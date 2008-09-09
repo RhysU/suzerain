@@ -1,0 +1,46 @@
+		                burgers Build Procedure
+                    ===============================
+
+0. Introduction
+---------------
+
+This document describes how to build burgers from source code on
+Unix-like systems.
+
+
+1. Dependencies
+---------------
+
+The code depends upon the following libraries:
+
+    1) GNU Scientific Library (GSL) from http://www.gnu.org/software/gsl/
+    2) Boost from http://www.boost.org/
+    3) matio from http://sourceforge.net/projects/matio/
+
+
+2. Configuration
+----------------
+
+If you have no `configure' script in the top level directory, run
+`bootstrap' to create one using GNU autoconf and automake.
+
+Before compiling burgers, you need to run the provided `configure' script.
+Generally, just `./configure' will work, but you may wish to provide
+more parameters.  Run `./configure --help' for details.
+
+
+3. Compilation
+--------------
+
+To compile burgers after it has been configured, simply type 'make'.
+
+After the compilation one or more ready-to-use executables should reside
+in the src directory.  Related documentation will be built in the doc
+subdirectory.
+
+
+3. Testing
+--------------
+
+Unit tests can be compiled and run using 'make check'.  Currently, they
+are both scare and may fail due to some Boost segfault issues.

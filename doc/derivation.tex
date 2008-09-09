@@ -1,0 +1,231 @@
+\documentclass[11pt]{amsart}
+
+\usepackage{amsmath}
+\usepackage{amssymb} 
+\usepackage[cm]{fullpage}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{latexsym}
+\usepackage{pxfonts}
+
+% Set appropriate header/footer information on each page
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headheight}{1.5em}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \lhead{}
+    \rhead{}
+}
+\pagestyle{plain}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{2.0em plus 0.5em minus 0.5em}
+\DeclareMathOperator{\mspan}{span}
+
+\begin{document}
+
+Fixing initial condition $u(x,0)\equiv{}g(x)$ and
+boundary conditions $u(\pm{}1,t)\equiv{}h(\pm{}1,t)$, 
+find $u$ such that
+\begin{align*}
+\partial_{t} u + u \partial_{x} u &= \nu \partial_{xx} u + f
+& \forall x\in\left(-1,1\right), &\forall t>0.
+\end{align*}
+
+We construct the lift
+\begin{align*}
+\tilde{u}(x,t) 
+&\equiv{} 
+\frac{x+1}{2}\,h(1,t) - \frac{x-1}{2}\,h(-1,t)
+\intertext{
+    with partial derivatives
+}
+\partial_{t}\tilde{u}(x,t) 
+&=
+\frac{x+1}{2}\,\partial_{t}h(1,t) - \frac{x-1}{2}\,\partial_{t}h(-1,t),
+\text{ and}
+\\
+\partial_{x}\tilde{u}(x,t) 
+&=
+\frac{h(1,t)}{2} - \frac{h(-1,t)}{2}.
+\end{align*}
+
+In conservation form, the Galerkin approximation problem is to find
+$u\in\tilde{u}+\mathcal{U}^{N}$ such that
+\begin{align*}
+\left< \partial_{t} u , v \right>
+&=
+\left<
+  \partial_x \left(-\frac{1}{2} u^2 + \nu \partial_{x} u\right) , v
+\right>
++
+\left< f, v \right>
+& \forall v\in \mathcal{V}^{N}&, \forall t>0
+\intertext{
+  where $\left< f, g \right> \coloneqq \int_{-1}^{1} f(x)
+  \overline{g(x)}\,dx$.  
+  Choosing $\mathcal{U}^{N} = \mspan \left\{ \phi_i \right\}$,
+  $\mathcal{V}^{N} = \mspan \left\{ \psi_i \right\}$
+  with $\phi_i(\pm{}1), \psi_i(\pm{}1) = 0$ gives
+}
+\left< \partial_{t} u , \psi_i \right>
+&=
+\left<
+  \partial_x \left(-\frac{1}{2} u^2 + \nu \partial_{x} u\right) , \psi_i
+\right>
++
+\left< f, \psi_i \right>
+& \forall i\in\left\{ 1,\dots,N \right\}&, \forall t>0.
+\intertext{
+  where $u(x,t)=\tilde{u}(x,t)+\sum_{i=1}^{N} \hat{u}_i(t) \phi_i(x)$.
+  Integrating by parts yields
+}
+\left< \partial_{t} u , \psi_i \right>
+&=
+\left<
+  \frac{1}{2} u^2 - \nu \partial_{x} u
+  ,
+  \partial_x \psi_i
+\right>
++
+\left< f, \psi_i \right>
+& \forall i\in\left\{ 1,\dots,N \right\}&, \forall t>0.
+\end{align*}
+
+Investigating each term, we see:
+\begin{align*}
+\left< \partial_{t} u , \psi_i \right>
+&=
+\left< 
+  \partial_{t} \tilde{u} + \sum_{j} \partial_{t} \hat{u}_j \phi_j , \psi_i
+\right>
+=
+\left< 
+  \partial_{t} \tilde{u} , \psi_i
+\right>
++
+\sum_{j} \partial_{t} \hat{u}_j \left< 
+  \phi_j , \psi_i 
+\right>
+\\
+\left< f, \psi_i \right>
+&=
+\left< \sum_{j} \hat{f}_j \phi_j, \psi_i \right>
+=
+\sum_{j} \hat{f}_j \left< \phi_j, \psi_i \right>
+\\
+\left<
+  \frac{1}{2} u^2 - \nu \partial_{x} u
+  ,
+  \partial_x \psi_i
+\right>
+&=
+\left<
+  \frac{1}{2} 
+  \left(\tilde{u}+\sum_{j} \hat{u}_j \phi_j\right)^{2}
+  -
+  \nu \partial_{x} \left( 
+    \tilde{u} + \sum_j \hat{u}_j \phi_j 
+  \right)
+  ,
+  \partial_x \psi_i
+\right>
+\\
+&=
+\left<
+  \frac{1}{2} \tilde{u}^2
+  +
+  \tilde{u} \sum_j \hat{u}_j \phi_j
+  +
+  \frac{1}{2}
+  \left(\sum_{p} \hat{u}_p \phi_p\right)
+  \left(\sum_{q} \hat{u}_q \phi_q\right)
+  -
+  \nu \partial_{x} \tilde{u}
+  -
+  \nu \sum_j \hat{u}_j \partial_{x} \phi_j 
+  ,
+  \partial_x \psi_i
+\right>
+\\
+&=
+\left<
+  \frac{1}{2} \tilde{u}^2
+  -
+  \nu \partial_{x} \tilde{u}
+  ,
+  \partial_x \psi_i
+\right>
+  +
+\left<
+  \tilde{u} \sum_j \hat{u}_j \phi_j
+  ,
+  \partial_x \psi_i
+\right>
+  +
+\frac{1}{2}
+\sum_{p} \sum_{q} \hat{u}_p \hat{u}_q 
+\left<
+  \phi_p \phi_q
+  ,
+  \partial_x \psi_i
+\right>
+  -
+\sum_j \hat{u}_j 
+\left<
+  \nu \partial_{x} \phi_j 
+  ,
+  \partial_x \psi_i
+\right>
+\end{align*}
+
+Assemble the terms and rearrange to obtain 
+that $\forall{}i\in\left\{ 1,\dots,N \right\}$
+\begin{align*}
+\begin{split}
+\sum_{j} \partial_{t} \hat{u}_j \left< 
+  \phi_j , \psi_i 
+\right>
+&=
+\left<
+  \tilde{u} \sum_j \hat{u}_j \phi_j
+  ,
+  \partial_x \psi_i
+\right>
+  +
+\frac{1}{2}
+\sum_{p} \sum_{q} \hat{u}_p \hat{u}_q 
+\left<
+  \phi_p \phi_q
+  ,
+  \partial_x \psi_i
+\right>
+  -
+\sum_j \hat{u}_j 
+\left<
+  \nu \partial_{x} \phi_j 
+  ,
+  \partial_x \psi_i
+\right>
+\\
+&\quad
++
+\left<
+  \frac{1}{2} \tilde{u}^2
+  -
+  \nu \partial_{x} \tilde{u}
+  ,
+  \partial_x \psi_i
+\right>
+-
+\left< 
+  \partial_{t} \tilde{u} , \psi_i
+\right>
++
+\sum_{j} \hat{f}_j \left< \phi_j, \psi_i \right>
+.
+\end{split}
+\end{align*}
+
+\end{document}
