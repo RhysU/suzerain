@@ -48,6 +48,8 @@ AC_DEFUN([AX_CHECK_ENABLE_DEBUG],[
         dnl AC_PROG_* will enable debugging if *FLAGS unset.
     else
         AC_MSG_RESULT(no)
+        dnl assert.h is a NOP if NDEBUG is defined, so define it.
+        AC_DEFINE(NDEBUG,,[define if debugging is disabled])
         dnl Ensure AC_PROG_CC/CXX/F77/FC will not enable debugging flags
         if test "x${CFLAGS+set}" != "xset"; then
             CFLAGS=""
