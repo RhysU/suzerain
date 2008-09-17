@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "legendrePoly.h"
+
 /*----------------------------------------------------------------*/
 /* Evaluates Lagrange polynomials using 3 term recursion.         */
 int
@@ -32,8 +34,3 @@ legendrePoly(const int N, const double xi, double * L, double * L_xi)
 
   return 0;
 }
-
-
-#ifdef UNIT_TEST
-#include "legendrePoly_test.cc"
-#endif

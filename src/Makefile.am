@@ -14,9 +14,8 @@ test_example_SOURCES = test_example.cc
 test_example_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 
 check_PROGRAMS            += legendrePoly_test
-legendrePoly_test_SOURCES  = legendrePoly.cc
+legendrePoly_test_SOURCES  = legendrePoly_test.cc legendrePoly.cc
 legendrePoly_test_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
-legendrePoly_test_CPPFLAGS = -D UNIT_TEST=1 $(AM_CPPFLAGS)
 
 TESTS = $(check_PROGRAMS)
 
