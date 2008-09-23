@@ -34,3 +34,24 @@ legendrePoly(const int N, const double xi, double * L, double * L_xi)
 
   return 0;
 }
+
+
+/*----------------------------------------------------------------*/
+/* Evaluates (1-xi^2)*Li, where Li is the ith Legendre poly       */
+int
+legendrePolyZero(const int N, const double xi, double * phi, double * phi_xi)
+{
+
+  const int ierr = legendrePoly(N, xi, phi, phi_xi);
+  if( ierr != 0 ) return ierr;
+
+  const double imx2 = (1.0 - xi*xi);
+  const double n2xi  = -2.0*xi;
+  for( int ii=0; ii<N; ii++ ){
+    // Do derivatives first (so we don't have to store L separately)
+    if( phi_xi != (double *)NULL ) phi_xi[ii] = n2xi*phi[ii] + imx2*phi_xi[ii];
+    phi[ii] *= imx2;
+  }
+
+  return 0;
+}
