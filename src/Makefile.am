@@ -17,6 +17,10 @@ check_PROGRAMS            += legendrePoly_test
 legendrePoly_test_SOURCES  = legendrePoly_test.cc legendrePoly.cc
 legendrePoly_test_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 
+check_PROGRAMS        += residual_test
+residual_test_SOURCES  = residual_test.cc residual.cc legendrePoly.cc
+residual_test_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+
 TESTS = $(check_PROGRAMS)
 
 # Required for AX_AM_MACROS
