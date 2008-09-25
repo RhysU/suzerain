@@ -5,9 +5,9 @@
 #include "residual.h"
 
 
-/*-----------------------------------------------------------------------*/
-/* Compute residual vector (in simplest, probably slowest, way possible) */
-/* Should refactor to improve speed and modularity.                      */
+//------------------------------------------------------------------------
+// Compute residual vector (in simplest, probably slowest, way possible).
+// Should refactor to improve speed and modularity.                      
 int
 interiorResidual( const int N, const double nu, const double *U, const double *UB,
 		  double *R, double *R_U )
