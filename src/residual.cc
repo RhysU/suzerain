@@ -20,7 +20,7 @@ interiorResidual( const int N, const double nu, const double *U, const double *U
   double phi[N], phi_xi[N];
   double xq[Nquad], wq[Nquad];
 
-  double u, u_x, F, F_u;
+  double u, u_x, F, F_u, F_u_x;
 
   // Get quadrature points
   ierr = legendreGaussQuad(Nquad, xq, wq);
@@ -45,15 +45,24 @@ interiorResidual( const int N, const double nu, const double *U, const double *U
     u_x += UB[0]*0.5*(   -1.0      ) + UB[1]*0.5*(1.0          );
 
 
-    // Compute flux
-    F = 0.5*u*u - nu*u_x;
+    // Compute flux and derivatives
+    F     = 0.5*u*u - nu*u_x;
+    F_u   =     u           ;
+    F_u_x =         - nu    ;
     
     // Add to residual integral
     for( int ii=0; ii<N; ii++ ) R[ii] -= wq[iquad]*phi_xi[ii]*F;
     
-    // Add to Jacobian integral
-    // NEED TO ADD
-  }
+    // Add to Jacobian integral (if requested)
+    if( R_U != (double *)NULL ){
+      for( int ii=0; ii<N; ii++ ){
+	for( int jj=0; jj<N; jj++ ){
+	  R_U[N*ii+jj] -= wq[iquad]*phi_xi[ii]*(F_u*phi[jj] + F_u_x*phi_xi[jj]);
+	}
+      }
+    }
+
+  } // end loop over quad points
 
   return 0;
 }

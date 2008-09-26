@@ -6,7 +6,7 @@
 #include "residual.h"
 
 
-BOOST_AUTO_TEST_CASE( test_residual_zero )
+BOOST_AUTO_TEST_CASE( test_residual )
 {
   int ierr;
   double U[2] = {0.0, 0.0};
@@ -40,4 +40,63 @@ BOOST_AUTO_TEST_CASE( test_residual_zero )
   
   BOOST_CHECK_SMALL(R[0], tol);
   BOOST_CHECK_CLOSE(R[1], -32.0/105.0, tol);
+}
+
+
+BOOST_AUTO_TEST_CASE( ping_residual )
+{
+
+  int ierr;
+  double U0[3] =  {0.5, 1.0, 0.5};
+  double U[3]  =  {0.5, 1.0, 0.5};
+  const double UB[2] = {1.0, -1.0};
+  const double eps[2] = {1e-2, 1e-3};
+  double R0[3], R_U0[9], Rp[3], R_Up[9];
+  double analytic, finitedi, diff[3][2], rate;
+
+  // Zero things out
+  for( int ii=0; ii<3; ii++ ) R0[ii] = Rp[ii] = 0.0;
+  for( int ii=0; ii<9; ii++ ) R_U0[ii] = R_Up[ii] = 0.0;
+  
+  // Baseline
+  ierr = interiorResidual(3, 0.1, U, UB, R0, R_U0);
+  BOOST_REQUIRE( ierr == 0 );
+
+  for( int ii=0; ii<3; ii++ ){ // ping for each state component
+
+    for( int jj=0; jj<2; jj++ ){
+      
+      // perturb the jjth state component
+      for( int kk=0; kk<3; kk++ ) U[kk] = U0[kk];
+      U[ii] += eps[jj];
+
+      // zero things out
+      for( int kk=0; kk<3; kk++ ) Rp[kk] = 0.0;
+      for( int kk=0; kk<9; kk++ ) R_Up[kk] = 0.0;
+
+      // Residual and Jacobian
+      ierr = interiorResidual(3, 0.1, U, UB, Rp, R_Up);
+      BOOST_REQUIRE( ierr == 0 );
+
+      // compute difference
+      for( int kk=0; kk<3; kk++ ){
+	finitedi = (Rp[kk] - R0[kk])/eps[jj];
+	analytic = 0.5*(R_Up[3*kk+ii] + R_U0[3*kk+ii]);
+	diff[kk][jj] = fabs(analytic - finitedi);
+	//printf("diff[%d][%d](%d) = %.6E\n", kk, ii, jj, diff[kk][jj]); fflush(stdout);
+      }
+    }
+
+    // check convergence (either error is small or rate is correct)
+    for( int kk=0; kk<3; kk++ ){
+      if( !(diff[kk][0] < 1e-12) ){
+	rate = log(diff[kk][1]/diff[kk][0])/log(eps[2]/eps[1]);
+	BOOST_CHECK( rate > 1.9 );
+      } else{
+	BOOST_CHECK( (diff[kk][0] < 1e-12) && (diff[kk][1] < 1e-12) );
+      }
+    }
+
+  }
+
 }
