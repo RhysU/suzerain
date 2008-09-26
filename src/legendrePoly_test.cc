@@ -315,3 +315,25 @@ BOOST_AUTO_TEST_CASE( test_legendre0MassMatrix )
   BOOST_CHECK_SMALL(MM[7],              stol);
   BOOST_CHECK_CLOSE(MM[8],  16.0/105.0, ptol); 
 }
+
+
+BOOST_AUTO_TEST_CASE( test_legendre0InverseMassMatrix )
+{
+  int ierr;
+  double iMM[9];
+  const double ptol = 1e-13;
+  const double stol = 1e-16;
+
+  ierr = legendre0InverseMassMatrix(3, iMM);
+  BOOST_REQUIRE( ierr==0 );
+
+  BOOST_CHECK_CLOSE(iMM[0], 2.1875 , ptol);
+  BOOST_CHECK_SMALL(iMM[1],          stol);
+  BOOST_CHECK_CLOSE(iMM[2], 4.3750 , ptol);
+  BOOST_CHECK_SMALL(iMM[3],          stol);
+  BOOST_CHECK_CLOSE(iMM[4], 6.5625 , ptol);
+  BOOST_CHECK_SMALL(iMM[5],          stol);
+  BOOST_CHECK_CLOSE(iMM[6], 4.3750 , ptol);
+  BOOST_CHECK_SMALL(iMM[7],          stol);
+  BOOST_CHECK_CLOSE(iMM[8], 15.3125, ptol); 
+}

@@ -1,5 +1,9 @@
 #include <stdio.h>
 #include <math.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_blas.h>
 
 #include "legendrePoly.h"
 
@@ -173,6 +177,36 @@ legendre0MassMatrix(const int N, double * MM)
     }
 
   }
+
+  return 0;
+}
+
+
+
+//------------------------------------------------------------------
+// Compute inverse mass matrix
+//
+int
+legendre0InverseMassMatrix(const int N, double * iMM)
+{
+  int ierr;
+  double MM[N*N];
+
+  for( int ii=0; ii<N*N; ii++ ) iMM[ii] = 0.0;
+
+  ierr = legendre0MassMatrix(N,MM);
+  if( ierr != 0 ) return ierr;
+
+  gsl_matrix_view gslMM = gsl_matrix_view_array(MM, N, N);
+  gsl_matrix_view gsliMM = gsl_matrix_view_array(iMM, N, N);
+  
+  ierr = gsl_linalg_cholesky_decomp(&gslMM.matrix);
+  if( ierr != 0 ) return ierr;
+
+  gsl_matrix_set_identity(&gsliMM.matrix);
+
+  gsl_blas_dtrsm(CblasLeft, CblasLower, CblasNoTrans, CblasNonUnit, 1.0, &gslMM.matrix, &gsliMM.matrix);
+  gsl_blas_dtrsm(CblasLeft, CblasLower, CblasTrans, CblasNonUnit, 1.0, &gslMM.matrix, &gsliMM.matrix);
 
   return 0;
 }
