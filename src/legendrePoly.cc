@@ -134,3 +134,45 @@ legendreGaussQuad(const int N, double * xq, double * wq)
 
   return 0;
 }
+
+//------------------------------------------------------------------
+// Compute mass matrix via quadrature
+//
+// NOTE: Can probably do this analytically... not sure if it's
+// worth it or not.
+//
+int
+legendre0MassMatrix(const int N, double * MM)
+{
+  int ierr;
+  const int solnOrder = N-1+2;
+  const int Nquad = solnOrder + 1;
+
+  double phi[N], phi_xi[N];
+  double xq[Nquad], wq[Nquad];
+
+  // initialize MM to zero
+  for( int ii=0; ii<N*N; ii++ ) MM[ii] = 0.0;
+
+  // Get quadrature points
+  ierr = legendreGaussQuad(Nquad, xq, wq);
+  if( ierr != 0 ) return ierr;
+
+  // Loop over quadrature points
+  for( int iquad=0; iquad<Nquad; iquad++ ){
+
+    // Evaluate basis
+    ierr = legendrePolyZero(N, xq[iquad], phi, phi_xi);
+    if( ierr != 0 ) return ierr;
+  
+    // Add to integral
+    for( int ii=0; ii<N; ii++ ){
+      for( int jj=0; jj<N; jj++ ){
+	MM[N*ii+jj] += wq[iquad]*phi[ii]*phi[jj];
+      }
+    }
+
+  }
+
+  return 0;
+}
