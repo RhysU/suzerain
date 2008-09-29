@@ -15,7 +15,7 @@ interiorResidual( const int N, const double nu, const double *U, const double *U
   int ierr;
   const int solnOrder = N-1+2;
   const int quadOrder = 3*solnOrder - 1;
-  const int Nquad = 3*quadOrder/2 + 1; // + 1 to be conservative
+  const int Nquad = quadOrder/2 + 1; // + 1 to be conservative
 
   double phi[N], phi_xi[N];
   double xq[Nquad], wq[Nquad];
@@ -63,6 +63,49 @@ interiorResidual( const int N, const double nu, const double *U, const double *U
     }
 
   } // end loop over quad points
+
+  return 0;
+}
+
+
+//------------------------------------------------------------------------
+// Compute contribution of unsteady BCs to total residual
+//
+int
+unsteadyBoundaryResidual( const int N, const double *UB0, const double *UB1, double *R )
+{
+
+  int ierr;
+  const int solnOrder = N-1+2;
+  const int quadOrder = solnOrder + 1;
+  const int Nquad = quadOrder/2 + 1; // + 1 to be conservative
+
+  double phi[N];
+  double xq[Nquad], wq[Nquad];
+
+  double ub0, ub1, dub;
+
+  // Get quad points and weights
+  ierr = legendreGaussQuad(Nquad, xq, wq);
+  if( ierr != 0 ) return ierr;
+
+  // Loop over quad points
+  for( int iquad=0; iquad<Nquad; iquad++ ){
+
+    // Evaluate basis
+    ierr = legendrePolyZero(N, xq[iquad], phi, (double *)NULL);
+    if( ierr != 0 ) return ierr;
+
+    // Interpolate boundary function
+    ub0 = UB0[0]*0.5*(1.0-xq[iquad]) + UB0[1]*0.5*(1.0+xq[iquad]);
+    ub1 = UB1[0]*0.5*(1.0-xq[iquad]) + UB1[1]*0.5*(1.0+xq[iquad]);
+
+    dub = ub1 - ub0;
+
+    // Add to integral
+    for( int ii=0; ii<N; ii++ ) R[ii] += wq[iquad]*phi[ii]*dub;
+
+  }
 
   return 0;
 }

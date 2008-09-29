@@ -100,3 +100,43 @@ BOOST_AUTO_TEST_CASE( ping_residual )
   }
 
 }
+
+
+BOOST_AUTO_TEST_CASE( test_unsteadyBoundaryResidual )
+{
+  int ierr;
+  double UB0[2] = {0.0, 0.0};
+  double UB1[2] = {0.0, 0.0};
+  double R[2] = {0.0, 0.0};
+  const double tol=1e-12;
+
+  // BCs do not change
+  ierr = unsteadyBoundaryResidual(2, UB0, UB1, R);
+  BOOST_REQUIRE( ierr == 0 );
+  
+  BOOST_CHECK_SMALL(R[0], tol);
+  BOOST_CHECK_SMALL(R[1], tol);
+
+  // change the same on both sides
+  UB0[0] = 0.0; UB0[1] = 0.0;
+  UB1[0] = 1.5; UB1[1] = 1.5;
+
+  R[0] = R[1] = 0.0;
+  ierr = unsteadyBoundaryResidual(2, UB0, UB1, R);
+  BOOST_REQUIRE( ierr == 0 );
+  
+  BOOST_CHECK_CLOSE(R[0], 2.0, tol);
+  BOOST_CHECK_SMALL(R[1], tol);
+
+  // different changes on each side
+  UB0[0] = 0.0; UB0[1] = 0.0;
+  UB1[0] = 1.0; UB1[1] = 2.0;
+
+  R[0] = R[1] = 0.0;
+  ierr = unsteadyBoundaryResidual(2, UB0, UB1, R);
+  BOOST_REQUIRE( ierr == 0 );
+  
+  BOOST_CHECK_CLOSE(R[0], 2.0, tol);
+  BOOST_CHECK_CLOSE(R[1], 2.0/15.0, tol);
+
+}
