@@ -101,16 +101,23 @@ unsteadyRK4(const int Nstep, burgers *pB)
   int ierr;
   const int N = pB->N;
   double time=0.0, tmptime=0.0;
-  double dt = 1.0/(N+1); // hardcoded time step for now
+  double dt = 1.0/(Nstep+1); // hardcoded time step for now
   double UB[2], UB0[2], UB1[2];
+  double Rnorm;
 
   gsl_vector *U = pB->U;
-  gsl_vector *Utmp;
+  gsl_vector *Utmp, *dU;
   gsl_vector *R = pB->R;
   gsl_vector *K1, *K2, *K3, *K4;
-  gsl_vector *dU;
 
   gsl_matrix *iMM;
+
+//   printf("dt = %.6E\n", dt); fflush(stdout);
+
+//   // Write solution to file   
+//   FILE *fp = fopen ("initialCondition.dat", "w");
+//   gsl_vector_fprintf(fp, pB->U, "%.15E");
+//   fclose(fp);
 
   // Allocate storage
   dU   = gsl_vector_calloc((size_t)N);
@@ -119,17 +126,17 @@ unsteadyRK4(const int Nstep, burgers *pB)
   K2   = gsl_vector_calloc((size_t)N);
   K3   = gsl_vector_calloc((size_t)N);
   K4   = gsl_vector_calloc((size_t)N);
+  iMM  = gsl_matrix_alloc((size_t)N, (size_t)N);
 
   // Compute inverse mass matrix
-  iMM = gsl_matrix_alloc((size_t)N, (size_t)N);
   ierr = legendre0InverseMassMatrix(N, iMM->data);
   if( ierr != 0 ) return ierr;
-  
 
-
+  // RK4
   for( int istep=0; istep<Nstep; istep++ ){
-
     
+    printf("istep = %d\n", istep); fflush(stdout);
+
     //---------------------------------------
     // STAGE 1
     //---------------------------------------
@@ -147,7 +154,7 @@ unsteadyRK4(const int Nstep, burgers *pB)
     // Evaluate residual
     ierr = interiorResidual(N, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
-    
+
     // K1 = -MM\R;
     gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K1);
 
@@ -171,7 +178,7 @@ unsteadyRK4(const int Nstep, burgers *pB)
     // Evaluate residual
     ierr = interiorResidual(N, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
-    
+
     // K2 = -MM\R;
     gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K2);
 
@@ -195,7 +202,7 @@ unsteadyRK4(const int Nstep, burgers *pB)
     // Evaluate residual
     ierr = interiorResidual(N, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
-    
+
     // K3 = -MM\R;
     gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K3);
 
@@ -220,7 +227,7 @@ unsteadyRK4(const int Nstep, burgers *pB)
     // Evaluate residual
     ierr = interiorResidual(N, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
-    
+
     // K4 = -MM\R;
     gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K4);
 
@@ -264,6 +271,15 @@ unsteadyRK4(const int Nstep, burgers *pB)
     time += dt;
     
   }
+
+  // Clean up
+  gsl_vector_free(dU);
+  gsl_vector_free(Utmp);
+  gsl_vector_free(K1);
+  gsl_vector_free(K2);
+  gsl_vector_free(K3);
+  gsl_vector_free(K4);
+  gsl_matrix_free(iMM);
 
   return 0;
 }

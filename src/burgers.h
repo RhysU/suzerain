@@ -13,7 +13,7 @@ typedef struct
 
 
 int boundaryCondition(const double time, double *UB);
-int InitialCondition(const int N, double *U);
+int initialCondition(const int N, double *U);
 
 #define INCLUDE_BURGERS_H 1
 #endif
