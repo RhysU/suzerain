@@ -11,7 +11,7 @@ bin_PROGRAMS        += helloworld
 helloworld_SOURCES   = helloworld.cc
 
 bin_PROGRAMS     += burgers
-burgers_SOURCES   = burgers.cc residual.cc legendrePoly.cc
+burgers_SOURCES   = burgers.cc solver.cc residual.cc legendrePoly.cc
 
 # Unit test executables
 check_PROGRAMS      += test_example

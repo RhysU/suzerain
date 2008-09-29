@@ -8,92 +8,36 @@
 
 #include "legendrePoly.h"
 #include "residual.h"
+#include "solver.h"
+#include "burgers.h"
 
-// Structure to allow for easy passing/maniuplation of some data
-typedef struct
-{
-  int N; // number of modes
-  double nu; // viscosity
-  gsl_vector *U; // state vector
-  gsl_vector *R; // residual vector
 
-} burgers;
+
+
 
 //-------------------------------------------------
-// Solve steady Burgers with Newton-Raphson
+// Evaluate BC function
 //
 int
-steadyNewton(const int NiterMax, burgers *pB)
-{
-  int ierr, iiter;
-  const int N = pB->N;
-  double Rnorm=0.0;
-  const double RTOL = 1e-12;
-  const double UB[2] = {1.0, -1.0};
-
-  gsl_vector *U = pB->U;
-  gsl_vector *R = pB->R;
-  gsl_vector *dU;
-  gsl_matrix *R_U;
-
-  int s;
-  gsl_permutation *p;
-
-  // Allocate storage
-  dU = gsl_vector_calloc((size_t)N);
-  R_U = gsl_matrix_calloc((size_t)N, (size_t)N);
-  p = gsl_permutation_alloc((size_t)N);
-
-  // Set residual to zero
-  gsl_vector_set_zero(R);
-
-  // Evaluate residual
-  ierr = interiorResidual(N, pB->nu, U->data, UB, R->data, R_U->data);
-  if( ierr != 0 ) return ierr;
-
-  // Compute residual 2-norm
-  Rnorm = gsl_blas_dnrm2(R);
-
-  iiter = 0;
-
-  printf("Iteration \t Residual Norm\n");
-  printf("--------------------------\n");
-  printf("%d \t %.12E\n", iiter, Rnorm);
-
-  while( (Rnorm>RTOL) && (iiter<NiterMax) ){
-    
-    // Solve for update: dU = -R_U\R
-    gsl_linalg_LU_decomp(R_U, p, &s);
-    gsl_linalg_LU_solve(R_U, p, R, dU);
-    gsl_vector_scale(dU, -1.0);
-
-    // Update state: U += dU
-    gsl_vector_add(U, dU);
-
-    // Set residual and Jacobian to zero
-    gsl_vector_set_zero(R);
-    gsl_matrix_set_zero(R_U);
-
-    // Evaluate residual
-    ierr = interiorResidual(N, pB->nu, U->data, UB, R->data, R_U->data);
-    if( ierr != 0 ) return ierr;
-
-    // Compute residual 2-norm
-    Rnorm = gsl_blas_dnrm2(R);
-
-    iiter++;
-    
-    printf("%d \t %.12E\n", iiter, Rnorm);
-  }
-
-  // Clean up
-  gsl_vector_free(dU);
-  gsl_matrix_free(R_U);
-  gsl_permutation_free(p);
+boundaryCondition(const double time, double *UB)
+{ 
+  // Just a placeholder for now
+  UB[0] =  1.0;
+  UB[1] = -1.0;
 
   return 0;
 }
 
+//-------------------------------------------------
+// Set initial state
+//
+int
+InitialCondition(const int N, double *U)
+{ 
+  // Just a placeholder for now
+  for( int ii=0; ii<N; ii++ ) U[ii] = 0.0;
+  return 0;
+}
 
 
 //-------------------------------------------------
