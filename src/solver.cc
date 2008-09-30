@@ -96,7 +96,7 @@ steadyNewton(const int NiterMax, burgers *pB)
 // March in time with 4th order Runge-Kutta
 //
 int
-unsteadyRK4(const int Nstep, const double dt, burgers *pB)
+unsteadyRK4(const int Nstep, const double dt, const int Nwrite, burgers *pB)
 {  
   int ierr;
   const int N = pB->N;
@@ -111,12 +111,7 @@ unsteadyRK4(const int Nstep, const double dt, burgers *pB)
 
   gsl_matrix *iMM;
 
-//   printf("dt = %.6E\n", dt); fflush(stdout);
-
-//   // Write solution to file   
-//   FILE *fp = fopen ("initialCondition.dat", "w");
-//   gsl_vector_fprintf(fp, pB->U, "%.15E");
-//   fclose(fp);
+  FILE *fp;
 
   // Allocate storage
   dU   = gsl_vector_calloc((size_t)N);
@@ -131,11 +126,20 @@ unsteadyRK4(const int Nstep, const double dt, burgers *pB)
   ierr = legendre0InverseMassMatrix(N, iMM->data);
   if( ierr != 0 ) return ierr;
 
+  // write time
+  printf("Writing solution at time = %.6E\n", time); fflush(stdout);
+  fp = fopen("time.dat", "w");
+  fprintf(fp, "%.15E\n", time);
+  fclose(fp);
+
+  // write solution
+  fp = fopen("soln.dat", "w");
+  gsl_vector_fprintf(fp, pB->U, "%.15E");
+  fclose(fp);
+
   // RK4
   for( int istep=0; istep<Nstep; istep++ ){
     
-    printf("istep = %d\n", istep); fflush(stdout);
-
     //---------------------------------------
     // STAGE 1
     //---------------------------------------
@@ -268,7 +272,21 @@ unsteadyRK4(const int Nstep, const double dt, burgers *pB)
     //---------------------------------------
     gsl_blas_daxpy(1.0, dU, U);
     time += dt;
-    
+
+    if( !((istep+1)%Nwrite) ){
+      printf("Writing solution at time = %.6E\n", time); fflush(stdout);
+
+      // write time
+      fp = fopen("time.dat", "a");
+      fprintf(fp, "%.15E\n", time);
+      fclose(fp);
+      
+      // write solution
+      fp = fopen("soln.dat", "a");
+      gsl_vector_fprintf(fp, pB->U, "%.15E");
+      fclose(fp);
+    }
+
   }
 
   // Clean up

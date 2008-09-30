@@ -57,12 +57,12 @@ boundaryCondition(const double time, double *UB)
   int ierr;
   
   // Steady
-  UB[0] =  1.0;
-  UB[1] = -1.0;
+//   UB[0] =  1.0;
+//   UB[1] = -1.0;
 
-//   // n wave
-//   ierr = nWave(-1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[0]));
-//   ierr = nWave( 1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[1]));
+  // n wave
+  ierr = nWave(-1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[0]));
+  ierr = nWave( 1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[1]));
 
   return 0;
 }
@@ -74,7 +74,7 @@ int
 initialCondition(const int N, double *U)
 { 
   // Just a placeholder for now
-  for( int ii=0; ii<N; ii++ ) U[ii] = 0.0;
+  //for( int ii=0; ii<N; ii++ ) U[ii] = 0.0;
 
 //   // Steady solution (33 modes, nu=0.1)
 //   U[ 0] = 1.629157349371976E-15;
@@ -111,67 +111,67 @@ initialCondition(const int N, double *U)
 //   U[31] = 4.876094701709677E-04;
 //   U[32] = -6.126450964786364E-18;
 
-//   // L2 projection of n wave solution at t=0 onto solution space
-//   int ierr;
-//   const int solnOrder = N-1+2;
-//   const int quadOrder = 4*solnOrder + 1; // exact for n wave order 3*N 
-//                                          // (of course, n wave is not poly, but hopefully error is small enough)
-//   const int Nquad = quadOrder/2 + 1;
+  // L2 projection of n wave solution at t=0 onto solution space
+  int ierr;
+  const int solnOrder = N-1+2;
+  const int quadOrder = 4*solnOrder + 1; // exact for n wave order 3*N 
+                                         // (of course, n wave is not poly, but hopefully error is small enough)
+  const int Nquad = quadOrder/2 + 1;
 
-//   double xq[Nquad], wq[Nquad];
-//   double phi[N];
-//   double UB[2], rhs[N], u, u0;
+  double xq[Nquad], wq[Nquad];
+  double phi[N];
+  double UB[2], rhs[N], u, u0;
 
-//   gsl_matrix *iMM;
+  gsl_matrix *iMM;
 
-//   // Get quadrature points
-//   ierr = legendreGaussQuad(Nquad, xq, wq);
-//   if( ierr != 0 ) return ierr;
+  // Get quadrature points
+  ierr = legendreGaussQuad(Nquad, xq, wq);
+  if( ierr != 0 ) return ierr;
 
-//   // Get BCs at time 0
-//   ierr = boundaryCondition(0.0, UB);
-//   if( ierr != 0 ) return ierr;
+  // Get BCs at time 0
+  ierr = boundaryCondition(0.0, UB);
+  if( ierr != 0 ) return ierr;
 
-//   FILE *fp = fopen ("nWave.dat", "w");
-//   fprintf(fp, "%.15E, %.15E\n", UB[0], UB[1]);
-//   fclose(fp);
+  FILE *fp = fopen ("nWave.dat", "w");
+  fprintf(fp, "%.15E, %.15E\n", UB[0], UB[1]);
+  fclose(fp);
 
-//   // zero rhs
-//   for( int ii=0; ii<N; ii++ ) rhs[ii] = 0.0;
+  // zero rhs
+  for( int ii=0; ii<N; ii++ ) rhs[ii] = 0.0;
 
-//   // Loop over quadrature points to form right hand side vector
-//   for( int iquad=0; iquad<Nquad; iquad++ ){
+  // Loop over quadrature points to form right hand side vector
+  for( int iquad=0; iquad<Nquad; iquad++ ){
   
-//     // Evaluate IC
-//     ierr = nWave(xq[iquad], 0.0, 1e-2, 1.0, 16.0, 1.0, &u);
-//     if( ierr != 0 ) return ierr;
+    // Evaluate IC
+    ierr = nWave(xq[iquad], 0.0, 1e-2, 1.0, 16.0, 1.0, &u);
+    if( ierr != 0 ) return ierr;
 
-//     // Write solution to screen         
-//     FILE *fp = fopen ("nWave.dat", "a");
-//     fprintf(fp, "%.15E, %.15E\n", xq[iquad], u);
-//     fclose(fp);
+    // Write solution to screen         
+    FILE *fp = fopen ("nWave.dat", "a");
+    fprintf(fp, "%.15E, %.15E\n", xq[iquad], u);
+    fclose(fp);
 
-//     u0 = u - (UB[0]*0.5*(1.0-xq[iquad]) + UB[1]*0.5*(1.0+xq[iquad]));
+    u0 = u - (UB[0]*0.5*(1.0-xq[iquad]) + UB[1]*0.5*(1.0+xq[iquad]));
 
-//     // Evaluate basis
-//     ierr = legendrePolyZero(N, xq[iquad], phi, (double *)NULL);
-//     if( ierr != 0 ) return ierr;
+    // Evaluate basis
+    ierr = legendrePolyZero(N, xq[iquad], phi, (double *)NULL);
+    if( ierr != 0 ) return ierr;
 
-//     // Add to right hand side
-//     for( int ii=0; ii<N; ii++ ) rhs[ii] += wq[iquad]*phi[ii]*u0;
-//   }
+    // Add to right hand side
+    for( int ii=0; ii<N; ii++ ) rhs[ii] += wq[iquad]*phi[ii]*u0;
+  }
 
-//   // Invert system to compute initial state
-//   iMM = gsl_matrix_calloc((size_t)N, (size_t)N);
-//   ierr = legendre0InverseMassMatrix(N, iMM->data);
+  // Invert system to compute initial state
+  iMM = gsl_matrix_calloc((size_t)N, (size_t)N);
+  ierr = legendre0InverseMassMatrix(N, iMM->data);
 
-//   gsl_vector_view gslU = gsl_vector_view_array(U  , N);
-//   gsl_vector_view gslR = gsl_vector_view_array(rhs, N);
+  gsl_vector_view gslU = gsl_vector_view_array(U  , N);
+  gsl_vector_view gslR = gsl_vector_view_array(rhs, N);
 
-//   gsl_blas_dgemv(CblasNoTrans, 1.0, iMM, &gslR.vector, 0.0, &gslU.vector);
+  gsl_blas_dgemv(CblasNoTrans, 1.0, iMM, &gslR.vector, 0.0, &gslU.vector);
 
-//   // Clean up
-//   gsl_matrix_free(iMM);
+  // Clean up
+  gsl_matrix_free(iMM);
 
   return 0;
 }
@@ -192,7 +192,7 @@ ostream& operator<<(ostream& os, const vector<T>& v)
 int
 main( int argc, char * argv[] )
 {
-  int ierr, N, nIter, nStep;
+  int ierr, N, nIter, nStep, nwrite;
   double nu, dt;
   burgers B, *pB;
   bool steady;
@@ -228,6 +228,9 @@ main( int argc, char * argv[] )
 
     ("dt", po::value< double >(&dt)->default_value(1e-3), 
      "time step size (unsteady ONLY)")
+
+    ("nwrite", po::value< int >(&nwrite)->default_value(nStep), 
+     "write solution every nwrite steps (unsteady ONLY)")
 
     ("niter", po::value< int >(&nIter)->default_value(2), 
      "maximum number of Newton iterations (steady ONLY)")
@@ -321,8 +324,16 @@ main( int argc, char * argv[] )
       cout << "using Newton solver with maximum of " << nIter << " iterations\n";
     } else{
       cout << "solution is unsteady\n";
-      cout << "using RK4 time integration with dt = " << dt << " and nstep = " << nStep << "\n";
+      cout << "using RK4 time integration with dt = " << dt 
+	   << " and nstep = " << nStep 
+	   << " and nwrite = " << nwrite << "\n";
     }
+  }
+
+  
+  if (vm.count("nmode")){
+    cout << "nmode is " 
+	 << vm["nmode"].as< int >() << "\n";
   }
 
   if (vm.count("ic")){
@@ -358,7 +369,7 @@ main( int argc, char * argv[] )
     ierr = steadyNewton(nIter, pB);
     if( ierr != 0 ) return ierr;
   } else{
-    ierr = unsteadyRK4(nStep, dt, pB);
+    ierr = unsteadyRK4(nStep, dt, nwrite, pB);
     if( ierr != 0 ) return ierr;
   }
 
