@@ -96,12 +96,11 @@ steadyNewton(const int NiterMax, burgers *pB)
 // March in time with 4th order Runge-Kutta
 //
 int
-unsteadyRK4(const int Nstep, burgers *pB)
+unsteadyRK4(const int Nstep, const double dt, burgers *pB)
 {  
   int ierr;
   const int N = pB->N;
   double time=0.0, tmptime=0.0;
-  double dt = 1.0/(Nstep+1); // hardcoded time step for now
   double UB[2], UB0[2], UB1[2];
   double Rnorm;
 
