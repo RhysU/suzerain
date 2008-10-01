@@ -50,8 +50,7 @@ dnl ------------------------------------------------
 AC_LANG([C++])
 AX_BOOST_BASE(1.34)
 AX_BOOST_UNIT_TEST_FRAMEWORK
-## Potential future expansion
-# AX_BOOST_PROGRAM_OPTIONS
+AX_BOOST_PROGRAM_OPTIONS
 ## Potential future expansion
 # AX_TRILINOS_BASE
 # AX_TRILINOS_TEUCHOS
