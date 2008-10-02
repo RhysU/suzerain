@@ -1,0 +1,19 @@
+#
+# Sample input file for unsteady case with
+# a known exact solution (an n wave).
+# 
+#
+# The "truth" output (for regression testing)
+# for this case is given in nwave.truth.dat
+#
+restart = false
+equation = Burgers
+viscosity = 1e-2
+steady = false
+nmode = 33
+nstep = 1000
+nwrite = 100
+dt = 1e-3
+ic = nwave # doesn't work yet
+bc = nwave # doesn't work yet
+output-file = nwave.dat

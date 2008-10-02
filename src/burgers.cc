@@ -63,12 +63,12 @@ boundaryCondition(const double time, double *UB)
   const double PI = 3.141592653589793e+00;
   
 //   // Steady
-   UB[0] =  1.0;
-   UB[1] = -1.0;
+//   UB[0] =  1.0;
+//   UB[1] = -1.0;
 
-//   // n wave
-//   ierr = nWave(-1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[0]));
-//   ierr = nWave( 1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[1]));
+  // n wave
+  ierr = nWave(-1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[0]));
+  ierr = nWave( 1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[1]));
 
 //    // 1 + sine
 //    UB[0] =  1.0 + 0.5*sin(10.0*2.0*PI*time);
@@ -84,105 +84,105 @@ int
 initialCondition(const int N, double *U)
 { 
   // Just a placeholder for now
-  for( int ii=0; ii<N; ii++ ) U[ii] = 0.0;
+  //for( int ii=0; ii<N; ii++ ) U[ii] = 0.0;
 
-  // Steady solution (33 modes, nu=0.2)
-  U[ 0] = -8.107557960725053e-16;
-  U[ 1] = -6.964909287732155e-01;
-  U[ 2] = 1.029853292251888e-15;
-  U[ 3] = 3.187306357930834e-01;
-  U[ 4] = -9.278700510928637e-16;
-  U[ 5] = -1.232407244495537e-01;
-  U[ 6] = 2.307386585955463e-16;
-  U[ 7] = 4.461576317321740e-02;
-  U[ 8] = -1.643197301453396e-16;
-  U[ 9] = -1.557084310595167e-02;
-  U[10] = 1.095523588419926e-16;
-  U[11] = 5.310390990719337e-03;
-  U[12] = -2.768935432572244e-17;
-  U[13] = -1.782876340501372e-03;
-  U[14] = 1.172322561245916e-16;
-  U[15] = 5.918465723762702e-04;
-  U[16] = 8.462948728233755e-18;
-  U[17] = -1.947758544693764e-04;
-  U[18] = 1.163335797992689e-16;
-  U[19] = 6.369718562798107e-05;
-  U[20] = 1.079731204445066e-16;
-  U[21] = -2.069306048974295e-05;
-  U[22] = 9.288260204669929e-17;
-  U[23] = 6.721650586349263e-06;
-  U[24] = 6.450140749447718e-17;
-  U[25] = -2.144115156769409e-06;
-  U[26] = 6.394990658741524e-17;
-  U[27] = 7.154564578625442e-07;
-  U[28] = 5.271758074343222e-17;
-  U[29] = -2.016320719890527e-07;
-  U[30] = 3.776354215485299e-17;
-  U[31] = 9.453514133714230e-08;
-  U[32] = 3.537498776849928e-17;
+//   // Steady solution (33 modes, nu=0.2)
+//   U[ 0] = -8.107557960725053e-16;
+//   U[ 1] = -6.964909287732155e-01;
+//   U[ 2] = 1.029853292251888e-15;
+//   U[ 3] = 3.187306357930834e-01;
+//   U[ 4] = -9.278700510928637e-16;
+//   U[ 5] = -1.232407244495537e-01;
+//   U[ 6] = 2.307386585955463e-16;
+//   U[ 7] = 4.461576317321740e-02;
+//   U[ 8] = -1.643197301453396e-16;
+//   U[ 9] = -1.557084310595167e-02;
+//   U[10] = 1.095523588419926e-16;
+//   U[11] = 5.310390990719337e-03;
+//   U[12] = -2.768935432572244e-17;
+//   U[13] = -1.782876340501372e-03;
+//   U[14] = 1.172322561245916e-16;
+//   U[15] = 5.918465723762702e-04;
+//   U[16] = 8.462948728233755e-18;
+//   U[17] = -1.947758544693764e-04;
+//   U[18] = 1.163335797992689e-16;
+//   U[19] = 6.369718562798107e-05;
+//   U[20] = 1.079731204445066e-16;
+//   U[21] = -2.069306048974295e-05;
+//   U[22] = 9.288260204669929e-17;
+//   U[23] = 6.721650586349263e-06;
+//   U[24] = 6.450140749447718e-17;
+//   U[25] = -2.144115156769409e-06;
+//   U[26] = 6.394990658741524e-17;
+//   U[27] = 7.154564578625442e-07;
+//   U[28] = 5.271758074343222e-17;
+//   U[29] = -2.016320719890527e-07;
+//   U[30] = 3.776354215485299e-17;
+//   U[31] = 9.453514133714230e-08;
+//   U[32] = 3.537498776849928e-17;
   
 
-//   // L2 projection of n wave solution at t=0 onto solution space
-//   int ierr;
-//   const int solnOrder = N-1+2;
-//   const int quadOrder = 4*solnOrder + 1; // exact for n wave order 3*N 
-//                                          // (of course, n wave is not poly, but hopefully error is small enough)
-//   const int Nquad = quadOrder/2 + 1;
+  // L2 projection of n wave solution at t=0 onto solution space
+  int ierr;
+  const int solnOrder = N-1+2;
+  const int quadOrder = 4*solnOrder + 1; // exact for n wave order 3*N 
+                                         // (of course, n wave is not poly, but hopefully error is small enough)
+  const int Nquad = quadOrder/2 + 1;
 
-//   double xq[Nquad], wq[Nquad];
-//   double phi[N];
-//   double UB[2], rhs[N], u, u0;
+  double xq[Nquad], wq[Nquad];
+  double phi[N];
+  double UB[2], rhs[N], u, u0;
 
-//   gsl_matrix *iMM;
+  gsl_matrix *iMM;
 
-//   // Get quadrature points
-//   ierr = legendreGaussQuad(Nquad, xq, wq);
-//   if( ierr != 0 ) return ierr;
+  // Get quadrature points
+  ierr = legendreGaussQuad(Nquad, xq, wq);
+  if( ierr != 0 ) return ierr;
 
-//   // Get BCs at time 0
-//   ierr = boundaryCondition(0.0, UB);
-//   if( ierr != 0 ) return ierr;
+  // Get BCs at time 0
+  ierr = boundaryCondition(0.0, UB);
+  if( ierr != 0 ) return ierr;
 
-//   FILE *fp = fopen ("nWave.dat", "w");
-//   fprintf(fp, "%.15E, %.15E\n", UB[0], UB[1]);
-//   fclose(fp);
+  FILE *fp = fopen ("nWave.dat", "w");
+  fprintf(fp, "%.15E, %.15E\n", UB[0], UB[1]);
+  fclose(fp);
 
-//   // zero rhs
-//   for( int ii=0; ii<N; ii++ ) rhs[ii] = 0.0;
+  // zero rhs
+  for( int ii=0; ii<N; ii++ ) rhs[ii] = 0.0;
 
-//   // Loop over quadrature points to form right hand side vector
-//   for( int iquad=0; iquad<Nquad; iquad++ ){
+  // Loop over quadrature points to form right hand side vector
+  for( int iquad=0; iquad<Nquad; iquad++ ){
   
-//     // Evaluate IC
-//     ierr = nWave(xq[iquad], 0.0, 1e-2, 1.0, 16.0, 1.0, &u);
-//     if( ierr != 0 ) return ierr;
+    // Evaluate IC
+    ierr = nWave(xq[iquad], 0.0, 1e-2, 1.0, 16.0, 1.0, &u);
+    if( ierr != 0 ) return ierr;
 
-//     // Write solution to screen         
-//     FILE *fp = fopen ("nWave.dat", "a");
-//     fprintf(fp, "%.15E, %.15E\n", xq[iquad], u);
-//     fclose(fp);
+    // Write solution to screen         
+    FILE *fp = fopen ("nWave.dat", "a");
+    fprintf(fp, "%.15E, %.15E\n", xq[iquad], u);
+    fclose(fp);
 
-//     u0 = u - (UB[0]*0.5*(1.0-xq[iquad]) + UB[1]*0.5*(1.0+xq[iquad]));
+    u0 = u - (UB[0]*0.5*(1.0-xq[iquad]) + UB[1]*0.5*(1.0+xq[iquad]));
 
-//     // Evaluate basis
-//     ierr = legendrePolyZero(N, xq[iquad], phi, (double *)NULL);
-//     if( ierr != 0 ) return ierr;
+    // Evaluate basis
+    ierr = legendrePolyZero(N, xq[iquad], phi, (double *)NULL);
+    if( ierr != 0 ) return ierr;
 
-//     // Add to right hand side
-//     for( int ii=0; ii<N; ii++ ) rhs[ii] += wq[iquad]*phi[ii]*u0;
-//   }
+    // Add to right hand side
+    for( int ii=0; ii<N; ii++ ) rhs[ii] += wq[iquad]*phi[ii]*u0;
+  }
 
-//   // Invert system to compute initial state
-//   iMM = gsl_matrix_calloc((size_t)N, (size_t)N);
-//   ierr = legendre0InverseMassMatrix(N, iMM->data);
+  // Invert system to compute initial state
+  iMM = gsl_matrix_calloc((size_t)N, (size_t)N);
+  ierr = legendre0InverseMassMatrix(N, iMM->data);
 
-//   gsl_vector_view gslU = gsl_vector_view_array(U  , N);
-//   gsl_vector_view gslR = gsl_vector_view_array(rhs, N);
+  gsl_vector_view gslU = gsl_vector_view_array(U  , N);
+  gsl_vector_view gslR = gsl_vector_view_array(rhs, N);
 
-//   gsl_blas_dgemv(CblasNoTrans, 1.0, iMM, &gslR.vector, 0.0, &gslU.vector);
+  gsl_blas_dgemv(CblasNoTrans, 1.0, iMM, &gslR.vector, 0.0, &gslU.vector);
 
-//   // Clean up
-//   gsl_matrix_free(iMM);
+  // Clean up
+  gsl_matrix_free(iMM);
 
   return 0;
 }
@@ -409,7 +409,11 @@ main( int argc, char * argv[] )
     
     printf("\n");
     printf("Writing %s... ", (vm["output-file"].as< string >()).c_str() );
-    gsl_vector_fprintf(fp, pBsteady->U, "%.15E");
+
+    fprintf(fp, "%.15E\n", 0.0); // time
+    fprintf(fp, "%.15E %.15E\n", pBsteady->UB[0], pBsteady->UB[1]); // BCs
+    fprintf(fp, "%d\n", Nmode); // number of modes
+    gsl_vector_fprintf(fp, pBsteady->U, "%.15E"); // solution coefficients
     fclose(fp);
     printf("done.\n"); fflush(stdout);
 
@@ -419,13 +423,55 @@ main( int argc, char * argv[] )
 
     
   } else{
-    //     ierr = unsteadyRK4(nStep, dt, nwrite, pB);
-    //     if( ierr != 0 ) return ierr;
-  }
-  
+    pBunsteady->Nmode = Nmode;
 
+    pBunsteady->Nstep = nStep;
+    pBunsteady->Nwrite = nwrite;
+    pBunsteady->Nstat = nStep/2; // convert to user set soon
+
+    pBunsteady->nu = nu;
+    pBunsteady->time = 0.0; // may be overwritten by restart file read
+    pBunsteady->dt = dt;
+
+    pBunsteady->U    = gsl_vector_calloc( (size_t)Nmode );
+    pBunsteady->Uavg = gsl_vector_calloc( (size_t)Nmode );
+
+    // Set initial condition
+    if( restart ){
+      printf("Restart not yet supported!\n"); fflush(stdout);
+//       readRestartFile((vm["restart-file"].as< string >()).c_str());
+//       if( ierr != 0 ) return ierr;
+    } else {
+      ierr = initialCondition(Nmode, pBunsteady->U->data);
+      if( ierr != 0 ) return ierr;
+
+      ierr = boundaryCondition(pBunsteady->time, pBunsteady->UB);
+      if( ierr != 0 ) return ierr;
+    }
+
+    pBunsteady->UBavg[0] = pBunsteady->UBavg[1] = 0.0;
+
+    ierr = unsteadyRK4(pBunsteady);
+    if( ierr != 0 ) return ierr;
+
+    // Dump final solution to file         
+    FILE *fp = fopen ((vm["output-file"].as< string >()).c_str(), "w");
+    
+    printf("\n");
+    printf("Writing %s... ", (vm["output-file"].as< string >()).c_str() );
+
+    fprintf(fp, "%.15E\n", pBunsteady->time); // time
+    fprintf(fp, "%.15E %.15E\n", pBunsteady->UB[0], pBunsteady->UB[1]); // BCs
+    fprintf(fp, "%d\n", Nmode); // number of modes
+    gsl_vector_fprintf(fp, pBunsteady->U, "%.15E"); // solution coefficients
+    fclose(fp);
+    printf("done.\n"); fflush(stdout);
+
+    // Clean up memory
+    gsl_vector_free(pBunsteady->U   );
+    gsl_vector_free(pBunsteady->Uavg);
+  }
 
   printf("\n");
-
   return 0;
 }

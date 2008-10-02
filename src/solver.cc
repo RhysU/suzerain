@@ -88,273 +88,280 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
 
 
 
-// //-------------------------------------------------
-// // March in time with 4th order Runge-Kutta
-// //
-// int
-// unsteadyRK4(burgersUnsteady *pB)
-// {  
-//   int ierr;
-//   const int N = pB->N;
-//   double time=pB->time, tmptime=time;
-//   double UB[2], UB0[2], UB1[2], UBavg[2]={0.0, 0.0};
-//   double Rnorm;
+//-------------------------------------------------
+// March in time with 4th order Runge-Kutta
+//
+int
+unsteadyRK4(burgersUnsteady *pB)
+{  
+  int ierr, Nstep = pB->Nstep, Nwrite = pB->Nwrite, Nstat = pB->Nstat;
+  const int Nmode = pB->Nmode;
+  double time=pB->time, tmptime=time;
+  double UB[2], UB0[2], UB1[2], UBavg[2]={0.0, 0.0};
+  double Rnorm;
+  double dt = pB->dt;
 
-//   const int Nstat = Nstep/2; // arbitrary... make this an input
-//   bool FirstAvg = true;
-//   double tstart, tend;
+  bool FirstAvg = true;
+  double tstart, tend;
 
-//   gsl_vector *U = pB->U;
-//   gsl_vector *Ucur, *Upre, *Utmp, *dU;
-//   gsl_vector *R = pB->R;
-//   gsl_vector *K1, *K2, *K3, *K4;
+  gsl_vector *U = pB->U;
+  gsl_vector *Uavg = pB->Uavg;
+  gsl_vector *Upre, *Utmp, *dU;
+  gsl_vector *R;
+  gsl_vector *K1, *K2, *K3, *K4;
 
-//   gsl_matrix *iMM;
+  gsl_matrix *iMM;
 
-//   FILE *fp;
+  FILE *fp;
 
-//   // Allocate storage
-//   dU   = gsl_vector_calloc((size_t)N);
-//   Utmp = gsl_vector_calloc((size_t)N);
-//   Ucur = gsl_vector_calloc((size_t)N);
-//   Upre = gsl_vector_calloc((size_t)N);
-//   K1   = gsl_vector_calloc((size_t)N);
-//   K2   = gsl_vector_calloc((size_t)N);
-//   K3   = gsl_vector_calloc((size_t)N);
-//   K4   = gsl_vector_calloc((size_t)N);
-//   iMM  = gsl_matrix_alloc((size_t)N, (size_t)N);
+  // Allocate storage
+  dU   = gsl_vector_calloc((size_t)Nmode);
+  Utmp = gsl_vector_calloc((size_t)Nmode);
+  Upre = gsl_vector_calloc((size_t)Nmode);
+  R    = gsl_vector_calloc((size_t)Nmode);
+  K1   = gsl_vector_calloc((size_t)Nmode);
+  K2   = gsl_vector_calloc((size_t)Nmode);
+  K3   = gsl_vector_calloc((size_t)Nmode);
+  K4   = gsl_vector_calloc((size_t)Nmode);
+  iMM  = gsl_matrix_alloc((size_t)Nmode, (size_t)Nmode);
 
-//   // Compute inverse mass matrix
-//   ierr = legendre0InverseMassMatrix(N, iMM->data);
-//   if( ierr != 0 ) return ierr;
+  // Compute inverse mass matrix
+  ierr = legendre0InverseMassMatrix(Nmode, iMM->data);
+  if( ierr != 0 ) return ierr;
 
-//   // write time
-//   printf("Writing solution at time = %.6E\n", time); fflush(stdout);
-//   fp = fopen("time.dat", "w");
-//   fprintf(fp, "%.15E\n", time);
-//   fclose(fp);
+  // write time
+  printf("Writing solution at time = %.6E\n", time); fflush(stdout);
+  fp = fopen("time.dat", "w");
+  fprintf(fp, "%.15E\n", time);
+  fclose(fp);
 
-//   // write solution
-//   fp = fopen("soln.dat", "w");
-//   gsl_vector_fprintf(fp, pB->U, "%.15E");
-//   fclose(fp);
+  // write solution
+  fp = fopen("soln.dat", "w");
+  gsl_vector_fprintf(fp, pB->U, "%.15E");
+  fclose(fp);
 
 
-//   // write bcs
-//   ierr = boundaryCondition(time, UB);
-//   if( ierr != 0 ) return ierr;
+  // write bcs
+  ierr = boundaryCondition(time, UB);
+  if( ierr != 0 ) return ierr;
 
-//   fp = fopen("bcs.dat", "w");
-//   fprintf(fp, "%.15E %.15E\n", UB[0], UB[1]);
-//   fclose(fp);
+  fp = fopen("bcs.dat", "w");
+  fprintf(fp, "%.15E %.15E\n", UB[0], UB[1]);
+  fclose(fp);
 
-//   // copy IC into Ucur
-//   gsl_vector_memcpy(Ucur, U);
+  // zero out Uavg in preparation for averaging
+  gsl_vector_set_zero(Uavg);
 
-//   // zero out U in preparation for averaging
-//   gsl_vector_set_zero(U);
-
-//   // RK4
-//   for( int istep=0; istep<Nstep; istep++ ){
+  // RK4
+  for( int istep=0; istep<Nstep; istep++ ){
     
-//     // save current U (used for averaging)
-//     gsl_vector_memcpy(Upre, Ucur);
+    // save current U (used for averaging)
+    gsl_vector_memcpy(Upre, U);
 
 
-//     //---------------------------------------
-//     // STAGE 1
-//     //---------------------------------------
+    //---------------------------------------
+    // STAGE 1
+    //---------------------------------------
 
-//     // Compute/store stage 1 state, time, and BCs
-//     gsl_vector_memcpy(Utmp, Ucur);
-//     tmptime = time;
+    // Compute/store stage 1 state, time, and BCs
+    gsl_vector_memcpy(Utmp, U);
+    tmptime = time;
 
-//     ierr = boundaryCondition(tmptime, UB);
-//     if( ierr != 0 ) return ierr;
+    if( istep == 0 ){
+      UB[0] = pB->UB[0];
+      UB[1] = pB->UB[1];
+    } else{
+      ierr = boundaryCondition(tmptime, UB);
+      if( ierr != 0 ) return ierr;
+    }
 
-//     // Set residual and Jacobian to zero
-//     gsl_vector_set_zero(R);
+    // Set residual and Jacobian to zero
+    gsl_vector_set_zero(R);
 
-//     // Evaluate residual
-//     ierr = interiorResidual(N, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
-//     if( ierr != 0 ) return ierr;
+    // Evaluate residual
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
+    if( ierr != 0 ) return ierr;
 
-//     // K1 = -MM\R;
-//     gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K1);
-
-
-//     //---------------------------------------
-//     // STAGE 2
-//     //---------------------------------------
-
-//     // Compute/store stage 2 state, time, and BCs
-//     gsl_vector_memcpy(Utmp, Ucur);
-//     gsl_blas_daxpy(0.5*dt, K1, Utmp);
-
-//     tmptime = time + 0.5*dt;
-
-//     ierr = boundaryCondition(tmptime, UB);
-//     if( ierr != 0 ) return ierr;
-
-//     // Set residual and Jacobian to zero
-//     gsl_vector_set_zero(R);
-
-//     // Evaluate residual
-//     ierr = interiorResidual(N, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
-//     if( ierr != 0 ) return ierr;
-
-//     // K2 = -MM\R;
-//     gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K2);
+    // K1 = -MM\R;
+    gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K1);
 
 
-//     //---------------------------------------
-//     // STAGE 3
-//     //---------------------------------------
+    //---------------------------------------
+    // STAGE 2
+    //---------------------------------------
 
-//     // Compute/store stage 2 state, time, and BCs
-//     gsl_vector_memcpy(Utmp, Ucur);
-//     gsl_blas_daxpy(0.5*dt, K2, Utmp);
+    // Compute/store stage 2 state, time, and BCs
+    gsl_vector_memcpy(Utmp, U);
+    gsl_blas_daxpy(0.5*dt, K1, Utmp);
 
-//     tmptime = time + 0.5*dt;
+    tmptime = time + 0.5*dt;
 
-//     ierr = boundaryCondition(tmptime, UB);
-//     if( ierr != 0 ) return ierr;
+    ierr = boundaryCondition(tmptime, UB);
+    if( ierr != 0 ) return ierr;
 
-//     // Set residual and Jacobian to zero
-//     gsl_vector_set_zero(R);
+    // Set residual and Jacobian to zero
+    gsl_vector_set_zero(R);
 
-//     // Evaluate residual
-//     ierr = interiorResidual(N, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
-//     if( ierr != 0 ) return ierr;
+    // Evaluate residual
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
+    if( ierr != 0 ) return ierr;
 
-//     // K3 = -MM\R;
-//     gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K3);
-
-
-//     //---------------------------------------
-//     // STAGE 4
-//     //---------------------------------------
-
-//     // Compute/store stage 2 state, time, and BCs
-//     gsl_vector_memcpy(Utmp, Ucur);
-//     gsl_blas_daxpy(dt, K3, Utmp);
-
-//     tmptime = time + dt;
-
-//     ierr = boundaryCondition(tmptime, UB);
-//     if( ierr != 0 ) return ierr;
+    // K2 = -MM\R;
+    gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K2);
 
 
-//     // Set residual and Jacobian to zero
-//     gsl_vector_set_zero(R);
+    //---------------------------------------
+    // STAGE 3
+    //---------------------------------------
 
-//     // Evaluate residual
-//     ierr = interiorResidual(N, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
-//     if( ierr != 0 ) return ierr;
+    // Compute/store stage 2 state, time, and BCs
+    gsl_vector_memcpy(Utmp, U);
+    gsl_blas_daxpy(0.5*dt, K2, Utmp);
 
-//     // K4 = -MM\R;
-//     gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K4);
+    tmptime = time + 0.5*dt;
 
+    ierr = boundaryCondition(tmptime, UB);
+    if( ierr != 0 ) return ierr;
 
-//     //---------------------------------------
-//     // UNSTEADY BC TERM
-//     //---------------------------------------
+    // Set residual and Jacobian to zero
+    gsl_vector_set_zero(R);
 
-//     // Evaluate boundary conditions at endpoints of interval
-//     ierr = boundaryCondition(time, UB0);
-//     if( ierr != 0 ) return ierr;
+    // Evaluate residual
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
+    if( ierr != 0 ) return ierr;
 
-//     ierr = boundaryCondition(time+dt, UB1);
-//     if( ierr != 0 ) return ierr;
-
-//     // Set residual and Jacobian to zero
-//     gsl_vector_set_zero(R);
-
-//     ierr = unsteadyBoundaryResidual(N, UB0, UB1, R->data);
-//     if( ierr != 0 ) return ierr;
+    // K3 = -MM\R;
+    gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K3);
 
 
-//     //---------------------------------------
-//     // SUM CONTRIBUTIONS TO UPDATE
-//     //---------------------------------------
+    //---------------------------------------
+    // STAGE 4
+    //---------------------------------------
 
-//     // Unsteady BC piece
-//     gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, dU);
+    // Compute/store stage 2 state, time, and BCs
+    gsl_vector_memcpy(Utmp, U);
+    gsl_blas_daxpy(dt, K3, Utmp);
 
-//     // Standard residual piece
-//     gsl_blas_daxpy(dt/6.0, K1, dU);
-//     gsl_blas_daxpy(dt/3.0, K2, dU);
-//     gsl_blas_daxpy(dt/3.0, K3, dU);
-//     gsl_blas_daxpy(dt/6.0, K4, dU);
+    tmptime = time + dt;
+
+    ierr = boundaryCondition(tmptime, UB);
+    if( ierr != 0 ) return ierr;
 
 
-//     //---------------------------------------
-//     // UPDATE STATE AND TIME
-//     //---------------------------------------
-//     gsl_blas_daxpy(1.0, dU, Ucur);
-//     time += dt;
+    // Set residual and Jacobian to zero
+    gsl_vector_set_zero(R);
 
-//     // Write solution is requested
-//     if( !((istep+1)%Nwrite) ){
-//       printf("Writing solution at time = %.6E\n", time); fflush(stdout);
+    // Evaluate residual
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
+    if( ierr != 0 ) return ierr;
 
-//       // write time
-//       fp = fopen("time.dat", "a");
-//       fprintf(fp, "%.15E\n", time);
-//       fclose(fp);
+    // K4 = -MM\R;
+    gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, K4);
+
+
+    //---------------------------------------
+    // UNSTEADY BC TERM
+    //---------------------------------------
+
+    // Evaluate boundary conditions at endpoints of interval
+    ierr = boundaryCondition(time, UB0);
+    if( ierr != 0 ) return ierr;
+
+    ierr = boundaryCondition(time+dt, UB1);
+    if( ierr != 0 ) return ierr;
+
+    // Set residual and Jacobian to zero
+    gsl_vector_set_zero(R);
+
+    ierr = unsteadyBoundaryResidual(Nmode, UB0, UB1, R->data);
+    if( ierr != 0 ) return ierr;
+
+
+    //---------------------------------------
+    // SUM CONTRIBUTIONS TO UPDATE
+    //---------------------------------------
+
+    // Unsteady BC piece
+    gsl_blas_dgemv(CblasNoTrans, -1.0, iMM, R, 0.0, dU);
+
+    // Standard residual piece
+    gsl_blas_daxpy(dt/6.0, K1, dU);
+    gsl_blas_daxpy(dt/3.0, K2, dU);
+    gsl_blas_daxpy(dt/3.0, K3, dU);
+    gsl_blas_daxpy(dt/6.0, K4, dU);
+
+
+    //---------------------------------------
+    // UPDATE STATE AND TIME
+    //---------------------------------------
+    gsl_blas_daxpy(1.0, dU, U);
+    time += dt;
+
+    // Write solution is requested
+    if( !((istep+1)%Nwrite) ){
+      printf("Writing solution at time = %.6E\n", time); fflush(stdout);
+
+      // write time
+      fp = fopen("time.dat", "a");
+      fprintf(fp, "%.15E\n", time);
+      fclose(fp);
       
-//       // write solution
-//       fp = fopen("soln.dat", "a");
-//       gsl_vector_fprintf(fp, Ucur, "%.15E");
-//       fclose(fp);
+      // write solution
+      fp = fopen("soln.dat", "a");
+      gsl_vector_fprintf(fp, U, "%.15E");
+      fclose(fp);
 
-//       // write bcs
-//       fp = fopen("bcs.dat", "a");
-//       fprintf(fp, "%.15E, %.15E\n", UB1[0], UB1[1]);
-//       fclose(fp);
-//     }
+      // write bcs
+      fp = fopen("bcs.dat", "a");
+      fprintf(fp, "%.15E, %.15E\n", UB1[0], UB1[1]);
+      fclose(fp);
+    }
 
-//     // Update average
-//     if( istep > Nstat ){
+    // Update average
+    if( istep > Nstat ){
       
-//       // average state
-//       if( FirstAvg ) tstart = time-dt;
-//       FirstAvg = false;
-//       tend = time;
+      // average state
+      if( FirstAvg ) tstart = time-dt;
+      FirstAvg = false;
+      tend = time;
 
-//       gsl_blas_daxpy(0.5, Upre, U);
-//       gsl_blas_daxpy(0.5, Ucur, U);
+      gsl_blas_daxpy(0.5, Upre, Uavg);
+      gsl_blas_daxpy(0.5, U   , Uavg);
 
-//       // average bcs
-//       UBavg[0] += 0.5*(UB0[0] + UB1[0]);
-//       UBavg[1] += 0.5*(UB0[1] + UB1[1]);
+      // average bcs
+      UBavg[0] += 0.5*(UB0[0] + UB1[0]);
+      UBavg[1] += 0.5*(UB0[1] + UB1[1]);
       
-//     }
+    }
 
-//   }
+  }
 
-//   // scale averages
-//   gsl_vector_scale(U, dt/(tend-tstart));
-//   UBavg[0] *= dt/(tend-tstart);
-//   UBavg[1] *= dt/(tend-tstart);
+  // scale averages
+  gsl_vector_scale(Uavg, dt/(tend-tstart));
+  UBavg[0] *= dt/(tend-tstart);
+  UBavg[1] *= dt/(tend-tstart);
 
-//   printf("Average BC = %.15E, %.15E\n", UBavg[0], UBavg[1]); fflush(stdout);
+  printf("Average BC = %.15E, %.15E\n", UBavg[0], UBavg[1]); fflush(stdout);
 
-//   // update time for save
-//   pB->time = time;
+  // update for saving
+  pB->time = time;
+  pB->UB[0] = UB1[0];
+  pB->UB[1] = UB1[1];
+  pB->UBavg[0] = UBavg[0];
+  pB->UBavg[1] = UBavg[1];
 
-//   // update bcs for same
+  // update bcs for same
 
-//   // Clean up
-//   gsl_vector_free(dU);
-//   gsl_vector_free(Utmp);
-//   gsl_vector_free(Ucur);
-//   gsl_vector_free(Upre);
-//   gsl_vector_free(K1);
-//   gsl_vector_free(K2);
-//   gsl_vector_free(K3);
-//   gsl_vector_free(K4);
-//   gsl_matrix_free(iMM);
+  // Clean up
+  gsl_vector_free(dU);
+  gsl_vector_free(Utmp);
+  gsl_vector_free(Upre);
+  gsl_vector_free(R);
+  gsl_vector_free(K1);
+  gsl_vector_free(K2);
+  gsl_vector_free(K3);
+  gsl_vector_free(K4);
+  gsl_matrix_free(iMM);
 
-//   return 0;
-// }
+  return 0;
+}
