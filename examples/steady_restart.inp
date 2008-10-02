@@ -4,13 +4,14 @@
 # The "truth" output (for regression testing)
 # for this case is given in steady.truth.dat
 #
-restart = false
+restart = true
+restart-file = steady.truth.dat
 equation = Burgers
 viscosity = 0.2
 steady = true
 nmode = 33
 niter = 20
-ic = zeroFunction # u(0) = 0
-bc = steadyShock  # u(-1) = 1, u(1) = -1
-output-file = steady.dat
+ic = zeroFunction # when restart = true, ic fcn not used
+bc = steadyShock  # when restart = true, bc fcn not used
+output-file = steady_restart.dat
 

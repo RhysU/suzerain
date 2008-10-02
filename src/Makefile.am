@@ -11,7 +11,7 @@ bin_PROGRAMS        += helloworld
 helloworld_SOURCES   = helloworld.cc
 
 bin_PROGRAMS     += burgers
-burgers_SOURCES   = burgers.cc solver.cc residual.cc legendrePoly.cc
+burgers_SOURCES   = burgers.cc solver.cc residual.cc legendrePoly.cc tools.cc
 burgers_LDADD     = $(BOOST_PROGRAM_OPTIONS_LIB)
 
 # Unit test executables

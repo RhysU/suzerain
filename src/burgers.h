@@ -34,11 +34,13 @@ typedef struct
   double UBavg[2]; // running average of boundary conditions
   gsl_vector *Uavg; // running average of state
 
+  char BCname[80];
+
 } burgersUnsteady;
 
 
-int boundaryCondition(const double time, double *UB);
-int initialCondition(const int N, double *U);
+int boundaryCondition(const char *fname, const double time, double *UB);
+int initialCondition(const char *fname, const int N, double *U);
 
 #define INCLUDE_BURGERS_H 1
 #endif

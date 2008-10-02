@@ -6,7 +6,8 @@
 # The "truth" output (for regression testing)
 # for this case is given in nwave.truth.dat
 #
-restart = false
+restart = true
+restart-file = nwave.truth.dat
 equation = Burgers
 viscosity = 1e-2
 steady = false
@@ -14,6 +15,6 @@ nmode = 33
 nstep = 1000
 nwrite = 100
 dt = 1e-3
-ic = nwave # n wave at t=0
-bc = nwave # n wave evaled at -1 and 1
-output-file = nwave.dat
+ic = nwave # when restart = true, ic fcn not used
+bc = nwave # when restart = true, ic fcn not used
+output-file = nwave_restart.dat

@@ -1,6 +1,6 @@
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
-#include <ctime>
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -22,53 +22,33 @@ using namespace std;
 #include "legendrePoly.h"
 #include "residual.h"
 #include "solver.h"
+#include "tools.h"
 #include "burgers.h"
 
-
-//------------------------------------------------
-// Evaluates n wave solution to Burgers eqn.
-// Use for testing unsteady solver.
-//
-int 
-nWave( const double x, const double t, const double nu, const double c, const double a, const double t0,
-       double *u )
-{
-
-  // Shift x and t
-  const double xx = x - c*t;
-  const double tt = t + t0;
-
-  // Some intermediate quantities
-  const double rat = xx/tt;
-  const double pow = -0.25*xx*xx/(nu*tt);
-  const double frt = sqrt(a/tt);
-
-  const double num = rat*frt*exp(pow);
-  const double den = 1.0 + frt*exp(pow);
-
-  // Solution
-  (*u) = num/den + c;
-
-  return 0;
-}
 
 
 //-------------------------------------------------
 // Evaluate BC function
 //
 int
-boundaryCondition(const double time, double *UB)
+boundaryCondition(const char *fname, const double time, double *UB)
 { 
   int ierr;
   const double PI = 3.141592653589793e+00;
   
-//   // Steady
-//   UB[0] =  1.0;
-//   UB[1] = -1.0;
-
-  // n wave
-  ierr = nWave(-1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[0]));
-  ierr = nWave( 1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[1]));
+  // pick requested bcs
+  if( strcmp(fname, "nwave")==0 ){
+    ierr = nWave(-1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[0]));
+    ierr = nWave( 1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[1]));
+  } else if( strcmp(fname, "zeroFunction")==0 ){
+    UB[0] = UB[1] = 0.0;
+  } else if( strcmp(fname, "steadyShock")==0 ){
+    UB[0] =  1.0;
+    UB[1] = -1.0;
+  } else{
+    printf("Unknown BC function.  Exiting.\n"); fflush(stdout);
+    return -1;
+  }
 
 //    // 1 + sine
 //    UB[0] =  1.0 + 0.5*sin(10.0*2.0*PI*time);
@@ -81,71 +61,25 @@ boundaryCondition(const double time, double *UB)
 // Set initial state
 //
 int
-initialCondition(const int N, double *U)
+initialCondition(const char *fname, const double UB[2], const int N, double *U)
 { 
-  // Just a placeholder for now
-  //for( int ii=0; ii<N; ii++ ) U[ii] = 0.0;
 
-//   // Steady solution (33 modes, nu=0.2)
-//   U[ 0] = -8.107557960725053e-16;
-//   U[ 1] = -6.964909287732155e-01;
-//   U[ 2] = 1.029853292251888e-15;
-//   U[ 3] = 3.187306357930834e-01;
-//   U[ 4] = -9.278700510928637e-16;
-//   U[ 5] = -1.232407244495537e-01;
-//   U[ 6] = 2.307386585955463e-16;
-//   U[ 7] = 4.461576317321740e-02;
-//   U[ 8] = -1.643197301453396e-16;
-//   U[ 9] = -1.557084310595167e-02;
-//   U[10] = 1.095523588419926e-16;
-//   U[11] = 5.310390990719337e-03;
-//   U[12] = -2.768935432572244e-17;
-//   U[13] = -1.782876340501372e-03;
-//   U[14] = 1.172322561245916e-16;
-//   U[15] = 5.918465723762702e-04;
-//   U[16] = 8.462948728233755e-18;
-//   U[17] = -1.947758544693764e-04;
-//   U[18] = 1.163335797992689e-16;
-//   U[19] = 6.369718562798107e-05;
-//   U[20] = 1.079731204445066e-16;
-//   U[21] = -2.069306048974295e-05;
-//   U[22] = 9.288260204669929e-17;
-//   U[23] = 6.721650586349263e-06;
-//   U[24] = 6.450140749447718e-17;
-//   U[25] = -2.144115156769409e-06;
-//   U[26] = 6.394990658741524e-17;
-//   U[27] = 7.154564578625442e-07;
-//   U[28] = 5.271758074343222e-17;
-//   U[29] = -2.016320719890527e-07;
-//   U[30] = 3.776354215485299e-17;
-//   U[31] = 9.453514133714230e-08;
-//   U[32] = 3.537498776849928e-17;
-  
-
-  // L2 projection of n wave solution at t=0 onto solution space
+  // L2 projection of ic function onto solution space
   int ierr;
   const int solnOrder = N-1+2;
-  const int quadOrder = 4*solnOrder + 1; // exact for n wave order 3*N 
-                                         // (of course, n wave is not poly, but hopefully error is small enough)
+  const int quadOrder = 4*solnOrder + 1; // exact for poly of order 3*N 
+                                         // (of course, ic may not be poly, but hopefully error is small enough)
   const int Nquad = quadOrder/2 + 1;
 
   double xq[Nquad], wq[Nquad];
   double phi[N];
-  double UB[2], rhs[N], u, u0;
+  double rhs[N], u, u0;
 
   gsl_matrix *iMM;
 
   // Get quadrature points
   ierr = legendreGaussQuad(Nquad, xq, wq);
   if( ierr != 0 ) return ierr;
-
-  // Get BCs at time 0
-  ierr = boundaryCondition(0.0, UB);
-  if( ierr != 0 ) return ierr;
-
-  FILE *fp = fopen ("nWave.dat", "w");
-  fprintf(fp, "%.15E, %.15E\n", UB[0], UB[1]);
-  fclose(fp);
 
   // zero rhs
   for( int ii=0; ii<N; ii++ ) rhs[ii] = 0.0;
@@ -154,8 +88,16 @@ initialCondition(const int N, double *U)
   for( int iquad=0; iquad<Nquad; iquad++ ){
   
     // Evaluate IC
-    ierr = nWave(xq[iquad], 0.0, 1e-2, 1.0, 16.0, 1.0, &u);
-    if( ierr != 0 ) return ierr;
+    if( strcmp(fname, "nwave")==0 ){
+      ierr = nWave(xq[iquad], 0.0, 1e-2, 1.0, 16.0, 1.0, &u);
+      if( ierr != 0 ) return ierr;
+    } else if( strcmp(fname, "zeroFunction")==0 ){
+      u = 0.0;
+    } else{
+      printf("Unknown IC function.  Exiting.\n"); fflush(stdout);
+      return -1;
+    }
+      
 
     // Write solution to screen         
     FILE *fp = fopen ("nWave.dat", "a");
@@ -193,6 +135,40 @@ ostream& operator<<(ostream& os, const vector<T>& v)
 {
     copy(v.begin(), v.end(), ostream_iterator<T>(cout, " ")); 
     return os;
+}
+
+//-------------------------------------------------
+// Reads ascii restart file
+//
+int
+readRestartFile(const char *fname, double *time, double UB[2], int Nmode, double *U)
+{
+  int ierr, NmodeRead, minNmode; 
+
+  FILE *fp = fopen(fname, "r");
+  if( fp == NULL ){
+    printf("Could not read file %s.  Exiting.\n", fname); fflush(stdout);
+    return -1;
+  }
+
+  ierr = fscanf(fp, "%lf\n", time);
+  if( ierr != 1 ) return -1;
+
+  ierr = fscanf(fp, "%lf %lf\n", &(UB[0]), &(UB[1]));
+  if( ierr != 2 ) return -1;
+
+  ierr = fscanf(fp, "%d\n", &NmodeRead);
+  if( ierr != 1 ) return -1;
+
+  minNmode = NmodeRead;
+  if( Nmode < minNmode ) minNmode = Nmode;
+
+  for( int ii=0; ii<minNmode; ii++ ){
+    ierr = fscanf(fp, "%lf\n", &(U[ii]));
+    if( ierr != 1 ) return -1;
+  }
+
+  return 0;
 }
 
 
@@ -355,17 +331,7 @@ main( int argc, char * argv[] )
     cout << "nmode is " 
 	 << vm["nmode"].as< int >() << "\n";
   }
-
-  if (vm.count("ic")){
-    cout << "using function " 
-	 << vm["ic"].as< string >() << " to set initial condition\n";
-  }
-
-  if (vm.count("bc")){
-    cout << "using function " 
-	 << vm["bc"].as< string >() << " to set boundary condition\n";
-  }
-
+   
   if (vm.count("output-file")){
     cout << "Output file is " 
 	 << vm["output-file"].as< string >() << "\n";
@@ -376,6 +342,17 @@ main( int argc, char * argv[] )
       cout << "Restarting from " << vm["restart-file"].as< string >() << "\n";
     } else{
       cout << "This is a fresh start.\n";
+
+      if (vm.count("bc")){
+	cout << "using function " 
+	     << vm["bc"].as< string >() << " to set boundary condition\n";
+      }
+      
+      if (vm.count("ic")){
+	cout << "using function " 
+	     << vm["ic"].as< string >() << " to set initial condition\n";
+      }
+
     }
   }
 
@@ -390,14 +367,17 @@ main( int argc, char * argv[] )
 
     // Set initial condition
     if( restart ){
-      printf("Restart not yet supported!\n"); fflush(stdout);
-//       readRestartFile((vm["restart-file"].as< string >()).c_str());
-//       if( ierr != 0 ) return ierr;
-    } else {
-      ierr = initialCondition(Nmode, pBsteady->U->data);
+      printf("Reading restart file!\n"); fflush(stdout);
+      double tmptime;
+      readRestartFile((vm["restart-file"].as< string >()).c_str(), 
+		      &tmptime, pBsteady->UB, Nmode, pBsteady->U->data);
       if( ierr != 0 ) return ierr;
 
-      ierr = boundaryCondition(0.0, pBsteady->UB);
+    } else {
+      ierr = boundaryCondition((vm["bc"].as< string >()).c_str(), 0.0, pBsteady->UB);
+      if( ierr != 0 ) return ierr;
+
+      ierr = initialCondition((vm["ic"].as< string >()).c_str(), pBsteady->UB, Nmode, pBsteady->U->data);
       if( ierr != 0 ) return ierr;
     }
 
@@ -436,16 +416,23 @@ main( int argc, char * argv[] )
     pBunsteady->U    = gsl_vector_calloc( (size_t)Nmode );
     pBunsteady->Uavg = gsl_vector_calloc( (size_t)Nmode );
 
+    if( (vm["bc"].as< string >()).length() > 79 ){
+      printf("BC function name is too long!\n"); fflush(stdout);
+      return -1;
+    }
+    strcpy(pBunsteady->BCname, (vm["bc"].as< string >()).c_str());
+
     // Set initial condition
     if( restart ){
-      printf("Restart not yet supported!\n"); fflush(stdout);
-//       readRestartFile((vm["restart-file"].as< string >()).c_str());
-//       if( ierr != 0 ) return ierr;
+      printf("Reading restart file!\n"); fflush(stdout);
+      readRestartFile((vm["restart-file"].as< string >()).c_str(), 
+		      &(pBunsteady->time), pBunsteady->UB, Nmode, pBunsteady->U->data);
+      if( ierr != 0 ) return ierr;
     } else {
-      ierr = initialCondition(Nmode, pBunsteady->U->data);
+      ierr = boundaryCondition((vm["bc"].as< string >()).c_str(), pBunsteady->time, pBunsteady->UB);
       if( ierr != 0 ) return ierr;
 
-      ierr = boundaryCondition(pBunsteady->time, pBunsteady->UB);
+      ierr = initialCondition((vm["ic"].as< string >()).c_str(), pBunsteady->UB, Nmode, pBunsteady->U->data);
       if( ierr != 0 ) return ierr;
     }
 

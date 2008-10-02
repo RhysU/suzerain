@@ -142,11 +142,8 @@ unsteadyRK4(burgersUnsteady *pB)
 
 
   // write bcs
-  ierr = boundaryCondition(time, UB);
-  if( ierr != 0 ) return ierr;
-
   fp = fopen("bcs.dat", "w");
-  fprintf(fp, "%.15E %.15E\n", UB[0], UB[1]);
+  fprintf(fp, "%.15E %.15E\n", pB->UB[0], pB->UB[1]);
   fclose(fp);
 
   // zero out Uavg in preparation for averaging
@@ -171,7 +168,7 @@ unsteadyRK4(burgersUnsteady *pB)
       UB[0] = pB->UB[0];
       UB[1] = pB->UB[1];
     } else{
-      ierr = boundaryCondition(tmptime, UB);
+      ierr = boundaryCondition(pB->BCname, tmptime, UB);
       if( ierr != 0 ) return ierr;
     }
 
@@ -196,7 +193,7 @@ unsteadyRK4(burgersUnsteady *pB)
 
     tmptime = time + 0.5*dt;
 
-    ierr = boundaryCondition(tmptime, UB);
+    ierr = boundaryCondition(pB->BCname, tmptime, UB);
     if( ierr != 0 ) return ierr;
 
     // Set residual and Jacobian to zero
@@ -220,7 +217,7 @@ unsteadyRK4(burgersUnsteady *pB)
 
     tmptime = time + 0.5*dt;
 
-    ierr = boundaryCondition(tmptime, UB);
+    ierr = boundaryCondition(pB->BCname, tmptime, UB);
     if( ierr != 0 ) return ierr;
 
     // Set residual and Jacobian to zero
@@ -244,7 +241,7 @@ unsteadyRK4(burgersUnsteady *pB)
 
     tmptime = time + dt;
 
-    ierr = boundaryCondition(tmptime, UB);
+    ierr = boundaryCondition(pB->BCname, tmptime, UB);
     if( ierr != 0 ) return ierr;
 
 
@@ -264,10 +261,10 @@ unsteadyRK4(burgersUnsteady *pB)
     //---------------------------------------
 
     // Evaluate boundary conditions at endpoints of interval
-    ierr = boundaryCondition(time, UB0);
+    ierr = boundaryCondition(pB->BCname, time, UB0);
     if( ierr != 0 ) return ierr;
 
-    ierr = boundaryCondition(time+dt, UB1);
+    ierr = boundaryCondition(pB->BCname, time+dt, UB1);
     if( ierr != 0 ) return ierr;
 
     // Set residual and Jacobian to zero
