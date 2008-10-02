@@ -1,0 +1,16 @@
+#
+# Sample input file for steady case.
+#
+# The "truth" output (for regression testing)
+# for this case is given in steady.truth.dat
+#
+restart = false
+equation = Burgers
+viscosity = 0.2
+steady = true
+nmode = 33
+niter = 20
+ic = zeroFunction # doesn't work yet
+bc = steadyShock  # doesn't work yet
+output-file = steady.dat
+
