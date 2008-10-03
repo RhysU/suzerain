@@ -1,13 +1,9 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_blas.h>
-
 #include "legendrePoly.h"
 #include "residual.h"
+#include "tools.h"
 #include "burgers.h"
 
 //-------------------------------------------------
@@ -380,6 +376,56 @@ unsteadyRK4(burgersUnsteady *pB)
   gsl_vector_free(K3);
   gsl_vector_free(K4);
   gsl_matrix_free(iMM);
+
+  return 0;
+}
+
+
+//-------------------------------------------------
+// Computes the eigen-decomposition of the
+// integrating factor matrix MM\KK
+// where MM = mass matrix and 
+// KK = stiffness matrix
+//
+// The eigenvalues are stored in the vector lambda,
+// and the eigenvectors are stored in the matrix RR.
+// The matrix iRR stores inv(RR).
+//
+int
+eigenDecompIntFactorMatrix( const int N, const double *MM, const double *KK,
+			    double *lambda, double *RR, double *iRR)
+{
+
+
+  gsl_matrix *MMtmp, *KKtmp;
+  gsl_matrix_const_view gslMM = gsl_matrix_const_view_array(MM, N, N);
+  gsl_matrix_const_view gslKK = gsl_matrix_const_view_array(KK, N, N);
+
+  gsl_vector_view gslLambda = gsl_vector_view_array(lambda, N);
+  gsl_matrix_view gslRR = gsl_matrix_view_array(RR, N, N);
+
+  // Initialize output
+  for( int ii=0; ii<N; ii++ ) lambda[ii] = 0.0;
+  for( int ii=0; ii<N*N; ii++ ) iRR[ii] = RR[ii] = 0.0;
+  
+  // copy MM and KK to temporary storage (b/c eigen calc overwrites inputs)
+  MMtmp = gsl_matrix_alloc((size_t)N, (size_t)N);
+  KKtmp = gsl_matrix_alloc((size_t)N, (size_t)N);
+
+  gsl_matrix_memcpy(MMtmp, &gslMM.matrix);
+  gsl_matrix_memcpy(KKtmp, &gslKK.matrix);
+
+  // set up and compute eigen-decomposition
+  gsl_eigen_gensymmv_workspace *eig_workspace = gsl_eigen_gensymmv_alloc(N);
+  int ierr = gsl_eigen_gensymmv(KKtmp, MMtmp, &gslLambda.vector, &gslRR.matrix, eig_workspace);
+  if( ierr != 0 ) return ierr;
+
+  // invert RR
+
+  // clean up
+  gsl_eigen_gensymmv_free(eig_workspace);
+  gsl_matrix_free(MMtmp);
+  gsl_matrix_free(KKtmp);
 
   return 0;
 }

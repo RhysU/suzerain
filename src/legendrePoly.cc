@@ -210,3 +210,44 @@ legendre0InverseMassMatrix(const int N, double * iMM)
 
   return 0;
 }
+
+
+//------------------------------------------------------------------
+// Compute stiffness matrix via quadrature
+//
+//
+int
+legendre0StiffnessMatrix(const int N, double * KK)
+{
+  int ierr;
+  const int solnOrder = N-1+2;
+  const int Nquad = solnOrder;
+
+  double phi[N], phi_xi[N];
+  double xq[Nquad], wq[Nquad];
+
+  // initialize MM to zero
+  for( int ii=0; ii<N*N; ii++ ) KK[ii] = 0.0;
+
+  // Get quadrature points
+  ierr = legendreGaussQuad(Nquad, xq, wq);
+  if( ierr != 0 ) return ierr;
+
+  // Loop over quadrature points
+  for( int iquad=0; iquad<Nquad; iquad++ ){
+
+    // Evaluate basis
+    ierr = legendrePolyZero(N, xq[iquad], phi, phi_xi);
+    if( ierr != 0 ) return ierr;
+  
+    // Add to integral
+    for( int ii=0; ii<N; ii++ ){
+      for( int jj=0; jj<N; jj++ ){
+	KK[N*ii+jj] += wq[iquad]*phi_xi[ii]*phi_xi[jj];
+      }
+    }
+
+  }
+
+  return 0;
+}

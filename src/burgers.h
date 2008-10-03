@@ -1,6 +1,15 @@
 
 #ifndef INCLUDE_BURGERS_H
 
+// Some gsl functionality
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_eigen.h>
+
 // Structures to allow for easy passing/maniuplation of some data
 
 // For steady cases
@@ -38,8 +47,6 @@ typedef struct
 
 } burgersUnsteady;
 
-int boundaryCondition(const char *fname, const double time0, const double time1, const double UB0[2], double UB1[2]); 
-int initialCondition(const char *fname, const int N, double *U);
 
 #define INCLUDE_BURGERS_H 1
 #endif

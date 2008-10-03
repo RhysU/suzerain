@@ -27,6 +27,10 @@ check_PROGRAMS        += residual_test
 residual_test_SOURCES  = residual_test.cc residual.cc legendrePoly.cc
 residual_test_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 
+check_PROGRAMS      += solver_test
+solver_test_SOURCES  = solver_test.cc solver.cc residual.cc legendrePoly.cc tools.cc
+solver_test_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
+
 TESTS = $(check_PROGRAMS)
 
 # Required for AX_AM_MACROS
