@@ -97,7 +97,7 @@ unsteadyRK4(burgersUnsteady *pB)
   int ierr, Nstep = pB->Nstep, Nwrite = pB->Nwrite, Nstat = pB->Nstat;
   const int Nmode = pB->Nmode;
   double time=pB->time, tmptime=time;
-  double UB[2], UB0[2], UB1[2], UBavg[2]={0.0, 0.0};
+  double UB[2], UB0[2], UBmid[2], UB1[2], UBavg[2]={0.0, 0.0};
   double Rnorm;
   double dt = pB->dt;
 
@@ -106,7 +106,7 @@ unsteadyRK4(burgersUnsteady *pB)
 
   gsl_vector *U = pB->U;
   gsl_vector *Uavg = pB->Uavg;
-  gsl_vector *Upre, *Utmp, *dU;
+  gsl_vector *Upre, *Utmp, *Uwri, *dU;
   gsl_vector *R;
   gsl_vector *K1, *K2, *K3, *K4;
 
@@ -118,6 +118,7 @@ unsteadyRK4(burgersUnsteady *pB)
   dU   = gsl_vector_calloc((size_t)Nmode);
   Utmp = gsl_vector_calloc((size_t)Nmode);
   Upre = gsl_vector_calloc((size_t)Nmode);
+  Uwri = gsl_vector_calloc((size_t)Nmode);
   R    = gsl_vector_calloc((size_t)Nmode);
   K1   = gsl_vector_calloc((size_t)Nmode);
   K2   = gsl_vector_calloc((size_t)Nmode);
@@ -165,18 +166,18 @@ unsteadyRK4(burgersUnsteady *pB)
     tmptime = time;
 
     if( istep == 0 ){
-      UB[0] = pB->UB[0];
-      UB[1] = pB->UB[1];
+      UB0[0] = pB->UB[0];
+      UB0[1] = pB->UB[1];
     } else{
-      ierr = boundaryCondition(pB->BCname, tmptime, UB);
-      if( ierr != 0 ) return ierr;
+      UB0[0] = UB1[0];
+      UB0[1] = UB1[1];
     }
 
     // Set residual and Jacobian to zero
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB0, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K1 = -MM\R;
@@ -193,14 +194,14 @@ unsteadyRK4(burgersUnsteady *pB)
 
     tmptime = time + 0.5*dt;
 
-    ierr = boundaryCondition(pB->BCname, tmptime, UB);
+    ierr = boundaryCondition(pB->BCname, time, tmptime, UB0, UBmid);
     if( ierr != 0 ) return ierr;
 
     // Set residual and Jacobian to zero
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K2 = -MM\R;
@@ -217,14 +218,14 @@ unsteadyRK4(burgersUnsteady *pB)
 
     tmptime = time + 0.5*dt;
 
-    ierr = boundaryCondition(pB->BCname, tmptime, UB);
-    if( ierr != 0 ) return ierr;
+//     ierr = boundaryCondition(pB->BCname, tmptime, UBmid);
+//     if( ierr != 0 ) return ierr;
 
     // Set residual and Jacobian to zero
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K3 = -MM\R;
@@ -241,7 +242,7 @@ unsteadyRK4(burgersUnsteady *pB)
 
     tmptime = time + dt;
 
-    ierr = boundaryCondition(pB->BCname, tmptime, UB);
+    ierr = boundaryCondition(pB->BCname, tmptime-0.5*dt, tmptime, UBmid, UB1);
     if( ierr != 0 ) return ierr;
 
 
@@ -249,7 +250,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB1, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K4 = -MM\R;
@@ -260,12 +261,12 @@ unsteadyRK4(burgersUnsteady *pB)
     // UNSTEADY BC TERM
     //---------------------------------------
 
-    // Evaluate boundary conditions at endpoints of interval
-    ierr = boundaryCondition(pB->BCname, time, UB0);
-    if( ierr != 0 ) return ierr;
+//     // Evaluate boundary conditions at endpoints of interval
+//     ierr = boundaryCondition(pB->BCname, time, UB0);
+//     if( ierr != 0 ) return ierr;
 
-    ierr = boundaryCondition(pB->BCname, time+dt, UB1);
-    if( ierr != 0 ) return ierr;
+//     ierr = boundaryCondition(pB->BCname, time+dt, UB1);
+//     if( ierr != 0 ) return ierr;
 
     // Set residual and Jacobian to zero
     gsl_vector_set_zero(R);
@@ -312,6 +313,7 @@ unsteadyRK4(burgersUnsteady *pB)
       fp = fopen("bcs.dat", "a");
       fprintf(fp, "%.15E, %.15E\n", UB1[0], UB1[1]);
       fclose(fp);
+
     }
 
     // Update average
@@ -328,6 +330,20 @@ unsteadyRK4(burgersUnsteady *pB)
       // average bcs
       UBavg[0] += 0.5*(UB0[0] + UB1[0]);
       UBavg[1] += 0.5*(UB0[1] + UB1[1]);
+
+      // write averaged solution
+      if( !((istep+1)%Nwrite) ){
+	fp = fopen("running_average_bcs.dat", "a");
+	fprintf(fp, "%.15E, %.15E\n", dt*UBavg[0]/(tend-tstart), dt*UBavg[1]/(tend-tstart));
+	fclose(fp);
+
+	gsl_vector_memcpy(Uwri, Uavg);
+	gsl_vector_scale(Uwri, dt/(tend-tstart));
+	
+	fp = fopen("running_average_soln.dat", "a");
+	gsl_vector_fprintf(fp, Uwri, "%.15E");
+	fclose(fp);
+      }
       
     }
 
@@ -338,7 +354,11 @@ unsteadyRK4(burgersUnsteady *pB)
   UBavg[0] *= dt/(tend-tstart);
   UBavg[1] *= dt/(tend-tstart);
 
-  printf("Average BC = %.15E, %.15E\n", UBavg[0], UBavg[1]); fflush(stdout);
+  // write averaged solution
+  fp = fopen("average_soln.dat", "w");
+  fprintf(fp, "%.15E, %.15E\n", UBavg[0], UBavg[1]);
+  gsl_vector_fprintf(fp, Uavg, "%.15E");
+  fclose(fp);
 
   // update for saving
   pB->time = time;
@@ -353,6 +373,7 @@ unsteadyRK4(burgersUnsteady *pB)
   gsl_vector_free(dU);
   gsl_vector_free(Utmp);
   gsl_vector_free(Upre);
+  gsl_vector_free(Uwri);
   gsl_vector_free(R);
   gsl_vector_free(K1);
   gsl_vector_free(K2);

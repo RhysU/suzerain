@@ -26,33 +26,65 @@ using namespace std;
 #include "burgers.h"
 
 
+// random number generator is global
+const gsl_rng_type * global_bc_T;
+gsl_rng * global_bc_r;
+
+int
+initializeRandNumGen()
+{
+  gsl_rng_env_setup();
+  
+  global_bc_T = gsl_rng_default;
+  global_bc_r = gsl_rng_alloc (global_bc_T);
+  return 0;
+}
+
 
 //-------------------------------------------------
 // Evaluate BC function
 //
 int
-boundaryCondition(const char *fname, const double time, double *UB)
+boundaryCondition(const char *fname, const double time0, const double time1, const double UB0[2],
+		  double UB1[2])
 { 
   int ierr;
   const double PI = 3.141592653589793e+00;
   
   // pick requested bcs
   if( strcmp(fname, "nwave")==0 ){
-    ierr = nWave(-1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[0]));
-    ierr = nWave( 1.0, time, 1e-2, 1.0, 16.0, 1.0, &(UB[1]));
+    ierr = nWave(-1.0, time1, 1e-2, 1.0, 16.0, 1.0, &(UB1[0]));
+    ierr = nWave( 1.0, time1, 1e-2, 1.0, 16.0, 1.0, &(UB1[1]));
   } else if( strcmp(fname, "zeroFunction")==0 ){
-    UB[0] = UB[1] = 0.0;
+    UB1[0] = UB1[1] = 0.0;
   } else if( strcmp(fname, "steadyShock")==0 ){
-    UB[0] =  1.0;
-    UB[1] = -1.0;
+    UB1[0] =  1.0;
+    UB1[1] = -1.0;  
+  } else if( strcmp(fname, "steadyBL")==0 ){
+    UB1[0] = 1.0;
+    UB1[1] = 0.0;
+  } else if( strcmp(fname, "sineOscillation")==0 ){
+    double ramp = 1e3*time1;
+    if( ramp > 1.0 ) ramp = 1.0;
+    UB1[0] =  1.0 + ramp*0.5*sin(2.0*2.0*PI*time1);
+    UB1[1] = 0.0;
+  } else if( strcmp(fname, "Langevin")==0 ){
+    if( UB0 == NULL ){
+      UB1[0] = 1.0;
+      UB1[1] = 0.0;
+    } else{
+      double TL = 1e-4;
+      double dt = time1 - time0;
+      double sig2 = 0.1;
+      double dU = (UB0[0] - 1.0)*(1.0 - dt/TL) + sqrt(2.0*sig2*dt/TL)*gsl_ran_gaussian(global_bc_r, 1.0);
+
+      UB1[0] =  1.0 + dU;
+      UB1[1] = 0.0;
+    }
   } else{
-    printf("Unknown BC function.  Exiting.\n"); fflush(stdout);
+    printf("BC fcn %s is not known.  Exiting.\n", fname); fflush(stdout);
     return -1;
   }
-
-//    // 1 + sine
-//    UB[0] =  1.0 + 0.5*sin(10.0*2.0*PI*time);
-//    UB[1] = -1.0 - 0.5*cos(10.0*2.0*PI*time);
 
   return 0;
 }
@@ -97,12 +129,6 @@ initialCondition(const char *fname, const double UB[2], const int N, double *U)
       printf("Unknown IC function.  Exiting.\n"); fflush(stdout);
       return -1;
     }
-      
-
-    // Write solution to screen         
-    FILE *fp = fopen ("nWave.dat", "a");
-    fprintf(fp, "%.15E, %.15E\n", xq[iquad], u);
-    fclose(fp);
 
     u0 = u - (UB[0]*0.5*(1.0-xq[iquad]) + UB[1]*0.5*(1.0+xq[iquad]));
 
@@ -374,7 +400,7 @@ main( int argc, char * argv[] )
       if( ierr != 0 ) return ierr;
 
     } else {
-      ierr = boundaryCondition((vm["bc"].as< string >()).c_str(), 0.0, pBsteady->UB);
+      ierr = boundaryCondition((vm["bc"].as< string >()).c_str(), 0.0, 0.0, NULL, pBsteady->UB);
       if( ierr != 0 ) return ierr;
 
       ierr = initialCondition((vm["ic"].as< string >()).c_str(), pBsteady->UB, Nmode, pBsteady->U->data);
@@ -403,11 +429,14 @@ main( int argc, char * argv[] )
 
     
   } else{
+    initializeRandNumGen();
+
     pBunsteady->Nmode = Nmode;
 
     pBunsteady->Nstep = nStep;
     pBunsteady->Nwrite = nwrite;
     pBunsteady->Nstat = nStep/2; // convert to user set soon
+    printf("Nstat = %d\n", pBunsteady->Nstat); fflush(stdout);
 
     pBunsteady->nu = nu;
     pBunsteady->time = 0.0; // may be overwritten by restart file read
@@ -429,7 +458,7 @@ main( int argc, char * argv[] )
 		      &(pBunsteady->time), pBunsteady->UB, Nmode, pBunsteady->U->data);
       if( ierr != 0 ) return ierr;
     } else {
-      ierr = boundaryCondition((vm["bc"].as< string >()).c_str(), pBunsteady->time, pBunsteady->UB);
+      ierr = boundaryCondition((vm["bc"].as< string >()).c_str(), pBunsteady->time, pBunsteady->time, NULL, pBunsteady->UB);
       if( ierr != 0 ) return ierr;
 
       ierr = initialCondition((vm["ic"].as< string >()).c_str(), pBunsteady->UB, Nmode, pBunsteady->U->data);
