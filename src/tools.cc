@@ -1,8 +1,10 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
 
 #include "legendrePoly.h"
+#include "tools.h"
 #include "burgers.h"
 
 //------------------------------------------------
@@ -56,6 +58,7 @@ boundaryCondition(const char *fname, const double time0, const double time1, con
 { 
   int ierr;
   const double PI = 3.141592653589793e+00;
+  const double uL = 2.0, uR = 1.0;
   
   // pick requested bcs
   if( strcmp(fname, "nwave")==0 ){
@@ -67,25 +70,26 @@ boundaryCondition(const char *fname, const double time0, const double time1, con
     UB1[0] =  1.0;
     UB1[1] = -1.0;  
   } else if( strcmp(fname, "steadyBL")==0 ){
-    UB1[0] = 1.0;
-    UB1[1] = 0.0;
+    UB1[0] = uL;
+    UB1[1] = uR;
   } else if( strcmp(fname, "sineOscillation")==0 ){
-    double ramp = 1e3*time1;
-    if( ramp > 1.0 ) ramp = 1.0;
-    UB1[0] =  1.0 + ramp*0.5*sin(2.0*2.0*PI*time1);
-    UB1[1] = 0.0;
+//     double ramp = 1e2*time1;
+//     if( ramp > 1.0 ) ramp = 1.0;
+    const double ramp = 1.0;
+    UB1[0] = uL + ramp*0.5*sin(10.0*2.0*PI*time1);
+    UB1[1] = uR; //uR - ramp*0.5*sin(20.0*2.0*PI*time1);
   } else if( strcmp(fname, "Langevin")==0 ){
     if( UB0 == NULL ){
-      UB1[0] = 1.0;
-      UB1[1] = 0.0;
+      UB1[0] = uL;
+      UB1[1] = uR;
     } else{
-      double TL = 1e-4;
+      double TL = 1e-1;
       double dt = time1 - time0;
       double sig2 = 0.1;
-      double dU = (UB0[0] - 1.0)*(1.0 - dt/TL) + sqrt(2.0*sig2*dt/TL)*gsl_ran_gaussian(global_bc_r, 1.0);
+      double dU = (UB0[0] - uL)*(1.0 - dt/TL) + sqrt(2.0*sig2*dt/TL)*gsl_ran_gaussian(global_bc_r, 1.0);
 
-      UB1[0] =  1.0 + dU;
-      UB1[1] = 0.0;
+      UB1[0] = uL + dU;
+      UB1[1] = uR;
     }
   } else{
     printf("BC fcn %s is not known.  Exiting.\n", fname); fflush(stdout);
@@ -131,6 +135,8 @@ initialCondition(const char *fname, const double UB[2], const int N, double *U)
       if( ierr != 0 ) return ierr;
     } else if( strcmp(fname, "zeroFunction")==0 ){
       u = 0.0;
+    } else if( strcmp(fname, "linear")==0 ){
+      u = UB[0]*0.5*(1.0-xq[iquad]) + UB[1]*0.5*(1.0+xq[iquad]);
     } else{
       printf("Unknown IC function.  Exiting.\n"); fflush(stdout);
       return -1;
@@ -159,4 +165,84 @@ initialCondition(const char *fname, const double UB[2], const int N, double *U)
   gsl_matrix_free(iMM);
 
   return 0;
+}
+
+//-------------------------------------------------
+// Computes number of quad points and allocates
+// memory for quad points, quad weights, and 
+// basis functions.
+//
+int
+allocateQuadratureAndBasisForResidual(const int Nmode, quadBasis **pQB)
+{
+
+  const int solnOrder = Nmode-1+2;
+  const int quadOrder = 3*solnOrder - 1;
+  const int Nquad = quadOrder/2 + 1; // + 1 to be conservative
+
+  *pQB = (quadBasis *)malloc(sizeof(quadBasis));
+
+  (*pQB)->Nquad = Nquad;
+
+  (*pQB)->xq = (double *)malloc(sizeof(double)*Nquad);
+  if( (*pQB)->xq==NULL ) return -1;
+
+  (*pQB)->wq = (double *)malloc(sizeof(double)*Nquad);
+  if( (*pQB)->wq==NULL ) return -1;
+
+  (*pQB)->phi   = (double *)malloc(sizeof(double)*Nmode*Nquad);
+  if( (*pQB)->phi==NULL ) return -1;
+
+  (*pQB)->phi_xi = (double *)malloc(sizeof(double)*Nmode*Nquad);
+  if( (*pQB)->phi_xi==NULL ) return -1;
+
+  return 0;
+}
+
+//-------------------------------------------------
+// Frees quad point, weights, and basis memory
+//
+int
+freeQuadratureAndBasisForResidual(quadBasis *pQB)
+{
+  free(pQB->xq);
+  free(pQB->wq);
+  free(pQB->phi);
+  free(pQB->phi_xi);
+  return 0;
+}
+
+//-------------------------------------------------
+// Evaluates and stores quad rule and basis.
+// Note that this function should only be called
+// once per run.
+//
+int
+evaluateQuadratureAndBasisForResidual(const int Nmode, quadBasis **pQB)
+{
+  int ierr;
+  double *phi, *phi_xi, *xq;
+  
+  ierr = allocateQuadratureAndBasisForResidual(Nmode, pQB);
+  if( ierr != 0 ) return ierr;
+
+  // Get quadrature points
+  ierr = legendreGaussQuad((*pQB)->Nquad, (*pQB)->xq, (*pQB)->wq);
+  if( ierr != 0 ) return ierr;
+
+  xq = (*pQB)->xq;
+
+  // Loop over quadrature points
+  for( int iquad=0; iquad<(*pQB)->Nquad; iquad++ ){
+
+    phi    = (*pQB)->phi    + iquad*Nmode;
+    phi_xi = (*pQB)->phi_xi + iquad*Nmode;
+
+    // Evaluate basis
+    ierr = legendrePolyZero(Nmode, xq[iquad], phi, phi_xi);
+    if( ierr != 0 ) return ierr;
+
+  }
+
+    return 0;
 }

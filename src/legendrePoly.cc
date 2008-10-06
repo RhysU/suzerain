@@ -124,7 +124,7 @@ legendreGaussQuad(const int N, double * xq, double * wq)
     } while( (fabs(res)>RTOL) && (iiter < ITERMAX) );
 
     // warn if point is not at least close to converged
-    if( fabs(res)>1e3*RTOL ){
+    if( fabs(res)>1e6*RTOL ){
       printf("WARNING: Quad point did not converge.\n");
       printf("         x = %.6E, residual = %.6E\n", xtmp, res );
       fflush(stdout);

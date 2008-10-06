@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE( test_residual )
   const double tol=1e-12;
 
   // u=0 is exact solution for homogeneous Dirichlet BCs.  Thus, R=0
-  ierr = interiorResidual(2, 1.0, U, UB, R, (double *)NULL);
+  ierr = interiorResidual(2, 1.0, U, UB, NULL, R, (double *)NULL);
   BOOST_REQUIRE( ierr == 0 );
   
   BOOST_CHECK_SMALL(R[0], tol);
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE( test_residual )
   // u=-x, zero viscosity
   R[0] = R[1] = 0.0;
   UB[0] = 1.0; UB[1] = -1.0;
-  ierr = interiorResidual(2, 0.0, U, UB, R, (double *)NULL);
+  ierr = interiorResidual(2, 0.0, U, UB, NULL, R, (double *)NULL);
   BOOST_REQUIRE( ierr == 0 );
   
   BOOST_CHECK_SMALL(R[0], tol);
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE( test_residual )
   R[0] = R[1] = 0.0;
   U[0] = 1.0; U[1] = 0.0;
   UB[0] = 0.0; UB[1] = 0.0;
-  ierr = interiorResidual(2, 0.0, U, UB, R, (double *)NULL);
+  ierr = interiorResidual(2, 0.0, U, UB, NULL, R, (double *)NULL);
   BOOST_REQUIRE( ierr == 0 );
   
   BOOST_CHECK_SMALL(R[0], tol);
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE( ping_residual )
   for( int ii=0; ii<9; ii++ ) R_U0[ii] = R_Up[ii] = 0.0;
   
   // Baseline
-  ierr = interiorResidual(3, 0.1, U, UB, R0, R_U0);
+  ierr = interiorResidual(3, 0.1, U, UB, NULL, R0, R_U0);
   BOOST_REQUIRE( ierr == 0 );
 
   for( int ii=0; ii<3; ii++ ){ // ping for each state component
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE( ping_residual )
       for( int kk=0; kk<9; kk++ ) R_Up[kk] = 0.0;
 
       // Residual and Jacobian
-      ierr = interiorResidual(3, 0.1, U, UB, Rp, R_Up);
+      ierr = interiorResidual(3, 0.1, U, UB, NULL, Rp, R_Up);
       BOOST_REQUIRE( ierr == 0 );
 
       // compute difference
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE( test_unsteadyBoundaryResidual )
   const double tol=1e-12;
 
   // BCs do not change
-  ierr = unsteadyBoundaryResidual(2, UB0, UB1, R);
+  ierr = unsteadyBoundaryResidual(2, UB0, UB1, NULL, R);
   BOOST_REQUIRE( ierr == 0 );
   
   BOOST_CHECK_SMALL(R[0], tol);
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE( test_unsteadyBoundaryResidual )
   UB1[0] = 1.5; UB1[1] = 1.5;
 
   R[0] = R[1] = 0.0;
-  ierr = unsteadyBoundaryResidual(2, UB0, UB1, R);
+  ierr = unsteadyBoundaryResidual(2, UB0, UB1, NULL, R);
   BOOST_REQUIRE( ierr == 0 );
   
   BOOST_CHECK_CLOSE(R[0], 2.0, tol);
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( test_unsteadyBoundaryResidual )
   UB1[0] = 1.0; UB1[1] = 2.0;
 
   R[0] = R[1] = 0.0;
-  ierr = unsteadyBoundaryResidual(2, UB0, UB1, R);
+  ierr = unsteadyBoundaryResidual(2, UB0, UB1, NULL, R);
   BOOST_REQUIRE( ierr == 0 );
   
   BOOST_CHECK_CLOSE(R[0], 2.0, tol);

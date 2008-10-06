@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -35,7 +36,7 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
   gsl_vector_set_zero(R);
 
   // Evaluate residual
-  ierr = interiorResidual(Nmode, pB->nu, U->data, UB, R->data, R_U->data);
+  ierr = interiorResidual(Nmode, pB->nu, U->data, UB, NULL, R->data, R_U->data);
   if( ierr != 0 ) return ierr;
 
   // Compute residual 2-norm
@@ -62,7 +63,7 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
     gsl_matrix_set_zero(R_U);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, U->data, UB, R->data, R_U->data);
+    ierr = interiorResidual(Nmode, pB->nu, U->data, UB, NULL, R->data, R_U->data);
     if( ierr != 0 ) return ierr;
 
     // Compute residual 2-norm
@@ -108,6 +109,8 @@ unsteadyRK4(burgersUnsteady *pB)
 
   gsl_matrix *iMM;
 
+  quadBasis *pQB;
+
   FILE *fp;
 
   // Allocate storage
@@ -121,6 +124,10 @@ unsteadyRK4(burgersUnsteady *pB)
   K3   = gsl_vector_calloc((size_t)Nmode);
   K4   = gsl_vector_calloc((size_t)Nmode);
   iMM  = gsl_matrix_alloc((size_t)Nmode, (size_t)Nmode);
+
+  // evaluate quad points and weights
+  ierr = evaluateQuadratureAndBasisForResidual(Nmode, &pQB);
+  if( ierr != 0 ) return ierr;
 
   // Compute inverse mass matrix
   ierr = legendre0InverseMassMatrix(Nmode, iMM->data);
@@ -173,7 +180,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB0, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB0, pQB, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K1 = -MM\R;
@@ -197,7 +204,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, pQB, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K2 = -MM\R;
@@ -221,7 +228,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, pQB, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K3 = -MM\R;
@@ -246,7 +253,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB1, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB1, pQB, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K4 = -MM\R;
@@ -267,7 +274,7 @@ unsteadyRK4(burgersUnsteady *pB)
     // Set residual and Jacobian to zero
     gsl_vector_set_zero(R);
 
-    ierr = unsteadyBoundaryResidual(Nmode, UB0, UB1, R->data);
+    ierr = unsteadyBoundaryResidual(Nmode, UB0, UB1, pQB, R->data);
     if( ierr != 0 ) return ierr;
 
 
@@ -307,7 +314,7 @@ unsteadyRK4(burgersUnsteady *pB)
 
       // write bcs
       fp = fopen("bcs.dat", "a");
-      fprintf(fp, "%.15E, %.15E\n", UB1[0], UB1[1]);
+      fprintf(fp, "%.15E %.15E\n", UB1[0], UB1[1]);
       fclose(fp);
 
     }
@@ -352,7 +359,9 @@ unsteadyRK4(burgersUnsteady *pB)
 
   // write averaged solution
   fp = fopen("average_soln.dat", "w");
-  fprintf(fp, "%.15E, %.15E\n", UBavg[0], UBavg[1]);
+  fprintf(fp, "%.15E\n", time);
+  fprintf(fp, "%.15E %.15E\n", UBavg[0], UBavg[1]);
+  fprintf(fp, "%d\n", Nmode);
   gsl_vector_fprintf(fp, Uavg, "%.15E");
   fclose(fp);
 
@@ -376,6 +385,8 @@ unsteadyRK4(burgersUnsteady *pB)
   gsl_vector_free(K3);
   gsl_vector_free(K4);
   gsl_matrix_free(iMM);
+  freeQuadratureAndBasisForResidual(pQB);
+  free(pQB);
 
   return 0;
 }
@@ -397,12 +408,13 @@ eigenDecompIntFactorMatrix( const int N, const double *MM, const double *KK,
 {
 
 
-  gsl_matrix *MMtmp, *KKtmp;
+  gsl_matrix *MMtmp, *KKtmp, *RRtmp;
   gsl_matrix_const_view gslMM = gsl_matrix_const_view_array(MM, N, N);
   gsl_matrix_const_view gslKK = gsl_matrix_const_view_array(KK, N, N);
 
   gsl_vector_view gslLambda = gsl_vector_view_array(lambda, N);
   gsl_matrix_view gslRR = gsl_matrix_view_array(RR, N, N);
+  gsl_matrix_view gsliRR = gsl_matrix_view_array(iRR, N, N);
 
   // Initialize output
   for( int ii=0; ii<N; ii++ ) lambda[ii] = 0.0;
@@ -421,6 +433,25 @@ eigenDecompIntFactorMatrix( const int N, const double *MM, const double *KK,
   if( ierr != 0 ) return ierr;
 
   // invert RR
+  RRtmp = gsl_matrix_alloc((size_t)N, (size_t)N);
+  gsl_matrix_memcpy(RRtmp, &gslRR.matrix);
+  int s;
+  gsl_permutation * p = gsl_permutation_alloc(N);
+  gsl_linalg_LU_decomp(RRtmp, p, &s);
+
+  gsl_vector *b;
+  b = gsl_vector_alloc(N);
+
+  for( int ii=0; ii<N; ii++ ){
+    gsl_vector_view gsliRR = gsl_vector_view_array_with_stride(&(iRR[ii]), N, N);
+    gsl_vector_set_basis(b, ii);
+
+    ierr = gsl_linalg_LU_solve (RRtmp, p, b, &gsliRR.vector);
+    if( ierr != 0 ){
+      printf("Cannot solve system!\n"); fflush(stdout);
+      return -1;
+    }
+  }
 
   // clean up
   gsl_eigen_gensymmv_free(eig_workspace);
@@ -429,3 +460,36 @@ eigenDecompIntFactorMatrix( const int N, const double *MM, const double *KK,
 
   return 0;
 }
+
+
+//-------------------------------------------------
+// intFactor = RR*exp(nu*t*diag(lambda))*iRR
+//
+int
+integratingFactor( const int N, const double *RR, const double *lambda, const double *iRR, 
+		   const double nu, const double time,
+		   double *intFactor)
+{
+
+  gsl_matrix *mLambda, *tempMatrix;
+  gsl_matrix_const_view gslRR = gsl_matrix_const_view_array(RR, N, N);
+  gsl_matrix_const_view gsliRR = gsl_matrix_const_view_array(iRR, N, N);
+  gsl_matrix_view gslIntFactor = gsl_matrix_view_array(intFactor, N, N);
+
+  tempMatrix = gsl_matrix_calloc(N,N);
+
+  // allocate and initialize diagonal eigenvalue matrix
+  mLambda = gsl_matrix_calloc(N,N);
+  for( int ii=0; ii<N; ii++ ) gsl_matrix_set(mLambda, ii, ii, exp(nu*time*lambda[ii]));
+
+  // matrix multiply: intFactor = RR*mLambda*iRR
+  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, &gslRR.matrix, mLambda, 0.0, tempMatrix);
+  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, tempMatrix, &gsliRR.matrix, 0.0, &gslIntFactor.matrix);
+
+  // clean up
+  gsl_matrix_free(mLambda);
+  gsl_matrix_free(tempMatrix);
+
+  return 0;
+}
+

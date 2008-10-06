@@ -36,7 +36,9 @@ ostream& operator<<(ostream& os, const vector<T>& v)
 int
 readRestartFile(const char *fname, double *time, double UB[2], int Nmode, double *U)
 {
-  int ierr, NmodeRead, minNmode; 
+  int ierr, NmodeRead, minNmode;
+
+  printf("Hello... reading restart file!\n"); fflush(stdout);
 
   FILE *fp = fopen(fname, "r");
   if( fp == NULL ){
@@ -45,21 +47,36 @@ readRestartFile(const char *fname, double *time, double UB[2], int Nmode, double
   }
 
   ierr = fscanf(fp, "%lf\n", time);
-  if( ierr != 1 ) return -1;
+  if( ierr != 1 ){
+    printf("Could not read time!\n"); fflush(stdout);
+    return -1;
+  }
 
   ierr = fscanf(fp, "%lf %lf\n", &(UB[0]), &(UB[1]));
-  if( ierr != 2 ) return -1;
+  if( ierr != 2 ){
+    printf("Could not read BCs!\n"); fflush(stdout);
+    return -1;
+  }
 
   ierr = fscanf(fp, "%d\n", &NmodeRead);
-  if( ierr != 1 ) return -1;
+  if( ierr != 1 ){
+    printf("Could not read number of modes!\n"); fflush(stdout);
+    return -1;
+  }
 
   minNmode = NmodeRead;
   if( Nmode < minNmode ) minNmode = Nmode;
 
   for( int ii=0; ii<minNmode; ii++ ){
     ierr = fscanf(fp, "%lf\n", &(U[ii]));
-    if( ierr != 1 ) return -1;
+    if( ierr != 1 ){
+      printf("Could not read solution component %d!\n", ii); fflush(stdout);
+      return -1;
+    }
   }
+
+  printf("Hello... reading restart file!\n"); fflush(stdout);
+
 
   return 0;
 }
@@ -262,7 +279,7 @@ main( int argc, char * argv[] )
     if( restart ){
       printf("Reading restart file!\n"); fflush(stdout);
       double tmptime;
-      readRestartFile((vm["restart-file"].as< string >()).c_str(), 
+      ierr = readRestartFile((vm["restart-file"].as< string >()).c_str(), 
 		      &tmptime, pBsteady->UB, Nmode, pBsteady->U->data);
       if( ierr != 0 ) return ierr;
 
@@ -302,7 +319,7 @@ main( int argc, char * argv[] )
 
     pBunsteady->Nstep = nStep;
     pBunsteady->Nwrite = nwrite;
-    pBunsteady->Nstat = nStep/2; // convert to user set soon
+    pBunsteady->Nstat = nwrite; // convert to user set soon
     printf("Nstat = %d\n", pBunsteady->Nstat); fflush(stdout);
 
     pBunsteady->nu = nu;
@@ -321,9 +338,13 @@ main( int argc, char * argv[] )
     // Set initial condition
     if( restart ){
       printf("Reading restart file!\n"); fflush(stdout);
-      readRestartFile((vm["restart-file"].as< string >()).c_str(), 
+      ierr = readRestartFile((vm["restart-file"].as< string >()).c_str(), 
 		      &(pBunsteady->time), pBunsteady->UB, Nmode, pBunsteady->U->data);
-      if( ierr != 0 ) return ierr;
+      if( ierr != 0 ){
+	printf("Error reading restart file.  Exiting.\n"); fflush(stdout);
+	return ierr;
+      }
+      printf("Successfully read restart file.\n"); fflush(stdout);
     } else {
       ierr = boundaryCondition((vm["bc"].as< string >()).c_str(), pBunsteady->time, pBunsteady->time, NULL, pBunsteady->UB);
       if( ierr != 0 ) return ierr;
