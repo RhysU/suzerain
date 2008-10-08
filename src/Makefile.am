@@ -9,7 +9,7 @@ noinst_LIBRARIES =
 
 # Libraries
 noinst_LIBRARIES += libburgers.a
-libburgers_a_SOURCES = solver.cc residual.cc legendrePoly.cc tools.cc
+libburgers_a_SOURCES = quesoFunctions.cc solver.cc residual.cc legendrePoly.cc tools.cc
 
 # Progams
 bin_PROGRAMS        += helloworld
