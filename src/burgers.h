@@ -18,6 +18,7 @@ typedef struct
   bool RABFlag; // true for Reynolds averaged Burgers simulation
   int Nmode; // number of modes
   double nu; // viscosity
+  double kappa; // parameter for burgulence model (-1.0 for DNS)
   double UB[2]; // boundary conditions 
   gsl_vector *U; // state vector (for DNS this is running average)
   gsl_vector *R; // residual vector

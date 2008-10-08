@@ -42,7 +42,7 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
   if( ierr != 0 ) return ierr;
 
   // Evaluate residual
-  ierr = interiorResidual(Nmode, pB->nu, U->data, UB, pQB, pB->RABFlag, R->data, R_U->data);
+  ierr = interiorResidual(Nmode, pB->nu, U->data, UB, pQB, pB->RABFlag, pB->kappa, R->data, R_U->data);
   if( ierr != 0 ) return ierr;
 
   // Compute residual 2-norm
@@ -69,7 +69,7 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
     gsl_matrix_set_zero(R_U);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, U->data, UB, pQB, pB->RABFlag, R->data, R_U->data);
+    ierr = interiorResidual(Nmode, pB->nu, U->data, UB, pQB, pB->RABFlag, pB->kappa, R->data, R_U->data);
     if( ierr != 0 ) return ierr;
 
     // Compute residual 2-norm
@@ -189,7 +189,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB0, pQB, false, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB0, pQB, false, -1.0, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K1 = -MM\R;
@@ -213,7 +213,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, pQB, false, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, pQB, false, -1.0, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K2 = -MM\R;
@@ -237,7 +237,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, pQB, false, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, pQB, false, -1.0, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K3 = -MM\R;
@@ -262,7 +262,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB1, pQB, false, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB1, pQB, false, -1.0, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K4 = -MM\R;

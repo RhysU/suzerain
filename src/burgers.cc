@@ -90,7 +90,7 @@ int
 main( int argc, char * argv[] )
 {
   int ierr, Nmode, nIter, nStep, nwrite;
-  double nu, dt;
+  double nu, kappa, dt;
   burgersSteady Bsteady, *pBsteady;
   burgersUnsteady Bunsteady, *pBunsteady;
   bool steady, restart, RABFlag=false;
@@ -115,6 +115,9 @@ main( int argc, char * argv[] )
 
     ("viscosity", po::value< double >(&nu)->default_value(1e-1), 
      "fluid viscosity")
+
+    ("kappa", po::value< double >(&kappa)->default_value(-1.0), 
+     "burgulence model parameter")
 
     ("steady", po::value< bool >(&steady)->default_value(false), 
      "true (for steady soln) or false (for unsteady)")
@@ -218,7 +221,10 @@ main( int argc, char * argv[] )
     cout << "equation is " 
 	 << vm["equation"].as< string >() << "\n";
 
-    if( strcmp( (vm["equation"].as< string >()).c_str(), "RAB" ) == 0 ) RABFlag = true;
+    if( strcmp( (vm["equation"].as< string >()).c_str(), "RAB" ) == 0 ){
+      RABFlag = true;
+      cout << "kappa is " << kappa << "\n";
+    }
   }
   
   if (vm.count("viscosity")){
@@ -276,6 +282,7 @@ main( int argc, char * argv[] )
 
     pBsteady->Nmode = Nmode;
     pBsteady->nu = nu;
+    pBsteady->kappa = kappa;
 
     pBsteady->U = gsl_vector_calloc( (size_t)Nmode );
     pBsteady->R = gsl_vector_calloc( (size_t)Nmode );

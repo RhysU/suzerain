@@ -10,9 +10,9 @@
 // Compute eddy viscosity for RAB simulations using
 // an algebraic burgulence model.
 int
-eddyViscosity(const double xq, const double u, const double u_x, double *nut, double *nut_u, double *nut_u_x)
+eddyViscosity(const double xq, const double kappa, const double u, const double u_x, 
+	      double *nut, double *nut_u, double *nut_u_x)
 {
-  double kappa = 0.3;
   double dist = (1.0-xq);
   double lmix = kappa*dist;
 
@@ -35,7 +35,7 @@ eddyViscosity(const double xq, const double u, const double u_x, double *nut, do
 // Should refactor to improve speed and modularity.                      
 int
 interiorResidual( const int N, const double nu, const double *U, const double *UB, quadBasis *pQB,
-		  bool RABFlag, double *R, double *R_U )
+		  const bool RABFlag, const double kappa, double *R, double *R_U )
 {
   int ierr, Nquad;
   double *xq, *wq, *phi, *phi_xi;
@@ -76,7 +76,7 @@ interiorResidual( const int N, const double nu, const double *U, const double *U
     
 
     if( RABFlag ){
-      ierr = eddyViscosity(xq[iquad], u, u_x, &nut, &nut_u, &nut_u_x);
+      ierr = eddyViscosity(xq[iquad], kappa, u, u_x, &nut, &nut_u, &nut_u_x);
       if( ierr != 0 ) return ierr;
 
       // add to effective viscosity
@@ -94,19 +94,30 @@ interiorResidual( const int N, const double nu, const double *U, const double *U
     }
     
     // Add to residual integral
-//     F *= wq[iquad];
-//     for( int ii=0; ii<N; ii++ ) R[ii] -= phi_xi[ii]*F;
 
+    // No source term
+    for( int ii=0; ii<N; ii++ ) R[ii] -= wq[iquad]*phi_xi[ii]*F;
+
+    // Dissipation term...
+    // that is proportional to u
     //for( int ii=0; ii<N; ii++ ) R[ii] -= wq[iquad]*( phi_xi[ii]*F - phi[ii]*0.5*u );
-    for( int ii=0; ii<N; ii++ ) R[ii] -= wq[iquad]*( phi_xi[ii]*F - phi[ii]*(1.0 - xq[iquad])/4.0 );
+
+    // that is linear in x
+    //for( int ii=0; ii<N; ii++ ) R[ii] -= wq[iquad]*( phi_xi[ii]*F - phi[ii]*(1.0 - xq[iquad])/4.0 );
 
     
     // Add to Jacobian integral (if requested)
     if( R_U != (double *)NULL ){
       for( int ii=0; ii<N; ii++ ){
 	for( int jj=0; jj<N; jj++ ){
+	  // no source
 	  R_U[N*ii+jj] -= wq[iquad]*phi_xi[ii]*(F_u*phi[jj] + F_u_x*phi_xi[jj]);
+
+	  // dissipation proportional to u
 	  //R_U[N*ii+jj] -= wq[iquad]*( phi_xi[ii]*(F_u*phi[jj] + F_u_x*phi_xi[jj]) - phi[ii]*0.5*phi[jj] );
+
+	  // dissipation linear in x
+	  //R_U[N*ii+jj] -= wq[iquad]*phi_xi[ii]*(F_u*phi[jj] + F_u_x*phi_xi[jj]);
 	}
       }
     }
