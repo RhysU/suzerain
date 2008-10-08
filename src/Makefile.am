@@ -5,14 +5,19 @@ AM_CPPFLAGS   += $(GSL_CFLAGS) $(BOOST_CPPFLAGS) $(MATIO_CFLAGS)
 AM_LDFLAGS     = $(GSL_LIBS)   $(BOOST_LDFLAGS)  $(MATIO_LIBS) 
 bin_PROGRAMS   =
 check_PROGRAMS = 
+noinst_LIBRARIES = 
+
+# Libraries
+noinst_LIBRARIES += libburgers.a
+libburgers_a_SOURCES = solver.cc residual.cc legendrePoly.cc tools.cc
 
 # Progams
 bin_PROGRAMS        += helloworld
 helloworld_SOURCES   = helloworld.cc
 
 bin_PROGRAMS     += burgers
-burgers_SOURCES   = burgers.cc solver.cc residual.cc legendrePoly.cc tools.cc
-burgers_LDADD     = $(BOOST_PROGRAM_OPTIONS_LIB)
+burgers_SOURCES   = burgers.cc # solver.cc residual.cc legendrePoly.cc tools.cc
+burgers_LDADD     = libburgers.a $(BOOST_PROGRAM_OPTIONS_LIB)
 
 # Unit test executables
 check_PROGRAMS      += test_example

@@ -58,7 +58,7 @@ boundaryCondition(const char *fname, const double time0, const double time1, con
 { 
   int ierr;
   const double PI = 3.141592653589793e+00;
-  const double uL = 2.0, uR = 1.0;
+  const double uL = 1.0, uR = 0.0;
   
   // pick requested bcs
   if( strcmp(fname, "nwave")==0 ){
@@ -76,14 +76,14 @@ boundaryCondition(const char *fname, const double time0, const double time1, con
 //     double ramp = 1e2*time1;
 //     if( ramp > 1.0 ) ramp = 1.0;
     const double ramp = 1.0;
-    UB1[0] = uL + ramp*0.5*sin(10.0*2.0*PI*time1);
+    UB1[0] = uL + ramp*0.5*sin(1.0*2.0*PI*time1);
     UB1[1] = uR; //uR - ramp*0.5*sin(20.0*2.0*PI*time1);
   } else if( strcmp(fname, "Langevin")==0 ){
     if( UB0 == NULL ){
       UB1[0] = uL;
       UB1[1] = uR;
     } else{
-      double TL = 1e-1;
+      double TL = 1e0;
       double dt = time1 - time0;
       double sig2 = 0.1;
       double dU = (UB0[0] - uL)*(1.0 - dt/TL) + sqrt(2.0*sig2*dt/TL)*gsl_ran_gaussian(global_bc_r, 1.0);

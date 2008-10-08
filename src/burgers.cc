@@ -93,7 +93,7 @@ main( int argc, char * argv[] )
   double nu, dt;
   burgersSteady Bsteady, *pBsteady;
   burgersUnsteady Bunsteady, *pBunsteady;
-  bool steady, restart;
+  bool steady, restart, RABFlag=false;
 
   pBsteady = &Bsteady;
   pBunsteady = &Bunsteady;
@@ -217,6 +217,8 @@ main( int argc, char * argv[] )
   if (vm.count("equation")){
     cout << "equation is " 
 	 << vm["equation"].as< string >() << "\n";
+
+    if( strcmp( (vm["equation"].as< string >()).c_str(), "RAB" ) == 0 ) RABFlag = true;
   }
   
   if (vm.count("viscosity")){
@@ -269,6 +271,9 @@ main( int argc, char * argv[] )
   cout << "\n";
 
   if( steady ){
+    pBsteady->RABFlag = false;
+    if( RABFlag ) pBsteady->RABFlag = true;
+
     pBsteady->Nmode = Nmode;
     pBsteady->nu = nu;
 
@@ -314,6 +319,11 @@ main( int argc, char * argv[] )
     
   } else{
     initializeRandNumGen();
+
+    if( RABFlag ){
+      printf("Reynolds-averaged Burgers equation is not supported by unsteady solver.\n");
+      return -1;
+    }
 
     pBunsteady->Nmode = Nmode;
 

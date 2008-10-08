@@ -15,6 +15,7 @@
 // For steady cases
 typedef struct
 {
+  bool RABFlag; // true for Reynolds averaged Burgers simulation
   int Nmode; // number of modes
   double nu; // viscosity
   double UB[2]; // boundary conditions 

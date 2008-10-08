@@ -24,6 +24,8 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
   gsl_vector *dU;
   gsl_matrix *R_U;
 
+  quadBasis *pQB;
+
   int s;
   gsl_permutation *p;
 
@@ -35,8 +37,12 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
   // Set residual to zero
   gsl_vector_set_zero(R);
 
+  // evaluate quad points and weights
+  ierr = evaluateQuadratureAndBasisForResidual(Nmode, &pQB);
+  if( ierr != 0 ) return ierr;
+
   // Evaluate residual
-  ierr = interiorResidual(Nmode, pB->nu, U->data, UB, NULL, R->data, R_U->data);
+  ierr = interiorResidual(Nmode, pB->nu, U->data, UB, pQB, pB->RABFlag, R->data, R_U->data);
   if( ierr != 0 ) return ierr;
 
   // Compute residual 2-norm
@@ -63,7 +69,7 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
     gsl_matrix_set_zero(R_U);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, U->data, UB, NULL, R->data, R_U->data);
+    ierr = interiorResidual(Nmode, pB->nu, U->data, UB, pQB, pB->RABFlag, R->data, R_U->data);
     if( ierr != 0 ) return ierr;
 
     // Compute residual 2-norm
@@ -77,7 +83,10 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
   // Clean up
   gsl_vector_free(dU);
   gsl_matrix_free(R_U);
-  gsl_permutation_free(p);
+  gsl_permutation_free(p);  
+  freeQuadratureAndBasisForResidual(pQB);
+  free(pQB);
+
 
   return 0;
 }
@@ -180,7 +189,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB0, pQB, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB0, pQB, false, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K1 = -MM\R;
@@ -204,7 +213,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, pQB, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, pQB, false, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K2 = -MM\R;
@@ -228,7 +237,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, pQB, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UBmid, pQB, false, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K3 = -MM\R;
@@ -253,7 +262,7 @@ unsteadyRK4(burgersUnsteady *pB)
     gsl_vector_set_zero(R);
 
     // Evaluate residual
-    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB1, pQB, R->data, (double *)NULL);
+    ierr = interiorResidual(Nmode, pB->nu, Utmp->data, UB1, pQB, false, R->data, (double *)NULL);
     if( ierr != 0 ) return ierr;
 
     // K4 = -MM\R;
