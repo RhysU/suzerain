@@ -7,6 +7,8 @@
 #include "tools.h"
 #include "burgers.h"
 
+#define VERBOSE 1
+
 //-------------------------------------------------
 // Solve steady Burgers with Newton-Raphson
 //
@@ -50,9 +52,11 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
 
   iiter = 0;
 
+#if VERBOSE==0
   printf("Iteration \t Residual Norm\n");
   printf("--------------------------\n");
   printf("%d \t %.12E\n", iiter, Rnorm);
+#endif
 
   while( (Rnorm>RTOL) && (iiter<NiterMax) ){
     
@@ -77,7 +81,14 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
 
     iiter++;
     
+#if VERBOSE==0    
     printf("%d \t %.12E\n", iiter, Rnorm);
+#endif
+  }
+
+  if( Rnorm > RTOL ){
+    printf("WARNING: Solution only converged to R=%.6E in %d iterations\n", Rnorm, iiter);
+    fflush(stdout);
   }
 
   // Clean up
@@ -87,6 +98,91 @@ steadyNewton(const int NiterMax, burgersSteady *pB)
   freeQuadratureAndBasisForResidual(pQB);
   free(pQB);
 
+
+  return 0;
+}
+
+//------------------------------------------------------
+// Solve steady Burgers with Newton-Raphson
+// Quad points, weights, and basis must be pre-computed
+//
+int
+steadyNewtonPreComputeBasis(const int NiterMax, burgersSteady *pB, quadBasis *pQB)
+{
+  int ierr, iiter;
+  const int Nmode = pB->Nmode;
+  double Rnorm=0.0;
+  const double RTOL = 1e-12;
+  double UB[2] = {pB->UB[0], pB->UB[1]};
+
+  gsl_vector *U = pB->U;
+  gsl_vector *R = pB->R;
+  gsl_vector *dU;
+  gsl_matrix *R_U;
+
+  int s;
+  gsl_permutation *p;
+
+  // Allocate storage
+  dU = gsl_vector_calloc((size_t)Nmode);
+  R_U = gsl_matrix_calloc((size_t)Nmode, (size_t)Nmode);
+  p = gsl_permutation_alloc((size_t)Nmode);
+
+  // Set residual to zero
+  gsl_vector_set_zero(R);
+
+  // Evaluate residual
+  ierr = interiorResidual(Nmode, pB->nu, U->data, UB, pQB, pB->RABFlag, pB->kappa, R->data, R_U->data);
+  if( ierr != 0 ) return ierr;
+
+  // Compute residual 2-norm
+  Rnorm = gsl_blas_dnrm2(R);
+
+  iiter = 0;
+
+#if VERBOSE==0
+  printf("Iteration \t Residual Norm\n");
+  printf("--------------------------\n");
+  printf("%d \t %.12E\n", iiter, Rnorm);
+#endif
+
+  while( (Rnorm>RTOL) && (iiter<NiterMax) ){
+    
+    // Solve for update: dU = -R_U\R
+    gsl_linalg_LU_decomp(R_U, p, &s);
+    gsl_linalg_LU_solve(R_U, p, R, dU);
+    gsl_vector_scale(dU, -1.0);
+
+    // Update state: U += dU
+    gsl_vector_add(U, dU);
+
+    // Set residual and Jacobian to zero
+    gsl_vector_set_zero(R);
+    gsl_matrix_set_zero(R_U);
+
+    // Evaluate residual
+    ierr = interiorResidual(Nmode, pB->nu, U->data, UB, pQB, pB->RABFlag, pB->kappa, R->data, R_U->data);
+    if( ierr != 0 ) return ierr;
+
+    // Compute residual 2-norm
+    Rnorm = gsl_blas_dnrm2(R);
+
+    iiter++;
+    
+#if VERBOSE==0    
+    printf("%d \t %.12E\n", iiter, Rnorm);
+#endif
+  }
+
+  if( Rnorm > RTOL ){
+    printf("WARNING: Solution only converged to R=%.6E in %d iterations\n", Rnorm, iiter);
+    fflush(stdout);
+  }
+
+  // Clean up
+  gsl_vector_free(dU);
+  gsl_matrix_free(R_U);
+  gsl_permutation_free(p);  
 
   return 0;
 }
@@ -401,104 +497,104 @@ unsteadyRK4(burgersUnsteady *pB)
 }
 
 
-//-------------------------------------------------
-// Computes the eigen-decomposition of the
-// integrating factor matrix MM\KK
-// where MM = mass matrix and 
-// KK = stiffness matrix
-//
-// The eigenvalues are stored in the vector lambda,
-// and the eigenvectors are stored in the matrix RR.
-// The matrix iRR stores inv(RR).
-//
-int
-eigenDecompIntFactorMatrix( const int N, const double *MM, const double *KK,
-			    double *lambda, double *RR, double *iRR)
-{
+// //-------------------------------------------------
+// // Computes the eigen-decomposition of the
+// // integrating factor matrix MM\KK
+// // where MM = mass matrix and 
+// // KK = stiffness matrix
+// //
+// // The eigenvalues are stored in the vector lambda,
+// // and the eigenvectors are stored in the matrix RR.
+// // The matrix iRR stores inv(RR).
+// //
+// int
+// eigenDecompIntFactorMatrix( const int N, const double *MM, const double *KK,
+// 			    double *lambda, double *RR, double *iRR)
+// {
 
 
-  gsl_matrix *MMtmp, *KKtmp, *RRtmp;
-  gsl_matrix_const_view gslMM = gsl_matrix_const_view_array(MM, N, N);
-  gsl_matrix_const_view gslKK = gsl_matrix_const_view_array(KK, N, N);
+//   gsl_matrix *MMtmp, *KKtmp, *RRtmp;
+//   gsl_matrix_const_view gslMM = gsl_matrix_const_view_array(MM, N, N);
+//   gsl_matrix_const_view gslKK = gsl_matrix_const_view_array(KK, N, N);
 
-  gsl_vector_view gslLambda = gsl_vector_view_array(lambda, N);
-  gsl_matrix_view gslRR = gsl_matrix_view_array(RR, N, N);
-  gsl_matrix_view gsliRR = gsl_matrix_view_array(iRR, N, N);
+//   gsl_vector_view gslLambda = gsl_vector_view_array(lambda, N);
+//   gsl_matrix_view gslRR = gsl_matrix_view_array(RR, N, N);
+//   gsl_matrix_view gsliRR = gsl_matrix_view_array(iRR, N, N);
 
-  // Initialize output
-  for( int ii=0; ii<N; ii++ ) lambda[ii] = 0.0;
-  for( int ii=0; ii<N*N; ii++ ) iRR[ii] = RR[ii] = 0.0;
+//   // Initialize output
+//   for( int ii=0; ii<N; ii++ ) lambda[ii] = 0.0;
+//   for( int ii=0; ii<N*N; ii++ ) iRR[ii] = RR[ii] = 0.0;
   
-  // copy MM and KK to temporary storage (b/c eigen calc overwrites inputs)
-  MMtmp = gsl_matrix_alloc((size_t)N, (size_t)N);
-  KKtmp = gsl_matrix_alloc((size_t)N, (size_t)N);
+//   // copy MM and KK to temporary storage (b/c eigen calc overwrites inputs)
+//   MMtmp = gsl_matrix_alloc((size_t)N, (size_t)N);
+//   KKtmp = gsl_matrix_alloc((size_t)N, (size_t)N);
 
-  gsl_matrix_memcpy(MMtmp, &gslMM.matrix);
-  gsl_matrix_memcpy(KKtmp, &gslKK.matrix);
+//   gsl_matrix_memcpy(MMtmp, &gslMM.matrix);
+//   gsl_matrix_memcpy(KKtmp, &gslKK.matrix);
 
-  // set up and compute eigen-decomposition
-  gsl_eigen_gensymmv_workspace *eig_workspace = gsl_eigen_gensymmv_alloc(N);
-  int ierr = gsl_eigen_gensymmv(KKtmp, MMtmp, &gslLambda.vector, &gslRR.matrix, eig_workspace);
-  if( ierr != 0 ) return ierr;
+//   // set up and compute eigen-decomposition
+//   gsl_eigen_gensymmv_workspace *eig_workspace = gsl_eigen_gensymmv_alloc(N);
+//   int ierr = gsl_eigen_gensymmv(KKtmp, MMtmp, &gslLambda.vector, &gslRR.matrix, eig_workspace);
+//   if( ierr != 0 ) return ierr;
 
-  // invert RR
-  RRtmp = gsl_matrix_alloc((size_t)N, (size_t)N);
-  gsl_matrix_memcpy(RRtmp, &gslRR.matrix);
-  int s;
-  gsl_permutation * p = gsl_permutation_alloc(N);
-  gsl_linalg_LU_decomp(RRtmp, p, &s);
+//   // invert RR
+//   RRtmp = gsl_matrix_alloc((size_t)N, (size_t)N);
+//   gsl_matrix_memcpy(RRtmp, &gslRR.matrix);
+//   int s;
+//   gsl_permutation * p = gsl_permutation_alloc(N);
+//   gsl_linalg_LU_decomp(RRtmp, p, &s);
 
-  gsl_vector *b;
-  b = gsl_vector_alloc(N);
+//   gsl_vector *b;
+//   b = gsl_vector_alloc(N);
 
-  for( int ii=0; ii<N; ii++ ){
-    gsl_vector_view gsliRR = gsl_vector_view_array_with_stride(&(iRR[ii]), N, N);
-    gsl_vector_set_basis(b, ii);
+//   for( int ii=0; ii<N; ii++ ){
+//     gsl_vector_view gsliRR = gsl_vector_view_array_with_stride(&(iRR[ii]), N, N);
+//     gsl_vector_set_basis(b, ii);
 
-    ierr = gsl_linalg_LU_solve (RRtmp, p, b, &gsliRR.vector);
-    if( ierr != 0 ){
-      printf("Cannot solve system!\n"); fflush(stdout);
-      return -1;
-    }
-  }
+//     ierr = gsl_linalg_LU_solve (RRtmp, p, b, &gsliRR.vector);
+//     if( ierr != 0 ){
+//       printf("Cannot solve system!\n"); fflush(stdout);
+//       return -1;
+//     }
+//   }
 
-  // clean up
-  gsl_eigen_gensymmv_free(eig_workspace);
-  gsl_matrix_free(MMtmp);
-  gsl_matrix_free(KKtmp);
+//   // clean up
+//   gsl_eigen_gensymmv_free(eig_workspace);
+//   gsl_matrix_free(MMtmp);
+//   gsl_matrix_free(KKtmp);
 
-  return 0;
-}
+//   return 0;
+// }
 
 
-//-------------------------------------------------
-// intFactor = RR*exp(nu*t*diag(lambda))*iRR
-//
-int
-integratingFactor( const int N, const double *RR, const double *lambda, const double *iRR, 
-		   const double nu, const double time,
-		   double *intFactor)
-{
+// //-------------------------------------------------
+// // intFactor = RR*exp(nu*t*diag(lambda))*iRR
+// //
+// int
+// integratingFactor( const int N, const double *RR, const double *lambda, const double *iRR, 
+// 		   const double nu, const double time,
+// 		   double *intFactor)
+// {
 
-  gsl_matrix *mLambda, *tempMatrix;
-  gsl_matrix_const_view gslRR = gsl_matrix_const_view_array(RR, N, N);
-  gsl_matrix_const_view gsliRR = gsl_matrix_const_view_array(iRR, N, N);
-  gsl_matrix_view gslIntFactor = gsl_matrix_view_array(intFactor, N, N);
+//   gsl_matrix *mLambda, *tempMatrix;
+//   gsl_matrix_const_view gslRR = gsl_matrix_const_view_array(RR, N, N);
+//   gsl_matrix_const_view gsliRR = gsl_matrix_const_view_array(iRR, N, N);
+//   gsl_matrix_view gslIntFactor = gsl_matrix_view_array(intFactor, N, N);
 
-  tempMatrix = gsl_matrix_calloc(N,N);
+//   tempMatrix = gsl_matrix_calloc(N,N);
 
-  // allocate and initialize diagonal eigenvalue matrix
-  mLambda = gsl_matrix_calloc(N,N);
-  for( int ii=0; ii<N; ii++ ) gsl_matrix_set(mLambda, ii, ii, exp(nu*time*lambda[ii]));
+//   // allocate and initialize diagonal eigenvalue matrix
+//   mLambda = gsl_matrix_calloc(N,N);
+//   for( int ii=0; ii<N; ii++ ) gsl_matrix_set(mLambda, ii, ii, exp(nu*time*lambda[ii]));
 
-  // matrix multiply: intFactor = RR*mLambda*iRR
-  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, &gslRR.matrix, mLambda, 0.0, tempMatrix);
-  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, tempMatrix, &gsliRR.matrix, 0.0, &gslIntFactor.matrix);
+//   // matrix multiply: intFactor = RR*mLambda*iRR
+//   gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, &gslRR.matrix, mLambda, 0.0, tempMatrix);
+//   gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, tempMatrix, &gsliRR.matrix, 0.0, &gslIntFactor.matrix);
 
-  // clean up
-  gsl_matrix_free(mLambda);
-  gsl_matrix_free(tempMatrix);
+//   // clean up
+//   gsl_matrix_free(mLambda);
+//   gsl_matrix_free(tempMatrix);
 
-  return 0;
-}
+//   return 0;
+// }
 

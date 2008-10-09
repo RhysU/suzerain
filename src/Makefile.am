@@ -19,6 +19,10 @@ bin_PROGRAMS     += burgers
 burgers_SOURCES   = burgers.cc # solver.cc residual.cc legendrePoly.cc tools.cc
 burgers_LDADD     = libburgers.a $(BOOST_PROGRAM_OPTIONS_LIB)
 
+bin_PROGRAMS             += timeQuesoSolve
+timeQuesoSolve_SOURCES   = timeQuesoSolve.cc
+timeQuesoSolve_LDADD     = libburgers.a
+
 # Unit test executables
 check_PROGRAMS      += test_example
 test_example_SOURCES = test_example.cc
