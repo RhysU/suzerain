@@ -15,7 +15,8 @@
 // using burgulence model parameter kappa
 //
 int
-solveForStateAtXLocations(const double *xx, const int Nx, const double kappa, quadBasis *pQB, double *u)
+solveForStateAtXLocations(const double *xx, const int Nx, const double nu, const double kappa, 
+			  gsl_vector *Uic, quadBasis *pQB, double *u)
 {
 
   int ierr, Nmode = 100, nIter = 20;
@@ -25,11 +26,11 @@ solveForStateAtXLocations(const double *xx, const int Nx, const double kappa, qu
   // Set up problem data
   pBsteady->RABFlag = true;
   pBsteady->Nmode = Nmode;
-  pBsteady->nu = 1e-2;
+  pBsteady->nu = nu;
   pBsteady->kappa = kappa;
   pBsteady->UB[0] = 1.0;
   pBsteady->UB[1] = 0.0;
-  pBsteady->U = gsl_vector_calloc(pBsteady->Nmode);  // initial condtion for U is zero (i.e. state is linear)
+  pBsteady->U = Uic; //gsl_vector_calloc(pBsteady->Nmode);  // initial condtion for U is zero (i.e. state is linear)
   pBsteady->R = gsl_vector_calloc(pBsteady->Nmode);
 
   // Solve
@@ -49,7 +50,7 @@ solveForStateAtXLocations(const double *xx, const int Nx, const double kappa, qu
   }
 
   // Clean up memory
-  gsl_vector_free(pBsteady->U);
+  //gsl_vector_free(pBsteady->U);
   gsl_vector_free(pBsteady->R);
 
   return 0;

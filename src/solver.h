@@ -1,4 +1,5 @@
 #include "burgers.h"
+#include "tools.h"
 int steadyNewton(const int NiterMax, burgersSteady *pB);
 int steadyNewtonPreComputeBasis(const int NiterMax, burgersSteady *pB, quadBasis *pQB);
 int unsteadyRK4(burgersUnsteady *pB);

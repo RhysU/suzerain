@@ -37,11 +37,12 @@ int
 interiorResidual( const int N, const double nu, const double *U, const double *UB, quadBasis *pQB,
 		  const bool RABFlag, const double kappa, double *R, double *R_U )
 {
-  int ierr, Nquad;
+  int ierr, Nquad, tmpI;
   double *xq, *wq, *phi, *phi_xi;
 
   double u, u_x, F, F_u, F_u_x, nut, nut_u, nut_u_x;
   double nue = nu, nue_u = 0.0, nue_u_x = 0.0;
+  double tmpD= 0.0, tmpDu = 0.0, tmpDu_x = 0.0;
   quadBasis *pQBtmp;
 
   // if necessary, compute quad points, weights and basis fcns
@@ -109,6 +110,10 @@ interiorResidual( const int N, const double nu, const double *U, const double *U
     // Add to Jacobian integral (if requested)
     if( R_U != (double *)NULL ){
       for( int ii=0; ii<N; ii++ ){
+	tmpD = wq[iquad]*phi_xi[ii];
+	tmpDu = tmpD*F_u;
+	tmpDu_x = tmpD*F_u_x;
+	tmpI = N*ii;
 	for( int jj=0; jj<N; jj++ ){
 	  // no source
 	  R_U[N*ii+jj] -= wq[iquad]*phi_xi[ii]*(F_u*phi[jj] + F_u_x*phi_xi[jj]);
@@ -118,6 +123,8 @@ interiorResidual( const int N, const double nu, const double *U, const double *U
 
 	  // dissipation linear in x
 	  //R_U[N*ii+jj] -= wq[iquad]*phi_xi[ii]*(F_u*phi[jj] + F_u_x*phi_xi[jj]);
+	  //R_U[tmpI+jj] -= tmpD*(F_u*phi[jj] + F_u_x*phi_xi[jj]);
+	  //R_U[tmpI+jj] -= (tmpDu*phi[jj] + tmpDu_x*phi_xi[jj]);
 	}
       }
     }
