@@ -47,3 +47,20 @@ sed -n '\#/]m4_quote(m4_defn([gl_HEADER_NAME]))[#{
   AS_VAR_POPDEF([gl_absolute_header])dnl
 ])dnl
 ])# gl_ABSOLUTE_HEADER
+_SET(gl_absolute_header,
+[`(eval "$ac_cpp conftest.$ac_ext") 2>&AS_MESSAGE_LOG_FD |
+sed -n '\#/]m4_quote(m4_defn([gl_HEADER_NAME]))[#{
+	s#.*"\(.*/]m4_quote(m4_defn([gl_HEADER_NAME]))[\)".*#\1#
+	s#^/[^/]#//&#
+	p
+	q
+}'`])
+    fi
+    AS_VAR_POPDEF([ac_header_exists])dnl
+    ])dnl
+  AC_DEFINE_UNQUOTED(AS_TR_CPP([ABSOLUTE_]m4_quote(m4_defn([gl_HEADER_NAME]))),
+                     ["AS_VAR_GET(gl_absolute_header)"],
+                     [Define this to an absolute name of <]m4_quote(m4_defn([gl_HEADER_NAME]))[>.])
+  AS_VAR_POPDEF([gl_absolute_header])dnl
+])dnl
+])# gl_TRILINOS_ABSOLUTE_HEADER
