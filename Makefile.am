@@ -13,7 +13,7 @@ EXTRA_DIST= bootstrap
 
 # Tools in the auxillary directory
 AUX_DIST = build-aux/install-sh    \
-		   build-aux/mkinstalldirs \
+           build-aux/mkinstalldirs \
            build-aux/missing
 
 # Files to be deleted by 'make maintainer-clean'

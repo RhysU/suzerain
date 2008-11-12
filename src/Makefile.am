@@ -1,44 +1,20 @@
 ## Process this file with automake to produce Makefile.in
 
 AM_CPPFLAGS    = -I$(top_builddir)/lib -I$(top_srcdir)/lib
-AM_CPPFLAGS   += $(GSL_CFLAGS) $(BOOST_CPPFLAGS) $(MATIO_CFLAGS)
-AM_LDFLAGS     = $(GSL_LIBS)   $(BOOST_LDFLAGS)  $(MATIO_LIBS) 
+AM_CPPFLAGS   += $(GSL_CFLAGS) $(BOOST_CPPFLAGS)
+AM_LDFLAGS     = $(GSL_LIBS)   $(BOOST_LDFLAGS)
 bin_PROGRAMS   =
 check_PROGRAMS = 
 noinst_LIBRARIES = 
-
-# Libraries
-noinst_LIBRARIES += libburgers.a
-libburgers_a_SOURCES = quesoFunctions.cc solver.cc residual.cc legendrePoly.cc tools.cc
 
 # Progams
 bin_PROGRAMS        += helloworld
 helloworld_SOURCES   = helloworld.cc
 
-bin_PROGRAMS     += burgers
-burgers_SOURCES   = burgers.cc # solver.cc residual.cc legendrePoly.cc tools.cc
-burgers_LDADD     = libburgers.a $(BOOST_PROGRAM_OPTIONS_LIB)
-
-bin_PROGRAMS             += timeQuesoSolve
-timeQuesoSolve_SOURCES   = timeQuesoSolve.cc
-timeQuesoSolve_LDADD     = libburgers.a
-
 # Unit test executables
 check_PROGRAMS      += test_example
 test_example_SOURCES = test_example.cc
 test_example_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
-
-check_PROGRAMS            += legendrePoly_test
-legendrePoly_test_SOURCES  = legendrePoly_test.cc legendrePoly.cc
-legendrePoly_test_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
-
-check_PROGRAMS        += residual_test
-residual_test_SOURCES  = residual_test.cc residual.cc tools.cc legendrePoly.cc
-residual_test_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
-
-check_PROGRAMS      += solver_test
-solver_test_SOURCES  = solver_test.cc solver.cc residual.cc legendrePoly.cc tools.cc
-solver_test_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
 
 TESTS = $(check_PROGRAMS)
 

@@ -1,7 +1,7 @@
 dnl ------------------------------------------------
 dnl Package name and version number
 dnl ------------------------------------------------
-AC_INIT(burgers, [0.0.1], [rhys@ices.utexas.edu])
+AC_INIT(suzerain, [0.0.1], [rhys@ices.utexas.edu])
 
 dnl ------------------------------------------------
 dnl Initialization macros
@@ -37,11 +37,6 @@ dnl     export GSL_CBLAS_LIB="${BLAS_LIBS}"
 dnl     AC_SUBST(GSL_CBLAS_LIB)
 dnl ],AC_MSG_WARN([Will use gslcblas if it is present.  Try --with-blas=<lib>.]))
 AX_PATH_GSL(1.10,,AC_MSG_ERROR([Could not find required GSL version.]))
-PKG_CHECK_MODULES(MATIO, matio >= 1.3.3,[
-    AC_SUBST(MATIO_CFLAGS)
-    AC_SUBST(MATIO_LIBS)
-    AC_DEFINE(HAVE_MATIO,,[define if the matio library is present])
-])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
