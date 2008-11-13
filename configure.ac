@@ -32,10 +32,10 @@ dnl ------------------------------------------------
 dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG([C])
-dnl ACX_BLAS([
-dnl     export GSL_CBLAS_LIB="${BLAS_LIBS}"
-dnl     AC_SUBST(GSL_CBLAS_LIB)
-dnl ],AC_MSG_WARN([Will use gslcblas if it is present.  Try --with-blas=<lib>.]))
+ACX_BLAS([
+    export GSL_CBLAS_LIB="${BLAS_LIBS}"
+    AC_SUBST(GSL_CBLAS_LIB)
+],AC_MSG_WARN([Will use gslcblas if it is present.  Try --with-blas=<lib>.]))
 AX_PATH_GSL(1.10,,AC_MSG_ERROR([Could not find required GSL version.]))
 AC_CACHE_SAVE
 
@@ -43,6 +43,9 @@ dnl ------------------------------------------------
 dnl C++ library requirements
 dnl ------------------------------------------------
 AC_LANG([C++])
+PKG_CHECK_MODULES(LOG4CXX, liblog4cxx >= 0.10)
+AC_SUBST(LOG4CXX_CFLAGS)
+AC_SUBST(LOG4CXX_LIBS)
 AX_BOOST_BASE(1.34)
 AX_BOOST_UNIT_TEST_FRAMEWORK
 AX_BOOST_PROGRAM_OPTIONS

@@ -1,7 +1,9 @@
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
 
-int add( int i, int j ) { return i+j; }
+int add( int i, int j ) {
+    return i+j;
+}
 
 BOOST_AUTO_TEST_CASE( simple_test )
 {
