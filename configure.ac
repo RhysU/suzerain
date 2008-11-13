@@ -46,6 +46,7 @@ AC_LANG([C++])
 PKG_CHECK_MODULES(LOG4CXX, liblog4cxx >= 0.10)
 AC_SUBST(LOG4CXX_CFLAGS)
 AC_SUBST(LOG4CXX_LIBS)
+
 AX_BOOST_BASE(1.34)
 AX_BOOST_UNIT_TEST_FRAMEWORK
 AX_BOOST_PROGRAM_OPTIONS
@@ -62,6 +63,9 @@ AX_BOOST_PROGRAM_OPTIONS
 ## Potential future expansion
 # AX_TRILINOS_AMESOS
 # AX_TRILINOS_EPETRAEXT_HDF5
+
+AX_PATH_GSLWRAP(0.2,,AC_MSG_ERROR([Could not find required GSLwrap version.]))
+
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
