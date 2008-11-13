@@ -1,17 +1,17 @@
 ## Process this file with automake to produce Makefile.in
 
 AM_CPPFLAGS    = -I$(top_builddir)/lib -I$(top_srcdir)/lib
-AM_CPPFLAGS   += $(GSL_CFLAGS) $(GSLWRAP_CFLAGS) $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
-AM_LDFLAGS     = $(GSL_LIBS)   $(GSLWRAP_LIBS)   $(LOG4CXX_LIBS)   $(BOOST_LDFLAGS)
+AM_CPPFLAGS   += $(GSL_CFLAGS) $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
+AM_LDFLAGS     = $(GSL_LIBS)   $(LOG4CXX_LIBS)   $(BOOST_LDFLAGS)
 bin_PROGRAMS   =
 check_PROGRAMS = 
 
 # Progams
-bin_PROGRAMS        += helloworld
-helloworld_SOURCES   = helloworld.cc
+bin_PROGRAMS       += helloworld
+helloworld_SOURCES  = helloworld.cc
 
-bin_PROGRAMS              += test_gsl_bspline
-test_gsl_bspline_SOURCES   = test_gsl_bspline.cc
+bin_PROGRAMS             += test_gsl_bspline
+test_gsl_bspline_SOURCES  = test_gsl_bspline.cc
 
 # Unit test executables
 check_PROGRAMS      += test_example

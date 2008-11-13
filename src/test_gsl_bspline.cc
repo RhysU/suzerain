@@ -3,7 +3,6 @@
 #include <gsl/gsl_bspline.h>
 #include <boost/foreach.hpp>
 #include <log4cxx/logger.h>
-#include <gslwrap/vector_double.h>
 
 using namespace log4cxx;
 
@@ -19,19 +18,29 @@ main()
     gsl_bspline_workspace *bw = gsl_bspline_alloc(order, nbreak);
 
     gsl_bspline_knots_uniform(left_end, right_end, bw);
-    LOG4CXX_DEBUG(logger, "Knots:");
-
-    gsl_vector_fprintf(stdout, bw->knots, "\t%0.5f");
-
-//    gsl_vector *v = gsl_vector_alloc(gsl_bspline_ncoeffs(bw));
-    gsl::vector v(gsl_bspline_ncoeffs(bw));
-    BOOST_FOREACH(double eval_point, eval_points) {
-        gsl_bspline_eval(eval_point, v.gslobj(), bw);
-        LOG4CXX_DEBUG(logger, "Values at " << std::fixed << eval_point);
-//        gsl_vector_fprintf(stdout, v, "\t%0.5f");
+    if (logger->isDebugEnabled()) {
+        for (size_t i = 0; i < bw->knots->size; i++) {
+            LOG4CXX_DEBUG(logger,
+                "knot[" << i << "] at " << gsl_vector_get(bw->knots, i)
+            )
+        }
     }
 
-//    gsl_vector_free(v);
+    gsl_vector *v = gsl_vector_alloc(gsl_bspline_ncoeffs(bw));
+    BOOST_FOREACH(double eval_point, eval_points) {
+        gsl_bspline_eval(eval_point, v, bw);
+        if (logger->isDebugEnabled()) {
+            for (size_t i = 0; i < v->size; i++) {
+                LOG4CXX_DEBUG(logger,
+                    "At x = " << eval_point 
+                              << " basis[" << i << "] = " 
+                              << gsl_vector_get(v, i) 
+                )
+            }
+        }
+    }
+
+    gsl_vector_free(v);
     gsl_bspline_free(bw);
 
     return 0;
