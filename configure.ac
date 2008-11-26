@@ -2,6 +2,7 @@ dnl ------------------------------------------------
 dnl Package name and version number
 dnl ------------------------------------------------
 AC_INIT(suzerain, [0.0.1], [rhys@ices.utexas.edu])
+AC_REVISION([$Id$])
 
 dnl ------------------------------------------------
 dnl Initialization macros
@@ -63,9 +64,6 @@ AX_BOOST_PROGRAM_OPTIONS
 ## Potential future expansion
 # AX_TRILINOS_AMESOS
 # AX_TRILINOS_EPETRAEXT_HDF5
-
-AX_PATH_GSLWRAP(0.2,,AC_MSG_ERROR([Could not find required GSLwrap version.]))
-
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
