@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-TEXSOURCES = 
+TEXSOURCES = derivation.tex
 
 all-local: dvi-local pdf-local
 dvi-local: $(TEXSOURCES:.tex=.dvi)

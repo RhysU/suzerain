@@ -1,0 +1,247 @@
+\documentclass[letterpaper,11pt,nointlimits]{amsart}
+
+% Packages
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{cancel}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage{ifthen}
+\usepackage{lastpage}
+\usepackage{latexsym}
+\usepackage{mathtools}
+\usepackage{pstricks}
+\usepackage{setspace}
+\usepackage{txfonts}
+\usepackage{wrapfig}
+
+\mathtoolsset{showonlyrefs,showmanualtags}
+\allowdisplaybreaks[1]
+
+% Line Spacing
+\singlespacing
+
+% Set appropriate header/footer information on each page
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headheight}{2.0em}
+    \renewcommand{\headsep}{0.75em}
+    \renewcommand{\headrulewidth}{1.0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \lhead{
+        Suzerain model derivation
+    }
+    \rhead{
+        Page \thepage{} of \pageref{LastPage}
+    }
+}
+\pagestyle{plain}
+
+% Paragraph spacing
+\setlength{\parindent}{0em}
+\setlength{\parskip}{2.0ex plus 0.75ex minus 0.75ex}
+
+% Document-specific commands
+\newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
+\DeclareMathOperator{\trace}{tr}
+
+\begin{document}
+
+\section{Model derivation}
+
+Here we derive the mathematical model in use.  Special attention is paid
+to the origins of all convervation laws and constitutive relations employed.
+
+\subsection{Conservation Equations}
+
+\subsubsection{Reynolds Transport Theorem}
+
+Consider a time-varying control volume $\Omega$ with surface
+$\partial\Omega$ and unit outward normal $\hat{n}$.  For any 
+scalar, vector, or tensor field quantity
+$T$, Leibniz' theorem states
+\begin{align}
+  \label{eq:rtt}
+  \frac{d}{dt}\int_{\Omega(t)}T(x,t)\,dV
+  &=
+  \int_{\Omega}\frac{\partial}{\partial{}t}T\,dV
+  +
+  \int_{\partial\Omega} \hat{n}\cdot{}w T\,dA
+  =
+  \int_{\Omega}\frac{\partial}{\partial{}t}T+\nabla\cdot(wT)\,dV
+\end{align}
+where $w$ is the velocity of $\partial\Omega$.  When $\Omega$ follows
+a fixed set of fluid particles, $w$ becomes the fluid velocity $v$.
+
+\subsubsection{Mass Continuity} 
+Since mass $M=\int_{\Omega} \rho\,dV$
+and mass conservation requires $\frac{d}{dt}M=0$,
+\begin{align}
+  0 = \frac{d}{dt}M 
+  = \frac{d}{dt}\int_{\Omega} \rho\,dV
+  =
+  \int_{\Omega}\frac{\partial\rho}{\partial{}t}+\nabla\cdot(v\rho{})\,dV.
+\end{align}
+Because the result must hold for any control volume, we obtain
+\begin{align}
+  \label{eq:cons_mass}
+  \frac{\partial\rho}{\partial{}t}+\nabla\cdot(\rho{}v) &= 0
+  .
+\end{align}
+
+\subsubsection{Momentum Equation} 
+Separating total force into surface forces and an intrinsic body force
+\begin{align}
+  \sum{}F
+  &= 
+     \int_{\partial\Omega} f_\text{surface} \, dA 
+   + \int_{\Omega} f_\text{body} \, dV 
+  = 
+     \int_{\partial\Omega} \sigma \hat{n} \, dA 
+  +  \int_{\Omega} f_\text{body} \, dV 
+  =  \int_{\Omega} \nabla\cdot\sigma + f_\text{body} \, dV 
+\end{align}
+where $\sigma$ is the Cauchy stress tensor.  Examining
+momentum $I=\int_{\Omega} \rho{}v\,dV$ and its conservation
+$\frac{d}{dt}I=\sum{}F$,
+\begin{align}
+  \int_{\Omega}\frac{\partial{}\rho{}v}{\partial{}t}+\nabla\cdot(v\otimes{}\rho{}v)\,dV
+&= \int_{\Omega} \nabla\cdot\sigma + f_\text{body} \, dV 
+.
+\end{align}
+Because the control volume may be arbitrary, 
+\begin{align}
+\frac{\partial\rho{}v}{\partial{}t} + \nabla\cdot(v\otimes{}\rho{}v) 
+&= \nabla\cdot\sigma + f_\text{body}
+.
+\end{align}
+We further separate pressure $p$ and viscous contributions $\tau$ to
+the Cauchy stress tensor so that $\sigma = -p I + \tau$,
+\begin{align}
+\label{eq:cons_momentum}
+\frac{\partial\rho{}v}{\partial{}t} + \nabla\cdot(v\otimes{}\rho{}v) 
+&= -\nabla{}p + \nabla\cdot{}\tau + f_\text{body}
+.
+\end{align}
+
+\subsubsection{Energy Equation} 
+Lumping internal and kinetic energy into an intrinsic density $e$, 
+the energy $E$ is
+\begin{align}
+  E &= \int_{\Omega} \rho{}e \, dV 
+  .
+\end{align}
+Treating heat input $Q$ as a surface phenomenon described by an outward
+heat flux $q$, 
+\begin{align}
+  Q 
+  &= 
+  -\int_{\partial\Omega}\hat{n}\cdot{}q\,dA
+  =
+  -\int_{\Omega}\nabla\cdot{}q\,dV
+  .
+\end{align}
+Power input $P=F\cdot{}v$ accounts for surface stress work and body force work
+to give
+\begin{align}
+  P 
+  &= 
+    \int_{\partial\Omega} \sigma{}\hat{n} \cdot{} v \, dA 
+  + \int_{\Omega} f_\text{body} \cdot{} v \, dV 
+  = \int_{\Omega} \nabla\cdot(\sigma{v}) + f_\text{body} \cdot{} v + \, dV 
+  .
+\end{align}
+Demanding energy conservation $\frac{d}{dt}E=Q+P$,
+\begin{align}
+\int_{\Omega}\frac{\partial}{\partial{}t} \left( \rho{}e \right)
+  +
+  \nabla\cdot\left(v\rho{}e\right)
+\,dV
+&=
+  - \int_{\Omega}\nabla\cdot{}q\,dV
+  + \int_{\Omega} \nabla\cdot(\sigma{}v) + f_\text{body} \cdot{} v \, dV 
+  .
+\end{align}
+Again, since the control volume was arbitrary, 
+\begin{align}
+  \frac{\partial}{\partial{}t}\left(\rho{}e\right)
+  +
+  \nabla\cdot\left(v\rho{}e\right)
+&=
+  - \nabla\cdot{}q + \nabla\cdot(\sigma{}v) + f_\text{body} \cdot{} v 
+  .
+\end{align}
+After splitting $\sigma$'s pressure and viscous stress contributions we have
+\begin{align}
+  \label{eq:cons_energy}
+  \frac{\partial}{\partial{}t}\left(\rho{}e\right)
+  +
+  \nabla\cdot\left(v\rho{}e\right)
+&=
+  - \nabla\cdot{}q 
+  - \nabla\cdot{}(pv)
+  + \nabla\cdot{}(\tau{}v)
+  + f_\text{body} \cdot{} v 
+  .
+\end{align}
+
+\subsection{Constitutive relations}
+
+\subsubsection{Principle of material frame indifference}
+
+If we seek a constitutive law for the viscous
+stress tensor $\tau$ using only velocity information, the principle
+of material frame indifference implies that uniform translation (given by
+velocity $v$) and solid-body rotation (given by the skew-symmetric
+rotation tensor $\omega=\frac{1}{2}\left( \nabla{}v-\trans{\nabla{}v}
+\right)$) may not influence $\tau$.  Considering contributions only up
+to the gradient of velocity, extensional strain (dilatation) and shear
+strain effects may depend on only the symmetric rate-of-deformation
+tensor $\varepsilon=\frac{1}{2}\left( \nabla{}v+\trans{\nabla{}v}\right)$
+and its principal invariants.
+
+\subsubsection{Newtonian fluid}
+
+Assuming $\tau$ is isotropic and depends linearly upon $\varepsilon$,
+we can express it as
+\begin{align}
+\tau_{ij} 
+  &= c_{ijmn} \varepsilon_{mn}
+  \\
+  &= \left( A \delta_{ij} \delta_{mn} 
+          + B \delta_{im} \delta_{jn} 
+          + C \delta_{in} \delta_{jm}
+     \right) \varepsilon_{mn}
+  &
+  &\text{for some }A, B, C\in\mathbb{R}
+  \\
+  &= A \delta_{ij} \varepsilon_{mm} + B\varepsilon_{ij} + C\varepsilon_{ji}
+  \\
+  &= A \delta_{ij} \varepsilon_{mm} + \left( B+C \right)\varepsilon_{ji}
+  \\
+  &= 2 \mu \varepsilon_{ij} + \lambda\delta_{ij}\nabla\cdot{}v
+\end{align}
+where $\mu=\frac{1}{2}\left( B + C \right)$ is the viscosity
+and $\lambda=A$ is the second viscosity.
+Reverting to direct notation we have
+\begin{align}
+\tau 
+  &= 2 \mu \varepsilon + \lambda \left( \nabla\cdot{}v \right) I
+  \\
+\label{eq:taunewt}
+&=   \mu \left( \nabla{}v + \trans{\nabla{}v} \right) 
+   + \lambda \left( \nabla\cdot{}v \right) I
+\end{align}
+
+\subsubsection{Stokes hypothesis}
+
+We further assume $\lambda=-\frac{2}{3}\mu$ so that
+\begin{align}
+\tau &= \mu \left( 
+    \nabla{}v + \trans{\nabla{}v} - \frac{2}{3} (\nabla\cdot{}v) I
+  \right) 
+\end{align}
+
+\end{document}
