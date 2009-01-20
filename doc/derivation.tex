@@ -51,8 +51,9 @@
 
 \section{Model derivation}
 
-Here we derive the mathematical model in use.  Special attention is paid
-to the origins of all convervation laws and constitutive relations employed.
+Here we derive the mathematical model in use.  Special attention is
+paid to the origins of all conservation laws and constitutive relations
+employed.  The model will nondimensionalized after derivation is complete.
 
 \subsection{Conservation Equations}
 
@@ -189,22 +190,21 @@ After splitting $\sigma$'s pressure and viscous stress contributions we have
 
 \subsection{Constitutive relations}
 
-\subsubsection{Principle of material frame indifference}
-
-If we seek a constitutive law for the viscous
-stress tensor $\tau$ using only velocity information, the principle
-of material frame indifference implies that uniform translation (given by
-velocity $v$) and solid-body rotation (given by the skew-symmetric
-rotation tensor $\omega=\frac{1}{2}\left( \nabla{}v-\trans{\nabla{}v}
-\right)$) may not influence $\tau$.  Considering contributions only up
-to the gradient of velocity, extensional strain (dilatation) and shear
-strain effects may depend on only the symmetric rate-of-deformation
-tensor $\varepsilon=\frac{1}{2}\left( \nabla{}v+\trans{\nabla{}v}\right)$
-and its principal invariants.
-
 \subsubsection{Newtonian fluid}
 
-Assuming $\tau$ is isotropic and depends linearly upon $\varepsilon$,
+If we seek a constitutive law for the viscous stress tensor $\tau$
+using only velocity information, the principle of material frame
+indifference implies that uniform translation (given by velocity $v$)
+and solid-body rotation (given by the skew-symmetric rotation tensor
+$\omega=\frac{1}{2}\left( \nabla{}v-\trans{\nabla{}v} \right)$)
+may not influence $\tau$.  Considering contributions only up to the
+gradient of velocity, extensional strain (dilatation) and shear strain
+effects may depend on only the symmetric rate-of-deformation tensor
+$\varepsilon=\frac{1}{2}\left( \nabla{}v+\trans{\nabla{}v}\right)$
+and its principal invariants.
+
+Assuming $\tau$ is isotropic and depends linearly upon 
+only $\varepsilon$,
 we can express it as
 \begin{align}
 \tau_{ij} 
@@ -242,6 +242,52 @@ We further assume $\lambda=-\frac{2}{3}\mu$ so that
 \tau &= \mu \left( 
     \nabla{}v + \trans{\nabla{}v} - \frac{2}{3} (\nabla\cdot{}v) I
   \right) 
+\end{align}
+
+\subsubsection{Fourier's Equation}
+
+We neglect the transport of energy by molecular diffusion, chemical
+reactions, and radiative heat transfer.  We seek a relation between
+the heat flux $q$ and the temperature $T$.  The principle of 
+frame indifference implies we may only use the temperature gradient
+so that
+\begin{align}
+  \label{eq:fouriertensorlaw}
+  q &= \underline{\kappa} \cdot \nabla{} T
+\end{align}
+where $\underline{\kappa}$ is a thermal conductivity tensor.  
+Consistent with our assumption that $\tau$ is isotropic, we assume
+$\underline{\kappa}$ is isotropic to obtain 
+\begin{align}
+  \label{eq:fourierlaw}
+  q &= - \kappa \nabla{} T
+\end{align}
+where $\kappa$ is the scalar thermal conductivity.  We introduce the
+negative sign so that heat flows from hot to cold when $\kappa>0$.
+
+\subsubsection{Perfect Gas}
+
+We assume our fluid is a thermally and calorically perfect gas so that
+\begin{align}
+  \label{eq:perfectgas}
+  p &= \rho{} R T
+\end{align}
+where $R$ is the gas constant. The constant volume $c_{v}$ and constant
+pressure specific heat $c_{p}$ relationships follow:
+\begin{align}
+  \label{eq:perfectgasspecificheats}
+  c_{v} &= \frac{R}{\gamma - 1}
+  &
+  c_{p} &= \frac{\gamma{}R}{\gamma-1}
+  &
+  R &= c_{p} - c_{v}
+\end{align}
+The total internal and kinetic energy density is found with
+\begin{align}
+  \label{eq:perfectgastotalenergy}
+  e &= c_{v} T + \frac{v\cdot{}v}{2}
+     = \frac{RT}{\gamma-1} + \frac{v^{2}}{2}
+  .
 \end{align}
 
 \end{document}
