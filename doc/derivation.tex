@@ -55,9 +55,9 @@ Here we derive the mathematical model in use.  Special attention is
 paid to the origins of all conservation laws and constitutive relations
 employed.  The model will nondimensionalized after derivation is complete.
 
-\subsection{Conservation Equations}
+\subsection{Conservation equations}
 
-\subsubsection{Reynolds Transport Theorem}
+\subsubsection{Reynolds transport theorem}
 
 Consider a time-varying control volume $\Omega$ with surface
 $\partial\Omega$ and unit outward normal $\hat{n}$.  For any 
@@ -71,28 +71,28 @@ $T$, Leibniz' theorem states
   +
   \int_{\partial\Omega} \hat{n}\cdot{}w T\,dA
   =
-  \int_{\Omega}\frac{\partial}{\partial{}t}T+\nabla\cdot(wT)\,dV
+  \int_{\Omega}\frac{\partial}{\partial{}t}T+\nabla\cdot{}wT\,dV
 \end{align}
 where $w$ is the velocity of $\partial\Omega$.  When $\Omega$ follows
 a fixed set of fluid particles, $w$ becomes the fluid velocity $v$.
 
-\subsubsection{Mass Continuity} 
+\subsubsection{Mass continuity} 
 Since mass $M=\int_{\Omega} \rho\,dV$
 and mass conservation requires $\frac{d}{dt}M=0$,
 \begin{align}
   0 = \frac{d}{dt}M 
   = \frac{d}{dt}\int_{\Omega} \rho\,dV
   =
-  \int_{\Omega}\frac{\partial\rho}{\partial{}t}+\nabla\cdot(v\rho{})\,dV.
+  \int_{\Omega}\frac{\partial}{\partial{}t}\rho+\nabla\cdot{}v\rho{}\,dV.
 \end{align}
 Because the result must hold for any control volume, we obtain
 \begin{align}
   \label{eq:cons_mass}
-  \frac{\partial\rho}{\partial{}t}+\nabla\cdot(\rho{}v) &= 0
+  \frac{\partial}{\partial{}t}\rho+\nabla\cdot\rho{}v &= 0
   .
 \end{align}
 
-\subsubsection{Momentum Equation} 
+\subsubsection{Momentum equation} 
 Separating total force into surface forces and an intrinsic body force
 \begin{align}
   \sum{}F
@@ -108,13 +108,14 @@ where $\sigma$ is the Cauchy stress tensor.  Examining
 momentum $I=\int_{\Omega} \rho{}v\,dV$ and its conservation
 $\frac{d}{dt}I=\sum{}F$,
 \begin{align}
-  \int_{\Omega}\frac{\partial{}\rho{}v}{\partial{}t}+\nabla\cdot(v\otimes{}\rho{}v)\,dV
+    \int_{\Omega}\frac{\partial{}}{\partial{}t}\rho{}v
+  + \nabla\cdot(v\otimes{}\rho{}v)\,dV
 &= \int_{\Omega} \nabla\cdot\sigma + f_\text{body} \, dV 
 .
 \end{align}
 Because the control volume may be arbitrary, 
 \begin{align}
-\frac{\partial\rho{}v}{\partial{}t} + \nabla\cdot(v\otimes{}\rho{}v) 
+  \frac{\partial{}}{\partial{}t}\rho{}v + \nabla\cdot(v\otimes{}\rho{}v) 
 &= \nabla\cdot\sigma + f_\text{body}
 .
 \end{align}
@@ -122,12 +123,12 @@ We further separate pressure $p$ and viscous contributions $\tau$ to
 the Cauchy stress tensor so that $\sigma = -p I + \tau$,
 \begin{align}
 \label{eq:cons_momentum}
-\frac{\partial\rho{}v}{\partial{}t} + \nabla\cdot(v\otimes{}\rho{}v) 
+\frac{\partial{}}{\partial{}t}\rho{}v + \nabla\cdot(v\otimes{}\rho{}v) 
 &= -\nabla{}p + \nabla\cdot{}\tau + f_\text{body}
 .
 \end{align}
 
-\subsubsection{Energy Equation} 
+\subsubsection{Energy equation} 
 Lumping internal and kinetic energy into an intrinsic density $e$, 
 the energy $E$ is
 \begin{align}
@@ -151,44 +152,44 @@ to give
   &= 
     \int_{\partial\Omega} \sigma{}\hat{n} \cdot{} v \, dA 
   + \int_{\Omega} f_\text{body} \cdot{} v \, dV 
-  = \int_{\Omega} \nabla\cdot(\sigma{v}) + f_\text{body} \cdot{} v + \, dV 
+  = \int_{\Omega} \nabla\cdot{}\sigma{}v + f_\text{body} \cdot{} v \, dV 
   .
 \end{align}
 Demanding energy conservation $\frac{d}{dt}E=Q+P$,
 \begin{align}
-\int_{\Omega}\frac{\partial}{\partial{}t} \left( \rho{}e \right)
+  \int_{\Omega}\frac{\partial}{\partial{}t} \rho{}e
   +
-  \nabla\cdot\left(v\rho{}e\right)
-\,dV
+  \nabla\cdot{}v\rho{}e
+  \,dV
 &=
   - \int_{\Omega}\nabla\cdot{}q\,dV
-  + \int_{\Omega} \nabla\cdot(\sigma{}v) + f_\text{body} \cdot{} v \, dV 
+  + \int_{\Omega} \nabla\cdot\sigma{}v + f_\text{body} \cdot{} v \, dV 
   .
 \end{align}
 Again, since the control volume was arbitrary, 
 \begin{align}
-  \frac{\partial}{\partial{}t}\left(\rho{}e\right)
+  \frac{\partial}{\partial{}t} \rho{}e
   +
-  \nabla\cdot\left(v\rho{}e\right)
+  \nabla\cdot{}e\rho{}v
 &=
-  - \nabla\cdot{}q + \nabla\cdot(\sigma{}v) + f_\text{body} \cdot{} v 
+  - \nabla\cdot{}q + \nabla\cdot\sigma{}v + f_\text{body} \cdot{} v 
   .
 \end{align}
 After splitting $\sigma$'s pressure and viscous stress contributions we have
 \begin{align}
   \label{eq:cons_energy}
-  \frac{\partial}{\partial{}t}\left(\rho{}e\right)
+  \frac{\partial}{\partial{}t} \rho{}e
   +
-  \nabla\cdot\left(v\rho{}e\right)
+  \nabla\cdot{}e\rho{}v
 &=
   - \nabla\cdot{}q 
-  - \nabla\cdot{}(pv)
-  + \nabla\cdot{}(\tau{}v)
+  - \nabla\cdot{}pv
+  + \nabla\cdot{}\tau{}v
   + f_\text{body} \cdot{} v 
   .
 \end{align}
 
-\subsection{Constitutive relations}
+\subsection{Constitutive relations and other assumptions}
 
 \subsubsection{Newtonian fluid}
 
@@ -203,8 +204,7 @@ effects may depend on only the symmetric rate-of-deformation tensor
 $\varepsilon=\frac{1}{2}\left( \nabla{}v+\trans{\nabla{}v}\right)$
 and its principal invariants.
 
-Assuming $\tau$ is isotropic and depends linearly upon 
-only $\varepsilon$,
+Assuming $\tau$ is isotropic and depends linearly upon only $\varepsilon$,
 we can express it as
 \begin{align}
 \tau_{ij} 
@@ -237,14 +237,14 @@ Reverting to direct notation we have
 
 \subsubsection{Stokes hypothesis}
 
-We further assume $\lambda=-\frac{2}{3}\mu$ so that
+We assume $\lambda=-\frac{2}{3}\mu$ so that
 \begin{align}
 \tau &= \mu \left( 
     \nabla{}v + \trans{\nabla{}v} - \frac{2}{3} (\nabla\cdot{}v) I
   \right) 
 \end{align}
 
-\subsubsection{Fourier's Equation}
+\subsubsection{Fourier's equation}
 
 We neglect the transport of energy by molecular diffusion, chemical
 reactions, and radiative heat transfer.  We seek a relation between
@@ -265,7 +265,7 @@ $\underline{\kappa}$ is isotropic to obtain
 where $\kappa$ is the scalar thermal conductivity.  We introduce the
 negative sign so that heat flows from hot to cold when $\kappa>0$.
 
-\subsubsection{Perfect Gas}
+\subsubsection{Perfect gas}
 
 We assume our fluid is a thermally and calorically perfect gas so that
 \begin{align}
@@ -282,12 +282,19 @@ pressure specific heat $c_{p}$ relationships follow:
   &
   R &= c_{p} - c_{v}
 \end{align}
-The total internal and kinetic energy density is found with
+The total energy density (internal and kinetic) is found using
 \begin{align}
   \label{eq:perfectgastotalenergy}
   e &= c_{v} T + \frac{v\cdot{}v}{2}
-     = \frac{RT}{\gamma-1} + \frac{v^{2}}{2}
+     = \frac{RT}{\gamma-1} + \frac{v\cdot{}v}{2}
   .
 \end{align}
+
+\subsubsection{No body force}
+
+We set $f_{\text{body}} = 0$.
+
+
+
 
 \end{document}
