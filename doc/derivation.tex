@@ -74,7 +74,7 @@ $T$, Leibniz' theorem states
   \int_{\Omega}\frac{\partial}{\partial{}t}T+\nabla\cdot{}wT\,dV
 \end{align}
 where $w$ is the velocity of $\partial\Omega$.  When $\Omega$ follows
-a fixed set of fluid particles, $w$ becomes the fluid velocity $v$.
+a fixed set of fluid particles, $w$ becomes the fluid velocity $u$.
 
 \subsubsection{Mass continuity} 
 Since mass $M=\int_{\Omega} \rho\,dV$
@@ -83,12 +83,12 @@ and mass conservation requires $\frac{d}{dt}M=0$,
   0 = \frac{d}{dt}M 
   = \frac{d}{dt}\int_{\Omega} \rho\,dV
   =
-  \int_{\Omega}\frac{\partial}{\partial{}t}\rho+\nabla\cdot{}v\rho{}\,dV.
+  \int_{\Omega}\frac{\partial}{\partial{}t}\rho+\nabla\cdot{}u\rho{}\,dV.
 \end{align}
 Because the result must hold for any control volume, we obtain
 \begin{align}
   \label{eq:cons_mass}
-  \frac{\partial}{\partial{}t}\rho+\nabla\cdot\rho{}v &= 0
+  \frac{\partial}{\partial{}t}\rho+\nabla\cdot\rho{}u &= 0
   .
 \end{align}
 
@@ -105,17 +105,17 @@ Separating total force into surface forces and an intrinsic body force
   =  \int_{\Omega} \nabla\cdot\sigma + f_\text{body} \, dV 
 \end{align}
 where $\sigma$ is the Cauchy stress tensor.  Examining
-momentum $I=\int_{\Omega} \rho{}v\,dV$ and its conservation
+momentum $I=\int_{\Omega} \rho{}u\,dV$ and its conservation
 $\frac{d}{dt}I=\sum{}F$,
 \begin{align}
-    \int_{\Omega}\frac{\partial{}}{\partial{}t}\rho{}v
-  + \nabla\cdot(v\otimes{}\rho{}v)\,dV
+    \int_{\Omega}\frac{\partial{}}{\partial{}t}\rho{}u
+  + \nabla\cdot(u\otimes{}\rho{}u)\,dV
 &= \int_{\Omega} \nabla\cdot\sigma + f_\text{body} \, dV 
 .
 \end{align}
 Because the control volume may be arbitrary, 
 \begin{align}
-  \frac{\partial{}}{\partial{}t}\rho{}v + \nabla\cdot(v\otimes{}\rho{}v) 
+  \frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u) 
 &= \nabla\cdot\sigma + f_\text{body}
 .
 \end{align}
@@ -123,7 +123,7 @@ We further separate pressure $p$ and viscous contributions $\tau$ to
 the Cauchy stress tensor so that $\sigma = -p I + \tau$,
 \begin{align}
 \label{eq:cons_momentum}
-\frac{\partial{}}{\partial{}t}\rho{}v + \nabla\cdot(v\otimes{}\rho{}v) 
+\frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u) 
 &= -\nabla{}p + \nabla\cdot{}\tau + f_\text{body}
 .
 \end{align}
@@ -150,29 +150,29 @@ to give
 \begin{align}
   P 
   &= 
-    \int_{\partial\Omega} \sigma{}\hat{n} \cdot{} v \, dA 
-  + \int_{\Omega} f_\text{body} \cdot{} v \, dV 
-  = \int_{\Omega} \nabla\cdot{}\sigma{}v + f_\text{body} \cdot{} v \, dV 
+    \int_{\partial\Omega} \sigma{}\hat{n} \cdot{} u \, dA 
+  + \int_{\Omega} f_\text{body} \cdot{} u \, dV 
+  = \int_{\Omega} \nabla\cdot{}\sigma{}u + f_\text{body} \cdot{} u \, dV 
   .
 \end{align}
 Demanding energy conservation $\frac{d}{dt}E=Q+P$,
 \begin{align}
   \int_{\Omega}\frac{\partial}{\partial{}t} \rho{}e
   +
-  \nabla\cdot{}v\rho{}e
+  \nabla\cdot{}u\rho{}e
   \,dV
 &=
   - \int_{\Omega}\nabla\cdot{}q\,dV
-  + \int_{\Omega} \nabla\cdot\sigma{}v + f_\text{body} \cdot{} v \, dV 
+  + \int_{\Omega} \nabla\cdot\sigma{}u + f_\text{body} \cdot{} u \, dV 
   .
 \end{align}
 Again, since the control volume was arbitrary, 
 \begin{align}
   \frac{\partial}{\partial{}t} \rho{}e
   +
-  \nabla\cdot{}e\rho{}v
+  \nabla\cdot{}\rho{}eu
 &=
-  - \nabla\cdot{}q + \nabla\cdot\sigma{}v + f_\text{body} \cdot{} v 
+  - \nabla\cdot{}q + \nabla\cdot\sigma{}u + f_\text{body} \cdot{} u 
   .
 \end{align}
 After splitting $\sigma$'s pressure and viscous stress contributions we have
@@ -180,28 +180,60 @@ After splitting $\sigma$'s pressure and viscous stress contributions we have
   \label{eq:cons_energy}
   \frac{\partial}{\partial{}t} \rho{}e
   +
-  \nabla\cdot{}e\rho{}v
+  \nabla\cdot{}\rho{}eu
 &=
   - \nabla\cdot{}q 
-  - \nabla\cdot{}pv
-  + \nabla\cdot{}\tau{}v
-  + f_\text{body} \cdot{} v 
+  - \nabla\cdot{}pu
+  + \nabla\cdot{}\tau{}u
+  + f_\text{body} \cdot{} u 
   .
 \end{align}
 
 \subsection{Constitutive relations and other assumptions}
 
+\subsubsection{Perfect gas}
+
+We assume our fluid is a thermally and calorically perfect gas governed by
+\begin{align}
+  \label{eq:perfectgaseos}
+  p &= \rho{} R T
+\end{align}
+where $R$ is the gas constant. The constant volume $c_{v}$ specific heat,
+constant pressure specific heat $c_{p}$, and speed of sound $a$ relationships 
+follow:
+\begin{align}
+  \label{eq:perfectgasrelations}
+  \gamma &= \frac{c_{p}}{c_{v}}
+  &
+  c_{v} &= \frac{R}{\gamma - 1}
+  &
+  c_{p} &= \frac{\gamma{}R}{\gamma-1}
+  &
+  R &= c_{p} - c_{v}
+  &
+  a^{2} = \gamma{}RT
+\end{align}
+We assume $\gamma$ and therefore $c_{v}$ and $c_{p}$ are constant.
+The total (internal and kinetic) energy density is given by
+\begin{align}
+  \label{eq:perfectgastotalenergy}
+  e &= c_{v} T + \frac{u\cdot{}u}{2}
+     = \frac{RT}{\gamma-1} + \frac{u\cdot{}u}{2}
+  .
+\end{align}
+See a gas dynamics reference, e.g. Liepmann \& Roshko 1957, for more details.
+
 \subsubsection{Newtonian fluid}
 
 If we seek a constitutive law for the viscous stress tensor $\tau$
 using only velocity information, the principle of material frame
-indifference implies that uniform translation (given by velocity $v$)
+indifference implies that uniform translation (given by velocity $u$)
 and solid-body rotation (given by the skew-symmetric rotation tensor
-$\omega=\frac{1}{2}\left( \nabla{}v-\trans{\nabla{}v} \right)$)
+$\omega=\frac{1}{2}\left( \nabla{}u-\trans{\nabla{}u} \right)$)
 may not influence $\tau$.  Considering contributions only up to the
 gradient of velocity, extensional strain (dilatation) and shear strain
 effects may depend on only the symmetric rate-of-deformation tensor
-$\varepsilon=\frac{1}{2}\left( \nabla{}v+\trans{\nabla{}v}\right)$
+$\varepsilon=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u}\right)$
 and its principal invariants.
 
 Assuming $\tau$ is isotropic and depends linearly upon only $\varepsilon$,
@@ -221,18 +253,18 @@ we can express it as
   \\
   &= A \delta_{ij} \varepsilon_{mm} + \left( B+C \right)\varepsilon_{ji}
   \\
-  &= 2 \mu \varepsilon_{ij} + \lambda\delta_{ij}\nabla\cdot{}v
+  &= 2 \mu \varepsilon_{ij} + \lambda\delta_{ij}\nabla\cdot{}u
 \end{align}
 where $\mu=\frac{1}{2}\left( B + C \right)$ is the viscosity
 and $\lambda=A$ is the second viscosity.
 Reverting to direct notation we have
 \begin{align}
 \tau 
-  &= 2 \mu \varepsilon + \lambda \left( \nabla\cdot{}v \right) I
+  &= 2 \mu \varepsilon + \lambda \left( \nabla\cdot{}u \right) I
   \\
 \label{eq:taunewt}
-&=   \mu \left( \nabla{}v + \trans{\nabla{}v} \right) 
-   + \lambda \left( \nabla\cdot{}v \right) I
+&=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right) 
+   + \lambda \left( \nabla\cdot{}u \right) I
 \end{align}
 
 \subsubsection{Stokes hypothesis}
@@ -240,9 +272,20 @@ Reverting to direct notation we have
 We assume $\lambda=-\frac{2}{3}\mu$ so that
 \begin{align}
 \tau &= \mu \left( 
-    \nabla{}v + \trans{\nabla{}v} - \frac{2}{3} (\nabla\cdot{}v) I
+    \nabla{}u + \trans{\nabla{}u} - \frac{2}{3} (\nabla\cdot{}u) I
   \right) 
 \end{align}
+
+\subsubsection{Power law viscosity}
+
+We assume that viscosity varies only with temperature according to
+\begin{align}
+  \label{eq:powerlawviscosity}
+  \frac{\mu}{\mu_{0}}=\left(\frac{T}{T_{0}}\right)^{\beta}
+\end{align}
+where $\mu_{0}$ and $T_{0}$ are suitable reference values.  This
+relationship models air well for temperatures up to several thousand
+degrees K.  See Svehla's 1962 NASA technical report R-132.
 
 \subsubsection{Fourier's equation}
 
@@ -265,36 +308,11 @@ $\underline{\kappa}$ is isotropic to obtain
 where $\kappa$ is the scalar thermal conductivity.  We introduce the
 negative sign so that heat flows from hot to cold when $\kappa>0$.
 
-\subsubsection{Perfect gas}
-
-We assume our fluid is a thermally and calorically perfect gas so that
-\begin{align}
-  \label{eq:perfectgas}
-  p &= \rho{} R T
-\end{align}
-where $R$ is the gas constant. The constant volume $c_{v}$ and constant
-pressure specific heat $c_{p}$ relationships follow:
-\begin{align}
-  \label{eq:perfectgasspecificheats}
-  c_{v} &= \frac{R}{\gamma - 1}
-  &
-  c_{p} &= \frac{\gamma{}R}{\gamma-1}
-  &
-  R &= c_{p} - c_{v}
-\end{align}
-The total energy density (internal and kinetic) is found using
-\begin{align}
-  \label{eq:perfectgastotalenergy}
-  e &= c_{v} T + \frac{v\cdot{}v}{2}
-     = \frac{RT}{\gamma-1} + \frac{v\cdot{}v}{2}
-  .
-\end{align}
-
 \subsubsection{No body force}
 
 We set $f_{\text{body}} = 0$.
 
-
+% TODO: Thermal conductivity coefficient, \kappa = \mu
 
 
 \end{document}
