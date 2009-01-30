@@ -14,6 +14,7 @@
 \usepackage{mathtools}
 \usepackage{pstricks}
 \usepackage{setspace}
+\usepackage{units}
 \usepackage{txfonts}
 \usepackage{wrapfig}
 
@@ -198,26 +199,26 @@ We assume our fluid is a thermally and calorically perfect gas governed by
   \label{eq:perfectgaseos}
   p &= \rho{} R T
 \end{align}
-where $R$ is the gas constant. The constant volume $c_{v}$ specific heat,
-constant pressure specific heat $c_{p}$, and speed of sound $a$ relationships 
-follow:
+where $R$ is the gas constant. The constant volume $C_{v}$ specific heat,
+constant pressure specific heat $C_{p}$, and acoustic velocity $a$ 
+relationships follow:
 \begin{align}
   \label{eq:perfectgasrelations}
-  \gamma &= \frac{c_{p}}{c_{v}}
+  \gamma &= \frac{C_{p}}{C_{v}}
   &
-  c_{v} &= \frac{R}{\gamma - 1}
+  C_{v} &= \frac{R}{\gamma - 1}
   &
-  c_{p} &= \frac{\gamma{}R}{\gamma-1}
+  C_{p} &= \frac{\gamma{}R}{\gamma-1}
   &
-  R &= c_{p} - c_{v}
+  R &= C_{p} - C_{v}
   &
   a^{2} = \gamma{}RT
 \end{align}
-We assume $\gamma$ and therefore $c_{v}$ and $c_{p}$ are constant.
-The total (internal and kinetic) energy density is given by
+We assume $\gamma$ and therefore $C_{v}$ and $C_{p}$ are constant.
+The total (internal and kinetic) energy density is
 \begin{align}
   \label{eq:perfectgastotalenergy}
-  e &= c_{v} T + \frac{u\cdot{}u}{2}
+  e &= C_{v} T + \frac{u\cdot{}u}{2}
      = \frac{RT}{\gamma-1} + \frac{u\cdot{}u}{2}
   .
 \end{align}
@@ -310,11 +311,38 @@ negative sign so that heat flows from hot to cold when $\kappa>0$.
 
 \subsubsection{Constant Prandtl number}
 
-We assume the Prandtl number $Pr = \frac{\mu{}c_{p}}{\kappa}$ is constant.
-This implies $\kappa=\mu$ when combined with our perfect gas assumptions.
+We assume the Prandtl number $Pr = \frac{\mu{}C_{p}}{\kappa}$ is constant.
 
 \subsubsection{No body force}
 
 We set $f_{\text{body}} = 0$.
+
+\subsection{Nondimensionalization}
+
+We choose a reference length $l_{0}$, temperature $T_{0}$,
+and density $\rho_{0}$.  These choices fix other dimensional
+reference quantities:
+\begin{align*}
+  a_{0} &= \sqrt{\gamma{}RT_{0}}
+  \\
+  t_{0} &= \frac{l_{0}}{a_{0}}
+  \\
+  \mu_{0} &= \rho_{0} a_{0} l_{0}
+  \\
+  \kappa_{0} &= \frac{\rho_{0} a_{0}^{3} l_{0}}{T_{0}}
+\end{align*}
+
+Using the above constitutive relations, these two choices fix our
+nondimensional, starred quantities according to:
+\begin{align}
+  T &= T_{*} T_{0}
+  \\
+  \rho &= \rho_{*} \rho_{0}
+  \\
+  p &= p_{*} p_{0} = p_{*} \rho_{0} R T_{0}
+  \\
+  u &= u_{*} a_{0} = u_{*} \sqrt{\gamma{}RT_{0}}
+  \label{eq:refquantities}
+\end{align}
 
 \end{document}
