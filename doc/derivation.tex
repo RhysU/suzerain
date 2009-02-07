@@ -279,8 +279,8 @@ Reverting to direct notation we have
 \subsubsection{Stokes hypothesis}
 
 We generally assume the second viscosity $\lambda=-\frac{2}{3}\mu$.
-However, because we anticipate $\lambda$ being useful, we will not
-combine $\mu$ and $\lambda$ terms in the model.
+However, because we anticipate separately maintaining $\lambda$ being
+useful, we will not combine $\mu$ and $\lambda$ terms in the model.
 
 \subsubsection{Power law viscosity}
 
@@ -336,17 +336,18 @@ simplify using the method of manufactured solutions for implementation
 verification.  We drop the subscript and subsequently denote this quantity
 as $f$.
 
-\subsection{Nondimensionalization}
-
 \subsubsection{Dimensional equations}
 
 By combining the conservation laws with our constitutive relations 
-and assumptions, we arrive at the dimensional equations
+and assumptions, we arrive at the dimensional model
+\begin{subequations}\label{eq:dimensionalmodel}
 \begin{align}
+  \label{eq:dim_continuity}
   \frac{\partial}{\partial{}t}\rho
 &= 
   - \nabla\cdot\rho{}u 
   \\
+  \label{eq:dim_momentum}
   \frac{\partial{}}{\partial{}t}\rho{}u 
 &= 
   - \frac{1}{2}\nabla\cdot(u\otimes{}\rho{}u + \rho{}u\otimes{}u) 
@@ -354,6 +355,7 @@ and assumptions, we arrive at the dimensional equations
   + \nabla\cdot{} \tau
   + f
   \\
+  \label{eq:dim_energy}
   \frac{\partial}{\partial{}t} \rho{}e
 &=
   - \nabla\cdot{}\rho{}eu
@@ -361,17 +363,109 @@ and assumptions, we arrive at the dimensional equations
   - \nabla\cdot{} p u
   + \nabla\cdot{}\tau{} u
   + f \cdot{} u 
-\intertext{where terms in the right hand side are computed according to}
+\intertext{where terms in the right hand side make use of}
+  \label{eq:dim_temperature}
   T &= \left( \frac{\gamma-1}{R} \right)\left( e - \frac{u\cdot{}u}{2} \right)
   \\
+  \label{eq:dim_pressure}
   p &= \rho{} R T
   \\
+  \label{eq:dim_viscosity}
   \mu &= \mu_{0} \left( \frac{T}{T_{0}} \right)^{\beta} 
   \\
+  \label{eq:dim_viscousstress}
   \tau &=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right) 
           + \lambda \left( \nabla\cdot{}u \right) I
   .
 \end{align}
+\end{subequations}
+
+\subsection{Nondimensionalization}
+
+\subsubsection{Reference independent nondimensionalization}
+
+First we will nondimensionalize the model without fixing our reference
+quantities or their interrelationships.  For each dimensional term in
+the dimensional model we introduce a nondimensional variable or operator
+denoted by a superscript star, e.g. $\nabla^{*}$.
+
+We introduce $t^{*}=\frac{t}{t_{0}}$ and $x^{*}=\frac{x}{x_{0}}$ for some
+reference $t_{0}$ and $x_{0}$.  This induces the following relationships:
+\begin{align}
+  \frac{\partial{}}{\partial{}t} 
+  &= 
+  \frac{\partial{}}{\partial{}t^{*}} 
+  \frac{\partial{}t^{*}}{\partial{}t} 
+  =
+  \frac{1}{t_{0}}\frac{\partial}{\partial{}t^{*}}
+  &
+  \frac{\partial{}}{\partial{}x} 
+  &= 
+  \frac{\partial{}}{\partial{}x^{*}} 
+  \frac{\partial{}x^{*}}{\partial{}x} 
+  =
+  \frac{1}{x_{0}}\frac{\partial}{\partial{}x^{*}}
+  &
+  \nabla
+  &=
+  \hat{e}_{i} \frac{\partial{}}{\partial{}x_{i}} 
+  =
+  \hat{e}_{i} \frac{1}{x_{0}} \frac{\partial}{\partial{}x^{*}_{i}}
+  =
+  \frac{1}{x_{0}} \nabla^{*}
+  \label{eq:nondim_derivops}
+\end{align}
+Introducing other nondimensional quantities (e.g. $\rho^{*} =
+\frac{\rho}{\rho_{0}}$) and using them in the dimensional model gives
+\begin{subequations}\label{eq:nondimnoref_model}
+\begin{align}
+  \label{eq:nondimnoref_continuity}
+  \frac{\rho_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}}\rho^{*}
+&= 
+- \frac{\rho_{0}u_{0}}{x_{0}} \nabla^{*}\cdot\rho^{*}u^{*}
+  \\
+  \label{eq:nondimnoref_momentum}
+  \frac{\rho_{0}u_{0}}{t_{0}} \frac{\partial{}}{\partial{}t^{*}}\rho^{*}u^{*}
+&= 
+  - \frac{1}{2}
+    \frac{\rho_{0}u_{0}^{2}}{x_{0}}
+    \nabla^{*}\cdot(u^{*}\otimes{}\rho^{*}u^{*} + \rho^{*}u^{*}\otimes{}u^{*}) 
+  - \frac{p_{0}}{x_{0}} \nabla^{*} p^{*}
+  + \frac{\tau_{0}}{x_{0}} \nabla^{*}\cdot{} \tau^{*}
+  + f_{0} f^{*}
+  \\
+  \label{eq:nondimnoref_energy}
+  \frac{\rho_{0}e_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}} \rho^{*}e^{*}
+&=
+  - \frac{\rho_{0}e_{0}u_{0}}{x_{0}} \nabla^{*} \cdot{}\rho^{*}e^{*}u^{*}
+  + \frac{\kappa_{0}T_{0}}{x_{0}^{2}} 
+    \nabla^{*}\cdot{} \mu^{*} \nabla^{*} T^{*}
+  - \frac{p_{0}u_{0}}{x_{0}} \nabla^{*}\cdot{} p^{*} u^{*}
+  + \frac{\tau_{0}u_{0}}{x_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
+  + f_{0}u_{0} f \cdot{} u 
+\intertext{where terms in the right hand side are determined by}
+  \label{eq:nondimnoref_temperature}
+  T^{*} &= \frac{1}{T_{0}} \left( \frac{\gamma-1}{R} \right)
+           \left( e_{0} e^{*} - u_{0}^{2} \frac{u^{*}\cdot{}u^{*}}{2} \right)
+  \\
+  \label{eq:nondimnoref_pressure}
+  p^{*} &= \frac{\rho_{0}RT_{0}}{p_{0}} \rho^{*} T^{*}
+  \\
+  \label{eq:nondimnoref_viscosity}
+  \mu^{*} &= \left( T^{*} \right)^{\beta} 
+  \\
+  \label{eq:nondimnoref_viscousstress}
+%  \tau &=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right) 
+%          + \lambda \left( \nabla\cdot{}u \right) I
+\tau^{*} &= \frac{\mu_{0}u_{0}}{x_{0} \tau_{0}} \left[ 
+      \mu^{*} \left( \nabla^{}u^{*} + \trans{\nabla^{*}u^{*}} \right) 
+      + \lambda^{*} \left( \nabla^{*}\cdot{}u^{*} \right) I
+    \right]
+  .
+\end{align}
+\end{subequations}
+
+
 
 
 
