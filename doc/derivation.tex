@@ -337,10 +337,13 @@ directions and across time.  Retaining body force will simplify using
 the method of manufactured solutions for implementation verification.
 We drop the subscript and subsequently denote this quantity as $f$.
 
+
+\subsection{Nondimensionalization}
+
 \subsubsection{Dimensional equations}
 
 By combining the conservation laws with our constitutive relations 
-and assumptions, we arrive at the dimensional model
+and assumptions, we arrive at the dimensional equations
 \begin{subequations}\label{eq:dimensionalmodel}
 \begin{align}
   \label{eq:dim_continuity}
@@ -381,9 +384,7 @@ and assumptions, we arrive at the dimensional model
 \end{align}
 \end{subequations}
 
-\subsection{Nondimensionalization}
-
-\subsubsection{Reference quantity introduction}
+\subsubsection{Introduction of nondimensional variables}
 
 We rewrite the dimensional equations using nondimensional variables
 combined with arbitrary reference quantities.  For each dimensional
@@ -445,7 +446,7 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   - \frac{p_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{} p^{*} u^{*}
   + \frac{\tau_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
   + \rho_{0}f_{0}u_{0} \rho^{*} f^{*} \cdot{} u^{*} 
-\intertext{where terms in the right hand side are determined by}
+\intertext{where terms in the right hand side are computed using}
   \label{eq:dimwithref_temperature}
   T^{*} &= \frac{1}{T_{0}} \left( \frac{\gamma-1}{R} \right)
            \left( e_{0} e^{*} - u_{0}^{2} \frac{u^{*}\cdot{}u^{*}}{2} \right)
@@ -468,13 +469,12 @@ Notice that $\lambda$ has been nondimensionalized using $\mu_{0}$.
 At this stage, we have many more reference quantities than the underlying
 dimensions warrant.
 
-\subsubsection{Reference quantity choices}
+\subsubsection{Reference quantity selections}
 
 We choose a reference length $l_{0}$, temperature $T_{0}$, and density
-$\rho_{0}$.  These choices fix other dimensional reference quantities:
+$\rho_{0}$.  These selections fix all other dimensional reference
+quantities:
 \begin{align*}
-  \mu_{0} & = \mu\left( T_{0} \right)
-  &
   a_{0} &= \sqrt{\gamma{}RT_{0}}
   &
   u_{0} &= a_{0}
@@ -486,63 +486,64 @@ $\rho_{0}$.  These choices fix other dimensional reference quantities:
   p_{0} &= \rho_{0} a_{0}^{2}
   &
   \tau_{0} &= \frac{\mu_{0}a_{0}}{l_{0}}
-% FIXME Working line
-%  \mu_{0} &= \rho_{0} a_{0} l_{0}
-%  \\
-%  \kappa_{0} &= \frac{\rho_{0} a_{0}^{3} l_{0}}{T_{0}}
+  &
+  f_{0} &= \frac{a_{0}^{2}}{l_{0}}
 \end{align*}
+Because we assume viscosity varies only with temperature,
+$\mu_{0}=\mu\!\left( T_{0} \right)$ is fixed by $T_{0}$.
+Because we assume a constant Prandtl number, $\kappa_{0}=\kappa\!\left(
+\mu\!\left( T_{0} \right) \right)$ is also fixed by $T_{0}$.
 
-These choices simplify our constitutive relationships:
+\subsubsection{Nondimensional equations}
+
+After employing our reference quantity relationships, multiplying the
+momentum equation by $\frac{l_{0}}{\rho_{0}a_{0}^{2}}$, and
+multipying the energy equation by FIXME
+we arrive at the following nondimensional equations:
+\begin{subequations}
 \begin{align}
+  \label{eq:nondim_continuity}
+  \frac{\partial}{\partial{}t^{*}}\rho^{*}
+&= 
+- \nabla^{*}\cdot\rho^{*}u^{*}
+  \\
+  \label{eq:nondim_momentum}
+  \frac{\partial{}}{\partial{}t^{*}}\rho^{*}u^{*}
+&= 
+  - \frac{1}{2}
+    \nabla^{*}\cdot(u^{*}\otimes{}\rho^{*}u^{*} + \rho^{*}u^{*}\otimes{}u^{*}) 
+  - \nabla^{*} p^{*}
+  + \frac{1}{Re} \nabla^{*}\cdot{} \tau^{*}
+  + \rho^{*}f^{*} 
+  \\
+  \label{eq:nondim_energy}
+  \frac{\rho_{0}e_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}} \rho^{*}e^{*}
+&=
+  - \frac{\rho_{0}e_{0}u_{0}}{l_{0}} \nabla^{*} \cdot{}\rho^{*}e^{*}u^{*}
+  + \frac{\kappa_{0}T_{0}}{l_{0}^{2}} 
+    \nabla^{*}\cdot{} \mu^{*} \nabla^{*} T^{*}
+  - \frac{p_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{} p^{*} u^{*}
+  + \frac{\tau_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
+  + \rho_{0}f_{0}u_{0} \rho^{*} f^{*} \cdot{} u^{*} 
+\intertext{
+where $Re=$FIXME.
+The nondimensional quantities appearing above are given as follows:
+}
+  \label{eq:nondim_temperature}
   T^{*} &= \gamma \left( \gamma-1 \right) 
            \left( e^{*} - \frac{u^{*}\cdot{}u^{*}}{2} \right)
   \\
+  \label{eq:nondim_pressure}
   p^{*} &= \frac{1}{\gamma} \rho^{*} T^{*}
   \\
+  \label{eq:nondim_viscosity}
   \mu^{*} &= \left( T^{*} \right)^{\beta} 
   \\
-  \tau^{*} &= \left[ 
+  \label{eq:nondim_viscousstress}
+  \tau^{*} &= 
       \mu^{*} \left( \nabla^{}u^{*} + \trans{\nabla^{*}u^{*}} \right) 
       + \lambda^{*} \left( \nabla^{*}\cdot{}u^{*} \right) I
-    \right]
 \end{align}
-
-%To eliminate the presence of leading dimensional constants we require
-%the following:
-%\begin{align}
-%  u_{0} &= \frac{x_{0}}{t_{0}}
-%  &
-%  \tau_{0} &= \frac{\mu_{0}}{t_{0}}
-%  &
-%  e_{0} &= u_{0}^{2}
-%  &
-%  p_{0} &= \rho_{0} u_{0}^{2}
-%  \label{eq:rq_relationships}
-%\end{align}
-
-These choices fix other dimensional
-reference quantities:
-\begin{align*}
-  a_{0} &= \sqrt{\gamma{}RT_{0}}
-  \\
-  t_{0} &= \frac{l_{0}}{a_{0}}
-  \\
-  \mu_{0} &= \rho_{0} a_{0} l_{0}
-  \\
-  \kappa_{0} &= \frac{\rho_{0} a_{0}^{3} l_{0}}{T_{0}}
-\end{align*}
-
-Using the above constitutive relations, these two choices fix our
-nondimensional, starred quantities according to:
-\begin{align}
-  T &= T_{*} T_{0}
-  \\
-  \rho &= \rho_{*} \rho_{0}
-  \\
-  p &= p_{*} p_{0} = p_{*} \rho_{0} R T_{0}
-  \\
-  u &= u_{*} a_{0} = u_{*} \sqrt{\gamma{}RT_{0}}
-  \label{eq:refquantities}
-\end{align}
+\end{subequations}
 
 \end{document}
