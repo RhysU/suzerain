@@ -1,4 +1,4 @@
-\documentclass[letterpaper,11pt,nointlimits]{amsart}
+\documentclass[letterpaper,11pt,nointlimits,reqno]{amsart}
 
 % Packages
 \usepackage{amsfonts}
@@ -389,8 +389,8 @@ combined with arbitrary reference quantities.  For each dimensional
 quantity in the dimensional model we introduce a nondimensional variable
 or operator denoted by a superscript star, e.g. $\nabla^{*}$.
 
-We introduce $t^{*}=\frac{t}{t_{0}}$ and $x^{*}=\frac{x}{x_{0}}$ for some
-reference $t_{0}$ and $x_{0}$.  This induces the following relationships:
+We introduce $t^{*}=\frac{t}{t_{0}}$ and $x^{*}=\frac{x}{l_{0}}$ for some
+reference $t_{0}$ and $l_{0}$.  This induces the following relationships:
 \begin{align}
   \frac{\partial{}}{\partial{}t} 
   &= 
@@ -404,45 +404,45 @@ reference $t_{0}$ and $x_{0}$.  This induces the following relationships:
   \frac{\partial{}}{\partial{}x^{*}} 
   \frac{\partial{}x^{*}}{\partial{}x} 
   =
-  \frac{1}{x_{0}}\frac{\partial}{\partial{}x^{*}}
+  \frac{1}{l_{0}}\frac{\partial}{\partial{}x^{*}}
   &
   \nabla
   &=
   \hat{e}_{i} \frac{\partial{}}{\partial{}x_{i}} 
   =
-  \hat{e}_{i} \frac{1}{x_{0}} \frac{\partial}{\partial{}x^{*}_{i}}
+  \hat{e}_{i} \frac{1}{l_{0}} \frac{\partial}{\partial{}x^{*}_{i}}
   =
-  \frac{1}{x_{0}} \nabla^{*}
+  \frac{1}{l_{0}} \nabla^{*}
   \label{eq:nondim_derivops}
 \end{align}
 
-We introducing other nondimensional quantities (e.g. $\rho^{*} =
+We introduce more nondimensional quantities (e.g. $\rho^{*} =
 \frac{\rho}{\rho_{0}}$) and use them to reexpress the model
 \begin{subequations}\label{eq:dimwithref_model}
 \begin{align}
   \label{eq:dimwithref_continuity}
   \frac{\rho_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}}\rho^{*}
 &= 
-- \frac{\rho_{0}u_{0}}{x_{0}} \nabla^{*}\cdot\rho^{*}u^{*}
+- \frac{\rho_{0}u_{0}}{l_{0}} \nabla^{*}\cdot\rho^{*}u^{*}
   \\
   \label{eq:dimwithref_momentum}
   \frac{\rho_{0}u_{0}}{t_{0}} \frac{\partial{}}{\partial{}t^{*}}\rho^{*}u^{*}
 &= 
   - \frac{1}{2}
-    \frac{\rho_{0}u_{0}^{2}}{x_{0}}
+    \frac{\rho_{0}u_{0}^{2}}{l_{0}}
     \nabla^{*}\cdot(u^{*}\otimes{}\rho^{*}u^{*} + \rho^{*}u^{*}\otimes{}u^{*}) 
-  - \frac{p_{0}}{x_{0}} \nabla^{*} p^{*}
-  + \frac{\tau_{0}}{x_{0}} \nabla^{*}\cdot{} \tau^{*}
+  - \frac{p_{0}}{l_{0}} \nabla^{*} p^{*}
+  + \frac{\tau_{0}}{l_{0}} \nabla^{*}\cdot{} \tau^{*}
   + f_{0} f^{*}
   \\
   \label{eq:dimwithref_energy}
   \frac{\rho_{0}e_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}} \rho^{*}e^{*}
 &=
-  - \frac{\rho_{0}e_{0}u_{0}}{x_{0}} \nabla^{*} \cdot{}\rho^{*}e^{*}u^{*}
-  + \frac{\kappa_{0}T_{0}}{x_{0}^{2}} 
+  - \frac{\rho_{0}e_{0}u_{0}}{l_{0}} \nabla^{*} \cdot{}\rho^{*}e^{*}u^{*}
+  + \frac{\kappa_{0}T_{0}}{l_{0}^{2}} 
     \nabla^{*}\cdot{} \mu^{*} \nabla^{*} T^{*}
-  - \frac{p_{0}u_{0}}{x_{0}} \nabla^{*}\cdot{} p^{*} u^{*}
-  + \frac{\tau_{0}u_{0}}{x_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
+  - \frac{p_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{} p^{*} u^{*}
+  + \frac{\tau_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
   + f_{0}u_{0} f \cdot{} u 
 \intertext{where terms in the right hand side are determined by}
   \label{eq:dimwithref_temperature}
@@ -456,25 +456,65 @@ We introducing other nondimensional quantities (e.g. $\rho^{*} =
   \mu^{*} &= \left( T^{*} \right)^{\beta} 
   \\
   \label{eq:dimwithref_viscousstress}
-\tau^{*} &= \frac{\mu_{0}u_{0}}{x_{0} \tau_{0}} \left[ 
+\tau^{*} &= \frac{\mu_{0}u_{0}}{l_{0} \tau_{0}} \left[ 
       \mu^{*} \left( \nabla^{}u^{*} + \trans{\nabla^{*}u^{*}} \right) 
       + \lambda^{*} \left( \nabla^{*}\cdot{}u^{*} \right) I
     \right]
   .
 \end{align}
 \end{subequations}
-
-
-
-
-
-
-
+At this stage, we have many more reference quantities than the underlying
+unit system warrants.  Notice that $\lambda$ has been nondimensionalized
+using $\mu_{0}$.
 
 \subsubsection{Reference quantity choices}
 
-We choose a reference length $l_{0}$, temperature $T_{0}$,
-and density $\rho_{0}$.  These choices fix other dimensional
+We choose a reference length $l_{0}$, temperature $T_{0}$, and density
+$\rho_{0}$.  These choices fix other dimensional reference quantities:
+\begin{align*}
+  a_{0} &= \sqrt{\gamma{}RT_{0}}
+  &
+  u_{0} &= a_{0}
+  &
+  e_{0} &= a_{0}^{2}
+  &
+  t_{0} &= \frac{l_{0}}{a_{0}}
+  &
+  p_{0} &= \rho_{0} a_{0}^{2}
+  &
+  \tau_{0} &= p_{0}
+  &
+  f_{0} &= \frac{p_{0}}{l_{0}} % FIXME suspect units
+% FIXME Working line
+%  \mu_{0} &= \rho_{0} a_{0} l_{0}
+%  \\
+%  \kappa_{0} &= \frac{\rho_{0} a_{0}^{3} l_{0}}{T_{0}}
+\end{align*}
+
+Then
+\begin{align}
+  T^{*} &= \gamma \left( \gamma-1 \right) 
+           \left( e^{*} - \frac{u^{*}\cdot{}u^{*}}{2} \right)
+  \\
+  p^{*} &= \frac{1}{\gamma} \rho^{*} T^{*}
+  \\
+  \mu^{*} &= \left( T^{*} \right)^{\beta} 
+\end{align}
+
+%To eliminate the presence of leading dimensional constants we require
+%the following:
+%\begin{align}
+%  u_{0} &= \frac{x_{0}}{t_{0}}
+%  &
+%  \tau_{0} &= \frac{\mu_{0}}{t_{0}}
+%  &
+%  e_{0} &= u_{0}^{2}
+%  &
+%  p_{0} &= \rho_{0} u_{0}^{2}
+%  \label{eq:rq_relationships}
+%\end{align}
+
+These choices fix other dimensional
 reference quantities:
 \begin{align*}
   a_{0} &= \sqrt{\gamma{}RT_{0}}
