@@ -464,15 +464,17 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   .
 \end{align}
 \end{subequations}
+Notice that $\lambda$ has been nondimensionalized using $\mu_{0}$.
 At this stage, we have many more reference quantities than the underlying
-unit system warrants.  Notice that $\lambda$ has been nondimensionalized
-using $\mu_{0}$.
+dimensions warrant.
 
 \subsubsection{Reference quantity choices}
 
 We choose a reference length $l_{0}$, temperature $T_{0}$, and density
 $\rho_{0}$.  These choices fix other dimensional reference quantities:
 \begin{align*}
+  \mu_{0} & = \mu\left( T_{0} \right)
+  &
   a_{0} &= \sqrt{\gamma{}RT_{0}}
   &
   u_{0} &= a_{0}
@@ -483,16 +485,14 @@ $\rho_{0}$.  These choices fix other dimensional reference quantities:
   &
   p_{0} &= \rho_{0} a_{0}^{2}
   &
-  \tau_{0} &= p_{0}
-  &
-  f_{0} &= \frac{p_{0}}{l_{0}} % FIXME suspect units
+  \tau_{0} &= \frac{\mu_{0}a_{0}}{l_{0}}
 % FIXME Working line
 %  \mu_{0} &= \rho_{0} a_{0} l_{0}
 %  \\
 %  \kappa_{0} &= \frac{\rho_{0} a_{0}^{3} l_{0}}{T_{0}}
 \end{align*}
 
-Then
+These choices simplify our constitutive relationships:
 \begin{align}
   T^{*} &= \gamma \left( \gamma-1 \right) 
            \left( e^{*} - \frac{u^{*}\cdot{}u^{*}}{2} \right)
@@ -500,6 +500,11 @@ Then
   p^{*} &= \frac{1}{\gamma} \rho^{*} T^{*}
   \\
   \mu^{*} &= \left( T^{*} \right)^{\beta} 
+  \\
+  \tau^{*} &= \left[ 
+      \mu^{*} \left( \nabla^{}u^{*} + \trans{\nabla^{*}u^{*}} \right) 
+      + \lambda^{*} \left( \nabla^{*}\cdot{}u^{*} \right) I
+    \right]
 \end{align}
 
 %To eliminate the presence of leading dimensional constants we require
