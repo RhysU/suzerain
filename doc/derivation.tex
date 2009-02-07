@@ -382,12 +382,12 @@ and assumptions, we arrive at the dimensional model
 
 \subsection{Nondimensionalization}
 
-\subsubsection{Reference independent nondimensionalization}
+\subsubsection{Reference quantity introduction}
 
-First we will nondimensionalize the model without fixing our reference
-quantities or their interrelationships.  For each dimensional term in
-the dimensional model we introduce a nondimensional variable or operator
-denoted by a superscript star, e.g. $\nabla^{*}$.
+We rewrite the dimensional equations using nondimensional variables
+combined with arbitrary reference quantities.  For each dimensional
+quantity in the dimensional model we introduce a nondimensional variable
+or operator denoted by a superscript star, e.g. $\nabla^{*}$.
 
 We introduce $t^{*}=\frac{t}{t_{0}}$ and $x^{*}=\frac{x}{x_{0}}$ for some
 reference $t_{0}$ and $x_{0}$.  This induces the following relationships:
@@ -415,16 +415,17 @@ reference $t_{0}$ and $x_{0}$.  This induces the following relationships:
   \frac{1}{x_{0}} \nabla^{*}
   \label{eq:nondim_derivops}
 \end{align}
-Introducing other nondimensional quantities (e.g. $\rho^{*} =
-\frac{\rho}{\rho_{0}}$) and using them in the dimensional model gives
-\begin{subequations}\label{eq:nondimnoref_model}
+
+We introducing other nondimensional quantities (e.g. $\rho^{*} =
+\frac{\rho}{\rho_{0}}$) and use them to reexpress the model
+\begin{subequations}\label{eq:dimwithref_model}
 \begin{align}
-  \label{eq:nondimnoref_continuity}
+  \label{eq:dimwithref_continuity}
   \frac{\rho_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}}\rho^{*}
 &= 
 - \frac{\rho_{0}u_{0}}{x_{0}} \nabla^{*}\cdot\rho^{*}u^{*}
   \\
-  \label{eq:nondimnoref_momentum}
+  \label{eq:dimwithref_momentum}
   \frac{\rho_{0}u_{0}}{t_{0}} \frac{\partial{}}{\partial{}t^{*}}\rho^{*}u^{*}
 &= 
   - \frac{1}{2}
@@ -434,7 +435,7 @@ Introducing other nondimensional quantities (e.g. $\rho^{*} =
   + \frac{\tau_{0}}{x_{0}} \nabla^{*}\cdot{} \tau^{*}
   + f_{0} f^{*}
   \\
-  \label{eq:nondimnoref_energy}
+  \label{eq:dimwithref_energy}
   \frac{\rho_{0}e_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}} \rho^{*}e^{*}
 &=
   - \frac{\rho_{0}e_{0}u_{0}}{x_{0}} \nabla^{*} \cdot{}\rho^{*}e^{*}u^{*}
@@ -444,19 +445,17 @@ Introducing other nondimensional quantities (e.g. $\rho^{*} =
   + \frac{\tau_{0}u_{0}}{x_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
   + f_{0}u_{0} f \cdot{} u 
 \intertext{where terms in the right hand side are determined by}
-  \label{eq:nondimnoref_temperature}
+  \label{eq:dimwithref_temperature}
   T^{*} &= \frac{1}{T_{0}} \left( \frac{\gamma-1}{R} \right)
            \left( e_{0} e^{*} - u_{0}^{2} \frac{u^{*}\cdot{}u^{*}}{2} \right)
   \\
-  \label{eq:nondimnoref_pressure}
+  \label{eq:dimwithref_pressure}
   p^{*} &= \frac{\rho_{0}RT_{0}}{p_{0}} \rho^{*} T^{*}
   \\
-  \label{eq:nondimnoref_viscosity}
+  \label{eq:dimwithref_viscosity}
   \mu^{*} &= \left( T^{*} \right)^{\beta} 
   \\
-  \label{eq:nondimnoref_viscousstress}
-%  \tau &=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right) 
-%          + \lambda \left( \nabla\cdot{}u \right) I
+  \label{eq:dimwithref_viscousstress}
 \tau^{*} &= \frac{\mu_{0}u_{0}}{x_{0} \tau_{0}} \left[ 
       \mu^{*} \left( \nabla^{}u^{*} + \trans{\nabla^{*}u^{*}} \right) 
       + \lambda^{*} \left( \nabla^{*}\cdot{}u^{*} \right) I
@@ -464,6 +463,8 @@ Introducing other nondimensional quantities (e.g. $\rho^{*} =
   .
 \end{align}
 \end{subequations}
+
+
 
 
 
