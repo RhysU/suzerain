@@ -19,7 +19,7 @@
 \usepackage{wrapfig}
 
 \mathtoolsset{showonlyrefs,showmanualtags}
-\allowdisplaybreaks[1]
+\allowdisplaybreaks[1] % Allow grouped equations to be split across pages
 
 % Line Spacing
 \singlespacing
@@ -56,7 +56,7 @@ Here we derive the mathematical model in use.  Special attention is
 paid to the origins of all conservation laws and constitutive relations
 employed.  The model will nondimensionalized after derivation is complete.
 
-\subsection{Conservation equations}
+\subsection{Conservation laws}
 
 \subsubsection{Reynolds transport theorem}
 
@@ -123,8 +123,16 @@ Because the control volume may be arbitrary,
 We further separate pressure $p$ and viscous contributions $\tau$ to
 the Cauchy stress tensor so that $\sigma = -p I + \tau$,
 \begin{align}
-\label{eq:cons_momentum}
 \frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u) 
+&= -\nabla{}p + \nabla\cdot{}\tau + f_\text{body}
+.
+\end{align}
+Lastly, observing that $u\otimes\rho{}u = \frac{1}{\rho}\rho{}u\otimes\rho{}u$
+is symmetric,
+\begin{align}
+\label{eq:cons_momentum}
+\frac{\partial{}}{\partial{}t}\rho{}u 
++ \frac{1}{2}\nabla\cdot(u\otimes{}\rho{}u + \rho{}u\otimes{}u) 
 &= -\nabla{}p + \nabla\cdot{}\tau + f_\text{body}
 .
 \end{align}
@@ -270,12 +278,9 @@ Reverting to direct notation we have
 
 \subsubsection{Stokes hypothesis}
 
-We assume $\lambda=-\frac{2}{3}\mu$ so that
-\begin{align}
-\tau &= \mu \left( 
-    \nabla{}u + \trans{\nabla{}u} - \frac{2}{3} (\nabla\cdot{}u) I
-  \right) 
-\end{align}
+We generally assume the second viscosity $\lambda=-\frac{2}{3}\mu$.
+However, because we anticipate $\lambda$ being useful, we will not
+combine $\mu$ and $\lambda$ terms in the model.
 
 \subsubsection{Power law viscosity}
 
@@ -312,12 +317,66 @@ negative sign so that heat flows from hot to cold when $\kappa>0$.
 \subsubsection{Constant Prandtl number}
 
 We assume the Prandtl number $Pr = \frac{\mu{}C_{p}}{\kappa}$ is constant.
+Because $C_{p}$ is constant the ratio $\frac{\mu}{\kappa}$ must be
+constant.  The viscosity and thermal conductivity must either grow at
+identical rates or they must grow according to an inverse relationship.
+The latter is not observed in practice for our class of fluids, and
+so we assume
+\begin{align}
+  \frac{\mu}{\mu_{0}} = \frac{\kappa}{\kappa_{0}}
+  .
+  \label{eq:mukappa}
+\end{align}
 
-\subsubsection{No body force}
+\subsubsection{Body force}
 
-We set $f_{\text{body}} = 0$.
+We retain the body force term $f_{\text{body}}$ and allow it to vary
+in all spatial directions and across time.  Retaining body force will
+simplify using the method of manufactured solutions for implementation
+verification.  We drop the subscript and subsequently denote this quantity
+as $f$.
 
 \subsection{Nondimensionalization}
+
+\subsubsection{Dimensional equations}
+
+By combining the conservation laws with our constitutive relations 
+and assumptions, we arrive at the dimensional equations
+\begin{align}
+  \frac{\partial}{\partial{}t}\rho
+&= 
+  - \nabla\cdot\rho{}u 
+  \\
+  \frac{\partial{}}{\partial{}t}\rho{}u 
+&= 
+  - \frac{1}{2}\nabla\cdot(u\otimes{}\rho{}u + \rho{}u\otimes{}u) 
+  -\nabla{} p
+  + \nabla\cdot{} \tau
+  + f
+  \\
+  \frac{\partial}{\partial{}t} \rho{}e
+&=
+  - \nabla\cdot{}\rho{}eu
+  + \nabla\cdot{} \frac{\kappa_{0}}{\mu_{0}} \mu \nabla{} T
+  - \nabla\cdot{} p u
+  + \nabla\cdot{}\tau{} u
+  + f \cdot{} u 
+\intertext{where terms in the right hand side are computed according to}
+  T &= \left( \frac{\gamma-1}{R} \right)\left( e - \frac{u\cdot{}u}{2} \right)
+  \\
+  p &= \rho{} R T
+  \\
+  \mu &= \mu_{0} \left( \frac{T}{T_{0}} \right)^{\beta} 
+  \\
+  \tau &=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right) 
+          + \lambda \left( \nabla\cdot{}u \right) I
+  .
+\end{align}
+
+
+
+
+\subsubsection{Reference quantity choices}
 
 We choose a reference length $l_{0}$, temperature $T_{0}$,
 and density $\rho_{0}$.  These choices fix other dimensional
