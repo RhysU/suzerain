@@ -459,7 +459,7 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   \\
   \label{eq:dimwithref_viscousstress}
 \tau^{*} &= \frac{\mu_{0}u_{0}}{l_{0} \tau_{0}} \left[ 
-      \mu^{*} \left( \nabla^{}u^{*} + \trans{\nabla^{*}u^{*}} \right) 
+      \mu^{*} \left( \nabla^{*}u^{*} + \trans{\nabla^{*}u^{*}} \right) 
       + \lambda^{*} \left( \nabla^{*}\cdot{}u^{*} \right) I
     \right]
   .
@@ -496,53 +496,55 @@ Because we assume a constant Prandtl number, $\kappa_{0}=\kappa\!\left(
 
 \subsubsection{Nondimensional equations}
 
-After employing our reference quantity relationships, multiplying the
-momentum equation by $\frac{l_{0}}{\rho_{0}a_{0}^{2}}$, and
-multipying the energy equation by FIXME
-we arrive at the following nondimensional equations:
+We employ the reference quantity relationships after multiplying the
+continuity, momentum, and energy equations by $\frac{t_{0}}{\rho_{0}}$,
+$\frac{l_{0}}{\rho_{0}a_{0}^{2}}$, and $\frac{t_{0}}{\rho_{0}e_{0}}$
+respectively.  Henceforth we suppress the superscript star notation
+because all terms are dimensionless.  We arrive at the following
+nondimensional equations:
 \begin{subequations}
 \begin{align}
   \label{eq:nondim_continuity}
-  \frac{\partial}{\partial{}t^{*}}\rho^{*}
+  \frac{\partial}{\partial{}t}\rho{}
 &= 
-- \nabla^{*}\cdot\rho^{*}u^{*}
+- \nabla\cdot\rho{}u
   \\
   \label{eq:nondim_momentum}
-  \frac{\partial{}}{\partial{}t^{*}}\rho^{*}u^{*}
+  \frac{\partial}{\partial{}t}\rho{}u
 &= 
   - \frac{1}{2}
-    \nabla^{*}\cdot(u^{*}\otimes{}\rho^{*}u^{*} + \rho^{*}u^{*}\otimes{}u^{*}) 
-  - \nabla^{*} p^{*}
-  + \frac{1}{Re} \nabla^{*}\cdot{} \tau^{*}
-  + \rho^{*}f^{*} 
+    \nabla\cdot(u\otimes\rho{}u + \rho{}u\otimes{}u) 
+  - \nabla{} p
+  + \frac{1}{Re} \nabla\cdot\tau
+  + \rho{}f 
   \\
   \label{eq:nondim_energy}
-  \frac{\rho_{0}e_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}} \rho^{*}e^{*}
+  \frac{\partial}{\partial{}t} \rho{}e
 &=
-  - \frac{\rho_{0}e_{0}u_{0}}{l_{0}} \nabla^{*} \cdot{}\rho^{*}e^{*}u^{*}
-  + \frac{\kappa_{0}T_{0}}{l_{0}^{2}} 
-    \nabla^{*}\cdot{} \mu^{*} \nabla^{*} T^{*}
-  - \frac{p_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{} p^{*} u^{*}
-  + \frac{\tau_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
-  + \rho_{0}f_{0}u_{0} \rho^{*} f^{*} \cdot{} u^{*} 
+  - \nabla\cdot\rho{}eu
+  + \frac{1}{Re\,Pr\,\left( \gamma - 1 \right)}
+    \nabla\cdot\mu\nabla{} T
+  - \nabla\cdot{} p u
+  + \frac{1}{Re} \nabla\cdot\tau{} u
+  + \rho{} f \cdot{} u
 \intertext{
-where $Re=$FIXME.
-The nondimensional quantities appearing above are given as follows:
+where $Re=\frac{\rho_{0}u_{0}l_{0}}{\mu_{0}}$ and
+$Pr=\frac{\mu_{0}C_{p}}{\kappa_{0}}$.  The nondimensional quantities
+appearing above are given by:
 }
   \label{eq:nondim_temperature}
-  T^{*} &= \gamma \left( \gamma-1 \right) 
-           \left( e^{*} - \frac{u^{*}\cdot{}u^{*}}{2} \right)
+  T &= \gamma \left( \gamma-1 \right) 
+       \left( e - \frac{u\cdot{}u}{2} \right)
   \\
   \label{eq:nondim_pressure}
-  p^{*} &= \frac{1}{\gamma} \rho^{*} T^{*}
+  p &= \frac{1}{\gamma} \rho{} T
   \\
   \label{eq:nondim_viscosity}
-  \mu^{*} &= \left( T^{*} \right)^{\beta} 
+  \mu &= T^{\beta} 
   \\
   \label{eq:nondim_viscousstress}
-  \tau^{*} &= 
-      \mu^{*} \left( \nabla^{}u^{*} + \trans{\nabla^{*}u^{*}} \right) 
-      + \lambda^{*} \left( \nabla^{*}\cdot{}u^{*} \right) I
+  \tau &=  \mu\left(\nabla{}u+\trans{\nabla{}u}\right) 
+         + \lambda\left(\nabla\cdot{}u\right) I
 \end{align}
 \end{subequations}
 
