@@ -94,17 +94,16 @@ Because the result must hold for any control volume, we obtain
 \end{align}
 
 \subsubsection{Momentum equation} 
-Separating total force into surface forces and an intrinsic body force
-density
+Separating total force into surface forces and a body force density
 \begin{align}
   \sum{}F
   &= 
-     \int_{\partial\Omega} f_\text{surface} \, dA 
-   + \int_{\Omega} \rho{}f_\text{body} \, dV 
+     \int_{\partial\Omega} f_s \, dA 
+   + \int_{\Omega} \rho{}f_b \, dV 
   = 
      \int_{\partial\Omega} \sigma \hat{n} \, dA 
-  +  \int_{\Omega} \rho{}f_\text{body} \, dV 
-  =  \int_{\Omega} \nabla\cdot\sigma + \rho{} f_\text{body} \, dV 
+  +  \int_{\Omega} \rho{}f_b \, dV 
+  =  \int_{\Omega} \nabla\cdot\sigma + \rho{} f_b \, dV 
 \end{align}
 where $\sigma$ is the Cauchy stress tensor.  Examining
 momentum $I=\int_{\Omega} \rho{}u\,dV$ and its conservation
@@ -112,20 +111,20 @@ $\frac{d}{dt}I=\sum{}F$,
 \begin{align}
     \int_{\Omega}\frac{\partial{}}{\partial{}t}\rho{}u
   + \nabla\cdot(u\otimes{}\rho{}u)\,dV
-&= \int_{\Omega} \nabla\cdot\sigma + \rho{} f_\text{body} \, dV 
+&= \int_{\Omega} \nabla\cdot\sigma + \rho{} f_b \, dV 
 .
 \end{align}
 Because the control volume may be arbitrary, 
 \begin{align}
   \frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u) 
-&= \nabla\cdot\sigma + \rho{} f_\text{body}
+&= \nabla\cdot\sigma + \rho{} f_b
 .
 \end{align}
 We further separate pressure $p$ and viscous contributions $\tau$ to
 the Cauchy stress tensor so that $\sigma = -p I + \tau$,
 \begin{align}
 \frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u) 
-&= -\nabla{}p + \nabla\cdot{}\tau + \rho{} f_\text{body}
+&= -\nabla{}p + \nabla\cdot{}\tau + \rho{} f_b
 .
 \end{align}
 Lastly, observing that $u\otimes\rho{}u = \frac{1}{\rho}\rho{}u\otimes\rho{}u$
@@ -134,7 +133,7 @@ is symmetric,
 \label{eq:cons_momentum}
 \frac{\partial{}}{\partial{}t}\rho{}u 
 + \frac{1}{2}\nabla\cdot(u\otimes{}\rho{}u + \rho{}u\otimes{}u) 
-&= -\nabla{}p + \nabla\cdot{}\tau + \rho{} f_\text{body}
+&= -\nabla{}p + \nabla\cdot{}\tau + \rho{} f_b
 .
 \end{align}
 
@@ -145,24 +144,26 @@ the energy $E$ is
   E &= \int_{\Omega} \rho{}e \, dV 
   .
 \end{align}
-Treating heat input $Q$ as a surface phenomenon described by an outward
-heat flux $q$, 
+Treating heat input $Q$ as both a surface phenomenon described by an outward
+heat flux $q_{s}$ and as a volumetric phenomenon governed by a
+body heating density $q_{b}$, 
 \begin{align}
   Q 
   &= 
-  -\int_{\partial\Omega}\hat{n}\cdot{}q\,dA
+   \int_{\Omega}\rho{}q_{b}\,dV
+  -\int_{\partial\Omega}\hat{n}\cdot{}q_{s}\,dA
   =
-  -\int_{\Omega}\nabla\cdot{}q\,dV
+    \int_{\Omega}\rho{}q_{b} - \nabla\cdot{}q_{s}\,dV
   .
 \end{align}
-Power input $P=F\cdot{}v$ accounts for surface stress work and body force work
-to give
+Power input $P=F\cdot{}v$ accounts for surface stress work and body
+force work to give
 \begin{align}
   P 
   &= 
     \int_{\partial\Omega} \sigma{}\hat{n} \cdot{} u \, dA 
-  + \int_{\Omega} \rho{}f_\text{body} \cdot{} u \, dV 
-  = \int_{\Omega} \nabla\cdot{}\sigma{}u + \rho{}f_\text{body} \cdot{} u \, dV 
+  + \int_{\Omega} \rho{}f_b \cdot{} u \, dV 
+  = \int_{\Omega} \nabla\cdot{}\sigma{}u + \rho{}f_b \cdot{} u \, dV 
   .
 \end{align}
 Demanding energy conservation $\frac{d}{dt}E=Q+P$,
@@ -172,8 +173,8 @@ Demanding energy conservation $\frac{d}{dt}E=Q+P$,
   \nabla\cdot{}u\rho{}e
   \,dV
 &=
-  - \int_{\Omega}\nabla\cdot{}q\,dV
-  + \int_{\Omega} \nabla\cdot\sigma{}u + \rho{}f_\text{body} \cdot{} u \, dV 
+    \int_{\Omega}\rho{}q_{b} - \nabla\cdot{}q_{s}\,dV
+  + \int_{\Omega} \nabla\cdot\sigma{}u + \rho{}f_b \cdot{} u \, dV 
   .
 \end{align}
 Again, since the control volume was arbitrary, 
@@ -182,7 +183,10 @@ Again, since the control volume was arbitrary,
   +
   \nabla\cdot{}\rho{}eu
 &=
-  - \nabla\cdot{}q + \nabla\cdot\sigma{}u + \rho{}f_\text{body} \cdot{} u 
+  - \nabla\cdot{}q_{s} 
+  + \nabla\cdot\sigma{}u 
+  + \rho{}f_b \cdot{} u 
+  + \rho{}q_{b} 
   .
 \end{align}
 After splitting $\sigma$'s pressure and viscous stress contributions we have
@@ -192,10 +196,11 @@ After splitting $\sigma$'s pressure and viscous stress contributions we have
   +
   \nabla\cdot{}\rho{}eu
 &=
-  - \nabla\cdot{}q 
+  - \nabla\cdot{}q_{s}
   - \nabla\cdot{}pu
   + \nabla\cdot{}\tau{}u
-  + \rho{}f_\text{body} \cdot{} u 
+  + \rho{}f_b \cdot{} u 
+  + \rho{}q_{b}
   .
 \end{align}
 
@@ -296,21 +301,20 @@ degrees K.  See Svehla's 1962 NASA technical report R-132.
 
 \subsubsection{Fourier's equation}
 
-We neglect the transport of energy by molecular diffusion, chemical
-reactions, and radiative heat transfer.  We seek a relation between
-the heat flux $q$ and the temperature $T$.  The principle of 
-frame indifference implies we may only use the temperature gradient
-so that
+We neglect the transport of energy by molecular diffusion and radiative
+heat transfer.  We seek a relation between the surface heat flux $q_{s}$
+and the temperature $T$.  The principle of frame indifference implies
+we may only use the temperature gradient so that
 \begin{align}
   \label{eq:fouriertensorlaw}
-  q &= \underline{\kappa} \cdot \nabla{} T
+  q_{s} &= \underline{\kappa} \cdot \nabla{} T
 \end{align}
 where $\underline{\kappa}$ is a thermal conductivity tensor.  
 Consistent with our assumption that $\tau$ is isotropic, we assume
 $\underline{\kappa}$ is isotropic to obtain 
 \begin{align}
   \label{eq:fourierlaw}
-  q &= - \kappa \nabla{} T
+  q_{s} &= - \kappa \nabla{} T
 \end{align}
 where $\kappa$ is the scalar thermal conductivity.  We introduce the
 negative sign so that heat flows from hot to cold when $\kappa>0$.
@@ -329,14 +333,16 @@ so we assume
   \label{eq:mukappa}
 \end{align}
 
-\subsubsection{Body force}
+\subsubsection{Body force density}
 
-We generally assume the body force density $f_{\text{body}}=0$.  However,
-in the formulation, we allow the $f_{\text{body}}$ to vary in all spatial
+We generally assume $f_{b}=0$.  However,
+in the formulation, we allow the $f_{b}$ to vary in all spatial
 directions and across time.  Retaining body force will simplify using
 the method of manufactured solutions for implementation verification.
-We drop the subscript and subsequently denote this quantity as $f$.
 
+\subsubsection{Body heating density}
+
+We assume a space- and time-varying body heating density $q_{b}$.
 
 \subsection{Nondimensionalization}
 
@@ -357,7 +363,7 @@ and assumptions, we arrive at the dimensional equations
   - \frac{1}{2}\nabla\cdot(u\otimes{}\rho{}u + \rho{}u\otimes{}u) 
   -\nabla{} p
   + \nabla\cdot{} \tau
-  + \rho{}f
+  + \rho{}f_{b}
   \\
   \label{eq:dim_energy}
   \frac{\partial}{\partial{}t} \rho{}e
@@ -366,7 +372,8 @@ and assumptions, we arrive at the dimensional equations
   + \nabla\cdot{} \frac{\kappa_{0}}{\mu_{0}} \mu \nabla{} T
   - \nabla\cdot{} p u
   + \nabla\cdot{}\tau{} u
-  + \rho{}f \cdot{} u 
+  + \rho{}f_{b} \cdot{} u 
+  + \rho{}q_{b}
 \intertext{where terms in the right hand side make use of}
   \label{eq:dim_temperature}
   T &= \left( \frac{\gamma-1}{R} \right)\left( e - \frac{u\cdot{}u}{2} \right)
@@ -435,7 +442,7 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
     \nabla^{*}\cdot(u^{*}\otimes{}\rho^{*}u^{*} + \rho^{*}u^{*}\otimes{}u^{*}) 
   - \frac{p_{0}}{l_{0}} \nabla^{*} p^{*}
   + \frac{\tau_{0}}{l_{0}} \nabla^{*}\cdot{} \tau^{*}
-  + \rho_{0} f_{0} \rho^{*}f^{*} 
+  + \rho_{0} f_{0} \rho^{*}f_{b}^{*} 
   \\
   \label{eq:dimwithref_energy}
   \frac{\rho_{0}e_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}} \rho^{*}e^{*}
@@ -444,8 +451,10 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   + \frac{\kappa_{0}T_{0}}{l_{0}^{2}} 
     \nabla^{*}\cdot{} \mu^{*} \nabla^{*} T^{*}
   - \frac{p_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{} p^{*} u^{*}
-  + \frac{\tau_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
-  + \rho_{0}f_{0}u_{0} \rho^{*} f^{*} \cdot{} u^{*} 
+\notag\\
+&\quad{}+ \frac{\tau_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
+  + \rho_{0}f_{0}u_{0} \rho^{*} f_{b}^{*} \cdot{} u^{*} 
+  + \rho_{0}q_{0} \rho^{*} q_{b}^{*}
 \intertext{where terms in the right hand side are computed using}
   \label{eq:dimwithref_temperature}
   T^{*} &= \frac{1}{T_{0}} \left( \frac{\gamma-1}{R} \right)
@@ -488,6 +497,8 @@ quantities:
   \tau_{0} &= \frac{\mu_{0}a_{0}}{l_{0}}
   &
   f_{0} &= \frac{a_{0}^{2}}{l_{0}}
+  &
+  q_{0} &= \frac{a_{0}^{3}}{l_{0}}
 \end{align*}
 Because we assume viscosity varies only with temperature,
 $\mu_{0}=\mu\!\left( T_{0} \right)$ is fixed by $T_{0}$.
@@ -516,7 +527,7 @@ nondimensional equations:
     \nabla\cdot(u\otimes\rho{}u + \rho{}u\otimes{}u) 
   - \nabla{} p
   + \frac{1}{Re} \nabla\cdot\tau
-  + \rho{}f 
+  + \rho{}f_{b} 
   \\
   \label{eq:nondim_energy}
   \frac{\partial}{\partial{}t} \rho{}e
@@ -526,7 +537,8 @@ nondimensional equations:
     \nabla\cdot\mu\nabla{} T
   - \nabla\cdot{} p u
   + \frac{1}{Re} \nabla\cdot\tau{} u
-  + \rho{} f \cdot{} u
+  + \rho{} f_{b} \cdot{} u
+  + \rho{} q_{b}
 \intertext{
 where $Re=\frac{\rho_{0}u_{0}l_{0}}{\mu_{0}}$ and
 $Pr=\frac{\mu_{0}C_{p}}{\kappa_{0}}$.  The nondimensional quantities
