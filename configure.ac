@@ -23,6 +23,7 @@ AX_CHECK_ENABLE_DEBUG
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
+AC_PROG_SED
 AC_CACHE_SAVE
 
 dnl TODO Automatically add optimization if debugging disabled per AX_CC_MAXOPT
@@ -34,10 +35,12 @@ dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG([C])
 ACX_BLAS([
-    export GSL_CBLAS_LIB="${BLAS_LIBS}"
+    dnl Workaround for bogus FLIBS
+    FLIBS=`echo ${FLIBS} | ${SED} 's/-lgfortranbegin//'`
+    export GSL_CBLAS_LIB="${BLAS_LIBS} ${FLIBS}"
     AC_SUBST(GSL_CBLAS_LIB)
 ],AC_MSG_WARN([Will use gslcblas if it is present.  Try --with-blas=<lib>.]))
-AX_PATH_GSL(1.10,,AC_MSG_ERROR([Could not find required GSL version.]))
+AX_PATH_GSL(1.12,,AC_MSG_ERROR([Could not find required GSL version.]))
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
@@ -91,6 +94,11 @@ AC_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
 AX_CFLAGS_WARN_ALL(CFLAGS)
 AX_CFLAGS_WARN_ALL(CXXFLAGS)
 AC_CACHE_SAVE
+
+dnl ------------------------------------------------
+dnl Prepare log4cxx properties in the build tree
+dnl ------------------------------------------------
+AC_CONFIG_LINKS([src/log4cxx.properties:src/log4cxx.properties.in])
 
 dnl ------------------------------------------------
 dnl Generate Makefiles
