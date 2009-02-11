@@ -41,6 +41,7 @@ ACX_BLAS([
     AC_SUBST(GSL_CBLAS_LIB)
 ],AC_MSG_WARN([Will use gslcblas if it is present.  Try --with-blas=<lib>.]))
 AX_PATH_GSL(1.12,,AC_MSG_ERROR([Could not find required GSL version.]))
+AX_PATH_P3DFFT(,AC_MSG_ERROR([Could not find the P3DFFT library.]))
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
