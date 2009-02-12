@@ -60,16 +60,6 @@ AX_BOOST_PROGRAM_OPTIONS
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
-dnl Checks for the literate programming toolchain
-dnl ------------------------------------------------
-## Potential future expansion
-# AX_ADD_AM_CWEB_LATEX
-# ACLTX_CLASS_ARTICLE(
-#     AC_MSG_ERROR([LaTeX article class not found.]))
-# ACLTX_PACKAGE(rcs,article,rcs_latex,,
-#     AC_MSG_ERROR([LaTeX package rcs not functional.]))
-
-dnl ------------------------------------------------
 dnl C++ compilation strictness and compatibility
 dnl ------------------------------------------------
 dnl Strictness must come after libraries to avoid breaking AC_CHECK_LIB
@@ -83,6 +73,15 @@ AC_CXX_CXXFLAGS_STD_LANG(AM_CXXFLAGS)
 AC_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
 AX_CFLAGS_WARN_ALL(CFLAGS)
 AX_CFLAGS_WARN_ALL(CXXFLAGS)
+AC_CACHE_SAVE
+
+dnl ------------------------------------------------
+dnl MPI toolchain checks
+dnl ------------------------------------------------
+AC_LANG([C])
+ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C, e.g. mpicc.))
+AC_LANG([C++])
+ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C++, e.g. mpicxx.))
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
