@@ -51,7 +51,7 @@ dnl ------------------------------------------------
 dnl C++ library requirements
 dnl ------------------------------------------------
 AC_LANG([C++])
-PKG_CHECK_MODULES(LOG4CXX, liblog4cxx >= 0.10)
+PKG_CHECK_MODULES(LOG4CXX, liblog4cxx >= 0.10 apr-1 >= 1.3.3 apr-util-1 >= 1.3.4)
 AC_SUBST(LOG4CXX_CFLAGS)
 AC_SUBST(LOG4CXX_LIBS)
 AX_BOOST_BASE(1.34)
