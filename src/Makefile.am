@@ -14,7 +14,7 @@ bin_PROGRAMS       += helloworld
 helloworld_SOURCES  = helloworld.cc
 
 bin_PROGRAMS        += driver_sine
-driver_sine_SOURCES  = driver_sine.cc p3dfft_cxx.h
+driver_sine_SOURCES  = driver_sine.cc p3dfft_d.h
 driver_sine_LDADD    = $(BOOST_PROGRAM_OPTIONS_LIB) $(P3DFFT_LIBS) $(FFTW3_LIBS)
 driver_sine_CPPFLAGS = $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS) 
 

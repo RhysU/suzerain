@@ -21,8 +21,8 @@
 
 !----------------------------------------------------------------------------
 */
-#ifndef __P3DFFT_H____
-#define __P3DFFT_H____
+#ifndef __P3DFFT_D_H____
+#define __P3DFFT_D_H____
 
 #include <stdlib.h>
 
@@ -68,8 +68,10 @@ extern void p3dfft_ftran_r2c(double *A,double *B);
 extern void p3dfft_btran_c2r(double *A,double *B);
 extern void p3dfft_clean();
 
+#ifdef __cplusplus
 extern void FORT_MOD_NAME(p3dfft_ftran_r2c)(double *A,double *B);
 extern void FORT_MOD_NAME(p3dfft_btran_c2r)(double *A,double *B);
+#endif
 
 __END_DECLS
 
@@ -103,4 +105,4 @@ void FORTNAME(abort)()
   abort();
 }
 
-#endif /* __P3DFFT_H____ */
+#endif /* __P3DFFT_D_H____ */

@@ -24,7 +24,7 @@
 ! If you have questions please contact Dmitry Pekurovsky, dmitry@sdsc.edu
 */
 
-#include "p3dfft_cxx.h"
+#include "p3dfft_d.h"
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
