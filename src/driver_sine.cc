@@ -24,7 +24,7 @@
 ! If you have questions please contact Dmitry Pekurovsky, dmitry@sdsc.edu
 */
 
-#include <p3dfft.h>
+#include "p3dfft_cxx.h"
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -108,9 +108,9 @@ int main(int argc,char **argv)
    conf = 2;
    get_dims(fstart,fend,fsize,conf);
 
-   sinx = malloc(sizeof(double)*nx);
-   siny = malloc(sizeof(double)*ny);
-   sinz = malloc(sizeof(double)*nz);
+   sinx = (double *) malloc(sizeof(double)*nx);
+   siny = (double *) malloc(sizeof(double)*ny);
+   sinz = (double *) malloc(sizeof(double)*nz);
 
    for(z=0;z < isize[2];z++)
      sinz[z] = sin((z+istart[2]-1)*twopi/nz);
