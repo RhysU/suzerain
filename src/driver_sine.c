@@ -24,20 +24,20 @@
 ! If you have questions please contact Dmitry Pekurovsky, dmitry@sdsc.edu
 */
 
-#include "p3dfft.h"
+#include <p3dfft.h>
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
-void print_all(float *,long int,int,long int);
-void mult_array(float *,long int,double);
+void print_all(double *,long int,int,long int);
+void mult_array(double *,long int,double);
 double FORTNAME(t1),FORTNAME(t2),FORTNAME(t3),FORTNAME(t4),FORTNAME(tp1);
 /* double t1,t2,t3,t4,tp1; */
 
 int main(int argc,char **argv)
 {
-   float *A,*B,*p,*C;
+   double *A,*B,*p,*C;
    int i,j,k,x,y,z,nx,ny,nz,proc_id,nproc,dims[2],ndim,nu;
    int istart[3],isize[3],iend[3];
    int fstart[3],fsize[3],fend[3];
@@ -120,9 +120,9 @@ int main(int argc,char **argv)
      sinx[x] = sin((x+istart[0]-1)*twopi/nx);
 
    /* Allocate and Initialize */
-   A = (float *) malloc(sizeof(float) * isize[0]*isize[1]*isize[2]);
-   B = (float *) malloc(sizeof(float) * fsize[0]*fsize[1]*fsize[2]*2);
-   C = (float *) malloc(sizeof(float) * isize[0]*isize[1]*isize[2]);
+   A = (double *) malloc(sizeof(double) * isize[0]*isize[1]*isize[2]);
+   B = (double *) malloc(sizeof(double) * fsize[0]*fsize[1]*fsize[2]*2);
+   C = (double *) malloc(sizeof(double) * isize[0]*isize[1]*isize[2]);
 
    p = A;
    for(z=0;z < isize[2];z++)
@@ -217,7 +217,7 @@ int main(int argc,char **argv)
 
 }
 
-void mult_array(float *A,long int nar,double f)
+void mult_array(double *A,long int nar,double f)
 {
   long int i;
 
@@ -225,7 +225,7 @@ void mult_array(float *A,long int nar,double f)
     A[i] *= f;
 }
 
-void print_all(float *A,long int nar,int proc_id,long int Nglob)
+void print_all(double *A,long int nar,int proc_id,long int Nglob)
 {
   int x,y,z,conf,Fstart[3],Fsize[3],Fend[3];
   long int i;
