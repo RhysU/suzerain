@@ -79,16 +79,18 @@ if test "${with_p3dfft}" != no ; then
         P3DFFT_CFLAGS="-I${p3dfft_include} ${P3DFFT_CFLAGS}"
     fi
 
-    ac_save_CFLAGS="$CFLAGS"
-    ac_save_LIBS="$LIBS"
+    ac_p3dfft_save_CFLAGS="$CFLAGS"
+    ac_p3dfft_save_LDFLAGS="$LDFLAGS"
+    ac_p3dfft_save_LIBS="$LIBS"
     CFLAGS="${P3DFFT_CFLAGS} ${CFLAGS}"
     LDFLAGS="${P3DFFT_LIBS} ${LDFLAGS}"
     AC_LANG_PUSH([C])
     AC_CHECK_HEADER([p3dfft.h],[found_header=yes],[found_header=no])
     AC_HAVE_LIBRARY([p3dfft],[found_library=yes],[found_library=no])
     AC_LANG_POP([C])
-    LIBS="$ac_save_LIBS"
-    CFLAGS="$ac_save_CFLAGS"
+    LDFLAGS="$ac_p3dfft_save_LDFLAGS"
+    CFLAGS="$ac_p3dfft_save_CFLAGS"
+    LIBS="$ac_p3dfft_save_LIBS"
 
     succeeded=no
     if test "$found_header" = yes; then
