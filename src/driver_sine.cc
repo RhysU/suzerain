@@ -1,51 +1,113 @@
-// $Id$
-/*****************************************************************************
- * This sample program illustrates the use of P3DFFT library for highly
- * scalable parallel 3D FFT.
+/*--------------------------------------------------------------------------
+ *--------------------------------------------------------------------------
+ *
+ * Copyright (C) 2008 The PECOS Development Team
+ *
+ * Please see http://pecos.ices.utexas.edu for more information.
+ *
+ * This file is part of Suzerain.
+ *
+ * Suzerain is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Suzerain is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with <APP/LIBRARY>.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *--------------------------------------------------------------------------
+ *
+ * driver_sine.cc: A P3DFFT test driver based on work by Dmitry Pekurovsky
  * 
- * This program initializes a 3D array with a 3D sine wave, then performs 3D
- * forward Fourier transform, then backward transform, and checks that the
- * results are correct, namely the same as in the start except for a
- * normalization factor. It can be used both as a correctness test and for
- * timing the library functions.
- * 
- * The program expects 'stdin' file in the working directory, with a single
- * line of numbers : Nx,Ny,Nz,Ndim,Nrep. Here Nx,Ny,Nz are box dimensions, Ndim
- * is the dimensionality of processor grid (1 or 2), and Nrep is the number of
- * repetitions. Optionally a file named 'dims' can also be provided to guide in
- * the choice of processor geometry in case of 2D decomposition. It should
- * contain two numbers in a line, with their product equal to the total number
- * of tasks. Otherwise processor grid geometry is chosen automatically.  For
- * better performance, experiment with this setting, varying iproc and jproc.
- * In many cases, minimizing iproc gives best results.  Setting it to 1
- * corresponds to one-dimensional decomposition.
- * 
- * If you have questions please contact Dmitry Pekurovsky, dmitry@sdsc.edu
- *****************************************************************************/
+ * $Id$
+ *--------------------------------------------------------------------------
+ *-------------------------------------------------------------------------- */
 
 #include "config.h"
 
-#include <boost/program_options.hpp>
-#include <boost/shared_ptr.hpp>
+#include <boost/foreach.hpp>
+//#include <boost/program_options.hpp>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
+#include <iostream>
+//#include <log4cxx/logger.h>
 #include <mpi.h>
 #include "p3dfft_d.h"
 #include <string>
 #include <vector>
 
-//std::shared_ptr<boost::program_options::options_description>
-//configuration_options()
-//{
-//}
+// TODO: Place into pecos::suzerain namespace
 
-void print_all(double *,long int,int,long int);
-void mult_array(double *,long int,double);
 double FORTNAME(t1),FORTNAME(t2),FORTNAME(t3),FORTNAME(t4),FORTNAME(tp1);
+
+// TODO: Add the missing function declarations?
+
+void mult_array(double *A,long int nar,double f)
+{
+  long int i;
+
+  for (i=0;i < nar;i++)
+    A[i] *= f;
+}
+
+void print_all(double *A,long int nar,int proc_id,long int Nglob)
+{
+  int x,y,z,conf,Fstart[3],Fsize[3],Fend[3];
+  long int i;
+
+  conf = 2;
+  get_dims(Fstart,Fend,Fsize,conf);
+  Fsize[0] *= 2;
+  Fstart[0] = 1 + (Fstart[0]-1)*2;
+  for (i=0;i < nar;i++)
+    if (fabs(A[i]) > Nglob *1.25e-4)
+      {
+        z = i/(Fsize[0]*Fsize[1]);
+        y = i/Fsize[0] - z*Fsize[1];
+        x = i-z*Fsize[0]*Fsize[1] - y*Fsize[0];
+        printf("(%d,%d,%d) %f\n",x+Fstart[0],y+Fstart[1],z+Fstart[2],A[i]);
+      }
+}
+
+// // Print usage information
+// template<typename charT, typename traits>
+// void print_help(std::basic_ostream<charT, traits>& out,
+//                 const std::string application_name, 
+//                 const boost::program_options::options_description options)
+// {
+//   using namespace std;
+// 
+//   out << endl
+//       << "Usage: " << application_name << " [options] [file]" << endl
+//       << endl
+// // TODO: Provide a legitimate description for the help message
+// //      << "Description: " << endl
+// //      << endl
+//       << options
+//       << endl;
+// }
+
+// Print version information
+template<typename charT, typename traits>
+void print_version(std::basic_ostream<charT, traits>& out)
+{
+  out << PACKAGE_STRING 
+      << " (built " __DATE__ " " __TIME__ ")" << std::endl;
+}
 
 int main(int argc,char **argv)
 {
+//  namespace po = boost::program_options;
+
+//  log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
+
   double *A,*B,*p,*C;
   int i,j,k,x,y,z,nx,ny,nz,proc_id,nproc,dims[2],ndim,nu;
   int istart[3],isize[3],iend[3];
@@ -58,62 +120,87 @@ int main(int argc,char **argv)
   double cdiff,ccdiff,ans;
   FILE *fp;
 
+  // Options accepted on command line and in configuration file
+//  po::options_description desc_config("Configuration options:");
+//  desc_config.add_options()
+//    ("nx",   boost::program_options::value<int>(), 
+//        "Domain grid size in X direction")
+//    ("ny",   boost::program_options::value<int>(), 
+//        "Domain grid size in Y direction")
+//    ("nz",   boost::program_options::value<int>(), 
+//        "Domain grid size in Z direction")
+//    // TODO Revisit treating as two distinct parameters
+//    ("ndim", boost::program_options::value<int>(), 
+//        "Dimensionality of processor grid. Must be either 1 or 2.")
+//    ("nrep", boost::program_options::value<int>(), 
+//        "Number of repetitions to perform for timing purposes")
+//    ("pg1", boost::program_options::value<int>(), 
+//        "Processor grid size in first direction.  Only valid for -ndim=2.")
+//    ("pg2", boost::program_options::value<int>(), 
+//        "Processor grid size in second direction.  Only valid for -ndim=2.")
+//    ;
+//
+//  // Options allowed only on command line
+//  po::options_description desc_clionly("Program information:");
+//  desc_clionly.add_options()
+//    ("help,h",    "show usage information")    
+//    ("version,v", "print version string")    
+//    ;
+//
+//  // Options allowed on command line and in configuration file
+//  // Not shown to the user
+//  po::options_description desc_hidden("Hidden options:");
+//  desc_hidden.add_options()
+//    ("input-file", po::value< std::vector<std::string> >(), "input file")
+//    ;
+//
+//  po::options_description opts_cli;
+//  opts_cli.add(desc_config).add(desc_hidden).add(desc_clionly);
+//
+//  po::options_description opts_file;
+//  opts_file.add(desc_config).add(desc_hidden);
+//
+//  po::options_description opts_visible;
+//  opts_visible.add(desc_config).add(desc_clionly);
+//
+//  po::positional_options_description opts_positional;
+//  opts_positional.add("input-file", -1);
+//
+//  //TODO: Only parse command line on processor zero?
+//  po::variables_map vm;
+//  store(po::command_line_parser(argc, argv).
+//    options(opts_cli).positional(opts_positional).run(), vm);
+//
+//  if (vm.count("help"))
+//    {
+//      print_help(std::cout, argv[0], opts_visible);
+//      exit(0); 
+//    }
+//
+//  if (vm.count("version"))
+//    {
+//      print_version(std::cout);
+//      exit(0); 
+//    }
+//
+//  if (vm.count("input-file"))
+//    {
+//      BOOST_FOREACH(std::string filename, 
+//                    vm["input-file"].as< std::vector<std::string> >())
+//        {
+////          LOG4CXX_DEBUG(logger, "Reading input file " << filename)
+//
+////          ifstream ifs( (vm["input-file"].as< string >()).c_str() );
+////          store(parse_config_file(ifs, config_file_options), vm);
+//        }
+//    }
+// 
+//  po::notify(vm);
+
+
   MPI_Init(&argc,&argv);
   MPI_Comm_size(MPI_COMM_WORLD,&nproc);
   MPI_Comm_rank(MPI_COMM_WORLD,&proc_id);
-
-  namespace po = boost::program_options;
-  // Options allowed on command line and in configuration file
-  po::options_description desc_config("Configuration options");
-  desc_config.add_options()
-    ("help", "show usage information")
-    ("nx",   boost::program_options::value<int>(), 
-        "Domain grid size in X direction")
-    ("ny",   boost::program_options::value<int>(), 
-        "Domain grid size in Y direction")
-    ("nz",   boost::program_options::value<int>(), 
-        "Domain grid size in Z direction")
-    // Revisit as two separate parameters
-    ("ndim", boost::program_options::value<int>(), 
-        "Dimensionality of processor grid. Must be either 1 or 2.")
-    ("ndim", boost::program_options::value<int>(), 
-        "Number of repetitions to perform for timing purposes")
-    ("pg1", boost::program_options::value<int>(), 
-        "Processor grid size in first direction.  Only valid for -ndim=2.")
-    ("pg2", boost::program_options::value<int>(), 
-        "Processor grid size in second direction.  Only valid for -ndim=2.")
-    ;
-
-  // Options allowed on command line and in configuration file
-  // Not shown to the user
-  po::options_description desc_hidden("Hidden options");
-  desc_hidden.add_options()
-    ("input-file", po::value< std::vector<std::string> >(), "input file")
-    ;
-
-  // Options allowed only on command line
-  po::options_description desc_clionly("Command line options");
-  desc_clionly.add_options()
-    ("help",      "produce help message")    
-    ("version,v", "print version string")    
-    ;
-
-  po::options_description opts_cli;
-  opts_cli.add(desc_config).add(desc_hidden).add(desc_clionly);
-
-  po::options_description opts_file;
-  opts_file.add(desc_config).add(desc_hidden);
-
-  po::options_description opts_visible("Allowed options");
-  opts_visible.add(desc_config).add(desc_clionly);
-
-  po::positional_options_description opts_positional;
-  opts_positional.add("input-file", -1);
-
-  po::variables_map vm;
-  store(po::command_line_parser(argc, argv).
-	options(opts_cli).positional(opts_positional).run(), vm);
-
 
   pi = atan(1.0)*4.0;
   twopi = 2.0*pi;
@@ -291,32 +378,3 @@ int main(int argc,char **argv)
   MPI_Finalize();
 
 }
-
-void mult_array(double *A,long int nar,double f)
-{
-  long int i;
-
-  for (i=0;i < nar;i++)
-    A[i] *= f;
-}
-
-void print_all(double *A,long int nar,int proc_id,long int Nglob)
-{
-  int x,y,z,conf,Fstart[3],Fsize[3],Fend[3];
-  long int i;
-
-  conf = 2;
-  get_dims(Fstart,Fend,Fsize,conf);
-  Fsize[0] *= 2;
-  Fstart[0] = 1 + (Fstart[0]-1)*2;
-  for (i=0;i < nar;i++)
-    if (fabs(A[i]) > Nglob *1.25e-4)
-      {
-        z = i/(Fsize[0]*Fsize[1]);
-        y = i/Fsize[0] - z*Fsize[1];
-        x = i-z*Fsize[0]*Fsize[1] - y*Fsize[0];
-        printf("(%d,%d,%d) %f\n",x+Fstart[0],y+Fstart[1],z+Fstart[2],A[i]);
-      }
-}
-
-

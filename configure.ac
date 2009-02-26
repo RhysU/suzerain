@@ -85,11 +85,6 @@ ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C++, e.g. mpicxx.
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
-dnl Prepare log4cxx properties in the build tree
-dnl ------------------------------------------------
-AC_CONFIG_LINKS([src/log4cxx.properties:src/log4cxx.properties.in])
-
-dnl ------------------------------------------------
 dnl Generate Makefiles
 dnl ------------------------------------------------
 AC_CONFIG_FILES([
