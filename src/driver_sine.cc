@@ -30,7 +30,9 @@
 
 #include "config.h"
 
+#include <algorithm>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 #include <cmath>
 #include <cstdio>
@@ -42,6 +44,8 @@
 #include "p3dfft_d.h"
 #include <string>
 #include <vector>
+
+#define ONLYPROC0(expr) { if (!procid) { expr ; } };
 
 // TODO: Place into pecos::suzerain namespace
 
@@ -57,7 +61,7 @@ void mult_array(double *A,long int nar,double f)
     A[i] *= f;
 }
 
-void print_all(double *A,long int nar,int proc_id,long int Nglob)
+void print_all(double *A,long int nar,int procid,long int Nglob)
 {
   int x,y,z,conf,Fstart[3],Fsize[3],Fend[3];
   long int i;
@@ -109,7 +113,7 @@ int main(int argc,char **argv)
   log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
   double *A,*B,*p,*C;
-  int i,j,k,x,y,z,nx,ny,nz,proc_id,nproc,dims[2],ndim,nu;
+  int i,j,k,x,y,z,nu;
   int istart[3],isize[3],iend[3];
   int fstart[3],fsize[3],fend[3];
   int iproc,jproc,ng[3],kmax,iex,conf,m,n;
@@ -118,7 +122,24 @@ int main(int argc,char **argv)
   double *sinx,*siny,*sinz,factor;
   double rtime1,rtime2,gt1,gt2,gt3,gt4,gtp1,gtcomm,tcomm;
   double cdiff,ccdiff,ans;
-  FILE *fp;
+
+  int nproc;        // Number of processors in MPI environment
+  int procid;       // This processor's global processor ID
+  int nx, ny, nz;   // Domain dimensions in x, y, and z directions 
+  int dims[2];      // Processor grid dimensions in 1st, 2nd directions
+
+  MPI_Init(&argc, &argv);                   // Initialize MPI on startup
+  atexit((void (*) ()) MPI_Finalize);       // Finalize down MPI at exit
+  MPI_Comm_size(MPI_COMM_WORLD, &nproc);    // TODO Const-ness
+  MPI_Comm_rank(MPI_COMM_WORLD, &procid);   // TODO Const-ness
+
+  // Find default processor grid size based on nproc
+  dims[0] = dims[1] = 0;                // Zeroed for MPI_Dims_create
+  MPI_Dims_create(nproc, 2, dims);      // Find a Cartesian grid
+  if (dims[0] > dims[1])                // Ensure first dimension smaller
+    {
+      std::swap(dims[0], dims[1]);
+    }
 
   // Options accepted on command line and in configuration file
   po::options_description desc_config("Configuration options");
@@ -129,16 +150,12 @@ int main(int argc,char **argv)
         "Domain grid size in Y direction")
     ("nz",  po::value<int>(&nz)->default_value(16), 
         "Domain grid size in Z direction")
-    // TODO Revisit treating as two distinct parameters
-    ("dim", po::value<int>(&ndim)->default_value(2), 
-        "Dimensionality of processor grid. Must be 1 or 2.")
     ("rep", po::value<int>(&n)->default_value(1), 
         "Number of repetitions to perform for timing purposes")
-    // TODO Revisit specifying pg1/pg2 in a single argument
-    ("pg1", po::value<int>(&dims[0]), 
-        "Processor grid size in first direction. Only valid for dim=2.")
-    ("pg2", po::value<int>(&dims[1]), 
-        "Processor grid size in second direction. Only valid for dim=2.")
+    ("pg1", po::value<int>(&dims[0])->default_value(dims[0]),
+        "Processor grid size in first direction.")
+    ("pg2", po::value<int>(&dims[1])->default_value(dims[1]), 
+        "Processor grid size in second direction.")
     ;
 
   // Options allowed only on command line
@@ -155,7 +172,7 @@ int main(int argc,char **argv)
     ("input-file", po::value< std::vector<std::string> >(), "input file")
     ;
 
-  // Build the options acceptable on the cli, in a file, and in help message
+  // Build the options acceptable on the CLI, in a file, and in help message
   po::options_description opts_cli;
   opts_cli.add(desc_config).add(desc_hidden).add(desc_clionly);
   po::options_description opts_file;
@@ -167,92 +184,52 @@ int main(int argc,char **argv)
   po::positional_options_description opts_positional;
   opts_positional.add("input-file", -1);
 
-  // TODO Only parse command line on processor zero?
+  // Parse all the command line options
   po::variables_map vm;
   po::store(po::command_line_parser(argc, argv).
     options(opts_cli).positional(opts_positional).run(), vm);
 
+  // Process command-line only parameters
+  if (vm.count("help"))
+    {
+      ONLYPROC0(print_help(std::cout, argv[0], opts_visible));
+      exit(0); 
+    }
+  if (vm.count("version"))
+    {
+      ONLYPROC0(print_version(std::cout));
+      exit(0); 
+    }
+
+  // Parse any input files provided on the command line
   if (vm.count("input-file"))
     {
       BOOST_FOREACH(std::string filename, 
                     vm["input-file"].as< std::vector<std::string> >())
         {
-          LOG4CXX_DEBUG(logger, "Reading input file " << filename)
+          ONLYPROC0(LOG4CXX_DEBUG(logger, "Reading input file " << filename));
           std::ifstream ifs( (vm["input-file"].as< std::string >()).c_str() );
           po::store(po::parse_config_file(ifs, opts_file), vm);
         }
     }
+
+  po::notify(vm); // Perform options callbacks
  
-  if (vm.count("help"))
+  ONLYPROC0(LOG4CXX_DEBUG(logger, "Physical grid dimensions: " 
+      << boost::format("(%3d, %3d, %3d)") % nx % ny %nz));
+  ONLYPROC0(LOG4CXX_DEBUG(logger, "Processor grid dimensions: " 
+      << boost::format("(%3d, %3d)") % dims[0] % dims[1]));
+  if (dims[0]*dims[1] != nproc)
     {
-      print_help(std::cout, argv[0], opts_visible);
-      exit(0); 
+      ONLYPROC0(LOG4CXX_WARN(logger, 
+          "Processor grid dimensions incompatible with nproc = " << nproc));
     }
-
-  if (vm.count("version"))
-    {
-      print_version(std::cout);
-      exit(0); 
-    }
-
-  po::notify(vm);
-
-  MPI_Init(&argc,&argv);
-  MPI_Comm_size(MPI_COMM_WORLD,&nproc);
-  MPI_Comm_rank(MPI_COMM_WORLD,&proc_id);
 
   pi = atan(1.0)*4.0;
   twopi = 2.0*pi;
 
   gt1=gt2=gt3=gt4=gtp1=0.0;
 
-  if (proc_id == 0)
-    {
-      fp = fopen("stdin","r");
-      ndim = 2;
-      fscanf(fp,"%d,%d,%d,%d,%d\n",&nx,&ny,&nz,&ndim,&n);
-      fclose(fp);
-      printf("Single precision\n (%d %d %d) grid\n %d proc. dimensions\n%d repetitions\n",nx,ny,nz,ndim,n);
-    }
-  MPI_Bcast(&nx,1,MPI_INT,0,MPI_COMM_WORLD);
-  MPI_Bcast(&ny,1,MPI_INT,0,MPI_COMM_WORLD);
-  MPI_Bcast(&nz,1,MPI_INT,0,MPI_COMM_WORLD);
-  MPI_Bcast(&n,1,MPI_INT,0,MPI_COMM_WORLD);
-  MPI_Bcast(&ndim,1,MPI_INT,0,MPI_COMM_WORLD);
-
-  if (ndim == 1)
-    {
-      dims[0] = 1;
-      dims[1] = nproc;
-    }
-  else if (ndim == 2)
-    {
-      fp = fopen("dims","r");
-      if (fp != NULL)
-        {
-          if (proc_id == 0)
-            printf("Reading proc. grid from file dims\n");
-          fscanf(fp,"%d %d\n",dims,dims+1);
-          fclose(fp);
-          if (dims[0]*dims[1] != nproc)
-            dims[1] = nproc / dims[0];
-        }
-      else
-        {
-          if (proc_id == 0)
-            printf("Creating proc. grid with mpi_dims_create\n");
-          dims[0]=dims[1]=0;
-          MPI_Dims_create(nproc,2,dims);
-          if (dims[0] > dims[1])
-            {
-              dims[0] = dims[1];
-              dims[1] = nproc/dims[0];
-            }
-        }
-    }
-
-  if (proc_id == 0)
-    printf("Using processor grid %d x %d\n",dims[0],dims[1]);
 
   /* Initialize P3DFFT */
   p3dfft_setup(dims,nx,ny,nz,1);
@@ -299,16 +276,16 @@ int main(int argc,char **argv)
 
       MPI_Barrier(MPI_COMM_WORLD);
       rtime1 = rtime1 - MPI_Wtime();
-      if (proc_id == 0)
+      if (procid == 0)
         printf("Iteration %d\n",m);
       /* compute forward Fourier transform on A, store results in B */
       p3dfft_ftran_r2c(A,B);
       rtime1 = rtime1 + MPI_Wtime();
 
-      if (proc_id == 0)
+      if (procid == 0)
         printf("Result of forward transform\n");
 
-      print_all(B,Ntot,proc_id,Nglob);
+      print_all(B,Ntot,procid,Nglob);
       /* normalize */
       mult_array(B,Ntot,factor);
 
@@ -340,7 +317,7 @@ int main(int argc,char **argv)
 
   MPI_Reduce(&cdiff,&ccdiff,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
 
-  if (proc_id == 0)
+  if (procid == 0)
     printf("max diff =%g\n",ccdiff);
 
   /* Gather timing statistics */
@@ -363,7 +340,7 @@ int main(int argc,char **argv)
   gtcomm = gtcomm / ((double) n);
   */
 
-  if (proc_id == 0)
+  if (procid == 0)
     {
       printf("Time per loop=%lg\n",rtime2/((double) n));
       /*
@@ -373,6 +350,5 @@ int main(int argc,char **argv)
     }
 
 
-  MPI_Finalize();
 
 }
