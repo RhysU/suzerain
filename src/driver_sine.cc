@@ -31,13 +31,13 @@
 #include "config.h"
 
 #include <boost/foreach.hpp>
-//#include <boost/program_options.hpp>
+#include <boost/program_options.hpp>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-//#include <log4cxx/logger.h>
+#include <log4cxx/logger.h>
 #include <mpi.h>
 #include "p3dfft_d.h"
 #include <string>
@@ -76,23 +76,23 @@ void print_all(double *A,long int nar,int proc_id,long int Nglob)
       }
 }
 
-// // Print usage information
-// template<typename charT, typename traits>
-// void print_help(std::basic_ostream<charT, traits>& out,
-//                 const std::string application_name, 
-//                 const boost::program_options::options_description options)
-// {
-//   using namespace std;
-// 
-//   out << endl
-//       << "Usage: " << application_name << " [options] [file]" << endl
-//       << endl
-// // TODO: Provide a legitimate description for the help message
-// //      << "Description: " << endl
-// //      << endl
-//       << options
-//       << endl;
-// }
+// Print usage information
+template<typename charT, typename traits>
+void print_help(std::basic_ostream<charT, traits>& out,
+                const std::string application_name, 
+                const boost::program_options::options_description options)
+{
+  using namespace std;
+
+  out << endl
+      << "Usage: " << application_name << " [OPTION] [FILE]..." << endl
+// TODO: Provide a legitimate description for the help message
+//      << endl
+//      << "Description: " << endl
+//      << endl
+      << options
+      << endl;
+}
 
 // Print version information
 template<typename charT, typename traits>
@@ -104,9 +104,9 @@ void print_version(std::basic_ostream<charT, traits>& out)
 
 int main(int argc,char **argv)
 {
-//  namespace po = boost::program_options;
+  namespace po = boost::program_options;
 
-//  log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
+  log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
   double *A,*B,*p,*C;
   int i,j,k,x,y,z,nx,ny,nz,proc_id,nproc,dims[2],ndim,nu;
@@ -121,82 +121,81 @@ int main(int argc,char **argv)
   FILE *fp;
 
   // Options accepted on command line and in configuration file
-//  po::options_description desc_config("Configuration options:");
-//  desc_config.add_options()
-//    ("nx",   boost::program_options::value<int>(), 
-//        "Domain grid size in X direction")
-//    ("ny",   boost::program_options::value<int>(), 
-//        "Domain grid size in Y direction")
-//    ("nz",   boost::program_options::value<int>(), 
-//        "Domain grid size in Z direction")
-//    // TODO Revisit treating as two distinct parameters
-//    ("ndim", boost::program_options::value<int>(), 
-//        "Dimensionality of processor grid. Must be either 1 or 2.")
-//    ("nrep", boost::program_options::value<int>(), 
-//        "Number of repetitions to perform for timing purposes")
-//    ("pg1", boost::program_options::value<int>(), 
-//        "Processor grid size in first direction.  Only valid for -ndim=2.")
-//    ("pg2", boost::program_options::value<int>(), 
-//        "Processor grid size in second direction.  Only valid for -ndim=2.")
-//    ;
-//
-//  // Options allowed only on command line
-//  po::options_description desc_clionly("Program information:");
-//  desc_clionly.add_options()
-//    ("help,h",    "show usage information")    
-//    ("version,v", "print version string")    
-//    ;
-//
-//  // Options allowed on command line and in configuration file
-//  // Not shown to the user
-//  po::options_description desc_hidden("Hidden options:");
-//  desc_hidden.add_options()
-//    ("input-file", po::value< std::vector<std::string> >(), "input file")
-//    ;
-//
-//  po::options_description opts_cli;
-//  opts_cli.add(desc_config).add(desc_hidden).add(desc_clionly);
-//
-//  po::options_description opts_file;
-//  opts_file.add(desc_config).add(desc_hidden);
-//
-//  po::options_description opts_visible;
-//  opts_visible.add(desc_config).add(desc_clionly);
-//
-//  po::positional_options_description opts_positional;
-//  opts_positional.add("input-file", -1);
-//
-//  //TODO: Only parse command line on processor zero?
-//  po::variables_map vm;
-//  store(po::command_line_parser(argc, argv).
-//    options(opts_cli).positional(opts_positional).run(), vm);
-//
-//  if (vm.count("help"))
-//    {
-//      print_help(std::cout, argv[0], opts_visible);
-//      exit(0); 
-//    }
-//
-//  if (vm.count("version"))
-//    {
-//      print_version(std::cout);
-//      exit(0); 
-//    }
-//
-//  if (vm.count("input-file"))
-//    {
-//      BOOST_FOREACH(std::string filename, 
-//                    vm["input-file"].as< std::vector<std::string> >())
-//        {
-////          LOG4CXX_DEBUG(logger, "Reading input file " << filename)
-//
-////          ifstream ifs( (vm["input-file"].as< string >()).c_str() );
-////          store(parse_config_file(ifs, config_file_options), vm);
-//        }
-//    }
-// 
-//  po::notify(vm);
+  po::options_description desc_config("Configuration options");
+  desc_config.add_options()
+    ("nx",  po::value<int>(&nx), 
+        "Domain grid size in X direction")
+    ("ny",  po::value<int>(&ny), 
+        "Domain grid size in Y direction")
+    ("nz",  po::value<int>(&nz), 
+        "Domain grid size in Z direction")
+    // TODO Revisit treating as two distinct parameters
+    ("dim", po::value<int>(&ndim), 
+        "Dimensionality of processor grid. Must be 1 or 2.")
+    ("rep", po::value<int>(&n), 
+        "Number of repetitions to perform for timing purposes")
+    ("pg1", po::value<int>(), 
+        "Processor grid size in first direction. Only valid for dim=2.")
+    ("pg2", po::value<int>(), 
+        "Processor grid size in second direction. Only valid for dim=2.")
+    ;
 
+  // Options allowed only on command line
+  po::options_description desc_clionly("Program information");
+  desc_clionly.add_options()
+    ("help,h",    "show usage information")    
+    ("version,v", "print version string")    
+    ;
+
+  // Options allowed on command line and in configuration file
+  // Not shown to the user
+  po::options_description desc_hidden("Hidden options:");
+  desc_hidden.add_options()
+    ("input-file", po::value< std::vector<std::string> >(), "input file")
+    ;
+
+  po::options_description opts_cli;
+  opts_cli.add(desc_config).add(desc_hidden).add(desc_clionly);
+
+  po::options_description opts_file;
+  opts_file.add(desc_config).add(desc_hidden);
+
+  po::options_description opts_visible;
+  opts_visible.add(desc_config).add(desc_clionly);
+
+  po::positional_options_description opts_positional;
+  opts_positional.add("input-file", -1);
+
+  //TODO: Only parse command line on processor zero?
+  po::variables_map vm;
+  store(po::command_line_parser(argc, argv).
+    options(opts_cli).positional(opts_positional).run(), vm);
+
+  if (vm.count("input-file"))
+    {
+      BOOST_FOREACH(std::string filename, 
+                    vm["input-file"].as< std::vector<std::string> >())
+        {
+          LOG4CXX_DEBUG(logger, "Reading input file " << filename)
+
+          std::ifstream ifs( (vm["input-file"].as< std::string >()).c_str() );
+          po::store(po::parse_config_file(ifs, opts_file), vm);
+        }
+    }
+ 
+  if (vm.count("help"))
+    {
+      print_help(std::cout, argv[0], opts_visible);
+      exit(0); 
+    }
+
+  if (vm.count("version"))
+    {
+      print_version(std::cout);
+      exit(0); 
+    }
+
+  po::notify(vm);
 
   MPI_Init(&argc,&argv);
   MPI_Comm_size(MPI_COMM_WORLD,&nproc);

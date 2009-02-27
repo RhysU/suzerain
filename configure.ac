@@ -26,6 +26,13 @@ AC_PROG_RANLIB
 AC_PROG_SED
 AC_CACHE_SAVE
 
+dnl ------------------------------------------------
+dnl Enable GNU libtool
+dnl Current version checks also in Makefile.am
+dnl ------------------------------------------------
+AC_PROG_LIBTOOL
+AC_SUBST(LIBTOOL_DEPS)
+
 dnl TODO Automatically add optimization if debugging disabled per AX_CC_MAXOPT
 dnl Issues: 1) AX_CC_MAXOPT doesn't play nicely with AX_CHECK_ENABLE_DEBUG
 dnl         2) AX_CC_MAXOPT only sets CFLAGS, not CXXFLAGS
@@ -54,9 +61,10 @@ AC_LANG([C++])
 PKG_CHECK_MODULES(LOG4CXX, liblog4cxx >= 0.10 apr-1 >= 1.3.3 apr-util-1 >= 1.3.4)
 AC_SUBST(LOG4CXX_CFLAGS)
 AC_SUBST(LOG4CXX_LIBS)
-AX_BOOST_BASE(1.37)
-AX_BOOST_UNIT_TEST_FRAMEWORK
-AX_BOOST_PROGRAM_OPTIONS
+BOOST_REQUIRE([1.37])
+BOOST_FOREACH
+BOOST_PROGRAM_OPTIONS
+BOOST_TEST
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------

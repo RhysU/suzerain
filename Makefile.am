@@ -31,5 +31,12 @@ MAINTAINERCLEANFILES =     \
 	src/Makefile.in        \
 	src/stamp.h.in
 
+# Additional tasks run with the 'all' target
+all-local: libtool
+
+# Make sure that libtool is up to date
+libtool: $(LIBTOOL_DEPS)
+	$(SHELL) ./config.status --recheck
+
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
