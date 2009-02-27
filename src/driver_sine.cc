@@ -51,8 +51,6 @@
 
 double FORTNAME(t1),FORTNAME(t2),FORTNAME(t3),FORTNAME(t4),FORTNAME(tp1);
 
-// TODO: Add the missing function declarations?
-
 void mult_array(double *A,long int nar,double f)
 {
   long int i;
@@ -118,7 +116,7 @@ int main(int argc,char **argv)
   int fstart[3],fsize[3],fend[3];
   int iproc,jproc,ng[3],kmax,iex,conf,m,n;
   long int Nglob,Ntot;
-  double pi,twopi,sinyz;
+  double sinyz;
   double *sinx,*siny,*sinz,factor;
   double rtime1,rtime2,gt1,gt2,gt3,gt4,gtp1,gtcomm,tcomm;
   double cdiff,ccdiff,ans;
@@ -213,23 +211,21 @@ int main(int argc,char **argv)
         }
     }
 
-  po::notify(vm); // Perform options callbacks
+  // Perform options callbacks now that we're done parsing options
+  po::notify(vm); 
  
+  ONLYPROC0(LOG4CXX_DEBUG(logger, "Number of processors: " << nproc));
   ONLYPROC0(LOG4CXX_DEBUG(logger, "Physical grid dimensions: " 
-      << boost::format("(%3d, %3d, %3d)") % nx % ny %nz));
+      << boost::format("(%d, %d, %d)") % nx % ny %nz));
   ONLYPROC0(LOG4CXX_DEBUG(logger, "Processor grid dimensions: " 
-      << boost::format("(%3d, %3d)") % dims[0] % dims[1]));
+      << boost::format("(%d, %d)") % dims[0] % dims[1]));
   if (dims[0]*dims[1] != nproc)
     {
       ONLYPROC0(LOG4CXX_WARN(logger, 
-          "Processor grid dimensions incompatible with nproc = " << nproc));
+          "Processor grid dimensions incompatible with number of processors"));
     }
 
-  pi = atan(1.0)*4.0;
-  twopi = 2.0*pi;
-
   gt1=gt2=gt3=gt4=gtp1=0.0;
-
 
   /* Initialize P3DFFT */
   p3dfft_setup(dims,nx,ny,nz,1);
@@ -244,11 +240,11 @@ int main(int argc,char **argv)
   sinz = (double *) malloc(sizeof(double)*nz);
 
   for (z=0;z < isize[2];z++)
-    sinz[z] = sin((z+istart[2]-1)*twopi/nz);
+    sinz[z] = sin((z+istart[2]-1)*2.0*M_PI/nz);
   for (y=0;y < isize[1];y++)
-    siny[y] = sin((y+istart[1]-1)*twopi/ny);
+    siny[y] = sin((y+istart[1]-1)*2.0*M_PI/ny);
   for (x=0;x < isize[0];x++)
-    sinx[x] = sin((x+istart[0]-1)*twopi/nx);
+    sinx[x] = sin((x+istart[0]-1)*2.0*M_PI/nx);
 
   /* Allocate and Initialize */
   A = (double *) malloc(sizeof(double) * isize[0]*isize[1]*isize[2]);
