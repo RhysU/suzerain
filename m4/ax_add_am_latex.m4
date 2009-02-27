@@ -60,16 +60,16 @@ AX_ADD_AM_MACRO([
 # Added by AX_ADD_AM_LATEX m4 macro
 %%.dvi : %%.tex
 	if file \$< | grep LaTeX &>/dev/null ; then \\
-		\$(top_builddir)/\$(tex_it_dir)/tex-it \$(latex) \$(LATEX_FLAGS) \$< ;\\
+		\$(tex_it_dir)/tex-it \$(latex) \$(LATEX_FLAGS) \$< ;\\
 	else \\
-		\$(top_builddir)/\$(tex_it_dir)/tex-it \$(TEX) \$(TEX_FLAGS) \$< ;\\
+		\$(tex_it_dir)/tex-it \$(TEX) \$(TEX_FLAGS) \$< ;\\
 	fi
 
 %%.pdf : %%.tex
 	if file \$< | grep LaTeX &>/dev/null ; then \\
-		\$(top_builddir)/\$(tex_it_dir)/tex-it \$(pdflatex) \$(PDFLATEX_FLAGS) \$< ;\\
+		\$(tex_it_dir)/tex-it \$(pdflatex) \$(PDFLATEX_FLAGS) \$< ;\\
 	else \\
-		\$(top_builddir)/\$(tex_it_dir)/tex-it \$(pdftex) \$(PDFTEX_FLAGS) \$< ;\\
+		\$(tex_it_dir)/tex-it \$(pdftex) \$(PDFTEX_FLAGS) \$< ;\\
 	fi
 ])
 ])

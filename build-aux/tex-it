@@ -1,6 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 # tex-it v1.3 by Joachim Schrod
-# Modified by Rhys Ulerich to stop eagerly on errors.
+# Modified by Rhys Ulerich to stop eagerly on errors, and to allow
+# file parameter to not be in the current directory
 # Taken from the cweb-latex package distribution at
 # http://www.ctan.org/tex-archive/help/Catalogue/entries/cweb-latex.html
 #----------------------------------------------------------------------
@@ -103,15 +104,15 @@ mkdir $tmp
 save_aux()
 {
     if [ -f "$file.aux" ]
-       then cp "$file.aux" $tmp
-       else touch "$tmp/$file.aux"
+       then cp "$file.aux" "$tmp/${file//\//_}.aux"
+       else touch "$tmp/${file//\//_}.aux"
     fi
 }
 
 check_aux()
 {
     test -f "$file.aux"  ||  return 0
-    cmp -s "$file.aux" "$tmp/$file.aux"  ||  run_tex=true
+    cmp -s "$file.aux" "$tmp/${file//\//_}.aux"  ||  run_tex=true
 }
 
 
@@ -121,8 +122,8 @@ save_bibtex()
 {
     if [ -f "$file.aux" ]
        then egrep '^\\(citation|bibdata)' "$file.aux"  |
-            sort >"$tmp/$file.bib"
-       else touch "$tmp/$file.bib"
+            sort >"$tmp/${file//\//_}.bib"
+       else touch "$tmp/${file//\//_}.bib"
     fi
 }
 
@@ -132,7 +133,7 @@ check_bibtex()
     test "$do_bibtex" -a -f "$file.aux"  ||  return 0
     egrep '^\\(citation|bibdata)' "$file.aux"  |  sort >$tmp/bib.new
     if grep '^\\bibdata' $tmp/bib.new >/dev/null
-       then if cmp -s "$tmp/$file.bib" $tmp/bib.new
+       then if cmp -s "$tmp/${file//\//_}.bib" $tmp/bib.new
            then : do nothing
            else bibtex "$file"
             run_tex=true
@@ -146,15 +147,15 @@ check_bibtex()
 save_idx()
 {
     if [ -f "$file.idx" ]
-       then cp "$file.idx" $tmp
-       else touch "$tmp/$file.idx"
+       then cp "$file.idx" "$tmp/${file//\//_}.idx"
+       else touch "$tmp/${file//\//_}.idx"
     fi
 }
 
 check_idx()
 {
     test "$do_makeindex" -a -f "$file.idx"  ||  return 0
-    if cmp -s "$file.idx" "$tmp/$file.idx"
+    if cmp -s "$file.idx" "$tmp/${file//\//_}.idx"
        then : do nothing
        else makeindex "$file"
         run_tex=true
