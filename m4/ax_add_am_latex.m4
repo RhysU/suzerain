@@ -30,7 +30,7 @@ AC_DEFUN([AX_ADD_AM_LATEX],[
 
 AC_REQUIRE([AC_CONFIG_AUX_DIR_DEFAULT])
 AC_REQUIRE_AUX_FILE([tex-it])
-AC_SUBST([tex_it_dir],[$ac_aux_dir])
+AC_SUBST([tex_it_dir],[`basename "$ac_aux_dir"`])
 
 AC_REQUIRE([AX_AM_MACROS])
 AC_REQUIRE([ACLTX_PROG_TEX])
@@ -60,16 +60,16 @@ AX_ADD_AM_MACRO([
 # Added by AX_ADD_AM_LATEX m4 macro
 %%.dvi : %%.tex
 	if file \$< | grep LaTeX &>/dev/null ; then \\
-		\$(tex_it_dir)/tex-it \$(latex) \$(LATEX_FLAGS) \$< ;\\
+		\$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(latex) \$(LATEX_FLAGS) \$< ;\\
 	else \\
-		\$(tex_it_dir)/tex-it \$(TEX) \$(TEX_FLAGS) \$< ;\\
+		\$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(TEX) \$(TEX_FLAGS) \$< ;\\
 	fi
 
 %%.pdf : %%.tex
 	if file \$< | grep LaTeX &>/dev/null ; then \\
-		\$(tex_it_dir)/tex-it \$(pdflatex) \$(PDFLATEX_FLAGS) \$< ;\\
+		\$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(pdflatex) \$(PDFLATEX_FLAGS) \$< ;\\
 	else \\
-		\$(tex_it_dir)/tex-it \$(pdftex) \$(PDFTEX_FLAGS) \$< ;\\
+		\$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(pdftex) \$(PDFTEX_FLAGS) \$< ;\\
 	fi
 ])
 ])
