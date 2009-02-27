@@ -123,20 +123,21 @@ int main(int argc,char **argv)
   // Options accepted on command line and in configuration file
   po::options_description desc_config("Configuration options");
   desc_config.add_options()
-    ("nx",  po::value<int>(&nx), 
+    ("nx",  po::value<int>(&nx)->default_value(16), 
         "Domain grid size in X direction")
-    ("ny",  po::value<int>(&ny), 
+    ("ny",  po::value<int>(&ny)->default_value(16), 
         "Domain grid size in Y direction")
-    ("nz",  po::value<int>(&nz), 
+    ("nz",  po::value<int>(&nz)->default_value(16), 
         "Domain grid size in Z direction")
     // TODO Revisit treating as two distinct parameters
-    ("dim", po::value<int>(&ndim), 
+    ("dim", po::value<int>(&ndim)->default_value(2), 
         "Dimensionality of processor grid. Must be 1 or 2.")
-    ("rep", po::value<int>(&n), 
+    ("rep", po::value<int>(&n)->default_value(1), 
         "Number of repetitions to perform for timing purposes")
-    ("pg1", po::value<int>(), 
+    // TODO Revisit specifying pg1/pg2 in a single argument
+    ("pg1", po::value<int>(&dims[0]), 
         "Processor grid size in first direction. Only valid for dim=2.")
-    ("pg2", po::value<int>(), 
+    ("pg2", po::value<int>(&dims[1]), 
         "Processor grid size in second direction. Only valid for dim=2.")
     ;
 
@@ -149,26 +150,26 @@ int main(int argc,char **argv)
 
   // Options allowed on command line and in configuration file
   // Not shown to the user
-  po::options_description desc_hidden("Hidden options:");
+  po::options_description desc_hidden("Hidden options");
   desc_hidden.add_options()
     ("input-file", po::value< std::vector<std::string> >(), "input file")
     ;
 
+  // Build the options acceptable on the cli, in a file, and in help message
   po::options_description opts_cli;
   opts_cli.add(desc_config).add(desc_hidden).add(desc_clionly);
-
   po::options_description opts_file;
   opts_file.add(desc_config).add(desc_hidden);
-
   po::options_description opts_visible;
   opts_visible.add(desc_config).add(desc_clionly);
 
+  // Have positional parameters act like input-file
   po::positional_options_description opts_positional;
   opts_positional.add("input-file", -1);
 
-  //TODO: Only parse command line on processor zero?
+  // TODO Only parse command line on processor zero?
   po::variables_map vm;
-  store(po::command_line_parser(argc, argv).
+  po::store(po::command_line_parser(argc, argv).
     options(opts_cli).positional(opts_positional).run(), vm);
 
   if (vm.count("input-file"))
@@ -177,7 +178,6 @@ int main(int argc,char **argv)
                     vm["input-file"].as< std::vector<std::string> >())
         {
           LOG4CXX_DEBUG(logger, "Reading input file " << filename)
-
           std::ifstream ifs( (vm["input-file"].as< std::string >()).c_str() );
           po::store(po::parse_config_file(ifs, opts_file), vm);
         }
@@ -205,7 +205,6 @@ int main(int argc,char **argv)
   twopi = 2.0*pi;
 
   gt1=gt2=gt3=gt4=gtp1=0.0;
-
 
   if (proc_id == 0)
     {
