@@ -23,7 +23,7 @@
  *--------------------------------------------------------------------------
  *
  * driver_sine.cc: A P3DFFT test driver based on work by Dmitry Pekurovsky
- * 
+ *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
@@ -81,7 +81,7 @@ void print_all(double *A,long int nar,int procid,long int Nglob)
 // Print usage information
 template<typename charT, typename traits>
 void print_help(std::basic_ostream<charT, traits>& out,
-                const std::string application_name, 
+                const std::string application_name,
                 const boost::program_options::options_description options)
 {
   using namespace std;
@@ -100,7 +100,7 @@ void print_help(std::basic_ostream<charT, traits>& out,
 template<typename charT, typename traits>
 void print_version(std::basic_ostream<charT, traits>& out)
 {
-  out << PACKAGE_STRING 
+  out << PACKAGE_STRING
       << " (built " __DATE__ " " __TIME__ ")" << std::endl;
 }
 
@@ -114,7 +114,7 @@ int main(int argc,char **argv)
   int i,j,k,x,y,z,nu;
   int istart[3],isize[3],iend[3];
   int fstart[3],fsize[3],fend[3];
-  int iproc,jproc,ng[3],kmax,iex,conf,m,n;
+  int iproc,jproc,ng[3],kmax,iex,conf,m,nrep;
   long int Nglob,Ntot;
   double sinyz;
   double *sinx,*siny,*sinz,factor;
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
 
   int nproc;        // Number of processors in MPI environment
   int procid;       // This processor's global processor ID
-  int nx, ny, nz;   // Domain dimensions in x, y, and z directions 
+  int nx, ny, nz;   // Domain dimensions in x, y, and z directions
   int dims[2];      // Processor grid dimensions in 1st, 2nd directions
 
   MPI_Init(&argc, &argv);                   // Initialize MPI on startup
@@ -142,25 +142,25 @@ int main(int argc,char **argv)
   // Options accepted on command line and in configuration file
   po::options_description desc_config("Configuration options");
   desc_config.add_options()
-    ("nx",  po::value<int>(&nx)->default_value(16), 
+    ("nx",  po::value<int>(&nx)->default_value(16),
         "Domain grid size in X direction")
-    ("ny",  po::value<int>(&ny)->default_value(16), 
+    ("ny",  po::value<int>(&ny)->default_value(16),
         "Domain grid size in Y direction")
-    ("nz",  po::value<int>(&nz)->default_value(16), 
+    ("nz",  po::value<int>(&nz)->default_value(16),
         "Domain grid size in Z direction")
-    ("rep", po::value<int>(&n)->default_value(1), 
+    ("rep", po::value<int>(&nrep)->default_value(1),
         "Number of repetitions to perform for timing purposes")
     ("pg1", po::value<int>(&dims[0])->default_value(dims[0]),
         "Processor grid size in first direction.")
-    ("pg2", po::value<int>(&dims[1])->default_value(dims[1]), 
+    ("pg2", po::value<int>(&dims[1])->default_value(dims[1]),
         "Processor grid size in second direction.")
     ;
 
   // Options allowed only on command line
   po::options_description desc_clionly("Program information");
   desc_clionly.add_options()
-    ("help,h",    "show usage information")    
-    ("version,v", "print version string")    
+    ("help,h",    "show usage information")
+    ("version,v", "print version string")
     ;
 
   // Options allowed on command line and in configuration file
@@ -191,18 +191,18 @@ int main(int argc,char **argv)
   if (vm.count("help"))
     {
       ONLYPROC0(print_help(std::cout, argv[0], opts_visible));
-      exit(0); 
+      exit(0);
     }
   if (vm.count("version"))
     {
       ONLYPROC0(print_version(std::cout));
-      exit(0); 
+      exit(0);
     }
 
   // Parse any input files provided on the command line
   if (vm.count("input-file"))
     {
-      BOOST_FOREACH(std::string filename, 
+      BOOST_FOREACH(std::string filename,
                     vm["input-file"].as< std::vector<std::string> >())
         {
           ONLYPROC0(LOG4CXX_DEBUG(logger, "Reading input file " << filename));
@@ -212,16 +212,16 @@ int main(int argc,char **argv)
     }
 
   // Perform options callbacks now that we're done parsing options
-  po::notify(vm); 
- 
+  po::notify(vm);
+
   ONLYPROC0(LOG4CXX_DEBUG(logger, "Number of processors: " << nproc));
-  ONLYPROC0(LOG4CXX_DEBUG(logger, "Physical grid dimensions: " 
+  ONLYPROC0(LOG4CXX_DEBUG(logger, "Physical grid dimensions: "
       << boost::format("(%d, %d, %d)") % nx % ny %nz));
-  ONLYPROC0(LOG4CXX_DEBUG(logger, "Processor grid dimensions: " 
+  ONLYPROC0(LOG4CXX_DEBUG(logger, "Processor grid dimensions: "
       << boost::format("(%d, %d)") % dims[0] % dims[1]));
   if (dims[0]*dims[1] != nproc)
     {
-      ONLYPROC0(LOG4CXX_WARN(logger, 
+      ONLYPROC0(LOG4CXX_WARN(logger,
           "Processor grid dimensions incompatible with number of processors"));
     }
 
@@ -267,7 +267,7 @@ int main(int argc,char **argv)
   factor = 1.0/Nglob;
 
   rtime1 = 0.0;
-  for (m=0;m < n;m++)
+  for (m=0;m < nrep;m++)
     {
 
       MPI_Barrier(MPI_COMM_WORLD);
@@ -338,7 +338,7 @@ int main(int argc,char **argv)
 
   if (procid == 0)
     {
-      printf("Time per loop=%lg\n",rtime2/((double) n));
+      printf("Time per loop=%lg\n",rtime2/((double) nrep));
       /*
       printf("Total comm: %g",gtcomm);
       printf("t1=%lg, t2=%lg, t3=%lg, t4=%lg, tp1=%lg\n",gt1,gt2,gt3,gt4,gtp1);
