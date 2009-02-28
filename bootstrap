@@ -32,6 +32,8 @@ fi
 
 rm -f config.cache acconfig.h
 
+echo "- libtoolize."          && \
+libtoolize --automake         && \
 echo "- aclocal."             && \
 aclocal -I m4                 && \
 echo "- autoconf."            && \
