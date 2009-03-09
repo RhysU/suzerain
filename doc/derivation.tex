@@ -120,19 +120,11 @@ Because the control volume may be arbitrary,
 &= \nabla\cdot\sigma + \rho{} f_b
 .
 \end{align}
-We further separate pressure $p$ and viscous contributions $\tau$ to
+Lastly, we separate the pressure $p$ and viscous contributions $\tau$ to
 the Cauchy stress tensor so that $\sigma = -p I + \tau$,
 \begin{align}
-\frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u) 
-&= -\nabla{}p + \nabla\cdot{}\tau + \rho{} f_b
-.
-\end{align}
-Lastly, observing that $u\otimes\rho{}u = \frac{1}{\rho}\rho{}u\otimes\rho{}u$
-is symmetric,
-\begin{align}
 \label{eq:cons_momentum}
-\frac{\partial{}}{\partial{}t}\rho{}u 
-+ \frac{1}{2}\nabla\cdot(u\otimes{}\rho{}u + \rho{}u\otimes{}u) 
+\frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u) 
 &= -\nabla{}p + \nabla\cdot{}\tau + \rho{} f_b
 .
 \end{align}
@@ -360,7 +352,7 @@ and assumptions, we arrive at the dimensional equations
   \label{eq:dim_momentum}
   \frac{\partial{}}{\partial{}t}\rho{}u 
 &= 
-  - \frac{1}{2}\nabla\cdot(u\otimes{}\rho{}u + \rho{}u\otimes{}u) 
+  - \nabla\cdot(u\otimes{}\rho{}u) 
   -\nabla{} p
   + \nabla\cdot{} \tau
   + \rho{}f_{b}
@@ -437,9 +429,8 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   \label{eq:dimwithref_momentum}
   \frac{\rho_{0}u_{0}}{t_{0}} \frac{\partial{}}{\partial{}t^{*}}\rho^{*}u^{*}
 &= 
-  - \frac{1}{2}
-    \frac{\rho_{0}u_{0}^{2}}{l_{0}}
-    \nabla^{*}\cdot(u^{*}\otimes{}\rho^{*}u^{*} + \rho^{*}u^{*}\otimes{}u^{*}) 
+  - \frac{\rho_{0}u_{0}^{2}}{l_{0}}
+    \nabla^{*}\cdot(u^{*}\otimes{}\rho^{*}u^{*}) 
   - \frac{p_{0}}{l_{0}} \nabla^{*} p^{*}
   + \frac{\tau_{0}}{l_{0}} \nabla^{*}\cdot{} \tau^{*}
   + \rho_{0} f_{0} \rho^{*}f_{b}^{*} 
@@ -523,8 +514,7 @@ nondimensional equations:
   \label{eq:nondim_momentum}
   \frac{\partial}{\partial{}t}\rho{}u
 &= 
-  - \frac{1}{2}
-    \nabla\cdot(u\otimes\rho{}u + \rho{}u\otimes{}u) 
+  - \nabla\cdot(u\otimes\rho{}u) 
   - \nabla{} p
   + \frac{1}{Re} \nabla\cdot\tau
   + \rho{}f_{b} 
