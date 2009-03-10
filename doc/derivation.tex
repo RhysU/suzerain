@@ -130,10 +130,10 @@ the Cauchy stress tensor so that $\sigma = -p I + \tau$,
 \end{align}
 
 \subsubsection{Energy equation} 
-Lumping internal and kinetic energy into an intrinsic density $e$, 
+Lumping internal and kinetic energy into an intrinsic density $\tilde{e}$, 
 the energy $E$ is
 \begin{align}
-  E &= \int_{\Omega} \rho{}e \, dV 
+  E &= \int_{\Omega} \rho{}\tilde{e} \, dV 
   .
 \end{align}
 Treating heat input $Q$ as both a surface phenomenon described by an outward
@@ -160,9 +160,9 @@ force work to give
 \end{align}
 Demanding energy conservation $\frac{d}{dt}E=Q+P$,
 \begin{align}
-  \int_{\Omega}\frac{\partial}{\partial{}t} \rho{}e
+  \int_{\Omega}\frac{\partial}{\partial{}t} \rho{}\tilde{e}
   +
-  \nabla\cdot{}u\rho{}e
+  \nabla\cdot{}u\rho{}\tilde{e}
   \,dV
 &=
     \int_{\Omega}\rho{}q_{b} - \nabla\cdot{}q_{s}\,dV
@@ -171,9 +171,9 @@ Demanding energy conservation $\frac{d}{dt}E=Q+P$,
 \end{align}
 Again, since the control volume was arbitrary, 
 \begin{align}
-  \frac{\partial}{\partial{}t} \rho{}e
+  \frac{\partial}{\partial{}t} \rho{}\tilde{e}
   +
-  \nabla\cdot{}\rho{}eu
+  \nabla\cdot{}\rho{}\tilde{e}u
 &=
   - \nabla\cdot{}q_{s} 
   + \nabla\cdot\sigma{}u 
@@ -184,9 +184,9 @@ Again, since the control volume was arbitrary,
 After splitting $\sigma$'s pressure and viscous stress contributions we have
 \begin{align}
   \label{eq:cons_energy}
-  \frac{\partial}{\partial{}t} \rho{}e
+  \frac{\partial}{\partial{}t} \rho{}\tilde{e}
   +
-  \nabla\cdot{}\rho{}eu
+  \nabla\cdot{}\rho{}\tilde{e}u
 &=
   - \nabla\cdot{}q_{s}
   - \nabla\cdot{}pu
@@ -224,7 +224,7 @@ We assume $\gamma$ and therefore $C_{v}$ and $C_{p}$ are constant.
 The total (internal and kinetic) energy density is
 \begin{align}
   \label{eq:perfectgastotalenergy}
-  e &= C_{v} T + \frac{u\cdot{}u}{2}
+  \tilde{e} &= C_{v} T + \frac{u\cdot{}u}{2}
      = \frac{RT}{\gamma-1} + \frac{u\cdot{}u}{2}
   .
 \end{align}
@@ -336,9 +336,7 @@ the method of manufactured solutions for implementation verification.
 
 We assume a space- and time-varying body heating density $q_{b}$.
 
-\subsection{Nondimensionalization}
-
-\subsubsection{Dimensional equations}
+\subsection{Dimensional equations}
 
 By combining the conservation laws with our constitutive relations 
 and assumptions, we arrive at the dimensional equations
@@ -358,9 +356,9 @@ and assumptions, we arrive at the dimensional equations
   + \rho{}f_{b}
   \\
   \label{eq:dim_energy}
-  \frac{\partial}{\partial{}t} \rho{}e
+  \frac{\partial}{\partial{}t} \rho{}\tilde{e}
 &=
-  - \nabla\cdot{}\rho{}eu
+  - \nabla\cdot{}\rho{}\tilde{e}u
   + \nabla\cdot{} \frac{\kappa_{0}}{\mu_{0}} \mu \nabla{} T
   - \nabla\cdot{} p u
   + \nabla\cdot{}\tau{} u
@@ -370,7 +368,8 @@ and assumptions, we arrive at the dimensional equations
   where terms in the right hand side make use of
 }
   \label{eq:dim_pressure}
-  p &= \left(\gamma-1\right)\left(\rho{}e - \rho\frac{u\cdot{}u}{2} \right)
+  p &=   \left(\gamma-1\right)\left(\rho{}\tilde{e} 
+       - \rho\frac{u\cdot{}u}{2} \right)
   \\
   \label{eq:dim_temperature}
   T &= \frac{p}{\rho{}R}
@@ -384,6 +383,8 @@ and assumptions, we arrive at the dimensional equations
   .
 \end{align}
 \end{subequations}
+
+\subsection{Nondimensionalization}
 
 \subsubsection{Introduction of nondimensional variables}
 
@@ -438,9 +439,10 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   + \rho_{0} f_{0} \rho^{*}f_{b}^{*} 
   \\
   \label{eq:dimwithref_energy}
-  \frac{\rho_{0}e_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}} \rho^{*}e^{*}
+  \frac{\rho_{0}\tilde{e}_{0}}{t_{0}} 
+  \frac{\partial}{\partial{}t^{*}} \rho^{*}\tilde{e}^{*}
 &=
-  - \frac{\rho_{0}e_{0}u_{0}}{l_{0}} \nabla^{*} \cdot{}\rho^{*}e^{*}u^{*}
+  - \frac{\rho_{0}\tilde{e}_{0}u_{0}}{l_{0}} \nabla^{*} \cdot{}\rho^{*}\tilde{e}^{*}u^{*}
   + \frac{\kappa_{0}T_{0}}{l_{0}^{2}} 
     \nabla^{*}\cdot{} \mu^{*} \nabla^{*} T^{*}
   - \frac{p_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{} p^{*} u^{*}
@@ -453,7 +455,7 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
 }
   \label{eq:dimwithref_pressure}
   p^{*} &= \frac{\gamma-1}{p_{0}} \left(
-        \rho_{0}e_{0}\rho^{*}e^{*} 
+        \rho_{0}\tilde{e}_{0}\rho^{*}\tilde{e}^{*} 
       - \rho_{0}u_{0}^{2}\,\rho^{*}\frac{u^{*}\cdot{}u^{*}}{2} 
   \right)
   \\
@@ -485,7 +487,7 @@ quantities:
   &
   u_{0} &= a_{0}
   &
-  e_{0} &= a_{0}^{2}
+  \tilde{e}_{0} &= a_{0}^{2}
   &
   t_{0} &= \frac{l_{0}}{a_{0}}
   &
@@ -504,12 +506,12 @@ Because we assume a constant Prandtl number, $\kappa_{0}=\kappa\!\left(
 
 \subsubsection{Nondimensional equations}
 
-We employ the reference quantity relationships after multiplying the
-continuity, momentum, and energy equations by $\frac{t_{0}}{\rho_{0}}$,
-$\frac{l_{0}}{\rho_{0}a_{0}^{2}}$, and $\frac{t_{0}}{\rho_{0}e_{0}}$
-respectively.  Henceforth we suppress the superscript star notation
-because all terms are dimensionless.  We arrive at the following
-nondimensional equations:
+We employ the reference quantity relationships after
+multiplying the continuity, momentum, and energy equations by
+$\frac{t_{0}}{\rho_{0}}$, $\frac{l_{0}}{\rho_{0}a_{0}^{2}}$, and
+$\frac{t_{0}}{\rho_{0}\tilde{e}_{0}}$ respectively.  Henceforth
+we suppress the superscript star notation because all terms are
+dimensionless.  We arrive at the following nondimensional equations:
 \begin{subequations}
 \begin{align}
   \label{eq:nondim_continuity}
@@ -526,9 +528,9 @@ nondimensional equations:
   + \rho{}f_{b} 
   \\
   \label{eq:nondim_energy}
-  \frac{\partial}{\partial{}t} \rho{}e
+  \frac{\partial}{\partial{}t} \rho{}\tilde{e}
 &=
-  - \nabla\cdot\rho{}eu
+  - \nabla\cdot\rho{}\tilde{e}u
   + \frac{1}{Re\,Pr\,\left( \gamma - 1 \right)}
     \nabla\cdot\mu\nabla{} T
   - \nabla\cdot{} p u
@@ -542,7 +544,7 @@ nondimensional equations:
 }
   \label{eq:nondim_pressure}
   p &= \left(\gamma-1\right) \left(
-        \rho{}e - \rho{}\frac{u\cdot{}u}{2} 
+    \rho{}\tilde{e} - \rho{}\frac{u\cdot{}u}{2} 
   \right)
   \\
   \label{eq:nondim_temperature}
@@ -556,5 +558,57 @@ nondimensional equations:
          + \lambda\left(\nabla\cdot{}u\right) I
 \end{align}
 \end{subequations}
+
+\subsection{State variable selection}
+
+We use nondimensional specific volume $\sigma=1/\rho$, momentum $m=\rho{}u$,
+and total energy $e=\rho{}\tilde{e}$ as the state variables for our
+computations.  Then the above equations become
+\begin{subequations}
+\begin{align}
+  \label{eq:state_continuity}
+  \frac{\partial}{\partial{}t}\sigma{}
+&= 
+  \sigma^{2}\nabla\cdot{}m
+  \\
+  \label{eq:state_momentum}
+  \frac{\partial}{\partial{}t}m
+&= 
+  - \nabla\cdot(\sigma m\otimes{}m) 
+  - \nabla{} p
+  + \frac{1}{Re} \nabla\cdot\tau
+  + \frac{1}{\sigma} f_{b} 
+  \\
+  \label{eq:state_energy}
+  \frac{\partial}{\partial{}t} e
+&=
+  - \nabla\cdot\left(\sigma{}em\right)
+  + \frac{1}{Re\,Pr\,\left( \gamma - 1 \right)}
+    \nabla\cdot\mu\nabla{} T
+  - \nabla\cdot{} \left(p\sigma{}m\right)
+  + \frac{1}{Re} \nabla\cdot\left(\tau{}\sigma{}m\right)
+  + f_{b} \cdot{} m
+  + \frac{1}{\sigma} q_{b}
+\intertext{
+  where the non-state quantities are fixed by
+}
+  \label{eq:state_pressure}
+  p &= \left(\gamma-1\right) \left(
+    e - \sigma{}\frac{m\cdot{}m}{2} 
+  \right)
+  \\
+  \label{eq:state_temperature}
+  T &= \gamma{} \sigma{} p
+  \\
+  \label{eq:state_viscosity}
+  \mu &= T^{\beta} 
+  \\
+  \label{eq:state_viscousstress}
+  \tau &=  \mu\left(\nabla{}\sigma{}m+\trans{\nabla{}\sigma{}m}\right) 
+         + \lambda\left(\nabla\cdot{}\sigma{}m\right) I
+  .
+\end{align}
+\end{subequations}
+
 
 \end{document}
