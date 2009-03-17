@@ -33,6 +33,8 @@
 #include <algorithm>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/vector.hpp> 
 #include <boost/program_options.hpp>
 #include <cmath>
 #include <cstdio>
@@ -45,9 +47,12 @@
 #include <string>
 #include <vector>
 
+// TODO: Place into pecos::suzerain namespace
+
+namespace ublas = boost::numeric::ublas; // Shorthand, TODO remove in some way
+
 #define ONLYPROC0(expr) { if (!procid) { expr ; } };
 
-// TODO: Place into pecos::suzerain namespace
 
 double FORTNAME(t1),FORTNAME(t2),FORTNAME(t3),FORTNAME(t4),FORTNAME(tp1);
 
@@ -61,11 +66,10 @@ void mult_array(double *A,long int nar,double f)
 
 void print_all(double *A,long int nar,int procid,long int Nglob)
 {
-  int x,y,z,conf,Fstart[3],Fsize[3],Fend[3];
+  int x,y,z,Fstart[3],Fsize[3],Fend[3];
   long int i;
 
-  conf = 2;
-  get_dims(Fstart,Fend,Fsize,conf);
+  get_dims(Fstart,Fend,Fsize,2);
   Fsize[0] *= 2;
   Fstart[0] = 1 + (Fstart[0]-1)*2;
   for (i=0;i < nar;i++)
@@ -112,12 +116,10 @@ int main(int argc,char **argv)
 
   double *A,*B,*p,*C;
   int i,j,k,x,y,z,nu;
-  int istart[3],isize[3],iend[3];
-  int fstart[3],fsize[3],fend[3];
-  int iproc,jproc,ng[3],kmax,iex,conf,m,nrep;
+  int iproc,jproc,ng[3],kmax,iex,m,nrep;
   long int Nglob,Ntot;
   double sinyz;
-  double *sinx,*siny,*sinz,factor;
+  double factor;
   double rtime1,rtime2,gt1,gt2,gt3,gt4,gtp1,gtcomm,tcomm;
   double cdiff,ccdiff,ans;
 
@@ -228,23 +230,28 @@ int main(int argc,char **argv)
   gt1=gt2=gt3=gt4=gtp1=0.0;
 
   /* Initialize P3DFFT */
-  p3dfft_setup(dims,nx,ny,nz,1);
+  p3dfft_setup(dims, nx, ny, nz, 1 /* safe to overwrite btrans */);
+
   /* Get dimensions for input and output arrays */
-  conf = 1;
-  get_dims(istart,iend,isize,conf);
-  conf = 2;
-  get_dims(fstart,fend,fsize,conf);
+  ublas::c_vector<int, 3> istart(3), isize(3), iend(3);
+  ublas::c_vector<int, 3> fstart(3), fsize(3), fend(3);
 
-  sinx = (double *) malloc(sizeof(double)*nx);
-  siny = (double *) malloc(sizeof(double)*ny);
-  sinz = (double *) malloc(sizeof(double)*nz);
+  get_dims(istart.data(), iend.data(), isize.data(), 1 /* physical pencil */);
+  get_dims(fstart.data(), fend.data(), fsize.data(), 2 /* wave pencil */);
 
-  for (z=0;z < isize[2];z++)
-    sinz[z] = sin((z+istart[2]-1)*2.0*M_PI/nz);
-  for (y=0;y < isize[1];y++)
-    siny[y] = sin((y+istart[1]-1)*2.0*M_PI/ny);
-  for (x=0;x < isize[0];x++)
-    sinx[x] = sin((x+istart[0]-1)*2.0*M_PI/nx);
+  ublas::vector<double> sinx(nx);
+  ublas::vector<double> siny(ny);
+  ublas::vector<double> sinz(nz);
+
+  for (ublas::vector<double>::size_type i=0; i < isize[0]; ++i) {
+    sinx[i] = sin((i+istart[0]-1)*2.0*M_PI/nx);
+  }
+  for (ublas::vector<double>::size_type i=0; i < isize[1]; ++i) {
+    siny[i] = sin((i+istart[1]-1)*2.0*M_PI/ny);
+  }
+  for (ublas::vector<double>::size_type i=0; i < isize[2]; ++i) {
+    sinz[i] = sin((i+istart[2]-1)*2.0*M_PI/nz);
+  }
 
   /* Allocate and Initialize */
   A = (double *) malloc(sizeof(double) * isize[0]*isize[1]*isize[2]);
@@ -344,7 +351,4 @@ int main(int argc,char **argv)
       printf("t1=%lg, t2=%lg, t3=%lg, t4=%lg, tp1=%lg\n",gt1,gt2,gt3,gt4,gtp1);
       */
     }
-
-
-
 }
