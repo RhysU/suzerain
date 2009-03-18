@@ -36,6 +36,7 @@
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/vector.hpp> 
 #include <boost/program_options.hpp>
+#include <boost/shared_array.hpp>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -57,27 +58,17 @@ namespace ublas = boost::numeric::ublas; // Shorthand, TODO remove in some way
 
 #define ONLYPROC0(expr) { if (!procid) { expr ; } };
 
-
 double FORTNAME(t1),FORTNAME(t2),FORTNAME(t3),FORTNAME(t4),FORTNAME(tp1);
-
-void mult_array(double *A,long int nar,double f)
-{
-  long int i;
-
-  for (i=0;i < nar;i++)
-    A[i] *= f;
-}
 
 void print_all(double *A,long int nar,int procid,long int Nglob)
 {
   int x,y,z,Fstart[3],Fsize[3],Fend[3];
-  long int i;
 
   get_dims(Fstart,Fend,Fsize,2);
   Fsize[0] *= 2;
   Fstart[0] = 1 + (Fstart[0]-1)*2;
-  for (i=0;i < nar;i++)
-    if (fabs(A[i]) > Nglob *1.25e-4)
+  for (long int i=0; i < nar; i++)
+    if (abs(A[i]) > Nglob *1.25e-4)
       {
         z = i/(Fsize[0]*Fsize[1]);
         y = i/Fsize[0] - z*Fsize[1];
@@ -114,18 +105,11 @@ void print_version(std::basic_ostream<charT, traits>& out)
 
 int main(int argc,char **argv)
 {
-  double *A,*p;
-  int i,j,k,x,y,z,nu;
-  int iproc,jproc,ng[3],kmax,iex,m,nrep;
-  double sinyz;
-  double factor;
-  double rtime1,rtime2,gt1,gt2,gt3,gt4,gtp1,gtcomm,tcomm;
-  double cdiff,ccdiff,ans;
-
   int nproc;        // Number of processors in MPI environment
   int procid;       // This processor's global processor ID
   int nx, ny, nz;   // Domain dimensions in x, y, and z directions
   int dims[2];      // Processor grid dimensions in 1st, 2nd directions
+  int nrep;         // Number of times to repeat the test
 
   MPI_Init(&argc, &argv);                   // Initialize MPI on startup
   atexit((void (*) ()) MPI_Finalize);       // Finalize down MPI at exit
@@ -233,8 +217,6 @@ int main(int argc,char **argv)
           "Processor grid dimensions incompatible with number of processors"));
     }
 
-  gt1=gt2=gt3=gt4=gtp1=0.0;
-
   /* Initialize P3DFFT */
   p3dfft_setup(dims, nx, ny, nz, 1 /* safe to overwrite btrans */);
 
@@ -259,99 +241,77 @@ int main(int argc,char **argv)
     sinz[i] = sin((i+istart[2]-1)*2.0*M_PI/nz);
   }
 
-  /* Allocate and Initialize */
-  A = (double *) malloc(sizeof(double) * std::max(
-        isize[0]*isize[1]*isize[2], fsize[0]*fsize[1]*fsize[2]*2));
+  /* Allocate and initialize state space */
+  ublas::shallow_array_adaptor<double> 
+    dataA(std::max( isize[0]*isize[1]*isize[2], fsize[0]*fsize[1]*fsize[2]*2));
+  ublas::vector<double, ublas::shallow_array_adaptor<double> > 
+    vecA(dataA.size(), dataA);
+  double * const A = dataA.begin();
 
-  p = A;
-  for (z=0;z < isize[2];z++)
-    for (y=0;y < isize[1];y++)
-      {
-        sinyz = siny[y]*sinz[z];
-        for (x=0;x < isize[0];x++)
-          *p++ = sinx[x]*sinyz;
-      }
+  {
+    double *p = A;
+    for (int z = 0; z < isize[2]; z++)
+      for (int y=0; y < isize[1]; y++)
+        {
+          const double sinyz = siny[y]*sinz[z];
+          for (int x=0; x < isize[0]; x++)
+            *p++ = sinx[x]*sinyz;
+        }
+  }
 
   const long int Ntot  = fsize[0]*fsize[1]*fsize[2]*2;
   const long int Nglob = nx*ny*nz;
-  factor = 1.0/Nglob;
+  const double factor = 1.0/Nglob;
 
-  rtime1 = 0.0;
-  for (m=0;m < nrep;m++)
+  double rtime1 = 0.0;
+  for (int m=0; m < nrep; m++)
     {
-
       MPI_Barrier(MPI_COMM_WORLD);
       rtime1 = rtime1 - MPI_Wtime();
-      if (procid == 0)
-        printf("Iteration %d\n",m);
-      /* compute forward Fourier transform on A, store results in place */
-      p3dfft_ftran_r2c(A,A);
+      ONLYPROC0(LOG4CXX_DEBUG(logger, "Iteration " << m));
+
+      p3dfft_ftran_r2c(A,A);          // Physical to wave transform
       rtime1 = rtime1 + MPI_Wtime();
 
-      if (procid == 0)
-        printf("Result of forward transform\n");
-
+      ONLYPROC0(LOG4CXX_DEBUG(logger, "Forward transform results "));
       print_all(A,Ntot,procid,Nglob);
-      /* normalize */
-      mult_array(A,Ntot,factor);
+      vecA *= factor;                 // normalize for grid size
 
-      /* Compute backward transform on A, store results in place */
       MPI_Barrier(MPI_COMM_WORLD);
       rtime1 = rtime1 - MPI_Wtime();
-      p3dfft_btran_c2r(A,A);
+      p3dfft_btran_c2r(A,A);          // Wave to physical transfrom
       rtime1 = rtime1 + MPI_Wtime();
 
     }
-  /* free work space */
-  p3dfft_clean();
+  p3dfft_clean();   // Free work space
 
   /* Check results */
-  cdiff = 0.0;
-  p = A;
-  for (z=0;z < isize[2];z++)
-    for (y=0;y < isize[1];y++)
-      {
-        sinyz =siny[y]*sinz[z];
-        for (x=0;x < isize[0];x++)
-          {
-            ans = sinx[x]*sinyz;
-            if (cdiff < fabs(*p - ans))
-              cdiff = fabs(*p - ans);
-            p++;
-          }
-      }
+  double cdiff = 0.0;
+  {
+    double *p = A;
+    for (int z=0; z < isize[2]; z++)
+      for (int y=0; y < isize[1]; y++)
+        {
+          const double sinyz = siny[y]*sinz[z];
+          for (int x=0; x < isize[0]; x++)
+            {
+              const double ans = sinx[x]*sinyz;
+              if (cdiff < abs(*p - ans))
+                cdiff = abs(*p - ans);
+              p++;
+            }
+        }
+  }
 
+  // Gather error indicator
+  double ccdiff = 0.0;
   MPI_Reduce(&cdiff,&ccdiff,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
+  ONLYPROC0(LOG4CXX_DEBUG(logger, 
+      "Maximum difference: " << std::scientific << ccdiff));
 
-  if (procid == 0)
-    printf("max diff =%g\n",ccdiff);
-
-  /* Gather timing statistics */
+  // Gather timing statistics
+  double rtime2 = 0.0;
   MPI_Reduce(&rtime1,&rtime2,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
 
-  /*
-  MPI_Reduce(&FORTNAME(t1),&gt1,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
-  MPI_Reduce(&FORTNAME(t2),&gt2,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
-  MPI_Reduce(&FORTNAME(t3),&gt3,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
-  MPI_Reduce(&FORTNAME(t4),&gt4,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
-  MPI_Reduce(&FORTNAME(tp1),&gtp1,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
-  tcomm = FORTNAME(t1)+FORTNAME(t2)+FORTNAME(t3)+FORTNAME(t4);
-  MPI_Reduce(&tcomm,&gtcomm,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
-
-  gt1 = gt1 / ((double) n);
-  gt2 = gt2 / ((double) n);
-  gt3 = gt3 / ((double) n);
-  gt4 = gt4 / ((double) n);
-  gtp1 = gtp1 / ((double) n);
-  gtcomm = gtcomm / ((double) n);
-  */
-
-  if (procid == 0)
-    {
-      printf("Time per loop=%lg\n",rtime2/((double) nrep));
-      /*
-      printf("Total comm: %g",gtcomm);
-      printf("t1=%lg, t2=%lg, t3=%lg, t4=%lg, tp1=%lg\n",gt1,gt2,gt3,gt4,gtp1);
-      */
-    }
+  ONLYPROC0(LOG4CXX_DEBUG(logger, "Time per loop: " << rtime2/((double)nrep)));
 }
