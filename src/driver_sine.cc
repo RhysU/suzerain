@@ -40,10 +40,14 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
+#include <ios>
 #include <iostream>
 #include <log4cxx/logger.h>
 #include <mpi.h>
+#include <numeric>
 #include "p3dfft_d.h"
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -110,14 +114,9 @@ void print_version(std::basic_ostream<charT, traits>& out)
 
 int main(int argc,char **argv)
 {
-  namespace po = boost::program_options;
-
-  log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
-
-  double *A,*B,*p,*C;
+  double *A,*p;
   int i,j,k,x,y,z,nu;
   int iproc,jproc,ng[3],kmax,iex,m,nrep;
-  long int Nglob,Ntot;
   double sinyz;
   double factor;
   double rtime1,rtime2,gt1,gt2,gt3,gt4,gtp1,gtcomm,tcomm;
@@ -133,6 +132,11 @@ int main(int argc,char **argv)
   MPI_Comm_size(MPI_COMM_WORLD, &nproc);    // TODO Const-ness
   MPI_Comm_rank(MPI_COMM_WORLD, &procid);   // TODO Const-ness
 
+  // TODO Compute width from magnitude of nproc
+  std::ostringstream procname;
+  procname << "proc" << std::setfill('0') << std::setw(3) << procid;
+  log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(procname.str());
+
   // Find default processor grid size based on nproc
   dims[0] = dims[1] = 0;                // Zeroed for MPI_Dims_create
   MPI_Dims_create(nproc, 2, dims);      // Find a Cartesian grid
@@ -140,6 +144,8 @@ int main(int argc,char **argv)
     {
       std::swap(dims[0], dims[1]);
     }
+
+  namespace po = boost::program_options;
 
   // Options accepted on command line and in configuration file
   po::options_description desc_config("Configuration options");
@@ -254,9 +260,8 @@ int main(int argc,char **argv)
   }
 
   /* Allocate and Initialize */
-  A = (double *) malloc(sizeof(double) * isize[0]*isize[1]*isize[2]);
-  B = (double *) malloc(sizeof(double) * fsize[0]*fsize[1]*fsize[2]*2);
-  C = (double *) malloc(sizeof(double) * isize[0]*isize[1]*isize[2]);
+  A = (double *) malloc(sizeof(double) * std::max(
+        isize[0]*isize[1]*isize[2], fsize[0]*fsize[1]*fsize[2]*2));
 
   p = A;
   for (z=0;z < isize[2];z++)
@@ -267,10 +272,8 @@ int main(int argc,char **argv)
           *p++ = sinx[x]*sinyz;
       }
 
-  Ntot = fsize[0]*fsize[1];
-  Ntot *= fsize[2]*2;
-  Nglob = nx * ny;
-  Nglob *= nz;
+  const long int Ntot  = fsize[0]*fsize[1]*fsize[2]*2;
+  const long int Nglob = nx*ny*nz;
   factor = 1.0/Nglob;
 
   rtime1 = 0.0;
@@ -281,21 +284,21 @@ int main(int argc,char **argv)
       rtime1 = rtime1 - MPI_Wtime();
       if (procid == 0)
         printf("Iteration %d\n",m);
-      /* compute forward Fourier transform on A, store results in B */
-      p3dfft_ftran_r2c(A,B);
+      /* compute forward Fourier transform on A, store results in place */
+      p3dfft_ftran_r2c(A,A);
       rtime1 = rtime1 + MPI_Wtime();
 
       if (procid == 0)
         printf("Result of forward transform\n");
 
-      print_all(B,Ntot,procid,Nglob);
+      print_all(A,Ntot,procid,Nglob);
       /* normalize */
-      mult_array(B,Ntot,factor);
+      mult_array(A,Ntot,factor);
 
-      /* Compute backward transform on B, store results in A */
+      /* Compute backward transform on A, store results in place */
       MPI_Barrier(MPI_COMM_WORLD);
       rtime1 = rtime1 - MPI_Wtime();
-      p3dfft_btran_c2r(B,C);
+      p3dfft_btran_c2r(A,A);
       rtime1 = rtime1 + MPI_Wtime();
 
     }
@@ -304,7 +307,7 @@ int main(int argc,char **argv)
 
   /* Check results */
   cdiff = 0.0;
-  p = C;
+  p = A;
   for (z=0;z < isize[2];z++)
     for (y=0;y < isize[1];y++)
       {
