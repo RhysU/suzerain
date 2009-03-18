@@ -1,4 +1,7 @@
 #define BOOST_TEST_MODULE $Id$
+
+#include "config.h"
+
 #include <boost/test/included/unit_test.hpp>
 
 int add( int i, int j ) {

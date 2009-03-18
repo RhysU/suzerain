@@ -66,6 +66,8 @@ BOOST_FOREACH
 BOOST_FORMAT
 BOOST_PROGRAM_OPTIONS
 BOOST_TEST
+dnl TODO Check for boost::numeric::ublas
+AC_DEFINE(BOOST_UBLAS_SHALLOW_ARRAY_ADAPTOR,1,[Enable boost::numeric::ublas::shallow_array_adaptor<T>])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
