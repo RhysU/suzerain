@@ -246,7 +246,7 @@ int main(int argc,char **argv)
     dataA(std::max( isize[0]*isize[1]*isize[2], fsize[0]*fsize[1]*fsize[2]*2));
   ublas::vector<double, ublas::shallow_array_adaptor<double> > 
     vecA(dataA.size(), dataA);
-  double * const A = dataA.begin();
+  double * const A = &dataA[0];
 
   {
     double *p = A;
