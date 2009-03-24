@@ -15,6 +15,7 @@ AM_INIT_AUTOMAKE(1.9 no-define tar-ustar -Wall -Werror foreign)
 AC_PREREQ([2.61])
 AX_AM_MACROS
 AX_ADD_AM_LATEX
+ACLTX_CLASSES([amsart],AMSART_CLASS,,AC_MSG_WARN([Unable to find LaTeX class 'amsart']))
 
 dnl ------------------------------------------------
 dnl Check for compiler toolchain
@@ -82,6 +83,7 @@ AC_CXX_COMPILE_STDCXX_0X
 AC_CXX_CPPFLAGS_STD_LANG(AM_CPPFLAGS)
 AC_CXX_CXXFLAGS_STD_LANG(AM_CXXFLAGS)
 AC_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
+AC_CXX_NAMESPACES
 dnl TODO Find a nice way to enable/disable -Wall at configure time
 dnl AX_CFLAGS_WARN_ALL_ANSI(CFLAGS)
 dnl AX_CFLAGS_WARN_ALL_ANSI(CXXFLAGS)
