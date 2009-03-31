@@ -27,8 +27,8 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_PENCIL_H
-#define PECOS_SUZERAIN_PENCIL_H
+#ifndef PECOS_SUZERAIN_PENCIL
+#define PECOS_SUZERAIN_PENCIL
 
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -36,7 +36,7 @@
 
 namespace pecos { namespace suzerain {
 
-template<class T = double>
+template<typename T = double>
 class Pencil {
 
   private:
@@ -69,4 +69,4 @@ class Pencil {
 
 } }
 
-#endif
+#endif // PECOS_SUZERAIN_PENCIL

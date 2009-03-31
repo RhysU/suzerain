@@ -6,10 +6,6 @@
 
 #include "Pencil.h"
 
-int add( int i, int j ) {
-    return i+j;
-}
-
 BOOST_AUTO_TEST_CASE( declare_pointer )
 {
   pecos::suzerain::Pencil<> *p = NULL;
