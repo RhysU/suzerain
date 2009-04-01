@@ -51,10 +51,20 @@ BOOST_AUTO_TEST_CASE( real_access )
 
   pencil<> p(pstart, psize, wstart, wsize);
 
+  // Z, Y, X loop order
   for (pencil<>::size_type k = 0; k < p.psize_z; ++k) {
     for (pencil<>::size_type j = 0; j < p.psize_y; ++j) {
       for (pencil<>::size_type i = 0; i < p.psize_x; ++i) {
-        p.p(i,j,k) = i*j*k;
+        p.p(i,j,k) = (i+1)*(j+1)*(k+1);
+      }
+    }
+  }
+
+  // X, Y, Z loop order
+  for (pencil<>::size_type i = 0; i < p.psize_x; ++i) {
+    for (pencil<>::size_type j = 0; j < p.psize_y; ++j) {
+      for (pencil<>::size_type k = 0; k < p.psize_z; ++k) {
+        BOOST_CHECK_EQUAL(p.p(i,j,k), (i+1)*(j+1)*(k+1));
       }
     }
   }

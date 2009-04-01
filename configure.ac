@@ -20,6 +20,7 @@ ACLTX_CLASSES([amsart],AMSART_CLASS,,AC_MSG_WARN([Unable to find LaTeX class 'am
 dnl ------------------------------------------------
 dnl Check for compiler toolchain
 dnl ------------------------------------------------
+dnl TODO CHECK_ENABLE_DEBUG not functioning correctly
 AX_CHECK_ENABLE_DEBUG
 AC_PROG_CC
 AC_PROG_CXX
