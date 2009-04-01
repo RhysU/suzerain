@@ -111,14 +111,36 @@ namespace pecos
         const dim_type wsize_z;
 
       private:
-        size_type pspace_nelem_;
-        size_type wspace_nelem_;
-        size_type array_nelem_;  
-        boost::shared_array<pspace_value_type> array_;
+        size_type pspace_offset(
+            const size_type px,
+            const size_type py,
+            const size_type pz) const;
+        size_type wspace_offset(
+            const size_type wx,
+            const size_type wy,
+            const size_type wz) const;
+
+      public:
+        pspace_reference       p(size_type px, size_type py, size_type pz);
+        pspace_const_reference p(size_type px, size_type py, size_type pz) const;
+
+        wspace_reference       w(size_type wx, size_type wy, size_type wz);
+        wspace_const_reference w(size_type wx, size_type wy, size_type wz) const;
+        pspace_reference       w_real(size_type wx, size_type wy, size_type wz);
+        pspace_const_reference w_real(size_type wx, size_type wy, size_type wz) const;
+        pspace_reference       w_imag(size_type wx, size_type wy, size_type wz);
+        pspace_const_reference w_imag(size_type wx, size_type wy, size_type wz) const;
+
+      private:
+        const size_type pspace_nelem_;
+        const size_type wspace_nelem_;
+        const size_type array_nelem_;
+        const boost::shared_array<pspace_value_type> array_;
         adaptor_pspace_type adaptor_pspace_;
         vector_pspace_type vector_pspace_;
         adaptor_wspace_type adaptor_wspace_;
         vector_wspace_type vector_wspace_;
+
       };
 
     template<typename T, typename G>
@@ -126,7 +148,7 @@ namespace pecos
       const dim_type pstart[3], const dim_type psize[3],
       const dim_type wstart[3], const dim_type wsize[3])
     throw(domain_error)
-        : 
+        :
         pstart_x(pstart[0]), pstart_y(pstart[1]), pstart_z(pstart[2]),
         psize_x(psize[0]), psize_y(psize[1]), psize_z(psize[2]),
         wstart_x(wstart[0]), wstart_y(wstart[1]), wstart_z(wstart[2]),
@@ -153,6 +175,83 @@ namespace pecos
       if (wsize_x  < 0) throw domain_error();
       if (wsize_y  < 0) throw domain_error();
       if (wsize_z  < 0) throw domain_error();
+    }
+
+    template<typename T, typename G>
+    inline pencil<T,G>::size_type pencil<T,G>::pspace_offset(
+      const size_type px,
+      const size_type py,
+      const size_type pz) const
+    {
+      // Row major storage in (X,Y,Z) order
+      return px + py*psize_x + pz*psize_x*psize_y;
+    }
+
+    template<typename T, typename G>
+    inline pencil<T,G>::size_type pencil<T,G>::wspace_offset(
+      const size_type wx,
+      const size_type wy,
+      const size_type wz) const
+    {
+      // Row major storage in (X,Y,Z) order
+      // TODO Assert STRIDE1 not specified during P3DFFT compilation
+      return wx + wy*wsize_x + wz*wsize_x*wsize_y;
+    }
+
+    template<typename T, typename G>
+    inline pencil<T,G>::pspace_reference pencil<T,G>::p(
+      size_type px, size_type py, size_type pz)
+    {
+      return vector_pspace_(pspace_offset(px,py,pz));
+    }
+
+    template<typename T, typename G>
+    inline pencil<T,G>::pspace_const_reference pencil<T,G>::p(
+      size_type px, size_type py, size_type pz) const
+    {
+      return vector_pspace_(pspace_offset(px,py,pz));
+    }
+
+    template<typename T, typename G>
+    inline pencil<T,G>::wspace_reference pencil<T,G>::w(
+      size_type wx, size_type wy, size_type wz)
+    {
+      return vector_wspace_(wspace_offset(wx,wy,wz));
+    }
+
+    template<typename T, typename G>
+    inline pencil<T,G>::wspace_const_reference pencil<T,G>::w(
+      size_type wx, size_type wy, size_type wz) const
+    {
+      return vector_wspace_(wspace_offset(wx,wy,wz));
+    }
+
+    template<typename T, typename G>
+    inline pencil<T,G>::pspace_reference pencil<T,G>::w_real(
+      size_type wx, size_type wy, size_type wz)
+    {
+      return vector_pspace_(2*wspace_offset(wx,wy,wz));
+    }
+
+    template<typename T, typename G>
+    inline pencil<T,G>::pspace_const_reference pencil<T,G>::w_real(
+      size_type wx, size_type wy, size_type wz) const
+    {
+      return vector_pspace_(2*wspace_offset(wx,wy,wz));
+    }
+
+    template<typename T, typename G>
+    inline pencil<T,G>::pspace_reference pencil<T,G>::w_imag(
+      size_type wx, size_type wy, size_type wz)
+    {
+      return vector_pspace_(2*wspace_offset(wx,wy,wz)+1);
+    }
+
+    template<typename T, typename G>
+    inline pencil<T,G>::pspace_const_reference pencil<T,G>::w_imag(
+      size_type wx, size_type wy, size_type wz) const
+    {
+      return vector_pspace_(2*wspace_offset(wx,wy,wz)+1);
     }
 
   }
