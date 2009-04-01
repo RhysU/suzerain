@@ -20,17 +20,17 @@ BOOST_AUTO_TEST_CASE( constructor )
 
   pecos::suzerain::pencil<> p(pstart, psize, wstart, wsize);
 
-//  BOOST_CHECK_EQUAL( pg.pstart_x, pstart[0] );
-//  BOOST_CHECK_EQUAL( pg.pstart_y, pstart[1] );
-//  BOOST_CHECK_EQUAL( pg.pstart_z, pstart[2] );
-//  BOOST_CHECK_EQUAL( pg.psize_x,  psize[0]  );
-//  BOOST_CHECK_EQUAL( pg.psize_y,  psize[1]  );
-//  BOOST_CHECK_EQUAL( pg.psize_z,  psize[2]  );
+  BOOST_CHECK_EQUAL( p.pstart_x, pstart[0] );
+  BOOST_CHECK_EQUAL( p.pstart_y, pstart[1] );
+  BOOST_CHECK_EQUAL( p.pstart_z, pstart[2] );
+  BOOST_CHECK_EQUAL( p.psize_x,  psize[0]  );
+  BOOST_CHECK_EQUAL( p.psize_y,  psize[1]  );
+  BOOST_CHECK_EQUAL( p.psize_z,  psize[2]  );
 
-//  BOOST_CHECK_EQUAL( pg.wstart_x, wstart[0] );
-//  BOOST_CHECK_EQUAL( pg.wstart_y, wstart[1] );
-//  BOOST_CHECK_EQUAL( pg.wstart_z, wstart[2] );
-//  BOOST_CHECK_EQUAL( pg.wsize_x,  wsize[0]  );
-//  BOOST_CHECK_EQUAL( pg.wsize_y,  wsize[1]  );
-//  BOOST_CHECK_EQUAL( pg.wsize_z,  wsize[2]  );
+  BOOST_CHECK_EQUAL( p.wstart_x, wstart[0] );
+  BOOST_CHECK_EQUAL( p.wstart_y, wstart[1] );
+  BOOST_CHECK_EQUAL( p.wstart_z, wstart[2] );
+  BOOST_CHECK_EQUAL( p.wsize_x,  wsize[0]  );
+  BOOST_CHECK_EQUAL( p.wsize_y,  wsize[1]  );
+  BOOST_CHECK_EQUAL( p.wsize_z,  wsize[2]  );
 }

@@ -12,12 +12,14 @@ BOOST_AUTO_TEST_CASE( declare_pointer )
   pecos::suzerain::pencil_grid<> *pg = NULL;
 }
 
-BOOST_AUTO_TEST_CASE( constructor_int )
+BOOST_AUTO_TEST_CASE( constructor_default )
 {
-  const int proc_dims[] = { 4, 2 };
-  const int nx = 16, ny = 16, nz = 16;
+  using namespace pecos::suzerain;
 
-  pecos::suzerain::pencil_grid<int> pg(proc_dims, nx, ny, nz);
+  const pencil_grid<>::dim_type proc_dims[] = { 4, 2 };
+  const pencil_grid<>::dim_type nx = 16, ny = 16, nz = 16;
+
+  pecos::suzerain::pencil_grid<> pg(proc_dims, nx, ny, nz);
 
   BOOST_CHECK_EQUAL( pg.pg1, proc_dims[0] );
   BOOST_CHECK_EQUAL( pg.pg2, proc_dims[1] );
