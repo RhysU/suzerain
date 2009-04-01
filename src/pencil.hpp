@@ -30,8 +30,10 @@
 #ifndef PECOS_SUZERAIN_PENCIL
 #define PECOS_SUZERAIN_PENCIL
 
+#include <algorithm>
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/vector.hpp>
+#include <boost/shared_array.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits.hpp>
 #include <complex>
@@ -50,42 +52,44 @@ namespace pecos
         typedef typename G::dim_type dim_type;
 
       private:
-        typedef pencil<T> self_type;
+        typedef typename boost::numeric::ublas::shallow_array_adaptor<T> adaptor_pspace_type;
+        typedef typename boost::numeric::ublas::vector<T, adaptor_pspace_type> vector_pspace_type;
 
-        typedef typename boost::numeric::ublas::shallow_array_adaptor<T> adaptor_pspace;
-        typedef typename boost::numeric::ublas::vector<T, adaptor_pspace> vector_pspace;
-
-        typedef typename boost::numeric::ublas::shallow_array_adaptor<std::complex<T> > adaptor_wspace;
-        typedef typename boost::numeric::ublas::vector<std::complex<T>, adaptor_wspace> vector_wspace;
+        typedef typename boost::numeric::ublas::shallow_array_adaptor<std::complex<T> > adaptor_wspace_type;
+        typedef typename boost::numeric::ublas::vector<std::complex<T>, adaptor_wspace_type> vector_wspace_type;
 
       public:
-        typedef typename vector_pspace::value_type pspace_value_type;
-        typedef typename vector_pspace::const_reference pspace_const_reference;
-        typedef typename vector_pspace::reference pspace_reference;
-        typedef typename vector_pspace::const_pointer pspace_const_pointer;
-        typedef typename vector_pspace::pointer pspace_pointer;
+        typedef typename vector_pspace_type::value_type pspace_value_type;
+        typedef typename vector_pspace_type::const_reference pspace_const_reference;
+        typedef typename vector_pspace_type::reference pspace_reference;
+        typedef typename vector_pspace_type::const_pointer pspace_const_pointer;
+        typedef typename vector_pspace_type::pointer pspace_pointer;
 
-        typedef typename vector_wspace::value_type wspace_value_type;
-        typedef typename vector_wspace::const_reference wspace_const_reference;
-        typedef typename vector_wspace::reference wspace_reference;
-        typedef typename vector_wspace::const_pointer wspace_const_pointer;
-        typedef typename vector_wspace::pointer wspace_pointer;
+        typedef typename vector_wspace_type::value_type wspace_value_type;
+        typedef typename vector_wspace_type::const_reference wspace_const_reference;
+        typedef typename vector_wspace_type::reference wspace_reference;
+        typedef typename vector_wspace_type::const_pointer wspace_const_pointer;
+        typedef typename vector_wspace_type::pointer wspace_pointer;
 
       private:
-        BOOST_STATIC_ASSERT((boost::is_same<
-              typename vector_pspace::size_type,
-              typename vector_wspace::size_type>::value));
-      public:
-        // By static assertion, this is also vector_wspace::size_type
-        typedef typename vector_pspace::size_type size_type;
+        // Ensure design assumptions valid when instantiated
+        BOOST_STATIC_ASSERT(
+            2*sizeof(pspace_value_type) == sizeof(wspace_value_type));
 
-      private:
         BOOST_STATIC_ASSERT((boost::is_same<
-              typename vector_pspace::difference_type,
-              typename vector_wspace::difference_type>::value));
+              typename vector_pspace_type::size_type,
+              typename vector_wspace_type::size_type>::value));
+
+        BOOST_STATIC_ASSERT((boost::is_same<
+              typename vector_pspace_type::difference_type,
+              typename vector_wspace_type::difference_type>::value));
+
       public:
-        // By static assertion, this is also vector_wspace::difference_type
-        typedef typename vector_pspace::difference_type difference_type;
+        // By static assertion, same as also typename vector_wspace_type::size_type
+        typedef typename vector_pspace_type::size_type size_type;
+
+        // By static assertion, same as typename vector_wspace_type::difference_type
+        typedef typename vector_pspace_type::difference_type difference_type;
 
       public:
         pencil(const dim_type pstart[3], const dim_type psize[3],
@@ -105,6 +109,16 @@ namespace pecos
         const dim_type wsize_x;
         const dim_type wsize_y;
         const dim_type wsize_z;
+
+      private:
+        size_type pspace_nelem_;
+        size_type wspace_nelem_;
+        size_type array_nelem_;  
+        boost::shared_array<pspace_value_type> array_;
+        adaptor_pspace_type adaptor_pspace_;
+        vector_pspace_type vector_pspace_;
+        adaptor_wspace_type adaptor_wspace_;
+        vector_wspace_type vector_wspace_;
       };
 
     template<typename T, typename G>
@@ -112,10 +126,19 @@ namespace pecos
       const dim_type pstart[3], const dim_type psize[3],
       const dim_type wstart[3], const dim_type wsize[3])
     throw(domain_error)
-        : pstart_x(pstart[0]), pstart_y(pstart[1]), pstart_z(pstart[2]),
+        : 
+        pstart_x(pstart[0]), pstart_y(pstart[1]), pstart_z(pstart[2]),
         psize_x(psize[0]), psize_y(psize[1]), psize_z(psize[2]),
         wstart_x(wstart[0]), wstart_y(wstart[1]), wstart_z(wstart[2]),
-        wsize_x(wsize[0]), wsize_y(wsize[1]), wsize_z(wsize[2])
+        wsize_x(wsize[0]), wsize_y(wsize[1]), wsize_z(wsize[2]),
+        pspace_nelem_(psize_x*psize_y*psize_z),
+        wspace_nelem_(wsize_x*wsize_y*wsize_z),
+        array_nelem_(std::max(pspace_nelem_, 2*wspace_nelem_)),
+        array_(new pspace_value_type[array_nelem_]),
+        adaptor_pspace_(pspace_nelem_, array_.get()),
+        vector_pspace_(pspace_nelem_, adaptor_pspace_),
+        adaptor_wspace_(wspace_nelem_, reinterpret_cast<wspace_pointer>(array_.get())),
+        vector_wspace_(wspace_nelem_, adaptor_wspace_)
     {
       if (pstart_x < 0) throw domain_error();
       if (pstart_y < 0) throw domain_error();

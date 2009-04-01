@@ -34,6 +34,4 @@ BOOST_AUTO_TEST_CASE( constructor )
   BOOST_CHECK_EQUAL( p.wsize_x,  wsize[0]  );
   BOOST_CHECK_EQUAL( p.wsize_y,  wsize[1]  );
   BOOST_CHECK_EQUAL( p.wsize_z,  wsize[2]  );
-
-  std::cout << boost::is_same<int,int>::value << std::endl;
 }

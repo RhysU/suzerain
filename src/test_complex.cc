@@ -92,8 +92,8 @@ BOOST_AUTO_TEST_CASE( shallow_array_adaptor_shared )
   shallow_adaptor_double adaptor_double(N, carray_double);
   shallow_vector_double  vec_double(N, adaptor_double);
 
-  shallow_adaptor_complex adaptor_complex(N, carray_complex);
-  shallow_vector_complex  vec_complex(N, adaptor_complex);
+  shallow_adaptor_complex adaptor_complex(N/2, carray_complex);
+  shallow_vector_complex  vec_complex(N/2, adaptor_complex);
 
   for (std::size_t i = 0; i < N/2; ++i)
     {
