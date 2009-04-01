@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * Pencil.h: Class to support P3DFFT's physical and wave space data layout
+ * pencil.h: Class to support P3DFFT's physical and wave space data layout
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -37,10 +37,10 @@
 namespace pecos { namespace suzerain {
 
 template<typename T = double>
-class Pencil {
+class pencil {
 
   private:
-    typedef Pencil<T> self_type;
+    typedef pencil<T> self_type;
 
     typedef typename boost::numeric::ublas::shallow_array_adaptor<T> adaptor_pspace;
     typedef typename boost::numeric::ublas::vector<T, adaptor_pspace> vector_pspace;

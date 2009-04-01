@@ -4,9 +4,9 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-#include "Pencil.h"
+#include "pencil.h"
 
 BOOST_AUTO_TEST_CASE( declare_pointer )
 {
-  pecos::suzerain::Pencil<> *p = NULL;
+  pecos::suzerain::pencil<> *p = NULL;
 }

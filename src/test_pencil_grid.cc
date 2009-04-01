@@ -4,12 +4,12 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-#include "PencilGrid.h"
+#include "pencil_grid.h"
 #include "utility.h"
 
 BOOST_AUTO_TEST_CASE( declare_pointer )
 {
-  pecos::suzerain::PencilGrid<> *pg = NULL;
+  pecos::suzerain::pencil_grid<> *pg = NULL;
 }
 
 BOOST_AUTO_TEST_CASE( constructor_int )
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE( constructor_int )
   const int wend[]   = { 6, 3, 15};
   const int wsize[]  = { 7, 4, 16};
 
-  pecos::suzerain::PencilGrid<int> pg(
+  pecos::suzerain::pencil_grid<int> pg(
       proc_dims, nx, ny, nz, pstart, pend, psize, wstart, wend, wsize);
 
   BOOST_CHECK_EQUAL( pg.pg1, proc_dims[0] );
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE( constructor_long )
   const long wend[]   = { 3, 3, 15};
   const long wsize[]  = { 4, 4, 16};
 
-  pecos::suzerain::PencilGrid<long> pg(
+  pecos::suzerain::pencil_grid<long> pg(
       proc_dims, nx, ny, nz, pstart, pend, psize, wstart, wend, wsize);
 
   BOOST_CHECK_EQUAL( pg.pg1, proc_dims[0] );

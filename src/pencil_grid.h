@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * PencilGrid.h: Class to manage data layout concerns for P3DFFT usage
+ * pencil_grid.h: Class to manage data layout concerns for P3DFFT usage
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -38,12 +38,12 @@
 namespace pecos { namespace suzerain {
 
 template<typename T = int>
-class PencilGrid {
+class pencil_grid {
 
   public:
     typedef T dim_type;
 
-    PencilGrid(
+    pencil_grid(
         const T proc_dims[2],
         const T nx, const T ny, const T nz,
         const T pstart[3], const T pend[3], const T psize[3],
@@ -79,7 +79,7 @@ class PencilGrid {
 };
 
 template<typename T>
-PencilGrid<T>::PencilGrid(
+pencil_grid<T>::pencil_grid(
     const T proc_dims[2],
     const T nx, const T ny, const T nz,
     const T pstart[3], const T pend[3], const T psize[3],
