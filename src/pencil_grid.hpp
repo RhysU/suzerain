@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * pencil_grid.h: Class to manage data layout concerns for P3DFFT usage
+ * pencil_grid.hpp: Class to manage data layout concerns for P3DFFT usage
  *
  * $Id$
  *--------------------------------------------------------------------------

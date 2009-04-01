@@ -3,8 +3,9 @@
 #include "config.h"
 
 #include <boost/test/included/unit_test.hpp>
+#include <boost/type_traits.hpp>
 
-#include "pencil.h"
+#include "pencil.hpp"
 
 BOOST_AUTO_TEST_CASE( declare_pointer )
 {
@@ -33,4 +34,6 @@ BOOST_AUTO_TEST_CASE( constructor )
   BOOST_CHECK_EQUAL( p.wsize_x,  wsize[0]  );
   BOOST_CHECK_EQUAL( p.wsize_y,  wsize[1]  );
   BOOST_CHECK_EQUAL( p.wsize_z,  wsize[2]  );
+
+  std::cout << boost::is_same<int,int>::value << std::endl;
 }

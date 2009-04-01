@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * pencil.h: Class to support P3DFFT's physical and wave space data layout
+ * pencil.hpp: Class to support P3DFFT's physical and wave space data layout
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -32,9 +32,11 @@
 
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/vector.hpp>
+#include <boost/static_assert.hpp>
+#include <boost/type_traits.hpp>
 #include <complex>
 
-#include "pencil_grid.h"
+#include "pencil_grid.hpp"
 
 namespace pecos
   {
@@ -44,6 +46,8 @@ namespace pecos
     template<typename T = double, typename G = pencil_grid<> >
     class pencil
       {
+      public:
+        typedef typename G::dim_type dim_type;
 
       private:
         typedef pencil<T> self_type;
@@ -55,23 +59,33 @@ namespace pecos
         typedef typename boost::numeric::ublas::vector<std::complex<T>, adaptor_wspace> vector_wspace;
 
       public:
-        typedef typename G::dim_type dim_type;
-
-        typedef typename vector_pspace::size_type pspace_size_type;
-        typedef typename vector_pspace::difference_type pspace_difference_type;
         typedef typename vector_pspace::value_type pspace_value_type;
         typedef typename vector_pspace::const_reference pspace_const_reference;
         typedef typename vector_pspace::reference pspace_reference;
         typedef typename vector_pspace::const_pointer pspace_const_pointer;
         typedef typename vector_pspace::pointer pspace_pointer;
 
-        typedef typename vector_wspace::size_type wspace_size_type;
-        typedef typename vector_wspace::difference_type wspace_difference_type;
         typedef typename vector_wspace::value_type wspace_value_type;
         typedef typename vector_wspace::const_reference wspace_const_reference;
         typedef typename vector_wspace::reference wspace_reference;
         typedef typename vector_wspace::const_pointer wspace_const_pointer;
         typedef typename vector_wspace::pointer wspace_pointer;
+
+      private:
+        BOOST_STATIC_ASSERT((boost::is_same<
+              typename vector_pspace::size_type,
+              typename vector_wspace::size_type>::value));
+      public:
+        // By static assertion, this is also vector_wspace::size_type
+        typedef typename vector_pspace::size_type size_type;
+
+      private:
+        BOOST_STATIC_ASSERT((boost::is_same<
+              typename vector_pspace::difference_type,
+              typename vector_wspace::difference_type>::value));
+      public:
+        // By static assertion, this is also vector_wspace::difference_type
+        typedef typename vector_pspace::difference_type difference_type;
 
       public:
         pencil(const dim_type pstart[3], const dim_type psize[3],
