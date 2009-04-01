@@ -34,39 +34,91 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <complex>
 
-namespace pecos { namespace suzerain {
+#include "pencil_grid.h"
 
-template<typename T = double>
-class pencil {
+namespace pecos
+  {
+  namespace suzerain
+    {
 
-  private:
-    typedef pencil<T> self_type;
+    template<typename T = double, typename G = pencil_grid<> >
+    class pencil
+      {
 
-    typedef typename boost::numeric::ublas::shallow_array_adaptor<T> adaptor_pspace;
-    typedef typename boost::numeric::ublas::vector<T, adaptor_pspace> vector_pspace;
+      private:
+        typedef pencil<T> self_type;
 
-    typedef typename boost::numeric::ublas::shallow_array_adaptor<std::complex<T> > adaptor_wspace;
-    typedef typename boost::numeric::ublas::vector<std::complex<T>, adaptor_wspace> vector_wspace;
+        typedef typename boost::numeric::ublas::shallow_array_adaptor<T> adaptor_pspace;
+        typedef typename boost::numeric::ublas::vector<T, adaptor_pspace> vector_pspace;
 
-  public:
-    typedef typename vector_pspace::size_type pspace_size_type;
-    typedef typename vector_pspace::difference_type pspace_difference_type;
-    typedef typename vector_pspace::value_type pspace_value_type;
-    typedef typename vector_pspace::const_reference pspace_const_reference;
-    typedef typename vector_pspace::reference pspace_reference;
-    typedef typename vector_pspace::const_pointer pspace_const_pointer;
-    typedef typename vector_pspace::pointer pspace_pointer;
+        typedef typename boost::numeric::ublas::shallow_array_adaptor<std::complex<T> > adaptor_wspace;
+        typedef typename boost::numeric::ublas::vector<std::complex<T>, adaptor_wspace> vector_wspace;
 
-    typedef typename vector_wspace::size_type wspace_size_type;
-    typedef typename vector_wspace::difference_type wspace_difference_type;
-    typedef typename vector_wspace::value_type wspace_value_type;
-    typedef typename vector_wspace::const_reference wspace_const_reference;
-    typedef typename vector_wspace::reference wspace_reference;
-    typedef typename vector_wspace::const_pointer wspace_const_pointer;
-    typedef typename vector_wspace::pointer wspace_pointer;
+      public:
+        typedef typename G::dim_type dim_type;
 
-};
+        typedef typename vector_pspace::size_type pspace_size_type;
+        typedef typename vector_pspace::difference_type pspace_difference_type;
+        typedef typename vector_pspace::value_type pspace_value_type;
+        typedef typename vector_pspace::const_reference pspace_const_reference;
+        typedef typename vector_pspace::reference pspace_reference;
+        typedef typename vector_pspace::const_pointer pspace_const_pointer;
+        typedef typename vector_pspace::pointer pspace_pointer;
 
-} }
+        typedef typename vector_wspace::size_type wspace_size_type;
+        typedef typename vector_wspace::difference_type wspace_difference_type;
+        typedef typename vector_wspace::value_type wspace_value_type;
+        typedef typename vector_wspace::const_reference wspace_const_reference;
+        typedef typename vector_wspace::reference wspace_reference;
+        typedef typename vector_wspace::const_pointer wspace_const_pointer;
+        typedef typename vector_wspace::pointer wspace_pointer;
+
+      public:
+        pencil(const dim_type pstart[3], const dim_type psize[3],
+               const dim_type wstart[3], const dim_type wsize[3])
+        throw(domain_error);
+
+        const dim_type pstart_x;
+        const dim_type pstart_y;
+        const dim_type pstart_z;
+        const dim_type psize_x;
+        const dim_type psize_y;
+        const dim_type psize_z;
+
+        const dim_type wstart_x;
+        const dim_type wstart_y;
+        const dim_type wstart_z;
+        const dim_type wsize_x;
+        const dim_type wsize_y;
+        const dim_type wsize_z;
+      };
+
+    template<typename T, typename G>
+    pencil<T,G>::pencil(
+      const dim_type pstart[3], const dim_type psize[3],
+      const dim_type wstart[3], const dim_type wsize[3])
+    throw(domain_error)
+        : pstart_x(pstart[0]), pstart_y(pstart[1]), pstart_z(pstart[2]),
+        psize_x(psize[0]), psize_y(psize[1]), psize_z(psize[2]),
+        wstart_x(wstart[0]), wstart_y(wstart[1]), wstart_z(wstart[2]),
+        wsize_x(wsize[0]), wsize_y(wsize[1]), wsize_z(wsize[2])
+    {
+      if (pstart_x < 0) throw domain_error();
+      if (pstart_y < 0) throw domain_error();
+      if (pstart_z < 0) throw domain_error();
+      if (psize_x  < 0) throw domain_error();
+      if (psize_y  < 0) throw domain_error();
+      if (psize_z  < 0) throw domain_error();
+
+      if (wstart_x < 0) throw domain_error();
+      if (wstart_y < 0) throw domain_error();
+      if (wstart_z < 0) throw domain_error();
+      if (wsize_x  < 0) throw domain_error();
+      if (wsize_y  < 0) throw domain_error();
+      if (wsize_z  < 0) throw domain_error();
+    }
+
+  }
+}
 
 #endif // PECOS_SUZERAIN_PENCIL
