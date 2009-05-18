@@ -32,10 +32,14 @@
 
 #include <boost/exception.hpp>
 
-namespace pecos { namespace suzerain {
+namespace pecos
+{
 
-  class domain_error: public boost::exception { };
+namespace suzerain {
 
-} }
+class domain_error: public boost::exception { };
+
+}
+}
 
 #endif // PECOS_SUZERAIN_UTILITY

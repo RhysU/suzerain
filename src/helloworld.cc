@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <gsl/gsl_blas.h>
 
-int main(/* int argc, const char* argv[] */) {
+int main(/* int argc, const char* argv[] */)
+{
     printf("Hello, world!\n");
 
     double a[] = { 0.11, 0.12, 0.13,

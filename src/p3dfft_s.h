@@ -55,52 +55,52 @@
 
 __BEGIN_DECLS
 
-extern void FORT_MOD_NAME(p3dfft_setup)(int *dims,int *nx,int *ny,int *nz, int *ow);
-extern void FORT_MOD_NAME(get_dims)(int *,int *,int *,int *);
-extern void FORT_MOD_NAME(p3dfft_ftran_r2c)(float *A,float *B);
-extern void FORT_MOD_NAME(p3dfft_btran_c2r)(float *A,float *B);
-extern void FORT_MOD_NAME(ftran_r2c)(float *A,float *B);
-extern void FORT_MOD_NAME(btran_c2r)(float *A,float *B);
+extern void FORT_MOD_NAME(p3dfft_setup)(int *dims, int *nx, int *ny, int *nz, int *ow);
+extern void FORT_MOD_NAME(get_dims)(int *, int *, int *, int *);
+extern void FORT_MOD_NAME(p3dfft_ftran_r2c)(float *A, float *B);
+extern void FORT_MOD_NAME(p3dfft_btran_c2r)(float *A, float *B);
+extern void FORT_MOD_NAME(ftran_r2c)(float *A, float *B);
+extern void FORT_MOD_NAME(btran_c2r)(float *A, float *B);
 extern void FORT_MOD_NAME(p3dfft_clean)();
 extern void FORTNAME(abort)();
 
-extern void p3dfft_setup(int *dims,int nx,int ny,int nz,int ovewrite);
-extern void get_dims(int *,int *,int *,int );
-extern void p3dfft_ftran_r2c(float *A,float *B);
-extern void p3dfft_btran_c2r(float *A,float *B);
+extern void p3dfft_setup(int *dims, int nx, int ny, int nz, int ovewrite);
+extern void get_dims(int *, int *, int *, int );
+extern void p3dfft_ftran_r2c(float *A, float *B);
+extern void p3dfft_btran_c2r(float *A, float *B);
 extern void p3dfft_clean();
 
 
 __END_DECLS
 
-void p3dfft_setup(int *dims,int nx,int ny,int nz, int overwrite)
+void p3dfft_setup(int *dims, int nx, int ny, int nz, int overwrite)
 {
-  FORT_MOD_NAME(p3dfft_setup)(dims,&nx,&ny,&nz,&overwrite);
+    FORT_MOD_NAME(p3dfft_setup)(dims, &nx, &ny, &nz, &overwrite);
 }
 
-void get_dims(int *start,int *end,int *size,int conf)
+void get_dims(int *start, int *end, int *size, int conf)
 {
-  FORT_MOD_NAME(get_dims)(start,end,size,&conf);
+    FORT_MOD_NAME(get_dims)(start, end, size, &conf);
 }
 
-void p3dfft_ftran_r2c(float *A,float *B)
+void p3dfft_ftran_r2c(float *A, float *B)
 {
-  FORT_MOD_NAME(p3dfft_ftran_r2c)(A,B);
+    FORT_MOD_NAME(p3dfft_ftran_r2c)(A, B);
 }
 
-void p3dfft_btran_c2r(float *A,float *B)
+void p3dfft_btran_c2r(float *A, float *B)
 {
-  FORT_MOD_NAME(p3dfft_btran_c2r)(A,B);
+    FORT_MOD_NAME(p3dfft_btran_c2r)(A, B);
 }
 
 void p3dfft_clean()
 {
-  FORT_MOD_NAME(p3dfft_clean)();
+    FORT_MOD_NAME(p3dfft_clean)();
 }
 
-void FORTNAME(abort)() 
+void FORTNAME(abort)()
 {
-  abort();
+    abort();
 }
 
 #endif /* __P3DFFT_S_H____ */

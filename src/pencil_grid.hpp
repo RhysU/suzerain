@@ -36,46 +36,50 @@
 #include "utility.h"
 
 namespace pecos
-  {
-  namespace suzerain
-    {
+{
 
-    template<typename I = int>
-    class pencil_grid
-      {
+namespace suzerain {
 
-      public:
-        typedef I dim_type;
+template < typename I = int >
 
-        pencil_grid(const I proc_dims[2], const I nx, const I ny, const I nz)
-        throw(domain_error);
+class pencil_grid
+{
 
-        const dim_type pg1;
-        const dim_type pg2;
+public:
+    typedef I dim_type;
 
-        const dim_type nx;
-        const dim_type ny;
-        const dim_type nz;
+    pencil_grid(const I proc_dims[2], const I nx, const I ny, const I nz)
+    throw(domain_error);
 
-      };
+    const dim_type pg1;
+    const dim_type pg2;
 
-    template<typename I>
-    pencil_grid<I>::pencil_grid(
-      const I proc_dims[2],
-      const I nx, const I ny, const I nz)
-    throw(domain_error)
+    const dim_type nx;
+    const dim_type ny;
+    const dim_type nz;
+
+};
+
+template<typename I>
+pencil_grid<I>::pencil_grid(
+    const I proc_dims[2],
+    const I nx, const I ny, const I nz)
+throw(domain_error)
         : pg1(proc_dims[0]), pg2(proc_dims[1]),
         nx(nx), ny(ny), nz(nz)
-    {
-      if (pg1 < 0) throw domain_error();
-      if (pg2 < 0) throw domain_error();
+{
+    if (pg1 < 0) throw domain_error();
 
-      if (ny  < 0) throw domain_error();
-      if (ny  < 0) throw domain_error();
-      if (ny  < 0) throw domain_error();
-    }
+    if (pg2 < 0) throw domain_error();
 
-  }
+    if (ny  < 0) throw domain_error();
+
+    if (ny  < 0) throw domain_error();
+
+    if (ny  < 0) throw domain_error();
+}
+
+}
 }
 
 #endif // PECOS_SUZERAIN_PENCILGRID
