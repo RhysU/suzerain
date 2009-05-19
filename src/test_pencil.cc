@@ -48,29 +48,49 @@ BOOST_AUTO_TEST_CASE( real_access )
     using namespace pecos::suzerain;
 
     const pencil<>::dim_type pstart[] = { 0, 0,  0};
-    const pencil<>::dim_type psize[]  = { 2, 2,  0};
+    const pencil<>::dim_type psize[]  = { 2, 2,  2};
     const pencil<>::dim_type wstart[] = { 0, 0,  0};
-    const pencil<>::dim_type wsize[]  = { 2, 1,  0};
+    const pencil<>::dim_type wsize[]  = { 2, 1,  1};
 
     pencil<> p(pstart, psize, wstart, wsize);
 
-    // Z, Y, X loop order
-
-    for (pencil<>::size_type k = 0; k < p.psize_z; ++k) {
-        for (pencil<>::size_type j = 0; j < p.psize_y; ++j) {
-            for (pencil<>::size_type i = 0; i < p.psize_x; ++i) {
+    // X, Z, Y loop order
+    for (pencil<>::size_type i = 0; i < p.psize_x; ++i) {
+        for (pencil<>::size_type k = 0; k < p.psize_z; ++k) {
+            for (pencil<>::size_type j = 0; j < p.psize_y; ++j) {
                 p.p(i, j, k) = (i + 1) * (j + 1) * (k + 1);
             }
         }
     }
 
-    // X, Y, Z loop order
-    for (pencil<>::size_type i = 0; i < p.psize_x; ++i) {
-        for (pencil<>::size_type j = 0; j < p.psize_y; ++j) {
-            for (pencil<>::size_type k = 0; k < p.psize_z; ++k) {
+    // Y, Z, X loop order
+    for (pencil<>::size_type j = 0; j < p.psize_y; ++j) {
+        for (pencil<>::size_type k = 0; k < p.psize_z; ++k) {
+            for (pencil<>::size_type i = 0; i < p.psize_x; ++i) {
                 BOOST_CHECK_EQUAL(p.p(i, j, k), (i + 1)*(j + 1)*(k + 1));
             }
         }
     }
+}
 
+BOOST_AUTO_TEST_CASE( storage_order )
+{
+    using namespace pecos::suzerain;
+
+    const pencil<>::dim_type pstart[] = {  0,  0,  0};
+    const pencil<>::dim_type psize[]  = { 11, 13, 17};
+    const pencil<>::dim_type wstart[] = {  0,  0,  0};
+    const pencil<>::dim_type wsize[]  = {  3,  5,  7};
+
+    pencil<> p(pstart, psize, wstart, wsize);
+
+    // Check physical memory layout is (X,Z,Y) in column major storage
+    BOOST_CHECK_EQUAL(&p.p(0,0,0) + 1,                 &p.p(1,0,0)); // x
+    BOOST_CHECK_EQUAL(&p.p(0,0,0) + psize[0]*psize[2], &p.p(0,1,0)); // y
+    BOOST_CHECK_EQUAL(&p.p(0,0,0) + psize[0],          &p.p(0,0,1)); // z
+
+    // Check wavespace memory layout is (Y,Z,X) in column major storage
+    BOOST_CHECK_EQUAL(&p.w(0,0,0) + wsize[1]*wsize[2], &p.w(1,0,0)); // x
+    BOOST_CHECK_EQUAL(&p.w(0,0,0) + 1,                 &p.w(0,1,0)); // y
+    BOOST_CHECK_EQUAL(&p.w(0,0,0) + wsize[1],          &p.w(0,0,1)); // z
 }

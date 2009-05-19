@@ -195,8 +195,8 @@ inline pencil<T, G>::size_type pencil<T, G>::pspace_offset(
     const size_type pz) const
 {
     // "original" orientation per the P3DFFT manual page 4
-    // Intended so X is streamwise, Z is spanwise, and Y is wall-normal
-    // Row major storage in (X,Z,Y) order
+    // Intended for X streamwise, Z spanwise, and Y wall-normal
+    // Column major (Fortran) storage in (X,Z,Y) order
     return px + pz*psize_x + py*psize_x*psize_z;
 }
 
@@ -207,8 +207,8 @@ inline pencil<T, G>::size_type pencil<T, G>::wspace_offset(
     const size_type wz) const
 {
     // "transposed" orientation per the P3DFFT manual page 4
-    // Intended so X is streamwise, Z is spanwise, and Y is wall-normal
-    // Row major storage in (Y,Z,X) order
+    // Intended for X streamwise, Z spanwise, and Y wall-normal
+    // Column major (Fortran) storage in (Y,Z,X) order
     // TODO Assert STRIDE1 not specified during P3DFFT compilation
     return wy + wz*wsize_y + wx*wsize_y*wsize_z;
 }
