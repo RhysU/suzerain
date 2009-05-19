@@ -36,6 +36,7 @@
 #include <boost/shared_array.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits.hpp>
+#include <boost/utility.hpp>
 #include <complex>
 
 #include "pencil_grid.hpp"
@@ -47,7 +48,7 @@ namespace suzerain
 {
 
 template < typename T = double, typename G = pencil_grid<> >
-class pencil
+class pencil : boost::noncopyable
 {
 public:
     typedef typename G::dim_type dim_type;
@@ -63,16 +64,23 @@ public:
     typedef typename vector_pspace_type::value_type pspace_value_type;
     typedef typename vector_pspace_type::const_reference pspace_const_reference;
     typedef typename vector_pspace_type::reference pspace_reference;
-    typedef typename vector_pspace_type::const_pointer pspace_const_pointer;
-    typedef typename vector_pspace_type::pointer pspace_pointer;
+    typedef typename vector_pspace_type::const_iterator pspace_const_iterator;
+    typedef typename vector_pspace_type::iterator pspace_iterator;
 
     typedef typename vector_wspace_type::value_type wspace_value_type;
     typedef typename vector_wspace_type::const_reference wspace_const_reference;
     typedef typename vector_wspace_type::reference wspace_reference;
+    typedef typename vector_wspace_type::const_iterator wspace_const_iterator;
+    typedef typename vector_wspace_type::iterator wspace_iterator;
+
+private:
+    typedef typename vector_pspace_type::const_pointer pspace_const_pointer;
+    typedef typename vector_pspace_type::pointer pspace_pointer;
+
     typedef typename vector_wspace_type::const_pointer wspace_const_pointer;
     typedef typename vector_wspace_type::pointer wspace_pointer;
 
-private:
+
     // Ensure design assumptions valid when instantiated
     BOOST_STATIC_ASSERT(
         2*sizeof(pspace_value_type) == sizeof(wspace_value_type));
@@ -131,6 +139,16 @@ public:
     pspace_const_reference w_real(size_type wx, size_type wy, size_type wz) const;
     pspace_reference       w_imag(size_type wx, size_type wy, size_type wz);
     pspace_const_reference w_imag(size_type wx, size_type wy, size_type wz) const;
+
+    pspace_iterator       pbegin();
+    pspace_const_iterator pbegin() const;
+    pspace_iterator       pend();
+    pspace_const_iterator pend() const;
+
+    wspace_iterator       wbegin();
+    wspace_const_iterator wbegin() const;
+    wspace_iterator       wend();
+    wspace_const_iterator wend() const;
 
 private:
     const size_type pspace_nelem_;
@@ -267,6 +285,54 @@ inline pencil<T, G>::pspace_const_reference pencil<T, G>::w_imag(
     size_type wx, size_type wy, size_type wz) const
 {
     return vector_pspace_(2*wspace_offset(wx, wy, wz) + 1);
+}
+
+template<typename T, typename G>
+inline pencil<T, G>::pspace_iterator pencil<T, G>::pbegin()
+{
+    return vector_pspace_.begin();
+}
+
+template<typename T, typename G>
+inline pencil<T, G>::pspace_const_iterator pencil<T, G>::pbegin() const
+{
+    return vector_pspace_.begin();
+}
+
+template<typename T, typename G>
+inline pencil<T, G>::pspace_iterator pencil<T, G>::pend()
+{
+    return vector_pspace_.end();
+}
+
+template<typename T, typename G>
+inline pencil<T, G>::pspace_const_iterator pencil<T, G>::pend() const
+{
+    return vector_pspace_.end();
+}
+
+template<typename T, typename G>
+inline pencil<T, G>::wspace_iterator pencil<T, G>::wbegin()
+{
+    return vector_wspace_.begin();
+}
+
+template<typename T, typename G>
+inline pencil<T, G>::wspace_const_iterator pencil<T, G>::wbegin() const
+{
+    return vector_wspace_.begin();
+}
+
+template<typename T, typename G>
+inline pencil<T, G>::wspace_iterator pencil<T, G>::wend()
+{
+    return vector_wspace_.end();
+}
+
+template<typename T, typename G>
+inline pencil<T, G>::wspace_const_iterator pencil<T, G>::wend() const
+{
+    return vector_wspace_.end();
 }
 
 }
