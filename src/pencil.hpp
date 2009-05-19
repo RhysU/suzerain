@@ -43,10 +43,10 @@
 namespace pecos
 {
 
-namespace suzerain {
+namespace suzerain 
+{
 
 template < typename T = double, typename G = pencil_grid<> >
-
 class pencil
 {
 public:
@@ -270,6 +270,7 @@ inline pencil<T, G>::pspace_const_reference pencil<T, G>::w_imag(
 }
 
 }
+
 }
 
 #endif // PECOS_SUZERAIN_PENCIL

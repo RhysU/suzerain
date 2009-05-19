@@ -26,10 +26,6 @@ test_gsl_bspline_SOURCES  = test_gsl_bspline.cc
 test_gsl_bspline_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
 
 # Unit test executables
-check_PROGRAMS      += test_example
-test_example_SOURCES = test_example.cc
-test_example_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
 check_PROGRAMS           += test_pencil_grid
 test_pencil_grid_SOURCES  = test_pencil_grid.cc
 test_pencil_grid_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)

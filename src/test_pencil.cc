@@ -73,6 +73,66 @@ BOOST_AUTO_TEST_CASE( real_access )
     }
 }
 
+BOOST_AUTO_TEST_CASE( complex_access )
+{
+
+    using namespace pecos::suzerain;
+
+    const pencil<>::dim_type pstart[] = { 1,  1,  1};
+    const pencil<>::dim_type psize[]  = { 2,  3,  5};
+    const pencil<>::dim_type wstart[] = { 2,  2,  2};
+    const pencil<>::dim_type wsize[]  = { 7, 11, 13};
+
+    pencil<> p(pstart, psize, wstart, wsize);
+
+    // X, Z, Y loop order, assign complex value
+    for (pencil<>::size_type i = 0; i < p.wsize_x; ++i) {
+        for (pencil<>::size_type k = 0; k < p.wsize_z; ++k) {
+            for (pencil<>::size_type j = 0; j < p.wsize_y; ++j) {
+                p.w(i, j, k) = pencil<>::wspace_value_type(
+                    (i + 1) * (j + 1) * (k + 1),
+                    (i - 1) * (j - 1) * (k - 1));
+            }
+        }
+    }
+
+    // Y, Z, X loop order, check values are correct
+    for (pencil<>::size_type j = 0; j < p.wsize_y; ++j) {
+        for (pencil<>::size_type k = 0; k < p.wsize_z; ++k) {
+            for (pencil<>::size_type i = 0; i < p.wsize_x; ++i) {
+                BOOST_CHECK_EQUAL(p.w(i, j, k), pencil<>::wspace_value_type(
+                    (i + 1)*(j + 1)*(k + 1),
+                    (i - 1)*(j - 1)*(k - 1)));
+                BOOST_CHECK_EQUAL(p.w_real(i, j, k), (i + 1)*(j + 1)*(k + 1));
+                BOOST_CHECK_EQUAL(p.w_imag(i, j, k), (i - 1)*(j - 1)*(k - 1));
+            }
+        }
+    }
+
+    // X, Z, Y loop order, assign real and image values
+    for (pencil<>::size_type i = 0; i < p.wsize_x; ++i) {
+        for (pencil<>::size_type k = 0; k < p.wsize_z; ++k) {
+            for (pencil<>::size_type j = 0; j < p.wsize_y; ++j) {
+                p.w_real(i, j, k) = (i - 123) * (j - 123) * (k - 123);
+                p.w_imag(i, j, k) = (i + 123) * (j + 123) * (k + 123);
+            }
+        }
+    }
+
+    // Y, Z, X loop order, check values are correct
+    for (pencil<>::size_type j = 0; j < p.wsize_y; ++j) {
+        for (pencil<>::size_type k = 0; k < p.wsize_z; ++k) {
+            for (pencil<>::size_type i = 0; i < p.wsize_x; ++i) {
+                BOOST_CHECK_EQUAL(p.w(i, j, k), pencil<>::wspace_value_type(
+                    (i - 123)*(j - 123)*(k - 123),
+                    (i + 123)*(j + 123)*(k + 123)));
+                BOOST_CHECK_EQUAL(p.w_real(i, j, k), (i - 123)*(j - 123)*(k - 123));
+                BOOST_CHECK_EQUAL(p.w_imag(i, j, k), (i + 123)*(j + 123)*(k + 123));
+            }
+        }
+    }
+}
+
 BOOST_AUTO_TEST_CASE( storage_order )
 {
     using namespace pecos::suzerain;

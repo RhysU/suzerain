@@ -38,10 +38,10 @@
 namespace pecos
 {
 
-namespace suzerain {
+namespace suzerain 
+{
 
 template < typename I = int >
-
 class pencil_grid
 {
 
@@ -80,6 +80,7 @@ throw(domain_error)
 }
 
 }
+
 }
 
 #endif // PECOS_SUZERAIN_PENCILGRID
