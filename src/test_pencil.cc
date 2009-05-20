@@ -29,19 +29,19 @@ BOOST_AUTO_TEST_CASE( constructor )
 
     pencil<> p(pstart, psize, wstart, wsize);
 
-    BOOST_CHECK_EQUAL( p.pstart_x, pstart[0] );
-    BOOST_CHECK_EQUAL( p.pstart_y, pstart[1] );
-    BOOST_CHECK_EQUAL( p.pstart_z, pstart[2] );
-    BOOST_CHECK_EQUAL( p.psize_x,  psize[0]  );
-    BOOST_CHECK_EQUAL( p.psize_y,  psize[1]  );
-    BOOST_CHECK_EQUAL( p.psize_z,  psize[2]  );
+    BOOST_CHECK_EQUAL( p.physical.start_x, pstart[0] );
+    BOOST_CHECK_EQUAL( p.physical.start_y, pstart[1] );
+    BOOST_CHECK_EQUAL( p.physical.start_z, pstart[2] );
+    BOOST_CHECK_EQUAL( p.physical.size_x,  psize[0]  );
+    BOOST_CHECK_EQUAL( p.physical.size_y,  psize[1]  );
+    BOOST_CHECK_EQUAL( p.physical.size_z,  psize[2]  );
 
-    BOOST_CHECK_EQUAL( p.wstart_x, wstart[0] );
-    BOOST_CHECK_EQUAL( p.wstart_y, wstart[1] );
-    BOOST_CHECK_EQUAL( p.wstart_z, wstart[2] );
-    BOOST_CHECK_EQUAL( p.wsize_x,  wsize[0]  );
-    BOOST_CHECK_EQUAL( p.wsize_y,  wsize[1]  );
-    BOOST_CHECK_EQUAL( p.wsize_z,  wsize[2]  );
+    BOOST_CHECK_EQUAL( p.wave.start_x, wstart[0] );
+    BOOST_CHECK_EQUAL( p.wave.start_y, wstart[1] );
+    BOOST_CHECK_EQUAL( p.wave.start_z, wstart[2] );
+    BOOST_CHECK_EQUAL( p.wave.size_x,  wsize[0]  );
+    BOOST_CHECK_EQUAL( p.wave.size_y,  wsize[1]  );
+    BOOST_CHECK_EQUAL( p.wave.size_z,  wsize[2]  );
 }
 
 BOOST_AUTO_TEST_CASE( storage_order )
@@ -56,14 +56,14 @@ BOOST_AUTO_TEST_CASE( storage_order )
     pencil<> p(pstart, psize, wstart, wsize);
 
     // Check physical memory layout is (X,Z,Y) in column major storage
-    BOOST_CHECK_EQUAL(&p.p(0,0,0) + 1,                 &p.p(1,0,0)); // x
-    BOOST_CHECK_EQUAL(&p.p(0,0,0) + psize[0]*psize[2], &p.p(0,1,0)); // y
-    BOOST_CHECK_EQUAL(&p.p(0,0,0) + psize[0],          &p.p(0,0,1)); // z
+    BOOST_CHECK_EQUAL(&p.physical(0,0,0) + 1,                 &p.physical(1,0,0)); // x
+    BOOST_CHECK_EQUAL(&p.physical(0,0,0) + psize[0]*psize[2], &p.physical(0,1,0)); // y
+    BOOST_CHECK_EQUAL(&p.physical(0,0,0) + psize[0],          &p.physical(0,0,1)); // z
 
     // Check wavespace memory layout is (Y,Z,X) in column major storage
-    BOOST_CHECK_EQUAL(&p.w(0,0,0) + wsize[1]*wsize[2], &p.w(1,0,0)); // x
-    BOOST_CHECK_EQUAL(&p.w(0,0,0) + 1,                 &p.w(0,1,0)); // y
-    BOOST_CHECK_EQUAL(&p.w(0,0,0) + wsize[1],          &p.w(0,0,1)); // z
+    BOOST_CHECK_EQUAL(&p.wave(0,0,0) + wsize[1]*wsize[2], &p.wave(1,0,0)); // x
+    BOOST_CHECK_EQUAL(&p.wave(0,0,0) + 1,                 &p.wave(0,1,0)); // y
+    BOOST_CHECK_EQUAL(&p.wave(0,0,0) + wsize[1],          &p.wave(0,0,1)); // z
 }
 
 BOOST_AUTO_TEST_CASE( real_access )
@@ -79,30 +79,30 @@ BOOST_AUTO_TEST_CASE( real_access )
     pencil<> p(pstart, psize, wstart, wsize);
 
     // X, Z, Y loop order
-    for (pencil<>::size_type i = 0; i < p.psize_x; ++i) {
-        for (pencil<>::size_type k = 0; k < p.psize_z; ++k) {
-            for (pencil<>::size_type j = 0; j < p.psize_y; ++j) {
-                p.p(i, j, k) = (i + 1) * (j + 1) * (k + 1);
+    for (pencil<>::size_type i = 0; i < p.physical.size_x; ++i) {
+        for (pencil<>::size_type k = 0; k < p.physical.size_z; ++k) {
+            for (pencil<>::size_type j = 0; j < p.physical.size_y; ++j) {
+                p.physical(i, j, k) = (i + 1) * (j + 1) * (k + 1);
             }
         }
     }
 
     // Y, Z, X loop order
-    for (pencil<>::size_type j = 0; j < p.psize_y; ++j) {
-        for (pencil<>::size_type k = 0; k < p.psize_z; ++k) {
-            for (pencil<>::size_type i = 0; i < p.psize_x; ++i) {
-                BOOST_CHECK_EQUAL(p.p(i, j, k), (i + 1)*(j + 1)*(k + 1));
+    for (pencil<>::size_type j = 0; j < p.physical.size_y; ++j) {
+        for (pencil<>::size_type k = 0; k < p.physical.size_z; ++k) {
+            for (pencil<>::size_type i = 0; i < p.physical.size_x; ++i) {
+                BOOST_CHECK_EQUAL(p.physical(i, j, k), (i + 1)*(j + 1)*(k + 1));
             }
         }
     }
 
     // Clear contents using iterator
-    std::fill(p.pbegin(), p.pend(), 0);
+    std::fill(p.physical.begin(), p.physical.end(), 0);
     // Check contents are clear
-    for (pencil<>::size_type j = 0; j < p.psize_y; ++j) {
-        for (pencil<>::size_type k = 0; k < p.psize_z; ++k) {
-            for (pencil<>::size_type i = 0; i < p.psize_x; ++i) {
-                BOOST_CHECK_EQUAL(p.p(i, j, k), 0);
+    for (pencil<>::size_type j = 0; j < p.physical.size_y; ++j) {
+        for (pencil<>::size_type k = 0; k < p.physical.size_z; ++k) {
+            for (pencil<>::size_type i = 0; i < p.physical.size_x; ++i) {
+                BOOST_CHECK_EQUAL(p.physical(i, j, k), 0);
             }
         }
     }
@@ -121,10 +121,10 @@ BOOST_AUTO_TEST_CASE( complex_access )
     pencil<> p(pstart, psize, wstart, wsize);
 
     // X, Z, Y loop order, assign complex value
-    for (pencil<>::size_type i = 0; i < p.wsize_x; ++i) {
-        for (pencil<>::size_type k = 0; k < p.wsize_z; ++k) {
-            for (pencil<>::size_type j = 0; j < p.wsize_y; ++j) {
-                p.w(i, j, k) = pencil<>::wspace_value_type(
+    for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
+        for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
+            for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
+                p.wave(i, j, k) = pencil<>::wave_space::value_type(
                     (i + 1) * (j + 1) * (k + 1),
                     (i - 1) * (j - 1) * (k - 1));
             }
@@ -132,51 +132,51 @@ BOOST_AUTO_TEST_CASE( complex_access )
     }
 
     // Y, Z, X loop order, check values are correct
-    for (pencil<>::size_type j = 0; j < p.wsize_y; ++j) {
-        for (pencil<>::size_type k = 0; k < p.wsize_z; ++k) {
-            for (pencil<>::size_type i = 0; i < p.wsize_x; ++i) {
-                BOOST_CHECK_EQUAL(p.w(i, j, k), pencil<>::wspace_value_type(
+    for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
+        for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
+            for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
+                BOOST_CHECK_EQUAL(p.wave(i, j, k), pencil<>::wave_space::value_type(
                     (i + 1)*(j + 1)*(k + 1),
                     (i - 1)*(j - 1)*(k - 1)));
-                BOOST_CHECK_EQUAL(p.w_real(i, j, k), (i + 1)*(j + 1)*(k + 1));
-                BOOST_CHECK_EQUAL(p.w_imag(i, j, k), (i - 1)*(j - 1)*(k - 1));
+                BOOST_CHECK_EQUAL(p.wave.real(i, j, k), (i + 1)*(j + 1)*(k + 1));
+                BOOST_CHECK_EQUAL(p.wave.imag(i, j, k), (i - 1)*(j - 1)*(k - 1));
             }
         }
     }
 
     // X, Z, Y loop order, assign real and image values
-    for (pencil<>::size_type i = 0; i < p.wsize_x; ++i) {
-        for (pencil<>::size_type k = 0; k < p.wsize_z; ++k) {
-            for (pencil<>::size_type j = 0; j < p.wsize_y; ++j) {
-                p.w_real(i, j, k) = (i - 123) * (j - 123) * (k - 123);
-                p.w_imag(i, j, k) = (i + 123) * (j + 123) * (k + 123);
+    for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
+        for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
+            for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
+                p.wave.real(i, j, k) = (i - 123) * (j - 123) * (k - 123);
+                p.wave.imag(i, j, k) = (i + 123) * (j + 123) * (k + 123);
             }
         }
     }
 
     // Y, Z, X loop order, check values are correct
-    for (pencil<>::size_type j = 0; j < p.wsize_y; ++j) {
-        for (pencil<>::size_type k = 0; k < p.wsize_z; ++k) {
-            for (pencil<>::size_type i = 0; i < p.wsize_x; ++i) {
-                BOOST_CHECK_EQUAL(p.w(i, j, k), pencil<>::wspace_value_type(
+    for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
+        for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
+            for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
+                BOOST_CHECK_EQUAL(p.wave(i, j, k), pencil<>::wave_space::value_type(
                     (i - 123)*(j - 123)*(k - 123),
                     (i + 123)*(j + 123)*(k + 123)));
                 BOOST_CHECK_EQUAL(
-                    p.w_real(i, j, k), (i - 123)*(j - 123)*(k - 123));
+                    p.wave.real(i, j, k), (i - 123)*(j - 123)*(k - 123));
                 BOOST_CHECK_EQUAL(
-                    p.w_imag(i, j, k), (i + 123)*(j + 123)*(k + 123));
+                    p.wave.imag(i, j, k), (i + 123)*(j + 123)*(k + 123));
             }
         }
     }
 
     // Clear contents using iterator
-    std::fill(p.wbegin(), p.wend(), pencil<>::wspace_value_type(0));
+    std::fill(p.wave.begin(), p.wave.end(), pencil<>::wave_space::value_type(0));
     // Check contents are clear
-    for (pencil<>::size_type j = 0; j < p.wsize_y; ++j) {
-        for (pencil<>::size_type k = 0; k < p.wsize_z; ++k) {
-            for (pencil<>::size_type i = 0; i < p.wsize_x; ++i) {
+    for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
+        for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
+            for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
                 BOOST_CHECK_EQUAL(
-                    p.w(i, j, k), pencil<>::wspace_value_type(0));
+                    p.wave(i, j, k), pencil<>::wave_space::value_type(0));
             }
         }
     }
