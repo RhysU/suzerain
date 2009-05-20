@@ -30,7 +30,6 @@
 #ifndef PECOS_SUZERAIN_PENCILGRID
 #define PECOS_SUZERAIN_PENCILGRID
 
-#include <algorithm>
 #include <stdexcept>
 
 #include "utility.h"
@@ -38,7 +37,7 @@
 namespace pecos
 {
 
-namespace suzerain 
+namespace suzerain
 {
 
 template < typename I = int >
