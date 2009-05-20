@@ -97,8 +97,10 @@ public:
         const dim_type size_z;
         const dim_type size;
 
-        reference       operator()(size_type x, size_type y, size_type z);
-        const_reference operator()(size_type x, size_type y, size_type z) const;
+        reference operator()(
+            const size_type x, const size_type y, const size_type z);
+        const_reference operator()(
+            const size_type x, const size_type y, const size_type z) const;
 
         iterator       begin();
         const_iterator begin() const;
@@ -145,13 +147,19 @@ public:
         const dim_type size_z;
         const dim_type size;
 
-        reference       operator()(size_type x, size_type y, size_type z);
-        const_reference operator()(size_type x, size_type y, size_type z) const;
+        reference operator()(
+            const size_type x, const size_type y, const size_type z);
+        const_reference operator()(
+            const size_type x, const size_type y, const size_type z) const;
 
-        physical_space::reference       real(size_type x, size_type y, size_type z);
-        physical_space::const_reference real(size_type x, size_type y, size_type z) const;
-        physical_space::reference       imag(size_type x, size_type y, size_type z);
-        physical_space::const_reference imag(size_type x, size_type y, size_type z) const;
+        physical_space::reference real(
+            const size_type x, const size_type y, const size_type z);
+        physical_space::const_reference real(
+            const size_type x, const size_type y, const size_type z) const;
+        physical_space::reference imag(
+            const size_type x, const size_type y, const size_type z);
+        physical_space::const_reference imag(
+            const size_type x, const size_type y, const size_type z) const;
 
         iterator       begin();
         const_iterator begin() const;
@@ -335,7 +343,7 @@ template<typename T, typename G>
 inline
 pencil<T, G>::physical_space::reference
 pencil<T, G>::physical_space::operator()(
-    size_type x, size_type y, size_type z)
+    const size_type x, const size_type y, const size_type z)
 {
     return vector_(physical_space::offset(x, y, z));
 }
@@ -344,7 +352,7 @@ template<typename T, typename G>
 inline
 pencil<T, G>::physical_space::const_reference
 pencil<T, G>::physical_space::operator()(
-    size_type x, size_type y, size_type z) const
+    const size_type x, const size_type y, const size_type z) const
 {
     return vector_(physical_space::offset(x, y, z));
 }
@@ -353,7 +361,7 @@ template<typename T, typename G>
 inline
 pencil<T, G>::wave_space::reference
 pencil<T, G>::wave_space::operator()(
-    size_type x, size_type y, size_type z)
+    const size_type x, const size_type y, const size_type z)
 {
     return vector_(wave_space::offset(x, y, z));
 }
@@ -362,7 +370,7 @@ template<typename T, typename G>
 inline
 pencil<T, G>::wave_space::const_reference
 pencil<T, G>::wave_space::operator()(
-    size_type x, size_type y, size_type z) const
+    const size_type x, const size_type y, const size_type z) const
 {
     return vector_(wave_space::offset(x, y, z));
 }
@@ -371,7 +379,7 @@ template<typename T, typename G>
 inline
 pencil<T, G>::physical_space::reference
 pencil<T, G>::wave_space::real(
-    size_type x, size_type y, size_type z)
+    const size_type x, const size_type y, const size_type z)
 {
     return vector_components_(2*wave_space::offset(x, y, z));
 }
@@ -380,7 +388,7 @@ template<typename T, typename G>
 inline
 pencil<T, G>::physical_space::const_reference
 pencil<T, G>::wave_space::real(
-    size_type x, size_type y, size_type z) const
+    const size_type x, const size_type y, const size_type z) const
 {
     return vector_components_(2*wave_space::offset(x, y, z));
 }
@@ -389,7 +397,7 @@ template<typename T, typename G>
 inline
 pencil<T, G>::physical_space::reference
 pencil<T, G>::wave_space::imag(
-    size_type x, size_type y, size_type z)
+    const size_type x, const size_type y, const size_type z)
 {
     return vector_components_(2*wave_space::offset(x, y, z) + 1);
 }
@@ -398,7 +406,7 @@ template<typename T, typename G>
 inline
 pencil<T, G>::physical_space::const_reference
 pencil<T, G>::wave_space::imag(
-    size_type x, size_type y, size_type z) const
+    const size_type x, const size_type y, const size_type z) const
 {
     return vector_components_(2*wave_space::offset(x, y, z) + 1);
 }
