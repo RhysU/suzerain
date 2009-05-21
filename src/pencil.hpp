@@ -51,62 +51,72 @@ template < typename T = double, typename G = pencil_grid<> >
 class pencil : boost::noncopyable
 {
 private:
+    typedef T               real_type;
+    typedef std::complex<T> complex_type;
+
     typedef typename
-        boost::numeric::ublas::shallow_array_adaptor<T>
+        boost::numeric::ublas::shallow_array_adaptor<real_type>
         physical_space_adaptor_type;
     typedef typename
         boost::numeric::ublas::vector<T, physical_space_adaptor_type>
         physical_space_vector_type;
 
     typedef typename
-        boost::numeric::ublas::shallow_array_adaptor<std::complex<T> >
+        boost::numeric::ublas::shallow_array_adaptor<complex_type>
         wave_space_adaptor_type;
     typedef typename
-        boost::numeric::ublas::vector<std::complex<T>, wave_space_adaptor_type>
+        boost::numeric::ublas::vector<complex_type, wave_space_adaptor_type>
         wave_space_vector_type;
 
-    // Ensure design assumptions valid when instantiated
-    BOOST_STATIC_ASSERT(
-        2*sizeof(physical_space_vector_type::value_type)
-        == sizeof(wave_space_vector_type::value_type));
-
+    // Ensure interface design assumptions valid when instantiated
+    BOOST_STATIC_ASSERT(2*sizeof(real_type) == sizeof(complex_type));
     BOOST_STATIC_ASSERT((boost::is_same <
         typename physical_space_vector_type::size_type,
         typename wave_space_vector_type::size_type >::value));
-
     BOOST_STATIC_ASSERT((boost::is_same <
         typename physical_space_vector_type::difference_type,
         typename wave_space_vector_type::difference_type >::value));
+    BOOST_STATIC_ASSERT((boost::is_same <
+        real_type,
+        typename physical_space_vector_type::value_type >::value));
+    BOOST_STATIC_ASSERT((boost::is_same <
+        complex_type,
+        typename wave_space_vector_type::value_type >::value));
 
 public:
     typedef typename G::dim_type dim_type;
 
-    // Prior static assertions make these identical with wave_space variety
-    typedef typename physical_space_vector_type::size_type       size_type;
-    typedef typename physical_space_vector_type::difference_type difference_type;
+    // Prior static assertions make these identical with wave_space varieties
+    typedef typename
+        physical_space_vector_type::size_type       size_type;
+    typedef typename
+        physical_space_vector_type::difference_type difference_type;
 
 private:
-    // Declared above public to enforce correct initialization order
-    const size_type array_nelem_;
-    const boost::scoped_array<typename physical_space_vector_type::value_type> array_;
+    // Declared above public members to enforce correct initialization order
+    const size_type                      array_nelem_;
+    const boost::scoped_array<real_type> array_;
 
 public:
     class wave_space; // Forward declaration
 
     class physical_space : boost::noncopyable
     {
-    private:
-        typedef physical_space_adaptor_type adaptor_type;
-        typedef physical_space_vector_type  vector_type;
-
     public:
-        typedef typename vector_type::const_iterator  const_iterator;
-        typedef typename vector_type::const_pointer   const_pointer;
-        typedef typename vector_type::const_reference const_reference;
-        typedef typename vector_type::iterator        iterator;
-        typedef typename vector_type::pointer         pointer;
-        typedef typename vector_type::reference       reference;
-        typedef typename vector_type::value_type      value_type;
+        typedef typename
+            physical_space_vector_type::const_iterator  const_iterator;
+        typedef typename
+            physical_space_vector_type::const_pointer   const_pointer;
+        typedef typename
+            physical_space_vector_type::const_reference const_reference;
+        typedef typename
+            physical_space_vector_type::iterator        iterator;
+        typedef typename
+            physical_space_vector_type::pointer         pointer;
+        typedef typename
+            physical_space_vector_type::reference       reference;
+        typedef typename
+            physical_space_vector_type::value_type      value_type;
 
         const dim_type start_x;
         const dim_type start_y;
@@ -128,10 +138,9 @@ public:
 
     private:
         friend class pencil<T,G>;
-        friend class pencil<T,G>::wave_space;
 
         physical_space(
-            const dim_type pstart[3], const dim_type psize[3], pointer data)
+            const dim_type start[3], const dim_type size[3], pointer data)
         throw(domain_error);
 
         size_type offset(
@@ -139,24 +148,27 @@ public:
             const size_type y,
             const size_type z) const;
 
-        adaptor_type adaptor_;
-        vector_type vector_;
+        physical_space_adaptor_type adaptor_;
+        physical_space_vector_type  vector_;
     };
 
     class wave_space : boost::noncopyable
     {
-    private:
-        typedef wave_space_adaptor_type adaptor_type;
-        typedef wave_space_vector_type  vector_type;
-
     public:
-        typedef typename vector_type::const_iterator  const_iterator;
-        typedef typename vector_type::const_pointer   const_pointer;
-        typedef typename vector_type::const_reference const_reference;
-        typedef typename vector_type::iterator        iterator;
-        typedef typename vector_type::pointer         pointer;
-        typedef typename vector_type::reference       reference;
-        typedef typename vector_type::value_type      value_type;
+        typedef typename
+            wave_space_vector_type::const_iterator  const_iterator;
+        typedef typename
+            wave_space_vector_type::const_pointer   const_pointer;
+        typedef typename
+            wave_space_vector_type::const_reference const_reference;
+        typedef typename
+            wave_space_vector_type::iterator        iterator;
+        typedef typename
+            wave_space_vector_type::pointer         pointer;
+        typedef typename
+            wave_space_vector_type::reference       reference;
+        typedef typename
+            wave_space_vector_type::value_type      value_type;
 
         const dim_type start_x;
         const dim_type start_y;
@@ -199,10 +211,10 @@ public:
             const size_type y,
             const size_type z) const;
 
-        adaptor_type adaptor_;
-        vector_type  vector_;
-        physical_space::adaptor_type adaptor_components_;
-        physical_space::vector_type  vector_components_;
+        wave_space_adaptor_type adaptor_;
+        wave_space_vector_type  vector_;
+        physical_space_adaptor_type adaptor_components_;
+        physical_space_vector_type  vector_components_;
     };
 
     pencil(const dim_type pstart[3], const dim_type psize[3],
@@ -228,7 +240,7 @@ throw(domain_error)
         : array_nelem_(std::max(
               psize[0]*psize[1]*psize[2],
             2*wsize[0]*wsize[1]*wsize[2])),
-        array_(new physical_space::value_type[array_nelem_]),
+        array_(new real_type[array_nelem_]),
         physical(pstart, psize, array_.get()),
         wave(wstart, wsize, array_.get())
 {
