@@ -65,13 +65,32 @@ private:
         boost::numeric::ublas::vector<std::complex<T>, wave_space_adaptor_type>
         wave_space_vector_type;
 
+    // Ensure design assumptions valid when instantiated
+    BOOST_STATIC_ASSERT(
+        2*sizeof(physical_space_vector_type::value_type)
+        == sizeof(wave_space_vector_type::value_type));
+
+    BOOST_STATIC_ASSERT((boost::is_same <
+        typename physical_space_vector_type::size_type,
+        typename wave_space_vector_type::size_type >::value));
+
+    BOOST_STATIC_ASSERT((boost::is_same <
+        typename physical_space_vector_type::difference_type,
+        typename wave_space_vector_type::difference_type >::value));
+
 public:
     typedef typename G::dim_type dim_type;
 
-    // By static assertion, these are the same as their wave_space counterparts
+    // Prior static assertions make these identical with wave_space variety
     typedef typename physical_space_vector_type::size_type       size_type;
     typedef typename physical_space_vector_type::difference_type difference_type;
 
+private:
+    // Declared above public to enforce correct initialization order
+    const size_type array_nelem_;
+    const boost::scoped_array<typename physical_space_vector_type::value_type> array_;
+
+public:
     class wave_space; // Forward declaration
 
     class physical_space : boost::noncopyable
@@ -186,13 +205,12 @@ public:
         physical_space::vector_type  vector_components_;
     };
 
-    typedef typename physical_space::const_iterator const_iterator;
-    typedef typename physical_space::iterator       iterator;
-
     pencil(const dim_type pstart[3], const dim_type psize[3],
            const dim_type wstart[3], const dim_type wsize[3])
     throw(domain_error);
 
+    typedef typename physical_space::const_iterator const_iterator;
+    typedef typename physical_space::iterator       iterator;
     iterator       begin();
     const_iterator begin() const;
     iterator       end();
@@ -200,22 +218,6 @@ public:
 
     physical_space physical;
     wave_space     wave;
-
-private:
-    // Ensure design assumptions valid when instantiated
-    BOOST_STATIC_ASSERT(
-        2*sizeof(physical_space::value_type) == sizeof(wave_space::value_type));
-
-    BOOST_STATIC_ASSERT((boost::is_same <
-        typename physical_space::vector_type::size_type,
-        typename wave_space::vector_type::size_type >::value));
-
-    BOOST_STATIC_ASSERT((boost::is_same <
-        typename physical_space::vector_type::difference_type,
-        typename wave_space::vector_type::difference_type >::value));
-
-    const size_type array_nelem_;
-    const boost::scoped_array<physical_space::value_type> array_;
 };
 
 template<typename T, typename G>

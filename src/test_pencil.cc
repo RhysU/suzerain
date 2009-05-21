@@ -55,15 +55,33 @@ BOOST_AUTO_TEST_CASE( storage_order )
 
     pencil<> p(pstart, psize, wstart, wsize);
 
+    // Ensure memory locations are initialized for test below,
+    // otherwise valgrind complains bitterly about uninitialized
+    // locations being used for jumps
+    p.physical(0,0,0) = 1;
+    p.physical(1,0,0) = 1;
+    p.physical(0,1,0) = 1;
+    p.physical(0,0,1) = 1;
+    p.wave(0,0,0) = 1;
+    p.wave(1,0,0) = 1;
+    p.wave(0,1,0) = 1;
+    p.wave(0,0,1) = 1;
+
     // Check physical memory layout is (X,Z,Y) in column major storage
-    BOOST_CHECK_EQUAL(&p.physical(0,0,0) + 1,                 &p.physical(1,0,0)); // x
-    BOOST_CHECK_EQUAL(&p.physical(0,0,0) + psize[0]*psize[2], &p.physical(0,1,0)); // y
-    BOOST_CHECK_EQUAL(&p.physical(0,0,0) + psize[0],          &p.physical(0,0,1)); // z
+    BOOST_CHECK_EQUAL(
+        &p.physical(0,0,0) + 1,                 &p.physical(1,0,0)); // x
+    BOOST_CHECK_EQUAL(
+        &p.physical(0,0,0) + psize[0]*psize[2], &p.physical(0,1,0)); // y
+    BOOST_CHECK_EQUAL(
+        &p.physical(0,0,0) + psize[0],          &p.physical(0,0,1)); // z
 
     // Check wavespace memory layout is (Y,Z,X) in column major storage
-    BOOST_CHECK_EQUAL(&p.wave(0,0,0) + wsize[1]*wsize[2], &p.wave(1,0,0)); // x
-    BOOST_CHECK_EQUAL(&p.wave(0,0,0) + 1,                 &p.wave(0,1,0)); // y
-    BOOST_CHECK_EQUAL(&p.wave(0,0,0) + wsize[1],          &p.wave(0,0,1)); // z
+    BOOST_CHECK_EQUAL(
+        &p.wave(0,0,0) + wsize[1]*wsize[2], &p.wave(1,0,0)); // x
+    BOOST_CHECK_EQUAL(
+        &p.wave(0,0,0) + 1,                 &p.wave(0,1,0)); // y
+    BOOST_CHECK_EQUAL(
+        &p.wave(0,0,0) + wsize[1],          &p.wave(0,0,1)); // z
 }
 
 BOOST_AUTO_TEST_CASE( real_access )
