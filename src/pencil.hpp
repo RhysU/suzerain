@@ -31,13 +31,11 @@
 #define PECOS_SUZERAIN_PENCIL
 
 #include <algorithm>
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/numeric/ublas/vector.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/static_assert.hpp>
-#include <boost/type_traits.hpp>
-#include <boost/utility.hpp>
 #include <complex>
+#include <cstddef>
 
 #include "pencil_grid.hpp"
 
@@ -54,48 +52,18 @@ private:
     typedef T               real_type;
     typedef std::complex<T> complex_type;
 
-    typedef typename
-        boost::numeric::ublas::shallow_array_adaptor<real_type>
-        physical_space_adaptor_type;
-    typedef typename
-        boost::numeric::ublas::vector<T, physical_space_adaptor_type>
-        physical_space_vector_type;
-
-    typedef typename
-        boost::numeric::ublas::shallow_array_adaptor<complex_type>
-        wave_space_adaptor_type;
-    typedef typename
-        boost::numeric::ublas::vector<complex_type, wave_space_adaptor_type>
-        wave_space_vector_type;
-
     // Ensure interface design assumptions valid when instantiated
     BOOST_STATIC_ASSERT(2*sizeof(real_type) == sizeof(complex_type));
-    BOOST_STATIC_ASSERT((boost::is_same <
-        typename physical_space_vector_type::size_type,
-        typename wave_space_vector_type::size_type >::value));
-    BOOST_STATIC_ASSERT((boost::is_same <
-        typename physical_space_vector_type::difference_type,
-        typename wave_space_vector_type::difference_type >::value));
-    BOOST_STATIC_ASSERT((boost::is_same <
-        real_type,
-        typename physical_space_vector_type::value_type >::value));
-    BOOST_STATIC_ASSERT((boost::is_same <
-        complex_type,
-        typename wave_space_vector_type::value_type >::value));
 
 public:
     typedef typename G::dim_type dim_type;
-
-    // Prior static assertions make these identical with wave_space varieties
-    typedef typename
-        physical_space_vector_type::size_type       size_type;
-    typedef typename
-        physical_space_vector_type::difference_type difference_type;
+    typedef std::size_t          size_type;
+    typedef std::ptrdiff_t       difference_type;
 
 private:
     // Declared above public members to enforce correct initialization order
-    const size_type                      array_nelem_;
-    const boost::scoped_array<real_type> array_;
+    const size_type                      data_nelem_;
+    const boost::scoped_array<real_type> data_;
 
 public:
     class wave_space; // Forward declaration
@@ -103,20 +71,13 @@ public:
     class physical_space : boost::noncopyable
     {
     public:
-        typedef typename
-            physical_space_vector_type::const_iterator  const_iterator;
-        typedef typename
-            physical_space_vector_type::const_pointer   const_pointer;
-        typedef typename
-            physical_space_vector_type::const_reference const_reference;
-        typedef typename
-            physical_space_vector_type::iterator        iterator;
-        typedef typename
-            physical_space_vector_type::pointer         pointer;
-        typedef typename
-            physical_space_vector_type::reference       reference;
-        typedef typename
-            physical_space_vector_type::value_type      value_type;
+        typedef real_type         value_type;
+        typedef value_type&       reference;
+        typedef const value_type& const_reference;
+        typedef value_type*       pointer;
+        typedef const value_type* const_pointer;
+        typedef pointer           iterator;
+        typedef const_pointer     const_iterator;
 
         const dim_type start_x;
         const dim_type start_y;
@@ -148,27 +109,19 @@ public:
             const size_type y,
             const size_type z) const;
 
-        physical_space_adaptor_type adaptor_;
-        physical_space_vector_type  vector_;
+        pointer const data_;
     };
 
     class wave_space : boost::noncopyable
     {
     public:
-        typedef typename
-            wave_space_vector_type::const_iterator  const_iterator;
-        typedef typename
-            wave_space_vector_type::const_pointer   const_pointer;
-        typedef typename
-            wave_space_vector_type::const_reference const_reference;
-        typedef typename
-            wave_space_vector_type::iterator        iterator;
-        typedef typename
-            wave_space_vector_type::pointer         pointer;
-        typedef typename
-            wave_space_vector_type::reference       reference;
-        typedef typename
-            wave_space_vector_type::value_type      value_type;
+        typedef complex_type      value_type;
+        typedef value_type&       reference;
+        typedef const value_type& const_reference;
+        typedef value_type*       pointer;
+        typedef const value_type* const_pointer;
+        typedef pointer           iterator;
+        typedef const_pointer     const_iterator;
 
         const dim_type start_x;
         const dim_type start_y;
@@ -211,10 +164,8 @@ public:
             const size_type y,
             const size_type z) const;
 
-        wave_space_adaptor_type adaptor_;
-        wave_space_vector_type  vector_;
-        physical_space_adaptor_type adaptor_components_;
-        physical_space_vector_type  vector_components_;
+        pointer const                 data_;
+        physical_space::pointer const data_components_;
     };
 
     pencil(const dim_type pstart[3], const dim_type psize[3],
@@ -237,38 +188,46 @@ pencil<T, G>::pencil(
     const dim_type pstart[3], const dim_type psize[3],
     const dim_type wstart[3], const dim_type wsize[3])
 throw(domain_error)
-        : array_nelem_(std::max(
+        : data_nelem_(std::max(
               psize[0]*psize[1]*psize[2],
             2*wsize[0]*wsize[1]*wsize[2])),
-        array_(new real_type[array_nelem_]),
-        physical(pstart, psize, array_.get()),
-        wave(wstart, wsize, array_.get())
+        data_(new real_type[data_nelem_]),
+        physical(pstart, psize, data_.get()),
+        wave(wstart, wsize, data_.get())
 {
     // NOP
 }
 
 template<typename T, typename G>
-pencil<T, G>::iterator pencil<T, G>::begin()
+inline
+pencil<T, G>::iterator
+pencil<T, G>::begin()
 {
-    return array_.get();
+    return data_.get();
 }
 
 template<typename T, typename G>
-pencil<T, G>::const_iterator pencil<T, G>::begin() const
+inline
+pencil<T, G>::const_iterator
+pencil<T, G>::begin() const
 {
-    return array_.get();
+    return data_.get();
 }
 
 template<typename T, typename G>
-pencil<T, G>::iterator pencil<T, G>::end()
+inline
+pencil<T, G>::iterator
+pencil<T, G>::end()
 {
-    return array_.get() + array_nelem_;
+    return data_.get() + data_nelem_;
 }
 
 template<typename T, typename G>
-pencil<T, G>::const_iterator pencil<T, G>::end() const
+inline
+pencil<T, G>::const_iterator
+pencil<T, G>::end() const
 {
-    return array_.get() + array_nelem_;
+    return data_.get() + data_nelem_;
 }
 
 template<typename T, typename G>
@@ -279,8 +238,7 @@ throw(domain_error)
         start_x(start[0]), start_y(start[1]), start_z(start[2]),
         size_x(size[0]), size_y(size[1]), size_z(size[2]),
         size(size_x*size_y*size_z),
-        adaptor_(this->size, data),
-        vector_(this->size, adaptor_)
+        data_(data)
 {
     if (start_x < 0) throw domain_error();
 
@@ -305,10 +263,8 @@ throw(domain_error)
         start_x(start[0]), start_y(start[1]), start_z(start[2]),
         size_x(size[0]), size_y(size[1]), size_z(size[2]),
         size(size_x*size_y*size_z),
-        adaptor_(this->size,reinterpret_cast<wave_space::pointer>(data)),
-        vector_(this->size, adaptor_),
-        adaptor_components_(2*this->size, data),
-        vector_components_(2*this->size, adaptor_components_)
+        data_(reinterpret_cast<wave_space::pointer>(data)),
+        data_components_(data)
 {
     if (start_x < 0) throw domain_error();
 
@@ -359,7 +315,7 @@ pencil<T, G>::physical_space::reference
 pencil<T, G>::physical_space::operator()(
     const size_type x, const size_type y, const size_type z)
 {
-    return vector_(physical_space::offset(x, y, z));
+    return data_[offset(x, y, z)];
 }
 
 template<typename T, typename G>
@@ -368,7 +324,7 @@ pencil<T, G>::physical_space::const_reference
 pencil<T, G>::physical_space::operator()(
     const size_type x, const size_type y, const size_type z) const
 {
-    return vector_(physical_space::offset(x, y, z));
+    return data_[offset(x, y, z)];
 }
 
 template<typename T, typename G>
@@ -377,7 +333,7 @@ pencil<T, G>::wave_space::reference
 pencil<T, G>::wave_space::operator()(
     const size_type x, const size_type y, const size_type z)
 {
-    return vector_(wave_space::offset(x, y, z));
+    return data_[offset(x, y, z)];
 }
 
 template<typename T, typename G>
@@ -386,7 +342,7 @@ pencil<T, G>::wave_space::const_reference
 pencil<T, G>::wave_space::operator()(
     const size_type x, const size_type y, const size_type z) const
 {
-    return vector_(wave_space::offset(x, y, z));
+    return data_[offset(x, y, z)];
 }
 
 template<typename T, typename G>
@@ -395,7 +351,7 @@ pencil<T, G>::physical_space::reference
 pencil<T, G>::wave_space::real(
     const size_type x, const size_type y, const size_type z)
 {
-    return vector_components_(2*wave_space::offset(x, y, z));
+    return data_components_[2*offset(x, y, z)];
 }
 
 template<typename T, typename G>
@@ -404,7 +360,7 @@ pencil<T, G>::physical_space::const_reference
 pencil<T, G>::wave_space::real(
     const size_type x, const size_type y, const size_type z) const
 {
-    return vector_components_(2*wave_space::offset(x, y, z));
+    return data_components_[2*offset(x, y, z)];
 }
 
 template<typename T, typename G>
@@ -413,7 +369,7 @@ pencil<T, G>::physical_space::reference
 pencil<T, G>::wave_space::imag(
     const size_type x, const size_type y, const size_type z)
 {
-    return vector_components_(2*wave_space::offset(x, y, z) + 1);
+    return data_components_[2*offset(x, y, z) + 1];
 }
 
 template<typename T, typename G>
@@ -422,7 +378,7 @@ pencil<T, G>::physical_space::const_reference
 pencil<T, G>::wave_space::imag(
     const size_type x, const size_type y, const size_type z) const
 {
-    return vector_components_(2*wave_space::offset(x, y, z) + 1);
+    return data_components_[2*offset(x, y, z) + 1];
 }
 
 template<typename T, typename G>
@@ -430,7 +386,7 @@ inline
 pencil<T, G>::physical_space::iterator
 pencil<T, G>::physical_space::begin()
 {
-    return vector_.begin();
+    return data_;
 }
 
 template<typename T, typename G>
@@ -438,7 +394,7 @@ inline
 pencil<T, G>::physical_space::const_iterator
 pencil<T, G>::physical_space::begin() const
 {
-    return vector_.begin();
+    return data_;
 }
 
 template<typename T, typename G>
@@ -446,7 +402,7 @@ inline
 pencil<T, G>::physical_space::iterator
 pencil<T, G>::physical_space::end()
 {
-    return vector_.end();
+    return data_ + size;
 }
 
 template<typename T, typename G>
@@ -454,7 +410,7 @@ inline
 pencil<T, G>::physical_space::const_iterator
 pencil<T, G>::physical_space::end() const
 {
-    return vector_.end();
+    return data_ + size;
 }
 
 template<typename T, typename G>
@@ -462,7 +418,7 @@ inline
 pencil<T, G>::wave_space::iterator
 pencil<T, G>::wave_space::begin()
 {
-    return vector_.begin();
+    return data_;
 }
 
 template<typename T, typename G>
@@ -470,7 +426,7 @@ inline
 pencil<T, G>::wave_space::const_iterator
 pencil<T, G>::wave_space::begin() const
 {
-    return vector_.begin();
+    return data_;
 }
 
 template<typename T, typename G>
@@ -478,7 +434,7 @@ inline
 pencil<T, G>::wave_space::iterator
 pencil<T, G>::wave_space::end()
 {
-    return vector_.end();
+    return data_ + size;
 }
 
 template<typename T, typename G>
@@ -486,7 +442,7 @@ inline
 pencil<T, G>::wave_space::const_iterator
 pencil<T, G>::wave_space::end() const
 {
-    return vector_.end();
+    return data_ + size;
 }
 
 }
