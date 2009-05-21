@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( complex_access )
         }
     }
 
-    // X, Z, Y loop order, assign real and image values
+    // X, Z, Y loop order, assign real and imag values
     for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
         for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
             for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
