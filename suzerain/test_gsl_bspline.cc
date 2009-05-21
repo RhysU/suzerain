@@ -1,4 +1,4 @@
-#include "config.h"
+#include <suzerain/config.h>
 
 #include <stdio.h>
 #include <math.h>

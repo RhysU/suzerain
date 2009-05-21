@@ -1,6 +1,4 @@
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <suzerain/config.h>
 
 #include <stdio.h>
 #include <gsl/gsl_blas.h>

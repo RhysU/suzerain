@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * utility.h: Utility declarations for use within Suzerain
+ * exceptions.hpp: Utility declarations for use within Suzerain
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -35,11 +35,13 @@
 namespace pecos
 {
 
-namespace suzerain {
+namespace suzerain
+{
 
 class domain_error: public boost::exception { };
 
 }
+
 }
 
 #endif // PECOS_SUZERAIN_UTILITY

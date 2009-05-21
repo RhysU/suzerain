@@ -1,6 +1,6 @@
 #define BOOST_TEST_MODULE $Id$
 
-#include "config.h"
+#include <suzerain/config.h>
 
 #include <algorithm>
 #include <boost/numeric/ublas/io.hpp>

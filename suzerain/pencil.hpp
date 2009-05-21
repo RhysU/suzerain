@@ -37,7 +37,7 @@
 #include <complex>
 #include <cstddef>
 
-#include "pencil_grid.hpp"
+#include <suzerain/pencil_grid.hpp>
 
 namespace pecos
 {

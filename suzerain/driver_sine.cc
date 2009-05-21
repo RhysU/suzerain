@@ -28,7 +28,7 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#include "config.h"
+#include <suzerain/config.h>
 
 #include <algorithm>
 #include <boost/foreach.hpp>
@@ -47,7 +47,7 @@
 #include <log4cxx/logger.h>
 #include <mpi.h>
 #include <numeric>
-#include "p3dfft_d.h"
+#include <p3dfft_d.h>
 #include <sstream>
 #include <string>
 #include <vector>

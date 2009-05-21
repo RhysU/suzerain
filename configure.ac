@@ -7,8 +7,8 @@ AC_REVISION([$Id$])
 dnl ------------------------------------------------
 dnl Initialization macros
 dnl ------------------------------------------------
-AC_CONFIG_SRCDIR([src/helloworld.cc])
-AM_CONFIG_HEADER(src/config.h)
+AC_CONFIG_SRCDIR([suzerain/pencil_grid.hpp])
+AM_CONFIG_HEADER(suzerain/config.h)
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE(1.9 no-define tar-ustar -Wall -Werror foreign)
@@ -68,7 +68,6 @@ BOOST_FOREACH
 BOOST_FORMAT
 BOOST_PROGRAM_OPTIONS
 BOOST_TEST
-dnl TODO Check for boost::numeric::ublas
 AC_DEFINE(BOOST_UBLAS_SHALLOW_ARRAY_ADAPTOR,1,[Enable boost::numeric::ublas::shallow_array_adaptor<T>])
 AC_CACHE_SAVE
 
@@ -106,7 +105,7 @@ AC_CONFIG_FILES([
     Makefile
     doc/Makefile
     lib/Makefile
-    src/Makefile
+    suzerain/Makefile
 ])
 
 AC_OUTPUT()

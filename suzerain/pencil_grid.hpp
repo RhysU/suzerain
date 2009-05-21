@@ -30,9 +30,7 @@
 #ifndef PECOS_SUZERAIN_PENCILGRID
 #define PECOS_SUZERAIN_PENCILGRID
 
-#include <stdexcept>
-
-#include "utility.h"
+#include <suzerain/exceptions.hpp>
 
 namespace pecos
 {
