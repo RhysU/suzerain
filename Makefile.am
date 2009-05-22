@@ -38,5 +38,8 @@ all-local: libtool
 libtool: $(LIBTOOL_DEPS)
 	$(SHELL) ./config.status --recheck
 
+# Required for AX_PROG_DOXYGEN
+include doxygen.am
+
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

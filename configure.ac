@@ -98,6 +98,21 @@ AC_LANG([C++])
 ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C++, e.g. mpicxx.))
 AC_CACHE_SAVE
 
+
+dnl ------------------------------------------------
+dnl Documentation generation
+dnl ------------------------------------------------
+DX_INIT_DOXYGEN([suzerain], [doxygen.cfg])
+DX_DOXYGEN_FEATURE([ON])
+DX_HTML_FEATURE([ON])
+DX_CHM_FEATURE([OFF])
+DX_CHI_FEATURE([OFF])
+DX_MAN_FEATURE([OFF])
+DX_RTF_FEATURE([OFF])
+DX_XML_FEATURE([OFF])
+DX_PDF_FEATURE([OFF])
+DX_PS_FEATURE([OFF])
+
 dnl ------------------------------------------------
 dnl Generate Makefiles
 dnl ------------------------------------------------
