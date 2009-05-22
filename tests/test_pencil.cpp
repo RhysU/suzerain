@@ -32,6 +32,9 @@ BOOST_AUTO_TEST_CASE( constructor )
     BOOST_CHECK_EQUAL( p.physical.start_x, pstart[0] );
     BOOST_CHECK_EQUAL( p.physical.start_y, pstart[1] );
     BOOST_CHECK_EQUAL( p.physical.start_z, pstart[2] );
+    BOOST_CHECK_EQUAL( p.physical.end_x, pstart[0] + psize[0]);
+    BOOST_CHECK_EQUAL( p.physical.end_y, pstart[1] + psize[1]);
+    BOOST_CHECK_EQUAL( p.physical.end_z, pstart[2] + psize[2]);
     BOOST_CHECK_EQUAL( p.physical.size_x,  psize[0]  );
     BOOST_CHECK_EQUAL( p.physical.size_y,  psize[1]  );
     BOOST_CHECK_EQUAL( p.physical.size_z,  psize[2]  );
@@ -39,6 +42,9 @@ BOOST_AUTO_TEST_CASE( constructor )
     BOOST_CHECK_EQUAL( p.wave.start_x, wstart[0] );
     BOOST_CHECK_EQUAL( p.wave.start_y, wstart[1] );
     BOOST_CHECK_EQUAL( p.wave.start_z, wstart[2] );
+    BOOST_CHECK_EQUAL( p.wave.end_x, wstart[0] + wsize[0]);
+    BOOST_CHECK_EQUAL( p.wave.end_y, wstart[1] + wsize[1]);
+    BOOST_CHECK_EQUAL( p.wave.end_z, wstart[2] + wsize[2]);
     BOOST_CHECK_EQUAL( p.wave.size_x,  wsize[0]  );
     BOOST_CHECK_EQUAL( p.wave.size_y,  wsize[1]  );
     BOOST_CHECK_EQUAL( p.wave.size_z,  wsize[2]  );

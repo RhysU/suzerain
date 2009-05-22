@@ -82,6 +82,9 @@ public:
         const dim_type start_x;
         const dim_type start_y;
         const dim_type start_z;
+        const dim_type end_x;
+        const dim_type end_y;
+        const dim_type end_z;
         const dim_type size_x;
         const dim_type size_y;
         const dim_type size_z;
@@ -126,6 +129,9 @@ public:
         const dim_type start_x;
         const dim_type start_y;
         const dim_type start_z;
+        const dim_type end_x;
+        const dim_type end_y;
+        const dim_type end_z;
         const dim_type size_x;
         const dim_type size_y;
         const dim_type size_z;
@@ -234,11 +240,12 @@ template<typename T, typename G>
 pencil<T, G>::physical_space::physical_space(
     const dim_type start[3], const dim_type size[3], pointer data)
 throw(domain_error)
-        :
-        start_x(start[0]), start_y(start[1]), start_z(start[2]),
-        size_x(size[0]), size_y(size[1]), size_z(size[2]),
-        size(size_x*size_y*size_z),
-        data_(data)
+    :
+    start_x(start[0]), start_y(start[1]), start_z(start[2]),
+    end_x(start[0]+size[0]), end_y(start[1]+size[1]), end_z(start[2]+size[2]),
+    size_x(size[0]), size_y(size[1]), size_z(size[2]),
+    size(size_x*size_y*size_z),
+    data_(data)
 {
     if (start_x < 0) throw domain_error();
 
@@ -259,12 +266,13 @@ pencil<T, G>::wave_space::wave_space(
     const dim_type size[3],
     physical_space::pointer data)
 throw(domain_error)
-        :
-        start_x(start[0]), start_y(start[1]), start_z(start[2]),
-        size_x(size[0]), size_y(size[1]), size_z(size[2]),
-        size(size_x*size_y*size_z),
-        data_(reinterpret_cast<wave_space::pointer>(data)),
-        data_components_(data)
+    :
+    start_x(start[0]), start_y(start[1]), start_z(start[2]),
+    end_x(start[0]+size[0]), end_y(start[1]+size[1]), end_z(start[2]+size[2]),
+    size_x(size[0]), size_y(size[1]), size_z(size[2]),
+    size(size_x*size_y*size_z),
+    data_(reinterpret_cast<wave_space::pointer>(data)),
+    data_components_(data)
 {
     if (start_x < 0) throw domain_error();
 
