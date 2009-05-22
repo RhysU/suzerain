@@ -27,8 +27,8 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_PENCILGRID
-#define PECOS_SUZERAIN_PENCILGRID
+#ifndef PECOS_SUZERAIN_PENCILGRID_H
+#define PECOS_SUZERAIN_PENCILGRID_H
 
 #include <suzerain/exceptions.hpp>
 
@@ -38,22 +38,35 @@ namespace pecos
 namespace suzerain
 {
 
+/** Encapsulates P3DFFT %pencil grid details, including the global grid size
+ * and the processor grid decomposition parameters.  These are the same details
+ * provided to P3DFFT's \c p3dfft_setup method.
+ */
 template < typename I = int >
 class pencil_grid
 {
 
 public:
-    typedef I dim_type;
+    typedef I dim_type; /**< Dimension type used to specify the grid */
 
+    /**
+     * Constructs an instance per the \c p3dff_setup method.
+     *
+     * @param proc_dims Processor grid sizes in \f$ P_1, P_2 \f$ directions
+     * @param nx Global grid size in the streamwise direction
+     * @param ny Global grid size in the wall-normal direction
+     * @param nz Global grid size in the spanwise direction
+     * @exception domain_error on negative input
+     */
     pencil_grid(const I proc_dims[2], const I nx, const I ny, const I nz)
     throw(domain_error);
 
-    const dim_type pg1;
-    const dim_type pg2;
+    const dim_type pg1; /**< Processor grid size in \f$ P_1 \f$ direction */
+    const dim_type pg2; /**< Processor grid size in \f$ P_2 \f$ direction */
 
-    const dim_type nx;
-    const dim_type ny;
-    const dim_type nz;
+    const dim_type nx;  /**< Global grid size in the streamwise direction */
+    const dim_type ny;  /**< Global grid size in the wall-normal direction */
+    const dim_type nz;  /**< Global grid size in the spanwise direction */
 
 };
 
@@ -76,8 +89,8 @@ throw(domain_error)
     if (ny  < 0) throw domain_error();
 }
 
-}
+} // namespace suzerain
 
-}
+} // namespace pecos
 
-#endif // PECOS_SUZERAIN_PENCILGRID
+#endif // PECOS_SUZERAIN_PENCILGRID_H
