@@ -27,8 +27,8 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_PENCIL
-#define PECOS_SUZERAIN_PENCIL
+#ifndef PECOS_SUZERAIN_PENCIL_H
+#define PECOS_SUZERAIN_PENCIL_H
 
 #include <algorithm>
 #include <boost/noncopyable.hpp>
@@ -45,10 +45,26 @@ namespace pecos
 namespace suzerain
 {
 
+/** Encapsulates a pencil-storage-based scalar field to be in-place transformed
+ * between physical and from wave space by P3DFFT.  Handles details like
+ * maintaining size information, indexing, appropriate storage order.  Here \e
+ * physical indicates real-valued storage of pointwise values and \e wave
+ * indicates complex-valued storage of Fourier coefficients.
+ *
+ * The \f$ x \f$, \f$ y \f$, and \f$ z \f$ directions are designed to be the
+ * streamwise, wall-normal, and spanwise directions respectively.  The storage
+ * is arranged so that the wall-normal direction is stride one in wave space
+ * while the streamwise direction is stride one in physical space.
+ */
 template < typename T = double, typename G = pencil_grid<> >
 class pencil : boost::noncopyable
 {
 public:
+    /**
+     * @name Real-valued types
+     * Used for physical space values and the real and imaginary portions
+     * of wave space coefficients.
+     * @{ */
     typedef T                  real_type;
     typedef real_type&         real_reference;
     typedef const real_type&   const_real_reference;
@@ -56,7 +72,12 @@ public:
     typedef const real_type*   const_real_pointer;
     typedef real_pointer       real_iterator;
     typedef const_real_pointer const_real_iterator;
+    /**  @} */
 
+    /**
+     * @name Complex-valued types
+     * Used for wave space values.
+     * @{ */
     typedef std::complex<T>       complex_type;
     typedef complex_type&         complex_reference;
     typedef const complex_type&   const_complex_reference;
@@ -64,45 +85,103 @@ public:
     typedef const complex_type*   const_complex_pointer;
     typedef complex_pointer       complex_iterator;
     typedef const_complex_pointer const_complex_iterator;
+    /**  @} */
 
+    /** Dimension type used to describe the underlying pencil_grid */
     typedef typename G::dim_type dim_type;
-    typedef std::size_t          size_type;
-    typedef std::ptrdiff_t       difference_type;
+
+    /** Offset type used to access coefficients within the %pencil */
+    typedef std::size_t size_type;
+
+    /** Relative offset type used to describe differences between offsets */
+    typedef std::ptrdiff_t difference_type;
 
 private:
     // Ensure interface design assumptions valid when instantiated
     BOOST_STATIC_ASSERT(2*sizeof(real_type) == sizeof(complex_type));
 
     // Declared above public members to enforce correct initialization order
+    /** Total amount of real_type data stored within the pencil, including both
+     *  physical and wave space storage requirements.
+     */
     const size_type                      data_nelem_;
+
+    /** Sufficient in size to simultaneously house physical and wave space
+     * data.  Contained physical and wave instances store information within
+     * this array.
+     */
     const boost::scoped_array<real_type> data_;
 
 public:
     class wave_space; // Forward declaration
 
+    /**
+     * Provides access to the real-valued representation of the field in
+     * physical space, assuming P3DFFT's \c p3dfft_btran_c2r has been applied
+     * to the pencil.
+     *
+     * The underlying storage is column major in (X,Z,Y) index order.  For
+     * stride reasons, three loops iterating across physical_space should
+     * resemble
+     * \code
+     *  // p an instance of pencil<T,G>::physical
+     *  for (pencil<T,G>::size_type j = 0; j < p.size_y; ++j)
+     *      for (pencil<T,G>::size_type k = 0; k < p.size_z; ++k)
+     *          for (pencil<T,G>::size_type i = 0; i < p.size_x; ++i)
+     *              // Access p(i,j,k) here
+     * \endcode
+     */
     class physical_space : boost::noncopyable
     {
     public:
-        const dim_type start_x;
-        const dim_type start_y;
-        const dim_type start_z;
-        const dim_type end_x;
-        const dim_type end_y;
-        const dim_type end_z;
-        const dim_type size_x;
-        const dim_type size_y;
-        const dim_type size_z;
-        const dim_type size;
+        /**
+         *  @name Starting offsets within the global pencil_grid
+         *  Inclusive index.
+         * @{ */
+        const dim_type start_x; /**< Starting streamwise offset */
+        const dim_type start_y; /**< Starting wall-normal offset */
+        const dim_type start_z; /**< Starting spanwise offset */
+        /**  @} */
 
+        /**
+         *  @name Ending offsets within the global pencil_grid
+         *  Exclusive index.
+         * @{ */
+        const dim_type end_x; /**< Ending streamwise offset */
+        const dim_type end_y; /**< Ending wall-normal offset */
+        const dim_type end_z; /**< Ending spanwise offset */
+        /**  @} */
+
+        /**
+         * @name Size of the physical_space data within the pencil.
+         * @{ */
+        const dim_type size_x; /**< Size in streamwise direction */
+        const dim_type size_y; /**< Size in wall-normal direction */
+        const dim_type size_z; /**< Size in spanwise direction */
+        const dim_type size;   /**< Combined size in three dimensions */
+        /**  @} */
+
+        /**
+         * @name Index-based access to physical space data
+         * @{ */
+        /** Mutable access to physical space data at given offset */
         real_reference operator()(
             const size_type x, const size_type y, const size_type z);
+
+        /** Immutable access to physical space data at given offset */
         const_real_reference operator()(
             const size_type x, const size_type y, const size_type z) const;
+        /**  @} */
 
+        /**
+         * @name Iterator-based access to physical space data
+         * Iteration access is linear across the underlying storage.
+         * @{ */
         real_iterator       begin();
         const_real_iterator begin() const;
         real_iterator       end();
         const_real_iterator end() const;
+        /**  @} */
 
     private:
         friend class pencil<T,G>;
@@ -447,8 +526,8 @@ pencil<T, G>::wave_space::end() const
     return data_complex_ + size;
 }
 
-}
+} // namespace suzerain
 
-}
+} // namespace pecos
 
-#endif // PECOS_SUZERAIN_PENCIL
+#endif // PECOS_SUZERAIN_PENCIL_H

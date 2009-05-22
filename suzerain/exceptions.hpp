@@ -22,13 +22,13 @@
  *
  *--------------------------------------------------------------------------
  *
- * exceptions.hpp: Utility declarations for use within Suzerain
+ * exceptions.hpp: Exceptions used within Suzerain
  *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_UTILITY
-#define PECOS_SUZERAIN_UTILITY
+#ifndef PECOS_SUZERAIN_EXCEPTIONS_H
+#define PECOS_SUZERAIN_EXCEPTIONS_H
 
 #include <boost/exception.hpp>
 
@@ -38,10 +38,15 @@ namespace pecos
 namespace suzerain
 {
 
+/** Reports arguments to functions that are outside the valid input range.
+ *
+ * \internal Intended to have the same semantics as \c std::domain_error
+ * but with the benefit of boost::exception as a base class.
+ */
 class domain_error: public boost::exception { };
 
-}
+} // namespace suzerain
 
-}
+} // namespace pecos
 
-#endif // PECOS_SUZERAIN_UTILITY
+#endif // PECOS_SUZERAIN_EXCEPTIONS_H
