@@ -103,6 +103,7 @@ dnl Generate Makefiles
 dnl ------------------------------------------------
 AC_CONFIG_FILES([
     Makefile
+    doxygen.cfg
     lib/Makefile
     doc/Makefile
     suzerain/Makefile
