@@ -16,6 +16,8 @@ AUX_DIST = build-aux/install-sh    \
            build-aux/mkinstalldirs \
            build-aux/missing
 
+MOSTLYCLEANFILES = $(DX_CLEANFILES)
+
 # Files to be deleted by 'make maintainer-clean'
 MAINTAINERCLEANFILES =     \
 	aclocal.m4             \

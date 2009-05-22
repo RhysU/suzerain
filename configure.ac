@@ -102,7 +102,7 @@ AC_CACHE_SAVE
 dnl ------------------------------------------------
 dnl Documentation generation
 dnl ------------------------------------------------
-DX_INIT_DOXYGEN([suzerain], [doxygen.cfg])
+DX_INIT_DOXYGEN([suzerain],[doxygen.cfg],[doxygen-doc])
 DX_DOXYGEN_FEATURE([ON])
 DX_HTML_FEATURE([ON])
 DX_CHM_FEATURE([OFF])
@@ -118,7 +118,6 @@ dnl Generate Makefiles
 dnl ------------------------------------------------
 AC_CONFIG_FILES([
     Makefile
-    doxygen.cfg
     lib/Makefile
     doc/Makefile
     suzerain/Makefile
