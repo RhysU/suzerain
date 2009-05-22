@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE( complex_access )
     for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
         for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
             for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
-                p.wave(i, j, k) = pencil<>::wave_space::value_type(
+                p.wave(i, j, k) = pencil<>::complex_type(
                     (i + 1) * (j + 1) * (k + 1),
                     (i - 1) * (j - 1) * (k - 1));
             }
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE( complex_access )
     for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
             for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
-                BOOST_CHECK_EQUAL(p.wave(i, j, k), pencil<>::wave_space::value_type(
+                BOOST_CHECK_EQUAL(p.wave(i, j, k), pencil<>::complex_type(
                     (i + 1)*(j + 1)*(k + 1),
                     (i - 1)*(j - 1)*(k - 1)));
                 BOOST_CHECK_EQUAL(p.wave.real(i, j, k), (i + 1)*(j + 1)*(k + 1));
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE( complex_access )
     for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
             for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
-                BOOST_CHECK_EQUAL(p.wave(i, j, k), pencil<>::wave_space::value_type(
+                BOOST_CHECK_EQUAL(p.wave(i, j, k), pencil<>::complex_type(
                     (i - 123)*(j - 123)*(k - 123),
                     (i + 123)*(j + 123)*(k + 123)));
                 BOOST_CHECK_EQUAL(
@@ -194,13 +194,13 @@ BOOST_AUTO_TEST_CASE( complex_access )
     }
 
     // Clear contents using iterator
-    std::fill(p.wave.begin(), p.wave.end(), pencil<>::wave_space::value_type(0));
+    std::fill(p.wave.begin(), p.wave.end(), pencil<>::complex_type(0));
     // Check contents are clear
     for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
             for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
                 BOOST_CHECK_EQUAL(
-                    p.wave(i, j, k), pencil<>::wave_space::value_type(0));
+                    p.wave(i, j, k), pencil<>::complex_type(0));
             }
         }
     }
