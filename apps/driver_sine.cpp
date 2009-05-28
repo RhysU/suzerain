@@ -28,33 +28,34 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#include <suzerain/config.h>
-
-#include <algorithm>
-#include <boost/foreach.hpp>
-#include <boost/format.hpp>
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/program_options.hpp>
-#include <boost/shared_array.hpp>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <cstddef>
+
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <ios>
 #include <iostream>
-#include <log4cxx/logger.h>
-#include <mpi.h>
 #include <numeric>
-#include <p3dfft_d.h>
 #include <sstream>
 #include <string>
-#include <vector>
+#include <valarray>
 
-// TODO: Place into pecos::suzerain namespace
+#include <boost/array.hpp>
+#include <boost/foreach.hpp>
+#include <boost/format.hpp>
+#include <boost/program_options.hpp>
+#include <boost/shared_array.hpp>
 
-namespace ublas = boost::numeric::ublas; // Shorthand, TODO remove in some way
+#include <log4cxx/logger.h>
+#include <mpi.h>
+#include <p3dfft_d.h>
+
+#include <suzerain/config.h>
+#include <suzerain/pencil_grid.hpp>
+#include <suzerain/pencil.hpp>
 
 #define ONLYPROC0(expr) { if (!procid) { expr ; } };
 
@@ -231,51 +232,33 @@ int main(int argc, char **argv)
     p3dfft_setup(dims, nx, ny, nz, 1 /* safe to overwrite btrans */);
 
     /* Get dimensions for input and output arrays */
-    ublas::c_vector<int, 3> istart(3), isize(3), iend(3);
+    boost::array<int, 3> istart, isize, iend, fstart, fsize, fend;
+    get_dims(istart.data(), iend.data(), isize.data(), 1/* physical pencil */);
+    get_dims(fstart.data(), fend.data(), fsize.data(), 2/* wave pencil */);
 
-    ublas::c_vector<int, 3> fstart(3), fsize(3), fend(3);
-
-    get_dims(istart.data(), iend.data(), isize.data(), 1 /* physical pencil */);
-
-    get_dims(fstart.data(), fend.data(), fsize.data(), 2 /* wave pencil */);
-
-    ublas::vector<double> sinx(nx);
-
-    ublas::vector<double> siny(ny);
-
-    ublas::vector<double> sinz(nz);
-
-    for (ublas::vector<double>::size_type i = 0; i < isize[0]; ++i) {
+    std::valarray<double> sinx(nx), siny(ny), sinz(nz);
+    for (size_t i = 0; i < isize[0]; ++i) {
         sinx[i] = sin((i + istart[0] - 1) * 2.0 * M_PI / nx);
     }
 
-    for (ublas::vector<double>::size_type i = 0; i < isize[1]; ++i) {
+    for (size_t i = 0; i < isize[1]; ++i) {
         siny[i] = sin((i + istart[1] - 1) * 2.0 * M_PI / ny);
     }
 
-    for (ublas::vector<double>::size_type i = 0; i < isize[2]; ++i) {
+    for (size_t i = 0; i < isize[2]; ++i) {
         sinz[i] = sin((i + istart[2] - 1) * 2.0 * M_PI / nz);
     }
 
     /* Allocate and initialize state space */
-    ublas::shallow_array_adaptor<double>
-    dataA(std::max( isize[0]*isize[1]*isize[2], fsize[0]*fsize[1]*fsize[2]*2));
+    using pecos::suzerain::pencil;
+    pencil<> A(istart.data(), isize.data(), fstart.data(), fsize.data());
 
-    ublas::vector<double, ublas::shallow_array_adaptor<double> >
-    vecA(dataA.size(), dataA);
-
-    double * const A = &dataA[0];
-
-    {
-        double *p = A;
-
-        for (int z = 0; z < isize[2]; z++)
-            for (int y = 0; y < isize[1]; y++) {
-                const double sinyz = siny[y] * sinz[z];
-
-                for (int x = 0; x < isize[0]; x++)
-                    *p++ = sinx[x] * sinyz;
+    for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
+        for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
+            for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
+                A.physical(i,j,k) = sinx[i]*siny[j]*sinz[k];
             }
+        }
     }
 
     const long int Ntot  = fsize[0] * fsize[1] * fsize[2] * 2;
@@ -291,16 +274,19 @@ int main(int argc, char **argv)
         rtime1 = rtime1 - MPI_Wtime();
         ONLYPROC0(LOG4CXX_DEBUG(logger, "Iteration " << m));
 
-        p3dfft_ftran_r2c(A, A);         // Physical to wave transform
+        p3dfft_ftran_r2c(A.data(), A.data()); // Physical to wave
         rtime1 = rtime1 + MPI_Wtime();
 
         ONLYPROC0(LOG4CXX_DEBUG(logger, "Forward transform results "));
-        print_all(A, Ntot, procid, Nglob);
-        vecA *= factor;                 // normalize for grid size
+        print_all(A.data(), Ntot, procid, Nglob);
+
+        for (pencil<>::real_iterator it = A.begin(); it != A.end(); ++it) {
+            *it *= factor;                    // normalize for grid size
+        }
 
         MPI_Barrier(MPI_COMM_WORLD);
         rtime1 = rtime1 - MPI_Wtime();
-        p3dfft_btran_c2r(A, A);         // Wave to physical transfrom
+        p3dfft_btran_c2r(A.data(), A.data()); // Wave to physical
         rtime1 = rtime1 + MPI_Wtime();
 
     }
@@ -309,22 +295,14 @@ int main(int argc, char **argv)
 
     /* Check results */
     double cdiff = 0.0;
-    {
-        double *p = A;
-
-        for (int z = 0; z < isize[2]; z++)
-            for (int y = 0; y < isize[1]; y++) {
-                const double sinyz = siny[y] * sinz[z];
-
-                for (int x = 0; x < isize[0]; x++) {
-                    const double ans = sinx[x] * sinyz;
-
-                    if (cdiff < abs(*p - ans))
-                        cdiff = abs(*p - ans);
-
-                    p++;
-                }
+    for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
+        for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
+            for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
+                const double ans = sinx[i]*siny[j]*sinz[k];
+                if (cdiff < abs(A.physical(i,j,k) - ans))
+                    cdiff = abs(A.physical(i,j,k) - ans);
             }
+        }
     }
 
     // Gather error indicator

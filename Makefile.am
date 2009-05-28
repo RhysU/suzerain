@@ -34,7 +34,10 @@ MAINTAINERCLEANFILES =     \
 	src/stamp.h.in
 
 # Additional tasks run with the 'all' target
-all-local: doxygen-run libtool
+all-local:  libtool
+
+# Documentation hooks in with the 'html' target
+html-local: doxygen-run
 
 # Make sure that libtool is up to date
 libtool: $(LIBTOOL_DEPS)
