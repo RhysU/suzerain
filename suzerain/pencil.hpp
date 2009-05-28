@@ -365,6 +365,12 @@ public:
     const_real_iterator end() const;
     /**  @} */
 
+    
+    /** Access the raw underlying storage directly, intended for use with
+     * P3DFFT's \c p3dfft_ftran_r2c and \c p3dfft_btran_c2r methods.
+     */
+    real_pointer data();
+
     /** Use to access all physical_space data for this instance */
     physical_space physical;
 
@@ -417,6 +423,14 @@ pencil<T, G>::const_real_iterator
 pencil<T, G>::end() const
 {
     return data_.get() + data_nelem_;
+}
+
+template<typename T, typename G>
+inline
+pencil<T, G>::real_pointer
+pencil<T, G>::data()
+{
+    return data_.get();
 }
 
 template<typename T, typename G>
