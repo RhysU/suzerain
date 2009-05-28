@@ -4,10 +4,10 @@ ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
 
 #Build in these directories:
-SUBDIRS = lib doc suzerain tests
+SUBDIRS = lib suzerain tests apps doc
 
 #Distribute these directories:
-DIST_SUBDIRS = lib doc suzerain tests
+DIST_SUBDIRS = lib suzerain tests apps doc
 
 EXTRA_DIST= bootstrap
 

@@ -116,8 +116,9 @@ dnl Generate Makefiles
 dnl ------------------------------------------------
 AC_CONFIG_FILES([
     Makefile
-    lib/Makefile
+    apps/Makefile
     doc/Makefile
+    lib/Makefile
     suzerain/Makefile
     tests/Makefile
 ])
