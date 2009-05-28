@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
-#include <boost/static_assert.hpp>
 #include <complex>
 #include <cstddef>
 
@@ -97,9 +96,6 @@ public:
     typedef std::ptrdiff_t difference_type;
 
 private:
-    // Ensure interface design assumptions valid when instantiated
-    BOOST_STATIC_ASSERT(2*sizeof(real_type) == sizeof(complex_type));
-
     // Declared above public members to enforce correct initialization order
     /** Total amount of real_type data stored within the pencil, including both
      *  physical and wave space storage requirements.
@@ -124,7 +120,7 @@ public:
      * stride reasons, three loops iterating across physical_space should
      * resemble
      * \code
-     *  // p an instance of pencil<T,G>::physical
+     *  // p an instance of pencil<T,G>::physical_space
      *  for (pencil<T,G>::size_type j = 0; j < p.size_y; ++j)
      *      for (pencil<T,G>::size_type k = 0; k < p.size_z; ++k)
      *          for (pencil<T,G>::size_type i = 0; i < p.size_x; ++i)
@@ -158,7 +154,7 @@ public:
         const dim_type size_x; /**< Size in streamwise direction */
         const dim_type size_y; /**< Size in wall-normal direction */
         const dim_type size_z; /**< Size in spanwise direction */
-        const dim_type size;   /**< Combined size in three dimensions */
+        const dim_type size;   /**< Products of sizes in three dimensions */
         /**  @} */
 
         /**
@@ -184,81 +180,195 @@ public:
         /**  @} */
 
     private:
+        /** Allows pencil to construct instances of physical_space */
         friend class pencil<T,G>;
 
+        /** Intended for use by pencil only.  The containing pencil
+         * instance is required to perform all memory allocation and
+         * deallocation.
+         *
+         * @param start starting location within the global pencil grid
+         * @param size  sizes of the data stored within this instance
+         * @param data  location where coefficients are to be found,
+         *              must be sufficiently large to hold all elements.
+         * @throw domain_error if any index is negative.
+         */
         physical_space(
             const dim_type start[3], const dim_type size[3], real_pointer data)
         throw(domain_error);
 
+        /** Compute the linear offset to the (\c x, \c y, \c z) element within
+         * the physical_space data.  This is the "original" orientation per the
+         * P3DFFT manual page 4.  The layout is column major (Fortran) storage
+         * in (X,Z,Y) order.
+         *
+         * @param x desired entry offset in streamwise direction
+         * @param y desired entry offset in wall-normal direction
+         * @param z desired entry offset in spanwise direction
+         *
+         * @return the linear, 1D offset where (\c x, \c y, \c z) is stored.
+         */
         size_type offset(
             const size_type x,
             const size_type y,
             const size_type z) const;
 
+        /** Raw real_type data where coefficients are stored. */
         real_pointer const data_;
     };
 
+    /**
+     * Provides access to the complex-valued representation of the field in
+     * wave space, assuming P3DFFT's \c p3dfft_ftran_r2c has been applied
+     * to the pencil.
+     *
+     * The underlying storage is column major in (Y,Z,X) index order.  For
+     * stride reasons, three loops iterating across physical_space should
+     * resemble
+     * \code
+     *  // p an instance of pencil<T,G>::wave_space
+     *  for (pencil<T,G>::size_type i = 0; i < p.size_x; ++i)
+     *      for (pencil<T,G>::size_type k = 0; k < p.size_z; ++k)
+     *          for (pencil<T,G>::size_type j = 0; j < p.size_y; ++j)
+     *              // Access p(i,j,k) here
+     * \endcode
+     */
     class wave_space : boost::noncopyable
     {
     public:
-        const dim_type start_x;
-        const dim_type start_y;
-        const dim_type start_z;
-        const dim_type end_x;
-        const dim_type end_y;
-        const dim_type end_z;
-        const dim_type size_x;
-        const dim_type size_y;
-        const dim_type size_z;
-        const dim_type size;
+        /**
+         *  @name Starting offsets within the global pencil_grid
+         *  Inclusive index.
+         * @{ */
+        const dim_type start_x; /**< Starting streamwise offset */
+        const dim_type start_y; /**< Starting wall-normal offset */
+        const dim_type start_z; /**< Starting spanwise offset */
+        /**  @} */
 
+        /**
+         *  @name Ending offsets within the global pencil_grid
+         *  Exclusive index.
+         * @{ */
+        const dim_type end_x; /**< Ending streamwise offset */
+        const dim_type end_y; /**< Ending wall-normal offset */
+        const dim_type end_z; /**< Ending spanwise offset */
+        /**  @} */
+
+        /**
+         * @name Size of the physical_space data within the pencil.
+         * @{ */
+        const dim_type size_x; /**< Size in streamwise direction */
+        const dim_type size_y; /**< Size in wall-normal direction */
+        const dim_type size_z; /**< Size in spanwise direction */
+        const dim_type size;   /**< Products of sizes in three dimensions */
+        /**  @} */
+
+        /**
+         * @name Index-based access to wave space data
+         * @{ */
+        /** Mutable access to wave space data at given offset */
         complex_reference operator()(
             const size_type x, const size_type y, const size_type z);
+
+        /** Immutable access to wave space data at given offset */
         const_complex_reference operator()(
             const size_type x, const size_type y, const size_type z) const;
 
+        /** Mutable access to real coefficients at given offset */
         real_reference real(
             const size_type x, const size_type y, const size_type z);
+
+        /** Immutable access to space real coefficients at given offset */
         const_real_reference real(
             const size_type x, const size_type y, const size_type z) const;
+
+        /** Mutable access to imaginary coefficients at given offset */
         real_reference imag(
             const size_type x, const size_type y, const size_type z);
+
+        /** Immutable access to imaginary coefficients at given offset */
         const_real_reference imag(
             const size_type x, const size_type y, const size_type z) const;
+        /**  @} */
 
+        /**
+         * @name Iterator-based access to wave space data
+         * Iteration access is linear across the underlying storage.
+         * @{ */
         complex_iterator       begin();
         const_complex_iterator begin() const;
         complex_iterator       end();
         const_complex_iterator end() const;
+        /**  @} */
 
     private:
+        /** Allows pencil to construct instances of physical_space */
         friend class pencil<T,G>;
 
+        /** Intended for use by pencil only.  The containing pencil
+         * instance is required to perform all memory allocation and
+         * deallocation.
+         *
+         * @param start starting location within the global pencil grid
+         * @param size  sizes of the data stored within this instance
+         * @param data  location where coefficients are to be found,
+         *              must be sufficiently large to hold all elements.
+         * @throw domain_error if any index is negative.
+         */
         wave_space(
-            const dim_type start[3],
-            const dim_type size[3],
-            real_pointer data)
+            const dim_type start[3], const dim_type size[3], real_pointer data)
         throw(domain_error);
 
+        /** Compute the linear offset to the (\c x, \c y, \c z) element within
+         * the wave_space data.  This is the "transposed" orientation per the
+         * P3DFFT manual page 4.  The layout is column major (Fortran) storage
+         * in (Y,Z,X) order.
+         *
+         * @param x desired entry offset in streamwise direction
+         * @param y desired entry offset in wall-normal direction
+         * @param z desired entry offset in spanwise direction
+         *
+         * @return the linear, 1D offset where (\c x, \c y, \c z) is stored.
+         */
         size_type offset(
             const size_type x,
             const size_type y,
             const size_type z) const;
 
+        /** Raw complex_type data where coefficients are stored. */
         complex_pointer const data_complex_;
+
+        /** Raw real_type data where coefficients are stored. */
         real_pointer    const data_real_;
     };
 
+    /**
+     * Construct a scalar pencil with the given characteristics.
+     * 
+     * @param pstart starting location in physical space within global grid.
+     * @param psize  size of the pencil in physical space.
+     * @param wstart starting location in wave space within the global grid.
+     * @param wsize  size of the pencil in wave space.
+     * @throw domain_error if any index is negative.
+     */
     pencil(const dim_type pstart[3], const dim_type psize[3],
            const dim_type wstart[3], const dim_type wsize[3])
     throw(domain_error);
 
+    /**
+     * @name Iterator-based access to all physical and wave space data.
+     * Iteration access is linear across the underlying storage.
+     * @{ */
     real_iterator       begin();
     const_real_iterator begin() const;
     real_iterator       end();
     const_real_iterator end() const;
+    /**  @} */
 
+    /** Use to access all physical_space data for this instance */
     physical_space physical;
+
+    /** Use to access all wave_space data for this instance */
     wave_space     wave;
 };
 
@@ -369,9 +479,6 @@ pencil<T, G>::physical_space::offset(
     const size_type y,
     const size_type z) const
 {
-    // "original" orientation per the P3DFFT manual page 4
-    // Intended for X streamwise, Z spanwise, and Y wall-normal
-    // Column major (Fortran) storage in (X,Z,Y) order
     return x + z*size_x + y*size_x*size_z;
 }
 
@@ -383,10 +490,7 @@ pencil<T, G>::wave_space::offset(
     const size_type y,
     const size_type z) const
 {
-    // "transposed" orientation per the P3DFFT manual page 4
-    // Intended for X streamwise, Z spanwise, and Y wall-normal
-    // Column major (Fortran) storage in (Y,Z,X) order
-    // TODO Assert STRIDE1 not specified during P3DFFT compilation
+    // TODO Assert STRIDE1 specified during P3DFFT compilation
     return y + z*size_y + x*size_y*size_z;
 }
 
