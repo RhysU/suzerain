@@ -179,6 +179,9 @@ public:
         const_real_iterator end() const;
         /**  @} */
 
+        /**
+         * @name Offset information methods for physical space data
+         * @{ */
         /** Compute the linear offset to the (\c x, \c y, \c z) element within
          * the physical_space data.  This is the "original" orientation per the
          * P3DFFT manual page 4.  The layout is column major (Fortran) storage
@@ -226,6 +229,7 @@ public:
             size_type * const x,
             size_type * const y,
             size_type * const z) const;
+         /* @} */
 
     private:
         /** Allows pencil to construct instances of physical_space */
@@ -333,6 +337,9 @@ public:
         const_complex_iterator end() const;
         /**  @} */
 
+        /**
+         * @name Offset information methods for wave space data
+         * @{ */
         /** Compute the linear offset to the (\c x, \c y, \c z) element within
          * the wave_space data.  This is the "transposed" orientation per the
          * P3DFFT manual page 4.  The layout is column major (Fortran) storage
@@ -380,6 +387,7 @@ public:
             size_type * const x,
             size_type * const y,
             size_type * const z) const;
+        /**  @} */
 
     private:
         /** Allows pencil to construct instances of physical_space */
