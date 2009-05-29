@@ -13,8 +13,7 @@ check_PROGRAMS =
 CXX=@MPICXX@
 
 # Headers
-suzeraindir = $(includedir)/suzerain
-suzerain_HEADERS = exceptions.hpp pencil.hpp pencil_grid.hpp
+pkginclude_HEADERS = exceptions.hpp pencil.hpp pencil_grid.hpp
 
 # Progams
 

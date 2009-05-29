@@ -6,10 +6,9 @@ AUTOMAKE_OPTIONS = foreign
 #Build in these directories:
 SUBDIRS = lib suzerain tests apps doc
 
-#Distribute these directories:
+#Distribute these items:
 DIST_SUBDIRS = lib suzerain tests apps doc
-
-EXTRA_DIST= bootstrap
+EXTRA_DIST= bootstrap $(DX_CONFIG)
 
 # Tools in the auxillary directory
 AUX_DIST = build-aux/install-sh    \
