@@ -90,30 +90,61 @@ BOOST_AUTO_TEST_CASE( storage_order )
         &p.wave(0,0,0) + wsize[1],          &p.wave(0,0,1)); // z
 }
 
-//BOOST_AUTO_TEST_CASE( offsets_and_inverse_offsets )
-//{
-//    using namespace pecos::suzerain;
+BOOST_AUTO_TEST_CASE( offsets_and_inverse_offsets )
+{
+    using namespace pecos::suzerain;
 
-//    const pencil<>::dim_type pstart[] = {  0,  0,  0};
-//    const pencil<>::dim_type psize[]  = { 11, 13, 17};
-//    const pencil<>::dim_type wstart[] = {  0,  0,  0};
-//    const pencil<>::dim_type wsize[]  = {  3,  5,  7};
+    const pencil<>::dim_type pstart[] = {  5,  6,  7};
+    const pencil<>::dim_type psize[]  = {  2,  3,  5};
+    const pencil<>::dim_type wstart[] = {  1,  2,  3};
+    const pencil<>::dim_type wsize[]  = {  3,  5,  7};
 
-//    pencil<> p(pstart, psize, wstart, wsize);
+    pencil<> p(pstart, psize, wstart, wsize);
 
-//    for (pencil<>::size_type i = 0; i < p.physical.size_x; ++i) {
-//        for (pencil<>::size_type j = 0; i < p.physical.size_y; ++j) {
-//            for (pencil<>::size_type k = 0; i < p.physical.size_z; ++k) {
-//                const pencil<>::size_type offset = p.physical.offset(i,j,k);
-//                pencil<>::size_type x, y, z;
-//                p.physical.inverse_offset(offset, &x, &y, &z);
-//                BOOST_CHECK_EQUAL(i, x);
-//                BOOST_CHECK_EQUAL(j, y);
-//                BOOST_CHECK_EQUAL(k, z);
-//            }
-//        }
-//    }
-//}
+    // Check that we can invert physical space offsets
+    for (pencil<>::size_type i = 0; i < p.physical.size_x; ++i) {
+        for (pencil<>::size_type j = 0; j < p.physical.size_y; ++j) {
+            for (pencil<>::size_type k = 0; k < p.physical.size_z; ++k) {
+                // Local offsets
+                pencil<>::size_type x, y, z;
+                p.physical.inverse_offset(
+                    p.physical.offset(i,j,k), &x, &y, &z);
+                BOOST_CHECK_EQUAL(i, x);
+                BOOST_CHECK_EQUAL(j, y);
+                BOOST_CHECK_EQUAL(k, z);
+
+                // Global offsets
+                p.physical.inverse_global_offset(
+                    p.physical.offset(i,j,k), &x, &y, &z);
+                BOOST_CHECK_EQUAL(i + pstart[0], x);
+                BOOST_CHECK_EQUAL(j + pstart[1], y);
+                BOOST_CHECK_EQUAL(k + pstart[2], z);
+            }
+        }
+    }
+
+    // Check that we can invert wave space offsets
+    for (pencil<>::size_type i = 0; i < p.wave.size_x; ++i) {
+        for (pencil<>::size_type j = 0; j < p.wave.size_y; ++j) {
+            for (pencil<>::size_type k = 0; k < p.wave.size_z; ++k) {
+                // Local offsets
+                pencil<>::size_type x, y, z;
+                p.wave.inverse_offset(
+                    p.wave.offset(i,j,k), &x, &y, &z);
+                BOOST_CHECK_EQUAL(i, x);
+                BOOST_CHECK_EQUAL(j, y);
+                BOOST_CHECK_EQUAL(k, z);
+
+                // Global offsets
+                p.wave.inverse_global_offset(
+                    p.wave.offset(i,j,k), &x, &y, &z);
+                BOOST_CHECK_EQUAL(i + wstart[0], x);
+                BOOST_CHECK_EQUAL(j + wstart[1], y);
+                BOOST_CHECK_EQUAL(k + wstart[2], z);
+            }
+        }
+    }
+}
 
 BOOST_AUTO_TEST_CASE( real_access )
 {

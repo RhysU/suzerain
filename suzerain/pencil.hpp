@@ -195,7 +195,33 @@ public:
             const size_type y,
             const size_type z) const;
 
+        /** Compute the (\c x, \c y, \c z) physical space indices associated
+         * with offset \c i.  Useful for turning an offset into a tuple that
+         * can be logged or displayed.  Returned indices are for the local
+         * pencil data, not the global grid.
+         *
+         * @param i offset found per \c offset method
+         * @param x (output) index in the streamwise direction
+         * @param y (output) index in the wall-normal direction
+         * @param z (output) index in the spanwise direction
+         */
         void inverse_offset(
+            const size_type  i,
+            size_type * const x,
+            size_type * const y,
+            size_type * const z) const;
+
+        /** Compute the (\c x, \c y, \c z) global physical space indices
+         * associated with offset \c i.  Useful for turning an offset into a
+         * tuple that can be logged or displayed.  Returned indices are for the
+         * global grid.
+         *
+         * @param i offset found per \c offset method
+         * @param x (output) index in the streamwise direction
+         * @param y (output) index in the wall-normal direction
+         * @param z (output) index in the spanwise direction
+         */
+        void inverse_global_offset(
             const size_type  i,
             size_type * const x,
             size_type * const y,
@@ -323,7 +349,33 @@ public:
             const size_type y,
             const size_type z) const;
 
+        /** Compute the (\c x, \c y, \c z) wave space indices associated with
+         * offset \c i.  Useful for turning an offset into a tuple that can be
+         * logged or displayed.  Returned indices are for the local pencil
+         * data, not the global grid.
+         *
+         * @param i offset found per \c offset method
+         * @param x (output) index in the streamwise direction
+         * @param y (output) index in the wall-normal direction
+         * @param z (output) index in the spanwise direction
+         */
         void inverse_offset(
+            const size_type  i,
+            size_type * const x,
+            size_type * const y,
+            size_type * const z) const;
+
+        /** Compute the (\c x, \c y, \c z) global wave space indices associated
+         * with offset \c i.  Useful for turning an offset into a tuple that
+         * can be logged or displayed.  Returned indices are for the global
+         * grid.
+         *
+         * @param i offset found per \c offset method
+         * @param x (output) index in the streamwise direction
+         * @param y (output) index in the wall-normal direction
+         * @param z (output) index in the spanwise direction
+         */
+        void inverse_global_offset(
             const size_type  i,
             size_type * const x,
             size_type * const y,
@@ -524,6 +576,21 @@ pencil<T, G>::physical_space::inverse_offset(
 
 template<typename T, typename G>
 inline
+void
+pencil<T, G>::physical_space::inverse_global_offset(
+    const size_type  i,
+    size_type * const x,
+    size_type * const y,
+    size_type * const z) const
+{
+    inverse_offset(i, x, y, z);
+    *x += start_x;
+    *y += start_y;
+    *z += start_z;
+}
+
+template<typename T, typename G>
+inline
 pencil<T, G>::size_type
 pencil<T, G>::wave_space::offset(
     const size_type x,
@@ -546,6 +613,21 @@ pencil<T, G>::wave_space::inverse_offset(
     *x = i / (size_y*size_z);
     *z = i / size_y - (*x)*size_z;
     *y = i - (*x)*size_y*size_z - (*z)*size_y;
+}
+
+template<typename T, typename G>
+inline
+void
+pencil<T, G>::wave_space::inverse_global_offset(
+    const size_type  i,
+    size_type * const x,
+    size_type * const y,
+    size_type * const z) const
+{
+    inverse_offset(i, x, y, z);
+    *x += start_x;
+    *y += start_y;
+    *z += start_z;
 }
 
 template<typename T, typename G>
