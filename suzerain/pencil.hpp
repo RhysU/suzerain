@@ -251,6 +251,9 @@ public:
 
         /** Raw real_type data where coefficients are stored. */
         real_pointer const data_;
+
+        /** Precomputed size_x * size_z */
+        const size_type size_xz_;
     };
 
     /**
@@ -412,6 +415,9 @@ public:
 
         /** Raw real_type data where coefficients are stored. */
         real_pointer    const data_real_;
+
+        /** Precomputed size_y * size_z */
+        const size_type size_yz_;
     };
 
     /**
@@ -514,7 +520,8 @@ throw(domain_error)
     end_x(start[0]+size[0]), end_y(start[1]+size[1]), end_z(start[2]+size[2]),
     size_x(size[0]), size_y(size[1]), size_z(size[2]),
     size(size_x*size_y*size_z),
-    data_(data)
+    data_(data),
+    size_xz_(size_x*size_z)
 {
     if (start_x < 0) throw domain_error();
 
@@ -541,7 +548,8 @@ throw(domain_error)
     size_x(size[0]), size_y(size[1]), size_z(size[2]),
     size(size_x*size_y*size_z),
     data_complex_(reinterpret_cast<complex_pointer>(data)),
-    data_real_(data)
+    data_real_(data),
+    size_yz_(size_y*size_z)
 {
     if (start_x < 0) throw domain_error();
 
@@ -565,7 +573,7 @@ pencil<T, G>::physical_space::offset(
     const size_type y,
     const size_type z) const
 {
-    return x + z*size_x + y*size_x*size_z;
+    return x + z*size_x + y*size_xz_;
 }
 
 template<typename T, typename G>
@@ -577,9 +585,9 @@ pencil<T, G>::physical_space::inverse_offset(
     size_type * const y,
     size_type * const z) const
 {
-    *y = i / (size_x*size_z);
+    *y = i / (size_xz_);
     *z = i / size_x - (*y)*size_z;
-    *x = i - (*y)*size_x*size_z - (*z)*size_x;
+    *x = i - (*y)*size_xz_ - (*z)*size_x;
 }
 
 template<typename T, typename G>
@@ -606,7 +614,7 @@ pencil<T, G>::wave_space::offset(
     const size_type z) const
 {
     // TODO Assert STRIDE1 specified during P3DFFT compilation
-    return y + z*size_y + x*size_y*size_z;
+    return y + z*size_y + x*size_yz_;
 }
 
 template<typename T, typename G>
@@ -618,9 +626,9 @@ pencil<T, G>::wave_space::inverse_offset(
     size_type * const y,
     size_type * const z) const
 {
-    *x = i / (size_y*size_z);
+    *x = i / (size_yz_);
     *z = i / size_y - (*x)*size_z;
-    *y = i - (*x)*size_y*size_z - (*z)*size_y;
+    *y = i - (*x)*size_yz_ - (*z)*size_y;
 }
 
 template<typename T, typename G>
