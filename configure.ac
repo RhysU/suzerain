@@ -26,6 +26,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
 AC_PROG_SED
+AX_AM_JOBSERVER([no])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
@@ -95,7 +96,6 @@ ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C, e.g. mpicc.))
 AC_LANG([C++])
 ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C++, e.g. mpicxx.))
 AC_CACHE_SAVE
-
 
 dnl ------------------------------------------------
 dnl Documentation generation
