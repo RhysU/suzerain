@@ -53,7 +53,8 @@ namespace suzerain
  * The \f$ x \f$, \f$ y \f$, and \f$ z \f$ directions are designed to be the
  * streamwise, wall-normal, and spanwise directions respectively.  The storage
  * is arranged so that the wall-normal direction is stride one in wave space
- * while the streamwise direction is stride one in physical space.
+ * while the streamwise direction is stride one in physical space.  All offsets
+ * are zero-indexed, which is a sharp contrast with P3DFFT.
  */
 template < typename T = double, typename G = pencil_grid<> >
 class pencil : boost::noncopyable
@@ -127,6 +128,7 @@ public:
      *              // Access p(i,j,k) here
      * \endcode
      */
+    //TODO Add comments about half storage of last dimension
     class physical_space : boost::noncopyable
     {
     public:
