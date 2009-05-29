@@ -179,6 +179,28 @@ public:
         const_real_iterator end() const;
         /**  @} */
 
+        /** Compute the linear offset to the (\c x, \c y, \c z) element within
+         * the physical_space data.  This is the "original" orientation per the
+         * P3DFFT manual page 4.  The layout is column major (Fortran) storage
+         * in (X,Z,Y) order.
+         *
+         * @param x desired entry offset in streamwise direction
+         * @param y desired entry offset in wall-normal direction
+         * @param z desired entry offset in spanwise direction
+         *
+         * @return the linear, 1D offset where (\c x, \c y, \c z) is stored.
+         */
+        size_type offset(
+            const size_type x,
+            const size_type y,
+            const size_type z) const;
+
+        void inverse_offset(
+            const size_type  i,
+            size_type * const x,
+            size_type * const y,
+            size_type * const z) const;
+
     private:
         /** Allows pencil to construct instances of physical_space */
         friend class pencil<T,G>;
@@ -196,22 +218,6 @@ public:
         physical_space(
             const dim_type start[3], const dim_type size[3], real_pointer data)
         throw(domain_error);
-
-        /** Compute the linear offset to the (\c x, \c y, \c z) element within
-         * the physical_space data.  This is the "original" orientation per the
-         * P3DFFT manual page 4.  The layout is column major (Fortran) storage
-         * in (X,Z,Y) order.
-         *
-         * @param x desired entry offset in streamwise direction
-         * @param y desired entry offset in wall-normal direction
-         * @param z desired entry offset in spanwise direction
-         *
-         * @return the linear, 1D offset where (\c x, \c y, \c z) is stored.
-         */
-        size_type offset(
-            const size_type x,
-            const size_type y,
-            const size_type z) const;
 
         /** Raw real_type data where coefficients are stored. */
         real_pointer const data_;
@@ -301,6 +307,28 @@ public:
         const_complex_iterator end() const;
         /**  @} */
 
+        /** Compute the linear offset to the (\c x, \c y, \c z) element within
+         * the wave_space data.  This is the "transposed" orientation per the
+         * P3DFFT manual page 4.  The layout is column major (Fortran) storage
+         * in (Y,Z,X) order.
+         *
+         * @param x desired entry offset in streamwise direction
+         * @param y desired entry offset in wall-normal direction
+         * @param z desired entry offset in spanwise direction
+         *
+         * @return the linear, 1D offset where (\c x, \c y, \c z) is stored.
+         */
+        size_type offset(
+            const size_type x,
+            const size_type y,
+            const size_type z) const;
+
+        void inverse_offset(
+            const size_type  i,
+            size_type * const x,
+            size_type * const y,
+            size_type * const z) const;
+
     private:
         /** Allows pencil to construct instances of physical_space */
         friend class pencil<T,G>;
@@ -319,22 +347,6 @@ public:
             const dim_type start[3], const dim_type size[3], real_pointer data)
         throw(domain_error);
 
-        /** Compute the linear offset to the (\c x, \c y, \c z) element within
-         * the wave_space data.  This is the "transposed" orientation per the
-         * P3DFFT manual page 4.  The layout is column major (Fortran) storage
-         * in (Y,Z,X) order.
-         *
-         * @param x desired entry offset in streamwise direction
-         * @param y desired entry offset in wall-normal direction
-         * @param z desired entry offset in spanwise direction
-         *
-         * @return the linear, 1D offset where (\c x, \c y, \c z) is stored.
-         */
-        size_type offset(
-            const size_type x,
-            const size_type y,
-            const size_type z) const;
-
         /** Raw complex_type data where coefficients are stored. */
         complex_pointer const data_complex_;
 
@@ -344,7 +356,7 @@ public:
 
     /**
      * Construct a scalar pencil with the given characteristics.
-     * 
+     *
      * @param pstart starting location in physical space within global grid.
      * @param psize  size of the pencil in physical space.
      * @param wstart starting location in wave space within the global grid.
@@ -365,7 +377,7 @@ public:
     const_real_iterator end() const;
     /**  @} */
 
-    
+
     /** Access the raw underlying storage directly, intended for use with
      * P3DFFT's \c p3dfft_ftran_r2c and \c p3dfft_btran_c2r methods.
      */
@@ -498,6 +510,20 @@ pencil<T, G>::physical_space::offset(
 
 template<typename T, typename G>
 inline
+void
+pencil<T, G>::physical_space::inverse_offset(
+    const size_type  i,
+    size_type * const x,
+    size_type * const y,
+    size_type * const z) const
+{
+    *y = i / (size_x*size_z);
+    *z = i / size_x - (*y)*size_z;
+    *x = i - (*y)*size_x*size_z - (*z)*size_x;
+}
+
+template<typename T, typename G>
+inline
 pencil<T, G>::size_type
 pencil<T, G>::wave_space::offset(
     const size_type x,
@@ -506,6 +532,20 @@ pencil<T, G>::wave_space::offset(
 {
     // TODO Assert STRIDE1 specified during P3DFFT compilation
     return y + z*size_y + x*size_y*size_z;
+}
+
+template<typename T, typename G>
+inline
+void
+pencil<T, G>::wave_space::inverse_offset(
+    const size_type  i,
+    size_type * const x,
+    size_type * const y,
+    size_type * const z) const
+{
+    *x = i / (size_y*size_z);
+    *z = i / size_y - (*x)*size_z;
+    *y = i - (*x)*size_y*size_z - (*z)*size_y;
 }
 
 template<typename T, typename G>
