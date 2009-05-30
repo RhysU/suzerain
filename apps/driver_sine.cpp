@@ -61,6 +61,10 @@
 
 double FORTNAME(t1), FORTNAME(t2), FORTNAME(t3), FORTNAME(t4), FORTNAME(tp1);
 
+float real_data(const double x, const double y, const double z) {
+    return sin(x)*sin(y)*sin(z);
+}
+
 void print_all(double *A, long int nar, int procid, long int Nglob)
 {
     int x, y, z, Fstart[3], Fsize[3], Fend[3];
@@ -236,17 +240,16 @@ int main(int argc, char **argv)
     get_dims(istart.data(), iend.data(), isize.data(), 1/* physical pencil */);
     get_dims(fstart.data(), fend.data(), fsize.data(), 2/* wave pencil */);
 
-    std::valarray<double> sinx(nx), siny(ny), sinz(nz);
+    /* Create a uniform tensor product grid */
+    std::valarray<double> gridx(nx), gridy(ny), gridz(nz);
     for (size_t i = 0; i < isize[0]; ++i) {
-        sinx[i] = sin((i + istart[0] - 1) * 2.0 * M_PI / nx);
+        gridx[i] = (i + istart[0] - 1) * 2*M_PI/nx;
     }
-
-    for (size_t i = 0; i < isize[1]; ++i) {
-        siny[i] = sin((i + istart[1] - 1) * 2.0 * M_PI / ny);
+    for (size_t j = 0; j < isize[1]; ++j) {
+        gridy[j] = (j + istart[1] - 1) * 2*M_PI/ny;
     }
-
-    for (size_t i = 0; i < isize[2]; ++i) {
-        sinz[i] = sin((i + istart[2] - 1) * 2.0 * M_PI / nz);
+    for (size_t k = 0; k < isize[2]; ++k) {
+        gridz[k] = (k + istart[2] - 1) * 2*M_PI/nz;
     }
 
     /* Allocate and initialize state space */
@@ -256,7 +259,7 @@ int main(int argc, char **argv)
     for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
             for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
-                A.physical(i,j,k) = sinx[i]*siny[j]*sinz[k];
+                A.physical(i,j,k) = real_data(gridx[i], gridy[j], gridz[k]);
             }
         }
     }
@@ -298,7 +301,7 @@ int main(int argc, char **argv)
     for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
             for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
-                const double ans = sinx[i]*siny[j]*sinz[k];
+                const double ans = real_data(gridx[i], gridy[j], gridz[k]);
                 if (cdiff < abs(A.physical(i,j,k) - ans))
                     cdiff = abs(A.physical(i,j,k) - ans);
             }
