@@ -1,3 +1,5 @@
+#define BOOST_TEST_MODULE $Id$
+
 #include <suzerain/config.h>
 
 #include <cstdio>
@@ -6,10 +8,11 @@
 #include <boost/foreach.hpp>
 #include <log4cxx/logger.h>
 
+#include <boost/test/included/unit_test.hpp>
+
 using namespace log4cxx;
 
-int
-main()
+BOOST_AUTO_TEST_CASE( main_test )
 {
     LoggerPtr logger = Logger::getRootLogger();
 
@@ -47,6 +50,4 @@ main()
 
     gsl_vector_free(v);
     gsl_bspline_free(bw);
-
-    return 0;
 }
