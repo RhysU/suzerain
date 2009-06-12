@@ -3,10 +3,12 @@
 #include <suzerain/config.h>
 
 #include <assert.h>
-#include <cstdio>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <algorithm>
 #include <gsl/gsl_bspline.h>
+#include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
@@ -20,10 +22,10 @@ using namespace log4cxx;
 LoggerPtr logger = Logger::getRootLogger();
 
 struct bspline_deriv_params {
-    size_t i_index;
-    size_t i_derivorder;
-    size_t j_index;
-    size_t j_derivorder;
+    size_t i_ndx;
+    size_t i_nderiv;
+    size_t j_ndx;
+    size_t j_nderiv;
 
     gsl_matrix *dB;
     gsl_bspline_workspace *w;
@@ -33,7 +35,7 @@ struct bspline_deriv_params {
 double eval_bspline_product(double x, void *p) {
     struct bspline_deriv_params* const params = (struct bspline_deriv_params *) p;
 
-    const size_t nderiv = std::max(params->i_derivorder, params->j_derivorder);
+    const size_t nderiv = std::max(params->i_nderiv, params->j_nderiv);
 
     assert(params->dB->size1 >= gsl_bspline_order(params->w));
     assert(params->dB->size2 >= nderiv + 1);
@@ -48,17 +50,17 @@ double eval_bspline_product(double x, void *p) {
                                    params->dw);
 
     double i_value = 0.0;
-    if (params->i_index >= index_start && params->i_index <= index_end) {
+    if (params->i_ndx >= index_start && params->i_ndx <= index_end) {
         i_value = gsl_matrix_get(params->dB,
-                                 params->i_index - index_start,
-                                 params->i_derivorder);
+                                 params->i_ndx - index_start,
+                                 params->i_nderiv);
     }
 
     double j_value = 0.0;
-    if (params->j_index >= index_start && params->j_index <= index_end) {
+    if (params->j_ndx >= index_start && params->j_ndx <= index_end) {
         j_value = gsl_matrix_get(params->dB,
-                                 params->j_index - index_start,
-                                 params->j_derivorder);
+                                 params->j_ndx - index_start,
+                                 params->j_nderiv);
     }
 
     return i_value * j_value;
@@ -67,12 +69,12 @@ double eval_bspline_product(double x, void *p) {
 BOOST_AUTO_TEST_CASE( main_test )
 {
 
-    const size_t nbreak = 8, order = 2;
+    const size_t nbreak = 8, k = 2;
     const double left_end = 0.0, right_end = 7.0;
     const double eval_points[] = { 1.0 / 8.0, 1.0 / 16.0, 1.0 / 32.0, 0 };
 
-    gsl_bspline_workspace *bw = gsl_bspline_alloc(order, nbreak);
-    gsl_bspline_deriv_workspace *bdw = gsl_bspline_deriv_alloc(order);
+    gsl_bspline_workspace *bw = gsl_bspline_alloc(k, nbreak);
+    gsl_bspline_deriv_workspace *bdw = gsl_bspline_deriv_alloc(k);
     gsl_bspline_knots_uniform(left_end, right_end, bw);
 
     if (logger->isDebugEnabled()) {
@@ -85,24 +87,38 @@ BOOST_AUTO_TEST_CASE( main_test )
 
     gsl_matrix *A = gsl_matrix_alloc(gsl_bspline_ncoeffs(bw),
             gsl_bspline_ncoeffs(bw));
-    gsl_matrix *dB = gsl_matrix_alloc(order, 2);
+    gsl_matrix *dB = gsl_matrix_alloc(k, 2);
 
     struct bspline_deriv_params f_params;
-    f_params.i_derivorder = 0;
-    f_params.j_derivorder = 0;
-    f_params.dB           = dB;
-    f_params.w            = bw;
-    f_params.dw           = bdw;
+    f_params.i_nderiv = 0;
+    f_params.j_nderiv = 0;
+    f_params.dB       = dB;
+    f_params.w        = bw;
+    f_params.dw       = bdw;
     const gsl_function f = { eval_bspline_product, &f_params };
 
+    for (f_params.i_ndx = 0; f_params.i_ndx < A->size1; ++f_params.i_ndx) {
+        for (f_params.j_ndx = 0; f_params.j_ndx < A->size1; ++f_params.j_ndx) {
 
+            double result = 0.0;
+            double abserr = 0.0;
+            size_t neval  = 0;
 
-    for (int i = 0; i < A->size1; ++i) {
-        f_params.i_index = i;
-        for (int j = 0; j < A->size2; ++j) {
-            f_params.j_index = j;
-            // NOP
+            if (abs(f_params.i_ndx - f_params.j_ndx) < k) {
+                const size_t left_index  = std::max(f_params.i_ndx,
+                                                    f_params.j_ndx);
+                const size_t right_index = std::min(f_params.i_ndx,
+                                                    f_params.j_ndx) + k;
+                const double left  = gsl_vector_get(bw->knots, left_index);
+                const double right = gsl_vector_get(bw->knots, right_index);
+                gsl_integration_qng(&f, left, right, 0.0, 0.5, // FIXME suspect
+                                    &result, &abserr, &neval);
+            }
+            gsl_matrix_set(A, f_params.i_ndx, f_params.j_ndx, result);
+
+            printf(" %10g", result);
         }
+        printf("\n");
     }
 
 
@@ -119,17 +135,6 @@ BOOST_AUTO_TEST_CASE( main_test )
                               << gsl_vector_get(v, i)
                              )
             }
-
-            // DEBUG
-            f_params.i_index     = 0;
-            f_params.j_index     = 1;
-            LOG4CXX_DEBUG(logger,
-                          "At x = " << eval_point
-                          << " basis[" << f_params.i_index << "]*basis["
-                          << f_params.j_index << "] = "
-                          << GSL_FN_EVAL(&f, eval_point)
-                         );
-
         }
     }
 
