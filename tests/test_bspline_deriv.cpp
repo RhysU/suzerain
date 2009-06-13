@@ -97,6 +97,52 @@ BOOST_AUTO_TEST_CASE( main_test )
     f_params.dw       = bdw;
     const gsl_function f = { eval_bspline_product, &f_params };
 
+    {
+        const double abserr = 0.0;
+        const double relerr = 0.5;  // FIXME suspect
+        double result;
+        double acterr;
+        size_t neval;
+        double left, right;
+        size_t left_index, right_index;
+
+        f_params.i_ndx = 0;
+        f_params.j_ndx = 1;
+        left_index  = std::max(f_params.i_ndx, f_params.j_ndx);
+        right_index = std::min(f_params.i_ndx, f_params.j_ndx) + k;
+        left  = gsl_vector_get(bw->knots, left_index);
+        right = gsl_vector_get(bw->knots, right_index);
+        gsl_integration_qng(&f, left, right, abserr, relerr,
+                            &result, &acterr, &neval);
+        LOG4CXX_DEBUG(logger, "Integrating basis " << f_params.i_ndx << " and "
+                             << f_params.j_ndx << " from " << left << " to "
+                             << right << " gives " << result << " in " << neval);
+
+        f_params.i_ndx = 1;
+        f_params.j_ndx = 1;
+        left_index  = std::max(f_params.i_ndx, f_params.j_ndx);
+        right_index = std::min(f_params.i_ndx, f_params.j_ndx) + k;
+        left  = gsl_vector_get(bw->knots, left_index);
+        right = gsl_vector_get(bw->knots, right_index);
+        gsl_integration_qng(&f, left, right, abserr, relerr,
+                            &result, &acterr, &neval);
+        LOG4CXX_DEBUG(logger, "Integrating basis " << f_params.i_ndx << " and "
+                             << f_params.j_ndx << " from " << left << " to "
+                             << right << " gives " << result << " in " << neval);
+
+        f_params.i_ndx = 1;
+        f_params.j_ndx = 2;
+        left_index  = std::max(f_params.i_ndx, f_params.j_ndx);
+        right_index = std::min(f_params.i_ndx, f_params.j_ndx) + k;
+        left  = gsl_vector_get(bw->knots, left_index);
+        right = gsl_vector_get(bw->knots, right_index);
+        gsl_integration_qng(&f, left, right, abserr, relerr,
+                            &result, &acterr, &neval);
+        LOG4CXX_DEBUG(logger, "Integrating basis " << f_params.i_ndx << " and "
+                             << f_params.j_ndx << " from " << left << " to "
+                             << right << " gives " << result << " in " << neval);
+    }
+
     for (f_params.i_ndx = 0; f_params.i_ndx < A->size1; ++f_params.i_ndx) {
         for (f_params.j_ndx = 0; f_params.j_ndx < A->size1; ++f_params.j_ndx) {
 
@@ -144,3 +190,4 @@ BOOST_AUTO_TEST_CASE( main_test )
     gsl_bspline_deriv_free(bdw);
     gsl_bspline_free(bw);
 }
+
