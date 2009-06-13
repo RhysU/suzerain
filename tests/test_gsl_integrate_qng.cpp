@@ -27,9 +27,6 @@ int main(int argc, char **argv)
     double right = 2.0;
 
     const gsl_function gsl_f = { f, NULL };
-    double result;
-    double esterr;
-    size_t neval;
 
     if (argc >= 2) abserr = atof(argv[1]);
     if (argc >= 3) relerr = atof(argv[2]);
@@ -41,12 +38,35 @@ int main(int argc, char **argv)
     printf("left:             %g\n", left);
     printf("right:            %g\n", right);
 
-    gsl_integration_qng(&gsl_f, left, right, abserr, relerr,
-                        &result, &esterr, &neval);
+    {
+        double result1, result2;
+        double esterr1, esterr2;
+        size_t neval1, neval2;
 
-    printf("Result:           %g\n", result);
-    printf("Estimated error:  %g\n", esterr);
-    printf("# of evaluations: %zu\n", neval);
+        const double center = (left+right)/2.0;
+        gsl_integration_qng(&gsl_f, left, center, abserr, relerr,
+                            &result1, &esterr1, &neval1);
+        gsl_integration_qng(&gsl_f, center, right, abserr, relerr,
+                            &result2, &esterr2, &neval2);
+
+        printf("\nTwo intervals...\n");
+        printf("Result:           %g\n", result1 + result2);
+        printf("Estimated error:  %g\n", esterr1 + esterr2);
+        printf("# of evaluations: %zu\n", neval1 + neval2);
+    }
+
+    {
+        double result;
+        double esterr;
+        size_t neval;
+
+        gsl_integration_qng(&gsl_f, left, right, abserr, relerr,
+                            &result, &esterr, &neval);
+        printf("\nOne interval...\n");
+        printf("Result:           %g\n", result);
+        printf("Estimated error:  %g\n", esterr);
+        printf("# of evaluations: %zu\n", neval);
+    }
 
     return 0;
 }
