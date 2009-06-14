@@ -1,10 +1,16 @@
 #define BOOST_TEST_MODULE $Id$
 
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
+#include <boost/format.hpp>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
+#include <log4cxx/logger.h>
+
+using namespace log4cxx;
+
+LoggerPtr logger = Logger::getRootLogger();
 
 double f(double x, void *p) {
     double retval = 0.0;
@@ -33,10 +39,10 @@ int main(int argc, char **argv)
     if (argc >= 4) left   = atof(argv[2]);
     if (argc >= 5) right  = atof(argv[2]);
 
-    printf("abserr:           %g\n", abserr);
-    printf("relerr:           %g\n", relerr);
-    printf("left:             %g\n", left);
-    printf("right:            %g\n", right);
+    LOG4CXX_DEBUG(logger, boost::format("abserr:           %g") % abserr);
+    LOG4CXX_DEBUG(logger, boost::format("relerr:           %g") % relerr);
+    LOG4CXX_DEBUG(logger, boost::format("left:             %g") % left);
+    LOG4CXX_DEBUG(logger, boost::format("right:            %g") % right);
 
     {
         double result1, result2;
@@ -49,10 +55,10 @@ int main(int argc, char **argv)
         gsl_integration_qng(&gsl_f, center, right, abserr, relerr,
                             &result2, &esterr2, &neval2);
 
-        printf("\nTwo intervals...\n");
-        printf("Result:           %g\n", result1 + result2);
-        printf("Estimated error:  %g\n", esterr1 + esterr2);
-        printf("# of evaluations: %zu\n", neval1 + neval2);
+        LOG4CXX_DEBUG(logger, "Two intervals...");
+        LOG4CXX_DEBUG(logger, boost::format("Result:           %g")  % (result1 + result2));
+        LOG4CXX_DEBUG(logger, boost::format("Estimated error:  %g")  % (esterr1 + esterr2));
+        LOG4CXX_DEBUG(logger, boost::format("# of evaluations: %zu") % (neval1 + neval2));
     }
 
     {
@@ -62,12 +68,12 @@ int main(int argc, char **argv)
 
         gsl_integration_qng(&gsl_f, left, right, abserr, relerr,
                             &result, &esterr, &neval);
-        printf("\nOne interval...\n");
-        printf("Result:           %g\n", result);
-        printf("Estimated error:  %g\n", esterr);
-        printf("# of evaluations: %zu\n", neval);
+
+        LOG4CXX_DEBUG(logger, "One interval...");
+        LOG4CXX_DEBUG(logger, boost::format("Result:           %g")  % result);
+        LOG4CXX_DEBUG(logger, boost::format("Estimated error:  %g")  % esterr);
+        LOG4CXX_DEBUG(logger, boost::format("# of evaluations: %zu") % neval);
     }
 
     return 0;
 }
-
