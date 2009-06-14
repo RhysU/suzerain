@@ -86,17 +86,23 @@ gsl_bspline_greville_abscissae(gsl_bspline_workspace *w, gsl_vector *abscissae)
 
 BOOST_AUTO_TEST_CASE( main_test )
 {
-
-    const size_t nbreak = 8, k = 2;
-    const double left_end = 0.0, right_end = 7.0;
-    const double eval_points[] = { 1.0 / 8.0, 1.0 / 16.0, 1.0 / 32.0, 0 };
+/*
+    // Greville abscissa example taken from R. W. Johnson paper
+    // Applied Numerical Mathematics vol 52 (2005) pages 63--75
+    const size_t k = 4;
+    const double bpoint_data[]    = { 0.0, 0.2, 0.5, 0.75, 1.0 };
+*/
+    const size_t k = 1;
+    const double bpoint_data[]    = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
+    const size_t nbreak           = sizeof(bpoint_data)/sizeof(bpoint_data[0]);
+    gsl_vector_const_view bpoints = gsl_vector_const_view_array(bpoint_data, nbreak);
 
     gsl_bspline_workspace *bw = gsl_bspline_alloc(k, nbreak);
     gsl_bspline_deriv_workspace *bdw = gsl_bspline_deriv_alloc(k);
-    gsl_bspline_knots_uniform(left_end, right_end, bw);
+    gsl_bspline_knots((const gsl_vector *) &bpoints, bw);
 
     if (logger->isDebugEnabled()) {
-        for (size_t i = 0; i < bw->knots->size; i++) {
+        for (size_t i = 0; i < bw->knots->size; ++i) {
             LOG4CXX_DEBUG(logger, "knot[" << i << "] at " 
                                   << gsl_vector_get(bw->knots, i));
         }
@@ -105,8 +111,8 @@ BOOST_AUTO_TEST_CASE( main_test )
     gsl_vector *abscissae = gsl_vector_alloc(gsl_bspline_ncoeffs(bw));
     gsl_bspline_greville_abscissae(bw, abscissae);
     if (logger->isDebugEnabled()) {
-        for (size_t i = 0; i < abscissae->size; i++) {
-            LOG4CXX_DEBUG(logger, "abscissae[" << i << "] at " 
+        for (size_t i = 0; i < abscissae->size; ++i) {
+            LOG4CXX_DEBUG(logger, "abscissa[" << i << "] at " 
                                   << gsl_vector_get(abscissae, i));
         }
     }
@@ -116,7 +122,7 @@ BOOST_AUTO_TEST_CASE( main_test )
 
     for (size_t i = 0; i < A->size1; ++i) {
         double x = gsl_vector_get(abscissae, i);
-        for (size_t j = 0; j < A->size1; ++j) {
+        for (size_t j = 0; j < A->size2; ++j) {
             double result = 0.0;
             if (abs(i - j) < k) {
                 gsl_bspline_basis_product(x, i, 0, j, 0, &result, dB, bw, bdw);
