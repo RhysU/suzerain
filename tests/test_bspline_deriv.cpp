@@ -6,13 +6,12 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <algorithm>
 #include <gsl/gsl_bspline.h>
-#include <gsl/gsl_integration.h>
+#include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_statistics.h>
 #include <gsl/gsl_vector.h>
-#include <boost/foreach.hpp>
 #include <log4cxx/logger.h>
 
 #include <boost/test/included/unit_test.hpp>
@@ -21,49 +20,68 @@ using namespace log4cxx;
 
 LoggerPtr logger = Logger::getRootLogger();
 
-struct bspline_deriv_params {
-    size_t i_ndx;
-    size_t i_nderiv;
-    size_t j_ndx;
-    size_t j_nderiv;
+int
+gsl_bspline_basis_product(const double x,
+                          const size_t i_index,
+                          const size_t i_nderiv,
+                          const size_t j_index,
+                          const size_t j_nderiv,
+                          double * result,
+                          gsl_matrix * dB,
+                          gsl_bspline_workspace * w,
+                          gsl_bspline_deriv_workspace * dw) {
 
-    gsl_matrix *dB;
-    gsl_bspline_workspace *w;
-    gsl_bspline_deriv_workspace *dw;
-};
+    const size_t nderiv = (i_nderiv > j_nderiv) ? i_nderiv : j_nderiv;
+    size_t nonzero_start, nonzero_end;
+    double i_value = 0.0, j_value = 0.0;
 
-double eval_bspline_product(double x, void *p) {
-    struct bspline_deriv_params* const params = (struct bspline_deriv_params *) p;
-
-    const size_t nderiv = std::max(params->i_nderiv, params->j_nderiv);
-
-    assert(params->dB->size1 >= gsl_bspline_order(params->w));
-    assert(params->dB->size2 >= nderiv + 1);
-
-    size_t index_start, index_end;
-    gsl_bspline_deriv_eval_nonzero(x,
-                                   nderiv,
-                                   params->dB,
-                                   &index_start,
-                                   &index_end,
-                                   params->w,
-                                   params->dw);
-
-    double i_value = 0.0;
-    if (params->i_ndx >= index_start && params->i_ndx <= index_end) {
-        i_value = gsl_matrix_get(params->dB,
-                                 params->i_ndx - index_start,
-                                 params->i_nderiv);
+    if (dB->size1 < gsl_bspline_order(w)) {
+        GSL_ERROR("dB->size1 too small for given B-spline order",
+                  GSL_EINVAL);
     }
 
-    double j_value = 0.0;
-    if (params->j_ndx >= index_start && params->j_ndx <= index_end) {
-        j_value = gsl_matrix_get(params->dB,
-                                 params->j_ndx - index_start,
-                                 params->j_nderiv);
+    if (dB->size2 < nderiv + 1) {
+        GSL_ERROR("dB->size2 too small for number of requested derivatives",
+                  GSL_EINVAL);
     }
 
-    return i_value * j_value;
+    gsl_bspline_deriv_eval_nonzero(x, nderiv, dB,
+                                   &nonzero_start, &nonzero_end,
+                                   w, dw);
+
+    if (i_index >= nonzero_start && i_index <= nonzero_end) {
+        i_value = gsl_matrix_get(dB, i_index - nonzero_start, i_nderiv);
+    }
+
+    if (j_index >= nonzero_start && j_index <= nonzero_end) {
+        j_value = gsl_matrix_get(dB, j_index - nonzero_start, j_nderiv);
+    }
+
+    *result = i_value * j_value;
+
+    return GSL_SUCCESS;
+}
+
+int
+gsl_bspline_greville_abscissae(gsl_bspline_workspace *w, gsl_vector *abscissae)
+{
+    const size_t k      = gsl_bspline_order(w);
+    const size_t n      = gsl_bspline_ncoeffs(w);
+    const size_t stride = abscissae->stride;
+    double * data       = w->knots->data;
+    size_t i;
+
+    if (abscissae->size < n) {
+        GSL_ERROR("abscissae->size too small for number of basis functions",
+                  GSL_EINVAL);
+    }
+
+    for (i = 0; i < n; ++i) {
+        gsl_vector_set(abscissae, i, gsl_stats_mean(data, stride, k));
+        data += stride;
+    }
+
+    return GSL_SUCCESS;
 }
 
 BOOST_AUTO_TEST_CASE( main_test )
@@ -79,114 +97,40 @@ BOOST_AUTO_TEST_CASE( main_test )
 
     if (logger->isDebugEnabled()) {
         for (size_t i = 0; i < bw->knots->size; i++) {
-            LOG4CXX_DEBUG(logger,
-                          "knot[" << i << "] at " << gsl_vector_get(bw->knots, i)
-                         )
+            LOG4CXX_DEBUG(logger, "knot[" << i << "] at " 
+                                  << gsl_vector_get(bw->knots, i));
         }
     }
 
-    gsl_matrix *A = gsl_matrix_alloc(gsl_bspline_ncoeffs(bw),
-            gsl_bspline_ncoeffs(bw));
-    gsl_matrix *dB = gsl_matrix_alloc(k, 2);
-
-    struct bspline_deriv_params f_params;
-    f_params.i_nderiv = 0;
-    f_params.j_nderiv = 0;
-    f_params.dB       = dB;
-    f_params.w        = bw;
-    f_params.dw       = bdw;
-    const gsl_function f = { eval_bspline_product, &f_params };
-
-    {
-        const double abserr = 0.0;
-        const double relerr = 0.5;  // FIXME suspect
-        double result;
-        double acterr;
-        size_t neval;
-        double left, right;
-        size_t left_index, right_index;
-
-        f_params.i_ndx = 0;
-        f_params.j_ndx = 1;
-        left_index  = std::max(f_params.i_ndx, f_params.j_ndx);
-        right_index = std::min(f_params.i_ndx, f_params.j_ndx) + k;
-        left  = gsl_vector_get(bw->knots, left_index);
-        right = gsl_vector_get(bw->knots, right_index);
-        gsl_integration_qng(&f, left, right, abserr, relerr,
-                            &result, &acterr, &neval);
-        LOG4CXX_DEBUG(logger, "Integrating basis " << f_params.i_ndx << " and "
-                             << f_params.j_ndx << " from " << left << " to "
-                             << right << " gives " << result << " in " << neval);
-
-        f_params.i_ndx = 1;
-        f_params.j_ndx = 1;
-        left_index  = std::max(f_params.i_ndx, f_params.j_ndx);
-        right_index = std::min(f_params.i_ndx, f_params.j_ndx) + k;
-        left  = gsl_vector_get(bw->knots, left_index);
-        right = gsl_vector_get(bw->knots, right_index);
-        gsl_integration_qng(&f, left, right, abserr, relerr,
-                            &result, &acterr, &neval);
-        LOG4CXX_DEBUG(logger, "Integrating basis " << f_params.i_ndx << " and "
-                             << f_params.j_ndx << " from " << left << " to "
-                             << right << " gives " << result << " in " << neval);
-
-        f_params.i_ndx = 1;
-        f_params.j_ndx = 2;
-        left_index  = std::max(f_params.i_ndx, f_params.j_ndx);
-        right_index = std::min(f_params.i_ndx, f_params.j_ndx) + k;
-        left  = gsl_vector_get(bw->knots, left_index);
-        right = gsl_vector_get(bw->knots, right_index);
-        gsl_integration_qng(&f, left, right, abserr, relerr,
-                            &result, &acterr, &neval);
-        LOG4CXX_DEBUG(logger, "Integrating basis " << f_params.i_ndx << " and "
-                             << f_params.j_ndx << " from " << left << " to "
-                             << right << " gives " << result << " in " << neval);
+    gsl_vector *abscissae = gsl_vector_alloc(gsl_bspline_ncoeffs(bw));
+    gsl_bspline_greville_abscissae(bw, abscissae);
+    if (logger->isDebugEnabled()) {
+        for (size_t i = 0; i < abscissae->size; i++) {
+            LOG4CXX_DEBUG(logger, "abscissae[" << i << "] at " 
+                                  << gsl_vector_get(abscissae, i));
+        }
     }
 
-    for (f_params.i_ndx = 0; f_params.i_ndx < A->size1; ++f_params.i_ndx) {
-        for (f_params.j_ndx = 0; f_params.j_ndx < A->size1; ++f_params.j_ndx) {
+    gsl_matrix *A = gsl_matrix_alloc(gsl_bspline_ncoeffs(bw), gsl_bspline_ncoeffs(bw));
+    gsl_matrix *dB = gsl_matrix_alloc(k, 2);
 
+    for (size_t i = 0; i < A->size1; ++i) {
+        double x = gsl_vector_get(abscissae, i);
+        for (size_t j = 0; j < A->size1; ++j) {
             double result = 0.0;
-            double abserr = 0.0;
-            size_t neval  = 0;
-
-            if (abs(f_params.i_ndx - f_params.j_ndx) < k) {
-                const size_t left_index  = std::max(f_params.i_ndx,
-                                                    f_params.j_ndx);
-                const size_t right_index = std::min(f_params.i_ndx,
-                                                    f_params.j_ndx) + k;
-                const double left  = gsl_vector_get(bw->knots, left_index);
-                const double right = gsl_vector_get(bw->knots, right_index);
-                gsl_integration_qng(&f, left, right, 0.0, 0.5, // FIXME suspect
-                                    &result, &abserr, &neval);
+            if (abs(i - j) < k) {
+                gsl_bspline_basis_product(x, i, 0, j, 0, &result, dB, bw, bdw);
             }
-            gsl_matrix_set(A, f_params.i_ndx, f_params.j_ndx, result);
+            gsl_matrix_set(A, i, j, result);
 
             printf(" %10g", result);
         }
         printf("\n");
     }
 
-
-    gsl_vector *v = gsl_vector_alloc(gsl_bspline_ncoeffs(bw));
-
-    BOOST_FOREACH(double eval_point, eval_points) {
-        gsl_bspline_eval(eval_point, v, bw);
-
-        if (logger->isDebugEnabled()) {
-            for (size_t i = 0; i < v->size; i++) {
-                LOG4CXX_DEBUG(logger,
-                              "At x = " << eval_point
-                              << " basis[" << i << "] = "
-                              << gsl_vector_get(v, i)
-                             )
-            }
-        }
-    }
-
+    gsl_vector_free(abscissae);
     gsl_matrix_free(dB);
     gsl_matrix_free(A);
-    gsl_vector_free(v);
     gsl_bspline_deriv_free(bdw);
     gsl_bspline_free(bw);
 }
