@@ -67,16 +67,17 @@ gsl_bspline_greville_abscissae(gsl_bspline_workspace *w, gsl_vector *abscissae)
 {
     const size_t k      = gsl_bspline_order(w);
     const size_t n      = gsl_bspline_ncoeffs(w);
-    const size_t stride = abscissae->stride;
+    const size_t np1    = n + 1;
     double * data       = w->knots->data;
+    const size_t stride = w->knots->stride;
     size_t i;
 
-    if (abscissae->size < n) {
+    if (abscissae->size < np1) {
         GSL_ERROR("abscissae->size too small for number of basis functions",
                   GSL_EINVAL);
     }
 
-    for (i = 0; i < n; ++i) {
+    for (i = 0; i < np1; ++i) {
         gsl_vector_set(abscissae, i, gsl_stats_mean(data, stride, k));
         data += stride;
     }
@@ -92,8 +93,13 @@ BOOST_AUTO_TEST_CASE( main_test )
     const size_t k = 4;
     const double bpoint_data[]    = { 0.0, 0.2, 0.5, 0.75, 1.0 };
 */
+/*
     const size_t k = 1;
     const double bpoint_data[]    = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
+*/
+
+    const size_t k = 3;
+    const double bpoint_data[]    = { 0.0, 2.0, 4.0 };
     const size_t nbreak           = sizeof(bpoint_data)/sizeof(bpoint_data[0]);
     gsl_vector_const_view bpoints = gsl_vector_const_view_array(bpoint_data, nbreak);
 
@@ -108,7 +114,7 @@ BOOST_AUTO_TEST_CASE( main_test )
         }
     }
 
-    gsl_vector *abscissae = gsl_vector_alloc(gsl_bspline_ncoeffs(bw));
+    gsl_vector *abscissae = gsl_vector_alloc(gsl_bspline_ncoeffs(bw)+1);
     gsl_bspline_greville_abscissae(bw, abscissae);
     if (logger->isDebugEnabled()) {
         for (size_t i = 0; i < abscissae->size; ++i) {
