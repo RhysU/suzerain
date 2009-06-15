@@ -35,6 +35,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <ios>
 #include <iostream>
@@ -61,25 +62,16 @@
 
 double FORTNAME(t1), FORTNAME(t2), FORTNAME(t3), FORTNAME(t4), FORTNAME(tp1);
 
-float real_data(const double x, const double y, const double z) {
-    return sin(x)*sin(y)*sin(z);
-}
-
-void print_all(double *A, long int nar, int procid, long int Nglob)
-{
-    int x, y, z, Fstart[3], Fsize[3], Fend[3];
-
-    get_dims(Fstart, Fend, Fsize, 2);
-    Fsize[0] *= 2;
-    Fstart[0] = 1 + (Fstart[0] - 1) * 2;
-
-    for (long int i = 0; i < nar; i++)
-        if (abs(A[i]) > Nglob *1.25e-4) {
-            z = i / (Fsize[0] * Fsize[1]);
-            y = i / Fsize[0] - z * Fsize[1];
-            x = i - z * Fsize[0] * Fsize[1] - y * Fsize[0];
-            printf("(%d,%d,%d) %f\n", x + Fstart[0], y + Fstart[1], z + Fstart[2], A[i]);
-        }
+double real_data(const double x, const double y, const double z) {
+    return   2.0* 1.0
+           + 2.0* 3.0*sin(x)
+           + 2.0* 5.0*sin(y)
+           + 2.0* 7.0*sin(z)
+//           + 2.0*11.0*sin(x)*sin(y)
+//           + 2.0*13.0*sin(x)*sin(z)
+//           + 2.0*17.0*sin(y)*sin(z)
+//           + 2.0*19.0*sin(x)*sin(y)*sin(z)
+           ;
 }
 
 // Print usage information
@@ -173,15 +165,12 @@ int main(int argc, char **argv)
 
     // Build the options acceptable on the CLI, in a file, and in help message
     po::options_description opts_cli;
-
     opts_cli.add(desc_config).add(desc_hidden).add(desc_clionly);
 
     po::options_description opts_file;
-
     opts_file.add(desc_config).add(desc_hidden);
 
     po::options_description opts_visible;
-
     opts_visible.add(desc_config).add(desc_clionly);
 
     // Have positional parameters act like input-file
@@ -240,21 +229,47 @@ int main(int argc, char **argv)
     get_dims(istart.data(), iend.data(), isize.data(), 1/* physical pencil */);
     get_dims(fstart.data(), fend.data(), fsize.data(), 2/* wave pencil */);
 
+    LOG4CXX_DEBUG(logger, "Physical space pencil sizes from P3DFFT: "
+                          << boost::format("(%d, %d, %d)")
+                          % isize[0] % isize[1] % isize[2]);
+
+    LOG4CXX_DEBUG(logger, "Wave space pencil sizes from P3DFFT: "
+                          << boost::format("(%d, %d, %d)")
+                          % fsize[0] % fsize[1] % fsize[2]);
+
+    /* Transform indices for C conventions, ranges like [istart, iend) */
+    std::transform(istart.begin(), istart.end(), istart.begin(),
+            std::bind2nd(std::minus<int>(),1));
+    std::transform(fstart.begin(), fstart.end(), fstart.begin(),
+            std::bind2nd(std::minus<int>(),1));
+
     /* Create a uniform tensor product grid */
     std::valarray<double> gridx(nx), gridy(ny), gridz(nz);
     for (size_t i = 0; i < isize[0]; ++i) {
-        gridx[i] = (i + istart[0] - 1) * 2*M_PI/nx;
+        gridx[i] = (i + istart[0]) * 2*M_PI/nx;
     }
     for (size_t j = 0; j < isize[1]; ++j) {
-        gridy[j] = (j + istart[1] - 1) * 2*M_PI/ny;
+        gridy[j] = (j + istart[1]) * 2*M_PI/ny;
     }
     for (size_t k = 0; k < isize[2]; ++k) {
-        gridz[k] = (k + istart[2] - 1) * 2*M_PI/nz;
+        gridz[k] = (k + istart[2]) * 2*M_PI/nz;
     }
 
     /* Allocate and initialize state space */
     using pecos::suzerain::pencil;
     pencil<> A(istart.data(), isize.data(), fstart.data(), fsize.data());
+
+    LOG4CXX_DEBUG(logger, "Physical space pencil dimensions: "
+                          << boost::format("(%d, %d, %d)")
+                          % A.physical.size_x
+                          % A.physical.size_y
+                          % A.physical.size_z);
+
+    LOG4CXX_DEBUG(logger, "Wave space pencil dimensions: "
+                          << boost::format("(%d, %d, %d)")
+                          % A.physical.size_x
+                          % A.physical.size_y
+                          % A.physical.size_z);
 
     for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
@@ -280,11 +295,21 @@ int main(int argc, char **argv)
         p3dfft_ftran_r2c(A.data(), A.data()); // Physical to wave
         rtime1 = rtime1 + MPI_Wtime();
 
-        ONLYPROC0(LOG4CXX_DEBUG(logger, "Forward transform results "));
-        print_all(A.data(), Ntot, procid, Nglob);
+        std::transform(A.begin(), A.end(), A.begin(),
+                       std::bind1st(std::multiplies<pencil<>::real_type>(),factor));
 
-        for (pencil<>::real_iterator it = A.begin(); it != A.end(); ++it) {
-            *it *= factor;                    // normalize for grid size
+        ONLYPROC0(LOG4CXX_DEBUG(logger, "Forward transform results "));
+
+        for (pencil<>::complex_iterator it = A.wave.begin();
+             it != A.wave.end();
+             ++it) {
+            if (abs(*it) > 1e-8) {
+                pencil<>::size_type i, j, k;
+                A.wave.inverse_global_offset(it - A.wave.begin(), &i, &j, &k);
+                LOG4CXX_DEBUG(logger,
+                        boost::format("(%d, %d, %d)") % i % j % k
+                        << " " << *it);
+            }
         }
 
         MPI_Barrier(MPI_COMM_WORLD);
