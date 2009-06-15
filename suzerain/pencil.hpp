@@ -53,8 +53,7 @@ namespace suzerain
  * The \f$ x \f$, \f$ y \f$, and \f$ z \f$ directions are designed to be the
  * streamwise, wall-normal, and spanwise directions respectively.  The storage
  * is arranged so that the wall-normal direction is stride one in wave space
- * while the streamwise direction is stride one in physical space.  All offsets
- * are zero-indexed, which is a sharp contrast with P3DFFT.
+ * while the streamwise direction is stride one in physical space.
  */
 template < typename T = double, typename G = pencil_grid<> >
 class pencil : boost::noncopyable
@@ -296,7 +295,7 @@ public:
         /**  @} */
 
         /**
-         * @name Size of the physical_space data within the pencil.
+         * @name Size of the wave_space data within the pencil.
          * @{ */
         const dim_type size_x; /**< Size in streamwise direction */
         const dim_type size_y; /**< Size in wall-normal direction */
@@ -425,9 +424,14 @@ public:
     /**
      * Construct a scalar pencil with the given characteristics.
      *
-     * @param pstart starting location in physical space within global grid.
+     * @warning Note that unlike P3DFFT's \c get_dims return values, \c pstart
+     * and \c wstart are to be zero-indexed.
+     *
+     * @param pstart zero-indexed starting location in physical space within
+     *               global grid.
      * @param psize  size of the pencil in physical space.
-     * @param wstart starting location in wave space within the global grid.
+     * @param wstart zero-indexed starting location in wave space within the
+     *               global grid.
      * @param wsize  size of the pencil in wave space.
      * @throw domain_error if any index is negative.
      */
