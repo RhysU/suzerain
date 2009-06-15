@@ -81,13 +81,13 @@ BOOST_AUTO_TEST_CASE( storage_order )
     BOOST_CHECK_EQUAL(
         &p.physical(0,0,0) + psize[0],          &p.physical(0,0,1)); // z
 
-    // Check wavespace memory layout is (Y,Z,X) in column major storage
+    // Check wavespace memory layout is (Y,X,Z) in column major storage
     BOOST_CHECK_EQUAL(
-        &p.wave(0,0,0) + wsize[1]*wsize[2], &p.wave(1,0,0)); // x
+        &p.wave(0,0,0) + wsize[1],          &p.wave(1,0,0)); // x
     BOOST_CHECK_EQUAL(
         &p.wave(0,0,0) + 1,                 &p.wave(0,1,0)); // y
     BOOST_CHECK_EQUAL(
-        &p.wave(0,0,0) + wsize[1],          &p.wave(0,0,1)); // z
+        &p.wave(0,0,0) + wsize[1]*wsize[0], &p.wave(0,0,1)); // z
 }
 
 BOOST_AUTO_TEST_CASE( offsets_and_inverse_offsets )
