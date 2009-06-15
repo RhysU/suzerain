@@ -262,13 +262,13 @@ public:
      * wave space, assuming P3DFFT's \c p3dfft_ftran_r2c has been applied
      * to the pencil.
      *
-     * The underlying storage is column major in (Y,Z,X) index order.  For
+     * The underlying storage is column major in (Y,X,Z) index order.  For
      * stride reasons, three loops iterating across physical_space should
      * resemble
      * \code
      *  // p an instance of pencil<T,G>::wave_space
-     *  for (pencil<T,G>::size_type i = 0; i < p.size_x; ++i)
-     *      for (pencil<T,G>::size_type k = 0; k < p.size_z; ++k)
+     *  for (pencil<T,G>::size_type k = 0; k < p.size_z; ++k)
+     *      for (pencil<T,G>::size_type i = 0; i < p.size_x; ++i)
      *          for (pencil<T,G>::size_type j = 0; j < p.size_y; ++j)
      *              // Access p(i,j,k) here
      * \endcode
@@ -347,7 +347,7 @@ public:
         /** Compute the linear offset to the (\c x, \c y, \c z) element within
          * the wave_space data.  This is the "transposed" orientation per the
          * P3DFFT manual page 4.  The layout is column major (Fortran) storage
-         * in (Y,Z,X) order.
+         * in (Y,X,Z) order.
          *
          * @param x desired entry offset in streamwise direction
          * @param y desired entry offset in wall-normal direction
@@ -417,8 +417,8 @@ public:
         /** Raw real_type data where coefficients are stored. */
         real_pointer    const data_real_;
 
-        /** Precomputed size_y * size_z */
-        const size_type size_yz_;
+        /** Precomputed size_x * size_y */
+        const size_type size_xy_;
     };
 
     /**
@@ -555,7 +555,7 @@ throw(domain_error)
     size(size_x*size_y*size_z),
     data_complex_(reinterpret_cast<complex_pointer>(data)),
     data_real_(data),
-    size_yz_(size_y*size_z)
+    size_xy_(size_x*size_y)
 {
     if (start_x < 0) throw domain_error();
 
@@ -620,7 +620,7 @@ pencil<T, G>::wave_space::offset(
     const size_type z) const
 {
     // TODO Assert STRIDE1 specified during P3DFFT compilation
-    return y + z*size_y + x*size_yz_;
+    return y + x*size_y + z*size_xy_;
 }
 
 template<typename T, typename G>
@@ -632,9 +632,9 @@ pencil<T, G>::wave_space::inverse_offset(
     size_type * const y,
     size_type * const z) const
 {
-    *x = i / (size_yz_);
-    *z = i / size_y - (*x)*size_z;
-    *y = i - (*x)*size_yz_ - (*z)*size_y;
+    *z = i / (size_xy_);
+    *x = i / size_y - (*z)*size_x;
+    *y = i - (*z)*size_xy_ - (*x)*size_y;
 }
 
 template<typename T, typename G>
