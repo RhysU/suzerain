@@ -5,7 +5,8 @@
 #include <boost/test/included/unit_test.hpp>
 #include <suzerain/underling.h>
 
-BOOST_AUTO_TEST_CASE( main_test )
+BOOST_AUTO_TEST_CASE( alloc )
 {
-    /* NOP */
+    underling_workspace * w = underling_workspace_alloc(3);
+    underling_workspace_free(w);
 }

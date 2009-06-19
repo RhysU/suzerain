@@ -28,6 +28,7 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
+#include <stdlib.h>
 #include <suzerain/underling.h>
 
 underling_workspace *
@@ -35,10 +36,72 @@ underling_workspace_alloc(int ndim) {
     int i;
     underling_workspace * w;
 
+    if (ndim < 1) {
+        UNDERLING_ERROR_NULL("ndim must be at least 1", UNDERLING_EINVAL);
+    }
+
+    w = malloc(sizeof(underling_workspace));
+    if (w == NULL) {
+        UNDERLING_ERROR_NULL("failed to allocate space for workspace",
+                             UNDERLING_ENOMEM);
+    }
+
+    w->ndim = ndim;
+
+    w->global_size = malloc(w->ndim * sizeof(w->global_size[0]));
+    if (w->global_size == NULL) {
+        UNDERLING_ERROR_NULL("failed to allocate space for global_size",
+                             UNDERLING_ENOMEM);
+        free(w);
+    }
+
+    w->dealias_by = malloc(w->ndim * sizeof(w->dealias_by[0]));
+    if (w->dealias_by == NULL) {
+        UNDERLING_ERROR_NULL("failed to allocate space for dealias_by",
+                             UNDERLING_ENOMEM);
+        free(w->global_size);
+        free(w);
+    }
+
+    w->state = malloc(w->ndim * sizeof(w->state[0]));
+    if (w->state == NULL) {
+        UNDERLING_ERROR_NULL("failed to allocate space for state",
+                             UNDERLING_ENOMEM);
+        free(w->global_size);
+        free(w->dealias_by);
+        free(w);
+    }
+
+    w->dim_r = malloc(w->ndim * sizeof(w->dim_r[0]));
+    if (w->dim_r == NULL) {
+        UNDERLING_ERROR_NULL("failed to allocate space for dim_r",
+                             UNDERLING_ENOMEM);
+        free(w->global_size);
+        free(w->dealias_by);
+        free(w->state);
+        free(w);
+    }
+
+    w->dim_c = malloc(w->ndim * sizeof(w->dim_c[0]));
+    if (w->dim_c == NULL) {
+        UNDERLING_ERROR_NULL("failed to allocate space for dim_c",
+                             UNDERLING_ENOMEM);
+        free(w->global_size);
+        free(w->dealias_by);
+        free(w->state);
+        free(w->dim_r);
+        free(w);
+    }
+
     return w;
 }
 
 void
-underling_workspace_free(underling_workspace * g) {
-
+underling_workspace_free(underling_workspace * w) {
+    free(w->global_size);
+    free(w->dealias_by);
+    free(w->state);
+    free(w->dim_r);
+    free(w->dim_c);
+    free(w);
 }
