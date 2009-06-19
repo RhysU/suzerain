@@ -355,9 +355,9 @@ int main(int argc, char **argv)
     for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
             for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
-                const double ans = real_data(gridx[i], gridy[j], gridz[k]);
-                if (cdiff > abs(A.physical(i,j,k) - ans))
-                    cdiff = abs(A.physical(i,j,k) - ans);
+                const double answer = real_data(gridx[i], gridy[j], gridz[k]);
+                const double abserr = fabs(A.physical(i,j,k) - answer);
+                cdiff               = std::max(cdiff, abserr);
             }
         }
     }
