@@ -253,15 +253,15 @@ int main(int argc, char **argv)
     std::valarray<double> gridx(isize[0]), gridy(isize[1]), gridz(isize[2]);
     for (size_t i = 0; i < isize[0]; ++i) {
         gridx[i] = (i+istart[0]) * 2*M_PI/nx;
-        LOG4CXX_DEBUG(logger, boost::format("gridx[%3d] = % 6g") % i % gridx[i]);
+        LOG4CXX_TRACE(logger, boost::format("gridx[%3d] = % 6g") % i % gridx[i]);
     }
     for (size_t j = 0; j < isize[1]; ++j) {
         gridy[j] = (j+istart[1]) * 2*M_PI/ny;
-        LOG4CXX_DEBUG(logger, boost::format("gridy[%3d] = % 6g") % j % gridy[j]);
+        LOG4CXX_TRACE(logger, boost::format("gridy[%3d] = % 6g") % j % gridy[j]);
     }
     for (size_t k = 0; k < isize[2]; ++k) {
         gridz[k] = (k+istart[2]) * 2*M_PI/nz;
-        LOG4CXX_DEBUG(logger, boost::format("gridz[%3d] = % 6g") % k % gridz[k]);
+        LOG4CXX_TRACE(logger, boost::format("gridz[%3d] = % 6g") % k % gridz[k]);
     }
 
     /* Allocate and initialize state space */
@@ -294,7 +294,7 @@ int main(int argc, char **argv)
         for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
             for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
                 const double value = real_data(gridx[i], gridy[j], gridz[k]);
-                LOG4CXX_DEBUG(logger, boost::format(
+                LOG4CXX_TRACE(logger, boost::format(
                               "Physical space (% 6.4f, % 6.4f, % 6.4f) = % 6g for index (%3d, %3d, %3d)")
                               % gridx[i] % gridy[j] % gridz[k] % value
                               % i % j % k);
@@ -345,9 +345,8 @@ int main(int argc, char **argv)
 
     }
 
-    p3dfft_clean();   // Free work space
-
     MPI_Barrier(MPI_COMM_WORLD);
+    p3dfft_clean();   // Free work space
 
     /* Check results */
     // FIXME Error results are fishy, compare P3DFFT's test_sine_inplace.x
@@ -366,11 +365,10 @@ int main(int argc, char **argv)
     double ccdiff = 0.0;
     MPI_Reduce(&cdiff, &ccdiff, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
     ONLYPROC0(LOG4CXX_INFO(logger,
-                            "Maximum difference: " << std::scientific << ccdiff));
+                           "Maximum difference: " << std::scientific << ccdiff));
 
     // Gather timing statistics
     double rtime2 = 0.0;
     MPI_Reduce(&rtime1, &rtime2, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-
     ONLYPROC0(LOG4CXX_INFO(logger, "Time per loop: " << rtime2 / ((double)nrep)));
 }

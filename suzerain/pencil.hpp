@@ -632,6 +632,11 @@ pencil<T, G>::wave_space::inverse_offset(
     size_type * const y,
     size_type * const z) const
 {
+    // FIXME, this should not be required (DEBUG)
+//    const size_type size_x   = this->size_x/2+1;    // MASK
+//    const size_type size_y   = (this->size_y-1)*2;  // MASK
+//    const size_type size_xy_ = size_x*size_y;       // MASK
+
     *z = i / (size_xy_);
     *x = i / size_y - (*z)*size_x;
     *y = i - (*z)*size_xy_ - (*x)*size_y;
