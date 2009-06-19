@@ -60,17 +60,15 @@
 
 #define ONLYPROC0(expr) { if (!procid) { expr ; } };
 
-double FORTNAME(t1), FORTNAME(t2), FORTNAME(t3), FORTNAME(t4), FORTNAME(tp1);
-
 double real_data(const double x, const double y, const double z) {
-    return   2.0* 1.0
-           + 2.0* 3.0*sin(x)
-           + 2.0* 5.0*sin(y)
-           + 2.0* 7.0*sin(z)
-           + 4.0*11.0*sin(x)*sin(y)
-           + 4.0*13.0*sin(x)*sin(z)
-           + 4.0*17.0*sin(y)*sin(z)
-           + 8.0*19.0*sin(x)*sin(y)*sin(z)
+    return   1.0* 1.0
+           + 2.0* 3.0*sin(x) // + 2.0* 6.0*sin(2*x) + 2.0* 9.0*sin(3*x)
+           + 2.0* 5.0*sin(y) // + 2.0*10.0*sin(2*y) + 2.0*15.0*sin(3*y)
+           + 2.0* 7.0*sin(z) // + 2.0*14.0*sin(2*z) + 2.0*21.0*sin(3*z)
+//           + 4.0*11.0*sin(x)*sin(y)
+//           + 4.0*13.0*sin(x)*sin(z)
+//           + 4.0*17.0*sin(y)*sin(z)
+//           + 8.0*19.0*sin(x)*sin(y)*sin(z)
            ;
 }
 
@@ -208,17 +206,17 @@ int main(int argc, char **argv)
     // Perform options callbacks now that we're done parsing options
     po::notify(vm);
 
-    ONLYPROC0(LOG4CXX_DEBUG(logger, "Number of processors: " << nproc));
+    ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
 
-    ONLYPROC0(LOG4CXX_DEBUG(logger, "Physical grid dimensions: "
-                            << boost::format("(%d, %d, %d)") % nx % ny % nz));
+    ONLYPROC0(LOG4CXX_INFO(logger, "Physical grid dimensions: "
+                           << boost::format("(%d, %d, %d)") % nx % ny % nz));
 
-    ONLYPROC0(LOG4CXX_DEBUG(logger, "Processor grid dimensions: "
-                            << boost::format("(%d, %d)") % dims[0] % dims[1]));
+    ONLYPROC0(LOG4CXX_INFO(logger, "Processor grid dimensions: "
+                           << boost::format("(%d, %d)") % dims[0] % dims[1]));
 
     if (dims[0]*dims[1] != nproc) {
         ONLYPROC0(LOG4CXX_WARN(logger,
-                               "Processor grid dimensions incompatible with number of processors"));
+                "Processor grid dimensions incompatible with number of processors"));
     }
 
     /* Initialize P3DFFT */
@@ -229,11 +227,11 @@ int main(int argc, char **argv)
     get_dims(istart.data(), iend.data(), isize.data(), 1/* physical pencil */);
     get_dims(fstart.data(), fend.data(), fsize.data(), 2/* wave pencil */);
 
-    LOG4CXX_DEBUG(logger, "Physical space pencil sizes from P3DFFT: "
+    LOG4CXX_DEBUG(logger, "Physical space pencil sizes from P3DFFT:           "
                           << boost::format("(%d, %d, %d)")
                           % isize[0] % isize[1] % isize[2]);
 
-    LOG4CXX_DEBUG(logger, "Wave space pencil sizes from P3DFFT: "
+    LOG4CXX_DEBUG(logger, "Wave space pencil sizes from P3DFFT:               "
                           << boost::format("(%d, %d, %d)")
                           % fsize[0] % fsize[1] % fsize[2]);
 
@@ -243,46 +241,64 @@ int main(int argc, char **argv)
     std::transform(fstart.begin(), fstart.end(), fstart.begin(),
             std::bind2nd(std::minus<int>(),1));
 
+    LOG4CXX_DEBUG(logger, "Physical space pencil sizes modified after P3DFFT: "
+                          << boost::format("(%d, %d, %d)")
+                          % isize[0] % isize[1] % isize[2]);
+
+    LOG4CXX_DEBUG(logger, "Wave space pencil sizes modified after P3DFFT:     "
+                          << boost::format("(%d, %d, %d)")
+                          % fsize[0] % fsize[1] % fsize[2]);
+
     /* Create a uniform tensor product grid */
-    std::valarray<double> gridx(nx), gridy(ny), gridz(nz);
+    std::valarray<double> gridx(isize[0]), gridy(isize[1]), gridz(isize[2]);
     for (size_t i = 0; i < isize[0]; ++i) {
-        gridx[i] = (i + istart[0]) * 2*M_PI/nx;
+        gridx[i] = (i+istart[0]) * 2*M_PI/nx;
+        LOG4CXX_DEBUG(logger, boost::format("gridx[%3d] = % 6g") % i % gridx[i]);
     }
     for (size_t j = 0; j < isize[1]; ++j) {
-        gridy[j] = (j + istart[1]) * 2*M_PI/ny;
+        gridy[j] = (j+istart[1]) * 2*M_PI/ny;
+        LOG4CXX_DEBUG(logger, boost::format("gridy[%3d] = % 6g") % j % gridy[j]);
     }
     for (size_t k = 0; k < isize[2]; ++k) {
-        gridz[k] = (k + istart[2]) * 2*M_PI/nz;
+        gridz[k] = (k+istart[2]) * 2*M_PI/nz;
+        LOG4CXX_DEBUG(logger, boost::format("gridz[%3d] = % 6g") % k % gridz[k]);
     }
 
     /* Allocate and initialize state space */
     using pecos::suzerain::pencil;
     pencil<> A(istart.data(), isize.data(), fstart.data(), fsize.data());
 
-    LOG4CXX_DEBUG(logger,
-                  "Physical space pencil start and end: "
-                  << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
-                  % A.physical.start_x
-                  % A.physical.start_y
-                  % A.physical.start_z
-                  % A.physical.end_x
-                  % A.physical.end_y
-                  % A.physical.end_z);
+    LOG4CXX_INFO(logger,
+                 "Physical space pencil start and end: "
+                 << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
+                 % A.physical.start_x
+                 % A.physical.start_y
+                 % A.physical.start_z
+                 % A.physical.end_x
+                 % A.physical.end_y
+                 % A.physical.end_z);
 
-    LOG4CXX_DEBUG(logger,
-                  "Wave space pencil start and end:     "
-                  << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
-                  % A.wave.start_x
-                  % A.wave.start_y
-                  % A.wave.start_z
-                  % A.wave.end_x
-                  % A.wave.end_y
-                  % A.wave.end_z);
+    LOG4CXX_INFO(logger,
+                 "Wave space pencil start and end:     "
+                 << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
+                 % A.wave.start_x
+                 % A.wave.start_y
+                 % A.wave.start_z
+                 % A.wave.end_x
+                 % A.wave.end_y
+                 % A.wave.end_z);
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
             for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
-                A.physical(i,j,k) = real_data(gridx[i], gridy[j], gridz[k]);
+                const double value = real_data(gridx[i], gridy[j], gridz[k]);
+                LOG4CXX_DEBUG(logger, boost::format(
+                              "Physical space (% 6.4f, % 6.4f, % 6.4f) = % 6g for index (%3d, %3d, %3d)")
+                              % gridx[i] % gridy[j] % gridz[k] % value
+                              % i % j % k);
+                A.physical(i,j,k) = value;
             }
         }
     }
@@ -298,7 +314,7 @@ int main(int argc, char **argv)
     for (int m = 0; m < nrep; m++) {
         MPI_Barrier(MPI_COMM_WORLD);
         rtime1 = rtime1 - MPI_Wtime();
-        ONLYPROC0(LOG4CXX_DEBUG(logger, "Iteration " << m));
+        ONLYPROC0(LOG4CXX_INFO(logger, "Iteration " << m));
 
         p3dfft_ftran_r2c(A.data(), A.data()); // Physical to wave
         rtime1 = rtime1 + MPI_Wtime();
@@ -306,7 +322,7 @@ int main(int argc, char **argv)
         std::transform(A.begin(), A.end(), A.begin(),
                        std::bind1st(std::multiplies<pencil<>::real_type>(),factor));
 
-        ONLYPROC0(LOG4CXX_DEBUG(logger, "Forward transform results "));
+        ONLYPROC0(LOG4CXX_INFO(logger, "Forward transform results "));
 
         for (pencil<>::complex_iterator it = A.wave.begin();
              it != A.wave.end();
@@ -314,7 +330,7 @@ int main(int argc, char **argv)
             if (abs(*it) > 1e-8) {
                 pencil<>::size_type i, j, k;
                 A.wave.inverse_global_offset(it - A.wave.begin(), &i, &j, &k);
-                LOG4CXX_DEBUG(logger,
+                LOG4CXX_INFO(logger,
                         boost::format("(%3d, %3d, %3d) = (%12g, %12g) at index %3d")
                         % i % j % k
                         % it->real() % it->imag()
@@ -331,13 +347,16 @@ int main(int argc, char **argv)
 
     p3dfft_clean();   // Free work space
 
+    MPI_Barrier(MPI_COMM_WORLD);
+
     /* Check results */
+    // FIXME Error results are fishy, compare P3DFFT's test_sine_inplace.x
     double cdiff = 0.0;
     for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
             for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
                 const double ans = real_data(gridx[i], gridy[j], gridz[k]);
-                if (cdiff < abs(A.physical(i,j,k) - ans))
+                if (cdiff > abs(A.physical(i,j,k) - ans))
                     cdiff = abs(A.physical(i,j,k) - ans);
             }
         }
@@ -346,12 +365,12 @@ int main(int argc, char **argv)
     // Gather error indicator
     double ccdiff = 0.0;
     MPI_Reduce(&cdiff, &ccdiff, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-    ONLYPROC0(LOG4CXX_DEBUG(logger,
+    ONLYPROC0(LOG4CXX_INFO(logger,
                             "Maximum difference: " << std::scientific << ccdiff));
 
     // Gather timing statistics
     double rtime2 = 0.0;
     MPI_Reduce(&rtime1, &rtime2, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
-    ONLYPROC0(LOG4CXX_DEBUG(logger, "Time per loop: " << rtime2 / ((double)nrep)));
+    ONLYPROC0(LOG4CXX_INFO(logger, "Time per loop: " << rtime2 / ((double)nrep)));
 }
