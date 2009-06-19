@@ -67,10 +67,10 @@ double real_data(const double x, const double y, const double z) {
            + 2.0* 3.0*sin(x)
            + 2.0* 5.0*sin(y)
            + 2.0* 7.0*sin(z)
-//           + 2.0*11.0*sin(x)*sin(y)
-//           + 2.0*13.0*sin(x)*sin(z)
-//           + 2.0*17.0*sin(y)*sin(z)
-//           + 2.0*19.0*sin(x)*sin(y)*sin(z)
+           + 4.0*11.0*sin(x)*sin(y)
+           + 4.0*13.0*sin(x)*sin(z)
+           + 4.0*17.0*sin(y)*sin(z)
+           + 8.0*19.0*sin(x)*sin(y)*sin(z)
            ;
 }
 
@@ -259,17 +259,25 @@ int main(int argc, char **argv)
     using pecos::suzerain::pencil;
     pencil<> A(istart.data(), isize.data(), fstart.data(), fsize.data());
 
-    LOG4CXX_DEBUG(logger, "Physical space pencil dimensions: "
-                          << boost::format("(%d, %d, %d)")
-                          % A.physical.size_x
-                          % A.physical.size_y
-                          % A.physical.size_z);
+    LOG4CXX_DEBUG(logger,
+                  "Physical space pencil start and end: "
+                  << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
+                  % A.physical.start_x
+                  % A.physical.start_y
+                  % A.physical.start_z
+                  % A.physical.end_x
+                  % A.physical.end_y
+                  % A.physical.end_z);
 
-    LOG4CXX_DEBUG(logger, "Wave space pencil dimensions: "
-                          << boost::format("(%d, %d, %d)")
-                          % A.physical.size_x
-                          % A.physical.size_y
-                          % A.physical.size_z);
+    LOG4CXX_DEBUG(logger,
+                  "Wave space pencil start and end:     "
+                  << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
+                  % A.wave.start_x
+                  % A.wave.start_y
+                  % A.wave.start_z
+                  % A.wave.end_x
+                  % A.wave.end_y
+                  % A.wave.end_z);
 
     for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
@@ -307,8 +315,10 @@ int main(int argc, char **argv)
                 pencil<>::size_type i, j, k;
                 A.wave.inverse_global_offset(it - A.wave.begin(), &i, &j, &k);
                 LOG4CXX_DEBUG(logger,
-                        boost::format("(%d, %d, %d)") % i % j % k
-                        << " " << *it);
+                        boost::format("(%3d, %3d, %3d) = (%12g, %12g) at index %3d")
+                        % i % j % k
+                        % it->real() % it->imag()
+                        % (it-A.wave.begin()) );
             }
         }
 
