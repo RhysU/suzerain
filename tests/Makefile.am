@@ -11,8 +11,7 @@ check_PROGRAMS =
 
 # FIXME: Ugly, separate MPI compilation into separate dir, maybe
 CXX=@MPICXX@
-
-# Progams
+CC=@MPICC@
 
 check_PROGRAMS           += test_gsl_bspline
 test_gsl_bspline_SOURCES  = test_gsl_bspline.cpp
@@ -26,7 +25,6 @@ check_PROGRAMS             += test_bspline_deriv
 test_bspline_deriv_SOURCES  = test_bspline_deriv.cpp
 test_bspline_deriv_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
 
-# Unit test executables
 check_PROGRAMS           += test_pencil_grid
 test_pencil_grid_SOURCES  = test_pencil_grid.cpp
 test_pencil_grid_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
@@ -42,6 +40,10 @@ test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 check_PROGRAMS               += test_underling_error
 test_underling_error_SOURCES  = test_underling_error.cpp
 test_underling_error_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS) ../suzerain/libunderling.la
+
+check_PROGRAMS         += test_underling
+test_underling_SOURCES  = test_underling.cpp
+test_underling_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS) ../suzerain/libunderling.la
 
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
 TESTS = $(check_PROGRAMS)

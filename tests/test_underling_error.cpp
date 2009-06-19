@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <boost/test/included/unit_test.hpp>
-#include <suzerain/underling_error.h>
+#include <suzerain/underling.h>
 
 #define CHECK(x) errors[n].number = x ; errors[n].name = #x ; n++ ;
 #define MAX_ERRS 64

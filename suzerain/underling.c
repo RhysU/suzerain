@@ -30,11 +30,15 @@
 
 #include <suzerain/underling.h>
 
-underling_grid *
-underling_grid_alloc() {
-	underling_grid * retval = 
+underling_workspace *
+underling_workspace_alloc(int ndim) {
+    int i;
+    underling_workspace * w;
 
+    return w;
 }
 
 void
-underling_grid_free(underling_grid * g);
+underling_workspace_free(underling_workspace * g) {
+
+}

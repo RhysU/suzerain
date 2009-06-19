@@ -31,6 +31,7 @@
 #define PECOS_SUZERAIN_UNDERLING_H
 
 #include <stdlib.h>
+#include <suzerain/underling_error.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -44,35 +45,33 @@
 
 __BEGIN_DECLS
 
-typedef double            underling_real;
-typedef underling_real[2] underling_complex;
-
 typedef enum {
-    underling_state_physical = 1,
-    underling_state_wave     = 2,
-    underling_state_other    = 4
-} _underling_state;
+    underling_uninitialized        = 0,
+    underling_state_physical       = 1,
+    underling_state_wave           = 2,
+    underling_state_nottransformed = 4
+} underling_state;
 
 typedef struct {
     int size;
     int stride;
     int global_offset;
-} _underling_dimension;
+} underling_dimension;
 
 typedef struct {
-    underling_state     state[3];
-    underling_dimension dim_r[3];
-    underling_dimension dim_c[3];
-    int                 size[3];
-    float dealias_by    float[3];
-} _underling_grid_impl;
+    int                   ndim;
+    int                 * global_size;
+    double              * dealias_by;
+    underling_state     * state;
+    underling_dimension * dim_r;
+    underling_dimension * dim_c;
+} underling_workspace;
 
-typedef struct {
-    _underling_grid_impl * pImpl;
-} underling_grid;
+typedef double         underling_real;
+typedef underling_real underling_complex[2];
 
-underling_grid * underling_grid_alloc();
-void             underling_grid_free(underling_grid * g);
+underling_workspace * underling_workspace_alloc(int ndim);
+void                  underling_workspace_free(underling_workspace * w);
 
 __END_DECLS
 

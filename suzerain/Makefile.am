@@ -11,18 +11,13 @@ check_PROGRAMS =
 
 # FIXME: Ugly, separate MPI compilation into separate dir, maybe
 CXX=@MPICXX@
+CC=@MPICC@
 
 pkginclude_HEADERS  = exceptions.hpp pencil.hpp pencil_grid.hpp
 pkginclude_HEADERS += underling.h underling_error.h
 
 noinst_LTLIBRARIES      = libunderling.la
-libunderling_la_SOURCES = underling_error.c # underling.c
-
-## check_PROGRAMS += test
-## test_SOURCES    = test.c
-## test_LDADD      = libunderling.la
-## 
-## TESTS                   = $(check_PROGRAMS)
+libunderling_la_SOURCES = underling.c underling_error.c
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
