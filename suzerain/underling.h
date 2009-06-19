@@ -56,24 +56,32 @@ typedef struct underling_dimension underling_dimension;
 struct underling_dimension {
     int size;
     int stride;
-    int global_offset;
-    underling_dimension * transformed;
+    int global_size;
+    int global_start;
+    double dealias_by;
+    underling_dimension *transformed;
 };
 
 typedef struct {
-    int                   ndim;
-    int                 * global_size;
-    double              * dealias_by;
-    underling_state     * state;
-    underling_dimension * dim_r;
-    underling_dimension * dim_c;
+    int                  ndim;
+    underling_state     *state;
+    underling_dimension *dim_p;
+    underling_dimension *dim_w;
 } underling_workspace;
 
 typedef double         underling_real;
 typedef underling_real underling_complex[2];
 
-underling_workspace * underling_workspace_alloc(int ndim);
-void                  underling_workspace_free(underling_workspace * w);
+underling_workspace *underling_workspace_alloc(int ndim);
+void                 underling_workspace_free(underling_workspace *w);
+
+int underling_prepare_physical_size(underling_workspace *w,
+                                    const int *physical_size);
+int underling_prepare_link(underling_workspace *w,
+                           int dim_physical,
+                           int dim_wave);
+int underling_prepare_state(underling_workspace *w,
+                            const underling_state *state);
 
 __END_DECLS
 

@@ -28,11 +28,13 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <suzerain/underling.h>
 
 underling_workspace *
-underling_workspace_alloc(int ndim) {
+underling_workspace_alloc(int ndim)
+{
     int i;
     underling_workspace * w;
 
@@ -48,74 +50,114 @@ underling_workspace_alloc(int ndim) {
 
     w->ndim = ndim;
 
-    w->global_size = malloc(w->ndim * sizeof(w->global_size[0]));
-    if (w->global_size == NULL) {
-        UNDERLING_ERROR_NULL("failed to allocate space for global_size",
-                             UNDERLING_ENOMEM);
-        free(w);
-    }
-
-    w->dealias_by = malloc(w->ndim * sizeof(w->dealias_by[0]));
-    if (w->dealias_by == NULL) {
-        UNDERLING_ERROR_NULL("failed to allocate space for dealias_by",
-                             UNDERLING_ENOMEM);
-        free(w->global_size);
-        free(w);
-    }
-
     w->state = malloc(w->ndim * sizeof(w->state[0]));
     if (w->state == NULL) {
         UNDERLING_ERROR_NULL("failed to allocate space for state",
                              UNDERLING_ENOMEM);
-        free(w->global_size);
-        free(w->dealias_by);
         free(w);
     }
 
-    w->dim_r = malloc(w->ndim * sizeof(w->dim_r[0]));
-    if (w->dim_r == NULL) {
-        UNDERLING_ERROR_NULL("failed to allocate space for dim_r",
+    w->dim_p = malloc(w->ndim * sizeof(w->dim_p[0]));
+    if (w->dim_p == NULL) {
+        UNDERLING_ERROR_NULL("failed to allocate space for dim_p",
                              UNDERLING_ENOMEM);
-        free(w->global_size);
-        free(w->dealias_by);
         free(w->state);
         free(w);
     }
 
-    w->dim_c = malloc(w->ndim * sizeof(w->dim_c[0]));
-    if (w->dim_c == NULL) {
-        UNDERLING_ERROR_NULL("failed to allocate space for dim_c",
+    w->dim_w = malloc(w->ndim * sizeof(w->dim_w[0]));
+    if (w->dim_w == NULL) {
+        UNDERLING_ERROR_NULL("failed to allocate space for dim_w",
                              UNDERLING_ENOMEM);
-        free(w->global_size);
-        free(w->dealias_by);
         free(w->state);
-        free(w->dim_r);
+        free(w->dim_p);
         free(w);
     }
 
     for (i = 0; i < w->ndim; ++i) {
-        w->global_size[i]         = 0;
-        w->dealias_by[i]          = 3.0/2.0;
         w->state[i]               = underling_state_uninitialized;
-        w->dim_r[i].size          = 0;
-        w->dim_r[i].stride        = 0;
-        w->dim_r[i].global_offset = 0;
-        w->dim_r[i].transformed   = NULL;
-        w->dim_c[i].size          = 0;
-        w->dim_c[i].stride        = 0;
-        w->dim_c[i].global_offset = 0;
-        w->dim_c[i].transformed   = NULL;
+
+        w->dim_p[i].size          = 0;
+        w->dim_p[i].stride        = 0;
+        w->dim_p[i].global_size   = 0;
+        w->dim_p[i].global_start  = 0;
+        w->dim_p[i].dealias_by    = 3.0/2.0;
+        w->dim_p[i].transformed   = NULL;
+
+        w->dim_w[i].size          = 0;
+        w->dim_w[i].stride        = 0;
+        w->dim_w[i].global_size   = 0;
+        w->dim_w[i].global_start  = 0;
+        w->dim_p[i].dealias_by    = 1.0;
+        w->dim_w[i].transformed   = NULL;
     }
 
     return w;
 }
 
 void
-underling_workspace_free(underling_workspace * w) {
-    free(w->global_size);
-    free(w->dealias_by);
+underling_workspace_free(underling_workspace * w)
+{
     free(w->state);
-    free(w->dim_r);
-    free(w->dim_c);
+    free(w->dim_p);
+    free(w->dim_w);
     free(w);
+}
+
+int
+underling_prepare_physical_size(underling_workspace *w,
+                                const int *physical_size)
+{
+    int i;
+
+    for (i = 0; i < w->ndim; ++i) {
+        if (physical_size[i] < 1) {
+            UNDERLING_ERROR("physical_size < 1", UNDERLING_EINVAL);
+        }
+    }
+
+    for (i = 0; i < w->ndim; ++i) {
+        w->dim_p[i].global_size = physical_size[i];
+    }
+
+    return UNDERLING_SUCCESS;
+}
+
+
+int
+underling_prepare_link(underling_workspace *w,
+                       int dim_physical,
+                       int dim_wave)
+{
+    if (dim_physical < 0 || dim_physical >= w->ndim) {
+        UNDERLING_ERROR("dim_physical index out of range", UNDERLING_EINVAL);
+    }
+    if (w->dim_p[dim_physical].transformed != NULL) {
+        UNDERLING_ERROR("dim_physical already linked", UNDERLING_EINVAL);
+    }
+
+    if (dim_wave < 0 || dim_wave >= w->ndim) {
+        UNDERLING_ERROR("dim_wave index out of range", UNDERLING_EINVAL);
+    }
+    if (w->dim_w[dim_wave].transformed != NULL) {
+        UNDERLING_ERROR("dim_wave already linked", UNDERLING_EINVAL);
+    }
+
+    w->dim_p[dim_physical].transformed = &(w->dim_w[dim_wave]);
+    w->dim_w[dim_wave].transformed     = &(w->dim_p[dim_physical]);
+
+    return UNDERLING_SUCCESS;
+}
+
+int
+underling_prepare_state(underling_workspace *w,
+                        const underling_state *state)
+{
+    int i;
+
+    for (i = 0; i < w->ndim; ++i) {
+        w->state[i] = state[i];
+    }
+
+    return UNDERLING_SUCCESS;
 }
