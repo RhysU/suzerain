@@ -46,17 +46,19 @@
 __BEGIN_DECLS
 
 typedef enum {
-    underling_uninitialized        = 0,
+    underling_state_uninitialized  = 0,
     underling_state_physical       = 1,
     underling_state_wave           = 2,
     underling_state_nottransformed = 4
 } underling_state;
 
-typedef struct {
+typedef struct underling_dimension underling_dimension;
+struct underling_dimension {
     int size;
     int stride;
     int global_offset;
-} underling_dimension;
+    underling_dimension * transformed;
+};
 
 typedef struct {
     int                   ndim;

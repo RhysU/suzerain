@@ -93,6 +93,20 @@ underling_workspace_alloc(int ndim) {
         free(w);
     }
 
+    for (i = 0; i < w->ndim; ++i) {
+        w->global_size[i]         = 0;
+        w->dealias_by[i]          = 3.0/2.0;
+        w->state[i]               = underling_state_uninitialized;
+        w->dim_r[i].size          = 0;
+        w->dim_r[i].stride        = 0;
+        w->dim_r[i].global_offset = 0;
+        w->dim_r[i].transformed   = NULL;
+        w->dim_c[i].size          = 0;
+        w->dim_c[i].stride        = 0;
+        w->dim_c[i].global_offset = 0;
+        w->dim_c[i].transformed   = NULL;
+    }
+
     return w;
 }
 
