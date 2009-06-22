@@ -28,7 +28,7 @@ void print_gsl_matrix(FILE * stream, gsl_matrix * m)
 {
     for (size_t i = 0; i < m->size1; ++i) {
         for (size_t j = 0; j < m->size2; ++j) {
-            fprintf(stream, " %10g", gsl_matrix_get(m, i, j));
+            fprintf(stream, " %14g", gsl_matrix_get(m, i, j));
         }
         printf("\n");
     }
@@ -77,9 +77,9 @@ BOOST_AUTO_TEST_CASE( main_test )
     for (size_t j = 0; j < M->size1; ++j) {
         double x = gsl_bspline_greville_abscissa(j, bw);
         gsl_bspline_deriv_eval(x, nderiv, dB, bw, bdw);
-        gsl_matrix_set_col(M,  j, (const gsl_vector *) &gsl_matrix_column(dB, 0));
-        gsl_matrix_set_col(D1, j, (const gsl_vector *) &gsl_matrix_column(dB, 1));
-        gsl_matrix_set_col(D2, j, (const gsl_vector *) &gsl_matrix_column(dB, 2));
+        gsl_matrix_set_row(M,  j, (const gsl_vector *) &gsl_matrix_column(dB, 0));
+        gsl_matrix_set_row(D1, j, (const gsl_vector *) &gsl_matrix_column(dB, 1));
+        gsl_matrix_set_row(D2, j, (const gsl_vector *) &gsl_matrix_column(dB, 2));
     }
 
     LOG4CXX_INFO(logger, "M follows... ");
@@ -97,10 +97,11 @@ BOOST_AUTO_TEST_CASE( main_test )
     print_gsl_matrix(stdout, MLU);
 
     {
-        // Vector of function coefficients
-        const int i = 0;
+        // Vector of function coefficients for f(x) = x+1
         gsl_vector * c  = gsl_vector_calloc(ncoeff);
-        gsl_vector_set(c, i, 1.0);
+        for (size_t i = 0; i < ncoeff; ++i) {
+            gsl_vector_set(c, i, i+1);
+        }
 
         // Form rhs = D1 c
         gsl_vector * rhs  = gsl_vector_calloc(ncoeff);
@@ -120,9 +121,9 @@ BOOST_AUTO_TEST_CASE( main_test )
         gsl_vector * residual = gsl_vector_alloc(ncoeff);
         gsl_blas_dgemv(CblasNoTrans, -1.0, D1, c, 0.0, residual);
         gsl_blas_dgemv(CblasNoTrans,  1.0, M, dc, 1.0, residual);
-        if (logger->isDebugEnabled()) {
+        if (logger->isTraceEnabled()) {
             for (size_t i = 0; i < residual->size; ++i) {
-                LOG4CXX_DEBUG(logger, "residual[" << i << "] = "
+                LOG4CXX_TRACE(logger, "residual[" << i << "] = "
                                       << gsl_vector_get(residual, i));
             }
         }
@@ -130,11 +131,12 @@ BOOST_AUTO_TEST_CASE( main_test )
 
         const int nsample = 5;
         const size_t nderiv = 2;
-        for (size_t i = 0; i < nbreak-1; ++i) {
+        for (size_t i = 0; i < ncoeff-1; ++i) {
+            const double gai   = gsl_bspline_greville_abscissa(i, bw);
+            const double gaip1 = gsl_bspline_greville_abscissa(i+1, bw);
             for (size_t j = 0; j < nsample; ++j) {
                 double direct_d1, collocation_d1;
-                const double x = bpoint_data[i]
-                    + j/((double)nsample)*(bpoint_data[i+1]-bpoint_data[i]);
+                const double x = gai + j/((double)nsample)*(gaip1-gai);
                 gsl_bspline_deriv_eval(x, nderiv, dB, bw, bdw);
                 gsl_blas_ddot(c,  (const gsl_vector *) &gsl_matrix_column(dB, 1),
                               &direct_d1);
