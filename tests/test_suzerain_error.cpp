@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <boost/test/included/unit_test.hpp>
-#include <suzerain/underling_error.h>
+#include <suzerain/suzerain_error.h>
 
 #define CHECK(x) errors[n].number = x ; errors[n].name = #x ; n++ ;
 #define MAX_ERRS 64
@@ -39,17 +39,17 @@ BOOST_AUTO_TEST_CASE( main_test )
     const char * name;
   } errors[MAX_ERRS] ;
 
-  CHECK(UNDERLING_SUCCESS);
-  CHECK(UNDERLING_FAILURE);
-  CHECK(UNDERLING_EDOM);
-  CHECK(UNDERLING_ERANGE);
-  CHECK(UNDERLING_EFAULT);
-  CHECK(UNDERLING_EINVAL);
-  CHECK(UNDERLING_EFAILED);
-  CHECK(UNDERLING_ESANITY);
-  CHECK(UNDERLING_ENOMEM);
-  CHECK(UNDERLING_EBADFUNC);
-  CHECK(UNDERLING_EZERODIV);
+  CHECK(SUZERAIN_SUCCESS);
+  CHECK(SUZERAIN_FAILURE);
+  CHECK(SUZERAIN_EDOM);
+  CHECK(SUZERAIN_ERANGE);
+  CHECK(SUZERAIN_EFAULT);
+  CHECK(SUZERAIN_EINVAL);
+  CHECK(SUZERAIN_EFAILED);
+  CHECK(SUZERAIN_ESANITY);
+  CHECK(SUZERAIN_ENOMEM);
+  CHECK(SUZERAIN_EBADFUNC);
+  CHECK(SUZERAIN_EZERODIV);
 
   for (i = 0 ; i < n ; i++)
     {
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE( main_test )
           if (j != i)
             {
               int e2 = errors[j].number;
-              status |= (underling_strerror(e1) == underling_strerror(e2)) ;
+              status |= (suzerain_strerror(e1) == suzerain_strerror(e2)) ;
             }
         }
       BOOST_REQUIRE_MESSAGE(!status, "Found non-distinct error message");

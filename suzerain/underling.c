@@ -39,36 +39,36 @@ underling_workspace_alloc(int ndim)
     underling_workspace * w;
 
     if (ndim < 1) {
-        UNDERLING_ERROR_NULL("ndim must be at least 1", UNDERLING_EINVAL);
+        SUZERAIN_ERROR_NULL("ndim must be at least 1", SUZERAIN_EINVAL);
     }
 
     w = malloc(sizeof(underling_workspace));
     if (w == NULL) {
-        UNDERLING_ERROR_NULL("failed to allocate space for workspace",
-                             UNDERLING_ENOMEM);
+        SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
+                             SUZERAIN_ENOMEM);
     }
 
     w->ndim = ndim;
 
     w->state = malloc(w->ndim * sizeof(w->state[0]));
     if (w->state == NULL) {
-        UNDERLING_ERROR_NULL("failed to allocate space for state",
-                             UNDERLING_ENOMEM);
+        SUZERAIN_ERROR_NULL("failed to allocate space for state",
+                             SUZERAIN_ENOMEM);
         free(w);
     }
 
     w->dim_p = malloc(w->ndim * sizeof(w->dim_p[0]));
     if (w->dim_p == NULL) {
-        UNDERLING_ERROR_NULL("failed to allocate space for dim_p",
-                             UNDERLING_ENOMEM);
+        SUZERAIN_ERROR_NULL("failed to allocate space for dim_p",
+                             SUZERAIN_ENOMEM);
         free(w->state);
         free(w);
     }
 
     w->dim_w = malloc(w->ndim * sizeof(w->dim_w[0]));
     if (w->dim_w == NULL) {
-        UNDERLING_ERROR_NULL("failed to allocate space for dim_w",
-                             UNDERLING_ENOMEM);
+        SUZERAIN_ERROR_NULL("failed to allocate space for dim_w",
+                             SUZERAIN_ENOMEM);
         free(w->state);
         free(w->dim_p);
         free(w);
@@ -112,7 +112,7 @@ underling_prepare_physical_size(underling_workspace *w,
 
     for (i = 0; i < w->ndim; ++i) {
         if (physical_size[i] < 1) {
-            UNDERLING_ERROR("physical_size < 1", UNDERLING_EINVAL);
+            SUZERAIN_ERROR("physical_size < 1", SUZERAIN_EINVAL);
         }
     }
 
@@ -120,7 +120,7 @@ underling_prepare_physical_size(underling_workspace *w,
         w->dim_p[i].global_size = physical_size[i];
     }
 
-    return UNDERLING_SUCCESS;
+    return SUZERAIN_SUCCESS;
 }
 
 
@@ -130,23 +130,23 @@ underling_prepare_link(underling_workspace *w,
                        int dim_wave)
 {
     if (dim_physical < 0 || dim_physical >= w->ndim) {
-        UNDERLING_ERROR("dim_physical index out of range", UNDERLING_EINVAL);
+        SUZERAIN_ERROR("dim_physical index out of range", SUZERAIN_EINVAL);
     }
     if (w->dim_p[dim_physical].transformed != NULL) {
-        UNDERLING_ERROR("dim_physical already linked", UNDERLING_EINVAL);
+        SUZERAIN_ERROR("dim_physical already linked", SUZERAIN_EINVAL);
     }
 
     if (dim_wave < 0 || dim_wave >= w->ndim) {
-        UNDERLING_ERROR("dim_wave index out of range", UNDERLING_EINVAL);
+        SUZERAIN_ERROR("dim_wave index out of range", SUZERAIN_EINVAL);
     }
     if (w->dim_w[dim_wave].transformed != NULL) {
-        UNDERLING_ERROR("dim_wave already linked", UNDERLING_EINVAL);
+        SUZERAIN_ERROR("dim_wave already linked", SUZERAIN_EINVAL);
     }
 
     w->dim_p[dim_physical].transformed = &(w->dim_w[dim_wave]);
     w->dim_w[dim_wave].transformed     = &(w->dim_p[dim_physical]);
 
-    return UNDERLING_SUCCESS;
+    return SUZERAIN_SUCCESS;
 }
 
 int
@@ -159,5 +159,5 @@ underling_prepare_state(underling_workspace *w,
         w->state[i] = state[i];
     }
 
-    return UNDERLING_SUCCESS;
+    return SUZERAIN_SUCCESS;
 }

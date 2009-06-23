@@ -22,16 +22,13 @@
  *
  *--------------------------------------------------------------------------
  *
- * underling.h: A parallel, three dimensional FFT library atop MPI
+ * bspline_operator.h: operator creation routines for a bspline basis
  *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_UNDERLING_H
-#define PECOS_SUZERAIN_UNDERLING_H
-
-#include <stdlib.h>
-#include <suzerain/suzerain_error.h>
+#ifndef PECOS_SUZERAIN_BSPLINE_OPERATOR_H
+#define PECOS_SUZERAIN_BSPLINE_OPERATOR_H
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -45,44 +42,29 @@
 
 __BEGIN_DECLS
 
-typedef enum {
-    underling_state_uninitialized  = 0,
-    underling_state_physical       = 1,
-    underling_state_wave           = 2,
-    underling_state_nottransformed = 4
-} underling_state;
-
-typedef struct underling_dimension underling_dimension;
-struct underling_dimension {
-    int size;
-    int stride;
-    int global_size;
-    int global_start;
-    double dealias_by;
-    underling_dimension *transformed;
+enum suzerain_bspline_operator_method {
+    SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE = 1
 };
 
 typedef struct {
-    int                  ndim;
-    underling_state     *state;
-    underling_dimension *dim_p;
-    underling_dimension *dim_w;
-} underling_workspace;
+    int order;
+    int nbreak;
+    int nderiv;
+    int M_kl, M_ku, M_lda, M_storagesize;
+    int D_kl, D_ku, D_lda, D_storagesize;
+    double *M;
+    double **D;
+} suzerain_bspline_operator_workspace;
 
-typedef double         underling_real;
-typedef underling_real underling_complex[2];
+suzerain_bspline_operator_workspace *
+suzerain_bspline_operator_alloc(int order,
+                                int nbreak,
+                                int nderiv,
+                                enum suzerain_bspline_operator_method method);
 
-underling_workspace *underling_workspace_alloc(int ndim);
-void                 underling_workspace_free(underling_workspace *w);
-
-int underling_prepare_physical_size(underling_workspace *w,
-                                    const int *physical_size);
-int underling_prepare_link(underling_workspace *w,
-                           int dim_physical,
-                           int dim_wave);
-int underling_prepare_state(underling_workspace *w,
-                            const underling_state *state);
+void
+suzerain_bspline_operator_free(suzerain_bspline_operator_workspace *w);
 
 __END_DECLS
 
-#endif // PECOS_SUZERAIN_UNDERLING_H
+#endif // PECOS_SUZERAIN_BSPLINE_OPERATOR_H

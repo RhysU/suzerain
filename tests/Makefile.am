@@ -37,13 +37,17 @@ check_PROGRAMS      += test_complex
 test_complex_SOURCES = test_complex.cpp
 test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-check_PROGRAMS               += test_underling_error
-test_underling_error_SOURCES  = test_underling_error.cpp
-test_underling_error_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS) ../suzerain/libunderling.la
-
 check_PROGRAMS         += test_underling
 test_underling_SOURCES  = test_underling.cpp
 test_underling_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS) ../suzerain/libunderling.la
+
+check_PROGRAMS              += test_suzerain_error
+test_suzerain_error_SOURCES  = test_suzerain_error.cpp
+test_suzerain_error_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS) ../suzerain/libsuzerain.la
+
+check_PROGRAMS                += test_bspline_operator
+test_bspline_operator_SOURCES  = test_bspline_operator.cpp
+test_bspline_operator_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS) ../suzerain/libsuzerain.la
 
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
 TESTS = $(check_PROGRAMS)
