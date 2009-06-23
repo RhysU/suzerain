@@ -34,10 +34,14 @@
 #include <suzerain/bspline_operator.h>
 #include <suzerain/suzerain_error.h>
 
+/* Compute the BLAS-compatible offset to a(i,j) for general banded matrices */
+/* a(i,j) -> storage(ku+1+i-j,j) where storage is column-major with LDA lda */
+#define GB_OFFSET(lda, ku, i, j) ((j)*(lda)+(ku+1+i-j))
+
 suzerain_bspline_operator_workspace *
 suzerain_bspline_operator_alloc(int order,
-                                int nbreak,
-                                int nderiv,
+                                int nbreakpoints,
+                                int nderivatives,
                                 enum suzerain_bspline_operator_method method)
 {
 
@@ -46,19 +50,21 @@ suzerain_bspline_operator_alloc(int order,
     suzerain_bspline_operator_workspace * w = NULL;
 
     /* Per gsl_bspline_ncoeffs; assumes highest continuity possible used */
-    const int ncoeff = nbreak + order - 2;
+    const int ncoeff = nbreakpoints + order - 2;
 
     /* Parameter sanity checks */
     if (order < 1) {
         SUZERAIN_ERROR_NULL("order must be at least 1", SUZERAIN_EINVAL);
     }
 
-    if (nbreak < 2) {
-        SUZERAIN_ERROR_NULL("nbreak must be at least 2", SUZERAIN_EINVAL);
+    if (nbreakpoints < 2) {
+        SUZERAIN_ERROR_NULL("nbreakpoints must be at least 2",
+                            SUZERAIN_EINVAL);
     }
 
-    if (nderiv < 1) {
-        SUZERAIN_ERROR_NULL("nderiv must be at least 1", SUZERAIN_EINVAL);
+    if (nderivatives < 1) {
+        SUZERAIN_ERROR_NULL("nderivatives must be at least 1",
+                            SUZERAIN_EINVAL);
     }
 
     /* Compute the bandwidth based on the supplied method and order */
@@ -90,8 +96,8 @@ suzerain_bspline_operator_alloc(int order,
 
     /* Save bspline details */
     w->order  = order;
-    w->nbreak = nbreak;
-    w->nderiv = nderiv;
+    w->nbreakpoints = nbreakpoints;
+    w->nderivatives = nderivatives;
     /* per gsl_bspline_ncoeffs */
 
     /* Storage parameters per http://www.intel.com/software/products/mkl/docs/WebHelp/appendices/mkl_appB_MA.html */
@@ -114,7 +120,7 @@ suzerain_bspline_operator_alloc(int order,
     }
 
     /* Allocate space for pointers to operator matrices */
-    w->D = malloc(w->nderiv * sizeof(double *));
+    w->D = malloc(w->nderivatives * sizeof(double *));
     if (w->D == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for derivative pointers",
                             SUZERAIN_ENOMEM);
@@ -123,7 +129,7 @@ suzerain_bspline_operator_alloc(int order,
     }
     /* simultaneously allocate memory for all derivative matrices */
     /* calloc ensures zeros in all matrix indices */
-    w->D[0] = calloc(w->nderiv * w->D_storagesize, sizeof(double));
+    w->D[0] = calloc(w->nderivatives * w->D_storagesize, sizeof(double));
     if (w->D[0] == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for derivative matrices",
                             SUZERAIN_ENOMEM);
@@ -133,7 +139,7 @@ suzerain_bspline_operator_alloc(int order,
     }
     /* w->D[0] now points to D[0] = d/dx */
     /* Establish pointers for higher derivatives, e.g. D[1] = d^2/dx^2, ...*/
-    for (i = 1; i < nderiv; ++i) {
+    for (i = 1; i < nderivatives; ++i) {
         w->D[i] = w->D[i-1] + w->D_storagesize;
     }
 
@@ -144,8 +150,16 @@ void
 suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
 {
     free(w->D[0]);
-    /* D[1], ..., D[nderiv-1] allocated through w->D[0]; no free() needed */
+    /* D[1], ..., D[nderivatives-1] allocated through w->D[0]; no free() */
     free(w->D);
     free(w->M);
     free(w);
+}
+
+int
+suzerain_bspline_operator_create(const double * breakpoints)
+{
+    /* NOP */
+
+    return SUZERAIN_SUCCESS;
 }

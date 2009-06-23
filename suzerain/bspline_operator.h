@@ -48,8 +48,8 @@ enum suzerain_bspline_operator_method {
 
 typedef struct {
     int order;
-    int nbreak;
-    int nderiv;
+    int nbreakpoints;
+    int nderivatives;
     int M_kl, M_ku, M_lda, M_storagesize;
     int D_kl, D_ku, D_lda, D_storagesize;
     double *M;
@@ -58,12 +58,15 @@ typedef struct {
 
 suzerain_bspline_operator_workspace *
 suzerain_bspline_operator_alloc(int order,
-                                int nbreak,
-                                int nderiv,
+                                int nbreakpoints,
+                                int nderivatives,
                                 enum suzerain_bspline_operator_method method);
 
 void
 suzerain_bspline_operator_free(suzerain_bspline_operator_workspace *w);
+
+int
+suzerain_bspline_operator_create(const double * breakpoints);
 
 __END_DECLS
 
