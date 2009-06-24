@@ -86,16 +86,16 @@ AC_ARG_WITH([boost],
    [AS_HELP_STRING([--with-boost=DIR],
                    [prefix of Boost $1 @<:@guess@:>@])])dnl
 AC_ARG_VAR([BOOST_ROOT],[Location of Boost installation])dnl
-# If BOOST_ROOT is set and the use has not provided a value to
+# If BOOST_ROOT is set and the user has not provided a value to
 # --with-boost, then treat BOOST_ROOT as if it the user supplied it.
 if test x"$BOOST_ROOT" != x; then
   if test x"$with_boost" = x; then
-    AC_MSG_NOTICE([Detected BOOST_ROOT; treating as --with-boost=$BOOST_ROOT])
+    AC_MSG_NOTICE([Detected BOOST_ROOT; continuing with --with-boost=$BOOST_ROOT])
     with_boost=$BOOST_ROOT
   else
-    AC_MSG_NOTICE([Detected BOOST_ROOT, but overridden by --with-boost=DIR])
-  fi 
-fi 
+    AC_MSG_NOTICE([Detected BOOST_ROOT=$BOOST_ROOT, but overridden by --with-boost=$with_boost])
+  fi
+fi
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],
          ["$DISTCHECK_CONFIGURE_FLAGS '--with-boost=$with_boost'"])
 boost_save_CPPFLAGS=$CPPFLAGS
@@ -484,6 +484,13 @@ AC_DEFUN([BOOST_HASH],
 # Look for Boost.Lambda
 AC_DEFUN([BOOST_LAMBDA],
 [BOOST_FIND_HEADER([boost/lambda/lambda.hpp])])
+
+
+# BOOST_OPTIONAL()
+# ----------------
+# Look for Boost.Optional
+AC_DEFUN([BOOST_OPTIONAL],
+[BOOST_FIND_HEADER([boost/optional.hpp])])
 
 
 # BOOST_PREPROCESSOR()
