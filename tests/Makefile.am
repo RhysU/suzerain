@@ -4,8 +4,7 @@ AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
 AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
 AM_CPPFLAGS   += $(GSL_CFLAGS) $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
 AM_CPPFLAGS   += $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS)
-AM_LDFLAGS     = $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
-AM_LDFLAGS    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+AM_LDFLAGS     =
 bin_PROGRAMS   =
 check_PROGRAMS =
 
@@ -39,15 +38,20 @@ test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 check_PROGRAMS         += test_underling
 test_underling_SOURCES  = test_underling.cpp
-test_underling_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS) ../suzerain/libunderling.la
+test_underling_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_underling_LDADD   += ../suzerain/libunderling.la
 
 check_PROGRAMS              += test_suzerain_error
 test_suzerain_error_SOURCES  = test_suzerain_error.cpp
-test_suzerain_error_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS) ../suzerain/libsuzerain.la
+test_suzerain_error_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_suzerain_error_LDADD   += ../suzerain/libsuzerain.la
 
 check_PROGRAMS                += test_bspline_operator
 test_bspline_operator_SOURCES  = test_bspline_operator.cpp
-test_bspline_operator_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS) ../suzerain/libsuzerain.la
+test_bspline_operator_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_bspline_operator_LDADD   += ../suzerain/libsuzerain.la
+test_bspline_operator_LDADD   += $(GSL_LIBS)
+test_bspline_operator_LDADD   += $(LOG4CXX_LIBS)
 
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
 TESTS = $(check_PROGRAMS)

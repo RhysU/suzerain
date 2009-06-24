@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
 #include <suzerain/bspline_operator.h>
 #include <suzerain/suzerain_error.h>
 
@@ -107,17 +109,17 @@ suzerain_bspline_operator_alloc(int order,
     /* Allocate space for pointers to matrices */
     w->D = malloc((w->nderivatives+1) * sizeof(double *));
     if (w->D == NULL) {
+        free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix pointers",
                             SUZERAIN_ENOMEM);
-        free(w);
     }
     /* allocate memory for all matrices in one contiguous block */
-    w->D[0] = calloc((w->nderivatives+1) * w->storagesize, sizeof(double));
+    w->D[0] = malloc((w->nderivatives+1) * w->storagesize * sizeof(double));
     if (w->D[0] == NULL) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
-                            SUZERAIN_ENOMEM);
         free(w->D);
         free(w);
+        SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
+                            SUZERAIN_ENOMEM);
     }
     /* w->D[0] now points to D[0] which will be the mass matrix */
     /* Establish pointers for D[1] = d/dx, d[2] = d^2/dx^2, ...*/
@@ -141,7 +143,40 @@ int
 suzerain_bspline_operator_create(const double * breakpoints,
                                  suzerain_bspline_operator_workspace *w)
 {
-    /* IMPLEMENT ME */
+    gsl_vector_const_view breakpoints_view
+        = gsl_vector_const_view_array(breakpoints, w->nbreakpoints);
+    gsl_bspline_workspace *bw;
+    gsl_bspline_deriv_workspace *bdw;
+    gsl_matrix *db;
+
+    /* Setup calls to use GSL B-spline functionality */
+    bw = gsl_bspline_alloc(w->order, w->nbreakpoints);
+    if (bw == NULL) {
+        SUZERAIN_ERROR("failure allocating bspline workspace",
+                       SUZERAIN_ENOMEM);
+    }
+    if (w->n != gsl_bspline_ncoeffs(bw)) {
+        gsl_bspline_free(bw);
+        SUZERAIN_ERROR("bspline coefficient count does not match workspace",
+                       SUZERAIN_EINVAL);
+    }
+    bdw = gsl_bspline_deriv_alloc(gsl_bspline_order(bw));
+    if (bdw == NULL) {
+        gsl_bspline_free(bw);
+        SUZERAIN_ERROR("failure allocating bspline derivative workspace",
+                       SUZERAIN_ENOMEM);
+    }
+    if (gsl_bspline_knots(&breakpoints_view.vector, bw)) {
+        gsl_bspline_deriv_free(bdw);
+        gsl_bspline_free(bw);
+        SUZERAIN_ERROR("failure seting bspline breakpoints",
+                       SUZERAIN_EFAILED);
+    }
+
+
+    /* Tear down calls for GSL B-spline functionality */
+    gsl_bspline_deriv_free(bdw);
+    gsl_bspline_free(bw);
 
     return SUZERAIN_SUCCESS;
 }
