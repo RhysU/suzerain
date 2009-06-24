@@ -35,8 +35,9 @@
 #include <suzerain/suzerain_error.h>
 
 /* Compute the BLAS-compatible offset to a(i,j) for general banded matrices */
-/* a(i,j) -> storage(ku+1+i-j,j) where storage is column-major with LDA lda */
-#define GB_OFFSET(lda, ku, i, j) ((j)*(lda)+(ku+1+i-j))
+/* a(i,j) -> storage(ku+i-j,j) where storage is column-major with LDA lda */
+/* Note missing constant one compared with Fortran because C 0-indexes arrays */
+#define GB_OFFSET(lda, ku, i, j) ((j)*(lda)+(ku+i-j))
 
 suzerain_bspline_operator_workspace *
 suzerain_bspline_operator_alloc(int order,
@@ -157,9 +158,10 @@ suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
 }
 
 int
-suzerain_bspline_operator_create(const double * breakpoints)
+suzerain_bspline_operator_create(const double * breakpoints,
+                                 suzerain_bspline_operator_workspace *w)
 {
-    /* NOP */
+    /* IMPLEMENT ME */
 
     return SUZERAIN_SUCCESS;
 }

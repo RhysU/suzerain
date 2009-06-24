@@ -66,7 +66,8 @@ void
 suzerain_bspline_operator_free(suzerain_bspline_operator_workspace *w);
 
 int
-suzerain_bspline_operator_create(const double * breakpoints);
+suzerain_bspline_operator_create(const double * breakpoints,
+                                 suzerain_bspline_operator_workspace *w);
 
 __END_DECLS
 
