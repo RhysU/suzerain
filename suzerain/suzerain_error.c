@@ -41,7 +41,7 @@ suzerain_error (const char * reason, const char * file, int line, int suzerain_e
   suzerain_stream_printf ("ERROR", file, line, reason);
 
   fflush (stdout);
-  fprintf (stderr, "Default GSL error handler invoked.\n");
+  fprintf (stderr, "Default suzerain error handler invoked.\n");
   fflush (stderr);
 
   abort ();
