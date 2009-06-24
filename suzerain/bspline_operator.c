@@ -50,9 +50,6 @@ suzerain_bspline_operator_alloc(int order,
     int bandwidth = -1 /* uninitialized */;
     suzerain_bspline_operator_workspace * w = NULL;
 
-    /* Per gsl_bspline_ncoeffs; assumes highest continuity possible used */
-    const int ncoeff = nbreakpoints + order - 2;
-
     /* Parameter sanity checks */
     if (order < 1) {
         SUZERAIN_ERROR_NULL("order must be at least 1", SUZERAIN_EINVAL);
@@ -71,7 +68,7 @@ suzerain_bspline_operator_alloc(int order,
     /* Compute the bandwidth based on the supplied method and order */
     switch (method) {
     case SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE:
-        /* Compute bandwidth of resulting operator matrices
+        /* Compute bandwidth of resulting operator matrices:
          *   order = 1, degree = 0 (piecewise constants),  bandwidth = 1
          *   order = 2, degree = 1 (piecewise linears),    bandwidth = 3
          *   order = 3, degree = 2 (piecewise quadratics), bandwidth = 3
@@ -95,53 +92,37 @@ suzerain_bspline_operator_alloc(int order,
                             SUZERAIN_ENOMEM);
     }
 
-    /* Save bspline details */
-    w->order  = order;
+    /* Save bspline parameters */
+    w->order        = order;
     w->nbreakpoints = nbreakpoints;
     w->nderivatives = nderivatives;
-    /* per gsl_bspline_ncoeffs */
+    w->n            = nbreakpoints + order - 2; /* assumes max continuity */
 
-    /* Storage parameters per http://www.intel.com/software/products/mkl/docs/WebHelp/appendices/mkl_appB_MA.html */
-    w->D_kl          = (bandwidth - 1) / 2;
-    w->D_ku          = (bandwidth - 1) / 2;
-    w->D_lda         = w->D_kl + w->D_ku + 1;
-    w->D_storagesize = w->D_lda * ncoeff;
-    w->M_kl          = w->D_kl;
-    w->M_ku          = w->D_kl + w->D_ku;  /* Extra for LU by DGBTRF */
-    w->M_lda         = w->M_kl + w->M_ku + 1;
-    w->M_storagesize = w->M_lda * ncoeff;
+    /* Storage parameters for BLAS/lapack-compatible general band matrix */
+    w->kl          = (bandwidth - 1) / 2;
+    w->ku          = (bandwidth - 1) / 2;
+    w->lda         = w->kl + w->ku + 1;
+    w->storagesize = w->lda * w->n;
 
-    /* Allocate space for mass matrix storage */
-    /* calloc ensures zeros for all matrix indices */
-    w->M = calloc(w->M_storagesize, sizeof(double));
-    if (w->M == NULL) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for mass matrix",
-                            SUZERAIN_ENOMEM);
-        free(w);
-    }
-
-    /* Allocate space for pointers to operator matrices */
-    w->D = malloc(w->nderivatives * sizeof(double *));
+    /* Allocate space for pointers to matrices */
+    w->D = malloc((w->nderivatives+1) * sizeof(double *));
     if (w->D == NULL) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for derivative pointers",
+        SUZERAIN_ERROR_NULL("failed to allocate space for matrix pointers",
                             SUZERAIN_ENOMEM);
-        free(w->M);
         free(w);
     }
-    /* simultaneously allocate memory for all derivative matrices */
-    /* calloc ensures zeros in all matrix indices */
-    w->D[0] = calloc(w->nderivatives * w->D_storagesize, sizeof(double));
+    /* allocate memory for all matrices in one contiguous block */
+    w->D[0] = calloc((w->nderivatives+1) * w->storagesize, sizeof(double));
     if (w->D[0] == NULL) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for derivative matrices",
+        SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
                             SUZERAIN_ENOMEM);
         free(w->D);
-        free(w->M);
         free(w);
     }
-    /* w->D[0] now points to D[0] = d/dx */
-    /* Establish pointers for higher derivatives, e.g. D[1] = d^2/dx^2, ...*/
-    for (i = 1; i < nderivatives; ++i) {
-        w->D[i] = w->D[i-1] + w->D_storagesize;
+    /* w->D[0] now points to D[0] which will be the mass matrix */
+    /* Establish pointers for D[1] = d/dx, d[2] = d^2/dx^2, ...*/
+    for (i = 0; i < nderivatives; ++i) {
+        w->D[i+1] = w->D[i] + w->storagesize;
     }
 
     return w;
@@ -153,7 +134,6 @@ suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
     free(w->D[0]);
     /* D[1], ..., D[nderivatives-1] allocated through w->D[0]; no free() */
     free(w->D);
-    free(w->M);
     free(w);
 }
 

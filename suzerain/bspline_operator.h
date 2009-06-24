@@ -50,9 +50,11 @@ typedef struct {
     int order;
     int nbreakpoints;
     int nderivatives;
-    int M_kl, M_ku, M_lda, M_storagesize;
-    int D_kl, D_ku, D_lda, D_storagesize;
-    double *M;
+    int n;
+    int kl;
+    int ku;
+    int lda;
+    int storagesize;
     double **D;
 } suzerain_bspline_operator_workspace;
 

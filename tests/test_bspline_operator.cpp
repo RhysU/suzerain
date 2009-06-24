@@ -22,7 +22,6 @@ BOOST_AUTO_TEST_CASE( memory_layout )
     const int order  = 3;
     const int nbreak = 5;
     const int nderiv = 2;
-    int i;
 
     suzerain_bspline_operator_workspace * w
         = suzerain_bspline_operator_alloc(order, nbreak, nderiv,
