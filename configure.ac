@@ -49,7 +49,8 @@ ACX_BLAS([
     FLIBS=`echo ${FLIBS} | ${SED} 's/-lgfortranbegin//'`
     export GSL_CBLAS_LIB="${BLAS_LIBS} ${FLIBS}"
     AC_SUBST(GSL_CBLAS_LIB)
-],AC_MSG_WARN([Will use gslcblas if it is present.  Try --with-blas=<lib>.]))
+],AC_MSG_WARN([Will use gslcblas if it is present; try --with-blas]))
+ACX_LAPACK([],AC_MSG_ERROR([Could not find LAPACK; try --with-lapack]))
 AX_PATH_GSL(1.12,,AC_MSG_ERROR([Could not find required GSL version.]))
 PKG_CHECK_MODULES(FFTW3, fftw3 >= 3.2)
 AC_SUBST(FFTW3_CFLAGS)
