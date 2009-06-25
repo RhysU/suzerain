@@ -1,0 +1,9 @@
+/config.h
+/config.h.in
+/.deps
+/helloworld
+/Makefile
+/Makefile.in
+/stamp-h1
+/test_example
+/test_gsl_bspline
