@@ -80,6 +80,11 @@ suzerain_bspline_operator_alloc(int order,
          *   order = 6, degree = 5 (piecewise quintics),   bandwidth = 7
          *   ...
          **/
+        /* TODO Bandwidth may be overly large for two reasons...
+         * 1) Right continuity of the rightmost basis function, which may
+         *    increase kl by one near lower right corner of matrices.
+         * 2) For even orders, kl may be one less than ku
+         */
         bandwidth = GSL_IS_ODD(order) ? order : order + 1;
         break;
     default:
