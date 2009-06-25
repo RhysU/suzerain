@@ -55,6 +55,7 @@ typedef struct {
     int ku;
     int lda;
     int storagesize;
+    enum suzerain_bspline_operator_method method;
     double **D;
 } suzerain_bspline_operator_workspace;
 
