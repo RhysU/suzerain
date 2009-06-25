@@ -121,8 +121,10 @@ suzerain_bspline_operator_alloc(int order,
                             SUZERAIN_ENOMEM);
     }
     /* allocate memory for all matrices in one contiguous block */
-    w->D[0] = malloc((w->nderivatives+1) * w->storagesize * sizeof(double));
-    if (w->D[0] == NULL) {
+    /* memory aligned per MKL user guide numerical stability suggestion */
+    if (posix_memalign((void **) &(w->D[0]),
+                       16 /* byte boundary */,
+                       (w->nderivatives+1)*w->storagesize*sizeof(double))) {
         free(w->D);
         free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
