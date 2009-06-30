@@ -65,17 +65,36 @@ AC_DEFUN([ACX_MKL], [
 AC_PREREQ(2.60)
 AC_REQUIRE([AC_CANONICAL_TARGET])
 AC_REQUIRE([AC_F77_LIBRARY_LDFLAGS])
+AC_REQUIRE([AX_COMPILER_VENDOR])
 AC_ARG_VAR(MKLROOT,[root directory of MKL installation])
 
+dnl Note the assumption that lp64 and not ilp64 should be used
 dnl Please add entries to the case statement as required
 case $target_cpu in
-    x86_64)  acx_mkl_libsuffix=em64t
+    x86_64)  acx_mkl_libdirsuffix="em64t"
+             acx_mkl_libsuffix="_lp64"
              ;;
     unknown) AC_MSG_WARN([Unknown target_cpu; defaulting to 32-bit MKL unless --with-mkl-lib=<DIR> supplied])
-             acx_mkl_libsuffix=32
+             acx_mkl_libdirsuffix="32"
+             acx_mkl_libsuffix=""
              ;;
     *)       AC_MSG_ERROR([Unable to handle target_cpu: $target_cpu])
              ;;
+esac
+
+dnl Note the assumption that we want threaded implementations
+dnl Please add entries to the case statement as required
+case $ax_cv_c_compiler_vendor in
+    intel) acx_mkl_interfacelayer="-lmkl_intel${acx_mkl_libsuffix}"
+           acx_mkl_threadinglayer="-lmkl_intel_thread"
+           acx_mkl_rtllayer="-liomp5 -lpthread"
+           ;;
+    gnu)   acx_mkl_interfacelayer="-lmkl_gf${acx_mkl_libsuffix}"
+           acx_mkl_threadinglayer="-lmkl_gnu_thread"
+           acx_mkl_rtllayer="-liomp5 -lpthread"
+           ;;
+    *)     AC_MSG_ERROR([Unable to handle ax_cv_c_compiler_vendor: $ax_cv_c_compiler_vendor])
+           ;;
 esac
 
 AC_ARG_WITH(mkl, [AS_HELP_STRING([--with-mkl[=DIR]],[root directory of MKL installation])],[
@@ -83,13 +102,13 @@ with_mkl=$withval
 if test "${with_mkl}" != yes; then
     MKLROOT=$withval
     acx_mkl_include="$withval/include"
-    acx_mkl_libdir="$withval/lib/$acx_mkl_libsuffix"
+    acx_mkl_libdir="$withval/lib/$acx_mkl_libdirsuffix"
 fi
 ],[
 with_mkl=$withval
 if test "x${MKLROOT}" != "x"; then
     acx_mkl_include="${MKLROOT}/include"
-    acx_mkl_libdir="${MKLROOT}/lib/$acx_mkl_libsuffix"
+    acx_mkl_libdir="${MKLROOT}/lib/$acx_mkl_libdirsuffix"
 fi
 ])
 
@@ -111,7 +130,13 @@ fi
 ])
 
 if test "${with_mkl}" != no ; then
-    MKL_LIBS="-lmkl_intel_thread -lmkl_lapack -lmkl_core -liomp5 -lpthread -lm"
+    MKL_LIBS=""
+    MKL_LIBS="${MKL_LIBS} ${acx_mkl_interfacelayer}"
+    MKL_LIBS="${MKL_LIBS} ${acx_mkl_threadinglayer}"
+    MKL_LIBS="${MKL_LIBS} -lmkl_lapack -lmkl_core"
+    MKL_LIBS="${MKL_LIBS} ${acx_mkl_rtllayer}"
+    MKL_LIBS="${MKL_LIBS} -lm"
+
     if test -d "${acx_mkl_libdir}" ; then
         MKL_LIBS="-L${acx_mkl_libdir} ${MKL_LIBS}"
     fi
@@ -127,7 +152,9 @@ if test "${with_mkl}" != no ; then
     LDFLAGS="${MKL_LIBS} ${LDFLAGS}"
     AC_LANG_PUSH([C])
     AC_CHECK_HEADER([mkl.h],[acx_mkl_found_header=yes],[acx_mkl_found_header=no])
-    AC_CHECK_LIB(mkl,MKLGetVersion,[acx_mkl_found_library=yes],[acx_mkl_found_library=no])
+    AC_SEARCH_LIBS(MKLGetVersion,[],[acx_mkl_found_library=yes],[acx_mkl_found_library=no])
+    AC_SEARCH_LIBS(dgemm,[],[acx_mkl_found_blas=yes],[acx_mkl_found_blas=no])
+    AC_SEARCH_LIBS(dgbtrf,[],[acx_mkl_found_lapack=yes],[acx_mkl_found_lapack=no])
     AC_LANG_POP([C])
     LDFLAGS="$acx_mkl_save_LDFLAGS"
     CFLAGS="$acx_mkl_save_CFLAGS"
@@ -136,7 +163,11 @@ if test "${with_mkl}" != no ; then
     acx_mkl_succeeded=no
     if test "$acx_mkl_found_header" = yes; then
         if test "$acx_mkl_found_library" = yes; then
-            acx_mkl_succeeded=yes
+            if test "$acx_mkl_found_blas" = yes; then
+                if test "$acx_mkl_found_lapack" = yes; then
+                    acx_mkl_succeeded=yes
+                fi
+            fi
         fi
     fi
 
