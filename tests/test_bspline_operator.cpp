@@ -4,6 +4,9 @@
 
 #include <boost/format.hpp>
 #include <boost/test/included/unit_test.hpp>
+#include <boost/test/floating_point_comparison.hpp>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_poly.h>
 #include <mkl_blas.h>
 #include <log4cxx/logger.h>
 #include <suzerain/bspline_operator.h>
@@ -66,4 +69,44 @@ BOOST_AUTO_TEST_CASE( memory_layout )
         w->D[1] + 1, w->D[1] + w->storagesize - 1);
 
     suzerain_bspline_operator_free(w);
+}
+
+// Polynomial test helpers
+typedef struct { int n; double c[]; } poly_params; // Flexible array
+double poly_f(double x, void *params)
+{
+    poly_params * p = (poly_params *) params;
+    return gsl_poly_eval(p->c, p->n, x);
+}
+void poly_params_differentiate(poly_params *params)
+{
+    for (int i = 1; i < params->n; ++i) params->c[i-1] = params->c[i] * i;
+    params->c[params->n-1] = 0;
+}
+
+// Sanity check the polynomial test helpers
+BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
+{
+    poly_params * p = (poly_params *)
+                      malloc(sizeof(poly_params) + 3*sizeof(double));
+    p->n    = 3;
+    p->c[0] = 1.1;
+    p->c[1] = 2.2;
+    p->c[2] = 3.3;
+    gsl_function f = {poly_f, p};
+
+    const double  dc[] = { 2.2, 6.6, 0.0 };
+    const double ddc[] = { 6.6, 0.0, 0.0 };
+
+    BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,1.0),  6.6, 0.001);
+    BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,2.0), 18.7, 0.001);
+
+    poly_params_differentiate(p);
+    BOOST_CHECK_EQUAL_COLLECTIONS(p->c, p->c + p->n, dc, dc + p->n);
+
+    poly_params_differentiate(p);
+    BOOST_CHECK_EQUAL_COLLECTIONS(p->c, p->c + p->n, ddc, ddc + p->n);
+
+    BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,1.0), 6.6, 0.001);
+    BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,2.0), 6.6, 0.001);
 }
