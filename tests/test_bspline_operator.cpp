@@ -4,6 +4,7 @@
 
 #include <boost/format.hpp>
 #include <boost/test/included/unit_test.hpp>
+#include <mkl_blas.h>
 #include <log4cxx/logger.h>
 #include <suzerain/bspline_operator.h>
 
@@ -19,7 +20,6 @@ BOOST_AUTO_TEST_CASE( allocation_okay )
             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
     suzerain_bspline_operator_free(w);
 }
-
 
 // Check a simple piecewise linear case's general banded storage
 BOOST_AUTO_TEST_CASE( memory_layout )

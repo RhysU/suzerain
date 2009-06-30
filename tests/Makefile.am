@@ -2,8 +2,8 @@
 
 AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
 AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
-AM_CPPFLAGS   += $(GSL_CFLAGS) $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
-AM_CPPFLAGS   += $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS)
+AM_CPPFLAGS   += $(MKL_CFLAGS) $(GSL_CFLAGS) $(LOG4CXX_CFLAGS)
+AM_CPPFLAGS   += $(BOOST_CPPFLAGS) $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS)
 AM_LDFLAGS     =
 bin_PROGRAMS   =
 check_PROGRAMS =
