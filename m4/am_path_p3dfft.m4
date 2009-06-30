@@ -14,7 +14,7 @@
 #   either --with-p3dfft or $P3DFFT_HOME.
 #
 #   On success, sets P3DFFT_CFLAGS, P3DFFT_LIBS, and
-#   #defines HAVE_P3DFFT.  When ACTION-IF-NOT-FOUND is not specified, 
+#   #defines HAVE_P3DFFT.  When ACTION-IF-NOT-FOUND is not specified,
 #   the default behavior is for configure to fail.
 #
 # LAST MODIFICATION
