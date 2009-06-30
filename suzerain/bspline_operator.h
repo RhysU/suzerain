@@ -72,6 +72,22 @@ int
 suzerain_bspline_operator_create(const double * breakpoints,
                                  suzerain_bspline_operator_workspace *w);
 
+typedef struct {
+    int n;
+    int kl;
+    int ku;
+    int lda;
+    int storagesize;
+    double *A;
+} suzerain_bspline_operator_lu_workspace;
+
+suzerain_bspline_operator_lu_workspace *
+suzerain_bspline_operator_lu_alloc(
+        const suzerain_bspline_operator_workspace *w);
+
+void
+suzerain_bspline_operator_lu_free(suzerain_bspline_operator_lu_workspace *luw);
+
 __END_DECLS
 
 #endif // PECOS_SUZERAIN_BSPLINE_OPERATOR_H

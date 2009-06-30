@@ -236,3 +236,43 @@ suzerain_bspline_operator_create(const double * breakpoints,
 
     return SUZERAIN_SUCCESS;
 }
+
+suzerain_bspline_operator_lu_workspace *
+suzerain_bspline_operator_lu_alloc(
+        const suzerain_bspline_operator_workspace *w)
+{
+    int i;
+    suzerain_bspline_operator_lu_workspace * luw = NULL;
+
+    luw = malloc(sizeof(suzerain_bspline_operator_lu_workspace));
+    if (luw == NULL) {
+        SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
+                            SUZERAIN_ENOMEM);
+    }
+
+    /* Determine general banded matrix shape parameters */
+    luw->n           = w->n;
+    luw->kl          = w->kl;
+    luw->ku          = w->kl + w->ku;         /* Increase ku per DGBTRF */
+    luw->lda         = luw->kl + luw->ku + 1;
+    luw->storagesize = luw->lda * luw->n;
+
+    /* Allocate memory for matrix */
+    /* memory aligned per MKL user guide numerical stability suggestion */
+    if (posix_memalign((void **) &(luw->A),
+                       16 /* byte boundary */,
+                       luw->storagesize*sizeof(double))) {
+        free(luw);
+        SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
+                            SUZERAIN_ENOMEM);
+    }
+
+    return luw;
+}
+
+void
+suzerain_bspline_operator_lu_free(suzerain_bspline_operator_lu_workspace * luw)
+{
+    free(luw->A);
+    free(luw);
+}
