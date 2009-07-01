@@ -88,6 +88,13 @@ suzerain_bspline_operator_lu_alloc(
 void
 suzerain_bspline_operator_lu_free(suzerain_bspline_operator_lu_workspace *luw);
 
+int
+suzerain_bspline_operator_lu_form(
+        int ncoeff,
+        const double * coeff,
+        const suzerain_bspline_operator_workspace * w,
+        suzerain_bspline_operator_lu_workspace *luw);
+
 __END_DECLS
 
 #endif // PECOS_SUZERAIN_BSPLINE_OPERATOR_H

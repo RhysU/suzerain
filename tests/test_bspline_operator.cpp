@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE( allocation_okay )
 {
     const int order  = 4, nbreak = 10, nderiv = 2;
 
-    suzerain_bspline_operator_workspace * w
+    suzerain_bspline_operator_workspace *w
         = suzerain_bspline_operator_alloc(order, nbreak, nderiv,
             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
 
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE( memory_layout )
     const int order  = 2;
     const int nderiv = 1;
 
-    suzerain_bspline_operator_workspace * w
+    suzerain_bspline_operator_workspace *w
         = suzerain_bspline_operator_alloc(order, nbreak, nderiv,
             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
 
@@ -73,6 +73,11 @@ BOOST_AUTO_TEST_CASE( memory_layout )
         good_D1, good_D1 + sizeof(good_D1)/sizeof(good_D1[0]),
         w->D[1] + 1, w->D[1] + w->storagesize - 1);
 
+    suzerain_bspline_operator_lu_workspace *luw
+        = suzerain_bspline_operator_lu_alloc(w);
+
+
+    suzerain_bspline_operator_lu_free(luw);
     suzerain_bspline_operator_free(w);
 }
 
@@ -80,19 +85,19 @@ BOOST_AUTO_TEST_CASE( memory_layout )
 typedef struct { int n; double c[]; } poly_params; // Flexible array
 double poly_f(double x, void *params)
 {
-    poly_params * p = (poly_params *) params;
+    poly_params *p = (poly_params *) params;
     return gsl_poly_eval(p->c, p->n, x);
 }
 void poly_params_differentiate(poly_params *params)
 {
-    for (int i = 1; i < params->n; ++i) params->c[i-1] = params->c[i] * i;
+    for (int i = 1; i < params->n; ++i) params->c[i-1] = params->c[i] *i;
     params->c[params->n-1] = 0;
 }
 
 // Sanity check the polynomial test helpers
 BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
 {
-    poly_params * p = (poly_params *)
+    poly_params *p = (poly_params *)
                       malloc(sizeof(poly_params) + 3*sizeof(double));
     p->n    = 3;
     p->c[0] = 1.1; // Constant
@@ -125,7 +130,7 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
 //     const int order  = 3;
 //     const int nderiv = 4;
 // 
-//     suzerain_bspline_operator_workspace * w
+//     suzerain_bspline_operator_workspace *w
 //         = suzerain_bspline_operator_alloc(order, nbreak, nderiv,
 //             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
 // 
