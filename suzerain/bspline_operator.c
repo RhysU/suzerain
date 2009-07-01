@@ -285,12 +285,12 @@ suzerain_bspline_operator_lu_form(
         const suzerain_bspline_operator_workspace * w,
         suzerain_bspline_operator_lu_workspace *luw)
 {
-    const int luw_lda  = luw->lda;
-    const int luw_ku   = luw->ku;
-    const int w_lda    = w->lda;
-    const int w_ku     = w->ku;
-    const int w_n      = w->n;
-    const int incr_lda = luw_lda - w_lda;
+    const int luw_ku        = luw->ku;
+    const int luw_lda       = luw->lda;
+    const int w_n           = w->n;
+    const int w_ku          = w->ku;
+    const int w_lda         = w->lda;
+    const int incr_ku       = luw_ku - w_ku;
 
     double *  A = luw->A;
     double ** D = w->D;
@@ -311,8 +311,8 @@ suzerain_bspline_operator_lu_form(
         SUZERAIN_ERROR("Incompatible workspaces: luw->n < w->n",
                        SUZERAIN_EINVAL);
     }
-    if (incr_lda < 0) {
-        SUZERAIN_ERROR("Incompatible workspaces: incr_lda < 0",
+    if (incr_ku < 0) {
+        SUZERAIN_ERROR("Incompatible workspaces: incr_ku < 0",
                        SUZERAIN_EINVAL);
     }
 
@@ -320,12 +320,12 @@ suzerain_bspline_operator_lu_form(
     memset(A, 0, luw->storagesize * sizeof(double));
 
     /* Accumulate coefficients times workspace w derivative operators */
-    for (i = 0; i < w_lda; ++i) {
-        for (j = 0; j < w_n; ++j) {
-            const int offset_D = GB_OFFSET(w_lda, w_ku, i, j);
-            const int offset_A = GB_OFFSET(luw_lda, luw_ku, i + incr_lda, j);
+    for (j = 0; j < w_n; ++j) {
+        const int joffset_D = j*w_lda;
+        const int joffset_A = j*luw_lda + incr_ku;
+        for (i = 0; i < w_lda; ++i) {
             for (k = 0; k < ncoefficients; ++k) {
-                A[offset_A] += coefficients[k] * D[k][offset_D];
+                A[i + joffset_A] += coefficients[k] * D[k][i + joffset_D];
             }
         }
     }
