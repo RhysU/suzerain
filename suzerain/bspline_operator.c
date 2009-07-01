@@ -285,20 +285,6 @@ suzerain_bspline_operator_lu_form(
         const suzerain_bspline_operator_workspace * w,
         suzerain_bspline_operator_lu_workspace *luw)
 {
-    const int luw_ku        = luw->ku;
-    const int luw_lda       = luw->lda;
-    const int w_n           = w->n;
-    const int w_ku          = w->ku;
-    const int w_lda         = w->lda;
-    const int incr_ku       = luw_ku - w_ku;
-
-    double *  A = luw->A;
-    double ** D = w->D;
-
-    int i; /* loop index over banded matrix row */
-    int j; /* loop index over banded matrix column */
-    int k; /* loop index over derivative order */
-
     if (ncoefficients < 0) {
         SUZERAIN_ERROR("Number of coefficients cannot be negative",
                        SUZERAIN_EINVAL);
@@ -311,23 +297,48 @@ suzerain_bspline_operator_lu_form(
         SUZERAIN_ERROR("Incompatible workspaces: luw->n < w->n",
                        SUZERAIN_EINVAL);
     }
-    if (incr_ku < 0) {
-        SUZERAIN_ERROR("Incompatible workspaces: incr_ku < 0",
+    if (luw->ku < w->ku + w->kl) {
+        SUZERAIN_ERROR("Incompatible workspaces: luw->ku too small",
                        SUZERAIN_EINVAL);
     }
 
     /* Clear operator storage; zeros out values not explicitly set below */
-    memset(A, 0, luw->storagesize * sizeof(double));
+    memset(luw->A, 0, luw->storagesize * sizeof(double));
 
     /* Accumulate coefficients times workspace w derivative operators */
-    for (j = 0; j < w_n; ++j) {
-        const int joffset_D = j*w_lda;
-        const int joffset_A = j*luw_lda + incr_ku;
-        for (i = 0; i < w_lda; ++i) {
-            for (k = 0; k < ncoefficients; ++k) {
-                A[i + joffset_A] += coefficients[k] * D[k][i + joffset_D];
+    {
+        const int luw_lda       = luw->lda;
+        const int w_lda         = w->lda;
+        const int w_storagesize = w->storagesize;
+
+        double * A       = luw->A + luw->ku - w->ku; /* location of A(0,0) */
+        double * const D = w->D[0];
+
+        int i, joffset, k;
+
+        /* Nasty loops avoid unnecessary dereferencing */
+        for (joffset = 0;
+             joffset < w_storagesize;
+             joffset += w_lda, A += luw_lda) {
+
+            double * const Dj = D + joffset;
+            double * Ai       = A;
+
+            for (i = 0;
+                 i < w_lda;
+                 ++i, ++Ai) {
+
+                double * Dji = Dj + i;
+
+                for (k = 0;
+                     k < ncoefficients;
+                     ++k, Dji += w_storagesize) {
+
+                    *Ai += coefficients[k] * *Dji;
+                }
             }
         }
+
     }
 
     return SUZERAIN_SUCCESS;
