@@ -53,7 +53,7 @@ suzerain_bspline_operator_alloc(int order,
                                 enum suzerain_bspline_operator_method method)
 {
     gsl_vector_const_view breakpoints_view
-        = gsl_vector_const_view_array(breakpoints, nbreakpoints);
+    = gsl_vector_const_view_array(breakpoints, nbreakpoints);
 
     int i;
     int bandwidth = -1 /* uninitialized */;
@@ -134,7 +134,7 @@ suzerain_bspline_operator_alloc(int order,
     }
 
     /* Allocate space for pointers to matrices */
-    w->D = malloc((w->nderivatives+1) * sizeof(double *));
+    w->D = malloc((w->nderivatives + 1) * sizeof(double *));
     if (w->D == NULL) {
         gsl_bspline_free(w->bw);
         free(w);
@@ -145,7 +145,7 @@ suzerain_bspline_operator_alloc(int order,
     /* Memory aligned per MKL user guide numerical stability suggestion */
     if (posix_memalign((void **) &(w->D[0]),
                        16 /* byte boundary */,
-                       (w->nderivatives+1)*w->storagesize*sizeof(double))) {
+                       (w->nderivatives + 1)*w->storagesize*sizeof(double))) {
         free(w->D);
         gsl_bspline_free(w->bw);
         free(w);
@@ -186,7 +186,7 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
     gsl_bspline_deriv_workspace *bdw;
 
     /* Setup workspaces to use GSL B-spline functionality */
-    db = gsl_matrix_alloc(w->order, w->nderivatives+1);
+    db = gsl_matrix_alloc(w->order, w->nderivatives + 1);
     if (db == NULL) {
         SUZERAIN_ERROR("failure allocating dB working matrix",
                        SUZERAIN_ENOMEM);
@@ -199,7 +199,7 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
     }
 
     /* Clear operator storage; zeros out values not explicitly set below */
-    memset(w->D[0], 0, (w->nderivatives+1) * w->storagesize * sizeof(double));
+    memset(w->D[0], 0, (w->nderivatives + 1) * w->storagesize * sizeof(double));
 
     /* Compute the operator matrices based on the supplied method */
     switch (w->method) {
@@ -223,7 +223,7 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
         const int ku            = w->ku;
         double ** const D       = w->D;
 
-        int i,j,k;
+        int i, j, k;
 
         for (i = 0; i < n; ++i) {
             const double xi = gsl_bspline_greville_abscissa(i, bw);
@@ -233,7 +233,7 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
             for (k = 0; k <= nderivatives; ++k) {
                 for (j = jstart; j <= jend; ++j) {
                     D[k][GB_OFFSET(lda, ku, i, j)]
-                        = gsl_matrix_get(db, j-jstart, k);
+                        = gsl_matrix_get(db, j - jstart, k);
                 }
             }
         }
@@ -248,9 +248,9 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
 
 int
 suzerain_bspline_operator_functioncoefficient_rhs(
-        const suzerain_function * function,
-        double * coefficient_rhs,
-        const suzerain_bspline_operator_workspace *w)
+    const suzerain_function * function,
+    double * coefficient_rhs,
+    const suzerain_bspline_operator_workspace *w)
 {
     /* Compute function coefficients for bspline basis per the method */
     switch (w->method) {
@@ -277,7 +277,7 @@ suzerain_bspline_operator_functioncoefficient_rhs(
 
 suzerain_bspline_operator_lu_workspace *
 suzerain_bspline_operator_lu_alloc(
-        const suzerain_bspline_operator_workspace *w)
+    const suzerain_bspline_operator_workspace *w)
 {
     int i;
     suzerain_bspline_operator_lu_workspace * luw = NULL;
@@ -318,10 +318,10 @@ suzerain_bspline_operator_lu_free(suzerain_bspline_operator_lu_workspace * luw)
 
 int
 suzerain_bspline_operator_lu_form(
-        int ncoefficients,
-        const double * coefficients,
-        const suzerain_bspline_operator_workspace * w,
-        suzerain_bspline_operator_lu_workspace *luw)
+    int ncoefficients,
+    const double * coefficients,
+    const suzerain_bspline_operator_workspace * w,
+    suzerain_bspline_operator_lu_workspace *luw)
 {
     if (ncoefficients < 0) {
         SUZERAIN_ERROR("Number of coefficients cannot be negative",
