@@ -16,14 +16,14 @@ CXX=@MPICXX@
 CC=@MPICC@
 
 pkginclude_HEADERS += exceptions.hpp pencil.hpp pencil_grid.hpp
-pkginclude_HEADERS += suzerain_error.h bspline_operator.h
+pkginclude_HEADERS += error.h bspline_operator.h function.h
 pkginclude_HEADERS += underling.h
 
 noinst_LTLIBRARIES     += libsuzerain.la
-libsuzerain_la_SOURCES  = suzerain_error.c bspline_operator.c
+libsuzerain_la_SOURCES  = error.c bspline_operator.c
 
 noinst_LTLIBRARIES      += libunderling.la
-libunderling_la_SOURCES  = suzerain_error.c underling.c
+libunderling_la_SOURCES  = error.c underling.c
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

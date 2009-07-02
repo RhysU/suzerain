@@ -41,10 +41,10 @@ test_underling_SOURCES  = test_underling.cpp
 test_underling_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 test_underling_LDADD   += ../suzerain/libunderling.la
 
-check_PROGRAMS              += test_suzerain_error
-test_suzerain_error_SOURCES  = test_suzerain_error.cpp
-test_suzerain_error_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-test_suzerain_error_LDADD   += ../suzerain/libsuzerain.la
+check_PROGRAMS     += test_error
+test_error_SOURCES  = test_error.cpp
+test_error_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_error_LDADD   += ../suzerain/libsuzerain.la
 
 check_PROGRAMS                += test_bspline_operator
 test_bspline_operator_SOURCES  = test_bspline_operator.cpp

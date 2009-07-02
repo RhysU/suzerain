@@ -5,11 +5,11 @@
 #include <boost/format.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
-#include <gsl/gsl_math.h>
 #include <gsl/gsl_poly.h>
 #include <mkl_blas.h>
 #include <log4cxx/logger.h>
 #include <suzerain/bspline_operator.h>
+#include <suzerain/function.h>
 
 using boost::format;
 log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE( allocation_okay )
 }
 
 // Check a simple piecewise linear case's general banded storage
-BOOST_AUTO_TEST_CASE( memory_layout )
+BOOST_AUTO_TEST_CASE( memory_layout_and_lu_form )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
@@ -121,13 +121,14 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
     p->c[0] = 1.1; // Constant
     p->c[1] = 2.2; // Linear
     p->c[2] = 3.3; // Quadratic
-    gsl_function f = {poly_f, p};
+    suzerain_function f = {poly_f, p};
 
-    const double  dc[] = { 2.2, 6.6, 0.0 }; // (d/dx)(p->c)
-    const double ddc[] = { 6.6, 0.0, 0.0 }; // (d^2/dx^2)(p->c)
+    const double   dc[] = { 2.2, 6.6, 0.0 }; // (d/dx)(p->c)
+    const double  ddc[] = { 6.6, 0.0, 0.0 }; // (d^2/dx^2)(p->c)
+    const double dddc[] = { 0.0, 0.0, 0.0 }; // (d^3/dx^3)(p->c)
 
-    BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,1.0),  6.6, 0.001);
-    BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,2.0), 18.7, 0.001);
+    BOOST_REQUIRE_CLOSE(SUZERAIN_FN_EVAL(&f,1.0),  6.6, 0.001);
+    BOOST_REQUIRE_CLOSE(SUZERAIN_FN_EVAL(&f,2.0), 18.7, 0.001);
 
     poly_params_differentiate(p);
     BOOST_REQUIRE_EQUAL_COLLECTIONS(p->c, p->c + p->n, dc, dc + p->n);
@@ -135,8 +136,22 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
     poly_params_differentiate(p);
     BOOST_REQUIRE_EQUAL_COLLECTIONS(p->c, p->c + p->n, ddc, ddc + p->n);
 
-    BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,1.0), 6.6, 0.001);
-    BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,2.0), 6.6, 0.001);
+    BOOST_REQUIRE_CLOSE(SUZERAIN_FN_EVAL(&f,1.0), 6.6, 0.001);
+    BOOST_REQUIRE_CLOSE(SUZERAIN_FN_EVAL(&f,2.0), 6.6, 0.001);
+
+    // Differentiate a constant
+    poly_params_differentiate(p);
+    BOOST_REQUIRE_EQUAL_COLLECTIONS(p->c, p->c + p->n, dddc, dddc + p->n);
+
+    BOOST_REQUIRE_EQUAL(SUZERAIN_FN_EVAL(&f,1.0), 0.0);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_FN_EVAL(&f,2.0), 0.0);
+
+    // Differentiate zero
+    poly_params_differentiate(p);
+    BOOST_REQUIRE_EQUAL_COLLECTIONS(p->c, p->c + p->n, dddc, dddc + p->n);
+
+    BOOST_REQUIRE_EQUAL(SUZERAIN_FN_EVAL(&f,1.0), 0.0);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_FN_EVAL(&f,2.0), 0.0);
 
     free(p);
 }
@@ -145,7 +160,7 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
 // {
 //     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 };
 //     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
-//     const int order  = 3;
+//     const int order  = 4; // Piecewise cubic
 //     const int nderiv = 4;
 // 
 //     suzerain_bspline_operator_workspace *w
@@ -153,6 +168,47 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
 //             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
 // 
 //     suzerain_bspline_operator_create(breakpoints, w);
+// 
+//     poly_params *p = (poly_params *)
+//                       malloc(sizeof(poly_params) + 4*sizeof(double));
+//     p->n    = 4;
+//     p->c[0] = 1.1; // 1
+//     p->c[1] = 2.2; // x
+//     p->c[2] = 3.3; // x^2
+//     p->c[3] = 4.4; // x^3
+//     gsl_function f = {poly_f, p};
+// 
+//     const double   dc[] = { 2.2, 6.6, 0.0 }; // (d/dx)(p->c)
+//     const double  ddc[] = { 6.6, 0.0, 0.0 }; // (d^2/dx^2)(p->c)
+//     const double dddc[] = { 0.0, 0.0, 0.0 }; // (d^3/dx^3)(p->c)
+// 
+//     BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,1.0),  6.6, 0.001);
+//     BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,2.0), 18.7, 0.001);
+// 
+//     poly_params_differentiate(p);
+//     BOOST_REQUIRE_EQUAL_COLLECTIONS(p->c, p->c + p->n, dc, dc + p->n);
+// 
+//     poly_params_differentiate(p);
+//     BOOST_REQUIRE_EQUAL_COLLECTIONS(p->c, p->c + p->n, ddc, ddc + p->n);
+// 
+//     BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,1.0), 6.6, 0.001);
+//     BOOST_REQUIRE_CLOSE(GSL_FN_EVAL(&f,2.0), 6.6, 0.001);
+// 
+//     // Differentiate a constant
+//     poly_params_differentiate(p);
+//     BOOST_REQUIRE_EQUAL_COLLECTIONS(p->c, p->c + p->n, dddc, dddc + p->n);
+// 
+//     BOOST_REQUIRE_EQUAL(GSL_FN_EVAL(&f,1.0), 0.0);
+//     BOOST_REQUIRE_EQUAL(GSL_FN_EVAL(&f,2.0), 0.0);
+// 
+//     // Differentiate zero
+//     poly_params_differentiate(p);
+//     BOOST_REQUIRE_EQUAL_COLLECTIONS(p->c, p->c + p->n, dddc, dddc + p->n);
+// 
+//     BOOST_REQUIRE_EQUAL(GSL_FN_EVAL(&f,1.0), 0.0);
+//     BOOST_REQUIRE_EQUAL(GSL_FN_EVAL(&f,2.0), 0.0);
+// 
+//     free(p);
 // 
 // 
 // 

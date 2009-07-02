@@ -35,7 +35,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 #include <suzerain/bspline_operator.h>
-#include <suzerain/suzerain_error.h>
+#include <suzerain/error.h>
 
 /* Compute the BLAS-compatible offset to a(i,j) for general banded matrices */
 /* a(i,j) -> storage(ku+i-j,j) where storage is column-major with LDA lda */

@@ -31,7 +31,7 @@
 #define PECOS_SUZERAIN_UNDERLING_H
 
 #include <stdlib.h>
-#include <suzerain/suzerain_error.h>
+#include <suzerain/error.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS

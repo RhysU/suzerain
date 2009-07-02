@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <suzerain/suzerain_error.h>
+#include <suzerain/error.h>
 
 suzerain_error_handler_t * suzerain_error_handler = NULL;
 
