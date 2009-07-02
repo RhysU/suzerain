@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( main_test )
               status |= (errors[i].number == errors[j].number);
         }
 
-      BOOST_REQUIRE_MESSAGE(!status, "Found non-distinct error value");
+      BOOST_CHECK_MESSAGE(!status, "Found non-distinct error value");
     }
 
   for (i = 0; i < n; i++)
@@ -80,6 +80,6 @@ BOOST_AUTO_TEST_CASE( main_test )
               status |= (suzerain_strerror(e1) == suzerain_strerror(e2)) ;
             }
         }
-      BOOST_REQUIRE_MESSAGE(!status, "Found non-distinct error message");
+      BOOST_CHECK_MESSAGE(!status, "Found non-distinct error message");
     }
 }

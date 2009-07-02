@@ -2,18 +2,13 @@
 
 #include <config.h>
 
-#include <boost/format.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <gsl/gsl_poly.h>
 #include <mkl_blas.h>
 #include <mkl_lapack.h>
-#include <log4cxx/logger.h>
 #include <suzerain/bspline_operator.h>
 #include <suzerain/function.h>
-
-using boost::format;
-log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
 BOOST_AUTO_TEST_CASE( allocation_okay )
 {

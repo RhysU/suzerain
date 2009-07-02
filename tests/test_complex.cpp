@@ -13,7 +13,7 @@ typedef std::complex<double> complex;
 BOOST_AUTO_TEST_CASE( shared_c_array )
 {
     // Assumption must hold true for any of this scheme to work
-    BOOST_REQUIRE_EQUAL( sizeof(complex), 2*sizeof(double) );
+    BOOST_CHECK_EQUAL( sizeof(complex), 2*sizeof(double) );
 
     const std::size_t N = 6;
     double carray_double[N] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
