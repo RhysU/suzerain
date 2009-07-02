@@ -58,21 +58,22 @@ typedef struct {
     int lda;
     int storagesize;
     enum suzerain_bspline_operator_method method;
+    void * bw;
     double **D;
 } suzerain_bspline_operator_workspace;
 
 suzerain_bspline_operator_workspace *
 suzerain_bspline_operator_alloc(int order,
-                                int nderivatives,
-                                int nbreakpoints,
-                                enum suzerain_bspline_operator_method method);
+                                 int nderivatives,
+                                 int nbreakpoints,
+                                 const double * breakpoints,
+                                 enum suzerain_bspline_operator_method method);
 
 void
 suzerain_bspline_operator_free(suzerain_bspline_operator_workspace *w);
 
 int
-suzerain_bspline_operator_create(const double * breakpoints,
-                                 suzerain_bspline_operator_workspace *w);
+suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w);
 
 int
 suzerain_bspline_operator_functioncoefficient_rhs(

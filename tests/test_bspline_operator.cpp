@@ -16,10 +16,13 @@ log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
 BOOST_AUTO_TEST_CASE( allocation_okay )
 {
-    const int order  = 4, nbreak = 10, nderiv = 2;
+    const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
+    const int order  = 4;
+    const int nderiv = 2;
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
 
     suzerain_bspline_operator_workspace *w
-        = suzerain_bspline_operator_alloc(order, nbreak, nderiv,
+        = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
 
     suzerain_bspline_operator_lu_workspace *luw
@@ -38,10 +41,10 @@ BOOST_AUTO_TEST_CASE( memory_layout_and_lu_form )
     const int nderiv = 1;
 
     suzerain_bspline_operator_workspace *w
-        = suzerain_bspline_operator_alloc(order, nderiv, nbreak,
+        = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
 
-    suzerain_bspline_operator_create(breakpoints, w);
+    suzerain_bspline_operator_create(w);
 
     /* Check w->D[0], the mass matrix, against known good solution:
      *   1   0   0   0
