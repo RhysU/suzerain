@@ -237,6 +237,61 @@ suzerain_bspline_operator_create(const double * breakpoints,
     return SUZERAIN_SUCCESS;
 }
 
+int
+suzerain_bspline_operator_functioncoefficient_rhs(
+                                 const double * breakpoints,
+                                 const suzerain_function * function,
+                                 double * coefficient_rhs,
+                                 suzerain_bspline_operator_workspace *w)
+{
+    gsl_vector_const_view breakpoints_view
+        = gsl_vector_const_view_array(breakpoints, w->nbreakpoints);
+    gsl_bspline_workspace *bw;
+
+    /* Setup workspace to use GSL B-spline functionality */
+    bw = gsl_bspline_alloc(w->order, w->nbreakpoints);
+    if (bw == NULL) {
+        SUZERAIN_ERROR("failure allocating bspline workspace",
+                       SUZERAIN_ENOMEM);
+    }
+    if (w->n != gsl_bspline_ncoeffs(bw)) {
+        gsl_bspline_free(bw);
+        SUZERAIN_ERROR("bspline coefficient count does not match workspace",
+                       SUZERAIN_EINVAL);
+    }
+    if (gsl_bspline_knots(&breakpoints_view.vector, bw)) {
+        gsl_bspline_free(bw);
+        SUZERAIN_ERROR("failure seting bspline breakpoints",
+                       SUZERAIN_EFAILED);
+    }
+
+    /* Compute function coefficients for bspline basis on the supplied method */
+    switch (w->method) {
+    case SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE:
+        /* Logic will need to change here once multiple methods available */
+        /* For now, continue since only one method is implemented */
+        break;
+    default:
+        gsl_bspline_free(bw);
+        SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
+    }
+
+    /* Evaluate the function at the Greville abscissae */
+    {
+        int i;
+
+        for (i = 0; i < w->n; ++i) {
+            const double x = gsl_bspline_greville_abscissa(i, bw);
+            coefficient_rhs[i] = SUZERAIN_FN_EVAL(function, x);
+        }
+    }
+
+    /* Tear down calls for GSL B-spline functionality */
+    gsl_bspline_free(bw);
+
+    return SUZERAIN_SUCCESS;
+}
+
 suzerain_bspline_operator_lu_workspace *
 suzerain_bspline_operator_lu_alloc(
         const suzerain_bspline_operator_workspace *w)

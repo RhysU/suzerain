@@ -74,6 +74,13 @@ int
 suzerain_bspline_operator_create(const double * breakpoints,
                                  suzerain_bspline_operator_workspace *w);
 
+int
+suzerain_bspline_operator_functioncoefficient_rhs(
+                                 const double * breakpoints,
+                                 const suzerain_function * function,
+                                 double * coefficient_rhs,
+                                 suzerain_bspline_operator_workspace *w);
+
 typedef struct {
     int n;
     int kl;
