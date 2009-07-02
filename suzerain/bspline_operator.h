@@ -30,6 +30,8 @@
 #ifndef PECOS_SUZERAIN_BSPLINE_OPERATOR_H
 #define PECOS_SUZERAIN_BSPLINE_OPERATOR_H
 
+#include <suzerain/function.h>
+
 #undef __BEGIN_DECLS
 #undef __END_DECLS
 #ifdef __cplusplus
@@ -61,8 +63,8 @@ typedef struct {
 
 suzerain_bspline_operator_workspace *
 suzerain_bspline_operator_alloc(int order,
-                                int nbreakpoints,
                                 int nderivatives,
+                                int nbreakpoints,
                                 enum suzerain_bspline_operator_method method);
 
 void

@@ -44,8 +44,8 @@
 
 suzerain_bspline_operator_workspace *
 suzerain_bspline_operator_alloc(int order,
-                                int nbreakpoints,
                                 int nderivatives,
+                                int nbreakpoints,
                                 enum suzerain_bspline_operator_method method)
 {
 
