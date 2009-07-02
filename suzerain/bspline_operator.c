@@ -34,6 +34,8 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
+#include <mkl_blas.h>
+#include <mkl_lapack.h>
 #include <suzerain/bspline_operator.h>
 #include <suzerain/error.h>
 
@@ -252,7 +254,6 @@ suzerain_bspline_operator_functioncoefficient_rhs(
     double * coefficient_rhs,
     const suzerain_bspline_operator_workspace *w)
 {
-    /* Compute function coefficients for bspline basis per the method */
     switch (w->method) {
     case SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE:
         /* Logic will need to change here once multiple methods available */
@@ -295,11 +296,20 @@ suzerain_bspline_operator_lu_alloc(
     luw->lda         = luw->kl + luw->ku + 1;
     luw->storagesize = luw->lda * luw->n;
 
+    /* Allocate memory for LU factorization pivot storage */
+    luw->ipiv = malloc(w->n * sizeof(int));
+    if (luw->ipiv == NULL) {
+        free(luw);
+        SUZERAIN_ERROR_NULL("failed to allocate space for pivot storage",
+                            SUZERAIN_ENOMEM);
+    }
+
     /* Allocate memory for matrix */
     /* memory aligned per MKL user guide numerical stability suggestion */
     if (posix_memalign((void **) &(luw->A),
                        16 /* byte boundary */,
                        luw->storagesize*sizeof(double))) {
+        free(luw->ipiv);
         free(luw);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
                             SUZERAIN_ENOMEM);
@@ -308,10 +318,12 @@ suzerain_bspline_operator_lu_alloc(
     return luw;
 }
 
+
 void
 suzerain_bspline_operator_lu_free(suzerain_bspline_operator_lu_workspace * luw)
 {
     free(luw->A);
+    free(luw->ipiv);
     free(luw);
 }
 
@@ -377,6 +389,26 @@ suzerain_bspline_operator_lu_form(
             }
         }
 
+    }
+
+    /* Compute LU factorization of the just-formed operator */
+    {
+        int kl = w->kl; /* Constant correctness; note from workspace w */
+        int ku = w->ku; /* Constant correctness; note from workspace w */
+        int info;
+        /* FIXME Next line causes valgrind problems */
+        dgbtrf(&(luw->n),
+               &(luw->n),
+               &kl,
+               &ku,
+               luw->A,
+               &(luw->lda),
+               luw->ipiv,
+               &info);
+        if (info) {
+            SUZERAIN_ERROR("lapack dgbtrf reported an error",
+                           SUZERAIN_ESANITY);
+        }
     }
 
     return SUZERAIN_SUCCESS;
