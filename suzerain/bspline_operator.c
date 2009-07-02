@@ -42,12 +42,15 @@
 /* Note missing constant one compared with Fortran because C 0-indexes arrays */
 #define GB_OFFSET(lda, ku, i, j) ((j)*(lda)+(ku+i-j))
 
+int
+suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w);
+
 suzerain_bspline_operator_workspace *
 suzerain_bspline_operator_alloc(int order,
-                                 int nderivatives,
-                                 int nbreakpoints,
-                                 const double * breakpoints,
-                                 enum suzerain_bspline_operator_method method)
+                                int nderivatives,
+                                int nbreakpoints,
+                                const double * breakpoints,
+                                enum suzerain_bspline_operator_method method)
 {
     gsl_vector_const_view breakpoints_view
         = gsl_vector_const_view_array(breakpoints, nbreakpoints);
@@ -143,8 +146,8 @@ suzerain_bspline_operator_alloc(int order,
     if (posix_memalign((void **) &(w->D[0]),
                        16 /* byte boundary */,
                        (w->nderivatives+1)*w->storagesize*sizeof(double))) {
-        gsl_bspline_free(w->bw);
         free(w->D);
+        gsl_bspline_free(w->bw);
         free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
                             SUZERAIN_ENOMEM);
@@ -155,16 +158,24 @@ suzerain_bspline_operator_alloc(int order,
         w->D[i+1] = w->D[i] + w->storagesize;
     }
 
+    /* Workspace is fully assembled below here */
+    /* Calculate operator matrices. */
+    if (suzerain_bspline_operator_create(w)) {
+        suzerain_bspline_operator_free(w);
+        SUZERAIN_ERROR_NULL("Error creating operator matrices",
+                            SUZERAIN_EFAILED);
+    }
+
     return w;
 }
 
 void
 suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
 {
-    gsl_bspline_free(w->bw);
     free(w->D[0]);
     /* D[1], ..., D[nderivatives-1] allocated through w->D[0]; no free() */
     free(w->D);
+    gsl_bspline_free(w->bw);
     free(w);
 }
 
@@ -173,7 +184,6 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
 {
     gsl_matrix *db;
     gsl_bspline_deriv_workspace *bdw;
-    int i,j,k;
 
     /* Setup workspaces to use GSL B-spline functionality */
     db = gsl_matrix_alloc(w->order, w->nderivatives+1);
@@ -205,12 +215,15 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
 
     /* Evaluate basis functions at the Greville abscissae: d^k/dx^k B_j(\xi_i) */
     {
-        gsl_bspline_workspace * bw = (gsl_bspline_workspace *) w->bw;
+        gsl_bspline_workspace * const bw = (gsl_bspline_workspace *) w->bw;
+
         const int n             = w->n;
         const int nderivatives  = w->nderivatives;
         const int lda           = w->lda;
         const int ku            = w->ku;
         double ** const D       = w->D;
+
+        int i,j,k;
 
         for (i = 0; i < n; ++i) {
             const double xi = gsl_bspline_greville_abscissa(i, bw);
@@ -235,40 +248,17 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
 
 int
 suzerain_bspline_operator_functioncoefficient_rhs(
-                                 const double * breakpoints,
-                                 const suzerain_function * function,
-                                 double * coefficient_rhs,
-                                 suzerain_bspline_operator_workspace *w)
+        const suzerain_function * function,
+        double * coefficient_rhs,
+        const suzerain_bspline_operator_workspace *w)
 {
-    gsl_vector_const_view breakpoints_view
-        = gsl_vector_const_view_array(breakpoints, w->nbreakpoints);
-    gsl_bspline_workspace *bw;
-
-    /* Setup workspace to use GSL B-spline functionality */
-    bw = gsl_bspline_alloc(w->order, w->nbreakpoints);
-    if (bw == NULL) {
-        SUZERAIN_ERROR("failure allocating bspline workspace",
-                       SUZERAIN_ENOMEM);
-    }
-    if (w->n != gsl_bspline_ncoeffs(bw)) {
-        gsl_bspline_free(bw);
-        SUZERAIN_ERROR("bspline coefficient count does not match workspace",
-                       SUZERAIN_EINVAL);
-    }
-    if (gsl_bspline_knots(&breakpoints_view.vector, bw)) {
-        gsl_bspline_free(bw);
-        SUZERAIN_ERROR("failure seting bspline breakpoints",
-                       SUZERAIN_EFAILED);
-    }
-
-    /* Compute function coefficients for bspline basis on the supplied method */
+    /* Compute function coefficients for bspline basis per the method */
     switch (w->method) {
     case SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE:
         /* Logic will need to change here once multiple methods available */
         /* For now, continue since only one method is implemented */
         break;
     default:
-        gsl_bspline_free(bw);
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
 
@@ -277,13 +267,10 @@ suzerain_bspline_operator_functioncoefficient_rhs(
         int i;
 
         for (i = 0; i < w->n; ++i) {
-            const double x = gsl_bspline_greville_abscissa(i, bw);
+            const double x = gsl_bspline_greville_abscissa(i, w->bw);
             coefficient_rhs[i] = SUZERAIN_FN_EVAL(function, x);
         }
     }
-
-    /* Tear down calls for GSL B-spline functionality */
-    gsl_bspline_free(bw);
 
     return SUZERAIN_SUCCESS;
 }

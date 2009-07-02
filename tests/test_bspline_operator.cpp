@@ -44,8 +44,6 @@ BOOST_AUTO_TEST_CASE( memory_layout_and_lu_form )
         = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
 
-    suzerain_bspline_operator_create(w);
-
     /* Check w->D[0], the mass matrix, against known good solution:
      *   1   0   0   0
      *   0   1   0   0
@@ -169,8 +167,6 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
 //     suzerain_bspline_operator_workspace *w
 //         = suzerain_bspline_operator_alloc(order, nderiv, nbreak,
 //             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
-//
-//     suzerain_bspline_operator_create(breakpoints, w);
 //
 //     poly_params *p = (poly_params *)
 //                       malloc(sizeof(poly_params) + 4*sizeof(double));
