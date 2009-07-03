@@ -2,6 +2,7 @@ dnl ------------------------------------------------
 dnl Package name and version number
 dnl ------------------------------------------------
 AC_INIT(suzerain, [0.0.1], [rhys@ices.utexas.edu])
+AC_CANONICAL_TARGET
 AC_REVISION([$Id$])
 
 dnl ------------------------------------------------
