@@ -1,8 +1,7 @@
-dnl ------------------------------------------------
+dl ------------------------------------------------
 dnl Package name and version number
 dnl ------------------------------------------------
 AC_INIT(suzerain, [0.0.1], [rhys@ices.utexas.edu])
-AC_CANONICAL_TARGET
 AC_REVISION([$Id$])
 
 dnl ------------------------------------------------
@@ -12,11 +11,17 @@ AC_CONFIG_SRCDIR([suzerain/pencil_grid.hpp])
 AM_CONFIG_HEADER(suzerain/config.h)
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE(1.9 no-define tar-ustar -Wall -Werror foreign)
 AC_PREREQ([2.61])
 AX_AM_MACROS
+
+dnl ------------------------------------------------
+dnl LaTeX capabilities
+dnl ------------------------------------------------
 AX_ADD_AM_LATEX
 ACLTX_CLASSES([amsart],AMSART_CLASS,,AC_MSG_WARN([Unable to find LaTeX class 'amsart']))
+AC_CACHE_SAVE
 
 dnl ------------------------------------------------
 dnl Check for compiler toolchain
@@ -36,6 +41,7 @@ dnl Current version checks also in Makefile.am
 dnl ------------------------------------------------
 AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
+AC_CACHE_SAVE
 
 dnl TODO Automatically add optimization if debugging disabled per AX_CC_MAXOPT
 dnl Issues: 1) AX_CC_MAXOPT doesn't play nicely with AX_CHECK_ENABLE_DEBUG
