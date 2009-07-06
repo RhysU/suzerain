@@ -7,7 +7,7 @@
 #   Test for Intel(R) Math Kernel Library
 #   (http://software.intel.com/en-us/intel-mkl/)
 #
-#   ACX_MKL([ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]])
+#   ACX_MKL([USE_THREADED,[ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]]])
 #
 # DESCRIPTION
 #
@@ -17,6 +17,8 @@
 #
 #   Supports separately specifying --with-mkl-include or --with-mkl-libdir to
 #   override default locations underneath either --with-mkl or $MKLROOT.
+#   Allows specifying whether or not threaded MKL routines should be used,
+#   with a default to use non-threaded MKL routines.
 #
 #   On success, sets MKL_CFLAGS, MKL_LIBS, and #defines HAVE_MKL.  When
 #   ACTION-IF-NOT-FOUND is not specified, the default behavior is for configure
@@ -82,16 +84,34 @@ case $target_cpu in
              ;;
 esac
 
-dnl Note the assumption that we want threaded implementations
+dnl TODO Add a [default=something] message to AS_HELP_STRING below
+AC_MSG_CHECKING(whether to link threaded MKL routines)
+acx_mkl_enable_threads_default="m4_tolower(m4_normalize(ifelse([$1],,[no],[$1])))"
+AC_ARG_ENABLE(mkl-threads,
+    [AS_HELP_STRING([--enable-mkl-threads],
+        [enable threaded MKL routines])],
+    [acx_mkl_enable_threads=yes],acx_mkl_enable_threads=$acx_mkl_enable_threads_default)
+AC_MSG_RESULT($acx_mkl_enable_threads)
+
 dnl Please add entries to the case statement as required
 case $ax_cv_c_compiler_vendor in
     intel) acx_mkl_interfacelayer="-lmkl_intel${acx_mkl_libsuffix}"
-           acx_mkl_threadinglayer="-lmkl_intel_thread"
-           acx_mkl_rtllayer="-liomp5 -lpthread"
+           if test "${acx_mkl_enable_threads}" = "yes"; then
+               acx_mkl_threadinglayer="-lmkl_intel_thread"
+               acx_mkl_rtllayer="-liomp5 -lpthread"
+           else
+               acx_mkl_threadinglayer="-lmkl_sequential"
+               acx_mkl_rtllayer=""
+           fi
            ;;
     gnu)   acx_mkl_interfacelayer="-lmkl_gf${acx_mkl_libsuffix}"
-           acx_mkl_threadinglayer="-lmkl_gnu_thread"
-           acx_mkl_rtllayer="-liomp5 -lpthread"
+           if test "${acx_mkl_enable_threads}" = "yes"; then
+               acx_mkl_threadinglayer="-lmkl_gnu_thread"
+               acx_mkl_rtllayer="-liomp5 -lpthread"
+           else
+               acx_mkl_threadinglayer="-lmkl_sequential"
+               acx_mkl_rtllayer=""
+           fi
            ;;
     *)     AC_MSG_ERROR([Unable to handle ax_cv_c_compiler_vendor: $ax_cv_c_compiler_vendor])
            ;;
@@ -151,6 +171,7 @@ if test "${with_mkl}" != no ; then
     CFLAGS="${MKL_CFLAGS} ${CFLAGS}"
     LDFLAGS="${MKL_LIBS} ${LDFLAGS}"
     AC_LANG_PUSH([C])
+    AC_MSG_NOTICE([Ensuring we can use Intel MKL routines using a known link line])
     AC_CHECK_HEADER([mkl.h],[acx_mkl_found_header=yes],[acx_mkl_found_header=no])
     AC_SEARCH_LIBS(MKLGetVersion,[],[acx_mkl_found_library=yes],[acx_mkl_found_library=no])
     AC_SEARCH_LIBS(dgemm,[],[acx_mkl_found_blas=yes],[acx_mkl_found_blas=no])
