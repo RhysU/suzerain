@@ -5,12 +5,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <gsl/gsl_poly.h>
-#ifdef HAVE_MKL
-#include <mkl_blas.h>
-#include <mkl_lapack.h>
-#else
-#error "No suitable BLAS and/or LAPACK library found during configuration"
-#endif
+#include <suzerain/blas_et_al.h>
 #include <suzerain/bspline_operator.h>
 #include <suzerain/function.h>
 

@@ -8,8 +8,9 @@ AM_LDFLAGS     = $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 AM_LDFLAGS    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 bin_PROGRAMS       = # Append below
 check_PROGRAMS     = # Append below
-pkginclude_HEADERS = # Append below
+noinst_HEADERS     = # Append below
 noinst_LTLIBRARIES = # Append below
+pkginclude_HEADERS = # Append below
 
 # FIXME: Ugly, separate MPI compilation into separate dir, maybe
 CXX=@MPICXX@
@@ -19,8 +20,10 @@ pkginclude_HEADERS += exceptions.hpp pencil.hpp pencil_grid.hpp
 pkginclude_HEADERS += error.h bspline_operator.h function.h
 pkginclude_HEADERS += underling.h
 
+noinst_HEADERS += blas_et_al.h
+
 noinst_LTLIBRARIES     += libsuzerain.la
-libsuzerain_la_SOURCES  = error.c bspline_operator.c
+libsuzerain_la_SOURCES  = error.c bspline_operator.c blas_et_al.c
 
 noinst_LTLIBRARIES      += libunderling.la
 libunderling_la_SOURCES  = error.c underling.c
