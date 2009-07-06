@@ -75,6 +75,14 @@ suzerain_bspline_operator_free(
     suzerain_bspline_operator_workspace *w);
 
 int
+suzerain_bspline_operator_apply(
+    int nderivative,
+    int nrhs,
+    double *b,
+    int ldb,
+    const suzerain_bspline_operator_workspace *w);
+
+int
 suzerain_bspline_operator_functioncoefficient_rhs(
     const suzerain_function * function,
     double * coefficient_rhs,

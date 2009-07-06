@@ -182,6 +182,48 @@ suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
     free(w);
 }
 
+
+int
+suzerain_bspline_operator_apply(
+    int nderivative,
+    int nvectors,
+    double *b,
+    int ldb,
+    const suzerain_bspline_operator_workspace *w)
+{
+    double *scratch;
+    int i;
+
+    if (0 < nderivative || nderivative > w->nderivatives) {
+        SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
+    }
+    if (ldb < w->n) {
+        SUZERAIN_ERROR("ldb < w->n", SUZERAIN_EINVAL);
+    }
+
+    /* Allocate scratch space */
+    if (posix_memalign((void **) &(scratch),
+                       16 /* byte boundary */,
+                       w->n*sizeof(double))) {
+        SUZERAIN_ERROR("failed to allocate scratch space",
+                       SUZERAIN_ENOMEM);
+    }
+
+    for (i = 0; i < nvectors; ++i) {
+        double * const bi = b + i*ldb;
+        /* Compute bi = w->D[nderivative]*bi */
+        suzerain_blas_dcopy(w->n, bi, 1, scratch, 1);
+        suzerain_blas_dgbmv(
+            'N', w->n, w->n, w->kl, w->ku,
+            1.0, w->D[nderivative], w->lda,
+            scratch, 1,
+            0.0, bi, 1);
+    }
+
+    free(scratch);
+    return SUZERAIN_SUCCESS;
+}
+
 int
 suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
 {
