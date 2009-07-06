@@ -31,13 +31,6 @@
 #ifndef __SUZERAIN_BLAS_ET_AL_H__
 #define __SUZERAIN_BLAS_ET_AL_H__
 
-#ifdef HAVE_MKL
-#include <mkl_blas.h>
-#include <mkl_lapack.h>
-#else
-#error "No suitable BLAS and/or LAPACK library found during configuration"
-#endif
-
 #undef __BEGIN_DECLS
 #undef __END_DECLS
 #ifdef __cplusplus
@@ -50,6 +43,32 @@
 
 __BEGIN_DECLS
 
+enum suzerain_lapack_transpose {
+    SUZERAIN_LAPACK_TRANSPOSE_NONE      = 'N',
+    SUZERAIN_LAPACK_TRANSPOSE_NORMAL    = 'T',
+    SUZERAIN_LAPACK_TRANSPOSE_CONJUGATE = 'C'
+};
+
+int suzerain_lapack_dgbtrf(
+        int m,
+        int n,
+        int kl,
+        int ku,
+        double *ab,
+        int ldab,
+        int *ipiv);
+
+int suzerain_lapack_dgbtrs(
+        char trans,
+        int n,
+        int kl,
+        int ku,
+        int nrhs,
+        double *ab,
+        int ldab,
+        int *ipiv,
+        double *b,
+        int ldb);
 
 __END_DECLS
 

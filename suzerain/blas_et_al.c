@@ -31,8 +31,72 @@
 #ifndef __SUZERAIN_BLAS_ET_AL_H__
 #define __SUZERAIN_BLAS_ET_AL_H__
 
+#include "config.h"
+
+#ifdef HAVE_MKL
+#include <mkl_types.h>
+#include <mkl_blas.h>
+#include <mkl_lapack.h>
+#else
+#error "No suitable BLAS and/or LAPACK library found during configuration"
+#endif
+
 #include <suzerain/blas_et_al.h>
 
-/* NOP */
+int suzerain_lapack_dgbtrf(
+        int m,
+        int n,
+        int kl,
+        int ku,
+        double *ab,
+        int ldab,
+        int *ipiv)
+{
+#ifdef HAVE_MKL
+    MKL_INT _m    = m;
+    MKL_INT _n    = n;
+    MKL_INT _kl   = kl;
+    MKL_INT _ku   = ku;
+    MKL_INT _ldab = ldab;
+    MKL_INT _info = 0;
+#else
+#error "Sanity failure"
+#endif
+
+    dgbtrf(&_m, &_n, &_kl, &_ku, ab, &_ldab, ipiv, &_info);
+
+    return _info;
+}
+
+int suzerain_lapack_dgbtrs(
+        char trans,
+        int n,
+        int kl,
+        int ku,
+        int nrhs,
+        double *ab,
+        int ldab,
+        int *ipiv,
+        double *b,
+        int ldb)
+{
+#ifdef HAVE_MKL
+    char _trans   = (char) trans;
+    MKL_INT _n    = n;
+    MKL_INT _kl   = kl;
+    MKL_INT _ku   = ku;
+    MKL_INT _nrhs = nrhs;
+    MKL_INT _ldab = ldab;
+    MKL_INT _ldb  = ldb;
+    MKL_INT _info = 0;
+#else
+#error "Sanity failure"
+#endif
+
+    dgbtrs(&_trans, &_n, &_kl, &_ku, &_nrhs,
+           ab, &_ldab, ipiv, b, &_ldb, &_info);
+
+    return _info;
+}
 
 #endif /* __SUZERAIN_BLAS_ET_AL_H__ */

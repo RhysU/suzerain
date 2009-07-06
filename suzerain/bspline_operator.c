@@ -394,20 +394,15 @@ suzerain_bspline_operator_lu_form(
 
     /* Compute LU factorization of the just-formed operator */
     {
-        int kl = w->kl; /* Constant correctness; note from workspace w */
-        int ku = w->ku; /* Constant correctness; note from workspace w */
-        int info;
-        /* FIXME Next line causes valgrind problems */
-        dgbtrf(&(luw->n),
-               &(luw->n),
-               &kl,
-               &ku,
-               luw->A,
-               &(luw->lda),
-               luw->ipiv,
-               &info);
+        const int info = suzerain_lapack_dgbtrf(luw->n,
+                                                luw->n,
+                                                w->kl, /* from workspace w */
+                                                w->ku, /* from workspace w */
+                                                luw->A,
+                                                luw->lda,
+                                                luw->ipiv);
         if (info) {
-            SUZERAIN_ERROR("lapack dgbtrf reported an error",
+            SUZERAIN_ERROR("suzerain_lapack_dgbtrf reported an error",
                            SUZERAIN_ESANITY);
         }
     }
