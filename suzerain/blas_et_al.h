@@ -43,26 +43,44 @@
 
 __BEGIN_DECLS
 
-int suzerain_lapack_dgbtrf(
-        int m,
-        int n,
-        int kl,
-        int ku,
+int
+suzerain_blas_dgbmv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy);
+
+int
+suzerain_lapack_dgbtrf(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
         double *ab,
-        int ldab,
+        const int ldab,
         int *ipiv);
 
-int suzerain_lapack_dgbtrs(
-        char trans,
-        int n,
-        int kl,
-        int ku,
-        int nrhs,
+int
+suzerain_lapack_dgbtrs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
         double *ab,
-        int ldab,
+        const int ldab,
         int *ipiv,
         double *b,
-        int ldb);
+        const int ldb);
 
 __END_DECLS
 

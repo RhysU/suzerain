@@ -43,13 +43,49 @@
 
 #include <suzerain/blas_et_al.h>
 
-int suzerain_lapack_dgbtrf(
-        int m,
-        int n,
-        int kl,
-        int ku,
+void
+suzerain_blas_dgbmv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy)
+{
+    char _trans   = trans;
+#ifdef HAVE_MKL
+    MKL_INT _m    = m;
+    MKL_INT _n    = n;
+    MKL_INT _kl   = kl;
+    MKL_INT _ku   = ku;
+    MKL_INT _lda  = lda;
+    MKL_INT _incx = incx;
+    MKL_INT _incy = incy;
+#else
+#error "Sanity failure"
+#endif
+    double  _alpha = alpha;
+    double  _beta  = beta;
+
+    dgbmv(&_trans, &_m, &_n, &_kl, &_ku, &_alpha, a, &_lda,
+          x, &_incx, &_beta, y, &_incy);
+}
+
+int
+suzerain_lapack_dgbtrf(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
         double *ab,
-        int ldab,
+        const int ldab,
         int *ipiv)
 {
 #ifdef HAVE_MKL
@@ -68,17 +104,18 @@ int suzerain_lapack_dgbtrf(
     return _info;
 }
 
-int suzerain_lapack_dgbtrs(
-        char trans,
-        int n,
-        int kl,
-        int ku,
-        int nrhs,
+int
+suzerain_lapack_dgbtrs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
         double *ab,
-        int ldab,
+        const int ldab,
         int *ipiv,
         double *b,
-        int ldb)
+        const int ldb)
 {
     char _trans   = trans;
 #ifdef HAVE_MKL
