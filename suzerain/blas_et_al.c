@@ -80,8 +80,8 @@ int suzerain_lapack_dgbtrs(
         double *b,
         int ldb)
 {
+    char _trans   = trans;
 #ifdef HAVE_MKL
-    char _trans   = (char) trans;
     MKL_INT _n    = n;
     MKL_INT _kl   = kl;
     MKL_INT _ku   = ku;

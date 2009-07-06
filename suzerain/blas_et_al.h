@@ -43,12 +43,6 @@
 
 __BEGIN_DECLS
 
-enum suzerain_lapack_transpose {
-    SUZERAIN_LAPACK_TRANSPOSE_NONE      = 'N',
-    SUZERAIN_LAPACK_TRANSPOSE_NORMAL    = 'T',
-    SUZERAIN_LAPACK_TRANSPOSE_CONJUGATE = 'C'
-};
-
 int suzerain_lapack_dgbtrf(
         int m,
         int n,
