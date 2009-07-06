@@ -44,6 +44,25 @@
 #include <suzerain/blas_et_al.h>
 
 void
+suzerain_blas_dcopy(
+        const int n,
+        double *x,
+        const int incx,
+        double *y,
+        const int incy)
+{
+#ifdef HAVE_MKL
+    MKL_INT _n    = n;
+    MKL_INT _incx = incx;
+    MKL_INT _incy = incy;
+#else
+#error "Sanity failure"
+#endif
+
+    dcopy(&_n, x, &_incx, y, &_incy);
+}
+
+void
 suzerain_blas_dgbmv(
         const char trans,
         const int m,

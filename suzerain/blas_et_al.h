@@ -43,7 +43,15 @@
 
 __BEGIN_DECLS
 
-int
+void
+suzerain_blas_dcopy(
+        const int n,
+        double *x,
+        const int incx,
+        double *y,
+        const int incy);
+
+void
 suzerain_blas_dgbmv(
         const char trans,
         const int m,
