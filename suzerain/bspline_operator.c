@@ -182,7 +182,6 @@ suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
     free(w);
 }
 
-
 int
 suzerain_bspline_operator_apply(
     int nderivative,
@@ -361,7 +360,6 @@ suzerain_bspline_operator_lu_alloc(
     return luw;
 }
 
-
 void
 suzerain_bspline_operator_lu_free(suzerain_bspline_operator_lu_workspace * luw)
 {
@@ -369,7 +367,6 @@ suzerain_bspline_operator_lu_free(suzerain_bspline_operator_lu_workspace * luw)
     free(luw->ipiv);
     free(luw);
 }
-
 
 int
 suzerain_bspline_operator_lu_form(
@@ -447,6 +444,32 @@ suzerain_bspline_operator_lu_form(
             SUZERAIN_ERROR("suzerain_lapack_dgbtrf reported an error",
                            SUZERAIN_ESANITY);
         }
+    }
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_operator_lu_solve(
+    int nrhs,
+    double *b,
+    int ldb,
+    const suzerain_bspline_operator_workspace *w,
+    const suzerain_bspline_operator_lu_workspace *luw)
+{
+    const int info = suzerain_lapack_dgbtrs('N',
+                                            luw->n,
+                                            w->kl, /* from workspace w */
+                                            w->ku, /* from workspace w */
+                                            nrhs,
+                                            luw->A,
+                                            luw->lda,
+                                            luw->ipiv,
+                                            b,
+                                            ldb);
+    if (info) {
+        SUZERAIN_ERROR("suzerain_lapack_dgbtrs reported an error",
+                       SUZERAIN_ESANITY);
     }
 
     return SUZERAIN_SUCCESS;

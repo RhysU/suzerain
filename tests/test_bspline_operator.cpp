@@ -164,69 +164,56 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
     free(p);
 }
 
-// BOOST_AUTO_TEST_CASE( functioncoefficients_rhs )
-// {
-//     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
-//     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
-//     const int order  = 2;
-//     const int nderiv = 1;
-//
-//     poly_params *p = (poly_params *)
-//                       malloc(sizeof(poly_params) + 3*sizeof(double));
-//     p->n = 3;
-//     suzerain_function f = {poly_f, p};
-//
-//     suzerain_bspline_operator_workspace *w
-//         = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
-//             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
-//
-//     p->c[0] = 3.4; // Constant
-//     p->c[1] = 0.0; // Linear
-//     p->c[2] = 0.0; // Quadratic
-//
-//     // Solve M x = b
-//     {
-//         // Form the mass matrix M in dgbtrf-ready banded storage
-//         suzerain_bspline_operator_lu_workspace * const luw
-//             = suzerain_bspline_operator_lu_alloc(w);
-//         const double d_one = 1.0;
-//         int    i_one = 1;
-//         suzerain_bspline_operator_lu_form(i_one, &d_one, w, luw);
-//
-//         // Compute the right hand side b
-//         double * coefficient_rhs = (double *) malloc(w->n * sizeof(double));
-//         suzerain_bspline_operator_functioncoefficient_rhs(
-//             &f, coefficient_rhs, w);
-//
-//         // Solve for function coefficients
-//         int * ipiv = (int *) malloc(w->n * sizeof(int));
-//         int info;
-//         dgbsv(&(luw->n),
-//               &(w->kl),
-//               &(w->ku),
-//               &i_one,
-//               luw->A,
-//               &(luw->lda),
-//               ipiv,
-//               coefficient_rhs,
-//               &(w->n),
-//               &info);
-//         BOOST_CHECK_EQUAL(info, 0);
-//
-//         for (int i = 0; i < w->n; ++i) {
-//             printf("coefficient_rhs[%2d]=%g\n", i, coefficient_rhs[i]);
-// //          BOOST_CHECK_EQUAL(p->c[0], coefficient_rhs[i]);
-//         }
-//
-//         free(ipiv);
-//         free(coefficient_rhs);
-//         suzerain_bspline_operator_lu_free(luw);
-//     }
-//
-//
-//     free(p);
-//     suzerain_bspline_operator_free(w);
-// }
+BOOST_AUTO_TEST_CASE( functioncoefficients_rhs )
+{
+    const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+    const int order  = 2;
+    const int nderiv = 1;
+
+    poly_params *p = (poly_params *)
+                      malloc(sizeof(poly_params) + 3*sizeof(double));
+    p->n = 3;
+    suzerain_function f = {poly_f, p};
+
+    suzerain_bspline_operator_workspace *w
+        = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
+            SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
+
+    p->c[0] = 3.4; // Constant
+    p->c[1] = 0.0; // Linear
+    p->c[2] = 0.0; // Quadratic
+
+    // Solve M x = b
+    {
+        // Form the mass matrix M in dgbtrf-ready banded storage
+        suzerain_bspline_operator_lu_workspace * const luw
+            = suzerain_bspline_operator_lu_alloc(w);
+        const double d_one = 1.0;
+        int    i_one = 1;
+        suzerain_bspline_operator_lu_form(i_one, &d_one, w, luw);
+
+        // Compute the right hand side b
+        double * coefficient_rhs = (double *) malloc(w->n * sizeof(double));
+        suzerain_bspline_operator_functioncoefficient_rhs(
+            &f, coefficient_rhs, w);
+
+        // Solve for function coefficients
+        suzerain_bspline_operator_lu_solve(1, coefficient_rhs, w->n, w, luw);
+
+        for (int i = 0; i < w->n; ++i) {
+            printf("coefficient_rhs[%2d]=%g\n", i, coefficient_rhs[i]);
+//          BOOST_CHECK_EQUAL(p->c[0], coefficient_rhs[i]);
+        }
+
+        free(coefficient_rhs);
+        suzerain_bspline_operator_lu_free(luw);
+    }
+
+
+    free(p);
+    suzerain_bspline_operator_free(w);
+}
 
 // BOOST_AUTO_TEST_CASE( differentiate_representable_polynomial )
 // {

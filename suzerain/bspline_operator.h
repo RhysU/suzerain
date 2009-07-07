@@ -113,6 +113,14 @@ suzerain_bspline_operator_lu_form(
     const suzerain_bspline_operator_workspace * w,
     suzerain_bspline_operator_lu_workspace *luw);
 
+int
+suzerain_bspline_operator_lu_solve(
+    int nrhs,
+    double *b,
+    int ldb,
+    const suzerain_bspline_operator_workspace *w,
+    const suzerain_bspline_operator_lu_workspace *luw);
+
 __END_DECLS
 
 #endif // PECOS_SUZERAIN_BSPLINE_OPERATOR_H
