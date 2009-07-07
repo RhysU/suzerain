@@ -211,7 +211,7 @@ suzerain_bspline_operator_apply(
 
     for (i = 0; i < nvectors; ++i) {
         double * const bi = b + i*ldb;
-        /* Compute bi = w->D[nderivative]*bi */
+        /* Compute bi := w->D[nderivative]*bi */
         suzerain_blas_dcopy(w->n, bi, 1, scratch, 1);
         suzerain_blas_dgbmv(
             'N', w->n, w->n, w->kl, w->ku,
