@@ -183,6 +183,13 @@ suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
 }
 
 int
+suzerain_bspline_operator_ncoefficients(
+    const suzerain_bspline_operator_workspace *w)
+{
+    return w->n;
+}
+
+int
 suzerain_bspline_operator_apply(
     int nderivative,
     int nrhs,

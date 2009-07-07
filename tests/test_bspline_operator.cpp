@@ -239,6 +239,7 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
     suzerain_bspline_operator_workspace *w
         = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
+    const int ncoeff = suzerain_bspline_operator_ncoefficients(w);
 
     // Form the mass matrix M
     suzerain_bspline_operator_lu_workspace * const mass
@@ -255,18 +256,18 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
         p->c[2] = 0.0; // Quadratic
 
         // Compute the right hand side coefficients for M x = b
-        double * coefficient = (double *) malloc(w->n * sizeof(double));
+        double * coefficient = (double *) malloc(ncoeff * sizeof(double));
         suzerain_bspline_operator_functioncoefficient_rhs(&f, coefficient, w);
 
         // Solve for function coefficients using the mass matrix
-        suzerain_bspline_operator_lu_solve(1, coefficient, w->n, mass);
+        suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
 
         // Take the n-th derivative of the coefficients using M x' = D x
-        suzerain_bspline_operator_apply(derivative, 1, coefficient, w->n, w);
-        suzerain_bspline_operator_lu_solve(1, coefficient, w->n, mass);
+        suzerain_bspline_operator_apply(derivative, 1, coefficient, ncoeff, w);
+        suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
-        for (int i = 0; i < w->n; ++i) {
+        for (int i = 0; i < ncoeff; ++i) {
             BOOST_CHECK_CLOSE(1.0 * p->c[1], coefficient[i], 1e-12);
         }
 
@@ -281,18 +282,18 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
 //      p->c[2] = 5.6; // Quadratic
 
 //      // Compute the right hand side coefficients for M x = b
-//      double * coefficient = (double *) malloc(w->n * sizeof(double));
+//      double * coefficient = (double *) malloc(ncoeff * sizeof(double));
 //      suzerain_bspline_operator_functioncoefficient_rhs(&f, coefficient, w);
 
 //      // Solve for function coefficients using the mass matrix
-//      suzerain_bspline_operator_lu_solve(1, coefficient, w->n, mass);
+//      suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
 
 //      // Take the n-th derivative of the coefficients using M x' = D x
-//      suzerain_bspline_operator_apply(derivative, 1, coefficient, w->n, w);
-//      suzerain_bspline_operator_lu_solve(1, coefficient, w->n, mass);
+//      suzerain_bspline_operator_apply(derivative, 1, coefficient, ncoeff, w);
+//      suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
 
 //      // Ensure we recover the leading order, scaled monomial coefficients
-//      for (int i = 0; i < w->n; ++i) {
+//      for (int i = 0; i < ncoeff; ++i) {
 //          BOOST_CHECK_CLOSE(2.0 * p->c[2], coefficient[i], 1e-12);
 //      }
 
