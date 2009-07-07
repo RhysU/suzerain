@@ -185,7 +185,7 @@ suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
 int
 suzerain_bspline_operator_apply(
     int nderivative,
-    int nvectors,
+    int nrhs,
     double *b,
     int ldb,
     const suzerain_bspline_operator_workspace *w)
@@ -193,7 +193,7 @@ suzerain_bspline_operator_apply(
     double *scratch;
     int i;
 
-    if (0 < nderivative || nderivative > w->nderivatives) {
+    if (nderivative < 0 || w->nderivatives < nderivative) {
         SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
     }
     if (ldb < w->n) {
@@ -208,7 +208,7 @@ suzerain_bspline_operator_apply(
                        SUZERAIN_ENOMEM);
     }
 
-    for (i = 0; i < nvectors; ++i) {
+    for (i = 0; i < nrhs; ++i) {
         double * const bi = b + i*ldb;
         /* Compute bi := w->D[nderivative]*bi */
         suzerain_blas_dcopy(w->n, bi, 1, scratch, 1);
