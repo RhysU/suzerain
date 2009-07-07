@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE( allocation_okay )
 }
 
 // Check a simple piecewise linear case's general banded storage
-BOOST_AUTO_TEST_CASE( memory_layout_and_application_and_lu_form )
+BOOST_AUTO_TEST_CASE( memory_layout_and_application_and_lu_form_and_solution )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
@@ -140,6 +140,26 @@ BOOST_AUTO_TEST_CASE( memory_layout_and_application_and_lu_form )
              expected < good_A0 + sizeof(good_A0)/sizeof(good_A0[0]);
              ++expected, ++actual) {
             BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
+        }
+    }
+
+    /* Check that multiple rhs solution works for operator found just above */
+    {
+        const int nrhs = 2;
+        double vector[] = { 1,  2, 3, 4,
+                           -4, -1, 1, 3};
+        const double good_result[] = {  1.25, 1.75, 2.25, 2.75,
+                                       -0.2,  1,    2,    3 };
+        const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
+        suzerain_bspline_operator_lu_solve(nrhs, vector, ldb, luw);
+        {
+            // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
+            const double *expected, *actual;
+            for (expected = good_result, actual = vector;
+                 expected < good_result + sizeof(good_result)/sizeof(good_result[0]);
+                 ++expected, ++actual) {
+                BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
+            }
         }
     }
 
