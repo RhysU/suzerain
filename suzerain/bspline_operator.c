@@ -334,7 +334,7 @@ suzerain_bspline_operator_lu_alloc(
     /* Determine general banded matrix shape parameters */
     luw->n           = w->n;
     luw->kl          = w->kl;
-    luw->ku          = w->kl + w->ku;         /* Increase ku per DGBTRF */
+    luw->ku          = w->kl + w->ku; /* Increase ku per DGBTRF, DGBTRS */
     luw->lda         = luw->kl + luw->ku + 1;
     luw->storagesize = luw->lda * luw->n;
 
@@ -435,8 +435,8 @@ suzerain_bspline_operator_lu_form(
     {
         const int info = suzerain_lapack_dgbtrf(luw->n,
                                                 luw->n,
-                                                w->kl, /* from workspace w */
-                                                w->ku, /* from workspace w */
+                                                luw->kl,
+                                                luw->ku - luw->kl, /* NB */
                                                 luw->A,
                                                 luw->lda,
                                                 luw->ipiv);
@@ -454,13 +454,12 @@ suzerain_bspline_operator_lu_solve(
     int nrhs,
     double *b,
     int ldb,
-    const suzerain_bspline_operator_workspace *w,
     const suzerain_bspline_operator_lu_workspace *luw)
 {
     const int info = suzerain_lapack_dgbtrs('N',
                                             luw->n,
-                                            w->kl, /* from workspace w */
-                                            w->ku, /* from workspace w */
+                                            luw->kl,
+                                            luw->ku - luw->kl, /* NB */
                                             nrhs,
                                             luw->A,
                                             luw->lda,

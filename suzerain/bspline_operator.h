@@ -90,7 +90,7 @@ suzerain_bspline_operator_functioncoefficient_rhs(
 
 typedef struct {
     int n;
-    int kl; // TODO Not the right kl per dgbsv
+    int kl;
     int ku;
     int lda;
     int storagesize;
@@ -118,7 +118,6 @@ suzerain_bspline_operator_lu_solve(
     int nrhs,
     double *b,
     int ldb,
-    const suzerain_bspline_operator_workspace *w,
     const suzerain_bspline_operator_lu_workspace *luw);
 
 __END_DECLS

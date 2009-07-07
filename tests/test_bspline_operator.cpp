@@ -199,11 +199,11 @@ BOOST_AUTO_TEST_CASE( functioncoefficients_rhs )
             &f, coefficient_rhs, w);
 
         // Solve for function coefficients
-        suzerain_bspline_operator_lu_solve(1, coefficient_rhs, w->n, w, luw);
+        suzerain_bspline_operator_lu_solve(1, coefficient_rhs, w->n, luw);
 
+        // TODO Return here for further testing
         for (int i = 0; i < w->n; ++i) {
-            printf("coefficient_rhs[%2d]=%g\n", i, coefficient_rhs[i]);
-//          BOOST_CHECK_EQUAL(p->c[0], coefficient_rhs[i]);
+            BOOST_CHECK_EQUAL(p->c[0], coefficient_rhs[i]);
         }
 
         free(coefficient_rhs);
