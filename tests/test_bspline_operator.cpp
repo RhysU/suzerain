@@ -275,11 +275,11 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
     }
 
 //  {
-//      const int derivative = 2;
+//      const int derivative = 1;
 
 //      p->c[0] = 1.2; // Constant
 //      p->c[1] = 3.4; // Linear
-//      p->c[2] = 5.6; // Quadratic
+//      p->c[2] = 0.0; // Quadratic
 
 //      // Compute the right hand side coefficients for M x = b
 //      double * coefficient = (double *) malloc(ncoeff * sizeof(double));
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
 
 //      // Ensure we recover the leading order, scaled monomial coefficients
 //      for (int i = 0; i < ncoeff; ++i) {
-//          BOOST_CHECK_CLOSE(2.0 * p->c[2], coefficient[i], 1e-12);
+//          BOOST_CHECK_CLOSE(1.0 * p->c[1], coefficient[i], 1e-12);
 //      }
 
 //      free(coefficient);
