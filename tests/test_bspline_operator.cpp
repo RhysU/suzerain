@@ -28,46 +28,86 @@ BOOST_AUTO_TEST_CASE( allocation_okay )
 }
 
 // Check a simple piecewise linear case's general banded storage
-BOOST_AUTO_TEST_CASE( memory_layout_and_lu_form )
+BOOST_AUTO_TEST_CASE( memory_layout_and_application_and_lu_form )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
     const int order  = 2;
-    const int nderiv = 1;
+    const int nderiv = 2;
 
     suzerain_bspline_operator_workspace *w
         = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
 
-    /* Check w->D[0], the mass matrix, against known good solution:
-     *   1   0   0   0
-     *   0   1   0   0
-     *   0   0   1   0
-     *   0   0   0   1
-     * Known good is in general banded matrix column-major order.
-     */
-    const double good_D0[] = { /*DK*/   1,     0,
-                                   0,   1,     0,
-                                   0,   1,     0,
-                                   0,   1  /*DK*/ };
-    BOOST_CHECK_EQUAL_COLLECTIONS(
-        good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
-        w->D[0] + w->ku, w->D[0] + w->storagesize - w->kl);
+    {
+        /* Check w->D[0], the mass matrix, against known good solution:
+         *   1   0   0   0
+         *   0   1   0   0
+         *   0   0   1   0
+         *   0   0   0   1
+         * Known good is in general banded matrix column-major order.
+         */
+        const double good_D0[] = { /*DK*/   1,     0,
+                                       0,   1,     0,
+                                       0,   1,     0,
+                                       0,   1  /*DK*/ };
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+            good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
+            w->D[0] + w->ku, w->D[0] + w->storagesize - w->kl);
 
-    /* Check w->D[1], the first derivative matrix, against known good:
-     *  -1   1   0   0
-     *   0  -1   1   0
-     *   0   0  -1   1
-     *   0   0  -1   1
-     * Known good is in general banded matrix column-major order.
-     */
-    const double good_D1[] = { /*DK*/  -1,     0,
-                                   1,  -1,     0,
-                                   1,  -1,    -1,
-                                   1,   1  /*DK*/ };
-    BOOST_CHECK_EQUAL_COLLECTIONS(
-        good_D1, good_D1 + sizeof(good_D1)/sizeof(good_D1[0]),
-        w->D[1] + w->ku, w->D[1] + w->storagesize - w->kl);
+        /* Check w->D[0] application against multiple vectors */
+        const int nrhs = 2;
+        double vector[] = { 1, 2, 3, 4,
+                            5, 6, 7, 8 };
+        const double good_result[] = { 1, 2, 3, 4,
+                                       5, 6, 7, 8 };
+        const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
+        suzerain_bspline_operator_apply(0, nrhs, vector, ldb, w);
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+            good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
+            vector, vector + sizeof(vector)/sizeof(vector[0]));
+    }
+
+    {
+        /* Check w->D[1], the first derivative matrix, against known good:
+         *  -1   1   0   0
+         *   0  -1   1   0
+         *   0   0  -1   1
+         *   0   0  -1   1
+         * Known good is in general banded matrix column-major order.
+         */
+        const double good_D1[] = { /*DK*/  -1,     0,
+                                       1,  -1,     0,
+                                       1,  -1,    -1,
+                                       1,   1  /*DK*/ };
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+            good_D1, good_D1 + sizeof(good_D1)/sizeof(good_D1[0]),
+            w->D[1] + w->ku, w->D[1] + w->storagesize - w->kl);
+
+        /* Check w->D[0] application against multiple vectors */
+        const int nrhs = 2;
+        double vector[] = { 1, 3, 2, 4,
+                            7, 6, 5, 8 };
+        const double good_result[] = {  2, -1, 2, 2,
+                                       -1, -1, 3, 3 };
+        const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
+        suzerain_bspline_operator_apply(1, nrhs, vector, ldb, w);
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+            good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
+            vector, vector + sizeof(vector)/sizeof(vector[0]));
+    }
+
+    {
+        /* Check w->D[2], the second derivative matrix, against zero result.
+         */
+        const double good_D2[] = { /*DK*/  0,    0,
+                                       0,  0,    0,
+                                       0,  0,    0,
+                                       0,  0  /*DK*/ };
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+            good_D2, good_D2 + sizeof(good_D2)/sizeof(good_D2[0]),
+            w->D[2] + w->ku, w->D[2] + w->storagesize - w->kl);
+    }
 
     suzerain_bspline_operator_lu_workspace *luw
         = suzerain_bspline_operator_lu_alloc(w);
@@ -169,7 +209,7 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
     const int order  = 2;
-    const int nderiv = 1;
+    const int nderiv = 2;
 
     poly_params *p = (poly_params *)
                       malloc(sizeof(poly_params) + 3*sizeof(double));
@@ -188,6 +228,8 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
     suzerain_bspline_operator_lu_form(i_one, &d_one, w, mass);
 
     {
+        const int derivative = 1;
+
         p->c[0] = 1.2; // Constant
         p->c[1] = 3.4; // Linear
         p->c[2] = 0.0; // Quadratic
@@ -199,8 +241,8 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
         // Solve for function coefficients using the mass matrix
         suzerain_bspline_operator_lu_solve(1, coefficient, w->n, mass);
 
-        // Take the first derivative of the coefficients using M x' = D x
-        suzerain_bspline_operator_apply(1, 1, coefficient, w->n, w);
+        // Take the n-th derivative of the coefficients using M x' = D x
+        suzerain_bspline_operator_apply(derivative, 1, coefficient, w->n, w);
         suzerain_bspline_operator_lu_solve(1, coefficient, w->n, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
@@ -211,94 +253,33 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
         free(coefficient);
     }
 
+//  {
+//      const int derivative = 2;
+
+//      p->c[0] = 1.2; // Constant
+//      p->c[1] = 3.4; // Linear
+//      p->c[2] = 5.6; // Quadratic
+
+//      // Compute the right hand side coefficients for M x = b
+//      double * coefficient = (double *) malloc(w->n * sizeof(double));
+//      suzerain_bspline_operator_functioncoefficient_rhs(&f, coefficient, w);
+
+//      // Solve for function coefficients using the mass matrix
+//      suzerain_bspline_operator_lu_solve(1, coefficient, w->n, mass);
+
+//      // Take the n-th derivative of the coefficients using M x' = D x
+//      suzerain_bspline_operator_apply(derivative, 1, coefficient, w->n, w);
+//      suzerain_bspline_operator_lu_solve(1, coefficient, w->n, mass);
+
+//      // Ensure we recover the leading order, scaled monomial coefficients
+//      for (int i = 0; i < w->n; ++i) {
+//          BOOST_CHECK_CLOSE(2.0 * p->c[2], coefficient[i], 1e-12);
+//      }
+
+//      free(coefficient);
+//  }
+
     suzerain_bspline_operator_lu_free(mass);
     suzerain_bspline_operator_free(w);
     free(p);
 }
-
-// BOOST_AUTO_TEST_CASE( differentiate_representable_polynomial )
-// {
-//     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 };
-//     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
-//     const int order  = 4; // Piecewise cubic
-//     const int nderiv = 4;
-//
-//     suzerain_bspline_operator_workspace *w
-//         = suzerain_bspline_operator_alloc(order, nderiv, nbreak,
-//             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
-//
-//     poly_params *p = (poly_params *)
-//                       malloc(sizeof(poly_params) + 4*sizeof(double));
-//     p->n    = 4;
-//     p->c[0] = 1.1; // 1
-//     p->c[1] = 2.2; // x
-//     p->c[2] = 3.3; // x^2
-//     p->c[3] = 4.4; // x^3
-//     gsl_function f = {poly_f, p};
-//
-//     const double   dc[] = { 2.2, 6.6, 0.0 }; // (d/dx)(p->c)
-//     const double  ddc[] = { 6.6, 0.0, 0.0 }; // (d^2/dx^2)(p->c)
-//     const double dddc[] = { 0.0, 0.0, 0.0 }; // (d^3/dx^3)(p->c)
-//
-//     BOOST_CHECK_CLOSE(GSL_FN_EVAL(&f,1.0),  6.6, 0.001);
-//     BOOST_CHECK_CLOSE(GSL_FN_EVAL(&f,2.0), 18.7, 0.001);
-//
-//     poly_params_differentiate(p);
-//     BOOST_CHECK_EQUAL_COLLECTIONS(p->c, p->c + p->n, dc, dc + p->n);
-//
-//     poly_params_differentiate(p);
-//     BOOST_CHECK_EQUAL_COLLECTIONS(p->c, p->c + p->n, ddc, ddc + p->n);
-//
-//     BOOST_CHECK_CLOSE(GSL_FN_EVAL(&f,1.0), 6.6, 0.001);
-//     BOOST_CHECK_CLOSE(GSL_FN_EVAL(&f,2.0), 6.6, 0.001);
-//
-//     // Differentiate a constant
-//     poly_params_differentiate(p);
-//     BOOST_CHECK_EQUAL_COLLECTIONS(p->c, p->c + p->n, dddc, dddc + p->n);
-//
-//     BOOST_CHECK_EQUAL(GSL_FN_EVAL(&f,1.0), 0.0);
-//     BOOST_CHECK_EQUAL(GSL_FN_EVAL(&f,2.0), 0.0);
-//
-//     // Differentiate zero
-//     poly_params_differentiate(p);
-//     BOOST_CHECK_EQUAL_COLLECTIONS(p->c, p->c + p->n, dddc, dddc + p->n);
-//
-//     BOOST_CHECK_EQUAL(GSL_FN_EVAL(&f,1.0), 0.0);
-//     BOOST_CHECK_EQUAL(GSL_FN_EVAL(&f,2.0), 0.0);
-//
-//     free(p);
-//
-//
-//
-//     /* Check w->D[0], the mass matrix, against known good solution:
-//      *   1              0              0              0
-//      *   0              1              0              0
-//      *   0              0              1              0
-//      *   0              0              0              1
-//      * Known good is in general banded matrix column-major order.
-//      */
-//     const double good_D0[] = { /*DK*/   1,     0,
-//                                    0,   1,     0,
-//                                    0,   1,     0,
-//                                    0,   1  /*DK*/ };
-//     BOOST_CHECK_EQUAL_COLLECTIONS(
-//         good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
-//         w->D[0] + 1, w->D[0] + w->storagesize - 1);
-//
-//     /* Check w->D[1], the first derivative matrix, against known good:
-//      *       -1              1              0              0
-//      *        0             -1              1              0
-//      *        0              0             -1              1
-//      *        0              0             -1              1
-//      * Known good is in general banded matrix column-major order.
-//      */
-//     const double good_D1[] = { /*DK*/  -1,     0,
-//                                    1,  -1,     0,
-//                                    1,  -1,    -1,
-//                                    1,   1  /*DK*/ };
-//     BOOST_CHECK_EQUAL_COLLECTIONS(
-//         good_D1, good_D1 + sizeof(good_D1)/sizeof(good_D1[0]),
-//         w->D[1] + 1, w->D[1] + w->storagesize - 1);
-//
-//     suzerain_bspline_operator_free(w);
-// }
