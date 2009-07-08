@@ -30,6 +30,9 @@
 
 #include "config.h"
 
+/* DEBUG */
+#include <stdio.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <gsl/gsl_bspline.h>
@@ -272,6 +275,7 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
         const int nderivatives  = w->nderivatives;
         const int lda           = w->lda;
         const int ku            = w->ku;
+        const int kl            = w->kl;
         double ** const D       = w->D;
 
         int i, j, k;
@@ -281,10 +285,19 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
             size_t jstart, jend;
             gsl_bspline_deriv_eval_nonzero(xi, nderivatives, db,
                                            &jstart, &jend, bw, bdw);
+
             for (k = 0; k <= nderivatives; ++k) {
                 for (j = jstart; j <= jend; ++j) {
-                    D[k][GB_OFFSET(lda, ku, i, j)]
-                        = gsl_matrix_get(db, j - jstart, k);
+                    const double value = gsl_matrix_get(db, j - jstart, k);
+                    if (j-ku <= i && i <= j+kl) {
+                        D[k][GB_OFFSET(lda, ku, i, j)] = value;
+                        printf("DEBUG: D[%d][%03d] from (%3d, %3d) = %+ 12.6g\n",
+                                k, GB_OFFSET(lda, ku, i, j), i, j, value);
+                    } else if (value == 0.0) {
+                        /* NOP: Value outside bandwith is zero, all is well */
+                    } else {
+                        /* TODO Teardown and report error */
+                    }
                 }
             }
         }
