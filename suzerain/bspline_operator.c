@@ -108,27 +108,15 @@ suzerain_bspline_operator_alloc(int order,
         SUZERAIN_ERROR_NULL("bandwidth not computed", SUZERAIN_ESANITY);
     }
 
+    /* Allocate workspace */
     w = malloc(sizeof(suzerain_bspline_operator_workspace));
     if (w == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
     }
 
-    /* Save bspline operator parameters */
-    w->order        = order;
-    w->nbreakpoints = nbreakpoints;
-    w->nderivatives = nderivatives;
-    w->n            = nbreakpoints + order - 2; /* assumes max continuity */
-    w->method       = method;
-
-    /* Storage parameters for BLAS/lapack-compatible general band matrix */
-    w->kl          = (bandwidth - 1) / 2;
-    w->ku          = (bandwidth - 1) / 2;
-    w->lda         = w->kl + w->ku + 1;
-    w->storagesize = w->lda * w->n;
-
     /* Setup workspace to use GSL B-spline functionality */
-    w->bw = gsl_bspline_alloc(w->order, w->nbreakpoints);
+    w->bw = gsl_bspline_alloc(order, nbreakpoints);
     if (w->bw == NULL) {
         free(w);
         SUZERAIN_ERROR_NULL("failure allocating bspline workspace",
@@ -140,15 +128,19 @@ suzerain_bspline_operator_alloc(int order,
         SUZERAIN_ERROR_NULL("failure seting bspline breakpoints",
                             SUZERAIN_EFAILED);
     }
-    if (gsl_bspline_ncoeffs(w->bw) != w->n) {
-        /* Only will occur if maximum continuity not used at breakpoints.
-         * Will happen for repeated interior knots, which are not possible
-         * in GSL v1.12 implementation */
-        gsl_bspline_free(w->bw);
-        free(w);
-        SUZERAIN_ERROR_NULL("Unexpected number of coefficients",
-                            SUZERAIN_ESANITY);
-    }
+
+    /* Save bspline operator parameters in workspace */
+    w->order        = order;
+    w->nbreakpoints = nbreakpoints;
+    w->nderivatives = nderivatives;
+    w->n            = gsl_bspline_ncoeffs(w->bw);
+    w->method       = method;
+
+    /* Storage parameters for BLAS/lapack-compatible general band matrix */
+    w->kl          = (bandwidth - 1) / 2;
+    w->ku          = (bandwidth - 1) / 2;
+    w->lda         = w->kl + w->ku + 1;
+    w->storagesize = w->lda * w->n;
 
     /* Allocate space for pointers to matrices */
     w->D = malloc((w->nderivatives + 1) * sizeof(double *));
