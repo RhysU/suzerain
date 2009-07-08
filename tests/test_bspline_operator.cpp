@@ -2,10 +2,6 @@
 
 #include <suzerain/config.h>
 
-/* DEBUG */
-#include <iostream>
-#include <boost/format.hpp>
-
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <gsl/gsl_poly.h>
@@ -179,11 +175,9 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
     const int order  = 3;
     const int nderiv = 2;
 
-    std::cout << boost::format("-->DEBUG START!\n");
     suzerain_bspline_operator_workspace *w
         = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
-    std::cout << boost::format("-->DEBUG END!\n");
 
     {
         /* Check w->D[0], the mass matrix, against known good solution:

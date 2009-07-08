@@ -30,9 +30,7 @@
 
 #include "config.h"
 
-/* DEBUG */
 #include <stdio.h>
-
 #include <stdlib.h>
 #include <string.h>
 #include <gsl/gsl_bspline.h>
@@ -43,10 +41,13 @@
 #include <suzerain/bspline_operator.h>
 #include <suzerain/error.h>
 
-/* Compute the BLAS-compatible offset to a(i,j) for general banded matrices */
-/* a(i,j) -> storage(ku+i-j,j) where storage is column-major with LDA lda */
-/* Note missing constant one compared with Fortran because C 0-indexes arrays */
-#define GB_OFFSET(lda, ku, i, j) ((j)*(lda)+(ku+i-j))
+/* Compute the BLAS-compatible offset to a(i,j) for general banded matrices
+ * a(i,j) -> storage(ku+i-j,j) where storage is column-major with LDA lda
+ * Note missing constant one compared with Fortran because C 0-indexes arrays */
+#define GB_OFFSET(lda, kl, ku, i, j) ((j)*(lda)+(ku+i-j))
+
+/* Determine if indices fall within the band of a general banded matrix */
+#define GB_IN_BAND(lda, kl, ku, i, j) ((j)-(ku) <= (i) && (i) <= (j)+(kl))
 
 int
 suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w);
@@ -93,9 +94,10 @@ suzerain_bspline_operator_alloc(int order,
          *   ...
          **/
         /* TODO Bandwidth may be overly large for two reasons...
-         * 1) Right continuity of the rightmost basis function, which may
-         *    increase kl by one near lower right corner of matrices.
-         * 2) For even orders, kl may be one less than ku
+         *    1) Right continuity of the rightmost basis function, which may
+         *       increase kl by one near lower right corner of matrices.
+         *    2) For even orders, kl may be one less than ku
+         * A sanity check occurs in suzerain_bspline_operator_create.
          */
         bandwidth = GSL_IS_ODD(order) ? order : order + 1;
         break;
@@ -137,6 +139,15 @@ suzerain_bspline_operator_alloc(int order,
         free(w);
         SUZERAIN_ERROR_NULL("failure seting bspline breakpoints",
                             SUZERAIN_EFAILED);
+    }
+    if (gsl_bspline_ncoeffs(w->bw) != w->n) {
+        /* Only will occur if maximum continuity not used at breakpoints.
+         * Will happen for repeated interior knots, which are not possible
+         * in GSL v1.12 implementation */
+        gsl_bspline_free(w->bw);
+        free(w);
+        SUZERAIN_ERROR_NULL("Unexpected number of coefficients",
+                            SUZERAIN_ESANITY);
     }
 
     /* Allocate space for pointers to matrices */
@@ -258,8 +269,8 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
     /* Compute the operator matrices based on the supplied method */
     switch (w->method) {
     case SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE:
-        /* Logic will need to change here once multiple methods available */
-        /* For now, continue since only one method is implemented */
+        /* Logic will need to change here once multiple methods available
+         * For now, continue since only one method is implemented */
         break;
     default:
         gsl_bspline_deriv_free(bdw);
@@ -271,6 +282,7 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
     {
         gsl_bspline_workspace * const bw = (gsl_bspline_workspace *) w->bw;
 
+        /* Defensively dereference into local constants */
         const int n             = w->n;
         const int nderivatives  = w->nderivatives;
         const int lda           = w->lda;
@@ -289,14 +301,36 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
             for (k = 0; k <= nderivatives; ++k) {
                 for (j = jstart; j <= jend; ++j) {
                     const double value = gsl_matrix_get(db, j - jstart, k);
-                    if (j-ku <= i && i <= j+kl) {
-                        D[k][GB_OFFSET(lda, ku, i, j)] = value;
-                        printf("DEBUG: D[%d][%03d] from (%3d, %3d) = %+ 12.6g\n",
-                                k, GB_OFFSET(lda, ku, i, j), i, j, value);
+
+                    if (GB_IN_BAND(lda, kl, ku, i, j)) {
+                        D[k][GB_OFFSET(lda, kl, ku, i, j)] = value;
                     } else if (value == 0.0) {
-                        /* NOP: Value outside bandwith is zero, all is well */
+                        /* OK: value outside band is identically zero */
+                    } else if (i == 0   && j == i + ku + 1) {
+                        /* OK: At first abscissae, continuity conditions
+                         *     may cause a single, ignorable nonzero
+                         *     one index outside the band */
+                    } else if (i == n-1 && j == i - kl - 1) {
+                        /* OK: At last abscissae continuity conditions
+                         *     may cause a single, ignorable nonzero
+                         *     one index outside the band */
                     } else {
-                        /* TODO Teardown and report error */
+                        /* NOT COOL: nonzero value outside bandwidth */
+                        char buffer[255];
+                        snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+                                 "encountered non-zero outside band"
+                                 " for basis spline order %d, degree %d;"
+                                 " (d/dx)^%d B_%d(\\xi_%d=%g) = %g"
+                                 " corresponds to (row=%d, column=%d) of"
+                                 " general banded matrix defined by "
+                                 "[lda=%d, kl=%d, ku=%d, n=%d]",
+                                 w->order, w->order-1,
+                                 k, j, i, xi, value,
+                                 i, j,
+                                 lda, kl, ku, n);
+                        gsl_bspline_deriv_free(bdw);
+                        gsl_matrix_free(db);
+                        SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
                     }
                 }
             }
