@@ -197,17 +197,17 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
             good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
             w->D[0] + w->ku, w->D[0] + w->storagesize - w->kl);
 
-//      /* Check w->D[0] application against multiple vectors */
-//      const int nrhs = 2;
-//      double vector[] = { 1, 2, 3, 4,
-//                          5, 6, 7, 8 };
-//      const double good_result[] = { 1, 2, 3, 4,
-//                                     5, 6, 7, 8 };
-//      const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-//      suzerain_bspline_operator_apply(0, nrhs, vector, ldb, w);
-//      BOOST_CHECK_EQUAL_COLLECTIONS(
-//          good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
-//          vector, vector + sizeof(vector)/sizeof(vector[0]));
+        /* Check w->D[0] application against multiple vectors */
+        const int nrhs = 2;
+        double vector[] = { 1, 2, 3, 4, 5,
+                            5, 6, 7, 8, 9 };
+        const double good_result[] = { 1., 15./8., 3., 33./8., 5.,
+                                       5., 47./8., 7., 65./8., 9. };
+        const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
+        suzerain_bspline_operator_apply(0, nrhs, vector, ldb, w);
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+            good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
+            vector, vector + sizeof(vector)/sizeof(vector[0]));
     }
 
 //  {
