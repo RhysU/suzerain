@@ -44,10 +44,14 @@
 /* Compute the BLAS-compatible offset to a(i,j) for general banded matrices
  * a(i,j) -> storage(ku+i-j,j) where storage is column-major with LDA lda
  * Note missing constant one compared with Fortran because C 0-indexes arrays */
-#define GB_OFFSET(lda, kl, ku, i, j) ((j)*(lda)+(ku+i-j))
+inline int gb_matrix_offset(int lda, int kl, int ku, int i, int j) {
+    return ((j)*(lda)+(ku+i-j));
+}
 
 /* Determine if indices fall within the band of a general banded matrix */
-#define GB_IN_BAND(lda, kl, ku, i, j) ((j)-(ku) <= (i) && (i) <= (j)+(kl))
+inline int gb_matrix_in_band(int lda, int kl, int ku, int i, int j) {
+    return ((j)-(ku) <= (i) && (i) <= (j)+(kl));
+}
 
 int
 suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w);
@@ -59,13 +63,6 @@ suzerain_bspline_operator_alloc(int order,
                                 const double * breakpoints,
                                 enum suzerain_bspline_operator_method method)
 {
-    gsl_vector_const_view breakpoints_view
-    = gsl_vector_const_view_array(breakpoints, nbreakpoints);
-
-    int i;
-    int bandwidth = -1 /* uninitialized */;
-    suzerain_bspline_operator_workspace * w = NULL;
-
     /* Parameter sanity checks */
     if (order < 1) {
         SUZERAIN_ERROR_NULL("order must be at least 1", SUZERAIN_EINVAL);
@@ -82,6 +79,7 @@ suzerain_bspline_operator_alloc(int order,
     }
 
     /* Compute the bandwidth based on the supplied method and order */
+    int bandwidth = -1 /* uninitialized */;
     switch (method) {
     case SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE:
         /* Compute bandwidth of resulting operator matrices:
@@ -109,7 +107,8 @@ suzerain_bspline_operator_alloc(int order,
     }
 
     /* Allocate workspace */
-    w = malloc(sizeof(suzerain_bspline_operator_workspace));
+    suzerain_bspline_operator_workspace * const w
+        = malloc(sizeof(suzerain_bspline_operator_workspace));
     if (w == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
@@ -122,6 +121,8 @@ suzerain_bspline_operator_alloc(int order,
         SUZERAIN_ERROR_NULL("failure allocating bspline workspace",
                             SUZERAIN_ENOMEM);
     }
+    gsl_vector_const_view breakpoints_view
+        = gsl_vector_const_view_array(breakpoints, nbreakpoints);
     if (gsl_bspline_knots(&breakpoints_view.vector, w->bw)) {
         gsl_bspline_free(w->bw);
         free(w);
@@ -163,7 +164,7 @@ suzerain_bspline_operator_alloc(int order,
     }
     /* w->D[0] now points to D[0] which will be the mass matrix */
     /* Establish pointers for D[1] = d/dx, d[2] = d^2/dx^2, ...*/
-    for (i = 0; i < nderivatives; ++i) {
+    for (int i = 0; i < nderivatives; ++i) {
         w->D[i+1] = w->D[i] + w->storagesize;
     }
 
@@ -203,9 +204,6 @@ suzerain_bspline_operator_apply(
     int ldb,
     const suzerain_bspline_operator_workspace *w)
 {
-    double *scratch;
-    int i;
-
     if (nderivative < 0 || w->nderivatives < nderivative) {
         SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
     }
@@ -214,6 +212,7 @@ suzerain_bspline_operator_apply(
     }
 
     /* Allocate scratch space */
+    double * scratch;
     if (posix_memalign((void **) &(scratch),
                        16 /* byte boundary */,
                        w->ncoefficients*sizeof(double))) {
@@ -221,7 +220,7 @@ suzerain_bspline_operator_apply(
                        SUZERAIN_ENOMEM);
     }
 
-    for (i = 0; i < nrhs; ++i) {
+    for (int i = 0; i < nrhs; ++i) {
         double * const bi = b + i*ldb;
         /* Compute bi := w->D[nderivative]*bi */
         suzerain_blas_dcopy(w->ncoefficients, bi, 1, scratch, 1);
@@ -239,16 +238,14 @@ suzerain_bspline_operator_apply(
 int
 suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
 {
-    gsl_matrix *db;
-    gsl_bspline_deriv_workspace *bdw;
-
     /* Setup workspaces to use GSL B-spline functionality */
-    db = gsl_matrix_alloc(w->order, w->nderivatives + 1);
+    gsl_matrix * const db = gsl_matrix_alloc(w->order, w->nderivatives + 1);
     if (db == NULL) {
         SUZERAIN_ERROR("failure allocating dB working matrix",
                        SUZERAIN_ENOMEM);
     }
-    bdw = gsl_bspline_deriv_alloc(gsl_bspline_order(w->bw));
+    gsl_bspline_deriv_workspace * const bdw
+        = gsl_bspline_deriv_alloc(gsl_bspline_order(w->bw));
     if (bdw == NULL) {
         gsl_matrix_free(db);
         SUZERAIN_ERROR("failure allocating bspline derivative workspace",
@@ -282,20 +279,18 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
         const int kl            = w->kl;
         double ** const D       = w->D;
 
-        int i, j, k;
-
-        for (i = 0; i < n; ++i) {
+        for (int i = 0; i < n; ++i) {
             const double xi = gsl_bspline_greville_abscissa(i, bw);
             size_t jstart, jend;
             gsl_bspline_deriv_eval_nonzero(xi, nderivatives, db,
                                            &jstart, &jend, bw, bdw);
 
-            for (k = 0; k <= nderivatives; ++k) {
-                for (j = jstart; j <= jend; ++j) {
+            for (int k = 0; k <= nderivatives; ++k) {
+                for (int j = jstart; j <= jend; ++j) {
                     const double value = gsl_matrix_get(db, j - jstart, k);
 
-                    if (GB_IN_BAND(lda, kl, ku, i, j)) {
-                        D[k][GB_OFFSET(lda, kl, ku, i, j)] = value;
+                    if (gb_matrix_in_band(lda, kl, ku, i, j)) {
+                        D[k][gb_matrix_offset(lda, kl, ku, i, j)] = value;
                     } else if (value == 0.0) {
                         /* OK: value outside band is identically zero */
                     } else if (i == 0   && j == i + ku + 1) {
@@ -352,14 +347,10 @@ suzerain_bspline_operator_functioncoefficient_rhs(
     }
 
     /* Evaluate the function at the Greville abscissae */
-    {
-        const int n = w->ncoefficients;
-        int i;
-
-        for (i = 0; i < n; ++i) {
-            const double x = gsl_bspline_greville_abscissa(i, w->bw);
-            coefficient_rhs[i] = SUZERAIN_FN_EVAL(function, x);
-        }
+    const int n = w->ncoefficients;
+    for (int i = 0; i < n; ++i) {
+        const double x = gsl_bspline_greville_abscissa(i, w->bw);
+        coefficient_rhs[i] = SUZERAIN_FN_EVAL(function, x);
     }
 
     return SUZERAIN_SUCCESS;
@@ -369,10 +360,8 @@ suzerain_bspline_operator_lu_workspace *
 suzerain_bspline_operator_lu_alloc(
     const suzerain_bspline_operator_workspace *w)
 {
-    int i;
-    suzerain_bspline_operator_lu_workspace * luw = NULL;
-
-    luw = malloc(sizeof(suzerain_bspline_operator_lu_workspace));
+    suzerain_bspline_operator_lu_workspace * const luw
+        = malloc(sizeof(suzerain_bspline_operator_lu_workspace));
     if (luw == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
