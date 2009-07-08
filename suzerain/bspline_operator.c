@@ -130,17 +130,17 @@ suzerain_bspline_operator_alloc(int order,
     }
 
     /* Save bspline operator parameters in workspace */
-    w->order        = order;
-    w->nbreakpoints = nbreakpoints;
-    w->nderivatives = nderivatives;
-    w->n            = gsl_bspline_ncoeffs(w->bw);
-    w->method       = method;
+    w->order         = order;
+    w->nbreakpoints  = nbreakpoints;
+    w->nderivatives  = nderivatives;
+    w->ncoefficients = gsl_bspline_ncoeffs(w->bw);
+    w->method        = method;
 
     /* Storage parameters for BLAS/lapack-compatible general band matrix */
     w->kl          = (bandwidth - 1) / 2;
     w->ku          = (bandwidth - 1) / 2;
     w->lda         = w->kl + w->ku + 1;
-    w->storagesize = w->lda * w->n;
+    w->storagesize = w->lda * w->ncoefficients;
 
     /* Allocate space for pointers to matrices */
     w->D = malloc((w->nderivatives + 1) * sizeof(double *));
@@ -192,7 +192,7 @@ int
 suzerain_bspline_operator_ncoefficients(
     const suzerain_bspline_operator_workspace *w)
 {
-    return w->n;
+    return w->ncoefficients;
 }
 
 int
@@ -209,14 +209,14 @@ suzerain_bspline_operator_apply(
     if (nderivative < 0 || w->nderivatives < nderivative) {
         SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
     }
-    if (ldb < w->n) {
-        SUZERAIN_ERROR("ldb < w->n", SUZERAIN_EINVAL);
+    if (ldb < w->ncoefficients) {
+        SUZERAIN_ERROR("ldb < w->ncoefficients", SUZERAIN_EINVAL);
     }
 
     /* Allocate scratch space */
     if (posix_memalign((void **) &(scratch),
                        16 /* byte boundary */,
-                       w->n*sizeof(double))) {
+                       w->ncoefficients*sizeof(double))) {
         SUZERAIN_ERROR("failed to allocate scratch space",
                        SUZERAIN_ENOMEM);
     }
@@ -224,9 +224,9 @@ suzerain_bspline_operator_apply(
     for (i = 0; i < nrhs; ++i) {
         double * const bi = b + i*ldb;
         /* Compute bi := w->D[nderivative]*bi */
-        suzerain_blas_dcopy(w->n, bi, 1, scratch, 1);
+        suzerain_blas_dcopy(w->ncoefficients, bi, 1, scratch, 1);
         suzerain_blas_dgbmv(
-            'N', w->n, w->n, w->kl, w->ku,
+            'N', w->ncoefficients, w->ncoefficients, w->kl, w->ku,
             1.0, w->D[nderivative], w->lda,
             scratch, 1,
             0.0, bi, 1);
@@ -275,7 +275,7 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
         gsl_bspline_workspace * const bw = (gsl_bspline_workspace *) w->bw;
 
         /* Defensively dereference into local constants */
-        const int n             = w->n;
+        const int n             = w->ncoefficients;
         const int nderivatives  = w->nderivatives;
         const int lda           = w->lda;
         const int ku            = w->ku;
@@ -353,9 +353,10 @@ suzerain_bspline_operator_functioncoefficient_rhs(
 
     /* Evaluate the function at the Greville abscissae */
     {
+        const int n = w->ncoefficients;
         int i;
 
-        for (i = 0; i < w->n; ++i) {
+        for (i = 0; i < n; ++i) {
             const double x = gsl_bspline_greville_abscissa(i, w->bw);
             coefficient_rhs[i] = SUZERAIN_FN_EVAL(function, x);
         }
@@ -378,14 +379,14 @@ suzerain_bspline_operator_lu_alloc(
     }
 
     /* Determine general banded matrix shape parameters */
-    luw->n           = w->n;
-    luw->kl          = w->kl;
-    luw->ku          = w->kl + w->ku; /* Increase ku per DGBTRF, DGBTRS */
-    luw->lda         = luw->kl + luw->ku + 1;
-    luw->storagesize = luw->lda * luw->n;
+    luw->ncoefficients = w->ncoefficients;
+    luw->kl            = w->kl;
+    luw->ku            = w->kl + w->ku; /* Increase ku per DGBTRF, DGBTRS */
+    luw->lda           = luw->kl + luw->ku + 1;
+    luw->storagesize   = luw->lda * luw->ncoefficients;
 
     /* Allocate memory for LU factorization pivot storage */
-    luw->ipiv = malloc(w->n * sizeof(int));
+    luw->ipiv = malloc(w->ncoefficients * sizeof(int));
     if (luw->ipiv == NULL) {
         free(luw);
         SUZERAIN_ERROR_NULL("failed to allocate space for pivot storage",
@@ -429,8 +430,9 @@ suzerain_bspline_operator_lu_form(
         SUZERAIN_ERROR("More coefficients provided than derivatives available",
                        SUZERAIN_EINVAL);
     }
-    if (luw->n < w->n) {
-        SUZERAIN_ERROR("Incompatible workspaces: luw->n < w->n",
+    if (luw->ncoefficients < w->ncoefficients) {
+        SUZERAIN_ERROR("Incompatible workspaces:"
+                       " luw->ncoefficients < w->ncoefficients",
                        SUZERAIN_EINVAL);
     }
     if (luw->ku < w->ku + w->kl) {
@@ -479,8 +481,8 @@ suzerain_bspline_operator_lu_form(
 
     /* Compute LU factorization of the just-formed operator */
     {
-        const int info = suzerain_lapack_dgbtrf(luw->n,
-                                                luw->n,
+        const int info = suzerain_lapack_dgbtrf(luw->ncoefficients,
+                                                luw->ncoefficients,
                                                 luw->kl,
                                                 luw->ku - luw->kl, /* NB */
                                                 luw->A,
@@ -503,7 +505,7 @@ suzerain_bspline_operator_lu_solve(
     const suzerain_bspline_operator_lu_workspace *luw)
 {
     const int info = suzerain_lapack_dgbtrs('N',
-                                            luw->n,
+                                            luw->ncoefficients,
                                             luw->kl,
                                             luw->ku - luw->kl, /* NB */
                                             nrhs,

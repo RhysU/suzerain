@@ -49,10 +49,10 @@ enum suzerain_bspline_operator_method {
 };
 
 typedef struct {
-    int order;
+    int order;          /* spline order, piecewise degree is order - 1 */
     int nbreakpoints;
     int nderivatives;
-    int n;
+    int ncoefficients;
     int kl;
     int ku;
     int lda;
@@ -93,7 +93,7 @@ suzerain_bspline_operator_functioncoefficient_rhs(
     const suzerain_bspline_operator_workspace *w);
 
 typedef struct {
-    int n;
+    int ncoefficients;
     int kl;
     int ku;
     int lda;
