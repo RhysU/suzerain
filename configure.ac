@@ -51,8 +51,7 @@ dnl ------------------------------------------------
 dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG([C])
-dnl TODO: Next line works for icc, but is lost for mpicc
-AC_PROG_CC_C99(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
+AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LIBS} ${FLIBS}"
 AX_PATH_GSL(1.12,,AC_MSG_ERROR([Could not find required GSL version.]))
