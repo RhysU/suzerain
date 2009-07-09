@@ -7,6 +7,9 @@ AM_CPPFLAGS   += $(BOOST_CPPFLAGS) $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS)
 AM_LDFLAGS     =
 bin_PROGRAMS   =
 check_PROGRAMS =
+noinst_HEADERS =
+
+noinst_HEADERS += test_tools.hpp
 
 # FIXME: Ugly, separate MPI compilation into separate dir, maybe
 CXX=@MPICXX@
