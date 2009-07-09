@@ -311,51 +311,44 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
 
 
 // Check a piecewise cubic case's general banded storage
-// BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
-// {
-//     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
-//     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
-//     const int order  = 4;
-//     const int nderiv = 2;
-//
-//     suzerain_bspline_operator_workspace *w
-//         = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
-//             SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
-//
-//     {
-//         /* Check w->D[0], the mass matrix, against known good solution:
-//          * 1.       0.        0.       0.        0.       0.
-//          * 8./27.  61./108.  43./324.  1./162.   0.       0.
-//          * 0.       1./4.     7./12.   1./6.     0.       0.
-//          * 0.       0.        1./6.    7./12.    1./4.    0.
-//          * 0.       0.        1./162. 43./324.  61./108.  8./27.
-//          * 0.       0.        0.       0.        0.       1.
-//          * Known good is in general banded matrix column-major order.
-//          */
-//         const double good_D0[] = {
-//             /*DK*/      /*DK*/          1.,       8./27.,         0,
-//             /*DK*/0,        0,         61./108.,  1./4.,          0,
-//                   0,       43./324.,    7./12.,   1./6.,          1./162.,
-//                   1./162.,  1./6.,      7./12.,   43./324.,       0,
-//                   0,        1./4.,     61./108.,  0,        /*DK*/0,
-//                   0,        8./27.,     1.        /*DK*/    /*DK*/
-//         };
-//     {
-//         // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
-//         int i = 0; /* DEBUG */
-//         const double *expected, *actual;
-//         for (expected = good_D0, actual = w->D[0] + w->ku;
-//              expected < good_D0 + sizeof(good_D0)/sizeof(good_D0[0]);
-//              ++expected, ++actual, ++i /*DEBUG*/) {
-//             std::cout << boost::format("expected[%3d]=%12g, actual[%3d]=%12g\n")
-//                 % i % *expected % i % *actual; /*DEBUG*/
-//             BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
-//         }
-//     }
-//         BOOST_CHECK_EQUAL_COLLECTIONS(
-//             good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
-//             w->D[0] + w->ku, w->D[0] + w->storagesize - w->kl);
-//
+BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
+{
+    const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+    const int order  = 4;
+    const int nderiv = 2;
+
+    suzerain_bspline_operator_workspace *w
+        = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
+            SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
+
+    {
+        /* Check w->D[0], the mass matrix, against known good solution:
+         * 1.       0.        0.       0.        0.       0.
+         * 8./27.  61./108.  43./324.  1./162.   0.       0.
+         * 0.       1./4.     7./12.   1./6.     0.       0.
+         * 0.       0.        1./6.    7./12.    1./4.    0.
+         * 0.       0.        1./162. 43./324.  61./108.  8./27.
+         * 0.       0.        0.       0.        0.       1.
+         * Known good is in general banded matrix column-major order.
+         */
+        const double good_D0[] = {
+            /*DK*/      /*DK*/          1.,       8./27.,         0,
+            /*DK*/0,        0,         61./108.,  1./4.,          0,
+                  0,       43./324.,    7./12.,   1./6.,          1./162.,
+                  1./162.,  1./6.,      7./12.,   43./324.,       0,
+                  0,        1./4.,     61./108.,  0,        /*DK*/0,
+                  0,        8./27.,     1.        /*DK*/    /*DK*/
+        };
+        // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
+        const double *expected, *actual;
+        for (expected = good_D0, actual = w->D[0] + w->ku;
+             expected < good_D0 + sizeof(good_D0)/sizeof(good_D0[0]);
+             ++expected, ++actual) {
+            BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
+        }
+    }
+
 //         /* Check w->D[0] application against multiple vectors */
 //      const int nrhs = 2;
 //      double vector[] = { 1, 2, 3, 4,
@@ -465,8 +458,8 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
 //  }
 
 //  suzerain_bspline_operator_lu_free(luw);
-//    suzerain_bspline_operator_free(w);
-//}
+    suzerain_bspline_operator_free(w);
+}
 
 // Polynomial test helpers
 typedef struct { int n; double c[]; } poly_params; // Flexible array
