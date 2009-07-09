@@ -111,9 +111,14 @@ suzerain_bspline_operator_lu_free(
     suzerain_bspline_operator_lu_workspace *luw);
 
 int
-suzerain_bspline_operator_lu_form(
+suzerain_bspline_operator_lu_form_general(
     int ncoefficients,
     const double * coefficients,
+    const suzerain_bspline_operator_workspace * w,
+    suzerain_bspline_operator_lu_workspace *luw);
+
+int
+suzerain_bspline_operator_lu_form_mass(
     const suzerain_bspline_operator_workspace * w,
     suzerain_bspline_operator_lu_workspace *luw);
 

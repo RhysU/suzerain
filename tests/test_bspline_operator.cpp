@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
                                      0,    -3,   5,     0.6,
                                      0,    -3,   0.8  /*DK*/ };
     const double coeff[] = { 2.0, -3.0 };
-    suzerain_bspline_operator_lu_form(
+    suzerain_bspline_operator_lu_form_general(
         sizeof(coeff)/sizeof(coeff[0]), coeff, w, luw);
     check_close_collections(
         good_A0, good_A0 + sizeof(good_A0)/sizeof(good_A0[0]),
@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
 //                                   0,    -3,   5,     0.6,
 //                                   0,    -3,   0.8  /*DK*/ };
 //  const double coeff[] = { 2.0, -3.0 };
-//  suzerain_bspline_operator_lu_form(
+//  suzerain_bspline_operator_lu_form_general(
 //      sizeof(coeff)/sizeof(coeff[0]), coeff, w, luw);
 //  {
 //      // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
 //                                   0,    -3,   5,     0.6,
 //                                   0,    -3,   0.8  /*DK*/ };
 //  const double coeff[] = { 2.0, -3.0 };
-//  suzerain_bspline_operator_lu_form(
+//  suzerain_bspline_operator_lu_form_general(
 //      sizeof(coeff)/sizeof(coeff[0]), coeff, w, luw);
 //  {
 //      // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
@@ -511,9 +511,32 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
     free(p);
 }
 
-// TODO derivatives_of_a_piecewise_quadratic look quite fishy
+BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
+{
+    const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+    const int order  = 4;
+    const int nderiv = order-2;
 
-BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic )
+    poly_params *p = (poly_params *)
+                      malloc(sizeof(poly_params) + order*sizeof(double));
+    p->n = order;
+    p->c[0] = 1.9;
+    for (int i = 1; i < order; ++i) {
+        p->c[i] = p->c[i-1] + 0.9;
+    }
+    suzerain_function f = {poly_f, p};
+
+    suzerain_bspline_operator_workspace *w
+        = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
+            SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
+    const int ncoeff = suzerain_bspline_operator_ncoefficients(w);
+
+    suzerain_bspline_operator_free(w);
+    free(p);
+}
+
+BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
@@ -533,9 +556,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic )
     // Form the mass matrix M
     suzerain_bspline_operator_lu_workspace * const mass
         = suzerain_bspline_operator_lu_alloc(w);
-    const double d_one = 1.0;
-    int    i_one = 1;
-    suzerain_bspline_operator_lu_form(i_one, &d_one, w, mass);
+    suzerain_bspline_operator_lu_form_mass(w, mass);
 
     {
         const int derivative = 1;
@@ -590,6 +611,34 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic )
 
         free(coefficient);
     }
+
+// FIXME the n-th derivative of n-th polynomial order seems fishy
+//  {
+//      const int derivative = 3;
+
+//      p->c[0] = 1.2; // Constant
+//      p->c[1] = 3.4; // Linear
+//      p->c[2] = 5.6; // Quadratic
+//      p->c[3] = 7.8; // Cubic
+
+//      // Compute the right hand side coefficients for M x = b
+//      double * coefficient = (double *) malloc(ncoeff * sizeof(double));
+//      suzerain_bspline_operator_functioncoefficient_rhs(&f, coefficient, w);
+
+//      // Solve for function coefficients using the mass matrix
+//      suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
+
+//      // Take the n-th derivative of the coefficients using M x' = D x
+//      suzerain_bspline_operator_apply(derivative, 1, coefficient, ncoeff, w);
+//      suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
+
+//      // Ensure we recover the leading order, scaled monomial coefficients
+//      for (int i = 0; i < ncoeff; ++i) {
+//          BOOST_CHECK_CLOSE(6.0 * p->c[3], coefficient[i], 1e-11);
+//      }
+
+//      free(coefficient);
+//  }
 
     suzerain_bspline_operator_lu_free(mass);
     suzerain_bspline_operator_free(w);

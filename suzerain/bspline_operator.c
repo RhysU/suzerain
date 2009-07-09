@@ -405,7 +405,7 @@ suzerain_bspline_operator_lu_free(suzerain_bspline_operator_lu_workspace * luw)
 }
 
 int
-suzerain_bspline_operator_lu_form(
+suzerain_bspline_operator_lu_form_general(
     int ncoefficients,
     const double * coefficients,
     const suzerain_bspline_operator_workspace * w,
@@ -484,6 +484,16 @@ suzerain_bspline_operator_lu_form(
     }
 
     return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_operator_lu_form_mass(
+    const suzerain_bspline_operator_workspace * w,
+    suzerain_bspline_operator_lu_workspace *luw)
+{
+    const double d_one = 1.0;
+    int i_one = 1;
+    return suzerain_bspline_operator_lu_form_general(i_one, &d_one, w, luw);
 }
 
 int
