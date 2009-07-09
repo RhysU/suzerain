@@ -515,12 +515,12 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
-    const int order  = 2;
-    const int nderiv = 2;
+    const int order  = 4; // Piecewise cubic
+    const int nderiv = 4;
 
     poly_params *p = (poly_params *)
-                      malloc(sizeof(poly_params) + 3*sizeof(double));
-    p->n = 3;
+                      malloc(sizeof(poly_params) + 4*sizeof(double));
+    p->n = 4;
     suzerain_function f = {poly_f, p};
 
     suzerain_bspline_operator_workspace *w
@@ -541,6 +541,7 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
         p->c[0] = 1.2; // Constant
         p->c[1] = 3.4; // Linear
         p->c[2] = 0.0; // Quadratic
+        p->c[3] = 0.0; // Cubic
 
         // Compute the right hand side coefficients for M x = b
         double * coefficient = (double *) malloc(ncoeff * sizeof(double));
@@ -562,11 +563,12 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
     }
 
 //  {
-//      const int derivative = 1;
+//      const int derivative = 2;
 
 //      p->c[0] = 1.2; // Constant
 //      p->c[1] = 3.4; // Linear
-//      p->c[2] = 0.0; // Quadratic
+//      p->c[2] = 5.6; // Quadratic
+//      p->c[3] = 0.0; // Cubic
 
 //      // Compute the right hand side coefficients for M x = b
 //      double * coefficient = (double *) malloc(ncoeff * sizeof(double));
@@ -581,7 +583,7 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
 
 //      // Ensure we recover the leading order, scaled monomial coefficients
 //      for (int i = 0; i < ncoeff; ++i) {
-//          BOOST_CHECK_CLOSE(1.0 * p->c[1], coefficient[i], 1e-12);
+//          BOOST_CHECK_CLOSE(2.0 * p->c[2], coefficient[i], 1e-12);
 //      }
 
 //      free(coefficient);
