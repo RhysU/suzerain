@@ -511,11 +511,13 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
     free(p);
 }
 
-BOOST_AUTO_TEST_CASE( functioncoefficients )
+// TODO derivatives_of_a_piecewise_quadratic look quite fishy
+
+BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
-    const int order  = 4; // Piecewise cubic
+    const int order  = 4;
     const int nderiv = 4;
 
     poly_params *p = (poly_params *)
@@ -562,32 +564,32 @@ BOOST_AUTO_TEST_CASE( functioncoefficients )
         free(coefficient);
     }
 
-//  {
-//      const int derivative = 2;
+    {
+        const int derivative = 2;
 
-//      p->c[0] = 1.2; // Constant
-//      p->c[1] = 3.4; // Linear
-//      p->c[2] = 5.6; // Quadratic
-//      p->c[3] = 0.0; // Cubic
+        p->c[0] = 1.2; // Constant
+        p->c[1] = 3.4; // Linear
+        p->c[2] = 5.6; // Quadratic
+        p->c[3] = 0.0; // Cubic
 
-//      // Compute the right hand side coefficients for M x = b
-//      double * coefficient = (double *) malloc(ncoeff * sizeof(double));
-//      suzerain_bspline_operator_functioncoefficient_rhs(&f, coefficient, w);
+        // Compute the right hand side coefficients for M x = b
+        double * coefficient = (double *) malloc(ncoeff * sizeof(double));
+        suzerain_bspline_operator_functioncoefficient_rhs(&f, coefficient, w);
 
-//      // Solve for function coefficients using the mass matrix
-//      suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
+        // Solve for function coefficients using the mass matrix
+        suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
 
-//      // Take the n-th derivative of the coefficients using M x' = D x
-//      suzerain_bspline_operator_apply(derivative, 1, coefficient, ncoeff, w);
-//      suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
+        // Take the n-th derivative of the coefficients using M x' = D x
+        suzerain_bspline_operator_apply(derivative, 1, coefficient, ncoeff, w);
+        suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
 
-//      // Ensure we recover the leading order, scaled monomial coefficients
-//      for (int i = 0; i < ncoeff; ++i) {
-//          BOOST_CHECK_CLOSE(2.0 * p->c[2], coefficient[i], 1e-12);
-//      }
+        // Ensure we recover the leading order, scaled monomial coefficients
+        for (int i = 0; i < ncoeff; ++i) {
+            BOOST_CHECK_CLOSE(2.0 * p->c[2], coefficient[i], 1e-11);
+        }
 
-//      free(coefficient);
-//  }
+        free(coefficient);
+    }
 
     suzerain_bspline_operator_lu_free(mass);
     suzerain_bspline_operator_free(w);
