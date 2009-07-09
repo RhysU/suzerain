@@ -9,6 +9,8 @@
 #include <suzerain/bspline_operator.h>
 #include <suzerain/function.h>
 
+#include "test_tools.hpp"
+
 BOOST_AUTO_TEST_CASE( allocation_okay )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
@@ -133,15 +135,10 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
     const double coeff[] = { 2.0, -3.0 };
     suzerain_bspline_operator_lu_form(
         sizeof(coeff)/sizeof(coeff[0]), coeff, w, luw);
-    {
-        // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
-        const double *expected, *actual;
-        for (expected = good_A0, actual = luw->A + luw->ku;
-             expected < good_A0 + sizeof(good_A0)/sizeof(good_A0[0]);
-             ++expected, ++actual) {
-            BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
-        }
-    }
+    check_close_collections(
+        good_A0, good_A0 + sizeof(good_A0)/sizeof(good_A0[0]),
+        luw->A + luw->ku, luw->A + luw->storagesize - luw->kl,
+        1e-12);
 
     /* Check that multiple rhs solution works for operator found just above */
     {
@@ -152,15 +149,10 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
                                        -0.2,  1,    2,    3 };
         const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
         suzerain_bspline_operator_lu_solve(nrhs, vector, ldb, luw);
-        {
-            // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
-            const double *expected, *actual;
-            for (expected = good_result, actual = vector;
-                 expected < good_result + sizeof(good_result)/sizeof(good_result[0]);
-                 ++expected, ++actual) {
-                BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
-            }
-        }
+        check_close_collections(
+            good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
+            vector, vector + sizeof(vector)/sizeof(vector[0]),
+            1.0e-12);
     }
 
     suzerain_bspline_operator_lu_free(luw);
@@ -225,7 +217,7 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
 //      BOOST_CHECK_EQUAL_COLLECTIONS(
 //          good_D1, good_D1 + sizeof(good_D1)/sizeof(good_D1[0]),
 //          w->D[1] + w->ku, w->D[1] + w->storagesize - w->kl);
-
+//
 //      /* Check w->D[0] application against multiple vectors */
 //      const int nrhs = 2;
 //      double vector[] = { 1, 3, 2, 4,
@@ -238,7 +230,7 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
 //          good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
 //          vector, vector + sizeof(vector)/sizeof(vector[0]));
 //  }
-
+//
 //  {
 //      /* Check w->D[2], the second derivative matrix, against zero result.
 //       */
@@ -250,10 +242,10 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
 //          good_D2, good_D2 + sizeof(good_D2)/sizeof(good_D2[0]),
 //          w->D[2] + w->ku, w->D[2] + w->storagesize - w->kl);
 //  }
-
+//
 //  suzerain_bspline_operator_lu_workspace *luw
 //      = suzerain_bspline_operator_lu_alloc(w);
-
+//
 //  /* Form 2*D[0] - 3*D[1] operator in LU-ready banded storage.  Answer is
 //   *   5   -3    0     0
 //   *   0    5   -3     0
@@ -284,7 +276,7 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
 //          BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
 //      }
 //  }
-
+//
 //  /* Check that multiple rhs solution works for operator found just above */
 //  {
 //      const int nrhs = 2;
@@ -340,27 +332,28 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
                   0,        1./4.,     61./108.,  0,        /*DK*/0,
                   0,        8./27.,     1.        /*DK*/    /*DK*/
         };
-        // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
-        const double *expected, *actual;
-        for (expected = good_D0, actual = w->D[0] + w->ku;
-             expected < good_D0 + sizeof(good_D0)/sizeof(good_D0[0]);
-             ++expected, ++actual) {
-            BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
+        check_close_collections(
+            good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
+            w->D[0] + w->ku, w->D[0] + w->storagesize - w->kl,
+            1.0e-12);
+
+        /* Check w->D[0] application against multiple vectors */
+        {
+            const int nrhs = 2;
+            double vector[] = { 1, 2, 3, 4, 5, 6,
+                                4, 5, 6, 7, 8, 9  };
+            const double good_result[] = {
+                1., 599./324., 35./12., 49./12., 1669./324., 6.,
+                4., 1571./324., 71./12., 85./12., 2641./324., 9.
+            };
+            const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
+            suzerain_bspline_operator_apply(0, nrhs, vector, ldb, w);
+            check_close_collections(
+                good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
+                vector, vector + sizeof(vector)/sizeof(vector[0]),
+                1.0e-12);
         }
     }
-
-//         /* Check w->D[0] application against multiple vectors */
-//      const int nrhs = 2;
-//      double vector[] = { 1, 2, 3, 4,
-//                          5, 6, 7, 8 };
-//      const double good_result[] = { 1, 2, 3, 4,
-//                                     5, 6, 7, 8 };
-//      const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-//      suzerain_bspline_operator_apply(0, nrhs, vector, ldb, w);
-//      BOOST_CHECK_EQUAL_COLLECTIONS(
-//          good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
-//          vector, vector + sizeof(vector)/sizeof(vector[0]));
-//  }
 
 //  {
 //      /* Check w->D[1], the first derivative matrix, against known good:
