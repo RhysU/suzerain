@@ -59,7 +59,7 @@ bool check_close_collections(const FPT *left_begin, const FPT *left_end,
 
         if( !is_close(*left_begin,*right_begin) ) {
             msg << "\nMismatch to tolerance "
-                << percent_tolerance << "%% at position " << pos << ": "
+                << percent_tolerance << "% at position " << pos << ": "
                 << *left_begin << " != " << *right_begin;
             res = false;
         }
