@@ -2,6 +2,7 @@
 
 #include <suzerain/config.h>
 
+#include <string.h>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <gsl/gsl_poly.h>
@@ -513,11 +514,24 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
 
 BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
 {
+    // Test parameters
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
     const int order  = 4;
-    const int nderiv = order-2;
+    const int nderiv = order-2; // TODO Bump this to order-1, where it breaks
 
+    // Initialize workspaces
+    suzerain_bspline_operator_workspace *w
+        = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
+            SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
+    const int ncoeff = suzerain_bspline_operator_ncoefficients(w);
+
+    // Initialize mass matrix in factored form
+    suzerain_bspline_operator_lu_workspace *mass
+        = suzerain_bspline_operator_lu_alloc(w);
+    suzerain_bspline_operator_lu_form_mass(w, mass);
+
+    // Initialize test function
     poly_params *p = (poly_params *)
                       malloc(sizeof(poly_params) + order*sizeof(double));
     p->n = order;
@@ -527,11 +541,42 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
     }
     suzerain_function f = {poly_f, p};
 
-    suzerain_bspline_operator_workspace *w
-        = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
-            SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
-    const int ncoeff = suzerain_bspline_operator_ncoefficients(w);
+    // Compute expected coefficients for derivatives [0...nderiv]
+    // by directly differentiating the polynomial test function.
+    double * const expected
+        = (double *) malloc((nderiv+1) * ncoeff * sizeof(double));
+    for (int i = 0; i <= nderiv; ++i) {
+        suzerain_bspline_operator_functioncoefficient_rhs(
+                &f, expected + i*ncoeff, w);
+        poly_params_differentiate(p);  // Drop the polynomial order by one
+    }
+    suzerain_bspline_operator_lu_solve(nderiv+1, expected, ncoeff, mass);
 
+    // Make copies of the zeroth derivative coefficients
+    double * const actual
+        = (double *) malloc((nderiv+1) * ncoeff * sizeof(double));
+    for (int i = 0; i <= nderiv; ++i) {
+        memcpy(actual + i*ncoeff, expected, ncoeff * sizeof(actual[0]));
+    }
+
+    // Solve M*x' = D*x ...
+    // ...starting by applying the derivative operators
+    for (int i = 0; i <= nderiv; ++i) {
+        suzerain_bspline_operator_apply(i, 1, actual + i*ncoeff, ncoeff, w);
+    }
+    // ...finish by solving with the mass matrix
+    suzerain_bspline_operator_lu_solve(nderiv+1, actual, ncoeff, mass);
+
+    // See if we got anywhere close
+    for (int i = 0; i <= nderiv; ++i) {
+        check_close_collections(
+                expected + i*ncoeff, expected + (i+1)*ncoeff,
+                actual + i*ncoeff, actual + (i+1)*ncoeff, 1.0e-12);
+    }
+
+    free(actual);
+    free(expected);
+    suzerain_bspline_operator_lu_free(mass);
     suzerain_bspline_operator_free(w);
     free(p);
 }
