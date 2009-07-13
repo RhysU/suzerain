@@ -169,6 +169,7 @@ suzerain_bspline_operator_alloc(int order,
     }
 
     /* Workspace is fully assembled below here */
+
     /* Calculate operator matrices. */
     if (suzerain_bspline_operator_create(w)) {
         suzerain_bspline_operator_free(w);
@@ -182,11 +183,13 @@ suzerain_bspline_operator_alloc(int order,
 void
 suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
 {
-    free(w->D[0]);
-    /* D[1], ..., D[nderivatives-1] allocated through w->D[0]; no free() */
-    free(w->D);
-    gsl_bspline_free(w->bw);
-    free(w);
+    if (w != NULL) {
+        free(w->D[0]);
+        /* D[1], ..., D[nderivatives-1] allocated through w->D[0]; no free() */
+        free(w->D);
+        gsl_bspline_free(w->bw);
+        free(w);
+    }
 }
 
 int
@@ -392,9 +395,11 @@ suzerain_bspline_operator_lu_alloc(
 void
 suzerain_bspline_operator_lu_free(suzerain_bspline_operator_lu_workspace * luw)
 {
-    free(luw->A);
-    free(luw->ipiv);
-    free(luw);
+    if (luw != NULL) {
+        free(luw->A);
+        free(luw->ipiv);
+        free(luw);
+    }
 }
 
 int
