@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
     const int order  = 3;
-    const int nderiv = 2;
+    const int nderiv = 1;
 
     suzerain_bspline_operator_workspace *w
         = suzerain_bspline_operator_alloc(order, nderiv, nbreak, breakpoints,
@@ -586,7 +586,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
     const int order  = 4;
-    const int nderiv = 4;
+    const int nderiv = 2;
 
     poly_params *p = (poly_params *)
                       malloc(sizeof(poly_params) + 4*sizeof(double));

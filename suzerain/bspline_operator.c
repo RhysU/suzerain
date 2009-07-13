@@ -41,6 +41,9 @@
 #include <suzerain/bspline_operator.h>
 #include <suzerain/error.h>
 
+int
+suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w);
+
 /* Compute the BLAS-compatible offset to a(i,j) for general banded matrices
  * a(i,j) -> storage(ku+i-j,j) where storage is column-major with LDA lda
  * Note missing constant one compared with Fortran because C 0-indexes arrays */
@@ -52,9 +55,6 @@ inline int gb_matrix_offset(int lda, int kl, int ku, int i, int j) {
 inline int gb_matrix_in_band(int lda, int kl, int ku, int i, int j) {
     return ((j)-(ku) <= (i) && (i) <= (j)+(kl));
 }
-
-int
-suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w);
 
 suzerain_bspline_operator_workspace *
 suzerain_bspline_operator_alloc(int order,
@@ -293,14 +293,6 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
                         D[k][gb_matrix_offset(lda, kl, ku, i, j)] = value;
                     } else if (value == 0.0) {
                         /* OK: value outside band is identically zero */
-                    } else if (i == 0   && j == i + ku + 1) {
-                        /* OK: At first abscissae, continuity conditions
-                         *     may cause a single, ignorable nonzero
-                         *     one index outside the band */
-                    } else if (i == n-1 && j == i - kl - 1) {
-                        /* OK: At last abscissae continuity conditions
-                         *     may cause a single, ignorable nonzero
-                         *     one index outside the band */
                     } else {
                         /* NOT COOL: nonzero value outside bandwidth */
                         char buffer[255];
