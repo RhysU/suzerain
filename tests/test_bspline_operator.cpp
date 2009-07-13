@@ -3,12 +3,17 @@
 #include <suzerain/config.h>
 
 #include <string.h>
+#include <boost/format.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <gsl/gsl_poly.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bspline_operator.h>
+#include <suzerain/error.h>
 #include <suzerain/function.h>
+#include <log4cxx/logger.h>
+
+log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
 #include "test_tools.hpp"
 
@@ -517,8 +522,8 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
     // Test parameters
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
-    const int order  = 4;
-    const int nderiv = order-2; // TODO Bump this to order-1, where it breaks
+    const int order  = 4;       // TODO Fishy behavior observed
+    const int nderiv = order-2; // TODO Fishy behavior observed
 
     // Initialize workspaces
     suzerain_bspline_operator_workspace *w
@@ -688,4 +693,40 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
     suzerain_bspline_operator_lu_free(mass);
     suzerain_bspline_operator_free(w);
     free(p);
+}
+
+void
+log4cxx_error_handler(const char *reason, const char *file,
+                      int line, int err)
+{
+    LOG4CXX_ERROR(logger,
+                  boost::format("%s caught [%s:%d: %s (%d)]")
+                  % __func__ % file % line % reason % err);
+}
+
+BOOST_AUTO_TEST_CASE( ensure_create_operation_in_alloc_succeeds )
+{
+    const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+
+    suzerain_error_handler_t * previous_handler
+        = suzerain_set_error_handler(&log4cxx_error_handler);
+
+    // TODO Bump up the order and nderiv on this test
+    const int maxorder = 2;
+    for (int order = 1; order <= maxorder; ++order) {
+        const int maxnderiv = (order < 2) ? order : 2;
+        for (int nderiv = 0; nderiv <= maxnderiv; ++nderiv) {
+            suzerain_bspline_operator_workspace *w
+                = suzerain_bspline_operator_alloc(
+                    order, nderiv, nbreak, breakpoints,
+                    SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE);
+            BOOST_CHECK_MESSAGE(w != NULL, boost::format(
+                "Error allocating operator for order %d, nderiv %d")
+                % order % nderiv);
+            suzerain_bspline_operator_free(w);  // Should accept w == NULL
+        }
+    }
+
+    suzerain_set_error_handler(previous_handler);
 }
