@@ -169,25 +169,22 @@ suzerain_bspline_operator_alloc(int order,
                             SUZERAIN_ENOMEM);
     }
     /* Allocate memory for all matrices in one contiguous block */
-    /* Memory aligned per MKL user guide numerical stability suggestion */
-    if (posix_memalign((void **) &(w->D[0]),
-                       16 /* byte boundary */,
-                       (w->nderivatives+1)*w->storagesize*sizeof(w->D[0][0]))) {
-        free(w->D);
-        gsl_matrix_free(w->db);
-        gsl_bspline_deriv_free(w->dbw);
-        gsl_bspline_free(w->bw);
-        free(w);
-        SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
-                            SUZERAIN_ENOMEM);
-    }
-    /* w->D[0] now points to D[0] which will be the mass matrix */
-    /* Establish pointers for D[1] = d/dx, d[2] = d^2/dx^2, ...*/
-    for (int i = 0; i < nderivatives; ++i) {
-        w->D[i+1] = w->D[i] + w->storagesize;
+    for (int k = 0; k <= w->nderivatives; ++k) {
+        if (posix_memalign((void **) &(w->D[k]),
+                           16 /* byte boundary */,
+                           w->storagesize*sizeof(w->D[0][0]))) {
+            for (int i = k-1; i >= 0; ++i) free(w->D[i]);
+            free(w->D);
+            gsl_matrix_free(w->db);
+            gsl_bspline_deriv_free(w->dbw);
+            gsl_bspline_free(w->bw);
+            free(w);
+            SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
+                                SUZERAIN_ENOMEM);
+        }
     }
 
-    /* Workspace is fully assembled below here */
+    /* Workspace is fully assembled below here, can use ..._operator_free */
 
     /* Calculate operator matrices. */
     if (suzerain_bspline_operator_create(w)) {
@@ -203,8 +200,7 @@ void
 suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
 {
     if (w != NULL) {
-        free(w->D[0]);
-        /* D[1], ..., D[nderivatives-1] allocated through w->D[0]; no free() */
+        for (int k = 0; k <= w->nderivatives; ++k) free(w->D[k]);
         free(w->D);
         gsl_matrix_free(w->db);
         gsl_bspline_deriv_free(w->dbw);
@@ -264,7 +260,9 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
 {
 
     /* Clear operator storage; zeros out values not explicitly set below */
-    memset(w->D[0], 0, (w->nderivatives+1)*w->storagesize*sizeof(w->D[0][0]));
+    for (int k = 0; k <= w->nderivatives; ++k) {
+        memset(w->D[k], 0, w->storagesize*sizeof(w->D[0][0]));
+    }
 
     /* Compute the operator matrices based on the supplied method */
     switch (w->method) {
