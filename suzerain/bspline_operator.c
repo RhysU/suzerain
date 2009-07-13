@@ -114,7 +114,7 @@ suzerain_bspline_operator_alloc(int order,
                             SUZERAIN_ENOMEM);
     }
 
-    /* Setup workspace to use GSL B-spline functionality */
+    /* Setup workspaces to use GSL B-spline functionality */
     w->bw = gsl_bspline_alloc(order, nbreakpoints);
     if (w->bw == NULL) {
         free(w);
@@ -128,6 +128,21 @@ suzerain_bspline_operator_alloc(int order,
         free(w);
         SUZERAIN_ERROR_NULL("failure seting bspline breakpoints",
                             SUZERAIN_EFAILED);
+    }
+    w->dbw = gsl_bspline_deriv_alloc(order);
+    if (w->dbw == NULL) {
+        gsl_bspline_free(w->bw);
+        free(w);
+        SUZERAIN_ERROR_NULL("failure allocating bspline derivative workspace",
+                            SUZERAIN_ENOMEM);
+    }
+    w->db = gsl_matrix_alloc(order, nderivatives + 1);
+    if (w->db == NULL) {
+        gsl_bspline_deriv_free(w->dbw);
+        gsl_bspline_free(w->bw);
+        free(w);
+        SUZERAIN_ERROR_NULL("failure allocating db working matrix",
+                            SUZERAIN_ENOMEM);
     }
 
     /* Save bspline operator parameters in workspace */
@@ -146,6 +161,8 @@ suzerain_bspline_operator_alloc(int order,
     /* Allocate space for pointers to matrices */
     w->D = malloc((w->nderivatives + 1) * sizeof(double *));
     if (w->D == NULL) {
+        gsl_matrix_free(w->db);
+        gsl_bspline_deriv_free(w->dbw);
         gsl_bspline_free(w->bw);
         free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix pointers",
@@ -157,6 +174,8 @@ suzerain_bspline_operator_alloc(int order,
                        16 /* byte boundary */,
                        (w->nderivatives + 1)*w->storagesize*sizeof(double))) {
         free(w->D);
+        gsl_matrix_free(w->db);
+        gsl_bspline_deriv_free(w->dbw);
         gsl_bspline_free(w->bw);
         free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
@@ -187,6 +206,8 @@ suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
         free(w->D[0]);
         /* D[1], ..., D[nderivatives-1] allocated through w->D[0]; no free() */
         free(w->D);
+        gsl_matrix_free(w->db);
+        gsl_bspline_deriv_free(w->dbw);
         gsl_bspline_free(w->bw);
         free(w);
     }
@@ -241,19 +262,6 @@ suzerain_bspline_operator_apply(
 int
 suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
 {
-    /* Setup workspaces to use GSL B-spline functionality */
-    gsl_matrix * const db = gsl_matrix_alloc(w->order, w->nderivatives + 1);
-    if (db == NULL) {
-        SUZERAIN_ERROR("failure allocating dB working matrix",
-                       SUZERAIN_ENOMEM);
-    }
-    gsl_bspline_deriv_workspace * const bdw
-        = gsl_bspline_deriv_alloc(gsl_bspline_order(w->bw));
-    if (bdw == NULL) {
-        gsl_matrix_free(db);
-        SUZERAIN_ERROR("failure allocating bspline derivative workspace",
-                       SUZERAIN_ENOMEM);
-    }
 
     /* Clear operator storage; zeros out values not explicitly set below */
     memset(w->D[0], 0, (w->nderivatives + 1) * w->storagesize * sizeof(double));
@@ -265,14 +273,17 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
          * For now, continue since only one method is implemented */
         break;
     default:
-        gsl_bspline_deriv_free(bdw);
-        gsl_matrix_free(db);
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
 
-    /* Evaluate basis functions at the Greville abscissae: d^k/dx^k B_j(\xi_i) */
+    /* Evaluate basis at the Greville abscissae: d^k/dx^k B_j(\xi_i) */
     {
-        gsl_bspline_workspace * const bw = (gsl_bspline_workspace *) w->bw;
+        gsl_bspline_workspace * const bw
+            = (gsl_bspline_workspace *) w->bw;
+        gsl_bspline_deriv_workspace * const bdw
+            = (gsl_bspline_deriv_workspace *) w->dbw;
+        gsl_matrix * const db
+            = (gsl_matrix *) w->db;
 
         /* Defensively dereference into local constants */
         const int n             = w->ncoefficients;
@@ -311,18 +322,12 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
                                  k, j, i, xi, value,
                                  i, j,
                                  lda, kl, ku, n);
-                        gsl_bspline_deriv_free(bdw);
-                        gsl_matrix_free(db);
                         SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
                     }
                 }
             }
         }
     }
-
-    /* Tear down calls for GSL B-spline functionality */
-    gsl_bspline_deriv_free(bdw);
-    gsl_matrix_free(db);
 
     return SUZERAIN_SUCCESS;
 }
