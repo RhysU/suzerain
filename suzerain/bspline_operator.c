@@ -297,8 +297,9 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
                         /* NOT COOL: nonzero value outside bandwidth */
                         char buffer[255];
                         snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
-                                 "encountered non-zero outside band"
-                                 " for basis spline order %d, degree %d;"
+                                 "encountered non-zero entry outside band"
+                                 " for basis spline order %d"
+                                 " (piecewise degree %d);"
                                  " (d/dx)^%d B_%d(\\xi_%d=%g) = %g"
                                  " corresponds to (row=%d, column=%d) of"
                                  " general banded matrix defined by "
