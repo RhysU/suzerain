@@ -159,7 +159,7 @@ suzerain_bspline_operator_alloc(int order,
     w->storagesize = w->lda * w->ncoefficients;
 
     /* Allocate space for pointers to matrices */
-    w->D = malloc((w->nderivatives + 1) * sizeof(double *));
+    w->D = malloc((w->nderivatives + 1) * sizeof(w->D[0]));
     if (w->D == NULL) {
         gsl_matrix_free(w->db);
         gsl_bspline_deriv_free(w->dbw);
@@ -172,7 +172,7 @@ suzerain_bspline_operator_alloc(int order,
     /* Memory aligned per MKL user guide numerical stability suggestion */
     if (posix_memalign((void **) &(w->D[0]),
                        16 /* byte boundary */,
-                       (w->nderivatives + 1)*w->storagesize*sizeof(double))) {
+                       (w->nderivatives+1)*w->storagesize*sizeof(w->D[0][0]))) {
         free(w->D);
         gsl_matrix_free(w->db);
         gsl_bspline_deriv_free(w->dbw);
@@ -239,7 +239,7 @@ suzerain_bspline_operator_apply(
     double * scratch;
     if (posix_memalign((void **) &(scratch),
                        16 /* byte boundary */,
-                       w->ncoefficients*sizeof(double))) {
+                       w->ncoefficients*sizeof(scratch[0]))) {
         SUZERAIN_ERROR("failed to allocate scratch space",
                        SUZERAIN_ENOMEM);
     }
@@ -264,7 +264,7 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
 {
 
     /* Clear operator storage; zeros out values not explicitly set below */
-    memset(w->D[0], 0, (w->nderivatives + 1) * w->storagesize * sizeof(double));
+    memset(w->D[0], 0, (w->nderivatives+1)*w->storagesize*sizeof(w->D[0][0]));
 
     /* Compute the operator matrices based on the supplied method */
     switch (w->method) {
@@ -387,7 +387,7 @@ suzerain_bspline_operator_lu_alloc(
     /* memory aligned per MKL user guide numerical stability suggestion */
     if (posix_memalign((void **) &(luw->A),
                        16 /* byte boundary */,
-                       luw->storagesize*sizeof(double))) {
+                       luw->storagesize*sizeof(luw->A[0]))) {
         free(luw->ipiv);
         free(luw);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
@@ -433,7 +433,7 @@ suzerain_bspline_operator_lu_form_general(
     }
 
     /* Clear operator storage; zeros out values not explicitly set below */
-    memset(luw->A, 0, luw->storagesize * sizeof(double));
+    memset(luw->A, 0, luw->storagesize * sizeof(luw->A[0]));
 
     /* Accumulate coefficients times workspace w derivative operators */
     {
