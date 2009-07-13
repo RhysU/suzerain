@@ -437,38 +437,24 @@ suzerain_bspline_operator_lu_form_general(
 
     /* Accumulate coefficients times workspace w derivative operators */
     {
-        const int luw_lda       = luw->lda;
-        const int w_lda         = w->lda;
-        const int w_storagesize = w->storagesize;
+        const int incr_ku         = luw->ku - w->ku;
+        const int luw_lda         = luw->lda;
+        const int w_lda           = w->lda;
+        const int w_ncoefficients = w->ncoefficients;
+        const int w_storagesize   = w->storagesize;
 
-        double * A       = luw->A + luw->ku - w->ku; /* location of A(0,0) */
-        double * const D = w->D[0];
+        double * A        = luw->A;
+        double ** const D = w->D;
 
-        int i, joffset, k;
-
-        /* Nasty loops avoid unnecessary dereferencing */
-        for (joffset = 0;
-             joffset < w_storagesize;
-             joffset += w_lda, A += luw_lda) {
-
-            double * const Dj = D + joffset;
-            double * Ai       = A;
-
-            for (i = 0;
-                 i < w_lda;
-                 ++i, ++Ai) {
-
-                double * Dji = Dj + i;
-
-                for (k = 0;
-                     k < ncoefficients;
-                     ++k, Dji += w_storagesize) {
-
-                    *Ai += coefficients[k] * *Dji;
+        for (int j = 0; j < w_ncoefficients; ++j) {
+            const int joffset_D = j*w_lda;
+            const int joffset_A = j*luw_lda + incr_ku;
+            for (int i = 0; i < w_lda; ++i) {
+                for (int k = 0; k < ncoefficients; ++k) {
+                    A[i + joffset_A] += coefficients[k] * D[k][i + joffset_D];
                 }
             }
         }
-
     }
 
     /* Compute LU factorization of the just-formed operator */
