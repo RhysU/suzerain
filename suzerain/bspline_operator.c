@@ -73,8 +73,8 @@ suzerain_bspline_operator_alloc(int order,
                             SUZERAIN_EINVAL);
     }
 
-    if (nderivatives < 1) {
-        SUZERAIN_ERROR_NULL("nderivatives must be at least 1",
+    if (nderivatives < 0) {
+        SUZERAIN_ERROR_NULL("nderivatives must be at least 0",
                             SUZERAIN_EINVAL);
     }
 
