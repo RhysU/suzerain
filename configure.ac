@@ -26,7 +26,6 @@ AC_CACHE_SAVE
 dnl ------------------------------------------------
 dnl Check for compiler toolchain
 dnl ------------------------------------------------
-dnl TODO CHECK_ENABLE_DEBUG not functioning correctly
 AX_CHECK_ENABLE_DEBUG
 AC_PROG_CC
 AC_PROG_CXX
