@@ -36,6 +36,7 @@
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_statistics_int.h>
 #include <gsl/gsl_vector.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bspline_operator.h>
@@ -431,12 +432,8 @@ suzerain_bspline_operator_lu_alloc(
     }
 
     /* Banded LU operator dimensions depend on largest derivative band */
-    int max_kl = w->kl[0];
-    int max_ku = w->ku[0];
-    for (int k = 1; k <= w->nderivatives; ++k) {
-        max_kl = GSL_MAX_INT(max_kl, w->kl[k]);
-        max_ku = GSL_MAX_INT(max_ku, w->ku[k]);
-    }
+    const int max_kl = gsl_stats_int_max(w->kl, 1, w->nderivatives+1);
+    const int max_ku = gsl_stats_int_max(w->ku, 1, w->nderivatives+1);
 
     /* Determine general banded matrix shape parameters */
     luw->ncoefficients = w->ncoefficients;
@@ -498,12 +495,8 @@ suzerain_bspline_operator_lu_form_general(
                        SUZERAIN_EINVAL);
     }
     /* Banded LU operator dimensions depend on largest derivative band */
-    int max_kl = w->kl[0];
-    int max_ku = w->ku[0];
-    for (int k = 1; k <= w->nderivatives; ++k) {
-        max_kl = GSL_MAX_INT(max_kl, w->kl[k]);
-        max_ku = GSL_MAX_INT(max_ku, w->ku[k]);
-    }
+    const int max_kl = gsl_stats_int_max(w->kl, 1, w->nderivatives+1);
+    const int max_ku = gsl_stats_int_max(w->ku, 1, w->nderivatives+1);
     if (luw->ku < max_kl + max_ku) {
         SUZERAIN_ERROR("Incompatible workspaces: luw->ku too small",
                        SUZERAIN_EINVAL);
