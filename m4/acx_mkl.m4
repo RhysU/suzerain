@@ -26,7 +26,7 @@
 #
 # LAST MODIFICATION
 #
-#   2009-06-29
+#   2009-07-14
 #
 # COPYLEFT
 #
@@ -73,14 +73,21 @@ AC_ARG_VAR(MKLROOT,[root directory of MKL installation])
 dnl Note the assumption that lp64 and not ilp64 should be used
 dnl Please add entries to the case statement as required
 case $target_cpu in
-    x86_64)  acx_mkl_libdirsuffix="em64t"
+    x86_64)
+             acx_mkl_libdirsuffix="em64t"
              acx_mkl_libsuffix="_lp64"
              ;;
-    unknown) AC_MSG_WARN([Unknown target_cpu; defaulting to 32-bit MKL unless --with-mkl-lib=<DIR> supplied])
+    i686)
              acx_mkl_libdirsuffix="32"
              acx_mkl_libsuffix=""
              ;;
-    *)       AC_MSG_ERROR([Unable to handle target_cpu: $target_cpu])
+    unknown)
+             AC_MSG_WARN([Unknown target_cpu; defaulting to 32-bit MKL unless --with-mkl-lib=<DIR> supplied])
+             acx_mkl_libdirsuffix="32"
+             acx_mkl_libsuffix=""
+             ;;
+    *)
+             AC_MSG_ERROR([m4 macro [$0][ unable to handle target_cpu: $target_cpu]])
              ;;
 esac
 
@@ -95,7 +102,8 @@ AC_MSG_RESULT($acx_mkl_enable_threads)
 
 dnl Please add entries to the case statement as required
 case $ax_cv_c_compiler_vendor in
-    intel) acx_mkl_interfacelayer="-lmkl_intel${acx_mkl_libsuffix}"
+    intel)
+           acx_mkl_interfacelayer="-lmkl_intel${acx_mkl_libsuffix}"
            if test "${acx_mkl_enable_threads}" = "yes"; then
                acx_mkl_threadinglayer="-lmkl_intel_thread"
                acx_mkl_rtllayer="-liomp5 -lpthread"
@@ -104,7 +112,8 @@ case $ax_cv_c_compiler_vendor in
                acx_mkl_rtllayer=""
            fi
            ;;
-    gnu)   acx_mkl_interfacelayer="-lmkl_gf${acx_mkl_libsuffix}"
+    gnu)
+           acx_mkl_interfacelayer="-lmkl_gf${acx_mkl_libsuffix}"
            if test "${acx_mkl_enable_threads}" = "yes"; then
                acx_mkl_threadinglayer="-lmkl_gnu_thread"
                acx_mkl_rtllayer="-liomp5 -lpthread"
@@ -113,7 +122,8 @@ case $ax_cv_c_compiler_vendor in
                acx_mkl_rtllayer=""
            fi
            ;;
-    *)     AC_MSG_ERROR([Unable to handle ax_cv_c_compiler_vendor: $ax_cv_c_compiler_vendor])
+    *)
+           AC_MSG_ERROR([m4 macro [$0][ unable to handle ax_cv_c_compiler_vendor: $ax_cv_c_compiler_vendor]])
            ;;
 esac
 
