@@ -48,11 +48,13 @@ AC_DEFUN([AX_CHECK_ENABLE_DEBUG],[
         CFLAGS="${CFLAGS} -g -O0"
         CXXFLAGS="${CXXFLAGS} -g -O0"
         FFLAGS="${FFLAGS} -g -O0"
+        FCFLAGS="${FCFLAGS} -g -O0"
+        OBJCFLAGS="${OBJCFLAGS} -g -O0"
     else
         AC_MSG_RESULT(no)
         dnl assert.h is a NOP if NDEBUG is defined, so define it.
         AC_DEFINE(NDEBUG,,[define if debugging is disabled])
-        dnl Ensure AC_PROG_CC/CXX/F77/FC will not enable debugging flags
+        dnl Ensure AC_PROG_CC/CXX/F77/FC/OBJC will not enable debugging flags
         dnl by setting any unset environment flag variables
         if test "x${CFLAGS+set}" != "xset"; then
             CFLAGS=""
@@ -62,6 +64,12 @@ AC_DEFUN([AX_CHECK_ENABLE_DEBUG],[
         fi
         if test "x${FFLAGS+set}" != "xset"; then
             FFLAGS=""
+        fi
+        if test "x${FCFLAGS+set}" != "xset"; then
+            FCFLAGS=""
+        fi
+        if test "x${OBJCFLAGS+set}" != "xset"; then
+            OBJCFLAGS=""
         fi
     fi
     ax_enable_debug="$enable_debug"
