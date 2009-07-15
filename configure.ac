@@ -15,6 +15,7 @@ AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE(1.9 no-define tar-ustar -Wall -Werror foreign)
 AC_PREREQ([2.61])
 AX_AM_MACROS
+AX_ADD_AM_CTAGSFLAGS
 
 dnl ------------------------------------------------
 dnl LaTeX capabilities
