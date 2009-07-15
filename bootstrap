@@ -33,7 +33,7 @@ fi
 rm -f config.cache acconfig.h
 
 echo "- libtoolize."          && \
-libtoolize --automake         && \
+libtoolize --automake --copy  && \
 echo "- aclocal."             && \
 aclocal -I m4                 && \
 echo "- autoconf."            && \

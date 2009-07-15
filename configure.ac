@@ -38,7 +38,8 @@ dnl ------------------------------------------------
 dnl Enable GNU libtool
 dnl Current version checks also in Makefile.am
 dnl ------------------------------------------------
-AC_PROG_LIBTOOL
+LT_INIT
+LT_PREREQ([2.2.6])
 AC_SUBST(LIBTOOL_DEPS)
 AC_CACHE_SAVE
 
