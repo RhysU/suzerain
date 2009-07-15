@@ -16,6 +16,7 @@ CXX=@MPICXX@
 bin_PROGRAMS        += driver_sine
 driver_sine_SOURCES  = driver_sine.cpp
 driver_sine_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
+driver_sine_LDADD   += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 driver_sine_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 driver_sine_LDADD   += $(P3DFFT_LIBS) $(FFTW3_LIBS)
 

@@ -21,32 +21,38 @@ test_gsl_integrate_qng_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
 
 check_PROGRAMS           += test_pencil_grid
 test_pencil_grid_SOURCES  = test_pencil_grid.cpp
-test_pencil_grid_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_pencil_grid_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_pencil_grid_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 check_PROGRAMS      += test_pencil
 test_pencil_SOURCES  = test_pencil.cpp
-test_pencil_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_pencil_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_pencil_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 check_PROGRAMS      += test_complex
 test_complex_SOURCES = test_complex.cpp
-test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_complex_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 check_PROGRAMS         += test_underling
 test_underling_SOURCES  = test_underling.cpp
-test_underling_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_underling_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 test_underling_LDADD   += ../suzerain/libunderling.la
 
 check_PROGRAMS     += test_error
 test_error_SOURCES  = test_error.cpp
-test_error_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-test_error_LDADD   += ../suzerain/libsuzerain.la
+test_error_LDADD    = ../suzerain/libsuzerain.la
+test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 check_PROGRAMS                += test_bspline_operator
 test_bspline_operator_SOURCES  = test_bspline_operator.cpp
-test_bspline_operator_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-test_bspline_operator_LDADD   += ../suzerain/libsuzerain.la
+test_bspline_operator_LDADD    = ../suzerain/libsuzerain.la
 test_bspline_operator_LDADD   += $(GSL_LIBS)
 test_bspline_operator_LDADD   += $(LOG4CXX_LIBS)
+test_bspline_operator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_bspline_operator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
 TESTS = $(check_PROGRAMS)
