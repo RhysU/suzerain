@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
                                        0,   1  /*DK*/ };
         BOOST_CHECK_EQUAL_COLLECTIONS(
             good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
-            w->D[0] + w->ku, w->D[0] + w->storagesize - w->kl);
+            w->D[0] + w->ku[0], w->D[0] + w->storagesize[0] - w->kl[0]);
 
         /* Check w->D[0] application against multiple vectors */
         const int nrhs = 2;
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
                                        1,   1  /*DK*/ };
         BOOST_CHECK_EQUAL_COLLECTIONS(
             good_D1, good_D1 + sizeof(good_D1)/sizeof(good_D1[0]),
-            w->D[1] + w->ku, w->D[1] + w->storagesize - w->kl);
+            w->D[1] + w->ku[1], w->D[1] + w->storagesize[1] - w->kl[1]);
 
         /* Check w->D[0] application against multiple vectors */
         const int nrhs = 2;
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
                                        0,  0  /*DK*/ };
         BOOST_CHECK_EQUAL_COLLECTIONS(
             good_D2, good_D2 + sizeof(good_D2)/sizeof(good_D2[0]),
-            w->D[2] + w->ku, w->D[2] + w->storagesize - w->kl);
+            w->D[2] + w->ku[2], w->D[2] + w->storagesize[2] - w->kl[2]);
     }
 
     suzerain_bspline_operator_lu_workspace *luw
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
                                       1./4.,       1.     /*DK*/ };
         BOOST_CHECK_EQUAL_COLLECTIONS(
             good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
-            w->D[0] + w->ku, w->D[0] + w->storagesize - w->kl);
+            w->D[0] + w->ku[0], w->D[0] + w->storagesize[0] - w->kl[0]);
 
         /* Check w->D[0] application against multiple vectors */
         const int nrhs = 2;
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
         };
         check_close_collections(
             good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
-            w->D[0] + w->ku, w->D[0] + w->storagesize - w->kl,
+            w->D[0] + w->ku[0], w->D[0] + w->storagesize[0] - w->kl[0],
             1.0e-12);
 
         /* Check w->D[0] application against multiple vectors */

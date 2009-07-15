@@ -53,11 +53,11 @@ typedef struct {
     int nbreakpoints;
     int nderivatives;
     int ncoefficients;
-    int kl;
-    int ku;
-    int lda;
-    int storagesize;
     enum suzerain_bspline_operator_method method;
+    int * kl;
+    int * ku;
+    int * lda;
+    int * storagesize;
     void * bw;
     void * dbw;
     void * db;
