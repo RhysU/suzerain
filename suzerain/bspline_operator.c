@@ -313,15 +313,6 @@ suzerain_bspline_operator_apply(
 
 int
 suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w) {
-    /* Access bspline workspace */
-    gsl_bspline_workspace * const bw
-        = (gsl_bspline_workspace *) w->bw;
-    gsl_bspline_deriv_workspace * const bdw
-        = (gsl_bspline_deriv_workspace *) w->dbw;
-    gsl_matrix * const db
-        = (gsl_matrix *) w->db;
-
-
     /* Compute the operator bandwidths based on the supplied method */
     switch (w->method) {
     case SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE:
@@ -359,14 +350,6 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
 
-    /* Access bspline workspace */
-    gsl_bspline_workspace * const bw
-        = (gsl_bspline_workspace *) w->bw;
-    gsl_bspline_deriv_workspace * const bdw
-        = (gsl_bspline_deriv_workspace *) w->dbw;
-    gsl_matrix * const db
-        = (gsl_matrix *) w->db;
-
     /* Evaluate basis at the Greville abscissae: d^k/dx^k B_j(\xi_i) */
 
     /* Defensively dereference into local constants */
@@ -378,14 +361,14 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
     double ** const D       = w->D;
 
     for (int i = 0; i < n; ++i) {
-        const double xi = gsl_bspline_greville_abscissa(i, bw);
+        const double xi = gsl_bspline_greville_abscissa(i, w->bw);
         size_t jstart, jend;
-        gsl_bspline_deriv_eval_nonzero(xi, nderivatives, db,
-                                       &jstart, &jend, bw, bdw);
+        gsl_bspline_deriv_eval_nonzero(xi, nderivatives, w->db,
+                                       &jstart, &jend, w->bw, w->dbw);
 
         for (int k = 0; k <= nderivatives; ++k) {
             for (int j = jstart; j <= jend; ++j) {
-                const double value = gsl_matrix_get(db, j - jstart, k);
+                const double value = gsl_matrix_get(w->db, j - jstart, k);
 
                 if (gb_matrix_in_band(lda[k], kl[k], ku[k], i, j)) {
                     const int offset

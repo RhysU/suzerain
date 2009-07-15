@@ -44,6 +44,15 @@
 
 __BEGIN_DECLS
 
+/* Conditional forward declarations of implementation-related structs */
+#ifndef __GSL_MATRIX_DOUBLE_H__
+typedef struct gsl_matrix gsl_matrix;
+#endif
+#ifndef __GSL_BSPLINE_H__
+typedef struct gsl_bspline_workspace gsl_bspline_workspace;
+typedef struct gsl_bspline_deriv_workspace gsl_bspline_deriv_workspace;
+#endif
+
 enum suzerain_bspline_operator_method {
     SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE = 1
 };
@@ -58,9 +67,9 @@ typedef struct {
     int * ku;
     int * lda;
     int * storagesize;
-    void * bw;
-    void * dbw;
-    void * db;
+    gsl_bspline_workspace * bw;
+    gsl_bspline_deriv_workspace * dbw;
+    gsl_matrix * db;
     double **D;
 } suzerain_bspline_operator_workspace;
 
