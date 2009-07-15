@@ -98,33 +98,37 @@ suzerain_bspline_operator_alloc(int order,
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
     }
+    /* Make workspace pointers NULL */
+    w->kl          = NULL;
+    w->ku          = NULL;
+    w->lda         = NULL;
+    w->storagesize = NULL;
+    w->bw          = NULL;
+    w->dbw         = NULL;
+    w->db          = NULL;
+    w->D           = NULL;
+    /* Prepare workspace */
     w->kl = malloc((nderivatives+1)*sizeof(w->kl[0]));
     if (w->kl == NULL) {
-        free(w);
+        suzerain_bspline_operator_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate workspace kl",
                             SUZERAIN_ENOMEM);
     }
     w->ku = malloc((nderivatives+1)*sizeof(w->ku[0]));
     if (w->ku == NULL) {
-        free(w->kl);
-        free(w);
+        suzerain_bspline_operator_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate workspace ku",
                             SUZERAIN_ENOMEM);
     }
     w->lda = malloc((nderivatives+1)*sizeof(w->lda[0]));
     if (w->lda == NULL) {
-        free(w->ku);
-        free(w->kl);
-        free(w);
+        suzerain_bspline_operator_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate workspace lda",
                             SUZERAIN_ENOMEM);
     }
     w->storagesize = malloc((nderivatives+1)*sizeof(w->storagesize[0]));
     if (w->storagesize == NULL) {
-        free(w->lda);
-        free(w->ku);
-        free(w->kl);
-        free(w);
+        suzerain_bspline_operator_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate workspace lda",
                             SUZERAIN_ENOMEM);
     }
@@ -132,50 +136,29 @@ suzerain_bspline_operator_alloc(int order,
     /* Setup workspaces to use GSL B-spline functionality */
     w->bw = gsl_bspline_alloc(order, nbreakpoints);
     if (w->bw == NULL) {
-        free(w->storagesize);
-        free(w->lda);
-        free(w->ku);
-        free(w->kl);
-        free(w);
+        suzerain_bspline_operator_free(w);
         SUZERAIN_ERROR_NULL("failure allocating bspline workspace",
                             SUZERAIN_ENOMEM);
     }
     gsl_vector_const_view breakpoints_view
         = gsl_vector_const_view_array(breakpoints, nbreakpoints);
     if (gsl_bspline_knots(&breakpoints_view.vector, w->bw)) {
-        gsl_bspline_free(w->bw);
-        free(w->storagesize);
-        free(w->lda);
-        free(w->ku);
-        free(w->kl);
-        free(w);
+        suzerain_bspline_operator_free(w);
         SUZERAIN_ERROR_NULL("failure seting bspline breakpoints",
                             SUZERAIN_EFAILED);
     }
     w->dbw = gsl_bspline_deriv_alloc(order);
     if (w->dbw == NULL) {
-        gsl_bspline_free(w->bw);
-        free(w->storagesize);
-        free(w->lda);
-        free(w->ku);
-        free(w->kl);
-        free(w);
+        suzerain_bspline_operator_free(w);
         SUZERAIN_ERROR_NULL("failure allocating bspline derivative workspace",
                             SUZERAIN_ENOMEM);
     }
     w->db = gsl_matrix_alloc(order, nderivatives + 1);
     if (w->db == NULL) {
-        gsl_bspline_deriv_free(w->dbw);
-        gsl_bspline_free(w->bw);
-        free(w->storagesize);
-        free(w->lda);
-        free(w->ku);
-        free(w->kl);
-        free(w);
+        suzerain_bspline_operator_free(w);
         SUZERAIN_ERROR_NULL("failure allocating db working matrix",
                             SUZERAIN_ENOMEM);
     }
-
     /* Save bspline operator parameters in workspace */
     w->order         = order;
     w->nbreakpoints  = nbreakpoints;
@@ -185,14 +168,7 @@ suzerain_bspline_operator_alloc(int order,
 
     /* Storage parameters for BLAS/lapack-compatible general band matrix */
     if (suzerain_bspline_operator_bandwidths(w)) {
-        gsl_matrix_free(w->db);
-        gsl_bspline_deriv_free(w->dbw);
-        gsl_bspline_free(w->bw);
-        free(w->storagesize);
-        free(w->lda);
-        free(w->ku);
-        free(w->kl);
-        free(w);
+        suzerain_bspline_operator_free(w);
         SUZERAIN_ERROR_NULL("failure determining operator bandwidths",
                             SUZERAIN_ESANITY);
     }
@@ -204,38 +180,23 @@ suzerain_bspline_operator_alloc(int order,
     /* Allocate space for pointers to matrices */
     w->D = malloc((w->nderivatives + 1) * sizeof(w->D[0]));
     if (w->D == NULL) {
-        gsl_matrix_free(w->db);
-        gsl_bspline_deriv_free(w->dbw);
-        gsl_bspline_free(w->bw);
-        free(w->storagesize);
-        free(w->lda);
-        free(w->ku);
-        free(w->kl);
-        free(w);
+        suzerain_bspline_operator_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix pointers",
                             SUZERAIN_ENOMEM);
+    }
+    for (int k = 0; k <= w->nderivatives; ++k) {
+        w->D[k] = NULL;
     }
     /* Allocate memory for each matrix separately */
     for (int k = 0; k <= w->nderivatives; ++k) {
         if (posix_memalign((void **) &(w->D[k]),
                            16 /* byte boundary */,
                            w->storagesize[k]*sizeof(w->D[0][0]))) {
-            for (int i = k-1; i >= 0; ++i) free(w->D[i]);
-            free(w->D);
-            gsl_matrix_free(w->db);
-            gsl_bspline_deriv_free(w->dbw);
-            gsl_bspline_free(w->bw);
-            free(w->storagesize);
-            free(w->lda);
-            free(w->ku);
-            free(w->kl);
-            free(w);
+            suzerain_bspline_operator_free(w);
             SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
                                 SUZERAIN_ENOMEM);
         }
     }
-
-    /* Workspace is fully assembled below here, can use ..._operator_free */
 
     /* Calculate operator matrices. */
     if (suzerain_bspline_operator_create(w)) {
@@ -251,15 +212,37 @@ void
 suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
 {
     if (w != NULL) {
-        for (int k = 0; k <= w->nderivatives; ++k) free(w->D[k]);
-        free(w->D);
+        if (w->D != NULL) {
+            for (int k = 0; k <= w->nderivatives; ++k) {
+                free(w->D[k]);
+                w->D[k] = NULL;
+            }
+
+            free(w->D);
+            w->D = NULL;
+        }
+
         gsl_matrix_free(w->db);
+        w->db = NULL;
+
         gsl_bspline_deriv_free(w->dbw);
+        w->dbw = NULL;
+
         gsl_bspline_free(w->bw);
+        w->bw = NULL;
+
         free(w->storagesize);
+        w->storagesize = NULL;
+
         free(w->lda);
+        w->lda = NULL;
+
         free(w->ku);
+        w->ku = NULL;
+
         free(w->kl);
+        w->kl = NULL;
+
         free(w);
     }
 }
@@ -435,6 +418,9 @@ suzerain_bspline_operator_lu_alloc(
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
     }
+    /* Make workspace pointers NULL */
+    luw->A = NULL;
+    luw->ipiv = NULL;
 
     /* Banded LU operator dimensions depend on largest derivative band */
     const int max_kl = gsl_stats_int_max(w->kl, 1, w->nderivatives+1);
@@ -450,7 +436,7 @@ suzerain_bspline_operator_lu_alloc(
     /* Allocate memory for LU factorization pivot storage */
     luw->ipiv = malloc(w->ncoefficients * sizeof(luw->ipiv[0]));
     if (luw->ipiv == NULL) {
-        free(luw);
+        suzerain_bspline_operator_lu_free(luw);
         SUZERAIN_ERROR_NULL("failed to allocate space for pivot storage",
                             SUZERAIN_ENOMEM);
     }
@@ -460,8 +446,7 @@ suzerain_bspline_operator_lu_alloc(
     if (posix_memalign((void **) &(luw->A),
                        16 /* byte boundary */,
                        luw->storagesize*sizeof(luw->A[0]))) {
-        free(luw->ipiv);
-        free(luw);
+        suzerain_bspline_operator_lu_free(luw);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
                             SUZERAIN_ENOMEM);
     }
@@ -474,7 +459,11 @@ suzerain_bspline_operator_lu_free(suzerain_bspline_operator_lu_workspace * luw)
 {
     if (luw != NULL) {
         free(luw->A);
+        luw->A = NULL;
+
         free(luw->ipiv);
+        luw->ipiv = NULL;
+
         free(luw);
     }
 }
