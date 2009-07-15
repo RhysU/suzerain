@@ -904,3 +904,12 @@ rm -f core conftest.err conftest_ipa8_conftest.oo \
 # Local Variables:
 # mode: autoconf
 # End:
+rmation created by the PGI compiler (conftest_ipa8_conftest.oo),
+dnl as it would interfere with the next link command.
+rm -f core conftest.err conftest_ipa8_conftest.oo \
+      conftest$ac_exeext m4_ifval([$1], [conftest.$ac_ext])[]dnl
+])# _BOOST_AC_LINK_IFELSE
+
+# Local Variables:
+# mode: autoconf
+# End:
