@@ -541,6 +541,15 @@ BOOST_AUTO_TEST_CASE( ensure_create_operation_in_alloc_succeeds )
             BOOST_CHECK_MESSAGE(w != NULL, boost::format(
                 "Error allocating operator for order %d, nderiv %d")
                 % order % nderiv);
+
+            if (order == nderiv && w != NULL) {
+                for (int k = 0; k <= w->nderivatives; ++k) {
+                LOG4CXX_TRACE(logger, boost::format(
+                    "Bandwidth details: order=%2d, deriv=%2d, kl=%2d, ku=%2d")
+                    % order % k % w->kl[k] % w->ku[k]);
+                }
+            }
+
             suzerain_bspline_operator_free(w);  // Should accept w == NULL
         }
     }
