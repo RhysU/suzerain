@@ -17,6 +17,9 @@ log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
 #include "test_tools.hpp"
 
+// TODO Check suzerain_bspline_operator_lu_form_general for nonuniform ku/kl
+// TODO compute_derivatives_of_a_general_polynomial for more orders
+
 BOOST_AUTO_TEST_CASE( allocation_okay )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
@@ -214,102 +217,6 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
             vector, vector + sizeof(vector)/sizeof(vector[0]));
     }
 
-//  {
-//      /* Check w->D[1], the first derivative matrix, against known good:
-//       *  -1   1   0   0
-//       *   0  -1   1   0
-//       *   0   0  -1   1
-//       *   0   0  -1   1
-//       * Known good is in general banded matrix column-major order.
-//       */
-//      const double good_D1[] = { /*DK*/  -1,     0,
-//                                     1,  -1,     0,
-//                                     1,  -1,    -1,
-//                                     1,   1  /*DK*/ };
-//      BOOST_CHECK_EQUAL_COLLECTIONS(
-//          good_D1, good_D1 + sizeof(good_D1)/sizeof(good_D1[0]),
-//          w->D[1] + w->ku, w->D[1] + w->storagesize - w->kl);
-//
-//      /* Check w->D[0] application against multiple vectors */
-//      const int nrhs = 2;
-//      double vector[] = { 1, 3, 2, 4,
-//                          7, 6, 5, 8 };
-//      const double good_result[] = {  2, -1, 2, 2,
-//                                     -1, -1, 3, 3 };
-//      const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-//      suzerain_bspline_operator_apply(1, nrhs, vector, ldb, w);
-//      BOOST_CHECK_EQUAL_COLLECTIONS(
-//          good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
-//          vector, vector + sizeof(vector)/sizeof(vector[0]));
-//  }
-//
-//  {
-//      /* Check w->D[2], the second derivative matrix, against zero result.
-//       */
-//      const double good_D2[] = { /*DK*/  0,    0,
-//                                     0,  0,    0,
-//                                     0,  0,    0,
-//                                     0,  0  /*DK*/ };
-//      BOOST_CHECK_EQUAL_COLLECTIONS(
-//          good_D2, good_D2 + sizeof(good_D2)/sizeof(good_D2[0]),
-//          w->D[2] + w->ku, w->D[2] + w->storagesize - w->kl);
-//  }
-//
-//  suzerain_bspline_operator_lu_workspace *luw
-//      = suzerain_bspline_operator_lu_alloc(w);
-//
-//  /* Form 2*D[0] - 3*D[1] operator in LU-ready banded storage.  Answer is
-//   *   5   -3    0     0
-//   *   0    5   -3     0
-//   *   0    0    5    -3
-//   *   0    0    3    -1
-//   * which, in LU-form where L has ones on the main diagonal, is
-//   *   5   -3    0     0
-//   *   0    5   -3     0
-//   *   0    0    5    -3
-//   *   0    0    0.6   0.8
-//   * The pivot matrix is eye(4).  Check it in octave using [l,u,p] = lu(A).
-//   * Known good is in general banded matrix column-major order with
-//   * additional superdiagonal to allow for LU factorization fill-in.
-//   */
-//  const double good_A0[] = { /*DK*/   /*DK*/   5,     0,
-//                             /*DK*/0,    -3,   5,     0,
-//                                   0,    -3,   5,     0.6,
-//                                   0,    -3,   0.8  /*DK*/ };
-//  const double coeff[] = { 2.0, -3.0 };
-//  suzerain_bspline_operator_lu_form_general(
-//      sizeof(coeff)/sizeof(coeff[0]), coeff, w, luw);
-//  {
-//      // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
-//      const double *expected, *actual;
-//      for (expected = good_A0, actual = luw->A + luw->ku;
-//           expected < good_A0 + sizeof(good_A0)/sizeof(good_A0[0]);
-//           ++expected, ++actual) {
-//          BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
-//      }
-//  }
-//
-//  /* Check that multiple rhs solution works for operator found just above */
-//  {
-//      const int nrhs = 2;
-//      double vector[] = { 1,  2, 3, 4,
-//                         -4, -1, 1, 3};
-//      const double good_result[] = {  1.25, 1.75, 2.25, 2.75,
-//                                     -0.2,  1,    2,    3 };
-//      const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-//      suzerain_bspline_operator_lu_solve(nrhs, vector, ldb, luw);
-//      {
-//          // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
-//          const double *expected, *actual;
-//          for (expected = good_result, actual = vector;
-//               expected < good_result + sizeof(good_result)/sizeof(good_result[0]);
-//               ++expected, ++actual) {
-//              BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
-//          }
-//      }
-//  }
-
-//  suzerain_bspline_operator_lu_free(luw);
     suzerain_bspline_operator_free(w);
 }
 
@@ -367,102 +274,6 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
         }
     }
 
-//  {
-//      /* Check w->D[1], the first derivative matrix, against known good:
-//       *  -1   1   0   0
-//       *   0  -1   1   0
-//       *   0   0  -1   1
-//       *   0   0  -1   1
-//       * Known good is in general banded matrix column-major order.
-//       */
-//      const double good_D1[] = { /*DK*/  -1,     0,
-//                                     1,  -1,     0,
-//                                     1,  -1,    -1,
-//                                     1,   1  /*DK*/ };
-//      BOOST_CHECK_EQUAL_COLLECTIONS(
-//          good_D1, good_D1 + sizeof(good_D1)/sizeof(good_D1[0]),
-//          w->D[1] + w->ku, w->D[1] + w->storagesize - w->kl);
-
-//      /* Check w->D[0] application against multiple vectors */
-//      const int nrhs = 2;
-//      double vector[] = { 1, 3, 2, 4,
-//                          7, 6, 5, 8 };
-//      const double good_result[] = {  2, -1, 2, 2,
-//                                     -1, -1, 3, 3 };
-//      const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-//      suzerain_bspline_operator_apply(1, nrhs, vector, ldb, w);
-//      BOOST_CHECK_EQUAL_COLLECTIONS(
-//          good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
-//          vector, vector + sizeof(vector)/sizeof(vector[0]));
-//  }
-
-//  {
-//      /* Check w->D[2], the second derivative matrix, against zero result.
-//       */
-//      const double good_D2[] = { /*DK*/  0,    0,
-//                                     0,  0,    0,
-//                                     0,  0,    0,
-//                                     0,  0  /*DK*/ };
-//      BOOST_CHECK_EQUAL_COLLECTIONS(
-//          good_D2, good_D2 + sizeof(good_D2)/sizeof(good_D2[0]),
-//          w->D[2] + w->ku, w->D[2] + w->storagesize - w->kl);
-//  }
-
-//  suzerain_bspline_operator_lu_workspace *luw
-//      = suzerain_bspline_operator_lu_alloc(w);
-
-//  /* Form 2*D[0] - 3*D[1] operator in LU-ready banded storage.  Answer is
-//   *   5   -3    0     0
-//   *   0    5   -3     0
-//   *   0    0    5    -3
-//   *   0    0    3    -1
-//   * which, in LU-form where L has ones on the main diagonal, is
-//   *   5   -3    0     0
-//   *   0    5   -3     0
-//   *   0    0    5    -3
-//   *   0    0    0.6   0.8
-//   * The pivot matrix is eye(4).  Check it in octave using [l,u,p] = lu(A).
-//   * Known good is in general banded matrix column-major order with
-//   * additional superdiagonal to allow for LU factorization fill-in.
-//   */
-//  const double good_A0[] = { /*DK*/   /*DK*/   5,     0,
-//                             /*DK*/0,    -3,   5,     0,
-//                                   0,    -3,   5,     0.6,
-//                                   0,    -3,   0.8  /*DK*/ };
-//  const double coeff[] = { 2.0, -3.0 };
-//  suzerain_bspline_operator_lu_form_general(
-//      sizeof(coeff)/sizeof(coeff[0]), coeff, w, luw);
-//  {
-//      // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
-//      const double *expected, *actual;
-//      for (expected = good_A0, actual = luw->A + luw->ku;
-//           expected < good_A0 + sizeof(good_A0)/sizeof(good_A0[0]);
-//           ++expected, ++actual) {
-//          BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
-//      }
-//  }
-
-//  /* Check that multiple rhs solution works for operator found just above */
-//  {
-//      const int nrhs = 2;
-//      double vector[] = { 1,  2, 3, 4,
-//                         -4, -1, 1, 3};
-//      const double good_result[] = {  1.25, 1.75, 2.25, 2.75,
-//                                     -0.2,  1,    2,    3 };
-//      const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-//      suzerain_bspline_operator_lu_solve(nrhs, vector, ldb, luw);
-//      {
-//          // Coarsely emulate BOOST_CHECK_EQUAL_COLLECTIONS with tolerance
-//          const double *expected, *actual;
-//          for (expected = good_result, actual = vector;
-//               expected < good_result + sizeof(good_result)/sizeof(good_result[0]);
-//               ++expected, ++actual) {
-//              BOOST_CHECK_CLOSE(*expected, *actual, 1.0e-12);
-//          }
-//      }
-//  }
-
-//  suzerain_bspline_operator_lu_free(luw);
     suzerain_bspline_operator_free(w);
 }
 
@@ -528,8 +339,8 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
     // Test parameters
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
-    const int order  = 4;       // TODO Fishy behavior observed
-    const int nderiv = order-2; // TODO Fishy behavior observed
+    const int order  = 7; /* Comparatively higher order than above tests */
+    const int nderiv = 7;
 
     // Initialize workspaces
     suzerain_bspline_operator_workspace *w
@@ -582,7 +393,7 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
     for (int i = 0; i <= nderiv; ++i) {
         check_close_collections(
                 expected + i*ncoeff, expected + (i+1)*ncoeff,
-                actual + i*ncoeff, actual + (i+1)*ncoeff, 1.0e-12);
+                actual + i*ncoeff, actual + (i+1)*ncoeff, 1.0e-09);
     }
 
     free(actual);
@@ -597,7 +408,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
     const int order  = 4;
-    const int nderiv = 2;
+    const int nderiv = 3;
 
     poly_params *p = (poly_params *)
                       malloc(sizeof(poly_params) + 4*sizeof(double));
@@ -668,33 +479,32 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
         free(coefficient);
     }
 
-// FIXME the n-th derivative of n-th polynomial order seems fishy
-//  {
-//      const int derivative = 3;
+    {
+        const int derivative = 3;
 
-//      p->c[0] = 1.2; // Constant
-//      p->c[1] = 3.4; // Linear
-//      p->c[2] = 5.6; // Quadratic
-//      p->c[3] = 7.8; // Cubic
+        p->c[0] = 1.2; // Constant
+        p->c[1] = 3.4; // Linear
+        p->c[2] = 5.6; // Quadratic
+        p->c[3] = 7.8; // Cubic
 
-//      // Compute the right hand side coefficients for M x = b
-//      double * coefficient = (double *) malloc(ncoeff * sizeof(double));
-//      suzerain_bspline_operator_functioncoefficient_rhs(&f, coefficient, w);
+        // Compute the right hand side coefficients for M x = b
+        double * coefficient = (double *) malloc(ncoeff * sizeof(double));
+        suzerain_bspline_operator_functioncoefficient_rhs(&f, coefficient, w);
 
-//      // Solve for function coefficients using the mass matrix
-//      suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
+        // Solve for function coefficients using the mass matrix
+        suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
 
-//      // Take the n-th derivative of the coefficients using M x' = D x
-//      suzerain_bspline_operator_apply(derivative, 1, coefficient, ncoeff, w);
-//      suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
+        // Take the n-th derivative of the coefficients using M x' = D x
+        suzerain_bspline_operator_apply(derivative, 1, coefficient, ncoeff, w);
+        suzerain_bspline_operator_lu_solve(1, coefficient, ncoeff, mass);
 
-//      // Ensure we recover the leading order, scaled monomial coefficients
-//      for (int i = 0; i < ncoeff; ++i) {
-//          BOOST_CHECK_CLOSE(6.0 * p->c[3], coefficient[i], 1e-11);
-//      }
+        // Ensure we recover the leading order, scaled monomial coefficients
+        for (int i = 0; i < ncoeff; ++i) {
+            BOOST_CHECK_CLOSE(6.0 * p->c[3], coefficient[i], 1e-11);
+        }
 
-//      free(coefficient);
-//  }
+        free(coefficient);
+    }
 
     suzerain_bspline_operator_lu_free(mass);
     suzerain_bspline_operator_free(w);
@@ -710,6 +520,8 @@ log4cxx_error_handler(const char *reason, const char *file,
                   % __func__ % file % line % reason % err);
 }
 
+// Intended to ensure our bandwidth routines are okay for
+// high order bsplines and high order derivatives
 BOOST_AUTO_TEST_CASE( ensure_create_operation_in_alloc_succeeds )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
@@ -718,10 +530,9 @@ BOOST_AUTO_TEST_CASE( ensure_create_operation_in_alloc_succeeds )
     suzerain_error_handler_t * previous_handler
         = suzerain_set_error_handler(&log4cxx_error_handler);
 
-    // TODO Bump up the order and nderiv on this test
-    const int maxorder = 2;
+    const int maxorder = 21;
     for (int order = 1; order <= maxorder; ++order) {
-        const int maxnderiv = (order < 2) ? order : 2;
+        const int maxnderiv = maxorder;
         for (int nderiv = 0; nderiv <= maxnderiv; ++nderiv) {
             suzerain_bspline_operator_workspace *w
                 = suzerain_bspline_operator_alloc(
