@@ -378,7 +378,7 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
                        SUZERAIN_ESANITY);
     }
 
-    const int lr_offset = w->order - w->ncoefficients; /* negative */
+    const int lr_offset = w->ncoefficients - w->order;
     if (compute_banded_collocation_derivative_submatrix(
              lr_offset, lr_offset,
              w->nderivatives, w->kl, w->ku, w->lda,
@@ -455,14 +455,6 @@ compute_banded_collocation_derivative_submatrix(
     gsl_matrix * db,
     double ** const D)
 {
-    /* Protect against an easy-to-make usage mistake */
-    if (ioffset > 0) {
-        SUZERAIN_ERROR("Nonpositive ioffset required", SUZERAIN_EINVAL);
-    }
-    if (joffset > 0) {
-        SUZERAIN_ERROR("Nonpositive joffset required", SUZERAIN_EINVAL);
-    }
-
     /* Clear operator storage; zeros out values not explicitly set below */
     for (int k = 0; k <= nderivatives; ++k) {
         memset(D[k], 0, lda[k]*npoints*sizeof(D[0][0]));
@@ -475,16 +467,16 @@ compute_banded_collocation_derivative_submatrix(
                                        &dbjstart, &dbjend, bw, dbw);
 
         /* Coerce dbjstart/dbjend to stay within the submatrix of interest */
-        const size_t jstart = GSL_MAX(dbjstart, -joffset);
-        const size_t jend   = GSL_MIN(dbjend, npoints-1-joffset);
+        const size_t jstart = GSL_MAX(dbjstart, joffset);
+        const size_t jend   = GSL_MIN(dbjend, npoints-1+joffset);
 
         for (int k = 0; k <= nderivatives; ++k) {
             for (int j = jstart; j <= jend; ++j) {
                 const double value = gsl_matrix_get(db, j - dbjstart, k);
                 const int in_band  = gb_matrix_in_band(
-                        lda[k], kl[k], ku[k], i-ioffset, j /* no joffset */);
+                        lda[k], kl[k], ku[k], i+ioffset, j /* no joffset */);
                 const int offset = gb_matrix_offset(
-                        lda[k], kl[k], ku[k], i /* no ioffset */, j+joffset);
+                        lda[k], kl[k], ku[k], i /* no ioffset */, j-joffset);
 
                 if (in_band) {
                     D[k][offset] = value;
