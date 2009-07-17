@@ -97,12 +97,10 @@ suzerain_bspline_operator_alloc(int order,
     if (order < 1) {
         SUZERAIN_ERROR_NULL("order must be at least 1", SUZERAIN_EINVAL);
     }
-
     if (nbreakpoints < 2) {
         SUZERAIN_ERROR_NULL("nbreakpoints must be at least 2",
                             SUZERAIN_EINVAL);
     }
-
     if (nderivatives < 0) {
         SUZERAIN_ERROR_NULL("nderivatives must be at least 0",
                             SUZERAIN_EINVAL);
@@ -198,6 +196,7 @@ suzerain_bspline_operator_alloc(int order,
         SUZERAIN_ERROR_NULL("failure determining operator bandwidths",
                             SUZERAIN_ESANITY);
     }
+    /* Precompute derived storage parameters */
     for (int k = 0; k <= nderivatives; ++k) {
         w->lda[k]         = w->kl[k] + w->ku[k] + 1;
         w->storagesize[k] = w->lda[k] * w->ncoefficients;
@@ -286,6 +285,7 @@ suzerain_bspline_operator_apply(
     int ldb,
     const suzerain_bspline_operator_workspace *w)
 {
+    /* Parameter sanity checks */
     if (nderivative < 0 || w->nderivatives < nderivative) {
         SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
     }
@@ -381,6 +381,7 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
     double ** const ul_D = &(scratch[0]);
     double ** const lr_D = &(scratch[w->nderivatives+1]);
 
+    /* Compute the upper-left- and lower-right- most submatrices */
     if (compute_banded_collocation_derivative_submatrix(
              0, 0,
              w->nderivatives, w->kl, w->ku, w->lda,
@@ -391,7 +392,6 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
         SUZERAIN_ERROR("Error computing operator UL submatrices",
                        SUZERAIN_ESANITY);
     }
-
     const int lr_offset = w->ncoefficients - w->order;
     if (compute_banded_collocation_derivative_submatrix(
              lr_offset, lr_offset,
@@ -465,6 +465,7 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
         points[i] = gsl_bspline_greville_abscissa(i, w->bw);
     }
 
+    /* Compute the full derivative operator matrices */
     if (compute_banded_collocation_derivative_submatrix(
              0, 0, w->nderivatives, w->kl, w->ku, w->lda,
              w->ncoefficients, points, w->bw, w->dbw, w->db, w->D)) {
@@ -497,7 +498,7 @@ compute_banded_collocation_derivative_submatrix(
         memset(D[k], 0, lda[k]*npoints*sizeof(D[0][0]));
     }
 
-    /* Fill nonzero entries in the operator storage */
+    /* Fill all nonzero entries in the operator storage */
     for (int i = 0; i < npoints; ++i) {
         size_t dbjstart, dbjend;
         gsl_bspline_deriv_eval_nonzero(points[i], nderivatives, db,
@@ -575,6 +576,7 @@ suzerain_bspline_operator_lu_workspace *
 suzerain_bspline_operator_lu_alloc(
     const suzerain_bspline_operator_workspace *w)
 {
+    /* Allocate space for the luw workspace */
     suzerain_bspline_operator_lu_workspace * const luw
         = malloc(sizeof(suzerain_bspline_operator_lu_workspace));
     if (luw == NULL) {
@@ -582,7 +584,7 @@ suzerain_bspline_operator_lu_alloc(
                             SUZERAIN_ENOMEM);
     }
     /* Make workspace pointers NULL */
-    luw->A = NULL;
+    luw->A    = NULL;
     luw->ipiv = NULL;
 
     /* Banded LU operator dimensions depend on largest derivative band */
@@ -604,8 +606,7 @@ suzerain_bspline_operator_lu_alloc(
                             SUZERAIN_ENOMEM);
     }
 
-    /* Allocate memory for matrix */
-    /* memory aligned per MKL user guide numerical stability suggestion */
+    /* Allocate memory for the matrix formed within lu_form_general */
     if (posix_memalign((void **) &(luw->A),
                        16 /* byte boundary */,
                        luw->storagesize*sizeof(luw->A[0]))) {
@@ -638,6 +639,7 @@ suzerain_bspline_operator_lu_form_general(
     const suzerain_bspline_operator_workspace * w,
     suzerain_bspline_operator_lu_workspace *luw)
 {
+    /* Parameter sanity checks */
     if (ncoefficients < 0) {
         SUZERAIN_ERROR("Number of coefficients cannot be negative",
                        SUZERAIN_EINVAL);
