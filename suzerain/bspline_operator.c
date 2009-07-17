@@ -322,7 +322,7 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
 
-    /* Specify maximum collocation operator band storage parameters */
+    /* Initially maximum collocation operator band storage parameters */
     for (int k = 0; k <= w->nderivatives; ++k) {
         w->kl[k]  = w->order - 1;
         w->ku[k]  = w->kl[k];
@@ -390,11 +390,34 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
                        SUZERAIN_ESANITY);
     }
 
-
-    /* FIXME Incorrect */
+    /* Reduce kl/ku for each zero off-diagonal in ul_D and lr_D */
     for (int k = 0; k <= w->nderivatives; ++k) {
-        w->kl[k] = (GSL_IS_ODD(w->order) ? w->order : w->order + 1) / 2;
-        w->ku[k] = w->kl[k];
+        const int fixed_ku_k  = w->ku[k];
+        const int fixed_kl_k  = w->kl[k];
+        const int fixed_lda_k = w->lda[k];
+
+        for (int i=0; i < fixed_ku_k; ++i) {
+            const double ul_asum
+                = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_lda_k);
+            const double lr_asum
+                = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_lda_k);
+            if (ul_asum + lr_asum == 0.0) {
+                --w->ku[k];
+            } else {
+                break; /* Skip all after nonzero superdiagonal */
+            }
+        }
+        for (int i=fixed_lda_k-1; i > fixed_ku_k; --i) {
+            const double ul_asum
+                = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_lda_k);
+            const double lr_asum
+                = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_lda_k);
+            if (ul_asum + lr_asum == 0.0) {
+                --w->kl[k];
+            } else {
+                break; /* Skip all after nonzero subdiagonal */
+            }
+        }
     }
 
     for (int k = 0; k < 2*(w->nderivatives+1); ++k) free(scratch[k]);

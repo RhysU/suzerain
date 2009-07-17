@@ -55,10 +55,12 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
          *   0   0   0   1
          * Known good is in general banded matrix column-major order.
          */
-        const double good_D0[] = { /*DK*/   1,     0,
-                                       0,   1,     0,
-                                       0,   1,     0,
-                                       0,   1  /*DK*/ };
+        const double good_D0[] = { 1,
+                                   1,
+                                   1,
+                                   1 };
+        BOOST_CHECK_EQUAL(0, w->ku[0]);
+        BOOST_CHECK_EQUAL(0, w->kl[0]);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
             w->D[0] + w->ku[0], w->D[0] + w->storagesize[0] - w->kl[0]);
@@ -88,6 +90,8 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
                                        1,  -1,     0,
                                        1,  -1,    -1,
                                        1,   1  /*DK*/ };
+        BOOST_CHECK_EQUAL(1, w->ku[1]);
+        BOOST_CHECK_EQUAL(1, w->kl[1]);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             good_D1, good_D1 + sizeof(good_D1)/sizeof(good_D1[0]),
             w->D[1] + w->ku[1], w->D[1] + w->storagesize[1] - w->kl[1]);
@@ -108,10 +112,12 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
     {
         /* Check w->D[2], the second derivative matrix, against zero result.
          */
-        const double good_D2[] = { /*DK*/  0,    0,
-                                       0,  0,    0,
-                                       0,  0,    0,
-                                       0,  0  /*DK*/ };
+        const double good_D2[] = { 0,
+                                   0,
+                                   0,
+                                   0 };
+        BOOST_CHECK_EQUAL(0, w->ku[2]);
+        BOOST_CHECK_EQUAL(0, w->kl[2]);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             good_D2, good_D2 + sizeof(good_D2)/sizeof(good_D2[0]),
             w->D[2] + w->ku[2], w->D[2] + w->storagesize[2] - w->kl[2]);
