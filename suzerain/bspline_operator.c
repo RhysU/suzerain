@@ -75,6 +75,17 @@ inline int gb_matrix_in_band(int lda, int kl, int ku, int i, int j) {
     return ((j)-(ku) <= (i) && (i) <= (j)+(kl));
 }
 
+/* Sum an array of integers */
+inline int sum_int(size_t n, const int * x, size_t incx) {
+    const int  * const x_end = x + n*incx;
+    int sum = 0;
+    while (x < x_end) {
+        sum += *x;
+        x   += incx;
+    }
+    return sum;
+}
+
 suzerain_bspline_operator_workspace *
 suzerain_bspline_operator_alloc(int order,
                                 int nderivatives,
@@ -200,10 +211,8 @@ suzerain_bspline_operator_alloc(int order,
                             SUZERAIN_ENOMEM);
     }
     /* Allocate one block for all derivative operator matrices */
-    size_t total_storage = w->storagesize[0];
-    for (int k = 1; k <= w->nderivatives; ++k) {
-        total_storage += w->storagesize[k];
-    }
+    const size_t total_storage
+        = sum_int(w->nderivatives+1, w->storagesize, 1);
     if (posix_memalign((void **) &(w->D[0]),
                        16 /* byte boundary */,
                        total_storage*sizeof(w->D[0][0]))) {
@@ -350,11 +359,8 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
         SUZERAIN_ERROR("Unable to allocate scratch pointers",
                 SUZERAIN_ENOMEM);
     }
-    size_t total_storage = w->storagesize[0];
-    for (int k = 1; k < 2*(w->nderivatives+1); ++k) {
-        const int storagesize_k = w->storagesize[k % (w->nderivatives+1)];
-        total_storage += storagesize_k;
-    }
+    const size_t total_storage
+        = 2 * sum_int(w->nderivatives+1, w->storagesize, 1);
     if (posix_memalign((void **) &(scratch[0]),
                        16 /* byte boundary */,
                        total_storage*sizeof(w->D[0][0]))) {
@@ -379,7 +385,6 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
              0, 0,
              w->nderivatives, w->kl, w->ku, w->lda,
              w->order, ul_points, w->bw, w->dbw, w->db, ul_D)) {
-        for (int k = 0; k < 2*(w->nderivatives+1); ++k) free(scratch[k]);
         free(scratch[0]);
         free(scratch);
         free(points);
