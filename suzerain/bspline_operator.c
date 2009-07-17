@@ -199,18 +199,20 @@ suzerain_bspline_operator_alloc(int order,
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix pointers",
                             SUZERAIN_ENOMEM);
     }
-    for (int k = 0; k <= w->nderivatives; ++k) {
-        w->D[k] = NULL;
+    /* Allocate one block for all derivative operator matrices */
+    size_t total_storage = w->storagesize[0];
+    for (int k = 1; k <= w->nderivatives; ++k) {
+        total_storage += w->storagesize[k];
     }
-    /* Allocate memory for each matrix separately */
-    for (int k = 0; k <= w->nderivatives; ++k) {
-        if (posix_memalign((void **) &(w->D[k]),
-                           16 /* byte boundary */,
-                           w->storagesize[k]*sizeof(w->D[0][0]))) {
-            suzerain_bspline_operator_free(w);
-            SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
-                                SUZERAIN_ENOMEM);
-        }
+    if (posix_memalign((void **) &(w->D[0]),
+                       16 /* byte boundary */,
+                       total_storage*sizeof(w->D[0][0]))) {
+        suzerain_bspline_operator_free(w);
+        SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
+                            SUZERAIN_ENOMEM);
+    }
+    for (int k = 0; k < w->nderivatives; ++k) {
+        w->D[k+1] = w->D[k] + w->storagesize[k];
     }
 
     /* Calculate operator matrices. */
@@ -228,10 +230,8 @@ suzerain_bspline_operator_free(suzerain_bspline_operator_workspace * w)
 {
     if (w != NULL) {
         if (w->D != NULL) {
-            for (int k = 0; k <= w->nderivatives; ++k) {
-                free(w->D[k]);
-                w->D[k] = NULL;
-            }
+            free(w->D[0]);
+            w->D[0] = NULL;
 
             free(w->D);
             w->D = NULL;
@@ -324,9 +324,10 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
 
     /* Initially maximum collocation operator band storage parameters */
     for (int k = 0; k <= w->nderivatives; ++k) {
-        w->kl[k]  = w->order - 1;
-        w->ku[k]  = w->kl[k];
-        w->lda[k] = w->kl[k] + w->ku[k] + 1;
+        w->kl[k]          = w->order - 1;
+        w->ku[k]          = w->kl[k];
+        w->lda[k]         = w->kl[k] + w->ku[k] + 1;
+        w->storagesize[k] = w->lda[k] * w->order;
     }
 
     /* Compute collocation points at which we will check bandwidth */
@@ -349,16 +350,23 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
         SUZERAIN_ERROR("Unable to allocate scratch pointers",
                 SUZERAIN_ENOMEM);
     }
-    for (int k = 0; k < 2*(w->nderivatives+1); ++k) {
-        const int lda_k = w->lda[k % (w->nderivatives+1)];
-        scratch[k] = malloc(lda_k * w->order * sizeof(scratch[0][0]));
-        if (scratch[k] == NULL) {
-            for (int i = k; i >= 0; --i) free(scratch[i]);
-            free(scratch);
-            free(points);
-            SUZERAIN_ERROR("Unable to allocate scratch space",
-                    SUZERAIN_ENOMEM);
-        }
+    size_t total_storage = w->storagesize[0];
+    for (int k = 1; k < 2*(w->nderivatives+1); ++k) {
+        const int storagesize_k = w->storagesize[k % (w->nderivatives+1)];
+        total_storage += storagesize_k;
+    }
+    if (posix_memalign((void **) &(scratch[0]),
+                       16 /* byte boundary */,
+                       total_storage*sizeof(w->D[0][0]))) {
+        free(scratch);
+        free(points);
+        SUZERAIN_ERROR_NULL("failed to allocate scratch",
+                            SUZERAIN_ENOMEM);
+    }
+    for (int k = 1; k < 2*(w->nderivatives+1); ++k) {
+        const int storagesize_km1
+            = w->storagesize[(k-1) % (w->nderivatives+1)];
+        scratch[k] = scratch[k-1] + storagesize_km1;
     }
 
     /* Create convenience views of our working space */
@@ -372,6 +380,7 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
              w->nderivatives, w->kl, w->ku, w->lda,
              w->order, ul_points, w->bw, w->dbw, w->db, ul_D)) {
         for (int k = 0; k < 2*(w->nderivatives+1); ++k) free(scratch[k]);
+        free(scratch[0]);
         free(scratch);
         free(points);
         SUZERAIN_ERROR("Error computing operator UL submatrices",
@@ -383,7 +392,7 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
              lr_offset, lr_offset,
              w->nderivatives, w->kl, w->ku, w->lda,
              w->order, lr_points, w->bw, w->dbw, w->db, lr_D)) {
-        for (int k = 0; k < 2*(w->nderivatives+1); ++k) free(scratch[k]);
+        free(scratch[0]);
         free(scratch);
         free(points);
         SUZERAIN_ERROR("Error computing operator LR submatrices",
@@ -420,7 +429,7 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w)
         }
     }
 
-    for (int k = 0; k < 2*(w->nderivatives+1); ++k) free(scratch[k]);
+    free(scratch[0]);
     free(scratch);
     free(points);
 
