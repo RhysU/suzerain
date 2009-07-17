@@ -43,10 +43,25 @@
 #include <suzerain/error.h>
 
 int
+suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w);
+
+int
 suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w);
 
 int
-suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w);
+compute_banded_collocation_derivative_submatrix(
+    const int ioffset,
+    const int joffset,
+    const int nderivatives,
+    const int * const kl,
+    const int * const ku,
+    const int * const lda,
+    const int npoints,
+    const double * points,
+    gsl_bspline_workspace * bw,
+    gsl_bspline_deriv_workspace * dbw,
+    gsl_matrix * db,
+    double ** const D);
 
 /* Compute the BLAS-compatible offset to a(i,j) for general banded matrices
  * a(i,j) -> storage(ku+i-j,j) where storage is column-major with LDA lda
@@ -318,11 +333,6 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_operator_workspace *w) {
 int
 suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
 {
-    /* Clear operator storage; zeros out values not explicitly set below */
-    for (int k = 0; k <= w->nderivatives; ++k) {
-        memset(w->D[k], 0, w->storagesize[k]*sizeof(w->D[0][0]));
-    }
-
     /* Compute the operator matrices based on the supplied method */
     switch (w->method) {
     case SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE:
@@ -334,46 +344,89 @@ suzerain_bspline_operator_create(suzerain_bspline_operator_workspace *w)
     }
 
     /* Evaluate basis at the Greville abscissae: d^k/dx^k B_j(\xi_i) */
+    double * const points
+        = malloc(w->ncoefficients*sizeof(w->bw->knots->data[0]));
+    if (points == NULL) {
+        SUZERAIN_ERROR("Unable to allocate space for Greville abscissae",
+                       SUZERAIN_ENOMEM);
+    }
+    for (int i = 0; i < w->ncoefficients; ++i) {
+        points[i] = gsl_bspline_greville_abscissa(i, w->bw);
+    }
 
-    /* Defensively dereference into local constants */
-    const int n             = w->ncoefficients;
-    const int nderivatives  = w->nderivatives;
-    const int * const lda   = w->lda;
-    const int * const ku    = w->ku;
-    const int * const kl    = w->kl;
-    double ** const D       = w->D;
+    if (compute_banded_collocation_derivative_submatrix(
+             0, 0, w->nderivatives, w->kl, w->ku, w->lda,
+             w->ncoefficients, points, w->bw, w->dbw, w->db, w->D)) {
+        free(points);
+        SUZERAIN_ERROR("Error computing operator matrices", SUZERAIN_ESANITY);
+    }
 
-    for (int i = 0; i < n; ++i) {
-        const double xi = gsl_bspline_greville_abscissa(i, w->bw);
+    free(points);
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+compute_banded_collocation_derivative_submatrix(
+    const int ioffset,
+    const int joffset,
+    const int nderivatives,
+    const int * const kl,
+    const int * const ku,
+    const int * const lda,
+    const int npoints,
+    const double * points,
+    gsl_bspline_workspace * bw,
+    gsl_bspline_deriv_workspace * dbw,
+    gsl_matrix * db,
+    double ** const D)
+{
+    /* Clear operator storage; zeros out values not explicitly set below */
+    for (int k = 0; k <= nderivatives; ++k) {
+        memset(D[k], 0, lda[k]*npoints*sizeof(D[0][0]));
+    }
+
+    /* Fill nonzero entries in the operator storage */
+    for (int i = 0; i < npoints; ++i) {
         size_t jstart, jend;
-        gsl_bspline_deriv_eval_nonzero(xi, nderivatives, w->db,
-                                       &jstart, &jend, w->bw, w->dbw);
+        gsl_bspline_deriv_eval_nonzero(points[i], nderivatives, db,
+                                       &jstart, &jend, bw, dbw);
+
+        /* Truncate offsets + jstart/jend to fall within n by n matrix */
+        /* Required to compute only a block of the full matrix */
+        jstart = GSL_MAX(jstart + joffset, 0);
+        jend   = GSL_MIN(jend   + joffset, npoints-1);
 
         for (int k = 0; k <= nderivatives; ++k) {
             for (int j = jstart; j <= jend; ++j) {
-                const double value = gsl_matrix_get(w->db, j - jstart, k);
+                const double value = gsl_matrix_get(db, j - jstart, k);
+                const int in_band  = gb_matrix_in_band(
+                        lda[k], kl[k], ku[k], i+ioffset, j+ioffset);
+                const int offset = gb_matrix_offset(
+                        lda[k], kl[k], ku[k], i+ioffset, j+joffset);
 
-                if (gb_matrix_in_band(lda[k], kl[k], ku[k], i, j)) {
-                    const int offset
-                        = gb_matrix_offset(lda[k], kl[k], ku[k], i, j);
+                if (in_band) {
                     D[k][offset] = value;
                 } else if (value == 0.0) {
                     /* OK: value outside band is identically zero */
                 } else {
                     /* NOT COOL: nonzero value outside bandwidth */
+                    const int order = bw->k;
                     char buffer[255];
                     snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
                              "encountered non-zero entry outside band"
                              " for basis spline order %d"
                              " (piecewise degree %d);"
-                             " (d/dx)^%d B_%d(\\xi_%d=%g) = %g"
-                             " corresponds to (row=%d, column=%d) of"
-                             " general banded matrix defined by "
-                             "[lda=%d, kl=%d, ku=%d, n=%d]",
-                             w->order, w->order-1,
-                             k, j, i, xi, value,
-                             i, j,
-                             lda[k], kl[k], ku[k], n);
+                             " (d/dx)^%d B_%d(\\points_%d=%g) = %g corresponds"
+                             " to (row=%d, column=%d, offset=%d) of"
+                             " general banded matrix defined by"
+                             " [lda=%d, kl=%d, ku=%d, n=%d]"
+                             " with offset (row=%d, column=%d)",
+                             order, order-1,
+                             k, j, i, points[i], value,
+                             i, j, offset,
+                             lda[k], kl[k], ku[k], npoints,
+                             ioffset, joffset);
                     SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
                 }
             }
