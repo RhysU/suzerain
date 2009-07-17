@@ -51,6 +51,12 @@ suzerain_blas_dcopy(
         double *y,
         const int incy);
 
+double
+suzerain_blas_dasum(
+        const int n,
+        double *x,
+        const int incx);
+
 void
 suzerain_blas_dgbmv(
         const char trans,

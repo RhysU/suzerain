@@ -62,6 +62,22 @@ suzerain_blas_dcopy(
     dcopy(&_n, x, &_incx, y, &_incy);
 }
 
+double
+suzerain_blas_dasum(
+        const int n,
+        double *x,
+        const int incx)
+{
+#ifdef HAVE_MKL
+    MKL_INT _n    = n;
+    MKL_INT _incx = incx;
+#else
+#error "Sanity failure"
+#endif
+
+    return dasum(&_n, x, &_incx);
+}
+
 void
 suzerain_blas_dgbmv(
         const char trans,
