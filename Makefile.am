@@ -3,12 +3,16 @@
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
 
-#Build in these directories:
+# Build in these directories:
 SUBDIRS = lib suzerain tests apps doc
 
-#Distribute these items:
+# Distribute these items:
 DIST_SUBDIRS = lib suzerain tests apps doc
 EXTRA_DIST= bootstrap $(DX_CONFIG)
+
+# Eliminate .svn directories in dist tarball
+dist-hook:
+	find $(distdir)/ -name '.svn' -type d -exec rm {} \;
 
 # Tools in the auxillary directory
 AUX_DIST = build-aux/install-sh    \
@@ -28,9 +32,9 @@ MAINTAINERCLEANFILES =     \
 	config.sub             \
 	configure              \
 	Makefile.in            \
-	src/config.h.in        \
-	src/Makefile.in        \
-	src/stamp.h.in
+	suzerain/config.h.in   \
+	suzerain/Makefile.in   \
+	suzerain/stamp.h.in
 
 # Additional tasks run with the 'all' target
 all-local:  libtool
