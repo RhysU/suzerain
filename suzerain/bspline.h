@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * bspline_operator.h: operator creation routines for a bspline basis
+ * bspline.h: bspline basis manipulation and operator routines
  *
  * $Id$
  *--------------------------------------------------------------------------

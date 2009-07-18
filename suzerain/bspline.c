@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * bspline_operator.c: operator creation routines for a bspline basis
+ * bspline.c: bspline basis manipulation and operator routines
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -39,14 +39,14 @@
 #include <gsl/gsl_statistics_int.h>
 #include <gsl/gsl_vector.h>
 #include <suzerain/blas_et_al.h>
-#include <suzerain/bspline_operator.h>
+#include <suzerain/bspline.h>
 #include <suzerain/error.h>
 
 int
-suzerain_bspline_operator_bandwidths(suzerain_bspline_workspace *w);
+suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w);
 
 int
-suzerain_bspline_operator_create(suzerain_bspline_workspace *w);
+suzerain_bspline_create_operator(suzerain_bspline_workspace *w);
 
 int
 compute_banded_collocation_derivative_submatrix(
@@ -191,7 +191,7 @@ suzerain_bspline_alloc(int order,
     w->method        = method;
 
     /* Storage parameters for BLAS/lapack-compatible general band matrix */
-    if (suzerain_bspline_operator_bandwidths(w)) {
+    if (suzerain_bspline_determine_operator_bandwidths(w)) {
         suzerain_bspline_free(w);
         SUZERAIN_ERROR_NULL("failure determining operator bandwidths",
                             SUZERAIN_ESANITY);
@@ -224,7 +224,7 @@ suzerain_bspline_alloc(int order,
     }
 
     /* Calculate operator matrices. */
-    if (suzerain_bspline_operator_create(w)) {
+    if (suzerain_bspline_create_operator(w)) {
         suzerain_bspline_free(w);
         SUZERAIN_ERROR_NULL("Error creating operator matrices",
                             SUZERAIN_EFAILED);
@@ -319,7 +319,7 @@ suzerain_bspline_apply_operator(
 }
 
 int
-suzerain_bspline_operator_bandwidths(suzerain_bspline_workspace *w)
+suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
 {
     /* Compute the operator bandwidths based on the supplied method */
     switch (w->method) {
@@ -442,7 +442,7 @@ suzerain_bspline_operator_bandwidths(suzerain_bspline_workspace *w)
 }
 
 int
-suzerain_bspline_operator_create(suzerain_bspline_workspace *w)
+suzerain_bspline_create_operator(suzerain_bspline_workspace *w)
 {
     /* Compute the operator matrices based on the supplied method */
     switch (w->method) {

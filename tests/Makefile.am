@@ -46,13 +46,13 @@ test_error_LDADD    = ../suzerain/libsuzerain.la
 test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-check_PROGRAMS                += test_bspline_operator
-test_bspline_operator_SOURCES  = test_bspline_operator.cpp
-test_bspline_operator_LDADD    = ../suzerain/libsuzerain.la
-test_bspline_operator_LDADD   += $(GSL_LIBS)
-test_bspline_operator_LDADD   += $(LOG4CXX_LIBS)
-test_bspline_operator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_bspline_operator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+check_PROGRAMS       += test_bspline
+test_bspline_SOURCES  = test_bspline.cpp
+test_bspline_LDADD    = ../suzerain/libsuzerain.la
+test_bspline_LDADD   += $(GSL_LIBS)
+test_bspline_LDADD   += $(LOG4CXX_LIBS)
+test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
 TESTS = $(check_PROGRAMS)

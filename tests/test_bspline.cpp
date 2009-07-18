@@ -8,7 +8,7 @@
 #include <boost/test/floating_point_comparison.hpp>
 #include <gsl/gsl_poly.h>
 #include <suzerain/blas_et_al.h>
-#include <suzerain/bspline_operator.h>
+#include <suzerain/bspline.h>
 #include <suzerain/error.h>
 #include <suzerain/function.h>
 #include <log4cxx/logger.h>
