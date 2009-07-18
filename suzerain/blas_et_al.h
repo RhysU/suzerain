@@ -52,6 +52,14 @@ suzerain_blas_dcopy(
         const int incy);
 
 double
+suzerain_blas_ddot(
+        const int n,
+        double *x,
+        const int incx,
+        double *y,
+        const int incy);
+
+double
 suzerain_blas_dasum(
         const int n,
         double *x,

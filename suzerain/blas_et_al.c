@@ -63,6 +63,25 @@ suzerain_blas_dcopy(
 }
 
 double
+suzerain_blas_ddot(
+        const int n,
+        double *x,
+        const int incx,
+        double *y,
+        const int incy)
+{
+#ifdef HAVE_MKL
+    MKL_INT _n    = n;
+    MKL_INT _incx = incx;
+    MKL_INT _incy = incy;
+#else
+#error "Sanity failure"
+#endif
+
+    return ddot(&_n, x, &_incx, y, &_incy);
+}
+
+double
 suzerain_blas_dasum(
         const int n,
         double *x,
