@@ -98,6 +98,16 @@ suzerain_bspline_apply_operator(
     const suzerain_bspline_workspace *w);
 
 int
+suzerain_bspline_evaluate(
+    int nderivative,
+    const double * coefficients,
+    int npoints,
+    const double * points,
+    double * values,
+    int ldvalues,
+    const suzerain_bspline_workspace *w);
+
+int
 suzerain_bspline_find_coefficient_rhs(
     const suzerain_function * function,
     double * coefficient_rhs,

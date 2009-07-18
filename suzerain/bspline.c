@@ -318,6 +318,59 @@ suzerain_bspline_apply_operator(
     return SUZERAIN_SUCCESS;
 }
 
+
+int
+suzerain_bspline_evaluate(
+    int nderivative,
+    const double * coefficients,
+    int npoints,
+    const double * points,
+    double * values,
+    int ldvalues,
+    const suzerain_bspline_workspace *w)
+{
+    /* Parameter sanity checks */
+    if (nderivative < 0 || w->nderivatives < nderivative) {
+        SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
+    }
+
+    /* Dereference workspace pointers */
+    gsl_matrix * const db = w->db;
+    gsl_bspline_workspace * const bw = w->bw;
+    gsl_bspline_deriv_workspace * const dbw = w->dbw;
+
+    /* Dereference fixed db parameters; db is row-major per gsl_matrix */
+    /* See GSL manual section 8.4.2 for details on gsl_matrix layout */
+    double * const db_data = db->data;
+    int db_tda = db->tda;
+
+    /* bspline support is always the piecewise degree plus one, so */
+    /* we can determine the number of nonzero basis functions outside loops */
+    const int dotlength = w->order;
+
+    /* ldvalues == 0 signals that we only want derivative nderivative */
+    const int kstart = (ldvalues == 0) ? nderivative : 0;
+
+    size_t jstart, jend;
+    for (int i = 0; i < npoints; ++i) {
+
+        gsl_bspline_deriv_eval_nonzero(points[i], nderivative,
+                db, &jstart, &jend, bw, dbw);
+
+        const double * coefficient_start = coefficients + jstart;
+
+        for (int k = kstart; k <= nderivative; ++k) {
+            const double * db_start = db_data + k;
+            const double value = suzerain_blas_ddot(
+                    dotlength, coefficient_start, 1, db_start, db_tda);
+            const int storage_offset = i + k*ldvalues;
+            values[storage_offset] = value;
+        }
+    }
+
+    return SUZERAIN_SUCCESS;
+}
+
 int
 suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
 {
