@@ -556,3 +556,42 @@ BOOST_AUTO_TEST_CASE( ensure_create_operation_in_alloc_succeeds )
 
     suzerain_set_error_handler(previous_handler);
 }
+
+BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
+{
+    const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+    const int order  = 4;
+    const int nderiv = 2;
+    const int ncoeff = 6;
+
+    suzerain_bspline_workspace *w
+        = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
+            SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
+
+    // Sanity check on fixed storage assumption for test case
+    BOOST_REQUIRE_EQUAL(ncoeff, suzerain_bspline_ncoefficients(w));
+
+    // Check that we have a partition of unity
+    {
+        double coefficients[ncoeff];
+        for (int i = 0; i < ncoeff; ++i) coefficients[i] = 1.0;
+
+        const double * points = breakpoints;
+        const int npoints = sizeof(breakpoints)/sizeof(breakpoints[0]);
+
+        const int ldvalues = npoints;
+        const int nvalues = (nderiv+1) * ldvalues;
+        double values[nvalues];
+
+        suzerain_bspline_evaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+
+        for (int i=0; i < nvalues; ++i) {
+// TODO FIXME
+//            BOOST_CHECK_EQUAL(values[i], 1.0);
+        }
+    }
+
+    suzerain_bspline_free(w);
+}
