@@ -53,8 +53,8 @@ typedef struct gsl_bspline_workspace gsl_bspline_workspace;
 typedef struct gsl_bspline_deriv_workspace gsl_bspline_deriv_workspace;
 #endif
 
-enum suzerain_bspline_operator_method {
-    SUZERAIN_BSPLINE_OPERATOR_COLLOCATION_GREVILLE = 1
+enum suzerain_bspline_method {
+    SUZERAIN_BSPLINE_COLLOCATION_GREVILLE = 1
 };
 
 typedef struct {
@@ -62,7 +62,7 @@ typedef struct {
     int nbreakpoints;
     int nderivatives;
     int ncoefficients;
-    enum suzerain_bspline_operator_method method;
+    enum suzerain_bspline_method method;
     int * kl;
     int * ku;
     int * lda;
@@ -71,37 +71,37 @@ typedef struct {
     gsl_bspline_deriv_workspace * dbw;
     gsl_matrix * db;
     double **D;
-} suzerain_bspline_operator_workspace;
+} suzerain_bspline_workspace;
 
-suzerain_bspline_operator_workspace *
-suzerain_bspline_operator_alloc(
+suzerain_bspline_workspace *
+suzerain_bspline_alloc(
     int order,
     int nderivatives,
     int nbreakpoints,
     const double * breakpoints,
-    enum suzerain_bspline_operator_method method);
+    enum suzerain_bspline_method method);
 
 void
-suzerain_bspline_operator_free(
-    suzerain_bspline_operator_workspace *w);
+suzerain_bspline_free(
+    suzerain_bspline_workspace *w);
 
 int
-suzerain_bspline_operator_ncoefficients(
-    const suzerain_bspline_operator_workspace *w);
+suzerain_bspline_ncoefficients(
+    const suzerain_bspline_workspace *w);
 
 int
-suzerain_bspline_operator_apply(
+suzerain_bspline_apply_operator(
     int nderivative,
     int nrhs,
     double *b,
     int ldb,
-    const suzerain_bspline_operator_workspace *w);
+    const suzerain_bspline_workspace *w);
 
 int
-suzerain_bspline_operator_functioncoefficient_rhs(
+suzerain_bspline_find_coefficient_rhs(
     const suzerain_function * function,
     double * coefficient_rhs,
-    const suzerain_bspline_operator_workspace *w);
+    const suzerain_bspline_workspace *w);
 
 typedef struct {
     int ncoefficients;
@@ -111,34 +111,34 @@ typedef struct {
     int storagesize;
     int *ipiv;
     double *A;
-} suzerain_bspline_operator_lu_workspace;
+} suzerain_bspline_lu_workspace;
 
-suzerain_bspline_operator_lu_workspace *
-suzerain_bspline_operator_lu_alloc(
-    const suzerain_bspline_operator_workspace *w);
+suzerain_bspline_lu_workspace *
+suzerain_bspline_lu_alloc(
+    const suzerain_bspline_workspace *w);
 
 void
-suzerain_bspline_operator_lu_free(
-    suzerain_bspline_operator_lu_workspace *luw);
+suzerain_bspline_lu_free(
+    suzerain_bspline_lu_workspace *luw);
 
 int
-suzerain_bspline_operator_lu_form_general(
+suzerain_bspline_lu_form_general(
     int ncoefficients,
     const double * coefficients,
-    const suzerain_bspline_operator_workspace * w,
-    suzerain_bspline_operator_lu_workspace *luw);
+    const suzerain_bspline_workspace * w,
+    suzerain_bspline_lu_workspace *luw);
 
 int
-suzerain_bspline_operator_lu_form_mass(
-    const suzerain_bspline_operator_workspace * w,
-    suzerain_bspline_operator_lu_workspace *luw);
+suzerain_bspline_lu_form_mass(
+    const suzerain_bspline_workspace * w,
+    suzerain_bspline_lu_workspace *luw);
 
 int
-suzerain_bspline_operator_lu_solve(
+suzerain_bspline_lu_solve(
     int nrhs,
     double *b,
     int ldb,
-    const suzerain_bspline_operator_lu_workspace *luw);
+    const suzerain_bspline_lu_workspace *luw);
 
 __END_DECLS
 
