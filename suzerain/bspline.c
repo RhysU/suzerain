@@ -342,7 +342,7 @@ suzerain_bspline_evaluate(
     /* Dereference fixed db parameters; db is row-major per gsl_matrix */
     /* See GSL manual section 8.4.2 for details on gsl_matrix layout */
     double * const db_data = db->data;
-    int db_tda = db->tda;
+    const int db_tda = db->tda;
 
     /* bspline support is always the piecewise degree plus one, so */
     /* we can determine the number of nonzero basis functions outside loops */
