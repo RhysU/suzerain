@@ -6,6 +6,7 @@
 #include <boost/format.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
+#include <gsl/gsl_nan.h>
 #include <gsl/gsl_poly.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bspline.h>
@@ -584,13 +585,93 @@ BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
         const int nvalues = (nderiv+1) * ldvalues;
         double values[nvalues];
 
+        // Compute 0...nderiv derivatives
         suzerain_bspline_evaluate(
                 nderiv, coefficients, npoints, points, values, ldvalues, w);
-
-        for (int i=0; i < nvalues; ++i) {
-// TODO FIXME
-//            BOOST_CHECK_EQUAL(values[i], 1.0);
+        for (int i=0; i < ldvalues; ++i) {
+            BOOST_CHECK_CLOSE(values[i], 1.0, 1.0e-13); // Partition of unity
         }
+        for (int i=ldvalues; i < nvalues; ++i) {
+            BOOST_CHECK_EQUAL(values[i], 0.0); // Higher derivatives all zero
+        }
+
+        // Compute only nderiv-th derivative
+        suzerain_bspline_evaluate(
+                nderiv, coefficients, npoints, points, values, 0, w);
+        for (int i=0; i < ldvalues; ++i) {
+            BOOST_CHECK_EQUAL(values[i], 0.0); // Partition of unity
+        }
+    }
+
+    // Check basis function evaluation, derivatives, and ddot behavior
+    // Note we assume that GSL bspline functionality is sound and
+    // only do some minor spot checks here
+    {
+        BOOST_REQUIRE_EQUAL(6, suzerain_bspline_ncoefficients(w)); // Sanity
+        BOOST_REQUIRE_EQUAL(2, nderiv);                            // Sanity
+
+        double       coefficients[ncoeff];
+        const double points[]             = { 1.0 };
+        const int    npoints              = sizeof(points)/sizeof(points[0]);
+        const int    ldvalues             = npoints;
+        const int    nvalues              = (nderiv+1) *ldvalues;
+        double       values[nvalues];
+
+        // Investigate second basis function
+        for (int i = 0; i < ncoeff; ++i) coefficients[i] = 0.0;
+        coefficients[1] = 1.0;
+        suzerain_bspline_evaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        BOOST_CHECK_EQUAL( 1./4., values[0]); // 0th derivative
+        BOOST_CHECK_EQUAL(-3./4., values[1]); // 1st derivative
+        BOOST_CHECK_EQUAL( 3./2., values[2]); // 2nd derivative
+
+        // Investigate third basis function
+        for (int i = 0; i < ncoeff; ++i) coefficients[i] = 0.0;
+        coefficients[2] = 1.0;
+        suzerain_bspline_evaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        BOOST_CHECK_CLOSE( 7./12., values[0], 1.0e-13); // 0th derivative
+        BOOST_CHECK_EQUAL( 1./ 4., values[1]);          // 1st derivative
+        BOOST_CHECK_EQUAL(-5./ 2., values[2]);          // 2nd derivative
+
+        // Investigate fourth basis function
+        for (int i = 0; i < ncoeff; ++i) coefficients[i] = 0.0;
+        coefficients[3] = 1.0;
+        suzerain_bspline_evaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        BOOST_CHECK_EQUAL( 1./ 6., values[0]); // 0th derivative
+        BOOST_CHECK_EQUAL( 1./ 2., values[1]); // 1st derivative
+        BOOST_CHECK_EQUAL(     1., values[2]); // 2nd derivative
+
+        // Investigate fifth basis function
+        for (int i = 0; i < ncoeff; ++i) coefficients[i] = 0.0;
+        coefficients[4] = 1.0;
+        suzerain_bspline_evaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        // All zero due to influence of endpoints/repeated knots
+        BOOST_CHECK_EQUAL( 0., values[0]); // 0th derivative
+        BOOST_CHECK_EQUAL( 0., values[1]); // 1st derivative
+        BOOST_CHECK_EQUAL( 0., values[2]); // 2nd derivative
+
+        // Check behavior of linear combinations of basis functions
+        coefficients[0] = GSL_NAN; // Poison value checks ddot bounds
+        coefficients[1] = 1.0;
+        coefficients[2] = 2.0;
+        coefficients[3] = 3.0;
+        coefficients[4] = 4.0;
+        coefficients[5] = GSL_NAN; // Poison value checks ddot bounds
+        suzerain_bspline_evaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        BOOST_CHECK_CLOSE(23./12., values[0], 1.0e-13); // 0th derivative
+        BOOST_CHECK_CLOSE( 5./ 4., values[1], 1.0e-13); // 1st derivative
+        BOOST_CHECK_CLOSE(-1./ 2., values[2], 1.0e-13); // 2nd derivative
+
+        // Check behavior of linear combinations of basis functions
+        // when ldvalues == 0 so only highest derivative is computed
+        suzerain_bspline_evaluate(
+                nderiv, coefficients, npoints, points, values, 0, w);
+        BOOST_CHECK_CLOSE(-1./ 2., values[0], 1.0e-13); // 2nd derivative
     }
 
     suzerain_bspline_free(w);
