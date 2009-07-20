@@ -334,8 +334,8 @@ suzerain_bspline_evaluate(
     if (nderivative < 0 || w->nderivatives < nderivative) {
         SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
     }
-    if (0 < ldvalues && ldvalues < w->ndof) {
-        SUZERAIN_ERROR("ldvalues too small for ndof", SUZERAIN_EINVAL);
+    if (ldvalues && 0 < ldvalues && ldvalues < npoints) {
+        SUZERAIN_ERROR("ldvalues too small for npoints", SUZERAIN_EINVAL);
     }
 
     /* Dereference workspace pointers */
