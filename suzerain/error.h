@@ -35,7 +35,7 @@
 
 __BEGIN_DECLS
 
-enum {
+enum suzerain_error_status {
   SUZERAIN_SUCCESS  = 0,
   SUZERAIN_FAILURE  = -1,
   SUZERAIN_EDOM     = 1,   /* input domain error, e.g sqrt(-1) */
