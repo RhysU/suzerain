@@ -32,6 +32,16 @@
 
 #include <suzerain/function.h>
 
+/** @file
+ * Provides bspline basis evaluation and derivative operator routines.  These
+ * functions provide bspline basis function evaluation, differentiation,
+ * derivative linear operator construction, and operator application routines.
+ *
+ * Internally, the code builds upon the GNU Scientific Library (GSL) bspline
+ * routines and uses banded matrix BLAS and LAPACK functionality where
+ * possible.
+ */
+
 #undef __BEGIN_DECLS
 #undef __END_DECLS
 #ifdef __cplusplus
@@ -53,24 +63,83 @@ typedef struct gsl_bspline_workspace gsl_bspline_workspace;
 typedef struct gsl_bspline_deriv_workspace gsl_bspline_deriv_workspace;
 #endif
 
+/** Indicates the method chosen to compute derivative operators.  */
 enum suzerain_bspline_method {
+    /** Form derivative operators using the Greville abscissae.  */
     SUZERAIN_BSPLINE_COLLOCATION_GREVILLE = 1
 };
 
+/**
+ * Encapsulates basis function and derivative operator information.
+ * Callers obtain a workspace using suzerain_bspline_alloc() and
+ * release it using suzerain_bspline_free().
+ */
 typedef struct {
-    int order;          /* spline order, piecewise degree is order - 1 */
+
+    /**
+     * Spline order per GSL/PPPACK conventions
+     * For example, 3 denotes piecewise quadratics and 4 denotes piecewise
+     * cubics.
+     **/
+    int order;
+
+    /** Number of breakpoints in the basis */
     int nbreakpoints;
+
+    /** Maximum derivative requested */
     int nderivatives;
+
+    /** Number of coefficients or degrees of freedom in the basis */
     int ncoefficients;
+
+    /** Method chosen to form derivative operators */
     enum suzerain_bspline_method method;
+
+    /** @name Banded derivative matrix storage details
+     * Each of the \c 0 through \c nderivative (inclusive) derivative operators
+     * is stored using BLAS banded matrix conventions.
+     * @{
+     */
+
+    /** Number of subdiagonals in each derivative */
     int * kl;
+
+    /** Number of superdiagonals in each derivative */
     int * ku;
+
+    /** Leading dimension in each derivative */
     int * lda;
+
+    /** Size of each banded derivative storage measured using <tt>double</tt>s */
     int * storagesize;
-    gsl_bspline_workspace * bw;
-    gsl_bspline_deriv_workspace * dbw;
-    gsl_matrix * db;
+
+    /**
+     * Raw data storage for each banded derivative operator matrix
+     * \c D[0] is the storage for the 0th derivative, D[1] is the storage for
+     * the 1st derivative, etc..
+     **/
     double **D;
+
+    /* @} */
+
+    /**
+     * GSL workspace for basis function evaluation
+     * \internal
+     **/
+    gsl_bspline_workspace * bw;
+
+    /**
+     * GSL workspace for basis function derivative evaluation
+     * \internal
+     **/
+    gsl_bspline_deriv_workspace * dbw;
+
+    /**
+     * Used when computing basis function derivatives
+     * \internal
+     **/
+    gsl_matrix * db;
+
 } suzerain_bspline_workspace;
 
 suzerain_bspline_workspace *
