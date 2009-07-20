@@ -117,13 +117,13 @@ typedef struct {
     /** Leading dimension in each derivative */
     int * lda;
 
-    /** Size of each banded derivative storage measured using <tt>double</tt>s */
+    /** Size of each derivative operator's storage in  doubles */
     int * storagesize;
 
     /**
      * Raw data storage for each banded derivative operator matrix
-     * \c D[0] is the storage for the 0th derivative, D[1] is the storage for
-     * the 1st derivative, etc..
+     * \c D[0] is the storage for the 0th derivative, \c D[1] is
+     * the storage for the 1st derivative, etc..
      **/
     double **D;
 
@@ -260,10 +260,28 @@ suzerain_bspline_evaluate(
     int ldvalues,
     const suzerain_bspline_workspace *w);
 
+/** 
+ * Determine the right hand side of the equation \c D[0] \c x =  \c rhs for
+ * \c function.  Here \c D[0] is the zeroth derivative operator
+ * (i.e. mass matrix), \c x are the basis function coefficients that will
+ * best represent \c function for the given method, and \c rhs is the
+ * vector computed by this routine.
+ * 
+ * @param function to use when computing \f$ b \f$
+ * @param rhs[out] output vector.
+ * @param w Workspace to use.
+ *
+ * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
+ *      returns one of suzerain_error_status.
+ *
+ * @see suzerain_bspline_method() for details on available methods.
+ * @see suzerain_bspline_lu_form_mass() and suzerain_bspline_lu_solve()
+ *      for how to solve the linear equation for \c x.
+ */
 int
-suzerain_bspline_find_coefficient_rhs(
+suzerain_bspline_find_interpolation_problem_rhs(
     const suzerain_function * function,
-    double * coefficient_rhs,
+    double * rhs,
     const suzerain_bspline_workspace *w);
 
 typedef struct {

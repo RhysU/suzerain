@@ -22,8 +22,8 @@
 #define __SUZERAIN_FUNCTION_H__
 
 /** @file
- * Provides a function evaluation interface compatible with
- * the GNU Scientific Library's \c gsl_function.
+ * Provides a function evaluation interface compatible with the GNU Scientific
+ * Library's \c gsl_function.
  */
 
 /* Specifies C linkage when compiled with C++ compiler */
@@ -39,16 +39,13 @@
 
 __BEGIN_DECLS
 
-/* Definition of an arbitrary function with parameters */
-/* Must match gsl_function_struct exactly */
-
 /**
  * Represents an arbitrary function of two parameters with the second parameter
  * fixed.  Used to fix some parameters of a multivariate function so that it
  * can be passed to a routine expecting a univariate function.  This structure
  * must be binary compatible with GSL's \c gsl_function.
  *
- * @see SUZERAIN_FN_EVAL for an evaluation macro.
+ * @see The function evaluation macro SUZERAIN_FN_EVAL.
  */
 typedef struct {
 
@@ -71,8 +68,8 @@ typedef struct {
 /**
  * \def SUZERAIN_FN_EVAL(F,x)
  * Evalute \c F(x) supplying <tt>F->params</tt> to it under the covers.
- * @params F Function to evaluate.
- * @params x Point at which \c F should be evaluated.
+ * @param F Function to evaluate.
+ * @param x Point at which \c F should be evaluated.
  */
 #define SUZERAIN_FN_EVAL(F,x) (*((F)->function))(x,(F)->params)
 

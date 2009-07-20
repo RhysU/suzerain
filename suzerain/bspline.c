@@ -605,9 +605,9 @@ compute_banded_collocation_derivative_submatrix(
 }
 
 int
-suzerain_bspline_find_coefficient_rhs(
+suzerain_bspline_find_interpolation_problem_rhs(
     const suzerain_function * function,
-    double * coefficient_rhs,
+    double * rhs,
     const suzerain_bspline_workspace *w)
 {
     switch (w->method) {
@@ -623,7 +623,7 @@ suzerain_bspline_find_coefficient_rhs(
     const int n = w->ndof;
     for (int i = 0; i < n; ++i) {
         const double x = gsl_bspline_greville_abscissa(i, w->bw);
-        coefficient_rhs[i] = SUZERAIN_FN_EVAL(function, x);
+        rhs[i] = SUZERAIN_FN_EVAL(function, x);
     }
 
     return SUZERAIN_SUCCESS;

@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
     double * const expected
         = (double *) malloc((nderiv+1) * ndof * sizeof(double));
     for (int i = 0; i <= nderiv; ++i) {
-        suzerain_bspline_find_coefficient_rhs(
+        suzerain_bspline_find_interpolation_problem_rhs(
                 &f, expected + i*ndof, w);
         poly_params_differentiate(p);  // Drop the polynomial order by one
     }
@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
 
         // Compute the right hand side coefficients for M x = b
         double * coefficient = (double *) malloc(ndof * sizeof(double));
-        suzerain_bspline_find_coefficient_rhs(&f, coefficient, w);
+        suzerain_bspline_find_interpolation_problem_rhs(&f, coefficient, w);
 
         // Solve for function coefficients using the mass matrix
         suzerain_bspline_lu_solve(1, coefficient, ndof, mass);
@@ -463,7 +463,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
 
         // Compute the right hand side coefficients for M x = b
         double * coefficient = (double *) malloc(ndof * sizeof(double));
-        suzerain_bspline_find_coefficient_rhs(&f, coefficient, w);
+        suzerain_bspline_find_interpolation_problem_rhs(&f, coefficient, w);
 
         // Solve for function coefficients using the mass matrix
         suzerain_bspline_lu_solve(1, coefficient, ndof, mass);
@@ -490,7 +490,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
 
         // Compute the right hand side coefficients for M x = b
         double * coefficient = (double *) malloc(ndof * sizeof(double));
-        suzerain_bspline_find_coefficient_rhs(&f, coefficient, w);
+        suzerain_bspline_find_interpolation_problem_rhs(&f, coefficient, w);
 
         // Solve for function coefficients using the mass matrix
         suzerain_bspline_lu_solve(1, coefficient, ndof, mass);
