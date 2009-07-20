@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
     suzerain_bspline_workspace *w
         = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
-    const int ncoeff = suzerain_bspline_ncoefficients(w);
+    const int ndof = suzerain_bspline_ndof(w);
 
     // Initialize mass matrix in factored form
     suzerain_bspline_lu_workspace *mass
@@ -367,34 +367,34 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
     // Compute expected coefficients for derivatives [0...nderiv]
     // by directly differentiating the polynomial test function.
     double * const expected
-        = (double *) malloc((nderiv+1) * ncoeff * sizeof(double));
+        = (double *) malloc((nderiv+1) * ndof * sizeof(double));
     for (int i = 0; i <= nderiv; ++i) {
         suzerain_bspline_find_coefficient_rhs(
-                &f, expected + i*ncoeff, w);
+                &f, expected + i*ndof, w);
         poly_params_differentiate(p);  // Drop the polynomial order by one
     }
-    suzerain_bspline_lu_solve(nderiv+1, expected, ncoeff, mass);
+    suzerain_bspline_lu_solve(nderiv+1, expected, ndof, mass);
 
     // Make copies of the zeroth derivative coefficients
     double * const actual
-        = (double *) malloc((nderiv+1) * ncoeff * sizeof(double));
+        = (double *) malloc((nderiv+1) * ndof * sizeof(double));
     for (int i = 0; i <= nderiv; ++i) {
-        memcpy(actual + i*ncoeff, expected, ncoeff * sizeof(actual[0]));
+        memcpy(actual + i*ndof, expected, ndof * sizeof(actual[0]));
     }
 
     // Solve M*x' = D*x ...
     // ...starting by applying the derivative operators
     for (int i = 0; i <= nderiv; ++i) {
-        suzerain_bspline_apply_operator(i, 1, actual + i*ncoeff, ncoeff, w);
+        suzerain_bspline_apply_operator(i, 1, actual + i*ndof, ndof, w);
     }
     // ...finish by solving with the mass matrix
-    suzerain_bspline_lu_solve(nderiv+1, actual, ncoeff, mass);
+    suzerain_bspline_lu_solve(nderiv+1, actual, ndof, mass);
 
     // See if we got anywhere close
     for (int i = 0; i <= nderiv; ++i) {
         check_close_collections(
-                expected + i*ncoeff, expected + (i+1)*ncoeff,
-                actual + i*ncoeff, actual + (i+1)*ncoeff, 1.0e-09);
+                expected + i*ndof, expected + (i+1)*ndof,
+                actual + i*ndof, actual + (i+1)*ndof, 1.0e-09);
     }
 
     free(actual);
@@ -419,7 +419,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
     suzerain_bspline_workspace *w
         = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
-    const int ncoeff = suzerain_bspline_ncoefficients(w);
+    const int ndof = suzerain_bspline_ndof(w);
 
     // Form the mass matrix M
     suzerain_bspline_lu_workspace * const mass
@@ -435,18 +435,18 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
         p->c[3] = 0.0; // Cubic
 
         // Compute the right hand side coefficients for M x = b
-        double * coefficient = (double *) malloc(ncoeff * sizeof(double));
+        double * coefficient = (double *) malloc(ndof * sizeof(double));
         suzerain_bspline_find_coefficient_rhs(&f, coefficient, w);
 
         // Solve for function coefficients using the mass matrix
-        suzerain_bspline_lu_solve(1, coefficient, ncoeff, mass);
+        suzerain_bspline_lu_solve(1, coefficient, ndof, mass);
 
         // Take the n-th derivative of the coefficients using M x' = D x
-        suzerain_bspline_apply_operator(derivative, 1, coefficient, ncoeff, w);
-        suzerain_bspline_lu_solve(1, coefficient, ncoeff, mass);
+        suzerain_bspline_apply_operator(derivative, 1, coefficient, ndof, w);
+        suzerain_bspline_lu_solve(1, coefficient, ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
-        for (int i = 0; i < ncoeff; ++i) {
+        for (int i = 0; i < ndof; ++i) {
             BOOST_CHECK_CLOSE(1.0 * p->c[1], coefficient[i], 1e-12);
         }
 
@@ -462,18 +462,18 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
         p->c[3] = 0.0; // Cubic
 
         // Compute the right hand side coefficients for M x = b
-        double * coefficient = (double *) malloc(ncoeff * sizeof(double));
+        double * coefficient = (double *) malloc(ndof * sizeof(double));
         suzerain_bspline_find_coefficient_rhs(&f, coefficient, w);
 
         // Solve for function coefficients using the mass matrix
-        suzerain_bspline_lu_solve(1, coefficient, ncoeff, mass);
+        suzerain_bspline_lu_solve(1, coefficient, ndof, mass);
 
         // Take the n-th derivative of the coefficients using M x' = D x
-        suzerain_bspline_apply_operator(derivative, 1, coefficient, ncoeff, w);
-        suzerain_bspline_lu_solve(1, coefficient, ncoeff, mass);
+        suzerain_bspline_apply_operator(derivative, 1, coefficient, ndof, w);
+        suzerain_bspline_lu_solve(1, coefficient, ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
-        for (int i = 0; i < ncoeff; ++i) {
+        for (int i = 0; i < ndof; ++i) {
             BOOST_CHECK_CLOSE(2.0 * p->c[2], coefficient[i], 1e-11);
         }
 
@@ -489,18 +489,18 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
         p->c[3] = 7.8; // Cubic
 
         // Compute the right hand side coefficients for M x = b
-        double * coefficient = (double *) malloc(ncoeff * sizeof(double));
+        double * coefficient = (double *) malloc(ndof * sizeof(double));
         suzerain_bspline_find_coefficient_rhs(&f, coefficient, w);
 
         // Solve for function coefficients using the mass matrix
-        suzerain_bspline_lu_solve(1, coefficient, ncoeff, mass);
+        suzerain_bspline_lu_solve(1, coefficient, ndof, mass);
 
         // Take the n-th derivative of the coefficients using M x' = D x
-        suzerain_bspline_apply_operator(derivative, 1, coefficient, ncoeff, w);
-        suzerain_bspline_lu_solve(1, coefficient, ncoeff, mass);
+        suzerain_bspline_apply_operator(derivative, 1, coefficient, ndof, w);
+        suzerain_bspline_lu_solve(1, coefficient, ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
-        for (int i = 0; i < ncoeff; ++i) {
+        for (int i = 0; i < ndof; ++i) {
             BOOST_CHECK_CLOSE(6.0 * p->c[3], coefficient[i], 1e-11);
         }
 
@@ -564,19 +564,19 @@ BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
     const int order  = 4;
     const int nderiv = 2;
-    const int ncoeff = 6;
+    const int ndof = 6;
 
     suzerain_bspline_workspace *w
         = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
 
     // Sanity check on fixed storage assumption for test case
-    BOOST_REQUIRE_EQUAL(ncoeff, suzerain_bspline_ncoefficients(w));
+    BOOST_REQUIRE_EQUAL(ndof, suzerain_bspline_ndof(w));
 
     // Check that we have a partition of unity
     {
-        double coefficients[ncoeff];
-        for (int i = 0; i < ncoeff; ++i) coefficients[i] = 1.0;
+        double coefficients[ndof];
+        for (int i = 0; i < ndof; ++i) coefficients[i] = 1.0;
 
         const double * points = breakpoints;
         const int npoints = sizeof(breakpoints)/sizeof(breakpoints[0]);
@@ -607,10 +607,10 @@ BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
     // Note we assume that GSL bspline functionality is sound and
     // only do some minor spot checks here
     {
-        BOOST_REQUIRE_EQUAL(6, suzerain_bspline_ncoefficients(w)); // Sanity
+        BOOST_REQUIRE_EQUAL(6, suzerain_bspline_ndof(w)); // Sanity
         BOOST_REQUIRE_EQUAL(2, nderiv);                            // Sanity
 
-        double       coefficients[ncoeff];
+        double       coefficients[ndof];
         const double points[]             = { 1.0 };
         const int    npoints              = sizeof(points)/sizeof(points[0]);
         const int    ldvalues             = npoints;
@@ -618,7 +618,7 @@ BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
         double       values[nvalues];
 
         // Investigate second basis function
-        for (int i = 0; i < ncoeff; ++i) coefficients[i] = 0.0;
+        for (int i = 0; i < ndof; ++i) coefficients[i] = 0.0;
         coefficients[1] = 1.0;
         suzerain_bspline_evaluate(
                 nderiv, coefficients, npoints, points, values, ldvalues, w);
@@ -627,7 +627,7 @@ BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
         BOOST_CHECK_EQUAL( 3./2., values[2]); // 2nd derivative
 
         // Investigate third basis function
-        for (int i = 0; i < ncoeff; ++i) coefficients[i] = 0.0;
+        for (int i = 0; i < ndof; ++i) coefficients[i] = 0.0;
         coefficients[2] = 1.0;
         suzerain_bspline_evaluate(
                 nderiv, coefficients, npoints, points, values, ldvalues, w);
@@ -636,7 +636,7 @@ BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
         BOOST_CHECK_EQUAL(-5./ 2., values[2]);          // 2nd derivative
 
         // Investigate fourth basis function
-        for (int i = 0; i < ncoeff; ++i) coefficients[i] = 0.0;
+        for (int i = 0; i < ndof; ++i) coefficients[i] = 0.0;
         coefficients[3] = 1.0;
         suzerain_bspline_evaluate(
                 nderiv, coefficients, npoints, points, values, ldvalues, w);
@@ -645,7 +645,7 @@ BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
         BOOST_CHECK_EQUAL(     1., values[2]); // 2nd derivative
 
         // Investigate fifth basis function
-        for (int i = 0; i < ncoeff; ++i) coefficients[i] = 0.0;
+        for (int i = 0; i < ndof; ++i) coefficients[i] = 0.0;
         coefficients[4] = 1.0;
         suzerain_bspline_evaluate(
                 nderiv, coefficients, npoints, points, values, ldvalues, w);

@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * bspline.h: bspline basis manipulation and operator routines
+ * bspline.h: B-spline basis manipulation and operator routines
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -33,15 +33,22 @@
 #include <suzerain/function.h>
 
 /** @file
- * Provides bspline basis evaluation and derivative operator routines.  These
- * functions provide bspline basis function evaluation, differentiation,
+ * Provides B-spline basis evaluation and derivative operator routines.  These
+ * functions provide B-spline basis function evaluation, differentiation,
  * derivative linear operator construction, and operator application routines.
+ * Unless otherwise noted, all matrices are stored in column-major (Fortran)
+ * storage.
  *
- * Internally, the code builds upon the GNU Scientific Library (GSL) bspline
+ * Multiple threads may call the routines simultaneously provided that each
+ * thread has its own workspace instances.  The behavior is undefined if two
+ * threads simultaneously share a workspace.
+ *
+ * Internally, the code builds upon the GNU Scientific Library (GSL) B-spline
  * routines and uses banded matrix BLAS and LAPACK functionality where
  * possible.
  */
 
+/* Specifies C linkage when compiled with C++ compiler */
 #undef __BEGIN_DECLS
 #undef __END_DECLS
 #ifdef __cplusplus
@@ -89,8 +96,8 @@ typedef struct {
     /** Maximum derivative requested */
     int nderivatives;
 
-    /** Number of coefficients or degrees of freedom in the basis */
-    int ncoefficients;
+    /** Number of degrees of freedom in the basis */
+    int ndof;
 
     /** Method chosen to form derivative operators */
     enum suzerain_bspline_method method;
@@ -142,6 +149,24 @@ typedef struct {
 
 } suzerain_bspline_workspace;
 
+/**
+ * Allocate a B-spline workspace.
+ *
+ * @param order Bspline order desired.  This is the piecewise degree plus one.
+ *              For example, 4 represents piecewise cubics.
+ * @param nderivatives Highest derivative operator requested.  The zeroth
+ *              through \c nderivatives-th operator will be available in
+ *              banded matrix form.
+ * @param nbreakpoints Number of breakpoints to use.  This can be thought of
+ *              as the number of piecewise intervals plus one.
+ * @param breakpoints Breakpoint locations in a length \c nbreakpoints
+ *              array.  Breakpoint locations may be nonuniform but must be
+ *              strictly increasing.  The values are copied for internal usage.
+ * @param method Specifies the method used to compute derivative operators.
+ *
+ * @return a workspace instance with operators ready for use on success.
+ *      On failure calls suzerain_error and returns NULL.
+ */
 suzerain_bspline_workspace *
 suzerain_bspline_alloc(
     int order,
@@ -150,14 +175,44 @@ suzerain_bspline_alloc(
     const double * breakpoints,
     enum suzerain_bspline_method method);
 
+/**
+ * Frees a previously allocated workspace.
+ *
+ * @param w Workspace to free.
+ */
 void
 suzerain_bspline_free(
     suzerain_bspline_workspace *w);
 
+
+/**
+ * Return the number of degrees of freedom in the B-spline basis.
+ * The number of degrees of freedom is exactly equal to the number
+ * of basis functions.
+ *
+ * @param w Workspace to use.
+ *
+ * @return the number of degrees of freedom.
+ */
 int
-suzerain_bspline_ncoefficients(
+suzerain_bspline_ndof(
     const suzerain_bspline_workspace *w);
 
+/**
+ * Apply the \c nderivative-th derivative operator to coefficients \c b.
+ * Multiplies the precomputed banded derivative operator against one or more
+ * coefficient vectors stored in \c b.  Results overwrite \c b.  Each
+ * coefficient vector is of length suzerain_bspline_ndof().
+ *
+ * @param nderivative Derivative operator to apply.  May be zero.
+ * @param nrhs Number of coefficient vectors stored in b.
+ * @param b[in,out] Coefficients to be multiplied.
+ * @param ldb Leading dimension of the data stored in \c b.
+ * @param w Workspace to use.
+ *
+ * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
+ *      returns one of suzerain_error_status.
+ */
 int
 suzerain_bspline_apply_operator(
     int nderivative,
@@ -166,6 +221,35 @@ suzerain_bspline_apply_operator(
     int ldb,
     const suzerain_bspline_workspace *w);
 
+/**
+ * At each \c point in \c points, evaluate the function and its derivatives
+ * determined from a linear combination of the supplied \c coefficients times
+ * the B-spline basis functions at \c point.
+ *
+ * Derivatives \c 0 through \c nderivative (inclusive) are computed and
+ * stored as columns within \c values.  If only a single derivative is
+ * desired, passing \c 0 to \c ldvalues will cause only that single derivative
+ * to be written in the first column of \c values.
+ *
+ * \note It is more efficient to compute a function and its derivatives
+ * simultaneously than to request each derivative separately.  This is due to
+ * the recurrence relationship used to compute B-spline derivatives.
+ *
+ * @param nderivative Maximum requested derivative.
+ * @param coefficients Expansion coefficients for a function in terms
+ *      of the B-spline basis.  Must be of length suzerain_bspline_ndof().
+ * @param npoints Number of evaluation points.
+ * @param points Points at which to evaluate the function.
+ * @param values[out] Matrix of values resulting from evaluating the function
+ *      and its derivatives.  Matrix dimensions are suzerain_bspline_ndof()
+ *      by \c nderivative if \c ldvalues >= \c suzerain_bspline_ndof().
+ *      If \c ldvalues is zero, only a single column is returned in \c values.
+ * @param ldvalues Leading dimension of the output matrix \c values.
+ * @param w Workspace to use.
+ *
+ * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
+ *      returns one of suzerain_error_status.
+ */
 int
 suzerain_bspline_evaluate(
     int nderivative,
@@ -183,7 +267,7 @@ suzerain_bspline_find_coefficient_rhs(
     const suzerain_bspline_workspace *w);
 
 typedef struct {
-    int ncoefficients;
+    int ndof;
     int kl;
     int ku;
     int lda;
