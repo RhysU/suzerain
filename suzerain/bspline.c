@@ -662,6 +662,8 @@ suzerain_bspline_lu_alloc(
         SUZERAIN_ERROR_NULL("failed to allocate space for pivot storage",
                             SUZERAIN_ENOMEM);
     }
+    /* Flag that decomposition has not occurred; Allows catching errors */
+    luw->ipiv[0] = -1;
 
     /* Allocate memory for the matrix formed within lu_form_general */
     if (posix_memalign((void **) &(luw->A),
@@ -749,19 +751,20 @@ suzerain_bspline_lu_form_general(
     }
 
     /* Compute LU factorization of the just-formed operator */
-    {
-        const int info = suzerain_lapack_dgbtrf(luw->ndof,
-                                                luw->ndof,
-                                                luw->kl,
-                                                luw->ku - luw->kl, /* NB */
-                                                luw->A,
-                                                luw->lda,
-                                                luw->ipiv);
-        if (info) {
-            SUZERAIN_ERROR("suzerain_lapack_dgbtrf reported an error",
-                           SUZERAIN_ESANITY);
-        }
+    const int info = suzerain_lapack_dgbtrf(luw->ndof,
+                                            luw->ndof,
+                                            luw->kl,
+                                            luw->ku - luw->kl, /* NB */
+                                            luw->A,
+                                            luw->lda,
+                                            luw->ipiv);
+    if (info) {
+        SUZERAIN_ERROR("suzerain_lapack_dgbtrf reported an error",
+                       SUZERAIN_ESANITY);
     }
+
+    /* Factorization overwrote luw->ipiv[0] == -1; This is our flag to
+     * check that factorization occurred in suzerain_bspline_lu_solve */
 
     return SUZERAIN_SUCCESS;
 }
@@ -783,6 +786,11 @@ suzerain_bspline_lu_solve(
     int ldb,
     const suzerain_bspline_lu_workspace *luw)
 {
+    if (luw->ipiv[0] == -1) {
+        SUZERAIN_ERROR("One of suzerain_bspline_lu_form_* not called before solve",
+                       SUZERAIN_EINVAL);
+    }
+
     const int info = suzerain_lapack_dgbtrs('N',
                                             luw->ndof,
                                             luw->kl,
