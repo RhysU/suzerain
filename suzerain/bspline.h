@@ -40,8 +40,11 @@
  * storage.  Multiple threads may call the routines simultaneously provided
  * that each thread has its own workspace instances.  The behavior is undefined
  * if two threads simultaneously share a workspace.  Internally, the code
- * builds upon the GNU Scientific Library (GSL) B-spline routines and uses
- * banded matrix BLAS and LAPACK functionality where possible.
+ * builds upon the <a href="http://www.gnu.org/software/gsl/">GNU Scientific
+ * Library</a> (GSL) <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Basis-Splines.html">B-spline
+ * routines</a> and uses banded matrix BLAS and LAPACK functionality where
+ * possible.
  */
 
 #undef __BEGIN_DECLS
