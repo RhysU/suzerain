@@ -76,7 +76,10 @@ typedef struct gsl_bspline_deriv_workspace gsl_bspline_deriv_workspace;
 
 /** Indicates the method chosen to compute derivative operators.  */
 enum suzerain_bspline_method {
-    /** Form derivative operators using the Greville abscissae.  */
+
+    /**
+     * Form derivative operators using collocation at the Greville abscissae.
+     **/
     SUZERAIN_BSPLINE_COLLOCATION_GREVILLE = 1
 };
 
@@ -156,17 +159,17 @@ typedef struct {
 /**
  * Allocate a B-spline workspace.
  *
- * @param order Bspline order desired.  This is the piecewise degree plus one.
- *              For example, 4 represents piecewise cubics.
- * @param nderivatives Highest derivative operator requested.  The zeroth
- *              through \c nderivatives-th operator will be available in
- *              banded matrix form.
- * @param nbreakpoints Number of breakpoints to use.  This can be thought of
- *              as the number of piecewise intervals plus one.
- * @param breakpoints Breakpoint locations in a length \c nbreakpoints
- *              array.  Breakpoint locations may be nonuniform but must be
- *              strictly increasing.  The values are copied for internal usage.
- * @param method Specifies the method used to compute derivative operators.
+ * @param[in] order Bspline order desired.  This is the piecewise degree plus
+ *          one.  For example, 4 represents piecewise cubics.
+ * @param[in] nderivatives Highest derivative operator requested.  The zeroth
+ *          through \c nderivatives-th operator will be available in
+ *          banded matrix form.
+ * @param[in] nbreakpoints Number of breakpoints to use.  This can be thought
+ *          of as the number of piecewise intervals plus one.
+ * @param[in] breakpoints Breakpoint locations in a length \c nbreakpoints
+ *          array.  Breakpoint locations may be nonuniform but must be
+ *          strictly increasing.  The values are copied for internal usage.
+ * @param[in] method Specifies the method used to compute derivative operators.
  *
  * @return a workspace instance with operators ready for use on success.
  *      On failure calls suzerain_error and returns NULL.
@@ -182,7 +185,7 @@ suzerain_bspline_alloc(
 /**
  * Frees a previously allocated workspace.
  *
- * @param w Workspace to free.
+ * @param[in] w Workspace to free.
  */
 void
 suzerain_bspline_free(
@@ -193,7 +196,7 @@ suzerain_bspline_free(
  * The number of degrees of freedom is exactly equal to the number
  * of basis functions.
  *
- * @param w Workspace to use.
+ * @param w[in] Workspace to use.
  *
  * @return the number of degrees of freedom.
  */
@@ -202,16 +205,16 @@ suzerain_bspline_ndof(
     const suzerain_bspline_workspace *w);
 
 /**
- * Apply the \c nderivative-th derivative operator to coefficients \c b.
+ * Apply the <tt>nderivative</tt>-th derivative operator to coefficients \c b.
  * Multiplies the precomputed banded derivative operator against one or more
  * coefficient vectors stored in \c b.  Results overwrite \c b.  Each
  * coefficient vector is of length suzerain_bspline_ndof().
  *
- * @param nderivative Derivative operator to apply.  May be zero.
- * @param nrhs Number of coefficient vectors stored in b.
+ * @param[in] nderivative Derivative operator to apply.  May be zero.
+ * @param[in] nrhs Number of coefficient vectors stored in b.
  * @param[in,out] b Coefficients to be multiplied.
- * @param ldb Leading dimension of the data stored in \c b.
- * @param w Workspace to use.
+ * @param[in] ldb Leading dimension of the data stored in \c b.
+ * @param[in] w Workspace to use.
  *
  * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
  *      returns one of suzerain_error_status.
@@ -225,31 +228,39 @@ suzerain_bspline_apply_operator(
     const suzerain_bspline_workspace *w);
 
 /**
- * At each \c point in \c points, evaluate the function and its derivatives
- * determined from a linear combination of the supplied \c coefficients times
- * the B-spline basis functions at \c point.
- *
- * Derivatives \c 0 through \c nderivative (inclusive) are computed and
- * stored as columns within \c values.  If only a single derivative is
- * desired, passing \c 0 to \c ldvalues will cause only that single derivative
- * to be written in the first column of \c values.
+ * Evaluate a function and its derivatives based upon a linear combination of
+ * the basis functions.  At each \c point in \c points, evaluate the function
+ * and its derivatives determined from a linear combination of the supplied \c
+ * coefficients times the B-spline basis functions at \c point.  Derivatives \c
+ * 0 through \c nderivative (inclusive) are computed and stored as columns
+ * within \c values.
+ * That is, \f[
+ *  \mbox{values}\left[i + k\,\mbox{ldvalues}\right] = \frac{d^k}{dx^k}
+ *  \sum_{j=0}^{\mbox{ndof}} \mbox{coefficients}_{j}\,B_{j}(\mbox{points}_{i})
+ * \f]
+ * for \f$ i\in\left\{0,\ldots,\mbox{npoints}\right\} \f$,
+ *\f$ k\in\left\{0,\ldots,\mbox{nderivative}\right\} \f$,
+ * \f$\mbox{ndof} = \f$ suzerain_bspline_ndof(w), and B-spline basis
+ * functions \f$ B_{j} \f$.  If only a single derivative is desired, passing \c
+ * 0 to \c ldvalues will cause only that single derivative to be written in the
+ * first column of \c values.
  *
  * \note It is more efficient to compute a function and its derivatives
  * simultaneously than to request each derivative separately.  This is due to
  * the recurrence relationship used to compute B-spline derivatives.
  *
- * @param nderivative Maximum requested derivative.  This may be higher
+ * @param[in] nderivative Maximum requested derivative.  This may be higher
  *      than the number of derivatives requested in suzerain_bspline_alloc().
- * @param coefficients Expansion coefficients for a function in terms
+ * @param[in] coefficients Expansion coefficients for a function in terms
  *      of the B-spline basis.  Must be of length suzerain_bspline_ndof().
- * @param npoints Number of evaluation points.
- * @param points Points at which to evaluate the function.
+ * @param[in] npoints Number of evaluation points.
+ * @param[in] points Points at which to evaluate the function.
  * @param[out] values Matrix of values resulting from evaluating the function
  *      and its derivatives.  Matrix dimensions are suzerain_bspline_ndof()
  *      by \c nderivative if \c ldvalues >= \c suzerain_bspline_ndof().
  *      If \c ldvalues is zero, only a single column is returned in \c values.
- * @param ldvalues Leading dimension of the output matrix \c values.
- * @param w Workspace to use.
+ * @param[in] ldvalues Leading dimension of the output matrix \c values.
+ * @param[in] w Workspace to use.
  *
  * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
  *      returns one of suzerain_error_status.
@@ -265,20 +276,22 @@ suzerain_bspline_evaluate(
     const suzerain_bspline_workspace *w);
 
 /**
- * Determine the right hand side of the equation \c D[0] \c x =  \c rhs for
- * \c function.  Here \c D[0] is the zeroth derivative operator
- * (i.e. mass matrix), \c x are the basis function coefficients that will
- * best represent \c function for the given method, and \c rhs is the
- * vector computed by this routine.
+ * Determine the right hand side of the interpolation problem <tt>D[0] x
+ * =rhs</tt>.  Here <tt>D[0]</tt> is the zeroth derivative operator (i.e. mass
+ * matrix), \c x are the basis function coefficients that will best represent
+ * \c function for the given method, and \c rhs is the vector computed by this
+ * routine.
  *
- * @param function to use when computing \f$ b \f$
- * @param[out] rhs output vector.
- * @param w Workspace to use.
+ * @param[in] function Function to use when computing \c rhs.
+ * @param[out] rhs Output vector containing computed right hand side
+ * @param[in] w Workspace to use.
  *
  * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
  *      returns one of suzerain_error_status.
  *
  * @see suzerain_bspline_method() for details on available methods.
+ *      Different methods will necessarily compute the right hand side
+ *      differently.
  * @see suzerain_bspline_lu_form_mass() and suzerain_bspline_lu_solve()
  *      for how to solve the linear equation for \c x.
  */
@@ -331,7 +344,8 @@ typedef struct {
 /**
  * Allocates a B-spline operator LU workspace.
  *
- * @param w Workspace to use.
+ * @param[in] w B-spline workspace on which to base the new workspace's
+ *      dimensions.
  *
  * @return a workspace instance ready to be used with
  *      suzerain_bspline_lu_form_general() or suzerain_bspline_lu_form_mass().
@@ -344,7 +358,7 @@ suzerain_bspline_lu_alloc(
 /**
  * Frees a previously allocated workspace.
  *
- * @param luw Workspace to free.
+ * @param[in] luw Workspace to free.
  */
 void
 suzerain_bspline_lu_free(
@@ -352,15 +366,17 @@ suzerain_bspline_lu_free(
 
 /**
  * Forms the LU decomposition of a linear combination of derivative operators
- * from the workspace \c w.
+ * from the workspace \c w.  That is, \f[
+ *  \mbox{luw} \leftarrow \mbox{LU}\left(
+ *      \sum_{j=0}^{\mbox{ncoefficients}} \mbox{coefficients}_{j} \, D[j]
+ *  \right)
+ * \f]
  *
- * @param ncoefficients Number of coefficients stored in \c coefficients.
- * @param coefficients Coefficients to use in the linear combination of
- *      derivative operators.  \c coefficients[0] multiplies the zeroth
- *      derivative operator in \c w.  \c coefficients[1] multiplies the
- *      first derivative operator in \c w.  Etc.
- * @param w Workspace containing desired derivative operators.
- * @param luw Workspace in which to store the factored operator.
+ * @param[in] ncoefficients Number of coefficients stored in \c coefficients.
+ * @param[in] coefficients Coefficients to use in the linear combination of
+ *      derivative operators.
+ * @param[in] w Workspace containing desired derivative operators.
+ * @param[in,out] luw Workspace in which to store the factored operator.
  *
  * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
  *      returns one of suzerain_error_status.
@@ -376,8 +392,8 @@ suzerain_bspline_lu_form_general(
  * Forms the LU decomposition of the zeroth derivative operator, also
  * called the mass matrix, from workspace \c w.
  *
- * @param w Workspace containing the desired mass matrix.
- * @param luw  Workspace in which to store the factored operator.
+ * @param[in] w Workspace containing the desired mass matrix.
+ * @param[in,out] luw  Workspace in which to store the factored operator.
  *
  * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
  *      returns one of suzerain_error_status.
@@ -391,15 +407,16 @@ suzerain_bspline_lu_form_mass(
     suzerain_bspline_lu_workspace *luw);
 
 /**
- * Solves the equation \c A \c x = \c b using the factored operator
- * stored in luw.
+ * Solves the equation <tt>A x = b</tt> using the factored operator
+ * stored in \c luw.
  *
- * @param nrhs Number of right hand sides, i.e. columns, stored in matrix \c b.
+ * @param[in] nrhs Number of right hand sides, i.e. columns, stored in
+ *      matrix \c b.
  * @param[in,out] b Matrix of right hand sides to solve and the resulting
  *      solutions.  On input, contains data \c b.  On output, contains
  *      solutions \c x.
- * @param ldb Leading dimension of matrix b.
- * @param luw Workspace containing the factored operator to use.
+ * @param[in] ldb Leading dimension of matrix b.
+ * @param[in] luw Workspace containing the factored operator to use.
  *
  * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
  *      returns one of suzerain_error_status.
