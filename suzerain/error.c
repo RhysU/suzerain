@@ -28,122 +28,129 @@
 
 suzerain_error_handler_t * suzerain_error_handler = NULL;
 
-static void no_error_handler (const char *reason, const char *file, int line, int suzerain_errno);
+static void
+no_error_handler(const char *reason,
+                 const char *file,
+                 int line,
+                 int suzerain_errno);
 
 void
-suzerain_error (const char * reason, const char * file, int line, int suzerain_errno)
+suzerain_error(const char * reason,
+               const char * file,
+               int line,
+               int suzerain_errno)
 {
-  if (suzerain_error_handler)
-    {
-      (*suzerain_error_handler) (reason, file, line, suzerain_errno);
-      return ;
+    if (suzerain_error_handler) {
+        (*suzerain_error_handler) (reason, file, line, suzerain_errno);
+        return ;
     }
 
-  suzerain_stream_printf ("ERROR", file, line, reason);
+    suzerain_stream_printf ("ERROR", file, line, reason);
 
-  fflush (stdout);
-  fprintf (stderr, "Default suzerain error handler invoked.\n");
-  fflush (stderr);
+    fflush (stdout);
+    fprintf (stderr, "Default suzerain error handler invoked.\n");
+    fflush (stderr);
 
-  abort ();
+    abort ();
 }
 
 suzerain_error_handler_t *
-suzerain_set_error_handler (suzerain_error_handler_t * new_handler)
+suzerain_set_error_handler(suzerain_error_handler_t * new_handler)
 {
-  suzerain_error_handler_t * previous_handler = suzerain_error_handler;
-  suzerain_error_handler = new_handler;
-  return previous_handler;
+    suzerain_error_handler_t * previous_handler = suzerain_error_handler;
+    suzerain_error_handler = new_handler;
+    return previous_handler;
 }
 
 
 suzerain_error_handler_t *
-suzerain_set_error_handler_off (void)
+suzerain_set_error_handler_off(void)
 {
-  suzerain_error_handler_t * previous_handler = suzerain_error_handler;
-  suzerain_error_handler = no_error_handler;
-  return previous_handler;
+    suzerain_error_handler_t * previous_handler = suzerain_error_handler;
+    suzerain_error_handler = no_error_handler;
+    return previous_handler;
 }
 
 static void
-no_error_handler (const char *reason, const char *file, int line, int suzerain_errno)
+no_error_handler(const char *reason,
+                 const char *file,
+                 int line,
+                 int suzerain_errno)
 {
-  /* do nothing */
-  reason = 0;
-  file = 0;
-  line = 0;
-  suzerain_errno = 0;
-  return;
+    /* do nothing */
+    reason = 0;
+    file = 0;
+    line = 0;
+    suzerain_errno = 0;
+    return;
 }
 
 FILE * suzerain_stream = NULL ;
 suzerain_stream_handler_t * suzerain_stream_handler = NULL;
 
 void
-suzerain_stream_printf(const char *label, const char *file, int line,
-                   const char *reason)
+suzerain_stream_printf(const char *label,
+                       const char *file,
+                       int line,
+                       const char *reason)
 {
-  if (suzerain_stream == NULL)
-    {
-      suzerain_stream = stderr;
+    if (suzerain_stream == NULL) {
+        suzerain_stream = stderr;
     }
-  if (suzerain_stream_handler)
-    {
-      (*suzerain_stream_handler) (label, file, line, reason);
-      return;
+    if (suzerain_stream_handler) {
+        (*suzerain_stream_handler) (label, file, line, reason);
+        return;
     }
-  fprintf (suzerain_stream, "suzerain: %s:%d: %s: %s\n", file, line, label, reason);
+    fprintf(suzerain_stream,
+            "suzerain: %s:%d: %s: %s\n", file, line, label, reason);
 
 }
 
 suzerain_stream_handler_t *
-suzerain_set_stream_handler (suzerain_stream_handler_t * new_handler)
+suzerain_set_stream_handler(suzerain_stream_handler_t * new_handler)
 {
-  suzerain_stream_handler_t * previous_handler = suzerain_stream_handler;
-  suzerain_stream_handler = new_handler;
-  return previous_handler;
+    suzerain_stream_handler_t * previous_handler = suzerain_stream_handler;
+    suzerain_stream_handler = new_handler;
+    return previous_handler;
 }
 
 FILE *
-suzerain_set_stream (FILE * new_stream)
+suzerain_set_stream(FILE * new_stream)
 {
-  FILE * previous_stream;
-  if (suzerain_stream == NULL) {
-    suzerain_stream = stderr;
-  }
-  previous_stream = suzerain_stream;
-  suzerain_stream = new_stream;
-  return previous_stream;
+    FILE * previous_stream;
+    if (suzerain_stream == NULL) {
+        suzerain_stream = stderr;
+    }
+    previous_stream = suzerain_stream;
+    suzerain_stream = new_stream;
+    return previous_stream;
 }
 
 const char *
 suzerain_strerror(const int suzerain_errno)
 {
-  switch (suzerain_errno)
-    {
+    switch (suzerain_errno) {
     case SUZERAIN_SUCCESS:
-      return "success" ;
-    case SUZERAIN_FAILURE:
-      return "failure" ;
+        return "success" ;
     case SUZERAIN_EDOM:
-      return "input domain error" ;
+        return "input domain error" ;
     case SUZERAIN_ERANGE:
-      return "output range error" ;
+        return "output range error" ;
     case SUZERAIN_EFAULT:
-      return "invalid pointer" ;
+        return "invalid pointer" ;
     case SUZERAIN_EINVAL:
-      return "invalid argument supplied by user" ;
+        return "invalid argument supplied by user" ;
     case SUZERAIN_EFAILED:
-      return "generic failure" ;
+        return "generic failure" ;
     case SUZERAIN_ESANITY:
-      return "sanity check failed - shouldn't happen" ;
+        return "sanity check failed - shouldn't happen" ;
     case SUZERAIN_ENOMEM:
-      return "malloc failed" ;
+        return "malloc failed" ;
     case SUZERAIN_EBADFUNC:
-      return "problem with user-supplied function";
+        return "problem with user-supplied function";
     case SUZERAIN_EZERODIV:
-      return "tried to divide by zero" ;
+        return "tried to divide by zero" ;
     default:
-      return "unknown error code" ;
+        return "unknown error code" ;
     }
 }

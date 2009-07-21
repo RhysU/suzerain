@@ -42,9 +42,9 @@
  * if two threads simultaneously share a workspace.  Internally, the code
  * builds upon the <a href="http://www.gnu.org/software/gsl/">GNU Scientific
  * Library</a> (GSL) <a
- * href="http://www.gnu.org/software/gsl/manual/html_node/Basis-Splines.html">B-spline
- * routines</a> and uses banded matrix BLAS and LAPACK functionality where
- * possible.
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Basis-Splines.html">
+ * B-spline routines</a> and uses banded matrix BLAS and LAPACK functionality
+ * where possible.
  */
 
 #undef __BEGIN_DECLS
@@ -175,7 +175,7 @@ typedef struct {
  * @param[in] method Specifies the method used to compute derivative operators.
  *
  * @return a workspace instance with operators ready for use on success.
- *      On failure calls suzerain_error and returns NULL.
+ *      On failure calls suzerain_error() and returns NULL.
  */
 suzerain_bspline_workspace *
 suzerain_bspline_alloc(
@@ -199,7 +199,7 @@ suzerain_bspline_free(
  * The number of degrees of freedom is exactly equal to the number
  * of basis functions.
  *
- * @param w[in] Workspace to use.
+ * @param[in] w Workspace to use.
  *
  * @return the number of degrees of freedom.
  */
@@ -219,8 +219,8 @@ suzerain_bspline_ndof(
  * @param[in] ldb Leading dimension of the data stored in \c b.
  * @param[in] w Workspace to use.
  *
- * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
- *      returns one of suzerain_error_status.
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
  */
 int
 suzerain_bspline_apply_operator(
@@ -265,8 +265,8 @@ suzerain_bspline_apply_operator(
  * @param[in] ldvalues Leading dimension of the output matrix \c values.
  * @param[in] w Workspace to use.
  *
- * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
- *      returns one of suzerain_error_status.
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
  */
 int
 suzerain_bspline_evaluate(
@@ -289,8 +289,8 @@ suzerain_bspline_evaluate(
  * @param[out] rhs Output vector containing computed right hand side
  * @param[in] w Workspace to use.
  *
- * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
- *      returns one of suzerain_error_status.
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
  *
  * @see suzerain_bspline_method() for details on available methods.
  *      Different methods will necessarily compute the right hand side
@@ -352,7 +352,7 @@ typedef struct {
  *
  * @return a workspace instance ready to be used with
  *      suzerain_bspline_lu_form_general() or suzerain_bspline_lu_form_mass().
- *      On failure calls suzerain_error and returns NULL.
+ *      On failure calls suzerain_error() and returns NULL.
  */
 suzerain_bspline_lu_workspace *
 suzerain_bspline_lu_alloc(
@@ -381,8 +381,8 @@ suzerain_bspline_lu_free(
  * @param[in] w Workspace containing desired derivative operators.
  * @param[in,out] luw Workspace in which to store the factored operator.
  *
- * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
- *      returns one of suzerain_error_status.
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
  */
 int
 suzerain_bspline_lu_form_general(
@@ -398,8 +398,8 @@ suzerain_bspline_lu_form_general(
  * @param[in] w Workspace containing the desired mass matrix.
  * @param[in,out] luw  Workspace in which to store the factored operator.
  *
- * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
- *      returns one of suzerain_error_status.
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
  *
  * @see This is a convenience wrapper function built atop
  *      suzerain_bspline_lu_form_general().
@@ -421,8 +421,8 @@ suzerain_bspline_lu_form_mass(
  * @param[in] ldb Leading dimension of matrix b.
  * @param[in] luw Workspace containing the factored operator to use.
  *
- * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
- *      returns one of suzerain_error_status.
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
  */
 int
 suzerain_bspline_lu_solve(
