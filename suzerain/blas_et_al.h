@@ -31,6 +31,14 @@
 #ifndef __SUZERAIN_BLAS_ET_AL_H__
 #define __SUZERAIN_BLAS_ET_AL_H__
 
+/** @file
+ * Wraps external BLAS and LAPACK routines necessary for Suzerain.
+ * Provided to insulate the library from potential variations in
+ * type signatures as well as to consolidate all Fortran-from-C
+ * parameter differences.
+ */
+
+/* Specifies C linkage when compiled with C++ compiler */
 #undef __BEGIN_DECLS
 #undef __END_DECLS
 #ifdef __cplusplus
@@ -43,14 +51,50 @@
 
 __BEGIN_DECLS
 
+/**
+ * Allocates memory aligned according to the underlying BLAS'
+ * recommendations for performance and numerical stability.
+ *
+ * @param size Number of bytes to allocate.
+ *
+ * @return On success, return a pointer to the allocated memory.  This
+ *      memory must later be freed.  On failure, return a NULL pointer.
+ */
+void *
+suzerain_blas_malloc(size_t size);
+
+/**
+ * Perform \f$ y \leftarrow{} x \f$ using BLAS's dcopy.
+ *
+ * @param n Number of elements in \c x and \c y.
+ * @param x Source vector.
+ * @param incx Source vector stride.
+ * @param y Target vector.
+ * @param incy Target vector stride.
+ *
+ * @see A BLAS reference for more details.
+ */
 void
 suzerain_blas_dcopy(
         const int n,
-        double *x,
+        const double *x,
         const int incx,
         double *y,
         const int incy);
 
+/**
+ * Compute \f$ x \cdot{} y \f$ using BLAS's ddot.
+ *
+ * @param n Number of elements in \c x and \c y.
+ * @param x First source vector.
+ * @param incx First source vector stride.
+ * @param y Second source vector.
+ * @param incy Second source vector stride.
+ *
+ * @return \f$ x \cdot{} y \f$.
+ *
+ * @see A BLAS reference for more details.
+ */
 double
 suzerain_blas_ddot(
         const int n,
@@ -59,12 +103,45 @@ suzerain_blas_ddot(
         const double *y,
         const int incy);
 
+/**
+ * Compute \f$ \left|\left| x \right|\right|_{1} \f$ using BLAS's dasum.
+ *
+ * @param n Number of elements in \c x.
+ * @param x Source vector.
+ * @param incx Source vector stride.
+ *
+ * @return \f$ \left|\left| x \right|\right|_{1} \f$
+ *
+ * @see A BLAS reference for more details.
+ */
 double
 suzerain_blas_dasum(
         const int n,
         const double *x,
         const int incx);
 
+/**
+ * Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ using BLAS's dgbmv.
+ * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
+ *
+ * @param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
+ *      or a conjugate transpose, respectively.
+ * @param m Number of rows in matrix \c a.
+ * @param n Number of columns in matrix \c a.
+ * @param kl Number of subdiagonals in band storage of \c a.
+ * @param ku Number of superdiagonals in band storage of \c a.
+ * @param alpha Multiplicative scalar \f$ \alpha \f$.
+ * @param a General band storage for matrix \f$ A \f$.
+ * @param lda Leading dimension of \c a.
+ * @param x Vector to be multiplied.
+ * @param incx Stride of vector \c x.
+ * @param beta Multiplicative scalar \f$ \beta \f$.
+ * @param y Vector to be added to product and to contain result.
+ * @param incy Stride of vector \c y.
+ *
+ * @see A BLAS reference for more details, especially for general
+ *      band storage matrix requirements.
+ */
 void
 suzerain_blas_dgbmv(
         const char trans,
@@ -81,6 +158,28 @@ suzerain_blas_dgbmv(
         double *y,
         const int incy);
 
+/**
+ * Compute the LUP decomposition of a general banded matrix using
+ * LAPACK's dgbtrf.  Stores the results back into the same matrix.
+ * Note that the matrix must have extra superdiagonals available
+ * to handle the factorization fill in.
+ *
+ * @param m Number of rows in matrix \c ab.
+ * @param n Number of columns in matrix \c ab.
+ * @param kl Number of subdiagonals in band storage of \c ab.
+ * @param ku Number of superdiagonals in band storage of \c ab.
+ * @param ab General band storage of the matrix to factor.
+ * @param ldab Leading dimension of \c ab.
+ * @param ipiv Pivot matrix computed in the decomposition.
+ *
+ * @returns Zero on successful execution.  Nonzero otherwise.
+ *
+ * @see suzerain_lapack_dgbtrs for how to solve a linear system
+ *      once you have decomposed the matrix.
+ * @see A LAPACK reference for more details, especially for the
+ *      \c ku storage requirements and the resulting factored
+ *      storage format.
+ */
 int
 suzerain_lapack_dgbtrf(
         const int m,
@@ -91,6 +190,32 @@ suzerain_lapack_dgbtrf(
         const int ldab,
         int *ipiv);
 
+/**
+ * Solve \f$ AX = B \f$ using the previously LUP decomposed general band matrix
+ * \f$ A \f$ and LAPACK's dgbtrs.  Transposes of \f$ A \f$ can be taken using
+ * the \c trans parameter.
+ *
+ * @param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
+ *      or a conjugate transpose, respectively.
+ * @param n Number of rows and columns in matrix \c ab.
+ * @param kl Number of subdiagonals in band storage of \c ab.
+ * @param ku Number of superdiagonals in nonfactored matrix \c ab.
+ *      Note this is \e not the number of superdiagonals in the storage
+ *      format of \c ab, but rather the number of superdiagonals required
+ *      to store the non-factored matrix \c ab.  This is odd.
+ * @param nrhs Number of right hand sides, or columns, in \c b.
+ * @param ab General band storage of the matrix to factor.
+ * @param ldab Leading dimension of \c ab.
+ * @param ipiv Pivot matrix already computed in the decomposition.
+ * @param b Matrix \f$ B \f$ containing right hand sides on invocation and
+ *      solutions on return.
+ * @param ldb Leading dimension of matrix \c b.
+ *
+ * @returns Zero on successful execution.  Nonzero otherwise.
+ *
+ * @see suzerain_lapack_dgbtrf for how to decompose the matrix \f$ A \f$.
+ * @see A LAPACK reference for more details.
+ */
 int
 suzerain_lapack_dgbtrs(
         const char trans,

@@ -28,10 +28,12 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#ifndef __SUZERAIN_BLAS_ET_AL_H__
-#define __SUZERAIN_BLAS_ET_AL_H__
-
 #include "config.h"
+
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef HAVE_MKL
 #include <mkl_types.h>
@@ -43,10 +45,38 @@
 
 #include <suzerain/blas_et_al.h>
 
+void *
+suzerain_blas_malloc(size_t size)
+{
+#ifdef HAVE_MKL
+    /* We do not use MKL_malloc to avoid later needing MKL_free calls. */
+    /* Align at 16-byte boundaries per MKL user guide section 8. */
+    const size_t alignment = 16;
+#else
+#error "Sanity failure"
+#endif
+
+    void * p = NULL;
+
+    const int status = posix_memalign(&p, alignment, size);
+
+    switch (status) {
+        case 0:
+            return p;
+        case ENOMEM:
+            return NULL;
+        case EINVAL:
+        default:
+            fprintf(stderr, "Fatal posix_memalign error at %s:%d-- %s\n",
+                    __FILE__, __LINE__, strerror(status));
+            abort();
+    }
+}
+
 void
 suzerain_blas_dcopy(
         const int n,
-        double *x,
+        const double *x,
         const int incx,
         double *y,
         const int incy)
@@ -189,5 +219,3 @@ suzerain_lapack_dgbtrs(
 
     return _info;
 }
-
-#endif /* __SUZERAIN_BLAS_ET_AL_H__ */
