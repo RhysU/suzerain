@@ -37,19 +37,12 @@
  * functions provide B-spline basis function evaluation, differentiation,
  * derivative linear operator construction, and operator application routines.
  * Unless otherwise noted, all matrices are stored in column-major (Fortran)
- * storage.
- *
- * Multiple threads may call the routines simultaneously provided that each
- * thread has its own workspace instances.  The behavior is undefined if two
- * threads simultaneously share a workspace.
- *
- * Internally, the code builds upon the GNU Scientific Library (GSL) B-spline
- * routines and uses banded matrix BLAS and LAPACK functionality where
- * possible.
+ * storage.  Multiple threads may call the routines simultaneously provided
+ * that each thread has its own workspace instances.  The behavior is undefined
+ * if two threads simultaneously share a workspace.  Internally, the code
+ * builds upon the GNU Scientific Library (GSL) B-spline routines and uses
+ * banded matrix BLAS and LAPACK functionality where possible.
  */
-
-/* TODO In versus out in doxygen */
-/* TODO Mathematics in doxygen */
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -65,7 +58,9 @@
 # define __END_DECLS /* empty */
 #endif
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __BEGIN_DECLS
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /* Conditional forward declarations of implementation-related structs */
 #ifndef __GSL_MATRIX_DOUBLE_H__
@@ -192,7 +187,6 @@ suzerain_bspline_alloc(
 void
 suzerain_bspline_free(
     suzerain_bspline_workspace *w);
-
 
 /**
  * Return the number of degrees of freedom in the B-spline basis.
@@ -416,6 +410,8 @@ suzerain_bspline_lu_solve(
     int ldb,
     const suzerain_bspline_lu_workspace *luw);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif // PECOS_SUZERAIN_BSPLINE_OPERATOR_H

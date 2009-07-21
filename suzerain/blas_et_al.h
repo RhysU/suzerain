@@ -49,7 +49,9 @@
 # define __END_DECLS /* empty */
 #endif
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __BEGIN_DECLS
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
  * Allocates memory aligned according to the underlying BLAS'
@@ -229,6 +231,8 @@ suzerain_lapack_dgbtrs(
         double *b,
         const int ldb);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* __SUZERAIN_BLAS_ET_AL_H__ */

@@ -37,7 +37,9 @@
 # define __END_DECLS /* empty */
 #endif
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __BEGIN_DECLS
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 enum suzerain_error_status {
   SUZERAIN_SUCCESS  = 0,
@@ -116,6 +118,8 @@ FILE * suzerain_set_stream(FILE * new_stream);
 #define SUZERAIN_ERROR_NULL(reason, suzerain_errno) \
         SUZERAIN_ERROR_VAL(reason, suzerain_errno, 0)
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* PECOS_SUZERAIN_ERRNO_H__ */

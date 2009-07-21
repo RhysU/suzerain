@@ -40,7 +40,9 @@
 # define __END_DECLS /* empty */
 #endif
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __BEGIN_DECLS
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
  * Represents an arbitrary function of two parameters with the second parameter
@@ -76,6 +78,8 @@ typedef struct {
  */
 #define SUZERAIN_FN_EVAL(F,x) (*((F)->function))(x,(F)->params)
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* __SUZERAIN_FUNCTION_H__ */

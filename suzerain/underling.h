@@ -47,7 +47,9 @@
 # define __END_DECLS /* empty */
 #endif
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __BEGIN_DECLS
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 typedef enum {
     underling_state_uninitialized  = 0,
@@ -87,6 +89,8 @@ int underling_prepare_link(underling_workspace *w,
 int underling_prepare_state(underling_workspace *w,
                             const underling_state *state);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif // PECOS_SUZERAIN_UNDERLING_H
