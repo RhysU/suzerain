@@ -238,7 +238,8 @@ suzerain_bspline_apply_operator(
  * simultaneously than to request each derivative separately.  This is due to
  * the recurrence relationship used to compute B-spline derivatives.
  *
- * @param nderivative Maximum requested derivative.
+ * @param nderivative Maximum requested derivative.  This may be higher
+ *      than the number of derivatives requested in suzerain_bspline_alloc().
  * @param coefficients Expansion coefficients for a function in terms
  *      of the B-spline basis.  Must be of length suzerain_bspline_ndof().
  * @param npoints Number of evaluation points.
