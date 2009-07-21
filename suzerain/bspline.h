@@ -48,6 +48,9 @@
  * possible.
  */
 
+/* TODO In versus out in doxygen */
+/* TODO Mathematics in doxygen */
+
 /* Specifies C linkage when compiled with C++ compiler */
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -117,13 +120,13 @@ typedef struct {
     /** Leading dimension in each derivative */
     int * lda;
 
-    /** Size of each derivative operator's storage in  doubles */
+    /** Size of each derivative operator's storage in doubles */
     int * storagesize;
 
     /**
      * Raw data storage for each banded derivative operator matrix
      * \c D[0] is the storage for the 0th derivative, \c D[1] is
-     * the storage for the 1st derivative, etc..
+     * the storage for the 1st derivative, etc.
      **/
     double **D;
 
@@ -260,13 +263,13 @@ suzerain_bspline_evaluate(
     int ldvalues,
     const suzerain_bspline_workspace *w);
 
-/** 
+/**
  * Determine the right hand side of the equation \c D[0] \c x =  \c rhs for
  * \c function.  Here \c D[0] is the zeroth derivative operator
  * (i.e. mass matrix), \c x are the basis function coefficients that will
  * best represent \c function for the given method, and \c rhs is the
  * vector computed by this routine.
- * 
+ *
  * @param function to use when computing \f$ b \f$
  * @param rhs[out] output vector.
  * @param w Workspace to use.
@@ -284,24 +287,83 @@ suzerain_bspline_find_interpolation_problem_rhs(
     double * rhs,
     const suzerain_bspline_workspace *w);
 
+/**
+ * Encapsulates the LU decomposition of a linear combination of derivative
+ * operators.  Callers obtain a workspace using suzerain_bspline_lu_alloc() and
+ * release it using suzerain_bspline_lu_free().
+ */
 typedef struct {
+
+    /** Number of degrees of freedom in the basis */
     int ndof;
+
+    /** Number of subdiagonals in the factored operator. */
     int kl;
+
+    /**
+     * Number of superdiagonals in the factored operator.
+     * Note that, for a given B-spline basis, suzerain_bspline_lu_workspace::ku
+     * is larger than the corresponding suzerain_bspline_workspace::ku
+     * according to the requirements of LAPACK's \c dgbtrf.
+     */
     int ku;
+
+    /** Leading dimension in the factored operator derivative */
     int lda;
+
+    /** Size of each derivative operator's storage in doubles */
     int storagesize;
+
+    /** Pivot matrix \c P from the \c LUP decomposition of the operator. */
     int *ipiv;
+
+    /**
+     * Raw data storage for the factored operator.  Operator is stored
+     * according to BLAS banded matrix conventions according to \c kl, \c ku,
+     * \c lda, and \c ndof
+     **/
     double *A;
+
 } suzerain_bspline_lu_workspace;
 
+
+/**
+ * Allocates a B-spline operator LU workspace.
+ *
+ * @param w Workspace to use.
+ *
+ * @return a workspace instance ready to be used with
+ *      suzerain_bspline_lu_form_general() or suzerain_bspline_lu_form_mass().
+ *      On failure calls suzerain_error and returns NULL.
+ */
 suzerain_bspline_lu_workspace *
 suzerain_bspline_lu_alloc(
     const suzerain_bspline_workspace *w);
 
+/**
+ * Frees a previously allocated workspace.
+ *
+ * @param w Workspace to free.
+ */
 void
 suzerain_bspline_lu_free(
     suzerain_bspline_lu_workspace *luw);
 
+/**
+ * Forms the LU decomposition of a linear combination of derivative operators
+ * from the workspace \c w.
+ *
+ * @param ncoefficients Number of coefficients stored in \c coefficients.
+ * @param coefficients Coefficients to use in the linear combination of
+ *      derivative operators.  \c coefficients[0] multiplies the zeroth
+ *      derivative operator in \c w.  \c coefficients[1] multiplies the
+ *      first derivative operator in \c w.  Etc.
+ * @param w Workspace containing desired derivative operators.
+ * @param luw Workspace in which to store the factored operator.
+ *
+ * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
+ *      returns one of suzerain_error_status.
+ */
 int
 suzerain_bspline_lu_form_general(
     int ncoefficients,
@@ -309,11 +371,38 @@ suzerain_bspline_lu_form_general(
     const suzerain_bspline_workspace * w,
     suzerain_bspline_lu_workspace *luw);
 
+/**
+ * Forms the LU decomposition of the zeroth derivative operator, also
+ * called the mass matrix, from workspace \c w.
+ *
+ * @param w Workspace containing the desired mass matrix.
+ * @param luw  Workspace in which to store the factored operator.
+ *
+ * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
+ *      returns one of suzerain_error_status.
+ *
+ * @see This is a convenience wrapper function built atop
+ *      suzerain_bspline_lu_form_general().
+ */
 int
 suzerain_bspline_lu_form_mass(
     const suzerain_bspline_workspace * w,
     suzerain_bspline_lu_workspace *luw);
 
+/**
+ * Solves the equation \c A \c x = \c b using the factored operator
+ * stored in luw.
+ *
+ * @param nrhs Number of right hand sides, i.e. columns, stored in matrix \c b.
+ * @param b[in,out] Matrix of right hand sides to solve and the resulting
+ *      solutions.  On input, contains data \c b.  On output, contains
+ *      solutions \c x.
+ * @param ldb Leading dimension of matrix b.
+ * @param luw Workspace containing the factored operator to use.
+ *
+ * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
+ *      returns one of suzerain_error_status.
+ */
 int
 suzerain_bspline_lu_solve(
     int nrhs,
