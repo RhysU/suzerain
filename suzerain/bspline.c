@@ -212,9 +212,8 @@ suzerain_bspline_alloc(int order,
     /* Allocate one block for all derivative operator matrices */
     const size_t total_storage
         = sum_int(w->nderivatives+1, w->storagesize, 1);
-    if (posix_memalign((void **) &(w->D[0]),
-                       16 /* byte boundary */,
-                       total_storage*sizeof(w->D[0][0]))) {
+    w->D[0] = suzerain_blas_malloc(total_storage*sizeof(w->D[0][0]));
+    if (w->D[0] == NULL) {
         suzerain_bspline_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
                             SUZERAIN_ENOMEM);
@@ -295,10 +294,9 @@ suzerain_bspline_apply_operator(
 
     /* Allocate scratch space; Required because BLAS operations' behavior on
      * aliased pointers is undefined. */
-    double * scratch;
-    if (posix_memalign((void **) &(scratch),
-                       16 /* byte boundary */,
-                       w->ndof*sizeof(scratch[0]))) {
+    double * const scratch
+        = suzerain_blas_malloc(w->ndof*sizeof(scratch[0]));
+    if (scratch == NULL) {
         SUZERAIN_ERROR("failed to allocate scratch space",
                        SUZERAIN_ENOMEM);
     }
@@ -418,9 +416,8 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     }
     const size_t total_storage
         = 2 * sum_int(w->nderivatives+1, w->storagesize, 1);
-    if (posix_memalign((void **) &(scratch[0]),
-                       16 /* byte boundary */,
-                       total_storage*sizeof(w->D[0][0]))) {
+    scratch[0] = suzerain_blas_malloc(total_storage*sizeof(w->D[0][0]));
+    if (scratch[0] == NULL) {
         free(scratch);
         free(points);
         SUZERAIN_ERROR_NULL("failed to allocate scratch",
@@ -666,9 +663,8 @@ suzerain_bspline_lu_alloc(
     luw->ipiv[0] = -1;
 
     /* Allocate memory for the matrix formed within lu_form_general */
-    if (posix_memalign((void **) &(luw->A),
-                       16 /* byte boundary */,
-                       luw->storagesize*sizeof(luw->A[0]))) {
+    luw->A = suzerain_blas_malloc(luw->storagesize*sizeof(luw->A[0]));
+    if (luw->A == NULL) {
         suzerain_bspline_lu_free(luw);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
                             SUZERAIN_ENOMEM);
