@@ -36,11 +36,15 @@
 #undef __BEGIN_DECLS
 #undef __END_DECLS
 #ifdef __cplusplus
+/** Marks beginning of public declarations using C linkage for C++ compiler */
 # define __BEGIN_DECLS extern "C" {
+/** Marks ending of public declarations using C linkage for C++ compiler */
 # define __END_DECLS }
 #else
+/** Marks beginning of public declarations for C compiler */
 # define __BEGIN_DECLS /* empty */
-# define __END_DECLS   /* empty */
+/** Marks ending of public declarations for C compiler */
+# define __END_DECLS /* empty */
 #endif
 
 __BEGIN_DECLS

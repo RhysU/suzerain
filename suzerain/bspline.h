@@ -51,25 +51,31 @@
 /* TODO In versus out in doxygen */
 /* TODO Mathematics in doxygen */
 
-/* Specifies C linkage when compiled with C++ compiler */
 #undef __BEGIN_DECLS
 #undef __END_DECLS
 #ifdef __cplusplus
+/** Marks beginning of public declarations using C linkage for C++ compiler */
 # define __BEGIN_DECLS extern "C" {
+/** Marks ending of public declarations using C linkage for C++ compiler */
 # define __END_DECLS }
 #else
+/** Marks beginning of public declarations for C compiler */
 # define __BEGIN_DECLS /* empty */
-# define __END_DECLS   /* empty */
+/** Marks ending of public declarations for C compiler */
+# define __END_DECLS /* empty */
 #endif
 
 __BEGIN_DECLS
 
 /* Conditional forward declarations of implementation-related structs */
 #ifndef __GSL_MATRIX_DOUBLE_H__
+/** Forward declaration of GSL's \c gsl_matrix. */
 typedef struct gsl_matrix gsl_matrix;
 #endif
 #ifndef __GSL_BSPLINE_H__
+/** Forward declaration of GSL's \c gsl_bspline_workspace. */
 typedef struct gsl_bspline_workspace gsl_bspline_workspace;
+/** Forward declaration of GSL's \c gsl_bspline_deriv_workspace. */
 typedef struct gsl_bspline_deriv_workspace gsl_bspline_deriv_workspace;
 #endif
 
@@ -209,7 +215,7 @@ suzerain_bspline_ndof(
  *
  * @param nderivative Derivative operator to apply.  May be zero.
  * @param nrhs Number of coefficient vectors stored in b.
- * @param b[in,out] Coefficients to be multiplied.
+ * @param[in,out] b Coefficients to be multiplied.
  * @param ldb Leading dimension of the data stored in \c b.
  * @param w Workspace to use.
  *
@@ -243,7 +249,7 @@ suzerain_bspline_apply_operator(
  *      of the B-spline basis.  Must be of length suzerain_bspline_ndof().
  * @param npoints Number of evaluation points.
  * @param points Points at which to evaluate the function.
- * @param values[out] Matrix of values resulting from evaluating the function
+ * @param[out] values Matrix of values resulting from evaluating the function
  *      and its derivatives.  Matrix dimensions are suzerain_bspline_ndof()
  *      by \c nderivative if \c ldvalues >= \c suzerain_bspline_ndof().
  *      If \c ldvalues is zero, only a single column is returned in \c values.
@@ -271,7 +277,7 @@ suzerain_bspline_evaluate(
  * vector computed by this routine.
  *
  * @param function to use when computing \f$ b \f$
- * @param rhs[out] output vector.
+ * @param[out] rhs output vector.
  * @param w Workspace to use.
  *
  * @return SUZERAIN_SUCCESS on success.  On error calls suzerain_error and
@@ -343,7 +349,7 @@ suzerain_bspline_lu_alloc(
 /**
  * Frees a previously allocated workspace.
  *
- * @param w Workspace to free.
+ * @param luw Workspace to free.
  */
 void
 suzerain_bspline_lu_free(
@@ -394,7 +400,7 @@ suzerain_bspline_lu_form_mass(
  * stored in luw.
  *
  * @param nrhs Number of right hand sides, i.e. columns, stored in matrix \c b.
- * @param b[in,out] Matrix of right hand sides to solve and the resulting
+ * @param[in,out] b Matrix of right hand sides to solve and the resulting
  *      solutions.  On input, contains data \c b.  On output, contains
  *      solutions \c x.
  * @param ldb Leading dimension of matrix b.
