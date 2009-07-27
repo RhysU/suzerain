@@ -54,6 +54,13 @@ test_bspline_LDADD   += $(LOG4CXX_LIBS)
 test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+check_PROGRAMS            += test_bspline_eval
+test_bspline_eval_SOURCES  = test_bspline_eval.cpp
+test_bspline_eval_LDADD    = ../suzerain/libsuzerain.la
+test_bspline_eval_LDADD   += $(LOG4CXX_LIBS)
+test_bspline_eval_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_bspline_eval_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
 TESTS = $(check_PROGRAMS)
 
