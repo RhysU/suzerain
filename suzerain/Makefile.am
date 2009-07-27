@@ -16,11 +16,15 @@ pkginclude_HEADERS = # Append below
 CXX=@MPICXX@
 CC=@MPICC@
 
-pkginclude_HEADERS += exceptions.hpp pencil.hpp pencil_grid.hpp
-pkginclude_HEADERS += error.h bspline.h function.h bspline_eval.h
+pkginclude_HEADERS += blas_et_al.h
+pkginclude_HEADERS += bspline_eval.h
+pkginclude_HEADERS += bspline.h
+pkginclude_HEADERS += error.h
+pkginclude_HEADERS += exceptions.hpp
+pkginclude_HEADERS += function.h
+pkginclude_HEADERS += pencil_grid.hpp
+pkginclude_HEADERS += pencil.hpp
 pkginclude_HEADERS += underling.h
-
-noinst_HEADERS += blas_et_al.h
 
 noinst_LTLIBRARIES     += libsuzerain.la
 libsuzerain_la_SOURCES  = error.c bspline.c bspline_eval.c blas_et_al.c
