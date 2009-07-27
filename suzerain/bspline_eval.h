@@ -91,7 +91,9 @@ suzerain_bspline_series_evaluate(
  *
  * The computation uses E. T. Y. Lee's routine published in "A Simplified
  * B-Spline Computation Routine", \e Computing volume 29 pages 365&ndash;371
- * (1982).
+ * (1982).  Please note that this algorithm has stability problems compared
+ * with the de Boor algorithm as discussed in Lee's "Comments on some
+ * B-spline algorithms", Computing volume 36 pages 229&ndash;238 (1986).
  *
  * \warning As this is a computational kernel, no error checking is performed.
  *      The caller must ensure all preconditions are satisfied.
