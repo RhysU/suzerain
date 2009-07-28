@@ -170,6 +170,7 @@ used in the next substep.  Provided that $M$, $D_j$, and $\xi_j$ are
 real-valued, these assumptions allow us to compute $N$ once for a complex field
 and then separately perform the substep on real and imaginary subfields using
 different $\xi_j$ coefficients.  The complex field must be rearranged so that
-the subfields are contiguous in memory.
+the subfields are contiguous in memory.  Operators $M$ and $D_j$ must be
+provided in BLAS/LAPACK-compatible band storage.
 
 \end{document}
