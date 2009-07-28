@@ -15,7 +15,7 @@
 \usepackage{setspace}
 \usepackage{txfonts}
 
-\mathtoolsset{showonlyrefs,showmanualtags}
+\mathtoolsset{showmanualtags}
 \allowdisplaybreaks[1]
 
 % Line Spacing
@@ -94,7 +94,7 @@ with One Infinite and Two Periodic Directions'' published in
 \end{align}
 \end{subequations}
 The authors determined the above coefficients to be
-\begin{align}
+\begin{align*}
   \alpha_1, \alpha_2, \alpha_3 &= \left\{
     \frac{29}{96}, -\frac{3}{40},  \frac{1}{6}
   \right\}
@@ -110,7 +110,7 @@ The authors determined the above coefficients to be
   \zeta_0, \zeta_1, \zeta_2 &= \left\{
     0, -\frac{17}{60}, -\frac{5}{12}
   \right\}
-\end{align}
+\end{align*}
 We have added $\zeta_0=0$.
 Each substep \eqref{eq:SMR_A4a}--\eqref{eq:SMR_A4c} has the form
 \begin{align}
@@ -134,8 +134,8 @@ $\alpha_i = - \beta_i + \gamma_i + \zeta_{i-1}$ we reexpress the above as
   \label{eq:simplifiedgeneralsubstep}
 \end{align}
 
-For a linear operator with the form $L=M^{-1} \sum_{j}
-\xi_j D_{j}$, the substep formula becomes
+For a linear operator $L=M^{-1} \sum_{j} \xi_j D_{j}$, the last expression
+becomes
 \begin{align}
   \left(I-\Delta{}t\beta_{i}M^{-1}\sum_{j}\xi_{j}D_{j}\right)
   \left(\frac{u^{i+1} - u^{i}}{\Delta{}t}\right)
@@ -145,16 +145,31 @@ For a linear operator with the form $L=M^{-1} \sum_{j}
   + \gamma_{i} N\left( u^{i} \right)
   + \zeta_{i-1} N\left( u^{i-1} \right)
 \end{align}
-Multiplying through by $M$ gives
+To avoid inverting an operator, we multiply through by $M$ to obtain
 \begin{align}
   \left(M-\sum_{j}\Delta{}t\beta_{i}\xi_{j}D_{j}\right)
   \left(\frac{u^{i+1} - u^{i}}{\Delta{}t}\right)
   &=
-    \left(\sum_{j}\left(\gamma_i+\zeta_{i-1}\right)\xi_{j}D_{j}\right) u^i
+    \underbrace{
+      \left(\sum_{j}\left(\gamma_i+\zeta_{i-1}\right)\xi_{j}D_{j}\right)
+    }_{\hat{D}} u^i
   + M \left[
         \gamma_{i} N\left( u^{i} \right)
       + \zeta_{i-1} N\left( u^{i-1} \right)
     \right]
 \end{align}
+
+We allow multiple state vectors to be updated within a single substep but
+require each state vector to be contiguous in memory.  We assume that the
+number of state vectors to be updated is large enough that it is worthwhile to
+form $\hat{D}$ prior to computing $\hat{D}u^{i}$.  We assume the nonlinear
+operator $N$ is horrifically expensive and will be computed for all state
+vectors prior to invoking the substep routine. We will overwrite the storage of
+$N\left( u^{i-1} \right)$ but must preserve $N\left( u^i \right)$ so it may be
+used in the next substep.  Provided that $M$, $D_j$, and $\xi_j$ are
+real-valued, these assumptions allow us to compute $N$ once for a complex field
+and then separately perform the substep on real and imaginary subfields using
+different $\xi_j$ coefficients.  The complex field must be rearranged so that
+the subfields are contiguous in memory.
 
 \end{document}
