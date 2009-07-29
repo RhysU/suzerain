@@ -183,6 +183,37 @@ suzerain_blas_dgbmv(
           x, &_incx, &beta, y, &_incy);
 }
 
+void
+suzerian_blas_dgb_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha,
+        const double *a,
+        const int lda,
+        const double beta,
+        double *b,
+        const int ldb)
+{
+#ifdef HAVE_MKL
+    const MKL_INT inc = 1;
+    const MKL_INT veclength = ku + 1 + kl;
+    const double * const bj_end = b + n *ldb;
+    const double *aj;
+    double       *bj;
+
+    /* Simulate dgb_acc since MKL lacks the routine. */
+    for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
+        /* Simulate daxpby since MKL lacks the routine. */
+        dscal(&veclength, &beta, bj, &inc);
+        daxpy(&veclength, &alpha, aj, &inc, bj, &inc);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
 int
 suzerain_lapack_dgbtrf(
         const int m,

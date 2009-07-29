@@ -185,6 +185,39 @@ suzerain_blas_dgbmv(
         const int incy);
 
 /**
+ * Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using
+ * BLAS' dgb_acc.  Matrices \f$ A \f$ and \f$ B \f$ both have
+ * band storage and must have the same shape and same number
+ * of super- and subdiagonals.
+ *
+ * @param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * @param n Number of columns in matrices \f$ A \f$ and \f$ B \f$.
+ * @param kl Number of subdiagonals in band storage of \c ab.
+ * @param ku Number of superdiagonals in band storage of \c ab.
+ * @param alpha Multiplicative scalar \f$ \alpha \f$
+ * @param a General band storage of the matrix \f$ A \f$.
+ * @param lda Leading dimension of \c a.
+ * @param beta Multiplicative scalar \f$ \beta \f$
+ * @param b General band storage of the matrix \f$ B \f$.
+ * @param ldb Leading dimension of \c b.
+ *
+ * @see A BLAS reference for more details, especially for general
+ *      band storage matrix requirements.
+ */
+void
+suzerian_blas_dgb_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha,
+        const double *a,
+        const int lda,
+        const double beta,
+        double *b,
+        const int ldb);
+
+/**
  * Compute the LUP decomposition of a general banded matrix using
  * LAPACK's dgbtrf.  Stores the results back into the same matrix.
  * Note that the matrix must have extra superdiagonals available
