@@ -2,15 +2,17 @@
 
 % Packages
 \usepackage{accents}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 \usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{mathtools}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
 \usepackage{fullpage}
 \usepackage{lastpage}
 \usepackage{latexsym}
+\usepackage{mathtools}
 \usepackage{pstricks}
 \usepackage{setspace}
 \usepackage{txfonts}
@@ -147,7 +149,9 @@ becomes
 \end{align}
 To avoid inverting an operator, we multiply through by $M$ to obtain
 \begin{align}
-  \left(M-\sum_{j}\Delta{}t\beta_{i}\xi_{j}D_{j}\right)
+  \underbrace{
+    \left(M-\sum_{j}\Delta{}t\beta_{i}\xi_{j}D_{j}\right)
+  }_{\hat{M}}
   \left(\frac{u^{i+1} - u^{i}}{\Delta{}t}\right)
   &=
     \underbrace{
@@ -157,20 +161,64 @@ To avoid inverting an operator, we multiply through by $M$ to obtain
         \gamma_{i} N\left( u^{i} \right)
       + \zeta_{i-1} N\left( u^{i-1} \right)
     \right]
+  \label{eq:MDsubstep}
 \end{align}
 
-We allow multiple state vectors to be updated within a single substep but
-require each state vector to be contiguous in memory.  We assume that the
-number of state vectors to be updated is large enough that it is worthwhile to
-form $\hat{D}$ prior to computing $\hat{D}u^{i}$.  We assume the nonlinear
-operator $N$ is horrifically expensive and will be computed for all state
-vectors prior to invoking the substep routine. We will overwrite the storage of
-$N\left( u^{i-1} \right)$ but must preserve $N\left( u^i \right)$ so it may be
-used in the next substep.  Provided that $M$, $D_j$, and $\xi_j$ are
-real-valued, these assumptions allow us to compute $N$ once for a complex field
-and then separately perform the substep on real and imaginary subfields using
-different $\xi_j$ coefficients.  The complex field must be rearranged so that
-the subfields are contiguous in memory.  Operators $M$ and $D_j$ must be
-provided in BLAS/LAPACK-compatible band storage.
+We allow multiple, noncontiguous state vectors to be updated within a single
+substep.  This implies multiple state vectors are parameterized by the number
+of state vectors, the leading dimension between state vectors, and the
+increment between elements in each state vector.  We assume that the number of
+state vectors to be updated is large enough that it is worthwhile to form
+$\hat{D}$ prior to computing $\hat{D}u^{i}$.  We assume the nonlinear operator
+$N$ is horrifically expensive and will be computed for all state vectors prior
+to invoking the substep routine.  We will overwrite the storage of $N\left(
+u^{i-1} \right)$ but must preserve $N\left( u^i \right)$ so it may be used in
+the next substep.
+
+Provided that $M$, $D_j$, and $\xi_j$ are real-valued, these assumptions allow
+us to compute $N$ once for a complex field and then separately perform the
+substep on its real and imaginary subfields using different $\xi_j$
+coefficients.  Operators $M$ and $D_j$ must be provided in
+BLAS/LAPACK-compatible band storage.  Time step $\Delta{}t$ will vary, and
+therefore $\hat{M}$ must be formed and factorized each time it is used.
+
+Given $M$, $D_j$, $\xi_j$, advance, and storage locations $a$--$c$, each
+substep computation follows algorithm \ref{alg:substep}.  Note that because
+GBMV only works on a single vector per invocation, we assemble the right hand
+side of equation \eqref{eq:MDsubstep} one state vector at a time and hope that
+cache locality is good.
+
+\begin{algorithm}
+\label{alg:substep}
+\caption{Compute one substep in the SMR scheme when
+         when $L=M^{-1} \sum_{j} \xi_j D_{j}$}
+\begin{algorithmic}
+  \REQUIRE Storage $a = u^i$;
+           storage $b = N\left(u^{i}\right)$;
+           storage $c = N\left(u^{i-1}\right)$
+  \STATE Allocate $d$ to be the length of one state vector
+% GBACC for the next two statements?
+  \STATE Form operator $\hat{D}$ using $\gamma_i$, $\zeta_{i-1}$,
+         $\xi_j$, and $D_j$
+  \STATE Form operator $\hat{M}$ using $M$, $\Delta{}t$, $\beta_i$,
+         $\xi_j$, and $D_j$
+  \STATE GBTRF:  $\hat{M}\leftarrow{}\mbox{lu}\left( \hat{M} \right)$
+  \FORALL{column vectors $c_j$ in storage $c$}
+% AXPBY for the next two statements?
+    \STATE SCAL: $c_{j}\leftarrow{}\zeta_{i-1}c_{j}$
+    \STATE AXPY: $c_{j}\leftarrow{}\gamma_{i}b_{j}+c_{j}$
+    \STATE GBMV: $d\leftarrow{}1 M c_{j} + 0 d$
+% Cost of forming $\hat{D}$ versus performing multiple GBMVs just below?
+    \STATE GBMV: $d\leftarrow{}1 \hat{D} a_{j} + 1 d$
+    \STATE GBTRS: $d\leftarrow{}\hat{M}^{-1} d$
+    \STATE AXPY: $a_{j}\leftarrow{}\Delta{}t d + a_{j}$
+  \ENDFOR
+  \STATE Deallocate $d$
+  \ENSURE Storage $a = u^{i+1}$;
+          storage $b = N\left(u^{i}\right)$
+\end{algorithmic}
+\end{algorithm}
+
+
 
 \end{document}
