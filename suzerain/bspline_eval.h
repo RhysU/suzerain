@@ -67,7 +67,7 @@ __BEGIN_DECLS
  * @param[in] t Nondecreasing knot vector containing
  *      \f$ \left( t_i \right)_{i=0}^{n+m} \f$
  * @param[in] d Maximum derivative to compute where \f$d\leq{}m\f$
- * @param[in] C B-coefficients \f$ \left( C_i \right)_{i=0}^{n-1}
+ * @param[in] C B-coefficients \f$ \left( C_i \right)_{i=0}^{n-1} \f$
  * @param[in] x Point \f$x\in\left[t_{m},t_{n}\right]\f$ at which to evaluate
  *      the B-spline series.
  * @param[out] Q Result vector containing derivatives 0 through d.
