@@ -130,7 +130,7 @@ suzerain_blas_dasum(
  * @param alpha Multiplicative scalar \f$ \alpha \f$
  * @param x First source vector.
  * @param incx First source vector stride.
- * @param alpha Multiplicative scalar \f$ \beta \f$
+ * @param beta Multiplicative scalar \f$ \beta \f$
  * @param y Second source vector and target vector.
  * @param incy Second source vector and target vector stride.
  *
