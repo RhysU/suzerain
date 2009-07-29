@@ -17,7 +17,6 @@ CXX=@MPICXX@
 CC=@MPICC@
 
 pkginclude_HEADERS += blas_et_al.h
-pkginclude_HEADERS += bspline_eval.h
 pkginclude_HEADERS += bspline.h
 pkginclude_HEADERS += error.h
 pkginclude_HEADERS += exceptions.hpp
@@ -27,7 +26,7 @@ pkginclude_HEADERS += pencil.hpp
 pkginclude_HEADERS += underling.h
 
 noinst_LTLIBRARIES     += libsuzerain.la
-libsuzerain_la_SOURCES  = error.c bspline.c bspline_eval.c blas_et_al.c
+libsuzerain_la_SOURCES  = error.c bspline.c blas_et_al.c
 
 noinst_LTLIBRARIES      += libunderling.la
 libunderling_la_SOURCES  = error.c underling.c
