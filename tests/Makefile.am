@@ -20,10 +20,6 @@ test_blas_et_al_SOURCES  = test_blas_et_al.c
 test_blas_et_al_LDADD    = $(GSL_LIBS)
 test_blas_et_al_LDADD   += ../suzerain/libsuzerain.la
 
-check_PROGRAMS                 += test_gsl_integrate_qng
-test_gsl_integrate_qng_SOURCES  = test_gsl_integrate_qng.cpp
-test_gsl_integrate_qng_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
-
 check_PROGRAMS           += test_pencil_grid
 test_pencil_grid_SOURCES  = test_pencil_grid.cpp
 test_pencil_grid_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
