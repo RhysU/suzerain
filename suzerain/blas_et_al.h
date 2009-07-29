@@ -205,7 +205,7 @@ suzerain_blas_dgbmv(
  *      band storage matrix requirements.
  */
 void
-suzerian_blas_dgb_acc(
+suzerain_blas_dgb_acc(
         const int m,
         const int n,
         const int kl,

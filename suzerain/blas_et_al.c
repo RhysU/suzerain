@@ -82,14 +82,14 @@ suzerain_blas_dcopy(
         const int incy)
 {
 #ifdef HAVE_MKL
-    MKL_INT _n    = n;
-    MKL_INT _incx = incx;
-    MKL_INT _incy = incy;
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+
+    dcopy(&_n, x, &_incx, y, &_incy);
 #else
 #error "Sanity failure"
 #endif
-
-    dcopy(&_n, x, &_incx, y, &_incy);
 }
 
 double
@@ -104,11 +104,11 @@ suzerain_blas_ddot(
     MKL_INT _n    = n;
     MKL_INT _incx = incx;
     MKL_INT _incy = incy;
+
+    return ddot(&_n, x, &_incx, y, &_incy);
 #else
 #error "Sanity failure"
 #endif
-
-    return ddot(&_n, x, &_incx, y, &_incy);
 }
 
 double
@@ -120,11 +120,11 @@ suzerain_blas_dasum(
 #ifdef HAVE_MKL
     MKL_INT _n    = n;
     MKL_INT _incx = incx;
+
+    return dasum(&_n, x, &_incx);
 #else
 #error "Sanity failure"
 #endif
-
-    return dasum(&_n, x, &_incx);
 }
 
 void
@@ -138,11 +138,11 @@ suzerain_blas_daxpby(
         const int incy)
 {
 #ifdef HAVE_MKL
-    MKL_INT _n    = n;
-    MKL_INT _incx = incx;
-    MKL_INT _incy = incy;
-
     /* Simulate daxpby since MKL lacks the routine. */
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+
     dscal(&_n, &beta, y, &_incy);
     daxpy(&_n, &alpha, x, &_incx, y, &_incy);
 #else
@@ -168,23 +168,23 @@ suzerain_blas_dgbmv(
 {
     char _trans   = trans;
 #ifdef HAVE_MKL
-    MKL_INT _m    = m;
-    MKL_INT _n    = n;
-    MKL_INT _kl   = kl;
-    MKL_INT _ku   = ku;
-    MKL_INT _lda  = lda;
-    MKL_INT _incx = incx;
-    MKL_INT _incy = incy;
-#else
-#error "Sanity failure"
-#endif
+    const MKL_INT _m    = m;
+    const MKL_INT _n    = n;
+    const MKL_INT _kl   = kl;
+    const MKL_INT _ku   = ku;
+    const MKL_INT _lda  = lda;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
 
     dgbmv(&_trans, &_m, &_n, &_kl, &_ku, &alpha, a, &_lda,
           x, &_incx, &beta, y, &_incy);
+#else
+#error "Sanity failure"
+#endif
 }
 
 void
-suzerian_blas_dgb_acc(
+suzerain_blas_dgb_acc(
         const int m,
         const int n,
         const int kl,
@@ -197,17 +197,14 @@ suzerian_blas_dgb_acc(
         const int ldb)
 {
 #ifdef HAVE_MKL
-    const MKL_INT inc = 1;
-    const MKL_INT veclength = ku + 1 + kl;
+    /* Simulate dgb_acc since MKL lacks the routine. */
+    const int veclength = ku + 1 + kl;
     const double * const bj_end = b + n *ldb;
     const double *aj;
     double       *bj;
 
-    /* Simulate dgb_acc since MKL lacks the routine. */
     for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
-        /* Simulate daxpby since MKL lacks the routine. */
-        dscal(&veclength, &beta, bj, &inc);
-        daxpy(&veclength, &alpha, aj, &inc, bj, &inc);
+        suzerain_blas_daxpby(veclength, alpha, aj, 1, beta, bj, 1);
     }
 #else
 #error "Sanity failure"
@@ -231,13 +228,13 @@ suzerain_lapack_dgbtrf(
     MKL_INT _ku   = ku;
     MKL_INT _ldab = ldab;
     MKL_INT _info = 0;
-#else
-#error "Sanity failure"
-#endif
 
     dgbtrf(&_m, &_n, &_kl, &_ku, ab, &_ldab, ipiv, &_info);
 
     return _info;
+#else
+#error "Sanity failure"
+#endif
 }
 
 int
@@ -262,12 +259,12 @@ suzerain_lapack_dgbtrs(
     MKL_INT _ldab = ldab;
     MKL_INT _ldb  = ldb;
     MKL_INT _info = 0;
-#else
-#error "Sanity failure"
-#endif
 
     dgbtrs(&_trans, &_n, &_kl, &_ku, &_nrhs,
            ab, &_ldab, ipiv, b, &_ldb, &_info);
 
     return _info;
+#else
+#error "Sanity failure"
+#endif
 }
