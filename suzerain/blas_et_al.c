@@ -142,14 +142,8 @@ suzerain_blas_daxpby(
     MKL_INT _incx = incx;
     MKL_INT _incy = incy;
 
-    /*
-     * Simulate daxpby since MKL lacks the routine.
-     * Reverse dscal so that daxpy runs in user's anticipated direction,
-     * which may be important for cache locality purposes
-     */
-    _incy = -incy;
+    /* Simulate daxpby since MKL lacks the routine. */
     dscal(&_n, &beta, y, &_incy);
-    _incy = -incy;
     daxpy(&_n, &alpha, x, &_incx, y, &_incy);
 #else
 #error "Sanity failure"

@@ -15,6 +15,11 @@ noinst_HEADERS += test_tools.hpp
 CXX=@MPICXX@
 CC=@MPICC@
 
+check_PROGRAMS          += test_blas_et_al
+test_blas_et_al_SOURCES  = test_blas_et_al.c
+test_blas_et_al_LDADD    = $(GSL_LIBS)
+test_blas_et_al_LDADD   += ../suzerain/libsuzerain.la
+
 check_PROGRAMS                 += test_gsl_integrate_qng
 test_gsl_integrate_qng_SOURCES  = test_gsl_integrate_qng.cpp
 test_gsl_integrate_qng_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
