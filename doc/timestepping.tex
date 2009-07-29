@@ -182,7 +182,7 @@ coefficients.  Operators $M$ and $D_j$ must be provided in
 BLAS/LAPACK-compatible band storage.  Time step $\Delta{}t$ will vary, and
 therefore $\hat{M}$ must be formed and factorized each time it is used.
 
-Given $M$, $D_j$, $\xi_j$, advance, and storage locations $a$--$c$, each
+Given $M$, $D_j$, $\xi_j$, and storage locations $a$--$c$, each
 substep computation follows algorithm \ref{alg:substep}.  Note that because
 GBMV only works on a single vector per invocation, we assemble the right hand
 side of equation \eqref{eq:MDsubstep} one state vector at a time and hope that
