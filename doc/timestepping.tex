@@ -188,27 +188,30 @@ GBMV only works on a single vector per invocation, we assemble the right hand
 side of equation \eqref{eq:MDsubstep} one state vector at a time and hope that
 cache locality is good.
 
+% Depending on the performance of GBTRS with multiple right hand sides, it may
+% be faster to move the final GBTRS/AXPY outside the FORALL loop and perform
+% one massive GBTRS/AXPY at the end.
+%
+% Depending on the number of state vectors, it may make sense to avoid
+% explicitly forming $\hat{D}$ and instead use more GBMV invocations in the
+% FORALL loop.
 \begin{algorithm}
+\caption{Compute one substep in the SMR scheme following
+         equation \eqref{eq:MDsubstep}}
 \label{alg:substep}
-\caption{Compute one substep in the SMR scheme when
-         $L=M^{-1} \sum_{j} \xi_j D_{j}$}
 \begin{algorithmic}
   \REQUIRE Storage $a = u^i$;
            storage $b = N\left(u^{i}\right)$;
            storage $c = N\left(u^{i-1}\right)$
   \STATE Allocate $d$ to be the length of one state vector
-% GBACC for the next two statements?
-  \STATE Form operator $\hat{D}$ using $\gamma_i$, $\zeta_{i-1}$,
+  \STATE GB\_ACC: Form operator $\hat{D}$ using $\gamma_i$, $\zeta_{i-1}$,
          $\xi_j$, and $D_j$
-  \STATE Form operator $\hat{M}$ using $M$, $\Delta{}t$, $\beta_i$,
+  \STATE GB\_ACC: Form operator $\hat{M}$ using $M$, $\Delta{}t$, $\beta_i$,
          $\xi_j$, and $D_j$
   \STATE GBTRF:  $\hat{M}\leftarrow{}\mbox{lu}\left( \hat{M} \right)$
   \FORALL{column vectors $c_j$ in storage $c$}
-% AXPBY for the next two statements?
-    \STATE SCAL: $c_{j}\leftarrow{}\zeta_{i-1}c_{j}$
-    \STATE AXPY: $c_{j}\leftarrow{}\gamma_{i}b_{j}+c_{j}$
+    \STATE AXPBY: $c_{j}\leftarrow{}\gamma_{i}b_{j}+\zeta_{i-1}c_{j}$
     \STATE GBMV: $d\leftarrow{}1 M c_{j} + 0 d$
-% Cost of forming $\hat{D}$ versus performing multiple GBMVs just below?
     \STATE GBMV: $d\leftarrow{}1 \hat{D} a_{j} + 1 d$
     \STATE GBTRS: $d\leftarrow{}\hat{M}^{-1} d$
     \STATE AXPY: $a_{j}\leftarrow{}\Delta{}t d + a_{j}$
