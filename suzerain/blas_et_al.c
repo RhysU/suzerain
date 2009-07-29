@@ -128,6 +128,35 @@ suzerain_blas_dasum(
 }
 
 void
+suzerain_blas_daxpby(
+        const int n,
+        const double alpha,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy)
+{
+#ifdef HAVE_MKL
+    MKL_INT _n    = n;
+    MKL_INT _incx = incx;
+    MKL_INT _incy = incy;
+
+    /*
+     * Simulate daxpby since MKL lacks the routine.
+     * Reverse dscal so that daxpy runs in user's anticipated direction,
+     * which may be important for cache locality purposes
+     */
+    _incy = -incy;
+    dscal(&_n, &beta, y, &_incy);
+    _incy = -incy;
+    daxpy(&_n, &alpha, x, &_incx, y, &_incy);
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
 suzerain_blas_dgbmv(
         const char trans,
         const int m,
@@ -155,11 +184,9 @@ suzerain_blas_dgbmv(
 #else
 #error "Sanity failure"
 #endif
-    double  _alpha = alpha;
-    double  _beta  = beta;
 
-    dgbmv(&_trans, &_m, &_n, &_kl, &_ku, &_alpha, a, &_lda,
-          x, &_incx, &_beta, y, &_incy);
+    dgbmv(&_trans, &_m, &_n, &_kl, &_ku, &alpha, a, &_lda,
+          x, &_incx, &beta, y, &_incy);
 }
 
 int
