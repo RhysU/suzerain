@@ -123,6 +123,30 @@ suzerain_blas_dasum(
         const int incx);
 
 /**
+ * Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's daxpby.
+ * If daxpby is not available, simulate it using dscal and daxpy.
+ *
+ * @param n Number of elements in \c x and \c y.
+ * @param alpha Multiplicative scalar \f$ \alpha \f$
+ * @param x First source vector.
+ * @param incx First source vector stride.
+ * @param alpha Multiplicative scalar \f$ \beta \f$
+ * @param y Second source vector and target vector.
+ * @param incy Second source vector and target vector stride.
+ *
+ * @see A BLAS reference for more details.
+ */
+void
+suzerain_blas_daxpby(
+        const int n,
+        const double alpha,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy);
+
+/**
  * Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ using BLAS's dgbmv.
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
