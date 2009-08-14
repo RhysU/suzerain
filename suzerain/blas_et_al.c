@@ -44,6 +44,7 @@
 #endif
 
 #include <suzerain/blas_et_al.h>
+#include <suzerain/macros.h>
 
 void *
 suzerain_blas_malloc(size_t size)
@@ -139,6 +140,8 @@ suzerain_blas_daxpby(
 {
 #ifdef HAVE_MKL
     /* Simulate daxpby since MKL lacks the routine. */
+    if (SUZERAIN_UNLIKELY((alpha == 0.0 && beta == 1.0) || n <= 0)) return;
+
     const MKL_INT _n    = n;
     const MKL_INT _incx = incx;
     const MKL_INT _incy = incy;
@@ -198,6 +201,8 @@ suzerain_blas_dgb_acc(
 {
 #ifdef HAVE_MKL
     /* Simulate dgb_acc since MKL lacks the routine. */
+    if (SUZERAIN_UNLIKELY((alpha == 0.0 && beta == 1.0) || m <= 0)) return;
+
     const int veclength = ku + 1 + kl;
     const double * const bj_end = b + n *ldb;
     const double *aj;
