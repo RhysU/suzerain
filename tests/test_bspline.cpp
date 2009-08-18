@@ -18,7 +18,6 @@ log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
 #include "test_tools.hpp"
 
-// TODO Check suzerain_bspline_lu_form_general for nonuniform ku/kl
 // TODO compute_derivatives_of_a_general_polynomial for more orders
 
 BOOST_AUTO_TEST_CASE( allocation_okay )
@@ -145,7 +144,7 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
                                /*DK*/0,      -3,   5,         0,
                                      0,      -3,   5,         0.6,
                                      0,      -3,   0.8, /*DK*/0    };
-    const double coeff[] = { 2.0, -3.0 };
+    const double coeff[] = { 2.0, -3.0, 999.0 };
     suzerain_bspline_lu_form_general(
         sizeof(coeff)/sizeof(coeff[0]), coeff, w, luw);
     CHECK_GBMATRIX_CLOSE(
