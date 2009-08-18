@@ -247,13 +247,6 @@ suzerain_bspline_free(suzerain_bspline_workspace * w)
 }
 
 int
-suzerain_bspline_ndof(
-    const suzerain_bspline_workspace *w)
-{
-    return w->ndof;
-}
-
-int
 suzerain_bspline_apply_operator(
     int nderivative,
     int nrhs,
