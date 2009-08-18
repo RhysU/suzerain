@@ -31,6 +31,8 @@
 #ifndef __SUZERAIN_BLAS_ET_AL_H__
 #define __SUZERAIN_BLAS_ET_AL_H__
 
+#include <stddef.h>
+
 /** @file
  * Wraps external BLAS and LAPACK routines necessary for Suzerain.
  * Provided to insulate the library from potential variations in
