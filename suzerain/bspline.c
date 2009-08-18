@@ -57,7 +57,7 @@ compute_banded_collocation_derivative_submatrix(
     const int nderivatives,
     const int * const kl,
     const int * const ku,
-    const int lda,
+    const int ld,
     const int npoints,
     const double * points,
     gsl_bspline_workspace * bw,
@@ -163,7 +163,7 @@ suzerain_bspline_alloc(int order,
     }
     /* Compute derived storage parameters.
      *
-     * We choose to have all operators stored using the same lda and
+     * We choose to have all operators stored using the same ld and
      * capable of being manipulated using w->max_kl and w->max_ku.  This
      * is not as space efficient as it could be in the pathological cases,
      * but it does allow using BLAS dgb_acc to form linear combinations
@@ -171,7 +171,7 @@ suzerain_bspline_alloc(int order,
      */
     w->max_kl = gsl_stats_int_max(w->kl, 1, w->nderivatives+1);
     w->max_ku = gsl_stats_int_max(w->ku, 1, w->nderivatives+1);
-    w->lda    = w->max_ku + 1 + w->max_kl;
+    w->ld     = w->max_ku + 1 + w->max_kl;
 
     /* Allocate space for pointers to matrices */
     w->D = malloc((w->nderivatives + 1) * sizeof(w->D[0]));
@@ -181,7 +181,7 @@ suzerain_bspline_alloc(int order,
                             SUZERAIN_ENOMEM);
     }
     /* Allocate one block for all derivative operator matrices */
-    const size_t an_operators_storage = w->lda * w->ndof;
+    const size_t an_operators_storage = w->ld * w->ndof;
     const size_t all_operators_storage
         = an_operators_storage * (w->nderivatives+1);
     w->D[0] = suzerain_blas_malloc(all_operators_storage*sizeof(w->D[0][0]));
@@ -285,7 +285,7 @@ suzerain_bspline_apply_operator(
         suzerain_blas_dgbmv(
             'N', w->ndof, w->ndof,
             w->kl[nderivative], w->ku[nderivative],
-            1.0, w->D[nderivative], w->lda,
+            1.0, w->D[nderivative], w->ld,
             scratch, 1,
             0.0, bi, 1);
     }
@@ -371,7 +371,7 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     /* Determine storage needs, defensively assuming nonuniform parameters */
     w->max_kl = gsl_stats_int_max(w->kl, 1, w->nderivatives+1);
     w->max_ku = gsl_stats_int_max(w->ku, 1, w->nderivatives+1);
-    w->lda    = w->max_kl + 1 + w->max_ku;
+    w->ld     = w->max_kl + 1 + w->max_ku;
 
     /* Compute collocation points at which we will check bandwidth */
     double * const points = malloc(2*w->order*sizeof(w->bw->knots->data[0]));
@@ -393,7 +393,7 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
         SUZERAIN_ERROR("Unable to allocate scratch pointers",
                 SUZERAIN_ENOMEM);
     }
-    const size_t an_operators_storage = w->lda * w->order;
+    const size_t an_operators_storage = w->ld * w->order;
     const size_t total_storage = 2*(w->nderivatives+1)*an_operators_storage;
     scratch[0] = suzerain_blas_calloc(total_storage, sizeof(w->D[0][0]));
     if (scratch[0] == NULL) {
@@ -415,7 +415,7 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     /* Compute the upper-left- and lower-right- most submatrices */
     if (compute_banded_collocation_derivative_submatrix(
              0, 0,
-             w->nderivatives, w->kl, w->ku, w->lda,
+             w->nderivatives, w->kl, w->ku, w->ld,
              w->order, ul_points, w->bw, w->dbw, w->db, ul_D)) {
         free(scratch[0]);
         free(scratch);
@@ -426,7 +426,7 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     const int lr_offset = w->ndof - w->order;
     if (compute_banded_collocation_derivative_submatrix(
              lr_offset, lr_offset,
-             w->nderivatives, w->kl, w->ku, w->lda,
+             w->nderivatives, w->kl, w->ku, w->ld,
              w->order, lr_points, w->bw, w->dbw, w->db, lr_D)) {
         free(scratch[0]);
         free(scratch);
@@ -439,24 +439,24 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     for (int k = 0; k <= w->nderivatives; ++k) {
         const int fixed_ku_k = w->ku[k];
         const int fixed_kl_k = w->kl[k];
-        const int fixed_lda  = w->lda;
+        const int fixed_ld   = w->ld;
 
         for (int i=0; i < fixed_ku_k; ++i) {
             const double ul_asum
-                = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_lda);
+                = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_ld);
             const double lr_asum
-                = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_lda);
+                = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_ld);
             if (ul_asum + lr_asum == 0.0) {
                 --w->ku[k];
             } else {
                 break; /* Skip all after nonzero superdiagonal */
             }
         }
-        for (int i=fixed_lda-1; i > fixed_ku_k; --i) {
+        for (int i=fixed_ld-1; i > fixed_ku_k; --i) {
             const double ul_asum
-                = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_lda);
+                = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_ld);
             const double lr_asum
-                = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_lda);
+                = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_ld);
             if (ul_asum + lr_asum == 0.0) {
                 --w->kl[k];
             } else {
@@ -498,12 +498,12 @@ suzerain_bspline_create_operators(suzerain_bspline_workspace *w)
 
     /* Zero the full derivative operator matrices */
     w->D[0] -= (w->max_ku - w->ku[0]); /* See suzerain_bspline_alloc */
-    memset(w->D[0], 0, w->lda*w->ndof*(w->nderivatives+1)*sizeof(w->D[0][0]));
+    memset(w->D[0], 0, w->ld*w->ndof*(w->nderivatives+1)*sizeof(w->D[0][0]));
     w->D[0] += (w->max_ku - w->ku[0]);
 
     /* Compute the full derivative operator matrices */
     if (compute_banded_collocation_derivative_submatrix(
-             0, 0, w->nderivatives, w->kl, w->ku, w->lda,
+             0, 0, w->nderivatives, w->kl, w->ku, w->ld,
              w->ndof, points, w->bw, w->dbw, w->db, w->D)) {
         free(points);
         SUZERAIN_ERROR("Error computing operator matrices", SUZERAIN_ESANITY);
@@ -521,7 +521,7 @@ compute_banded_collocation_derivative_submatrix(
     const int nderivatives,
     const int * const kl,
     const int * const ku,
-    const int lda,
+    const int ld,
     const int npoints,
     const double * points,
     gsl_bspline_workspace * bw,
@@ -545,9 +545,9 @@ compute_banded_collocation_derivative_submatrix(
             for (int j = jstart; j <= jend; ++j) {
                 const double value = gsl_matrix_get(db, j - dbjstart, k);
                 const int in_band  = suzerain_gbmatrix_in_band(
-                        lda, kl[k], ku[k], i+ioffset, j /* no joffset */);
+                        ld, kl[k], ku[k], i+ioffset, j /* no joffset */);
                 const int offset = suzerain_gbmatrix_offset(
-                        lda, kl[k], ku[k], i /* no ioffset */, j-joffset);
+                        ld, kl[k], ku[k], i /* no ioffset */, j-joffset);
 
                 if (in_band) {
                     D[k][offset] = value;
@@ -564,12 +564,12 @@ compute_banded_collocation_derivative_submatrix(
                              " (d/dx)^%d B_%d(\\points_%d=%g) = %g"
                              " in (row=%d, column=%d, offset=%d) of"
                              " general band matrix"
-                             " [lda=%d, kl=%d, ku=%d, n=%d]"
+                             " [ld=%d, kl=%d, ku=%d, n=%d]"
                              " with offset (row=%d, column=%d)",
                              order, order-1,
                              k, j, i, points[i], value,
                              i, j, offset,
-                             lda, kl[k], ku[k], npoints,
+                             ld, kl[k], ku[k], npoints,
                              ioffset, joffset);
                     SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
                 }
@@ -624,7 +624,7 @@ suzerain_bspline_lu_alloc(
     luw->ndof          = w->ndof;
     luw->kl            = w->max_kl;
     luw->ku            = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS */
-    luw->lda           = luw->kl + luw->ku + 1;
+    luw->ld            = luw->kl + luw->ku + 1;
 
     /* Allocate memory for LU factorization pivot storage */
     luw->ipiv = malloc(w->ndof * sizeof(luw->ipiv[0]));
@@ -637,7 +637,7 @@ suzerain_bspline_lu_alloc(
     luw->ipiv[0] = -1;
 
     /* Allocate memory for the matrix formed within lu_form_general */
-    luw->A = suzerain_blas_malloc(luw->lda*luw->ndof*sizeof(luw->A[0]));
+    luw->A = suzerain_blas_malloc(luw->ld*luw->ndof*sizeof(luw->A[0]));
     if (luw->A == NULL) {
         suzerain_bspline_lu_free(luw);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
@@ -689,14 +689,14 @@ suzerain_bspline_lu_form_general(
     }
 
     /* Clear operator storage, including superdiagonals not touched below */
-    memset(luw->A, 0, luw->lda*luw->ndof*sizeof(luw->A[0]));
+    memset(luw->A, 0, luw->ld*luw->ndof*sizeof(luw->A[0]));
 
     /* Accumulate scaled derivative operators into luw->A */
     for (int k = 0; k < ncoefficients; ++k) {
         suzerain_blas_dgb_acc(
             luw->ndof, luw->ndof, w->max_kl, w->max_ku,
-            coefficients[k], w->D[k] - (w->max_ku - w->ku[k]), w->lda,
-            1.0, luw->A + w->max_kl, luw->lda);
+            coefficients[k], w->D[k] - (w->max_ku - w->ku[k]), w->ld,
+            1.0, luw->A + w->max_kl, luw->ld);
     }
 
     /* Compute LU factorization of the just-formed operator */
@@ -705,7 +705,7 @@ suzerain_bspline_lu_form_general(
                                             luw->kl,
                                             luw->ku - luw->kl, /* NB */
                                             luw->A,
-                                            luw->lda,
+                                            luw->ld,
                                             luw->ipiv);
     if (info) {
         SUZERAIN_ERROR("suzerain_lapack_dgbtrf reported an error",
@@ -746,7 +746,7 @@ suzerain_bspline_lu_solve(
                                             luw->ku - luw->kl, /* NB */
                                             nrhs,
                                             luw->A,
-                                            luw->lda,
+                                            luw->ld,
                                             luw->ipiv,
                                             b,
                                             ldb);

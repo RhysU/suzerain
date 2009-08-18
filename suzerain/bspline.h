@@ -131,18 +131,18 @@ typedef struct {
     int max_ku;
 
     /** Leading dimension for all derivative operators */
-    int lda;
+    int ld;
 
     /**
      * Storage for each banded derivative operator matrix.
      *
      * This general band storage can be accessed in two different ways:
      * \li <tt>D[k]</tt> is the band storage for the <tt>k</tt>-th derivative
-     *     using <tt>kl[k]</tt>, <tt>ku[k]</tt>, and <tt>lda</tt>.  This view
+     *     using <tt>kl[k]</tt>, <tt>ku[k]</tt>, and <tt>ld</tt>.  This view
      *     is optimal for BLAS \c gbmv operations.
      * \li <tt>D[k] - (max_ku - ku[k])</tt> is the same band storage
      *     for the <tt>k</tt>-th derivative viewed using <tt>max_kl</tt>,
-     *     <tt>max_ku</tt>, and <tt>lda</tt>.  This view is optimal for
+     *     <tt>max_ku</tt>, and <tt>ld</tt>.  This view is optimal for
      *     BLAS \c gb_acc and \c gb_add operations.
      **/
     double **D;
@@ -336,7 +336,7 @@ typedef struct {
     int ku;
 
     /** Leading dimension in the factored operator derivative */
-    int lda;
+    int ld;
 
     /** Pivot matrix \c P from the \c LUP decomposition of the operator. */
     int *ipiv;
@@ -344,7 +344,7 @@ typedef struct {
     /**
      * Raw data storage for the factored operator.  Operator is stored
      * according to BLAS banded matrix conventions according to \c kl, \c ku,
-     * \c lda, and \c ndof
+     * \c ld, and \c ndof
      **/
     double *A;
 
