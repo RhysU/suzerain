@@ -36,17 +36,19 @@
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_minmax.h>
 #include <gsl/gsl_statistics_int.h>
 #include <gsl/gsl_vector.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bspline.h>
 #include <suzerain/error.h>
+#include <suzerain/macros.h>
 
 int
 suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w);
 
 int
-suzerain_bspline_create_operator(suzerain_bspline_workspace *w);
+suzerain_bspline_create_operators(suzerain_bspline_workspace *w);
 
 int
 compute_banded_collocation_derivative_submatrix(
@@ -55,36 +57,13 @@ compute_banded_collocation_derivative_submatrix(
     const int nderivatives,
     const int * const kl,
     const int * const ku,
-    const int * const lda,
+    const int lda,
     const int npoints,
     const double * points,
     gsl_bspline_workspace * bw,
     gsl_bspline_deriv_workspace * dbw,
     gsl_matrix * db,
     double ** const D);
-
-/* Compute the BLAS-compatible offset to a(i,j) for general banded matrices
- * a(i,j) -> storage(ku+i-j,j) where storage is column-major with LDA lda
- * Note missing constant one compared with Fortran because C 0-indexes arrays */
-inline int gb_matrix_offset(int lda, int kl, int ku, int i, int j) {
-    return ((j)*(lda)+(ku+i-j));
-}
-
-/* Determine if indices fall within the band of a general banded matrix */
-inline int gb_matrix_in_band(int lda, int kl, int ku, int i, int j) {
-    return ((j)-(ku) <= (i) && (i) <= (j)+(kl));
-}
-
-/* Sum an array of integers */
-inline int sum_int(size_t n, const int * x, size_t incx) {
-    const int  * const x_end = x + n*incx;
-    int sum = 0;
-    while (x < x_end) {
-        sum += *x;
-        x   += incx;
-    }
-    return sum;
-}
 
 suzerain_bspline_workspace *
 suzerain_bspline_alloc(int order,
@@ -125,8 +104,6 @@ suzerain_bspline_alloc(int order,
     /* Make workspace pointers NULL */
     w->kl          = NULL;
     w->ku          = NULL;
-    w->lda         = NULL;
-    w->storagesize = NULL;
     w->bw          = NULL;
     w->dbw         = NULL;
     w->db          = NULL;
@@ -142,18 +119,6 @@ suzerain_bspline_alloc(int order,
     if (w->ku == NULL) {
         suzerain_bspline_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate workspace ku",
-                            SUZERAIN_ENOMEM);
-    }
-    w->lda = malloc((nderivatives+1)*sizeof(w->lda[0]));
-    if (w->lda == NULL) {
-        suzerain_bspline_free(w);
-        SUZERAIN_ERROR_NULL("failed to allocate workspace lda",
-                            SUZERAIN_ENOMEM);
-    }
-    w->storagesize = malloc((nderivatives+1)*sizeof(w->storagesize[0]));
-    if (w->storagesize == NULL) {
-        suzerain_bspline_free(w);
-        SUZERAIN_ERROR_NULL("failed to allocate workspace lda",
                             SUZERAIN_ENOMEM);
     }
 
@@ -196,11 +161,17 @@ suzerain_bspline_alloc(int order,
         SUZERAIN_ERROR_NULL("failure determining operator bandwidths",
                             SUZERAIN_ESANITY);
     }
-    /* Precompute derived storage parameters */
-    for (int k = 0; k <= nderivatives; ++k) {
-        w->lda[k]         = w->kl[k] + w->ku[k] + 1;
-        w->storagesize[k] = w->lda[k] * w->ndof;
-    }
+    /* Compute derived storage parameters.
+     *
+     * We choose to have all operators stored using the same lda and
+     * capable of being manipulated using w->max_kl and w->max_ku.  This
+     * is not as space efficient as it could be in the pathological cases,
+     * but it does allow using BLAS dgb_acc to form linear combinations
+     * of operators.
+     */
+    w->max_kl = gsl_stats_int_max(w->kl, 1, w->nderivatives+1);
+    w->max_ku = gsl_stats_int_max(w->ku, 1, w->nderivatives+1);
+    w->lda    = w->max_ku + 1 + w->max_kl;
 
     /* Allocate space for pointers to matrices */
     w->D = malloc((w->nderivatives + 1) * sizeof(w->D[0]));
@@ -210,20 +181,27 @@ suzerain_bspline_alloc(int order,
                             SUZERAIN_ENOMEM);
     }
     /* Allocate one block for all derivative operator matrices */
-    const size_t total_storage
-        = sum_int(w->nderivatives+1, w->storagesize, 1);
-    w->D[0] = suzerain_blas_malloc(total_storage*sizeof(w->D[0][0]));
+    const size_t an_operators_storage = w->lda * w->ndof;
+    const size_t all_operators_storage
+        = an_operators_storage * (w->nderivatives+1);
+    w->D[0] = suzerain_blas_malloc(all_operators_storage*sizeof(w->D[0][0]));
     if (w->D[0] == NULL) {
         suzerain_bspline_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
                             SUZERAIN_ENOMEM);
     }
-    for (int k = 0; k < w->nderivatives; ++k) {
-        w->D[k+1] = w->D[k] + w->storagesize[k];
+    /* Compute pointers to the beginning of each derivative operator */
+    /* Determine the start of raw storage for (k+1)-th operator */
+    for (int k = 1; k <= w->nderivatives; ++k) {
+        w->D[k] = w->D[k-1] + an_operators_storage;
+    }
+    /* Step pointer past any unused superdiagonals in the k-th operator */
+    for (int k = 0; k <= w->nderivatives; ++k) {
+        w->D[k] += (w->max_ku - w->ku[k]);
     }
 
-    /* Calculate operator matrices. */
-    if (suzerain_bspline_create_operator(w)) {
+    /* Calculate operator matrices */
+    if (suzerain_bspline_create_operators(w)) {
         suzerain_bspline_free(w);
         SUZERAIN_ERROR_NULL("Error creating operator matrices",
                             SUZERAIN_EFAILED);
@@ -237,8 +215,13 @@ suzerain_bspline_free(suzerain_bspline_workspace * w)
 {
     if (w != NULL) {
         if (w->D != NULL) {
-            free(w->D[0]);
-            w->D[0] = NULL;
+            if (w->D[0] != NULL) {
+                // Must free originally allocated memory offset, not the
+                // computed offset.  See suzerain_bspline_alloc.
+                w->D[0] -= (w->max_ku - w->ku[0]);
+                free(w->D[0]);
+                w->D[0] = NULL;
+            }
 
             free(w->D);
             w->D = NULL;
@@ -252,12 +235,6 @@ suzerain_bspline_free(suzerain_bspline_workspace * w)
 
         gsl_bspline_free(w->bw);
         w->bw = NULL;
-
-        free(w->storagesize);
-        w->storagesize = NULL;
-
-        free(w->lda);
-        w->lda = NULL;
 
         free(w->ku);
         w->ku = NULL;
@@ -308,7 +285,7 @@ suzerain_bspline_apply_operator(
         suzerain_blas_dgbmv(
             'N', w->ndof, w->ndof,
             w->kl[nderivative], w->ku[nderivative],
-            1.0, w->D[nderivative], w->lda[nderivative],
+            1.0, w->D[nderivative], w->lda,
             scratch, 1,
             0.0, bi, 1);
     }
@@ -386,13 +363,15 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
 
-    /* Initially maximum collocation operator band storage parameters */
+    /* Initially set maximum collocation operator band storage parameters */
     for (int k = 0; k <= w->nderivatives; ++k) {
-        w->kl[k]          = w->order - 1;
-        w->ku[k]          = w->kl[k];
-        w->lda[k]         = w->kl[k] + w->ku[k] + 1;
-        w->storagesize[k] = w->lda[k] * w->order;
+        w->kl[k] = w->order - 1;
+        w->ku[k] = w->kl[k];
     }
+    /* Determine storage needs, defensively assuming nonuniform parameters */
+    w->max_kl = gsl_stats_int_max(w->kl, 1, w->nderivatives+1);
+    w->max_ku = gsl_stats_int_max(w->ku, 1, w->nderivatives+1);
+    w->lda    = w->max_kl + 1 + w->max_ku;
 
     /* Compute collocation points at which we will check bandwidth */
     double * const points = malloc(2*w->order*sizeof(w->bw->knots->data[0]));
@@ -403,7 +382,7 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     for (int i = 0; i < w->order; ++i) {
         points[i] = gsl_bspline_greville_abscissa(i, w->bw);
         points[i + w->order] = gsl_bspline_greville_abscissa(
-                w->ndof-w->order+i,w->bw);
+                w->ndof-w->order+i, w->bw);
     }
 
     /* Allocate space for collocation operator submatrices */
@@ -414,9 +393,9 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
         SUZERAIN_ERROR("Unable to allocate scratch pointers",
                 SUZERAIN_ENOMEM);
     }
-    const size_t total_storage
-        = 2 * sum_int(w->nderivatives+1, w->storagesize, 1);
-    scratch[0] = suzerain_blas_malloc(total_storage*sizeof(w->D[0][0]));
+    const size_t an_operators_storage = w->lda * w->order;
+    const size_t total_storage = 2*(w->nderivatives+1)*an_operators_storage;
+    scratch[0] = suzerain_blas_calloc(total_storage, sizeof(w->D[0][0]));
     if (scratch[0] == NULL) {
         free(scratch);
         free(points);
@@ -424,9 +403,7 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
                             SUZERAIN_ENOMEM);
     }
     for (int k = 1; k < 2*(w->nderivatives+1); ++k) {
-        const int storagesize_km1
-            = w->storagesize[(k-1) % (w->nderivatives+1)];
-        scratch[k] = scratch[k-1] + storagesize_km1;
+        scratch[k] = scratch[k-1] + an_operators_storage;
     }
 
     /* Create convenience views of our working space */
@@ -460,26 +437,26 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
 
     /* Reduce kl/ku for each zero off-diagonal in ul_D and lr_D */
     for (int k = 0; k <= w->nderivatives; ++k) {
-        const int fixed_ku_k  = w->ku[k];
-        const int fixed_kl_k  = w->kl[k];
-        const int fixed_lda_k = w->lda[k];
+        const int fixed_ku_k = w->ku[k];
+        const int fixed_kl_k = w->kl[k];
+        const int fixed_lda  = w->lda;
 
         for (int i=0; i < fixed_ku_k; ++i) {
             const double ul_asum
-                = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_lda_k);
+                = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_lda);
             const double lr_asum
-                = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_lda_k);
+                = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_lda);
             if (ul_asum + lr_asum == 0.0) {
                 --w->ku[k];
             } else {
                 break; /* Skip all after nonzero superdiagonal */
             }
         }
-        for (int i=fixed_lda_k-1; i > fixed_ku_k; --i) {
+        for (int i=fixed_lda-1; i > fixed_ku_k; --i) {
             const double ul_asum
-                = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_lda_k);
+                = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_lda);
             const double lr_asum
-                = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_lda_k);
+                = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_lda);
             if (ul_asum + lr_asum == 0.0) {
                 --w->kl[k];
             } else {
@@ -496,7 +473,7 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
 }
 
 int
-suzerain_bspline_create_operator(suzerain_bspline_workspace *w)
+suzerain_bspline_create_operators(suzerain_bspline_workspace *w)
 {
     /* Compute the operator matrices based on the supplied method */
     switch (w->method) {
@@ -519,6 +496,11 @@ suzerain_bspline_create_operator(suzerain_bspline_workspace *w)
         points[i] = gsl_bspline_greville_abscissa(i, w->bw);
     }
 
+    /* Zero the full derivative operator matrices */
+    w->D[0] -= (w->max_ku - w->ku[0]); /* See suzerain_bspline_alloc */
+    memset(w->D[0], 0, w->lda*w->ndof*(w->nderivatives+1)*sizeof(w->D[0][0]));
+    w->D[0] += (w->max_ku - w->ku[0]);
+
     /* Compute the full derivative operator matrices */
     if (compute_banded_collocation_derivative_submatrix(
              0, 0, w->nderivatives, w->kl, w->ku, w->lda,
@@ -539,7 +521,7 @@ compute_banded_collocation_derivative_submatrix(
     const int nderivatives,
     const int * const kl,
     const int * const ku,
-    const int * const lda,
+    const int lda,
     const int npoints,
     const double * points,
     gsl_bspline_workspace * bw,
@@ -547,10 +529,7 @@ compute_banded_collocation_derivative_submatrix(
     gsl_matrix * db,
     double ** const D)
 {
-    /* Clear operator storage; zeros out values not explicitly set below */
-    for (int k = 0; k <= nderivatives; ++k) {
-        memset(D[k], 0, lda[k]*npoints*sizeof(D[0][0]));
-    }
+    /* PRECONDITION: D[0]...D[nderivatives] must have been filled with zeros */
 
     /* Fill all nonzero entries in the operator storage */
     for (int i = 0; i < npoints; ++i) {
@@ -565,10 +544,10 @@ compute_banded_collocation_derivative_submatrix(
         for (int k = 0; k <= nderivatives; ++k) {
             for (int j = jstart; j <= jend; ++j) {
                 const double value = gsl_matrix_get(db, j - dbjstart, k);
-                const int in_band  = gb_matrix_in_band(
-                        lda[k], kl[k], ku[k], i+ioffset, j /* no joffset */);
-                const int offset = gb_matrix_offset(
-                        lda[k], kl[k], ku[k], i /* no ioffset */, j-joffset);
+                const int in_band  = suzerain_gbmatrix_in_band(
+                        lda, kl[k], ku[k], i+ioffset, j /* no joffset */);
+                const int offset = suzerain_gbmatrix_offset(
+                        lda, kl[k], ku[k], i /* no ioffset */, j-joffset);
 
                 if (in_band) {
                     D[k][offset] = value;
@@ -590,7 +569,7 @@ compute_banded_collocation_derivative_submatrix(
                              order, order-1,
                              k, j, i, points[i], value,
                              i, j, offset,
-                             lda[k], kl[k], ku[k], npoints,
+                             lda, kl[k], ku[k], npoints,
                              ioffset, joffset);
                     SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
                 }
@@ -641,16 +620,11 @@ suzerain_bspline_lu_alloc(
     luw->A    = NULL;
     luw->ipiv = NULL;
 
-    /* Banded LU operator dimensions depend on largest derivative band */
-    const int max_kl = gsl_stats_int_max(w->kl, 1, w->nderivatives+1);
-    const int max_ku = gsl_stats_int_max(w->ku, 1, w->nderivatives+1);
-
     /* Determine general banded matrix shape parameters */
     luw->ndof          = w->ndof;
-    luw->kl            = max_kl;
-    luw->ku            = max_kl + max_ku; /* Increase ku per DGBTRF, DGBTRS */
+    luw->kl            = w->max_kl;
+    luw->ku            = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS */
     luw->lda           = luw->kl + luw->ku + 1;
-    luw->storagesize   = luw->lda * luw->ndof;
 
     /* Allocate memory for LU factorization pivot storage */
     luw->ipiv = malloc(w->ndof * sizeof(luw->ipiv[0]));
@@ -663,7 +637,7 @@ suzerain_bspline_lu_alloc(
     luw->ipiv[0] = -1;
 
     /* Allocate memory for the matrix formed within lu_form_general */
-    luw->A = suzerain_blas_malloc(luw->storagesize*sizeof(luw->A[0]));
+    luw->A = suzerain_blas_malloc(luw->lda*luw->ndof*sizeof(luw->A[0]));
     if (luw->A == NULL) {
         suzerain_bspline_lu_free(luw);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
@@ -709,41 +683,20 @@ suzerain_bspline_lu_form_general(
                        SUZERAIN_EINVAL);
     }
     /* Banded LU operator dimensions depend on largest derivative band */
-    const int max_kl = gsl_stats_int_max(w->kl, 1, w->nderivatives+1);
-    const int max_ku = gsl_stats_int_max(w->ku, 1, w->nderivatives+1);
-    if (luw->ku < max_kl + max_ku) {
+    if (luw->ku < w->max_kl + w->max_ku) {
         SUZERAIN_ERROR("Incompatible workspaces: luw->ku too small",
                        SUZERAIN_EINVAL);
     }
 
-    /* Clear operator storage; zeros out values not explicitly set below */
-    memset(luw->A, 0, luw->storagesize * sizeof(luw->A[0]));
+    /* Clear operator storage, including superdiagonals not touched below */
+    memset(luw->A, 0, luw->lda*luw->ndof*sizeof(luw->A[0]));
 
-    /* Accumulate coefficients times workspace w derivative operators */
-    {
-        double * A        = luw->A;
-        double ** const D = w->D;
-
-        const int luw_lda = luw->lda;
-        const int w_ndof  = w->ndof;
-        for (int k = 0; k < ncoefficients; ++k) {
-            if (coefficients[k] == 0.0) {
-                continue; /* Skip identically zero coefficient */
-            }
-
-            double * const D_k          = w->D[k];
-            const double coefficients_k = coefficients[k];
-            const int incr_ku_k         = luw->ku - w->ku[k];
-            const int w_lda_k           = w->lda[k];
-
-            for (int j = 0; j < w_ndof; ++j) {
-                const int joffset_D = j*w_lda_k;
-                const int joffset_A = j*luw_lda + incr_ku_k;
-                for (int i = 0; i < w_lda_k; ++i) {
-                    A[i + joffset_A] += coefficients_k * D_k[i + joffset_D];
-                }
-            }
-        }
+    /* Accumulate scaled derivative operators into luw->A */
+    for (int k = 0; k < ncoefficients; ++k) {
+        suzerain_blas_dgb_acc(
+            luw->ndof, luw->ndof, w->max_kl, w->max_ku,
+            coefficients[k], w->D[k] - (w->max_ku - w->ku[k]), w->lda,
+            1.0, luw->A + w->max_kl, luw->lda);
     }
 
     /* Compute LU factorization of the just-formed operator */

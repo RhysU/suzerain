@@ -63,11 +63,10 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
                                    1,
                                    1,
                                    1 };
-        BOOST_CHECK_EQUAL(0, w->ku[0]);
-        BOOST_CHECK_EQUAL(0, w->kl[0]);
-        BOOST_CHECK_EQUAL_COLLECTIONS(
-            good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
-            w->D[0] + w->ku[0], w->D[0] + w->storagesize[0] - w->kl[0]);
+        CHECK_GBMATRIX_CLOSE(
+                  4,       4,        0,        0, good_D0,      1,
+            w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->lda,
+            1e-12);
 
         /* Check w->D[0] application against multiple vectors */
         const int nrhs = 2;
@@ -90,17 +89,16 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
          *   0   0  -1   1
          * Known good is in general banded matrix column-major order.
          */
-        const double good_D1[] = { /*DK*/  -1,     0,
-                                       1,  -1,     0,
-                                       1,  -1,    -1,
-                                       1,   1  /*DK*/ };
-        BOOST_CHECK_EQUAL(1, w->ku[1]);
-        BOOST_CHECK_EQUAL(1, w->kl[1]);
-        BOOST_CHECK_EQUAL_COLLECTIONS(
-            good_D1, good_D1 + sizeof(good_D1)/sizeof(good_D1[0]),
-            w->D[1] + w->ku[1], w->D[1] + w->storagesize[1] - w->kl[1]);
+        const double good_D1[] = { /*DK*/0,   -1,       0,
+                                         1,   -1,       0,
+                                         1,   -1,      -1,
+                                         1,    1, /*DK*/0 };
+        CHECK_GBMATRIX_CLOSE(
+                  4,       4,        1,        1, good_D1,      3,
+            w->ndof, w->ndof, w->kl[1], w->ku[1], w->D[1], w->lda,
+            1e-12);
 
-        /* Check w->D[0] application against multiple vectors */
+        /* Check w->D[1] application against multiple vectors */
         const int nrhs = 2;
         double vector[] = { 1, 3, 2, 4,
                             7, 6, 5, 8 };
@@ -120,11 +118,10 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
                                    0,
                                    0,
                                    0 };
-        BOOST_CHECK_EQUAL(0, w->ku[2]);
-        BOOST_CHECK_EQUAL(0, w->kl[2]);
-        BOOST_CHECK_EQUAL_COLLECTIONS(
-            good_D2, good_D2 + sizeof(good_D2)/sizeof(good_D2[0]),
-            w->D[2] + w->ku[2], w->D[2] + w->storagesize[2] - w->kl[2]);
+        CHECK_GBMATRIX_CLOSE(
+                  4,       4,        0,        0, good_D2,      1,
+            w->ndof, w->ndof, w->kl[2], w->ku[2], w->D[2], w->lda,
+            1e-12);
     }
 
     suzerain_bspline_lu_workspace *luw
@@ -144,16 +141,16 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
      * Known good is in general banded matrix column-major order with
      * additional superdiagonal to allow for LU factorization fill-in.
      */
-    const double good_A0[] = { /*DK*/   /*DK*/   5,     0,
-                               /*DK*/0,    -3,   5,     0,
-                                     0,    -3,   5,     0.6,
-                                     0,    -3,   0.8  /*DK*/ };
+    const double good_A0[] = { /*DK*/0, /*DK*/0,   5,         0,
+                               /*DK*/0,      -3,   5,         0,
+                                     0,      -3,   5,         0.6,
+                                     0,      -3,   0.8, /*DK*/0    };
     const double coeff[] = { 2.0, -3.0 };
     suzerain_bspline_lu_form_general(
         sizeof(coeff)/sizeof(coeff[0]), coeff, w, luw);
-    check_close_collections(
-        good_A0, good_A0 + sizeof(good_A0)/sizeof(good_A0[0]),
-        luw->A + luw->ku, luw->A + luw->storagesize - luw->kl,
+    CHECK_GBMATRIX_CLOSE(
+                4,         4,       1,       2, good_A0,        4,
+        luw->ndof, luw->ndof, luw->kl, luw->ku,  luw->A, luw->lda,
         1e-12);
 
     /* Check that multiple rhs solution works for operator found just above */
@@ -196,14 +193,15 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
          *  0.    0.    0.    0.    1.
          * Known good is in general banded matrix column-major order.
          */
-        const double good_D0[] = { /*DK*/      1.,       1./4.,
-                                      0.,      5./8.,    1./8.,
-                                      1./8.,   3./4.,    1./8.,
-                                      1./8.,   5./8.,    0.,
-                                      1./4.,       1.     /*DK*/ };
-        BOOST_CHECK_EQUAL_COLLECTIONS(
-            good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
-            w->D[0] + w->ku[0], w->D[0] + w->storagesize[0] - w->kl[0]);
+        const double good_D0[] = { /*DK*/0.,   1.,      1./4.,
+                                         0.,   5./8.,   1./8.,
+                                      1./8.,   3./4.,   1./8.,
+                                      1./8.,   5./8.,   0.,
+                                      1./4.,      1.,   /*DK*/0. };
+        CHECK_GBMATRIX_CLOSE(
+                  5,       5,        1,        1, good_D0,      3,
+            w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->lda,
+            1e-12);
 
         /* Check w->D[0] application against multiple vectors */
         const int nrhs = 2;
@@ -245,17 +243,17 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
          * Known good is in general banded matrix column-major order.
          */
         const double good_D0[] = {
-            /*DK*/      /*DK*/          1.,       8./27.,         0,
+            /*DK*/0,  /*DK*/0,          1.,       8./27.,         0,
             /*DK*/0,        0,         61./108.,  1./4.,          0,
                   0,       43./324.,    7./12.,   1./6.,          1./162.,
                   1./162.,  1./6.,      7./12.,   43./324.,       0,
                   0,        1./4.,     61./108.,  0,        /*DK*/0,
-                  0,        8./27.,     1.        /*DK*/    /*DK*/
+                  0,        8./27.,     1.,       /*DK*/0,  /*DK*/0
         };
-        check_close_collections(
-            good_D0, good_D0 + sizeof(good_D0)/sizeof(good_D0[0]),
-            w->D[0] + w->ku[0], w->D[0] + w->storagesize[0] - w->kl[0],
-            1.0e-12);
+        CHECK_GBMATRIX_CLOSE(
+                  6,       6,        2,        2, good_D0,      5,
+            w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->lda,
+            1e-12);
 
         /* Check w->D[0] application against multiple vectors */
         {

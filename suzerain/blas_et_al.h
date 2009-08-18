@@ -55,7 +55,8 @@ __BEGIN_DECLS
 
 /**
  * Allocates memory aligned according to the underlying BLAS'
- * recommendations for performance and numerical stability.
+ * recommendations for performance and numerical stability.  The
+ * memory is not cleared.
  *
  * @param size Number of bytes to allocate.
  *
@@ -64,6 +65,20 @@ __BEGIN_DECLS
  */
 void *
 suzerain_blas_malloc(size_t size);
+
+/**
+ * Allocate and clear memory aligned according to the underlying BLAS'
+ * recommendations for performance and numerical stability.  The
+ * memory is set to zero.
+ *
+ * @param nmemb Number of elements to allocate
+ * @param size Size of each member in bytes.
+ *
+ * @return On success, return a pointer to the allocated memory.  This
+ *      memory must later be freed.  On failure, return a NULL pointer.
+ */
+void *
+suzerain_blas_calloc(size_t nmemb, size_t size);
 
 /**
  * Perform \f$ y \leftarrow{} x \f$ using BLAS's dcopy.

@@ -74,6 +74,17 @@ suzerain_blas_malloc(size_t size)
     }
 }
 
+void *
+suzerain_blas_calloc(size_t nmemb, size_t size)
+{
+    const size_t total_bytes = nmemb * size;
+    void * p = suzerain_blas_malloc(total_bytes);
+    if (p != NULL) {
+        memset(p, 0, total_bytes);
+    }
+    return p;
+}
+
 void
 suzerain_blas_dcopy(
         const int n,
