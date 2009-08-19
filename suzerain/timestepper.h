@@ -52,6 +52,24 @@
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+int
+suzerain_smr91_substep(
+        const int n,
+        const int kl,
+        const int ku,
+        const double * const M,
+        const int ldM,
+        const int nD,
+        const double * const xi,
+        const double * const * const D,
+        const int ldD,
+        double delta_t,
+        const int nrhs,
+              double * const a, const int inca, const int lda,
+        const double * const b, const int incb, const int ldb,
+              double * const c, const int incc, const int ldc,
+        const int substep);
+
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
