@@ -31,6 +31,7 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/error.h>
 
@@ -59,9 +60,9 @@ suzerain_smr91_substep(
         const int ldD,
         double delta_t,
         const int nrhs,
-              double * const a, const int inca, const int lda,
+        double       * const a, const int inca, const int lda,
         const double * const b, const int incb, const int ldb,
-              double * const c, const int incc, const int ldc,
+        double       * const c, const int incc, const int ldc,
         const int substep)
 {
     /* Allocate and clear working space for matrix \hat{D} */
@@ -70,23 +71,25 @@ suzerain_smr91_substep(
     if (hatD == NULL) {
         SUZERAIN_ERROR("failed to allocate space for hatD", SUZERAIN_ENOMEM);
     }
-    /* Accumulate \hat{D} */
+    /* Accumulate $\hat{D} = \sum_j (\gamma_i + \zeta_{i-1}) \xi_j D_j$ */
     for (int j = 0; j < nD; ++j) {
-        const double alpha = (_smr91_gamma[substep]+_smr91_zeta[substep])*xi[j];
-        suzerain_blas_dgb_acc(n, n, kl, ku, alpha, D[j], ldD, 1.0, hatD, ld_hatD);
+        const double alpha 
+            = (_smr91_gamma[substep] + _smr91_zeta[substep]) * xi[j];
+        suzerain_blas_dgb_acc(
+                n, n, kl, ku, alpha, D[j], ldD, 1.0, hatD, ld_hatD);
     }
 
     /* Allocate and clear space for matrix \hat{M} with LU-ready padding */
     const int ld_hatM = 2*kl + 1 + ku;
-    double * const hatM = suzerain_blas_calloc(n*ld_hatM, sizeof(hatM[0]));
+    double * const hatM = suzerain_blas_calloc(n * ld_hatM, sizeof(hatM[0]));
     if (hatM == NULL) {
         free(hatD);
         SUZERAIN_ERROR("failed to allocate space for hatM", SUZERAIN_ENOMEM);
     }
-    /* Accumulate \hat{M} */
+    /* Accumulate $\hat{M}  = M - \sum_j \Delta{}t \beta_i \xi_j D_j */
     suzerain_blas_dgb_acc(n, n, kl, ku, 1.0, M, ldM, 0.0, hatM + kl, ld_hatM);
     for (int j = 0; j < nD; ++j) {
-        const double alpha = -1.0*delta_t*_smr91_beta[substep]*xi[j];
+        const double alpha = -1.0 * delta_t * _smr91_beta[substep] * xi[j];
         suzerain_blas_dgb_acc(
             n, n, kl, ku, alpha, D[j], ldD, 1.0, hatM + kl, ld_hatM);
     }
@@ -106,8 +109,10 @@ suzerain_smr91_substep(
         free(ipiv);
         free(hatM);
         free(hatD);
-        SUZERAIN_ERROR("suzerain_lapack_dgbtrf reported an error",
-                       SUZERAIN_ESANITY);
+        char buffer[72];
+        snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+                 "suzerain_lapack_dgbtrf reported error: %d", error_dgbtrf);
+        SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
     }
 
     /* Allocate working space for contiguous vector d */
@@ -130,7 +135,7 @@ suzerain_smr91_substep(
                 _smr91_zeta[substep],  c_j, incc);
 
         suzerain_blas_dgbmv('N', n, n, kl, ku,
-                1.0, M, ldM, c_j, ldc,
+                1.0, M, ldM, c_j, incc,
                 0.0, d, incd);
 
         suzerain_blas_dgbmv('N', n, n, kl, ku,
@@ -144,8 +149,10 @@ suzerain_smr91_substep(
             free(ipiv);
             free(hatM);
             free(hatD);
-            SUZERAIN_ERROR("suzerain_lapack_dgbtrs reported an error",
-                        SUZERAIN_ESANITY);
+            char buffer[72];
+            snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+                    "suzerain_lapack_dgbtrs reported error: %d", error_dgbtrf);
+            SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
         }
 
         suzerain_blas_daxpy(n,

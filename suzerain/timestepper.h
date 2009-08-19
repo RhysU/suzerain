@@ -65,9 +65,9 @@ suzerain_smr91_substep(
         const int ldD,
         double delta_t,
         const int nrhs,
-              double * const a, const int inca, const int lda,
+        double       * const a, const int inca, const int lda,
         const double * const b, const int incb, const int ldb,
-              double * const c, const int incc, const int ldc,
+        double       * const c, const int incc, const int ldc,
         const int substep);
 
 
