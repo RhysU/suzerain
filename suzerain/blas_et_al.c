@@ -140,6 +140,26 @@ suzerain_blas_dasum(
 }
 
 void
+suzerain_blas_daxpy(
+        const int n,
+        const double alpha,
+        const double *x,
+        const int incx,
+        double *y,
+        const int incy)
+{
+#ifdef HAVE_MKL
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+
+    daxpy(&_n, &alpha, x, &_incx, y, &_incy);
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
 suzerain_blas_daxpby(
         const int n,
         const double alpha,
