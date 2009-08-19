@@ -55,6 +55,11 @@ test_bspline_LDADD   += $(LOG4CXX_LIBS)
 test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+check_PROGRAMS           += test_timestepper
+test_timestepper_SOURCES  = test_timestepper.c
+test_timestepper_LDADD    = $(GSL_LIBS)
+test_timestepper_LDADD   += ../suzerain/libsuzerain.la
+
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
 TESTS = $(check_PROGRAMS)
 
