@@ -158,7 +158,7 @@ suzerain_smr91_substep(
                 1.0, d, incd);
 
         const int error_dgbtrs = suzerain_lapack_dgbtrs(
-                'N', n, kl, ku, 1, hatM, ld_hatM, ipiv, d, incd);
+                'N', n, kl, ku, 1, hatM, ld_hatM, ipiv, d, n*incd);
         if (error_dgbtrs) {
             free(d);
             free(ipiv);
