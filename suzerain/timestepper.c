@@ -35,17 +35,28 @@
 #include <suzerain/blas_et_al.h>
 #include <suzerain/error.h>
 
+/* Number of substeps in the SMR91 scheme */
+const int _smr91_numsubsteps = 3;
+
 /* Zero-indexed \f$ \alpha_1 \dots \alpha_3 \f$ coefficients per SMR91 */
-const double _smr91_alpha[3] = { 29.0/ 96.0,  -3.0/40.0,  1.0/ 6.0 };
+const double _smr91_alpha[_smr91_numsubsteps] = {
+    29.0/96.0, -3.0/40.0, 1.0/6.0
+};
 
 /* Zero-indexed \f$ \beta_1 \dots \beta_3 \f$ coefficients per SMR91 */
-const double _smr91_beta[3]  = { 37.0/160.0,   5.0/24.0,  1.0/ 6.0 };
+const double _smr91_beta[_smr91_numsubsteps]  = {
+    37.0/160.0, 5.0/24.0, 1.0/6.0
+};
 
 /* Zero-indexed \f$ \gamma_1 \dots \gamma_3 \f$ coefficients per SMR91 */
-const double _smr91_gamma[3] = {  8.0/ 15.0,   5.0/12.0,  3.0/ 4.0 };
+const double _smr91_gamma[_smr91_numsubsteps] = {
+    8.0/15.0, 5.0/12.0, 3.0/4.0
+};
 
 /* Zero-indexed \f$ \zeta_0 \dots \zeta_2 \f$ coefficients per SMR91 */
-const double _smr91_zeta[3]  = {  0.0,       -17.0/60.0, -5.0/12.0 };
+const double _smr91_zeta[_smr91_numsubsteps] = {
+    0.0, -17.0/60.0, -5.0/12.0
+};
 
 int
 suzerain_smr91_substep(
@@ -65,6 +76,10 @@ suzerain_smr91_substep(
         double       * const c, const int incc, const int ldc,
         const int substep)
 {
+    if (substep < 0 || substep >= _smr91_numsubsteps) {
+        SUZERAIN_ERROR("requested substep out of range", SUZERAIN_ESANITY);
+    }
+
     /* Allocate and clear working space for matrix \hat{D} */
     const int ld_hatD = kl + 1 + ku;
     double * const hatD = suzerain_blas_calloc(n*ld_hatD, sizeof(hatD[0]));
@@ -73,7 +88,7 @@ suzerain_smr91_substep(
     }
     /* Accumulate $\hat{D} = \sum_j (\gamma_i + \zeta_{i-1}) \xi_j D_j$ */
     for (int j = 0; j < nD; ++j) {
-        const double alpha 
+        const double alpha
             = (_smr91_gamma[substep] + _smr91_zeta[substep]) * xi[j];
         suzerain_blas_dgb_acc(
                 n, n, kl, ku, alpha, D[j], ldD, 1.0, hatD, ld_hatD);
