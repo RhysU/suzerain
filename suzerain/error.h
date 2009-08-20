@@ -66,7 +66,8 @@ enum suzerain_error_status {
     SUZERAIN_ESANITY  = 7,   /**< Sanity check failed - shouldn't happen */
     SUZERAIN_ENOMEM   = 8,   /**< Memory allocation failed */
     SUZERAIN_EBADFUNC = 9,   /**< Problem with user-supplied function */
-    SUZERAIN_EZERODIV = 12   /**< Tried to divide by zero */
+    SUZERAIN_EZERODIV = 12,  /**< Tried to divide by zero */
+    SUZERAIN_EBADLEN  = 19   /**< matrix or vector lengths are not conformant */
 };
 
 /**

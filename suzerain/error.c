@@ -150,6 +150,8 @@ suzerain_strerror(const int suzerain_errno)
         return "problem with user-supplied function";
     case SUZERAIN_EZERODIV:
         return "tried to divide by zero" ;
+    case SUZERAIN_EBADLEN:
+        return "matrix or vector lengths are not conformant";
     default:
         return "unknown error code" ;
     }
