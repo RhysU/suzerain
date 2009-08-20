@@ -24,6 +24,7 @@ pkginclude_HEADERS += function.h
 pkginclude_HEADERS += macros.h
 pkginclude_HEADERS += pencil_grid.hpp
 pkginclude_HEADERS += pencil.hpp
+pkginclude_HEADERS += richardson.h
 pkginclude_HEADERS += timestepper.h
 pkginclude_HEADERS += underling.h
 
@@ -31,6 +32,7 @@ noinst_LTLIBRARIES     += libsuzerain.la
 libsuzerain_la_SOURCES  = blas_et_al.c
 libsuzerain_la_SOURCES += bspline.c
 libsuzerain_la_SOURCES += error.c
+libsuzerain_la_SOURCES += richardson.c
 libsuzerain_la_SOURCES += timestepper.c
 
 noinst_LTLIBRARIES      += libunderling.la
