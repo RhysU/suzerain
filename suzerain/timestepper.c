@@ -166,7 +166,7 @@ suzerain_smr91_substep(
             free(hatD);
             char buffer[72];
             snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
-                    "suzerain_lapack_dgbtrs reported error: %d", error_dgbtrf);
+                    "suzerain_lapack_dgbtrs reported error: %d", error_dgbtrs);
             SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
         }
 
