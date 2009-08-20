@@ -77,7 +77,7 @@ suzerain_smr91_substep(
         const int substep)
 {
     if (substep < 0 || substep >= _smr91_numsubsteps) {
-        SUZERAIN_ERROR("requested substep out of range", SUZERAIN_ESANITY);
+        SUZERAIN_ERROR("requested substep out of range", SUZERAIN_EINVAL);
     }
 
     /* Allocate and clear working space for matrix \hat{D} */
