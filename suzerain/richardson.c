@@ -30,4 +30,29 @@
 
 #include "config.h"
 
+#include <gsl/gsl_math.h>
+#include <suzerain/error.h>
 #include <suzerain/richardson.h>
+
+int
+suzerain_richardson_step(
+    const gsl_vector * Aih,
+    const gsl_vector * Aiht,
+    const int ki,
+    const double t,
+    gsl_vector * Aip1h)
+{
+    const double tki       = gsl_pow_int(t, ki);
+    const double inv_tkim1 = 1.0/(tki-1.0);
+    int error;
+
+    error = gsl_blas_dcopy(Aiht, Aip1h);
+    if (error) return error;
+
+    gsl_blas_dscal(tki*inv_tkim1, Aip1h);
+
+    error = gsl_blas_daxpy(-inv_tkim1, Aih, Aip1h);
+    if (error) return error;
+
+    return SUZERAIN_SUCCESS;
+}
