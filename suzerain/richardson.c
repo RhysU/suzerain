@@ -36,22 +36,17 @@
 
 int
 suzerain_richardson_step(
-    const gsl_vector * Aih,
-    const gsl_vector * Aiht,
+    gsl_vector * Ah,
+    const gsl_vector * Aht,
     const int ki,
-    const double t,
-    gsl_vector * Aip1h)
+    const double t)
 {
     const double tki       = gsl_pow_int(t, ki);
     const double inv_tkim1 = 1.0/(tki-1.0);
-    int error;
 
-    error = gsl_blas_dcopy(Aiht, Aip1h);
-    if (error) return error;
+    gsl_blas_dscal(-inv_tkim1, Ah);
 
-    gsl_blas_dscal(tki*inv_tkim1, Aip1h);
-
-    error = gsl_blas_daxpy(-inv_tkim1, Aih, Aip1h);
+    int error = gsl_blas_daxpy(tki*inv_tkim1, Aht, Ah);
     if (error) return error;
 
     return SUZERAIN_SUCCESS;

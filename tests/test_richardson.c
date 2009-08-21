@@ -11,32 +11,31 @@ test_richardson_step()
 {
     const int    ki           = 1;
     const size_t n            = 1;
-    gsl_vector *Aih   = gsl_vector_alloc(n);
-    gsl_vector *Aiht  = gsl_vector_alloc(n);
-    gsl_vector *Aip1h = gsl_vector_alloc(n);
-
-    gsl_vector_set(Aih,  0, 1.0);
-    gsl_vector_set(Aiht, 0, 2.0);
+    gsl_vector *Ah   = gsl_vector_alloc(n);
+    gsl_vector *Aht  = gsl_vector_alloc(n);
 
     {
         const double t = 2.0;
-        gsl_test(suzerain_richardson_step(Aih, Aiht, 1, t, Aip1h),
+        gsl_vector_set(Ah,  0, 1.0);
+        gsl_vector_set(Aht, 0, 2.0);
+        gsl_test(suzerain_richardson_step(Ah, Aht, 1, t),
                 "Unexpected error reported in %s for t=%f", __func__, t);
-        gsl_test_abs(gsl_vector_get(Aip1h, 0), 3.0, GSL_DBL_EPSILON,
+        gsl_test_abs(gsl_vector_get(Ah, 0), 3.0, GSL_DBL_EPSILON,
                 "Extrapolation in %s for ki=%d, t=%f", __func__, ki, t);
     }
 
     {
         const double t = 3.0;
-        gsl_test(suzerain_richardson_step(Aih, Aiht, 1, t, Aip1h),
+        gsl_vector_set(Ah,  0, 1.0);
+        gsl_vector_set(Aht, 0, 2.0);
+        gsl_test(suzerain_richardson_step(Ah, Aht, 1, t),
                 "Unexpected error reported in %s for t=%f", __func__, t);
-        gsl_test_abs(gsl_vector_get(Aip1h, 0), 5.0/2.0, GSL_DBL_EPSILON,
+        gsl_test_abs(gsl_vector_get(Ah, 0), 5.0/2.0, GSL_DBL_EPSILON,
                 "Extrapolation in %s for ki=%d, t=%f", __func__, ki, t);
     }
 
-    gsl_vector_free(Aip1h);
-    gsl_vector_free(Aiht);
-    gsl_vector_free(Aih);
+    gsl_vector_free(Aht);
+    gsl_vector_free(Ah);
 }
 
 int
