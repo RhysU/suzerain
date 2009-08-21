@@ -6,9 +6,21 @@
 #include <gsl/gsl_test.h>
 #include <suzerain/timestepper.h>
 
+void
+check_smr91_constants()
+{
+    const suzerain_lsrk_method m = suzerain_lsrk_smr91;
+
+    for (int i = 0; i < m.substeps; ++i) {
+        const double res = m.alpha[i] + m.beta[i] - m.gamma[i] - m.zeta[i];
+        gsl_test_abs(res, 0.0, GSL_DBL_EPSILON,
+                "Coefficient residual for %s substep %d of %d",
+                m.name, i, m.substeps);
+    }
+}
 
 void
-check_scalareqn_substeps()
+check_smr91_scalareqn_substeps()
 {
     /* Checks that operations are as expected */
 
@@ -40,7 +52,8 @@ check_scalareqn_substeps()
         double    a[1]    = { 19.0 };
         double    c[1]    = { 29.0 };
         const int substep = 0;
-        suzerain_smr91_substep(
+        suzerain_lsrk_substep(
+                suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
                 nD, xi, D, ldD,
@@ -57,7 +70,8 @@ check_scalareqn_substeps()
         double    a[1]    = { 19.0 };
         double    c[1]    = { 29.0 };
         const int substep = 1;
-        suzerain_smr91_substep(
+        suzerain_lsrk_substep(
+                suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
                 nD, xi, D, ldD,
@@ -74,7 +88,8 @@ check_scalareqn_substeps()
         double    a[1]    = { 19.0 };
         double    c[1]    = { 29.0 };
         const int substep = 2;
-        suzerain_smr91_substep(
+        suzerain_lsrk_substep(
+                suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
                 nD, xi, D, ldD,
@@ -89,7 +104,7 @@ check_scalareqn_substeps()
 }
 
 void
-check_matrixeqn_substeps()
+check_smr91_matrixeqn_substeps()
 {
     /* Checks band storage, increments, leading dimensions, etc. */
 
@@ -128,7 +143,8 @@ check_matrixeqn_substeps()
         const int incc    = 1;
         const int ldc     = 2;
         const int substep = 0;
-        suzerain_smr91_substep(
+        suzerain_lsrk_substep(
+                suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
                 nD, xi, D, ldD,
@@ -163,7 +179,8 @@ check_matrixeqn_substeps()
         const int incc    = 1;
         const int ldc     = 2;
         const int substep = 1;
-        suzerain_smr91_substep(
+        suzerain_lsrk_substep(
+                suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
                 nD, xi, D, ldD,
@@ -198,7 +215,8 @@ check_matrixeqn_substeps()
         const int incc    = 1;
         const int ldc     = 2;
         const int substep = 2;
-        suzerain_smr91_substep(
+        suzerain_lsrk_substep(
+                suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
                 nD, xi, D, ldD,
@@ -225,8 +243,9 @@ main(int argc, char **argv)
 {
     gsl_ieee_env_setup();
 
-    check_scalareqn_substeps();
-    check_matrixeqn_substeps();
+    check_smr91_constants();
+    check_smr91_scalareqn_substeps();
+    check_smr91_matrixeqn_substeps();
 
     exit(gsl_test_summary());
 }

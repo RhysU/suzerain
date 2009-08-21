@@ -52,8 +52,20 @@
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+typedef struct suzerain_lsrk_method {
+    const char   * const name;
+    const int            substeps;
+    const double * const alpha;
+    const double * const beta;
+    const double * const gamma;
+    const double * const zeta;
+} suzerain_lsrk_method;
+
+extern const suzerain_lsrk_method suzerain_lsrk_smr91;
+
 int
-suzerain_smr91_substep(
+suzerain_lsrk_substep(
+        const suzerain_lsrk_method method,
         const int n,
         const int kl,
         const int ku,
@@ -69,7 +81,6 @@ suzerain_smr91_substep(
         const double * const b, const int incb, const int ldb,
         double       * const c, const int incc, const int ldc,
         const int substep);
-
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS

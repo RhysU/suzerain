@@ -34,32 +34,20 @@
 #include <stdio.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/error.h>
+#include <suzerain/timestepper.h>
 
-/* Number of substeps in the SMR91 scheme */
-const int _smr91_numsubsteps = 3;
+static const double _smr91_alpha[3] = { 29.0/ 96.0,  -3.0/40.0,  1.0/ 6.0 };
+static const double _smr91_beta[3]  = { 37.0/160.0,   5.0/24.0,  1.0/ 6.0 };
+static const double _smr91_gamma[3] = { 8.0/  15.0,   5.0/12.0,  3.0/ 4.0 };
+static const double _smr91_zeta[3]  = {        0.0, -17.0/60.0, -5.0/12.0 };
 
-/* Zero-indexed \f$ \alpha_1 \dots \alpha_3 \f$ coefficients per SMR91 */
-const double _smr91_alpha[_smr91_numsubsteps] = {
-    29.0/96.0, -3.0/40.0, 1.0/6.0
-};
-
-/* Zero-indexed \f$ \beta_1 \dots \beta_3 \f$ coefficients per SMR91 */
-const double _smr91_beta[_smr91_numsubsteps]  = {
-    37.0/160.0, 5.0/24.0, 1.0/6.0
-};
-
-/* Zero-indexed \f$ \gamma_1 \dots \gamma_3 \f$ coefficients per SMR91 */
-const double _smr91_gamma[_smr91_numsubsteps] = {
-    8.0/15.0, 5.0/12.0, 3.0/4.0
-};
-
-/* Zero-indexed \f$ \zeta_0 \dots \zeta_2 \f$ coefficients per SMR91 */
-const double _smr91_zeta[_smr91_numsubsteps] = {
-    0.0, -17.0/60.0, -5.0/12.0
+const suzerain_lsrk_method suzerain_lsrk_smr91 = {
+    "SMR91", 3, _smr91_alpha, _smr91_beta, _smr91_gamma, _smr91_zeta
 };
 
 int
-suzerain_smr91_substep(
+suzerain_lsrk_substep(
+        const suzerain_lsrk_method method,
         const int n,
         const int kl,
         const int ku,
@@ -76,7 +64,7 @@ suzerain_smr91_substep(
         double       * const c, const int incc, const int ldc,
         const int substep)
 {
-    if (substep < 0 || substep >= _smr91_numsubsteps) {
+    if (substep < 0 || substep >= method.substeps) {
         SUZERAIN_ERROR("requested substep out of range", SUZERAIN_EINVAL);
     }
 
@@ -89,7 +77,7 @@ suzerain_smr91_substep(
     /* Accumulate $\hat{D} = \sum_j (\gamma_i + \zeta_{i-1}) \xi_j D_j$ */
     for (int j = 0; j < nD; ++j) {
         const double alpha
-            = (_smr91_gamma[substep] + _smr91_zeta[substep]) * xi[j];
+            = (method.gamma[substep] + method.zeta[substep]) * xi[j];
         suzerain_blas_dgb_acc(
                 n, n, kl, ku, alpha, D[j], ldD, 1.0, hatD, ld_hatD);
     }
@@ -104,7 +92,7 @@ suzerain_smr91_substep(
     /* Accumulate $\hat{M}  = M - \sum_j \Delta{}t \beta_i \xi_j D_j */
     suzerain_blas_dgb_acc(n, n, kl, ku, 1.0, M, ldM, 0.0, hatM + kl, ld_hatM);
     for (int j = 0; j < nD; ++j) {
-        const double alpha = -1.0 * delta_t * _smr91_beta[substep] * xi[j];
+        const double alpha = -1.0 * delta_t * method.beta[substep] * xi[j];
         suzerain_blas_dgb_acc(
             n, n, kl, ku, alpha, D[j], ldD, 1.0, hatM + kl, ld_hatM);
     }
@@ -146,8 +134,8 @@ suzerain_smr91_substep(
         double       * const  c_j = c + j*ldc;
 
         suzerain_blas_daxpby(n,
-                _smr91_gamma[substep], b_j, incb,
-                _smr91_zeta[substep],  c_j, incc);
+                method.gamma[substep], b_j, incb,
+                method.zeta[substep],  c_j, incc);
 
         suzerain_blas_dgbmv('N', n, n, kl, ku,
                 1.0, M, ldM, c_j, incc,
