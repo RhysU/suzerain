@@ -75,11 +75,20 @@
  *      in an undefined state after any error.
  */
 int
-suzerain_richardson_step(
+suzerain_richardson_extrapolation_step(
     gsl_vector * Ah,
     const gsl_vector * Aht,
     const int ki,
     const double t);
+
+int
+suzerain_richardson_extrapolation(
+        gsl_vector * const * const A,
+        const gsl_vector * k,
+        const double t,
+        const gsl_vector * const exact,
+        gsl_matrix * normtable
+    );
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS

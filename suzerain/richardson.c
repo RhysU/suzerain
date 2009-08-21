@@ -35,7 +35,7 @@
 #include <suzerain/richardson.h>
 
 int
-suzerain_richardson_step(
+suzerain_richardson_extrapolation_step(
     gsl_vector * Ah,
     const gsl_vector * Aht,
     const int ki,
