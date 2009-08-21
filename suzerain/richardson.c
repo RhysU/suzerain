@@ -30,9 +30,94 @@
 
 #include "config.h"
 
+#include <stdlib.h>
+#include <gsl/gsl_blas.h>
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_nan.h>
 #include <suzerain/error.h>
 #include <suzerain/richardson.h>
+
+int
+suzerain_richardson_extrapolation(
+        gsl_matrix * const A,
+        const gsl_vector * k,
+        const double t,
+        gsl_matrix * normtable,
+        const gsl_vector * const exact)
+{
+    int i, j;
+    gsl_vector * scratch = NULL;
+
+    if (exact) {
+        if (!normtable) {
+            SUZERAIN_ERROR("exact provided but normtable was not",
+                    SUZERAIN_EINVAL);
+        }
+        if (exact->size != A->size2) {
+            SUZERAIN_ERROR("exact->size does not match A->size2",
+                    SUZERAIN_EINVAL);
+        }
+    }
+
+    if (normtable) {
+        if (normtable->size1 != A->size2) {
+            SUZERAIN_ERROR("normtable->size1 does not match A->size2",
+                    SUZERAIN_EINVAL);
+        }
+        if (normtable->size2 != A->size2) {
+            SUZERAIN_ERROR("normtable->size2 does not match A->size2",
+                    SUZERAIN_EINVAL);
+        }
+
+        gsl_matrix_set_all(normtable, GSL_NAN);
+
+        /* Compute the first column in the norm table */
+        if (exact) {
+            scratch = gsl_vector_alloc(A->size1);
+        }
+        for (i = 0; i < A->size2; ++i) {
+            double norm;
+            if (exact) {
+                gsl_matrix_get_col(scratch, A, i);
+                gsl_blas_daxpy(-1.0, exact, scratch);
+                norm = gsl_blas_dnrm2(scratch);
+            } else {
+                gsl_vector_view Ai = gsl_matrix_column(A, i);
+                norm = gsl_blas_dnrm2(&Ai.vector);
+            }
+            gsl_matrix_set(normtable, i, 1, norm);
+        }
+    }
+
+    for (i = 0; i < A->size1 - 1; ++i) {
+        for (j = 0; j < A->size1 - i; ++j) {
+            gsl_vector_view Aih  = gsl_matrix_column(A, j);
+            gsl_vector_view Aiht = gsl_matrix_column(A, j+1);
+            const double ki      = gsl_vector_get(k, i);
+
+            suzerain_richardson_extrapolation_step(
+                    &Aih.vector, &Aiht.vector, ki, t);
+
+            if (normtable) {
+                double norm;
+                if (exact) {
+                    gsl_vector_memcpy(scratch, &Aih.vector);
+                    gsl_blas_daxpy(-1.0, exact, scratch);
+                    norm = gsl_blas_dnrm2(scratch);
+                } else {
+                    norm = gsl_blas_dnrm2(&Aih.vector);
+                }
+                gsl_matrix_set(normtable, i, 1, norm);
+            }
+        }
+    }
+
+    if (scratch) {
+        gsl_vector_free(scratch);
+    }
+
+    return SUZERAIN_SUCCESS;
+}
 
 int
 suzerain_richardson_extrapolation_step(
@@ -51,3 +136,5 @@ suzerain_richardson_extrapolation_step(
 
     return SUZERAIN_SUCCESS;
 }
+
+

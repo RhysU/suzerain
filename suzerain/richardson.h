@@ -31,7 +31,6 @@
 #ifndef __SUZERAIN_RICHARDSON_H__
 #define __SUZERAIN_RICHARDSON_H__
 
-#include <gsl/gsl_blas.h>
 #include <gsl/gsl_matrix_double.h>
 #include <gsl/gsl_vector_double.h>
 
@@ -76,19 +75,18 @@
  */
 int
 suzerain_richardson_extrapolation_step(
-    gsl_vector * Ah,
-    const gsl_vector * Aht,
-    const int ki,
-    const double t);
+        gsl_vector * Ah,
+        const gsl_vector * Aht,
+        const int ki,
+        const double t);
 
 int
 suzerain_richardson_extrapolation(
-        gsl_vector * const * const A,
+        gsl_matrix * const A,
         const gsl_vector * k,
         const double t,
-        const gsl_vector * const exact,
-        gsl_matrix * normtable
-    );
+        gsl_matrix * normtable,
+        const gsl_vector * const exact);
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
