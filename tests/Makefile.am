@@ -15,10 +15,29 @@ noinst_HEADERS += test_tools.hpp
 CXX=@MPICXX@
 CC=@MPICC@
 
+check_PROGRAMS     += test_error
+test_error_SOURCES  = test_error.cpp
+test_error_LDADD    = ../suzerain/libsuzerain.la
+test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 check_PROGRAMS          += test_blas_et_al
 test_blas_et_al_SOURCES  = test_blas_et_al.c
 test_blas_et_al_LDADD    = $(GSL_LIBS)
 test_blas_et_al_LDADD   += ../suzerain/libsuzerain.la
+
+check_PROGRAMS       += test_bspline
+test_bspline_SOURCES  = test_bspline.cpp
+test_bspline_LDADD    = ../suzerain/libsuzerain.la
+test_bspline_LDADD   += $(GSL_LIBS)
+test_bspline_LDADD   += $(LOG4CXX_LIBS)
+test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
+check_PROGRAMS      += test_complex
+test_complex_SOURCES = test_complex.cpp
+test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_complex_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 check_PROGRAMS           += test_pencil_grid
 test_pencil_grid_SOURCES  = test_pencil_grid.cpp
@@ -30,31 +49,6 @@ test_pencil_SOURCES  = test_pencil.cpp
 test_pencil_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencil_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-check_PROGRAMS      += test_complex
-test_complex_SOURCES = test_complex.cpp
-test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_complex_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
-check_PROGRAMS         += test_underling
-test_underling_SOURCES  = test_underling.cpp
-test_underling_LDADD    = ../suzerain/libunderling.la
-test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
-check_PROGRAMS     += test_error
-test_error_SOURCES  = test_error.cpp
-test_error_LDADD    = ../suzerain/libsuzerain.la
-test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
-check_PROGRAMS       += test_bspline
-test_bspline_SOURCES  = test_bspline.cpp
-test_bspline_LDADD    = ../suzerain/libsuzerain.la
-test_bspline_LDADD   += $(GSL_LIBS)
-test_bspline_LDADD   += $(LOG4CXX_LIBS)
-test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
 check_PROGRAMS          += test_richardson
 test_richardson_SOURCES  = test_richardson.c
 test_richardson_LDADD    = $(GSL_LIBS)
@@ -64,6 +58,12 @@ check_PROGRAMS           += test_timestepper
 test_timestepper_SOURCES  = test_timestepper.c
 test_timestepper_LDADD    = $(GSL_LIBS)
 test_timestepper_LDADD   += ../suzerain/libsuzerain.la
+
+check_PROGRAMS         += test_underling
+test_underling_SOURCES  = test_underling.cpp
+test_underling_LDADD    = ../suzerain/libunderling.la
+test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
 TESTS = $(check_PROGRAMS)
