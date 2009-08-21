@@ -91,7 +91,7 @@ enum suzerain_bspline_method {
  * Callers obtain a workspace using suzerain_bspline_alloc() and
  * release it using suzerain_bspline_free().
  */
-typedef struct {
+typedef struct suzerain_bspline_workspace {
 
     /**
      * Spline order per GSL/PPPACK conventions
@@ -306,7 +306,7 @@ suzerain_bspline_find_interpolation_problem_rhs(
  * operators.  Callers obtain a workspace using suzerain_bspline_lu_alloc() and
  * release it using suzerain_bspline_lu_free().
  */
-typedef struct {
+typedef struct suzerain_bspline_lu_workspace {
 
     /** Number of degrees of freedom in the basis */
     int ndof;
