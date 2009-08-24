@@ -251,6 +251,33 @@ test_richardson_extrapolation_twolevels()
         gsl_matrix_free(normtable);
     }
 
+    {
+        gsl_matrix_set(data3, 0, 0, 1.0);
+        gsl_matrix_set(data3, 0, 1, 2.0);
+        gsl_matrix_set(data3, 0, 2, 3.0);
+        gsl_vector_int_set(k2, 0, 2);
+        gsl_vector_int_set(k2, 1, 3);
+
+        gsl_test(suzerain_richardson_extrapolation(data3, 2, k2, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data3, 0, 0), 73.0/21.0, GSL_DBL_EPSILON,
+                "%s scalar correct result at %s:%d",
+                __func__, __FILE__, __LINE__);
+    }
+
+    {
+        gsl_matrix_set(data3, 0, 0, 1.0);
+        gsl_matrix_set(data3, 0, 1, 2.0);
+        gsl_matrix_set(data3, 0, 2, 3.0);
+        gsl_vector_int_set(k1, 0, 2);
+
+        gsl_test(suzerain_richardson_extrapolation(data3, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data3, 0, 0), 73.0/21.0, GSL_DBL_EPSILON,
+                "%s scalar correct result at %s:%d",
+                __func__, __FILE__, __LINE__);
+    }
+
     gsl_vector_int_free(k2);
     gsl_vector_int_free(k1);
     gsl_matrix_free(data3);
