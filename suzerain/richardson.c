@@ -146,7 +146,7 @@ suzerain_richardson_extrapolation(
                 } else {
                     norm = gsl_blas_dnrm2(&Aih.vector);
                 }
-                gsl_matrix_set(normtable, i+1, j+1, norm);
+                gsl_matrix_set(normtable, i+j+1, i+1, norm);
             }
         }
     }

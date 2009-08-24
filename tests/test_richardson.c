@@ -213,17 +213,29 @@ test_richardson_extrapolation_twolevels()
     }
 
     {
+        gsl_matrix * normtable = gsl_matrix_alloc(data3->size2, data3->size2);
+
         gsl_matrix_set(data3, 0, 0, 1.0);
         gsl_matrix_set(data3, 0, 1, 2.0);
         gsl_matrix_set(data3, 0, 2, 3.0);
         gsl_vector_int_set(k2, 0, 1);
         gsl_vector_int_set(k2, 1, 2);
 
-        gsl_test(suzerain_richardson_extrapolation(data3, 2, k2, NULL, NULL),
+        gsl_test(suzerain_richardson_extrapolation(data3, 2, k2, normtable, NULL),
                 "Unexpected error reported in %s");
         gsl_test_abs(gsl_matrix_get(data3, 0, 0), 13.0/3.0, GSL_DBL_EPSILON,
                 "%s scalar correct result at %s:%d",
                 __func__, __FILE__, __LINE__);
+
+        for (int i = 0; i < normtable->size1 - 1; ++i) {
+            for (int j = i+1; j < normtable->size2; ++j) {
+                gsl_test(!gsl_isnan(gsl_matrix_get(normtable, i, j)),
+                        "%s expected NAN in normtable at (%d, %d)",
+                        __func__, i, j);
+            }
+        }
+
+        gsl_matrix_free(normtable);
     }
 
     gsl_vector_int_free(k2);
