@@ -40,13 +40,13 @@
 int
 suzerain_richardson_extrapolation(
         gsl_matrix * const A,
-        const gsl_vector * k,
+        const gsl_vector_int * k,
         const double t,
         gsl_matrix * normtable,
         const gsl_vector * const exact)
 {
-    int i, j;
     gsl_vector * scratch = NULL;
+    const size_t k_size = (k) ? k->size : 0;
 
     if (exact) {
         if (!normtable) {
@@ -75,7 +75,7 @@ suzerain_richardson_extrapolation(
         if (exact) {
             scratch = gsl_vector_alloc(A->size1);
         }
-        for (i = 0; i < A->size2; ++i) {
+        for (int i = 0; i < A->size2; ++i) {
             double norm;
             if (exact) {
                 gsl_matrix_get_col(scratch, A, i);
@@ -89,14 +89,35 @@ suzerain_richardson_extrapolation(
         }
     }
 
-    for (i = 0; i < A->size1 - 1; ++i) {
-        for (j = 0; j < A->size1 - i; ++j) {
+    for (int i = 0; i < A->size1 - 1; ++i) {
+        for (int j = 0; j < A->size1 - i; ++j) {
             gsl_vector_view Aih  = gsl_matrix_column(A, j);
             gsl_vector_view Aiht = gsl_matrix_column(A, j+1);
-            const double ki      = gsl_vector_get(k, i);
 
-            suzerain_richardson_extrapolation_step(
+            /* Provide automagic around the k parameter */
+            int ki;
+            if (k_size) {
+                if (i < k_size) {
+                    ki = gsl_vector_int_get(k, i);
+                } else if (k_size == 1) {
+                    ki = gsl_vector_int_get(k, 0) + i;
+                } else {
+                    const int increment = gsl_vector_int_get(k, k_size-1)
+                        - gsl_vector_int_get(k, k_size-2);
+                    ki = (i - (k_size-1))*increment;
+                }
+            } else {
+                ki = i+1;
+            }
+
+            const int error = suzerain_richardson_extrapolation_step(
                     &Aih.vector, &Aiht.vector, ki, t);
+            if (error) {
+                if (scratch) {
+                    gsl_vector_free(scratch);
+                }
+                return error;
+            }
 
             if (normtable) {
                 double norm;
