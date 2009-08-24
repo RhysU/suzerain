@@ -107,8 +107,8 @@ suzerain_richardson_extrapolation(
         }
     }
 
-    for (int i = 0; i < A->size1; ++i) {
-        for (int j = 0; j < A->size1 - i; ++j) {
+    for (int i = 0; i < A->size2; ++i) {
+        for (int j = 0; j < A->size2 - i - 1; ++j) {
             gsl_vector_view Aih  = gsl_matrix_column(A, j);
             gsl_vector_view Aiht = gsl_matrix_column(A, j+1);
 

@@ -47,6 +47,26 @@ test_richardson_extrapolation_defaults()
     {
         gsl_matrix_set(data1, 0, 0, 1.0);
         gsl_matrix_set(data1, 0, 1, 2.0);
+
+        gsl_test(suzerain_richardson_extrapolation(data1, 2, NULL, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data1, 0, 0), 3.0, GSL_DBL_EPSILON,
+                "%s scalar correct result", __func__);
+    }
+
+    {
+        gsl_matrix_set(data1, 0, 0, 1.0);
+        gsl_matrix_set(data1, 0, 1, 2.0);
+
+        gsl_test(suzerain_richardson_extrapolation(data1, 3, NULL, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data1, 0, 0), 5.0/2.0, GSL_DBL_EPSILON,
+                "%s scalar correct result", __func__);
+    }
+
+    {
+        gsl_matrix_set(data1, 0, 0, 1.0);
+        gsl_matrix_set(data1, 0, 1, 2.0);
         gsl_matrix_memcpy(data2, data1);
 
         gsl_test(suzerain_richardson_extrapolation(data1, 2, NULL, NULL, NULL),
@@ -135,6 +155,84 @@ test_richardson_extrapolation_defaults()
     gsl_matrix_free(data1);
 }
 
+void
+test_richardson_extrapolation_twolevels()
+{
+    gsl_matrix * data2 = gsl_matrix_alloc(1, 2);
+    gsl_matrix * data3 = gsl_matrix_alloc(1, 3);
+    gsl_vector_int * k1 = gsl_vector_int_alloc(1);
+    gsl_vector_int * k2 = gsl_vector_int_alloc(2);
+
+    {
+        gsl_matrix_set(data2, 0, 0, 1.0);
+        gsl_matrix_set(data2, 0, 1, 2.0);
+        gsl_vector_int_set(k1, 0, 1);
+
+        gsl_test(suzerain_richardson_extrapolation(data2, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data2, 0, 0), 3.0, GSL_DBL_EPSILON,
+                "%s scalar correct result at %s:%d",
+                __func__, __FILE__, __LINE__);
+    }
+
+    {
+        gsl_matrix_set(data2, 0, 0, 2.0);
+        gsl_matrix_set(data2, 0, 1, 3.0);
+        gsl_vector_int_set(k1, 0, 1);
+
+        gsl_test(suzerain_richardson_extrapolation(data2, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data2, 0, 0), 4.0, GSL_DBL_EPSILON,
+                "%s scalar correct result at %s:%d",
+                __func__, __FILE__, __LINE__);
+    }
+
+    {
+        gsl_matrix_set(data2, 0, 0, 3.0);
+        gsl_matrix_set(data2, 0, 1, 4.0);
+        gsl_vector_int_set(k1, 0, 2);
+
+        gsl_test(suzerain_richardson_extrapolation(data2, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data2, 0, 0), 13.0/3.0, GSL_DBL_EPSILON,
+                "%s scalar correct result at %s:%d",
+                __func__, __FILE__, __LINE__);
+    }
+
+    {
+        gsl_matrix_set(data3, 0, 0, 1.0);
+        gsl_matrix_set(data3, 0, 1, 2.0);
+        gsl_matrix_set(data3, 0, 2, 3.0);
+        gsl_vector_int_set(k1, 0, 1);
+
+        gsl_test(suzerain_richardson_extrapolation(data3, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data3, 0, 0), 13.0/3.0, GSL_DBL_EPSILON,
+                "%s scalar correct result at %s:%d",
+                __func__, __FILE__, __LINE__);
+    }
+
+    {
+        gsl_matrix_set(data3, 0, 0, 1.0);
+        gsl_matrix_set(data3, 0, 1, 2.0);
+        gsl_matrix_set(data3, 0, 2, 3.0);
+        gsl_vector_int_set(k2, 0, 1);
+        gsl_vector_int_set(k2, 1, 2);
+
+        gsl_test(suzerain_richardson_extrapolation(data3, 2, k2, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data3, 0, 0), 13.0/3.0, GSL_DBL_EPSILON,
+                "%s scalar correct result at %s:%d",
+                __func__, __FILE__, __LINE__);
+    }
+
+    gsl_vector_int_free(k2);
+    gsl_vector_int_free(k1);
+    gsl_matrix_free(data3);
+    gsl_matrix_free(data2);
+
+}
+
 int
 main(int argc, char **argv)
 {
@@ -142,6 +240,7 @@ main(int argc, char **argv)
 
     test_richardson_extrapolation_step();
     test_richardson_extrapolation_defaults();
+    test_richardson_extrapolation_twolevels();
 
     exit(gsl_test_summary());
 }
