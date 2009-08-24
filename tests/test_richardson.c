@@ -235,6 +235,19 @@ test_richardson_extrapolation_twolevels()
             }
         }
 
+        gsl_test_abs(gsl_matrix_get(normtable, 0, 0), 1.0, GSL_DBL_EPSILON,
+                "%s normtable (0,0) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 1, 0), 2.0, GSL_DBL_EPSILON,
+                "%s normtable (1,0) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 2, 0), 3.0, GSL_DBL_EPSILON,
+                "%s normtable (2,0) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 1, 1), 3.0, GSL_DBL_EPSILON,
+                "%s normtable (1,1) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 2, 1), 4.0, GSL_DBL_EPSILON,
+                "%s normtable (2,1) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 2, 2), 13.0/3.0, GSL_DBL_EPSILON,
+                "%s normtable (2,2) value", __func__);
+
         gsl_matrix_free(normtable);
     }
 
