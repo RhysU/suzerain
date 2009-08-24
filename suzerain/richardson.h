@@ -78,14 +78,14 @@ int
 suzerain_richardson_extrapolation_step(
         gsl_vector * Ah,
         const gsl_vector * Aht,
-        const int ki,
-        const double t);
+        const double t,
+        const int ki);
 
 int
 suzerain_richardson_extrapolation(
         gsl_matrix * const A,
-        const gsl_vector_int * k,
         const double t,
+        const gsl_vector_int * k,
         gsl_matrix * normtable,
         const gsl_vector * const exact);
 

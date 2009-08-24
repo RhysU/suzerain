@@ -38,10 +38,28 @@
 #include <suzerain/richardson.h>
 
 int
+suzerain_richardson_extrapolation_step(
+    gsl_vector * Ah,
+    const gsl_vector * Aht,
+    const double t,
+    const int ki)
+{
+    const double tki       = gsl_pow_int(t, ki);
+    const double inv_tkim1 = 1.0/(tki-1.0);
+
+    gsl_blas_dscal(-inv_tkim1, Ah);
+
+    int error = gsl_blas_daxpy(tki*inv_tkim1, Aht, Ah);
+    if (error) return error;
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
 suzerain_richardson_extrapolation(
         gsl_matrix * const A,
-        const gsl_vector_int * k,
         const double t,
+        const gsl_vector_int * k,
         gsl_matrix * normtable,
         const gsl_vector * const exact)
 {
@@ -53,8 +71,8 @@ suzerain_richardson_extrapolation(
             SUZERAIN_ERROR("exact provided but normtable was not",
                     SUZERAIN_EINVAL);
         }
-        if (exact->size != A->size2) {
-            SUZERAIN_ERROR("exact->size does not match A->size2",
+        if (exact->size != A->size1) {
+            SUZERAIN_ERROR("exact->size does not match A->size1",
                     SUZERAIN_EINVAL);
         }
     }
@@ -75,7 +93,7 @@ suzerain_richardson_extrapolation(
         if (exact) {
             scratch = gsl_vector_alloc(A->size1);
         }
-        for (int i = 0; i < A->size2; ++i) {
+        for (int i = 0; i < normtable->size2; ++i) {
             double norm;
             if (exact) {
                 gsl_matrix_get_col(scratch, A, i);
@@ -85,11 +103,11 @@ suzerain_richardson_extrapolation(
                 gsl_vector_view Ai = gsl_matrix_column(A, i);
                 norm = gsl_blas_dnrm2(&Ai.vector);
             }
-            gsl_matrix_set(normtable, i, 1, norm);
+            gsl_matrix_set(normtable, i, 0, norm);
         }
     }
 
-    for (int i = 0; i < A->size1 - 1; ++i) {
+    for (int i = 0; i < A->size1; ++i) {
         for (int j = 0; j < A->size1 - i; ++j) {
             gsl_vector_view Aih  = gsl_matrix_column(A, j);
             gsl_vector_view Aiht = gsl_matrix_column(A, j+1);
@@ -111,7 +129,7 @@ suzerain_richardson_extrapolation(
             }
 
             const int error = suzerain_richardson_extrapolation_step(
-                    &Aih.vector, &Aiht.vector, ki, t);
+                    &Aih.vector, &Aiht.vector, t, ki);
             if (error) {
                 if (scratch) {
                     gsl_vector_free(scratch);
@@ -128,7 +146,7 @@ suzerain_richardson_extrapolation(
                 } else {
                     norm = gsl_blas_dnrm2(&Aih.vector);
                 }
-                gsl_matrix_set(normtable, i, 1, norm);
+                gsl_matrix_set(normtable, i+1, j+1, norm);
             }
         }
     }
@@ -139,23 +157,3 @@ suzerain_richardson_extrapolation(
 
     return SUZERAIN_SUCCESS;
 }
-
-int
-suzerain_richardson_extrapolation_step(
-    gsl_vector * Ah,
-    const gsl_vector * Aht,
-    const int ki,
-    const double t)
-{
-    const double tki       = gsl_pow_int(t, ki);
-    const double inv_tkim1 = 1.0/(tki-1.0);
-
-    gsl_blas_dscal(-inv_tkim1, Ah);
-
-    int error = gsl_blas_daxpy(tki*inv_tkim1, Aht, Ah);
-    if (error) return error;
-
-    return SUZERAIN_SUCCESS;
-}
-
-
