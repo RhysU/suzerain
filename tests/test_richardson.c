@@ -406,6 +406,59 @@ test_richardson_extrapolation_multiplelevels()
     gsl_matrix_free(data2);
 }
 
+void
+test_richardson_extrapolation_vectorinputs()
+{
+    {
+        gsl_matrix * data = gsl_matrix_alloc(2,2);
+        gsl_matrix_set(data, 0, 0, 1.0);
+        gsl_matrix_set(data, 0, 1, 2.0);
+        gsl_matrix_set(data, 1, 0, 2.0);
+        gsl_matrix_set(data, 1, 1, 3.0);
+
+        gsl_matrix * normtable = gsl_matrix_alloc(data->size2, data->size2);
+
+        gsl_vector * exact = gsl_vector_alloc(data->size2);
+        gsl_vector_set(exact, 0, 3.0);
+        gsl_vector_set(exact, 1, 4.0);
+
+        gsl_test(suzerain_richardson_extrapolation(
+                    data, 2, NULL, normtable, exact),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data, 0, 0), 3.0, GSL_DBL_EPSILON,
+                "%s data (0,0) value at %s:%d", __func__, __FILE__, __LINE__);
+        gsl_test_abs(gsl_matrix_get(data, 1, 0), 4.0, GSL_DBL_EPSILON,
+                "%s data (1,0) value at %s:%d", __func__, __FILE__, __LINE__);
+
+        gsl_test_abs(gsl_matrix_get(normtable, 1, 1), 0.0, GSL_DBL_EPSILON,
+                "%s normtable (1,1) value at %s:%d",
+                __func__, __FILE__, __LINE__);
+
+        gsl_vector_free(exact);
+        gsl_matrix_free(normtable);
+        gsl_matrix_free(data);
+    }
+
+    {
+        gsl_matrix * data = gsl_matrix_alloc(2,3);
+        gsl_matrix_set(data, 0, 0, 1.0);
+        gsl_matrix_set(data, 0, 1, 2.0);
+        gsl_matrix_set(data, 0, 2, 3.0);
+        gsl_matrix_set(data, 1, 0, 2.0);
+        gsl_matrix_set(data, 1, 1, 3.0);
+        gsl_matrix_set(data, 1, 2, 4.0);
+
+        gsl_test(suzerain_richardson_extrapolation(data, 2, NULL, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data, 0, 0), 13.0/3.0, GSL_DBL_EPSILON,
+                "%s data (0,0) value at %s:%d", __func__, __FILE__, __LINE__);
+        gsl_test_abs(gsl_matrix_get(data, 1, 0), 16.0/3.0, GSL_DBL_EPSILON,
+                "%s data (1,0) value at %s:%d", __func__, __FILE__, __LINE__);
+
+        gsl_matrix_free(data);
+    }
+}
+
 int
 main(int argc, char **argv)
 {
@@ -415,6 +468,7 @@ main(int argc, char **argv)
     test_richardson_extrapolation_defaults();
     test_richardson_extrapolation_twolevels();
     test_richardson_extrapolation_multiplelevels();
+    test_richardson_extrapolation_vectorinputs();
 
     exit(gsl_test_summary());
 }
