@@ -1,5 +1,6 @@
 #include <suzerain/config.h>
 
+#include <math.h>
 #include <stdlib.h>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
@@ -238,6 +239,70 @@ check_smr91_matrixeqn_substeps()
     }
 }
 
+double
+riccati_equation_solution(double a, double b, double c, double t)
+{
+    return a + 1.0/(-1.0/(2*a+b) + c*exp(-(2*a+b)*t));
+}
+
+double
+riccati_equation_nonlinear_operator(double y, double a, double b, double c)
+{
+    return pow(y, 2.0) - a*a - a*b;
+}
+
+void
+check_smr91_convergence_rate_riccati_equation()
+{
+    /* Solves (d/dt) y = y^2 + b y - a^2 -a b and compares against the
+     * solution y(t) = a + (-(2*a+b)^(-1) + c*exp(-(2*a+b)*t))^(-1).   */
+
+    /* Time parameters */
+    const double t_initial = 0.140;
+    const double t_final   = 0.145;
+
+    /* Problem coefficients */
+    const double coeff_a =   2.0;
+    const double coeff_b =   2.0;
+    const double coeff_c = -50.0;
+
+    /* Problem exact solution */
+    const double exact_initial
+        = riccati_equation_solution(coeff_a, coeff_b, coeff_c, t_initial);
+    const double exact_final
+        = riccati_equation_solution(coeff_a, coeff_b, coeff_c, t_final);
+
+    /* Linear operator details so L = b = M^-1 xi[1] D */
+    const int           n       = 1;
+    const int           kl      = 0;
+    const int           ku      = 0;
+    const double        M[1]    = { 2.0 }; /* Compare xi */
+    const int           ldM     = 1;
+    const int           nD      = 1;
+    const double        xi[1]   = { 2.0 }; /* Compare M */
+    const double        D0[1]   = { coeff_b };
+    const double *const D[1]    = { D0 };
+    const int           ldD     = 1;
+    const int           nrhs    = 1;
+
+    /* Working array and storage parameters */
+    const double a[1], b[1], c[1];
+    const int    inca = 1, incb = 1, incc = 1;
+    const int    lda  = 1, ldb  = 1, ldc  = 1;
+
+    /* Coarser grid calculation */
+    {
+        const double nsteps  = 16;
+        const double delta_t = (t_final - t_initial)/nsteps;
+    }
+
+    /* Finer grid calculation */
+    {
+        const double nsteps  = 32;
+        const double delta_t = (t_final - t_initial)/nsteps;
+    }
+}
+
 int
 main(int argc, char **argv)
 {
@@ -246,6 +311,8 @@ main(int argc, char **argv)
     check_smr91_constants();
     check_smr91_scalareqn_substeps();
     check_smr91_matrixeqn_substeps();
+
+    check_smr91_convergence_rate_riccati_equation();
 
     exit(gsl_test_summary());
 }
