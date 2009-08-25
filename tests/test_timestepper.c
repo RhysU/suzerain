@@ -286,21 +286,78 @@ check_smr91_convergence_rate_riccati_equation()
     const int           nrhs    = 1;
 
     /* Working array and storage parameters */
-    const double a[1], b[1], c[1];
+    double a[1], b[1], c[1];
     const int    inca = 1, incb = 1, incc = 1;
     const int    lda  = 1, ldb  = 1, ldc  = 1;
 
     /* Coarser grid calculation */
+    double coarse_final;
     {
-        const double nsteps  = 16;
+        const int nsteps  = 16;
         const double delta_t = (t_final - t_initial)/nsteps;
+        a[0] = exact_initial;
+
+        for (int i = 0; i < nsteps; ++i) {
+            for (int substep = 0;
+                 substep < suzerain_lsrk_smr91.substeps;
+                 ++substep) {
+                b[0] = riccati_equation_nonlinear_operator(
+                        a[0], coeff_a, coeff_b, coeff_c);
+                suzerain_lsrk_substep(
+                        suzerain_lsrk_smr91,
+                        n, kl, ku,
+                        M, ldM,
+                        nD, xi, D, ldD,
+                        delta_t, nrhs,
+                        a, inca, lda,
+                        b, incb, ldb,
+                        c, incc, ldc,
+                        substep);
+                c[0] = b[0];
+            }
+        }
+
+        /* Next tolerance found using Octave code */
+        gsl_test_abs(a[0], exact_final, 1.0e-10,
+                "%s solution at t=%f using %d steps",
+                __func__, t_final, nsteps);
     }
+    coarse_final = a[0];
+
 
     /* Finer grid calculation */
+    double finer_final;
     {
-        const double nsteps  = 32;
+        const int nsteps  = 32;
         const double delta_t = (t_final - t_initial)/nsteps;
+        a[0] = exact_initial;
+
+        for (int i = 0; i < nsteps; ++i) {
+            for (int substep = 0;
+                 substep < suzerain_lsrk_smr91.substeps;
+                 ++substep) {
+                b[0] = riccati_equation_nonlinear_operator(
+                        a[0], coeff_a, coeff_b, coeff_c);
+                suzerain_lsrk_substep(
+                        suzerain_lsrk_smr91,
+                        n, kl, ku,
+                        M, ldM,
+                        nD, xi, D, ldD,
+                        delta_t, nrhs,
+                        a, inca, lda,
+                        b, incb, ldb,
+                        c, incc, ldc,
+                        substep);
+                c[0] = b[0];
+            }
+        }
+
+        /* Next tolerance found using Octave code */
+        gsl_test_abs(a[0], exact_final, 1.0e-11,
+                "%s solution at t=%f using %d steps",
+                __func__, t_final, nsteps);
     }
+    finer_final = a[0];
 }
 
 int
