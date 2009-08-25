@@ -114,25 +114,27 @@ suzerain_richardson_extrapolation(
     }
 
     for (int i = 0; i < A->size2; ++i) {
+
+        /* Provide automagic around the k parameter */
+        double ki;
+        if (k_size) {
+            if (i < k_size) {
+                ki = gsl_vector_get(k, i);
+            } else if (k_size == 1) {
+                ki = gsl_vector_get(k, 0) + i;
+            } else {
+                const double last_ki = gsl_vector_get(k, k_size-1);
+                const double increment = last_ki - gsl_vector_get(k, k_size-2);
+                ki = last_ki + (i - (k_size-1))*increment;
+            }
+        } else {
+            ki = i+1;
+        }
+
+        /* Perform the extrapolation using leading term order ki */
         for (int j = 0; j < A->size2 - i - 1; ++j) {
             gsl_vector_view Aih  = gsl_matrix_column(A, j);
             gsl_vector_view Aiht = gsl_matrix_column(A, j+1);
-
-            /* Provide automagic around the k parameter */
-            double ki;
-            if (k_size) {
-                if (i < k_size) {
-                    ki = gsl_vector_get(k, i);
-                } else if (k_size == 1) {
-                    ki = gsl_vector_get(k, 0) + i;
-                } else {
-                    const double increment = gsl_vector_get(k, k_size-1)
-                        - gsl_vector_get(k, k_size-2);
-                    ki = (i - (k_size-1))*increment;
-                }
-            } else {
-                ki = i+1;
-            }
 
             const int error = suzerain_richardson_extrapolation_step(
                     &Aih.vector, &Aiht.vector, t, ki);

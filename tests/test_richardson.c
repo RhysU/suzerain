@@ -278,11 +278,99 @@ test_richardson_extrapolation_twolevels()
                 __func__, __FILE__, __LINE__);
     }
 
+
     gsl_vector_free(k2);
     gsl_vector_free(k1);
     gsl_matrix_free(data3);
     gsl_matrix_free(data2);
 
+}
+
+void
+test_richardson_extrapolation_multiplelevels()
+{
+    gsl_matrix * data2 = gsl_matrix_alloc(1, 2);
+    gsl_matrix * data4 = gsl_matrix_alloc(1, 4);
+    gsl_vector * k1 = gsl_vector_alloc(1);
+    gsl_vector * k2 = gsl_vector_alloc(2);
+    gsl_vector * k3 = gsl_vector_alloc(3);
+
+    {
+        gsl_vector_set(k1, 0, 3);
+
+        gsl_matrix_set(data2, 0, 0, 1.0);
+        gsl_matrix_set(data2, 0, 1, 2.0);
+        gsl_test(suzerain_richardson_extrapolation(data2, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        const double xx = gsl_matrix_get(data2, 0, 0);
+
+        gsl_matrix_set(data2, 0, 0, 2.0);
+        gsl_matrix_set(data2, 0, 1, 3.0);
+        gsl_test(suzerain_richardson_extrapolation(data2, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        const double xy = gsl_matrix_get(data2, 0, 0);
+
+        gsl_matrix_set(data2, 0, 0, 3.0);
+        gsl_matrix_set(data2, 0, 1, 4.0);
+        gsl_test(suzerain_richardson_extrapolation(data2, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        const double xz = gsl_matrix_get(data2, 0, 0);
+
+        gsl_vector_set(k1, 0, 6);
+
+        gsl_matrix_set(data2, 0, 0, xx);
+        gsl_matrix_set(data2, 0, 1, xy);
+        gsl_test(suzerain_richardson_extrapolation(data2, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        const double yx = gsl_matrix_get(data2, 0, 0);
+
+        gsl_matrix_set(data2, 0, 0, xy);
+        gsl_matrix_set(data2, 0, 1, xz);
+        gsl_test(suzerain_richardson_extrapolation(data2, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        const double yy = gsl_matrix_get(data2, 0, 0);
+
+        gsl_vector_set(k1, 0, 9);
+
+        gsl_matrix_set(data2, 0, 0, yx);
+        gsl_matrix_set(data2, 0, 1, yy);
+        gsl_test(suzerain_richardson_extrapolation(data2, 2, k1, NULL, NULL),
+                "Unexpected error reported in %s");
+        const double zx = gsl_matrix_get(data2, 0, 0);
+
+        gsl_vector_set(k3, 0, 3);
+        gsl_vector_set(k3, 1, 6);
+        gsl_vector_set(k3, 2, 9);
+
+        gsl_matrix_set(data4, 0, 0, 1.0);
+        gsl_matrix_set(data4, 0, 1, 2.0);
+        gsl_matrix_set(data4, 0, 2, 3.0);
+        gsl_matrix_set(data4, 0, 3, 4.0);
+        gsl_test(suzerain_richardson_extrapolation(data4, 2, k3, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data4, 0, 0), zx, GSL_DBL_EPSILON,
+                "%s scalar correct result at %s:%d",
+                __func__, __FILE__, __LINE__);
+
+        gsl_vector_set(k2, 0, 3);
+        gsl_vector_set(k2, 1, 6);
+
+        gsl_matrix_set(data4, 0, 0, 1.0);
+        gsl_matrix_set(data4, 0, 1, 2.0);
+        gsl_matrix_set(data4, 0, 2, 3.0);
+        gsl_matrix_set(data4, 0, 3, 4.0);
+        gsl_test(suzerain_richardson_extrapolation(data4, 2, k2, NULL, NULL),
+                "Unexpected error reported in %s");
+        gsl_test_abs(gsl_matrix_get(data4, 0, 0), zx, GSL_DBL_EPSILON,
+                "%s scalar correct result at %s:%d",
+                __func__, __FILE__, __LINE__);
+    }
+
+    gsl_vector_free(k3);
+    gsl_vector_free(k2);
+    gsl_vector_free(k1);
+    gsl_matrix_free(data4);
+    gsl_matrix_free(data2);
 }
 
 int
@@ -293,6 +381,7 @@ main(int argc, char **argv)
     test_richardson_extrapolation_step();
     test_richardson_extrapolation_defaults();
     test_richardson_extrapolation_twolevels();
+    test_richardson_extrapolation_multiplelevels();
 
     exit(gsl_test_summary());
 }
