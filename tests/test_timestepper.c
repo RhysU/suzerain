@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
+#include <gsl/gsl_sys.h>
 #include <gsl/gsl_test.h>
 #include <suzerain/timestepper.h>
 
@@ -255,7 +256,7 @@ void
 check_smr91_convergence_rate_riccati_equation()
 {
     /* Solves (d/dt) y = y^2 + b y - a^2 -a b and compares against the
-     * solution y(t) = a + (-(2*a+b)^(-1) + c*exp(-(2*a+b)*t))^(-1).   */
+     * solution y(t) = a + (-(2*a+b)^(-1) + c*exp(-(2*a+b)*t))^(-1). */
 
     /* Time parameters */
     const double t_initial = 0.140;
@@ -323,7 +324,7 @@ check_smr91_convergence_rate_riccati_equation()
                 __func__, t_final, nsteps);
     }
     coarse_final = a[0];
-
+    const double coarse_error = fabs(exact_final - coarse_final);
 
     /* Finer grid calculation */
     double finer_final;
@@ -358,6 +359,16 @@ check_smr91_convergence_rate_riccati_equation()
                 __func__, t_final, nsteps);
     }
     finer_final = a[0];
+    const double finer_error = fabs(exact_final - finer_final);
+
+    /* SMR91 is second order against the Riccati problem */
+    const double expected_order = 1.98; /* allows for floating point losses */
+    const double observed_order = log(coarse_error/finer_error)/log(2.0);
+    gsl_test(gsl_isnan(observed_order),
+            "%s observed convergence not NAN: %g", __func__, observed_order);
+    gsl_test(observed_order < expected_order,
+            "%s observed convergence order of %f not lower than %f",
+            __func__, observed_order, expected_order);
 }
 
 int
