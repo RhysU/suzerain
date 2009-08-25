@@ -352,6 +352,8 @@ test_richardson_extrapolation_multiplelevels()
                 "%s scalar correct result at %s:%d",
                 __func__, __FILE__, __LINE__);
 
+        gsl_matrix * normtable = gsl_matrix_alloc(data4->size2, data4->size2);
+
         gsl_vector_set(k2, 0, 3);
         gsl_vector_set(k2, 1, 6);
 
@@ -359,11 +361,42 @@ test_richardson_extrapolation_multiplelevels()
         gsl_matrix_set(data4, 0, 1, 2.0);
         gsl_matrix_set(data4, 0, 2, 3.0);
         gsl_matrix_set(data4, 0, 3, 4.0);
-        gsl_test(suzerain_richardson_extrapolation(data4, 2, k2, NULL, NULL),
+        gsl_test(suzerain_richardson_extrapolation(data4, 2, k2, normtable, NULL),
                 "Unexpected error reported in %s");
         gsl_test_abs(gsl_matrix_get(data4, 0, 0), zx, GSL_DBL_EPSILON,
                 "%s scalar correct result at %s:%d",
                 __func__, __FILE__, __LINE__);
+
+        for (int i = 0; i < normtable->size1 - 1; ++i) {
+            for (int j = i+1; j < normtable->size2; ++j) {
+                gsl_test(!gsl_isnan(gsl_matrix_get(normtable, i, j)),
+                        "%s expected NAN in normtable at (%d, %d)",
+                        __func__, i, j);
+            }
+        }
+
+        gsl_test_abs(gsl_matrix_get(normtable, 0, 0), 1.0, GSL_DBL_EPSILON,
+                "%s normtable (0,0) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 1, 0), 2.0, GSL_DBL_EPSILON,
+                "%s normtable (1,0) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 2, 0), 3.0, GSL_DBL_EPSILON,
+                "%s normtable (2,0) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 3, 0), 4.0, GSL_DBL_EPSILON,
+                "%s normtable (3,0) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 1, 1), xx, GSL_DBL_EPSILON,
+                "%s normtable (1,1) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 2, 1), xy, GSL_DBL_EPSILON,
+                "%s normtable (2,1) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 3, 1), xz, GSL_DBL_EPSILON,
+                "%s normtable (3,1) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 2, 2), yx, GSL_DBL_EPSILON,
+                "%s normtable (2,2) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 3, 2), yy, GSL_DBL_EPSILON,
+                "%s normtable (3,2) value", __func__);
+        gsl_test_abs(gsl_matrix_get(normtable, 3, 3), zx, GSL_DBL_EPSILON,
+                "%s normtable (3,3) value", __func__);
+
+        gsl_matrix_free(normtable);
     }
 
     gsl_vector_free(k3);
