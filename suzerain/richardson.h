@@ -65,9 +65,9 @@
  *
  * @param[in,out] Ah On entry, the coarser approximation \f$A_{i}(h)\f$.
  *      On exit, the extrapolated approximation \f$A_{i+1}(h)\f$.
- * @param[in] Aht the finer approximation \f$A_{i}(h/t)\f$
- * @param[in] ki the leading error term in the Taylor expansion \f$k_{i}\f$
- * @param[in] t the refinement factor between the two approximations
+ * @param[in] Aht The finer approximation \f$A_{i}(h/t)\f$
+ * @param[in] ki The leading term order in the Taylor expansion \f$k_{i}\f$
+ * @param[in] t The refinement factor between the two approximations
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.  The parameter \c Ah will be
@@ -80,6 +80,36 @@ suzerain_richardson_extrapolation_step(
         const double t,
         const double ki);
 
+/**
+ * Perform Richardson extrapolation on a sequence of refined approximations.
+ * The routine can perform multiple step extrapolation, e.g. using
+ * \f$ A_{0}(h) \f$, \f$ A_{0}(h/2) \f$, and \f$ A_{0}(h/4) \f$ to compute
+ * \f$ A_{2}(h) \f$.
+ *
+ * @see suzerain_richardson_extrapolation_step() for details on each
+ *      extrapolation step and the terminology used.
+ *
+ * @param[in,out] A On entry, column \c i of \c A contains
+ *              \f$ A_{0}(h/t**i)\f$.  On exit, column \c 0 of \c A
+ *              contains \f$ A_{A->size2}(h) \f$.  Other columns will be
+ *              overwritten.
+ * @param[in] t The refinement factor between the two approximations.
+ * @param[in] k Leading error term orders.  Assumed to start at 1 if \c NULL
+ *              provided.  Assumed to increment by 1 if no second element
+ *              provided.  If the vector is shorter than <tt>A->size2</tt>, any
+ *              unspecified higher index entries are assumed to grow by
+ *              <tt>k(k->size-1) - k(k->size-2)</tt>.
+ * @param[out] normtable If non-<tt>NULL</tt>, the routine outputs a table
+ *              showing the \f$ \ell_2 \f$ error at each step in the
+ *              extrapolation process calculated against the provided
+ *              \c exact parameter.
+ * @param[in] exact Exact solution used to calculate \c normtable.  If \c NULL,
+ *              \c exact is treated as if it contained all zeros.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.  The parameters \c A and
+ *      \c normtable will be in an undefined state after any error.
+ */
 int
 suzerain_richardson_extrapolation(
         gsl_matrix * const A,
