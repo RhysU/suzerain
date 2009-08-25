@@ -33,7 +33,6 @@
 
 #include <gsl/gsl_matrix_double.h>
 #include <gsl/gsl_vector_double.h>
-#include <gsl/gsl_vector_int.h>
 
 /** @file
  * Provides generalized Richardson extrapolation built atop the <a
@@ -79,13 +78,13 @@ suzerain_richardson_extrapolation_step(
         gsl_vector * Ah,
         const gsl_vector * Aht,
         const double t,
-        const int ki);
+        const double ki);
 
 int
 suzerain_richardson_extrapolation(
         gsl_matrix * const A,
         const double t,
-        const gsl_vector_int * k,
+        const gsl_vector * k,
         gsl_matrix * normtable,
         const gsl_vector * const exact);
 

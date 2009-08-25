@@ -30,7 +30,8 @@
 
 #include "config.h"
 
-#include <stdlib.h>
+#include <math.h>
+#include <stddef.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_nan.h>
@@ -42,9 +43,14 @@ suzerain_richardson_extrapolation_step(
     gsl_vector * Ah,
     const gsl_vector * Aht,
     const double t,
-    const int ki)
+    const double ki)
 {
-    const double tki       = gsl_pow_int(t, ki);
+    if (ki == 0.0) {
+        SUZERAIN_ERROR("ki == 0 invalid as it will cause a division-by-zero",
+                SUZERAIN_EDOM);
+    }
+
+    const double tki       = pow(t, ki);
     const double inv_tkim1 = 1.0/(tki-1.0);
 
     gsl_blas_dscal(-inv_tkim1, Ah);
@@ -59,7 +65,7 @@ int
 suzerain_richardson_extrapolation(
         gsl_matrix * const A,
         const double t,
-        const gsl_vector_int * k,
+        const gsl_vector * k,
         gsl_matrix * normtable,
         const gsl_vector * const exact)
 {
@@ -113,15 +119,15 @@ suzerain_richardson_extrapolation(
             gsl_vector_view Aiht = gsl_matrix_column(A, j+1);
 
             /* Provide automagic around the k parameter */
-            int ki;
+            double ki;
             if (k_size) {
                 if (i < k_size) {
-                    ki = gsl_vector_int_get(k, i);
+                    ki = gsl_vector_get(k, i);
                 } else if (k_size == 1) {
-                    ki = gsl_vector_int_get(k, 0) + i;
+                    ki = gsl_vector_get(k, 0) + i;
                 } else {
-                    const int increment = gsl_vector_int_get(k, k_size-1)
-                        - gsl_vector_int_get(k, k_size-2);
+                    const double increment = gsl_vector_get(k, k_size-1)
+                        - gsl_vector_get(k, k_size-2);
                     ki = (i - (k_size-1))*increment;
                 }
             } else {
