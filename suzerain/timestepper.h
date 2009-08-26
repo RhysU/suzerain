@@ -31,7 +31,23 @@
 #define PECOS_SUZERAIN_TIMESTEPPER_H
 
 /** @file
- * FIXME
+ * Provides a low-storage, hybrid explicit/implicit Runge-Kutta time integrator.
+ * The integrator advances the state vector \f$ u(t) \f$ to \f$u(t+\Delta{}t)\f$
+ * according to \f$ u_t = Lu + N(u) \f$ where \f$L\f$ and \f$N\f$ are linear
+ * and nonlinear operators, respectively.  Neither operator may depend on time.
+ *
+ * The linear operator has the form \f$L = M^{-1} \xi_k D_k\f$ and must be
+ * provided using BLAS-compatible general band storage matrices.  This form
+ * facilitates using B-spline derivative operators obtained using bspline.h.
+ * The nonlinear operator must be computed by the caller between Runge-Kutta
+ * substeps.
+ *
+ * Different order schemes may be computed using suzerain_lsrk_substep given
+ * appropriate constants in an instance of ::suzerain_lsrk_method.  Currently
+ * only ::suzerain_lsrk_smr91 is provided.
+ *
+ * @see The timestepping document contained in Suzerain's \c doc subdirectory
+ * for details on the mechanics of each low-storage substep.
  */
 
 #undef __BEGIN_DECLS
@@ -61,6 +77,12 @@ typedef struct suzerain_lsrk_method {
     const double * const zeta;
 } suzerain_lsrk_method;
 
+/**
+ * Encapsulates the three stage, third order scheme from Appendix A of Spalart,
+ * Moser, and Rogers' 1991 ``Spectral Methods for the Navier-Stokes Equations
+ * with One Infinite and Two Periodic Directions'' published in the
+ * <em>Journal of Computational Physics</em> volume 96 pages 297-324.
+ */
 extern const suzerain_lsrk_method suzerain_lsrk_smr91;
 
 int
