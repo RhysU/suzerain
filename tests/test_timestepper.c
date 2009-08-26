@@ -4,9 +4,12 @@
 #include <stdlib.h>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
+#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_sys.h>
 #include <gsl/gsl_test.h>
+#include <gsl/gsl_vector.h>
 #include <suzerain/timestepper.h>
+#include <suzerain/richardson.h>
 
 void
 check_smr91_constants()
@@ -273,6 +276,10 @@ check_smr91_convergence_rate_riccati_equation()
     const double exact_final
         = riccati_equation_solution(coeff_a, coeff_b, coeff_c, t_final);
 
+    /* Chosen grid sizes */
+    const int coarse_nsteps = 16;
+    const int finer_nsteps  = 2*coarse_nsteps;
+
     /* Linear operator details so L = b = M^-1 xi[1] D */
     const int           n       = 1;
     const int           kl      = 0;
@@ -294,26 +301,26 @@ check_smr91_convergence_rate_riccati_equation()
     /* Coarser grid calculation */
     double coarse_final;
     {
-        const int nsteps  = 16;
-        const double delta_t = (t_final - t_initial)/nsteps;
+        const double delta_t = (t_final - t_initial)/coarse_nsteps;
         a[0] = exact_initial;
 
-        for (int i = 0; i < nsteps; ++i) {
+        for (int i = 0; i < coarse_nsteps; ++i) {
             for (int substep = 0;
                  substep < suzerain_lsrk_smr91.substeps;
                  ++substep) {
                 b[0] = riccati_equation_nonlinear_operator(
                         a[0], coeff_a, coeff_b, coeff_c);
-                suzerain_lsrk_substep(
-                        suzerain_lsrk_smr91,
-                        n, kl, ku,
-                        M, ldM,
-                        nD, xi, D, ldD,
-                        delta_t, nrhs,
-                        a, inca, lda,
-                        b, incb, ldb,
-                        c, incc, ldc,
-                        substep);
+                gsl_test(suzerain_lsrk_substep(
+                            suzerain_lsrk_smr91,
+                            n, kl, ku,
+                            M, ldM,
+                            nD, xi, D, ldD,
+                            delta_t, nrhs,
+                            a, inca, lda,
+                            b, incb, ldb,
+                            c, incc, ldc,
+                            substep),
+                        "Unexpected error reported in %s", __func__);
                 c[0] = b[0];
             }
         }
@@ -321,7 +328,7 @@ check_smr91_convergence_rate_riccati_equation()
         /* Next tolerance found using Octave code */
         gsl_test_abs(a[0], exact_final, 1.0e-10,
                 "%s solution at t=%f using %d steps",
-                __func__, t_final, nsteps);
+                __func__, t_final, coarse_nsteps);
     }
     coarse_final = a[0];
     const double coarse_error = fabs(exact_final - coarse_final);
@@ -329,26 +336,26 @@ check_smr91_convergence_rate_riccati_equation()
     /* Finer grid calculation */
     double finer_final;
     {
-        const int nsteps  = 32;
-        const double delta_t = (t_final - t_initial)/nsteps;
+        const double delta_t = (t_final - t_initial)/finer_nsteps;
         a[0] = exact_initial;
 
-        for (int i = 0; i < nsteps; ++i) {
+        for (int i = 0; i < finer_nsteps; ++i) {
             for (int substep = 0;
                  substep < suzerain_lsrk_smr91.substeps;
                  ++substep) {
                 b[0] = riccati_equation_nonlinear_operator(
                         a[0], coeff_a, coeff_b, coeff_c);
-                suzerain_lsrk_substep(
-                        suzerain_lsrk_smr91,
-                        n, kl, ku,
-                        M, ldM,
-                        nD, xi, D, ldD,
-                        delta_t, nrhs,
-                        a, inca, lda,
-                        b, incb, ldb,
-                        c, incc, ldc,
-                        substep);
+                gsl_test(suzerain_lsrk_substep(
+                            suzerain_lsrk_smr91,
+                            n, kl, ku,
+                            M, ldM,
+                            nD, xi, D, ldD,
+                            delta_t, nrhs,
+                            a, inca, lda,
+                            b, incb, ldb,
+                            c, incc, ldc,
+                            substep),
+                        "Unexpected error reported in %s", __func__);
                 c[0] = b[0];
             }
         }
@@ -356,19 +363,59 @@ check_smr91_convergence_rate_riccati_equation()
         /* Next tolerance found using Octave code */
         gsl_test_abs(a[0], exact_final, 1.0e-11,
                 "%s solution at t=%f using %d steps",
-                __func__, t_final, nsteps);
+                __func__, t_final, finer_nsteps);
     }
     finer_final = a[0];
     const double finer_error = fabs(exact_final - finer_final);
 
     /* SMR91 is second order against the Riccati problem */
     const double expected_order = 1.98; /* allows for floating point losses */
-    const double observed_order = log(coarse_error/finer_error)/log(2.0);
+    const double observed_order
+        = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
     gsl_test(gsl_isnan(observed_order),
             "%s observed convergence not NAN: %g", __func__, observed_order);
     gsl_test(observed_order < expected_order,
             "%s observed convergence order of %f not lower than %f",
             __func__, observed_order, expected_order);
+
+    /* Richardson extrapolation should show h^2 term elimination
+     * gives a better result than h^1, h^3, etc... */
+    {
+        gsl_matrix * data = gsl_matrix_alloc(1,2);
+        gsl_vector * k = gsl_vector_alloc(1);
+        gsl_matrix * normtable = gsl_matrix_alloc(data->size2, data->size2);
+        gsl_vector * exact = gsl_vector_alloc(1);
+        gsl_vector_set(exact, 0, exact_final);
+
+        double richardson_h_error[4];
+        for (int i = 0;
+             i < sizeof(richardson_h_error)/sizeof(richardson_h_error[0]);
+             ++i) {
+            gsl_matrix_set(data, 0, 0, coarse_final);
+            gsl_matrix_set(data, 0, 1, finer_final);
+            gsl_vector_set(k,0,i+1);
+            gsl_test(suzerain_richardson_extrapolation(
+                        data, finer_nsteps/coarse_nsteps, k, normtable, exact),
+                    "Unexpected error reported in %s");
+            richardson_h_error[i] = gsl_matrix_get(
+                    normtable, normtable->size2-1, normtable->size2-1);
+        }
+
+        gsl_matrix_free(normtable);
+        gsl_vector_free(exact);
+        gsl_vector_free(k);
+        gsl_matrix_free(data);
+
+        gsl_test(richardson_h_error[1] > richardson_h_error[0],
+                "%s extrapolation should show h^2 leading error but %g > %g",
+                __func__, richardson_h_error[1], richardson_h_error[0]);
+        gsl_test(richardson_h_error[1] > richardson_h_error[2],
+                "%s extrapolation should show h^2 leading error but %g > %g",
+                __func__, richardson_h_error[1], richardson_h_error[2]);
+        gsl_test(richardson_h_error[1] > richardson_h_error[3],
+                "%s extrapolation should show h^2 leading error but %g > %g",
+                __func__, richardson_h_error[1], richardson_h_error[3]);
+    }
 }
 
 int
