@@ -15,7 +15,6 @@ The code depends upon the following libraries:
 
     1) GNU Scientific Library (GSL) from http://www.gnu.org/software/gsl/
     2) Boost from http://www.boost.org/
-    3) Trilinos from http://trilinos.sandia.gov
 
 
 2. Configuration
