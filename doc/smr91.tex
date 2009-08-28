@@ -1,0 +1,884 @@
+\documentclass[letterpaper,11pt]{amsart}
+
+% Packages
+\usepackage{accents}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage{lastpage}
+\usepackage{latexsym}
+\usepackage{pstricks}
+\usepackage{setspace}
+\usepackage{txfonts}
+
+\mathtoolsset{showonlyrefs,showmanualtags}
+\allowdisplaybreaks[1]
+
+% Line Spacing
+\singlespacing
+
+% Set appropriate header/footer information on each page
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headheight}{2.0em}
+    \renewcommand{\headsep}{0.75em}
+    \renewcommand{\headrulewidth}{1.0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \lhead{
+        Derivation of SMR's third-order, low-storage,
+        hybrid implicit/explicit Runge-Kutta scheme
+    }
+    \rhead{
+        Page \thepage{} of \pageref{LastPage}
+    }
+}
+\pagestyle{plain}
+
+% Paragraph spacing
+\setlength{\parindent}{0em}
+\setlength{\parskip}{2.0ex plus 0.75ex minus 0.75ex}
+
+% Document-specific commands
+\newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
+\newcommand{\order}[2]{\ensuremath{O\!\left( {#1}^{#2} \right)}}
+
+\begin{document}
+
+Motivated and developed following Appendix A of Spalart, Moser, and
+Rogers' 1991 ``Spectral Methods for the Navier-Stokes Equations
+with One Infinite and Two Periodic Directions'' published in
+\emph{J. Comput. Phys.} volume 96 pages 297--324.
+
+The time evolution of a state vector $u$ can be expressed as
+\begin{align}
+  u_{t}
+  &=
+  L(u)
+  +
+  N(u)
+  \equiv
+  R(u)
+\end{align}
+where $L$ and $N$ are linear and nonlinear operators, respectively.
+Neither operator depends explicitly on time.  Typically $L$ is stiff
+and requires an implicit scheme to allow for reasonable time steps.
+$N$ is hard to linearize in a spectral method and so we want to use
+an explicit method to avoid iterating.  We seek a low-storage, hybrid
+implicit/explicit, three-stage Runge-Kutta scheme.
+
+Let $\mathcal{D}$ and $\mathcal{E}$ be the first and second
+Fr\'echet derivatives of $N$ with respect to $u$.  Then
+$\mathcal{D}$ is a linear operator and $\mathcal{E}$ is a symmetric,
+bilinear operator.  We obtain the following operator expansions:
+\begin{subequations}
+\begin{align}
+  L(u+du)
+  &=
+  L(u)
+  +
+  L(du)
+\\
+  N(u+du)
+  &=
+  N(u)
+  +
+  \mathcal{D}(du)
+  +
+  \frac{1}{2}\mathcal{E}(du,du)
+  +
+  \order{du}{3}
+\end{align}
+\end{subequations}
+
+Expanding $u(t)$ in a Taylor series
+\begin{align}
+  u\left( t+\Delta{}t \right)
+  &=
+  u
+  +
+  \Delta{}t\,u_{t}
+  +
+  \frac{\Delta{}t^{2}}{2}u_{tt}
+  +
+  \frac{\Delta{}t^{3}}{6}\,u_{ttt}
+  +
+  \order{\Delta{}t}{4}
+\end{align}
+and computing the following derivatives
+\begin{subequations}
+\begin{align}
+  u_{tt}
+  =
+  \frac{\partial}{\partial{}t}
+  \left[u_{t}\right]
+  &=
+  \frac{\partial}{\partial{}t} R(u)
+  =
+  \frac{\partial}{\partial{}u} \left[ R(u) \right]
+  u_{t}
+  =
+  \left( L + \mathcal{D} \right) R(u)
+\\
+  u_{ttt}
+  =
+  \frac{\partial}{\partial{}t}
+  \left[u_{tt}\right]
+  &=
+  \frac{\partial}{\partial{}t}
+  \left[
+    \left( L + \mathcal{D} \right) R(u)
+  \right]
+\\
+\notag
+  &=
+  \frac{\partial}{\partial{}u}
+  \left[
+    \left( L + \mathcal{D} \right) R(u)
+  \right]
+  u_{t}
+\\
+\notag
+  &=
+  \left(
+  \frac{\partial}{\partial{}u}
+  \left[ L \right] R(u)
+  +
+  \frac{\partial}{\partial{}u}
+  \left[ \mathcal{D} \right] R(u)
+  +
+  \left(L + \mathcal{D}\right)
+  \frac{\partial}{\partial{}u}
+  \left[ R(u) \right]
+  \right)
+  R(u)
+\\
+\notag
+  &=
+  \left(
+  \mathcal{E} R(u)
+  +
+  \left(L + \mathcal{D}\right)^{2}
+  \right)
+  R(u)
+\end{align}
+\end{subequations}
+allows us to obtain
+\begin{align}
+  u\left( t+\Delta{}t \right) - u
+  &=
+  \Delta{}t\,R(u)
+  +
+  \frac{\Delta{}t^{2}}{2}
+  \left( L + \mathcal{D} \right) R(u)
+  +
+  \frac{\Delta{}t^{3}}{6}
+  \left[
+    \mathcal{E}\left( R(u), R(u) \right)
+    +
+    \left(L + \mathcal{D}\right)^{2} R(u)
+  \right]
+  +
+  \order{\Delta{}t}{4}
+  .
+\end{align}
+
+We want our three stage Runge-Kutta scheme to advance
+$u_{n}$, at time $t$, to $u_{n+1}$, at time $t+\Delta{}t$:
+\begin{subequations}
+\begin{align}
+  u'
+  &=
+  u_{n}
+  + \Delta{}t\left[
+      L\left( \alpha_{1}u_{n} + \beta_{1}u' \right)
+    + \gamma_{1} N(u_{n})
+  \right]
+\\
+  u''
+  &=
+  u'
+  + \Delta{}t\left[
+    L\left( \alpha_{2}u' + \beta_{2}u'' \right)
+    + \gamma_{2} N(u') + \zeta_{1} N(u_{n})
+  \right]
+\\
+  u_{n+1}
+  &=
+  u''
+  + \Delta{}t\left[
+      L\left( \alpha_{3}u'' + \beta_{3}u_{n+1} \right)
+    + \gamma_{3} N(u'') + \zeta_{2} N(u')
+  \right]
+\end{align}
+\end{subequations}
+
+We begin determining the unknown coefficients $\alpha$, $\beta$, $\gamma$,
+and $\zeta$ by rearranging the scheme as follows:
+\begin{subequations}
+\begin{alignat}{5}
+  \left( I - \Delta{}t \beta_{1} L \right) &u'
+  &&= u_{n}
+  &&+ \Delta{}t \alpha_{1} L(u_{n})
+  &&+ \Delta{}t \gamma_{1} N(u_{n})
+\\
+  \left( I - \Delta{}t \beta_{2} L \right) &u''
+  &&= u'
+  &&+ \Delta{}t \alpha_{2} L(u')
+  &&+ \Delta{}t \gamma_{2} N(u')
+  &&+ \Delta{}t \zeta_{1}  N(u_{n})
+\\
+  \left( I - \Delta{}t \beta_{3} L \right) &u_{n+1}
+  &&= u''
+  &&+ \Delta{}t \alpha_{3} L(u'')
+  &&+ \Delta{}t \gamma_{3} N(u'')
+  &&+ \Delta{}t \zeta_{2}  N(u')
+\end{alignat}
+\end{subequations}
+
+Next, we follow A. Leonard's technique of enforcing consistent $L$ and $N$
+substep lengths using the choices
+\begin{subequations}
+\begin{align}
+  \alpha_{1} + \beta_{1} &= \gamma_{1}
+  \\
+  \alpha_{2} + \beta_{2} &= \gamma_{2}+\zeta_{1}
+  \\
+  \alpha_{3} + \beta_{3} &= \gamma_{3}+\zeta_{2}
+\end{align}
+\end{subequations}
+to eliminate the unknown $\alpha$'s from the equations.
+\begin{subequations}
+\begin{align}
+  u' - u_{n}
+  &=
+  \Delta{}t \left( I - \Delta{}t \beta_{1} L \right)^{-1} \left(
+    \gamma_{1} R(u_{n})
+  \right)
+\\
+  u'' - u'
+  &=
+  \Delta{}t \left( I - \Delta{}t \beta_{2} L \right)^{-1} \left(
+      \gamma_{2} R(u')
+    + \zeta_{1} L(u')
+    + \zeta_{1} N(u_{n})
+  \right)
+\\
+  u_{n+1} - u''
+  &=
+  \Delta{}t \left( I - \Delta{}t \beta_{3} L \right)^{-1} \left(
+      \gamma_{3} R(u'')
+    + \zeta_{2}  L(u'')
+    + \zeta_{2}  N(u')
+  \right)
+\end{align}
+\end{subequations}
+We can employ the Neumann series $\left( I - \Delta{}t  \beta{}
+L \right)^{-1} = I + \Delta{}t \beta{} L + \Delta{}t^{2} \beta{}^{2}
+L^{2} + \order{\Delta{}t}{3}$ by assuming $||\Delta{}t\beta{}L||<1$.
+For brevity, we also introduce the notation
+$L_{n}=L(u_{n})$,
+$L'=L(u')$,
+$L''=L(u'')$,
+and similarly for $N_{n}$, $R_{n}$, etc.
+\begin{subequations}
+\begin{align}
+  u' - u_{n}
+  &=
+  \Delta{}t
+  \left(
+      I
+    + \Delta{}t \beta_{1} L
+    + \Delta{}t^{2} \beta_{1}^{2} L^{2}
+  \right)
+  \left(
+    \gamma_{1} R_{n}
+  \right)
+  + \order{\Delta{}t}{4}
+\\
+  u'' - u'
+  &=
+  \Delta{}t
+  \left(
+      I
+    + \Delta{}t \beta_{2} L
+    + \Delta{}t^{2} \beta_{2}^{2} L^{2}
+  \right)
+  \left(
+      \gamma_{2} R'
+    + \zeta_{1}  L'
+    + \zeta_{1}  N_{n}
+  \right)
+  + \order{\Delta{}t}{4}
+\\
+  u_{n+1} - u''
+  &=
+  \Delta{}t
+  \left(
+      I
+    + \Delta{}t \beta_{3} L
+    + \Delta{}t^{2} \beta_{3}^{2} L^{2}
+  \right)
+  \left(
+      \gamma_{3} R''
+    + \zeta_{2}  L''
+    + \zeta_{2}  N'
+  \right)
+  + \order{\Delta{}t}{4}
+\end{align}
+\end{subequations}
+
+Noting that $u' = u_{n} + \left( u' - u_{n} \right)$,
+we apply the operator expansions:
+\begin{subequations}
+\begin{align}
+  L'
+  &=
+  L_{n}
+  +
+  L(u'-u_{n})
+\\
+&=
+\trans{\begin{bmatrix}
+  1 \\
+  0 \\
+  \gamma_{1} \\
+  0 \\
+  0 \\
+  0 \\
+  \beta_{1} \gamma_{1} \\
+  0
+\end{bmatrix}}
+\begin{bmatrix}
+  L_{n} \\
+  \Delta{}t D R_{n} \\
+  \Delta{}t L R_{n} \\
+  \Delta{}t^{2} D^{2} R_{n} \\
+  \Delta{}t^{2} D L R_{n} \\
+  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} L^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{3}
+\notag
+\\
+  N'
+  &=
+  N_{n}
+  + \mathcal{D}\left( u'-u_{n} \right)
+  + \frac{1}{2} \mathcal{E}\left( u'-u_{n}, u'-u_{n} \right)
+  + \order{\left(u'-u_{n}\right)}{3}
+\\
+  &=
+\trans{\begin{bmatrix}
+  1 \\
+  \gamma_{1} \\
+  0 \\
+  0 \\
+  \beta_{1} \gamma_{1} \\
+  0 \\
+  0 \\
+  \frac{1}{2} \gamma_{1}^{2} 
+\end{bmatrix}}
+\begin{bmatrix}
+  N_{n} \\
+  \Delta{}t D R_{n} \\
+  \Delta{}t L R_{n} \\
+  \Delta{}t^{2} D^{2} R_{n} \\
+  \Delta{}t^{2} D L R_{n} \\
+  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} L^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{3}
+  \notag
+\end{align}
+\end{subequations}
+
+We determine $u''-u'$ using $L'$ and $N'$ followed by tallying
+$u''-u_{n} = (u''-u')+(u'-u_{n})$:
+\begin{align}
+      \gamma_{2} R'
+    + \zeta_{1}  L'
+    + \zeta_{1}  N_{n}
+  &=
+\trans{\begin{bmatrix}
+  \gamma_{2} + \zeta_{1} \\
+  \gamma_{1} \gamma_{2} \\
+  \gamma_{1} \zeta_{1} + \gamma_{1} \gamma_{2} \\
+  0 \\
+  \beta_{1} \gamma_{1} \gamma_{2} \\
+  0 \\
+  \beta_{1} \gamma_{1} \zeta_{1} + \beta_{1} \gamma_{1} \gamma_{2} \\
+  \frac{1}{2} \gamma_{1}^{2} \gamma_{2}
+\end{bmatrix}}
+\begin{bmatrix}
+  R_{n} \\
+  \Delta{}t D R_{n} \\
+  \Delta{}t L R_{n} \\
+  \Delta{}t^{2} D^{2} R_{n} \\
+  \Delta{}t^{2} D L R_{n} \\
+  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} L^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{3}
+\\
+  u'' - u'
+  &=
+\trans{\begin{bmatrix}
+  \gamma_{2} + \zeta_{1} \\
+  \gamma_{1} \gamma_{2} \\
+    \gamma_{1} \gamma_{2} + \gamma_{1} \zeta_{1}
+  + \beta_{2}\left( \gamma_{2} + \zeta_{1} \right) \\
+  0 \\
+  \beta_{1} \gamma_{1} \gamma_{2} \\
+  \beta_{2} \gamma_{1} \gamma_{2} \\
+    \left( \beta_{1} + \beta_{2} \right) \gamma_{1} \zeta_{1}
+  + \beta_{2}^{2} \left( \gamma_{2} + \zeta_{1} \right)
+  + \beta_{1} \gamma_{1} \gamma_{2} 
+  + \beta_{2} \gamma_{1} \gamma_{2} 
+  \\
+  \frac{1}{2} \gamma_{1}^{2} \gamma_{2}
+\end{bmatrix}}
+\begin{bmatrix}
+  \Delta{}t R_{n} \\
+  \Delta{}t^{2} D R_{n} \\
+  \Delta{}t^{2} L R_{n} \\
+  \Delta{}t^{3} D^{2} R_{n} \\
+  \Delta{}t^{3} D L R_{n} \\
+  \Delta{}t^{3} L D R_{n} \\
+  \Delta{}t^{3} L^{2} R_{n} \\
+  \Delta{}t^{3} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{4}
+\\
+  u'' - u_{n}
+  &=
+\begin{bmatrix}
+  \gamma_{1} + \gamma_{2} + \zeta_{1} \\
+  \gamma_{1} \gamma_{2} \\
+    \gamma_{1} \left(\beta_{1} + \gamma_{2} + \zeta_{1}\right) 
+  + \beta_{2} \left(\gamma_{2} + \zeta_{1}\right) \\
+  0 \\
+  \beta_{1} \gamma_{1} \gamma_{2} \\
+  \beta_{2} \gamma_{1} \gamma_{2} \\
+    \gamma_{1} \left(
+        \beta_{1}^2 + \left(\gamma_{2} + \zeta_{1}\right) \beta_{1} 
+      + \beta_{2} \left(\gamma_{2} + \zeta_{1}\right)
+    \right) 
+    + \beta_{2}^2 \left(\gamma_{2} + \zeta_{1}\right)
+  \\
+  \frac{1}{2} \gamma_{1}^{2} \gamma_{2}
+\end{bmatrix}
+\begin{bmatrix}
+  \Delta{}t R_{n} \\
+  \Delta{}t^{2} D R_{n} \\
+  \Delta{}t^{2} L R_{n} \\
+  \Delta{}t^{3} D^{2} R_{n} \\
+  \Delta{}t^{3} D L R_{n} \\
+  \Delta{}t^{3} L D R_{n} \\
+  \Delta{}t^{3} L^{2} R_{n} \\
+  \Delta{}t^{3} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{4}
+\end{align}
+
+Noting that $u'' = u_{n} + \left( u'' - u_{n} \right)$,
+we apply the operator expansions:
+\begin{subequations}
+\begin{align}
+  L''
+  &=
+  L_{n}
+  +
+  L(u''-u_{n})
+\\
+&=
+\trans{\begin{bmatrix}
+  1 \\
+  0 \\
+  \gamma_{1} + \gamma_{2} + \zeta_{1} \\
+  0 \\
+  0 \\
+  \gamma_{1} \gamma_{2} \\
+    \left(
+       \gamma_{1} \left(\beta_{1}+\zeta_{1}\right)
+      +\beta_{2} \left(\gamma_{2}+\zeta_{1}\right)
+    \right)
+  + \gamma_{1} \gamma_{2} \\
+  0
+\end{bmatrix}}
+\begin{bmatrix}
+  L_{n} \\
+  \Delta{}t D R_{n} \\
+  \Delta{}t L R_{n} \\
+  \Delta{}t^{2} D^{2} R_{n} \\
+  \Delta{}t^{2} D L R_{n} \\
+  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} L^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{3}
+\\
+  N''
+  &=
+  N_{n}
+  + \mathcal{D} \left( u'' - u_{n} \right)
+  + \frac{1}{2} \mathcal{E} \left( u''-u_{n}, u''-u_{n} \right)
+  + \order{\left(u''-u_{n}\right)}{3}
+\\
+  &=
+\trans{\begin{bmatrix}
+  1 \\
+  \gamma_{1} + \gamma_{2} + \zeta_{1} \\
+  0 \\
+  \gamma_{1} \gamma_{2} \\
+    \gamma_{1} \left(\beta_{1} + \gamma_{2} + \zeta_{1}\right) 
+  + \beta_{2} \left(\gamma_{2} + \zeta_{1}\right) \\
+  \gamma_{1} \gamma_{2} \\
+  0 \\
+  \frac{1}{2} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)^{2}
+\end{bmatrix}}
+\begin{bmatrix}
+  N_{n} \\
+  \Delta{}t D R_{n} \\
+  \Delta{}t L R_{n} \\
+  \Delta{}t^{2} D^{2} R_{n} \\
+  \Delta{}t^{2} D L R_{n} \\
+  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} L^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{3}
+\notag
+\end{align}
+\end{subequations}
+
+We determine $u_{n+1}-u''$ using $L''$, $N''$, and $N'$ followed by tallying
+$u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
+\begin{align}
+      \gamma_{3} R''
+    + \zeta_{2}  L''
+    + \zeta_{2}  N'
+  &=
+\trans{\begin{bmatrix}
+  &\gamma_{3} + \zeta_{2} \\
+    &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+  + \gamma_{1} \zeta_{2} \\
+    &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+  + \gamma_{1} \zeta_{2} 
+  + \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right) \\
+  &\gamma_{1} \gamma_{2} \gamma_{3} \\
+    &\gamma_{3} \left(
+       \gamma_{1} \left(\beta_{1}+\zeta_{1}\right)
+      +\beta_{2} \left(\gamma_{2}+\zeta_{1}\right)
+    \right)
+  + \gamma_{1} \gamma_{2} \gamma_{3} 
+  + \beta_{1} \gamma_{1} \zeta_{2} \\
+    &\gamma_{1} \gamma_{2} \gamma_{3}
+  + \gamma_{1} \gamma_{2} \zeta_{2} \\
+%
+\bigg(\mspace{-18mu}
+\begin{split}
+    &\gamma_{3} \left(
+       \gamma_{1} \left(\beta_{1}+\zeta_{1}\right)
+      +\beta_{2} \left(\gamma_{2}+\zeta_{1}\right)
+    \right)
+  + \gamma_{1} \gamma_{2} \gamma_{3}
+  \\
+  &\quad+ \zeta_{2} \left(
+       \gamma_{1} \left(\beta_{1}+\zeta_{1}\right)
+      +\beta_{2} \left(\gamma_{2}+\zeta_{1}\right)
+    \right)
+  + \gamma_{1} \gamma_{2} \zeta_{2}
+\end{split}
+\mspace{18mu}\bigg)
+  \\
+%
+    &\frac{1}{2}\gamma_{1}^{2}\zeta_{2}
+  + \frac{1}{2}\gamma_{3}\left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)^{2}
+\end{bmatrix}}
+\begin{bmatrix}
+  R_{n} \\
+  \Delta{}t D R_{n} \\
+  \Delta{}t L R_{n} \\
+  \Delta{}t^{2} D^{2} R_{n} \\
+  \Delta{}t^{2} D L R_{n} \\
+  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} L^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{3}
+\\
+  u_{n+1}-u''
+  &=
+\trans{\begin{bmatrix}
+  &\gamma_{3} + \zeta_{2} \\
+  &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+  + \gamma_{1} \zeta_{2} \\
+  &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+  + \gamma_{1} \zeta_{2}
+  + \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+  + \beta_{3} \left( \gamma_{3} + \zeta_{2} \right) \\
+  &\gamma_{1} \gamma_{2} \gamma_{3} \\
+  &\gamma_{3} \left( 
+      \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
+      + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+    \right)
+  + \gamma_{1} \gamma_{2} \gamma_{3}
+  + \beta_{1} \gamma_{1} \zeta_{2} \\
+  &\gamma_{1} \gamma_{2} \gamma_{3}
+  + \gamma_{1} \gamma_{2} \zeta_{2}
+  + \beta_{3} \left( 
+      \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+    + \gamma_{1} \zeta_{2}
+    \right) \\
+%
+\Bigg(\mspace{-18mu}
+\begin{split}
+  &\gamma_{3} \left( 
+      \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
+      + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+    \right)
+  + \gamma_{1} \gamma_{2} \gamma_{3}
+  + \gamma_{1} \gamma_{2} \zeta_{2}
+  \\
+  &\quad+ \zeta_{2} \left(
+        \gamma_{1} \left( \beta_{1} + \zeta_{1} \right)
+      + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+    \right)
+  + \beta_{3} \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+  \\
+  &\quad+ \beta_{3}^{2} \left( \gamma_{3} + \zeta_{2} \right)
+  + \beta_{3} \left( 
+      \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+    + \gamma_{1} \zeta_{2}
+    \right)
+\end{split}
+\mspace{18mu}\Bigg)
+  \\
+%
+  &\frac{1}{2}\gamma_{1}^{2}\zeta_{2}
+  + \frac{1}{2}\gamma_{3}\left( \gamma_{1}+\gamma_{2}+\zeta_{1} \right)^{2}
+\end{bmatrix}}
+\begin{bmatrix}
+  \Delta{}t R_{n} \\
+  \Delta{}t^{2} D R_{n} \\
+  \Delta{}t^{2} L R_{n} \\
+  \Delta{}t^{3} D^{2} R_{n} \\
+  \Delta{}t^{3} D L R_{n} \\
+  \Delta{}t^{3} L D R_{n} \\
+  \Delta{}t^{3} L^{2} R_{n} \\
+  \Delta{}t^{3} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{4}
+\\
+  u_{n+1} - u_{n}
+  &=
+\trans{\begin{bmatrix}
+  &\gamma_{3} + \zeta_{2} 
+  + \gamma_{1} + \gamma_{2} + \zeta_{1} \\
+  &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+  + \gamma_{1} \zeta_{2} + \gamma_{1} \gamma_{2} \\
+%
+\bigg(\mspace{-18mu}
+\begin{split}
+  &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+  + \gamma_{1} \zeta_{2}
+  + \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+  \\
+  &\quad+ \beta_{3} \left( \gamma_{3} + \zeta_{2} \right) 
+  + \gamma_{1} \left( \beta_{1} + \gamma_{2} + \zeta_{1} \right)
+  + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right) 
+\end{split}
+\mspace{18mu}\bigg)
+  \\
+%
+  &\gamma_{1} \gamma_{2} \gamma_{3} \\
+  &\gamma_{3} \left( 
+      \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
+      + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+    \right)
+  + \gamma_{1} \gamma_{2} \gamma_{3}
+  + \beta_{1} \gamma_{1} \zeta_{2} 
+  + \beta_{1} \gamma_{1} \gamma_{2} \\
+  &\gamma_{1} \gamma_{2} \gamma_{3}
+  + \gamma_{1} \gamma_{2} \zeta_{2}
+  + \beta_{3} \left( 
+      \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+    + \gamma_{1} \zeta_{2}
+    \right) 
+  + \beta_{2} \gamma_{1} \gamma_{2} \\
+%
+\Bigg(\mspace{-18mu}
+\begin{split}
+  &\gamma_{3} \left( 
+      \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
+      + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+    \right)
+  + \gamma_{1} \gamma_{2} \gamma_{3}
+  + \gamma_{1} \gamma_{2} \zeta_{2}
+  \\
+  &\quad+ \zeta_{2} \left(
+        \gamma_{1} \left( \beta_{1} + \zeta_{1} \right)
+      + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+    \right)
+  + \beta_{3} \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+  \\
+  &\quad+ \beta_{3}^{2} \left( \gamma_{3} + \zeta_{2} \right)
+  + \beta_{3} \left( 
+      \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+    + \gamma_{1} \zeta_{2}
+    \right)
+  \\
+  &\quad+ \gamma_{1} \left( 
+      \beta_{1}^{2}
+      + \left( \gamma_{2} + \zeta_{1} \right)\beta_{1}
+      + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+    \right)
+  + \beta_{2}^{2} \left( \gamma_{2} + \zeta_{1} \right)
+\end{split}
+\mspace{18mu}\Bigg)
+  \\
+%
+  &\frac{1}{2}\gamma_{1}^{2}\zeta_{2}
+  + \frac{1}{2}\gamma_{3}\left( \gamma_{1}+\gamma_{2}+\zeta_{1} \right)^{2}
+  + \frac{1}{2} \gamma_{1}^{2} \gamma_{2}
+\end{bmatrix}}
+\begin{bmatrix}
+  \Delta{}t R_{n} \\
+  \Delta{}t^{2} D R_{n} \\
+  \Delta{}t^{2} L R_{n} \\
+  \Delta{}t^{3} D^{2} R_{n} \\
+  \Delta{}t^{3} D L R_{n} \\
+  \Delta{}t^{3} L D R_{n} \\
+  \Delta{}t^{3} L^{2} R_{n} \\
+  \Delta{}t^{3} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{4}
+\end{align}
+
+Comparing the above $u_{n+1} - u_{n}$ result term-by-term with our
+original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
+(A6)--(A8):
+\begin{align*}
+\tag{A6, $\Delta{}t R_{n}$}
+1 
+&= 
+\gamma_{1} + \gamma_{2} + \gamma_{3} + \zeta_{1} + \zeta_{2}
+\\
+\tag{A7a, $\Delta{}t^{2} D R_{n}$}
+\frac{1}{2} 
+&=
+\gamma_{3} \left( 
+  \gamma_{1} + \gamma_{2} + \zeta_{1}
+\right)
++
+\gamma_{1} \left( 
+  \zeta_{2} + \gamma_{2}
+\right)
+\\
+\tag{A7b, $\Delta{}t^{2} L R_{n}$}
+\begin{split}
+\frac{1}{2}
+&=
+\gamma_{1} \beta_{1}
++
+\gamma_{1} \left( \gamma_{2} + \zeta_{1} \right)
++
+\left( \gamma_{2} + \zeta_{1} \right) \beta_{2}
+\\
+&\quad{}+
+\left( \gamma_{3} + \zeta_{2} \right)\left( 
+  \gamma_{1} + \gamma_{2} + \zeta_{1}
+\right)
++
+\beta_{3} \left( \gamma_{3} + \zeta_{2} \right)
+\end{split}
+\\
+\tag{A8a, $\Delta{}t^{3} D^{2} R_{n}$}
+\frac{1}{6}
+&=
+\gamma_{1} \gamma_{2} \gamma_{3}
+\\
+\tag{A8d, $\Delta{}t^{3} D L R_{n}$}
+\frac{1}{6}
+&=
+\gamma_{3} \left( 
+  \gamma_{1} \beta_{1} 
+  + 
+  \left( \gamma_{2} + \zeta_{1}\right) \left( \gamma_{1} + \beta_{2} \right)
+\right)
++
+\gamma_{1} \beta_{1} \left( 
+  \gamma_{2} + \zeta_{2}
+\right)
+\\
+\tag{A8c, $\Delta{}t^{3} L D R_{n}$}
+\frac{1}{6}
+&=
+\beta_{3} \left( 
+  \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+  +
+  \gamma_{1} \zeta_{2}
+\right)
++
+\gamma_{1} \gamma_{2} \left( \gamma_{3} + \zeta_{2} \right)
++
+\gamma_{1} \gamma_{2} \beta_{2}
+\\
+\tag{A8e, $\Delta{}t^{3} L^{2} R_{n}$}
+\begin{split}
+\frac{1}{6}
+&=
+\left( 
+  \left( \gamma_{1} + \beta_{3} + \beta_{2} \right)
+  \left( \zeta_{1} + \gamma_{2} \right)
+  +
+  \left( \beta_{3} + \beta_{1} \right) \gamma_{1} 
+  +
+  \beta_{3}^{2}
+\right) \zeta_{2}
+\\
+&\quad{}+
+\left( 
+  \left( \gamma_{1} + \beta_{3} + \beta_{2} \right) \gamma_{3}
+  +
+  \left( \beta_{2} + \beta_{1} \right) \gamma_{1}
+  +
+  \beta_{2}^{2}
+\right) \zeta_{1}
+\\
+&\quad{}+
+\left( 
+  \left( \gamma_{1} + \beta_{3} + \beta_{2} \right) \gamma_{2}
+  +
+  \left( \beta_{3} + \beta_{1} \right) \gamma_{1}
+  +
+  \beta_{3}^{2}
+\right) \gamma_{3}
+\\
+&\quad{}+
+\left( 
+  \left( \beta_{2} + \beta_{1} \right) \gamma_{1} 
+  +
+  \beta_{2}^{2}
+\right) \gamma_{2}
++
+\beta_{1}^{2} \gamma_{1}
+\end{split}
+\\
+\tag{A8b, $\Delta{}t^{3} \mathcal{E}\left( R_{n}, R_{n} \right)$}
+\frac{1}{3}
+&=
+\gamma_{1}^{2} \left( \gamma_{2} + \zeta_{2} \right)
++
+\gamma_{3} \left( \gamma_{1} + \zeta_{1} + \gamma_{2} \right)^{2}
+\end{align*}
+
+
+\end{document}
