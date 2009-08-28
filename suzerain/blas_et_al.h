@@ -40,7 +40,7 @@
  * parameter differences.
  */
 
-/* Specifies C linkage when compiled with C++ compiler */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #undef __BEGIN_DECLS
 #undef __END_DECLS
 #ifdef __cplusplus
@@ -50,8 +50,6 @@
 # define __BEGIN_DECLS /* empty */
 # define __END_DECLS /* empty */
 #endif
-
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
