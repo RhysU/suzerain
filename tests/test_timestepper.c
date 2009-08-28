@@ -14,13 +14,13 @@
 void
 check_smr91_constants()
 {
-    const suzerain_lsrk_method m = suzerain_lsrk_smr91;
+    const suzerain_lsrk_method * const m = suzerain_lsrk_smr91;
 
-    for (int i = 0; i < m.substeps; ++i) {
-        const double res = m.alpha[i] + m.beta[i] - m.gamma[i] - m.zeta[i];
+    for (int i = 0; i < m->substeps; ++i) {
+        const double res = m->alpha[i] + m->beta[i] - m->gamma[i] - m->zeta[i];
         gsl_test_abs(res, 0.0, GSL_DBL_EPSILON,
                 "Coefficient residual for %s substep %d of %d",
-                m.name, i, m.substeps);
+                m->name, i, m->substeps);
     }
 }
 
@@ -306,7 +306,7 @@ check_smr91_convergence_rate_riccati_equation()
 
         for (int i = 0; i < coarse_nsteps; ++i) {
             for (int substep = 0;
-                 substep < suzerain_lsrk_smr91.substeps;
+                 substep < suzerain_lsrk_smr91->substeps;
                  ++substep) {
                 b[0] = riccati_equation_nonlinear_operator(
                         a[0], coeff_a, coeff_b, coeff_c);
@@ -341,7 +341,7 @@ check_smr91_convergence_rate_riccati_equation()
 
         for (int i = 0; i < finer_nsteps; ++i) {
             for (int substep = 0;
-                 substep < suzerain_lsrk_smr91.substeps;
+                 substep < suzerain_lsrk_smr91->substeps;
                  ++substep) {
                 b[0] = riccati_equation_nonlinear_operator(
                         a[0], coeff_a, coeff_b, coeff_c);
@@ -466,7 +466,7 @@ check_smr91_convergence_rate_only_explicit_operator()
 
         for (int i = 0; i < coarse_nsteps; ++i) {
             for (int substep = 0;
-                 substep < suzerain_lsrk_smr91.substeps;
+                 substep < suzerain_lsrk_smr91->substeps;
                  ++substep) {
                 b[0] = coeff_a * a[0]; /* Explicit operator */
                 gsl_test(suzerain_lsrk_substep(
@@ -500,7 +500,7 @@ check_smr91_convergence_rate_only_explicit_operator()
 
         for (int i = 0; i < finer_nsteps; ++i) {
             for (int substep = 0;
-                 substep < suzerain_lsrk_smr91.substeps;
+                 substep < suzerain_lsrk_smr91->substeps;
                  ++substep) {
                 b[0] = coeff_a * a[0]; /* Explicit operator */
                 gsl_test(suzerain_lsrk_substep(
