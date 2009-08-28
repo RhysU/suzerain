@@ -46,7 +46,7 @@
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-typedef enum {
+typedef enum underling_state {
     underling_state_uninitialized  = 0,
     underling_state_physical       = 1,
     underling_state_wave           = 2,
@@ -63,7 +63,7 @@ struct underling_dimension {
     underling_dimension *transformed;
 };
 
-typedef struct {
+typedef struct underling_workspace {
     int                  ndim;
     underling_state     *state;
     underling_dimension *dim_p;
