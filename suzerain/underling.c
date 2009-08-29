@@ -35,10 +35,16 @@
 #include <suzerain/underling.h>
 
 underling_workspace *
-underling_workspace_alloc(int ndim)
+underling_workspace_alloc(const int ndim, const int nstage)
 {
     if (ndim < 1) {
         SUZERAIN_ERROR_NULL("ndim must be at least 1", SUZERAIN_EINVAL);
+    }
+    if (nstage < 1) {
+        SUZERAIN_ERROR_NULL("nstage must be at least 1", SUZERAIN_EINVAL);
+    }
+    if (nstage > ndim+1) {
+        SUZERAIN_ERROR_NULL("nstage must be less than ndim+1", SUZERAIN_EINVAL);
     }
 
     underling_workspace * w = malloc(sizeof(underling_workspace));
@@ -46,49 +52,58 @@ underling_workspace_alloc(int ndim)
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                              SUZERAIN_ENOMEM);
     }
+    w->ndim   = ndim;
+    w->nstage = nstage;
 
-    w->ndim = ndim;
-
-    w->state = malloc(w->ndim * sizeof(w->state[0]));
-    if (w->state == NULL) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for state",
+    w->stage = calloc(nstage, sizeof(w->stage[0]));
+    if (w->stage == NULL) {
+        underling_workspace_free(w);
+        SUZERAIN_ERROR_NULL("failed to allocate space for stage",
                              SUZERAIN_ENOMEM);
-        free(w);
     }
 
-    w->dim_p = malloc(w->ndim * sizeof(w->dim_p[0]));
-    if (w->dim_p == NULL) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for dim_p",
-                             SUZERAIN_ENOMEM);
-        free(w->state);
-        free(w);
+    for (int i = 0; i < nstage; ++i) {
+        w->stage[i].dim = calloc(ndim, sizeof(w->stage[0].dim[0]));
+        if (w->stage[i].dim == NULL) {
+            underling_workspace_free(w);
+            SUZERAIN_ERROR_NULL("failed to allocate space for stage's dim",
+                                SUZERAIN_ENOMEM);
+        }
     }
 
-    w->dim_w = malloc(w->ndim * sizeof(w->dim_w[0]));
-    if (w->dim_w == NULL) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for dim_w",
-                             SUZERAIN_ENOMEM);
-        free(w->state);
-        free(w->dim_p);
-        free(w);
+    /* In stage 0, ndim - (nstage-1) dimensions are in physical space. */
+    for (int j = 0; j < ndim; ++j) {
+        if (j < nstage-1) {
+            w->stage[0].dim[j].state = UNDERLING_STATE_PHYSICAL;
+        } else {
+            w->stage[0].dim[j].state = UNDERLING_STATE_NOTTRANSFORMED;
+        }
     }
 
-    for (int i = 0; i < w->ndim; ++i) {
-        w->state[i]               = underling_state_uninitialized;
+    for (int i = 0; i < nstage-1; ++i) {
+        for (int j = 0; j < ndim; ++j) {
+            /* Establish pointers to this dimension in next and previous stage */
+            const int j_next_r2c = (j + ndim - 1) % ndim;
+            const int j_next_c2r = (j + 1) % ndim;
+            w->stage[i].dim[j].next_r2c = w->stage[i+1].dim + j_next_r2c;
+            w->stage[i+1].dim[j].next_c2r = w->stage[i].dim + j_next_c2r;
 
-        w->dim_p[i].size          = 0;
-        w->dim_p[i].stride        = 0;
-        w->dim_p[i].global_size   = 0;
-        w->dim_p[i].global_start  = 0;
-        w->dim_p[i].dealias_by    = 3.0/2.0;
-        w->dim_p[i].transformed   = NULL;
+            /* Assume the dimension stays in the same state... */
+            w->stage[i].dim[j].next_r2c->state = w->stage[i].dim[j].state;
+        }
 
-        w->dim_w[i].size          = 0;
-        w->dim_w[i].stride        = 0;
-        w->dim_w[i].global_size   = 0;
-        w->dim_w[i].global_start  = 0;
-        w->dim_p[i].dealias_by    = 1.0;
-        w->dim_w[i].transformed   = NULL;
+        /* ...unless it was the zeroth dimension in this stage */
+        switch (w->stage[i].dim[0].state) {
+            case UNDERLING_STATE_PHYSICAL:
+                w->stage[i].dim[0].next_r2c->state = UNDERLING_STATE_WAVE;
+                break;
+            case UNDERLING_STATE_NOTTRANSFORMED:
+                /* NOP */
+                break;
+            default:
+                SUZERAIN_ERROR_NULL("unexpected state in allocation logic",
+                                    SUZERAIN_ESANITY);
+        }
     }
 
     return w;
@@ -98,16 +113,18 @@ void
 underling_workspace_free(underling_workspace * w)
 {
     if (w) {
-        free(w->state);
-        w->state = NULL;
-
-        free(w->dim_p);
-        w->dim_p = NULL;
-
-        free(w->dim_w);
-        w->dim_w = NULL;
+        if (w->stage) {
+            for (int i = 0; i < w->nstage; ++i) {
+                if (w->stage[i].dim) {
+                    free(w->stage[i].dim);
+                    w->stage[i].dim = NULL;
+                }
+            }
+            free(w->stage);
+            w->stage = NULL;
+        }
+        free(w);
     }
-    free(w);
 }
 
 int
@@ -120,46 +137,10 @@ underling_prepare_physical_size(underling_workspace *w,
         }
     }
 
-    for (int i = 0; i < w->ndim; ++i) {
-        w->dim_p[i].global_size = physical_size[i];
-    }
-
-    return SUZERAIN_SUCCESS;
-}
-
-
-int
-underling_prepare_link(underling_workspace *w,
-                       int dim_physical,
-                       int dim_wave)
-{
-    if (dim_physical < 0 || dim_physical >= w->ndim) {
-        SUZERAIN_ERROR("dim_physical index out of range", SUZERAIN_EINVAL);
-    }
-    if (w->dim_p[dim_physical].transformed != NULL) {
-        SUZERAIN_ERROR("dim_physical already linked", SUZERAIN_EINVAL);
-    }
-
-    if (dim_wave < 0 || dim_wave >= w->ndim) {
-        SUZERAIN_ERROR("dim_wave index out of range", SUZERAIN_EINVAL);
-    }
-    if (w->dim_w[dim_wave].transformed != NULL) {
-        SUZERAIN_ERROR("dim_wave already linked", SUZERAIN_EINVAL);
-    }
-
-    w->dim_p[dim_physical].transformed = &(w->dim_w[dim_wave]);
-    w->dim_w[dim_wave].transformed     = &(w->dim_p[dim_physical]);
-
-    return SUZERAIN_SUCCESS;
-}
-
-int
-underling_prepare_state(underling_workspace *w,
-                        const underling_state *state)
-{
-    for (int i = 0; i < w->ndim; ++i) {
-        w->state[i] = state[i];
-    }
+    // FIXME
+/*    for (int i = 0; i < w->ndim; ++i) {*/
+/*        w->dim_p[i].global_size = physical_size[i];*/
+/*    }*/
 
     return SUZERAIN_SUCCESS;
 }

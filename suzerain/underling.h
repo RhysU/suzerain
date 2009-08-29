@@ -50,10 +50,10 @@ __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 typedef enum underling_state {
-    underling_state_uninitialized  = 0,
-    underling_state_physical       = 1,
-    underling_state_wave           = 2,
-    underling_state_nottransformed = 4
+    UNDERLING_STATE_UNINITIALIZED  = 0,
+    UNDERLING_STATE_PHYSICAL       = 1,
+    UNDERLING_STATE_WAVE           = 2,
+    UNDERLING_STATE_NOTTRANSFORMED = 4
 } underling_state;
 
 typedef struct underling_dimension underling_dimension;
@@ -63,29 +63,34 @@ struct underling_dimension {
     int global_size;
     int global_start;
     double dealias_by;
-    underling_dimension *transformed;
+    underling_state state;
+    underling_dimension *next_r2c;
+    underling_dimension *next_c2r;
 };
+
+typedef struct underling_stage {
+    underling_dimension *dim;
+} underling_stage;
 
 typedef struct underling_workspace {
     int                  ndim;
-    underling_state     *state;
-    underling_dimension *dim_p;
-    underling_dimension *dim_w;
+    int                  nstage;
+    underling_stage     *stage;
 } underling_workspace;
 
 typedef double         underling_real;
+
 typedef underling_real underling_complex[2];
 
-underling_workspace *underling_workspace_alloc(int ndim);
-void                 underling_workspace_free(underling_workspace *w);
+underling_workspace *
+underling_workspace_alloc(const int ndim, const int nstage);
 
-int underling_prepare_physical_size(underling_workspace *w,
-                                    const int *physical_size);
-int underling_prepare_link(underling_workspace *w,
-                           int dim_physical,
-                           int dim_wave);
-int underling_prepare_state(underling_workspace *w,
-                            const underling_state *state);
+void
+underling_workspace_free(underling_workspace * const w);
+
+int
+underling_prepare_physical_size(underling_workspace * const w,
+                                const int *physical_size);
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
@@ -100,7 +105,9 @@ bool operator==(const underling_dimension& a, const underling_dimension& b)
         && (a.global_size == b.global_size)
         && (a.global_start == b.global_start)
         && (a.dealias_by == b.dealias_by)
-        && (a.transformed == b.transformed);
+        && (a.state == b.state)
+        && (a.next_r2c == b.next_r2c)
+        && (a.next_c2r == b.next_c2r);
 }
 
 inline
@@ -111,7 +118,10 @@ std::ostream& operator<<(std::ostream& os, const underling_dimension& ud)
               << "stride=" << ud.stride << ","
               << "global_size=" << ud.global_size << ","
               << "global_start=" << ud.global_start << ","
-              << "dealias_by=" << ud.dealias_by
+              << "dealias_by=" << ud.dealias_by << ","
+              << "state=" << ud.state << ","
+              << "next_r2c=" << ud.next_r2c << ","
+              << "next_c2r=" << ud.next_c2r
               << ")";
 }
 
