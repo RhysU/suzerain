@@ -31,6 +31,9 @@
 #define PECOS_SUZERAIN_UNDERLING_H
 
 #include <stdlib.h>
+#ifdef __cplusplus
+#include <iosfwd>
+#endif
 #include <suzerain/error.h>
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -87,5 +90,31 @@ int underling_prepare_state(underling_workspace *w,
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
+
+#ifdef __cplusplus
+inline
+bool operator==(const underling_dimension& a, const underling_dimension& b)
+{
+    return (a.size == b.size)
+        && (a.stride == b.stride)
+        && (a.global_size == b.global_size)
+        && (a.global_start == b.global_start)
+        && (a.dealias_by == b.dealias_by)
+        && (a.transformed == b.transformed);
+}
+
+inline
+std::ostream& operator<<(std::ostream& os, const underling_dimension& ud)
+{
+    return os << "("
+              << "size=" << ud.size << ","
+              << "stride=" << ud.stride << ","
+              << "global_size=" << ud.global_size << ","
+              << "global_start=" << ud.global_start << ","
+              << "dealias_by=" << ud.dealias_by
+              << ")";
+}
+
+#endif /* __cplusplus */
 
 #endif // PECOS_SUZERAIN_UNDERLING_H

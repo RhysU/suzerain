@@ -100,9 +100,16 @@ underling_workspace_alloc(int ndim)
 void
 underling_workspace_free(underling_workspace * w)
 {
-    free(w->state);
-    free(w->dim_p);
-    free(w->dim_w);
+    if (w) {
+        free(w->state);
+        w->state = NULL;
+
+        free(w->dim_p);
+        w->dim_p = NULL;
+
+        free(w->dim_w);
+        w->dim_w = NULL;
+    }
     free(w);
 }
 
