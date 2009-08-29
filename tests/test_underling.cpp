@@ -11,6 +11,16 @@ BOOST_AUTO_TEST_CASE( alloc_and_prepare_workspace )
     underling_workspace * const w = underling_workspace_alloc(ndim);
     BOOST_CHECK_EQUAL(w->ndim, ndim);
 
+    const underling_state state[ndim] = {
+        underling_state_physical,
+        underling_state_physical,
+        underling_state_nottransformed
+    };
+    underling_prepare_state(w, state);
+    for (int i = 0; i < w->ndim; ++i) {
+        BOOST_CHECK_EQUAL(w->state[i], state[i]);
+    }
+
     const int physical_size[ndim] = { 16, 24, 32 };
     underling_prepare_physical_size(w, physical_size);
     for (int i = 0; i < w->ndim; ++i) {
@@ -31,16 +41,6 @@ BOOST_AUTO_TEST_CASE( alloc_and_prepare_workspace )
     BOOST_CHECK_EQUAL(*(w->dim_p[2].transformed), w->dim_w[0]);
     BOOST_CHECK_EQUAL(*(w->dim_w[0].transformed), w->dim_p[2]);
     BOOST_CHECK_EQUAL(*((w->dim_p[2].transformed)->transformed), w->dim_p[2]);
-
-    const underling_state state[ndim] = {
-        underling_state_physical,
-        underling_state_physical,
-        underling_state_nottransformed
-    };
-    underling_prepare_state(w, state);
-    for (int i = 0; i < w->ndim; ++i) {
-        BOOST_CHECK_EQUAL(w->state[i], state[i]);
-    }
 
     underling_workspace_free(w);
 }

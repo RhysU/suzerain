@@ -37,14 +37,11 @@
 underling_workspace *
 underling_workspace_alloc(int ndim)
 {
-    int i;
-    underling_workspace * w;
-
     if (ndim < 1) {
         SUZERAIN_ERROR_NULL("ndim must be at least 1", SUZERAIN_EINVAL);
     }
 
-    w = malloc(sizeof(underling_workspace));
+    underling_workspace * w = malloc(sizeof(underling_workspace));
     if (w == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                              SUZERAIN_ENOMEM);
@@ -76,7 +73,7 @@ underling_workspace_alloc(int ndim)
         free(w);
     }
 
-    for (i = 0; i < w->ndim; ++i) {
+    for (int i = 0; i < w->ndim; ++i) {
         w->state[i]               = underling_state_uninitialized;
 
         w->dim_p[i].size          = 0;
@@ -117,15 +114,13 @@ int
 underling_prepare_physical_size(underling_workspace *w,
                                 const int *physical_size)
 {
-    int i;
-
-    for (i = 0; i < w->ndim; ++i) {
+    for (int i = 0; i < w->ndim; ++i) {
         if (physical_size[i] < 1) {
             SUZERAIN_ERROR("physical_size < 1", SUZERAIN_EINVAL);
         }
     }
 
-    for (i = 0; i < w->ndim; ++i) {
+    for (int i = 0; i < w->ndim; ++i) {
         w->dim_p[i].global_size = physical_size[i];
     }
 
@@ -162,9 +157,7 @@ int
 underling_prepare_state(underling_workspace *w,
                         const underling_state *state)
 {
-    int i;
-
-    for (i = 0; i < w->ndim; ++i) {
+    for (int i = 0; i < w->ndim; ++i) {
         w->state[i] = state[i];
     }
 
