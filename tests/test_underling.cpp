@@ -17,4 +17,59 @@ BOOST_AUTO_TEST_CASE( alloc )
             underling_workspace_free(w);
         }
     }
+
+    /* Check information across each stage with all directions transformed */
+    {
+        const int ndim   = 3;
+        const int nstage = ndim+1;
+        underling_workspace * const w
+            = underling_workspace_alloc(ndim, nstage);
+
+        const underling_state states[nstage][ndim] = {
+            { UNDERLING_STATE_PHYSICAL,
+                UNDERLING_STATE_PHYSICAL,
+                UNDERLING_STATE_PHYSICAL },
+            { UNDERLING_STATE_PHYSICAL,
+                UNDERLING_STATE_PHYSICAL,
+                UNDERLING_STATE_WAVE },
+            { UNDERLING_STATE_PHYSICAL,
+                UNDERLING_STATE_WAVE,
+                UNDERLING_STATE_WAVE },
+            { UNDERLING_STATE_WAVE,
+                UNDERLING_STATE_WAVE,
+                UNDERLING_STATE_WAVE }
+        };
+        for (int i = 0; i < nstage; ++i) {
+            for (int j = 0; j < ndim; ++j) {
+                BOOST_CHECK_EQUAL(w->stage[i].dim[j].state, states[i][j]);
+            }
+        }
+        underling_workspace_free(w);
+    }
+
+    /* Check information across each stage with one untransformed direction */
+    {
+        const int ndim   = 3;
+        const int nstage = ndim;
+        underling_workspace * const w
+            = underling_workspace_alloc(ndim, nstage);
+
+        const underling_state states[nstage][ndim] = {
+            { UNDERLING_STATE_PHYSICAL,
+                UNDERLING_STATE_PHYSICAL,
+                UNDERLING_STATE_NOTTRANSFORMED },
+            { UNDERLING_STATE_PHYSICAL,
+                UNDERLING_STATE_NOTTRANSFORMED,
+                UNDERLING_STATE_WAVE },
+            { UNDERLING_STATE_NOTTRANSFORMED,
+                UNDERLING_STATE_WAVE,
+                UNDERLING_STATE_WAVE }
+        };
+        for (int i = 0; i < nstage; ++i) {
+            for (int j = 0; j < ndim; ++j) {
+                BOOST_CHECK_EQUAL(w->stage[i].dim[j].state, states[i][j]);
+            }
+        }
+        underling_workspace_free(w);
+    }
 }
