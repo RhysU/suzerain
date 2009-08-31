@@ -18,6 +18,61 @@ BOOST_AUTO_TEST_CASE( alloc )
         }
     }
 
+    /* Check information across each stage for low dimension problem */
+    {
+        const int ndim   = 1;
+        const int nstage = ndim+1;
+        underling_workspace * const w
+            = underling_workspace_alloc(ndim, nstage);
+
+        /* Check states are correct in each stage */
+        const underling_state states[nstage][ndim] = {
+            { UNDERLING_STATE_PHYSICAL },
+            { UNDERLING_STATE_WAVE }
+        };
+        for (int i = 0; i < nstage; ++i) {
+            for (int j = 0; j < ndim; ++j) {
+                BOOST_CHECK_EQUAL(w->stage[i].dim[j].state, states[i][j]);
+            }
+        }
+
+        /* Check next_r2c pointers are correct */
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].next_r2c, &(w->stage[1].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[0].next_r2c, (void *) NULL);
+
+        /* Check next_c2r pointers are correct */
+        BOOST_CHECK_EQUAL(w->stage[1].dim[0].next_c2r, &(w->stage[0].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].next_c2r, (void *) NULL);
+
+        underling_workspace_free(w);
+    }
+
+    /* Check information across each stage for untransformed low dimension */
+    {
+        const int ndim   = 1;
+        const int nstage = 1;
+        underling_workspace * const w
+            = underling_workspace_alloc(ndim, nstage);
+
+        /* Check states are correct in each stage */
+        const underling_state states[nstage][ndim] = {
+            { UNDERLING_STATE_NOTTRANSFORMED }
+        };
+        for (int i = 0; i < nstage; ++i) {
+            for (int j = 0; j < ndim; ++j) {
+                BOOST_CHECK_EQUAL(w->stage[i].dim[j].state, states[i][j]);
+            }
+        }
+
+        /* Check next_r2c pointers are correct */
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].next_r2c, (void *) NULL);
+
+        /* Check next_c2r pointers are correct */
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].next_c2r, (void *) NULL);
+
+        underling_workspace_free(w);
+    }
+
     /* Check information across each stage with all directions transformed */
     {
         const int ndim   = 3;
@@ -25,6 +80,7 @@ BOOST_AUTO_TEST_CASE( alloc )
         underling_workspace * const w
             = underling_workspace_alloc(ndim, nstage);
 
+        /* Check states are correct in each stage */
         const underling_state states[nstage][ndim] = {
             { UNDERLING_STATE_PHYSICAL,
                 UNDERLING_STATE_PHYSICAL,
@@ -44,6 +100,34 @@ BOOST_AUTO_TEST_CASE( alloc )
                 BOOST_CHECK_EQUAL(w->stage[i].dim[j].state, states[i][j]);
             }
         }
+
+        /* Check next_r2c pointers are correct */
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].next_r2c, &(w->stage[1].dim[2]));
+        BOOST_CHECK_EQUAL(w->stage[0].dim[1].next_r2c, &(w->stage[1].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[0].dim[2].next_r2c, &(w->stage[1].dim[1]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[0].next_r2c, &(w->stage[2].dim[2]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[1].next_r2c, &(w->stage[2].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[2].next_r2c, &(w->stage[2].dim[1]));
+        BOOST_CHECK_EQUAL(w->stage[2].dim[0].next_r2c, &(w->stage[3].dim[2]));
+        BOOST_CHECK_EQUAL(w->stage[2].dim[1].next_r2c, &(w->stage[3].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[2].dim[2].next_r2c, &(w->stage[3].dim[1]));
+        BOOST_CHECK_EQUAL(w->stage[3].dim[0].next_r2c, (void *) NULL);
+        BOOST_CHECK_EQUAL(w->stage[3].dim[1].next_r2c, (void *) NULL);
+        BOOST_CHECK_EQUAL(w->stage[3].dim[2].next_r2c, (void *) NULL);
+
+        /* Check next_c2r pointers are correct */
+        BOOST_CHECK_EQUAL(w->stage[3].dim[0].next_c2r, &(w->stage[2].dim[1]));
+        BOOST_CHECK_EQUAL(w->stage[3].dim[1].next_c2r, &(w->stage[2].dim[2]));
+        BOOST_CHECK_EQUAL(w->stage[3].dim[2].next_c2r, &(w->stage[2].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[2].dim[0].next_c2r, &(w->stage[1].dim[1]));
+        BOOST_CHECK_EQUAL(w->stage[2].dim[1].next_c2r, &(w->stage[1].dim[2]));
+        BOOST_CHECK_EQUAL(w->stage[2].dim[2].next_c2r, &(w->stage[1].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[0].next_c2r, &(w->stage[0].dim[1]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[1].next_c2r, &(w->stage[0].dim[2]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[2].next_c2r, &(w->stage[0].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].next_c2r, (void *) NULL);
+        BOOST_CHECK_EQUAL(w->stage[0].dim[1].next_c2r, (void *) NULL);
+        BOOST_CHECK_EQUAL(w->stage[0].dim[2].next_c2r, (void *) NULL);
         underling_workspace_free(w);
     }
 
@@ -54,6 +138,7 @@ BOOST_AUTO_TEST_CASE( alloc )
         underling_workspace * const w
             = underling_workspace_alloc(ndim, nstage);
 
+        /* Check states are correct in each stage */
         const underling_state states[nstage][ndim] = {
             { UNDERLING_STATE_PHYSICAL,
                 UNDERLING_STATE_PHYSICAL,
@@ -70,6 +155,29 @@ BOOST_AUTO_TEST_CASE( alloc )
                 BOOST_CHECK_EQUAL(w->stage[i].dim[j].state, states[i][j]);
             }
         }
+
+        /* Check next_r2c pointers are correct */
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].next_r2c, &(w->stage[1].dim[2]));
+        BOOST_CHECK_EQUAL(w->stage[0].dim[1].next_r2c, &(w->stage[1].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[0].dim[2].next_r2c, &(w->stage[1].dim[1]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[0].next_r2c, &(w->stage[2].dim[2]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[1].next_r2c, &(w->stage[2].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[2].next_r2c, &(w->stage[2].dim[1]));
+        BOOST_CHECK_EQUAL(w->stage[2].dim[0].next_r2c, (void *) NULL);
+        BOOST_CHECK_EQUAL(w->stage[2].dim[1].next_r2c, (void *) NULL);
+        BOOST_CHECK_EQUAL(w->stage[2].dim[2].next_r2c, (void *) NULL);
+
+        /* Check next_c2r pointers are correct */
+        BOOST_CHECK_EQUAL(w->stage[2].dim[0].next_c2r, &(w->stage[1].dim[1]));
+        BOOST_CHECK_EQUAL(w->stage[2].dim[1].next_c2r, &(w->stage[1].dim[2]));
+        BOOST_CHECK_EQUAL(w->stage[2].dim[2].next_c2r, &(w->stage[1].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[0].next_c2r, &(w->stage[0].dim[1]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[1].next_c2r, &(w->stage[0].dim[2]));
+        BOOST_CHECK_EQUAL(w->stage[1].dim[2].next_c2r, &(w->stage[0].dim[0]));
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].next_c2r, (void *) NULL);
+        BOOST_CHECK_EQUAL(w->stage[0].dim[1].next_c2r, (void *) NULL);
+        BOOST_CHECK_EQUAL(w->stage[0].dim[2].next_c2r, (void *) NULL);
+
         underling_workspace_free(w);
     }
 }
