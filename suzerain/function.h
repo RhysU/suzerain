@@ -22,8 +22,33 @@
 #define __SUZERAIN_FUNCTION_H__
 
 /** @file
- * Provides a function evaluation interface compatible with the GNU Scientific
- * Library's \c gsl_function.
+ * Provides a function evaluation interface compatible with the <a
+ * href="http://www.gnu.org/software/gsl/">GNU Scientific Library</a>'s <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Providing-the-function-to-solve.html"><tt>gsl_function</tt></a>.
+ *
+ * For example, the following snippet establishes a suzerain_function instance
+ * which performs an arbitrary order polynomial evaluation:
+ * \code
+ * // Declarations
+ * typedef struct { int n; double c[]; } poly_params; // Flexible array
+ *
+ * double poly_f(double x, void *params)
+ * {
+ *     poly_params *p = (poly_params *) params;
+ *     return gsl_poly_eval(p->c, p->n, x);
+ * }
+ *
+ * // Within some method
+ * poly_params *p = (poly_params *)
+ *                   malloc(sizeof(poly_params) + 3*sizeof(double));
+ * p->n    = 3;
+ * p->c[0] = 1.1; // Constant
+ * p->c[1] = 2.2; // Linear
+ * p->c[2] = 3.3; // Quadratic
+ * suzerain_function f = {poly_f, p};
+ *
+ * const double result = SUZERAIN_FN_EVAL(&f,1.0) // equals 6.6
+ * \endcode
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
