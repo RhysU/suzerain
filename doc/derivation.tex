@@ -565,7 +565,10 @@ dimensionless.  We arrive at the following nondimensional equations:
 
 We use nondimensional density $\rho$, momentum $m=\rho{}u$,
 and total energy $e=\rho{}\tilde{e}$ as the state variables for our
-computations.  Then the above equations become
+computations.  Though it eliminates division and potentially allows for
+fully dealiased calculations, we do not use specific density $\sigma=1/\rho$
+because it requires using a nonconservative mass equation.
+When rewritten using the state variables the above equations become
 \begin{subequations}
 \begin{align}
   \label{eq:state_continuity}
