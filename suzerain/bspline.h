@@ -35,16 +35,90 @@
 /** @file
  * Provides B-spline basis evaluation and derivative operator routines.  These
  * functions provide B-spline basis function evaluation, differentiation,
- * derivative linear operator construction, and operator application routines.
- * Unless otherwise noted, all matrices are stored in column-major (Fortran)
- * storage.  Multiple threads may call the routines simultaneously provided
- * that each thread has its own workspace instances.  The behavior is undefined
- * if two threads simultaneously share a workspace.  Internally, the code
- * builds upon the <a href="http://www.gnu.org/software/gsl/">GNU Scientific
- * Library</a> (GSL) <a
+ * derivative operator construction, and operator application routines.
+ *
+ * The derivative operators map a function's spline coefficients to an
+ * approximation of the derivative's spline coefficients.  For
+ * collocation-based operators, the approximation \f$\tilde{\gamma}(x) =
+ * \sum_{i} \beta_{i} B_{i}(x)\f$ to the continuous operator
+ * \f$\mathcal{D}\f$ acting on
+ * \f$\tilde{\phi}(x) = \sum_{i} \alpha_{i} B_{i}(x)\f$ must satisfy
+ * \f$\tilde{\gamma}(x_j) = \left(\mathcal{D}\tilde{\phi}\right)(x_j)\f$
+ * at each collocation point \f$x_j\f$.  This implies
+ * \f[
+ *        \sum_{i} \beta_{i} B_{i}(x_j)
+ *      = \sum_{i} \alpha_{i} \mathcal{D}(B_i)(x_j)
+ *      \quad \forall{} j.
+ * \f]
+ * The \f$k\f$-th collocation derivative operator matrix is given by
+ * \f$D^k_{i,j}=\left(B^{(k)}_i(x_j)\right)\f$.
+ * For Galerkin-based operators, the relationship \f$ \left( B_j,
+ * \tilde{\gamma}\right) = \left(B_j, \mathcal{D}\tilde{\phi}\right)\f$ must
+ * hold for each spline basis index \f$j\f$ where \f$(f,g)\f$ denotes the
+ * \f$L_2\f$ inner product.  This implies
+ * \f[
+ *          \sum_{i} \beta_{i} \left( B_j, B_i \right)
+ *      =   \sum_{i} \alpha_{j} \left( B_j, \mathcal{D}B_i \right).
+ * \f]
+ * The \f$k\f$-th Galerkin derivative operator matrix is given by
+ * \f$D^k_{i,j}=\left(B_i,B^{k}_j\right)\f$.  For either method, applying
+ * the \f$k\f$-th derivative operator requires solving the linear problem
+ * \f$D^{0} \beta = D^{k} \alpha\f$.  The method to use is chosen
+ * through the ::suzerain_bspline_method value provided to
+ * suzerain_bspline_alloc().
+ *
+ * Assuming you already have a suzerain_function instance \c f, this snippet
+ * interpolates a general function onto a cubic spline basis and then takes a
+ * derivative:
+ * \code
+ *  // Declare the breakpoints used in our basis
+ *  const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
+ *  const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+ *
+ *  // Create a cubic (k=4) workspace with 1 derivative available
+ *  suzerain_bspline_workspace *w
+ *      = suzerain_bspline_alloc(4, 1, nbreak, breakpoints,
+ *          SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
+ *
+ *  // Factor the mass matrix D[0] to allow solving D[0] x = b
+ *  suzerain_bspline_lu_workspace *mass
+ *      = suzerain_bspline_lu_alloc(w);
+ *  suzerain_bspline_lu_form_mass(w, mass);
+ *
+ *  // Set up and solve for coefficients that interpolate f
+ *  double x[w->ndof]; // C99
+ *  suzerain_bspline_find_interpolation_problem_rhs(&f, x, w);
+ *  suzerain_bspline_lu_solve(1, x, 1, mass);
+ *
+ *  // Solve D[0] x' = D[1] x by forming right hand side and solving
+ *  suzerain_bspline_apply_operator(1, 1, x, 1, w);
+ *  suzerain_bspline_lu_solve(1, x, 1, mass);
+ *  // x now contains an approximation to the derivative of f
+ *
+ *  // Deallocate workspaces
+ *  suzerain_bspline_lu_free(luw);
+ *  suzerain_bspline_free(w);
+ * \endcode
+ *
+ * All matrices are stored in column-major (Fortran) storage.  Multiple threads
+ * may call the routines simultaneously provided that each thread has its own
+ * workspace instances.  The behavior is undefined if two threads
+ * simultaneously share a workspace.  Internally, the code builds upon the <a
+ * href="http://www.gnu.org/software/gsl/">GNU Scientific Library</a> (GSL) <a
  * href="http://www.gnu.org/software/gsl/manual/html_node/Basis-Splines.html">
  * B-spline routines</a> and uses banded matrix BLAS and LAPACK functionality
  * where possible.
+ *
+ * @see <a href="http://dx.doi.org/10.1006/jcph.2001.6919">A Critical
+ * Evaluation of the Resolution Properties of B-Spline and Compact Finite
+ * Difference Methods</a> by Kwok, Moser, and Jimenez published in the
+ * <em>Journal of Computational Physics</em>, volume 174, number 2, pages
+ * 510-551 (December 2001) for more details on B-spline derivative operators
+ * and their properties.
+ * @see <a href="http://dx.doi.org/10.1016/j.apnum.2004.04.002"> Higher order
+ * B-spline collocation at the Greville abscissae</a> by Johnson published in
+ * <em>Applied Numerical Mathematics</em>, volume 52, number 1, pages 63-75
+ * (January 2005) for information about Greville abscissae.
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -89,9 +163,8 @@ enum suzerain_bspline_method {
 typedef struct suzerain_bspline_workspace {
 
     /**
-     * Spline order per GSL/PPPACK conventions
-     * For example, 3 denotes piecewise quadratics and 4 denotes piecewise
-     * cubics.
+     * Spline order per GSL/PPPACK conventions.  For example, 3 denotes
+     * piecewise quadratics and 4 denotes piecewise cubics.
      **/
     int order;
 
