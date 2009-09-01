@@ -27,7 +27,8 @@
  * href="http://www.gnu.org/software/gsl/manual/html_node/Providing-the-function-to-solve.html"><tt>gsl_function</tt></a>.
  *
  * For example, the following snippet establishes a suzerain_function instance
- * which performs an arbitrary order polynomial evaluation:
+ * which performs an arbitrary order polynomial evaluation via GSL's <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Polynomial-Evaluation.html"><tt>gsl_poly_eval</tt></a>:
  * \code
  * // Declarations
  * typedef struct { int n; double c[]; } poly_params; // Flexible array
