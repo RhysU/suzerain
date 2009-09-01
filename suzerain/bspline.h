@@ -61,7 +61,7 @@
  *      =   \sum_{i} \alpha_{j} \left( B_j, \mathcal{D}B_i \right).
  * \f]
  * The \f$k\f$-th Galerkin derivative operator matrix is given by
- * \f$D^k_{i,j}=\left(B_i,B^{k}_j\right)\f$.  For either method, applying
+ * \f$D^k_{i,j}=\left(B_i,B^{(k)}_j\right)\f$.  For either method, applying
  * the \f$k\f$-th derivative operator requires solving the linear problem
  * \f$D^{0} \beta = D^{k} \alpha\f$.  The method to use is chosen
  * through the ::suzerain_bspline_method value provided to
