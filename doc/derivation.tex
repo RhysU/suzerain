@@ -32,7 +32,7 @@
     \renewcommand{\headrulewidth}{1.0pt}
     \renewcommand{\footrulewidth}{0pt}
     \lhead{
-        Suzerain model derivation
+        Suzerain model derivation and numerical considerations
     }
     \rhead{
         Page \thepage{} of \pageref{LastPage}
@@ -54,7 +54,7 @@
 
 \section{Model derivation}
 
-Here we derive the mathematical model in use.  Special attention is
+Here we derive the mathematical model used in Suzerain.  Special attention is
 paid to the origins of all conservation laws and constitutive relations
 employed.  The model will nondimensionalized after derivation is complete.
 
@@ -379,6 +379,9 @@ and assumptions, we arrive at the dimensional equations
   \label{eq:dim_viscosity}
   \mu &= \mu_{0} \left( \frac{T}{T_{0}} \right)^{\beta}
   \\
+  \label{eq:dim_secondviscosity}
+  \lambda &= - \frac{2}{3} \mu
+  \\
   \label{eq:dim_viscousstress}
   \tau &=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right)
           + \lambda \left( \nabla\cdot{}u \right) I
@@ -467,6 +470,9 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   \label{eq:dimwithref_viscosity}
   \mu^{*} &= \left( T^{*} \right)^{\beta}
   \\
+  \label{eq:dimwithref_secondviscosity}
+  \lambda^{*} &= - \frac{2}{3} \mu^{*}
+  \\
   \label{eq:dimwithref_viscousstress}
   \tau^{*} &= \frac{\mu_{0}u_{0}}{l_{0} \tau_{0}} \left[
       \mu^{*} \left( \nabla^{*}u^{*} + \trans{\nabla^{*}u^{*}} \right)
@@ -507,6 +513,7 @@ Because we assume a constant Prandtl number, $\kappa_{0}=\kappa\!\left(
 \mu\!\left( T_{0} \right) \right)$ is also fixed by $T_{0}$.
 
 \subsubsection{Nondimensional equations}
+\label{nondim_equations}
 
 We employ the reference quantity relationships after
 multiplying the continuity, momentum, and energy equations by
@@ -555,20 +562,33 @@ dimensionless.  We arrive at the following nondimensional equations:
   \label{eq:nondim_viscosity}
   \mu &= T^{\beta}
   \\
+  \label{eq:nondim_secondviscosity}
+  \lambda &= -\frac{2}{3}\mu
+  \\
   \label{eq:nondim_viscousstress}
   \tau &=  \mu\left(\nabla{}u+\trans{\nabla{}u}\right)
          + \lambda\left(\nabla\cdot{}u\right) I
 \end{align}
 \end{subequations}
 
+\section{Numerical considerations}
+
+Here we take the complete mathematical model and put it into the form which we
+will compute.  Though less clean in appearance, this section's equations will
+better reflect the spectral implementation details used in Suzerain than those
+given in the previous section.  We continue to use $\nabla$-notation instead of
+switching to Cartesian index notation in anticipation of $\nabla$ being
+decomposed into slow- and fast-growth contributions and/or needing to account
+for curvature in the domain.
+
 \subsection{State variable selection}
 
-We use nondimensional density $\rho$, momentum $m=\rho{}u$,
-and total energy $e=\rho{}\tilde{e}$ as the state variables for our
-computations.  Though it eliminates division and potentially allows for
-fully dealiased calculations, we do not use specific density $\sigma=1/\rho$
-because it requires using a nonconservative mass equation.
-When rewritten using the state variables the above equations become
+We use nondimensional density $\rho$, momentum $m=\rho{}u$, and total energy
+$e=\rho{}\tilde{e}$ as the state variables for our computations.  Though it
+eliminates division and potentially allows for fully dealiased calculations, we
+do not use specific density $\sigma=1/\rho$ because it requires using a
+nonconservative mass equation.  When rewritten using the state variables
+the equations in section \ref{nondim_equations} become
 \begin{subequations}
 \begin{align}
   \label{eq:state_continuity}
@@ -608,6 +628,9 @@ When rewritten using the state variables the above equations become
   \label{eq:state_viscosity}
   \mu &= T^{\beta}
   \\
+  \label{eq:state_secondviscosity}
+  \lambda &= - \frac{2}{3} \mu
+  \\
   \label{eq:state_viscousstress}
   \tau &= \mu \left(
             \nabla{}\frac{m}{\rho}+\trans{\left(\nabla{}\frac{m}{\rho}\right)}
@@ -616,6 +639,7 @@ When rewritten using the state variables the above equations become
   .
 \end{align}
 \end{subequations}
+
 
 
 \end{document}
