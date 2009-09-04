@@ -75,6 +75,9 @@ BOOST_FORMAT
 BOOST_PROGRAM_OPTIONS
 BOOST_TEST
 AC_DEFINE(BOOST_UBLAS_SHALLOW_ARRAY_ADAPTOR,1,[Enable boost::numeric::ublas::shallow_array_adaptor<T>])
+PKG_CHECK_MODULES(EIGEN, eigen2 >= 2.0.5)
+AC_SUBST(EIGEN_CFLAGS)
+dnl EIGEN_LIBS should be empty and is so no AC_SUBST is used
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------

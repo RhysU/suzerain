@@ -15,6 +15,7 @@ The code depends upon the following libraries:
 
     1) GNU Scientific Library (GSL) from http://www.gnu.org/software/gsl/
     2) Boost from http://www.boost.org/
+    3) Eigen from http://eigen.tuxfamily.org/
 
 
 2. Configuration
