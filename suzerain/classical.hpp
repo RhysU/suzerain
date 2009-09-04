@@ -33,10 +33,36 @@
 #include <Eigen/Core>
 
 /** @file
- * Provides routines that obtain derived classical state expressions (based on
- * \f$p\f$, \f$T\f$, \f$\vec{u}\f$, \f$e\f$) from conservative state quantities
- * (based on \f$\rho\f$, \f$\vec{m}$, \f$e\f$) using the ideal gas equations of
- * state.
+ * Provides routines that compute classical state quantities (based on
+ * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$) from conservative state
+ * quantities (based on nondimensional \f$\rho\f$, \f$\vec{m}\f$, \f$e\f$)
+ * using the ideal gas equations of state nondimensionalized by a reference
+ * length, temperature, and density:
+ * \f{align*}
+ *     p &= \left(\gamma-1\right) \left(
+ *       e - \frac{m\cdot{}m}{2\rho}
+ *     \right)
+ *     \\
+ *     T &= \gamma{} \frac{p}{\rho}
+ *     \\
+ *     \mu &= T^{\beta}
+ *     \\
+ *     \lambda &= - \frac{2}{3} \mu
+ * \f}
+ *
+ * The following nondimensional variable definitions are used:
+ *   - \f$p\f$ or \c p is pressure.
+ *   - \f$T\f$ or \c T is temperature.
+ *   - \f$\vec{u}\f$ or \c u is the velocity vector.
+ *   - \f$\rho\f$ or \c pho is density.
+ *   - \f$\vec{m}\f$ or \c m is the momentum vector \f$\rho\vec{u}\f$.
+ *   - \f$e\f$ or \c e is the total energy \f$\rho\tilde{e}\f$ where
+ *         \f$\tilde{e}\f$ is the sum of the internal and kinetic
+ *         energy densities.
+ *   - \f$\mu\f$ or \c mu is the first viscosity.
+ *   - \f$\lambda\f$ or \c lambda is the second viscosity.
+ *   - \f$\gamma\f$ or \c gamma is the constant ratio of specific heats
+ *         \f$C_p/C_v\f$.
  */
 
 
