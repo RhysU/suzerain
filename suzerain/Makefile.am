@@ -18,6 +18,7 @@ CC=@MPICC@
 
 pkginclude_HEADERS += blas_et_al.h
 pkginclude_HEADERS += bspline.h
+pkginclude_HEADERS += classical.hpp
 pkginclude_HEADERS += error.h
 pkginclude_HEADERS += exceptions.hpp
 pkginclude_HEADERS += function.h
