@@ -30,6 +30,7 @@
 #ifndef PECOS_SUZERAIN_CLASSICAL_H
 #define PECOS_SUZERAIN_CLASSICAL_H
 
+#include <cmath>
 #include <Eigen/Core>
 
 /** @file
@@ -64,6 +65,45 @@
  *   - \f$\gamma\f$ or \c gamma is the constant ratio of specific heats
  *         \f$C_p/C_v\f$.
  */
+
+namespace pecos
+{
+
+namespace suzerain
+{
+
+namespace cartesian
+{
+
+namespace rhome
+{
+
+template < typename Scalar = double >
+void p_T_mu_lambda(const Scalar beta,
+        const Scalar gamma,
+        const Scalar rho,
+        const Eigen::Matrix<Scalar,3,1> &m,
+        const Scalar e,
+        Scalar &p,
+        Scalar &T,
+        Scalar &mu,
+        Scalar &lambda)
+{
+    const Scalar rho_inverse = 1.0/rho;
+
+    p      = (gamma-1)*(e - (1.0/2.0)*rho_inverse*m.squaredNorm());
+    T      = gamma * p * rho_inverse;
+    mu     = pow(T, beta);
+    lambda = -2.0/3.0*mu;
+}
+
+} // namespace rhome
+
+} // namespace cartesian
+
+} // namespace suzerain
+
+} // namespace pecos
 
 
 #endif // PECOS_SUZERAIN_CLASSICAL_H

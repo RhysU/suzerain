@@ -4,6 +4,7 @@ AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
 AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
 AM_CPPFLAGS   += $(MKL_CFLAGS) $(GSL_CFLAGS) $(LOG4CXX_CFLAGS)
 AM_CPPFLAGS   += $(BOOST_CPPFLAGS) $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS)
+AM_CPPFLAGS   += $(EIGEN_CFLAGS)
 AM_LDFLAGS     =
 bin_PROGRAMS   =
 check_PROGRAMS =
@@ -48,6 +49,11 @@ check_PROGRAMS      += test_pencil
 test_pencil_SOURCES  = test_pencil.cpp
 test_pencil_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencil_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
+check_PROGRAMS         += test_classical
+test_classical_SOURCES  = test_classical.cpp
+test_classical_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_classical_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 check_PROGRAMS          += test_richardson
 test_richardson_SOURCES  = test_richardson.c
