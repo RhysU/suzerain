@@ -160,6 +160,44 @@ void div_u(
     div_u = rho_inverse*(div_m - rho_inverse*grad_rho.dot(m));
 }
 
+/**
+ * Compute \f$\vec{\nabla}\vec{\nabla}\cdot{}u =
+ * \rho^{-1}\vec{\nabla}\vec{\nabla}\cdot\vec{m}
+ * - \rho^{-2}\left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
+ * - \rho^{-2}\left(\vec{\nabla}\vec{m}\right)\vec{\nabla}\rho
+ * - \rho^{-2}\left(\rho^{-1}\vec{\nabla}\rho\cdot\vec{m}
+ *   + \vec{\nabla}\cdot\vec{m}\right)\vec{\nabla}{\rho}\f$.
+ *
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
+ * @param[in]  grad_grad_rho \f$\vec{\nabla}\vec{\nabla}\rho\f$.
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  div_m \f$\vec{\nabla}\cdot\vec{m}\f$
+ * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param[in]  grad_div_m \f$\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$
+ * @param[out] grad_div_u \f$\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$
+ */
+template<typename Scalar>
+void grad_div_u(
+        const Scalar &rho,
+        const Eigen::Matrix<Scalar,3,1> &grad_rho,
+        const Eigen::Matrix<Scalar,3,3> &grad_grad_rho,
+        const Eigen::Matrix<Scalar,3,1> &m,
+        const Scalar &div_m,
+        const Eigen::Matrix<Scalar,3,3> &grad_m,
+        const Eigen::Matrix<Scalar,3,1> &grad_div_m,
+        Eigen::Matrix<Scalar,3,1> &grad_div_u)
+{
+    const Scalar rho_inverse = 1.0/rho;
+
+    grad_div_u = rho_inverse * (
+                    grad_div_m - rho_inverse * (
+                          grad_grad_rho*m
+                        + grad_m*grad_rho
+                        + (rho_inverse * grad_rho.dot(m) + div_m) * grad_rho
+                ));
+}
+
 } // namespace rhome
 
 } // namespace cartesian
