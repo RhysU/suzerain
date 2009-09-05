@@ -78,7 +78,7 @@ namespace cartesian
 namespace rhome
 {
 
-template < typename Scalar = double >
+template < typename Scalar >
 void p_T_mu_lambda(const Scalar beta,
         const Scalar gamma,
         const Scalar rho,
