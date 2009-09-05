@@ -40,10 +40,9 @@ BOOST_AUTO_TEST_CASE( rhome_grad_u )
     grad_m << 19.0, 23.0, 29.0,
               31.0, 37.0, 41.0,
               43.0, 47.0, 53.0;
-    Eigen::Matrix3d grad_u;
 
-    pecos::suzerain::cartesian::rhome::grad_u(
-            rho, grad_rho, m, grad_m, grad_u);
+    const Eigen::Matrix3d grad_u = pecos::suzerain::cartesian::rhome::grad_u(
+            rho, grad_rho, m, grad_m);
 
     Eigen::Matrix3d expected;
     expected(0,0) = 0.5*19.0 - 0.25*3.0*11.0;
@@ -68,10 +67,9 @@ BOOST_AUTO_TEST_CASE( rhome_div_u )
     Eigen::Vector3d m;
     m << 11.0, 13.0, 17.0;
     const double div_m = 19.0;
-    double div_u;
 
-    pecos::suzerain::cartesian::rhome::div_u(
-            rho, grad_rho, m, div_m, div_u);
+    const double div_u = pecos::suzerain::cartesian::rhome::div_u(
+            rho, grad_rho, m, div_m);
 
     const double expected = -0.25*(3.0*11.0+5.0*13.0+7.0*17.0) + 0.5*19.0;
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e-3;

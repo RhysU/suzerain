@@ -122,19 +122,17 @@ void p_T_mu_lambda(
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
  * @param[in]  m \f$\vec{m}\f$
  * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
- * @param[out] grad_u \f$\vec{\nabla}\vec{u}\f$
  */
 template<typename Scalar>
-void grad_u(
+Eigen::Matrix<Scalar,3,3> grad_u(
         const Scalar &rho,
         const Eigen::Matrix<Scalar,3,1> &grad_rho,
         const Eigen::Matrix<Scalar,3,1> &m,
-        const Eigen::Matrix<Scalar,3,3> &grad_m,
-        Eigen::Matrix<Scalar,3,3> &grad_u)
+        const Eigen::Matrix<Scalar,3,3> &grad_m)
 {
     const Scalar rho_inverse = 1.0/rho;
 
-    grad_u = rho_inverse*(grad_m - rho_inverse*grad_rho*m.transpose());
+    return rho_inverse*(grad_m - rho_inverse*grad_rho*m.transpose());
 }
 
 /**
@@ -145,19 +143,17 @@ void grad_u(
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
  * @param[in]  m \f$\vec{m}\f$
  * @param[in]  div_m \f$\vec{\nabla}\cdot\vec{m}\f$
- * @param[out] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
  */
 template<typename Scalar>
-void div_u(
+Scalar div_u(
         const Scalar &rho,
         const Eigen::Matrix<Scalar,3,1> &grad_rho,
         const Eigen::Matrix<Scalar,3,1> &m,
-        const Scalar &div_m,
-        Scalar &div_u)
+        const Scalar &div_m)
 {
     const Scalar rho_inverse = 1.0/rho;
 
-    div_u = rho_inverse*(div_m - rho_inverse*grad_rho.dot(m));
+    return rho_inverse*(div_m - rho_inverse*grad_rho.dot(m));
 }
 
 /**
@@ -175,27 +171,26 @@ void div_u(
  * @param[in]  div_m \f$\vec{\nabla}\cdot\vec{m}\f$
  * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
  * @param[in]  grad_div_m \f$\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$
- * @param[out] grad_div_u \f$\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$
  */
 template<typename Scalar>
-void grad_div_u(
+Eigen::Matrix<Scalar,3,1> grad_div_u(
         const Scalar &rho,
         const Eigen::Matrix<Scalar,3,1> &grad_rho,
         const Eigen::Matrix<Scalar,3,3> &grad_grad_rho,
         const Eigen::Matrix<Scalar,3,1> &m,
         const Scalar &div_m,
         const Eigen::Matrix<Scalar,3,3> &grad_m,
-        const Eigen::Matrix<Scalar,3,1> &grad_div_m,
-        Eigen::Matrix<Scalar,3,1> &grad_div_u)
+        const Eigen::Matrix<Scalar,3,1> &grad_div_m)
 {
     const Scalar rho_inverse = 1.0/rho;
 
-    grad_div_u = rho_inverse * (
-                    grad_div_m - rho_inverse * (
-                          grad_grad_rho*m
-                        + grad_m*grad_rho
-                        + (rho_inverse * grad_rho.dot(m) + div_m) * grad_rho
-                ));
+    return rho_inverse * (
+                grad_div_m - rho_inverse * (
+                    grad_grad_rho*m
+                    + grad_m*grad_rho
+                    + (rho_inverse * grad_rho.dot(m) + div_m) * grad_rho
+                )
+            );
 }
 
 } // namespace rhome
