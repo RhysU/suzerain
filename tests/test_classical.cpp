@@ -147,19 +147,30 @@ BOOST_AUTO_TEST_CASE( rhome_grad_u )
     BOOST_CHECK_CLOSE(grad_u(2,2), ans(2,2), close_enough);
 }
 
+// Checks derived formula and computed result against rhome_test_data()
 BOOST_AUTO_TEST_CASE( rhome_div_u )
 {
-    const double rho = 2.0;
+    double          rho;
     Eigen::Vector3d grad_rho;
-    grad_rho << 3.0, 5.0, 7.0;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
     Eigen::Vector3d m;
-    m << 11.0, 13.0, 17.0;
-    const double div_m = 19.0;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+
+    rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e);
 
     const double div_u = pecos::suzerain::cartesian::rhome::div_u(
             rho, grad_rho, m, div_m);
 
-    const double expected = -0.25*(3.0*11.0+5.0*13.0+7.0*17.0) + 0.5*19.0;
-    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e-3;
-    BOOST_CHECK_CLOSE(div_u, expected, close_enough);
+    const double ans = -7.8528271460331434259092626891655172292938028930092832721830;
+    const double close_enough = std::numeric_limits<double>::epsilon();
+    BOOST_CHECK_CLOSE(div_u, ans, close_enough);
 }
