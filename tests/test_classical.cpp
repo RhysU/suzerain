@@ -59,3 +59,21 @@ BOOST_AUTO_TEST_CASE( rhome_grad_u )
 
     BOOST_CHECK_SMALL((grad_u - expected).norm(), close_enough);
 }
+
+BOOST_AUTO_TEST_CASE( rhome_div_u )
+{
+    const double rho = 2.0;
+    Eigen::Vector3d grad_rho;
+    grad_rho << 3.0, 5.0, 7.0;
+    Eigen::Vector3d m;
+    m << 11.0, 13.0, 17.0;
+    const double div_m = 19.0;
+    double div_u;
+
+    pecos::suzerain::cartesian::rhome::div_u(
+            rho, grad_rho, m, div_m, div_u);
+
+    const double expected = -0.25*(3.0*11.0+5.0*13.0+7.0*17.0) + 0.5*19.0;
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e-3;
+    BOOST_CHECK_CLOSE(div_u, expected, close_enough);
+}

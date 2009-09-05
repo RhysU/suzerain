@@ -96,11 +96,11 @@ namespace rhome
  */
 template<typename Scalar>
 void p_T_mu_lambda(
-        const Scalar beta,
-        const Scalar gamma,
-        const Scalar rho,
+        const Scalar &beta,
+        const Scalar &gamma,
+        const Scalar &rho,
         const Eigen::Matrix<Scalar,3,1> &m,
-        const Scalar e,
+        const Scalar &e,
         Scalar &p,
         Scalar &T,
         Scalar &mu,
@@ -126,7 +126,7 @@ void p_T_mu_lambda(
  */
 template<typename Scalar>
 void grad_u(
-        const Scalar rho,
+        const Scalar &rho,
         const Eigen::Matrix<Scalar,3,1> &grad_rho,
         const Eigen::Matrix<Scalar,3,1> &m,
         const Eigen::Matrix<Scalar,3,3> &grad_m,
@@ -135,6 +135,29 @@ void grad_u(
     const Scalar rho_inverse = 1.0/rho;
 
     grad_u = rho_inverse*(grad_m - rho_inverse*grad_rho*m.transpose());
+}
+
+/**
+ * Compute \f$\vec{\nabla}\cdot\vec{u} = \rho^{-1} \vec{\nabla}\cdot\vec{m} - \rho^{-2}
+ * \vec{\nabla}\rho\cdot\vec{m}\f$.
+ *
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  div_m \f$\vec{\nabla}\cdot\vec{m}\f$
+ * @param[out] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ */
+template<typename Scalar>
+void div_u(
+        const Scalar &rho,
+        const Eigen::Matrix<Scalar,3,1> &grad_rho,
+        const Eigen::Matrix<Scalar,3,1> &m,
+        const Scalar &div_m,
+        Scalar &div_u)
+{
+    const Scalar rho_inverse = 1.0/rho;
+
+    div_u = rho_inverse*(div_m - rho_inverse*grad_rho.dot(m));
 }
 
 } // namespace rhome
