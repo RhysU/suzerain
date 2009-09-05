@@ -62,6 +62,8 @@
  *         energy densities.
  *   - \f$\mu\f$ or \c mu is the first viscosity.
  *   - \f$\lambda\f$ or \c lambda is the second viscosity.
+ *   - \f$\beta\f$ or \c beta is the constant coefficient in the power
+ *          viscosity law.
  *   - \f$\gamma\f$ or \c gamma is the constant ratio of specific heats
  *         \f$C_p/C_v\f$.
  */
@@ -78,8 +80,23 @@ namespace cartesian
 namespace rhome
 {
 
-template < typename Scalar >
-void p_T_mu_lambda(const Scalar beta,
+/**
+ * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$ using the equation
+ * of state.
+ *
+ * @param[in]  beta \f$\beta\f$
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  rho \f$rho\f$
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  e \f$e\f$
+ * @param[out] p \f$p\f$
+ * @param[out] T \f$T\f$
+ * @param[out] mu \f$\mu\f$
+ * @param[out] lambda \f$\lambda\f$
+ */
+template<typename Scalar>
+void p_T_mu_lambda(
+        const Scalar beta,
         const Scalar gamma,
         const Scalar rho,
         const Eigen::Matrix<Scalar,3,1> &m,
@@ -95,6 +112,29 @@ void p_T_mu_lambda(const Scalar beta,
     T      = gamma * p * rho_inverse;
     mu     = pow(T, beta);
     lambda = -2.0/3.0*mu;
+}
+
+/**
+ * Compute \f$\vec{\nabla}\vec{u} = \rho^{-1} \vec{\nabla}\vec{m} - \rho^{-2}
+ * \vec{\nabla}\rho\otimes\vec{m}\f$.
+ *
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param[out] grad_u \f$\vec{\nabla}\vec{u}\f$
+ */
+template<typename Scalar>
+void grad_u(
+        const Scalar rho,
+        const Eigen::Matrix<Scalar,3,1> &grad_rho,
+        const Eigen::Matrix<Scalar,3,1> &m,
+        const Eigen::Matrix<Scalar,3,3> &grad_m,
+        Eigen::Matrix<Scalar,3,3> &grad_u)
+{
+    const Scalar rho_inverse = 1.0/rho;
+
+    grad_u = rho_inverse*(grad_m - rho_inverse*grad_rho*m.transpose());
 }
 
 } // namespace rhome
