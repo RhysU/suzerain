@@ -116,7 +116,7 @@ void p_T_mu_lambda(
 
 /**
  * Compute \f$\vec{\nabla}\vec{u} = \rho^{-1} \vec{\nabla}\vec{m} - \rho^{-2}
- * \vec{\nabla}\rho\otimes\vec{m}\f$.
+ * \vec{m}\otimes\vec{\nabla}\rho\f$.
  *
  * @param[in]  rho \f$\rho\f$
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
@@ -132,7 +132,7 @@ Eigen::Matrix<Scalar,3,3> grad_u(
 {
     const Scalar rho_inverse = 1.0/rho;
 
-    return rho_inverse*(grad_m - rho_inverse*grad_rho*m.transpose());
+    return rho_inverse*(grad_m - rho_inverse*m*grad_rho.transpose());
 }
 
 /**
