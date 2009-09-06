@@ -251,7 +251,7 @@ Eigen::Matrix<Scalar,3,1> div_grad_u(
 
 } // namespace rhome
 
-} // namespace cartesian
+} // namespace orthonormal
 
 } // namespace suzerain
 
