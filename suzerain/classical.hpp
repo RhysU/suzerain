@@ -74,7 +74,7 @@ namespace pecos
 namespace suzerain
 {
 
-namespace cartesian
+namespace orthonormal
 {
 
 namespace rhome
@@ -136,8 +136,9 @@ Eigen::Matrix<Scalar,3,3> grad_u(
 }
 
 /**
- * Compute \f$\vec{\nabla}\cdot\vec{u} = \rho^{-1} \vec{\nabla}\cdot\vec{m} - \rho^{-2}
- * \vec{\nabla}\rho\cdot\vec{m}\f$.
+ * Compute \f$\vec{\nabla}\cdot\vec{u} =
+ *   \rho^{-1} \vec{\nabla}\cdot\vec{m}
+ * - \rho^{-2} * \vec{\nabla}\rho\cdot\vec{m}\f$.
  *
  * @param[in]  rho \f$\rho\f$
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
@@ -158,11 +159,11 @@ Scalar div_u(
 
 /**
  * Compute \f$\vec{\nabla}\vec{\nabla}\cdot{}u =
- * \rho^{-1}\vec{\nabla}\vec{\nabla}\cdot\vec{m}
+ *  2\rho^{-3}\left(\vec{\nabla}\rho\cdot\vec{m}\right)\vec{\nabla}\rho
  * - \rho^{-2}\left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
- * - \rho^{-2}\left(\vec{\nabla}\vec{m}\right)\vec{\nabla}\rho
- * - \rho^{-2}\left(\rho^{-1}\vec{\nabla}\rho\cdot\vec{m}
- *   + \vec{\nabla}\cdot\vec{m}\right)\vec{\nabla}{\rho}\f$.
+ * - \rho^{-2}\left(\vec{\nabla}\vec{m}\right)^{\mbox{T}}\vec{\nabla}\rho
+ * - \rho^{-2}\left(\vec{\nabla}\cdot\vec{m}\right)\vec{\nabla}\rho
+ * + \rho^{-1}\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$.
  *
  * @param[in]  rho \f$\rho\f$
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
@@ -185,10 +186,9 @@ Eigen::Matrix<Scalar,3,1> grad_div_u(
     const Scalar rho_inverse = 1.0/rho;
 
     return rho_inverse * (
-                grad_div_m - rho_inverse * (
-                    grad_grad_rho*m
-                    + grad_m*grad_rho
-                    + (rho_inverse * grad_rho.dot(m) + div_m) * grad_rho
+                grad_div_m + rho_inverse*(
+                      (2*rho_inverse*grad_rho.dot(m) - div_m)*grad_rho
+                    - grad_grad_rho*m - grad_m.transpose()*grad_rho
                 )
             );
 }

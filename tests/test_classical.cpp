@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE( rhome_p_T_mu_lambda )
     const double e = 163.0;
     double p, T, mu, lambda;
 
-    pecos::suzerain::cartesian::rhome::p_T_mu_lambda(
+    pecos::suzerain::orthonormal::rhome::p_T_mu_lambda(
             beta, gamma, rho, m, e, p, T, mu, lambda);
 
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e4;
@@ -52,53 +52,53 @@ void rhome_test_data(
         double          &e,
         Eigen::Vector3d &grad_e)
 {
-    rho = 138.0;
+    rho = 138.;
 
-    grad_rho(0) = 150.0;
-    grad_rho(1) =  87.0;
-    grad_rho(2) =  76.0;
+    grad_rho(0) = 150.;
+    grad_rho(1) =  87.;
+    grad_rho(2) =  76.;
 
-    div_grad_rho = 62.0;
+    div_grad_rho = 62.;
 
-    grad_grad_rho(0,0) = 24.0;
-    grad_grad_rho(0,1) = 93.0;
-    grad_grad_rho(0,2) = 80.0;
-    grad_grad_rho(1,0) = 93.0;
-    grad_grad_rho(1,1) = 18.0;
-    grad_grad_rho(1,2) = 44.0;
-    grad_grad_rho(2,0) = 80.0;
-    grad_grad_rho(2,1) = 44.0;
-    grad_grad_rho(2,2) = 20.0;
+    grad_grad_rho(0,0) = 24.;
+    grad_grad_rho(0,1) = 93.;
+    grad_grad_rho(0,2) = 80.;
+    grad_grad_rho(1,0) = 93.;
+    grad_grad_rho(1,1) = 18.;
+    grad_grad_rho(1,2) = 44.;
+    grad_grad_rho(2,0) = 80.;
+    grad_grad_rho(2,1) = 44.;
+    grad_grad_rho(2,2) = 20.;
 
-    m(0) =  7.0*sin( 7.0) + 11.0*sin(22.0) + 13.0*sin(39.0);
-    m(1) = 17.0*sin(17.0) + 19.0*sin(38.0) + 23.0*sin(69.0);
-    m(2) = 31.0*sin(31.0) + 37.0*sin(74.0) + 41.0*sin(123.0);
+    m(0) =  7.*sin( 7.) + 11.*sin(22.) + 13.*sin(39.);
+    m(1) = 17.*sin(17.) + 19.*sin(38.) + 23.*sin(69.);
+    m(2) = 31.*sin(31.) + 37.*sin(74.) + 41.*sin(123.);
 
-    div_m = 49.0*cos(7.0) + 361.0*cos(38.0) + 1681.0*cos(123.0);
+    div_m = 49.*cos(7.) + 361.*cos(38.) + 1681.*cos(123.);
 
-    grad_m(0,0) =   49.0*cos(  7.0);
-    grad_m(0,1) =  121.0*cos( 22.0);
-    grad_m(0,2) =  169.0*cos( 39.0);
-    grad_m(1,0) =  289.0*cos( 17.0);
-    grad_m(1,1) =  361.0*cos( 38.0);
-    grad_m(1,2) =  529.0*cos( 69.0);
-    grad_m(2,0) =  961.0*cos( 31.0);
-    grad_m(2,1) = 1369.0*cos( 74.0);
-    grad_m(2,2) = 1681.0*cos(123.0);
+    grad_m(0,0) =   49.*cos(  7.);
+    grad_m(0,1) =  121.*cos( 22.);
+    grad_m(0,2) =  169.*cos( 39.);
+    grad_m(1,0) =  289.*cos( 17.);
+    grad_m(1,1) =  361.*cos( 38.);
+    grad_m(1,2) =  529.*cos( 69.);
+    grad_m(2,0) =  961.*cos( 31.);
+    grad_m(2,1) = 1369.*cos( 74.);
+    grad_m(2,2) = 1681.*cos(123.);
 
-    div_grad_m(0) = -  343.0*sin( 7.0) -  1331.0*sin(22.0) -  2197.0*sin( 39.0);
-    div_grad_m(1) = - 4913.0*sin(17.0) -  6859.0*sin(38.0) - 12167.0*sin( 69.0);
-    div_grad_m(2) = -29791.0*sin(31.0) - 50653.0*sin(74.0) - 68921.0*sin(123.0);
+    div_grad_m(0) = -  343.*sin( 7.) -  1331.*sin(22.) -  2197.*sin( 39.);
+    div_grad_m(1) = - 4913.*sin(17.) -  6859.*sin(38.) - 12167.*sin( 69.);
+    div_grad_m(2) = -29791.*sin(31.) - 50653.*sin(74.) - 68921.*sin(123.);
 
-    grad_div_m(0) = -  343.0*sin(  7.0);
-    grad_div_m(1) = - 6859.0*sin( 38.0);
-    grad_div_m(2) = -68921.0*sin(123.0);
+    grad_div_m(0) = -  343.*sin(  7.);
+    grad_div_m(1) = - 6859.*sin( 38.);
+    grad_div_m(2) = -68921.*sin(123.);
 
-    e = 11328.0;
+    e = 11328.;
 
-    grad_e(0) = 13194.0;
-    grad_e(1) =  7542.0;
-    grad_e(2) =  5678.0;
+    grad_e(0) = 13194.;
+    grad_e(1) =  7542.;
+    grad_e(2) =  5678.;
 }
 
 // Checks derived formula and computed result against rhome_test_data()
@@ -122,7 +122,8 @@ BOOST_AUTO_TEST_CASE( rhome_grad_u )
         e, grad_e);
 
     const Eigen::Matrix3d grad_u
-        = pecos::suzerain::cartesian::rhome::grad_u(rho, grad_rho, m, grad_m);
+        = pecos::suzerain::orthonormal::rhome::grad_u(
+                rho, grad_rho, m, grad_m);
 
     Eigen::Matrix3d ans; /* Found using sage's RealField(200) */
     ans(0,0) =   0.13354624933259255905305717414904148571263050381552617302315;
@@ -167,7 +168,7 @@ BOOST_AUTO_TEST_CASE( rhome_div_u )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e);
 
-    const double div_u = pecos::suzerain::cartesian::rhome::div_u(
+    const double div_u = pecos::suzerain::orthonormal::rhome::div_u(
             rho, grad_rho, m, div_m);
 
     const double ans = -7.8528271460331434259092626891655172292938028930092832721830;
@@ -196,7 +197,7 @@ BOOST_AUTO_TEST_CASE( rhome_grad_div_u )
         e, grad_e);
 
     const Eigen::Vector3d grad_div_u
-        = pecos::suzerain::cartesian::rhome::grad_div_u(
+        = pecos::suzerain::orthonormal::rhome::grad_div_u(
                 rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
 
     Eigen::Vector3d ans; /* Found using sage's RealField(200) */
