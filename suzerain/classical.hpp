@@ -91,37 +91,62 @@ namespace rhome
 {
 
 /**
- * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$ using the equation
- * of state.
+ * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$ and their
+ * gradients using the equation of state.
  *
  * @param[in]  beta \f$\beta\f$
  * @param[in]  gamma \f$\gamma\f$
  * @param[in]  rho \f$rho\f$
+ * @param[in]  grad_rho \f$\vec{\nabla}rho\f$
  * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
  * @param[in]  e \f$e\f$
+ * @param[in]  grad_e \f$\vec{\nabla}e\f$
  * @param[out] p \f$p\f$
+ * @param[out] grad_p \f$\vec{\nabla}p\f$
  * @param[out] T \f$T\f$
+ * @param[out] grad_T \f$\vec{\nabla}T\f$
  * @param[out] mu \f$\mu\f$
+ * @param[out] grad_mu \f$\vec{\nabla}\mu\f$
  * @param[out] lambda \f$\lambda\f$
+ * @param[out] grad_lambda \f$\vec{\nabla}\lambda\f$
  */
 template<typename Scalar>
 void p_T_mu_lambda(
         const Scalar &beta,
         const Scalar &gamma,
         const Scalar &rho,
+        const Eigen::Matrix<Scalar,3,1> &grad_rho,
         const Eigen::Matrix<Scalar,3,1> &m,
+        const Eigen::Matrix<Scalar,3,3> &grad_m,
         const Scalar &e,
+        const Eigen::Matrix<Scalar,3,1> &grad_e,
         Scalar &p,
+        Eigen::Matrix<Scalar,3,1> &grad_p,
         Scalar &T,
+        Eigen::Matrix<Scalar,3,1> &grad_T,
         Scalar &mu,
-        Scalar &lambda)
+        Eigen::Matrix<Scalar,3,1> &grad_mu,
+        Scalar &lambda,
+        Eigen::Matrix<Scalar,3,1> &grad_lambda)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse     = 1.0/rho;
 
-    p      = (gamma-1)*(e - (1.0/2.0)*rho_inverse*m.squaredNorm());
+    // Compute scalar quantities
+    p      = (gamma-1.0)*(e - (1.0/2.0)*rho_inverse*m.squaredNorm());
     T      = gamma * p * rho_inverse;
     mu     = pow(T, beta);
     lambda = -2.0/3.0*mu;
+
+    // Compute vector quantities
+    grad_p = (gamma-1.0)*(
+                grad_e + rho_inverse*(
+                    0.5*rho_inverse*m.squaredNorm()*grad_rho - grad_m*m
+                )
+             );
+    grad_T      = gamma*rho_inverse*(grad_p - rho_inverse*p*grad_rho);
+    grad_mu     = beta*pow(T,beta-1.0)*grad_T;
+    grad_lambda = -2.0/3.0*grad_mu;
 }
 
 /**

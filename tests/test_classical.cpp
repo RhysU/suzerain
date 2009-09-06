@@ -10,26 +10,6 @@
 
 #include <suzerain/classical.hpp>
 
-BOOST_AUTO_TEST_CASE( orthogonal_rhome_p_T_mu_lambda )
-{
-    const double beta  = 2.0/3.0;
-    const double gamma = 1.4;
-    const double rho   = 2.0;
-    Eigen::Vector3d m;
-    m << 3.0, 5.0, 7.0;
-    const double e = 163.0;
-    double p, T, mu, lambda;
-
-    pecos::suzerain::orthonormal::rhome::p_T_mu_lambda(
-            beta, gamma, rho, m, e, p, T, mu, lambda);
-
-    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e4;
-    BOOST_CHECK_CLOSE(p,       56.9,             close_enough);
-    BOOST_CHECK_CLOSE(T,       39.83,            close_enough);
-    BOOST_CHECK_CLOSE(mu,      11.6629085673383, close_enough);
-    BOOST_CHECK_CLOSE(lambda,  -7.7752723782255, close_enough);
-}
-
 // Provides data for the test field
 //      rho = 2*(x^2)*y*z + 3*x*(y^2)*z + 5*x*y*(z^2)
 //      m   = {
@@ -100,6 +80,52 @@ void orthogonal_rhome_test_data(
     grad_e(1) =  7542.;
     grad_e(2) =  5678.;
 }
+
+BOOST_AUTO_TEST_CASE( orthogonal_rhome_p_T_mu_lambda )
+{
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+
+    orthogonal_rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e);
+
+    const double beta  = 2.0/3.0;
+    const double gamma = 1.4;
+
+    double p, T, mu, lambda;
+    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+
+    pecos::suzerain::orthonormal::rhome::p_T_mu_lambda(
+            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+
+    /* Expected results found using sage's RealField(200) */
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e4;
+    BOOST_CHECK_CLOSE(p,
+            4523.8529315224394491652244924378285975908038303556842666509,
+            close_enough);
+    BOOST_CHECK_CLOSE(T,
+            45.894160174865327745154451372557681424834241757231579516748,
+            close_enough);
+    BOOST_CHECK_CLOSE(mu,
+            12.818531787494714755711740676149526369900526768964830775976,
+            close_enough);
+    BOOST_CHECK_CLOSE(lambda,
+            -8.5456878583298098371411604507663509132670178459765538506509,
+            close_enough);
+}
+
 
 // Checks derived formula and computation against orthogonal_rhome_test_data()
 BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_u )
