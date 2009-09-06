@@ -35,6 +35,26 @@
 
 /** @file
  * Provides routines that compute classical state quantities (based on
+ * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$) from other state quantities.
+ */
+
+namespace pecos
+{
+
+namespace suzerain
+{
+
+/**
+ * Provides routines that compute classical state quantities (based on
+ * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$) from other state quantities
+ * under the assumption of an orthonormal coordinate system with an identity
+ * metric tensor.
+ */
+namespace orthonormal
+{
+
+/**
+ * Provides routines that compute classical state quantities (based on
  * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$) from conservative state
  * quantities (based on nondimensional \f$\rho\f$, \f$\vec{m}\f$, \f$e\f$)
  * using the ideal gas equations of state nondimensionalized by a reference
@@ -67,16 +87,6 @@
  *   - \f$\gamma\f$ or \c gamma is the constant ratio of specific heats
  *         \f$C_p/C_v\f$.
  */
-
-namespace pecos
-{
-
-namespace suzerain
-{
-
-namespace orthonormal
-{
-
 namespace rhome
 {
 
@@ -115,8 +125,12 @@ void p_T_mu_lambda(
 }
 
 /**
- * Compute \f$\vec{\nabla}\vec{u} = \rho^{-1} \vec{\nabla}\vec{m} - \rho^{-2}
- * \vec{m}\otimes\vec{\nabla}\rho\f$.
+ * Compute \f$\vec{\nabla}\vec{u}\f$.  Uses the expansion
+ * \f[
+ *      \vec{\nabla}\vec{u} =
+ *          \rho^{-1} \vec{\nabla}\vec{m} - \rho^{-2}
+ *          \vec{m}\otimes\vec{\nabla}\rho.
+ * \f]
  *
  * @param[in]  rho \f$\rho\f$
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
@@ -136,9 +150,12 @@ Eigen::Matrix<Scalar,3,3> grad_u(
 }
 
 /**
- * Compute \f$\vec{\nabla}\cdot\vec{u} =
- *   \rho^{-1} \vec{\nabla}\cdot\vec{m}
- * - \rho^{-2} * \vec{\nabla}\rho\cdot\vec{m}\f$.
+ * Compute \f$\vec{\nabla}\cdot\vec{u}\f$.  Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot\vec{u} =
+ *            \rho^{-1} \vec{\nabla}\cdot\vec{m}
+ *          - \rho^{-2} \vec{\nabla}\rho\cdot\vec{m}.
+ * \f]
  *
  * @param[in]  rho \f$\rho\f$
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
@@ -158,12 +175,15 @@ Scalar div_u(
 }
 
 /**
- * Compute \f$\vec{\nabla}\vec{\nabla}\cdot{}u =
- *  2\rho^{-3}\left(\vec{\nabla}\rho\cdot\vec{m}\right)\vec{\nabla}\rho
- * - \rho^{-2}\left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
- * - \rho^{-2}\left(\vec{\nabla}\vec{m}\right)^{\mbox{T}}\vec{\nabla}\rho
- * - \rho^{-2}\left(\vec{\nabla}\cdot\vec{m}\right)\vec{\nabla}\rho
- * + \rho^{-1}\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$.
+ * Compute \f$\vec{\nabla}\vec{\nabla}\cdot{}u\f$.  Uses the expansion
+ * \f[
+ * \vec{\nabla}\vec{\nabla}\cdot{}u =
+ *      2\rho^{-3}\left(\vec{\nabla}\rho\cdot\vec{m}\right)\vec{\nabla}\rho
+ *     - \rho^{-2}\left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
+ *     - \rho^{-2}\left(\vec{\nabla}\vec{m}\right)^{\mathrm{T}}\vec{\nabla}\rho
+ *     - \rho^{-2}\left(\vec{\nabla}\cdot\vec{m}\right)\vec{\nabla}\rho
+ *     + \rho^{-1}\vec{\nabla}\vec{\nabla}\cdot\vec{m}.
+ * \f]
  *
  * @param[in]  rho \f$\rho\f$
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
