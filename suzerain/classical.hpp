@@ -91,8 +91,23 @@ namespace rhome
 {
 
 /**
- * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$ and their
- * gradients using the equation of state.
+ * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$ and their gradients
+ * using the equation of state.  The gradients are computed using these
+ * expansions:
+ * \f{align*}
+ *      \vec{\nabla}p &= (\gamma-1)\left[
+ *            \vec{\nabla}e
+ *          + \frac{1}{2}\rho^{-2}\left(\vec{m}\cdot\vec{m}\right) \vec{\nabla}\rho
+ *          - \rho^{-1} \left(\vec{\nabla}\vec{m}\right)^{\mathrm{T}} \vec{m}
+ *      \right]
+ *      \\
+ *      \vec{\nabla}T &= \gamma\rho^{-1}\vec{\nabla}p
+ *                     - \gamma\rho^{-2} p \vec{\nabla}\rho
+ *      \\
+ *      \vec{\nabla}\mu &= \beta{}T^{\beta-1}\vec{\nabla}T
+ *      \\
+ *      \vec{\nabla}\lambda &= -\frac{2}{3}\vec{\nabla}\mu
+ * \f}
  *
  * @param[in]  beta \f$\beta\f$
  * @param[in]  gamma \f$\gamma\f$
@@ -141,7 +156,8 @@ void p_T_mu_lambda(
     // Compute vector quantities
     grad_p = (gamma-1.0)*(
                 grad_e + rho_inverse*(
-                    0.5*rho_inverse*m.squaredNorm()*grad_rho - grad_m*m
+                      0.5*rho_inverse*m.squaredNorm()*grad_rho
+                    - grad_m.transpose()*m
                 )
              );
     grad_T      = gamma*rho_inverse*(grad_p - rho_inverse*p*grad_rho);

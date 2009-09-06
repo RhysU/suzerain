@@ -81,6 +81,7 @@ void orthogonal_rhome_test_data(
     grad_e(2) =  5678.;
 }
 
+// Checks derived formula and computation against orthogonal_rhome_test_data()
 BOOST_AUTO_TEST_CASE( orthogonal_rhome_p_T_mu_lambda )
 {
     double          rho;
@@ -124,8 +125,39 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(lambda,
             -8.5456878583298098371411604507663509132670178459765538506509,
             close_enough);
-}
 
+    const Eigen::Vector3d grad_p_ans(
+            5453.5209639604035869584122627487425816813409506343630929293,
+            3086.9691968926047335425739267829758568639555587282859345292,
+            1999.8806276135462562543621611330864774644251338499615213427);
+    BOOST_CHECK_CLOSE(grad_p(0), grad_p_ans(0), close_enough);
+    BOOST_CHECK_CLOSE(grad_p(1), grad_p_ans(1), close_enough);
+    BOOST_CHECK_CLOSE(grad_p(2), grad_p_ans(2), close_enough);
+
+    const Eigen::Vector3d grad_T_ans(
+             5.4406182848896076809319526229317927581792830964012420477440,
+             2.3838039162055298052983060006061443162968025314525571766942,
+            -4.9864006857304358686639947733917588394000520736206805318339);
+    BOOST_CHECK_CLOSE(grad_T(0), grad_T_ans(0), close_enough);
+    BOOST_CHECK_CLOSE(grad_T(1), grad_T_ans(1), close_enough);
+    BOOST_CHECK_CLOSE(grad_T(2), grad_T_ans(2), close_enough);
+
+    const Eigen::Vector3d grad_mu_ans(
+             1.0130662690381109382304916850142818302534744683039668368759,
+             0.44387442989997855519790991486035061354804176216270679061604,
+            -0.92848901983288259118625731085663474679900828620195051533844);
+    BOOST_CHECK_CLOSE(grad_mu(0), grad_mu_ans(0), close_enough);
+    BOOST_CHECK_CLOSE(grad_mu(1), grad_mu_ans(1), close_enough);
+    BOOST_CHECK_CLOSE(grad_mu(2), grad_mu_ans(2), close_enough);
+
+    const Eigen::Vector3d grad_lambda_ans(
+            -0.67537751269207395882032779000952122016898297886931122458391,
+            -0.29591628659998570346527327657356707569869450810847119374402,
+             0.61899267988858839412417154057108983119933885746796701022562);
+    BOOST_CHECK_CLOSE(grad_lambda(0), grad_lambda_ans(0), close_enough);
+    BOOST_CHECK_CLOSE(grad_lambda(1), grad_lambda_ans(1), close_enough);
+    BOOST_CHECK_CLOSE(grad_lambda(2), grad_lambda_ans(2), close_enough);
+}
 
 // Checks derived formula and computation against orthogonal_rhome_test_data()
 BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_u )
