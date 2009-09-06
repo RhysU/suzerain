@@ -174,3 +174,38 @@ BOOST_AUTO_TEST_CASE( rhome_div_u )
     const double close_enough = std::numeric_limits<double>::epsilon();
     BOOST_CHECK_CLOSE(div_u, ans, close_enough);
 }
+
+// Checks derived formula and computed result against rhome_test_data()
+BOOST_AUTO_TEST_CASE( rhome_grad_div_u )
+{
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+
+    rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e);
+
+    const Eigen::Vector3d grad_div_u
+        = pecos::suzerain::cartesian::rhome::grad_div_u(
+                rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
+
+    Eigen::Vector3d ans; /* Found using sage's RealField(200) */
+    ans(0) =   3.5808667611324763961641377901365615487146733886413982972779;
+    ans(1) = -11.378277959392865631969701464497046416747061061234520455900;
+    ans(2) = 237.13623643835318300159939437852909295361695206836632310924;
+
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
+    BOOST_CHECK_CLOSE(grad_div_u(0), ans(0), close_enough);
+    BOOST_CHECK_CLOSE(grad_div_u(1), ans(1), close_enough);
+    BOOST_CHECK_CLOSE(grad_div_u(2), ans(2), close_enough);
+}
