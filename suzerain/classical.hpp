@@ -226,10 +226,10 @@ Eigen::Matrix<Scalar,3,1> div_grad_u(
 
     return rho_inverse*(
                 div_grad_m + rho_inverse*(
-                    2*rho_inverse*grad_rho.squaredNorm() - div_grad_rho
-                )*m
-            )
-        + 2*grad_m*grad_rho;
+                    (2.0*rho_inverse*grad_rho.squaredNorm() - div_grad_rho)*m
+                   - 2.0*grad_m*grad_rho
+                )
+            );
 }
 
 } // namespace rhome
