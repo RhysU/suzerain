@@ -175,9 +175,9 @@ Scalar div_u(
 }
 
 /**
- * Compute \f$\vec{\nabla}\vec{\nabla}\cdot{}u\f$.  Uses the expansion
+ * Compute \f$\vec{\nabla}\vec{\nabla}\cdot{}\vec{u}\f$.  Uses the expansion
  * \f[
- * \vec{\nabla}\vec{\nabla}\cdot{}u =
+ * \vec{\nabla}\vec{\nabla}\cdot{}\vec{u} =
  *      2\rho^{-3}\left(\vec{\nabla}\rho\cdot\vec{m}\right)\vec{\nabla}\rho
  *     - \rho^{-2}\left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
  *     - \rho^{-2}\left(\vec{\nabla}\vec{m}\right)^{\mathrm{T}}\vec{\nabla}\rho
@@ -213,6 +213,23 @@ Eigen::Matrix<Scalar,3,1> grad_div_u(
             );
 }
 
+/**
+ * Compute \f$\vec{\nabla}\cdot{}\vec{\nabla}\vec{u}\f$.  Uses the expansion
+ * \f[
+ * \vec{\nabla}\cdot{}\vec{\nabla}\vec{u} =
+ *      2\rho^{-3}\left(\vec{\nabla}\rho\cdot\vec{\nabla}\rho\right)\vec{m}
+ *     -2\rho^{-2}\left(\vec{\nabla}\vec{m}\right)\vec{\nabla}\rho
+ *     - \rho^{-2}\left(\vec{\nabla}\cdot\vec{\nabla}\rho\right)\vec{m}
+ *     + \rho^{-1}\vec{\nabla}\cdot\vec{\nabla}\vec{m}.
+ * \f]
+ *
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
+ * @param[in]  div_grad_rho \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$.
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param[in]  div_grad_m \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$
+ */
 template<typename Scalar>
 Eigen::Matrix<Scalar,3,1> div_grad_u(
         const Scalar &rho,
