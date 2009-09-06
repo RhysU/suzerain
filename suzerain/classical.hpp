@@ -213,6 +213,25 @@ Eigen::Matrix<Scalar,3,1> grad_div_u(
             );
 }
 
+template<typename Scalar>
+Eigen::Matrix<Scalar,3,1> div_grad_u(
+        const Scalar &rho,
+        const Eigen::Matrix<Scalar,3,1> &grad_rho,
+        const Scalar &div_grad_rho,
+        const Eigen::Matrix<Scalar,3,1> &m,
+        const Eigen::Matrix<Scalar,3,3> &grad_m,
+        const Eigen::Matrix<Scalar,3,1> &div_grad_m)
+{
+    const Scalar rho_inverse = 1.0/rho;
+
+    return rho_inverse*(
+                div_grad_m + rho_inverse*(
+                    2*rho_inverse*grad_rho.squaredNorm() - div_grad_rho
+                )*m
+            )
+        + 2*grad_m*grad_rho;
+}
+
 } // namespace rhome
 
 } // namespace cartesian

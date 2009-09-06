@@ -10,7 +10,7 @@
 
 #include <suzerain/classical.hpp>
 
-BOOST_AUTO_TEST_CASE( rhome_p_T_mu_lambda )
+BOOST_AUTO_TEST_CASE( orthogonal_rhome_p_T_mu_lambda )
 {
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE( rhome_p_T_mu_lambda )
 //      }
 //      e   = 311*(x^2)*y*z + 313*x*(y^2)*z + 317*x*y*(z^2)
 // symbolically evaluated at (x,y,z) = (1, 2, 3)
-void rhome_test_data(
+void orthogonal_rhome_test_data(
         double          &rho,
         Eigen::Vector3d &grad_rho,
         double          &div_grad_rho,
@@ -101,8 +101,8 @@ void rhome_test_data(
     grad_e(2) =  5678.;
 }
 
-// Checks derived formula and computed result against rhome_test_data()
-BOOST_AUTO_TEST_CASE( rhome_grad_u )
+// Checks derived formula and computation against orthogonal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE( rhome_grad_u )
     double          e;
     Eigen::Vector3d grad_e;
 
-    rhome_test_data(
+    orthogonal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e);
@@ -148,8 +148,8 @@ BOOST_AUTO_TEST_CASE( rhome_grad_u )
     BOOST_CHECK_CLOSE(grad_u(2,2), ans(2,2), close_enough);
 }
 
-// Checks derived formula and computed result against rhome_test_data()
-BOOST_AUTO_TEST_CASE( rhome_div_u )
+// Checks derived formula and computation against orthogonal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthogonal_rhome_div_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE( rhome_div_u )
     double          e;
     Eigen::Vector3d grad_e;
 
-    rhome_test_data(
+    orthogonal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e);
@@ -176,8 +176,8 @@ BOOST_AUTO_TEST_CASE( rhome_div_u )
     BOOST_CHECK_CLOSE(div_u, ans, close_enough);
 }
 
-// Checks derived formula and computed result against rhome_test_data()
-BOOST_AUTO_TEST_CASE( rhome_grad_div_u )
+// Checks derived formula and computed result against orthogonal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_div_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE( rhome_grad_div_u )
     double          e;
     Eigen::Vector3d grad_e;
 
-    rhome_test_data(
+    orthogonal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e);
@@ -209,4 +209,39 @@ BOOST_AUTO_TEST_CASE( rhome_grad_div_u )
     BOOST_CHECK_CLOSE(grad_div_u(0), ans(0), close_enough);
     BOOST_CHECK_CLOSE(grad_div_u(1), ans(1), close_enough);
     BOOST_CHECK_CLOSE(grad_div_u(2), ans(2), close_enough);
+}
+
+// Checks derived formula and computation against orthogonal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthogonal_rhome_div_grad_u )
+{
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+
+    orthogonal_rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e);
+
+    const Eigen::Vector3d div_grad_u
+        = pecos::suzerain::orthonormal::rhome::div_grad_u(
+                rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
+
+    Eigen::Vector3d ans; /* Found using sage's RealField(200) */
+    ans(0) = - 16.318446092843163297609832709693050751558008045050013765743;
+    ans(1) =   23.204406985769508424700716673327465318352740571910767421546;
+    ans(2) =  672.79795991861399600487930607996269111701083307478613865859;
+
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
+    BOOST_CHECK_CLOSE(div_grad_u(0), ans(0), close_enough);
+    BOOST_CHECK_CLOSE(div_grad_u(1), ans(1), close_enough);
+    BOOST_CHECK_CLOSE(div_grad_u(2), ans(2), close_enough);
 }
