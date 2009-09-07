@@ -234,62 +234,6 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_div_u )
     BOOST_CHECK_CLOSE(div_u, ans, close_enough);
 }
 
-// Checks computation against orthogonal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthogonal_rhome_tau )
-{
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-
-    orthogonal_rhome_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
-
-    const double beta  = 2.0/3.0;
-    const double gamma = 1.4;
-
-    double p, T, mu, lambda;
-    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
-
-    using namespace pecos::suzerain::orthonormal;
-    rhome::p_T_mu_lambda(beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
-            p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
-    const double          div_u  = rhome::div_u(rho, grad_rho, m, div_m);
-    const Eigen::Matrix3d grad_u = rhome::grad_u(rho, grad_rho, m, grad_m);
-    const Eigen::Matrix3d tau    = rhome::tau(mu, lambda, div_u, grad_u);
-
-    Eigen::Matrix3d ans; /* Found using sage's RealField(200) */
-    ans(0,0) =   70.531543279759231389408345113198923408553579956805627651633;
-    ans(0,1) = - 18.274805458259731295309074758455374124262335886995620262487;
-    ans(0,2) =   91.817913251736077743933865033061417711733974379411774042718;
-    ans(1,0) = ans(0,1);
-    ans(1,1) =  132.72376679658254412168387767749817009654029724008914502171;
-    ans(1,2) =   75.304386307037240507158364283048615894309818988016971749851;
-    ans(2,0) = ans(0,2);
-    ans(2,1) = ans(1,2);
-    ans(2,2) = -203.25531007634177551109222279069709350509387719689477267335;
-
-    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
-    BOOST_CHECK_CLOSE(tau(0,0), ans(0,0), close_enough);
-    BOOST_CHECK_CLOSE(tau(0,1), ans(0,1), close_enough);
-    BOOST_CHECK_CLOSE(tau(0,2), ans(0,2), close_enough);
-    BOOST_CHECK_CLOSE(tau(1,0), ans(1,0), close_enough);
-    BOOST_CHECK_CLOSE(tau(1,1), ans(1,1), close_enough);
-    BOOST_CHECK_CLOSE(tau(1,2), ans(1,2), close_enough);
-    BOOST_CHECK_CLOSE(tau(2,0), ans(2,0), close_enough);
-    BOOST_CHECK_CLOSE(tau(2,1), ans(2,1), close_enough);
-    BOOST_CHECK_CLOSE(tau(2,2), ans(2,2), close_enough);
-}
-
 // Checks derived formula and computed result against orthogonal_rhome_test_data()
 BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_div_u )
 {
@@ -358,4 +302,82 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_div_grad_u )
     BOOST_CHECK_CLOSE(div_grad_u(0), ans(0), close_enough);
     BOOST_CHECK_CLOSE(div_grad_u(1), ans(1), close_enough);
     BOOST_CHECK_CLOSE(div_grad_u(2), ans(2), close_enough);
+}
+
+// Checks computation against orthogonal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthogonal_rhome_tau_and_div_tau )
+{
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+
+    orthogonal_rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e);
+
+    const double beta  = 2.0/3.0;
+    const double gamma = 1.4;
+
+    double p, T, mu, lambda;
+    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+
+    using namespace pecos::suzerain::orthonormal;
+    rhome::p_T_mu_lambda(beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+    const double          div_u  = rhome::div_u(rho, grad_rho, m, div_m);
+    const Eigen::Matrix3d grad_u = rhome::grad_u(rho, grad_rho, m, grad_m);
+    const Eigen::Vector3d grad_div_u = rhome::grad_div_u(
+                rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
+    const Eigen::Vector3d div_grad_u = rhome::div_grad_u(
+                rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
+
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
+    {
+        const Eigen::Matrix3d tau = rhome::tau(mu, lambda, div_u, grad_u);
+
+        Eigen::Matrix3d ans; /* Found using sage's RealField(200) */
+        ans(0,0) =   70.531543279759231389408345113198923408553579956805627651633;
+        ans(0,1) = - 18.274805458259731295309074758455374124262335886995620262487;
+        ans(0,2) =   91.817913251736077743933865033061417711733974379411774042718;
+        ans(1,0) = ans(0,1);
+        ans(1,1) =  132.72376679658254412168387767749817009654029724008914502171;
+        ans(1,2) =   75.304386307037240507158364283048615894309818988016971749851;
+        ans(2,0) = ans(0,2);
+        ans(2,1) = ans(1,2);
+        ans(2,2) = -203.25531007634177551109222279069709350509387719689477267335;
+
+        BOOST_CHECK_CLOSE(tau(0,0), ans(0,0), close_enough);
+        BOOST_CHECK_CLOSE(tau(0,1), ans(0,1), close_enough);
+        BOOST_CHECK_CLOSE(tau(0,2), ans(0,2), close_enough);
+        BOOST_CHECK_CLOSE(tau(1,0), ans(1,0), close_enough);
+        BOOST_CHECK_CLOSE(tau(1,1), ans(1,1), close_enough);
+        BOOST_CHECK_CLOSE(tau(1,2), ans(1,2), close_enough);
+        BOOST_CHECK_CLOSE(tau(2,0), ans(2,0), close_enough);
+        BOOST_CHECK_CLOSE(tau(2,1), ans(2,1), close_enough);
+        BOOST_CHECK_CLOSE(tau(2,2), ans(2,2), close_enough);
+    }
+
+    {
+        const Eigen::Vector3d div_tau = rhome::div_tau(
+                mu, grad_mu, lambda, grad_lambda,
+                div_u, grad_u, div_grad_u, grad_div_u);
+
+        Eigen::Vector3d ans; /* Found using sage's RealField(200) */
+        ans(0) = - 195.58731950891911935327871659569254694467509625810898354185;
+        ans(1) =   246.52589132115431226459081257854313932950474889459145467105;
+        ans(2) =  9662.1147275452378450481114526062453379951497410467223391699;
+
+        BOOST_CHECK_CLOSE(div_tau(0), ans(0), close_enough);
+        BOOST_CHECK_CLOSE(div_tau(1), ans(1), close_enough);
+        BOOST_CHECK_CLOSE(div_tau(2), ans(2), close_enough);
+    }
 }
