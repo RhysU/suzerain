@@ -328,6 +328,49 @@ Eigen::Matrix<Scalar,3,3> tau(
         + lambda*div_u*Eigen::Matrix<Scalar,3,3>::Identity();
 }
 
+/**
+ * Compute \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$.
+ * Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau} =
+ *        \left[
+ *           \vec{\nabla}\vec{u}
+ *         + \left(\vec{\nabla}\vec{u}\right)^{\mathrm{T}}
+ *        \right] \vec{\nabla}\mu
+ *      + \mu \vec{\nabla}\cdot\vec{\nabla}\vec{u}
+ *      + \left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}
+ *      + \left(\vec{\nabla}\cdot\vec{u}\right)\vec{\nabla}\lambda
+ * \f]
+ *
+ * @param[in]  mu \f$\mu\f$
+ * @param[in]  grad_mu \f$\vec{\nabla}\mu\f$
+ * @param[in]  lambda \f$\lambda\f$
+ * @param[in]  grad_lambda \f$\vec{\nabla}\lambda\f$
+ * @param[in]  div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ * @param[in]  grad_u \f$\vec{\nabla}\vec{u}\f$
+ * @param[in]  div_grad_u \f$\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$
+ * @param[in]  grad_div_u \f$\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$
+ *
+ * @return The divergence of the viscous stress tensor based on the provided
+ *         fields.
+ */
+template<typename Scalar>
+Eigen::Matrix<Scalar,3,1> div_tau(
+        const Scalar &mu,
+        const Eigen::Matrix<Scalar,3,1> &grad_mu,
+        const Scalar &lambda,
+        const Eigen::Matrix<Scalar,3,1> &grad_lambda,
+        const Scalar &div_u,
+        const Eigen::Matrix<Scalar,3,3> &grad_u,
+        const Eigen::Matrix<Scalar,3,1> &div_grad_u,
+        const Eigen::Matrix<Scalar,3,1> &grad_div_u)
+{
+    return (grad_u + grad_u.transpose())*grad_mu
+        + mu*div_grad_u
+        + (mu+lambda)*grad_div_u
+        + div_u*grad_lambda;
+}
+
 } // namespace rhome
 
 } // namespace orthonormal
