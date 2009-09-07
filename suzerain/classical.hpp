@@ -177,6 +177,8 @@ void p_T_mu_lambda(
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
  * @param[in]  m \f$\vec{m}\f$
  * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
+ *
+ * @return The gradient of the velocity based on the provided fields.
  */
 template<typename Scalar>
 Eigen::Matrix<Scalar,3,3> grad_u(
@@ -202,6 +204,8 @@ Eigen::Matrix<Scalar,3,3> grad_u(
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
  * @param[in]  m \f$\vec{m}\f$
  * @param[in]  div_m \f$\vec{\nabla}\cdot\vec{m}\f$
+ *
+ * @return The divergence of the velocity based on the provided fields.
  */
 template<typename Scalar>
 Scalar div_u(
@@ -233,6 +237,9 @@ Scalar div_u(
  * @param[in]  div_m \f$\vec{\nabla}\cdot\vec{m}\f$
  * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
  * @param[in]  grad_div_m \f$\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$
+ *
+ * @return The gradient of the divergence of the velocity based on the provided
+ *         fields.
  */
 template<typename Scalar>
 Eigen::Matrix<Scalar,3,1> grad_div_u(
@@ -270,6 +277,9 @@ Eigen::Matrix<Scalar,3,1> grad_div_u(
  * @param[in]  m \f$\vec{m}\f$
  * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
  * @param[in]  div_grad_m \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$
+ *
+ * @return The divergence of the gradient of the velocity based on the provided
+ *         fields.
  */
 template<typename Scalar>
 Eigen::Matrix<Scalar,3,1> div_grad_u(
@@ -288,6 +298,34 @@ Eigen::Matrix<Scalar,3,1> div_grad_u(
                    - 2.0*grad_m*grad_rho
                 )
             );
+}
+
+// FIXME tau is symmetric, which should be enforced through Eigen return type
+/**
+ * Compute \f$\accentset{\leftrightarrow}{\tau} =
+ *    \mu\left(
+ *        \vec{\nabla}\vec{u}
+ *      + \left(\vec{\nabla}\vec{u}\right)^{\mathrm{T}}
+ *    \right)
+ *  + \lambda \left( \vec{\nabla}\cdot\vec{u} \right)
+ *            \accentset{\leftrightarrow}{I}\f$.
+ *
+ * @param[in]  mu \f$\mu\f$
+ * @param[in]  lambda \f$\lambda\f$
+ * @param[in]  div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ * @param[in]  grad_u \f$\vec{\nabla}\vec{u}\f$
+ *
+ * @return The viscous stress tensor based on the provided fields.
+ */
+template<typename Scalar>
+Eigen::Matrix<Scalar,3,3> tau(
+        const Scalar &mu,
+        const Scalar &lambda,
+        const Scalar &div_u,
+        const Eigen::Matrix<Scalar,3,3> &grad_u)
+{
+    return mu*(grad_u + grad_u.transpose())
+        + lambda*div_u*Eigen::Matrix<Scalar,3,3>::Identity();
 }
 
 } // namespace rhome
