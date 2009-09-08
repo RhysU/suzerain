@@ -8,7 +8,7 @@
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/included/unit_test.hpp>
 
-#include <suzerain/classical.hpp>
+#include <suzerain/orthonormal.hpp>
 
 // Provides data for the test field
 //      rho = 2*(x^2)*y*z + 3*x*(y^2)*z + 5*x*y*(z^2)

@@ -50,10 +50,10 @@ test_pencil_SOURCES  = test_pencil.cpp
 test_pencil_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencil_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-check_PROGRAMS         += test_classical
-test_classical_SOURCES  = test_classical.cpp
-test_classical_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_classical_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+check_PROGRAMS           += test_orthonormal
+test_orthonormal_SOURCES  = test_orthonormal.cpp
+test_orthonormal_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_orthonormal_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 check_PROGRAMS          += test_richardson
 test_richardson_SOURCES  = test_richardson.c

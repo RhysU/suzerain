@@ -22,13 +22,13 @@
  *
  *--------------------------------------------------------------------------
  *
- * classical.hpp: Obtains classical state from conservative variables
+ * orthonormal.hpp: Computes classical quantities in an orthonormal frame
  *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_CLASSICAL_H
-#define PECOS_SUZERAIN_CLASSICAL_H
+#ifndef PECOS_SUZERAIN_ORTHONORMAL_H
+#define PECOS_SUZERAIN_ORTHONORMAL_H
 
 #include <cmath>
 #include <Eigen/Core>
@@ -444,4 +444,4 @@ Eigen::Matrix<Scalar,3,1> div_grad_u(
 } // namespace pecos
 
 
-#endif // PECOS_SUZERAIN_CLASSICAL_H
+#endif // PECOS_SUZERAIN_ORTHONORMAL_H
