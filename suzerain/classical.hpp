@@ -162,6 +162,33 @@ Scalar div_eu(
 }
 
 /**
+ * Compute \f$\vec{\nabla}\cdot{}\mu\vec{\nabla}T\f$.
+ * Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot{}\mu\vec{\nabla}T =
+ *          \vec{\nabla}\mu\cdot\vec{\nabla}T
+ *          + \mu \vec{\nabla}\cdot\vec{\nabla}T
+ * \f]
+ *
+ * @param grad_T \f$\vec{\nabla}T\f$
+ * @param div_grad_T \f$\vec{\nabla}\cdot\vec{\nabla}T\f$
+ * @param mu \f$\mu\f$
+ * @param grad_mu \f$\vec{\nabla}\mu\f$
+ *
+ * @return The divergence of the product of viscosity and
+ *      the temperature gradient.
+ */
+template<typename Scalar>
+Scalar div_mu_grad_T(
+        const Eigen::Matrix<Scalar,3,1> &grad_T,
+        const Scalar &div_grad_T,
+        const Scalar &mu,
+        const Eigen::Matrix<Scalar,3,1> &grad_mu)
+{
+    return grad_mu.dot(grad_T) + mu*div_grad_T;
+}
+
+/**
  * Provides routines that compute classical state quantities (based on
  * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$, \f$\mu\f$, \f$\lambda\f$)
  * from conservative state quantities (based on nondimensional \f$\rho\f$,
