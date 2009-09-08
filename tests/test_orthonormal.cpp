@@ -356,6 +356,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
         ans(2,1) = ans(1,2);
         ans(2,2) = -203.25531007634177551109222279069709350509387719689477267335;
 
+        // Check for acceptability of entries
         BOOST_CHECK_CLOSE(tau(0,0), ans(0,0), close_enough);
         BOOST_CHECK_CLOSE(tau(0,1), ans(0,1), close_enough);
         BOOST_CHECK_CLOSE(tau(0,2), ans(0,2), close_enough);
@@ -365,6 +366,11 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
         BOOST_CHECK_CLOSE(tau(2,0), ans(2,0), close_enough);
         BOOST_CHECK_CLOSE(tau(2,1), ans(2,1), close_enough);
         BOOST_CHECK_CLOSE(tau(2,2), ans(2,2), close_enough);
+
+        // Check for exact symmetry of the computed result
+        BOOST_CHECK_EQUAL(tau(0,1), tau(1,0));
+        BOOST_CHECK_EQUAL(tau(0,2), tau(2,0));
+        BOOST_CHECK_EQUAL(tau(2,1), tau(1,2));
     }
 
     {
