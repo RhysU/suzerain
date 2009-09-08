@@ -506,3 +506,60 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
     const double close_enough = std::numeric_limits<double>::epsilon()*1.0e2;
     BOOST_CHECK_CLOSE(div_p_u, ans, close_enough);
 }
+
+// Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
+{
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+
+    orthonormal_rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e);
+
+    using namespace pecos::suzerain;
+
+    const double beta  = 2.0/3.0;
+    const double gamma = 1.4;
+
+    double p, T, mu, lambda;
+    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+
+    pecos::suzerain::orthonormal::rhome::p_T_mu_lambda(
+            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+
+    const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
+    const double div_u = orthonormal::rhome::div_u(
+            rho, grad_rho, m, div_m);
+    const Eigen::Matrix3d grad_u = orthonormal::rhome::grad_u(
+            rho, grad_rho, m, grad_m);
+    const Eigen::Vector3d div_grad_u = orthonormal::rhome::div_grad_u(
+            rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
+    const Eigen::Vector3d grad_div_u = orthonormal::rhome::grad_div_u(
+            rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
+    const Eigen::Matrix3d tau = orthonormal::tau(mu, lambda, div_u, grad_u);
+    const Eigen::Vector3d div_tau = orthonormal::div_tau(
+            mu, grad_mu, lambda, grad_lambda,
+            div_u, grad_u, div_grad_u, grad_div_u);
+
+    const double div_tau_u = orthonormal::div_tau_u<double>(
+            u, grad_u, tau, div_tau);
+
+    /* Expected results found using test_orthonormal.sage */
+    const double ans
+        = -1178.5183176047041859331013266287927977178206769790673702902;
+
+    const double close_enough = std::numeric_limits<double>::epsilon()*1.0e2;
+    BOOST_CHECK_CLOSE(div_tau_u, ans, close_enough);
+}
