@@ -428,3 +428,37 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
         BOOST_CHECK_CLOSE(div_tau(2), ans(2), close_enough);
     }
 }
+
+// Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_div_e_u )
+{
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+
+    orthonormal_rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e);
+
+    using namespace pecos::suzerain;
+    const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
+    const double div_u = orthonormal::rhome::div_u(
+            rho, grad_rho, m, div_m);
+    const double div_e_u = orthonormal::div_e_u(u, div_u, e, grad_e);
+
+    /* Expected results found using test_orthonormal.sage */
+    const double ans
+        = -90849.212502207575911979472073826868082163956391101506206117;
+
+    const double close_enough = std::numeric_limits<double>::epsilon();
+    BOOST_CHECK_CLOSE(div_e_u, ans, close_enough);
+}
