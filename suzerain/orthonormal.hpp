@@ -240,6 +240,11 @@ Scalar div_p_u(
  * @param[in] tau \f$\accentset{\leftrightarrow}{\tau}\f$
  * @param[in] div_tau \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$
  *
+ * @note Compilers may have trouble automatically deducing the Scalar type
+ * because no Scalar appears in the function signature.  Explicitly providing
+ * it via <tt>div_tau_u<Scalar></tt> should resolve any 'no instance of
+ * function template' errors encountered.
+ *
  * @return The divergence of the viscous stress tensor applied to the
  *      velocity.
  */
