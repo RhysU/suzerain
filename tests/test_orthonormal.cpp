@@ -453,7 +453,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_u )
     const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
     const double div_u = orthonormal::rhome::div_u(
             rho, grad_rho, m, div_m);
-    const double div_e_u = orthonormal::div_e_u(u, div_u, e, grad_e);
+    const double div_e_u = orthonormal::div_e_u(e, grad_e, u, div_u);
 
     /* Expected results found using test_orthonormal.sage */
     const double ans
@@ -461,4 +461,48 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_u )
 
     const double close_enough = std::numeric_limits<double>::epsilon();
     BOOST_CHECK_CLOSE(div_e_u, ans, close_enough);
+}
+
+// Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
+{
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+
+    orthonormal_rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e);
+
+    const double beta  = 2.0/3.0;
+    const double gamma = 1.4;
+
+    double p, T, mu, lambda;
+    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+
+    using namespace pecos::suzerain;
+    orthonormal::rhome::p_T_mu_lambda(
+            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+
+    const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
+    const double div_u = orthonormal::rhome::div_u(
+            rho, grad_rho, m, div_m);
+    const double div_p_u = orthonormal::div_p_u(p, grad_p, u, div_u);
+
+    /* Expected results found using test_orthonormal.sage */
+    const double ans
+        = -36133.705926299567425548649114294679973238338337791365684538;
+
+    const double close_enough = std::numeric_limits<double>::epsilon()*1.0e2;
+    BOOST_CHECK_CLOSE(div_p_u, ans, close_enough);
 }

@@ -148,20 +148,20 @@ Vector div_tau(
  *          e\vec{\nabla}\cdot\vec{u} + \vec{u}\cdot\vec{\nabla}e
  * \f]
  *
- * @param[in] u \f$\vec{u}\f$
- * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
  * @param[in] e \f$e\f$
  * @param[in] grad_e \f$\vec{\nabla}e\f$
+ * @param[in] u \f$\vec{u}\f$
+ * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
  *
  * @return The divergence of the product of total energy and velocity.
  */
 template<typename Scalar,
          typename Vector = Eigen::Matrix<Scalar,3,1> >
 Scalar div_e_u(
-        const Vector &u,
-        const Scalar &div_u,
         const Scalar &e,
-        const Vector &grad_e)
+        const Vector &grad_e,
+        const Vector &u,
+        const Scalar &div_u)
 {
     return e*div_u + u.dot(grad_e);
 }
