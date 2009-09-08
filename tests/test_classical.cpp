@@ -19,7 +19,7 @@
 //      }
 //      e   = 311*(x^2)*y*z + 313*x*(y^2)*z + 317*x*y*(z^2)
 // symbolically evaluated at (x,y,z) = (1, 2, 3)
-void orthogonal_rhome_test_data(
+void orthonormal_rhome_test_data(
         double          &rho,
         Eigen::Vector3d &grad_rho,
         double          &div_grad_rho,
@@ -81,8 +81,8 @@ void orthogonal_rhome_test_data(
     grad_e(2) =  5678.;
 }
 
-// Checks derived formula and computation against orthogonal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthogonal_rhome_p_T_mu_lambda )
+// Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_p_T_mu_lambda )
     double          e;
     Eigen::Vector3d grad_e;
 
-    orthogonal_rhome_test_data(
+    orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e);
@@ -159,8 +159,8 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(grad_lambda(2), grad_lambda_ans(2), close_enough);
 }
 
-// Checks derived formula and computation against orthogonal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_u )
+// Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_u )
     double          e;
     Eigen::Vector3d grad_e;
 
-    orthogonal_rhome_test_data(
+    orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e);
@@ -206,8 +206,8 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_u )
     BOOST_CHECK_CLOSE(grad_u(2,2), ans(2,2), close_enough);
 }
 
-// Checks derived formula and computation against orthogonal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthogonal_rhome_div_u )
+// Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_div_u )
     double          e;
     Eigen::Vector3d grad_e;
 
-    orthogonal_rhome_test_data(
+    orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e);
@@ -234,8 +234,8 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_div_u )
     BOOST_CHECK_CLOSE(div_u, ans, close_enough);
 }
 
-// Checks derived formula and computed result against orthogonal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_div_u )
+// Checks derived formula and computed result against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_div_u )
     double          e;
     Eigen::Vector3d grad_e;
 
-    orthogonal_rhome_test_data(
+    orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e);
@@ -269,8 +269,8 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_grad_div_u )
     BOOST_CHECK_CLOSE(grad_div_u(2), ans(2), close_enough);
 }
 
-// Checks derived formula and computation against orthogonal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthogonal_rhome_div_grad_u )
+// Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_div_grad_u )
     double          e;
     Eigen::Vector3d grad_e;
 
-    orthogonal_rhome_test_data(
+    orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e);
@@ -304,8 +304,8 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_div_grad_u )
     BOOST_CHECK_CLOSE(div_grad_u(2), ans(2), close_enough);
 }
 
-// Checks computation against orthogonal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthogonal_rhome_tau_and_div_tau )
+// Checks computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_tau_and_div_tau )
     double          e;
     Eigen::Vector3d grad_e;
 
-    orthogonal_rhome_test_data(
+    orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e);
@@ -342,7 +342,8 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_tau_and_div_tau )
 
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
     {
-        const Eigen::Matrix3d tau = rhome::tau(mu, lambda, div_u, grad_u);
+        using namespace pecos::suzerain;
+        const Eigen::Matrix3d tau = orthonormal::tau(mu, lambda, div_u, grad_u);
 
         Eigen::Matrix3d ans; /* Found using sage's RealField(200) */
         ans(0,0) =   70.531543279759231389408345113198923408553579956805627651633;
@@ -367,7 +368,8 @@ BOOST_AUTO_TEST_CASE( orthogonal_rhome_tau_and_div_tau )
     }
 
     {
-        const Eigen::Vector3d div_tau = rhome::div_tau(
+        using namespace pecos::suzerain;
+        const Eigen::Vector3d div_tau = orthonormal::div_tau(
                 mu, grad_mu, lambda, grad_lambda,
                 div_u, grad_u, div_grad_u, grad_div_u);
 

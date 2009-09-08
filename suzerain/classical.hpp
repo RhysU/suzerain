@@ -46,19 +46,127 @@ namespace suzerain
 
 /**
  * Provides routines that compute classical state quantities (based on
- * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$) from other state quantities
- * under the assumption of an orthonormal coordinate system with an identity
- * metric tensor.
+ * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$, \f$mu\f$, \f$\lambda\f$)
+ * from other conserved and classical state quantities under the assumption of
+ * an orthonormal coordinate system with an identity metric tensor.
+ *
+ * The following nondimensional variable definitions are used:
+ *   - \f$p\f$ or \c p is pressure.
+ *   - \f$T\f$ or \c T is temperature.
+ *   - \f$\vec{u}\f$ or \c u is the velocity vector.
+ *   - \f$e\f$ or \c e is the total energy \f$\rho\tilde{e}\f$ where
+ *         \f$\tilde{e}\f$ is the sum of the internal and kinetic
+ *         energy densities.
+ *   - \f$\mu\f$ or \c mu is the first viscosity.
+ *   - \f$\lambda\f$ or \c lambda is the second viscosity.
+ *   - \f$\accentset{\leftrightarrow}{\tau}\f$ or \c tau is the
+ *          viscous stress tensor.
  */
 namespace orthonormal
 {
 
+// FIXME tau is symmetric, which should be enforced through Eigen return type
+/**
+ * Compute \f$\accentset{\leftrightarrow}{\tau} =
+ *    \mu\left(
+ *        \vec{\nabla}\vec{u}
+ *      + \left(\vec{\nabla}\vec{u}\right)^{\mathrm{T}}
+ *    \right)
+ *  + \lambda \left( \vec{\nabla}\cdot\vec{u} \right)
+ *            \accentset{\leftrightarrow}{I}\f$.
+ *
+ * @param[in]  mu \f$\mu\f$
+ * @param[in]  lambda \f$\lambda\f$
+ * @param[in]  div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ * @param[in]  grad_u \f$\vec{\nabla}\vec{u}\f$
+ *
+ * @return The viscous stress tensor based on the provided fields.
+ */
+template<typename Scalar>
+Eigen::Matrix<Scalar,3,3> tau(
+        const Scalar &mu,
+        const Scalar &lambda,
+        const Scalar &div_u,
+        const Eigen::Matrix<Scalar,3,3> &grad_u)
+{
+    return mu*(grad_u + grad_u.transpose())
+        + lambda*div_u*Eigen::Matrix<Scalar,3,3>::Identity();
+}
+
+/**
+ * Compute \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$.
+ * Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau} =
+ *        \left[
+ *           \vec{\nabla}\vec{u}
+ *         + \left(\vec{\nabla}\vec{u}\right)^{\mathrm{T}}
+ *        \right] \vec{\nabla}\mu
+ *      + \mu \vec{\nabla}\cdot\vec{\nabla}\vec{u}
+ *      + \left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}
+ *      + \left(\vec{\nabla}\cdot\vec{u}\right)\vec{\nabla}\lambda
+ * \f]
+ *
+ * @param[in]  mu \f$\mu\f$
+ * @param[in]  grad_mu \f$\vec{\nabla}\mu\f$
+ * @param[in]  lambda \f$\lambda\f$
+ * @param[in]  grad_lambda \f$\vec{\nabla}\lambda\f$
+ * @param[in]  div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ * @param[in]  grad_u \f$\vec{\nabla}\vec{u}\f$
+ * @param[in]  div_grad_u \f$\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$
+ * @param[in]  grad_div_u \f$\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$
+ *
+ * @return The divergence of the viscous stress tensor based on the provided
+ *         fields.
+ */
+template<typename Scalar>
+Eigen::Matrix<Scalar,3,1> div_tau(
+        const Scalar &mu,
+        const Eigen::Matrix<Scalar,3,1> &grad_mu,
+        const Scalar &lambda,
+        const Eigen::Matrix<Scalar,3,1> &grad_lambda,
+        const Scalar &div_u,
+        const Eigen::Matrix<Scalar,3,3> &grad_u,
+        const Eigen::Matrix<Scalar,3,1> &div_grad_u,
+        const Eigen::Matrix<Scalar,3,1> &grad_div_u)
+{
+    return (grad_u + grad_u.transpose())*grad_mu
+        + mu*div_grad_u
+        + (mu+lambda)*grad_div_u
+        + div_u*grad_lambda;
+}
+
+/**
+ * Compute \f$\vec{\nabla}\cdot{}e\vec{u}\f$.
+ * Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot{}e\vec{u} =
+ *          e\vec{\nabla}\cdot\vec{u} + \vec{u}\cdot\vec{\nabla}e
+ * \f]
+ *
+ * @param u \f$\vec{u}\f$
+ * @param div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ * @param e \f$e\f$
+ * @param grad_e \f$\vec{\nabla}e\f$
+ *
+ * @return The divergence of the product of total energy and velocity.
+ */
+template<typename Scalar>
+Scalar div_eu(
+        const Eigen::Matrix<Scalar,3,1> &u,
+        const Scalar &div_u,
+        const Scalar &e,
+        const Eigen::Matrix<Scalar,3,1> &grad_e)
+{
+    return e*div_u + u.dot(grad_e);
+}
+
 /**
  * Provides routines that compute classical state quantities (based on
- * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$) from conservative state
- * quantities (based on nondimensional \f$\rho\f$, \f$\vec{m}\f$, \f$e\f$)
- * using the ideal gas equations of state nondimensionalized by a reference
- * length, temperature, and density:
+ * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$, \f$\mu\f$, \f$\lambda\f$)
+ * from conservative state quantities (based on nondimensional \f$\rho\f$,
+ * \f$\vec{m}\f$, \f$e\f$) using the ideal gas equations of state
+ * nondimensionalized by a reference length, temperature, and density:
  * \f{align*}
  *     p &= \left(\gamma-1\right) \left(
  *       e - \frac{m\cdot{}m}{2\rho}
@@ -75,7 +183,7 @@ namespace orthonormal
  *   - \f$p\f$ or \c p is pressure.
  *   - \f$T\f$ or \c T is temperature.
  *   - \f$\vec{u}\f$ or \c u is the velocity vector.
- *   - \f$\rho\f$ or \c pho is density.
+ *   - \f$\rho\f$ or \c rho is density.
  *   - \f$\vec{m}\f$ or \c m is the momentum vector \f$\rho\vec{u}\f$.
  *   - \f$e\f$ or \c e is the total energy \f$\rho\tilde{e}\f$ where
  *         \f$\tilde{e}\f$ is the sum of the internal and kinetic
@@ -298,77 +406,6 @@ Eigen::Matrix<Scalar,3,1> div_grad_u(
                    - 2.0*grad_m*grad_rho
                 )
             );
-}
-
-// FIXME tau is symmetric, which should be enforced through Eigen return type
-/**
- * Compute \f$\accentset{\leftrightarrow}{\tau} =
- *    \mu\left(
- *        \vec{\nabla}\vec{u}
- *      + \left(\vec{\nabla}\vec{u}\right)^{\mathrm{T}}
- *    \right)
- *  + \lambda \left( \vec{\nabla}\cdot\vec{u} \right)
- *            \accentset{\leftrightarrow}{I}\f$.
- *
- * @param[in]  mu \f$\mu\f$
- * @param[in]  lambda \f$\lambda\f$
- * @param[in]  div_u \f$\vec{\nabla}\cdot\vec{u}\f$
- * @param[in]  grad_u \f$\vec{\nabla}\vec{u}\f$
- *
- * @return The viscous stress tensor based on the provided fields.
- */
-template<typename Scalar>
-Eigen::Matrix<Scalar,3,3> tau(
-        const Scalar &mu,
-        const Scalar &lambda,
-        const Scalar &div_u,
-        const Eigen::Matrix<Scalar,3,3> &grad_u)
-{
-    return mu*(grad_u + grad_u.transpose())
-        + lambda*div_u*Eigen::Matrix<Scalar,3,3>::Identity();
-}
-
-/**
- * Compute \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$.
- * Uses the expansion
- * \f[
- *      \vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau} =
- *        \left[
- *           \vec{\nabla}\vec{u}
- *         + \left(\vec{\nabla}\vec{u}\right)^{\mathrm{T}}
- *        \right] \vec{\nabla}\mu
- *      + \mu \vec{\nabla}\cdot\vec{\nabla}\vec{u}
- *      + \left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}
- *      + \left(\vec{\nabla}\cdot\vec{u}\right)\vec{\nabla}\lambda
- * \f]
- *
- * @param[in]  mu \f$\mu\f$
- * @param[in]  grad_mu \f$\vec{\nabla}\mu\f$
- * @param[in]  lambda \f$\lambda\f$
- * @param[in]  grad_lambda \f$\vec{\nabla}\lambda\f$
- * @param[in]  div_u \f$\vec{\nabla}\cdot\vec{u}\f$
- * @param[in]  grad_u \f$\vec{\nabla}\vec{u}\f$
- * @param[in]  div_grad_u \f$\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$
- * @param[in]  grad_div_u \f$\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$
- *
- * @return The divergence of the viscous stress tensor based on the provided
- *         fields.
- */
-template<typename Scalar>
-Eigen::Matrix<Scalar,3,1> div_tau(
-        const Scalar &mu,
-        const Eigen::Matrix<Scalar,3,1> &grad_mu,
-        const Scalar &lambda,
-        const Eigen::Matrix<Scalar,3,1> &grad_lambda,
-        const Scalar &div_u,
-        const Eigen::Matrix<Scalar,3,3> &grad_u,
-        const Eigen::Matrix<Scalar,3,1> &div_grad_u,
-        const Eigen::Matrix<Scalar,3,1> &grad_div_u)
-{
-    return (grad_u + grad_u.transpose())*grad_mu
-        + mu*div_grad_u
-        + (mu+lambda)*grad_div_u
-        + div_u*grad_lambda;
 }
 
 } // namespace rhome
