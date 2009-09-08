@@ -74,10 +74,14 @@ namespace orthonormal
  *  + \lambda \left( \vec{\nabla}\cdot\vec{u} \right)
  *            \accentset{\leftrightarrow}{I}\f$.
  *
- * @param[in]  mu \f$\mu\f$
- * @param[in]  lambda \f$\lambda\f$
- * @param[in]  div_u \f$\vec{\nabla}\cdot\vec{u}\f$
- * @param[in]  grad_u \f$\vec{\nabla}\vec{u}\f$
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] lambda \f$\lambda\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ *            computed from, for example, rhome::div_u()
+ * @param[in] grad_u \f$\vec{\nabla}\vec{u}\f$
+ *            computed from, for example, rhome::grad_u()
  *
  * @return The viscous stress tensor based on the provided fields.
  */
@@ -108,14 +112,22 @@ Tensor tau(
  *      + \left(\vec{\nabla}\cdot\vec{u}\right)\vec{\nabla}\lambda
  * \f]
  *
- * @param[in]  mu \f$\mu\f$
- * @param[in]  grad_mu \f$\vec{\nabla}\mu\f$
- * @param[in]  lambda \f$\lambda\f$
- * @param[in]  grad_lambda \f$\vec{\nabla}\lambda\f$
- * @param[in]  div_u \f$\vec{\nabla}\cdot\vec{u}\f$
- * @param[in]  grad_u \f$\vec{\nabla}\vec{u}\f$
- * @param[in]  div_grad_u \f$\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$
- * @param[in]  grad_div_u \f$\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] grad_mu \f$\vec{\nabla}\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] lambda \f$\lambda\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] grad_lambda \f$\vec{\nabla}\lambda\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ *            computed from, for example, rhome::div_u()
+ * @param[in] grad_u \f$\vec{\nabla}\vec{u}\f$
+ *            computed from, for example, rhome::grad_u()
+ * @param[in] div_grad_u \f$\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$
+ *            computed from, for example, rhome::div_grad_u()
+ * @param[in] grad_div_u \f$\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$
+ *            computed from, for example, rhome::grad_div_u()
  *
  * @return The divergence of the viscous stress tensor based on the provided
  *         fields.
@@ -151,7 +163,9 @@ Vector div_tau(
  * @param[in] e \f$e\f$
  * @param[in] grad_e \f$\vec{\nabla}e\f$
  * @param[in] u \f$\vec{u}\f$
+ *            computed from, for example, rhome::u()
  * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ *            computed from, for example, rhome::div_u()
  *
  * @return The divergence of the product of total energy and velocity.
  */
@@ -176,9 +190,13 @@ Scalar div_e_u(
  * \f]
  *
  * @param[in] grad_T \f$\vec{\nabla}T\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
  * @param[in] div_grad_T \f$\vec{\nabla}\cdot\vec{\nabla}T\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
  * @param[in] mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
  * @param[in] grad_mu \f$\vec{\nabla}\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
  *
  * @return The divergence of the product of viscosity and
  *      the temperature gradient.
@@ -204,9 +222,13 @@ Scalar div_mu_grad_T(
  * \f]
  *
  * @param[in] p \f$p\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
  * @param[in] grad_p \f$\vec{\nabla}p\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
  * @param[in] u \f$\vec{u}\f$
+ *            computed from, for example, rhome::u()
  * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ *            computed from, for example, rhome::div_u()
  *
  * @return The divergence of the product of pressure and velocity.
  */
@@ -236,9 +258,13 @@ Scalar div_p_u(
  * \f]
  *
  * @param[in] u \f$\vec{u}\f$
+ *            computed from, for example, rhome::u()
  * @param[in] grad_u \f$\vec{\nabla}\vec{u}\f$
+ *            computed from, for example, rhome::grad_u()
  * @param[in] tau \f$\accentset{\leftrightarrow}{\tau}\f$
+ *            computed from, for example, tau()
  * @param[in] div_tau \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$
+ *            computed from, for example, div_tau()
  *
  * @note Compilers may have trouble automatically deducing the Scalar type
  * because no Scalar appears in the function signature.  Explicitly providing
@@ -319,8 +345,8 @@ namespace rhome
  *
  * @param[in]  beta \f$\beta\f$
  * @param[in]  gamma \f$\gamma\f$
- * @param[in]  rho \f$rho\f$
- * @param[in]  grad_rho \f$\vec{\nabla}rho\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$
  * @param[in]  m \f$\vec{m}\f$
  * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
  * @param[in]  e \f$e\f$
@@ -375,7 +401,6 @@ void p_T_mu_lambda(
     grad_lambda = -2.0/3.0*grad_mu;
 }
 
-
 /**
  * Compute \f$\vec{u}=\rho^{-1}\vec{m}\f$
  *
@@ -393,7 +418,6 @@ Vector u(const Scalar &rho,
 
     return rho_inverse*m;
 }
-
 
 /**
  * Compute \f$\vec{\nabla}\vec{u}\f$.  Uses the expansion
