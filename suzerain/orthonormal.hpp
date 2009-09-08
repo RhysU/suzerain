@@ -81,16 +81,17 @@ namespace orthonormal
  *
  * @return The viscous stress tensor based on the provided fields.
  */
-template<typename Scalar>
-Eigen::Matrix<Scalar,3,3> tau(
+template<typename Scalar,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Tensor tau(
         const Scalar &mu,
         const Scalar &lambda,
         const Scalar &div_u,
-        const Eigen::Matrix<Scalar,3,3> &grad_u)
+        const Tensor &grad_u)
 {
 // FIXME tau's symmetry should be used/enforced in the computation
     return mu*(grad_u + grad_u.transpose())
-        + lambda*div_u*Eigen::Matrix<Scalar,3,3>::Identity();
+        + lambda*div_u*Tensor::Identity();
 }
 
 /**
@@ -119,16 +120,18 @@ Eigen::Matrix<Scalar,3,3> tau(
  * @return The divergence of the viscous stress tensor based on the provided
  *         fields.
  */
-template<typename Scalar>
-Eigen::Matrix<Scalar,3,1> div_tau(
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Vector div_tau(
         const Scalar &mu,
-        const Eigen::Matrix<Scalar,3,1> &grad_mu,
+        const Vector &grad_mu,
         const Scalar &lambda,
-        const Eigen::Matrix<Scalar,3,1> &grad_lambda,
+        const Vector &grad_lambda,
         const Scalar &div_u,
-        const Eigen::Matrix<Scalar,3,3> &grad_u,
-        const Eigen::Matrix<Scalar,3,1> &div_grad_u,
-        const Eigen::Matrix<Scalar,3,1> &grad_div_u)
+        const Tensor &grad_u,
+        const Vector &div_grad_u,
+        const Vector &grad_div_u)
 {
 // FIXME symmetry of grad_u + grad_u^T should be used in the computation
     return (grad_u + grad_u.transpose())*grad_mu
@@ -145,19 +148,20 @@ Eigen::Matrix<Scalar,3,1> div_tau(
  *          e\vec{\nabla}\cdot\vec{u} + \vec{u}\cdot\vec{\nabla}e
  * \f]
  *
- * @param u \f$\vec{u}\f$
- * @param div_u \f$\vec{\nabla}\cdot\vec{u}\f$
- * @param e \f$e\f$
- * @param grad_e \f$\vec{\nabla}e\f$
+ * @param[in] u \f$\vec{u}\f$
+ * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ * @param[in] e \f$e\f$
+ * @param[in] grad_e \f$\vec{\nabla}e\f$
  *
  * @return The divergence of the product of total energy and velocity.
  */
-template<typename Scalar>
-Scalar div_eu(
-        const Eigen::Matrix<Scalar,3,1> &u,
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+Scalar div_e_u(
+        const Vector &u,
         const Scalar &div_u,
         const Scalar &e,
-        const Eigen::Matrix<Scalar,3,1> &grad_e)
+        const Vector &grad_e)
 {
     return e*div_u + u.dot(grad_e);
 }
@@ -171,20 +175,21 @@ Scalar div_eu(
  *          + \mu \vec{\nabla}\cdot\vec{\nabla}T
  * \f]
  *
- * @param grad_T \f$\vec{\nabla}T\f$
- * @param div_grad_T \f$\vec{\nabla}\cdot\vec{\nabla}T\f$
- * @param mu \f$\mu\f$
- * @param grad_mu \f$\vec{\nabla}\mu\f$
+ * @param[in] grad_T \f$\vec{\nabla}T\f$
+ * @param[in] div_grad_T \f$\vec{\nabla}\cdot\vec{\nabla}T\f$
+ * @param[in] mu \f$\mu\f$
+ * @param[in] grad_mu \f$\vec{\nabla}\mu\f$
  *
  * @return The divergence of the product of viscosity and
  *      the temperature gradient.
  */
-template<typename Scalar>
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
 Scalar div_mu_grad_T(
-        const Eigen::Matrix<Scalar,3,1> &grad_T,
+        const Vector &grad_T,
         const Scalar &div_grad_T,
         const Scalar &mu,
-        const Eigen::Matrix<Scalar,3,1> &grad_mu)
+        const Vector &grad_mu)
 {
     return grad_mu.dot(grad_T) + mu*div_grad_T;
 }
@@ -198,23 +203,23 @@ Scalar div_mu_grad_T(
  *          + \vec{u}\cdot\vec{\nabla}p
  * \f]
  *
- * @param p \f$p\f$
- * @param grad_p \f$\vec{\nabla}p\f$
- * @param u \f$\vec{u}\f$
- * @param div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ * @param[in] p \f$p\f$
+ * @param[in] grad_p \f$\vec{\nabla}p\f$
+ * @param[in] u \f$\vec{u}\f$
+ * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
  *
  * @return The divergence of the product of pressure and velocity.
  */
-template<typename Scalar>
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
 Scalar div_p_u(
         const Scalar &p,
-        const Eigen::Matrix<Scalar,3,1> &grad_p,
-        const Eigen::Matrix<Scalar,3,1> &u,
+        const Vector &grad_p,
+        const Vector &u,
         const Scalar &div_u)
 {
     return p*div_u + u.dot(grad_p);
 }
-
 
 /**
  * Compute \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\vec{u}\f$.
@@ -230,20 +235,22 @@ Scalar div_p_u(
  *      \right)
  * \f]
  *
- * @param u \f$\vec{u}\f$
- * @param grad_u \f$\vec{\nabla}\vec{u}\f$
- * @param tau \f$\accentset{\leftrightarrow}{\tau}\f$
- * @param div_tau \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$
+ * @param[in] u \f$\vec{u}\f$
+ * @param[in] grad_u \f$\vec{\nabla}\vec{u}\f$
+ * @param[in] tau \f$\accentset{\leftrightarrow}{\tau}\f$
+ * @param[in] div_tau \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$
  *
  * @return The divergence of the viscous stress tensor applied to the
  *      velocity.
  */
-template<typename Scalar>
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
 Scalar div_tau_u(
-        const Eigen::Matrix<Scalar,3,1> &u,
-        const Eigen::Matrix<Scalar,3,3> &grad_u,
-        const Eigen::Matrix<Scalar,3,3> &tau,
-        const Eigen::Matrix<Scalar,3,1> &div_tau)
+        const Vector &u,
+        const Tensor &grad_u,
+        const Tensor &tau,
+        const Vector &div_tau)
 {
     return u.dot(div_tau) + (tau*grad_u).lazy().trace();
 }
@@ -292,7 +299,8 @@ namespace rhome
  * \f{align*}
  *      \vec{\nabla}p &= (\gamma-1)\left[
  *            \vec{\nabla}e
- *          + \frac{1}{2}\rho^{-2}\left(\vec{m}\cdot\vec{m}\right) \vec{\nabla}\rho
+ *          + \frac{1}{2}\rho^{-2}\left(\vec{m}\cdot\vec{m}\right)
+ *            \vec{\nabla}\rho
  *          - \rho^{-1} \left(\vec{\nabla}\vec{m}\right)^{\mathrm{T}} \vec{m}
  *      \right]
  *      \\
@@ -321,24 +329,26 @@ namespace rhome
  * @param[out] lambda \f$\lambda\f$
  * @param[out] grad_lambda \f$\vec{\nabla}\lambda\f$
  */
-template<typename Scalar>
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
 void p_T_mu_lambda(
         const Scalar &beta,
         const Scalar &gamma,
         const Scalar &rho,
-        const Eigen::Matrix<Scalar,3,1> &grad_rho,
-        const Eigen::Matrix<Scalar,3,1> &m,
-        const Eigen::Matrix<Scalar,3,3> &grad_m,
+        const Vector &grad_rho,
+        const Vector &m,
+        const Tensor &grad_m,
         const Scalar &e,
-        const Eigen::Matrix<Scalar,3,1> &grad_e,
+        const Vector &grad_e,
         Scalar &p,
-        Eigen::Matrix<Scalar,3,1> &grad_p,
+        Vector &grad_p,
         Scalar &T,
-        Eigen::Matrix<Scalar,3,1> &grad_T,
+        Vector &grad_T,
         Scalar &mu,
-        Eigen::Matrix<Scalar,3,1> &grad_mu,
+        Vector &grad_mu,
         Scalar &lambda,
-        Eigen::Matrix<Scalar,3,1> &grad_lambda)
+        Vector &grad_lambda)
 {
     const Scalar rho_inverse     = 1.0/rho;
 
@@ -375,12 +385,14 @@ void p_T_mu_lambda(
  *
  * @return The gradient of the velocity based on the provided fields.
  */
-template<typename Scalar>
-Eigen::Matrix<Scalar,3,3> grad_u(
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Tensor grad_u(
         const Scalar &rho,
-        const Eigen::Matrix<Scalar,3,1> &grad_rho,
-        const Eigen::Matrix<Scalar,3,1> &m,
-        const Eigen::Matrix<Scalar,3,3> &grad_m)
+        const Vector &grad_rho,
+        const Vector &m,
+        const Tensor &grad_m)
 {
     const Scalar rho_inverse = 1.0/rho;
 
@@ -402,11 +414,12 @@ Eigen::Matrix<Scalar,3,3> grad_u(
  *
  * @return The divergence of the velocity based on the provided fields.
  */
-template<typename Scalar>
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
 Scalar div_u(
         const Scalar &rho,
-        const Eigen::Matrix<Scalar,3,1> &grad_rho,
-        const Eigen::Matrix<Scalar,3,1> &m,
+        const Vector &grad_rho,
+        const Vector &m,
         const Scalar &div_m)
 {
     const Scalar rho_inverse = 1.0/rho;
@@ -436,15 +449,17 @@ Scalar div_u(
  * @return The gradient of the divergence of the velocity based on the provided
  *         fields.
  */
-template<typename Scalar>
-Eigen::Matrix<Scalar,3,1> grad_div_u(
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Vector grad_div_u(
         const Scalar &rho,
-        const Eigen::Matrix<Scalar,3,1> &grad_rho,
-        const Eigen::Matrix<Scalar,3,3> &grad_grad_rho,
-        const Eigen::Matrix<Scalar,3,1> &m,
+        const Vector &grad_rho,
+        const Tensor &grad_grad_rho,
+        const Vector &m,
         const Scalar &div_m,
-        const Eigen::Matrix<Scalar,3,3> &grad_m,
-        const Eigen::Matrix<Scalar,3,1> &grad_div_m)
+        const Tensor &grad_m,
+        const Vector &grad_div_m)
 {
     const Scalar rho_inverse = 1.0/rho;
 
@@ -476,14 +491,16 @@ Eigen::Matrix<Scalar,3,1> grad_div_u(
  * @return The divergence of the gradient of the velocity based on the provided
  *         fields.
  */
-template<typename Scalar>
-Eigen::Matrix<Scalar,3,1> div_grad_u(
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Vector div_grad_u(
         const Scalar &rho,
-        const Eigen::Matrix<Scalar,3,1> &grad_rho,
+        const Vector &grad_rho,
         const Scalar &div_grad_rho,
-        const Eigen::Matrix<Scalar,3,1> &m,
-        const Eigen::Matrix<Scalar,3,3> &grad_m,
-        const Eigen::Matrix<Scalar,3,1> &div_grad_m)
+        const Vector &m,
+        const Tensor &grad_m,
+        const Vector &div_grad_m)
 {
     const Scalar rho_inverse = 1.0/rho;
 
