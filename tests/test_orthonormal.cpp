@@ -82,6 +82,40 @@ void orthonormal_rhome_test_data(
 }
 
 // Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_rhome_u )
+{
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+
+    orthonormal_rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e);
+
+    const Eigen::Vector3d u = pecos::suzerain::orthonormal::rhome::u(rho, m);
+
+    /* Expected results found using test_orthonormal.sage */
+    const Eigen::Vector3d ans(
+             0.12341218703282769413064525687781462380236231103335735506961,
+            -0.096759457126720663880658289039861350486647579313251121603828,
+            -0.49153349101893774791320060483746755015882872625676686905257);
+
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e2;
+    BOOST_CHECK_CLOSE(u(0), ans(0), close_enough);
+    BOOST_CHECK_CLOSE(u(1), ans(1), close_enough);
+    BOOST_CHECK_CLOSE(u(2), ans(2), close_enough);
+}
+
+// Checks derived formula and computation against orthonormal_rhome_test_data()
 BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
 {
     double          rho;
@@ -111,7 +145,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
             beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
-    /* Expected results found using sage's RealField(200) */
+    /* Expected results found using test_orthonormal.sage */
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e4;
     BOOST_CHECK_CLOSE(p,
             4523.8529315224394491652244924378285975908038303556842666509,
@@ -183,7 +217,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_u )
         = pecos::suzerain::orthonormal::rhome::grad_u(
                 rho, grad_rho, m, grad_m);
 
-    Eigen::Matrix3d ans; /* Found using sage's RealField(200) */
+    /* Expected results found using test_orthonormal.sage */
+    Eigen::Matrix3d ans;
     ans(0,0) =   0.13354624933259255905305717414904148571263050381552617302315;
     ans(0,1) = - 0.95458058163483407021971942603699868798014583786167988660320;
     ans(0,2) =   0.25857485039372819387032260745049292527417870255089489945870;
@@ -258,7 +293,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
         = pecos::suzerain::orthonormal::rhome::grad_div_u(
                 rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
 
-    Eigen::Vector3d ans; /* Found using sage's RealField(200) */
+    /* Expected results found using test_orthonormal.sage */
+    Eigen::Vector3d ans;
     ans(0) =   3.5808667611324763961641377901365615487146733886413982972779;
     ans(1) = -11.378277959392865631969701464497046416747061061234520455900;
     ans(2) = 237.13623643835318300159939437852909295361695206836632310924;
@@ -293,7 +329,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
         = pecos::suzerain::orthonormal::rhome::div_grad_u(
                 rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
 
-    Eigen::Vector3d ans; /* Found using sage's RealField(200) */
+    /* Expected results found using test_orthonormal.sage */
+    Eigen::Vector3d ans;
     ans(0) = - 16.318446092843163297609832709693050751558008045050013765743;
     ans(1) =   23.204406985769508424700716673327465318352740571910767421546;
     ans(2) =  672.79795991861399600487930607996269111701083307478613865859;
@@ -345,7 +382,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
         using namespace pecos::suzerain;
         const Eigen::Matrix3d tau = orthonormal::tau(mu, lambda, div_u, grad_u);
 
-        Eigen::Matrix3d ans; /* Found using sage's RealField(200) */
+        /* Expected results found using test_orthonormal.sage */
+        Eigen::Matrix3d ans;
         ans(0,0) =   70.531543279759231389408345113198923408553579956805627651633;
         ans(0,1) = - 18.274805458259731295309074758455374124262335886995620262487;
         ans(0,2) =   91.817913251736077743933865033061417711733974379411774042718;
@@ -379,7 +417,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
                 mu, grad_mu, lambda, grad_lambda,
                 div_u, grad_u, div_grad_u, grad_div_u);
 
-        Eigen::Vector3d ans; /* Found using sage's RealField(200) */
+        /* Expected results found using test_orthonormal.sage */
+        Eigen::Vector3d ans;
         ans(0) = - 195.58731950891911935327871659569254694467509625810898354185;
         ans(1) =   246.52589132115431226459081257854313932950474889459145467105;
         ans(2) =  9662.1147275452378450481114526062453379951497410467223391699;

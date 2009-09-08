@@ -370,6 +370,26 @@ void p_T_mu_lambda(
     grad_lambda = -2.0/3.0*grad_mu;
 }
 
+
+/**
+ * Compute \f$\vec{u}=\rho^{-1}\vec{m}\f$
+ *
+ * @param rho \f$\rho\f$
+ * @param m \f$\vec{m}\f$
+ *
+ * @return The velocity vector.
+ */
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+Vector u(const Scalar &rho,
+         const Vector &m)
+{
+    const Scalar rho_inverse = 1.0/rho;
+
+    return rho_inverse*m;
+}
+
+
 /**
  * Compute \f$\vec{\nabla}\vec{u}\f$.  Uses the expansion
  * \f[
