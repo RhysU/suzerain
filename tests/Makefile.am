@@ -5,10 +5,11 @@ AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
 AM_CPPFLAGS   += $(MKL_CFLAGS) $(GSL_CFLAGS) $(LOG4CXX_CFLAGS)
 AM_CPPFLAGS   += $(BOOST_CPPFLAGS) $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS)
 AM_CPPFLAGS   += $(EIGEN_CFLAGS)
-AM_LDFLAGS     =
-bin_PROGRAMS   =
-check_PROGRAMS =
-noinst_HEADERS =
+AM_LDFLAGS     = # Append below
+bin_PROGRAMS   = # Append below
+check_PROGRAMS = # Append below
+noinst_HEADERS = # Append below
+EXTRA_DIST     = # Append below
 
 noinst_HEADERS += test_tools.hpp
 
@@ -54,6 +55,7 @@ check_PROGRAMS           += test_orthonormal
 test_orthonormal_SOURCES  = test_orthonormal.cpp
 test_orthonormal_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_orthonormal_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+EXTRA_DIST               += test_orthonormal.sage
 
 check_PROGRAMS          += test_richardson
 test_richardson_SOURCES  = test_richardson.c
