@@ -65,7 +65,6 @@ namespace suzerain
 namespace orthonormal
 {
 
-// FIXME tau is symmetric, which should be enforced through Eigen return type
 /**
  * Compute \f$\accentset{\leftrightarrow}{\tau} =
  *    \mu\left(
@@ -89,6 +88,7 @@ Eigen::Matrix<Scalar,3,3> tau(
         const Scalar &div_u,
         const Eigen::Matrix<Scalar,3,3> &grad_u)
 {
+// FIXME tau's symmetry should be used/enforced in the computation
     return mu*(grad_u + grad_u.transpose())
         + lambda*div_u*Eigen::Matrix<Scalar,3,3>::Identity();
 }
@@ -130,6 +130,7 @@ Eigen::Matrix<Scalar,3,1> div_tau(
         const Eigen::Matrix<Scalar,3,1> &div_grad_u,
         const Eigen::Matrix<Scalar,3,1> &grad_div_u)
 {
+// FIXME symmetry of grad_u + grad_u^T should be used in the computation
     return (grad_u + grad_u.transpose())*grad_mu
         + mu*div_grad_u
         + (mu+lambda)*grad_div_u
@@ -186,6 +187,65 @@ Scalar div_mu_grad_T(
         const Eigen::Matrix<Scalar,3,1> &grad_mu)
 {
     return grad_mu.dot(grad_T) + mu*div_grad_T;
+}
+
+/**
+ * Compute \f$\vec{\nabla}\cdot{}p\vec{u}\f$.
+ * Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot{}p\vec{u} =
+ *            p\vec{\nabla}\cdot\vec{u}
+ *          + \vec{u}\cdot\vec{\nabla}p
+ * \f]
+ *
+ * @param p \f$p\f$
+ * @param grad_p \f$\vec{\nabla}p\f$
+ * @param u \f$\vec{u}\f$
+ * @param div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ *
+ * @return The divergence of the product of pressure and velocity.
+ */
+template<typename Scalar>
+Scalar div_p_u(
+        const Scalar &p,
+        const Eigen::Matrix<Scalar,3,1> &grad_p,
+        const Eigen::Matrix<Scalar,3,1> &u,
+        const Scalar &div_u)
+{
+    return p*div_u + u.dot(grad_p);
+}
+
+
+/**
+ * Compute \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\vec{u}\f$.
+ * Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\vec{u} =
+ *      \vec{u}\cdot\left(
+ *          \vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}
+ *      \right)
+ *      +
+ *      \mathrm{trace}\!\left(
+ *          \accentset{\leftrightarrow}{\tau}\,\vec{\nabla}\vec{u}
+ *      \right)
+ * \f]
+ *
+ * @param u \f$\vec{u}\f$
+ * @param grad_u \f$\vec{\nabla}\vec{u}\f$
+ * @param tau \f$\accentset{\leftrightarrow}{\tau}\f$
+ * @param div_tau \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$
+ *
+ * @return The divergence of the viscous stress tensor applied to the
+ *      velocity.
+ */
+template<typename Scalar>
+Scalar div_tau_u(
+        const Eigen::Matrix<Scalar,3,1> &u,
+        const Eigen::Matrix<Scalar,3,3> &grad_u,
+        const Eigen::Matrix<Scalar,3,3> &tau,
+        const Eigen::Matrix<Scalar,3,1> &div_tau)
+{
+    return u.dot(div_tau) + (tau*grad_u).lazy().trace();
 }
 
 /**
