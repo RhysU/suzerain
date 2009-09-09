@@ -46,6 +46,8 @@ div_grad_m = [
     m[1].diff(x,x) + m[1].diff(y,y) + m[1].diff(z,z),
     m[2].diff(x,x) + m[2].diff(y,y) + m[2].diff(z,z),
 ];
+grad_e = [ e.diff(x), e.diff(y), e.diff(z) ];
+div_grad_e = grad_e[0].diff(x) + grad_e[1].diff(y) + grad_e[2].diff(z);
 
 # Classical state variables
 p = (gamma - 1)*(e - (m[0]*m[0]+m[1]*m[1]+m[2]*m[2])/(2*rho));

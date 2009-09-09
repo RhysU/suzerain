@@ -33,7 +33,8 @@ void orthonormal_rhome_test_data(
         Eigen::Vector3d &div_grad_m,
         Eigen::Vector3d &grad_div_m,
         double          &e,
-        Eigen::Vector3d &grad_e)
+        Eigen::Vector3d &grad_e,
+        double          &div_grad_e)
 {
     rho = 138.;
 
@@ -82,6 +83,8 @@ void orthonormal_rhome_test_data(
     grad_e(0) = 13194.;
     grad_e(1) =  7542.;
     grad_e(2) =  5678.;
+
+    div_grad_e = 6878.;
 }
 
 // Checks derived formula and computation against orthonormal_rhome_test_data()
@@ -98,11 +101,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_u )
     Eigen::Vector3d grad_div_m;
     double          e;
     Eigen::Vector3d grad_e;
+    double          div_grad_e;
 
     orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
+        e, grad_e, div_grad_e);
 
     const Eigen::Vector3d u = pecos::suzerain::orthonormal::rhome::u(rho, m);
 
@@ -132,11 +136,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
     Eigen::Vector3d grad_div_m;
     double          e;
     Eigen::Vector3d grad_e;
+    double          div_grad_e;
 
     orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
+        e, grad_e, div_grad_e);
 
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
@@ -210,11 +215,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_u )
     Eigen::Vector3d grad_div_m;
     double          e;
     Eigen::Vector3d grad_e;
+    double          div_grad_e;
 
     orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
+        e, grad_e, div_grad_e);
 
     const Eigen::Matrix3d grad_u
         = pecos::suzerain::orthonormal::rhome::grad_u(
@@ -258,11 +264,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_u )
     Eigen::Vector3d grad_div_m;
     double          e;
     Eigen::Vector3d grad_e;
+    double          div_grad_e;
 
     orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
+        e, grad_e, div_grad_e);
 
     const double div_u = pecos::suzerain::orthonormal::rhome::div_u(
             rho, grad_rho, m, div_m);
@@ -286,11 +293,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
     Eigen::Vector3d grad_div_m;
     double          e;
     Eigen::Vector3d grad_e;
+    double          div_grad_e;
 
     orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
+        e, grad_e, div_grad_e);
 
     const Eigen::Vector3d grad_div_u
         = pecos::suzerain::orthonormal::rhome::grad_div_u(
@@ -322,11 +330,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
     Eigen::Vector3d grad_div_m;
     double          e;
     Eigen::Vector3d grad_e;
+    double          div_grad_e;
 
     orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
+        e, grad_e, div_grad_e);
 
     const Eigen::Vector3d div_grad_u
         = pecos::suzerain::orthonormal::rhome::div_grad_u(
@@ -358,11 +367,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
     Eigen::Vector3d grad_div_m;
     double          e;
     Eigen::Vector3d grad_e;
+    double          div_grad_e;
 
     orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
+        e, grad_e, div_grad_e);
 
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
@@ -446,11 +456,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_u )
     Eigen::Vector3d grad_div_m;
     double          e;
     Eigen::Vector3d grad_e;
+    double          div_grad_e;
 
     orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
+        e, grad_e, div_grad_e);
 
     using namespace pecos::suzerain;
     const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
@@ -480,11 +491,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
     Eigen::Vector3d grad_div_m;
     double          e;
     Eigen::Vector3d grad_e;
+    double          div_grad_e;
 
     orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
+        e, grad_e, div_grad_e);
 
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
@@ -524,11 +536,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
     Eigen::Vector3d grad_div_m;
     double          e;
     Eigen::Vector3d grad_e;
+    double          div_grad_e;
 
     orthonormal_rhome_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
-        e, grad_e);
+        e, grad_e, div_grad_e);
 
     using namespace pecos::suzerain;
 
