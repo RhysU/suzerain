@@ -26,6 +26,27 @@ m = [
 ];
 e = 311*(x^2)*y*z + 313*x*(y^2)*z + 317*x*y*(z^2);
 
+# Gradients of conservative state variables
+grad_rho = [ rho.diff(x), rho.diff(y), rho.diff(z) ];
+div_grad_rho = grad_rho[0].diff(x) + grad_rho[1].diff(y) + grad_rho[2].diff(z);
+grad_grad_rho = [
+    [ grad_rho[0].diff(x), grad_rho[0].diff(y), grad_rho[0].diff(z) ],
+    [ grad_rho[1].diff(x), grad_rho[1].diff(y), grad_rho[1].diff(z) ],
+    [ grad_rho[2].diff(x), grad_rho[2].diff(y), grad_rho[2].diff(z) ]
+];
+grad_m = [
+    [ m[0].diff(x), m[0].diff(y), m[0].diff(z) ],
+    [ m[1].diff(x), m[1].diff(y), m[1].diff(z) ],
+    [ m[2].diff(x), m[2].diff(y), m[2].diff(z) ]
+];
+div_m = m[0].diff(x) + m[1].diff(y) + m[2].diff(z);
+grad_div_m = [ div_m.diff(x), div_m.diff(y), div_m.diff(z) ];
+div_grad_m = [
+    m[0].diff(x,x) + m[0].diff(y,y) + m[0].diff(z,z),
+    m[1].diff(x,x) + m[1].diff(y,y) + m[1].diff(z,z),
+    m[2].diff(x,x) + m[2].diff(y,y) + m[2].diff(z,z),
+];
+
 # Classical state variables
 p = (gamma - 1)*(e - (m[0]*m[0]+m[1]*m[1]+m[2]*m[2])/(2*rho));
 T = gamma*p/rho;
