@@ -61,6 +61,12 @@ grad_T  = [  T.diff(x),  T.diff(y),  T.diff(z) ];
 grad_mu = [ mu.diff(x), mu.diff(y), mu.diff(z) ];
 grad_l  = [  l.diff(x),  l.diff(y),  l.diff(z) ];
 
+# Second derivatives of classical state variables
+div_grad_p  = grad_p[0].diff(x)  + grad_p[1].diff(y)  + grad_p[2].diff(z);
+div_grad_T  = grad_T[0].diff(x)  + grad_T[1].diff(y)  + grad_T[2].diff(z);
+div_grad_mu = grad_mu[0].diff(x) + grad_mu[1].diff(y) + grad_mu[2].diff(z);
+div_grad_l  = grad_l[0].diff(x)  + grad_l[1].diff(y)  + grad_l[2].diff(z);
+
 # Velocity field and its derivatives
 u = [
     m[0]/rho,
