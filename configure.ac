@@ -55,7 +55,7 @@ AC_LANG([C])
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LIBS} ${FLIBS}"
-AX_PATH_GSL(1.12,,AC_MSG_ERROR([Could not find required GSL version.]))
+AX_PATH_GSL(1.13,,AC_MSG_ERROR([Could not find required GSL version.]))
 PKG_CHECK_MODULES(FFTW3, fftw3 >= 3.2)
 AC_SUBST(FFTW3_CFLAGS)
 AC_SUBST(FFTW3_LIBS)
