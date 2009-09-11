@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-TEXSOURCES = derivation.tex timestepping.tex smr91.tex
+TEXSOURCES = derivation.tex timestepping.tex smr91.tex skewadjoint.tex
 
 all-local: dvi-local pdf-local
 dvi-local: $(TEXSOURCES:.tex=.dvi)

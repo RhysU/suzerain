@@ -1,0 +1,109 @@
+\documentclass[letterpaper,reqno,11pt]{amsart}
+
+% Packages
+\usepackage{accents}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage{lastpage}
+\usepackage{latexsym}
+\usepackage{mathtools}
+\usepackage{pstricks}
+\usepackage{setspace}
+\usepackage{txfonts}
+
+\mathtoolsset{showmanualtags,showonlyrefs}
+\allowdisplaybreaks[1]
+
+% Line Spacing
+\singlespacing
+
+% Set appropriate header/footer information on each page
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headheight}{2.0em}
+    \renewcommand{\headsep}{0.75em}
+    \renewcommand{\headrulewidth}{1.0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \lhead{
+      Skew-adjoint form of the convective derivative operator
+    }
+    \rhead{
+        Page \thepage{} of \pageref{LastPage}
+    }
+}
+\pagestyle{plain}
+
+% Paragraph spacing
+\setlength{\parindent}{0em}
+\setlength{\parskip}{2.0ex plus 0.75ex minus 0.75ex}
+
+% Document-specific commands
+\newcommand{\vecnabla}{\ensuremath{\vec{\nabla}}}
+
+\begin{document}
+
+For fixed $\vec{u}$, consider the convective linear operator
+\begin{align}
+  L\vec{f} &\coloneqq
+      \frac{1}{2}\vec{u}\cdot\vecnabla{}\vec{f}
+    + \frac{1}{2}\vecnabla\cdot\vec{u}\otimes\vec{f}.
+\end{align}
+With appropriate assumptions about smoothness, the domain, and the
+boundary conditions, $L$ is skew-adjoint in the $\mathcal{L}^2$
+inner product, that is $ \int_{\Omega} L\vec{f}\cdot\vec{g}\,d\!V =
+-\int_{\Omega} \vec{f}\cdot{}L\vec{g} \,d\!V$.  Skew-adjointness implies
+that all the operator's eigenvalues are imaginary.  In conjunction with a
+first-order time derivative, a skew-adjoint operator propagates a signal
+without growth or decay.
+
+% FIXME References for Boyd, Zang, and Horiuti
+
+Showing that $L$ is skew-adjoint requires two integration by parts results.
+We develop both using index notation in a Cartesian frame, though they
+hold in general coordinates.  The first result is
+\begin{align}
+  \int_{\Omega} \left(\vec{u}\cdot\vecnabla\vec{f}\right)\cdot{g} \,d\!V
+  &=
+  \int_{\Omega} g_i u_j \partial\!x_{i} f_j \,d\!V
+  \\
+  &=
+    \int_{\Omega} \partial\!x_{i} g_i u_j f_j \,d\!V
+  - \int_{\Omega} f_j \partial\!x_{i} g_i u_j \,d\!V
+  \\
+  &=
+    \int_{\Omega} \vecnabla\cdot\left(\vec{u}\cdot\vec{f}\right)\vec{g} \,d\!V
+  - \int_{\Omega} \vec{f}\cdot\left(\vecnabla\cdot\vec{u}\otimes\vec{g}\right) \,d\!V
+  \\
+  &=
+    \int_{\partial\Omega} \left(\vec{u}\cdot\vec{f}\right)\vec{g}\cdot\hat{n} \,d\!S
+  - \int_{\Omega} \vec{f}\cdot\left(\vecnabla\cdot\vec{u}\otimes\vec{g}\right) \,d\!V
+  .
+\end{align}
+The second result is
+\begin{align}
+  \int_{\Omega} \left(\vecnabla\cdot\vec{u}\otimes\vec{f}\right)\cdot\vec{g} \,d\!V
+  &=
+  \int_{\Omega} g_i \partial\!x_{j} u_i f_j \,d\!V
+  \\
+  &=
+    \int_{\Omega} \partial\!x_{j} g_i u_i f_j \,d\!V
+  - \int_{\Omega} u_i f_j \partial\!x_{j} g_i \,d\!V
+  \\
+  &=
+    \int_{\Omega} \vecnabla\cdot\left(\vec{u}\cdot\vec{g}\right)\vec{f} \,d\!V
+  - \int_{\Omega} \vec{f}\cdot\left(\vec{u}\cdot\vecnabla\vec{g}\right) \,d\!V
+  \\
+  &=
+    \int_{\partial\Omega} \left(\vec{u}\cdot\vec{g}\right)\vec{f}\cdot\hat{n} \,d\!S
+  - \int_{\Omega} \vec{f}\cdot\left(\vec{u}\cdot\vecnabla\vec{g}\right) \,d\!V
+  .
+\end{align}
+Neither result requires anything beyond the usual smoothness restrictions.
+
+
+
+\end{document}
