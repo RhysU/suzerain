@@ -81,6 +81,10 @@ hold in general coordinates.  The first result is
   &=
     \int_{\partial\Omega} \left(\vec{u}\cdot\vec{f}\right)\vec{g}\cdot\hat{n} \,d\!S
   - \int_{\Omega} \vec{f}\cdot\left(\vecnabla\cdot\vec{u}\otimes\vec{g}\right) \,d\!V
+  \\
+  &=
+    \int_{\partial\Omega} \left(\vec{g}\otimes\vec{f}\right)\vec{u}\cdot\hat{n} \,d\!S
+  - \int_{\Omega} \vec{f}\cdot\left(\vecnabla\cdot\vec{u}\otimes\vec{g}\right) \,d\!V
   .
 \end{align}
 The second result is
@@ -100,10 +104,25 @@ The second result is
   &=
     \int_{\partial\Omega} \left(\vec{u}\cdot\vec{g}\right)\vec{f}\cdot\hat{n} \,d\!S
   - \int_{\Omega} \vec{f}\cdot\left(\vec{u}\cdot\vecnabla\vec{g}\right) \,d\!V
+  \\
+  &=
+    \int_{\partial\Omega} \left(\vec{f}\otimes\vec{g}\right)\vec{u}\cdot\hat{n} \,d\!S
+  - \int_{\Omega} \vec{f}\cdot\left(\vec{u}\cdot\vecnabla\vec{g}\right) \,d\!V
   .
 \end{align}
-Neither result requires anything beyond the usual smoothness restrictions.
-
+By employing the above two results and combining their boundary terms, we see
+\begin{align}
+  \int_{\Omega} L\vec{f}\cdot\vec{g}\,d\!V
+  &=
+  - \int_{\Omega} \vec{f}\cdot{}L\vec{g} \,d\!V
+  + \int_{\partial\Omega} \frac{1}{2}\left[
+        \left(\vec{f}\otimes\vec{g}\right)
+      + \left(\vec{f}\otimes\vec{g}\right)^{\mathrm{T}} % Conjugate transpose?
+    \right] \vec{u}\cdot\hat{n} \,d\!S
+  .
+\end{align}
+In conjunction with the smoothness requirements necessary to apply integration by parts,
+to be self-adjoint the boundary integral must also vanish.
 
 
 \end{document}
