@@ -38,6 +38,7 @@ AC_REQUIRE([ACLTX_PROG_PDFTEX])
 AC_REQUIRE([ACLTX_PROG_LATEX])
 AC_REQUIRE([ACLTX_PROG_PDFLATEX])
 AC_REQUIRE([ACLTX_PROG_BIBTEX])
+AC_REQUIRE([ACLTX_PROG_MAKEINDEX])
 
 AC_ARG_VAR(LATEX_FLAGS,[Options for latex used in Makefile rules])
 if test "x$LATEX_FLAGS" = x; then
@@ -56,7 +57,6 @@ if test "x$PDFTEX_FLAGS" = x; then
     PDFTEX_FLAGS=
 fi
 
-dnl TODO Does not handle .bib files when building in VPATH
 AX_ADD_AM_MACRO([
 # Added by AX_ADD_AM_LATEX m4 macro
 %%.dvi : %%.tex

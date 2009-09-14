@@ -68,10 +68,9 @@ test $# -gt 0  ||  usage
 
 
 # Get file name (last argument), discard extension if necessary.
-
 file=`eval "echo \\$$#"`
 file=`echo $file | sed 's/\.[^.]*//'`
-
+filedir=`dirname $file`
 
 # Create temporary directory for auxiliary files to compare. Discard
 # that directory if the script is terminated. Note that trap handler
@@ -139,7 +138,6 @@ check_bibtex()
         fi
     fi
 }
-
 
 # idx: raw index data
 
