@@ -52,12 +52,13 @@ For fixed $\vec{u}$, consider the convective linear operator
       \frac{1}{2}\vec{u}\cdot\vecnabla{}\vec{f}
     + \frac{1}{2}\vecnabla\cdot\vec{u}\otimes\vec{f}.
 \end{align}
-With appropriate assumptions about smoothness, the domain, and the
-boundary conditions, $L$ is skew-adjoint in the $\mathcal{L}^2$
-inner product, that is $ \int_{\Omega} L\vec{f}\cdot\vec{g}\,d\!V =
--\int_{\Omega} \vec{f}\cdot{}L\vec{g} \,d\!V$.  Skew-adjointness implies
-that all the operator's eigenvalues are imaginary.  In conjunction with a
-first-order time derivative, a skew-adjoint operator propagates a signal
+With appropriate assumptions about smoothness, the domain, and the boundary
+conditions, $L$ is skew-adjoint in the $\mathcal{L}^2$ inner product, that is $
+\int_{\Omega} L\vec{f}\cdot\vec{g}^{\ast}\,d\!V = -\int_{\Omega}
+\vec{f}\cdot{}\left(L\vec{g}\right)^{\ast} \,d\!V$ where
+$\left(\cdot\right)^\ast$ denotes complex conjugation.  Skew-adjointness
+implies that all the operator's eigenvalues are imaginary.  In conjunction with
+a first-order time derivative, a skew-adjoint operator propagates a signal
 without growth or decay.
 
 % FIXME References for Boyd, Zang, and Horiuti
@@ -66,63 +67,91 @@ Showing that $L$ is skew-adjoint requires two integration by parts results.
 We develop both using index notation in a Cartesian frame, though they
 hold in general coordinates.  The first result is
 \begin{align}
-  \int_{\Omega} \left(\vec{u}\cdot\vecnabla\vec{f}\right)\cdot{g} \,d\!V
+  \int_{\Omega}
+    \left(\vec{u}\cdot\vecnabla\vec{f}\right)\cdot{}\vec{g}^{\ast}
+    \,d\!V
   &=
-  \int_{\Omega} g_i u_j \partial\!x_{i} f_j \,d\!V
+  \int_{\Omega} g_i^{\ast} u_j \partial\!x_{i} f_j \,d\!V
   \\
   &=
-    \int_{\Omega} \partial\!x_{i} g_i u_j f_j \,d\!V
-  - \int_{\Omega} f_j \partial\!x_{i} g_i u_j \,d\!V
+    \int_{\Omega} \partial\!x_{i} g_i^{\ast} u_j f_j \,d\!V
+  - \int_{\Omega} f_j \partial\!x_{i} g_i^{\ast} u_j \,d\!V
   \\
   &=
-    \int_{\Omega} \vecnabla\cdot\left(\vec{u}\cdot\vec{f}\right)\vec{g} \,d\!V
-  - \int_{\Omega} \vec{f}\cdot\left(\vecnabla\cdot\vec{u}\otimes\vec{g}\right) \,d\!V
+    \int_{\Omega}
+      \vecnabla\cdot\left(\vec{u}\cdot\vec{f}\right)\vec{g}^{\ast}
+      \,d\!V
+  - \int_{\Omega}
+      \vec{f}\cdot\left(\vecnabla\cdot\vec{u}\otimes\vec{g}^{\ast}\right)
+      \,d\!V
   \\
   &=
-    \int_{\partial\Omega} \left(\vec{u}\cdot\vec{f}\right)\vec{g}\cdot\hat{n} \,d\!S
-  - \int_{\Omega} \vec{f}\cdot\left(\vecnabla\cdot\vec{u}\otimes\vec{g}\right) \,d\!V
+    \int_{\partial\Omega}
+      \left(\vec{u}\cdot\vec{f}\right)\vec{g}^{\ast}\cdot\hat{n}
+      \,d\!S
+  - \int_{\Omega}
+      \vec{f}\cdot\left(\vecnabla\cdot\vec{u}\otimes\vec{g}^{\ast}\right)
+      \,d\!V
   \\
   &=
-    \int_{\partial\Omega} \left(\vec{g}\otimes\vec{f}\right)\vec{u}\cdot\hat{n} \,d\!S
-  - \int_{\Omega} \vec{f}\cdot\left(\vecnabla\cdot\vec{u}\otimes\vec{g}\right) \,d\!V
+    \int_{\partial\Omega}
+      \left(\vec{g}^{\ast}\otimes\vec{f}\right)\vec{u}\cdot\hat{n}
+      \,d\!S
+  - \int_{\Omega}
+      \vec{f}\cdot\left(\vecnabla\cdot\vec{u}\otimes\vec{g}^{\ast}\right)
+      \,d\!V
   .
 \end{align}
 The second result is
 \begin{align}
-  \int_{\Omega} \left(\vecnabla\cdot\vec{u}\otimes\vec{f}\right)\cdot\vec{g} \,d\!V
+  \int_{\Omega}
+    \left(\vecnabla\cdot\vec{u}\otimes\vec{f}\right)\cdot\vec{g}^{\ast}
+    \,d\!V
   &=
-  \int_{\Omega} g_i \partial\!x_{j} u_i f_j \,d\!V
+  \int_{\Omega} g_i^{\ast} \partial\!x_{j} u_i f_j \,d\!V
   \\
   &=
-    \int_{\Omega} \partial\!x_{j} g_i u_i f_j \,d\!V
-  - \int_{\Omega} u_i f_j \partial\!x_{j} g_i \,d\!V
+    \int_{\Omega} \partial\!x_{j} g_i^{\ast} u_i f_j \,d\!V
+  - \int_{\Omega} u_i f_j \partial\!x_{j} g_i^{\ast} \,d\!V
   \\
   &=
-    \int_{\Omega} \vecnabla\cdot\left(\vec{u}\cdot\vec{g}\right)\vec{f} \,d\!V
-  - \int_{\Omega} \vec{f}\cdot\left(\vec{u}\cdot\vecnabla\vec{g}\right) \,d\!V
+    \int_{\Omega}
+      \vecnabla\cdot\left(\vec{u}\cdot\vec{g}^{\ast}\right)\vec{f}
+      \,d\!V
+  - \int_{\Omega}
+      \vec{f}\cdot\left(\vec{u}\cdot\vecnabla\vec{g}^{\ast}\right)
+      \,d\!V
   \\
   &=
-    \int_{\partial\Omega} \left(\vec{u}\cdot\vec{g}\right)\vec{f}\cdot\hat{n} \,d\!S
-  - \int_{\Omega} \vec{f}\cdot\left(\vec{u}\cdot\vecnabla\vec{g}\right) \,d\!V
+    \int_{\partial\Omega}
+      \left(\vec{u}\cdot\vec{g}^{\ast}\right)\vec{f}\cdot\hat{n}
+      \,d\!S
+  - \int_{\Omega}
+      \vec{f}\cdot\left(\vec{u}\cdot\vecnabla\vec{g}^{\ast}\right)
+      \,d\!V
   \\
   &=
-    \int_{\partial\Omega} \left(\vec{f}\otimes\vec{g}\right)\vec{u}\cdot\hat{n} \,d\!S
-  - \int_{\Omega} \vec{f}\cdot\left(\vec{u}\cdot\vecnabla\vec{g}\right) \,d\!V
+    \int_{\partial\Omega}
+      \left(\vec{f}\otimes\vec{g}^{\ast}\right)\vec{u}\cdot\hat{n}
+      \,d\!S
+  - \int_{\Omega}
+      \vec{f}\cdot\left(\vec{u}\cdot\vecnabla\vec{g}^{\ast}\right)
+      \,d\!V
   .
 \end{align}
 By employing the above two results and combining their boundary terms, we see
 \begin{align}
-  \int_{\Omega} L\vec{f}\cdot\vec{g}\,d\!V
+  \int_{\Omega} L\vec{f}\cdot\vec{g}^{\ast}\,d\!V
   &=
-  - \int_{\Omega} \vec{f}\cdot{}L\vec{g} \,d\!V
+  - \int_{\Omega} \vec{f}\cdot{}\left(L\vec{g}\right)^{\ast} \,d\!V
   + \int_{\partial\Omega} \frac{1}{2}\left[
-        \left(\vec{f}\otimes\vec{g}\right)
-      + \left(\vec{f}\otimes\vec{g}\right)^{\mathrm{T}} % Conjugate transpose?
+        \left(\vec{f}\otimes\vec{g}^{\ast}\right)
+      + \left(\vec{f}\otimes\vec{g}^{\ast}\right)^{\mathrm{T}}
     \right] \vec{u}\cdot\hat{n} \,d\!S
   .
 \end{align}
-In conjunction with the smoothness requirements necessary to apply integration by parts,
-for the operator to be self-adjoint the boundary integral must also vanish.
-
+In conjunction with the smoothness requirements necessary to apply integration
+by parts, for the operator to be self-adjoint the boundary integral must also
+vanish.
 
 \end{document}
