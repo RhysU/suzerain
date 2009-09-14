@@ -11,14 +11,13 @@
 #
 # (history at end)
 
-
 # SYNOPSIS
 #
 #   tex-it [-bi] tex-cmd file
 #
 # tex-it runs 'tex-cmd' on 'file' as often as necessary to produce a
 # DVI file where all cross references are resolved. That convergence
-# is reached by analyzing auxilliary files:
+# is reached by analyzing auxiliary files:
 #  -- If file.toc has changed, the table of contents is not up to date.
 #  -- If file.idx has changed, the index is not up to date.
 #     MakeIndex is assumed to be used for creating the index.
@@ -26,7 +25,7 @@
 #  -- If file.aux contains a "\bibdata" tag and if the set of
 #     "\citation" tags have changed, then BibTeX is run.
 #
-# No other auxilliary files are handled. No subdocuments (via
+# No other auxiliary files are handled. No subdocuments (via
 # "\include") are supported.
 #
 # 'tex-cmd' may be more than one word.
