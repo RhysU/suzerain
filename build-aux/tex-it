@@ -68,10 +68,10 @@ test $# -gt 0  ||  usage
 
 
 # Get file name (last argument), discard extension if necessary.
-file=`eval "echo \\$$#"`
-file=`echo $file | sed 's/\.[^.]*//'`   # Has path prefix
-filebase=`basename $file`               # Has no path prefix
-filedir=`dirname $file`                 # Has path prefix
+file=${!#}                              # Last argument provided
+filebase=`basename $file .tex`
+filedir=`dirname $file`
+file="${filedir}/${filebase}"           # Has path prefix, no suffix
 
 # Force BIBINPUTS and BSTINPUTS to include $filedir
 # Allows proper bibtex operation in VPATH environment
