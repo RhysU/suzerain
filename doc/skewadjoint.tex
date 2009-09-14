@@ -46,26 +46,24 @@
 
 \begin{document}
 
-For fixed $\vec{u}$, consider the convective linear operator
+For fixed, real-valued $\vec{u}$, consider the convective linear operator
 \begin{align}
   L\vec{f} &\coloneqq
       \frac{1}{2}\vec{u}\cdot\vecnabla{}\vec{f}
     + \frac{1}{2}\vecnabla\cdot\vec{u}\otimes\vec{f}.
 \end{align}
 With appropriate assumptions about smoothness, the domain, and the boundary
-conditions, $L$ is skew-adjoint in the $\mathcal{L}^2$ inner product, that is $
-\int_{\Omega} L\vec{f}\cdot\vec{g}^{\ast}\,d\!V = -\int_{\Omega}
+conditions, $L$ is skew-adjoint in the $L^2\left(\Omega\right)$ inner product,
+that is $ \int_{\Omega} L\vec{f}\cdot\vec{g}^{\ast}\,d\!V = -\int_{\Omega}
 \vec{f}\cdot{}\left(L\vec{g}\right)^{\ast} \,d\!V$ where
 $\left(\cdot\right)^\ast$ denotes complex conjugation.  Skew-adjointness
 implies that all the operator's eigenvalues are imaginary.  In conjunction with
 a first-order time derivative, a skew-adjoint operator propagates a signal
 without growth or decay.
 
-% FIXME References for Boyd, Zang, and Horiuti
-
-Showing that $L$ is skew-adjoint requires two integration by parts results.
-We develop both using index notation in a Cartesian frame, though they
-hold in general coordinates.  The first result is
+Showing that $L$ is skew-adjoint requires two integration by parts formulas.
+We develop both using index notation in a Cartesian frame, though they hold in
+general coordinates.  The first result is
 \begin{align}
   \int_{\Omega}
     \left(\vec{u}\cdot\vecnabla\vec{f}\right)\cdot{}\vec{g}^{\ast}
@@ -139,7 +137,20 @@ The second result is
       \,d\!V
   .
 \end{align}
-By employing the above two results and combining their boundary terms, we see
+Lastly, we depend on $\vec{u}$ being real-valued so that
+\begin{align}
+  \left(L\vec{g}\right)^{\ast}
+  &=
+      \frac{1}{2}\vec{u}^{\ast}\cdot\vecnabla{}\vec{g}^{\ast}
+    + \frac{1}{2}\vecnabla\cdot\vec{u}^{\ast}\otimes\vec{g}^{\ast}
+  =
+      \frac{1}{2}\vec{u}\cdot\vecnabla{}\vec{g}^{\ast}
+    + \frac{1}{2}\vecnabla\cdot\vec{u}\otimes\vec{g}^{\ast}
+  = L\vec{g}^{\ast}
+  .
+\end{align}
+
+By employing the above three results and combining the boundary terms, we see
 \begin{align}
   \int_{\Omega} L\vec{f}\cdot\vec{g}^{\ast}\,d\!V
   &=
@@ -150,8 +161,12 @@ By employing the above two results and combining their boundary terms, we see
     \right] \vec{u}\cdot\hat{n} \,d\!S
   .
 \end{align}
-In conjunction with the smoothness requirements necessary to apply integration
-by parts, for the operator to be self-adjoint the boundary integral must also
-vanish.
+Beyond the smoothness requirements necessary to apply integration by parts, the
+boundary integral must also vanish for the operator to be self-adjoint.
+
+%\nocite{Zang1991Rotation}
+%\nocite{boyd2001chebyshev}
+%\bibliographystyle{amsplain}
+%\bibliography{skewadjoint}
 
 \end{document}
