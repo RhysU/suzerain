@@ -74,7 +74,7 @@ file=`eval "echo \\$$#"`
 file=`echo $file | sed 's/\.[^.]*//'`
 
 
-# Create temporary directory for auxilliary files to compare. Discard
+# Create temporary directory for auxiliary files to compare. Discard
 # that directory if the script is terminated. Note that trap handler
 # for 0 is executed at the end of the trap handler for the other
 # signals.
@@ -87,11 +87,11 @@ mkdir $tmp
 
 # ------------------------------------------------------------
 #
-# Set up functions that save auxilliary information and check if they
+# Set up functions that save auxiliary information and check if they
 # have changed. Save functions are called `save_<type>', check
 # functions are called `check_<type>'. Check functions set $run_tex to
 # "true" if TeX must be run anew. Check functions may run programs to
-# create other auxilliary files.
+# create other auxiliary files.
 
 
 # aux: table of contents & cross references
