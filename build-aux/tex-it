@@ -69,14 +69,19 @@ test $# -gt 0  ||  usage
 
 # Get file name (last argument), discard extension if necessary.
 file=`eval "echo \\$$#"`
-file=`echo $file | sed 's/\.[^.]*//'`
-filedir=`dirname $file`
+file=`echo $file | sed 's/\.[^.]*//'`   # Has path prefix
+filebase=`basename $file`               # Has no path prefix
+filedir=`dirname $file`                 # Has path prefix
+
+# Force BIBINPUTS and BSTINPUTS to include $filedir
+# Allows proper bibtex operation in VPATH environment
+export BIBINPUTS=${filedir}:${BIBINPUTS-}
+export BSTINPUTS=${filedir}:${BSTINPUTS-}
 
 # Create temporary directory for auxiliary files to compare. Discard
 # that directory if the script is terminated. Note that trap handler
 # for 0 is executed at the end of the trap handler for the other
 # signals.
-
 tmp=/tmp/tex$$
 trap "/bin/rm -rf $tmp" 0
 trap "exit 4" 1 2 3 15
@@ -84,7 +89,6 @@ mkdir $tmp
 
 
 # ------------------------------------------------------------
-#
 # Set up functions that save auxiliary information and check if they
 # have changed. Save functions are called `save_<type>', check
 # functions are called `check_<type>'. Check functions set $run_tex to
@@ -98,61 +102,58 @@ mkdir $tmp
 # AUX file anyhow, and plain-based macros typically produce the table
 # of contents at the end of the document, when it's guaranteed to be
 # OK.
-
 save_aux()
 {
-    if [ -f "$file.aux" ]
-       then cp "$file.aux" "$tmp/${file//\//_}.aux"
+    if [ -f "$filebase.aux" ]
+       then cp "$filebase.aux" "$tmp/${file//\//_}.aux"
        else touch "$tmp/${file//\//_}.aux"
     fi
 }
 
 check_aux()
 {
-    test -f "$file.aux"  ||  return 0
-    cmp -s "$file.aux" "$tmp/${file//\//_}.aux"  ||  run_tex=true
+    test -f "$filebase.aux"  ||  return 0
+    cmp -s "$filebase.aux" "$tmp/${file//\//_}.aux"  ||  run_tex=true
 }
 
 
 # bibtex: Citations
-
 save_bibtex()
 {
-    if [ -f "$file.aux" ]
-       then egrep '^\\(citation|bibdata)' "$file.aux"  |
+    if [ -f "$filebase.aux" ]
+       then egrep '^\\(citation|bibdata)' "$filebase.aux"  |
             sort >"$tmp/${file//\//_}.bib"
        else touch "$tmp/${file//\//_}.bib"
     fi
 }
 
-
 check_bibtex()
 {
-    test "$do_bibtex" -a -f "$file.aux"  ||  return 0
-    egrep '^\\(citation|bibdata)' "$file.aux"  |  sort >$tmp/bib.new
+    test "$do_bibtex" -a -f "$filebase.aux"  ||  return 0
+    egrep '^\\(citation|bibdata)' "$filebase.aux"  |  sort >$tmp/bib.new
     if grep '^\\bibdata' $tmp/bib.new >/dev/null
-       then if cmp -s "$tmp/${file//\//_}.bib" $tmp/bib.new
+    then if cmp -s "$tmp/${file//\//_}.bib" $tmp/bib.new
            then : do nothing
-           else bibtex "$file"
+           else bibtex "$filebase"
             run_tex=true
         fi
     fi
 }
 
-# idx: raw index data
 
+# idx: raw index data
 save_idx()
 {
-    if [ -f "$file.idx" ]
-       then cp "$file.idx" "$tmp/${file//\//_}.idx"
+    if [ -f "$filebase.idx" ]
+       then cp "$filebase.idx" "$tmp/${file//\//_}.idx"
        else touch "$tmp/${file//\//_}.idx"
     fi
 }
 
 check_idx()
 {
-    test "$do_makeindex" -a -f "$file.idx"  ||  return 0
-    if cmp -s "$file.idx" "$tmp/${file//\//_}.idx"
+    test "$do_makeindex" -a -f "$filebase.idx"  ||  return 0
+    if cmp -s "$filebase.idx" "$tmp/${file//\//_}.idx"
        then : do nothing
        else makeindex "$file"
         run_tex=true
@@ -161,7 +162,6 @@ check_idx()
 
 
 # Two functions that collect the functions above.
-
 save_aux_info()
 {
     save_aux
@@ -184,9 +184,15 @@ check_aux_info()
 # Provide echo X to LaTeX/TeX to get force it to quit quickly on error.
 save_aux_info
 if echo X | "$@"; then
+    # Always run bibtex at least once if used in the tex source
+    if test "$do_bibtex" -a -f "$filebase.aux"; then
+        if grep '^\\bibdata' "$filebase.aux" >/dev/null ; then
+            bibtex "$filebase"
+        fi
+    fi
     run_tex=''
     check_aux_info # See if we should continue
-else 
+else
     exit
 fi
 
