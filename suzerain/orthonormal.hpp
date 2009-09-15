@@ -402,6 +402,75 @@ void p_T_mu_lambda(
 }
 
 /**
+ * Compute \f$\vec{\nabla}\cdot\vec\nabla{}p\f$
+ * using the equation of state.  Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot\vec{\nabla}p =
+ *      \left(\gamma-1\right)\left[
+ *          \vec{\nabla}\cdot\vec{\nabla}e
+ *          - \rho^{-1}\left[
+ *                \mathrm{trace}\!\left(
+ *                    \vec{\nabla}\vec{m}^{\mathrm{T}}\vec{\nabla}\vec{m}
+ *                \right)
+ *              + \left(\vec{\nabla}\cdot\vec{\nabla}\vec{m}\right)\cdot\vec{m}
+ *              - \rho^{-1}\left[
+ *                    2\vec{\nabla}\vec{m}^{\mathrm{T}}\vec{m}
+ *                        \cdot\vec{\nabla}\rho
+ *                  + \frac{1}{2}\left(\vec{m}\cdot\vec{m}\right)
+ *                        \vec{\nabla}\cdot\vec{\nabla}\rho
+ *                  - \rho^{-1}\left(\vec{m}\cdot\vec{m}\right)
+ *                        \left(\vec{\nabla}\rho\cdot\vec{\nabla}\rho\right)
+ *              \right]
+ *          \right]
+ *      \right]
+ *      .
+ * \f]
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$
+ * @param[in]  div_grad_rho \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param[in]  div_grad_m \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$
+ * @param[in]  e \f$e\f$
+ * @param[in]  grad_e \f$\vec{\nabla}e\f$
+ * @param[in]  div_grad_e \f$\vec{\nabla}\cdot\vec{\nabla}e\f$
+ *
+ * @return The Laplacian of pressure.
+ */
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Scalar div_grad_p(
+        const Scalar &gamma,
+        const Scalar &rho,
+        const Vector &grad_rho,
+        const Scalar &div_grad_rho,
+        const Vector &m,
+        const Tensor &grad_m,
+        const Vector &div_grad_m,
+        const Scalar &e,
+        const Vector &grad_e,
+        const Scalar &div_grad_e)
+{
+    const Scalar rho_inverse = 1.0/rho;
+    const Scalar m_dot_m     = m.squaredNorm();
+
+    return (gamma - 1.0)*(
+                  div_grad_e
+                - rho_inverse*(
+                          (grad_m.transpose()*grad_m).trace()
+                        + div_grad_m.dot(m)
+                        - rho_inverse*(
+                                2.0*grad_rho.dot(grad_m.transpose()*m)
+                              + 0.5*m_dot_m*div_grad_rho
+                              - rho_inverse*m_dot_m*grad_rho.squaredNorm()
+                            )
+                    )
+            );
+}
+
+/**
  * Compute \f$\vec{u}=\rho^{-1}\vec{m}\f$
  *
  * @param rho \f$\rho\f$

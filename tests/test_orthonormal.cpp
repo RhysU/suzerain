@@ -200,6 +200,42 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(grad_lambda(1), grad_lambda_ans(1), close_enough);
     BOOST_CHECK_CLOSE(grad_lambda(2), grad_lambda_ans(2), close_enough);
 }
+//
+// Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p )
+{
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+    double          div_grad_e;
+
+    orthonormal_rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e, div_grad_e);
+
+    const double gamma = 1.4;
+
+    const double div_grad_p = pecos::suzerain::orthonormal::rhome::div_grad_p(
+        gamma,
+        rho, grad_rho, div_grad_rho,
+        m, grad_m, div_grad_m,
+        e, grad_e, div_grad_e);
+
+    /* Expected results found using test_orthonormal.sage */
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
+    BOOST_CHECK_CLOSE(div_grad_p,
+            11191.566068848019028203711722987453542724808010087855921969,
+            close_enough);
+}
 
 // Checks derived formula and computation against orthonormal_rhome_test_data()
 BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_u )
