@@ -2,7 +2,7 @@
 
 TEXSOURCES = derivation.tex timestepping.tex smr91.tex skewadjoint.tex
 
-EXTRA_DIST = skewadjoint.bib
+EXTRA_DIST = derivation.bib skewadjoint.bib
 
 all-local: dvi-local pdf-local
 dvi-local: $(TEXSOURCES:.tex=.dvi)
