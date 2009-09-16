@@ -491,8 +491,11 @@ Scalar div_grad_p(
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$
  * @param[in]  div_grad_rho \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$
  * @param[in]  p \f$p\f$
+ *             computed from, for example, p_T_mu_lambda()
  * @param[in]  grad_p \f$\vec{\nabla}p\f$
+ *             computed from, for example, p_T_mu_lambda()
  * @param[in]  div_grad_p \f$\vec{\nabla}\cdot\vec{\nabla}p\f$
+ *             computed from, for example, div_grad_p()
  *
  * @return The Laplacian of temperature.
  */
