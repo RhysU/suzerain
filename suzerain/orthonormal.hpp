@@ -471,6 +471,54 @@ Scalar div_grad_p(
 }
 
 /**
+ * Compute \f$\vec{\nabla}\cdot\vec\nabla{}T\f$
+ * using the equation of state.  Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot\vec\nabla{}T =
+ *          \gamma\rho^{-1}\left[
+ *                \vec{\nabla}\cdot\vec\nabla{}p
+ *              - \rho^{-1}\left[
+ *                    p\vec{\nabla}\cdot\vec\nabla{}\rho
+ *                  + 2\vec{\nabla}\rho\cdot\left(
+ *                      \vec{\nabla}p - \rho^{-1}p\vec{\nabla{\rho}}
+ *                  \right)
+ *              \right]
+ *          \right]
+ *      .
+ * \f]
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$
+ * @param[in]  div_grad_rho \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$
+ * @param[in]  p \f$p\f$
+ * @param[in]  grad_p \f$\vec{\nabla}p\f$
+ * @param[in]  div_grad_p \f$\vec{\nabla}\cdot\vec{\nabla}p\f$
+ *
+ * @return The Laplacian of temperature.
+ */
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+Scalar div_grad_T(
+        const Scalar &gamma,
+        const Scalar &rho,
+        const Vector &grad_rho,
+        const Scalar &div_grad_rho,
+        const Scalar &p,
+        const Vector &grad_p,
+        const Scalar &div_grad_p)
+{
+    const Scalar rho_inverse = 1.0/rho;
+
+    return gamma*rho_inverse*(
+                  div_grad_p
+                - rho_inverse*(
+                          p*div_grad_rho
+                        + 2.0*grad_rho.dot(grad_p - rho_inverse*p*grad_rho)
+                    )
+            );
+}
+
+/**
  * Compute \f$\vec{u}=\rho^{-1}\vec{m}\f$
  *
  * @param rho \f$\rho\f$
