@@ -654,41 +654,46 @@ Our simulations will use a discrete B-spline basis in the wall normal
 direction.  For this basis, repeated application of a discrete first derivative
 operator gives results that differ significantly from application of a
 discrete second derivative operator.  In particular, repeated first
-differentiation severely abates high frequency content (see~\cite{Kwok2001}
+differentiation severely abates high frequency modes (see~\cite{Kwok2001}
 figures 2 and 3).
 
 Second differentiation enters equations \eqref{eq:state_continuity},
 \eqref{eq:state_momentum}, and \eqref{eq:state_energy} through the terms
 $\nabla\cdot\tau$, $\nabla\cdot\tau\frac{m}{\rho}$, and
-$\nabla\cdot\mu\nabla{}T$.  We expand these three nonlinear terms:
+$\nabla\cdot\mu\nabla{}T$.  We wish to compute these terms in a way that keeps
+first and second derivative applications wholly separate.  Doing so will ensure
+that these three terms have the appropriate diffusive effects on high frequency
+content.  We start by expanding these three nonlinear terms:
 \begin{subequations}
 \begin{align}
   \nabla\cdot\tau
   &=
-    \left[ \nabla{}u + \nabla{}u^{\mathrm{T}} \right] \nabla\mu
-  + \mu \nabla\cdot\nabla{}u
-  + \left(\mu+\lambda\right)\nabla\nabla\cdot{}u
-  + \left(\nabla{}\cdot{}u\right)\nabla\lambda
+    \left[
+       \nabla\frac{m}{\rho}
+     + \left(\nabla\frac{m}{\rho}\right)^{\mathrm{T}}
+    \right] \nabla\mu
+  + \mu \Delta\frac{m}{\rho}
+  + \left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho}
+  + \left(\nabla\cdot\frac{m}{\rho}\right)\nabla\lambda
 \\
   \nabla\cdot\tau{}\frac{m}{\rho}
   &=
-    u\cdot\left(\nabla\cdot\tau\right)
-  + \mathrm{tr}\!\left( \tau\,\nabla{}u \right)
+    \frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)
+  + \mathrm{tr}\left( \tau\,\nabla\frac{m}{\rho} \right)
 \\
   \nabla\cdot\mu\nabla{}T
   &=
     \nabla\mu\cdot\nabla{}T
-  + \mu \nabla\cdot\nabla{}T
+  + \mu \Delta{}T
 \end{align}
 \end{subequations}
-We expand the derivatives appearing above using the derivatives of our state
-variables:
+We then expand the non-state derivatives appearing above
 \begin{subequations}
 \begin{align}
   \nabla{}p &= (\gamma-1)\left[
         \nabla{}e
-      + \frac{1}{2}\rho^{-2}\left(m\cdot{}m\right) \nabla\rho
-      - \rho^{-1} \left(\nabla{}m\right)^{\mathrm{T}}m
+      + \frac{1}{2}\rho^{-2} m^{2} \nabla\rho
+      - \rho^{-1} \nabla{}m^{\mathrm{T}}m
   \right]
 \\
   \nabla{}T &= \gamma\rho^{-1}\nabla{}p
@@ -698,66 +703,66 @@ variables:
 \\
   \nabla\lambda &= -\frac{2}{3}\nabla\mu
 \\
-  \nabla\cdot{}u
+  \nabla\cdot\frac{m}{\rho}
   &=
   \rho^{-1}\left[ \nabla\cdot{}m - \rho^{-1}m\cdot\nabla\rho \right]
 \\
-  \nabla{}u
+  \nabla{}\frac{m}{\rho}
   &=
-  \rho^{-1}\left[ \nabla{m} - \rho^{-1}{m}\otimes\nabla\rho  \right]
+  \rho^{-1}\left[ \nabla{}m - \rho^{-1}{m}\otimes\nabla\rho  \right]
 \\
-  \nabla\cdot\nabla{}u
+  \Delta\frac{m}{\rho}
   &=
  \rho^{-1}\left[
-      \nabla\cdot\nabla{m}
+      \Delta{}m
     + \rho^{-1}\left[
           \left(
-              2\rho^{-1}\left(\nabla\rho\cdot\nabla\rho\right)
-            - \nabla\cdot\nabla\rho
+              2\rho^{-1}\left(\nabla\rho\right)^{2}
+            - \Delta\rho
           \right) {m}
         - 2 \left(\nabla{m}\right)\nabla\rho
       \right]
  \right]
 \\
-  \nabla\nabla\cdot{}u
+  \nabla\nabla\cdot\frac{m}{\rho}
   &=
   \rho^{-1}\left[
-        \nabla\nabla\cdot{m}
+        \nabla\nabla\cdot{}m
       - \rho^{-1}\left[
-            \left(\nabla\nabla\rho\right)m
+            \left(\nabla\nabla\rho\right) m
           + \nabla{}m^{\mathrm{T}}\nabla\rho
-          + \left(\nabla\cdot{m}\right)\nabla\rho
+          + \left(\nabla\cdot{}m\right)\nabla\rho
           - 2 \rho^{-1}\left(\nabla\rho\cdot{}m\right)\nabla\rho
         \right]
   \right]
 \\
-  \nabla\cdot\nabla{}p
+  \Delta{}p
   &=
   \left(\gamma-1\right)\left[
-      \nabla{}\cdot\nabla{}e
+      \Delta{}e
       - \rho^{-1}\left[
-            \mathrm{tr}\!\left( \nabla{}{m}^{\mathrm{T}}\nabla{}{m} \right)
-          + \left(\nabla{}\cdot\nabla{}{m}\right)\cdot{m}
+            \mathrm{tr}\left( \nabla{}{m}^{\mathrm{T}}\nabla{}{m} \right)
+          + m\cdot\Delta{}m
           - \rho^{-1}\left[
                 2\nabla{}{m}^{\mathrm{T}}{m} \cdot\nabla{}\rho
-              + \frac{1}{2}\left({m}\cdot{m}\right) \nabla{}\cdot\nabla{}\rho
-              - \rho^{-1}\left({m}\cdot{m}\right)
-                    \left(\nabla{}\rho\cdot\nabla{}\rho\right)
+              + \frac{1}{2} m^2 \Delta\rho
+              - \rho^{-1} m^2 \left(\nabla\rho\right)^{2}
           \right]
       \right]
   \right]
 \\
-  \nabla\cdot\nabla{}T
+  \Delta{}T
   &=
   \gamma\rho^{-1}\left[
-        \nabla{}\cdot\nabla{}p
+        \Delta{}p
       - \rho^{-1}\left[
-            p\nabla{}\cdot\nabla{}\rho
+            p\Delta{}\rho
           + 2\nabla{}\rho\cdot\left( \nabla{}p - \rho^{-1}p\nabla\rho \right)
       \right]
   \right]
 \end{align}
 \end{subequations}
+where we have employed shorthand like $m^2=m\cdot{}m$.
 
 
 
