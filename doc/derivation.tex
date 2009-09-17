@@ -670,7 +670,7 @@ content.  We start by expanding these three nonlinear terms:
   &=
     \left[
        \nabla\frac{m}{\rho}
-     + \left(\nabla\frac{m}{\rho}\right)^{\mathrm{T}}
+     + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
     \right] \nabla\mu
   + \mu \Delta\frac{m}{\rho}
   + \left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho}
@@ -693,7 +693,7 @@ We then expand the non-state derivatives appearing above
   \nabla{}p &= (\gamma-1)\left[
         \nabla{}e
       + \frac{1}{2}\rho^{-2} m^{2} \nabla\rho
-      - \rho^{-1} \nabla{}m^{\mathrm{T}}m
+      - \rho^{-1} \nabla{}m^{\mathsf{T}}m
   \right]
 \\
   \nabla{}T &= \gamma\rho^{-1}\nabla{}p
@@ -708,10 +708,10 @@ We then expand the non-state derivatives appearing above
   \left(\gamma-1\right)\left[
       \Delta{}e
       - \rho^{-1}\left[
-            \mathrm{tr}\left( \nabla{}{m}^{\mathrm{T}}\nabla{}{m} \right)
+            \mathrm{tr}\left( \nabla{}{m}^{\mathsf{T}}\nabla{}{m} \right)
           + m\cdot\Delta{}m
           - \rho^{-1}\left[
-                2\nabla{}{m}^{\mathrm{T}}{m} \cdot\nabla{}\rho
+                2\nabla{}{m}^{\mathsf{T}}{m} \cdot\nabla{}\rho
               + \frac{1}{2} m^2 \Delta\rho
               - \rho^{-1} m^2 \left(\nabla\rho\right)^{2}
           \right]
@@ -736,6 +736,16 @@ We then expand the non-state derivatives appearing above
   &=
   \rho^{-1}\left[ \nabla{}m - \rho^{-1}{m}\otimes\nabla\rho  \right]
 \\
+  \nabla\frac{m}{\rho} + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
+  &=
+  \rho^{-1}\left[
+      \left(\nabla{}m + \nabla{}m^{\mathsf{T}}\right)
+    - \rho^{-1}\left[
+          \left(m\otimes\nabla\rho\right)
+        + \left(m\otimes\nabla\rho\right)^{\mathsf{T}}
+      \right]
+  \right]
+\\
   \Delta\frac{m}{\rho}
   &=
  \rho^{-1}\left[
@@ -755,7 +765,7 @@ We then expand the non-state derivatives appearing above
         \nabla\nabla\cdot{}m
       - \rho^{-1}\left[
             \left(\nabla\nabla\rho\right) m
-          + \nabla{}m^{\mathrm{T}}\nabla\rho
+          + \nabla{}m^{\mathsf{T}}\nabla\rho
           + \left(\nabla\cdot{}m\right)\nabla\rho
           - 2 \rho^{-1}\left(\nabla\rho\cdot{}m\right)\nabla\rho
         \right]
@@ -765,6 +775,47 @@ We then expand the non-state derivatives appearing above
 where we have employed the shorthand $m^2=m\cdot{}m$ and
 $\left(\nabla\rho\right)^2=\nabla\rho\cdot\nabla\rho$.
 
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{r|ccccccccccccc}
+& $\rho$
+& $\nabla\rho$
+& $\Delta\rho$
+& $\nabla\nabla\rho$
+& $m$
+& $\nabla{}m$
+& $\left(\nabla{}m+\nabla{}m^{\mathsf{T}}\right)$
+& $\nabla\cdot{}m$
+& $\Delta{}m$
+& $\nabla\nabla\cdot{}m$
+& $e$
+& $\nabla{}e$
+& $\Delta{}e$
+\\
+$p$, $T$, $\mu$, $\lambda$
+\\
+$\nabla{}p$, $\nabla{}T$, $\nabla\mu$, $\nabla\lambda$
+\\
+$\nabla\cdot\frac{m}{\rho}$
+\\
+$\nabla\frac{m}{\rho}$
+\\
+$\Delta\frac{m}{\rho}$
+\\
+$\nabla\nabla\cdot\frac{m}{\rho}$
+\\
+$\Delta{}p$
+\\
+$\Delta{}T$
+\\
+\end{tabular}
+\caption{
+  Required state variable derivatives to compute quantities in physical space
+  without repeated first derivative application
+}
+\label{tab:nofirstderivcost}
+\end{table}
 
 
 
