@@ -607,7 +607,7 @@ the equations in section \ref{nondim_equations} become
   \label{eq:state_momentum}
   \frac{\partial}{\partial{}t}m
 &=
-- \nabla\cdot\left(\frac{1}{\rho}m\otimes{}m\right)
+- \nabla\cdot\left(\frac{m}{\rho}\otimes{}m\right)
   - \nabla{} p
   + \frac{1}{\Reynolds} \nabla\cdot\tau
   + \rho{}f_{b}
@@ -615,11 +615,11 @@ the equations in section \ref{nondim_equations} become
   \label{eq:state_energy}
   \frac{\partial}{\partial{}t} e
 &=
-  - \nabla\cdot{}\frac{em}{\rho}
+  - \nabla\cdot{}e\frac{m}{\rho}
   + \frac{1}{\Reynolds\,\Prandtl\,\left( \gamma - 1 \right)}
     \nabla\cdot\mu\nabla{} T
-  - \nabla\cdot{} \frac{p m}{\rho}
-  + \frac{1}{\Reynolds} \nabla\cdot\frac{\tau{} m}{\rho}
+  - \nabla\cdot{} p\frac{m}{\rho}
+  + \frac{1}{\Reynolds} \nabla\cdot\tau{}\frac{m}{\rho}
   + f_{b} \cdot{} m
   + \rho{} q_{b}
 \intertext{
@@ -648,7 +648,126 @@ the equations in section \ref{nondim_equations} become
 \end{align}
 \end{subequations}
 
+\subsection{Discretized operator considerations}
+
+Our simulations will use a discrete B-spline basis in the wall normal
+direction.  For this basis, repeated application of a discrete first derivative
+operator gives results that differ significantly from application of a
+discrete second derivative operator.  In particular, repeated first
+differentiation severely abates high frequency content (see~\cite{Kwok2001}
+figures 2 and 3).
+
+Second differentiation enters equations \eqref{eq:state_continuity},
+\eqref{eq:state_momentum}, and \eqref{eq:state_energy} through the terms
+$\nabla\cdot\tau$, $\nabla\cdot\tau\frac{m}{\rho}$, and
+$\nabla\cdot\mu\nabla{}T$.  We expand these three nonlinear terms:
+\begin{subequations}
+\begin{align}
+  \nabla\cdot\tau
+  &=
+    \left[ \nabla{}u + \nabla{}u^{\mathrm{T}} \right] \nabla\mu
+  + \mu \nabla\cdot\nabla{}u
+  + \left(\mu+\lambda\right)\nabla\nabla\cdot{}u
+  + \left(\nabla{}\cdot{}u\right)\nabla\lambda
+\\
+  \nabla\cdot\tau{}\frac{m}{\rho}
+  &=
+    u\cdot\left(\nabla\cdot\tau\right)
+  + \mathrm{tr}\!\left( \tau\,\nabla{}u \right)
+\\
+  \nabla\cdot\mu\nabla{}T
+  &=
+    \nabla\mu\cdot\nabla{}T
+  + \mu \nabla\cdot\nabla{}T
+\end{align}
+\end{subequations}
+We expand the derivatives appearing above using the derivatives of our state
+variables:
+\begin{subequations}
+\begin{align}
+  \nabla{}p &= (\gamma-1)\left[
+        \nabla{}e
+      + \frac{1}{2}\rho^{-2}\left(m\cdot{}m\right) \nabla\rho
+      - \rho^{-1} \left(\nabla{}m\right)^{\mathrm{T}}m
+  \right]
+\\
+  \nabla{}T &= \gamma\rho^{-1}\nabla{}p
+             - \gamma\rho^{-2} p \nabla\rho
+\\
+  \nabla\mu &= \beta{}T^{\beta-1}\nabla{}T
+\\
+  \nabla\lambda &= -\frac{2}{3}\nabla\mu
+\\
+  \nabla\cdot{}u
+  &=
+  \rho^{-1}\left[ \nabla\cdot{}m - \rho^{-1}m\cdot\nabla\rho \right]
+\\
+  \nabla{}u
+  &=
+  \rho^{-1}\left[ \nabla{m} - \rho^{-1}{m}\otimes\nabla\rho  \right]
+\\
+  \nabla\cdot\nabla{}u
+  &=
+ \rho^{-1}\left[
+      \nabla\cdot\nabla{m}
+    + \rho^{-1}\left[
+          \left(
+              2\rho^{-1}\left(\nabla\rho\cdot\nabla\rho\right)
+            - \nabla\cdot\nabla\rho
+          \right) {m}
+        - 2 \left(\nabla{m}\right)\nabla\rho
+      \right]
+ \right]
+\\
+  \nabla\nabla\cdot{}u
+  &=
+  \rho^{-1}\left[
+        \nabla\nabla\cdot{m}
+      - \rho^{-1}\left[
+            \left(\nabla\nabla\rho\right)m
+          + \nabla{}m^{\mathrm{T}}\nabla\rho
+          + \left(\nabla\cdot{m}\right)\nabla\rho
+          - 2 \rho^{-1}\left(\nabla\rho\cdot{}m\right)\nabla\rho
+        \right]
+  \right]
+\\
+  \nabla\cdot\nabla{}p
+  &=
+  \left(\gamma-1\right)\left[
+      \nabla{}\cdot\nabla{}e
+      - \rho^{-1}\left[
+            \mathrm{tr}\!\left( \nabla{}{m}^{\mathrm{T}}\nabla{}{m} \right)
+          + \left(\nabla{}\cdot\nabla{}{m}\right)\cdot{m}
+          - \rho^{-1}\left[
+                2\nabla{}{m}^{\mathrm{T}}{m} \cdot\nabla{}\rho
+              + \frac{1}{2}\left({m}\cdot{m}\right) \nabla{}\cdot\nabla{}\rho
+              - \rho^{-1}\left({m}\cdot{m}\right)
+                    \left(\nabla{}\rho\cdot\nabla{}\rho\right)
+          \right]
+      \right]
+  \right]
+\\
+  \nabla\cdot\nabla{}T
+  &=
+  \gamma\rho^{-1}\left[
+        \nabla{}\cdot\nabla{}p
+      - \rho^{-1}\left[
+            p\nabla{}\cdot\nabla{}\rho
+          + 2\nabla{}\rho\cdot\left( \nabla{}p - \rho^{-1}p\nabla\rho \right)
+      \right]
+  \right]
+\end{align}
+\end{subequations}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliographystyle{amsplain}
 \bibliography{derivation}
+
 
 \end{document}
