@@ -777,42 +777,65 @@ $\left(\nabla\rho\right)^2=\nabla\rho\cdot\nabla\rho$.
 
 \begin{table}[h]
 \centering
-\renewcommand{\arraystretch}{1.25}
-\begin{tabular}{r|ccccccccccccc}
-& $\rho$
-& $\nabla\rho$
-& $\Delta\rho$
-& $\nabla\nabla\rho$
-& $m$
-& $\nabla{}m$
-& $\left(\nabla{}m+\nabla{}m^{\mathsf{T}}\right)$
-& $\nabla\cdot{}m$
-& $\Delta{}m$
-& $\nabla\nabla\cdot{}m$
-& $e$
-& $\nabla{}e$
-& $\Delta{}e$
-\\
-$p$, $T$, $\mu$, $\lambda$
-\\
-$\nabla{}p$, $\nabla{}T$, $\nabla\mu$, $\nabla\lambda$
-\\
-$\nabla\cdot\frac{m}{\rho}$
-\\
-$\nabla\frac{m}{\rho}$
-\\
-$\Delta\frac{m}{\rho}$
-\\
-$\nabla\nabla\cdot\frac{m}{\rho}$
-\\
-$\Delta{}p$
-\\
-$\Delta{}T$
-\\
+\renewcommand{\arraystretch}{1.25} % Adds whitespace between rows
+\newcommand{\cm}{\checkmark}       % For brevity in the table details
+\begin{tabular}{r|cccccccccccccc}
+& $\rho$                                            % 01
+& $\nabla\rho$                                      % 02
+& $\Delta\rho$                                      % 03
+& $\nabla\nabla\rho$                                % 04
+& $m$                                               % 05
+& $\nabla{}m$                                       % 06
+& $\nabla\cdot{}m$                                  % 07
+& $\left(\nabla{}m+\nabla{}m^{\mathsf{T}}\right)$   % 08
+& $\Delta{}m$                                       % 09
+& $\nabla\nabla\cdot{}m$                            % 11
+& $e$                                               % 12
+& $\nabla{}e$                                       % 13
+& $\Delta{}e$                                       % 14
+\\ \hline $p$, $T$, $\mu$, $\lambda$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm &     &     &     & \cm &     &     &     &     &     & \cm &     &
+\\ $\nabla{}p$, $\nabla{}T$, $\nabla\mu$, $\nabla\lambda$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     &     & \cm & \cm &     &     &     &     & \cm & \cm &
+\\ $\nabla\cdot\frac{m}{\rho}$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     &     & \cm &     & \cm &     &     &     &     &     &
+\\ $\nabla\frac{m}{\rho}$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     &     & \cm & \cm &     &     &     &     &     &     &
+\\ $\nabla\frac{m}{\rho} + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     &     & \cm &     &     & \cm &     &     &     &     &
+\\ $\Delta\frac{m}{\rho}$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm & \cm &     & \cm & \cm &     &     & \cm &     &     &     &
+\\ $\nabla\nabla\cdot\frac{m}{\rho}$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     & \cm & \cm & \cm & \cm &     &     & \cm &     &     &
+\\ $\Delta{}p$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm & \cm &     & \cm & \cm &     &     & \cm &     &     &     & \cm
+\\ $\Delta{}T$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm & \cm &     & \cm & \cm &     &     & \cm &     & \cm & \cm & \cm
+\\ $\tau$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     &     & \cm &     & \cm & \cm &     &     & \cm &     &
+\\ $\nabla\cdot\tau$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm & \cm & \cm & \cm & \cm & \cm & \cm & \cm & \cm & \cm & \cm &
+\\ $\nabla\cdot\tau\frac{m}{\rho}$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm & \cm & \cm & \cm & \cm & \cm & \cm & \cm & \cm & \cm & \cm &
+\\ $\nabla\cdot\mu\nabla{}T$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm & \cm &     & \cm & \cm &     &     & \cm &     & \cm & \cm & \cm
 \end{tabular}
 \caption{
-  Required state variable derivatives to compute quantities in physical space
-  without repeated first derivative application
+  State variable derivatives required to compute quantities in physical space
+  without repeated first derivative applications
 }
 \label{tab:nofirstderivcost}
 \end{table}
