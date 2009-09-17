@@ -543,8 +543,11 @@ Vector u(const Scalar &rho,
  * Compute \f$\vec{\nabla}\vec{u}\f$.  Uses the expansion
  * \f[
  *      \vec{\nabla}\vec{u} =
- *          \rho^{-1} \vec{\nabla}\vec{m} - \rho^{-2}
- *          \vec{m}\otimes\vec{\nabla}\rho.
+ *      \rho^{-1} \left[
+ *              \vec{\nabla}\vec{m}
+ *            - \rho^{-1} \vec{m}\otimes\vec{\nabla}\rho
+ *      \right]
+ *      .
  * \f]
  *
  * @param[in]  rho \f$\rho\f$
@@ -572,8 +575,10 @@ Tensor grad_u(
  * Compute \f$\vec{\nabla}\cdot\vec{u}\f$.  Uses the expansion
  * \f[
  *      \vec{\nabla}\cdot\vec{u} =
- *            \rho^{-1} \vec{\nabla}\cdot\vec{m}
- *          - \rho^{-2} \vec{\nabla}\rho\cdot\vec{m}.
+ *      \rho^{-1}\left[
+ *          \vec{\nabla}\cdot\vec{m} - \rho^{-1}\vec{m}\cdot\vec{\nabla}\rho
+ *      \right]
+ *      .
  * \f]
  *
  * @param[in]  rho \f$\rho\f$
@@ -600,11 +605,16 @@ Scalar div_u(
  * Compute \f$\vec{\nabla}\vec{\nabla}\cdot{}\vec{u}\f$.  Uses the expansion
  * \f[
  * \vec{\nabla}\vec{\nabla}\cdot{}\vec{u} =
- *      2\rho^{-3}\left(\vec{\nabla}\rho\cdot\vec{m}\right)\vec{\nabla}\rho
- *     - \rho^{-2}\left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
- *     - \rho^{-2}\left(\vec{\nabla}\vec{m}\right)^{\mathrm{T}}\vec{\nabla}\rho
- *     - \rho^{-2}\left(\vec{\nabla}\cdot\vec{m}\right)\vec{\nabla}\rho
- *     + \rho^{-1}\vec{\nabla}\vec{\nabla}\cdot\vec{m}.
+ *      \rho^{-1}\left[
+ *            \vec{\nabla}\vec{\nabla}\cdot\vec{m}
+ *          - \rho^{-1}\left[
+ *                \left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
+ *              + \vec{\nabla}\vec{m}^{\mathrm{T}}\vec{\nabla}\rho
+ *              + \left(\vec{\nabla}\cdot\vec{m}\right)\vec{\nabla}\rho
+ *              - 2 \rho^{-1}
+ *                \left(\vec{\nabla}\rho\cdot\vec{m}\right)\vec{\nabla}\rho
+ *            \right]
+ *      \right]
  * \f]
  *
  * @param[in]  rho \f$\rho\f$
@@ -644,10 +654,17 @@ Vector grad_div_u(
  * Compute \f$\vec{\nabla}\cdot{}\vec{\nabla}\vec{u}\f$.  Uses the expansion
  * \f[
  * \vec{\nabla}\cdot{}\vec{\nabla}\vec{u} =
- *      2\rho^{-3}\left(\vec{\nabla}\rho\cdot\vec{\nabla}\rho\right)\vec{m}
- *     -2\rho^{-2}\left(\vec{\nabla}\vec{m}\right)\vec{\nabla}\rho
- *     - \rho^{-2}\left(\vec{\nabla}\cdot\vec{\nabla}\rho\right)\vec{m}
- *     + \rho^{-1}\vec{\nabla}\cdot\vec{\nabla}\vec{m}.
+ *     \rho^{-1}\left[
+ *        \vec{\nabla}\cdot\vec{\nabla}\vec{m}
+ *        +
+ *        \rho^{-1}\left[
+ *            \left(
+ *                2\rho^{-1}\left(\vec{\nabla}\rho\cdot\vec{\nabla}\rho\right)
+ *              - \vec{\nabla}\cdot\vec{\nabla}\rho
+ *            \right) \vec{m}
+ *          - 2 \left(\vec{\nabla}\vec{m}\right)\vec{\nabla}\rho
+ *        \right]
+ *     \right]
  * \f]
  *
  * @param[in]  rho \f$\rho\f$
