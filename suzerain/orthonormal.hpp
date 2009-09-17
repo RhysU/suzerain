@@ -476,11 +476,11 @@ Scalar div_grad_p(
  * \f[
  *      \vec{\nabla}\cdot\vec\nabla{}T =
  *          \gamma\rho^{-1}\left[
- *                \vec{\nabla}\cdot\vec\nabla{}p
+ *                \vec{\nabla}\cdot\vec{\nabla}p
  *              - \rho^{-1}\left[
- *                    p\vec{\nabla}\cdot\vec\nabla{}\rho
+ *                    p\vec{\nabla}\cdot\vec{\nabla}\rho
  *                  + 2\vec{\nabla}\rho\cdot\left(
- *                      \vec{\nabla}p - \rho^{-1}p\vec{\nabla{\rho}}
+ *                      \vec{\nabla}p - \rho^{-1}p\vec{\nabla}\rho
  *                  \right)
  *              \right]
  *          \right]
