@@ -14,8 +14,9 @@
 \usepackage{mathtools}
 \usepackage{pstricks}
 \usepackage{setspace}
-\usepackage{units}
 \usepackage{txfonts}
+\usepackage{units}
+\usepackage{varioref}
 \usepackage{wrapfig}
 
 \mathtoolsset{showonlyrefs,showmanualtags}
@@ -653,11 +654,11 @@ the equations in section \ref{nondim_equations} become
 
 \subsection{Separation of first and second derivative operators}
 
-Our simulations will use a discrete B-spline basis in the wall normal
-direction.  For this basis, repeated application of a discrete first derivative
-operator gives results that differ significantly from application of a discrete
-second derivative operator.  In particular, repeated first differentiation
-severely abates high frequency modes (see figures 2 and 3 in ~\cite{Kwok2001}).
+We intend to use a B-spline basis in the wall normal direction.  For B-splines,
+the repeated application of a discrete first derivative operator gives a result
+that differs significantly from applying a discrete second derivative operator.
+In particular, repeated first differentiation severely abates high frequency
+modes (see figures 2 and 3 in ~\cite{Kwok2001}).
 
 Second differentiation enters equations \eqref{eq:state_continuity},
 \eqref{eq:state_momentum}, and \eqref{eq:state_energy} through the terms
@@ -691,49 +692,10 @@ We start by expanding the three nonlinear terms:
   + \mu \Delta{}T
 \end{align}
 \end{subequations}
-
-To determine the cost associated with each of these three expressions, we
+Next, to determine the cost associated with each of these three expressions, we
 expand the non-state derivatives appearing above:
 \begin{subequations}
 \begin{align}
-  \nabla{}p &= (\gamma-1)\left[
-        \nabla{}e
-      + \frac{1}{2}\rho^{-2} m^{2} \nabla\rho
-      - \rho^{-1} \nabla{}m^{\mathsf{T}}m
-  \right]
-\\
-  \nabla{}T &= \gamma\rho^{-1}\nabla{}p
-             - \gamma\rho^{-2} p \nabla\rho
-\\
-  \nabla\mu &= \beta{}T^{\beta-1}\nabla{}T
-\\
-  \nabla\lambda &= -\frac{2}{3}\nabla\mu
-\\
-  \Delta{}p
-  &=
-  \left(\gamma-1\right)\left[
-      \Delta{}e
-      - \rho^{-1}\left[
-            \mathrm{tr}\left( \nabla{}{m}^{\mathsf{T}}\nabla{}{m} \right)
-          + m\cdot\Delta{}m
-          - \rho^{-1}\left[
-                2\nabla{}{m}^{\mathsf{T}}{m} \cdot\nabla{}\rho
-              + \frac{1}{2} m^2 \Delta\rho
-              - \rho^{-1} m^2 \left(\nabla\rho\right)^{2}
-          \right]
-      \right]
-  \right]
-\\
-  \Delta{}T
-  &=
-  \gamma\rho^{-1}\left[
-        \Delta{}p
-      - \rho^{-1}\left[
-            p\Delta{}\rho
-          + 2\nabla{}\rho\cdot\left( \nabla{}p - \rho^{-1}p\nabla\rho \right)
-      \right]
-  \right]
-\\
   \nabla\cdot\frac{m}{\rho}
   &=
   \rho^{-1}\left[ \nabla\cdot{}m - \rho^{-1}m\cdot\nabla\rho \right]
@@ -776,6 +738,44 @@ expand the non-state derivatives appearing above:
           - 2 \rho^{-1}\left(\nabla\rho\cdot{}m\right)\nabla\rho
         \right]
   \right]
+\\
+  \nabla{}p &= (\gamma-1)\left[
+        \nabla{}e
+      + \frac{1}{2}\rho^{-2} m^{2} \nabla\rho
+      - \rho^{-1} \nabla{}m^{\mathsf{T}}m
+  \right]
+\\
+  \nabla{}T &= \gamma\rho^{-1}\nabla{}p
+             - \gamma\rho^{-2} p \nabla\rho
+\\
+  \nabla\mu &= \beta{}T^{\beta-1}\nabla{}T
+\\
+  \nabla\lambda &= -\frac{2}{3}\nabla\mu
+\\
+  \Delta{}p
+  &=
+  \left(\gamma-1\right)\left[
+      \Delta{}e
+      - \rho^{-1}\left[
+            \mathrm{tr}\left( \nabla{}{m}^{\mathsf{T}}\nabla{}{m} \right)
+          + m\cdot\Delta{}m
+          - \rho^{-1}\left[
+                2\nabla{}{m}^{\mathsf{T}}{m} \cdot\nabla{}\rho
+              + \frac{1}{2} m^2 \Delta\rho
+              - \rho^{-1} m^2 \left(\nabla\rho\right)^{2}
+          \right]
+      \right]
+  \right]
+\\
+  \Delta{}T
+  &=
+  \gamma\rho^{-1}\left[
+        \Delta{}p
+      - \rho^{-1}\left[
+            p\Delta{}\rho
+          + 2\nabla{}\rho\cdot\left( \nabla{}p - \rho^{-1}p\nabla\rho \right)
+      \right]
+  \right]
 \end{align}
 \end{subequations}
 where we have employed the shorthand $m^2=m\cdot{}m$ and
@@ -799,14 +799,20 @@ since
   .
 \end{align}
 \end{subequations}
+Finally, in table~\vref{tab:nofirstderivnonlinearcost}, we tabulate the specific
+state variable derivatives necessary to compute each nonlinear term and all of
+its contributions.
 
 
-\begin{table}[h]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[tbhp]
 \centering
-\renewcommand{\arraystretch}{1.15}   % Adds whitespace between rows
+\vspace{1em}
+\renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
 \newcommand{\cm}{\checkmark}         % For brevity in the table details
 \newcommand{\cd}{\ensuremath{\cdot}} % For brevity in the table details
-\begin{tabular}{r|ccccccccccccc|r}
+\begin{tabular}{r|cccc|cccccc|ccc|r}
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 &   1 &   3 &   1 &   6 &   3 &   1 &   6 &   9 &   3 &   3 &   1 &   3 &   1
 \\
@@ -824,14 +830,6 @@ since
 & $\nabla{}e$                                         % 13
 & $\Delta{}e$                                         % 14
 \\ \hline
-$p$, $T$, $\mu$, $\lambda$
-% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
-& \cm &     &     &     & \cm &     &     &     &     &     & \cm &     &
-& 5 \\
-$\nabla{}p$, $\nabla{}T$, $\nabla\mu$, $\nabla\lambda$
-% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
-& \cm & \cm &     &     & \cm &     &     & \cm &     &     & \cm & \cm &
-& 20 \\
 $\nabla\cdot\frac{m}{\rho}$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm &     &     & \cm & \cm &     &     &     &     &     &     &
@@ -840,7 +838,7 @@ $\nabla\frac{m}{\rho}$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm &     &     & \cm &     &     & \cm &     &     &     &     &
 & 16 \\
-$\nabla\frac{m}{\rho} + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}$
+$\nabla\frac{m}{\rho}\!+\!\left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm &     &     & \cm &     & \cm &     &     &     &     &     &
 & 13 \\
@@ -851,7 +849,15 @@ $\Delta\frac{m}{\rho}$
 $\nabla\nabla\cdot\frac{m}{\rho}$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm &     & \cm & \cm & \cd &     & \cm &     & \cm &     &     &
-& 25 \\
+& 25 \\[1.5em]
+$p$, $T$, $\mu$, $\lambda$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm &     &     &     & \cm &     &     &     &     &     & \cm &     &
+& 5 \\
+$\nabla{}p$, $\nabla{}T$, $\nabla\mu$, $\nabla\lambda$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     &     & \cm &     &     & \cm &     &     & \cm & \cm &
+& 20 \\
 $\Delta{}p$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm & \cm &     & \cm &     &     & \cm & \cm &     &     &     & \cm
@@ -859,31 +865,74 @@ $\Delta{}p$
 $\Delta{}T$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm & \cm &     & \cm &     &     & \cm & \cm &     & \cm & \cm & \cm
-& 25 \\
+& 25 \\[1.5em]
 $\tau$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm &     &     & \cm & \cd & \cm &     &     &     & \cm &     &
-& 14 \\
+& 14 \\[1.5em]
+$\left[
+  \nabla\frac{m}{\rho}\!+\!\left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
+\right] \nabla\mu$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     &     & \cm &     & \cd & \cm &     &     & \cm & \cm &
+& 20 \\
+$\mu\Delta\frac{m}{\rho}$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm & \cm &     & \cm &     &     & \cm & \cm &     & \cm &     &
+& 21 \\
+$\left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho}$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     & \cm & \cm & \cd &     & \cm &     & \cm & \cm &     &
+& 26 \\
+$\left(\nabla\cdot\frac{m}{\rho}\right)\nabla\lambda$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     &     & \cm & \cd &     & \cm &     &     & \cm & \cm &
+& 20 \\
 $\nabla\cdot\tau$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm & \cd & \cm & \cm & \cd & \cd & \cm & \cm & \cm & \cm & \cm &
-& 32 \\
-$\nabla\cdot\tau\frac{m}{\rho}$
+& 32 \\[1.5em]
+$\frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm & \cd & \cm & \cm & \cd & \cd & \cm & \cm & \cm & \cm & \cm &
 & 32 \\
+$\mathrm{tr}\left(\tau\nabla\frac{m}{\rho}\right)$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     &     & \cm & \cd & \cd & \cm &     &     & \cm &     &
+& 20 \\
+$\nabla\cdot\tau\frac{m}{\rho}$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm & \cd & \cm & \cm & \cd & \cd & \cm & \cm & \cm & \cm & \cm &
+& 32 \\[1.5em]
+$\nabla\mu\cdot\nabla{}T$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm &     &     & \cm &     &     & \cm &     &     & \cm & \cm &
+& 20 \\
+$\mu\Delta{}T$
+% 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
+& \cm & \cm & \cm &     & \cm &     &     & \cm & \cm &     & \cm & \cm & \cm
+& 25 \\
 $\nabla\cdot\mu\nabla{}T$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm & \cm &     & \cm &     &     & \cm & \cm &     & \cm & \cm & \cm
 & 25
 \end{tabular}
-
+\vspace{1em}
 \caption{
-  State variable derivatives required to completely compute quantities in
-  physical space without repeated first derivative applications
+    State variable derivatives and the relative computational cost required to
+    completely compute quantities in physical space without using repeated
+    first derivative applications.  A check (\checkmark) indicates that a
+    quantity is required to compute the given term.  A dot ($\cdot$) indicates
+    the quantity is required but it can be computed from other required
+    quantities.  Costs are given relative to the cost of transforming a single
+    scalar field from wave space to physical space and do not include floating
+    point operations. The total cost for each term is found in the rightmost
+    column of the table.
 }
-\label{tab:nofirstderivcost}
+\label{tab:nofirstderivnonlinearcost}
 \end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
