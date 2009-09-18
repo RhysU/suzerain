@@ -584,10 +584,13 @@ for curvature in the domain.
 \subsection{Convective derivative operator form}
 
 We choose to use the conservative form of the convective derivative operator,
-$\nabla\cdot\left(u\otimes{}\rho{}u\right)$ instead of the skew-symmetric form
-$\frac{1}{2}u\cdot\nabla{}\rho{}u + \frac{1}{2}\nabla\cdot{}u\otimes{}\rho{}u$.
-The former is simpler to compute and behaves comparably to the latter in the
-incompressible case when aliasing errors are removed~\cite{Zang1991Rotation}.
+$\nabla\cdot\left(u\otimes{}\rho{}u\right)$, instead of the skew-symmetric
+form, $\frac{1}{2}u\cdot\nabla{}\rho{}u +
+\frac{1}{2}\nabla\cdot{}u\otimes{}\rho{}u$.  The former is simpler to compute,
+retains the conservative nature of the equations, and behaves comparably to the
+latter in the incompressible case when aliasing errors are
+removed~\cite{Zang1991Rotation}.  This choice may need to be revisited as the
+wall-normal direction is not dealiased.
 
 \subsection{State variable selection}
 
@@ -602,12 +605,12 @@ the equations in section \ref{nondim_equations} become
   \label{eq:state_continuity}
   \frac{\partial}{\partial{}t}\rho{}
 &=
-- \nabla\cdot{}m
+  - \nabla\cdot{}m
   \\
   \label{eq:state_momentum}
   \frac{\partial}{\partial{}t}m
 &=
-- \nabla\cdot\left(\frac{m}{\rho}\otimes{}m\right)
+  - \nabla\cdot\left(\frac{m}{\rho}\otimes{}m\right)
   - \nabla{} p
   + \frac{1}{\Reynolds} \nabla\cdot\tau
   + \rho{}f_{b}
@@ -648,14 +651,13 @@ the equations in section \ref{nondim_equations} become
 \end{align}
 \end{subequations}
 
-\subsection{Discretized operator considerations}
+\subsection{Discrete operator considerations}
 
 Our simulations will use a discrete B-spline basis in the wall normal
 direction.  For this basis, repeated application of a discrete first derivative
-operator gives results that differ significantly from application of a
-discrete second derivative operator.  In particular, repeated first
-differentiation severely abates high frequency modes (see~\cite{Kwok2001}
-figures 2 and 3).
+operator gives results that differ significantly from application of a discrete
+second derivative operator.  In particular, repeated first differentiation
+severely abates high frequency modes (see figures 2 and 3 in ~\cite{Kwok2001}).
 
 Second differentiation enters equations \eqref{eq:state_continuity},
 \eqref{eq:state_momentum}, and \eqref{eq:state_energy} through the terms
