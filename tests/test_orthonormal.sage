@@ -39,6 +39,17 @@ grad_m = [
     [ m[1].diff(x), m[1].diff(y), m[1].diff(z) ],
     [ m[2].diff(x), m[2].diff(y), m[2].diff(z) ]
 ];
+grad_m_grad_m_T = [
+    [ grad_m[0][0] + grad_m[0][0],
+      grad_m[0][1] + grad_m[1][0],
+      grad_m[0][2] + grad_m[2][0] ],
+    [ grad_m[1][0] + grad_m[0][1],
+      grad_m[1][1] + grad_m[1][1],
+      grad_m[1][2] + grad_m[2][1] ],
+    [ grad_m[2][0] + grad_m[0][2],
+      grad_m[2][1] + grad_m[1][2],
+      grad_m[2][2] + grad_m[2][2] ]
+];
 div_m = m[0].diff(x) + m[1].diff(y) + m[2].diff(z);
 grad_div_m = [ div_m.diff(x), div_m.diff(y), div_m.diff(z) ];
 div_grad_m = [
@@ -88,6 +99,17 @@ grad_div_u = [
     div_u.diff(x),
     div_u.diff(y),
     div_u.diff(z)
+];
+grad_u_grad_u_T = [
+    [ grad_u[0][0] + grad_u[0][0],
+      grad_u[0][1] + grad_u[1][0],
+      grad_u[0][2] + grad_u[2][0] ],
+    [ grad_u[1][0] + grad_u[0][1],
+      grad_u[1][1] + grad_u[1][1],
+      grad_u[1][2] + grad_u[2][1] ],
+    [ grad_u[2][0] + grad_u[0][2],
+      grad_u[2][1] + grad_u[1][2],
+      grad_u[2][2] + grad_u[2][2] ]
 ];
 
 # Viscous stress tensor
