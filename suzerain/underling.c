@@ -137,10 +137,10 @@ underling_workspace_free(underling_workspace * w)
 }
 
 int
-underling_workspace_name_dimension(underling_workspace * const w,
-                                   const int ndim,
-                                   const int nstage,
-                                   const char * const name)
+underling_name_dimension(underling_workspace * const w,
+                         const int ndim,
+                         const int nstage,
+                         const char * const name)
 {
     if (ndim < 0 || ndim > w->ndim+1) {
         SUZERAIN_ERROR("ndim out of range", SUZERAIN_EINVAL);

@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE( name_dimension )
         const int nstage = ndim+1;
         underling_workspace * const w
             = underling_workspace_alloc(ndim, nstage);
-        underling_workspace_name_dimension(w, 0, 0, "X");
+        underling_name_dimension(w, 0, 0, "X");
 
         BOOST_CHECK_EQUAL(w->stage[0].dim[0].name, "X");
         BOOST_CHECK_EQUAL(w->stage[1].dim[0].name, "X");
@@ -204,9 +204,9 @@ BOOST_AUTO_TEST_CASE( name_dimension )
         const int nstage = ndim;
         underling_workspace * const w
             = underling_workspace_alloc(ndim, nstage);
-        underling_workspace_name_dimension(w, 0, 2, "Y");
-        underling_workspace_name_dimension(w, 1, 2, "X");
-        underling_workspace_name_dimension(w, 2, 2, "Z");
+        underling_name_dimension(w, 0, 2, "Y");
+        underling_name_dimension(w, 1, 2, "X");
+        underling_name_dimension(w, 2, 2, "Z");
 
         BOOST_CHECK_EQUAL(w->stage[2].dim[0].name, "Y");
         BOOST_CHECK_EQUAL(w->stage[2].dim[1].name, "X");
@@ -229,9 +229,9 @@ BOOST_AUTO_TEST_CASE( name_dimension )
         const int nstage = ndim;
         underling_workspace * const w
             = underling_workspace_alloc(ndim, nstage);
-        underling_workspace_name_dimension(w, 0, 1, "Z");
-        underling_workspace_name_dimension(w, 1, 1, "Y");
-        underling_workspace_name_dimension(w, 2, 1, "X");
+        underling_name_dimension(w, 0, 1, "Z");
+        underling_name_dimension(w, 1, 1, "Y");
+        underling_name_dimension(w, 2, 1, "X");
 
         BOOST_CHECK_EQUAL(w->stage[2].dim[0].name, "Y");
         BOOST_CHECK_EQUAL(w->stage[2].dim[1].name, "X");

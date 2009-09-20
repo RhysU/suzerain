@@ -96,10 +96,10 @@ underling_workspace *
 underling_workspace_alloc(const int ndim, const int nstage);
 
 int
-underling_workspace_name_dimension(underling_workspace * const w,
-                                   const int ndim,
-                                   const int nstage,
-                                   const char * const name);
+underling_name_dimension(underling_workspace * const w,
+                         const int ndim,
+                         const int nstage,
+                         const char * const name);
 
 void
 underling_workspace_free(underling_workspace * const w);
