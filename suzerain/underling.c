@@ -32,6 +32,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include <suzerain/underling.h>
 
 underling_workspace *
@@ -116,6 +117,14 @@ underling_workspace_free(underling_workspace * w)
         if (w->stage) {
             for (int i = 0; i < w->nstage; ++i) {
                 if (w->stage[i].dim) {
+                    /* Free items allocated per-dimension  */
+                    for (int j = 0; j < w->ndim; ++j) {
+                        if (w->stage[i].dim[j].name) {
+                            free(w->stage[i].dim[j].name);
+                            w->stage[i].dim[j].name = NULL;
+                        }
+                    }
+                    /* Free dimensions previously allocated in a block */
                     free(w->stage[i].dim);
                     w->stage[i].dim = NULL;
                 }
@@ -125,6 +134,50 @@ underling_workspace_free(underling_workspace * w)
         }
         free(w);
     }
+}
+
+int
+underling_workspace_name_dimension(underling_workspace * const w,
+                                   const int ndim,
+                                   const int nstage,
+                                   const char * const name)
+{
+    if (ndim < 0 || ndim > w->ndim+1) {
+        SUZERAIN_ERROR("ndim out of range", SUZERAIN_EINVAL);
+    }
+    if (nstage < 0 || nstage > w->nstage+1) {
+        SUZERAIN_ERROR("nstage out of range", SUZERAIN_EINVAL);
+    }
+
+    const size_t namelen = strlen(name);
+
+    underling_dimension * dim;
+
+    dim = &(w->stage[nstage].dim[ndim]);
+    while (dim) {
+        dim->name = malloc((namelen+1)*sizeof(name[0]));
+        if (! dim->name) {
+            SUZERAIN_ERROR("Unable to allocate space for name",
+                           SUZERAIN_ENOMEM);
+        }
+        strcpy(dim->name, name);
+
+        dim = dim->next_c2r;
+    }
+
+    dim = w->stage[nstage].dim[ndim].next_r2c;
+    while (dim) {
+        dim->name = malloc((namelen+1)*sizeof(name[0]));
+        if (! dim->name) {
+            SUZERAIN_ERROR("Unable to allocate space for name",
+                           SUZERAIN_ENOMEM);
+        }
+        strcpy(dim->name, name);
+
+        dim = dim->next_r2c;
+    }
+
+    return SUZERAIN_SUCCESS;
 }
 
 int

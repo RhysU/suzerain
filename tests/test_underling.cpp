@@ -181,3 +181,70 @@ BOOST_AUTO_TEST_CASE( alloc )
         underling_workspace_free(w);
     }
 }
+
+BOOST_AUTO_TEST_CASE( name_dimension )
+{
+    /* Check dimension names across each stage for low dimension problem */
+    {
+        const int ndim   = 1;
+        const int nstage = ndim+1;
+        underling_workspace * const w
+            = underling_workspace_alloc(ndim, nstage);
+        underling_workspace_name_dimension(w, 0, 0, "X");
+
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].name, "X");
+        BOOST_CHECK_EQUAL(w->stage[1].dim[0].name, "X");
+
+        underling_workspace_free(w);
+    }
+
+    /* Check dimension names across each stage specified using last stage */
+    {
+        const int ndim   = 3;
+        const int nstage = ndim;
+        underling_workspace * const w
+            = underling_workspace_alloc(ndim, nstage);
+        underling_workspace_name_dimension(w, 0, 2, "Y");
+        underling_workspace_name_dimension(w, 1, 2, "X");
+        underling_workspace_name_dimension(w, 2, 2, "Z");
+
+        BOOST_CHECK_EQUAL(w->stage[2].dim[0].name, "Y");
+        BOOST_CHECK_EQUAL(w->stage[2].dim[1].name, "X");
+        BOOST_CHECK_EQUAL(w->stage[2].dim[2].name, "Z");
+
+        BOOST_CHECK_EQUAL(w->stage[1].dim[0].name, "Z");
+        BOOST_CHECK_EQUAL(w->stage[1].dim[1].name, "Y");
+        BOOST_CHECK_EQUAL(w->stage[1].dim[2].name, "X");
+
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].name, "X");
+        BOOST_CHECK_EQUAL(w->stage[0].dim[1].name, "Z");
+        BOOST_CHECK_EQUAL(w->stage[0].dim[2].name, "Y");
+
+        underling_workspace_free(w);
+    }
+
+    /* Check dimension names across each stage specified using intermediate stage */
+    {
+        const int ndim   = 3;
+        const int nstage = ndim;
+        underling_workspace * const w
+            = underling_workspace_alloc(ndim, nstage);
+        underling_workspace_name_dimension(w, 0, 1, "Z");
+        underling_workspace_name_dimension(w, 1, 1, "Y");
+        underling_workspace_name_dimension(w, 2, 1, "X");
+
+        BOOST_CHECK_EQUAL(w->stage[2].dim[0].name, "Y");
+        BOOST_CHECK_EQUAL(w->stage[2].dim[1].name, "X");
+        BOOST_CHECK_EQUAL(w->stage[2].dim[2].name, "Z");
+
+        BOOST_CHECK_EQUAL(w->stage[1].dim[0].name, "Z");
+        BOOST_CHECK_EQUAL(w->stage[1].dim[1].name, "Y");
+        BOOST_CHECK_EQUAL(w->stage[1].dim[2].name, "X");
+
+        BOOST_CHECK_EQUAL(w->stage[0].dim[0].name, "X");
+        BOOST_CHECK_EQUAL(w->stage[0].dim[1].name, "Z");
+        BOOST_CHECK_EQUAL(w->stage[0].dim[2].name, "Y");
+
+        underling_workspace_free(w);
+    }
+}

@@ -58,6 +58,7 @@ typedef enum underling_state {
 
 typedef struct underling_dimension underling_dimension;
 struct underling_dimension {
+    char * name;
     int size;
     int stride;
     int global_size;
@@ -84,6 +85,12 @@ typedef underling_real underling_complex[2];
 
 underling_workspace *
 underling_workspace_alloc(const int ndim, const int nstage);
+
+int
+underling_workspace_name_dimension(underling_workspace * const w,
+                                   const int ndim,
+                                   const int nstage,
+                                   const char * const name);
 
 void
 underling_workspace_free(underling_workspace * const w);
