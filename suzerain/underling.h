@@ -49,6 +49,9 @@
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+typedef double         underling_real;
+typedef underling_real underling_complex[2];
+
 typedef enum underling_state {
     UNDERLING_STATE_UNINITIALIZED  = 0,
     UNDERLING_STATE_PHYSICAL       = 1,
@@ -63,7 +66,7 @@ struct underling_dimension {
     int stride;
     int global_size;
     int global_start;
-    double dealias_by;
+    underling_real dealias_by;
     underling_state state;
     underling_dimension *next_r2c;
     underling_dimension *next_c2r;
@@ -73,15 +76,21 @@ typedef struct underling_stage {
     underling_dimension *dim;
 } underling_stage;
 
+typedef struct underling_scalar_tophysical {
+    int max_derivative;
+    int *derivative_requested;
+    char ** field_name;
+    underling_real ** field;
+    int stage;
+} underling_scalar_tophysical;
+
 typedef struct underling_workspace {
-    int                  ndim;
-    int                  nstage;
-    underling_stage     *stage;
+    int                          ndim;
+    int                          nstage;
+    underling_stage             *stage;
+    int                          nscalar_tophysical;
+    underling_scalar_tophysical *scalar_tophysical;
 } underling_workspace;
-
-typedef double         underling_real;
-
-typedef underling_real underling_complex[2];
 
 underling_workspace *
 underling_workspace_alloc(const int ndim, const int nstage);
