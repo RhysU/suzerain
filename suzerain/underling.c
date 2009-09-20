@@ -48,7 +48,7 @@ underling_workspace_alloc(const int ndim, const int nstage)
         SUZERAIN_ERROR_NULL("nstage must be less than ndim+1", SUZERAIN_EINVAL);
     }
 
-    underling_workspace * w = malloc(sizeof(underling_workspace));
+    underling_workspace * w = calloc(1, sizeof(underling_workspace));
     if (w == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                              SUZERAIN_ENOMEM);
@@ -176,6 +176,28 @@ underling_name_dimension(underling_workspace * const w,
 
         dim = dim->next_r2c;
     }
+
+    return SUZERAIN_SUCCESS;
+}
+
+
+int
+underling_scalar_to_physical_add(underling_workspace * const w,
+                                 const char * const name,
+                                 const int max_derivative)
+{
+    if (max_derivative < 0) {
+        SUZERAIN_ERROR("max_derivative must be nonnegative", SUZERAIN_EINVAL);
+    }
+    if (max_derivative > 2) {
+        SUZERAIN_ERROR("Unable to handle max_derivative > 2", SUZERAIN_ESANITY);
+    }
+    if (!name || !strlen(name)) {
+        SUZERAIN_ERROR("Unable to add a nameless scalar_to_physical field",
+                       SUZERAIN_EINVAL);
+    }
+
+    /* Go to end of scalar_to_physical list, looking for duplicate names */
 
     return SUZERAIN_SUCCESS;
 }

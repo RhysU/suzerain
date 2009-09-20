@@ -76,20 +76,18 @@ typedef struct underling_stage {
     underling_dimension *dim;
 } underling_stage;
 
-typedef struct underling_scalar_tophysical {
+typedef struct underling_scalar_to_physical {
     int max_derivative;
     int *derivative_requested;
     char ** field_name;
     underling_real ** field;
     int stage;
-} underling_scalar_tophysical;
+} underling_scalar_to_physical;
 
 typedef struct underling_workspace {
-    int                          ndim;
-    int                          nstage;
-    underling_stage             *stage;
-    int                          nscalar_tophysical;
-    underling_scalar_tophysical *scalar_tophysical;
+    int                           ndim;
+    int                           nstage;
+    underling_stage              *stage;
 } underling_workspace;
 
 underling_workspace *
@@ -100,6 +98,11 @@ underling_name_dimension(underling_workspace * const w,
                          const int ndim,
                          const int nstage,
                          const char * const name);
+
+int
+underling_scalar_to_physical_add(underling_workspace * const w,
+                                 const char * const name,
+                                 const int max_derivative);
 
 void
 underling_workspace_free(underling_workspace * const w);
