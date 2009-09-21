@@ -37,6 +37,23 @@
 #include <string.h>
 #include <suzerain/underling.h>
 
+bool
+scalar_to_physical_gl_listelement_equals_fn(const void *elt1,
+                                            const void *elt2)
+{
+    const underling_scalar_to_physical * const stp1
+        = (underling_scalar_to_physical *) elt1;
+    const underling_scalar_to_physical * const stp2
+        = (underling_scalar_to_physical *) elt2;
+
+    const char * const name1
+        = !(stp1) ? NULL : !(stp1->field_name) ? NULL : stp1->field_name[0];
+    const char * const name2
+        = !(stp2) ? NULL : !(stp2->field_name) ? NULL : stp2->field_name[0];
+
+    return 0 == strcmp(name1, name2);
+}
+
 underling_workspace *
 underling_workspace_alloc(const int ndim, const int nstage)
 {
@@ -151,30 +168,26 @@ underling_name_dimension(underling_workspace * const w,
         SUZERAIN_ERROR("nstage out of range", SUZERAIN_EINVAL);
     }
 
-    const size_t namelen = strlen(name);
-
     underling_dimension * dim;
 
     dim = &(w->stage[nstage].dim[ndim]);
     while (dim) {
-        dim->name = malloc((namelen+1)*sizeof(name[0]));
+        dim->name = strdup(name);
         if (! dim->name) {
             SUZERAIN_ERROR("Unable to allocate space for name",
                            SUZERAIN_ENOMEM);
         }
-        strcpy(dim->name, name);
 
         dim = dim->next_c2r;
     }
 
     dim = w->stage[nstage].dim[ndim].next_r2c;
     while (dim) {
-        dim->name = malloc((namelen+1)*sizeof(name[0]));
+        dim->name = strdup(name);
         if (! dim->name) {
             SUZERAIN_ERROR("Unable to allocate space for name",
                            SUZERAIN_ENOMEM);
         }
-        strcpy(dim->name, name);
 
         dim = dim->next_r2c;
     }
