@@ -54,6 +54,25 @@ scalar_to_physical_gl_listelement_equals_fn(const void *elt1,
     return 0 == strcmp(name1, name2);
 }
 
+underling_scalar_to_physical *
+scalar_to_physical_alloc(const underling_workspace * const w,
+                         const char * const field_name,
+                         const int max_derivative)
+{
+    underling_scalar_to_physical * const retval =
+        calloc(1, sizeof(underling_scalar_to_physical));
+    if (retval == NULL) {
+        SUZERAIN_ERROR_NULL("failed to allocate space for scalar_to_physical",
+                             SUZERAIN_ENOMEM);
+    }
+
+    retval->max_derivative = max_derivative;
+
+    /* FIXME STARTHERE */
+
+    return retval;
+}
+
 underling_workspace *
 underling_workspace_alloc(const int ndim, const int nstage)
 {

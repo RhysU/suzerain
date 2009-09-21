@@ -83,11 +83,12 @@ typedef struct underling_stage {
 } underling_stage;
 
 typedef struct underling_scalar_to_physical {
-    int max_derivative;
-    int *derivative_requested;
-    char ** field_name;
-    underling_real ** field;
-    int stage;
+    int              stage;
+    int              max_derivative;
+    int              nfield;
+    int             *derivative_requested;
+    char           **field_name;
+    underling_real **field;
 } underling_scalar_to_physical;
 
 typedef struct underling_workspace {
