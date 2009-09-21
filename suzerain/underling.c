@@ -30,6 +30,8 @@
 
 #include <config.h>
 
+#include "gl_array_list.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
