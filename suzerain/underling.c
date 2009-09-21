@@ -33,8 +33,11 @@
 #include "gl_array_list.h"
 
 #include <assert.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gsl/gsl_combination.h>
+#include <suzerain/error.h>
 #include <suzerain/underling.h>
 
 bool
@@ -47,28 +50,45 @@ scalar_to_physical_gl_listelement_equals_fn(const void *elt1,
         = (underling_scalar_to_physical *) elt2;
 
     const char * const name1
-        = !(stp1) ? NULL : !(stp1->field_name) ? NULL : stp1->field_name[0];
+        = !(stp1) ? NULL : !(stp1->name) ? NULL : stp1->name[0];
     const char * const name2
-        = !(stp2) ? NULL : !(stp2->field_name) ? NULL : stp2->field_name[0];
+        = !(stp2) ? NULL : !(stp2->name) ? NULL : stp2->name[0];
 
     return 0 == strcmp(name1, name2);
+}
+
+void
+scalar_to_physical_free(underling_scalar_to_physical * stp)
+{
+    /* FIXME: Implement */
 }
 
 underling_scalar_to_physical *
 scalar_to_physical_alloc(const underling_workspace * const w,
                          const char * const field_name,
-                         const int max_derivative)
+                         const int nderivative)
 {
     underling_scalar_to_physical * const retval =
         calloc(1, sizeof(underling_scalar_to_physical));
     if (retval == NULL) {
+        scalar_to_physical_free(retval);
         SUZERAIN_ERROR_NULL("failed to allocate space for scalar_to_physical",
                              SUZERAIN_ENOMEM);
     }
+    retval->stage       = w->nstage-1; /* Start in all wave space */
+    retval->nderivative = nderivative;
+    retval->nfield      = 0;
 
-    retval->max_derivative = max_derivative;
-
-    /* FIXME STARTHERE */
+    retval->index = calloc(nderivative+1, sizeof(retval->index[0]));
+    if (retval == NULL) {
+        scalar_to_physical_free(retval);
+        SUZERAIN_ERROR_NULL("failed to allocate space for scalar_to_physical",
+                             SUZERAIN_ENOMEM);
+    }
+    for (int i = 0; i <= nderivative; ++i) {
+        /* FIXME STARTHERE */
+        retval->index[i] = gsl_combination_calloc(w->ndim, i+1);
+    }
 
     return retval;
 }

@@ -51,8 +51,12 @@ __BEGIN_DECLS
 
 /* Conditional forward declaration of implementation-related structs */
 #ifndef _GL_LIST_H
-typedef struct gl_list_impl;
+struct gl_list_impl;
 typedef struct gl_list_impl * gl_list_t;
+#endif
+#ifndef __GSL_COMBINATION_H__
+struct gsl_combination_struct;
+typedef struct gsl_combination_struct gsl_combination;
 #endif
 
 typedef double         underling_real;
@@ -83,12 +87,12 @@ typedef struct underling_stage {
 } underling_stage;
 
 typedef struct underling_scalar_to_physical {
-    int              stage;
-    int              max_derivative;
-    int              nfield;
-    int             *derivative_requested;
-    char           **field_name;
-    underling_real **field;
+    int               stage;
+    int               nderivative;
+    int               nfield;
+    gsl_combination **index;
+    char            **name;
+    underling_real  **field;
 } underling_scalar_to_physical;
 
 typedef struct underling_workspace {
@@ -110,7 +114,7 @@ underling_name_dimension(underling_workspace * const w,
 int
 underling_scalar_to_physical_add(underling_workspace * const w,
                                  const char * const name,
-                                 const int max_derivative);
+                                 const int nderivative);
 
 void
 underling_workspace_free(underling_workspace * const w);
