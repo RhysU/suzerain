@@ -42,6 +42,8 @@ echo "- autoheader."          && \
 autoheader                    && \
 echo "- automake."            && \
 automake --add-missing --copy && \
+echo "- gnulib."              && \
+gnulib-tool --update          && \
 exit 0
 
 exit 1

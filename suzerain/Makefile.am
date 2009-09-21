@@ -35,10 +35,12 @@ libsuzerain_la_SOURCES += bspline.c
 libsuzerain_la_SOURCES += error.c
 libsuzerain_la_SOURCES += richardson.c
 libsuzerain_la_SOURCES += timestepper.c
+libsuzerain_la_LIBADD   = ../lib/libgnu.la
 
 noinst_LTLIBRARIES      += libunderling.la
 libunderling_la_SOURCES  = error.c
 libunderling_la_SOURCES += underling.c
+libunderling_la_LIBADD   = ../lib/libgnu.la
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

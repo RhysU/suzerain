@@ -8,7 +8,7 @@ SUBDIRS = lib suzerain tests apps doc
 
 # Distribute these items:
 DIST_SUBDIRS = lib suzerain tests apps doc
-EXTRA_DIST= bootstrap $(DX_CONFIG)
+EXTRA_DIST= bootstrap m4/gnulib-cache.m4 $(DX_CONFIG)
 
 # Eliminate .svn directories in dist tarball
 dist-hook:

@@ -29,6 +29,7 @@ dnl Check for compiler toolchain
 dnl ------------------------------------------------
 AX_CHECK_ENABLE_DEBUG
 AC_PROG_CC
+gl_EARLY
 AC_PROG_CXX
 AC_PROG_RANLIB
 AC_PROG_SED
@@ -53,6 +54,7 @@ dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG([C])
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
+gl_INIT
 ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LIBS} ${FLIBS}"
 AX_PATH_GSL(1.13,,AC_MSG_ERROR([Could not find required GSL version.]))
