@@ -329,7 +329,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_u )
             rho, grad_rho, m, div_m);
 
     const double ans = -7.8528271460331434259092626891655172292938028930092832721830;
-    const double close_enough = std::numeric_limits<double>::epsilon();
+    const double close_enough = std::numeric_limits<double>::epsilon() *1e2;
     BOOST_CHECK_CLOSE(div_u, ans, close_enough);
 }
 
@@ -527,7 +527,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_u )
     const double ans
         = -90849.212502207575911979472073826868082163956391101506206117;
 
-    const double close_enough = std::numeric_limits<double>::epsilon();
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1e2;
     BOOST_CHECK_CLOSE(div_e_u, ans, close_enough);
 }
 
