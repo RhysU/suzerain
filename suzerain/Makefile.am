@@ -11,10 +11,14 @@ check_PROGRAMS     = # Append below
 noinst_HEADERS     = # Append below
 noinst_LTLIBRARIES = # Append below
 pkginclude_HEADERS = # Append below
+CLEANFILES         = # Append below
 
 # FIXME: Ugly, separate MPI compilation into separate dir, maybe
 CXX=@MPICXX@
 CC=@MPICC@
+
+# Clean up from Intel Compiler's -prof-gen output
+CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
 
 pkginclude_HEADERS += blas_et_al.h
 pkginclude_HEADERS += bspline.h

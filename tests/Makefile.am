@@ -10,12 +10,16 @@ bin_PROGRAMS   = # Append below
 check_PROGRAMS = # Append below
 noinst_HEADERS = # Append below
 EXTRA_DIST     = # Append below
+CLEANFILES     = # Append below
 
 noinst_HEADERS += test_tools.hpp
 
 # FIXME: Ugly, separate MPI compilation into separate dir, maybe
 CXX=@MPICXX@
 CC=@MPICC@
+
+# Clean up from Intel Compiler's -prof-gen output
+CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
 
 check_PROGRAMS     += test_error
 test_error_SOURCES  = test_error.cpp

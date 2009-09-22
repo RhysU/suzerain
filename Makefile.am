@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
-
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS  = -I m4
 AUTOMAKE_OPTIONS = foreign
+CLEANFILES       = # Append below
 
 # Build in these directories:
 SUBDIRS = lib suzerain tests apps doc
@@ -18,6 +18,11 @@ dist-hook:
 AUX_DIST = build-aux/install-sh    \
            build-aux/mkinstalldirs \
            build-aux/missing
+
+# Clean up from Intel Compiler's -prof-gen output
+CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
+clean-local:
+	rm -rf lib/pgopti.spi lib/pgopti.spl lib/*.dyn lib/*.dpi
 
 MOSTLYCLEANFILES = $(DX_CLEANFILES)
 

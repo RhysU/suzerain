@@ -6,11 +6,15 @@ AM_CPPFLAGS   += $(GSL_CFLAGS) $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
 AM_CPPFLAGS   += $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS)
 AM_LDFLAGS     = $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 AM_LDFLAGS    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-bin_PROGRAMS   =
-check_PROGRAMS =
+bin_PROGRAMS   = # Append below
+check_PROGRAMS = # Append below
+CLEANFILES     = # Append below
 
 # FIXME: Ugly, separate MPI compilation into separate dir, maybe
 CXX=@MPICXX@
+
+# Clean up from Intel Compiler's -prof-gen output
+CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
 
 # Progams
 bin_PROGRAMS        += driver_sine
