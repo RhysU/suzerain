@@ -630,7 +630,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
     const double ans
         = -1178.5183176047041859331013266287927977178206769790673702902;
 
-    const double close_enough = std::numeric_limits<double>::epsilon()*1.0e2;
+    const double close_enough = std::numeric_limits<double>::epsilon()*1.0e3;
     BOOST_CHECK_CLOSE(div_tau_u, ans, close_enough);
 }
 
