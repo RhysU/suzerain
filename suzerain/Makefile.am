@@ -34,6 +34,7 @@ pkginclude_HEADERS += timestepper.h
 pkginclude_HEADERS += underling.h
 
 noinst_LTLIBRARIES     += libsuzerain.la
+libsuzerain_la_LDFLAGS  = -release $(PACKAGE_VERSION)
 libsuzerain_la_SOURCES  = blas_et_al.c
 libsuzerain_la_SOURCES += bspline.c
 libsuzerain_la_SOURCES += error.c
@@ -42,6 +43,7 @@ libsuzerain_la_SOURCES += timestepper.c
 libsuzerain_la_LIBADD   = ../lib/libgnu.la
 
 noinst_LTLIBRARIES      += libunderling.la
+libunderling_la_LDFLAGS  = -release $(PACKAGE_VERSION)
 libunderling_la_SOURCES  = error.c
 libunderling_la_SOURCES += underling.c
 libunderling_la_LIBADD   = ../lib/libgnu.la
