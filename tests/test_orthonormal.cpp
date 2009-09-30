@@ -685,3 +685,57 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_mu_grad_T )
             close_enough);
 }
 
+// Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_rho_inverse_m_outer_m )
+{
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+    double          div_grad_e;
+
+    orthonormal_rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e, div_grad_e);
+
+    /* Expected results found using test_orthonormal.sage */
+    const double close_enough = std::numeric_limits<double>::epsilon()*1.0e3;
+    const Eigen::Vector3d ans(
+            - 139.62394416218589511382305374934119093270491143228219517924,
+            - 196.62019324654648600809920433959614291380888927326388185922,
+             1352.1114315042037165058005031972730396574030986356606221464 );
+
+    /* Compute using div_rho_inverse_m_outer_m */
+    {
+        const Eigen::Vector3d div_rho_inverse_m_outer_m
+            = pecos::suzerain::orthonormal::div_rho_inverse_m_outer_m(
+                    rho, grad_rho, m, div_m, grad_m);
+        BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(0), ans(0), close_enough);
+        BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(1), ans(1), close_enough);
+        BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(2), ans(2), close_enough);
+    }
+
+    /* Compute using div_u_outer_m */
+    {
+        const Eigen::Vector3d u = pecos::suzerain::orthonormal::rhome::u(
+                rho, m);
+        const double div_u = pecos::suzerain::orthonormal::rhome::div_u(
+                rho, grad_rho, m, div_m);
+
+        const Eigen::Vector3d div_u_outer_m
+            = pecos::suzerain::orthonormal::div_u_outer_m(
+                    m, grad_m, u, div_u);
+
+        BOOST_CHECK_CLOSE(div_u_outer_m(0), ans(0), close_enough);
+        BOOST_CHECK_CLOSE(div_u_outer_m(1), ans(1), close_enough);
+        BOOST_CHECK_CLOSE(div_u_outer_m(2), ans(2), close_enough);
+    }
+}

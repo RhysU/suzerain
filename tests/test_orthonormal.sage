@@ -139,9 +139,39 @@ div_mu_grad_T = (
     + (mu*grad_T[2]).diff(z)
 );
 div_p_u = (p*u[0]).diff(x) + (p*u[1]).diff(y) + (p*u[2]).diff(z);
+div_tau = [
+    tau[0][0].diff(x) + tau[1][0].diff(y) + tau[2][0].diff(z),
+    tau[0][1].diff(x) + tau[1][1].diff(y) + tau[2][1].diff(z),
+    tau[0][2].diff(x) + tau[1][2].diff(y) + tau[2][2].diff(z),
+]
 tau_u = [
     tau[0][0]*u[0] + tau[0][1]*u[1] + tau[0][2]*u[2],
     tau[1][0]*u[0] + tau[1][1]*u[1] + tau[1][2]*u[2],
     tau[2][0]*u[0] + tau[2][1]*u[1] + tau[2][2]*u[2],
 ];
 div_tau_u = tau_u[0].diff(x) + tau_u[1].diff(y) + tau_u[2].diff(z);
+
+# Divergence form of the convective derivative
+u_outer_m = [
+    [ u[0]*m[0], u[0]*m[1], u[0]*m[2] ],
+    [ u[1]*m[0], u[1]*m[1], u[1]*m[2] ],
+    [ u[2]*m[0], u[2]*m[1], u[2]*m[2] ]
+];
+div_u_outer_m = [
+    (
+          u_outer_m[0][0].diff(x)
+        + u_outer_m[1][0].diff(y)
+        + u_outer_m[2][0].diff(z)
+    ),
+    (
+          u_outer_m[0][1].diff(x)
+        + u_outer_m[1][1].diff(y)
+        + u_outer_m[2][1].diff(z)
+    ),
+    (
+          u_outer_m[0][2].diff(x)
+        + u_outer_m[1][2].diff(y)
+        + u_outer_m[2][2].diff(z)
+    )
+];
+div_rho_inverse_m_outer_m = div_u_outer_m; # Exact for analytic expressions

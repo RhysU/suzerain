@@ -46,7 +46,7 @@ namespace suzerain
 
 /**
  * Provides routines that compute classical state quantities (based on
- * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$, \f$mu\f$, \f$\lambda\f$)
+ * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$, \f$\mu\f$, \f$\lambda\f$)
  * from other conserved and classical state quantities under the assumption of
  * an orthonormal coordinate system with an identity metric tensor.
  *
@@ -64,6 +64,8 @@ namespace suzerain
  */
 namespace orthonormal
 {
+
+
 
 /**
  * Compute \f$\accentset{\leftrightarrow}{\tau} =
@@ -96,6 +98,77 @@ Tensor tau(
 // FIXME tau's symmetry should be used/enforced in the computation
     return mu*(grad_u + grad_u.transpose())
         + lambda*div_u*Tensor::Identity();
+}
+
+/**
+ * Compute
+ * \f$\vec{\nabla}\cdot\left(\frac{1}{\rho}\vec{m}\otimes\vec{m}\right)\f$.
+ * Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot\left(\frac{1}{\rho}\vec{m}\otimes\vec{m}\right)
+ *      = \rho^{-1} \left[
+ *            \left(\vec{\nabla}\cdot\vec{m}\right)\vec{m}
+ *          + \left(\vec{\nabla}\vec{m}\right)\vec{m}
+ *          - \rho^{-1} \left(\vec{m}\otimes\vec{m}\right)\vec{\nabla}\rho
+ *        \right]
+ * \f]
+ *
+ * @param[in] rho \f$\rho\f$
+ * @param[in] grad_rho \f$\vec{\nabla}\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ * @param[in] div_m \f$\vec{\nabla}\cdot\vec{m}\f$
+ * @param[in] grad_m \f$\vec{\nabla}\vec{m}\f$
+ *
+ * @return The convective derivative computed from the divergence form.
+ */
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Vector div_rho_inverse_m_outer_m(
+        const Scalar &rho,
+        const Vector &grad_rho,
+        const Vector &m,
+        const Scalar &div_m,
+        const Tensor &grad_m)
+{
+    const Scalar rho_inverse = 1.0/rho;
+
+    return rho_inverse*(
+                  div_m*m
+                + grad_m*m
+                - rho_inverse*(m*m.transpose())*grad_rho
+            );
+}
+
+/**
+ * Compute
+ * \f$\vec{\nabla}\cdot\left(\vec{u}\otimes\vec{m}\right)\f$.
+ * Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot\left(\vec{u}\otimes\vec{m}\right)
+ *      =   \left(\vec{\nabla}\vec{m}\right)\vec{u}
+ *        + \left(\vec{\nabla}\cdot\vec{u}\right)\vec{m}
+ * \f]
+ *
+ * @param[in] m \f$\vec{m}\f$
+ * @param[in] grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param[in] u \f$\vec{u}\f$
+ *            computed from, for example, rhome::u()
+ * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
+ *            computed from, for example, rhome::div_u()
+ *
+ * @return The convective derivative computed from the divergence form.
+ */
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Vector div_u_outer_m(
+        const Vector &m,
+        const Tensor &grad_m,
+        const Vector &u,
+        const Scalar &div_u)
+{
+    return grad_m*u + div_u*m;
 }
 
 /**
