@@ -53,6 +53,8 @@ dnl ------------------------------------------------
 dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG([C])
+AX_ASM_INLINE
+AX_ASM_INLINE_COMMENT
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 gl_INIT
 ACX_MKL()
