@@ -107,9 +107,11 @@ Tensor tau(
  * \f[
  *      \vec{\nabla}\cdot\left(\frac{1}{\rho}\vec{m}\otimes\vec{m}\right)
  *      = \rho^{-1} \left[
- *            \left(\vec{\nabla}\cdot\vec{m}\right)\vec{m}
- *          + \left(\vec{\nabla}\vec{m}\right)\vec{m}
- *          - \rho^{-1} \left(\vec{m}\otimes\vec{m}\right)\vec{\nabla}\rho
+ *            \left(\vec{\nabla}\vec{m}\right)\vec{m}
+ *          + \left(
+ *              \vec{\nabla}\cdot\vec{m}
+ *              - \rho^{-1} \vec{m}\cdot\vec{\nabla}\rho
+ *            \right)\vec{m}
  *        \right]
  * \f]
  *
@@ -134,9 +136,8 @@ Vector div_rho_inverse_m_outer_m(
     const Scalar rho_inverse = 1.0/rho;
 
     return rho_inverse*(
-                  div_m*m
-                + grad_m*m
-                - rho_inverse*(m*m.transpose())*grad_rho
+                  grad_m*m
+                + (div_m - rho_inverse*m.dot(grad_rho))*m
             );
 }
 
