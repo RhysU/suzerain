@@ -223,8 +223,8 @@ bool check_close_collections(const FPT *left_begin, const FPT *left_end,
                 << percent_tolerance << "% at position " << pos << ": ";
             const ::std::ios_base::fmtflags flags = errormsg.flags();
             const ::std::streamsize         prec  = errormsg.precision();
-            errormsg.flags(::std::ios::scientific);
-            errormsg.precision(16);
+            errormsg.flags(::std::ios::scientific | ::std::ios::showpos);
+            errormsg.precision(::std::numeric_limits<FPT>::digits10 + 1);
             errormsg << *left_begin << " != " << *right_begin;
             errormsg.flags(flags);
             errormsg.precision(prec);
