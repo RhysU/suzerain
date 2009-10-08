@@ -36,8 +36,8 @@
 #include <limits>
 #include <sstream>
 #include <string>
-#include <boost/test/test_tools.hpp>
 #include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/test_tools.hpp>
 #include <suzerain/macros.h>
 
 #define CHECK_GBMATRIX_CLOSE(                                        \
@@ -218,7 +218,19 @@ bool check_close_collections(const FPT *left_begin, const FPT *left_end,
          left_begin != left_end && right_begin != right_end;
          ++left_begin, ++right_begin, ++pos ) {
 
-        if( !is_close(*left_begin,*right_begin) ) {
+        bool pos_okay = true;
+
+        if( *left_begin == 0 && *right_begin == 0 ) {
+            // NOP on both identically zero
+        } else if ( *left_begin == 0 ) {
+            if (abs(*right_begin) > percent_tolerance) pos_okay = false;
+        } else if ( *right_begin == 0 ) {
+            if (abs(*left_begin) > percent_tolerance) pos_okay = false;
+        } else if( !is_close(*left_begin,*right_begin) ) {
+            pos_okay = false;
+        }
+
+        if (!pos_okay) {
             errormsg << "\nMismatch to tolerance "
                 << percent_tolerance << "% at position " << pos << ": ";
             const ::std::ios_base::fmtflags flags = errormsg.flags();
