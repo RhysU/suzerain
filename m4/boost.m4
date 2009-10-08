@@ -56,10 +56,11 @@ AC_REQUIRE([AC_PROG_SED])dnl
 AC_LANG_CONFTEST([AC_LANG_SOURCE([[$2]])])
 AS_IF([dnl eval is necessary to expand ac_cpp.
 dnl Ultrix and Pyramid sh refuse to redirect output of eval, so use subshell.
+dnl Cannot use 'dnl' after [$4] because a trailing dnl may break AC_CACHE_CHECK
 (eval "$ac_cpp conftest.$ac_ext") 2>&AS_MESSAGE_LOG_FD |
   $SED -n -e "$1" >conftest.i 2>&1],
   [$3],
-  [$4])dnl
+  [$4])
 rm -f conftest*
 ])# AC_EGREP_CPP
 
@@ -75,7 +76,9 @@ rm -f conftest*
 # FIXME: Add a 2nd optional argument so that it's not fatal if Boost isn't found
 # and add an AC_DEFINE to tell whether HAVE_BOOST.
 AC_DEFUN([BOOST_REQUIRE],
-[boost_save_IFS=$IFS
+[
+AC_REQUIRE([AC_PROG_GREP])dnl
+boost_save_IFS=$IFS
 boost_version_req="$1"
 IFS=.
 set x $boost_version_req 0 0 0
@@ -123,9 +126,26 @@ m4_pattern_allow([^BOOST_VERSION$])dnl
     # Without --layout=system, Boost (or at least some versions) installs
     # itself in <prefix>/include/boost-<version>.  This inner loop helps to
     # find headers in such directories.
+    #
+    # Any ${boost_dir}/boost-x_xx directories are searched in reverse version
+    # order followed by ${boost_dir}.  The final '.' is a sentinel for
+    # searching $boost_dir" itself.  Entries are whitespace separated.
+    #
     # I didn't indent this loop on purpose (to avoid over-indented code)
-    for boost_inc in "$boost_dir" "$boost_dir"/boost-*
+    boost_layout_system_search_list=`                         \
+          (                                                   \
+                 cd "$boost_dir" 2>/dev/null                  \
+              && ls -1 | "${GREP}" ^boost- | sort -rn -t- -k2 \
+          )                                                   \
+        ; echo .                                              \
+        `
+    for boost_inc in $boost_layout_system_search_list
     do
+      if test x"$boost_inc" != x.; then
+        boost_inc="$boost_dir/$boost_inc"
+      else
+        boost_inc="$boost_dir" # Uses sentinel in boost_layout_system_search_list
+      fi
       test x"$boost_inc" != x && CPPFLAGS="$CPPFLAGS -I$boost_inc"
       AC_COMPILE_IFELSE([], [boost_cv_inc_path=yes], [boost_cv_version=no])
       if test x"$boost_cv_inc_path" = xyes; then
@@ -484,6 +504,20 @@ AC_DEFUN([BOOST_HASH],
 # Look for Boost.Lambda
 AC_DEFUN([BOOST_LAMBDA],
 [BOOST_FIND_HEADER([boost/lambda/lambda.hpp])])
+
+
+# BOOST_MATH()
+# ---------------
+# Look for Boost.Math
+AC_DEFUN([BOOST_MATH],
+[BOOST_FIND_HEADER([boost/math/special_functions.hpp])])
+
+
+# BOOST_MULTIARRAY()
+# ---------------
+# Look for Boost.MultiArray
+AC_DEFUN([BOOST_MULTIARRAY],
+[BOOST_FIND_HEADER([boost/multi_array.hpp])])
 
 
 # BOOST_OPTIONAL()
