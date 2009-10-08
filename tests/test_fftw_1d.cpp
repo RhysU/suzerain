@@ -43,10 +43,10 @@ public:
                        FFTW_ESTIMATE),
                     std::ptr_fun(fftw_destroy_plan)),
             plan_c2r(fftw_plan_dft_c2r_1d(
-                        NR,
-                        reinterpret_cast<fftw_complex*>(&c[0]),
-                        &r[0],
-                        FFTW_ESTIMATE),
+                       NR,
+                       reinterpret_cast<fftw_complex*>(&c[0]),
+                       &r[0],
+                       FFTW_ESTIMATE),
                     std::ptr_fun(fftw_destroy_plan))
     {
         if (!plan_r2c.get()) throw std::logic_error("invalid r2c plan");
@@ -108,8 +108,7 @@ BOOST_AUTO_TEST_CASE( differentiate )
 
     Data::VectorReal expected = 2.0*cos(2.0*d.x);
 
-    check_close_collections(
-            &d.r[0], &d.r[d.r.size()],
-            &expected[0], &expected[expected.size()],
+    BOOST_CHECK_SMALL(
+            (abs(expected-d.r)).sum(),
             std::numeric_limits<Data::Real>::epsilon() * 1.0e+4);
 }
