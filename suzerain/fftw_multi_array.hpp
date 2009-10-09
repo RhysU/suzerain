@@ -58,6 +58,7 @@ bool increment(IndexType &index, const MaxIndexType &max_index)
     typedef BOOST_TYPEOF_TPL(max_index[0])      max_index_element_type;
     typedef BOOST_TYPEOF_TPL(index[0]/max_index[0]) element_division_type;
 
+    // Assert compile time algorithm preconditions valid when in debug mode
     BOOST_STATIC_ASSERT(NumDims > 0);
     BOOST_STATIC_ASSERT(!boost::is_const<index_element_type>::value);
     BOOST_STATIC_ASSERT(boost::is_integral<element_division_type>::value);
@@ -67,9 +68,11 @@ bool increment(IndexType &index, const MaxIndexType &max_index)
     // The overflow == 0 condition causes an effective NOP after occurring.
     bool overflow = 1;
     for (std::size_t n = 0; n < NumDims; ++n) {
+        // Assert runtime algorithm preconditions valid when in debug mode
         assert(1 <= max_index[n]);
         assert(boost::is_unsigned<index_element_type>::value || 0 <= index[n]);
         assert(static_cast<max_index_element_type>(index[n]) < max_index[n]);
+        assert(index[n] < std::numeric_limits<index_element_type>::max() - 1);
 
         index[n] += overflow;                 // Handle incoming overflow
         overflow  = index[n]/max_index[n];    // Check outgoing overflow
