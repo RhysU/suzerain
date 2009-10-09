@@ -1,6 +1,8 @@
 #define BOOST_TEST_MODULE $Id$
+#include <cmath>
 #include <complex>
 #include <functional>
+#include <limits>
 #include <numeric>
 #include <vector>
 #include <boost/array.hpp>
@@ -182,35 +184,39 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
     BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
-
-BOOST_AUTO_TEST_CASE( multi_array_sample )
+void check_1D_conjugate_symmetry(const int N)
 {
-  // Create a 3D array that is 3 x 4 x 2
-  typedef boost::multi_array<double, 3> array_type;
-  typedef array_type::index index;
-  array_type A(boost::extents[3][4][2]);
+    const double close_enough = std::numeric_limits<double>::epsilon();
 
-  // Assign values to the elements
-  int values = 0;
-  for(index i = 0; i != 3; ++i)
-    for(index j = 0; j != 4; ++j)
-      for(index k = 0; k != 2; ++k)
-        A[i][j][k] = values++;
+    typedef boost::multi_array<std::complex<double>,1> array_type;
+    array_type in(boost::extents[N]);
+    array_type out(boost::extents[N]);
 
-  // Verify values
-  int verify = 0;
-  for(index i = 0; i != 3; ++i)
-    for(index j = 0; j != 4; ++j)
-      for(index k = 0; k != 2; ++k)
-        BOOST_CHECK_EQUAL(A[i][j][k], verify++);
+    for (int i = 0; i < N; ++i) {
+        in[i].real() = 1;
+        in[i].imag() = 0;
+        const double xi = i*2*M_PI/N;
+        for (int j = 0; j < N/2; ++j) {
+            in[i].real() += i*sin(i*xi) - i*cos(i*xi);
+        }
+    }
+
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+
+    // Real input should exhibit conjugate symmetry in wave space
+    BOOST_CHECK_SMALL(out[0].imag(), close_enough);
+    BOOST_CHECK_SMALL(out[N/2].imag(), close_enough);
+    for (int i = 1; i < N/2; ++i) {
+        BOOST_CHECK_CLOSE(out[i].real(), out[N-i].real(), close_enough);
+        BOOST_CHECK_CLOSE(out[i].imag(), -out[N-i].imag(), close_enough);
+    }
 }
 
-
-BOOST_AUTO_TEST_CASE( in_progress )
+BOOST_AUTO_TEST_CASE( c2c_transform_1d_real_input )
 {
-    typedef boost::multi_array<std::complex<double>,3> array_type;
-    array_type in(boost::extents[3][2][4]);
-    array_type out(boost::extents[3][2][4]);
-
-    fftw_multi_array::c2c_transform(1, in, out, FFTW_FORWARD);
+    check_1D_conjugate_symmetry(4);
+    check_1D_conjugate_symmetry(8);
+    check_1D_conjugate_symmetry(16);
+    check_1D_conjugate_symmetry(32);
+    check_1D_conjugate_symmetry(64);
 }

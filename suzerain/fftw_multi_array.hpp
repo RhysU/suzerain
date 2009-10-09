@@ -180,7 +180,9 @@ void c2c_transform(const size_t transform_dim,
     index_array loop_index = {{   }};   // Initialize to default value
     index_array dereference_index;
 
-    // Process each of the transform_dim pencils
+    // TODO Walk fastest dimensions first in increment routine
+
+    // Process each of the transform_dim pencils in turn
     do {
         // Obtain pointer to this input pencil's starting position
         std::transform(loop_index.begin(), loop_index.end(),
@@ -190,7 +192,7 @@ void c2c_transform(const size_t transform_dim,
 
         // Copy input into transform buffer and pad any excess with zeros
         // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
-        /* TODO differentiate prior to FFTW_BACKWARD if requested */
+        // TODO differentiate prior to FFTW_BACKWARD if requested
         for (std::ptrdiff_t i = 0; i < shape_transform_dim; ++i) {
             buffer[i] = *p_pencil_in;
             p_pencil_in += stride_transform_dim_in;
@@ -209,7 +211,7 @@ void c2c_transform(const size_t transform_dim,
 
         // Copy transform buffer into output truncating auxiliary modes
         // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
-        /* TODO differentiate after FFTW_FORWARD if requested */
+        // TODO differentiate after FFTW_FORWARD if requested
         for (std::ptrdiff_t i = 0; i <= shape_transform_dim/2; ++i) {
             *p_pencil_out = (buffer[i] /= possible_normalization_factor);
             p_pencil_out += stride_transform_dim_out;
