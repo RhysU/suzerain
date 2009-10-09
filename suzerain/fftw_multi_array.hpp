@@ -33,7 +33,7 @@
 
 #include <cassert>
 #include <cstddef>
-#include <vector>
+#include <limits>
 #include <fftw3.h>
 #include <boost/array.hpp>
 #include <boost/shared_ptr.hpp>
@@ -43,6 +43,7 @@
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_unsigned.hpp>
+#include <boost/type_traits/remove_pointer.hpp>
 #include <boost/typeof/typeof.hpp>
 
 /* DEBUG */
@@ -54,8 +55,8 @@ namespace pecos { namespace suzerain { namespace fftw_multi_array {
 template<std::size_t NumDims, typename IndexType, typename MaxIndexType>
 bool increment(IndexType &index, const MaxIndexType &max_index)
 {
-    typedef BOOST_TYPEOF_TPL(index[0])          index_element_type;
-    typedef BOOST_TYPEOF_TPL(max_index[0])      max_index_element_type;
+    typedef BOOST_TYPEOF_TPL(index[0])              index_element_type;
+    typedef BOOST_TYPEOF_TPL(max_index[0])          max_index_element_type;
     typedef BOOST_TYPEOF_TPL(index[0]/max_index[0]) element_division_type;
 
     // Assert compile time algorithm preconditions valid when in debug mode
@@ -86,47 +87,84 @@ void c2c_transform(const size_t transform_dim,
                    ComplexMultiArray &in,
                    ComplexMultiArray &out,
                    const int fftw_sign,
-                   const unsigned fftw_flags,
-                   const double dealias_by = 1.0)
+                   const double dealias_by = 1.0,
+                   const unsigned fftw_flags = 0)
 {
-    typedef typename ComplexMultiArray::element                   element;
-    typedef typename ComplexMultiArray::index                     index;
-    typedef typename ComplexMultiArray::size_type                 size_type;
-    typedef typename ComplexMultiArray::index_range               index_range;
-    typedef boost::array<index,ComplexMultiArray::dimensionality> index_array;
+    // Typedefs fixed by the ComplexMultiArray template parameter
+    typedef typename ComplexMultiArray::element     element;
+    typedef typename ComplexMultiArray::index       index;
+    typedef typename ComplexMultiArray::size_type   size_type;
     const size_type dimensionality = ComplexMultiArray::dimensionality;
 
-    /* Ensure we transform a dimension that exists in the data */
+    // Typedefs from implementation choices
+    typedef boost::array<index,dimensionality>      index_array;
+    typedef int                                     shape_type; // Per FFTW
+    typedef boost::array<shape_type,dimensionality> shape_array;
+
+    // Ensure we transform a dimension that exists in the data
     assert(transform_dim < dimensionality);
-    /* Ensure we are operating on a complex-valued array */
+    // Ensure we are operating on a complex-valued array
     BOOST_STATIC_ASSERT(
               (boost::is_complex<element>::value)
            || (boost::is_same<element, fftw_complex>::value));
-    /* Ensure transformation direction and dealiasing choice are sane */
+    // Ensure transformation direction and dealiasing choice are consistent
     assert(   (fftw_sign == FFTW_FORWARD  && dealias_by == 1.0)
            || (fftw_sign == FFTW_BACKWARD && dealias_by >= 1.0));
-    /* Ensure the in and out arrays have the same shape */
-    const size_type * const shape = in.shape();
-    for (size_type n = 0; n < dimensionality; ++n) {
-        assert(shape[n] == out.shape()[n]);
-    }
+    // Copy all shape information into integers well-suited for FFTW
+    shape_array shape_in, shape_out;
+    {
+        const size_type * const p_shape_in  = in.shape();
+        const size_type * const p_shape_out = out.shape();
+        for (size_type n = 0; n < dimensionality; ++n) {
+            // Ensure out's shape is at least as large as in's shape
+            assert(p_shape_in[n] <= p_shape_out[n]);
+            // Ensure won't accidentally truncate the shape value
+            assert(p_shape_in[n]  <= std::numeric_limits<shape_type>::max());
+            assert(p_shape_out[n] <= std::numeric_limits<shape_type>::max());
 
-    /* Determine FFTW advanced plan parameters */
-    const int rank = 1;
-    const int n[1] = { shape[transform_dim] };
-    assert( shape[transform_dim] <= static_cast<size_type>(n[0])); /* Sanity */
-//    const int howmany;
-
-    index_array out_strides, in_strides;
-    index_array out_indices, in_indices;
-    index_array in_last_indices;
-    for (size_type n = 0; n < dimensionality; ++n) {
-        out_strides[n] = out.strides()[n];
-        in_strides[n]  = in.strides()[n];
-        out_indices[n] = out.index_bases()[n];
-        in_indices[n] = in.index_bases()[n];
-        in_last_indices[n] = in_indices[n] + shape[n];
+            shape_in[n]  = p_shape_in[n];
+            shape_out[n] = p_shape_out[n];
+        }
     }
+    // Ensure dealiased transform size computable through FFTW interface
+    assert(shape_in[transform_dim] * dealias_by
+            <= std::numeric_limits<shape_type>::max());
+    const shape_type dealiased_n = shape_in[transform_dim] * dealias_by;
+
+    // We choose to always use an intermediate buffer for the transform:
+    //  1) Avoids nuking in or out during FFTW planning
+    //  2) Allows us to always enforce FFTW memory alignment recommendations
+    //  3) Allows us to repeatedly apply the same, simple FFTW plan
+    //  4) Minimizes the costs of potentially non-stride-1 access
+    //  5) Always gives us in-place transform performance for the FFT
+    //  6) Greatly simplifies transform, dealiasing, and differentiation code
+    //  7) Simplifies moving to other FFT libraries in the future, e.g. ESSL
+    boost::shared_ptr<element> buffer(
+        static_cast<element *>(fftw_malloc(sizeof(element)*dealiased_n)),
+        std::ptr_fun(fftw_free));
+    assert(buffer);
+
+    // Construct the FFTW in-place plan for the dealiased buffer
+    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
+            fftw_plan_dft_1d(dealiased_n,
+                             reinterpret_cast<fftw_complex*>(buffer.get()),
+                             reinterpret_cast<fftw_complex*>(buffer.get()),
+                             fftw_sign,
+                             fftw_flags | FFTW_DESTROY_INPUT),
+            std::ptr_fun(fftw_destroy_plan));
+    assert(plan);
+
+
+//    index_array out_strides, in_strides;
+//    index_array out_indices, in_indices;
+//    index_array in_last_indices;
+//    for (size_type n = 0; n < dimensionality; ++n) {
+//        out_strides[n] = out.strides()[n];
+//        in_strides[n]  = in.strides()[n];
+//        out_indices[n] = out.index_bases()[n];
+//        in_indices[n] = in.index_bases()[n];
+//        in_last_indices[n] = in_indices[n] + shape[n];
+//    }
 
 //    std::copy(in_indices.begin(), in_indices.end(),
 //            std::ostream_iterator<index>(std::cout, ",")); /* DEBUG */
@@ -137,43 +175,6 @@ void c2c_transform(const size_t transform_dim,
 
 
 
-//    int howmany,
-//    fftw_complex *in,
-//    const int *inembed,
-//    int istride,
-//    int idist,
-//    fftw_complex *out,
-//    const int *onembed,
-//    int ostride,
-//    int odist,
-//    int sign,
-//    unsigned flags
-
-    /* Construct the FFTW transform plan and plan parameters */
-//    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
-//        fftw_plan_dft_c2r_1d(
-//                        NR,
-//                        reinterpret_cast<fftw_complex*>(c.data()),
-//                        r.data(),
-//                        FFTW_ESTIMATE),
-//                    std::ptr_fun(fftw_destroy_plan))
-
-//         fftw_plan_many_dft(int rank,
-//                            const int *n,
-//                            int howmany,
-//                            fftw_complex *in,
-//                            const int *inembed,
-//                            int istride,
-//                            int idist,
-//                            fftw_complex *out,
-//                            const int *onembed,
-//                            int ostride,
-//                            int odist,
-//                            int sign,
-//                            unsigned flags),
-//        std::ptr_fun(fftw_destroy_plan));
-
-//    const fftw_plan plan = fftw_plan_dft(1, )
 } /* c2c_transform */
 
 } /* fftw_multi_array */ } /* suzerain */ } /* pecos */

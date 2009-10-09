@@ -212,5 +212,5 @@ BOOST_AUTO_TEST_CASE( in_progress )
     array_type in(boost::extents[3][2]);
     array_type out(boost::extents[3][2]);
 
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD, FFTW_PRESERVE_INPUT);
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 }
