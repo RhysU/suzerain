@@ -25,6 +25,7 @@ pkginclude_HEADERS += bspline.h
 pkginclude_HEADERS += orthonormal.hpp
 pkginclude_HEADERS += error.h
 pkginclude_HEADERS += exceptions.hpp
+pkginclude_HEADERS += fftw_multi_array.hpp
 pkginclude_HEADERS += function.h
 pkginclude_HEADERS += macros.h
 pkginclude_HEADERS += pencil_grid.hpp
