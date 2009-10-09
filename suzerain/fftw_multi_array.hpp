@@ -190,6 +190,7 @@ void c2c_transform(const size_t transform_dim,
 
         // Copy input into transform buffer and pad any excess with zeros
         // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
+        /* TODO differentiate prior to FFTW_BACKWARD if requested */
         for (std::ptrdiff_t i = 0; i < shape_transform_dim; ++i) {
             buffer[i] = pencil_in[i * stride_transform_dim_in];
         }
@@ -197,19 +198,16 @@ void c2c_transform(const size_t transform_dim,
             buffer[i] = element();  // Fancy zero
         }
 
-        if (fftw_sign == FFTW_FORWARD) { /* TODO differentiate here */ };
-
-        // TODO Execute transform
-
-        if (fftw_sign == FFTW_BACKWARD) { /* TODO differentiate here */ };
+        fftw_execute(plan.get()); // Pull the strings!  Pull the strings!
 
         std::transform(loop_index.begin(), loop_index.end(),
                        index_bases_out.begin(), dereference_index.begin(),
                        std::plus<index>());
-        element * const pencil_out = &(in(dereference_index));
+        element * const pencil_out = &(out(dereference_index));
 
         // Copy transform buffer into output truncating auxiliary modes
         // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
+        /* TODO differentiate after FFTW_FORWARD if requested */
         for (std::ptrdiff_t i = 0; i <= shape_transform_dim/2; ++i) {
             buffer[i] /= possible_normalization_factor;
             pencil_out[i * stride_transform_dim_out] = buffer[i];
