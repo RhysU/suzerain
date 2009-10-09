@@ -31,11 +31,14 @@
 #ifndef PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
 #define PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <functional>
 #include <limits>
 #include <fftw3.h>
 #include <boost/array.hpp>
+#include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/is_const.hpp>
@@ -111,7 +114,7 @@ void c2c_transform(const size_t transform_dim,
     assert(   (fftw_sign == FFTW_FORWARD  && dealias_by == 1.0)
            || (fftw_sign == FFTW_BACKWARD && dealias_by >= 1.0));
     // Copy all shape information into integers well-suited for FFTW
-    shape_array shape_in, shape_out;
+    shape_array shape_in;
     {
         const size_type * const p_shape_in  = in.shape();
         const size_type * const p_shape_out = out.shape();
@@ -120,10 +123,8 @@ void c2c_transform(const size_t transform_dim,
             assert(p_shape_in[n] <= p_shape_out[n]);
             // Ensure won't accidentally truncate the shape value
             assert(p_shape_in[n]  <= std::numeric_limits<shape_type>::max());
-            assert(p_shape_out[n] <= std::numeric_limits<shape_type>::max());
 
             shape_in[n]  = p_shape_in[n];
-            shape_out[n] = p_shape_out[n];
         }
     }
     // Ensure dealiased transform size computable through FFTW interface
@@ -139,7 +140,7 @@ void c2c_transform(const size_t transform_dim,
     //  5) Always gives us in-place transform performance for the FFT
     //  6) Greatly simplifies transform, dealiasing, and differentiation code
     //  7) Simplifies moving to other FFT libraries in the future, e.g. ESSL
-    boost::shared_ptr<element> buffer(
+    boost::shared_array<element> buffer(
         static_cast<element *>(fftw_malloc(sizeof(element)*dealiased_n)),
         std::ptr_fun(fftw_free));
     assert(buffer);
@@ -154,26 +155,73 @@ void c2c_transform(const size_t transform_dim,
             std::ptr_fun(fftw_destroy_plan));
     assert(plan);
 
+    // Dereference constant parameters outside main processing loop
+    index_array index_bases_in, index_bases_out;
+    {
+        const index * const p_index_bases_in  = in.index_bases();
+        const index * const p_index_bases_out = out.index_bases();
+        for (size_type n = 0; n < dimensionality; ++n) {
+            index_bases_in[n]  = p_index_bases_in[n];
+            index_bases_out[n] = p_index_bases_out[n];
+        }
+    }
+    const shape_type shape_transform_dim      = shape_in[transform_dim];
+    const index      stride_transform_dim_in  = in.strides()[transform_dim];
+    const index      stride_transform_dim_out = out.strides()[transform_dim];
 
-//    index_array out_strides, in_strides;
-//    index_array out_indices, in_indices;
-//    index_array in_last_indices;
-//    for (size_type n = 0; n < dimensionality; ++n) {
-//        out_strides[n] = out.strides()[n];
-//        in_strides[n]  = in.strides()[n];
-//        out_indices[n] = out.index_bases()[n];
-//        in_indices[n] = in.index_bases()[n];
-//        in_last_indices[n] = in_indices[n] + shape[n];
-//    }
+    // Normalization only occurs during backwards transform
+    const float possible_normalization_factor
+        = (fftw_sign == FFTW_BACKWARD) ? dealiased_n : 1.0;
 
-//    std::copy(in_indices.begin(), in_indices.end(),
-//            std::ostream_iterator<index>(std::cout, ",")); /* DEBUG */
+    // Prepare per-pencil outer loop index and loop bounds
+    shape_array loop_shape(shape_in);   // Iterate over all dimensions...
+    loop_shape[transform_dim] = 1;      // ...except the transformed one
+    BOOST_STATIC_ASSERT(index() == 0);  // Ensure expected default value
+    index_array loop_index = {{   }};   // Initialize to default value
+    index_array dereference_index;
 
-//    std::copy(in_indices.begin(), in_indices.end(),
-//            std::ostream_iterator<index>(std::cout, ",")); /* DEBUG */
+    // Process each of the transform_dim pencils
+    do {
+        // Obtain pointer to start of this input pencil
+        std::transform(loop_index.begin(), loop_index.end(),
+                       index_bases_in.begin(), dereference_index.begin(),
+                       std::plus<index>());
+        element * const pencil_in = &(in(dereference_index));
 
+        // Copy input into transform buffer and pad any excess with zeros
+        // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
+        for (std::ptrdiff_t i = 0; i < shape_transform_dim; ++i) {
+            buffer[i] = pencil_in[i * stride_transform_dim_in];
+        }
+        for (std::ptrdiff_t i = shape_transform_dim; i < dealiased_n; ++i) {
+            buffer[i] = element();  // Fancy zero
+        }
 
+        if (fftw_sign == FFTW_FORWARD) { /* TODO differentiate here */ };
 
+        // TODO Execute transform
+
+        if (fftw_sign == FFTW_BACKWARD) { /* TODO differentiate here */ };
+
+        std::transform(loop_index.begin(), loop_index.end(),
+                       index_bases_out.begin(), dereference_index.begin(),
+                       std::plus<index>());
+        element * const pencil_out = &(in(dereference_index));
+
+        // Copy transform buffer into output truncating auxiliary modes
+        // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
+        for (std::ptrdiff_t i = 0; i <= shape_transform_dim/2; ++i) {
+            buffer[i] /= possible_normalization_factor;
+            pencil_out[i * stride_transform_dim_out] = buffer[i];
+        }
+        for (std::ptrdiff_t i = dealiased_n - shape_transform_dim/2 + 1;
+             i < dealiased_n;
+             ++i) {
+            buffer[i] /= possible_normalization_factor;
+            pencil_out[i - (dealiased_n-shape_transform_dim)] = buffer[i];
+        }
+
+    } while (increment<dimensionality>(loop_index, loop_shape));
 
 } /* c2c_transform */
 

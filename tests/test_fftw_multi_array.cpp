@@ -208,9 +208,9 @@ BOOST_AUTO_TEST_CASE( multi_array_sample )
 
 BOOST_AUTO_TEST_CASE( in_progress )
 {
-    typedef boost::multi_array<std::complex<double>,2> array_type;
-    array_type in(boost::extents[3][2]);
-    array_type out(boost::extents[3][2]);
+    typedef boost::multi_array<std::complex<double>,3> array_type;
+    array_type in(boost::extents[3][2][4]);
+    array_type out(boost::extents[3][2][4]);
 
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::c2c_transform(1, in, out, FFTW_FORWARD);
 }
