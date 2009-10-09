@@ -182,17 +182,18 @@ void c2c_transform(const size_t transform_dim,
 
     // Process each of the transform_dim pencils
     do {
-        // Obtain pointer to start of this input pencil
+        // Obtain pointer to this input pencil's starting position
         std::transform(loop_index.begin(), loop_index.end(),
                        index_bases_in.begin(), dereference_index.begin(),
                        std::plus<index>());
-        element * const pencil_in = &(in(dereference_index));
+        element * p_pencil_in = &(in(dereference_index));
 
         // Copy input into transform buffer and pad any excess with zeros
         // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
         /* TODO differentiate prior to FFTW_BACKWARD if requested */
         for (std::ptrdiff_t i = 0; i < shape_transform_dim; ++i) {
-            buffer[i] = pencil_in[i * stride_transform_dim_in];
+            buffer[i] = *p_pencil_in;
+            p_pencil_in += stride_transform_dim_in;
         }
         for (std::ptrdiff_t i = shape_transform_dim; i < dealiased_n; ++i) {
             buffer[i] = element();  // Fancy zero
@@ -200,23 +201,24 @@ void c2c_transform(const size_t transform_dim,
 
         fftw_execute(plan.get()); // Pull the strings!  Pull the strings!
 
+        // Obtain pointer to this output pencil's starting position
         std::transform(loop_index.begin(), loop_index.end(),
                        index_bases_out.begin(), dereference_index.begin(),
                        std::plus<index>());
-        element * const pencil_out = &(out(dereference_index));
+        element * p_pencil_out = &(out(dereference_index));
 
         // Copy transform buffer into output truncating auxiliary modes
         // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
         /* TODO differentiate after FFTW_FORWARD if requested */
         for (std::ptrdiff_t i = 0; i <= shape_transform_dim/2; ++i) {
-            buffer[i] /= possible_normalization_factor;
-            pencil_out[i * stride_transform_dim_out] = buffer[i];
+            *p_pencil_out = (buffer[i] /= possible_normalization_factor);
+            p_pencil_out += stride_transform_dim_out;
         }
         for (std::ptrdiff_t i = dealiased_n - shape_transform_dim/2 + 1;
              i < dealiased_n;
              ++i) {
-            buffer[i] /= possible_normalization_factor;
-            pencil_out[i - (dealiased_n-shape_transform_dim)] = buffer[i];
+            *p_pencil_out = (buffer[i] /= possible_normalization_factor);
+            p_pencil_out += stride_transform_dim_out;
         }
 
     } while (increment<dimensionality>(loop_index, loop_shape));
