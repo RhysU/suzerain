@@ -2,19 +2,19 @@
 #include <cmath>
 #include <complex>
 #include <functional>
+#include <iostream>
+#include <iterator>
 #include <limits>
 #include <numeric>
+#include <string>
 #include <vector>
 #include <boost/array.hpp>
-#include <boost/test/included/unit_test.hpp>
 #include <boost/multi_array.hpp>
+#include <boost/static_assert.hpp>
+#include <boost/test/included/unit_test.hpp>
 #include <suzerain/fftw_multi_array.hpp>
 
 #include "test_tools.hpp"
-
-/* DEBUG */
-#include <iostream>
-#include <iterator>
 
 using namespace pecos::suzerain;
 
@@ -184,10 +184,23 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
     BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
-template<class ComplexMultiArray>
-void check_1D_conjugate_symmetry(ComplexMultiArray &in, ComplexMultiArray &out)
+template<class MultiArray>
+void debug_dump(const std::string &prefix, const MultiArray &x)
 {
-    BOOST_CHECK_EQUAL(in.num_dimensions(), 1); // Test sanity
+    BOOST_STATIC_ASSERT(MultiArray::dimensionality == 1);
+    using namespace std;
+
+    cout << prefix;
+    copy(x.begin(), x.end(),
+         ostream_iterator<typename MultiArray::element>(std::cout, " "));
+    cout << endl;
+}
+
+// Helper function that kicks the tires of a 1D c2c transform
+template<class ComplexMultiArray>
+void check_1D(ComplexMultiArray &in, ComplexMultiArray &out)
+{
+    BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
     const double close_enough = std::numeric_limits<double>::epsilon();
     const int N = in.shape()[0];
 
@@ -196,19 +209,25 @@ void check_1D_conjugate_symmetry(ComplexMultiArray &in, ComplexMultiArray &out)
         in[i].real() = 1;
         in[i].imag() = 0;
         const double xi = i*2*M_PI/N;
-        for (int j = 0; j < N/2; ++j) {
-            in[i].real() += i*sin(i*xi) - i*cos(i*xi);
+        for (int j = 0; j < (N+1)/2; ++j) {
+            in[i].real() += j*sin(j*xi) - j*cos(j*xi);
         }
     }
 
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
+    if (N == 3) { // DEBUG
+        std::cout << "N =   " << N << std::endl;
+        debug_dump("in =  ", in);
+        debug_dump("out = ", out);
+    }
+
     // Real input should exhibit conjugate symmetry in wave space
     BOOST_CHECK_SMALL(out[0].imag(), close_enough);
     if (N%2 == 0) {
-        BOOST_CHECK_SMALL(out[N/2].imag(), close_enough);
+        BOOST_CHECK_SMALL(out[(N+1)/2].imag(), close_enough);
     }
-    for (int i = 1; i < N/2; ++i) {
+    for (int i = 1; i < (N+1)/2; ++i) {
         BOOST_CHECK_CLOSE(out[i].real(),  out[N-i].real(), close_enough);
         BOOST_CHECK_CLOSE(out[i].imag(), -out[N-i].imag(), close_enough);
     }
@@ -218,8 +237,8 @@ void check_1D_conjugate_symmetry(ComplexMultiArray &in, ComplexMultiArray &out)
         in[i].real() = 0;
         in[i].imag() = 1;
         const double xi = i*2*M_PI/N;
-        for (int j = 0; j < N/2; ++j) {
-            in[i].imag() += i*sin(i*xi) - i*cos(i*xi);
+        for (int j = 0; j < (N+1)/2; ++j) {
+            in[i].imag() += j*sin(j*xi) - j*cos(j*xi);
         }
     }
 
@@ -229,27 +248,28 @@ void check_1D_conjugate_symmetry(ComplexMultiArray &in, ComplexMultiArray &out)
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
     BOOST_CHECK_SMALL(out[0].real(), close_enough);
     if (N%2 == 0) {
-        BOOST_CHECK_SMALL(out[N/2].real(), close_enough);
+        BOOST_CHECK_SMALL(out[(N+1)/2].real(), close_enough);
     }
-    for (int i = 1; i < N/2; ++i) {
+    for (int i = 1; i < (N+1)/2; ++i) {
         BOOST_CHECK_CLOSE(out[i].real(), -out[N-i].real(), close_enough);
         BOOST_CHECK_CLOSE(out[i].imag(),  out[N-i].imag(), close_enough);
     }
 }
 
-BOOST_AUTO_TEST_CASE( c2c_transform_1d_real_input )
+BOOST_AUTO_TEST_CASE( c2c_transform_1d )
 {
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type in, out;
 
     const int sizes[] = {
-        4,     8,  16,   32,   64,        // Easy: powers of 2
-        2*3, 2*5, 2*7, 2*11, 2*13, 2*17   // Moderate: Even lengths
-// DISABLED 5, 9, 17, 33, 65  // Harder
+        4,     8,  16,   32,   64         // Easy: powers of 2
+        , 2*3, 2*5, 2*7, 2*11, 2*13, 2*17 // Moderate: Even lengths
+        // FIXME: tests broken below here
+        // DISABLED, 3 , 5, 7, 9, 11, 13, 17, 19, 23, 29  // Hard: Primes
     };
     for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
         in.resize(boost::extents[sizes[i]]);
         out.resize(boost::extents[sizes[i]]);
-        check_1D_conjugate_symmetry(in, out);
+        check_1D(in, out);
     }
 }
