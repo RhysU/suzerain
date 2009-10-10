@@ -184,14 +184,14 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
     BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
-void check_1D_conjugate_symmetry(const int N)
+template<class ComplexMultiArray>
+void check_1D_conjugate_symmetry(ComplexMultiArray &in, ComplexMultiArray &out)
 {
+    BOOST_CHECK_EQUAL(in.num_dimensions(), 1); // Test sanity
     const double close_enough = std::numeric_limits<double>::epsilon();
+    const int N = in.shape()[0];
 
-    typedef boost::multi_array<std::complex<double>,1> array_type;
-    array_type in(boost::extents[N]);
-    array_type out(boost::extents[N]);
-
+    // Load a real-valued function into the input array
     for (int i = 0; i < N; ++i) {
         in[i].real() = 1;
         in[i].imag() = 0;
@@ -205,18 +205,51 @@ void check_1D_conjugate_symmetry(const int N)
 
     // Real input should exhibit conjugate symmetry in wave space
     BOOST_CHECK_SMALL(out[0].imag(), close_enough);
-    BOOST_CHECK_SMALL(out[N/2].imag(), close_enough);
+    if (N%2 == 0) {
+        BOOST_CHECK_SMALL(out[N/2].imag(), close_enough);
+    }
     for (int i = 1; i < N/2; ++i) {
-        BOOST_CHECK_CLOSE(out[i].real(), out[N-i].real(), close_enough);
+        BOOST_CHECK_CLOSE(out[i].real(),  out[N-i].real(), close_enough);
         BOOST_CHECK_CLOSE(out[i].imag(), -out[N-i].imag(), close_enough);
+    }
+
+    // Load an imaginary-valued function into the input array
+    for (int i = 0; i < N; ++i) {
+        in[i].real() = 0;
+        in[i].imag() = 1;
+        const double xi = i*2*M_PI/N;
+        for (int j = 0; j < N/2; ++j) {
+            in[i].imag() += i*sin(i*xi) - i*cos(i*xi);
+        }
+    }
+
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+
+    // Imaginary input should exhibit a similar symmetry in wave space:
+    // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
+    BOOST_CHECK_SMALL(out[0].real(), close_enough);
+    if (N%2 == 0) {
+        BOOST_CHECK_SMALL(out[N/2].real(), close_enough);
+    }
+    for (int i = 1; i < N/2; ++i) {
+        BOOST_CHECK_CLOSE(out[i].real(), -out[N-i].real(), close_enough);
+        BOOST_CHECK_CLOSE(out[i].imag(),  out[N-i].imag(), close_enough);
     }
 }
 
 BOOST_AUTO_TEST_CASE( c2c_transform_1d_real_input )
 {
-    check_1D_conjugate_symmetry(4);
-    check_1D_conjugate_symmetry(8);
-    check_1D_conjugate_symmetry(16);
-    check_1D_conjugate_symmetry(32);
-    check_1D_conjugate_symmetry(64);
+    typedef boost::multi_array<std::complex<double>,1> array_type;
+    array_type in, out;
+
+    const int sizes[] = {
+        4,     8,  16,   32,   64,        // Easy: powers of 2
+        2*3, 2*5, 2*7, 2*11, 2*13, 2*17   // Moderate: Even lengths
+// DISABLED 5, 9, 17, 33, 65  // Harder
+    };
+    for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
+        in.resize(boost::extents[sizes[i]]);
+        out.resize(boost::extents[sizes[i]]);
+        check_1D_conjugate_symmetry(in, out);
+    }
 }
