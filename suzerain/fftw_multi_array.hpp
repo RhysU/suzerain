@@ -87,7 +87,7 @@ bool increment(IndexType &index, const MaxIndexType &max_index)
 
 template<class ComplexMultiArray>
 void c2c_transform(const size_t transform_dim,
-                   ComplexMultiArray &in,
+                   const ComplexMultiArray &in,
                    ComplexMultiArray &out,
                    const int fftw_sign,
                    const double dealias_by = 1.0,
@@ -188,7 +188,7 @@ void c2c_transform(const size_t transform_dim,
         std::transform(loop_index.begin(), loop_index.end(),
                        index_bases_in.begin(), dereference_index.begin(),
                        std::plus<index>());
-        element * p_pencil_in = &(in(dereference_index));
+        const element * p_pencil_in = &(in(dereference_index));
 
         // Copy input into transform buffer and pad any excess with zeros
         // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
@@ -216,7 +216,7 @@ void c2c_transform(const size_t transform_dim,
             *p_pencil_out = (buffer[i] /= possible_normalization_factor);
             p_pencil_out += stride_transform_dim_out;
         }
-        for (std::ptrdiff_t i = dealiased_n - shape_transform_dim/2 + 1;
+        for (std::ptrdiff_t i = dealiased_n - (shape_transform_dim-1)/2;
              i < dealiased_n;
              ++i) {
             *p_pencil_out = (buffer[i] /= possible_normalization_factor);

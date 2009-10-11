@@ -198,11 +198,12 @@ void debug_dump(const std::string &prefix, const MultiArray &x)
 
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray>
-void check_1D(ComplexMultiArray &in, ComplexMultiArray &out)
+void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
-    const double close_enough = std::numeric_limits<double>::epsilon();
     const int N = in.shape()[0];
+    const double close_enough
+        = std::numeric_limits<double>::epsilon()*10*N*log(N);
 
     // Load a real-valued function into the input array
     for (int i = 0; i < N; ++i) {
@@ -216,18 +217,9 @@ void check_1D(ComplexMultiArray &in, ComplexMultiArray &out)
 
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
-    if (N == 3) { // DEBUG
-        std::cout << "N =   " << N << std::endl;
-        debug_dump("in =  ", in);
-        debug_dump("out = ", out);
-    }
-
     // Real input should exhibit conjugate symmetry in wave space
     BOOST_CHECK_SMALL(out[0].imag(), close_enough);
-    if (N%2 == 0) {
-        BOOST_CHECK_SMALL(out[(N+1)/2].imag(), close_enough);
-    }
-    for (int i = 1; i < (N+1)/2; ++i) {
+    for (int i = 1; i <= (N+1)/2; ++i) {
         BOOST_CHECK_CLOSE(out[i].real(),  out[N-i].real(), close_enough);
         BOOST_CHECK_CLOSE(out[i].imag(), -out[N-i].imag(), close_enough);
     }
@@ -247,10 +239,7 @@ void check_1D(ComplexMultiArray &in, ComplexMultiArray &out)
     // Imaginary input should exhibit a similar symmetry in wave space:
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
     BOOST_CHECK_SMALL(out[0].real(), close_enough);
-    if (N%2 == 0) {
-        BOOST_CHECK_SMALL(out[(N+1)/2].real(), close_enough);
-    }
-    for (int i = 1; i < (N+1)/2; ++i) {
+    for (int i = 1; i <= (N+1)/2; ++i) {
         BOOST_CHECK_CLOSE(out[i].real(), -out[N-i].real(), close_enough);
         BOOST_CHECK_CLOSE(out[i].imag(),  out[N-i].imag(), close_enough);
     }
@@ -262,14 +251,13 @@ BOOST_AUTO_TEST_CASE( c2c_transform_1d )
     array_type in, out;
 
     const int sizes[] = {
-        4,     8,  16,   32,   64         // Easy: powers of 2
-        , 2*3, 2*5, 2*7, 2*11, 2*13, 2*17 // Moderate: Even lengths
-        // FIXME: tests broken below here
-        // DISABLED, 3 , 5, 7, 9, 11, 13, 17, 19, 23, 29  // Hard: Primes
+        4,     8,  16,   32,   64             // Easy: powers of 2
+        , 2*3, 2*5, 2*7, 2*11, 2*13, 2*17     // Moderate: Even lengths
+        , 3, 5, 7, 9, 11, 13, 17, 19, 23, 29  // Hard: Primes
     };
     for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
         in.resize(boost::extents[sizes[i]]);
         out.resize(boost::extents[sizes[i]]);
-        check_1D(in, out);
+        check_1D_complex(in, out);
     }
 }
