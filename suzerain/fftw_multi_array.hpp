@@ -182,8 +182,8 @@ void c2c_transform(const size_t transform_dim,
               (boost::is_complex<element2>::value)
            || (boost::is_same<element2, fftw_complex>::value));
     // Ensure transformation direction and dealiasing choice are consistent
-    assert(   (fftw_sign == FFTW_FORWARD  && dealias_by == 1.0)
-           || (fftw_sign == FFTW_BACKWARD && dealias_by >= 1.0));
+    assert(   (fftw_sign == FFTW_FORWARD  && dealias_by >= 1.0)
+           || (fftw_sign == FFTW_BACKWARD && dealias_by == 1.0));
     // Copy all shape information into integers well-suited for FFTW
     shape_array shape_in;
     {
@@ -266,7 +266,7 @@ void c2c_transform(const size_t transform_dim,
         const element1 * p_pencil_in = &(in(dereference_index));
 
         // Copy input into transform buffer and pad any excess with zeros
-        // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
+        // Logic looks FFTW_FORWARD-specific, but handles FFTW_BACKWARD too
         // TODO differentiate prior to FFTW_BACKWARD if requested
         for (std::ptrdiff_t i = 0; i < shape_transform_dim; ++i) {
             detail::assign_complex(buffer[i], *p_pencil_in);
@@ -285,7 +285,7 @@ void c2c_transform(const size_t transform_dim,
         element2 * p_pencil_out = &(out(dereference_index));
 
         // Copy transform buffer into output truncating auxiliary modes
-        // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
+        // Logic looks FFTW_FORWARD-specific, but handles FFTW_BACKWARD too
         // TODO differentiate after FFTW_FORWARD if requested
         for (std::ptrdiff_t i = 0; i <= shape_transform_dim/2; ++i) {
             detail::assign_complex(*p_pencil_out,

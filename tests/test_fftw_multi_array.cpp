@@ -218,7 +218,9 @@ void debug_dump(const std::string &prefix,
 
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray1, class ComplexMultiArray2>
-void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
+void check_1D_complex_forward(ComplexMultiArray1 &in,
+                              ComplexMultiArray2 &out,
+                              const double dealias_by = 1.0)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
@@ -227,6 +229,7 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         = std::numeric_limits<double>::epsilon()*10*N*N;
 
     // Load a real-valued function into the input array
+    // Function includes only resolvable modes
     for (int i = 0; i < N; ++i) {
         double real_part = 1, imag_part = 0;
         const double xi = i*2*M_PI/N;
@@ -236,7 +239,7 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         fftw_multi_array::detail::assign_complex(in[i], real_part, imag_part);
     }
 
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD, dealias_by);
 
     // Real input should exhibit conjugate symmetry in wave space
     BOOST_CHECK_SMALL(out[0].imag(), close_enough);
@@ -249,6 +252,7 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     }
 
     // Load an imaginary-valued function into the input array
+    // Function includes only resolvable modes
     for (int i = 0; i < N; ++i) {
         double real_part = 0, imag_part = 1;
         const double xi = i*2*M_PI/N;
@@ -258,7 +262,7 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         fftw_multi_array::detail::assign_complex(in[i], real_part, imag_part);
     }
 
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD, dealias_by);
 
     // Imaginary input should exhibit a similar symmetry in wave space:
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
@@ -299,7 +303,7 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 
     // Transform input FFTW directly and also our wrapper
     fftw_execute(plan.get());  // Important to be first for in == out
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD, dealias_by);
 
     // Ensure we got exactly the same result
     for (int i = 0; i < N; ++i) {
@@ -313,7 +317,8 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray1, class ComplexMultiArray2>
-void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
+void check_1D_complex_backward(ComplexMultiArray1 &in,
+                               ComplexMultiArray2 &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
