@@ -172,7 +172,7 @@ void c2c_transform(const size_t transform_dim,
     typedef boost::array<shape_type,dimensionality>  shape_array;
 
     // Ensure we transform a dimension that exists in the data
-    assert(transform_dim < dimensionality);
+    assert(0 <= transform_dim && transform_dim < dimensionality);
     // Ensure we are operating on a complex-valued array
     // C99 _Complex may require additional handling just below
     BOOST_STATIC_ASSERT(
