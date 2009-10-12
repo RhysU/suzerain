@@ -120,6 +120,24 @@ void assign_complex(std::complex<FPT> &dest,
     dest.imag() = src_imag;
 }
 
+template<typename FPT>
+void assign_components(FPT &dest_real,
+                       FPT &dest_imag,
+                       const std::complex<FPT> &src)
+{
+    dest_real = src.real();
+    dest_imag = src.imag();
+}
+
+template<typename FPT>
+void assign_components(FPT &dest_real,
+                       FPT &dest_imag,
+                       const fftw_complex &src)
+{
+    dest_real = src[0];
+    dest_imag = src[1];
+}
+
 } // namespace detail
 
 template<class ComplexMultiArray1, class ComplexMultiArray2>

@@ -216,22 +216,23 @@ void debug_dump(const std::string &prefix,
 }
 
 // Helper function that kicks the tires of a 1D c2c transform
-template<class ComplexMultiArray>
-void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
+template<class ComplexMultiArray1, class ComplexMultiArray2>
+void check_1D_complex(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 {
-    BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
     const int N = in.shape()[0];
     const double close_enough
         = std::numeric_limits<double>::epsilon()*10*N*N;
 
     // Load a real-valued function into the input array
     for (int i = 0; i < N; ++i) {
-        in[i].real() = 1;
-        in[i].imag() = 0;
+        double real_part = 1, imag_part = 0;
         const double xi = i*2*M_PI/N;
         for (int j = 0; j <= (N+1)/2; ++j) {
-            in[i].real() += j*sin(j*xi) - j*cos(j*xi);
+            real_part += j*sin(j*xi) - j*cos(j*xi);
         }
+        fftw_multi_array::detail::assign_complex(in[i], real_part, imag_part);
     }
 
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
@@ -239,18 +240,21 @@ void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
     // Real input should exhibit conjugate symmetry in wave space
     BOOST_CHECK_SMALL(out[0].imag(), close_enough);
     for (int i = 1; i <= (N+1)/2; ++i) {
-        BOOST_CHECK_CLOSE(out[i].real(),  out[N-i].real(), close_enough);
-        BOOST_CHECK_CLOSE(out[i].imag(), -out[N-i].imag(), close_enough);
+        double a_real, a_imag, b_real, b_imag;
+        fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
+        fftw_multi_array::detail::assign_components(b_real, b_imag, out[N-i]);
+        BOOST_CHECK_CLOSE(a_real,  b_real, close_enough);
+        BOOST_CHECK_CLOSE(a_imag, -b_imag, close_enough);
     }
 
     // Load an imaginary-valued function into the input array
     for (int i = 0; i < N; ++i) {
-        in[i].real() = 0;
-        in[i].imag() = 1;
+        double real_part = 0, imag_part = 1;
         const double xi = i*2*M_PI/N;
         for (int j = 0; j <= (N+1)/2; ++j) {
-            in[i].imag() += j*sin(j*xi) - j*cos(j*xi);
+            imag_part += j*sin(j*xi) - j*cos(j*xi);
         }
+        fftw_multi_array::detail::assign_complex(in[i], real_part, imag_part);
     }
 
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
@@ -259,8 +263,11 @@ void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
     BOOST_CHECK_SMALL(out[0].real(), close_enough);
     for (int i = 1; i <= (N+1)/2; ++i) {
-        BOOST_CHECK_CLOSE(out[i].real(), -out[N-i].real(), close_enough);
-        BOOST_CHECK_CLOSE(out[i].imag(),  out[N-i].imag(), close_enough);
+        double a_real, a_imag, b_real, b_imag;
+        fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
+        fftw_multi_array::detail::assign_components(b_real, b_imag, out[N-i]);
+        BOOST_CHECK_CLOSE(a_real, -b_real, close_enough);
+        BOOST_CHECK_CLOSE(a_imag,  b_imag, close_enough);
     }
 
     // Compare our raw double results with FFTW's directly computed result
@@ -280,13 +287,13 @@ void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
 
     // Load a complex-valued function into the input array
     for (int i = 0; i < N; ++i) {
-        in[i].real() = N;
-        in[i].imag() = N;
+        double real_part = N, imag_part = N;
         const double xi = i*2*M_PI/N;
         for (int j = 0; j <= (N+1)/2; ++j) {
-            in[i].real() += j*cos(j*xi + M_PI/3);
-            in[i].imag() -= j*cos(j*xi + M_PI/5);
+            real_part += j*cos(j*xi + M_PI/3);
+            imag_part -= j*cos(j*xi + M_PI/5);
         }
+        fftw_multi_array::detail::assign_complex(in[i], real_part, imag_part);
     }
 
     // Transform input FFTW directly and also our wrapper
@@ -295,23 +302,25 @@ void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
 
     // Ensure we got exactly the same result
     for (int i = 0; i < N; ++i) {
-        BOOST_CHECK_EQUAL(out[i].real(), buffer[i][0]);
-        BOOST_CHECK_EQUAL(out[i].imag(), buffer[i][1]);
+        double out_real, out_imag;
+        fftw_multi_array::detail::assign_components(
+                out_real, out_imag, out[i]);
+        BOOST_CHECK_EQUAL(out_real, buffer[i][0]);
+        BOOST_CHECK_EQUAL(out_imag, buffer[i][1]);
     }
 }
 
 BOOST_AUTO_TEST_CASE( c2c_transform_1d )
 {
-    typedef boost::multi_array<std::complex<double>,1> array_type;
-
     const int sizes[] = {
         2,  4,  8, 16, 32, 64                 // Easy: powers of 2
         , 2*3, 2*5, 2*7, 2*11, 2*13, 2*17     // Moderate: Even lengths
         , 3, 5, 7, 9, 11, 13, 17, 19, 23, 29  // Hard: Primes
     };
 
-    // Out of place transformations
+    // Out of place transformations on std::complex
     {
+        typedef boost::multi_array<std::complex<double>,1> array_type;
         array_type in, out;
         for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
             in.resize(boost::extents[sizes[i]]);
@@ -320,8 +329,9 @@ BOOST_AUTO_TEST_CASE( c2c_transform_1d )
         }
     }
 
-    // In place transformations
+    // In place transformations on std::complex
     {
+        typedef boost::multi_array<std::complex<double>,1> array_type;
         array_type both;
         for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
             both.resize(boost::extents[sizes[i]]);
