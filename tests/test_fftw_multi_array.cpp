@@ -289,9 +289,9 @@ void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
         }
     }
 
-    // Transform input using our wrapper and using FFTW directly
+    // Transform input FFTW directly and also our wrapper
+    fftw_execute(plan.get());  // Important to be first for in == out
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
-    fftw_execute(plan.get());
 
     // Ensure we got exactly the same result
     for (int i = 0; i < N; ++i) {
@@ -303,16 +303,29 @@ void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
 BOOST_AUTO_TEST_CASE( c2c_transform_1d )
 {
     typedef boost::multi_array<std::complex<double>,1> array_type;
-    array_type in, out;
 
     const int sizes[] = {
         2,  4,  8, 16, 32, 64                 // Easy: powers of 2
         , 2*3, 2*5, 2*7, 2*11, 2*13, 2*17     // Moderate: Even lengths
         , 3, 5, 7, 9, 11, 13, 17, 19, 23, 29  // Hard: Primes
     };
-    for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
-        in.resize(boost::extents[sizes[i]]);
-        out.resize(boost::extents[sizes[i]]);
-        check_1D_complex(in, out);
+
+    // Out of place transformations
+    {
+        array_type in, out;
+        for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
+            in.resize(boost::extents[sizes[i]]);
+            out.resize(boost::extents[sizes[i]]);
+            check_1D_complex(in, out);
+        }
+    }
+
+    // In place transformations
+    {
+        array_type both;
+        for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
+            both.resize(boost::extents[sizes[i]]);
+            check_1D_complex(both, both);
+        }
     }
 }
