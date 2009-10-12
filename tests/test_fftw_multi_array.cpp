@@ -222,7 +222,7 @@ void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
     const int N = in.shape()[0];
     const double close_enough
-        = std::numeric_limits<double>::epsilon()*10*N*log(N);
+        = std::numeric_limits<double>::epsilon()*10*N*N;
 
     // Load a real-valued function into the input array
     for (int i = 0; i < N; ++i) {
