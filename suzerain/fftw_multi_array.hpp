@@ -35,9 +35,9 @@
 #include <cassert>
 #include <cstddef>
 #include <functional>
-#include <limits>
 #include <fftw3.h>
 #include <boost/array.hpp>
+#include <boost/integer_traits.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
@@ -58,6 +58,8 @@ namespace pecos { namespace suzerain { namespace fftw_multi_array {
 template<std::size_t NumDims, typename IndexType, typename MaxIndexType>
 bool increment(IndexType &index, const MaxIndexType &max_index)
 {
+    using boost::integer_traits;
+
     typedef BOOST_TYPEOF_TPL(index[0])              index_element_type;
     typedef BOOST_TYPEOF_TPL(max_index[0])          max_index_element_type;
     typedef BOOST_TYPEOF_TPL(index[0]/max_index[0]) element_division_type;
@@ -76,7 +78,7 @@ bool increment(IndexType &index, const MaxIndexType &max_index)
         assert(1 <= max_index[n]);
         assert(boost::is_unsigned<index_element_type>::value || 0 <= index[n]);
         assert(static_cast<max_index_element_type>(index[n]) < max_index[n]);
-        assert(index[n] < std::numeric_limits<index_element_type>::max() - 1);
+        assert(index[n]< integer_traits<index_element_type>::const_max - 1);
 
         index[n] += overflow;                 // Handle incoming overflow
         overflow  = index[n]/max_index[n];    // Check outgoing overflow
@@ -93,6 +95,8 @@ void c2c_transform(const size_t transform_dim,
                    const double dealias_by = 1.0,
                    const unsigned fftw_flags = 0)
 {
+    using boost::integer_traits;
+
     // Typedefs fixed by the ComplexMultiArray template parameter
     typedef typename ComplexMultiArray::element     element;
     typedef typename ComplexMultiArray::index       index;
@@ -122,14 +126,14 @@ void c2c_transform(const size_t transform_dim,
             // Ensure out's shape is at least as large as in's shape
             assert(p_shape_in[n] <= p_shape_out[n]);
             // Ensure won't accidentally truncate the shape value
-            assert(p_shape_in[n]  <= std::numeric_limits<shape_type>::max());
+            assert(p_shape_in[n] <= integer_traits<shape_type>::const_max);
 
             shape_in[n]  = p_shape_in[n];
         }
     }
     // Ensure dealiased transform size computable through FFTW interface
     assert(shape_in[transform_dim] * dealias_by
-            <= std::numeric_limits<shape_type>::max());
+            <= integer_traits<shape_type>::const_max);
     const shape_type dealiased_n = shape_in[transform_dim] * dealias_by;
 
     // We choose to always use an intermediate buffer for the transform:
