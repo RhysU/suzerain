@@ -13,6 +13,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <suzerain/fftw_multi_array.hpp>
+#include <fftw3.h>
 
 #include "test_tools.hpp"
 
@@ -196,6 +197,24 @@ void debug_dump(const std::string &prefix, const MultiArray &x)
     cout << endl;
 }
 
+void debug_dump(const std::string &prefix,
+               const fftw_complex * begin,
+               const fftw_complex * end) {
+    using namespace std;
+
+    cout << prefix;
+    while (begin != end) {
+        cout << "("
+             << (*begin)[0]
+             << ","
+             << (*begin)[1]
+             << ")";
+        begin++;
+        if (begin != end) cout << ", ";
+    }
+    cout << endl;
+}
+
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray>
 void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
@@ -210,7 +229,7 @@ void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
         in[i].real() = 1;
         in[i].imag() = 0;
         const double xi = i*2*M_PI/N;
-        for (int j = 0; j < (N+1)/2; ++j) {
+        for (int j = 0; j <= (N+1)/2; ++j) {
             in[i].real() += j*sin(j*xi) - j*cos(j*xi);
         }
     }
@@ -229,7 +248,7 @@ void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
         in[i].real() = 0;
         in[i].imag() = 1;
         const double xi = i*2*M_PI/N;
-        for (int j = 0; j < (N+1)/2; ++j) {
+        for (int j = 0; j <= (N+1)/2; ++j) {
             in[i].imag() += j*sin(j*xi) - j*cos(j*xi);
         }
     }
@@ -243,6 +262,42 @@ void check_1D_complex(ComplexMultiArray &in, ComplexMultiArray &out)
         BOOST_CHECK_CLOSE(out[i].real(), -out[N-i].real(), close_enough);
         BOOST_CHECK_CLOSE(out[i].imag(),  out[N-i].imag(), close_enough);
     }
+
+    // Compare our raw double results with FFTW's directly computed result
+    // Plan before loading in the data since planning overwrites in
+    boost::shared_array<fftw_complex> buffer(
+        static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*N)),
+        std::ptr_fun(fftw_free));
+    BOOST_CHECK(buffer.get() != NULL);
+    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
+            fftw_plan_dft_1d(N,
+                             reinterpret_cast<fftw_complex*>(in.data()),
+                             buffer.get(),
+                             FFTW_FORWARD,
+                             FFTW_PRESERVE_INPUT),
+            std::ptr_fun(fftw_destroy_plan));
+    BOOST_CHECK(plan.get() != NULL);
+
+    // Load a complex-valued function into the input array
+    for (int i = 0; i < N; ++i) {
+        in[i].real() = N;
+        in[i].imag() = N;
+        const double xi = i*2*M_PI/N;
+        for (int j = 0; j <= (N+1)/2; ++j) {
+            in[i].real() += j*cos(j*xi + M_PI/3);
+            in[i].imag() -= j*cos(j*xi + M_PI/5);
+        }
+    }
+
+    // Transform input using our wrapper and using FFTW directly
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+    fftw_execute(plan.get());
+
+    // Ensure we got exactly the same result
+    for (int i = 0; i < N; ++i) {
+        BOOST_CHECK_EQUAL(out[i].real(), buffer[i][0]);
+        BOOST_CHECK_EQUAL(out[i].imag(), buffer[i][1]);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( c2c_transform_1d )
@@ -251,7 +306,7 @@ BOOST_AUTO_TEST_CASE( c2c_transform_1d )
     array_type in, out;
 
     const int sizes[] = {
-        4,     8,  16,   32,   64             // Easy: powers of 2
+        2,  4,  8, 16, 32, 64                 // Easy: powers of 2
         , 2*3, 2*5, 2*7, 2*11, 2*13, 2*17     // Moderate: Even lengths
         , 3, 5, 7, 9, 11, 13, 17, 19, 23, 29  // Hard: Primes
     };
