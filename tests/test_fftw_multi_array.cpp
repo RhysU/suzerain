@@ -10,6 +10,7 @@
 #include <vector>
 #include <boost/array.hpp>
 #include <boost/multi_array.hpp>
+#include <boost/scoped_array.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <suzerain/fftw_multi_array.hpp>
@@ -217,7 +218,7 @@ void debug_dump(const std::string &prefix,
 
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray1, class ComplexMultiArray2>
-void check_1D_complex(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
+void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
@@ -310,6 +311,84 @@ void check_1D_complex(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     }
 }
 
+// Helper function that kicks the tires of a 1D c2c transform
+template<class ComplexMultiArray1, class ComplexMultiArray2>
+void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
+{
+    BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
+    const int N = in.shape()[0];
+    const double close_enough
+        = std::numeric_limits<double>::epsilon()*10*N*N;
+
+    // Load a conjugate-symmetric function into the input array
+    fftw_multi_array::detail::assign_complex(in[0], N, 0);
+    for (int i = 1; i < (N+1)/2; ++i) {
+        fftw_multi_array::detail::assign_complex(in[i],   i,  i);
+        fftw_multi_array::detail::assign_complex(in[N-i], i, -i);
+    }
+    if (N%2 == 0) fftw_multi_array::detail::assign_complex(in[N/2], N/2, 0);
+
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
+
+    // Output should be a real-valued function in physical space
+    for (int i = 0; i < N; ++i) {
+        double a_real, a_imag;
+        fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
+        BOOST_CHECK_SMALL(a_imag, close_enough);
+    }
+
+    // Load a real-symmetric function into the input array
+    fftw_multi_array::detail::assign_complex(in[0], 0, N);
+    for (int i = 1; i <= (N+1)/2; ++i) {
+        fftw_multi_array::detail::assign_complex(in[i],    i, i);
+        fftw_multi_array::detail::assign_complex(in[N-i], -i, i);
+    }
+    if (N%2 == 0) fftw_multi_array::detail::assign_complex(in[N/2], 0, N/2);
+
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
+
+    // Output should be an imaginary-valued function in physical space
+    for (int i = 0; i < N; ++i) {
+        double a_real, a_imag;
+        fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
+        BOOST_CHECK_SMALL(a_real, close_enough);
+    }
+
+    // Compare our raw double results with FFTW's directly computed result
+    // Plan before loading in the data since planning overwrites in
+    boost::shared_array<fftw_complex> buffer(
+        static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*N)),
+        std::ptr_fun(fftw_free));
+    BOOST_CHECK(buffer.get() != NULL);
+    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
+            fftw_plan_dft_1d(N,
+                             reinterpret_cast<fftw_complex*>(in.data()),
+                             buffer.get(),
+                             FFTW_BACKWARD,
+                             FFTW_PRESERVE_INPUT),
+            std::ptr_fun(fftw_destroy_plan));
+    BOOST_CHECK(plan.get() != NULL);
+
+    // Load a complex-valued function into the input array
+    for (int i = 0; i < N; ++i) {
+        fftw_multi_array::detail::assign_complex(in[i], i, i);
+    }
+
+    // Transform input FFTW directly and also our wrapper
+    fftw_execute(plan.get());  // Important to be first for in == out
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
+
+    // Ensure we got exactly the same result after normalization
+    for (int i = 0; i < N; ++i) {
+        double out_real, out_imag;
+        fftw_multi_array::detail::assign_components(
+                out_real, out_imag, out[i]);
+        BOOST_CHECK_EQUAL(out_real, buffer[i][0] / N);
+        BOOST_CHECK_EQUAL(out_imag, buffer[i][1] / N);
+    }
+}
+
 BOOST_AUTO_TEST_CASE( c2c_transform_1d )
 {
     const int sizes[] = {
@@ -325,7 +404,8 @@ BOOST_AUTO_TEST_CASE( c2c_transform_1d )
         for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
             in.resize(boost::extents[sizes[i]]);
             out.resize(boost::extents[sizes[i]]);
-            check_1D_complex(in, out);
+            check_1D_complex_forward(in, out);
+            check_1D_complex_backward(in, out);
         }
     }
 
@@ -335,7 +415,14 @@ BOOST_AUTO_TEST_CASE( c2c_transform_1d )
         array_type both;
         for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
             both.resize(boost::extents[sizes[i]]);
-            check_1D_complex(both, both);
+            check_1D_complex_forward(both, both);
+            check_1D_complex_backward(both, both);
         }
     }
+
+    // TODO Out of place transformations on fftw_complex
+    // TODO In place transformations on fftw_complex
+    // Broken: boost::multi_array cannot handle fftw_complex elements
+    // Awaiting response from boost-users mailing list
+    // http://article.gmane.org/gmane.comp.lib.boost.user/52327
 }

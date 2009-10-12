@@ -49,10 +49,6 @@
 #include <boost/type_traits/remove_pointer.hpp>
 #include <boost/typeof/typeof.hpp>
 
-/* DEBUG */
-#include <iostream>
-#include <iterator>
-
 namespace pecos { namespace suzerain { namespace fftw_multi_array {
 
 template<std::size_t NumDims, typename IndexType, typename MaxIndexType>
@@ -111,10 +107,10 @@ void assign_complex(fftw_complex &dest,
     dest[1] = src_imag;
 }
 
-template<typename FPT>
-void assign_complex(std::complex<FPT> &dest,
-                    const FPT &src_real,
-                    const FPT &src_imag)
+template<typename FPT1, typename FPT2>
+void assign_complex(std::complex<FPT1> &dest,
+                    const FPT2 &src_real,
+                    const FPT2 &src_imag)
 {
     dest.real() = src_real;
     dest.imag() = src_imag;
@@ -178,7 +174,7 @@ void c2c_transform(const size_t transform_dim,
     // Ensure we transform a dimension that exists in the data
     assert(transform_dim < dimensionality);
     // Ensure we are operating on a complex-valued array
-    // TODO Handle C99 _Complex in a nice way
+    // C99 _Complex may require additional handling just below
     BOOST_STATIC_ASSERT(
               (boost::is_complex<element1>::value)
            || (boost::is_same<element1, fftw_complex>::value));
