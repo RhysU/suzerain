@@ -87,33 +87,86 @@ bool increment(IndexType &index, const MaxIndexType &max_index)
     return !overflow;
 }
 
-template<class ComplexMultiArray>
+namespace detail {
+
+template<typename FPT>
+void assign_complex(fftw_complex &dest, const std::complex<FPT> &src)
+{
+    dest[0] = src.real();
+    dest[1] = src.imag();
+}
+
+void assign_complex(fftw_complex &dest, const fftw_complex &src)
+{
+    dest[0] = src[0];
+    dest[1] = src[1];
+}
+
+template<typename FPT>
+void assign_complex(fftw_complex &dest,
+                    const FPT &src_real,
+                    const FPT &src_imag)
+{
+    dest[0] = src_real;
+    dest[1] = src_imag;
+}
+
+template<typename FPT>
+void assign_complex(std::complex<FPT> &dest,
+                    const FPT &src_real,
+                    const FPT &src_imag)
+{
+    dest.real() = src_real;
+    dest.imag() = src_imag;
+}
+
+} // namespace detail
+
+template<class ComplexMultiArray1, class ComplexMultiArray2>
 void c2c_transform(const size_t transform_dim,
-                   const ComplexMultiArray &in,
-                   ComplexMultiArray &out,
+                   const ComplexMultiArray1 &in,
+                   ComplexMultiArray2 &out,
                    const int fftw_sign,
                    const double dealias_by = 1.0,
                    const unsigned fftw_flags = 0)
 {
     using boost::integer_traits;
 
-    // Typedefs fixed by the ComplexMultiArray template parameter
-    typedef typename ComplexMultiArray::element     element;
-    typedef typename ComplexMultiArray::index       index;
-    typedef typename ComplexMultiArray::size_type   size_type;
-    const size_type dimensionality = ComplexMultiArray::dimensionality;
+    // Typedefs fixed separately each ComplexMultiArray template parameters
+    typedef typename ComplexMultiArray1::element     element1;
+    typedef typename ComplexMultiArray2::element     element2;
+    BOOST_STATIC_ASSERT(sizeof(element1) == sizeof(element2));
 
-    // Typedefs from implementation choices
-    typedef boost::array<index,dimensionality>      index_array;
-    typedef int                                     shape_type; // Per FFTW
-    typedef boost::array<shape_type,dimensionality> shape_array;
+    // Typedefs expected to be consistent across both template parameters
+    BOOST_STATIC_ASSERT((boost::is_same<
+                typename ComplexMultiArray1::index,
+                typename ComplexMultiArray2::index
+            >::value));
+    typedef typename ComplexMultiArray1::index       index;
+    BOOST_STATIC_ASSERT((boost::is_same<
+                typename ComplexMultiArray1::size_type,
+                typename ComplexMultiArray2::size_type
+            >::value));
+    typedef typename ComplexMultiArray1::size_type   size_type;
+    BOOST_STATIC_ASSERT(    ComplexMultiArray1::dimensionality
+                         == ComplexMultiArray2::dimensionality);
+    const size_type dimensionality = ComplexMultiArray1::dimensionality;
+
+    // Typedefs due to implementation choices
+    typedef boost::array<index,dimensionality>       index_array;
+    typedef int                                      shape_type; // Per FFTW
+    typedef boost::array<shape_type,dimensionality>  shape_array;
 
     // Ensure we transform a dimension that exists in the data
     assert(transform_dim < dimensionality);
     // Ensure we are operating on a complex-valued array
+    // TODO Handle C99 _Complex in a nice way
     BOOST_STATIC_ASSERT(
-              (boost::is_complex<element>::value)
-           || (boost::is_same<element, fftw_complex>::value));
+              (boost::is_complex<element1>::value)
+           || (boost::is_same<element1, fftw_complex>::value));
+    BOOST_STATIC_ASSERT(
+              (boost::is_complex<element2>::value)
+           || (boost::is_same<element2, fftw_complex>::value));
     // Ensure transformation direction and dealiasing choice are consistent
     assert(   (fftw_sign == FFTW_FORWARD  && dealias_by == 1.0)
            || (fftw_sign == FFTW_BACKWARD && dealias_by >= 1.0));
@@ -144,16 +197,17 @@ void c2c_transform(const size_t transform_dim,
     //  5) Always gives us in-place transform performance for the FFT
     //  6) Greatly simplifies transform, dealiasing, and differentiation code
     //  7) Simplifies moving to other FFT libraries in the future, e.g. ESSL
-    boost::shared_array<element> buffer(
-        static_cast<element *>(fftw_malloc(sizeof(element)*dealiased_n)),
+    boost::shared_array<fftw_complex> buffer(
+        static_cast<fftw_complex *>(
+            fftw_malloc(sizeof(fftw_complex)*dealiased_n)),
         std::ptr_fun(fftw_free));
     assert(buffer);
 
     // Construct the FFTW in-place plan for the dealiased buffer
     boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_dft_1d(dealiased_n,
-                             reinterpret_cast<fftw_complex*>(buffer.get()),
-                             reinterpret_cast<fftw_complex*>(buffer.get()),
+                             buffer.get(),
+                             buffer.get(),
                              fftw_sign,
                              fftw_flags | FFTW_DESTROY_INPUT),
             std::ptr_fun(fftw_destroy_plan));
@@ -180,8 +234,11 @@ void c2c_transform(const size_t transform_dim,
     // Prepare per-pencil outer loop index and loop bounds
     shape_array loop_shape(shape_in);   // Iterate over all dimensions...
     loop_shape[transform_dim] = 1;      // ...except the transformed one
-    BOOST_STATIC_ASSERT(index() == 0);  // Ensure expected default value
     index_array loop_index = {{   }};   // Initialize to default value
+    for (size_type n = 0; n < dimensionality; ++n) {
+        assert(loop_index[n] == 0);     // Check initialization correct
+    }
+
     index_array dereference_index;
 
     // TODO Walk fastest dimensions first in increment routine
@@ -192,17 +249,17 @@ void c2c_transform(const size_t transform_dim,
         std::transform(loop_index.begin(), loop_index.end(),
                        index_bases_in.begin(), dereference_index.begin(),
                        std::plus<index>());
-        const element * p_pencil_in = &(in(dereference_index));
+        const element1 * p_pencil_in = &(in(dereference_index));
 
         // Copy input into transform buffer and pad any excess with zeros
         // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
         // TODO differentiate prior to FFTW_BACKWARD if requested
         for (std::ptrdiff_t i = 0; i < shape_transform_dim; ++i) {
-            buffer[i] = *p_pencil_in;
+            detail::assign_complex(buffer[i], *p_pencil_in);
             p_pencil_in += stride_transform_dim_in;
         }
         for (std::ptrdiff_t i = shape_transform_dim; i < dealiased_n; ++i) {
-            buffer[i] = element();  // Fancy zero
+            detail::assign_complex(buffer[i], 0, 0);
         }
 
         fftw_execute(plan.get()); // Pull the strings!  Pull the strings!
@@ -211,19 +268,25 @@ void c2c_transform(const size_t transform_dim,
         std::transform(loop_index.begin(), loop_index.end(),
                        index_bases_out.begin(), dereference_index.begin(),
                        std::plus<index>());
-        element * p_pencil_out = &(out(dereference_index));
+        element2 * p_pencil_out = &(out(dereference_index));
 
         // Copy transform buffer into output truncating auxiliary modes
         // Logic looks FFTW_BACKWARD-specific, but handles FFTW_FORWARD too
         // TODO differentiate after FFTW_FORWARD if requested
         for (std::ptrdiff_t i = 0; i <= shape_transform_dim/2; ++i) {
-            *p_pencil_out = (buffer[i] /= possible_normalization_factor);
+            detail::assign_complex(*p_pencil_out,
+                        buffer[i][0] / possible_normalization_factor,
+                        buffer[i][1] / possible_normalization_factor
+                    );
             p_pencil_out += stride_transform_dim_out;
         }
         for (std::ptrdiff_t i = dealiased_n - (shape_transform_dim-1)/2;
              i < dealiased_n;
              ++i) {
-            *p_pencil_out = (buffer[i] /= possible_normalization_factor);
+            detail::assign_complex(*p_pencil_out,
+                        buffer[i][0] / possible_normalization_factor,
+                        buffer[i][1] / possible_normalization_factor
+                    );
             p_pencil_out += stride_transform_dim_out;
         }
 
