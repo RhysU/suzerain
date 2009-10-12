@@ -33,3 +33,13 @@ BOOST_AUTO_TEST_CASE( shared_c_array )
         BOOST_CHECK_EQUAL(carray_double[2*i+1], carray_complex[i].imag());
     }
 }
+
+BOOST_AUTO_TEST_CASE( real_and_imag_return_lvalues )
+{
+    complex x(1,2);
+    x.real() += 1;
+    x.imag() += 2;
+    BOOST_CHECK_EQUAL(x.real(), 2);
+    BOOST_CHECK_EQUAL(x.imag(), 4);
+    BOOST_CHECK_EQUAL(x, complex(2,4));
+}
