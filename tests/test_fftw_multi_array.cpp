@@ -465,13 +465,13 @@ void c2c_1d_out_of_place(const int N)
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type in(boost::extents[N]), out(boost::extents[N]);
 
-    // No dealiasing in effect: NR == NC
+    // No dealiasing in effect: in == out
     check_1D_complex_forward(in, out);
     compare_1D_complex_forward(in, out);
     check_1D_complex_backward(in, out);
     compare_1D_complex_backward(in, out);
 
-    // Dealiasing for NR < NC
+    // Dealiasing where in < out
 //    if (N == 4) {
 //        for (int i = 1; i < N; ++i) {
 //            in.resize(boost::extents[i]);
@@ -480,7 +480,7 @@ void c2c_1d_out_of_place(const int N)
 //        }
 //    }
 
-    // Dealiasing for NR > NC
+    // Dealiasing where in > out
     for (int i = N+1; i <= 2*N; ++i) {
         in.resize(boost::extents[i]);
 //        check_1D_complex_forward(in, out);
