@@ -275,6 +275,7 @@ void c2c_transform(const size_t transform_dim,
     assert(plan);
 
     // Dereference all constant parameters outside main processing loop
+    // Pulls array information into our stack frame
     index_array index_bases_in, index_bases_out;
     {
         const index * const p_index_bases_in  = in.index_bases();
@@ -288,20 +289,26 @@ void c2c_transform(const size_t transform_dim,
     const index      stride_out_transform_dim = out.strides()[transform_dim];
     const shape_type shape_in_transform_dim   = shape_in[transform_dim];
     const shape_type shape_out_transform_dim  = shape_out[transform_dim];
-    // Dealiasing constants for how the input data is copied into the buffer
+    // Dealiasing constants for how the input data is copied into the buffer:
+    //   [offset_in1, offset_in2) Copied into the buffer from in
+    //   [offset_in2, offset_in3) Buffer padded with zeros
+    //   [offset_in3, offset_in4) Copied into the buffer from in
     const std::ptrdiff_t copy_in
         = std::min(shape_in_transform_dim, transform_n);
     const std::ptrdiff_t offset_in1 = 0;
     const std::ptrdiff_t offset_in2 = (copy_in+2)/2;
-    const std::ptrdiff_t offset_in3 = shape_in_transform_dim - (copy_in-1)/2;
+    const std::ptrdiff_t offset_in3 = shape_in_transform_dim-(copy_in-1)/2;
     const std::ptrdiff_t offset_in4
         = std::max(shape_in_transform_dim, transform_n);
     // Dealiasing constants for how the output data is copied from the buffer
+    //   [offset_out1, offset_out2) Copied into out from the buffer
+    //   [offset_out2, offset_out3) Storage out padded with zeros
+    //   [offset_out3, offset_out4) Copied into out from the buffer
     const std::ptrdiff_t copy_out
         = std::min(shape_out_transform_dim, transform_n);
     const std::ptrdiff_t offset_out1 = 0;
     const std::ptrdiff_t offset_out2 = (copy_out+2)/2;
-    const std::ptrdiff_t offset_out3 = shape_out_transform_dim - (copy_out-1)/2;
+    const std::ptrdiff_t offset_out3 = shape_out_transform_dim-(copy_out-1)/2;
     const std::ptrdiff_t offset_out4 = shape_out_transform_dim;
     // Normalization only required during backwards transform
     const double normalization_factor
@@ -314,8 +321,7 @@ void c2c_transform(const size_t transform_dim,
     for (size_type n = 0; n < dimensionality; ++n) {
         assert(loop_index[n] == 0);     // Check initialization correct
     }
-
-    index_array dereference_index;
+    index_array dereference_index;      // To be adjusted by index_bases
 
     // TODO Walk fastest dimensions first in increment routine
 
