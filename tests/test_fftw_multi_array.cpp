@@ -242,74 +242,87 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
-    const int N = in.shape()[0];
+    const int NR = in.shape()[0];
+    const int NC = out.shape()[0];
     const double close_enough
-        = std::numeric_limits<double>::epsilon()*10*N*N;
+        = std::numeric_limits<double>::epsilon()*10*NR*NR;
 
     // Load a real-valued function into the input array and transform it
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < NR; ++i) {
         fftw_multi_array::detail::assign_complex(
-                in[i], real_test_function<double>(N, (N+1)/2, i), 0.0);
+                in[i], real_test_function<double>(NR, (NR+1)/2, i), 0.0);
     }
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
     // Real input should exhibit conjugate symmetry in wave space
     BOOST_CHECK_SMALL(out[0].imag(), close_enough);
-    for (int i = 1; i < (N+1)/2; ++i) {
+    for (int i = 1; i < (NR+1)/2; ++i) {
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
-        fftw_multi_array::detail::assign_components(b_real, b_imag, out[N-i]);
+        fftw_multi_array::detail::assign_components(b_real, b_imag, out[NR-i]);
         BOOST_CHECK_CLOSE(a_real,  b_real, close_enough);
         BOOST_CHECK_CLOSE(a_imag, -b_imag, close_enough);
     }
 
     // Load an imaginary-valued function into the input array and transform it
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < NR; ++i) {
         fftw_multi_array::detail::assign_complex(
-                in[i], 0.0, real_test_function<double>(N, (N+1)/2, i));
+                in[i], 0.0, real_test_function<double>(NR, (NR+1)/2, i));
     }
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
     // Imaginary input should exhibit a similar symmetry in wave space:
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
     BOOST_CHECK_SMALL(out[0].real(), close_enough);
-    for (int i = 1; i < (N+1)/2; ++i) {
+    for (int i = 1; i < (NR+1)/2; ++i) {
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
-        fftw_multi_array::detail::assign_components(b_real, b_imag, out[N-i]);
+        fftw_multi_array::detail::assign_components(b_real, b_imag, out[NR-i]);
         BOOST_CHECK_CLOSE(a_real, -b_real, close_enough);
         BOOST_CHECK_CLOSE(a_imag,  b_imag, close_enough);
     }
+}
 
-    // Compare our raw double results with FFTW's directly computed result
+// Compare our results with FFTW's directly computed result
+template<class ComplexMultiArray1, class ComplexMultiArray2>
+void compare_1D_complex_forward(ComplexMultiArray1 &in,
+                                ComplexMultiArray2 &out)
+{
+    BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
+    const int NC = in.shape()[0];
+    const int NR = out.shape()[0];
+    const double close_enough
+        = std::numeric_limits<double>::epsilon()*10*NC*NC;
+
     // Plan before loading in the data since planning overwrites in
     boost::shared_array<fftw_complex> buffer(
-        static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*N)),
+        static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NR)),
         std::ptr_fun(fftw_free));
     BOOST_CHECK(buffer.get() != NULL);
     boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_many_dft(1,
-                               &N,
+                               &NR,
                                1,
                                reinterpret_cast<fftw_complex*>(in.data()),
                                NULL,
                                in.strides()[0],
-                               N,
+                               NR,
                                buffer.get(),
                                NULL,
                                1,
-                               N,
+                               NR,
                                FFTW_FORWARD,
                                FFTW_PRESERVE_INPUT),
             std::ptr_fun(fftw_destroy_plan));
     BOOST_CHECK(plan.get() != NULL);
 
     // Load a complex-valued function into the input array
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < NR; ++i) {
         fftw_multi_array::detail::assign_complex(
                 in[i],
-                real_test_function<double>(N, (N+1)/2, i, M_PI/3.0),
-                real_test_function<double>(N, (N+1)/2, i, M_PI/5.0));
+                real_test_function<double>(NR, (NR+1)/2, i, M_PI/3.0),
+                real_test_function<double>(NR, (NR+1)/2, i, M_PI/5.0));
     }
 
     // Transform input FFTW directly and also our wrapper
@@ -317,14 +330,14 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
     // Ensure we got the same result
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < NR; ++i) {
         double out_real, out_imag;
         fftw_multi_array::detail::assign_components(
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
         // BOOST_CHECK_EQUAL would be nice, but it fails here
-        BOOST_CHECK_CLOSE(out_real, buffer[i][0], close_enough/(N*N));
-        BOOST_CHECK_CLOSE(out_imag, buffer[i][1], close_enough/(N*N));
+        BOOST_CHECK_CLOSE(out_real, buffer[i][0], close_enough/(NR*NR));
+        BOOST_CHECK_CLOSE(out_imag, buffer[i][1], close_enough/(NR*NR));
     }
 }
 
@@ -334,69 +347,82 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
-    const int N = in.shape()[0];
+    const int NC = in.shape()[0];
+    const int NR = out.shape()[0];
     const double close_enough
-        = std::numeric_limits<double>::epsilon()*10*N*N;
+        = std::numeric_limits<double>::epsilon()*10*NC*NC;
 
     // Load a conjugate-symmetric function into the input array
-    fftw_multi_array::detail::assign_complex(in[0], N, 0);
-    for (int i = 1; i < (N+1)/2; ++i) {
+    fftw_multi_array::detail::assign_complex(in[0], NC, 0);
+    for (int i = 1; i < (NC+1)/2; ++i) {
         fftw_multi_array::detail::assign_complex(in[i],   i,  i);
-        fftw_multi_array::detail::assign_complex(in[N-i], i, -i);
+        fftw_multi_array::detail::assign_complex(in[NC-i], i, -i);
     }
-    if (N%2 == 0) fftw_multi_array::detail::assign_complex(in[N/2], N/2, 0);
+    if (NC%2 == 0) fftw_multi_array::detail::assign_complex(in[NC/2], NC/2, 0);
 
     fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
 
     // Output should be a real-valued function in physical space
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < NR; ++i) {
         double a_real, a_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         BOOST_CHECK_SMALL(a_imag, close_enough);
     }
 
     // Load a real-symmetric function into the input array
-    fftw_multi_array::detail::assign_complex(in[0], 0, N);
-    for (int i = 1; i < (N+1)/2; ++i) {
+    fftw_multi_array::detail::assign_complex(in[0], 0, NC);
+    for (int i = 1; i < (NC+1)/2; ++i) {
         fftw_multi_array::detail::assign_complex(in[i],    i, i);
-        fftw_multi_array::detail::assign_complex(in[N-i], -i, i);
+        fftw_multi_array::detail::assign_complex(in[NC-i], -i, i);
     }
-    if (N%2 == 0) fftw_multi_array::detail::assign_complex(in[N/2], 0, N/2);
+    if (NC%2 == 0) fftw_multi_array::detail::assign_complex(in[NC/2], 0, NC/2);
 
     fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
 
     // Output should be an imaginary-valued function in physical space
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < NR; ++i) {
         double a_real, a_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         BOOST_CHECK_SMALL(a_real, close_enough);
     }
+}
 
-    // Compare our raw double results with FFTW's directly computed result
+// Compare our results with FFTW's directly computed result
+template<class ComplexMultiArray1, class ComplexMultiArray2>
+void compare_1D_complex_backward(ComplexMultiArray1 &in,
+                                 ComplexMultiArray2 &out)
+{
+    BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
+    const int NC = in.shape()[0];
+    const int NR = out.shape()[0];
+    const double close_enough
+        = std::numeric_limits<double>::epsilon()*10*NC*NC;
+
     // Plan before loading in the data since planning overwrites in
     boost::shared_array<fftw_complex> buffer(
-        static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*N)),
+        static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NC)),
         std::ptr_fun(fftw_free));
     BOOST_CHECK(buffer.get() != NULL);
     boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_many_dft(1,
-                               &N,
+                               &NC,
                                1,
                                reinterpret_cast<fftw_complex*>(in.data()),
                                NULL,
                                in.strides()[0],
-                               N,
+                               NC,
                                buffer.get(),
                                NULL,
                                1,
-                               N,
+                               NC,
                                FFTW_BACKWARD,
                                FFTW_PRESERVE_INPUT),
             std::ptr_fun(fftw_destroy_plan));
     BOOST_CHECK(plan.get() != NULL);
 
     // Load a complex-valued function into the input array
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < NC; ++i) {
         fftw_multi_array::detail::assign_complex(in[i], i, i);
     }
 
@@ -405,14 +431,14 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
 
     // Ensure we got exactly the same result after normalization
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < NR; ++i) {
         double out_real, out_imag;
         fftw_multi_array::detail::assign_components(
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
         // BOOST_CHECK_EQUAL would be nice, but it fails here
-        BOOST_CHECK_CLOSE(out_real, buffer[i][0] / N, close_enough/10);
-        BOOST_CHECK_CLOSE(out_imag, buffer[i][1] / N, close_enough/10);
+        BOOST_CHECK_CLOSE(out_real, buffer[i][0] / NR, close_enough/10);
+        BOOST_CHECK_CLOSE(out_imag, buffer[i][1] / NR, close_enough/10);
     }
 }
 
@@ -433,7 +459,9 @@ void c2c_1d_out_of_place(const int N)
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type in(boost::extents[N]), out(boost::extents[N]);
     check_1D_complex_forward(in, out);
+    compare_1D_complex_forward(in, out);
     check_1D_complex_backward(in, out);
+    compare_1D_complex_backward(in, out);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END()
@@ -448,7 +476,9 @@ void c2c_1d_in_place(const int N)
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type both(boost::extents[N]);
     check_1D_complex_forward(both, both);
+    compare_1D_complex_forward(both, both);
     check_1D_complex_backward(both, both);
+    compare_1D_complex_forward(both, both);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_IN_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END()
