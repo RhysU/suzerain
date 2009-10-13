@@ -222,6 +222,20 @@ void debug_dump(const std::string &prefix,
     cout << endl;
 }
 
+// Produce a real signal with known frequency content
+template<typename FPT, typename Integer>
+FPT real_test_function(const Integer NR,
+                       const Integer max_mode,
+                       const Integer i,
+                       const FPT shift = M_PI/3.0) {
+    const FPT xi = i*2*M_PI/NR;
+    FPT retval = (max_mode >= 0) ? NR : 0;
+    for (Integer i = 1; i <= max_mode; ++i) {
+        retval += i*sin(i*xi + shift);
+    }
+    return retval;
+}
+
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray1, class ComplexMultiArray2>
 void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
@@ -232,16 +246,11 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     const double close_enough
         = std::numeric_limits<double>::epsilon()*10*N*N;
 
-    // Load a real-valued function into the input array
+    // Load a real-valued function into the input array and transform it
     for (int i = 0; i < N; ++i) {
-        double real_part = 1, imag_part = 0;
-        const double xi = i*2*M_PI/N;
-        for (int j = 0; j <= (N+1)/2; ++j) {
-            real_part += j*sin(j*xi) - j*cos(j*xi);
-        }
-        fftw_multi_array::detail::assign_complex(in[i], real_part, imag_part);
+        fftw_multi_array::detail::assign_complex(
+                in[i], real_test_function<double>(N, (N+1)/2, i), 0.0);
     }
-
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
     // Real input should exhibit conjugate symmetry in wave space
@@ -254,16 +263,11 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         BOOST_CHECK_CLOSE(a_imag, -b_imag, close_enough);
     }
 
-    // Load an imaginary-valued function into the input array
+    // Load an imaginary-valued function into the input array and transform it
     for (int i = 0; i < N; ++i) {
-        double real_part = 0, imag_part = 1;
-        const double xi = i*2*M_PI/N;
-        for (int j = 0; j <= (N+1)/2; ++j) {
-            imag_part += j*sin(j*xi) - j*cos(j*xi);
-        }
-        fftw_multi_array::detail::assign_complex(in[i], real_part, imag_part);
+        fftw_multi_array::detail::assign_complex(
+                in[i], 0.0, real_test_function<double>(N, (N+1)/2, i));
     }
-
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
     // Imaginary input should exhibit a similar symmetry in wave space:
@@ -302,13 +306,10 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 
     // Load a complex-valued function into the input array
     for (int i = 0; i < N; ++i) {
-        double real_part = N, imag_part = N;
-        const double xi = i*2*M_PI/N;
-        for (int j = 0; j <= (N+1)/2; ++j) {
-            real_part += j*cos(j*xi + M_PI/3);
-            imag_part -= j*cos(j*xi + M_PI/5);
-        }
-        fftw_multi_array::detail::assign_complex(in[i], real_part, imag_part);
+        fftw_multi_array::detail::assign_complex(
+                in[i],
+                real_test_function<double>(N, (N+1)/2, i, M_PI/3.0),
+                real_test_function<double>(N, (N+1)/2, i, M_PI/5.0));
     }
 
     // Transform input FFTW directly and also our wrapper
@@ -457,3 +458,4 @@ BOOST_AUTO_TEST_SUITE_END()
 // Broken: boost::multi_array cannot handle fftw_complex elements
 // Awaiting response from boost-users mailing list
 // http://article.gmane.org/gmane.comp.lib.boost.user/52327
+// Helper function that kicks the tires of a 1D c2c transform
