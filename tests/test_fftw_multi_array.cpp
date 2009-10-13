@@ -10,6 +10,8 @@
 #include <vector>
 #include <boost/array.hpp>
 #include <boost/multi_array.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
+#include <boost/preprocessor/seq/size.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/test/included/unit_test.hpp>
@@ -19,6 +21,8 @@
 #include "test_tools.hpp"
 
 using namespace pecos::suzerain;
+
+BOOST_AUTO_TEST_SUITE( increment )
 
 BOOST_AUTO_TEST_CASE( increment_1d_degenerate )
 {
@@ -185,6 +189,8 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
     BOOST_CHECK_EQUAL(index[2], 1);
     BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 template<class MultiArray>
 void debug_dump(const std::string &prefix, const MultiArray &x)
@@ -404,45 +410,50 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
         // BOOST_CHECK_EQUAL would be nice, but it fails here
-        BOOST_CHECK_CLOSE(out_real, buffer[i][0] / N, close_enough/100);
-        BOOST_CHECK_CLOSE(out_imag, buffer[i][1] / N, close_enough/100);
+        BOOST_CHECK_CLOSE(out_real, buffer[i][0] / N, close_enough/10);
+        BOOST_CHECK_CLOSE(out_imag, buffer[i][1] / N, close_enough/10);
     }
 }
 
-BOOST_AUTO_TEST_CASE( c2c_transform_1d )
+
+/* powers of 2; even simple composites of form 2*prime; prime numbers */
+#define TRANSFORM_1D_SIZE_SEQ \
+        (2)(4)(8)(16)(32)(64) \
+        (6)(10)(14)(22)(26)(34) \
+        (3)(5)(7)(9)(11)(13)(17)(19)(23)(29)
+
+BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place )
+#define TEST_C2C_1D_OUT_OF_PLACE(r, data, elem) \
+        BOOST_AUTO_TEST_CASE( BOOST_PP_CAT(c2c_1d_out_of_place_,elem) ) \
+        { c2c_1d_out_of_place(elem); }
+void c2c_1d_out_of_place(const int N)
 {
-    const int sizes[] = {
-        2,  4,  8, 16, 32, 64                 // Easy: powers of 2
-        , 2*3, 2*5, 2*7, 2*11, 2*13, 2*17     // Moderate: Even lengths
-        , 3, 5, 7, 9, 11, 13, 17, 19, 23, 29  // Hard: Primes
-    };
-
-    // Out of place transformations on std::complex
-    {
-        typedef boost::multi_array<std::complex<double>,1> array_type;
-        array_type in, out;
-        for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
-            in.resize(boost::extents[sizes[i]]);
-            out.resize(boost::extents[sizes[i]]);
-            check_1D_complex_forward(in, out);
-            check_1D_complex_backward(in, out);
-        }
-    }
-
-    // In place transformations on std::complex
-    {
-        typedef boost::multi_array<std::complex<double>,1> array_type;
-        array_type both;
-        for (int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
-            both.resize(boost::extents[sizes[i]]);
-            check_1D_complex_forward(both, both);
-            check_1D_complex_backward(both, both);
-        }
-    }
-
-    // TODO Out of place transformations on fftw_complex
-    // TODO In place transformations on fftw_complex
-    // Broken: boost::multi_array cannot handle fftw_complex elements
-    // Awaiting response from boost-users mailing list
-    // http://article.gmane.org/gmane.comp.lib.boost.user/52327
+    typedef boost::multi_array<std::complex<double>,1> array_type;
+    array_type in(boost::extents[N]), out(boost::extents[N]);
+    check_1D_complex_forward(in, out);
+    check_1D_complex_backward(in, out);
 }
+BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( c2c_1d_in_place )
+#define TEST_C2C_1D_IN_PLACE(r, data, elem) \
+        BOOST_AUTO_TEST_CASE( BOOST_PP_CAT(c2c_1d_in_place_,elem) ) \
+        { c2c_1d_in_place(elem); }
+void c2c_1d_in_place(const int N)
+{
+    typedef boost::multi_array<std::complex<double>,1> array_type;
+    array_type both(boost::extents[N]);
+    check_1D_complex_forward(both, both);
+    check_1D_complex_backward(both, both);
+}
+BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_IN_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
+BOOST_AUTO_TEST_SUITE_END()
+
+
+// TODO Out of place transformations on fftw_complex
+// TODO In place transformations on fftw_complex
+// Broken: boost::multi_array cannot handle fftw_complex elements
+// Awaiting response from boost-users mailing list
+// http://article.gmane.org/gmane.comp.lib.boost.user/52327
