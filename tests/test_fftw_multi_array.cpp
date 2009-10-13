@@ -259,7 +259,7 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     for (int i = 1; i < (NR+1)/2; ++i) {
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
-        fftw_multi_array::detail::assign_components(b_real, b_imag, out[NR-i]);
+        fftw_multi_array::detail::assign_components(b_real, b_imag, out[NC-i]);
         BOOST_CHECK_CLOSE(a_real,  b_real, close_enough);
         BOOST_CHECK_CLOSE(a_imag, -b_imag, close_enough);
     }
@@ -277,7 +277,7 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     for (int i = 1; i < (NR+1)/2; ++i) {
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
-        fftw_multi_array::detail::assign_components(b_real, b_imag, out[NR-i]);
+        fftw_multi_array::detail::assign_components(b_real, b_imag, out[NC-i]);
         BOOST_CHECK_CLOSE(a_real, -b_real, close_enough);
         BOOST_CHECK_CLOSE(a_imag,  b_imag, close_enough);
     }
@@ -358,7 +358,10 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         fftw_multi_array::detail::assign_complex(in[i],   i,  i);
         fftw_multi_array::detail::assign_complex(in[NC-i], i, -i);
     }
-    if (NC%2 == 0) fftw_multi_array::detail::assign_complex(in[NC/2], NC/2, 0);
+    if (NC%2 == 0) {
+        fftw_multi_array::detail::assign_complex(in[NC/2],
+                (NC >= NR) ? NC/2 : 0, 0);
+    }
 
     fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
 
@@ -375,7 +378,10 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         fftw_multi_array::detail::assign_complex(in[i],    i, i);
         fftw_multi_array::detail::assign_complex(in[NC-i], -i, i);
     }
-    if (NC%2 == 0) fftw_multi_array::detail::assign_complex(in[NC/2], 0, NC/2);
+    if (NC%2 == 0) {
+        fftw_multi_array::detail::assign_complex(in[NC/2],
+                0, (NC >= NR) ? NC/2 : 0);
+    }
 
     fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
 
@@ -458,10 +464,28 @@ void c2c_1d_out_of_place(const int N)
 {
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type in(boost::extents[N]), out(boost::extents[N]);
+
+    // No dealiasing in effect: NR == NC
     check_1D_complex_forward(in, out);
     compare_1D_complex_forward(in, out);
     check_1D_complex_backward(in, out);
     compare_1D_complex_backward(in, out);
+
+    // Dealiasing for NR < NC
+//    if (N == 4) {
+//        for (int i = 1; i < N; ++i) {
+//            in.resize(boost::extents[i]);
+//            check_1D_complex_forward(in, out);
+//            check_1D_complex_backward(in, out);
+//        }
+//    }
+
+    // Dealiasing for NR > NC
+    for (int i = N+1; i <= 2*N; ++i) {
+        in.resize(boost::extents[i]);
+//        check_1D_complex_forward(in, out);
+//        check_1D_complex_backward(in, out);
+    }
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END()
@@ -475,6 +499,8 @@ void c2c_1d_in_place(const int N)
 {
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type both(boost::extents[N]);
+
+    // No dealiasing in effect for in place transform: NR == NC
     check_1D_complex_forward(both, both);
     compare_1D_complex_forward(both, both);
     check_1D_complex_backward(both, both);
