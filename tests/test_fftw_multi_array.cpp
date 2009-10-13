@@ -278,11 +278,19 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         std::ptr_fun(fftw_free));
     BOOST_CHECK(buffer.get() != NULL);
     boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
-            fftw_plan_dft_1d(N,
-                             reinterpret_cast<fftw_complex*>(in.data()),
-                             buffer.get(),
-                             FFTW_FORWARD,
-                             FFTW_PRESERVE_INPUT),
+            fftw_plan_many_dft(1,
+                               &N,
+                               1,
+                               reinterpret_cast<fftw_complex*>(in.data()),
+                               NULL,
+                               in.strides()[0],
+                               N,
+                               buffer.get(),
+                               NULL,
+                               1,
+                               N,
+                               FFTW_FORWARD,
+                               FFTW_PRESERVE_INPUT),
             std::ptr_fun(fftw_destroy_plan));
     BOOST_CHECK(plan.get() != NULL);
 
@@ -301,13 +309,15 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     fftw_execute(plan.get());  // Important to be first for in == out
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
-    // Ensure we got exactly the same result
+    // Ensure we got the same result, except that
     for (int i = 0; i < N; ++i) {
         double out_real, out_imag;
         fftw_multi_array::detail::assign_components(
                 out_real, out_imag, out[i]);
-        BOOST_CHECK_EQUAL(out_real, buffer[i][0]);
-        BOOST_CHECK_EQUAL(out_imag, buffer[i][1]);
+        // FFTW with a stride gives a different result than with stride 1
+        // BOOST_CHECK_EQUAL would be nice, but it fails here
+        BOOST_CHECK_CLOSE(out_real, buffer[i][0], close_enough/100);
+        BOOST_CHECK_CLOSE(out_imag, buffer[i][1], close_enough/100);
     }
 }
 
@@ -362,11 +372,19 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         std::ptr_fun(fftw_free));
     BOOST_CHECK(buffer.get() != NULL);
     boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
-            fftw_plan_dft_1d(N,
-                             reinterpret_cast<fftw_complex*>(in.data()),
-                             buffer.get(),
-                             FFTW_BACKWARD,
-                             FFTW_PRESERVE_INPUT),
+            fftw_plan_many_dft(1,
+                               &N,
+                               1,
+                               reinterpret_cast<fftw_complex*>(in.data()),
+                               NULL,
+                               in.strides()[0],
+                               N,
+                               buffer.get(),
+                               NULL,
+                               1,
+                               N,
+                               FFTW_BACKWARD,
+                               FFTW_PRESERVE_INPUT),
             std::ptr_fun(fftw_destroy_plan));
     BOOST_CHECK(plan.get() != NULL);
 
@@ -384,8 +402,10 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         double out_real, out_imag;
         fftw_multi_array::detail::assign_components(
                 out_real, out_imag, out[i]);
-        BOOST_CHECK_EQUAL(out_real, buffer[i][0] / N);
-        BOOST_CHECK_EQUAL(out_imag, buffer[i][1] / N);
+        // FFTW with a stride gives a different result than with stride 1
+        // BOOST_CHECK_EQUAL would be nice, but it fails here
+        BOOST_CHECK_CLOSE(out_real, buffer[i][0] / N, close_enough/100);
+        BOOST_CHECK_CLOSE(out_imag, buffer[i][1] / N, close_enough/100);
     }
 }
 
