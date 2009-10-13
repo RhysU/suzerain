@@ -255,7 +255,7 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 
     // Real input should exhibit conjugate symmetry in wave space
     BOOST_CHECK_SMALL(out[0].imag(), close_enough);
-    for (int i = 1; i <= (N+1)/2; ++i) {
+    for (int i = 1; i < (N+1)/2; ++i) {
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         fftw_multi_array::detail::assign_components(b_real, b_imag, out[N-i]);
@@ -273,7 +273,7 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     // Imaginary input should exhibit a similar symmetry in wave space:
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
     BOOST_CHECK_SMALL(out[0].real(), close_enough);
-    for (int i = 1; i <= (N+1)/2; ++i) {
+    for (int i = 1; i < (N+1)/2; ++i) {
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         fftw_multi_array::detail::assign_components(b_real, b_imag, out[N-i]);
@@ -316,15 +316,15 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     fftw_execute(plan.get());  // Important to be first for in == out
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
-    // Ensure we got the same result, except that
+    // Ensure we got the same result
     for (int i = 0; i < N; ++i) {
         double out_real, out_imag;
         fftw_multi_array::detail::assign_components(
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
         // BOOST_CHECK_EQUAL would be nice, but it fails here
-        BOOST_CHECK_CLOSE(out_real, buffer[i][0], close_enough/100);
-        BOOST_CHECK_CLOSE(out_imag, buffer[i][1], close_enough/100);
+        BOOST_CHECK_CLOSE(out_real, buffer[i][0], close_enough/(N*N));
+        BOOST_CHECK_CLOSE(out_imag, buffer[i][1], close_enough/(N*N));
     }
 }
 
@@ -357,7 +357,7 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 
     // Load a real-symmetric function into the input array
     fftw_multi_array::detail::assign_complex(in[0], 0, N);
-    for (int i = 1; i <= (N+1)/2; ++i) {
+    for (int i = 1; i < (N+1)/2; ++i) {
         fftw_multi_array::detail::assign_complex(in[i],    i, i);
         fftw_multi_array::detail::assign_complex(in[N-i], -i, i);
     }
@@ -417,11 +417,12 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 }
 
 
-/* powers of 2; even simple composites of form 2*prime; prime numbers */
+/* powers of 2; simple composites of form 2*prime; prime numbers; 1 */
 #define TRANSFORM_1D_SIZE_SEQ \
         (2)(4)(8)(16)(32)(64) \
         (6)(10)(14)(22)(26)(34) \
-        (3)(5)(7)(9)(11)(13)(17)(19)(23)(29)
+        (3)(5)(7)(9)(11)(13)(17)(19)(23)(29) \
+        (1)
 
 BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place )
 #define TEST_C2C_1D_OUT_OF_PLACE(r, data, elem) \
