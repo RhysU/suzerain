@@ -244,11 +244,9 @@ void c2c_transform(const size_t transform_dim,
     }
     // Ensure transformation direction parameter is sane
     assert(fftw_sign == FFTW_FORWARD || fftw_sign == FFTW_BACKWARD);
-    // Determine transform size from the physical space dimension
-    // All dealiasing behavior is fixed through this variable
+    // Transform size determined from the physical space dimension
     const shape_type transform_n = (fftw_sign == FFTW_FORWARD)
-        ? shape_in[transform_dim]
-        : shape_out[transform_dim];
+        ? shape_in[transform_dim] : shape_out[transform_dim];
 
     // We choose to always use an intermediate buffer for the transform:
     //  1) Avoids nuking in or out during FFTW planning
@@ -285,28 +283,15 @@ void c2c_transform(const size_t transform_dim,
             index_bases_out[n] = p_index_bases_out[n];
         }
     }
-    const index      stride_in_transform_dim  = in.strides()[transform_dim];
-    const index      stride_out_transform_dim = out.strides()[transform_dim];
-    const shape_type shape_in_transform_dim   = shape_in[transform_dim];
-    const shape_type shape_out_transform_dim  = shape_out[transform_dim];
-    // Dealiasing constants for how the input data is copied into the buffer:
-    //   [offset_in1, offset_in2) Copied into the buffer from in
-    //   [offset_in2, offset_in3) Buffer padded with zeros
-    //   [offset_in3, offset_in4) Copied into the buffer from in
-    const shape_type copy_in = std::min(shape_in_transform_dim,transform_n);
-    const shape_type offset_in1 = 0;
-    const shape_type offset_in2 = (copy_in+2)/2;
-    const shape_type offset_in3 = shape_in_transform_dim-(copy_in-1)/2;
-    const shape_type offset_in4 = std::max(shape_in_transform_dim,transform_n);
-    // Dealiasing constants for how the output data is copied from the buffer
-    //   [offset_out1, offset_out2) Copied into out from the buffer
-    //   [offset_out2, offset_out3) Storage out padded with zeros
-    //   [offset_out3, offset_out4) Copied into out from the buffer
-    const shape_type copy_out = std::min(shape_out_transform_dim,transform_n);
-    const shape_type offset_out1 = 0;
-    const shape_type offset_out2 = (copy_out+2)/2;
-    const shape_type offset_out3 = shape_out_transform_dim-(copy_out-1)/2;
-    const shape_type offset_out4 = shape_out_transform_dim;
+    const index stride_in_transform_dim  = in.strides()[transform_dim];
+    const index stride_out_transform_dim = out.strides()[transform_dim];
+    // Parameters that control dealiasing copy operations
+    const shape_type last_pos_kn_in         = shape_in[transform_dim]/2;
+    const shape_type last_pos_kn_out        = shape_out[transform_dim]/2;
+    const shape_type last_pos_kn_transform  = transform_n/2;
+    const shape_type first_neg_kn_in        = -(shape_in[transform_dim]-1)/2;
+    const shape_type first_neg_kn_out       = -(shape_out[transform_dim]-1)/2;
+    const shape_type first_neg_kn_transform = -(transform_n-1)/2;
     // Normalization only required during backwards transform
     const double normalization_factor
         = (fftw_sign == FFTW_BACKWARD) ? 1.0/transform_n : 1.0;
@@ -320,6 +305,7 @@ void c2c_transform(const size_t transform_dim,
     }
     index_array dereference_index;      // To be adjusted by index_bases
     fftw_complex * p_buffer;            // Used to walk the buffer
+    shape_type kn;                      // Used to track current wavenumber
 
     // TODO Walk fastest dimensions first in increment routine
 
@@ -334,19 +320,19 @@ void c2c_transform(const size_t transform_dim,
         // Copy input into transform buffer and pad any excess with zeros
         // TODO differentiate prior to FFTW_BACKWARD if requested
         p_buffer = buffer.get();
-        for (shape_type i = offset_in1; i < offset_in2; ++i) {
-            detail::assign_complex(*p_buffer, *p_pencil_in);
-            p_buffer    += 1;
+        kn = 0;
+        for (/* from above */; kn <= last_pos_kn_in; ++kn) {
+            detail::assign_complex(*(p_buffer++), *p_pencil_in);
             p_pencil_in += stride_in_transform_dim;
         }
-        for (shape_type i = offset_in2; i < offset_in3; ++i) {
-            detail::assign_complex(*p_buffer, 0, 0);
-            p_buffer    += 1;
-            // p_pencil_in does not advance
+        for (/* from above */; kn <= last_pos_kn_transform; ++kn) {
+            detail::assign_complex(*(p_buffer++), 0, 0);
         }
-        for (shape_type i = offset_in3; i < offset_in4; ++i) {
-            detail::assign_complex(*p_buffer, *p_pencil_in);
-            p_buffer    += 1;
+        for (kn = first_neg_kn_in; kn < first_neg_kn_transform; ++kn) {
+            detail::assign_complex(*(p_buffer++), 0, 0);
+        }
+        for (/* from above */; kn <= -1; ++kn) {
+            detail::assign_complex(*(p_buffer++), *p_pencil_in);
             p_pencil_in += stride_in_transform_dim;
         }
 
@@ -361,23 +347,27 @@ void c2c_transform(const size_t transform_dim,
         // Copy transform buffer into output truncating auxiliary modes
         // TODO differentiate after FFTW_FORWARD if requested
         p_buffer = buffer.get();
-        for (shape_type i = offset_out1; i < offset_out2; ++i) {
+        kn = 0;
+        for (/* from above */; kn <= last_pos_kn_out; ++kn) {
             detail::assign_complex(*p_pencil_out,
                         (*p_buffer)[0] * normalization_factor,
                         (*p_buffer)[1] * normalization_factor);
-            p_buffer    += 1;
+            ++p_buffer;
             p_pencil_out += stride_out_transform_dim;
         }
-        for (shape_type i = offset_out2; i < offset_out3; ++i) {
+        for (/* from above */; kn <= last_pos_kn_transform; ++kn) {
             detail::assign_complex(*p_pencil_out, 0, 0);
-            // p_buffer does not advance
             p_pencil_out += stride_out_transform_dim;
         }
-        for (shape_type i = offset_out3; i < offset_out4; ++i) {
+        for (kn = first_neg_kn_out; kn < first_neg_kn_transform; ++kn) {
+            detail::assign_complex(*p_pencil_out, 0, 0);
+            p_pencil_out += stride_out_transform_dim;
+        }
+        for (/* from above */; kn <= -1; ++kn) {
             detail::assign_complex(*p_pencil_out,
                         (*p_buffer)[0] * normalization_factor,
                         (*p_buffer)[1] * normalization_factor);
-            p_buffer    += 1;
+            ++p_buffer;
             p_pencil_out += stride_out_transform_dim;
         }
 
