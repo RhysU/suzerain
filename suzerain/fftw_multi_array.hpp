@@ -348,14 +348,14 @@ void c2c_transform(const size_t transform_dim,
         // TODO differentiate after FFTW_FORWARD if requested
         p_buffer = buffer.get();
         kn = 0;
-        for (/* from above */; kn <= last_pos_kn_out; ++kn) {
+        for (/* from above */; kn <= last_pos_kn_transform; ++kn) {
             detail::assign_complex(*p_pencil_out,
                         (*p_buffer)[0] * normalization_factor,
                         (*p_buffer)[1] * normalization_factor);
             ++p_buffer;
             p_pencil_out += stride_out_transform_dim;
         }
-        for (/* from above */; kn <= last_pos_kn_transform; ++kn) {
+        for (/* from above */; kn <= last_pos_kn_out; ++kn) {
             detail::assign_complex(*p_pencil_out, 0, 0);
             p_pencil_out += stride_out_transform_dim;
         }
