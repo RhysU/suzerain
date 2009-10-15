@@ -243,6 +243,16 @@ FPT real_test_function(const Integer NR,
     return retval;
 }
 
+template<class ComplexMultiArray>
+void fill_with_complex_NaN(ComplexMultiArray &x)
+{
+    typedef typename ComplexMultiArray::element element;
+    const typename element::value_type quiet_NaN
+        = std::numeric_limits<typename element::value_type>::quiet_NaN();
+    const element nan_value(quiet_NaN, quiet_NaN);
+    std::fill(x.data(), x.data() + x.num_elements(), nan_value);
+}
+
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray1, class ComplexMultiArray2>
 void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
@@ -255,6 +265,8 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         = std::numeric_limits<double>::epsilon()*10*NR*NR;
 
     // Load a real-valued function into the input array and transform it
+    fill_with_complex_NaN(in);
+    fill_with_complex_NaN(out);
     for (int i = 0; i < NR; ++i) {
         fftw_multi_array::detail::assign_complex(
                 in[i], real_test_function<double>(NR, (NR+1)/2, i), 0.0);
@@ -272,6 +284,8 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     }
 
     // Load an imaginary-valued function into the input array and transform it
+    fill_with_complex_NaN(in);
+    fill_with_complex_NaN(out);
     for (int i = 0; i < NR; ++i) {
         fftw_multi_array::detail::assign_complex(
                 in[i], 0.0, real_test_function<double>(NR, (NR+1)/2, i));
@@ -325,6 +339,8 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     BOOST_REQUIRE(plan.get() != NULL);
 
     // Load a complex-valued function into the input array
+    fill_with_complex_NaN(in);
+    fill_with_complex_NaN(out);
     for (int i = 0; i < NR; ++i) {
         fftw_multi_array::detail::assign_complex(
                 in[i],
@@ -360,6 +376,8 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         = std::numeric_limits<double>::epsilon()*10*NC*NC;
 
     // Load a conjugate-symmetric function into the input array
+    fill_with_complex_NaN(in);
+    fill_with_complex_NaN(out);
     fftw_multi_array::detail::assign_complex(in[0], NC, 0);
     for (int i = 1; i < (NC+1)/2; ++i) {
         fftw_multi_array::detail::assign_complex(in[i],   i,  i);
@@ -380,6 +398,8 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     }
 
     // Load a real-symmetric function into the input array
+    fill_with_complex_NaN(in);
+    fill_with_complex_NaN(out);
     fftw_multi_array::detail::assign_complex(in[0], 0, NC);
     for (int i = 1; i < (NC+1)/2; ++i) {
         fftw_multi_array::detail::assign_complex(in[i],    i, i);
@@ -435,6 +455,8 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     BOOST_REQUIRE(plan.get() != NULL);
 
     // Load a complex-valued function into the input array
+    fill_with_complex_NaN(in);
+    fill_with_complex_NaN(out);
     for (int i = 0; i < NC; ++i) {
         fftw_multi_array::detail::assign_complex(in[i], i, i);
     }
@@ -544,9 +566,9 @@ void c2c_1d_out_of_place_dealiased_backward(const int NC, const int NR)
     check_1D_complex_backward(in, out); // Dealiasing in effect
 }
 // TODO Generate only a single outer product to speed compilation
-/*
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
         ((forward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
+/*
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
         ((forward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
