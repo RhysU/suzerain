@@ -321,11 +321,14 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NR)),
         std::ptr_fun(fftw_free));
     BOOST_REQUIRE(buffer.get() != NULL);
+    typename ComplexMultiArray1::element * const in_data
+        = in.origin() + std::inner_product(
+            in.index_bases(), in.index_bases()+1, in.strides(), 0);
     boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_many_dft(1,
                                &NR,
                                1,
-                               reinterpret_cast<fftw_complex*>(in.data()),
+                               reinterpret_cast<fftw_complex*>(in_data),
                                NULL,
                                in.strides()[0],
                                NR,
@@ -447,11 +450,14 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NC)),
         std::ptr_fun(fftw_free));
     BOOST_REQUIRE(buffer.get() != NULL);
+    typename ComplexMultiArray1::element * const in_data
+        = in.origin() + std::inner_product(
+            in.index_bases(), in.index_bases()+1, in.strides(), 0);
     boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_many_dft(1,
                                &NC,
                                1,
-                               reinterpret_cast<fftw_complex*>(in.data()),
+                               reinterpret_cast<fftw_complex*>(in_data),
                                NULL,
                                in.strides()[0],
                                NC,
@@ -513,6 +519,53 @@ void c2c_1d_out_of_place(const int N)
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
 
+BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_one_reversed );
+#define TEST_C2C_1D_OUT_OF_PLACE_ONE_REVERSED(r, data, elem) \
+        BOOST_AUTO_TEST_CASE( \
+          BOOST_PP_CAT(c2c_1d_out_of_place_one_reversed_,elem) ) \
+        { c2c_1d_out_of_place_one_reversed(elem); }
+void c2c_1d_out_of_place_one_reversed(const int N)
+{
+    typedef boost::multi_array<std::complex<double>,1> array_type;
+    typedef boost::general_storage_order<array_type::dimensionality> storage;
+    array_type::size_type ordering[array_type::dimensionality] = { 0 };
+    const bool ascending[array_type::dimensionality] = { false };
+
+    array_type in(boost::extents[N], storage(ordering, ascending));
+    array_type out(boost::extents[N]);
+
+    check_1D_complex_forward(in, out);
+    compare_1D_complex_forward(in, out);
+    check_1D_complex_backward(in, out);
+    compare_1D_complex_backward(in, out);
+}
+BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE_ONE_REVERSED,\
+    _,TRANSFORM_1D_SIZE_SEQ);
+BOOST_AUTO_TEST_SUITE_END();
+
+BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_two_reversed );
+#define TEST_C2C_1D_OUT_OF_PLACE_TWO_REVERSED(r, data, elem) \
+        BOOST_AUTO_TEST_CASE( \
+          BOOST_PP_CAT(c2c_1d_out_of_place_two_reversed_,elem) ) \
+        { c2c_1d_out_of_place_two_reversed(elem); }
+void c2c_1d_out_of_place_two_reversed(const int N)
+{
+    typedef boost::multi_array<std::complex<double>,1> array_type;
+    typedef boost::general_storage_order<array_type::dimensionality> storage;
+    array_type::size_type ordering[array_type::dimensionality] = { 0 };
+    const bool ascending[array_type::dimensionality] = { false };
+
+    array_type in(boost::extents[N], storage(ordering, ascending));
+    array_type out(boost::extents[N], storage(ordering, ascending));
+
+    check_1D_complex_forward(in, out);
+    compare_1D_complex_forward(in, out);
+    check_1D_complex_backward(in, out);
+    compare_1D_complex_backward(in, out);
+}
+BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE_TWO_REVERSED,\
+    _,TRANSFORM_1D_SIZE_SEQ);
+BOOST_AUTO_TEST_SUITE_END();
 
 BOOST_AUTO_TEST_SUITE( c2c_1d_in_place );
 #define TEST_C2C_1D_IN_PLACE(r, data, elem) \
