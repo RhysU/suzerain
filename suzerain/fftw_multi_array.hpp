@@ -283,15 +283,21 @@ void c2c_transform(const size_t transform_dim,
             index_bases_out[n] = p_index_bases_out[n];
         }
     }
-    const index stride_in_transform_dim  = in.strides()[transform_dim];
-    const index stride_out_transform_dim = out.strides()[transform_dim];
+    const index      stride_in_transform_dim  = in.strides()[transform_dim];
+    const index      stride_out_transform_dim = out.strides()[transform_dim];
+    const shape_type shape_in_transform_dim   = shape_in[transform_dim];
+    const shape_type shape_out_transform_dim  = shape_out[transform_dim];
     // Parameters that control dealiasing copy operations
-    const shape_type last_pos_kn_in         = shape_in[transform_dim]/2;
-    const shape_type last_pos_kn_out        = shape_out[transform_dim]/2;
-    const shape_type last_pos_kn_transform  = transform_n/2;
-    const shape_type first_neg_kn_in        = -(shape_in[transform_dim]-1)/2;
-    const shape_type first_neg_kn_out       = -(shape_out[transform_dim]-1)/2;
-    const shape_type first_neg_kn_transform = -(transform_n-1)/2;
+    const shape_type last_kn_pos_in         = shape_in_transform_dim/2;
+    const shape_type last_kn_pos_out        = shape_out_transform_dim/2;
+    const shape_type last_kn_pos_transform  = transform_n/2;
+    const shape_type last_kn_pos_copyin
+        = std::min(last_kn_pos_in, last_kn_pos_transform);
+    const shape_type last_kn_pos_copyout
+        = std::min(last_kn_pos_out, last_kn_pos_transform);
+    const shape_type first_kn_neg_in        = -(shape_in_transform_dim-1)/2;
+    const shape_type first_kn_neg_out       = -(shape_out_transform_dim-1)/2;
+    const shape_type first_kn_neg_transform = -(transform_n-1)/2;
     // Normalization only required during backwards transform
     const double normalization_factor
         = (fftw_sign == FFTW_BACKWARD) ? 1.0/transform_n : 1.0;
@@ -321,15 +327,24 @@ void c2c_transform(const size_t transform_dim,
         // TODO differentiate prior to FFTW_BACKWARD if requested
         p_buffer = buffer.get();
         kn = 0;
-        for (/* from above */; kn <= last_pos_kn_in; ++kn) {
+        for (/* from above */; kn <= last_kn_pos_copyin; ++kn) {
             detail::assign_complex(*(p_buffer++), *p_pencil_in);
             p_pencil_in += stride_in_transform_dim;
         }
-        for (/* from above */; kn <= last_pos_kn_transform; ++kn) {
-            detail::assign_complex(*(p_buffer++), 0, 0);
-        }
-        for (kn = first_neg_kn_in; kn < first_neg_kn_transform; ++kn) {
-            detail::assign_complex(*(p_buffer++), 0, 0);
+        if (shape_in_transform_dim > transform_n) {
+            for (/* from above */; kn <= last_kn_pos_in; ++kn) {
+                p_pencil_in += stride_in_transform_dim;
+            }
+            for (kn = first_kn_neg_in; kn < first_kn_neg_transform; ++kn) {
+                p_pencil_in += stride_in_transform_dim;
+            }
+        } else {
+            for (/* from above */; kn <= last_kn_pos_transform; ++kn) {
+                detail::assign_complex(*(p_buffer++), 0, 0);
+            }
+            for (kn = first_kn_neg_transform; kn < first_kn_neg_in; ++kn) {
+                detail::assign_complex(*(p_buffer++), 0, 0);
+            }
         }
         for (/* from above */; kn <= -1; ++kn) {
             detail::assign_complex(*(p_buffer++), *p_pencil_in);
@@ -348,20 +363,29 @@ void c2c_transform(const size_t transform_dim,
         // TODO differentiate after FFTW_FORWARD if requested
         p_buffer = buffer.get();
         kn = 0;
-        for (/* from above */; kn <= last_pos_kn_transform; ++kn) {
+        for (/* from above */; kn <= last_kn_pos_copyout; ++kn) {
             detail::assign_complex(*p_pencil_out,
                         (*p_buffer)[0] * normalization_factor,
                         (*p_buffer)[1] * normalization_factor);
             ++p_buffer;
             p_pencil_out += stride_out_transform_dim;
         }
-        for (/* from above */; kn <= last_pos_kn_out; ++kn) {
-            detail::assign_complex(*p_pencil_out, 0, 0);
-            p_pencil_out += stride_out_transform_dim;
-        }
-        for (kn = first_neg_kn_out; kn < first_neg_kn_transform; ++kn) {
-            detail::assign_complex(*p_pencil_out, 0, 0);
-            p_pencil_out += stride_out_transform_dim;
+        if (shape_out_transform_dim > transform_n) {
+            for (/* from above */; kn <= last_kn_pos_out; ++kn) {
+                detail::assign_complex(*p_pencil_out, 0, 0);
+                p_pencil_out += stride_out_transform_dim;
+            }
+            for (kn = first_kn_neg_out; kn < first_kn_neg_transform; ++kn) {
+                detail::assign_complex(*p_pencil_out, 0, 0);
+                p_pencil_out += stride_out_transform_dim;
+            }
+        } else {
+            for (/* from above */; kn <= last_kn_pos_transform; ++kn) {
+                ++p_buffer;
+            }
+            for (kn = first_kn_neg_transform; kn < first_kn_neg_out; ++kn) {
+                ++p_buffer;
+            }
         }
         for (/* from above */; kn <= -1; ++kn) {
             detail::assign_complex(*p_pencil_out,
