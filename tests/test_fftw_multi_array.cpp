@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE( increment_1d_degenerate )
     int       index[n] = { 0 };
     const int shape[n] = { 1 };
 
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_1d_normal )
@@ -46,11 +46,11 @@ BOOST_AUTO_TEST_CASE( increment_1d_normal )
     int       index[n] = { 0 };
     const int shape[n] = { 3 };
 
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 2);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
@@ -59,13 +59,13 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
     boost::array<int,n> index = {{ 0, 0 }};
     boost::array<int,n> shape = {{ 3, 1 }};
 
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 2);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
@@ -74,13 +74,13 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
     boost::array<int, n>        index = {{ 0, 0 }};
     boost::array<std::size_t,n> shape = {{ 1, 3 }};
 
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 0);
-    BOOST_CHECK_EQUAL(index[1], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 0);
-    BOOST_CHECK_EQUAL(index[1], 2);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_all )
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_all )
     int        index[n] = { 0, 0 };
     const long shape[n] = { 1, 1 };
 
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_2d_normal )
@@ -98,16 +98,16 @@ BOOST_AUTO_TEST_CASE( increment_2d_normal )
     unsigned int index[n] = { 0, 0 };
     unsigned int shape[n] = { 2, 2 };
 
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 0);
-    BOOST_CHECK_EQUAL(index[1], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(index[1], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_3d_degenerate_all )
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE( increment_3d_degenerate_all )
     signed int        index[n] = { 0, 0, 0 };
     const signed long shape[n] = { 1, 1, 1 };
 
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
@@ -125,39 +125,39 @@ BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
     long                        index[n] =  { 0, 0, 0 };
     boost::array<std::size_t,n> shape    = {{ 3, 1, 3 }};
 
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 0);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 2);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 0);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 0);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 2);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 0);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 2);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 2);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 2);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 2);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_3d_normal )
@@ -166,35 +166,35 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
     std::vector<short> index(n, 0);
     std::vector<int> shape(n, 2);
 
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 0);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 0);
-    BOOST_CHECK_EQUAL(index[1], 1);
-    BOOST_CHECK_EQUAL(index[2], 0);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(index[1], 1);
-    BOOST_CHECK_EQUAL(index[2], 0);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 0);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(index[1], 0);
-    BOOST_CHECK_EQUAL(index[2], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 0);
-    BOOST_CHECK_EQUAL(index[1], 1);
-    BOOST_CHECK_EQUAL(index[2], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
-    BOOST_CHECK_EQUAL(index[0], 1);
-    BOOST_CHECK_EQUAL(index[1], 1);
-    BOOST_CHECK_EQUAL(index[2], 1);
-    BOOST_CHECK_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -262,13 +262,13 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
     // Real input should exhibit conjugate symmetry in wave space
-    BOOST_CHECK_SMALL(out[0].imag(), close_enough);
+    BOOST_REQUIRE_SMALL(out[0].imag(), close_enough);
     for (int i = 1; i < (NR+1)/2; ++i) {
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         fftw_multi_array::detail::assign_components(b_real, b_imag, out[NC-i]);
-        BOOST_CHECK_CLOSE(a_real,  b_real, close_enough);
-        BOOST_CHECK_CLOSE(a_imag, -b_imag, close_enough);
+        BOOST_REQUIRE_CLOSE(a_real,  b_real, close_enough);
+        BOOST_REQUIRE_CLOSE(a_imag, -b_imag, close_enough);
     }
 
     // Load an imaginary-valued function into the input array and transform it
@@ -280,13 +280,13 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 
     // Imaginary input should exhibit a similar symmetry in wave space:
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
-    BOOST_CHECK_SMALL(out[0].real(), close_enough);
+    BOOST_REQUIRE_SMALL(out[0].real(), close_enough);
     for (int i = 1; i < (NR+1)/2; ++i) {
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         fftw_multi_array::detail::assign_components(b_real, b_imag, out[NC-i]);
-        BOOST_CHECK_CLOSE(a_real, -b_real, close_enough);
-        BOOST_CHECK_CLOSE(a_imag,  b_imag, close_enough);
+        BOOST_REQUIRE_CLOSE(a_real, -b_real, close_enough);
+        BOOST_REQUIRE_CLOSE(a_imag,  b_imag, close_enough);
     }
 }
 
@@ -306,7 +306,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     boost::shared_array<fftw_complex> buffer(
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NR)),
         std::ptr_fun(fftw_free));
-    BOOST_CHECK(buffer.get() != NULL);
+    BOOST_REQUIRE(buffer.get() != NULL);
     boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_many_dft(1,
                                &NR,
@@ -322,7 +322,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
                                FFTW_FORWARD,
                                FFTW_PRESERVE_INPUT),
             std::ptr_fun(fftw_destroy_plan));
-    BOOST_CHECK(plan.get() != NULL);
+    BOOST_REQUIRE(plan.get() != NULL);
 
     // Load a complex-valued function into the input array
     for (int i = 0; i < NR; ++i) {
@@ -342,9 +342,9 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
         fftw_multi_array::detail::assign_components(
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
-        // BOOST_CHECK_EQUAL would be nice, but it fails here
-        BOOST_CHECK_CLOSE(out_real, buffer[i][0], close_enough/(NR*NR));
-        BOOST_CHECK_CLOSE(out_imag, buffer[i][1], close_enough/(NR*NR));
+        // BOOST_REQUIRE_EQUAL would be nice, but it fails here
+        BOOST_REQUIRE_CLOSE(out_real, buffer[i][0], close_enough/(NR*NR));
+        BOOST_REQUIRE_CLOSE(out_imag, buffer[i][1], close_enough/(NR*NR));
     }
 }
 
@@ -376,7 +376,7 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     for (int i = 0; i < NR; ++i) {
         double a_real, a_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
-        BOOST_CHECK_SMALL(a_imag, close_enough);
+        BOOST_REQUIRE_SMALL(a_imag, close_enough);
     }
 
     // Load a real-symmetric function into the input array
@@ -396,7 +396,7 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     for (int i = 0; i < NR; ++i) {
         double a_real, a_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
-        BOOST_CHECK_SMALL(a_real, close_enough);
+        BOOST_REQUIRE_SMALL(a_real, close_enough);
     }
 }
 
@@ -416,7 +416,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     boost::shared_array<fftw_complex> buffer(
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NC)),
         std::ptr_fun(fftw_free));
-    BOOST_CHECK(buffer.get() != NULL);
+    BOOST_REQUIRE(buffer.get() != NULL);
     boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_many_dft(1,
                                &NC,
@@ -432,7 +432,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
                                FFTW_BACKWARD,
                                FFTW_PRESERVE_INPUT),
             std::ptr_fun(fftw_destroy_plan));
-    BOOST_CHECK(plan.get() != NULL);
+    BOOST_REQUIRE(plan.get() != NULL);
 
     // Load a complex-valued function into the input array
     for (int i = 0; i < NC; ++i) {
@@ -449,9 +449,9 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
         fftw_multi_array::detail::assign_components(
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
-        // BOOST_CHECK_EQUAL would be nice, but it fails here
-        BOOST_CHECK_CLOSE(out_real, buffer[i][0] / NR, close_enough/10);
-        BOOST_CHECK_CLOSE(out_imag, buffer[i][1] / NR, close_enough/10);
+        // BOOST_REQUIRE_EQUAL would be nice, but it fails here
+        BOOST_REQUIRE_CLOSE(out_real, buffer[i][0] / NR, close_enough/10);
+        BOOST_REQUIRE_CLOSE(out_imag, buffer[i][1] / NR, close_enough/10);
     }
 }
 
@@ -533,13 +533,18 @@ BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_dealiased );
                 BOOST_PP_EMPTY());
 void c2c_1d_out_of_place_dealiased_forward(const int NR, const int NC)
 {
-    // TODO Add the test
+    typedef boost::multi_array<std::complex<double>,1> array_type;
+    array_type in(boost::extents[NR]), out(boost::extents[NC]);
+    check_1D_complex_forward(in, out); // Dealiasing in effect
 }
 void c2c_1d_out_of_place_dealiased_backward(const int NC, const int NR)
 {
-    // TODO Add the test
+    typedef boost::multi_array<std::complex<double>,1> array_type;
+    array_type in(boost::extents[NC]), out(boost::extents[NR]);
+    check_1D_complex_backward(in, out); // Dealiasing in effect
 }
 // TODO Generate only a single outer product to speed compilation
+/*
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
         ((forward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
@@ -548,4 +553,5 @@ BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
         ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
         ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
+*/
 BOOST_AUTO_TEST_SUITE_END();
