@@ -273,9 +273,9 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     }
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
-    // Real input should exhibit conjugate symmetry in wave space
+    // Real input should exhibit conjugate symmetry in wave space...
     BOOST_REQUIRE_SMALL(out[0].imag(), close_enough);
-    for (int i = 1; i < (NR+1)/2; ++i) {
+    for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) { // ...up to grid modes
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         fftw_multi_array::detail::assign_components(b_real, b_imag, out[NC-i]);
@@ -292,10 +292,10 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     }
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
-    // Imaginary input should exhibit a similar symmetry in wave space:
+    // Imaginary input should exhibit a similar symmetry in wave space...
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
     BOOST_REQUIRE_SMALL(out[0].real(), close_enough);
-    for (int i = 1; i < (NR+1)/2; ++i) {
+    for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) { // ...up to grid modes
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         fftw_multi_array::detail::assign_components(b_real, b_imag, out[NC-i]);
@@ -375,13 +375,18 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     const double close_enough
         = std::numeric_limits<double>::epsilon()*10*NC*NC;
 
-    // Load a conjugate-symmetric function into the input array
+    // Load a conjugate-symmetric function into the input array...
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
     fftw_multi_array::detail::assign_complex(in[0], NC, 0);
     for (int i = 1; i < (NC+1)/2; ++i) {
-        fftw_multi_array::detail::assign_complex(in[i],   i,  i);
-        fftw_multi_array::detail::assign_complex(in[NC-i], i, -i);
+        if (i < (NR+1)/2) { // ...up to grid modes
+            fftw_multi_array::detail::assign_complex(in[i],    i,  i);
+            fftw_multi_array::detail::assign_complex(in[NC-i], i, -i);
+        } else {
+            fftw_multi_array::detail::assign_complex(in[i],    0, 0);
+            fftw_multi_array::detail::assign_complex(in[NC-i], 0, 0);
+        }
     }
     if (NC%2 == 0) {
         fftw_multi_array::detail::assign_complex(in[NC/2],
@@ -397,13 +402,18 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         BOOST_REQUIRE_SMALL(a_imag, close_enough);
     }
 
-    // Load a real-symmetric function into the input array
+    // Load a real-symmetric function into the input array...
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
     fftw_multi_array::detail::assign_complex(in[0], 0, NC);
     for (int i = 1; i < (NC+1)/2; ++i) {
-        fftw_multi_array::detail::assign_complex(in[i],    i, i);
-        fftw_multi_array::detail::assign_complex(in[NC-i], -i, i);
+        if (i < (NR+1)/2) { // ...up to grid modes
+            fftw_multi_array::detail::assign_complex(in[i],     i, i);
+            fftw_multi_array::detail::assign_complex(in[NC-i], -i, i);
+        } else {
+            fftw_multi_array::detail::assign_complex(in[i],    0, 0);
+            fftw_multi_array::detail::assign_complex(in[NC-i], 0, 0);
+        }
     }
     if (NC%2 == 0) {
         fftw_multi_array::detail::assign_complex(in[NC/2],
@@ -568,12 +578,10 @@ void c2c_1d_out_of_place_dealiased_backward(const int NC, const int NR)
 // TODO Generate only a single outer product to speed compilation
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
         ((forward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
-/*
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
         ((forward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
         ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
         ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
-*/
 BOOST_AUTO_TEST_SUITE_END();
