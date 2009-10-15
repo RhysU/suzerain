@@ -10,8 +10,15 @@
 #include <vector>
 #include <boost/array.hpp>
 #include <boost/multi_array.hpp>
+#include <boost/preprocessor/comparison/greater.hpp>
+#include <boost/preprocessor/comparison/less.hpp>
+#include <boost/preprocessor/control/iif.hpp>
+#include <boost/preprocessor/facilities/empty.hpp>
+#include <boost/preprocessor/seq/elem.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
+#include <boost/preprocessor/seq/for_each_product.hpp>
 #include <boost/preprocessor/seq/size.hpp>
+#include <boost/preprocessor/seq/to_tuple.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/test/included/unit_test.hpp>
@@ -456,7 +463,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
         (3)(5)(7)(9)(11)(13)(17)(19)(23)(29) \
         (1)
 
-BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place )
+BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place );
 #define TEST_C2C_1D_OUT_OF_PLACE(r, data, elem) \
         BOOST_AUTO_TEST_CASE( BOOST_PP_CAT(c2c_1d_out_of_place_,elem) ) \
         { c2c_1d_out_of_place(elem); }
@@ -470,28 +477,12 @@ void c2c_1d_out_of_place(const int N)
     compare_1D_complex_forward(in, out);
     check_1D_complex_backward(in, out);
     compare_1D_complex_backward(in, out);
-
-    // Dealiasing where in < out
-//    if (N == 4) {
-//        for (int i = 1; i < N; ++i) {
-//            in.resize(boost::extents[i]);
-//            check_1D_complex_forward(in, out);
-//            check_1D_complex_backward(in, out);
-//        }
-//    }
-
-    // Dealiasing where in > out
-    for (int i = N+1; i <= 2*N; ++i) {
-        in.resize(boost::extents[i]);
-//        check_1D_complex_forward(in, out);
-//        check_1D_complex_backward(in, out);
-    }
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END();
 
 
-BOOST_AUTO_TEST_SUITE( c2c_1d_in_place )
+BOOST_AUTO_TEST_SUITE( c2c_1d_in_place );
 #define TEST_C2C_1D_IN_PLACE(r, data, elem) \
         BOOST_AUTO_TEST_CASE( BOOST_PP_CAT(c2c_1d_in_place_,elem) ) \
         { c2c_1d_in_place(elem); }
@@ -507,8 +498,7 @@ void c2c_1d_in_place(const int N)
     compare_1D_complex_forward(both, both);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_IN_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
-BOOST_AUTO_TEST_SUITE_END()
-
+BOOST_AUTO_TEST_SUITE_END();
 
 // TODO Out of place transformations on fftw_complex
 // TODO In place transformations on fftw_complex
@@ -516,3 +506,46 @@ BOOST_AUTO_TEST_SUITE_END()
 // Awaiting response from boost-users mailing list
 // http://article.gmane.org/gmane.comp.lib.boost.user/52327
 // Helper function that kicks the tires of a 1D c2c transform
+
+BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_dealiased );
+#define TEST_C2C_1D_OUT_OF_PLACE_DEALIASED(r, product) \
+        BOOST_AUTO_TEST_CASE( \
+          BOOST_PP_CAT(c2c_1d_out_of_place_dealiased_, \
+            BOOST_PP_CAT(BOOST_PP_SEQ_ELEM(0,product), \
+              BOOST_PP_CAT(_, \
+                BOOST_PP_CAT(BOOST_PP_SEQ_ELEM(1,product), \
+                  BOOST_PP_CAT(_,BOOST_PP_SEQ_ELEM(2,product))))))) \
+        {\
+            BOOST_PP_CAT(c2c_1d_out_of_place_dealiased_, \
+                         BOOST_PP_SEQ_ELEM(0,product))( \
+                BOOST_PP_SEQ_ELEM(1,product), \
+                BOOST_PP_SEQ_ELEM(2,product) ); \
+        }
+#define TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY(r,product) \
+    BOOST_PP_IIF(BOOST_PP_LESS(BOOST_PP_SEQ_ELEM(1,product),\
+                BOOST_PP_SEQ_ELEM(2,product)), \
+                TEST_C2C_1D_OUT_OF_PLACE_DEALIASED(r,product), \
+                BOOST_PP_EMPTY());
+#define TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY(r,product) \
+    BOOST_PP_IIF(BOOST_PP_GREATER(BOOST_PP_SEQ_ELEM(1,product),\
+                BOOST_PP_SEQ_ELEM(2,product)), \
+                TEST_C2C_1D_OUT_OF_PLACE_DEALIASED(r,product), \
+                BOOST_PP_EMPTY());
+void c2c_1d_out_of_place_dealiased_forward(const int NR, const int NC)
+{
+    // TODO Add the test
+}
+void c2c_1d_out_of_place_dealiased_backward(const int NC, const int NR)
+{
+    // TODO Add the test
+}
+// TODO Generate only a single outer product to speed compilation
+BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
+        ((forward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
+BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
+        ((forward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
+BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
+        ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
+BOOST_PP_SEQ_FOR_EACH_PRODUCT(TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
+        ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
+BOOST_AUTO_TEST_SUITE_END();
