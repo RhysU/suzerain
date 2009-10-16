@@ -525,8 +525,8 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
         // BOOST_REQUIRE_EQUAL would be nice, but it fails here
-        BOOST_REQUIRE_CLOSE(out_real, buffer[i][0] / NR, close_enough/15);
-        BOOST_REQUIRE_CLOSE(out_imag, buffer[i][1] / NR, close_enough/15);
+        BOOST_REQUIRE_CLOSE(out_real, buffer[i][0] / NR, close_enough);
+        BOOST_REQUIRE_CLOSE(out_imag, buffer[i][1] / NR, close_enough);
     }
 }
 
