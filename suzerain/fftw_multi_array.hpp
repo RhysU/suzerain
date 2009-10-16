@@ -298,9 +298,17 @@ void c2c_transform(const size_t transform_dim,
     const shape_type first_kn_neg_in        = -(shape_in_transform_dim-1)/2;
     const shape_type first_kn_neg_out       = -(shape_out_transform_dim-1)/2;
     const shape_type first_kn_neg_transform = -(transform_n-1)/2;
-    // Normalization only required after backwards transform completes
-    const double normalization_factor
-        = (fftw_sign == FFTW_BACKWARD) ? 1.0/transform_n : 1.0;
+    // Must sometimes adjust the zero-th wavenumber to maintain constant signal
+    typedef BOOST_TYPEOF(buffer[0][0]) fftw_real;
+    const fftw_real input_zero_mode_factor = (fftw_sign == FFTW_FORWARD)
+        ? 1.0
+        : ((fftw_real) shape_in_transform_dim) / shape_out_transform_dim;
+    const fftw_real output_zero_mode_factor = (fftw_sign == FFTW_FORWARD)
+        ? ((fftw_real) shape_out_transform_dim) / shape_in_transform_dim
+        : 1.0;
+    // Other normalization only required after backwards transform completes
+    const fftw_real output_normalization_factor
+        = (fftw_sign == FFTW_FORWARD) ? 1.0 : 1.0/transform_n;
 
     // Prepare per-pencil outer loop index and loop bounds
     shape_array loop_shape(shape_in);   // Iterate over all dimensions...
@@ -326,8 +334,14 @@ void c2c_transform(const size_t transform_dim,
         // Copy input into transform buffer and pad any excess with zeros
         // TODO differentiate prior to FFTW_BACKWARD if requested
         p_buffer = buffer.get();
-        kn = 0;
-        for (/* from above */; kn <= last_kn_pos_copyin; ++kn) {
+        {   // Zero mode handled as a special case
+            detail::assign_complex(*p_buffer, *p_pencil_in);
+            (*p_buffer)[0] *= input_zero_mode_factor;
+            (*p_buffer)[1] *= input_zero_mode_factor;
+            ++p_buffer;
+            p_pencil_in += stride_in_transform_dim;
+        }
+        for (kn = 1; kn <= last_kn_pos_copyin; ++kn) {
             detail::assign_complex(*(p_buffer++), *p_pencil_in);
             p_pencil_in += stride_in_transform_dim;
         }
@@ -362,11 +376,19 @@ void c2c_transform(const size_t transform_dim,
         // Copy transform buffer into output truncating auxiliary modes
         // TODO differentiate after FFTW_FORWARD if requested
         p_buffer = buffer.get();
-        kn = 0;
-        for (/* from above */; kn <= last_kn_pos_copyout; ++kn) {
+        {   // Zero mode handled as a special case
+            (*p_buffer)[0] *= output_zero_mode_factor;
+            (*p_buffer)[1] *= output_zero_mode_factor;
             detail::assign_complex(*p_pencil_out,
-                        (*p_buffer)[0] * normalization_factor,
-                        (*p_buffer)[1] * normalization_factor);
+                        (*p_buffer)[0] * output_normalization_factor,
+                        (*p_buffer)[1] * output_normalization_factor);
+            ++p_buffer;
+            p_pencil_out += stride_out_transform_dim;
+        }
+        for (kn = 1; kn <= last_kn_pos_copyout; ++kn) {
+            detail::assign_complex(*p_pencil_out,
+                        (*p_buffer)[0] * output_normalization_factor,
+                        (*p_buffer)[1] * output_normalization_factor);
             ++p_buffer;
             p_pencil_out += stride_out_transform_dim;
         }
@@ -389,8 +411,8 @@ void c2c_transform(const size_t transform_dim,
         }
         for (/* from above */; kn <= -1; ++kn) {
             detail::assign_complex(*p_pencil_out,
-                        (*p_buffer)[0] * normalization_factor,
-                        (*p_buffer)[1] * normalization_factor);
+                        (*p_buffer)[0] * output_normalization_factor,
+                        (*p_buffer)[1] * output_normalization_factor);
             ++p_buffer;
             p_pencil_out += stride_out_transform_dim;
         }

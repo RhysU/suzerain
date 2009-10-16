@@ -232,15 +232,21 @@ void debug_dump(const std::string &prefix,
 // Produce a real signal with known frequency content
 template<typename FPT, typename Integer>
 FPT real_test_function(const Integer NR,
-                       const Integer max_mode,
+                       const Integer max_mode_exclusive,
                        const Integer i,
                        const FPT shift = M_PI/3.0) {
     const FPT xi = i*2*M_PI/NR;
-    FPT retval = (max_mode >= 0) ? NR : 0;
-    for (Integer i = 1; i <= max_mode; ++i) {
+    FPT retval = (max_mode_exclusive > 0) ? NR : 0;
+    for (Integer i = 1; i < max_mode_exclusive; ++i) {
         retval += i*sin(i*xi + shift);
     }
     return retval;
+}
+
+template<class MultiArray>
+void fill_multi_array(MultiArray &x, const typename MultiArray::element &value)
+{
+    std::fill(x.data(), x.data() + x.num_elements(), value);
 }
 
 template<class ComplexMultiArray>
@@ -250,12 +256,12 @@ void fill_with_complex_NaN(ComplexMultiArray &x)
     const typename element::value_type quiet_NaN
         = std::numeric_limits<typename element::value_type>::quiet_NaN();
     const element nan_value(quiet_NaN, quiet_NaN);
-    std::fill(x.data(), x.data() + x.num_elements(), nan_value);
+    fill_multi_array(x, element(quiet_NaN, quiet_NaN));
 }
 
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray1, class ComplexMultiArray2>
-void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
+void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
@@ -263,24 +269,38 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     const int NC = out.shape()[0];
     const double close_enough
         = std::numeric_limits<double>::epsilon()*10*NR*NR;
+    const double shift = M_PI/3.0;
 
     // Load a real-valued function into the input array and transform it
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
     for (int i = 0; i < NR; ++i) {
         fftw_multi_array::detail::assign_complex(
-                in[i], real_test_function<double>(NR, (NR+1)/2, i), 0.0);
+                in[i], real_test_function<double>(NR, (NR+1)/2, i, shift), 0.0);
     }
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
     // Real input should exhibit conjugate symmetry in wave space...
-    BOOST_REQUIRE_SMALL(out[0].imag(), close_enough);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) { // ...up to grid modes
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         fftw_multi_array::detail::assign_components(b_real, b_imag, out[NC-i]);
         BOOST_REQUIRE_CLOSE(a_real,  b_real, close_enough);
         BOOST_REQUIRE_CLOSE(a_imag, -b_imag, close_enough);
+
+        // We should also see the expected frequency content
+        const double real_expected = i * sin(shift) * NR/2.0;
+        const double imag_expected = i * cos(shift) * NR/2.0;
+        BOOST_REQUIRE_CLOSE(b_real, real_expected, sqrt(close_enough));
+        BOOST_REQUIRE_CLOSE(b_imag, imag_expected, sqrt(close_enough));
+    }
+    // Ensure we see the expected zero mode magnitude
+    {
+        double z_real, z_imag;
+        fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
+        BOOST_REQUIRE_SMALL(z_imag, close_enough);
+        // NR*NC from constant test factor * transformed/target grid size
+        BOOST_REQUIRE_CLOSE(z_real, NR * NC, close_enough);
     }
 
     // Load an imaginary-valued function into the input array and transform it
@@ -288,19 +308,32 @@ void check_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     fill_with_complex_NaN(out);
     for (int i = 0; i < NR; ++i) {
         fftw_multi_array::detail::assign_complex(
-                in[i], 0.0, real_test_function<double>(NR, (NR+1)/2, i));
+                in[i], 0.0, real_test_function<double>(NR, (NR+1)/2, i, shift));
     }
     fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
 
     // Imaginary input should exhibit a similar symmetry in wave space...
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
-    BOOST_REQUIRE_SMALL(out[0].real(), close_enough);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) { // ...up to grid modes
         double a_real, a_imag, b_real, b_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         fftw_multi_array::detail::assign_components(b_real, b_imag, out[NC-i]);
         BOOST_REQUIRE_CLOSE(a_real, -b_real, close_enough);
         BOOST_REQUIRE_CLOSE(a_imag,  b_imag, close_enough);
+
+        // We should also see the expected frequency content
+        const double real_expected = - i * cos(shift) * NR/2.0;
+        const double imag_expected =   i * sin(shift) * NR/2.0;
+        BOOST_REQUIRE_CLOSE(b_real, real_expected, sqrt(close_enough));
+        BOOST_REQUIRE_CLOSE(b_imag, imag_expected, sqrt(close_enough));
+    }
+    // Ensure we see the expected zero mode magnitude
+    {
+        double z_real, z_imag;
+        fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
+        BOOST_REQUIRE_SMALL(z_real, close_enough);
+        // NR*NC from constant test factor * transformed/target grid size
+        BOOST_REQUIRE_CLOSE(z_imag, NR * NC, close_enough);
     }
 }
 
@@ -369,7 +402,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
 
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray1, class ComplexMultiArray2>
-void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
+void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
@@ -379,13 +412,14 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         = std::numeric_limits<double>::epsilon()*10*NC*NC;
 
     // Load a conjugate-symmetric function into the input array...
+    // ...with known frequency content and constant offset NC
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
-    fftw_multi_array::detail::assign_complex(in[0], NC, 0);
+    fftw_multi_array::detail::assign_complex(in[0], NC*NC, 0);
     for (int i = 1; i < (NC+1)/2; ++i) {
         if (i < (NR+1)/2) { // ...up to grid modes
-            fftw_multi_array::detail::assign_complex(in[i],    i,  i);
-            fftw_multi_array::detail::assign_complex(in[NC-i], i, -i);
+            fftw_multi_array::detail::assign_complex(in[i],    i/2.0,  i/2.0);
+            fftw_multi_array::detail::assign_complex(in[NC-i], i/2.0, -i/2.0);
         } else {
             fftw_multi_array::detail::assign_complex(in[i],    0, 0);
             fftw_multi_array::detail::assign_complex(in[NC-i], 0, 0);
@@ -398,21 +432,23 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 
     fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
 
-    // Output should be a real-valued function in physical space
+    // Output should be a real-valued function in physical space...
     for (int i = 0; i < NR; ++i) {
         double a_real, a_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         BOOST_REQUIRE_SMALL(a_imag, close_enough);
     }
+    // TODO ...with known physical space values
 
     // Load a real-symmetric function into the input array...
+    // ...with known frequency content and constant offset i*NC
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
-    fftw_multi_array::detail::assign_complex(in[0], 0, NC);
+    fftw_multi_array::detail::assign_complex(in[0], 0, NC*NC);
     for (int i = 1; i < (NC+1)/2; ++i) {
         if (i < (NR+1)/2) { // ...up to grid modes
-            fftw_multi_array::detail::assign_complex(in[i],     i, i);
-            fftw_multi_array::detail::assign_complex(in[NC-i], -i, i);
+            fftw_multi_array::detail::assign_complex(in[i],     i/2.0, i/2.0);
+            fftw_multi_array::detail::assign_complex(in[NC-i], -i/2.0, i/2.0);
         } else {
             fftw_multi_array::detail::assign_complex(in[i],    0, 0);
             fftw_multi_array::detail::assign_complex(in[NC-i], 0, 0);
@@ -425,12 +461,13 @@ void check_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 
     fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
 
-    // Output should be an imaginary-valued function in physical space
+    // Output should be an imaginary-valued function in physical space...
     for (int i = 0; i < NR; ++i) {
         double a_real, a_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         BOOST_REQUIRE_SMALL(a_real, close_enough);
     }
+    // TODO ...with known physical space values
 }
 
 // Compare our results with FFTW's directly computed result
@@ -488,8 +525,8 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
         // BOOST_REQUIRE_EQUAL would be nice, but it fails here
-        BOOST_REQUIRE_CLOSE(out_real, buffer[i][0] / NR, close_enough/10);
-        BOOST_REQUIRE_CLOSE(out_imag, buffer[i][1] / NR, close_enough/10);
+        BOOST_REQUIRE_CLOSE(out_real, buffer[i][0] / NR, close_enough/15);
+        BOOST_REQUIRE_CLOSE(out_imag, buffer[i][1] / NR, close_enough/15);
     }
 }
 
@@ -511,9 +548,9 @@ void c2c_1d_out_of_place(const int N)
     array_type in(boost::extents[N]), out(boost::extents[N]);
 
     // No dealiasing in effect: in == out
-    check_1D_complex_forward(in, out);
+    symmetry_1D_complex_forward(in, out);
     compare_1D_complex_forward(in, out);
-    check_1D_complex_backward(in, out);
+    symmetry_1D_complex_backward(in, out);
     compare_1D_complex_backward(in, out);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
@@ -534,9 +571,9 @@ void c2c_1d_out_of_place_one_reversed(const int N)
     array_type in(boost::extents[N], storage(ordering, ascending));
     array_type out(boost::extents[N]);
 
-    check_1D_complex_forward(in, out);
+    symmetry_1D_complex_forward(in, out);
     compare_1D_complex_forward(in, out);
-    check_1D_complex_backward(in, out);
+    symmetry_1D_complex_backward(in, out);
     compare_1D_complex_backward(in, out);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE_ONE_REVERSED,\
@@ -558,9 +595,9 @@ void c2c_1d_out_of_place_two_reversed(const int N)
     array_type in(boost::extents[N], storage(ordering, ascending));
     array_type out(boost::extents[N], storage(ordering, ascending));
 
-    check_1D_complex_forward(in, out);
+    symmetry_1D_complex_forward(in, out);
     compare_1D_complex_forward(in, out);
-    check_1D_complex_backward(in, out);
+    symmetry_1D_complex_backward(in, out);
     compare_1D_complex_backward(in, out);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE_TWO_REVERSED,\
@@ -577,9 +614,9 @@ void c2c_1d_in_place(const int N)
     array_type both(boost::extents[N]);
 
     // No dealiasing in effect for in place transform: NR == NC
-    check_1D_complex_forward(both, both);
+    symmetry_1D_complex_forward(both, both);
     compare_1D_complex_forward(both, both);
-    check_1D_complex_backward(both, both);
+    symmetry_1D_complex_backward(both, both);
     compare_1D_complex_forward(both, both);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_IN_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
@@ -620,13 +657,13 @@ void c2c_1d_out_of_place_dealiased_forward(const int NR, const int NC)
 {
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type in(boost::extents[NR]), out(boost::extents[NC]);
-    check_1D_complex_forward(in, out); // Dealiasing in effect
+    symmetry_1D_complex_forward(in, out); // Dealiasing in effect
 }
 void c2c_1d_out_of_place_dealiased_backward(const int NC, const int NR)
 {
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type in(boost::extents[NC]), out(boost::extents[NR]);
-    check_1D_complex_backward(in, out); // Dealiasing in effect
+    symmetry_1D_complex_backward(in, out); // Dealiasing in effect
 }
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
         TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
@@ -640,4 +677,56 @@ BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
         TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
         ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
+BOOST_AUTO_TEST_SUITE_END();
+
+
+BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_zero_mode );
+template<class ComplexMultiArray1, class ComplexMultiArray2>
+void check_1D_complex_zero_mode(ComplexMultiArray1 &in,
+                                ComplexMultiArray2 &out)
+{
+    BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
+    const int NR = in.shape()[0];
+    const int NC = out.shape()[0];
+    const double close_enough
+        = std::numeric_limits<double>::epsilon()*10*NR*NR;
+
+    fill_multi_array(in, typename ComplexMultiArray1::element(23.0, 31.0));
+    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+    {
+        double z_real, z_imag;
+        fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
+        BOOST_REQUIRE_CLOSE(z_real, 23.0*NC, close_enough);
+        BOOST_REQUIRE_CLOSE(z_imag, 31.0*NC, close_enough);
+    }
+
+    fftw_multi_array::c2c_transform(0, out, in, FFTW_BACKWARD);
+    for (int i = 0; i < in.shape()[0]; ++i) {
+        double z_real, z_imag;
+        fftw_multi_array::detail::assign_components(z_real, z_imag, in[i]);
+        BOOST_REQUIRE_CLOSE(z_real, 23.0, close_enough);
+        BOOST_REQUIRE_CLOSE(z_imag, 31.0, close_enough);
+    }
+}
+#define TEST_C2C_1D_OUT_OF_PLACE_ZERO_MODE(r, product) \
+        BOOST_AUTO_TEST_CASE( \
+          BOOST_PP_CAT(c2c_1d_out_of_place_zero_mode_, \
+                BOOST_PP_CAT(BOOST_PP_SEQ_ELEM(0,product), \
+                  BOOST_PP_CAT(_,BOOST_PP_SEQ_ELEM(1,product))))) \
+        {\
+            c2c_1d_complex_out_of_place_zero_mode( \
+                BOOST_PP_SEQ_ELEM(0,product), \
+                BOOST_PP_SEQ_ELEM(1,product) ); \
+        }
+void c2c_1d_complex_out_of_place_zero_mode(const int NC, const int NR)
+{
+    typedef boost::multi_array<std::complex<double>,1> array_type;
+    array_type in(boost::extents[NC]), out(boost::extents[NR]);
+    check_1D_complex_zero_mode(in, out);
+}
+// TODO Enable this test
+//BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
+//        TEST_C2C_1D_OUT_OF_PLACE_ZERO_MODE, \
+//        (TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_AUTO_TEST_SUITE_END();
