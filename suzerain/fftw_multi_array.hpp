@@ -298,7 +298,7 @@ void c2c_transform(const size_t transform_dim,
     const shape_type first_kn_neg_in        = -(shape_in_transform_dim-1)/2;
     const shape_type first_kn_neg_out       = -(shape_out_transform_dim-1)/2;
     const shape_type first_kn_neg_transform = -(transform_n-1)/2;
-    // Normalization only required during backwards transform
+    // Normalization only required after backwards transform completes
     const double normalization_factor
         = (fftw_sign == FFTW_BACKWARD) ? 1.0/transform_n : 1.0;
 
