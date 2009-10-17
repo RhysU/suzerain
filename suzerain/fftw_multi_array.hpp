@@ -298,17 +298,15 @@ void c2c_transform(const size_t transform_dim,
     const shape_type first_kn_neg_in        = -(shape_in_transform_dim-1)/2;
     const shape_type first_kn_neg_out       = -(shape_out_transform_dim-1)/2;
     const shape_type first_kn_neg_transform = -(transform_n-1)/2;
-    // Must sometimes adjust the zero-th wavenumber to maintain constant signal
+    // Must scale 0th wavenumber to correct constant signal when dealiasing
     typedef BOOST_TYPEOF(buffer[0][0]) fftw_real;
-    const fftw_real input_zero_mode_factor = (fftw_sign == FFTW_FORWARD)
-        ? 1.0
-        : ((fftw_real) shape_in_transform_dim) / shape_out_transform_dim;
-    const fftw_real output_zero_mode_factor = (fftw_sign == FFTW_FORWARD)
-        ? ((fftw_real) shape_out_transform_dim) / shape_in_transform_dim
-        : 1.0;
+    const fftw_real input_zero_mode_factor
+        = ((fftw_real) transform_n) / shape_in_transform_dim;
+    const fftw_real output_zero_mode_factor
+        = ((fftw_real) shape_out_transform_dim) / transform_n;
     // Other normalization only required after backwards transform completes
     const fftw_real output_normalization_factor
-        = (fftw_sign == FFTW_FORWARD) ? 1.0 : 1.0/transform_n;
+        = (fftw_sign == FFTW_FORWARD) ? 1.0 : ((fftw_real) 1.0)/transform_n;
 
     // Prepare per-pencil outer loop index and loop bounds
     shape_array loop_shape(shape_in);   // Iterate over all dimensions...

@@ -236,7 +236,7 @@ FPT real_test_function(const Integer NR,
                        const Integer i,
                        const FPT shift = M_PI/3.0) {
     const FPT xi = i*2*M_PI/NR;
-    FPT retval = (max_mode_exclusive > 0) ? NR : 0;
+    FPT retval = (max_mode_exclusive > 0) ? 17.0 : 0; // Zero mode fixed
     for (Integer i = 1; i < max_mode_exclusive; ++i) {
         retval += i*sin(i*xi + shift);
     }
@@ -299,8 +299,8 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         double z_real, z_imag;
         fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
         BOOST_REQUIRE_SMALL(z_imag, close_enough);
-        // NR*NC from constant test factor * transformed/target grid size
-        BOOST_REQUIRE_CLOSE(z_real, NR * NC, close_enough);
+        // 17 from constant test factor * target wave space size
+        BOOST_REQUIRE_CLOSE(z_real, 17.0*NC, close_enough);
     }
 
     // Load an imaginary-valued function into the input array and transform it
@@ -332,8 +332,8 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         double z_real, z_imag;
         fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
         BOOST_REQUIRE_SMALL(z_real, close_enough);
-        // NR*NC from constant test factor * transformed/target grid size
-        BOOST_REQUIRE_CLOSE(z_imag, NR * NC, close_enough);
+        // 17 from constant test factor * target wave space size
+        BOOST_REQUIRE_CLOSE(z_imag, 17*NC, close_enough);
     }
 }
 
@@ -725,8 +725,7 @@ void c2c_1d_complex_out_of_place_zero_mode(const int NC, const int NR)
     array_type in(boost::extents[NC]), out(boost::extents[NR]);
     check_1D_complex_zero_mode(in, out);
 }
-// TODO Enable this test
-//BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
-//        TEST_C2C_1D_OUT_OF_PLACE_ZERO_MODE, \
-//        (TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
+BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
+        TEST_C2C_1D_OUT_OF_PLACE_ZERO_MODE, \
+        (TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_AUTO_TEST_SUITE_END();
