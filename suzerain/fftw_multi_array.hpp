@@ -35,7 +35,7 @@
 #include <cassert>
 #include <cstddef>
 #include <functional>
-#include <fftw3.h>
+#include <limits>
 #include <boost/array.hpp>
 #include <boost/integer_traits.hpp>
 #include <boost/shared_array.hpp>
@@ -48,6 +48,7 @@
 #include <boost/type_traits/is_unsigned.hpp>
 #include <boost/type_traits/remove_pointer.hpp>
 #include <boost/typeof/typeof.hpp>
+#include <fftw3.h>
 
 namespace pecos { namespace suzerain { namespace fftw_multi_array {
 
@@ -88,6 +89,43 @@ bool increment(IndexType &index, const MaxIndexType &max_index)
  * @internal
  */
 namespace detail {
+
+/**
+ * Computes \f$x^n\f$ efficiently for small integer \f$n\f$, including
+ * \f$n <= 0\f$.  No overflow checking is performed.  Algorithm taken
+ * from the GNU Scientific Library's \c gsl_pow_int.
+ *
+ * @param x \f$x\f$
+ * @param n \f$n\f$
+ *
+ * @return \f$x^n\f$
+ */
+template<typename FPT, typename Integral>
+FPT integer_power(FPT x, Integral n)
+{
+    using std::numeric_limits;
+
+    // Avoid shooting ourselves by accidentally requesting a negative power for
+    // an integer input.  Long lines to ensure messages appear in compiler
+    // error output when used improperly.
+    BOOST_STATIC_ASSERT(numeric_limits<Integral>::is_integer);
+    BOOST_STATIC_ASSERT(!numeric_limits<Integral>::is_signed || !numeric_limits<FPT>::is_integer);
+
+    FPT retval = 1.0;
+    // Convert all requests into one involving a positive power
+    if (n < 0) {
+        x = 1.0/x;
+        n = -n;
+    }
+    // Repeated squaring method.  Returns 0.0^0 = 1.0; continuous in x
+    do {
+        if (n & 1) retval *= x;  /* for n odd */
+        n >>= 1;
+        x *= x;
+    } while (n);
+
+    return retval;
+}
 
 /**
  * Overwrite \c dest with <tt>src</tt>
