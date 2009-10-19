@@ -278,7 +278,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         fftw_multi_array::detail::assign_complex(
                 in[i], real_test_function<double>(NR, (NR+1)/2, i, shift), 0.0);
     }
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD);
 
     // Real input should exhibit conjugate symmetry in wave space...
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) { // ...up to grid modes
@@ -289,8 +289,8 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         BOOST_REQUIRE_CLOSE(a_imag, -b_imag, close_enough);
 
         // We should also see the expected frequency content
-        const double real_expected = i * sin(shift) * NR/2.0;
-        const double imag_expected = i * cos(shift) * NR/2.0;
+        const double real_expected = i * sin(shift) * NC/2.0;
+        const double imag_expected = i * cos(shift) * NC/2.0;
         BOOST_REQUIRE_CLOSE(b_real, real_expected, sqrt(close_enough));
         BOOST_REQUIRE_CLOSE(b_imag, imag_expected, sqrt(close_enough));
     }
@@ -310,7 +310,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         fftw_multi_array::detail::assign_complex(
                 in[i], 0.0, real_test_function<double>(NR, (NR+1)/2, i, shift));
     }
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD);
 
     // Imaginary input should exhibit a similar symmetry in wave space...
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
@@ -322,8 +322,8 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         BOOST_REQUIRE_CLOSE(a_imag,  b_imag, close_enough);
 
         // We should also see the expected frequency content
-        const double real_expected = - i * cos(shift) * NR/2.0;
-        const double imag_expected =   i * sin(shift) * NR/2.0;
+        const double real_expected = - i * cos(shift) * NC/2.0;
+        const double imag_expected =   i * sin(shift) * NC/2.0;
         BOOST_REQUIRE_CLOSE(b_real, real_expected, sqrt(close_enough));
         BOOST_REQUIRE_CLOSE(b_imag, imag_expected, sqrt(close_enough));
     }
@@ -386,7 +386,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
 
     // Transform input FFTW directly and also our wrapper
     fftw_execute(plan.get());  // Important to be first for in == out
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD);
 
     // Ensure we got the same result
     for (int i = 0; i < NR; ++i) {
@@ -412,14 +412,15 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
         = std::numeric_limits<double>::epsilon()*10*NC*NC;
 
     // Load a conjugate-symmetric function into the input array...
-    // ...with known frequency content and constant offset NC
+    // ...with known frequency content and constant offset 17
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
-    fftw_multi_array::detail::assign_complex(in[0], NC*NC, 0);
+    fftw_multi_array::detail::assign_complex(in[0], 17.0*NC, 0.0);
     for (int i = 1; i < (NC+1)/2; ++i) {
         if (i < (NR+1)/2) { // ...up to grid modes
-            fftw_multi_array::detail::assign_complex(in[i],    i/2.0,  i/2.0);
-            fftw_multi_array::detail::assign_complex(in[NC-i], i/2.0, -i/2.0);
+            const double val = NC*i/2.0;
+            fftw_multi_array::detail::assign_complex(in[i],    val, -val);
+            fftw_multi_array::detail::assign_complex(in[NC-i], val,  val);
         } else {
             fftw_multi_array::detail::assign_complex(in[i],    0, 0);
             fftw_multi_array::detail::assign_complex(in[NC-i], 0, 0);
@@ -427,28 +428,38 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     }
     if (NC%2 == 0) {
         fftw_multi_array::detail::assign_complex(in[NC/2],
-                (NC >= NR) ? NC/2 : 0, 0);
+                (NC >= NR) ? NC/2 : 0, 0);           // Extra half mode
     }
 
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
+    fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
 
     // Output should be a real-valued function in physical space...
     for (int i = 0; i < NR; ++i) {
         double a_real, a_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         BOOST_REQUIRE_SMALL(a_imag, close_enough);
+
+        // ...with known physical space values
+// TODO Enable test
+//        const double xi = i*2*M_PI/NR;
+//        double expected_real = 17;
+//        for (int j = 1; j < (NC+1)/2; ++j) {
+//            expected_real += j*sin(j*xi) + j*cos(j*xi);
+//        }
+//        expected_real += (!(NC%2) && NC >= NR)*0.5*cos((NC/2)*xi);
+//        BOOST_REQUIRE_CLOSE(a_real, expected_real, sqrt(close_enough));
     }
-    // TODO ...with known physical space values
 
     // Load a real-symmetric function into the input array...
-    // ...with known frequency content and constant offset i*NC
+    // ...with known frequency content and constant offset 17
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
-    fftw_multi_array::detail::assign_complex(in[0], 0, NC*NC);
+    fftw_multi_array::detail::assign_complex(in[0], 0.0, 17.0*NC);
     for (int i = 1; i < (NC+1)/2; ++i) {
         if (i < (NR+1)/2) { // ...up to grid modes
-            fftw_multi_array::detail::assign_complex(in[i],     i/2.0, i/2.0);
-            fftw_multi_array::detail::assign_complex(in[NC-i], -i/2.0, i/2.0);
+            const double val = NC*i/2.0;
+            fftw_multi_array::detail::assign_complex(in[i],    -val, val);
+            fftw_multi_array::detail::assign_complex(in[NC-i],  val, val);
         } else {
             fftw_multi_array::detail::assign_complex(in[i],    0, 0);
             fftw_multi_array::detail::assign_complex(in[NC-i], 0, 0);
@@ -459,7 +470,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
                 0, (NC >= NR) ? NC/2 : 0);
     }
 
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
+    fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
 
     // Output should be an imaginary-valued function in physical space...
     for (int i = 0; i < NR; ++i) {
@@ -516,7 +527,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
 
     // Transform input FFTW directly and also our wrapper
     fftw_execute(plan.get());  // Important to be first for in == out
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_BACKWARD);
+    fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
 
     // Ensure we got exactly the same result after normalization
     for (int i = 0; i < NR; ++i) {
@@ -693,7 +704,7 @@ void check_1D_complex_zero_mode(ComplexMultiArray1 &in,
         = std::numeric_limits<double>::epsilon()*10*NR*NR;
 
     fill_multi_array(in, typename ComplexMultiArray1::element(23.0, 31.0));
-    fftw_multi_array::c2c_transform(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD);
     {
         double z_real, z_imag;
         fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
@@ -701,7 +712,7 @@ void check_1D_complex_zero_mode(ComplexMultiArray1 &in,
         BOOST_REQUIRE_CLOSE(z_imag, 31.0*NC, close_enough);
     }
 
-    fftw_multi_array::c2c_transform(0, out, in, FFTW_BACKWARD);
+    fftw_multi_array::transform_c2c(0, out, in, FFTW_BACKWARD);
     for (int i = 0; i < in.shape()[0]; ++i) {
         double z_real, z_imag;
         fftw_multi_array::detail::assign_components(z_real, z_imag, in[i]);

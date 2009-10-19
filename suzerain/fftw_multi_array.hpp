@@ -90,32 +90,34 @@ bool increment(IndexType &index, const MaxIndexType &max_index)
 namespace detail {
 
 /**
- * Overwrite \c dest with \c src
+ * Overwrite \c dest with <tt>src</tt>
  *
  * @param dest destination
  * @param src source
  */
 template<typename FPT>
-void assign_complex(fftw_complex &dest, const std::complex<FPT> &src)
+void assign_complex(fftw_complex &dest,
+                    const std::complex<FPT> &src)
 {
     dest[0] = src.real();
     dest[1] = src.imag();
 }
 
 /**
- * Overwrite \c dest with \c src
+ * Overwrite \c dest with <tt>src</tt>
  *
  * @param dest destination
  * @param src source
  */
-void assign_complex(fftw_complex &dest, const fftw_complex &src)
+void assign_complex(fftw_complex &dest,
+                    const fftw_complex &src)
 {
     dest[0] = src[0];
     dest[1] = src[1];
 }
 
 /**
- * Overwrite \c dest with \c src_real + \f$\sqrt{-1}\f$ \c src_imag
+ * Overwrite \c dest with <tt>src_real</tt> + \f$\sqrt{-1}\f$ <tt>src_imag</tt>
  *
  * @param dest destination
  * @param src_real real part of the source
@@ -131,7 +133,7 @@ void assign_complex(fftw_complex &dest,
 }
 
 /**
- * Overwrite \c dest with \c src_real + \f$\sqrt{-1}\f$ \c src_imag
+ * Overwrite \c dest with <tt>src_real</tt> + \f$\sqrt{-1}\f$ <tt>src_imag</tt>
  *
  * @param dest destination
  * @param src_real real part of the source
@@ -147,7 +149,8 @@ void assign_complex(std::complex<FPT1> &dest,
 }
 
 /**
- * Overwrite \c dest_real with Re \c src and \c dest_imag with Re \c src_imag
+ * Overwrite \c dest_real with Re <tt>src</tt> and \c dest_imag with Re
+ * <tt>src_imag</tt>
  *
  * @param dest_real destination real part
  * @param dest_imag destination imag part
@@ -163,7 +166,8 @@ void assign_components(FPT &dest_real,
 }
 
 /**
- * Overwrite \c dest_real with Re \c src and \c dest_imag with Re \c src_imag
+ * Overwrite \c dest_real with Re <tt>src</tt> and \c dest_imag with Re
+ * <tt>src_imag</tt>
  *
  * @param dest_real destination real part
  * @param dest_imag destination imag part
@@ -178,10 +182,118 @@ void assign_components(FPT &dest_real,
     dest_imag = src[1];
 }
 
+/**
+ * Overwrite \c dest with <tt>alpha*src</tt>
+ *
+ * @param dest destination
+ * @param src source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT1, typename FPT2>
+void assign_complex_scaled(fftw_complex &dest,
+                           const std::complex<FPT1> &src,
+                           const FPT2 &alpha)
+{
+    dest[0] = alpha*src.real();
+    dest[1] = alpha*src.imag();
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*src</tt>
+ *
+ * @param dest destination
+ * @param src source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT>
+void assign_complex_scaled(fftw_complex &dest,
+                           const fftw_complex &src,
+                           const FPT &alpha)
+{
+    dest[0] = alpha*src[0];
+    dest[1] = alpha*src[1];
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*src_real</tt> + \f$\sqrt{-1}\f$
+ * <tt>alpha*src_imag</tt>
+ *
+ * @param dest destination
+ * @param src_real real part of the source
+ * @param src_imag imag part of the source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT1, typename FPT2>
+void assign_complex_scaled(fftw_complex &dest,
+                           const FPT1 &src_real,
+                           const FPT1 &src_imag,
+                           const FPT2 &alpha)
+{
+    dest[0] = alpha*src_real;
+    dest[1] = alpha*src_imag;
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*src_real</tt> + \f$\sqrt{-1}\f$
+ * <tt>alpha*src_imag</tt>
+ *
+ * @param dest destination
+ * @param src_real real part of the source
+ * @param src_imag imag part of the source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT1, typename FPT2, typename FPT3>
+void assign_complex_scaled(std::complex<FPT1> &dest,
+                           const FPT2 &src_real,
+                           const FPT2 &src_imag,
+                           const FPT3 &alpha)
+{
+    dest.real() = alpha*src_real;
+    dest.imag() = alpha*src_imag;
+}
+
+/**
+ * Overwrite \c dest_real with Re <tt>alpha*src</tt> and \c dest_imag with Re
+ * <tt>alpha*src_imag</tt>
+ *
+ * @param dest_real destination real part
+ * @param dest_imag destination imag part
+ * @param src source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT1, typename FPT2>
+void assign_components_scaled(FPT1 &dest_real,
+                              FPT2 &dest_imag,
+                              const std::complex<FPT1> &src,
+                              const FPT2 &alpha)
+{
+    dest_real = alpha*src.real();
+    dest_imag = alpha*src.imag();
+}
+
+/**
+ * Overwrite \c dest_real with Re <tt>alpha*src</tt> and \c dest_imag with Re
+ * <tt>alpha*src_imag</tt>
+ *
+ * @param dest_real destination real part
+ * @param dest_imag destination imag part
+ * @param src source
+ * @param alpha multiplicative scaling factor
+ */
+template<typename FPT1, typename FPT2>
+void assign_components_scaled(FPT1 &dest_real,
+                              FPT1 &dest_imag,
+                              const fftw_complex &src,
+                              const FPT2 &alpha)
+{
+    dest_real = alpha*src[0];
+    dest_imag = alpha*src[1];
+}
+
 } // namespace detail
 
 template<class ComplexMultiArray1, class ComplexMultiArray2>
-void c2c_transform(const size_t transform_dim,
+void transform_c2c(const size_t transform_dim,
                    const ComplexMultiArray1 &in,
                    ComplexMultiArray2 &out,
                    const int fftw_sign,
@@ -298,15 +410,14 @@ void c2c_transform(const size_t transform_dim,
     const shape_type first_kn_neg_in        = -(shape_in_transform_dim-1)/2;
     const shape_type first_kn_neg_out       = -(shape_out_transform_dim-1)/2;
     const shape_type first_kn_neg_transform = -(transform_n-1)/2;
-    // Must scale 0th wavenumber to correct constant signal when dealiasing
+    // Must scale data to account for possible differences in grid sizes
+    // Must additionally normalize after backwards transform completes
     typedef BOOST_TYPEOF(buffer[0][0]) fftw_real;
-    const fftw_real input_zero_mode_factor
+    const fftw_real input_scale_factor
         = ((fftw_real) transform_n) / shape_in_transform_dim;
-    const fftw_real output_zero_mode_factor
-        = ((fftw_real) shape_out_transform_dim) / transform_n;
-    // Other normalization only required after backwards transform completes
-    const fftw_real output_normalization_factor
-        = (fftw_sign == FFTW_FORWARD) ? 1.0 : ((fftw_real) 1.0)/transform_n;
+    const fftw_real output_scale_factor
+        = ((fftw_real) shape_out_transform_dim) / transform_n
+        * (fftw_sign == FFTW_FORWARD ? 1.0 : ((fftw_real) 1.0)/transform_n);
 
     // Prepare per-pencil outer loop index and loop bounds
     shape_array loop_shape(shape_in);   // Iterate over all dimensions...
@@ -332,34 +443,29 @@ void c2c_transform(const size_t transform_dim,
         // Copy input into transform buffer and pad any excess with zeros
         // TODO differentiate prior to FFTW_BACKWARD if requested
         p_buffer = buffer.get();
-        {   // Zero mode handled as a special case
-            detail::assign_complex(*p_buffer, *p_pencil_in);
-            (*p_buffer)[0] *= input_zero_mode_factor;
-            (*p_buffer)[1] *= input_zero_mode_factor;
-            ++p_buffer;
-            p_pencil_in += stride_in_transform_dim;
-        }
-        for (kn = 1; kn <= last_kn_pos_copyin; ++kn) {
-            detail::assign_complex(*(p_buffer++), *p_pencil_in);
+        for (kn = 0; kn <= last_kn_pos_copyin; ++kn) {
+            detail::assign_complex_scaled(
+                    *(p_buffer++), *p_pencil_in, input_scale_factor);
             p_pencil_in += stride_in_transform_dim;
         }
         if (shape_in_transform_dim > transform_n) {
-            for (/* from above */; kn <= last_kn_pos_in; ++kn) {
+            for (/* init from above */; kn <= last_kn_pos_in; ++kn) {
                 p_pencil_in += stride_in_transform_dim;
             }
             for (kn = first_kn_neg_in; kn < first_kn_neg_transform; ++kn) {
                 p_pencil_in += stride_in_transform_dim;
             }
         } else {
-            for (/* from above */; kn <= last_kn_pos_transform; ++kn) {
+            for (/* init from above */; kn <= last_kn_pos_transform; ++kn) {
                 detail::assign_complex(*(p_buffer++), 0, 0);
             }
             for (kn = first_kn_neg_transform; kn < first_kn_neg_in; ++kn) {
                 detail::assign_complex(*(p_buffer++), 0, 0);
             }
         }
-        for (/* from above */; kn <= -1; ++kn) {
-            detail::assign_complex(*(p_buffer++), *p_pencil_in);
+        for (/* init from above */; kn <= -1; ++kn) {
+            detail::assign_complex_scaled(
+                    *(p_buffer++), *p_pencil_in, input_scale_factor);
             p_pencil_in += stride_in_transform_dim;
         }
 
@@ -374,24 +480,14 @@ void c2c_transform(const size_t transform_dim,
         // Copy transform buffer into output truncating auxiliary modes
         // TODO differentiate after FFTW_FORWARD if requested
         p_buffer = buffer.get();
-        {   // Zero mode handled as a special case
-            (*p_buffer)[0] *= output_zero_mode_factor;
-            (*p_buffer)[1] *= output_zero_mode_factor;
-            detail::assign_complex(*p_pencil_out,
-                        (*p_buffer)[0] * output_normalization_factor,
-                        (*p_buffer)[1] * output_normalization_factor);
-            ++p_buffer;
-            p_pencil_out += stride_out_transform_dim;
-        }
-        for (kn = 1; kn <= last_kn_pos_copyout; ++kn) {
-            detail::assign_complex(*p_pencil_out,
-                        (*p_buffer)[0] * output_normalization_factor,
-                        (*p_buffer)[1] * output_normalization_factor);
+        for (kn = 0; kn <= last_kn_pos_copyout; ++kn) {
+            detail::assign_complex_scaled( *p_pencil_out,
+                    (*p_buffer)[0], (*p_buffer)[1], output_scale_factor);
             ++p_buffer;
             p_pencil_out += stride_out_transform_dim;
         }
         if (shape_out_transform_dim > transform_n) {
-            for (/* from above */; kn <= last_kn_pos_out; ++kn) {
+            for (/* init from above */; kn <= last_kn_pos_out; ++kn) {
                 detail::assign_complex(*p_pencil_out, 0, 0);
                 p_pencil_out += stride_out_transform_dim;
             }
@@ -400,24 +496,23 @@ void c2c_transform(const size_t transform_dim,
                 p_pencil_out += stride_out_transform_dim;
             }
         } else {
-            for (/* from above */; kn <= last_kn_pos_transform; ++kn) {
+            for (/* init from above */; kn <= last_kn_pos_transform; ++kn) {
                 ++p_buffer;
             }
             for (kn = first_kn_neg_transform; kn < first_kn_neg_out; ++kn) {
                 ++p_buffer;
             }
         }
-        for (/* from above */; kn <= -1; ++kn) {
-            detail::assign_complex(*p_pencil_out,
-                        (*p_buffer)[0] * output_normalization_factor,
-                        (*p_buffer)[1] * output_normalization_factor);
+        for (/* init from above */; kn <= -1; ++kn) {
+            detail::assign_complex_scaled(*p_pencil_out,
+                        (*p_buffer)[0], (*p_buffer)[1], output_scale_factor);
             ++p_buffer;
             p_pencil_out += stride_out_transform_dim;
         }
 
     } while (increment<dimensionality>(loop_index, loop_shape));
 
-} /* c2c_transform */
+} /* transform_c2c */
 
 } /* fftw_multi_array */ } /* suzerain */ } /* pecos */
 
