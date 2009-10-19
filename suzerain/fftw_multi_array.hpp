@@ -221,23 +221,131 @@ void assign_components(FPT &dest_real,
 }
 
 /**
- * Overwrite \c dest with <tt>alpha*src*I^i_power</tt> where
+ * Overwrite \c dest with <tt>alpha*src</tt>.
+ *
+ * @param dest destination
+ * @param src source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT1, typename FPT2>
+void assign_complex_scaled(fftw_complex &dest,
+                           const std::complex<FPT1> &src,
+                           const FPT2 alpha)
+{
+    dest[0] = alpha*src.real();
+    dest[1] = alpha*src.imag();
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*src</tt>.
+ *
+ * @param dest destination
+ * @param src source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT>
+void assign_complex_scaled(fftw_complex &dest,
+                           const fftw_complex &src,
+                           const FPT alpha)
+{
+    dest[0] = alpha*src[0];
+    dest[1] = alpha*src[1];
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*src_real + I*alpha*src_imag*I</tt> where
+ * \c I is the imaginary unit.
+ *
+ * @param dest destination
+ * @param src_real real part of the source
+ * @param src_imag imag part of the source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT1, typename FPT2>
+void assign_complex_scaled(fftw_complex &dest,
+                           const FPT1 &src_real,
+                           const FPT1 &src_imag,
+                           const FPT2 alpha)
+
+{
+    dest[0] = alpha*src_real;
+    dest[1] = alpha*src_imag;
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*src_real + I*alpha*src_imag</tt> where \c I
+ * is the imaginary unit.
+ *
+ * @param dest destination
+ * @param src_real real part of the source
+ * @param src_imag imag part of the source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT1, typename FPT2, typename FPT3>
+void assign_complex_scaled(std::complex<FPT1> &dest,
+                           const FPT2 &src_real,
+                           const FPT2 &src_imag,
+                           const FPT3 alpha)
+{
+    dest.real() = alpha*src_real;
+    dest.imag() = alpha*src_imag;
+}
+
+/**
+ * Overwrite \c dest_real with Re <tt>alpha*src</tt> and \c dest_imag
+ * with Im <tt>alpha*src</tt>.
+ *
+ * @param dest_real destination real part
+ * @param dest_imag destination imag part
+ * @param src source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT1, typename FPT2>
+void assign_components_scaled(FPT1 &dest_real,
+                              FPT2 &dest_imag,
+                              const std::complex<FPT1> &src,
+                              const FPT2 alpha)
+{
+    dest_real = alpha*src.real();
+    dest_imag = alpha*src.imag();
+}
+
+/**
+ * Overwrite \c dest_real with Re <tt>alpha*src</tt> and \c dest_imag
+ * with Im <tt>alpha*src_imag</tt>.
+ *
+ * @param dest_real destination real part
+ * @param dest_imag destination imag part
+ * @param src source
+ */
+template<typename FPT1, typename FPT2>
+void assign_components_scaled(FPT1 &dest_real,
+                              FPT1 &dest_imag,
+                              const fftw_complex &src,
+                              const FPT2 alpha)
+{
+    dest_real = alpha*src[0];
+    dest_imag = alpha*src[1];
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*src*I^ipower</tt> where
  * \c I is the imaginary unit.
  *
  * @param dest destination
  * @param src source
  * @param alpha multiplicative real scaling factor
- * @param i_power exponent on the imaginary unit to include in the scaling
+ * @param ipower exponent on the imaginary unit to include in the scaling
  */
 template<typename FPT1, typename FPT2>
-void assign_complex_scaled(fftw_complex &dest,
-                           const std::complex<FPT1> &src,
-                           const FPT2 alpha,
-                           const int i_power = 0)
+void assign_complex_scaled_ipower(fftw_complex &dest,
+                                  const std::complex<FPT1> &src,
+                                  const FPT2 alpha,
+                                  const int ipower)
 {
-    switch (i_power & (4-1)) { // Fast, modulo-like operation
+    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
         case 3: // I^3 = -I = I^-1
-            dest[0] = -alpha*src.imag();
+            dest[0] =  alpha*src.imag();
             dest[1] = -alpha*src.real();
             break;
         case 2: // I^2 = -1 = I^-2
@@ -245,34 +353,34 @@ void assign_complex_scaled(fftw_complex &dest,
             dest[1] = -alpha*src.imag();
             break;
         case 1: // I^1 = I = I^-3
-            dest[0] = alpha*src.imag();
-            dest[1] = alpha*src.real();
+            dest[0] = -alpha*src.imag();
+            dest[1] =  alpha*src.real();
             break;
         case 0: // I^0 = 1
-            dest[0] = alpha*src.real();
-            dest[1] = alpha*src.imag();
+            dest[0] =  alpha*src.real();
+            dest[1] =  alpha*src.imag();
             break;
     }
 }
 
 /**
- * Overwrite \c dest with <tt>alpha*src*I^i_power</tt> where
+ * Overwrite \c dest with <tt>alpha*src*I^ipower</tt> where
  * \c I is the imaginary unit.
  *
  * @param dest destination
  * @param src source
  * @param alpha multiplicative real scaling factor
- * @param i_power exponent on the imaginary unit to include in the scaling
+ * @param ipower exponent on the imaginary unit to include in the scaling
  */
 template<typename FPT>
-void assign_complex_scaled(fftw_complex &dest,
-                           const fftw_complex &src,
-                           const FPT alpha,
-                           const int i_power = 0)
+void assign_complex_scaled_ipower(fftw_complex &dest,
+                                  const fftw_complex &src,
+                                  const FPT alpha,
+                                  const int ipower)
 {
-    switch (i_power & (4-1)) { // Fast, modulo-like operation
+    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
         case 3: // I^3 = -I = I^-1
-            dest[0] = -alpha*src[1];
+            dest[0] =  alpha*src[1];
             dest[1] = -alpha*src[0];
             break;
         case 2: // I^2 = -1 = I^-2
@@ -280,36 +388,36 @@ void assign_complex_scaled(fftw_complex &dest,
             dest[1] = -alpha*src[1];
             break;
         case 1: // I^1 = I = I^-3
-            dest[0] = alpha*src[1];
-            dest[1] = alpha*src[0];
+            dest[0] = -alpha*src[1];
+            dest[1] =  alpha*src[0];
             break;
         case 0: // I^0 = 1
-            dest[0] = alpha*src[0];
-            dest[1] = alpha*src[1];
+            dest[0] =  alpha*src[0];
+            dest[1] =  alpha*src[1];
             break;
     }
 }
 
 /**
  * Overwrite \c dest with <tt>(alpha*src_real +
- * I*alpha*src_imag)*I^i_power</tt> where \c I is the imaginary unit.
+ * I*alpha*src_imag)*I^ipower</tt> where \c I is the imaginary unit.
  *
  * @param dest destination
  * @param src_real real part of the source
  * @param src_imag imag part of the source
  * @param alpha multiplicative real scaling factor
- * @param i_power exponent on the imaginary unit to include in the scaling
+ * @param ipower exponent on the imaginary unit to include in the scaling
  */
 template<typename FPT1, typename FPT2>
-void assign_complex_scaled(fftw_complex &dest,
-                           const FPT1 &src_real,
-                           const FPT1 &src_imag,
-                           const FPT2 alpha,
-                           const int i_power = 0)
+void assign_complex_scaled_ipower(fftw_complex &dest,
+                                  const FPT1 &src_real,
+                                  const FPT1 &src_imag,
+                                  const FPT2 alpha,
+                                  const int ipower)
 {
-    switch (i_power & (4-1)) { // Fast, modulo-like operation
+    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
         case 3: // I^3 = -I = I^-1
-            dest[0] = -alpha*src_imag;
+            dest[0] =  alpha*src_imag;
             dest[1] = -alpha*src_real;
             break;
         case 2: // I^2 = -1 = I^-2
@@ -317,36 +425,36 @@ void assign_complex_scaled(fftw_complex &dest,
             dest[1] = -alpha*src_imag;
             break;
         case 1: // I^1 = I = I^-3
-            dest[0] = alpha*src_imag;
-            dest[1] = alpha*src_real;
+            dest[0] = -alpha*src_imag;
+            dest[1] =  alpha*src_real;
             break;
         case 0: // I^0 = 1
-            dest[0] = alpha*src_real;
-            dest[1] = alpha*src_imag;
+            dest[0] =  alpha*src_real;
+            dest[1] =  alpha*src_imag;
             break;
     }
 }
 
 /**
  * Overwrite \c dest with <tt>(alpha*src_real +
- * I*alpha*src_imag)*I^i_power</tt> where \c I is the imaginary unit.
+ * I*alpha*src_imag)*I^ipower</tt> where \c I is the imaginary unit.
  *
  * @param dest destination
  * @param src_real real part of the source
  * @param src_imag imag part of the source
  * @param alpha multiplicative real scaling factor
- * @param i_power exponent on the imaginary unit to include in the scaling
+ * @param ipower exponent on the imaginary unit to include in the scaling
  */
 template<typename FPT1, typename FPT2, typename FPT3>
-void assign_complex_scaled(std::complex<FPT1> &dest,
-                           const FPT2 &src_real,
-                           const FPT2 &src_imag,
-                           const FPT3 alpha,
-                           const int i_power = 0)
+void assign_complex_scaled_ipower(std::complex<FPT1> &dest,
+                                  const FPT2 &src_real,
+                                  const FPT2 &src_imag,
+                                  const FPT3 alpha,
+                                  const int ipower)
 {
-    switch (i_power & (4-1)) { // Fast, modulo-like operation
+    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
         case 3: // I^3 = -I = I^-1
-            dest.real() = -alpha*src_imag;
+            dest.real() =  alpha*src_imag;
             dest.imag() = -alpha*src_real;
             break;
         case 2: // I^2 = -1 = I^-2
@@ -354,36 +462,36 @@ void assign_complex_scaled(std::complex<FPT1> &dest,
             dest.imag() = -alpha*src_imag;
             break;
         case 1: // I^1 = I = I^-3
-            dest.real() = alpha*src_imag;
-            dest.imag() = alpha*src_real;
+            dest.real() = -alpha*src_imag;
+            dest.imag() =  alpha*src_real;
             break;
         case 0: // I^0 = 1
-            dest.real() = alpha*src_real;
-            dest.imag() = alpha*src_imag;
+            dest.real() =  alpha*src_real;
+            dest.imag() =  alpha*src_imag;
             break;
     }
 }
 
 /**
- * Overwrite \c dest_real with Re <tt>alpha*src*I^i_power</tt> and \c dest_imag
- * with Re <tt>alpha*src_imag*I^i_power</tt> where \c I is the imaginary unit.
+ * Overwrite \c dest_real with Re <tt>alpha*src*I^ipower</tt> and \c dest_imag
+ * with Im <tt>alpha*src_imag*I^ipower</tt> where \c I is the imaginary unit.
  *
  * @param dest_real destination real part
  * @param dest_imag destination imag part
  * @param src source
  * @param alpha multiplicative real scaling factor
- * @param i_power exponent on the imaginary unit to include in the scaling
+ * @param ipower exponent on the imaginary unit to include in the scaling
  */
 template<typename FPT1, typename FPT2>
-void assign_components_scaled(FPT1 &dest_real,
-                              FPT2 &dest_imag,
-                              const std::complex<FPT1> &src,
-                              const FPT2 &alpha,
-                              const int i_power = 0)
+void assign_components_scaled_ipower(FPT1 &dest_real,
+                                     FPT2 &dest_imag,
+                                     const std::complex<FPT1> &src,
+                                     const FPT2 alpha,
+                                     const int ipower)
 {
-    switch (i_power & (4-1)) { // Fast, modulo-like operation
+    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
         case 3: // I^3 = -I = I^-1
-            dest_real = -alpha*src.imag();
+            dest_real =  alpha*src.imag();
             dest_imag = -alpha*src.real();
             break;
         case 2: // I^2 = -1 = I^-2
@@ -391,19 +499,19 @@ void assign_components_scaled(FPT1 &dest_real,
             dest_imag = -alpha*src.imag();
             break;
         case 1: // I^1 = I = I^-3
-            dest_real = alpha*src.imag();
-            dest_imag = alpha*src.real();
+            dest_real = -alpha*src.imag();
+            dest_imag =  alpha*src.real();
             break;
         case 0: // I^0 = 1
-            dest_real = alpha*src.real();
-            dest_imag = alpha*src.imag();
+            dest_real =  alpha*src.real();
+            dest_imag =  alpha*src.imag();
             break;
     }
 }
 
 /**
- * Overwrite \c dest_real with Re <tt>alpha*src*I^i_power</tt> and \c dest_imag
- * with Re <tt>alpha*src_imag*I^i_power</tt> where \c I is the imaginary unit.
+ * Overwrite \c dest_real with Re <tt>alpha*src*I^ipower</tt> and \c dest_imag
+ * with Re <tt>alpha*src_imag*I^ipower</tt> where \c I is the imaginary unit.
  *
  * @param dest_real destination real part
  * @param dest_imag destination imag part
@@ -411,28 +519,28 @@ void assign_components_scaled(FPT1 &dest_real,
  * @param alpha multiplicative scaling factor
  */
 template<typename FPT1, typename FPT2>
-void assign_components_scaled(FPT1 &dest_real,
-                              FPT1 &dest_imag,
-                              const fftw_complex &src,
-                              const FPT2 &alpha,
-                              const int i_power = 0)
+void assign_components_scaled_ipower(FPT1 &dest_real,
+                                     FPT1 &dest_imag,
+                                     const fftw_complex &src,
+                                     const FPT2 alpha,
+                                     const int ipower)
 {
-    switch (i_power & (4-1)) { // Fast, modulo-like operation
+    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
         case 3: // I^3 = -I = I^-1
             dest_imag = -alpha*src[0];
-            dest_real = -alpha*src[1];
+            dest_real =  alpha*src[1];
             break;
         case 2: // I^2 = -1 = I^-2
             dest_real = -alpha*src[0];
             dest_imag = -alpha*src[1];
             break;
         case 1: // I^1 = I = I^-3
-            dest_imag = alpha*src[0];
-            dest_real = alpha*src[1];
+            dest_imag =  alpha*src[0];
+            dest_real = -alpha*src[1];
             break;
         case 0: // I^0 = 1
-            dest_real = alpha*src[0];
-            dest_imag = alpha*src[1];
+            dest_real =  alpha*src[0];
+            dest_imag =  alpha*src[1];
             break;
     }
 }
