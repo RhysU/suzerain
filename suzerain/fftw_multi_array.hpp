@@ -35,12 +35,17 @@
 #include <cassert>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <boost/array.hpp>
 #include <boost/integer_traits.hpp>
+#include <boost/iterator/counting_iterator.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/type_traits/decay.hpp>
+#include <boost/type_traits/integral_constant.hpp>
+#include <boost/type_traits/is_array.hpp>
 #include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/is_complex.hpp>
 #include <boost/type_traits/is_integral.hpp>
@@ -64,8 +69,13 @@ namespace fftw_multi_array {
 namespace detail {
 
 
-template<std::size_t NumDims, typename IndexType, typename MaxIndexType>
-bool increment(IndexType &index, const MaxIndexType &max_index)
+template<std::size_t NumDims,
+         typename IndexType,
+         typename MaxIndexType,
+         class InputIterator>
+bool increment(IndexType &index,
+               const MaxIndexType &max_index,
+               InputIterator index_order)
 {
     using boost::integer_traits;
 
@@ -94,6 +104,45 @@ bool increment(IndexType &index, const MaxIndexType &max_index)
         index[n] *= !overflow;                // Set to zero on outgoing
     }
     return !overflow;
+}
+
+template<std::size_t NumDims,
+         typename IndexType,
+         typename MaxIndexType>
+bool increment_impl(IndexType &index,
+                    const MaxIndexType &max_index,
+                    const boost::false_type &)
+{
+    typedef typename IndexType::value_type value_type;
+    typedef boost::counting_iterator<value_type> counting_iterator;
+
+    return increment<NumDims, IndexType, MaxIndexType, counting_iterator>(
+            index, max_index, counting_iterator());
+}
+
+template<std::size_t NumDims,
+         typename IndexType,
+         typename MaxIndexType>
+bool increment_impl(IndexType &index,
+                    const MaxIndexType &max_index,
+                    const boost::true_type &)
+{
+    typedef typename std::iterator_traits<
+            typename boost::decay<IndexType>::type
+        >::value_type value_type;
+    typedef boost::counting_iterator<value_type> counting_iterator;
+
+    return increment<NumDims, IndexType, MaxIndexType, counting_iterator>(
+            index, max_index, counting_iterator());
+}
+
+template<std::size_t NumDims,
+         typename IndexType,
+         typename MaxIndexType>
+bool increment(IndexType &index, const MaxIndexType &max_index)
+{
+    return increment_impl<NumDims, IndexType, MaxIndexType>(
+            index, max_index, boost::is_array<IndexType>());
 }
 
 /**
