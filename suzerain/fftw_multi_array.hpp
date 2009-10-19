@@ -50,7 +50,19 @@
 #include <boost/typeof/typeof.hpp>
 #include <fftw3.h>
 
-namespace pecos { namespace suzerain { namespace fftw_multi_array {
+namespace pecos { namespace suzerain {
+
+/**
+  * TODO Namespace documentation
+  */
+namespace fftw_multi_array {
+
+/**
+ * Implementation details underneath pecos::suzerain::fftw_multi_array
+ * @internal
+ */
+namespace detail {
+
 
 template<std::size_t NumDims, typename IndexType, typename MaxIndexType>
 bool increment(IndexType &index, const MaxIndexType &max_index)
@@ -83,12 +95,6 @@ bool increment(IndexType &index, const MaxIndexType &max_index)
     }
     return !overflow;
 }
-
-/**
- * Implementation details underneath pecos::suzerain::fftw_multi_array
- * @internal
- */
-namespace detail {
 
 /**
  * Computes \f$x^n\f$ efficiently for small integer \f$n\f$, including
@@ -765,7 +771,7 @@ void transform_c2c(const size_t transform_dim,
             p_pencil_out += stride_out_transform_dim;
         }
 
-    } while (increment<dimensionality>(loop_index, loop_shape));
+    } while (detail::increment<dimensionality>(loop_index, loop_shape));
 
 } /* transform_c2c */
 

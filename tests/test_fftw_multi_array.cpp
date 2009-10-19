@@ -383,168 +383,186 @@ BOOST_AUTO_TEST_SUITE( increment )
 
 BOOST_AUTO_TEST_CASE( increment_1d_degenerate )
 {
+    using fftw_multi_array::detail::increment;
+
     const int n        = 1;
     int       index[n] = { 0 };
     const int shape[n] = { 1 };
 
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_1d_normal )
 {
+    using fftw_multi_array::detail::increment;
+
     const int n        = 1;
     int       index[n] = { 0 };
     const int shape[n] = { 3 };
 
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 2);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
 {
+    using fftw_multi_array::detail::increment;
+
     const int           n     = 2;
     boost::array<int,n> index = {{ 0, 0 }};
     boost::array<int,n> shape = {{ 3, 1 }};
 
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 0);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 2);
     BOOST_REQUIRE_EQUAL(index[1], 0);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
 {
+    using fftw_multi_array::detail::increment;
+
     const int                   n     = 2;
     boost::array<int, n>        index = {{ 0, 0 }};
     boost::array<std::size_t,n> shape = {{ 1, 3 }};
 
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 0);
     BOOST_REQUIRE_EQUAL(index[1], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 0);
     BOOST_REQUIRE_EQUAL(index[1], 2);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_all )
 {
+    using fftw_multi_array::detail::increment;
+
     const int  n        = 2;
     int        index[n] = { 0, 0 };
     const long shape[n] = { 1, 1 };
 
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_2d_normal )
 {
+    using fftw_multi_array::detail::increment;
+
     const int    n        = 2;
     unsigned int index[n] = { 0, 0 };
     unsigned int shape[n] = { 2, 2 };
 
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 0);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 0);
     BOOST_REQUIRE_EQUAL(index[1], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_3d_degenerate_all )
 {
+    using fftw_multi_array::detail::increment;
+
     const int         n        = 3;
     signed int        index[n] = { 0, 0, 0 };
     const signed long shape[n] = { 1, 1, 1 };
 
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
 {
+    using fftw_multi_array::detail::increment;
+
     const int                   n        = 3;
     long                        index[n] =  { 0, 0, 0 };
     boost::array<std::size_t,n> shape    = {{ 3, 1, 3 }};
 
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 0);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 2);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 0);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 0);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 2);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 0);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 2);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 2);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 2);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 2);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_3d_normal )
 {
+    using fftw_multi_array::detail::increment;
+
     const int n = 3;
     std::vector<short> index(n, 0);
     std::vector<int> shape(n, 2);
 
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 0);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 0);
     BOOST_REQUIRE_EQUAL(index[1], 1);
     BOOST_REQUIRE_EQUAL(index[2], 0);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 1);
     BOOST_REQUIRE_EQUAL(index[2], 0);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 0);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 0);
     BOOST_REQUIRE_EQUAL(index[2], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 0);
     BOOST_REQUIRE_EQUAL(index[1], 1);
     BOOST_REQUIRE_EQUAL(index[2], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 1);
     BOOST_REQUIRE_EQUAL(index[2], 1);
-    BOOST_REQUIRE_EQUAL(fftw_multi_array::increment<n>(index,shape), false);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
