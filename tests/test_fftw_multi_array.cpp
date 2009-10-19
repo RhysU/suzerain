@@ -421,11 +421,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
         fftw_multi_array::detail::assign_complex(in[i],    val, -val);
         fftw_multi_array::detail::assign_complex(in[NC-i], val,  val);
     }
-// DEBUG
-//    if (NC%2 == 0) {
-//        fftw_multi_array::detail::assign_complex(in[NC/2],
-//                (NC >= NR) ? NC/2 : 0, 0);                  // Half mode
-//    }
+    // TODO Test behavior of highest even half mode
 
     fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
 
@@ -441,8 +437,6 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
         for (int j = 1; j < (std::min(NC,NR)+1)/2; ++j) {
             expected_real += j*sin(j*xi) + j*cos(j*xi);
         }
-// DEBUG
-//        expected_real += (!(NC%2) && NC >= NR)*0.5*cos((NC/2)*xi);
         BOOST_REQUIRE_CLOSE(a_real, expected_real, sqrt(close_enough));
     }
 
@@ -453,14 +447,10 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     fftw_multi_array::detail::assign_complex(in[0], 0.0, 17.0*NC);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         const double val = NC*i/2.0;
-        fftw_multi_array::detail::assign_complex(in[i],    -val, val);
-        fftw_multi_array::detail::assign_complex(in[NC-i],  val, val);
+        fftw_multi_array::detail::assign_complex(in[i],     val, val);
+        fftw_multi_array::detail::assign_complex(in[NC-i], -val, val);
     }
-// DEBUG
-//    if (NC%2 == 0) {
-//        fftw_multi_array::detail::assign_complex(in[NC/2],
-//                0, (NC >= NR) ? NC/2 : 0);
-//    }
+    // TODO Test behavior of highest even half mode
 
     fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
 
@@ -469,8 +459,15 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
         double a_real, a_imag;
         fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
         BOOST_REQUIRE_SMALL(a_real, close_enough);
+
+        // ...with known physical space values
+        const double xi = i*2*M_PI/NR;
+        double expected_imag = 17;
+        for (int j = 1; j < (std::min(NC,NR)+1)/2; ++j) {
+            expected_imag += j*sin(j*xi) + j*cos(j*xi);
+        }
+        BOOST_REQUIRE_CLOSE(a_imag, expected_imag, sqrt(close_enough));
     }
-    // TODO ...with known physical space values
 }
 
 // Compare our results with FFTW's directly computed result
@@ -680,55 +677,4 @@ BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
         TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
         ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
-BOOST_AUTO_TEST_SUITE_END();
-
-
-BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_zero_mode );
-template<class ComplexMultiArray1, class ComplexMultiArray2>
-void check_1D_complex_zero_mode(ComplexMultiArray1 &in,
-                                ComplexMultiArray2 &out)
-{
-    BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
-    BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
-    const int NR = in.shape()[0];
-    const int NC = out.shape()[0];
-    const double close_enough
-        = std::numeric_limits<double>::epsilon()*10*NR*NR;
-
-    fill_multi_array(in, typename ComplexMultiArray1::element(23.0, 31.0));
-    fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD);
-    {
-        double z_real, z_imag;
-        fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
-        BOOST_REQUIRE_CLOSE(z_real, 23.0*NC, close_enough);
-        BOOST_REQUIRE_CLOSE(z_imag, 31.0*NC, close_enough);
-    }
-
-    fftw_multi_array::transform_c2c(0, out, in, FFTW_BACKWARD);
-    for (int i = 0; i < in.shape()[0]; ++i) {
-        double z_real, z_imag;
-        fftw_multi_array::detail::assign_components(z_real, z_imag, in[i]);
-        BOOST_REQUIRE_CLOSE(z_real, 23.0, close_enough);
-        BOOST_REQUIRE_CLOSE(z_imag, 31.0, close_enough);
-    }
-}
-#define TEST_C2C_1D_OUT_OF_PLACE_ZERO_MODE(r, product) \
-        BOOST_AUTO_TEST_CASE( \
-          BOOST_PP_CAT(c2c_1d_out_of_place_zero_mode_, \
-                BOOST_PP_CAT(BOOST_PP_SEQ_ELEM(0,product), \
-                  BOOST_PP_CAT(_,BOOST_PP_SEQ_ELEM(1,product))))) \
-        {\
-            c2c_1d_complex_out_of_place_zero_mode( \
-                BOOST_PP_SEQ_ELEM(0,product), \
-                BOOST_PP_SEQ_ELEM(1,product) ); \
-        }
-void c2c_1d_complex_out_of_place_zero_mode(const int NC, const int NR)
-{
-    typedef boost::multi_array<std::complex<double>,1> array_type;
-    array_type in(boost::extents[NC]), out(boost::extents[NR]);
-    check_1D_complex_zero_mode(in, out);
-}
-BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
-        TEST_C2C_1D_OUT_OF_PLACE_ZERO_MODE, \
-        (TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_AUTO_TEST_SUITE_END();
