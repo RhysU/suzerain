@@ -92,7 +92,9 @@ bool increment(IndexType &index,
     // and NumDims is often small, do not break out of loop when overflow == 0.
     // The overflow == 0 condition causes an effective NOP after occurring.
     bool overflow = 1;
-    for (std::size_t n = 0; n < NumDims; ++n) {
+    for (std::size_t i = 0; i < NumDims; ++i) {
+        const typename InputIterator::value_type n = *index_order++;
+
         // Assert runtime algorithm preconditions valid when in debug mode
         assert(1 <= max_index[n]);
         assert(boost::is_unsigned<index_element_type>::value || 0 <= index[n]);
@@ -117,7 +119,7 @@ bool increment_impl(IndexType &index,
     typedef boost::counting_iterator<value_type> counting_iterator;
 
     return increment<NumDims, IndexType, MaxIndexType, counting_iterator>(
-            index, max_index, counting_iterator());
+            index, max_index, counting_iterator(0));
 }
 
 template<std::size_t NumDims,
@@ -133,7 +135,7 @@ bool increment_impl(IndexType &index,
     typedef boost::counting_iterator<value_type> counting_iterator;
 
     return increment<NumDims, IndexType, MaxIndexType, counting_iterator>(
-            index, max_index, counting_iterator());
+            index, max_index, counting_iterator(0));
 }
 
 template<std::size_t NumDims,
