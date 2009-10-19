@@ -413,23 +413,19 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
 
     // Load a conjugate-symmetric function into the input array...
     // ...with known frequency content and constant offset 17
-    fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
+    fill_multi_array(in, 0);
     fftw_multi_array::detail::assign_complex(in[0], 17.0*NC, 0.0);
-    for (int i = 1; i < (NC+1)/2; ++i) {
-        if (i < (NR+1)/2) { // ...up to grid modes
-            const double val = NC*i/2.0;
-            fftw_multi_array::detail::assign_complex(in[i],    val, -val);
-            fftw_multi_array::detail::assign_complex(in[NC-i], val,  val);
-        } else {
-            fftw_multi_array::detail::assign_complex(in[i],    0, 0);
-            fftw_multi_array::detail::assign_complex(in[NC-i], 0, 0);
-        }
+    for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
+        const double val = NC*i/2.0;
+        fftw_multi_array::detail::assign_complex(in[i],    val, -val);
+        fftw_multi_array::detail::assign_complex(in[NC-i], val,  val);
     }
-    if (NC%2 == 0) {
-        fftw_multi_array::detail::assign_complex(in[NC/2],
-                (NC >= NR) ? NC/2 : 0, 0);           // Extra half mode
-    }
+// DEBUG
+//    if (NC%2 == 0) {
+//        fftw_multi_array::detail::assign_complex(in[NC/2],
+//                (NC >= NR) ? NC/2 : 0, 0);                  // Half mode
+//    }
 
     fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
 
@@ -440,35 +436,31 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
         BOOST_REQUIRE_SMALL(a_imag, close_enough);
 
         // ...with known physical space values
-// TODO Enable test
-//        const double xi = i*2*M_PI/NR;
-//        double expected_real = 17;
-//        for (int j = 1; j < (NC+1)/2; ++j) {
-//            expected_real += j*sin(j*xi) + j*cos(j*xi);
-//        }
+        const double xi = i*2*M_PI/NR;
+        double expected_real = 17;
+        for (int j = 1; j < (std::min(NC,NR)+1)/2; ++j) {
+            expected_real += j*sin(j*xi) + j*cos(j*xi);
+        }
+// DEBUG
 //        expected_real += (!(NC%2) && NC >= NR)*0.5*cos((NC/2)*xi);
-//        BOOST_REQUIRE_CLOSE(a_real, expected_real, sqrt(close_enough));
+        BOOST_REQUIRE_CLOSE(a_real, expected_real, sqrt(close_enough));
     }
 
     // Load a real-symmetric function into the input array...
     // ...with known frequency content and constant offset 17
-    fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
+    fill_multi_array(in, 0);
     fftw_multi_array::detail::assign_complex(in[0], 0.0, 17.0*NC);
-    for (int i = 1; i < (NC+1)/2; ++i) {
-        if (i < (NR+1)/2) { // ...up to grid modes
-            const double val = NC*i/2.0;
-            fftw_multi_array::detail::assign_complex(in[i],    -val, val);
-            fftw_multi_array::detail::assign_complex(in[NC-i],  val, val);
-        } else {
-            fftw_multi_array::detail::assign_complex(in[i],    0, 0);
-            fftw_multi_array::detail::assign_complex(in[NC-i], 0, 0);
-        }
+    for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
+        const double val = NC*i/2.0;
+        fftw_multi_array::detail::assign_complex(in[i],    -val, val);
+        fftw_multi_array::detail::assign_complex(in[NC-i],  val, val);
     }
-    if (NC%2 == 0) {
-        fftw_multi_array::detail::assign_complex(in[NC/2],
-                0, (NC >= NR) ? NC/2 : 0);
-    }
+// DEBUG
+//    if (NC%2 == 0) {
+//        fftw_multi_array::detail::assign_complex(in[NC/2],
+//                0, (NC >= NR) ? NC/2 : 0);
+//    }
 
     fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
 
