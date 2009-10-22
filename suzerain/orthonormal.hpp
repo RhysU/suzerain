@@ -681,12 +681,13 @@ Scalar div_u(
  * \vec{\nabla}\vec{\nabla}\cdot{}\vec{u} =
  *      \rho^{-1}\left[
  *            \vec{\nabla}\vec{\nabla}\cdot\vec{m}
- *          - \rho^{-1}\left[
- *                \left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
- *              + \vec{\nabla}\vec{m}^{\mathrm{T}}\vec{\nabla}\rho
- *              + \left(\vec{\nabla}\cdot\vec{m}\right)\vec{\nabla}\rho
- *              - 2 \rho^{-1}
- *                \left(\vec{\nabla}\rho\cdot\vec{m}\right)\vec{\nabla}\rho
+ *          + \rho^{-1}\left[
+ *                2 \rho^{-1} \left(
+ *                     \vec{\nabla}\rho\cdot\vec{m}
+ *                   - \vec{\nabla}\cdot\vec{m}
+ *                \right)\vec{\nabla}\rho
+ *              - \left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
+ *              - \vec{\nabla}\vec{m}^{\mathrm{T}}\vec{\nabla}\rho
  *            \right]
  *      \right]
  * \f]
