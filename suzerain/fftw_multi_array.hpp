@@ -35,21 +35,17 @@
 #include <cassert>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <boost/array.hpp>
 #include <boost/concept/assert.hpp>
 #include <boost/integer_traits.hpp>
 #include <boost/iterator/counting_iterator.hpp>
-#include <boost/iterator/iterator_traits.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/typeof/typeof.hpp>
-#include <boost/type_traits/decay.hpp>
-#include <boost/type_traits/integral_constant.hpp>
 #include <boost/type_traits/is_complex.hpp>
-#include <boost/type_traits/is_const.hpp>
-#include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/remove_pointer.hpp>
 #include <fftw3.h>
@@ -97,12 +93,12 @@ bool increment(Mutable_RandomAccessIterator indices,
     BOOST_CONCEPT_ASSERT((boost::RandomAccessIterator<RandomAccessIterator>));
     BOOST_CONCEPT_ASSERT((boost::InputIterator<InputIterator>));
 
-    typedef typename boost::iterator_value<
-        Mutable_RandomAccessIterator>::type index_type;
-    typedef typename boost::iterator_value<
-        RandomAccessIterator>::type max_index_type;
-    typedef typename boost::iterator_value<
-        InputIterator>::type index_order_type;
+    typedef typename std::iterator_traits<
+        Mutable_RandomAccessIterator>::value_type index_type;
+    typedef typename std::iterator_traits<
+        RandomAccessIterator>::value_type max_index_type;
+    typedef typename std::iterator_traits<
+        InputIterator>::value_type index_order_type;
 
     BOOST_CONCEPT_ASSERT((boost::Integer<index_type>));
     BOOST_CONCEPT_ASSERT((boost::Integer<max_index_type>));
