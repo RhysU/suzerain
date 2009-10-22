@@ -35,24 +35,23 @@
 #include <cassert>
 #include <cstddef>
 #include <functional>
-#include <iterator>
 #include <limits>
 #include <boost/array.hpp>
+#include <boost/concept/assert.hpp>
 #include <boost/integer_traits.hpp>
 #include <boost/iterator/counting_iterator.hpp>
+#include <boost/iterator/iterator_traits.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/typeof/typeof.hpp>
 #include <boost/type_traits/decay.hpp>
 #include <boost/type_traits/integral_constant.hpp>
-#include <boost/type_traits/is_array.hpp>
-#include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/is_complex.hpp>
+#include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/is_unsigned.hpp>
 #include <boost/type_traits/remove_pointer.hpp>
-#include <boost/typeof/typeof.hpp>
 #include <fftw3.h>
 
 namespace pecos { namespace suzerain {
@@ -68,83 +67,89 @@ namespace fftw_multi_array {
  */
 namespace detail {
 
-
+/**
+ * Increment the next appropriate index in \c indices according to the upper
+ * bounds given in \c max_indices.  Both \c indices and \c max_indices must
+ * have at least \c NumDims elements.
+ *
+ * @param indices contains current values on input and one incremented
+ *                value if method returns true.
+ * @param max_indices contains the upper bounds on each index.
+ * @param index_order contains the order in which the indices should be
+ *                incremented.
+ *
+ * @pre  <tt>0 <= indices[i] < max_indices[i]</tt> for <tt>0<=i<NumDims</tt>
+ * @pre  <tt>index_order[i] < NumDims</tt> for <tt>0<=i<NumDims</tt>
+ * @post <tt>0 <= indices[i] < max_indices[i]</tt> for <tt>0<=i<NumDims</tt>
+ *
+ * @return true if one of \c indices was incremented and false otherwise.
+ */
 template<std::size_t NumDims,
-         typename IndexType,
-         typename MaxIndexType,
-         class InputIterator>
-bool increment(IndexType &index,
-               const MaxIndexType &max_index,
+         typename Mutable_RandomAccessIterator,
+         typename RandomAccessIterator,
+         typename InputIterator>
+bool increment(Mutable_RandomAccessIterator indices,
+               RandomAccessIterator max_indices,
                InputIterator index_order)
 {
-    using boost::integer_traits;
-
-    typedef BOOST_TYPEOF_TPL(index[0])              index_element_type;
-    typedef BOOST_TYPEOF_TPL(max_index[0])          max_index_element_type;
-    typedef BOOST_TYPEOF_TPL(index[0]/max_index[0]) element_division_type;
-
-    // Assert compile time algorithm preconditions valid when in debug mode
     BOOST_STATIC_ASSERT(NumDims > 0);
-    BOOST_STATIC_ASSERT(!boost::is_const<index_element_type>::value);
-    BOOST_STATIC_ASSERT(boost::is_integral<element_division_type>::value);
+    BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessIterator<Mutable_RandomAccessIterator>));
+    BOOST_CONCEPT_ASSERT((boost::RandomAccessIterator<RandomAccessIterator>));
+    BOOST_CONCEPT_ASSERT((boost::InputIterator<InputIterator>));
+
+    typedef typename boost::iterator_value<
+        Mutable_RandomAccessIterator>::type index_type;
+    typedef typename boost::iterator_value<
+        RandomAccessIterator>::type max_index_type;
+    typedef typename boost::iterator_value<
+        InputIterator>::type index_order_type;
+
+    BOOST_CONCEPT_ASSERT((boost::Integer<index_type>));
+    BOOST_CONCEPT_ASSERT((boost::Integer<max_index_type>));
+    BOOST_CONCEPT_ASSERT((boost::Integer<index_order_type>));
 
     // Because we have 4*NumDims integral operations in the fully unrolled loop
     // and NumDims is often small, do not break out of loop when overflow == 0.
     // The overflow == 0 condition causes an effective NOP after occurring.
     bool overflow = 1;
-    for (std::size_t i = 0; i < NumDims; ++i) {
-        const typename InputIterator::value_type n = *index_order++;
+    for (std::size_t i = 0; i < NumDims; ++i, ++index_order) {
 
-        // Assert runtime algorithm preconditions valid when in debug mode
-        assert(1 <= max_index[n]);
-        assert(boost::is_unsigned<index_element_type>::value || 0 <= index[n]);
-        assert(static_cast<max_index_element_type>(index[n]) < max_index[n]);
-        assert(index[n]< integer_traits<index_element_type>::const_max - 1);
+        index_type           &index     = indices[*index_order];
+        const max_index_type &max_index = max_indices[*index_order];
 
-        index[n] += overflow;                 // Handle incoming overflow
-        overflow  = index[n]/max_index[n];    // Check outgoing overflow
-        index[n] *= !overflow;                // Set to zero on outgoing
+        assert(1 <= max_index);
+        assert(0 <= index);
+        assert(index < max_index);
+
+        index    += overflow;           // Handle incoming overflow
+        overflow  = index/max_index;    // Check outgoing overflow
+        index    *= !overflow;          // Set to zero on outgoing
     }
     return !overflow;
 }
 
+/**
+ * Increment the next appropriate index in \c indices according to the upper
+ * bounds given in \c max_indices.  Both \c indices and \c max_indices must
+ * have at least \c NumDims elements.  Indices are incremented according to
+ * their position within \c indices with the 0th index being the fastest.
+ *
+ * @param indices contains current values on input and one incremented
+ *                value if method returns true.
+ * @param max_indices contains the upper bounds on each index.
+ *
+ * @return true if one of \c indices was incremented and false otherwise.
+ *
+ * @see increment(Mutable_RandomAccessIterator, RandomAccessIterator, InputIterator) for more details.
+ */
 template<std::size_t NumDims,
-         typename IndexType,
-         typename MaxIndexType>
-bool increment_impl(IndexType &index,
-                    const MaxIndexType &max_index,
-                    const boost::false_type &)
+         typename Mutable_RandomAccessIterator,
+         typename RandomAccessIterator>
+bool increment(Mutable_RandomAccessIterator indices,
+               RandomAccessIterator max_indices)
 {
-    typedef typename IndexType::value_type value_type;
-    typedef boost::counting_iterator<value_type> counting_iterator;
-
-    return increment<NumDims, IndexType, MaxIndexType, counting_iterator>(
-            index, max_index, counting_iterator(0));
-}
-
-template<std::size_t NumDims,
-         typename IndexType,
-         typename MaxIndexType>
-bool increment_impl(IndexType &index,
-                    const MaxIndexType &max_index,
-                    const boost::true_type &)
-{
-    typedef typename std::iterator_traits<
-            typename boost::decay<IndexType>::type
-        >::value_type value_type;
-    typedef boost::counting_iterator<value_type> counting_iterator;
-
-    return increment<NumDims, IndexType, MaxIndexType, counting_iterator>(
-            index, max_index, counting_iterator(0));
-}
-
-template<std::size_t NumDims,
-         typename IndexType,
-         typename MaxIndexType>
-bool increment(IndexType &index, const MaxIndexType &max_index)
-{
-    return increment_impl<NumDims, IndexType, MaxIndexType>(
-            index, max_index, boost::is_array<IndexType>());
+    return increment<NumDims>(
+            indices, max_indices, boost::make_counting_iterator(0));
 }
 
 /**
@@ -822,7 +827,8 @@ void transform_c2c(const size_t transform_dim,
             p_pencil_out += stride_out_transform_dim;
         }
 
-    } while (detail::increment<dimensionality>(loop_index, loop_shape));
+    } while (detail::increment<dimensionality>(loop_index.begin(),
+                                               loop_shape.begin()));
 
 } /* transform_c2c */
 

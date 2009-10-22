@@ -412,8 +412,10 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
     using fftw_multi_array::detail::increment;
 
     const int           n     = 2;
-    boost::array<int,n> index = {{ 0, 0 }};
-    boost::array<int,n> shape = {{ 3, 1 }};
+    boost::array<int,n> index_array = {{ 0, 0 }};
+    boost::array<int,n> shape_array = {{ 3, 1 }};
+    boost::array<int,n>::iterator index = index_array.begin();
+    boost::array<int,n>::iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
@@ -429,8 +431,10 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
     using fftw_multi_array::detail::increment;
 
     const int                   n     = 2;
-    boost::array<int, n>        index = {{ 0, 0 }};
-    boost::array<std::size_t,n> shape = {{ 1, 3 }};
+    boost::array<int, n> index_array            = {{ 0, 0 }};
+    boost::array<std::size_t,n> shape_array     = {{ 1, 3 }};
+    boost::array<int, n>::iterator index        = index_array.begin();
+    boost::array<std::size_t,n>::iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 0);
@@ -458,7 +462,7 @@ BOOST_AUTO_TEST_CASE( increment_2d_normal )
 
     const int    n        = 2;
     unsigned int index[n] = { 0, 0 };
-    unsigned int shape[n] = { 2, 2 };
+    unsigned int shape[n] = { 2, 3 };
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
@@ -469,7 +473,67 @@ BOOST_AUTO_TEST_CASE( increment_2d_normal )
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
     BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_2d_normal_usualorder )
+{
+    using fftw_multi_array::detail::increment;
+
+    const int    n        = 2;
+    unsigned int index[n] = { 0, 0 };
+    unsigned int shape[n] = { 2, 3 };
+    unsigned int order[n] = { 0, 1 };
+
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_2d_normal_reverseorder )
+{
+    using fftw_multi_array::detail::increment;
+
+    const int    n        = 2;
+    unsigned int index[n] = { 0, 0 };
+    unsigned int shape[n] = { 2, 3 };
+    unsigned int order[n] = { 1, 0 };
+
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), false);
 }
 
 BOOST_AUTO_TEST_CASE( increment_3d_degenerate_all )
@@ -487,9 +551,10 @@ BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
 {
     using fftw_multi_array::detail::increment;
 
-    const int                   n        = 3;
-    long                        index[n] =  { 0, 0, 0 };
-    boost::array<std::size_t,n> shape    = {{ 3, 1, 3 }};
+    const int                   n               = 3;
+    long                        index[n]        =  { 0, 0, 0 };
+    boost::array<std::size_t,n> shape_array     = {{ 3, 1, 3 }};
+    boost::array<std::size_t,n>::iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
@@ -531,8 +596,10 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
     using fftw_multi_array::detail::increment;
 
     const int n = 3;
-    std::vector<short> index(n, 0);
-    std::vector<int> shape(n, 2);
+    std::vector<short> index_array(n, 0);
+    std::vector<int>   shape_array(n, 2);
+    std::vector<short>::iterator     index = index_array.begin();
+    std::vector<int>::const_iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
@@ -563,6 +630,42 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
     BOOST_REQUIRE_EQUAL(index[1], 1);
     BOOST_REQUIRE_EQUAL(index[2], 1);
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_3d_normal_outoforder )
+{
+    using fftw_multi_array::detail::increment;
+
+    const int n = 3;
+    boost::array<short,3> index_array = {{ 0, 0, 0 }};
+    boost::array<int,3>   shape_array = {{ 2, 1, 3 }};
+    boost::array<long,3>  order_array = {{ 2, 0, 1 }};
+
+    boost::array<short,3>::iterator index = index_array.begin();
+    boost::array<int,3>::iterator   shape = shape_array.begin();
+    boost::array<long,3>::iterator  order = order_array.begin();
+
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
