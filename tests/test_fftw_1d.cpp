@@ -33,9 +33,9 @@ public:
     data() throw(std::logic_error)
         :   L(2*M_PI),
             x(NR),
-            r(NR),
+            r(Real(0), NR),
             k(NC),
-            c(NC),
+            c(Complex(0), NC),
             plan_r2c(fftw_plan_dft_r2c_1d(
                        NR,
                        &r[0],
@@ -53,18 +53,14 @@ public:
         if (!plan_c2r.get()) throw std::logic_error("invalid c2r plan");
 
         x[0] = 0.0;
-        for (std::size_t i = 1; i < NR; ++i) {
-            x[i] = x[i-1] + L/NR;
-        }
-
-        for (std::size_t i = 0; i < NC; ++i) {
-            k[i] = 2*M_PI*i/L;
-        }
+        for (std::size_t i = 1; i < NR; ++i) x[i] = x[i-1] + L/NR;
+        for (std::size_t i = 0; i < NC; ++i) k[i] = 2*M_PI*i/L;
     }
 
     void to_wave_space()
     {
         fftw_execute(plan_r2c.get());
+        c /= NR;
     }
 
     void differentiate()
@@ -75,7 +71,6 @@ public:
     void to_physical_space()
     {
         fftw_execute(plan_c2r.get());
-        r /= NR;
     }
 };
 
@@ -94,6 +89,37 @@ BOOST_AUTO_TEST_CASE( forward_and_backward )
             &d.r[0], &d.r[d.r.size()],
             &expected[0], &expected[expected.size()],
             std::numeric_limits<Data::Real>::epsilon() * 1.0e+3);
+}
+
+BOOST_AUTO_TEST_CASE( poor_mans_dealiasing )
+{
+    typedef data<8> Data8;
+    typedef data<16> Data16;
+    Data8 d8;
+    Data16 d16;
+
+    d8.r = sin(2.0*d8.x);
+    const Data8::VectorReal expected(d8.r);
+    d8.to_wave_space();
+
+    for (std::size_t i = 0; i < d8.c.size(); ++i) {
+        d16.c[i] = d8.c[i];
+    }
+    d8.to_physical_space();
+    d16.to_physical_space();
+
+    const Data8::Real close_enough =
+        std::numeric_limits<Data8::Real>::epsilon() * 1.0e+3;
+
+    check_close_collections(
+            &d8.r[0], &d8.r[d8.r.size()],
+            &expected[0], &expected[expected.size()],
+            close_enough);
+
+    // Make sure we recovered the same data on the 16 mode grid
+    Data8::VectorReal error(d16.r[std::slice(0,d8.r.size(),2)]);
+    error = abs(error - d8.r);
+    BOOST_CHECK_SMALL(error.sum(), close_enough);
 }
 
 BOOST_AUTO_TEST_CASE( differentiate )
