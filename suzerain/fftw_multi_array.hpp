@@ -130,8 +130,7 @@ bool increment(Mutable_RandomAccessIterator indices,
 
 /**
  * Increment the next appropriate index in \c indices according to the upper
- * bounds given in \c max_indices.  Both \c indices and \c max_indices must
- * have at least \c NumDims elements.  Indices are incremented according to
+ * bounds given in \c max_indices.  Indices are incremented according to
  * their position within \c indices with the 0th index being the fastest.
  *
  * @param indices contains current values on input and one incremented
