@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE( assign_complex_scaled )
 
     fftw_complex a, b;
     typedef BOOST_TYPEOF(a[0]) fftw_real;
-    std::complex<fftw_real> c;
+    std::complex<fftw_real> c, d;
 
     // fftw_complex from std::complex
     c.real() = 1.0;
@@ -126,6 +126,11 @@ BOOST_AUTO_TEST_CASE( assign_complex_scaled )
     assign_complex_scaled(c, 3.0, 4.0, 2.0);
     BOOST_CHECK_EQUAL(c.real(), 6.0);
     BOOST_CHECK_EQUAL(c.imag(), 8.0);
+
+    // std::complex from std::complex
+    assign_complex_scaled(d, c, 2.0);
+    BOOST_CHECK_EQUAL(d.real(), 12.0);
+    BOOST_CHECK_EQUAL(d.imag(), 16.0);
 }
 
 BOOST_AUTO_TEST_CASE( assign_complex_scaled_ipower )
@@ -760,8 +765,8 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         BOOST_REQUIRE_CLOSE(a_imag, -b_imag, close_enough);
 
         // We should also see the expected frequency content
-        const double real_expected = i * sin(shift) * NC/2.0;
-        const double imag_expected = i * cos(shift) * NC/2.0;
+        const double real_expected = i * sin(shift) * 1.0/2.0;
+        const double imag_expected = i * cos(shift) * 1.0/2.0;
         BOOST_REQUIRE_CLOSE(b_real, real_expected, sqrt(close_enough));
         BOOST_REQUIRE_CLOSE(b_imag, imag_expected, sqrt(close_enough));
     }
@@ -770,8 +775,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         double z_real, z_imag;
         fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
         BOOST_REQUIRE_SMALL(z_imag, close_enough);
-        // 17 from constant test factor * target wave space size
-        BOOST_REQUIRE_CLOSE(z_real, 17.0*NC, close_enough);
+        BOOST_REQUIRE_CLOSE(z_real, 17.0, close_enough);
     }
 
     // Load an imaginary-valued function into the input array and transform it
@@ -793,8 +797,8 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         BOOST_REQUIRE_CLOSE(a_imag,  b_imag, close_enough);
 
         // We should also see the expected frequency content
-        const double real_expected = - i * cos(shift) * NC/2.0;
-        const double imag_expected =   i * sin(shift) * NC/2.0;
+        const double real_expected = - i * cos(shift) * 1.0/2.0;
+        const double imag_expected =   i * sin(shift) * 1.0/2.0;
         BOOST_REQUIRE_CLOSE(b_real, real_expected, sqrt(close_enough));
         BOOST_REQUIRE_CLOSE(b_imag, imag_expected, sqrt(close_enough));
     }
@@ -803,8 +807,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         double z_real, z_imag;
         fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
         BOOST_REQUIRE_SMALL(z_real, close_enough);
-        // 17 from constant test factor * target wave space size
-        BOOST_REQUIRE_CLOSE(z_imag, 17*NC, close_enough);
+        BOOST_REQUIRE_CLOSE(z_imag, 17, close_enough);
     }
 }
 
@@ -818,7 +821,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     const int NC = in.shape()[0];
     const int NR = out.shape()[0];
     const double close_enough
-        = std::numeric_limits<double>::epsilon()*10*NC*NC;
+        = std::numeric_limits<double>::epsilon()*1e2*NC;
 
     // Plan before loading in the data since planning overwrites in
     boost::shared_array<fftw_complex> buffer(
@@ -859,15 +862,15 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     fftw_execute(plan.get());  // Important to be first for in == out
     fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD);
 
-    // Ensure we got the same result
+    // Ensure we got the same result, up to scaling differences
     for (int i = 0; i < NR; ++i) {
         double out_real, out_imag;
         fftw_multi_array::detail::assign_components(
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
         // BOOST_REQUIRE_EQUAL would be nice, but it fails here
-        BOOST_REQUIRE_CLOSE(out_real, buffer[i][0], close_enough/(NR*NR));
-        BOOST_REQUIRE_CLOSE(out_imag, buffer[i][1], close_enough/(NR*NR));
+        BOOST_REQUIRE_CLOSE(out_real*NC, buffer[i][0], close_enough);
+        BOOST_REQUIRE_CLOSE(out_imag*NC, buffer[i][1], close_enough);
     }
 }
 
@@ -886,9 +889,9 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     // ...with known frequency content and constant offset 17
     fill_with_complex_NaN(out);
     fill_multi_array(in, 0);
-    fftw_multi_array::detail::assign_complex(in[0], 17.0*NC, 0.0);
+    fftw_multi_array::detail::assign_complex(in[0], 17.0, 0.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
-        const double val = NC*i/2.0;
+        const double val = i/2.0;
         fftw_multi_array::detail::assign_complex(in[i],    val, -val);
         fftw_multi_array::detail::assign_complex(in[NC-i], val,  val);
     }
@@ -915,9 +918,9 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     // ...with known frequency content and constant offset 17
     fill_with_complex_NaN(out);
     fill_multi_array(in, 0);
-    fftw_multi_array::detail::assign_complex(in[0], 0.0, 17.0*NC);
+    fftw_multi_array::detail::assign_complex(in[0], 0.0, 17.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
-        const double val = NC*i/2.0;
+        const double val = i/2.0;
         fftw_multi_array::detail::assign_complex(in[i],     val, val);
         fftw_multi_array::detail::assign_complex(in[NC-i], -val, val);
     }
@@ -951,7 +954,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     const int NC = in.shape()[0];
     const int NR = out.shape()[0];
     const double close_enough
-        = std::numeric_limits<double>::epsilon()*10*NC*NC;
+        = std::numeric_limits<double>::epsilon()*1e2*NC*NC;
 
     // Plan before loading in the data since planning overwrites in
     boost::shared_array<fftw_complex> buffer(
@@ -986,7 +989,17 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     }
 
     // Transform input FFTW directly and also our wrapper
-    fftw_execute(plan.get());  // Important to be first for in == out
+    // Important for FFTW to be first to handle in === out
+
+    // Ramp up amplitudes for FFTW's backwards transform
+    for (int i = 0; i < NC; ++i) {
+        fftw_multi_array::detail::assign_complex_scaled(in[i], in[i], NC);
+    }
+    fftw_execute(plan.get());
+    // Ramp down amplitudes for our backwards transform
+    for (int i = 0; i < NC; ++i) {
+        fftw_multi_array::detail::assign_complex_scaled(in[i], in[i], 1.0/NC);
+    }
     fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
 
     // Ensure we got exactly the same result after normalization

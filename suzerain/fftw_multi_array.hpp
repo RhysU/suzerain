@@ -310,6 +310,22 @@ void assign_complex_scaled(fftw_complex &dest,
 }
 
 /**
+ * Overwrite \c dest with <tt>alpha*src</tt>.
+ *
+ * @param dest destination
+ * @param src source
+ * @param alpha multiplicative real scaling factor
+ */
+template<typename FPT1, typename FPT2, typename FPT3>
+void assign_complex_scaled(std::complex<FPT1> &dest,
+                           const std::complex<FPT2> &src,
+                           const FPT3 alpha)
+{
+    dest.real() = alpha*src.real();
+    dest.imag() = alpha*src.imag();
+}
+
+/**
  * Overwrite \c dest with <tt>alpha*src_real + I*alpha*src_imag*I</tt> where
  * \c I is the imaginary unit.
  *
@@ -716,11 +732,9 @@ void transform_c2c(const size_t transform_dim,
     // Must scale data to account for possible differences in grid sizes
     // Must additionally normalize after backwards transform completes
     typedef BOOST_TYPEOF(buffer[0][0]) fftw_real;
-    const fftw_real input_scale_factor
-        = ((fftw_real) transform_n) / shape_in_transform_dim;
+    const fftw_real input_scale_factor = 1.0;
     const fftw_real output_scale_factor
-        = ((fftw_real) shape_out_transform_dim) / transform_n
-        * (fftw_sign == FFTW_FORWARD ? 1.0 : ((fftw_real) 1.0)/transform_n);
+        = (fftw_sign == FFTW_FORWARD) ? ((fftw_real) 1.0) / transform_n : 1.0;
 
     // Prepare per-pencil outer loop index and loop bounds
     shape_array loop_shape(shape_in);   // Iterate over all dimensions...
