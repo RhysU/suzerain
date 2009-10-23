@@ -300,6 +300,22 @@ void assign_complex_scaled(fftw_complex &dest,
  * @param src source
  * @param alpha multiplicative real scaling factor
  */
+template<typename FPT1, typename FPT2>
+void assign_complex_scaled(std::complex<FPT1> &dest,
+                           const fftw_complex &src,
+                           const FPT2 alpha)
+{
+     dest.real() = alpha*src[0];
+     dest.imag() = alpha*src[1];
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*src</tt>.
+ *
+ * @param dest destination
+ * @param src source
+ * @param alpha multiplicative real scaling factor
+ */
 template<typename FPT>
 void assign_complex_scaled(fftw_complex &dest,
                            const fftw_complex &src,
@@ -762,7 +778,7 @@ void transform_c2c(const size_t transform_dim,
         p_buffer = buffer.get();
         for (n = 0; n <= last_n_pos_copyin; ++n) {
             detail::assign_complex_scaled(
-                    *(p_buffer++), *p_pencil_in, input_scale_factor);
+                    *p_buffer++, *p_pencil_in, input_scale_factor);
             p_pencil_in += stride_in_transform_dim;
         }
         if (shape_in_transform_dim > transform_n) {
@@ -774,15 +790,15 @@ void transform_c2c(const size_t transform_dim,
             }
         } else {
             for (/* init from above */; n <= last_n_pos_transform; ++n) {
-                detail::assign_complex(*(p_buffer++), 0, 0);
+                detail::assign_complex(*p_buffer++, 0, 0);
             }
             for (n = first_n_neg_transform; n < first_n_neg_in; ++n) {
-                detail::assign_complex(*(p_buffer++), 0, 0);
+                detail::assign_complex(*p_buffer++, 0, 0);
             }
         }
         for (/* init from above */; n <= -1; ++n) {
             detail::assign_complex_scaled(
-                    *(p_buffer++), *p_pencil_in, input_scale_factor);
+                    *p_buffer++, *p_pencil_in, input_scale_factor);
             p_pencil_in += stride_in_transform_dim;
         }
 
@@ -798,9 +814,8 @@ void transform_c2c(const size_t transform_dim,
         // TODO differentiate after FFTW_FORWARD if requested
         p_buffer = buffer.get();
         for (n = 0; n <= last_n_pos_copyout; ++n) {
-            detail::assign_complex_scaled( *p_pencil_out,
-                    (*p_buffer)[0], (*p_buffer)[1], output_scale_factor);
-            ++p_buffer;
+            detail::assign_complex_scaled(
+                    *p_pencil_out, *p_buffer++, output_scale_factor);
             p_pencil_out += stride_out_transform_dim;
         }
         if (shape_out_transform_dim > transform_n) {
@@ -821,9 +836,8 @@ void transform_c2c(const size_t transform_dim,
             }
         }
         for (/* init from above */; n <= -1; ++n) {
-            detail::assign_complex_scaled(*p_pencil_out,
-                        (*p_buffer)[0], (*p_buffer)[1], output_scale_factor);
-            ++p_buffer;
+            detail::assign_complex_scaled(
+                    *p_pencil_out, *p_buffer++, output_scale_factor);
             p_pencil_out += stride_out_transform_dim;
         }
 

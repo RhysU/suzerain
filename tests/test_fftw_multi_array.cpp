@@ -122,6 +122,11 @@ BOOST_AUTO_TEST_CASE( assign_complex_scaled )
     BOOST_CHECK_EQUAL(b[0], 6.0);
     BOOST_CHECK_EQUAL(b[1], 8.0);
 
+    // std::complex from fftw_complex
+    assign_complex_scaled(c, b, 2.0);
+    BOOST_CHECK_EQUAL(c.real(), 12.0);
+    BOOST_CHECK_EQUAL(c.imag(), 16.0);
+
     // std::complex from components
     assign_complex_scaled(c, 3.0, 4.0, 2.0);
     BOOST_CHECK_EQUAL(c.real(), 6.0);
