@@ -39,8 +39,8 @@
 #include <limits>
 #include <boost/array.hpp>
 #include <boost/concept/assert.hpp>
-#include <boost/integer_traits.hpp>
 #include <boost/iterator/counting_iterator.hpp>
+#include <boost/numeric/conversion/converter.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
@@ -611,11 +611,18 @@ void transform_c2c(const size_t transform_dim,
                    const int fftw_sign,
                    const unsigned fftw_flags = 0)
 {
-    using boost::integer_traits;
-
     // Typedefs fixed separately each ComplexMultiArray template parameters
     typedef typename ComplexMultiArray1::element element1;
     typedef typename ComplexMultiArray2::element element2;
+    // Ensure we are operating on complex-valued arrays
+    // C99 _Complex may require additional handling
+    BOOST_STATIC_ASSERT(
+              (boost::is_complex<element1>::value)
+           || (boost::is_same<element1, fftw_complex>::value));
+    BOOST_STATIC_ASSERT(
+              (boost::is_complex<element2>::value)
+           || (boost::is_same<element2, fftw_complex>::value));
+    // Ensure element types occupy the same storage
     BOOST_STATIC_ASSERT(sizeof(element1) == sizeof(element2));
 
     // Typedefs expected to be consistent across both template parameters
@@ -640,31 +647,19 @@ void transform_c2c(const size_t transform_dim,
 
     // Ensure we transform a dimension that exists in the data
     assert(0 <= transform_dim && transform_dim < dimensionality);
-    // Ensure we are operating on a complex-valued array
-    // C99 _Complex may require additional handling just below
-    BOOST_STATIC_ASSERT(
-              (boost::is_complex<element1>::value)
-           || (boost::is_same<element1, fftw_complex>::value));
-    BOOST_STATIC_ASSERT(
-              (boost::is_complex<element2>::value)
-           || (boost::is_same<element2, fftw_complex>::value));
     // Copy all shape information into integers well-suited for FFTW
     shape_array shape_in, shape_out;
     {
-        const size_type * const p_shape_in  = in.shape();
-        const size_type * const p_shape_out = out.shape();
-        for (size_type n = 0; n < dimensionality; ++n) {
-            // Ensure out shape at least as large as in shape for
-            // all non-transformed directions
-            assert(n == transform_dim || p_shape_in[n] <= p_shape_out[n]);
-            // Ensure we won't accidentally truncate the shape values
-            // Also checks that FFTW can handle the transform size
-            assert(p_shape_in[n]  <= integer_traits<shape_type>::const_max);
-            assert(p_shape_out[n] <= integer_traits<shape_type>::const_max);
-
-            shape_in[n]  = p_shape_in[n];
-            shape_out[n] = p_shape_out[n];
-        }
+        typedef boost::numeric::converter<shape_type,size_type> Size2ShapeType;
+        std::transform(in.shape(), in.shape() + dimensionality,
+                    shape_in.begin(), Size2ShapeType());
+        std::transform(out.shape(), out.shape() + dimensionality,
+                    shape_out.begin(), Size2ShapeType());
+    }
+    // Ensure out shape at least as large as in shape for
+    // all non-transformed directions
+    for (size_type n = 0; n < dimensionality; ++n) {
+        assert(n == transform_dim || shape_in[n] <= shape_out[n]);
     }
     // Ensure transformation direction parameter is sane
     assert(fftw_sign == FFTW_FORWARD || fftw_sign == FFTW_BACKWARD);
@@ -699,14 +694,10 @@ void transform_c2c(const size_t transform_dim,
     // Dereference all constant parameters outside main processing loop
     // Pulls array information into our stack frame
     index_array index_bases_in, index_bases_out;
-    {
-        const index * const p_index_bases_in  = in.index_bases();
-        const index * const p_index_bases_out = out.index_bases();
-        for (size_type n = 0; n < dimensionality; ++n) {
-            index_bases_in[n]  = p_index_bases_in[n];
-            index_bases_out[n] = p_index_bases_out[n];
-        }
-    }
+    std::copy(in.index_bases(), in.index_bases() + dimensionality,
+              index_bases_in.begin());
+    std::copy(out.index_bases(), out.index_bases() + dimensionality,
+              index_bases_out.begin());
     const index      stride_in_transform_dim  = in.strides()[transform_dim];
     const index      stride_out_transform_dim = out.strides()[transform_dim];
     const shape_type shape_in_transform_dim   = shape_in[transform_dim];
