@@ -150,6 +150,56 @@ bool increment(Mutable_RandomAccessIterator indices,
 }
 
 /**
+ * Compares indices based on element comparison from some underlying
+ * RandomAccessIterator.
+ */
+template<class RandomAccessIterator>
+struct indexed_element_comparator {
+
+    BOOST_CONCEPT_ASSERT((boost::RandomAccessIterator<RandomAccessIterator>));
+
+    /** Used to lookup elements during comparison */
+    const RandomAccessIterator table_;
+
+
+    /**
+     * Create an instance that compares indices based on \c table.
+     *
+     * @param table to use for comparisons
+     */
+    indexed_element_comparator(const RandomAccessIterator table)
+        : table_(table) {};
+
+
+    /**
+     * Performs the comparison of two indices.
+     *
+     * @param xi left index to compare
+     * @param yi right index to compare
+     *
+     * @return true if <tt>table_[xi] < table_[yi]</tt> and false otherwise.
+     */
+    bool operator()(const std::size_t &xi, const std::size_t &yi) const
+    {
+        return table_[xi] < table_[yi];
+    }
+};
+
+/**
+ * Constructs an indexed_element_comparator from \c table.
+ *
+ * @param table to use for indexed comparison.
+ *
+ * @return an indexed_element_comparison using \c table for element lookup.
+ */
+template<class RandomAccessIterator>
+indexed_element_comparator<RandomAccessIterator>
+make_indexed_element_comparator(const RandomAccessIterator table)
+{
+    return indexed_element_comparator<RandomAccessIterator>(table);
+}
+
+/**
  * Computes \f$x^n\f$ efficiently for small integer \f$n\f$, including
  * \f$n <= 0\f$.  No overflow checking is performed.  Algorithm taken
  * from the GNU Scientific Library's \c gsl_pow_int.
