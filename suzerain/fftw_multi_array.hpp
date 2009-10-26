@@ -395,43 +395,6 @@ void assign_complex_scaled(std::complex<FPT1> &dest,
 }
 
 /**
- * Overwrite \c dest_real with Re <tt>alpha*src</tt> and \c dest_imag
- * with Im <tt>alpha*src</tt>.
- *
- * @param dest_real destination real part
- * @param dest_imag destination imag part
- * @param src source
- * @param alpha multiplicative real scaling factor
- */
-template<typename FPT1, typename FPT2>
-void assign_components_scaled(FPT1 &dest_real,
-                              FPT2 &dest_imag,
-                              const std::complex<FPT1> &src,
-                              const FPT2 alpha)
-{
-    dest_real = alpha*src.real();
-    dest_imag = alpha*src.imag();
-}
-
-/**
- * Overwrite \c dest_real with Re <tt>alpha*src</tt> and \c dest_imag
- * with Im <tt>alpha*src_imag</tt>.
- *
- * @param dest_real destination real part
- * @param dest_imag destination imag part
- * @param src source
- */
-template<typename FPT1, typename FPT2>
-void assign_components_scaled(FPT1 &dest_real,
-                              FPT1 &dest_imag,
-                              const fftw_complex &src,
-                              const FPT2 alpha)
-{
-    dest_real = alpha*src[0];
-    dest_imag = alpha*src[1];
-}
-
-/**
  * Overwrite \c dest with <tt>alpha*src*I^ipower</tt> where
  * \c I is the imaginary unit.
  *
@@ -575,79 +538,6 @@ void assign_complex_scaled_ipower(std::complex<FPT1> &dest,
     }
 }
 
-/**
- * Overwrite \c dest_real with Re <tt>alpha*src*I^ipower</tt> and \c dest_imag
- * with Im <tt>alpha*src_imag*I^ipower</tt> where \c I is the imaginary unit.
- *
- * @param dest_real destination real part
- * @param dest_imag destination imag part
- * @param src source
- * @param alpha multiplicative real scaling factor
- * @param ipower exponent on the imaginary unit to include in the scaling
- */
-template<typename FPT1, typename FPT2>
-void assign_components_scaled_ipower(FPT1 &dest_real,
-                                     FPT2 &dest_imag,
-                                     const std::complex<FPT1> &src,
-                                     const FPT2 alpha,
-                                     const int ipower)
-{
-    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
-        case 3: // I^3 = -I = I^-1
-            dest_real =  alpha*src.imag();
-            dest_imag = -alpha*src.real();
-            break;
-        case 2: // I^2 = -1 = I^-2
-            dest_real = -alpha*src.real();
-            dest_imag = -alpha*src.imag();
-            break;
-        case 1: // I^1 = I = I^-3
-            dest_real = -alpha*src.imag();
-            dest_imag =  alpha*src.real();
-            break;
-        case 0: // I^0 = 1
-            dest_real =  alpha*src.real();
-            dest_imag =  alpha*src.imag();
-            break;
-    }
-}
-
-/**
- * Overwrite \c dest_real with Re <tt>alpha*src*I^ipower</tt> and \c dest_imag
- * with Re <tt>alpha*src_imag*I^ipower</tt> where \c I is the imaginary unit.
- *
- * @param dest_real destination real part
- * @param dest_imag destination imag part
- * @param src source
- * @param alpha multiplicative scaling factor
- */
-template<typename FPT1, typename FPT2>
-void assign_components_scaled_ipower(FPT1 &dest_real,
-                                     FPT1 &dest_imag,
-                                     const fftw_complex &src,
-                                     const FPT2 alpha,
-                                     const int ipower)
-{
-    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
-        case 3: // I^3 = -I = I^-1
-            dest_imag = -alpha*src[0];
-            dest_real =  alpha*src[1];
-            break;
-        case 2: // I^2 = -1 = I^-2
-            dest_real = -alpha*src[0];
-            dest_imag = -alpha*src[1];
-            break;
-        case 1: // I^1 = I = I^-3
-            dest_imag =  alpha*src[0];
-            dest_real = -alpha*src[1];
-            break;
-        case 0: // I^0 = 1
-            dest_real =  alpha*src[0];
-            dest_imag =  alpha*src[1];
-            break;
-    }
-}
-
 template<typename T>
 struct complex_traits {};
 
@@ -671,12 +561,13 @@ struct complex_traits<fftwl_complex> {
     typedef long double value_type;
 };
 
-template<class ComplexDestination>
 struct copy_complex {
-    template<class ComplexSource, typename SignedInteger>
+    template<class ComplexDestination,
+             class ComplexSource,
+             typename SignedInteger>
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
-                    const SignedInteger /* Don't care */) const
+                    const SignedInteger& /* Don't care */) const
     {
         assign_complex(dest, src);
     }
@@ -693,7 +584,7 @@ struct copy_complex_scaled {
     template<class ComplexSource, typename SignedInteger>
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
-                    const SignedInteger /* Don't care */) const
+                    const SignedInteger& /* Don't care */) const
     {
         assign_complex_scaled(dest, src, alpha_);
     }
@@ -851,21 +742,6 @@ void transform_c2c(const size_t transform_dim,
     const index      stride_out_transform_dim = out.strides()[transform_dim];
     const shape_type shape_in_transform_dim   = shape_in[transform_dim];
     const shape_type shape_out_transform_dim  = shape_out[transform_dim];
-    // Parameters that control dealiasing copy operations
-    const shape_type last_n_pos_in         = shape_in_transform_dim/2;
-    const shape_type last_n_pos_out        = shape_out_transform_dim/2;
-    const shape_type last_n_pos_transform  = transform_n/2;
-    const shape_type last_n_pos_copyin
-        = std::min(last_n_pos_in, last_n_pos_transform);
-    const shape_type last_n_pos_copyout
-        = std::min(last_n_pos_out, last_n_pos_transform);
-    const shape_type first_n_neg_in        = -(shape_in_transform_dim-1)/2;
-    const shape_type first_n_neg_out       = -(shape_out_transform_dim-1)/2;
-    const shape_type first_n_neg_transform = -(transform_n-1)/2;
-    // Must scale data to account for possible differences in grid sizes
-    // Must additionally normalize after backwards transform completes
-    typedef BOOST_TYPEOF(buffer[0][0]) fftw_real; // TODO Remove
-    const fftw_real input_scale_factor = 1.0;
 
     // Prepare per-pencil outer loop index and loop bounds
     shape_array loop_shape(shape_in);   // Iterate over all dimensions...
@@ -875,51 +751,29 @@ void transform_c2c(const size_t transform_dim,
         assert(loop_index[n] == 0);     // Check initialization correct
     }
     index_array dereference_index;      // To be adjusted by index_bases
-    fftw_complex * p_buffer;            // Used to walk the buffer
-    shape_type n;                       // Used to track current wavenumber
 
     // TODO Walk fastest dimensions first in increment routine
 
     // Process each of the transform_dim pencils in turn
     do {
-        // Obtain pointer to this input pencil's starting position
+        // Obtain index for the current input pencil's starting position
         std::transform(loop_index.begin(), loop_index.end(),
                        index_bases_in.begin(), dereference_index.begin(),
                        std::plus<index>());
-        const element1 * p_pencil_in = &(in(dereference_index));
 
         // Copy input into transform buffer and pad any excess with zeros
         // TODO differentiate prior to FFTW_BACKWARD if requested
-        p_buffer = buffer.get();
-        for (n = 0; n <= last_n_pos_copyin; ++n) {
-            detail::assign_complex_scaled(
-                    *p_buffer++, *p_pencil_in, input_scale_factor);
-            p_pencil_in += stride_in_transform_dim;
-        }
-        if (shape_in_transform_dim > transform_n) {
-            for (/* init from above */; n <= last_n_pos_in; ++n) {
-                p_pencil_in += stride_in_transform_dim;
-            }
-            for (n = first_n_neg_in; n < first_n_neg_transform; ++n) {
-                p_pencil_in += stride_in_transform_dim;
-            }
-        } else {
-            for (/* init from above */; n <= last_n_pos_transform; ++n) {
-                detail::assign_complex(*p_buffer++, 0, 0);
-            }
-            for (n = first_n_neg_transform; n < first_n_neg_in; ++n) {
-                detail::assign_complex(*p_buffer++, 0, 0);
-            }
-        }
-        for (/* init from above */; n <= -1; ++n) {
-            detail::assign_complex_scaled(
-                    *p_buffer++, *p_pencil_in, input_scale_factor);
-            p_pencil_in += stride_in_transform_dim;
-        }
+        detail::c2c_buffer_process(
+            buffer.get(), transform_n, index(1),
+            &in(dereference_index),
+            shape_in_transform_dim,
+            stride_in_transform_dim,
+            detail::copy_complex());
 
-        fftw_execute(plan.get()); // Pull the strings!  Pull the strings!
+        // Pull the strings!  Pull the strings!
+        fftw_execute(plan.get());
 
-        // Obtain pointer to this output pencil's starting position
+        // Obtain index for the current output pencil's starting position
         std::transform(loop_index.begin(), loop_index.end(),
                        index_bases_out.begin(), dereference_index.begin(),
                        std::plus<index>());
@@ -927,20 +781,20 @@ void transform_c2c(const size_t transform_dim,
         // TODO differentiate after FFTW_FORWARD if requested
         // Copy transform buffer into output truncating auxiliary modes
         if (fftw_sign == FFTW_FORWARD) {
-            // TODO Constant scaling below wrong for non-double value_type
+            typedef typename detail::complex_traits<element2>::value_type scalar;
             detail::c2c_buffer_process(
                 &out(dereference_index),
                 shape_out_transform_dim,
                 stride_out_transform_dim,
                 buffer.get(), transform_n, index(1),
-                detail::copy_complex_scaled<element2>(1.0/transform_n));
+                detail::copy_complex_scaled<element2>(scalar(1.0)/transform_n));
         } else {
             detail::c2c_buffer_process(
                 &out(dereference_index),
                 shape_out_transform_dim,
                 stride_out_transform_dim,
                 buffer.get(), transform_n, index(1),
-                detail::copy_complex<element2>());
+                detail::copy_complex());
         }
 
     } while (detail::increment<dimensionality>(loop_index.begin(),
