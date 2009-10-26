@@ -52,8 +52,11 @@
 namespace pecos { namespace suzerain {
 
 /**
-  * TODO Namespace documentation
-  */
+ * Provides routines for performing FFTs atop the Boost.MultiArray concept.
+ *
+ * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
+ *      Boost.MultiArray</a> for more information on the MultiArray concept.
+ */
 namespace fftw_multi_array {
 
 /**
@@ -595,6 +598,7 @@ struct complex_copy_scale_differentiate {
     /** Scaling factor type */
     typedef typename complex_traits<ComplexDestination>::value_type scalar;
 
+    /** Scaling factor applied by the functor */
     const scalar alpha_;
 
     /** Derivative order to take within operator() */
@@ -720,10 +724,10 @@ void c2c_buffer_process(OutputIterator out,
  *
  * @param transform_dim zero-indexed dimension indicating the pencils to
  *                      be transformed.
- * @param in an instance modeling the MultiArray concept containing the input
- *           data to transform.
+ * @param in an instance modeling the MultiArray concept containing the
+ *           complex input data to transform.
  * @param out an instance modeling the MultiArray concept to contain the
- *            output from the transform.
+ *            complex output data from the transform.
  * @param fftw_sign either \c FFTW_FORWARD or \c FFTW_BACKWARD to transform
  *                  from physical to wave space or from wave space to
  *                  physical space, respectively.
@@ -734,14 +738,13 @@ void c2c_buffer_process(OutputIterator out,
  * @param fftw_flags FFTW planner flags to use when computing the transform.
  *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
  *
- * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
- *      Boost.MultiArray</a> for more information on the MultiArray concept.
- * @see the <a href="http://www.fftw.org/fftw3_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">FFTW documentation</a> for the expected wavenumber order in
- *      each 1D wave space pencil.
- * @see the <a href="http://www.fftw.org/fftw3_doc/Planner-Flags.html">FFTW
- *      documentation</a> for information on the available planner flags.
+ * @see The FFTW documentation for <a href="http://www.fftw.org/fftw3_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">
+ *      the expected wavenumber order</a> in each 1D wave space pencil.
+ * @see The FFTW documentation for information on the
+ *      <a href="http://www.fftw.org/fftw3_doc/Planner-Flags.html">
+ *      available planner flags</a>.
  *
- * @internal We choose to always use an intermediate buffer for the transform:
+ * @note We choose to always use an intermediate buffer for the transform:
  *    @li Avoids nuking in or out during FFTW planning
  *    @li Allows us to always enforce FFTW memory alignment recommendations
  *    @li Allows us to repeatedly apply the same, simple FFTW plan
