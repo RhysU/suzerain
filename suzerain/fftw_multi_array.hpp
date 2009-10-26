@@ -906,7 +906,11 @@ void transform_c2c(
     }
     index_array dereference_index;      // To be adjusted by index_bases
 
-    // TODO Walk fastest dimensions first in increment routine
+    // Walk fastest dimensions first when incrementing across pencils
+    index_array increment_order;
+    for (index n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
+    std::stable_sort(increment_order.begin(), increment_order.end(),
+                     detail::make_indexed_element_comparator(in.strides()));
 
     // Process each of the transform_dim pencils in turn
     do {
@@ -971,7 +975,8 @@ void transform_c2c(
         }
 
     } while (detail::increment<dimensionality>(loop_index.begin(),
-                                               loop_shape.begin()));
+                                               loop_shape.begin(),
+                                               increment_order.begin()));
 
 } /* transform_c2c */
 
