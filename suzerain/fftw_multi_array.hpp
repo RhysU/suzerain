@@ -44,7 +44,6 @@
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
-#include <boost/typeof/typeof.hpp>
 #include <boost/type_traits/is_complex.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/remove_pointer.hpp>
@@ -356,45 +355,6 @@ void assign_complex_scaled(std::complex<FPT1> &dest,
 }
 
 /**
- * Overwrite \c dest with <tt>alpha*src_real + I*alpha*src_imag*I</tt> where
- * \c I is the imaginary unit.
- *
- * @param dest destination
- * @param src_real real part of the source
- * @param src_imag imag part of the source
- * @param alpha multiplicative real scaling factor
- */
-template<typename FPT1, typename FPT2>
-void assign_complex_scaled(fftw_complex &dest,
-                           const FPT1 &src_real,
-                           const FPT1 &src_imag,
-                           const FPT2 alpha)
-
-{
-    dest[0] = alpha*src_real;
-    dest[1] = alpha*src_imag;
-}
-
-/**
- * Overwrite \c dest with <tt>alpha*src_real + I*alpha*src_imag</tt> where \c I
- * is the imaginary unit.
- *
- * @param dest destination
- * @param src_real real part of the source
- * @param src_imag imag part of the source
- * @param alpha multiplicative real scaling factor
- */
-template<typename FPT1, typename FPT2, typename FPT3>
-void assign_complex_scaled(std::complex<FPT1> &dest,
-                           const FPT2 &src_real,
-                           const FPT2 &src_imag,
-                           const FPT3 alpha)
-{
-    dest.real() = alpha*src_real;
-    dest.imag() = alpha*src_imag;
-}
-
-/**
  * Overwrite \c dest with <tt>alpha*src*I^ipower</tt> where
  * \c I is the imaginary unit.
  *
@@ -437,6 +397,7 @@ void assign_complex_scaled_ipower(fftw_complex &dest,
  * @param src source
  * @param alpha multiplicative real scaling factor
  * @param ipower exponent on the imaginary unit to include in the scaling
+ * @warning \c dest and \c src must not refer to the same data
  */
 template<typename FPT>
 void assign_complex_scaled_ipower(fftw_complex &dest,
@@ -465,75 +426,36 @@ void assign_complex_scaled_ipower(fftw_complex &dest,
 }
 
 /**
- * Overwrite \c dest with <tt>(alpha*src_real +
- * I*alpha*src_imag)*I^ipower</tt> where \c I is the imaginary unit.
+ * Overwrite \c dest with <tt>alpha*src*I^ipower</tt> where
+ * \c I is the imaginary unit.
  *
  * @param dest destination
- * @param src_real real part of the source
- * @param src_imag imag part of the source
+ * @param src source
  * @param alpha multiplicative real scaling factor
  * @param ipower exponent on the imaginary unit to include in the scaling
  */
 template<typename FPT1, typename FPT2>
-void assign_complex_scaled_ipower(fftw_complex &dest,
-                                  const FPT1 &src_real,
-                                  const FPT1 &src_imag,
+void assign_complex_scaled_ipower(std::complex<FPT1> &dest,
+                                  const fftw_complex &src,
                                   const FPT2 alpha,
                                   const int ipower)
 {
     switch (ipower & 3) { // Modulo-four-like operation for 2s complement
         case 3: // I^3 = -I = I^-1
-            dest[0] =  alpha*src_imag;
-            dest[1] = -alpha*src_real;
+            dest.real() =  alpha*src[1];
+            dest.imag() = -alpha*src[0];
             break;
         case 2: // I^2 = -1 = I^-2
-            dest[0] = -alpha*src_real;
-            dest[1] = -alpha*src_imag;
+            dest.real() = -alpha*src[0];
+            dest.imag() = -alpha*src[1];
             break;
         case 1: // I^1 = I = I^-3
-            dest[0] = -alpha*src_imag;
-            dest[1] =  alpha*src_real;
+            dest.real() = -alpha*src[1];
+            dest.imag() =  alpha*src[0];
             break;
         case 0: // I^0 = 1
-            dest[0] =  alpha*src_real;
-            dest[1] =  alpha*src_imag;
-            break;
-    }
-}
-
-/**
- * Overwrite \c dest with <tt>(alpha*src_real +
- * I*alpha*src_imag)*I^ipower</tt> where \c I is the imaginary unit.
- *
- * @param dest destination
- * @param src_real real part of the source
- * @param src_imag imag part of the source
- * @param alpha multiplicative real scaling factor
- * @param ipower exponent on the imaginary unit to include in the scaling
- */
-template<typename FPT1, typename FPT2, typename FPT3>
-void assign_complex_scaled_ipower(std::complex<FPT1> &dest,
-                                  const FPT2 &src_real,
-                                  const FPT2 &src_imag,
-                                  const FPT3 alpha,
-                                  const int ipower)
-{
-    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
-        case 3: // I^3 = -I = I^-1
-            dest.real() =  alpha*src_imag;
-            dest.imag() = -alpha*src_real;
-            break;
-        case 2: // I^2 = -1 = I^-2
-            dest.real() = -alpha*src_real;
-            dest.imag() = -alpha*src_imag;
-            break;
-        case 1: // I^1 = I = I^-3
-            dest.real() = -alpha*src_imag;
-            dest.imag() =  alpha*src_real;
-            break;
-        case 0: // I^0 = 1
-            dest.real() =  alpha*src_real;
-            dest.imag() =  alpha*src_imag;
+            dest.real() =  alpha*src[0];
+            dest.imag() =  alpha*src[1];
             break;
     }
 }
@@ -590,18 +512,64 @@ struct copy_complex_scaled {
     }
 };
 
+template<class ComplexDestination>
+struct copy_complex_differentiate {
+    typedef typename complex_traits<ComplexDestination>::value_type scalar;
+
+    const int ipower_;
+    const scalar twopioverlength_;
+
+    copy_complex_differentiate(
+        const int ipower,
+        const scalar length = 2.0*M_PI)
+        : ipower_(ipower), twopioverlength_(2.0*M_PI/length) {}
+
+    template<class ComplexSource, typename SignedInteger>
+    void operator()(ComplexDestination &dest,
+                    const ComplexSource &src,
+                    const SignedInteger& n) const
+    {
+        assign_complex_scaled_ipower(
+            dest, src, integer_power(twopioverlength_*n, ipower_), n);
+    }
+};
+
+template<class ComplexDestination>
+struct copy_complex_scaled_differentiate {
+    typedef typename complex_traits<ComplexDestination>::value_type scalar;
+
+    const scalar alpha_;
+    const int ipower_;
+    const scalar twopioverlength_;
+
+    copy_complex_scaled_differentiate(
+        const scalar alpha,
+        const int ipower,
+        const scalar length = 2.0*M_PI)
+        : alpha_(alpha), ipower_(ipower), twopioverlength_(2.0*M_PI/length) {}
+
+    template<class ComplexSource, typename SignedInteger>
+    void operator()(ComplexDestination &dest,
+                    const ComplexSource &src,
+                    const SignedInteger& n) const
+    {
+        assign_complex_scaled_ipower(
+            dest, src, alpha_ * integer_power(twopioverlength_*n, ipower_), n);
+    }
+};
+
 template<class InputIterator,
          class OutputIterator,
          typename SizeType,
          typename StrideType,
-         class C2CDataProcessor>
+         class C2CBufferProcessor>
 void c2c_buffer_process(OutputIterator out,
                         const SizeType size_out,
                         const StrideType stride_out,
                         InputIterator  in,
                         const SizeType size_in,
                         const StrideType stride_in,
-                        const C2CDataProcessor c2c_data_processor)
+                        const C2CBufferProcessor c2c_buffer_processor)
 {
     // Highest positive wavenumber
     const SizeType last_n_pos_out  = size_out / 2;
@@ -613,7 +581,7 @@ void c2c_buffer_process(OutputIterator out,
 
     SizeType n = 0; // Always tracks current wavenumber during iteration
     for (n = 0; n <= last_n_pos_copy; ++n) {
-        c2c_data_processor(*out, *in, n);
+        c2c_buffer_processor(*out, *in, n);
         std::advance(in,  stride_in);
         std::advance(out, stride_out);
     }
@@ -635,7 +603,7 @@ void c2c_buffer_process(OutputIterator out,
         }
     }
     for (/* init from above */; n <= -1; ++n) {
-        c2c_data_processor(*out, *in, n);
+        c2c_buffer_processor(*out, *in, n);
         std::advance(in,  stride_in);
         std::advance(out, stride_out);
     }
@@ -649,6 +617,7 @@ void transform_c2c(const size_t transform_dim,
                    const ComplexMultiArray1 &in,
                    ComplexMultiArray2 &out,
                    const int fftw_sign,
+                   const int derivative = 0,
                    const unsigned fftw_flags = 0)
 {
     // Typedefs fixed separately each ComplexMultiArray template parameters
@@ -761,14 +730,22 @@ void transform_c2c(const size_t transform_dim,
                        index_bases_in.begin(), dereference_index.begin(),
                        std::plus<index>());
 
-        // Copy input into transform buffer and pad any excess with zeros
-        // TODO differentiate prior to FFTW_BACKWARD if requested
-        detail::c2c_buffer_process(
-            buffer.get(), transform_n, index(1),
-            &in(dereference_index),
-            shape_in_transform_dim,
-            stride_in_transform_dim,
-            detail::copy_complex());
+        // Copy input into transform buffer performing any needed scaling, etc.
+        if (fftw_sign == FFTW_BACKWARD && derivative != 0) {
+            detail::c2c_buffer_process(
+                buffer.get(), transform_n, index(1),
+                &in(dereference_index),
+                shape_in_transform_dim,
+                stride_in_transform_dim,
+                detail::copy_complex_differentiate<fftw_complex>(derivative));
+        } else {
+            detail::c2c_buffer_process(
+                buffer.get(), transform_n, index(1),
+                &in(dereference_index),
+                shape_in_transform_dim,
+                stride_in_transform_dim,
+                detail::copy_complex());
+        }
 
         // Pull the strings!  Pull the strings!
         fftw_execute(plan.get());
@@ -778,16 +755,26 @@ void transform_c2c(const size_t transform_dim,
                        index_bases_out.begin(), dereference_index.begin(),
                        std::plus<index>());
 
-        // TODO differentiate after FFTW_FORWARD if requested
-        // Copy transform buffer into output truncating auxiliary modes
+        // Copy transform buffer into output performing any needed scaling, etc.
         if (fftw_sign == FFTW_FORWARD) {
             typedef typename detail::complex_traits<element2>::value_type scalar;
-            detail::c2c_buffer_process(
-                &out(dereference_index),
-                shape_out_transform_dim,
-                stride_out_transform_dim,
-                buffer.get(), transform_n, index(1),
-                detail::copy_complex_scaled<element2>(scalar(1.0)/transform_n));
+            const scalar normalization = scalar(1.0)/transform_n;
+            if (derivative == 0) {
+                detail::c2c_buffer_process(
+                    &out(dereference_index),
+                    shape_out_transform_dim,
+                    stride_out_transform_dim,
+                    buffer.get(), transform_n, index(1),
+                    detail::copy_complex_scaled<element2>(normalization));
+            } else {
+                detail::c2c_buffer_process(
+                    &out(dereference_index),
+                    shape_out_transform_dim,
+                    stride_out_transform_dim,
+                    buffer.get(), transform_n, index(1),
+                    detail::copy_complex_scaled_differentiate<element2>(
+                        normalization, derivative));
+            }
         } else {
             detail::c2c_buffer_process(
                 &out(dereference_index),

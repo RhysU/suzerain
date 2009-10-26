@@ -122,25 +122,17 @@ BOOST_AUTO_TEST_CASE( assign_complex_scaled )
     BOOST_CHECK_EQUAL(a[0], 4.0);
     BOOST_CHECK_EQUAL(a[1], 8.0);
 
-    // fftw_complex from components
-    assign_complex_scaled(b, 3.0, 4.0, 2.0);
-    BOOST_CHECK_EQUAL(b[0], 6.0);
-    BOOST_CHECK_EQUAL(b[1], 8.0);
-
     // std::complex from fftw_complex
+    b[0] = 6.0;
+    b[1] = 8.0;
     assign_complex_scaled(c, b, 2.0);
     BOOST_CHECK_EQUAL(c.real(), 12.0);
     BOOST_CHECK_EQUAL(c.imag(), 16.0);
 
-    // std::complex from components
-    assign_complex_scaled(c, 3.0, 4.0, 2.0);
-    BOOST_CHECK_EQUAL(c.real(), 6.0);
-    BOOST_CHECK_EQUAL(c.imag(), 8.0);
-
     // std::complex from std::complex
     assign_complex_scaled(d, c, 2.0);
-    BOOST_CHECK_EQUAL(d.real(), 12.0);
-    BOOST_CHECK_EQUAL(d.imag(), 16.0);
+    BOOST_CHECK_EQUAL(d.real(), 24.0);
+    BOOST_CHECK_EQUAL(d.imag(), 32.0);
 }
 
 BOOST_AUTO_TEST_CASE( assign_complex_scaled_ipower )
@@ -213,63 +205,36 @@ BOOST_AUTO_TEST_CASE( assign_complex_scaled_ipower )
     BOOST_CHECK_EQUAL(a[0],  2.0);
     BOOST_CHECK_EQUAL(a[1],  4.0);
 
-    // fftw_complex from components
-    assign_complex_scaled_ipower(b, 3.0, 4.0, 2.0, -4);
-    BOOST_CHECK_EQUAL(b[0],  6.0);
-    BOOST_CHECK_EQUAL(b[1],  8.0);
-    assign_complex_scaled_ipower(b, 3.0, 4.0, 2.0, -3);
-    BOOST_CHECK_EQUAL(b[0], -8.0);
-    BOOST_CHECK_EQUAL(b[1],  6.0);
-    assign_complex_scaled_ipower(b, 3.0, 4.0, 2.0, -2);
-    BOOST_CHECK_EQUAL(b[0], -6.0);
-    BOOST_CHECK_EQUAL(b[1], -8.0);
-    assign_complex_scaled_ipower(b, 3.0, 4.0, 2.0, -1);
-    BOOST_CHECK_EQUAL(b[0],  8.0);
-    BOOST_CHECK_EQUAL(b[1], -6.0);
-    assign_complex_scaled_ipower(b, 3.0, 4.0, 2.0,  0);
-    BOOST_CHECK_EQUAL(b[0],  6.0);
-    BOOST_CHECK_EQUAL(b[1],  8.0);
-    assign_complex_scaled_ipower(b, 3.0, 4.0, 2.0,  1);
-    BOOST_CHECK_EQUAL(b[0], -8.0);
-    BOOST_CHECK_EQUAL(b[1],  6.0);
-    assign_complex_scaled_ipower(b, 3.0, 4.0, 2.0,  2);
-    BOOST_CHECK_EQUAL(b[0], -6.0);
-    BOOST_CHECK_EQUAL(b[1], -8.0);
-    assign_complex_scaled_ipower(b, 3.0, 4.0, 2.0,  3);
-    BOOST_CHECK_EQUAL(b[0],  8.0);
-    BOOST_CHECK_EQUAL(b[1], -6.0);
-    assign_complex_scaled_ipower(b, 3.0, 4.0, 2.0,  4);
-    BOOST_CHECK_EQUAL(b[0],  6.0);
-    BOOST_CHECK_EQUAL(b[1],  8.0);
-
-    // std::complex from components
-    assign_complex_scaled_ipower(c, 3.0, 4.0, 2.0, -4);
-    BOOST_CHECK_EQUAL(c.real(),  6.0);
-    BOOST_CHECK_EQUAL(c.imag(),  8.0);
-    assign_complex_scaled_ipower(c, 3.0, 4.0, 2.0, -3);
-    BOOST_CHECK_EQUAL(c.real(), -8.0);
-    BOOST_CHECK_EQUAL(c.imag(),  6.0);
-    assign_complex_scaled_ipower(c, 3.0, 4.0, 2.0, -2);
-    BOOST_CHECK_EQUAL(c.real(), -6.0);
-    BOOST_CHECK_EQUAL(c.imag(), -8.0);
-    assign_complex_scaled_ipower(c, 3.0, 4.0, 2.0, -1);
-    BOOST_CHECK_EQUAL(c.real(),  8.0);
-    BOOST_CHECK_EQUAL(c.imag(), -6.0);
-    assign_complex_scaled_ipower(c, 3.0, 4.0, 2.0,  0);
-    BOOST_CHECK_EQUAL(c.real(),  6.0);
-    BOOST_CHECK_EQUAL(c.imag(),  8.0);
-    assign_complex_scaled_ipower(c, 3.0, 4.0, 2.0,  1);
-    BOOST_CHECK_EQUAL(c.real(), -8.0);
-    BOOST_CHECK_EQUAL(c.imag(),  6.0);
-    assign_complex_scaled_ipower(c, 3.0, 4.0, 2.0,  2);
-    BOOST_CHECK_EQUAL(c.real(), -6.0);
-    BOOST_CHECK_EQUAL(c.imag(), -8.0);
-    assign_complex_scaled_ipower(c, 3.0, 4.0, 2.0,  3);
-    BOOST_CHECK_EQUAL(c.real(),  8.0);
-    BOOST_CHECK_EQUAL(c.imag(), -6.0);
-    assign_complex_scaled_ipower(c, 3.0, 4.0, 2.0,  4);
-    BOOST_CHECK_EQUAL(c.real(),  6.0);
-    BOOST_CHECK_EQUAL(c.imag(),  8.0);
+    // std::complex from fftw_complex
+    b[0] = 1.0;
+    b[1] = 2.0;
+    assign_complex_scaled_ipower(c, b, 2.0, -4);
+    BOOST_CHECK_EQUAL(c.real(),  2.0);
+    BOOST_CHECK_EQUAL(c.imag(),  4.0);
+    assign_complex_scaled_ipower(c, b, 2.0, -3);
+    BOOST_CHECK_EQUAL(c.real(), -4.0);
+    BOOST_CHECK_EQUAL(c.imag(),  2.0);
+    assign_complex_scaled_ipower(c, b, 2.0, -2);
+    BOOST_CHECK_EQUAL(c.real(), -2.0);
+    BOOST_CHECK_EQUAL(c.imag(), -4.0);
+    assign_complex_scaled_ipower(c, b, 2.0, -1);
+    BOOST_CHECK_EQUAL(c.real(),  4.0);
+    BOOST_CHECK_EQUAL(c.imag(), -2.0);
+    assign_complex_scaled_ipower(c, b, 2.0, 0);
+    BOOST_CHECK_EQUAL(c.real(),  2.0);
+    BOOST_CHECK_EQUAL(c.imag(),  4.0);
+    assign_complex_scaled_ipower(c, b, 2.0, 1);
+    BOOST_CHECK_EQUAL(c.real(), -4.0);
+    BOOST_CHECK_EQUAL(c.imag(),  2.0);
+    assign_complex_scaled_ipower(c, b, 2.0, 2);
+    BOOST_CHECK_EQUAL(c.real(), -2.0);
+    BOOST_CHECK_EQUAL(c.imag(), -4.0);
+    assign_complex_scaled_ipower(c, b, 2.0, 3);
+    BOOST_CHECK_EQUAL(c.real(),  4.0);
+    BOOST_CHECK_EQUAL(c.imag(), -2.0);
+    assign_complex_scaled_ipower(c, b, 2.0, 4);
+    BOOST_CHECK_EQUAL(c.real(),  2.0);
+    BOOST_CHECK_EQUAL(c.imag(),  4.0);
 }
 
 BOOST_AUTO_TEST_CASE( assign_components )
