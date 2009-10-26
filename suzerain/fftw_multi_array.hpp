@@ -460,106 +460,204 @@ void assign_complex_scaled_ipower(std::complex<FPT1> &dest,
     }
 }
 
-template<typename T>
-struct complex_traits {};
-
-template<typename FPT>
-struct complex_traits<std::complex<FPT> > {
-    typedef typename std::complex<FPT>::value_type value_type;
+/**
+ * Provides traits for general complex number types.
+ * General template works for \c std::complex instantiations.
+ **/
+template<typename Complex>
+struct complex_traits {
+    /** Real and imaginary components type */
+    typedef typename Complex::value_type value_type;
 };
 
+/** Provides traits for \c fftwf_complex complex number type.  **/
 template<>
 struct complex_traits<fftwf_complex> {
+    /** Real and imaginary components type */
     typedef float value_type;
 };
 
+/** Provides traits for \c fftw_complex complex number type.  **/
 template<>
 struct complex_traits<fftw_complex> {
+    /** Real and imaginary components type */
     typedef double value_type;
 };
 
+/** Provides traits for \c fftwl_complex complex number type.  **/
 template<>
 struct complex_traits<fftwl_complex> {
+    /** Real and imaginary components type */
     typedef long double value_type;
 };
 
-struct copy_complex {
+/** A copy-only functor for manipulating complex values */
+struct complex_copy {
+    /**
+     * Copies \c src to \c dest
+     *
+     * @param dest destination
+     * @param src source
+     * @param dontcare ignored within this functor
+     */
     template<class ComplexDestination,
              class ComplexSource,
              typename SignedInteger>
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
-                    const SignedInteger& /* Don't care */) const
+                    const SignedInteger& dontcare) const
     {
         assign_complex(dest, src);
     }
 };
 
+/** A copy-and-scale functor for manipulating complex values */
 template<class ComplexDestination>
-struct copy_complex_scaled {
+struct complex_copy_scale {
+    /** Scaling factor applied by the functor */
     const typename complex_traits<ComplexDestination>::value_type alpha_;
 
-    copy_complex_scaled(
+    /**
+     * Create a functor instance with the supplied scaling factor
+     *
+     * @param alpha scaling factor to use within operator()
+     */
+    complex_copy_scale(
         const typename complex_traits<ComplexDestination>::value_type alpha)
         : alpha_(alpha) {}
 
+    /** Copies <tt>alpha*src</tt> to \c dest.
+     *
+     * @param dest destination
+     * @param src source
+     * @param dontcare ignored within this functor
+     */
     template<class ComplexSource, typename SignedInteger>
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
-                    const SignedInteger& /* Don't care */) const
+                    const SignedInteger& dontcare) const
     {
         assign_complex_scaled(dest, src, alpha_);
     }
 };
 
+/**
+ * A copy-and-differentiate functor for manipulating complex values
+ * in the context of a wavenumber index.
+ **/
 template<class ComplexDestination>
-struct copy_complex_differentiate {
+struct complex_copy_differentiate {
+    /** Scaling factor type */
     typedef typename complex_traits<ComplexDestination>::value_type scalar;
 
-    const int ipower_;
+    /** Derivative order to take within operator() */
+    const int derivative_;
+
+    /** Domain length-based factor used to find wavenumber from index */
     const scalar twopioverlength_;
 
-    copy_complex_differentiate(
-        const int ipower,
-        const scalar length = 2.0*M_PI)
-        : ipower_(ipower), twopioverlength_(2.0*M_PI/length) {}
+    /**
+     * Create a functor instance applying the given derivative operator
+     * for a domain of given length.
+     *
+     * @param derivative derivative to take
+     * @param length length of the domain
+     */
+    complex_copy_differentiate(
+        const int derivative,
+        const scalar length)
+        : derivative_(derivative), twopioverlength_(2.0*M_PI/length) {}
 
+    /**
+     * Copies <tt>(2*pi*n*I/length)^derivative * src</tt> to \c dest
+     * where \c I is the imaginary unit.
+     *
+     * @param dest destination
+     * @param src source
+     * @param n wavenumber index to use
+     */
     template<class ComplexSource, typename SignedInteger>
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
                     const SignedInteger& n) const
     {
         assign_complex_scaled_ipower(
-            dest, src, integer_power(twopioverlength_*n, ipower_), n);
+            dest, src, integer_power(twopioverlength_*n, derivative_), n);
     }
 };
 
+/**
+ * A copy-scale-and-differentiate functor for manipulating complex values
+ * in the context of a wavenumber index.
+ **/
 template<class ComplexDestination>
-struct copy_complex_scaled_differentiate {
+struct complex_copy_scale_differentiate {
+    /** Scaling factor type */
     typedef typename complex_traits<ComplexDestination>::value_type scalar;
 
     const scalar alpha_;
-    const int ipower_;
+
+    /** Derivative order to take within operator() */
+    const int derivative_;
+
+    /** Domain length-based factor used to find wavenumber from index */
     const scalar twopioverlength_;
 
-    copy_complex_scaled_differentiate(
+    /**
+     * Create a functor instance applying the given derivative operator
+     * for a domain of given length and then scaling the result.
+     *
+     * @param alpha scaling factor to apply
+     * @param derivative derivative to take
+     * @param length length of the domain
+     */
+    complex_copy_scale_differentiate(
         const scalar alpha,
-        const int ipower,
-        const scalar length = 2.0*M_PI)
-        : alpha_(alpha), ipower_(ipower), twopioverlength_(2.0*M_PI/length) {}
+        const int derivative,
+        const scalar length)
+        : alpha_(alpha),
+          derivative_(derivative),
+          twopioverlength_(2.0*M_PI/length) {}
 
+    /**
+     * Copies <tt>(2*pi*n*I/length)^derivative * alpha * src</tt> to \c dest
+     * where \c I is the imaginary unit.
+     *
+     * @param dest destination
+     * @param src source
+     * @param n wavenumber index to use
+     */
     template<class ComplexSource, typename SignedInteger>
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
                     const SignedInteger& n) const
     {
         assign_complex_scaled_ipower(
-            dest, src, alpha_ * integer_power(twopioverlength_*n, ipower_), n);
+            dest, src,
+            alpha_ * integer_power(twopioverlength_*n, derivative_), n);
     }
 };
 
-template<class InputIterator,
-         class OutputIterator,
+/**
+ * Transforms \c in to \c out taking into account FFTW's complex-to-complex
+ * storage order and dealiasing considerations.  If \c size_in and \c size_out
+ * are identical, then this routine performs a simple strided transformation.
+ *
+ * @param out start of the output storage
+ * @param size_out number of logical elements in the output storage
+ * @param stride_out stride between logical elements in the output storage
+ * @param in start of the input storage
+ * @param size_in number of logical elements in the input storage
+ * @param stride_in stride between logical elements in the input storage
+ * @param c2c_buffer_processor a functor to apply at each location.
+ *
+ * @see complex_copy, complex_copy_scale, complex_copy_differentiate, and
+ *      complex_copy_scale_differentiate for valid \c c2c_buffer_processor
+ *      values and a better idea of the \c c2c_buffer_processor concept
+ * @see the <a href="http://www.fftw.org/fftw3_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">FFTW documentation</a> for the expected wavenumber order.
+ */
+template<class OutputIterator,
+         class InputIterator,
          typename SizeType,
          typename StrideType,
          class C2CBufferProcessor>
@@ -569,7 +667,7 @@ void c2c_buffer_process(OutputIterator out,
                         InputIterator  in,
                         const SizeType size_in,
                         const StrideType stride_in,
-                        const C2CBufferProcessor c2c_buffer_processor)
+                        const C2CBufferProcessor &c2c_buffer_processor)
 {
     // Highest positive wavenumber
     const SizeType last_n_pos_out  = size_out / 2;
@@ -612,13 +710,56 @@ void c2c_buffer_process(OutputIterator out,
 
 } // namespace detail
 
-template<class ComplexMultiArray1, class ComplexMultiArray2>
-void transform_c2c(const size_t transform_dim,
-                   const ComplexMultiArray1 &in,
-                   ComplexMultiArray2 &out,
-                   const int fftw_sign,
-                   const int derivative = 0,
-                   const unsigned fftw_flags = 0)
+/**
+ * Perform a FFT on each 1D "pencil" of \c in storing the result in \c out.  If
+ * desired, the data can be differentiated.  Processing is done in a way that
+ * attempt to minimize memory access under the assumption that either \c in or
+ * \c out will require non-stride-one access.  If \c in and \c out are two
+ * distinct data sets, then \c in is not destroyed in the computation.  Data is
+ * normalized in wave space in a transform-size-independent way.
+ *
+ * @param transform_dim zero-indexed dimension indicating the pencils to
+ *                      be transformed.
+ * @param in an instance modeling the MultiArray concept containing the input
+ *           data to transform.
+ * @param out an instance modeling the MultiArray concept to contain the
+ *            output from the transform.
+ * @param fftw_sign either \c FFTW_FORWARD or \c FFTW_BACKWARD to transform
+ *                  from physical to wave space or from wave space to
+ *                  physical space, respectively.
+ * @param derivative If nonzero, the data is differentiated during the transform
+ *                   process.
+ * @param domain_length Used when differentiating the data during the
+ *                   transformation.
+ * @param fftw_flags FFTW planner flags to use when computing the transform.
+ *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
+ *
+ * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
+ *      Boost.MultiArray</a> for more information on the MultiArray concept.
+ * @see the <a href="http://www.fftw.org/fftw3_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">FFTW documentation</a> for the expected wavenumber order in
+ *      each 1D wave space pencil.
+ * @see the <a href="http://www.fftw.org/fftw3_doc/Planner-Flags.html">FFTW
+ *      documentation</a> for information on the available planner flags.
+ *
+ * @internal We choose to always use an intermediate buffer for the transform:
+ *    @li Avoids nuking in or out during FFTW planning
+ *    @li Allows us to always enforce FFTW memory alignment recommendations
+ *    @li Allows us to repeatedly apply the same, simple FFTW plan
+ *    @li Minimizes the costs of potentially non-stride-1 access
+ *    @li Always gives us in-place transform performance for the FFT
+ *    @li Greatly simplifies transform, dealiasing, and differentiation code
+ *    @li Simplifies moving to other FFT libraries in the future, e.g. ESSL
+ */
+template<class ComplexMultiArray1,
+         class ComplexMultiArray2>
+void transform_c2c(
+    const size_t transform_dim,
+    const ComplexMultiArray1 &in,
+    ComplexMultiArray2 &out,
+    const int fftw_sign,
+    const int derivative = 0,
+    const double domain_length = 2.0*M_PI, // TODO Remove double assumption
+    const unsigned fftw_flags = 0)
 {
     // Typedefs fixed separately each ComplexMultiArray template parameters
     typedef typename ComplexMultiArray1::element element1;
@@ -676,21 +817,12 @@ void transform_c2c(const size_t transform_dim,
     const shape_type transform_n = (fftw_sign == FFTW_FORWARD)
         ? shape_in[transform_dim] : shape_out[transform_dim];
 
-    // We choose to always use an intermediate buffer for the transform:
-    //  1) Avoids nuking in or out during FFTW planning
-    //  2) Allows us to always enforce FFTW memory alignment recommendations
-    //  3) Allows us to repeatedly apply the same, simple FFTW plan
-    //  4) Minimizes the costs of potentially non-stride-1 access
-    //  5) Always gives us in-place transform performance for the FFT
-    //  6) Greatly simplifies transform, dealiasing, and differentiation code
-    //  7) Simplifies moving to other FFT libraries in the future, e.g. ESSL
+    // Prepare the in-place transform buffer and construct the FFTW plan
     boost::shared_array<fftw_complex> buffer(
         static_cast<fftw_complex *>(
             fftw_malloc(sizeof(fftw_complex)*transform_n)),
         std::ptr_fun(fftw_free));
     assert(buffer);
-
-    // Construct the FFTW in-place plan for the transform buffer
     boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_dft_1d(transform_n,
                              buffer.get(),
@@ -737,14 +869,15 @@ void transform_c2c(const size_t transform_dim,
                 &in(dereference_index),
                 shape_in_transform_dim,
                 stride_in_transform_dim,
-                detail::copy_complex_differentiate<fftw_complex>(derivative));
+                detail::complex_copy_differentiate<fftw_complex>(
+                    derivative, domain_length));
         } else {
             detail::c2c_buffer_process(
                 buffer.get(), transform_n, index(1),
                 &in(dereference_index),
                 shape_in_transform_dim,
                 stride_in_transform_dim,
-                detail::copy_complex());
+                detail::complex_copy());
         }
 
         // Pull the strings!  Pull the strings!
@@ -765,15 +898,15 @@ void transform_c2c(const size_t transform_dim,
                     shape_out_transform_dim,
                     stride_out_transform_dim,
                     buffer.get(), transform_n, index(1),
-                    detail::copy_complex_scaled<element2>(normalization));
+                    detail::complex_copy_scale<element2>(normalization));
             } else {
                 detail::c2c_buffer_process(
                     &out(dereference_index),
                     shape_out_transform_dim,
                     stride_out_transform_dim,
                     buffer.get(), transform_n, index(1),
-                    detail::copy_complex_scaled_differentiate<element2>(
-                        normalization, derivative));
+                    detail::complex_copy_scale_differentiate<element2>(
+                        normalization, derivative, domain_length));
             }
         } else {
             detail::c2c_buffer_process(
@@ -781,7 +914,7 @@ void transform_c2c(const size_t transform_dim,
                 shape_out_transform_dim,
                 stride_out_transform_dim,
                 buffer.get(), transform_n, index(1),
-                detail::copy_complex());
+                detail::complex_copy());
         }
 
     } while (detail::increment<dimensionality>(loop_index.begin(),
