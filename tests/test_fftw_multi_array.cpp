@@ -973,7 +973,7 @@ void differentiate_on_forward_1D_complex(ComplexMultiArray1 &in,
             fill_with_complex_NaN(out);
             for (int i = 0; i < NR; ++i) {
                 const double val = real_test_function<double>(
-                        NR, (NR+1)/2, i, shift, 0, length[l]);
+                        NR, (std::min(NR,NC)+1)/2, i, shift, 0, length[l]);
                 fftw_multi_array::detail::assign_complex(in[i], val, -val);
             }
 
@@ -988,7 +988,8 @@ void differentiate_on_forward_1D_complex(ComplexMultiArray1 &in,
             // Ensure we see what we expect
             for (int i = 0; i < NR; ++i) {
                 const double expected_val = real_test_function<double>(
-                        NR, (NR+1)/2, i, shift, derivative, length[l]);
+                        NR, (std::min(NR,NC)+1)/2, i, shift, derivative,
+                        length[l]);
                 double real, imag;
                 fftw_multi_array::detail::assign_components(real, imag, in[i]);
                 if (fabs(expected_val) < close_enough) {
@@ -1025,7 +1026,7 @@ void differentiate_on_backward_1D_complex(ComplexMultiArray1 &in,
             fill_with_complex_NaN(out);
             for (int i = 0; i < NR; ++i) {
                 const double val = real_test_function<double>(
-                        NR, (NR+1)/2, i, shift, 0, length[l]);
+                        NR, (std::min(NR,NC)+1)/2, i, shift, 0, length[l]);
                 fftw_multi_array::detail::assign_complex(in[i], val, -val);
             }
 
@@ -1040,7 +1041,8 @@ void differentiate_on_backward_1D_complex(ComplexMultiArray1 &in,
             // Ensure we see what we expect as the derivative
             for (int i = 0; i < NR; ++i) {
                 const double expected_val = real_test_function<double>(
-                        NR, (NR+1)/2, i, shift, derivative, length[l]);
+                        NR, (std::min(NR,NC)+1)/2, i, shift, derivative,
+                        length[l]);
                 double real, imag;
                 fftw_multi_array::detail::assign_components(real, imag, in[i]);
                 if (fabs(expected_val) < close_enough) {
@@ -1192,14 +1194,14 @@ void c2c_1d_out_of_place_dealiased_forward(const int NR, const int NC)
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type in(boost::extents[NR]), out(boost::extents[NC]);
     symmetry_1D_complex_forward(in, out); // Dealiasing in effect
-    // TODO Add differentiation test here
+    differentiate_on_forward_1D_complex(in, out);
 }
 void c2c_1d_out_of_place_dealiased_backward(const int NC, const int NR)
 {
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type in(boost::extents[NC]), out(boost::extents[NR]);
     symmetry_1D_complex_backward(in, out); // Dealiasing in effect
-    // TODO Add differentiation test here
+    differentiate_on_backward_1D_complex(out, in); // NB reversed
 }
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
         TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
