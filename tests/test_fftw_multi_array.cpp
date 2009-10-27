@@ -658,20 +658,32 @@ FPT real_test_function(const Integer NR,
     return retval;
 }
 
-template<class MultiArray>
-void fill_multi_array(MultiArray &x, const typename MultiArray::element &value)
-{
-    std::fill(x.data(), x.data() + x.num_elements(), value);
-}
-
 template<class ComplexMultiArray>
 void fill_with_complex_NaN(ComplexMultiArray &x)
 {
     typedef typename ComplexMultiArray::element element;
-    const typename element::value_type quiet_NaN
-        = std::numeric_limits<typename element::value_type>::quiet_NaN();
-    const element nan_value(quiet_NaN, quiet_NaN);
-    fill_multi_array(x, element(quiet_NaN, quiet_NaN));
+    element NaN_value;
+    typedef typename fftw_multi_array::detail::complex_traits<
+            element>::value_type value_type;
+    const value_type quiet_NaN = std::numeric_limits<value_type>::quiet_NaN();
+
+    const element * const end = x.data() + x.num_elements();
+    element *it = x.data();
+    while (it != end) {
+        fftw_multi_array::detail::assign_complex(*it++, quiet_NaN, quiet_NaN);
+    }
+}
+
+template<class ComplexMultiArray>
+void fill_with_complex_zero(ComplexMultiArray &x)
+{
+    typedef typename ComplexMultiArray::element element;
+
+    const element * const end = x.data() + x.num_elements();
+    element *it = x.data();
+    while (it != end) {
+        fftw_multi_array::detail::assign_complex(*it++, 0, 0);
+    }
 }
 
 // Helper function that kicks the tires of a 1D c2c transform
@@ -827,7 +839,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     // Load a conjugate-symmetric function into the input array...
     // ...with known frequency content and constant offset 17
     fill_with_complex_NaN(out);
-    fill_multi_array(in, 0);
+    fill_with_complex_zero(in);
     fftw_multi_array::detail::assign_complex(in[0], 17.0, 0.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         const double val = i/2.0;
@@ -856,7 +868,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     // Load a real-symmetric function into the input array...
     // ...with known frequency content and constant offset 17
     fill_with_complex_NaN(out);
-    fill_multi_array(in, 0);
+    fill_with_complex_zero(in);
     fftw_multi_array::detail::assign_complex(in[0], 0.0, 17.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         const double val = i/2.0;
@@ -1073,16 +1085,37 @@ BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place );
         { c2c_1d_out_of_place(elem); }
 void c2c_1d_out_of_place(const int N)
 {
-    typedef boost::multi_array<std::complex<double>,1> array_type;
-    array_type in(boost::extents[N]), out(boost::extents[N]);
+    // Test multi_array using std::complex
+    {
+        typedef boost::multi_array<std::complex<double>,1> array_type;
+        array_type in(boost::extents[N]), out(boost::extents[N]);
 
-    // No dealiasing in effect: in == out
-    symmetry_1D_complex_forward(in, out);
-    compare_1D_complex_forward(in, out);
-    symmetry_1D_complex_backward(in, out);
-    compare_1D_complex_backward(in, out);
-    differentiate_on_forward_1D_complex(in, out);
-    differentiate_on_backward_1D_complex(in, out);
+        // No dealiasing in effect: size in == size out
+        symmetry_1D_complex_forward(in, out);
+        compare_1D_complex_forward(in, out);
+        symmetry_1D_complex_backward(in, out);
+        compare_1D_complex_backward(in, out);
+        differentiate_on_forward_1D_complex(in, out);
+        differentiate_on_backward_1D_complex(in, out);
+    }
+
+    // Test multi_array_ref using fftw_complex
+    {
+        boost::scoped_array<fftw_complex> in_data(new fftw_complex[N]);
+        boost::scoped_array<fftw_complex> out_data(new fftw_complex[N]);
+        typedef boost::multi_array_ref<fftw_complex, 1> array_ref_type;
+        array_ref_type in(in_data.get(), boost::extents[N]);
+        array_ref_type out(out_data.get(), boost::extents[N]);
+
+        // No dealiasing in effect: size in == size out
+        symmetry_1D_complex_forward(in, out);
+        compare_1D_complex_forward(in, out);
+        symmetry_1D_complex_backward(in, out);
+        compare_1D_complex_backward(in, out);
+        differentiate_on_forward_1D_complex(in, out);
+        differentiate_on_backward_1D_complex(in, out);
+    }
+
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
@@ -1158,12 +1191,6 @@ void c2c_1d_in_place(const int N)
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_IN_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
-
-// TODO Out of place transformations on fftw_complex
-// TODO In place transformations on fftw_complex
-// Broken: boost::multi_array cannot handle fftw_complex elements
-// Awaiting response from boost-users mailing list
-// http://article.gmane.org/gmane.comp.lib.boost.user/52327
 
 BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_dealiased );
 #define TEST_C2C_1D_OUT_OF_PLACE_DEALIASED(r, product) \
