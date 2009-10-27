@@ -816,7 +816,9 @@ void transform_c2c(
     ComplexMultiArray2 &out,
     const int fftw_sign,
     const int derivative = 0,
-    const double domain_length = 2.0*M_PI, // TODO Remove double assumption
+    const typename detail::complex_traits<
+            typename ComplexMultiArray1::element
+        >::value_type domain_length = 2.0*M_PI,
     const unsigned fftw_flags = 0)
 {
     // Typedefs fixed separately each ComplexMultiArray template parameters
@@ -876,6 +878,7 @@ void transform_c2c(
         ? shape_in[transform_dim] : shape_out[transform_dim];
 
     // Prepare the in-place transform buffer and construct the FFTW plan
+    // TODO Assumes we're always using FFTW's double interface; relax that
     boost::shared_array<fftw_complex> buffer(
         static_cast<fftw_complex *>(
             fftw_malloc(sizeof(fftw_complex)*transform_n)),
