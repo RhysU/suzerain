@@ -621,7 +621,8 @@ void debug_dump(const std::string &prefix,
     cout << endl;
 }
 
-// Produce a real signal with known frequency content
+// Produce a periodic real signal with known frequency content
+// on domain of supplied length
 template<typename FPT, typename Integer>
 FPT real_test_function(const Integer NR,
                        const Integer max_mode_exclusive,
@@ -635,16 +636,20 @@ FPT real_test_function(const Integer NR,
     for (Integer i = 1; i < max_mode_exclusive; ++i) {
         switch (derivative % 4) {
             case 0:
-                retval += pow(i, derivative+1)*sin(i*xi + shift);
+                retval +=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * sin(i*(2.0*M_PI/length)*xi + shift);
                 break;
             case 1:
-                retval += pow(i, derivative+1)*cos(i*xi + shift);
+                retval +=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * cos(i*(2.0*M_PI/length)*xi + shift);
                 break;
             case 2:
-                retval -= pow(i, derivative+1)*sin(i*xi + shift);
+                retval -=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * sin(i*(2.0*M_PI/length)*xi + shift);
                 break;
             case 3:
-                retval -= pow(i, derivative+1)*cos(i*xi + shift);
+                retval -=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * cos(i*(2.0*M_PI/length)*xi + shift);
                 break;
             default:
                 BOOST_ERROR("Unexpected derivative % 4 result");
@@ -948,7 +953,6 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     }
 }
 
-// TODO Add non-2PI length to the test case
 template<class ComplexMultiArray1, class ComplexMultiArray2>
 void differentiate_on_forward_1D_complex(ComplexMultiArray1 &in,
                                          ComplexMultiArray2 &out)
@@ -961,40 +965,46 @@ void differentiate_on_forward_1D_complex(ComplexMultiArray1 &in,
         = std::numeric_limits<double>::epsilon()*10*NR*NR;
     const double shift = M_PI/3.0;
 
-    for (int derivative = 0; derivative < 8; ++derivative) {
-        // Load a complex function into the input array
-        fill_with_complex_NaN(in);
-        fill_with_complex_NaN(out);
-        for (int i = 0; i < NR; ++i) {
-            const double val = real_test_function<double>(
-                    NR, (NR+1)/2, i, shift);
-            fftw_multi_array::detail::assign_complex(in[i], val, -val);
-        }
+    const double length[2] = { 2.0 * M_PI, 10.0 };
+    for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
+        for (int derivative = 0; derivative < 8; ++derivative) {
+            // Load a complex function into the input array
+            fill_with_complex_NaN(in);
+            fill_with_complex_NaN(out);
+            for (int i = 0; i < NR; ++i) {
+                const double val = real_test_function<double>(
+                        NR, (NR+1)/2, i, shift, 0, length[l]);
+                fftw_multi_array::detail::assign_complex(in[i], val, -val);
+            }
 
-        // Forward transform and differentiate
-        fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD, derivative);
+            // Forward transform and differentiate
+            fftw_multi_array::transform_c2c(
+                0, in, out, FFTW_FORWARD, derivative, length[l]);
 
-        // Backwards transform without differentiating
-        fftw_multi_array::transform_c2c(0, out, in, FFTW_BACKWARD, 0);
+            // Backwards transform without differentiating
+            fftw_multi_array::transform_c2c(
+                0, out, in, FFTW_BACKWARD, 0, length[l]);
 
-        // Ensure we see what we expect
-        for (int i = 0; i < NR; ++i) {
-            const double expected_val = real_test_function<double>(
-                    NR, (NR+1)/2, i, shift, derivative);
-            double real, imag;
-            fftw_multi_array::detail::assign_components(real, imag, in[i]);
-            if (fabs(expected_val) < close_enough) {
-                BOOST_REQUIRE_SMALL(real, close_enough);
-                BOOST_REQUIRE_SMALL(imag, close_enough);
-            } else {
-                BOOST_REQUIRE_CLOSE( expected_val, real, sqrt(close_enough));
-                BOOST_REQUIRE_CLOSE(-expected_val, imag, sqrt(close_enough));
+            // Ensure we see what we expect
+            for (int i = 0; i < NR; ++i) {
+                const double expected_val = real_test_function<double>(
+                        NR, (NR+1)/2, i, shift, derivative, length[l]);
+                double real, imag;
+                fftw_multi_array::detail::assign_components(real, imag, in[i]);
+                if (fabs(expected_val) < close_enough) {
+                    BOOST_REQUIRE_SMALL(real, close_enough);
+                    BOOST_REQUIRE_SMALL(imag, close_enough);
+                } else {
+                    BOOST_REQUIRE_CLOSE(
+                            expected_val, real, sqrt(close_enough));
+                    BOOST_REQUIRE_CLOSE(
+                           -expected_val, imag, sqrt(close_enough));
+                }
             }
         }
     }
 }
 
-// TODO Add non-2PI length to the test case
 template<class ComplexMultiArray1, class ComplexMultiArray2>
 void differentiate_on_backward_1D_complex(ComplexMultiArray1 &in,
                                           ComplexMultiArray2 &out)
@@ -1007,34 +1017,41 @@ void differentiate_on_backward_1D_complex(ComplexMultiArray1 &in,
         = std::numeric_limits<double>::epsilon()*10*NR*NR;
     const double shift = M_PI/3.0;
 
-    for (int derivative = 0; derivative < 8; ++derivative) {
-        // Load a complex function into the input array
-        fill_with_complex_NaN(in);
-        fill_with_complex_NaN(out);
-        for (int i = 0; i < NR; ++i) {
-            const double val = real_test_function<double>(
-                    NR, (NR+1)/2, i, shift);
-            fftw_multi_array::detail::assign_complex(in[i], val, -val);
-        }
+    const double length[2] = { 2.0 * M_PI, 10.0 };
+    for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
+        for (int derivative = 0; derivative < 8; ++derivative) {
+            // Load a complex function into the input array
+            fill_with_complex_NaN(in);
+            fill_with_complex_NaN(out);
+            for (int i = 0; i < NR; ++i) {
+                const double val = real_test_function<double>(
+                        NR, (NR+1)/2, i, shift, 0, length[l]);
+                fftw_multi_array::detail::assign_complex(in[i], val, -val);
+            }
 
-        // Forward transform without differentiating
-        fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD, 0);
+            // Forward transform without differentiating
+            fftw_multi_array::transform_c2c(
+                    0, in, out, FFTW_FORWARD, 0, length[l]);
 
-        // Backwards transform and differentiate
-        fftw_multi_array::transform_c2c(0, out, in, FFTW_BACKWARD, derivative);
+            // Backwards transform and differentiate
+            fftw_multi_array::transform_c2c(
+                    0, out, in, FFTW_BACKWARD, derivative, length[l]);
 
-        // Ensure we see what we expect as the derivative
-        for (int i = 0; i < NR; ++i) {
-            const double expected_val = real_test_function<double>(
-                    NR, (NR+1)/2, i, shift, derivative);
-            double real, imag;
-            fftw_multi_array::detail::assign_components(real, imag, in[i]);
-            if (fabs(expected_val) < close_enough) {
-                BOOST_REQUIRE_SMALL(real, close_enough);
-                BOOST_REQUIRE_SMALL(imag, close_enough);
-            } else {
-                BOOST_REQUIRE_CLOSE( expected_val, real, sqrt(close_enough));
-                BOOST_REQUIRE_CLOSE(-expected_val, imag, sqrt(close_enough));
+            // Ensure we see what we expect as the derivative
+            for (int i = 0; i < NR; ++i) {
+                const double expected_val = real_test_function<double>(
+                        NR, (NR+1)/2, i, shift, derivative, length[l]);
+                double real, imag;
+                fftw_multi_array::detail::assign_components(real, imag, in[i]);
+                if (fabs(expected_val) < close_enough) {
+                    BOOST_REQUIRE_SMALL(real, close_enough);
+                    BOOST_REQUIRE_SMALL(imag, close_enough);
+                } else {
+                    BOOST_REQUIRE_CLOSE(
+                             expected_val, real, sqrt(close_enough));
+                    BOOST_REQUIRE_CLOSE(
+                            -expected_val, imag, sqrt(close_enough));
+                }
             }
         }
     }
