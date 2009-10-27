@@ -635,7 +635,10 @@ struct complex_copy_differentiate {
                     const SignedInteger& n) const
     {
         assign_complex_scaled_ipower(
-            dest, src, integer_power(twopioverlength_*n, derivative_), n);
+                dest,
+                src,
+                integer_power(twopioverlength_*n, derivative_),
+                derivative_);
     }
 };
 
@@ -687,8 +690,10 @@ struct complex_copy_scale_differentiate {
                     const SignedInteger& n) const
     {
         assign_complex_scaled_ipower(
-            dest, src,
-            alpha_ * integer_power(twopioverlength_*n, derivative_), n);
+                dest,
+                src,
+                alpha_ * integer_power(twopioverlength_*n, derivative_),
+                derivative_);
     }
 };
 

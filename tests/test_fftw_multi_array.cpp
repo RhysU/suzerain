@@ -626,11 +626,29 @@ template<typename FPT, typename Integer>
 FPT real_test_function(const Integer NR,
                        const Integer max_mode_exclusive,
                        const Integer i,
-                       const FPT shift = M_PI/3.0) {
-    const FPT xi = i*2*M_PI/NR;
-    FPT retval = (max_mode_exclusive > 0) ? 17.0 : 0; // Zero mode fixed
+                       const FPT shift = M_PI/3.0,
+                       const Integer derivative = 0,
+                       const FPT length = 2.0*M_PI) {
+    const FPT xi = i*length/NR;
+    FPT retval = (max_mode_exclusive > 0 && derivative == 0 )
+        ? 17.0 : 0; // Zero mode fixed
     for (Integer i = 1; i < max_mode_exclusive; ++i) {
-        retval += i*sin(i*xi + shift);
+        switch (derivative % 4) {
+            case 0:
+                retval += pow(i, derivative+1)*sin(i*xi + shift);
+                break;
+            case 1:
+                retval += pow(i, derivative+1)*cos(i*xi + shift);
+                break;
+            case 2:
+                retval -= pow(i, derivative+1)*sin(i*xi + shift);
+                break;
+            case 3:
+                retval -= pow(i, derivative+1)*cos(i*xi + shift);
+                break;
+            default:
+                BOOST_ERROR("Unexpected derivative % 4 result");
+        }
     }
     return retval;
 }
@@ -930,6 +948,98 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     }
 }
 
+// TODO Add non-2PI length to the test case
+template<class ComplexMultiArray1, class ComplexMultiArray2>
+void differentiate_on_forward_1D_complex(ComplexMultiArray1 &in,
+                                         ComplexMultiArray2 &out)
+{
+    BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
+    const int NR = in.shape()[0];
+    const int NC = out.shape()[0];
+    const double close_enough
+        = std::numeric_limits<double>::epsilon()*10*NR*NR;
+    const double shift = M_PI/3.0;
+
+    for (int derivative = 0; derivative < 8; ++derivative) {
+        // Load a complex function into the input array
+        fill_with_complex_NaN(in);
+        fill_with_complex_NaN(out);
+        for (int i = 0; i < NR; ++i) {
+            const double val = real_test_function<double>(
+                    NR, (NR+1)/2, i, shift);
+            fftw_multi_array::detail::assign_complex(in[i], val, -val);
+        }
+
+        // Forward transform and differentiate
+        fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD, derivative);
+
+        // Backwards transform without differentiating
+        fftw_multi_array::transform_c2c(0, out, in, FFTW_BACKWARD, 0);
+
+        // Ensure we see what we expect
+        for (int i = 0; i < NR; ++i) {
+            const double expected_val = real_test_function<double>(
+                    NR, (NR+1)/2, i, shift, derivative);
+            double real, imag;
+            fftw_multi_array::detail::assign_components(real, imag, in[i]);
+            if (fabs(expected_val) < close_enough) {
+                BOOST_REQUIRE_SMALL(real, close_enough);
+                BOOST_REQUIRE_SMALL(imag, close_enough);
+            } else {
+                BOOST_REQUIRE_CLOSE( expected_val, real, sqrt(close_enough));
+                BOOST_REQUIRE_CLOSE(-expected_val, imag, sqrt(close_enough));
+            }
+        }
+    }
+}
+
+// TODO Add non-2PI length to the test case
+template<class ComplexMultiArray1, class ComplexMultiArray2>
+void differentiate_on_backward_1D_complex(ComplexMultiArray1 &in,
+                                          ComplexMultiArray2 &out)
+{
+    BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
+    const int NR = in.shape()[0];
+    const int NC = out.shape()[0];
+    const double close_enough
+        = std::numeric_limits<double>::epsilon()*10*NR*NR;
+    const double shift = M_PI/3.0;
+
+    for (int derivative = 0; derivative < 8; ++derivative) {
+        // Load a complex function into the input array
+        fill_with_complex_NaN(in);
+        fill_with_complex_NaN(out);
+        for (int i = 0; i < NR; ++i) {
+            const double val = real_test_function<double>(
+                    NR, (NR+1)/2, i, shift);
+            fftw_multi_array::detail::assign_complex(in[i], val, -val);
+        }
+
+        // Forward transform without differentiating
+        fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD, 0);
+
+        // Backwards transform and differentiate
+        fftw_multi_array::transform_c2c(0, out, in, FFTW_BACKWARD, derivative);
+
+        // Ensure we see what we expect as the derivative
+        for (int i = 0; i < NR; ++i) {
+            const double expected_val = real_test_function<double>(
+                    NR, (NR+1)/2, i, shift, derivative);
+            double real, imag;
+            fftw_multi_array::detail::assign_components(real, imag, in[i]);
+            if (fabs(expected_val) < close_enough) {
+                BOOST_REQUIRE_SMALL(real, close_enough);
+                BOOST_REQUIRE_SMALL(imag, close_enough);
+            } else {
+                BOOST_REQUIRE_CLOSE( expected_val, real, sqrt(close_enough));
+                BOOST_REQUIRE_CLOSE(-expected_val, imag, sqrt(close_enough));
+            }
+        }
+    }
+}
+
 
 /* powers of 2; simple composites of form 2*prime; prime numbers; 1 */
 #define TRANSFORM_1D_SIZE_SEQ \
@@ -952,6 +1062,8 @@ void c2c_1d_out_of_place(const int N)
     compare_1D_complex_forward(in, out);
     symmetry_1D_complex_backward(in, out);
     compare_1D_complex_backward(in, out);
+    differentiate_on_forward_1D_complex(in, out);
+    differentiate_on_backward_1D_complex(in, out);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
@@ -975,6 +1087,8 @@ void c2c_1d_out_of_place_one_reversed(const int N)
     compare_1D_complex_forward(in, out);
     symmetry_1D_complex_backward(in, out);
     compare_1D_complex_backward(in, out);
+    differentiate_on_forward_1D_complex(in, out);
+    differentiate_on_backward_1D_complex(in, out);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE_ONE_REVERSED,\
     _,TRANSFORM_1D_SIZE_SEQ);
@@ -999,6 +1113,8 @@ void c2c_1d_out_of_place_two_reversed(const int N)
     compare_1D_complex_forward(in, out);
     symmetry_1D_complex_backward(in, out);
     compare_1D_complex_backward(in, out);
+    differentiate_on_forward_1D_complex(in, out);
+    differentiate_on_backward_1D_complex(in, out);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE_TWO_REVERSED,\
     _,TRANSFORM_1D_SIZE_SEQ);
@@ -1018,6 +1134,8 @@ void c2c_1d_in_place(const int N)
     compare_1D_complex_forward(both, both);
     symmetry_1D_complex_backward(both, both);
     compare_1D_complex_forward(both, both);
+    differentiate_on_forward_1D_complex(both, both);
+    differentiate_on_backward_1D_complex(both, both);
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_IN_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
@@ -1027,7 +1145,6 @@ BOOST_AUTO_TEST_SUITE_END();
 // Broken: boost::multi_array cannot handle fftw_complex elements
 // Awaiting response from boost-users mailing list
 // http://article.gmane.org/gmane.comp.lib.boost.user/52327
-// Helper function that kicks the tires of a 1D c2c transform
 
 BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_dealiased );
 #define TEST_C2C_1D_OUT_OF_PLACE_DEALIASED(r, product) \
@@ -1058,12 +1175,14 @@ void c2c_1d_out_of_place_dealiased_forward(const int NR, const int NC)
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type in(boost::extents[NR]), out(boost::extents[NC]);
     symmetry_1D_complex_forward(in, out); // Dealiasing in effect
+    // TODO Add differentiation test here
 }
 void c2c_1d_out_of_place_dealiased_backward(const int NC, const int NR)
 {
     typedef boost::multi_array<std::complex<double>,1> array_type;
     array_type in(boost::extents[NC]), out(boost::extents[NR]);
     symmetry_1D_complex_backward(in, out); // Dealiasing in effect
+    // TODO Add differentiation test here
 }
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
         TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
