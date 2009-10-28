@@ -239,159 +239,105 @@ FPT integer_power(FPT x, Integral n)
 }
 
 /**
- * Overwrite \c dest with <tt>src</tt>
+ * Obtain the real part of a complex number.
  *
- * @param dest destination, which might be an \c fftw_complex type
- * @param src source
- */
-template<typename FPT1, typename FPT2>
-void assign_complex(FPT1 (&dest)[2],
-                    const std::complex<FPT2> &src)
-{
-    dest[0] = src.real();
-    dest[1] = src.imag();
-}
-
-/**
- * Overwrite \c dest with <tt>src</tt>
+ * @param z complex number stored as a two-element array.
  *
- * @param dest destination
- * @param src source, which might be an \c fftw_complex type
- */
-template<typename FPT1, typename FPT2>
-void assign_complex(std::complex<FPT1> &dest,
-                    const FPT2 (&src)[2])
-{
-    dest.real() = src[0];
-    dest.imag() = src[1];
-}
-
-/**
- * Overwrite \c dest with <tt>src</tt>
- *
- * @param dest destination, which might be an \c fftw_complex type
- * @param src source, which might be an \c fftw_complex type
- */
-template<typename FPT1, typename FPT2>
-void assign_complex(FPT1 (&dest)[2],
-                    const FPT2 (&src)[2])
-{
-    dest[0] = src[0];
-    dest[1] = src[1];
-}
-
-/**
- * Overwrite \c dest with <tt>src_real</tt> + \f$\sqrt{-1}\f$ <tt>src_imag</tt>
- *
- * @param dest destination, which might be an \c fftw_complex type
- * @param src_real real part of the source
- * @param src_imag imag part of the source
- */
-template<typename FPT1, typename FPT2>
-void assign_complex(FPT1 (&dest)[2],
-                    const FPT2 &src_real,
-                    const FPT2 &src_imag)
-{
-    dest[0] = src_real;
-    dest[1] = src_imag;
-}
-
-/**
- * Overwrite \c dest with <tt>src_real</tt> + \f$\sqrt{-1}\f$ <tt>src_imag</tt>
- *
- * @param dest destination
- * @param src_real real part of the source
- * @param src_imag imag part of the source
- */
-template<typename FPT1, typename FPT2>
-void assign_complex(std::complex<FPT1> &dest,
-                    const FPT2 &src_real,
-                    const FPT2 &src_imag)
-{
-    dest.real() = src_real;
-    dest.imag() = src_imag;
-}
-
-/**
- * Overwrite \c dest_real with Re <tt>src</tt> and \c dest_imag with Re
- * <tt>src_imag</tt>
- *
- * @param dest_real destination real part
- * @param dest_imag destination imag part
- * @param src source
+ * @return <tt>Re(z)</tt>
  */
 template<typename FPT>
-void assign_components(FPT &dest_real,
-                       FPT &dest_imag,
-                       const std::complex<FPT> &src)
+inline
+FPT& real(FPT (&z)[2]) {
+    return z[0];
+}
+
+/**
+ * Obtain the real part of a complex number.
+ *
+ * @param z complex number stored as a two-element array.
+ *
+ * @return <tt>Re(z)</tt>
+ */
+template<typename FPT>
+inline
+const FPT& real(const FPT (&z)[2]) {
+    return z[0];
+}
+
+/**
+ * Obtain the imaginary part of a complex number.
+ *
+ * @param z complex number stored as a two-element array.
+ *
+ * @return <tt>Im(z)</tt>
+ */
+template<typename FPT>
+inline
+FPT& imag(FPT (&z)[2]) {
+    return z[1];
+}
+
+/**
+ * Obtain the imaginary part of a complex number.
+ *
+ * @param z complex number stored as a two-element array.
+ *
+ * @return <tt>Im(z)</tt>
+ */
+template<typename FPT>
+inline
+const FPT& imag(const FPT (&z)[2]) {
+    return z[1];
+}
+
+/**
+ * Overwrite \c dest with \c src.
+ *
+ * @param dest destination
+ * @param src source
+ */
+template<class Complex1, class Complex2>
+inline
+void assign_complex(Complex1 &dest, const Complex2 &src)
 {
-    dest_real = src.real();
-    dest_imag = src.imag();
+    real(dest) = real(src);
+    imag(dest) = imag(src);
+}
+
+/**
+ * Overwrite \c dest with <tt>src_real + I*src_imag</tt> where \c I is
+ * the imaginary unit.
+ *
+ * @param dest destination
+ * @param src_real real part of the source
+ * @param src_imag imag part of the source
+ */
+template<class Complex, typename FPT>
+inline
+void assign_complex(Complex &dest,
+                    const FPT src_real,
+                    const FPT src_imag)
+{
+    real(dest) = src_real;
+    imag(dest) = src_imag;
 }
 
 /**
  * Overwrite \c dest_real with Re <tt>src</tt> and \c dest_imag with Re
- * <tt>src_imag</tt>
+ * <tt>src_imag</tt>.
  *
  * @param dest_real destination real part
  * @param dest_imag destination imag part
- * @param src source, which might be an \c fftw_complex type
- */
-template<typename FPT1, typename FPT2>
-void assign_components(FPT1 &dest_real,
-                       FPT1 &dest_imag,
-                       const FPT2 (&src)[2])
-{
-    dest_real = src[0];
-    dest_imag = src[1];
-}
-
-/**
- * Overwrite \c dest with <tt>alpha*src</tt>.
- *
- * @param dest destination, which might be an \c fftw_complex type
  * @param src source
- * @param alpha multiplicative real scaling factor
  */
-template<typename FPT1, typename FPT2, typename FPT3>
-void assign_complex_scaled(FPT1 (&dest)[2],
-                           const std::complex<FPT2> &src,
-                           const FPT3 alpha)
+template<typename FPT, class Complex>
+inline
+void assign_components(FPT &dest_real,
+                       FPT &dest_imag,
+                       const Complex &src)
 {
-    dest[0] = alpha*src.real();
-    dest[1] = alpha*src.imag();
-}
-
-/**
- * Overwrite \c dest with <tt>alpha*src</tt>.
- *
- * @param dest destination
- * @param src source, which might be an \c fftw_complex type
- * @param alpha multiplicative real scaling factor
- */
-template<typename FPT1, typename FPT2, typename FPT3>
-void assign_complex_scaled(std::complex<FPT1> &dest,
-                           const FPT2 (&src)[2],
-                           const FPT3 alpha)
-{
-     dest.real() = alpha*src[0];
-     dest.imag() = alpha*src[1];
-}
-
-/**
- * Overwrite \c dest with <tt>alpha*src</tt>.
- *
- * @param dest destination, which might be an \c fftw_complex type
- * @param src source, which might be an \c fftw_complex type
- * @param alpha multiplicative real scaling factor
- */
-template<typename FPT1, typename FPT2, typename FPT3>
-void assign_complex_scaled(FPT1 (&dest)[2],
-                           const FPT2 (&src)[2],
-                           const FPT3 alpha)
-{
-    dest[0] = alpha*src[0];
-    dest[1] = alpha*src[1];
+    dest_real = real(src);
+    dest_imag = imag(src);
 }
 
 /**
@@ -401,84 +347,14 @@ void assign_complex_scaled(FPT1 (&dest)[2],
  * @param src source
  * @param alpha multiplicative real scaling factor
  */
-template<typename FPT1, typename FPT2, typename FPT3>
-void assign_complex_scaled(std::complex<FPT1> &dest,
-                           const std::complex<FPT2> &src,
-                           const FPT3 alpha)
+template<class Complex1, class Complex2, typename FPT>
+inline
+void assign_complex_scaled(Complex1 &dest,
+                           const Complex2 &src,
+                           const FPT alpha)
 {
-    dest.real() = alpha*src.real();
-    dest.imag() = alpha*src.imag();
-}
-
-/**
- * Overwrite \c dest with <tt>alpha*src*I^ipower</tt> where
- * \c I is the imaginary unit.
- *
- * @param dest destination, which might be an \c fftw_complex type
- * @param src source
- * @param alpha multiplicative real scaling factor
- * @param ipower exponent on the imaginary unit to include in the scaling
- */
-template<typename FPT1, typename FPT2, typename FPT3>
-void assign_complex_scaled_ipower(FPT1 (&dest)[2],
-                                  const std::complex<FPT2> &src,
-                                  const FPT3 alpha,
-                                  const int ipower)
-{
-    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
-        case 3: // I^3 = -I = I^-1
-            dest[0] =  alpha*src.imag();
-            dest[1] = -alpha*src.real();
-            break;
-        case 2: // I^2 = -1 = I^-2
-            dest[0] = -alpha*src.real();
-            dest[1] = -alpha*src.imag();
-            break;
-        case 1: // I^1 = I = I^-3
-            dest[0] = -alpha*src.imag();
-            dest[1] =  alpha*src.real();
-            break;
-        case 0: // I^0 = 1
-            dest[0] =  alpha*src.real();
-            dest[1] =  alpha*src.imag();
-            break;
-    }
-}
-
-/**
- * Overwrite \c dest with <tt>alpha*src*I^ipower</tt> where
- * \c I is the imaginary unit.
- *
- * @param dest destination, which might be an \c fftw_complex type
- * @param src source, which might be an \c fftw_complex type
- * @param alpha multiplicative real scaling factor
- * @param ipower exponent on the imaginary unit to include in the scaling
- * @warning \c dest and \c src must not refer to the same data
- */
-template<typename FPT1, typename FPT2, typename FPT3>
-void assign_complex_scaled_ipower(FPT1 (&dest)[2],
-                                  const FPT2 (&src)[2],
-                                  const FPT3 alpha,
-                                  const int ipower)
-{
-    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
-        case 3: // I^3 = -I = I^-1
-            dest[0] =  alpha*src[1];
-            dest[1] = -alpha*src[0];
-            break;
-        case 2: // I^2 = -1 = I^-2
-            dest[0] = -alpha*src[0];
-            dest[1] = -alpha*src[1];
-            break;
-        case 1: // I^1 = I = I^-3
-            dest[0] = -alpha*src[1];
-            dest[1] =  alpha*src[0];
-            break;
-        case 0: // I^0 = 1
-            dest[0] =  alpha*src[0];
-            dest[1] =  alpha*src[1];
-            break;
-    }
+    real(dest) = alpha*real(src);
+    imag(dest) = alpha*imag(src);
 }
 
 /**
@@ -486,32 +362,33 @@ void assign_complex_scaled_ipower(FPT1 (&dest)[2],
  * \c I is the imaginary unit.
  *
  * @param dest destination
- * @param src source, which might be an \c fftw_complex type
+ * @param src source
  * @param alpha multiplicative real scaling factor
  * @param ipower exponent on the imaginary unit to include in the scaling
  */
-template<typename FPT1, typename FPT2, typename FPT3>
-void assign_complex_scaled_ipower(std::complex<FPT1> &dest,
-                                  const FPT2 (&src)[2],
-                                  const FPT3 alpha,
+template<class Complex1, class Complex2, typename FPT>
+inline
+void assign_complex_scaled_ipower(Complex1 &dest,
+                                  const Complex2 &src,
+                                  const FPT alpha,
                                   const int ipower)
 {
     switch (ipower & 3) { // Modulo-four-like operation for 2s complement
         case 3: // I^3 = -I = I^-1
-            dest.real() =  alpha*src[1];
-            dest.imag() = -alpha*src[0];
+            real(dest) =  alpha*imag(src);
+            imag(dest) = -alpha*real(src);
             break;
         case 2: // I^2 = -1 = I^-2
-            dest.real() = -alpha*src[0];
-            dest.imag() = -alpha*src[1];
+            real(dest) = -alpha*real(src);
+            imag(dest) = -alpha*imag(src);
             break;
         case 1: // I^1 = I = I^-3
-            dest.real() = -alpha*src[1];
-            dest.imag() =  alpha*src[0];
+            real(dest) = -alpha*imag(src);
+            imag(dest) =  alpha*real(src);
             break;
         case 0: // I^0 = 1
-            dest.real() =  alpha*src[0];
-            dest.imag() =  alpha*src[1];
+            real(dest) =  alpha*real(src);
+            imag(dest) =  alpha*imag(src);
             break;
     }
 }
@@ -559,6 +436,7 @@ struct complex_copy {
     template<class ComplexDestination,
              class ComplexSource,
              typename SignedInteger>
+    inline
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
                     const SignedInteger& dontcare) const
@@ -589,6 +467,7 @@ struct complex_copy_scale {
      * @param dontcare ignored within this functor
      */
     template<class ComplexSource, typename SignedInteger>
+    inline
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
                     const SignedInteger& dontcare) const
@@ -633,6 +512,7 @@ struct complex_copy_differentiate {
      * @param n wavenumber index to use
      */
     template<class ComplexSource, typename SignedInteger>
+    inline
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
                     const SignedInteger& n) const
@@ -688,6 +568,7 @@ struct complex_copy_scale_differentiate {
      * @param n wavenumber index to use
      */
     template<class ComplexSource, typename SignedInteger>
+    inline
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
                     const SignedInteger& n) const
