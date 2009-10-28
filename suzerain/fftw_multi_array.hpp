@@ -49,6 +49,8 @@
 #include <boost/type_traits/remove_pointer.hpp>
 #include <fftw3.h>
 
+// TODO Broken details::assign_* if FFTW3 discovers the C99 _Complex type
+
 namespace pecos { namespace suzerain {
 
 /**
@@ -239,12 +241,12 @@ FPT integer_power(FPT x, Integral n)
 /**
  * Overwrite \c dest with <tt>src</tt>
  *
- * @param dest destination
+ * @param dest destination, which might be an \c fftw_complex type
  * @param src source
  */
-template<typename FPT>
-void assign_complex(fftw_complex &dest,
-                    const std::complex<FPT> &src)
+template<typename FPT1, typename FPT2>
+void assign_complex(FPT1 (&dest)[2],
+                    const std::complex<FPT2> &src)
 {
     dest[0] = src.real();
     dest[1] = src.imag();
@@ -254,11 +256,11 @@ void assign_complex(fftw_complex &dest,
  * Overwrite \c dest with <tt>src</tt>
  *
  * @param dest destination
- * @param src source
+ * @param src source, which might be an \c fftw_complex type
  */
-template<typename FPT>
-void assign_complex(std::complex<FPT> &dest,
-                    const fftw_complex &src)
+template<typename FPT1, typename FPT2>
+void assign_complex(std::complex<FPT1> &dest,
+                    const FPT2 (&src)[2])
 {
     dest.real() = src[0];
     dest.imag() = src[1];
@@ -267,11 +269,12 @@ void assign_complex(std::complex<FPT> &dest,
 /**
  * Overwrite \c dest with <tt>src</tt>
  *
- * @param dest destination
- * @param src source
+ * @param dest destination, which might be an \c fftw_complex type
+ * @param src source, which might be an \c fftw_complex type
  */
-void assign_complex(fftw_complex &dest,
-                    const fftw_complex &src)
+template<typename FPT1, typename FPT2>
+void assign_complex(FPT1 (&dest)[2],
+                    const FPT2 (&src)[2])
 {
     dest[0] = src[0];
     dest[1] = src[1];
@@ -280,14 +283,14 @@ void assign_complex(fftw_complex &dest,
 /**
  * Overwrite \c dest with <tt>src_real</tt> + \f$\sqrt{-1}\f$ <tt>src_imag</tt>
  *
- * @param dest destination
+ * @param dest destination, which might be an \c fftw_complex type
  * @param src_real real part of the source
  * @param src_imag imag part of the source
  */
-template<typename FPT>
-void assign_complex(fftw_complex &dest,
-                    const FPT &src_real,
-                    const FPT &src_imag)
+template<typename FPT1, typename FPT2>
+void assign_complex(FPT1 (&dest)[2],
+                    const FPT2 &src_real,
+                    const FPT2 &src_imag)
 {
     dest[0] = src_real;
     dest[1] = src_imag;
@@ -332,12 +335,12 @@ void assign_components(FPT &dest_real,
  *
  * @param dest_real destination real part
  * @param dest_imag destination imag part
- * @param src source
+ * @param src source, which might be an \c fftw_complex type
  */
-template<typename FPT>
-void assign_components(FPT &dest_real,
-                       FPT &dest_imag,
-                       const fftw_complex &src)
+template<typename FPT1, typename FPT2>
+void assign_components(FPT1 &dest_real,
+                       FPT1 &dest_imag,
+                       const FPT2 (&src)[2])
 {
     dest_real = src[0];
     dest_imag = src[1];
@@ -346,14 +349,14 @@ void assign_components(FPT &dest_real,
 /**
  * Overwrite \c dest with <tt>alpha*src</tt>.
  *
- * @param dest destination
+ * @param dest destination, which might be an \c fftw_complex type
  * @param src source
  * @param alpha multiplicative real scaling factor
  */
-template<typename FPT1, typename FPT2>
-void assign_complex_scaled(fftw_complex &dest,
-                           const std::complex<FPT1> &src,
-                           const FPT2 alpha)
+template<typename FPT1, typename FPT2, typename FPT3>
+void assign_complex_scaled(FPT1 (&dest)[2],
+                           const std::complex<FPT2> &src,
+                           const FPT3 alpha)
 {
     dest[0] = alpha*src.real();
     dest[1] = alpha*src.imag();
@@ -363,13 +366,13 @@ void assign_complex_scaled(fftw_complex &dest,
  * Overwrite \c dest with <tt>alpha*src</tt>.
  *
  * @param dest destination
- * @param src source
+ * @param src source, which might be an \c fftw_complex type
  * @param alpha multiplicative real scaling factor
  */
-template<typename FPT1, typename FPT2>
+template<typename FPT1, typename FPT2, typename FPT3>
 void assign_complex_scaled(std::complex<FPT1> &dest,
-                           const fftw_complex &src,
-                           const FPT2 alpha)
+                           const FPT2 (&src)[2],
+                           const FPT3 alpha)
 {
      dest.real() = alpha*src[0];
      dest.imag() = alpha*src[1];
@@ -378,14 +381,14 @@ void assign_complex_scaled(std::complex<FPT1> &dest,
 /**
  * Overwrite \c dest with <tt>alpha*src</tt>.
  *
- * @param dest destination
- * @param src source
+ * @param dest destination, which might be an \c fftw_complex type
+ * @param src source, which might be an \c fftw_complex type
  * @param alpha multiplicative real scaling factor
  */
-template<typename FPT>
-void assign_complex_scaled(fftw_complex &dest,
-                           const fftw_complex &src,
-                           const FPT alpha)
+template<typename FPT1, typename FPT2, typename FPT3>
+void assign_complex_scaled(FPT1 (&dest)[2],
+                           const FPT2 (&src)[2],
+                           const FPT3 alpha)
 {
     dest[0] = alpha*src[0];
     dest[1] = alpha*src[1];
@@ -411,15 +414,15 @@ void assign_complex_scaled(std::complex<FPT1> &dest,
  * Overwrite \c dest with <tt>alpha*src*I^ipower</tt> where
  * \c I is the imaginary unit.
  *
- * @param dest destination
+ * @param dest destination, which might be an \c fftw_complex type
  * @param src source
  * @param alpha multiplicative real scaling factor
  * @param ipower exponent on the imaginary unit to include in the scaling
  */
-template<typename FPT1, typename FPT2>
-void assign_complex_scaled_ipower(fftw_complex &dest,
-                                  const std::complex<FPT1> &src,
-                                  const FPT2 alpha,
+template<typename FPT1, typename FPT2, typename FPT3>
+void assign_complex_scaled_ipower(FPT1 (&dest)[2],
+                                  const std::complex<FPT2> &src,
+                                  const FPT3 alpha,
                                   const int ipower)
 {
     switch (ipower & 3) { // Modulo-four-like operation for 2s complement
@@ -446,16 +449,16 @@ void assign_complex_scaled_ipower(fftw_complex &dest,
  * Overwrite \c dest with <tt>alpha*src*I^ipower</tt> where
  * \c I is the imaginary unit.
  *
- * @param dest destination
- * @param src source
+ * @param dest destination, which might be an \c fftw_complex type
+ * @param src source, which might be an \c fftw_complex type
  * @param alpha multiplicative real scaling factor
  * @param ipower exponent on the imaginary unit to include in the scaling
  * @warning \c dest and \c src must not refer to the same data
  */
-template<typename FPT>
-void assign_complex_scaled_ipower(fftw_complex &dest,
-                                  const fftw_complex &src,
-                                  const FPT alpha,
+template<typename FPT1, typename FPT2, typename FPT3>
+void assign_complex_scaled_ipower(FPT1 (&dest)[2],
+                                  const FPT2 (&src)[2],
+                                  const FPT3 alpha,
                                   const int ipower)
 {
     switch (ipower & 3) { // Modulo-four-like operation for 2s complement
@@ -483,14 +486,14 @@ void assign_complex_scaled_ipower(fftw_complex &dest,
  * \c I is the imaginary unit.
  *
  * @param dest destination
- * @param src source
+ * @param src source, which might be an \c fftw_complex type
  * @param alpha multiplicative real scaling factor
  * @param ipower exponent on the imaginary unit to include in the scaling
  */
-template<typename FPT1, typename FPT2>
+template<typename FPT1, typename FPT2, typename FPT3>
 void assign_complex_scaled_ipower(std::complex<FPT1> &dest,
-                                  const fftw_complex &src,
-                                  const FPT2 alpha,
+                                  const FPT2 (&src)[2],
+                                  const FPT3 alpha,
                                   const int ipower)
 {
     switch (ipower & 3) { // Modulo-four-like operation for 2s complement
@@ -825,7 +828,7 @@ void transform_c2c(
     typedef typename ComplexMultiArray1::element element1;
     typedef typename ComplexMultiArray2::element element2;
     // Ensure we are operating on complex-valued arrays
-    // C99 _Complex may require additional handling
+    // If available, C99 _Complex will be typedefed to fftw_complex, etc.
     BOOST_STATIC_ASSERT(
               (boost::is_complex<element1>::value)
            || (boost::is_same<element1, fftw_complex>::value));
