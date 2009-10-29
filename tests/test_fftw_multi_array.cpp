@@ -772,7 +772,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     const int NC = in.shape()[0];
     const int NR = out.shape()[0];
     const double close_enough
-        = std::numeric_limits<double>::epsilon()*5e2*NC;
+        = std::numeric_limits<double>::epsilon()*1e2*NC*NC;
 
     // Plan before loading in the data since planning overwrites in
     boost::shared_array<fftw_complex> buffer(
