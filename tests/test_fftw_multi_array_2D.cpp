@@ -19,6 +19,8 @@
 
 using namespace pecos::suzerain;
 
+BOOST_AUTO_TEST_SUITE( c2c_2d_forward_simple )
+
 // Helper function testing directional transforms for a small 2D grid
 template<class ComplexMultiArray1, class ComplexMultiArray2>
 void c2c_2d_forward_4_by_3(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
@@ -102,13 +104,57 @@ void c2c_2d_forward_4_by_3(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     }
 }
 
-BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward )
+BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward_out_of_place_c_storage )
 {
     typedef boost::multi_array<std::complex<double>,2> array_type;
 
-    {
-        array_type in(boost::extents[4][3]);
-        array_type out(boost::extents[4][3]);
-        c2c_2d_forward_4_by_3(in, out);
-    }
+    array_type in(boost::extents[4][3],  boost::c_storage_order());
+    array_type out(boost::extents[4][3], boost::c_storage_order());
+    c2c_2d_forward_4_by_3(in, out);
 }
+
+BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward_out_of_place_fortran_storage )
+{
+    typedef boost::multi_array<std::complex<double>,2> array_type;
+
+    array_type in(boost::extents[4][3],  boost::fortran_storage_order());
+    array_type out(boost::extents[4][3], boost::fortran_storage_order());
+    c2c_2d_forward_4_by_3(in, out);
+}
+
+BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward_out_of_place_c2fortran_storage )
+{
+    typedef boost::multi_array<std::complex<double>,2> array_type;
+
+    array_type in(boost::extents[4][3],  boost::c_storage_order());
+    array_type out(boost::extents[4][3], boost::fortran_storage_order());
+    c2c_2d_forward_4_by_3(in, out);
+}
+
+BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward_out_of_place_fortran2c_storage )
+{
+    typedef boost::multi_array<std::complex<double>,2> array_type;
+
+    array_type in(boost::extents[4][3],  boost::fortran_storage_order());
+    array_type out(boost::extents[4][3], boost::c_storage_order());
+    c2c_2d_forward_4_by_3(in, out);
+}
+
+BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward_in_place_c_storage )
+{
+    typedef boost::multi_array<std::complex<double>,2> array_type;
+
+    array_type both(boost::extents[4][3], boost::c_storage_order());
+    c2c_2d_forward_4_by_3(both, both);
+}
+
+BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward_in_place_fortran_storage )
+{
+    typedef boost::multi_array<std::complex<double>,2> array_type;
+
+    array_type both(boost::extents[4][3], boost::fortran_storage_order());
+    c2c_2d_forward_4_by_3(both, both);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
