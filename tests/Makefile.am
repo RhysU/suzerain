@@ -71,15 +71,20 @@ test_timestepper_SOURCES  = test_timestepper.c
 test_timestepper_LDADD    = $(GSL_LIBS)
 test_timestepper_LDADD   += ../suzerain/libsuzerain.la
 
-check_PROGRAMS       += test_fftw_1d
-test_fftw_1d_SOURCES  = test_fftw_1d.cpp
-test_fftw_1d_LDADD    = $(FFTW3_LIBS)
-test_fftw_1d_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+check_PROGRAMS       += test_fftw_1D
+test_fftw_1D_SOURCES  = test_fftw_1D.cpp
+test_fftw_1D_LDADD    = $(FFTW3_LIBS)
+test_fftw_1D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 
-check_PROGRAMS                += test_fftw_multi_array
-test_fftw_multi_array_SOURCES  = test_fftw_multi_array.cpp
-test_fftw_multi_array_LDADD    = $(FFTW3_LIBS)
-test_fftw_multi_array_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+check_PROGRAMS                   += test_fftw_multi_array_1D
+test_fftw_multi_array_1D_SOURCES  = test_fftw_multi_array_1D.cpp
+test_fftw_multi_array_1D_LDADD    = $(FFTW3_LIBS)
+test_fftw_multi_array_1D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+
+check_PROGRAMS                   += test_fftw_multi_array_2D
+test_fftw_multi_array_2D_SOURCES  = test_fftw_multi_array_2D.cpp
+test_fftw_multi_array_2D_LDADD    = $(FFTW3_LIBS)
+test_fftw_multi_array_2D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 
 check_PROGRAMS         += test_underling
 test_underling_SOURCES  = test_underling.cpp
