@@ -420,6 +420,12 @@ struct transform_traits<fftwf_complex> {
     static fftw_plan_type (* const plan_c2c_1d)(
                 int, fftw_complex_type*, fftw_complex_type*, int, unsigned
             ) = &fftwf_plan_dft_1d;
+
+    /** Corresponding FFTW execute plan function */
+    static void (* const execute_plan)(fftw_plan_type) = &fftwf_execute;
+
+    /** Corresponding FFTW destroy plan function */
+    static void (* const destroy_plan)(fftw_plan_type) = &fftwf_destroy_plan;
 };
 
 /** FFT traits specialized for \c fftw_complex */
@@ -442,6 +448,12 @@ struct transform_traits<fftw_complex> {
     static fftw_plan_type (* const plan_c2c_1d)(
                 int, fftw_complex_type*, fftw_complex_type*, int, unsigned
             ) = &fftw_plan_dft_1d;
+
+    /** Corresponding FFTW execute plan function */
+    static void (* const execute_plan)(fftw_plan_type) = &fftw_execute;
+
+    /** Corresponding FFTW destroy plan function */
+    static void (* const destroy_plan)(fftw_plan_type) = &fftw_destroy_plan;
 };
 
 /** FFT traits specialized for \c fftwl_complex */
@@ -464,6 +476,12 @@ struct transform_traits<fftwl_complex> {
     static fftw_plan_type (* const plan_c2c_1d)(
                 int, fftw_complex_type*, fftw_complex_type*, int, unsigned
             ) = &fftwl_plan_dft_1d;
+
+    /** Corresponding FFTW execute plan function */
+    static void (* const execute_plan)(fftw_plan_type) = &fftwl_execute;
+
+    /** Corresponding FFTW destroy plan function */
+    static void (* const destroy_plan)(fftw_plan_type) = &fftwl_destroy_plan;
 };
 
 /** FFT traits specialized for <tt>std::complex<float></tt> */
@@ -762,15 +780,14 @@ void c2c_buffer_process(OutputIterator out,
  */
 template<class TransformTraits,
          class ComplexMultiArray1,
-         class ComplexMultiArray2>
+         class ComplexMultiArray2,
+         typename DomainLengthType>
 void transform_c2c(
     const size_t transform_dim,
     const ComplexMultiArray1 &in,
     ComplexMultiArray2 &out,
     const int fftw_sign,
-    const typename detail::transform_traits<
-            typename ComplexMultiArray1::element
-        >::real_type domain_length,
+    const DomainLengthType domain_length,
     const int derivative,
     const unsigned fftw_flags)
 {
@@ -828,19 +845,21 @@ void transform_c2c(
         ? shape_in[transform_dim] : shape_out[transform_dim];
 
     // Prepare the in-place transform buffer and construct the FFTW plan
-    // TODO Assumes we're always using FFTW's double interface; relax that
-    boost::shared_array<fftw_complex> buffer(
-        static_cast<fftw_complex *>(
-            fftw_malloc(sizeof(fftw_complex)*transform_n)),
+    typedef typename TransformTraits::fftw_complex_type fftw_complex_type;
+    boost::shared_array<fftw_complex_type> buffer(
+        static_cast<fftw_complex_type *>(
+            fftw_malloc(sizeof(fftw_complex_type)*transform_n)),
         std::ptr_fun(fftw_free));
     assert(buffer);
-    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
-            fftw_plan_dft_1d(transform_n,
-                             buffer.get(),
-                             buffer.get(),
-                             fftw_sign,
-                             fftw_flags | FFTW_DESTROY_INPUT),
-            std::ptr_fun(fftw_destroy_plan));
+    typedef typename TransformTraits::fftw_plan_type fftw_plan_type;
+    boost::shared_ptr<
+            typename boost::remove_pointer<fftw_plan_type>::type
+        > plan(TransformTraits::plan_c2c_1d(transform_n,
+                                            buffer.get(),
+                                            buffer.get(),
+                                            fftw_sign,
+                                            fftw_flags | FFTW_DESTROY_INPUT),
+               std::ptr_fun(TransformTraits::destroy_plan));
     assert(plan);
 
     // Dereference all constant parameters outside main processing loop
@@ -898,7 +917,7 @@ void transform_c2c(
         }
 
         // Pull the strings!  Pull the strings!
-        fftw_execute(plan.get());
+        TransformTraits::execute_plan(plan.get());
 
         // Obtain index for the current output pencil's starting position
         std::transform(loop_index.begin(), loop_index.end(),
@@ -969,7 +988,7 @@ void forward_c2c(
     const ComplexMultiArray1 &in,
     ComplexMultiArray2 &out,
     const typename detail::transform_traits<
-            typename ComplexMultiArray1::element
+            typename ComplexMultiArray2::element         // wave space scalar
         >::real_type domain_length = 2.0*M_PI,
     const int derivative = 0,
     const unsigned fftw_flags = 0)
@@ -978,7 +997,10 @@ void forward_c2c(
             // Transform traits based on physical space types
             detail::transform_traits<typename ComplexMultiArray1::element>,
             ComplexMultiArray1,
-            ComplexMultiArray2
+            ComplexMultiArray2,
+            typename detail::transform_traits<
+                    typename ComplexMultiArray2::element // wave space scalar
+                >::real_type
         >(
             transform_dim,
             in,
@@ -1017,7 +1039,7 @@ void backward_c2c(
     const ComplexMultiArray1 &in,
     ComplexMultiArray2 &out,
     const typename detail::transform_traits<
-            typename ComplexMultiArray1::element
+            typename ComplexMultiArray1::element         // wave space scalar
         >::real_type domain_length = 2.0*M_PI,
     const int derivative = 0,
     const unsigned fftw_flags = 0)
@@ -1026,7 +1048,10 @@ void backward_c2c(
             // Transform traits based on physical space types
             detail::transform_traits<typename ComplexMultiArray2::element>,
             ComplexMultiArray1,
-            ComplexMultiArray2
+            ComplexMultiArray2,
+            typename detail::transform_traits<
+                    typename ComplexMultiArray1::element // wave space scalar
+                >::real_type
         >(
             transform_dim,
             in,
