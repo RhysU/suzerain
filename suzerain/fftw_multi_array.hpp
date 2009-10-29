@@ -774,9 +774,14 @@ void transform_c2c(
     const int derivative,
     const unsigned fftw_flags)
 {
-    // Typedefs fixed separately each ComplexMultiArray template parameters
+    // Typedefs fixed separately by ComplexMultiArray template parameters
     typedef typename ComplexMultiArray1::element element1;
     typedef typename ComplexMultiArray2::element element2;
+    typedef typename ComplexMultiArray1::index index1;
+    typedef typename ComplexMultiArray2::index index2;
+    typedef typename ComplexMultiArray1::size_type size_type1;
+    typedef typename ComplexMultiArray2::size_type size_type2;
+
     // Ensure we are operating on complex-valued arrays
     // If available, C99 _Complex will be typedefed to fftw_complex, etc.
     BOOST_STATIC_ASSERT(
@@ -787,24 +792,14 @@ void transform_c2c(
            || (boost::is_same<element2, fftw_complex>::value));
     // Ensure element types occupy the same storage
     BOOST_STATIC_ASSERT(sizeof(element1) == sizeof(element2));
-
-    // Typedefs expected to be consistent across both template parameters
-    BOOST_STATIC_ASSERT((boost::is_same<
-                typename ComplexMultiArray1::index,
-                typename ComplexMultiArray2::index
-            >::value));
-    typedef typename ComplexMultiArray1::index index;
-    BOOST_STATIC_ASSERT((boost::is_same<
-                typename ComplexMultiArray1::size_type,
-                typename ComplexMultiArray2::size_type
-            >::value));
-    typedef typename ComplexMultiArray1::size_type size_type;
+    // Ensure dimension of both in and out is consistent
     BOOST_STATIC_ASSERT(    ComplexMultiArray1::dimensionality
                          == ComplexMultiArray2::dimensionality);
-    const size_type dimensionality = ComplexMultiArray1::dimensionality;
+    const size_type1 dimensionality = ComplexMultiArray1::dimensionality;
 
     // Typedefs due to implementation choices
-    typedef boost::array<index,dimensionality>       index_array;
+    typedef boost::array<index1,dimensionality>      index_array1;
+    typedef boost::array<index2,dimensionality>      index_array2;
     typedef int                                      shape_type; // Per FFTW
     typedef boost::array<shape_type,dimensionality>  shape_array;
 
@@ -813,15 +808,17 @@ void transform_c2c(
     // Copy all shape information into integers well-suited for FFTW
     shape_array shape_in, shape_out;
     {
-        typedef boost::numeric::converter<shape_type,size_type> Size2ShapeType;
+        using boost::numeric::converter;
+        typedef converter<shape_type,size_type1> Size1ToShapeType;
         std::transform(in.shape(), in.shape() + dimensionality,
-                    shape_in.begin(), Size2ShapeType());
+                       shape_in.begin(), Size1ToShapeType());
+        typedef converter<shape_type,size_type2> Size2ToShapeType;
         std::transform(out.shape(), out.shape() + dimensionality,
-                    shape_out.begin(), Size2ShapeType());
+                       shape_out.begin(), Size2ToShapeType());
     }
     // Ensure out shape at least as large as in shape for
     // all non-transformed directions
-    for (size_type n = 0; n < dimensionality; ++n) {
+    for (size_type1 n = 0; n < dimensionality; ++n) {
         assert(n == transform_dim || shape_in[n] <= shape_out[n]);
     }
     // Ensure transformation direction parameter is sane
@@ -848,28 +845,30 @@ void transform_c2c(
 
     // Dereference all constant parameters outside main processing loop
     // Pulls array information into our stack frame
-    index_array index_bases_in, index_bases_out;
+    index_array1 index_bases_in;
     std::copy(in.index_bases(), in.index_bases() + dimensionality,
               index_bases_in.begin());
+    index_array2 index_bases_out;
     std::copy(out.index_bases(), out.index_bases() + dimensionality,
               index_bases_out.begin());
-    const index      stride_in_transform_dim  = in.strides()[transform_dim];
-    const index      stride_out_transform_dim = out.strides()[transform_dim];
+    const index1     stride_in_transform_dim  = in.strides()[transform_dim];
+    const index2     stride_out_transform_dim = out.strides()[transform_dim];
     const shape_type shape_in_transform_dim   = shape_in[transform_dim];
     const shape_type shape_out_transform_dim  = shape_out[transform_dim];
 
     // Prepare per-pencil outer loop index and loop bounds
     shape_array loop_shape(shape_in);   // Iterate over all dimensions...
     loop_shape[transform_dim] = 1;      // ...except the transformed one
-    index_array loop_index = {{   }};   // Initialize to default value
-    for (size_type n = 0; n < dimensionality; ++n) {
+    index_array1 loop_index = {{   }};  // Initialize to default value
+    for (size_type1 n = 0; n < dimensionality; ++n) {
         assert(loop_index[n] == 0);     // Check initialization correct
     }
-    index_array dereference_index;      // To be adjusted by index_bases
+    index_array1 dereference_index1;     // To be adjusted by index_bases
+    index_array2 dereference_index2;     // To be adjusted by index_bases
 
     // Walk fastest dimensions first when incrementing across pencils
-    index_array increment_order;
-    for (index n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
+    index_array1 increment_order;
+    for (index1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
     std::stable_sort(increment_order.begin(), increment_order.end(),
                      detail::make_indexed_element_comparator(in.strides()));
 
@@ -877,22 +876,22 @@ void transform_c2c(
     do {
         // Obtain index for the current input pencil's starting position
         std::transform(loop_index.begin(), loop_index.end(),
-                       index_bases_in.begin(), dereference_index.begin(),
-                       std::plus<index>());
+                       index_bases_in.begin(), dereference_index1.begin(),
+                       std::plus<index1>());
 
         // Copy input into transform buffer performing any needed scaling, etc.
         if (fftw_sign == FFTW_BACKWARD && derivative != 0) {
             detail::c2c_buffer_process(
-                buffer.get(), transform_n, index(1),
-                &in(dereference_index),
+                buffer.get(), transform_n, index1(1),
+                &in(dereference_index1),
                 shape_in_transform_dim,
                 stride_in_transform_dim,
                 detail::complex_copy_differentiate<fftw_complex>(
                     derivative, domain_length));
         } else {
             detail::c2c_buffer_process(
-                buffer.get(), transform_n, index(1),
-                &in(dereference_index),
+                buffer.get(), transform_n, index1(1),
+                &in(dereference_index1),
                 shape_in_transform_dim,
                 stride_in_transform_dim,
                 detail::complex_copy());
@@ -903,8 +902,8 @@ void transform_c2c(
 
         // Obtain index for the current output pencil's starting position
         std::transform(loop_index.begin(), loop_index.end(),
-                       index_bases_out.begin(), dereference_index.begin(),
-                       std::plus<index>());
+                       index_bases_out.begin(), dereference_index2.begin(),
+                       std::plus<index2>());
 
         // Copy transform buffer into output performing any needed scaling, etc.
         if (fftw_sign == FFTW_FORWARD) {
@@ -913,26 +912,26 @@ void transform_c2c(
             const scalar normalization = scalar(1.0)/transform_n;
             if (derivative == 0) {
                 detail::c2c_buffer_process(
-                    &out(dereference_index),
+                    &out(dereference_index2),
                     shape_out_transform_dim,
                     stride_out_transform_dim,
-                    buffer.get(), transform_n, index(1),
+                    buffer.get(), transform_n, index2(1),
                     detail::complex_copy_scale<element2>(normalization));
             } else {
                 detail::c2c_buffer_process(
-                    &out(dereference_index),
+                    &out(dereference_index2),
                     shape_out_transform_dim,
                     stride_out_transform_dim,
-                    buffer.get(), transform_n, index(1),
+                    buffer.get(), transform_n, index2(1),
                     detail::complex_copy_scale_differentiate<element2>(
                         normalization, derivative, domain_length));
             }
         } else {
             detail::c2c_buffer_process(
-                &out(dereference_index),
+                &out(dereference_index2),
                 shape_out_transform_dim,
                 stride_out_transform_dim,
-                buffer.get(), transform_n, index(1),
+                buffer.get(), transform_n, index2(1),
                 detail::complex_copy());
         }
 
