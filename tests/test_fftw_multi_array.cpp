@@ -1251,3 +1251,77 @@ BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
         TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
         ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_AUTO_TEST_SUITE_END();
+
+BOOST_AUTO_TEST_CASE( c2c_2d_out_of_place )
+{
+    typedef boost::multi_array<std::complex<double>,2> array_type;
+    using fftw_multi_array::detail::assign_complex;
+    using fftw_multi_array::detail::assign_components;
+
+    const int M = 4, N = 3;
+    const double data[M][N] = {1,2,3, 4,5,6, 7,8,9, 10,11,12};
+    const double close_enough 
+        = std::numeric_limits<double>::epsilon()*10*M*M*N*N;
+
+    array_type in(boost::extents[M][N]);
+    for (int i = 0; i < M; ++i)
+        for (int j = 0; j < N; ++j)
+            assign_complex(in[i][j], data[i][j], 0);
+
+    { // Transform each row and test against expected
+        array_type out(boost::extents[M][N]);
+        typedef std::complex<double> z;
+        const z expected0[M][N] = {
+            z( 5.5, 0.),  z( 6.5, 0.),  z( 7.5, 0.),
+            z(-1.5, 1.5), z(-1.5, 1.5), z(-1.5, 1.5),
+            z(-1.5, 0.),  z(-1.5, 0.),  z(-1.5, 0.),
+            z(-1.5,-1.5), z(-1.5,-1.5), z(-1.5,-1.5)
+        };
+        fftw_multi_array::forward_c2c(0, in, out);
+        for (int i = 0; i < M; ++i) {
+            for (int j = 0; j < N; ++j) {
+                double e_real, e_imag;
+                assign_components(e_real, e_imag, expected0[i][j]);
+                if (fabs(e_real) < close_enough) {
+                    BOOST_CHECK_SMALL(real(out[i][j]), close_enough);
+                } else {
+                    BOOST_CHECK_CLOSE(e_real, real(out[i][j]), close_enough);
+                }
+                if (fabs(e_imag) < close_enough) {
+                    BOOST_CHECK_SMALL(imag(out[i][j]), close_enough);
+                } else {
+                    BOOST_CHECK_CLOSE(e_imag, imag(out[i][j]), close_enough);
+                }
+            }
+        }
+    }
+
+    { // Transform each column and test against expected
+        array_type out(boost::extents[M][N]);
+        typedef std::complex<double> z;
+        const z expected1[M][N] = {
+            z( 2.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813),
+            z( 5.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813),
+            z( 8.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813),
+            z(11.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813)
+        };
+        fftw_multi_array::forward_c2c(1, in, out);
+        for (int i = 0; i < M; ++i) {
+            for (int j = 0; j < N; ++j) {
+                double e_real, e_imag;
+                assign_components(e_real, e_imag, expected1[i][j]);
+                if (fabs(e_real) < close_enough) {
+                    BOOST_CHECK_SMALL(real(out[i][j]), close_enough);
+                } else {
+                    BOOST_CHECK_CLOSE(e_real, real(out[i][j]), close_enough);
+                }
+                if (fabs(e_imag) < close_enough) {
+                    BOOST_CHECK_SMALL(imag(out[i][j]), close_enough);
+                } else {
+                    BOOST_CHECK_CLOSE(e_imag, imag(out[i][j]), close_enough);
+                }
+            }
+        }
+    }
+
+}

@@ -312,11 +312,11 @@ void assign_complex(Complex1 &dest, const Complex2 &src)
  * @param src_real real part of the source
  * @param src_imag imag part of the source
  */
-template<class Complex, typename FPT>
+template<class Complex, typename FPT1, typename FPT2>
 inline
 void assign_complex(Complex &dest,
-                    const FPT src_real,
-                    const FPT src_imag)
+                    const FPT1 src_real,
+                    const FPT2 src_imag)
 {
     real(dest) = src_real;
     imag(dest) = src_imag;
