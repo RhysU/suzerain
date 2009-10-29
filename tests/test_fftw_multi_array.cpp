@@ -628,8 +628,8 @@ FPT real_test_function(const Integer NR,
                        const Integer max_mode_exclusive,
                        const Integer i,
                        const FPT shift = M_PI/3.0,
-                       const Integer derivative = 0,
-                       const FPT length = 2.0*M_PI) {
+                       const FPT length = 2.0*M_PI,
+                       const Integer derivative = 0) {
     const FPT xi = i*length/NR;
     FPT retval = (max_mode_exclusive > 0 && derivative == 0 )
         ? 17.0 : 0; // Zero mode fixed
@@ -705,7 +705,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         fftw_multi_array::detail::assign_complex(
                 in[i], real_test_function<double>(NR, (NR+1)/2, i, shift), 0.0);
     }
-    fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::forward_c2c(0, in, out);
 
     // Real input should exhibit conjugate symmetry in wave space...
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) { // ...up to grid modes
@@ -736,7 +736,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         fftw_multi_array::detail::assign_complex(
                 in[i], 0.0, real_test_function<double>(NR, (NR+1)/2, i, shift));
     }
-    fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::forward_c2c(0, in, out);
 
     // Imaginary input should exhibit a similar symmetry in wave space...
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
@@ -811,7 +811,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
 
     // Transform input FFTW directly and also our wrapper
     fftw_execute(plan.get());  // Important to be first for in == out
-    fftw_multi_array::transform_c2c(0, in, out, FFTW_FORWARD);
+    fftw_multi_array::forward_c2c(0, in, out);
 
     // Ensure we got the same result, up to scaling differences
     for (int i = 0; i < NR; ++i) {
@@ -856,7 +856,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     }
     // TODO Test behavior of highest even half mode
 
-    fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
+    fftw_multi_array::backward_c2c(0, in, out);
 
     // Output should be a real-valued function in physical space...
     for (int i = 0; i < NR; ++i) {
@@ -885,7 +885,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     }
     // TODO Test behavior of highest even half mode
 
-    fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
+    fftw_multi_array::backward_c2c(0, in, out);
 
     // Output should be an imaginary-valued function in physical space...
     for (int i = 0; i < NR; ++i) {
@@ -959,7 +959,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     for (int i = 0; i < NC; ++i) {
         fftw_multi_array::detail::assign_complex_scaled(in[i], in[i], 1.0/NC);
     }
-    fftw_multi_array::transform_c2c(0, in, out, FFTW_BACKWARD);
+    fftw_multi_array::backward_c2c(0, in, out);
 
     // Ensure we got exactly the same result after normalization
     for (int i = 0; i < NR; ++i) {
@@ -993,23 +993,21 @@ void differentiate_on_forward_1D_complex(ComplexMultiArray1 &in,
             fill_with_complex_NaN(out);
             for (int i = 0; i < NR; ++i) {
                 const double val = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, 0, length[l]);
+                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
                 fftw_multi_array::detail::assign_complex(in[i], val, -val);
             }
 
             // Forward transform and differentiate
-            fftw_multi_array::transform_c2c(
-                0, in, out, FFTW_FORWARD, derivative, length[l]);
+            fftw_multi_array::forward_c2c(0, in, out, length[l], derivative);
 
             // Backwards transform without differentiating
-            fftw_multi_array::transform_c2c(
-                0, out, in, FFTW_BACKWARD, 0, length[l]);
+            fftw_multi_array::backward_c2c(0, out, in, length[l], 0);
 
             // Ensure we see what we expect
             for (int i = 0; i < NR; ++i) {
                 const double expected_val = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, derivative,
-                        length[l]);
+                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
+                        derivative);
                 double real, imag;
                 fftw_multi_array::detail::assign_components(real, imag, in[i]);
                 if (fabs(expected_val) < close_enough) {
@@ -1046,23 +1044,21 @@ void differentiate_on_backward_1D_complex(ComplexMultiArray1 &in,
             fill_with_complex_NaN(out);
             for (int i = 0; i < NR; ++i) {
                 const double val = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, 0, length[l]);
+                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
                 fftw_multi_array::detail::assign_complex(in[i], val, -val);
             }
 
             // Forward transform without differentiating
-            fftw_multi_array::transform_c2c(
-                    0, in, out, FFTW_FORWARD, 0, length[l]);
+            fftw_multi_array::forward_c2c(0, in, out, length[l], 0);
 
             // Backwards transform and differentiate
-            fftw_multi_array::transform_c2c(
-                    0, out, in, FFTW_BACKWARD, derivative, length[l]);
+            fftw_multi_array::backward_c2c(0, out, in, length[l], derivative);
 
             // Ensure we see what we expect as the derivative
             for (int i = 0; i < NR; ++i) {
                 const double expected_val = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, derivative,
-                        length[l]);
+                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
+                        derivative);
                 double real, imag;
                 fftw_multi_array::detail::assign_components(real, imag, in[i]);
                 if (fabs(expected_val) < close_enough) {

@@ -721,13 +721,10 @@ void c2c_buffer_process(OutputIterator out,
     }
 }
 
-
-} // namespace detail
-
 /**
  * Perform a FFT on each 1D "pencil" of \c in storing the result in \c out.  If
  * desired, the data can be differentiated.  Processing is done in a way that
- * attempt to minimize memory access under the assumption that either \c in or
+ * attempts to minimize memory access under the assumption that either \c in or
  * \c out will require non-stride-one access.  If \c in and \c out are two
  * distinct data sets, then \c in is not destroyed in the computation.  Data is
  * normalized in wave space in a transform-size-independent way.
@@ -741,10 +738,10 @@ void c2c_buffer_process(OutputIterator out,
  * @param fftw_sign either \c FFTW_FORWARD or \c FFTW_BACKWARD to transform
  *                  from physical to wave space or from wave space to
  *                  physical space, respectively.
- * @param derivative If nonzero, the data is differentiated during the transform
- *                   process.
  * @param domain_length Used when differentiating the data during the
  *                   transformation.
+ * @param derivative If nonzero, the data is differentiated during the transform
+ *                   process.
  * @param fftw_flags FFTW planner flags to use when computing the transform.
  *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
  *
@@ -763,18 +760,19 @@ void c2c_buffer_process(OutputIterator out,
  *    @li Greatly simplifies transform, dealiasing, and differentiation code
  *    @li Simplifies moving to other FFT libraries in the future, e.g. ESSL
  */
-template<class ComplexMultiArray1,
+template<class TransformTraits,
+         class ComplexMultiArray1,
          class ComplexMultiArray2>
 void transform_c2c(
     const size_t transform_dim,
     const ComplexMultiArray1 &in,
     ComplexMultiArray2 &out,
     const int fftw_sign,
-    const int derivative = 0,
     const typename detail::transform_traits<
             typename ComplexMultiArray1::element
-        >::real_type domain_length = 2.0*M_PI,
-    const unsigned fftw_flags = 0)
+        >::real_type domain_length,
+    const int derivative,
+    const unsigned fftw_flags)
 {
     // Typedefs fixed separately each ComplexMultiArray template parameters
     typedef typename ComplexMultiArray1::element element1;
@@ -941,8 +939,105 @@ void transform_c2c(
     } while (detail::increment<dimensionality>(loop_index.begin(),
                                                loop_shape.begin(),
                                                increment_order.begin()));
-
 } /* transform_c2c */
+
+} // namespace detail
+
+/**
+ * Perform a forward FFT on each 1D "pencil" of \c in storing the result in \c
+ * out.  That is, data is transformed from physical space to wave space.  If
+ * desired, the data can be differentiated.
+ *
+ * @param transform_dim zero-indexed dimension indicating the pencils to
+ *                      be transformed.
+ * @param in an instance modeling the MultiArray concept containing the
+ *           complex physical space input data to transform.
+ * @param out an instance modeling the MultiArray concept to contain the
+ *            complex wave space output data from the transform.
+ * @param domain_length Used when differentiating the data during the
+ *                   transformation.
+ * @param derivative If nonzero, the data is differentiated during the transform
+ *                   process.
+ * @param fftw_flags FFTW planner flags to use when computing the transform.
+ *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
+ *
+ * @see detail::c2c_transform for more details on the transform process.
+ */
+template<class ComplexMultiArray1,
+         class ComplexMultiArray2>
+void forward_c2c(
+    const size_t transform_dim,
+    const ComplexMultiArray1 &in,
+    ComplexMultiArray2 &out,
+    const typename detail::transform_traits<
+            typename ComplexMultiArray1::element
+        >::real_type domain_length = 2.0*M_PI,
+    const int derivative = 0,
+    const unsigned fftw_flags = 0)
+{
+    return detail::transform_c2c<
+            // Transform traits based on physical space types
+            detail::transform_traits<typename ComplexMultiArray1::element>,
+            ComplexMultiArray1,
+            ComplexMultiArray2
+        >(
+            transform_dim,
+            in,
+            out,
+            FFTW_FORWARD,
+            domain_length,
+            derivative,
+            fftw_flags
+         );
+}
+
+/**
+ * Perform a backward FFT on each 1D "pencil" of \c in storing the result in \c
+ * out.  That is, data is transformed from wave space to physical space.  If
+ * desired, the data can be differentiated.
+ *
+ * @param transform_dim zero-indexed dimension indicating the pencils to
+ *                      be transformed.
+ * @param in an instance modeling the MultiArray concept containing the
+ *           complex wave space input data to transform.
+ * @param out an instance modeling the MultiArray concept to contain the
+ *            complex physical space output data from transform.
+ * @param domain_length Used when differentiating the data during the
+ *                   transformation.
+ * @param derivative If nonzero, the data is differentiated during the transform
+ *                   process.
+ * @param fftw_flags FFTW planner flags to use when computing the transform.
+ *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
+ *
+ * @see detail::c2c_transform for more details on the transform process.
+ */
+template<class ComplexMultiArray1,
+         class ComplexMultiArray2>
+void backward_c2c(
+    const size_t transform_dim,
+    const ComplexMultiArray1 &in,
+    ComplexMultiArray2 &out,
+    const typename detail::transform_traits<
+            typename ComplexMultiArray1::element
+        >::real_type domain_length = 2.0*M_PI,
+    const int derivative = 0,
+    const unsigned fftw_flags = 0)
+{
+    return detail::transform_c2c<
+            // Transform traits based on physical space types
+            detail::transform_traits<typename ComplexMultiArray2::element>,
+            ComplexMultiArray1,
+            ComplexMultiArray2
+        >(
+            transform_dim,
+            in,
+            out,
+            FFTW_BACKWARD,
+            domain_length,
+            derivative,
+            fftw_flags
+         );
+}
 
 } /* fftw_multi_array */ } /* suzerain */ } /* pecos */
 
