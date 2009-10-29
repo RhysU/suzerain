@@ -394,34 +394,144 @@ void assign_complex_scaled_ipower(Complex1 &dest,
 }
 
 /**
- * Provides traits for general complex number types.
- * General template works for \c std::complex instantiations.
+ * Provides primary template for complex number traits.  Must be specialized
+ * for all types of interest.
  **/
 template<typename Complex>
-struct complex_traits {
-    /** Real and imaginary components type */
-    typedef typename Complex::value_type value_type;
+struct transform_traits {
 };
 
-/** Provides traits for \c fftwf_complex complex number type.  **/
+/** Complex number traits specialized for <tt>std::complex<float></tt> */
 template<>
-struct complex_traits<fftwf_complex> {
+struct transform_traits<std::complex<float> > {
+
+    /** Complex number type */
+    typedef typename std::complex<float> complex_type;
+
     /** Real and imaginary components type */
-    typedef float value_type;
+    typedef typename std::complex<float>::value_type real_type;
+
+    /** Corresponding precision FFTW complex type */
+    typedef fftwf_complex fftw_complex_type;
+
+    /** Corresponding precision FFTW plan type */
+    typedef fftwf_plan fftw_plan_type;
+
+    /** Corresponding FFTW planning function */
+    static fftw_plan_type (* const plan_c2c_1d)(
+                int, fftw_complex_type*, fftw_complex_type*, int, unsigned
+            ) = &fftwf_plan_dft_1d;
 };
 
-/** Provides traits for \c fftw_complex complex number type.  **/
+/** Complex number traits specialized for <tt>std::complex<double></tt> */
 template<>
-struct complex_traits<fftw_complex> {
-    /** Real and imaginary components type */
-    typedef double value_type;
+struct transform_traits<std::complex<double> > {
+
+    /** Complex number type */
+    typedef typename std::complex<double> complex_type;
+
+    /** Real and imaginary type */
+    typedef typename
+        std::complex<double>::value_type real_type;
+
+    /** Corresponding precision FFTW complex type */
+    typedef fftw_complex fftw_complex_type;
+
+    /** Corresponding precision FFTW plan type */
+    typedef fftw_plan fftw_plan_type;
+
+    /** Corresponding FFTW planning function */
+    static fftw_plan_type (* const plan_c2c_1d)(
+                int, fftw_complex_type*, fftw_complex_type*, int, unsigned
+            ) = &fftw_plan_dft_1d;
 };
 
-/** Provides traits for \c fftwl_complex complex number type.  **/
+/** Complex number traits specialized for <tt>std::complex<long double></tt> */
 template<>
-struct complex_traits<fftwl_complex> {
+struct transform_traits<std::complex<long double> > {
+
+    /** Complex number type */
+    typedef typename std::complex<long double> complex_type;
+
     /** Real and imaginary components type */
-    typedef long double value_type;
+    typedef typename std::complex<long double>::value_type real_type;
+
+    /** Corresponding precision FFTW complex type */
+    typedef fftwl_complex fftw_complex_type;
+
+    /** Corresponding precision FFTW plan type */
+    typedef fftwl_plan fftw_plan_type;
+
+    /** Corresponding FFTW planning function */
+    static fftw_plan_type (* const plan_c2c_1d)(
+                int, fftw_complex_type*, fftw_complex_type*, int, unsigned
+            ) = &fftwl_plan_dft_1d;
+};
+
+/** Complex number traits specialized for \c fftwf_complex */
+template<>
+struct transform_traits<fftwf_complex> {
+
+    /** Complex number type */
+    typedef fftwf_complex complex_type;
+
+    /** Real and imaginary components type */
+    typedef float real_type;
+
+    /** Corresponding precision FFTW complex type */
+    typedef fftwf_complex fftw_complex_type;
+
+    /** Corresponding precision FFTW plan type */
+    typedef fftwf_plan fftw_plan_type;
+
+    /** Corresponding FFTW planning function */
+    static fftw_plan_type (* const plan_c2c_1d)(
+                int, fftw_complex_type*, fftw_complex_type*, int, unsigned
+            ) = &fftwf_plan_dft_1d;
+};
+
+/** Complex number traits specialized for \c fftw_complex */
+template<>
+struct transform_traits<fftw_complex> {
+
+    /** Complex number type */
+    typedef fftw_complex complex_type;
+
+    /** Real and imaginary components type */
+    typedef double real_type;
+
+    /** Corresponding precision FFTW complex type */
+    typedef fftw_complex fftw_complex_type;
+
+    /** Corresponding precision FFTW plan type */
+    typedef fftw_plan fftw_plan_type;
+
+    /** Corresponding FFTW planning function */
+    static fftw_plan_type (* const plan_c2c_1d)(
+                int, fftw_complex_type*, fftw_complex_type*, int, unsigned
+            ) = &fftw_plan_dft_1d;
+};
+
+/** Complex number traits specialized for \c fftwl_complex */
+template<>
+struct transform_traits<fftwl_complex> {
+
+    /** Complex number type */
+    typedef fftwl_complex complex_type;
+
+    /** Real and imaginary components type */
+    typedef long double real_type;
+
+    /** Corresponding precision FFTW complex type */
+    typedef fftwl_complex fftw_complex_type;
+
+    /** Corresponding precision FFTW plan type */
+    typedef fftwl_plan fftw_plan_type;
+
+    /** Corresponding FFTW planning function */
+    static fftw_plan_type (* const plan_c2c_1d)(
+                int, fftw_complex_type*, fftw_complex_type*, int, unsigned
+            ) = &fftwl_plan_dft_1d;
 };
 
 /** A copy-only functor for manipulating complex values */
@@ -449,7 +559,7 @@ struct complex_copy {
 template<class ComplexDestination>
 struct complex_copy_scale {
     /** Scaling factor applied by the functor */
-    const typename complex_traits<ComplexDestination>::value_type alpha_;
+    const typename transform_traits<ComplexDestination>::real_type alpha_;
 
     /**
      * Create a functor instance with the supplied scaling factor
@@ -457,7 +567,7 @@ struct complex_copy_scale {
      * @param alpha scaling factor to use within operator()
      */
     complex_copy_scale(
-        const typename complex_traits<ComplexDestination>::value_type alpha)
+        const typename transform_traits<ComplexDestination>::real_type alpha)
         : alpha_(alpha) {}
 
     /** Copies <tt>alpha*src</tt> to \c dest.
@@ -483,7 +593,7 @@ struct complex_copy_scale {
 template<class ComplexDestination>
 struct complex_copy_differentiate {
     /** Scaling factor type */
-    typedef typename complex_traits<ComplexDestination>::value_type scalar;
+    typedef typename transform_traits<ComplexDestination>::real_type scalar;
 
     /** Derivative order to take within operator() */
     const int derivative_;
@@ -532,7 +642,7 @@ struct complex_copy_differentiate {
 template<class ComplexDestination>
 struct complex_copy_scale_differentiate {
     /** Scaling factor type */
-    typedef typename complex_traits<ComplexDestination>::value_type scalar;
+    typedef typename transform_traits<ComplexDestination>::real_type scalar;
 
     /** Scaling factor applied by the functor */
     const scalar alpha_;
@@ -700,9 +810,9 @@ void transform_c2c(
     ComplexMultiArray2 &out,
     const int fftw_sign,
     const int derivative = 0,
-    const typename detail::complex_traits<
+    const typename detail::transform_traits<
             typename ComplexMultiArray1::element
-        >::value_type domain_length = 2.0*M_PI,
+        >::real_type domain_length = 2.0*M_PI,
     const unsigned fftw_flags = 0)
 {
     // Typedefs fixed separately each ComplexMultiArray template parameters
@@ -839,7 +949,8 @@ void transform_c2c(
 
         // Copy transform buffer into output performing any needed scaling, etc.
         if (fftw_sign == FFTW_FORWARD) {
-            typedef typename detail::complex_traits<element2>::value_type scalar;
+            typedef typename
+                detail::transform_traits<element2>::real_type scalar;
             const scalar normalization = scalar(1.0)/transform_n;
             if (derivative == 0) {
                 detail::c2c_buffer_process(

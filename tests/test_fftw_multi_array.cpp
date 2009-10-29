@@ -663,9 +663,9 @@ void fill_with_complex_NaN(ComplexMultiArray &x)
 {
     typedef typename ComplexMultiArray::element element;
     element NaN_value;
-    typedef typename fftw_multi_array::detail::complex_traits<
-            element>::value_type value_type;
-    const value_type quiet_NaN = std::numeric_limits<value_type>::quiet_NaN();
+    typedef typename fftw_multi_array::detail::transform_traits<
+            element>::real_type real_type;
+    const real_type quiet_NaN = std::numeric_limits<real_type>::quiet_NaN();
 
     const element * const end = x.data() + x.num_elements();
     element *it = x.data();
