@@ -24,12 +24,32 @@ AX_ADD_AM_LATEX
 ACLTX_CLASSES([amsart],AMSART_CLASS,,AC_MSG_WARN([Unable to find LaTeX class 'amsart']))
 AC_CACHE_SAVE
 
-dnl ------------------------------------------------
-dnl Check for compiler toolchain
-dnl ------------------------------------------------
+dnl ------------------------------------------------------
+dnl Check for compiler toolchain and optimization level
+dnl Ordering very specific: AX_CC_MAXOPT usage is fragile
+dnl ------------------------------------------------------
 AX_CHECK_ENABLE_DEBUG
+AC_LANG([C])
 AC_PROG_CC
 gl_EARLY
+AX_COMPILER_VENDOR
+if test "x$ax_enable_debug" != "xyes"; then
+    dnl Determine good optimization flags for C and store in CFLAGS_MAXOPT
+    CFLAGS_pre_AX_CC_MAXOPT=${CFLAGS}
+    CFLAGS=
+    ac_test_CFLAGS_pre_AX_CC_MAXOPT=${ac_test_CFLAGS}
+    ac_test_CFLAGS=
+    AX_CC_MAXOPT
+    ac_test_CFLAGS=${ac_test_CFLAGS_pre_AX_CC_MAXOPT}
+    CFLAGS_MAXOPT=${CFLAGS}
+    CFLAGS="${CFLAGS_pre_AX_CC_MAXOPT} ${CFLAGS_MAXOPT}"
+    dnl Presume optimization flags useful for other languages
+    CXXFLAGS="${CXXFLAGS} ${CFLAGS_MAXOPT}"
+    FFLAGS="${FFLAGS} ${CFLAGS_MAXOPT}"
+    FCFLAGS="${FCFLAGS} ${CFLAGS_MAXOPT}"
+fi
+AC_LANG([C++])
+AX_COMPILER_VENDOR
 AC_PROG_CXX
 AC_PROG_RANLIB
 AC_PROG_SED
@@ -44,10 +64,6 @@ LT_INIT
 LT_PREREQ([2.2.6])
 AC_SUBST(LIBTOOL_DEPS)
 AC_CACHE_SAVE
-
-dnl TODO Automatically add optimization if debugging disabled per AX_CC_MAXOPT
-dnl Issues: 1) AX_CC_MAXOPT doesn't play nicely with AX_CHECK_ENABLE_DEBUG
-dnl         2) AX_CC_MAXOPT only sets CFLAGS, not CXXFLAGS
 
 dnl ------------------------------------------------
 dnl C library requirements
