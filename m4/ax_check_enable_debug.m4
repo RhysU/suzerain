@@ -81,10 +81,14 @@ AC_DEFUN([AX_CHECK_ENABLE_DEBUG],[
             fi
         fi
         dnl assert.h is a NOP if NDEBUG is defined, so define it.
-        AC_DEFINE(NDEBUG,,[define if debugging is disabled])
+        AC_DEFINE(NDEBUG,,[Define if debugging is disabled])
         dnl Disable range checking in common libraries
         AC_DEFINE(GSL_RANGE_CHECK_OFF,,
             [Define to disable GNU Scientific Library range checking])
+        AC_DEFINE(BOOST_DISABLE_ASSERTS,,
+            [Define to disable assertions within Boost])
+        AC_DEFINE(BOOST_UBLAS_NDEBUG,,
+            [Define to disable assertions within Boost uBLAS])
     fi
     ax_enable_debug=$enable_debug
 ])
