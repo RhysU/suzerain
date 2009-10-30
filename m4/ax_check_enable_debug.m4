@@ -4,20 +4,22 @@
 #
 # SYNOPSIS
 #
-#   Check for the presence of an --enable-debug option to configure
-#   and allow/avoid compiled debugging flags appropriately.
+#   Check for the presence of an --enable-debug option to configure and
+#   allow/avoid compiled debugging flags appropriately.
 #
-#   AX_CHECK_ENABLE_DEBUG([enable by default=yes/no])
+#   AX_CHECK_ENABLE_DEBUG([enable by default=yes/info/no])
 #
 # DESCRIPTION
 #
-#   Check for the presence of an --enable-debug option to configure, with
-#   the specified default value used when the option is not present.
-#   Return the value in the variable $ax_enable_debug.
+#   Check for the presence of an --enable-debug option to configure, with the
+#   specified default value used when the option is not present.  Return the
+#   value in the variable $ax_enable_debug.
 #
-#   Define #DEBUG if debug enabled.  If debug not enabled, ensure
-#   AC_PROG_* will not add debugging flags.  Should be invoked prior to
-#   any AC_PROG_* compiler checks.
+#   Specifying 'yes' adds '-g -O0' to the compilation flags for all languages.
+#   Specifying 'info' adds '-g' to the compilation flags.  Otherwise, nothing
+#   is added.  Define #DEBUG if debug enabled.  Define #NDEBUG is debug
+#   disabled.  If debug not enabled, ensure AC_PROG_* will not add debugging
+#   flags.  Should be invoked prior to any AC_PROG_* compiler checks.
 #
 # LAST MODIFICATION
 #
@@ -25,7 +27,7 @@
 #
 # COPYLEFT
 #
-#   Copyright (c) 2008 Rhys Ulerich <rhys.ulerich@gmail.com>
+#   Copyright (c) 2009 Rhys Ulerich <rhys.ulerich@gmail.com>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
@@ -51,29 +53,38 @@ AC_DEFUN([AX_CHECK_ENABLE_DEBUG],[
         FCFLAGS="${FCFLAGS} -g -O0"
         OBJCFLAGS="${OBJCFLAGS} -g -O0"
     else
-        AC_MSG_RESULT(no)
+        if test "x$enable_debug" = "xinfo"; then
+            AC_MSG_RESULT(info)
+            CFLAGS="${CFLAGS} -g"
+            CXXFLAGS="${CXXFLAGS} -g"
+            FFLAGS="${FFLAGS} -g"
+            FCFLAGS="${FCFLAGS} -g"
+            OBJCFLAGS="${OBJCFLAGS} -g"
+        else
+            AC_MSG_RESULT(no)
+            dnl Ensure AC_PROG_CC/CXX/F77/FC/OBJC will not enable debug flags
+            dnl by setting any unset environment flag variables
+            if test "x${CFLAGS+set}" != "xset"; then
+                CFLAGS=""
+            fi
+            if test "x${CXXFLAGS+set}" != "xset"; then
+                CXXFLAGS=""
+            fi
+            if test "x${FFLAGS+set}" != "xset"; then
+                FFLAGS=""
+            fi
+            if test "x${FCFLAGS+set}" != "xset"; then
+                FCFLAGS=""
+            fi
+            if test "x${OBJCFLAGS+set}" != "xset"; then
+                OBJCFLAGS=""
+            fi
+        fi
         dnl assert.h is a NOP if NDEBUG is defined, so define it.
         AC_DEFINE(NDEBUG,,[define if debugging is disabled])
         dnl Disable range checking in common libraries
         AC_DEFINE(GSL_RANGE_CHECK_OFF,,
-            [define to disable GNU Scientific Library range checking])
-        dnl Ensure AC_PROG_CC/CXX/F77/FC/OBJC will not enable debugging flags
-        dnl by setting any unset environment flag variables
-        if test "x${CFLAGS+set}" != "xset"; then
-            CFLAGS=""
-        fi
-        if test "x${CXXFLAGS+set}" != "xset"; then
-            CXXFLAGS=""
-        fi
-        if test "x${FFLAGS+set}" != "xset"; then
-            FFLAGS=""
-        fi
-        if test "x${FCFLAGS+set}" != "xset"; then
-            FCFLAGS=""
-        fi
-        if test "x${OBJCFLAGS+set}" != "xset"; then
-            OBJCFLAGS=""
-        fi
+            [Define to disable GNU Scientific Library range checking])
     fi
-    ax_enable_debug="$enable_debug"
+    ax_enable_debug=$enable_debug
 ])
