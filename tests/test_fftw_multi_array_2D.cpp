@@ -1,4 +1,7 @@
 #define BOOST_TEST_MODULE $Id$
+
+#include <suzerain/config.h>
+
 #include <cmath>
 #include <complex>
 #include <functional>
