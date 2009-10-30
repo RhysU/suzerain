@@ -416,15 +416,25 @@ struct transform_traits<fftwf_complex> {
     /** Corresponding precision FFTW plan type */
     typedef fftwf_plan fftw_plan_type;
 
-    /** Corresponding FFTW C2C planning function */
+    /** FFTW complex-to-complex planning function */
     static fftw_plan_type (* const plan_c2c_1d)(
                 int, fftw_complex_type*, fftw_complex_type*, int, unsigned
             ) = &fftwf_plan_dft_1d;
 
-    /** Corresponding FFTW execute plan function */
+    /** FFTW real-to-complex planning function */
+    static fftw_plan_type (* const plan_r2c_1d)(
+                int, real_type*, fftw_complex_type*, unsigned
+            ) = &fftwf_plan_dft_r2c_1d;
+
+    /** FFTW complex-to-real planning function */
+    static fftw_plan_type (* const plan_c2r_1d)(
+                int, fftw_complex_type*, real_type*, unsigned
+            ) = &fftwf_plan_dft_c2r_1d;
+
+    /** FFTW execute plan function */
     static void (* const execute_plan)(fftw_plan_type) = &fftwf_execute;
 
-    /** Corresponding FFTW destroy plan function */
+    /** FFTW destroy plan function */
     static void (* const destroy_plan)(fftw_plan_type) = &fftwf_destroy_plan;
 };
 
@@ -444,15 +454,25 @@ struct transform_traits<fftw_complex> {
     /** Corresponding precision FFTW plan type */
     typedef fftw_plan fftw_plan_type;
 
-    /** Corresponding FFTW C2C planning function */
+    /** FFTW complex-to-complex planning function */
     static fftw_plan_type (* const plan_c2c_1d)(
                 int, fftw_complex_type*, fftw_complex_type*, int, unsigned
             ) = &fftw_plan_dft_1d;
 
-    /** Corresponding FFTW execute plan function */
+    /** FFTW real-to-complex planning function */
+    static fftw_plan_type (* const plan_r2c_1d)(
+                int, real_type*, fftw_complex_type*, unsigned
+            ) = &fftw_plan_dft_r2c_1d;
+
+    /** FFTW complex-to-real planning function */
+    static fftw_plan_type (* const plan_c2r_1d)(
+                int, fftw_complex_type*, real_type*, unsigned
+            ) = &fftw_plan_dft_c2r_1d;
+
+    /** FFTW execute plan function */
     static void (* const execute_plan)(fftw_plan_type) = &fftw_execute;
 
-    /** Corresponding FFTW destroy plan function */
+    /** FFTW destroy plan function */
     static void (* const destroy_plan)(fftw_plan_type) = &fftw_destroy_plan;
 };
 
@@ -472,15 +492,25 @@ struct transform_traits<fftwl_complex> {
     /** Corresponding precision FFTW plan type */
     typedef fftwl_plan fftw_plan_type;
 
-    /** Corresponding FFTW C2C planning function */
+    /** FFTW complex-to-complex planning function */
     static fftw_plan_type (* const plan_c2c_1d)(
                 int, fftw_complex_type*, fftw_complex_type*, int, unsigned
             ) = &fftwl_plan_dft_1d;
 
-    /** Corresponding FFTW execute plan function */
+    /** FFTW real-to-complex planning function */
+    static fftw_plan_type (* const plan_r2c_1d)(
+                int, real_type*, fftw_complex_type*, unsigned
+            ) = &fftwl_plan_dft_r2c_1d;
+
+    /** FFTW complex-to-real planning function */
+    static fftw_plan_type (* const plan_c2r_1d)(
+                int, fftw_complex_type*, real_type*, unsigned
+            ) = &fftwl_plan_dft_c2r_1d;
+
+    /** FFTW execute plan function */
     static void (* const execute_plan)(fftw_plan_type) = &fftwl_execute;
 
-    /** Corresponding FFTW destroy plan function */
+    /** FFTW destroy plan function */
     static void (* const destroy_plan)(fftw_plan_type) = &fftwl_destroy_plan;
 };
 
@@ -572,13 +602,13 @@ struct complex_copy_scale {
 template<class ComplexDestination>
 struct complex_copy_differentiate {
     /** Scaling factor type */
-    typedef typename transform_traits<ComplexDestination>::real_type scalar;
+    typedef typename transform_traits<ComplexDestination>::real_type real_type;
 
     /** Derivative order to take within operator() */
     const int derivative_;
 
     /** Domain length-based factor used to find wavenumber from index */
-    const scalar twopioverlength_;
+    const real_type twopioverlength_;
 
     /**
      * Create a functor instance applying the given derivative operator
@@ -589,7 +619,7 @@ struct complex_copy_differentiate {
      */
     complex_copy_differentiate(
         const int derivative,
-        const scalar length)
+        const real_type length)
         : derivative_(derivative), twopioverlength_(2.0*M_PI/length) {}
 
     /**
@@ -621,16 +651,16 @@ struct complex_copy_differentiate {
 template<class ComplexDestination>
 struct complex_copy_scale_differentiate {
     /** Scaling factor type */
-    typedef typename transform_traits<ComplexDestination>::real_type scalar;
+    typedef typename transform_traits<ComplexDestination>::real_type real_type;
 
     /** Scaling factor applied by the functor */
-    const scalar alpha_;
+    const real_type alpha_;
 
     /** Derivative order to take within operator() */
     const int derivative_;
 
     /** Domain length-based factor used to find wavenumber from index */
-    const scalar twopioverlength_;
+    const real_type twopioverlength_;
 
     /**
      * Create a functor instance applying the given derivative operator
@@ -641,9 +671,9 @@ struct complex_copy_scale_differentiate {
      * @param length length of the domain
      */
     complex_copy_scale_differentiate(
-        const scalar alpha,
+        const real_type alpha,
         const int derivative,
-        const scalar length)
+        const real_type length)
         : alpha_(alpha),
           derivative_(derivative),
           twopioverlength_(2.0*M_PI/length) {}
@@ -674,6 +704,8 @@ struct complex_copy_scale_differentiate {
  * Transforms \c in to \c out taking into account FFTW's complex-to-complex
  * storage order and dealiasing considerations.  If \c size_in and \c size_out
  * are identical, then this routine performs a simple strided transformation.
+ * Below, the number of "logical elements" means the number of physical space
+ * complex-valued data points or wave space complex-valued wavenumbers.
  *
  * @param out start of the output storage
  * @param size_out number of logical elements in the output storage
@@ -693,7 +725,7 @@ template<class OutputIterator,
          typename SizeType,
          typename StrideType,
          class C2CBufferProcessor>
-void c2c_buffer_process(OutputIterator out,
+void c2c_fullbuffer_process(OutputIterator out,
                         const SizeType size_out,
                         const StrideType stride_out,
                         InputIterator  in,
@@ -709,7 +741,8 @@ void c2c_buffer_process(OutputIterator out,
     const SizeType first_n_neg_out = -(size_out - 1)/2;
     const SizeType first_n_neg_in  = -(size_in  - 1)/2;
 
-    SizeType n = 0; // Always tracks current wavenumber during iteration
+    // Code relies on loop conditions being checked prior to any loop entry
+    SizeType n; // Always tracks current wavenumber during iteration
     for (n = 0; n <= last_n_pos_copy; ++n) {
         c2c_buffer_processor(*out, *in, n);
         std::advance(in,  stride_in);
@@ -735,6 +768,57 @@ void c2c_buffer_process(OutputIterator out,
     for (/* init from above */; n <= -1; ++n) {
         c2c_buffer_processor(*out, *in, n);
         std::advance(in,  stride_in);
+        std::advance(out, stride_out);
+    }
+}
+
+/**
+ * Transforms \c in to \c out taking into account FFTW's real-to-complex and
+ * complex-to-real storage order and dealiasing considerations.  If \c size_in
+ * and \c size_out are identical, then this routine performs a simple strided
+ * transformation.  Below, the number of "logical elements" means the
+ * corresponding number of physical space real-valued data points.
+ *
+ * @param out start of the output storage
+ * @param size_out number of logical elements in the output storage
+ * @param stride_out stride between logical elements in the output storage
+ * @param in start of the input storage
+ * @param size_in number of logical elements in the input storage
+ * @param stride_in stride between logical elements in the input storage
+ * @param c2c_buffer_processor a functor to apply at each location.
+ *
+ * @see complex_copy, complex_copy_scale, complex_copy_differentiate, and
+ *      complex_copy_scale_differentiate for valid \c c2c_buffer_processor
+ *      values and a better idea of the \c c2c_buffer_processor concept
+ * @see the <a href="http://www.fftw.org/fftw3_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">FFTW documentation</a> for the expected wavenumber order.
+ */
+template<class OutputIterator,
+         class InputIterator,
+         typename SizeType,
+         typename StrideType,
+         class C2CBufferProcessor>
+void c2c_halfbuffer_process(OutputIterator out,
+                            const SizeType size_out,
+                            const StrideType stride_out,
+                            InputIterator  in,
+                            const SizeType size_in,
+                            const StrideType stride_in,
+                            const C2CBufferProcessor &c2c_buffer_processor)
+{
+    // Highest positive wavenumber
+    const SizeType last_n_pos_out  = (size_out / 2) + 1;
+    const SizeType last_n_pos_in   = (size_in  / 2) + 1;
+    const SizeType last_n_pos_copy = std::min(last_n_pos_out, last_n_pos_in);
+
+    // Code relies on loop conditions being checked prior to any loop entry
+    SizeType n; // Always tracks current wavenumber during iteration
+    for (n = 0; n <= last_n_pos_copy; ++n) {
+        c2c_buffer_processor(*out, *in, n);
+        std::advance(in,  stride_in);
+        std::advance(out, stride_out);
+    }
+    for (/* init from above */; n <= last_n_pos_out; ++n) {
+        detail::assign_complex(*out, 0, 0);
         std::advance(out, stride_out);
     }
 }
@@ -900,7 +984,7 @@ void transform_c2c(
 
         // Copy input into transform buffer performing any needed scaling, etc.
         if (fftw_sign == FFTW_BACKWARD && derivative != 0) {
-            detail::c2c_buffer_process(
+            detail::c2c_fullbuffer_process(
                 buffer.get(), transform_n, index1(1),
                 &in(dereference_index1),
                 shape_in_transform_dim,
@@ -908,7 +992,7 @@ void transform_c2c(
                 detail::complex_copy_differentiate<fftw_complex>(
                     derivative, domain_length));
         } else {
-            detail::c2c_buffer_process(
+            detail::c2c_fullbuffer_process(
                 buffer.get(), transform_n, index1(1),
                 &in(dereference_index1),
                 shape_in_transform_dim,
@@ -927,17 +1011,17 @@ void transform_c2c(
         // Copy transform buffer into output performing any needed scaling, etc.
         if (fftw_sign == FFTW_FORWARD) {
             typedef typename
-                detail::transform_traits<element2>::real_type scalar;
-            const scalar normalization = scalar(1.0)/transform_n;
+                detail::transform_traits<element2>::real_type real_type;
+            const real_type normalization = real_type(1.0)/transform_n;
             if (derivative == 0) {
-                detail::c2c_buffer_process(
+                detail::c2c_fullbuffer_process(
                     &out(dereference_index2),
                     shape_out_transform_dim,
                     stride_out_transform_dim,
                     buffer.get(), transform_n, index2(1),
                     detail::complex_copy_scale<element2>(normalization));
             } else {
-                detail::c2c_buffer_process(
+                detail::c2c_fullbuffer_process(
                     &out(dereference_index2),
                     shape_out_transform_dim,
                     stride_out_transform_dim,
@@ -946,7 +1030,7 @@ void transform_c2c(
                         normalization, derivative, domain_length));
             }
         } else {
-            detail::c2c_buffer_process(
+            detail::c2c_fullbuffer_process(
                 &out(dereference_index2),
                 shape_out_transform_dim,
                 stride_out_transform_dim,
