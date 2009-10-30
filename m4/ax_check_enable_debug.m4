@@ -21,7 +21,7 @@
 #
 # LAST MODIFICATION
 #
-#   2008-09-06
+#   2009-10-30
 #
 # COPYLEFT
 #
@@ -54,6 +54,9 @@ AC_DEFUN([AX_CHECK_ENABLE_DEBUG],[
         AC_MSG_RESULT(no)
         dnl assert.h is a NOP if NDEBUG is defined, so define it.
         AC_DEFINE(NDEBUG,,[define if debugging is disabled])
+        dnl Disable range checking in common libraries
+        AC_DEFINE(GSL_RANGE_CHECK_OFF,,
+            [define to disable GNU Scientific Library range checking])
         dnl Ensure AC_PROG_CC/CXX/F77/FC/OBJC will not enable debugging flags
         dnl by setting any unset environment flag variables
         if test "x${CFLAGS+set}" != "xset"; then
