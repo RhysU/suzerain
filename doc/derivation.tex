@@ -328,16 +328,13 @@ so we assume
   \label{eq:mukappa}
 \end{align}
 
-\subsubsection{Body force density}
+\subsubsection{Forcing terms}
 
-We generally assume $f_{b}=0$.  However,
-in the formulation, we allow the $f_{b}$ to vary in all spatial
-directions and across time.  Retaining body force will simplify using
-the method of manufactured solutions for implementation verification.
-
-\subsubsection{Body heating density}
-
-We assume a space- and time-varying body heating density $q_{b}$.
+We add arbitrary space- and time-varying forcing to the continuity,
+momentum, and energy equations using a continuity source term $c_{s}$,
+a body force density $f_{b}$, and a body heating density $q_{b}$,
+respectively.  These terms are provided to facilitate using the method
+of manufactured solutions for implementation verification.
 
 \subsection{Dimensional equations}
 
@@ -349,6 +346,7 @@ and assumptions, we arrive at the dimensional equations
   \frac{\partial}{\partial{}t}\rho
 &=
   - \nabla\cdot\rho{}u
+  + c_{s}
   \\
   \label{eq:dim_momentum}
   \frac{\partial{}}{\partial{}t}\rho{}u
@@ -433,7 +431,8 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   \label{eq:dimwithref_continuity}
   \frac{\rho_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}}\rho^{*}
 &=
-- \frac{\rho_{0}u_{0}}{l_{0}} \nabla^{*}\cdot\rho^{*}u^{*}
+  - \frac{\rho_{0}u_{0}}{l_{0}} \nabla^{*}\cdot\rho^{*}u^{*}
+  + c_{0} c_{s}^{*}
   \\
   \label{eq:dimwithref_momentum}
   \frac{\rho_{0}u_{0}}{t_{0}} \frac{\partial{}}{\partial{}t^{*}}\rho^{*}u^{*}
@@ -504,6 +503,8 @@ quantities:
   &
   \tau_{0} &= \frac{\mu_{0}a_{0}}{l_{0}}
   &
+  c_{0} &= \frac{\rho_{0}}{t_{0}}
+  &
   f_{0} &= \frac{a_{0}^{2}}{l_{0}}
   &
   q_{0} &= \frac{a_{0}^{3}}{l_{0}}
@@ -527,7 +528,8 @@ dimensionless.  We arrive at the following nondimensional equations:
   \label{eq:nondim_continuity}
   \frac{\partial}{\partial{}t}\rho{}
 &=
-- \nabla\cdot\rho{}u
+  - \nabla\cdot\rho{}u
+  + c_s
   \\
   \label{eq:nondim_momentum}
   \frac{\partial}{\partial{}t}\rho{}u
@@ -607,6 +609,7 @@ the equations in section \ref{nondim_equations} become
   \frac{\partial}{\partial{}t}\rho{}
 &=
   - \nabla\cdot{}m
+  + c_s
   \\
   \label{eq:state_momentum}
   \frac{\partial}{\partial{}t}m
