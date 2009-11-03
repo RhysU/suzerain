@@ -50,12 +50,21 @@ if test "x$ax_enable_debug" != "xyes"; then
     FCFLAGS="${FCFLAGS} ${CFLAGS_MAXOPT}"
 fi
 AC_LANG([C++])
-AX_COMPILER_VENDOR
 AC_PROG_CXX
+AX_COMPILER_VENDOR
 AC_PROG_RANLIB
 AC_PROG_SED
 AX_AM_JOBSERVER([no])
 AC_CACHE_SAVE
+
+dnl ----------------------------------------------
+dnl Enable rudimentary precompiled header support
+dnl Currently very, very Intel-specific
+dnl ----------------------------------------------
+AC_LANG([C])
+AX_CHECK_COMPILER_FLAGS([-pch],[CFLAGS="${CFLAGS} -pch"])
+AC_LANG([C++])
+AX_CHECK_COMPILER_FLAGS([-pch],[CXXFLAGS="${CXXFLAGS} -pch"])
 
 dnl ------------------------------------------------
 dnl Enable GNU libtool

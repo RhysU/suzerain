@@ -30,6 +30,7 @@
 
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
+#pragma hdrstop
 
 #include <log4cxx/logger.h>
 #include <mpi.h>

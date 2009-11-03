@@ -19,6 +19,8 @@ CC=@MPICC@
 
 # Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
+# Clean up from Intel Compiler's precompiled header output
+CLEANFILES += *.pchi
 
 BUILT_SOURCES = suzerain-config.h
 

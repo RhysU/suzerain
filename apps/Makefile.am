@@ -16,6 +16,8 @@ CXX=@MPICXX@
 
 # Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
+# Clean up from Intel Compiler's precompiled header output
+CLEANFILES += *.pchi
 
 # Progams
 bin_PROGRAMS        += driver_sine

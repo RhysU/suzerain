@@ -1,8 +1,7 @@
-#define BOOST_TEST_MODULE $Id$
-
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
 #pragma hdrstop
+#define BOOST_TEST_MODULE $Id$
 #include <suzerain/pencil_grid.hpp>
 #include <boost/test/included/unit_test.hpp>
 

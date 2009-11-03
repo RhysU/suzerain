@@ -1,11 +1,10 @@
-#define BOOST_TEST_MODULE $Id$
-
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <fftw3.h>
+#define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
 #include "test_tools.hpp"
+#include <fftw3.h>
 
 template<int NR = 8, int NC = (NR/2) + 1>
 class data {

@@ -16,11 +16,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#define BOOST_TEST_MODULE $Id$
 
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
 #pragma hdrstop
+#define BOOST_TEST_MODULE $Id$
 #include <suzerain/error.h>
 #include <boost/test/included/unit_test.hpp>
 
