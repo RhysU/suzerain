@@ -30,6 +30,7 @@
 
 #include <config.h>
 #include <suzerain/common.h>
+#pragma hdrstop
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>

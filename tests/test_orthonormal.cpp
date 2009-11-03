@@ -2,6 +2,7 @@
 
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
+#pragma hdrstop
 #include <suzerain/orthonormal.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/included/unit_test.hpp>

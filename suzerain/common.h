@@ -81,7 +81,7 @@ Provides hint to the compiler to optimize for the expression being false.
 #define SUZERAIN_FORCEINLINE inline
 #endif
 
-// Required C functionality appearing through Suzerain
+// Required standard C functionality appearing through Suzerain
 // C++-specific functionality is included in common.hpp
 #include <assert.h>
 #include <errno.h>

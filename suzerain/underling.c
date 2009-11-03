@@ -30,6 +30,7 @@
 
 #include <config.h>
 #include <suzerain/common.h>
+#pragma hdrstop
 #include "gl_array_list.h"
 #include <gsl/gsl_combination.h>
 #include <suzerain/error.h>

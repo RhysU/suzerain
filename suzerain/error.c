@@ -20,6 +20,7 @@
 
 #include <config.h>
 #include <suzerain/common.h>
+#pragma hdrstop
 #include <suzerain/error.h>
 
 suzerain_error_handler_t * suzerain_error_handler = NULL;

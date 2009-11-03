@@ -2,7 +2,7 @@
 
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
-
+#pragma hdrstop
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <gsl/gsl_nan.h>

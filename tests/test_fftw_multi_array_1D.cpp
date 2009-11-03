@@ -3,6 +3,7 @@
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
 #include <suzerain/fftw_multi_array.hpp>
+#pragma hdrstop
 #include <boost/test/included/unit_test.hpp>
 #include <fftw3.h>
 #include "test_tools.hpp"

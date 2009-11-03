@@ -30,6 +30,7 @@
 
 #include <config.h>
 #include <suzerain/common.h>
+#pragma hdrstop
 
 #ifdef SUZERAIN_HAVE_MKL
 #include <mkl_types.h>

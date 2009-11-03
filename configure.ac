@@ -85,9 +85,11 @@ dnl ------------------------------------------------
 dnl C++ library requirements
 dnl ------------------------------------------------
 AC_LANG([C++])
-PKG_CHECK_MODULES(LOG4CXX, liblog4cxx >= 0.10 apr-1 >= 1.3.3 apr-util-1 >= 1.3.4)
-AC_SUBST(LOG4CXX_CFLAGS)
-AC_SUBST(LOG4CXX_LIBS)
+PKG_CHECK_MODULES(LOG4CXX,
+    [liblog4cxx >= 0.10 apr-1 >= 1.3.3 apr-util-1 >= 1.3.4],
+    AC_DEFINE([HAVE_LOG4CXX],1,[Define if log4cxx is available])
+    AC_SUBST(LOG4CXX_CFLAGS)
+    AC_SUBST(LOG4CXX_LIBS))
 BOOST_REQUIRE([1.40])
 BOOST_FOREACH
 BOOST_FORMAT
@@ -98,9 +100,11 @@ BOOST_PROGRAM_OPTIONS
 BOOST_STATICASSERT
 BOOST_TEST
 BOOST_TYPETRAITS
-PKG_CHECK_MODULES(EIGEN, eigen2 >= 2.0.5)
-AC_SUBST(EIGEN_CFLAGS)
-dnl EIGEN_LIBS should be empty and is so no AC_SUBST is used
+PKG_CHECK_MODULES(EIGEN,
+    [eigen2 >= 2.0.5],
+    AC_DEFINE([HAVE_EIGEN],1,[Define if Eigen is available])
+    dnl EIGEN_LIBS should be empty and is so no AC_SUBST is used
+    AC_SUBST(EIGEN_CFLAGS))
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------

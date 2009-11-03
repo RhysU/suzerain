@@ -2,6 +2,7 @@
 
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
+#pragma hdrstop
 #include <boost/test/included/unit_test.hpp>
 
 typedef std::complex<double> complex;

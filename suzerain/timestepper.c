@@ -30,6 +30,7 @@
 
 #include <config.h>
 #include <suzerain/common.h>
+#pragma hdrstop
 #include <suzerain/blas_et_al.h>
 #include <suzerain/error.h>
 #include <suzerain/timestepper.h>

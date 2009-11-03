@@ -20,6 +20,7 @@
 
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
+#pragma hdrstop
 #include <suzerain/error.h>
 #include <boost/test/included/unit_test.hpp>
 

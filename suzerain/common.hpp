@@ -33,7 +33,7 @@
 // Include all of the C common material
 #include <suzerain/common.h>
 
-// Include C++ functionality used throughout Suzerain
+// Required standard C++ functionality used throughout Suzerain
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -52,6 +52,7 @@
 #include <valarray>
 
 // Include Boost functionality used throughout Suzerain
+#ifdef SUZERAIN_HAVE_BOOST
 #include <boost/array.hpp>
 #include <boost/concept/assert.hpp>
 #include <boost/exception.hpp>
@@ -79,11 +80,11 @@
 #include <boost/type_traits/is_complex.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/remove_pointer.hpp>
+#endif // SUZERAIN_HAVE_BOOST
 
 // Include other functionality used throughout Suzerain
+#ifdef SUZERAIN_HAVE_EIGEN
 #include <Eigen/Core>
-
-// Tell the Intel compiler to stop processing for precompiled headers
-#pragma hdrstop
+#endif // SUZERAIN_HAVE_EIGEN
 
 #endif // __PECOS_SUZERAIN_COMMON_HPP

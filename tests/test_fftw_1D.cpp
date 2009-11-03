@@ -2,6 +2,7 @@
 
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
+#pragma hdrstop
 #include <fftw3.h>
 #include <boost/test/included/unit_test.hpp>
 #include "test_tools.hpp"
