@@ -30,6 +30,8 @@
 #ifndef PECOS_SUZERAIN_EXCEPTIONS_H
 #define PECOS_SUZERAIN_EXCEPTIONS_H
 
+#include <suzerain/common.h>
+
 #include <boost/exception.hpp>
 
 namespace pecos

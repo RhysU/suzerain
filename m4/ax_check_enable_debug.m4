@@ -17,13 +17,13 @@
 #
 #   Specifying 'yes' adds '-g -O0' to the compilation flags for all languages.
 #   Specifying 'info' adds '-g' to the compilation flags.  Otherwise, nothing
-#   is added.  Define #DEBUG if debug enabled.  Define #NDEBUG is debug
-#   disabled.  If debug not enabled, ensure AC_PROG_* will not add debugging
-#   flags.  Should be invoked prior to any AC_PROG_* compiler checks.
+#   is added.  Define NDEBUG if debug disabled.  If debug not enabled, ensure
+#   AC_PROG_* will not add debugging flags.  Should be invoked prior to any
+#   AC_PROG_* compiler checks.
 #
 # LAST MODIFICATION
 #
-#   2009-10-30
+#   2009-11-02
 #
 # COPYLEFT
 #
@@ -46,7 +46,6 @@ AC_DEFUN([AX_CHECK_ENABLE_DEBUG],[
         [],enable_debug=$ax_enable_debug_default)
     if test "x$enable_debug" = "xyes"; then
         AC_MSG_RESULT(yes)
-        AC_DEFINE(DEBUG,,[define if debugging is enabled])
         CFLAGS="${CFLAGS} -g -O0"
         CXXFLAGS="${CXXFLAGS} -g -O0"
         FFLAGS="${FFLAGS} -g -O0"
@@ -82,13 +81,6 @@ AC_DEFUN([AX_CHECK_ENABLE_DEBUG],[
         fi
         dnl assert.h is a NOP if NDEBUG is defined, so define it.
         AC_DEFINE(NDEBUG,,[Define if debugging is disabled])
-        dnl Disable range checking in common libraries
-        AC_DEFINE(GSL_RANGE_CHECK_OFF,,
-            [Define to disable GNU Scientific Library range checking])
-        AC_DEFINE(BOOST_DISABLE_ASSERTS,,
-            [Define to disable assertions within Boost])
-        AC_DEFINE(BOOST_UBLAS_NDEBUG,,
-            [Define to disable assertions within Boost uBLAS])
     fi
     ax_enable_debug=$enable_debug
 ])

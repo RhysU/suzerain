@@ -30,6 +30,8 @@
 #ifndef PECOS_SUZERAIN_ORTHONORMAL_H
 #define PECOS_SUZERAIN_ORTHONORMAL_H
 
+#include <suzerain/common.h>
+
 #include <cmath>
 #include <Eigen/Core>
 

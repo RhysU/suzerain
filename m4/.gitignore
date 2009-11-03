@@ -39,3 +39,9 @@ string_h.m4
 unistd_h.m4
 xalloc.m4
 xsize.m4
+/00gnulib.m4
+/longlong.m4
+/multiarch.m4
+/stdint.m4
+/wchar.m4
+/wint_t.m4

@@ -29,6 +29,7 @@
  *-------------------------------------------------------------------------- */
 
 #include <config.h>
+#include <suzerain/common.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +43,6 @@
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bspline.h>
 #include <suzerain/error.h>
-#include <suzerain/macros.h>
 
 int
 suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w);

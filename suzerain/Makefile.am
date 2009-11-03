@@ -20,17 +20,20 @@ CC=@MPICC@
 # Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
 
+BUILT_SOURCES = suzerain-config.h
+
 pkginclude_HEADERS += blas_et_al.h
 pkginclude_HEADERS += bspline.h
-pkginclude_HEADERS += orthonormal.hpp
+pkginclude_HEADERS += common.h
 pkginclude_HEADERS += error.h
 pkginclude_HEADERS += exceptions.hpp
 pkginclude_HEADERS += fftw_multi_array.hpp
 pkginclude_HEADERS += function.h
-pkginclude_HEADERS += macros.h
+pkginclude_HEADERS += orthonormal.hpp
 pkginclude_HEADERS += pencil_grid.hpp
 pkginclude_HEADERS += pencil.hpp
 pkginclude_HEADERS += richardson.h
+pkginclude_HEADERS += suzerain-config.h
 pkginclude_HEADERS += timestepper.h
 pkginclude_HEADERS += underling.h
 

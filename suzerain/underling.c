@@ -29,6 +29,7 @@
  *-------------------------------------------------------------------------- */
 
 #include <config.h>
+#include <suzerain/common.h>
 
 #include "gl_array_list.h"
 

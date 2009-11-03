@@ -31,6 +31,8 @@
 #ifndef __SUZERAIN_RICHARDSON_H__
 #define __SUZERAIN_RICHARDSON_H__
 
+#include <suzerain/common.h>
+
 #include <gsl/gsl_matrix_double.h>
 #include <gsl/gsl_vector_double.h>
 

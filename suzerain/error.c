@@ -19,6 +19,7 @@
  */
 
 #include <config.h>
+#include <suzerain/common.h>
 
 #include <stddef.h>
 #include <stdlib.h>

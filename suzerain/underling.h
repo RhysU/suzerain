@@ -30,6 +30,8 @@
 #ifndef PECOS_SUZERAIN_UNDERLING_H
 #define PECOS_SUZERAIN_UNDERLING_H
 
+#include <suzerain/common.h>
+
 #include <stdlib.h>
 #ifdef __cplusplus
 #include <iosfwd>

@@ -30,6 +30,8 @@
 #ifndef PECOS_SUZERAIN_PENCIL_H
 #define PECOS_SUZERAIN_PENCIL_H
 
+#include <suzerain/common.h>
+
 #include <algorithm>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>

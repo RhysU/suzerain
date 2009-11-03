@@ -44,3 +44,5 @@ xalloc-die.c
 xalloc.h
 xmalloc.c
 xsize.h
+/stdint.in.h
+/wchar.in.h

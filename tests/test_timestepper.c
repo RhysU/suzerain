@@ -1,4 +1,5 @@
 #include <suzerain/config.h>
+#include <suzerain/common.h>
 
 #include <math.h>
 #include <stdlib.h>

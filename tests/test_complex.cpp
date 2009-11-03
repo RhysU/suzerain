@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE $Id$
 
 #include <suzerain/config.h>
+#include <suzerain/common.h>
 
 #include <algorithm>
 #include <boost/foreach.hpp>

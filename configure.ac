@@ -8,7 +8,8 @@ dnl ------------------------------------------------
 dnl Initialization macros
 dnl ------------------------------------------------
 AC_CONFIG_SRCDIR([suzerain/pencil_grid.hpp])
-AM_CONFIG_HEADER(suzerain/config.h)
+AM_CONFIG_HEADER([suzerain/config.h])
+AX_PREFIX_CONFIG_H([suzerain/suzerain-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_TARGET
@@ -69,9 +70,6 @@ dnl ------------------------------------------------
 dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG([C])
-AX_FORCEINLINE
-AX_ASM_INLINE
-AX_ASM_INLINE_COMMENT
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 gl_INIT
 ACX_MKL()
@@ -100,7 +98,6 @@ BOOST_PROGRAM_OPTIONS
 BOOST_STATICASSERT
 BOOST_TEST
 BOOST_TYPETRAITS
-AC_DEFINE(BOOST_UBLAS_SHALLOW_ARRAY_ADAPTOR,1,[Enable boost::numeric::ublas::shallow_array_adaptor<T>])
 PKG_CHECK_MODULES(EIGEN, eigen2 >= 2.0.5)
 AC_SUBST(EIGEN_CFLAGS)
 dnl EIGEN_LIBS should be empty and is so no AC_SUBST is used

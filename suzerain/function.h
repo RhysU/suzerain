@@ -21,6 +21,8 @@
 #ifndef __SUZERAIN_FUNCTION_H__
 #define __SUZERAIN_FUNCTION_H__
 
+#include <suzerain/common.h>
+
 /** @file
  * Provides a function evaluation interface compatible with the <a
  * href="http://www.gnu.org/software/gsl/">GNU Scientific Library</a>'s <a

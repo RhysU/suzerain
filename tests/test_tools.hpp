@@ -32,13 +32,14 @@
 #ifndef PECOS_SUZERAIN_TEST_TOOLS_H
 #define PECOS_SUZERAIN_TEST_TOOLS_H
 
+#include <suzerain/common.h>
+
 #include <iomanip>
 #include <limits>
 #include <sstream>
 #include <string>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/test_tools.hpp>
-#include <suzerain/macros.h>
 
 #define CHECK_GBMATRIX_CLOSE(                                        \
             e_m, e_n, e_kl, e_ku, e, e_ld,                           \

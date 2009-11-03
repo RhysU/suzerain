@@ -30,6 +30,8 @@
 #ifndef PECOS_SUZERAIN_TIMESTEPPER_H
 #define PECOS_SUZERAIN_TIMESTEPPER_H
 
+#include <suzerain/common.h>
+
 /** @file
  * Provides a low-storage, hybrid explicit/implicit Runge-Kutta time integrator
  * suitable for use from both C and Fortran.  The integrator advances the state

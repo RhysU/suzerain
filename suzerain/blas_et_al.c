@@ -29,13 +29,14 @@
  *-------------------------------------------------------------------------- */
 
 #include <config.h>
+#include <suzerain/common.h>
 
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
 #include <mkl_types.h>
 #include <mkl_blas.h>
 #include <mkl_lapack.h>
@@ -44,12 +45,11 @@
 #endif
 
 #include <suzerain/blas_et_al.h>
-#include <suzerain/macros.h>
 
 void *
 suzerain_blas_malloc(size_t size)
 {
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
     /* We do not use MKL_malloc to avoid later needing MKL_free calls. */
     /* Align at 16-byte boundaries per MKL user guide section 8. */
     const size_t alignment = 16;
@@ -93,7 +93,7 @@ suzerain_blas_dcopy(
         double *y,
         const int incy)
 {
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
     const MKL_INT _n    = n;
     const MKL_INT _incx = incx;
     const MKL_INT _incy = incy;
@@ -112,7 +112,7 @@ suzerain_blas_ddot(
         const double *y,
         const int incy)
 {
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
     MKL_INT _n    = n;
     MKL_INT _incx = incx;
     MKL_INT _incy = incy;
@@ -129,7 +129,7 @@ suzerain_blas_dasum(
         const double *x,
         const int incx)
 {
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
     MKL_INT _n    = n;
     MKL_INT _incx = incx;
 
@@ -148,7 +148,7 @@ suzerain_blas_daxpy(
         double *y,
         const int incy)
 {
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
     const MKL_INT _n    = n;
     const MKL_INT _incx = incx;
     const MKL_INT _incy = incy;
@@ -169,7 +169,7 @@ suzerain_blas_daxpby(
         double *y,
         const int incy)
 {
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
     /* Simulate daxpby since MKL lacks the routine. */
     if (SUZERAIN_UNLIKELY((alpha == 0.0 && beta == 1.0) || n <= 0)) return;
 
@@ -201,7 +201,7 @@ suzerain_blas_dgbmv(
         const int incy)
 {
     char _trans   = trans;
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
     const MKL_INT _m    = m;
     const MKL_INT _n    = n;
     const MKL_INT _kl   = kl;
@@ -230,7 +230,7 @@ suzerain_blas_dgb_acc(
         double *b,
         const int ldb)
 {
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
     /* Simulate dgb_acc since MKL lacks the routine. */
     if (SUZERAIN_UNLIKELY((alpha == 0.0 && beta == 1.0) || m <= 0)) return;
 
@@ -257,7 +257,7 @@ suzerain_lapack_dgbtrf(
         const int ldab,
         int *ipiv)
 {
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
     MKL_INT _m    = m;
     MKL_INT _n    = n;
     MKL_INT _kl   = kl;
@@ -287,7 +287,7 @@ suzerain_lapack_dgbtrs(
         const int ldb)
 {
     char _trans   = trans;
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
     MKL_INT _n    = n;
     MKL_INT _kl   = kl;
     MKL_INT _ku   = ku;

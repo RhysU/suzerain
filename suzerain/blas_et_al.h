@@ -31,6 +31,8 @@
 #ifndef __SUZERAIN_BLAS_ET_AL_H__
 #define __SUZERAIN_BLAS_ET_AL_H__
 
+#include <suzerain/common.h>
+
 #include <stddef.h>
 
 /** @file

@@ -22,33 +22,63 @@
  *
  *--------------------------------------------------------------------------
  *
- * macros.h: miscellaneous utility macros and inline functions
+ * common.h: common definitions, utility macros, and inline functions
  *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_MACROS_H
-#define PECOS_SUZERAIN_MACROS_H
+#ifndef PECOS_SUZERAIN_COMMON_H
+#define PECOS_SUZERAIN_COMMON_H
 
-/* Macro follows LOG4CXX_UNLIKELY */
-#if !defined(SUZERAIN_UNLIKELY)
+#include <suzerain/suzerain-config.h>
+
+// Release-mode specific #defines
+#ifndef NDEBUG
+/** Disable GNU Scientific Library range checking */
+#define GSL_RANGE_CHECK_OFF
+/** Disable assertions within Boost */
+#define BOOST_DISABLE_ASSERTS
+/** Enable release mode within Boost uBLAS */
+#define BOOST_UBLAS_NDEBUG
+#endif
+
+/** Enable boost::numeric::ublas::shallow_array_adaptor<T> */
+#define BOOST_UBLAS_SHALLOW_ARRAY_ADAPTOR 1
+
+#if __GNUC__ >= 3
+/** Create an inline assembly comment, if supported */
+#define SUZERAIN_ASM_INLINE_COMMENT(comment) __asm__("# "__FILE__##":"##SUZERAIN_ASM_INLINE_COMMENT_HELPER_TOSTRING(__LINE__)##" "## #comment)
+/** Helps ASM_INLINE_COMMENT convert __LINE__ to a (char *) */
+#define SUZERAIN_ASM_INLINE_COMMENT_HELPER_STRINGIFY(x) #x
+/** Helps ASM_INLINE_COMMENT convert __LINE__ to a (char *) */
+#define SUZERAIN_ASM_INLINE_COMMENT_HELPER_TOSTRING(x) SUZERAIN_ASM_INLINE_COMMENT_HELPER_STRINGIFY(x)
+#else
+/** Create an inline assembly comment, if supported */
+#define SUZERAIN_ASM_INLINE_COMMENT(comment)
+#endif
+
 #if __GNUC__ >= 3
 /**
-Provides optimization hint to the compiler
-to optimize for the expression being false.
+Provides hint to the compiler to optimize for the expression being false.
 @param expr boolean expression.
 @returns value of expression.
 */
 #define SUZERAIN_UNLIKELY(expr) __builtin_expect(expr, 0)
 #else
 /**
-Provides optimization hint to the compiler
-to optimize for the expression being false.
+Provides hint to the compiler to optimize for the expression being false.
 @param expr boolean expression.
 @returns value of expression.
 **/
 #define SUZERAIN_UNLIKELY(expr) expr
 #endif
+
+#if __GNUC__ >= 3
+/** Strongly recommend that a function be inlined */
+#define SUZERAIN_FORCEINLINE __forceinline
+#else
+/** Strongly recommend that a function be inlined */
+#define SUZERAIN_FORCEINLINE inline
 #endif
 
 /**
@@ -87,4 +117,4 @@ int suzerain_gbmatrix_in_band(int lda, int kl, int ku, int i, int j) {
     return j-ku <= i && i <= j+kl;
 }
 
-#endif // PECOS_SUZERAIN_MACROS_H
+#endif // PECOS_SUZERAIN_COMMON_H

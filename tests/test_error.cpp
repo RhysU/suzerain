@@ -19,6 +19,7 @@
 #define BOOST_TEST_MODULE $Id$
 
 #include <suzerain/config.h>
+#include <suzerain/common.h>
 
 #include <stdio.h>
 #include <stdlib.h>

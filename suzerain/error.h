@@ -21,6 +21,8 @@
 #ifndef PECOS_SUZERAIN_ERRNO_H__
 #define PECOS_SUZERAIN_ERRNO_H__
 
+#include <suzerain/common.h>
+
 #include <stdio.h>
 
 /** @file

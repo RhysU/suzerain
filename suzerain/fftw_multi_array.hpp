@@ -31,6 +31,8 @@
 #ifndef PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
 #define PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
 
+#include <suzerain/common.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -50,11 +52,6 @@
 #include <fftw3.h>
 
 // TODO Broken details::assign_* if FFTW3 discovers the C99 _Complex type
-
-#ifndef FORCEINLINE
-/** Ensure FORCEINLINE is well-defined if not provided elsewhere */
-#define FORCEINLINE inline
-#endif
 
 namespace pecos { namespace suzerain {
 
@@ -251,7 +248,7 @@ FPT integer_power(FPT x, Integral n)
  * @return <tt>Re(z)</tt>
  */
 template<typename FPT>
-FORCEINLINE
+SUZERAIN_FORCEINLINE
 FPT& real(FPT (&z)[2]) {
     return z[0];
 }
@@ -264,7 +261,7 @@ FPT& real(FPT (&z)[2]) {
  * @return <tt>Re(z)</tt>
  */
 template<typename FPT>
-FORCEINLINE
+SUZERAIN_FORCEINLINE
 const FPT& real(const FPT (&z)[2]) {
     return z[0];
 }
@@ -277,7 +274,7 @@ const FPT& real(const FPT (&z)[2]) {
  * @return <tt>Im(z)</tt>
  */
 template<typename FPT>
-FORCEINLINE
+SUZERAIN_FORCEINLINE
 FPT& imag(FPT (&z)[2]) {
     return z[1];
 }
@@ -290,7 +287,7 @@ FPT& imag(FPT (&z)[2]) {
  * @return <tt>Im(z)</tt>
  */
 template<typename FPT>
-FORCEINLINE
+SUZERAIN_FORCEINLINE
 const FPT& imag(const FPT (&z)[2]) {
     return z[1];
 }
@@ -302,7 +299,7 @@ const FPT& imag(const FPT (&z)[2]) {
  * @param src source
  */
 template<class Complex1, class Complex2>
-FORCEINLINE
+SUZERAIN_FORCEINLINE
 void assign_complex(Complex1 &dest, const Complex2 &src)
 {
     real(dest) = real(src);
@@ -318,7 +315,7 @@ void assign_complex(Complex1 &dest, const Complex2 &src)
  * @param src_imag imag part of the source
  */
 template<class Complex, typename FPT1, typename FPT2>
-FORCEINLINE
+SUZERAIN_FORCEINLINE
 void assign_complex(Complex &dest,
                     const FPT1 src_real,
                     const FPT2 src_imag)
@@ -336,7 +333,7 @@ void assign_complex(Complex &dest,
  * @param src source
  */
 template<typename FPT, class Complex>
-FORCEINLINE
+SUZERAIN_FORCEINLINE
 void assign_components(FPT &dest_real,
                        FPT &dest_imag,
                        const Complex &src)
@@ -353,7 +350,7 @@ void assign_components(FPT &dest_real,
  * @param alpha multiplicative real scaling factor
  */
 template<class Complex1, class Complex2, typename FPT>
-FORCEINLINE
+SUZERAIN_FORCEINLINE
 void assign_complex_scaled(Complex1 &dest,
                            const Complex2 &src,
                            const FPT alpha)
@@ -372,7 +369,7 @@ void assign_complex_scaled(Complex1 &dest,
  * @param ipower exponent on the imaginary unit to include in the scaling
  */
 template<class Complex1, class Complex2, typename FPT>
-FORCEINLINE
+SUZERAIN_FORCEINLINE
 void assign_complex_scaled_ipower(Complex1 &dest,
                                   const Complex2 &src,
                                   const FPT alpha,
@@ -560,7 +557,7 @@ struct complex_copy {
     template<class ComplexDestination,
              class ComplexSource,
              typename SignedInteger>
-    FORCEINLINE
+    SUZERAIN_FORCEINLINE
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
                     const SignedInteger& dontcare) const
@@ -591,7 +588,7 @@ struct complex_copy_scale {
      * @param dontcare ignored within this functor
      */
     template<class ComplexSource, typename SignedInteger>
-    FORCEINLINE
+    SUZERAIN_FORCEINLINE
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
                     const SignedInteger& dontcare) const
@@ -636,7 +633,7 @@ struct complex_copy_differentiate {
      * @param n wavenumber index to use
      */
     template<class ComplexSource, typename SignedInteger>
-    FORCEINLINE
+    SUZERAIN_FORCEINLINE
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
                     const SignedInteger& n) const
@@ -692,7 +689,7 @@ struct complex_copy_scale_differentiate {
      * @param n wavenumber index to use
      */
     template<class ComplexSource, typename SignedInteger>
-    FORCEINLINE
+    SUZERAIN_FORCEINLINE
     void operator()(ComplexDestination &dest,
                     const ComplexSource &src,
                     const SignedInteger& n) const

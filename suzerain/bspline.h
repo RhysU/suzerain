@@ -30,6 +30,7 @@
 #ifndef PECOS_SUZERAIN_BSPLINE_OPERATOR_H
 #define PECOS_SUZERAIN_BSPLINE_OPERATOR_H
 
+#include <suzerain/common.h>
 #include <suzerain/function.h>
 
 /** @file
