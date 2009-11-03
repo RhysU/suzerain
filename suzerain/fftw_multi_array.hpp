@@ -28,27 +28,10 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#ifndef PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
-#define PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
+#ifndef __PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
+#define __PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
 
-#include <suzerain/common.h>
-
-#include <algorithm>
-#include <cassert>
-#include <cstddef>
-#include <functional>
-#include <iterator>
-#include <limits>
-#include <boost/array.hpp>
-#include <boost/concept/assert.hpp>
-#include <boost/iterator/counting_iterator.hpp>
-#include <boost/numeric/conversion/converter.hpp>
-#include <boost/shared_array.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/static_assert.hpp>
-#include <boost/type_traits/is_complex.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/remove_pointer.hpp>
+#include <suzerain/common.hpp>
 #include <fftw3.h>
 
 // TODO Broken details::assign_* if FFTW3 discovers the C99 _Complex type
@@ -1151,4 +1134,4 @@ void backward_c2c(
 
 } /* fftw_multi_array */ } /* suzerain */ } /* pecos */
 
-#endif // PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
+#endif // __PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP

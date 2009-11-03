@@ -1,11 +1,9 @@
 #define BOOST_TEST_MODULE $Id$
 
 #include <suzerain/config.h>
-#include <suzerain/common.h>
-
-#include <boost/test/included/unit_test.hpp>
-
+#include <suzerain/common.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( declare_pointer )
 {

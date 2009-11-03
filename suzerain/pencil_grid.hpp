@@ -27,10 +27,10 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_PENCILGRID_H
-#define PECOS_SUZERAIN_PENCILGRID_H
+#ifndef __PECOS_SUZERAIN_PENCILGRID_H
+#define __PECOS_SUZERAIN_PENCILGRID_H
 
-#include <suzerain/common.h>
+#include <suzerain/common.hpp>
 #include <suzerain/exceptions.hpp>
 
 namespace pecos
@@ -94,4 +94,4 @@ throw(domain_error)
 
 } // namespace pecos
 
-#endif // PECOS_SUZERAIN_PENCILGRID_H
+#endif // __PECOS_SUZERAIN_PENCILGRID_H

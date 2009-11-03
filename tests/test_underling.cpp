@@ -1,10 +1,9 @@
 #define BOOST_TEST_MODULE $Id$
 
 #include <suzerain/config.h>
-#include <suzerain/common.h>
-
-#include <boost/test/included/unit_test.hpp>
+#include <suzerain/common.hpp>
 #include <suzerain/underling.h>
+#include <boost/test/included/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( alloc )
 {

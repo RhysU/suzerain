@@ -27,17 +27,10 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_PENCIL_H
-#define PECOS_SUZERAIN_PENCIL_H
+#ifndef __PECOS_SUZERAIN_PENCIL_H
+#define __PECOS_SUZERAIN_PENCIL_H
 
-#include <suzerain/common.h>
-
-#include <algorithm>
-#include <boost/noncopyable.hpp>
-#include <boost/scoped_array.hpp>
-#include <complex>
-#include <cstddef>
-
+#include <suzerain/common.hpp>
 #include <suzerain/pencil_grid.hpp>
 
 namespace pecos
@@ -799,4 +792,4 @@ pencil<T, G>::wave_space::end() const
 
 } // namespace pecos
 
-#endif // PECOS_SUZERAIN_PENCIL_H
+#endif // __PECOS_SUZERAIN_PENCIL_H

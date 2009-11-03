@@ -28,33 +28,13 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <cstddef>
-
-#include <algorithm>
-#include <fstream>
-#include <functional>
-#include <iomanip>
-#include <ios>
-#include <iostream>
-#include <numeric>
-#include <sstream>
-#include <string>
-#include <valarray>
-
-#include <boost/array.hpp>
-#include <boost/foreach.hpp>
-#include <boost/format.hpp>
-#include <boost/program_options.hpp>
-#include <boost/shared_array.hpp>
+#include <suzerain/config.h>
+#include <suzerain/common.hpp>
 
 #include <log4cxx/logger.h>
 #include <mpi.h>
 #include <p3dfft_d.h>
 
-#include <suzerain/config.h>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
 

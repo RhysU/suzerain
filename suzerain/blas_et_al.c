@@ -31,11 +31,6 @@
 #include <config.h>
 #include <suzerain/common.h>
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #ifdef SUZERAIN_HAVE_MKL
 #include <mkl_types.h>
 #include <mkl_blas.h>

@@ -1,15 +1,10 @@
 #define BOOST_TEST_MODULE $Id$
 
 #include <suzerain/config.h>
-#include <suzerain/common.h>
-
-#include <cmath>
-#include <limits>
-#include <Eigen/Core>
+#include <suzerain/common.hpp>
+#include <suzerain/orthonormal.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/included/unit_test.hpp>
-
-#include <suzerain/orthonormal.hpp>
 
 // Provides data for the test field
 //      rho = 2*(x^2)*y*z + 3*x*(y^2)*z + 5*x*y*(z^2)

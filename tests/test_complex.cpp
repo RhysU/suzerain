@@ -1,12 +1,8 @@
 #define BOOST_TEST_MODULE $Id$
 
 #include <suzerain/config.h>
-#include <suzerain/common.h>
-
-#include <algorithm>
-#include <boost/foreach.hpp>
+#include <suzerain/common.hpp>
 #include <boost/test/included/unit_test.hpp>
-#include <complex>
 
 typedef std::complex<double> complex;
 

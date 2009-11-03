@@ -1,7 +1,6 @@
 #include <suzerain/config.h>
 #include <suzerain/common.h>
 
-#include <stdlib.h>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_test.h>

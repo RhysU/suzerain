@@ -30,13 +30,7 @@
 
 #include <config.h>
 #include <suzerain/common.h>
-
 #include "gl_array_list.h"
-
-#include <assert.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <string.h>
 #include <gsl/gsl_combination.h>
 #include <suzerain/error.h>
 #include <suzerain/underling.h>

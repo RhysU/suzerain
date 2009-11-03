@@ -27,13 +27,10 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_ORTHONORMAL_H
-#define PECOS_SUZERAIN_ORTHONORMAL_H
+#ifndef __PECOS_SUZERAIN_ORTHONORMAL_H
+#define __PECOS_SUZERAIN_ORTHONORMAL_H
 
-#include <suzerain/common.h>
-
-#include <cmath>
-#include <Eigen/Core>
+#include <suzerain/common.hpp>
 
 /** @file
  * Provides routines that compute classical state quantities (based on
@@ -784,4 +781,4 @@ Vector div_grad_u(
 } // namespace pecos
 
 
-#endif // PECOS_SUZERAIN_ORTHONORMAL_H
+#endif // __PECOS_SUZERAIN_ORTHONORMAL_H

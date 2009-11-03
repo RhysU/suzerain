@@ -27,12 +27,10 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_EXCEPTIONS_H
-#define PECOS_SUZERAIN_EXCEPTIONS_H
+#ifndef __PECOS_SUZERAIN_EXCEPTIONS_H
+#define __PECOS_SUZERAIN_EXCEPTIONS_H
 
-#include <suzerain/common.h>
-
-#include <boost/exception.hpp>
+#include <suzerain/common.hpp>
 
 namespace pecos
 {
@@ -51,4 +49,4 @@ class domain_error: public boost::exception { };
 
 } // namespace pecos
 
-#endif // PECOS_SUZERAIN_EXCEPTIONS_H
+#endif // __PECOS_SUZERAIN_EXCEPTIONS_H

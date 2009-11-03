@@ -20,11 +20,6 @@
 
 #include <config.h>
 #include <suzerain/common.h>
-
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 #include <suzerain/error.h>
 
 suzerain_error_handler_t * suzerain_error_handler = NULL;

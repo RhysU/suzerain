@@ -18,12 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef PECOS_SUZERAIN_ERRNO_H__
-#define PECOS_SUZERAIN_ERRNO_H__
+#ifndef __PECOS_SUZERAIN_ERRNO_H__
+#define __PECOS_SUZERAIN_ERRNO_H__
 
 #include <suzerain/common.h>
-
-#include <stdio.h>
 
 /** @file
  * Provides standardized error numbers and error handling routines.  Error
@@ -249,4 +247,4 @@ FILE * suzerain_set_stream(FILE * new_stream);
 __END_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-#endif /* PECOS_SUZERAIN_ERRNO_H__ */
+#endif /* __PECOS_SUZERAIN_ERRNO_H__ */

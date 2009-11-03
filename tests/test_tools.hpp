@@ -32,12 +32,7 @@
 #ifndef PECOS_SUZERAIN_TEST_TOOLS_H
 #define PECOS_SUZERAIN_TEST_TOOLS_H
 
-#include <suzerain/common.h>
-
-#include <iomanip>
-#include <limits>
-#include <sstream>
-#include <string>
+#include <suzerain/common.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/test_tools.hpp>
 

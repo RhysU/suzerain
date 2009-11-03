@@ -1,16 +1,13 @@
 #include <suzerain/config.h>
 #include <suzerain/common.h>
-
-#include <math.h>
-#include <stdlib.h>
+#include <suzerain/timestepper.h>
+#include <suzerain/richardson.h>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_sys.h>
 #include <gsl/gsl_test.h>
 #include <gsl/gsl_vector.h>
-#include <suzerain/timestepper.h>
-#include <suzerain/richardson.h>
 
 void
 check_smr91_constants()

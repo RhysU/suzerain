@@ -1,35 +1,10 @@
 #define BOOST_TEST_MODULE $Id$
 
 #include <suzerain/config.h>
-#include <suzerain/common.h>
-
-#include <cmath>
-#include <complex>
-#include <functional>
-#include <iostream>
-#include <iterator>
-#include <limits>
-#include <numeric>
-#include <string>
-#include <vector>
-#include <boost/array.hpp>
-#include <boost/multi_array.hpp>
-#include <boost/preprocessor/comparison/greater.hpp>
-#include <boost/preprocessor/comparison/less.hpp>
-#include <boost/preprocessor/control/iif.hpp>
-#include <boost/preprocessor/facilities/empty.hpp>
-#include <boost/preprocessor/seq/elem.hpp>
-#include <boost/preprocessor/seq/for_each.hpp>
-#include <boost/preprocessor/seq/for_each_product.hpp>
-#include <boost/preprocessor/seq/size.hpp>
-#include <boost/preprocessor/seq/to_tuple.hpp>
-#include <boost/scoped_array.hpp>
-#include <boost/static_assert.hpp>
-#include <boost/test/included/unit_test.hpp>
-#include <boost/typeof/typeof.hpp>
+#include <suzerain/common.hpp>
 #include <suzerain/fftw_multi_array.hpp>
+#include <boost/test/included/unit_test.hpp>
 #include <fftw3.h>
-
 #include "test_tools.hpp"
 
 using namespace pecos::suzerain;

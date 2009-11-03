@@ -22,13 +22,13 @@
  *
  *--------------------------------------------------------------------------
  *
- * common.h: common definitions, utility macros, and inline functions
+ * common.h: C common definitions, utility macros, and inline functions
  *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef PECOS_SUZERAIN_COMMON_H
-#define PECOS_SUZERAIN_COMMON_H
+#ifndef __PECOS_SUZERAIN_COMMON_H
+#define __PECOS_SUZERAIN_COMMON_H
 
 #include <suzerain/suzerain-config.h>
 
@@ -81,6 +81,17 @@ Provides hint to the compiler to optimize for the expression being false.
 #define SUZERAIN_FORCEINLINE inline
 #endif
 
+// Required C functionality appearing through Suzerain
+// C++-specific functionality is included in common.hpp
+#include <assert.h>
+#include <errno.h>
+#include <limits.h>
+#include <math.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 /**
  * Compute the BLAS-compatible offset to <tt>a(i,j)</tt> for general
  * banded matrices <tt>a(i,j) -> storage(ku+i-j,j)</tt> where storage
@@ -117,4 +128,4 @@ int suzerain_gbmatrix_in_band(int lda, int kl, int ku, int i, int j) {
     return j-ku <= i && i <= j+kl;
 }
 
-#endif // PECOS_SUZERAIN_COMMON_H
+#endif // __PECOS_SUZERAIN_COMMON_H

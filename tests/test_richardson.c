@@ -1,12 +1,10 @@
 #include <suzerain/config.h>
 #include <suzerain/common.h>
-
-#include <stdlib.h>
+#include <suzerain/richardson.h>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_sys.h>
 #include <gsl/gsl_test.h>
-#include <suzerain/richardson.h>
 
 void
 test_richardson_extrapolation_step()

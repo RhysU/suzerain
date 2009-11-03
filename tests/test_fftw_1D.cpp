@@ -1,20 +1,9 @@
 #define BOOST_TEST_MODULE $Id$
 
 #include <suzerain/config.h>
-#include <suzerain/common.h>
-
-#include <algorithm>
-#include <cmath>
-#include <complex>
-#include <functional>
-#include <limits>
-#include <stdexcept>
-#include <valarray>
+#include <suzerain/common.hpp>
 #include <fftw3.h>
-#include <boost/shared_ptr.hpp>
 #include <boost/test/included/unit_test.hpp>
-#include <boost/type_traits/remove_pointer.hpp>
-
 #include "test_tools.hpp"
 
 template<int NR = 8, int NC = (NR/2) + 1>

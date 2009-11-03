@@ -30,10 +30,6 @@
 
 #include <config.h>
 #include <suzerain/common.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>

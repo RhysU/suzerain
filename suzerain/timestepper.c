@@ -30,9 +30,6 @@
 
 #include <config.h>
 #include <suzerain/common.h>
-
-#include <stdlib.h>
-#include <stdio.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/error.h>
 #include <suzerain/timestepper.h>
