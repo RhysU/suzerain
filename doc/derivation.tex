@@ -251,18 +251,18 @@ we can express it as
 \begin{align}
 \tau_{ij}
   &= c_{ijmn} \varepsilon_{mn}
-  \\
+  \notag \\
   &= \left( A \delta_{ij} \delta_{mn}
           + B \delta_{im} \delta_{jn}
           + C \delta_{in} \delta_{jm}
      \right) \varepsilon_{mn}
   &
   &\text{for some }A, B, C\in\mathbb{R}
-  \\
+  \notag \\
   &= A \delta_{ij} \varepsilon_{mm} + B\varepsilon_{ij} + C\varepsilon_{ji}
-  \\
+  \notag \\
   &= A \delta_{ij} \varepsilon_{mm} + \left( B+C \right)\varepsilon_{ji}
-  \\
+  \notag \\
   &= 2 \mu \varepsilon_{ij} + \lambda\delta_{ij}\nabla\cdot{}u
 \end{align}
 where $\mu=\frac{1}{2}\left( B + C \right)$ is the viscosity
@@ -271,7 +271,7 @@ Reverting to direct notation we have
 \begin{align}
 \tau
   &= 2 \mu \varepsilon + \lambda \left( \nabla\cdot{}u \right) I
-  \\
+  \notag \\
 \label{eq:taunewt}
 &=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right)
    + \lambda \left( \nabla\cdot{}u \right) I
@@ -490,7 +490,7 @@ dimensions warrant.
 We choose a reference length $l_{0}$, temperature $T_{0}$, and density
 $\rho_{0}$.  These selections fix all other dimensional reference
 quantities:
-\begin{align*}
+\begin{align}
   a_{0} &= \sqrt{\gamma{}RT_{0}}
   &
   u_{0} &= a_{0}
@@ -508,7 +508,7 @@ quantities:
   f_{0} &= \frac{a_{0}^{2}}{l_{0}}
   &
   q_{0} &= \frac{a_{0}^{3}}{l_{0}}
-\end{align*}
+\end{align}
 Because we assume viscosity varies only with temperature,
 $\mu_{0}=\mu\!\left( T_{0} \right)$ is fixed by $T_{0}$.
 Because we assume a constant Prandtl number, $\kappa_{0}=\kappa\!\left(
@@ -622,10 +622,9 @@ the equations in section \ref{nondim_equations} become
   \label{eq:state_energy}
   \frac{\partial}{\partial{}t} e
 &=
-  - \nabla\cdot{}e\frac{m}{\rho}
+  - \nabla\cdot{}\left(e + p\right)\frac{m}{\rho}
   + \frac{1}{\Reynolds\,\Prandtl\,\left( \gamma - 1 \right)}
     \nabla\cdot\mu\nabla{} T
-  - \nabla\cdot{} p\frac{m}{\rho}
   + \frac{1}{\Reynolds} \nabla\cdot\tau{}\frac{m}{\rho}
   + f_{b} \cdot{} m
   + \rho{} q_{b}
@@ -762,7 +761,8 @@ expand the non-state derivatives appearing above:
       - \rho^{-1}\left[
             \mathrm{tr}\left( \nabla{}{m}^{\mathsf{T}}\nabla{}{m} \right)
           + m\cdot\Delta{}m
-          - \rho^{-1}\left[
+\right.\right. \notag\\ &\qquad\qquad\qquad\qquad \left.\left. % LINE BREAK
+        {}- \rho^{-1}\left[
                 2\nabla{}{m}^{\mathsf{T}}{m} \cdot\nabla{}\rho
               + \frac{1}{2} m^2 \Delta\rho
               - \rho^{-1} m^2 \left(\nabla\rho\right)^{2}
@@ -785,7 +785,6 @@ where we have employed the shorthand $m^2=m\cdot{}m$ and
 $\left(\nabla\rho\right)^2=\nabla\rho\cdot\nabla\rho$.  Obviously,
 not all of the non-state derivatives possess independent information
 since
-\begin{subequations}
 \begin{align}
   \Delta\rho
   &=
@@ -801,7 +800,6 @@ since
   \right)
   .
 \end{align}
-\end{subequations}
 Finally, in table~\vref{tab:nofirstderivnonlinearcost}, we tabulate the
 specific state variable derivatives necessary to compute each mixed-derivative
 nonlinear term and all of its contributions.
