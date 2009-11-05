@@ -706,11 +706,10 @@ containing derivative operators applied only to state quantities:
   &=
   \rho^{-1}\left[
         \nabla\nabla\cdot{}m
-      - \rho^{-1}\left[
-            \left(\nabla\nabla\rho\right) m
-          + \nabla{}m^{\mathsf{T}}\nabla\rho
-          + \left(\nabla\cdot{}m\right)\nabla\rho
-          - 2 \rho^{-1}\left(\nabla\rho\cdot{}m\right)\nabla\rho
+      + \rho^{-1}\left[
+            \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
+          - \left(\nabla\nabla\rho\right)m
+          - \nabla{}m^{\mathsf{T}}\nabla\rho
         \right]
   \right]
 \end{align}

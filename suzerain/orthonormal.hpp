@@ -681,8 +681,8 @@ Scalar div_u(
  *      \rho^{-1}\left[
  *            \vec{\nabla}\vec{\nabla}\cdot\vec{m}
  *          + \rho^{-1}\left[
- *                2 \rho^{-1} \left(
- *                     \vec{\nabla}\rho\cdot\vec{m}
+ *                \left(
+ *                     2 \rho^{-1} \vec{\nabla}\rho\cdot\vec{m}
  *                   - \vec{\nabla}\cdot\vec{m}
  *                \right)\vec{\nabla}\rho
  *              - \left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
