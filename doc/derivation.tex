@@ -679,13 +679,13 @@ containing derivative operators applied only to state quantities:
   &=
   \rho^{-1}\left[ \nabla{}m - \rho^{-1}{m}\otimes\nabla\rho  \right]
 \\
-  \nabla\frac{m}{\rho} + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
+  \nabla\frac{m}{\rho} + \trans{\left(\nabla\frac{m}{\rho}\right)}
   &=
   \rho^{-1}\left[
-      \left(\nabla{}m + \nabla{}m^{\mathsf{T}}\right)
+      \left(\nabla{}m + \trans{\nabla{}m}\right)
     - \rho^{-1}\left[
           \left(m\otimes\nabla\rho\right)
-        + \left(m\otimes\nabla\rho\right)^{\mathsf{T}}
+        + \trans{\left(m\otimes\nabla\rho\right)}
       \right]
   \right]
 \\
@@ -709,7 +709,7 @@ containing derivative operators applied only to state quantities:
       + \rho^{-1}\left[
             \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
           - \left(\nabla\nabla\rho\right)m
-          - \nabla{}m^{\mathsf{T}}\nabla\rho
+          - \trans{\nabla{}m}\nabla\rho
         \right]
   \right]
 \end{align}
@@ -720,14 +720,14 @@ derivatives:
 \begin{align}
   \Delta\rho
   &=
-  \mathrm{tr}\left( \nabla\nabla\rho \right)
+  \trace\left( \nabla\nabla\rho \right)
 &
   \nabla\cdot{}m
   &=
-  \mathrm{tr}\left( \nabla{}m \right)
+  \trace\left( \nabla{}m \right)
   =
-  \frac{1}{2} \mathrm{tr}\left(
-    \nabla\frac{m}{\rho} + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
+  \frac{1}{2} \trace\left(
+    \nabla\frac{m}{\rho} + \trans{\left(\nabla\frac{m}{\rho}\right)}
   \right)
 \end{align}
 
@@ -754,8 +754,7 @@ We expand the three mixed order, nonlinear terms:
   \nabla\cdot\tau
   &=
     \left[
-       \nabla\frac{m}{\rho}
-     + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
+       \nabla\frac{m}{\rho} + \trans{\left(\nabla\frac{m}{\rho}\right)}
     \right] \nabla\mu
   + \mu \Delta\frac{m}{\rho}
   + \left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho}
@@ -764,7 +763,7 @@ We expand the three mixed order, nonlinear terms:
   \nabla\cdot\tau{}\frac{m}{\rho}
   &=
     \frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)
-  + \mathrm{tr}\left( \tau\,\nabla\frac{m}{\rho} \right)
+  + \trace\left( \tau\,\nabla\frac{m}{\rho} \right)
 \\
   \nabla\cdot\mu\nabla{}T
   &=
@@ -779,7 +778,7 @@ expand:
   \nabla{}p &= (\gamma-1)\left[
         \nabla{}e
       + \frac{1}{2}\rho^{-2} m^{2} \nabla\rho
-      - \rho^{-1} \nabla{}m^{\mathsf{T}}m
+      - \rho^{-1} \trans{\nabla{}m}m
   \right]
 \\
   \nabla{}T &= \gamma\rho^{-1}\nabla{}p
@@ -794,11 +793,11 @@ expand:
   \left(\gamma-1\right)\left[
       \Delta{}e
       - \rho^{-1}\left[
-            \mathrm{tr}\left( \nabla{}{m}^{\mathsf{T}}\nabla{}{m} \right)
+            \trace\left( \trans{\nabla{}m}\nabla{}{m} \right)
           + m\cdot\Delta{}m
 \right.\right. \notag\\ &\qquad\qquad\qquad\qquad \left.\left. % LINE BREAK
         {}- \rho^{-1}\left[
-                2\nabla{}{m}^{\mathsf{T}}{m} \cdot\nabla{}\rho
+                2\trans{\nabla{}m}m\cdot\nabla{}\rho
               + \frac{1}{2} m^2 \Delta\rho
               - \rho^{-1} m^2 \left(\nabla\rho\right)^{2}
           \right]
@@ -858,7 +857,7 @@ converting 5 scalar fields back to wave space.
 & $\nabla\nabla\rho$                                  % 04
 & $m$                                                 % 05
 & $\nabla\cdot{}m$                                    % 06
-& $\left(\nabla{}m\!+\!\nabla{}m^{\mathsf{T}}\right)$ % 07
+& $\left(\nabla{}m\!+\!\trans{\nabla{}m}\right)$      % 07
 & $\nabla{}m$                                         % 08
 & $\Delta{}m$                                         % 09
 & $\nabla\nabla\cdot{}m$                              % 11
@@ -874,7 +873,7 @@ $\nabla\frac{m}{\rho}$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm &     &     & \cm &     &     & \cm &     &     &     &     &
 & 16 \\
-$\nabla\frac{m}{\rho}\!+\!\left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}$
+$\nabla\frac{m}{\rho}\!+\!\trans{\left(\nabla\frac{m}{\rho}\right)}$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm &     &     & \cm &     & \cm &     &     &     &     &     &
 & 13 \\
@@ -907,7 +906,7 @@ $\tau$
 & \cm & \cm &     &     & \cm & \cd & \cm &     &     &     & \cm &     &
 & 14 \\[1.5em]
 $\left[
-  \nabla\frac{m}{\rho}\!+\!\left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
+  \nabla\frac{m}{\rho}\!+\!\trans{\left(\nabla\frac{m}{\rho}\right)}
 \right] \nabla\mu$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm &     &     & \cm &     & \cd & \cm &     &     & \cm & \cm &
@@ -932,7 +931,7 @@ $\frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm & \cd & \cm & \cm & \cd & \cd & \cm & \cm & \cm & \cm & \cm &
 & 32 \\
-$\mathrm{tr}\left(\tau\nabla\frac{m}{\rho}\right)$
+$\trace\left(\tau\nabla\frac{m}{\rho}\right)$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm &     &     & \cm & \cd & \cd & \cm &     &     & \cm &     &
 & 20 \\
