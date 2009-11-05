@@ -231,7 +231,7 @@ The total (internal and kinetic) energy density is
      = \frac{RT}{\gamma-1} + \frac{u\cdot{}u}{2}
   .
 \end{align}
-See a gas dynamics reference, e.g. \cite{LiepmannRoshko2002}, for more details.
+See a gas dynamics reference, e.g.~\cite{LiepmannRoshko2002}, for more details.
 
 \subsubsection{Newtonian fluid}
 
@@ -250,31 +250,31 @@ Assuming $\tau$ is isotropic and depends linearly upon only $\varepsilon$,
 we can express it as
 \begin{align}
 \tau_{ij}
-  &= c_{ijmn} \varepsilon_{mn}
-  \notag \\
-  &= \left( A \delta_{ij} \delta_{mn}
-          + B \delta_{im} \delta_{jn}
-          + C \delta_{in} \delta_{jm}
-     \right) \varepsilon_{mn}
-  &
-  &\text{for some }A, B, C\in\mathbb{R}
-  \notag \\
-  &= A \delta_{ij} \varepsilon_{mm} + B\varepsilon_{ij} + C\varepsilon_{ji}
-  \notag \\
-  &= A \delta_{ij} \varepsilon_{mm} + \left( B+C \right)\varepsilon_{ji}
-  \notag \\
-  &= 2 \mu \varepsilon_{ij} + \lambda\delta_{ij}\nabla\cdot{}u
+&= c_{ijmn} \varepsilon_{mn}
+\notag \\
+&= \left( A \delta_{ij} \delta_{mn}
+        + B \delta_{im} \delta_{jn}
+        + C \delta_{in} \delta_{jm}
+    \right) \varepsilon_{mn}
+&
+&\text{for some }A, B, C\in\mathbb{R}
+\notag \\
+&= A \delta_{ij} \varepsilon_{mm} + B\varepsilon_{ij} + C\varepsilon_{ji}
+\notag \\
+&= A \delta_{ij} \varepsilon_{mm} + \left( B+C \right)\varepsilon_{ji}
+\notag \\
+&= 2 \mu \varepsilon_{ij} + \lambda\delta_{ij}\nabla\cdot{}u
 \end{align}
 where $\mu=\frac{1}{2}\left( B + C \right)$ is the viscosity
 and $\lambda=A$ is the second viscosity.
 Reverting to direct notation we have
 \begin{align}
 \tau
-  &= 2 \mu \varepsilon + \lambda \left( \nabla\cdot{}u \right) I
-  \notag \\
+&= 2 \mu \varepsilon + \lambda \left( \nabla\cdot{}u \right) I
+\notag \\
 \label{eq:taunewt}
 &=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right)
-   + \lambda \left( \nabla\cdot{}u \right) I
+  + \lambda \left( \nabla\cdot{}u \right) I
 \end{align}
 
 \subsubsection{Stokes hypothesis}
@@ -287,8 +287,8 @@ useful, we will not combine $\mu$ and $\lambda$ terms in the model.
 
 We assume that viscosity varies only with temperature according to
 \begin{align}
-  \label{eq:powerlawviscosity}
-  \frac{\mu}{\mu_{0}}=\left(\frac{T}{T_{0}}\right)^{\beta}
+\label{eq:powerlawviscosity}
+\frac{\mu}{\mu_{0}}=\left(\frac{T}{T_{0}}\right)^{\beta}
 \end{align}
 where $\mu_{0}$ and $T_{0}$ are suitable reference values.  This
 relationship models air well for temperatures up to several thousand
@@ -596,13 +596,14 @@ removed~\cite{Zang1991Rotation}.  This choice may need to be revisited as the
 wall-normal direction is not dealiased.
 
 \subsection{State variable selection}
+\label{state_variable_selection}
 
 We use nondimensional density $\rho$, momentum $m=\rho{}u$, and total energy
 $e=\rho{}\tilde{e}$ as the state variables for our computations.  Though it
 eliminates division and potentially allows for fully dealiased calculations, we
 do not use specific density $\sigma=1/\rho$ because it requires using a
 nonconservative mass equation.  When rewritten using the state variables
-the equations in section \ref{nondim_equations} become
+the equations in section~\ref{nondim_equations} become
 \begin{subequations}
 \begin{align}
   \label{eq:state_continuity}
@@ -633,7 +634,7 @@ the equations in section \ref{nondim_equations} become
 }
   \label{eq:state_pressure}
   p &= \left(\gamma-1\right) \left(
-    e - \frac{m\cdot{}m}{2\rho}
+    e - \frac{m^2}{2\rho}
   \right)
   \\
   \label{eq:state_temperature}
@@ -650,52 +651,24 @@ the equations in section \ref{nondim_equations} become
             \nabla{}\frac{m}{\rho}+\trans{\left(\nabla{}\frac{m}{\rho}\right)}
           \right)
         + \lambda\left(\nabla\cdot{}\frac{m}{\rho}\right) I
-  .
 \end{align}
 \end{subequations}
+where we have employed the shorthand $m^2=m\cdot{}m$.
 
-\subsection{Separation of first and second derivative operators}
+\subsection{Communications overhead}
 
-We intend to use a B-spline basis in the wall normal direction.  For B-splines,
-the repeated application of a discrete first derivative operator gives a result
-that differs significantly from applying a discrete second derivative operator.
-In particular, repeated first differentiation severely abates high frequency
-modes (see figures 2 and 3 in ~\cite{Kwok2001}).
+Suzerain performs time advancement in wave space but must compute nonlinear
+terms in physical space.  The communications and computation cost required to
+convert state data from wave space to physical space or vice versa is very
+high.  Consequently, we transform back and forth only once per time integration
+substep.  This implies that we must be able to compute derived quantity
+derivatives using state quantity derivatives.
 
-Second differentiation enters equations \eqref{eq:state_continuity},
-\eqref{eq:state_momentum}, and \eqref{eq:state_energy} through the terms
-$\nabla\cdot\tau$, $\nabla\cdot\tau\frac{m}{\rho}$, and
-$\nabla\cdot\mu\nabla{}T$.  We wish to compute these terms in a way that keeps
-first and second derivative applications wholly separate.  Doing so will help
-ensure that these three terms have the appropriate diffusive effects on high
-frequency content.
+\subsection{Velocity derivative expansions}
+\label{velocity_derivative_expansions}
 
-We start by expanding the three mixed order, nonlinear terms:
-\begin{subequations}
-\begin{align}
-  \nabla\cdot\tau
-  &=
-    \left[
-       \nabla\frac{m}{\rho}
-     + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
-    \right] \nabla\mu
-  + \mu \Delta\frac{m}{\rho}
-  + \left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho}
-  + \left(\nabla\cdot\frac{m}{\rho}\right)\nabla\lambda
-\\
-  \nabla\cdot\tau{}\frac{m}{\rho}
-  &=
-    \frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)
-  + \mathrm{tr}\left( \tau\,\nabla\frac{m}{\rho} \right)
-\\
-  \nabla\cdot\mu\nabla{}T
-  &=
-    \nabla\mu\cdot\nabla{}T
-  + \mu \Delta{}T
-\end{align}
-\end{subequations}
-Next, to determine the cost associated with each of these three expressions, we
-expand the non-state derivatives appearing above:
+We expand the necessary velocity derivatives into a combination of terms each
+containing only a single derivative operator applied to a state quantity:
 \begin{subequations}
 \begin{align}
   \nabla\cdot\frac{m}{\rho}
@@ -740,7 +713,70 @@ expand the non-state derivatives appearing above:
           - 2 \rho^{-1}\left(\nabla\rho\cdot{}m\right)\nabla\rho
         \right]
   \right]
+\end{align}
+\end{subequations}
+
+We note some relationships amongst the information appearing in such
+derivatives:
+\begin{align}
+  \Delta\rho
+  &=
+  \mathrm{tr}\left( \nabla\nabla\rho \right)
+&
+  \nabla\cdot{}m
+  &=
+  \mathrm{tr}\left( \nabla{}m \right)
+  =
+  \frac{1}{2} \mathrm{tr}\left(
+    \nabla\frac{m}{\rho} + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
+  \right)
+\end{align}
+
+\subsection{Separation of first and second derivative operators}
+\label{separate_first_section_deriv}
+
+Suzerain uses a B-spline basis in the wall normal direction.  Unlike a Fourier
+basis, for B-splines the repeated application of a discrete first derivative
+operator gives a result that differs significantly from applying a discrete
+second derivative operator.  In particular, repeated first differentiation
+severely abates high frequency modes (see figures 2 and 3 in ~\cite{Kwok2001}).
+
+Second differentiation enters equations~\eqref{eq:state_continuity},
+\eqref{eq:state_momentum}, and~\eqref{eq:state_energy} through the terms
+$\nabla\cdot\tau$, $\nabla\cdot\tau\frac{m}{\rho}$, and
+$\nabla\cdot\mu\nabla{}T$.  We wish to compute these terms in a way that keeps
+first and second derivative applications wholly separate.  Doing so will help
+ensure that these three terms have the appropriate diffusive effects on high
+frequency content.
+
+We expand the three mixed order, nonlinear terms:
+\begin{subequations}
+\begin{align}
+  \nabla\cdot\tau
+  &=
+    \left[
+       \nabla\frac{m}{\rho}
+     + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
+    \right] \nabla\mu
+  + \mu \Delta\frac{m}{\rho}
+  + \left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho}
+  + \left(\nabla\cdot\frac{m}{\rho}\right)\nabla\lambda
 \\
+  \nabla\cdot\tau{}\frac{m}{\rho}
+  &=
+    \frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)
+  + \mathrm{tr}\left( \tau\,\nabla\frac{m}{\rho} \right)
+\\
+  \nabla\cdot\mu\nabla{}T
+  &=
+    \nabla\mu\cdot\nabla{}T
+  + \mu \Delta{}T
+\end{align}
+\end{subequations}
+Many of these term contains non-state quantity derivatives which we also
+expand:
+\begin{subequations}
+\begin{align}
   \nabla{}p &= (\gamma-1)\left[
         \nabla{}e
       + \frac{1}{2}\rho^{-2} m^{2} \nabla\rho
@@ -781,28 +817,28 @@ expand the non-state derivatives appearing above:
   \right]
 \end{align}
 \end{subequations}
-where we have employed the shorthand $m^2=m\cdot{}m$ and
-$\left(\nabla\rho\right)^2=\nabla\rho\cdot\nabla\rho$.  Obviously,
-not all of the non-state derivatives possess independent information
-since
-\begin{align}
-  \Delta\rho
-  &=
-  \mathrm{tr}\left( \nabla\nabla\rho \right)
-  ,
-&
-  \nabla\cdot{}m
-  &=
-  \mathrm{tr}\left( \nabla{}m \right)
-  =
-  \frac{1}{2} \mathrm{tr}\left(
-    \nabla\frac{m}{\rho} + \left(\nabla\frac{m}{\rho}\right)^{\mathsf{T}}
-  \right)
-  .
-\end{align}
-Finally, in table~\vref{tab:nofirstderivnonlinearcost}, we tabulate the
-specific state variable derivatives necessary to compute each mixed-derivative
-nonlinear term and all of its contributions.
+
+Though we could have found these expressions for only the wall-normal
+direction, writing them for the complete $\nabla$ operator allows us to reuse
+them later.
+
+\subsection{Fully explicit scheme cost tabulation}
+
+Though Suzerain uses a hybrid implicit/explicit time stepping scheme and a
+Fourier basis in the streamwise and spanwise directions where repeated first
+differentiation is acceptable, it is useful to examine the communication costs
+for purely a explicit time stepper when we do not mix derivative orders.
+
+Using the information in sections~\ref{velocity_derivative_expansions}
+and~\ref{separate_first_section_deriv} we tabulate in
+table~\ref{tab:nofirstderivnonlinearcost} the specific state variable
+derivatives necessary to compute each mixed-derivative nonlinear term and all
+of its contributions.  From this table and the equations appearing in
+section~\ref{state_variable_selection}, a fully explicit timestepping approach
+could compute a single substep at the cost of converting 33 scalar fields from
+wave space to physical space, forming 5 scalars representing the right hand
+sides of equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy}, and
+converting 5 scalar fields back to wave space.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
