@@ -1036,30 +1036,32 @@ contribution that satisfies our timestepper's implicit operator needs:
   &
   &{}- 2\nabla{}m\reference{\rho^{-2}\nabla\rho}
 \\
-% FIXME REMOVE
-  \Delta\frac{m}{\rho}
-  &=
- \rho^{-1}\left[
-      \Delta{}m
-    + \rho^{-1}\left[
-          \left(
-              2\rho^{-1}\left(\nabla\rho\right)^{2}
-            - \Delta\rho
-          \right) {m}
-        - 2 \left(\nabla{m}\right)\nabla\rho
-      \right]
- \right]
+\nabla\nabla\cdot\frac{m}{\rho} &=
+       \left(\rho^{-1}-\reference{\rho^{-1}}\right)\nabla\nabla\cdot{}m
+  &
+  &{}+ \reference{\rho^{-1}}\nabla\nabla\cdot{}m
 \\
-  \nabla\nabla\cdot\frac{m}{\rho}
-  &=
-  \rho^{-1}\left[
-        \nabla\nabla\cdot{}m
-      + \rho^{-1}\left[
-            \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
-          - \left(\nabla\nabla\rho\right)m
-          - \trans{\nabla{}m}\nabla\rho
-        \right]
-  \right]
+  &{}+ 2\left(
+          \rho^{-3}\nabla\rho\cdot{}m
+        - \reference{\rho^{-3}\nabla\rho\cdot{}m}
+        \right)\nabla\rho
+  &
+  &{}+ 2\reference{\rho^{-3}\nabla\rho\cdot{}m}\nabla\rho
+\\
+  &{}- \left(\rho^{-2}\nabla\rho-\reference{\rho^{-2}\nabla\rho}\right)
+       \nabla\cdot{}m
+  &
+  &{}- \reference{\rho^{-2}\nabla\rho}\nabla\cdot{}m
+\\
+  &{}- \nabla\nabla\rho\left(\rho^{-2}m - \reference{\rho^{-2}m}\right)
+  &
+  &{}- \nabla\nabla\rho\reference{\rho^{-2}m}
+\\
+  &{}- \trans{\nabla{}m}\left(
+          \rho^{-2}\nabla\rho - \reference{\rho^{-2}\nabla\rho}
+       \right)
+  &
+  &{}- \trans{\nabla{}m}\reference{\rho^{-2}\nabla\rho}
 \end{align}
 \end{subequations}
 
