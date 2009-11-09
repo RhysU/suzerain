@@ -963,7 +963,7 @@ $\nabla\cdot\mu\nabla{}T$
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Expansions about reference values}
+\subsection{Linearization of second order viscous terms}
 
 Suzerain uses a hybrid implicit/explicit timestepper to alleviate the very
 restrictive timestep requirements that arise if we advance time in a purely
@@ -974,44 +974,42 @@ equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} meets these
 criteria.  We must carve it up.
 
 Because second derivatives give rise to the most restrictive eigenvalues for
-timestepping, we focus on how they enter the full operator.  We take the
-quantities from sections~\ref{velocity_derivative_expansions}
+timestepping, we focus on how second order terms enter the full operator.  We
+take the quantities from sections~\ref{velocity_derivative_expansions}
 and~\ref{separate_first_section_deriv} and expand the nonlinear coefficients on
 second order terms about reference states.  For example, $\rho^{-1}\Delta{}m =
 \lessreference{\rho^{-1}}\Delta{}m + \reference{\rho^{-1}}\Delta{}m$ where
 $\reference{\rho^{-1}}$ indicates the term $\rho^{-1}$ evaluated at some given,
-fixed state.  This approach separates each quantity into a nonlinear portion
-contribution to be treated explicitly and a linear, second derivative-oriented
-contribution that satisfies our timestepper's implicit operator needs:
+fixed state.  This approach separates each quantity into an explicitly-treated
+nonlinear portion plus a linear contribution that satisfies our timestepper's
+implicit operator needs:
 \begin{subequations}
 \begin{align}
-\Delta\frac{m}{\rho} = &\phantom{{}+}
-    \lessreference{\rho^{-1}} \Delta{}m
-  - \lessreference{\rho^{-2}m} \Delta\rho
-  + \rho^{-2}\left[
+\mu\Delta\frac{m}{\rho} = &\phantom{{}+}
+    \mu\rho^{-2}\left[
           2\rho^{-1}m\left(\nabla\rho\right)^{2}
         - 2 \left(\nabla{m}\right)\nabla\rho
     \right]
 \\
-  &{}+ \reference{\rho^{-1}} \Delta{}m
-  -    \reference{\rho^{-2}m} \Delta\rho
+  &{}+ \lessreference{\mu\rho^{-1}} \Delta{}m
+     - \lessreference{\mu\rho^{-2}m} \Delta\rho
 \\
-\nabla\nabla\cdot\frac{m}{\rho} = &\phantom{{}+}
-    \lessreference{\rho^{-1}} \nabla\nabla\cdot{}m
-  - \nabla\nabla\rho \lessreference{\rho^{-2}m}
-  + \rho^{-2}\left[
-        \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
-      - \trans{\nabla{}m}\nabla\rho
-    \right]
+  &{}+ \reference{\mu\rho^{-1}} \Delta{}m
+     - \reference{\mu\rho^{-2}m} \Delta\rho
 \\
-  &{}+ \reference{\rho^{-1}} \nabla\nabla\cdot{}m
-     - \nabla\nabla\rho \reference{\rho^{-2}m}
+\left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho} = &\phantom{{}+}
+   \left(\mu+\lambda\right)\rho^{-2}\left[
+       \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
+     - \trans{\nabla{}m}\nabla\rho
+   \right]
 \\
-\Delta{}p = &\phantom{{}+}
-       \left(\gamma-1\right)\Delta{}e
-   {}- \left(\gamma-1\right)\rho^{-1}m\cdot\Delta{}m
-     + \frac{1}{2}\left(\gamma-1\right)\rho^{-2}m^2 \Delta\rho
+  &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m
+     - \nabla\nabla\rho \lessreference{\left(\mu+\lambda\right)\rho^{-2}m}
 \\
+  &{}+ \reference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m
+     - \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-2}m}
+\\
+\Delta{}p =
   &{}- \left(\gamma-1\right)\rho^{-1}\left[
              \trace\left(\trans{\nabla{}m}\nabla{}m\right)
            - \rho^{-1}\left[
@@ -1020,15 +1018,45 @@ contribution that satisfies our timestepper's implicit operator needs:
            \right]
        \right]
 \\
-\Delta{}T = &\phantom{{}+}
-      \gamma\rho^{-1}\Delta{}p
-    - \gamma\rho^{-2}p\Delta\rho
-    - 2\gamma\rho^{-2}\nabla{}\rho\cdot
-      \left(\nabla{}p-\rho^{-1}p\nabla\rho\right)
+  &{}+ \left(\gamma-1\right)\Delta{}e
+     - \left(\gamma-1\right)\rho^{-1}m\cdot\Delta{}m
+     + \frac{\gamma-1}{2}\rho^{-2}m^2 \Delta\rho
 \\
-= &\phantom{{}+}
+\mu\Delta{}T =
+  &{}- 2\gamma\mu\rho^{-2}\nabla{}\rho\cdot
+       \left(\nabla{}p-\rho^{-1}p\nabla\rho\right)
+     + \gamma\mu\rho^{-1}\Delta{}p
+     - \gamma\mu\rho^{-2}p\Delta\rho
+\\
+=
+  &{}- 2\gamma\mu\rho^{-2}\nabla{}\rho\cdot
+       \left(\nabla{}p-\rho^{-1}p\nabla\rho\right)
+\\
+  &{}- \gamma\left(\gamma-1\right)\mu\rho^{-2}\left[
+             \trace\left(\trans{\nabla{}m}\nabla{}m\right)
+           - \rho^{-1}\left[
+               2\trans{\nabla{}m}m\cdot\nabla{}\rho
+             - \rho^{-1} m^2 \left(\nabla\rho\right)^{2}
+           \right]
+       \right]
+\\
+  &{}+ \gamma\left(\gamma-1\right)\lessreference{\mu\rho^{-1}}\Delta{}e
+     - \gamma\left(\gamma-1\right)\lessreference{\mu\rho^{-2}m}\cdot\Delta{}m
+\\
+  &{}+ \gamma
+       \lessreference{\frac{\gamma-1}{2}\mu\rho^{-3}m^2 - \mu\rho^{-2}p}
+       \Delta\rho
+\\
+  &{}+ \gamma\left(\gamma-1\right)\reference{\mu\rho^{-1}}\Delta{}e
+     - \gamma\left(\gamma-1\right)\reference{\mu\rho^{-2}m}\cdot\Delta{}m
+     + \gamma
+       \reference{\frac{\gamma-1}{2}\mu\rho^{-3}m^2 - \mu\rho^{-2}p}
+       \Delta\rho
 \end{align}
 \end{subequations}
+The last line of each quantity is the implicit portion.  Note that we will
+recover an explicit-only operator if we choose identically zero reference
+values.
 
 
 
