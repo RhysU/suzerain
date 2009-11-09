@@ -50,6 +50,8 @@
 \newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
 \newcommand{\Prandtl}[1][]{\ensuremath{\mbox{Pr}_{#1}}}
 \newcommand{\reference}[1]{\ensuremath{\left\{#1\right\}_{0}}}
+\newcommand{\lessreference}[1]
+  {\ensuremath{\left({#1}-\reference{#1}\right)}}
 \newcommand{\symmetricpart}[1]
   {\ensuremath{\operatorname{Sym}\left(#1\right)}}
 \DeclareMathOperator{\trace}{tr}
@@ -976,95 +978,84 @@ restrictive eigenvalues for timestepping, we focus on how they enter the full
 operator.  We take the quantities from
 sections~\ref{velocity_derivative_expansions}
 and~\ref{separate_first_section_deriv} and expand them about reference states.
-For example, $\rho^{-1}\nabla{}m = \left(\rho^{-1} -
-\reference{\rho^{-1}}\right)\nabla{}m + \reference{\rho^{-1}}\nabla{}m$ where
-$\reference{\rho^{-1}}$ indicates the term $\rho^{-1}$ evaluated at some given,
-fixed state.  This approach separates each quantity into a nonlinear portion
-contribution to be treated explicitly and a linear, derivative-oriented
-contribution that satisfies our timestepper's implicit operator needs:
+For example, $\rho^{-1}\Delta{}m = \lessreference{\rho^{-1}}\Delta{}m +
+\reference{\rho^{-1}}\Delta{}m$ where $\reference{\rho^{-1}}$ indicates the
+term $\rho^{-1}$ evaluated at some given, fixed state.  This approach separates
+each quantity into a nonlinear portion contribution to be treated explicitly
+and a linear, derivative-oriented contribution that satisfies our timestepper's
+implicit operator needs:
 \begin{subequations}
 \begin{align}
 \nabla\cdot\frac{m}{\rho}
 &=
-     \left(\rho^{-1}-\reference{\rho^{-1}}\right)\nabla\cdot{}m
+      \lessreference{\rho^{-1}}\nabla\cdot{}m
   &
   &{}+\reference{\rho^{-1}}\nabla\cdot{}m
 \\
-  &{}- \left(\rho^{-2}m-\reference{\rho^{-2}m}\right)\cdot\nabla\rho
+  &{}- \lessreference{\rho^{-2}m}\cdot\nabla\rho
   &
   &{}- \reference{\rho^{-2}m}\cdot\nabla\rho
 \\
 \nabla{}\frac{m}{\rho}
 &=
-       \left(\rho^{-1}-\reference{\rho^{-1}}\right)\nabla{}m
+       \lessreference{\rho^{-1}}\nabla{}m
   &
   &{}+ \reference{\rho^{-1}}\nabla{}m
 \\
-  &{}- \left(\rho^{-2}m-\reference{\rho^{-2}m}\right)\otimes\nabla\rho
+  &{}- \lessreference{\rho^{-2}m}\otimes\nabla\rho
   &
   &{}- \reference{\rho^{-2}m}\otimes\nabla\rho
 \\
 \symmetricpart{\nabla\frac{m}{\rho}}
 &=
-       \left(\rho^{-1}-\reference{\rho^{-1}}\right)\symmetricpart{\nabla{}m}
+       \lessreference{\rho^{-1}}\symmetricpart{\nabla{}m}
   &
   &{}+ \reference{\rho^{-1}}\symmetricpart{\nabla{}m}
 \\
-  &{}- \symmetricpart{
-       \left(\rho^{-2}m-\reference{\rho^{-2}m}\right)\otimes\nabla\rho}
+  &{}- \symmetricpart{\lessreference{\rho^{-2}m}\otimes\nabla\rho}
   &
   &{}- \symmetricpart{\reference{\rho^{-2}m} \otimes\nabla\rho}
 \\
 \Delta\frac{m}{\rho}
 &=
-       \left(\rho^{-1}-\reference{\rho^{-1}}\right)\Delta{}m
+       \lessreference{\rho^{-1}}\Delta{}m
   &
   &{}+ \reference{\rho^{-1}}\Delta{}m
 \\
-  &{}+ 2\left(\rho^{-3}m\nabla\rho - \reference{\rho^{-3}m\nabla\rho}\right)
-       \cdot\nabla\rho
+  &{}+ 2\lessreference{\rho^{-3}m\nabla\rho}\cdot\nabla\rho
   &
   &{}+ 2\reference{\rho^{-3}m\nabla\rho}\cdot\nabla\rho
 \\
-  &{}- \left(\rho^{-2}m-\reference{\rho^{-2}m}\right)\Delta\rho
+  &{}- \lessreference{\rho^{-2}m}\Delta\rho
   &
   &{}- \reference{\rho^{-2}m}\Delta\rho
 \\
-  &{}- 2\nabla{}m\left(
-         \rho^{-2}\nabla\rho - \reference{\rho^{-2}\nabla\rho}
-       \right)
+  &{}- 2\nabla{}m\lessreference{\rho^{-2}\nabla\rho}
   &
   &{}- 2\nabla{}m\reference{\rho^{-2}\nabla\rho}
 \\
 \nabla\nabla\cdot\frac{m}{\rho} &=
-       \left(\rho^{-1}-\reference{\rho^{-1}}\right)\nabla\nabla\cdot{}m
+       \lessreference{\rho^{-1}}\nabla\nabla\cdot{}m
   &
   &{}+ \reference{\rho^{-1}}\nabla\nabla\cdot{}m
 \\
-  &{}+ 2\left(
-          \rho^{-3}\nabla\rho\cdot{}m
-        - \reference{\rho^{-3}\nabla\rho\cdot{}m}
-        \right)\nabla\rho
+  &{}+ 2\lessreference{\rho^{-3}\nabla\rho\cdot{}m}\nabla\rho
   &
   &{}+ 2\reference{\rho^{-3}\nabla\rho\cdot{}m}\nabla\rho
 \\
-  &{}- \left(\rho^{-2}\nabla\rho-\reference{\rho^{-2}\nabla\rho}\right)
-       \nabla\cdot{}m
+  &{}- \lessreference{\rho^{-2}\nabla\rho}\nabla\cdot{}m
   &
   &{}- \reference{\rho^{-2}\nabla\rho}\nabla\cdot{}m
 \\
-  &{}- \nabla\nabla\rho\left(\rho^{-2}m - \reference{\rho^{-2}m}\right)
+  &{}- \nabla\nabla\rho\lessreference{\rho^{-2}m}
   &
   &{}- \nabla\nabla\rho\reference{\rho^{-2}m}
 \\
-  &{}- \trans{\nabla{}m}\left(
-          \rho^{-2}\nabla\rho - \reference{\rho^{-2}\nabla\rho}
-       \right)
+  &{}- \trans{\nabla{}m}\lessreference{\rho^{-2}\nabla\rho}
   &
   &{}- \trans{\nabla{}m}\reference{\rho^{-2}\nabla\rho}
 \end{align}
 \end{subequations}
-
 
 
 
