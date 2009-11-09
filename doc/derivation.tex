@@ -790,7 +790,7 @@ expand:
   \left(\gamma-1\right)\left[
       \Delta{}e
       - \rho^{-1}\left[
-            \trace\left( \trans{\nabla{}m}\nabla{}{m} \right)
+            \trace\left( \trans{\nabla{}m}\nabla{}m \right)
           + m\cdot\Delta{}m
 \right.\right. \notag\\ &\qquad\qquad\qquad\qquad \left.\left. % LINE BREAK
         {}- \rho^{-1}\left[
@@ -973,87 +973,60 @@ full operator as written in
 equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} meets these
 criteria.  We must carve it up.
 
-Because derivatives, particularly second derivatives, give rise to the most
-restrictive eigenvalues for timestepping, we focus on how they enter the full
-operator.  We take the quantities from
-sections~\ref{velocity_derivative_expansions}
-and~\ref{separate_first_section_deriv} and expand them about reference states.
-For example, $\rho^{-1}\Delta{}m = \lessreference{\rho^{-1}}\Delta{}m +
-\reference{\rho^{-1}}\Delta{}m$ where $\reference{\rho^{-1}}$ indicates the
-term $\rho^{-1}$ evaluated at some given, fixed state.  This approach separates
-each quantity into a nonlinear portion contribution to be treated explicitly
-and a linear, derivative-oriented contribution that satisfies our timestepper's
-implicit operator needs:
+Because second derivatives give rise to the most restrictive eigenvalues for
+timestepping, we focus on how they enter the full operator.  We take the
+quantities from sections~\ref{velocity_derivative_expansions}
+and~\ref{separate_first_section_deriv} and expand the nonlinear coefficients on
+second order terms about reference states.  For example, $\rho^{-1}\Delta{}m =
+\lessreference{\rho^{-1}}\Delta{}m + \reference{\rho^{-1}}\Delta{}m$ where
+$\reference{\rho^{-1}}$ indicates the term $\rho^{-1}$ evaluated at some given,
+fixed state.  This approach separates each quantity into a nonlinear portion
+contribution to be treated explicitly and a linear, second derivative-oriented
+contribution that satisfies our timestepper's implicit operator needs:
 \begin{subequations}
 \begin{align}
-\nabla\cdot\frac{m}{\rho}
-&=
-      \lessreference{\rho^{-1}}\nabla\cdot{}m
-  &
-  &{}+\reference{\rho^{-1}}\nabla\cdot{}m
+\Delta\frac{m}{\rho} = &\phantom{{}+}
+    \lessreference{\rho^{-1}} \Delta{}m
+  - \lessreference{\rho^{-2}m} \Delta\rho
+  + \rho^{-2}\left[
+          2\rho^{-1}m\left(\nabla\rho\right)^{2}
+        - 2 \left(\nabla{m}\right)\nabla\rho
+    \right]
 \\
-  &{}- \lessreference{\rho^{-2}m}\cdot\nabla\rho
-  &
-  &{}- \reference{\rho^{-2}m}\cdot\nabla\rho
+  &{}+ \reference{\rho^{-1}} \Delta{}m
+  -    \reference{\rho^{-2}m} \Delta\rho
 \\
-\nabla{}\frac{m}{\rho}
-&=
-       \lessreference{\rho^{-1}}\nabla{}m
-  &
-  &{}+ \reference{\rho^{-1}}\nabla{}m
+\nabla\nabla\cdot\frac{m}{\rho} = &\phantom{{}+}
+    \lessreference{\rho^{-1}} \nabla\nabla\cdot{}m
+  - \nabla\nabla\rho \lessreference{\rho^{-2}m}
+  + \rho^{-2}\left[
+        \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
+      - \trans{\nabla{}m}\nabla\rho
+    \right]
 \\
-  &{}- \lessreference{\rho^{-2}m}\otimes\nabla\rho
-  &
-  &{}- \reference{\rho^{-2}m}\otimes\nabla\rho
+  &{}+ \reference{\rho^{-1}} \nabla\nabla\cdot{}m
+     - \nabla\nabla\rho \reference{\rho^{-2}m}
 \\
-\symmetricpart{\nabla\frac{m}{\rho}}
-&=
-       \lessreference{\rho^{-1}}\symmetricpart{\nabla{}m}
-  &
-  &{}+ \reference{\rho^{-1}}\symmetricpart{\nabla{}m}
+\Delta{}p = &\phantom{{}+}
+       \left(\gamma-1\right)\Delta{}e
+   {}- \left(\gamma-1\right)\rho^{-1}m\cdot\Delta{}m
+     + \frac{1}{2}\left(\gamma-1\right)\rho^{-2}m^2 \Delta\rho
 \\
-  &{}- \symmetricpart{\lessreference{\rho^{-2}m}\otimes\nabla\rho}
-  &
-  &{}- \symmetricpart{\reference{\rho^{-2}m} \otimes\nabla\rho}
+  &{}- \left(\gamma-1\right)\rho^{-1}\left[
+             \trace\left(\trans{\nabla{}m}\nabla{}m\right)
+           - \rho^{-1}\left[
+               2\trans{\nabla{}m}m\cdot\nabla{}\rho
+             - \rho^{-1} m^2 \left(\nabla\rho\right)^{2}
+           \right]
+       \right]
 \\
-\Delta\frac{m}{\rho}
-&=
-       \lessreference{\rho^{-1}}\Delta{}m
-  &
-  &{}+ \reference{\rho^{-1}}\Delta{}m
+\Delta{}T = &\phantom{{}+}
+      \gamma\rho^{-1}\Delta{}p
+    - \gamma\rho^{-2}p\Delta\rho
+    - 2\gamma\rho^{-2}\nabla{}\rho\cdot
+      \left(\nabla{}p-\rho^{-1}p\nabla\rho\right)
 \\
-  &{}+ 2\lessreference{\rho^{-3}m\nabla\rho}\cdot\nabla\rho
-  &
-  &{}+ 2\reference{\rho^{-3}m\nabla\rho}\cdot\nabla\rho
-\\
-  &{}- \lessreference{\rho^{-2}m}\Delta\rho
-  &
-  &{}- \reference{\rho^{-2}m}\Delta\rho
-\\
-  &{}- 2\nabla{}m\lessreference{\rho^{-2}\nabla\rho}
-  &
-  &{}- 2\nabla{}m\reference{\rho^{-2}\nabla\rho}
-\\
-\nabla\nabla\cdot\frac{m}{\rho} &=
-       \lessreference{\rho^{-1}}\nabla\nabla\cdot{}m
-  &
-  &{}+ \reference{\rho^{-1}}\nabla\nabla\cdot{}m
-\\
-  &{}+ 2\lessreference{\rho^{-3}\nabla\rho\cdot{}m}\nabla\rho
-  &
-  &{}+ 2\reference{\rho^{-3}\nabla\rho\cdot{}m}\nabla\rho
-\\
-  &{}- \lessreference{\rho^{-2}\nabla\rho}\nabla\cdot{}m
-  &
-  &{}- \reference{\rho^{-2}\nabla\rho}\nabla\cdot{}m
-\\
-  &{}- \nabla\nabla\rho\lessreference{\rho^{-2}m}
-  &
-  &{}- \nabla\nabla\rho\reference{\rho^{-2}m}
-\\
-  &{}- \trans{\nabla{}m}\lessreference{\rho^{-2}\nabla\rho}
-  &
-  &{}- \trans{\nabla{}m}\reference{\rho^{-2}\nabla\rho}
+= &\phantom{{}+}
 \end{align}
 \end{subequations}
 
