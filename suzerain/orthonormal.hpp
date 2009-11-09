@@ -454,7 +454,7 @@ void p_T_mu_lambda(
         Scalar &lambda,
         Vector &grad_lambda)
 {
-    const Scalar rho_inverse     = 1.0/rho;
+    const Scalar rho_inverse = 1.0/rho;
 
     // Compute scalar quantities
     p      = (gamma-1.0)*(e - (1.0/2.0)*rho_inverse*m.squaredNorm());
@@ -770,6 +770,203 @@ Vector div_grad_u(
                    - 2.0*grad_m*grad_rho
                 )
             );
+}
+
+template<typename Scalar>
+inline
+Scalar explicit_mu_div_grad_u_refcoeff_div_grad_m(
+        const Scalar &mu,
+        const Scalar &rho)
+{
+    return mu/rho;
+}
+
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+inline
+Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
+        const Scalar &mu,
+        const Scalar &rho,
+        const Vector &m)
+{
+    const Scalar rho_inverse = 1.0/rho;
+    return mu*rho_inverse*rho_inverse*m;
+}
+
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Vector explicit_mu_div_grad_u(
+        const Scalar &mu,
+        const Scalar &rho,
+        const Vector &grad_rho,
+        const Scalar &div_grad_rho,
+        const Vector &m,
+        const Tensor &grad_m,
+        const Vector &div_grad_m,
+        const Scalar &refcoeff_div_grad_m,
+        const Vector &refcoeff_div_grad_rho)
+{
+    const Scalar rho_inverse  = 1.0/rho;
+    const Scalar rho_inverse2 = rho_inverse*rho_inverse;
+    const Scalar coeff_div_grad_m(
+            explicit_mu_div_grad_u_refcoeff_div_grad_m(mu, rho)
+          - refcoeff_div_grad_m);
+    const Vector coeff_div_grad_rho(
+            explicit_mu_div_grad_u_refcoeff_div_grad_rho(mu, rho, m);
+          - refcoeff_div_grad_rho);
+
+    return   mu*rho_inverse2*(
+                    2*rho_inverse*grad_rho.squaredNorm()*m
+                  - 2*grad_m*grad_rho
+             )
+           + coeff_div_grad_m  *div_grad_m
+           - coeff_div_grad_rho*div_grad_rho;
+}
+
+template<typename Scalar>
+inline
+Scalar explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
+        const Scalar &mu,
+        const Scalar &lambda,
+        const Scalar &rho)
+{
+    return (mu+lambda)/rho;
+}
+
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+inline
+Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
+        const Scalar &mu,
+        const Scalar &lambda,
+        const Scalar &rho,
+        const Vector &m)
+{
+    const Scalar rho_inverse = 1.0/rho;
+    return (mu+lambda)*rho_inverse*rho_inverse*m;
+}
+
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Vector explicit_mu_plus_lambda_grad_div_u(
+        const Scalar &mu,
+        const Scalar &lambda,
+        const Scalar &rho,
+        const Vector &grad_rho,
+        const Tensor &grad_grad_rho,
+        const Vector &m,
+        const Scalar &div_m,
+        const Tensor &grad_m,
+        const Vector &grad_div_m,
+        const Scalar &refcoeff_grad_div_m    = 0,
+        const Vector &refcoeff_grad_grad_rho = Vector::Zero())
+{
+    const Scalar rho_inverse  = 1.0/rho;
+    const Scalar rho_inverse2 = rho_inverse*rho_inverse;
+    const Scalar coeff_grad_div_m(
+            explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
+              mu, lambda, rho)
+          - refcoeff_grad_div_m);
+    const Vector coeff_grad_grad_rho(
+            explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
+              mu, lambda, rho, m)
+          - refcoeff_grad_grad_rho);
+
+    return   (mu+lambda)*rho_inverse2*(
+                  (2*rho_inverse*grad_rho.dot(m) - div_m)*grad_rho
+                - grad_m.transpose()*grad_rho
+             )
+           + coeff_grad_div_m*grad_div_m
+           - grad_grad_rho*coeff_grad_grad_rho;
+}
+
+template<typename Scalar>
+inline
+Scalar explicit_mu_div_grad_T_refcoeff_div_grad_e(
+        const Scalar &mu,
+        const Scalar &rho)
+{
+    return mu/rho;
+}
+
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+inline
+Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
+        const Scalar &mu,
+        const Scalar &rho,
+        const Vector &m)
+{
+    const Scalar rho_inverse = 1.0/rho;
+    return mu*rho_inverse*rho_inverse*m;
+}
+
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+inline
+Vector explicit_mu_div_grad_T_refcoeff_div_grad_rho(
+        const Scalar &gamma,
+        const Scalar &mu,
+        const Scalar &rho,
+        const Vector &m,
+        const Scalar &p)
+{
+    const Scalar rho_inverse = 1.0/rho;
+    return mu*rho_inverse*rho_inverse*(
+             0.5*(gamma-1.0)*rho_inverse*m.squaredNorm() - p
+           );
+}
+
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+Scalar explicit_mu_div_grad_T(
+        const Scalar &gamma,
+        const Scalar &mu,
+        const Scalar &rho,
+        const Vector &grad_rho,
+        const Scalar &div_grad_rho,
+        const Vector &m,
+        const Tensor &grad_m,
+        const Vector &div_grad_m,
+        const Scalar &div_grad_e,
+        const Scalar &p,
+        const Vector &grad_p,
+        const Scalar &refcoeff_div_grad_e   = 0,
+        const Vector &refcoeff_div_grad_m   = Vector::Zero(),
+        const Scalar &refcoeff_div_grad_rho = 0)
+{
+    const Scalar rho_inverse  = 1.0/rho;
+    const Scalar rho_inverse2 = rho_inverse*rho_inverse;
+    const Scalar coeff_div_grad_e(
+            explicit_mu_div_grad_T_refcoeff_div_grad_e(mu, rho)
+          - refcoeff_div_grad_e);
+    const Scalar coeff_div_grad_m(
+            explicit_mu_div_grad_T_refcoeff_div_grad_m(mu, rho, m)
+          - refcoeff_div_grad_m);
+    const Scalar coeff_div_grad_rho(
+            explicit_mu_div_grad_T_refcoeff_div_grad_rho(gamma, mu, rho, m, p)
+          - refcoeff_div_grad_rho);
+
+    return gamma*(
+                coeff_div_grad_rho*div_grad_rho;
+              - 2.0*mu*rho_inverse2*grad_rho.dot(
+                    grad_p - rho_inverse*p*grad_rho
+                )
+              + (gamma-1.0)*(
+                  - mu*rho_inverse2*(
+                        (grad_m.transpose()*grad_m).trace()
+                      - rho_inverse*(
+                            2.0*grad_rho.dot(grad_m.transpose()*m)
+                          - rho_inverse*m.squaredNorm()*grad_rho.squaredNorm()
+                        )
+                    )
+                  + coeff_div_grad_e*grad_div_e
+                  - div_grad_m.dot(coeff_div_grad_m)
+                )
+           );
 }
 
 } // namespace rhome
