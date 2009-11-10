@@ -910,7 +910,7 @@ Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
 template<typename Scalar,
          typename Vector = Eigen::Matrix<Scalar,3,1> >
 inline
-Vector explicit_mu_div_grad_T_refcoeff_div_grad_rho(
+Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
         const Scalar &gamma,
         const Scalar &mu,
         const Scalar &rho,
@@ -924,32 +924,33 @@ Vector explicit_mu_div_grad_T_refcoeff_div_grad_rho(
 }
 
 template<typename Scalar,
-         typename Vector            = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor            = Eigen::Matrix<Scalar,3,3>,
-         typename ScalarCoefficient = Scalar,
-         typename VectorCoefficient = Vector >
+         typename Vector             = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor             = Eigen::Matrix<Scalar,3,3>,
+         typename ScalarCoefficient1 = Scalar,
+         typename ScalarCoefficient2 = Scalar,
+         typename VectorCoefficient  = Vector >
 Scalar explicit_mu_div_grad_T(
-        const Scalar            &gamma,
-        const Scalar            &mu,
-        const Scalar            &rho,
-        const Vector            &grad_rho,
-        const Scalar            &div_grad_rho,
-        const Vector            &m,
-        const Tensor            &grad_m,
-        const Vector            &div_grad_m,
-        const Scalar            &div_grad_e,
-        const Scalar            &p,
-        const Vector            &grad_p,
-        const ScalarCoefficient &refcoeff_div_grad_e,
-        const VectorCoefficient &refcoeff_div_grad_m,
-        const ScalarCoefficient &refcoeff_div_grad_rho)
+        const Scalar             &gamma,
+        const Scalar             &mu,
+        const Scalar             &rho,
+        const Vector             &grad_rho,
+        const Scalar             &div_grad_rho,
+        const Vector             &m,
+        const Tensor             &grad_m,
+        const Vector             &div_grad_m,
+        const Scalar             &div_grad_e,
+        const Scalar             &p,
+        const Vector             &grad_p,
+        const ScalarCoefficient1 &refcoeff_div_grad_e,
+        const VectorCoefficient  &refcoeff_div_grad_m,
+        const ScalarCoefficient2 &refcoeff_div_grad_rho)
 {
     const Scalar rho_inverse  = 1.0/rho;
     const Scalar rho_inverse2 = rho_inverse*rho_inverse;
     const Scalar coeff_div_grad_e(
             explicit_mu_div_grad_T_refcoeff_div_grad_e(mu, rho)
           - refcoeff_div_grad_e);
-    const Scalar coeff_div_grad_m(
+    const Vector coeff_div_grad_m(
             explicit_mu_div_grad_T_refcoeff_div_grad_m(mu, rho, m)
           - refcoeff_div_grad_m);
     const Scalar coeff_div_grad_rho(
@@ -957,7 +958,7 @@ Scalar explicit_mu_div_grad_T(
           - refcoeff_div_grad_rho);
 
     return gamma*(
-                coeff_div_grad_rho*div_grad_rho;
+                coeff_div_grad_rho*div_grad_rho
               - 2.0*mu*rho_inverse2*grad_rho.dot(
                     grad_p - rho_inverse*p*grad_rho
                 )
@@ -969,7 +970,7 @@ Scalar explicit_mu_div_grad_T(
                           - rho_inverse*m.squaredNorm()*grad_rho.squaredNorm()
                         )
                     )
-                  + coeff_div_grad_e*grad_div_e
+                  + coeff_div_grad_e*div_grad_e
                   - div_grad_m.dot(coeff_div_grad_m)
                 )
            );
