@@ -44,9 +44,9 @@ namespace suzerain
 {
 
 /**
- * Provides routines that compute classical state quantities (based on
+ * Provides routines that compute classical quantities (based on
  * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$, \f$\mu\f$, \f$\lambda\f$)
- * from other conserved and classical state quantities under the assumption of
+ * from other conserved and classical quantities under the assumption of
  * an orthonormal coordinate system with an identity metric tensor.
  *
  * The following nondimensional variable definitions are used:
@@ -64,13 +64,11 @@ namespace suzerain
 namespace orthonormal
 {
 
-
-
 /**
  * Compute \f$\accentset{\leftrightarrow}{\tau} =
  *    \mu\left(
  *        \vec{\nabla}\vec{u}
- *      + \left(\vec{\nabla}\vec{u}\right)^{\mathrm{T}}
+ *      + \left(\vec{\nabla}\vec{u}\right)^{\mathsf{T}}
  *    \right)
  *  + \lambda \left( \vec{\nabla}\cdot\vec{u} \right)
  *            \accentset{\leftrightarrow}{I}\f$.
@@ -178,7 +176,7 @@ Vector div_u_outer_m(
  *      \vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau} =
  *        \left[
  *           \vec{\nabla}\vec{u}
- *         + \left(\vec{\nabla}\vec{u}\right)^{\mathrm{T}}
+ *         + \left(\vec{\nabla}\vec{u}\right)^{\mathsf{T}}
  *        \right] \vec{\nabla}\mu
  *      + \mu \vec{\nabla}\cdot\vec{\nabla}\vec{u}
  *      + \left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}
@@ -325,7 +323,7 @@ Scalar div_p_u(
  *          \vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}
  *      \right)
  *      +
- *      \mathrm{trace}\!\left(
+ *      \operatorname{trace}\left(
  *          \accentset{\leftrightarrow}{\tau}\,\vec{\nabla}\vec{u}
  *      \right)
  * \f]
@@ -357,6 +355,513 @@ Scalar div_tau_u(
         const Vector &div_tau)
 {
     return u.dot(div_tau) + (tau*grad_u).lazy().trace();
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$ in the explicit portion
+ * of \f$\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$.
+ *
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ *
+ * @return \f$\mu\rho^{-1}\f$
+ * @see explicit_mu_div_grad_u for more details on the explicit
+ *      operator.
+ */
+template<typename Scalar>
+inline
+Scalar explicit_mu_div_grad_u_refcoeff_div_grad_m(
+        const Scalar &mu,
+        const Scalar &rho)
+{
+    return mu/rho;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$ in the explicit portion
+ * of \f$\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$.
+ *
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ *
+ * @return \f$\mu\rho^{-2}\vec{m}\f$
+ * @see explicit_mu_div_grad_u for more details on the explicit
+ *      operator.
+ */
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+inline
+Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
+        const Scalar &mu,
+        const Scalar &rho,
+        const Vector &m)
+{
+    const Scalar rho_inverse = 1.0/rho;
+    return mu*rho_inverse*rho_inverse*m;
+}
+
+/**
+ * Compute the explicit portion of
+ * \f$\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$.
+ * Uses the expansion
+ * \f{align*}
+ * \mu\vec{\nabla}\cdot\vec{\nabla}\vec{u} = &\phantom{{}+}
+ *     \mu\rho^{-2}\left[
+ *           2\rho^{-1}\vec{m}\left({\vec\nabla}\rho\right)^{2}
+ *         - 2 \left(\vec{\nabla}\vec{m}\right)\vec{\nabla}\rho
+ *     \right]
+ * \\
+ *   &{}+ \left(
+ *              \mu\rho^{-1}
+ *            - \left\{\mu\rho^{-1}\right\}_0
+ *        \right)\vec{\nabla}\cdot\vec{\nabla}\vec{m}
+ *      - \left(
+ *              \mu\rho^{-2}\vec{m}
+ *            - \left\{\mu\rho^{-2}\vec{m}\right\}_0
+ *        \right)\vec{\nabla}\cdot\vec{\nabla}\rho
+ * \f}
+ * where \f$\left\{\mu\rho^{-1}\right\}_0\f$
+ * and \f$\left\{\mu\rho^{-2}m\right\}_0\f$ are fixed by
+ * \c refcoeff_div_grad_m and \c refcoeff_div_grad_rho, respectively.
+ * The remaining linear portion of
+ * \f$\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$ is
+ * \f[
+ *      \left\{\mu\rho^{-1}\right\}_0 \vec{\nabla}\cdot\vec{\nabla}\vec{m}
+ *    - \left\{\mu\rho^{-2}\vec{m}\right\}_0 \vec{\nabla}\cdot\vec{\nabla}\rho
+ * \f]
+ *
+ * @param mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param rho \f$\rho\f$
+ * @param grad_rho \f$\vec{\nabla}\rho\f$
+ * @param div_grad_rho \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$
+ * @param m \f$\vec{m}\f$
+ * @param grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param div_grad_m \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$
+ * @param refcoeff_div_grad_m the reference coefficient
+ *        on \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$ which may
+ *        be computed using explicit_mu_div_grad_u_refcoeff_div_grad_m()
+ * @param refcoeff_div_grad_rho the reference coefficient
+ *        on \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$ which may
+ *        be computed using explicit_mu_div_grad_u_refcoeff_div_grad_rho()
+ *
+ * @return The explicit portion of the viscosity times the Laplacian
+ *         of velocity.
+ */
+template<typename Scalar,
+         typename Vector            = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor            = Eigen::Matrix<Scalar,3,3>,
+         typename ScalarCoefficient = Scalar,
+         typename VectorCoefficient = Vector >
+Vector explicit_mu_div_grad_u(
+        const Scalar            &mu,
+        const Scalar            &rho,
+        const Vector            &grad_rho,
+        const Scalar            &div_grad_rho,
+        const Vector            &m,
+        const Tensor            &grad_m,
+        const Vector            &div_grad_m,
+        const ScalarCoefficient &refcoeff_div_grad_m,
+        const VectorCoefficient &refcoeff_div_grad_rho)
+{
+    const Scalar rho_inverse  = 1.0/rho;
+    const Scalar rho_inverse2 = rho_inverse*rho_inverse;
+    const Scalar coeff_div_grad_m(
+            explicit_mu_div_grad_u_refcoeff_div_grad_m(mu, rho)
+          - refcoeff_div_grad_m);
+    const Vector coeff_div_grad_rho(
+            explicit_mu_div_grad_u_refcoeff_div_grad_rho(mu, rho, m)
+          - refcoeff_div_grad_rho);
+
+    return   mu*rho_inverse2*(
+                    2*rho_inverse*grad_rho.squaredNorm()*m
+                  - 2*grad_m*grad_rho
+             )
+           + coeff_div_grad_m  *div_grad_m
+           - coeff_div_grad_rho*div_grad_rho;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$ in the explicit portion
+ * of \f$\left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$.
+ *
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] lambda \f$\lambda\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ *
+ * @return \f$\left(\mu+\lambda\right)\rho^{-1}\f$
+ * @see explicit_mu_plus_lambda_grad_div_u() for more details on the explicit
+ *      operator.
+ */
+template<typename Scalar>
+inline
+Scalar explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
+        const Scalar &mu,
+        const Scalar &lambda,
+        const Scalar &rho)
+{
+    return (mu+lambda)/rho;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\vec{\nabla}\rho\f$ in the explicit portion
+ * of \f$\left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$.
+ *
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] lambda \f$\lambda\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ *
+ * @return \f$\left(\mu+\lambda\right)\rho^{-2}\vec{m}\f$
+ * @see explicit_mu_plus_lambda_grad_div_u() for more details on the explicit
+ *      operator.
+ */
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+inline
+Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
+        const Scalar &mu,
+        const Scalar &lambda,
+        const Scalar &rho,
+        const Vector &m)
+{
+    const Scalar rho_inverse = 1.0/rho;
+    return (mu+lambda)*rho_inverse*rho_inverse*m;
+}
+
+/**
+ * Compute the explicit portion of
+ * \f$\left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$.
+ * Uses the expansion
+ * \f{align*}
+ * \left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u} =
+ *   &\phantom{{}+}
+ *    \left(\mu+\lambda\right)\rho^{-2}\left[
+ *        \left(
+ *              2\rho^{-1}\vec{\nabla}\rho\cdot\vec{m}
+ *            - \vec{\nabla}\cdot\vec{m}
+ *        \right)\vec{\nabla}\rho
+ *      - {\vec{\nabla}\vec{m}}^{\mathsf{T}}\vec{\nabla}\rho
+ *    \right]
+ * \\
+ *   &{}+ \left(
+ *              \left(\mu+\lambda\right)\rho^{-1}
+ *            - \left\{\left(\mu+\lambda\right)\rho^{-1}\right\}_0
+ *        \right) \vec{\nabla}\vec{\nabla}\cdot\vec{m}
+ *      - \vec{\nabla}\vec{\nabla}\rho \left(
+ *              \left(\mu+\lambda\right)\rho^{-2}\vec{m}
+ *            - \left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0
+ *        \right)
+ * \\
+ * \f}
+ * where \f$\left\{\left(\mu+\lambda\right)\rho^{-1}\right\}_0\f$
+ * and \f$\left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0\f$
+ * are fixed by \c refcoeff_grad_div_m and \c refcoeff_grad_grad_rho,
+ * respectively.
+ * The remaining linear portion of
+ * \f$\left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$ is
+ * \f[
+ *        \left\{\left(\mu+\lambda\right)\rho^{-1}\right\}_0
+ *        \vec{\nabla}\vec{\nabla}\cdot\vec{m}
+ *      - \vec{\nabla}\vec{\nabla}\rho
+ *        \left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0
+ * \f]
+ *
+ * @param mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param lambda \f$\lambda\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param rho \f$\rho\f$
+ * @param grad_rho \f$\vec{\nabla}\rho\f$
+ * @param grad_grad_rho \f$\vec{\nabla}\vec{\nabla}\rho\f$
+ * @param m \f$\vec{m}\f$
+ * @param div_m \f$\vec{\nabla}\cdot\vec{m}\f$
+ * @param grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param grad_div_m \f$\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$
+ * @param refcoeff_grad_div_m the reference coefficient
+ *        on \f$\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$ which may
+ *        be computed using
+ *        explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m()
+ * @param refcoeff_grad_grad_rho the reference coefficient
+ *        on \f$\vec{\nabla}\vec{\nabla}\rho\f$ which may
+ *        be computed using
+ *        explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho()
+ *
+ * @return The explicit portion of the sum of the viscosities times
+ *         the gradient of the divergence of velocity.
+ */
+template<typename Scalar,
+         typename Vector            = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor            = Eigen::Matrix<Scalar,3,3>,
+         typename ScalarCoefficient = Scalar,
+         typename VectorCoefficient = Vector >
+Vector explicit_mu_plus_lambda_grad_div_u(
+        const Scalar            &mu,
+        const Scalar            &lambda,
+        const Scalar            &rho,
+        const Vector            &grad_rho,
+        const Tensor            &grad_grad_rho,
+        const Vector            &m,
+        const Scalar            &div_m,
+        const Tensor            &grad_m,
+        const Vector            &grad_div_m,
+        const ScalarCoefficient &refcoeff_grad_div_m,
+        const VectorCoefficient &refcoeff_grad_grad_rho)
+{
+    const Scalar rho_inverse  = 1.0/rho;
+    const Scalar rho_inverse2 = rho_inverse*rho_inverse;
+    const Scalar coeff_grad_div_m(
+            explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
+              mu, lambda, rho)
+          - refcoeff_grad_div_m);
+    const Vector coeff_grad_grad_rho(
+            explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
+              mu, lambda, rho, m)
+          - refcoeff_grad_grad_rho);
+
+    return   (mu+lambda)*rho_inverse2*(
+                  (2*rho_inverse*grad_rho.dot(m) - div_m)*grad_rho
+                - grad_m.transpose()*grad_rho
+             )
+           + coeff_grad_div_m*grad_div_m
+           - grad_grad_rho*coeff_grad_grad_rho;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\cdot\vec{\nabla}e\f$ in the explicit portion
+ * of \f$\mu\vec{\nabla}\cdot\vec{\nabla}T\f$.
+ *
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ *
+ * @return \f$\mu\rho^{-1}\f$
+ * @see explicit_mu_div_grad_T() for more details on the explicit
+ *      operator.
+ */
+template<typename Scalar>
+inline
+Scalar explicit_mu_div_grad_T_refcoeff_div_grad_e(
+        const Scalar &mu,
+        const Scalar &rho)
+{
+    return mu/rho;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$ in the explicit portion
+ * of \f$\mu\vec{\nabla}\cdot\vec{\nabla}T\f$.
+ *
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ *
+ * @return \f$\mu\rho^{-2}\vec{m}\f$
+ * @see explicit_mu_div_grad_T() for more details on the explicit
+ *      operator.
+ */
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+inline
+Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
+        const Scalar &mu,
+        const Scalar &rho,
+        const Vector &m)
+{
+    const Scalar rho_inverse = 1.0/rho;
+    return mu*rho_inverse*rho_inverse*m;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$ in the explicit portion
+ * of \f$\mu\vec{\nabla}\cdot\vec{\nabla}T\f$.
+ *
+ * @param[in] gamma \f$\gamma\f$
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ * @param[in] p \f$p\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ *
+ * @return \f$\mu\rho^{-2}\left(
+ *            \frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)\f$
+ * @see explicit_mu_div_grad_T() for more details on the explicit
+ *      operator.
+ */
+template<typename Scalar,
+         typename Vector = Eigen::Matrix<Scalar,3,1> >
+inline
+Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
+        const Scalar &gamma,
+        const Scalar &mu,
+        const Scalar &rho,
+        const Vector &m,
+        const Scalar &p)
+{
+    const Scalar rho_inverse = 1.0/rho;
+    return mu*rho_inverse*rho_inverse*(
+             0.5*(gamma-1.0)*rho_inverse*m.squaredNorm() - p
+           );
+}
+
+
+/**
+ * Compute the explicit portion of \f$\mu\vec{\nabla}\cdot\vec{\nabla}T\f$.
+ * Uses the expansion
+ * \f{align*}
+ * \mu\vec{\nabla}\cdot\vec{\nabla}T =
+ *   &{}- 2\gamma\mu\rho^{-2}\vec{\nabla}\rho\cdot
+ *        \left(\vec{\nabla}p-\rho^{-1}p\vec{\nabla}\rho\right)
+ * \\
+ *   &{}- \gamma\left(\gamma-1\right)\mu\rho^{-2}\left[
+ *              \operatorname{trace}\left(
+ *                  {\vec{\nabla}\vec{m}}^{\mathsf{T}}\vec{\nabla}\vec{m}
+ *              \right)
+ *            - \rho^{-1}\left[
+ *                2{\vec{\nabla}\vec{m}}^{\mathsf{T}}\vec{m}
+ *                      \cdot\vec{\nabla}\rho
+ *              - \rho^{-1} \vec{m}^2 \left(\vec{\nabla}\rho\right)^{2}
+ *            \right]
+ *        \right]
+ * \\
+ *   &{}+ \gamma\left(\gamma-1\right)\left(
+ *              \mu\rho^{-1}
+ *            - \left\{\mu\rho^{-1}\right\}_0
+ *        \right)\vec{\nabla}\cdot\vec{\nabla}e
+ *      - \gamma\left(\gamma-1\right)\left(
+ *               \mu\rho^{-2}m
+ *             - \left\{\mu\rho^{-2}\vec{m}\right\}_0
+ *        \right)\cdot\vec{\nabla}\cdot\vec{\nabla}\vec{m}
+ * \\
+ *   &{}+ \gamma\left(
+ *            \mu\rho^{-2}\left(\frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)
+ *          - \left\{
+ *              \mu\rho^{-2}\left(\frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)
+ *            \right\}_0
+ *        \right)\vec{\nabla}\cdot\vec{\nabla}\rho
+ * \f}
+ * where \f$\left\{\mu\rho^{-1}\right\}_0\f$,
+ *  \f$\left\{\mu\rho^{-2}\vec{m}\right\}_0\f$,
+ * and \f$
+ *   \left\{
+ *     \mu\rho^{-2}\left(\frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)
+ *   \right\}_0
+ * \f$
+ * are fixed by \c refcoeff_div_grad_e, \c refcoeff_div_grad_m,
+ * and \c refcoeff_div_grad_rho, respectively.
+ * The remaining linear portion of
+ * \f$\mu\vec{\nabla}\cdot\vec{\nabla}T\f$ is
+ * \f[
+ *      \gamma\left(\gamma-1\right)
+ *      \left\{\mu\rho^{-1}\right\}_0
+ *      \vec{\nabla}\cdot\vec{\nabla}e
+ *    - \gamma\left(\gamma-1\right)
+ *      \left\{\mu\rho^{-2}\vec{m}\right\}_0
+ *      \cdot\vec{\nabla}\cdot\vec{\nabla}\vec{m}
+ *    + \gamma
+ *      \left\{
+ *        \mu\rho^{-2}\left(\frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)
+ *      \right\}_0
+ *      \vec{\nabla}\cdot\vec{\nabla}\rho
+ * \f]
+ *
+ * @param gamma \f$\gamma\f$
+ * @param mu \f$\mu\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param rho \f$\rho\f$
+ * @param grad_rho \f$\vec{\nabla}\rho\f$
+ * @param div_grad_rho \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$
+ * @param m \f$\vec{m}\f$
+ * @param grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param div_grad_m \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$
+ * @param div_grad_e \f$\vec{\nabla}\cdot\vec{\nabla}e\f$
+ * @param p \f$p\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param grad_p \f$\vec{\nabla}p\f$
+ *            computed from, for example, rhome::p_T_mu_lambda()
+ * @param refcoeff_div_grad_e the reference coefficient
+ *        on \f$\vec{\nabla}\cdot\vec{\nabla}e\f$ which may
+ *        be computed using
+ *        explicit_mu_div_grad_T_refcoeff_div_grad_e()
+ * @param refcoeff_div_grad_m the reference coefficient
+ *        on \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$ which may
+ *        be computed using
+ *        explicit_mu_div_grad_T_refcoeff_div_grad_m()
+ * @param refcoeff_div_grad_rho the reference coefficient
+ *        on \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$ which may
+ *        be computed using
+ *        explicit_mu_div_grad_T_refcoeff_div_grad_rho()
+ *
+ * @return The explicit portion of the viscosity times
+ *         the Laplacian of temperature.
+ */
+template<typename Scalar,
+         typename Vector             = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor             = Eigen::Matrix<Scalar,3,3>,
+         typename ScalarCoefficient1 = Scalar,
+         typename ScalarCoefficient2 = Scalar,
+         typename VectorCoefficient  = Vector >
+Scalar explicit_mu_div_grad_T(
+        const Scalar             &gamma,
+        const Scalar             &mu,
+        const Scalar             &rho,
+        const Vector             &grad_rho,
+        const Scalar             &div_grad_rho,
+        const Vector             &m,
+        const Tensor             &grad_m,
+        const Vector             &div_grad_m,
+        const Scalar             &div_grad_e,
+        const Scalar             &p,
+        const Vector             &grad_p,
+        const ScalarCoefficient1 &refcoeff_div_grad_e,
+        const VectorCoefficient  &refcoeff_div_grad_m,
+        const ScalarCoefficient2 &refcoeff_div_grad_rho)
+{
+    const Scalar rho_inverse  = 1.0/rho;
+    const Scalar rho_inverse2 = rho_inverse*rho_inverse;
+    const Scalar coeff_div_grad_e(
+            explicit_mu_div_grad_T_refcoeff_div_grad_e(mu, rho)
+          - refcoeff_div_grad_e);
+    const Vector coeff_div_grad_m(
+            explicit_mu_div_grad_T_refcoeff_div_grad_m(mu, rho, m)
+          - refcoeff_div_grad_m);
+    const Scalar coeff_div_grad_rho(
+            explicit_mu_div_grad_T_refcoeff_div_grad_rho(gamma, mu, rho, m, p)
+          - refcoeff_div_grad_rho);
+
+    return gamma*(
+                coeff_div_grad_rho*div_grad_rho
+              - 2.0*mu*rho_inverse2*grad_rho.dot(
+                    grad_p - rho_inverse*p*grad_rho
+                )
+              + (gamma-1.0)*(
+                  - mu*rho_inverse2*(
+                        (grad_m.transpose()*grad_m).trace()
+                      - rho_inverse*(
+                            2.0*grad_rho.dot(grad_m.transpose()*m)
+                          - rho_inverse*m.squaredNorm()*grad_rho.squaredNorm()
+                        )
+                    )
+                  + coeff_div_grad_e*div_grad_e
+                  - div_grad_m.dot(coeff_div_grad_m)
+                )
+           );
 }
 
 /**
@@ -405,7 +910,7 @@ namespace rhome
  *            \vec{\nabla}e
  *          + \frac{1}{2}\rho^{-2}\left(\vec{m}\cdot\vec{m}\right)
  *            \vec{\nabla}\rho
- *          - \rho^{-1} \left(\vec{\nabla}\vec{m}\right)^{\mathrm{T}} \vec{m}
+ *          - \rho^{-1} \left(\vec{\nabla}\vec{m}\right)^{\mathsf{T}}\vec{m}
  *      \right]
  *      \\
  *      \vec{\nabla}T &= \gamma\rho^{-1}\vec{\nabla}p
@@ -477,17 +982,17 @@ void p_T_mu_lambda(
 /**
  * Compute \f$\vec{\nabla}\cdot\vec\nabla{}p\f$
  * using the equation of state.  Uses the expansion
- * \f[
+ * \f{align*}
  *      \vec{\nabla}\cdot\vec{\nabla}p =
  *      \left(\gamma-1\right)\left[
  *          \vec{\nabla}\cdot\vec{\nabla}e
  *          - \rho^{-1}\left[
- *                \mathrm{trace}\!\left(
- *                    \vec{\nabla}\vec{m}^{\mathrm{T}}\vec{\nabla}\vec{m}
+ *                \operatorname{trace}\left(
+ *                    \vec{\nabla}\vec{m}^{\mathsf{T}}\vec{\nabla}\vec{m}
  *                \right)
  *              + \left(\vec{\nabla}\cdot\vec{\nabla}\vec{m}\right)\cdot\vec{m}
  *              - \rho^{-1}\left[
- *                    2\vec{\nabla}\vec{m}^{\mathrm{T}}\vec{m}
+ *                    2\vec{\nabla}\vec{m}^{\mathsf{T}}\vec{m}
  *                        \cdot\vec{\nabla}\rho
  *                  + \frac{1}{2}\left(\vec{m}\cdot\vec{m}\right)
  *                        \vec{\nabla}\cdot\vec{\nabla}\rho
@@ -497,7 +1002,7 @@ void p_T_mu_lambda(
  *          \right]
  *      \right]
  *      .
- * \f]
+ * \f}
  * @param[in]  gamma \f$\gamma\f$
  * @param[in]  rho \f$\rho\f$
  * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$
@@ -686,7 +1191,7 @@ Scalar div_u(
  *                   - \vec{\nabla}\cdot\vec{m}
  *                \right)\vec{\nabla}\rho
  *              - \left(\vec{\nabla}\vec{\nabla}\rho\right)\vec{m}
- *              - \vec{\nabla}\vec{m}^{\mathrm{T}}\vec{\nabla}\rho
+ *              - \vec{\nabla}\vec{m}^{\mathsf{T}}\vec{\nabla}\rho
  *            \right]
  *      \right]
  * \f]
@@ -770,210 +1275,6 @@ Vector div_grad_u(
                    - 2.0*grad_m*grad_rho
                 )
             );
-}
-
-template<typename Scalar>
-inline
-Scalar explicit_mu_div_grad_u_refcoeff_div_grad_m(
-        const Scalar &mu,
-        const Scalar &rho)
-{
-    return mu/rho;
-}
-
-template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
-inline
-Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
-        const Scalar &mu,
-        const Scalar &rho,
-        const Vector &m)
-{
-    const Scalar rho_inverse = 1.0/rho;
-    return mu*rho_inverse*rho_inverse*m;
-}
-
-template<typename Scalar,
-         typename Vector            = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor            = Eigen::Matrix<Scalar,3,3>,
-         typename ScalarCoefficient = Scalar,
-         typename VectorCoefficient = Vector >
-Vector explicit_mu_div_grad_u(
-        const Scalar            &mu,
-        const Scalar            &rho,
-        const Vector            &grad_rho,
-        const Scalar            &div_grad_rho,
-        const Vector            &m,
-        const Tensor            &grad_m,
-        const Vector            &div_grad_m,
-        const ScalarCoefficient &refcoeff_div_grad_m,
-        const VectorCoefficient &refcoeff_div_grad_rho)
-{
-    const Scalar rho_inverse  = 1.0/rho;
-    const Scalar rho_inverse2 = rho_inverse*rho_inverse;
-    const Scalar coeff_div_grad_m(
-            explicit_mu_div_grad_u_refcoeff_div_grad_m(mu, rho)
-          - refcoeff_div_grad_m);
-    const Vector coeff_div_grad_rho(
-            explicit_mu_div_grad_u_refcoeff_div_grad_rho(mu, rho, m)
-          - refcoeff_div_grad_rho);
-
-    return   mu*rho_inverse2*(
-                    2*rho_inverse*grad_rho.squaredNorm()*m
-                  - 2*grad_m*grad_rho
-             )
-           + coeff_div_grad_m  *div_grad_m
-           - coeff_div_grad_rho*div_grad_rho;
-}
-
-template<typename Scalar>
-inline
-Scalar explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
-        const Scalar &mu,
-        const Scalar &lambda,
-        const Scalar &rho)
-{
-    return (mu+lambda)/rho;
-}
-
-template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
-inline
-Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
-        const Scalar &mu,
-        const Scalar &lambda,
-        const Scalar &rho,
-        const Vector &m)
-{
-    const Scalar rho_inverse = 1.0/rho;
-    return (mu+lambda)*rho_inverse*rho_inverse*m;
-}
-
-template<typename Scalar,
-         typename Vector            = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor            = Eigen::Matrix<Scalar,3,3>,
-         typename ScalarCoefficient = Scalar,
-         typename VectorCoefficient = Vector >
-Vector explicit_mu_plus_lambda_grad_div_u(
-        const Scalar            &mu,
-        const Scalar            &lambda,
-        const Scalar            &rho,
-        const Vector            &grad_rho,
-        const Tensor            &grad_grad_rho,
-        const Vector            &m,
-        const Scalar            &div_m,
-        const Tensor            &grad_m,
-        const Vector            &grad_div_m,
-        const ScalarCoefficient &refcoeff_grad_div_m,
-        const VectorCoefficient &refcoeff_grad_grad_rho)
-{
-    const Scalar rho_inverse  = 1.0/rho;
-    const Scalar rho_inverse2 = rho_inverse*rho_inverse;
-    const Scalar coeff_grad_div_m(
-            explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
-              mu, lambda, rho)
-          - refcoeff_grad_div_m);
-    const Vector coeff_grad_grad_rho(
-            explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
-              mu, lambda, rho, m)
-          - refcoeff_grad_grad_rho);
-
-    return   (mu+lambda)*rho_inverse2*(
-                  (2*rho_inverse*grad_rho.dot(m) - div_m)*grad_rho
-                - grad_m.transpose()*grad_rho
-             )
-           + coeff_grad_div_m*grad_div_m
-           - grad_grad_rho*coeff_grad_grad_rho;
-}
-
-template<typename Scalar>
-inline
-Scalar explicit_mu_div_grad_T_refcoeff_div_grad_e(
-        const Scalar &mu,
-        const Scalar &rho)
-{
-    return mu/rho;
-}
-
-template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
-inline
-Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
-        const Scalar &mu,
-        const Scalar &rho,
-        const Vector &m)
-{
-    const Scalar rho_inverse = 1.0/rho;
-    return mu*rho_inverse*rho_inverse*m;
-}
-
-template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
-inline
-Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
-        const Scalar &gamma,
-        const Scalar &mu,
-        const Scalar &rho,
-        const Vector &m,
-        const Scalar &p)
-{
-    const Scalar rho_inverse = 1.0/rho;
-    return mu*rho_inverse*rho_inverse*(
-             0.5*(gamma-1.0)*rho_inverse*m.squaredNorm() - p
-           );
-}
-
-template<typename Scalar,
-         typename Vector             = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor             = Eigen::Matrix<Scalar,3,3>,
-         typename ScalarCoefficient1 = Scalar,
-         typename ScalarCoefficient2 = Scalar,
-         typename VectorCoefficient  = Vector >
-Scalar explicit_mu_div_grad_T(
-        const Scalar             &gamma,
-        const Scalar             &mu,
-        const Scalar             &rho,
-        const Vector             &grad_rho,
-        const Scalar             &div_grad_rho,
-        const Vector             &m,
-        const Tensor             &grad_m,
-        const Vector             &div_grad_m,
-        const Scalar             &div_grad_e,
-        const Scalar             &p,
-        const Vector             &grad_p,
-        const ScalarCoefficient1 &refcoeff_div_grad_e,
-        const VectorCoefficient  &refcoeff_div_grad_m,
-        const ScalarCoefficient2 &refcoeff_div_grad_rho)
-{
-    const Scalar rho_inverse  = 1.0/rho;
-    const Scalar rho_inverse2 = rho_inverse*rho_inverse;
-    const Scalar coeff_div_grad_e(
-            explicit_mu_div_grad_T_refcoeff_div_grad_e(mu, rho)
-          - refcoeff_div_grad_e);
-    const Vector coeff_div_grad_m(
-            explicit_mu_div_grad_T_refcoeff_div_grad_m(mu, rho, m)
-          - refcoeff_div_grad_m);
-    const Scalar coeff_div_grad_rho(
-            explicit_mu_div_grad_T_refcoeff_div_grad_rho(gamma, mu, rho, m, p)
-          - refcoeff_div_grad_rho);
-
-    return gamma*(
-                coeff_div_grad_rho*div_grad_rho
-              - 2.0*mu*rho_inverse2*grad_rho.dot(
-                    grad_p - rho_inverse*p*grad_rho
-                )
-              + (gamma-1.0)*(
-                  - mu*rho_inverse2*(
-                        (grad_m.transpose()*grad_m).trace()
-                      - rho_inverse*(
-                            2.0*grad_rho.dot(grad_m.transpose()*m)
-                          - rho_inverse*m.squaredNorm()*grad_rho.squaredNorm()
-                        )
-                    )
-                  + coeff_div_grad_e*div_grad_e
-                  - div_grad_m.dot(coeff_div_grad_m)
-                )
-           );
 }
 
 } // namespace rhome
