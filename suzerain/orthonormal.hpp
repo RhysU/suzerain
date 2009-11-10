@@ -794,18 +794,20 @@ Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
 }
 
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector            = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor            = Eigen::Matrix<Scalar,3,3>,
+         typename ScalarCoefficient = Scalar,
+         typename VectorCoefficient = Vector >
 Vector explicit_mu_div_grad_u(
-        const Scalar &mu,
-        const Scalar &rho,
-        const Vector &grad_rho,
-        const Scalar &div_grad_rho,
-        const Vector &m,
-        const Tensor &grad_m,
-        const Vector &div_grad_m,
-        const Scalar &refcoeff_div_grad_m,
-        const Vector &refcoeff_div_grad_rho)
+        const Scalar            &mu,
+        const Scalar            &rho,
+        const Vector            &grad_rho,
+        const Scalar            &div_grad_rho,
+        const Vector            &m,
+        const Tensor            &grad_m,
+        const Vector            &div_grad_m,
+        const ScalarCoefficient &refcoeff_div_grad_m,
+        const VectorCoefficient &refcoeff_div_grad_rho)
 {
     const Scalar rho_inverse  = 1.0/rho;
     const Scalar rho_inverse2 = rho_inverse*rho_inverse;
@@ -813,7 +815,7 @@ Vector explicit_mu_div_grad_u(
             explicit_mu_div_grad_u_refcoeff_div_grad_m(mu, rho)
           - refcoeff_div_grad_m);
     const Vector coeff_div_grad_rho(
-            explicit_mu_div_grad_u_refcoeff_div_grad_rho(mu, rho, m);
+            explicit_mu_div_grad_u_refcoeff_div_grad_rho(mu, rho, m)
           - refcoeff_div_grad_rho);
 
     return   mu*rho_inverse2*(
@@ -848,20 +850,22 @@ Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
 }
 
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector            = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor            = Eigen::Matrix<Scalar,3,3>,
+         typename ScalarCoefficient = Scalar,
+         typename VectorCoefficient = Vector >
 Vector explicit_mu_plus_lambda_grad_div_u(
-        const Scalar &mu,
-        const Scalar &lambda,
-        const Scalar &rho,
-        const Vector &grad_rho,
-        const Tensor &grad_grad_rho,
-        const Vector &m,
-        const Scalar &div_m,
-        const Tensor &grad_m,
-        const Vector &grad_div_m,
-        const Scalar &refcoeff_grad_div_m    = 0,
-        const Vector &refcoeff_grad_grad_rho = Vector::Zero())
+        const Scalar            &mu,
+        const Scalar            &lambda,
+        const Scalar            &rho,
+        const Vector            &grad_rho,
+        const Tensor            &grad_grad_rho,
+        const Vector            &m,
+        const Scalar            &div_m,
+        const Tensor            &grad_m,
+        const Vector            &grad_div_m,
+        const ScalarCoefficient &refcoeff_grad_div_m,
+        const VectorCoefficient &refcoeff_grad_grad_rho)
 {
     const Scalar rho_inverse  = 1.0/rho;
     const Scalar rho_inverse2 = rho_inverse*rho_inverse;
@@ -920,23 +924,25 @@ Vector explicit_mu_div_grad_T_refcoeff_div_grad_rho(
 }
 
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector            = Eigen::Matrix<Scalar,3,1>,
+         typename Tensor            = Eigen::Matrix<Scalar,3,3>,
+         typename ScalarCoefficient = Scalar,
+         typename VectorCoefficient = Vector >
 Scalar explicit_mu_div_grad_T(
-        const Scalar &gamma,
-        const Scalar &mu,
-        const Scalar &rho,
-        const Vector &grad_rho,
-        const Scalar &div_grad_rho,
-        const Vector &m,
-        const Tensor &grad_m,
-        const Vector &div_grad_m,
-        const Scalar &div_grad_e,
-        const Scalar &p,
-        const Vector &grad_p,
-        const Scalar &refcoeff_div_grad_e   = 0,
-        const Vector &refcoeff_div_grad_m   = Vector::Zero(),
-        const Scalar &refcoeff_div_grad_rho = 0)
+        const Scalar            &gamma,
+        const Scalar            &mu,
+        const Scalar            &rho,
+        const Vector            &grad_rho,
+        const Scalar            &div_grad_rho,
+        const Vector            &m,
+        const Tensor            &grad_m,
+        const Vector            &div_grad_m,
+        const Scalar            &div_grad_e,
+        const Scalar            &p,
+        const Vector            &grad_p,
+        const ScalarCoefficient &refcoeff_div_grad_e,
+        const VectorCoefficient &refcoeff_div_grad_m,
+        const ScalarCoefficient &refcoeff_div_grad_rho)
 {
     const Scalar rho_inverse  = 1.0/rho;
     const Scalar rho_inverse2 = rho_inverse*rho_inverse;
