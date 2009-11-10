@@ -332,6 +332,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_u )
 // Checks derived formula and computed result against orthonormal_rhome_test_data()
 BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
 {
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
+
     double          rho;
     Eigen::Vector3d grad_rho;
     double          div_grad_rho;
@@ -350,20 +352,114 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    const Eigen::Vector3d grad_div_u
-        = pecos::suzerain::orthonormal::rhome::grad_div_u(
+    /* Expected results found using test_orthonormal.sage */
+    {
+        const Eigen::Vector3d grad_div_u
+            = pecos::suzerain::orthonormal::rhome::grad_div_u(
                 rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
 
-    /* Expected results found using test_orthonormal.sage */
-    Eigen::Vector3d ans;
-    ans(0) =   3.5808667611324763961641377901365615487146733886413982972779;
-    ans(1) = -11.378277959392865631969701464497046416747061061234520455900;
-    ans(2) = 237.13623643835318300159939437852909295361695206836632310924;
+        const Eigen::Vector3d ans(
+            3.5808667611324763961641377901365615487146733886413982972779,
+            - 11.378277959392865631969701464497046416747061061234520455900,
+            237.13623643835318300159939437852909295361695206836632310924);
 
-    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
-    BOOST_CHECK_CLOSE(grad_div_u(0), ans(0), close_enough);
-    BOOST_CHECK_CLOSE(grad_div_u(1), ans(1), close_enough);
-    BOOST_CHECK_CLOSE(grad_div_u(2), ans(2), close_enough);
+        BOOST_CHECK_CLOSE(grad_div_u(0), ans(0), close_enough);
+        BOOST_CHECK_CLOSE(grad_div_u(1), ans(1), close_enough);
+        BOOST_CHECK_CLOSE(grad_div_u(2), ans(2), close_enough);
+    }
+
+    /* With zero refcoeffs, explicit operator matches the full one */
+    {
+        const double mu     = 4181.0;
+        const double lambda = 6765.0;
+
+        const Eigen::Vector3d mu_plus_lambda_grad_div_u
+            = pecos::suzerain::orthonormal::rhome
+                ::explicit_mu_plus_lambda_grad_div_u(
+                    mu, lambda, rho, grad_rho, grad_grad_rho, m,
+                    div_m, grad_m, grad_div_m, 0, Eigen::Vector3d::Zero());
+
+        const Eigen::Vector3d ans(
+            (mu+lambda)
+            *3.5808667611324763961641377901365615487146733886413982972779,
+            (mu+lambda)
+            *-11.378277959392865631969701464497046416747061061234520455900,
+            (mu+lambda)
+            *237.13623643835318300159939437852909295361695206836632310924);
+
+        BOOST_CHECK_CLOSE(mu_plus_lambda_grad_div_u(0), ans(0), close_enough);
+        BOOST_CHECK_CLOSE(mu_plus_lambda_grad_div_u(1), ans(1), close_enough);
+        BOOST_CHECK_CLOSE(mu_plus_lambda_grad_div_u(2), ans(2), close_enough);
+    }
+
+    /* With nonzero refcoeffs, explicit operator differs from full one */
+    {
+        const double mu     = 4181.0;
+        const double lambda = 6765.0;
+        const double refcoeff_grad_div_m = 89.0;
+
+        const Eigen::Vector3d mu_plus_lambda_grad_div_u
+            = pecos::suzerain::orthonormal::rhome
+                ::explicit_mu_plus_lambda_grad_div_u(
+                    mu, lambda, rho, grad_rho, grad_grad_rho, m,
+                    div_m, grad_m, grad_div_m,
+                    refcoeff_grad_div_m, Eigen::Vector3d::Zero());
+
+        const Eigen::Vector3d ans(
+                59251.997466444561194961843519913703789109645722525625271084,
+                56371.864698208669179904529966597802712284277363839600322130,
+              -225340.51082752741696350364123413038584340722233614860633701);
+
+        BOOST_CHECK_CLOSE(mu_plus_lambda_grad_div_u(0), ans(0), close_enough);
+        BOOST_CHECK_CLOSE(mu_plus_lambda_grad_div_u(1), ans(1), close_enough);
+        BOOST_CHECK_CLOSE(mu_plus_lambda_grad_div_u(2), ans(2), close_enough);
+    }
+
+    /* With nonzero refcoeffs, explicit operator differs from full one */
+    {
+        const double mu     = 4181.0;
+        const double lambda = 6765.0;
+        const Eigen::Vector3d refcoeff_grad_grad_rho(144.0, 233.0, 377.0);
+
+        const Eigen::Vector3d mu_plus_lambda_grad_div_u
+            = pecos::suzerain::orthonormal::rhome
+                ::explicit_mu_plus_lambda_grad_div_u(
+                    mu, lambda, rho, grad_rho, grad_grad_rho, m,
+                    div_m, grad_m, grad_div_m,
+                    0, refcoeff_grad_grad_rho);
+
+        const Eigen::Vector3d ans(
+             94481.167567356086632412652250834802712230814912068745762004,
+            -90372.630543514307207540352230384670077713330376273060910286,
+                 2.6250052440542139411355069708673794514702911573403377727538e6);
+
+        BOOST_CHECK_CLOSE(mu_plus_lambda_grad_div_u(0), ans(0), close_enough);
+        BOOST_CHECK_CLOSE(mu_plus_lambda_grad_div_u(1), ans(1), close_enough);
+        BOOST_CHECK_CLOSE(mu_plus_lambda_grad_div_u(2), ans(2), close_enough);
+    }
+
+    /* Ensure the coefficient calculations are correct */
+    {
+        const double mu     = 4181.0;
+        const double lambda = 6765.0;
+        const double rho    = 67.0;
+        const Eigen::Vector3d m(144.0, 233.0, 377.0);
+
+        BOOST_CHECK_CLOSE(
+            pecos::suzerain::orthonormal::rhome
+                ::explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
+                    mu, lambda, rho),
+                (mu+lambda)/rho,
+                close_enough);
+        for (int i = 0; i < 3; ++i) {
+            BOOST_CHECK_CLOSE(
+                pecos::suzerain::orthonormal::rhome
+                    ::explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
+                        mu, lambda, rho, m)[i],
+                    (mu+lambda)/rho/rho*m[i],
+                    close_enough);
+        }
+    }
 }
 
 // Checks derived formula and computation against orthonormal_rhome_test_data()
@@ -406,60 +502,60 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
 
     /* With zero refcoeffs, explicit operator matches the full one */
     {
-      const double mu = 4181.0;
+        const double mu = 4181.0;
 
-      const Eigen::Vector3d ans(
-        mu * - 16.318446092843163297609832709693050751558008045050013765743,
-        mu *   23.204406985769508424700716673327465318352740571910767421546,
-        mu *  672.79795991861399600487930607996269111701083307478613865859);
+        const Eigen::Vector3d ans(
+            mu * - 16.318446092843163297609832709693050751558008045050013765743,
+            mu *   23.204406985769508424700716673327465318352740571910767421546,
+            mu *  672.79795991861399600487930607996269111701083307478613865859);
 
-      const Eigen::Vector3d mu_div_grad_u
-          = pecos::suzerain::orthonormal::rhome::explicit_mu_div_grad_u(
-              mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
-              0, Eigen::Vector3d::Zero());
+        const Eigen::Vector3d mu_div_grad_u
+            = pecos::suzerain::orthonormal::rhome::explicit_mu_div_grad_u(
+                mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
+                0, Eigen::Vector3d::Zero());
 
-      BOOST_CHECK_CLOSE(mu_div_grad_u(0), ans(0), close_enough);
-      BOOST_CHECK_CLOSE(mu_div_grad_u(1), ans(1), close_enough);
-      BOOST_CHECK_CLOSE(mu_div_grad_u(2), ans(2), close_enough);
+        BOOST_CHECK_CLOSE(mu_div_grad_u(0), ans(0), close_enough);
+        BOOST_CHECK_CLOSE(mu_div_grad_u(1), ans(1), close_enough);
+        BOOST_CHECK_CLOSE(mu_div_grad_u(2), ans(2), close_enough);
     }
 
     /* With nonzero refcoeffs, explicit operator differs from full one */
     {
-      const double mu = 4181.0;
-      const double refcoeff_div_grad_m = 2584.0;
+        const double mu = 4181.0;
+        const double refcoeff_div_grad_m = 2584.0;
 
-      const Eigen::Vector3d ans(
-         5.9551380098350547299406169179153558202535417758727995727551e6,
-        -1.0464153750779144075786479854308628293364388219511766501161e7,
-        -2.3913808232284881074922576572858143105464556248213880447440e8);
+        const Eigen::Vector3d ans(
+            5.9551380098350547299406169179153558202535417758727995727551e6,
+            -1.0464153750779144075786479854308628293364388219511766501161e7,
+            -2.3913808232284881074922576572858143105464556248213880447440e8);
 
-      const Eigen::Vector3d mu_div_grad_u
-          = pecos::suzerain::orthonormal::rhome::explicit_mu_div_grad_u(
-              mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
-              refcoeff_div_grad_m, Eigen::Vector3d::Zero());
+        const Eigen::Vector3d mu_div_grad_u
+            = pecos::suzerain::orthonormal::rhome::explicit_mu_div_grad_u(
+                mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
+                refcoeff_div_grad_m, Eigen::Vector3d::Zero());
 
-      BOOST_CHECK_CLOSE(mu_div_grad_u(0), ans(0), close_enough);
-      BOOST_CHECK_CLOSE(mu_div_grad_u(1), ans(1), close_enough);
-      BOOST_CHECK_CLOSE(mu_div_grad_u(2), ans(2), close_enough);
+        BOOST_CHECK_CLOSE(mu_div_grad_u(0), ans(0), close_enough);
+        BOOST_CHECK_CLOSE(mu_div_grad_u(1), ans(1), close_enough);
+        BOOST_CHECK_CLOSE(mu_div_grad_u(2), ans(2), close_enough);
     }
 
     /* With nonzero refcoeffs, explicit operator differs from full one */
     {
-      const double mu = 4181.0;
-      const Eigen::Vector3d refcoeff_div_grad_rho(610.0, 987.0, 1597.0);
-      const Eigen::Vector3d ans(
-        - 30407.423114177265747306710559226645192264031636354107554571,
-         158211.62560750231472367369641118213249603280833115891858948,
-              2.9119822704197251172964003787203240115602222930856808457316e6);
+        const double mu = 4181.0;
+        const Eigen::Vector3d refcoeff_div_grad_rho(610.0, 987.0, 1597.0);
+        const Eigen::Vector3d ans(
+            - 30407.423114177265747306710559226645192264031636354107554571,
+            158211.62560750231472367369641118213249603280833115891858948,
+                2.9119822704197251172964003787203240115602222930856808457316e6);
 
-      const Eigen::Vector3d mu_div_grad_u
-          = pecos::suzerain::orthonormal::rhome::explicit_mu_div_grad_u(
-              mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
-              0, refcoeff_div_grad_rho);
+        const Eigen::Vector3d mu_div_grad_u
+            = pecos::suzerain::orthonormal::rhome::explicit_mu_div_grad_u(
+                mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
+                0, refcoeff_div_grad_rho);
 
-      BOOST_CHECK_CLOSE(mu_div_grad_u(0), ans(0), close_enough);
-      BOOST_CHECK_CLOSE(mu_div_grad_u(1), ans(1), close_enough);
-      BOOST_CHECK_CLOSE(mu_div_grad_u(2), ans(2), close_enough);
+        BOOST_CHECK_CLOSE(mu_div_grad_u(0), ans(0), close_enough);
+        BOOST_CHECK_CLOSE(mu_div_grad_u(1), ans(1), close_enough);
+        BOOST_CHECK_CLOSE(mu_div_grad_u(2), ans(2), close_enough);
     }
 
     /* Ensure the coefficient calculations are correct */
