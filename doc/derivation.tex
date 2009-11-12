@@ -33,7 +33,7 @@
     \renewcommand{\headrulewidth}{1.0pt}
     \renewcommand{\footrulewidth}{0pt}
     \lhead{
-        Suzerain model derivation and numerical considerations
+        Suzerain model derivation, discretization, and numerical considerations
     }
     \rhead{
         Page \thepage{} of \pageref{LastPage}
@@ -579,6 +579,7 @@ dimensionless.  We arrive at the following nondimensional equations:
 \end{align}
 \end{subequations}
 
+
 \section{Numerical considerations}
 
 Here we take the complete mathematical model and put it into the form which we
@@ -1065,6 +1066,57 @@ values.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliographystyle{amsplain}
 \bibliography{derivation}
+
+
+
+\section{Discretization}
+
+\subsection{Time discretization}
+
+\subsection{Spatial discretization}
+
+\begin{align}
+  \partial_t u &= f(u)
+\\
+  \partial_t u^h &= f(u^h) + R^h
+\\
+u^h(x,y,z,t)
+&=
+  \sum_{l=0}^{N_y}
+  \sum_{m=-\frac{N_x}{2}+1}^{\frac{N_x}{2}}
+  \sum_{n=-\frac{N_z}{2}+1}^{\frac{N_z}{2}}
+  \hat{u}_{l,m,n}(t)
+  B_l(y)
+  e^{i \frac{2\pi{}m}{L_x}x}
+  e^{i \frac{2\pi{}n}{L_z}z}
+= \sum_{l}\sum_{k_x}\sum_{k_z}
+  \hat{u}_{l,m,n}(t)B_l(y)e^{i k_x x}e^{i k_z z}
+\end{align}
+
+\begin{align}
+\int_{0}^{L_y} \int_{0}^{L_x} \int_{0}^{L_z}
+&\delta(y-y_i) e^{-i k_x x}e^{-i k_z z}
+\partial_t
+\sum_{l}\sum_{k_x}\sum_{k_z}
+\hat{u}_{l,m,n}(t)B_l(y)e^{i k_x x}e^{i k_z z}
+\, dz \, dx \, dy
+\\
+&=
+\sum_{l}
+B_l(y_i) e^{i k_x x}e^{i k_z z}
+\partial_t
+\hat{u}_{l,m,n}(t)
+\end{align}
+
+\begin{align}
+\int_{0}^{L_y} \int_{0}^{L_x} \int_{0}^{L_z}
+\delta(y-y_i) e^{-i k_x x}e^{-i k_z z}
+f\left(
+  \sum_{l}\sum_{k_x}\sum_{k_z}
+  \hat{u}_{l,m,n}(t)B_l(y)e^{i k_x x}e^{i k_z z}
+\right)
+\, dz \, dx \, dy
+\end{align}
 
 
 \end{document}
