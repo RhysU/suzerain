@@ -793,6 +793,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_u )
 // Checks derived formula and computation against orthonormal_rhome_test_data()
 BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
 {
+    const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
+
     double          rho;
     Eigen::Vector3d grad_rho;
     double          div_grad_rho;
@@ -822,18 +824,181 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
             beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
-    const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
-    const double div_u = orthonormal::rhome::div_u(
-            rho, grad_rho, m, div_m);
-    const double div_p_u = orthonormal::div_p_u(p, grad_p, u, div_u);
-
     /* Expected results found using test_orthonormal.sage */
-    const double ans
-        = -36133.705926299567425548649114294679973238338337791365684538;
+    {
+        const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
+        const double div_u = orthonormal::rhome::div_u(
+                rho, grad_rho, m, div_m);
+        const double div_p_u = orthonormal::div_p_u(p, grad_p, u, div_u);
+        const double ans
+            = -36133.705926299567425548649114294679973238338337791365684538;
 
-    const double close_enough = std::numeric_limits<double>::epsilon()*1.0e2;
-    BOOST_CHECK_CLOSE(div_p_u, ans, close_enough);
+        BOOST_CHECK_CLOSE(div_p_u, ans, close_enough);
+    }
+
+    /* Explicit operator should coincide when refcoeffs are zero */
+    {
+        const double explicit_div_p_u = orthonormal::explicit_div_p_u(
+                rho, grad_rho, m, div_m, p, grad_p,
+                0, Eigen::Vector3d::Zero());
+        const double ans
+            = -36133.705926299567425548649114294679973238338337791365684538;
+        BOOST_CHECK_CLOSE(explicit_div_p_u, ans, close_enough);
+    }
+
+    /* Explicit operator differs for nonzero refcoeff */
+    {
+        const double refcoeff_div_m = 77.0;
+        const double explicit_div_p_u = orthonormal::explicit_div_p_u(
+                rho, grad_rho, m, div_m, p, grad_p,
+                refcoeff_div_m, Eigen::Vector3d::Zero());
+        const double ans
+            = 49409.670159954180179078803321626238490759844350764069895944;
+        BOOST_CHECK_CLOSE(explicit_div_p_u, ans, close_enough);
+    }
+
+    /* Explicit operator differs for nonzero refcoeff */
+    {
+        const Eigen::Vector3d refcoeff_grad_rho(77.0, 88.0, 99.0);
+        const double explicit_div_p_u = orthonormal::explicit_div_p_u(
+                rho, grad_rho, m, div_m, p, grad_p,
+                0, refcoeff_grad_rho);
+        const double ans
+            = -9403.7059262995674255486491142946799732383383377913656845385;
+        BOOST_CHECK_CLOSE(explicit_div_p_u, ans, close_enough);
+    }
+
+    /* Ensure the coefficient calculations are correct */
+    {
+        const double rho    = 67.0;
+        const Eigen::Vector3d m(144.0, 233.0, 377.0);
+        const double p      = 55.0;
+
+        BOOST_CHECK_CLOSE(orthonormal::explicit_div_p_u_refcoeff_div_m(
+            rho, p), p/rho, close_enough);
+        for (int i = 0; i < 3; ++i) {
+            BOOST_CHECK_CLOSE(orthonormal::explicit_div_p_u_refcoeff_grad_rho(
+                rho, m, p)[i], p/rho/rho*m[i], close_enough);
+        }
+    }
 }
+
+// Checks derived formula and computation against orthonormal_rhome_test_data()
+BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
+{
+    const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
+
+    double          rho;
+    Eigen::Vector3d grad_rho;
+    double          div_grad_rho;
+    Eigen::Matrix3d grad_grad_rho;
+    Eigen::Vector3d m;
+    double          div_m;
+    Eigen::Matrix3d grad_m;
+    Eigen::Vector3d div_grad_m;
+    Eigen::Vector3d grad_div_m;
+    double          e;
+    Eigen::Vector3d grad_e;
+    double          div_grad_e;
+
+    orthonormal_rhome_test_data(
+        rho, grad_rho, div_grad_rho, grad_grad_rho,
+        m, div_m, grad_m, div_grad_m, grad_div_m,
+        e, grad_e, div_grad_e);
+
+    const double beta  = 2.0/3.0;
+    const double gamma = 1.4;
+
+    double p, T, mu, lambda;
+    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+
+    using namespace pecos::suzerain;
+    orthonormal::rhome::p_T_mu_lambda(
+            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+
+    /* Should recover the full operator when no refcoeffs used */
+    {
+        const double ans
+            = -126982.91842850714333752812118812154805540229472889287189066;
+
+        const double div_e_plus_p_u = orthonormal::explicit_div_e_plus_p_u(
+                gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
+                0, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+        BOOST_CHECK_CLOSE(div_e_plus_p_u, ans, close_enough);
+    }
+
+    /* Explicit operator differs when refcoeffs in use */
+    {
+        const double refcoeff_div_m = 55.0;
+        const double div_e_plus_p_u = orthonormal::explicit_div_e_plus_p_u(
+                gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
+                refcoeff_div_m, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+        const double ans
+            = -65880.506938325895048508512305320892009689307094210417904597;
+        BOOST_CHECK_CLOSE(div_e_plus_p_u, ans, close_enough);
+    }
+
+    /* Explicit operator differs when refcoeffs in use */
+    {
+        const Eigen::Vector3d refcoeff_grad_rho(55.0, 66.0, 77.0);
+        const double div_e_plus_p_u = orthonormal::explicit_div_e_plus_p_u(
+                gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
+                0, refcoeff_grad_rho, Eigen::Vector3d::Zero());
+        const double ans
+            = -146826.91842850714333752812118812154805540229472889287189066;
+        BOOST_CHECK_CLOSE(div_e_plus_p_u, ans, close_enough);
+    }
+
+    /* Explicit operator differs when refcoeffs in use */
+    {
+        const Eigen::Vector3d refcoeff_grad_e(55.0, 66.0, 77.0);
+        const double div_e_plus_p_u = orthonormal::explicit_div_e_plus_p_u(
+                gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
+                0, Eigen::Vector3d::Zero(), refcoeff_grad_e);
+        const double ans
+            = -1.7876309184285071433375281211881215480554022947288928718907e6;
+        BOOST_CHECK_CLOSE(div_e_plus_p_u, ans, close_enough);
+    }
+
+    /* Ensure the coefficient calculations are correct */
+    {
+        const double gamma  = 1.4;
+        const double rho    = 67.0;
+        const Eigen::Vector3d m(144.0, 233.0, 377.0);
+        const double e      = 55.0;
+
+        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_div_m(
+            gamma, rho, m, e),
+            -8.5256850077968367119625751837825796391178436177322343506349,
+            close_enough);
+        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_rho(
+            gamma, rho, m, e)[0],
+            39.117758500879429983076375751006606530723526497607750953408,
+            close_enough);
+        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_rho(
+            gamma, rho, m, e)[1],
+            63.294706463228522125394413541559300844851261624601430362112,
+            close_enough);
+        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_rho(
+            gamma, rho, m, e)[2],
+            102.41246496410795210847078929256590737557478812220918131552,
+            close_enough);
+        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_e(
+            gamma, rho, m)[0],
+            3.0089552238805970149253731343283582089552238805970149253731,
+            close_enough);
+        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_e(
+            gamma, rho, m)[1],
+            4.8686567164179104477611940298507462686567164179104477611940,
+            close_enough);
+        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_e(
+            gamma, rho, m)[2],
+            7.8776119402985074626865671641791044776119402985074626865672,
+            close_enough);
+    }
+}
+
 
 // Checks derived formula and computation against orthonormal_rhome_test_data()
 BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )

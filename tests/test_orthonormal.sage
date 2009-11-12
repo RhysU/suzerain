@@ -150,6 +150,17 @@ tau_u = [
     tau[2][0]*u[0] + tau[2][1]*u[1] + tau[2][2]*u[2],
 ];
 div_tau_u = tau_u[0].diff(x) + tau_u[1].diff(y) + tau_u[2].diff(z);
+m_dot_m = m[0]*m[0] + m[1]*m[1] + m[2]*m[2]
+grad_m_m = [
+    grad_m[0][0]*m[0] + grad_m[0][1]*m[1] + grad_m[0][2]*m[2],
+    grad_m[1][0]*m[0] + grad_m[1][1]*m[1] + grad_m[1][2]*m[2],
+    grad_m[2][0]*m[0] + grad_m[2][1]*m[1] + grad_m[2][2]*m[2],
+];
+grad_m_T_m = [
+    grad_m[0][0]*m[0] + grad_m[1][0]*m[1] + grad_m[2][0]*m[2],
+    grad_m[0][1]*m[0] + grad_m[1][1]*m[1] + grad_m[2][1]*m[2],
+    grad_m[0][2]*m[0] + grad_m[1][2]*m[1] + grad_m[2][2]*m[2],
+];
 
 # Divergence form of the convective derivative
 u_outer_m = [
