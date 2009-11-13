@@ -46,10 +46,10 @@ double real_data(const double x, const double y, const double z) {
            + 2.0* 3.0*sin(x) // + 2.0* 6.0*sin(2*x) + 2.0* 9.0*sin(3*x)
            + 2.0* 5.0*sin(y) // + 2.0*10.0*sin(2*y) + 2.0*15.0*sin(3*y)
            + 2.0* 7.0*sin(z) // + 2.0*14.0*sin(2*z) + 2.0*21.0*sin(3*z)
-//           + 4.0*11.0*sin(x)*sin(y)
-//           + 4.0*13.0*sin(x)*sin(z)
-//           + 4.0*17.0*sin(y)*sin(z)
-//           + 8.0*19.0*sin(x)*sin(y)*sin(z)
+           + 4.0*11.0*sin(x)*sin(y)
+           + 4.0*13.0*sin(x)*sin(z)
+           + 4.0*17.0*sin(y)*sin(z)
+           + 8.0*19.0*sin(x)*sin(y)*sin(z)
            ;
 }
 
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
     ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Physical grid dimensions: "
-                           << boost::format("(%d, %d, %d)") % nx % ny % nz));
+                           << boost::format("(% 4d, % 4d, % 4d)") % nx % ny % nz));
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Processor grid dimensions: "
                            << boost::format("(%d, %d)") % dims[0] % dims[1]));
@@ -208,12 +208,18 @@ int main(int argc, char **argv)
     get_dims(istart.data(), iend.data(), isize.data(), 1/* physical pencil */);
     get_dims(fstart.data(), fend.data(), fsize.data(), 2/* wave pencil */);
 
+    /* P3DFFT STRIDE1 wave space sizes return in (Y, X, Z) ordering */
+    /* Suzerain's pencils require (X, Y, Z) ordering */
+    std::swap(fstart[0], fstart[1]);
+    std::swap(fend[0], fend[1]);
+    std::swap(fsize[0], fsize[1]);
+
     LOG4CXX_DEBUG(logger, "Physical space pencil sizes from P3DFFT:           "
-                          << boost::format("(%d, %d, %d)")
+                          << boost::format("(% 4d, % 4d, % 4d)")
                           % isize[0] % isize[1] % isize[2]);
 
     LOG4CXX_DEBUG(logger, "Wave space pencil sizes from P3DFFT:               "
-                          << boost::format("(%d, %d, %d)")
+                          << boost::format("(% 4d, % 4d, % 4d)")
                           % fsize[0] % fsize[1] % fsize[2]);
 
     /* Transform indices for C conventions, ranges like [istart, iend) */
@@ -222,12 +228,13 @@ int main(int argc, char **argv)
     std::transform(fstart.begin(), fstart.end(), fstart.begin(),
             std::bind2nd(std::minus<int>(),1));
 
+
     LOG4CXX_DEBUG(logger, "Physical space pencil sizes modified after P3DFFT: "
-                          << boost::format("(%d, %d, %d)")
+                          << boost::format("(% 4d, % 4d, % 4d)")
                           % isize[0] % isize[1] % isize[2]);
 
     LOG4CXX_DEBUG(logger, "Wave space pencil sizes modified after P3DFFT:     "
-                          << boost::format("(%d, %d, %d)")
+                          << boost::format("(% 4d, % 4d, % 4d)")
                           % fsize[0] % fsize[1] % fsize[2]);
 
     /* Create a uniform tensor product grid */
