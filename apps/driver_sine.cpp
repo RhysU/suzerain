@@ -39,7 +39,7 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
 
-#define ONLYPROC0(expr) { if (!procid) { expr ; } };
+#define ONLYPROC0(expr) if (!procid) { expr ; } else
 
 double real_data(const double x, const double y, const double z) {
     return   1.0* 1.0
@@ -200,42 +200,27 @@ int main(int argc, char **argv)
                 "Processor grid dimensions incompatible with number of processors"));
     }
 
-    /* Initialize P3DFFT */
-    p3dfft_setup(dims, nx, ny, nz, 1 /* safe to overwrite btrans */);
-
-    /* Get dimensions for input and output arrays */
+    /* Initialize P3DFFT using Y as STRIDE1 direction in wave space */
+    p3dfft_setup(dims, nx, nz, ny, 1 /* safe to overwrite btrans */);
+    /* Retrieve dimensions for input and output arrays */
     boost::array<int, 3> istart, isize, iend, fstart, fsize, fend;
     get_dims(istart.data(), iend.data(), isize.data(), 1/* physical pencil */);
     get_dims(fstart.data(), fend.data(), fsize.data(), 2/* wave pencil */);
-
-    /* P3DFFT STRIDE1 wave space sizes return in (Y, X, Z) ordering */
-    /* Suzerain's pencils require (X, Y, Z) ordering */
+    /* P3DFFT STRIDE1 physical space get_dims returns in (X, Z, Y) ordering */
+    /* Suzerain's pencils require (X, Y, Z) ordering; flip Z and Y data */
+    std::swap(istart[1], istart[2]);
+    std::swap(iend  [1], iend  [2]);
+    std::swap(isize [1], isize [2]);
+    /* P3DFFT STRIDE1 wave space get_dims returns in (Y, X, Z) ordering */
+    /* Suzerain's pencils require (X, Y, Z) ordering; flip Y and X data */
     std::swap(fstart[0], fstart[1]);
-    std::swap(fend[0], fend[1]);
-    std::swap(fsize[0], fsize[1]);
-
-    LOG4CXX_DEBUG(logger, "Physical space pencil sizes from P3DFFT:           "
-                          << boost::format("(% 4d, % 4d, % 4d)")
-                          % isize[0] % isize[1] % isize[2]);
-
-    LOG4CXX_DEBUG(logger, "Wave space pencil sizes from P3DFFT:               "
-                          << boost::format("(% 4d, % 4d, % 4d)")
-                          % fsize[0] % fsize[1] % fsize[2]);
-
-    /* Transform indices for C conventions, ranges like [istart, iend) */
+    std::swap(fend  [0], fend  [1]);
+    std::swap(fsize [0], fsize [1]);
+    /* Transform indices for C conventions; want ranges like [istart, iend) */
     std::transform(istart.begin(), istart.end(), istart.begin(),
             std::bind2nd(std::minus<int>(),1));
     std::transform(fstart.begin(), fstart.end(), fstart.begin(),
             std::bind2nd(std::minus<int>(),1));
-
-
-    LOG4CXX_DEBUG(logger, "Physical space pencil sizes modified after P3DFFT: "
-                          << boost::format("(% 4d, % 4d, % 4d)")
-                          % isize[0] % isize[1] % isize[2]);
-
-    LOG4CXX_DEBUG(logger, "Wave space pencil sizes modified after P3DFFT:     "
-                          << boost::format("(% 4d, % 4d, % 4d)")
-                          % fsize[0] % fsize[1] % fsize[2]);
 
     /* Create a uniform tensor product grid */
     std::valarray<double> gridx(isize[0]), gridy(isize[1]), gridz(isize[2]);
@@ -283,9 +268,8 @@ int main(int argc, char **argv)
             for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
                 const double value = real_data(gridx[i], gridy[j], gridz[k]);
                 LOG4CXX_TRACE(logger, boost::format(
-                              "Physical space (% 6.4f, % 6.4f, % 6.4f) = % 6g for index (%3d, %3d, %3d)")
-                              % gridx[i] % gridy[j] % gridz[k] % value
-                              % i % j % k);
+                              "Physical space (% 6.4f, % 6.4f, % 6.4f) = % 8.4f")
+                              % gridx[i] % gridy[j] % gridz[k] % value);
                 A.physical(i,j,k) = value;
             }
         }
