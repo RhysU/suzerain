@@ -870,14 +870,13 @@ void transform_c2c(
 
     // Ensure we are operating on complex-valued arrays
     // If available, C99 _Complex will be typedefed to fftw_complex, etc.
+    // TODO Following two checks broken for single and long double precisions
     BOOST_STATIC_ASSERT(
               (boost::is_complex<element1>::value)
            || (boost::is_same<element1, fftw_complex>::value));
     BOOST_STATIC_ASSERT(
               (boost::is_complex<element2>::value)
            || (boost::is_same<element2, fftw_complex>::value));
-    // Ensure element types occupy the same storage
-    BOOST_STATIC_ASSERT(sizeof(element1) == sizeof(element2));
     // Ensure dimension of both in and out is consistent
     BOOST_STATIC_ASSERT(    ComplexMultiArray1::dimensionality
                          == ComplexMultiArray2::dimensionality);
@@ -1131,6 +1130,176 @@ void backward_c2c(
             fftw_flags
          );
 }
+
+// FIXME Documentation
+template<class RealMultiArray,
+         class ComplexMultiArray>
+void forward_r2c(
+    const size_t transform_dim,
+    const RealMultiArray &in,
+    ComplexMultiArray &out,
+    const typename detail::transform_traits<
+            typename ComplexMultiArray::element          // wave space scalar
+        >::real_type domain_length = 2.0*M_PI,
+    const int derivative      = 0,
+    const unsigned fftw_flags = 0)
+{
+    // TransformTraits fixed by the wave space type
+    typedef detail::transform_traits<
+            typename ComplexMultiArray::element> transform_traits;
+
+    // Typedefs fixed separately by MultiArray template parameters
+    typedef typename RealMultiArray::element      element1;
+    typedef typename ComplexMultiArray::element   element2;
+    typedef typename RealMultiArray::index        index1;
+    typedef typename ComplexMultiArray::index     index2;
+    typedef typename RealMultiArray::size_type    size_type1;
+    typedef typename ComplexMultiArray::size_type size_type2;
+
+    // Ensure we are operating on real-valued input and complex-valued output
+    // If available, C99 _Complex will be typedefed to fftw_complex, etc.
+    // TODO Following two checks broken for single and long double precisions
+    BOOST_STATIC_ASSERT(
+              (! boost::is_complex<element1>::value)
+           || (! boost::is_same<element1, fftw_complex>::value));
+    BOOST_STATIC_ASSERT(
+              (boost::is_complex<element2>::value)
+           || (boost::is_same<element2, fftw_complex>::value));
+    // Ensure dimension of both in and out is consistent
+    BOOST_STATIC_ASSERT(    RealMultiArray::dimensionality
+                         == ComplexMultiArray::dimensionality);
+    const size_type1 dimensionality = RealMultiArray::dimensionality;
+
+    // Typedefs due to implementation choices
+    typedef boost::array<index1,dimensionality>      index_array1;
+    typedef boost::array<index2,dimensionality>      index_array2;
+    typedef int                                      shape_type; // Per FFTW
+    typedef boost::array<shape_type,dimensionality>  shape_array;
+
+    // Ensure we transform a dimension that exists in the data
+    assert(0 <= transform_dim && transform_dim < dimensionality);
+    // Copy all shape information into integers well-suited for FFTW
+    shape_array shape_in, shape_out;
+    {
+        using boost::numeric::converter;
+        typedef converter<shape_type,size_type1> Size1ToShapeType;
+        std::transform(in.shape(), in.shape() + dimensionality,
+                       shape_in.begin(), Size1ToShapeType());
+        typedef converter<shape_type,size_type2> Size2ToShapeType;
+        std::transform(out.shape(), out.shape() + dimensionality,
+                       shape_out.begin(), Size2ToShapeType());
+    }
+    // Ensure out shape at least as large as in shape for
+    // all non-transformed directions
+    for (size_type1 n = 0; n < dimensionality; ++n) {
+        assert(n == transform_dim || shape_in[n] <= shape_out[n]);
+    }
+    // Transform size determined from the physical space dimension
+    const shape_type transform_n = shape_in[transform_dim];
+
+    // Prepare the in-place transform buffer and construct the FFTW plan
+    typedef typename transform_traits::fftw_complex_type fftw_complex_type;
+    boost::shared_array<fftw_complex_type> buffer(
+        static_cast<fftw_complex_type *>(
+            fftw_malloc(sizeof(fftw_complex_type)*(transform_n/2+1)),
+        std::ptr_fun(fftw_free));
+    assert(buffer);
+    typedef typename transform_traits::fftw_plan_type fftw_plan_type;
+    boost::shared_ptr<
+            typename boost::remove_pointer<fftw_plan_type>::type
+        > plan(transform_traits::plan_r2c_1d(
+                    transform_n,
+                    reinterpret_cast<typename transform_traits::real_type *>(
+                            buffer.get()),
+                    buffer.get(),
+                    fftw_flags | FFTW_DESTROY_INPUT),
+               std::ptr_fun(transform_traits::destroy_plan));
+    assert(plan);
+
+    // Dereference all constant parameters outside main processing loop
+    // Pulls array information into our stack frame
+    index_array1 index_bases_in;
+    std::copy(in.index_bases(), in.index_bases() + dimensionality,
+              index_bases_in.begin());
+    index_array2 index_bases_out;
+    std::copy(out.index_bases(), out.index_bases() + dimensionality,
+              index_bases_out.begin());
+    const index1     stride_in_transform_dim  = in.strides()[transform_dim];
+    const index2     stride_out_transform_dim = out.strides()[transform_dim];
+    const shape_type shape_in_transform_dim   = shape_in[transform_dim];
+    const shape_type shape_out_transform_dim  = shape_out[transform_dim];
+
+    // Prepare per-pencil outer loop index and loop bounds
+    shape_array loop_shape(shape_in);   // Iterate over all dimensions...
+    loop_shape[transform_dim] = 1;      // ...except the transformed one
+    index_array1 loop_index = {{   }};  // Initialize to default value
+    for (size_type1 n = 0; n < dimensionality; ++n) {
+        assert(loop_index[n] == 0);     // Check initialization correct
+    }
+    index_array1 dereference_index1;     // To be adjusted by index_bases
+    index_array2 dereference_index2;     // To be adjusted by index_bases
+
+    // Walk fastest dimensions first when incrementing across pencils
+    index_array1 increment_order;
+    for (index1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
+    std::stable_sort(increment_order.begin(), increment_order.end(),
+                     detail::make_indexed_element_comparator(in.strides()));
+
+    // Process each of the transform_dim pencils in turn
+    do {
+        // Obtain index for the current input pencil's starting position
+        std::transform(loop_index.begin(), loop_index.end(),
+                       index_bases_in.begin(), dereference_index1.begin(),
+                       std::plus<index1>());
+
+        // Copy real input into transform buffer
+        {
+            const element1 * p_first = &in(dereference_index1);
+            const element1 * const p_last
+                = p_first + transform_n * stride_in_transform_dim;
+            typename transform_traits::real_type * p_result;
+                = reinterpret_cast<typename transform_traits::real_type *>(
+                        buffer.get());
+            while (p_first != p_last) {
+                *(p_result++) = *p_first;
+                p_first += stride_in_transform_dim;
+            }
+        }
+
+        // Pull the strings!  Pull the strings!
+        transform_traits::execute_plan(plan.get());
+
+        // Obtain index for the current output pencil's starting position
+        std::transform(loop_index.begin(), loop_index.end(),
+                       index_bases_out.begin(), dereference_index2.begin(),
+                       std::plus<index2>());
+
+        // Copy complex buffer into output performing any needed scaling, etc.
+        typedef typename
+            detail::transform_traits<element2>::real_type real_type;
+        const real_type normalization = real_type(1.0)/transform_n;
+        if (derivative == 0) {
+            detail::c2c_halfbuffer_process(
+                &out(dereference_index2),
+                (shape_out_transform_dim - 1)*2 /* logical */,
+                stride_out_transform_dim,
+                buffer.get(), transform_n, index2(1),
+                detail::complex_copy_scale<element2>(normalization));
+        } else {
+            detail::c2c_halfbuffer_process(
+                &out(dereference_index2),
+                (shape_out_transform_dim - 1)*2 /* logical */,
+                stride_out_transform_dim,
+                buffer.get(), transform_n, index2(1),
+                detail::complex_copy_scale_differentiate<element2>(
+                    normalization, derivative, domain_length));
+        }
+
+    } while (detail::increment<dimensionality>(loop_index.begin(),
+                                               loop_shape.begin(),
+                                               increment_order.begin()));
+} /* forward_r2c */
+
 
 } /* fftw_multi_array */ } /* suzerain */ } /* pecos */
 

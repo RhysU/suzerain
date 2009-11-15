@@ -743,6 +743,45 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
     }
 }
 
+// Helper function that kicks the tires of a 1D r2c transform
+template<class RealMultiArray, class ComplexMultiArray>
+void check_1D_half_forward(RealMultiArray &in, ComplexMultiArray &out)
+{
+    BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
+    typedef typename fftw_multi_array::detail::transform_traits<
+        typename ComplexMultiArray2::element>::real_type real_type;
+    const int NR = in.shape()[0];
+    const int NC = out.shape()[0];
+    const real_type close_enough
+        = std::numeric_limits<real_type>::epsilon()*10*NR*NR;
+    const real_type shift = M_PI/3.0;
+
+    // Load a real-valued function into the input array and transform it
+    fill_with_complex_NaN(out);
+    for (int i = 0; i < NR; ++i) {
+        in[i] = real_test_function<real_type>(NR, (NR+1)/2, i, shift);
+    }
+    fftw_multi_array::forward_r2c(0, in, out);
+
+    // We should see the expected frequency content up to grid modes
+    for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
+        real_type a_real, a_imag;
+        fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
+        const real_type real_expected = i * sin(shift) * 1.0/2.0;
+        const real_type imag_expected = i * cos(shift) * 1.0/2.0;
+        BOOST_REQUIRE_CLOSE(b_real, real_expected, sqrt(close_enough));
+        BOOST_REQUIRE_CLOSE(b_imag, imag_expected, sqrt(close_enough));
+    }
+    // Ensure we see the expected zero mode magnitude
+    {
+        real_type z_real, z_imag;
+        fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
+        BOOST_REQUIRE_SMALL(z_imag, close_enough);
+        BOOST_REQUIRE_CLOSE(z_real, 17.0, close_enough);
+    }
+}
+
 // Compare our results with FFTW's directly computed result
 template<class ComplexMultiArray1, class ComplexMultiArray2>
 void compare_1D_complex_forward(ComplexMultiArray1 &in,
