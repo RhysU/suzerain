@@ -45,7 +45,7 @@ static const suzerain_lsrk_method _suzerain_lsrk_smr91 = {
 const suzerain_lsrk_method * const suzerain_lsrk_smr91 = &_suzerain_lsrk_smr91;
 
 int
-suzerain_lsrk_substep(
+suzerain_lsrk_imex_substep(
         const suzerain_lsrk_method * const method,
         const int n,
         const int kl,

@@ -33,13 +33,13 @@
 #include <suzerain/common.h>
 
 /** @file
- * Provides a low-storage, hybrid explicit/implicit Runge-Kutta time integrator
+ * Provides a low-storage, hybrid implicit/explicit Runge-Kutta time integrator
  * suitable for use from both C and Fortran.  The integrator advances the state
  * vector \f$ u(t) \f$ to \f$u(t+\Delta{}t)\f$ according to \f$ u_t = Lu + N(u)
  * \f$ where \f$L\f$ and \f$N\f$ are linear and nonlinear operators,
  * respectively.  Neither operator may depend on time.
  *
- * Different order schemes may be computed using suzerain_lsrk_substep() given
+ * Different order schemes may be computed using suzerain_lsrk_imex_substep() given
  * appropriate constants in an instance of ::suzerain_lsrk_method.  Currently
  * only ::suzerain_lsrk_smr91 is provided.
  *
@@ -61,7 +61,7 @@ __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
- * Encapsulates a low-storage, hybrid explicit/implicit Runge-Kutta scheme's
+ * Encapsulates a low-storage, hybrid implicit/explicit Runge-Kutta scheme's
  * coefficients.  Schemes advance between substeps following the equation
  * \f[
  *   u^{i+1} = u^i + \Delta{}t \left[
@@ -110,7 +110,7 @@ typedef struct suzerain_lsrk_method {
 extern const suzerain_lsrk_method * const suzerain_lsrk_smr91;
 
 /**
- * Provides a low-storage, hybrid explicit/implicit Runge-Kutta time substepper
+ * Provides a low-storage, hybrid implicit/explicit Runge-Kutta time substepper
  * where the linear operator has the form \f$L = M^{-1} \xi_j D_j\f$ for
  * \f$j\in[0, \dots, \mbox{nD}]\f$ and must be provided using BLAS-compatible
  * general band storage matrices.  This linear operator form facilitates using
@@ -128,7 +128,7 @@ extern const suzerain_lsrk_method * const suzerain_lsrk_smr91;
  *               substep < suzerain_lsrk_smr91->substeps;
  *               ++substep) {
  *              b[0] = nonlinear_operator(a[0]);
- *              if (suzerain_lsrk_substep(
+ *              if (suzerain_lsrk_imex_substep(
  *                          suzerain_lsrk_smr91,
  *                          n, kl, ku,
  *                          M, ldM,
@@ -256,7 +256,7 @@ extern const suzerain_lsrk_method * const suzerain_lsrk_smr91;
  *      returns one of #suzerain_error_status.
  */
 int
-suzerain_lsrk_substep(
+suzerain_lsrk_imex_substep(
         const suzerain_lsrk_method * const method,
         const int n,
         const int kl,

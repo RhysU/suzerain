@@ -56,7 +56,7 @@ check_smr91_scalareqn_substeps()
         double    a[1]    = { 19.0 };
         double    c[1]    = { 29.0 };
         const int substep = 0;
-        suzerain_lsrk_substep(
+        suzerain_lsrk_imex_substep(
                 suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
@@ -74,7 +74,7 @@ check_smr91_scalareqn_substeps()
         double    a[1]    = { 19.0 };
         double    c[1]    = { 29.0 };
         const int substep = 1;
-        suzerain_lsrk_substep(
+        suzerain_lsrk_imex_substep(
                 suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
@@ -92,7 +92,7 @@ check_smr91_scalareqn_substeps()
         double    a[1]    = { 19.0 };
         double    c[1]    = { 29.0 };
         const int substep = 2;
-        suzerain_lsrk_substep(
+        suzerain_lsrk_imex_substep(
                 suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
@@ -147,7 +147,7 @@ check_smr91_matrixeqn_substeps()
         const int incc    = 1;
         const int ldc     = 2;
         const int substep = 0;
-        suzerain_lsrk_substep(
+        suzerain_lsrk_imex_substep(
                 suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
@@ -183,7 +183,7 @@ check_smr91_matrixeqn_substeps()
         const int incc    = 1;
         const int ldc     = 2;
         const int substep = 1;
-        suzerain_lsrk_substep(
+        suzerain_lsrk_imex_substep(
                 suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
@@ -219,7 +219,7 @@ check_smr91_matrixeqn_substeps()
         const int incc    = 1;
         const int ldc     = 2;
         const int substep = 2;
-        suzerain_lsrk_substep(
+        suzerain_lsrk_imex_substep(
                 suzerain_lsrk_smr91,
                 n, kl, ku,
                 M, ldM,
@@ -309,7 +309,7 @@ check_smr91_convergence_rate_riccati_equation()
                  ++substep) {
                 b[0] = riccati_equation_nonlinear_operator(
                         a[0], coeff_a, coeff_b, coeff_c);
-                gsl_test(suzerain_lsrk_substep(
+                gsl_test(suzerain_lsrk_imex_substep(
                             suzerain_lsrk_smr91,
                             n, kl, ku,
                             M, ldM,
@@ -344,7 +344,7 @@ check_smr91_convergence_rate_riccati_equation()
                  ++substep) {
                 b[0] = riccati_equation_nonlinear_operator(
                         a[0], coeff_a, coeff_b, coeff_c);
-                gsl_test(suzerain_lsrk_substep(
+                gsl_test(suzerain_lsrk_imex_substep(
                             suzerain_lsrk_smr91,
                             n, kl, ku,
                             M, ldM,
@@ -468,7 +468,7 @@ check_smr91_convergence_rate_only_explicit_operator()
                  substep < suzerain_lsrk_smr91->substeps;
                  ++substep) {
                 b[0] = coeff_a * a[0]; /* Explicit operator */
-                gsl_test(suzerain_lsrk_substep(
+                gsl_test(suzerain_lsrk_imex_substep(
                             suzerain_lsrk_smr91,
                             n, kl, ku,
                             M, ldM,
@@ -502,7 +502,7 @@ check_smr91_convergence_rate_only_explicit_operator()
                  substep < suzerain_lsrk_smr91->substeps;
                  ++substep) {
                 b[0] = coeff_a * a[0]; /* Explicit operator */
-                gsl_test(suzerain_lsrk_substep(
+                gsl_test(suzerain_lsrk_imex_substep(
                             suzerain_lsrk_smr91,
                             n, kl, ku,
                             M, ldM,
