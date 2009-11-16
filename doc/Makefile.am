@@ -1,6 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 
-TEXSOURCES = derivation.tex timestepping.tex smr91.tex skewadjoint.tex
+TEXSOURCES  = derivation.tex
+TEXSOURCES += skewadjoint.tex
+TEXSOURCES += smr91.tex
+TEXSOURCES += timestepping_ex.tex
+TEXSOURCES += timestepping_imex.tex
 
 EXTRA_DIST = derivation.bib skewadjoint.bib
 
