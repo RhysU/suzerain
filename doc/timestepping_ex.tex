@@ -146,6 +146,7 @@ for this use case.  We rearrange \eqref{eq:simplifiedgeneralsubstep} into
   &=
     \gamma_{i}  N\left( u^{i} \right)
   + \zeta_{i-1} N\left( u^{i-1} \right)
+  \label{eq:MNsubstep}
   .
 \end{align}
 
@@ -158,57 +159,22 @@ to invoking the substep routine.  We will overwrite the storage of $N\left(
 u^{i-1} \right)$ but must preserve $N\left( u^i \right)$ so it may be used in
 the next substep.
 
-
-
-% REVISE BELOW HERE
-
-Provided that $M$, $D_j$, and $\xi_j$ are real-valued, these assumptions allow
-us to compute $N$ once for a complex field and then separately perform the
-substep on its real and imaginary subfields using different $\xi_j$
-coefficients.  Operators $M$ and $D_j$ must be provided in
-BLAS/LAPACK-compatible band storage.  Time step $\Delta{}t$ will vary, and
-therefore $\hat{M}$ must be formed and factorized each time it is used.
-
-Given $M$, $D_j$, $\xi_j$, and storage locations $a$--$c$, each
-substep computation follows algorithm \ref{alg:substep}.  Note that because
-GBMV only works on a single vector per invocation, we assemble the right hand
-side of equation \eqref{eq:MDsubstep} one state vector at a time and hope that
-cache locality is good.
-
-% Depending on the performance of GBTRS with multiple right hand sides, it may
-% be faster to move the final GBTRS/AXPY outside the FORALL loop and perform
-% one massive GBTRS/AXPY at the end.
-%
-% Depending on the number of state vectors, it may make sense to avoid
-% explicitly forming $\hat{D}$ and instead use more GBMV invocations in the
-% FORALL loop.
 \begin{algorithm}
 \caption{Compute one substep in the SMR scheme following
-         equation \eqref{eq:MDsubstep}}
+         equation \eqref{eq:MNsubstep}}
 \label{alg:substep}
 \begin{algorithmic}
   \REQUIRE Storage $a = u^i$;
            storage $b = N\left(u^{i}\right)$;
-           storage $c = N\left(u^{i-1}\right)$
-  \STATE Allocate $d$ to be the length of one state vector
-  \STATE GB\_ACC: Form operator $\hat{D}$ using $\gamma_i$, $\zeta_{i-1}$,
-         $\xi_j$, and $D_j$
-  \STATE GB\_ACC: Form operator $\hat{M}$ using $M$, $\Delta{}t$, $\beta_i$,
-         $\xi_j$, and $D_j$
-  \STATE GBTRF:  $\hat{M}\leftarrow{}\mbox{lu}\left( \hat{M} \right)$
-  \FORALL{column vectors $c_j$ in storage $c$}
-    \STATE AXPBY: $c_{j}\leftarrow{}\gamma_{i}b_{j}+\zeta_{i-1}c_{j}$
-    \STATE GBMV: $d\leftarrow{}1 M c_{j} + 0 d$
-    \STATE GBMV: $d\leftarrow{}1 \hat{D} a_{j} + 1 d$
-    \STATE GBTRS: $d\leftarrow{}\hat{M}^{-1} d$
-    \STATE AXPY: $a_{j}\leftarrow{}\Delta{}t d + a_{j}$
-  \ENDFOR
-  \STATE Deallocate $d$
+           storage $c = N\left(u^{i-1}\right)$;
+           $M\leftarrow{}\mbox{GBTRF}\left( M \right)$
+  \STATE AXPBY: $c\leftarrow{}\gamma_{i}b+\zeta_{i-1}c$
+  \STATE GBTRS: $c\leftarrow{}M^{-1} c$
+  \STATE AXPY: $a\leftarrow{}\Delta{}t \, c + a$
   \ENSURE Storage $a = u^{i+1}$;
           storage $b = N\left(u^{i}\right)$
 \end{algorithmic}
 \end{algorithm}
-
 
 
 \end{document}
