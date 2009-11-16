@@ -169,3 +169,62 @@ suzerain_lsrk_imex_substep(
 
     return SUZERAIN_SUCCESS;
 }
+
+int
+suzerain_lsrk_ex_substep(
+        const suzerain_lsrk_method * const method,
+        const int n,
+        const int kl,
+        const int ku,
+        const double * const M,
+        const int ldM,
+        const int * const ipivM,
+        double delta_t,
+        const int nrhs,
+        double       * const a, const int inca, const int lda,
+        const double * const b, const int incb, const int ldb,
+        double       * const c, const int incc, const int ldc,
+        const int substep)
+{
+    if (substep < 0 || substep >= method->substeps) {
+        SUZERAIN_ERROR("requested substep out of range", SUZERAIN_EINVAL);
+    }
+
+    /* TODO Handle purely contiguous case more intelligently */
+
+    /* Allocate working space for contiguous vector d */
+    const int incd = 1;
+    double * const d = suzerain_blas_malloc(n * incd * sizeof(d[0]));
+    if (d == NULL) {
+        SUZERAIN_ERROR("failed to allocate space for d", SUZERAIN_ENOMEM);
+    }
+
+    for (int j = 0; j < nrhs; ++j) {
+        double       * const  a_j = a + j*lda;
+        const double * const  b_j = b + j*ldb;
+        double       * const  c_j = c + j*ldc;
+
+        suzerain_blas_dwaxpby(n,
+                method->gamma[substep], b_j, incb,
+                method->zeta[substep],  c_j, incc,
+                                          d, incd);
+
+        const int error_dgbtrs = suzerain_lapack_dgbtrs(
+                'N', n, kl, ku, 1, M, ldM, ipivM, d, n*incd);
+        if (error_dgbtrs) {
+            free(d);
+            char buffer[72];
+            snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+                    "suzerain_lapack_dgbtrs reported error: %d", error_dgbtrs);
+            SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
+        }
+
+        suzerain_blas_daxpy(n,
+                delta_t, d, incd,
+                a_j, inca);
+    }
+
+    free(d);
+
+    return SUZERAIN_SUCCESS;
+}

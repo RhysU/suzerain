@@ -278,11 +278,10 @@ suzerain_lsrk_imex_substep(
  * Provides a low-storage explicit Runge-Kutta time substepper for an operator
  * like \f$M u_t = N\left( u \right)\f$ where \f$M\f$ is a banded mass matrix.
  * The nonlinear operator \f$N\f$ must be computed by the caller between
- * Runge-Kutta substeps.
- * More specifically, storage \c a is advanced from \f$u^{i}\f$ to
- * \f$u^{i+1}\f$.  Storage \c b must contain \f$N(u^{i})\f$ on entry; it is
- * preserved for use in a subsequent substep.  Storage \c c must contain
- * \f$N(u^{i-1})\f$ on entry; it is overwritten during the invocation.
+ * Runge-Kutta substeps.  More specifically, storage \c a is advanced from
+ * \f$u^{i}\f$ to \f$u^{i+1}\f$.  Storage \c b must contain \f$N(u^{i})\f$ on
+ * entry; it is preserved for use in a subsequent substep.  Storage \c c must
+ * contain \f$N(u^{i-1})\f$ on entry; it is overwritten during the invocation.
  *
  * Multiple, noncontiguous state vectors may be updated within a single
  * substep.  They are parameterized by the number of state vectors (\c nrhs),
