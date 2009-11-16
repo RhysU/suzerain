@@ -274,6 +274,104 @@ suzerain_lsrk_imex_substep(
         double       * const c, const int incc, const int ldc,
         const int substep);
 
+/**
+ * Provides a low-storage explicit Runge-Kutta time substepper for an operator
+ * like \f$M u_t = N\left( u \right)\f$ where \f$M\f$ is a banded mass matrix.
+ * The nonlinear operator \f$N\f$ must be computed by the caller between
+ * Runge-Kutta substeps.
+ * More specifically, storage \c a is advanced from \f$u^{i}\f$ to
+ * \f$u^{i+1}\f$.  Storage \c b must contain \f$N(u^{i})\f$ on entry; it is
+ * preserved for use in a subsequent substep.  Storage \c c must contain
+ * \f$N(u^{i-1})\f$ on entry; it is overwritten during the invocation.
+ *
+ * Multiple, noncontiguous state vectors may be updated within a single
+ * substep.  They are parameterized by the number of state vectors (\c nrhs),
+ * the leading dimension between state vectors (\c lda, \c ldb, \c ldc), and
+ * the increment between elements in each state vector (\c inca, \c incb, \c
+ * incc).  For real-valued \f$M\f$ these parameters allow computing the
+ * nonlinear operator once for a complex field and then separately performing
+ * the substep on its real and imaginary subfields using two invocations with
+ * different \f$\xi_j\f$ coefficients and imaginary offset storage locations
+ * (<tt>a+1</tt>, <tt>b+1</tt>, <tt>c+1</tt>).
+ *
+ * The implementation employs column-major <a
+ * href="http://www.intel.com/software/products/mkl/docs/mklqref/matrixst.htm">
+ * general banded matrix</a> BLAS and LAPACK functionality where possible.  The
+ * mass matrix is time independent and must be factored by LAPACK's GBTRF
+ * prior to invoking this method.  The computational algorithm is
+ * -# Preconditions:
+ *   Storage \f$a = u^i\f$;
+ *   storage \f$b = N\left(u^{i}\right)\f$;
+ *   storage \f$c = N\left(u^{i-1}\right)\f$;
+ *   \f$M\leftarrow{}\mbox{GBTRF}\left(M\right)\f$
+ * -# Allocate \f$d\f$ to be the length of one state vector
+ * -# For each right hand side \f$a_j\f$, \f$b_j\f$, and \f$c_j\f$
+ *      in storage \c a, \c b, and \c c, respectively:
+ *   -# WAXPBY: \f$d\leftarrow{}\gamma_{i}b_{j}+\zeta_{i}c_{j}\f$
+ *   -# GBTRS: \f$d\leftarrow{}\hat{M}^{-1} d\f$
+ *   -# AXPY: \f$a_{j}\leftarrow{}\Delta{}t\,d + a_{j}\f$
+ * -# Deallocate \f$d\f$
+ * -# Postconditions:
+ *   Storage \f$a = u^{i+1}\f$;
+ *   storage \f$b = N\left(u^{i}\right)\f$
+ * .
+ * Note that the routine chooses to assemble the right hand side of the
+ * equation one state vector at a time because
+ * - GBTRS does not allow an arbitrary increment between elements in a vector.
+ *
+ * @param[in] method Low-storage method to use.
+ * @param[in] n Number of rows and columns in \f$M\f$ and \f$D_j\f$.
+ * @param[in] kl Number of subdiagonals in \f$M\f$ and \f$D_j\f$.
+ * @param[in] ku Number of superdiagonals in \f$M\f$ and \f$D_j\f$.
+ * @param[in] M Column-major band storage of \f$M\f$ using \c kl, \c ku,
+ *      and \c ldM.  Must have previously been factored by GBTRF.
+ * @param[in] ldM Leading dimension between columns of \c M.
+ * @param[in] ipivM Pivot matrix from GBTRF.
+ * @param[in] delta_t Size of the Runge-Kutta step to take.  The same
+ *      value must be provided for all substeps when advancing from
+ *      \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$.
+ * @param[in] nrhs The number of right hand sides or state vectors stored
+ *      in \c a, \c b, and \c c.
+ * @param[in,out] a Contains \f$u^{i}\f$ on entry and \f$u^{i+1}\f$ on
+ *      exit where \f$i\f$ is the provided \c substep.
+ * @param[in] inca Increment between two consecutive elements in a
+ *      column vector in \c a.
+ * @param[in] lda Leading dimension between two state vectors in \c a.
+ *      That is, \f$a_j\f$ starts at <tt>a+j*inca</tt>.
+ * @param[in] b Contains \f$N(u^{i})\f$ on entry where \f$i\f$ is
+ *      the provided \c substep.
+ * @param[in] incb Increment between two consecutive elements in a
+ *      column vector in \c b.
+ * @param[in] ldb Leading dimension between two state vectors in \c b.
+ *      That is, \f$b_j\f$ starts at <tt>b+j*incb</tt>.
+ * @param[in,out] c Contains \f$N(u^{i+1})\f$ on entry and contains
+ *      undefined values on exit where \f$i\f$ is the provided \c substep.
+ * @param[in] incc Increment between two consecutive elements in a
+ *      column vector in \c c.
+ * @param[in] ldc Leading dimension between two state vectors in \c c.
+ *      That is, \f$c_j\f$ starts at <tt>b+j*incc</tt>.
+ * @param[in] substep The substep to take which must be in the inclusive
+ *      range 0 to <tt>method.substeps</tt>.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_lsrk_ex_substep(
+        const suzerain_lsrk_method * const method,
+        const int n,
+        const int kl,
+        const int ku,
+        const double * const M,
+        const int ldM,
+        const int * ipivM,
+        double delta_t,
+        const int nrhs,
+        double       * const a, const int inca, const int lda,
+        const double * const b, const int incb, const int ldb,
+        double       * const c, const int incc, const int ldc,
+        const int substep);
+
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */

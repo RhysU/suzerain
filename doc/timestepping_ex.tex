@@ -150,14 +150,21 @@ for this use case.  We rearrange \eqref{eq:simplifiedgeneralsubstep} into
   .
 \end{align}
 
-The mass matrix may be factored once and the factorization repeatedly used.  We
-allow multiple, contiguous state vectors to be updated within a single substep.
-This implies all state is parameterized only by the number of state vectors and
-the leading dimension between state vectors.  We assume the nonlinear operator
-$N$ is horrifically expensive and will be computed for all state vectors prior
-to invoking the substep routine.  We will overwrite the storage of $N\left(
+We allow multiple, noncontiguous state vectors to be updated within a single
+substep.  This implies all state is parameterized by the number of state
+vectors, the leading dimension between state vectors, and the increment between
+elements in a single state vector.  We assume the nonlinear operator $N$ is
+horrifically expensive and will be computed for all state vectors prior to
+invoking the substep routine.  We will overwrite the storage of $N\left(
 u^{i-1} \right)$ but must preserve $N\left( u^i \right)$ so it may be used in
 the next substep.
+
+Provided that $M$ is real-valued, these assumptions allow us to compute $N$
+once for a complex field and then separately perform the substep on its real
+and imaginary subfields.  The mass matrix must be factored once and the
+factorization repeatedly used.  Operator $M$ must be provided in
+BLAS/LAPACK-compatible band storage and must have been factored by GBTRF prior
+to the substep.
 
 \begin{algorithm}
 \caption{Compute one substep in the SMR scheme following
@@ -168,9 +175,12 @@ the next substep.
            storage $b = N\left(u^{i}\right)$;
            storage $c = N\left(u^{i-1}\right)$;
            $M\leftarrow{}\mbox{GBTRF}\left( M \right)$
-  \STATE AXPBY: $c\leftarrow{}\gamma_{i}b+\zeta_{i-1}c$
-  \STATE GBTRS: $c\leftarrow{}M^{-1} c$
-  \STATE AXPY: $a\leftarrow{}\Delta{}t \, c + a$
+  \STATE Allocate $d$ to be the length of one state vector
+  \FORALL{column vectors $c_j$ in storage $c$}
+    \STATE WAXPBY: $d\leftarrow{}\gamma_{i}b_{j}+\zeta_{i-1}c_{j}$
+    \STATE GBTRS: $d\leftarrow{}M^{-1} d$
+    \STATE AXPY: $a_{j}\leftarrow{}\Delta{}t \, d + a_{j}$
+  \ENDFOR
   \ENSURE Storage $a = u^{i+1}$;
           storage $b = N\left(u^{i}\right)$
 \end{algorithmic}
