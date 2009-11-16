@@ -303,9 +303,9 @@ suzerain_lapack_dgbtrs(
         const int kl,
         const int ku,
         const int nrhs,
-        double *ab,
+        const double *ab,
         const int ldab,
-        int *ipiv,
+        const int *ipiv,
         double *b,
         const int ldb)
 {
