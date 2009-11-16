@@ -183,6 +183,34 @@ suzerain_blas_daxpby(
         const int incy);
 
 /**
+ * Compute \f$ w \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's dwaxpby.
+ * If dwaxpby is not available, simulate it using dcopy, dscal, and daxpy.
+ *
+ * @param n Number of elements in \c x and \c y.
+ * @param alpha Multiplicative scalar \f$ \alpha \f$
+ * @param x First source vector.
+ * @param incx First source vector stride.
+ * @param beta Multiplicative scalar \f$ \beta \f$
+ * @param y Second source vector.
+ * @param incy Second source vector.
+ * @param w Target vector.
+ * @param incw Target vector stride.
+ *
+ * @see A BLAS reference for more details.
+ */
+void
+suzerain_blas_dwaxpby(
+        const int n,
+        const double alpha,
+        const double *x,
+        const int incx,
+        const double beta,
+        const double *y,
+        const int incy,
+        double *w,
+        const int incw);
+
+/**
  * Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ using BLAS's dgbmv.
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *

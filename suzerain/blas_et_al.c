@@ -181,6 +181,33 @@ suzerain_blas_daxpby(
 }
 
 void
+suzerain_blas_dwaxpby(
+        const int n,
+        const double alpha,
+        const double *x,
+        const int incx,
+        const double beta,
+        const double *y,
+        const int incy,
+        double *w,
+        const int incw)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    /* Simulate dwaxpby since MKL lacks the routine. */
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+    const MKL_INT _incw = incw;
+
+    dcopy(&_n, y, &_incy, w, &_incw);
+    dscal(&_n, &beta, w, &_incw);
+    daxpy(&_n, &alpha, x, &_incx, w, &_incw);
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
 suzerain_blas_dgbmv(
         const char trans,
         const int m,

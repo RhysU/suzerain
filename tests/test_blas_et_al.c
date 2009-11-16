@@ -39,6 +39,38 @@ test_daxpby()
 }
 
 void
+test_dwaxpby()
+{
+    int i;
+
+    const double alpha      = 2.0;
+    const double x[]        = {1.0, 2.0, 3.0};
+    const int    incx       = 1;
+    const int    nx         = sizeof(x)/sizeof(x[0]);
+    const double beta       = 3.0;
+    const double y[]        = {4.0, -1, 5.0, -2, 6.0, -3};
+    const int    incy       = 2;
+    const int    ny         = sizeof(y)/sizeof(y[0]);
+    double       w[nx/incx];
+    const int    nw         = sizeof(w)/sizeof(w[0]);
+    const int    incw       = 1;
+    const double expected[] = {
+        alpha*x[0] + beta*y[0],
+        alpha*x[1] + beta*y[2],
+        alpha*x[2] + beta*y[4],
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(nw, nexpected, "Expected results' length");
+
+    suzerain_blas_dwaxpby(nx/incx, alpha, x, incx, beta, y, incy, w, incw);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(w[i], expected[i], GSL_DBL_EPSILON, "dwaxpby index %d", i);
+    }
+}
+
+void
 test_daxpby_nop()
 {
     int i;
@@ -166,6 +198,8 @@ main(int argc, char **argv)
 
     test_daxpby();
     test_daxpby_nop();
+
+    test_dwaxpby();
 
     test_dgb_acc();
     test_dgb_acc_nop();
