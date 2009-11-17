@@ -791,8 +791,8 @@ void c2c_halfbuffer_process(OutputIterator out,
                             const C2CBufferProcessor &c2c_buffer_processor)
 {
     // Highest positive wavenumber
-    const SizeType last_n_pos_out  = (size_out / 2) + 1;
-    const SizeType last_n_pos_in   = (size_in  / 2) + 1;
+    const SizeType last_n_pos_out  = size_out / 2;
+    const SizeType last_n_pos_in   = size_in  / 2;
     const SizeType last_n_pos_copy = std::min(last_n_pos_out, last_n_pos_in);
 
     // Code relies on loop conditions being checked prior to any loop entry
@@ -870,13 +870,16 @@ void transform_c2c(
 
     // Ensure we are operating on complex-valued arrays
     // If available, C99 _Complex will be typedefed to fftw_complex, etc.
-    // TODO Following two checks broken for single and long double precisions
     BOOST_STATIC_ASSERT(
               (boost::is_complex<element1>::value)
-           || (boost::is_same<element1, fftw_complex>::value));
+           || (boost::is_same<element1, fftwf_complex>::value)
+           || (boost::is_same<element1, fftw_complex>::value)
+           || (boost::is_same<element1, fftwl_complex>::value));
     BOOST_STATIC_ASSERT(
               (boost::is_complex<element2>::value)
-           || (boost::is_same<element2, fftw_complex>::value));
+           || (boost::is_same<element2, fftwf_complex>::value)
+           || (boost::is_same<element2, fftw_complex>::value)
+           || (boost::is_same<element2, fftwl_complex>::value));
     // Ensure dimension of both in and out is consistent
     BOOST_STATIC_ASSERT(    ComplexMultiArray1::dimensionality
                          == ComplexMultiArray2::dimensionality);
@@ -1158,13 +1161,16 @@ void forward_r2c(
 
     // Ensure we are operating on real-valued input and complex-valued output
     // If available, C99 _Complex will be typedefed to fftw_complex, etc.
-    // TODO Following two checks broken for single and long double precisions
     BOOST_STATIC_ASSERT(
               (! boost::is_complex<element1>::value)
-           || (! boost::is_same<element1, fftw_complex>::value));
+           && (! boost::is_same<element1, fftwf_complex>::value)
+           && (! boost::is_same<element1, fftw_complex>::value)
+           && (! boost::is_same<element1, fftwl_complex>::value));
     BOOST_STATIC_ASSERT(
               (boost::is_complex<element2>::value)
-           || (boost::is_same<element2, fftw_complex>::value));
+           || (boost::is_same<element2, fftwf_complex>::value)
+           || (boost::is_same<element2, fftw_complex>::value)
+           || (boost::is_same<element2, fftwl_complex>::value));
     // Ensure dimension of both in and out is consistent
     BOOST_STATIC_ASSERT(    RealMultiArray::dimensionality
                          == ComplexMultiArray::dimensionality);
@@ -1201,7 +1207,7 @@ void forward_r2c(
     typedef typename transform_traits::fftw_complex_type fftw_complex_type;
     boost::shared_array<fftw_complex_type> buffer(
         static_cast<fftw_complex_type *>(
-            fftw_malloc(sizeof(fftw_complex_type)*(transform_n/2+1)),
+            fftw_malloc(sizeof(fftw_complex_type)*(transform_n/2+1))),
         std::ptr_fun(fftw_free));
     assert(buffer);
     typedef typename transform_traits::fftw_plan_type fftw_plan_type;
@@ -1257,7 +1263,7 @@ void forward_r2c(
             const element1 * p_first = &in(dereference_index1);
             const element1 * const p_last
                 = p_first + transform_n * stride_in_transform_dim;
-            typename transform_traits::real_type * p_result;
+            typename transform_traits::real_type * p_result
                 = reinterpret_cast<typename transform_traits::real_type *>(
                         buffer.get());
             while (p_first != p_last) {
@@ -1275,24 +1281,26 @@ void forward_r2c(
                        std::plus<index2>());
 
         // Copy complex buffer into output performing any needed scaling, etc.
-        typedef typename
-            detail::transform_traits<element2>::real_type real_type;
-        const real_type normalization = real_type(1.0)/transform_n;
-        if (derivative == 0) {
-            detail::c2c_halfbuffer_process(
-                &out(dereference_index2),
-                (shape_out_transform_dim - 1)*2 /* logical */,
-                stride_out_transform_dim,
-                buffer.get(), transform_n, index2(1),
-                detail::complex_copy_scale<element2>(normalization));
-        } else {
-            detail::c2c_halfbuffer_process(
-                &out(dereference_index2),
-                (shape_out_transform_dim - 1)*2 /* logical */,
-                stride_out_transform_dim,
-                buffer.get(), transform_n, index2(1),
-                detail::complex_copy_scale_differentiate<element2>(
-                    normalization, derivative, domain_length));
+        {
+            typedef typename
+                detail::transform_traits<element2>::real_type real_type;
+            const real_type normalization = real_type(1.0)/transform_n;
+            if (derivative == 0) {
+                detail::c2c_halfbuffer_process(
+                    &out(dereference_index2),
+                    (shape_out_transform_dim - 1)*2 /* logical */,
+                    stride_out_transform_dim,
+                    buffer.get(), transform_n, index2(1),
+                    detail::complex_copy_scale<element2>(normalization));
+            } else {
+                detail::c2c_halfbuffer_process(
+                    &out(dereference_index2),
+                    (shape_out_transform_dim - 1)*2 /* logical */,
+                    stride_out_transform_dim,
+                    buffer.get(), transform_n, index2(1),
+                    detail::complex_copy_scale_differentiate<element2>(
+                        normalization, derivative, domain_length));
+            }
         }
 
     } while (detail::increment<dimensionality>(loop_index.begin(),

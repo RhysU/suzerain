@@ -750,7 +750,7 @@ void check_1D_half_forward(RealMultiArray &in, ComplexMultiArray &out)
     BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
     typedef typename fftw_multi_array::detail::transform_traits<
-        typename ComplexMultiArray2::element>::real_type real_type;
+        typename ComplexMultiArray::element>::real_type real_type;
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
     const real_type close_enough
@@ -766,12 +766,12 @@ void check_1D_half_forward(RealMultiArray &in, ComplexMultiArray &out)
 
     // We should see the expected frequency content up to grid modes
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
-        real_type a_real, a_imag;
-        fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
-        const real_type real_expected = i * sin(shift) * 1.0/2.0;
-        const real_type imag_expected = i * cos(shift) * 1.0/2.0;
-        BOOST_REQUIRE_CLOSE(b_real, real_expected, sqrt(close_enough));
-        BOOST_REQUIRE_CLOSE(b_imag, imag_expected, sqrt(close_enough));
+        real_type z_real, z_imag;
+        fftw_multi_array::detail::assign_components(z_real, z_imag, out[i]);
+        const real_type real_expected =  i * sin(shift) * 1.0/2.0;
+        const real_type imag_expected = -i * cos(shift) * 1.0/2.0;
+        BOOST_REQUIRE_CLOSE(z_real, real_expected, sqrt(close_enough));
+        BOOST_REQUIRE_CLOSE(z_imag, imag_expected, sqrt(close_enough));
     }
     // Ensure we see the expected zero mode magnitude
     {
@@ -1105,13 +1105,13 @@ void differentiate_on_backward_1D_complex(ComplexMultiArray1 &in,
         (3)(5)(7)(9)(11)(13)(17)(19)(23)(29) \
         (1)
 
-BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place );
-#define TEST_C2C_1D_OUT_OF_PLACE(r, data, elem) \
-        BOOST_AUTO_TEST_CASE( BOOST_PP_CAT(c2c_1d_out_of_place_,elem) ) \
-        { c2c_1d_out_of_place(elem); }
-void c2c_1d_out_of_place(const int N)
+BOOST_AUTO_TEST_SUITE( test_1d_out_of_place );
+#define TEST_1D_OUT_OF_PLACE(r, data, elem) \
+        BOOST_AUTO_TEST_CASE( BOOST_PP_CAT(test_1d_out_of_place_,elem) ) \
+        { test_1d_out_of_place(elem); }
+void test_1d_out_of_place(const int N)
 {
-    // Test multi_array using std::complex
+    // C2C: Test multi_array using std::complex
     {
         typedef boost::multi_array<std::complex<double>,1> array_type;
         array_type in(boost::extents[N]), out(boost::extents[N]);
@@ -1125,7 +1125,7 @@ void c2c_1d_out_of_place(const int N)
         differentiate_on_backward_1D_complex(in, out);
     }
 
-    // Test multi_array_ref using fftw_complex
+    // C2C: Test multi_array_ref using fftw_complex
     {
         boost::scoped_array<fftw_complex> in_data(new fftw_complex[N]);
         boost::scoped_array<fftw_complex> out_data(new fftw_complex[N]);
@@ -1142,8 +1142,25 @@ void c2c_1d_out_of_place(const int N)
         differentiate_on_backward_1D_complex(in, out);
     }
 
+    // R2C: Test multi_array using std::complex
+    {
+        boost::multi_array<double,1>               in(boost::extents[N]);
+        boost::multi_array<std::complex<double>,1> out(boost::extents[N/2+1]);
+
+        // No dealiasing in effect
+        check_1D_half_forward(in, out);
+    }
+
+    // R2C: Test multi_array using fftw_complex
+    {
+        boost::multi_array<double,1>       in(boost::extents[N]);
+        boost::multi_array<fftw_complex,1> out(boost::extents[N/2+1]);
+
+        // No dealiasing in effect
+        check_1D_half_forward(in, out);
+    }
 }
-BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
+BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
 
 BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_one_reversed );
