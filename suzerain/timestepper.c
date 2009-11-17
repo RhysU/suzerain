@@ -181,21 +181,32 @@ suzerain_lsrk_ex_substep_contiguous(
         const int * const ipivM,
         double delta_t,
         const int nrhs,
-        double       * const a,
-        const double * const b,
-        double       * const c,
+        double       * const a, const int lda,
+        const double * const b, const int ldb,
+        double       * const c, const int ldc,
         const int substep)
 {
     if (substep < 0 || substep >= method->substeps) {
         SUZERAIN_ERROR("requested substep out of range", SUZERAIN_EINVAL);
     }
 
-    suzerain_blas_daxpby(n*nrhs,
-            method->gamma[substep], b, 1,
-            method->zeta[substep],  c, 1);
+    if (ldb == n && ldc == n) {
+            suzerain_blas_daxpby(n*nrhs,
+                    method->gamma[substep], b, 1,
+                    method->zeta[substep],  c, 1);
+    } else {
+        for (int j = 0; j < nrhs; ++j) {
+            const double * const  b_j = b + j*ldb;
+            double       * const  c_j = c + j*ldc;
+
+            suzerain_blas_daxpby(n,
+                    method->gamma[substep], b_j, 1,
+                    method->zeta[substep],  c_j, 1);
+        }
+    }
 
     const int error_dgbtrs = suzerain_lapack_dgbtrs(
-            'N', n, kl, ku, nrhs, M, ldM, ipivM, c, n);
+            'N', n, kl, ku, nrhs, M, ldM, ipivM, c, ldc);
     if (error_dgbtrs) {
         char buffer[72];
         snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
@@ -203,9 +214,20 @@ suzerain_lsrk_ex_substep_contiguous(
         SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
     }
 
-    suzerain_blas_daxpy(n*nrhs,
-            delta_t, c, 1,
-                     a, 1);
+    if (lda == n && ldc == n) {
+        suzerain_blas_daxpy(n*nrhs,
+                delta_t, c, 1,
+                         a, 1);
+    } else {
+        for (int j = 0; j < nrhs; ++j) {
+            double       * const  a_j = a + j*lda;
+            const double * const  c_j = c + j*ldc;
+
+            suzerain_blas_daxpy(n,
+                    delta_t, c_j, 1,
+                             a_j, 1);
+        }
+    }
 
     return SUZERAIN_SUCCESS;
 }
@@ -284,15 +306,12 @@ suzerain_lsrk_ex_substep(
         double       * const c, const int incc, const int ldc,
         const int substep)
 {
-    if (    inca == 1 && lda == n
-         && incb == 1 && ldb == n
-         && incc == 1 && ldc == n)
-    {
+    if ( inca == 1 && incb == 1 && incc == 1 ) {
         return suzerain_lsrk_ex_substep_contiguous(
             method, n, kl, ku, M, ldM, ipivM, delta_t, nrhs,
-            a,
-            b,
-            c,
+            a, lda,
+            b, ldb,
+            c, ldc,
             substep);
     } else {
         return suzerain_lsrk_ex_substep_noncontiguous(

@@ -457,7 +457,7 @@ check_smr91_ex_matrixeqn_substeps()
 void
 check_smr91_ex_matrixeqn_substeps_contiguous()
 {
-    /* Checks correct computation under contiguous memory optimizations */
+    /* Checks correct computation under contiguous vector optimizations */
 
     const int           n       = 2;
     const int           kl      = 1;
@@ -518,11 +518,11 @@ check_smr91_ex_matrixeqn_substeps_contiguous()
 
     {
         double    a[]     = {
-            41.0, 43.0,
-            47.0, 53.0
+            41.0, 43.0, /*DK*/555,
+            47.0, 53.0, /*DK*/555,
         };
         const int inca    = 1;
-        const int lda     = 2;
+        const int lda     = 3;
         double    c[]     = {
             59.0, 61.0,
             67.0, 71.0
@@ -541,8 +541,8 @@ check_smr91_ex_matrixeqn_substeps_contiguous()
                 substep);
 
         double    a_expected[]     = {
-            -803.0/30.0,  639.0/10.0,
-            -319.0/30.0, 1743.0/25.0
+            -803.0/30.0,  639.0/10.0, /*DK*/555,
+            -319.0/30.0, 1743.0/25.0, /*DK*/555
         };
 
         for (int i = 0; i < sizeof(a_expected)/sizeof(a_expected[0]); ++i) {
@@ -559,11 +559,11 @@ check_smr91_ex_matrixeqn_substeps_contiguous()
         const int inca    = 1;
         const int lda     = 2;
         double    c[]     = {
-            59.0, 61.0,
-            67.0, 71.0
+            59.0, 61.0, /*DK*/555,
+            67.0, 71.0, /*DK*/555
         };
         const int incc    = 1;
-        const int ldc     = 2;
+        const int ldc     = 3;
         const int substep = 2;
         suzerain_lsrk_ex_substep(
                 suzerain_lsrk_smr91,
