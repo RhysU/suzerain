@@ -290,7 +290,7 @@ suzerain_lsrk_imex_substep(
  * incc).  For real-valued \f$M\f$ these parameters allow computing the
  * nonlinear operator once for a complex field and then separately performing
  * the substep on its real and imaginary subfields using two invocations with
- * different \f$\xi_j\f$ coefficients and imaginary offset storage locations
+ * imaginary offset storage locations
  * (<tt>a+1</tt>, <tt>b+1</tt>, <tt>c+1</tt>).
  *
  * The implementation employs column-major <a
