@@ -721,7 +721,7 @@ suzerain_bspline_lu_form_mass(
 }
 
 int
-suzerain_bspline_lu_solve(
+suzerain_bspline_lu_solve_contiguous(
     int nrhs,
     double *b,
     int ldb,
@@ -748,4 +748,69 @@ suzerain_bspline_lu_solve(
     }
 
     return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_lu_solve_noncontiguous(
+    int nrhs,
+    double *b,
+    int incb,
+    int ldb,
+    const suzerain_bspline_lu_workspace *luw)
+{
+    if (luw->ipiv[0] == -1) {
+        SUZERAIN_ERROR("One of suzerain_bspline_lu_form_* not called before solve",
+                       SUZERAIN_EINVAL);
+    }
+
+    /* Allocate scratch space because GBTRS requires contiguous vectors */
+    double * const scratch
+        = suzerain_blas_malloc(luw->ndof*sizeof(scratch[0]));
+    if (scratch == NULL) {
+        SUZERAIN_ERROR("failed to allocate scratch space",
+                       SUZERAIN_ENOMEM);
+    }
+
+    for (int j = 0; j < nrhs; ++j) {
+        double * const b_j = b + j*ldb;
+
+        suzerain_blas_dcopy(luw->ndof, b_j, incb, scratch, 1);
+        const int info = suzerain_lapack_dgbtrs('N',
+                                                luw->ndof,
+                                                luw->kl,
+                                                luw->ku - luw->kl, /* NB */
+                                                1, /* One RHS at a time */
+                                                luw->A,
+                                                luw->ld,
+                                                luw->ipiv,
+                                                scratch,
+                                                luw->ndof);
+        if (info) {
+            free(scratch);
+            SUZERAIN_ERROR("suzerain_lapack_dgbtrs reported an error",
+                        SUZERAIN_ESANITY);
+        }
+        suzerain_blas_dcopy(luw->ndof, scratch, 1, b_j, incb);
+    }
+
+    free(scratch);
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_lu_solve(
+    int nrhs,
+    double *b,
+    int incb,
+    int ldb,
+    const suzerain_bspline_lu_workspace *luw)
+{
+    if (incb == 1) {
+        return suzerain_bspline_lu_solve_contiguous(
+                nrhs, b, ldb, luw);
+    } else {
+        return suzerain_bspline_lu_solve_noncontiguous(
+                nrhs, b, incb, ldb, luw);
+    }
 }

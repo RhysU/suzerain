@@ -158,14 +158,20 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
         1e-12);
 
     /* Check that multiple rhs solution works for operator found just above */
+    /* Also ensures that non-unit stride works as expected */
     {
         const int nrhs = 2;
-        double vector[] = { 1,  2, 3, 4,
-                           -4, -1, 1, 3};
-        const double good_result[] = {  1.25, 1.75, 2.25, 2.75,
-                                       -0.2,  1,    2,    3 };
+        double vector[] = {
+             1, /*DK*/555,  2, /*DK*/555, 3, /*DK*/555, 4,
+            -4, /*DK*/555, -1, /*DK*/555, 1, /*DK*/555, 3
+        };
+        const double good_result[] = {
+            1.25, /*DK*/555, 1.75, /*DK*/555, 2.25, /*DK*/555, 2.75,
+           -0.20, /*DK*/555, 1.00, /*DK*/555, 2.00, /*DK*/555, 3.00
+        };
         const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-        suzerain_bspline_lu_solve(nrhs, vector, ldb, luw);
+        const int incb = 2;
+        suzerain_bspline_lu_solve(nrhs, vector, incb, ldb, luw);
         check_close_collections(
             good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
             vector, vector + sizeof(vector)/sizeof(vector[0]),
@@ -374,7 +380,7 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
                 &f, expected + i*w->ndof, w);
         poly_params_differentiate(p);  // Drop the polynomial order by one
     }
-    suzerain_bspline_lu_solve(nderiv+1, expected, w->ndof, mass);
+    suzerain_bspline_lu_solve(nderiv+1, expected, 1, w->ndof, mass);
 
     // Make copies of the zeroth derivative coefficients
     double * const actual
@@ -390,7 +396,7 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
                 i, 1, actual + i*w->ndof, 1, w->ndof, w);
     }
     // ...finish by solving with the mass matrix
-    suzerain_bspline_lu_solve(nderiv+1, actual, w->ndof, mass);
+    suzerain_bspline_lu_solve(nderiv+1, actual, 1, w->ndof, mass);
 
     // See if we got anywhere close
     for (int i = 0; i <= nderiv; ++i) {
@@ -440,12 +446,12 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
         suzerain_bspline_find_interpolation_problem_rhs(&f, coefficient, w);
 
         // Solve for function coefficients using the mass matrix
-        suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
+        suzerain_bspline_lu_solve(1, coefficient, 1, w->ndof, mass);
 
         // Take the n-th derivative of the coefficients using M x' = D x
         suzerain_bspline_apply_operator(
                 derivative, 1, coefficient, 1, w->ndof, w);
-        suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
+        suzerain_bspline_lu_solve(1, coefficient, 1, w->ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
         for (int i = 0; i < w->ndof; ++i) {
@@ -468,12 +474,12 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
         suzerain_bspline_find_interpolation_problem_rhs(&f, coefficient, w);
 
         // Solve for function coefficients using the mass matrix
-        suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
+        suzerain_bspline_lu_solve(1, coefficient, 1, w->ndof, mass);
 
         // Take the n-th derivative of the coefficients using M x' = D x
         suzerain_bspline_apply_operator(
                 derivative, 1, coefficient, 1, w->ndof, w);
-        suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
+        suzerain_bspline_lu_solve(1, coefficient, 1, w->ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
         for (int i = 0; i < w->ndof; ++i) {
@@ -496,12 +502,12 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
         suzerain_bspline_find_interpolation_problem_rhs(&f, coefficient, w);
 
         // Solve for function coefficients using the mass matrix
-        suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
+        suzerain_bspline_lu_solve(1, coefficient, 1, w->ndof, mass);
 
         // Take the n-th derivative of the coefficients using M x' = D x
         suzerain_bspline_apply_operator(
                 derivative, 1, coefficient, 1, w->ndof, w);
-        suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
+        suzerain_bspline_lu_solve(1, coefficient, 1, w->ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
         for (int i = 0; i < w->ndof; ++i) {

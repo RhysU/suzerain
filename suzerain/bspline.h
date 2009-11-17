@@ -483,7 +483,8 @@ suzerain_bspline_lu_form_mass(
  * @param[in,out] b Matrix of right hand sides to solve and the resulting
  *      solutions.  On input, contains data \c b.  On output, contains
  *      solutions \c x.
- * @param[in] ldb Leading dimension of matrix b.
+ * @param[in] incb Stride between elements in matrix \c b.
+ * @param[in] ldb Leading dimension of matrix \c b.
  * @param[in] luw Workspace containing the factored operator to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
@@ -493,6 +494,7 @@ int
 suzerain_bspline_lu_solve(
     int nrhs,
     double *b,
+    int incb,
     int ldb,
     const suzerain_bspline_lu_workspace *luw);
 
