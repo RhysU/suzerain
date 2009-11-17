@@ -1153,8 +1153,10 @@ void test_1d_out_of_place(const int N)
 
     // R2C: Test multi_array using fftw_complex
     {
-        boost::multi_array<double,1>       in(boost::extents[N]);
-        boost::multi_array<fftw_complex,1> out(boost::extents[N/2+1]);
+        boost::multi_array<double,1>      in(boost::extents[N]);
+        boost::scoped_array<fftw_complex> out_data(new fftw_complex[N/2+1]);
+        boost::multi_array_ref<fftw_complex, 1> out(
+                out_data.get(), boost::extents[N/2+1]);
 
         // No dealiasing in effect
         check_1D_half_forward(in, out);
