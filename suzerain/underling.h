@@ -50,10 +50,6 @@ __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /* Conditional forward declaration of implementation-related structs */
-#ifndef _GL_LIST_H
-struct gl_list_impl;
-typedef struct gl_list_impl * gl_list_t;
-#endif
 #ifndef __GSL_COMBINATION_H__
 struct gsl_combination_struct;
 typedef struct gsl_combination_struct gsl_combination;
@@ -99,7 +95,7 @@ typedef struct underling_workspace {
     int                           ndim;
     int                           nstage;
     underling_stage              *stage;
-    gl_list_t                    *scalar_to_physical;
+//    gl_list_t                    *scalar_to_physical; // FIXME
 } underling_workspace;
 
 underling_workspace *

@@ -31,12 +31,11 @@
 #include <config.h>
 #include <suzerain/common.h>
 #pragma hdrstop
-#include "gl_array_list.h"
 #include <gsl/gsl_combination.h>
 #include <suzerain/error.h>
 #include <suzerain/underling.h>
 
-bool
+int
 scalar_to_physical_gl_listelement_equals_fn(const void *elt1,
                                             const void *elt2)
 {
@@ -248,6 +247,7 @@ underling_scalar_to_physical_add(underling_workspace * const w,
     }
 
     /* Go to end of scalar_to_physical list, looking for duplicate names */
+    // FIXME: Implement
 
     return SUZERAIN_SUCCESS;
 }
@@ -262,7 +262,7 @@ underling_prepare_physical_size(underling_workspace *w,
         }
     }
 
-    // FIXME
+    // FIXME: Implement
 /*    for (int i = 0; i < w->ndim; ++i) {*/
 /*        w->dim_p[i].global_size = physical_size[i];*/
 /*    }*/
