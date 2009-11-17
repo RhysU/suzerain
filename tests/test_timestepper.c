@@ -454,6 +454,139 @@ check_smr91_ex_matrixeqn_substeps()
     }
 }
 
+void
+check_smr91_ex_matrixeqn_substeps_contiguous()
+{
+    /* Checks correct computation under contiguous memory optimizations */
+
+    const int           n       = 2;
+    const int           kl      = 1;
+    const int           ku      = 0;
+    /* Additional space required to perform LU using GBTRF */
+    double              M[6]
+        = { /*DK*/555, 2.0, 3.0, /*DK*/555, 5.0, /*DK*/555};
+    const int           ldM     = 2*kl + 1 + ku;
+    int                 ipivM[2];
+    double              delta_t = 19.0;
+    const int           nrhs    = 2;
+    /* a declared below */
+    const double b[]            = {
+        23.0,  29.0,
+        31.0,  37.0
+    };
+    const int           incb    = 1;
+    const int           ldb     = 2;
+    /* c declared below */
+
+    /* Factor M prior to invoking any substeps */
+    suzerain_lapack_dgbtrf(n, n, kl, ku, M, ldM, ipivM);
+
+    {
+        double    a[]     = {
+            41.0, 43.0,
+            47.0, 53.0
+        };
+        const int inca    = 1;
+        const int lda     = 2;
+        double    c[]     = {
+            59.0, 61.0,
+            67.0, 71.0
+        };
+        const int incc    = 1;
+        const int ldc     = 2;
+        const int substep = 0;
+        suzerain_lsrk_ex_substep(
+                suzerain_lsrk_smr91,
+                n, kl, ku,
+                M, ldM, ipivM,
+                delta_t, nrhs,
+                a, inca, lda,
+                b, incb, ldb,
+                c, incc, ldc,
+                substep);
+
+        double    a_expected[]     = {
+            2363.0/15.0, 2389.0/75.0,
+            3061.0/15.0, 2531.0/75.0
+        };
+
+        for (int i = 0; i < sizeof(a_expected)/sizeof(a_expected[0]); ++i) {
+            gsl_test_abs(a[i], a_expected[i], 1.0e3*GSL_DBL_EPSILON,
+                    "%s substep %d result a[%d]", __func__, substep, i);
+        }
+    }
+
+    {
+        double    a[]     = {
+            41.0, 43.0,
+            47.0, 53.0
+        };
+        const int inca    = 1;
+        const int lda     = 2;
+        double    c[]     = {
+            59.0, 61.0,
+            67.0, 71.0
+        };
+        const int incc    = 1;
+        const int ldc     = 2;
+        const int substep = 1;
+        suzerain_lsrk_ex_substep(
+                suzerain_lsrk_smr91,
+                n, kl, ku,
+                M, ldM, ipivM,
+                delta_t, nrhs,
+                a, inca, lda,
+                b, incb, ldb,
+                c, incc, ldc,
+                substep);
+
+        double    a_expected[]     = {
+            -803.0/30.0,  639.0/10.0,
+            -319.0/30.0, 1743.0/25.0
+        };
+
+        for (int i = 0; i < sizeof(a_expected)/sizeof(a_expected[0]); ++i) {
+            gsl_test_abs(a[i], a_expected[i], 1.0e3*GSL_DBL_EPSILON,
+                    "%s substep %d result a[%d]", __func__, substep, i);
+        }
+    }
+
+    {
+        double    a[]     = {
+            41.0, 43.0,
+            47.0, 53.0
+        };
+        const int inca    = 1;
+        const int lda     = 2;
+        double    c[]     = {
+            59.0, 61.0,
+            67.0, 71.0
+        };
+        const int incc    = 1;
+        const int ldc     = 2;
+        const int substep = 2;
+        suzerain_lsrk_ex_substep(
+                suzerain_lsrk_smr91,
+                n, kl, ku,
+                M, ldM, ipivM,
+                delta_t, nrhs,
+                a, inca, lda,
+                b, incb, ldb,
+                c, incc, ldc,
+                substep);
+
+        double    a_expected[]     = {
+            -86.0/3.0, 1063.0/15.0,
+              8.0/3.0, 2179.0/30.0
+        };
+
+        for (int i = 0; i < sizeof(a_expected)/sizeof(a_expected[0]); ++i) {
+            gsl_test_abs(a[i], a_expected[i], 1.0e3*GSL_DBL_EPSILON,
+                    "%s substep %d result a[%d]", __func__, substep, i);
+        }
+    }
+}
+
 double
 riccati_equation_solution(double a, double b, double c, double t)
 {
@@ -955,6 +1088,7 @@ main(int argc, char **argv)
     // Using SMR91 in explicit-only mode
     check_smr91_ex_scalareqn_substeps();
     check_smr91_ex_matrixeqn_substeps();
+    check_smr91_ex_matrixeqn_substeps_contiguous();
     check_smr91_ex_convergence_rate_only_explicit_operator();
 
     exit(gsl_test_summary());

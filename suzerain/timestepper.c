@@ -171,7 +171,47 @@ suzerain_lsrk_imex_substep(
 }
 
 int
-suzerain_lsrk_ex_substep(
+suzerain_lsrk_ex_substep_contiguous(
+        const suzerain_lsrk_method * const method,
+        const int n,
+        const int kl,
+        const int ku,
+        const double * const M,
+        const int ldM,
+        const int * const ipivM,
+        double delta_t,
+        const int nrhs,
+        double       * const a,
+        const double * const b,
+        double       * const c,
+        const int substep)
+{
+    if (substep < 0 || substep >= method->substeps) {
+        SUZERAIN_ERROR("requested substep out of range", SUZERAIN_EINVAL);
+    }
+
+    suzerain_blas_daxpby(n*nrhs,
+            method->gamma[substep], b, 1,
+            method->zeta[substep],  c, 1);
+
+    const int error_dgbtrs = suzerain_lapack_dgbtrs(
+            'N', n, kl, ku, nrhs, M, ldM, ipivM, c, n);
+    if (error_dgbtrs) {
+        char buffer[72];
+        snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+                "suzerain_lapack_dgbtrs reported error: %d", error_dgbtrs);
+        SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
+    }
+
+    suzerain_blas_daxpy(n*nrhs,
+            delta_t, c, 1,
+                     a, 1);
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_lsrk_ex_substep_noncontiguous(
         const suzerain_lsrk_method * const method,
         const int n,
         const int kl,
@@ -189,8 +229,6 @@ suzerain_lsrk_ex_substep(
     if (substep < 0 || substep >= method->substeps) {
         SUZERAIN_ERROR("requested substep out of range", SUZERAIN_EINVAL);
     }
-
-    /* TODO Handle purely contiguous case more intelligently */
 
     /* Allocate working space for contiguous vector d */
     const int incd = 1;
@@ -227,4 +265,41 @@ suzerain_lsrk_ex_substep(
     free(d);
 
     return SUZERAIN_SUCCESS;
+}
+
+
+int
+suzerain_lsrk_ex_substep(
+        const suzerain_lsrk_method * const method,
+        const int n,
+        const int kl,
+        const int ku,
+        const double * const M,
+        const int ldM,
+        const int * const ipivM,
+        double delta_t,
+        const int nrhs,
+        double       * const a, const int inca, const int lda,
+        const double * const b, const int incb, const int ldb,
+        double       * const c, const int incc, const int ldc,
+        const int substep)
+{
+    if (    inca == 1 && lda == n
+         && incb == 1 && ldb == n
+         && incc == 1 && ldc == n)
+    {
+        return suzerain_lsrk_ex_substep_contiguous(
+            method, n, kl, ku, M, ldM, ipivM, delta_t, nrhs,
+            a,
+            b,
+            c,
+            substep);
+    } else {
+        return suzerain_lsrk_ex_substep_noncontiguous(
+            method, n, kl, ku, M, ldM, ipivM, delta_t, nrhs,
+            a, inca, lda,
+            b, incb, ldb,
+            c, incc, ldc,
+            substep);
+    }
 }

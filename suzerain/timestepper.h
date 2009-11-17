@@ -315,8 +315,11 @@ suzerain_lsrk_imex_substep(
  *   storage \f$b = N\left(u^{i}\right)\f$
  * .
  * Note that the routine chooses to assemble the right hand side of the
- * equation one state vector at a time because
- * - GBTRS does not allow an arbitrary increment between elements in a vector.
+ * equation one state vector at a time because GBTRS does not allow an
+ * arbitrary increment between elements in a vector.
+ * In the event that all vectors are contiguous and right hand sides occupy
+ * sequential memory, a single AXPBY, GBTRS, AXPY sequence is used to solve the
+ * entire system.
  *
  * @param[in] method Low-storage method to use.
  * @param[in] n Number of rows and columns in \f$M\f$ and \f$D_j\f$.
