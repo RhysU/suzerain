@@ -72,7 +72,8 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
         const double good_result[] = { 1, 2, 3, 4,
                                        5, 6, 7, 8 };
         const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-        suzerain_bspline_apply_operator(0, nrhs, vector, ldb, w);
+        const int incb = 1;
+        suzerain_bspline_apply_operator(0, nrhs, vector, incb, ldb, w);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
             vector, vector + sizeof(vector)/sizeof(vector[0]));
@@ -96,13 +97,19 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
             1e-12);
 
         /* Check w->D[1] application against multiple vectors */
+        /* Includes b having non-unit stride */
         const int nrhs = 2;
-        double vector[] = { 1, 3, 2, 4,
-                            7, 6, 5, 8 };
-        const double good_result[] = {  2, -1, 2, 2,
-                                       -1, -1, 3, 3 };
+        double vector[] = {
+            1, /*DK*/555, 3, /*DK*/555, 2, /*DK*/555, 4,
+            7, /*DK*/555, 6, /*DK*/555, 5, /*DK*/555, 8
+        };
+        const double good_result[] = {
+            2, /*DK*/555, -1, /*DK*/555, 2, /*DK*/555, 2,
+           -1, /*DK*/555, -1, /*DK*/555, 3, /*DK*/555, 3
+        };
         const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-        suzerain_bspline_apply_operator(1, nrhs, vector, ldb, w);
+        const int incb = 2;
+        suzerain_bspline_apply_operator(1, nrhs, vector, incb, ldb, w);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
             vector, vector + sizeof(vector)/sizeof(vector[0]));
@@ -207,7 +214,7 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
         const double good_result[] = { 1., 15./8., 3., 33./8., 5.,
                                        5., 47./8., 7., 65./8., 9. };
         const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-        suzerain_bspline_apply_operator(0, nrhs, vector, ldb, w);
+        suzerain_bspline_apply_operator(0, nrhs, vector, 1, ldb, w);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
             vector, vector + sizeof(vector)/sizeof(vector[0]));
@@ -262,7 +269,7 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
                 4., 1571./324., 71./12., 85./12., 2641./324., 9.
             };
             const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-            suzerain_bspline_apply_operator(0, nrhs, vector, ldb, w);
+            suzerain_bspline_apply_operator(0, nrhs, vector, 1, ldb, w);
             check_close_collections(
                 good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
                 vector, vector + sizeof(vector)/sizeof(vector[0]),
@@ -379,7 +386,8 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
     // Solve M*x' = D*x ...
     // ...starting by applying the derivative operators
     for (int i = 0; i <= nderiv; ++i) {
-        suzerain_bspline_apply_operator(i, 1, actual + i*w->ndof, w->ndof, w);
+        suzerain_bspline_apply_operator(
+                i, 1, actual + i*w->ndof, 1, w->ndof, w);
     }
     // ...finish by solving with the mass matrix
     suzerain_bspline_lu_solve(nderiv+1, actual, w->ndof, mass);
@@ -435,7 +443,8 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
         suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
 
         // Take the n-th derivative of the coefficients using M x' = D x
-        suzerain_bspline_apply_operator(derivative, 1, coefficient, w->ndof, w);
+        suzerain_bspline_apply_operator(
+                derivative, 1, coefficient, 1, w->ndof, w);
         suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
@@ -462,7 +471,8 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
         suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
 
         // Take the n-th derivative of the coefficients using M x' = D x
-        suzerain_bspline_apply_operator(derivative, 1, coefficient, w->ndof, w);
+        suzerain_bspline_apply_operator(
+                derivative, 1, coefficient, 1, w->ndof, w);
         suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
@@ -489,7 +499,8 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
         suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
 
         // Take the n-th derivative of the coefficients using M x' = D x
-        suzerain_bspline_apply_operator(derivative, 1, coefficient, w->ndof, w);
+        suzerain_bspline_apply_operator(
+                derivative, 1, coefficient, 1, w->ndof, w);
         suzerain_bspline_lu_solve(1, coefficient, w->ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients

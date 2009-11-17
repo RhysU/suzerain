@@ -92,7 +92,7 @@
  *  suzerain_bspline_lu_solve(1, x, 1, mass);
  *
  *  // Solve D[0] x' = D[1] x by forming right hand side and solving
- *  suzerain_bspline_apply_operator(1, 1, x, 1, w);
+ *  suzerain_bspline_apply_operator(1, 1, x, 1, w->ndof, w);
  *  suzerain_bspline_lu_solve(1, x, 1, mass);
  *  // x now contains an approximation to the derivative of f
  *
@@ -282,6 +282,7 @@ suzerain_bspline_free(
  * @param[in] nderivative Derivative operator to apply.  May be zero.
  * @param[in] nrhs Number of coefficient vectors stored in b.
  * @param[in,out] b Coefficients to be multiplied.
+ * @param[in] incb Stride between elements stored in \c b.
  * @param[in] ldb Leading dimension of the data stored in \c b.
  * @param[in] w Workspace to use.
  *
@@ -293,6 +294,7 @@ suzerain_bspline_apply_operator(
     int nderivative,
     int nrhs,
     double *b,
+    int incb,
     int ldb,
     const suzerain_bspline_workspace *w);
 

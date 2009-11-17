@@ -248,6 +248,7 @@ suzerain_bspline_apply_operator(
     int nderivative,
     int nrhs,
     double *b,
+    int incb,
     int ldb,
     const suzerain_bspline_workspace *w)
 {
@@ -263,21 +264,22 @@ suzerain_bspline_apply_operator(
      * aliased pointers is undefined. */
     double * const scratch
         = suzerain_blas_malloc(w->ndof*sizeof(scratch[0]));
+    const int incscratch = 1;
     if (scratch == NULL) {
         SUZERAIN_ERROR("failed to allocate scratch space",
                        SUZERAIN_ENOMEM);
     }
 
-    for (int i = 0; i < nrhs; ++i) {
-        double * const bi = b + i*ldb;
-        /* Compute bi := w->D[nderivative]*bi */
-        suzerain_blas_dcopy(w->ndof, bi, 1, scratch, 1);
+    for (int j = 0; j < nrhs; ++j) {
+        double * const b_j = b + j*ldb;
+        /* Compute bi := w->D[nderivative]*b_j */
+        suzerain_blas_dcopy(w->ndof, b_j, incb, scratch, incscratch);
         suzerain_blas_dgbmv(
             'N', w->ndof, w->ndof,
             w->kl[nderivative], w->ku[nderivative],
             1.0, w->D[nderivative], w->ld,
-            scratch, 1,
-            0.0, bi, 1);
+            scratch, incscratch,
+            0.0, b_j, incb);
     }
 
     free(scratch);
