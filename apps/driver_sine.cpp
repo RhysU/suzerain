@@ -238,7 +238,7 @@ int main(int argc, char **argv)
     }
 
     /* Allocate and initialize state space */
-    using pecos::suzerain::pencil;
+    using suzerain::pencil;
     pencil<> A(istart.data(), isize.data(), fstart.data(), fsize.data());
 
     LOG4CXX_INFO(logger,

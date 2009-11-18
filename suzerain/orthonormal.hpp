@@ -27,8 +27,8 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __PECOS_SUZERAIN_ORTHONORMAL_H
-#define __PECOS_SUZERAIN_ORTHONORMAL_H
+#ifndef __SUZERAIN_ORTHONORMAL_H
+#define __SUZERAIN_ORTHONORMAL_H
 
 #include <suzerain/common.hpp>
 
@@ -36,9 +36,6 @@
  * Provides routines that compute classical state quantities (based on
  * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$) from other state quantities.
  */
-
-namespace pecos
-{
 
 namespace suzerain
 {
@@ -1588,7 +1585,4 @@ Vector div_grad_u(
 
 } // namespace suzerain
 
-} // namespace pecos
-
-
-#endif // __PECOS_SUZERAIN_ORTHONORMAL_H
+#endif // __SUZERAIN_ORTHONORMAL_H

@@ -7,13 +7,13 @@
 
 BOOST_AUTO_TEST_CASE( declare_pointer )
 {
-    pecos::suzerain::pencil_grid<> *pg = NULL;
+    suzerain::pencil_grid<> *pg = NULL;
 }
 
 BOOST_AUTO_TEST_CASE( constructor_default )
 {
 
-    using namespace pecos::suzerain;
+    using namespace suzerain;
 
     const pencil_grid<>::dim_type proc_dims[] = { 4, 2 };
     const pencil_grid<>::dim_type nx = 16, ny = 16, nz = 16;
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE( constructor_default )
 BOOST_AUTO_TEST_CASE( constructor_long )
 {
 
-    using namespace pecos::suzerain;
+    using namespace suzerain;
 
     const pencil_grid<long>::dim_type proc_dims[] = { 4, 2 };
     const pencil_grid<long>::dim_type nx = 16, ny = 16, nz = 16;

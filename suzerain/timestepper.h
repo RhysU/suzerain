@@ -27,8 +27,8 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __PECOS_SUZERAIN_TIMESTEPPER_H
-#define __PECOS_SUZERAIN_TIMESTEPPER_H
+#ifndef __SUZERAIN_TIMESTEPPER_H
+#define __SUZERAIN_TIMESTEPPER_H
 
 #include <suzerain/common.h>
 
@@ -378,4 +378,4 @@ suzerain_lsrk_ex_substep(
 __END_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-#endif // __PECOS_SUZERAIN_TIMESTEPPER_H
+#endif // __SUZERAIN_TIMESTEPPER_H

@@ -27,8 +27,8 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __PECOS_SUZERAIN_COMMON_HPP
-#define __PECOS_SUZERAIN_COMMON_HPP
+#ifndef __SUZERAIN_COMMON_HPP
+#define __SUZERAIN_COMMON_HPP
 
 // Include all of the C common material
 #include <suzerain/common.h>
@@ -87,4 +87,4 @@
 #include <Eigen/Core>
 #endif // SUZERAIN_HAVE_EIGEN
 
-#endif // __PECOS_SUZERAIN_COMMON_HPP
+#endif // __SUZERAIN_COMMON_HPP

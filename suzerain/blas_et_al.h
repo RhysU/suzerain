@@ -28,8 +28,8 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#ifndef __PECOS_SUZERAIN_BLAS_ET_AL_H__
-#define __PECOS_SUZERAIN_BLAS_ET_AL_H__
+#ifndef __SUZERAIN_BLAS_ET_AL_H__
+#define __SUZERAIN_BLAS_ET_AL_H__
 
 #include <suzerain/common.h>
 
@@ -356,4 +356,4 @@ suzerain_lapack_dgbtrs(
 __END_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-#endif /* __PECOS_SUZERAIN_BLAS_ET_AL_H__ */
+#endif /* __SUZERAIN_BLAS_ET_AL_H__ */

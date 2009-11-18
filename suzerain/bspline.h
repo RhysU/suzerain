@@ -27,8 +27,8 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __PECOS_SUZERAIN_BSPLINE_OPERATOR_H
-#define __PECOS_SUZERAIN_BSPLINE_OPERATOR_H
+#ifndef __SUZERAIN_BSPLINE_OPERATOR_H
+#define __SUZERAIN_BSPLINE_OPERATOR_H
 
 #include <suzerain/common.h>
 #include <suzerain/function.h>
@@ -502,4 +502,4 @@ suzerain_bspline_lu_solve(
 __END_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-#endif // __PECOS_SUZERAIN_BSPLINE_OPERATOR_H
+#endif // __SUZERAIN_BSPLINE_OPERATOR_H

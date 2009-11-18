@@ -27,8 +27,8 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __PECOS_SUZERAIN_UNDERLING_H
-#define __PECOS_SUZERAIN_UNDERLING_H
+#ifndef __SUZERAIN_UNDERLING_H
+#define __SUZERAIN_UNDERLING_H
 
 #include <suzerain/common.h>
 #ifdef __cplusplus
@@ -154,4 +154,4 @@ std::ostream& operator<<(std::ostream& os, const underling_dimension& ud)
 
 #endif /* __cplusplus */
 
-#endif // __PECOS_SUZERAIN_UNDERLING_H
+#endif // __SUZERAIN_UNDERLING_H

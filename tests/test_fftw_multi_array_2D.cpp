@@ -7,7 +7,7 @@
 #include <fftw3.h>
 #include "test_tools.hpp"
 
-using namespace pecos::suzerain;
+using namespace suzerain;
 
 BOOST_AUTO_TEST_SUITE( c2c_2d_forward_simple )
 

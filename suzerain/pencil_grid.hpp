@@ -27,14 +27,11 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __PECOS_SUZERAIN_PENCILGRID_H
-#define __PECOS_SUZERAIN_PENCILGRID_H
+#ifndef __SUZERAIN_PENCILGRID_H
+#define __SUZERAIN_PENCILGRID_H
 
 #include <suzerain/common.hpp>
 #include <suzerain/exceptions.hpp>
-
-namespace pecos
-{
 
 namespace suzerain
 {
@@ -92,6 +89,4 @@ throw(domain_error)
 
 } // namespace suzerain
 
-} // namespace pecos
-
-#endif // __PECOS_SUZERAIN_PENCILGRID_H
+#endif // __SUZERAIN_PENCILGRID_H

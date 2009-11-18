@@ -8,7 +8,7 @@
 BOOST_AUTO_TEST_CASE( declare_pointer )
 {
 
-    using namespace pecos::suzerain;
+    using namespace suzerain;
 
     pencil<> *p = NULL;
 }
@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE( declare_pointer )
 BOOST_AUTO_TEST_CASE( constructor )
 {
 
-    using namespace pecos::suzerain;
+    using namespace suzerain;
 
     const pencil<>::dim_type pstart[] = { 0, 0,  0};
     const pencil<>::dim_type psize[]  = {16, 7,  4};
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE( constructor )
 
 BOOST_AUTO_TEST_CASE( storage_order )
 {
-    using namespace pecos::suzerain;
+    using namespace suzerain;
 
     const pencil<>::dim_type pstart[] = {  0,  0,  0};
     const pencil<>::dim_type psize[]  = { 11, 13, 17};
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( storage_order )
 
 BOOST_AUTO_TEST_CASE( offsets_and_inverse_offsets )
 {
-    using namespace pecos::suzerain;
+    using namespace suzerain;
 
     const pencil<>::dim_type pstart[] = {  5,  6,  7};
     const pencil<>::dim_type psize[]  = {  2,  3,  5};
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE( offsets_and_inverse_offsets )
 BOOST_AUTO_TEST_CASE( real_access )
 {
 
-    using namespace pecos::suzerain;
+    using namespace suzerain;
 
     const pencil<>::dim_type pstart[] = { 0, 0,  0};
     const pencil<>::dim_type psize[]  = { 2, 2,  2};
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE( real_access )
 BOOST_AUTO_TEST_CASE( complex_access )
 {
 
-    using namespace pecos::suzerain;
+    using namespace suzerain;
 
     const pencil<>::dim_type pstart[] = { 1,  1,  1};
     const pencil<>::dim_type psize[]  = { 2,  3,  5};

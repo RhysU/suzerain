@@ -27,14 +27,11 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __PECOS_SUZERAIN_PENCIL_H
-#define __PECOS_SUZERAIN_PENCIL_H
+#ifndef __SUZERAIN_PENCIL_H
+#define __SUZERAIN_PENCIL_H
 
 #include <suzerain/common.hpp>
 #include <suzerain/pencil_grid.hpp>
-
-namespace pecos
-{
 
 namespace suzerain
 {
@@ -785,6 +782,4 @@ pencil<T, G>::wave_space::end() const
 
 } // namespace suzerain
 
-} // namespace pecos
-
-#endif // __PECOS_SUZERAIN_PENCIL_H
+#endif // __SUZERAIN_PENCIL_H

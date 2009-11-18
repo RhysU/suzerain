@@ -28,15 +28,15 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#ifndef __PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
-#define __PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
+#ifndef __SUZERAIN_FFTW_MULTI_ARRAY_HPP
+#define __SUZERAIN_FFTW_MULTI_ARRAY_HPP
 
 #include <suzerain/common.hpp>
 #include <fftw3.h>
 
 // TODO Broken details::assign_* if FFTW3 discovers the C99 _Complex type
 
-namespace pecos { namespace suzerain {
+namespace suzerain {
 
 /**
  * Provides routines for performing FFTs atop the Boost.MultiArray concept.
@@ -1308,7 +1308,6 @@ void forward_r2c(
                                                increment_order.begin()));
 } /* forward_r2c */
 
+} /* fftw_multi_array */ } /* suzerain */
 
-} /* fftw_multi_array */ } /* suzerain */ } /* pecos */
-
-#endif // __PECOS_SUZERAIN_FFTW_MULTI_ARRAY_HPP
+#endif // __SUZERAIN_FFTW_MULTI_ARRAY_HPP

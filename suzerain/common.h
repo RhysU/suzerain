@@ -27,8 +27,8 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __PECOS_SUZERAIN_COMMON_H
-#define __PECOS_SUZERAIN_COMMON_H
+#ifndef __SUZERAIN_COMMON_H
+#define __SUZERAIN_COMMON_H
 
 #include <suzerain/suzerain-config.h>
 
@@ -128,4 +128,4 @@ int suzerain_gbmatrix_in_band(int lda, int kl, int ku, int i, int j) {
     return j-ku <= i && i <= j+kl;
 }
 
-#endif // __PECOS_SUZERAIN_COMMON_H
+#endif // __SUZERAIN_COMMON_H

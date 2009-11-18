@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __PECOS_SUZERAIN_ERRNO_H__
-#define __PECOS_SUZERAIN_ERRNO_H__
+#ifndef __SUZERAIN_ERRNO_H__
+#define __SUZERAIN_ERRNO_H__
 
 #include <suzerain/common.h>
 
@@ -247,4 +247,4 @@ FILE * suzerain_set_stream(FILE * new_stream);
 __END_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-#endif /* __PECOS_SUZERAIN_ERRNO_H__ */
+#endif /* __SUZERAIN_ERRNO_H__ */
