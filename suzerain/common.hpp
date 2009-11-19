@@ -45,6 +45,7 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <new>
 #include <numeric>
 #include <sstream>
 #include <string>
