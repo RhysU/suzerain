@@ -39,6 +39,38 @@ test_daxpby()
 }
 
 void
+test_saxpby()
+{
+    int i;
+
+    const float  alpha      = 2.0;
+    const float  x[]        = {1.0, 2.0, 3.0};
+    const int    incx       = 1;
+    const float  beta       = 3.0;
+    float        y[]        = {4.0, -1, 5.0, -2, 6.0, -3};
+    const int    incy       = 2;
+    const int    nx         = sizeof(x)/sizeof(x[0]);
+    const int    ny         = sizeof(y)/sizeof(y[0]);
+    const float expected[] = {
+        alpha*x[0] + beta*y[0],
+        y[1],
+        alpha*x[1] + beta*y[2],
+        y[3],
+        alpha*x[2] + beta*y[4],
+        y[5]
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_saxpby(nx/incx, alpha, x, incx, beta, y, incy);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i], expected[i], GSL_FLT_EPSILON, "saxpby index %d", i);
+    }
+}
+
+void
 test_dwaxpby()
 {
     int i;
@@ -92,6 +124,31 @@ test_daxpby_nop()
     suzerain_blas_daxpby(nx/incx, alpha, x, incx, beta, y, incy);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON, "daxpby index %d", i);
+    }
+}
+
+void
+test_saxpby_nop()
+{
+    int i;
+
+    const float  alpha     = 0.0;  /* NOP zero */
+    const float  x[]       = {1.0, 2.0, 3.0};
+    const int    incx      = 1;
+    const float  beta      = 1.0;  /* NOP one */
+    float        y[]       = {4.0, -1, 5.0, -2, 6.0, -3};
+    const int    incy      = 2;
+    const int    nx        = sizeof(x)/sizeof(x[0]);
+    const int    ny        = sizeof(y)/sizeof(y[0]);
+    const float *expected = y;
+    const int    nexpected = ny;
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_saxpby(nx/incx, alpha, x, incx, beta, y, incy);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i], expected[i], GSL_FLT_EPSILON, "saxpby index %d", i);
     }
 }
 
@@ -198,6 +255,9 @@ main(int argc, char **argv)
 
     test_daxpby();
     test_daxpby_nop();
+
+    test_saxpby();
+    test_saxpby_nop();
 
     test_dwaxpby();
 

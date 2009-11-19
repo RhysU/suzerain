@@ -183,6 +183,30 @@ suzerain_blas_daxpby(
         const int incy);
 
 /**
+ * Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's saxpby.
+ * If saxpby is not available, simulate it using sscal and saxpy.
+ *
+ * @param n Number of elements in \c x and \c y.
+ * @param alpha Multiplicative scalar \f$ \alpha \f$
+ * @param x First source vector.
+ * @param incx First source vector stride.
+ * @param beta Multiplicative scalar \f$ \beta \f$
+ * @param y Second source vector and target vector.
+ * @param incy Second source vector and target vector stride.
+ *
+ * @see A BLAS reference for more details.
+ */
+void
+suzerain_blas_saxpby(
+        const int n,
+        const float alpha,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy);
+
+/**
  * Compute \f$ w \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's dwaxpby.
  * If dwaxpby is not available, simulate it using dcopy, dscal, and daxpy.
  *

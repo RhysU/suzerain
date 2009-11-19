@@ -173,8 +173,35 @@ suzerain_blas_daxpby(
     const MKL_INT _incx = incx;
     const MKL_INT _incy = incy;
 
-    dscal(&_n, &beta, y, &_incy);
+    if (beta != 1.0)
+        dscal(&_n, &beta, y, &_incy);
     daxpy(&_n, &alpha, x, &_incx, y, &_incy);
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_saxpby(
+        const int n,
+        const float alpha,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    /* Simulate daxpby since MKL lacks the routine. */
+    if (SUZERAIN_UNLIKELY((alpha == 0.0 && beta == 1.0) || n <= 0)) return;
+
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+
+    if (beta != 1.0)
+        sscal(&_n, &beta, y, &_incy);
+    saxpy(&_n, &alpha, x, &_incx, y, &_incy);
 #else
 #error "Sanity failure"
 #endif
