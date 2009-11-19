@@ -3,6 +3,7 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <suzerain/state.hpp>
+#include <suzerain/timestepper.hpp>
 #include <boost/test/included/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( declare_pointer )

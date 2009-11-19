@@ -37,6 +37,7 @@ pkginclude_HEADERS += pencil.hpp
 pkginclude_HEADERS += richardson.h
 pkginclude_HEADERS += suzerain-config.h
 pkginclude_HEADERS += timestepper.h
+pkginclude_HEADERS += timestepper.hpp
 pkginclude_HEADERS += underling.h
 
 noinst_LTLIBRARIES     += libsuzerain.la
