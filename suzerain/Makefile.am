@@ -25,6 +25,7 @@ CLEANFILES += *.pchi
 BUILT_SOURCES = suzerain-config.h
 
 pkginclude_HEADERS += blas_et_al.h
+pkginclude_HEADERS += blas_et_al.hpp
 pkginclude_HEADERS += bspline.h
 pkginclude_HEADERS += common.h
 pkginclude_HEADERS += error.h

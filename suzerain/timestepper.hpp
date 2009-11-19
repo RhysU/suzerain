@@ -53,12 +53,6 @@ public:
     virtual ~IOperatorLifecycle() {};
 };
 
-class IState
-{
-public:
-    virtual ~IState() {};
-};
-
 } // namespace timestepper
 
 } // namespace suzerain

@@ -49,6 +49,7 @@
 #include <numeric>
 #include <sstream>
 #include <string>
+#include <typeinfo>
 #include <vector>
 #include <valarray>
 
