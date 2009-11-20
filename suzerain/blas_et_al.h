@@ -33,7 +33,7 @@
 
 #include <suzerain/common.h>
 
-/** @file
+/** \file
  * Wraps external BLAS and LAPACK routines necessary for Suzerain.
  * Provided to insulate the library from potential variations in
  * type signatures as well as to consolidate all Fortran-from-C
@@ -53,62 +53,57 @@
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-/**
- * Allocates memory aligned according to the underlying BLAS'
- * recommendations for performance and numerical stability.  The
- * memory is not cleared.
+/*! \name Memory allocation
+ * @{
+ */
+
+/*!
+ * \brief Allocates memory aligned according to the underlying BLAS'
+ * recommendations for performance and numerical stability.
  *
- * @param size Number of bytes to allocate.
+ * The memory is not cleared.  Any returned memory must later be freed using \c
+ * free.
  *
- * @return On success, return a pointer to the allocated memory.  This
- *      memory must later be freed.  On failure, return a NULL pointer.
+ * \param size Number of bytes to allocate.
+ *
+ * \return On success, return a pointer to the allocated memory.  On failure,
+ * return a NULL pointer.
  */
 void *
 suzerain_blas_malloc(size_t size);
 
-/**
- * Allocate and clear memory aligned according to the underlying BLAS'
- * recommendations for performance and numerical stability.  The
- * memory is set to zero.
+/*!
+ * \brief Allocate and clear memory aligned according to the underlying BLAS'
+ * recommendations for performance and numerical stability.
  *
- * @param nmemb Number of elements to allocate
- * @param size Size of each member in bytes.
+ * The memory is set to zero.  Any returned memory must later be freed using \c
+ * free.
  *
- * @return On success, return a pointer to the allocated memory.  This
- *      memory must later be freed.  On failure, return a NULL pointer.
+ * \param nmemb Number of elements to allocate
+ * \param size Size of each member in bytes.
+ *
+ * \return On success, return a pointer to the allocated memory.  On failure,
+ * return a NULL pointer.
  */
 void *
 suzerain_blas_calloc(size_t nmemb, size_t size);
 
-/**
- * Perform \f$ y \leftarrow{} x \f$ using BLAS's dcopy.
- *
- * @param n Number of elements in \c x and \c y.
- * @param x Source vector.
- * @param incx Source vector stride.
- * @param y Target vector.
- * @param incy Target vector stride.
- *
- * @see A BLAS reference for more details.
- */
-void
-suzerain_blas_dcopy(
-        const int n,
-        const double *x,
-        const int incx,
-        double *y,
-        const int incy);
+/*! @} */
 
-/**
- * Perform \f$ y \leftarrow{} x \f$ using BLAS's scopy.
+/*! \name BLAS level 1 operations
+ * @{
+ */
+
+/*!
+ * \brief Perform \f$ y \leftarrow{} x \f$ using BLAS's copy.
  *
- * @param n Number of elements in \c x and \c y.
- * @param x Source vector.
- * @param incx Source vector stride.
- * @param y Target vector.
- * @param incy Target vector stride.
+ * \param n Number of elements in \c x and \c y.
+ * \param x Source vector.
+ * \param incx Source vector stride.
+ * \param y Target vector.
+ * \param incy Target vector stride.
  *
- * @see A BLAS reference for more details.
+ * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_scopy(
@@ -118,39 +113,27 @@ suzerain_blas_scopy(
         float *y,
         const int incy);
 
-/**
- * Compute \f$ x \cdot{} y \f$ using BLAS's ddot.
- *
- * @param n Number of elements in \c x and \c y.
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param y Second source vector.
- * @param incy Second source vector stride.
- *
- * @return \f$ x \cdot{} y \f$.
- *
- * @see A BLAS reference for more details.
- */
-double
-suzerain_blas_ddot(
+/*! \copydoc suzerain_blas_scopy */
+void
+suzerain_blas_dcopy(
         const int n,
         const double *x,
         const int incx,
-        const double *y,
+        double *y,
         const int incy);
 
-/**
- * Compute \f$ x \cdot{} y \f$ using BLAS's sdot.
+/*!
+ * \brief Compute \f$ x \cdot{} y \f$ using BLAS's dot.
  *
- * @param n Number of elements in \c x and \c y.
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param y Second source vector.
- * @param incy Second source vector stride.
+ * \param n Number of elements in \c x and \c y.
+ * \param x First source vector.
+ * \param incx First source vector stride.
+ * \param y Second source vector.
+ * \param incy Second source vector stride.
  *
- * @return \f$ x \cdot{} y \f$.
+ * \return \f$ x \cdot{} y \f$.
  *
- * @see A BLAS reference for more details.
+ * \see A BLAS reference for more details.
  */
 float
 suzerain_blas_sdot(
@@ -160,33 +143,25 @@ suzerain_blas_sdot(
         const float *y,
         const int incy);
 
-/**
- * Compute \f$ \left|\left| x \right|\right|_{1} \f$ using BLAS's dasum.
- *
- * @param n Number of elements in \c x.
- * @param x Source vector.
- * @param incx Source vector stride.
- *
- * @return \f$ \left|\left| x \right|\right|_{1} \f$
- *
- * @see A BLAS reference for more details.
- */
+/*! \copydoc suzerain_blas_sdot */
 double
-suzerain_blas_dasum(
+suzerain_blas_ddot(
         const int n,
         const double *x,
-        const int incx);
+        const int incx,
+        const double *y,
+        const int incy);
 
-/**
- * Compute \f$ \left|\left| x \right|\right|_{1} \f$ using BLAS's sasum.
+/*!
+ * \brief Compute \f$ \left|\left| x \right|\right|_{1} \f$ using BLAS's asum.
  *
- * @param n Number of elements in \c x.
- * @param x Source vector.
- * @param incx Source vector stride.
+ * \param n Number of elements in \c x.
+ * \param x Source vector.
+ * \param incx Source vector stride.
  *
- * @return \f$ \left|\left| x \right|\right|_{1} \f$
+ * \return \f$ \left|\left| x \right|\right|_{1} \f$
  *
- * @see A BLAS reference for more details.
+ * \see A BLAS reference for more details.
  */
 float
 suzerain_blas_sasum(
@@ -194,38 +169,24 @@ suzerain_blas_sasum(
         const float *x,
         const int incx);
 
-/**
- * Compute \f$ y \leftarrow{} \alpha{}x + y \f$ using BLAS's daxpy.
- *
- * @param n Number of elements in \c x and \c y.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param y Second source vector and target vector.
- * @param incy Second source vector and target vector stride.
- *
- * @see A BLAS reference for more details.
- */
-void
-suzerain_blas_daxpy(
+/*! \copydoc suzerain_blas_sasum */
+double
+suzerain_blas_dasum(
         const int n,
-        const double alpha,
         const double *x,
-        const int incx,
-        double *y,
-        const int incy);
+        const int incx);
 
-/**
- * Compute \f$ y \leftarrow{} \alpha{}x + y \f$ using BLAS's saxpy.
+/*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{}x + y \f$ using BLAS's axpy.
  *
- * @param n Number of elements in \c x and \c y.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param y Second source vector and target vector.
- * @param incy Second source vector and target vector stride.
+ * \param n Number of elements in \c x and \c y.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param x First source vector.
+ * \param incx First source vector stride.
+ * \param y Second source vector and target vector.
+ * \param incy Second source vector and target vector stride.
  *
- * @see A BLAS reference for more details.
+ * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_saxpy(
@@ -236,44 +197,31 @@ suzerain_blas_saxpy(
         float *y,
         const int incy);
 
-/**
- * Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's daxpby.
- * If daxpby is not available, simulate it using dscal and daxpy.
- *
- * @param n Number of elements in \c x and \c y.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param y Second source vector and target vector.
- * @param incy Second source vector and target vector stride.
- *
- * @see A BLAS reference for more details.
- */
+/*! \copydoc suzerain_blas_saxpy */
 void
-suzerain_blas_daxpby(
+suzerain_blas_daxpy(
         const int n,
         const double alpha,
         const double *x,
         const int incx,
-        const double beta,
         double *y,
         const int incy);
 
-
-/**
- * Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's saxpby.
- * If saxpby is not available, simulate it using sscal and saxpy.
+/*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$
+ * using BLAS's axpby.
  *
- * @param n Number of elements in \c x and \c y.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param y Second source vector and target vector.
- * @param incy Second source vector and target vector stride.
+ * If axpby is not available, simulate it using scal and axpy.
  *
- * @see A BLAS reference for more details.
+ * \param n Number of elements in \c x and \c y.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param x First source vector.
+ * \param incx First source vector stride.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param y Second source vector and target vector.
+ * \param incy Second source vector and target vector stride.
+ *
+ * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_saxpby(
@@ -285,50 +233,34 @@ suzerain_blas_saxpby(
         float *y,
         const int incy);
 
-/**
- * Compute \f$ w \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's dwaxpby.
- * If dwaxpby is not available, simulate it using dcopy, dscal, and daxpy.
- *
- * @param n Number of elements in \c x and \c y.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param y Second source vector.
- * @param incy Second source vector.
- * @param w Target vector.
- * @param incw Target vector stride.
- *
- * @see A BLAS reference for more details.
- */
+/*! \copydoc suzerain_blas_saxpby */
 void
-suzerain_blas_dwaxpby(
+suzerain_blas_daxpby(
         const int n,
         const double alpha,
         const double *x,
         const int incx,
         const double beta,
-        const double *y,
-        const int incy,
-        double *w,
-        const int incw);
+        double *y,
+        const int incy);
 
-
-/**
- * Compute \f$ w \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's swaxpby.
- * If swaxpby is not available, simulate it using scopy, sscal, and saxpy.
+/*!
+ * \brief Compute \f$ w \leftarrow{} \alpha{}x + \beta{}y \f$
+ * using BLAS's waxpby.
  *
- * @param n Number of elements in \c x and \c y.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param y Second source vector.
- * @param incy Second source vector.
- * @param w Target vector.
- * @param incw Target vector stride.
+ * If waxpby is not available, simulate it using copy, scal, and axpy.
  *
- * @see A BLAS reference for more details.
+ * \param n Number of elements in \c x and \c y.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param x First source vector.
+ * \param incx First source vector stride.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param y Second source vector.
+ * \param incy Second source vector.
+ * \param w Target vector.
+ * \param incw Target vector stride.
+ *
+ * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_swaxpby(
@@ -342,64 +274,47 @@ suzerain_blas_swaxpby(
         float *w,
         const int incw);
 
-/**
- * Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ using BLAS's dgbmv.
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * @param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * @param m Number of rows in matrix \c a.
- * @param n Number of columns in matrix \c a.
- * @param kl Number of subdiagonals in band storage of \c a.
- * @param ku Number of superdiagonals in band storage of \c a.
- * @param alpha Multiplicative scalar \f$ \alpha \f$.
- * @param a General band storage for matrix \f$ A \f$.
- * @param lda Leading dimension of \c a.
- * @param x Vector to be multiplied.
- * @param incx Stride of vector \c x.
- * @param beta Multiplicative scalar \f$ \beta \f$.
- * @param y Vector to be added to product and to contain result.
- * @param incy Stride of vector \c y.
- *
- * @see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
- */
+/*! \copydoc suzerain_blas_swaxpby */
 void
-suzerain_blas_dgbmv(
-        const char trans,
-        const int m,
+suzerain_blas_dwaxpby(
         const int n,
-        const int kl,
-        const int ku,
         const double alpha,
-        const double *a,
-        const int lda,
         const double *x,
         const int incx,
         const double beta,
-        double *y,
-        const int incy);
+        const double *y,
+        const int incy,
+        double *w,
+        const int incw);
 
-/**
- * Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ using BLAS's sgbmv.
+/*! @} */
+
+/*! \name BLAS level 2 operations
+ * @{
+ */
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$
+ * using BLAS's gbmv.
+ *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
- * @param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
+ * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
  *      or a conjugate transpose, respectively.
- * @param m Number of rows in matrix \c a.
- * @param n Number of columns in matrix \c a.
- * @param kl Number of subdiagonals in band storage of \c a.
- * @param ku Number of superdiagonals in band storage of \c a.
- * @param alpha Multiplicative scalar \f$ \alpha \f$.
- * @param a General band storage for matrix \f$ A \f$.
- * @param lda Leading dimension of \c a.
- * @param x Vector to be multiplied.
- * @param incx Stride of vector \c x.
- * @param beta Multiplicative scalar \f$ \beta \f$.
- * @param y Vector to be added to product and to contain result.
- * @param incy Stride of vector \c y.
+ * \param m Number of rows in matrix \c a.
+ * \param n Number of columns in matrix \c a.
+ * \param kl Number of subdiagonals in band storage of \c a.
+ * \param ku Number of superdiagonals in band storage of \c a.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$.
+ * \param a General band storage for matrix \f$ A \f$.
+ * \param lda Leading dimension of \c a.
+ * \param x Vector to be multiplied.
+ * \param incx Stride of vector \c x.
+ * \param beta Multiplicative scalar \f$ \beta \f$.
+ * \param y Vector to be added to product and to contain result.
+ * \param incy Stride of vector \c y.
  *
- * @see A BLAS reference for more details, especially for general
+ * \see A BLAS reference for more details, especially for general
  *      band storage matrix requirements.
  */
 void
@@ -418,28 +333,10 @@ suzerain_blas_sgbmv(
         float *y,
         const int incy);
 
-/**
- * Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using
- * BLAS' dgb_acc.  Matrices \f$ A \f$ and \f$ B \f$ both have
- * band storage and must have the same shape and same number
- * of super- and subdiagonals.
- *
- * @param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
- * @param n Number of columns in matrices \f$ A \f$ and \f$ B \f$.
- * @param kl Number of subdiagonals in band storage of \c ab.
- * @param ku Number of superdiagonals in band storage of \c ab.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param a General band storage of the matrix \f$ A \f$.
- * @param lda Leading dimension of \c a.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param b General band storage of the matrix \f$ B \f$.
- * @param ldb Leading dimension of \c b.
- *
- * @see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
- */
+/*! \copydoc suzerain_blas_sgbmv */
 void
-suzerain_blas_dgb_acc(
+suzerain_blas_dgbmv(
+        const char trans,
         const int m,
         const int n,
         const int kl,
@@ -447,29 +344,32 @@ suzerain_blas_dgb_acc(
         const double alpha,
         const double *a,
         const int lda,
+        const double *x,
+        const int incx,
         const double beta,
-        double *b,
-        const int ldb);
+        double *y,
+        const int incy);
 
-
-/**
- * Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using
- * BLAS' sgb_acc.  Matrices \f$ A \f$ and \f$ B \f$ both have
+/*!
+ * \brief Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using
+ * BLAS' gb_acc.
+ *
+ * Matrices \f$ A \f$ and \f$ B \f$ both have
  * band storage and must have the same shape and same number
  * of super- and subdiagonals.
  *
- * @param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
- * @param n Number of columns in matrices \f$ A \f$ and \f$ B \f$.
- * @param kl Number of subdiagonals in band storage of \c ab.
- * @param ku Number of superdiagonals in band storage of \c ab.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param a General band storage of the matrix \f$ A \f$.
- * @param lda Leading dimension of \c a.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param b General band storage of the matrix \f$ B \f$.
- * @param ldb Leading dimension of \c b.
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$.
+ * \param kl Number of subdiagonals in band storage of \c ab.
+ * \param ku Number of superdiagonals in band storage of \c ab.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param a General band storage of the matrix \f$ A \f$.
+ * \param lda Leading dimension of \c a.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param b General band storage of the matrix \f$ B \f$.
+ * \param ldb Leading dimension of \c b.
  *
- * @see A BLAS reference for more details, especially for general
+ * \see A BLAS reference for more details, especially for general
  *      band storage matrix requirements.
  */
 void
@@ -485,57 +385,52 @@ suzerain_blas_sgb_acc(
         float *b,
         const int ldb);
 
-/**
- * Compute the LUP decomposition of a general banded matrix using
- * LAPACK's dgbtrf.  Stores the results back into the same matrix.
- * Note that the matrix must have extra superdiagonals available
- * to handle the factorization fill in.
- *
- * @param m Number of rows in matrix \c ab.
- * @param n Number of columns in matrix \c ab.
- * @param kl Number of subdiagonals in band storage of \c ab.
- * @param ku Number of superdiagonals in band storage of \c ab.
- * @param ab General band storage of the matrix to factor.
- * @param ldab Leading dimension of \c ab.
- * @param ipiv Pivot matrix computed in the decomposition.
- *
- * @returns Zero on successful execution.  Nonzero otherwise.
- *
- * @see suzerain_lapack_dgbtrs for how to solve a linear system
- *      once you have decomposed the matrix.
- * @see A LAPACK reference for more details, especially for the
- *      \c ku storage requirements and the resulting factored
- *      storage format.
- */
-int
-suzerain_lapack_dgbtrf(
+/*! \copydoc suzerain_blas_sgb_acc */
+void
+suzerain_blas_dgb_acc(
         const int m,
         const int n,
         const int kl,
         const int ku,
-        double *ab,
-        const int ldab,
-        int *ipiv);
+        const double alpha,
+        const double *a,
+        const int lda,
+        const double beta,
+        double *b,
+        const int ldb);
 
-/**
- * Compute the LUP decomposition of a general banded matrix using
- * LAPACK's sgbtrf.  Stores the results back into the same matrix.
- * Note that the matrix must have extra superdiagonals available
- * to handle the factorization fill in.
+/*! @} */
+
+/*! \name BLAS level 3 operations
+ * @{
+ */
+
+/*! @} */
+
+/*! \name LAPACK operations
+ * @{
+ */
+
+/*!
+ * \brief Compute the LUP decomposition of a general banded matrix using
+ * LAPACK's gbtrf.
  *
- * @param m Number of rows in matrix \c ab.
- * @param n Number of columns in matrix \c ab.
- * @param kl Number of subdiagonals in band storage of \c ab.
- * @param ku Number of superdiagonals in band storage of \c ab.
- * @param ab General band storage of the matrix to factor.
- * @param ldab Leading dimension of \c ab.
- * @param ipiv Pivot matrix computed in the decomposition.
+ * Stores the results back into the same matrix.  Note that the matrix must
+ * have extra superdiagonals available to handle the factorization fill in.
  *
- * @returns Zero on successful execution.  Nonzero otherwise.
+ * \param m Number of rows in matrix \c ab.
+ * \param n Number of columns in matrix \c ab.
+ * \param kl Number of subdiagonals in band storage of \c ab.
+ * \param ku Number of superdiagonals in band storage of \c ab.
+ * \param ab General band storage of the matrix to factor.
+ * \param ldab Leading dimension of \c ab.
+ * \param ipiv Pivot matrix computed in the decomposition.
  *
- * @see suzerain_lapack_sgbtrs for how to solve a linear system
+ * \return Zero on successful execution.  Nonzero otherwise.
+ *
+ * \see gbtrs for how to solve a linear system
  *      once you have decomposed the matrix.
- * @see A LAPACK reference for more details, especially for the
+ * \see A LAPACK reference for more details, especially for the
  *      \c ku storage requirements and the resulting factored
  *      storage format.
  */
@@ -549,70 +444,43 @@ suzerain_lapack_sgbtrf(
         const int ldab,
         int *ipiv);
 
-/**
- * Solve \f$ AX = B \f$ using the previously LUP decomposed general band matrix
- * \f$ A \f$ and LAPACK's dgbtrs.  Transposes of \f$ A \f$ can be taken using
- * the \c trans parameter.
- *
- * @param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * @param n Number of rows and columns in matrix \c ab.
- * @param kl Number of subdiagonals in band storage of \c ab.
- * @param ku Number of superdiagonals in nonfactored matrix \c ab.
- *      Note this is \e not the number of superdiagonals in the storage
- *      format of \c ab, but rather the number of superdiagonals required
- *      to store the non-factored matrix \c ab.  This is odd.
- * @param nrhs Number of right hand sides, or columns, in \c b.
- * @param ab General band storage of the matrix to factor.
- * @param ldab Leading dimension of \c ab.
- * @param ipiv Pivot matrix already computed in the decomposition.
- * @param b Matrix \f$ B \f$ containing right hand sides on invocation and
- *      solutions on return.
- * @param ldb Leading dimension of matrix \c b.
- *
- * @returns Zero on successful execution.  Nonzero otherwise.
- *
- * @see suzerain_lapack_dgbtrf for how to decompose the matrix \f$ A \f$.
- * @see A LAPACK reference for more details.
- */
+/*! \copydoc suzerain_lapack_sgbtrf */
 int
-suzerain_lapack_dgbtrs(
-        const char trans,
+suzerain_lapack_dgbtrf(
+        const int m,
         const int n,
         const int kl,
         const int ku,
-        const int nrhs,
-        const double *ab,
+        double *ab,
         const int ldab,
-        const int *ipiv,
-        double *b,
-        const int ldb);
+        int *ipiv);
 
-/**
- * Solve \f$ AX = B \f$ using the previously LUP decomposed general band matrix
- * \f$ A \f$ and LAPACK's sgbtrs.  Transposes of \f$ A \f$ can be taken using
- * the \c trans parameter.
+/*!
+ * \brief Solve \f$ AX = B \f$ using the previously LUP decomposed general band matrix
+ * \f$ A \f$ and LAPACK's gbtrs.
  *
- * @param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
+ * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
+ *
+ * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
  *      or a conjugate transpose, respectively.
- * @param n Number of rows and columns in matrix \c ab.
- * @param kl Number of subdiagonals in band storage of \c ab.
- * @param ku Number of superdiagonals in nonfactored matrix \c ab.
+ * \param n Number of rows and columns in matrix \c ab.
+ * \param kl Number of subdiagonals in band storage of \c ab.
+ * \param ku Number of superdiagonals in nonfactored matrix \c ab.
  *      Note this is \e not the number of superdiagonals in the storage
  *      format of \c ab, but rather the number of superdiagonals required
  *      to store the non-factored matrix \c ab.  This is odd.
- * @param nrhs Number of right hand sides, or columns, in \c b.
- * @param ab General band storage of the matrix to factor.
- * @param ldab Leading dimension of \c ab.
- * @param ipiv Pivot matrix already computed in the decomposition.
- * @param b Matrix \f$ B \f$ containing right hand sides on invocation and
+ * \param nrhs Number of right hand sides, or columns, in \c b.
+ * \param ab General band storage of the matrix to factor.
+ * \param ldab Leading dimension of \c ab.
+ * \param ipiv Pivot matrix already computed in the decomposition.
+ * \param b Matrix \f$ B \f$ containing right hand sides on invocation and
  *      solutions on return.
- * @param ldb Leading dimension of matrix \c b.
+ * \param ldb Leading dimension of matrix \c b.
  *
- * @returns Zero on successful execution.  Nonzero otherwise.
+ * \return Zero on successful execution.  Nonzero otherwise.
  *
- * @see suzerain_lapack_sgbtrf for how to decompose the matrix \f$ A \f$.
- * @see A LAPACK reference for more details.
+ * \see gbtrf for how to decompose the matrix \f$ A \f$.
+ * \see A LAPACK reference for more details.
  */
 int
 suzerain_lapack_sgbtrs(
@@ -626,6 +494,22 @@ suzerain_lapack_sgbtrs(
         const int *ipiv,
         float *b,
         const int ldb);
+
+/*! \copydoc suzerain_lapack_sgbtrs */
+int
+suzerain_lapack_dgbtrs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        const double *ab,
+        const int ldab,
+        const int *ipiv,
+        double *b,
+        const int ldb);
+
+/*! @} */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS

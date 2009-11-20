@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * blas_et_al.h: wraps external implementations of BLAS, LAPACK, et al.
+ * blas_et_al.hpp: C++ wrappers around blas_et_al.h's functionality
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -38,38 +38,48 @@
  * C++ wrappers for external BLAS and LAPACK routines necessary for Suzerain.
  * Provides function overloading atop the pure C interfaces in blas_et_al.h.
  */
+namespace suzerain {
 
 /**
- * Perform \f$ y \leftarrow{} x \f$.
- *
- * @param n Number of elements in \c x and \c y.
- * @param x Source vector.
- * @param incx Source vector stride.
- * @param y Target vector.
- * @param incy Target vector stride.
- *
- * @see A BLAS reference for more details.
+ * Provides function templates for BLAS level 1, 2, and 3 functionality.  Also
+ * includes functionality from the <a
+ * href="http://www.netlib.org/blas/blast-forum/">BLAS Technical Forum
+ * Standard</a>.
  */
-template< typename FPT > void suzerain_blas_copy(
+namespace blas {
+
+/*! \name Memory allocation
+ * @{
+ */
+
+/*! @copydoc suzerain_blas_malloc(size_t) */
+inline void * malloc(size_t size)
+{
+    return suzerain_blas_malloc(size);
+}
+
+/*! @copydoc suzerain_blas_calloc(size_t,size_t) */
+inline void * calloc(size_t nmemb, size_t size)
+{
+    return suzerain_blas_calloc(nmemb, size);
+}
+
+/*! @} */
+
+/*! \name BLAS level 1 operations
+ * @{
+ */
+
+/*! @copydoc suzerain_blas_scopy */
+template< typename FPT > void copy(
         const int n,
         const FPT *x,
         const int incx,
         FPT *y,
         const int incy);
 
-SUZERAIN_FORCEINLINE
-template<> void suzerain_blas_copy<double>(
-        const int n,
-        const double *x,
-        const int incx,
-        double *y,
-        const int incy)
-{
-    return suzerain_blas_dcopy(n, x, incx, y, incy);
-}
-
-SUZERAIN_FORCEINLINE
-template<> void suzerain_blas_copy<float>(
+/*! @copydoc suzerain_blas_scopy */
+inline template<> void copy<float>(
         const int n,
         const float *x,
         const int incx,
@@ -79,39 +89,27 @@ template<> void suzerain_blas_copy<float>(
     return suzerain_blas_scopy(n, x, incx, y, incy);
 }
 
-/**
- * Compute \f$ x \cdot{} y \f$.
- *
- * @param n Number of elements in \c x and \c y.
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param y Second source vector.
- * @param incy Second source vector stride.
- *
- * @return \f$ x \cdot{} y \f$.
- *
- * @see A BLAS reference for more details.
- */
-template< typename FPT > FPT suzerain_blas_dot(
+/*! @copydoc suzerain_blas_scopy */
+inline template<> void copy<double>(
+        const int n,
+        const double *x,
+        const int incx,
+        double *y,
+        const int incy)
+{
+    return suzerain_blas_dcopy(n, x, incx, y, incy);
+}
+
+/*! @copydoc suzerain_blas_sdot */
+template< typename FPT > FPT dot(
         const int n,
         const FPT *x,
         const int incx,
         const FPT *y,
         const int incy);
 
-SUZERAIN_FORCEINLINE
-template<> double suzerain_blas_dot<double>(
-        const int n,
-        const double *x,
-        const int incx,
-        const double *y,
-        const int incy)
-{
-    return suzerain_blas_ddot(n, x, incx, y, incy);
-}
-
-SUZERAIN_FORCEINLINE
-template<> float suzerain_blas_dot<float>(
+/*! @copydoc suzerain_blas_sdot */
+inline template<> float dot<float>(
         const int n,
         const float *x,
         const int incx,
@@ -121,113 +119,139 @@ template<> float suzerain_blas_dot<float>(
     return suzerain_blas_sdot(n, x, incx, y, incy);
 }
 
-
-// FIXME STARTHERE
-
-/**
- * Compute \f$ \left|\left| x \right|\right|_{1} \f$.
- *
- * @param n Number of elements in \c x.
- * @param x Source vector.
- * @param incx Source vector stride.
- *
- * @return \f$ \left|\left| x \right|\right|_{1} \f$
- *
- * @see A BLAS reference for more details.
- */
-double
-suzerain_blas_dasum(
+/*! @copydoc suzerain_blas_sdot */
+inline template<> double dot<double>(
         const int n,
         const double *x,
+        const int incx,
+        const double *y,
+        const int incy)
+{
+    return suzerain_blas_ddot(n, x, incx, y, incy);
+}
+
+/*! @copydoc suzerain_blas_sasum */
+template< typename FPT > FPT asum(
+        const int n,
+        const FPT *x,
         const int incx);
 
-/**
- * Compute \f$ y \leftarrow{} \alpha{}x + y \f$ using BLAS's daxpy.
- *
- * @param n Number of elements in \c x and \c y.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param y Second source vector and target vector.
- * @param incy Second source vector and target vector stride.
- *
- * @see A BLAS reference for more details.
- */
-void
-suzerain_blas_daxpy(
+/*! @copydoc suzerain_blas_sasum */
+inline template<> float asum<float>(
+        const int n,
+        const float *x,
+        const int incx)
+{
+    return suzerain_blas_sasum(n, x, incx);
+}
+
+/*! @copydoc suzerain_blas_sasum */
+inline template<> double asum<double>(
+        const int n,
+        const double *x,
+        const int incx)
+{
+    return suzerain_blas_dasum(n, x, incx);
+}
+
+/*! @copydoc suzerain_blas_saxpy */
+template< typename FPT > void axpy(
+        const int n,
+        const FPT alpha,
+        const FPT *x,
+        const int incx,
+        FPT *y,
+        const int incy);
+
+/*! @copydoc suzerain_blas_saxpy */
+inline template<> void axpy<float>(
+        const int n,
+        const float alpha,
+        const float *x,
+        const int incx,
+        float *y,
+        const int incy)
+{
+    return suzerain_blas_saxpy(n, alpha, x, incx, y, incy);
+}
+
+/*! @copydoc suzerain_blas_saxpy */
+inline template<> void axpy<double>(
         const int n,
         const double alpha,
         const double *x,
         const int incx,
         double *y,
-        const int incy);
+        const int incy)
+{
+    return suzerain_blas_daxpy(n, alpha, x, incx, y, incy);
+}
 
-/**
- * Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's daxpby.
- * If daxpby is not available, simulate it using dscal and daxpy.
- *
- * @param n Number of elements in \c x and \c y.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param y Second source vector and target vector.
- * @param incy Second source vector and target vector stride.
- *
- * @see A BLAS reference for more details.
- */
-void
-suzerain_blas_daxpby(
+/*! @copydoc suzerain_blas_saxpby */
+template< typename FPT > void axpby(
         const int n,
-        const double alpha,
-        const double *x,
+        const FPT alpha,
+        const FPT *x,
         const int incx,
-        const double beta,
-        double *y,
+        const FPT beta,
+        FPT *y,
         const int incy);
 
-/**
- * Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's saxpby.
- * If saxpby is not available, simulate it using sscal and saxpy.
- *
- * @param n Number of elements in \c x and \c y.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param y Second source vector and target vector.
- * @param incy Second source vector and target vector stride.
- *
- * @see A BLAS reference for more details.
- */
-void
-suzerain_blas_saxpby(
+/*! @copydoc suzerain_blas_saxpby */
+inline template<> void axpby<float>(
         const int n,
         const float alpha,
         const float *x,
         const int incx,
         const float beta,
         float *y,
-        const int incy);
+        const int incy)
+{
+    return suzerain_blas_saxpby(n, alpha, x, incx, beta, y, incy);
+}
 
-/**
- * Compute \f$ w \leftarrow{} \alpha{}x + \beta{}y \f$ using BLAS's dwaxpby.
- * If dwaxpby is not available, simulate it using dcopy, dscal, and daxpy.
- *
- * @param n Number of elements in \c x and \c y.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector.
- * @param incx First source vector stride.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param y Second source vector.
- * @param incy Second source vector.
- * @param w Target vector.
- * @param incw Target vector stride.
- *
- * @see A BLAS reference for more details.
- */
-void
-suzerain_blas_dwaxpby(
+/*! @copydoc suzerain_blas_saxpby */
+inline template<> void axpby<double>(
+        const int n,
+        const double alpha,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy)
+{
+    return suzerain_blas_daxpby(n, alpha, x, incx, beta, y, incy);
+}
+
+/*! @copydoc suzerain_blas_swaxpby */
+template< typename FPT > void waxpby(
+        const int n,
+        const FPT alpha,
+        const FPT *x,
+        const int incx,
+        const FPT beta,
+        const FPT *y,
+        const int incy,
+        FPT *w,
+        const int incw);
+
+/*! @copydoc suzerain_blas_swaxpby */
+inline template<> void waxpby<float>(
+        const int n,
+        const float alpha,
+        const float *x,
+        const int incx,
+        const float beta,
+        const float *y,
+        const int incy,
+        float *w,
+        const int incw)
+{
+    return suzerain_blas_swaxpby(n, alpha, x, incx, beta, y, incy, w, incw);
+}
+
+/*! @copydoc suzerain_blas_swaxpby */
+inline template<> void waxpby<double>(
         const int n,
         const double alpha,
         const double *x,
@@ -236,32 +260,55 @@ suzerain_blas_dwaxpby(
         const double *y,
         const int incy,
         double *w,
-        const int incw);
+        const int incw)
+{
+    return suzerain_blas_dwaxpby(n, alpha, x, incx, beta, y, incy, w, incw);
+}
 
-/**
- * Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ using BLAS's dgbmv.
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * @param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * @param m Number of rows in matrix \c a.
- * @param n Number of columns in matrix \c a.
- * @param kl Number of subdiagonals in band storage of \c a.
- * @param ku Number of superdiagonals in band storage of \c a.
- * @param alpha Multiplicative scalar \f$ \alpha \f$.
- * @param a General band storage for matrix \f$ A \f$.
- * @param lda Leading dimension of \c a.
- * @param x Vector to be multiplied.
- * @param incx Stride of vector \c x.
- * @param beta Multiplicative scalar \f$ \beta \f$.
- * @param y Vector to be added to product and to contain result.
- * @param incy Stride of vector \c y.
- *
- * @see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+/*! @} */
+
+/*! \name BLAS level 2 operations
+ * @{
  */
-void
-suzerain_blas_dgbmv(
+
+/*! @copydoc suzerain_blas_sgbmv */
+template< typename FPT > void gbmv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const FPT alpha,
+        const FPT *a,
+        const int lda,
+        const FPT *x,
+        const int incx,
+        const FPT beta,
+        FPT *y,
+        const int incy);
+
+/*! @copydoc suzerain_blas_sgbmv */
+inline template<> void gbmv<float>(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy);
+{
+    return suzerain_blas_sgbmv(
+        trans, m, n, kl, ku, alpha, a, lda, x, incx, beta, y, incy);
+}
+
+/*! @copydoc suzerain_blas_sgbmv */
+inline template<> void gbmv<double>(
         const char trans,
         const int m,
         const int n,
@@ -275,29 +322,43 @@ suzerain_blas_dgbmv(
         const double beta,
         double *y,
         const int incy);
+{
+    return suzerain_blas_dgbmv(
+        trans, m, n, kl, ku, alpha, a, lda, x, incx, beta, y, incy);
+}
 
-/**
- * Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using
- * BLAS' dgb_acc.  Matrices \f$ A \f$ and \f$ B \f$ both have
- * band storage and must have the same shape and same number
- * of super- and subdiagonals.
- *
- * @param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
- * @param n Number of columns in matrices \f$ A \f$ and \f$ B \f$.
- * @param kl Number of subdiagonals in band storage of \c ab.
- * @param ku Number of superdiagonals in band storage of \c ab.
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param a General band storage of the matrix \f$ A \f$.
- * @param lda Leading dimension of \c a.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param b General band storage of the matrix \f$ B \f$.
- * @param ldb Leading dimension of \c b.
- *
- * @see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
- */
-void
-suzerain_blas_dgb_acc(
+/*! @copydoc suzerain_blas_sgb_acc */
+template< typename FPT > void gb_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const FPT alpha,
+        const FPT *a,
+        const int lda,
+        const FPT beta,
+        FPT *b,
+        const int ldb);
+
+/*! @copydoc suzerain_blas_sgb_acc */
+inline template<> void gb_acc<float>(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha,
+        const float *a,
+        const int lda,
+        const float beta,
+        float *b,
+        const int ldb)
+{
+    return suzerain_blas_sgb_acc(
+        m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+}
+
+/*! @copydoc suzerain_blas_sgb_acc */
+inline template<> void gb_acc<double>(
         const int m,
         const int n,
         const int kl,
@@ -307,68 +368,95 @@ suzerain_blas_dgb_acc(
         const int lda,
         const double beta,
         double *b,
-        const int ldb);
+        const int ldb)
+{
+    return suzerain_blas_dgb_acc(
+        m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+}
+
+/*! @} */
+
+/*! \name BLAS level 3 operations
+ * @{
+ */
+
+/*! @} */
+
+} // namespace blas
 
 /**
- * Compute the LUP decomposition of a general banded matrix using
- * LAPACK's dgbtrf.  Stores the results back into the same matrix.
- * Note that the matrix must have extra superdiagonals available
- * to handle the factorization fill in.
- *
- * @param m Number of rows in matrix \c ab.
- * @param n Number of columns in matrix \c ab.
- * @param kl Number of subdiagonals in band storage of \c ab.
- * @param ku Number of superdiagonals in band storage of \c ab.
- * @param ab General band storage of the matrix to factor.
- * @param ldab Leading dimension of \c ab.
- * @param ipiv Pivot matrix computed in the decomposition.
- *
- * @returns Zero on successful execution.  Nonzero otherwise.
- *
- * @see suzerain_lapack_dgbtrs for how to solve a linear system
- *      once you have decomposed the matrix.
- * @see A LAPACK reference for more details, especially for the
- *      \c ku storage requirements and the resulting factored
- *      storage format.
+ * Provides function templates for LAPACK functionality.
  */
-int
-suzerain_lapack_dgbtrf(
+namespace lapack {
+
+/*! @copydoc suzerain_lapack_sgbtrf */
+template< typename FPT > int gbtrf(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        FPT *ab,
+        const int ldab,
+        int *ipiv);
+
+/*! @copydoc suzerain_lapack_sgbtrf */
+inline template<> int gbtrf<float>(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        float *ab,
+        const int ldab,
+        int *ipiv)
+{
+    return suzerain_lapack_sgbtrf(m, n, kl, ku, ab, ldab, ipiv);
+}
+
+/*! @copydoc suzerain_lapack_sgbtrf */
+inline template<> int gbtrf<double>(
         const int m,
         const int n,
         const int kl,
         const int ku,
         double *ab,
         const int ldab,
-        int *ipiv);
+        int *ipiv)
+{
+    return suzerain_lapack_dgbtrf(m, n, kl, ku, ab, ldab, ipiv);
+}
 
-/**
- * Solve \f$ AX = B \f$ using the previously LUP decomposed general band matrix
- * \f$ A \f$ and LAPACK's dgbtrs.  Transposes of \f$ A \f$ can be taken using
- * the \c trans parameter.
- *
- * @param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * @param n Number of rows and columns in matrix \c ab.
- * @param kl Number of subdiagonals in band storage of \c ab.
- * @param ku Number of superdiagonals in nonfactored matrix \c ab.
- *      Note this is \e not the number of superdiagonals in the storage
- *      format of \c ab, but rather the number of superdiagonals required
- *      to store the non-factored matrix \c ab.  This is odd.
- * @param nrhs Number of right hand sides, or columns, in \c b.
- * @param ab General band storage of the matrix to factor.
- * @param ldab Leading dimension of \c ab.
- * @param ipiv Pivot matrix already computed in the decomposition.
- * @param b Matrix \f$ B \f$ containing right hand sides on invocation and
- *      solutions on return.
- * @param ldb Leading dimension of matrix \c b.
- *
- * @returns Zero on successful execution.  Nonzero otherwise.
- *
- * @see suzerain_lapack_dgbtrf for how to decompose the matrix \f$ A \f$.
- * @see A LAPACK reference for more details.
- */
-int
-suzerain_lapack_dgbtrs(
+/*! @copydoc suzerain_lapack_sgbtrs */
+template< typename FPT > int gbtrs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        const FPT *ab,
+        const int ldab,
+        const int *ipiv,
+        FPT *b,
+        const int ldb);
+
+/*! @copydoc suzerain_lapack_sgbtrs */
+inline template<> int gbtrs<float>(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        const float *ab,
+        const int ldab,
+        const int *ipiv,
+        float *b,
+        const int ldb)
+{
+    return suzerain_lapack_sgbtrs(
+        trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
+}
+
+/*! @copydoc suzerain_lapack_sgbtrs */
+inline template<> int gbtrs<double>(
         const char trans,
         const int n,
         const int kl,
@@ -378,6 +466,14 @@ suzerain_lapack_dgbtrs(
         const int ldab,
         const int *ipiv,
         double *b,
-        const int ldb);
+        const int ldb)
+{
+    return suzerain_lapack_dgbtrs(
+        trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
+}
+
+} // namespace lapack
+
+} // namespace suzerain
 
 #endif /* __SUZERAIN_BLAS_ET_AL_HPP__ */
