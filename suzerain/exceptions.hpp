@@ -42,6 +42,13 @@ namespace suzerain
  */
 class domain_error: public boost::exception { };
 
+/** Reports function arguments indicative of a programming error.
+ *
+ * \internal Intended to have the same semantics as \c std::logic_error
+ * but with the benefit of boost::exception as a base class.
+ */
+class logic_error: public boost::exception { };
+
 } // namespace suzerain
 
 #endif // __SUZERAIN_EXCEPTIONS_H

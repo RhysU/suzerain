@@ -32,6 +32,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/exceptions.hpp>
 
 namespace suzerain
 {
@@ -67,7 +68,8 @@ public:
     virtual void scaleAddScaled(const FPT thisScale,
                                 const FPT otherScale,
                                 IState<FPT> * const other)
-                                throw(std::bad_cast) = 0;
+                                throw(std::bad_cast,
+                                      suzerain::logic_error) = 0;
 };
 
 template< typename FPT >
@@ -84,7 +86,8 @@ public:
     virtual void scaleAddScaled(const FPT thisScale,
                                 const FPT otherScale,
                                 IState<FPT> * const other)
-                                throw(std::bad_cast);
+                                throw(std::bad_cast,
+                                      suzerain::logic_error);
 private:
     boost::shared_array<double> raw;  /**< Raw, aligned storage */
 
@@ -112,7 +115,8 @@ template< typename FPT >
 void RealState<FPT>::scaleAddScaled(const FPT thisScale,
                                     const FPT otherScale,
                                     IState<FPT> * const other)
-throw(std::bad_cast)
+throw(std::bad_cast,
+      suzerain::logic_error)
 {
     RealState<FPT> * const o = dynamic_cast<RealState<FPT> * const>(other);
     if (!o) throw std::bad_cast();
@@ -126,12 +130,10 @@ throw(std::bad_cast)
 template< typename FPT >
 class ComplexState : public IState<FPT>, public boost::noncopyable
 {
-private:
-    typedef typename boost::multi_array_ref<FPT, 4> components_type;
-
 public:
-    typedef typename boost::multi_array_ref<std::complex<FPT>, 3> state_type;
+    typedef typename boost::multi_array_ref<FPT, 4> components_type;
     typedef typename boost::array_view_gen<components_type,3>::type component_type;
+    typedef typename boost::multi_array_ref<std::complex<FPT>, 3> state_type;
 
     explicit ComplexState(typename IState<FPT>::size_type variable_count,
                           typename IState<FPT>::size_type vector_length,
@@ -141,16 +143,17 @@ public:
     virtual void scaleAddScaled(const FPT thisScale,
                                 const FPT otherScale,
                                 IState<FPT> * const other)
-                                throw(std::bad_cast);
+                                throw(std::bad_cast,
+                                      suzerain::logic_error);
 
 private:
     boost::shared_array<FPT> raw;  /**< Raw, aligned storage */
-    components_type components;    /**< MultiArray of state as FPT */
 
 public:
-    state_type data;      /**< MultiArray of complex-valued state */
-    component_type real;  /**< MultiArray of state's real part */
-    component_type imag;  /**< MultiArray of state's imaginary part */
+    components_type components;  /**< MultiArray of complex state components */
+    component_type real;         /**< MultiArray of state's real part */
+    component_type imag;         /**< MultiArray of state's imaginary part */
+    state_type data;             /**< MultiArray of complex-valued state */
 };
 
 template< typename FPT >
@@ -165,9 +168,6 @@ throw(std::bad_alloc)
       components(raw.get(),
            boost::extents[2][variable_count][vector_length][vector_count],
            boost::fortran_storage_order()),
-      data(reinterpret_cast<std::complex<FPT> *>(raw.get()),
-           boost::extents[variable_count][vector_length][vector_count],
-           boost::fortran_storage_order()),
       real(components[boost::indices[0]
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]
@@ -175,7 +175,10 @@ throw(std::bad_alloc)
       imag(components[boost::indices[1]
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]
-                                    [boost::multi_array_types::index_range()]])
+                                    [boost::multi_array_types::index_range()]]),
+      data(reinterpret_cast<std::complex<FPT> *>(raw.get()),
+           boost::extents[variable_count][vector_length][vector_count],
+           boost::fortran_storage_order())
 {
     if (!raw) throw std::bad_alloc();
 }
@@ -184,7 +187,8 @@ template< typename FPT >
 void ComplexState<FPT>::scaleAddScaled(const FPT thisScale,
                                        const FPT otherScale,
                                        IState<FPT> * const other)
-throw(std::bad_cast)
+throw(std::bad_cast,
+      suzerain::logic_error)
 {
     ComplexState<FPT> * const o
         = dynamic_cast<ComplexState<FPT> * const>(other);

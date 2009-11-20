@@ -22,3 +22,21 @@ BOOST_AUTO_TEST_CASE( constructor )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( ComplexState )
+
+BOOST_AUTO_TEST_CASE( declare_pointer )
+{
+    suzerain::ComplexState<double> *state = NULL;
+}
+
+BOOST_AUTO_TEST_CASE( constructor )
+{
+    const suzerain::ComplexState<double> foo(1, 2, 3);
+    BOOST_CHECK_EQUAL(foo.variable_count, 1);
+    BOOST_CHECK_EQUAL(foo.vector_length, 2);
+    BOOST_CHECK_EQUAL(foo.vector_count, 3);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
