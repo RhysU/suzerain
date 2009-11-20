@@ -100,6 +100,25 @@ suzerain_blas_dcopy(
 #endif
 }
 
+void
+suzerain_blas_scopy(
+        const int n,
+        const float *x,
+        const int incx,
+        float *y,
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+
+    scopy(&_n, x, &_incx, y, &_incy);
+#else
+#error "Sanity failure"
+#endif
+}
+
 double
 suzerain_blas_ddot(
         const int n,
@@ -114,6 +133,25 @@ suzerain_blas_ddot(
     MKL_INT _incy = incy;
 
     return ddot(&_n, x, &_incx, y, &_incy);
+#else
+#error "Sanity failure"
+#endif
+}
+
+float
+suzerain_blas_sdot(
+        const int n,
+        const float *x,
+        const int incx,
+        const float *y,
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    MKL_INT _n    = n;
+    MKL_INT _incx = incx;
+    MKL_INT _incy = incy;
+
+    return sdot(&_n, x, &_incx, y, &_incy);
 #else
 #error "Sanity failure"
 #endif
@@ -135,6 +173,22 @@ suzerain_blas_dasum(
 #endif
 }
 
+float
+suzerain_blas_sasum(
+        const int n,
+        const float *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    MKL_INT _n    = n;
+    MKL_INT _incx = incx;
+
+    return sasum(&_n, x, &_incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
 void
 suzerain_blas_daxpy(
         const int n,
@@ -150,6 +204,26 @@ suzerain_blas_daxpy(
     const MKL_INT _incy = incy;
 
     daxpy(&_n, &alpha, x, &_incx, y, &_incy);
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_saxpy(
+        const int n,
+        const float alpha,
+        const float *x,
+        const int incx,
+        float *y,
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+
+    saxpy(&_n, &alpha, x, &_incx, y, &_incy);
 #else
 #error "Sanity failure"
 #endif
@@ -192,14 +266,14 @@ suzerain_blas_saxpby(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    /* Simulate daxpby since MKL lacks the routine. */
-    if (SUZERAIN_UNLIKELY((alpha == 0.0 && beta == 1.0) || n <= 0)) return;
+    /* Simulate saxpby since MKL lacks the routine. */
+    if (SUZERAIN_UNLIKELY((alpha == 0.0f && beta == 1.0f) || n <= 0)) return;
 
     const MKL_INT _n    = n;
     const MKL_INT _incx = incx;
     const MKL_INT _incy = incy;
 
-    if (beta != 1.0)
+    if (beta != 1.0f)
         sscal(&_n, &beta, y, &_incy);
     saxpy(&_n, &alpha, x, &_incx, y, &_incy);
 #else
@@ -227,8 +301,37 @@ suzerain_blas_dwaxpby(
     const MKL_INT _incw = incw;
 
     dcopy(&_n, y, &_incy, w, &_incw);
-    dscal(&_n, &beta, w, &_incw);
+    if (beta != 1.0)
+        dscal(&_n, &beta, w, &_incw);
     daxpy(&_n, &alpha, x, &_incx, w, &_incw);
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_swaxpby(
+        const int n,
+        const float alpha,
+        const float *x,
+        const int incx,
+        const float beta,
+        const float *y,
+        const int incy,
+        float *w,
+        const int incw)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    /* Simulate swaxpby since MKL lacks the routine. */
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+    const MKL_INT _incw = incw;
+
+    scopy(&_n, y, &_incy, w, &_incw);
+    if (beta != 1.0f)
+        sscal(&_n, &beta, w, &_incw);
+    saxpy(&_n, &alpha, x, &_incx, w, &_incw);
 #else
 #error "Sanity failure"
 #endif
@@ -268,6 +371,39 @@ suzerain_blas_dgbmv(
 }
 
 void
+suzerain_blas_sgbmv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy)
+{
+    char _trans   = trans;
+#ifdef SUZERAIN_HAVE_MKL
+    const MKL_INT _m    = m;
+    const MKL_INT _n    = n;
+    const MKL_INT _kl   = kl;
+    const MKL_INT _ku   = ku;
+    const MKL_INT _lda  = lda;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+
+    sgbmv(&_trans, &_m, &_n, &_kl, &_ku, &alpha, a, &_lda,
+          x, &_incx, &beta, y, &_incy);
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
 suzerain_blas_dgb_acc(
         const int m,
         const int n,
@@ -291,6 +427,36 @@ suzerain_blas_dgb_acc(
 
     for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
         suzerain_blas_daxpby(veclength, alpha, aj, 1, beta, bj, 1);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_sgb_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha,
+        const float *a,
+        const int lda,
+        const float beta,
+        float *b,
+        const int ldb)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    /* Simulate sgb_acc since MKL lacks the routine. */
+    if (SUZERAIN_UNLIKELY((alpha == 0.0f && beta == 1.0f) || m <= 0)) return;
+
+    const int veclength = ku + 1 + kl;
+    const float * const bj_end = b + n *ldb;
+    const float *aj;
+    float       *bj;
+
+    for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
+        suzerain_blas_saxpby(veclength, alpha, aj, 1, beta, bj, 1);
     }
 #else
 #error "Sanity failure"
@@ -324,6 +490,32 @@ suzerain_lapack_dgbtrf(
 }
 
 int
+suzerain_lapack_sgbtrf(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        float *ab,
+        const int ldab,
+        int *ipiv)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    MKL_INT _m    = m;
+    MKL_INT _n    = n;
+    MKL_INT _kl   = kl;
+    MKL_INT _ku   = ku;
+    MKL_INT _ldab = ldab;
+    MKL_INT _info = 0;
+
+    sgbtrf(&_m, &_n, &_kl, &_ku, ab, &_ldab, ipiv, &_info);
+
+    return _info;
+#else
+#error "Sanity failure"
+#endif
+}
+
+int
 suzerain_lapack_dgbtrs(
         const char trans,
         const int n,
@@ -347,6 +539,38 @@ suzerain_lapack_dgbtrs(
     MKL_INT _info = 0;
 
     dgbtrs(&_trans, &_n, &_kl, &_ku, &_nrhs,
+           ab, &_ldab, ipiv, b, &_ldb, &_info);
+
+    return _info;
+#else
+#error "Sanity failure"
+#endif
+}
+
+int
+suzerain_lapack_sgbtrs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        const float *ab,
+        const int ldab,
+        const int *ipiv,
+        float *b,
+        const int ldb)
+{
+    char _trans   = trans;
+#ifdef SUZERAIN_HAVE_MKL
+    MKL_INT _n    = n;
+    MKL_INT _kl   = kl;
+    MKL_INT _ku   = ku;
+    MKL_INT _nrhs = nrhs;
+    MKL_INT _ldab = ldab;
+    MKL_INT _ldb  = ldb;
+    MKL_INT _info = 0;
+
+    sgbtrs(&_trans, &_n, &_kl, &_ku, &_nrhs,
            ab, &_ldab, ipiv, b, &_ldb, &_info);
 
     return _info;

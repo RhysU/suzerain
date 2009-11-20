@@ -103,6 +103,38 @@ test_dwaxpby()
 }
 
 void
+test_swaxpby()
+{
+    int i;
+
+    const float  alpha      = 2.0;
+    const float  x[]        = {1.0, 2.0, 3.0};
+    const int    incx       = 1;
+    const int    nx         = sizeof(x)/sizeof(x[0]);
+    const float  beta       = 3.0;
+    const float  y[]        = {4.0, -1, 5.0, -2, 6.0, -3};
+    const int    incy       = 2;
+    const int    ny         = sizeof(y)/sizeof(y[0]);
+    float        w[nx/incx];
+    const int    nw         = sizeof(w)/sizeof(w[0]);
+    const int    incw       = 1;
+    const float  expected[] = {
+        alpha*x[0] + beta*y[0],
+        alpha*x[1] + beta*y[2],
+        alpha*x[2] + beta*y[4],
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(nw, nexpected, "Expected results' length");
+
+    suzerain_blas_swaxpby(nx/incx, alpha, x, incx, beta, y, incy, w, incw);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(w[i], expected[i], GSL_FLT_EPSILON, "swaxpby index %d", i);
+    }
+}
+
+void
 test_daxpby_nop()
 {
     int i;
@@ -204,6 +236,57 @@ test_dgb_acc()
 }
 
 void
+test_sgb_acc()
+{
+    int i;
+
+    const int    m     = 4;
+    const int    n     = m;
+    const int    ku    = 2;
+    const int    kl    = 1;
+    const int    lda   = 5;
+    const int    ldb   = 6;
+    const float  alpha = 2.0;
+    const float  beta  = 3.0;
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const float  a_data[]  = {
+        /*lda buffer*/   /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
+                 -1.1,     -1.0,    -1.0,     1.0,      2.0,
+                 -1.1,     -1.0,     3.0,     4.0,      5.0,
+                 -1.1,      6.0,     7.0,     8.0,      9.0,
+                 -1.1,     10.0,    11.0,    12.0,     -1.0
+    };
+    float  b_data[]  = {
+        /*ldb buffer*/   /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
+         -2.2,   -1.1,     -1.0,    -1.0,     1.0,      2.0,
+         -2.2,   -1.1,     -1.0,     3.0,     4.0,      5.0,
+         -2.2,   -1.1,      6.0,     7.0,     8.0,      9.0,
+         -2.2,   -1.1,     10.0,    11.0,    12.0,     -1.0
+    };
+    const float  expected_data[]  = {
+        /*ldb buffer*/   /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
+         -2.2,   -1.1,     -5.0,    -5.0,     5.0,     10.0,
+         -2.2,   -1.1,     -5.0,    15.0,    20.0,     25.0,
+         -2.2,   -1.1,     30.0,    35.0,    40.0,     45.0,
+         -2.2,   -1.1,     50.0,    55.0,    60.0,     -5.0
+    };
+    const float  *a = a_data + lda-(ku+1+kl);
+    float        *b = b_data + ldb-(ku+1+kl);
+
+    const float  nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const float  nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blas_sgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i], expected_data[i], GSL_FLT_EPSILON,
+                "dgb_acc index %d", i);
+    }
+}
+
+void
 test_dgb_acc_nop()
 {
     int i;
@@ -260,9 +343,12 @@ main(int argc, char **argv)
     test_saxpby_nop();
 
     test_dwaxpby();
+    test_swaxpby();
 
     test_dgb_acc();
     test_dgb_acc_nop();
+
+    test_sgb_acc();
 
     exit(gsl_test_summary());
 }
