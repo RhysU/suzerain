@@ -79,7 +79,7 @@ template< typename FPT > void copy(
         const int incy);
 
 /*! @copydoc suzerain_blas_scopy */
-inline template<> void copy<float>(
+template<> inline void copy<float>(
         const int n,
         const float *x,
         const int incx,
@@ -90,7 +90,7 @@ inline template<> void copy<float>(
 }
 
 /*! @copydoc suzerain_blas_scopy */
-inline template<> void copy<double>(
+template<> inline void copy<double>(
         const int n,
         const double *x,
         const int incx,
@@ -109,7 +109,7 @@ template< typename FPT > FPT dot(
         const int incy);
 
 /*! @copydoc suzerain_blas_sdot */
-inline template<> float dot<float>(
+template<> inline float dot<float>(
         const int n,
         const float *x,
         const int incx,
@@ -120,7 +120,7 @@ inline template<> float dot<float>(
 }
 
 /*! @copydoc suzerain_blas_sdot */
-inline template<> double dot<double>(
+template<> inline double dot<double>(
         const int n,
         const double *x,
         const int incx,
@@ -137,7 +137,7 @@ template< typename FPT > FPT asum(
         const int incx);
 
 /*! @copydoc suzerain_blas_sasum */
-inline template<> float asum<float>(
+template<> inline float asum<float>(
         const int n,
         const float *x,
         const int incx)
@@ -146,7 +146,7 @@ inline template<> float asum<float>(
 }
 
 /*! @copydoc suzerain_blas_sasum */
-inline template<> double asum<double>(
+template<> inline double asum<double>(
         const int n,
         const double *x,
         const int incx)
@@ -164,7 +164,7 @@ template< typename FPT > void axpy(
         const int incy);
 
 /*! @copydoc suzerain_blas_saxpy */
-inline template<> void axpy<float>(
+template<> inline void axpy<float>(
         const int n,
         const float alpha,
         const float *x,
@@ -176,7 +176,7 @@ inline template<> void axpy<float>(
 }
 
 /*! @copydoc suzerain_blas_saxpy */
-inline template<> void axpy<double>(
+template<> inline void axpy<double>(
         const int n,
         const double alpha,
         const double *x,
@@ -198,7 +198,7 @@ template< typename FPT > void axpby(
         const int incy);
 
 /*! @copydoc suzerain_blas_saxpby */
-inline template<> void axpby<float>(
+template<> inline void axpby<float>(
         const int n,
         const float alpha,
         const float *x,
@@ -211,7 +211,7 @@ inline template<> void axpby<float>(
 }
 
 /*! @copydoc suzerain_blas_saxpby */
-inline template<> void axpby<double>(
+template<> inline void axpby<double>(
         const int n,
         const double alpha,
         const double *x,
@@ -236,7 +236,7 @@ template< typename FPT > void waxpby(
         const int incw);
 
 /*! @copydoc suzerain_blas_swaxpby */
-inline template<> void waxpby<float>(
+template<> inline void waxpby<float>(
         const int n,
         const float alpha,
         const float *x,
@@ -251,7 +251,7 @@ inline template<> void waxpby<float>(
 }
 
 /*! @copydoc suzerain_blas_swaxpby */
-inline template<> void waxpby<double>(
+template<> inline void waxpby<double>(
         const int n,
         const double alpha,
         const double *x,
@@ -288,7 +288,7 @@ template< typename FPT > void gbmv(
         const int incy);
 
 /*! @copydoc suzerain_blas_sgbmv */
-inline template<> void gbmv<float>(
+template<> inline void gbmv<float>(
         const char trans,
         const int m,
         const int n,
@@ -301,14 +301,14 @@ inline template<> void gbmv<float>(
         const int incx,
         const float beta,
         float *y,
-        const int incy);
+        const int incy)
 {
     return suzerain_blas_sgbmv(
         trans, m, n, kl, ku, alpha, a, lda, x, incx, beta, y, incy);
 }
 
 /*! @copydoc suzerain_blas_sgbmv */
-inline template<> void gbmv<double>(
+template<> inline void gbmv<double>(
         const char trans,
         const int m,
         const int n,
@@ -321,7 +321,7 @@ inline template<> void gbmv<double>(
         const int incx,
         const double beta,
         double *y,
-        const int incy);
+        const int incy)
 {
     return suzerain_blas_dgbmv(
         trans, m, n, kl, ku, alpha, a, lda, x, incx, beta, y, incy);
@@ -341,7 +341,7 @@ template< typename FPT > void gb_acc(
         const int ldb);
 
 /*! @copydoc suzerain_blas_sgb_acc */
-inline template<> void gb_acc<float>(
+template<> inline void gb_acc<float>(
         const int m,
         const int n,
         const int kl,
@@ -358,7 +358,7 @@ inline template<> void gb_acc<float>(
 }
 
 /*! @copydoc suzerain_blas_sgb_acc */
-inline template<> void gb_acc<double>(
+template<> inline void gb_acc<double>(
         const int m,
         const int n,
         const int kl,
@@ -400,7 +400,7 @@ template< typename FPT > int gbtrf(
         int *ipiv);
 
 /*! @copydoc suzerain_lapack_sgbtrf */
-inline template<> int gbtrf<float>(
+template<> inline int gbtrf<float>(
         const int m,
         const int n,
         const int kl,
@@ -413,7 +413,7 @@ inline template<> int gbtrf<float>(
 }
 
 /*! @copydoc suzerain_lapack_sgbtrf */
-inline template<> int gbtrf<double>(
+template<> inline int gbtrf<double>(
         const int m,
         const int n,
         const int kl,
@@ -439,7 +439,7 @@ template< typename FPT > int gbtrs(
         const int ldb);
 
 /*! @copydoc suzerain_lapack_sgbtrs */
-inline template<> int gbtrs<float>(
+template<> inline int gbtrs<float>(
         const char trans,
         const int n,
         const int kl,
@@ -456,7 +456,7 @@ inline template<> int gbtrs<float>(
 }
 
 /*! @copydoc suzerain_lapack_sgbtrs */
-inline template<> int gbtrs<double>(
+template<> inline int gbtrs<double>(
         const char trans,
         const int n,
         const int kl,
