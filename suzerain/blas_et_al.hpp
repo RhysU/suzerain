@@ -50,18 +50,15 @@
  *
  * @see A BLAS reference for more details.
  */
-template< typename FPT >
-void
-suzerain_blas_copy(
+template< typename FPT > void suzerain_blas_copy(
         const int n,
         const FPT *x,
         const int incx,
         FPT *y,
         const int incy);
 
-inline template<>
-void
-suzerain_blas_copy<double>(
+SUZERAIN_FORCEINLINE
+template<> void suzerain_blas_copy<double>(
         const int n,
         const double *x,
         const int incx,
@@ -71,7 +68,16 @@ suzerain_blas_copy<double>(
     return suzerain_blas_dcopy(n, x, incx, y, incy);
 }
 
-// FIXME Starthere
+SUZERAIN_FORCEINLINE
+template<> void suzerain_blas_copy<float>(
+        const int n,
+        const float *x,
+        const int incx,
+        float *y,
+        const int incy)
+{
+    return suzerain_blas_scopy(n, x, incx, y, incy);
+}
 
 /**
  * Compute \f$ x \cdot{} y \f$.
@@ -86,16 +92,40 @@ suzerain_blas_copy<double>(
  *
  * @see A BLAS reference for more details.
  */
-double
-suzerain_blas_ddot(
+template< typename FPT > FPT suzerain_blas_dot(
+        const int n,
+        const FPT *x,
+        const int incx,
+        const FPT *y,
+        const int incy);
+
+SUZERAIN_FORCEINLINE
+template<> double suzerain_blas_dot<double>(
         const int n,
         const double *x,
         const int incx,
         const double *y,
-        const int incy);
+        const int incy)
+{
+    return suzerain_blas_ddot(n, x, incx, y, incy);
+}
+
+SUZERAIN_FORCEINLINE
+template<> float suzerain_blas_dot<float>(
+        const int n,
+        const float *x,
+        const int incx,
+        const float *y,
+        const int incy)
+{
+    return suzerain_blas_sdot(n, x, incx, y, incy);
+}
+
+
+// FIXME STARTHERE
 
 /**
- * Compute \f$ \left|\left| x \right|\right|_{1} \f$ using BLAS's dasum.
+ * Compute \f$ \left|\left| x \right|\right|_{1} \f$.
  *
  * @param n Number of elements in \c x.
  * @param x Source vector.
