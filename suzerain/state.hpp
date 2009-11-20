@@ -31,7 +31,7 @@
 #define __SUZERAIN_STATE_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al.h>
+#include <suzerain/blas_et_al.hpp>
 
 namespace suzerain
 {
@@ -71,7 +71,7 @@ public:
 };
 
 template< typename FPT >
-class RealState : public IState<FPT>, private boost::noncopyable
+class RealState : public IState<FPT>, public boost::noncopyable
 {
 public:
     typedef typename boost::multi_array_ref<FPT, 3> state_type;
@@ -108,44 +108,30 @@ throw(std::bad_alloc)
     if (!raw) throw std::bad_alloc();
 }
 
-namespace detail {
-
-    template<typename FPT>
-    void axpby(const int n,
-               const FPT alpha, const FPT *x, const int incx,
-               const FPT beta,        FPT *y, const int incy);
-
-    template<>
-    void axpby<float>(const int n,
-                      const float alpha, const float *x, const int incx,
-                      const float beta,        float *y, const int incy)
-    {
-        return suzerain_blas_saxpby(n, alpha, x, incx, beta, y, incy);
-    }
-
-    template<>
-    void axpby<double>(const int n,
-                       const double alpha, const double *x, const int incx,
-                       const double beta,        double *y, const int incy)
-    {
-        return suzerain_blas_daxpby(n, alpha, x, incx, beta, y, incy);
-    }
-}
-
 template< typename FPT >
 void RealState<FPT>::scaleAddScaled(const FPT thisScale,
                                     const FPT otherScale,
                                     IState<FPT> * const other)
 throw(std::bad_cast)
 {
+    RealState<FPT> * const o = dynamic_cast<RealState<FPT> * const>(other);
+    if (!o) throw std::bad_cast();
+
+    suzerain::blas::axpby<FPT>(
+            this->data.num_elements(),
+            otherScale, o->raw.get(), 1,
+            thisScale,  this->raw.get(), 1);
 }
 
 template< typename FPT >
-class ComplexState : public IState<FPT>, private boost::noncopyable
+class ComplexState : public IState<FPT>, public boost::noncopyable
 {
+private:
+    typedef typename boost::multi_array_ref<FPT, 4> components_type;
+
 public:
     typedef typename boost::multi_array_ref<std::complex<FPT>, 3> state_type;
-    typedef typename boost::multi_array_ref<FPT, 3> component_type;
+    typedef typename boost::array_view_gen<components_type,3>::type component_type;
 
     explicit ComplexState(typename IState<FPT>::size_type variable_count,
                           typename IState<FPT>::size_type vector_length,
@@ -154,15 +140,61 @@ public:
 
     virtual void scaleAddScaled(const FPT thisScale,
                                 const FPT otherScale,
-                                IState<FPT> * const other);
+                                IState<FPT> * const other)
+                                throw(std::bad_cast);
+
 private:
     boost::shared_array<FPT> raw;  /**< Raw, aligned storage */
+    components_type components;    /**< MultiArray of state as FPT */
 
 public:
     state_type data;      /**< MultiArray of complex-valued state */
     component_type real;  /**< MultiArray of state's real part */
     component_type imag;  /**< MultiArray of state's imaginary part */
 };
+
+template< typename FPT >
+ComplexState<FPT>::ComplexState(typename IState<FPT>::size_type variable_count,
+                                typename IState<FPT>::size_type vector_length,
+                                typename IState<FPT>::size_type vector_count)
+throw(std::bad_alloc)
+    : IState<FPT>(variable_count, vector_length, vector_count),
+      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
+                2*sizeof(FPT)*variable_count*vector_length*vector_count)),
+          std::ptr_fun(free)),
+      components(raw.get(),
+           boost::extents[2][variable_count][vector_length][vector_count],
+           boost::fortran_storage_order()),
+      data(reinterpret_cast<std::complex<FPT> *>(raw.get()),
+           boost::extents[variable_count][vector_length][vector_count],
+           boost::fortran_storage_order()),
+      real(components[boost::indices[0]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]]),
+      imag(components[boost::indices[1]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]])
+{
+    if (!raw) throw std::bad_alloc();
+}
+
+template< typename FPT >
+void ComplexState<FPT>::scaleAddScaled(const FPT thisScale,
+                                       const FPT otherScale,
+                                       IState<FPT> * const other)
+throw(std::bad_cast)
+{
+    ComplexState<FPT> * const o
+        = dynamic_cast<ComplexState<FPT> * const>(other);
+    if (!o) throw std::bad_cast();
+
+    suzerain::blas::axpby<FPT>(
+            this->components.num_elements(),
+            otherScale, o->raw.get(), 1,
+            thisScale,  this->raw.get(), 1);
+}
 
 } // namespace suzerain
 
