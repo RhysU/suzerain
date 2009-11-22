@@ -31,8 +31,7 @@
     \renewcommand{\headrulewidth}{1.0pt}
     \renewcommand{\footrulewidth}{0pt}
     \lhead{
-        Computing SMR's hybrid Runge-Kutta scheme
-        in the purely explicit case
+        SMR's hybrid Runge-Kutta scheme implementation
     }
     \rhead{
         Page \thepage{} of \pageref{LastPage}
@@ -113,8 +112,8 @@ The authors determined the above coefficients to be
     0, -\frac{17}{60}, -\frac{5}{12}
   \right\}
 \end{align*}
-We have added $\zeta_0=0$.
-Each substep \eqref{eq:SMR_A4a}--\eqref{eq:SMR_A4c} has the form
+We have added $\zeta_0=0$.  Each substep \eqref{eq:SMR_A4a}--\eqref{eq:SMR_A4c}
+has the general form
 \begin{align}
   u^{i+1} &= u^i + \Delta{}t \left[
         \alpha_{i} L u^i
@@ -124,67 +123,41 @@ Each substep \eqref{eq:SMR_A4a}--\eqref{eq:SMR_A4c} has the form
   \right]
   \label{eq:generalsubstep}
 \end{align}
-where $i\in\left\{ 1,2,3 \right\}$ is the substep number.  Using
-$\alpha_i = - \beta_i + \gamma_i + \zeta_{i-1}$ we reexpress the above as
+where $i\in\left\{ 1,2,3 \right\}$ is the substep number.
+
+We rewrite the general substep equation as
 \begin{align}
-  \left(I-\Delta{}t\beta_{i}L\right)
-  \left(\frac{u^{i+1} - u^{i}}{\Delta{}t}\right)
+  \left(I - \Delta{}t\beta_{i}L\right) u^{i+1}
   &=
-    \left( \gamma_i + \zeta_{i-1} \right) L u^i
-  + \gamma_{i} N\left( u^{i} \right)
-  + \zeta_{i-1} N\left( u^{i-1} \right)
-  \label{eq:simplifiedgeneralsubstep}
+  \left(I + \Delta{}t\alpha_{i}L\right) u^{i}
+  + \Delta{}t\gamma_{i}N\left(u^{i}\right)
+  + \Delta{}t\zeta_{i-1}N\left(u^{i-1}\right)
+  \label{eq:generaloperatorsubstep}
 \end{align}
-
-We wish to advance the purely explicit operator $M u_t = N\left( u \right)$
-where $M$ is a banded mass matrix.  Such a mass matrix arises when using
-B-splines in the inhomogeneous direction.  The implicit operator $L$ vanishes
-for this use case.  We rearrange \eqref{eq:simplifiedgeneralsubstep} into
-\begin{align}
-  M
-  \left(\frac{u^{i+1} - u^{i}}{\Delta{}t}\right)
-  &=
-    \gamma_{i}  N\left( u^{i} \right)
-  + \zeta_{i-1} N\left( u^{i-1} \right)
-  \label{eq:MNsubstep}
-  .
-\end{align}
-
-We allow multiple, noncontiguous state vectors to be updated within a single
-substep.  This implies all state is parameterized by the number of state
-vectors, the leading dimension between state vectors, and the increment between
-elements in a single state vector.  We assume the nonlinear operator $N$ is
-horrifically expensive and will be computed for all state vectors prior to
-invoking the substep routine.  We will overwrite the storage of $N\left(
-u^{i-1} \right)$ but must preserve $N\left( u^i \right)$ so it may be used in
-the next substep.
-
-Provided that $M$ is real-valued, these assumptions allow us to compute $N$
-once for a complex field and then separately perform the substep on its real
-and imaginary subfields.  The mass matrix must be factored once and the
-factorization repeatedly used.  Operator $M$ must be provided in
-BLAS/LAPACK-compatible band storage and must have been factored by GBTRF prior
-to the substep.
+to make it apparent that this time advancement scheme requires implementations
+of $u\mapsto{}N\left(u\right)$, $u\mapsto{}\left(I+\varphi{}L\right)u$, and
+$u\mapsto{}\left(I+\varphi{}L\right)^{-1}u$ for some arbitrary scalar
+$\varphi$.  To achieve a low storage implementation, the $N\left(u\right)$ and
+$\left(I+\varphi{}L\right)^{-1}$ implementations must operate in-place while
+$\left(I+\varphi{}L\right)$ must operate out-of-place.  Given only two storage
+locations $a$ and $b$, each substep computation follows algorithm
+\ref{alg:substep}.
 
 \begin{algorithm}
 \caption{Compute one substep in the SMR scheme following
-         equation \eqref{eq:MNsubstep}}
+         equation \eqref{eq:generaloperatorsubstep}}
 \label{alg:substep}
 \begin{algorithmic}
   \REQUIRE Storage $a = u^i$;
-           storage $b = N\left(u^{i}\right)$;
-           storage $c = N\left(u^{i-1}\right)$;
-           $M\leftarrow{}\mbox{GBTRF}\left( M \right)$
-  \STATE Allocate $d$ to be the length of one state vector
-  \FORALL{column vectors $c_j$ in storage $c$}
-    \STATE WAXPBY: $d\leftarrow{}\gamma_{i}b_{j}+\zeta_{i-1}c_{j}$
-    \STATE GBTRS: $d\leftarrow{}M^{-1} d$
-    \STATE AXPY: $a_{j}\leftarrow{}\Delta{}t \, d + a_{j}$
-  \ENDFOR
-  \ENSURE Storage $a = u^{i+1}$;
-          storage $b = N\left(u^{i}\right)$
+           storage $b = N\left(u^{i-1}\right)$
+  \STATE $b\leftarrow{}\Delta{}t\zeta_{i-1}b$
+  \STATE $b\leftarrow{}b + \left(I+\Delta{}t\alpha_{i}L\right)a$
+  \STATE $a\leftarrow{}N\left(a\right)$
+  \STATE $b\leftarrow{}b + \Delta{}t\gamma_{i}a$
+  \STATE $b\leftarrow{}\left(I-\Delta{}t\beta_{i}\right)^{-1}b$
+  \ENSURE Storage $a = N\left(u^{i}\right)$;
+          storage $b = u^{i+1}$
 \end{algorithmic}
 \end{algorithm}
-
 
 \end{document}

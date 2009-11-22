@@ -3,8 +3,7 @@
 TEXSOURCES  = derivation.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
-TEXSOURCES += timestepping_ex.tex
-TEXSOURCES += timestepping_imex.tex
+TEXSOURCES += timestepping.tex
 
 EXTRA_DIST = derivation.bib skewadjoint.bib
 
