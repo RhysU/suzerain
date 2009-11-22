@@ -340,6 +340,40 @@ suzerain_blas_dwaxpby(
 }
 
 void
+suzerain_blas_sscal(
+        const int n,
+        const float alpha,
+        float *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+
+    sscal(&_n, &alpha, x, &_incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_dscal(
+        const int n,
+        const double alpha,
+        double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+
+    dscal(&_n, &alpha, x, &_incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
 suzerain_blas_sgbmv(
         const char trans,
         const int m,

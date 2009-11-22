@@ -185,6 +185,84 @@ test_saxpby_nop()
 }
 
 void
+test_dscal()
+{
+    int i;
+
+    {
+        const double alpha  = 2.0;
+        double       x[]    = {1.0, 2.0, 3.0};
+        const int    incx   = 1;
+        const int    nx     = sizeof(x)/sizeof(x[0]);
+        const double x_expected[] = { alpha*x[0], alpha*x[1], alpha*x[2] };
+        const int nx_expected = sizeof(x_expected)/sizeof(x_expected[0]);
+
+        gsl_test_int(nx, nx_expected, "Expected results' length");
+        suzerain_blas_dscal(nx/incx, alpha, x, incx);
+        for (i = 0; i < nx_expected; ++i) {
+            gsl_test_abs(x[i], x_expected[i], GSL_DBL_EPSILON,
+                    "dscal index %d", i);
+        }
+    }
+
+    {
+        const double beta   = 3.0;
+        double       y[]    = {4.0, -1, 5.0, -2, 6.0, -3};
+        const int    incy   = 2;
+        const int    ny     = sizeof(y)/sizeof(y[0]);
+        const double y_expected[] = {
+            beta*y[0], y[1], beta*y[2], y[3], beta*y[4], y[5] };
+        const int ny_expected = sizeof(y_expected)/sizeof(y_expected[0]);
+
+        gsl_test_int(ny, ny_expected, "Expected results' length");
+        suzerain_blas_dscal(ny/incy, beta, y, incy);
+        for (i = 0; i < ny_expected; ++i) {
+            gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
+                    "dscal index %d", i);
+        }
+    }
+}
+
+void
+test_sscal()
+{
+    int i;
+
+    {
+        const float  alpha  = 2.0;
+        float        x[]    = {1.0, 2.0, 3.0};
+        const int    incx   = 1;
+        const int    nx     = sizeof(x)/sizeof(x[0]);
+        const float  x_expected[] = { alpha*x[0], alpha*x[1], alpha*x[2] };
+        const int nx_expected = sizeof(x_expected)/sizeof(x_expected[0]);
+
+        gsl_test_int(nx, nx_expected, "Expected results' length");
+        suzerain_blas_sscal(nx/incx, alpha, x, incx);
+        for (i = 0; i < nx_expected; ++i) {
+            gsl_test_abs(x[i], x_expected[i], GSL_FLT_EPSILON,
+                    "sscal index %d", i);
+        }
+    }
+
+    {
+        const float  beta   = 3.0;
+        float        y[]    = {4.0, -1, 5.0, -2, 6.0, -3};
+        const int    incy   = 2;
+        const int    ny     = sizeof(y)/sizeof(y[0]);
+        const float  y_expected[] = {
+            beta*y[0], y[1], beta*y[2], y[3], beta*y[4], y[5] };
+        const int ny_expected = sizeof(y_expected)/sizeof(y_expected[0]);
+
+        gsl_test_int(ny, ny_expected, "Expected results' length");
+        suzerain_blas_sscal(ny/incy, beta, y, incy);
+        for (i = 0; i < ny_expected; ++i) {
+            gsl_test_abs(y[i], y_expected[i], GSL_FLT_EPSILON,
+                    "sscal index %d", i);
+        }
+    }
+}
+
+void
 test_dgb_acc()
 {
     int i;
@@ -344,6 +422,8 @@ main(int argc, char **argv)
 
     test_dwaxpby();
     test_swaxpby();
+
+    test_dscal();
 
     test_dgb_acc();
     test_dgb_acc_nop();

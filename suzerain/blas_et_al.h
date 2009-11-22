@@ -287,6 +287,32 @@ suzerain_blas_dwaxpby(
         double *w,
         const int incw);
 
+/*!
+ * \brief Compute \f$ x \leftarrow{} \alpha{}x \f$
+ * using BLAS's scal.
+ *
+ * \param n Number of elements in \c x.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param x Source and target vector.
+ * \param incx Source and target vector stride.
+ *
+ * \see A BLAS reference for more details.
+ */
+void
+suzerain_blas_sscal(
+        const int n,
+        const float alpha,
+        float *x,
+        const int incx);
+
+/*! \copydoc suzerain_blas_sscal */
+void
+suzerain_blas_dscal(
+        const int n,
+        const double alpha,
+        double *x,
+        const int incx);
+
 /*! @} */
 
 /*! \name BLAS level 2 operations

@@ -265,6 +265,33 @@ template<> inline void waxpby<double>(
     return suzerain_blas_dwaxpby(n, alpha, x, incx, beta, y, incy, w, incw);
 }
 
+/*! @copydoc suzerain_blas_sscal */
+template< typename FPT > void scal(
+        const int n,
+        const FPT alpha,
+        FPT *x,
+        const int incx);
+
+/*! @copydoc suzerain_blas_sscal */
+template<> inline void scal<float>(
+        const int n,
+        const float alpha,
+        float *x,
+        const int incx)
+{
+    return suzerain_blas_sscal(n, alpha, x, incx);
+}
+
+/*! @copydoc suzerain_blas_sscal */
+template<> inline void scal<double>(
+        const int n,
+        const double alpha,
+        double *x,
+        const int incx)
+{
+    return suzerain_blas_dscal(n, alpha, x, incx);
+}
+
 /*! @} */
 
 /*! \name BLAS level 2 operations
