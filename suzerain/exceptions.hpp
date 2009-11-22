@@ -83,6 +83,19 @@ public:
         : std::logic_error(what_arg) {};
 };
 
+/** Reports function arguments indicative of a runtime error.
+ *
+ * \internal Intended to have the same semantics as \c std::logic_error
+ * but with the benefit of boost::exception as a base class.
+ */
+class runtime_error: public std::runtime_error, public boost::exception {
+public:
+
+    /*! \copydoc domain_error::domain_error(const std::string&) */
+    runtime_error(const std::string &what_arg)
+        : std::runtime_error(what_arg) {};
+};
+
 } // namespace suzerain
 
 #endif // __SUZERAIN_EXCEPTIONS_H

@@ -32,6 +32,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/exceptions.hpp>
+#include <suzerain/state.hpp>
 
 namespace suzerain
 {
@@ -45,13 +46,44 @@ public:
     virtual ~IOperatorConfig() {};
 };
 
+class IOperatorSplit
+{
+public:
+    virtual ~IOperatorSplit() {};
+};
+
 class IOperatorLifecycle
 {
 public:
-    virtual void init(const IOperatorConfig * const config) = 0;
-    virtual void destroy() = 0;
+    virtual void init(const IOperatorConfig * const config)
+                      throw(suzerain::runtime_error) {};
+    virtual void establishSplit(const IOperatorSplit * const split)
+                                throw(suzerain::runtime_error) {};
+    virtual void destroy() {};
     virtual ~IOperatorLifecycle() {};
 };
+
+template< typename FPT >
+class INonlinearOperator : public IOperatorLifecycle
+{
+public:
+    virtual void applyOperator(suzerain::IState<FPT> * const state) const
+                               throw(suzerain::runtime_error) = 0;
+}
+
+template< typename FPT >
+class ILinearOperator : public IOperatorLifecycle
+{
+public:
+    virtual void applyIdentityPlusScaledOperator(
+                     const FPT scale,
+                     suzerain::IState<FPT> * const state) const
+                     throw(suzerain::runtime_error) = 0;
+    virtual void invertIdentityPlusScaledOperator(
+                     const FPT scale,
+                     suzerain::IState<FPT> * const state) const
+                     throw(suzerain::runtime_error) = 0;
+}
 
 } // namespace timestepper
 
