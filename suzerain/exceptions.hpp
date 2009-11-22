@@ -32,6 +32,10 @@
 
 #include <suzerain/common.hpp>
 
+/** \file
+ * Provides exception types used throughout Suzerain.
+ */
+
 namespace suzerain
 {
 
@@ -40,14 +44,44 @@ namespace suzerain
  * \internal Intended to have the same semantics as \c std::domain_error
  * but with the benefit of boost::exception as a base class.
  */
-class domain_error: public boost::exception { };
+class domain_error: public std::domain_error, public boost::exception {
+public:
+
+    /*!
+     * Construct an instance reporting \c what_arg through its what member
+     * function.
+     *
+     * \param what_arg details describing the cause of the exception.
+     */
+    domain_error(const std::string &what_arg)
+        : std::domain_error(what_arg) {};
+};
+
+/** Reports an invalid argument was provided to a function.
+ *
+ * \internal Intended to have the same semantics as \c std::invalid_argument
+ * but with the benefit of boost::exception as a base class.
+ */
+class invalid_argument: public std::invalid_argument, public boost::exception {
+public:
+
+    /*! \copydoc suzerain::domain_error::domain_error(const std::string&) */
+    invalid_argument(const std::string &what_arg)
+        : std::invalid_argument(what_arg) {};
+};
 
 /** Reports function arguments indicative of a programming error.
  *
  * \internal Intended to have the same semantics as \c std::logic_error
  * but with the benefit of boost::exception as a base class.
  */
-class logic_error: public boost::exception { };
+class logic_error: public std::logic_error, public boost::exception {
+public:
+
+    /*! \copydoc domain_error::domain_error(const std::string&) */
+    logic_error(const std::string &what_arg)
+        : std::logic_error(what_arg) {};
+};
 
 } // namespace suzerain
 

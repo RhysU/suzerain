@@ -54,10 +54,10 @@ public:
      * @param nx Global grid size in the streamwise direction
      * @param ny Global grid size in the wall-normal direction
      * @param nz Global grid size in the spanwise direction
-     * @exception domain_error on negative input
+     * @exception suzerain::invalid_argument on negative input
      */
     pencil_grid(const I proc_dims[2], const I nx, const I ny, const I nz)
-    throw(domain_error);
+    throw(suzerain::invalid_argument);
 
     const dim_type pg1; /**< Processor grid size in \f$ P_1 \f$ direction */
     const dim_type pg2; /**< Processor grid size in \f$ P_2 \f$ direction */
@@ -72,19 +72,21 @@ template<typename I>
 pencil_grid<I>::pencil_grid(
     const I proc_dims[2],
     const I nx, const I ny, const I nz)
-throw(domain_error)
+throw(suzerain::invalid_argument)
         : pg1(proc_dims[0]), pg2(proc_dims[1]),
         nx(nx), ny(ny), nz(nz)
 {
-    if (pg1 < 0) throw domain_error();
+    using suzerain::invalid_argument;
 
-    if (pg2 < 0) throw domain_error();
+    if (pg1 < 0) throw invalid_argument("pg1 must be nonnegative");
 
-    if (ny  < 0) throw domain_error();
+    if (pg2 < 0) throw invalid_argument("pg2 must be nonnegative");
 
-    if (ny  < 0) throw domain_error();
+    if (nx  < 0) throw invalid_argument("nx must be nonnegative");
 
-    if (ny  < 0) throw domain_error();
+    if (ny  < 0) throw invalid_argument("ny must be nonnegative");
+
+    if (nz  < 0) throw invalid_argument("nz must be nonnegative");
 }
 
 } // namespace suzerain

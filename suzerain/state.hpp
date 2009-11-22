@@ -58,7 +58,7 @@ public:
 
     virtual ~IState() {};
 
-    virtual bool isConformant(const IState * const other)
+    virtual bool isConformant(const IState * const other) const
     {
         return    variable_count == other->variable_count
                && vector_length  == other->vector_length
@@ -118,6 +118,9 @@ void RealState<FPT>::scaleAddScaled(const FPT thisScale,
 throw(std::bad_cast,
       suzerain::logic_error)
 {
+    if (!isConformant(other))
+        throw suzerain::logic_error("Nonconformant other in scaleAddScaled");
+
     RealState<FPT> * const o = dynamic_cast<RealState<FPT> * const>(other);
     if (!o) throw std::bad_cast();
 
@@ -190,6 +193,9 @@ void ComplexState<FPT>::scaleAddScaled(const FPT thisScale,
 throw(std::bad_cast,
       suzerain::logic_error)
 {
+    if (!isConformant(other))
+        throw suzerain::logic_error("Nonconformant other in scaleAddScaled");
+
     ComplexState<FPT> * const o
         = dynamic_cast<ComplexState<FPT> * const>(other);
     if (!o) throw std::bad_cast();
