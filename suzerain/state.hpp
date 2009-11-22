@@ -34,21 +34,62 @@
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/exceptions.hpp>
 
+/** @file
+ * Provides an interface and implementations for an abstract state concept.
+ */
+
 namespace suzerain
 {
 
+/**
+ * An interface describing a state space consisting of one or more state
+ * vectors containing one or more state variables.  IState instances of the
+ * same subtype and shape may be scaled by type \c FPT and added together.
+ * Implementations are expected to make the underlying information available
+ * through the Boost.MultiArray concept.
+ *
+ * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
+ *      Boost.MultiArray</a> for more information on the MultiArray concept.
+ */
 template< typename FPT >
 class IState
 {
 public:
+    /**
+     * A signed integral type used to index into MultiArrays.
+     * Provided as a convenience typedef from boost::multi_array::types.
+     **/
     typedef boost::multi_array_types::index index;
+
+    /**
+     * An unsigned integral type used to express a MultiArray's shape.
+     * Provided as a convenience typedef from boost::multi_array::types.
+     **/
     typedef boost::multi_array_types::size_type size_type;
+
+    /**
+     * A signed integral type used to express index offsets for MultiArrays.
+     * Provided as a convenience typedef from boost::multi_array::types.
+     **/
     typedef boost::multi_array_types::difference_type difference_type;
 
-    const size_type variable_count; /**< Number of state variables */
-    const size_type vector_length;  /**< Length of each state vector */
-    const size_type vector_count;   /**< Number of state vectors */
+    /** Number of state variables present at each position in a state vector */
+    const size_type variable_count;
 
+    /** Number of positions within each state vector */
+    const size_type vector_length;
+
+    /** Number of state vectors maintained within this instance */
+    const size_type vector_count;
+
+    /**
+     * Construct an instance holding the given amount of state information.
+     *
+     * @param variable_count Number of individual variables or
+     *                       pieces of state at a given position.
+     * @param vector_length  Number of positions per full state vector.
+     * @param vector_count   Number of independent state vectors to store.
+     */
     IState(size_type variable_count,
            size_type vector_length,
            size_type vector_count)
@@ -56,8 +97,17 @@ public:
             vector_length(vector_length),
             vector_count(vector_count) {};
 
+    /** Virtual destructor appropriate for an abstract base class */
     virtual ~IState() {};
 
+    /**
+     * Is this instance's shape "conformant" with <tt>other</tt>'s?
+     *
+     * @param other another instance to compare against.
+     *
+     * @return True if all of #variable_count, #vector_length, and
+     *         #vector_count are identical.  False otherwise.
+     */
     virtual bool isConformant(const IState * const other) const
     {
         return    variable_count == other->variable_count
@@ -65,6 +115,18 @@ public:
                && vector_count   == other->vector_count;
     }
 
+    /**
+     * Scale and accumulate state information by computing
+     * \f$\mbox{this} \leftarrow{} \mbox{thisScale}\times\mbox{this} +
+     * \mbox{otherScale}\times\mbox{other}\f$.
+     *
+     * @param thisScale Scale factor to apply to this state information.
+     * @param otherScale Scale factor to apply to <tt>other</tt>'s
+     *                   state information.
+     * @param other Another state instance to scale and add to \c this.
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw suzerain::logic_error if \c other is not conformant in shape.
+     */
     virtual void scaleAddScaled(const FPT thisScale,
                                 const FPT otherScale,
                                 IState<FPT> * const other)
@@ -72,27 +134,63 @@ public:
                                       suzerain::logic_error) = 0;
 };
 
+/**
+ * An implementation of IState<FPT> for real-valued state information.
+ */
 template< typename FPT >
 class RealState : public IState<FPT>, public boost::noncopyable
 {
 public:
-    typedef typename boost::multi_array_ref<FPT, 3> state_type;
-
+    /**
+     * Construct an instance holding the given amount of real-valued state
+     * information.
+     *
+     * @param variable_count Number of individual variables or
+     *                       pieces of state at a given position.
+     * @param vector_length  Number of positions per full state vector.
+     * @param vector_count   Number of independent state vectors to store.
+     * @throw std::bad_alloc if a memory allocation error occurs
+     */
     explicit RealState(typename IState<FPT>::size_type variable_count,
                        typename IState<FPT>::size_type vector_length,
                        typename IState<FPT>::size_type vector_count)
                        throw(std::bad_alloc);
 
+    /**
+     * Scale and accumulate state information by computing
+     * \f$\mbox{this} \leftarrow{} \mbox{thisScale}\times\mbox{this} +
+     * \mbox{otherScale}\times\mbox{other}\f$.
+     *
+     * @param thisScale Scale factor to apply to this state information.
+     * @param otherScale Scale factor to apply to <tt>other</tt>'s
+     *                   state information.
+     * @param other Another state instance to scale and add to \c this.
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw suzerain::logic_error if \c other is not conformant in shape.
+     */
     virtual void scaleAddScaled(const FPT thisScale,
                                 const FPT otherScale,
                                 IState<FPT> * const other)
                                 throw(std::bad_cast,
                                       suzerain::logic_error);
-private:
-    boost::shared_array<double> raw;  /**< Raw, aligned storage */
+protected:
+    /**
+     * Raw, aligned storage of all state information stored in column-major
+     * storage over indices #variable_count, #vector_length, and #vector_count.
+     **/
+    boost::shared_array<double> raw;
 
 public:
-    state_type data;  /**< MultiArray of real-valued state */
+    /** Type of the Boost.MultiArray exposed through #data. */
+    typedef typename boost::multi_array_ref<FPT, 3> state_type;
+
+    /**
+     * A three-dimensional Boost.MultiArray of real-valued state kept
+     * zero-indexed in column-major order.  The indices are over
+     * #variable_count, #vector_length, and #vector_count respectively.
+     * The information is contiguous.
+     */
+    state_type data;
 };
 
 template< typename FPT >
@@ -130,33 +228,96 @@ throw(std::bad_cast,
             thisScale,  this->raw.get(), 1);
 }
 
+/**
+ * An implementation of IState<FPT> for complex-valued state information.
+ * \c FPT is the real scalar type used underneath the complex type.
+ */
 template< typename FPT >
 class ComplexState : public IState<FPT>, public boost::noncopyable
 {
 public:
-    typedef typename boost::multi_array_ref<FPT, 4> components_type;
-    typedef typename boost::array_view_gen<components_type,3>::type component_type;
-    typedef typename boost::multi_array_ref<std::complex<FPT>, 3> state_type;
-
+    /**
+     * Construct an instance holding the given amount of complex-valued state
+     * information.
+     *
+     * @param variable_count Number of individual variables or
+     *                       pieces of state at a given position.
+     * @param vector_length  Number of positions per full state vector.
+     * @param vector_count   Number of independent state vectors to store.
+     * @throw std::bad_alloc if a memory allocation error occurs
+     */
     explicit ComplexState(typename IState<FPT>::size_type variable_count,
                           typename IState<FPT>::size_type vector_length,
                           typename IState<FPT>::size_type vector_count)
     throw(std::bad_alloc);
 
+    /**
+     * Scale and accumulate state information by computing
+     * \f$\mbox{this} \leftarrow{} \mbox{thisScale}\times\mbox{this} +
+     * \mbox{otherScale}\times\mbox{other}\f$.
+     *
+     * @param thisScale Scale factor to apply to this state information.
+     * @param otherScale Scale factor to apply to <tt>other</tt>'s
+     *                   state information.
+     * @param other Another state instance to scale and add to \c this.
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw suzerain::logic_error if \c other is not conformant in shape.
+     */
     virtual void scaleAddScaled(const FPT thisScale,
                                 const FPT otherScale,
                                 IState<FPT> * const other)
                                 throw(std::bad_cast,
                                       suzerain::logic_error);
 
-private:
-    boost::shared_array<FPT> raw;  /**< Raw, aligned storage */
+protected:
+    /**
+     * Raw, aligned storage of all state information stored in column-major
+     * storage over \c FPT real-valued components (i.e. real and imaginary),
+     * #variable_count, #vector_length, and #vector_count.
+     **/
+    boost::shared_array<FPT> raw;
 
 public:
-    components_type components;  /**< MultiArray of complex state components */
-    component_type real;         /**< MultiArray of state's real part */
-    component_type imag;         /**< MultiArray of state's imaginary part */
-    state_type data;             /**< MultiArray of complex-valued state */
+    /** Type of the Boost.MultiArray exposed through #components. */
+    typedef typename boost::multi_array_ref<FPT, 4> components_type;
+
+    /** Type of the Boost.MultiArray exposed through #real and #imag. */
+    typedef typename boost::array_view_gen<components_type,3>::type component_type;
+
+    /** Type of the Boost.MultiArray exposed through #data. */
+    typedef typename boost::multi_array_ref<std::complex<FPT>, 3> state_type;
+
+    /**
+     * A four-dimensional Boost.MultiArray of real-valued state kept
+     * zero-indexed in column-major order.  The indices are over the real and
+     * imaginary component, #variable_count, #vector_length, and
+     * #vector_count respectively.  The information is contiguous.
+     */
+    components_type components;
+
+    /**
+     * A three-dimensional Boost.MultiArray view of the real portion of the
+     * complex-valued state zero-indexed in column-major order.  The indices
+     * are over #variable_count, #vector_length, and #vector_count
+     * respectively.  The data is not contiguous in memory.
+     */
+    component_type real;
+
+    /**
+     * A three-dimensional Boost.MultiArray view of the imaginary portion of
+     * the complex-valued state zero-indexed in column-major order.  The
+     * indices are over #variable_count, #vector_length, and #vector_count
+     * respectively.  The data is not contiguous in memory.
+     */
+    component_type imag;
+
+    /**
+     * A three-dimensional Boost.MultiArray view of complex-valued state kept
+     * zero-indexed in column-major order.  The indices are over
+     * #variable_count, #vector_length, and #vector_count respectively.
+     * The information is contiguous.
+     */
+    state_type data;
 };
 
 template< typename FPT >
