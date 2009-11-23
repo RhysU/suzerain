@@ -116,30 +116,28 @@ public:
     }
 
     /**
-     * Scale and accumulate state information by computing
-     * \f$\mbox{this} \leftarrow{} \mbox{thisScale}\times\mbox{this} +
-     * \mbox{otherScale}\times\mbox{other}\f$.
-     *
-     * @param thisScale Scale factor to apply to this state information.
-     * @param otherScale Scale factor to apply to <tt>other</tt>'s
-     *                   state information.
-     * @param other Another state instance to scale and add to \c this.
-     * @throw std::bad_cast if \c other does not have a compatible type.
-     * @throw suzerain::logic_error if \c other is not conformant in shape.
-     */
-    virtual void scaleAddScaled(const FPT thisScale,
-                                const FPT otherScale,
-                                IState<FPT> * const other)
-                                throw(std::bad_cast,
-                                      suzerain::logic_error) = 0;
-
-    /**
      * Scale all state information by the given scale factor, i.e.
-     * \f$\mbox{this} \leftarrow{} \mbox{factor} \mbox{this}\f$.
+     * \f$\mbox{this} \leftarrow{} \mbox{factor}\times\mbox{this}\f$.
      *
      * @param factor Scale factor to use.
      */
     virtual void scale(const FPT factor) = 0;
+
+    /**
+     * Accumulate scaled state information by computing \f$\mbox{this}
+     * \leftarrow{} \mbox{this} + \mbox{factor}\times\mbox{other}\f$.
+     *
+     * @param factor Scale factor to apply to <tt>other</tt>'s
+     *               state information.
+     * @param other Another state instance to scale and add to \c this.
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw suzerain::logic_error if \c other is not conformant in shape.
+     */
+    virtual void addScaled(const FPT factor,
+                          IState<FPT> * const other)
+                          throw(std::bad_cast,
+                                suzerain::logic_error) = 0;
+
 };
 
 /**
@@ -165,30 +163,27 @@ public:
                        throw(std::bad_alloc);
 
     /**
-     * Scale and accumulate state information by computing
-     * \f$\mbox{this} \leftarrow{} \mbox{thisScale}\times\mbox{this} +
-     * \mbox{otherScale}\times\mbox{other}\f$.
-     *
-     * @param thisScale Scale factor to apply to this state information.
-     * @param otherScale Scale factor to apply to <tt>other</tt>'s
-     *                   state information.
-     * @param other Another state instance to scale and add to \c this.
-     * @throw std::bad_cast if \c other does not have a compatible type.
-     * @throw suzerain::logic_error if \c other is not conformant in shape.
-     */
-    virtual void scaleAddScaled(const FPT thisScale,
-                                const FPT otherScale,
-                                IState<FPT> * const other)
-                                throw(std::bad_cast,
-                                      suzerain::logic_error);
-
-    /**
      * Scale all state information by the given scale factor, i.e.
-     * \f$\mbox{this} \leftarrow{} \mbox{factor} \mbox{this}\f$.
+     * \f$\mbox{this} \leftarrow{} \mbox{factor}\times\mbox{this}\f$.
      *
      * @param factor Scale factor to use.
      */
     virtual void scale(const FPT factor);
+
+    /**
+     * Accumulate scaled state information by computing \f$\mbox{this}
+     * \leftarrow{} \mbox{this} + \mbox{factor}\times\mbox{other}\f$.
+     *
+     * @param factor Scale factor to apply to <tt>other</tt>'s
+     *               state information.
+     * @param other Another state instance to scale and add to \c this.
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw suzerain::logic_error if \c other is not conformant in shape.
+     */
+    virtual void addScaled(const FPT factor,
+                          IState<FPT> * const other)
+                          throw(std::bad_cast,
+                                suzerain::logic_error);
 
 protected:
     /**
@@ -227,25 +222,6 @@ throw(std::bad_alloc)
 }
 
 template< typename FPT >
-void RealState<FPT>::scaleAddScaled(const FPT thisScale,
-                                    const FPT otherScale,
-                                    IState<FPT> * const other)
-throw(std::bad_cast,
-      suzerain::logic_error)
-{
-    if (!isConformant(other))
-        throw suzerain::logic_error("Nonconformant other in scaleAddScaled");
-
-    RealState<FPT> * const o = dynamic_cast<RealState<FPT> * const>(other);
-    if (!o) throw std::bad_cast();
-
-    suzerain::blas::axpby<FPT>(
-            this->data.num_elements(),
-            otherScale, o->raw.get(), 1,
-            thisScale,  this->raw.get(), 1);
-}
-
-template< typename FPT >
 void RealState<FPT>::scale(const FPT factor)
 {
     if (factor == FPT(0)) {
@@ -254,6 +230,24 @@ void RealState<FPT>::scale(const FPT factor)
         suzerain::blas::scal<FPT>(
                 this->data.num_elements(), factor, this->raw.get(), 1);
     }
+}
+
+template< typename FPT >
+void RealState<FPT>::addScaled(const FPT factor,
+                               IState<FPT> * const other)
+throw(std::bad_cast,
+      suzerain::logic_error)
+{
+    if (!isConformant(other))
+        throw suzerain::logic_error("Nonconformant other in addScaled");
+
+    RealState<FPT> * const o = dynamic_cast<RealState<FPT> * const>(other);
+    if (!o) throw std::bad_cast();
+
+    suzerain::blas::axpy<FPT>(
+            this->data.num_elements(),
+            factor, o->raw.get(), 1,
+            this->raw.get(), 1);
 }
 
 /**
@@ -280,30 +274,27 @@ public:
     throw(std::bad_alloc);
 
     /**
-     * Scale and accumulate state information by computing
-     * \f$\mbox{this} \leftarrow{} \mbox{thisScale}\times\mbox{this} +
-     * \mbox{otherScale}\times\mbox{other}\f$.
-     *
-     * @param thisScale Scale factor to apply to this state information.
-     * @param otherScale Scale factor to apply to <tt>other</tt>'s
-     *                   state information.
-     * @param other Another state instance to scale and add to \c this.
-     * @throw std::bad_cast if \c other does not have a compatible type.
-     * @throw suzerain::logic_error if \c other is not conformant in shape.
-     */
-    virtual void scaleAddScaled(const FPT thisScale,
-                                const FPT otherScale,
-                                IState<FPT> * const other)
-                                throw(std::bad_cast,
-                                      suzerain::logic_error);
-
-    /**
      * Scale all state information by the given scale factor, i.e.
-     * \f$\mbox{this} \leftarrow{} \mbox{factor} \mbox{this}\f$.
+     * \f$\mbox{this} \leftarrow{} \mbox{factor}\times\mbox{this}\f$.
      *
      * @param factor Scale factor to use.
      */
     virtual void scale(const FPT factor);
+
+    /**
+     * Accumulate scaled state information by computing \f$\mbox{this}
+     * \leftarrow{} \mbox{this} + \mbox{factor}\times\mbox{other}\f$.
+     *
+     * @param factor Scale factor to apply to <tt>other</tt>'s
+     *               state information.
+     * @param other Another state instance to scale and add to \c this.
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw suzerain::logic_error if \c other is not conformant in shape.
+     */
+    virtual void addScaled(const FPT factor,
+                          IState<FPT> * const other)
+                          throw(std::bad_cast,
+                                suzerain::logic_error);
 
 protected:
     /**
@@ -384,26 +375,6 @@ throw(std::bad_alloc)
 }
 
 template< typename FPT >
-void ComplexState<FPT>::scaleAddScaled(const FPT thisScale,
-                                       const FPT otherScale,
-                                       IState<FPT> * const other)
-throw(std::bad_cast,
-      suzerain::logic_error)
-{
-    if (!isConformant(other))
-        throw suzerain::logic_error("Nonconformant other in scaleAddScaled");
-
-    ComplexState<FPT> * const o
-        = dynamic_cast<ComplexState<FPT> * const>(other);
-    if (!o) throw std::bad_cast();
-
-    suzerain::blas::axpby<FPT>(
-            this->components.num_elements(),
-            otherScale, o->raw.get(), 1,
-            thisScale,  this->raw.get(), 1);
-}
-
-template< typename FPT >
 void ComplexState<FPT>::scale(const FPT factor)
 {
     if (factor == FPT(0)) {
@@ -413,6 +384,25 @@ void ComplexState<FPT>::scale(const FPT factor)
         suzerain::blas::scal<FPT>(
                 this->components.num_elements(), factor, this->raw.get(), 1);
     }
+}
+
+template< typename FPT >
+void ComplexState<FPT>::addScaled(const FPT factor,
+                                  IState<FPT> * const other)
+throw(std::bad_cast,
+      suzerain::logic_error)
+{
+    if (!isConformant(other))
+        throw suzerain::logic_error("Nonconformant other in addScaled");
+
+    ComplexState<FPT> * const o
+        = dynamic_cast<ComplexState<FPT> * const>(other);
+    if (!o) throw std::bad_cast();
+
+    suzerain::blas::axpy<FPT>(
+            this->components.num_elements(),
+            factor, o->raw.get(), 1,
+            this->raw.get(), 1);
 }
 
 } // namespace suzerain

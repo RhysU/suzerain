@@ -77,7 +77,8 @@ class ILinearOperator : public IOperatorLifecycle
 public:
     virtual void applyIdentityPlusScaledOperator(
                      const FPT scale,
-                     suzerain::IState<FPT> * const state) const
+                     const suzerain::IState<FPT> * const input,
+                           suzerain::IState<FPT> * const output) const
                      throw(suzerain::runtime_error) = 0;
     virtual void invertIdentityPlusScaledOperator(
                      const FPT scale,
