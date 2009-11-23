@@ -132,6 +132,14 @@ public:
                                 IState<FPT> * const other)
                                 throw(std::bad_cast,
                                       suzerain::logic_error) = 0;
+
+    /**
+     * Scale all state information by the given scale factor, i.e.
+     * \f$\mbox{this} \leftarrow{} \mbox{factor} \mbox{this}\f$.
+     *
+     * @param factor Scale factor to use.
+     */
+    virtual void scale(const FPT factor) = 0;
 };
 
 /**
@@ -173,6 +181,15 @@ public:
                                 IState<FPT> * const other)
                                 throw(std::bad_cast,
                                       suzerain::logic_error);
+
+    /**
+     * Scale all state information by the given scale factor, i.e.
+     * \f$\mbox{this} \leftarrow{} \mbox{factor} \mbox{this}\f$.
+     *
+     * @param factor Scale factor to use.
+     */
+    virtual void scale(const FPT factor);
+
 protected:
     /**
      * Raw, aligned storage of all state information stored in column-major
@@ -228,6 +245,17 @@ throw(std::bad_cast,
             thisScale,  this->raw.get(), 1);
 }
 
+template< typename FPT >
+void RealState<FPT>::scale(const FPT factor)
+{
+    if (factor == FPT(0)) {
+        memset(this->raw.get(), 0, this->data.num_elements()*sizeof(FPT));
+    } else {
+        suzerain::blas::scal<FPT>(
+                this->data.num_elements(), factor, this->raw.get(), 1);
+    }
+}
+
 /**
  * An implementation of IState<FPT> for complex-valued state information.
  * \c FPT is the real scalar type used underneath the complex type.
@@ -268,6 +296,14 @@ public:
                                 IState<FPT> * const other)
                                 throw(std::bad_cast,
                                       suzerain::logic_error);
+
+    /**
+     * Scale all state information by the given scale factor, i.e.
+     * \f$\mbox{this} \leftarrow{} \mbox{factor} \mbox{this}\f$.
+     *
+     * @param factor Scale factor to use.
+     */
+    virtual void scale(const FPT factor);
 
 protected:
     /**
@@ -365,6 +401,18 @@ throw(std::bad_cast,
             this->components.num_elements(),
             otherScale, o->raw.get(), 1,
             thisScale,  this->raw.get(), 1);
+}
+
+template< typename FPT >
+void ComplexState<FPT>::scale(const FPT factor)
+{
+    if (factor == FPT(0)) {
+        memset(this->raw.get(), 0,
+               this->components.num_elements()*sizeof(FPT));
+    } else {
+        suzerain::blas::scal<FPT>(
+                this->components.num_elements(), factor, this->raw.get(), 1);
+    }
 }
 
 } // namespace suzerain

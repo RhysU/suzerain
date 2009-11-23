@@ -104,6 +104,37 @@ BOOST_AUTO_TEST_CASE( scaleAddScaled )
                       suzerain::logic_error);
 }
 
+BOOST_AUTO_TEST_CASE( scale )
+{
+    suzerain::RealState<double> foo(1, 2, 3);
+    foo.data[0][0][0] =  2.0;
+    foo.data[0][1][0] =  3.0;
+    foo.data[0][0][1] =  5.0;
+    foo.data[0][1][1] =  7.0;
+    foo.data[0][0][2] = 11.0;
+    foo.data[0][1][2] = 13.0;
+
+    foo.scale(2.0);
+
+    // Ensure foo.data was modified appropriately
+    BOOST_CHECK_EQUAL(foo.data[0][0][0], 2.0* 2.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][0], 2.0* 3.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][1], 2.0* 5.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][1], 2.0* 7.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][2], 2.0*11.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][2], 2.0*13.0);
+
+    foo.scale(0.0);
+
+    // Ensure foo.data was zeroed
+    BOOST_CHECK_EQUAL(foo.data[0][0][0], 0.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][0], 0.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][1], 0.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][1], 0.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][2], 0.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][2], 0.0);
+}
+
 BOOST_AUTO_TEST_CASE( comparison_and_assignment )
 {
     suzerain::RealState<double> foo(1, 2, 3);
@@ -311,6 +342,50 @@ BOOST_AUTO_TEST_CASE( scaleAddScaled )
     suzerain::ComplexState<double> baz(2, 2, 2);
     BOOST_CHECK_THROW(foo.scaleAddScaled(2.0, 3.0, &baz),
                       suzerain::logic_error);
+}
+
+BOOST_AUTO_TEST_CASE( scale )
+{
+    suzerain::ComplexState<double> foo(1, 2, 3);
+    typedef std::complex<double> complex;
+    foo.data[0][0][0] = complex( 2.0, - 2.0);
+    foo.data[0][1][0] = complex( 3.0, - 3.0);
+    foo.data[0][0][1] = complex( 5.0, - 5.0);
+    foo.data[0][1][1] = complex( 7.0, - 7.0);
+    foo.data[0][0][2] = complex(11.0, -11.0);
+    foo.data[0][1][2] = complex(13.0, -13.0);
+
+    foo.scale(2.0);
+
+    // Ensure foo.data was modified appropriately
+    BOOST_CHECK_EQUAL(foo.real[0][0][0],  2.0* 2.0);
+    BOOST_CHECK_EQUAL(foo.real[0][1][0],  2.0* 3.0);
+    BOOST_CHECK_EQUAL(foo.real[0][0][1],  2.0* 5.0);
+    BOOST_CHECK_EQUAL(foo.real[0][1][1],  2.0* 7.0);
+    BOOST_CHECK_EQUAL(foo.real[0][0][2],  2.0*11.0);
+    BOOST_CHECK_EQUAL(foo.real[0][1][2],  2.0*13.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][0][0], -2.0* 2.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][1][0], -2.0* 3.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][0][1], -2.0* 5.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][1][1], -2.0* 7.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][0][2], -2.0*11.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][1][2], -2.0*13.0);
+
+    foo.scale(0.0);
+
+    // Ensure foo.data was zeroed
+    BOOST_CHECK_EQUAL(foo.real[0][0][0], 0.0);
+    BOOST_CHECK_EQUAL(foo.real[0][1][0], 0.0);
+    BOOST_CHECK_EQUAL(foo.real[0][0][1], 0.0);
+    BOOST_CHECK_EQUAL(foo.real[0][1][1], 0.0);
+    BOOST_CHECK_EQUAL(foo.real[0][0][2], 0.0);
+    BOOST_CHECK_EQUAL(foo.real[0][1][2], 0.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][0][0], 0.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][1][0], 0.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][0][1], 0.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][1][1], 0.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][0][2], 0.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][1][2], 0.0);
 }
 
 BOOST_AUTO_TEST_CASE( comparison_and_assignment )
