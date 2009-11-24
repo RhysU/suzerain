@@ -154,7 +154,7 @@ locations $a$ and $b$, each substep computation follows algorithm
   \STATE $b\leftarrow{}b + \left(I+\Delta{}t\alpha_{i}L\right)a$
   \STATE $a\leftarrow{}N\left(a\right)$
   \STATE $b\leftarrow{}b + \Delta{}t\gamma_{i}a$
-  \STATE $b\leftarrow{}\left(I-\Delta{}t\beta_{i}\right)^{-1}b$
+  \STATE $b\leftarrow{}\left(I-\Delta{}t\beta_{i}L\right)^{-1}b$
   \ENSURE Storage $a = N\left(u^{i}\right)$;
           storage $b = u^{i+1}$
 \end{algorithmic}
