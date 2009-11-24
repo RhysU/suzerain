@@ -75,10 +75,10 @@ test_richardson_SOURCES  = test_richardson.c
 test_richardson_LDADD    = $(GSL_LIBS)
 test_richardson_LDADD   += ../suzerain/libsuzerain.la
 
-check_PROGRAMS           += test_timestepper
-test_timestepper_SOURCES  = test_timestepper.c
-test_timestepper_LDADD    = $(GSL_LIBS)
-test_timestepper_LDADD   += ../suzerain/libsuzerain.la
+check_PROGRAMS               += test_timestepper_old
+test_timestepper_old_SOURCES  = test_timestepper_old.c
+test_timestepper_old_LDADD    = $(GSL_LIBS)
+test_timestepper_old_LDADD   += ../suzerain/libsuzerain.la
 
 check_PROGRAMS       += test_fftw_1D
 test_fftw_1D_SOURCES  = test_fftw_1D.cpp
