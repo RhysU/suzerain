@@ -69,7 +69,7 @@ class INonlinearOperator : public IOperatorLifecycle
 public:
     virtual void applyOperator(suzerain::IState<FPT> * const state) const
                                throw(suzerain::runtime_error) = 0;
-}
+};
 
 template< typename FPT >
 class ILinearOperator : public IOperatorLifecycle
@@ -84,7 +84,7 @@ public:
                      const FPT scale,
                      suzerain::IState<FPT> * const state) const
                      throw(suzerain::runtime_error) = 0;
-}
+};
 
 template< typename FPT >
 class ILowStorageMethod
@@ -97,7 +97,7 @@ public:
     virtual FPT gamma(std::size_t substep) const = 0;
     virtual FPT delta(std::size_t substep) const = 0;
     virtual ~ILowStorageMethod() {};
-}
+};
 
 template< typename FPT >
 class SMR91Method : ILowStorageMethod<FPT>
@@ -109,32 +109,31 @@ public:
     virtual FPT beta(const std::size_t substep);
     virtual FPT gamma(const std::size_t substep);
     virtual FPT zeta(const std::size_t substep);
-    virtual ~ILowStorageMethod() {};
-}
+};
 
 template< typename FPT >
-FPT SMR91Method::alpha(const std::size_t substep)
+FPT SMR91Method<FPT>::alpha(const std::size_t substep)
 {
     const FPT coeff[3] = { FPT(29)/FPT(96),  FPT(-3)/FPT(40), FPT(1)/FPT(6) };
     return coeff[substep];
 }
 
 template< typename FPT >
-FPT SMR91Method::beta(const std::size_t substep)
+FPT SMR91Method<FPT>::beta(const std::size_t substep)
 {
     const FPT coeff[3] = { FPT(37)/FPT(160), FPT(5)/FPT(24), FPT(1)/FPT(6) };
     return coeff[substep];
 }
 
 template< typename FPT >
-FPT SMR91Method::gamma(const std::size_t substep)
+FPT SMR91Method<FPT>::gamma(const std::size_t substep)
 {
     const FPT coeff[3] = { FPT(8)/FPT(15), FPT(5)/FPT(12), FPT(3)/FPT(4) };
     return coeff[substep];
 }
 
 template< typename FPT >
-FPT SMR91Method::zeta(const std::size_t substep)
+FPT SMR91Method<FPT>::zeta(const std::size_t substep)
 {
     const FPT coeff[3] = { FPT(0), FPT(-17)/FPT(60), FPT(-5)/FPT(12) };
     return coeff[substep];
