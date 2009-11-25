@@ -134,7 +134,7 @@ public:
      * @throw suzerain::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
-                          IState<FPT> * const other)
+                          const IState<FPT> * const other)
                           throw(std::bad_cast,
                                 suzerain::logic_error) = 0;
 
@@ -181,7 +181,7 @@ public:
      * @throw suzerain::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
-                          IState<FPT> * const other)
+                          const IState<FPT> * const other)
                           throw(std::bad_cast,
                                 suzerain::logic_error);
 
@@ -234,14 +234,15 @@ void RealState<FPT>::scale(const FPT factor)
 
 template< typename FPT >
 void RealState<FPT>::addScaled(const FPT factor,
-                               IState<FPT> * const other)
+                               const IState<FPT> * const other)
 throw(std::bad_cast,
       suzerain::logic_error)
 {
     if (!isConformant(other))
         throw suzerain::logic_error("Nonconformant other in addScaled");
 
-    RealState<FPT> * const o = dynamic_cast<RealState<FPT> * const>(other);
+    const RealState<FPT> * const o
+        = dynamic_cast<const RealState<FPT> * const>(other);
     if (!o) throw std::bad_cast();
 
     suzerain::blas::axpy<FPT>(
@@ -292,7 +293,7 @@ public:
      * @throw suzerain::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
-                          IState<FPT> * const other)
+                          const IState<FPT> * const other)
                           throw(std::bad_cast,
                                 suzerain::logic_error);
 
@@ -388,15 +389,15 @@ void ComplexState<FPT>::scale(const FPT factor)
 
 template< typename FPT >
 void ComplexState<FPT>::addScaled(const FPT factor,
-                                  IState<FPT> * const other)
+                                  const IState<FPT> * const other)
 throw(std::bad_cast,
       suzerain::logic_error)
 {
     if (!isConformant(other))
         throw suzerain::logic_error("Nonconformant other in addScaled");
 
-    ComplexState<FPT> * const o
-        = dynamic_cast<ComplexState<FPT> * const>(other);
+    const ComplexState<FPT> * const o
+        = dynamic_cast<const ComplexState<FPT> * const>(other);
     if (!o) throw std::bad_cast();
 
     suzerain::blas::axpy<FPT>(

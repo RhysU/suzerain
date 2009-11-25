@@ -121,14 +121,6 @@ BOOST_AUTO_TEST_CASE( addScaled )
     BOOST_CHECK_EQUAL(foo.data[0][0][2], 11.0 + 3.0*31.0);
     BOOST_CHECK_EQUAL(foo.data[0][1][2], 13.0 + 3.0*37.0);
 
-    // Ensure bar.data was not modified
-    BOOST_CHECK_EQUAL(bar.data[0][0][0], 17.0);
-    BOOST_CHECK_EQUAL(bar.data[0][1][0], 19.0);
-    BOOST_CHECK_EQUAL(bar.data[0][0][1], 23.0);
-    BOOST_CHECK_EQUAL(bar.data[0][1][1], 29.0);
-    BOOST_CHECK_EQUAL(bar.data[0][0][2], 31.0);
-    BOOST_CHECK_EQUAL(bar.data[0][1][2], 37.0);
-
     // Ensure we catch an operation between two nonconforming states
     suzerain::RealState<double> baz(2, 2, 2);
     BOOST_CHECK_THROW(foo.addScaled(3.0, &baz), suzerain::logic_error);
@@ -372,14 +364,6 @@ BOOST_AUTO_TEST_CASE( addScaled )
     BOOST_CHECK_EQUAL(foo.imag[0][1][1], - 7.0 - 3.0*29.0);
     BOOST_CHECK_EQUAL(foo.imag[0][0][2], -11.0 - 3.0*31.0);
     BOOST_CHECK_EQUAL(foo.imag[0][1][2], -13.0 - 3.0*37.0);
-
-    // Ensure bar.data was not modified
-    BOOST_CHECK_EQUAL(bar.data[0][0][0], complex(17.0, -17.0));
-    BOOST_CHECK_EQUAL(bar.data[0][1][0], complex(19.0, -19.0));
-    BOOST_CHECK_EQUAL(bar.data[0][0][1], complex(23.0, -23.0));
-    BOOST_CHECK_EQUAL(bar.data[0][1][1], complex(29.0, -29.0));
-    BOOST_CHECK_EQUAL(bar.data[0][0][2], complex(31.0, -31.0));
-    BOOST_CHECK_EQUAL(bar.data[0][1][2], complex(37.0, -37.0));
 
     // Ensure we catch an operation between two nonconforming states
     suzerain::ComplexState<double> baz(2, 2, 2);
