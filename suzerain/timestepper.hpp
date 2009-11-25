@@ -75,7 +75,7 @@ template< typename FPT >
 class ILinearOperator : public IOperatorLifecycle
 {
 public:
-    virtual void applyIdentityPlusScaledOperator(
+    virtual void accumulateIdentityPlusScaledOperator(
                      const FPT scale,
                      const suzerain::IState<FPT> * const input,
                            suzerain::IState<FPT> * const output) const
@@ -95,45 +95,45 @@ public:
     virtual FPT alpha(std::size_t substep) const = 0;
     virtual FPT beta(std::size_t substep) const = 0;
     virtual FPT gamma(std::size_t substep) const = 0;
-    virtual FPT delta(std::size_t substep) const = 0;
+    virtual FPT zeta(std::size_t substep) const = 0;
     virtual ~ILowStorageMethod() {};
 };
 
 template< typename FPT >
-class SMR91Method : ILowStorageMethod<FPT>
+class SMR91Method : public ILowStorageMethod<FPT>
 {
 public:
-    virtual const char * name() { return "SMR91"; };
-    virtual std::size_t substeps() { return 3; };
-    virtual FPT alpha(const std::size_t substep);
-    virtual FPT beta(const std::size_t substep);
-    virtual FPT gamma(const std::size_t substep);
-    virtual FPT zeta(const std::size_t substep);
+    virtual const char * name() const { return "SMR91"; }
+    virtual std::size_t substeps() const { return 3; };
+    virtual FPT alpha(const std::size_t substep) const;
+    virtual FPT beta(const std::size_t substep) const;
+    virtual FPT gamma(const std::size_t substep) const;
+    virtual FPT zeta(const std::size_t substep) const;
 };
 
 template< typename FPT >
-FPT SMR91Method<FPT>::alpha(const std::size_t substep)
+FPT SMR91Method<FPT>::alpha(const std::size_t substep) const
 {
     const FPT coeff[3] = { FPT(29)/FPT(96),  FPT(-3)/FPT(40), FPT(1)/FPT(6) };
     return coeff[substep];
 }
 
 template< typename FPT >
-FPT SMR91Method<FPT>::beta(const std::size_t substep)
+FPT SMR91Method<FPT>::beta(const std::size_t substep) const
 {
     const FPT coeff[3] = { FPT(37)/FPT(160), FPT(5)/FPT(24), FPT(1)/FPT(6) };
     return coeff[substep];
 }
 
 template< typename FPT >
-FPT SMR91Method<FPT>::gamma(const std::size_t substep)
+FPT SMR91Method<FPT>::gamma(const std::size_t substep) const
 {
     const FPT coeff[3] = { FPT(8)/FPT(15), FPT(5)/FPT(12), FPT(3)/FPT(4) };
     return coeff[substep];
 }
 
 template< typename FPT >
-FPT SMR91Method<FPT>::zeta(const std::size_t substep)
+FPT SMR91Method<FPT>::zeta(const std::size_t substep) const
 {
     const FPT coeff[3] = { FPT(0), FPT(-17)/FPT(60), FPT(-5)/FPT(12) };
     return coeff[substep];
