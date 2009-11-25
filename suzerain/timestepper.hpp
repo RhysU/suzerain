@@ -45,21 +45,27 @@ public:
     virtual ~IOperatorConfig() {};
 };
 
+class IOperatorLifecycle
+{
+public:
+    virtual void init(const IOperatorConfig * const config)
+                      throw(std::runtime_error) {};
+    virtual void destroy() {};
+    virtual ~IOperatorLifecycle() {};
+};
+
 class IOperatorSplit
 {
 public:
     virtual ~IOperatorSplit() {};
 };
 
-class IOperatorLifecycle
+class IAdjustableSplitOperator
 {
 public:
-    virtual void init(const IOperatorConfig * const config)
-                      throw(std::runtime_error) {};
     virtual void establishSplit(const IOperatorSplit * const split)
                                 throw(std::exception) {};
-    virtual void destroy() {};
-    virtual ~IOperatorLifecycle() {};
+    virtual ~IAdjustableSplitOperator() {};
 };
 
 template< typename FPT >
@@ -69,6 +75,9 @@ public:
     virtual void applyOperator(suzerain::IState<FPT> * const state) const
                                throw(std::exception) = 0;
 };
+
+namespace lowstorage
+{
 
 template< typename FPT >
 class ILinearOperator : public IOperatorLifecycle
@@ -86,13 +95,14 @@ public:
 };
 
 template< typename FPT >
-class ScalingOperator : public ILinearOperator<FPT>, public INonlinearOperator<FPT>
+class MultiplicativeOperator
+    : public ILinearOperator<FPT>, public INonlinearOperator<FPT>
 {
 private:
     const FPT factor;
 
 public:
-    ScalingOperator(const FPT factor) : factor(factor) {};
+    MultiplicativeOperator(const FPT factor) : factor(factor) {};
 
     virtual void applyOperator(suzerain::IState<FPT> * const state) const
                                throw(std::exception)
@@ -170,6 +180,41 @@ FPT SMR91Method<FPT>::zeta(const std::size_t substep) const
     const FPT coeff[3] = { FPT(0), FPT(-17)/FPT(60), FPT(-5)/FPT(12) };
     return coeff[substep];
 }
+
+template< typename FPT >
+void substep(const ILowStorageMethod<FPT> * const m,
+             const INonlinearOperator<FPT> * const N,
+             const ILinearOperator<FPT> * const L,
+             const FPT delta_t,
+             IState<FPT> * const a,
+             IState<FPT> * const b,
+             const std::size_t substep)
+throw(std::exception)
+{
+    if (substep >= m->substeps())
+        throw std::invalid_argument("Requested substep too large");
+
+    b->scale(delta_t * m->zeta(substep));
+    L->accumulateIdentityPlusScaledOperator(delta_t * m->alpha(substep), a, b);
+    N->applyOperator(a);
+    b->addScaled(delta_t * m->beta(substep));
+    L->invertIdentityPlusScaledOperator(-delta_t * m->beta(substep), b);
+}
+
+template< typename FPT >
+void substep(const ILowStorageMethod<FPT> * const m,
+             const INonlinearOperator<FPT> * const N,
+             const FPT delta_t,
+             IState<FPT> * const a,
+             IState<FPT> * const b,
+             const std::size_t substep)
+throw(std::exception)
+{
+    MultiplicativeOperator<FPT> zero_operator(FPT(0));
+    return substep(m, N, &zero_operator, delta_t, a, b, substep);
+}
+
+} // namespace lowstorage
 
 } // namespace timestepper
 

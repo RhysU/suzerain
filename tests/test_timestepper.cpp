@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_SUITE( SMR91Method )
 
 BOOST_AUTO_TEST_CASE( constants )
 {
-    using suzerain::timestepper::SMR91Method;
+    using suzerain::timestepper::lowstorage::SMR91Method;
 
     {
         const float close_enough = std::numeric_limits<float>::epsilon();
@@ -44,19 +44,19 @@ BOOST_AUTO_TEST_CASE( constants )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( ScalingOperator )
+BOOST_AUTO_TEST_SUITE( MultiplicativeOperator )
 
 BOOST_AUTO_TEST_CASE( applyOperator )
 {
     const double close_enough = std::numeric_limits<double>::epsilon();
 
     using suzerain::RealState;
-    using suzerain::timestepper::ScalingOperator;
+    using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 
     RealState<double> a(1,1,1);
     a.data[0][0][0] = 1.0;
 
-    ScalingOperator<double> op(2.0);
+    MultiplicativeOperator<double> op(2.0);
     op.applyOperator(&a);
     BOOST_CHECK_CLOSE(a.data[0][0][0], 2.0, close_enough);
     op.applyOperator(&a);
@@ -70,13 +70,13 @@ BOOST_AUTO_TEST_CASE( accumulateIdentityPlusScaledOperator )
     const double close_enough = std::numeric_limits<double>::epsilon();
 
     using suzerain::RealState;
-    using suzerain::timestepper::ScalingOperator;
+    using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 
     RealState<double> a(1,1,1), b(1,1,1), c(2,1,1);
     a.data[0][0][0] = 2.0;
     b.data[0][0][0] = 3.0;
 
-    ScalingOperator<double> op(5.0);
+    MultiplicativeOperator<double> op(5.0);
     op.accumulateIdentityPlusScaledOperator(7.0, &a, &b);
     BOOST_CHECK_CLOSE(b.data[0][0][0], 75.0, close_enough);
     op.accumulateIdentityPlusScaledOperator(0.0, &b, &a);
@@ -92,12 +92,12 @@ BOOST_AUTO_TEST_CASE( invertIdentityPlusScaledOperator )
     const double close_enough = std::numeric_limits<double>::epsilon();
 
     using suzerain::RealState;
-    using suzerain::timestepper::ScalingOperator;
+    using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 
     RealState<double> a(1,1,1), b(2,1,1);
     a.data[0][0][0] = 2.0;
 
-    ScalingOperator<double> op(3.0);
+    MultiplicativeOperator<double> op(3.0);
     op.invertIdentityPlusScaledOperator(5.0, &a);
     BOOST_CHECK_CLOSE(a.data[0][0][0], 1.0/8.0, close_enough);
 }
