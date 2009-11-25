@@ -145,6 +145,7 @@ template< typename FPT >
 class SMR91Method : public ILowStorageMethod<FPT>
 {
 public:
+    SMR91Method() {};
     virtual const char * name() const { return "SMR91"; }
     virtual std::size_t substeps() const { return 3; };
     virtual FPT alpha(const std::size_t substep) const;
@@ -188,17 +189,19 @@ void substep(const ILowStorageMethod<FPT> * const m,
              const FPT delta_t,
              IState<FPT> * const a,
              IState<FPT> * const b,
-             const std::size_t substep)
+             const std::size_t substep_index)
 throw(std::exception)
 {
-    if (substep >= m->substeps())
+    if (substep_index >= m->substeps())
         throw std::invalid_argument("Requested substep too large");
 
-    b->scale(delta_t * m->zeta(substep));
-    L->accumulateIdentityPlusScaledOperator(delta_t * m->alpha(substep), a, b);
+    b->scale(delta_t * m->zeta(substep_index));
+    L->accumulateIdentityPlusScaledOperator(
+            delta_t * m->alpha(substep_index), a, b);
     N->applyOperator(a);
-    b->addScaled(delta_t * m->beta(substep));
-    L->invertIdentityPlusScaledOperator(-delta_t * m->beta(substep), b);
+    b->addScaled(delta_t * m->gamma(substep_index), a);
+    L->invertIdentityPlusScaledOperator(
+            - delta_t * m->beta(substep_index), b);
 }
 
 template< typename FPT >
@@ -207,11 +210,11 @@ void substep(const ILowStorageMethod<FPT> * const m,
              const FPT delta_t,
              IState<FPT> * const a,
              IState<FPT> * const b,
-             const std::size_t substep)
+             const std::size_t substep_index)
 throw(std::exception)
 {
     MultiplicativeOperator<FPT> zero_operator(FPT(0));
-    return substep(m, N, &zero_operator, delta_t, a, b, substep);
+    return substep<FPT>(m, N, &zero_operator, delta_t, a, b, substep_index);
 }
 
 } // namespace lowstorage
