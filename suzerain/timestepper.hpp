@@ -31,7 +31,6 @@
 #define __SUZERAIN_TIMESTEPPER_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/exceptions.hpp>
 #include <suzerain/state.hpp>
 
 namespace suzerain
@@ -56,9 +55,9 @@ class IOperatorLifecycle
 {
 public:
     virtual void init(const IOperatorConfig * const config)
-                      throw(suzerain::runtime_error) {};
+                      throw(std::runtime_error) {};
     virtual void establishSplit(const IOperatorSplit * const split)
-                                throw(suzerain::runtime_error) {};
+                                throw(std::exception) {};
     virtual void destroy() {};
     virtual ~IOperatorLifecycle() {};
 };
@@ -68,7 +67,7 @@ class INonlinearOperator : public IOperatorLifecycle
 {
 public:
     virtual void applyOperator(suzerain::IState<FPT> * const state) const
-                               throw(suzerain::runtime_error) = 0;
+                               throw(std::exception) = 0;
 };
 
 template< typename FPT >
@@ -79,11 +78,44 @@ public:
                      const FPT scale,
                      const suzerain::IState<FPT> * const input,
                            suzerain::IState<FPT> * const output) const
-                     throw(suzerain::runtime_error) = 0;
+                     throw(std::exception) = 0;
     virtual void invertIdentityPlusScaledOperator(
                      const FPT scale,
                      suzerain::IState<FPT> * const state) const
-                     throw(suzerain::runtime_error) = 0;
+                     throw(std::exception) = 0;
+};
+
+template< typename FPT >
+class ScalingOperator : public ILinearOperator<FPT>, public INonlinearOperator<FPT>
+{
+private:
+    const FPT factor;
+
+public:
+    ScalingOperator(const FPT factor) : factor(factor) {};
+
+    virtual void applyOperator(suzerain::IState<FPT> * const state) const
+                               throw(std::exception)
+    {
+        state->scale(factor);
+    };
+
+    virtual void accumulateIdentityPlusScaledOperator(
+                     const FPT scale,
+                     const suzerain::IState<FPT> * const input,
+                           suzerain::IState<FPT> * const output) const
+                     throw(std::exception)
+    {
+        output->addScaled(1.0 + scale*factor, input);
+    };
+
+    virtual void invertIdentityPlusScaledOperator(
+                     const FPT scale,
+                     suzerain::IState<FPT> * const state) const
+                     throw(std::exception)
+    {
+        state->scale(1/(1+scale*factor));
+    };
 };
 
 template< typename FPT >

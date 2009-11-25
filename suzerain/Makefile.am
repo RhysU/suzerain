@@ -29,7 +29,6 @@ pkginclude_HEADERS += blas_et_al.hpp
 pkginclude_HEADERS += bspline.h
 pkginclude_HEADERS += common.h
 pkginclude_HEADERS += error.h
-pkginclude_HEADERS += exceptions.hpp
 pkginclude_HEADERS += fftw_multi_array.hpp
 pkginclude_HEADERS += function.h
 pkginclude_HEADERS += orthonormal.hpp

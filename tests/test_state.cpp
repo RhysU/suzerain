@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( addScaled )
 
     // Ensure we catch an operation between two nonconforming states
     suzerain::RealState<double> baz(2, 2, 2);
-    BOOST_CHECK_THROW(foo.addScaled(3.0, &baz), suzerain::logic_error);
+    BOOST_CHECK_THROW(foo.addScaled(3.0, &baz), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE( comparison_and_assignment )
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE( addScaled )
 
     // Ensure we catch an operation between two nonconforming states
     suzerain::ComplexState<double> baz(2, 2, 2);
-    BOOST_CHECK_THROW(foo.addScaled(3.0, &baz), suzerain::logic_error);
+    BOOST_CHECK_THROW(foo.addScaled(3.0, &baz), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE( comparison_and_assignment )

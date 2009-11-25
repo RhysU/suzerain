@@ -31,7 +31,6 @@
 #define __SUZERAIN_PENCILGRID_H
 
 #include <suzerain/common.hpp>
-#include <suzerain/exceptions.hpp>
 
 namespace suzerain
 {
@@ -54,10 +53,10 @@ public:
      * @param nx Global grid size in the streamwise direction
      * @param ny Global grid size in the wall-normal direction
      * @param nz Global grid size in the spanwise direction
-     * @exception suzerain::invalid_argument on negative input
+     * @exception std::invalid_argument on negative input
      */
     pencil_grid(const I proc_dims[2], const I nx, const I ny, const I nz)
-    throw(suzerain::invalid_argument);
+    throw(std::invalid_argument);
 
     const dim_type pg1; /**< Processor grid size in \f$ P_1 \f$ direction */
     const dim_type pg2; /**< Processor grid size in \f$ P_2 \f$ direction */
@@ -72,11 +71,11 @@ template<typename I>
 pencil_grid<I>::pencil_grid(
     const I proc_dims[2],
     const I nx, const I ny, const I nz)
-throw(suzerain::invalid_argument)
+throw(std::invalid_argument)
         : pg1(proc_dims[0]), pg2(proc_dims[1]),
         nx(nx), ny(ny), nz(nz)
 {
-    using suzerain::invalid_argument;
+    using std::invalid_argument;
 
     if (pg1 < 0) throw invalid_argument("pg1 must be nonnegative");
 

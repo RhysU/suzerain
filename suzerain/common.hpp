@@ -57,7 +57,6 @@
 #ifdef SUZERAIN_HAVE_BOOST
 #include <boost/array.hpp>
 #include <boost/concept/assert.hpp>
-#include <boost/exception.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/iterator/counting_iterator.hpp>

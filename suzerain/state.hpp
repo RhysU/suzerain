@@ -32,7 +32,6 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
-#include <suzerain/exceptions.hpp>
 
 /** @file
  * Provides an interface and implementations for an abstract state concept.
@@ -131,12 +130,12 @@ public:
      *               state information.
      * @param other Another state instance to scale and add to \c this.
      * @throw std::bad_cast if \c other does not have a compatible type.
-     * @throw suzerain::logic_error if \c other is not conformant in shape.
+     * @throw std::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
                           const IState<FPT> * const other)
                           throw(std::bad_cast,
-                                suzerain::logic_error) = 0;
+                                std::logic_error) = 0;
 
 };
 
@@ -178,12 +177,12 @@ public:
      *               state information.
      * @param other Another state instance to scale and add to \c this.
      * @throw std::bad_cast if \c other does not have a compatible type.
-     * @throw suzerain::logic_error if \c other is not conformant in shape.
+     * @throw std::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
                           const IState<FPT> * const other)
                           throw(std::bad_cast,
-                                suzerain::logic_error);
+                                std::logic_error);
 
 protected:
     /**
@@ -236,10 +235,10 @@ template< typename FPT >
 void RealState<FPT>::addScaled(const FPT factor,
                                const IState<FPT> * const other)
 throw(std::bad_cast,
-      suzerain::logic_error)
+      std::logic_error)
 {
     if (!isConformant(other))
-        throw suzerain::logic_error("Nonconformant other in addScaled");
+        throw std::logic_error("Nonconformant other in addScaled");
 
     const RealState<FPT> * const o
         = dynamic_cast<const RealState<FPT> * const>(other);
@@ -290,12 +289,12 @@ public:
      *               state information.
      * @param other Another state instance to scale and add to \c this.
      * @throw std::bad_cast if \c other does not have a compatible type.
-     * @throw suzerain::logic_error if \c other is not conformant in shape.
+     * @throw std::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
                           const IState<FPT> * const other)
                           throw(std::bad_cast,
-                                suzerain::logic_error);
+                                std::logic_error);
 
 protected:
     /**
@@ -391,10 +390,10 @@ template< typename FPT >
 void ComplexState<FPT>::addScaled(const FPT factor,
                                   const IState<FPT> * const other)
 throw(std::bad_cast,
-      suzerain::logic_error)
+      std::logic_error)
 {
     if (!isConformant(other))
-        throw suzerain::logic_error("Nonconformant other in addScaled");
+        throw std::logic_error("Nonconformant other in addScaled");
 
     const ComplexState<FPT> * const o
         = dynamic_cast<const ComplexState<FPT> * const>(other);

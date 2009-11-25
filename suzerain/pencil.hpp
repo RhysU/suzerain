@@ -236,11 +236,11 @@ public:
          * @param size  sizes of the data stored within this instance
          * @param data  location where coefficients are to be found,
          *              must be sufficiently large to hold all elements.
-         * @throw suzerain::invalid_argument if any index is negative.
+         * @throw std::invalid_argument if any index is negative.
          */
         physical_space(
             const dim_type start[3], const dim_type size[3], real_pointer data)
-        throw(suzerain::invalid_argument);
+        throw(std::invalid_argument);
 
         /** Raw real_type data where coefficients are stored. */
         real_pointer const data_;
@@ -397,11 +397,11 @@ public:
          * @param size  sizes of the data stored within this instance
          * @param data  location where coefficients are to be found,
          *              must be sufficiently large to hold all elements.
-         * @throw suzerain::invalid_argument if any index is negative.
+         * @throw std::invalid_argument if any index is negative.
          */
         wave_space(
             const dim_type start[3], const dim_type size[3], real_pointer data)
-        throw(suzerain::invalid_argument);
+        throw(std::invalid_argument);
 
         /** Raw complex_type data where coefficients are stored. */
         complex_pointer const data_complex_;
@@ -425,11 +425,11 @@ public:
      * @param wstart zero-indexed starting location in wave space within the
      *               global grid.
      * @param wsize  size of the pencil in wave space.
-     * @throw suzerain::invalid_argument if any index is negative.
+     * @throw std::invalid_argument if any index is negative.
      */
     pencil(const dim_type pstart[3], const dim_type psize[3],
            const dim_type wstart[3], const dim_type wsize[3])
-    throw(suzerain::invalid_argument);
+    throw(std::invalid_argument);
 
     /**
      * @name Iterator-based access to all physical and wave space data.
@@ -458,7 +458,7 @@ template<typename T, typename G>
 pencil<T, G>::pencil(
     const dim_type pstart[3], const dim_type psize[3],
     const dim_type wstart[3], const dim_type wsize[3])
-throw(suzerain::invalid_argument)
+throw(std::invalid_argument)
         : data_nelem_(std::max(
               psize[0]*psize[1]*psize[2],
             2*wsize[0]*wsize[1]*wsize[2])),
@@ -512,7 +512,7 @@ pencil<T, G>::data()
 template<typename T, typename G>
 pencil<T, G>::physical_space::physical_space(
     const dim_type start[3], const dim_type size[3], real_pointer data)
-throw(suzerain::invalid_argument)
+throw(std::invalid_argument)
     :
     start_x(start[0]), start_y(start[1]), start_z(start[2]),
     end_x(start[0]+size[0]), end_y(start[1]+size[1]), end_z(start[2]+size[2]),
@@ -521,7 +521,7 @@ throw(suzerain::invalid_argument)
     data_(data),
     size_xz_(size_x*size_z)
 {
-    using suzerain::invalid_argument;
+    using std::invalid_argument;
 
     if (start_x < 0) throw invalid_argument("start_x must be nonnegative");
 
@@ -541,7 +541,7 @@ pencil<T, G>::wave_space::wave_space(
     const dim_type start[3],
     const dim_type size[3],
     real_pointer data)
-throw(suzerain::invalid_argument)
+throw(std::invalid_argument)
     :
     start_x(start[0]), start_y(start[1]), start_z(start[2]),
     end_x(start[0]+size[0]), end_y(start[1]+size[1]), end_z(start[2]+size[2]),
@@ -551,7 +551,7 @@ throw(suzerain::invalid_argument)
     data_real_(data),
     size_xy_(size_x*size_y)
 {
-    using suzerain::invalid_argument;
+    using std::invalid_argument;
 
     if (start_x < 0) throw invalid_argument("start_x must be nonnegative");
 
