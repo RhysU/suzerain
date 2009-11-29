@@ -72,7 +72,7 @@ def substep_hybrid_residual(linear, nonlinear,
             )
         rhs = (
                 a_old[i]
-                + delta_t * alpha[substep] * a_old[i]
+                + delta_t * alpha[substep] * linear(a_old[i])
                 + delta_t * gamma[substep] * a_new[i]
                 + delta_t * zeta[substep]  * b_old[i]
             )
@@ -98,6 +98,6 @@ substep_hybrid_residual_2 = substep_hybrid_residual(
         RiccatiHybridLinearOperator(2,3),
         RiccatiHybridNonlinearOperator(2,3),
         [5,7], [11,13],
-        substep_hybrid_1[0], substep_hybrid_1[1],
+        substep_hybrid_2[0], substep_hybrid_2[1],
         17, 2
     )
