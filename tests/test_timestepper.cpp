@@ -200,4 +200,102 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
                       std::invalid_argument);
 }
 
+// Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
+// right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
+template< typename FPT >
+class RiccatiNonlinearOperator
+    : public suzerain::timestepper::INonlinearOperator<FPT>
+{
+private:
+    const FPT a;
+    const FPT b;
+
+public:
+    RiccatiNonlinearOperator(const FPT a, const FPT b) : a(a), b(b) {};
+
+    virtual void applyOperator(suzerain::IState<FPT> * const state) const
+                               throw(std::exception)
+    {
+        suzerain::RealState<FPT> * const realstate
+            = dynamic_cast<suzerain::RealState<FPT> *>(state);
+        typedef typename suzerain::RealState<FPT>::index index;
+        for (index k = 0; k < realstate->data.shape()[2]; ++k)
+            for (index j = 0; j < realstate->data.shape()[1]; ++j)
+                for (index i = 0; i < realstate->data.shape()[0]; ++i) {
+                    FPT &y = realstate->data[i][j][k];
+                    y = y*y - a*a - a*b;
+                }
+    };
+};
+
+template< typename FPT >
+class RiccatiLinearOperator
+    : public suzerain::timestepper::lowstorage::MultiplicativeOperator<FPT>
+{
+public:
+    RiccatiLinearOperator(const FPT a, const FPT b)
+        : suzerain::timestepper::lowstorage::MultiplicativeOperator<FPT>(b) {};
+};
+
+BOOST_AUTO_TEST_CASE( substep_hybrid )
+{
+    // See test_timestepper.sage for manufactured answers
+
+    using suzerain::RealState;
+    using suzerain::timestepper::lowstorage::SMR91Method;
+    using suzerain::timestepper::lowstorage::substep;
+
+    const double close_enough = std::numeric_limits<double>::epsilon()*500;
+    const SMR91Method<double> m;
+    const RiccatiNonlinearOperator<double> nonlinear_op(2, 3);
+    const RiccatiLinearOperator<double>    linear_op(2, 3);
+    RealState<double> a(2,1,1), b(2,1,1);
+
+    {
+        a.data[0][0][0] =  5.0;
+        a.data[1][0][0] =  7.0;
+        b.data[0][0][0] = 11.0;
+        b.data[1][0][0] = 13.0;
+
+        substep(&m, &linear_op, &nonlinear_op, 17.0, &a, &b, 0);
+
+        BOOST_CHECK_CLOSE( a.data[0][0][0],            15.0, close_enough);
+        BOOST_CHECK_CLOSE( a.data[1][0][0],            39.0, close_enough);
+        BOOST_CHECK_CLOSE( b.data[0][0][0], -34885.0/1727.0, close_enough);
+        BOOST_CHECK_CLOSE( b.data[1][0][0], -74951.0/1727.0, close_enough);
+    }
+
+    {
+        a.data[0][0][0] =  5.0;
+        a.data[1][0][0] =  7.0;
+        b.data[0][0][0] = 11.0;
+        b.data[1][0][0] = 13.0;
+
+        substep(&m, &linear_op, &nonlinear_op, 17.0, &a, &b, 1);
+
+        BOOST_CHECK_CLOSE(a.data[0][0][0],            15.0, close_enough);
+        BOOST_CHECK_CLOSE(a.data[1][0][0],            39.0, close_enough);
+        BOOST_CHECK_CLOSE(b.data[0][0][0], -   61.0/  15.0, close_enough);
+        BOOST_CHECK_CLOSE(b.data[1][0][0], -23263.0/1155.0, close_enough);
+    }
+
+    {
+        a.data[0][0][0] =  5.0;
+        a.data[1][0][0] =  7.0;
+        b.data[0][0][0] = 11.0;
+        b.data[1][0][0] = 13.0;
+
+        substep(&m, &linear_op, &nonlinear_op, 17.0, &a, &b, 2);
+
+        BOOST_CHECK_CLOSE(a.data[0][0][0],       15.0, close_enough);
+        BOOST_CHECK_CLOSE(a.data[1][0][0],       39.0, close_enough);
+        BOOST_CHECK_CLOSE(b.data[0][0][0], -193.0/9.0, close_enough);
+        BOOST_CHECK_CLOSE(b.data[1][0][0], -566.0/9.0, close_enough);
+    }
+
+    // Requesting an out-of-bounds substep_index should balk
+    BOOST_CHECK_THROW(substep(&m, &linear_op, &nonlinear_op, 17.0, &a, &b, 3),
+                      std::invalid_argument);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

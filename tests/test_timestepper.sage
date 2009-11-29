@@ -13,18 +13,91 @@ beta  = [37/160, 5/24, 1/6];
 # Purely explicit Riccati equation nonlinear operator
 # is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
 def RiccatiNonlinearOperator(a, b):
-    return lambda state: map(lambda x: x**2 + b*x - a**2 - a*b ,state)
+    return lambda y: y**2 + b*y - a**2 - a*b
 
 def substep_explicit(op, a, b, delta_t, substep):
     for i in range(0,len(a)):
         b[i] = delta_t * zeta[substep] * b[i] + a[i]
-        a[i]= op([a[i]])[0]
+        a[i]= op(a[i])
         b[i] = b[i] + delta_t * gamma[substep] * a[i]
     return (a, b)
 
+# Manufactured answers for the explicit substep test case
 substep_explicit_0 = substep_explicit(
     RiccatiNonlinearOperator(2, 3), [5, 7], [11, 13], 17, 0)
 substep_explicit_1 = substep_explicit(
     RiccatiNonlinearOperator(2, 3), [5, 7], [11, 13], 17, 1)
 substep_explicit_2 = substep_explicit(
     RiccatiNonlinearOperator(2, 3), [5, 7], [11, 13], 17, 2)
+
+# Nonlinear portion of the Riccati operator is the right hand side of (d/dt) y
+# = y^2 + b y - a^2 -a b minus the b y term
+def RiccatiHybridNonlinearOperator(a, b):
+    return lambda y: y**2 - a**2 - a*b
+
+# Linear portion of the Riccati operator
+def RiccatiHybridLinearOperator(a, b):
+    return lambda y: b*y
+
+def substep_hybrid(linear, nonlinear, a, b, delta_t, substep):
+    linear_coefficient = linear(1)
+    for i in range(0,len(a)):
+        b[i] = (delta_t * zeta[substep] * b[i]
+                    + a[i] + delta_t*alpha[substep]*linear(a[i]))
+        a[i] = nonlinear(a[i])
+        b[i] = b[i] + delta_t * gamma[substep] * a[i]
+        b[i] = (1 - delta_t * beta[substep] * linear_coefficient)^(-1)*b[i]
+    return (a, b)
+
+# Manufactured answers for the hybrid substep test case
+substep_hybrid_0 = substep_hybrid(
+    RiccatiHybridLinearOperator(2, 3),
+    RiccatiHybridNonlinearOperator(2, 3), [5, 7], [11, 13], 17, 0)
+substep_hybrid_1 = substep_hybrid(
+    RiccatiHybridLinearOperator(2, 3),
+    RiccatiHybridNonlinearOperator(2, 3), [5, 7], [11, 13], 17, 1)
+substep_hybrid_2 = substep_hybrid(
+    RiccatiHybridLinearOperator(2, 3),
+    RiccatiHybridNonlinearOperator(2, 3), [5, 7], [11, 13], 17, 2)
+
+# Checking the residual for the hybrid substep test case
+def substep_hybrid_residual(linear, nonlinear,
+                            a_old, b_old, a_new, b_new,
+                            delta_t, substep):
+    retval = []
+    for i in range(0,len(a_old)):
+        lhs = (
+                b_new[i]
+                - delta_t * beta[substep] * linear(b_new[i])
+            )
+        rhs = (
+                a_old[i]
+                + delta_t * alpha[substep] * a_old[i]
+                + delta_t * gamma[substep] * a_new[i]
+                + delta_t * zeta[substep]  * b_old[i]
+            )
+        retval.append(lhs - rhs)
+    return retval
+
+# Ensure the manufactured answers solve the original equation
+substep_hybrid_residual_0 = substep_hybrid_residual(
+        RiccatiHybridLinearOperator(2,3),
+        RiccatiHybridNonlinearOperator(2,3),
+        [5,7], [11,13],
+        substep_hybrid_0[0], substep_hybrid_0[1],
+        17, 0
+    )
+substep_hybrid_residual_1 = substep_hybrid_residual(
+        RiccatiHybridLinearOperator(2,3),
+        RiccatiHybridNonlinearOperator(2,3),
+        [5,7], [11,13],
+        substep_hybrid_1[0], substep_hybrid_1[1],
+        17, 1
+    )
+substep_hybrid_residual_2 = substep_hybrid_residual(
+        RiccatiHybridLinearOperator(2,3),
+        RiccatiHybridNonlinearOperator(2,3),
+        [5,7], [11,13],
+        substep_hybrid_1[0], substep_hybrid_1[1],
+        17, 2
+    )

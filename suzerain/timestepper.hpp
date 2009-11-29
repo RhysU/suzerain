@@ -184,8 +184,8 @@ FPT SMR91Method<FPT>::zeta(const std::size_t substep) const
 
 template< typename FPT >
 void substep(const ILowStorageMethod<FPT> * const m,
-             const INonlinearOperator<FPT> * const N,
              const ILinearOperator<FPT> * const L,
+             const INonlinearOperator<FPT> * const N,
              const FPT delta_t,
              IState<FPT> * const a,
              IState<FPT> * const b,
@@ -214,7 +214,7 @@ void substep(const ILowStorageMethod<FPT> * const m,
 throw(std::exception)
 {
     MultiplicativeOperator<FPT> zero_operator(FPT(0));
-    return substep<FPT>(m, N, &zero_operator, delta_t, a, b, substep_index);
+    return substep<FPT>(m, &zero_operator, N, delta_t, a, b, substep_index);
 }
 
 } // namespace lowstorage
