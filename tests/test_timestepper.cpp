@@ -63,11 +63,11 @@ BOOST_AUTO_TEST_CASE( applyOperator )
     a.data[0][0][0] = 1.0;
 
     MultiplicativeOperator<double> op(2.0);
-    op.applyOperator(&a);
+    op.applyOperator(a);
     BOOST_CHECK_CLOSE(a.data[0][0][0], 2.0, close_enough);
-    op.applyOperator(&a);
+    op.applyOperator(a);
     BOOST_CHECK_CLOSE(a.data[0][0][0], 4.0, close_enough);
-    op.applyOperator(&a);
+    op.applyOperator(a);
     BOOST_CHECK_CLOSE(a.data[0][0][0], 8.0, close_enough);
 }
 
@@ -83,13 +83,13 @@ BOOST_AUTO_TEST_CASE( accumulateIdentityPlusScaledOperator )
     b.data[0][0][0] = 3.0;
 
     MultiplicativeOperator<double> op(5.0);
-    op.accumulateIdentityPlusScaledOperator(7.0, &a, &b);
+    op.accumulateIdentityPlusScaledOperator(7.0, a, b);
     BOOST_CHECK_CLOSE(b.data[0][0][0], 75.0, close_enough);
-    op.accumulateIdentityPlusScaledOperator(0.0, &b, &a);
+    op.accumulateIdentityPlusScaledOperator(0.0, b, a);
     BOOST_CHECK_CLOSE(a.data[0][0][0], 77.0, close_enough);
 
     // Ensure we catch an operation between two nonconforming states
-    BOOST_CHECK_THROW(op.accumulateIdentityPlusScaledOperator(3.0, &b, &c),
+    BOOST_CHECK_THROW(op.accumulateIdentityPlusScaledOperator(3.0, b, c),
                       std::logic_error);
 }
 
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( invertIdentityPlusScaledOperator )
     a.data[0][0][0] = 2.0;
 
     MultiplicativeOperator<double> op(3.0);
-    op.invertIdentityPlusScaledOperator(5.0, &a);
+    op.invertIdentityPlusScaledOperator(5.0, a);
     BOOST_CHECK_CLOSE(a.data[0][0][0], 1.0/8.0, close_enough);
 }
 
@@ -125,16 +125,16 @@ private:
 public:
     RiccatiExplicitOperator(const FPT a, const FPT b) : a(a), b(b) { };
 
-    virtual void applyOperator(suzerain::IState<FPT> * const state) const
+    virtual void applyOperator(suzerain::IState<FPT> &state) const
                                throw(std::exception)
     {
-        suzerain::RealState<FPT> * const realstate
-            = dynamic_cast<suzerain::RealState<FPT> *>(state);
+        suzerain::RealState<FPT> &realstate
+            = dynamic_cast<suzerain::RealState<FPT>&>(state);
         typedef typename suzerain::RealState<FPT>::index index;
-        for (index k = 0; k < realstate->data.shape()[2]; ++k)
-            for (index j = 0; j < realstate->data.shape()[1]; ++j)
-                for (index i = 0; i < realstate->data.shape()[0]; ++i) {
-                    FPT &y = realstate->data[i][j][k];
+        for (index k = 0; k < realstate.data.shape()[2]; ++k)
+            for (index j = 0; j < realstate.data.shape()[1]; ++j)
+                for (index i = 0; i < realstate.data.shape()[0]; ++i) {
+                    FPT &y = realstate.data[i][j][k];
                     y = y*y + b*y - a*a - a*b;
                 }
     };
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b.data[0][0][0] = 11.0;
         b.data[1][0][0] = 13.0;
 
-        substep(&m, &riccati_op, 17.0, &a, &b, 0);
+        substep(m, riccati_op, 17.0, a, b, 0);
 
         BOOST_CHECK_CLOSE(a.data[0][0][0],  30.0, close_enough);
         BOOST_CHECK_CLOSE(a.data[1][0][0],  60.0, close_enough);
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b.data[0][0][0] = 11.0;
         b.data[1][0][0] = 13.0;
 
-        substep(&m, &riccati_op, 17.0, &a, &b, 1);
+        substep(m, riccati_op, 17.0, a, b, 1);
 
         BOOST_CHECK_CLOSE(a.data[0][0][0],    30.0,      close_enough);
         BOOST_CHECK_CLOSE(a.data[1][0][0],    60.0,      close_enough);
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b.data[0][0][0] = 11.0;
         b.data[1][0][0] = 13.0;
 
-        substep(&m, &riccati_op, 17.0, &a, &b, 2);
+        substep(m, riccati_op, 17.0, a, b, 2);
 
         BOOST_CHECK_CLOSE(a.data[0][0][0],  30.0,       close_enough);
         BOOST_CHECK_CLOSE(a.data[1][0][0],  60.0,       close_enough);
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
     }
 
     // Requesting an out-of-bounds substep_index should balk
-    BOOST_CHECK_THROW(substep(&m, &riccati_op, 17.0, &a, &b, 3),
+    BOOST_CHECK_THROW(substep(m, riccati_op, 17.0, a, b, 3),
                       std::invalid_argument);
 }
 
@@ -213,16 +213,16 @@ private:
 public:
     RiccatiNonlinearOperator(const FPT a, const FPT b) : a(a), b(b) {};
 
-    virtual void applyOperator(suzerain::IState<FPT> * const state) const
+    virtual void applyOperator(suzerain::IState<FPT> &state) const
                                throw(std::exception)
     {
-        suzerain::RealState<FPT> * const realstate
-            = dynamic_cast<suzerain::RealState<FPT> *>(state);
+        suzerain::RealState<FPT> &realstate
+            = dynamic_cast<suzerain::RealState<FPT>&>(state);
         typedef typename suzerain::RealState<FPT>::index index;
-        for (index k = 0; k < realstate->data.shape()[2]; ++k)
-            for (index j = 0; j < realstate->data.shape()[1]; ++j)
-                for (index i = 0; i < realstate->data.shape()[0]; ++i) {
-                    FPT &y = realstate->data[i][j][k];
+        for (index k = 0; k < realstate.data.shape()[2]; ++k)
+            for (index j = 0; j < realstate.data.shape()[1]; ++j)
+                for (index i = 0; i < realstate.data.shape()[0]; ++i) {
+                    FPT &y = realstate.data[i][j][k];
                     y = y*y - a*a - a*b;
                 }
     };
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
         b.data[0][0][0] = 11.0;
         b.data[1][0][0] = 13.0;
 
-        substep(&m, &linear_op, &nonlinear_op, 17.0, &a, &b, 0);
+        substep(m, linear_op, nonlinear_op, 17.0, a, b, 0);
 
         BOOST_CHECK_CLOSE( a.data[0][0][0],            15.0, close_enough);
         BOOST_CHECK_CLOSE( a.data[1][0][0],            39.0, close_enough);
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
         b.data[0][0][0] = 11.0;
         b.data[1][0][0] = 13.0;
 
-        substep(&m, &linear_op, &nonlinear_op, 17.0, &a, &b, 1);
+        substep(m, linear_op, nonlinear_op, 17.0, a, b, 1);
 
         BOOST_CHECK_CLOSE(a.data[0][0][0],            15.0, close_enough);
         BOOST_CHECK_CLOSE(a.data[1][0][0],            39.0, close_enough);
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
         b.data[0][0][0] = 11.0;
         b.data[1][0][0] = 13.0;
 
-        substep(&m, &linear_op, &nonlinear_op, 17.0, &a, &b, 2);
+        substep(m, linear_op, nonlinear_op, 17.0, a, b, 2);
 
         BOOST_CHECK_CLOSE(a.data[0][0][0],       15.0, close_enough);
         BOOST_CHECK_CLOSE(a.data[1][0][0],       39.0, close_enough);
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
     }
 
     // Requesting an out-of-bounds substep_index should balk
-    BOOST_CHECK_THROW(substep(&m, &linear_op, &nonlinear_op, 17.0, &a, &b, 3),
+    BOOST_CHECK_THROW(substep(m, linear_op, nonlinear_op, 17.0, a, b, 3),
                       std::invalid_argument);
 }
 

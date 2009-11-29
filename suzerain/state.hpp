@@ -107,11 +107,11 @@ public:
      * @return True if all of #variable_count, #vector_length, and
      *         #vector_count are identical.  False otherwise.
      */
-    virtual bool isConformant(const IState * const other) const
+    virtual bool isConformant(const IState &other) const
     {
-        return    variable_count == other->variable_count
-               && vector_length  == other->vector_length
-               && vector_count   == other->vector_count;
+        return    variable_count == other.variable_count
+               && vector_length  == other.vector_length
+               && vector_count   == other.vector_count;
     }
 
     /**
@@ -133,7 +133,7 @@ public:
      * @throw std::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
-                          const IState<FPT> * const other)
+                          const IState<FPT> &other)
                           throw(std::bad_cast,
                                 std::logic_error) = 0;
 
@@ -180,7 +180,7 @@ public:
      * @throw std::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
-                          const IState<FPT> * const other)
+                          const IState<FPT> &other)
                           throw(std::bad_cast,
                                 std::logic_error);
 
@@ -233,20 +233,18 @@ void RealState<FPT>::scale(const FPT factor)
 
 template< typename FPT >
 void RealState<FPT>::addScaled(const FPT factor,
-                               const IState<FPT> * const other)
+                               const IState<FPT> &other)
 throw(std::bad_cast,
       std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
 
-    const RealState<FPT> * const o
-        = dynamic_cast<const RealState<FPT> * const>(other);
-    if (!o) throw std::bad_cast();
+    const RealState<FPT> &o = dynamic_cast<const RealState<FPT>&>(other);
 
     suzerain::blas::axpy<FPT>(
             this->data.num_elements(),
-            factor, o->raw.get(), 1,
+            factor, o.raw.get(), 1,
             this->raw.get(), 1);
 }
 
@@ -292,7 +290,7 @@ public:
      * @throw std::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
-                          const IState<FPT> * const other)
+                          const IState<FPT> &other)
                           throw(std::bad_cast,
                                 std::logic_error);
 
@@ -388,20 +386,18 @@ void ComplexState<FPT>::scale(const FPT factor)
 
 template< typename FPT >
 void ComplexState<FPT>::addScaled(const FPT factor,
-                                  const IState<FPT> * const other)
+                                  const IState<FPT> &other)
 throw(std::bad_cast,
       std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
 
-    const ComplexState<FPT> * const o
-        = dynamic_cast<const ComplexState<FPT> * const>(other);
-    if (!o) throw std::bad_cast();
+    const ComplexState<FPT> &o = dynamic_cast<const ComplexState<FPT>&>(other);
 
     suzerain::blas::axpy<FPT>(
             this->components.num_elements(),
-            factor, o->raw.get(), 1,
+            factor, o.raw.get(), 1,
             this->raw.get(), 1);
 }
 

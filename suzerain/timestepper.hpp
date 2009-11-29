@@ -48,7 +48,7 @@ public:
 class IOperatorLifecycle
 {
 public:
-    virtual void init(const IOperatorConfig * const config)
+    virtual void init(const IOperatorConfig &config)
                       throw(std::runtime_error) {};
     virtual void destroy() {};
     virtual ~IOperatorLifecycle() {};
@@ -63,7 +63,7 @@ public:
 class IAdjustableSplitOperator
 {
 public:
-    virtual void establishSplit(const IOperatorSplit * const split)
+    virtual void establishSplit(const IOperatorSplit &split)
                                 throw(std::exception) {};
     virtual ~IAdjustableSplitOperator() {};
 };
@@ -72,7 +72,7 @@ template< typename FPT >
 class INonlinearOperator : public IOperatorLifecycle
 {
 public:
-    virtual void applyOperator(suzerain::IState<FPT> * const state) const
+    virtual void applyOperator(suzerain::IState<FPT> &state) const
                                throw(std::exception) = 0;
 };
 
@@ -85,12 +85,12 @@ class ILinearOperator : public IOperatorLifecycle
 public:
     virtual void accumulateIdentityPlusScaledOperator(
                      const FPT scale,
-                     const suzerain::IState<FPT> * const input,
-                           suzerain::IState<FPT> * const output) const
+                     const suzerain::IState<FPT> &input,
+                           suzerain::IState<FPT> &output) const
                      throw(std::exception) = 0;
     virtual void invertIdentityPlusScaledOperator(
                      const FPT scale,
-                     suzerain::IState<FPT> * const state) const
+                     suzerain::IState<FPT> &state) const
                      throw(std::exception) = 0;
 };
 
@@ -104,27 +104,27 @@ private:
 public:
     MultiplicativeOperator(const FPT factor) : factor(factor) {};
 
-    virtual void applyOperator(suzerain::IState<FPT> * const state) const
+    virtual void applyOperator(suzerain::IState<FPT> &state) const
                                throw(std::exception)
     {
-        state->scale(factor);
+        state.scale(factor);
     };
 
     virtual void accumulateIdentityPlusScaledOperator(
                      const FPT scale,
-                     const suzerain::IState<FPT> * const input,
-                           suzerain::IState<FPT> * const output) const
+                     const suzerain::IState<FPT> &input,
+                           suzerain::IState<FPT> &output) const
                      throw(std::exception)
     {
-        output->addScaled(1.0 + scale*factor, input);
+        output.addScaled(1.0 + scale*factor, input);
     };
 
     virtual void invertIdentityPlusScaledOperator(
                      const FPT scale,
-                     suzerain::IState<FPT> * const state) const
+                     suzerain::IState<FPT> &state) const
                      throw(std::exception)
     {
-        state->scale(1/(1+scale*factor));
+        state.scale(1/(1+scale*factor));
     };
 };
 
@@ -183,38 +183,38 @@ FPT SMR91Method<FPT>::zeta(const std::size_t substep) const
 }
 
 template< typename FPT >
-void substep(const ILowStorageMethod<FPT> * const m,
-             const ILinearOperator<FPT> * const L,
-             const INonlinearOperator<FPT> * const N,
+void substep(const ILowStorageMethod<FPT> &m,
+             const ILinearOperator<FPT> &L,
+             const INonlinearOperator<FPT> &N,
              const FPT delta_t,
-             IState<FPT> * const a,
-             IState<FPT> * const b,
+             IState<FPT> &a,
+             IState<FPT> &b,
              const std::size_t substep_index)
 throw(std::exception)
 {
-    if (substep_index >= m->substeps())
+    if (substep_index >= m.substeps())
         throw std::invalid_argument("Requested substep too large");
 
-    b->scale(delta_t * m->zeta(substep_index));
-    L->accumulateIdentityPlusScaledOperator(
-            delta_t * m->alpha(substep_index), a, b);
-    N->applyOperator(a);
-    b->addScaled(delta_t * m->gamma(substep_index), a);
-    L->invertIdentityPlusScaledOperator(
-            - delta_t * m->beta(substep_index), b);
+    b.scale(delta_t * m.zeta(substep_index));
+    L.accumulateIdentityPlusScaledOperator(
+            delta_t * m.alpha(substep_index), a, b);
+    N.applyOperator(a);
+    b.addScaled(delta_t * m.gamma(substep_index), a);
+    L.invertIdentityPlusScaledOperator( -delta_t * m.beta(substep_index), b);
 }
 
 template< typename FPT >
-void substep(const ILowStorageMethod<FPT> * const m,
-             const INonlinearOperator<FPT> * const N,
+void substep(const ILowStorageMethod<FPT> &m,
+             const INonlinearOperator<FPT> &N,
              const FPT delta_t,
-             IState<FPT> * const a,
-             IState<FPT> * const b,
+             IState<FPT> &a,
+             IState<FPT> &b,
              const std::size_t substep_index)
 throw(std::exception)
 {
-    MultiplicativeOperator<FPT> zero_operator(FPT(0));
-    return substep<FPT>(m, &zero_operator, N, delta_t, a, b, substep_index);
+    return substep<FPT>(
+            m, MultiplicativeOperator<FPT>(0), N,
+            delta_t, a, b, substep_index);
 }
 
 } // namespace lowstorage
