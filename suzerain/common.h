@@ -33,7 +33,7 @@
 #include <suzerain/suzerain-config.h>
 
 // Release-mode specific #defines
-#ifndef NDEBUG
+#ifdef NDEBUG
 /** Disable GNU Scientific Library range checking */
 #define GSL_RANGE_CHECK_OFF
 /** Disable assertions within Boost */
