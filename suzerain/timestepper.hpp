@@ -250,7 +250,7 @@ void step(const ILowStorageMethod<FPT> &m,
           IState<FPT> &b)
 throw(std::exception)
 {
-    substep(m, MultiplicativeOperator<FPT>(0), N, delta_t, *p_a, *p_b, i);
+    return step(m, MultiplicativeOperator<FPT>(0), N, delta_t, *p_a, *p_b);
 }
 
 } // namespace lowstorage
