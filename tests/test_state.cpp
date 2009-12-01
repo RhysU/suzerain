@@ -91,6 +91,10 @@ BOOST_AUTO_TEST_CASE( assignment )
     // Ensure we catch an operation between two nonconforming states
     suzerain::RealState<double> baz(2, 2, 2);
     BOOST_CHECK_THROW(baz = foo, std::logic_error);
+
+    // Ensure we catch an operation between two different subclasses
+    BOOST_CHECK_THROW(baz = suzerain::ComplexState<double>(1,2,3),
+                      std::bad_cast);
 }
 
 BOOST_AUTO_TEST_CASE( fortran_storage_order )
@@ -416,6 +420,10 @@ BOOST_AUTO_TEST_CASE( assignment )
     // Ensure we catch an operation between two nonconforming states
     suzerain::ComplexState<double> baz(2, 2, 2);
     BOOST_CHECK_THROW(baz = foo, std::logic_error);
+
+    // Ensure we catch an operation between two different subclasses
+    BOOST_CHECK_THROW(baz = suzerain::RealState<double>(1,2,3),
+                      std::bad_cast);
 }
 
 BOOST_AUTO_TEST_CASE( fortran_storage_order )
