@@ -12,8 +12,9 @@ BOOST_AUTO_TEST_CASE( declare_pointer )
     suzerain::RealState<double> *state = NULL;
 }
 
-BOOST_AUTO_TEST_CASE( constructor )
+BOOST_AUTO_TEST_CASE( constructors )
 {
+    // Regular constructor
     suzerain::RealState<double> foo(1, 2, 3);
     BOOST_CHECK_EQUAL(foo.variable_count, 1);
     BOOST_CHECK_EQUAL(foo.vector_length, 2);
@@ -32,6 +33,64 @@ BOOST_AUTO_TEST_CASE( constructor )
     BOOST_CHECK_EQUAL(foo.data[0][1][1],  7.0);
     BOOST_CHECK_EQUAL(foo.data[0][0][2], 11.0);
     BOOST_CHECK_EQUAL(foo.data[0][1][2], 13.0);
+
+    // Copy construct a second instance
+    suzerain::RealState<double> bar(foo);
+    BOOST_CHECK_EQUAL(bar.variable_count, 1);
+    BOOST_CHECK_EQUAL(bar.vector_length, 2);
+    BOOST_CHECK_EQUAL(bar.vector_count, 3);
+
+    // Modify first instance's data
+    foo.data[0][0][0] +=  2.0;
+    foo.data[0][1][0] +=  3.0;
+    foo.data[0][0][1] +=  5.0;
+    foo.data[0][1][1] +=  7.0;
+    foo.data[0][0][2] += 11.0;
+    foo.data[0][1][2] += 13.0;
+
+    // Ensure copy constructed data not modified
+    BOOST_CHECK_EQUAL(bar.data[0][0][0],  2.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][0],  3.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][1],  5.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][1],  7.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][2], 11.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][2], 13.0);
+}
+
+BOOST_AUTO_TEST_CASE( assignment )
+{
+    suzerain::RealState<double> foo(1, 2, 3), bar(1,2,3);
+
+    foo.data[0][0][0] =  2.0;
+    foo.data[0][1][0] =  3.0;
+    foo.data[0][0][1] =  5.0;
+    foo.data[0][1][1] =  7.0;
+    foo.data[0][0][2] = 11.0;
+    foo.data[0][1][2] = 13.0;
+
+    // Self assignment
+    foo = foo;
+
+    BOOST_CHECK_EQUAL(foo.data[0][0][0],  2.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][0],  3.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][1],  5.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][1],  7.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][2], 11.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][2], 13.0);
+
+    // Normal assignment
+    bar = foo;
+
+    BOOST_CHECK_EQUAL(bar.data[0][0][0],  2.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][0],  3.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][1],  5.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][1],  7.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][2], 11.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][2], 13.0);
+
+    // Ensure we catch an operation between two nonconforming states
+    suzerain::RealState<double> baz(2, 2, 2);
+    BOOST_CHECK_THROW(baz = foo, std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE( fortran_storage_order )
@@ -173,8 +232,8 @@ BOOST_AUTO_TEST_CASE( declare_pointer )
 
 BOOST_AUTO_TEST_CASE( constructor )
 {
+    // Regular constructor
     suzerain::ComplexState<double> foo(1, 2, 3);
-
     BOOST_CHECK_EQUAL(foo.variable_count, 1);
     BOOST_CHECK_EQUAL(foo.vector_length, 2);
     BOOST_CHECK_EQUAL(foo.vector_count, 3);
@@ -226,6 +285,137 @@ BOOST_AUTO_TEST_CASE( constructor )
     BOOST_CHECK_EQUAL(foo.imag[0][1][1], - 7.0);
     BOOST_CHECK_EQUAL(foo.imag[0][0][2], -11.0);
     BOOST_CHECK_EQUAL(foo.imag[0][1][2], -13.0);
+
+    // Copy construct a second instance
+    suzerain::ComplexState<double> bar(foo);
+    BOOST_CHECK_EQUAL(bar.variable_count, 1);
+    BOOST_CHECK_EQUAL(bar.vector_length, 2);
+    BOOST_CHECK_EQUAL(bar.vector_count, 3);
+
+    // Modify first instance's data
+    foo.data[0][0][0] += complex( 2.0, 555.0);
+    foo.data[0][1][0] += complex( 3.0, 555.0);
+    foo.data[0][0][1] += complex( 5.0, 555.0);
+    foo.data[0][1][1] += complex( 7.0, 555.0);
+    foo.data[0][0][2] += complex(11.0, 555.0);
+    foo.data[0][1][2] += complex(13.0, 555.0);
+
+    // Ensure copy constructed data not modified
+    BOOST_CHECK_EQUAL(bar.data[0][0][0].real(),   2.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][0].imag(), - 2.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][0].real(),   3.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][0].imag(), - 3.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][1].real(),   5.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][1].imag(), - 5.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][1].real(),   7.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][1].imag(), - 7.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][2].real(),  11.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][2].imag(), -11.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][2].real(),  13.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][2].imag(), -13.0);
+
+    BOOST_CHECK_EQUAL(bar.components[0][0][0][0],   2.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][0][0], - 2.0);
+    BOOST_CHECK_EQUAL(bar.components[0][0][1][0],   3.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][1][0], - 3.0);
+    BOOST_CHECK_EQUAL(bar.components[0][0][0][1],   5.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][0][1], - 5.0);
+    BOOST_CHECK_EQUAL(bar.components[0][0][1][1],   7.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][1][1], - 7.0);
+    BOOST_CHECK_EQUAL(bar.components[0][0][0][2],  11.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][0][2], -11.0);
+    BOOST_CHECK_EQUAL(bar.components[0][0][1][2],  13.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][1][2], -13.0);
+
+    BOOST_CHECK_EQUAL(bar.real[0][0][0],   2.0);
+    BOOST_CHECK_EQUAL(bar.real[0][1][0],   3.0);
+    BOOST_CHECK_EQUAL(bar.real[0][0][1],   5.0);
+    BOOST_CHECK_EQUAL(bar.real[0][1][1],   7.0);
+    BOOST_CHECK_EQUAL(bar.real[0][0][2],  11.0);
+    BOOST_CHECK_EQUAL(bar.real[0][1][2],  13.0);
+
+    BOOST_CHECK_EQUAL(bar.imag[0][0][0], - 2.0);
+    BOOST_CHECK_EQUAL(bar.imag[0][1][0], - 3.0);
+    BOOST_CHECK_EQUAL(bar.imag[0][0][1], - 5.0);
+    BOOST_CHECK_EQUAL(bar.imag[0][1][1], - 7.0);
+    BOOST_CHECK_EQUAL(bar.imag[0][0][2], -11.0);
+    BOOST_CHECK_EQUAL(bar.imag[0][1][2], -13.0);
+}
+
+BOOST_AUTO_TEST_CASE( assignment )
+{
+    suzerain::ComplexState<double> foo(1, 2, 3), bar(1,2,3);
+
+    typedef std::complex<double> complex;
+    foo.data[0][0][0] = complex( 2.0, - 2.0);
+    foo.data[0][1][0] = complex( 3.0, - 3.0);
+    foo.data[0][0][1] = complex( 5.0, - 5.0);
+    foo.data[0][1][1] = complex( 7.0, - 7.0);
+    foo.data[0][0][2] = complex(11.0, -11.0);
+    foo.data[0][1][2] = complex(13.0, -13.0);
+
+    // Self assignment
+    foo = foo;
+
+    BOOST_CHECK_EQUAL(foo.data[0][0][0].real(),   2.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][0].imag(), - 2.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][0].real(),   3.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][0].imag(), - 3.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][1].real(),   5.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][1].imag(), - 5.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][1].real(),   7.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][1].imag(), - 7.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][2].real(),  11.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][2].imag(), -11.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][2].real(),  13.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][2].imag(), -13.0);
+
+    // Normal assignment
+    bar = foo;
+
+    BOOST_CHECK_EQUAL(bar.data[0][0][0].real(),   2.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][0].imag(), - 2.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][0].real(),   3.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][0].imag(), - 3.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][1].real(),   5.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][1].imag(), - 5.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][1].real(),   7.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][1].imag(), - 7.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][2].real(),  11.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][2].imag(), -11.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][2].real(),  13.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][2].imag(), -13.0);
+
+    BOOST_CHECK_EQUAL(bar.components[0][0][0][0],   2.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][0][0], - 2.0);
+    BOOST_CHECK_EQUAL(bar.components[0][0][1][0],   3.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][1][0], - 3.0);
+    BOOST_CHECK_EQUAL(bar.components[0][0][0][1],   5.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][0][1], - 5.0);
+    BOOST_CHECK_EQUAL(bar.components[0][0][1][1],   7.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][1][1], - 7.0);
+    BOOST_CHECK_EQUAL(bar.components[0][0][0][2],  11.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][0][2], -11.0);
+    BOOST_CHECK_EQUAL(bar.components[0][0][1][2],  13.0);
+    BOOST_CHECK_EQUAL(bar.components[1][0][1][2], -13.0);
+
+    BOOST_CHECK_EQUAL(bar.real[0][0][0],   2.0);
+    BOOST_CHECK_EQUAL(bar.real[0][1][0],   3.0);
+    BOOST_CHECK_EQUAL(bar.real[0][0][1],   5.0);
+    BOOST_CHECK_EQUAL(bar.real[0][1][1],   7.0);
+    BOOST_CHECK_EQUAL(bar.real[0][0][2],  11.0);
+    BOOST_CHECK_EQUAL(bar.real[0][1][2],  13.0);
+
+    BOOST_CHECK_EQUAL(bar.imag[0][0][0], - 2.0);
+    BOOST_CHECK_EQUAL(bar.imag[0][1][0], - 3.0);
+    BOOST_CHECK_EQUAL(bar.imag[0][0][1], - 5.0);
+    BOOST_CHECK_EQUAL(bar.imag[0][1][1], - 7.0);
+    BOOST_CHECK_EQUAL(bar.imag[0][0][2], -11.0);
+    BOOST_CHECK_EQUAL(bar.imag[0][1][2], -13.0);
+
+    // Ensure we catch an operation between two nonconforming states
+    suzerain::ComplexState<double> baz(2, 2, 2);
+    BOOST_CHECK_THROW(baz = foo, std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE( fortran_storage_order )

@@ -94,13 +94,24 @@ public:
            size_type vector_count)
         :   variable_count(variable_count),
             vector_length(vector_length),
-            vector_count(vector_count) {};
-
-    /** Virtual destructor appropriate for an abstract base class */
-    virtual ~IState() {};
+            vector_count(vector_count) {}
 
     /**
-     * Is this instance's shape "conformant" with <tt>other</tt>'s?
+     * Construct an instance with the same amount of state information
+     * as another.
+     *
+     * @param other instance to mimic in shape.
+     */
+    IState(const IState& other)
+        : variable_count(other.variable_count),
+          vector_length(other.vector_length),
+          vector_count(other.vector_count) {}
+
+    /** Virtual destructor appropriate for an abstract base class */
+    virtual ~IState() {}
+
+    /**
+     * Is \c this instance's shape "conformant" with <tt>other</tt>'s?
      *
      * @param other another instance to compare against.
      *
@@ -130,20 +141,30 @@ public:
      *               state information.
      * @param other Another state instance to scale and add to \c this.
      * @throw std::bad_cast if \c other does not have a compatible type.
-     * @throw std::logic_error if \c other is not conformant in shape.
+     * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(const FPT factor,
-                          const IState<FPT> &other)
-                          throw(std::bad_cast,
-                                std::logic_error) = 0;
+                           const IState<FPT> &other)
+                           throw(std::bad_cast, std::logic_error) = 0;
 
+    /**
+     * Assign to this instance the state information from another instance.
+     *
+     * @param that instance to copy.
+     *
+     * @return *this
+     */
+    virtual IState& operator=(const IState& that)
+                              throw(std::bad_cast, std::logic_error) = 0;
+
+    // TODO Add IState<FPT>::swap(IState<FPT>&) to public interface
 };
 
 /**
  * An implementation of IState<FPT> for real-valued state information.
  */
 template< typename FPT >
-class RealState : public IState<FPT>, public boost::noncopyable
+class RealState : public IState<FPT>
 {
 public:
     /**
@@ -154,11 +175,23 @@ public:
      *                       pieces of state at a given position.
      * @param vector_length  Number of positions per full state vector.
      * @param vector_count   Number of independent state vectors to store.
-     * @throw std::bad_alloc if a memory allocation error occurs
+     * @throw std::bad_alloc if a memory allocation error occurs.
      */
     explicit RealState(typename IState<FPT>::size_type variable_count,
                        typename IState<FPT>::size_type vector_length,
                        typename IState<FPT>::size_type vector_count)
+                       throw(std::bad_alloc);
+
+    /**
+     * Construct an instance with the same amount of state information
+     * as another.  The copy constructor is explicit because instances maintain
+     * non-trivial amounts of information; unintentional copying would be
+     * problematic.
+     *
+     * @param other instance to mimic in shape.
+     * @throw std::bad_alloc if a memory allocation error occurs.
+     */
+    explicit RealState(const RealState& other)
                        throw(std::bad_alloc);
 
     /**
@@ -177,22 +210,47 @@ public:
      *               state information.
      * @param other Another state instance to scale and add to \c this.
      * @throw std::bad_cast if \c other does not have a compatible type.
-     * @throw std::logic_error if \c other is not conformant in shape.
+     * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(const FPT factor,
-                          const IState<FPT> &other)
-                          throw(std::bad_cast,
-                                std::logic_error);
+                           const IState<FPT> &other)
+                           throw(std::bad_cast, std::logic_error);
+
+    /**
+     * Assign to this instance the state information from another instance.
+     *
+     * @param that instance to copy.
+     * @return *this
+     * @throw std::logic_error if \c other is not conformant.
+     */
+    RealState& operator=(const RealState& that) throw(std::logic_error);
+
+    /**
+     * Assign to this instance the state information from another instance.
+     *
+     * @param that instance to copy.
+     * @return *this
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw std::logic_error if \c other is not conformant.
+     */
+    virtual RealState& operator=(const IState<FPT>& that)
+                                 throw(std::bad_cast, std::logic_error)
+    {
+        return operator=(dynamic_cast<const RealState<FPT>&>(that));
+    }
+
+    // TODO Implement swap using https://svn.boost.org/trac/boost/ticket/1045
 
 protected:
     /**
      * Raw, aligned storage of all state information stored in column-major
-     * storage over indices #variable_count, #vector_length, and #vector_count.
+     * storage over indices IState<FPT>#variable_count,
+     * IState<FPT>#vector_length, and IState<FPT>#vector_count.
      **/
     boost::shared_array<double> raw;
 
 public:
-    /** Type of the Boost.MultiArray exposed through #data. */
+    /** Type of the Boost.MultiArray exposed through RealState#data. */
     typedef typename boost::multi_array_ref<FPT, 3> state_type;
 
     /**
@@ -211,7 +269,8 @@ RealState<FPT>::RealState(typename IState<FPT>::size_type variable_count,
 throw(std::bad_alloc)
     : IState<FPT>(variable_count, vector_length, vector_count),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
-                sizeof(FPT)*variable_count*vector_length*vector_count)),
+                  sizeof(state_type::element)
+                * variable_count*vector_length*vector_count)),
           std::ptr_fun(free)),
       data(raw.get(),
            boost::extents[variable_count][vector_length][vector_count],
@@ -221,13 +280,34 @@ throw(std::bad_alloc)
 }
 
 template< typename FPT >
+RealState<FPT>::RealState(const RealState<FPT> &other)
+throw(std::bad_alloc)
+    : IState<FPT>(other),
+      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
+                sizeof(state_type::element)
+              * other.variable_count
+              * other.vector_length
+              * other.vector_count)),
+          std::ptr_fun(free)),
+      data(raw.get(),
+           boost::extents[other.variable_count]
+                         [other.vector_length]
+                         [other.vector_count],
+           boost::fortran_storage_order())
+{
+    if (!raw) throw std::bad_alloc();
+    memcpy(data.data(), other.data.data(),
+           sizeof(state_type::element)*data.num_elements());
+}
+
+template< typename FPT >
 void RealState<FPT>::scale(const FPT factor)
 {
     if (factor == FPT(0)) {
-        memset(this->raw.get(), 0, this->data.num_elements()*sizeof(FPT));
+        memset(data.data(), 0,
+               data.num_elements()*sizeof(state_type::element));
     } else {
-        suzerain::blas::scal<FPT>(
-                this->data.num_elements(), factor, this->raw.get(), 1);
+        suzerain::blas::scal(data.num_elements(), factor, data.data(), 1);
     }
 }
 
@@ -242,10 +322,24 @@ throw(std::bad_cast,
 
     const RealState<FPT> &o = dynamic_cast<const RealState<FPT>&>(other);
 
-    suzerain::blas::axpy<FPT>(
-            this->data.num_elements(),
-            factor, o.raw.get(), 1,
-            this->raw.get(), 1);
+    suzerain::blas::axpy(data.num_elements(),
+                         factor, o.data.data(), 1,
+                         data.data(), 1);
+}
+
+template< typename FPT >
+RealState<FPT>& RealState<FPT>::operator=(const RealState<FPT> &that)
+throw(std::logic_error)
+{
+    if (this != &that) {
+        if (!isConformant(that))
+            throw std::logic_error("Nonconformant that in operator=");
+
+        memcpy(data.data(), that.data.data(),
+               sizeof(state_type::element)*data.num_elements());
+    }
+
+    return *this;
 }
 
 /**
@@ -253,7 +347,7 @@ throw(std::bad_cast,
  * \c FPT is the real scalar type used underneath the complex type.
  */
 template< typename FPT >
-class ComplexState : public IState<FPT>, public boost::noncopyable
+class ComplexState : public IState<FPT>
 {
 public:
     /**
@@ -269,7 +363,19 @@ public:
     explicit ComplexState(typename IState<FPT>::size_type variable_count,
                           typename IState<FPT>::size_type vector_length,
                           typename IState<FPT>::size_type vector_count)
-    throw(std::bad_alloc);
+                          throw(std::bad_alloc);
+
+    /**
+     * Construct an instance with the same amount of state information as
+     * another.  The copy constructor is explicit because instances maintain
+     * non-trivial amounts of information; unintentional copying would be
+     * problematic.
+     *
+     * @param other instance to mimic in shape.
+     * @throw std::bad_alloc if a memory allocation error occurs.
+     */
+    explicit ComplexState(const ComplexState& other)
+                          throw(std::bad_alloc);
 
     /**
      * Scale all state information by the given scale factor, i.e.
@@ -290,9 +396,34 @@ public:
      * @throw std::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
-                          const IState<FPT> &other)
-                          throw(std::bad_cast,
-                                std::logic_error);
+                           const IState<FPT> &other)
+                           throw(std::bad_cast,
+                                 std::logic_error);
+
+    /**
+     * Assign to this instance the state information from another instance.
+     *
+     * @param that instance to copy.
+     * @return *this
+     * @throw std::logic_error if \c other is not conformant.
+     */
+    ComplexState& operator=(const ComplexState& that) throw(std::logic_error);
+
+    /**
+     * Assign to this instance the state information from another instance.
+     *
+     * @param that instance to copy.
+     * @return *this
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw std::logic_error if \c other is not conformant.
+     */
+    virtual ComplexState& operator=(const IState<FPT>& that)
+                                    throw(std::bad_cast, std::logic_error)
+    {
+        return operator=(dynamic_cast<const ComplexState<FPT>&>(that));
+    }
+
+    // TODO Implement swap using https://svn.boost.org/trac/boost/ticket/1045
 
 protected:
     /**
@@ -352,7 +483,8 @@ ComplexState<FPT>::ComplexState(typename IState<FPT>::size_type variable_count,
 throw(std::bad_alloc)
     : IState<FPT>(variable_count, vector_length, vector_count),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
-                2*sizeof(FPT)*variable_count*vector_length*vector_count)),
+                  sizeof(state_type::element)
+                * variable_count*vector_length*vector_count)),
           std::ptr_fun(free)),
       components(raw.get(),
            boost::extents[2][variable_count][vector_length][vector_count],
@@ -373,14 +505,49 @@ throw(std::bad_alloc)
 }
 
 template< typename FPT >
+ComplexState<FPT>::ComplexState(const ComplexState<FPT> &other)
+throw(std::bad_alloc)
+    : IState<FPT>(other),
+      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
+                   sizeof(state_type::element)
+                 * other.variable_count
+                 * other.vector_length
+                 * other.vector_count)),
+          std::ptr_fun(free)),
+      components(raw.get(),
+           boost::extents[2]
+                         [other.variable_count]
+                         [other.vector_length]
+                         [other.vector_count],
+           boost::fortran_storage_order()),
+      real(components[boost::indices[0]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]]),
+      imag(components[boost::indices[1]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]]),
+      data(reinterpret_cast<std::complex<FPT> *>(raw.get()),
+           boost::extents[other.variable_count]
+                         [other.vector_length]
+                         [other.vector_count],
+           boost::fortran_storage_order())
+{
+    if (!raw) throw std::bad_alloc();
+    memcpy(data.data(), other.data.data(),
+           sizeof(state_type::element)*data.num_elements());
+}
+
+template< typename FPT >
 void ComplexState<FPT>::scale(const FPT factor)
 {
     if (factor == FPT(0)) {
-        memset(this->raw.get(), 0,
-               this->components.num_elements()*sizeof(FPT));
+        memset(data.data(), 0,
+               data.num_elements()*sizeof(state_type::element));
     } else {
-        suzerain::blas::scal<FPT>(
-                this->components.num_elements(), factor, this->raw.get(), 1);
+        suzerain::blas::scal(
+                components.num_elements(), factor, components.data(), 1);
     }
 }
 
@@ -395,10 +562,24 @@ throw(std::bad_cast,
 
     const ComplexState<FPT> &o = dynamic_cast<const ComplexState<FPT>&>(other);
 
-    suzerain::blas::axpy<FPT>(
-            this->components.num_elements(),
-            factor, o.raw.get(), 1,
-            this->raw.get(), 1);
+    suzerain::blas::axpy(components.num_elements(),
+                         factor, o.components.data(), 1,
+                         components.data(), 1);
+}
+
+template< typename FPT >
+ComplexState<FPT>& ComplexState<FPT>::operator=(const ComplexState<FPT> &that)
+throw(std::logic_error)
+{
+    if (this != &that) {
+        if (!isConformant(that))
+            throw std::logic_error("Nonconformant that in operator=");
+
+        memcpy(data.data(), that.data.data(),
+               sizeof(state_type::element)*data.num_elements());
+    }
+
+    return *this;
 }
 
 } // namespace suzerain
