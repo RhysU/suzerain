@@ -299,3 +299,16 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( step )
+
+BOOST_AUTO_TEST_CASE( step_explicit )
+{
+}
+
+BOOST_AUTO_TEST_CASE( step_hybrid )
+{
+}
+
+BOOST_AUTO_TEST_SUITE_END()
