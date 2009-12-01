@@ -77,6 +77,7 @@
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/swap.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/type_traits/is_complex.hpp>
 #include <boost/type_traits/is_same.hpp>

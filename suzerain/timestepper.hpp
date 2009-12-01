@@ -204,6 +204,31 @@ throw(std::exception)
 }
 
 template< typename FPT >
+void step(const ILowStorageMethod<FPT> &m,
+          const ILinearOperator<FPT> &L,
+          const INonlinearOperator<FPT> &N,
+          const FPT delta_t,
+          IState<FPT> &a,
+          IState<FPT> &b)
+throw(std::exception)
+{
+    IState<FPT> *p_a = &a, *p_b = &b;
+
+    // Even substep counts will the roles of a and b at return.
+    // Perform one auxiliary flip for odd substep counts.
+    // Possible since b = N(u_{i-1}) is wholly ignored for first substep
+    if (m.substeps() & 1) {
+        b = a; // TODO Use IState<FPT>::swap(IState<FPT>&) once available
+        boost::swap(p_a, p_b);
+    }
+
+    for (std::size_t i = 0; i < m.substeps(); ++i) {
+        substep(m, L, N, delta_t, *p_a, *p_b, i);
+        boost::swap(p_a, p_b);
+    }
+}
+
+template< typename FPT >
 void substep(const ILowStorageMethod<FPT> &m,
              const INonlinearOperator<FPT> &N,
              const FPT delta_t,
@@ -215,6 +240,17 @@ throw(std::exception)
     return substep<FPT>(
             m, MultiplicativeOperator<FPT>(0), N,
             delta_t, a, b, substep_index);
+}
+
+template< typename FPT >
+void step(const ILowStorageMethod<FPT> &m,
+          const INonlinearOperator<FPT> &N,
+          const FPT delta_t,
+          IState<FPT> &a,
+          IState<FPT> &b)
+throw(std::exception)
+{
+    substep(m, MultiplicativeOperator<FPT>(0), N, delta_t, *p_a, *p_b, i);
 }
 
 } // namespace lowstorage
