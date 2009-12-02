@@ -1,10 +1,96 @@
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
-#include <suzerain/state.hpp>
-#include <suzerain/timestepper.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
+#include <suzerain/state.hpp>
+#include <suzerain/timestepper.hpp>
+#include <suzerain/richardson.h>
+#include <gsl/gsl_ieee_utils.h>
+#include <gsl/gsl_machine.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
+
+// Purely explicit Riccati equation nonlinear operator
+// is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
+template< typename FPT >
+class RiccatiExplicitOperator
+    : public suzerain::timestepper::INonlinearOperator<FPT>
+{
+private:
+    const FPT a;
+    const FPT b;
+
+public:
+    RiccatiExplicitOperator(const FPT a, const FPT b) : a(a), b(b) { };
+
+    virtual void applyOperator(suzerain::IState<FPT> &state) const
+                               throw(std::exception)
+    {
+        suzerain::RealState<FPT> &realstate
+            = dynamic_cast<suzerain::RealState<FPT>&>(state);
+        typedef typename suzerain::RealState<FPT>::index index;
+        for (index k = 0; k < realstate.data.shape()[2]; ++k)
+            for (index j = 0; j < realstate.data.shape()[1]; ++j)
+                for (index i = 0; i < realstate.data.shape()[0]; ++i) {
+                    FPT &y = realstate.data[i][j][k];
+                    y = y*y + b*y - a*a - a*b;
+                }
+    };
+};
+
+// Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
+// right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
+template< typename FPT >
+class RiccatiNonlinearOperator
+    : public suzerain::timestepper::INonlinearOperator<FPT>
+{
+private:
+    const FPT a;
+    const FPT b;
+
+public:
+    RiccatiNonlinearOperator(const FPT a, const FPT b) : a(a), b(b) {};
+
+    virtual void applyOperator(suzerain::IState<FPT> &state) const
+                               throw(std::exception)
+    {
+        suzerain::RealState<FPT> &realstate
+            = dynamic_cast<suzerain::RealState<FPT>&>(state);
+        typedef typename suzerain::RealState<FPT>::index index;
+        for (index k = 0; k < realstate.data.shape()[2]; ++k)
+            for (index j = 0; j < realstate.data.shape()[1]; ++j)
+                for (index i = 0; i < realstate.data.shape()[0]; ++i) {
+                    FPT &y = realstate.data[i][j][k];
+                    y = y*y - a*a - a*b;
+                }
+    };
+};
+
+template< typename FPT >
+class RiccatiLinearOperator
+    : public suzerain::timestepper::lowstorage::MultiplicativeOperator<FPT>
+{
+public:
+    RiccatiLinearOperator(const FPT a, const FPT b)
+        : suzerain::timestepper::lowstorage::MultiplicativeOperator<FPT>(b) {};
+};
+
+// Functor returning the solution (d/dt) y = y^2 + b y - a^2 -a b
+// where y(t) = a + (-(2*a+b)^(-1) + c*exp(-(2*a+b)*t))^(-1).
+template< typename FPT >
+struct RiccatiSolution
+{
+    const FPT a, b, c;
+
+    RiccatiSolution(FPT a, FPT b, FPT c) : a(a), b(b), c(c) {}
+
+    FPT operator()(FPT t) const
+    {
+        return a + FPT(1)/(FPT(-1)/(2*a+b) + c*exp(-(2*a+b)*t));
+    }
+};
+
 
 BOOST_AUTO_TEST_SUITE( SMR91Method )
 
@@ -110,35 +196,8 @@ BOOST_AUTO_TEST_CASE( invertIdentityPlusScaledOperator )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+
 BOOST_AUTO_TEST_SUITE( substep )
-
-// Purely explicit Riccati equation nonlinear operator
-// is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
-template< typename FPT >
-class RiccatiExplicitOperator
-    : public suzerain::timestepper::INonlinearOperator<FPT>
-{
-private:
-    const FPT a;
-    const FPT b;
-
-public:
-    RiccatiExplicitOperator(const FPT a, const FPT b) : a(a), b(b) { };
-
-    virtual void applyOperator(suzerain::IState<FPT> &state) const
-                               throw(std::exception)
-    {
-        suzerain::RealState<FPT> &realstate
-            = dynamic_cast<suzerain::RealState<FPT>&>(state);
-        typedef typename suzerain::RealState<FPT>::index index;
-        for (index k = 0; k < realstate.data.shape()[2]; ++k)
-            for (index j = 0; j < realstate.data.shape()[1]; ++j)
-                for (index i = 0; i < realstate.data.shape()[0]; ++i) {
-                    FPT &y = realstate.data[i][j][k];
-                    y = y*y + b*y - a*a - a*b;
-                }
-    };
-};
 
 BOOST_AUTO_TEST_CASE( substep_explicit )
 {
@@ -199,43 +258,6 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
     BOOST_CHECK_THROW(substep(m, riccati_op, 17.0, a, b, 3),
                       std::invalid_argument);
 }
-
-// Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
-// right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
-template< typename FPT >
-class RiccatiNonlinearOperator
-    : public suzerain::timestepper::INonlinearOperator<FPT>
-{
-private:
-    const FPT a;
-    const FPT b;
-
-public:
-    RiccatiNonlinearOperator(const FPT a, const FPT b) : a(a), b(b) {};
-
-    virtual void applyOperator(suzerain::IState<FPT> &state) const
-                               throw(std::exception)
-    {
-        suzerain::RealState<FPT> &realstate
-            = dynamic_cast<suzerain::RealState<FPT>&>(state);
-        typedef typename suzerain::RealState<FPT>::index index;
-        for (index k = 0; k < realstate.data.shape()[2]; ++k)
-            for (index j = 0; j < realstate.data.shape()[1]; ++j)
-                for (index i = 0; i < realstate.data.shape()[0]; ++i) {
-                    FPT &y = realstate.data[i][j][k];
-                    y = y*y - a*a - a*b;
-                }
-    };
-};
-
-template< typename FPT >
-class RiccatiLinearOperator
-    : public suzerain::timestepper::lowstorage::MultiplicativeOperator<FPT>
-{
-public:
-    RiccatiLinearOperator(const FPT a, const FPT b)
-        : suzerain::timestepper::lowstorage::MultiplicativeOperator<FPT>(b) {};
-};
 
 BOOST_AUTO_TEST_CASE( substep_hybrid )
 {
@@ -305,10 +327,84 @@ BOOST_AUTO_TEST_SUITE( step )
 
 BOOST_AUTO_TEST_CASE( step_explicit )
 {
+    // TODO implement this test
 }
 
 BOOST_AUTO_TEST_CASE( step_hybrid )
 {
+    // Fix test problem parameters
+    const RiccatiSolution<double> soln(2.0, 2.0, -50.0);
+    const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
+
+    // Fix method, operators, and storage space
+    const suzerain::timestepper::lowstorage::SMR91Method<double> m;
+    const RiccatiNonlinearOperator<double> nonlinear_op(soln.a, soln.b);
+    const RiccatiLinearOperator<double>    linear_op(soln.a, soln.b);
+    suzerain::RealState<double> a(1,1,1), b(1,1,1);
+
+    // Coarse grid calculation
+    const std::size_t coarse_nsteps = 16;
+    a.data[0][0][0] = soln(t_initial);
+    for (std::size_t i = 0; i < coarse_nsteps; ++i) {
+        suzerain::timestepper::lowstorage::step(
+                m, linear_op, nonlinear_op,
+                (t_final - t_initial)/coarse_nsteps, a, b);
+    }
+    const double coarse_final = a.data[0][0][0];
+    const double coarse_error = fabs(coarse_final - soln(t_final));
+    BOOST_CHECK_SMALL(coarse_error, 1.0e-10); // Tolerance found using Octave
+
+    // Finer grid calculation
+    const std::size_t finer_nsteps = 2*coarse_nsteps;
+    a.data[0][0][0] = soln(t_initial);
+    for (std::size_t i = 0; i < finer_nsteps; ++i) {
+        suzerain::timestepper::lowstorage::step(
+                m, linear_op, nonlinear_op,
+                (t_final - t_initial)/finer_nsteps, a, b);
+    }
+    const double finer_final = a.data[0][0][0];
+    const double finer_error = fabs(finer_final - soln(t_final));
+    BOOST_CHECK_SMALL(finer_error, 1.0e-11); // Tolerance found using Octave
+
+    // SMR91 is second order against the Riccati problem
+    const double expected_order = 1.98; // allows for floating point losses
+    const double observed_order
+        = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
+    BOOST_CHECK(!boost::math::isnan(observed_order));
+    BOOST_CHECK_GE(observed_order, expected_order);
+
+    // Richardson extrapolation should show h^2 term elimination gives a better
+    // result than h^1, h^3, etc...
+    {
+        gsl_matrix * data = gsl_matrix_alloc(1,2);
+        gsl_vector * k = gsl_vector_alloc(1);
+        gsl_matrix * normtable = gsl_matrix_alloc(data->size2, data->size2);
+        gsl_vector * exact = gsl_vector_alloc(1);
+        gsl_vector_set(exact, 0, soln(t_final));
+
+        double richardson_h_error[4];
+        for (int i = 0;
+             i < sizeof(richardson_h_error)/sizeof(richardson_h_error[0]);
+             ++i) {
+            gsl_matrix_set(data, 0, 0, coarse_final);
+            gsl_matrix_set(data, 0, 1, finer_final);
+            gsl_vector_set(k,0,i+1);
+            suzerain_richardson_extrapolation(
+                    data, finer_nsteps/coarse_nsteps,
+                    k, normtable, exact);
+            richardson_h_error[i] = gsl_matrix_get(
+                    normtable, normtable->size2-1, normtable->size2-1);
+        }
+
+        gsl_matrix_free(normtable);
+        gsl_vector_free(exact);
+        gsl_vector_free(k);
+        gsl_matrix_free(data);
+
+        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[0]);
+        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[2]);
+        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[3]);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

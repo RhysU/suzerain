@@ -79,6 +79,7 @@ check_PROGRAMS           += test_timestepper
 test_timestepper_SOURCES  = test_timestepper.cpp
 test_timestepper_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_timestepper_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_timestepper_LDADD   += $(GSL_LIBS)
 test_timestepper_LDADD   += $(MKL_LIBS)
 test_timestepper_LDADD   += ../suzerain/libsuzerain.la
 
