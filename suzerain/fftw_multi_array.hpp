@@ -35,6 +35,7 @@
 #include <fftw3.h>
 
 // TODO Broken details::assign_* if FFTW3 discovers the C99 _Complex type
+// TODO Much of transform_c2c, forward_r2c, and backward_c2r is boilerplate
 
 namespace suzerain {
 
@@ -1033,20 +1034,22 @@ void transform_c2c(
 } // namespace detail
 
 /**
- * Perform a forward FFT on each 1D "pencil" of \c in storing the result in \c
- * out.  That is, data is transformed from physical space to wave space.  If
- * desired, the data can be differentiated.
+ * Perform a forward complex-to-complex FFT on each 1D "pencil" of \c in
+ * storing the result in \c out.  Data is transformed from physical
+ * space to wave space.  If desired, the data can be differentiated.
+ * For the transform to proceed without any dealiasing, it must be true that
+ * <tt>in.shape()[transform_dim] == out.shape()[transform_dim]</tt>.
  *
  * @param transform_dim zero-indexed dimension indicating the pencils to
  *                      be transformed.
  * @param in an instance modeling the MultiArray concept containing the
- *           complex physical space input data to transform.
+ *           complex-valued physical space input data to transform.
  * @param out an instance modeling the MultiArray concept to contain the
- *            complex wave space output data from the transform.
+ *            complex-valued wave space output data from the transform.
  * @param domain_length Used when differentiating the data during the
  *                   transformation.
- * @param derivative If nonzero, the data is differentiated during the transform
- *                   process.
+ * @param derivative If nonzero, the data is differentiated during the
+ *                   transform process.
  * @param fftw_flags FFTW planner flags to use when computing the transform.
  *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
  *
@@ -1084,20 +1087,22 @@ void forward_c2c(
 }
 
 /**
- * Perform a backward FFT on each 1D "pencil" of \c in storing the result in \c
- * out.  That is, data is transformed from wave space to physical space.  If
- * desired, the data can be differentiated.
+ * Perform a backward complex-to-complex FFT on each 1D "pencil" of \c in
+ * storing the result in \c out.  Data is transformed from wave space
+ * to physical space.  If desired, the data can be differentiated.
+ * For the transform to proceed without any dealiasing, it must be true that
+ * <tt>in.shape()[transform_dim] == out.shape()[transform_dim]</tt>.
  *
  * @param transform_dim zero-indexed dimension indicating the pencils to
  *                      be transformed.
  * @param in an instance modeling the MultiArray concept containing the
- *           complex wave space input data to transform.
+ *           complex-valued wave space input data to transform.
  * @param out an instance modeling the MultiArray concept to contain the
- *            complex physical space output data from transform.
+ *            complex-valued physical space output data from transform.
  * @param domain_length Used when differentiating the data during the
  *                   transformation.
- * @param derivative If nonzero, the data is differentiated during the transform
- *                   process.
+ * @param derivative If nonzero, the data is differentiated during the
+ *                   transform process.
  * @param fftw_flags FFTW planner flags to use when computing the transform.
  *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
  *
@@ -1134,7 +1139,30 @@ void backward_c2c(
          );
 }
 
-// FIXME Documentation
+/**
+ * Perform a forward real-to-complex FFT on each 1D "pencil" of \c in storing
+ * the result in \c out.  Data is transformed from physical space to
+ * wave space.  If desired, the data can be differentiated.
+ * For the transform to proceed without any dealiasing, it must be true that
+ * <tt>in.shape()[transform_dim] == out.shape()[transform_dim]/2 + 1</tt>.
+ *
+ * @param transform_dim zero-indexed dimension indicating the pencils to
+ *                      be transformed.
+ * @param in an instance modeling the MultiArray concept containing the
+ *           real-valued physical space input data to transform.
+ * @param out an instance modeling the MultiArray concept to contain the
+ *            complex-valued wave space output data from the transform.
+ *            Only the nonnegative wavenumber indices are stored because the
+ *            forward transform of real-valued data has conjugate symmetry.
+ * @param domain_length Used when differentiating the data during the
+ *                   transformation.
+ * @param derivative If nonzero, the data is differentiated during the
+ *                   transform process.
+ * @param fftw_flags FFTW planner flags to use when computing the transform.
+ *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
+ *
+ * @see detail::c2c_transform for more details on the transform process.
+ */
 template<class RealMultiArray,
          class ComplexMultiArray>
 void forward_r2c(
@@ -1308,7 +1336,29 @@ void forward_r2c(
                                                increment_order.begin()));
 } /* forward_r2c */
 
-// FIXME Documentation
+/**
+ * Perform a backward complex-to-real FFT on each 1D "pencil" of \c in storing
+ * the result in \c out.  Data is transformed from wave space to
+ * physical space.  If desired, the data can be differentiated.
+ * For the transform to proceed without any dealiasing, it must be true that
+ * <tt>in.shape()[transform_dim]/2 + 1 == out.shape()[transform_dim]</tt>.
+ *
+ * @param transform_dim zero-indexed dimension indicating the pencils to
+ *                      be transformed.
+ * @param in an instance modeling the MultiArray concept containing the
+ *           complex-valued wave space input data to transform.
+ *           The input consists of only nonnegative wavenumber indices.
+ * @param out an instance modeling the MultiArray concept to contain the
+ *            real-valued physical space output data from transform.
+ * @param domain_length Used when differentiating the data during the
+ *                   transformation.
+ * @param derivative If nonzero, the data is differentiated during the
+ *                   transform process.
+ * @param fftw_flags FFTW planner flags to use when computing the transform.
+ *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
+ *
+ * @see detail::c2c_transform for more details on the transform process.
+ */
 template<class ComplexMultiArray,
          class RealMultiArray>
 void backward_c2r(
