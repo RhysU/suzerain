@@ -1165,74 +1165,138 @@ void test_1d_out_of_place(const int N)
 BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
 
-BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_one_reversed );
-#define TEST_C2C_1D_OUT_OF_PLACE_ONE_REVERSED(r, data, elem) \
+BOOST_AUTO_TEST_SUITE( test_1d_out_of_place_one_reversed );
+#define TEST_1D_OUT_OF_PLACE_ONE_REVERSED(r, data, elem) \
         BOOST_AUTO_TEST_CASE( \
-          BOOST_PP_CAT(c2c_1d_out_of_place_one_reversed_,elem) ) \
-        { c2c_1d_out_of_place_one_reversed(elem); }
-void c2c_1d_out_of_place_one_reversed(const int N)
+          BOOST_PP_CAT(test_1d_out_of_place_one_reversed_,elem) ) \
+        { test_1d_out_of_place_one_reversed(elem); }
+void test_1d_out_of_place_one_reversed(const int N)
 {
-    typedef boost::multi_array<std::complex<double>,1> array_type;
-    typedef boost::general_storage_order<array_type::dimensionality> storage;
-    array_type::size_type ordering[array_type::dimensionality] = { 0 };
-    const bool ascending[array_type::dimensionality] = { false };
+    // C2C: Test multi_array using std::complex
+    {
+        typedef boost::multi_array<std::complex<double>,1> array_type;
+        typedef boost::general_storage_order<array_type::dimensionality> storage;
+        array_type::size_type ordering[array_type::dimensionality] = { 0 };
+        const bool ascending[array_type::dimensionality] = { false };
 
-    array_type in(boost::extents[N], storage(ordering, ascending));
-    array_type out(boost::extents[N]);
+        array_type in(boost::extents[N], storage(ordering, ascending));
+        array_type out(boost::extents[N]);
 
-    symmetry_1D_complex_forward(in, out);
-    compare_1D_complex_forward(in, out);
-    symmetry_1D_complex_backward(in, out);
-    compare_1D_complex_backward(in, out);
-    differentiate_on_forward_1D_complex(in, out);
-    differentiate_on_backward_1D_complex(in, out);
+        symmetry_1D_complex_forward(in, out);
+        compare_1D_complex_forward(in, out);
+        symmetry_1D_complex_backward(in, out);
+        compare_1D_complex_backward(in, out);
+        differentiate_on_forward_1D_complex(in, out);
+        differentiate_on_backward_1D_complex(in, out);
+    }
+
+    // R2C: Test multi_array using std::complex when real storage reversed
+    {
+        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
+        typedef boost::multi_array<double,1>               real_array_type;
+
+        const real_array_type::size_type N = real_array_type::dimensionality;
+        typedef boost::general_storage_order<N> storage;
+        real_array_type::size_type ordering[N] = { 0 };
+        const bool ascending[N] = { false };
+
+        real_array_type in(boost::extents[N], storage(ordering, ascending));
+        complex_array_type out(boost::extents[N/2+1]);
+
+        // No dealiasing in effect
+        check_1D_half_forward(in, out);
+    }
+
+    // R2C: Test multi_array using std::complex when complex storage reversed
+    {
+        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
+        typedef boost::multi_array<double,1>               real_array_type;
+
+        const complex_array_type::size_type N
+            = complex_array_type::dimensionality;
+        typedef boost::general_storage_order<N> storage;
+        complex_array_type::size_type ordering[N] = { 0 };
+        const bool ascending[N] = { false };
+
+        real_array_type in(boost::extents[N]);
+        complex_array_type out(boost::extents[N/2+1],
+                               storage(ordering, ascending));
+
+        // No dealiasing in effect
+        check_1D_half_forward(in, out);
+    }
 }
-BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE_ONE_REVERSED,\
+BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE_ONE_REVERSED,\
     _,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
 
-BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_two_reversed );
-#define TEST_C2C_1D_OUT_OF_PLACE_TWO_REVERSED(r, data, elem) \
+BOOST_AUTO_TEST_SUITE( test_1d_out_of_place_two_reversed );
+#define TEST_1D_OUT_OF_PLACE_TWO_REVERSED(r, data, elem) \
         BOOST_AUTO_TEST_CASE( \
-          BOOST_PP_CAT(c2c_1d_out_of_place_two_reversed_,elem) ) \
-        { c2c_1d_out_of_place_two_reversed(elem); }
-void c2c_1d_out_of_place_two_reversed(const int N)
+          BOOST_PP_CAT(test_1d_out_of_place_two_reversed_,elem) ) \
+        { test_1d_out_of_place_two_reversed(elem); }
+void test_1d_out_of_place_two_reversed(const int N)
 {
-    typedef boost::multi_array<std::complex<double>,1> array_type;
-    typedef boost::general_storage_order<array_type::dimensionality> storage;
-    array_type::size_type ordering[array_type::dimensionality] = { 0 };
-    const bool ascending[array_type::dimensionality] = { false };
+    // C2C: Test multi_array using std::complex
+    {
+        typedef boost::multi_array<std::complex<double>,1> array_type;
+        typedef boost::general_storage_order<array_type::dimensionality> storage;
+        array_type::size_type ordering[array_type::dimensionality] = { 0 };
+        const bool ascending[array_type::dimensionality] = { false };
 
-    array_type in(boost::extents[N], storage(ordering, ascending));
-    array_type out(boost::extents[N], storage(ordering, ascending));
+        array_type in(boost::extents[N], storage(ordering, ascending));
+        array_type out(boost::extents[N], storage(ordering, ascending));
 
-    symmetry_1D_complex_forward(in, out);
-    compare_1D_complex_forward(in, out);
-    symmetry_1D_complex_backward(in, out);
-    compare_1D_complex_backward(in, out);
-    differentiate_on_forward_1D_complex(in, out);
-    differentiate_on_backward_1D_complex(in, out);
+        symmetry_1D_complex_forward(in, out);
+        compare_1D_complex_forward(in, out);
+        symmetry_1D_complex_backward(in, out);
+        compare_1D_complex_backward(in, out);
+        differentiate_on_forward_1D_complex(in, out);
+        differentiate_on_backward_1D_complex(in, out);
+    }
+
+    // R2C: Test multi_array using std::complex
+    {
+        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
+        typedef boost::multi_array<double,1>               real_array_type;
+
+        const real_array_type::size_type N = real_array_type::dimensionality;
+        typedef boost::general_storage_order<N> storage;
+        real_array_type::size_type ordering[N] = { 0 };
+        const bool ascending[N] = { false };
+
+        real_array_type in(boost::extents[N],
+                           storage(ordering, ascending));
+        complex_array_type out(boost::extents[N/2+1],
+                               storage(ordering, ascending));
+
+        // No dealiasing in effect
+        check_1D_half_forward(in, out);
+    }
 }
-BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_OUT_OF_PLACE_TWO_REVERSED,\
+BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE_TWO_REVERSED,\
     _,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
 
-BOOST_AUTO_TEST_SUITE( c2c_1d_in_place );
+BOOST_AUTO_TEST_SUITE( test_1d_in_place );
 #define TEST_C2C_1D_IN_PLACE(r, data, elem) \
-        BOOST_AUTO_TEST_CASE( BOOST_PP_CAT(c2c_1d_in_place_,elem) ) \
-        { c2c_1d_in_place(elem); }
-void c2c_1d_in_place(const int N)
+        BOOST_AUTO_TEST_CASE( BOOST_PP_CAT(test_1d_in_place_,elem) ) \
+        { test_1d_in_place(elem); }
+void test_1d_in_place(const int N)
 {
-    typedef boost::multi_array<std::complex<double>,1> array_type;
-    array_type both(boost::extents[N]);
+    // C2C: Test multi_array using std::complex
+    {
+        typedef boost::multi_array<std::complex<double>,1> array_type;
+        array_type both(boost::extents[N]);
 
-    // No dealiasing in effect for in place transform: NR == NC
-    symmetry_1D_complex_forward(both, both);
-    compare_1D_complex_forward(both, both);
-    symmetry_1D_complex_backward(both, both);
-    compare_1D_complex_forward(both, both);
-    differentiate_on_forward_1D_complex(both, both);
-    differentiate_on_backward_1D_complex(both, both);
+        // No dealiasing in effect for in place transform: NR == NC
+        symmetry_1D_complex_forward(both, both);
+        compare_1D_complex_forward(both, both);
+        symmetry_1D_complex_backward(both, both);
+        compare_1D_complex_forward(both, both);
+        differentiate_on_forward_1D_complex(both, both);
+        differentiate_on_backward_1D_complex(both, both);
+    }
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_IN_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
