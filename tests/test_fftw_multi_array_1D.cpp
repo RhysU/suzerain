@@ -1101,58 +1101,6 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
     }
 }
 
-// FIXME Need backward_c2r to complete this test case
-
-// template<class RealMultiArray, class ComplexMultiArray>
-// void differentiate_on_forward_1D_r2c(RealMultiArray &in,
-//                                      ComplexMultiArray &out)
-// {
-//     BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
-//     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
-//     const int NR = in.shape()[0];
-//     const int NC = out.shape()[0];
-//     const double close_enough
-//         = std::numeric_limits<double>::epsilon()*10*NR*NR;
-//     const double shift = M_PI/3.0;
-//
-//     const double length[2] = { 2.0 * M_PI, 10.0 };
-//     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
-//         for (int derivative = 0; derivative < 8; ++derivative) {
-//             // Load a complex function into the input array
-//             fill_with_real_NaN(in);
-//             fill_with_complex_NaN(out);
-//             for (int i = 0; i < NR; ++i) {
-//                 in[i] = real_test_function<double>(
-//                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
-//             }
-//
-//             // Forward transform and differentiate
-//             fftw_multi_array::forward_r2c(0, in, out, length[l], derivative);
-//
-//             // Backwards transform without differentiating
-//             fftw_multi_array::backward_c2c(0, out, in, length[l], 0);
-//
-//             // Ensure we see what we expect
-//             for (int i = 0; i < NR; ++i) {
-//                 const double expected_val = real_test_function<double>(
-//                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
-//                         derivative);
-//                 double real, imag;
-//                 fftw_multi_array::detail::assign_components(real, imag, in[i]);
-//                 if (fabs(expected_val) < close_enough) {
-//                     BOOST_REQUIRE_SMALL(real, close_enough);
-//                     BOOST_REQUIRE_SMALL(imag, close_enough);
-//                 } else {
-//                     BOOST_REQUIRE_CLOSE(
-//                             expected_val, real, sqrt(close_enough));
-//                     BOOST_REQUIRE_CLOSE(
-//                            -expected_val, imag, sqrt(close_enough));
-//                 }
-//             }
-//         }
-//     }
-// }
-
 template<class ComplexMultiArray1, class ComplexMultiArray2>
 void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
                                       ComplexMultiArray2 &out)
@@ -1198,6 +1146,98 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
                              expected_val, real, sqrt(close_enough));
                     BOOST_REQUIRE_CLOSE(
                             -expected_val, imag, sqrt(close_enough));
+                }
+            }
+        }
+    }
+}
+
+template<class RealMultiArray, class ComplexMultiArray>
+void differentiate_on_forward_1D_r2c(RealMultiArray &in,
+                                     ComplexMultiArray &out)
+{
+    BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
+    const int NR = in.shape()[0];
+    const int NC = out.shape()[0];
+    const double close_enough
+        = std::numeric_limits<double>::epsilon()*10*NR*NR;
+    const double shift = M_PI/3.0;
+
+    const double length[2] = { 2.0 * M_PI, 10.0 };
+    for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
+        for (int derivative = 0; derivative < 8; ++derivative) {
+            // Load a real-valued function into the input array
+            fill_with_real_NaN(in);
+            fill_with_complex_NaN(out);
+            for (int i = 0; i < NR; ++i) {
+                in[i] = real_test_function<double>(
+                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
+            }
+
+            // Forward transform and differentiate
+            fftw_multi_array::forward_r2c(0, in, out, length[l], derivative);
+
+            // Backwards transform without differentiating
+            fftw_multi_array::backward_c2r(0, out, in, length[l], 0);
+
+            // Ensure we see what we expect
+            for (int i = 0; i < NR; ++i) {
+                const double expected_val = real_test_function<double>(
+                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
+                        derivative);
+                const double observed_val = in[i];
+                if (fabs(expected_val) < close_enough) {
+                    BOOST_REQUIRE_SMALL(observed_val, close_enough);
+                } else {
+                    BOOST_REQUIRE_CLOSE(
+                            expected_val, observed_val, sqrt(close_enough));
+                }
+            }
+        }
+    }
+}
+
+template<class RealMultiArray, class ComplexMultiArray>
+void differentiate_on_backward_1D_c2r(RealMultiArray &in,
+                                      ComplexMultiArray &out)
+{
+    BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
+    BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
+    const int NR = in.shape()[0];
+    const int NC = out.shape()[0];
+    const double close_enough
+        = std::numeric_limits<double>::epsilon()*10*NR*NR;
+    const double shift = M_PI/3.0;
+
+    const double length[2] = { 2.0 * M_PI, 10.0 };
+    for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
+        for (int derivative = 0; derivative < 8; ++derivative) {
+            // Load a real-valued function into the input array
+            fill_with_real_NaN(in);
+            fill_with_complex_NaN(out);
+            for (int i = 0; i < NR; ++i) {
+                in[i] = real_test_function<double>(
+                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
+            }
+
+            // Forward transform without differentiating
+            fftw_multi_array::forward_r2c(0, in, out, length[l], 0);
+
+            // Backward transform and differentiate
+            fftw_multi_array::backward_c2r(0, out, in, length[l], derivative);
+
+            // Ensure we see what we expect
+            for (int i = 0; i < NR; ++i) {
+                const double expected_val = real_test_function<double>(
+                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
+                        derivative);
+                const double observed_val = in[i];
+                if (fabs(expected_val) < close_enough) {
+                    BOOST_REQUIRE_SMALL(observed_val, close_enough);
+                } else {
+                    BOOST_REQUIRE_CLOSE(
+                            expected_val, observed_val, sqrt(close_enough));
                 }
             }
         }
@@ -1557,8 +1597,7 @@ void test_1d_out_of_place_dealiased_forward(const int NR, const int NC)
         typedef boost::multi_array<std::complex<double>,1> complex_array_type;
         real_array_type in(boost::extents[NR]);
         complex_array_type out(boost::extents[NC]);
-
-        // FIXME Implement R2C dealiased tests
+        differentiate_on_forward_1D_r2c(in, out);
     }
 }
 void test_1d_out_of_place_dealiased_backward(const int NC, const int NR)
@@ -1573,12 +1612,11 @@ void test_1d_out_of_place_dealiased_backward(const int NC, const int NR)
 
     // C2R and C2R: Test multi_array using std::complex
     {
-        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
         typedef boost::multi_array<double,1>               real_array_type;
-        complex_array_type in(boost::extents[NC]);
-        real_array_type out(boost::extents[NR]);
-
-        // FIXME Implement C2R dealiased tests
+        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
+        real_array_type in(boost::extents[NR]);
+        complex_array_type out(boost::extents[NC]);
+        differentiate_on_backward_1D_c2r(in, out);
     }
 }
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
