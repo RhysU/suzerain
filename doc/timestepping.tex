@@ -160,4 +160,38 @@ locations $a$ and $b$, each substep computation follows algorithm
 \end{algorithmic}
 \end{algorithm}
 
+\begin{algorithm}
+\caption{Compute all substeps in the SMR scheme following
+         equation \eqref{eq:generaloperatorsubstep}}
+\label{alg:step}
+\begin{algorithmic}
+  \REQUIRE Storage $a = u\left(t\right) = u^{0} $;
+           storage $b$'s contents undefined
+  \STATE $b\leftarrow{}a$
+  \STATE $b\leftarrow{}N\left(b\right)$
+  \STATE Compute $\Delta{}t$ from $a=u^0$ and $b=N\left(u^0\right)$
+  \STATE $a\leftarrow{}\left(I+\Delta{}t\alpha_{1}L\right)a$
+  \STATE $a\leftarrow{}a + \Delta{}t \gamma_{1} b$
+  \STATE $a\leftarrow{}\left(I-\Delta{}t\beta_{1}L\right)^{-1}a$
+  \ENSURE Storage $a = u^1$;
+          storage $b = N\left(u^{0}\right)$
+  \STATE $b\leftarrow{}\Delta{}t\zeta_{1}b$
+  \STATE $b\leftarrow{}b + \left(I+\Delta{}t\alpha_{2}L\right)a$
+  \STATE $a\leftrightarrow{}b$
+  \STATE $b\leftarrow{}N\left(b\right)$
+  \STATE $a\leftarrow{}a + \Delta{}t \gamma_{2} b$
+  \STATE $a\leftarrow{}\left(I-\Delta{}t\beta_{2}L\right)^{-1}a$
+  \ENSURE Storage $a = u^{2}$;
+          storage $b = N\left(u^{1}\right)$
+  \STATE $b\leftarrow{}\Delta{}t\zeta_{2}b$
+  \STATE $b\leftarrow{}b + \left(I+\Delta{}t\alpha_{3}L\right)a$
+  \STATE $a\leftrightarrow{}b$
+  \STATE $b\leftarrow{}N\left(b\right)$
+  \STATE $a\leftarrow{}a + \Delta{}t \gamma_{3} b$
+  \STATE $a\leftarrow{}\left(I-\Delta{}t\beta_{3}L\right)^{-1}a$
+  \ENSURE Storage $a = u\left(t+\Delta{}t\right)= u^{3}$;
+          storage $b = N\left(u^{2}\right)$
+\end{algorithmic}
+\end{algorithm}
+
 \end{document}
