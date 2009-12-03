@@ -745,7 +745,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
 
 // Helper function that kicks the tires of a 1D r2c transform
 template<class RealMultiArray, class ComplexMultiArray>
-void check_1D_half_forward(RealMultiArray &in, ComplexMultiArray &out)
+void check_1D_forward_r2c(RealMultiArray &in, ComplexMultiArray &out)
 {
     BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
@@ -1148,7 +1148,7 @@ void test_1d_out_of_place(const int N)
         boost::multi_array<std::complex<double>,1> out(boost::extents[N/2+1]);
 
         // No dealiasing in effect
-        check_1D_half_forward(in, out);
+        check_1D_forward_r2c(in, out);
     }
 
     // R2C: Test multi_array using fftw_complex
@@ -1159,7 +1159,7 @@ void test_1d_out_of_place(const int N)
                 out_data.get(), boost::extents[N/2+1]);
 
         // No dealiasing in effect
-        check_1D_half_forward(in, out);
+        check_1D_forward_r2c(in, out);
     }
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
@@ -1204,7 +1204,7 @@ void test_1d_out_of_place_one_reversed(const int N)
         complex_array_type out(boost::extents[N/2+1]);
 
         // No dealiasing in effect
-        check_1D_half_forward(in, out);
+        check_1D_forward_r2c(in, out);
     }
 
     // R2C: Test multi_array using std::complex when complex storage reversed
@@ -1223,7 +1223,7 @@ void test_1d_out_of_place_one_reversed(const int N)
                                storage(ordering, ascending));
 
         // No dealiasing in effect
-        check_1D_half_forward(in, out);
+        check_1D_forward_r2c(in, out);
     }
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE_ONE_REVERSED,\
@@ -1271,7 +1271,7 @@ void test_1d_out_of_place_two_reversed(const int N)
                                storage(ordering, ascending));
 
         // No dealiasing in effect
-        check_1D_half_forward(in, out);
+        check_1D_forward_r2c(in, out);
     }
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE_TWO_REVERSED,\
@@ -1279,7 +1279,7 @@ BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE_TWO_REVERSED,\
 BOOST_AUTO_TEST_SUITE_END();
 
 BOOST_AUTO_TEST_SUITE( test_1d_in_place );
-#define TEST_C2C_1D_IN_PLACE(r, data, elem) \
+#define TEST_1D_IN_PLACE(r, data, elem) \
         BOOST_AUTO_TEST_CASE( BOOST_PP_CAT(test_1d_in_place_,elem) ) \
         { test_1d_in_place(elem); }
 void test_1d_in_place(const int N)
@@ -1297,58 +1297,101 @@ void test_1d_in_place(const int N)
         differentiate_on_forward_1D_complex(both, both);
         differentiate_on_backward_1D_complex(both, both);
     }
+
+    // R2C: Test multi_array_ref using std::complex
+    // Test performed in place; API requires both real and complex views
+    {
+        typedef std::complex<double> complex;
+        boost::scoped_array<complex> raw(new complex[N/2+1]);
+
+        typedef boost::multi_array_ref<complex::value_type,1> real_array_type;
+        real_array_type in(reinterpret_cast<complex::value_type *>(raw.get()),
+                           boost::extents[N]);
+
+        typedef boost::multi_array_ref<complex,1> complex_array_type;
+        complex_array_type out(raw.get(), boost::extents[N/2+1]);
+
+        // No dealiasing in effect
+        check_1D_forward_r2c(in, out);
+    }
 }
-BOOST_PP_SEQ_FOR_EACH(TEST_C2C_1D_IN_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
+BOOST_PP_SEQ_FOR_EACH(TEST_1D_IN_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
 
-BOOST_AUTO_TEST_SUITE( c2c_1d_out_of_place_dealiased );
-#define TEST_C2C_1D_OUT_OF_PLACE_DEALIASED(r, product) \
+BOOST_AUTO_TEST_SUITE( test_1d_out_of_place_dealiased );
+#define TEST_1D_OUT_OF_PLACE_DEALIASED(r, product) \
         BOOST_AUTO_TEST_CASE( \
-          BOOST_PP_CAT(c2c_1d_out_of_place_dealiased_, \
+          BOOST_PP_CAT(test_1d_out_of_place_dealiased_, \
             BOOST_PP_CAT(BOOST_PP_SEQ_ELEM(0,product), \
               BOOST_PP_CAT(_, \
                 BOOST_PP_CAT(BOOST_PP_SEQ_ELEM(1,product), \
                   BOOST_PP_CAT(_,BOOST_PP_SEQ_ELEM(2,product))))))) \
         {\
-            BOOST_PP_CAT(c2c_1d_out_of_place_dealiased_, \
+            BOOST_PP_CAT(test_1d_out_of_place_dealiased_, \
                          BOOST_PP_SEQ_ELEM(0,product))( \
                 BOOST_PP_SEQ_ELEM(1,product), \
                 BOOST_PP_SEQ_ELEM(2,product) ); \
         }
-#define TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY(r,product) \
+#define TEST_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY(r,product) \
     BOOST_PP_IIF(BOOST_PP_LESS(BOOST_PP_SEQ_ELEM(1,product),\
                 BOOST_PP_SEQ_ELEM(2,product)), \
-                TEST_C2C_1D_OUT_OF_PLACE_DEALIASED(r,product), \
+                TEST_1D_OUT_OF_PLACE_DEALIASED(r,product), \
                 BOOST_PP_EMPTY());
-#define TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY(r,product) \
+#define TEST_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY(r,product) \
     BOOST_PP_IIF(BOOST_PP_GREATER(BOOST_PP_SEQ_ELEM(1,product),\
                 BOOST_PP_SEQ_ELEM(2,product)), \
-                TEST_C2C_1D_OUT_OF_PLACE_DEALIASED(r,product), \
+                TEST_1D_OUT_OF_PLACE_DEALIASED(r,product), \
                 BOOST_PP_EMPTY());
-void c2c_1d_out_of_place_dealiased_forward(const int NR, const int NC)
+void test_1d_out_of_place_dealiased_forward(const int NR, const int NC)
 {
-    typedef boost::multi_array<std::complex<double>,1> array_type;
-    array_type in(boost::extents[NR]), out(boost::extents[NC]);
-    symmetry_1D_complex_forward(in, out); // Dealiasing in effect
-    differentiate_on_forward_1D_complex(in, out);
+    // C2C: Test multi_array using std::complex
+    {
+        typedef boost::multi_array<std::complex<double>,1> array_type;
+        array_type in(boost::extents[NR]), out(boost::extents[NC]);
+        symmetry_1D_complex_forward(in, out); // Dealiasing in effect
+        differentiate_on_forward_1D_complex(in, out);
+    }
+
+    // R2C: Test multi_array using std::complex
+    {
+        typedef boost::multi_array<double,1>               real_array_type;
+        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
+        real_array_type in(boost::extents[NR]);
+        complex_array_type out(boost::extents[NC]);
+
+        // FIXME Implement R2C dealiased tests
+    }
 }
-void c2c_1d_out_of_place_dealiased_backward(const int NC, const int NR)
+void test_1d_out_of_place_dealiased_backward(const int NC, const int NR)
 {
-    typedef boost::multi_array<std::complex<double>,1> array_type;
-    array_type in(boost::extents[NC]), out(boost::extents[NR]);
-    symmetry_1D_complex_backward(in, out); // Dealiasing in effect
-    differentiate_on_backward_1D_complex(out, in); // NB reversed
+    // C2C: Test multi_array using std::complex
+    {
+        typedef boost::multi_array<std::complex<double>,1> array_type;
+        array_type in(boost::extents[NC]), out(boost::extents[NR]);
+        symmetry_1D_complex_backward(in, out); // Dealiasing in effect
+        differentiate_on_backward_1D_complex(out, in); // NB reversed
+    }
+
+    // C2C: Test multi_array using std::complex
+    {
+        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
+        typedef boost::multi_array<double,1>               real_array_type;
+        complex_array_type in(boost::extents[NC]);
+        real_array_type out(boost::extents[NR]);
+
+        // FIXME Implement C2R dealiased tests
+    }
 }
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
-        TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
+        TEST_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
         ((forward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
-        TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
+        TEST_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
         ((forward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
-        TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
+        TEST_1D_OUT_OF_PLACE_DEALIASED_LESS_ONLY, \
         ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_PP_SEQ_FOR_EACH_PRODUCT(\
-        TEST_C2C_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
+        TEST_1D_OUT_OF_PLACE_DEALIASED_GREATER_ONLY, \
         ((backward))(TRANSFORM_1D_SIZE_SEQ)(TRANSFORM_1D_SIZE_SEQ) );
 BOOST_AUTO_TEST_SUITE_END();
