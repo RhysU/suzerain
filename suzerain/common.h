@@ -32,7 +32,9 @@
 
 #include <suzerain/suzerain-config.h>
 
-// Release-mode specific #defines
+// Release-mode specific #defines whenever NDEBUG in effect.  We do not use
+// SUZERAIN_NDEBUG to determine this behavior as it would impact all source
+// code that needs to include our header due to <suzerain/suzerain-config.h>
 #ifdef NDEBUG
 /** Disable GNU Scientific Library range checking */
 #define GSL_RANGE_CHECK_OFF
