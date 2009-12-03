@@ -83,11 +83,6 @@ test_timestepper_LDADD   += $(GSL_LIBS)
 test_timestepper_LDADD   += $(MKL_LIBS)
 test_timestepper_LDADD   += ../suzerain/libsuzerain.la
 
-check_PROGRAMS               += test_timestepper_old
-test_timestepper_old_SOURCES  = test_timestepper_old.c
-test_timestepper_old_LDADD    = $(GSL_LIBS)
-test_timestepper_old_LDADD   += ../suzerain/libsuzerain.la
-
 check_PROGRAMS       += test_fftw_1D
 test_fftw_1D_SOURCES  = test_fftw_1D.cpp
 test_fftw_1D_LDADD    = $(FFTW3_LIBS)
