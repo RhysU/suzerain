@@ -976,7 +976,7 @@ void transform_c2c(
                 &in(dereference_index1),
                 shape_in_transform_dim,
                 stride_in_transform_dim,
-                detail::complex_copy_differentiate<fftw_complex>(
+                detail::complex_copy_differentiate<fftw_complex_type>(
                     derivative, domain_length));
         } else {
             detail::c2c_fullbuffer_process(
@@ -1258,7 +1258,7 @@ void forward_r2c(
                        index_bases_in.begin(), dereference_index1.begin(),
                        std::plus<index1>());
 
-        // Copy real input into transform buffer
+        // Copy strided real input into stride one transform buffer
         {
             const element1 * p_first = &in(dereference_index1);
             const element1 * const p_last
@@ -1267,7 +1267,7 @@ void forward_r2c(
                 = reinterpret_cast<typename transform_traits::real_type *>(
                         buffer.get());
             while (p_first != p_last) {
-                *(p_result++) = *p_first;
+                *p_result++ = *p_first;
                 p_first += stride_in_transform_dim;
             }
         }
@@ -1440,14 +1440,14 @@ void backward_c2r(
                     &in(dereference_index1),
                     (shape_in_transform_dim - 1)*2 /* logical */,
                     stride_in_transform_dim,
-                    detail::complex_copy<element1>());
+                    detail::complex_copy());
             } else {
                 detail::c2c_halfbuffer_process(
                     buffer.get(), transform_n, index1(1),
                     &in(dereference_index1),
                     (shape_in_transform_dim - 1)*2 /* logical */,
                     stride_in_transform_dim,
-                    detail::complex_copy_differentiate<element1>(
+                    detail::complex_copy_differentiate<fftw_complex_type>(
                         derivative, domain_length));
             }
         }
@@ -1460,17 +1460,16 @@ void backward_c2r(
                        index_bases_out.begin(), dereference_index2.begin(),
                        std::plus<index2>());
 
-        // Copy transform buffer to real output
+        // Copy stride one transform buffer to strided real output
         {
-            const element2 * p_first = &out(dereference_index2);
-            const element2 * const p_last
-                = p_first + transform_n * stride_out_transform_dim;
-            typename transform_traits::real_type * p_result
-                = reinterpret_cast<typename transform_traits::real_type *>(
-                        buffer.get());
+            typedef typename transform_traits::real_type real_type;
+            const real_type * p_first
+                = reinterpret_cast<real_type *>(buffer.get());
+            const real_type * const p_last = p_first + transform_n;
+            element2 * p_result = &out(dereference_index2);
             while (p_first != p_last) {
-                *(p_result++) = *p_first;
-                p_first += stride_out_transform_dim;
+                *p_result = *p_first++;
+                p_result += stride_out_transform_dim;
             }
         }
 

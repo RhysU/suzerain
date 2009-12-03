@@ -940,6 +940,46 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     }
 }
 
+// Helper function that kicks the tires of a 1D c2r transform
+template<class ComplexMultiArray, class RealMultiArray>
+void check_1D_backward_c2r(ComplexMultiArray &in, RealMultiArray &out)
+{
+    BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
+    BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
+    typedef typename fftw_multi_array::detail::transform_traits<
+        typename ComplexMultiArray::element>::real_type real_type;
+    const int NC = in.shape()[0];
+    const int NR = out.shape()[0];
+    const real_type close_enough
+        = std::numeric_limits<real_type>::epsilon()*10*NR*NR;
+    const real_type shift = M_PI/3.0;
+
+    // Load a function into the input array...
+    // ...with known frequency content and constant offset 17
+    fill_with_real_NaN(out);
+    fill_with_complex_zero(in);
+    fftw_multi_array::detail::assign_complex(in[0], 17.0, 0.0);
+    for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
+        const real_type val = i/2.0;
+        fftw_multi_array::detail::assign_complex(in[i], val, -val);
+    }
+    // TODO Test behavior of highest even half mode
+
+    fftw_multi_array::backward_c2r(0, in, out);
+
+    // Output should be the expected function
+    for (int i = 0; i < NR; ++i) {
+        real_type a_real = out[i];
+
+        const real_type xi = i*2*M_PI/NR;
+        real_type expected_real = 17;
+        for (int j = 1; j < (std::min(NC,NR)+1)/2; ++j) {
+            expected_real += j*sin(j*xi) + j*cos(j*xi);
+        }
+        BOOST_REQUIRE_CLOSE(a_real, expected_real, sqrt(close_enough));
+    }
+}
+
 // Compare our results with FFTW's directly computed result
 template<class ComplexMultiArray1, class ComplexMultiArray2>
 void compare_1D_complex_backward(ComplexMultiArray1 &in,
@@ -1228,6 +1268,26 @@ void test_1d_out_of_place(const int N)
         // No dealiasing in effect
         check_1D_forward_r2c(in, out);
     }
+
+    // C2R: Test multi_array using std::complex
+    {
+        boost::multi_array<std::complex<double>,1> in(boost::extents[N/2+1]);
+        boost::multi_array<double,1>               out(boost::extents[N]);
+
+        // No dealiasing in effect
+        check_1D_backward_c2r(in, out);
+    }
+
+    // C2R: Test multi_array using fftw_complex
+    {
+        boost::scoped_array<fftw_complex> in_data(new fftw_complex[N/2+1]);
+        boost::multi_array_ref<fftw_complex, 1> in(
+                in_data.get(), boost::extents[N/2+1]);
+        boost::multi_array<double,1>      out(boost::extents[N]);
+
+        // No dealiasing in effect
+        check_1D_backward_c2r(in, out);
+    }
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
@@ -1292,6 +1352,42 @@ void test_1d_out_of_place_one_reversed(const int N)
         // No dealiasing in effect
         check_1D_forward_r2c(in, out);
     }
+
+    // C2R: Test multi_array using std::complex when real storage reversed
+    {
+        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
+        typedef boost::multi_array<double,1>               real_array_type;
+
+        const real_array_type::size_type N = real_array_type::dimensionality;
+        typedef boost::general_storage_order<N> storage;
+        real_array_type::size_type ordering[N] = { 0 };
+        const bool ascending[N] = { false };
+
+        complex_array_type in(boost::extents[N/2+1]);
+        real_array_type out(boost::extents[N], storage(ordering, ascending));
+
+        // No dealiasing in effect
+        check_1D_backward_c2r(in, out);
+    }
+
+    // C2R: Test multi_array using std::complex when complex storage reversed
+    {
+        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
+        typedef boost::multi_array<double,1>               real_array_type;
+
+        const complex_array_type::size_type N
+            = complex_array_type::dimensionality;
+        typedef boost::general_storage_order<N> storage;
+        complex_array_type::size_type ordering[N] = { 0 };
+        const bool ascending[N] = { false };
+
+        complex_array_type in(boost::extents[N/2+1],
+                               storage(ordering, ascending));
+        real_array_type out(boost::extents[N]);
+
+        // No dealiasing in effect
+        check_1D_backward_c2r(in, out);
+    }
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE_ONE_REVERSED,\
     _,TRANSFORM_1D_SIZE_SEQ);
@@ -1340,6 +1436,25 @@ void test_1d_out_of_place_two_reversed(const int N)
         // No dealiasing in effect
         check_1D_forward_r2c(in, out);
     }
+
+    // C2R: Test multi_array using std::complex
+    {
+        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
+        typedef boost::multi_array<double,1>               real_array_type;
+
+        const real_array_type::size_type N = real_array_type::dimensionality;
+        typedef boost::general_storage_order<N> storage;
+        real_array_type::size_type ordering[N] = { 0 };
+        const bool ascending[N] = { false };
+
+        complex_array_type in(boost::extents[N/2+1],
+                              storage(ordering, ascending));
+        real_array_type out(boost::extents[N],
+                           storage(ordering, ascending));
+
+        // No dealiasing in effect
+        check_1D_backward_c2r(in, out);
+    }
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_1D_OUT_OF_PLACE_TWO_REVERSED,\
     _,TRANSFORM_1D_SIZE_SEQ);
@@ -1381,6 +1496,23 @@ void test_1d_in_place(const int N)
         // No dealiasing in effect
         check_1D_forward_r2c(in, out);
     }
+
+    // C2R: Test multi_array_ref using std::complex
+    // Test performed in place; API requires both real and complex views
+    {
+        typedef std::complex<double> complex;
+        boost::scoped_array<complex> raw(new complex[N/2+1]);
+
+        typedef boost::multi_array_ref<complex,1> complex_array_type;
+        complex_array_type in(raw.get(), boost::extents[N/2+1]);
+
+        typedef boost::multi_array_ref<complex::value_type,1> real_array_type;
+        real_array_type out(reinterpret_cast<complex::value_type *>(raw.get()),
+                            boost::extents[N]);
+
+        // No dealiasing in effect
+        check_1D_backward_c2r(in, out);
+    }
 }
 BOOST_PP_SEQ_FOR_EACH(TEST_1D_IN_PLACE,_,TRANSFORM_1D_SIZE_SEQ);
 BOOST_AUTO_TEST_SUITE_END();
@@ -1419,7 +1551,7 @@ void test_1d_out_of_place_dealiased_forward(const int NR, const int NC)
         differentiate_on_forward_1D_c2c(in, out);
     }
 
-    // R2C: Test multi_array using std::complex
+    // R2C and C2R: Test multi_array using std::complex
     {
         typedef boost::multi_array<double,1>               real_array_type;
         typedef boost::multi_array<std::complex<double>,1> complex_array_type;
@@ -1439,7 +1571,7 @@ void test_1d_out_of_place_dealiased_backward(const int NC, const int NR)
         differentiate_on_backward_1D_c2c(out, in); // NB reversed
     }
 
-    // C2C: Test multi_array using std::complex
+    // C2R and C2R: Test multi_array using std::complex
     {
         typedef boost::multi_array<std::complex<double>,1> complex_array_type;
         typedef boost::multi_array<double,1>               real_array_type;
