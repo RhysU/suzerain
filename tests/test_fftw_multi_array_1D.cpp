@@ -637,6 +637,14 @@ FPT real_test_function(const Integer NR,
     return retval;
 }
 
+template<class RealMultiArray>
+void fill_with_real_NaN(RealMultiArray &x)
+{
+    typedef typename RealMultiArray::element real_type;
+    const real_type quiet_NaN = std::numeric_limits<real_type>::quiet_NaN();
+    std::fill_n(x.data(), x.num_elements(), quiet_NaN);
+}
+
 template<class ComplexMultiArray>
 void fill_with_complex_NaN(ComplexMultiArray &x)
 {
@@ -651,6 +659,13 @@ void fill_with_complex_NaN(ComplexMultiArray &x)
     while (it != end) {
         fftw_multi_array::detail::assign_complex(*it++, quiet_NaN, quiet_NaN);
     }
+}
+
+template<class RealMultiArray>
+void fill_with_real_zero(RealMultiArray &x)
+{
+    typedef typename RealMultiArray::element real_type;
+    std::fill_n(x.data(), x.num_elements(), real_type(0));
 }
 
 template<class ComplexMultiArray>
@@ -996,8 +1011,8 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
 }
 
 template<class ComplexMultiArray1, class ComplexMultiArray2>
-void differentiate_on_forward_1D_complex(ComplexMultiArray1 &in,
-                                         ComplexMultiArray2 &out)
+void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
+                                     ComplexMultiArray2 &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
@@ -1046,9 +1061,61 @@ void differentiate_on_forward_1D_complex(ComplexMultiArray1 &in,
     }
 }
 
+// FIXME Need backward_c2r to complete this test case
+
+// template<class RealMultiArray, class ComplexMultiArray>
+// void differentiate_on_forward_1D_r2c(RealMultiArray &in,
+//                                      ComplexMultiArray &out)
+// {
+//     BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
+//     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
+//     const int NR = in.shape()[0];
+//     const int NC = out.shape()[0];
+//     const double close_enough
+//         = std::numeric_limits<double>::epsilon()*10*NR*NR;
+//     const double shift = M_PI/3.0;
+//
+//     const double length[2] = { 2.0 * M_PI, 10.0 };
+//     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
+//         for (int derivative = 0; derivative < 8; ++derivative) {
+//             // Load a complex function into the input array
+//             fill_with_real_NaN(in);
+//             fill_with_complex_NaN(out);
+//             for (int i = 0; i < NR; ++i) {
+//                 in[i] = real_test_function<double>(
+//                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
+//             }
+//
+//             // Forward transform and differentiate
+//             fftw_multi_array::forward_r2c(0, in, out, length[l], derivative);
+//
+//             // Backwards transform without differentiating
+//             fftw_multi_array::backward_c2c(0, out, in, length[l], 0);
+//
+//             // Ensure we see what we expect
+//             for (int i = 0; i < NR; ++i) {
+//                 const double expected_val = real_test_function<double>(
+//                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
+//                         derivative);
+//                 double real, imag;
+//                 fftw_multi_array::detail::assign_components(real, imag, in[i]);
+//                 if (fabs(expected_val) < close_enough) {
+//                     BOOST_REQUIRE_SMALL(real, close_enough);
+//                     BOOST_REQUIRE_SMALL(imag, close_enough);
+//                 } else {
+//                     BOOST_REQUIRE_CLOSE(
+//                             expected_val, real, sqrt(close_enough));
+//                     BOOST_REQUIRE_CLOSE(
+//                            -expected_val, imag, sqrt(close_enough));
+//                 }
+//             }
+//         }
+//     }
+// }
+
 template<class ComplexMultiArray1, class ComplexMultiArray2>
-void differentiate_on_backward_1D_complex(ComplexMultiArray1 &in,
-                                          ComplexMultiArray2 &out)
+void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
+                                      ComplexMultiArray2 &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
@@ -1121,8 +1188,8 @@ void test_1d_out_of_place(const int N)
         compare_1D_complex_forward(in, out);
         symmetry_1D_complex_backward(in, out);
         compare_1D_complex_backward(in, out);
-        differentiate_on_forward_1D_complex(in, out);
-        differentiate_on_backward_1D_complex(in, out);
+        differentiate_on_forward_1D_c2c(in, out);
+        differentiate_on_backward_1D_c2c(in, out);
     }
 
     // C2C: Test multi_array_ref using fftw_complex
@@ -1138,8 +1205,8 @@ void test_1d_out_of_place(const int N)
         compare_1D_complex_forward(in, out);
         symmetry_1D_complex_backward(in, out);
         compare_1D_complex_backward(in, out);
-        differentiate_on_forward_1D_complex(in, out);
-        differentiate_on_backward_1D_complex(in, out);
+        differentiate_on_forward_1D_c2c(in, out);
+        differentiate_on_backward_1D_c2c(in, out);
     }
 
     // R2C: Test multi_array using std::complex
@@ -1186,8 +1253,8 @@ void test_1d_out_of_place_one_reversed(const int N)
         compare_1D_complex_forward(in, out);
         symmetry_1D_complex_backward(in, out);
         compare_1D_complex_backward(in, out);
-        differentiate_on_forward_1D_complex(in, out);
-        differentiate_on_backward_1D_complex(in, out);
+        differentiate_on_forward_1D_c2c(in, out);
+        differentiate_on_backward_1D_c2c(in, out);
     }
 
     // R2C: Test multi_array using std::complex when real storage reversed
@@ -1251,8 +1318,8 @@ void test_1d_out_of_place_two_reversed(const int N)
         compare_1D_complex_forward(in, out);
         symmetry_1D_complex_backward(in, out);
         compare_1D_complex_backward(in, out);
-        differentiate_on_forward_1D_complex(in, out);
-        differentiate_on_backward_1D_complex(in, out);
+        differentiate_on_forward_1D_c2c(in, out);
+        differentiate_on_backward_1D_c2c(in, out);
     }
 
     // R2C: Test multi_array using std::complex
@@ -1294,8 +1361,8 @@ void test_1d_in_place(const int N)
         compare_1D_complex_forward(both, both);
         symmetry_1D_complex_backward(both, both);
         compare_1D_complex_forward(both, both);
-        differentiate_on_forward_1D_complex(both, both);
-        differentiate_on_backward_1D_complex(both, both);
+        differentiate_on_forward_1D_c2c(both, both);
+        differentiate_on_backward_1D_c2c(both, both);
     }
 
     // R2C: Test multi_array_ref using std::complex
@@ -1349,7 +1416,7 @@ void test_1d_out_of_place_dealiased_forward(const int NR, const int NC)
         typedef boost::multi_array<std::complex<double>,1> array_type;
         array_type in(boost::extents[NR]), out(boost::extents[NC]);
         symmetry_1D_complex_forward(in, out); // Dealiasing in effect
-        differentiate_on_forward_1D_complex(in, out);
+        differentiate_on_forward_1D_c2c(in, out);
     }
 
     // R2C: Test multi_array using std::complex
@@ -1369,7 +1436,7 @@ void test_1d_out_of_place_dealiased_backward(const int NC, const int NR)
         typedef boost::multi_array<std::complex<double>,1> array_type;
         array_type in(boost::extents[NC]), out(boost::extents[NR]);
         symmetry_1D_complex_backward(in, out); // Dealiasing in effect
-        differentiate_on_backward_1D_complex(out, in); // NB reversed
+        differentiate_on_backward_1D_c2c(out, in); // NB reversed
     }
 
     // C2C: Test multi_array using std::complex
