@@ -29,8 +29,8 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#ifndef PECOS_SUZERAIN_TEST_TOOLS_H
-#define PECOS_SUZERAIN_TEST_TOOLS_H
+#ifndef PECOS_SUZERAIN_TEST_TOOLS_HPP
+#define PECOS_SUZERAIN_TEST_TOOLS_HPP
 
 #include <suzerain/common.hpp>
 #include <boost/test/floating_point_comparison.hpp>
@@ -267,4 +267,4 @@ bool check_close_collections(const FPT *left_begin, const FPT *left_end,
     return res;
 }
 
-#endif // PECOS_SUZERAIN_TEST_TOOLS_H
+#endif // PECOS_SUZERAIN_TEST_TOOLS_HPP
