@@ -58,8 +58,8 @@ namespace detail {
  * bounds given in \c max_indices.  Both \c indices and \c max_indices must
  * have at least \c NumDims elements.
  *
- * @param indices contains current values on input and one incremented
- *                value if method returns true.
+ * @param indices contains current values on input and at least one
+ *                incremented value if method returns true.
  * @param max_indices contains the upper bounds on each index.
  * @param index_order contains the order in which the indices should be
  *                incremented.
@@ -68,7 +68,8 @@ namespace detail {
  * @pre  <tt>index_order[i] < NumDims</tt> for <tt>0<=i<NumDims</tt>
  * @post <tt>0 <= indices[i] < max_indices[i]</tt> for <tt>0<=i<NumDims</tt>
  *
- * @return true if one of \c indices was incremented and false otherwise.
+ * @return true if at least one of \c indices was incremented
+ *         and false otherwise.
  */
 template<std::size_t NumDims,
          typename Mutable_RandomAccessIterator,
@@ -115,15 +116,78 @@ bool increment(Mutable_RandomAccessIterator indices,
 }
 
 /**
+ * Decrement the next appropriate index in \c indices according to the upper
+ * bounds given in \c max_indices.  Both \c indices and \c max_indices must
+ * have at least \c NumDims elements.
+ *
+ * @param indices contains current values on input and at least
+ *                one decremented value if method returns true.
+ * @param max_indices contains the upper bounds on each index.
+ * @param index_order contains the order in which the indices should be
+ *                decremented.
+ *
+ * @pre  <tt>0 <= indices[i] < max_indices[i]</tt> for <tt>0<=i<NumDims</tt>
+ * @pre  <tt>index_order[i] < NumDims</tt> for <tt>0<=i<NumDims</tt>
+ * @post <tt>0 <= indices[i] < max_indices[i]</tt> for <tt>0<=i<NumDims</tt>
+ *
+ * @return true if at least one of \c indices was decremented
+ *         and false otherwise.
+ */
+template<std::size_t NumDims,
+         typename Mutable_RandomAccessIterator,
+         typename RandomAccessIterator,
+         typename InputIterator>
+bool decrement(Mutable_RandomAccessIterator indices,
+               RandomAccessIterator max_indices,
+               InputIterator index_order)
+{
+    BOOST_STATIC_ASSERT(NumDims > 0);
+    BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessIterator<Mutable_RandomAccessIterator>));
+    BOOST_CONCEPT_ASSERT((boost::RandomAccessIterator<RandomAccessIterator>));
+    BOOST_CONCEPT_ASSERT((boost::InputIterator<InputIterator>));
+
+    typedef typename std::iterator_traits<
+        Mutable_RandomAccessIterator>::value_type index_type;
+    typedef typename std::iterator_traits<
+        RandomAccessIterator>::value_type max_index_type;
+    typedef typename std::iterator_traits<
+        InputIterator>::value_type index_order_type;
+
+    BOOST_CONCEPT_ASSERT((boost::Integer<index_type>));
+    BOOST_CONCEPT_ASSERT((boost::Integer<max_index_type>));
+    BOOST_CONCEPT_ASSERT((boost::Integer<index_order_type>));
+
+    // Because we have 4*NumDims integral operations in the fully unrolled loop
+    // and NumDims is often small, do not break out of loop when underflow == 0.
+    // The underflow == 0 condition causes an effective NOP after occurring.
+    bool underflow = 1;
+    for (std::size_t i = 0; i < NumDims; ++i, ++index_order) {
+
+        index_type           &index     = indices[*index_order];
+        const max_index_type &max_index = max_indices[*index_order];
+
+        assert(1 <= max_index);
+        assert(0 <= index);
+        assert(index < max_index);
+
+        index     -= underflow;                  // Handle incoming underflow
+        underflow  = (index == index_type(-1));  // Check outgoing underflow
+        index     += underflow * max_index;      // Set max_index-1 on outgoing
+    }
+    return !underflow;
+}
+
+/**
  * Increment the next appropriate index in \c indices according to the upper
  * bounds given in \c max_indices.  Indices are incremented according to
  * their position within \c indices with the 0th index being the fastest.
  *
- * @param indices contains current values on input and one incremented
- *                value if method returns true.
+ * @param indices contains current values on input and at least
+ *                one incremented value if method returns true.
  * @param max_indices contains the upper bounds on each index.
  *
- * @return true if one of \c indices was incremented and false otherwise.
+ * @return true if at least one of \c indices was incremented
+ *         and false otherwise.
  *
  * @see increment(Mutable_RandomAccessIterator, RandomAccessIterator, InputIterator) for more details.
  */
@@ -134,6 +198,30 @@ bool increment(Mutable_RandomAccessIterator indices,
                RandomAccessIterator max_indices)
 {
     return increment<NumDims>(
+            indices, max_indices, boost::make_counting_iterator(0));
+}
+
+/**
+ * Decrement the next appropriate index in \c indices according to the upper
+ * bounds given in \c max_indices.  Indices are incremented according to
+ * their position within \c indices with the 0th index being the fastest.
+ *
+ * @param indices contains current values on input and at least
+ *                one decremented value if method returns true.
+ * @param max_indices contains the upper bounds on each index.
+ *
+ * @return true if at least one of \c indices was decremented
+ *         and false otherwise.
+ *
+ * @see decrement(Mutable_RandomAccessIterator, RandomAccessIterator, InputIterator) for more details.
+ */
+template<std::size_t NumDims,
+         typename Mutable_RandomAccessIterator,
+         typename RandomAccessIterator>
+bool decrement(Mutable_RandomAccessIterator indices,
+               RandomAccessIterator max_indices)
+{
+    return decrement<NumDims>(
             indices, max_indices, boost::make_counting_iterator(0));
 }
 
@@ -149,7 +237,6 @@ struct indexed_element_comparator {
     /** Used to lookup elements during comparison */
     const RandomAccessIterator table_;
 
-
     /**
      * Create an instance that compares indices based on \c table.
      *
@@ -157,7 +244,6 @@ struct indexed_element_comparator {
      */
     indexed_element_comparator(const RandomAccessIterator table)
         : table_(table) {};
-
 
     /**
      * Performs the comparison of two indices.

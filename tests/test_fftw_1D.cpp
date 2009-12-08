@@ -131,3 +131,12 @@ BOOST_AUTO_TEST_CASE( differentiate )
             (abs(expected-d.r)).sum(),
             std::numeric_limits<Data::Real>::epsilon() * 1.0e+4);
 }
+
+BOOST_AUTO_TEST_CASE( simple_r2c )
+{
+    const int N = 4;
+    double buffer[6] = {1.0, 4.0, 7.0, 10.0, -555.0, -555.0 };
+    fftw_plan plan  = fftw_plan_dft_r2c_1d(
+            N, buffer, reinterpret_cast<fftw_complex *>(buffer), 0);
+    fftw_execute(plan);
+}
