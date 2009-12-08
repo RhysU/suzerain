@@ -1352,17 +1352,17 @@ void forward_r2c(
     // Prepare per-pencil outer loop index and loop bounds
     shape_array loop_shape(shape_in);   // Iterate over all dimensions...
     loop_shape[transform_dim] = 1;      // ...except the transformed one
-    index_array1 loop_index = {{   }};  // Initialize to default value
+    index_array1 loop_index;            // Start at the highest index
     for (size_type1 n = 0; n < dimensionality; ++n) {
-        assert(loop_index[n] == 0);     // Check initialization correct
+        loop_index[n] = loop_shape[n] - 1;
     }
     index_array1 dereference_index1;     // To be adjusted by index_bases
     index_array2 dereference_index2;     // To be adjusted by index_bases
 
-    // Walk fastest dimensions first when incrementing across pencils
-    index_array1 increment_order;
-    for (index1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
-    std::stable_sort(increment_order.begin(), increment_order.end(),
+    // Walk fastest dimensions first when decrementing across pencils
+    index_array1 decrement_order;
+    for (index1 n = 0; n < dimensionality; ++n) { decrement_order[n] = n; }
+    std::stable_sort(decrement_order.begin(), decrement_order.end(),
                      detail::make_indexed_element_comparator(in.strides()));
 
     // Process each of the transform_dim pencils in turn
@@ -1417,9 +1417,9 @@ void forward_r2c(
             }
         }
 
-    } while (detail::increment<dimensionality>(loop_index.begin(),
+    } while (detail::decrement<dimensionality>(loop_index.begin(),
                                                loop_shape.begin(),
-                                               increment_order.begin()));
+                                               decrement_order.begin()));
 } /* forward_r2c */
 
 /**

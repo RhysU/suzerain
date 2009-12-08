@@ -4,6 +4,7 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
+#include <boost/iterator/counting_iterator.hpp>
 #include <fftw3.h>
 #include "test_tools.hpp"
 
@@ -281,60 +282,74 @@ BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_out_of_place_fortran2c_storage )
     r2c_2d_forward_4_by_3(in, out);
 }
 
-// FIXME: Test case not behaving correctly
-// BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_in_place_c_storage )
-// {
-//     typedef std::complex<double> complex;
-//
-//     // Logical two dimensional array size in real space
-//     const std::size_t M = 4, N = 3;
-//
-//     // Required complex extents potentially larger to transform each direction
-//     const std::size_t complexM = std::max(M, M/2+1);
-//     const std::size_t complexN = std::max(N, N/2+1);
-//
-//     // Required real extents to transform each direction
-//     const std::size_t realM
-//         = complexM * sizeof(complex)/sizeof(complex::value_type);
-//     const std::size_t realN
-//         = complexN * sizeof(complex)/sizeof(complex::value_type);
-//
-//     // Create appropriately typed views of the same raw storage
-//     boost::scoped_array<complex> raw(new complex[complexM*complexN]);
-//     typedef boost::multi_array_ref<complex::value_type,2> real_array;
-//     typedef boost::multi_array_ref<complex,2>             complex_array;
-//     real_array    in( reinterpret_cast<complex::value_type *>(raw.get()),
-//                       boost::extents[realM][realN],
-//                       boost::c_storage_order());
-//     complex_array out(raw.get(),
-//                       boost::extents[complexM][complexN],
-//                       boost::c_storage_order());
-//
-//     typedef real_array::index_range range;
-//     typedef boost::array_view_gen<real_array,2>::type real_view;
-//     real_view in_view = in[boost::indices[range(0,M)][range(0,N)]];
-//
-//     r2c_2d_forward_4_by_3(in_view, out);
-// }
+BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_in_place_c_storage )
+{
+    typedef std::complex<double> complex;
 
-// FIXME: Implement test case
-// BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_in_place_fortran_storage )
-// {
-//     // Allocate raw storage
-//     using std::max;
-//     const int M = 4, N = 3;
-//     typedef std::complex<double> complex;
-//     boost::scoped_array<complex> raw(new complex[max(M,M/2+1)*max(N,N/2+1)]);
-//
-//     // Create appropriately typed views
-//     typedef boost::multi_array_ref<complex,2>             complex_array;
-//     typedef boost::multi_array_ref<complex::value_type,2> real_array;
-//     real_array    in( reinterpret_cast<complex::value_type *>(raw.get()),
-//                       boost::extents[M][N], boost::fortran_storage_order());
-//     complex_array out(raw.get(),
-//                       boost::extents[M][N], boost::fortran_storage_order());
-//
-//     r2c_2d_forward_4_by_3(in, out);
-// }
+    // Logical two dimensional array size in real space
+    const std::size_t M = 4, N = 3;
+
+    // Required complex extents potentially larger to transform each direction
+    const std::size_t complexM = std::max(M, M/2+1);
+    const std::size_t complexN = std::max(N, N/2+1);
+
+    // Required real extents to transform each direction
+    const std::size_t realM
+        = complexM * sizeof(complex)/sizeof(complex::value_type);
+    const std::size_t realN
+        = complexN * sizeof(complex)/sizeof(complex::value_type);
+
+    // Create appropriately typed views of the same raw storage
+    boost::scoped_array<complex> raw(new complex[complexM*complexN]);
+    typedef boost::multi_array_ref<complex::value_type,2> real_array;
+    typedef boost::multi_array_ref<complex,2>             complex_array;
+    real_array    in( reinterpret_cast<complex::value_type *>(raw.get()),
+                      boost::extents[realM][realN],
+                      boost::c_storage_order());
+    complex_array out(raw.get(),
+                      boost::extents[complexM][complexN],
+                      boost::c_storage_order());
+
+    typedef real_array::index_range range;
+    typedef boost::array_view_gen<real_array,2>::type real_view;
+    real_view in_view = in[boost::indices[range(0,M)][range(0,N)]];
+
+    r2c_2d_forward_4_by_3(in_view, out);
+}
+
+BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_in_place_fortran_storage )
+{
+    typedef std::complex<double> complex;
+
+    // Logical two dimensional array size in real space
+    const std::size_t M = 4, N = 3;
+
+    // Required complex extents potentially larger to transform each direction
+    const std::size_t complexM = std::max(M, M/2+1);
+    const std::size_t complexN = std::max(N, N/2+1);
+
+    // Required real extents to transform each direction
+    const std::size_t realM
+        = complexM * sizeof(complex)/sizeof(complex::value_type);
+    const std::size_t realN
+        = complexN * sizeof(complex)/sizeof(complex::value_type);
+
+    // Create appropriately typed views of the same raw storage
+    boost::scoped_array<complex> raw(new complex[complexM*complexN]);
+    typedef boost::multi_array_ref<complex::value_type,2> real_array;
+    typedef boost::multi_array_ref<complex,2>             complex_array;
+    real_array    in( reinterpret_cast<complex::value_type *>(raw.get()),
+                      boost::extents[realM][realN],
+                      boost::fortran_storage_order());
+    complex_array out(raw.get(),
+                      boost::extents[complexM][complexN],
+                      boost::fortran_storage_order());
+
+    typedef real_array::index_range range;
+    typedef boost::array_view_gen<real_array,2>::type real_view;
+    real_view in_view = in[boost::indices[range(0,M)][range(0,N)]];
+
+    r2c_2d_forward_4_by_3(in_view, out);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
