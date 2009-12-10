@@ -30,6 +30,7 @@
 #ifndef __SUZERAIN_TIMESTEPPER_HPP
 #define __SUZERAIN_TIMESTEPPER_HPP
 
+#include <iosfwd>
 #include <suzerain/common.hpp>
 #include <suzerain/state.hpp>
 
@@ -83,11 +84,17 @@ template< typename FPT >
 class ILinearOperator : public IOperatorLifecycle
 {
 public:
+    virtual void applyIdentityPlusScaledOperator(
+                     const FPT scale,
+                     suzerain::IState<FPT> &state) const
+                     throw(std::exception) = 0;
+
     virtual void accumulateIdentityPlusScaledOperator(
                      const FPT scale,
                      const suzerain::IState<FPT> &input,
                            suzerain::IState<FPT> &output) const
                      throw(std::exception) = 0;
+
     virtual void invertIdentityPlusScaledOperator(
                      const FPT scale,
                      suzerain::IState<FPT> &state) const
@@ -110,13 +117,21 @@ public:
         state.scale(factor);
     };
 
+    virtual void applyIdentityPlusScaledOperator(
+                     const FPT scale,
+                     suzerain::IState<FPT> &state) const
+                     throw(std::exception)
+    {
+        state.scale(1 + scale*factor);
+    };
+
     virtual void accumulateIdentityPlusScaledOperator(
                      const FPT scale,
                      const suzerain::IState<FPT> &input,
                            suzerain::IState<FPT> &output) const
                      throw(std::exception)
     {
-        output.addScaled(1.0 + scale*factor, input);
+        output.addScaled(1 + scale*factor, input);
     };
 
     virtual void invertIdentityPlusScaledOperator(
@@ -124,7 +139,7 @@ public:
                      suzerain::IState<FPT> &state) const
                      throw(std::exception)
     {
-        state.scale(1/(1+scale*factor));
+        state.scale(1/(1 + scale*factor));
     };
 };
 
@@ -140,6 +155,14 @@ public:
     virtual FPT zeta(std::size_t substep) const = 0;
     virtual ~ILowStorageMethod() {};
 };
+
+template< typename charT, typename traits, typename FPT >
+std::basic_ostream<charT,traits>& operator<<(
+        std::basic_ostream<charT,traits> &os,
+        const ILowStorageMethod<FPT> &m)
+{
+    return os << m.name();
+}
 
 template< typename FPT >
 class SMR91Method : public ILowStorageMethod<FPT>
