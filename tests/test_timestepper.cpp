@@ -24,8 +24,9 @@ private:
 public:
     RiccatiExplicitOperator(const FPT a, const FPT b) : a(a), b(b) { };
 
-    virtual void applyOperator(suzerain::IState<FPT> &state) const
-                               throw(std::exception)
+    virtual FPT applyOperator(suzerain::IState<FPT> &state,
+                              const bool delta_t_requested = false) const
+                              throw(std::exception)
     {
         suzerain::RealState<FPT> &realstate
             = dynamic_cast<suzerain::RealState<FPT>&>(state);
@@ -36,6 +37,7 @@ public:
                     FPT &y = realstate.data[i][j][k];
                     y = y*y + b*y - a*a - a*b;
                 }
+        return std::numeric_limits<FPT>::quiet_NaN();
     };
 };
 
@@ -52,8 +54,9 @@ private:
 public:
     RiccatiNonlinearOperator(const FPT a, const FPT b) : a(a), b(b) {};
 
-    virtual void applyOperator(suzerain::IState<FPT> &state) const
-                               throw(std::exception)
+    virtual FPT applyOperator(suzerain::IState<FPT> &state,
+                              const bool delta_t_requested = false) const
+                              throw(std::exception)
     {
         suzerain::RealState<FPT> &realstate
             = dynamic_cast<suzerain::RealState<FPT>&>(state);
@@ -64,6 +67,7 @@ public:
                     FPT &y = realstate.data[i][j][k];
                     y = y*y - a*a - a*b;
                 }
+        return std::numeric_limits<FPT>::quiet_NaN();
     };
 };
 

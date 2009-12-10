@@ -73,8 +73,9 @@ template< typename FPT >
 class INonlinearOperator : public IOperatorLifecycle
 {
 public:
-    virtual void applyOperator(suzerain::IState<FPT> &state) const
-                               throw(std::exception) = 0;
+    virtual FPT applyOperator(suzerain::IState<FPT> &state,
+                              const bool delta_t_requested = false) const
+                              throw(std::exception) = 0;
 };
 
 namespace lowstorage
@@ -111,10 +112,15 @@ private:
 public:
     MultiplicativeOperator(const FPT factor) : factor(factor) {};
 
-    virtual void applyOperator(suzerain::IState<FPT> &state) const
-                               throw(std::exception)
+    virtual FPT applyOperator(suzerain::IState<FPT> &state,
+                              const bool delta_t_requested = false) const
+                              throw(std::exception)
     {
         state.scale(factor);
+
+        // Never returns a meaningful result for the time step
+        BOOST_STATIC_ASSERT(std::numeric_limits<FPT>::has_quiet_NaN);
+        return std::numeric_limits<FPT>::quiet_NaN();
     };
 
     virtual void applyIdentityPlusScaledOperator(
