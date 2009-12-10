@@ -31,8 +31,10 @@
 #ifndef __SUZERAIN_BLAS_ET_AL_HPP__
 #define __SUZERAIN_BLAS_ET_AL_HPP__
 
-#include <suzerain/common.h>
 #include <suzerain/blas_et_al.h>
+#include <boost/numeric/conversion/cast.hpp>
+#include <boost/static_assert.hpp>
+#include <boost/type_traits/is_integral.hpp>
 
 /** @file
  * C++ wrappers for external BLAS and LAPACK routines necessary for Suzerain.
@@ -71,217 +73,272 @@ inline void * calloc(size_t nmemb, size_t size)
  */
 
 /*! @copydoc suzerain_blas_sswap */
-template< typename FPT > void swap(
-        const int n,
-        FPT *x,
-        const int incx,
-        FPT *y,
-        const int incy);
-
-/*! @copydoc suzerain_blas_sswap */
-template<> inline void swap<float>(
-        const int n,
+template< typename Integer1, typename Integer2, typename Integer3 >
+inline void swap(
+        const Integer1 n,
         float *x,
-        const int incx,
+        const Integer2 incx,
         float *y,
-        const int incy)
+        const Integer3 incy)
 {
-    return suzerain_blas_sswap(n, x, incx, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_sswap(boost::numeric_cast<int>(n),
+                               x,
+                               boost::numeric_cast<int>(incx),
+                               y,
+                               boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_sswap */
-template<> inline void swap<double>(
-        const int n,
+template< typename Integer1, typename Integer2, typename Integer3 >
+inline void swap(
+        const Integer1 n,
         double *x,
-        const int incx,
+        const Integer2 incx,
         double *y,
-        const int incy)
+        const Integer3 incy)
 {
-    return suzerain_blas_dswap(n, x, incx, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_dswap(boost::numeric_cast<int>(n),
+                               x,
+                               boost::numeric_cast<int>(incx),
+                               y,
+                               boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_scopy */
-template< typename FPT > void copy(
-        const int n,
-        const FPT *x,
-        const int incx,
-        FPT *y,
-        const int incy);
-
-/*! @copydoc suzerain_blas_scopy */
-template<> inline void copy<float>(
-        const int n,
+template< typename Integer1, typename Integer2, typename Integer3 >
+inline void copy(
+        const Integer1 n,
         const float *x,
-        const int incx,
+        const Integer2 incx,
         float *y,
-        const int incy)
+        const Integer3 incy)
 {
-    return suzerain_blas_scopy(n, x, incx, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_scopy(boost::numeric_cast<int>(n),
+                               x,
+                               boost::numeric_cast<int>(incx),
+                               y,
+                               boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_scopy */
-template<> inline void copy<double>(
-        const int n,
+template< typename Integer1, typename Integer2, typename Integer3 >
+inline void copy(
+        const Integer1 n,
         const double *x,
-        const int incx,
+        const Integer2 incx,
         double *y,
-        const int incy)
+        const Integer3 incy)
 {
-    return suzerain_blas_dcopy(n, x, incx, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_dcopy(boost::numeric_cast<int>(n),
+                               x,
+                               boost::numeric_cast<int>(incx),
+                               y,
+                               boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_sdot */
-template< typename FPT > FPT dot(
-        const int n,
-        const FPT *x,
-        const int incx,
-        const FPT *y,
-        const int incy);
-
-/*! @copydoc suzerain_blas_sdot */
-template<> inline float dot<float>(
-        const int n,
+template< typename Integer1, typename Integer2, typename Integer3 >
+inline float dot(
+        const Integer1 n,
         const float *x,
-        const int incx,
+        const Integer2 incx,
         const float *y,
-        const int incy)
+        const Integer3 incy)
 {
-    return suzerain_blas_sdot(n, x, incx, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_sdot(boost::numeric_cast<int>(n),
+                              x,
+                              boost::numeric_cast<int>(incx),
+                              y,
+                              boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_sdot */
-template<> inline double dot<double>(
-        const int n,
+template< typename Integer1, typename Integer2, typename Integer3 >
+inline double dot(
+        const Integer1 n,
         const double *x,
-        const int incx,
+        const Integer2 incx,
         const double *y,
-        const int incy)
+        const Integer3 incy)
 {
-    return suzerain_blas_ddot(n, x, incx, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_ddot(boost::numeric_cast<int>(n),
+                              x,
+                              boost::numeric_cast<int>(incx),
+                              y,
+                              boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_sasum */
-template< typename FPT > FPT asum(
-        const int n,
-        const FPT *x,
-        const int incx);
-
-/*! @copydoc suzerain_blas_sasum */
-template<> inline float asum<float>(
-        const int n,
+template< typename Integer1, typename Integer2 >
+inline float asum(
+        const Integer1 n,
         const float *x,
-        const int incx)
+        const Integer2 incx)
 {
-    return suzerain_blas_sasum(n, x, incx);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_sasum(boost::numeric_cast<int>(n),
+                               x,
+                               boost::numeric_cast<int>(incx));
 }
 
 /*! @copydoc suzerain_blas_sasum */
-template<> inline double asum<double>(
-        const int n,
+template< typename Integer1, typename Integer2 >
+inline double asum(
+        const Integer1 n,
         const double *x,
-        const int incx)
+        const Integer2 incx)
 {
-    return suzerain_blas_dasum(n, x, incx);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_dasum(boost::numeric_cast<int>(n),
+                               x,
+                               boost::numeric_cast<int>(incx));
 }
 
 /*! @copydoc suzerain_blas_saxpy */
-template< typename FPT > void axpy(
-        const int n,
-        const FPT alpha,
-        const FPT *x,
-        const int incx,
-        FPT *y,
-        const int incy);
-
-/*! @copydoc suzerain_blas_saxpy */
-template<> inline void axpy<float>(
-        const int n,
+template< typename Integer1, typename Integer2, typename Integer3 >
+inline void axpy(
+        const Integer1 n,
         const float alpha,
         const float *x,
-        const int incx,
+        const Integer2 incx,
         float *y,
-        const int incy)
+        const Integer3 incy)
 {
-    return suzerain_blas_saxpy(n, alpha, x, incx, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_saxpy(boost::numeric_cast<int>(n),
+                               alpha,
+                               x,
+                               boost::numeric_cast<int>(incx),
+                               y,
+                               boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_saxpy */
-template<> inline void axpy<double>(
-        const int n,
+template< typename Integer1, typename Integer2, typename Integer3 >
+inline void axpy(
+        const Integer1 n,
         const double alpha,
         const double *x,
-        const int incx,
+        const Integer2 incx,
         double *y,
-        const int incy)
+        const Integer3 incy)
 {
-    return suzerain_blas_daxpy(n, alpha, x, incx, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_daxpy(boost::numeric_cast<int>(n),
+                               alpha,
+                               x,
+                               boost::numeric_cast<int>(incx),
+                               y,
+                               boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_saxpby */
-template< typename FPT > void axpby(
-        const int n,
-        const FPT alpha,
-        const FPT *x,
-        const int incx,
-        const FPT beta,
-        FPT *y,
-        const int incy);
-
-/*! @copydoc suzerain_blas_saxpby */
-template<> inline void axpby<float>(
-        const int n,
+template< typename Integer1, typename Integer2, typename Integer3 >
+inline void axpby(
+        const Integer1 n,
         const float alpha,
         const float *x,
-        const int incx,
+        const Integer2 incx,
         const float beta,
         float *y,
-        const int incy)
+        const Integer3 incy)
 {
-    return suzerain_blas_saxpby(n, alpha, x, incx, beta, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_saxpby(boost::numeric_cast<int>(n),
+                                alpha,
+                                x,
+                                boost::numeric_cast<int>(incx),
+                                beta,
+                                y,
+                                boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_saxpby */
-template<> inline void axpby<double>(
-        const int n,
+template< typename Integer1, typename Integer2, typename Integer3 >
+inline void axpby(
+        const Integer1 n,
         const double alpha,
         const double *x,
-        const int incx,
+        const Integer2 incx,
         const double beta,
         double *y,
-        const int incy)
+        const Integer3 incy)
 {
-    return suzerain_blas_daxpby(n, alpha, x, incx, beta, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_daxpby(boost::numeric_cast<int>(n),
+                                alpha,
+                                x,
+                                boost::numeric_cast<int>(incx),
+                                beta,
+                                y,
+                                boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_swaxpby */
-template< typename FPT > void waxpby(
-        const int n,
-        const FPT alpha,
-        const FPT *x,
-        const int incx,
-        const FPT beta,
-        const FPT *y,
-        const int incy,
-        FPT *w,
-        const int incw);
-
-/*! @copydoc suzerain_blas_swaxpby */
-template<> inline void waxpby<float>(
-        const int n,
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4 >
+inline void waxpby(
+        const Integer1 n,
         const float alpha,
         const float *x,
-        const int incx,
+        const Integer2 incx,
         const float beta,
         const float *y,
-        const int incy,
+        const Integer3 incy,
         float *w,
-        const int incw)
+        const Integer4 incw)
 {
-    return suzerain_blas_swaxpby(n, alpha, x, incx, beta, y, incy, w, incw);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    return suzerain_blas_swaxpby(boost::numeric_cast<int>(n),
+                                 alpha,
+                                 x,
+                                 boost::numeric_cast<int>(incx),
+                                 beta,
+                                 y,
+                                 boost::numeric_cast<int>(incy),
+                                 w,
+                                 boost::numeric_cast<int>(incw));
 }
 
 /*! @copydoc suzerain_blas_swaxpby */
-template<> inline void waxpby<double>(
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4 >
+inline void waxpby(
         const int n,
         const double alpha,
         const double *x,
@@ -292,34 +349,51 @@ template<> inline void waxpby<double>(
         double *w,
         const int incw)
 {
-    return suzerain_blas_dwaxpby(n, alpha, x, incx, beta, y, incy, w, incw);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    return suzerain_blas_dwaxpby(boost::numeric_cast<int>(n),
+                                 alpha,
+                                 x,
+                                 boost::numeric_cast<int>(incx),
+                                 beta,
+                                 y,
+                                 boost::numeric_cast<int>(incy),
+                                 w,
+                                 boost::numeric_cast<int>(incw));
 }
 
 /*! @copydoc suzerain_blas_sscal */
-template< typename FPT > void scal(
-        const int n,
-        const FPT alpha,
-        FPT *x,
-        const int incx);
-
-/*! @copydoc suzerain_blas_sscal */
-template<> inline void scal<float>(
-        const int n,
+template< typename Integer1, typename Integer2 >
+inline void scal(
+        const Integer1 n,
         const float alpha,
         float *x,
-        const int incx)
+        const Integer2 incx)
 {
-    return suzerain_blas_sscal(n, alpha, x, incx);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_sscal(boost::numeric_cast<int>(n),
+                               alpha,
+                               x,
+                               boost::numeric_cast<int>(incx));
 }
 
 /*! @copydoc suzerain_blas_sscal */
-template<> inline void scal<double>(
-        const int n,
+template< typename Integer1, typename Integer2 >
+inline void scal(
+        const Integer1 n,
         const double alpha,
         double *x,
-        const int incx)
+        const Integer2 incx)
 {
-    return suzerain_blas_dscal(n, alpha, x, incx);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_dscal(boost::numeric_cast<int>(n),
+                               alpha,
+                               x,
+                               boost::numeric_cast<int>(incx));
 }
 
 /*! @} */
@@ -329,106 +403,167 @@ template<> inline void scal<double>(
  */
 
 /*! @copydoc suzerain_blas_sgbmv */
-template< typename FPT > void gbmv(
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Integer6,
+          typename Integer7 >
+inline void gbmv(
         const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const FPT alpha,
-        const FPT *a,
-        const int lda,
-        const FPT *x,
-        const int incx,
-        const FPT beta,
-        FPT *y,
-        const int incy);
-
-/*! @copydoc suzerain_blas_sgbmv */
-template<> inline void gbmv<float>(
-        const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
         const float alpha,
         const float *a,
-        const int lda,
+        const Integer5 lda,
         const float *x,
-        const int incx,
+        const Integer6 incx,
         const float beta,
         float *y,
-        const int incy)
+        const Integer7 incy)
 {
-    return suzerain_blas_sgbmv(
-        trans, m, n, kl, ku, alpha, a, lda, x, incx, beta, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer6>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer7>::value);
+    return suzerain_blas_sgbmv(trans,
+                               boost::numeric_cast<int>(m),
+                               boost::numeric_cast<int>(n),
+                               boost::numeric_cast<int>(kl),
+                               boost::numeric_cast<int>(ku),
+                               alpha,
+                               a,
+                               boost::numeric_cast<int>(lda),
+                               x,
+                               boost::numeric_cast<int>(incx),
+                               beta,
+                               y,
+                               boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_sgbmv */
-template<> inline void gbmv<double>(
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Integer6,
+          typename Integer7 >
+inline void gbmv(
         const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
         const double alpha,
         const double *a,
-        const int lda,
+        const Integer5 lda,
         const double *x,
-        const int incx,
+        const Integer6 incx,
         const double beta,
         double *y,
-        const int incy)
+        const Integer7 incy)
 {
-    return suzerain_blas_dgbmv(
-        trans, m, n, kl, ku, alpha, a, lda, x, incx, beta, y, incy);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer6>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer7>::value);
+    return suzerain_blas_dgbmv(trans,
+                               boost::numeric_cast<int>(m),
+                               boost::numeric_cast<int>(n),
+                               boost::numeric_cast<int>(kl),
+                               boost::numeric_cast<int>(ku),
+                               alpha,
+                               a,
+                               boost::numeric_cast<int>(lda),
+                               x,
+                               boost::numeric_cast<int>(incx),
+                               beta,
+                               y,
+                               boost::numeric_cast<int>(incy));
 }
 
 /*! @copydoc suzerain_blas_sgb_acc */
-template< typename FPT > void gb_acc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const FPT alpha,
-        const FPT *a,
-        const int lda,
-        const FPT beta,
-        FPT *b,
-        const int ldb);
-
-/*! @copydoc suzerain_blas_sgb_acc */
-template<> inline void gb_acc<float>(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Integer6 >
+inline void gb_acc(
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
         const float alpha,
         const float *a,
-        const int lda,
+        const Integer5 lda,
         const float beta,
         float *b,
-        const int ldb)
+        const Integer6 ldb)
 {
-    return suzerain_blas_sgb_acc(
-        m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer6>::value);
+    return suzerain_blas_sgb_acc(boost::numeric_cast<int>(m),
+                                 boost::numeric_cast<int>(n),
+                                 boost::numeric_cast<int>(kl),
+                                 boost::numeric_cast<int>(ku),
+                                 alpha,
+                                 a,
+                                 boost::numeric_cast<int>(lda),
+                                 beta,
+                                 b,
+                                 boost::numeric_cast<int>(ldb));
 }
 
 /*! @copydoc suzerain_blas_sgb_acc */
-template<> inline void gb_acc<double>(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Integer6 >
+inline void gb_acc(
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
         const double alpha,
         const double *a,
-        const int lda,
+        const Integer5 lda,
         const double beta,
         double *b,
-        const int ldb)
+        const Integer6 ldb)
 {
-    return suzerain_blas_dgb_acc(
-        m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer6>::value);
+    return suzerain_blas_dgb_acc(boost::numeric_cast<int>(m),
+                                 boost::numeric_cast<int>(n),
+                                 boost::numeric_cast<int>(kl),
+                                 boost::numeric_cast<int>(ku),
+                                 alpha,
+                                 a,
+                                 boost::numeric_cast<int>(lda),
+                                 beta,
+                                 b,
+                                 boost::numeric_cast<int>(ldb));
 }
 
 /*! @} */
@@ -447,86 +582,135 @@ template<> inline void gb_acc<double>(
 namespace lapack {
 
 /*! @copydoc suzerain_lapack_sgbtrf */
-template< typename FPT > int gbtrf(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        FPT *ab,
-        const int ldab,
-        int *ipiv);
-
-/*! @copydoc suzerain_lapack_sgbtrf */
-template<> inline int gbtrf<float>(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5 >
+inline int gbtrf(
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
         float *ab,
-        const int ldab,
+        const Integer5 ldab,
         int *ipiv)
 {
-    return suzerain_lapack_sgbtrf(m, n, kl, ku, ab, ldab, ipiv);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    return suzerain_lapack_sgbtrf(boost::numeric_cast<int>(m),
+                                  boost::numeric_cast<int>(n),
+                                  boost::numeric_cast<int>(kl),
+                                  boost::numeric_cast<int>(ku),
+                                  ab,
+                                  boost::numeric_cast<int>(ldab),
+                                  ipiv);
 }
 
 /*! @copydoc suzerain_lapack_sgbtrf */
-template<> inline int gbtrf<double>(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5 >
+inline int gbtrf(
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
         double *ab,
-        const int ldab,
+        const Integer5 ldab,
         int *ipiv)
 {
-    return suzerain_lapack_dgbtrf(m, n, kl, ku, ab, ldab, ipiv);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    return suzerain_lapack_dgbtrf(boost::numeric_cast<int>(m),
+                                  boost::numeric_cast<int>(n),
+                                  boost::numeric_cast<int>(kl),
+                                  boost::numeric_cast<int>(ku),
+                                  ab,
+                                  boost::numeric_cast<int>(ldab),
+                                  ipiv);
 }
 
 /*! @copydoc suzerain_lapack_sgbtrs */
-template< typename FPT > int gbtrs(
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Integer6 >
+inline int gbtrs(
         const char trans,
-        const int n,
-        const int kl,
-        const int ku,
-        const int nrhs,
-        const FPT *ab,
-        const int ldab,
-        const int *ipiv,
-        FPT *b,
-        const int ldb);
-
-/*! @copydoc suzerain_lapack_sgbtrs */
-template<> inline int gbtrs<float>(
-        const char trans,
-        const int n,
-        const int kl,
-        const int ku,
-        const int nrhs,
+        const Integer1 n,
+        const Integer2 kl,
+        const Integer3 ku,
+        const Integer4 nrhs,
         const float *ab,
-        const int ldab,
+        const Integer5 ldab,
         const int *ipiv,
         float *b,
-        const int ldb)
+        const Integer6 ldb)
 {
-    return suzerain_lapack_sgbtrs(
-        trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer6>::value);
+    return suzerain_lapack_sgbtrs(trans,
+                                  boost::numeric_cast<int>(n),
+                                  boost::numeric_cast<int>(kl),
+                                  boost::numeric_cast<int>(ku),
+                                  boost::numeric_cast<int>(nrhs),
+                                  ab,
+                                  boost::numeric_cast<int>(ldab),
+                                  ipiv,
+                                  b,
+                                  boost::numeric_cast<int>(ldb));
 }
 
 /*! @copydoc suzerain_lapack_sgbtrs */
-template<> inline int gbtrs<double>(
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Integer6 >
+inline int gbtrs(
         const char trans,
-        const int n,
-        const int kl,
-        const int ku,
-        const int nrhs,
+        const Integer1 n,
+        const Integer2 kl,
+        const Integer3 ku,
+        const Integer4 nrhs,
         const double *ab,
-        const int ldab,
+        const Integer5 ldab,
         const int *ipiv,
         double *b,
-        const int ldb)
+        const Integer6 ldb)
 {
-    return suzerain_lapack_dgbtrs(
-        trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer6>::value);
+    return suzerain_lapack_dgbtrs(trans,
+                                  boost::numeric_cast<int>(n),
+                                  boost::numeric_cast<int>(kl),
+                                  boost::numeric_cast<int>(ku),
+                                  boost::numeric_cast<int>(nrhs),
+                                  ab,
+                                  boost::numeric_cast<int>(ldab),
+                                  ipiv,
+                                  b,
+                                  boost::numeric_cast<int>(ldb));
 }
 
 } // namespace lapack
