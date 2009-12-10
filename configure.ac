@@ -60,10 +60,10 @@ dnl ----------------------------------------------
 dnl Enable rudimentary precompiled header support
 dnl Currently very, very Intel-specific
 dnl ----------------------------------------------
-AC_LANG([C])
-AX_CHECK_COMPILER_FLAGS([-pch],[CFLAGS="${CFLAGS} -pch"])
-AC_LANG([C++])
-AX_CHECK_COMPILER_FLAGS([-pch],[CXXFLAGS="${CXXFLAGS} -pch"])
+dnl AC_LANG([C])
+dnl AX_CHECK_COMPILER_FLAGS([-pch],[CFLAGS="${CFLAGS} -pch"])
+dnl AC_LANG([C++])
+dnl AX_CHECK_COMPILER_FLAGS([-pch],[CXXFLAGS="${CXXFLAGS} -pch"])
 
 dnl ------------------------------------------------
 dnl Enable GNU libtool
