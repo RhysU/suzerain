@@ -16,6 +16,7 @@
 \usepackage{pstricks}
 \usepackage{setspace}
 \usepackage{txfonts}
+\usepackage{varioref}
 
 \mathtoolsset{showmanualtags}
 \allowdisplaybreaks[1]
@@ -141,7 +142,7 @@ $\varphi$.  To achieve a low storage implementation, the $N\left(u\right)$ and
 $\left(I+\varphi{}L\right)^{-1}$ implementations must operate in-place while
 $\left(I+\varphi{}L\right)$ must operate out-of-place.  Given only two storage
 locations $a$ and $b$, each substep computation follows algorithm
-\ref{alg:substep}.
+\vref{alg:substep}.
 
 \begin{algorithm}
 \caption{Compute one substep in the SMR scheme following
@@ -160,11 +161,22 @@ locations $a$ and $b$, each substep computation follows algorithm
 \end{algorithmic}
 \end{algorithm}
 
+Two possible issues arise when repeatedly using the substep algorithm: First,
+during the first substep the timestep may need to be computed dynamically based
+on a stability criterion available only during the nonlinear operator
+computation.  Second, it may be important to always apply each operator against
+a particular storage location.  This requirement implies that the
+implementation of $\left(I+\varphi{}L\right)$ must also support in place
+application.  The underlying state storage must support a swap operation,
+denoted $a\leftrightarrow{}b$.  Under these considerations, time step
+computation follows algorithm \vref{alg:step}.
+
 \begin{algorithm}
 \caption{Compute all substeps in the SMR scheme following
          equation \eqref{eq:generaloperatorsubstep}}
 \label{alg:step}
 \begin{algorithmic}
+  \renewcommand{\algorithmiccomment}[1]{\hfill{}// #1}
   \REQUIRE Storage $a = u\left(t\right) = u^{0} $;
            storage $b$'s contents undefined
   \STATE $b\leftarrow{}a$
@@ -176,7 +188,7 @@ locations $a$ and $b$, each substep computation follows algorithm
   \ENSURE Storage $a = u^1$;
           storage $b = N\left(u^{0}\right)$
   \STATE $b\leftarrow{}\Delta{}t\zeta_{1}b$
-  \STATE $b\leftarrow{}b + \left(I+\Delta{}t\alpha_{2}L\right)a$
+  \STATE $b\leftarrow{}b+\left(I+\Delta{}t\alpha_{2}L\right)a$
   \STATE $a\leftrightarrow{}b$
   \STATE $b\leftarrow{}N\left(b\right)$
   \STATE $a\leftarrow{}a + \Delta{}t \gamma_{2} b$
@@ -184,7 +196,7 @@ locations $a$ and $b$, each substep computation follows algorithm
   \ENSURE Storage $a = u^{2}$;
           storage $b = N\left(u^{1}\right)$
   \STATE $b\leftarrow{}\Delta{}t\zeta_{2}b$
-  \STATE $b\leftarrow{}b + \left(I+\Delta{}t\alpha_{3}L\right)a$
+  \STATE $b\leftarrow{}b+\left(I+\Delta{}t\alpha_{3}L\right)a$
   \STATE $a\leftrightarrow{}b$
   \STATE $b\leftarrow{}N\left(b\right)$
   \STATE $a\leftarrow{}a + \Delta{}t \gamma_{3} b$
@@ -193,5 +205,73 @@ locations $a$ and $b$, each substep computation follows algorithm
           storage $b = N\left(u^{2}\right)$
 \end{algorithmic}
 \end{algorithm}
+
+%% Results at each step in the main algorithm
+%\clearpage
+%\begin{align*}
+%&\text{begin}
+%& a&=u(t)=u^{0}
+%\\
+%b&\leftarrow{}a
+%& &
+%& b&=u^{0}
+%\\
+%b &\leftarrow{} N(b)
+%& &
+%& b&=N(u^{0})
+%\\
+%a &\leftarrow{} \left(I+\Delta{}t\alpha_{1}L\right)a
+%& a&=\left(I+\Delta{}t\alpha_{1}L\right)u^{0}
+%& &
+%\\
+%a &\leftarrow{} a + \Delta{}t\gamma_{1}b
+%& a&=\left(I+\Delta{}t\alpha_{1}L\right)u^{0} + \Delta{}t\gamma_{1}N(u^{0})
+%\\
+%a &\leftarrow{} \left(I-\Delta{}t\beta_{1}L\right)^{-1}a
+%& a&=u^{1}
+%\\
+%b &\leftarrow{} \left(I+\Delta{}t\alpha_{2}L\right)a + \Delta{}t\zeta_{1}b
+%& &
+%& b&=\left(I+\Delta{}t\alpha_{2}L\right)u^{1} + \Delta{}t\zeta_{1}N(u^{0})
+%\\
+%a &\leftrightarrow{} b
+%& a&=\left(I+\Delta{}t\alpha_{2}L\right)u^{1} + \Delta{}t\zeta_{1}N(u^{0})
+%& b&=u^{1}
+%\\
+%b &\leftarrow{} N(b)
+%& &
+%& b&=N(u^{1})
+%\\
+%a &\leftarrow{} a + \Delta{}t\gamma_{2}b
+%& a&=\left(I+\Delta{}t\alpha_{2}L\right)u^{1}
+%    + \Delta{}t\gamma_{2}N(u^{1})
+%    + \Delta{}t\zeta_{1}N(u^{0})
+%\\
+%a &\leftarrow{} \left(I-\Delta{}t\beta_{2}L\right)^{-1}a
+%& a&=u^{2}
+%\\
+%b &\leftarrow{} \left(I+\Delta{}t\alpha_{3}L\right)a + \Delta{}t\zeta_{2}b
+%& &
+%& b&=\left(I+\Delta{}t\alpha_{3}L\right)u^{2} + \Delta{}t\zeta_{2}N(u^{1})
+%\\
+%a &\leftrightarrow{} b
+%& a&=\left(I+\Delta{}t\alpha_{3}L\right)u^{2} + \Delta{}t\zeta_{2}N(u^{1})
+%& b&=u^{2}
+%\\
+%b &\leftarrow{} N(b)
+%& &
+%& b&=N(u^{2})
+%\\
+%a &\leftarrow{} a + \Delta{}t\gamma_{3}b
+%& a&=\left(I+\Delta{}t\alpha_{3}L\right)u^{2}
+%    + \Delta{}t\gamma_{3}N(u^{2})
+%    + \Delta{}t\zeta_{2}N(u^{1})
+%\\
+%a &\leftarrow{} \left(I-\Delta{}t\beta_{3}L\right)^{-1}a
+%& a&=u^{3}
+%\\
+%&\text{end}
+%& a&=u(t+\Delta{}t)=u^{3}
+%\end{align*}
 
 \end{document}
