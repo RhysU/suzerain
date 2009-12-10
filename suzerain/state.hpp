@@ -154,8 +154,21 @@ public:
      *
      * @return *this
      */
-    virtual IState& operator=(const IState& that)
+    virtual IState& operator=(const IState<FPT>& that)
                               throw(std::bad_cast, std::logic_error) = 0;
+
+    /**
+     * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
+     * the relevant data without incurring a lot of memory overhead.  In
+     * contrast with potentially optimized swap semantics, this method should
+     * swap data instead of playing tricks with underlying pointers.
+     *
+     * @param other instance with which to exchange data.
+     * @throw std::bad_cast if \c that does not have a compatible type.
+     * @throw std::logic_error if \c that is not conformant.
+     */
+    virtual void exchange(IState<FPT>& other)
+                          throw(std::bad_cast, std::logic_error) = 0;
 
     // TODO Add IState<FPT>::swap(IState<FPT>&) to public interface
 };
@@ -238,6 +251,19 @@ public:
     {
         return operator=(dynamic_cast<const RealState<FPT>&>(that));
     }
+
+    /**
+     * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
+     * the relevant data without incurring a lot of memory overhead.  In
+     * contrast with potentially optimized swap semantics, this method should
+     * swap data instead of playing tricks with underlying pointers.
+     *
+     * @param other instance with which to exchange data.
+     * @throw std::bad_cast if \c that does not have a compatible type.
+     * @throw std::logic_error if \c that is not conformant.
+     */
+    virtual void exchange(IState<FPT>& other)
+                          throw(std::bad_cast, std::logic_error);
 
     // TODO Implement swap using https://svn.boost.org/trac/boost/ticket/1045
 
@@ -342,6 +368,23 @@ throw(std::logic_error)
     return *this;
 }
 
+template< typename FPT >
+void RealState<FPT>::exchange(IState<FPT> &other)
+throw(std::bad_cast,
+      std::logic_error)
+{
+    if (this != &other) {
+        if (!isConformant(other))
+            throw std::logic_error("Nonconformant other in exchange");
+
+        RealState<FPT> &o = dynamic_cast<RealState<FPT>&>(other);
+
+        suzerain::blas::swap(data.num_elements(),
+                             o.data.data(), 1,
+                             data.data(), 1);
+    }
+}
+
 /**
  * An implementation of IState<FPT> for complex-valued state information.
  * \c FPT is the real scalar type used underneath the complex type.
@@ -422,6 +465,19 @@ public:
     {
         return operator=(dynamic_cast<const ComplexState<FPT>&>(that));
     }
+
+    /**
+     * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
+     * the relevant data without incurring a lot of memory overhead.  In
+     * contrast with potentially optimized swap semantics, this method should
+     * swap data instead of playing tricks with underlying pointers.
+     *
+     * @param other instance with which to exchange data.
+     * @throw std::bad_cast if \c that does not have a compatible type.
+     * @throw std::logic_error if \c that is not conformant.
+     */
+    virtual void exchange(IState<FPT>& other)
+                          throw(std::bad_cast, std::logic_error);
 
     // TODO Implement swap using https://svn.boost.org/trac/boost/ticket/1045
 
@@ -580,6 +636,23 @@ throw(std::logic_error)
     }
 
     return *this;
+}
+
+template< typename FPT >
+void ComplexState<FPT>::exchange(IState<FPT> &other)
+throw(std::bad_cast,
+      std::logic_error)
+{
+    if (this != &other) {
+        if (!isConformant(other))
+            throw std::logic_error("Nonconformant other in exchange");
+
+        ComplexState<FPT> &o = dynamic_cast<ComplexState<FPT>&>(other);
+
+        suzerain::blas::swap(components.num_elements(),
+                             o.components.data(), 1,
+                             components.data(), 1);
+    }
 }
 
 } // namespace suzerain
