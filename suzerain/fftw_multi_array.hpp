@@ -1353,9 +1353,8 @@ void forward_r2c(
     shape_array loop_shape(shape_in);   // Iterate over all dimensions...
     loop_shape[transform_dim] = 1;      // ...except the transformed one
     index_array1 loop_index;            // Start at the highest index
-    for (size_type1 n = 0; n < dimensionality; ++n) {
-        loop_index[n] = loop_shape[n] - 1;
-    }
+    std::transform(loop_shape.begin(), loop_shape.end(), loop_index.begin(),
+                   std::bind2nd(std::minus<shape_type>(), shape_type(1)));
     index_array1 dereference_index1;     // To be adjusted by index_bases
     index_array2 dereference_index2;     // To be adjusted by index_bases
 
