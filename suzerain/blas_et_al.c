@@ -81,6 +81,43 @@ suzerain_blas_calloc(size_t nmemb, size_t size)
     return p;
 }
 
+void
+suzerain_blas_sswap(
+        const int n,
+        float *x,
+        const int incx,
+        float *y,
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+
+    sswap(&_n, x, &_incx, y, &_incy);
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_dswap(
+        const int n,
+        double *x,
+        const int incx,
+        double *y,
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    const MKL_INT _n    = n;
+    const MKL_INT _incx = incx;
+    const MKL_INT _incy = incy;
+
+    dswap(&_n, x, &_incx, y, &_incy);
+#else
+#error "Sanity failure"
+#endif
+}
 
 void
 suzerain_blas_scopy(
@@ -574,8 +611,10 @@ suzerain_lapack_sgbtrs(
     MKL_INT _ldb  = ldb;
     MKL_INT _info = 0;
 
+    // Cast away const; MKL LAPACK API does not enforce its logical const-ness
+    // http://software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
     sgbtrs(&_trans, &_n, &_kl, &_ku, &_nrhs,
-           ab, &_ldab, ipiv, b, &_ldb, &_info);
+           (float *)ab, &_ldab, (int *)ipiv, b, &_ldb, &_info);
 
     return _info;
 #else
@@ -606,8 +645,10 @@ suzerain_lapack_dgbtrs(
     MKL_INT _ldb  = ldb;
     MKL_INT _info = 0;
 
+    // Cast away const; MKL LAPACK API does not enforce its logical const-ness
+    // http://software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
     dgbtrs(&_trans, &_n, &_kl, &_ku, &_nrhs,
-           ab, &_ldab, ipiv, b, &_ldb, &_info);
+           (double *)ab, &_ldab, (int *)ipiv, b, &_ldb, &_info);
 
     return _info;
 #else

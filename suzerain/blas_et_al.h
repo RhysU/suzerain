@@ -95,6 +95,34 @@ suzerain_blas_calloc(size_t nmemb, size_t size);
  */
 
 /*!
+ * \brief Perform \f$ x \leftrightarrow{} y \f$ using BLAS's swap.
+ *
+ * \param n Number of elements in \c x and \c y.
+ * \param x Source vector.
+ * \param incx Source vector stride.
+ * \param y Target vector.
+ * \param incy Target vector stride.
+ *
+ * \see A BLAS reference for more details.
+ */
+void
+suzerain_blas_sswap(
+        const int n,
+        float *x,
+        const int incx,
+        float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_sswap */
+void
+suzerain_blas_dswap(
+        const int n,
+        double *x,
+        const int incx,
+        double *y,
+        const int incy);
+
+/*!
  * \brief Perform \f$ y \leftarrow{} x \f$ using BLAS's copy.
  *
  * \param n Number of elements in \c x and \c y.

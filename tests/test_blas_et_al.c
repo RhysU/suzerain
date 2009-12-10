@@ -185,6 +185,68 @@ test_saxpby_nop()
 }
 
 void
+test_dswap()
+{
+    int i;
+
+    double       x[]    = {1.0, 2.0, 3.0};
+    double       y[]    = {4.0, 5.0, 6.0};
+    const int    incx   = 1;
+    const int    incy   = 1;
+    const int    nx     = sizeof(x)/sizeof(x[0]);
+    const int    ny     = sizeof(y)/sizeof(y[0]);
+    const double x_expected[] = { 4.0, 5.0, 6.0 };
+    const double y_expected[] = { 1.0, 2.0, 3.0 };
+    const int nx_expected = sizeof(x_expected)/sizeof(x_expected[0]);
+    const int ny_expected = sizeof(y_expected)/sizeof(y_expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Consistent vector lengths");
+    gsl_test_int(nx, nx_expected, "Expected x results' length");
+    gsl_test_int(ny, ny_expected, "Expected y results' length");
+
+    suzerain_blas_dswap(nx/incx, x, incx, y, incy);
+    for (i = 0; i < nx_expected; ++i) {
+        gsl_test_abs(x[i], x_expected[i], GSL_DBL_EPSILON,
+                "dswap x index %d", i);
+    }
+    for (i = 0; i < ny_expected; ++i) {
+        gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
+                "dswap y index %d", i);
+    }
+}
+
+void
+test_sswap()
+{
+    int i;
+
+    float       x[]          = {1.0, 2.0, 3.0};
+    float       y[]          = {4.0, 5.0, 6.0};
+    const int   incx         = 1;
+    const int   incy         = 1;
+    const int   nx           = sizeof(x)/sizeof(x[0]);
+    const int   ny           = sizeof(y)/sizeof(y[0]);
+    const float x_expected[] = { 4.0, 5.0, 6.0 };
+    const float y_expected[] = { 1.0, 2.0, 3.0 };
+    const int nx_expected = sizeof(x_expected)/sizeof(x_expected[0]);
+    const int ny_expected = sizeof(y_expected)/sizeof(y_expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Consistent vector lengths");
+    gsl_test_int(nx, nx_expected, "Expected x results' length");
+    gsl_test_int(ny, ny_expected, "Expected y results' length");
+
+    suzerain_blas_sswap(nx/incx, x, incx, y, incy);
+    for (i = 0; i < nx_expected; ++i) {
+        gsl_test_abs(x[i], x_expected[i], GSL_DBL_EPSILON,
+                "sswap x index %d", i);
+    }
+    for (i = 0; i < ny_expected; ++i) {
+        gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
+                "sswap y index %d", i);
+    }
+}
+
+void
 test_dscal()
 {
     int i;
@@ -261,6 +323,55 @@ test_sscal()
         }
     }
 }
+
+void
+test_dcopy()
+{
+    int i;
+
+    const double x[]    = {1.0, 2.0, 3.0};
+    double       y[]    = {555.0, 555.0, 555.0};
+    const int    incx   = 1;
+    const int    incy   = 1;
+    const int    nx     = sizeof(x)/sizeof(x[0]);
+    const int    ny     = sizeof(y)/sizeof(y[0]);
+    const double y_expected[] = { 1.0, 2.0, 3.0 };
+    const int ny_expected = sizeof(y_expected)/sizeof(y_expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Consistent vector lengths");
+    gsl_test_int(ny, ny_expected, "Expected y results' length");
+
+    suzerain_blas_dcopy(nx/incx, x, incx, y, incy);
+    for (i = 0; i < ny_expected; ++i) {
+        gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
+                "dcopy y index %d", i);
+    }
+}
+
+void
+test_scopy()
+{
+    int i;
+
+    const float  x[]    = {1.0, 2.0, 3.0};
+    float        y[]    = {555.0, 555.0, 555.0};
+    const int    incx   = 1;
+    const int    incy   = 1;
+    const int    nx     = sizeof(x)/sizeof(x[0]);
+    const int    ny     = sizeof(y)/sizeof(y[0]);
+    const float  y_expected[] = { 1.0, 2.0, 3.0 };
+    const int ny_expected = sizeof(y_expected)/sizeof(y_expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Consistent vector lengths");
+    gsl_test_int(ny, ny_expected, "Expected y results' length");
+
+    suzerain_blas_scopy(nx/incx, x, incx, y, incy);
+    for (i = 0; i < ny_expected; ++i) {
+        gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
+                "scopy y index %d", i);
+    }
+}
+
 
 void
 test_dgb_acc()
@@ -423,7 +534,14 @@ main(int argc, char **argv)
     test_dwaxpby();
     test_swaxpby();
 
+    test_dswap();
+    test_sswap();
+
     test_dscal();
+    test_sscal();
+
+    test_dcopy();
+    test_scopy();
 
     test_dgb_acc();
     test_dgb_acc_nop();

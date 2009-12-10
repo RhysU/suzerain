@@ -70,6 +70,36 @@ inline void * calloc(size_t nmemb, size_t size)
  * @{
  */
 
+/*! @copydoc suzerain_blas_sswap */
+template< typename FPT > void swap(
+        const int n,
+        FPT *x,
+        const int incx,
+        FPT *y,
+        const int incy);
+
+/*! @copydoc suzerain_blas_sswap */
+template<> inline void swap<float>(
+        const int n,
+        float *x,
+        const int incx,
+        float *y,
+        const int incy)
+{
+    return suzerain_blas_sswap(n, x, incx, y, incy);
+}
+
+/*! @copydoc suzerain_blas_sswap */
+template<> inline void swap<double>(
+        const int n,
+        double *x,
+        const int incx,
+        double *y,
+        const int incy)
+{
+    return suzerain_blas_dswap(n, x, incx, y, incy);
+}
+
 /*! @copydoc suzerain_blas_scopy */
 template< typename FPT > void copy(
         const int n,
