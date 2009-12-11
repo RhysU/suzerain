@@ -30,7 +30,6 @@
 #ifndef __SUZERAIN_TIMESTEPPER_HPP
 #define __SUZERAIN_TIMESTEPPER_HPP
 
-#include <iosfwd>
 #include <suzerain/common.hpp>
 #include <suzerain/state.hpp>
 
@@ -108,19 +107,20 @@ class MultiplicativeOperator
 {
 private:
     const FPT factor;
+    const FPT delta_t;
 
 public:
-    MultiplicativeOperator(const FPT factor) : factor(factor) {};
+    MultiplicativeOperator(
+            const FPT factor,
+            const FPT delta_t = std::numeric_limits<FPT>::quiet_NaN())
+        : factor(factor), delta_t(delta_t) {};
 
     virtual FPT applyOperator(suzerain::IState<FPT> &state,
                               const bool delta_t_requested = false) const
                               throw(std::exception)
     {
         state.scale(factor);
-
-        // Never returns a meaningful result for the time step
-        BOOST_STATIC_ASSERT(std::numeric_limits<FPT>::has_quiet_NaN);
-        return std::numeric_limits<FPT>::quiet_NaN();
+        return delta_t;
     };
 
     virtual void applyIdentityPlusScaledOperator(
@@ -280,6 +280,42 @@ void step(const ILowStorageMethod<FPT> &m,
 throw(std::exception)
 {
     return step(m, MultiplicativeOperator<FPT>(0), N, delta_t, a, b);
+}
+
+template< typename FPT, typename LinearState, typename NonlinearState >
+void step(const ILowStorageMethod<FPT> &m,
+          const ILinearOperator<FPT> &L,
+          const INonlinearOperator<FPT> &N,
+          LinearState &a,
+          NonlinearState &b)
+throw(std::exception)
+{
+    // First substep handling is special since we need to determine delta_t
+    b = a;
+    const FPT delta_t = N.applyOperator(b, true /* we need delta_t */);
+    L.applyIdentityPlusScaledOperator(delta_t * m.alpha(0), a);
+    a.addScaled(delta_t * m.gamma(0), b);
+    L.invertIdentityPlusScaledOperator( -delta_t * m.beta(0), a);
+
+    // Second and subsequent substeps are identical
+    for (std::size_t i = 1; i < m.substeps(); ++i) {
+        b.scale(delta_t * m.zeta(i));
+        L.accumulateIdentityPlusScaledOperator(delta_t * m.alpha(i), a, b);
+        b.exchange(a); // Note nonlinear storage controls exchange operation
+        N.applyOperator(b, false /* delta_t not needed */);
+        a.addScaled(delta_t * m.gamma(i), b);
+        L.invertIdentityPlusScaledOperator( -delta_t * m.beta(i), a);
+    }
+}
+
+template< typename FPT, typename LinearState, typename NonlinearState >
+void step(const ILowStorageMethod<FPT> &m,
+          const INonlinearOperator<FPT> &N,
+          LinearState &a,
+          NonlinearState &b)
+throw(std::exception)
+{
+    return step(m, MultiplicativeOperator<FPT>(0), N, a, b);
 }
 
 } // namespace lowstorage

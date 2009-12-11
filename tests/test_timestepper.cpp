@@ -20,9 +20,14 @@ class RiccatiExplicitOperator
 private:
     const FPT a;
     const FPT b;
+    const FPT delta_t;
 
 public:
-    RiccatiExplicitOperator(const FPT a, const FPT b) : a(a), b(b) { };
+    RiccatiExplicitOperator(
+            const FPT a,
+            const FPT b,
+            const FPT delta_t = std::numeric_limits<FPT>::quiet_NaN())
+        : a(a), b(b), delta_t(delta_t) { };
 
     virtual FPT applyOperator(suzerain::IState<FPT> &state,
                               const bool delta_t_requested = false) const
@@ -37,7 +42,7 @@ public:
                     FPT &y = realstate.data[i][j][k];
                     y = y*y + b*y - a*a - a*b;
                 }
-        return std::numeric_limits<FPT>::quiet_NaN();
+        return delta_t;
     };
 };
 
@@ -50,9 +55,14 @@ class RiccatiNonlinearOperator
 private:
     const FPT a;
     const FPT b;
+    const FPT delta_t;
 
 public:
-    RiccatiNonlinearOperator(const FPT a, const FPT b) : a(a), b(b) {};
+    RiccatiNonlinearOperator(
+            const FPT a,
+            const FPT b,
+            const FPT delta_t = std::numeric_limits<FPT>::quiet_NaN())
+        : a(a), b(b), delta_t(delta_t) {};
 
     virtual FPT applyOperator(suzerain::IState<FPT> &state,
                               const bool delta_t_requested = false) const
@@ -67,7 +77,7 @@ public:
                     FPT &y = realstate.data[i][j][k];
                     y = y*y - a*a - a*b;
                 }
-        return std::numeric_limits<FPT>::quiet_NaN();
+        return delta_t;
     };
 };
 
@@ -338,7 +348,7 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE( step )
+BOOST_AUTO_TEST_SUITE( step_delta_t_provided )
 
 // Run the explicit timestepper against (d/dt) y = a*y
 // where it is expected to be third order.
@@ -450,6 +460,181 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
         suzerain::timestepper::lowstorage::step(
                 m, linear_op, nonlinear_op,
                 (t_final - t_initial)/finer_nsteps, a, b);
+    }
+    const double finer_final = a.data[0][0][0];
+    const double finer_error = fabs(finer_final - soln(t_final));
+    BOOST_CHECK_SMALL(finer_error, 1.0e-11); // Tolerance found using Octave
+
+    // SMR91 is second order against the Riccati problem
+    const double expected_order = 1.98; // allows for floating point losses
+    const double observed_order
+        = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
+    BOOST_CHECK(!boost::math::isnan(observed_order));
+    BOOST_CHECK_GE(observed_order, expected_order);
+
+    // Richardson extrapolation should show h^2 term elimination gives a better
+    // result than h^1, h^3, etc...
+    {
+        gsl_matrix * data = gsl_matrix_alloc(1,2);
+        gsl_vector * k = gsl_vector_alloc(1);
+        gsl_matrix * normtable = gsl_matrix_alloc(data->size2, data->size2);
+        gsl_vector * exact = gsl_vector_alloc(1);
+        gsl_vector_set(exact, 0, soln(t_final));
+
+        double richardson_h_error[4];
+        for (int i = 0;
+             i < sizeof(richardson_h_error)/sizeof(richardson_h_error[0]);
+             ++i) {
+            gsl_matrix_set(data, 0, 0, coarse_final);
+            gsl_matrix_set(data, 0, 1, finer_final);
+            gsl_vector_set(k,0,i+1);
+            suzerain_richardson_extrapolation(
+                    data, finer_nsteps/coarse_nsteps,
+                    k, normtable, exact);
+            richardson_h_error[i] = gsl_matrix_get(
+                    normtable, normtable->size2-1, normtable->size2-1);
+        }
+
+        gsl_matrix_free(normtable);
+        gsl_vector_free(exact);
+        gsl_vector_free(k);
+        gsl_matrix_free(data);
+
+        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[0]);
+        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[2]);
+        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[3]);
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( step_delta_t_computed )
+
+// Run the explicit timestepper against (d/dt) y = a*y
+// where it is expected to be third order.
+BOOST_AUTO_TEST_CASE( step_explicit )
+{
+    // Fix test problem parameters
+    const ExponentialSolution<double> soln(2.0, 1.0);
+    const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
+
+    // Fix method, operators, and storage space
+    using namespace suzerain::timestepper;
+    const lowstorage::SMR91Method<double> m;
+    suzerain::RealState<double> a(1,1,1), b(1,1,1);
+
+    // Coarse grid calculation
+    const std::size_t coarse_nsteps = 16;
+    a.data[0][0][0] = soln(t_initial);
+    {
+        // Nonlinear operator provides timestep size information
+        const lowstorage::MultiplicativeOperator<double> nonlinear_op(
+                soln.a, (t_final - t_initial)/coarse_nsteps);
+        for (std::size_t i = 0; i < coarse_nsteps; ++i) {
+            suzerain::timestepper::lowstorage::step(m, nonlinear_op, a, b);
+        }
+    }
+    const double coarse_final = a.data[0][0][0];
+    const double coarse_error = fabs(coarse_final - soln(t_final));
+    BOOST_CHECK_SMALL(coarse_error, 1.0e-12); // Tolerance found using Octave
+
+    // Finer grid calculation
+    const std::size_t finer_nsteps = 2*coarse_nsteps;
+    a.data[0][0][0] = soln(t_initial);
+    {
+        // Nonlinear operator provides timestep size information
+        const lowstorage::MultiplicativeOperator<double> nonlinear_op(
+                soln.a, (t_final - t_initial)/finer_nsteps);
+        for (std::size_t i = 0; i < finer_nsteps; ++i) {
+            suzerain::timestepper::lowstorage::step(m, nonlinear_op, a, b);
+        }
+    }
+    const double finer_final = a.data[0][0][0];
+    const double finer_error = fabs(finer_final - soln(t_final));
+    BOOST_CHECK_SMALL(finer_error, 1.0e-13); // Tolerance found using Octave
+
+    // SMR91 is third order against the exponential problem
+    const double expected_order = 2.95; // allows for floating point losses
+    const double observed_order
+        = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
+    BOOST_CHECK(!boost::math::isnan(observed_order));
+    BOOST_CHECK_GE(observed_order, expected_order);
+
+    // Richardson extrapolation should show h^3 term elimination gives a better
+    // result than h^1, h^2, h^4, etc...
+    {
+        gsl_matrix * data = gsl_matrix_alloc(1,2);
+        gsl_vector * k = gsl_vector_alloc(1);
+        gsl_matrix * normtable = gsl_matrix_alloc(data->size2, data->size2);
+        gsl_vector * exact = gsl_vector_alloc(1);
+        gsl_vector_set(exact, 0, soln(t_final));
+
+        double richardson_h_error[4];
+        for (int i = 0;
+             i < sizeof(richardson_h_error)/sizeof(richardson_h_error[0]);
+             ++i) {
+            gsl_matrix_set(data, 0, 0, coarse_final);
+            gsl_matrix_set(data, 0, 1, finer_final);
+            gsl_vector_set(k,0,i+1);
+            suzerain_richardson_extrapolation(
+                    data, finer_nsteps/coarse_nsteps,
+                    k, normtable, exact);
+            richardson_h_error[i] = gsl_matrix_get(
+                    normtable, normtable->size2-1, normtable->size2-1);
+        }
+
+        gsl_matrix_free(normtable);
+        gsl_vector_free(exact);
+        gsl_vector_free(k);
+        gsl_matrix_free(data);
+
+        BOOST_CHECK_LT(richardson_h_error[2], richardson_h_error[0]);
+        BOOST_CHECK_LT(richardson_h_error[2], richardson_h_error[1]);
+        BOOST_CHECK_LT(richardson_h_error[2], richardson_h_error[3]);
+    }
+}
+
+// Run the hybrid implicit/explicit timestepper against a Riccati problem
+// where it is expected to be second order.
+BOOST_AUTO_TEST_CASE( step_hybrid )
+{
+    // Fix test problem parameters
+    const RiccatiSolution<double> soln(2.0, 2.0, -50.0);
+    const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
+
+    // Fix method, operators, and storage space
+    const suzerain::timestepper::lowstorage::SMR91Method<double> m;
+    const RiccatiLinearOperator<double>    linear_op(soln.a, soln.b);
+    suzerain::RealState<double> a(1,1,1), b(1,1,1);
+
+    // Coarse grid calculation
+    const std::size_t coarse_nsteps = 16;
+    a.data[0][0][0] = soln(t_initial);
+    {
+        // Nonlinear operator provides timestep size information
+        const RiccatiNonlinearOperator<double> nonlinear_op(
+                soln.a, soln.b, (t_final - t_initial)/coarse_nsteps);
+        for (std::size_t i = 0; i < coarse_nsteps; ++i) {
+            suzerain::timestepper::lowstorage::step(
+                    m, linear_op, nonlinear_op, a, b);
+        }
+    }
+    const double coarse_final = a.data[0][0][0];
+    const double coarse_error = fabs(coarse_final - soln(t_final));
+    BOOST_CHECK_SMALL(coarse_error, 1.0e-10); // Tolerance found using Octave
+
+    // Finer grid calculation
+    const std::size_t finer_nsteps = 2*coarse_nsteps;
+    a.data[0][0][0] = soln(t_initial);
+    {
+        // Nonlinear operator provides timestep size information
+        const RiccatiNonlinearOperator<double> nonlinear_op(
+                soln.a, soln.b, (t_final - t_initial)/finer_nsteps);
+        for (std::size_t i = 0; i < finer_nsteps; ++i) {
+            suzerain::timestepper::lowstorage::step(
+                    m, linear_op, nonlinear_op, a, b);
+        }
     }
     const double finer_final = a.data[0][0][0];
     const double finer_error = fabs(finer_final - soln(t_final));
