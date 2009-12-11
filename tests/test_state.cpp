@@ -224,6 +224,51 @@ BOOST_AUTO_TEST_CASE( comparison_and_assignment )
     BOOST_CHECK_EQUAL(bar.data[0][1][2], 13.0);
 }
 
+BOOST_AUTO_TEST_CASE( exchange )
+{
+    suzerain::RealState<double> foo(1, 2, 3);
+
+    foo.data[0][0][0] =  2.0;
+    foo.data[0][1][0] =  3.0;
+    foo.data[0][0][1] =  5.0;
+    foo.data[0][1][1] =  7.0;
+    foo.data[0][0][2] = 11.0;
+    foo.data[0][1][2] = 13.0;
+
+    suzerain::RealState<double> bar(1, 2, 3);
+
+    bar.data[0][0][0] = 17.0;
+    bar.data[0][1][0] = 19.0;
+    bar.data[0][0][1] = 23.0;
+    bar.data[0][1][1] = 29.0;
+    bar.data[0][0][2] = 31.0;
+    bar.data[0][1][2] = 37.0;
+
+    foo.exchange(bar);
+
+    BOOST_CHECK_EQUAL(foo.data[0][0][0], 17.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][0], 19.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][1], 23.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][1], 29.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][2], 31.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][2], 37.0);
+
+    BOOST_CHECK_EQUAL(bar.data[0][0][0],  2.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][0],  3.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][1],  5.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][1],  7.0);
+    BOOST_CHECK_EQUAL(bar.data[0][0][2], 11.0);
+    BOOST_CHECK_EQUAL(bar.data[0][1][2], 13.0);
+
+    // Ensure we catch an operation between two nonconforming states
+    suzerain::RealState<double> baz(2, 2, 2);
+    BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
+
+    // Ensure we catch an operation between two different subclasses
+    suzerain::ComplexState<double> qux(1,2,3);
+    BOOST_CHECK_THROW(foo.exchange(qux), std::bad_cast);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
@@ -603,6 +648,51 @@ BOOST_AUTO_TEST_CASE( comparison_and_assignment )
     BOOST_CHECK_EQUAL(bar.data[0][1][1], complex(777.0,    0.0));
     BOOST_CHECK_EQUAL(bar.data[0][0][2], complex( 11.0, - 11.0));
     BOOST_CHECK_EQUAL(bar.data[0][1][2], complex( 13.0, - 13.0));
+}
+
+BOOST_AUTO_TEST_CASE( exchange )
+{
+    suzerain::ComplexState<double> foo(1, 2, 3);
+
+    typedef std::complex<double> complex;
+    foo.data[0][0][0] = complex( 2.0, - 2.0);
+    foo.data[0][1][0] = complex( 3.0, - 3.0);
+    foo.data[0][0][1] = complex( 5.0, - 5.0);
+    foo.data[0][1][1] = complex( 7.0, - 7.0);
+    foo.data[0][0][2] = complex(11.0, -11.0);
+    foo.data[0][1][2] = complex(13.0, -13.0);
+
+    suzerain::ComplexState<double> bar(1, 2, 3);
+    bar.data[0][0][0] = complex(17.0, -17.0);
+    bar.data[0][1][0] = complex(19.0, -19.0);
+    bar.data[0][0][1] = complex(23.0, -23.0);
+    bar.data[0][1][1] = complex(29.0, -29.0);
+    bar.data[0][0][2] = complex(31.0, -31.0);
+    bar.data[0][1][2] = complex(37.0, -37.0);
+
+    foo.exchange(bar);
+
+    BOOST_CHECK_EQUAL(foo.data[0][0][0], complex(17.0, -17.0));
+    BOOST_CHECK_EQUAL(foo.data[0][1][0], complex(19.0, -19.0));
+    BOOST_CHECK_EQUAL(foo.data[0][0][1], complex(23.0, -23.0));
+    BOOST_CHECK_EQUAL(foo.data[0][1][1], complex(29.0, -29.0));
+    BOOST_CHECK_EQUAL(foo.data[0][0][2], complex(31.0, -31.0));
+    BOOST_CHECK_EQUAL(foo.data[0][1][2], complex(37.0, -37.0));
+
+    BOOST_CHECK_EQUAL(bar.data[0][0][0], complex( 2.0, - 2.0));
+    BOOST_CHECK_EQUAL(bar.data[0][1][0], complex( 3.0, - 3.0));
+    BOOST_CHECK_EQUAL(bar.data[0][0][1], complex( 5.0, - 5.0));
+    BOOST_CHECK_EQUAL(bar.data[0][1][1], complex( 7.0, - 7.0));
+    BOOST_CHECK_EQUAL(bar.data[0][0][2], complex(11.0, -11.0));
+    BOOST_CHECK_EQUAL(bar.data[0][1][2], complex(13.0, -13.0));
+
+    // Ensure we catch an operation between two nonconforming states
+    suzerain::ComplexState<double> baz(2, 2, 2);
+    BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
+
+    // Ensure we catch an operation between two different subclasses
+    suzerain::RealState<double> qux(1,2,3);
+    BOOST_CHECK_THROW(foo.exchange(qux), std::bad_cast);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
