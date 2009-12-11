@@ -270,6 +270,21 @@ BOOST_AUTO_TEST_CASE( increment_1d_normal )
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
+BOOST_AUTO_TEST_CASE( increment_1d_normal_unsigned )
+{
+    using fftw_multi_array::detail::increment;
+
+    const unsigned int n        = 1;
+    unsigned int       index[n] = { 0 };
+    const unsigned int shape[n] = { 3 };
+
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
+}
+
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
 {
     using fftw_multi_array::detail::increment;
@@ -553,6 +568,21 @@ BOOST_AUTO_TEST_CASE( decrement_1d_normal )
     const int n        = 1;
     int       index[n] = { 2 };
     const int shape[n] = { 3 };
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_1d_normal_unsigned )
+{
+    using fftw_multi_array::detail::decrement;
+
+    const unsigned int n        = 1;
+    unsigned int       index[n] = { 2 };
+    const unsigned int shape[n] = { 3 };
 
     BOOST_REQUIRE_EQUAL(decrement<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);

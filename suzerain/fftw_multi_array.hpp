@@ -69,7 +69,8 @@ namespace detail {
  * @post <tt>0 <= indices[i] < max_indices[i]</tt> for <tt>0<=i<NumDims</tt>
  *
  * @return true if at least one of \c indices was incremented
- *         and false otherwise.
+ *         and false otherwise.  The contents of \c indices are undefined
+ *         when false is returned.
  */
 template<std::size_t NumDims,
          typename Mutable_RandomAccessIterator,
@@ -131,7 +132,8 @@ bool increment(Mutable_RandomAccessIterator indices,
  * @post <tt>0 <= indices[i] < max_indices[i]</tt> for <tt>0<=i<NumDims</tt>
  *
  * @return true if at least one of \c indices was decremented
- *         and false otherwise.
+ *         and false otherwise.  The contents of \c indices are undefined
+ *         when false is returned.
  */
 template<std::size_t NumDims,
          typename Mutable_RandomAccessIterator,
@@ -187,7 +189,8 @@ bool decrement(Mutable_RandomAccessIterator indices,
  * @param max_indices contains the upper bounds on each index.
  *
  * @return true if at least one of \c indices was incremented
- *         and false otherwise.
+ *         and false otherwise.  The contents of \c indices are undefined
+ *         when false is returned.
  *
  * @see increment(Mutable_RandomAccessIterator, RandomAccessIterator, InputIterator) for more details.
  */
@@ -211,7 +214,8 @@ bool increment(Mutable_RandomAccessIterator indices,
  * @param max_indices contains the upper bounds on each index.
  *
  * @return true if at least one of \c indices was decremented
- *         and false otherwise.
+ *         and false otherwise.  The contents of \c indices are undefined
+ *         when false is returned.
  *
  * @see decrement(Mutable_RandomAccessIterator, RandomAccessIterator, InputIterator) for more details.
  */
