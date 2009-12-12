@@ -33,88 +33,242 @@
 #include <suzerain/common.hpp>
 #include <suzerain/state.hpp>
 
+/** @file
+ * Provides time integration schemes.
+ */
+
 namespace suzerain
 {
 
+/**
+ * Provides time integration schemes and the associated interfaces that the
+ * underlying operators must obey.  Also includes the associated operator
+ * configuration and lifecycle interfaces.
+ */
 namespace timestepper
 {
 
+/**
+ * A marker interface for configuration data supplied to operator at runtime.
+ *
+ * @see IOperatorLifecycle for more information.
+ */
 class IOperatorConfig
 {
 public:
+
+    /** Virtual destructor to support interface-like behavior. */
     virtual ~IOperatorConfig() {};
 };
 
+/**
+ * An interface that runtime configurable operators must implement.  The
+ * interface follows the J2EE Servlet pattern.  Prior to being applied, the
+ * init method should be called.  One or more operator application methods may
+ * be called.  Finally, the destroy method will be called.  After destroy, init
+ * may again be invoked with a new operator configuration.
+ */
 class IOperatorLifecycle
 {
 public:
+
+    /**
+     * Initialize the operator so that it may process operator application
+     * requests.  The operator should use \c config to determine what resources
+     * it needs, and it should use this information to obtain these resources.
+     * All expensive or one-time set up cost should be completed during this
+     * method.
+     *
+     * @param config operator configuration to set for subsequent
+     *        operator application.
+     * @throw std::exception if a non-recoverable error occurs
+     *        during initialization.
+     */
     virtual void init(const IOperatorConfig &config)
-                      throw(std::runtime_error) {};
+                      throw(std::exception) {};
+
+    /**
+     * Destroy any resources associated with the previous \c init invocation.
+     */
     virtual void destroy() {};
+
+    /** Virtual destructor to support interface-like behavior. */
     virtual ~IOperatorLifecycle() {};
 };
 
+/**
+ * A marker interface for operator splitting data provided to the
+ * operator at runtime.
+ *
+ * @see IAdjustableSplitOperator for more information.
+ */
 class IOperatorSplit
 {
 public:
+
+    /** Virtual destructor to support interface-like behavior. */
     virtual ~IOperatorSplit() {};
 };
 
+/**
+ * An interface indicating that an ILinearOperator and INonlinearOperator
+ * implementation pair implement to indicate they support adjustable
+ * operator splitting.
+ */
 class IAdjustableSplitOperator
 {
 public:
+
+    /**
+     * Establish an operator split using the given information.
+     *
+     * @param split operator split information to set for subsequent
+     *        operator application.
+     * @throw std::exception if a non-recoverable error occurs
+     *        during operator splitting.
+     */
     virtual void establishSplit(const IOperatorSplit &split)
                                 throw(std::exception) {};
+
+    /** Virtual destructor to support interface-like behavior. */
     virtual ~IAdjustableSplitOperator() {};
 };
 
+/**
+ * Defines the nonlinear operator interface required for timestepping.
+ *
+ * @see suzerain::IState<FPT> for more information on state vectors.
+ * @see suzerain::timestepper::lowstorage for low storage schemes.
+ */
 template< typename FPT >
 class INonlinearOperator : public IOperatorLifecycle
 {
 public:
+
+    /**
+     * Apply the operator in place on a given state location.  That is, compute
+     * \f$\mbox{state}\leftarrow{}\mbox{operator}\left(\mbox{state}\right)\f$.
+     *
+     * @param state The state location to use.  It is expected that certain
+     *        implementations will require more specific state types.
+     * @param delta_t_requested If true, the operator must compute
+     *        and return a stable timestep.
+     *
+     * @return a stable timestep if \c delta_t_requested is true.  Otherwise
+     *        the return value is meaningless.
+     */
     virtual FPT applyOperator(suzerain::IState<FPT> &state,
                               const bool delta_t_requested = false) const
                               throw(std::exception) = 0;
 };
 
+
+/**
+ * Provides low-storage Runge-Kutta time integration schemes and the associated
+ * operator interfaces.  Both a hybrid implicit/explicit scheme and a purely
+ * explicit scheme is available.  The hybrid integrator advances the state
+ * vector \f$ u(t) \f$ to \f$u(t+\Delta{}t)\f$ according to \f$ u_t = Lu + N(u)
+ * \f$ where \f$L\f$ and \f$N\f$ are linear and nonlinear operators,
+ * respectively.  Neither operator may depend on time.  The purely explicit
+ * scheme has $L=0$.
+ *
+ * @see ILowStorageMethod for details on this class of timestepping schemes.
+ */
 namespace lowstorage
 {
 
+/**
+ * Defines the linear operator interface required for low storage timestepping.
+ *
+ * @see suzerain::IState<FPT> for more information on state vectors.
+ */
 template< typename FPT >
 class ILinearOperator : public IOperatorLifecycle
 {
 public:
+
+    /**
+     * Apply \f$I+\phi{}L\f$ in-place for real scalar \f$\phi\f$.
+     * That is,
+     * \f$\mbox{state}\leftarrow{}\left(I+\phi{}L\right)\mbox{state}\f$.
+     *
+     * @param scale Scale factor \f$\phi\f$ to use.
+     * @param state State vector on which to apply the operator.
+     * @throw std::exception if an unrecoverable error occurs.
+     */
     virtual void applyIdentityPlusScaledOperator(
                      const FPT scale,
                      suzerain::IState<FPT> &state) const
                      throw(std::exception) = 0;
 
+    /**
+     * Accumulate \f$I+\phi{}L\f$ out-of-place for real scalar \f$\phi\f$.
+     * That is, \f$\mbox{output}\leftarrow{}\mbox{output} +
+     * \left(I+\phi{}L\right)\mbox{input}\f$.
+     *
+     * @param scale Scale factor \f$\phi\f$ to use.
+     * @param input State vector on which to apply the operator.
+     * @param output State vector into which to accumulate the result.
+     * @throw std::exception if an unrecoverable error occurs.
+     */
     virtual void accumulateIdentityPlusScaledOperator(
                      const FPT scale,
                      const suzerain::IState<FPT> &input,
                            suzerain::IState<FPT> &output) const
                      throw(std::exception) = 0;
 
+    /**
+     * Invert \f$I+\phi{}L\f$ in-place for real scalar \f$\phi\f$.
+     * That is,
+     * \f$\mbox{state}\leftarrow{}\left(I+\phi{}L\right)^{-1}\mbox{state}\f$.
+     *
+     * @param scale Scale factor \f$\phi\f$ to use.
+     * @param state State vector on which to apply the operator.
+     * @throw std::exception if an unrecoverable error occurs.
+     */
     virtual void invertIdentityPlusScaledOperator(
                      const FPT scale,
                      suzerain::IState<FPT> &state) const
                      throw(std::exception) = 0;
 };
 
+/**
+ * Implements simple multiplicative operator which scales all state
+ * variables by a uniform factor.  This operator is used for both
+ * test purposes and also within the explicit-only timestepping
+ * algorithm.
+ */
 template< typename FPT >
 class MultiplicativeOperator
     : public ILinearOperator<FPT>, public INonlinearOperator<FPT>
 {
 private:
-    const FPT factor;
-    const FPT delta_t;
+    const FPT factor;   /**< Uniform scale factor to apply */
+    const FPT delta_t;  /**< Uniform stable time step to report */
 
 public:
+
+    /**
+     * Construct an instance which scales by \c factor and reports
+     * \c delta_t as a stable timestep.
+     *
+     * @param factor uniform scaling factor to apply.
+     * @param delta_t uniform stable timestep to return from ::applyOperator.
+     *                If not provided, it defaults to NaN.
+     */
     MultiplicativeOperator(
             const FPT factor,
             const FPT delta_t = std::numeric_limits<FPT>::quiet_NaN())
         : factor(factor), delta_t(delta_t) {};
 
+    /**
+     * Scale \c state by the factor set at construction time.
+     *
+     * @param state to scale in place.
+     * @param delta_t_requested ignored in this implementation.
+     *
+     * @return The \c delta_t provided at construction time.
+     */
     virtual FPT applyOperator(suzerain::IState<FPT> &state,
                               const bool delta_t_requested = false) const
                               throw(std::exception)
@@ -123,6 +277,14 @@ public:
         return delta_t;
     };
 
+    /**
+     * Compute \f$\mbox{state}\leftarrow{}
+     * \left(I+\phi\times\mbox{factor}\right)\mbox{state}\f$ where \c factor is
+     * the scaling factor set at construction time.
+     *
+     * @param scale Additional scaling \f$\phi\f$ to apply.
+     * @param state to modify in place.
+     */
     virtual void applyIdentityPlusScaledOperator(
                      const FPT scale,
                      suzerain::IState<FPT> &state) const
@@ -131,6 +293,15 @@ public:
         state.scale(1 + scale*factor);
     };
 
+    /**
+     * Compute \f$\mbox{output}\leftarrow{}\mbox{output}+
+     * \left(I+\phi\times\mbox{factor}\right)\mbox{input}\f$ where \c factor is
+     * the scaling factor set at construction time.
+     *
+     * @param scale Additional scaling \f$\phi\f$ to apply.
+     * @param input on which to apply the operator.
+     * @param output on which to accumulate the result.
+     */
     virtual void accumulateIdentityPlusScaledOperator(
                      const FPT scale,
                      const suzerain::IState<FPT> &input,
@@ -140,6 +311,14 @@ public:
         output.addScaled(1 + scale*factor, input);
     };
 
+    /**
+     * Compute \f$\mbox{state}\leftarrow{}
+     * \left(I+\phi\times\mbox{factor}\right)^{-1}\mbox{state}\f$ where \c
+     * factor is the scaling factor set at construction time.
+     *
+     * @param scale Additional scaling \f$\phi\f$ to apply.
+     * @param state to modify in place.
+     */
     virtual void invertIdentityPlusScaledOperator(
                      const FPT scale,
                      suzerain::IState<FPT> &state) const
@@ -149,19 +328,98 @@ public:
     };
 };
 
+/**
+ * Encapsulates a hybrid implicit/explicit low storage Runge-Kutta method to
+ * advance \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$.
+ * The method consists of one or more substeps governed by coefficients
+ * \f$\alpha_i\f$, \f$\beta_i\f$, \f$\gamma_i\f$, and \f$\zeta_i\f$ where
+ * \f$i\f$ is less than the number of substeps.  Each substep obeys
+ * \f[
+ *   \left(I - \Delta{}t\beta_{i}L\right) u^{i+1}
+ *   =
+ *   \left(I + \Delta{}t\alpha_{i}L\right) u^{i}
+ *   + \Delta{}t\gamma_{i}N\left(u^{i}\right)
+ *   + \Delta{}t\zeta_{i}N\left(u^{i-1}\right)
+ * \f]
+ * where \f$\alpha_i+\beta_i=\gamma_i+\zeta_i\f$.  Note that the indexing
+ * on the \f$\zeta_i\f$ coefficients differs slightly from other sources.
+ *
+ * @see ILinearOperator for the interface that \f$L\f$ must implement.
+ * @see INonlinearOperator for the interface that \f$N\f$ must implement.
+ * @see SMR91Method for an example of a concrete scheme.
+ * @see step() or substep() for methods that can advance state variables
+ *      according to a timestepping method.
+ */
 template< typename FPT >
 class ILowStorageMethod
 {
 public:
+
+    /**
+     * A human-readable name for the timestepping method.
+     * Intended to be used in tracing and logging.
+     *
+     * @return The time advancement scheme's name.
+     */
     virtual const char * name() const = 0;
+
+    /**
+     * The number of substeps required to advance \f$u(t)\f$ to
+     * \f$u(t+\Delta{}t)\f$.
+     *
+     * @return The number of substeps per time step.
+     */
     virtual std::size_t substeps() const = 0;
+
+    /**
+     * Obtain the scheme's \f$\alpha_i\f$ coefficient.
+     *
+     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     *
+     * @return The coefficient associated with the requested substep.
+     */
     virtual FPT alpha(std::size_t substep) const = 0;
+
+    /**
+     * Obtain the scheme's \f$\beta_i\f$ coefficient.
+     *
+     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     *
+     * @return The coefficient associated with the requested substep.
+     */
     virtual FPT beta(std::size_t substep) const = 0;
+
+    /**
+     * Obtain the scheme's \f$\gamma_i\f$ coefficient.
+     *
+     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     *
+     * @return The coefficient associated with the requested substep.
+     */
     virtual FPT gamma(std::size_t substep) const = 0;
+
+    /**
+     * Obtain the scheme's \f$\zeta_i\f$ coefficient.
+     *
+     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     *
+     * @return The coefficient associated with the requested substep.
+     */
     virtual FPT zeta(std::size_t substep) const = 0;
+
+    /** Virtual destructor to support interface-like behavior. */
     virtual ~ILowStorageMethod() {};
 };
 
+/**
+ * Output the timestepping scheme <tt>m</tt>'s name on the given
+ * output stream.
+ *
+ * @param os output stream to use.
+ * @param m scheme's name to output.
+ *
+ * @return The output stream.
+ */
 template< typename charT, typename traits, typename FPT >
 std::basic_ostream<charT,traits>& operator<<(
         std::basic_ostream<charT,traits> &os,
@@ -170,16 +428,36 @@ std::basic_ostream<charT,traits>& operator<<(
     return os << m.name();
 }
 
+/**
+ * Encapsulates the three stage, third order scheme from Appendix A of Spalart,
+ * Moser, and Rogers' 1991 ``Spectral Methods for the Navier-Stokes Equations
+ * with One Infinite and Two Periodic Directions'' published in the
+ * <em>Journal of Computational Physics</em> volume 96 pages 297-324.
+ */
 template< typename FPT >
 class SMR91Method : public ILowStorageMethod<FPT>
 {
 public:
+
+    /** Explicit default constructor */
     SMR91Method() {};
+
+    /*! @copydoc ILowStorageMethod::name */
     virtual const char * name() const { return "SMR91"; }
+
+    /*! @copydoc ILowStorageMethod::substeps */
     virtual std::size_t substeps() const { return 3; };
+
+    /*! @copydoc ILowStorageMethod::alpha */
     virtual FPT alpha(const std::size_t substep) const;
+
+    /*! @copydoc ILowStorageMethod::beta */
     virtual FPT beta(const std::size_t substep) const;
+
+    /*! @copydoc ILowStorageMethod::gamma */
     virtual FPT gamma(const std::size_t substep) const;
+
+    /*! @copydoc ILowStorageMethod::zeta */
     virtual FPT zeta(const std::size_t substep) const;
 };
 
@@ -211,6 +489,25 @@ FPT SMR91Method<FPT>::zeta(const std::size_t substep) const
     return coeff[substep];
 }
 
+/**
+ * Using the given method and a linear and nonlinear operator, take substep \c
+ * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
+ * a hybrid implicit/explicit scheme.  Note that the roles of state locations
+ * \c a and \c b are flipped after each substep.
+ *
+ * @param m The low storage scheme to use.  For example, SMR91Method.
+ * @param L The linear operator to be treated implicitly.
+ * @param N The nonlinear operator to be treated explicitly.
+ * @param delta_t The time step \f$\Delta{}t\f$ to take.  The same time step
+ *                must be supplied for all substep computations.
+ * @param a On entry contains \f$u^{i}\f$ and on exit contains
+ *          \f$N\left(u^{i}\right)\f$.
+ * @param b On entry contains \f$N\left(u^{i-1}\right)\f$ and on exit contains
+ *          \f$u^{i+1}\f$.
+ * @param substep_index The substep number to take.
+ *
+ * @see ILowStorageMethod for the equation governing time advancement.
+ */
 template< typename FPT >
 void substep(const ILowStorageMethod<FPT> &m,
              const ILinearOperator<FPT> &L,
@@ -232,6 +529,21 @@ throw(std::exception)
     L.invertIdentityPlusScaledOperator( -delta_t * m.beta(substep_index), b);
 }
 
+/**
+ * Using the given method and a linear and nonlinear operator,
+ * advance from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
+ * a hybrid implicit/explicit scheme.
+ *
+ * @param m The low storage scheme to use.  For example, SMR91Method.
+ * @param L The linear operator to be treated implicitly.
+ * @param N The nonlinear operator to be treated explicitly.
+ * @param delta_t The time step \f$\Delta{}t\f$ to take.
+ * @param a On entry contains \f$u(t)\f$ and on exit contains
+ *          \f$u(t+\Delta{}t)\f$.
+ * @param b Used as a temporary storage location during the substeps.
+ *
+ * @see ILowStorageMethod for the equation governing time advancement.
+ */
 template< typename FPT >
 void step(const ILowStorageMethod<FPT> &m,
           const ILinearOperator<FPT> &L,
@@ -257,6 +569,24 @@ throw(std::exception)
     }
 }
 
+/**
+ * Using the given method and a nonlinear operator, take substep \c
+ * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
+ * a purely explicit scheme.  Note that the roles of state locations
+ * \c a and \c b are flipped after each substep.
+ *
+ * @param m The low storage scheme to use.  For example, SMR91Method.
+ * @param N The nonlinear operator to be treated explicitly.
+ * @param delta_t The time step \f$\Delta{}t\f$ to take.  The same time step
+ *                must be supplied for all substep computations.
+ * @param a On entry contains \f$u^{i}\f$ and on exit contains
+ *          \f$N\left(u^{i}\right)\f$.
+ * @param b On entry contains \f$N\left(u^{i-1}\right)\f$ and on exit contains
+ *          \f$u^{i+1}\f$.
+ * @param substep_index The substep number to take.
+ *
+ * @see ILowStorageMethod for the equation governing time advancement.
+ */
 template< typename FPT >
 void substep(const ILowStorageMethod<FPT> &m,
              const INonlinearOperator<FPT> &N,
@@ -271,6 +601,19 @@ throw(std::exception)
             delta_t, a, b, substep_index);
 }
 
+/**
+ * Using the given method and a nonlinear operator, advance from \f$u(t)\f$ to
+ * \f$u(t+\Delta{}t)\f$ using a purely explicit scheme.
+ *
+ * @param m The low storage scheme to use.  For example, SMR91Method.
+ * @param N The nonlinear operator to be treated explicitly.
+ * @param delta_t The time step \f$\Delta{}t\f$ to take.
+ * @param a On entry contains \f$u(t)\f$ and on exit contains
+ *          \f$u(t+\Delta{}t)\f$.
+ * @param b Used as a temporary storage location during the substeps.
+ *
+ * @see ILowStorageMethod for the equation governing time advancement.
+ */
 template< typename FPT >
 void step(const ILowStorageMethod<FPT> &m,
           const INonlinearOperator<FPT> &N,
@@ -282,6 +625,24 @@ throw(std::exception)
     return step(m, MultiplicativeOperator<FPT>(0), N, delta_t, a, b);
 }
 
+/**
+ * Using the given method and a linear and nonlinear operator, take substep \c
+ * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
+ * a hybrid implicit/explicit scheme.  The time step taken, \f$\Delta{}t\f$
+ * will be computed during the first nonlinear operator application.
+ *
+ * @param m The low storage scheme to use.  For example, SMR91Method.
+ * @param L The linear operator to be treated implicitly.
+ * @param N The nonlinear operator to be treated explicitly.
+ * @param a On entry contains \f$u^{i}\f$ and on exit contains
+ *          \f$N\left(u^{i}\right)\f$.  The linear operator is applied
+ *          only to this state storage.
+ * @param b On entry contains \f$N\left(u^{i-1}\right)\f$ and on exit contains
+ *          \f$u^{i+1}\f$.  The nonlinear operator is applied only
+ *          to this state storage.
+ *
+ * @see ILowStorageMethod for the equation governing time advancement.
+ */
 template< typename FPT, typename LinearState, typename NonlinearState >
 void step(const ILowStorageMethod<FPT> &m,
           const ILinearOperator<FPT> &L,
@@ -308,6 +669,23 @@ throw(std::exception)
     }
 }
 
+/**
+ * Using the given method and a nonlinear operator, take substep \c
+ * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
+ * a purely explicit scheme.  The time step taken, \f$\Delta{}t\f$
+ * will be computed during the first nonlinear operator application.
+ *
+ * @param m The low storage scheme to use.  For example, SMR91Method.
+ * @param N The nonlinear operator to be treated explicitly.
+ * @param a On entry contains \f$u^{i}\f$ and on exit contains
+ *          \f$N\left(u^{i}\right)\f$.  The linear operator is applied
+ *          only to this state storage.
+ * @param b On entry contains \f$N\left(u^{i-1}\right)\f$ and on exit contains
+ *          \f$u^{i+1}\f$.  The nonlinear operator is applied only
+ *          to this state storage.
+ *
+ * @see ILowStorageMethod for the equation governing time advancement.
+ */
 template< typename FPT, typename LinearState, typename NonlinearState >
 void step(const ILowStorageMethod<FPT> &m,
           const INonlinearOperator<FPT> &N,
