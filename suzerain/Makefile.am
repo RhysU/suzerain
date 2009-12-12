@@ -36,7 +36,6 @@ pkginclude_HEADERS += pencil_grid.hpp
 pkginclude_HEADERS += pencil.hpp
 pkginclude_HEADERS += richardson.h
 pkginclude_HEADERS += suzerain-config.h
-pkginclude_HEADERS += timestepper.h
 pkginclude_HEADERS += timestepper.hpp
 pkginclude_HEADERS += underling.h
 
@@ -46,7 +45,6 @@ libsuzerain_la_SOURCES  = blas_et_al.c
 libsuzerain_la_SOURCES += bspline.c
 libsuzerain_la_SOURCES += error.c
 libsuzerain_la_SOURCES += richardson.c
-libsuzerain_la_SOURCES += timestepper.c
 
 noinst_LTLIBRARIES      += libunderling.la
 libunderling_la_LDFLAGS  = -release $(PACKAGE_VERSION)
