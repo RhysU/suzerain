@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE( applyOperator )
     BOOST_CHECK_CLOSE(a.data[0][0][0], 8.0, close_enough);
 }
 
-BOOST_AUTO_TEST_CASE( accumulateIdentityPlusScaledOperator )
+BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
 {
     const double close_enough = std::numeric_limits<double>::epsilon();
 
@@ -194,17 +194,17 @@ BOOST_AUTO_TEST_CASE( accumulateIdentityPlusScaledOperator )
     b.data[0][0][0] = 3.0;
 
     MultiplicativeOperator<double> op(5.0);
-    op.accumulateIdentityPlusScaledOperator(7.0, a, b);
+    op.accumulateMassPlusScaledOperator(7.0, a, b);
     BOOST_CHECK_CLOSE(b.data[0][0][0], 75.0, close_enough);
-    op.accumulateIdentityPlusScaledOperator(0.0, b, a);
+    op.accumulateMassPlusScaledOperator(0.0, b, a);
     BOOST_CHECK_CLOSE(a.data[0][0][0], 77.0, close_enough);
 
     // Ensure we catch an operation between two nonconforming states
-    BOOST_CHECK_THROW(op.accumulateIdentityPlusScaledOperator(3.0, b, c),
+    BOOST_CHECK_THROW(op.accumulateMassPlusScaledOperator(3.0, b, c),
                       std::logic_error);
 }
 
-BOOST_AUTO_TEST_CASE( invertIdentityPlusScaledOperator )
+BOOST_AUTO_TEST_CASE( invertMassPlusScaledOperator )
 {
     const double close_enough = std::numeric_limits<double>::epsilon();
 
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE( invertIdentityPlusScaledOperator )
     a.data[0][0][0] = 2.0;
 
     MultiplicativeOperator<double> op(3.0);
-    op.invertIdentityPlusScaledOperator(5.0, a);
+    op.invertMassPlusScaledOperator(5.0, a);
     BOOST_CHECK_CLOSE(a.data[0][0][0], 1.0/8.0, close_enough);
 }
 
@@ -229,11 +229,13 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
     // See test_timestepper.sage for manufactured answers
 
     using suzerain::RealState;
+    using suzerain::timestepper::lowstorage::MultiplicativeOperator;
     using suzerain::timestepper::lowstorage::SMR91Method;
     using suzerain::timestepper::lowstorage::substep;
 
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
     const SMR91Method<double> m;
+    const MultiplicativeOperator<double>  trivial_linear_op(0);
     const RiccatiExplicitOperator<double> riccati_op(2, 3);
     RealState<double> a(2,1,1), b(2,1,1);
 
@@ -243,7 +245,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b.data[0][0][0] = 11.0;
         b.data[1][0][0] = 13.0;
 
-        substep(m, riccati_op, 17.0, a, b, 0);
+        substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 0);
 
         BOOST_CHECK_CLOSE(a.data[0][0][0],  30.0, close_enough);
         BOOST_CHECK_CLOSE(a.data[1][0][0],  60.0, close_enough);
@@ -257,7 +259,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b.data[0][0][0] = 11.0;
         b.data[1][0][0] = 13.0;
 
-        substep(m, riccati_op, 17.0, a, b, 1);
+        substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 1);
 
         BOOST_CHECK_CLOSE(a.data[0][0][0],    30.0,      close_enough);
         BOOST_CHECK_CLOSE(a.data[1][0][0],    60.0,      close_enough);
@@ -271,7 +273,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b.data[0][0][0] = 11.0;
         b.data[1][0][0] = 13.0;
 
-        substep(m, riccati_op, 17.0, a, b, 2);
+        substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 2);
 
         BOOST_CHECK_CLOSE(a.data[0][0][0],  30.0,       close_enough);
         BOOST_CHECK_CLOSE(a.data[1][0][0],  60.0,       close_enough);
@@ -280,7 +282,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
     }
 
     // Requesting an out-of-bounds substep_index should balk
-    BOOST_CHECK_THROW(substep(m, riccati_op, 17.0, a, b, 3),
+    BOOST_CHECK_THROW(substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 3),
                       std::invalid_argument);
 }
 
@@ -361,6 +363,7 @@ BOOST_AUTO_TEST_CASE( step_explicit )
     // Fix method, operators, and storage space
     using namespace suzerain::timestepper;
     const lowstorage::SMR91Method<double> m;
+    const lowstorage::MultiplicativeOperator<double> trivial_linear_op(0);
     const lowstorage::MultiplicativeOperator<double> nonlinear_op(soln.a);
     suzerain::RealState<double> a(1,1,1), b(1,1,1);
 
@@ -369,7 +372,8 @@ BOOST_AUTO_TEST_CASE( step_explicit )
     a.data[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < coarse_nsteps; ++i) {
         suzerain::timestepper::lowstorage::step(
-                m, nonlinear_op, (t_final - t_initial)/coarse_nsteps, a, b);
+                m, trivial_linear_op, nonlinear_op,
+                (t_final - t_initial)/coarse_nsteps, a, b);
     }
     const double coarse_final = a.data[0][0][0];
     const double coarse_error = fabs(coarse_final - soln(t_final));
@@ -380,7 +384,8 @@ BOOST_AUTO_TEST_CASE( step_explicit )
     a.data[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < finer_nsteps; ++i) {
         suzerain::timestepper::lowstorage::step(
-                m, nonlinear_op, (t_final - t_initial)/finer_nsteps, a, b);
+                m, trivial_linear_op, nonlinear_op,
+                (t_final - t_initial)/finer_nsteps, a, b);
     }
     const double finer_final = a.data[0][0][0];
     const double finer_error = fabs(finer_final - soln(t_final));
@@ -511,7 +516,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( step_delta_t_computed )
 
-// Run the explicit timestepper against (d/dt) y = a*y
+// Run the timestepper purely explicitly against (d/dt) y = a*y
 // where it is expected to be third order.
 BOOST_AUTO_TEST_CASE( step_explicit )
 {
@@ -522,6 +527,7 @@ BOOST_AUTO_TEST_CASE( step_explicit )
     // Fix method, operators, and storage space
     using namespace suzerain::timestepper;
     const lowstorage::SMR91Method<double> m;
+    const lowstorage::MultiplicativeOperator<double> trivial_linear_op(0);
     suzerain::RealState<double> a(1,1,1), b(1,1,1);
 
     // Coarse grid calculation
@@ -532,7 +538,8 @@ BOOST_AUTO_TEST_CASE( step_explicit )
         const lowstorage::MultiplicativeOperator<double> nonlinear_op(
                 soln.a, (t_final - t_initial)/coarse_nsteps);
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
-            suzerain::timestepper::lowstorage::step(m, nonlinear_op, a, b);
+            suzerain::timestepper::lowstorage::step(
+                    m, trivial_linear_op, nonlinear_op, a, b);
         }
     }
     const double coarse_final = a.data[0][0][0];
@@ -547,7 +554,8 @@ BOOST_AUTO_TEST_CASE( step_explicit )
         const lowstorage::MultiplicativeOperator<double> nonlinear_op(
                 soln.a, (t_final - t_initial)/finer_nsteps);
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
-            suzerain::timestepper::lowstorage::step(m, nonlinear_op, a, b);
+            suzerain::timestepper::lowstorage::step(
+                    m, trivial_linear_op, nonlinear_op, a, b);
         }
     }
     const double finer_final = a.data[0][0][0];

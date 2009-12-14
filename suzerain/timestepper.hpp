@@ -165,12 +165,12 @@ public:
 
 /**
  * Provides low-storage Runge-Kutta time integration schemes and the associated
- * operator interfaces.  Both a hybrid implicit/explicit scheme and a purely
- * explicit scheme is available.  The hybrid integrator advances the state
- * vector \f$ u(t) \f$ to \f$u(t+\Delta{}t)\f$ according to \f$ u_t = Lu + N(u)
- * \f$ where \f$L\f$ and \f$N\f$ are linear and nonlinear operators,
- * respectively.  Neither operator may depend on time.  The purely explicit
- * scheme has $L=0$.
+ * operator interfaces.  A hybrid implicit/explicit scheme is available.  The
+ * hybrid integrator advances the state vector \f$ u(t) \f$ to
+ * \f$u(t+\Delta{}t)\f$ according to \f$ M u_{t} = Lu + N(u) \f$ where \f$M\f$,
+ * \f$L\f$, and \f$N\f$ are linear, linear, and nonlinear operators,
+ * respectively.  \f$M\f$ is referred to as the mass matrix.  No operator may
+ * depend on time.
  *
  * @see ILowStorageMethod for details on this class of timestepping schemes.
  */
@@ -188,45 +188,45 @@ class ILinearOperator : public IOperatorLifecycle
 public:
 
     /**
-     * Apply \f$I+\phi{}L\f$ in-place for real scalar \f$\phi\f$.
+     * Apply \f$M+\phi{}L\f$ in-place for real scalar \f$\phi\f$.
      * That is,
-     * \f$\mbox{state}\leftarrow{}\left(I+\phi{}L\right)\mbox{state}\f$.
+     * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)\mbox{state}\f$.
      *
      * @param scale Scale factor \f$\phi\f$ to use.
      * @param state State vector on which to apply the operator.
      * @throw std::exception if an unrecoverable error occurs.
      */
-    virtual void applyIdentityPlusScaledOperator(
+    virtual void applyMassPlusScaledOperator(
                      const FPT scale,
                      suzerain::IState<FPT> &state) const
                      throw(std::exception) = 0;
 
     /**
-     * Accumulate \f$I+\phi{}L\f$ out-of-place for real scalar \f$\phi\f$.
+     * Accumulate \f$M+\phi{}L\f$ out-of-place for real scalar \f$\phi\f$.
      * That is, \f$\mbox{output}\leftarrow{}\mbox{output} +
-     * \left(I+\phi{}L\right)\mbox{input}\f$.
+     * \left(M+\phi{}L\right)\mbox{input}\f$.
      *
      * @param scale Scale factor \f$\phi\f$ to use.
      * @param input State vector on which to apply the operator.
      * @param output State vector into which to accumulate the result.
      * @throw std::exception if an unrecoverable error occurs.
      */
-    virtual void accumulateIdentityPlusScaledOperator(
+    virtual void accumulateMassPlusScaledOperator(
                      const FPT scale,
                      const suzerain::IState<FPT> &input,
                            suzerain::IState<FPT> &output) const
                      throw(std::exception) = 0;
 
     /**
-     * Invert \f$I+\phi{}L\f$ in-place for real scalar \f$\phi\f$.
+     * Invert \f$M+\phi{}L\f$ in-place for real scalar \f$\phi\f$.
      * That is,
-     * \f$\mbox{state}\leftarrow{}\left(I+\phi{}L\right)^{-1}\mbox{state}\f$.
+     * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)^{-1}\mbox{state}\f$.
      *
      * @param scale Scale factor \f$\phi\f$ to use.
      * @param state State vector on which to apply the operator.
      * @throw std::exception if an unrecoverable error occurs.
      */
-    virtual void invertIdentityPlusScaledOperator(
+    virtual void invertMassPlusScaledOperator(
                      const FPT scale,
                      suzerain::IState<FPT> &state) const
                      throw(std::exception) = 0;
@@ -234,9 +234,8 @@ public:
 
 /**
  * Implements simple multiplicative operator which scales all state
- * variables by a uniform factor.  This operator is used for both
- * test purposes and also within the explicit-only timestepping
- * algorithm.
+ * variables by a uniform factor.  The associated mass matrix \f$M\f$
+ * is identity.
  */
 template< typename FPT >
 class MultiplicativeOperator
@@ -279,13 +278,13 @@ public:
 
     /**
      * Compute \f$\mbox{state}\leftarrow{}
-     * \left(I+\phi\times\mbox{factor}\right)\mbox{state}\f$ where \c factor is
-     * the scaling factor set at construction time.
+     * \left(I+\phi\times\mbox{factor}\right) \mbox{state}\f$ where \c factor
+     * is the scaling factor set at construction time.
      *
      * @param scale Additional scaling \f$\phi\f$ to apply.
      * @param state to modify in place.
      */
-    virtual void applyIdentityPlusScaledOperator(
+    virtual void applyMassPlusScaledOperator(
                      const FPT scale,
                      suzerain::IState<FPT> &state) const
                      throw(std::exception)
@@ -295,14 +294,14 @@ public:
 
     /**
      * Compute \f$\mbox{output}\leftarrow{}\mbox{output}+
-     * \left(I+\phi\times\mbox{factor}\right)\mbox{input}\f$ where \c factor is
-     * the scaling factor set at construction time.
+     * \left(I+\phi\times\mbox{factor}\right) \mbox{input}\f$ where \c factor
+     * is the scaling factor set at construction time.
      *
      * @param scale Additional scaling \f$\phi\f$ to apply.
      * @param input on which to apply the operator.
      * @param output on which to accumulate the result.
      */
-    virtual void accumulateIdentityPlusScaledOperator(
+    virtual void accumulateMassPlusScaledOperator(
                      const FPT scale,
                      const suzerain::IState<FPT> &input,
                            suzerain::IState<FPT> &output) const
@@ -313,13 +312,13 @@ public:
 
     /**
      * Compute \f$\mbox{state}\leftarrow{}
-     * \left(I+\phi\times\mbox{factor}\right)^{-1}\mbox{state}\f$ where \c
+     * \left(I+\phi\times\mbox{factor}\right)^{-1} \mbox{state}\f$ where \c
      * factor is the scaling factor set at construction time.
      *
      * @param scale Additional scaling \f$\phi\f$ to apply.
      * @param state to modify in place.
      */
-    virtual void invertIdentityPlusScaledOperator(
+    virtual void invertMassPlusScaledOperator(
                      const FPT scale,
                      suzerain::IState<FPT> &state) const
                      throw(std::exception)
@@ -335,9 +334,9 @@ public:
  * \f$\alpha_i\f$, \f$\beta_i\f$, \f$\gamma_i\f$, and \f$\zeta_i\f$ where
  * \f$i\f$ is less than the number of substeps.  Each substep obeys
  * \f[
- *   \left(I - \Delta{}t\beta_{i}L\right) u^{i+1}
+ *   \left(M - \Delta{}t\beta_{i}L\right) u^{i+1}
  *   =
- *   \left(I + \Delta{}t\alpha_{i}L\right) u^{i}
+ *   \left(M + \Delta{}t\alpha_{i}L\right) u^{i}
  *   + \Delta{}t\gamma_{i}N\left(u^{i}\right)
  *   + \Delta{}t\zeta_{i}N\left(u^{i-1}\right)
  * \f]
@@ -492,8 +491,9 @@ FPT SMR91Method<FPT>::zeta(const std::size_t substep) const
 /**
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
- * a hybrid implicit/explicit scheme.  Note that the roles of state locations
- * \c a and \c b are flipped after each substep.
+ * a hybrid implicit/explicit scheme to advance the system \f$ M u_t = Lu +
+ * N(u) \f$.  Note that the roles of state locations \c a and \c b are flipped
+ * after each substep.
  *
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
@@ -522,17 +522,17 @@ throw(std::exception)
         throw std::invalid_argument("Requested substep too large");
 
     b.scale(delta_t * m.zeta(substep_index));
-    L.accumulateIdentityPlusScaledOperator(
+    L.accumulateMassPlusScaledOperator(
             delta_t * m.alpha(substep_index), a, b);
     N.applyOperator(a);
     b.addScaled(delta_t * m.gamma(substep_index), a);
-    L.invertIdentityPlusScaledOperator( -delta_t * m.beta(substep_index), b);
+    L.invertMassPlusScaledOperator( -delta_t * m.beta(substep_index), b);
 }
 
 /**
- * Using the given method and a linear and nonlinear operator,
- * advance from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
- * a hybrid implicit/explicit scheme.
+ * Using the given method and a linear and nonlinear operator, advance from
+ * \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using a hybrid implicit/explicit scheme
+ * to advance the system \f$ M u_t = Lu + N(u) \f$.
  *
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
@@ -570,66 +570,11 @@ throw(std::exception)
 }
 
 /**
- * Using the given method and a nonlinear operator, take substep \c
- * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
- * a purely explicit scheme.  Note that the roles of state locations
- * \c a and \c b are flipped after each substep.
- *
- * @param m The low storage scheme to use.  For example, SMR91Method.
- * @param N The nonlinear operator to be treated explicitly.
- * @param delta_t The time step \f$\Delta{}t\f$ to take.  The same time step
- *                must be supplied for all substep computations.
- * @param a On entry contains \f$u^{i}\f$ and on exit contains
- *          \f$N\left(u^{i}\right)\f$.
- * @param b On entry contains \f$N\left(u^{i-1}\right)\f$ and on exit contains
- *          \f$u^{i+1}\f$.
- * @param substep_index The substep number to take.
- *
- * @see ILowStorageMethod for the equation governing time advancement.
- */
-template< typename FPT >
-void substep(const ILowStorageMethod<FPT> &m,
-             const INonlinearOperator<FPT> &N,
-             const FPT delta_t,
-             IState<FPT> &a,
-             IState<FPT> &b,
-             const std::size_t substep_index)
-throw(std::exception)
-{
-    return substep<FPT>(
-            m, MultiplicativeOperator<FPT>(0), N,
-            delta_t, a, b, substep_index);
-}
-
-/**
- * Using the given method and a nonlinear operator, advance from \f$u(t)\f$ to
- * \f$u(t+\Delta{}t)\f$ using a purely explicit scheme.
- *
- * @param m The low storage scheme to use.  For example, SMR91Method.
- * @param N The nonlinear operator to be treated explicitly.
- * @param delta_t The time step \f$\Delta{}t\f$ to take.
- * @param a On entry contains \f$u(t)\f$ and on exit contains
- *          \f$u(t+\Delta{}t)\f$.
- * @param b Used as a temporary storage location during the substeps.
- *
- * @see ILowStorageMethod for the equation governing time advancement.
- */
-template< typename FPT >
-void step(const ILowStorageMethod<FPT> &m,
-          const INonlinearOperator<FPT> &N,
-          const FPT delta_t,
-          IState<FPT> &a,
-          IState<FPT> &b)
-throw(std::exception)
-{
-    return step(m, MultiplicativeOperator<FPT>(0), N, delta_t, a, b);
-}
-
-/**
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
- * a hybrid implicit/explicit scheme.  The time step taken, \f$\Delta{}t\f$
- * will be computed during the first nonlinear operator application.
+ * a hybrid implicit/explicit scheme using the system \f$ M u_t = Lu + N(u)\f$.
+ * The time step taken, \f$\Delta{}t\f$ will be computed during the first
+ * nonlinear operator application.
  *
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
@@ -654,46 +599,19 @@ throw(std::exception)
     // First substep handling is special since we need to determine delta_t
     b = a;
     const FPT delta_t = N.applyOperator(b, true /* we need delta_t */);
-    L.applyIdentityPlusScaledOperator(delta_t * m.alpha(0), a);
+    L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a);
     a.addScaled(delta_t * m.gamma(0), b);
-    L.invertIdentityPlusScaledOperator( -delta_t * m.beta(0), a);
+    L.invertMassPlusScaledOperator( -delta_t * m.beta(0), a);
 
     // Second and subsequent substeps are identical
     for (std::size_t i = 1; i < m.substeps(); ++i) {
         b.scale(delta_t * m.zeta(i));
-        L.accumulateIdentityPlusScaledOperator(delta_t * m.alpha(i), a, b);
+        L.accumulateMassPlusScaledOperator(delta_t * m.alpha(i), a, b);
         b.exchange(a); // Note nonlinear storage controls exchange operation
         N.applyOperator(b, false /* delta_t not needed */);
         a.addScaled(delta_t * m.gamma(i), b);
-        L.invertIdentityPlusScaledOperator( -delta_t * m.beta(i), a);
+        L.invertMassPlusScaledOperator( -delta_t * m.beta(i), a);
     }
-}
-
-/**
- * Using the given method and a nonlinear operator, take substep \c
- * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
- * a purely explicit scheme.  The time step taken, \f$\Delta{}t\f$
- * will be computed during the first nonlinear operator application.
- *
- * @param m The low storage scheme to use.  For example, SMR91Method.
- * @param N The nonlinear operator to be treated explicitly.
- * @param a On entry contains \f$u^{i}\f$ and on exit contains
- *          \f$N\left(u^{i}\right)\f$.  The linear operator is applied
- *          only to this state storage.
- * @param b On entry contains \f$N\left(u^{i-1}\right)\f$ and on exit contains
- *          \f$u^{i+1}\f$.  The nonlinear operator is applied only
- *          to this state storage.
- *
- * @see ILowStorageMethod for the equation governing time advancement.
- */
-template< typename FPT, typename LinearState, typename NonlinearState >
-void step(const ILowStorageMethod<FPT> &m,
-          const INonlinearOperator<FPT> &N,
-          LinearState &a,
-          NonlinearState &b)
-throw(std::exception)
-{
-    return step(m, MultiplicativeOperator<FPT>(0), N, a, b);
 }
 
 } // namespace lowstorage
