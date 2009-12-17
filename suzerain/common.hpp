@@ -59,6 +59,7 @@
 #include <boost/concept/assert.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/function.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/multi_array.hpp>
@@ -79,10 +80,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/swap.hpp>
+#include <boost/test/utils/nullstream.hpp>
 #include <boost/typeof/typeof.hpp>
-#include <boost/type_traits/is_complex.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/remove_pointer.hpp>
+#include <boost/type_traits.hpp>
 #endif // SUZERAIN_HAVE_BOOST
 
 // Include other functionality used throughout Suzerain

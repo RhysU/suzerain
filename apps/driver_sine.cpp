@@ -38,6 +38,8 @@
 
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
+#include <suzerain/problem.hpp>
+#include <suzerain/program_options.hpp>
 
 #define ONLYPROC0(expr) if (!procid) { expr ; } else
 
@@ -53,38 +55,10 @@ double real_data(const double x, const double y, const double z) {
            ;
 }
 
-// Print usage information
-template<typename charT, typename traits>
-void print_help(std::basic_ostream<charT, traits>& out,
-                const std::string application_name,
-                const boost::program_options::options_description options)
-{
-
-    using namespace std;
-
-    out << endl
-    << "Usage: " << application_name << " [OPTION] [FILE]..." << endl
-// TODO: Provide a legitimate description for the help message
-//      << endl
-//      << "Description: " << endl
-//      << endl
-    << options
-    << endl;
-}
-
-// Print version information
-template<typename charT, typename traits>
-void print_version(std::basic_ostream<charT, traits>& out)
-{
-    out << PACKAGE_STRING
-    << " (built " __DATE__ " " __TIME__ ")" << std::endl;
-}
-
 int main(int argc, char **argv)
 {
     int nproc;        // Number of processors in MPI environment
     int procid;       // This processor's global processor ID
-    int nx, ny, nz;   // Domain dimensions in x, y, and z directions
     int dims[2];      // Processor grid dimensions in 1st, 2nd directions
     int nrep;         // Number of times to repeat the test
 
@@ -106,91 +80,25 @@ int main(int argc, char **argv)
         std::swap(dims[0], dims[1]);
     }
 
+    suzerain::ProgramOptions options;
+    suzerain::problem::GridDefinition<> grid;
+    options.add_definition(grid);
     namespace po = boost::program_options;
-
-    // Options accepted on command line and in configuration file
-    po::options_description desc_config("Configuration options");
-
-    desc_config.add_options()
-    ("nx",  po::value<int>(&nx)->default_value(16),
-     "Domain grid size in X direction")
-    ("ny",  po::value<int>(&ny)->default_value(16),
-     "Domain grid size in Y direction")
-    ("nz",  po::value<int>(&nz)->default_value(16),
-     "Domain grid size in Z direction")
-    ("rep", po::value<int>(&nrep)->default_value(1),
-     "Number of repetitions to perform for timing purposes")
-    ("pg1", po::value<int>(&dims[0])->default_value(dims[0]),
-     "Processor grid size in first direction.")
-    ("pg2", po::value<int>(&dims[1])->default_value(dims[1]),
-     "Processor grid size in second direction.")
+    options.add_options()
+        ("rep", po::value<int>(&nrep)->default_value(1),
+        "Number of repetitions to perform for timing purposes")
+        ("pg1", po::value<int>(&dims[0])->default_value(dims[0]),
+        "Processor grid size in first direction.")
+        ("pg2", po::value<int>(&dims[1])->default_value(dims[1]),
+        "Processor grid size in second direction.")
     ;
-
-    // Options allowed only on command line
-    po::options_description desc_clionly("Program information");
-
-    desc_clionly.add_options()
-    ("help,h",    "show usage information")
-    ("version,v", "print version string")
-    ;
-
-    // Options allowed on command line and in configuration file
-    // Not shown to the user
-    po::options_description desc_hidden("Hidden options");
-
-    desc_hidden.add_options()
-    ("input-file", po::value< std::vector<std::string> >(), "input file")
-    ;
-
-    // Build the options acceptable on the CLI, in a file, and in help message
-    po::options_description opts_cli;
-    opts_cli.add(desc_config).add(desc_hidden).add(desc_clionly);
-
-    po::options_description opts_file;
-    opts_file.add(desc_config).add(desc_hidden);
-
-    po::options_description opts_visible;
-    opts_visible.add(desc_config).add(desc_clionly);
-
-    // Have positional parameters act like input-file
-    po::positional_options_description opts_positional;
-
-    opts_positional.add("input-file", -1);
-
-    // Parse all the command line options
-    po::variables_map vm;
-
-    po::store(po::command_line_parser(argc, argv).
-              options(opts_cli).positional(opts_positional).run(), vm);
-
-    // Process command-line only parameters
-    if (vm.count("help")) {
-        ONLYPROC0(print_help(std::cout, argv[0], opts_visible));
-        exit(0);
-    }
-
-    if (vm.count("version")) {
-        ONLYPROC0(print_version(std::cout));
-        exit(0);
-    }
-
-    // Parse any input files provided on the command line
-    if (vm.count("input-file")) {
-        BOOST_FOREACH(std::string filename,
-                      vm["input-file"].as< std::vector<std::string> >()) {
-            ONLYPROC0(LOG4CXX_DEBUG(logger, "Reading input file " << filename));
-            std::ifstream ifs( (vm["input-file"].as< std::string >()).c_str() );
-            po::store(po::parse_config_file(ifs, opts_file), vm);
-        }
-    }
-
-    // Perform options callbacks now that we're done parsing options
-    po::notify(vm);
+    options.process(argc, argv);
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Physical grid dimensions: "
-                           << boost::format("(% 4d, % 4d, % 4d)") % nx % ny % nz));
+                           << boost::format("(% 4d, % 4d, % 4d)")
+                           % grid.Nx() % grid.Ny() % grid.Nz()));
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Processor grid dimensions: "
                            << boost::format("(%d, %d)") % dims[0] % dims[1]));
@@ -201,7 +109,7 @@ int main(int argc, char **argv)
     }
 
     /* Initialize P3DFFT using Y as STRIDE1 direction in wave space */
-    p3dfft_setup(dims, nx, nz, ny, 1 /* safe to overwrite btrans */);
+    p3dfft_setup(dims, grid.Nx(), grid.Nz(), grid.Ny(), 1 /* nuke btrans */);
     /* Retrieve dimensions for input and output arrays */
     boost::array<int, 3> istart, isize, iend, fstart, fsize, fend;
     get_dims(istart.data(), iend.data(), isize.data(), 1/* physical pencil */);
@@ -225,15 +133,15 @@ int main(int argc, char **argv)
     /* Create a uniform tensor product grid */
     std::valarray<double> gridx(isize[0]), gridy(isize[1]), gridz(isize[2]);
     for (size_t i = 0; i < isize[0]; ++i) {
-        gridx[i] = (i+istart[0]) * 2*M_PI/nx;
+        gridx[i] = (i+istart[0]) * 2*M_PI/grid.Nx();
         LOG4CXX_TRACE(logger, boost::format("gridx[%3d] = % 6g") % i % gridx[i]);
     }
     for (size_t j = 0; j < isize[1]; ++j) {
-        gridy[j] = (j+istart[1]) * 2*M_PI/ny;
+        gridy[j] = (j+istart[1]) * 2*M_PI/grid.Ny();
         LOG4CXX_TRACE(logger, boost::format("gridy[%3d] = % 6g") % j % gridy[j]);
     }
     for (size_t k = 0; k < isize[2]; ++k) {
-        gridz[k] = (k+istart[2]) * 2*M_PI/nz;
+        gridz[k] = (k+istart[2]) * 2*M_PI/grid.Nz();
         LOG4CXX_TRACE(logger, boost::format("gridz[%3d] = % 6g") % k % gridz[k]);
     }
 
@@ -277,7 +185,7 @@ int main(int argc, char **argv)
 
     const long int Ntot  = fsize[0] * fsize[1] * fsize[2] * 2;
 
-    const long int Nglob = nx * ny * nz;
+    const long int Nglob = grid.Nx() * grid.Ny() * grid.Nz();
 
     const double factor = 1.0 / Nglob;
 
@@ -321,7 +229,6 @@ int main(int argc, char **argv)
     p3dfft_clean();   // Free work space
 
     /* Check results */
-    // FIXME Error results are fishy, compare P3DFFT's test_sine_inplace.x
     double cdiff = 0.0;
     for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
         for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
