@@ -92,7 +92,13 @@ int main(int argc, char **argv)
         ("pg2", po::value<int>(&dims[1])->default_value(dims[1]),
         "Processor grid size in second direction.")
     ;
-    options.process(argc, argv);
+    if (!procid) {
+        options.process(argc, argv);
+    } else {
+        boost::onullstream nullstream;
+        options.process(argc, argv,
+                        nullstream, nullstream, nullstream, nullstream);
+    }
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
 
