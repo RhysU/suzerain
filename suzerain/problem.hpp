@@ -87,24 +87,68 @@ throw(std::invalid_argument)
 } // namespace detail
 
 /**
- * @todo Document this class
+ * Holds basic three dimensional computational grid dimensions.
  */
 template< typename FPT           = double,
           typename SizeType      = int >
 class GridDefinition : public IDefinition
 {
 public:
-    typedef SizeType size_type;
-    typedef FPT      floating_point_type;
+    typedef FPT      floating_point_type; /**< Floating point type in use */
+    typedef SizeType size_type;           /**< Integral size type in use */
 
+    /**
+     * Construct an instance with the given default size in each direction
+     * and the given default length.
+     *
+     * @param default_size Default grid size in the X, Y, and Z directions.
+     * @param default_length Default grid length in the X, Y, and Z directions.
+     */
     GridDefinition(SizeType default_size = 16, FPT default_length = 2.0*M_PI);
 
+    /**
+     * Retrieve the domain length in the X direction.
+     *
+     * @return the domain's X length.
+     */
     FPT Lx() const { return Lx_; }
+
+    /**
+     * Retrieve the domain length in the Y direction.
+     *
+     * @return the domain's Y length.
+     */
     FPT Ly() const { return Ly_; }
+
+    /**
+     * Retrieve the domain length in the Z direction.
+     *
+     * @return the domain's Z length.
+     */
     FPT Lz() const { return Lz_; }
 
+    /**
+     * Retrieve computational grid size in the X direction.
+     * This is the number of points in the domain.
+     *
+     * @return the grid size in the X direction.
+     */
     SizeType Nx() const { return Nx_; }
+
+    /**
+     * Retrieve computational grid size in the Y direction.
+     * This is the number of points in the domain.
+     *
+     * @return the grid size in the Y direction.
+     */
     SizeType Ny() const { return Ny_; }
+
+    /**
+     * Retrieve computational grid size in the Z direction.
+     * This is the number of points in the domain.
+     *
+     * @return the grid size in the Z direction.
+     */
     SizeType Nz() const { return Nz_; }
 
     /*! @copydoc IDefinition::options */
@@ -113,13 +157,17 @@ public:
     }
 
 private:
+
+    /** Stores the program options processing information */
     boost::program_options::options_description options_;
-    FPT Lx_;
-    FPT Ly_;
-    FPT Lz_;
-    SizeType Nx_;
-    SizeType Ny_;
-    SizeType Nz_;
+
+    FPT Lx_;        /**< Stores the X direction length */
+    FPT Ly_;        /**< Stores the Y direction length */
+    FPT Lz_;        /**< Stores the Z direction length */
+
+    SizeType Nx_;   /**< Stores the X direction grid size */
+    SizeType Ny_;   /**< Stores the Y direction grid size */
+    SizeType Nz_;   /**< Stores the Z direction grid size */
 };
 
 template< typename FPT, typename SizeType >
