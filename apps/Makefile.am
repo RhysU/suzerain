@@ -27,5 +27,12 @@ driver_sine_LDADD   += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 driver_sine_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 driver_sine_LDADD   += $(P3DFFT_LIBS) $(FFTW3_LIBS)
 
+bin_PROGRAMS          += driver_pencil
+driver_pencil_SOURCES  = driver_pencil.cpp
+driver_pencil_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
+driver_pencil_LDADD   += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
+driver_pencil_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
+driver_pencil_LDADD   += $(FFTW3_LIBS)
+
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

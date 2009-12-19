@@ -36,7 +36,6 @@
 // Required standard C++ functionality used throughout Suzerain
 #include <algorithm>
 #include <cmath>
-#include <stdexcept>
 #include <complex>
 #include <fstream>
 #include <functional>
@@ -48,10 +47,12 @@
 #include <new>
 #include <numeric>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <typeinfo>
-#include <vector>
+#include <utility>
 #include <valarray>
+#include <vector>
 
 // Include Boost functionality used throughout Suzerain
 #ifdef SUZERAIN_HAVE_BOOST
@@ -60,6 +61,7 @@
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/function.hpp>
+#include <boost/integer_traits.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/multi_array.hpp>
