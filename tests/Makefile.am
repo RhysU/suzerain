@@ -32,6 +32,7 @@ test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 check_PROGRAMS          += test_blas_et_al
 test_blas_et_al_SOURCES  = test_blas_et_al.c
 test_blas_et_al_LDADD    = $(GSL_LIBS)
+test_blas_et_al_LDADD   += $(MKL_LIBS)
 test_blas_et_al_LDADD   += ../suzerain/libsuzerain.la
 
 check_PROGRAMS       += test_bspline
