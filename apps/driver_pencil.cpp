@@ -61,7 +61,8 @@ int main(int argc, char **argv)
 {
     int nproc;                  // Number of processors in MPI environment
     int procid;                 // This processor's global processor ID
-    boost::array<int,2> N;      // Global index extents in X, Y direction
+    const int NDIM = 2;         // Dimensionality of the problem
+    boost::array<int,NDIM> N;   // Global index extents in X, Y direction
 
 
     MPI_Init(&argc, &argv);                   // Initialize MPI on startup
@@ -94,7 +95,7 @@ int main(int argc, char **argv)
 
     // Allocate the storage we need to house either X or Y pencils
     // First compute the processor extents when long in either direction
-    boost::multi_array<int,N.static_size> procextents(boost::extents[N.static_size][2]);
+    boost::multi_array<int,NDIM> procextents(boost::extents[NDIM][2]);
     for (int i = 0; i < procextents.shape()[0]; ++i) {
         BOOST_AUTO(extents, calculate_processor_extents(nproc, procid, N[i]));
         procextents[i][0] = extents.first;
@@ -113,13 +114,13 @@ int main(int argc, char **argv)
     }
     // Third allocate and create views of the required raw storage
     boost::scoped_array<double> raw_storage(new double[max_storage]);
-    typedef boost::multi_array_ref<double,N.static_size> array_type;
+    typedef boost::multi_array_ref<double,NDIM> array_type;
     boost::array<bool,
-                 array_type::dimensionality> ascending = { true, true };
+                 array_type::dimensionality> ascending = {{ true, true }};
     boost::array<array_type::size_type,
-                 array_type::dimensionality> ordering_X = { 0, 1 };
+                 array_type::dimensionality> ordering_X = {{ 0, 1 }};
     boost::array<array_type::size_type,
-                 array_type::dimensionality> ordering_Y = { 1, 0 };
+                 array_type::dimensionality> ordering_Y = {{ 1, 0 }};
     array_type pencil_X(
             raw_storage.get(),
             boost::extents[N[0]][procextents[0][1] - procextents[0][0]],
