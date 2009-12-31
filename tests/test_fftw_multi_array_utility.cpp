@@ -3,6 +3,7 @@
 #include <suzerain/fftw_multi_array.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
+#include <boost/assign.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <fftw3.h>
 #include "test_tools.hpp"
@@ -296,11 +297,11 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
     boost::array<int,n>::iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
-    BOOST_REQUIRE_EQUAL(index[0], 1);
-    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0));
+
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
-    BOOST_REQUIRE_EQUAL(index[0], 2);
-    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0));
+
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 
@@ -315,11 +316,11 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
     boost::array<std::size_t,n>::iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
-    BOOST_REQUIRE_EQUAL(index[0], 0);
-    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(1));
+
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
-    BOOST_REQUIRE_EQUAL(index[0], 0);
-    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(2));
+
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), false);
 }
 

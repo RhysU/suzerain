@@ -267,4 +267,20 @@ bool check_close_collections(const FPT *left_begin, const FPT *left_end,
     return res;
 }
 
+
+// Provide a general operator<<(basic_ostream, boost::array) template in ::boost
+namespace boost {
+template< typename charT, typename traits, typename T, ::std::size_t N >
+::std::basic_ostream<charT,traits>& operator<<(
+        ::std::basic_ostream<charT,traits> &os, const ::boost::array<T,N> &array)
+{
+    os << '[' << N << "]{ ";
+    ::std::copy(array.begin(),
+                array.end(),
+                ::std::ostream_iterator<T,charT,traits>(os, " "));
+    os << '}';
+    return os;
+}
+}
+
 #endif // PECOS_SUZERAIN_TEST_TOOLS_HPP
