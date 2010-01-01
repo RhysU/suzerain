@@ -108,6 +108,12 @@ test_fftw_multi_array_2D_LDADD    = $(FFTW3_LIBS)
 test_fftw_multi_array_2D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_fftw_multi_array_2D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+check_PROGRAMS                   += test_fftw_multi_array_3D
+test_fftw_multi_array_3D_SOURCES  = test_fftw_multi_array_3D.cpp
+test_fftw_multi_array_3D_LDADD    = $(FFTW3_LIBS)
+test_fftw_multi_array_3D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_fftw_multi_array_3D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 check_PROGRAMS         += test_underling
 test_underling_SOURCES  = test_underling.cpp
 test_underling_LDADD    = ../suzerain/libunderling.la
