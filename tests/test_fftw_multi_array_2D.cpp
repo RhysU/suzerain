@@ -27,7 +27,7 @@ void c2c_2d_forward_4_by_3(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
     BOOST_REQUIRE_EQUAL(out.shape()[0], M);
     BOOST_REQUIRE_EQUAL(out.shape()[1], N);
 
-    const double data[M][N] = {1,2,3, 4,5,6, 7,8,9, 10,11,12};
+    const double data[M][N] = {{1,2,3}, {4,5,6}, {7,8,9}, {10,11,12}};
     const double close = std::numeric_limits<double>::epsilon()*10*M*M*N*N;
 
     { // Transform zeroth dimension and test against expected
