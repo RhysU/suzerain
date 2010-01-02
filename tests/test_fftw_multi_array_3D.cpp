@@ -466,43 +466,45 @@ BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_out_of_place_fortran2c_storage )
     r2c_3d_forward_4_by_3_by_2(in, out);
 }
 
-//// void test_r2c_3d_complex_forward_in_place(const std::size_t (&ordering)[2],
-////                                           const bool        (&ascending)[2])
-//// {
-////     typedef std::complex<double> complex;
-////     const std::size_t size_ratio = sizeof(complex)/sizeof(complex::value_type);
-////
-////     // Logical two dimensional array size in real space
-////     const std::size_t M = 4, N = 3;
-////     // Find maximum required complex extents for transforms in each direction
-////     const std::size_t complexM = std::max(M, M/2+1);
-////     const std::size_t complexN = std::max(N, N/2+1);
-////     // Convert to maximum required real extents sizes
-////     const std::size_t realM = complexM * size_ratio;
-////     const std::size_t realN = complexN * size_ratio;
-////     // Determine amount of complex storage to allocate
-////     const std::size_t storage_amount
-////         = std::max(complexM*complexN, realM*realN/size_ratio);
-////
-////     // Create appropriately typed views of the same raw storage
-////     boost::scoped_array<complex> raw(new complex[storage_amount]);
-////     typedef boost::multi_array_ref<complex::value_type,2> real_array;
-////     typedef boost::multi_array_ref<complex,2>             complex_array;
-////     typedef boost::general_storage_order<real_array::dimensionality> storage;
-////     real_array    in( reinterpret_cast<complex::value_type *>(raw.get()),
-////                       boost::extents[realM][realN],
-////                       storage(ordering, ascending));
-////     complex_array out(raw.get(),
-////                       boost::extents[complexM][complexN],
-////                       storage(ordering, ascending));
-////
-////     typedef real_array::index_range range;
-////     typedef boost::array_view_gen<real_array,2>::type real_view;
-////     real_view in_view = in[boost::indices[range(0,M)][range(0,N)]];
-////
-////     r2c_3d_forward_4_by_3_by_2(in_view, out);
-//// }
-////
+void test_r2c_3d_complex_forward_in_place(const std::size_t (&ordering)[3],
+                                          const bool        (&ascending)[3])
+{
+    typedef std::complex<double> complex;
+    const std::size_t size_ratio = sizeof(complex)/sizeof(complex::value_type);
+
+    // Logical two dimensional array size in real space
+    const std::size_t L = 4, M = 3, N = 2;
+    // Find maximum required complex extents for transforms in each direction
+    const std::size_t complexL = std::max(L, L/2+1);
+    const std::size_t complexM = std::max(M, M/2+1);
+    const std::size_t complexN = std::max(N, N/2+1);
+    // Convert to maximum required real extents sizes
+    const std::size_t realL = complexL * size_ratio;
+    const std::size_t realM = complexM * size_ratio;
+    const std::size_t realN = complexN * size_ratio;
+    // Determine amount of complex storage to allocate
+    const std::size_t storage_amount
+        = std::max(complexL*complexM*complexN, realL*realM*realN/size_ratio);
+
+    // Create appropriately typed views of the same raw storage
+    boost::scoped_array<complex> raw(new complex[storage_amount]);
+    typedef boost::multi_array_ref<complex::value_type,3> real_array;
+    typedef boost::multi_array_ref<complex,3>             complex_array;
+    typedef boost::general_storage_order<real_array::dimensionality> storage;
+    real_array    in( reinterpret_cast<complex::value_type *>(raw.get()),
+                      boost::extents[realL][realM][realN],
+                      storage(ordering, ascending));
+    complex_array out(raw.get(),
+                      boost::extents[complexL][complexM][complexN],
+                      storage(ordering, ascending));
+
+    typedef real_array::index_range range;
+    typedef boost::array_view_gen<real_array,3>::type real_view;
+    real_view in_view = in[boost::indices[range(0,L)][range(0,M)][range(0,N)]];
+
+    r2c_3d_forward_4_by_3_by_2(in_view, out);
+}
+
 //// BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_c_storage )
 //// {
 ////     const std::size_t ordering[2]  = { 1, 0 };
