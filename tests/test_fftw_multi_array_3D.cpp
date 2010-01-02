@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE( c2c_3d_complex_forward_in_place_fortran_storage )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( r2c_2d_forward_simple )
+BOOST_AUTO_TEST_SUITE( r2c_3d_forward_simple )
 
 // Helper function testing directional transforms for a small 2D grid
 template<class RealArray, class ComplexArray>
@@ -378,26 +378,26 @@ void r2c_3d_forward_4_by_3_by_2(RealArray &in, ComplexArray &out)
                     in[i][j][k] = data[i][j][k];
 
         typedef std::complex<double> z;
-        const z expected2[L][M][N/2+1] = { // Not smaller in practice
+        const z expected2[L][M][N/2+1] = { // Not any smaller in practice
             {
-              {z( 5.5, 0. ), z(17.5, 0. )},
-              {z( 6.5, 0. ), z(18.5, 0.) },
-              {z( 7.5, 0. ), z(19.5, 0. )}
+                { z( 7.0, 0.), z(-6.0, 0.) },
+                { z( 8.0, 0.), z(-6.0, 0.) },
+                { z( 9.0, 0.), z(-6.0, 0.) }
             },
             {
-              {z(-1.5, 1.5), z(-1.5, 1.5)},
-              {z(-1.5, 1.5), z(-1.5, 1.5)},
-              {z(-1.5, 1.5), z(-1.5, 1.5)}
+                { z(10.0, 0.), z(-6.0, 0.) },
+                { z(11.0, 0.), z(-6.0, 0.) },
+                { z(12.0, 0.), z(-6.0, 0.) }
             },
             {
-              {z(-1.5, 0. ), z(-1.5, 0. )},
-              {z(-1.5, 0. ), z(-1.5, 0.) },
-              {z(-1.5, 0. ), z(-1.5, 0. )}
+                { z(13.0, 0.), z(-6.0, 0.) },
+                { z(14.0, 0.), z(-6.0, 0.) },
+                { z(15.0, 0.), z(-6.0, 0.) }
             },
             {
-              {z(-1.5,-1.5), z(-1.5,-1.5)},
-              {z(-1.5,-1.5), z(-1.5,-1.5)},
-              {z(-1.5,-1.5), z(-1.5,-1.5)}
+                { z(16.0, 0.), z(-6.0, 0.) },
+                { z(17.0, 0.), z(-6.0, 0.) },
+                { z(18.0, 0.), z(-6.0, 0.) }
             }
         };
 
@@ -433,40 +433,40 @@ BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_out_of_place_c_storage )
 
     real_array    in( boost::extents[4][3][2], boost::c_storage_order());
     complex_array out(boost::extents[4][3][2], boost::c_storage_order());
-//     r2c_3d_forward_4_by_3_by_2(in, out);
+    r2c_3d_forward_4_by_3_by_2(in, out);
 }
 
-//// BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_out_of_place_fortran_storage )
-//// {
-////     typedef boost::multi_array<std::complex<double>,2> complex_array;
-////     typedef boost::multi_array<complex_array::element::value_type,2> real_array;
-////
-////     real_array    in( boost::extents[4][3], boost::fortran_storage_order());
-////     complex_array out(boost::extents[4][3], boost::fortran_storage_order());
-////     r2c_2d_forward_4_by_3_by_2(in, out);
-//// }
-////
-//// BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_out_of_place_c2fortran_storage )
-//// {
-////     typedef boost::multi_array<std::complex<double>,2> complex_array;
-////     typedef boost::multi_array<complex_array::element::value_type,2> real_array;
-////
-////     real_array    in( boost::extents[4][3], boost::c_storage_order());
-////     complex_array out(boost::extents[4][3], boost::fortran_storage_order());
-////     r2c_2d_forward_4_by_3_by_2(in, out);
-//// }
-////
-//// BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_out_of_place_fortran2c_storage )
-//// {
-////     typedef boost::multi_array<std::complex<double>,2> complex_array;
-////     typedef boost::multi_array<complex_array::element::value_type,2> real_array;
-////
-////     real_array    in( boost::extents[4][3], boost::fortran_storage_order());
-////     complex_array out(boost::extents[4][3], boost::c_storage_order());
-////     r2c_2d_forward_4_by_3_by_2(in, out);
-//// }
-////
-//// void test_r2c_2d_complex_forward_in_place(const std::size_t (&ordering)[2],
+BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_out_of_place_fortran_storage )
+{
+    typedef boost::multi_array<std::complex<double>,3> complex_array;
+    typedef boost::multi_array<complex_array::element::value_type,3> real_array;
+
+    real_array    in( boost::extents[4][3][2], boost::fortran_storage_order());
+    complex_array out(boost::extents[4][3][2], boost::fortran_storage_order());
+    r2c_3d_forward_4_by_3_by_2(in, out);
+}
+
+BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_out_of_place_c2fortran_storage )
+{
+    typedef boost::multi_array<std::complex<double>,3> complex_array;
+    typedef boost::multi_array<complex_array::element::value_type,3> real_array;
+
+    real_array    in( boost::extents[4][3][2], boost::c_storage_order());
+    complex_array out(boost::extents[4][3][2], boost::fortran_storage_order());
+    r2c_3d_forward_4_by_3_by_2(in, out);
+}
+
+BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_out_of_place_fortran2c_storage )
+{
+    typedef boost::multi_array<std::complex<double>,3> complex_array;
+    typedef boost::multi_array<complex_array::element::value_type,3> real_array;
+
+    real_array    in( boost::extents[4][3][2], boost::fortran_storage_order());
+    complex_array out(boost::extents[4][3][2], boost::c_storage_order());
+    r2c_3d_forward_4_by_3_by_2(in, out);
+}
+
+//// void test_r2c_3d_complex_forward_in_place(const std::size_t (&ordering)[2],
 ////                                           const bool        (&ascending)[2])
 //// {
 ////     typedef std::complex<double> complex;
@@ -500,64 +500,64 @@ BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_out_of_place_c_storage )
 ////     typedef boost::array_view_gen<real_array,2>::type real_view;
 ////     real_view in_view = in[boost::indices[range(0,M)][range(0,N)]];
 ////
-////     r2c_2d_forward_4_by_3_by_2(in_view, out);
+////     r2c_3d_forward_4_by_3_by_2(in_view, out);
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_in_place_c_storage )
+//// BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_c_storage )
 //// {
 ////     const std::size_t ordering[2]  = { 1, 0 };
 ////     const bool        ascending[2] = { true, true };
-////     test_r2c_2d_complex_forward_in_place(ordering, ascending);
+////     test_r2c_3d_complex_forward_in_place(ordering, ascending);
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_in_place_fortran_storage )
+//// BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_fortran_storage )
 //// {
 ////     const std::size_t ordering[2]  = { 0, 1 };
 ////     const bool        ascending[2] = { true, true };
-////     test_r2c_2d_complex_forward_in_place(ordering, ascending);
+////     test_r2c_3d_complex_forward_in_place(ordering, ascending);
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_in_place_c_storage_reversed )
+//// BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_c_storage_reversed )
 //// {
 ////     const std::size_t ordering[2]  = { 1, 0 }; // C ordering
 ////     {
 ////         const bool ascending[2] = { true, false };
-////         test_r2c_2d_complex_forward_in_place(ordering, ascending);
+////         test_r2c_3d_complex_forward_in_place(ordering, ascending);
 ////     }
 ////     {
 ////         const bool ascending[2] = { false, true };
-////         test_r2c_2d_complex_forward_in_place(ordering, ascending);
+////         test_r2c_3d_complex_forward_in_place(ordering, ascending);
 ////     }
 ////     {
 ////         const bool ascending[2] = { false, false };
-////         test_r2c_2d_complex_forward_in_place(ordering, ascending);
+////         test_r2c_3d_complex_forward_in_place(ordering, ascending);
 ////     }
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_in_place_fortran_storage_reversed )
+//// BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_fortran_storage_reversed )
 //// {
 ////     const std::size_t ordering[2]  = { 0, 1 }; // Fortran ordering
 ////     {
 ////         const bool ascending[2] = { true, false };
-////         test_r2c_2d_complex_forward_in_place(ordering, ascending);
+////         test_r2c_3d_complex_forward_in_place(ordering, ascending);
 ////     }
 ////     {
 ////         const bool ascending[2] = { false, true };
-////         test_r2c_2d_complex_forward_in_place(ordering, ascending);
+////         test_r2c_3d_complex_forward_in_place(ordering, ascending);
 ////     }
 ////     {
 ////         const bool ascending[2] = { false, false };
-////         test_r2c_2d_complex_forward_in_place(ordering, ascending);
+////         test_r2c_3d_complex_forward_in_place(ordering, ascending);
 ////     }
 //// }
 ////
 //// BOOST_AUTO_TEST_SUITE_END()
 ////
-//// BOOST_AUTO_TEST_SUITE( c2r_2d_backward_simple )
+//// BOOST_AUTO_TEST_SUITE( c2r_3d_backward_simple )
 ////
 //// // Helper function testing directional transforms for a small 2D grid
 //// template<class ComplexArray, class RealArray>
-//// void c2r_2d_backward_4_by_3(ComplexArray &in, RealArray &out)
+//// void c2r_3d_backward_4_by_3(ComplexArray &in, RealArray &out)
 //// {
 ////     BOOST_STATIC_ASSERT(ComplexArray::dimensionality == 2);
 ////     BOOST_STATIC_ASSERT(RealArray::dimensionality == 2);
@@ -629,47 +629,47 @@ BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_out_of_place_c_storage )
 ////     }
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_out_of_place_c_storage )
+//// BOOST_AUTO_TEST_CASE( c2r_3d_complex_backward_out_of_place_c_storage )
 //// {
 ////     typedef boost::multi_array<std::complex<double>,2> complex_array;
 ////     typedef boost::multi_array<complex_array::element::value_type,2> real_array;
 ////
 ////     complex_array in( boost::extents[4][3], boost::c_storage_order());
 ////     real_array    out(boost::extents[4][3], boost::c_storage_order());
-////     c2r_2d_backward_4_by_3(in, out);
+////     c2r_3d_backward_4_by_3(in, out);
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_out_of_place_fortran_storage )
+//// BOOST_AUTO_TEST_CASE( c2r_3d_complex_backward_out_of_place_fortran_storage )
 //// {
 ////     typedef boost::multi_array<std::complex<double>,2> complex_array;
 ////     typedef boost::multi_array<complex_array::element::value_type,2> real_array;
 ////
 ////     complex_array in( boost::extents[4][3], boost::fortran_storage_order());
 ////     real_array    out(boost::extents[4][3], boost::fortran_storage_order());
-////     c2r_2d_backward_4_by_3(in, out);
+////     c2r_3d_backward_4_by_3(in, out);
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_out_of_place_c2fortran_storage )
+//// BOOST_AUTO_TEST_CASE( c2r_3d_complex_backward_out_of_place_c2fortran_storage )
 //// {
 ////     typedef boost::multi_array<std::complex<double>,2> complex_array;
 ////     typedef boost::multi_array<complex_array::element::value_type,2> real_array;
 ////
 ////     complex_array in( boost::extents[4][3], boost::fortran_storage_order());
 ////     real_array    out(boost::extents[4][3], boost::c_storage_order());
-////     c2r_2d_backward_4_by_3(in, out);
+////     c2r_3d_backward_4_by_3(in, out);
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_out_of_place_fortran2c_storage )
+//// BOOST_AUTO_TEST_CASE( c2r_3d_complex_backward_out_of_place_fortran2c_storage )
 //// {
 ////     typedef boost::multi_array<std::complex<double>,2> complex_array;
 ////     typedef boost::multi_array<complex_array::element::value_type,2> real_array;
 ////
 ////     complex_array in( boost::extents[4][3], boost::c_storage_order());
 ////     real_array    out(boost::extents[4][3], boost::fortran_storage_order());
-////     c2r_2d_backward_4_by_3(in, out);
+////     c2r_3d_backward_4_by_3(in, out);
 //// }
 ////
-//// void test_c2r_2d_complex_backward_in_place(const std::size_t (&ordering)[2],
+//// void test_c2r_3d_complex_backward_in_place(const std::size_t (&ordering)[2],
 ////                                            const bool        (&ascending)[2])
 //// {
 ////     typedef std::complex<double> complex;
@@ -703,54 +703,54 @@ BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_out_of_place_c_storage )
 ////     typedef boost::array_view_gen<real_array,2>::type real_view;
 ////     real_view out_view = out[boost::indices[range(0,M)][range(0,N)]];
 ////
-////     c2r_2d_backward_4_by_3(in, out_view);
+////     c2r_3d_backward_4_by_3(in, out_view);
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_in_place_c_storage )
+//// BOOST_AUTO_TEST_CASE( c2r_3d_complex_backward_in_place_c_storage )
 //// {
 ////     const std::size_t ordering[2]  = { 1, 0 };
 ////     const bool        ascending[2] = { true, true };
-////     test_c2r_2d_complex_backward_in_place(ordering, ascending);
+////     test_c2r_3d_complex_backward_in_place(ordering, ascending);
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_in_place_fortran_storage )
+//// BOOST_AUTO_TEST_CASE( c2r_3d_complex_backward_in_place_fortran_storage )
 //// {
 ////     const std::size_t ordering[2]  = { 0, 1 };
 ////     const bool        ascending[2] = { true, true };
-////     test_c2r_2d_complex_backward_in_place(ordering, ascending);
+////     test_c2r_3d_complex_backward_in_place(ordering, ascending);
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_in_place_c_storage_reversed )
+//// BOOST_AUTO_TEST_CASE( c2r_3d_complex_backward_in_place_c_storage_reversed )
 //// {
 ////     const std::size_t ordering[2]  = { 1, 0 }; // C ordering
 ////     {
 ////         const bool ascending[2] = { true, false };
-////         test_c2r_2d_complex_backward_in_place(ordering, ascending);
+////         test_c2r_3d_complex_backward_in_place(ordering, ascending);
 ////     }
 ////     {
 ////         const bool ascending[2] = { false, true };
-////         test_c2r_2d_complex_backward_in_place(ordering, ascending);
+////         test_c2r_3d_complex_backward_in_place(ordering, ascending);
 ////     }
 ////     {
 ////         const bool ascending[2] = { false, false };
-////         test_c2r_2d_complex_backward_in_place(ordering, ascending);
+////         test_c2r_3d_complex_backward_in_place(ordering, ascending);
 ////     }
 //// }
 ////
-//// BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_in_place_fortran_storage_reversed )
+//// BOOST_AUTO_TEST_CASE( c2r_3d_complex_backward_in_place_fortran_storage_reversed )
 //// {
 ////     const std::size_t ordering[2]  = { 0, 1 }; // Fortran ordering
 ////     {
 ////         const bool ascending[2] = { true, false };
-////         test_c2r_2d_complex_backward_in_place(ordering, ascending);
+////         test_c2r_3d_complex_backward_in_place(ordering, ascending);
 ////     }
 ////     {
 ////         const bool ascending[2] = { false, true };
-////         test_c2r_2d_complex_backward_in_place(ordering, ascending);
+////         test_c2r_3d_complex_backward_in_place(ordering, ascending);
 ////     }
 ////     {
 ////         const bool ascending[2] = { false, false };
-////         test_c2r_2d_complex_backward_in_place(ordering, ascending);
+////         test_c2r_3d_complex_backward_in_place(ordering, ascending);
 ////     }
 //// }
 
