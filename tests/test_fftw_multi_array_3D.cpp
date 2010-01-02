@@ -505,20 +505,21 @@ void test_r2c_3d_complex_forward_in_place(const std::size_t (&ordering)[3],
     r2c_3d_forward_4_by_3_by_2(in_view, out);
 }
 
-//// BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_c_storage )
-//// {
-////     const std::size_t ordering[2]  = { 1, 0 };
-////     const bool        ascending[2] = { true, true };
-////     test_r2c_3d_complex_forward_in_place(ordering, ascending);
-//// }
-////
-//// BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_fortran_storage )
-//// {
-////     const std::size_t ordering[2]  = { 0, 1 };
-////     const bool        ascending[2] = { true, true };
-////     test_r2c_3d_complex_forward_in_place(ordering, ascending);
-//// }
-////
+// FIXME Problems with C storage ordering
+///BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_c_storage )
+///{
+///    const std::size_t ordering[3]  = { 2, 1, 0 };
+///    const bool        ascending[3] = { true, true, true };
+///    test_r2c_3d_complex_forward_in_place(ordering, ascending);
+///}
+
+BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_fortran_storage )
+{
+    const std::size_t ordering[3]  = { 0, 1, 2 };
+    const bool        ascending[3] = { true, true, true };
+    test_r2c_3d_complex_forward_in_place(ordering, ascending);
+}
+
 //// BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_c_storage_reversed )
 //// {
 ////     const std::size_t ordering[2]  = { 1, 0 }; // C ordering
@@ -535,26 +536,44 @@ void test_r2c_3d_complex_forward_in_place(const std::size_t (&ordering)[3],
 ////         test_r2c_3d_complex_forward_in_place(ordering, ascending);
 ////     }
 //// }
-////
-//// BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_fortran_storage_reversed )
-//// {
-////     const std::size_t ordering[2]  = { 0, 1 }; // Fortran ordering
-////     {
-////         const bool ascending[2] = { true, false };
-////         test_r2c_3d_complex_forward_in_place(ordering, ascending);
-////     }
-////     {
-////         const bool ascending[2] = { false, true };
-////         test_r2c_3d_complex_forward_in_place(ordering, ascending);
-////     }
-////     {
-////         const bool ascending[2] = { false, false };
-////         test_r2c_3d_complex_forward_in_place(ordering, ascending);
-////     }
-//// }
-////
-//// BOOST_AUTO_TEST_SUITE_END()
-////
+
+BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place_fortran_storage_reversed )
+{
+    const std::size_t ordering[3]  = { 0, 1, 2 }; // Fortran ordering
+
+    // Two reversed
+    {
+        const bool ascending[3] = { true, false, false };
+        test_r2c_3d_complex_forward_in_place(ordering, ascending);
+    }
+    {
+        const bool ascending[3] = { false, true, false };
+        test_r2c_3d_complex_forward_in_place(ordering, ascending);
+    }
+// FIXME Problems with reversed storage ordering
+////    {
+////        const bool ascending[3] = { false, false, true };
+////        test_r2c_3d_complex_forward_in_place(ordering, ascending);
+////    }
+
+    // One reversed
+    {
+        const bool ascending[3] = { true, true, false };
+        test_r2c_3d_complex_forward_in_place(ordering, ascending);
+    }
+    {
+        const bool ascending[3] = { false, true, true };
+        test_r2c_3d_complex_forward_in_place(ordering, ascending);
+    }
+// FIXME Problems with reversed storage ordering
+////    {
+////        const bool ascending[3] = { true, false, true };
+////        test_r2c_3d_complex_forward_in_place(ordering, ascending);
+////    }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 //// BOOST_AUTO_TEST_SUITE( c2r_3d_backward_simple )
 ////
 //// // Helper function testing directional transforms for a small 2D grid
@@ -755,5 +774,5 @@ void test_r2c_3d_complex_forward_in_place(const std::size_t (&ordering)[3],
 ////         test_c2r_3d_complex_backward_in_place(ordering, ascending);
 ////     }
 //// }
-
-BOOST_AUTO_TEST_SUITE_END()
+////
+//// BOOST_AUTO_TEST_SUITE_END()
