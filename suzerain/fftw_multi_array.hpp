@@ -100,6 +100,7 @@ bool increment(Mutable_RandomAccessIterator indices,
     // and NumDims is often small, do not break out of loop when overflow == 0.
     // The overflow == 0 condition causes an effective NOP after occurring.
     bool overflow = 1;
+    #pragma unroll
     for (std::size_t i = 0; i < NumDims; ++i, ++index_order) {
 
         index_type           &index     = indices[*index_order];
@@ -163,6 +164,7 @@ bool decrement(Mutable_RandomAccessIterator indices,
     // and NumDims is often small, do not break out of loop when underflow == 0.
     // The underflow == 0 condition causes an effective NOP after occurring.
     bool underflow = 1;
+    #pragma unroll
     for (std::size_t i = 0; i < NumDims; ++i, ++index_order) {
 
         index_type           &index     = indices[*index_order];

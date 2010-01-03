@@ -853,6 +853,80 @@ BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
     BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), false);
 }
 
+BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_1 )
+{
+    using fftw_multi_array::detail::decrement;
+
+    const int n = 3;
+    typedef boost::array<int,n> array_type;
+    array_type           index_array = {{ 3, 0, 1 }};
+    array_type::iterator index       = index_array.begin();
+    array_type           shape_array = {{ 4, 1, 2 }};
+    array_type::iterator shape       = shape_array.begin();
+    array_type           order_array = {{ 0, 1, 2 }};
+    array_type::iterator order       = order_array.begin();
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_2 )
+{
+    using fftw_multi_array::detail::decrement;
+
+    const int n = 3;
+    typedef boost::array<int,n> array_type;
+    array_type           index_array = {{ 3, 0, 1 }};
+    array_type::iterator index       = index_array.begin();
+    array_type           shape_array = {{ 4, 1, 2 }};
+    array_type::iterator shape       = shape_array.begin();
+    array_type           order_array = {{ 2, 1, 0 }};
+    array_type::iterator order       = order_array.begin();
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), false);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( indexed_element_comparator )
