@@ -929,14 +929,14 @@ BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_2 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( indexed_element_comparator )
+BOOST_AUTO_TEST_SUITE( indexed_element_magnitude_comparator )
 
-BOOST_AUTO_TEST_CASE( indexed_element_comparator_operator )
+BOOST_AUTO_TEST_CASE( indexed_element_magnitude_comparator_operator_positive )
 {
-    using fftw_multi_array::detail::indexed_element_comparator;
+    using fftw_multi_array::detail::indexed_element_magnitude_comparator;
 
     const double data[3] = { 0.0, 1.0, 2.0 };
-    indexed_element_comparator<const double *> c(&data[0]);
+    indexed_element_magnitude_comparator<const double *> c(&data[0]);
 
     BOOST_CHECK_EQUAL(true, c(0, 1));
     BOOST_CHECK_EQUAL(true, c(1, 2));
@@ -947,16 +947,32 @@ BOOST_AUTO_TEST_CASE( indexed_element_comparator_operator )
     BOOST_CHECK_EQUAL(false, c(2, 0));
 }
 
-BOOST_AUTO_TEST_CASE( indexed_element_comparator_stable_sort )
+BOOST_AUTO_TEST_CASE( indexed_element_magnitude_comparator_operator_mixed )
 {
-    using fftw_multi_array::detail::make_indexed_element_comparator;
+    using fftw_multi_array::detail::indexed_element_magnitude_comparator;
+
+    const double data[3] = { 0.0, -1.0, -2.0 };
+    indexed_element_magnitude_comparator<const double *> c(&data[0]);
+
+    BOOST_CHECK_EQUAL(true, c(0, 1));
+    BOOST_CHECK_EQUAL(true, c(1, 2));
+    BOOST_CHECK_EQUAL(true, c(0, 2));
+
+    BOOST_CHECK_EQUAL(false, c(1, 0));
+    BOOST_CHECK_EQUAL(false, c(2, 1));
+    BOOST_CHECK_EQUAL(false, c(2, 0));
+}
+
+BOOST_AUTO_TEST_CASE( indexed_element_magnitude_comparator_stable_sort )
+{
+    using fftw_multi_array::detail::make_indexed_element_magnitude_comparator;
 
     const int n = 5;
     const double data[n]    = { 0, 1, 2, 3, 4 };
     std::size_t  indices[n] = { 3, 1, 4, 0, 2 };
 
     std::stable_sort(indices, indices + n,
-            make_indexed_element_comparator(&data[0]));
+            make_indexed_element_magnitude_comparator(&data[0]));
     BOOST_CHECK_EQUAL(0, indices[0]);
     BOOST_CHECK_EQUAL(1, indices[1]);
     BOOST_CHECK_EQUAL(2, indices[2]);

@@ -36,6 +36,7 @@
 
 // TODO Broken details::assign_* if FFTW3 discovers the C99 _Complex type
 // TODO Much of transform_c2c, forward_r2c, and backward_c2r is boilerplate
+// TODO Bomb when encountering in-place transform with mismatched strides
 
 namespace suzerain {
 
@@ -232,11 +233,12 @@ bool decrement(Mutable_RandomAccessIterator indices,
 }
 
 /**
- * Compares indices based on element comparison from some underlying
- * RandomAccessIterator.
+ * Compares indices based on element magnitude comparison from some underlying
+ * RandomAccessIterator.  Element magnitude is calculated using
+ * <tt>std::abs</tt>.
  */
 template<class RandomAccessIterator>
-struct indexed_element_comparator {
+struct indexed_element_magnitude_comparator {
 
     BOOST_CONCEPT_ASSERT((boost::RandomAccessIterator<RandomAccessIterator>));
 
@@ -248,7 +250,7 @@ struct indexed_element_comparator {
      *
      * @param table to use for comparisons
      */
-    indexed_element_comparator(const RandomAccessIterator table)
+    indexed_element_magnitude_comparator(const RandomAccessIterator table)
         : table_(table) {};
 
     /**
@@ -257,26 +259,29 @@ struct indexed_element_comparator {
      * @param xi left index to compare
      * @param yi right index to compare
      *
-     * @return true if <tt>table_[xi] < table_[yi]</tt> and false otherwise.
+     * @return true if <tt>std::abs(table_[xi]) < std::abs(table_[yi])</tt>
+     *         and false otherwise.
      */
     bool operator()(const std::size_t &xi, const std::size_t &yi) const
     {
-        return table_[xi] < table_[yi];
+        return std::abs(table_[xi]) < std::abs(table_[yi]);
     }
 };
 
 /**
- * Constructs an indexed_element_comparator from \c table.
+ * Constructs an indexed_element_magnitude_comparator from \c table.
  *
  * @param table to use for indexed comparison.
  *
- * @return an indexed_element_comparison using \c table for element lookup.
+ * @return an indexed_element_magnitude_comparison using \c table for element
+ *         lookup.
  */
 template<class RandomAccessIterator>
-indexed_element_comparator<RandomAccessIterator>
-make_indexed_element_comparator(const RandomAccessIterator table)
+inline
+indexed_element_magnitude_comparator<RandomAccessIterator>
+make_indexed_element_magnitude_comparator(const RandomAccessIterator table)
 {
-    return indexed_element_comparator<RandomAccessIterator>(table);
+    return indexed_element_magnitude_comparator<RandomAccessIterator>(table);
 }
 
 /**
@@ -300,13 +305,13 @@ FPT integer_power(FPT x, Integral n)
     BOOST_STATIC_ASSERT(numeric_limits<Integral>::is_integer);
     BOOST_STATIC_ASSERT(!numeric_limits<Integral>::is_signed || !numeric_limits<FPT>::is_integer);
 
-    FPT retval = 1.0;
+    FPT retval = 1;
     // Convert all requests into one involving a positive power
     if (n < 0) {
         x = ((FPT) 1)/x;
         n = -n;
     }
-    // Repeated squaring method.  Returns 0.0^0 = 1.0; continuous in x
+    // Repeated squaring method.  Returns 0.0^0 = 1; continuous in x
     do {
         if (n & 1) retval *= x;  /* for n odd */
         n >>= 1;
@@ -1052,8 +1057,9 @@ void transform_c2c(
     // Walk fastest dimensions first when incrementing across pencils
     index_array1 increment_order;
     for (index1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
-    std::stable_sort(increment_order.begin(), increment_order.end(),
-                     detail::make_indexed_element_comparator(in.strides()));
+    std::sort(
+        increment_order.begin(), increment_order.end(),
+        detail::make_indexed_element_magnitude_comparator(in.strides()));
 
     // Process each of the transform_dim pencils in turn
     do {
@@ -1092,7 +1098,7 @@ void transform_c2c(
         if (fftw_sign == FFTW_FORWARD) {
             typedef typename
                 detail::transform_traits<element2>::real_type real_type;
-            const real_type normalization = real_type(1.0)/transform_n;
+            const real_type normalization = real_type(1)/transform_n;
             if (derivative == 0) {
                 detail::c2c_fullbuffer_process(
                     &out(dereference_index2),
@@ -1367,8 +1373,9 @@ void forward_r2c(
     // Walk fastest dimensions first when decrementing across pencils
     index_array1 decrement_order;
     for (index1 n = 0; n < dimensionality; ++n) { decrement_order[n] = n; }
-    std::stable_sort(decrement_order.begin(), decrement_order.end(),
-                     detail::make_indexed_element_comparator(in.strides()));
+    std::sort(
+        decrement_order.begin(), decrement_order.end(),
+        detail::make_indexed_element_magnitude_comparator(in.strides()));
 
     // Process each of the transform_dim pencils in turn
     do {
@@ -1403,7 +1410,7 @@ void forward_r2c(
         {
             typedef typename
                 detail::transform_traits<element2>::real_type real_type;
-            const real_type normalization = real_type(1.0)/transform_n;
+            const real_type normalization = real_type(1)/transform_n;
             if (derivative == 0) {
                 detail::c2c_halfbuffer_process(
                     &out(dereference_index2),
@@ -1563,8 +1570,9 @@ void backward_c2r(
     // Walk fastest dimensions first when incrementing across pencils
     index_array1 increment_order;
     for (index1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
-    std::stable_sort(increment_order.begin(), increment_order.end(),
-                     detail::make_indexed_element_comparator(in.strides()));
+    std::sort(
+        increment_order.begin(), increment_order.end(),
+        detail::make_indexed_element_magnitude_comparator(in.strides()));
 
     // Process each of the transform_dim pencils in turn
     do {
