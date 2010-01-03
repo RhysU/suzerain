@@ -55,9 +55,9 @@ namespace fftw_multi_array {
 namespace detail {
 
 /**
- * Increment the next appropriate index in \c indices according to the upper
- * bounds given in \c max_indices.  Both \c indices and \c max_indices must
- * have at least \c NumDims elements.
+ * Increment the next appropriate index in \c indices according to
+ * the upper bounds given in \c max_indices.  All parameters must have
+ * at least \c NumDims elements.
  *
  * @param indices contains current values on input and at least one
  *                incremented value if method returns true.
@@ -98,9 +98,9 @@ bool increment(Mutable_RandomAccessIterator indices,
     BOOST_CONCEPT_ASSERT((boost::Integer<index_order_type>));
 
     // Because we have 4*NumDims integral operations in the fully unrolled loop
-    // and NumDims is often small, do not break out of loop when overflow == 0.
-    // The overflow == 0 condition causes an effective NOP after occurring.
-    bool overflow = 1;
+    // and NumDims is often small, do not break out of loop when overflow is
+    // false.  The overflow == false condition causes an effective NOP.
+    bool overflow = true;
     #pragma unroll
     for (std::size_t i = 0; i < NumDims; ++i, ++index_order) {
 
@@ -119,8 +119,8 @@ bool increment(Mutable_RandomAccessIterator indices,
 }
 
 /**
- * Decrement the next appropriate index in \c indices according to the upper
- * bounds given in \c max_indices.  Both \c indices and \c max_indices must
+ * Decrement the next appropriate index in \c indices according to
+ * the upper bounds given in \c max_indices.  All parameters must
  * have at least \c NumDims elements.
  *
  * @param indices contains current values on input and at least
@@ -162,9 +162,9 @@ bool decrement(Mutable_RandomAccessIterator indices,
     BOOST_CONCEPT_ASSERT((boost::Integer<index_order_type>));
 
     // Because we have 4*NumDims integral operations in the fully unrolled loop
-    // and NumDims is often small, do not break out of loop when underflow == 0.
-    // The underflow == 0 condition causes an effective NOP after occurring.
-    bool underflow = 1;
+    // and NumDims is often small, do not break out of loop when underflow is
+    // false.  The underflow == false condition causes an effective NOP.
+    bool underflow = true;
     #pragma unroll
     for (std::size_t i = 0; i < NumDims; ++i, ++index_order) {
 
@@ -180,6 +180,82 @@ bool decrement(Mutable_RandomAccessIterator indices,
         index     += underflow * max_index;      // Set max_index-1 on outgoing
     }
     return !underflow;
+}
+
+/**
+ * Increment or decrement the next appropriate index in \c indices according
+ * to the directions in \c indices_increasing and the upper bounds given in
+ * \c max_indices.  All parameters must have at least \c NumDims elements.
+ *
+ * @param indices contains current values on input and at least one
+ *                modified value if method returns true.
+ * @param indices_increasing contains the direction in which each index
+ *                should be modified.  Elements must be coercible to type bool.
+ *                Values in \c indices are incremented if the corresponding
+ *                element in \c indices_increasing is true.
+ * @param max_indices contains the upper bounds on each index.
+ * @param index_order contains the order in which the indices should be
+ *                incremented or decremented.
+ *
+ * @pre  <tt>0 <= indices[i] < max_indices[i]</tt> for <tt>0<=i<NumDims</tt>
+ * @pre  <tt>index_order[i] < NumDims</tt> for <tt>0<=i<NumDims</tt>
+ * @post <tt>0 <= indices[i] < max_indices[i]</tt> for <tt>0<=i<NumDims</tt>
+ *
+ * @return true if at least one of \c indices was modified
+ *         and false otherwise.  The contents of \c indices are undefined
+ *         when false is returned.
+ */
+template<std::size_t NumDims,
+         typename Mutable_RandomAccessIterator,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2,
+         typename InputIterator>
+bool increment_or_decrement(
+               Mutable_RandomAccessIterator indices,
+               RandomAccessIterator1 indices_increasing,
+               RandomAccessIterator2 max_indices,
+               InputIterator index_order)
+{
+    BOOST_STATIC_ASSERT(NumDims > 0);
+    BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessIterator<Mutable_RandomAccessIterator>));
+    BOOST_CONCEPT_ASSERT((boost::RandomAccessIterator<RandomAccessIterator1>));
+    BOOST_CONCEPT_ASSERT((boost::RandomAccessIterator<RandomAccessIterator2>));
+    BOOST_CONCEPT_ASSERT((boost::InputIterator<InputIterator>));
+
+    typedef typename std::iterator_traits<
+        Mutable_RandomAccessIterator>::value_type index_type;
+    typedef typename std::iterator_traits<
+        RandomAccessIterator2>::value_type max_index_type;
+    typedef typename std::iterator_traits<
+        InputIterator>::value_type index_order_type;
+
+    BOOST_CONCEPT_ASSERT((boost::Integer<index_type>));
+    BOOST_CONCEPT_ASSERT((boost::Integer<max_index_type>));
+    BOOST_CONCEPT_ASSERT((boost::Integer<index_order_type>));
+
+    // Because we have O(NumDims) integral operations in the fully unrolled
+    // loop and NumDims is O(3), do not break out of loop when carry_bit is
+    // false.  The carry_bit == false condition causes an effective NOP.
+    bool carry_bit = true;
+    #pragma unroll
+    for (std::size_t i = 0; i < NumDims; ++i, ++index_order) {
+
+        index_type           &index        = indices[*index_order];
+        const bool           is_increasing = indices_increasing[*index_order];
+        const max_index_type &max_index    = max_indices[*index_order];
+
+        assert(1 <= max_index);
+        assert(0 <= index);
+        assert(index < max_index);
+
+        index += is_increasing*carry_bit - !is_increasing*carry_bit;
+        const bool overflow  = is_increasing*(index/max_index);
+        const bool underflow = !is_increasing*(index == index_type(-1));
+        index    *= !overflow;             // Set to zero if new overflow
+        index    += underflow * max_index; // Set max_index-1 if new underflow
+        carry_bit = overflow + underflow;
+    }
+    return !carry_bit;
 }
 
 /**
@@ -230,6 +306,40 @@ bool decrement(Mutable_RandomAccessIterator indices,
 {
     return decrement<NumDims>(
             indices, max_indices, boost::make_counting_iterator(0));
+}
+
+/**
+ * Increment or decrement the next appropriate index in \c indices according
+ * to the directions in \c indices_increasing and the upper bounds given in
+ * \c max_indices.  Indices are incremented according to
+ * their position within \c indices with the 0th index being the fastest.
+ *
+ * @param indices contains current values on input and at least
+ *                one modified value if method returns true.
+ * @param indices_increasing contains the direction in which each index
+ *                should be modified.  Elements must be coercible to type bool.
+ *                Values in \c indices are incremented if the corresponding
+ *                element in \c indices_increasing is true.
+ * @param max_indices contains the upper bounds on each index.
+ *
+ * @return true if at least one of \c indices was modified and false
+ *         otherwise.  The contents of \c indices are undefined when
+ *         false is returned.
+ *
+ * @see increment_or_decrement(Mutable_RandomAccessIterator, RandomAccessIterator1, RandomAccessIterator2, InputIterator) for more details.
+ */
+template<std::size_t NumDims,
+         typename Mutable_RandomAccessIterator,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2>
+bool increment_or_decrement(Mutable_RandomAccessIterator indices,
+                            RandomAccessIterator1 indices_increasing,
+                            RandomAccessIterator2 max_indices)
+{
+    return increment_or_decrement<NumDims>(indices,
+                                           indices_increasing,
+                                           max_indices,
+                                           boost::make_counting_iterator(0));
 }
 
 /**

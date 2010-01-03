@@ -291,10 +291,10 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
     using fftw_multi_array::detail::increment;
 
     const int           n     = 2;
-    boost::array<int,n> index_array = {{ 0, 0 }};
-    boost::array<int,n> shape_array = {{ 3, 1 }};
-    boost::array<int,n>::iterator index = index_array.begin();
-    boost::array<int,n>::iterator shape = shape_array.begin();
+    boost::array<int,n> index_array       = {{ 0, 0 }};
+    const boost::array<int,n> shape_array = {{ 3, 1 }};
+    boost::array<int,n>::iterator       index = index_array.begin();
+    boost::array<int,n>::const_iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0));
@@ -430,10 +430,10 @@ BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
 {
     using fftw_multi_array::detail::increment;
 
-    const int                   n               = 3;
-    long                        index[n]        =  { 0, 0, 0 };
-    boost::array<std::size_t,n> shape_array     = {{ 3, 1, 3 }};
-    boost::array<std::size_t,n>::iterator shape = shape_array.begin();
+    const int                                   n           = 3;
+    long                                        index[n]    =  { 0, 0, 0 };
+    const boost::array<std::size_t,n>           shape_array = {{ 3, 1, 3 }};
+    boost::array<std::size_t,n>::const_iterator shape       = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_REQUIRE_EQUAL(index[0], 1);
@@ -890,6 +890,838 @@ BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_1 )
     BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), false);
 }
 
+BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_2 )
+{
+    using fftw_multi_array::detail::decrement;
+
+    const int n = 3;
+    typedef boost::array<int,n> array_type;
+    array_type           index_array = {{ 3, 0, 1 }};
+    array_type::iterator index       = index_array.begin();
+    array_type           shape_array = {{ 4, 1, 2 }};
+    array_type::iterator shape       = shape_array.begin();
+    array_type           order_array = {{ 2, 1, 0 }};
+    array_type::iterator order       = order_array.begin();
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), false);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( increment_or_decrement )
+
+BOOST_AUTO_TEST_CASE( increment_1d_degenerate )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int  n             = 1;
+    int        index[n]      = { 0 };
+    const bool increasing[n] = { true };
+    const int  shape[n]      = { 1 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_1d_normal )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int  n             = 1;
+    int        index[n]      = { 0 };
+    const bool increasing[n] = { true };
+    const int  shape[n]      = { 3 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_1d_normal_unsigned )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const unsigned int n             = 1;
+    unsigned int       index[n]      = { 0 };
+    const bool         increasing[n] = { true };
+    const unsigned int shape[n]      = { 3 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int           n     = 2;
+    boost::array<int,n> index_array                = {{ 0, 0 }};
+    const boost::array<int,n> increasing_array     = {{ 1, 1 }};
+    const boost::array<int,n> shape_array          = {{ 3, 1 }};
+    boost::array<int,n>::iterator index            = index_array.begin();
+    boost::array<int,n>::const_iterator increasing = increasing_array.begin();
+    boost::array<int,n>::const_iterator shape      = shape_array.begin();
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0));
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0));
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int n = 2;
+    boost::array<int, n> index_array                = {{ 0, 0 }};
+    const boost::array<bool,n> increasing_array     = {{ true, true }};
+    boost::array<std::size_t,n> shape_array         = {{ 1, 3 }};
+    boost::array<int, n>::iterator index            = index_array.begin();
+    boost::array<bool,n>::const_iterator increasing = increasing_array.begin();
+    boost::array<std::size_t,n>::iterator shape     = shape_array.begin();
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(1));
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(2));
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_2d_degenerate_all )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int  n             = 2;
+    int        index[n]      = { 0, 0 };
+    bool       increasing[n] = { true, true };
+    const long shape[n]      = { 1, 1 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_2d_normal )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int    n             = 2;
+    unsigned int index[n]      = { 0, 0 };
+    unsigned int increasing[n] = { 5, 57 };
+    unsigned int shape[n]      = { 2, 3 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_2d_normal_usualorder )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int    n             = 2;
+    unsigned int index[n]      = { 0, 0 };
+    unsigned int increasing[n] = { 5, 57 };
+    unsigned int shape[n]      = { 2, 3 };
+    unsigned int order[n]      = { 0, 1 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_2d_normal_reverseorder )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int    n             = 2;
+    unsigned int index[n]      = { 0, 0 };
+    const bool   increasing[n] = { true, true };
+    unsigned int shape[n]      = { 2, 3 };
+    unsigned int order[n]      = { 1, 0 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_3d_degenerate_all )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int         n             = 3;
+    signed int        index[n]      = { 0, 0, 0 };
+    const signed long increasing[n] = { 1, 1, 1 };
+    const signed long shape[n]      = { 1, 1, 1 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int n = 3;
+    long index[n] = { 0, 0, 0 };
+    boost::array<std::size_t,n> increasing_array = {{ 3, 1, 3 }};
+    boost::array<std::size_t,n>::const_iterator increasing = increasing_array.begin();
+    const boost::array<std::size_t,n> shape_array = {{ 3, 1, 3 }};
+    boost::array<std::size_t,n>::const_iterator shape = shape_array.begin();
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_3d_normal )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int n = 3;
+    std::vector<short> index_array(n, 0);
+    const std::vector<bool>  increasing_array(n, 1);
+    const std::vector<int>   shape_array(n, 2);
+    std::vector<short>::iterator      index      = index_array.begin();
+    std::vector<bool>::const_iterator increasing = increasing_array.begin();
+    std::vector<int>::const_iterator  shape      = shape_array.begin();
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( increment_3d_normal_outoforder )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int n = 3;
+    boost::array<short,3> index_array            = {{ 0, 0, 0 }};
+    const boost::array<long,3>  increasing_array = {{ -1, -1, -1 }};
+    const boost::array<int,3>   shape_array      = {{ 2, 1, 3 }};
+    const boost::array<long,3>  order_array      = {{ 2, 0, 1 }};
+
+
+    boost::array<short,3>::iterator index = index_array.begin();
+    boost::array<long,3>::const_iterator increasing = increasing_array.begin();
+    boost::array<int,3>::const_iterator  shape = shape_array.begin();
+    boost::array<long,3>::const_iterator order = order_array.begin();
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_1d_degenerate )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int n             = 1;
+    int       index[n]      = { 0 };
+    int       increasing[n] = { 0 };
+    const int shape[n]      = { 1 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_1d_normal )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int n             = 1;
+    int       index[n]      = { 2 };
+    int       increasing[n] = { 0 };
+    const int shape[n]      = { 3 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_1d_normal_unsigned )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const unsigned int n             = 1;
+    unsigned int       index[n]      = { 2 };
+    unsigned int       increasing[n] = { 0 };
+    const unsigned int shape[n]      = { 3 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_first )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int n = 2;
+    boost::array<int,n> index_array = {{ 2, 0 }};
+    const boost::array<int,n> increasing_array = {{ 0, 0 }};
+    const boost::array<int,n> shape_array = {{ 3, 1 }};
+    boost::array<int,n>::iterator index = index_array.begin();
+    boost::array<int,n>::const_iterator increasing = increasing_array.begin();
+    boost::array<int,n>::const_iterator shape = shape_array.begin();
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_second )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int n = 2;
+    boost::array<int, n> index_array            = {{ 0, 2 }};
+    const bool increasing[n]                    = { false, false };
+    boost::array<std::size_t,n> shape_array     = {{ 1, 3 }};
+    boost::array<int, n>::iterator index        = index_array.begin();
+    boost::array<std::size_t,n>::iterator shape = shape_array.begin();
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_all )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int  n             = 2;
+    int        index[n]      = { 0, 0 };
+    const int  increasing[n] = { 0, 0 };
+    const long shape[n]      = { 1, 1 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_2d_normal )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int    n             = 2;
+    unsigned int index[n]      = { 1, 2 };
+    unsigned int increasing[n] = { 0, 0 };
+    unsigned int shape[n]      = { 2, 3 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_2d_normal_usualorder )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int    n             = 2;
+    unsigned int index[n]      = { 1, 2 };
+    unsigned int increasing[n] = { 0, 0 };
+    unsigned int shape[n]      = { 2, 3 };
+    unsigned int order[n]      = { 0, 1 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_2d_normal_reverseorder )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int          n             = 2;
+    unsigned int       index[n]      = { 1, 2 };
+    const unsigned int increasing[n] = { 0, 0 };
+    const unsigned int shape[n]      = { 2, 3 };
+    const unsigned int order[n]      = { 1, 0 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_all )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int         n             = 3;
+    signed int        index[n]      = { 0, 0, 0 };
+    const signed long increasing[n] = { 0, 0, 0 };
+    const signed long shape[n]      = { 1, 1, 1 };
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_middle )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int                   n               = 3;
+    long                        index[n]         =  { 2, 0, 2 };
+    boost::array<std::size_t,n> increasing_array = {{ 0, 0, 0 }};
+    boost::array<std::size_t,n> shape_array      = {{ 3, 1, 3 }};
+    boost::array<std::size_t,n>::const_iterator increasing = increasing_array.begin();
+    boost::array<std::size_t,n>::const_iterator shape = shape_array.begin();
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 2);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_3d_normal )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int n = 3;
+    std::vector<short> index_array(n, 1);
+    std::vector<short> increasing_array(n, 0);
+    std::vector<int> shape_array(n, 2);
+    std::vector<short>::iterator index = index_array.begin();
+    std::vector<short>::const_iterator increasing = increasing_array.begin();
+    std::vector<int>::const_iterator shape = shape_array.begin();
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 1);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape), false);
+}
+
+BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
+{
+    using fftw_multi_array::detail::increment_or_decrement;
+
+    const int n = 3;
+    boost::array<short,3> index_array = {{ 1, 0, 2 }};
+    boost::array<bool,3> increasing_array = {{ false, false, false }};
+    boost::array<int,3> shape_array = {{ 2, 1, 3 }};
+    boost::array<long,3> order_array = {{ 2, 0, 1 }};
+
+    boost::array<short,3>::iterator index = index_array.begin();
+    boost::array<bool,3>::iterator increasing = increasing_array.begin();
+    boost::array<int,3>::iterator shape = shape_array.begin();
+    boost::array<long,3>::iterator order = order_array.begin();
+
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 1);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 2);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 1);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index[0], 0);
+    BOOST_REQUIRE_EQUAL(index[1], 0);
+    BOOST_REQUIRE_EQUAL(index[2], 0);
+    BOOST_REQUIRE_EQUAL(
+        increment_or_decrement<n>(index,increasing,shape,order), false);
+}
+
+// FIXME STARTHERE Mixed increment/decrement
+BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_1 )
+{
+    using fftw_multi_array::detail::decrement;
+
+    const int n = 3;
+    typedef boost::array<int,n> array_type;
+    array_type           index_array = {{ 3, 0, 1 }};
+    array_type::iterator index       = index_array.begin();
+    array_type           shape_array = {{ 4, 1, 2 }};
+    array_type::iterator shape       = shape_array.begin();
+    array_type           order_array = {{ 0, 1, 2 }};
+    array_type::iterator order       = order_array.begin();
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(1));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
+    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+
+    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), false);
+}
+
+// FIXME STARTHERE Mixed increment/decrement
 BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_2 )
 {
     using fftw_multi_array::detail::decrement;
