@@ -4,13 +4,18 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/assign.hpp>
+#include <boost/mpl/list_c.hpp>
 #include <boost/test/included/unit_test.hpp>
+#include <boost/test/test_case_template.hpp>
 #include <fftw3.h>
 #include "test_tools.hpp"
+
+typedef boost::mpl::list_c<int,0,1> int_zero_one_type;
 
 using namespace suzerain;
 
 BOOST_AUTO_TEST_SUITE( integer_power )
+
 BOOST_AUTO_TEST_CASE( detail_integer_power )
 {
     using fftw_multi_array::detail::integer_power;
@@ -1683,80 +1688,320 @@ BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
         increment_or_decrement<n>(index,increasing,shape,order), false);
 }
 
-// FIXME STARTHERE Mixed increment/decrement
-BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_1 )
+BOOST_AUTO_TEST_CASE_TEMPLATE( increment_or_decrement_3d_spot_check_behavior_1, ASCENDING, int_zero_one_type )
 {
-    using fftw_multi_array::detail::decrement;
-
+    using fftw_multi_array::detail::increment_or_decrement;
     const int n = 3;
     typedef boost::array<int,n> array_type;
-    array_type           index_array = {{ 3, 0, 1 }};
-    array_type::iterator index       = index_array.begin();
-    array_type           shape_array = {{ 4, 1, 2 }};
-    array_type::iterator shape       = shape_array.begin();
-    array_type           order_array = {{ 0, 1, 2 }};
-    array_type::iterator order       = order_array.begin();
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(1));
+    const array_type           shape_array = {{ 4, 1, 2 }};
+    array_type::const_iterator shape       = shape_array.begin();
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(1));
+    {
+        array_type       index_array      = {{ 0, 0, 1 }};
+        const array_type increasing_array = {{ 1, ASCENDING::type::value, 0 }};
+        const array_type order_array      = {{ 0, 1, 2 }};
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(1));
+        array_type::iterator       index      = index_array.begin();
+        array_type::const_iterator increasing = increasing_array.begin();
+        array_type::const_iterator order      = order_array.begin();
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(0));
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(1));
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(0));
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(1));
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(0));
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(1));
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), false);
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), false);
+    }
+
+    {
+        array_type       index_array      = {{ 0, 0, 1 }};
+        const array_type increasing_array = {{ 1, ASCENDING::type::value, 0 }};
+        const array_type order_array      = {{ 2, 1, 0 }};
+
+        array_type::iterator       index      = index_array.begin();
+        array_type::const_iterator increasing = increasing_array.begin();
+        array_type::const_iterator order      = order_array.begin();
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), false);
+    }
+
+    {
+        array_type       index_array      = {{ 3, 0, 0 }};
+        const array_type increasing_array = {{ 0, ASCENDING::type::value, 1 }};
+        const array_type order_array      = {{ 1, 0, 2 }};
+
+        array_type::iterator       index      = index_array.begin();
+        array_type::const_iterator increasing = increasing_array.begin();
+        array_type::const_iterator order      = order_array.begin();
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), false);
+    }
+
+    {
+        array_type       index_array      = {{ 3, 0, 0 }};
+        const array_type increasing_array = {{ 0, ASCENDING::type::value, 1 }};
+        const array_type order_array      = {{ 2, 0, 1 }};
+
+        array_type::iterator       index      = index_array.begin();
+        array_type::const_iterator increasing = increasing_array.begin();
+        array_type::const_iterator order      = order_array.begin();
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), false);
+    }
 }
 
-// FIXME STARTHERE Mixed increment/decrement
-BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_2 )
+BOOST_AUTO_TEST_CASE_TEMPLATE( increment_or_decrement_3d_spot_check_behavior_2, ASCENDING, int_zero_one_type )
 {
-    using fftw_multi_array::detail::decrement;
-
+    using fftw_multi_array::detail::increment_or_decrement;
     const int n = 3;
     typedef boost::array<int,n> array_type;
-    array_type           index_array = {{ 3, 0, 1 }};
-    array_type::iterator index       = index_array.begin();
-    array_type           shape_array = {{ 4, 1, 2 }};
-    array_type::iterator shape       = shape_array.begin();
-    array_type           order_array = {{ 2, 1, 0 }};
-    array_type::iterator order       = order_array.begin();
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(3)(0)(0));
+    const array_type           shape_array = {{ 1, 3, 2 }};
+    array_type::const_iterator shape       = shape_array.begin();
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(1));
+    {
+        array_type       index_array      = {{ 0, 0, 1 }};
+        const array_type increasing_array = {{ ASCENDING::type::value, 1, 0 }};
+        const array_type order_array      = {{ 0, 1, 2 }};
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(2)(0)(0));
+        array_type::iterator       index      = index_array.begin();
+        array_type::const_iterator increasing = increasing_array.begin();
+        array_type::const_iterator order      = order_array.begin();
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(1));
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(1)(1));
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(1)(0)(0));
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(2)(1));
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(1));
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
-    BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(1)(0));
 
-    BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), false);
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(2)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), false);
+    }
+
+    {
+        array_type       index_array      = {{ 0, 0, 1 }};
+        const array_type increasing_array = {{ ASCENDING::type::value, 1, 0 }};
+        const array_type order_array      = {{ 2, 1, 0 }};
+
+        array_type::iterator       index      = index_array.begin();
+        array_type::const_iterator increasing = increasing_array.begin();
+        array_type::const_iterator order      = order_array.begin();
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(1)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(1)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(2)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_REQUIRE_EQUAL(index_array, boost::assign::list_of(0)(2)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), false);
+    }
+
+    {
+        array_type       index_array      = {{ 0, 2, 0 }};
+        const array_type increasing_array = {{ ASCENDING::type::value, 0, 1 }};
+        const array_type order_array      = {{ 0, 1, 2 }};
+
+        array_type::iterator       index      = index_array.begin();
+        array_type::const_iterator increasing = increasing_array.begin();
+        array_type::const_iterator order      = order_array.begin();
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(1)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(2)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(1)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), false);
+    }
+
+    {
+        array_type       index_array      = {{ 0, 2, 0 }};
+        const array_type increasing_array = {{ ASCENDING::type::value, 0, 1 }};
+        const array_type order_array      = {{ 0, 2, 1 }};
+
+        array_type::iterator       index      = index_array.begin();
+        array_type::const_iterator increasing = increasing_array.begin();
+        array_type::const_iterator order      = order_array.begin();
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(2)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(1)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(1)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(0)(0));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), true);
+        BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(0)(1));
+
+        BOOST_REQUIRE_EQUAL(
+            increment_or_decrement<n>(index,increasing,shape,order), false);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
