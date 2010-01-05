@@ -210,11 +210,10 @@ template<std::size_t NumDims,
          typename RandomAccessIterator1,
          typename RandomAccessIterator2,
          typename InputIterator>
-bool increment_or_decrement(
-               Mutable_RandomAccessIterator indices,
-               RandomAccessIterator1 indices_increasing,
-               RandomAccessIterator2 max_indices,
-               InputIterator index_order)
+bool crement(Mutable_RandomAccessIterator indices,
+             RandomAccessIterator1 indices_increasing,
+             RandomAccessIterator2 max_indices,
+             InputIterator index_order)
 {
     BOOST_STATIC_ASSERT(NumDims > 0);
     BOOST_CONCEPT_ASSERT((boost::Mutable_RandomAccessIterator<Mutable_RandomAccessIterator>));
@@ -326,20 +325,20 @@ bool decrement(Mutable_RandomAccessIterator indices,
  *         otherwise.  The contents of \c indices are undefined when
  *         false is returned.
  *
- * @see increment_or_decrement(Mutable_RandomAccessIterator, RandomAccessIterator1, RandomAccessIterator2, InputIterator) for more details.
+ * @see crement(Mutable_RandomAccessIterator, RandomAccessIterator1, RandomAccessIterator2, InputIterator) for more details.
  */
 template<std::size_t NumDims,
          typename Mutable_RandomAccessIterator,
          typename RandomAccessIterator1,
          typename RandomAccessIterator2>
-bool increment_or_decrement(Mutable_RandomAccessIterator indices,
-                            RandomAccessIterator1 indices_increasing,
-                            RandomAccessIterator2 max_indices)
+bool crement(Mutable_RandomAccessIterator indices,
+             RandomAccessIterator1 indices_increasing,
+             RandomAccessIterator2 max_indices)
 {
-    return increment_or_decrement<NumDims>(indices,
-                                           indices_increasing,
-                                           max_indices,
-                                           boost::make_counting_iterator(0));
+    return crement<NumDims>(indices,
+                            indices_increasing,
+                            max_indices,
+                            boost::make_counting_iterator(0));
 }
 
 /**
