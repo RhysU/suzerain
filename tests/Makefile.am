@@ -84,6 +84,11 @@ test_timestepper_LDADD   += $(GSL_LIBS)
 test_timestepper_LDADD   += $(MKL_LIBS)
 test_timestepper_LDADD   += ../suzerain/libsuzerain.la
 
+check_PROGRAMS           += test_multi_array
+test_multi_array_SOURCES  = test_multi_array.cpp
+test_multi_array_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_multi_array_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 check_PROGRAMS       += test_fftw_1D
 test_fftw_1D_SOURCES  = test_fftw_1D.cpp
 test_fftw_1D_LDADD    = $(FFTW3_LIBS)

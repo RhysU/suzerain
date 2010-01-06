@@ -65,6 +65,7 @@
 #include <boost/integer_traits.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
+#include <boost/mpl/list.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/numeric/conversion/converter.hpp>
