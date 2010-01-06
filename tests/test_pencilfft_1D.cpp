@@ -1,6 +1,6 @@
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
-#include <suzerain/fftw_multi_array.hpp>
+#include <suzerain/pencilfft.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
@@ -89,7 +89,7 @@ void fill_with_complex_NaN(ComplexMultiArray &x)
 {
     typedef typename ComplexMultiArray::element element;
     element NaN_value;
-    typedef typename fftw_multi_array::detail::transform_traits<
+    typedef typename pencilfft::detail::transform_traits<
             element>::real_type real_type;
     const real_type quiet_NaN = std::numeric_limits<real_type>::quiet_NaN();
 
@@ -125,7 +125,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
-    typedef typename fftw_multi_array::detail::transform_traits<
+    typedef typename pencilfft::detail::transform_traits<
         typename ComplexMultiArray1::element>::real_type real_type;
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
@@ -140,7 +140,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         suzerain::complex::assign_complex(in[i],
                 real_test_function<real_type>(NR, (NR+1)/2, i, shift), 0.0);
     }
-    fftw_multi_array::forward_c2c(0, in, out);
+    pencilfft::forward_c2c(0, in, out);
 
     // Real input should exhibit conjugate symmetry in wave space...
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) { // ...up to grid modes
@@ -171,7 +171,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         suzerain::complex::assign_complex(in[i], 0.0,
                 real_test_function<real_type>(NR, (NR+1)/2, i, shift));
     }
-    fftw_multi_array::forward_c2c(0, in, out);
+    pencilfft::forward_c2c(0, in, out);
 
     // Imaginary input should exhibit a similar symmetry in wave space...
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
@@ -203,7 +203,7 @@ void check_1D_forward_r2c(RealMultiArray &in, ComplexMultiArray &out)
 {
     BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
-    typedef typename fftw_multi_array::detail::transform_traits<
+    typedef typename pencilfft::detail::transform_traits<
         typename ComplexMultiArray::element>::real_type real_type;
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
@@ -216,7 +216,7 @@ void check_1D_forward_r2c(RealMultiArray &in, ComplexMultiArray &out)
     for (int i = 0; i < NR; ++i) {
         in[i] = real_test_function<real_type>(NR, (NR+1)/2, i, shift);
     }
-    fftw_multi_array::forward_r2c(0, in, out);
+    pencilfft::forward_r2c(0, in, out);
 
     // We should see the expected frequency content up to grid modes
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
@@ -285,7 +285,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
 
     // Transform input FFTW directly and also our wrapper
     fftw_execute(plan.get());  // Important to be first for in == out
-    fftw_multi_array::forward_c2c(0, in, out);
+    pencilfft::forward_c2c(0, in, out);
 
     // Ensure we got the same result, up to scaling differences
     for (int i = 0; i < NR; ++i) {
@@ -313,7 +313,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
-    typedef typename fftw_multi_array::detail::transform_traits<
+    typedef typename pencilfft::detail::transform_traits<
         typename ComplexMultiArray2::element>::real_type real_type;
     const int NC = in.shape()[0];
     const int NR = out.shape()[0];
@@ -332,7 +332,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     }
     // TODO Test behavior of highest even half mode
 
-    fftw_multi_array::backward_c2c(0, in, out);
+    pencilfft::backward_c2c(0, in, out);
 
     // Output should be a real-valued function in physical space...
     for (int i = 0; i < NR; ++i) {
@@ -361,7 +361,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     }
     // TODO Test behavior of highest even half mode
 
-    fftw_multi_array::backward_c2c(0, in, out);
+    pencilfft::backward_c2c(0, in, out);
 
     // Output should be an imaginary-valued function in physical space...
     for (int i = 0; i < NR; ++i) {
@@ -385,7 +385,7 @@ void check_1D_backward_c2r(ComplexMultiArray &in, RealMultiArray &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
     BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
-    typedef typename fftw_multi_array::detail::transform_traits<
+    typedef typename pencilfft::detail::transform_traits<
         typename ComplexMultiArray::element>::real_type real_type;
     const int NC = in.shape()[0];
     const int NR = out.shape()[0];
@@ -404,7 +404,7 @@ void check_1D_backward_c2r(ComplexMultiArray &in, RealMultiArray &out)
     }
     // TODO Test behavior of highest even half mode
 
-    fftw_multi_array::backward_c2r(0, in, out);
+    pencilfft::backward_c2r(0, in, out);
 
     // Output should be the expected function
     for (int i = 0; i < NR; ++i) {
@@ -475,7 +475,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     for (int i = 0; i < NC; ++i) {
         suzerain::complex::assign_complex_scaled(in[i], in[i], 1.0/NC);
     }
-    fftw_multi_array::backward_c2c(0, in, out);
+    pencilfft::backward_c2c(0, in, out);
 
     // Ensure we got exactly the same result after normalization
     for (int i = 0; i < NR; ++i) {
@@ -514,10 +514,10 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
             }
 
             // Forward transform and differentiate
-            fftw_multi_array::forward_c2c(0, in, out, length[l], derivative);
+            pencilfft::forward_c2c(0, in, out, length[l], derivative);
 
             // Backwards transform without differentiating
-            fftw_multi_array::backward_c2c(0, out, in, length[l], 0);
+            pencilfft::backward_c2c(0, out, in, length[l], 0);
 
             // Ensure we see what we expect
             for (int i = 0; i < NR; ++i) {
@@ -565,10 +565,10 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
             }
 
             // Forward transform without differentiating
-            fftw_multi_array::forward_c2c(0, in, out, length[l], 0);
+            pencilfft::forward_c2c(0, in, out, length[l], 0);
 
             // Backwards transform and differentiate
-            fftw_multi_array::backward_c2c(0, out, in, length[l], derivative);
+            pencilfft::backward_c2c(0, out, in, length[l], derivative);
 
             // Ensure we see what we expect as the derivative
             for (int i = 0; i < NR; ++i) {
@@ -615,10 +615,10 @@ void differentiate_on_forward_1D_r2c(RealMultiArray &in,
             }
 
             // Forward transform and differentiate
-            fftw_multi_array::forward_r2c(0, in, out, length[l], derivative);
+            pencilfft::forward_r2c(0, in, out, length[l], derivative);
 
             // Backwards transform without differentiating
-            fftw_multi_array::backward_c2r(0, out, in, length[l], 0);
+            pencilfft::backward_c2r(0, out, in, length[l], 0);
 
             // Ensure we see what we expect
             for (int i = 0; i < NR; ++i) {
@@ -661,10 +661,10 @@ void differentiate_on_backward_1D_c2r(RealMultiArray &in,
             }
 
             // Forward transform without differentiating
-            fftw_multi_array::forward_r2c(0, in, out, length[l], 0);
+            pencilfft::forward_r2c(0, in, out, length[l], 0);
 
             // Backward transform and differentiate
-            fftw_multi_array::backward_c2r(0, out, in, length[l], derivative);
+            pencilfft::backward_c2r(0, out, in, length[l], derivative);
 
             // Ensure we see what we expect
             for (int i = 0; i < NR; ++i) {

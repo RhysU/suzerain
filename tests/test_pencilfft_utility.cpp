@@ -1,6 +1,6 @@
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
-#include <suzerain/fftw_multi_array.hpp>
+#include <suzerain/pencilfft.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/assign.hpp>
@@ -16,10 +16,10 @@ using namespace suzerain;
 
 BOOST_AUTO_TEST_SUITE( increment )
 
+using pencilfft::detail::increment;
+
 BOOST_AUTO_TEST_CASE( increment_1d_degenerate )
 {
-    using fftw_multi_array::detail::increment;
-
     const int n        = 1;
     int       index[n] = { 0 };
     const int shape[n] = { 1 };
@@ -29,8 +29,6 @@ BOOST_AUTO_TEST_CASE( increment_1d_degenerate )
 
 BOOST_AUTO_TEST_CASE( increment_1d_normal )
 {
-    using fftw_multi_array::detail::increment;
-
     const int n        = 1;
     int       index[n] = { 0 };
     const int shape[n] = { 3 };
@@ -44,8 +42,6 @@ BOOST_AUTO_TEST_CASE( increment_1d_normal )
 
 BOOST_AUTO_TEST_CASE( increment_1d_normal_unsigned )
 {
-    using fftw_multi_array::detail::increment;
-
     const unsigned int n        = 1;
     unsigned int       index[n] = { 0 };
     const unsigned int shape[n] = { 3 };
@@ -59,8 +55,6 @@ BOOST_AUTO_TEST_CASE( increment_1d_normal_unsigned )
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
 {
-    using fftw_multi_array::detail::increment;
-
     const int           n     = 2;
     boost::array<int,n> index_array       = {{ 0, 0 }};
     const boost::array<int,n> shape_array = {{ 3, 1 }};
@@ -78,8 +72,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
 {
-    using fftw_multi_array::detail::increment;
-
     const int                   n     = 2;
     boost::array<int, n> index_array            = {{ 0, 0 }};
     boost::array<std::size_t,n> shape_array     = {{ 1, 3 }};
@@ -97,8 +89,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_all )
 {
-    using fftw_multi_array::detail::increment;
-
     const int  n        = 2;
     int        index[n] = { 0, 0 };
     const long shape[n] = { 1, 1 };
@@ -108,8 +98,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( increment_2d_normal )
 {
-    using fftw_multi_array::detail::increment;
-
     const int    n        = 2;
     unsigned int index[n] = { 0, 0 };
     unsigned int shape[n] = { 2, 3 };
@@ -134,8 +122,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_normal )
 
 BOOST_AUTO_TEST_CASE( increment_2d_normal_usualorder )
 {
-    using fftw_multi_array::detail::increment;
-
     const int    n        = 2;
     unsigned int index[n] = { 0, 0 };
     unsigned int shape[n] = { 2, 3 };
@@ -161,8 +147,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_normal_usualorder )
 
 BOOST_AUTO_TEST_CASE( increment_2d_normal_reverseorder )
 {
-    using fftw_multi_array::detail::increment;
-
     const int    n        = 2;
     unsigned int index[n] = { 0, 0 };
     unsigned int shape[n] = { 2, 3 };
@@ -188,8 +172,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_normal_reverseorder )
 
 BOOST_AUTO_TEST_CASE( increment_3d_degenerate_all )
 {
-    using fftw_multi_array::detail::increment;
-
     const int         n        = 3;
     signed int        index[n] = { 0, 0, 0 };
     const signed long shape[n] = { 1, 1, 1 };
@@ -199,8 +181,6 @@ BOOST_AUTO_TEST_CASE( increment_3d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
 {
-    using fftw_multi_array::detail::increment;
-
     const int                                   n           = 3;
     long                                        index[n]    =  { 0, 0, 0 };
     const boost::array<std::size_t,n>           shape_array = {{ 3, 1, 3 }};
@@ -243,8 +223,6 @@ BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
 
 BOOST_AUTO_TEST_CASE( increment_3d_normal )
 {
-    using fftw_multi_array::detail::increment;
-
     const int n = 3;
     std::vector<short> index_array(n, 0);
     std::vector<int>   shape_array(n, 2);
@@ -284,8 +262,6 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
 
 BOOST_AUTO_TEST_CASE( increment_3d_normal_outoforder )
 {
-    using fftw_multi_array::detail::increment;
-
     const int n = 3;
     boost::array<short,3> index_array = {{ 0, 0, 0 }};
     boost::array<int,3>   shape_array = {{ 2, 1, 3 }};
@@ -322,10 +298,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( decrement )
 
+using pencilfft::detail::decrement;
+
 BOOST_AUTO_TEST_CASE( decrement_1d_degenerate )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int n        = 1;
     int       index[n] = { 0 };
     const int shape[n] = { 1 };
@@ -335,8 +311,6 @@ BOOST_AUTO_TEST_CASE( decrement_1d_degenerate )
 
 BOOST_AUTO_TEST_CASE( decrement_1d_normal )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int n        = 1;
     int       index[n] = { 2 };
     const int shape[n] = { 3 };
@@ -350,8 +324,6 @@ BOOST_AUTO_TEST_CASE( decrement_1d_normal )
 
 BOOST_AUTO_TEST_CASE( decrement_1d_normal_unsigned )
 {
-    using fftw_multi_array::detail::decrement;
-
     const unsigned int n        = 1;
     unsigned int       index[n] = { 2 };
     const unsigned int shape[n] = { 3 };
@@ -365,8 +337,6 @@ BOOST_AUTO_TEST_CASE( decrement_1d_normal_unsigned )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_first )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int n = 2;
     boost::array<int,n> index_array = {{ 2, 0 }};
     boost::array<int,n> shape_array = {{ 3, 1 }};
@@ -384,8 +354,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_first )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_second )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int n = 2;
     boost::array<int, n> index_array            = {{ 0, 2 }};
     boost::array<std::size_t,n> shape_array     = {{ 1, 3 }};
@@ -403,8 +371,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_second )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_all )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int  n        = 2;
     int        index[n] = { 0, 0 };
     const long shape[n] = { 1, 1 };
@@ -414,8 +380,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_normal )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int    n        = 2;
     unsigned int index[n] = { 1, 2 };
     unsigned int shape[n] = { 2, 3 };
@@ -440,8 +404,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_normal )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_normal_usualorder )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int    n        = 2;
     unsigned int index[n] = { 1, 2 };
     unsigned int shape[n] = { 2, 3 };
@@ -467,8 +429,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_normal_usualorder )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_normal_reverseorder )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int    n        = 2;
     unsigned int index[n] = { 1, 2 };
     unsigned int shape[n] = { 2, 3 };
@@ -494,8 +454,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_normal_reverseorder )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_all )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int         n        = 3;
     signed int        index[n] = { 0, 0, 0 };
     const signed long shape[n] = { 1, 1, 1 };
@@ -505,8 +463,6 @@ BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_middle )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int                   n               = 3;
     long                        index[n]        =  { 2, 0, 2 };
     boost::array<std::size_t,n> shape_array     = {{ 3, 1, 3 }};
@@ -549,8 +505,6 @@ BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_middle )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_normal )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int n = 3;
     std::vector<short> index_array(n, 1);
     std::vector<int>   shape_array(n, 2);
@@ -590,8 +544,6 @@ BOOST_AUTO_TEST_CASE( decrement_3d_normal )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int n = 3;
     boost::array<short,3> index_array = {{ 1, 0, 2 }};
     boost::array<int,3>   shape_array = {{ 2, 1, 3 }};
@@ -626,8 +578,6 @@ BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_1 )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int n = 3;
     typedef boost::array<int,n> array_type;
     array_type           index_array = {{ 3, 0, 1 }};
@@ -663,8 +613,6 @@ BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_1 )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_2 )
 {
-    using fftw_multi_array::detail::decrement;
-
     const int n = 3;
     typedef boost::array<int,n> array_type;
     array_type           index_array = {{ 3, 0, 1 }};
@@ -702,10 +650,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( crement )
 
+using pencilfft::detail::crement;
+
 BOOST_AUTO_TEST_CASE( increment_1d_degenerate )
 {
-    using fftw_multi_array::detail::crement;
-
     const int  n             = 1;
     int        index[n]      = { 0 };
     const bool increasing[n] = { true };
@@ -716,8 +664,6 @@ BOOST_AUTO_TEST_CASE( increment_1d_degenerate )
 
 BOOST_AUTO_TEST_CASE( increment_1d_normal )
 {
-    using fftw_multi_array::detail::crement;
-
     const int  n             = 1;
     int        index[n]      = { 0 };
     const bool increasing[n] = { true };
@@ -732,8 +678,6 @@ BOOST_AUTO_TEST_CASE( increment_1d_normal )
 
 BOOST_AUTO_TEST_CASE( increment_1d_normal_unsigned )
 {
-    using fftw_multi_array::detail::crement;
-
     const unsigned int n             = 1;
     unsigned int       index[n]      = { 0 };
     const bool         increasing[n] = { true };
@@ -748,8 +692,6 @@ BOOST_AUTO_TEST_CASE( increment_1d_normal_unsigned )
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
 {
-    using fftw_multi_array::detail::crement;
-
     const int           n     = 2;
     boost::array<int,n> index_array                = {{ 0, 0 }};
     const boost::array<int,n> increasing_array     = {{ 1, 1 }};
@@ -769,8 +711,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
 {
-    using fftw_multi_array::detail::crement;
-
     const int n = 2;
     boost::array<int, n> index_array                = {{ 0, 0 }};
     const boost::array<bool,n> increasing_array     = {{ true, true }};
@@ -790,8 +730,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_all )
 {
-    using fftw_multi_array::detail::crement;
-
     const int  n             = 2;
     int        index[n]      = { 0, 0 };
     bool       increasing[n] = { true, true };
@@ -802,8 +740,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( increment_2d_normal )
 {
-    using fftw_multi_array::detail::crement;
-
     const int    n             = 2;
     unsigned int index[n]      = { 0, 0 };
     unsigned int increasing[n] = { 5, 57 };
@@ -829,8 +765,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_normal )
 
 BOOST_AUTO_TEST_CASE( increment_2d_normal_usualorder )
 {
-    using fftw_multi_array::detail::crement;
-
     const int    n             = 2;
     unsigned int index[n]      = { 0, 0 };
     unsigned int increasing[n] = { 5, 57 };
@@ -857,8 +791,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_normal_usualorder )
 
 BOOST_AUTO_TEST_CASE( increment_2d_normal_reverseorder )
 {
-    using fftw_multi_array::detail::crement;
-
     const int    n             = 2;
     unsigned int index[n]      = { 0, 0 };
     const bool   increasing[n] = { true, true };
@@ -885,8 +817,6 @@ BOOST_AUTO_TEST_CASE( increment_2d_normal_reverseorder )
 
 BOOST_AUTO_TEST_CASE( increment_3d_degenerate_all )
 {
-    using fftw_multi_array::detail::crement;
-
     const int         n             = 3;
     signed int        index[n]      = { 0, 0, 0 };
     const signed long increasing[n] = { 1, 1, 1 };
@@ -897,8 +827,6 @@ BOOST_AUTO_TEST_CASE( increment_3d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
 {
-    using fftw_multi_array::detail::crement;
-
     const int n = 3;
     long index[n] = { 0, 0, 0 };
     boost::array<std::size_t,n> increasing_array = {{ 3, 1, 3 }};
@@ -943,8 +871,6 @@ BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
 
 BOOST_AUTO_TEST_CASE( increment_3d_normal )
 {
-    using fftw_multi_array::detail::crement;
-
     const int n = 3;
     std::vector<short> index_array(n, 0);
     const std::vector<bool>  increasing_array(n, 1);
@@ -986,8 +912,6 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
 
 BOOST_AUTO_TEST_CASE( increment_3d_normal_outoforder )
 {
-    using fftw_multi_array::detail::crement;
-
     const int n = 3;
     boost::array<short,3> index_array            = {{ 0, 0, 0 }};
     const boost::array<long,3>  increasing_array = {{ -1, -1, -1 }};
@@ -1025,8 +949,6 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal_outoforder )
 
 BOOST_AUTO_TEST_CASE( decrement_1d_degenerate )
 {
-    using fftw_multi_array::detail::crement;
-
     const int n             = 1;
     int       index[n]      = { 0 };
     int       increasing[n] = { 0 };
@@ -1038,8 +960,6 @@ BOOST_AUTO_TEST_CASE( decrement_1d_degenerate )
 
 BOOST_AUTO_TEST_CASE( decrement_1d_normal )
 {
-    using fftw_multi_array::detail::crement;
-
     const int n             = 1;
     int       index[n]      = { 2 };
     int       increasing[n] = { 0 };
@@ -1054,8 +974,6 @@ BOOST_AUTO_TEST_CASE( decrement_1d_normal )
 
 BOOST_AUTO_TEST_CASE( decrement_1d_normal_unsigned )
 {
-    using fftw_multi_array::detail::crement;
-
     const unsigned int n             = 1;
     unsigned int       index[n]      = { 2 };
     unsigned int       increasing[n] = { 0 };
@@ -1070,8 +988,6 @@ BOOST_AUTO_TEST_CASE( decrement_1d_normal_unsigned )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_first )
 {
-    using fftw_multi_array::detail::crement;
-
     const int n = 2;
     boost::array<int,n> index_array = {{ 2, 0 }};
     const boost::array<int,n> increasing_array = {{ 0, 0 }};
@@ -1091,8 +1007,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_first )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_second )
 {
-    using fftw_multi_array::detail::crement;
-
     const int n = 2;
     boost::array<int, n> index_array            = {{ 0, 2 }};
     const bool increasing[n]                    = { false, false };
@@ -1111,8 +1025,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_second )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_all )
 {
-    using fftw_multi_array::detail::crement;
-
     const int  n             = 2;
     int        index[n]      = { 0, 0 };
     const int  increasing[n] = { 0, 0 };
@@ -1123,8 +1035,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_normal )
 {
-    using fftw_multi_array::detail::crement;
-
     const int    n             = 2;
     unsigned int index[n]      = { 1, 2 };
     unsigned int increasing[n] = { 0, 0 };
@@ -1150,8 +1060,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_normal )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_normal_usualorder )
 {
-    using fftw_multi_array::detail::crement;
-
     const int    n             = 2;
     unsigned int index[n]      = { 1, 2 };
     unsigned int increasing[n] = { 0, 0 };
@@ -1178,8 +1086,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_normal_usualorder )
 
 BOOST_AUTO_TEST_CASE( decrement_2d_normal_reverseorder )
 {
-    using fftw_multi_array::detail::crement;
-
     const int          n             = 2;
     unsigned int       index[n]      = { 1, 2 };
     const unsigned int increasing[n] = { 0, 0 };
@@ -1206,8 +1112,6 @@ BOOST_AUTO_TEST_CASE( decrement_2d_normal_reverseorder )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_all )
 {
-    using fftw_multi_array::detail::crement;
-
     const int         n             = 3;
     signed int        index[n]      = { 0, 0, 0 };
     const signed long increasing[n] = { 0, 0, 0 };
@@ -1218,8 +1122,6 @@ BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_middle )
 {
-    using fftw_multi_array::detail::crement;
-
     const int                   n               = 3;
     long                        index[n]         =  { 2, 0, 2 };
     boost::array<std::size_t,n> increasing_array = {{ 0, 0, 0 }};
@@ -1264,8 +1166,6 @@ BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_middle )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_normal )
 {
-    using fftw_multi_array::detail::crement;
-
     const int n = 3;
     std::vector<short> index_array(n, 1);
     std::vector<short> increasing_array(n, 0);
@@ -1307,8 +1207,6 @@ BOOST_AUTO_TEST_CASE( decrement_3d_normal )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
 {
-    using fftw_multi_array::detail::crement;
-
     const int n = 3;
     boost::array<short,3> index_array = {{ 1, 0, 2 }};
     boost::array<bool,3> increasing_array = {{ false, false, false }};
@@ -1345,7 +1243,6 @@ BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( crement_3d_spot_check_behavior_1, ASCENDING, int_zero_one_type )
 {
-    using fftw_multi_array::detail::crement;
     const int n = 3;
     typedef boost::array<int,n> array_type;
 
@@ -1513,7 +1410,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( crement_3d_spot_check_behavior_1, ASCENDING, int_
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( crement_3d_spot_check_behavior_2, ASCENDING, int_zero_one_type )
 {
-    using fftw_multi_array::detail::crement;
     const int n = 3;
     typedef boost::array<int,n> array_type;
 
@@ -1659,10 +1555,11 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( indexed_element_magnitude_comparator )
 
+using pencilfft::detail::indexed_element_magnitude_comparator;
+using pencilfft::detail::make_indexed_element_magnitude_comparator;
+
 BOOST_AUTO_TEST_CASE( indexed_element_magnitude_comparator_operator_positive )
 {
-    using fftw_multi_array::detail::indexed_element_magnitude_comparator;
-
     const double data[3] = { 0.0, 1.0, 2.0 };
     indexed_element_magnitude_comparator<const double *> c(&data[0]);
 
@@ -1677,8 +1574,6 @@ BOOST_AUTO_TEST_CASE( indexed_element_magnitude_comparator_operator_positive )
 
 BOOST_AUTO_TEST_CASE( indexed_element_magnitude_comparator_operator_mixed )
 {
-    using fftw_multi_array::detail::indexed_element_magnitude_comparator;
-
     const double data[3] = { 0.0, -1.0, -2.0 };
     indexed_element_magnitude_comparator<const double *> c(&data[0]);
 
@@ -1693,8 +1588,6 @@ BOOST_AUTO_TEST_CASE( indexed_element_magnitude_comparator_operator_mixed )
 
 BOOST_AUTO_TEST_CASE( indexed_element_magnitude_comparator_stable_sort )
 {
-    using fftw_multi_array::detail::make_indexed_element_magnitude_comparator;
-
     const int n = 5;
     const double data[n]    = { 0, 1, 2, 3, 4 };
     std::size_t  indices[n] = { 3, 1, 4, 0, 2 };

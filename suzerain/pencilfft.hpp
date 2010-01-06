@@ -22,14 +22,14 @@
  *
  *--------------------------------------------------------------------------
  *
- * fftw_multi_array.hpp: perform FFTs atop boost::multi_array using FFTW
+ * pencilfft.hpp: perform FFTs atop boost::multi_array using FFTW
  *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#ifndef __SUZERAIN_FFTW_MULTI_ARRAY_HPP
-#define __SUZERAIN_FFTW_MULTI_ARRAY_HPP
+#ifndef __SUZERAIN_PENCILFFT_HPP
+#define __SUZERAIN_PENCILFFT_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/complex.hpp>
@@ -42,15 +42,17 @@
 namespace suzerain {
 
 /**
- * Provides routines for performing FFTs atop the Boost.MultiArray concept.
+ * Provides routines for performing FFTs along a "pencil", one direction of a
+ * potentially multidimensional array.   In particular, provides such routines
+ * atop the Boost.MultiArray concept.
  *
  * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
  *      Boost.MultiArray</a> for more information on the MultiArray concept.
  */
-namespace fftw_multi_array {
+namespace pencilfft {
 
 /**
- * Implementation details underneath pecos::suzerain::fftw_multi_array
+ * Implementation details underneath pecos::suzerain::pencilfft
  * @internal
  */
 namespace detail {
@@ -1546,6 +1548,6 @@ void backward_c2r(
                                                increment_order.begin()));
 } /* backward_c2r */
 
-} /* fftw_multi_array */ } /* suzerain */
+} /* pencilfft */ } /* suzerain */
 
-#endif // __SUZERAIN_FFTW_MULTI_ARRAY_HPP
+#endif // __SUZERAIN_PENCILFFT_HPP

@@ -1,6 +1,6 @@
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
-#include <suzerain/fftw_multi_array.hpp>
+#include <suzerain/pencilfft.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
@@ -45,7 +45,7 @@ void c2c_2d_forward_4_by_3(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
             z(-1.5, 0.),  z(-1.5, 0.),  z(-1.5, 0.),
             z(-1.5,-1.5), z(-1.5,-1.5), z(-1.5,-1.5)
         };
-        fftw_multi_array::forward_c2c(0, in, out);
+        pencilfft::forward_c2c(0, in, out);
         for (int i = 0; i < M; ++i) {
             for (int j = 0; j < N; ++j) {
                 double e_real, e_imag;
@@ -77,7 +77,7 @@ void c2c_2d_forward_4_by_3(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
             z( 8.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813),
             z(11.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813)
         };
-        fftw_multi_array::forward_c2c(1, in, out);
+        pencilfft::forward_c2c(1, in, out);
         for (int i = 0; i < M; ++i) {
             for (int j = 0; j < N; ++j) {
                 double e_real, e_imag;
@@ -218,7 +218,7 @@ void r2c_2d_forward_4_by_3(RealArray &in, ComplexArray &out)
 
         complex_view out_view
             = out[boost::indices[range().finish(M/2+1)][range()]];
-        fftw_multi_array::forward_r2c(0, in, out_view);
+        pencilfft::forward_r2c(0, in, out_view);
 
         for (int i = 0; i < out_view.shape()[0]; ++i) {
             for (int j = 0; j < out_view.shape()[1]; ++j) {
@@ -254,7 +254,7 @@ void r2c_2d_forward_4_by_3(RealArray &in, ComplexArray &out)
 
         complex_view out_view
             = out[boost::indices[range()][range().finish(N/2+1)]];
-        fftw_multi_array::forward_r2c(1, in, out_view);
+        pencilfft::forward_r2c(1, in, out_view);
 
         for (int i = 0; i < out_view.shape()[0]; ++i) {
             for (int j = 0; j < out_view.shape()[1]; ++j) {
@@ -419,7 +419,7 @@ void c2r_2d_backward_4_by_3(ComplexArray &in, RealArray &out)
             for (index j = 0; j < in_view.shape()[1]; ++j)
                 in_view[i][j] = data[i][j];
 
-        fftw_multi_array::backward_c2r(0, in_view, out);
+        pencilfft::backward_c2r(0, in_view, out);
 
         for (int i = 0; i < out.shape()[0]; ++i) {
             for (int j = 0; j < out.shape()[1]; ++j) {
@@ -447,7 +447,7 @@ void c2r_2d_backward_4_by_3(ComplexArray &in, RealArray &out)
             for (index j = 0; j < in_view.shape()[1]; ++j)
                 in_view[i][j] = data[i][j];
 
-        fftw_multi_array::backward_c2r(1, in_view, out);
+        pencilfft::backward_c2r(1, in_view, out);
 
         for (int i = 0; i < out.shape()[0]; ++i) {
             for (int j = 0; j < out.shape()[1]; ++j) {

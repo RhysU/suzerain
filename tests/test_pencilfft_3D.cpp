@@ -1,6 +1,6 @@
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
-#include <suzerain/fftw_multi_array.hpp>
+#include <suzerain/pencilfft.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
@@ -69,7 +69,7 @@ void c2c_3d_forward_4_by_3_by_2(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
               {z(-1.5,-1.5), z(-1.5,-1.5)}
             }
         };
-        fftw_multi_array::forward_c2c(0, in, out);
+        pencilfft::forward_c2c(0, in, out);
         for (int i = 0; i < L; ++i) {
             for (int j = 0; j < M; ++j) {
                 for (int k = 0; k < N; ++k) {
@@ -120,7 +120,7 @@ void c2c_3d_forward_4_by_3_by_2(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
                 { z(- 0.5,-0.288675134594813), z(- 0.5,-0.288675134594813) }
             }
         };
-        fftw_multi_array::forward_c2c(1, in, out);
+        pencilfft::forward_c2c(1, in, out);
         for (int i = 0; i < L; ++i) {
             for (int j = 0; j < M; ++j) {
                 for (int k = 0; k < N; ++k) {
@@ -171,7 +171,7 @@ void c2c_3d_forward_4_by_3_by_2(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
                 { z(18.0, 0.), z(-6.0, 0.) }
             }
         };
-        fftw_multi_array::forward_c2c(2, in, out);
+        pencilfft::forward_c2c(2, in, out);
         for (int i = 0; i < L; ++i) {
             for (int j = 0; j < M; ++j) {
                 for (int k = 0; k < N; ++k) {
@@ -342,7 +342,7 @@ void r2c_3d_forward_4_by_3_by_2(RealArray &in, ComplexArray &out)
 
         complex_view out_view
             = out[boost::indices[range().finish(L/2+1)][range()][range()]];
-        fftw_multi_array::forward_r2c(0, in, out_view);
+        pencilfft::forward_r2c(0, in, out_view);
 
         for (int i = 0; i < out_view.shape()[0]; ++i) {
             for (int j = 0; j < out_view.shape()[1]; ++j) {
@@ -393,7 +393,7 @@ void r2c_3d_forward_4_by_3_by_2(RealArray &in, ComplexArray &out)
 
         complex_view out_view
             = out[boost::indices[range()][range().finish(M/2+1)][range()]];
-        fftw_multi_array::forward_r2c(1, in, out_view);
+        pencilfft::forward_r2c(1, in, out_view);
 
         for (int i = 0; i < out_view.shape()[0]; ++i) {
             for (int j = 0; j < out_view.shape()[1]; ++j) {
@@ -448,7 +448,7 @@ void r2c_3d_forward_4_by_3_by_2(RealArray &in, ComplexArray &out)
 
         complex_view out_view
             = out[boost::indices[range()][range()][range().finish(N/2+1)]];
-        fftw_multi_array::forward_r2c(2, in, out_view);
+        pencilfft::forward_r2c(2, in, out_view);
 
         for (int i = 0; i < out_view.shape()[0]; ++i) {
             for (int j = 0; j < out_view.shape()[1]; ++j) {
@@ -633,7 +633,7 @@ BOOST_AUTO_TEST_SUITE_END()
 ////             for (index j = 0; j < in_view.shape()[1]; ++j)
 ////                 in_view[i][j] = data[i][j];
 ////
-////         fftw_multi_array::backward_c2r(0, in_view, out);
+////         pencilfft::backward_c2r(0, in_view, out);
 ////
 ////         for (int i = 0; i < out.shape()[0]; ++i) {
 ////             for (int j = 0; j < out.shape()[1]; ++j) {
@@ -660,7 +660,7 @@ BOOST_AUTO_TEST_SUITE_END()
 ////             for (index j = 0; j < in_view.shape()[1]; ++j)
 ////                 in_view[i][j] = data[i][j];
 ////
-////         fftw_multi_array::backward_c2r(1, in_view, out);
+////         pencilfft::backward_c2r(1, in_view, out);
 ////
 ////         for (int i = 0; i < out.shape()[0]; ++i) {
 ////             for (int j = 0; j < out.shape()[1]; ++j) {
