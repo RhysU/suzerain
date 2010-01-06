@@ -43,6 +43,11 @@ test_bspline_LDADD   += $(LOG4CXX_LIBS)
 test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+check_PROGRAMS    += test_math
+test_math_SOURCES  = test_math.cpp
+test_math_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_math_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 check_PROGRAMS      += test_complex
 test_complex_SOURCES = test_complex.cpp
 test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)

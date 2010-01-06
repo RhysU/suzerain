@@ -96,7 +96,7 @@ void fill_with_complex_NaN(ComplexMultiArray &x)
     const element * const end = x.data() + x.num_elements();
     element *it = x.data();
     while (it != end) {
-        fftw_multi_array::detail::assign_complex(*it++, quiet_NaN, quiet_NaN);
+        suzerain::complex::assign_complex(*it++, quiet_NaN, quiet_NaN);
     }
 }
 
@@ -115,7 +115,7 @@ void fill_with_complex_zero(ComplexMultiArray &x)
     const element * const end = x.data() + x.num_elements();
     element *it = x.data();
     while (it != end) {
-        fftw_multi_array::detail::assign_complex(*it++, 0, 0);
+        suzerain::complex::assign_complex(*it++, 0, 0);
     }
 }
 
@@ -137,7 +137,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
     for (int i = 0; i < NR; ++i) {
-        fftw_multi_array::detail::assign_complex(in[i],
+        suzerain::complex::assign_complex(in[i],
                 real_test_function<real_type>(NR, (NR+1)/2, i, shift), 0.0);
     }
     fftw_multi_array::forward_c2c(0, in, out);
@@ -145,8 +145,8 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
     // Real input should exhibit conjugate symmetry in wave space...
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) { // ...up to grid modes
         real_type a_real, a_imag, b_real, b_imag;
-        fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
-        fftw_multi_array::detail::assign_components(b_real, b_imag, out[NC-i]);
+        suzerain::complex::assign_components(a_real, a_imag, out[i]);
+        suzerain::complex::assign_components(b_real, b_imag, out[NC-i]);
         BOOST_REQUIRE_CLOSE(a_real,  b_real, close_enough);
         BOOST_REQUIRE_CLOSE(a_imag, -b_imag, close_enough);
 
@@ -159,7 +159,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
     // Ensure we see the expected zero mode magnitude
     {
         real_type z_real, z_imag;
-        fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
+        suzerain::complex::assign_components(z_real, z_imag, out[0]);
         BOOST_REQUIRE_SMALL(z_imag, close_enough);
         BOOST_REQUIRE_CLOSE(z_real, 17.0, close_enough);
     }
@@ -168,7 +168,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
     for (int i = 0; i < NR; ++i) {
-        fftw_multi_array::detail::assign_complex(in[i], 0.0,
+        suzerain::complex::assign_complex(in[i], 0.0,
                 real_test_function<real_type>(NR, (NR+1)/2, i, shift));
     }
     fftw_multi_array::forward_c2c(0, in, out);
@@ -177,8 +177,8 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
     // Re(X_k) = - Re(X_{N-k}), Im(X_k) = Im(X_{N-k})
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) { // ...up to grid modes
         real_type a_real, a_imag, b_real, b_imag;
-        fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
-        fftw_multi_array::detail::assign_components(b_real, b_imag, out[NC-i]);
+        suzerain::complex::assign_components(a_real, a_imag, out[i]);
+        suzerain::complex::assign_components(b_real, b_imag, out[NC-i]);
         BOOST_REQUIRE_CLOSE(a_real, -b_real, close_enough);
         BOOST_REQUIRE_CLOSE(a_imag,  b_imag, close_enough);
 
@@ -191,7 +191,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
     // Ensure we see the expected zero mode magnitude
     {
         real_type z_real, z_imag;
-        fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
+        suzerain::complex::assign_components(z_real, z_imag, out[0]);
         BOOST_REQUIRE_SMALL(z_real, close_enough);
         BOOST_REQUIRE_CLOSE(z_imag, 17, close_enough);
     }
@@ -221,7 +221,7 @@ void check_1D_forward_r2c(RealMultiArray &in, ComplexMultiArray &out)
     // We should see the expected frequency content up to grid modes
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         real_type z_real, z_imag;
-        fftw_multi_array::detail::assign_components(z_real, z_imag, out[i]);
+        suzerain::complex::assign_components(z_real, z_imag, out[i]);
         const real_type real_expected =  i * sin(shift) * 1.0/2.0;
         const real_type imag_expected = -i * cos(shift) * 1.0/2.0;
         BOOST_REQUIRE_CLOSE(z_real, real_expected, sqrt(close_enough));
@@ -230,7 +230,7 @@ void check_1D_forward_r2c(RealMultiArray &in, ComplexMultiArray &out)
     // Ensure we see the expected zero mode magnitude
     {
         real_type z_real, z_imag;
-        fftw_multi_array::detail::assign_components(z_real, z_imag, out[0]);
+        suzerain::complex::assign_components(z_real, z_imag, out[0]);
         BOOST_REQUIRE_SMALL(z_imag, close_enough);
         BOOST_REQUIRE_CLOSE(z_real, 17.0, close_enough);
     }
@@ -277,7 +277,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
     for (int i = 0; i < NR; ++i) {
-        fftw_multi_array::detail::assign_complex(
+        suzerain::complex::assign_complex(
                 in[i],
                 real_test_function<double>(NR, (NR+1)/2, i, M_PI/3.0),
                 real_test_function<double>(NR, (NR+1)/2, i, M_PI/5.0));
@@ -290,7 +290,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     // Ensure we got the same result, up to scaling differences
     for (int i = 0; i < NR; ++i) {
         double out_real, out_imag;
-        fftw_multi_array::detail::assign_components(
+        suzerain::complex::assign_components(
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
         // BOOST_REQUIRE_EQUAL would be nice, but it fails here
@@ -324,11 +324,11 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     // ...with known frequency content and constant offset 17
     fill_with_complex_NaN(out);
     fill_with_complex_zero(in);
-    fftw_multi_array::detail::assign_complex(in[0], 17.0, 0.0);
+    suzerain::complex::assign_complex(in[0], 17.0, 0.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         const real_type val = i/2.0;
-        fftw_multi_array::detail::assign_complex(in[i],    val, -val);
-        fftw_multi_array::detail::assign_complex(in[NC-i], val,  val);
+        suzerain::complex::assign_complex(in[i],    val, -val);
+        suzerain::complex::assign_complex(in[NC-i], val,  val);
     }
     // TODO Test behavior of highest even half mode
 
@@ -337,7 +337,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     // Output should be a real-valued function in physical space...
     for (int i = 0; i < NR; ++i) {
         real_type a_real, a_imag;
-        fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
+        suzerain::complex::assign_components(a_real, a_imag, out[i]);
         BOOST_REQUIRE_SMALL(a_imag, close_enough);
 
         // ...with known physical space values
@@ -353,11 +353,11 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     // ...with known frequency content and constant offset 17
     fill_with_complex_NaN(out);
     fill_with_complex_zero(in);
-    fftw_multi_array::detail::assign_complex(in[0], 0.0, 17.0);
+    suzerain::complex::assign_complex(in[0], 0.0, 17.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         const real_type val = i/2.0;
-        fftw_multi_array::detail::assign_complex(in[i],     val, val);
-        fftw_multi_array::detail::assign_complex(in[NC-i], -val, val);
+        suzerain::complex::assign_complex(in[i],     val, val);
+        suzerain::complex::assign_complex(in[NC-i], -val, val);
     }
     // TODO Test behavior of highest even half mode
 
@@ -366,7 +366,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
     // Output should be an imaginary-valued function in physical space...
     for (int i = 0; i < NR; ++i) {
         real_type a_real, a_imag;
-        fftw_multi_array::detail::assign_components(a_real, a_imag, out[i]);
+        suzerain::complex::assign_components(a_real, a_imag, out[i]);
         BOOST_REQUIRE_SMALL(a_real, close_enough);
 
         // ...with known physical space values
@@ -397,10 +397,10 @@ void check_1D_backward_c2r(ComplexMultiArray &in, RealMultiArray &out)
     // ...with known frequency content and constant offset 17
     fill_with_real_NaN(out);
     fill_with_complex_zero(in);
-    fftw_multi_array::detail::assign_complex(in[0], 17.0, 0.0);
+    suzerain::complex::assign_complex(in[0], 17.0, 0.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         const real_type val = i/2.0;
-        fftw_multi_array::detail::assign_complex(in[i], val, -val);
+        suzerain::complex::assign_complex(in[i], val, -val);
     }
     // TODO Test behavior of highest even half mode
 
@@ -460,7 +460,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     fill_with_complex_NaN(in);
     fill_with_complex_NaN(out);
     for (int i = 0; i < NC; ++i) {
-        fftw_multi_array::detail::assign_complex(in[i], i, i);
+        suzerain::complex::assign_complex(in[i], i, i);
     }
 
     // Transform input FFTW directly and also our wrapper
@@ -468,19 +468,19 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
 
     // Ramp up amplitudes for FFTW's backwards transform
     for (int i = 0; i < NC; ++i) {
-        fftw_multi_array::detail::assign_complex_scaled(in[i], in[i], NC);
+        suzerain::complex::assign_complex_scaled(in[i], in[i], NC);
     }
     fftw_execute(plan.get());
     // Ramp down amplitudes for our backwards transform
     for (int i = 0; i < NC; ++i) {
-        fftw_multi_array::detail::assign_complex_scaled(in[i], in[i], 1.0/NC);
+        suzerain::complex::assign_complex_scaled(in[i], in[i], 1.0/NC);
     }
     fftw_multi_array::backward_c2c(0, in, out);
 
     // Ensure we got exactly the same result after normalization
     for (int i = 0; i < NR; ++i) {
         double out_real, out_imag;
-        fftw_multi_array::detail::assign_components(
+        suzerain::complex::assign_components(
                 out_real, out_imag, out[i]);
         // FFTW with a stride gives a different result than with stride 1
         // BOOST_REQUIRE_EQUAL would be nice, but it fails here
@@ -510,7 +510,7 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
             for (int i = 0; i < NR; ++i) {
                 const double val = real_test_function<double>(
                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
-                fftw_multi_array::detail::assign_complex(in[i], val, -val);
+                suzerain::complex::assign_complex(in[i], val, -val);
             }
 
             // Forward transform and differentiate
@@ -525,7 +525,7 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
                         derivative);
                 double real, imag;
-                fftw_multi_array::detail::assign_components(real, imag, in[i]);
+                suzerain::complex::assign_components(real, imag, in[i]);
                 if (fabs(expected_val) < close_enough) {
                     BOOST_REQUIRE_SMALL(real, close_enough);
                     BOOST_REQUIRE_SMALL(imag, close_enough);
@@ -561,7 +561,7 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
             for (int i = 0; i < NR; ++i) {
                 const double val = real_test_function<double>(
                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
-                fftw_multi_array::detail::assign_complex(in[i], val, -val);
+                suzerain::complex::assign_complex(in[i], val, -val);
             }
 
             // Forward transform without differentiating
@@ -576,7 +576,7 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
                         derivative);
                 double real, imag;
-                fftw_multi_array::detail::assign_components(real, imag, in[i]);
+                suzerain::complex::assign_components(real, imag, in[i]);
                 if (fabs(expected_val) < close_enough) {
                     BOOST_REQUIRE_SMALL(real, close_enough);
                     BOOST_REQUIRE_SMALL(imag, close_enough);

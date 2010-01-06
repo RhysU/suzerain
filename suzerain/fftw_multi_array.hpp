@@ -32,9 +32,10 @@
 #define __SUZERAIN_FFTW_MULTI_ARRAY_HPP
 
 #include <suzerain/common.hpp>
+#include <suzerain/complex.hpp>
+#include <suzerain/math.hpp>
 #include <fftw3.h>
 
-// TODO Broken details::assign_* if FFTW3 discovers the C99 _Complex type
 // TODO Much of transform_c2c, forward_r2c, and backward_c2r is boilerplate
 // TODO Bomb when encountering in-place transform with mismatched strides
 
@@ -394,198 +395,6 @@ make_indexed_element_magnitude_comparator(const RandomAccessIterator table)
 }
 
 /**
- * Computes \f$x^n\f$ efficiently for small integer \f$n\f$, including
- * \f$n <= 0\f$.  No overflow checking is performed.  Algorithm taken
- * from the GNU Scientific Library's \c gsl_pow_int.
- *
- * @param x \f$x\f$
- * @param n \f$n\f$
- *
- * @return \f$x^n\f$
- */
-template<typename FPT, typename Integral>
-FPT integer_power(FPT x, Integral n)
-{
-    using std::numeric_limits;
-
-    // Avoid shooting ourselves by accidentally requesting a negative power for
-    // an integer input.  Long lines to ensure messages appear in compiler
-    // error output when used improperly.
-    BOOST_STATIC_ASSERT(numeric_limits<Integral>::is_integer);
-    BOOST_STATIC_ASSERT(!numeric_limits<Integral>::is_signed || !numeric_limits<FPT>::is_integer);
-
-    FPT retval = 1;
-    // Convert all requests into one involving a positive power
-    if (n < 0) {
-        x = ((FPT) 1)/x;
-        n = -n;
-    }
-    // Repeated squaring method.  Returns 0.0^0 = 1; continuous in x
-    do {
-        if (n & 1) retval *= x;  /* for n odd */
-        n >>= 1;
-        x *= x;
-    } while (n);
-
-    return retval;
-}
-
-/**
- * Obtain the real part of a complex number.
- *
- * @param z complex number stored as a two-element array.
- *
- * @return <tt>Re(z)</tt>
- */
-template<typename FPT>
-SUZERAIN_FORCEINLINE
-FPT& real(FPT (&z)[2]) {
-    return z[0];
-}
-
-/**
- * Obtain the real part of a complex number.
- *
- * @param z complex number stored as a two-element array.
- *
- * @return <tt>Re(z)</tt>
- */
-template<typename FPT>
-SUZERAIN_FORCEINLINE
-const FPT& real(const FPT (&z)[2]) {
-    return z[0];
-}
-
-/**
- * Obtain the imaginary part of a complex number.
- *
- * @param z complex number stored as a two-element array.
- *
- * @return <tt>Im(z)</tt>
- */
-template<typename FPT>
-SUZERAIN_FORCEINLINE
-FPT& imag(FPT (&z)[2]) {
-    return z[1];
-}
-
-/**
- * Obtain the imaginary part of a complex number.
- *
- * @param z complex number stored as a two-element array.
- *
- * @return <tt>Im(z)</tt>
- */
-template<typename FPT>
-SUZERAIN_FORCEINLINE
-const FPT& imag(const FPT (&z)[2]) {
-    return z[1];
-}
-
-/**
- * Overwrite \c dest with \c src.
- *
- * @param dest destination
- * @param src source
- */
-template<class Complex1, class Complex2>
-SUZERAIN_FORCEINLINE
-void assign_complex(Complex1 &dest, const Complex2 &src)
-{
-    real(dest) = real(src);
-    imag(dest) = imag(src);
-}
-
-/**
- * Overwrite \c dest with <tt>src_real + I*src_imag</tt> where \c I is
- * the imaginary unit.
- *
- * @param dest destination
- * @param src_real real part of the source
- * @param src_imag imag part of the source
- */
-template<class Complex, typename FPT1, typename FPT2>
-SUZERAIN_FORCEINLINE
-void assign_complex(Complex &dest,
-                    const FPT1 src_real,
-                    const FPT2 src_imag)
-{
-    real(dest) = src_real;
-    imag(dest) = src_imag;
-}
-
-/**
- * Overwrite \c dest_real with Re <tt>src</tt> and \c dest_imag with Re
- * <tt>src_imag</tt>.
- *
- * @param dest_real destination real part
- * @param dest_imag destination imag part
- * @param src source
- */
-template<typename FPT, class Complex>
-SUZERAIN_FORCEINLINE
-void assign_components(FPT &dest_real,
-                       FPT &dest_imag,
-                       const Complex &src)
-{
-    dest_real = real(src);
-    dest_imag = imag(src);
-}
-
-/**
- * Overwrite \c dest with <tt>alpha*src</tt>.
- *
- * @param dest destination
- * @param src source
- * @param alpha multiplicative real scaling factor
- */
-template<class Complex1, class Complex2, typename FPT>
-SUZERAIN_FORCEINLINE
-void assign_complex_scaled(Complex1 &dest,
-                           const Complex2 &src,
-                           const FPT alpha)
-{
-    real(dest) = alpha*real(src);
-    imag(dest) = alpha*imag(src);
-}
-
-/**
- * Overwrite \c dest with <tt>alpha*src*I^ipower</tt> where
- * \c I is the imaginary unit.
- *
- * @param dest destination
- * @param src source
- * @param alpha multiplicative real scaling factor
- * @param ipower exponent on the imaginary unit to include in the scaling
- */
-template<class Complex1, class Complex2, typename FPT>
-SUZERAIN_FORCEINLINE
-void assign_complex_scaled_ipower(Complex1 &dest,
-                                  const Complex2 &src,
-                                  const FPT alpha,
-                                  const int ipower)
-{
-    switch (ipower & 3) { // Modulo-four-like operation for 2s complement
-        case 3: // I^3 = -I = I^-1
-            real(dest) =  alpha*imag(src);
-            imag(dest) = -alpha*real(src);
-            break;
-        case 2: // I^2 = -1 = I^-2
-            real(dest) = -alpha*real(src);
-            imag(dest) = -alpha*imag(src);
-            break;
-        case 1: // I^1 = I = I^-3
-            real(dest) = -alpha*imag(src);
-            imag(dest) =  alpha*real(src);
-            break;
-        case 0: // I^0 = 1
-            real(dest) =  alpha*real(src);
-            imag(dest) =  alpha*imag(src);
-            break;
-    }
-}
-
-/**
  * Primary template declaration for FFT traits.
  * Must be specialized for all types of interest.
  **/
@@ -752,7 +561,7 @@ struct complex_copy {
                     const ComplexSource &src,
                     const SignedInteger& dontcare) const
     {
-        assign_complex(dest, src);
+        suzerain::complex::assign_complex(dest, src);
     }
 };
 
@@ -783,7 +592,7 @@ struct complex_copy_scale {
                     const ComplexSource &src,
                     const SignedInteger& dontcare) const
     {
-        assign_complex_scaled(dest, src, alpha_);
+        suzerain::complex::assign_complex_scaled(dest, src, alpha_);
     }
 };
 
@@ -828,10 +637,10 @@ struct complex_copy_differentiate {
                     const ComplexSource &src,
                     const SignedInteger& n) const
     {
-        assign_complex_scaled_ipower(
+        suzerain::complex::assign_complex_scaled_ipower(
                 dest,
                 src,
-                integer_power(twopioverlength_*n, derivative_),
+                suzerain::math::integer_power(twopioverlength_*n, derivative_),
                 derivative_);
     }
 };
@@ -884,10 +693,11 @@ struct complex_copy_scale_differentiate {
                     const ComplexSource &src,
                     const SignedInteger& n) const
     {
-        assign_complex_scaled_ipower(
+        suzerain::complex::assign_complex_scaled_ipower(
                 dest,
                 src,
-                alpha_ * integer_power(twopioverlength_*n, derivative_),
+                alpha_ * suzerain::math::integer_power(twopioverlength_*n,
+                                                       derivative_),
                 derivative_);
     }
 };
@@ -949,11 +759,11 @@ void c2c_fullbuffer_process(OutputIterator out,
         }
     } else {
         for (/* init from above */; n <= last_n_pos_out; ++n) {
-            detail::assign_complex(*out, 0, 0);
+            suzerain::complex::assign_complex(*out, 0, 0);
             std::advance(out, stride_out);
         }
         for (n = first_n_neg_out; n < first_n_neg_in; ++n) {
-            detail::assign_complex(*out, 0, 0);
+            suzerain::complex::assign_complex(*out, 0, 0);
             std::advance(out, stride_out);
         }
     }
@@ -1010,7 +820,7 @@ void c2c_halfbuffer_process(OutputIterator out,
         std::advance(out, stride_out);
     }
     for (/* init from above */; n <= last_n_pos_out; ++n) {
-        detail::assign_complex(*out, 0, 0);
+        suzerain::complex::assign_complex(*out, 0, 0);
         std::advance(out, stride_out);
     }
 }

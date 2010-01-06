@@ -18,8 +18,8 @@ BOOST_AUTO_TEST_SUITE( c2c_2d_forward_simple )
 template<class ComplexMultiArray1, class ComplexMultiArray2>
 void c2c_2d_forward_4_by_3(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 {
-    using fftw_multi_array::detail::assign_complex;
-    using fftw_multi_array::detail::assign_components;
+    using suzerain::complex::assign_complex;
+    using suzerain::complex::assign_components;
 
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 2);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 2);
@@ -178,8 +178,8 @@ BOOST_AUTO_TEST_SUITE( r2c_2d_forward_simple )
 template<class RealArray, class ComplexArray>
 void r2c_2d_forward_4_by_3(RealArray &in, ComplexArray &out)
 {
-    using fftw_multi_array::detail::assign_complex;
-    using fftw_multi_array::detail::assign_components;
+    using suzerain::complex::assign_complex;
+    using suzerain::complex::assign_components;
 
     BOOST_STATIC_ASSERT(RealArray::dimensionality == 2);
     BOOST_STATIC_ASSERT(ComplexArray::dimensionality == 2);
