@@ -35,6 +35,8 @@ BOOST_AUTO_TEST_CASE( shared_c_array )
 
 BOOST_AUTO_TEST_CASE( real_and_imag_return_lvalues )
 {
+    // Officially, std::complex do not return lvalues,
+    // but many implementations do so.
     typedef std::complex<double> complex;
 
     complex x(1,2);
@@ -45,7 +47,22 @@ BOOST_AUTO_TEST_CASE( real_and_imag_return_lvalues )
     BOOST_CHECK_EQUAL(x, complex(2,4));
 }
 
-BOOST_AUTO_TEST_SUITE( complex_helpers )
+BOOST_AUTO_TEST_CASE( is_complex )
+{
+    using suzerain::complex::is_complex;
+
+    BOOST_CHECK(is_complex<std::complex<double> >::value == true);
+    BOOST_CHECK(is_complex<std::complex<float> >::value == true);
+    BOOST_CHECK(is_complex<std::complex<int> >::value == true);
+
+    BOOST_CHECK(is_complex<double>::value == false);
+    BOOST_CHECK(is_complex<float>::value == false);
+    BOOST_CHECK(is_complex<int>::value == false);
+
+    BOOST_CHECK(is_complex<fftwf_complex>::value == true);
+    BOOST_CHECK(is_complex<fftw_complex>::value == true);
+    BOOST_CHECK(is_complex<fftwl_complex>::value == true);
+}
 
 BOOST_AUTO_TEST_CASE( assign_complex )
 {
@@ -241,5 +258,3 @@ BOOST_AUTO_TEST_CASE( assign_components )
     BOOST_CHECK_EQUAL(s1, 3.0);
     BOOST_CHECK_EQUAL(s2, 4.0);
 }
-
-BOOST_AUTO_TEST_SUITE_END()

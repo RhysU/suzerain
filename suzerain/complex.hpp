@@ -46,10 +46,39 @@ namespace suzerain {
  */
 namespace complex {
 
-/** Import std::real(std::complex<T>) */
+/** Import Boost.TypeTrait's is_complex for <tt>std::complex<T></tt> */
+
+/**
+ * An <tt>is_complex</tt> type trait similar to <tt>boost::is_complex</tt>.  If
+ * the template parameter \c T is complex, then <tt>is_complex</tt> will
+ * inherit from <tt>boost::true_type</tt>.  Otherwise it inherits from
+ * <tt>boost.false_type</tt>.
+ *
+ * @see <a href="http://www.boost.org/doc/libs/release/libs/type_traits/">
+ * Boost.TypeTraits</a> for more details.
+ */
+template<class T, class Enable = void >
+struct is_complex
+        : public boost::is_complex<T> {};
+
+/**
+ * A specialization of <tt>is_complex</tt> extended to recognize FFTW-like
+ * complex types.  If the template parameter \c T is complex, then
+ * <tt>is_complex</tt> will inherit from <tt>boost::true_type</tt>.  Otherwise
+ * it inherits from <tt>boost.false_type</tt>.
+ *
+ * @see <a href="http://www.boost.org/doc/libs/release/libs/type_traits/">
+ * Boost.TypeTraits</a> for more details.
+ */
+template<class T>
+struct is_complex<T[2],
+                  typename boost::enable_if<boost::is_arithmetic<T> >::type>
+        : public boost::true_type {};
+
+/** Import <tt>std::real(std::complex<T>)</tt> */
 using std::real;
 
-/** Import std::imag(std::complex<T>) */
+/** Import <tt>std::imag(std::complex<T>)</tt> */
 using std::imag;
 
 /**
