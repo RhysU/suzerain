@@ -20,12 +20,12 @@ CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
 CLEANFILES += *.pchi
 
 # Progams
-bin_PROGRAMS        += driver_sine
-driver_sine_SOURCES  = driver_sine.cpp
-driver_sine_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
-driver_sine_LDADD   += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
-driver_sine_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
-driver_sine_LDADD   += $(P3DFFT_LIBS) $(FFTW3_LIBS)
+bin_PROGRAMS          += driver_p3dfft
+driver_p3dfft_SOURCES  = driver_p3dfft.cpp
+driver_p3dfft_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
+driver_p3dfft_LDADD   += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
+driver_p3dfft_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
+driver_p3dfft_LDADD   += $(P3DFFT_LIBS) $(FFTW3_LIBS)
 
 bin_PROGRAMS          += driver_pencil
 driver_pencil_SOURCES  = driver_pencil.cpp
