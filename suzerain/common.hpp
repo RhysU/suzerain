@@ -66,6 +66,7 @@
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/mpl/list.hpp>
+#include <boost/mpl/logical.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/numeric/conversion/converter.hpp>
@@ -87,6 +88,7 @@
 #include <boost/test/utils/nullstream.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/type_traits.hpp>
+#include <boost/utility.hpp>
 #endif // SUZERAIN_HAVE_BOOST
 
 // Include other functionality used throughout Suzerain

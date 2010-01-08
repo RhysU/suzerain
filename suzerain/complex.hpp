@@ -46,16 +46,20 @@ namespace suzerain {
  */
 namespace complex {
 
-/** Import Boost.TypeTrait's is_complex for <tt>std::complex<T></tt> */
+/**
+ * Provides complex type traits suitable for manipulating C++03 and FFTW3
+ * complex types.  Many of these build atop the Boost.TypeTraits framework.
+ *
+ * @see <a href="http://www.boost.org/doc/libs/release/libs/type_traits/">
+ * Boost.TypeTraits</a> for more details.
+ */
+namespace traits {
 
 /**
  * An <tt>is_complex</tt> type trait similar to <tt>boost::is_complex</tt>.  If
  * the template parameter \c T is complex, then <tt>is_complex</tt> will
  * inherit from <tt>boost::true_type</tt>.  Otherwise it inherits from
  * <tt>boost.false_type</tt>.
- *
- * @see <a href="http://www.boost.org/doc/libs/release/libs/type_traits/">
- * Boost.TypeTraits</a> for more details.
  */
 template<class T, class Enable = void >
 struct is_complex
@@ -63,17 +67,63 @@ struct is_complex
 
 /**
  * A specialization of <tt>is_complex</tt> extended to recognize FFTW-like
- * complex types.  If the template parameter \c T is complex, then
- * <tt>is_complex</tt> will inherit from <tt>boost::true_type</tt>.  Otherwise
- * it inherits from <tt>boost.false_type</tt>.
- *
- * @see <a href="http://www.boost.org/doc/libs/release/libs/type_traits/">
- * Boost.TypeTraits</a> for more details.
+ * complex types.
  */
 template<class T>
 struct is_complex<T[2],
                   typename boost::enable_if<boost::is_arithmetic<T> >::type>
         : public boost::true_type {};
+
+/**
+ * A type trait that, given a valid complex-value type, returns the type of the
+ * real scalar component as <tt>type</tt>.
+ */
+template<class T> struct real {};
+
+/** A specialization to handle <tt>std::complex<T></tt>. */
+template<class T> struct real<std::complex<T> > {
+    typedef typename std::complex<T>::value_type type;
+};
+
+/** A specialization to handle FFTW-like types. */
+template<class T> struct real<T[2]> {
+    typedef T type;
+};
+
+} // namespace traits
+
+/**
+ * Returns a <tt>std::complex</tt> instance with matching floating point type
+ * whose real and imaginary components are equal to NaN.
+ *
+ * @return <tt>std::complex<FPT>(quiet_NaN,quiet_NaN)</tt>
+ */
+template<typename FPT>
+typename boost::enable_if<
+    boost::is_floating_point<FPT>,
+    std::complex<FPT>
+>::type NaN()
+{
+    BOOST_STATIC_ASSERT(std::numeric_limits<FPT>::has_quiet_NaN);
+    const FPT quiet_NaN = std::numeric_limits<FPT>::quiet_NaN();
+    return std::complex<FPT>(quiet_NaN,quiet_NaN);
+}
+
+/**
+ * Returns a <tt>std::complex</tt> instance with matching floating point type
+ * whose real and imaginary components are equal to NaN.
+ *
+ * @return <tt>std::complex<FPT>(quiet_NaN,quiet_NaN)</tt>
+ */
+template<class T>
+std::complex<typename traits::real<T>::type>
+NaN()
+{
+    typedef typename traits::real<T>::type real_type;
+    BOOST_STATIC_ASSERT(std::numeric_limits<real_type>::has_quiet_NaN);
+    const real_type quiet_NaN = std::numeric_limits<real_type>::quiet_NaN();
+    return std::complex<real_type>(quiet_NaN,quiet_NaN);
+}
 
 /** Import <tt>std::real(std::complex<T>)</tt> */
 using std::real;

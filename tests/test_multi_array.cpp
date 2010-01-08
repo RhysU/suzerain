@@ -20,9 +20,9 @@ using suzerain::multi_array::fill;
 
 const std::size_t NX = 3, NY = 4, NZ = 5, NZZ = 6;
 
-typedef boost::mpl::list<int, float, double> test_types;
+typedef boost::mpl::list<int, float, double> element_test_types;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_1D, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_1D, T, element_test_types)
 {
     // Fill boost::multi_array
     multi_array<T,1> foo(extents[NX]);
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_1D, T, test_types)
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_1D, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_1D, T, element_test_types)
 {
     // Fill boost::multi_array_ref
     scoped_array<T> raw(new T[NX]);
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_1D, T, test_types)
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_2D, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_2D, T, element_test_types)
 {
     // Fill boost::multi_array
     multi_array<T,2> foo(extents[NX][NY]);
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_2D, T, test_types)
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_2D, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_2D, T, element_test_types)
 {
     // Fill boost::multi_array_ref
     scoped_array<T> raw(new T[NX*NY]);
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_2D, T, test_types)
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_3D, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_3D, T, element_test_types)
 {
     // Fill boost::multi_array
     multi_array<T,3> foo(extents[NX][NY][NZ]);
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_3D, T, test_types)
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_3D, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_3D, T, element_test_types)
 {
     // Fill boost::multi_array_ref
     scoped_array<T> raw(new T[NX*NY*NZ]);
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_3D, T, test_types)
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_4D, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_4D, T, element_test_types)
 {
     // Fill boost::multi_array
     multi_array<T,4> foo(extents[NX][NY][NZ][NZZ]);
@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_4D, T, test_types)
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_4D, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_4D, T, element_test_types)
 {
     // Fill boost::multi_array_ref
     scoped_array<T> raw(new T[NX*NY*NZ*NZZ]);
@@ -302,3 +302,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_4D, T, test_types)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( fill_with_NaN )
+
+using boost::extents;
+using boost::multi_array;
+using boost::multi_array_types::index;
+using suzerain::multi_array::fill_with_NaN;
+
+const std::size_t NX = 3;
+
+BOOST_AUTO_TEST_CASE(fill_real_with_NaN)
+{
+    multi_array<double,1> foo(extents[NX]);
+    fill_with_NaN(foo);
+    for (index i = 0; i < foo.shape()[0]; ++i) {
+        BOOST_CHECK(foo[i] != foo[i]); // Ensure NaN
+    }
+}
+
+BOOST_AUTO_TEST_CASE(fill_complex_with_NaN)
+{
+    multi_array<std::complex<double>,1> foo(extents[NX]);
+    fill_with_NaN(foo);
+    for (index i = 0; i < foo.shape()[0]; ++i) {
+        BOOST_CHECK(foo[i].real() != foo[i].real()); // Ensure NaN
+        BOOST_CHECK(foo[i].imag() != foo[i].imag()); // Ensure NaN
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+

@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE( real_and_imag_return_lvalues )
 
 BOOST_AUTO_TEST_CASE( is_complex )
 {
-    using suzerain::complex::is_complex;
+    using suzerain::complex::traits::is_complex;
 
     BOOST_CHECK(is_complex<std::complex<double> >::value == true);
     BOOST_CHECK(is_complex<std::complex<float> >::value == true);
@@ -62,6 +62,49 @@ BOOST_AUTO_TEST_CASE( is_complex )
     BOOST_CHECK(is_complex<fftwf_complex>::value == true);
     BOOST_CHECK(is_complex<fftw_complex>::value == true);
     BOOST_CHECK(is_complex<fftwl_complex>::value == true);
+}
+
+BOOST_AUTO_TEST_CASE( real_type )
+{
+    using boost::is_same;
+    using suzerain::complex::traits::real;
+
+    BOOST_CHECK((is_same<real<std::complex<float> >::type,float>::value));
+    BOOST_CHECK((is_same<real<std::complex<double> >::type,double>::value));
+    BOOST_CHECK((is_same<real<std::complex<int> >::type,int>::value));
+
+    BOOST_CHECK((is_same<real<fftwf_complex>::type,float>::value));
+    BOOST_CHECK((is_same<real<fftw_complex>::type,double>::value));
+    BOOST_CHECK((is_same<real<fftwl_complex>::type,long double>::value));
+}
+
+BOOST_AUTO_TEST_CASE( NaN )
+{
+    using suzerain::complex::NaN;
+
+    {
+        std::complex<double> z = NaN<std::complex<double> >();
+        BOOST_CHECK(z.real() != z.real());
+        BOOST_CHECK(z.imag() != z.imag());
+    }
+
+    {
+        std::complex<double> z = NaN<double>();
+        BOOST_CHECK(z.real() != z.real());
+        BOOST_CHECK(z.imag() != z.imag());
+    }
+
+    {
+        std::complex<float> z = NaN<std::complex<float> >();
+        BOOST_CHECK(z.real() != z.real());
+        BOOST_CHECK(z.imag() != z.imag());
+    }
+
+    {
+        std::complex<float> z = NaN<float>();
+        BOOST_CHECK(z.real() != z.real());
+        BOOST_CHECK(z.imag() != z.imag());
+    }
 }
 
 BOOST_AUTO_TEST_CASE( assign_complex )

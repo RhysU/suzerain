@@ -395,7 +395,7 @@ void check_1D_backward_c2r(ComplexMultiArray &in, RealMultiArray &out)
 
     // Load a function into the input array...
     // ...with known frequency content and constant offset 17
-    fill_with_real_NaN(out);
+    fill_with_NaN(out);
     fill_with_complex_zero(in);
     suzerain::complex::assign_complex(in[0], 17.0, 0.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
@@ -607,7 +607,7 @@ void differentiate_on_forward_1D_r2c(RealMultiArray &in,
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
         for (int derivative = 0; derivative < 8; ++derivative) {
             // Load a real-valued function into the input array
-            fill_with_real_NaN(in);
+            fill_with_NaN(in);
             fill_with_complex_NaN(out);
             for (int i = 0; i < NR; ++i) {
                 in[i] = real_test_function<double>(
@@ -653,7 +653,7 @@ void differentiate_on_backward_1D_c2r(RealMultiArray &in,
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
         for (int derivative = 0; derivative < 8; ++derivative) {
             // Load a real-valued function into the input array
-            fill_with_real_NaN(in);
+            fill_with_NaN(in);
             fill_with_complex_NaN(out);
             for (int i = 0; i < NR; ++i) {
                 in[i] = real_test_function<double>(

@@ -269,10 +269,12 @@ bool check_close_collections(const FPT *left_begin, const FPT *left_end,
 
 
 // Provide a general operator<<(basic_ostream, boost::array) template in ::boost
+// Required for many of the Boost.Test predicates to compile correctly
 namespace boost {
 template< typename charT, typename traits, typename T, ::std::size_t N >
 ::std::basic_ostream<charT,traits>& operator<<(
-        ::std::basic_ostream<charT,traits> &os, const ::boost::array<T,N> &array)
+        ::std::basic_ostream<charT,traits> &os,
+        const ::boost::array<T,N> &array)
 {
     os << '[' << N << "]{ ";
     ::std::copy(array.begin(),
