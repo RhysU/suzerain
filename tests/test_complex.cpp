@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE( NaN )
     }
 }
 
-BOOST_AUTO_TEST_CASE( assign_complex )
+BOOST_AUTO_TEST_CASE( assign_complex_with_complex_source )
 {
     using suzerain::complex::assign_complex;
 
@@ -141,6 +141,25 @@ BOOST_AUTO_TEST_CASE( assign_complex )
     assign_complex(c, 3.0, 4.0);
     BOOST_CHECK_EQUAL(c.real(), 3.0);
     BOOST_CHECK_EQUAL(c.imag(), 4.0);
+}
+
+BOOST_AUTO_TEST_CASE( assign_complex_with_arithmetic_source )
+{
+    using suzerain::complex::assign_complex;
+
+    fftw_complex a;
+    a[0] = 123.0;
+    a[1] = 456.0;
+    assign_complex(a,789.0);
+    BOOST_CHECK_EQUAL(a[0], 789.0);
+    BOOST_CHECK_EQUAL(a[1], 0.0);
+
+    std::complex<double> b;
+    b.real() = 123.0;
+    b.imag() = 456.0;
+    assign_complex(b, 789.0);
+    BOOST_CHECK_EQUAL(b.real(), 789.0);
+    BOOST_CHECK_EQUAL(b.imag(), 0.0);
 }
 
 BOOST_AUTO_TEST_CASE( assign_complex_scaled )

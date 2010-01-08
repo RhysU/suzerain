@@ -31,6 +31,7 @@ pkginclude_HEADERS += common.h
 pkginclude_HEADERS += complex.hpp
 pkginclude_HEADERS += error.h
 pkginclude_HEADERS += function.h
+pkginclude_HEADERS += functional.hpp
 pkginclude_HEADERS += math.hpp
 pkginclude_HEADERS += multi_array.hpp
 pkginclude_HEADERS += orthonormal.hpp

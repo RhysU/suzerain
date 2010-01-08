@@ -32,9 +32,11 @@
 #ifndef PECOS_SUZERAIN_TEST_TOOLS_HPP
 #define PECOS_SUZERAIN_TEST_TOOLS_HPP
 
-#include <suzerain/common.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/test_tools.hpp>
+#include <suzerain/common.hpp>
+#include <suzerain/complex.hpp>
+#include <suzerain/multi_array.hpp>
 
 #define CHECK_GBMATRIX_CLOSE(                                        \
             e_m, e_n, e_kl, e_ku, e, e_ld,                           \
@@ -283,6 +285,36 @@ template< typename charT, typename traits, typename T, ::std::size_t N >
     os << '}';
     return os;
 }
+}
+
+/**
+ * Fill a floating point MultiArray \c x with real NaN.
+ *
+ * @param x MultiArray to fill.
+ */
+template<class MultiArray>
+typename boost::disable_if<
+    ::suzerain::complex::traits::is_complex<typename MultiArray::element>,
+    void
+>::type fill_with_NaN(MultiArray &x) {
+    typedef typename MultiArray::element real_type;
+    BOOST_STATIC_ASSERT(std::numeric_limits<real_type>::has_quiet_NaN);
+    using namespace ::suzerain::multi_array;
+    fill(x, std::numeric_limits<real_type>::quiet_NaN());
+}
+
+/**
+ * Fill a complex-valued MultiArray \c x with complex NaN.
+ *
+ * @param x MultiArray to fill.
+ */
+template<class MultiArray>
+typename boost::enable_if<
+    ::suzerain::complex::traits::is_complex<typename MultiArray::element>,
+    void
+>::type fill_with_NaN(MultiArray &x) {
+    using namespace ::suzerain::multi_array;
+    fill(x, ::suzerain::complex::NaN<typename MultiArray::element>());
 }
 
 #endif // PECOS_SUZERAIN_TEST_TOOLS_HPP

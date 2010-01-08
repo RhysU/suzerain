@@ -76,49 +76,6 @@ FPT real_test_function(const Integer NR,
     return retval;
 }
 
-template<class RealMultiArray>
-void fill_with_real_NaN(RealMultiArray &x)
-{
-    typedef typename RealMultiArray::element real_type;
-    const real_type quiet_NaN = std::numeric_limits<real_type>::quiet_NaN();
-    std::fill_n(x.data(), x.num_elements(), quiet_NaN);
-}
-
-template<class ComplexMultiArray>
-void fill_with_complex_NaN(ComplexMultiArray &x)
-{
-    typedef typename ComplexMultiArray::element element;
-    element NaN_value;
-    typedef typename pencilfft::detail::transform_traits<
-            element>::real_type real_type;
-    const real_type quiet_NaN = std::numeric_limits<real_type>::quiet_NaN();
-
-    const element * const end = x.data() + x.num_elements();
-    element *it = x.data();
-    while (it != end) {
-        suzerain::complex::assign_complex(*it++, quiet_NaN, quiet_NaN);
-    }
-}
-
-template<class RealMultiArray>
-void fill_with_real_zero(RealMultiArray &x)
-{
-    typedef typename RealMultiArray::element real_type;
-    std::fill_n(x.data(), x.num_elements(), real_type(0));
-}
-
-template<class ComplexMultiArray>
-void fill_with_complex_zero(ComplexMultiArray &x)
-{
-    typedef typename ComplexMultiArray::element element;
-
-    const element * const end = x.data() + x.num_elements();
-    element *it = x.data();
-    while (it != end) {
-        suzerain::complex::assign_complex(*it++, 0, 0);
-    }
-}
-
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray1, class ComplexMultiArray2>
 void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
@@ -134,8 +91,8 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
     const real_type shift = M_PI/3.0;
 
     // Load a real-valued function into the input array and transform it
-    fill_with_complex_NaN(in);
-    fill_with_complex_NaN(out);
+    fill_with_NaN(in);
+    fill_with_NaN(out);
     for (int i = 0; i < NR; ++i) {
         suzerain::complex::assign_complex(in[i],
                 real_test_function<real_type>(NR, (NR+1)/2, i, shift), 0.0);
@@ -165,8 +122,8 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
     }
 
     // Load an imaginary-valued function into the input array and transform it
-    fill_with_complex_NaN(in);
-    fill_with_complex_NaN(out);
+    fill_with_NaN(in);
+    fill_with_NaN(out);
     for (int i = 0; i < NR; ++i) {
         suzerain::complex::assign_complex(in[i], 0.0,
                 real_test_function<real_type>(NR, (NR+1)/2, i, shift));
@@ -212,7 +169,7 @@ void check_1D_forward_r2c(RealMultiArray &in, ComplexMultiArray &out)
     const real_type shift = M_PI/3.0;
 
     // Load a real-valued function into the input array and transform it
-    fill_with_complex_NaN(out);
+    fill_with_NaN(out);
     for (int i = 0; i < NR; ++i) {
         in[i] = real_test_function<real_type>(NR, (NR+1)/2, i, shift);
     }
@@ -274,8 +231,8 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     BOOST_REQUIRE(plan.get() != NULL);
 
     // Load a complex-valued function into the input array
-    fill_with_complex_NaN(in);
-    fill_with_complex_NaN(out);
+    fill_with_NaN(in);
+    fill_with_NaN(out);
     for (int i = 0; i < NR; ++i) {
         suzerain::complex::assign_complex(
                 in[i],
@@ -322,8 +279,8 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
 
     // Load a conjugate-symmetric function into the input array...
     // ...with known frequency content and constant offset 17
-    fill_with_complex_NaN(out);
-    fill_with_complex_zero(in);
+    fill_with_NaN(out);
+    suzerain::multi_array::fill(in, 0);
     suzerain::complex::assign_complex(in[0], 17.0, 0.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         const real_type val = i/2.0;
@@ -351,8 +308,8 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
 
     // Load a real-symmetric function into the input array...
     // ...with known frequency content and constant offset 17
-    fill_with_complex_NaN(out);
-    fill_with_complex_zero(in);
+    fill_with_NaN(out);
+    suzerain::multi_array::fill(in, 0);
     suzerain::complex::assign_complex(in[0], 0.0, 17.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         const real_type val = i/2.0;
@@ -396,7 +353,7 @@ void check_1D_backward_c2r(ComplexMultiArray &in, RealMultiArray &out)
     // Load a function into the input array...
     // ...with known frequency content and constant offset 17
     fill_with_NaN(out);
-    fill_with_complex_zero(in);
+    suzerain::multi_array::fill(in,0);
     suzerain::complex::assign_complex(in[0], 17.0, 0.0);
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         const real_type val = i/2.0;
@@ -457,8 +414,8 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     BOOST_REQUIRE(plan.get() != NULL);
 
     // Load a complex-valued function into the input array
-    fill_with_complex_NaN(in);
-    fill_with_complex_NaN(out);
+    fill_with_NaN(in);
+    fill_with_NaN(out);
     for (int i = 0; i < NC; ++i) {
         suzerain::complex::assign_complex(in[i], i, i);
     }
@@ -505,8 +462,8 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
         for (int derivative = 0; derivative < 8; ++derivative) {
             // Load a complex function into the input array
-            fill_with_complex_NaN(in);
-            fill_with_complex_NaN(out);
+            fill_with_NaN(in);
+            fill_with_NaN(out);
             for (int i = 0; i < NR; ++i) {
                 const double val = real_test_function<double>(
                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
@@ -556,8 +513,8 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
         for (int derivative = 0; derivative < 8; ++derivative) {
             // Load a complex function into the input array
-            fill_with_complex_NaN(in);
-            fill_with_complex_NaN(out);
+            fill_with_NaN(in);
+            fill_with_NaN(out);
             for (int i = 0; i < NR; ++i) {
                 const double val = real_test_function<double>(
                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
@@ -608,7 +565,7 @@ void differentiate_on_forward_1D_r2c(RealMultiArray &in,
         for (int derivative = 0; derivative < 8; ++derivative) {
             // Load a real-valued function into the input array
             fill_with_NaN(in);
-            fill_with_complex_NaN(out);
+            fill_with_NaN(out);
             for (int i = 0; i < NR; ++i) {
                 in[i] = real_test_function<double>(
                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
@@ -654,7 +611,7 @@ void differentiate_on_backward_1D_c2r(RealMultiArray &in,
         for (int derivative = 0; derivative < 8; ++derivative) {
             // Load a real-valued function into the input array
             fill_with_NaN(in);
-            fill_with_complex_NaN(out);
+            fill_with_NaN(out);
             for (int i = 0; i < NR; ++i) {
                 in[i] = real_test_function<double>(
                         NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);

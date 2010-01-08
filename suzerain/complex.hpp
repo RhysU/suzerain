@@ -32,7 +32,7 @@
 #define __SUZERAIN_COMPLEX_HPP
 
 #include <suzerain/common.hpp>
-#include <complex>
+#include <suzerain/functional.hpp>
 
 // TODO Broken details::assign_* if FFTW3 discovers the C99 _Complex type
 // This header does not currently require fftw3.h to function, but fixing
@@ -189,12 +189,31 @@ const FPT& imag(const FPT (&z)[2]) {
  * @param dest destination
  * @param src source
  */
-template<class Complex1, class Complex2>
+template<class Complex, class Source>
 SUZERAIN_FORCEINLINE
-void assign_complex(Complex1 &dest, const Complex2 &src)
+typename boost::enable_if<
+    traits::is_complex<Source>, void
+>::type assign_complex(Complex &dest, const Source &src)
 {
     real(dest) = real(src);
     imag(dest) = imag(src);
+}
+
+/**
+ * Overwrite \c dest with \c src.  The imaginary
+ * part of \c dest is set to zero.
+ *
+ * @param dest destination
+ * @param src source
+ */
+template<class Complex, class Source>
+SUZERAIN_FORCEINLINE
+typename boost::enable_if<
+    boost::is_arithmetic<Source>, void
+>::type assign_complex(Complex &dest, const Source &src)
+{
+    real(dest) = src;
+    imag(dest) = 0;
 }
 
 /**
@@ -287,6 +306,46 @@ void assign_complex_scaled_ipower(Complex1 &dest,
 }
 
 } // namespace complex
+
+namespace functional {
+
+/**
+ * A specialization of the assign functor to properly handle the case where \c
+ * Target is a recognized complex type according to
+ * ::suzerain::complex::traits::is_complex.  It uses
+ * ::suzerain::complex::assign_complex to perform the assignment, and therefore
+ * supports all types that \c assign_complex does.
+ */
+template<class Target, class Source>
+struct assign<
+    Target,
+    Source,
+    typename boost::enable_if<
+        ::suzerain::complex::traits::is_complex<Target>
+    >::type >
+{
+    /**
+     * Create an instance which assigns \c s when applied.
+     *
+     * @param s source of assignment operation occurring via
+     *          <tt>operator()</tt>.
+     */
+    assign(const Source &s) : s_(s) {};
+
+    /**
+     * Assign the value provided at construction to \c t.
+     *
+     * @param t to be assigned.
+     */
+    void operator()(Target& t) const {
+        ::suzerain::complex::assign_complex(t, s_);
+    }
+
+private:
+    const Source &s_; /**< Source for assignment operations */
+};
+
+} // namespace functional
 
 } // namespace suzerain
 

@@ -31,7 +31,7 @@
 #define __SUZERAIN_MULTIARRAY_H
 
 #include <suzerain/common.hpp>
-#include <suzerain/complex.hpp>
+#include <suzerain/functional.hpp>
 
 namespace suzerain
 {
@@ -144,81 +144,19 @@ UnaryFunction for_each(boost::multi_array_ref<ValueType,NumDims> &x,
     return std::for_each(x.data(), x.data() + x.num_elements(), f);
 }
 
-namespace { // anonymous
-
-// General assignment functor
-template<class Source, class Enable = void>
-struct assign_functor {
-    assign_functor(const Source &s) : s_(s) {}
-
-    template<class Target> void operator()(Target& t) const { t = s_; }
-
-private:
-    const Source &s_;
-};
-
-// Specialized assignment functor only accepting recognized complex types
-template<class Source>
-struct assign_functor<
-    Source,
-    typename boost::enable_if<
-        ::suzerain::complex::traits::is_complex<Source>
-    >::type >
-{
-    assign_functor(const Source &s) : s_(s) {};
-
-    template<class Target>
-    void operator()(Target& t) const {
-        BOOST_STATIC_ASSERT(::suzerain::complex::traits::is_complex<Target>::value);
-        ::suzerain::complex::assign_complex(t, s_);
-    }
-
-private:
-    const Source &s_;
-};
-
-} // namespace anonymous
-
 /**
  * Fill MultiArray \c x with the value \c v.  MultiArray <tt>x</tt>'s elements
- * must be assignable from \c v.
+ * must be assignable from \c v.  The underlying assignment uses
+ * ::suzerain::functional::assign to allow specializations of that functor to
+ * be found.
  *
  * @param x MultiArray to fill.
  * @param v Value with which to fill \c x.
  */
 template<class MultiArray, class V>
 void fill(MultiArray &x, const V &v) {
-    for_each(x, assign_functor<V>(v));
-}
-
-/**
- * Fill MultiArray \c x with real NaN.
- * MultiArray::element must be a floating point value.
- *
- * @param x MultiArray to fill.
- */
-template<class MultiArray>
-typename boost::disable_if<
-    ::suzerain::complex::traits::is_complex<typename MultiArray::element>,
-    void
->::type fill_with_NaN(MultiArray &x) {
-    typedef typename MultiArray::element real_type;
-    BOOST_STATIC_ASSERT(std::numeric_limits<real_type>::has_quiet_NaN);
-    fill(x, std::numeric_limits<real_type>::quiet_NaN());
-}
-
-/**
- * Fill MultiArray \c x with complex NaN.  MultiArray::element
- * must be a complex type built from two floating point values.
- *
- * @param x MultiArray to fill.
- */
-template<class MultiArray>
-typename boost::enable_if<
-    ::suzerain::complex::traits::is_complex<typename MultiArray::element>,
-    void
->::type fill_with_NaN(MultiArray &x) {
-    fill(x, ::suzerain::complex::NaN<typename MultiArray::element>());
+    using suzerain::functional::assign;
+    for_each(x, assign<typename MultiArray::element,V>(v));
 }
 
 } // namespace multi_array

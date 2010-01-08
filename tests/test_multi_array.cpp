@@ -5,6 +5,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <suzerain/multi_array.hpp>
+#include <suzerain/complex.hpp>
 
 BOOST_AUTO_TEST_SUITE( fill_multi_array )
 
@@ -303,34 +304,37 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_4D, T, element_test_types)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( fill_with_NaN )
+// Checks that the suzerain::functional::assign specialization
+// in <suzerain/complex.hpp> is picked up within
+// suzerain::multi_array::fill as expected.
+BOOST_AUTO_TEST_SUITE( fill_complex_multiarray )
 
 using boost::extents;
 using boost::multi_array;
 using boost::multi_array_types::index;
-using suzerain::multi_array::fill_with_NaN;
+using suzerain::multi_array::fill;
 
 const std::size_t NX = 3;
 
-BOOST_AUTO_TEST_CASE(fill_real_with_NaN)
-{
-    multi_array<double,1> foo(extents[NX]);
-    fill_with_NaN(foo);
-    for (index i = 0; i < foo.shape()[0]; ++i) {
-        BOOST_CHECK(foo[i] != foo[i]); // Ensure NaN
-    }
-}
-
-BOOST_AUTO_TEST_CASE(fill_complex_with_NaN)
+BOOST_AUTO_TEST_CASE(fill_complex_multiarray)
 {
     multi_array<std::complex<double>,1> foo(extents[NX]);
-    fill_with_NaN(foo);
+
+    // Fill std::complex elements with FFTW-like complex array
+    const double z[2] = { 1, -1 };
+    fill(foo, z);
     for (index i = 0; i < foo.shape()[0]; ++i) {
-        BOOST_CHECK(foo[i].real() != foo[i].real()); // Ensure NaN
-        BOOST_CHECK(foo[i].imag() != foo[i].imag()); // Ensure NaN
+        BOOST_CHECK_EQUAL(foo[i].real(),  1);
+        BOOST_CHECK_EQUAL(foo[i].imag(), -1);
+    }
+
+    // Fill std::complex elements with real value
+    // Imaginary parts should be set to zero as well
+    fill(foo, 0);
+    for (index i = 0; i < foo.shape()[0]; ++i) {
+        BOOST_CHECK_EQUAL(foo[i].real(), 0);
+        BOOST_CHECK_EQUAL(foo[i].imag(), 0);
     }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
-
