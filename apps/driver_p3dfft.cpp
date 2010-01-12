@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * driver_sine.cc: A P3DFFT test driver based on work by Dmitry Pekurovsky
+ * driver_p3dfft.cc: A P3DFFT test driver based on work by Dmitry Pekurovsky
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -34,8 +34,8 @@
 
 #include <log4cxx/logger.h>
 #include <mpi.h>
-#include <p3dfft_d.h>
 
+#include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
 #include <suzerain/problem.hpp>
@@ -57,28 +57,20 @@ double real_data(const double x, const double y, const double z) {
 
 int main(int argc, char **argv)
 {
-    int nproc;        // Number of processors in MPI environment
-    int procid;       // This processor's global processor ID
-    int dims[2];      // Processor grid dimensions in 1st, 2nd directions
-    int nrep;         // Number of times to repeat the test
-
     MPI_Init(&argc, &argv);                   // Initialize MPI on startup
     atexit((void (*) ()) MPI_Finalize);       // Finalize down MPI at exit
-    MPI_Comm_size(MPI_COMM_WORLD, &nproc);    // TODO Const-ness
-    MPI_Comm_rank(MPI_COMM_WORLD, &procid);   // TODO Const-ness
 
-    // TODO Compute width from magnitude of nproc
+    const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
+    const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+
+    // Initialize logger with processor number
     std::ostringstream procname;
-    procname << "proc" << std::setfill('0') << std::setw(3) << procid;
+    procname << "proc"
+             << std::setfill('0') << std::setw(ceil(log10(nproc))) << procid;
     log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(procname.str());
 
-    // Find default processor grid size based on nproc
-    dims[0] = dims[1] = 0;                // Zeroed for MPI_Dims_create
-    MPI_Dims_create(nproc, 2, dims);      // Find a Cartesian grid
-
-    if (dims[0] > dims[1]) {              // Ensure first dimension smaller
-        std::swap(dims[0], dims[1]);
-    }
+    // Program-specific option storage
+    int nrep;  // Number of times to repeat the test
 
     suzerain::ProgramOptions options;
     suzerain::problem::GridDefinition<> grid;
@@ -87,10 +79,6 @@ int main(int argc, char **argv)
     options.add_options()
         ("rep", po::value<int>(&nrep)->default_value(1),
         "Number of repetitions to perform for timing purposes")
-        ("pg1", po::value<int>(&dims[0])->default_value(dims[0]),
-        "Processor grid size in first direction.")
-        ("pg2", po::value<int>(&dims[1])->default_value(dims[1]),
-        "Processor grid size in second direction.")
     ;
     if (!procid) {
         options.process(argc, argv);
@@ -104,56 +92,39 @@ int main(int argc, char **argv)
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Physical grid dimensions: "
                            << boost::format("(% 4d, % 4d, % 4d)")
-                           % grid.Nx() % grid.Ny() % grid.Nz()));
+                           % grid.nx() % grid.ny() % grid.nz()));
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Processor grid dimensions: "
-                           << boost::format("(%d, %d)") % dims[0] % dims[1]));
+                           << boost::format("(%d, %d)")
+                           % grid.pg0() % grid.pg1()));
 
-    if (dims[0]*dims[1] != nproc) {
-        ONLYPROC0(LOG4CXX_WARN(logger,
-                "Processor grid dimensions incompatible with number of processors"));
-    }
 
-    /* Initialize P3DFFT using Y as STRIDE1 direction in wave space */
-    p3dfft_setup(dims, grid.Nx(), grid.Nz(), grid.Ny(), 1 /* nuke btrans */);
-    /* Retrieve dimensions for input and output arrays */
-    boost::array<int, 3> istart, isize, iend, fstart, fsize, fend;
-    get_dims(istart.data(), iend.data(), isize.data(), 1/* physical pencil */);
-    get_dims(fstart.data(), fend.data(), fsize.data(), 2/* wave pencil */);
-    /* P3DFFT STRIDE1 physical space get_dims returns in (X, Z, Y) ordering */
-    /* Suzerain's pencils require (X, Y, Z) ordering; flip Z and Y data */
-    std::swap(istart[1], istart[2]);
-    std::swap(iend  [1], iend  [2]);
-    std::swap(isize [1], isize [2]);
-    /* P3DFFT STRIDE1 wave space get_dims returns in (Y, X, Z) ordering */
-    /* Suzerain's pencils require (X, Y, Z) ordering; flip Y and X data */
-    std::swap(fstart[0], fstart[1]);
-    std::swap(fend  [0], fend  [1]);
-    std::swap(fsize [0], fsize [1]);
-    /* Transform indices for C conventions; want ranges like [istart, iend) */
-    std::transform(istart.begin(), istart.end(), istart.begin(),
-            std::bind2nd(std::minus<int>(),1));
-    std::transform(fstart.begin(), fstart.end(), fstart.begin(),
-            std::bind2nd(std::minus<int>(),1));
+    // pencil_grid handles P3DFFT setup/clean RAII
+    using suzerain::pencil_grid;
+    pencil_grid pg(grid.global_extents(), grid.processor_grid());
+    // pencil handles memory allocation and storage layout
+    using suzerain::pencil;
+    pencil<> A(pg);
 
-    /* Create a uniform tensor product grid */
-    std::valarray<double> gridx(isize[0]), gridy(isize[1]), gridz(isize[2]);
-    for (size_t i = 0; i < isize[0]; ++i) {
-        gridx[i] = (i+istart[0]) * 2*M_PI/grid.Nx();
+    // Create a uniform tensor product grid
+    std::valarray<double> gridx(A.physical.size_x);
+    for (size_t i = 0; i < A.physical.size_x; ++i) {
+        gridx[i] = (i+A.physical.start_x) * 2*M_PI/grid.nx();
         LOG4CXX_TRACE(logger, boost::format("gridx[%3d] = % 6g") % i % gridx[i]);
     }
-    for (size_t j = 0; j < isize[1]; ++j) {
-        gridy[j] = (j+istart[1]) * 2*M_PI/grid.Ny();
+
+    std::valarray<double> gridy(A.physical.size_y);
+    for (size_t j = 0; j < A.physical.size_y; ++j) {
+        gridy[j] = (j+A.physical.start_y) * 2*M_PI/grid.ny();
         LOG4CXX_TRACE(logger, boost::format("gridy[%3d] = % 6g") % j % gridy[j]);
     }
-    for (size_t k = 0; k < isize[2]; ++k) {
-        gridz[k] = (k+istart[2]) * 2*M_PI/grid.Nz();
+
+    std::valarray<double> gridz(A.physical.size_z);
+    for (size_t k = 0; k < A.physical.size_z; ++k) {
+        gridz[k] = (k+A.physical.start_z) * 2*M_PI/grid.nz();
         LOG4CXX_TRACE(logger, boost::format("gridz[%3d] = % 6g") % k % gridz[k]);
     }
 
-    /* Allocate and initialize state space */
-    using suzerain::pencil;
-    pencil<> A(istart.data(), isize.data(), fstart.data(), fsize.data());
 
     LOG4CXX_INFO(logger,
                  "Physical space pencil start and end: "
@@ -189,9 +160,9 @@ int main(int argc, char **argv)
         }
     }
 
-    const long int Ntot  = fsize[0] * fsize[1] * fsize[2] * 2;
+    const long int Ntot  = A.wave.size * 2;
 
-    const long int Nglob = grid.Nx() * grid.Ny() * grid.Nz();
+    const long int Nglob = grid.nx() * grid.ny() * grid.nz();
 
     const double factor = 1.0 / Nglob;
 
@@ -214,8 +185,8 @@ int main(int argc, char **argv)
              it != A.wave.end();
              ++it) {
             if (abs(*it) > 1e-8) {
-                pencil<>::size_type i, j, k;
-                A.wave.inverse_global_offset(it - A.wave.begin(), &i, &j, &k);
+                pencil<>::index i, j, k;
+                A.wave.inverse_global_offset(it - A.wave.begin(), i, j, k);
                 LOG4CXX_INFO(logger,
                         boost::format("(%3d, %3d, %3d) = (%12g, %12g) at index %3d")
                         % i % j % k
@@ -232,7 +203,6 @@ int main(int argc, char **argv)
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
-    p3dfft_clean();   // Free work space
 
     /* Check results */
     double cdiff = 0.0;

@@ -73,31 +73,37 @@ extern void p3dfft_clean();
 
 __END_DECLS
 
+inline
 void p3dfft_setup(int *dims, int nx, int ny, int nz, int overwrite)
 {
     FORT_MOD_NAME(p3dfft_setup)(dims, &nx, &ny, &nz, &overwrite);
 }
 
+inline
 void get_dims(int *start, int *end, int *size, int conf)
 {
     FORT_MOD_NAME(get_dims)(start, end, size, &conf);
 }
 
+inline
 void p3dfft_ftran_r2c(float *A, float *B)
 {
     FORT_MOD_NAME(p3dfft_ftran_r2c)(A, B);
 }
 
+inline
 void p3dfft_btran_c2r(float *A, float *B)
 {
     FORT_MOD_NAME(p3dfft_btran_c2r)(A, B);
 }
 
+inline
 void p3dfft_clean()
 {
     FORT_MOD_NAME(p3dfft_clean)();
 }
 
+inline
 void FORTNAME(abort)()
 {
     abort();

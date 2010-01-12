@@ -27,67 +27,155 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __SUZERAIN_PENCILGRID_H
-#define __SUZERAIN_PENCILGRID_H
+#ifndef __SUZERAIN_PENCIL_GRID_H
+#define __SUZERAIN_PENCIL_GRID_H
 
 #include <suzerain/common.hpp>
+#include <suzerain/types.hpp>
+#include <suzerain/mpi.hpp>
+#include <p3dfft_d.h>
+#include <mpi.h>
 
 namespace suzerain
 {
 
-/** Encapsulates P3DFFT %pencil grid details, including the global grid size
- * and the processor grid decomposition parameters.  These are the same details
- * provided to P3DFFT's \c p3dfft_setup method.
+/**
+ * Encapsulates P3DFFT %pencil grid details, including the global grid extent
+ * and the processor grid decomposition parameters.  Appropriately handles
+ * munging this information to obtain P3DFFT calls which are stride one
+ * in Y in wave space.  Unless otherwise noted, all indices start from
+ * zero with X, Y, and Z having indices 0, 1, and 2, respectively.
  */
-template < typename I = int >
-class pencil_grid
+class pencil_grid : public integral_types
 {
 
 public:
-    typedef I dim_type; /**< Dimension type used to specify the grid */
+    /**
+     * Constructs an instance for the given global grid extents.
+     * Under the covers, P3DFFT's <tt>p3dfft_setup</tt> is
+     * invoked to determine pencil decomposition parameters for
+     * the local process.
+     *
+     * @param global_extents Global grid extents in the
+     *        streamwise (X), wall-normal (Y), and spanwise (Z)
+     *        directions.
+     * @param processor_grid The processor grid decomposition to use in the
+     *        \f$ P_1 \f$ and \f$ P_2 \f$ directions.  Providing a zero
+     *        for either value causes that value to be determined automatically.
+     */
+    pencil_grid(const size_type_3d &global_extents,
+                const size_type_2d &processor_grid);
 
     /**
-     * Constructs an instance per the \c p3dff_setup method.
-     *
-     * @param proc_dims Processor grid sizes in \f$ P_1, P_2 \f$ directions
-     * @param nx Global grid size in the streamwise direction
-     * @param ny Global grid size in the wall-normal direction
-     * @param nz Global grid size in the spanwise direction
-     * @exception std::invalid_argument on negative input
+     * Tears down an instance.  Under the covers, P3DFFT's <tt>p3dfft_clean</tt>
+     * is invoked.
      */
-    pencil_grid(const I proc_dims[2], const I nx, const I ny, const I nz)
-    throw(std::invalid_argument);
+    ~pencil_grid();
 
-    const dim_type pg1; /**< Processor grid size in \f$ P_1 \f$ direction */
-    const dim_type pg2; /**< Processor grid size in \f$ P_2 \f$ direction */
+    /**
+     * Retrieve global computational grid extents.
+     *
+     * @return the global grid extents in the X, Y, and Z directions.
+     */
+    const size_type_3d& global_extents() const { return global_extents_; }
 
-    const dim_type nx;  /**< Global grid size in the streamwise direction */
-    const dim_type ny;  /**< Global grid size in the wall-normal direction */
-    const dim_type nz;  /**< Global grid size in the spanwise direction */
+    /**
+     * Retrieve the processor grid extents.
+     *
+     * In physical space, \f$ P_0 \f$ is the grid extent in the Z direction
+     * and \f$ P_1 \f$ is the grid extent in the Y direction.
+     * In wave space, \f$ P_0 \f$ is the grid extent in the X direction
+     * and \f$ P_1 \f$  is the grid extent in the Z direction.
+     *
+     * @return the processor grid extents in the \f$ P_0 \f$
+     *         and \f$ P_1 \f$ directions as indices 0 and 1, respectively.
+     */
+    const size_type_2d& processor_grid() const { return processor_grid_; }
 
+    /**
+     * Retrieve local pencil physical space starting indices (inclusive) within
+     * the global extents.
+     *
+     * @return local pencil physical space starting indices in the X, Y, and Z
+     * directions.
+     */
+    const index_3d& local_physical_start() const { return pstart_; }
+
+    /**
+     * Retrieve local pencil physical space ending indices (exclusive)
+     * within the global extents.
+     *
+     * @return local pencil physical space starting indices in the X, Y, and Z
+     * directions.
+     */
+    const index_3d& local_physical_end() const { return pend_; }
+
+    /**
+     * Retrieve local pencil physical space extents.
+     *
+     * @return local pencil physical space extents in the X, Y, and Z
+     * directions.
+     */
+    const index_3d& local_physical_extent() const { return pextent_; }
+
+    /**
+     * Retrieve local pencil wave space starting indices (inclusive) within
+     * the global extents.
+     *
+     * @return local pencil wave space starting indices in the X, Y, and Z
+     * directions.
+     */
+    const index_3d& local_wave_start() const { return wstart_; }
+
+    /**
+     * Retrieve local pencil wave space ending indices (exclusive)
+     * within the global extents.
+     *
+     * @return local pencil wave space starting indices in the X, Y, and Z
+     * directions.
+     */
+    const index_3d& local_wave_end() const { return wend_; }
+
+    /**
+     * Retrieve local pencil wave space extents.
+     *
+     * @return local pencil wave space extents in the X, Y, and Z
+     * directions.
+     */
+    const index_3d& local_wave_extent() const { return wextent_; }
+
+private:
+    /**
+     * Global grid extent in the streamwise, wall-normal,
+     * and spanwise directions.
+     **/
+    size_type_3d global_extents_;
+
+    /** Processor grid extent in the \f$ P_1 \f$ and \f$ P_2 \f$ directions. */
+    size_type_2d processor_grid_;
+
+    /** Physical space starting indices for local storage within global grid */
+    index_3d pstart_;
+
+    /** Physical space ending indices for local storage within global grid */
+    index_3d pend_;
+
+    /** Physical space dimensions for local storage */
+    index_3d pextent_;
+
+    /** Wave space starting indices for local storage within global grid */
+    index_3d wstart_;
+
+    /** Wave space ending indices for local storage within global grid */
+    index_3d wend_;
+
+    /** Wave space dimensions for local storage */
+    index_3d wextent_;
+
+    /** Was p3dfft_setup successfully called during construction? */
+    bool p3dfft_setup_called_;
 };
-
-template<typename I>
-pencil_grid<I>::pencil_grid(
-    const I proc_dims[2],
-    const I nx, const I ny, const I nz)
-throw(std::invalid_argument)
-        : pg1(proc_dims[0]), pg2(proc_dims[1]),
-        nx(nx), ny(ny), nz(nz)
-{
-    using std::invalid_argument;
-
-    if (pg1 < 0) throw invalid_argument("pg1 must be nonnegative");
-
-    if (pg2 < 0) throw invalid_argument("pg2 must be nonnegative");
-
-    if (nx  < 0) throw invalid_argument("nx must be nonnegative");
-
-    if (ny  < 0) throw invalid_argument("ny must be nonnegative");
-
-    if (nz  < 0) throw invalid_argument("nz must be nonnegative");
-}
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_PENCILGRID_H
+#endif // __SUZERAIN_PENCIL_GRID_H

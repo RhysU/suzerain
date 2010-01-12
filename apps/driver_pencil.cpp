@@ -72,16 +72,17 @@ int main(int argc, char **argv)
 
     // Initialize logger with processor number
     std::ostringstream procname;
-    procname << "proc" << std::setfill('0') << std::setw(3) << procid;
+    procname << "proc"
+             << std::setfill('0') << std::setw(ceil(log10(nproc))) << procid;
     log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(procname.str());
 
     // Process command line arguments in process 0 and broadcast them
     suzerain::ProgramOptions options;
     namespace po = boost::program_options;
     options.add_options()
-        ("Nx", po::value<int>(&N[0])->default_value(16),
+        ("nx", po::value<int>(&N[0])->default_value(16),
         "Processor grid size in X direction.")
-        ("Ny", po::value<int>(&N[1])->default_value(16),
+        ("ny", po::value<int>(&N[1])->default_value(16),
         "Processor grid size in Y direction.")
     ;
     if (!procid) {

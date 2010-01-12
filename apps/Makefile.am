@@ -22,14 +22,16 @@ CLEANFILES += *.pchi
 # Progams
 bin_PROGRAMS          += driver_p3dfft
 driver_p3dfft_SOURCES  = driver_p3dfft.cpp
-driver_p3dfft_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
+driver_p3dfft_LDADD    = ../suzerain/libsuzerain.la
+driver_p3dfft_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
 driver_p3dfft_LDADD   += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 driver_p3dfft_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 driver_p3dfft_LDADD   += $(P3DFFT_LIBS) $(FFTW3_LIBS)
 
 bin_PROGRAMS          += driver_pencil
 driver_pencil_SOURCES  = driver_pencil.cpp
-driver_pencil_LDADD    = $(GSL_LIBS) $(LOG4CXX_LIBS)
+driver_pencil_LDADD    = ../suzerain/libsuzerain.la
+driver_pencil_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
 driver_pencil_LDADD   += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 driver_pencil_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 driver_pencil_LDADD   += $(FFTW3_LIBS)

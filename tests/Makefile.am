@@ -60,15 +60,14 @@ test_state_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 test_state_LDADD    += $(MKL_LIBS)
 test_state_LDADD    += ../suzerain/libsuzerain.la
 
-check_PROGRAMS           += test_pencil_grid
-test_pencil_grid_SOURCES  = test_pencil_grid.cpp
-test_pencil_grid_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_pencil_grid_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
 check_PROGRAMS      += test_pencil
 test_pencil_SOURCES  = test_pencil.cpp
 test_pencil_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencil_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_pencil_LDADD   += $(P3DFFT_LIBS)
+test_pencil_LDADD   += $(FFTW3_LIBS)
+test_pencil_LDADD   += $(GSL_LIBS)
+test_pencil_LDADD   += ../suzerain/libsuzerain.la
 
 check_PROGRAMS           += test_orthonormal
 test_orthonormal_SOURCES  = test_orthonormal.cpp

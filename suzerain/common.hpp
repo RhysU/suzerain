@@ -69,6 +69,7 @@
 #include <boost/mpl/logical.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/preprocessor/comparison/greater.hpp>
 #include <boost/preprocessor/comparison/less.hpp>
@@ -89,6 +90,23 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/utility.hpp>
+
+// Provide a general operator<<(basic_ostream, boost::array) template in ::boost
+namespace boost {
+template< typename charT, typename traits, typename T, ::std::size_t N >
+::std::basic_ostream<charT,traits>& operator<<(
+        ::std::basic_ostream<charT,traits> &os,
+        const ::boost::array<T,N> &array)
+{
+    os << '[' << N << "]{ ";
+    ::std::copy(array.begin(),
+                array.end(),
+                ::std::ostream_iterator<T,charT,traits>(os, " "));
+    os << '}';
+    return os;
+}
+} // namespace boost
+
 #endif // SUZERAIN_HAVE_BOOST
 
 // Include other functionality used throughout Suzerain

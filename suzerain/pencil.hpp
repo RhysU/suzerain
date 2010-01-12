@@ -32,6 +32,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/types.hpp>
 
 namespace suzerain
 {
@@ -47,16 +48,19 @@ namespace suzerain
  * is arranged so that the wall-normal direction is stride one in wave space
  * while the streamwise direction is stride one in physical space.
  */
-template < typename T = double, typename G = pencil_grid<> >
-class pencil : boost::noncopyable
+template< typename FPT = double >
+class pencil
+    : public integral_types,
+      boost::noncopyable
 {
 public:
+
     /**
      * @name Real-valued types
      * Used for physical space values and the real and imaginary portions
      * of wave space coefficients.
      * @{ */
-    typedef T                  real_type;
+    typedef FPT                real_type;
     typedef real_type&         real_reference;
     typedef const real_type&   const_real_reference;
     typedef real_type*         real_pointer;
@@ -69,30 +73,21 @@ public:
      * @name Complex-valued types
      * Used for wave space values.
      * @{ */
-    typedef std::complex<T>       complex_type;
-    typedef complex_type&         complex_reference;
-    typedef const complex_type&   const_complex_reference;
-    typedef complex_type*         complex_pointer;
-    typedef const complex_type*   const_complex_pointer;
-    typedef complex_pointer       complex_iterator;
-    typedef const_complex_pointer const_complex_iterator;
+    typedef typename std::complex<FPT> complex_type;
+    typedef complex_type&              complex_reference;
+    typedef const complex_type&        const_complex_reference;
+    typedef complex_type*              complex_pointer;
+    typedef const complex_type*        const_complex_pointer;
+    typedef complex_pointer            complex_iterator;
+    typedef const_complex_pointer      const_complex_iterator;
     /**  @} */
 
-    /** Dimension type used to describe the underlying pencil_grid */
-    typedef typename G::dim_type dim_type;
+private: // Declared above public members to enforce initialization order
 
-    /** Offset type used to access coefficients within the %pencil */
-    typedef std::size_t size_type;
-
-    /** Relative offset type used to describe differences between offsets */
-    typedef std::ptrdiff_t difference_type;
-
-private:
-    // Declared above public members to enforce correct initialization order
     /** Total amount of real_type data stored within the pencil, including both
      *  physical and wave space storage requirements.
      */
-    const size_type                      data_nelem_;
+    const size_type data_nelem_;
 
     /** Sufficient in size to simultaneously house physical and wave space
      * data.  Contained physical and wave instances store information within
@@ -101,6 +96,7 @@ private:
     const boost::scoped_array<real_type> data_;
 
 public:
+
     class wave_space; // Forward declaration
 
     /**
@@ -112,10 +108,10 @@ public:
      * stride reasons, three loops iterating across physical_space should
      * resemble
      * \code
-     *  // p an instance of pencil<T,G>::physical_space
-     *  for (pencil<T,G>::size_type j = 0; j < p.size_y; ++j)
-     *      for (pencil<T,G>::size_type k = 0; k < p.size_z; ++k)
-     *          for (pencil<T,G>::size_type i = 0; i < p.size_x; ++i)
+     *  // p an instance of pencil<>::physical_space
+     *  for (pencil<>::index j = 0; j < p.size_y; ++j)
+     *      for (pencil<>::index k = 0; k < p.size_z; ++k)
+     *          for (pencil<>::index i = 0; i < p.size_x; ++i)
      *              // Access p(i,j,k) here
      * \endcode
      */
@@ -127,27 +123,27 @@ public:
          *  @name Starting offsets within the global pencil_grid
          *  Inclusive index.
          * @{ */
-        const dim_type start_x; /**< Starting streamwise offset */
-        const dim_type start_y; /**< Starting wall-normal offset */
-        const dim_type start_z; /**< Starting spanwise offset */
+        const index start_x; /**< Starting streamwise offset */
+        const index start_y; /**< Starting wall-normal offset */
+        const index start_z; /**< Starting spanwise offset */
         /**  @} */
 
         /**
          *  @name Ending offsets within the global pencil_grid
          *  Exclusive index.
          * @{ */
-        const dim_type end_x; /**< Ending streamwise offset */
-        const dim_type end_y; /**< Ending wall-normal offset */
-        const dim_type end_z; /**< Ending spanwise offset */
+        const index end_x; /**< Ending streamwise offset */
+        const index end_y; /**< Ending wall-normal offset */
+        const index end_z; /**< Ending spanwise offset */
         /**  @} */
 
         /**
          * @name Size of the physical_space data within the pencil.
          * @{ */
-        const dim_type size_x; /**< Size in streamwise direction */
-        const dim_type size_y; /**< Size in wall-normal direction */
-        const dim_type size_z; /**< Size in spanwise direction */
-        const dim_type size;   /**< Products of sizes in three dimensions */
+        const size_type size_x; /**< Size in streamwise direction */
+        const size_type size_y; /**< Size in wall-normal direction */
+        const size_type size_z; /**< Size in spanwise direction */
+        const size_type size;   /**< Products of sizes in three dimensions */
         /**  @} */
 
         /**
@@ -155,11 +151,11 @@ public:
          * @{ */
         /** Mutable access to physical space data at given offset */
         real_reference operator()(
-            const size_type x, const size_type y, const size_type z);
+            const index x, const index y, const index z);
 
         /** Immutable access to physical space data at given offset */
         const_real_reference operator()(
-            const size_type x, const size_type y, const size_type z) const;
+            const index x, const index y, const index z) const;
         /**  @} */
 
         /**
@@ -186,47 +182,47 @@ public:
          *
          * @return the linear, 1D offset where (\c x, \c y, \c z) is stored.
          */
-        size_type offset(
-            const size_type x,
-            const size_type y,
-            const size_type z) const;
+        index offset(
+            const index x,
+            const index y,
+            const index z) const;
 
         /** Compute the (\c x, \c y, \c z) physical space indices associated
          * with offset \c i.  Useful for turning an offset into a tuple that
          * can be logged or displayed.  Returned indices are for the local
          * pencil data, not the global grid.
          *
-         * @param i offset found per \c offset method
-         * @param x (output) index in the streamwise direction
-         * @param y (output) index in the wall-normal direction
-         * @param z (output) index in the spanwise direction
+         * @param[in] i offset found per \c offset method
+         * @param[out] x index in the streamwise direction
+         * @param[out] y index in the wall-normal direction
+         * @param[out] z index in the spanwise direction
          */
         void inverse_offset(
-            const size_type  i,
-            size_type * const x,
-            size_type * const y,
-            size_type * const z) const;
+            const index  i,
+            index &x,
+            index &y,
+            index &z) const;
 
         /** Compute the (\c x, \c y, \c z) global physical space indices
          * associated with offset \c i.  Useful for turning an offset into a
          * tuple that can be logged or displayed.  Returned indices are for the
          * global grid.
          *
-         * @param i offset found per \c offset method
-         * @param x (output) index in the streamwise direction
-         * @param y (output) index in the wall-normal direction
-         * @param z (output) index in the spanwise direction
+         * @param[in]  i offset found per \c offset method
+         * @param[out] x index in the streamwise direction
+         * @param[out] y index in the wall-normal direction
+         * @param[out] z index in the spanwise direction
          */
         void inverse_global_offset(
-            const size_type  i,
-            size_type * const x,
-            size_type * const y,
-            size_type * const z) const;
+            const index  i,
+            index &x,
+            index &y,
+            index &z) const;
          /* @} */
 
     private:
         /** Allows pencil to construct instances of physical_space */
-        friend class pencil<T,G>;
+        friend class pencil;
 
         /** Intended for use by pencil only.  The containing pencil
          * instance is required to perform all memory allocation and
@@ -236,17 +232,15 @@ public:
          * @param size  sizes of the data stored within this instance
          * @param data  location where coefficients are to be found,
          *              must be sufficiently large to hold all elements.
-         * @throw std::invalid_argument if any index is negative.
          */
         physical_space(
-            const dim_type start[3], const dim_type size[3], real_pointer data)
-        throw(std::invalid_argument);
+            const index_3d &start, const index_3d &size, real_pointer data);
 
         /** Raw real_type data where coefficients are stored. */
         real_pointer const data_;
 
         /** Precomputed size_x * size_z */
-        const size_type size_xz_;
+        const index size_xz_;
     };
 
     /**
@@ -258,10 +252,10 @@ public:
      * stride reasons, three loops iterating across physical_space should
      * resemble
      * \code
-     *  // p an instance of pencil<T,G>::wave_space
-     *  for (pencil<T,G>::size_type k = 0; k < p.size_z; ++k)
-     *      for (pencil<T,G>::size_type i = 0; i < p.size_x; ++i)
-     *          for (pencil<T,G>::size_type j = 0; j < p.size_y; ++j)
+     *  // p an instance of pencil::wave_space
+     *  for (pencil<>::index k = 0; k < p.size_z; ++k)
+     *      for (pencil<>::index i = 0; i < p.size_x; ++i)
+     *          for (pencil<>::index j = 0; j < p.size_y; ++j)
      *              // Access p(i,j,k) here
      * \endcode
      */
@@ -272,27 +266,27 @@ public:
          *  @name Starting offsets within the global pencil_grid
          *  Inclusive index.
          * @{ */
-        const dim_type start_x; /**< Starting streamwise offset */
-        const dim_type start_y; /**< Starting wall-normal offset */
-        const dim_type start_z; /**< Starting spanwise offset */
+        const index start_x; /**< Starting streamwise offset */
+        const index start_y; /**< Starting wall-normal offset */
+        const index start_z; /**< Starting spanwise offset */
         /**  @} */
 
         /**
          *  @name Ending offsets within the global pencil_grid
          *  Exclusive index.
          * @{ */
-        const dim_type end_x; /**< Ending streamwise offset */
-        const dim_type end_y; /**< Ending wall-normal offset */
-        const dim_type end_z; /**< Ending spanwise offset */
+        const index end_x; /**< Ending streamwise offset */
+        const index end_y; /**< Ending wall-normal offset */
+        const index end_z; /**< Ending spanwise offset */
         /**  @} */
 
         /**
          * @name Size of the wave_space data within the pencil.
          * @{ */
-        const dim_type size_x; /**< Size in streamwise direction */
-        const dim_type size_y; /**< Size in wall-normal direction */
-        const dim_type size_z; /**< Size in spanwise direction */
-        const dim_type size;   /**< Products of sizes in three dimensions */
+        const size_type size_x; /**< Size in streamwise direction */
+        const size_type size_y; /**< Size in wall-normal direction */
+        const size_type size_z; /**< Size in spanwise direction */
+        const size_type size;   /**< Products of sizes in three dimensions */
         /**  @} */
 
         /**
@@ -300,27 +294,27 @@ public:
          * @{ */
         /** Mutable access to wave space data at given offset */
         complex_reference operator()(
-            const size_type x, const size_type y, const size_type z);
+            const index x, const index y, const index z);
 
         /** Immutable access to wave space data at given offset */
         const_complex_reference operator()(
-            const size_type x, const size_type y, const size_type z) const;
+            const index x, const index y, const index z) const;
 
         /** Mutable access to real coefficients at given offset */
         real_reference real(
-            const size_type x, const size_type y, const size_type z);
+            const index x, const index y, const index z);
 
         /** Immutable access to space real coefficients at given offset */
         const_real_reference real(
-            const size_type x, const size_type y, const size_type z) const;
+            const index x, const index y, const index z) const;
 
         /** Mutable access to imaginary coefficients at given offset */
         real_reference imag(
-            const size_type x, const size_type y, const size_type z);
+            const index x, const index y, const index z);
 
         /** Immutable access to imaginary coefficients at given offset */
         const_real_reference imag(
-            const size_type x, const size_type y, const size_type z) const;
+            const index x, const index y, const index z) const;
         /**  @} */
 
         /**
@@ -347,47 +341,47 @@ public:
          *
          * @return the linear, 1D offset where (\c x, \c y, \c z) is stored.
          */
-        size_type offset(
-            const size_type x,
-            const size_type y,
-            const size_type z) const;
+        index offset(
+            const index x,
+            const index y,
+            const index z) const;
 
         /** Compute the (\c x, \c y, \c z) wave space indices associated with
          * offset \c i.  Useful for turning an offset into a tuple that can be
          * logged or displayed.  Returned indices are for the local pencil
          * data, not the global grid.
          *
-         * @param i offset found per \c offset method
-         * @param x (output) index in the streamwise direction
-         * @param y (output) index in the wall-normal direction
-         * @param z (output) index in the spanwise direction
+         * @param[in]  i offset found per \c offset method
+         * @param[out] x index in the streamwise direction
+         * @param[out] y index in the wall-normal direction
+         * @param[out] z index in the spanwise direction
          */
         void inverse_offset(
-            const size_type  i,
-            size_type * const x,
-            size_type * const y,
-            size_type * const z) const;
+            const index  i,
+            index &x,
+            index &y,
+            index &z) const;
 
         /** Compute the (\c x, \c y, \c z) global wave space indices associated
          * with offset \c i.  Useful for turning an offset into a tuple that
          * can be logged or displayed.  Returned indices are for the global
          * grid.
          *
-         * @param i offset found per \c offset method
-         * @param x (output) index in the streamwise direction
-         * @param y (output) index in the wall-normal direction
-         * @param z (output) index in the spanwise direction
+         * @param[in]  i offset found per \c offset method
+         * @param[out] x index in the streamwise direction
+         * @param[out] y index in the wall-normal direction
+         * @param[out] z index in the spanwise direction
          */
         void inverse_global_offset(
-            const size_type  i,
-            size_type * const x,
-            size_type * const y,
-            size_type * const z) const;
+            const index  i,
+            index &x,
+            index &y,
+            index &z) const;
         /**  @} */
 
     private:
         /** Allows pencil to construct instances of physical_space */
-        friend class pencil<T,G>;
+        friend class pencil;
 
         /** Intended for use by pencil only.  The containing pencil
          * instance is required to perform all memory allocation and
@@ -397,11 +391,9 @@ public:
          * @param size  sizes of the data stored within this instance
          * @param data  location where coefficients are to be found,
          *              must be sufficiently large to hold all elements.
-         * @throw std::invalid_argument if any index is negative.
          */
         wave_space(
-            const dim_type start[3], const dim_type size[3], real_pointer data)
-        throw(std::invalid_argument);
+            const index_3d &start, const index_3d &size, real_pointer data);
 
         /** Raw complex_type data where coefficients are stored. */
         complex_pointer const data_complex_;
@@ -410,7 +402,7 @@ public:
         real_pointer    const data_real_;
 
         /** Precomputed size_x * size_y */
-        const size_type size_xy_;
+        const index size_xy_;
     };
 
     /**
@@ -427,9 +419,17 @@ public:
      * @param wsize  size of the pencil in wave space.
      * @throw std::invalid_argument if any index is negative.
      */
-    pencil(const dim_type pstart[3], const dim_type psize[3],
-           const dim_type wstart[3], const dim_type wsize[3])
+    pencil(const index_3d &pstart, const index_3d &psize,
+           const index_3d &wstart, const index_3d &wsize)
     throw(std::invalid_argument);
+
+    /**
+     * Construct a local pencil matching the characteristics of
+     * a global pencil_grid.
+     *
+     * @param pg The pencil_grid to match.
+     */
+    pencil(const pencil_grid &pg);
 
     /**
      * @name Iterator-based access to all physical and wave space data.
@@ -451,17 +451,274 @@ public:
     physical_space physical;
 
     /** Use to access all wave_space data for this instance */
-    wave_space     wave;
+    wave_space wave;
 };
 
-template<typename T, typename G>
-pencil<T, G>::pencil(
-    const dim_type pstart[3], const dim_type psize[3],
-    const dim_type wstart[3], const dim_type wsize[3])
+template<typename FPT>
+inline
+pencil<FPT>::real_iterator
+pencil<FPT>::begin()
+{
+    return data_.get();
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::const_real_iterator
+pencil<FPT>::begin() const
+{
+    return data_.get();
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::real_iterator
+pencil<FPT>::end()
+{
+    return data_.get() + data_nelem_;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::const_real_iterator
+pencil<FPT>::end() const
+{
+    return data_.get() + data_nelem_;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::real_pointer
+pencil<FPT>::data()
+{
+    return data_.get();
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::index
+pencil<FPT>::physical_space::offset(
+    const index x,
+    const index y,
+    const index z) const
+{
+    return x + z*size_x + y*size_xz_;
+}
+
+template<typename FPT>
+inline
+void
+pencil<FPT>::physical_space::inverse_offset(
+    const index  i,
+    index &x,
+    index &y,
+    index &z) const
+{
+    y = i / (size_xz_);
+    z = i / size_x - y*size_z;
+    x = i - y*size_xz_ - z*size_x;
+}
+
+template<typename FPT>
+inline
+void
+pencil<FPT>::physical_space::inverse_global_offset(
+    const index  i,
+    index &x,
+    index &y,
+    index &z) const
+{
+    inverse_offset(i, x, y, z);
+    x += start_x;
+    y += start_y;
+    z += start_z;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::index
+pencil<FPT>::wave_space::offset(
+    const index x,
+    const index y,
+    const index z) const
+{
+    // TODO Assert STRIDE1 specified during P3DFFT compilation
+    return y + x*size_y + z*size_xy_;
+}
+
+template<typename FPT>
+inline
+void
+pencil<FPT>::wave_space::inverse_offset(
+    const index  i,
+    index &x,
+    index &y,
+    index &z) const
+{
+    z = i / (size_xy_);
+    x = i / size_y - z*size_x;
+    y = i - z*size_xy_ - x*size_y;
+}
+
+template<typename FPT>
+inline
+void
+pencil<FPT>::wave_space::inverse_global_offset(
+    const index  i,
+    index &x,
+    index &y,
+    index &z) const
+{
+    inverse_offset(i, x, y, z);
+    x += start_x;
+    y += start_y;
+    z += start_z;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::real_reference
+pencil<FPT>::physical_space::operator()(
+    const index x, const index y, const index z)
+{
+    return data_[offset(x, y, z)];
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::const_real_reference
+pencil<FPT>::physical_space::operator()(
+    const index x, const index y, const index z) const
+{
+    return data_[offset(x, y, z)];
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::complex_reference
+pencil<FPT>::wave_space::operator()(
+    const index x, const index y, const index z)
+{
+    return data_complex_[offset(x, y, z)];
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::const_complex_reference
+pencil<FPT>::wave_space::operator()(
+    const index x, const index y, const index z) const
+{
+    return data_complex_[offset(x, y, z)];
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::real_reference
+pencil<FPT>::wave_space::real(
+    const index x, const index y, const index z)
+{
+    return data_real_[2*offset(x, y, z)];
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::const_real_reference
+pencil<FPT>::wave_space::real(
+    const index x, const index y, const index z) const
+{
+    return data_real_[2*offset(x, y, z)];
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::real_reference
+pencil<FPT>::wave_space::imag(
+    const index x, const index y, const index z)
+{
+    return data_real_[2*offset(x, y, z) + 1];
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::const_real_reference
+pencil<FPT>::wave_space::imag(
+    const index x, const index y, const index z) const
+{
+    return data_real_[2*offset(x, y, z) + 1];
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::real_iterator
+pencil<FPT>::physical_space::begin()
+{
+    return data_;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::const_real_iterator
+pencil<FPT>::physical_space::begin() const
+{
+    return data_;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::real_iterator
+pencil<FPT>::physical_space::end()
+{
+    return data_ + size;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::const_real_iterator
+pencil<FPT>::physical_space::end() const
+{
+    return data_ + size;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::complex_iterator
+pencil<FPT>::wave_space::begin()
+{
+    return data_complex_;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::const_complex_iterator
+pencil<FPT>::wave_space::begin() const
+{
+    return data_complex_;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::complex_iterator
+pencil<FPT>::wave_space::end()
+{
+    return data_complex_ + size;
+}
+
+template<typename FPT>
+inline
+pencil<FPT>::const_complex_iterator
+pencil<FPT>::wave_space::end() const
+{
+    return data_complex_ + size;
+}
+
+template<typename FPT>
+pencil<FPT>::pencil(
+    const index_3d &pstart, const index_3d &psize,
+    const index_3d &wstart, const index_3d &wsize)
 throw(std::invalid_argument)
         : data_nelem_(std::max(
               psize[0]*psize[1]*psize[2],
-            2*wsize[0]*wsize[1]*wsize[2])),
+              2*wsize[0]*wsize[1]*wsize[2])),
         data_(new real_type[data_nelem_]),
         physical(pstart, psize, data_.get()),
         wave(wstart, wsize, data_.get())
@@ -469,50 +726,27 @@ throw(std::invalid_argument)
     // NOP
 }
 
-template<typename T, typename G>
-inline
-pencil<T, G>::real_iterator
-pencil<T, G>::begin()
+template<typename FPT>
+pencil<FPT>::pencil(const pencil_grid &pg)
+        : data_nelem_(std::max(
+                 pg.local_physical_extent()[0]
+                    *pg.local_physical_extent()[1]
+                    *pg.local_physical_extent()[2],
+                 2*pg.local_wave_extent()[0]
+                    *pg.local_wave_extent()[1]
+                    *pg.local_wave_extent()[2])),
+        data_(new real_type[data_nelem_]),
+        physical(pg.local_physical_start(),
+                 pg.local_physical_extent(), data_.get()),
+        wave(pg.local_wave_start(),
+             pg.local_wave_extent(), data_.get())
 {
-    return data_.get();
+    // NOP
 }
 
-template<typename T, typename G>
-inline
-pencil<T, G>::const_real_iterator
-pencil<T, G>::begin() const
-{
-    return data_.get();
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::real_iterator
-pencil<T, G>::end()
-{
-    return data_.get() + data_nelem_;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::const_real_iterator
-pencil<T, G>::end() const
-{
-    return data_.get() + data_nelem_;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::real_pointer
-pencil<T, G>::data()
-{
-    return data_.get();
-}
-
-template<typename T, typename G>
-pencil<T, G>::physical_space::physical_space(
-    const dim_type start[3], const dim_type size[3], real_pointer data)
-throw(std::invalid_argument)
+template<typename FPT>
+pencil<FPT>::physical_space::physical_space(
+    const index_3d &start, const index_3d &size, real_pointer data)
     :
     start_x(start[0]), start_y(start[1]), start_z(start[2]),
     end_x(start[0]+size[0]), end_y(start[1]+size[1]), end_z(start[2]+size[2]),
@@ -521,27 +755,12 @@ throw(std::invalid_argument)
     data_(data),
     size_xz_(size_x*size_z)
 {
-    using std::invalid_argument;
-
-    if (start_x < 0) throw invalid_argument("start_x must be nonnegative");
-
-    if (start_y < 0) throw invalid_argument("start_y must be nonnegative");
-
-    if (start_z < 0) throw invalid_argument("start_z must be nonnegative");
-
-    if (size_x  < 0) throw invalid_argument("size_x must be nonnegative");
-
-    if (size_y  < 0) throw invalid_argument("size_y must be nonnegative");
-
-    if (size_z  < 0) throw invalid_argument("size_z must be nonnegative");
+    // NOP
 }
 
-template<typename T, typename G>
-pencil<T, G>::wave_space::wave_space(
-    const dim_type start[3],
-    const dim_type size[3],
-    real_pointer data)
-throw(std::invalid_argument)
+template<typename FPT>
+pencil<FPT>::wave_space::wave_space(
+    const index_3d &start, const index_3d &size, real_pointer data)
     :
     start_x(start[0]), start_y(start[1]), start_z(start[2]),
     end_x(start[0]+size[0]), end_y(start[1]+size[1]), end_z(start[2]+size[2]),
@@ -551,237 +770,7 @@ throw(std::invalid_argument)
     data_real_(data),
     size_xy_(size_x*size_y)
 {
-    using std::invalid_argument;
-
-    if (start_x < 0) throw invalid_argument("start_x must be nonnegative");
-
-    if (start_y < 0) throw invalid_argument("start_y must be nonnegative");
-
-    if (start_z < 0) throw invalid_argument("start_z must be nonnegative");
-
-    if (size_x  < 0) throw invalid_argument("size_x must be nonnegative");
-
-    if (size_y  < 0) throw invalid_argument("size_y must be nonnegative");
-
-    if (size_z  < 0) throw invalid_argument("size_z must be nonnegative");
-}
-
-
-template<typename T, typename G>
-inline
-pencil<T, G>::size_type
-pencil<T, G>::physical_space::offset(
-    const size_type x,
-    const size_type y,
-    const size_type z) const
-{
-    return x + z*size_x + y*size_xz_;
-}
-
-template<typename T, typename G>
-inline
-void
-pencil<T, G>::physical_space::inverse_offset(
-    const size_type  i,
-    size_type * const x,
-    size_type * const y,
-    size_type * const z) const
-{
-    *y = i / (size_xz_);
-    *z = i / size_x - (*y)*size_z;
-    *x = i - (*y)*size_xz_ - (*z)*size_x;
-}
-
-template<typename T, typename G>
-inline
-void
-pencil<T, G>::physical_space::inverse_global_offset(
-    const size_type  i,
-    size_type * const x,
-    size_type * const y,
-    size_type * const z) const
-{
-    inverse_offset(i, x, y, z);
-    *x += start_x;
-    *y += start_y;
-    *z += start_z;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::size_type
-pencil<T, G>::wave_space::offset(
-    const size_type x,
-    const size_type y,
-    const size_type z) const
-{
-    // TODO Assert STRIDE1 specified during P3DFFT compilation
-    return y + x*size_y + z*size_xy_;
-}
-
-template<typename T, typename G>
-inline
-void
-pencil<T, G>::wave_space::inverse_offset(
-    const size_type  i,
-    size_type * const x,
-    size_type * const y,
-    size_type * const z) const
-{
-    *z = i / (size_xy_);
-    *x = i / size_y - (*z)*size_x;
-    *y = i - (*z)*size_xy_ - (*x)*size_y;
-}
-
-template<typename T, typename G>
-inline
-void
-pencil<T, G>::wave_space::inverse_global_offset(
-    const size_type  i,
-    size_type * const x,
-    size_type * const y,
-    size_type * const z) const
-{
-    inverse_offset(i, x, y, z);
-    *x += start_x;
-    *y += start_y;
-    *z += start_z;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::real_reference
-pencil<T, G>::physical_space::operator()(
-    const size_type x, const size_type y, const size_type z)
-{
-    return data_[offset(x, y, z)];
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::const_real_reference
-pencil<T, G>::physical_space::operator()(
-    const size_type x, const size_type y, const size_type z) const
-{
-    return data_[offset(x, y, z)];
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::complex_reference
-pencil<T, G>::wave_space::operator()(
-    const size_type x, const size_type y, const size_type z)
-{
-    return data_complex_[offset(x, y, z)];
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::const_complex_reference
-pencil<T, G>::wave_space::operator()(
-    const size_type x, const size_type y, const size_type z) const
-{
-    return data_complex_[offset(x, y, z)];
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::real_reference
-pencil<T, G>::wave_space::real(
-    const size_type x, const size_type y, const size_type z)
-{
-    return data_real_[2*offset(x, y, z)];
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::const_real_reference
-pencil<T, G>::wave_space::real(
-    const size_type x, const size_type y, const size_type z) const
-{
-    return data_real_[2*offset(x, y, z)];
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::real_reference
-pencil<T, G>::wave_space::imag(
-    const size_type x, const size_type y, const size_type z)
-{
-    return data_real_[2*offset(x, y, z) + 1];
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::const_real_reference
-pencil<T, G>::wave_space::imag(
-    const size_type x, const size_type y, const size_type z) const
-{
-    return data_real_[2*offset(x, y, z) + 1];
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::real_iterator
-pencil<T, G>::physical_space::begin()
-{
-    return data_;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::const_real_iterator
-pencil<T, G>::physical_space::begin() const
-{
-    return data_;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::real_iterator
-pencil<T, G>::physical_space::end()
-{
-    return data_ + size;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::const_real_iterator
-pencil<T, G>::physical_space::end() const
-{
-    return data_ + size;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::complex_iterator
-pencil<T, G>::wave_space::begin()
-{
-    return data_complex_;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::const_complex_iterator
-pencil<T, G>::wave_space::begin() const
-{
-    return data_complex_;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::complex_iterator
-pencil<T, G>::wave_space::end()
-{
-    return data_complex_ + size;
-}
-
-template<typename T, typename G>
-inline
-pencil<T, G>::const_complex_iterator
-pencil<T, G>::wave_space::end() const
-{
-    return data_complex_ + size;
+    // NOP
 }
 
 } // namespace suzerain

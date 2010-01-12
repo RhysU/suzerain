@@ -31,6 +31,7 @@
 #define __SUZERAIN_PROBLEM_HPP
 
 #include <suzerain/common.hpp>
+#include <suzerain/types.hpp>
 
 /** @file
  * Provides classes handling problem definitions, which are runtime
@@ -87,15 +88,14 @@ throw(std::invalid_argument)
 } // namespace detail
 
 /**
- * Holds basic three dimensional computational grid dimensions.
+ * Holds basic three dimensional computational grid dimensions,
+ * including the two dimensional processor grid definition.
  */
-template< typename FPT           = double,
-          typename SizeType      = int >
-class GridDefinition : public IDefinition
+template< typename FPT = double >
+class GridDefinition : public IDefinition, public integral_types
 {
 public:
-    typedef FPT      floating_point_type; /**< Floating point type in use */
-    typedef SizeType size_type;           /**< Integral size type in use */
+    typedef FPT floating_point_type; /**< Floating point type in use */
 
     /**
      * Construct an instance with the given default size in each direction
@@ -104,28 +104,35 @@ public:
      * @param default_size Default grid size in the X, Y, and Z directions.
      * @param default_length Default grid length in the X, Y, and Z directions.
      */
-    GridDefinition(SizeType default_size = 16, FPT default_length = 2.0*M_PI);
+    GridDefinition(size_type default_size = 16, FPT default_length = 2.0*M_PI);
 
     /**
      * Retrieve the domain length in the X direction.
      *
      * @return the domain's X length.
      */
-    FPT Lx() const { return Lx_; }
+    FPT lx() const { return lx_; }
 
     /**
      * Retrieve the domain length in the Y direction.
      *
      * @return the domain's Y length.
      */
-    FPT Ly() const { return Ly_; }
+    FPT ly() const { return ly_; }
 
     /**
      * Retrieve the domain length in the Z direction.
      *
      * @return the domain's Z length.
      */
-    FPT Lz() const { return Lz_; }
+    FPT lz() const { return lz_; }
+
+    /**
+     * Retrieve global computational grid extents.
+     *
+     * @return the global grid extents in the X, Y, and Z directions.
+     */
+    const size_type_3d& global_extents() const { return global_extents_; }
 
     /**
      * Retrieve computational grid size in the X direction.
@@ -133,7 +140,7 @@ public:
      *
      * @return the grid size in the X direction.
      */
-    SizeType Nx() const { return Nx_; }
+    size_type nx() const { return global_extents_[0]; }
 
     /**
      * Retrieve computational grid size in the Y direction.
@@ -141,7 +148,7 @@ public:
      *
      * @return the grid size in the Y direction.
      */
-    SizeType Ny() const { return Ny_; }
+    size_type ny() const { return global_extents_[1]; }
 
     /**
      * Retrieve computational grid size in the Z direction.
@@ -149,7 +156,36 @@ public:
      *
      * @return the grid size in the Z direction.
      */
-    SizeType Nz() const { return Nz_; }
+    size_type nz() const { return global_extents_[2]; }
+
+    /**
+     * Retrieve the two dimensional processor grid extents.
+     *
+     * In physical space, \f$ P_0 \f$ is the grid extent in the Z direction
+     * and \f$ P_1 \f$ is the grid extent in the Y direction.
+     * In wave space, \f$ P_0 \f$ is the grid extent in the X direction
+     * and \f$ P_1 \f$  is the grid extent in the Z direction.
+     *
+     * @return the processor grid extents in the \f$ P_0 \f$ and \f$ P_1 \f$
+     *         directions.
+     */
+    const size_type_2d& processor_grid() const { return processor_grid_; }
+
+    /**
+     * Retrieve the processor grid extent in the \f$ P_0 \f$ direction.
+     *
+     * @return the processor grid extents in the \f$ P_0 \f$ direction.
+     * @see processor_grid() for more details.
+     */
+    size_type pg0() const { return processor_grid_[0]; }
+
+    /**
+     * Retrieve the processor grid extent in the \f$ P_1 \f$ direction.
+     *
+     * @return the processor grid extents in the \f$ P_1 \f$ direction.
+     * @see processor_grid() for more details.
+     */
+    size_type pg1() const { return processor_grid_[1]; }
 
     /*! @copydoc IDefinition::options */
     const boost::program_options::options_description& options() {
@@ -161,59 +197,71 @@ private:
     /** Stores the program options processing information */
     boost::program_options::options_description options_;
 
-    FPT Lx_;        /**< Stores the X direction length */
-    FPT Ly_;        /**< Stores the Y direction length */
-    FPT Lz_;        /**< Stores the Z direction length */
+    FPT lx_;  /**< Stores the X direction length */
+    FPT ly_;  /**< Stores the Y direction length */
+    FPT lz_;  /**< Stores the Z direction length */
 
-    SizeType Nx_;   /**< Stores the X direction grid size */
-    SizeType Ny_;   /**< Stores the Y direction grid size */
-    SizeType Nz_;   /**< Stores the Z direction grid size */
+    /** Stores the computational grid extents */
+    size_type_3d global_extents_;
+
+    /** Stores the processor grid extents */
+    size_type_2d processor_grid_;
 };
 
-template< typename FPT, typename SizeType >
-GridDefinition<FPT,SizeType>::GridDefinition(SizeType default_size,
-                                             FPT default_length)
+template< typename FPT >
+GridDefinition<FPT>::GridDefinition(size_type default_size,
+                                    FPT default_length)
     : options_("Grid definition"),
-      Lx_(default_length),
-      Ly_(default_length),
-      Lz_(default_length),
-      Nx_(default_size),
-      Ny_(default_size),
-      Nz_(default_size)
+      lx_(default_length),
+      ly_(default_length),
+      lz_(default_length)
 {
+    std::fill(global_extents_.begin(), global_extents_.end(), default_size);
+    std::fill(processor_grid_.begin(), processor_grid_.end(), 0);
+
     namespace po = ::boost::program_options;
 
     options_.add_options()
-        ("Lx",
-         po::value<FPT>(&Lx_)
+        ("lx",
+         po::value<FPT>(&lx_)
                 ->notifier(detail::ensure_positive<FPT>)
                 ->default_value(default_length),
         "Nondimensional grid length in X (streamwise) direction")
-        ("Ly",
-         po::value<FPT>(&Ly_)
+        ("ly",
+         po::value<FPT>(&ly_)
                 ->notifier(detail::ensure_positive<FPT>)
                 ->default_value(default_length),
         "Nondimensional grid length in Y (wall normal) direction")
-        ("Lz",
-         po::value<FPT>(&Lz_)
+        ("lz",
+         po::value<FPT>(&lz_)
                 ->notifier(detail::ensure_positive<FPT>)
                 ->default_value(default_length),
         "Nondimensional grid length in Z (spanwise) direction")
-        ("Nx",
-         po::value<SizeType>(&Nx_)
-                ->notifier(detail::ensure_positive<SizeType>)
+        ("nx",
+         po::value<size_type>(&global_extents_[0])
+                ->notifier(detail::ensure_positive<size_type>)
                 ->default_value(default_size),
         "Number of grid points in X (streamwise) direction")
-        ("Ny",
-         po::value<SizeType>(&Ny_)
-                ->notifier(detail::ensure_positive<SizeType>)
+        ("ny",
+         po::value<size_type>(&global_extents_[1])
+                ->notifier(detail::ensure_positive<size_type>)
                 ->default_value(default_size),
         "Number of grid points in Y (wall normal) direction")
-        ("Nz",
-         po::value<SizeType>(&Nz_)
-                ->notifier(detail::ensure_positive<SizeType>)
+        ("nz",
+         po::value<size_type>(&global_extents_[2])
+                ->notifier(detail::ensure_positive<size_type>)
                 ->default_value(default_size),
         "Number of grid points in Z (spanwise) direction")
+        ("pg0",
+         po::value<size_type>(&processor_grid_[0])
+                ->notifier(detail::ensure_positive<size_type>)
+                ->default_value(0),
+        "Processor count in the P_0 decomposition direction; 0 for automatic")
+        ("pg1",
+         po::value<size_type>(&processor_grid_[1])
+                ->notifier(detail::ensure_positive<size_type>)
+                ->default_value(0),
+        "Processor count in the P_1 decomposition direction; 0 for automatic")
     ;
 }
 
