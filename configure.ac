@@ -85,7 +85,9 @@ AX_PATH_GSL(1.13,,AC_MSG_ERROR([Could not find required GSL version.]))
 PKG_CHECK_MODULES(FFTW3, fftw3 >= 3.2)
 AC_SUBST(FFTW3_CFLAGS)
 AC_SUBST(FFTW3_LIBS)
-AX_PATH_P3DFFT(,AC_MSG_ERROR([Could not find the P3DFFT library.]))
+PKG_CHECK_MODULES(P3DFFT, suzerain-p3dfft)
+AC_SUBST(P3DFFT_CFLAGS)
+AC_SUBST(P3DFFT_LIBS)
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
