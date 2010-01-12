@@ -60,7 +60,7 @@ public:
      *        streamwise (X), wall-normal (Y), and spanwise (Z)
      *        directions.
      * @param processor_grid The processor grid decomposition to use in the
-     *        \f$ P_1 \f$ and \f$ P_2 \f$ directions.  Providing a zero
+     *        \f$ P_0 \f$ and \f$ P_1 \f$ directions.  Providing a zero
      *        for either value causes that value to be determined automatically.
      */
     pencil_grid(const size_type_3d &global_extents,
@@ -151,7 +151,7 @@ private:
      **/
     size_type_3d global_extents_;
 
-    /** Processor grid extent in the \f$ P_1 \f$ and \f$ P_2 \f$ directions. */
+    /** Processor grid extent in the \f$ P_0 \f$ and \f$ P_1 \f$ directions. */
     size_type_2d processor_grid_;
 
     /** Physical space starting indices for local storage within global grid */
