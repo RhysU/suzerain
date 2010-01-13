@@ -45,13 +45,13 @@
 
 double real_data(const double x, const double y, const double z) {
     return   1.0* 1.0
-           + 2.0* 3.0*sin(x) // + 2.0* 6.0*sin(2*x) + 2.0* 9.0*sin(3*x)
-           + 2.0* 5.0*sin(y) // + 2.0*10.0*sin(2*y) + 2.0*15.0*sin(3*y)
-           + 2.0* 7.0*sin(z) // + 2.0*14.0*sin(2*z) + 2.0*21.0*sin(3*z)
-           + 4.0*11.0*sin(x)*sin(y)
+           +      2.0*y
+           + 2.0* 3.0*sin(x)
+           + 2.0* 5.0*sin(z)
+           + 2.0* 7.0*sin(x)*y
+           + 2.0*11.0*y*sin(z)
            + 4.0*13.0*sin(x)*sin(z)
-           + 4.0*17.0*sin(y)*sin(z)
-           + 8.0*19.0*sin(x)*sin(y)*sin(z)
+           + 4.0*17.0*sin(x)*y*sin(z)
            ;
 }
 
@@ -160,11 +160,8 @@ int main(int argc, char **argv)
         }
     }
 
-    const long int Ntot  = A.wave.size * 2;
-
-    const long int Nglob = grid.nx() * grid.ny() * grid.nz();
-
-    const double factor = 1.0 / Nglob;
+    // Scale factor in X and Z directions only
+    const double factor = 1.0 / (grid.nx()*grid.nz());
 
     double rtime1 = 0.0;
 
