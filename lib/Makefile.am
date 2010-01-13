@@ -7,7 +7,7 @@ bin_PROGRAMS   = # Append below
 check_PROGRAMS = # Append below
 CLEANFILES     = # Append below
 
-noinst_HEADERS = p3dfft_d.h p3dfft_s.h
+noinst_HEADERS =
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
