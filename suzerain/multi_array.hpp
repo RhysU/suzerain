@@ -54,26 +54,23 @@ struct for_each_functor {
     BOOST_STATIC_ASSERT(D != 0); // Nonsensical behavior for zero dimensions
     BOOST_STATIC_ASSERT(D > 1);  // Ensure not instantiated for specialized values
 
-    // Cannot use MultiArray reference in signature below, why?  See
-    // http://groups.google.com/group/boost-list/browse_thread/thread/e16f32c4411dea08
-    // for any potential changes to the reference-related equations below
+    // See http://groups.google.com/group/boost-list/browse_thread/thread/e16f32c4411dea08
+    // for details about why MultiArray::iterator::reference is used below.
     template<class MultiArray,
              class UnaryFunction >
-    void operator()(MultiArray /*&*/x, UnaryFunction &f) const {
+    void operator()(MultiArray &x, UnaryFunction &f) const {
         for_each_functor<D-1> functor;
         for (typename MultiArray::iterator i = x.begin(); i != x.end(); ++i) {
-            functor(*i,f);
+            typename MultiArray::iterator::reference ri = *i;
+            functor(ri,f);
         }
     }
 };
 
 template<> struct for_each_functor<1> {
-    // Cannot use MultiArray reference in signature below, why?  See
-    // http://groups.google.com/group/boost-list/browse_thread/thread/e16f32c4411dea08
-    // for any potential changes to the reference-related equations below
     template<class MultiArray,
              class UnaryFunction >
-    void operator()(MultiArray /*&*/x, UnaryFunction &f) const {
+    void operator()(MultiArray &x, UnaryFunction &f) const {
         std::for_each(x.begin(), x.end(), f);
     }
 };
