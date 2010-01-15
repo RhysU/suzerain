@@ -520,6 +520,42 @@ test_dgb_acc_nop()
     }
 }
 
+void
+test_kernel_ztranspose()
+{
+    int i;
+    const int N = 8;
+    double * const x = suzerain_blas_malloc(2*N*sizeof(double));
+
+    // Establish stride one complex matrix storage
+    for (i = 0; i < N; ++i) {
+        x[2*i]   = i+1;   /* Real part */
+        x[2*i+1] = i+1.5; /* Imag part */
+    }
+
+    suzerain_kernel_ztranspose(N, 1.0, x, 1);
+
+    // Check that the real and imaginary parts are separated entirely
+    for (i = 0; i < N; ++i) {
+        gsl_test_abs(x[i], i+1, GSL_DBL_EPSILON,
+                     "kernel_ztranspose real part of index %d", i);
+        gsl_test_abs(x[i+N], i+1.5, GSL_DBL_EPSILON,
+                     "kernel_ztranspose imag part of index %d", i);
+    }
+
+    suzerain_kernel_ztranspose_inverse(N, 1.0, x, 1);
+
+    // Check that we're back as a stride one complex matrix
+    for (i = 0; i < N; ++i) {
+        gsl_test_abs(x[2*i], i+1, GSL_DBL_EPSILON,
+                     "kernel_ztranspose original part of index %d", i);
+        gsl_test_abs(x[2*i+1], i+1.5, GSL_DBL_EPSILON,
+                     "kernel_ztranspose original part of index %d", i);
+    }
+
+    free(x);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -547,6 +583,8 @@ main(int argc, char **argv)
     test_dgb_acc_nop();
 
     test_sgb_acc();
+
+    test_kernel_ztranspose();
 
     exit(gsl_test_summary());
 }
