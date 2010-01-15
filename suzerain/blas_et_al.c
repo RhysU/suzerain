@@ -36,7 +36,6 @@
 #include <mkl_types.h>
 #include <mkl_blas.h>
 #include <mkl_lapack.h>
-#include <mkl_trans.h>
 #else
 #error "No suitable BLAS and/or LAPACK library found during configuration"
 #endif
@@ -772,41 +771,61 @@ suzerain_lapack_dgbtrs(
 }
 
 void
-suzerain_kernel_ztranspose(
+suzerain_blasext_i2s_zaxpby2(
+        const int m,
         const int n,
-        const double alpha,
-        double *x,
-        const int incx)
+        const double (*alpha)[2],
+        const double (* x)[2],
+        const int incx,
+        const int ldx,
+        const double (*beta)[2],
+        double * y_re,
+        const int incy_re,
+        const int ldy_re,
+        double * y_im,
+        const int incy_im,
+        const int ldy_im)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    if (incx == 1) {
-        // Treats a contiguous complex vector as a 2D array.
-        // Transpose the array in place using MKL-specific call.
-        mkl_dimatcopy('R', 'T', n, 2, alpha, x, 2, n);
+    if (alpha == NULL) {
+        for (int j = 0; j < m; ++j) {
+            const int jldx    = j*ldx;
+            const int jldy_re = j*ldy_re;
+            const int jldy_im = j*ldy_im;
+            for (int i = 0; i < n; ++i) {
+                const int ix = i*incx + jldx;
+                const double *x_ix = x[ix];
+                y_re[i*incy_re + jldy_re] = x_ix[0];
+                y_im[i*incy_im + jldy_im] = x_ix[1];
+            }
+        }
+    } else if ((*alpha)[1] == 0.0) {
+        const double alpha_re = (*alpha)[0];
+        for (int j = 0; j < m; ++j) {
+            const int jldx    = j*ldx;
+            const int jldy_re = j*ldy_re;
+            const int jldy_im = j*ldy_im;
+            for (int i = 0; i < n; ++i) {
+                const int ix = i*incx + jldx;
+                const double *x_ix = x[ix];
+                y_re[i*incy_re + jldy_re] = alpha_re * x_ix[0];
+                y_im[i*incy_im + jldy_im] = alpha_re * x_ix[1];
+            }
+        }
     } else {
-        // FIXME implement
+        const double alpha_re = (*alpha)[0];
+        const double alpha_im = (*alpha)[1];
+        for (int j = 0; j < m; ++j) {
+            const int jldx    = j*ldx;
+            const int jldy_re = j*ldy_re;
+            const int jldy_im = j*ldy_im;
+            for (int i = 0; i < n; ++i) {
+                const int ix = i*incx + jldx;
+                const double *x_ix = x[ix];
+                y_re[i*incy_re + jldy_re]
+                    = x_ix[0]*alpha_re - x_ix[1]*alpha_im;
+                y_im[i*incy_im + jldy_im]
+                    = x_ix[0]*alpha_im + x_ix[1]*alpha_re;
+            }
+        }
     }
-#else
-#error "Sanity failure"
-#endif
-}
-
-void
-suzerain_kernel_ztranspose_inverse(
-        const int n,
-        const double alpha,
-        double *x,
-        const int incx)
-{
-#ifdef SUZERAIN_HAVE_MKL
-    if (incx == 1) {
-        // Treats a contiguous complex vector as a 2D array.
-        // Transpose the array in place using MKL-specific call.
-        mkl_dimatcopy('C', 'T', n, 2, alpha, x, n, 2);
-    } else {
-        // FIXME implement
-    }
-#else
-#error "Sanity failure"
-#endif
 }

@@ -565,25 +565,71 @@ suzerain_lapack_dgbtrs(
 
 /*! @} */
 
-/*! \name Custom compute kernels
+/*! \name BLAS-like extensions
+ * These are extensions built on vendor-specific BLAS-like routines and/or on
+ * custom coded loops.
+ *
+ * Some of these extensions refer to interleaved versus split complex storage.
+ * Interleaved complex storage stores the imaginary component immediately after
+ * the real component in memory, for example \c fftw_complex or
+ * <tt>std::complex<T></tt>.  Split complex storage stores the real and
+ * imaginary components in wholly separate locations.
+ *
+ * \see The FFTW manual for further discussion on
+ * <a href="http://www.fftw.org/fftw3_doc/Interleaved-and-split-arrays.html>
+ * interleaved versus split complex storage</a>.
  * @{
  */
 
-/* FIXME Document */
+/*!
+ * \brief Copy interleaved complex storage into split complex storage.
+ * Copy and scale interleaved complex column-major matrices into
+ * two split complex column-major matrices, one each for the real and
+ * imaginary parts.  The input and output memory must not be aliased (per C99
+ * \c restrict keyword requirements), otherwise the result is undefined.
+ *
+ * Interleaved complex format stores the imaginary part immediately
+ * after the real part.  Split complex format stores the real and
+ * imaginary parts at two wholly separate memory locations.
+ *
+ * \param m
+ * \param n
+ * \param alpha
+ * \param z
+ * \param incz
+ * \param ldz
+ * \param z_re
+ * \param incz_re
+ * \param ldz_re
+ * \param z_im
+ * \param incz_im
+ * \param ldz_im
+ *
+ */
+/* FIXME Documentation and name */
 void
-suzerain_kernel_ztranspose(
+suzerain_blasext_i2s_zaxpby2(
+        const int m,
         const int n,
-        const double alpha,
-        double *x,
-        const int incx);
+        const double (*alpha)[2],
+        const double (* x)[2],
+        const int incx,
+        const int ldx,
+        const double (*beta)[2],
+        double * y_re,
+        const int incy_re,
+        const int ldy_re,
+        double * y_im,
+        const int incy_im,
+        const int ldy_im);
 
 /* FIXME Document */
-void
-suzerain_kernel_ztranspose_inverse(
-        const int n,
-        const double alpha,
-        double *x,
-        const int incx);
+// void
+// suzerain_kernel_zsplit2interleaved(
+//         const int n,
+//         const double alpha,
+//         double *const z_re,
+//         double *const z_im);
 
 /*! @} */
 
