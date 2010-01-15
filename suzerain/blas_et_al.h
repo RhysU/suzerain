@@ -565,6 +565,28 @@ suzerain_lapack_dgbtrs(
 
 /*! @} */
 
+/*! \name Custom compute kernels
+ * @{
+ */
+
+/* FIXME Document */
+void
+suzerain_kernel_ztranspose(
+        const int n,
+        const double alpha,
+        double *x,
+        const int incx);
+
+/* FIXME Document */
+void
+suzerain_kernel_ztranspose_inverse(
+        const int n,
+        const double alpha,
+        double *x,
+        const int incx);
+
+/*! @} */
+
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */

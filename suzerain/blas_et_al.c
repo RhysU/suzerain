@@ -36,6 +36,7 @@
 #include <mkl_types.h>
 #include <mkl_blas.h>
 #include <mkl_lapack.h>
+#include <mkl_trans.h>
 #else
 #error "No suitable BLAS and/or LAPACK library found during configuration"
 #endif
@@ -764,6 +765,46 @@ suzerain_lapack_dgbtrs(
         dgbtrs((char*)&trans, &_n, &_kl, &_ku, &_nrhs,
                (double *)ab, &_ldab, (int *)ipiv, b, &_ldb, &_info);
         return _info;
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_kernel_ztranspose(
+        const int n,
+        const double alpha,
+        double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (incx == 1) {
+        // Treats a contiguous complex vector as a 2D array.
+        // Transpose the array in place using MKL-specific call.
+        mkl_dimatcopy('R', 'T', n, 2, alpha, x, 2, n);
+    } else {
+        // FIXME implement
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_kernel_ztranspose_inverse(
+        const int n,
+        const double alpha,
+        double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (incx == 1) {
+        // Treats a contiguous complex vector as a 2D array.
+        // Transpose the array in place using MKL-specific call.
+        mkl_dimatcopy('C', 'T', n, 2, alpha, x, n, 2);
+    } else {
+        // FIXME implement
     }
 #else
 #error "Sanity failure"
