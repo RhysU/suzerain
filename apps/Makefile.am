@@ -36,5 +36,15 @@ driver_pencil_LDADD   += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 driver_pencil_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 driver_pencil_LDADD   += $(FFTW3_LIBS)
 
+bin_PROGRAMS             += driver_underling
+driver_underling_SOURCES  = driver_underling.cpp
+driver_underling_LDADD    = ../suzerain/libsuzerain.la
+driver_underling_LDADD   += ../suzerain/libunderling.la
+driver_underling_LDADD   += -lfftw3_mpi
+driver_underling_LDADD   += $(FFTW3_LIBS)
+driver_underling_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
+driver_underling_LDADD   += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
+driver_underling_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
+
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
