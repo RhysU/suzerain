@@ -113,7 +113,7 @@ underling_problem_create(
 
     // Get number of processors in the communicator
     int nproc;
-    MPICHKN(MPI_Comm_rank(comm, &nproc));
+    MPICHKN(MPI_Comm_size(comm, &nproc));
 
     // Create a balanced processor grid if not specified by p0, p1 != 0
     {
@@ -234,12 +234,15 @@ underling_problem_destroy(underling_problem * p)
     if (p) {
         if (p->g_comm) {
             MPICHKV(MPI_Comm_disconnect(&p->g_comm));
+            p->g_comm = MPI_COMM_NULL;
         }
         if (p->p0_comm) {
             MPICHKV(MPI_Comm_disconnect(&p->p0_comm));
+            p->p0_comm = MPI_COMM_NULL;
         }
         if (p->p1_comm) {
             MPICHKV(MPI_Comm_disconnect(&p->p1_comm));
+            p->p1_comm = MPI_COMM_NULL;
         }
     }
     free(p);

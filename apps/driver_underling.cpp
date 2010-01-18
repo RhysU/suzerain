@@ -40,6 +40,7 @@
 #include <suzerain/types.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
+#include <suzerain/underling.h>
 
 #define ONLYPROC0(expr) if (!procid) { expr ; } else
 
@@ -71,18 +72,24 @@ int main(int argc, char *argv[])
                         nullstream, nullstream, nullstream, nullstream);
     }
 
-    const ptrdiff_t N0 = grid.nx();  // To be rearranged later
-    const ptrdiff_t N1 = grid.ny();
-    const ptrdiff_t N2 = grid.nz();
-    boost::array<ptrdiff_t,2> P = { grid.pg0(), grid.pg1() };
-    suzerain::mpi::dims_create(nproc, P.begin(), P.end());
-    std::sort(P.begin(), P.end());
+    underling_problem *problem = underling_problem_create(
+            MPI_COMM_WORLD, grid.nx(), grid.ny(), grid.nz(), 0, 0);
+    assert(problem);
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
-    ONLYPROC0(LOG4CXX_INFO(logger, "Computational grid dimensions: "
-                           << boost::format("(% 4d, % 4d, % 4d)")
-                           % N0 % N1 % N2));
-    ONLYPROC0(LOG4CXX_INFO(logger, "Processor grid dimensions: "
-                           << boost::format("(%d, %d)") % P[0] % P[1]));
 
+    LOG4CXX_INFO(logger, "problem->np0:     " << problem->np0);
+    LOG4CXX_INFO(logger, "problem->nw0:     " << problem->nw0);
+    LOG4CXX_INFO(logger, "problem->n1:      " << problem->n1);
+    LOG4CXX_INFO(logger, "problem->n2:      " << problem->n2);
+    LOG4CXX_INFO(logger, "problem->p0:      " << problem->p0);
+    LOG4CXX_INFO(logger, "problem->p1:      " << problem->p1);
+    LOG4CXX_INFO(logger, "problem->g_comm:  " << problem->g_comm);
+    LOG4CXX_INFO(logger, "problem->p0_comm: " << problem->p0_comm);
+    LOG4CXX_INFO(logger, "problem->p1_comm: " << problem->p1_comm);
+    LOG4CXX_INFO(logger, "problem->block_a: " << problem->block_a);
+    LOG4CXX_INFO(logger, "problem->block_b: " << problem->block_b);
+    LOG4CXX_INFO(logger, "problem->block_c: " << problem->block_c);
+
+    underling_problem_destroy(problem);
 }
