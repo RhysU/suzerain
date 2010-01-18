@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
     log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(procname.str());
 
     suzerain::ProgramOptions options;
-    suzerain::problem::GridDefinition<> grid;
-    options.add_definition(grid);
+    suzerain::problem::GridDefinition<> griddef;
+    options.add_definition(griddef);
     namespace po = boost::program_options;
     if (!procid) {
         options.process(argc, argv);
@@ -72,24 +72,25 @@ int main(int argc, char *argv[])
                         nullstream, nullstream, nullstream, nullstream);
     }
 
-    underling_problem *problem = underling_problem_create(
-            MPI_COMM_WORLD, grid.nx(), grid.ny(), grid.nz(), 0, 0);
-    assert(problem);
-
     ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
 
-    LOG4CXX_INFO(logger, "problem->np0:     " << problem->np0);
-    LOG4CXX_INFO(logger, "problem->nw0:     " << problem->nw0);
-    LOG4CXX_INFO(logger, "problem->n1:      " << problem->n1);
-    LOG4CXX_INFO(logger, "problem->n2:      " << problem->n2);
-    LOG4CXX_INFO(logger, "problem->p0:      " << problem->p0);
-    LOG4CXX_INFO(logger, "problem->p1:      " << problem->p1);
-    LOG4CXX_INFO(logger, "problem->g_comm:  " << problem->g_comm);
-    LOG4CXX_INFO(logger, "problem->p0_comm: " << problem->p0_comm);
-    LOG4CXX_INFO(logger, "problem->p1_comm: " << problem->p1_comm);
-    LOG4CXX_INFO(logger, "problem->block_a: " << problem->block_a);
-    LOG4CXX_INFO(logger, "problem->block_b: " << problem->block_b);
-    LOG4CXX_INFO(logger, "problem->block_c: " << problem->block_c);
+    underling_grid *grid = underling_grid_create(
+            MPI_COMM_WORLD, griddef.nx(), griddef.ny(), griddef.nz(), 0, 0);
+    assert(grid);
+    underling_problem *problem = underling_problem_create(grid, 1);
+    assert(problem);
+
+    LOG4CXX_INFO(logger, "grid->np0:        " << grid->np0);
+    LOG4CXX_INFO(logger, "grid->nw0:        " << grid->nw0);
+    LOG4CXX_INFO(logger, "grid->n1:         " << grid->n1);
+    LOG4CXX_INFO(logger, "grid->n2:         " << grid->n2);
+    LOG4CXX_INFO(logger, "grid->p0:         " << grid->p0);
+    LOG4CXX_INFO(logger, "grid->p1:         " << grid->p1);
+    LOG4CXX_INFO(logger, "grid->g_comm:     " << grid->g_comm);
+    LOG4CXX_INFO(logger, "grid->p0_comm:    " << grid->p0_comm);
+    LOG4CXX_INFO(logger, "grid->p1_comm:    " << grid->p1_comm);
+    LOG4CXX_INFO(logger, "problem->howmany: " << problem->howmany);
 
     underling_problem_destroy(problem);
+    underling_grid_destroy(grid);
 }

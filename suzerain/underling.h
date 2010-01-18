@@ -51,7 +51,7 @@ __BEGIN_DECLS
 typedef double         underling_real;
 typedef underling_real underling_complex[2];
 
-typedef struct underling_problem {
+typedef struct underling_grid {
     int np0;
     int nw0;
     int n1;
@@ -61,13 +61,10 @@ typedef struct underling_problem {
     MPI_Comm g_comm;
     MPI_Comm p0_comm;
     MPI_Comm p1_comm;
-    int block_a;
-    int block_b;
-    int block_c;
-} underling_problem;
+} underling_grid;
 
-underling_problem *
-underling_problem_create(
+underling_grid *
+underling_grid_create(
         MPI_Comm comm,
         int n0,
         int n1,
@@ -76,14 +73,26 @@ underling_problem_create(
         int p1);
 
 void
+underling_grid_destroy(
+        underling_grid * grid);
+
+typedef struct underling_problem {
+    int howmany;
+} underling_problem;
+
+underling_problem *
+underling_problem_create(
+        underling_grid *grid,
+        int howmany);
+
+void
 underling_problem_destroy(
         underling_problem * problem);
 
 size_t
 underling_size_local(
-        underling_problem * problem,
-        int howmany);
-
+        underling_grid * grid,
+        underling_problem * problem);
 
 typedef struct underling_plan {
     underling_problem * p;

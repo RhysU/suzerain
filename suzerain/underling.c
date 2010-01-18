@@ -85,8 +85,8 @@
         } \
     } while(0)
 
-underling_problem *
-underling_problem_create(
+underling_grid *
+underling_grid_create(
         MPI_Comm comm,
         int np0,
         int np1,
@@ -162,48 +162,67 @@ underling_problem_create(
 
     // Transform proceeds like
     // ALL WAVE SPACE
-    //      (nw0/p0 x nw1/p1) x nw2
-    //       \---block_a---/
+    //      ((nw0/p0 x nw1/p1)) x nw2
+    //       \----block_a----/
     //      to
-    //      (nw2/p1 x nw0/p0) x nw1
-    //      (nw2/p1 x nw0/p0) x np1
-    //       \---block_b---/
+    //      ((nw2/p1 x nw0/p0)) x nw1
+    //      ((nw2/p1 x nw0/p0)) x np1
+    //       \----block_b----/
     //      to
-    //      (np1/p0 x nw2/p1) x nw0
-    //      (np1/p0 x nw2/p1) x np0
-    //       \---block_c---/
+    //      ((np1/p0 x nw2/p1)) x nw0
+    //      ((np1/p0 x nw2/p1)) x np0
+    //       \----block_c----/
     // ALL PHYSICAL_SPACE
 
-    // Check determined processor grid and global length compatibility needs
-    if (nw0 % p0 != 0) {
-        char reason[127];
-        snprintf(reason, sizeof(reason)/sizeof(reason[0]),
-                "Invalid processor grid: nw0 {%d} %% p0 {%d} != 0", nw0, p0);
-        SUZERAIN_ERROR_NULL(reason, SUZERAIN_EINVAL);
+    // Create and initialize the grid workspace
+    underling_grid * g = malloc(sizeof(underling_grid));
+    if (g == NULL) {
+        SUZERAIN_ERROR_NULL("failed to allocate space for grid",
+                             SUZERAIN_ENOMEM);
     }
-    if (n1 % p1 != 0) {
-        char reason[127];
-        snprintf(reason, sizeof(reason)/sizeof(reason[0]),
-                "Invalid processor grid: n1 {%d} %% p1 {%d} != 0", n1, p1);
-        SUZERAIN_ERROR_NULL(reason, SUZERAIN_EINVAL);
-    }
-    if (n2 % p1 != 0) {
-        char reason[127];
-        snprintf(reason, sizeof(reason)/sizeof(reason[0]),
-                "Invalid processor grid: n2 {%d} %% p1 {%d} != 0", n2, p1);
-        SUZERAIN_ERROR_NULL(reason, SUZERAIN_EINVAL);
-    }
-    if (n1 % p0 != 0) {
-        char reason[127];
-        snprintf(reason, sizeof(reason)/sizeof(reason[0]),
-                "Invalid processor grid: nw0 {%d} %% p0 {%d} != 0", n1, p0);
-        SUZERAIN_ERROR_NULL(reason, SUZERAIN_EINVAL);
-    }
+    // Copy the grid parameters to the grid workspace
+    g->np0     = np0;
+    g->nw0     = nw0;
+    g->n1      = n1;
+    g->n2      = n2;
+    g->p0      = p0;
+    g->p1      = p1;
+    g->g_comm  = g_comm;
+    g->p0_comm = p0_comm;
+    g->p1_comm = p1_comm;
 
-    // Compute required block sizes for FFTW MPI transform inputs
-    const int block_a = nw0/p0 * n1 /p1;
-    const int block_b = n2 /p1 * nw0/p0;
-    const int block_c = n1 /p1 * n2 / p1;
+    return g;
+}
+
+void
+underling_grid_destroy(underling_grid * grid)
+{
+    if (grid) {
+        if (grid->g_comm) {
+            MPICHKV(MPI_Comm_disconnect(&grid->g_comm));
+            grid->g_comm = MPI_COMM_NULL;
+        }
+        if (grid->p0_comm) {
+            MPICHKV(MPI_Comm_disconnect(&grid->p0_comm));
+            grid->p0_comm = MPI_COMM_NULL;
+        }
+        if (grid->p1_comm) {
+            MPICHKV(MPI_Comm_disconnect(&grid->p1_comm));
+            grid->p1_comm = MPI_COMM_NULL;
+        }
+        free(grid);
+    }
+}
+
+
+underling_problem *
+underling_problem_create(
+        underling_grid *grid,
+        int howmany)
+{
+    if (howmany < 1) {
+        SUZERAIN_ERROR_NULL("howmany >= 1 required", SUZERAIN_EINVAL);
+    }
 
     // Create and initialize the problem workspace
     underling_problem * p = malloc(sizeof(underling_problem));
@@ -212,38 +231,16 @@ underling_problem_create(
                              SUZERAIN_ENOMEM);
     }
     // Copy the problem parameters to the problem workspace
-    p->np0     = np0;
-    p->nw0     = nw0;
-    p->n1      = n1;
-    p->n2      = n2;
-    p->p0      = p0;
-    p->p1      = p1;
-    p->g_comm  = g_comm;
-    p->p0_comm = p0_comm;
-    p->p1_comm = p1_comm;
-    p->block_a = block_a;
-    p->block_b = block_b;
-    p->block_c = block_c;
+    p->howmany = howmany;
 
     return p;
 }
 
 void
-underling_problem_destroy(underling_problem * p)
+underling_problem_destroy(
+        underling_problem * problem)
 {
-    if (p) {
-        if (p->g_comm) {
-            MPICHKV(MPI_Comm_disconnect(&p->g_comm));
-            p->g_comm = MPI_COMM_NULL;
-        }
-        if (p->p0_comm) {
-            MPICHKV(MPI_Comm_disconnect(&p->p0_comm));
-            p->p0_comm = MPI_COMM_NULL;
-        }
-        if (p->p1_comm) {
-            MPICHKV(MPI_Comm_disconnect(&p->p1_comm));
-            p->p1_comm = MPI_COMM_NULL;
-        }
+    if (problem) {
+        free(problem);
     }
-    free(p);
 }
