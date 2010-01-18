@@ -57,7 +57,8 @@ pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
     // If processor grid was not fully fixed by the arguments,
     // find a 2D Cartesian decomposition where P_1 <= P_2
     if (processor_grid_[0] == 0 || processor_grid_[1] == 0) {
-        suzerain::mpi::dims_create(nproc, processor_grid_);
+        suzerain::mpi::dims_create(
+                nproc, processor_grid_.begin(), processor_grid_.end());
         std::sort(processor_grid_.begin(), processor_grid_.end());
     }
 
