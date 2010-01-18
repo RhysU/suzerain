@@ -31,10 +31,9 @@
 #define __SUZERAIN_UNDERLING_H
 
 #include <suzerain/common.h>
-#ifdef __cplusplus
-#include <iosfwd>
-#endif
 #include <suzerain/error.h>
+#include <mpi.h>
+#include <fftw3-mpi.h>
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 #undef __BEGIN_DECLS
@@ -49,109 +48,68 @@
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-/* Conditional forward declaration of implementation-related structs */
-#ifndef __GSL_COMBINATION_H__
-struct gsl_combination_struct;
-typedef struct gsl_combination_struct gsl_combination;
-#endif
-
 typedef double         underling_real;
 typedef underling_real underling_complex[2];
 
-typedef enum underling_state {
-    UNDERLING_STATE_UNINITIALIZED  = 0,
-    UNDERLING_STATE_PHYSICAL       = 1,
-    UNDERLING_STATE_WAVE           = 2,
-    UNDERLING_STATE_NOTTRANSFORMED = 4
-} underling_state;
+typedef struct underling_problem {
+    int np0;
+    int nw0;
+    int n1;
+    int n2;
+    int p0;
+    int p1;
+    MPI_Comm g_comm;
+    MPI_Comm p0_comm;
+    MPI_Comm p1_comm;
+    int block_a;
+    int block_b;
+    int block_c;
+} underling_problem;
 
-typedef struct underling_dimension underling_dimension;
-struct underling_dimension {
-    char * name;
-    int size;
-    int stride;
-    int global_size;
-    int global_start;
-    underling_real dealias_by;
-    underling_state state;
-    underling_dimension *next_r2c;
-    underling_dimension *next_c2r;
-};
-
-typedef struct underling_stage {
-    underling_dimension *dim;
-} underling_stage;
-
-typedef struct underling_scalar_to_physical {
-    int               stage;
-    int               nderivative;
-    int               nfield;
-    gsl_combination **index;
-    char            **name;
-    underling_real  **field;
-} underling_scalar_to_physical;
-
-typedef struct underling_workspace {
-    int                           ndim;
-    int                           nstage;
-    underling_stage              *stage;
-//    gl_list_t                    *scalar_to_physical; // FIXME
-} underling_workspace;
-
-underling_workspace *
-underling_workspace_alloc(const int ndim, const int nstage);
-
-int
-underling_name_dimension(underling_workspace * const w,
-                         const int ndim,
-                         const int nstage,
-                         const char * const name);
-
-int
-underling_scalar_to_physical_add(underling_workspace * const w,
-                                 const char * const name,
-                                 const int nderivative);
+underling_problem *
+underling_problem_create(
+        MPI_Comm comm,
+        int n0,
+        int n1,
+        int n2,
+        int p0,
+        int p1);
 
 void
-underling_workspace_free(underling_workspace * const w);
+underling_problem_destroy(
+        underling_problem * problem);
 
-int
-underling_prepare_physical_size(underling_workspace * const w,
-                                const int *physical_size);
+size_t
+underling_size_local(
+        underling_problem * problem,
+        int howmany);
+
+
+typedef struct underling_plan {
+    underling_problem * p;
+    int howmany;
+    fftw_plan plan12;
+    fftw_plan plan23;
+    fftw_plan plan32;
+    fftw_plan plan21;
+    underling_real *data;
+} underling_plan;
+
+underling_plan *
+underling_plan_create(
+        underling_problem * problem,
+        int howmany,
+        underling_real * data,
+        int will_perform_c2r,
+        int will_perform_r2c,
+        unsigned flags);
+
+void
+underling_plan_destroy(
+        underling_plan * plan);
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
-
-#ifdef __cplusplus
-inline
-bool operator==(const underling_dimension& a, const underling_dimension& b)
-{
-    return (a.size == b.size)
-        && (a.stride == b.stride)
-        && (a.global_size == b.global_size)
-        && (a.global_start == b.global_start)
-        && (a.dealias_by == b.dealias_by)
-        && (a.state == b.state)
-        && (a.next_r2c == b.next_r2c)
-        && (a.next_c2r == b.next_c2r);
-}
-
-inline
-std::ostream& operator<<(std::ostream& os, const underling_dimension& ud)
-{
-    return os << "("
-              << "size=" << ud.size << ","
-              << "stride=" << ud.stride << ","
-              << "global_size=" << ud.global_size << ","
-              << "global_start=" << ud.global_start << ","
-              << "dealias_by=" << ud.dealias_by << ","
-              << "state=" << ud.state << ","
-              << "next_r2c=" << ud.next_r2c << ","
-              << "next_c2r=" << ud.next_c2r
-              << ")";
-}
-
-#endif /* __cplusplus */
 
 #endif // __SUZERAIN_UNDERLING_H
