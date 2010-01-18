@@ -774,58 +774,92 @@ void
 suzerain_blasext_i2s_zaxpby2(
         const int m,
         const int n,
-        const double (*alpha)[2],
-        const double (* x)[2],
+        const double * const alpha,
+        const double * const x,
         const int incx,
         const int ldx,
-        const double (*beta)[2],
-        double * y_re,
+        const double * const beta,
+        double * const y_re,
         const int incy_re,
         const int ldy_re,
-        double * y_im,
+        double * const y_im,
         const int incy_im,
         const int ldy_im)
 {
-    if (alpha == NULL) {
+    /* alpha == NULL defaults to 1 */
+    const double alpha_re = (alpha == NULL) ? 1.0 : alpha[0];
+    const double alpha_im = (alpha == NULL) ? 0.0 : alpha[1];
+    /* beta == NULL defaults to 0 */
+    const double beta_re  = (beta == NULL)  ? 0.0 : beta[0];
+    const double beta_im  = (beta == NULL)  ? 0.0 : beta[1];
+
+    if (alpha_im == 0.0 && beta_im == 0.0) {
+
+        // Avoid complex arithmetic for real-valued scaling
         for (int j = 0; j < m; ++j) {
-            const int jldx    = j*ldx;
-            const int jldy_re = j*ldy_re;
-            const int jldy_im = j*ldy_im;
+
+            const double * p_x_re = x + 2*j*ldx;
+            const double * p_x_im = x + 2*j*ldx + 1;
+            double * p_y_re = y_re + j*ldy_re;
+            double * p_y_im = y_im + j*ldy_im;
+
             for (int i = 0; i < n; ++i) {
-                const int ix = i*incx + jldx;
-                const double *x_ix = x[ix];
-                y_re[i*incy_re + jldy_re] = x_ix[0];
-                y_im[i*incy_im + jldy_im] = x_ix[1];
+
+                /* Compute complex-valued alpha*x */
+                const double alpha_x_re = (*p_x_re)*alpha_re;
+                const double alpha_x_im = (*p_x_im)*alpha_re;
+
+                /* Compute complex-valued beta*y */
+                const double beta_y_re =  (*p_y_re)*beta_re;
+                const double beta_y_im =  (*p_y_im)*beta_re;
+
+                /* Store result alpha*x + beta*y in y */
+                *p_y_re = alpha_x_re + beta_y_re;
+                *p_y_im = alpha_x_im + beta_y_im;
+
+                /* Increment pointers for next iteration */
+                p_x_re += 2*incx;
+                p_x_im += 2*incx;
+                p_y_re += incy_re;
+                p_y_im += incy_im;
             }
         }
-    } else if ((*alpha)[1] == 0.0) {
-        const double alpha_re = (*alpha)[0];
-        for (int j = 0; j < m; ++j) {
-            const int jldx    = j*ldx;
-            const int jldy_re = j*ldy_re;
-            const int jldy_im = j*ldy_im;
-            for (int i = 0; i < n; ++i) {
-                const int ix = i*incx + jldx;
-                const double *x_ix = x[ix];
-                y_re[i*incy_re + jldy_re] = alpha_re * x_ix[0];
-                y_im[i*incy_im + jldy_im] = alpha_re * x_ix[1];
-            }
-        }
+
     } else {
-        const double alpha_re = (*alpha)[0];
-        const double alpha_im = (*alpha)[1];
+
+        // Complex arithmetic required
         for (int j = 0; j < m; ++j) {
-            const int jldx    = j*ldx;
-            const int jldy_re = j*ldy_re;
-            const int jldy_im = j*ldy_im;
+
+            const double * p_x_re = x + 2*j*ldx;
+            const double * p_x_im = x + 2*j*ldx + 1;
+            double * p_y_re = y_re + j*ldy_re;
+            double * p_y_im = y_im + j*ldy_im;
+
             for (int i = 0; i < n; ++i) {
-                const int ix = i*incx + jldx;
-                const double *x_ix = x[ix];
-                y_re[i*incy_re + jldy_re]
-                    = x_ix[0]*alpha_re - x_ix[1]*alpha_im;
-                y_im[i*incy_im + jldy_im]
-                    = x_ix[0]*alpha_im + x_ix[1]*alpha_re;
+
+                /* Compute complex-valued alpha*x */
+                const double alpha_x_re
+                    = (*p_x_re)*alpha_re - (*p_x_im)*alpha_im;
+                const double alpha_x_im
+                    = (*p_x_re)*alpha_im + (*p_x_im)*alpha_re;
+
+                /* Compute complex-valued beta*y */
+                const double beta_y_re
+                    =  (*p_y_re)*beta_re - (*p_y_im)*beta_im;
+                const double beta_y_im
+                    =  (*p_y_re)*beta_im + (*p_y_im)*beta_re;
+
+                /* Store result alpha*x + beta*y in y */
+                *p_y_re = alpha_x_re + beta_y_re;
+                *p_y_im = alpha_x_im + beta_y_im;
+
+                /* Increment pointers for next iteration */
+                p_x_re += 2*incx;
+                p_x_im += 2*incx;
+                p_y_re += incy_re;
+                p_y_im += incy_im;
             }
         }
+
     }
 }

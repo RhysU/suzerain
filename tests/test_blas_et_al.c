@@ -526,17 +526,17 @@ test_blasext_i2s_zaxpby2()
     { /* Test pure copy for single, stride one vectors */
 
         const int N = 4;
-        double z[N][2];
+        double z[N*2];
         double z_re[N];
         double z_im[N];
 
         for (int i = 0; i < N; ++i) {
-            z[i][0] = i+1;   /* Real part */
-            z[i][1] = i+1.5; /* Imag part */
+            z[2*i]   = i+1;   /* Real part */
+            z[2*i+1] = i+1.5; /* Imag part */
         }
 
         suzerain_blasext_i2s_zaxpby2(
-                1, N, NULL, (void *) z, 1, N,
+                1, N, NULL, z, 1, N,
                 NULL, z_re, 1, N, z_im, 1, N);
 
         for (int i = 0; i < N; ++i) {
@@ -558,20 +558,20 @@ test_blasext_i2s_zaxpby2()
         const int ldz     = N*incz + 2;
         const int ldz_re  = N*incz_re + 3;
         const int ldz_im  = N*incz_im + 5;
-        double z[(N*incz)*(M*ldz)][2];
+        double z[2*(N*incz)*(M*ldz)];
         double z_re[(N*incz_re)*(M*ldz_re)];
         double z_im[(N*incz_im)*(M*ldz_im)];
 
         for (int j = 0; j < M; ++j) {
             for (int i = 0; i < N; ++i) {
-                z[i*incz + j*ldz][0] = i+1;   /* Real part */
-                z[i*incz + j*ldz][1] = i+1.5; /* Imag part */
+                z[2*(i*incz + j*ldz)]   = i+1;   /* Real part */
+                z[2*(i*incz + j*ldz)+1] = i+1.5; /* Imag part */
             }
         }
 
         suzerain_blasext_i2s_zaxpby2(
                 M, N, NULL,
-                (void *) z, incz, ldz,
+                z, incz, ldz,
                 NULL,
                 z_re, incz_re, ldz_re,
                 z_im, incz_im, ldz_im);
@@ -590,18 +590,18 @@ test_blasext_i2s_zaxpby2()
 
     { /* Test real scaling for single, stride one vectors */
         const int N = 4;
-        double alpha[1][2] = { {2.0, 0.0} };
-        double z[N][2];
+        const double alpha[2] = {2.0, 0.0};
+        double z[2*N];
         double z_re[N];
         double z_im[N];
 
         for (int i = 0; i < N; ++i) {
-            z[i][0] = i+1;   /* Real part */
-            z[i][1] = i+1.5; /* Imag part */
+            z[2*i]   = i+1;   /* Real part */
+            z[2*i+1] = i+1.5; /* Imag part */
         }
 
         suzerain_blasext_i2s_zaxpby2(
-                1, N, (void *) alpha, (void *) z, 1, N,
+                1, N, alpha, z, 1, N,
                 NULL,
                 z_re, 1, N, z_im, 1, N);
 
@@ -618,27 +618,27 @@ test_blasext_i2s_zaxpby2()
     { /* Test real scaling for multiple, strided vectors */
         const int M       = 3;
         const int N       = 4;
-        double alpha[1][2] = { {2.0, 0.0} };
+        const double alpha[2] = {2.0, 0.0};
         const int incz    = 2;
         const int incz_re = 3;
         const int incz_im = 4;
         const int ldz     = N*incz + 2;
         const int ldz_re  = N*incz_re + 3;
         const int ldz_im  = N*incz_im + 5;
-        double z[(N*incz)*(M*ldz)][2];
+        double z[2*(N*incz)*(M*ldz)];
         double z_re[(N*incz_re)*(M*ldz_re)];
         double z_im[(N*incz_im)*(M*ldz_im)];
 
         for (int j = 0; j < M; ++j) {
             for (int i = 0; i < N; ++i) {
-                z[i*incz + j*ldz][0] = i+1;   /* Real part */
-                z[i*incz + j*ldz][1] = i+1.5; /* Imag part */
+                z[2*(i*incz + j*ldz)]   = i+1;   /* Real part */
+                z[2*(i*incz + j*ldz)+1] = i+1.5; /* Imag part */
             }
         }
 
         suzerain_blasext_i2s_zaxpby2(
-                M, N, (void *) alpha,
-                (void *) z, incz, ldz,
+                M, N, alpha,
+                z, incz, ldz,
                 NULL,
                 z_re, incz_re, ldz_re,
                 z_im, incz_im, ldz_im);
@@ -659,26 +659,30 @@ test_blasext_i2s_zaxpby2()
 
     { /* Test complex scaling for contiguous vectors */
         const int N = 4;
-        double alpha[1][2] = { {3.0, 2.0} };
-        double z[N][2];
+        const double alpha[2] = {3.0, 2.0};
+        const double beta[2]  = {4.0, 5.0};
+        double z[2*N];
         double z_re[N];
         double z_im[N];
 
         for (int i = 0; i < N; ++i) {
-            z[i][0] = i+1;   /* Real part */
-            z[i][1] = i+1.5; /* Imag part */
+            z[2*(i)] = (i+1)*(i+1);
+            z[2*(i)+1] = i+1.5;
+            z_re[i] = i+7;
+            z_im[i] = i+11;
         }
 
         suzerain_blasext_i2s_zaxpby2(
-                1, N, (void *) alpha, (void *) z, 1, N,
-                NULL,
-                z_re, 1, N, z_im, 1, N);
+                1, N, alpha, z, 1, N,
+                beta, z_re, 1, N, z_im, 1, N);
 
         for (int i = 0; i < N; ++i) {
-            gsl_test_abs(z_re[i], i, GSL_DBL_EPSILON,
+            gsl_test_abs(z_re[i], 3*i*i + 3*i - 27,
+                        GSL_DBL_EPSILON,
                         "i2s_zaxpby2 real part of index %d at line %d",
                         i, __LINE__);
-            gsl_test_abs(z_im[i], 5*i+6.5, GSL_DBL_EPSILON,
+            gsl_test_abs(z_im[i], 2*i*i + 16*i + 85.5,
+                        GSL_DBL_EPSILON,
                         "i2s_zaxpby2 imag part of index %d at line %d",
                         i, __LINE__);
         }
@@ -687,39 +691,44 @@ test_blasext_i2s_zaxpby2()
     { /* Test complex scaling for multiple, strided vectors */
         const int M       = 3;
         const int N       = 4;
-        double alpha[1][2] = { {3.0, 2.0} };
+        const double alpha[2] = {3.0, 2.0};
+        const double beta[2]  = {4.0, 5.0};
         const int incz    = 2;
         const int incz_re = 3;
         const int incz_im = 4;
         const int ldz     = N*incz + 2;
         const int ldz_re  = N*incz_re + 3;
         const int ldz_im  = N*incz_im + 5;
-        double z[(N*incz)*(M*ldz)][2];
+        double z[2*(N*incz)*(M*ldz)];
         double z_re[(N*incz_re)*(M*ldz_re)];
         double z_im[(N*incz_im)*(M*ldz_im)];
 
         for (int j = 0; j < M; ++j) {
             for (int i = 0; i < N; ++i) {
-                z[i*incz + j*ldz][0] = i+1;   /* Real part */
-                z[i*incz + j*ldz][1] = i+1.5; /* Imag part */
+                z[2*(i*incz + j*ldz)] = (i+1)*(i+1);
+                z[2*(i*incz + j*ldz)+1] = i+1.5;
+                z_re[i*incz_re + j*ldz_re] = i+7;
+                z_im[i*incz_im + j*ldz_im] = i+11;
             }
         }
 
         suzerain_blasext_i2s_zaxpby2(
-                M, N, (void *) alpha,
-                (void *) z, incz, ldz,
-                NULL,
+                M, N, alpha,
+                z, incz, ldz,
+                beta,
                 z_re, incz_re, ldz_re,
                 z_im, incz_im, ldz_im);
 
         for (int j = 0; j < M; ++j) {
             for (int i = 0; i < N; ++i) {
-                gsl_test_abs(z_re[i*incz_re+j*ldz_re], i, GSL_DBL_EPSILON,
-                            "i2s_zaxpby2 real part of index %d at line %d",
-                            i, __LINE__);
-                gsl_test_abs(z_im[i*incz_im+j*ldz_im], 5*i+6.5, GSL_DBL_EPSILON,
-                            "i2s_zaxpby2 imag part of index %d at line %d",
-                            i, __LINE__);
+                gsl_test_abs(z_re[i*incz_re+j*ldz_re], 3*i*i + 3*i - 27,
+                        GSL_DBL_EPSILON,
+                        "i2s_zaxpby2 real part of index %d at line %d",
+                        i, __LINE__);
+                gsl_test_abs(z_im[i*incz_im+j*ldz_im], 2*i*i + 16*i + 85.5,
+                        GSL_DBL_EPSILON,
+                        "i2s_zaxpby2 imag part of index %d at line %d",
+                        i, __LINE__);
             }
         }
     }

@@ -582,54 +582,56 @@ suzerain_lapack_dgbtrs(
  */
 
 /*!
- * \brief Copy interleaved complex storage into split complex storage.
- * Copy and scale interleaved complex column-major matrices into
+ * \brief Compute two-strided \f$ Y \leftarrow{} \alpha{}X+\beta{}Y \f$
+ *        where \f$ X \f$ and \f$ Y \f$ have split and interleaved
+ *        complex storage, respectively.
+ *
+ * Accumulated interleaved complex column-major matrices into
  * two split complex column-major matrices, one each for the real and
- * imaginary parts.  The input and output memory must not be aliased (per C99
- * \c restrict keyword requirements), otherwise the result is undefined.
+ * imaginary parts.  The input and output arguments must not coincide.
+ * Note that \c incx and \c ldx are specified in terms of complex strides,
+ * and not real-valued strides.
  *
- * Interleaved complex format stores the imaginary part immediately
- * after the real part.  Split complex format stores the real and
- * imaginary parts at two wholly separate memory locations.
- *
- * \param m
- * \param n
- * \param alpha
- * \param z
- * \param incz
- * \param ldz
- * \param z_re
- * \param incz_re
- * \param ldz_re
- * \param z_im
- * \param incz_im
- * \param ldz_im
- *
+ * \param m Number of rows in column-major matrices \f$ X \f$ and \f$ Y \f$.
+ * \param n Number of columns in column-major matrices \f$ X \f$ and \f$ Y \f$.
+ * \param alpha Scale factor \f$ \alpha \f$ to apply to matrix \f$ X \f$.
+ * \param x Beginning of interleaved complex storage for matrix \f$ X \f$.
+ *          Real and imaginary components must be in adjacent locations.
+ * \param incx Increment between values in a column of \f$ X \f$,
+ *             specified in terms of complex elements like <tt>double[2]</tt>.
+ * \param ldx  Leading distance between values in a row of \f$ X \f$,
+ *             specified in terms of complex elements like <tt>double[2]</tt>.
+ * \param beta Scale factor \f$ \beta \f$ to apply to matrix \f$ Y \f$
+ * \param y_re Beginning of the storage for \f$\operatorname{real} Y \f$.
+ * \param incy_re Increment between values in a column of 
+ *                \f$ \operatorname{real} Y \f$, specified in terms of
+ *                <tt>sizeof(double)</tt>.
+ * \param ldy_re Leading distance between values in a row of 
+ *                \f$ \operatorname{real} Y \f$, specified in terms of
+ *                <tt>sizeof(double)</tt>.
+ * \param y_im Beginning of the storage for \f$\operatorname{imag} Y \f$.
+ * \param incy_im Increment between values in a column of 
+ *                \f$ \operatorname{imag} Y \f$, specified in terms of
+ *                <tt>sizeof(double)</tt>.
+ * \param ldy_im Leading distance between values in a row of 
+ *                \f$ \operatorname{imag} Y \f$, specified in terms of
+ *                <tt>sizeof(double)</tt>.
  */
-/* FIXME Documentation and name */
 void
 suzerain_blasext_i2s_zaxpby2(
         const int m,
         const int n,
-        const double (*alpha)[2],
-        const double (* x)[2],
+        const double * const alpha,
+        const double * const x,
         const int incx,
         const int ldx,
-        const double (*beta)[2],
-        double * y_re,
+        const double * const beta,
+        double * const y_re,
         const int incy_re,
         const int ldy_re,
-        double * y_im,
+        double * const y_im,
         const int incy_im,
         const int ldy_im);
-
-/* FIXME Document */
-// void
-// suzerain_kernel_zsplit2interleaved(
-//         const int n,
-//         const double alpha,
-//         double *const z_re,
-//         double *const z_im);
 
 /*! @} */
 
