@@ -34,63 +34,6 @@
 #include <suzerain/error.h>
 #include <suzerain/underling.h>
 
-// Check MPI error code and call SUZERAIN_ERROR if code not MPI_SUCCESS.
-// Returns SUZERAIN_EFAILED from the function.
-#define MPICHKQ(stmt) \
-    do { \
-        int _chk_stat = (stmt); \
-        if (_chk_stat != MPI_SUCCESS) { \
-            char _chk_reason[255]; \
-            char *_chk_mpistring = NULL; \
-            int _chk_len; \
-            const int _chk_string_stat \
-                = MPI_Error_string(_chk_stat,_chk_mpistring,&_chk_len); \
-            snprintf(_chk_reason, sizeof(_chk_reason)/sizeof(_chk_reason[0]), \
-                    "Encountered MPI error code %d: %s", _chk_stat, \
-                    (_chk_string_stat == MPI_SUCCESS) \
-                    ? _chk_mpistring : "UNKNOWN"); \
-            SUZERAIN_ERROR(_chk_reason, SUZERAIN_EFAILED); \
-        } \
-    } while(0)
-
-// Check MPI error code and call SUZERAIN_ERROR if code not MPI_SUCCESS.
-// Returns NULL from the function.
-#define MPICHKN(stmt) \
-    do { \
-        int _chk_stat = (stmt); \
-        if (_chk_stat != MPI_SUCCESS) { \
-            char _chk_reason[255]; \
-            char *_chk_mpistring = NULL; \
-            int _chk_len; \
-            const int _chk_string_stat \
-                = MPI_Error_string(_chk_stat,_chk_mpistring,&_chk_len); \
-            snprintf(_chk_reason, sizeof(_chk_reason)/sizeof(_chk_reason[0]), \
-                    "Encountered MPI error code %d: %s", _chk_stat, \
-                    (_chk_string_stat == MPI_SUCCESS) \
-                    ? _chk_mpistring : "UNKNOWN"); \
-            SUZERAIN_ERROR_NULL(_chk_reason, SUZERAIN_EFAILED); \
-        } \
-    } while(0)
-
-// Check MPI error code and call SUZERAIN_ERROR if code not MPI_SUCCESS.
-// Returns from a function with a void return value.
-#define MPICHKV(stmt) \
-    do { \
-        int _chk_stat = (stmt); \
-        if (_chk_stat != MPI_SUCCESS) { \
-            char _chk_reason[255]; \
-            char *_chk_mpistring = NULL; \
-            int _chk_len; \
-            const int _chk_string_stat \
-                = MPI_Error_string(_chk_stat,_chk_mpistring,&_chk_len); \
-            snprintf(_chk_reason, sizeof(_chk_reason)/sizeof(_chk_reason[0]), \
-                    "Encountered MPI error code %d: %s", _chk_stat, \
-                    (_chk_string_stat == MPI_SUCCESS) \
-                    ? _chk_mpistring : "UNKNOWN"); \
-            SUZERAIN_ERROR_VOID(_chk_reason, SUZERAIN_EFAILED); \
-        } \
-    } while(0)
-
 underling_grid
 underling_grid_create(
         MPI_Comm comm,
@@ -119,12 +62,12 @@ underling_grid_create(
 
     // Get number of processors in the communicator
     int nproc;
-    MPICHKN(MPI_Comm_size(comm, &nproc));
+    SUZERAIN_MPICHKN(MPI_Comm_size(comm, &nproc));
 
     // Create a balanced processor grid if not specified by p0, p1 != 0
     {
         int dims[2] = { p0, p1 };
-        MPICHKN(MPI_Dims_create(nproc, 2, dims));
+        SUZERAIN_MPICHKN(MPI_Dims_create(nproc, 2, dims));
         // If both directions automatic, ensure dims[0] <= dims[1]
         if (p0 == 0 && p1 == 0 && dims[0] > dims[1]) {
             int tmp = dims[0]; dims[0] = dims[1]; dims[1] = tmp;
@@ -177,19 +120,19 @@ underling_grid_create(
     {
         int dims[2]     = { p0, p1 };
         int periodic[2] = { 0, 0 };
-        MPICHKN(MPI_Cart_create(
+        SUZERAIN_MPICHKN(MPI_Cart_create(
                 comm, 2, dims, periodic, 1/*reordering allowed*/, &g_comm));
     }
     // Create communicators for the p0, P1 directions
     MPI_Comm p0_comm;
     {
         int remain_dims[2] = { 1, 0 };
-        MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p0_comm));
+        SUZERAIN_MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p0_comm));
     }
     MPI_Comm p1_comm;
     {
         int remain_dims[2] = { 0, 1 };
-        MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p1_comm));
+        SUZERAIN_MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p1_comm));
     }
 
     // Create and initialize the grid workspace
@@ -218,15 +161,15 @@ underling_grid_destroy(underling_grid grid)
 {
     if (grid) {
         if (grid->g_comm) {
-            MPICHKV(MPI_Comm_disconnect(&grid->g_comm));
+            SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->g_comm));
             grid->g_comm = MPI_COMM_NULL;
         }
         if (grid->p0_comm) {
-            MPICHKV(MPI_Comm_disconnect(&grid->p0_comm));
+            SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->p0_comm));
             grid->p0_comm = MPI_COMM_NULL;
         }
         if (grid->p1_comm) {
-            MPICHKV(MPI_Comm_disconnect(&grid->p1_comm));
+            SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->p1_comm));
             grid->p1_comm = MPI_COMM_NULL;
         }
         free(grid);

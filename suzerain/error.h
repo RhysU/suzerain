@@ -2,6 +2,7 @@
  *
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2007 Gerard Jungman, Brian Gough
  * Adapted from the GNU Scientific Library
+ * Copyright (C) 2009 The PECOS Development Team
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +30,9 @@
  * href="http://www.gnu.org/software/gsl/">GNU Scientific Library</a> (GSL) <a
  * href="http://www.gnu.org/software/gsl/manual/html_node/Error-Handling.html">
  * error handling routines</a>.  Much of suzerain's error code is a direct copy
- * of GSL's API and source code.
+ * of GSL's API and source code.  Notable exceptions are the MPI error handling
+ * macros which are an improved copy of ideas found in <a
+ * href="http://www.mcs.anl.gov/petsc/">PETSc</a>.
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -242,6 +245,72 @@ FILE * suzerain_set_stream(FILE * new_stream);
  */
 #define SUZERAIN_ERROR_NULL(reason, suzerain_errno) \
         SUZERAIN_ERROR_VAL(reason, suzerain_errno, 0)
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+/* Internal helper macro for implementing SUZERAIN_MPICHKx macros */
+#define SUZERAIN_MPICHKx_TEMPLATE(suzerain_error_macro,stmt) \
+    do { \
+        const int _chk_stat = (stmt); \
+        if (_chk_stat != MPI_SUCCESS) { \
+            char _chk_reason[255]; \
+            char *_chk_mpistring = NULL; \
+            int _chk_len; \
+            const int _chk_string_stat \
+                = MPI_Error_string(_chk_stat,_chk_mpistring,&_chk_len); \
+            snprintf(_chk_reason, sizeof(_chk_reason)/sizeof(_chk_reason[0]), \
+                    "Encountered MPI error code %d: %s", _chk_stat, \
+                    (_chk_string_stat == MPI_SUCCESS) \
+                    ? _chk_mpistring : "UNKNOWN"); \
+            suzerain_error_macro(_chk_reason, SUZERAIN_EFAILED); \
+        } \
+    } while(0)
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+
+/**
+ * Executes \c stmt once handling any resulting MPI error per \c
+ * SUZERAIN_ERROR.  Any relevant message is looked up using \c MPI_Error_string
+ * and reported.  \c SUZERAIN_EFAILED is the return value provided to \c
+ * SUZERAIN_ERROR.
+ *
+ * @param stmt Statement, presumably an MPI call, to be executed.
+ * @note <tt>mpi.h</tt> must be <tt>#include</tt>d for the macro
+ *       expansion to compile correctly.
+ * @warning This macro expands to a not insignificant amount of code.
+ *          It should not be used in performance critical regions.
+ * @see PETSc's CHKERRQ for the original inspiration for this macro.
+ */
+#define SUZERAIN_MPICHKQ(stmt) \
+    SUZERAIN_MPICHKx_TEMPLATE(SUZERAIN_ERROR,stmt)
+
+/**
+ * Executes \c stmt once handling any resulting MPI error per \c
+ * SUZERAIN_ERROR_NULL.  Any relevant message is looked up using \c
+ * MPI_Error_string and reported.
+ *
+ * @param stmt Statement, presumably an MPI call, to be executed.
+ * @note <tt>mpi.h</tt> must be <tt>#include</tt>d for the macro
+ *       expansion to compile correctly.
+ * @warning This macro expands to a not insignificant amount of code.
+ *          It should not be used in performance critical regions.
+ * @see PETSc's CHKERRQ for the original inspiration for this macro.
+ */
+#define SUZERAIN_MPICHKN(stmt) \
+    SUZERAIN_MPICHKx_TEMPLATE(SUZERAIN_ERROR_NULL,stmt)
+
+/**
+ * Executes \c stmt once handling any resulting MPI error per \c
+ * SUZERAIN_ERROR_VOID.  Any relevant message is looked up using \c
+ * MPI_Error_string and reported.
+ *
+ * @param stmt Statement, presumably an MPI call, to be executed.
+ * @note <tt>mpi.h</tt> must be <tt>#include</tt>d for the macro
+ *       expansion to compile correctly.
+ * @warning This macro expands to a not insignificant amount of code.
+ *          It should not be used in performance critical regions.
+ * @see PETSc's CHKERRV for the original inspiration for this macro.
+ */
+#define SUZERAIN_MPICHKV(stmt) \
+    SUZERAIN_MPICHKx_TEMPLATE(SUZERAIN_ERROR_VOID,stmt)
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
