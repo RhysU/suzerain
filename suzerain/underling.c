@@ -593,3 +593,67 @@ underling_execute_r2c(
 
     return SUZERAIN_SUCCESS;
 }
+
+void
+underling_fprint_plan(
+        const underling_plan plan, FILE *output_file)
+{
+    fprintf(output_file, "{underling_plan:");
+    if (!plan) {
+        fprintf(output_file, "NULL");
+    } else {
+
+        fprintf(output_file, "{underling_plan_c2r:");
+        if (plan->transpose_tophysical_A) {
+            fprintf(output_file, "{transpose_tophysical_A:");
+            fftw_fprint_plan(plan->transpose_tophysical_A, output_file);
+            fprintf(output_file, "}");
+        }
+        if (plan->c2c_tophysical_n1) {
+            fprintf(output_file, "{c2c_tophysical_n1:");
+            fftw_fprint_plan(plan->c2c_tophysical_n1, output_file);
+            fprintf(output_file, "}");
+        }
+        if (plan->transpose_tophysical_B) {
+            fprintf(output_file, "{plan->transpose_tophysical_B:");
+            fftw_fprint_plan(plan->transpose_tophysical_B, output_file);
+            fprintf(output_file, "}");
+        }
+        if (plan->c2r_tophysical_n0) {
+            fprintf(output_file, "{plan->c2r_tophysical_n0:");
+            fftw_fprint_plan(plan->c2r_tophysical_n0, output_file);
+            fprintf(output_file, "}");
+        }
+        fprintf(output_file, "}");
+
+        fprintf(output_file, "{underling_plan_r2c:");
+        if (plan->r2c_towave_n0) {
+            fprintf(output_file, "{r2c_towave_n0:");
+            fftw_fprint_plan(plan->r2c_towave_n0, output_file);
+            fprintf(output_file, "}");
+        }
+        if (plan->transpose_towave_A) {
+            fprintf(output_file, "{transpose_towave_A:");
+            fftw_fprint_plan(plan->transpose_towave_A, output_file);
+            fprintf(output_file, "}");
+        }
+        if (plan->c2c_towave_n1) {
+            fprintf(output_file, "{c2c_towave_n1:");
+            fftw_fprint_plan(plan->c2c_towave_n1, output_file);
+            fprintf(output_file, "}");
+        }
+        if (plan->transpose_towave_B) {
+            fprintf(output_file, "{transpose_towave_B:");
+            fftw_fprint_plan(plan->transpose_towave_B, output_file);
+            fprintf(output_file, "}");
+        }
+        fprintf(output_file, "}");
+    }
+}
+
+void
+underling_print_plan(
+        const underling_plan plan)
+{
+    underling_fprint_plan(plan, stdout);
+}

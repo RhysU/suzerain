@@ -48,6 +48,8 @@
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+/* TODO Add appropriate grid/problem/plan const-ness */
+
 typedef double         underling_real;
 typedef underling_real underling_complex[2];
 
@@ -146,6 +148,15 @@ underling_execute_c2r(
 int
 underling_execute_r2c(
         underling_plan plan);
+
+void
+underling_fprint_plan(
+        const underling_plan plan,
+        FILE *output_file);
+
+void
+underling_print_plan(
+        const underling_plan plan);
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
