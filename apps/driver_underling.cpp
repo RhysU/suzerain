@@ -96,6 +96,9 @@ int main(int argc, char *argv[])
         = (underling_real *) fftw_malloc(local_size*sizeof(underling_real));
     underling_plan plan = underling_plan_create(problem, data, 1, 1, 0);
 
+    /* Print the plan, just because */
+    ONLYPROC0(underling_print_plan(plan));
+    ONLYPROC0(printf("\n"));
 
     /* Clean up after ourselves */
     underling_plan_destroy(plan);

@@ -603,51 +603,51 @@ underling_fprint_plan(
         fprintf(output_file, "NULL");
     } else {
 
-        fprintf(output_file, "{underling_plan_c2r:");
+        fprintf(output_file, "\n{underling_plan_c2r:");
         if (plan->transpose_tophysical_A) {
-            fprintf(output_file, "{transpose_tophysical_A:");
+            fprintf(output_file, "\n{transpose_tophysical_A:");
             fftw_fprint_plan(plan->transpose_tophysical_A, output_file);
-            fprintf(output_file, "}");
+            fprintf(output_file, "\n}");
         }
         if (plan->c2c_tophysical_n1) {
-            fprintf(output_file, "{c2c_tophysical_n1:");
+            fprintf(output_file, "\n{c2c_tophysical_n1:");
             fftw_fprint_plan(plan->c2c_tophysical_n1, output_file);
-            fprintf(output_file, "}");
+            fprintf(output_file, "\n}");
         }
         if (plan->transpose_tophysical_B) {
-            fprintf(output_file, "{plan->transpose_tophysical_B:");
+            fprintf(output_file, "\n{plan->transpose_tophysical_B:");
             fftw_fprint_plan(plan->transpose_tophysical_B, output_file);
-            fprintf(output_file, "}");
+            fprintf(output_file, "\n}");
         }
         if (plan->c2r_tophysical_n0) {
-            fprintf(output_file, "{plan->c2r_tophysical_n0:");
+            fprintf(output_file, "\n{plan->c2r_tophysical_n0:");
             fftw_fprint_plan(plan->c2r_tophysical_n0, output_file);
-            fprintf(output_file, "}");
+            fprintf(output_file, "\n}");
         }
-        fprintf(output_file, "}");
+        fprintf(output_file, "\n}");
 
-        fprintf(output_file, "{underling_plan_r2c:");
+        fprintf(output_file, "\n{underling_plan_r2c:");
         if (plan->r2c_towave_n0) {
-            fprintf(output_file, "{r2c_towave_n0:");
+            fprintf(output_file, "\n{r2c_towave_n0:");
             fftw_fprint_plan(plan->r2c_towave_n0, output_file);
-            fprintf(output_file, "}");
+            fprintf(output_file, "\n}");
         }
         if (plan->transpose_towave_A) {
-            fprintf(output_file, "{transpose_towave_A:");
+            fprintf(output_file, "\n{transpose_towave_A:");
             fftw_fprint_plan(plan->transpose_towave_A, output_file);
-            fprintf(output_file, "}");
+            fprintf(output_file, "\n}");
         }
         if (plan->c2c_towave_n1) {
-            fprintf(output_file, "{c2c_towave_n1:");
+            fprintf(output_file, "\n{c2c_towave_n1:");
             fftw_fprint_plan(plan->c2c_towave_n1, output_file);
-            fprintf(output_file, "}");
+            fprintf(output_file, "\n}");
         }
         if (plan->transpose_towave_B) {
-            fprintf(output_file, "{transpose_towave_B:");
+            fprintf(output_file, "\n{transpose_towave_B:");
             fftw_fprint_plan(plan->transpose_towave_B, output_file);
-            fprintf(output_file, "}");
+            fprintf(output_file, "\n}");
         }
-        fprintf(output_file, "}");
+        fprintf(output_file, "\n}");
     }
 }
 
