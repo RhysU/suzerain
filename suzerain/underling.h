@@ -63,8 +63,14 @@ struct underling_grid_s {                         // Internal
     int p1;
     int block_a;
     MPI_Comm g_comm;
+    int g_rank;
+    int g_coords[2];
     MPI_Comm p0_comm;
+    int p0_rank;
+    int p0_coord;
     MPI_Comm p1_comm;
+    int p1_rank;
+    int p1_coord;
 };
 
 underling_grid
@@ -94,6 +100,7 @@ typedef struct underling_transpose_details {  // Internal
 
 typedef struct underling_problem_s * underling_problem;  // Public
 struct underling_problem_s {                             // Internal
+    underling_grid grid;                      // grid owns its resources
     int nfields;                              // # of complex-valued state
     underling_transpose_details tophysical_A; // n2 long to n1 long
     underling_transpose_details tophysical_B; // n1 long to n0 long
@@ -117,7 +124,7 @@ underling_local_size(
 
 typedef struct underling_plan_s * underling_plan;  // Public
 struct underling_plan_s {                          // Internal
-    underling_problem problem;         // underling_problem owns resources
+    underling_problem problem;         // problem owns its resources
     fftw_plan transpose_tophysical_A;
     fftw_plan c2c_tophysical_n1;
     fftw_plan transpose_tophysical_B;

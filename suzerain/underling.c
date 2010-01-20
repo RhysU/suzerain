@@ -123,17 +123,35 @@ underling_grid_create(
         SUZERAIN_MPICHKN(MPI_Cart_create(
                 comm, 2, dims, periodic, 1/*reordering allowed*/, &g_comm));
     }
-    // Create communicators for the p0, P1 directions
+    // Cache the rank and coordinates of this process within g_comm
+    int g_rank;
+    SUZERAIN_MPICHKN(MPI_Comm_rank(g_comm, &g_rank));
+    int g_coords[2];
+    SUZERAIN_MPICHKN(MPI_Cart_coords(g_comm, g_rank, 2, g_coords));
+
+    // Create communicator for the P0 direction
     MPI_Comm p0_comm;
     {
         int remain_dims[2] = { 1, 0 };
         SUZERAIN_MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p0_comm));
     }
+    // Cache the rank and coordinates of this process within g_comm
+    int p0_rank;
+    SUZERAIN_MPICHKN(MPI_Comm_rank(p0_comm, &p0_rank));
+    int p0_coord;
+    SUZERAIN_MPICHKN(MPI_Cart_coords(p0_comm, p0_rank, 1, &p0_coord));
+
+    // Create communicator for the P1 direction
     MPI_Comm p1_comm;
     {
         int remain_dims[2] = { 0, 1 };
         SUZERAIN_MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p1_comm));
     }
+    // Cache the rank and coordinates of this process within g_comm
+    int p1_rank;
+    SUZERAIN_MPICHKN(MPI_Comm_rank(p1_comm, &p1_rank));
+    int p1_coord;
+    SUZERAIN_MPICHKN(MPI_Cart_coords(p1_comm, p1_rank, 1, &p1_coord));
 
     // Create and initialize the grid workspace
     underling_grid g = calloc(1, sizeof(struct underling_grid_s));
@@ -142,16 +160,23 @@ underling_grid_create(
                              SUZERAIN_ENOMEM);
     }
     // Copy the grid parameters to the grid workspace
-    g->np0     = np0;
-    g->nw0     = nw0;
-    g->n1      = n1;
-    g->n2      = n2;
-    g->p0      = p0;
-    g->p1      = p1;
-    g->block_a = block_a;
-    g->g_comm  = g_comm;
-    g->p0_comm = p0_comm;
-    g->p1_comm = p1_comm;
+    g->np0         = np0;
+    g->nw0         = nw0;
+    g->n1          = n1;
+    g->n2          = n2;
+    g->p0          = p0;
+    g->p1          = p1;
+    g->block_a     = block_a;
+    g->g_comm      = g_comm;
+    g->g_rank      = g_rank;
+    g->g_coords[0] = g_coords[0];
+    g->g_coords[1] = g_coords[1];
+    g->p0_comm     = p0_comm;
+    g->p0_rank     = p0_rank;
+    g->p0_coord    = p0_coord;
+    g->p1_comm     = p1_comm;
+    g->p1_rank     = p1_rank;
+    g->p1_coord    = p1_coord;
 
     return g;
 }
@@ -196,6 +221,7 @@ underling_problem_create(
                              SUZERAIN_ENOMEM);
     }
     // Copy the problem parameters to the problem workspace
+    p->grid    = grid;
     p->nfields = nfields;
 
     { /* Wave towards physical MPI transpose: long in n2 to long in n1 */
@@ -306,6 +332,7 @@ underling_problem_destroy(
         underling_problem problem)
 {
     if (problem) {
+        problem->grid = NULL;
         free(problem);
     }
 }
@@ -488,7 +515,6 @@ underling_plan_destroy(
         plan->data = NULL;
     }
 }
-
 
 int
 underling_execute_c2r(
