@@ -74,11 +74,10 @@ int main(int argc, char *argv[])
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
 
+    /* Create a grid and a problem*/
     underling_grid grid = underling_grid_create(
             MPI_COMM_WORLD, griddef.nx(), griddef.ny(), griddef.nz(), 0, 0);
-    assert(grid);
     underling_problem problem = underling_problem_create(grid, 1);
-    assert(problem);
 
     LOG4CXX_INFO(logger, "grid->np0:        " << grid->np0);
     LOG4CXX_INFO(logger, "grid->nw0:        " << grid->nw0);
@@ -91,6 +90,16 @@ int main(int argc, char *argv[])
     LOG4CXX_INFO(logger, "grid->p1_comm:    " << grid->p1_comm);
     LOG4CXX_INFO(logger, "problem->nfields: " << problem->nfields);
 
+    /* Allocate storage and create a plan */
+    const size_t local_size = underling_local_size(problem);
+    underling_real * const data
+        = (underling_real *) fftw_malloc(local_size*sizeof(underling_real));
+    underling_plan plan = underling_plan_create(problem, data, 1, 1, 0);
+
+
+    /* Clean up after ourselves */
+    underling_plan_destroy(plan);
+    fftw_free(data);
     underling_problem_destroy(problem);
     underling_grid_destroy(grid);
 }

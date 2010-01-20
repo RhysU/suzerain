@@ -395,18 +395,110 @@ underling_plan_create(
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
 
+    // Create and initialize the plan workspace
     underling_plan p = calloc(1, sizeof(struct underling_plan_s));
     if (p == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for grid",
                              SUZERAIN_ENOMEM);
     }
+    p->problem = problem;
+    p->data = data;
 
 
+    /* Create FFTW plans to transform from wave to physical space */
     if (will_perform_c2r) {
-        /* TODO Create FFT plans */
+        {
+            underling_transpose_details * const d
+                = &(p->problem->tophysical_A);
+            p->transpose_tophysical_A = fftw_mpi_plan_many_transpose(
+                        d->n[0],
+                        d->n[1],
+                        d->howmany,
+                        FFTW_MPI_DEFAULT_BLOCK,
+                        FFTW_MPI_DEFAULT_BLOCK,
+                        p->data, /* in-place */
+                        p->data, /* in-place */
+                        d->comm,
+                        d->flags | rigor_flags
+                    );
+            if (p->transpose_tophysical_A == NULL) {
+                underling_plan_destroy(p);
+                SUZERAIN_ERROR_NULL(
+                        "FFTW MPI returned NULL plan: transpose_tophysical_A",
+                        SUZERAIN_EFAILED);
+            }
+        }
+        {
+            underling_transpose_details * const d
+                = &(p->problem->tophysical_B);
+            p->transpose_tophysical_B = fftw_mpi_plan_many_transpose(
+                        d->n[0],
+                        d->n[1],
+                        d->howmany,
+                        FFTW_MPI_DEFAULT_BLOCK,
+                        FFTW_MPI_DEFAULT_BLOCK,
+                        p->data, /* in-place */
+                        p->data, /* in-place */
+                        d->comm,
+                        d->flags | rigor_flags
+                    );
+            if (p->transpose_tophysical_B == NULL) {
+                underling_plan_destroy(p);
+                SUZERAIN_ERROR_NULL(
+                        "FFTW MPI returned NULL plan: transpose_tophysical_B",
+                        SUZERAIN_EFAILED);
+            }
+        }
+        /* TODO Create FFT plan: c2c_tophysical_n1 */
+        /* TODO Create FFT plan: c2r_tophysical_n0 */
     }
+
+    /* Create FFTW plans to transform from physical to wave space */
     if (will_perform_r2c) {
-        /* TODO Create FFT plans */
+        {
+            underling_transpose_details * const d
+                = &(p->problem->towave_B);
+            p->transpose_towave_B = fftw_mpi_plan_many_transpose(
+                        d->n[0],
+                        d->n[1],
+                        d->howmany,
+                        FFTW_MPI_DEFAULT_BLOCK,
+                        FFTW_MPI_DEFAULT_BLOCK,
+                        p->data, /* in-place */
+                        p->data, /* in-place */
+                        d->comm,
+                        d->flags | rigor_flags
+                    );
+            if (p->transpose_towave_B == NULL) {
+                underling_plan_destroy(p);
+                SUZERAIN_ERROR_NULL(
+                        "FFTW MPI returned NULL plan: transpose_towave_B",
+                        SUZERAIN_EFAILED);
+            }
+        }
+        {
+            underling_transpose_details * const d
+                = &(p->problem->towave_A);
+            p->transpose_towave_A = fftw_mpi_plan_many_transpose(
+                        d->n[0],
+                        d->n[1],
+                        d->howmany,
+                        FFTW_MPI_DEFAULT_BLOCK,
+                        FFTW_MPI_DEFAULT_BLOCK,
+                        p->data, /* in-place */
+                        p->data, /* in-place */
+                        d->comm,
+                        d->flags | rigor_flags
+                    );
+            if (p->transpose_towave_A == NULL) {
+                underling_plan_destroy(p);
+                SUZERAIN_ERROR_NULL(
+                        "FFTW MPI returned NULL plan: transpose_towave_A",
+                        SUZERAIN_EFAILED);
+            }
+        }
+        /* TODO Create FFT plan: r2c_towave_n0 */
+        /* TODO Create FFT plan: c2c_towave_n1 */
     }
 
     return p;
