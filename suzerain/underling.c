@@ -193,7 +193,7 @@ underling_grid_create(
     }
 
     // Create and initialize the grid workspace
-    underling_grid g = malloc(sizeof(struct underling_grid_s));
+    underling_grid g = calloc(1, sizeof(struct underling_grid_s));
     if (g == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for grid",
                              SUZERAIN_ENOMEM);
@@ -239,12 +239,15 @@ underling_problem_create(
         underling_grid grid,
         int nfields)
 {
+    if (grid == NULL) {
+        SUZERAIN_ERROR_NULL("non-NULL grid required", SUZERAIN_EINVAL);
+    }
     if (nfields < 1) {
         SUZERAIN_ERROR_NULL("nfields >= 1 required", SUZERAIN_EINVAL);
     }
 
     // Create and initialize the problem workspace
-    underling_problem p = malloc(sizeof(struct underling_problem_s));
+    underling_problem p = calloc(1, sizeof(struct underling_problem_s));
     if (p == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for problem",
                              SUZERAIN_ENOMEM);
@@ -361,5 +364,92 @@ underling_problem_destroy(
 {
     if (problem) {
         free(problem);
+    }
+}
+
+underling_plan
+underling_plan_create(
+        underling_problem problem,
+        underling_real * data,
+        int will_perform_c2r,
+        int will_perform_r2c,
+        unsigned rigor_flags)
+{
+    if (problem == NULL) {
+        SUZERAIN_ERROR_NULL("non-NULL problem required", SUZERAIN_EINVAL);
+    }
+    if (data == NULL) {
+        SUZERAIN_ERROR_NULL("non-NULL data required", SUZERAIN_EINVAL);
+    }
+    if (!(will_perform_c2r || will_perform_r2c)) {
+        SUZERAIN_ERROR_NULL(
+                "one or both of will_perform_{c2r,r2c} required",
+                SUZERAIN_EINVAL);
+    }
+    const unsigned non_rigor_flag_mask =   ~FFTW_ESTIMATE
+                                         & ~FFTW_MEASURE
+                                         & ~FFTW_PATIENT
+                                         & ~FFTW_EXHAUSTIVE
+                                         & ~FFTW_WISDOM_ONLY;
+    if (rigor_flags & non_rigor_flag_mask) {
+        SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
+    }
+
+    underling_plan p = calloc(1, sizeof(struct underling_plan_s));
+    if (p == NULL) {
+        SUZERAIN_ERROR_NULL("failed to allocate space for grid",
+                             SUZERAIN_ENOMEM);
+    }
+
+
+    if (will_perform_c2r) {
+        /* TODO Create FFT plans */
+    }
+    if (will_perform_r2c) {
+        /* TODO Create FFT plans */
+    }
+
+    return p;
+}
+
+void
+underling_plan_destroy(
+        underling_plan plan)
+{
+    if (plan) {
+        plan->problem = NULL;
+        if (plan->transpose_tophysical_A) {
+            fftw_destroy_plan(plan->transpose_tophysical_A);
+            plan->transpose_tophysical_A = NULL;
+        }
+        if (plan->c2c_tophysical_n1) {
+            fftw_destroy_plan(plan->c2c_tophysical_n1);
+            plan->c2c_tophysical_n1 = NULL;
+        }
+        if (plan->transpose_tophysical_B) {
+            fftw_destroy_plan(plan->transpose_tophysical_B);
+            plan->transpose_tophysical_B = NULL;
+        }
+        if (plan->c2r_tophysical_n0) {
+            fftw_destroy_plan(plan->c2r_tophysical_n0);
+            plan->c2r_tophysical_n0 = NULL;
+        }
+        if (plan->r2c_towave_n0) {
+            fftw_destroy_plan(plan->r2c_towave_n0);
+            plan->r2c_towave_n0 = NULL;
+        }
+        if (plan->transpose_towave_A) {
+            fftw_destroy_plan(plan->transpose_towave_A);
+            plan->transpose_towave_A = NULL;
+        }
+        if (plan->c2c_towave_n1) {
+            fftw_destroy_plan(plan->c2c_towave_n1);
+            plan->c2c_towave_n1 = NULL;
+        }
+        if (plan->transpose_towave_B) {
+            fftw_destroy_plan(plan->transpose_towave_B);
+            plan->transpose_towave_B = NULL;
+        }
+        plan->data = NULL;
     }
 }

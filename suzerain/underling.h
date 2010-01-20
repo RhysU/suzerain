@@ -115,7 +115,7 @@ underling_local_size(
 
 typedef struct underling_plan_s * underling_plan;  // Public
 struct underling_plan_s {                          // Internal
-    underling_problem p;               // underling_problem owns resources
+    underling_problem problem;         // underling_problem owns resources
     fftw_plan transpose_tophysical_A;
     fftw_plan c2c_tophysical_n1;
     fftw_plan transpose_tophysical_B;
@@ -133,7 +133,7 @@ underling_plan_create(
         underling_real * data,
         int will_perform_c2r,
         int will_perform_r2c,
-        unsigned flags);
+        unsigned rigor_flags);
 
 void
 underling_plan_destroy(
