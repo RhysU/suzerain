@@ -74,10 +74,10 @@ int main(int argc, char *argv[])
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
 
-    underling_grid *grid = underling_grid_create(
+    underling_grid grid = underling_grid_create(
             MPI_COMM_WORLD, griddef.nx(), griddef.ny(), griddef.nz(), 0, 0);
     assert(grid);
-    underling_problem *problem = underling_problem_create(grid, 1);
+    underling_problem problem = underling_problem_create(grid, 1);
     assert(problem);
 
     LOG4CXX_INFO(logger, "grid->np0:        " << grid->np0);

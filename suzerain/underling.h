@@ -51,7 +51,8 @@ __BEGIN_DECLS
 typedef double         underling_real;
 typedef underling_real underling_complex[2];
 
-typedef struct underling_grid {
+typedef struct underling_grid_s * underling_grid; // Public
+struct underling_grid_s {                         // Internal
     int np0;
     int nw0;
     int n1;
@@ -62,9 +63,9 @@ typedef struct underling_grid {
     MPI_Comm g_comm;
     MPI_Comm p0_comm;
     MPI_Comm p1_comm;
-} underling_grid;
+};
 
-underling_grid *
+underling_grid
 underling_grid_create(
         MPI_Comm comm,
         int n0,
@@ -75,9 +76,9 @@ underling_grid_create(
 
 void
 underling_grid_destroy(
-        underling_grid * grid);
+        underling_grid grid);
 
-typedef struct underling_transpose_details {
+typedef struct underling_transpose_details {  // Internal
     ptrdiff_t n[2];
     ptrdiff_t howmany;                        // # of real-valued components
     MPI_Comm comm;                            // underling_grid owns resource
@@ -89,30 +90,32 @@ typedef struct underling_transpose_details {
     ptrdiff_t local_size;
 } underling_transpose_details;
 
-typedef struct underling_problem {
+typedef struct underling_problem_s * underling_problem;  // Public
+struct underling_problem_s {                             // Internal
     int nfields;                              // # of complex-valued state
     underling_transpose_details tophysical_A; // n2 long to n1 long
     underling_transpose_details tophysical_B; // n1 long to n0 long
     underling_transpose_details towave_B;     // n0 long to n1 long
     underling_transpose_details towave_A;     // n1 long to n2 long
     ptrdiff_t local_size;                     // Max of all local sizes
-} underling_problem;
+};
 
-underling_problem *
+underling_problem
 underling_problem_create(
-        underling_grid *grid,
+        underling_grid grid,
         int nfields);
 
 void
 underling_problem_destroy(
-        underling_problem * problem);
+        underling_problem problem);
 
 size_t
 underling_local_size(
-        underling_problem * problem);
+        underling_problem problem);
 
-typedef struct underling_plan {
-    underling_problem * p;             // underling_problem owns resources
+typedef struct underling_plan_s * underling_plan;  // Public
+struct underling_plan_s {                          // Internal
+    underling_problem p;               // underling_problem owns resources
     fftw_plan transpose_tophysical_A;
     fftw_plan c2c_tophysical_n1;
     fftw_plan transpose_tophysical_B;
@@ -122,11 +125,11 @@ typedef struct underling_plan {
     fftw_plan c2c_towave_n1;
     fftw_plan transpose_towave_B;
     underling_real *data;              // API end-user owns resources
-} underling_plan;
+};
 
-underling_plan *
+underling_plan
 underling_plan_create(
-        underling_problem * problem,
+        underling_problem problem,
         underling_real * data,
         int will_perform_c2r,
         int will_perform_r2c,
@@ -134,7 +137,7 @@ underling_plan_create(
 
 void
 underling_plan_destroy(
-        underling_plan * plan);
+        underling_plan plan);
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS

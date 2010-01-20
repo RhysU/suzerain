@@ -91,7 +91,7 @@
         } \
     } while(0)
 
-underling_grid *
+underling_grid
 underling_grid_create(
         MPI_Comm comm,
         int np0,
@@ -193,7 +193,7 @@ underling_grid_create(
     }
 
     // Create and initialize the grid workspace
-    underling_grid * g = malloc(sizeof(underling_grid));
+    underling_grid g = malloc(sizeof(struct underling_grid_s));
     if (g == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for grid",
                              SUZERAIN_ENOMEM);
@@ -214,7 +214,7 @@ underling_grid_create(
 }
 
 void
-underling_grid_destroy(underling_grid * grid)
+underling_grid_destroy(underling_grid grid)
 {
     if (grid) {
         if (grid->g_comm) {
@@ -234,9 +234,9 @@ underling_grid_destroy(underling_grid * grid)
 }
 
 
-underling_problem *
+underling_problem
 underling_problem_create(
-        underling_grid *grid,
+        underling_grid grid,
         int nfields)
 {
     if (nfields < 1) {
@@ -244,7 +244,7 @@ underling_problem_create(
     }
 
     // Create and initialize the problem workspace
-    underling_problem * p = malloc(sizeof(underling_problem));
+    underling_problem p = malloc(sizeof(struct underling_problem_s));
     if (p == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for problem",
                              SUZERAIN_ENOMEM);
@@ -350,14 +350,14 @@ underling_problem_create(
 
 size_t
 underling_local_size(
-        underling_problem * problem)
+        underling_problem problem)
 {
     return problem->local_size;
 }
 
 void
 underling_problem_destroy(
-        underling_problem * problem)
+        underling_problem problem)
 {
     if (problem) {
         free(problem);
