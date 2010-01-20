@@ -97,24 +97,29 @@ int main(int argc, char *argv[])
     underling_plan plan = underling_plan_create(problem, data, 1, 1, 0);
 
     /* Initialize test data in wave space */
-    LOG4CXX_DEBUG(logger, "initial test field");
     for (int i = 0; i < local_size; ++i) {
         data[i] = procid*10000 + i;
-        LOG4CXX_DEBUG(logger, "data[" << i << "] = " << data[i]);
+        LOG4CXX_DEBUG(logger, "initial data["
+                << std::setw(8) << std::setfill('0') << i << "] = "
+                << std::setw(8) << std::setfill(' ') << data[i]);
     }
 
     /* Transform to physical space */
     LOG4CXX_DEBUG(logger, "underling_execute_c2r");
     underling_execute_c2r(plan);
     for (int i = 0; i < local_size; ++i) {
-        LOG4CXX_DEBUG(logger, "data[" << i << "] = " << data[i]);
+        LOG4CXX_DEBUG(logger, "post c2r data["
+                << std::setw(8) << std::setfill('0') << i << "] = "
+                << std::setw(8) << std::setfill(' ') << data[i]);
     }
 
     /* Transform to wave space */
     LOG4CXX_DEBUG(logger, "underling_execute_r2c");
     underling_execute_r2c(plan);
     for (int i = 0; i < local_size; ++i) {
-        LOG4CXX_DEBUG(logger, "data[" << i << "] = " << data[i]);
+        LOG4CXX_DEBUG(logger, "post r2c data["
+                << std::setw(8) << std::setfill('0') << i << "] = "
+                << std::setw(8) << std::setfill(' ') << data[i]);
     }
 
     /* Clean up after ourselves */
