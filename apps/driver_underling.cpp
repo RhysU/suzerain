@@ -96,6 +96,8 @@ int main(int argc, char *argv[])
         = (underling_real *) fftw_malloc(local_size*sizeof(underling_real));
     underling_plan plan = underling_plan_create(problem, data, 1, 1, 0);
 
+    MPI_Barrier(MPI_COMM_WORLD);
+
     /* Initialize test data in wave space */
     for (int i = 0; i < local_size; ++i) {
         data[i] = procid*10000 + i;
@@ -103,6 +105,8 @@ int main(int argc, char *argv[])
                 << std::setw(8) << std::setfill('0') << i << "] = "
                 << std::setw(8) << std::setfill(' ') << data[i]);
     }
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     /* Transform to physical space */
     LOG4CXX_DEBUG(logger, "underling_execute_c2r");
@@ -113,6 +117,8 @@ int main(int argc, char *argv[])
                 << std::setw(8) << std::setfill(' ') << data[i]);
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
+
     /* Transform to wave space */
     LOG4CXX_DEBUG(logger, "underling_execute_r2c");
     underling_execute_r2c(plan);
@@ -121,6 +127,8 @@ int main(int argc, char *argv[])
                 << std::setw(8) << std::setfill('0') << i << "] = "
                 << std::setw(8) << std::setfill(' ') << data[i]);
     }
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     /* Clean up after ourselves */
     underling_plan_destroy(plan);
