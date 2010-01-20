@@ -72,23 +72,27 @@ int main(int argc, char *argv[])
                         nullstream, nullstream, nullstream, nullstream);
     }
 
-    ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
 
     /* Create a grid and a problem*/
     underling_grid grid = underling_grid_create(
             MPI_COMM_WORLD, griddef.nx(), griddef.ny(), griddef.nz(), 0, 0);
     underling_problem problem = underling_problem_create(grid, 1);
 
-    LOG4CXX_INFO(logger, "grid->np0:        " << grid->np0);
-    LOG4CXX_INFO(logger, "grid->nw0:        " << grid->nw0);
-    LOG4CXX_INFO(logger, "grid->n1:         " << grid->n1);
-    LOG4CXX_INFO(logger, "grid->n2:         " << grid->n2);
-    LOG4CXX_INFO(logger, "grid->p0:         " << grid->p0);
-    LOG4CXX_INFO(logger, "grid->p1:         " << grid->p1);
-    LOG4CXX_INFO(logger, "grid->g_comm:     " << grid->g_comm);
-    LOG4CXX_INFO(logger, "grid->p0_comm:    " << grid->p0_comm);
-    LOG4CXX_INFO(logger, "grid->p1_comm:    " << grid->p1_comm);
-    LOG4CXX_INFO(logger, "problem->nfields: " << problem->nfields);
+    /* Dump some runtime information */
+    ONLYPROC0(
+        LOG4CXX_INFO(logger, "Number of processors: " << nproc);
+        LOG4CXX_INFO(logger, "grid->np0:            " << grid->np0);
+        LOG4CXX_INFO(logger, "grid->nw0:            " << grid->nw0);
+        LOG4CXX_INFO(logger, "grid->n1:             " << grid->n1);
+        LOG4CXX_INFO(logger, "grid->n2:             " << grid->n2);
+        LOG4CXX_INFO(logger, "grid->p0:             " << grid->p0);
+        LOG4CXX_INFO(logger, "grid->p1:             " << grid->p1);
+        LOG4CXX_INFO(logger, "problem->nfields:     " << problem->nfields);
+    );
+    LOG4CXX_INFO(logger, "grid->p0_comm:        " << grid->p0_comm);
+    LOG4CXX_INFO(logger, "grid->p1_comm:        " << grid->p1_comm);
+    LOG4CXX_INFO(logger, "problem->local_size:  " << problem->local_size);
+    LOG4CXX_INFO(logger, "problem->optimum_size:" << underling_optimum_local_size(problem));
 
     /* Allocate storage and create a plan */
     const size_t local_size = underling_local_size(problem);
@@ -130,9 +134,24 @@ int main(int argc, char *argv[])
 
     MPI_Barrier(MPI_COMM_WORLD);
 
+    /* Primitive check for data corruption */
+    int corruption = 0;
+    for (int i = 0; i < local_size; ++i) {
+        if (data[i] != (procid*10000 + i)) {
+            LOG4CXX_WARN(logger, "test result discrepancy at index " << i);
+            corruption = 1;
+            break;
+        }
+    }
+    int retval;
+    SUZERAIN_MPICHKQ(MPI_Allreduce(
+            &corruption, &retval, 1, MPI_INT, MPI_BOR, MPI_COMM_WORLD));
+
     /* Clean up after ourselves */
     underling_plan_destroy(plan);
     fftw_free(data);
     underling_problem_destroy(problem);
     underling_grid_destroy(grid);
+
+    return retval;
 }

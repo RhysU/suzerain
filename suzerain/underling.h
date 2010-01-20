@@ -61,7 +61,6 @@ struct underling_grid_s {                         // Internal
     int n2;
     int p0;
     int p1;
-    int block_a;
     MPI_Comm g_comm;
     int g_rank;
     int g_coords[2];
@@ -88,7 +87,8 @@ underling_grid_destroy(
 
 typedef struct underling_transpose_details {  // Internal
     ptrdiff_t n[2];
-    ptrdiff_t howmany;                        // # of real-valued components
+    ptrdiff_t block0;
+    ptrdiff_t block1;
     MPI_Comm comm;                            // underling_grid owns resource
     unsigned flags;
     ptrdiff_t local_n0;
@@ -101,7 +101,8 @@ typedef struct underling_transpose_details {  // Internal
 typedef struct underling_problem_s * underling_problem;  // Public
 struct underling_problem_s {                             // Internal
     underling_grid grid;                      // grid owns its resources
-    int nfields;                              // # of complex-valued state
+    int nfields;                              // # of complex-valued state...
+    int howmany;                              // ...as a # of real values
     underling_transpose_details tophysical_A; // n2 long to n1 long
     underling_transpose_details tophysical_B; // n1 long to n0 long
     underling_transpose_details towave_B;     // n0 long to n1 long
@@ -120,7 +121,11 @@ underling_problem_destroy(
 
 size_t
 underling_local_size(
-        underling_problem problem);
+        const underling_problem problem);
+
+size_t
+underling_optimum_local_size(
+        const underling_problem problem);
 
 typedef struct underling_plan_s * underling_plan;  // Public
 struct underling_plan_s {                          // Internal

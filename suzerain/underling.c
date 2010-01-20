@@ -70,7 +70,7 @@ underling_grid_create(
         SUZERAIN_MPICHKN(MPI_Dims_create(nproc, 2, dims));
         // If both directions automatic, ensure dims[0] <= dims[1]
         if (p0 == 0 && p1 == 0 && dims[0] > dims[1]) {
-            int tmp = dims[0]; dims[0] = dims[1]; dims[1] = tmp;
+            const int tmp = dims[0]; dims[0] = dims[1]; dims[1] = tmp;
         }
         p0 = dims[0];
         p1 = dims[1];
@@ -88,32 +88,6 @@ underling_grid_create(
     const int nw0 = np0/2 + 1;
     const int n1  = np1;
     const int n2  = np2;
-
-    // Transform proceeds like
-    // ALL WAVE SPACE
-    //      ((nw0/p0 x nw1/p1)) x nw2
-    //       \----block_a----/
-    //      to
-    //      ((nw2/p1 x nw0/p0)) x nw1
-    //      ((nw2/p1 x nw0/p0)) x np1
-    //       \----block_b----/
-    //      to
-    //      ((np1/p0 x nw2/p1)) x nw0
-    //      ((np1/p0 x nw2/p1)) x np0
-    //       \----block_c----/
-    // ALL PHYSICAL_SPACE
-
-    // Ensure grid allows the problem data to be distributed evenly.
-    // This is a dumb restriction that should probably be lifted.
-    if ((nw0*n1) % (p0*p1) != 0) {
-        char reason[127];
-        snprintf(reason, sizeof(reason)/sizeof(reason[0]),
-                "Invalid processor grid: "
-                "(nw0 {%d} * n1 {%d}) %% (p0 {%d}* p1 {%d}) != 0",
-                nw0, n1, p0, p1);
-        SUZERAIN_ERROR_NULL(reason, SUZERAIN_EFAILED);
-    }
-    const int block_a = (nw0*n1)/(p0*p1);
 
     // Clone the communicator and create the 2D Cartesian topology
     MPI_Comm g_comm;
@@ -166,7 +140,6 @@ underling_grid_create(
     g->n2          = n2;
     g->p0          = p0;
     g->p1          = p1;
-    g->block_a     = block_a;
     g->g_comm      = g_comm;
     g->g_rank      = g_rank;
     g->g_coords[0] = g_coords[0];
@@ -223,86 +196,131 @@ underling_problem_create(
     // Copy the problem parameters to the problem workspace
     p->grid    = grid;
     p->nfields = nfields;
+    p->howmany = nfields * sizeof(underling_complex)/sizeof(underling_real);
+
+    // Wave space is partitioned according to (nw0 x n1) x n2 with n2 long.
+    // Use FFTW's partitioning to find the portion of the global (nw0 x n1)
+    // data that is spread across p1_comm.  We never perform this next
+    // transpose, but we do need its local_n0 which should be roughly
+    // (nw0*n1)/p1_rank.
+    ptrdiff_t pencil_p0_n0, pencil_p0_n0_start;
+    ptrdiff_t pencil_p0_n1, pencil_p0_n1_start;
+    {
+        const ptrdiff_t n[2] = { (grid->nw0 * grid->n1), grid->n2 };
+        fftw_mpi_local_size_many_transposed(/*rank*/2,
+                                            n,
+                                            p->howmany,
+                                            FFTW_MPI_DEFAULT_BLOCK,
+                                            FFTW_MPI_DEFAULT_BLOCK,
+                                            grid->p1_comm,
+                                            &pencil_p0_n0,
+                                            &pencil_p0_n0_start,
+                                            &pencil_p0_n1,
+                                            &pencil_p0_n1_start);
+    }
 
     { /* Wave towards physical MPI transpose: long in n2 to long in n1 */
         underling_transpose_details * const d = &(p->tophysical_A);
-        d->n[0]    = grid->p1 * grid->block_a;
+        d->n[0]    = pencil_p0_n0;
         d->n[1]    = grid->n2;
-        d->howmany = nfields * sizeof(underling_complex)/sizeof(underling_real);
-        d->comm    = grid->p1_comm;
-        d->flags   = 0;
-        d->local_size = fftw_mpi_local_size_many_transposed(
-                    /*rank*/2,
-                    d->n,
-                    d->howmany,
-                    FFTW_MPI_DEFAULT_BLOCK,
-                    FFTW_MPI_DEFAULT_BLOCK,
-                    d->comm,
-                    &(d->local_n0),
-                    &(d->local_n0_start),
-                    &(d->local_n1),
-                    &(d->local_n1_start)
-                );
-    }
-    { /* Wave towards physical MPI transpose: long in n1 to long in n0 */
-        underling_transpose_details * const d = &(p->tophysical_B);
-        d->n[0]    = grid->p0 * p->tophysical_A.local_n1 * grid->nw0;
-        d->n[1]    = grid->n1;
-        d->howmany = p->tophysical_A.howmany; /* copy for consistency */
+        d->block0  = FFTW_MPI_DEFAULT_BLOCK;
+        d->block1  = FFTW_MPI_DEFAULT_BLOCK;
         d->comm    = grid->p0_comm;
         d->flags   = 0;
         d->local_size = fftw_mpi_local_size_many_transposed(
                     /*rank*/2,
                     d->n,
-                    d->howmany,
-                    FFTW_MPI_DEFAULT_BLOCK,
-                    FFTW_MPI_DEFAULT_BLOCK,
+                    p->howmany,
+                    d->block0,
+                    d->block1,
                     d->comm,
                     &(d->local_n0),
                     &(d->local_n0_start),
                     &(d->local_n1),
-                    &(d->local_n1_start)
-                );
+                    &(d->local_n1_start));
+    }
+
+    // After one transpose we have n2 x (nw0 x n1) = (n2 x nw0) x n1
+    // with n1 long.  Again, use FFTW's partitioning to find the
+    // portion of the global (n2 x nw0) data that is spread across
+    // p0_comm.  We never perform the this next transpose, but we
+    // do need its its local_n0 which should be roughly
+    // (n2*nw0)/p0_rank.
+    ptrdiff_t pencil_p1_n0, pencil_p1_n0_start;
+    ptrdiff_t pencil_p1_n1, pencil_p1_n1_start;
+    {
+        const ptrdiff_t n[2] = { (grid->n2 * grid->nw0), grid->n1 };
+        fftw_mpi_local_size_many_transposed(/*rank*/2,
+                                            n,
+                                            p->howmany,
+                                            FFTW_MPI_DEFAULT_BLOCK,
+                                            FFTW_MPI_DEFAULT_BLOCK,
+                                            grid->p0_comm,
+                                            &pencil_p1_n0,
+                                            &pencil_p1_n0_start,
+                                            &pencil_p1_n1,
+                                            &pencil_p1_n1_start);
+    }
+
+    { /* Wave towards physical MPI transpose: long in n1 to long in n0 */
+        underling_transpose_details * const d = &(p->tophysical_B);
+        d->n[0]    = pencil_p1_n0,
+        d->n[1]    = grid->n1;
+        d->block0  = p->tophysical_A.local_n1;
+        d->block1  = FFTW_MPI_DEFAULT_BLOCK;
+        d->comm    = grid->p1_comm;
+        d->flags   = 0;
+        d->local_size = fftw_mpi_local_size_many_transposed(
+                    /*rank*/2,
+                    d->n,
+                    p->howmany,
+                    d->block0,
+                    d->block1,
+                    d->comm,
+                    &(d->local_n0),
+                    &(d->local_n0_start),
+                    &(d->local_n1),
+                    &(d->local_n1_start));
     }
     { /* Physical towards wave MPI transpose: long in n0 to long in n1 */
         underling_transpose_details * const d = &(p->towave_B);
-        d->n[0]    = p->tophysical_B.n[1];
-        d->n[1]    = p->tophysical_B.n[0];
-        d->howmany = p->tophysical_A.howmany; /* copy for consistency */
+        d->n[0]    = p->tophysical_B.n[1];    /* copy/flip for consistency */
+        d->n[1]    = p->tophysical_B.n[0];    /* copy/flip for consistency */
+        d->block0  = p->tophysical_B.block1;  /* copy/flip for consistency */
+        d->block1  = p->tophysical_B.block0;  /* copy/flip for consistency */
         d->comm    = p->tophysical_B.comm;    /* copy for consistency */
         d->flags   = 0;
         d->local_size = fftw_mpi_local_size_many_transposed(
                     /*rank*/2,
                     d->n,
-                    d->howmany,
-                    FFTW_MPI_DEFAULT_BLOCK,
-                    FFTW_MPI_DEFAULT_BLOCK,
+                    p->howmany,
+                    d->block0,
+                    d->block1,
                     d->comm,
                     &(d->local_n0),
                     &(d->local_n0_start),
                     &(d->local_n1),
-                    &(d->local_n1_start)
-                );
+                    &(d->local_n1_start));
     }
     { /* Physical towards wave MPI transpose: long in n1 to long in n2 */
         underling_transpose_details * const d = &(p->towave_A);
-        d->n[0]    = p->tophysical_A.n[1];
-        d->n[1]    = p->tophysical_A.n[0];
-        d->howmany = p->tophysical_A.howmany; /* copy for consistency */
+        d->n[0]    = p->tophysical_A.n[1];    /* copy/flip for consistency */
+        d->n[1]    = p->tophysical_A.n[0];    /* copy/flip for consistency */
+        d->block0  = p->tophysical_A.block1;  /* copy/flip for consistency */
+        d->block1  = p->tophysical_A.block0;  /* copy/flip for consistency */
         d->comm    = p->tophysical_A.comm;    /* copy for consistency */
         d->flags   = 0;
         d->local_size = fftw_mpi_local_size_many_transposed(
                     /*rank*/2,
                     d->n,
-                    d->howmany,
-                    FFTW_MPI_DEFAULT_BLOCK,
-                    FFTW_MPI_DEFAULT_BLOCK,
+                    p->howmany,
+                    d->block0,
+                    d->block1,
                     d->comm,
                     &(d->local_n0),
                     &(d->local_n0_start),
                     &(d->local_n1),
-                    &(d->local_n1_start)
-                );
+                    &(d->local_n1_start));
     }
 
     /* local_size is overall maximum of all transpose local_size values */
@@ -322,9 +340,24 @@ underling_problem_create(
 
 size_t
 underling_local_size(
-        underling_problem problem)
+        const underling_problem problem)
 {
     return problem->local_size;
+}
+
+size_t
+underling_optimum_local_size(
+        const underling_problem problem)
+{
+    const size_t global_data =   problem->grid->nw0
+                               * problem->grid->n1
+                               * problem->grid->n2
+                               * problem->howmany;
+
+    const size_t nprocessors =   problem->grid->p0
+                               * problem->grid->p1;
+
+    return global_data/nprocessors;
 }
 
 void
@@ -383,7 +416,7 @@ underling_plan_create(
             p->transpose_tophysical_A = fftw_mpi_plan_many_transpose(
                         d->n[0],
                         d->n[1],
-                        d->howmany,
+                        p->problem->howmany,
                         FFTW_MPI_DEFAULT_BLOCK,
                         FFTW_MPI_DEFAULT_BLOCK,
                         p->data, /* in-place */
@@ -404,7 +437,7 @@ underling_plan_create(
             p->transpose_tophysical_B = fftw_mpi_plan_many_transpose(
                         d->n[0],
                         d->n[1],
-                        d->howmany,
+                        p->problem->howmany,
                         FFTW_MPI_DEFAULT_BLOCK,
                         FFTW_MPI_DEFAULT_BLOCK,
                         p->data, /* in-place */
@@ -431,7 +464,7 @@ underling_plan_create(
             p->transpose_towave_B = fftw_mpi_plan_many_transpose(
                         d->n[0],
                         d->n[1],
-                        d->howmany,
+                        p->problem->howmany,
                         FFTW_MPI_DEFAULT_BLOCK,
                         FFTW_MPI_DEFAULT_BLOCK,
                         p->data, /* in-place */
@@ -452,7 +485,7 @@ underling_plan_create(
             p->transpose_towave_A = fftw_mpi_plan_many_transpose(
                         d->n[0],
                         d->n[1],
-                        d->howmany,
+                        p->problem->howmany,
                         FFTW_MPI_DEFAULT_BLOCK,
                         FFTW_MPI_DEFAULT_BLOCK,
                         p->data, /* in-place */
@@ -556,9 +589,9 @@ underling_execute_r2c(
     }
 
 /* FIXME fftw_execute(plan->r2c_towave_n0); */
-    fftw_execute(plan->transpose_towave_A);
-/* FIXME fftw_execute(plan->c2c_towave_n1); */
     fftw_execute(plan->transpose_towave_B);
+/* FIXME fftw_execute(plan->c2c_towave_n1); */
+    fftw_execute(plan->transpose_towave_A);
 
     return SUZERAIN_SUCCESS;
 }
