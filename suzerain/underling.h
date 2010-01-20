@@ -77,23 +77,23 @@ void
 underling_grid_destroy(
         underling_grid * grid);
 
-typedef struct underling_fftw_transpose_details {
-    int n[2];
+typedef struct underling_transpose_details {
+    ptrdiff_t n[2];
+    ptrdiff_t howmany;                        // # of real-valued components
     ptrdiff_t local_size;
-    ptrdiff_t block0;
-    ptrdiff_t block1;
-    ptrdiff_t local_0;
-    ptrdiff_t local_0_start;
-    ptrdiff_t local_1;
-    ptrdiff_t local_1_start;
-} underling_fftw_transpose_details;
+    ptrdiff_t local_n0;
+    ptrdiff_t local_n0_start;
+    ptrdiff_t local_n1;
+    ptrdiff_t local_n1_start;
+} underling_transpose_details;
 
 typedef struct underling_problem {
-    int nfields;
-    underling_fftw_transpose_details tophysical_A; // n2 long to n1 long
-    underling_fftw_transpose_details tophysical_B; // n1 long to n0 long
-    underling_fftw_transpose_details towave_B;     // n0 long to n1 long
-    underling_fftw_transpose_details towave_A;     // n1 long to n2 long
+    int nfields;                              // # of complex-valued state
+    underling_transpose_details tophysical_A; // n2 long to n1 long
+    underling_transpose_details tophysical_B; // n1 long to n0 long
+    underling_transpose_details towave_B;     // n0 long to n1 long
+    underling_transpose_details towave_A;     // n1 long to n2 long
+    ptrdiff_t local_size;                     // Max of all local sizes
 } underling_problem;
 
 underling_problem *

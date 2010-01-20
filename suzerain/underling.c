@@ -252,7 +252,89 @@ underling_problem_create(
     // Copy the problem parameters to the problem workspace
     p->nfields = nfields;
 
-    {
+    { /* Wave towards physical MPI transpose: long in n2 to long in n1 */
+        underling_transpose_details * const d = &(p->tophysical_A);
+        d->n[0]    = grid->p1 * grid->block_a;
+        d->n[1]    = grid->n2;
+        d->howmany = nfields * sizeof(underling_complex)/sizeof(underling_real);
+        d->local_size = fftw_mpi_local_size_many_transposed(
+                    /*rank*/2,
+                    d->n,
+                    d->howmany,
+                    FFTW_MPI_DEFAULT_BLOCK,
+                    FFTW_MPI_DEFAULT_BLOCK,
+                    grid->p1_comm,
+                    &(d->local_n0),
+                    &(d->local_n0_start),
+                    &(d->local_n1),
+                    &(d->local_n1_start)
+                );
+    }
+    { /* Wave towards physical MPI transpose: long in n1 to long in n0 */
+        underling_transpose_details * const d = &(p->tophysical_B);
+        d->n[0]    = grid->p0 * p->tophysical_A.local_n1 * grid->nw0;
+        d->n[1]    = grid->n1;
+        d->howmany = p->tophysical_A.howmany; /* copy for consistency */
+        d->local_size = fftw_mpi_local_size_many_transposed(
+                    /*rank*/2,
+                    d->n,
+                    d->howmany,
+                    FFTW_MPI_DEFAULT_BLOCK,
+                    FFTW_MPI_DEFAULT_BLOCK,
+                    grid->p0_comm,
+                    &(d->local_n0),
+                    &(d->local_n0_start),
+                    &(d->local_n1),
+                    &(d->local_n1_start)
+                );
+    }
+    { /* Physical towards wave MPI transpose: long in n0 to long in n1 */
+        underling_transpose_details * const d = &(p->towave_B);
+        d->n[0]    = p->tophysical_B.n[1];
+        d->n[1]    = p->tophysical_B.n[0];
+        d->howmany = p->tophysical_A.howmany; /* copy for consistency */
+        d->local_size = fftw_mpi_local_size_many_transposed(
+                    /*rank*/2,
+                    d->n,
+                    d->howmany,
+                    FFTW_MPI_DEFAULT_BLOCK,
+                    FFTW_MPI_DEFAULT_BLOCK,
+                    grid->p0_comm,
+                    &(d->local_n0),
+                    &(d->local_n0_start),
+                    &(d->local_n1),
+                    &(d->local_n1_start)
+                );
+    }
+    { /* Physical towards wave MPI transpose: long in n1 to long in n2 */
+        underling_transpose_details * const d = &(p->towave_A);
+        d->n[0]    = p->tophysical_A.n[1];
+        d->n[1]    = p->tophysical_A.n[0];
+        d->howmany = p->tophysical_A.howmany; /* copy for consistency */
+        d->local_size = fftw_mpi_local_size_many_transposed(
+                    /*rank*/2,
+                    d->n,
+                    d->howmany,
+                    FFTW_MPI_DEFAULT_BLOCK,
+                    FFTW_MPI_DEFAULT_BLOCK,
+                    grid->p1_comm,
+                    &(d->local_n0),
+                    &(d->local_n0_start),
+                    &(d->local_n1),
+                    &(d->local_n1_start)
+                );
+    }
+
+    /* Compute overall maximum of all transpose local_size values */
+    p->local_size = p->tophysical_A.local_size;
+    if (p->local_size < p->tophysical_B.local_size) {
+        p->local_size = p->tophysical_B.local_size;
+    }
+    if (p->local_size < p->towave_B.local_size) {
+        p->local_size = p->towave_B.local_size;
+    }
+    if (p->local_size < p->towave_A.local_size) {
+        p->local_size = p->towave_A.local_size;
     }
 
     return p;
