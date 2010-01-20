@@ -34,6 +34,8 @@
 #include <suzerain/error.h>
 #include <suzerain/underling.h>
 
+// Check MPI error code and call SUZERAIN_ERROR if code not MPI_SUCCESS.
+// Returns SUZERAIN_EFAILED from the function.
 #define MPICHKQ(stmt) \
     do { \
         int _chk_stat = (stmt); \
@@ -51,6 +53,8 @@
         } \
     } while(0)
 
+// Check MPI error code and call SUZERAIN_ERROR if code not MPI_SUCCESS.
+// Returns NULL from the function.
 #define MPICHKN(stmt) \
     do { \
         int _chk_stat = (stmt); \
@@ -68,6 +72,8 @@
         } \
     } while(0)
 
+// Check MPI error code and call SUZERAIN_ERROR if code not MPI_SUCCESS.
+// Returns from a function with a void return value.
 #define MPICHKV(stmt) \
     do { \
         int _chk_stat = (stmt); \
@@ -134,26 +140,6 @@ underling_grid_create(
         }
     }
 
-    // Clone the communicator and create the 2D Cartesian topology
-    MPI_Comm g_comm;
-    {
-        int dims[2]     = { p0, p1 };
-        int periodic[2] = { 0, 0 };
-        MPICHKN(MPI_Cart_create(
-                comm, 2, dims, periodic, 1/*reordering allowed*/, &g_comm));
-    }
-    // Create communicators for the p0, P1 directions
-    MPI_Comm p0_comm;
-    {
-        int remain_dims[2] = { 1, 0 };
-        MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p0_comm));
-    }
-    MPI_Comm p1_comm;
-    {
-        int remain_dims[2] = { 0, 1 };
-        MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p1_comm));
-    }
-
     // Determine the wave space dimensions in the n0 where
     // n0 is only about half as long in wave space.
     const int nw0 = np0/2 + 1;
@@ -174,6 +160,38 @@ underling_grid_create(
     //       \----block_c----/
     // ALL PHYSICAL_SPACE
 
+    // Ensure grid allows the problem data to be distributed evenly.
+    // This is a dumb restriction that should probably be lifted.
+    if ((nw0*n1) % (p0*p1) != 0) {
+        char reason[127];
+        snprintf(reason, sizeof(reason)/sizeof(reason[0]),
+                "Invalid processor grid: "
+                "(nw0 {%d} * n1 {%d}) %% (p0 {%d}* p1 {%d}) != 0",
+                nw0, n1, p0, p1);
+        SUZERAIN_ERROR_NULL(reason, SUZERAIN_EFAILED);
+    }
+    const int block_a = (nw0*n1)/(p0*p1);
+
+    // Clone the communicator and create the 2D Cartesian topology
+    MPI_Comm g_comm;
+    {
+        int dims[2]     = { p0, p1 };
+        int periodic[2] = { 0, 0 };
+        MPICHKN(MPI_Cart_create(
+                comm, 2, dims, periodic, 1/*reordering allowed*/, &g_comm));
+    }
+    // Create communicators for the p0, P1 directions
+    MPI_Comm p0_comm;
+    {
+        int remain_dims[2] = { 1, 0 };
+        MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p0_comm));
+    }
+    MPI_Comm p1_comm;
+    {
+        int remain_dims[2] = { 0, 1 };
+        MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p1_comm));
+    }
+
     // Create and initialize the grid workspace
     underling_grid * g = malloc(sizeof(underling_grid));
     if (g == NULL) {
@@ -187,6 +205,7 @@ underling_grid_create(
     g->n2      = n2;
     g->p0      = p0;
     g->p1      = p1;
+    g->block_a = block_a;
     g->g_comm  = g_comm;
     g->p0_comm = p0_comm;
     g->p1_comm = p1_comm;
@@ -218,10 +237,10 @@ underling_grid_destroy(underling_grid * grid)
 underling_problem *
 underling_problem_create(
         underling_grid *grid,
-        int howmany)
+        int nfields)
 {
-    if (howmany < 1) {
-        SUZERAIN_ERROR_NULL("howmany >= 1 required", SUZERAIN_EINVAL);
+    if (nfields < 1) {
+        SUZERAIN_ERROR_NULL("nfields >= 1 required", SUZERAIN_EINVAL);
     }
 
     // Create and initialize the problem workspace
@@ -231,7 +250,10 @@ underling_problem_create(
                              SUZERAIN_ENOMEM);
     }
     // Copy the problem parameters to the problem workspace
-    p->howmany = howmany;
+    p->nfields = nfields;
+
+    {
+    }
 
     return p;
 }

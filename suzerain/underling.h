@@ -58,6 +58,7 @@ typedef struct underling_grid {
     int n2;
     int p0;
     int p1;
+    int block_a;
     MPI_Comm g_comm;
     MPI_Comm p0_comm;
     MPI_Comm p1_comm;
@@ -76,14 +77,29 @@ void
 underling_grid_destroy(
         underling_grid * grid);
 
+typedef struct underling_fftw_transpose_details {
+    int n[2];
+    ptrdiff_t local_size;
+    ptrdiff_t block0;
+    ptrdiff_t block1;
+    ptrdiff_t local_0;
+    ptrdiff_t local_0_start;
+    ptrdiff_t local_1;
+    ptrdiff_t local_1_start;
+} underling_fftw_transpose_details;
+
 typedef struct underling_problem {
-    int howmany;
+    int nfields;
+    underling_fftw_transpose_details tophysical_A; // n2 long to n1 long
+    underling_fftw_transpose_details tophysical_B; // n1 long to n0 long
+    underling_fftw_transpose_details towave_B;     // n0 long to n1 long
+    underling_fftw_transpose_details towave_A;     // n1 long to n2 long
 } underling_problem;
 
 underling_problem *
 underling_problem_create(
         underling_grid *grid,
-        int howmany);
+        int nfields);
 
 void
 underling_problem_destroy(
@@ -96,18 +112,17 @@ underling_size_local(
 
 typedef struct underling_plan {
     underling_problem * p;
-    int howmany;
-    fftw_plan plan12;
-    fftw_plan plan23;
-    fftw_plan plan32;
-    fftw_plan plan21;
+    fftw_plan c2c_tophysical_n1;
+    fftw_plan c2r_tophysical_n0;
+    fftw_plan r2c_towave_n0;
+    fftw_plan c2c_towave_n1;
     underling_real *data;
 } underling_plan;
 
 underling_plan *
 underling_plan_create(
         underling_problem * problem,
-        int howmany,
+        int nfields,
         underling_real * data,
         int will_perform_c2r,
         int will_perform_r2c,

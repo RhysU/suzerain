@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     LOG4CXX_INFO(logger, "grid->g_comm:     " << grid->g_comm);
     LOG4CXX_INFO(logger, "grid->p0_comm:    " << grid->p0_comm);
     LOG4CXX_INFO(logger, "grid->p1_comm:    " << grid->p1_comm);
-    LOG4CXX_INFO(logger, "problem->howmany: " << problem->howmany);
+    LOG4CXX_INFO(logger, "problem->nfields: " << problem->nfields);
 
     underling_problem_destroy(problem);
     underling_grid_destroy(grid);
