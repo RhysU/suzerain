@@ -545,3 +545,51 @@ underling_plan_destroy(
         plan->data = NULL;
     }
 }
+
+
+int
+underling_execute_c2r(
+        underling_plan plan)
+{
+    if (plan == NULL) {
+        SUZERAIN_ERROR("non-NULL plan required", SUZERAIN_EINVAL);
+    }
+
+    /* FIXME check valid c2c_tophysical_n1, c2r_tophysical_n0 as well */
+    const int valid =       plan->transpose_tophysical_A
+                         && plan->transpose_tophysical_B;
+    if (!valid) {
+        SUZERAIN_ERROR("plan has one or more NULL c2r subplans",
+                SUZERAIN_EINVAL);
+    }
+
+    fftw_execute(plan->transpose_tophysical_A);
+/* FIXME fftw_execute(plan->c2c_tophysical_n1); */
+    fftw_execute(plan->transpose_tophysical_B);
+/* FIXME fftw_execute(plan->c2r_tophysical_n0); */
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+underling_execute_r2c(
+        underling_plan plan)
+{
+    if (plan == NULL) {
+        SUZERAIN_ERROR("non-NULL plan required", SUZERAIN_EINVAL);
+    }
+    /* FIXME check valid r2c_towave_n0, c2c_towave_n1 as well */
+    const int valid =    plan->transpose_towave_A
+                      && plan->transpose_towave_B;
+    if (!valid) {
+        SUZERAIN_ERROR("plan has one or more NULL r2c subplans",
+                SUZERAIN_EINVAL);
+    }
+
+/* FIXME fftw_execute(plan->r2c_towave_n0); */
+    fftw_execute(plan->transpose_towave_A);
+/* FIXME fftw_execute(plan->c2c_towave_n1); */
+    fftw_execute(plan->transpose_towave_B);
+
+    return SUZERAIN_SUCCESS;
+}

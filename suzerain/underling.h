@@ -139,6 +139,14 @@ void
 underling_plan_destroy(
         underling_plan plan);
 
+int
+underling_execute_c2r(
+        underling_plan plan);
+
+int
+underling_execute_r2c(
+        underling_plan plan);
+
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
