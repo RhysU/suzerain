@@ -96,9 +96,26 @@ int main(int argc, char *argv[])
         = (underling_real *) fftw_malloc(local_size*sizeof(underling_real));
     underling_plan plan = underling_plan_create(problem, data, 1, 1, 0);
 
-    /* Print the plan, just because */
-    ONLYPROC0(underling_print_plan(plan));
-    ONLYPROC0(printf("\n"));
+    /* Initialize test data in wave space */
+    LOG4CXX_DEBUG(logger, "initial test field");
+    for (int i = 0; i < local_size; ++i) {
+        data[i] = procid*10000 + i;
+        LOG4CXX_DEBUG(logger, "data[" << i << "] = " << data[i]);
+    }
+
+    /* Transform to physical space */
+    LOG4CXX_DEBUG(logger, "underling_execute_c2r");
+    underling_execute_c2r(plan);
+    for (int i = 0; i < local_size; ++i) {
+        LOG4CXX_DEBUG(logger, "data[" << i << "] = " << data[i]);
+    }
+
+    /* Transform to wave space */
+    LOG4CXX_DEBUG(logger, "underling_execute_r2c");
+    underling_execute_r2c(plan);
+    for (int i = 0; i < local_size; ++i) {
+        LOG4CXX_DEBUG(logger, "data[" << i << "] = " << data[i]);
+    }
 
     /* Clean up after ourselves */
     underling_plan_destroy(plan);
