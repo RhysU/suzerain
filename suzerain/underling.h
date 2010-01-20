@@ -80,11 +80,13 @@ underling_grid_destroy(
 typedef struct underling_transpose_details {
     ptrdiff_t n[2];
     ptrdiff_t howmany;                        // # of real-valued components
-    ptrdiff_t local_size;
+    MPI_Comm comm;                            // underling_grid owns resource
+    unsigned flags;
     ptrdiff_t local_n0;
     ptrdiff_t local_n0_start;
     ptrdiff_t local_n1;
     ptrdiff_t local_n1_start;
+    ptrdiff_t local_size;
 } underling_transpose_details;
 
 typedef struct underling_problem {
@@ -106,23 +108,25 @@ underling_problem_destroy(
         underling_problem * problem);
 
 size_t
-underling_size_local(
-        underling_grid * grid,
+underling_local_size(
         underling_problem * problem);
 
 typedef struct underling_plan {
-    underling_problem * p;
+    underling_problem * p;             // underling_problem owns resources
+    fftw_plan transpose_tophysical_A;
     fftw_plan c2c_tophysical_n1;
+    fftw_plan transpose_tophysical_B;
     fftw_plan c2r_tophysical_n0;
     fftw_plan r2c_towave_n0;
+    fftw_plan transpose_towave_A;
     fftw_plan c2c_towave_n1;
-    underling_real *data;
+    fftw_plan transpose_towave_B;
+    underling_real *data;              // API end-user owns resources
 } underling_plan;
 
 underling_plan *
 underling_plan_create(
         underling_problem * problem,
-        int nfields,
         underling_real * data,
         int will_perform_c2r,
         int will_perform_r2c,

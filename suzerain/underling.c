@@ -257,13 +257,15 @@ underling_problem_create(
         d->n[0]    = grid->p1 * grid->block_a;
         d->n[1]    = grid->n2;
         d->howmany = nfields * sizeof(underling_complex)/sizeof(underling_real);
+        d->comm    = grid->p1_comm;
+        d->flags   = 0;
         d->local_size = fftw_mpi_local_size_many_transposed(
                     /*rank*/2,
                     d->n,
                     d->howmany,
                     FFTW_MPI_DEFAULT_BLOCK,
                     FFTW_MPI_DEFAULT_BLOCK,
-                    grid->p1_comm,
+                    d->comm,
                     &(d->local_n0),
                     &(d->local_n0_start),
                     &(d->local_n1),
@@ -275,13 +277,15 @@ underling_problem_create(
         d->n[0]    = grid->p0 * p->tophysical_A.local_n1 * grid->nw0;
         d->n[1]    = grid->n1;
         d->howmany = p->tophysical_A.howmany; /* copy for consistency */
+        d->comm    = grid->p0_comm;
+        d->flags   = 0;
         d->local_size = fftw_mpi_local_size_many_transposed(
                     /*rank*/2,
                     d->n,
                     d->howmany,
                     FFTW_MPI_DEFAULT_BLOCK,
                     FFTW_MPI_DEFAULT_BLOCK,
-                    grid->p0_comm,
+                    d->comm,
                     &(d->local_n0),
                     &(d->local_n0_start),
                     &(d->local_n1),
@@ -293,13 +297,15 @@ underling_problem_create(
         d->n[0]    = p->tophysical_B.n[1];
         d->n[1]    = p->tophysical_B.n[0];
         d->howmany = p->tophysical_A.howmany; /* copy for consistency */
+        d->comm    = p->tophysical_B.comm;    /* copy for consistency */
+        d->flags   = 0;
         d->local_size = fftw_mpi_local_size_many_transposed(
                     /*rank*/2,
                     d->n,
                     d->howmany,
                     FFTW_MPI_DEFAULT_BLOCK,
                     FFTW_MPI_DEFAULT_BLOCK,
-                    grid->p0_comm,
+                    d->comm,
                     &(d->local_n0),
                     &(d->local_n0_start),
                     &(d->local_n1),
@@ -311,13 +317,15 @@ underling_problem_create(
         d->n[0]    = p->tophysical_A.n[1];
         d->n[1]    = p->tophysical_A.n[0];
         d->howmany = p->tophysical_A.howmany; /* copy for consistency */
+        d->comm    = p->tophysical_A.comm;    /* copy for consistency */
+        d->flags   = 0;
         d->local_size = fftw_mpi_local_size_many_transposed(
                     /*rank*/2,
                     d->n,
                     d->howmany,
                     FFTW_MPI_DEFAULT_BLOCK,
                     FFTW_MPI_DEFAULT_BLOCK,
-                    grid->p1_comm,
+                    d->comm,
                     &(d->local_n0),
                     &(d->local_n0_start),
                     &(d->local_n1),
@@ -325,7 +333,7 @@ underling_problem_create(
                 );
     }
 
-    /* Compute overall maximum of all transpose local_size values */
+    /* local_size is overall maximum of all transpose local_size values */
     p->local_size = p->tophysical_A.local_size;
     if (p->local_size < p->tophysical_B.local_size) {
         p->local_size = p->tophysical_B.local_size;
@@ -338,6 +346,13 @@ underling_problem_create(
     }
 
     return p;
+}
+
+size_t
+underling_local_size(
+        underling_problem * problem)
+{
+    return problem->local_size;
 }
 
 void
