@@ -35,7 +35,8 @@ namespace suzerain {
 
 namespace mpi {
 
-std::string error_string(const int errorcode) {
+std::string error_string(const int errorcode)
+{
     std::ostringstream retval;
 
     char *errorstring = NULL;
@@ -56,18 +57,74 @@ std::string error_string(const int errorcode) {
     return retval.str();
 }
 
-int comm_size(MPI_Comm comm) {
+int comm_size(MPI_Comm comm)
+{
     int size;
-    const int status = MPI_Comm_size(comm, &size);
-    if (status != MPI_SUCCESS) throw std::runtime_error(error_string(status));
+    const int error = MPI_Comm_size(comm, &size);
+    if (error) throw std::runtime_error(error_string(error));
     return size;
 }
 
-int comm_rank(MPI_Comm comm) {
+int comm_rank(MPI_Comm comm)
+{
     int rank;
-    const int status = MPI_Comm_rank(comm, &rank);
-    if (status != MPI_SUCCESS) throw std::runtime_error(error_string(status));
+    const int error = MPI_Comm_rank(comm, &rank);
+    if (error) throw std::runtime_error(error_string(error));
     return rank;
+}
+
+std::string comm_rank_identifier(MPI_Comm comm)
+{
+    // All MPI calls below fail for MPI_COMM_NULL,
+    // so handle it as a special case.
+    if (comm == MPI_COMM_NULL) {
+        return "NULL";
+    }
+
+    // We want the name for comm as a C-style string at p_buffer
+    // with resultlen = strlen(p_buffer)
+    char buffer[MPI_MAX_OBJECT_NAME];
+    char * p_buffer = buffer;
+    int resultlen;
+    const int error = MPI_Comm_get_name(comm, buffer, &resultlen);
+    if (error) throw std::runtime_error(error_string(error));
+    if (resultlen == 0) {
+        // Providing a default value if MPI had none.
+        resultlen = snprintf(buffer,
+                             sizeof(buffer)/sizeof(buffer[0]),
+                             "c0x%X", comm);
+        assert(resultlen >= 0);
+    } else {
+        // Brevity, trim any leading MPI_COMM_ business by modifying p_buffer
+        static const char prefix[]   = "MPI_COMM_";
+        static const int  prefix_len = sizeof(prefix)/sizeof(prefix[0]) - 1;
+        if (0 == strncmp(buffer, prefix, prefix_len)) {
+            p_buffer += prefix_len;
+            resultlen -= prefix_len;
+        }
+    }
+
+    // Look up comm's size and this process' rank
+    int size, rank;
+    char sep;
+    if (comm == MPI_COMM_SELF) {
+        // size and rank are useless for MPI_COMM_SELF,
+        // so provide details from MPI_COMM_WORLD instead
+        sep  = 'w';
+        size = comm_size(MPI_COMM_WORLD);
+        rank = comm_rank(MPI_COMM_WORLD);
+    } else {
+        sep  = 'r';
+        size = comm_size(comm);
+        rank = comm_rank(comm);
+    }
+
+    // Pack up and return a std::string containing name and rank
+    // Take care so that all results from the same comm are the same length
+    std::ostringstream oss;
+    oss.write(p_buffer, resultlen);
+    oss << sep << std::setfill('0') << std::setw(ceil(log10(size))) << rank;
+    return oss.str();
 }
 
 } // namespace mpi

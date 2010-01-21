@@ -31,10 +31,9 @@
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <suzerain/program_options.hpp>
-
 #include <log4cxx/logger.h>
-#include <mpi.h>
+#include <suzerain/program_options.hpp>
+#include <suzerain/mpi.hpp>
 
 #define ONLYPROC0(expr) if (!procid) { expr ; } else
 
@@ -59,22 +58,16 @@ std::pair<Integer,Integer> calculate_processor_extents(
 
 int main(int argc, char **argv)
 {
-    int nproc;                  // Number of processors in MPI environment
-    int procid;                 // This processor's global processor ID
     const int NDIM = 2;         // Dimensionality of the problem
     boost::array<int,NDIM> N;   // Global index extents in X, Y direction
 
-
     MPI_Init(&argc, &argv);                   // Initialize MPI on startup
     atexit((void (*) ()) MPI_Finalize);       // Finalize MPI at exit
-    MPI_Comm_size(MPI_COMM_WORLD, &nproc);
-    MPI_Comm_rank(MPI_COMM_WORLD, &procid);
 
-    // Initialize logger with processor number
-    std::ostringstream procname;
-    procname << "proc"
-             << std::setfill('0') << std::setw(ceil(log10(nproc))) << procid;
-    log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(procname.str());
+    const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
+    const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+    log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(
+            suzerain::mpi::comm_rank_identifier(MPI_COMM_WORLD));
 
     // Process command line arguments in process 0 and broadcast them
     suzerain::ProgramOptions options;

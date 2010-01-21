@@ -76,6 +76,18 @@ int comm_size(MPI_Comm comm);
 int comm_rank(MPI_Comm comm);
 
 /**
+ * Create a reasonable identifier for the current process within the given MPI
+ * communicator.  The result is based on the communicator's name, if present,
+ * and the rank of the current process.
+ *
+ * @param comm Communicator to use.
+ *
+ * @return an identifier munging the communicator and rank into a
+ * human-readable string.
+ */
+std::string comm_rank_identifier(MPI_Comm comm);
+
+/**
  * Create a division of processors in a Cartesian grid.
  * The dimensionality is chosen via the templated second parameter type.  On
  * error, throws an appropriate exception.  Any zero value contained in the

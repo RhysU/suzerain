@@ -49,16 +49,12 @@ int main(int argc, char *argv[])
     MPI_Init(&argc, &argv);                   // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);       // Finalize MPI at exit
     fftw_mpi_init();                          // Initialize FFTW MPI
-    atexit((void (*) ()) fftw_mpi_cleanup);   // Finalize FFTW MPI
+    atexit((void (*) ()) fftw_mpi_cleanup);   // Finalize FFTW MPI at exit
 
     const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
     const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
-
-    // Initialize logger with processor number
-    std::ostringstream procname;
-    procname << "proc"
-             << std::setfill('0') << std::setw(ceil(log10(nproc))) << procid;
-    log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(procname.str());
+    log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(
+            suzerain::mpi::comm_rank_identifier(MPI_COMM_WORLD));
 
     suzerain::ProgramOptions options;
     suzerain::problem::GridDefinition<> griddef;
@@ -71,7 +67,6 @@ int main(int argc, char *argv[])
         options.process(argc, argv,
                         nullstream, nullstream, nullstream, nullstream);
     }
-
 
     /* Create a grid and a problem*/
     underling_grid grid = underling_grid_create(

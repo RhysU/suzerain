@@ -31,10 +31,7 @@
 #include <suzerain/config.h>
 #include <suzerain/common.hpp>
 #pragma hdrstop
-
 #include <log4cxx/logger.h>
-#include <mpi.h>
-
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
@@ -62,12 +59,8 @@ int main(int argc, char **argv)
 
     const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
     const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
-
-    // Initialize logger with processor number
-    std::ostringstream procname;
-    procname << "proc"
-             << std::setfill('0') << std::setw(ceil(log10(nproc))) << procid;
-    log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(procname.str());
+    log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(
+            suzerain::mpi::comm_rank_identifier(MPI_COMM_WORLD));
 
     // Program-specific option storage
     int nrep;  // Number of times to repeat the test
