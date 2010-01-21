@@ -597,6 +597,96 @@ underling_execute_r2c(
 }
 
 void
+underling_fprint_grid(
+        const underling_grid grid,
+        FILE *output_file)
+{
+    fprintf(output_file, "{underling_grid:");
+    if (!grid) {
+        fprintf(output_file, "NULL");
+    } else {
+        fprintf(output_file,
+                "{np0=%d,nw0=%d,n1=%d,n2=%d},{p0=%d,p1=%d}",
+                grid->np0, grid->nw0, grid->n1, grid->n2,
+                grid->p0, grid->p1);
+    }
+    fprintf(output_file, "\n}");
+}
+
+void
+underling_print_grid(
+        const underling_grid grid)
+{
+    underling_fprint_grid(grid, stdout);
+}
+
+// Internal only
+static void
+underling_fprint_transpose_details(
+        const underling_transpose_details *details,
+        FILE *output_file)
+{
+    fprintf(output_file, "{underling_transpose_details:");
+    if (!details) {
+        fprintf(output_file, "NULL");
+    } else {
+        fprintf(output_file,
+                "{n[0]=%ld,n[1]=%ld},{block0=%ld,block1=%ld},",
+                details->n[0], details->n[1],
+                details->block0, details->block1);
+        fprintf(output_file,
+                "{comm=%d,flags=%u,local_size=%ld},",
+                details->comm,details->flags,details->local_size);
+        fprintf(output_file,
+                "{local_n0=%ld,local_n0_start=%ld},",
+                details->local_n0,details->local_n0_start);
+        fprintf(output_file,
+                "{local_n1=%ld,local_n1_start=%ld}",
+                details->local_n1,details->local_n1_start);
+    }
+    fprintf(output_file, "\n}");
+}
+
+void
+underling_fprint_problem(
+        const underling_problem problem,
+        FILE *output_file)
+{
+    fprintf(output_file, "{underling_problem:");
+    if (!problem) {
+        fprintf(output_file, "NULL");
+    } else {
+        fprintf(output_file,"{nfields=%d,howmany=%d,local_size=%ld}",
+                problem->nfields, problem->howmany, problem->local_size);
+        fprintf(output_file,"\n{tophysical_A:");
+        underling_fprint_transpose_details(
+                &(problem->tophysical_A), output_file);
+        fprintf(output_file, "\n}");
+        fprintf(output_file,"\n{tophysical_B:");
+        underling_fprint_transpose_details(
+                &(problem->tophysical_B), output_file);
+        fprintf(output_file, "\n}");
+        fprintf(output_file,"\n{towave_B:");
+        underling_fprint_transpose_details(
+                &(problem->towave_B), output_file);
+        fprintf(output_file, "\n}");
+        fprintf(output_file,"\n{towave_A:");
+        underling_fprint_transpose_details(
+                &(problem->towave_A), output_file);
+        fprintf(output_file, "\n}");
+    }
+    fprintf(output_file, "\n}");
+}
+
+void
+underling_print_problem(
+        const underling_problem problem)
+{
+    underling_fprint_problem(problem, stdout);
+}
+
+
+void
 underling_fprint_plan(
         const underling_plan plan, FILE *output_file)
 {

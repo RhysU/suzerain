@@ -49,6 +49,7 @@ __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /* TODO Add appropriate grid/problem/plan const-ness */
+/* TODO Move private structures to a private header */
 
 typedef double         underling_real;
 typedef underling_real underling_complex[2];
@@ -160,6 +161,24 @@ underling_execute_c2r(
 int
 underling_execute_r2c(
         underling_plan plan);
+
+void
+underling_fprint_grid(
+        const underling_grid grid,
+        FILE *output_file);
+
+void
+underling_print_grid(
+        const underling_grid grid);
+
+void
+underling_fprint_problem(
+        const underling_problem problem,
+        FILE *output_file);
+
+void
+underling_print_problem(
+        const underling_problem problem);
 
 void
 underling_fprint_plan(
