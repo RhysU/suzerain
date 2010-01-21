@@ -66,7 +66,7 @@ pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
     if (processor_grid_[0]*processor_grid_[1] != nproc) {
         std::ostringstream what;
         what << "Processor grid dimensions " << processor_grid_
-             << "incompatible with number of processors " << nproc;
+             << " incompatible with number of processors " << nproc;
         throw std::runtime_error(what.str());
     }
 
