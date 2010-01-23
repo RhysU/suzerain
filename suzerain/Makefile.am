@@ -37,6 +37,7 @@ pkginclude_HEADERS += math.hpp
 pkginclude_HEADERS += mpi.hpp
 pkginclude_HEADERS += multi_array.hpp
 pkginclude_HEADERS += orthonormal.hpp
+pkginclude_HEADERS += os.h
 pkginclude_HEADERS += pencilfft.hpp
 pkginclude_HEADERS += pencil_grid.hpp
 pkginclude_HEADERS += pencil.hpp
@@ -53,6 +54,7 @@ libsuzerain_la_SOURCES  = blas_et_al.c
 libsuzerain_la_SOURCES += bspline.c
 libsuzerain_la_SOURCES += error.c
 libsuzerain_la_SOURCES += mpi.cpp
+libsuzerain_la_SOURCES += os.c
 libsuzerain_la_SOURCES += pencil_grid.cpp
 libsuzerain_la_SOURCES += richardson.c
 
