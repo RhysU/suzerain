@@ -192,8 +192,6 @@ suzerain_set_stream_handler(suzerain_stream_handler_t * new_handler);
  */
 FILE * suzerain_set_stream(FILE * new_stream);
 
-/* SUZERAIN_ERROR: call the error handler, and return the error code */
-
 /**
  * Invokes suzerain_error and returns the value \c suzerain_errno.
  * Automatically provides file and line information.
@@ -245,6 +243,19 @@ FILE * suzerain_set_stream(FILE * new_stream);
  */
 #define SUZERAIN_ERROR_NULL(reason, suzerain_errno) \
         SUZERAIN_ERROR_VAL(reason, suzerain_errno, 0)
+
+/**
+ * Invokes suzerain_error using \c suzerain_errno but \em does \em not return
+ * from the current function.  Automatically provides file and line
+ * information.
+ *
+ * @param reason Message to report.
+ * @param suzerain_errno Error status to report.
+ */
+#define SUZERAIN_ERROR_REPORT(reason, suzerain_errno) \
+       do { \
+       suzerain_error (reason, __FILE__, __LINE__, suzerain_errno) ; \
+       } while (0)
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 /* Internal helper macro for implementing SUZERAIN_MPICHKx macros */
@@ -311,6 +322,21 @@ FILE * suzerain_set_stream(FILE * new_stream);
  */
 #define SUZERAIN_MPICHKV(stmt) \
     SUZERAIN_MPICHKx_TEMPLATE(SUZERAIN_ERROR_VOID,stmt)
+
+/**
+ * Executes \c stmt once handling any resulting MPI error per \c
+ * SUZERAIN_ERROR_REPORT. The current function \em continues \em executing. Any
+ * relevant message is looked up using \c MPI_Error_string and reported.
+ *
+ * @param stmt Statement, presumably an MPI call, to be executed.
+ * @note <tt>mpi.h</tt> must be <tt>#include</tt>d for the macro
+ *       expansion to compile correctly.
+ * @warning This macro expands to a not insignificant amount of code.
+ *          It should not be used in performance critical regions.
+ * @see PETSc's CHKERRV for the original inspiration for this macro.
+ */
+#define SUZERAIN_MPICHKR(stmt) \
+    SUZERAIN_MPICHKx_TEMPLATE(SUZERAIN_ERROR_REPORT,stmt)
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
