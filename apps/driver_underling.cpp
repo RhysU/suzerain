@@ -36,10 +36,14 @@
 #include <fftw3-mpi.h>
 #include <log4cxx/logger.h>
 
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
+
 #include <suzerain/mpi.hpp>
-#include <suzerain/types.hpp>
+#include <suzerain/os.h>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
+#include <suzerain/types.hpp>
 #include <suzerain/underling.h>
 
 #define ONLYPROC0(expr) if (!procid) { expr ; } else
@@ -74,23 +78,43 @@ int main(int argc, char *argv[])
     underling_problem problem = underling_problem_create(grid, 1);
 
     /* Dump some runtime information */
-    ONLYPROC0(
-        LOG4CXX_INFO(logger, "Number of processors: " << nproc);
-        LOG4CXX_INFO(logger, "grid->np0:            " << grid->np0);
-        LOG4CXX_INFO(logger, "grid->nw0:            " << grid->nw0);
-        LOG4CXX_INFO(logger, "grid->n1:             " << grid->n1);
-        LOG4CXX_INFO(logger, "grid->n2:             " << grid->n2);
-        LOG4CXX_INFO(logger, "grid->p0:             " << grid->p0);
-        LOG4CXX_INFO(logger, "grid->p1:             " << grid->p1);
-        LOG4CXX_INFO(logger, "problem->nfields:     " << problem->nfields);
-    );
-    LOG4CXX_INFO(logger, "grid->p0_comm:        " << grid->p0_comm);
-    LOG4CXX_INFO(logger, "grid->p1_comm:        " << grid->p1_comm);
-    LOG4CXX_INFO(logger, "problem->local_size:  " << problem->local_size);
-    LOG4CXX_INFO(logger, "problem->optimum_size:" << underling_optimum_local_size(problem));
+//     ONLYPROC0(
+//         LOG4CXX_INFO(logger, "Number of processors: " << nproc);
+//         LOG4CXX_INFO(logger, "grid->np0:            " << grid->np0);
+//         LOG4CXX_INFO(logger, "grid->nw0:            " << grid->nw0);
+//         LOG4CXX_INFO(logger, "grid->n1:             " << grid->n1);
+//         LOG4CXX_INFO(logger, "grid->n2:             " << grid->n2);
+//         LOG4CXX_INFO(logger, "grid->p0:             " << grid->p0);
+//         LOG4CXX_INFO(logger, "grid->p1:             " << grid->p1);
+//         LOG4CXX_INFO(logger, "problem->nfields:     " << problem->nfields);
+//     );
+//     LOG4CXX_INFO(logger, "grid->p0_comm:        " << grid->p0_comm);
+//     LOG4CXX_INFO(logger, "grid->p1_comm:        " << grid->p1_comm);
+//     LOG4CXX_INFO(logger, "problem->local_size:  " << problem->local_size);
+//     LOG4CXX_INFO(logger, "problem->optimum_size:" << underling_optimum_local_size(problem));
+
+    { // Dump grid and problem information
+        // TODO: Error checking on these pipe and FILE* operations
+        FILE *pipewrite;
+        int pipereadfd;
+        suzerain_fpipe(&pipereadfd, O_NONBLOCK, &pipewrite, O_NONBLOCK);
+        namespace io = boost::iostreams;
+        io::stream<io::file_descriptor_source> piperead(pipereadfd);
+        ONLYPROC0(
+            underling_fprint_grid(grid, pipewrite); fflush(pipewrite);
+            LOG4CXX_INFO(logger, piperead.rdbuf());
+        );
+        underling_fprint_problem(problem, pipewrite); fflush(pipewrite);
+        LOG4CXX_DEBUG(logger, piperead.rdbuf());
+        fclose(pipewrite);
+        close(piperead);
+    }
 
     /* Allocate storage and create a plan */
     const size_t local_size = underling_local_size(problem);
+    LOG4CXX_DEBUG(logger, "problem local_size = " << local_size);
+    LOG4CXX_DEBUG(logger, "problem optimum_local_size = "
+                         << underling_optimum_local_size(problem));
     underling_real * const data
         = (underling_real *) fftw_malloc(local_size*sizeof(underling_real));
     underling_plan plan = underling_plan_create(problem, data, 1, 1, 0);

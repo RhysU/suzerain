@@ -32,6 +32,8 @@
 #define __SUZERAIN_OS_H__
 
 #include <suzerain/common.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 /** @file
  * Provides utilities atop POSIX methods.

@@ -51,27 +51,12 @@ __BEGIN_DECLS
 /* TODO Add appropriate grid/problem/plan const-ness */
 /* TODO Move private structures to a private header */
 
-typedef double         underling_real;
-typedef underling_real underling_complex[2];
+typedef double         underling_real;       /**< Real-valued scalar */
+typedef underling_real underling_complex[2]; /**< Complex-valued scalar */
 
-typedef struct underling_grid_s * underling_grid; // Public
-struct underling_grid_s {                         // Internal
-    int np0;
-    int nw0;
-    int n1;
-    int n2;
-    int p0;
-    int p1;
-    MPI_Comm g_comm;
-    int g_rank;
-    int g_coords[2];
-    MPI_Comm p0_comm;
-    int p0_rank;
-    int p0_coord;
-    MPI_Comm p1_comm;
-    int p1_rank;
-    int p1_coord;
-};
+typedef struct underling_grid_s    *underling_grid;
+typedef struct underling_problem_s *underling_problem;
+typedef struct underling_plan_s    *underling_plan;
 
 underling_grid
 underling_grid_create(
@@ -85,31 +70,6 @@ underling_grid_create(
 void
 underling_grid_destroy(
         underling_grid grid);
-
-typedef struct underling_transpose_details {  // Internal
-    ptrdiff_t n[2];
-    ptrdiff_t block0;
-    ptrdiff_t block1;
-    MPI_Comm comm;                            // underling_grid owns resource
-    unsigned flags;
-    ptrdiff_t local_n0;
-    ptrdiff_t local_n0_start;
-    ptrdiff_t local_n1;
-    ptrdiff_t local_n1_start;
-    ptrdiff_t local_size;
-} underling_transpose_details;
-
-typedef struct underling_problem_s * underling_problem;  // Public
-struct underling_problem_s {                             // Internal
-    underling_grid grid;                      // grid owns its resources
-    int nfields;                              // # of complex-valued state...
-    int howmany;                              // ...as a # of real values
-    underling_transpose_details tophysical_A; // n2 long to n1 long
-    underling_transpose_details tophysical_B; // n1 long to n0 long
-    underling_transpose_details towave_B;     // n0 long to n1 long
-    underling_transpose_details towave_A;     // n1 long to n2 long
-    ptrdiff_t local_size;                     // Max of all local sizes
-};
 
 underling_problem
 underling_problem_create(
@@ -127,20 +87,6 @@ underling_local_size(
 size_t
 underling_optimum_local_size(
         const underling_problem problem);
-
-typedef struct underling_plan_s * underling_plan;  // Public
-struct underling_plan_s {                          // Internal
-    underling_problem problem;         // problem owns its resources
-    fftw_plan transpose_tophysical_A;
-    fftw_plan c2c_tophysical_n1;
-    fftw_plan transpose_tophysical_B;
-    fftw_plan c2r_tophysical_n0;
-    fftw_plan r2c_towave_n0;
-    fftw_plan transpose_towave_A;
-    fftw_plan c2c_towave_n1;
-    fftw_plan transpose_towave_B;
-    underling_real *data;              // API end-user owns resources
-};
 
 underling_plan
 underling_plan_create(
@@ -168,26 +114,14 @@ underling_fprint_grid(
         FILE *output_file);
 
 void
-underling_print_grid(
-        const underling_grid grid);
-
-void
 underling_fprint_problem(
         const underling_problem problem,
         FILE *output_file);
 
 void
-underling_print_problem(
-        const underling_problem problem);
-
-void
 underling_fprint_plan(
         const underling_plan plan,
         FILE *output_file);
-
-void
-underling_print_plan(
-        const underling_plan plan);
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
