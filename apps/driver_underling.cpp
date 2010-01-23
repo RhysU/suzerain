@@ -77,22 +77,6 @@ int main(int argc, char *argv[])
             MPI_COMM_WORLD, griddef.nx(), griddef.ny(), griddef.nz(), 0, 0);
     underling_problem problem = underling_problem_create(grid, 1);
 
-    /* Dump some runtime information */
-//     ONLYPROC0(
-//         LOG4CXX_INFO(logger, "Number of processors: " << nproc);
-//         LOG4CXX_INFO(logger, "grid->np0:            " << grid->np0);
-//         LOG4CXX_INFO(logger, "grid->nw0:            " << grid->nw0);
-//         LOG4CXX_INFO(logger, "grid->n1:             " << grid->n1);
-//         LOG4CXX_INFO(logger, "grid->n2:             " << grid->n2);
-//         LOG4CXX_INFO(logger, "grid->p0:             " << grid->p0);
-//         LOG4CXX_INFO(logger, "grid->p1:             " << grid->p1);
-//         LOG4CXX_INFO(logger, "problem->nfields:     " << problem->nfields);
-//     );
-//     LOG4CXX_INFO(logger, "grid->p0_comm:        " << grid->p0_comm);
-//     LOG4CXX_INFO(logger, "grid->p1_comm:        " << grid->p1_comm);
-//     LOG4CXX_INFO(logger, "problem->local_size:  " << problem->local_size);
-//     LOG4CXX_INFO(logger, "problem->optimum_size:" << underling_optimum_local_size(problem));
-
     { // Dump grid and problem information
         // TODO: Error checking on these pipe and FILE* operations
         FILE *pipewrite;
@@ -124,7 +108,7 @@ int main(int argc, char *argv[])
     /* Initialize test data in wave space */
     for (int i = 0; i < local_size; ++i) {
         data[i] = procid*10000 + i;
-        LOG4CXX_DEBUG(logger, "initial data["
+        LOG4CXX_TRACE(logger, "initial data["
                 << std::setw(8) << std::setfill('0') << i << "] = "
                 << std::setw(8) << std::setfill(' ') << data[i]);
     }
@@ -135,7 +119,7 @@ int main(int argc, char *argv[])
     LOG4CXX_DEBUG(logger, "underling_execute_c2r");
     underling_execute_c2r(plan);
     for (int i = 0; i < local_size; ++i) {
-        LOG4CXX_DEBUG(logger, "post c2r data["
+        LOG4CXX_TRACE(logger, "post c2r data["
                 << std::setw(8) << std::setfill('0') << i << "] = "
                 << std::setw(8) << std::setfill(' ') << data[i]);
     }
@@ -146,7 +130,7 @@ int main(int argc, char *argv[])
     LOG4CXX_DEBUG(logger, "underling_execute_r2c");
     underling_execute_r2c(plan);
     for (int i = 0; i < local_size; ++i) {
-        LOG4CXX_DEBUG(logger, "post r2c data["
+        LOG4CXX_TRACE(logger, "post r2c data["
                 << std::setw(8) << std::setfill('0') << i << "] = "
                 << std::setw(8) << std::setfill(' ') << data[i]);
     }

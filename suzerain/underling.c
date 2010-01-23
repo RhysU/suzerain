@@ -419,6 +419,7 @@ underling_problem_create(
     // portion of the global (nw0 x n1) data that is spread across p1_comm.  We
     // never perform this next transpose, but we do need its local_{n0,n1}.
     ptrdiff_t p0_specific_nw0n1;
+    ptrdiff_t p0_specific_n2;
     {
         underling_transpose partition_nw0n1_by_n2_across_p1
             = underling_transpose_create(grid->nw0 * grid->n1,
@@ -436,6 +437,7 @@ underling_problem_create(
         }
         // Save the partitioning information that we need and destroy the rest
         p0_specific_nw0n1 = partition_nw0n1_by_n2_across_p1->local_n0;
+        p0_specific_n2   = partition_nw0n1_by_n2_across_p1->local_n1;
         underling_transpose_destroy(partition_nw0n1_by_n2_across_p1);
     }
 
@@ -472,7 +474,6 @@ underling_problem_create(
     // global block0 size for the long in n1 to long in n0 distribution across
     // the p1 communicator depends on local_n1 at the rank 0 node for
     // p->tophysical_A.
-    // TODO Check that this is correct....
     ptrdiff_t tophysical_B_block0 = p->tophysical_A->local_n1;
     const int bcast_error = MPI_Bcast(
             &tophysical_B_block0, 1, MPI_LONG, 0, grid->p1_comm);
@@ -480,6 +481,7 @@ underling_problem_create(
         underling_problem_destroy(p);
         SUZERAIN_MPICHKN(bcast_error);
     }
+    tophysical_B_block0 *= p0_specific_n2;
 
     // Wave towards physical MPI transpose: long in n1 to long in n0
     p->tophysical_B = underling_transpose_create(
