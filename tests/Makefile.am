@@ -29,6 +29,10 @@ test_error_LDADD    = ../suzerain/libsuzerain.la
 test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+check_PROGRAMS     += test_os
+test_os_SOURCES  = test_os.c
+test_os_LDADD    = ../suzerain/libsuzerain.la
+
 check_PROGRAMS          += test_blas_et_al
 test_blas_et_al_SOURCES  = test_blas_et_al.c
 test_blas_et_al_LDADD    = $(GSL_LIBS)

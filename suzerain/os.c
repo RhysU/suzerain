@@ -39,13 +39,16 @@
 #include <string.h>
 #include <unistd.h>
 
-int suzerain_fpipe(FILE **r, int rflags, FILE **w, int wflags)
+int suzerain_fpipe(int *rfd, int rflags, FILE **w, int wflags)
 {
     int pipefd[2]; /* read/write are pipefd[0/1] respectively */
     int flags;
 
+    /* Reset errno */
+    errno = 0;
+
     /* Create the pipe */
-    if (!pipe(pipefd)) {
+    if (pipe(pipefd) == -1) {
         SUZERAIN_ERROR_VAL(strerror(errno), SUZERAIN_FAILURE, errno);
     }
 
@@ -68,13 +71,10 @@ int suzerain_fpipe(FILE **r, int rflags, FILE **w, int wflags)
     }
 
     /* Get the file descriptor for the read side */
-    *r = fdopen(pipefd[0], "r");
-    if (*r == NULL) {
-        SUZERAIN_ERROR_VAL(strerror(errno), SUZERAIN_FAILURE, errno);
-    }
+    *rfd = pipefd[0];
 
     /* Get the file descriptor for the write side */
-    *w = fdopen(pipefd[1], "w");
+    *w = fdopen(pipefd[1], "a");
     if (*w == NULL) {
         SUZERAIN_ERROR_VAL(strerror(errno), SUZERAIN_FAILURE, errno);
     }

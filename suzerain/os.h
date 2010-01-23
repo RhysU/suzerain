@@ -52,9 +52,10 @@ __BEGIN_DECLS
 
 /**
  * Create a POSIX pipe, set the provided flags on the read and write
- * portions, and create <tt>FILE*</tt> handles to each end.
+ * portions, and create a <tt>FILE*</tt> handle to the write end
+ * suitable for use with \c fprintf and friends.
  *
- * @param[out] r Handle returned for the new pipe's read side.
+ * @param[out] rfd File descriptor attached to the pipe's read side.
  * @param[in] rflags Flags to set for the new pipe's read side.
  * @param[out] w Handle return for the new pipe's write side.
  * @param[in] wflags Flags to set for the new pipe's write side.
@@ -62,14 +63,14 @@ __BEGIN_DECLS
  * @see The manual pages for <tt>fcntl(2)</tt>, <tt>pipe(2)</tt>,
  *      and <tt>pipe(7)</tt> for more information on creating pipes
  *      and the effect of their flags.
- * @see The manual page for <tt>fclose(3) for information on how
- *      to close \c <tt>*read</tt> and \c <tt>*write</tt> after
+ * @see The manual pages for <tt>close(2)</tt>and  <tt>fclose(3) for
+ *      information on how to close \c rfd and \c <tt>*write</tt> after
  *      you have finished using them.
  *
  * @return Zero on successful completion.  On non-zero returns \c
  *         SUZERAIN_FAILURE and \c errno is set appropriately.
  */
-int suzerain_fpipe(FILE **r, int rflags, FILE **w, int wflags);
+int suzerain_fpipe(int *rfd, int rflags, FILE **w, int wflags);
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 __END_DECLS
