@@ -161,31 +161,31 @@ public:
     /**
      * Retrieve the two dimensional processor grid extents.
      *
-     * In physical space, \f$ P_0 \f$ is the grid extent in the Z direction
-     * and \f$ P_1 \f$ is the grid extent in the Y direction.
-     * In wave space, \f$ P_0 \f$ is the grid extent in the X direction
-     * and \f$ P_1 \f$  is the grid extent in the Z direction.
+     * In physical space, \f$ P_A \f$ is the grid extent in the Z direction
+     * and \f$ P_B \f$ is the grid extent in the Y direction.
+     * In wave space, \f$ P_A \f$ is the grid extent in the X direction
+     * and \f$ P_B \f$  is the grid extent in the Z direction.
      *
-     * @return the processor grid extents in the \f$ P_0 \f$ and \f$ P_1 \f$
+     * @return the processor grid extents in the \f$ P_A \f$ and \f$ P_B \f$
      *         directions.
      */
     const size_type_2d& processor_grid() const { return processor_grid_; }
 
     /**
-     * Retrieve the processor grid extent in the \f$ P_0 \f$ direction.
+     * Retrieve the processor grid extent in the \f$ P_A \f$ direction.
      *
-     * @return the processor grid extents in the \f$ P_0 \f$ direction.
+     * @return the processor grid extents in the \f$ P_A \f$ direction.
      * @see processor_grid() for more details.
      */
-    size_type pg0() const { return processor_grid_[0]; }
+    size_type pa() const { return processor_grid_[0]; }
 
     /**
-     * Retrieve the processor grid extent in the \f$ P_1 \f$ direction.
+     * Retrieve the processor grid extent in the \f$ P_B \f$ direction.
      *
-     * @return the processor grid extents in the \f$ P_1 \f$ direction.
+     * @return the processor grid extents in the \f$ P_B \f$ direction.
      * @see processor_grid() for more details.
      */
-    size_type pg1() const { return processor_grid_[1]; }
+    size_type pb() const { return processor_grid_[1]; }
 
     /*! @copydoc IDefinition::options */
     const boost::program_options::options_description& options() {
@@ -252,16 +252,16 @@ GridDefinition<FPT>::GridDefinition(size_type default_size,
                 ->notifier(detail::ensure_positive<size_type>)
                 ->default_value(default_size),
         "Number of grid points in Z (spanwise) direction")
-        ("pg0",
+        ("pa",
          po::value<size_type>(&processor_grid_[0])
                 ->notifier(detail::ensure_positive<size_type>)
                 ->default_value(0),
-        "Processor count in the P_0 decomposition direction; 0 for automatic")
-        ("pg1",
+        "Processor count in the P_A decomposition direction; 0 for automatic")
+        ("pb",
          po::value<size_type>(&processor_grid_[1])
                 ->notifier(detail::ensure_positive<size_type>)
                 ->default_value(0),
-        "Processor count in the P_1 decomposition direction; 0 for automatic")
+        "Processor count in the P_B decomposition direction; 0 for automatic")
     ;
 }
 

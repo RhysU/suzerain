@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Processor grid dimensions: "
                            << boost::format("(%d, %d)")
-                           % grid.pg0() % grid.pg1()));
+                           % grid.pa() % grid.pb()));
 
 
     // pencil_grid handles P3DFFT setup/clean RAII
