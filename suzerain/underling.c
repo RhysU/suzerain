@@ -58,17 +58,17 @@ struct underling_grid_s {
 
 typedef struct underling_transpose_s * underling_transpose; // Internal!
 struct underling_transpose_s {
-    ptrdiff_t n0;
-    ptrdiff_t n1;
+    ptrdiff_t d0;
+    ptrdiff_t d1;
     ptrdiff_t howmany;
     ptrdiff_t block0;
     ptrdiff_t block1;
     MPI_Comm comm;                    // underling_grid owns resource
     unsigned flags;
-    ptrdiff_t local_n0;
-    ptrdiff_t local_n0_start;
-    ptrdiff_t local_n1;
-    ptrdiff_t local_n1_start;
+    ptrdiff_t local_d0;
+    ptrdiff_t local_d0_start;
+    ptrdiff_t local_d1;
+    ptrdiff_t local_d1_start;
     ptrdiff_t local_size;
 };
 
@@ -102,8 +102,8 @@ struct underling_plan_s {
 
 underling_transpose
 underling_transpose_create(
-        ptrdiff_t n0,
-        ptrdiff_t n1,
+        ptrdiff_t d0,
+        ptrdiff_t d1,
         ptrdiff_t howmany,
         ptrdiff_t block0,
         ptrdiff_t block1,
@@ -277,8 +277,8 @@ underling_grid_destroy(underling_grid grid)
 
 underling_transpose
 underling_transpose_create(
-        ptrdiff_t n0,
-        ptrdiff_t n1,
+        ptrdiff_t d0,
+        ptrdiff_t d1,
         ptrdiff_t howmany,
         ptrdiff_t block0,
         ptrdiff_t block1,
@@ -293,8 +293,8 @@ underling_transpose_create(
     }
 
     // Fix struct values known from arguments
-    t->n0      = n0;
-    t->n1      = n1;
+    t->d0      = d0;
+    t->d1      = d1;
     t->howmany = howmany;
     t->block0  = block0;
     t->block1  = block1;
@@ -302,18 +302,18 @@ underling_transpose_create(
     t->flags   = flags;
 
     // Fix struct details obtainable via FFTW MPI call
-    const ptrdiff_t n[2] = { t->n0, t->n1 };
+    const ptrdiff_t d[2] = { t->d0, t->d1 };
     t->local_size = fftw_mpi_local_size_many_transposed(
-                                           /*rank*/sizeof(n)/sizeof(n[0]),
-                                            n,
+                                           /*rank*/sizeof(d)/sizeof(d[0]),
+                                            d,
                                             t->howmany,
                                             t->block0,
                                             t->block1,
                                             t->comm,
-                                            &(t->local_n0),
-                                            &(t->local_n0_start),
-                                            &(t->local_n1),
-                                            &(t->local_n1_start));
+                                            &(t->local_d0),
+                                            &(t->local_d0_start),
+                                            &(t->local_d1),
+                                            &(t->local_d1_start));
 
     return t;
 }
@@ -337,8 +337,8 @@ underling_transpose_create_inverse(
     }
 
     // Fix struct values known from inverting forward plan
-    backward->n0      = forward->n1;
-    backward->n1      = forward->n0;
+    backward->d0      = forward->d1;
+    backward->d1      = forward->d0;
     backward->howmany = forward->howmany;
     backward->block0  = forward->block1;
     backward->block1  = forward->block0;
@@ -347,18 +347,18 @@ underling_transpose_create_inverse(
     // Unsure of how block sizes should be flipped for inversion
 
     // Fix struct details obtainable via FFTW MPI call
-    const ptrdiff_t n[2] = { backward->n0, backward->n1 };
+    const ptrdiff_t d[2] = { backward->d0, backward->d1 };
     backward->local_size = fftw_mpi_local_size_many_transposed(
-                                           /*rank*/sizeof(n)/sizeof(n[0]),
-                                            n,
+                                           /*rank*/sizeof(d)/sizeof(d[0]),
+                                            d,
                                             backward->howmany,
                                             backward->block0,
                                             backward->block1,
                                             backward->comm,
-                                            &(backward->local_n0),
-                                            &(backward->local_n0_start),
-                                            &(backward->local_n1),
-                                            &(backward->local_n1_start));
+                                            &(backward->local_d0),
+                                            &(backward->local_d0_start),
+                                            &(backward->local_d1),
+                                            &(backward->local_d1_start));
 
     return backward;
 }
@@ -380,8 +380,8 @@ underling_transpose_fftw_plan(
         unsigned flags)
 {
     return fftw_mpi_plan_many_transpose(
-            transpose->n0,
-            transpose->n1,
+            transpose->d0,
+            transpose->d1,
             transpose->howmany,
             transpose->block0,
             transpose->block1,
@@ -436,7 +436,7 @@ underling_problem_create(
                     SUZERAIN_EFAILED);
         }
         // Save the partitioning information that we need and destroy the rest
-        p1_specific_nw0n1 = partition_nw0n1_by_n2_across_p1->local_n0;
+        p1_specific_nw0n1 = partition_nw0n1_by_n2_across_p1->local_d0;
         underling_transpose_destroy(partition_nw0n1_by_n2_across_p1);
     }
 
@@ -461,7 +461,7 @@ underling_problem_create(
     // p0_comm.  We must accumulate the p0-specific global (n2 x nw0) value.
     ptrdiff_t p0_specific_global_n2nw0;
     const int allreduce_error = MPI_Allreduce(
-            &(p->tophysical_A->n0), &p0_specific_global_n2nw0, 1,
+            &(p->tophysical_A->d0), &p0_specific_global_n2nw0, 1,
             MPI_LONG, MPI_SUM, grid->p1_comm);
     if (allreduce_error) {
         underling_problem_destroy(p);
@@ -469,7 +469,7 @@ underling_problem_create(
     }
     assert(p0_specific_global_n2nw0 % grid->n1 == 0);
     p0_specific_global_n2nw0 /= grid->n1;
-    p0_specific_global_n2nw0 *= p->tophysical_A->local_n1;
+    p0_specific_global_n2nw0 *= p->tophysical_A->local_d1;
 
     // Wave towards physical MPI transpose: long in n1 to long in nw0
     // That is, (n2 x nw0) x n1 becomes n1 x (n2 x nw0)
@@ -774,18 +774,18 @@ underling_fprint_transpose(
         fprintf(output_file, "NULL");
     } else {
         fprintf(output_file,
-                "{n0=%ld,n1=%ld},{block0=%ld,block1=%ld},",
-                transpose->n0, transpose->n1,
+                "{d0=%ld,d1=%ld},{block0=%ld,block1=%ld},",
+                transpose->d0, transpose->d1,
                 transpose->block0, transpose->block1);
         fprintf(output_file,
                 "{comm=%x,flags=%u,local_size=%ld},",
                 transpose->comm,transpose->flags,transpose->local_size);
         fprintf(output_file,
-                "{local_n0=%ld,local_n0_start=%ld},",
-                transpose->local_n0,transpose->local_n0_start);
+                "{local_d0=%ld,local_d0_start=%ld},",
+                transpose->local_d0,transpose->local_d0_start);
         fprintf(output_file,
-                "{local_n1=%ld,local_n1_start=%ld}",
-                transpose->local_n1,transpose->local_n1_start);
+                "{local_d1=%ld,local_d1_start=%ld}",
+                transpose->local_d1,transpose->local_d1_start);
     }
     fprintf(output_file, "}");
 }
