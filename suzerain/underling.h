@@ -88,6 +88,27 @@ size_t
 underling_optimum_local_size(
         const underling_problem problem);
 
+size_t
+underling_local_long_n2(
+        const underling_problem problem,
+        int *start,
+        int *size,
+        int *stride_complex);
+
+size_t
+underling_local_long_n1(
+        const underling_problem problem,
+        int *start,
+        int *size,
+        int *stride_complex);
+
+size_t
+underling_local_long_n0(
+        const underling_problem problem,
+        int *start,
+        int *size,
+        int *stride_real);
+
 underling_plan
 underling_plan_create(
         underling_problem problem,

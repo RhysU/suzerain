@@ -139,7 +139,10 @@ int main(int argc, char *argv[])
 
     /* Primitive check for data corruption */
     int corruption = 0;
-    for (int i = 0; i < local_size; ++i) {
+    const size_t long_n2_data
+        =   sizeof(underling_complex)/sizeof(underling_real)
+          * underling_local_long_n2(problem, NULL, NULL, NULL);
+    for (int i = 0; i < long_n2_data; ++i) {
         if (data[i] != (procid*10000 + i)) {
             LOG4CXX_WARN(logger, "test result discrepancy at index " << i);
             corruption = 1;

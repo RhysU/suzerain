@@ -582,6 +582,105 @@ underling_optimum_local_size(
     return global_data/nprocessors;
 }
 
+size_t
+underling_local_long_n2(
+        const underling_problem problem,
+        int *start,
+        int *size,
+        int *stride_complex)
+{
+    if (problem == NULL) {
+        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
+    }
+
+    const underling_extents * const e = &problem->long_n2;
+    if (start) {
+        start[0] = e->local_nw0_start;
+        start[1] = e->local_n1_start;
+        start[2] = e->local_n2_start;
+    }
+    if (size) {
+        size[0] = e->local_nw0;
+        size[1] = e->local_n1;
+        size[2] = e->local_n2;
+    }
+    // Long in n2: (nw0/pB x  n1/pA) x n2
+    // Row-major storage
+    if (stride_complex) {
+        stride_complex[2] = problem->nfields;
+        stride_complex[1] = stride_complex[2] * e->local_n2;
+        stride_complex[0] = stride_complex[1] * e->local_n1;
+    }
+
+    return problem->nfields * e->local_nw0 * e->local_n1 * e->local_n2;
+}
+
+size_t
+underling_local_long_n1(
+        const underling_problem problem,
+        int *start,
+        int *size,
+        int *stride_complex)
+{
+    if (problem == NULL) {
+        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
+    }
+
+    const underling_extents * const e = &problem->long_n1;
+    if (start) {
+        start[0] = e->local_nw0_start;
+        start[1] = e->local_n1_start;
+        start[2] = e->local_n2_start;
+    }
+    if (size) {
+        size[0] = e->local_nw0;
+        size[1] = e->local_n1;
+        size[2] = e->local_n2;
+    }
+    // Long in n1: n2/pA x (nw0/pB x n1) = ( n2/pA x nw0/pB) x n1
+    // Row-major storage
+    if (stride_complex) {
+        stride_complex[1] = problem->nfields;
+        stride_complex[0] = stride_complex[1] * e->local_n1;
+        stride_complex[2] = stride_complex[0] * e->local_nw0;
+    }
+
+    return problem->nfields * e->local_nw0 * e->local_n1 * e->local_n2;
+}
+
+size_t
+underling_local_long_n0(
+        const underling_problem problem,
+        int *start,
+        int *size,
+        int *stride_real)
+{
+    if (problem == NULL) {
+        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
+    }
+
+    const underling_extents * const e = &problem->long_n0;
+    if (start) {
+        start[0] = e->local_nw0_start;
+        start[1] = e->local_n1_start;
+        start[2] = e->local_n2_start;
+    }
+    if (size) {
+        size[0] = e->local_nw0;
+        size[1] = e->local_n1;
+        size[2] = e->local_n2;
+    }
+    // Long in n0: n1/pB x (n2/pA x nw0) = ( n1/pB x  n2/pA) x nw0
+    // Row-major storage
+    if (stride_real) {
+        stride_real[0] = problem->nfields;
+        stride_real[2] = stride_real[0] * e->local_nw0;
+        stride_real[1] = stride_real[2] * e->local_n2;
+    }
+
+    return problem->nfields * e->local_nw0 * e->local_n1 * e->local_n2;
+}
+
 void
 underling_problem_destroy(
         underling_problem problem)
