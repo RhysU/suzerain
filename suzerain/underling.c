@@ -414,12 +414,12 @@ underling_problem_create(
     p->nfields = nfields;
     p->howmany = nfields * sizeof(underling_complex)/sizeof(underling_real);
 
-    // Wave space is partitioned across a 2D (p0 x p1) topology according to
-    // (nw0 x n1) x n2 with n2 long.  Use FFTW's partitioning to find the
-    // portion of the global (nw0 x n1) data that is spread across p1_comm.  We
-    // never perform this next transpose, but we do need its local_{n0,n1}.
-    ptrdiff_t p0_specific_nw0n1;
-    ptrdiff_t p0_specific_n2;
+    // Wave space is initially partitioned across a 2D (p0 x p1) topology
+    // according to (nw0 x n1) x n2 with n2 long.  Use FFTW's partitioning to
+    // find the portion of the global (nw0 x n1) data that is spread across
+    // p1_comm.  We never perform this next transpose, but we do need its
+    // local_n0.
+    ptrdiff_t p1_specific_nw0n1;
     {
         underling_transpose partition_nw0n1_by_n2_across_p1
             = underling_transpose_create(grid->nw0 * grid->n1,
@@ -436,14 +436,14 @@ underling_problem_create(
                     SUZERAIN_EFAILED);
         }
         // Save the partitioning information that we need and destroy the rest
-        p0_specific_nw0n1 = partition_nw0n1_by_n2_across_p1->local_n0;
-        p0_specific_n2   = partition_nw0n1_by_n2_across_p1->local_n1;
+        p1_specific_nw0n1 = partition_nw0n1_by_n2_across_p1->local_n0;
         underling_transpose_destroy(partition_nw0n1_by_n2_across_p1);
     }
 
     // Wave towards physical MPI transpose: long in n2 to long in n1
+    // That is, (nw0 x n1) x n2 becomes n2 x (nw0 x n1)
     p->tophysical_A = underling_transpose_create(
-            p0_specific_nw0n1,
+            p1_specific_nw0n1,
             grid->n2,
             p->howmany,
             FFTW_MPI_DEFAULT_BLOCK,
@@ -471,24 +471,13 @@ underling_problem_create(
     p0_specific_global_n2nw0 /= grid->n1;
     p0_specific_global_n2nw0 *= p->tophysical_A->local_n1;
 
-    // global block0 size for the long in n1 to long in n0 distribution across
-    // the p1 communicator depends on local_n1 at the rank 0 node for
-    // p->tophysical_A.
-    ptrdiff_t tophysical_B_block0 = p->tophysical_A->local_n1;
-    const int bcast_error = MPI_Bcast(
-            &tophysical_B_block0, 1, MPI_LONG, 0, grid->p1_comm);
-    if (bcast_error) {
-        underling_problem_destroy(p);
-        SUZERAIN_MPICHKN(bcast_error);
-    }
-    tophysical_B_block0 *= p0_specific_n2;
-
-    // Wave towards physical MPI transpose: long in n1 to long in n0
+    // Wave towards physical MPI transpose: long in n1 to long in nw0
+    // That is, (n2 x nw0) x n1 becomes n1 x (n2 x nw0)
     p->tophysical_B = underling_transpose_create(
             p0_specific_global_n2nw0,
             grid->n1,
             p->howmany,
-            tophysical_B_block0,
+            FFTW_MPI_DEFAULT_BLOCK,
             FFTW_MPI_DEFAULT_BLOCK,
             grid->p1_comm,
             /*flags*/0);
@@ -764,9 +753,12 @@ underling_fprint_grid(
         fprintf(output_file, "NULL");
     } else {
         fprintf(output_file,
-                "{np0=%d,nw0=%d,n1=%d,n2=%d},{p0=%d,p1=%d}",
+                "{np0=%d,nw0=%d,n1=%d,n2=%d}"
+                ",{p0=%d,p1=%d}"
+                ",{g_comm=%x,p0_comm=%x,p1_comm=%x}",
                 grid->np0, grid->nw0, grid->n1, grid->n2,
-                grid->p0, grid->p1);
+                grid->p0, grid->p1,
+                grid->g_comm, grid->p0_comm, grid->p1_comm);
     }
     fprintf(output_file, "}");
 }
@@ -786,7 +778,7 @@ underling_fprint_transpose(
                 transpose->n0, transpose->n1,
                 transpose->block0, transpose->block1);
         fprintf(output_file,
-                "{comm=%d,flags=%u,local_size=%ld},",
+                "{comm=%x,flags=%u,local_size=%ld},",
                 transpose->comm,transpose->flags,transpose->local_size);
         fprintf(output_file,
                 "{local_n0=%ld,local_n0_start=%ld},",
