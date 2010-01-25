@@ -491,14 +491,14 @@ underling_problem_create(
     const ptrdiff_t pA_d[2] = { p->long_n2.local_nw0 * grid->n1,
                                 grid->n2 };
     ptrdiff_t pA_block[2]   = { p->long_n2.local_nw0 * p->long_n2.local_n1,
-                                p->long_n1.local_n2  * p->long_n1.local_nw0 };
+                                p->long_n1.local_n2 };
     SUZERAIN_MPICHKN(MPI_Bcast(pA_block, 2, MPI_LONG, 0, grid->pA_comm));
 
     // Transpose pB details: (n2/pA x nw0/pB) x n1 to n1/pB x (n2/pA x nw0)
     const ptrdiff_t pB_d[2] = { p->long_n1.local_n2 * grid->nw0,
                                 grid->n1 };
     ptrdiff_t pB_block[2]   = { p->long_n1.local_n2 * p->long_n1.local_nw0,
-                                p->long_n0.local_n1 * p->long_n0.local_n2 };
+                                p->long_n0.local_n1 };
     SUZERAIN_MPICHKN(MPI_Bcast(pB_block, 2, MPI_LONG, 0, grid->pB_comm));
 
     // Wave towards physical MPI transpose: long in n2 to long in n1
