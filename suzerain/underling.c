@@ -43,17 +43,15 @@ struct underling_grid_s {
     int nw0;
     int n1;
     int n2;
-    int p0;
-    int p1;
+    int pA;
+    int pB;
     MPI_Comm g_comm;
     int g_rank;
     int g_coords[2];
-    MPI_Comm p0_comm;
-    int p0_rank;
-    int p0_coord;
-    MPI_Comm p1_comm;
-    int p1_rank;
-    int p1_coord;
+    MPI_Comm pA_comm;
+    int pA_rank;
+    MPI_Comm pB_comm;
+    int pB_rank;
 };
 
 typedef struct underling_transpose_s * underling_transpose; // Internal!
@@ -72,27 +70,39 @@ struct underling_transpose_s {
     ptrdiff_t local_size;
 };
 
+typedef struct underling_extents { // Internal!
+    int local_nw0;
+    int local_nw0_start;
+    int local_n1;
+    int local_n1_start;
+    int local_n2;
+    int local_n2_start;
+} underling_extents;
+
 struct underling_problem_s {
     underling_grid grid;              // grid owns its resources
     int nfields;                      // # of complex-valued state...
     int howmany;                      // ...as a # of real values
-    underling_transpose tophysical_A; // n2 long to n1 long
-    underling_transpose tophysical_B; // n1 long to n0 long
-    underling_transpose towave_B;     // n0 long to n1 long
-    underling_transpose towave_A;     // n1 long to n2 long
+    underling_extents long_n2;        // Layout details for n2 long
+    underling_extents long_n1;        // Layout details for n1 long
+    underling_extents long_n0;        // Layout details for n0 long
+    underling_transpose tophysA;      // n2 long to n1 long
+    underling_transpose tophysB;      // n1 long to n0 long
+    underling_transpose towaveB;      // n0 long to n1 long
+    underling_transpose towaveA;      // n1 long to n2 long
     ptrdiff_t local_size;             // Max of all local sizes
 };
 
 struct underling_plan_s {
     underling_problem problem;         // problem owns its resources
-    fftw_plan transpose_tophysical_A;
+    fftw_plan transpose_tophysA;
     fftw_plan c2c_tophysical_n1;
-    fftw_plan transpose_tophysical_B;
+    fftw_plan transpose_tophysB;
     fftw_plan c2r_tophysical_n0;
     fftw_plan r2c_towave_n0;
-    fftw_plan transpose_towave_A;
+    fftw_plan transpose_towaveA;
     fftw_plan c2c_towave_n1;
-    fftw_plan transpose_towave_B;
+    fftw_plan transpose_towaveB;
     underling_real *data;              // API end-user owns resources
 };
 
@@ -130,6 +140,11 @@ underling_fprint_transpose(
         const underling_transpose transpose,
         FILE *output_file);
 
+void
+underling_fprint_extents(
+        const underling_extents *extents,
+        FILE *output_file);
+
 // **************************************************************************
 // IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION
 // **************************************************************************
@@ -140,8 +155,8 @@ underling_grid_create(
         int np0,
         int np1,
         int np2,
-        int p0,
-        int p1)
+        int pA,
+        int pB)
 {
     // Sanity check incoming, non-MPI arguments
     if (np0 < 1) {
@@ -153,32 +168,32 @@ underling_grid_create(
     if (np2 < 1) {
         SUZERAIN_ERROR_NULL("np2 >= 1 required", SUZERAIN_EINVAL);
     }
-    if (p0 < 0) {
-        SUZERAIN_ERROR_NULL("p0 >= 0 required", SUZERAIN_EINVAL);
+    if (pA < 0) {
+        SUZERAIN_ERROR_NULL("pA >= 0 required", SUZERAIN_EINVAL);
     }
-    if (p1 < 0) {
-        SUZERAIN_ERROR_NULL("p1 >= 0 required", SUZERAIN_EINVAL);
+    if (pB < 0) {
+        SUZERAIN_ERROR_NULL("pB >= 0 required", SUZERAIN_EINVAL);
     }
 
     // Get number of processors in the communicator
     int nproc;
     SUZERAIN_MPICHKN(MPI_Comm_size(comm, &nproc));
 
-    // Create a balanced processor grid if not specified by p0, p1 != 0
+    // Create a balanced processor grid if not specified by pA, pB != 0
     {
-        int dims[2] = { p0, p1 };
+        int dims[2] = { pA, pB };
         SUZERAIN_MPICHKN(MPI_Dims_create(nproc, 2, dims));
         // If both directions automatic, ensure dims[0] <= dims[1]
-        if (p0 == 0 && p1 == 0 && dims[0] > dims[1]) {
+        if (pA == 0 && pB == 0 && dims[0] > dims[1]) {
             const int tmp = dims[0]; dims[0] = dims[1]; dims[1] = tmp;
         }
-        p0 = dims[0];
-        p1 = dims[1];
-        if (p0 * p1 != nproc) {
+        pA = dims[0];
+        pB = dims[1];
+        if (pA * pB != nproc) {
             char reason[127];
             snprintf(reason, sizeof(reason)/sizeof(reason[0]),
-                    "Invalid processor grid: p0 {%d} * p1 {%d} != nproc {%d}",
-                    p0, p1, nproc);
+                    "Invalid processor grid: pA {%d} * pB {%d} != nproc {%d}",
+                    pA, pB, nproc);
             SUZERAIN_ERROR_NULL(reason, SUZERAIN_EFAILED);
         }
     }
@@ -192,7 +207,7 @@ underling_grid_create(
     // Clone the communicator and create the 2D Cartesian topology
     MPI_Comm g_comm;
     {
-        int dims[2]     = { p0, p1 };
+        int dims[2]     = { pA, pB };
         int periodic[2] = { 0, 0 };
         SUZERAIN_MPICHKN(MPI_Cart_create(
                 comm, 2, dims, periodic, 1/*reordering allowed*/, &g_comm));
@@ -203,29 +218,37 @@ underling_grid_create(
     int g_coords[2];
     SUZERAIN_MPICHKN(MPI_Cart_coords(g_comm, g_rank, 2, g_coords));
 
-    // Create communicator for the P0 direction
-    MPI_Comm p0_comm;
+    // Create communicator for the PA direction
+    MPI_Comm pA_comm;
     {
         int remain_dims[2] = { 1, 0 };
-        SUZERAIN_MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p0_comm));
+        SUZERAIN_MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &pA_comm));
     }
-    // Cache the rank and coordinates of this process within g_comm
-    int p0_rank;
-    SUZERAIN_MPICHKN(MPI_Comm_rank(p0_comm, &p0_rank));
-    int p0_coord;
-    SUZERAIN_MPICHKN(MPI_Cart_coords(p0_comm, p0_rank, 1, &p0_coord));
+    // Find the rank of this process within g_comm
+    int pA_rank;
+    SUZERAIN_MPICHKN(MPI_Comm_rank(pA_comm, &pA_rank));
 
-    // Create communicator for the P1 direction
-    MPI_Comm p1_comm;
+    // Create communicator for the PB direction
+    MPI_Comm pB_comm;
     {
         int remain_dims[2] = { 0, 1 };
-        SUZERAIN_MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &p1_comm));
+        SUZERAIN_MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &pB_comm));
     }
-    // Cache the rank and coordinates of this process within g_comm
-    int p1_rank;
-    SUZERAIN_MPICHKN(MPI_Comm_rank(p1_comm, &p1_rank));
-    int p1_coord;
-    SUZERAIN_MPICHKN(MPI_Cart_coords(p1_comm, p1_rank, 1, &p1_coord));
+    // Find the rank of this process within g_comm
+    int pB_rank;
+    SUZERAIN_MPICHKN(MPI_Comm_rank(pB_comm, &pB_rank));
+
+    // Name the three new communicators something mildly descriptive
+    char buffer[MPI_MAX_OBJECT_NAME];
+    snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+            "uGComm%dx%d", pA, pB);
+    SUZERAIN_MPICHKN(MPI_Comm_set_name(g_comm, buffer));
+    snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+            "uPACommXx%d", pB_rank);
+    SUZERAIN_MPICHKN(MPI_Comm_set_name(pA_comm, buffer));
+    snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+            "uPBComm%dxX", pA_rank);
+    SUZERAIN_MPICHKN(MPI_Comm_set_name(pB_comm, buffer));
 
     // Create and initialize the grid workspace
     underling_grid g = calloc(1, sizeof(struct underling_grid_s));
@@ -238,18 +261,16 @@ underling_grid_create(
     g->nw0         = nw0;
     g->n1          = n1;
     g->n2          = n2;
-    g->p0          = p0;
-    g->p1          = p1;
+    g->pA          = pA;
+    g->pB          = pB;
     g->g_comm      = g_comm;
     g->g_rank      = g_rank;
     g->g_coords[0] = g_coords[0];
     g->g_coords[1] = g_coords[1];
-    g->p0_comm     = p0_comm;
-    g->p0_rank     = p0_rank;
-    g->p0_coord    = p0_coord;
-    g->p1_comm     = p1_comm;
-    g->p1_rank     = p1_rank;
-    g->p1_coord    = p1_coord;
+    g->pA_comm     = pA_comm;
+    g->pA_rank     = pA_rank;
+    g->pB_comm     = pB_comm;
+    g->pB_rank     = pB_rank;
 
     return g;
 }
@@ -262,13 +283,13 @@ underling_grid_destroy(underling_grid grid)
             SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->g_comm));
             grid->g_comm = MPI_COMM_NULL;
         }
-        if (grid->p0_comm) {
-            SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->p0_comm));
-            grid->p0_comm = MPI_COMM_NULL;
+        if (grid->pA_comm) {
+            SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->pA_comm));
+            grid->pA_comm = MPI_COMM_NULL;
         }
-        if (grid->p1_comm) {
-            SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->p1_comm));
-            grid->p1_comm = MPI_COMM_NULL;
+        if (grid->pB_comm) {
+            SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->pB_comm));
+            grid->pB_comm = MPI_COMM_NULL;
         }
         free(grid);
     }
@@ -414,105 +435,126 @@ underling_problem_create(
     p->nfields = nfields;
     p->howmany = nfields * sizeof(underling_complex)/sizeof(underling_real);
 
-    // Wave space is initially partitioned across a 2D (p0 x p1) topology
-    // according to (nw0 x n1) x n2 with n2 long.  Use FFTW's partitioning to
-    // find the portion of the global (nw0 x n1) data that is spread across
-    // p1_comm.  We never perform this next transpose, but we do need its
-    // local_n0.
-    ptrdiff_t p1_specific_nw0n1;
+    // Global pencil decomposition details
+    // ---------------------------------------------------------
+    // Long in n2:                         (nw0/pB x  n1/pA) x n2
+    // Long in n1: n2/pA x (nw0/pB x n1) = ( n2/pA x nw0/pB) x n1
+    // Long in n0: n1/pB x (n2/pA x nw0) = ( n1/pB x  n2/pA) x nw0
+
+    // Fix {n2,n1,n0} dimension details in p->long_{n2,n1,n0}
+    p->long_n2.local_n2        = grid->n2;
+    p->long_n2.local_n2_start  = 0;
+    p->long_n1.local_n1        = grid->n1;
+    p->long_n1.local_n1_start  = 0;
+    p->long_n0.local_nw0       = grid->nw0;
+    p->long_n0.local_nw0_start = 0;
+
+    // Decompose {nw0,n1}/pB and store details in p->long_{(n2,n1),n0}
     {
-        underling_transpose partition_nw0n1_by_n2_across_p1
-            = underling_transpose_create(grid->nw0 * grid->n1,
-                                         grid->n2,
-                                         p->howmany,
-                                         FFTW_MPI_DEFAULT_BLOCK,
-                                         FFTW_MPI_DEFAULT_BLOCK,
-                                         grid->p1_comm,
-                                         /*flags*/0);
-        if (partition_nw0n1_by_n2_across_p1 == NULL) {
-            underling_problem_destroy(p);
-            SUZERAIN_ERROR_NULL(
-                    "failed determining partition_nw0n1_by_n2_across_p1",
-                    SUZERAIN_EFAILED);
-        }
-        // Save the partitioning information that we need and destroy the rest
-        p1_specific_nw0n1 = partition_nw0n1_by_n2_across_p1->local_d0;
-        underling_transpose_destroy(partition_nw0n1_by_n2_across_p1);
+        ptrdiff_t local_d0, local_d0_start, local_d1, local_d1_start;
+        ptrdiff_t dB[2] = {grid->nw0, grid->n1}; // Never performed
+        fftw_mpi_local_size_many_transposed(2, dB, p->howmany,
+                FFTW_MPI_DEFAULT_BLOCK, FFTW_MPI_DEFAULT_BLOCK, grid->pB_comm,
+                &local_d0, &local_d0_start, &local_d1, & local_d1_start);
+        assert(local_d0       <= INT_MAX);
+        assert(local_d0_start <= INT_MAX);
+        assert(local_d1       <= INT_MAX);
+        assert(local_d1_start <= INT_MAX);
+        p->long_n2.local_nw0       = local_d0;
+        p->long_n2.local_nw0_start = local_d0_start;
+        p->long_n1.local_nw0       = local_d0;
+        p->long_n1.local_nw0_start = local_d0_start;
+        p->long_n0.local_n1        = local_d1;
+        p->long_n0.local_n1_start  = local_d1_start;
     }
 
+    // Decompose {n1,n2}/pA and store details in p->long_{n2,(n1,n0)}
+    {
+        ptrdiff_t local_d0, local_d0_start, local_d1, local_d1_start;
+        ptrdiff_t dA[2] = {grid->n1, grid->n2}; // Never performed
+        fftw_mpi_local_size_many_transposed(2, dA, p->howmany,
+                FFTW_MPI_DEFAULT_BLOCK, FFTW_MPI_DEFAULT_BLOCK, grid->pA_comm,
+                &local_d0, &local_d0_start, &local_d1, &local_d1_start);
+        assert(local_d0       <= INT_MAX);
+        assert(local_d0_start <= INT_MAX);
+        assert(local_d1       <= INT_MAX);
+        assert(local_d1_start <= INT_MAX);
+        p->long_n2.local_n1       = local_d0;
+        p->long_n2.local_n1_start = local_d0_start;
+        p->long_n1.local_n2       = local_d1;
+        p->long_n1.local_n2_start = local_d1_start;
+        p->long_n0.local_n2       = local_d1;
+        p->long_n0.local_n2_start = local_d1_start;
+    }
+
+    // Transpose pA details: (nw0/pB x n1/pA) x n2 to n2/pA x (nw0/pB x n1)
+    const ptrdiff_t pA_d[2] = { p->long_n2.local_nw0 * grid->n1,
+                                grid->n2 };
+    ptrdiff_t pA_block[2]   = { p->long_n2.local_nw0 * p->long_n2.local_n1,
+                                p->long_n1.local_n2  * p->long_n1.local_nw0 };
+    SUZERAIN_MPICHKN(MPI_Bcast(pA_block, 2, MPI_LONG, 0, grid->pA_comm));
+
+    // Transpose pB details: (n2/pA x nw0/pB) x n1 to n1/pB x (n2/pA x nw0)
+    const ptrdiff_t pB_d[2] = { p->long_n1.local_n2 * grid->nw0,
+                                grid->n1 };
+    ptrdiff_t pB_block[2]   = { p->long_n1.local_n2 * p->long_n1.local_nw0,
+                                p->long_n0.local_n1 * p->long_n0.local_n2 };
+    SUZERAIN_MPICHKN(MPI_Bcast(pB_block, 2, MPI_LONG, 0, grid->pB_comm));
+
     // Wave towards physical MPI transpose: long in n2 to long in n1
-    // That is, (nw0 x n1) x n2 becomes n2 x (nw0 x n1)
-    p->tophysical_A = underling_transpose_create(
-            p1_specific_nw0n1,
-            grid->n2,
-            p->howmany,
-            FFTW_MPI_DEFAULT_BLOCK,
-            FFTW_MPI_DEFAULT_BLOCK,
-            grid->p0_comm,
-            /*flags*/0);
-    if (p->tophysical_A == NULL) {
+    p->tophysA = underling_transpose_create(pA_d[0],
+                                            pA_d[1],
+                                            p->howmany,
+                                            pA_block[0],
+                                            pA_block[1],
+                                            grid->pA_comm,
+                                            /*flags*/0);
+    if (p->tophysA == NULL) {
         underling_problem_destroy(p);
-        SUZERAIN_ERROR_NULL("failed creating p->tophysical_A",
+        SUZERAIN_ERROR_NULL("failed creating p->tophysA",
                 SUZERAIN_EFAILED);
     }
 
-    // The global transform size for n2 x (nw0 x n1) = (n2 x nw0) x n1
-    // redistribution across p1_comm depends on the rank of the process within
-    // p0_comm.  We must accumulate the p0-specific global (n2 x nw0) value.
-    ptrdiff_t p0_specific_global_n2nw0;
-    const int allreduce_error = MPI_Allreduce(
-            &(p->tophysical_A->d0), &p0_specific_global_n2nw0, 1,
-            MPI_LONG, MPI_SUM, grid->p1_comm);
-    if (allreduce_error) {
-        underling_problem_destroy(p);
-        SUZERAIN_MPICHKN(allreduce_error);
-    }
-    assert(p0_specific_global_n2nw0 % grid->n1 == 0);
-    p0_specific_global_n2nw0 /= grid->n1;
-    p0_specific_global_n2nw0 *= p->tophysical_A->local_d1;
-
     // Wave towards physical MPI transpose: long in n1 to long in nw0
-    // That is, (n2 x nw0) x n1 becomes n1 x (n2 x nw0)
-    p->tophysical_B = underling_transpose_create(
-            p0_specific_global_n2nw0,
-            grid->n1,
-            p->howmany,
-            FFTW_MPI_DEFAULT_BLOCK,
-            FFTW_MPI_DEFAULT_BLOCK,
-            grid->p1_comm,
-            /*flags*/0);
-    if (p->tophysical_B == NULL) {
+    p->tophysB = underling_transpose_create(pB_d[0],
+                                            pB_d[1],
+                                            p->howmany,
+                                            pB_block[0],
+                                            pB_block[1],
+                                            grid->pB_comm,
+                                            /*flags*/0);
+    if (p->tophysB == NULL) {
         underling_problem_destroy(p);
-        SUZERAIN_ERROR_NULL("failed creating p->tophysical_B",
+        SUZERAIN_ERROR_NULL("failed creating p->tophysB",
                 SUZERAIN_EFAILED);
     }
 
     // Physical towards wave MPI transpose: long in n0 to long in n1
-    p->towave_B = underling_transpose_create_inverse(p->tophysical_B);
-    if (p->towave_B == NULL) {
+    p->towaveB = underling_transpose_create_inverse(p->tophysB);
+    if (p->towaveB == NULL) {
         underling_problem_destroy(p);
-        SUZERAIN_ERROR_NULL("failed creating p->towave_B",
+        SUZERAIN_ERROR_NULL("failed creating p->towaveB",
                 SUZERAIN_EFAILED);
     }
 
     // Physical towards wave MPI transpose: long in n1 to long in n2
-    p->towave_A = underling_transpose_create_inverse(p->tophysical_A);
-    if (p->towave_A == NULL) {
+    p->towaveA = underling_transpose_create_inverse(p->tophysA);
+    if (p->towaveA == NULL) {
         underling_problem_destroy(p);
-        SUZERAIN_ERROR_NULL("failed creating p->towave_A",
+        SUZERAIN_ERROR_NULL("failed creating p->towaveA",
                 SUZERAIN_EFAILED);
     }
 
-    // local_size is overall maximum of all transpose local_size values
-    p->local_size = p->tophysical_A->local_size;
-    if (p->local_size < p->tophysical_B->local_size) {
-        p->local_size = p->tophysical_B->local_size;
+    // p->local_size is overall maximum of all local_size values
+    p->local_size = p->tophysA->local_size;
+    if (p->local_size < p->tophysB->local_size) {
+        p->local_size = p->tophysB->local_size;
     }
-    if (p->local_size < p->towave_B->local_size) {
-        p->local_size = p->towave_B->local_size;
+    if (p->local_size < p->towaveB->local_size) {
+        p->local_size = p->towaveB->local_size;
     }
-    if (p->local_size < p->towave_A->local_size) {
-        p->local_size = p->towave_A->local_size;
+    if (p->local_size < p->towaveA->local_size) {
+        p->local_size = p->towaveA->local_size;
     }
 
     return p;
@@ -534,8 +576,8 @@ underling_optimum_local_size(
                                * problem->grid->n2
                                * problem->howmany;
 
-    const size_t nprocessors =   problem->grid->p0
-                               * problem->grid->p1;
+    const size_t nprocessors =   problem->grid->pA
+                               * problem->grid->pB;
 
     return global_data/nprocessors;
 }
@@ -546,21 +588,21 @@ underling_problem_destroy(
 {
     if (problem) {
         problem->grid = NULL;
-        if (problem->tophysical_A) {
-            underling_transpose_destroy(problem->tophysical_A);
-            problem->tophysical_A = NULL;
+        if (problem->tophysA) {
+            underling_transpose_destroy(problem->tophysA);
+            problem->tophysA = NULL;
         }
-        if (problem->tophysical_B) {
-            underling_transpose_destroy(problem->tophysical_B);
-            problem->tophysical_B = NULL;
+        if (problem->tophysB) {
+            underling_transpose_destroy(problem->tophysB);
+            problem->tophysB = NULL;
         }
-        if (problem->towave_B) {
-            underling_transpose_destroy(problem->towave_B);
-            problem->towave_B = NULL;
+        if (problem->towaveB) {
+            underling_transpose_destroy(problem->towaveB);
+            problem->towaveB = NULL;
         }
-        if (problem->towave_A) {
-            underling_transpose_destroy(problem->towave_A);
-            problem->towave_A = NULL;
+        if (problem->towaveA) {
+            underling_transpose_destroy(problem->towaveA);
+            problem->towaveA = NULL;
         }
         free(problem);
     }
@@ -605,21 +647,21 @@ underling_plan_create(
 
     /* Create FFTW plans to transform from wave to physical space */
     if (will_perform_c2r) {
-        p->transpose_tophysical_A = underling_transpose_fftw_plan(
-                p->problem->tophysical_A, p->data, p->data, rigor_flags);
-        if (p->transpose_tophysical_A == NULL) {
+        p->transpose_tophysA = underling_transpose_fftw_plan(
+                p->problem->tophysA, p->data, p->data, rigor_flags);
+        if (p->transpose_tophysA == NULL) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
-                    "FFTW MPI returned NULL plan: transpose_tophysical_A",
+                    "FFTW MPI returned NULL plan: transpose_tophysA",
                     SUZERAIN_EFAILED);
         }
 
-        p->transpose_tophysical_B = underling_transpose_fftw_plan(
-                p->problem->tophysical_B, p->data, p->data, rigor_flags);
-        if (p->transpose_tophysical_B == NULL) {
+        p->transpose_tophysB = underling_transpose_fftw_plan(
+                p->problem->tophysB, p->data, p->data, rigor_flags);
+        if (p->transpose_tophysB == NULL) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
-                    "FFTW MPI returned NULL plan: transpose_tophysical_B",
+                    "FFTW MPI returned NULL plan: transpose_tophysB",
                     SUZERAIN_EFAILED);
         }
 
@@ -629,21 +671,21 @@ underling_plan_create(
 
     /* Create FFTW plans to transform from physical to wave space */
     if (will_perform_r2c) {
-        p->transpose_towave_B = underling_transpose_fftw_plan(
-                p->problem->towave_B, p->data, p->data, rigor_flags);
-        if (p->transpose_towave_B == NULL) {
+        p->transpose_towaveB = underling_transpose_fftw_plan(
+                p->problem->towaveB, p->data, p->data, rigor_flags);
+        if (p->transpose_towaveB == NULL) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
-                    "FFTW MPI returned NULL plan: transpose_towave_B",
+                    "FFTW MPI returned NULL plan: transpose_towaveB",
                     SUZERAIN_EFAILED);
         }
 
-        p->transpose_towave_A = underling_transpose_fftw_plan(
-                p->problem->towave_A, p->data, p->data, rigor_flags);
-        if (p->transpose_towave_A == NULL) {
+        p->transpose_towaveA = underling_transpose_fftw_plan(
+                p->problem->towaveA, p->data, p->data, rigor_flags);
+        if (p->transpose_towaveA == NULL) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
-                    "FFTW MPI returned NULL plan: transpose_towave_A",
+                    "FFTW MPI returned NULL plan: transpose_towaveA",
                     SUZERAIN_EFAILED);
         }
 
@@ -660,17 +702,17 @@ underling_plan_destroy(
 {
     if (plan) {
         plan->problem = NULL;
-        if (plan->transpose_tophysical_A) {
-            fftw_destroy_plan(plan->transpose_tophysical_A);
-            plan->transpose_tophysical_A = NULL;
+        if (plan->transpose_tophysA) {
+            fftw_destroy_plan(plan->transpose_tophysA);
+            plan->transpose_tophysA = NULL;
         }
         if (plan->c2c_tophysical_n1) {
             fftw_destroy_plan(plan->c2c_tophysical_n1);
             plan->c2c_tophysical_n1 = NULL;
         }
-        if (plan->transpose_tophysical_B) {
-            fftw_destroy_plan(plan->transpose_tophysical_B);
-            plan->transpose_tophysical_B = NULL;
+        if (plan->transpose_tophysB) {
+            fftw_destroy_plan(plan->transpose_tophysB);
+            plan->transpose_tophysB = NULL;
         }
         if (plan->c2r_tophysical_n0) {
             fftw_destroy_plan(plan->c2r_tophysical_n0);
@@ -680,17 +722,17 @@ underling_plan_destroy(
             fftw_destroy_plan(plan->r2c_towave_n0);
             plan->r2c_towave_n0 = NULL;
         }
-        if (plan->transpose_towave_A) {
-            fftw_destroy_plan(plan->transpose_towave_A);
-            plan->transpose_towave_A = NULL;
+        if (plan->transpose_towaveA) {
+            fftw_destroy_plan(plan->transpose_towaveA);
+            plan->transpose_towaveA = NULL;
         }
         if (plan->c2c_towave_n1) {
             fftw_destroy_plan(plan->c2c_towave_n1);
             plan->c2c_towave_n1 = NULL;
         }
-        if (plan->transpose_towave_B) {
-            fftw_destroy_plan(plan->transpose_towave_B);
-            plan->transpose_towave_B = NULL;
+        if (plan->transpose_towaveB) {
+            fftw_destroy_plan(plan->transpose_towaveB);
+            plan->transpose_towaveB = NULL;
         }
         plan->data = NULL;
     }
@@ -705,16 +747,16 @@ underling_execute_c2r(
     }
 
     /* FIXME check valid c2c_tophysical_n1, c2r_tophysical_n0 as well */
-    const int valid =       plan->transpose_tophysical_A
-                         && plan->transpose_tophysical_B;
+    const int valid =       plan->transpose_tophysA
+                         && plan->transpose_tophysB;
     if (!valid) {
         SUZERAIN_ERROR("plan has one or more NULL c2r subplans",
                 SUZERAIN_EINVAL);
     }
 
-    fftw_execute(plan->transpose_tophysical_A);
+    fftw_execute(plan->transpose_tophysA);
 /* FIXME fftw_execute(plan->c2c_tophysical_n1); */
-    fftw_execute(plan->transpose_tophysical_B);
+    fftw_execute(plan->transpose_tophysB);
 /* FIXME fftw_execute(plan->c2r_tophysical_n0); */
 
     return SUZERAIN_SUCCESS;
@@ -728,17 +770,17 @@ underling_execute_r2c(
         SUZERAIN_ERROR("non-NULL plan required", SUZERAIN_EINVAL);
     }
     /* FIXME check valid r2c_towave_n0, c2c_towave_n1 as well */
-    const int valid =    plan->transpose_towave_A
-                      && plan->transpose_towave_B;
+    const int valid =    plan->transpose_towaveA
+                      && plan->transpose_towaveB;
     if (!valid) {
         SUZERAIN_ERROR("plan has one or more NULL r2c subplans",
                 SUZERAIN_EINVAL);
     }
 
 /* FIXME fftw_execute(plan->r2c_towave_n0); */
-    fftw_execute(plan->transpose_towave_B);
+    fftw_execute(plan->transpose_towaveB);
 /* FIXME fftw_execute(plan->c2c_towave_n1); */
-    fftw_execute(plan->transpose_towave_A);
+    fftw_execute(plan->transpose_towaveA);
 
     return SUZERAIN_SUCCESS;
 }
@@ -752,13 +794,38 @@ underling_fprint_grid(
     if (!grid) {
         fprintf(output_file, "NULL");
     } else {
+
         fprintf(output_file,
                 "{np0=%d,nw0=%d,n1=%d,n2=%d}"
-                ",{p0=%d,p1=%d}"
-                ",{g_comm=%x,p0_comm=%x,p1_comm=%x}",
+                ",{pA=%d,pB=%d}",
                 grid->np0, grid->nw0, grid->n1, grid->n2,
-                grid->p0, grid->p1,
-                grid->g_comm, grid->p0_comm, grid->p1_comm);
+                grid->pA, grid->pB);
+
+        char buffer[MPI_MAX_OBJECT_NAME];
+        int resultlen = 0;
+        if (   MPI_Comm_get_name(grid->g_comm, buffer, &resultlen)
+            || resultlen == 0) {
+            fprintf(output_file, ",{g_comm=%x", grid->g_comm);
+        } else {
+            fprintf(output_file, ",{g_comm=%s", buffer);
+        }
+
+        resultlen = 0;
+        if (   MPI_Comm_get_name(grid->pA_comm, buffer, &resultlen)
+            || resultlen == 0) {
+            fprintf(output_file, ",pA_comm=%x", grid->pA_comm);
+        } else {
+            fprintf(output_file, ",pA_comm=%s", buffer);
+        }
+
+        resultlen = 0;
+        if (   MPI_Comm_get_name(grid->pB_comm, buffer, &resultlen)
+            || resultlen == 0) {
+            fprintf(output_file, ",pB_comm=%x}", grid->pB_comm);
+        } else {
+            fprintf(output_file, ",pB_comm=%s}", buffer);
+        }
+
     }
     fprintf(output_file, "}");
 }
@@ -801,21 +868,30 @@ underling_fprint_problem(
     } else {
         fprintf(output_file,"{nfields=%d,howmany=%d,local_size=%ld}",
                 problem->nfields, problem->howmany, problem->local_size);
-        fprintf(output_file,"{tophysical_A:");
-        underling_fprint_transpose(
-                problem->tophysical_A, output_file);
+        fprintf(output_file,"{long_n2:");
+        underling_fprint_extents(&(problem->long_n2), output_file);
         fprintf(output_file, "}");
-        fprintf(output_file,"{tophysical_B:");
-        underling_fprint_transpose(
-                problem->tophysical_B, output_file);
+        fprintf(output_file,"{long_n1:");
+        underling_fprint_extents(&(problem->long_n1), output_file);
         fprintf(output_file, "}");
-        fprintf(output_file,"{towave_B:");
-        underling_fprint_transpose(
-                problem->towave_B, output_file);
+        fprintf(output_file,"{long_n0:");
+        underling_fprint_extents(&(problem->long_n0), output_file);
         fprintf(output_file, "}");
-        fprintf(output_file,"{towave_A:");
+        fprintf(output_file,"{tophysA:");
         underling_fprint_transpose(
-                problem->towave_A, output_file);
+                problem->tophysA, output_file);
+        fprintf(output_file, "}");
+        fprintf(output_file,"{tophysB:");
+        underling_fprint_transpose(
+                problem->tophysB, output_file);
+        fprintf(output_file, "}");
+        fprintf(output_file,"{towaveB:");
+        underling_fprint_transpose(
+                problem->towaveB, output_file);
+        fprintf(output_file, "}");
+        fprintf(output_file,"{towaveA:");
+        underling_fprint_transpose(
+                problem->towaveA, output_file);
         fprintf(output_file, "}");
     }
     fprintf(output_file, "}");
@@ -831,9 +907,9 @@ underling_fprint_plan(
     } else {
 
         fprintf(output_file, "{underling_plan_c2r:");
-        if (plan->transpose_tophysical_A) {
-            fprintf(output_file, "{transpose_tophysical_A:");
-            fftw_fprint_plan(plan->transpose_tophysical_A, output_file);
+        if (plan->transpose_tophysA) {
+            fprintf(output_file, "{transpose_tophysA:");
+            fftw_fprint_plan(plan->transpose_tophysA, output_file);
             fprintf(output_file, "}");
         }
         if (plan->c2c_tophysical_n1) {
@@ -841,9 +917,9 @@ underling_fprint_plan(
             fftw_fprint_plan(plan->c2c_tophysical_n1, output_file);
             fprintf(output_file, "}");
         }
-        if (plan->transpose_tophysical_B) {
-            fprintf(output_file, "{plan->transpose_tophysical_B:");
-            fftw_fprint_plan(plan->transpose_tophysical_B, output_file);
+        if (plan->transpose_tophysB) {
+            fprintf(output_file, "{plan->transpose_tophysB:");
+            fftw_fprint_plan(plan->transpose_tophysB, output_file);
             fprintf(output_file, "}");
         }
         if (plan->c2r_tophysical_n0) {
@@ -859,9 +935,9 @@ underling_fprint_plan(
             fftw_fprint_plan(plan->r2c_towave_n0, output_file);
             fprintf(output_file, "}");
         }
-        if (plan->transpose_towave_A) {
-            fprintf(output_file, "{transpose_towave_A:");
-            fftw_fprint_plan(plan->transpose_towave_A, output_file);
+        if (plan->transpose_towaveA) {
+            fprintf(output_file, "{transpose_towaveA:");
+            fftw_fprint_plan(plan->transpose_towaveA, output_file);
             fprintf(output_file, "}");
         }
         if (plan->c2c_towave_n1) {
@@ -869,11 +945,29 @@ underling_fprint_plan(
             fftw_fprint_plan(plan->c2c_towave_n1, output_file);
             fprintf(output_file, "}");
         }
-        if (plan->transpose_towave_B) {
-            fprintf(output_file, "{transpose_towave_B:");
-            fftw_fprint_plan(plan->transpose_towave_B, output_file);
+        if (plan->transpose_towaveB) {
+            fprintf(output_file, "{transpose_towaveB:");
+            fftw_fprint_plan(plan->transpose_towaveB, output_file);
             fprintf(output_file, "}");
         }
         fprintf(output_file, "}");
+    }
+}
+
+void
+underling_fprint_extents(
+        const underling_extents *extents,
+        FILE *output_file)
+{
+    if (!extents) {
+        fprintf(output_file, "NULL");
+    } else {
+        fprintf(output_file, "[%d,%d)x[%d,%d)x[%d,%d)",
+                extents->local_nw0_start,
+                extents->local_nw0_start + extents->local_nw0,
+                extents->local_n1_start,
+                extents->local_n1_start + extents->local_n1,
+                extents->local_n2_start,
+                extents->local_n2_start + extents->local_n2);
     }
 }

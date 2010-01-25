@@ -64,8 +64,8 @@ underling_grid_create(
         int n0,
         int n1,
         int n2,
-        int p0,
-        int p1);
+        int pA,
+        int pB);
 
 void
 underling_grid_destroy(
