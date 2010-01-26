@@ -143,19 +143,19 @@ underling_grid_create(
         int pB)
 {
     // Sanity check incoming, non-MPI arguments
-    if (n0 < 1) {
+    if (SUZERAIN_UNLIKELY(n0 < 1)) {
         SUZERAIN_ERROR_NULL("n0 >= 1 required", SUZERAIN_EINVAL);
     }
-    if (n1 < 1) {
+    if (SUZERAIN_UNLIKELY(n1 < 1)) {
         SUZERAIN_ERROR_NULL("n1 >= 1 required", SUZERAIN_EINVAL);
     }
-    if (n2 < 1) {
+    if (SUZERAIN_UNLIKELY(n2 < 1)) {
         SUZERAIN_ERROR_NULL("n2 >= 1 required", SUZERAIN_EINVAL);
     }
-    if (pA < 0) {
+    if (SUZERAIN_UNLIKELY(pA < 0)) {
         SUZERAIN_ERROR_NULL("pA >= 0 required", SUZERAIN_EINVAL);
     }
-    if (pB < 0) {
+    if (SUZERAIN_UNLIKELY(pB < 0)) {
         SUZERAIN_ERROR_NULL("pB >= 0 required", SUZERAIN_EINVAL);
     }
 
@@ -173,7 +173,7 @@ underling_grid_create(
         }
         pA = dims[0];
         pB = dims[1];
-        if (pA * pB != nproc) {
+        if (SUZERAIN_UNLIKELY(pA * pB != nproc)) {
             char reason[127];
             snprintf(reason, sizeof(reason)/sizeof(reason[0]),
                     "Invalid processor grid: pA {%d} * pB {%d} != nproc {%d}",
@@ -230,7 +230,7 @@ underling_grid_create(
 
     // Create and initialize the grid workspace
     underling_grid g = calloc(1, sizeof(struct underling_grid_s));
-    if (g == NULL) {
+    if (SUZERAIN_UNLIKELY(g == NULL)) {
         SUZERAIN_ERROR_NULL("failed to allocate space for grid",
                              SUZERAIN_ENOMEM);
     }
@@ -285,7 +285,7 @@ underling_transpose_create(
 {
     // Create and initialize the transpose workspace
     underling_transpose t = calloc(1, sizeof(struct underling_transpose_s));
-    if (t == NULL) {
+    if (SUZERAIN_UNLIKELY(t == NULL)) {
         SUZERAIN_ERROR_NULL("failed to allocate space for transpose",
                              SUZERAIN_ENOMEM);
     }
@@ -319,8 +319,11 @@ underling_transpose
 underling_transpose_create_inverse(
         const underling_transpose forward)
 {
+    if (SUZERAIN_UNLIKELY(forward == NULL)) {
+        SUZERAIN_ERROR_NULL("forward == NULL", SUZERAIN_EINVAL);
+    }
     // TODO Handle FFTW_MPI_TRANSPOSED_IN, FFTW_MPI_TRANSPOSED_OUT correctly
-    if (forward->flags) {
+    if (SUZERAIN_UNLIKELY(forward->flags)) {
         SUZERAIN_ERROR_NULL("Nontrivial transpose flags not yet implemented!",
                 SUZERAIN_ESANITY);
     }
@@ -328,7 +331,7 @@ underling_transpose_create_inverse(
     // Create and initialize the transpose workspace
     underling_transpose backward
         = calloc(1, sizeof(struct underling_transpose_s));
-    if (backward == NULL) {
+    if (SUZERAIN_UNLIKELY(backward == NULL)) {
         SUZERAIN_ERROR_NULL("failed to allocate space for transpose",
                              SUZERAIN_ENOMEM);
     }
@@ -375,6 +378,9 @@ underling_transpose_fftw_plan(
         underling_real *out,
         unsigned flags)
 {
+    if (SUZERAIN_UNLIKELY(transpose == NULL)) {
+        SUZERAIN_ERROR_NULL("transpose == NULL", SUZERAIN_EINVAL);
+    }
     return fftw_mpi_plan_many_transpose(transpose->d[0],
                                         transpose->d[1],
                                         transpose->howmany,
@@ -391,16 +397,16 @@ underling_problem_create(
         underling_grid grid,
         int howmany)
 {
-    if (grid == NULL) {
-        SUZERAIN_ERROR_NULL("non-NULL grid required", SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(grid == NULL)) {
+        SUZERAIN_ERROR_NULL("grid == NULL", SUZERAIN_EINVAL);
     }
-    if (howmany < 1) {
+    if (SUZERAIN_UNLIKELY(howmany < 1)) {
         SUZERAIN_ERROR_NULL("howmany >= 1 required", SUZERAIN_EINVAL);
     }
 
     // Create and initialize the problem workspace
     underling_problem p = calloc(1, sizeof(struct underling_problem_s));
-    if (p == NULL) {
+    if (SUZERAIN_UNLIKELY(p == NULL)) {
         SUZERAIN_ERROR_NULL("failed to allocate space for problem",
                              SUZERAIN_ENOMEM);
     }
@@ -506,7 +512,7 @@ underling_problem_create(
                                               pA_block[1],
                                               grid->pA_comm,
                                               /*flags*/0);
-    if (p->backwardA == NULL) {
+    if (SUZERAIN_UNLIKELY(p->backwardA == NULL)) {
         underling_problem_destroy(p);
         SUZERAIN_ERROR_NULL("failed creating p->backwardA",
                 SUZERAIN_EFAILED);
@@ -520,7 +526,7 @@ underling_problem_create(
                                               pB_block[1],
                                               grid->pB_comm,
                                               /*flags*/0);
-    if (p->backwardB == NULL) {
+    if (SUZERAIN_UNLIKELY(p->backwardB == NULL)) {
         underling_problem_destroy(p);
         SUZERAIN_ERROR_NULL("failed creating p->backwardB",
                 SUZERAIN_EFAILED);
@@ -528,7 +534,7 @@ underling_problem_create(
 
     // Physical towards wave MPI transpose: long in n0 to long in n1
     p->forwardB = underling_transpose_create_inverse(p->backwardB);
-    if (p->forwardB == NULL) {
+    if (SUZERAIN_UNLIKELY(p->forwardB == NULL)) {
         underling_problem_destroy(p);
         SUZERAIN_ERROR_NULL("failed creating p->forwardB",
                 SUZERAIN_EFAILED);
@@ -536,7 +542,7 @@ underling_problem_create(
 
     // Physical towards wave MPI transpose: long in n1 to long in n2
     p->forwardA = underling_transpose_create_inverse(p->backwardA);
-    if (p->forwardA == NULL) {
+    if (SUZERAIN_UNLIKELY(p->forwardA == NULL)) {
         underling_problem_destroy(p);
         SUZERAIN_ERROR_NULL("failed creating p->forwardA",
                 SUZERAIN_EFAILED);
@@ -561,7 +567,7 @@ size_t
 underling_local_memory(
         const underling_problem problem)
 {
-    if (problem == NULL) {
+    if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
 
@@ -578,7 +584,7 @@ underling_global_memory(
     const int error = MPI_Allreduce(
             MPI_IN_PLACE, &retval, 1, MPI_UNSIGNED_LONG,
             MPI_SUM, problem->grid->g_comm);
-    if (error) {
+    if (SUZERAIN_UNLIKELY(error)) {
         SUZERAIN_MPICHKR(error /* allreduce local_memory */);
         retval = 0;
     }
@@ -592,7 +598,7 @@ size_t
 underling_global_memory_optimum(
         const underling_problem problem)
 {
-    if (problem == NULL) {
+    if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
     const underling_grid grid = problem->grid;
@@ -620,10 +626,10 @@ underling_local(
         int *size,
         int *stride)
 {
-    if (n < 0 || n > 2) {
+    if (SUZERAIN_UNLIKELY(n < 0 || n > 2)) {
         SUZERAIN_ERROR_VAL("n < 0 or n > 2", SUZERAIN_EINVAL, 0);
     }
-    if (problem == NULL) {
+    if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
 
@@ -648,11 +654,11 @@ underling_local_extents(
         const underling_problem problem,
         int n)
 {
-    if (n < 0 || n > 2) {
+    if (SUZERAIN_UNLIKELY(n < 0 || n > 2)) {
         SUZERAIN_ERROR_VAL("n < 0 or n > 2",
                 SUZERAIN_EINVAL, UNDERLING_EXTENTS_INVALID);
     }
-    if (problem == NULL) {
+    if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_VAL("problem == NULL",
                 SUZERAIN_EINVAL, UNDERLING_EXTENTS_INVALID);
     }
@@ -694,15 +700,15 @@ underling_plan_create(
         unsigned direction_flags,
         unsigned rigor_flags)
 {
-    if (problem == NULL) {
-        SUZERAIN_ERROR_NULL("non-NULL problem required", SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(problem == NULL)) {
+        SUZERAIN_ERROR_NULL("problem == NULL", SUZERAIN_EINVAL);
     }
-    if (data == NULL) {
-        SUZERAIN_ERROR_NULL("non-NULL data required", SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(data == NULL)) {
+        SUZERAIN_ERROR_NULL("data == NULL", SUZERAIN_EINVAL);
     }
     const unsigned non_direction_mask =   ~UNDERLING_DIRECTION_FORWARD
                                         & ~UNDERLING_DIRECTION_BACKWARD;
-    if (direction_flags & non_direction_mask) {
+    if (SUZERAIN_UNLIKELY(direction_flags & non_direction_mask)) {
         SUZERAIN_ERROR_NULL(
             "direction_flags contains ~UNDERLING_DIRECTION_{FORWARD,BACKWARD}",
             SUZERAIN_EINVAL);
@@ -712,7 +718,7 @@ underling_plan_create(
                                     & ~FFTW_PATIENT
                                     & ~FFTW_EXHAUSTIVE
                                     & ~FFTW_WISDOM_ONLY;
-    if (rigor_flags & non_rigor_mask) {
+    if (SUZERAIN_UNLIKELY(rigor_flags & non_rigor_mask)) {
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
 
@@ -724,8 +730,8 @@ underling_plan_create(
 
     // Create and initialize the plan workspace
     underling_plan p = calloc(1, sizeof(struct underling_plan_s));
-    if (p == NULL) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for grid",
+    if (SUZERAIN_UNLIKELY(p == NULL)) {
+        SUZERAIN_ERROR_NULL("failed to allocate space for plan",
                              SUZERAIN_ENOMEM);
     }
     p->problem = problem;
@@ -735,7 +741,7 @@ underling_plan_create(
     if (direction_flags | UNDERLING_DIRECTION_BACKWARD) {
         p->plan_backwardA = underling_transpose_fftw_plan(
                 p->problem->backwardA, p->data, p->data, rigor_flags);
-        if (p->plan_backwardA == NULL) {
+        if (SUZERAIN_UNLIKELY(p->plan_backwardA == NULL)) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
                     "FFTW MPI returned NULL plan: plan_backwardA",
@@ -744,7 +750,7 @@ underling_plan_create(
 
         p->plan_backwardB = underling_transpose_fftw_plan(
                 p->problem->backwardB, p->data, p->data, rigor_flags);
-        if (p->plan_backwardB == NULL) {
+        if (SUZERAIN_UNLIKELY(p->plan_backwardB == NULL)) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
                     "FFTW MPI returned NULL plan: plan_backwardB",
@@ -757,7 +763,7 @@ underling_plan_create(
     if (direction_flags | UNDERLING_DIRECTION_FORWARD) {
         p->plan_forwardB = underling_transpose_fftw_plan(
                 p->problem->forwardB, p->data, p->data, rigor_flags);
-        if (p->plan_forwardB == NULL) {
+        if (SUZERAIN_UNLIKELY(p->plan_forwardB == NULL)) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
                     "FFTW MPI returned NULL plan: plan_forwardB",
@@ -766,7 +772,7 @@ underling_plan_create(
 
         p->plan_forwardA = underling_transpose_fftw_plan(
                 p->problem->forwardA, p->data, p->data, rigor_flags);
-        if (p->plan_forwardA == NULL) {
+        if (SUZERAIN_UNLIKELY(p->plan_forwardA == NULL)) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
                     "FFTW MPI returned NULL plan: plan_forwardA",
@@ -805,15 +811,15 @@ underling_plan_destroy(
 
 int
 underling_execute_backward(
-        underling_plan plan)
+        const underling_plan plan)
 {
-    if (plan == NULL) {
-        SUZERAIN_ERROR("non-NULL plan required", SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(plan == NULL)) {
+        SUZERAIN_ERROR("plan == NULL", SUZERAIN_EINVAL);
     }
 
     const int valid =    plan->plan_backwardA
                       && plan->plan_backwardB;
-    if (!valid) {
+    if (SUZERAIN_UNLIKELY(!valid)) {
         SUZERAIN_ERROR("plan has one or more NULL subplans",
                 SUZERAIN_EINVAL);
     }
@@ -826,14 +832,14 @@ underling_execute_backward(
 
 int
 underling_execute_forward(
-        underling_plan plan)
+        const underling_plan plan)
 {
-    if (plan == NULL) {
-        SUZERAIN_ERROR("non-NULL plan required", SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(plan == NULL)) {
+        SUZERAIN_ERROR("plan == NULL", SUZERAIN_EINVAL);
     }
     const int valid =    plan->plan_forwardB
                       && plan->plan_forwardA;
-    if (!valid) {
+    if (SUZERAIN_UNLIKELY(!valid)) {
         SUZERAIN_ERROR("plan has one or more NULL subplans",
                 SUZERAIN_EINVAL);
     }
