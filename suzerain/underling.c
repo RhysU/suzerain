@@ -39,8 +39,7 @@
 // *******************************************************************
 
 struct underling_grid_s {
-    int np0;
-    int nw0;
+    int n0;
     int n1;
     int n2;
     int pA;
@@ -71,8 +70,8 @@ struct underling_transpose_s {
 };
 
 typedef struct underling_extents { // Internal!
-    int local_nw0;
-    int local_nw0_start;
+    int local_n0;
+    int local_n0_start;
     int local_n1;
     int local_n1_start;
     int local_n2;
@@ -81,28 +80,23 @@ typedef struct underling_extents { // Internal!
 
 struct underling_problem_s {
     underling_grid grid;              // grid owns its resources
-    int nfields;                      // # of complex-valued state...
-    int howmany;                      // ...as a # of real values
+    int howmany;                      // # of real values to transpose
     underling_extents long_n2;        // Layout details for n2 long
     underling_extents long_n1;        // Layout details for n1 long
     underling_extents long_n0;        // Layout details for n0 long
-    underling_transpose tophysA;      // n2 long to n1 long
-    underling_transpose tophysB;      // n1 long to n0 long
-    underling_transpose towaveB;      // n0 long to n1 long
-    underling_transpose towaveA;      // n1 long to n2 long
+    underling_transpose backwardA;    // n2 long to n1 long
+    underling_transpose backwardB;    // n1 long to n0 long
+    underling_transpose forwardB;     // n0 long to n1 long
+    underling_transpose forwardA;     // n1 long to n2 long
     ptrdiff_t local_size;             // Max of all local sizes
 };
 
 struct underling_plan_s {
     underling_problem problem;         // problem owns its resources
-    fftw_plan transpose_tophysA;
-    fftw_plan c2c_tophysical_n1;
-    fftw_plan transpose_tophysB;
-    fftw_plan c2r_tophysical_n0;
-    fftw_plan r2c_towave_n0;
-    fftw_plan transpose_towaveA;
-    fftw_plan c2c_towave_n1;
-    fftw_plan transpose_towaveB;
+    fftw_plan plan_backwardA;
+    fftw_plan plan_backwardB;
+    fftw_plan plan_forwardA;
+    fftw_plan plan_forwardB;
     underling_real *data;              // API end-user owns resources
 };
 
@@ -152,21 +146,21 @@ underling_fprint_extents(
 underling_grid
 underling_grid_create(
         MPI_Comm comm,
-        int np0,
-        int np1,
-        int np2,
+        int n0,
+        int n1,
+        int n2,
         int pA,
         int pB)
 {
     // Sanity check incoming, non-MPI arguments
-    if (np0 < 1) {
-        SUZERAIN_ERROR_NULL("np0 >= 1 required", SUZERAIN_EINVAL);
+    if (n0 < 1) {
+        SUZERAIN_ERROR_NULL("n0 >= 1 required", SUZERAIN_EINVAL);
     }
-    if (np1 < 1) {
-        SUZERAIN_ERROR_NULL("np1 >= 1 required", SUZERAIN_EINVAL);
+    if (n1 < 1) {
+        SUZERAIN_ERROR_NULL("n1 >= 1 required", SUZERAIN_EINVAL);
     }
-    if (np2 < 1) {
-        SUZERAIN_ERROR_NULL("np2 >= 1 required", SUZERAIN_EINVAL);
+    if (n2 < 1) {
+        SUZERAIN_ERROR_NULL("n2 >= 1 required", SUZERAIN_EINVAL);
     }
     if (pA < 0) {
         SUZERAIN_ERROR_NULL("pA >= 0 required", SUZERAIN_EINVAL);
@@ -197,12 +191,6 @@ underling_grid_create(
             SUZERAIN_ERROR_NULL(reason, SUZERAIN_EFAILED);
         }
     }
-
-    // Determine the wave space dimensions in the n0 where
-    // n0 is only about half as long in wave space.
-    const int nw0 = np0/2 + 1;
-    const int n1  = np1;
-    const int n2  = np2;
 
     // Clone the communicator and create the 2D Cartesian topology
     MPI_Comm g_comm;
@@ -257,8 +245,7 @@ underling_grid_create(
                              SUZERAIN_ENOMEM);
     }
     // Copy the grid parameters to the grid workspace
-    g->np0         = np0;
-    g->nw0         = nw0;
+    g->n0          = n0;
     g->n1          = n1;
     g->n2          = n2;
     g->pA          = pA;
@@ -415,13 +402,13 @@ underling_transpose_fftw_plan(
 underling_problem
 underling_problem_create(
         underling_grid grid,
-        int nfields)
+        int howmany)
 {
     if (grid == NULL) {
         SUZERAIN_ERROR_NULL("non-NULL grid required", SUZERAIN_EINVAL);
     }
-    if (nfields < 1) {
-        SUZERAIN_ERROR_NULL("nfields >= 1 required", SUZERAIN_EINVAL);
+    if (howmany < 1) {
+        SUZERAIN_ERROR_NULL("howmany >= 1 required", SUZERAIN_EINVAL);
     }
 
     // Create and initialize the problem workspace
@@ -432,27 +419,26 @@ underling_problem_create(
     }
     // Copy the problem parameters to the problem workspace
     p->grid    = grid;
-    p->nfields = nfields;
-    p->howmany = nfields * sizeof(underling_complex)/sizeof(underling_real);
+    p->howmany = howmany;
 
     // Global pencil decomposition details
-    // ---------------------------------------------------------
-    // Long in n2:                         (nw0/pB x  n1/pA) x n2
-    // Long in n1: n2/pA x (nw0/pB x n1) = ( n2/pA x nw0/pB) x n1
-    // Long in n0: n1/pB x (n2/pA x nw0) = ( n1/pB x  n2/pA) x nw0
+    // -------------------------------------------------------
+    // Long in n2:                        (n0/pB x n1/pA) x n2
+    // Long in n1: n2/pA x (n0/pB x n1) = (n2/pA x n0/pB) x n1
+    // Long in n0: n1/pB x (n2/pA x n0) = (n1/pB x n2/pA) x n0
 
     // Fix {n2,n1,n0} dimension details in p->long_{n2,n1,n0}
-    p->long_n2.local_n2        = grid->n2;
-    p->long_n2.local_n2_start  = 0;
-    p->long_n1.local_n1        = grid->n1;
-    p->long_n1.local_n1_start  = 0;
-    p->long_n0.local_nw0       = grid->nw0;
-    p->long_n0.local_nw0_start = 0;
+    p->long_n2.local_n2       = grid->n2;
+    p->long_n2.local_n2_start = 0;
+    p->long_n1.local_n1       = grid->n1;
+    p->long_n1.local_n1_start = 0;
+    p->long_n0.local_n0       = grid->n0;
+    p->long_n0.local_n0_start = 0;
 
-    // Decompose {nw0,n1}/pB and store details in p->long_{(n2,n1),n0}
+    // Decompose {n0,n1}/pB and store details in p->long_{(n2,n1),n0}
     {
         ptrdiff_t local_d0, local_d0_start, local_d1, local_d1_start;
-        ptrdiff_t dB[2] = {grid->nw0, grid->n1}; // Never performed
+        ptrdiff_t dB[2] = {grid->n0, grid->n1}; // Never performed
         fftw_mpi_local_size_many_transposed(2, dB, p->howmany,
                 FFTW_MPI_DEFAULT_BLOCK, FFTW_MPI_DEFAULT_BLOCK, grid->pB_comm,
                 &local_d0, &local_d0_start, &local_d1, & local_d1_start);
@@ -460,12 +446,12 @@ underling_problem_create(
         assert(local_d0_start <= INT_MAX);
         assert(local_d1       <= INT_MAX);
         assert(local_d1_start <= INT_MAX);
-        p->long_n2.local_nw0       = local_d0;
-        p->long_n2.local_nw0_start = local_d0_start;
-        p->long_n1.local_nw0       = local_d0;
-        p->long_n1.local_nw0_start = local_d0_start;
-        p->long_n0.local_n1        = local_d1;
-        p->long_n0.local_n1_start  = local_d1_start;
+        p->long_n2.local_n0       = local_d0;
+        p->long_n2.local_n0_start = local_d0_start;
+        p->long_n1.local_n0       = local_d0;
+        p->long_n1.local_n0_start = local_d0_start;
+        p->long_n0.local_n1       = local_d1;
+        p->long_n0.local_n1_start = local_d1_start;
     }
 
     // Decompose {n1,n2}/pA and store details in p->long_{n2,(n1,n0)}
@@ -487,74 +473,74 @@ underling_problem_create(
         p->long_n0.local_n2_start = local_d1_start;
     }
 
-    // Transpose pA details: (nw0/pB x n1/pA) x n2 to n2/pA x (nw0/pB x n1)
-    const ptrdiff_t pA_d[2] = { p->long_n2.local_nw0 * grid->n1,
+    // Transpose pA details: (n0/pB x n1/pA) x n2 to n2/pA x (n0/pB x n1)
+    const ptrdiff_t pA_d[2] = { p->long_n2.local_n0 * grid->n1,
                                 grid->n2 };
-    ptrdiff_t pA_block[2]   = { p->long_n2.local_nw0 * p->long_n2.local_n1,
+    ptrdiff_t pA_block[2]   = { p->long_n2.local_n0 * p->long_n2.local_n1,
                                 p->long_n1.local_n2 };
     SUZERAIN_MPICHKN(MPI_Bcast(pA_block, 2, MPI_LONG, 0, grid->pA_comm));
 
-    // Transpose pB details: (n2/pA x nw0/pB) x n1 to n1/pB x (n2/pA x nw0)
-    const ptrdiff_t pB_d[2] = { p->long_n1.local_n2 * grid->nw0,
+    // Transpose pB details: (n2/pA x n0/pB) x n1 to n1/pB x (n2/pA x n0)
+    const ptrdiff_t pB_d[2] = { p->long_n1.local_n2 * grid->n0,
                                 grid->n1 };
-    ptrdiff_t pB_block[2]   = { p->long_n1.local_n2 * p->long_n1.local_nw0,
+    ptrdiff_t pB_block[2]   = { p->long_n1.local_n2 * p->long_n1.local_n0,
                                 p->long_n0.local_n1 };
     SUZERAIN_MPICHKN(MPI_Bcast(pB_block, 2, MPI_LONG, 0, grid->pB_comm));
 
     // Wave towards physical MPI transpose: long in n2 to long in n1
-    p->tophysA = underling_transpose_create(pA_d[0],
+    p->backwardA = underling_transpose_create(pA_d[0],
                                             pA_d[1],
                                             p->howmany,
                                             pA_block[0],
                                             pA_block[1],
                                             grid->pA_comm,
                                             /*flags*/0);
-    if (p->tophysA == NULL) {
+    if (p->backwardA == NULL) {
         underling_problem_destroy(p);
-        SUZERAIN_ERROR_NULL("failed creating p->tophysA",
+        SUZERAIN_ERROR_NULL("failed creating p->backwardA",
                 SUZERAIN_EFAILED);
     }
 
-    // Wave towards physical MPI transpose: long in n1 to long in nw0
-    p->tophysB = underling_transpose_create(pB_d[0],
+    // Wave towards physical MPI transpose: long in n1 to long in n0
+    p->backwardB = underling_transpose_create(pB_d[0],
                                             pB_d[1],
                                             p->howmany,
                                             pB_block[0],
                                             pB_block[1],
                                             grid->pB_comm,
                                             /*flags*/0);
-    if (p->tophysB == NULL) {
+    if (p->backwardB == NULL) {
         underling_problem_destroy(p);
-        SUZERAIN_ERROR_NULL("failed creating p->tophysB",
+        SUZERAIN_ERROR_NULL("failed creating p->backwardB",
                 SUZERAIN_EFAILED);
     }
 
     // Physical towards wave MPI transpose: long in n0 to long in n1
-    p->towaveB = underling_transpose_create_inverse(p->tophysB);
-    if (p->towaveB == NULL) {
+    p->forwardB = underling_transpose_create_inverse(p->backwardB);
+    if (p->forwardB == NULL) {
         underling_problem_destroy(p);
-        SUZERAIN_ERROR_NULL("failed creating p->towaveB",
+        SUZERAIN_ERROR_NULL("failed creating p->forwardB",
                 SUZERAIN_EFAILED);
     }
 
     // Physical towards wave MPI transpose: long in n1 to long in n2
-    p->towaveA = underling_transpose_create_inverse(p->tophysA);
-    if (p->towaveA == NULL) {
+    p->forwardA = underling_transpose_create_inverse(p->backwardA);
+    if (p->forwardA == NULL) {
         underling_problem_destroy(p);
-        SUZERAIN_ERROR_NULL("failed creating p->towaveA",
+        SUZERAIN_ERROR_NULL("failed creating p->forwardA",
                 SUZERAIN_EFAILED);
     }
 
     // p->local_size is overall maximum of all local_size values
-    p->local_size = p->tophysA->local_size;
-    if (p->local_size < p->tophysB->local_size) {
-        p->local_size = p->tophysB->local_size;
+    p->local_size = p->backwardA->local_size;
+    if (p->local_size < p->backwardB->local_size) {
+        p->local_size = p->backwardB->local_size;
     }
-    if (p->local_size < p->towaveB->local_size) {
-        p->local_size = p->towaveB->local_size;
+    if (p->local_size < p->forwardB->local_size) {
+        p->local_size = p->forwardB->local_size;
     }
-    if (p->local_size < p->towaveA->local_size) {
-        p->local_size = p->towaveA->local_size;
+    if (p->local_size < p->forwardA->local_size) {
+        p->local_size = p->forwardA->local_size;
     }
 
     return p;
@@ -571,7 +557,7 @@ size_t
 underling_optimum_local_size(
         const underling_problem problem)
 {
-    const size_t global_data =   problem->grid->nw0
+    const size_t global_data =   problem->grid->n0
                                * problem->grid->n1
                                * problem->grid->n2
                                * problem->howmany;
@@ -587,7 +573,7 @@ underling_local_long_n2(
         const underling_problem problem,
         int *start,
         int *size,
-        int *stride_complex)
+        int *stride)
 {
     if (problem == NULL) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
@@ -595,24 +581,24 @@ underling_local_long_n2(
 
     const underling_extents * const e = &problem->long_n2;
     if (start) {
-        start[0] = e->local_nw0_start;
+        start[0] = e->local_n0_start;
         start[1] = e->local_n1_start;
         start[2] = e->local_n2_start;
     }
     if (size) {
-        size[0] = e->local_nw0;
+        size[0] = e->local_n0;
         size[1] = e->local_n1;
         size[2] = e->local_n2;
     }
-    // Long in n2: (nw0/pB x  n1/pA) x n2
+    // Long in n2: (n0/pB x  n1/pA) x n2
     // Row-major storage
-    if (stride_complex) {
-        stride_complex[2] = problem->nfields;
-        stride_complex[1] = stride_complex[2] * e->local_n2;
-        stride_complex[0] = stride_complex[1] * e->local_n1;
+    if (stride) {
+        stride[2] = problem->howmany;
+        stride[1] = stride[2] * e->local_n2;
+        stride[0] = stride[1] * e->local_n1;
     }
 
-    return problem->nfields * e->local_nw0 * e->local_n1 * e->local_n2;
+    return problem->howmany * e->local_n0 * e->local_n1 * e->local_n2;
 }
 
 size_t
@@ -620,7 +606,7 @@ underling_local_long_n1(
         const underling_problem problem,
         int *start,
         int *size,
-        int *stride_complex)
+        int *stride)
 {
     if (problem == NULL) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
@@ -628,24 +614,24 @@ underling_local_long_n1(
 
     const underling_extents * const e = &problem->long_n1;
     if (start) {
-        start[0] = e->local_nw0_start;
+        start[0] = e->local_n0_start;
         start[1] = e->local_n1_start;
         start[2] = e->local_n2_start;
     }
     if (size) {
-        size[0] = e->local_nw0;
+        size[0] = e->local_n0;
         size[1] = e->local_n1;
         size[2] = e->local_n2;
     }
-    // Long in n1: n2/pA x (nw0/pB x n1) = ( n2/pA x nw0/pB) x n1
+    // Long in n1: n2/pA x (n0/pB x n1) = (n2/pA x n0/pB) x n1
     // Row-major storage
-    if (stride_complex) {
-        stride_complex[1] = problem->nfields;
-        stride_complex[0] = stride_complex[1] * e->local_n1;
-        stride_complex[2] = stride_complex[0] * e->local_nw0;
+    if (stride) {
+        stride[1] = problem->howmany;
+        stride[0] = stride[1] * e->local_n1;
+        stride[2] = stride[0] * e->local_n0;
     }
 
-    return problem->nfields * e->local_nw0 * e->local_n1 * e->local_n2;
+    return problem->howmany * e->local_n0 * e->local_n1 * e->local_n2;
 }
 
 size_t
@@ -653,7 +639,7 @@ underling_local_long_n0(
         const underling_problem problem,
         int *start,
         int *size,
-        int *stride_real)
+        int *stride)
 {
     if (problem == NULL) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
@@ -661,24 +647,24 @@ underling_local_long_n0(
 
     const underling_extents * const e = &problem->long_n0;
     if (start) {
-        start[0] = e->local_nw0_start;
+        start[0] = e->local_n0_start;
         start[1] = e->local_n1_start;
         start[2] = e->local_n2_start;
     }
     if (size) {
-        size[0] = e->local_nw0;
+        size[0] = e->local_n0;
         size[1] = e->local_n1;
         size[2] = e->local_n2;
     }
-    // Long in n0: n1/pB x (n2/pA x nw0) = ( n1/pB x  n2/pA) x nw0
+    // Long in n0: n1/pB x (n2/pA x n0) = ( n1/pB x  n2/pA) x n0
     // Row-major storage
-    if (stride_real) {
-        stride_real[0] = problem->nfields;
-        stride_real[2] = stride_real[0] * e->local_nw0;
-        stride_real[1] = stride_real[2] * e->local_n2;
+    if (stride) {
+        stride[0] = problem->howmany;
+        stride[2] = stride[0] * e->local_n0;
+        stride[1] = stride[2] * e->local_n2;
     }
 
-    return problem->nfields * e->local_nw0 * e->local_n1 * e->local_n2;
+    return problem->howmany * e->local_n0 * e->local_n1 * e->local_n2;
 }
 
 void
@@ -687,21 +673,21 @@ underling_problem_destroy(
 {
     if (problem) {
         problem->grid = NULL;
-        if (problem->tophysA) {
-            underling_transpose_destroy(problem->tophysA);
-            problem->tophysA = NULL;
+        if (problem->backwardA) {
+            underling_transpose_destroy(problem->backwardA);
+            problem->backwardA = NULL;
         }
-        if (problem->tophysB) {
-            underling_transpose_destroy(problem->tophysB);
-            problem->tophysB = NULL;
+        if (problem->backwardB) {
+            underling_transpose_destroy(problem->backwardB);
+            problem->backwardB = NULL;
         }
-        if (problem->towaveB) {
-            underling_transpose_destroy(problem->towaveB);
-            problem->towaveB = NULL;
+        if (problem->forwardB) {
+            underling_transpose_destroy(problem->forwardB);
+            problem->forwardB = NULL;
         }
-        if (problem->towaveA) {
-            underling_transpose_destroy(problem->towaveA);
-            problem->towaveA = NULL;
+        if (problem->forwardA) {
+            underling_transpose_destroy(problem->forwardA);
+            problem->forwardA = NULL;
         }
         free(problem);
     }
@@ -711,8 +697,7 @@ underling_plan
 underling_plan_create(
         underling_problem problem,
         underling_real * data,
-        int will_perform_c2r,
-        int will_perform_r2c,
+        unsigned direction_flags,
         unsigned rigor_flags)
 {
     if (problem == NULL) {
@@ -721,18 +706,26 @@ underling_plan_create(
     if (data == NULL) {
         SUZERAIN_ERROR_NULL("non-NULL data required", SUZERAIN_EINVAL);
     }
-    if (!(will_perform_c2r || will_perform_r2c)) {
+    const unsigned non_direction_mask =   ~UNDERLING_DIRECTION_FORWARD
+                                        & ~UNDERLING_DIRECTION_BACKWARD;
+    if (direction_flags & non_direction_mask) {
         SUZERAIN_ERROR_NULL(
-                "one or both of will_perform_{c2r,r2c} required",
-                SUZERAIN_EINVAL);
+            "direction_flags contains ~UNDERLING_DIRECTION_{FORWARD,BACKWARD}",
+            SUZERAIN_EINVAL);
     }
-    const unsigned non_rigor_flag_mask =   ~FFTW_ESTIMATE
-                                         & ~FFTW_MEASURE
-                                         & ~FFTW_PATIENT
-                                         & ~FFTW_EXHAUSTIVE
-                                         & ~FFTW_WISDOM_ONLY;
-    if (rigor_flags & non_rigor_flag_mask) {
+    const unsigned non_rigor_mask =   ~FFTW_ESTIMATE
+                                    & ~FFTW_MEASURE
+                                    & ~FFTW_PATIENT
+                                    & ~FFTW_EXHAUSTIVE
+                                    & ~FFTW_WISDOM_ONLY;
+    if (rigor_flags & non_rigor_mask) {
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
+    }
+
+    // Perform both directions if neither specified
+    if (direction_flags == 0) {
+        direction_flags =   UNDERLING_DIRECTION_FORWARD
+                          | UNDERLING_DIRECTION_BACKWARD;
     }
 
     // Create and initialize the plan workspace
@@ -744,52 +737,47 @@ underling_plan_create(
     p->problem = problem;
     p->data = data;
 
-    /* Create FFTW plans to transform from wave to physical space */
-    if (will_perform_c2r) {
-        p->transpose_tophysA = underling_transpose_fftw_plan(
-                p->problem->tophysA, p->data, p->data, rigor_flags);
-        if (p->transpose_tophysA == NULL) {
+    // Create FFTW MPI plans to transpose from long in n2 to long in 20
+    if (direction_flags | UNDERLING_DIRECTION_BACKWARD) {
+        p->plan_backwardA = underling_transpose_fftw_plan(
+                p->problem->backwardA, p->data, p->data, rigor_flags);
+        if (p->plan_backwardA == NULL) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
-                    "FFTW MPI returned NULL plan: transpose_tophysA",
+                    "FFTW MPI returned NULL plan: plan_backwardA",
                     SUZERAIN_EFAILED);
         }
 
-        p->transpose_tophysB = underling_transpose_fftw_plan(
-                p->problem->tophysB, p->data, p->data, rigor_flags);
-        if (p->transpose_tophysB == NULL) {
+        p->plan_backwardB = underling_transpose_fftw_plan(
+                p->problem->backwardB, p->data, p->data, rigor_flags);
+        if (p->plan_backwardB == NULL) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
-                    "FFTW MPI returned NULL plan: transpose_tophysB",
+                    "FFTW MPI returned NULL plan: plan_backwardB",
                     SUZERAIN_EFAILED);
         }
 
-        /* TODO Create FFT plan: c2c_tophysical_n1 */
-        /* TODO Create FFT plan: c2r_tophysical_n0 */
     }
 
-    /* Create FFTW plans to transform from physical to wave space */
-    if (will_perform_r2c) {
-        p->transpose_towaveB = underling_transpose_fftw_plan(
-                p->problem->towaveB, p->data, p->data, rigor_flags);
-        if (p->transpose_towaveB == NULL) {
+    // Create FFTW MPI plans to transpose from long in n0 to long in n2
+    if (direction_flags | UNDERLING_DIRECTION_FORWARD) {
+        p->plan_forwardB = underling_transpose_fftw_plan(
+                p->problem->forwardB, p->data, p->data, rigor_flags);
+        if (p->plan_forwardB == NULL) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
-                    "FFTW MPI returned NULL plan: transpose_towaveB",
+                    "FFTW MPI returned NULL plan: plan_forwardB",
                     SUZERAIN_EFAILED);
         }
 
-        p->transpose_towaveA = underling_transpose_fftw_plan(
-                p->problem->towaveA, p->data, p->data, rigor_flags);
-        if (p->transpose_towaveA == NULL) {
+        p->plan_forwardA = underling_transpose_fftw_plan(
+                p->problem->forwardA, p->data, p->data, rigor_flags);
+        if (p->plan_forwardA == NULL) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
-                    "FFTW MPI returned NULL plan: transpose_towaveA",
+                    "FFTW MPI returned NULL plan: plan_forwardA",
                     SUZERAIN_EFAILED);
         }
-
-        /* TODO Create FFT plan: r2c_towave_n0 */
-        /* TODO Create FFT plan: c2c_towave_n1 */
     }
 
     return p;
@@ -801,85 +789,63 @@ underling_plan_destroy(
 {
     if (plan) {
         plan->problem = NULL;
-        if (plan->transpose_tophysA) {
-            fftw_destroy_plan(plan->transpose_tophysA);
-            plan->transpose_tophysA = NULL;
+        if (plan->plan_backwardA) {
+            fftw_destroy_plan(plan->plan_backwardA);
+            plan->plan_backwardA = NULL;
         }
-        if (plan->c2c_tophysical_n1) {
-            fftw_destroy_plan(plan->c2c_tophysical_n1);
-            plan->c2c_tophysical_n1 = NULL;
+        if (plan->plan_backwardB) {
+            fftw_destroy_plan(plan->plan_backwardB);
+            plan->plan_backwardB = NULL;
         }
-        if (plan->transpose_tophysB) {
-            fftw_destroy_plan(plan->transpose_tophysB);
-            plan->transpose_tophysB = NULL;
+        if (plan->plan_forwardA) {
+            fftw_destroy_plan(plan->plan_forwardA);
+            plan->plan_forwardA = NULL;
         }
-        if (plan->c2r_tophysical_n0) {
-            fftw_destroy_plan(plan->c2r_tophysical_n0);
-            plan->c2r_tophysical_n0 = NULL;
-        }
-        if (plan->r2c_towave_n0) {
-            fftw_destroy_plan(plan->r2c_towave_n0);
-            plan->r2c_towave_n0 = NULL;
-        }
-        if (plan->transpose_towaveA) {
-            fftw_destroy_plan(plan->transpose_towaveA);
-            plan->transpose_towaveA = NULL;
-        }
-        if (plan->c2c_towave_n1) {
-            fftw_destroy_plan(plan->c2c_towave_n1);
-            plan->c2c_towave_n1 = NULL;
-        }
-        if (plan->transpose_towaveB) {
-            fftw_destroy_plan(plan->transpose_towaveB);
-            plan->transpose_towaveB = NULL;
+        if (plan->plan_forwardB) {
+            fftw_destroy_plan(plan->plan_forwardB);
+            plan->plan_forwardB = NULL;
         }
         plan->data = NULL;
     }
 }
 
 int
-underling_execute_c2r(
+underling_execute_backward(
         underling_plan plan)
 {
     if (plan == NULL) {
         SUZERAIN_ERROR("non-NULL plan required", SUZERAIN_EINVAL);
     }
 
-    /* FIXME check valid c2c_tophysical_n1, c2r_tophysical_n0 as well */
-    const int valid =       plan->transpose_tophysA
-                         && plan->transpose_tophysB;
+    const int valid =    plan->plan_backwardA
+                      && plan->plan_backwardB;
     if (!valid) {
-        SUZERAIN_ERROR("plan has one or more NULL c2r subplans",
+        SUZERAIN_ERROR("plan has one or more NULL subplans",
                 SUZERAIN_EINVAL);
     }
 
-    fftw_execute(plan->transpose_tophysA);
-/* FIXME fftw_execute(plan->c2c_tophysical_n1); */
-    fftw_execute(plan->transpose_tophysB);
-/* FIXME fftw_execute(plan->c2r_tophysical_n0); */
+    fftw_execute(plan->plan_backwardA);
+    fftw_execute(plan->plan_backwardB);
 
     return SUZERAIN_SUCCESS;
 }
 
 int
-underling_execute_r2c(
+underling_execute_forward(
         underling_plan plan)
 {
     if (plan == NULL) {
         SUZERAIN_ERROR("non-NULL plan required", SUZERAIN_EINVAL);
     }
-    /* FIXME check valid r2c_towave_n0, c2c_towave_n1 as well */
-    const int valid =    plan->transpose_towaveA
-                      && plan->transpose_towaveB;
+    const int valid =    plan->plan_forwardB
+                      && plan->plan_forwardA;
     if (!valid) {
-        SUZERAIN_ERROR("plan has one or more NULL r2c subplans",
+        SUZERAIN_ERROR("plan has one or more NULL subplans",
                 SUZERAIN_EINVAL);
     }
 
-/* FIXME fftw_execute(plan->r2c_towave_n0); */
-    fftw_execute(plan->transpose_towaveB);
-/* FIXME fftw_execute(plan->c2c_towave_n1); */
-    fftw_execute(plan->transpose_towaveA);
+    fftw_execute(plan->plan_forwardB);
+    fftw_execute(plan->plan_forwardA);
 
     return SUZERAIN_SUCCESS;
 }
@@ -895,9 +861,9 @@ underling_fprint_grid(
     } else {
 
         fprintf(output_file,
-                "{np0=%d,nw0=%d,n1=%d,n2=%d}"
+                "{n0=%d,n1=%d,n2=%d}"
                 ",{pA=%d,pB=%d}",
-                grid->np0, grid->nw0, grid->n1, grid->n2,
+                grid->n0, grid->n1, grid->n2,
                 grid->pA, grid->pB);
 
         char buffer[MPI_MAX_OBJECT_NAME];
@@ -965,8 +931,8 @@ underling_fprint_problem(
     if (!problem) {
         fprintf(output_file, "NULL");
     } else {
-        fprintf(output_file,"{nfields=%d,howmany=%d,local_size=%ld}",
-                problem->nfields, problem->howmany, problem->local_size);
+        fprintf(output_file,"{howmany=%d,local_size=%ld}",
+                problem->howmany, problem->local_size);
         fprintf(output_file,"{long_n2:");
         underling_fprint_extents(&(problem->long_n2), output_file);
         fprintf(output_file, "}");
@@ -976,21 +942,21 @@ underling_fprint_problem(
         fprintf(output_file,"{long_n0:");
         underling_fprint_extents(&(problem->long_n0), output_file);
         fprintf(output_file, "}");
-        fprintf(output_file,"{tophysA:");
+        fprintf(output_file,"{backwardA:");
         underling_fprint_transpose(
-                problem->tophysA, output_file);
+                problem->backwardA, output_file);
         fprintf(output_file, "}");
-        fprintf(output_file,"{tophysB:");
+        fprintf(output_file,"{backwardB:");
         underling_fprint_transpose(
-                problem->tophysB, output_file);
+                problem->backwardB, output_file);
         fprintf(output_file, "}");
-        fprintf(output_file,"{towaveB:");
+        fprintf(output_file,"{forwardB:");
         underling_fprint_transpose(
-                problem->towaveB, output_file);
+                problem->forwardB, output_file);
         fprintf(output_file, "}");
-        fprintf(output_file,"{towaveA:");
+        fprintf(output_file,"{forwardA:");
         underling_fprint_transpose(
-                problem->towaveA, output_file);
+                problem->forwardA, output_file);
         fprintf(output_file, "}");
     }
     fprintf(output_file, "}");
@@ -1005,51 +971,27 @@ underling_fprint_plan(
         fprintf(output_file, "NULL");
     } else {
 
-        fprintf(output_file, "{underling_plan_c2r:");
-        if (plan->transpose_tophysA) {
-            fprintf(output_file, "{transpose_tophysA:");
-            fftw_fprint_plan(plan->transpose_tophysA, output_file);
+        if (plan->plan_backwardA) {
+            fprintf(output_file, "{plan_backwardA:");
+            fftw_fprint_plan(plan->plan_backwardA, output_file);
             fprintf(output_file, "}");
         }
-        if (plan->c2c_tophysical_n1) {
-            fprintf(output_file, "{c2c_tophysical_n1:");
-            fftw_fprint_plan(plan->c2c_tophysical_n1, output_file);
+        if (plan->plan_backwardB) {
+            fprintf(output_file, "{plan_backwardB:");
+            fftw_fprint_plan(plan->plan_backwardB, output_file);
             fprintf(output_file, "}");
         }
-        if (plan->transpose_tophysB) {
-            fprintf(output_file, "{plan->transpose_tophysB:");
-            fftw_fprint_plan(plan->transpose_tophysB, output_file);
-            fprintf(output_file, "}");
-        }
-        if (plan->c2r_tophysical_n0) {
-            fprintf(output_file, "{plan->c2r_tophysical_n0:");
-            fftw_fprint_plan(plan->c2r_tophysical_n0, output_file);
-            fprintf(output_file, "}");
-        }
-        fprintf(output_file, "}");
 
-        fprintf(output_file, "{underling_plan_r2c:");
-        if (plan->r2c_towave_n0) {
-            fprintf(output_file, "{r2c_towave_n0:");
-            fftw_fprint_plan(plan->r2c_towave_n0, output_file);
+        if (plan->plan_forwardA) {
+            fprintf(output_file, "{plan_forwardB:");
+            fftw_fprint_plan(plan->plan_forwardB, output_file);
             fprintf(output_file, "}");
         }
-        if (plan->transpose_towaveA) {
-            fprintf(output_file, "{transpose_towaveA:");
-            fftw_fprint_plan(plan->transpose_towaveA, output_file);
+        if (plan->plan_forwardB) {
+            fprintf(output_file, "{plan_forwardA:");
+            fftw_fprint_plan(plan->plan_forwardA, output_file);
             fprintf(output_file, "}");
         }
-        if (plan->c2c_towave_n1) {
-            fprintf(output_file, "{c2c_towave_n1:");
-            fftw_fprint_plan(plan->c2c_towave_n1, output_file);
-            fprintf(output_file, "}");
-        }
-        if (plan->transpose_towaveB) {
-            fprintf(output_file, "{transpose_towaveB:");
-            fftw_fprint_plan(plan->transpose_towaveB, output_file);
-            fprintf(output_file, "}");
-        }
-        fprintf(output_file, "}");
     }
 }
 
@@ -1062,8 +1004,8 @@ underling_fprint_extents(
         fprintf(output_file, "NULL");
     } else {
         fprintf(output_file, "[%d,%d)x[%d,%d)x[%d,%d)",
-                extents->local_nw0_start,
-                extents->local_nw0_start + extents->local_nw0,
+                extents->local_n0_start,
+                extents->local_n0_start + extents->local_n0,
                 extents->local_n1_start,
                 extents->local_n1_start + extents->local_n1,
                 extents->local_n2_start,

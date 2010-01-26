@@ -49,14 +49,19 @@ __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /* TODO Add appropriate grid/problem/plan const-ness */
-/* TODO Move private structures to a private header */
 
-typedef double         underling_real;       /**< Real-valued scalar */
-typedef underling_real underling_complex[2]; /**< Complex-valued scalar */
-
+typedef double underling_real;     /**< Real-valued scalar */
 typedef struct underling_grid_s    *underling_grid;
 typedef struct underling_problem_s *underling_problem;
 typedef struct underling_plan_s    *underling_plan;
+
+/** Flag indicating a transform from long in \c n0 to long in \c n2. */
+#define UNDERLING_DIRECTION_FORWARD  (1U << 0)
+/** Flag indicating a transform from long in \c n2 to long in \c n0. */
+#define UNDERLING_DIRECTION_BACKWARD (1U << 1)
+/** Convenience flag indicating transforming in both directions */
+#define UNDERLING_DIRECTION_BOTH \
+        (UNDERLING_DIRECTION_FORWARD | UNDERLING_DIRECTION_BACKWARD)
 
 underling_grid
 underling_grid_create(
@@ -74,7 +79,7 @@ underling_grid_destroy(
 underling_problem
 underling_problem_create(
         underling_grid grid,
-        int nfields);
+        int howmany);
 
 void
 underling_problem_destroy(
@@ -93,40 +98,39 @@ underling_local_long_n2(
         const underling_problem problem,
         int *start,
         int *size,
-        int *stride_complex);
+        int *stride);
 
 size_t
 underling_local_long_n1(
         const underling_problem problem,
         int *start,
         int *size,
-        int *stride_complex);
+        int *stride);
 
 size_t
 underling_local_long_n0(
         const underling_problem problem,
         int *start,
         int *size,
-        int *stride_real);
+        int *stride);
 
 underling_plan
 underling_plan_create(
         underling_problem problem,
         underling_real * data,
-        int will_perform_c2r,
-        int will_perform_r2c,
-        unsigned rigor_flags);
+        unsigned direction_flags,
+        unsigned fftw_rigor_flags);
 
 void
 underling_plan_destroy(
         underling_plan plan);
 
 int
-underling_execute_c2r(
+underling_execute_backward(
         underling_plan plan);
 
 int
-underling_execute_r2c(
+underling_execute_forward(
         underling_plan plan);
 
 void

@@ -101,7 +101,8 @@ int main(int argc, char *argv[])
                          << underling_optimum_local_size(problem));
     underling_real * const data
         = (underling_real *) fftw_malloc(local_size*sizeof(underling_real));
-    underling_plan plan = underling_plan_create(problem, data, 1, 1, 0);
+    underling_plan plan = underling_plan_create(
+            problem, data, UNDERLING_DIRECTION_BOTH, 0);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -116,10 +117,10 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* Transform to physical space */
-    LOG4CXX_DEBUG(logger, "underling_execute_c2r");
-    underling_execute_c2r(plan);
+    LOG4CXX_DEBUG(logger, "underling_execute_backward");
+    underling_execute_backward(plan);
     for (int i = 0; i < local_size; ++i) {
-        LOG4CXX_TRACE(logger, "post c2r data["
+        LOG4CXX_TRACE(logger, "post backward data["
                 << std::setw(8) << std::setfill('0') << i << "] = "
                 << std::setw(8) << std::setfill(' ') << data[i]);
     }
@@ -127,10 +128,10 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* Transform to wave space */
-    LOG4CXX_DEBUG(logger, "underling_execute_r2c");
-    underling_execute_r2c(plan);
+    LOG4CXX_DEBUG(logger, "underling_execute_forward");
+    underling_execute_forward(plan);
     for (int i = 0; i < local_size; ++i) {
-        LOG4CXX_TRACE(logger, "post r2c data["
+        LOG4CXX_TRACE(logger, "post forward data["
                 << std::setw(8) << std::setfill('0') << i << "] = "
                 << std::setw(8) << std::setfill(' ') << data[i]);
     }
@@ -140,8 +141,7 @@ int main(int argc, char *argv[])
     /* Primitive check for data corruption */
     int corruption = 0;
     const size_t long_n2_data
-        =   sizeof(underling_complex)/sizeof(underling_real)
-          * underling_local_long_n2(problem, NULL, NULL, NULL);
+        = underling_local_long_n2(problem, NULL, NULL, NULL);
     for (int i = 0; i < long_n2_data; ++i) {
         if (data[i] != (procid*10000 + i)) {
             LOG4CXX_WARN(logger, "test result discrepancy at index " << i);
