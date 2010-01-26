@@ -74,9 +74,7 @@ typedef struct underling_extents { // Internal!
 struct underling_problem_s {
     underling_grid grid;              // grid owns its resources
     int howmany;                      // # of real values to transpose
-    underling_extents long_n2;        // Layout details for n2 long
-    underling_extents long_n1;        // Layout details for n1 long
-    underling_extents long_n0;        // Layout details for n0 long
+    underling_extents long_n[3];      // Layout details for n{0,1,2} long
     underling_transpose backwardA;    // n2 long to n1 long
     underling_transpose backwardB;    // n1 long to n0 long
     underling_transpose forwardB;     // n0 long to n1 long
@@ -418,12 +416,12 @@ underling_problem_create(
     // Long in n0: n1/pB x (n2/pA x n0) = (n1/pB x n2/pA) x n0
 
     // Fix {n2,n1,n0} dimension details in p->long_{n2,n1,n0}
-    p->long_n2.size[2]  = grid->n2;
-    p->long_n2.start[2] = 0;
-    p->long_n1.size[1]  = grid->n1;
-    p->long_n1.start[1] = 0;
-    p->long_n0.size[0]  = grid->n0;
-    p->long_n0.start[0] = 0;
+    p->long_n[2].size[2]  = grid->n2;
+    p->long_n[2].start[2] = 0;
+    p->long_n[1].size[1]  = grid->n1;
+    p->long_n[1].start[1] = 0;
+    p->long_n[0].size[0]  = grid->n0;
+    p->long_n[0].start[0] = 0;
 
     // Decompose {n0,n1}/pB and store details in p->long_{(n2,n1),n0}
     {
@@ -436,12 +434,12 @@ underling_problem_create(
         assert(local_d0_start <= INT_MAX);
         assert(local_d1       <= INT_MAX);
         assert(local_d1_start <= INT_MAX);
-        p->long_n2.size[0]  = local_d0;
-        p->long_n2.start[0] = local_d0_start;
-        p->long_n1.size[0]  = local_d0;
-        p->long_n1.start[0] = local_d0_start;
-        p->long_n0.size[1]  = local_d1;
-        p->long_n0.start[1] = local_d1_start;
+        p->long_n[2].size[0]  = local_d0;
+        p->long_n[2].start[0] = local_d0_start;
+        p->long_n[1].size[0]  = local_d0;
+        p->long_n[1].start[0] = local_d0_start;
+        p->long_n[0].size[1]  = local_d1;
+        p->long_n[0].start[1] = local_d1_start;
     }
 
     // Decompose {n1,n2}/pA and store details in p->long_{n2,(n1,n0)}
@@ -455,26 +453,26 @@ underling_problem_create(
         assert(local_d0_start <= INT_MAX);
         assert(local_d1       <= INT_MAX);
         assert(local_d1_start <= INT_MAX);
-        p->long_n2.size[1]  = local_d0;
-        p->long_n2.start[1] = local_d0_start;
-        p->long_n1.size[2]  = local_d1;
-        p->long_n1.start[2] = local_d1_start;
-        p->long_n0.size[2]  = local_d1;
-        p->long_n0.start[2] = local_d1_start;
+        p->long_n[2].size[1]  = local_d0;
+        p->long_n[2].start[1] = local_d0_start;
+        p->long_n[1].size[2]  = local_d1;
+        p->long_n[1].start[2] = local_d1_start;
+        p->long_n[0].size[2]  = local_d1;
+        p->long_n[0].start[2] = local_d1_start;
     }
 
     // Transpose pA details: (n0/pB x n1/pA) x n2 to n2/pA x (n0/pB x n1)
-    const ptrdiff_t pA_d[2] = { p->long_n2.size[0] * grid->n1,
+    const ptrdiff_t pA_d[2] = { p->long_n[2].size[0] * grid->n1,
                                 grid->n2 };
-    ptrdiff_t pA_block[2]   = { p->long_n2.size[0] * p->long_n2.size[1],
-                                p->long_n1.size[2] };
+    ptrdiff_t pA_block[2]   = { p->long_n[2].size[0] * p->long_n[2].size[1],
+                                p->long_n[1].size[2] };
     SUZERAIN_MPICHKN(MPI_Bcast(pA_block, 2, MPI_LONG, 0, grid->pA_comm));
 
     // Transpose pB details: (n2/pA x n0/pB) x n1 to n1/pB x (n2/pA x n0)
-    const ptrdiff_t pB_d[2] = { p->long_n1.size[2] * grid->n0,
+    const ptrdiff_t pB_d[2] = { p->long_n[1].size[2] * grid->n0,
                                 grid->n1 };
-    ptrdiff_t pB_block[2]   = { p->long_n1.size[2] * p->long_n1.size[0],
-                                p->long_n0.size[1] };
+    ptrdiff_t pB_block[2]   = { p->long_n[1].size[2] * p->long_n[1].size[0],
+                                p->long_n[0].size[1] };
     SUZERAIN_MPICHKN(MPI_Bcast(pB_block, 2, MPI_LONG, 0, grid->pB_comm));
 
     // FIXME: Establish strides
@@ -571,7 +569,7 @@ underling_local_long_n2(
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
 
-    const underling_extents * const e = &problem->long_n2;
+    const underling_extents * const e = &problem->long_n[2];
     if (start) {
         start[0] = e->start[0];
         start[1] = e->start[1];
@@ -604,7 +602,7 @@ underling_local_long_n1(
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
 
-    const underling_extents * const e = &problem->long_n1;
+    const underling_extents * const e = &problem->long_n[1];
     if (start) {
         start[0] = e->start[0];
         start[1] = e->start[1];
@@ -637,7 +635,7 @@ underling_local_long_n0(
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
 
-    const underling_extents * const e = &problem->long_n0;
+    const underling_extents * const e = &problem->long_n[0];
     if (start) {
         start[0] = e->start[0];
         start[1] = e->start[1];
@@ -925,15 +923,11 @@ underling_fprint_problem(
     } else {
         fprintf(output_file,"{howmany=%d,local_size=%ld}",
                 problem->howmany, problem->local_size);
-        fprintf(output_file,"{long_n2:");
-        underling_fprint_extents(&(problem->long_n2), output_file);
-        fprintf(output_file, "}");
-        fprintf(output_file,"{long_n1:");
-        underling_fprint_extents(&(problem->long_n1), output_file);
-        fprintf(output_file, "}");
-        fprintf(output_file,"{long_n0:");
-        underling_fprint_extents(&(problem->long_n0), output_file);
-        fprintf(output_file, "}");
+        for (int i = 2; i >= 0; --i) {
+            fprintf(output_file,"{long_n%d:", i);
+            underling_fprint_extents(&problem->long_n[i], output_file);
+            fprintf(output_file, "}");
+        }
         fprintf(output_file,"{backwardA:");
         underling_fprint_transpose(
                 problem->backwardA, output_file);
