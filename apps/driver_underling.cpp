@@ -95,11 +95,30 @@ int main(int argc, char *argv[])
         close(piperead);
     }
 
+    /* Report memory usage characteristics */
+    const size_t local_memory
+            = underling_local_memory(problem);
+    const size_t local_memory_optimum
+            = underling_local_memory_optimum(problem);
+    LOG4CXX_DEBUG(logger,    "problem local memory "
+                          << local_memory
+                          << " versus optimum "
+                          << local_memory_optimum
+                          << ", ratio = "
+                          << ((double)local_memory)/local_memory_optimum);
+    const size_t global_memory
+            = underling_global_memory(problem); // Collective
+    const size_t global_memory_optimum
+            = underling_global_memory_optimum(problem);
+    ONLYPROC0(LOG4CXX_INFO(logger,
+            "problem global memory "
+              << global_memory
+              << " versus optimum "
+              << global_memory_optimum
+              << ", ratio = "
+              << ((double)global_memory)/global_memory_optimum));
+
     /* Allocate storage and create a plan */
-    const size_t local_memory = underling_local_memory(problem);
-    LOG4CXX_DEBUG(logger, "problem local_memory = " << local_memory);
-    LOG4CXX_DEBUG(logger, "problem local_memory_optimum = "
-                         << underling_local_memory_optimum(problem));
     underling_real * const data
         = (underling_real *) fftw_malloc(local_memory*sizeof(underling_real));
     underling_plan plan = underling_plan_create(
@@ -118,7 +137,7 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* Transform to physical space */
-    LOG4CXX_DEBUG(logger, "underling_execute_backward");
+    LOG4CXX_TRACE(logger, "underling_execute_backward");
     underling_execute_backward(plan);
     for (int i = 0; i < local_memory; ++i) {
         LOG4CXX_TRACE(logger, "post backward data["
@@ -129,7 +148,7 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* Transform to wave space */
-    LOG4CXX_DEBUG(logger, "underling_execute_forward");
+    LOG4CXX_TRACE(logger, "underling_execute_forward");
     underling_execute_forward(plan);
     for (int i = 0; i < local_memory; ++i) {
         LOG4CXX_TRACE(logger, "post forward data["

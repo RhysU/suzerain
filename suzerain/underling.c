@@ -71,7 +71,7 @@ struct underling_problem_s {
     underling_transpose backwardB;    // n1 long to n0 long
     underling_transpose forwardB;     // n0 long to n1 long
     underling_transpose forwardA;     // n1 long to n2 long
-    ptrdiff_t local_memory;           // Max of all transpose local sizes
+    size_t local_memory;              // Max of all transpose local sizes
 };
 
 struct underling_plan_s {
@@ -561,22 +561,55 @@ size_t
 underling_local_memory(
         const underling_problem problem)
 {
+    if (problem == NULL) {
+        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
+    }
+
     return problem->local_memory;
+}
+
+size_t
+underling_global_memory(
+        const underling_problem problem)
+{
+    // unsigned long values for safety in heterogeneous environments.
+    unsigned long int retval = underling_local_memory(problem);
+
+    const int error = MPI_Allreduce(
+            MPI_IN_PLACE, &retval, 1, MPI_UNSIGNED_LONG,
+            MPI_SUM, problem->grid->g_comm);
+    if (error) {
+        SUZERAIN_MPICHKR(error /* allreduce local_memory */);
+        retval = 0;
+    }
+
+    assert(retval <= (size_t)(-1)); // Ensure retval <=  maximum size_t
+
+    return retval;
+}
+
+size_t
+underling_global_memory_optimum(
+        const underling_problem problem)
+{
+    if (problem == NULL) {
+        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
+    }
+    const underling_grid grid = problem->grid;
+    return problem->howmany * grid->n[0] * grid->n[1] * grid->n[2];
 }
 
 size_t
 underling_local_memory_optimum(
         const underling_problem problem)
 {
-    const size_t global_data =   problem->grid->n[0]
-                               * problem->grid->n[1]
-                               * problem->grid->n[2]
-                               * problem->howmany;
+    const size_t global_memory = underling_global_memory_optimum(problem);
+    const size_t nprocessors   = problem->grid->pA *problem->grid->pB;
+    const size_t result        = global_memory / nprocessors;
+    const size_t remainder     = global_memory % nprocessors;
 
-    const size_t nprocessors =   problem->grid->pA
-                               * problem->grid->pB;
-
-    return global_data/nprocessors;
+    // Round up result iff necessary and our rank is low enough
+    return result + (!!remainder)*(problem->grid->g_rank < remainder);
 }
 
 size_t

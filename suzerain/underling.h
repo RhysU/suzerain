@@ -115,6 +115,13 @@ size_t
 underling_local_memory_optimum(
         const underling_problem problem);
 
+size_t
+underling_global_memory(
+        const underling_problem problem);
+
+size_t
+underling_global_memory_optimum(
+        const underling_problem problem);
 
 underling_plan
 underling_plan_create(
