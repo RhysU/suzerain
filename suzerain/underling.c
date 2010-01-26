@@ -66,12 +66,9 @@ struct underling_transpose_s {
 };
 
 typedef struct underling_extents { // Internal!
-    int local_n0;
-    int local_n0_start;
-    int local_n1;
-    int local_n1_start;
-    int local_n2;
-    int local_n2_start;
+    int start[3];
+    int size[3];
+    int stride[3];
 } underling_extents;
 
 struct underling_problem_s {
@@ -421,12 +418,12 @@ underling_problem_create(
     // Long in n0: n1/pB x (n2/pA x n0) = (n1/pB x n2/pA) x n0
 
     // Fix {n2,n1,n0} dimension details in p->long_{n2,n1,n0}
-    p->long_n2.local_n2       = grid->n2;
-    p->long_n2.local_n2_start = 0;
-    p->long_n1.local_n1       = grid->n1;
-    p->long_n1.local_n1_start = 0;
-    p->long_n0.local_n0       = grid->n0;
-    p->long_n0.local_n0_start = 0;
+    p->long_n2.size[2]  = grid->n2;
+    p->long_n2.start[2] = 0;
+    p->long_n1.size[1]  = grid->n1;
+    p->long_n1.start[1] = 0;
+    p->long_n0.size[0]  = grid->n0;
+    p->long_n0.start[0] = 0;
 
     // Decompose {n0,n1}/pB and store details in p->long_{(n2,n1),n0}
     {
@@ -439,12 +436,12 @@ underling_problem_create(
         assert(local_d0_start <= INT_MAX);
         assert(local_d1       <= INT_MAX);
         assert(local_d1_start <= INT_MAX);
-        p->long_n2.local_n0       = local_d0;
-        p->long_n2.local_n0_start = local_d0_start;
-        p->long_n1.local_n0       = local_d0;
-        p->long_n1.local_n0_start = local_d0_start;
-        p->long_n0.local_n1       = local_d1;
-        p->long_n0.local_n1_start = local_d1_start;
+        p->long_n2.size[0]  = local_d0;
+        p->long_n2.start[0] = local_d0_start;
+        p->long_n1.size[0]  = local_d0;
+        p->long_n1.start[0] = local_d0_start;
+        p->long_n0.size[1]  = local_d1;
+        p->long_n0.start[1] = local_d1_start;
     }
 
     // Decompose {n1,n2}/pA and store details in p->long_{n2,(n1,n0)}
@@ -458,27 +455,29 @@ underling_problem_create(
         assert(local_d0_start <= INT_MAX);
         assert(local_d1       <= INT_MAX);
         assert(local_d1_start <= INT_MAX);
-        p->long_n2.local_n1       = local_d0;
-        p->long_n2.local_n1_start = local_d0_start;
-        p->long_n1.local_n2       = local_d1;
-        p->long_n1.local_n2_start = local_d1_start;
-        p->long_n0.local_n2       = local_d1;
-        p->long_n0.local_n2_start = local_d1_start;
+        p->long_n2.size[1]  = local_d0;
+        p->long_n2.start[1] = local_d0_start;
+        p->long_n1.size[2]  = local_d1;
+        p->long_n1.start[2] = local_d1_start;
+        p->long_n0.size[2]  = local_d1;
+        p->long_n0.start[2] = local_d1_start;
     }
 
     // Transpose pA details: (n0/pB x n1/pA) x n2 to n2/pA x (n0/pB x n1)
-    const ptrdiff_t pA_d[2] = { p->long_n2.local_n0 * grid->n1,
+    const ptrdiff_t pA_d[2] = { p->long_n2.size[0] * grid->n1,
                                 grid->n2 };
-    ptrdiff_t pA_block[2]   = { p->long_n2.local_n0 * p->long_n2.local_n1,
-                                p->long_n1.local_n2 };
+    ptrdiff_t pA_block[2]   = { p->long_n2.size[0] * p->long_n2.size[1],
+                                p->long_n1.size[2] };
     SUZERAIN_MPICHKN(MPI_Bcast(pA_block, 2, MPI_LONG, 0, grid->pA_comm));
 
     // Transpose pB details: (n2/pA x n0/pB) x n1 to n1/pB x (n2/pA x n0)
-    const ptrdiff_t pB_d[2] = { p->long_n1.local_n2 * grid->n0,
+    const ptrdiff_t pB_d[2] = { p->long_n1.size[2] * grid->n0,
                                 grid->n1 };
-    ptrdiff_t pB_block[2]   = { p->long_n1.local_n2 * p->long_n1.local_n0,
-                                p->long_n0.local_n1 };
+    ptrdiff_t pB_block[2]   = { p->long_n1.size[2] * p->long_n1.size[0],
+                                p->long_n0.size[1] };
     SUZERAIN_MPICHKN(MPI_Bcast(pB_block, 2, MPI_LONG, 0, grid->pB_comm));
+
+    // FIXME: Establish strides
 
     // Wave towards physical MPI transpose: long in n2 to long in n1
     p->backwardA = underling_transpose_create(pA_d[0],
@@ -574,24 +573,24 @@ underling_local_long_n2(
 
     const underling_extents * const e = &problem->long_n2;
     if (start) {
-        start[0] = e->local_n0_start;
-        start[1] = e->local_n1_start;
-        start[2] = e->local_n2_start;
+        start[0] = e->start[0];
+        start[1] = e->start[1];
+        start[2] = e->start[2];
     }
     if (size) {
-        size[0] = e->local_n0;
-        size[1] = e->local_n1;
-        size[2] = e->local_n2;
+        size[0] = e->size[0];
+        size[1] = e->size[1];
+        size[2] = e->size[2];
     }
     // Long in n2: (n0/pB x  n1/pA) x n2
     // Row-major storage
     if (stride) {
         stride[2] = problem->howmany;
-        stride[1] = stride[2] * e->local_n2;
-        stride[0] = stride[1] * e->local_n1;
+        stride[1] = stride[2] * e->size[2];
+        stride[0] = stride[1] * e->size[1];
     }
 
-    return problem->howmany * e->local_n0 * e->local_n1 * e->local_n2;
+    return problem->howmany * e->size[0] * e->size[1] * e->size[2];
 }
 
 size_t
@@ -607,24 +606,24 @@ underling_local_long_n1(
 
     const underling_extents * const e = &problem->long_n1;
     if (start) {
-        start[0] = e->local_n0_start;
-        start[1] = e->local_n1_start;
-        start[2] = e->local_n2_start;
+        start[0] = e->start[0];
+        start[1] = e->start[1];
+        start[2] = e->start[2];
     }
     if (size) {
-        size[0] = e->local_n0;
-        size[1] = e->local_n1;
-        size[2] = e->local_n2;
+        size[0] = e->size[0];
+        size[1] = e->size[1];
+        size[2] = e->size[2];
     }
     // Long in n1: n2/pA x (n0/pB x n1) = (n2/pA x n0/pB) x n1
     // Row-major storage
     if (stride) {
         stride[1] = problem->howmany;
-        stride[0] = stride[1] * e->local_n1;
-        stride[2] = stride[0] * e->local_n0;
+        stride[0] = stride[1] * e->size[1];
+        stride[2] = stride[0] * e->size[0];
     }
 
-    return problem->howmany * e->local_n0 * e->local_n1 * e->local_n2;
+    return problem->howmany * e->size[0] * e->size[1] * e->size[2];
 }
 
 size_t
@@ -640,24 +639,24 @@ underling_local_long_n0(
 
     const underling_extents * const e = &problem->long_n0;
     if (start) {
-        start[0] = e->local_n0_start;
-        start[1] = e->local_n1_start;
-        start[2] = e->local_n2_start;
+        start[0] = e->start[0];
+        start[1] = e->start[1];
+        start[2] = e->start[2];
     }
     if (size) {
-        size[0] = e->local_n0;
-        size[1] = e->local_n1;
-        size[2] = e->local_n2;
+        size[0] = e->size[0];
+        size[1] = e->size[1];
+        size[2] = e->size[2];
     }
     // Long in n0: n1/pB x (n2/pA x n0) = ( n1/pB x  n2/pA) x n0
     // Row-major storage
     if (stride) {
         stride[0] = problem->howmany;
-        stride[2] = stride[0] * e->local_n0;
-        stride[1] = stride[2] * e->local_n2;
+        stride[2] = stride[0] * e->size[0];
+        stride[1] = stride[2] * e->size[2];
     }
 
-    return problem->howmany * e->local_n0 * e->local_n1 * e->local_n2;
+    return problem->howmany * e->size[0] * e->size[1] * e->size[2];
 }
 
 void
@@ -997,11 +996,11 @@ underling_fprint_extents(
         fprintf(output_file, "NULL");
     } else {
         fprintf(output_file, "[%d,%d)x[%d,%d)x[%d,%d)",
-                extents->local_n0_start,
-                extents->local_n0_start + extents->local_n0,
-                extents->local_n1_start,
-                extents->local_n1_start + extents->local_n1,
-                extents->local_n2_start,
-                extents->local_n2_start + extents->local_n2);
+                extents->start[0],
+                extents->start[0] + extents->size[0],
+                extents->start[1],
+                extents->start[1] + extents->size[1],
+                extents->start[2],
+                extents->start[2] + extents->size[2]);
     }
 }
