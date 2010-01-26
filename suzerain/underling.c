@@ -55,17 +55,13 @@ struct underling_grid_s {
 
 typedef struct underling_transpose_s * underling_transpose; // Internal!
 struct underling_transpose_s {
-    ptrdiff_t d0;
-    ptrdiff_t d1;
+    ptrdiff_t d[2];
     ptrdiff_t howmany;
-    ptrdiff_t block0;
-    ptrdiff_t block1;
-    MPI_Comm comm;                    // underling_grid owns resource
+    ptrdiff_t block[2];
+    MPI_Comm comm;              // underling_grid owns resource
     unsigned flags;
-    ptrdiff_t local_d0;
-    ptrdiff_t local_d0_start;
-    ptrdiff_t local_d1;
-    ptrdiff_t local_d1_start;
+    ptrdiff_t local[2];
+    ptrdiff_t local_start[2];
     ptrdiff_t local_size;
 };
 
@@ -301,27 +297,26 @@ underling_transpose_create(
     }
 
     // Fix struct values known from arguments
-    t->d0      = d0;
-    t->d1      = d1;
-    t->howmany = howmany;
-    t->block0  = block0;
-    t->block1  = block1;
-    t->comm    = comm;
-    t->flags   = flags;
+    t->d[0]     = d0;
+    t->d[1]     = d1;
+    t->howmany  = howmany;
+    t->block[0] = block0;
+    t->block[1] = block1;
+    t->comm     = comm;
+    t->flags    = flags;
 
     // Fix struct details obtainable via FFTW MPI call
-    const ptrdiff_t d[2] = { t->d0, t->d1 };
     t->local_size = fftw_mpi_local_size_many_transposed(
-                                           /*rank*/sizeof(d)/sizeof(d[0]),
-                                            d,
+                                            /*rank*/2,
+                                            t->d,
                                             t->howmany,
-                                            t->block0,
-                                            t->block1,
+                                            t->block[0],
+                                            t->block[1],
                                             t->comm,
-                                            &(t->local_d0),
-                                            &(t->local_d0_start),
-                                            &(t->local_d1),
-                                            &(t->local_d1_start));
+                                            &t->local[0],
+                                            &t->local_start[0],
+                                            &t->local[1],
+                                            &t->local_start[1]);
 
     return t;
 }
@@ -345,28 +340,27 @@ underling_transpose_create_inverse(
     }
 
     // Fix struct values known from inverting forward plan
-    backward->d0      = forward->d1;
-    backward->d1      = forward->d0;
-    backward->howmany = forward->howmany;
-    backward->block0  = forward->block1;
-    backward->block1  = forward->block0;
-    backward->comm    = forward->comm;
-    backward->flags   = forward->flags;
+    backward->d[0]     = forward->d[1];
+    backward->d[1]     = forward->d[0];
+    backward->howmany  = forward->howmany;
+    backward->block[0] = forward->block[1];
+    backward->block[1] = forward->block[0];
+    backward->comm     = forward->comm;
+    backward->flags    = forward->flags;
     // Unsure of how block sizes should be flipped for inversion
 
     // Fix struct details obtainable via FFTW MPI call
-    const ptrdiff_t d[2] = { backward->d0, backward->d1 };
     backward->local_size = fftw_mpi_local_size_many_transposed(
-                                           /*rank*/sizeof(d)/sizeof(d[0]),
-                                            d,
+                                           /*rank*/2,
+                                            backward->d,
                                             backward->howmany,
-                                            backward->block0,
-                                            backward->block1,
+                                            backward->block[0],
+                                            backward->block[1],
                                             backward->comm,
-                                            &(backward->local_d0),
-                                            &(backward->local_d0_start),
-                                            &(backward->local_d1),
-                                            &(backward->local_d1_start));
+                                            &backward->local[0],
+                                            &backward->local_start[0],
+                                            &backward->local[1],
+                                            &backward->local_start[1]);
 
     return backward;
 }
@@ -387,16 +381,15 @@ underling_transpose_fftw_plan(
         underling_real *out,
         unsigned flags)
 {
-    return fftw_mpi_plan_many_transpose(
-            transpose->d0,
-            transpose->d1,
-            transpose->howmany,
-            transpose->block0,
-            transpose->block1,
-            in,
-            out,
-            transpose->comm,
-            transpose->flags | flags);
+    return fftw_mpi_plan_many_transpose(transpose->d[0],
+                                        transpose->d[1],
+                                        transpose->howmany,
+                                        transpose->block[0],
+                                        transpose->block[1],
+                                        in,
+                                        out,
+                                        transpose->comm,
+                                        transpose->flags | flags);
 }
 
 underling_problem
@@ -907,17 +900,17 @@ underling_fprint_transpose(
     } else {
         fprintf(output_file,
                 "{d0=%ld,d1=%ld},{block0=%ld,block1=%ld},",
-                transpose->d0, transpose->d1,
-                transpose->block0, transpose->block1);
+                transpose->d[0], transpose->d[1],
+                transpose->block[0], transpose->block[1]);
         fprintf(output_file,
                 "{comm=%x,flags=%u,local_size=%ld},",
                 transpose->comm,transpose->flags,transpose->local_size);
         fprintf(output_file,
-                "{local_d0=%ld,local_d0_start=%ld},",
-                transpose->local_d0,transpose->local_d0_start);
+                "{local0=%ld,local_start0=%ld},",
+                transpose->local[0],transpose->local_start[0]);
         fprintf(output_file,
-                "{local_d1=%ld,local_d1_start=%ld}",
-                transpose->local_d1,transpose->local_d1_start);
+                "{local1=%ld,local_start1=%ld}",
+                transpose->local[1],transpose->local_start[1]);
     }
     fprintf(output_file, "}");
 }
