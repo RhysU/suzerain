@@ -39,9 +39,7 @@
 // *******************************************************************
 
 struct underling_grid_s {
-    int n0;
-    int n1;
-    int n2;
+    int n[3];
     int pA;
     int pB;
     MPI_Comm g_comm;
@@ -236,9 +234,9 @@ underling_grid_create(
                              SUZERAIN_ENOMEM);
     }
     // Copy the grid parameters to the grid workspace
-    g->n0          = n0;
-    g->n1          = n1;
-    g->n2          = n2;
+    g->n[0]        = n0;
+    g->n[1]        = n1;
+    g->n[2]        = n2;
     g->pA          = pA;
     g->pB          = pB;
     g->g_comm      = g_comm;
@@ -416,17 +414,17 @@ underling_problem_create(
     // Long in n0: n1/pB x (n2/pA x n0) = (n1/pB x n2/pA) x n0
 
     // Fix {n2,n1,n0} dimension details in p->long_{n2,n1,n0}
-    p->long_n[2].size[2]  = grid->n2;
+    p->long_n[2].size[2]  = grid->n[2];
     p->long_n[2].start[2] = 0;
-    p->long_n[1].size[1]  = grid->n1;
+    p->long_n[1].size[1]  = grid->n[1];
     p->long_n[1].start[1] = 0;
-    p->long_n[0].size[0]  = grid->n0;
+    p->long_n[0].size[0]  = grid->n[0];
     p->long_n[0].start[0] = 0;
 
     // Decompose {n0,n1}/pB and store details in p->long_{(n2,n1),n0}
     {
         ptrdiff_t local_d0, local_d0_start, local_d1, local_d1_start;
-        ptrdiff_t dB[2] = {grid->n0, grid->n1}; // Never performed
+        ptrdiff_t dB[2] = {grid->n[0], grid->n[1]}; // Never performed
         fftw_mpi_local_size_many_transposed(2, dB, p->howmany,
                 FFTW_MPI_DEFAULT_BLOCK, FFTW_MPI_DEFAULT_BLOCK, grid->pB_comm,
                 &local_d0, &local_d0_start, &local_d1, & local_d1_start);
@@ -445,7 +443,7 @@ underling_problem_create(
     // Decompose {n1,n2}/pA and store details in p->long_{n2,(n1,n0)}
     {
         ptrdiff_t local_d0, local_d0_start, local_d1, local_d1_start;
-        ptrdiff_t dA[2] = {grid->n1, grid->n2}; // Never performed
+        ptrdiff_t dA[2] = {grid->n[1], grid->n[2]}; // Never performed
         fftw_mpi_local_size_many_transposed(2, dA, p->howmany,
                 FFTW_MPI_DEFAULT_BLOCK, FFTW_MPI_DEFAULT_BLOCK, grid->pA_comm,
                 &local_d0, &local_d0_start, &local_d1, &local_d1_start);
@@ -462,15 +460,15 @@ underling_problem_create(
     }
 
     // Transpose pA details: (n0/pB x n1/pA) x n2 to n2/pA x (n0/pB x n1)
-    const ptrdiff_t pA_d[2] = { p->long_n[2].size[0] * grid->n1,
-                                grid->n2 };
+    const ptrdiff_t pA_d[2] = { p->long_n[2].size[0] * grid->n[1],
+                                grid->n[2] };
     ptrdiff_t pA_block[2]   = { p->long_n[2].size[0] * p->long_n[2].size[1],
                                 p->long_n[1].size[2] };
     SUZERAIN_MPICHKN(MPI_Bcast(pA_block, 2, MPI_LONG, 0, grid->pA_comm));
 
     // Transpose pB details: (n2/pA x n0/pB) x n1 to n1/pB x (n2/pA x n0)
-    const ptrdiff_t pB_d[2] = { p->long_n[1].size[2] * grid->n0,
-                                grid->n1 };
+    const ptrdiff_t pB_d[2] = { p->long_n[1].size[2] * grid->n[0],
+                                grid->n[1] };
     ptrdiff_t pB_block[2]   = { p->long_n[1].size[2] * p->long_n[1].size[0],
                                 p->long_n[0].size[1] };
     SUZERAIN_MPICHKN(MPI_Bcast(pB_block, 2, MPI_LONG, 0, grid->pB_comm));
@@ -479,12 +477,12 @@ underling_problem_create(
 
     // Wave towards physical MPI transpose: long in n2 to long in n1
     p->backwardA = underling_transpose_create(pA_d[0],
-                                            pA_d[1],
-                                            p->howmany,
-                                            pA_block[0],
-                                            pA_block[1],
-                                            grid->pA_comm,
-                                            /*flags*/0);
+                                              pA_d[1],
+                                              p->howmany,
+                                              pA_block[0],
+                                              pA_block[1],
+                                              grid->pA_comm,
+                                              /*flags*/0);
     if (p->backwardA == NULL) {
         underling_problem_destroy(p);
         SUZERAIN_ERROR_NULL("failed creating p->backwardA",
@@ -493,12 +491,12 @@ underling_problem_create(
 
     // Wave towards physical MPI transpose: long in n1 to long in n0
     p->backwardB = underling_transpose_create(pB_d[0],
-                                            pB_d[1],
-                                            p->howmany,
-                                            pB_block[0],
-                                            pB_block[1],
-                                            grid->pB_comm,
-                                            /*flags*/0);
+                                              pB_d[1],
+                                              p->howmany,
+                                              pB_block[0],
+                                              pB_block[1],
+                                              grid->pB_comm,
+                                              /*flags*/0);
     if (p->backwardB == NULL) {
         underling_problem_destroy(p);
         SUZERAIN_ERROR_NULL("failed creating p->backwardB",
@@ -547,9 +545,9 @@ size_t
 underling_optimum_local_size(
         const underling_problem problem)
 {
-    const size_t global_data =   problem->grid->n0
-                               * problem->grid->n1
-                               * problem->grid->n2
+    const size_t global_data =   problem->grid->n[0]
+                               * problem->grid->n[1]
+                               * problem->grid->n[2]
                                * problem->howmany;
 
     const size_t nprocessors =   problem->grid->pA
@@ -853,7 +851,7 @@ underling_fprint_grid(
         fprintf(output_file,
                 "{n0=%d,n1=%d,n2=%d}"
                 ",{pA=%d,pB=%d}",
-                grid->n0, grid->n1, grid->n2,
+                grid->n[0], grid->n[1], grid->n[2],
                 grid->pA, grid->pB);
 
         char buffer[MPI_MAX_OBJECT_NAME];
