@@ -116,6 +116,14 @@ underling_local_memory_optimum(
         const underling_problem problem);
 
 size_t
+underling_local_memory_maximum(
+        const underling_problem problem);
+
+size_t
+underling_local_memory_minimum(
+        const underling_problem problem);
+
+size_t
 underling_global_memory(
         const underling_problem problem);
 
@@ -136,11 +144,11 @@ underling_plan_destroy(
 
 int
 underling_execute_backward(
-        underling_plan plan);
+        const underling_plan plan);
 
 int
 underling_execute_forward(
-        underling_plan plan);
+        const underling_plan plan);
 
 void
 underling_fprint_grid(
@@ -150,6 +158,11 @@ underling_fprint_grid(
 void
 underling_fprint_problem(
         const underling_problem problem,
+        FILE *output_file);
+
+void
+underling_fprint_extents(
+        const underling_extents *extents,
         FILE *output_file);
 
 void

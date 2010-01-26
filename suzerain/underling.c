@@ -112,14 +112,14 @@ underling_transpose_fftw_plan(
         underling_real *out,
         unsigned flags);
 
+size_t
+underling_local_memory_allreduce(
+        const underling_problem problem,
+        MPI_Op op);
+
 void
 underling_fprint_transpose(
         const underling_transpose transpose,
-        FILE *output_file);
-
-void
-underling_fprint_extents(
-        const underling_extents *extents,
         FILE *output_file);
 
 // **************************************************************************
@@ -272,7 +272,7 @@ underling_grid_destroy(underling_grid grid)
     }
 }
 
-
+static
 underling_transpose
 underling_transpose_create(
         ptrdiff_t d0,
@@ -315,6 +315,7 @@ underling_transpose_create(
     return t;
 }
 
+static
 underling_transpose
 underling_transpose_create_inverse(
         const underling_transpose forward)
@@ -362,6 +363,7 @@ underling_transpose_create_inverse(
     return backward;
 }
 
+static
 void
 underling_transpose_destroy(
         underling_transpose transpose)
@@ -371,6 +373,7 @@ underling_transpose_destroy(
     }
 }
 
+static
 fftw_plan
 underling_transpose_fftw_plan(
         const underling_transpose transpose,
@@ -574,24 +577,50 @@ underling_local_memory(
     return problem->local_memory;
 }
 
+static
 size_t
-underling_global_memory(
-        const underling_problem problem)
+underling_local_memory_allreduce(
+        const underling_problem problem,
+        MPI_Op op)
 {
-    // unsigned long values for safety in heterogeneous environments.
-    unsigned long int retval = underling_local_memory(problem);
+    if (SUZERAIN_UNLIKELY(problem == NULL)) {
+        SUZERAIN_ERROR_NULL("problem == NULL", SUZERAIN_EINVAL);
+    }
 
+    // Use unsigned long values for safety in heterogeneous environments.
+    assert(((size_t)-1) <= ((unsigned long int)-1)); // "Type safety"
+
+    unsigned long int retval = underling_local_memory(problem);
     const int error = MPI_Allreduce(
             MPI_IN_PLACE, &retval, 1, MPI_UNSIGNED_LONG,
-            MPI_SUM, problem->grid->g_comm);
+            op, problem->grid->g_comm);
     if (SUZERAIN_UNLIKELY(error)) {
         SUZERAIN_MPICHKR(error /* allreduce local_memory */);
         retval = 0;
     }
 
-    assert(retval <= (size_t)(-1)); // Ensure retval <=  maximum size_t
-
     return retval;
+}
+
+size_t
+underling_local_memory_maximum(
+        const underling_problem problem)
+{
+    return underling_local_memory_allreduce(problem, MPI_MAX);
+}
+
+size_t
+underling_local_memory_minimum(
+        const underling_problem problem)
+{
+    return underling_local_memory_allreduce(problem, MPI_MIN);
+}
+
+size_t
+underling_global_memory(
+        const underling_problem problem)
+{
+    return underling_local_memory_allreduce(problem, MPI_SUM);
 }
 
 size_t
