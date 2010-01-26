@@ -74,7 +74,8 @@ int main(int argc, char *argv[])
 
     /* Create a grid and a problem*/
     underling_grid grid = underling_grid_create(
-            MPI_COMM_WORLD, griddef.nx(), griddef.ny(), griddef.nz(), 0, 0);
+            MPI_COMM_WORLD, griddef.nx(), griddef.ny(), griddef.nz(),
+            griddef.pa(), griddef.pb());
     underling_problem problem = underling_problem_create(grid, 1);
 
     { // Dump grid and problem information
