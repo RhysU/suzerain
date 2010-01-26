@@ -95,19 +95,19 @@ int main(int argc, char *argv[])
     }
 
     /* Allocate storage and create a plan */
-    const size_t local_size = underling_local_size(problem);
-    LOG4CXX_DEBUG(logger, "problem local_size = " << local_size);
-    LOG4CXX_DEBUG(logger, "problem optimum_local_size = "
-                         << underling_optimum_local_size(problem));
+    const size_t local_memory = underling_local_memory(problem);
+    LOG4CXX_DEBUG(logger, "problem local_memory = " << local_memory);
+    LOG4CXX_DEBUG(logger, "problem local_memory_optimum = "
+                         << underling_local_memory_optimum(problem));
     underling_real * const data
-        = (underling_real *) fftw_malloc(local_size*sizeof(underling_real));
+        = (underling_real *) fftw_malloc(local_memory*sizeof(underling_real));
     underling_plan plan = underling_plan_create(
             problem, data, UNDERLING_DIRECTION_BOTH, 0);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* Initialize test data in wave space */
-    for (int i = 0; i < local_size; ++i) {
+    for (int i = 0; i < local_memory; ++i) {
         data[i] = procid*10000 + i;
         LOG4CXX_TRACE(logger, "initial data["
                 << std::setw(8) << std::setfill('0') << i << "] = "
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
     /* Transform to physical space */
     LOG4CXX_DEBUG(logger, "underling_execute_backward");
     underling_execute_backward(plan);
-    for (int i = 0; i < local_size; ++i) {
+    for (int i = 0; i < local_memory; ++i) {
         LOG4CXX_TRACE(logger, "post backward data["
                 << std::setw(8) << std::setfill('0') << i << "] = "
                 << std::setw(8) << std::setfill(' ') << data[i]);
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     /* Transform to wave space */
     LOG4CXX_DEBUG(logger, "underling_execute_forward");
     underling_execute_forward(plan);
-    for (int i = 0; i < local_size; ++i) {
+    for (int i = 0; i < local_memory; ++i) {
         LOG4CXX_TRACE(logger, "post forward data["
                 << std::setw(8) << std::setfill('0') << i << "] = "
                 << std::setw(8) << std::setfill(' ') << data[i]);
@@ -140,8 +140,7 @@ int main(int argc, char *argv[])
 
     /* Primitive check for data corruption */
     int corruption = 0;
-    const size_t long_n2_data
-        = underling_local_long_n2(problem, NULL, NULL, NULL);
+    const size_t long_n2_data = underling_local(problem, 2, NULL, NULL, NULL);
     for (int i = 0; i < long_n2_data; ++i) {
         if (data[i] != (procid*10000 + i)) {
             LOG4CXX_WARN(logger, "test result discrepancy at index " << i);

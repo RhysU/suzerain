@@ -55,6 +55,15 @@ typedef struct underling_grid_s    *underling_grid;
 typedef struct underling_problem_s *underling_problem;
 typedef struct underling_plan_s    *underling_plan;
 
+typedef struct underling_extents {
+    int    start[3];
+    int    size[3];
+    int    stride[3];
+    size_t total_extent;
+} underling_extents;
+
+extern const underling_extents UNDERLING_EXTENTS_INVALID;
+
 /** Flag indicating a transform from long in \c n0 to long in \c n2. */
 #define UNDERLING_DIRECTION_FORWARD  (1U << 0)
 /** Flag indicating a transform from long in \c n2 to long in \c n0. */
@@ -86,33 +95,26 @@ underling_problem_destroy(
         underling_problem problem);
 
 size_t
-underling_local_size(
+underling_local(
+        const underling_problem problem,
+        int n,
+        int *start,
+        int *size,
+        int *stride);
+
+underling_extents
+underling_local_extents(
+        const underling_problem problem,
+        int n);
+
+size_t
+underling_local_memory(
         const underling_problem problem);
 
 size_t
-underling_optimum_local_size(
+underling_local_memory_optimum(
         const underling_problem problem);
 
-size_t
-underling_local_long_n2(
-        const underling_problem problem,
-        int *start,
-        int *size,
-        int *stride);
-
-size_t
-underling_local_long_n1(
-        const underling_problem problem,
-        int *start,
-        int *size,
-        int *stride);
-
-size_t
-underling_local_long_n0(
-        const underling_problem problem,
-        int *start,
-        int *size,
-        int *stride);
 
 underling_plan
 underling_plan_create(
