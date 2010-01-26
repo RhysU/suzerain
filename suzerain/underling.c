@@ -615,7 +615,7 @@ underling_local_memory_optimum(
     const size_t remainder     = global_memory % nprocessors;
 
     // Round up result iff necessary and our rank is low enough
-    return result + (!!remainder)*(problem->grid->g_rank < remainder);
+    return result + (!!remainder)*(problem->grid->g_rank <= remainder);
 }
 
 size_t
