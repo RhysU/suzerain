@@ -42,13 +42,9 @@ struct underling_grid_s {
     int      n[3];
     int      pA;
     int      pB;
-    MPI_Comm g_comm;
-    int      g_rank;
-    int      g_coords[2];
-    MPI_Comm pA_comm;
-    int      pA_rank;
-    MPI_Comm pB_comm;
-    int      pB_rank;
+    MPI_Comm g_comm;                  // Instance owns MPI resource
+    MPI_Comm pA_comm;                 // Instance owns MPI resource
+    MPI_Comm pB_comm;                 // Instance owns MPI resource
 };
 
 typedef struct underling_transpose_s * underling_transpose; // Internal!
@@ -56,7 +52,7 @@ struct underling_transpose_s {
     ptrdiff_t d[2];
     ptrdiff_t howmany;
     ptrdiff_t block[2];
-    MPI_Comm  comm;              // underling_grid owns resource
+    MPI_Comm  comm;                   // Instance owns MPI resource
     unsigned  flags;
     ptrdiff_t local[2];
     ptrdiff_t local_start[2];
@@ -64,7 +60,6 @@ struct underling_transpose_s {
 };
 
 struct underling_problem_s {
-    underling_grid grid;              // grid owns its resources
     int howmany;                      // # of real values to transpose
     underling_extents long_n[3];      // Layout details for n{0,1,2} long
     underling_transpose backwardA;    // n2 long to n1 long
@@ -75,7 +70,6 @@ struct underling_problem_s {
 };
 
 struct underling_plan_s {
-    underling_problem problem;         // problem owns its resources
     fftw_plan plan_backwardA;
     fftw_plan plan_backwardB;
     fftw_plan plan_forwardA;
@@ -86,6 +80,9 @@ struct underling_plan_s {
 // ********************************************************************
 // INTERNAL PROTOTYPES INTERNAL PROTOTYPES INTERNAL PROTOTYPES INTERNAL
 // ********************************************************************
+
+MPI_Comm
+underling_MPI_Comm_dup_with_name(MPI_Comm comm);
 
 underling_transpose
 underling_transpose_create(
@@ -114,6 +111,7 @@ underling_transpose_fftw_plan(
 
 size_t
 underling_local_memory_allreduce(
+        const underling_grid    grid,
         const underling_problem problem,
         MPI_Op op);
 
@@ -132,6 +130,40 @@ const underling_extents UNDERLING_EXTENTS_INVALID = {
     /*stride*/      {-1, -1, -1},
     /*total_extent*/0
 };
+
+static
+MPI_Comm
+underling_MPI_Comm_dup_with_name(MPI_Comm comm)
+{
+    if (comm == MPI_COMM_NULL) return MPI_COMM_NULL;
+
+    char buffer[MPI_MAX_OBJECT_NAME];
+    int resultlen = 0;
+    const int get_name_error = MPI_Comm_get_name(comm, buffer, &resultlen);
+    if (get_name_error) {
+        SUZERAIN_MPICHKR(get_name_error /* MPI_Comm_get_name */);
+        return MPI_COMM_NULL;
+    }
+
+    MPI_Comm retval = MPI_COMM_NULL;
+
+    const int dup_error = MPI_Comm_dup(comm, &retval);
+    if (dup_error) {
+        SUZERAIN_MPICHKR(dup_error /* MPI_Comm_dup */);
+        return MPI_COMM_NULL;
+    }
+
+    if (resultlen > 0) {
+        const int set_name_error = MPI_Comm_set_name(retval, buffer);
+        if (set_name_error) {
+            SUZERAIN_MPICHKR(set_name_error /* MPI_Comm_set_name */);
+            SUZERAIN_MPICHKR(MPI_Comm_free(&retval));
+            return MPI_COMM_NULL;
+        }
+    }
+
+    return retval;
+}
 
 underling_grid
 underling_grid_create(
@@ -183,21 +215,16 @@ underling_grid_create(
     }
 
     // Clone the communicator and create the 2D Cartesian topology
-    MPI_Comm g_comm;
+    MPI_Comm g_comm = MPI_COMM_NULL;
     {
         int dims[2]     = { pA, pB };
         int periodic[2] = { 0, 0 };
         SUZERAIN_MPICHKN(MPI_Cart_create(
                 comm, 2, dims, periodic, 1/*reordering allowed*/, &g_comm));
     }
-    // Cache the rank and coordinates of this process within g_comm
-    int g_rank;
-    SUZERAIN_MPICHKN(MPI_Comm_rank(g_comm, &g_rank));
-    int g_coords[2];
-    SUZERAIN_MPICHKN(MPI_Cart_coords(g_comm, g_rank, 2, g_coords));
 
     // Create communicator for the PA direction
-    MPI_Comm pA_comm;
+    MPI_Comm pA_comm = MPI_COMM_NULL;
     {
         int remain_dims[2] = { 1, 0 };
         SUZERAIN_MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &pA_comm));
@@ -207,7 +234,7 @@ underling_grid_create(
     SUZERAIN_MPICHKN(MPI_Comm_rank(pA_comm, &pA_rank));
 
     // Create communicator for the PB direction
-    MPI_Comm pB_comm;
+    MPI_Comm pB_comm = MPI_COMM_NULL;
     {
         int remain_dims[2] = { 0, 1 };
         SUZERAIN_MPICHKN(MPI_Cart_sub(g_comm, remain_dims, &pB_comm));
@@ -241,13 +268,8 @@ underling_grid_create(
     g->pA          = pA;
     g->pB          = pB;
     g->g_comm      = g_comm;
-    g->g_rank      = g_rank;
-    g->g_coords[0] = g_coords[0];
-    g->g_coords[1] = g_coords[1];
     g->pA_comm     = pA_comm;
-    g->pA_rank     = pA_rank;
     g->pB_comm     = pB_comm;
-    g->pB_rank     = pB_rank;
 
     return g;
 }
@@ -256,16 +278,16 @@ void
 underling_grid_destroy(underling_grid grid)
 {
     if (grid) {
-        if (grid->g_comm) {
-            SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->g_comm));
+        if (grid->g_comm != MPI_COMM_NULL) {
+            SUZERAIN_MPICHKR(MPI_Comm_free(&grid->g_comm));
             grid->g_comm = MPI_COMM_NULL;
         }
-        if (grid->pA_comm) {
-            SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->pA_comm));
+        if (grid->pA_comm != MPI_COMM_NULL) {
+            SUZERAIN_MPICHKR(MPI_Comm_free(&grid->pA_comm));
             grid->pA_comm = MPI_COMM_NULL;
         }
-        if (grid->pB_comm) {
-            SUZERAIN_MPICHKV(MPI_Comm_disconnect(&grid->pB_comm));
+        if (grid->pB_comm != MPI_COMM_NULL) {
+            SUZERAIN_MPICHKR(MPI_Comm_free(&grid->pB_comm));
             grid->pB_comm = MPI_COMM_NULL;
         }
         free(grid);
@@ -283,6 +305,12 @@ underling_transpose_create(
         MPI_Comm comm,
         unsigned flags)
 {
+    if (SUZERAIN_UNLIKELY(comm == MPI_COMM_NULL)) {
+        SUZERAIN_ERROR_NULL(
+                "Unable to create transpose for comm == MPI_COMM_NULL",
+                SUZERAIN_EINVAL);
+    }
+
     // Create and initialize the transpose workspace
     underling_transpose t = calloc(1, sizeof(struct underling_transpose_s));
     if (SUZERAIN_UNLIKELY(t == NULL)) {
@@ -296,8 +324,14 @@ underling_transpose_create(
     t->howmany  = howmany;
     t->block[0] = block0;
     t->block[1] = block1;
-    t->comm     = comm;
+    t->comm     = underling_MPI_Comm_dup_with_name(comm);
     t->flags    = flags;
+
+    if (t->comm == MPI_COMM_NULL) {
+        underling_transpose_destroy(t);
+        SUZERAIN_ERROR_NULL("Detected MPI_COMM_NULL in t->comm",
+                            SUZERAIN_ESANITY);
+    }
 
     // Fix struct details obtainable via FFTW MPI call
     t->local_size = fftw_mpi_local_size_many_transposed(
@@ -343,9 +377,14 @@ underling_transpose_create_inverse(
     backward->howmany  = forward->howmany;
     backward->block[0] = forward->block[1];
     backward->block[1] = forward->block[0];
-    backward->comm     = forward->comm;
+    backward->comm     = underling_MPI_Comm_dup_with_name(forward->comm);
     backward->flags    = forward->flags;
-    // Unsure of how block sizes should be flipped for inversion
+
+    if (backward->comm == MPI_COMM_NULL) {
+        underling_transpose_destroy(backward);
+        SUZERAIN_ERROR_NULL("Detected MPI_COMM_NULL in backward->comm",
+                            SUZERAIN_ESANITY);
+    }
 
     // Fix struct details obtainable via FFTW MPI call
     backward->local_size = fftw_mpi_local_size_many_transposed(
@@ -369,6 +408,10 @@ underling_transpose_destroy(
         underling_transpose transpose)
 {
     if (transpose) {
+        if (transpose->comm != MPI_COMM_NULL) {
+            SUZERAIN_MPICHKR(MPI_Comm_free(&transpose->comm));
+            transpose->comm = MPI_COMM_NULL;
+        }
         free(transpose);
     }
 }
@@ -414,7 +457,6 @@ underling_problem_create(
                              SUZERAIN_ENOMEM);
     }
     // Copy the problem parameters to the problem workspace
-    p->grid    = grid;
     p->howmany = howmany;
 
     // Global pencil decomposition details
@@ -580,9 +622,13 @@ underling_local_memory(
 static
 size_t
 underling_local_memory_allreduce(
+        const underling_grid    grid,
         const underling_problem problem,
         MPI_Op op)
 {
+    if (SUZERAIN_UNLIKELY(grid == NULL)) {
+        SUZERAIN_ERROR_VAL("grid == NULL", SUZERAIN_EINVAL, 0);
+    }
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_NULL("problem == NULL", SUZERAIN_EINVAL);
     }
@@ -593,7 +639,7 @@ underling_local_memory_allreduce(
     unsigned long int retval = underling_local_memory(problem);
     const int error = MPI_Allreduce(
             MPI_IN_PLACE, &retval, 1, MPI_UNSIGNED_LONG,
-            op, problem->grid->g_comm);
+            op, grid->g_comm);
     if (SUZERAIN_UNLIKELY(error)) {
         SUZERAIN_MPICHKR(error /* allreduce local_memory */);
         retval = 0;
@@ -604,47 +650,61 @@ underling_local_memory_allreduce(
 
 size_t
 underling_local_memory_maximum(
+        const underling_grid    grid,
         const underling_problem problem)
 {
-    return underling_local_memory_allreduce(problem, MPI_MAX);
+    return underling_local_memory_allreduce(grid, problem, MPI_MAX);
 }
 
 size_t
 underling_local_memory_minimum(
+        const underling_grid    grid,
         const underling_problem problem)
 {
-    return underling_local_memory_allreduce(problem, MPI_MIN);
+    return underling_local_memory_allreduce(grid, problem, MPI_MIN);
 }
 
 size_t
 underling_global_memory(
+        const underling_grid    grid,
         const underling_problem problem)
 {
-    return underling_local_memory_allreduce(problem, MPI_SUM);
+    return underling_local_memory_allreduce(grid, problem, MPI_SUM);
 }
 
 size_t
 underling_global_memory_optimum(
+        const underling_grid    grid,
         const underling_problem problem)
 {
+    if (SUZERAIN_UNLIKELY(grid == NULL)) {
+        SUZERAIN_ERROR_VAL("grid == NULL", SUZERAIN_EINVAL, 0);
+    }
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
-    const underling_grid grid = problem->grid;
     return problem->howmany * grid->n[0] * grid->n[1] * grid->n[2];
 }
 
 size_t
 underling_local_memory_optimum(
+        const underling_grid    grid,
         const underling_problem problem)
 {
-    const size_t global_memory = underling_global_memory_optimum(problem);
-    const size_t nprocessors   = problem->grid->pA *problem->grid->pB;
-    const size_t result        = global_memory / nprocessors;
-    const size_t remainder     = global_memory % nprocessors;
+    const size_t memory      = underling_global_memory_optimum(grid, problem);
+    const size_t nprocessors = grid->pA * grid->pB;
+    const size_t result      = memory / nprocessors;
+    const size_t remainder   = memory % nprocessors;
 
-    // Round up result iff necessary and our rank is low enough
-    return result + (!!remainder)*(problem->grid->g_rank <= remainder);
+    int g_rank;
+    const int error = MPI_Comm_rank(grid->g_comm, &g_rank);
+    if (error) {
+        SUZERAIN_MPICHKR(error /* MPI_Comm_rank */);
+        return 0;
+    }
+
+    // Round up result iff necessary and our 2D rank is low enough
+    return result + (!!remainder)*(g_rank <= remainder);
 }
 
 size_t
@@ -701,7 +761,6 @@ underling_problem_destroy(
         underling_problem problem)
 {
     if (problem) {
-        problem->grid = NULL;
         if (problem->backwardA) {
             underling_transpose_destroy(problem->backwardA);
             problem->backwardA = NULL;
@@ -763,13 +822,13 @@ underling_plan_create(
         SUZERAIN_ERROR_NULL("failed to allocate space for plan",
                              SUZERAIN_ENOMEM);
     }
-    p->problem = problem;
+    // Copy the problem parameters to the problem workspace
     p->data = data;
 
     // Create FFTW MPI plans to transpose from long in n2 to long in 20
     if (direction_flags | UNDERLING_DIRECTION_BACKWARD) {
         p->plan_backwardA = underling_transpose_fftw_plan(
-                p->problem->backwardA, p->data, p->data, rigor_flags);
+                problem->backwardA, p->data, p->data, rigor_flags);
         if (SUZERAIN_UNLIKELY(p->plan_backwardA == NULL)) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
@@ -778,7 +837,7 @@ underling_plan_create(
         }
 
         p->plan_backwardB = underling_transpose_fftw_plan(
-                p->problem->backwardB, p->data, p->data, rigor_flags);
+                problem->backwardB, p->data, p->data, rigor_flags);
         if (SUZERAIN_UNLIKELY(p->plan_backwardB == NULL)) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
@@ -791,7 +850,7 @@ underling_plan_create(
     // Create FFTW MPI plans to transpose from long in n0 to long in n2
     if (direction_flags | UNDERLING_DIRECTION_FORWARD) {
         p->plan_forwardB = underling_transpose_fftw_plan(
-                p->problem->forwardB, p->data, p->data, rigor_flags);
+                problem->forwardB, p->data, p->data, rigor_flags);
         if (SUZERAIN_UNLIKELY(p->plan_forwardB == NULL)) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
@@ -800,7 +859,7 @@ underling_plan_create(
         }
 
         p->plan_forwardA = underling_transpose_fftw_plan(
-                p->problem->forwardA, p->data, p->data, rigor_flags);
+                problem->forwardA, p->data, p->data, rigor_flags);
         if (SUZERAIN_UNLIKELY(p->plan_forwardA == NULL)) {
             underling_plan_destroy(p);
             SUZERAIN_ERROR_NULL(
@@ -817,7 +876,6 @@ underling_plan_destroy(
         underling_plan plan)
 {
     if (plan) {
-        plan->problem = NULL;
         if (plan->plan_backwardA) {
             fftw_destroy_plan(plan->plan_backwardA);
             plan->plan_backwardA = NULL;
@@ -835,6 +893,7 @@ underling_plan_destroy(
             plan->plan_forwardB = NULL;
         }
         plan->data = NULL;
+        free(plan);
     }
 }
 
@@ -938,9 +997,19 @@ underling_fprint_transpose(
                 "{d0=%ld,d1=%ld},{block0=%ld,block1=%ld},",
                 transpose->d[0], transpose->d[1],
                 transpose->block[0], transpose->block[1]);
+
+        char buffer[MPI_MAX_OBJECT_NAME];
+        int resultlen = 0;
+        if (   MPI_Comm_get_name(transpose->comm, buffer, &resultlen)
+            || resultlen == 0) {
+            fprintf(output_file, "{comm=%x", transpose->comm);
+        } else {
+            fprintf(output_file, "{comm=%s", buffer);
+        }
         fprintf(output_file,
-                "{comm=%x,flags=%u,local_size=%ld},",
-                transpose->comm,transpose->flags,transpose->local_size);
+                ",flags=%u,local_size=%ld},",
+                transpose->flags,transpose->local_size);
+
         fprintf(output_file,
                 "{local0=%ld,local_start0=%ld},",
                 transpose->local[0],transpose->local_start[0]);

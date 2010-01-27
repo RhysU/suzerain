@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     const size_t local_memory
             = underling_local_memory(problem);
     const size_t local_memory_optimum
-            = underling_local_memory_optimum(problem);
+            = underling_local_memory_optimum(grid, problem);
     LOG4CXX_DEBUG(logger,    "problem local memory "
                           << local_memory
                           << " versus optimum "
@@ -111,9 +111,9 @@ int main(int argc, char *argv[])
                           << ", ratio = "
                           << ((double)local_memory)/local_memory_optimum);
     const size_t global_memory
-            = underling_global_memory(problem); // Collective
+            = underling_global_memory(grid, problem); // Collective
     const size_t global_memory_optimum
-            = underling_global_memory_optimum(problem);
+            = underling_global_memory_optimum(grid, problem);
     ONLYPROC0(LOG4CXX_INFO(logger,
             "problem global memory "
               << global_memory
