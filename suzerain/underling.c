@@ -548,8 +548,8 @@ underling_problem_create(
     // Sanity check the intended strideorder use case
     for (int i = 0; i < 3; ++i) {
         const underling_extents * const e = &p->long_n[i];
-        assert(e->stride[e->strideorder[0]] < e->stride[e->strideorder[1]]);
-        assert(e->stride[e->strideorder[1]] < e->stride[e->strideorder[2]]);
+        assert(e->stride[e->strideorder[0]] <= e->stride[e->strideorder[1]]);
+        assert(e->stride[e->strideorder[1]] <= e->stride[e->strideorder[2]]);
     }
 
     // Transpose pA details: (n0/pB x n1/pA) x n2 to n2/pA x (n0/pB x n1)
