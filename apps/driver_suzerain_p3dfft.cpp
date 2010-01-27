@@ -36,6 +36,7 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
 #include <suzerain/problem.hpp>
+#include <suzerain/grid_definition.hpp>
 #include <suzerain/program_options.hpp>
 
 #define ONLYPROC0(expr) if (!procid) { expr ; } else

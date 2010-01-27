@@ -43,7 +43,7 @@ rigor rigor_from(const char *name)
             case 'p': return patient;
             case 'e':
                 switch (tolower(name[1])) {
-                    default:  break;
+                    default:  // Assume exhaustive
                     case 's': return estimate;
                     case 'x': return exhaustive;
                 }
@@ -75,6 +75,32 @@ const char * c_str(rigor r)
         default:
         case measure:    return "measure";    // Default
     }
+}
+
+FFTWDefinition::FFTWDefinition()
+    : options_("FFTW definition")
+{
+    namespace po = ::boost::program_options;
+
+    std::string rigor_description;
+    rigor_description += "Planning rigor; one of {";
+    rigor_description += c_str(estimate);
+    rigor_description += ", ";
+    rigor_description += c_str(measure);
+    rigor_description += ", ";
+    rigor_description += c_str(patient);
+    rigor_description += ", ";
+    rigor_description += c_str(exhaustive);
+    rigor_description += "}";
+
+    std::string rigor_default(c_str(measure));
+
+    options_.add_options()
+        ("rigor",
+         po::value<std::string>(&rigor_string_)
+                ->default_value(rigor_default),
+         rigor_description.c_str())
+    ;
 }
 
 } // namespace fftw

@@ -34,6 +34,7 @@ pkginclude_HEADERS += error.h
 pkginclude_HEADERS += fftw.hpp
 pkginclude_HEADERS += functional.hpp
 pkginclude_HEADERS += function.h
+pkginclude_HEADERS += grid_definition.hpp
 pkginclude_HEADERS += math.hpp
 pkginclude_HEADERS += mpi.hpp
 pkginclude_HEADERS += multi_array.hpp

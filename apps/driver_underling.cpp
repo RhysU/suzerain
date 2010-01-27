@@ -39,6 +39,8 @@
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 
+#include <suzerain/fftw.hpp>
+#include <suzerain/grid_definition.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/os.h>
 #include <suzerain/problem.hpp>
@@ -63,6 +65,8 @@ int main(int argc, char *argv[])
     suzerain::ProgramOptions options;
     suzerain::problem::GridDefinition<> griddef;
     options.add_definition(griddef);
+    suzerain::fftw::FFTWDefinition fftwdef;
+    options.add_definition(fftwdef);
     namespace po = boost::program_options;
     if (!procid) {
         options.process(argc, argv);
@@ -122,7 +126,7 @@ int main(int argc, char *argv[])
     underling_real * const data
         = (underling_real *) fftw_malloc(local_memory*sizeof(underling_real));
     underling_plan plan = underling_plan_create(
-            problem, data, UNDERLING_DIRECTION_BOTH, 0);
+            problem, data, UNDERLING_DIRECTION_BOTH, fftwdef.plan_rigor());
 
     MPI_Barrier(MPI_COMM_WORLD);
 

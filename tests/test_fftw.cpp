@@ -40,9 +40,8 @@ BOOST_AUTO_TEST_CASE( from_constchar )
     BOOST_CHECK_EQUAL(patient,    rigor_from("patient"));
     BOOST_CHECK_EQUAL(patient,    rigor_from("PATIENT"));
     BOOST_CHECK_EQUAL(patient,    rigor_from("P"));
-
-    BOOST_CHECK_EQUAL(measure, rigor_from("e"));  // Ambiguous
-    BOOST_CHECK_EQUAL(measure, rigor_from("E"));  // Ambiguous
+    BOOST_CHECK_EQUAL(estimate,   rigor_from("e"));
+    BOOST_CHECK_EQUAL(estimate,   rigor_from("E"));
 
     BOOST_CHECK_EQUAL(measure, rigor_from(""));                 // Unknown
     BOOST_CHECK_EQUAL(measure, rigor_from((const char *)NULL)); // Unknown
