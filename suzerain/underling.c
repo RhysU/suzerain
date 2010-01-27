@@ -783,7 +783,7 @@ underling_problem_destroy(
 
 underling_plan
 underling_plan_create(
-        underling_problem problem,
+        const underling_problem problem,
         underling_real * data,
         unsigned direction_flags,
         unsigned rigor_flags)
