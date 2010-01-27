@@ -108,7 +108,7 @@ underling_transpose_fftw_plan(
         const underling_transpose transpose,
         underling_real *in,
         underling_real *out,
-        unsigned flags);
+        unsigned fftw_flags);
 
 size_t
 underling_local_memory_allreduce(
@@ -423,7 +423,7 @@ underling_transpose_fftw_plan(
         const underling_transpose transpose,
         underling_real *in,
         underling_real *out,
-        unsigned flags)
+        unsigned fftw_flags)
 {
     if (SUZERAIN_UNLIKELY(transpose == NULL)) {
         SUZERAIN_ERROR_NULL("transpose == NULL", SUZERAIN_EINVAL);
@@ -436,7 +436,7 @@ underling_transpose_fftw_plan(
                                         in,
                                         out,
                                         transpose->comm,
-                                        transpose->flags | flags);
+                                        transpose->flags | fftw_flags);
 }
 
 underling_problem
