@@ -30,10 +30,7 @@
 #ifndef __SUZERAIN_UNDERLING_H
 #define __SUZERAIN_UNDERLING_H
 
-#include <suzerain/common.h>
-#include <suzerain/error.h>
 #include <mpi.h>
-#include <fftw3-mpi.h>
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 #undef __BEGIN_DECLS

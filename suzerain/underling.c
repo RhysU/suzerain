@@ -33,6 +33,7 @@
 #pragma hdrstop
 #include <suzerain/error.h>
 #include <suzerain/underling.h>
+#include <fftw3-mpi.h>
 
 // *******************************************************************
 // INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS

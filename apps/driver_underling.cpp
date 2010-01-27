@@ -39,6 +39,7 @@
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 
+#include <suzerain/error.h>
 #include <suzerain/fftw.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/mpi.hpp>
