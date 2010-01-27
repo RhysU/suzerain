@@ -85,6 +85,9 @@ struct underling_plan_s {
 MPI_Comm
 underling_MPI_Comm_dup_with_name(MPI_Comm comm);
 
+fftw_plan
+underling_fftw_plan_nop();
+
 underling_transpose
 underling_transpose_create(
         ptrdiff_t d0,
@@ -161,6 +164,22 @@ underling_MPI_Comm_dup_with_name(MPI_Comm comm)
     }
 
     return retval;
+}
+
+fftw_plan
+underling_fftw_plan_nop()
+{
+    // Create a non-NULL NOP FFTW plan
+    fftw_plan nop_plan = fftw_plan_guru_r2r(/*rank*/0,
+                                            /*dims*/NULL,
+                                            /*howmany_rank*/0,
+                                            /*dims*/NULL,
+                                            /*in*/NULL,
+                                            /*out*/NULL,
+                                            /*kind*/NULL,
+                                            /*flags*/0);
+    assert(nop_plan);
+    return nop_plan;
 }
 
 underling_grid
@@ -331,18 +350,28 @@ underling_transpose_create(
                             SUZERAIN_ESANITY);
     }
 
-    // Fix struct details obtainable via FFTW MPI call
-    t->local_size = fftw_mpi_local_size_many_transposed(
-                                            /*rank*/2,
-                                            t->d,
-                                            t->howmany,
-                                            t->block[0],
-                                            t->block[1],
-                                            t->comm,
-                                            &t->local[0],
-                                            &t->local_start[0],
-                                            &t->local[1],
-                                            &t->local_start[1]);
+    if (SUZERAIN_UNLIKELY(t->d[0] == 0 || t->d[1] == 0)) {
+        // Trivial transpose required;
+        // fftw_mpi_local_size_many_transpose divides-by-zero on zero size
+        t->local[0]       = 0;
+        t->local[1]       = 0;
+        t->local_start[0] = 0;
+        t->local_start[1] = 0;
+        t->local_size     = 0;
+    } else {
+        // Fix transpose details obtained from FFTW MPI call
+        t->local_size = fftw_mpi_local_size_many_transposed(
+                                                /*rank*/2,
+                                                t->d,
+                                                t->howmany,
+                                                t->block[0],
+                                                t->block[1],
+                                                t->comm,
+                                                &t->local[0],
+                                                &t->local_start[0],
+                                                &t->local[1],
+                                                &t->local_start[1]);
+    }
 
     return t;
 }
@@ -384,18 +413,28 @@ underling_transpose_create_inverse(
                             SUZERAIN_ESANITY);
     }
 
-    // Fix struct details obtainable via FFTW MPI call
-    backward->local_size = fftw_mpi_local_size_many_transposed(
-                                           /*rank*/2,
-                                            backward->d,
-                                            backward->howmany,
-                                            backward->block[0],
-                                            backward->block[1],
-                                            backward->comm,
-                                            &backward->local[0],
-                                            &backward->local_start[0],
-                                            &backward->local[1],
-                                            &backward->local_start[1]);
+    if (SUZERAIN_UNLIKELY(backward->d[0] == 0 || backward->d[1] == 0)) {
+        // Trivial transpose required;
+        // fftw_mpi_local_size_many_transpose divides-by-zero on zero size
+        backward->local[0]       = 0;
+        backward->local[1]       = 0;
+        backward->local_start[0] = 0;
+        backward->local_start[1] = 0;
+        backward->local_size     = 0;
+    } else {
+        // Fix transpose details obtained from FFTW MPI call
+        backward->local_size = fftw_mpi_local_size_many_transposed(
+                                                /*rank*/2,
+                                                backward->d,
+                                                backward->howmany,
+                                                backward->block[0],
+                                                backward->block[1],
+                                                backward->comm,
+                                                &backward->local[0],
+                                                &backward->local_start[0],
+                                                &backward->local[1],
+                                                &backward->local_start[1]);
+    }
 
     return backward;
 }
@@ -425,15 +464,22 @@ underling_transpose_fftw_plan(
     if (SUZERAIN_UNLIKELY(transpose == NULL)) {
         SUZERAIN_ERROR_NULL("transpose == NULL", SUZERAIN_EINVAL);
     }
-    return fftw_mpi_plan_many_transpose(transpose->d[0],
-                                        transpose->d[1],
-                                        transpose->howmany,
-                                        transpose->block[0],
-                                        transpose->block[1],
-                                        in,
-                                        out,
-                                        transpose->comm,
-                                        transpose->flags | fftw_flags);
+
+    if (SUZERAIN_UNLIKELY(transpose->d[0] == 0 || transpose->d[1] == 0)) {
+        // Trivial transpose required;
+        // fftw_mpi_plan_many_transpose returns NULL on trivial input
+        return underling_fftw_plan_nop();
+    } else {
+        return fftw_mpi_plan_many_transpose(transpose->d[0],
+                                            transpose->d[1],
+                                            transpose->howmany,
+                                            transpose->block[0],
+                                            transpose->block[1],
+                                            in,
+                                            out,
+                                            transpose->comm,
+                                            transpose->flags | fftw_flags);
+    }
 }
 
 underling_problem

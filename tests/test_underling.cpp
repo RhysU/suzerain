@@ -77,6 +77,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( two_three_five, HOWMANY, howmany_value_list )
     BOOST_REQUIRE_LE(extent_n[1], local_memory);
     BOOST_REQUIRE_LE(extent_n[2], local_memory);
 
+    // Dump out the process' portion of the global grid
+    if (howmany == 1) {
+        boost::format formatter("long_n%d: [%d,%d)x[%d,%d)x[%d,%d)");
+        std::ostringstream oss;
+        oss << "Rank " << procid << " has ";
+        for (int i = 0; i < 3; ++i) {
+            formatter % i;
+            for (int j = 0; j < 3; ++j) {
+                formatter % long_n[i].start[j]
+                          % (long_n[i].start[j] + long_n[i].size[j]);
+            }
+            oss << formatter.str();
+            if (i < 2) oss << ", ";
+        }
+        BOOST_TEST_MESSAGE(oss.str());
+    }
+
     // Create a plan that will be automagically cleaned up
     boost::shared_ptr<boost::remove_pointer<underling_plan>::type>
         plan(underling_plan_create(
