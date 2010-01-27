@@ -526,14 +526,30 @@ underling_problem_create(
     p->long_n[2].stride[2] = p->howmany;
     p->long_n[2].stride[1] = p->long_n[2].stride[2] * p->long_n[2].size[2];
     p->long_n[2].stride[0] = p->long_n[2].stride[1] * p->long_n[2].size[1];
+    p->long_n[2].strideorder[0] = 2; // Fastest
+    p->long_n[2].strideorder[1] = 1;
+    p->long_n[2].strideorder[2] = 0; // Slowest
     // Compute strides when long in n1: (n2/pA x n0/pB) x n1
     p->long_n[1].stride[1] = p->howmany;
     p->long_n[1].stride[0] = p->long_n[1].stride[1] * p->long_n[1].size[1];
     p->long_n[1].stride[2] = p->long_n[1].stride[0] * p->long_n[1].size[0];
+    p->long_n[1].strideorder[0] = 1; // Fastest
+    p->long_n[1].strideorder[1] = 0;
+    p->long_n[1].strideorder[2] = 2; // Slowest
     // Compute strides when long in n0: (n1/pB x n2/pA) x n0
     p->long_n[0].stride[0] = p->howmany;
     p->long_n[0].stride[2] = p->long_n[0].stride[0] * p->long_n[0].size[0];
     p->long_n[0].stride[1] = p->long_n[0].stride[2] * p->long_n[0].size[2];
+    p->long_n[0].strideorder[0] = 0; // Fastest
+    p->long_n[0].strideorder[1] = 2;
+    p->long_n[0].strideorder[2] = 1; // Slowest
+
+    // Sanity check the intended strideorder use case
+    for (int i = 0; i < 3; ++i) {
+        const underling_extents * const e = &p->long_n[i];
+        assert(e->stride[e->strideorder[0]] < e->stride[e->strideorder[1]]);
+        assert(e->stride[e->strideorder[1]] < e->stride[e->strideorder[2]]);
+    }
 
     // Transpose pA details: (n0/pB x n1/pA) x n2 to n2/pA x (n0/pB x n1)
     const ptrdiff_t pA_d[2] = { p->long_n[2].size[0] * grid->n[1],

@@ -59,6 +59,7 @@ typedef struct underling_extents {
     int    start[3];
     int    size[3];
     int    stride[3];
+    int    strideorder[3];
     size_t total_extent;
 } underling_extents;
 
