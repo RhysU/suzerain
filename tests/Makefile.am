@@ -138,7 +138,8 @@ test_pencilfft_3D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 check_PROGRAMS         += test_underling
 test_underling_SOURCES  = test_underling.cpp
 test_underling_LDADD    = ../suzerain/libunderling.la
-test_underling_LDADD   += $(GSL_LIBS)
+test_underling_LDADD   += -lfftw3_mpi
+test_underling_LDADD   += $(FFTW3_LIBS)
 test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
