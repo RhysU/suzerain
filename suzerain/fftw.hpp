@@ -82,7 +82,7 @@ enum rigor {
 rigor rigor_from(const char *name);
 
 /**
- * Extract a rigor instance from FFTW's <tt>#define</tt>d flags.
+ * Extract a rigor instance from FFTW's <tt>define</tt>d flags.
  *
  * @param flags to convert.
  *

@@ -65,8 +65,8 @@ __BEGIN_DECLS
  * @see The manual pages for <tt>fcntl(2)</tt>, <tt>pipe(2)</tt>,
  *      and <tt>pipe(7)</tt> for more information on creating pipes
  *      and the effect of their flags.
- * @see The manual pages for <tt>close(2)</tt>and  <tt>fclose(3) for
- *      information on how to close \c rfd and \c <tt>*write</tt> after
+ * @see The manual pages for <tt>close(2)</tt> and <tt>fclose(3)</tt>
+ *      for information on how to close \c rfd and <tt>*write</tt> after
  *      you have finished using them.
  *
  * @return Zero on successful completion.  On non-zero returns \c
