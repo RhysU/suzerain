@@ -66,15 +66,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( two_three_five, HOWMANY, howmany_value_list )
 
     // Sanity check the buffer vs local extent information
     // Also gives us a reason to look up stride information
-    const underling_extents long_n0
-        = underling_local_extents(problem.get(), 0);
-    const underling_extents long_n1
-        = underling_local_extents(problem.get(), 1);
-    const underling_extents long_n2
-        = underling_local_extents(problem.get(), 2);
-    BOOST_REQUIRE_LE(long_n0.total_extent, local_memory);
-    BOOST_REQUIRE_LE(long_n1.total_extent, local_memory);
-    BOOST_REQUIRE_LE(long_n2.total_extent, local_memory);
+    underling_extents long_n[3];
+    size_t extent_n[3];
+    for (int i = 0; i < sizeof(long_n)/sizeof(long_n[0]); ++i) {
+        long_n[i] = underling_local_extents(problem.get(), i);
+        extent_n[i]
+            = long_n[i].size[0] * long_n[i].size[1] * long_n[i].size[2];
+    }
+    BOOST_REQUIRE_LE(extent_n[0], local_memory);
+    BOOST_REQUIRE_LE(extent_n[1], local_memory);
+    BOOST_REQUIRE_LE(extent_n[2], local_memory);
 
     // Create a plan that will be automagically cleaned up
     boost::shared_ptr<boost::remove_pointer<underling_plan>::type>
@@ -104,7 +105,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( two_three_five, HOWMANY, howmany_value_list )
     // Buffer reqions beyond total_extent are excluded from the check.
     BOOST_REQUIRE_EQUAL_COLLECTIONS(
             data.get(),
-            data.get() + long_n2.total_extent,
+            data.get() + extent_n[2],
             make_counting_iterator(procid*10000.0),
-            make_counting_iterator(procid*10000.0 + long_n2.total_extent));
+            make_counting_iterator(procid*10000.0 + extent_n[2]));
 }

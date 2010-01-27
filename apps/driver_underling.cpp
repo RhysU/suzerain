@@ -167,7 +167,8 @@ int main(int argc, char *argv[])
 
     /* Primitive check for data corruption */
     int corruption = 0;
-    const size_t long_n2_data = underling_local(problem, 2, NULL, NULL, NULL);
+    const size_t long_n2_data
+        = underling_local(problem, 2, NULL, NULL, NULL, NULL);
     for (int i = 0; i < long_n2_data; ++i) {
         if (data[i] != (procid*10000 + i)) {
             LOG4CXX_WARN(logger, "test result discrepancy at index " << i);

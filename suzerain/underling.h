@@ -57,7 +57,6 @@ typedef struct underling_extents {
     int    size[3];
     int    stride[3];
     int    strideorder[3];
-    size_t total_extent;
 } underling_extents;
 
 extern const underling_extents UNDERLING_EXTENTS_INVALID;
@@ -109,7 +108,8 @@ underling_local(
         int n,
         int *start,
         int *size,
-        int *stride);
+        int *stride,
+        int *strideorder);
 
 underling_extents
 underling_local_extents(

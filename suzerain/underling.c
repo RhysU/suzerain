@@ -126,10 +126,7 @@ underling_fprint_transpose(
 // **************************************************************************
 
 const underling_extents UNDERLING_EXTENTS_INVALID = {
-    /*start*/       {-1, -1, -1},
-    /*size*/        {-1, -1, -1},
-    /*stride*/      {-1, -1, -1},
-    /*total_extent*/0
+    {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}
 };
 
 static
@@ -512,15 +509,6 @@ underling_problem_create(
         p->long_n[0].start[2] = local_d1_start;
     }
 
-    // Determine the storage required for pure data in each long configuration
-    // Does not include any transpose buffer overhead
-    for (int i = 0; i < 3; ++i) {
-        p->long_n[i].total_extent =   p->howmany
-                                    * p->long_n[i].size[0]
-                                    * p->long_n[i].size[1]
-                                    * p->long_n[i].size[2];
-    }
-
     // Determine all necessary strides for row-major storage
     // -----------------------------------------------------
     // Compute strides when long in n2: (n0/pB x  n1/pA) x n2
@@ -544,13 +532,6 @@ underling_problem_create(
     p->long_n[0].strideorder[0] = 0; // Fastest
     p->long_n[0].strideorder[1] = 2;
     p->long_n[0].strideorder[2] = 1; // Slowest
-
-    // Sanity check the intended strideorder use case
-    for (int i = 0; i < 3; ++i) {
-        const underling_extents * const e = &p->long_n[i];
-        assert(e->stride[e->strideorder[0]] <= e->stride[e->strideorder[1]]);
-        assert(e->stride[e->strideorder[1]] <= e->stride[e->strideorder[2]]);
-    }
 
     // Transpose pA details: (n0/pB x n1/pA) x n2 to n2/pA x (n0/pB x n1)
     const ptrdiff_t pA_d[2] = { p->long_n[2].size[0] * grid->n[1],
@@ -730,7 +711,8 @@ underling_local(
         int n,
         int *start,
         int *size,
-        int *stride)
+        int *stride,
+        int *strideorder)
 {
     if (SUZERAIN_UNLIKELY(n < 0 || n > 2)) {
         SUZERAIN_ERROR_VAL("n < 0 or n > 2", SUZERAIN_EINVAL, 0);
@@ -752,7 +734,11 @@ underling_local(
         for (int i = 0; i < 3; ++i)
             stride[i] = e->stride[i];
     }
-    return e->total_extent;
+    if (strideorder) {
+        for (int i = 0; i < 3; ++i)
+            strideorder[i] = e->strideorder[i];
+    }
+    return e->size[0] * e->size[1] * e->size[2];
 }
 
 underling_extents
