@@ -62,13 +62,24 @@ typedef struct underling_extents {
 
 extern const underling_extents UNDERLING_EXTENTS_INVALID;
 
-/** Flag indicating a transform from long in \c n0 to long in \c n2. */
-#define UNDERLING_DIRECTION_FORWARD  (1U << 0)
-/** Flag indicating a transform from long in \c n2 to long in \c n0. */
-#define UNDERLING_DIRECTION_BACKWARD (1U << 1)
-/** Convenience flag indicating transforming in both directions */
-#define UNDERLING_DIRECTION_BOTH \
-        (UNDERLING_DIRECTION_FORWARD | UNDERLING_DIRECTION_BACKWARD)
+/** Flag indicating a transform from long in \c n2 to long in \c n1. */
+#define UNDERLING_TRANSPOSE_LONG_N2_TO_LONG_N1 (1U << 0)
+
+/** Flag indicating a transform from long in \c n1 to long in \c n0. */
+#define UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N0 (1U << 1)
+
+/** Flag indicating a transform from long in \c n0 to long in \c n1. */
+#define UNDERLING_TRANSPOSE_LONG_N0_TO_LONG_N1 (1U << 2)
+
+/** Flag indicating a transform from long in \c n1 to long in \c n2. */
+#define UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N2 (1U << 3)
+
+/** Convenience flag indicating all transform directions */
+#define UNDERLING_TRANSPOSE_ALL \
+         (   UNDERLING_TRANSPOSE_LONG_N2_TO_LONG_N1   \
+           | UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N0   \
+           | UNDERLING_TRANSPOSE_LONG_N0_TO_LONG_N1   \
+           | UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N2 )
 
 underling_grid
 underling_grid_create(
@@ -138,7 +149,7 @@ underling_plan
 underling_plan_create(
         const underling_problem problem,
         underling_real * data,
-        unsigned direction_flags,
+        unsigned transform_flags,
         unsigned fftw_rigor_flags);
 
 void
@@ -146,11 +157,19 @@ underling_plan_destroy(
         underling_plan plan);
 
 int
-underling_execute_backward(
+underling_execute_long_n2_to_long_n1(
         const underling_plan plan);
 
 int
-underling_execute_forward(
+underling_execute_long_n1_to_long_n0(
+        const underling_plan plan);
+
+int
+underling_execute_long_n0_to_long_n1(
+        const underling_plan plan);
+
+int
+underling_execute_long_n1_to_long_n2(
         const underling_plan plan);
 
 void

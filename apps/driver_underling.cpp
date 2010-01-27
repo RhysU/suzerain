@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
     underling_real * const data
         = (underling_real *) fftw_malloc(local_memory*sizeof(underling_real));
     underling_plan plan = underling_plan_create(
-            problem, data, UNDERLING_DIRECTION_BOTH, fftwdef.plan_rigor());
+            problem, data, UNDERLING_TRANSPOSE_ALL, fftwdef.plan_rigor());
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -142,8 +142,9 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* Transform to physical space */
-    LOG4CXX_TRACE(logger, "underling_execute_backward");
-    underling_execute_backward(plan);
+    LOG4CXX_TRACE(logger, "underling_execute");
+    underling_execute_long_n2_to_long_n1(plan);
+    underling_execute_long_n1_to_long_n0(plan);
     for (int i = 0; i < local_memory; ++i) {
         LOG4CXX_TRACE(logger, "post backward data["
                 << std::setw(8) << std::setfill('0') << i << "] = "
@@ -153,8 +154,9 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* Transform to wave space */
-    LOG4CXX_TRACE(logger, "underling_execute_forward");
-    underling_execute_forward(plan);
+    LOG4CXX_TRACE(logger, "underling_execute");
+    underling_execute_long_n0_to_long_n1(plan);
+    underling_execute_long_n1_to_long_n2(plan);
     for (int i = 0; i < local_memory; ++i) {
         LOG4CXX_TRACE(logger, "post forward data["
                 << std::setw(8) << std::setfill('0') << i << "] = "

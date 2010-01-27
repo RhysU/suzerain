@@ -802,7 +802,7 @@ underling_plan
 underling_plan_create(
         const underling_problem problem,
         underling_real * data,
-        unsigned direction_flags,
+        unsigned transform_flags,
         unsigned rigor_flags)
 {
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
@@ -811,12 +811,9 @@ underling_plan_create(
     if (SUZERAIN_UNLIKELY(data == NULL)) {
         SUZERAIN_ERROR_NULL("data == NULL", SUZERAIN_EINVAL);
     }
-    const unsigned non_direction_mask =   ~UNDERLING_DIRECTION_FORWARD
-                                        & ~UNDERLING_DIRECTION_BACKWARD;
-    if (SUZERAIN_UNLIKELY(direction_flags & non_direction_mask)) {
+    if (SUZERAIN_UNLIKELY(transform_flags & ~UNDERLING_TRANSPOSE_ALL)) {
         SUZERAIN_ERROR_NULL(
-            "direction_flags contains ~UNDERLING_DIRECTION_{FORWARD,BACKWARD}",
-            SUZERAIN_EINVAL);
+            "transform_flags contains non-direction bit", SUZERAIN_EINVAL);
     }
     const unsigned non_rigor_mask =   ~FFTW_ESTIMATE
                                     & ~FFTW_MEASURE
@@ -827,10 +824,9 @@ underling_plan_create(
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
 
-    // Perform both directions if neither specified
-    if (direction_flags == 0) {
-        direction_flags =   UNDERLING_DIRECTION_FORWARD
-                          | UNDERLING_DIRECTION_BACKWARD;
+    // Be ready to execute all transforms if trivial flag provided
+    if (transform_flags == 0) {
+        transform_flags = UNDERLING_TRANSPOSE_ALL;
     }
 
     // Create and initialize the plan workspace
@@ -842,8 +838,8 @@ underling_plan_create(
     // Copy the problem parameters to the problem workspace
     p->data = data;
 
-    // Create FFTW MPI plans to transpose from long in n2 to long in 20
-    if (direction_flags | UNDERLING_DIRECTION_BACKWARD) {
+    // Create the requested FFTW MPI plans
+    if (transform_flags | UNDERLING_TRANSPOSE_LONG_N2_TO_LONG_N1) {
         p->plan_backwardA = underling_transpose_fftw_plan(
                 problem->backwardA, p->data, p->data, rigor_flags);
         if (SUZERAIN_UNLIKELY(p->plan_backwardA == NULL)) {
@@ -852,7 +848,9 @@ underling_plan_create(
                     "FFTW MPI returned NULL plan: plan_backwardA",
                     SUZERAIN_EFAILED);
         }
+    }
 
+    if (transform_flags | UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N0) {
         p->plan_backwardB = underling_transpose_fftw_plan(
                 problem->backwardB, p->data, p->data, rigor_flags);
         if (SUZERAIN_UNLIKELY(p->plan_backwardB == NULL)) {
@@ -861,11 +859,9 @@ underling_plan_create(
                     "FFTW MPI returned NULL plan: plan_backwardB",
                     SUZERAIN_EFAILED);
         }
-
     }
 
-    // Create FFTW MPI plans to transpose from long in n0 to long in n2
-    if (direction_flags | UNDERLING_DIRECTION_FORWARD) {
+    if (transform_flags | UNDERLING_TRANSPOSE_LONG_N0_TO_LONG_N1) {
         p->plan_forwardB = underling_transpose_fftw_plan(
                 problem->forwardB, p->data, p->data, rigor_flags);
         if (SUZERAIN_UNLIKELY(p->plan_forwardB == NULL)) {
@@ -874,7 +870,9 @@ underling_plan_create(
                     "FFTW MPI returned NULL plan: plan_forwardB",
                     SUZERAIN_EFAILED);
         }
+    }
 
+    if (transform_flags | UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N2) {
         p->plan_forwardA = underling_transpose_fftw_plan(
                 problem->forwardA, p->data, p->data, rigor_flags);
         if (SUZERAIN_UNLIKELY(p->plan_forwardA == NULL)) {
@@ -915,41 +913,64 @@ underling_plan_destroy(
 }
 
 int
-underling_execute_backward(
+underling_execute_long_n2_to_long_n1(
         const underling_plan plan)
 {
     if (SUZERAIN_UNLIKELY(plan == NULL)) {
         SUZERAIN_ERROR("plan == NULL", SUZERAIN_EINVAL);
     }
-
-    const int valid =    plan->plan_backwardA
-                      && plan->plan_backwardB;
-    if (SUZERAIN_UNLIKELY(!valid)) {
-        SUZERAIN_ERROR("plan has one or more NULL subplans",
-                SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(plan->plan_backwardA == NULL)) {
+        SUZERAIN_ERROR("plan->plan_backwardA == NULL", SUZERAIN_EINVAL);
     }
 
     fftw_execute(plan->plan_backwardA);
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+underling_execute_long_n1_to_long_n0(
+        const underling_plan plan)
+{
+    if (SUZERAIN_UNLIKELY(plan == NULL)) {
+        SUZERAIN_ERROR("plan == NULL", SUZERAIN_EINVAL);
+    }
+    if (SUZERAIN_UNLIKELY(plan->plan_backwardB == NULL)) {
+        SUZERAIN_ERROR("plan->plan_backwardB == NULL", SUZERAIN_EINVAL);
+    }
+
     fftw_execute(plan->plan_backwardB);
 
     return SUZERAIN_SUCCESS;
 }
 
 int
-underling_execute_forward(
+underling_execute_long_n0_to_long_n1(
         const underling_plan plan)
 {
     if (SUZERAIN_UNLIKELY(plan == NULL)) {
         SUZERAIN_ERROR("plan == NULL", SUZERAIN_EINVAL);
     }
-    const int valid =    plan->plan_forwardB
-                      && plan->plan_forwardA;
-    if (SUZERAIN_UNLIKELY(!valid)) {
-        SUZERAIN_ERROR("plan has one or more NULL subplans",
-                SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(plan->plan_forwardB == NULL)) {
+        SUZERAIN_ERROR("plan->plan_forwardB == NULL", SUZERAIN_EINVAL);
     }
 
     fftw_execute(plan->plan_forwardB);
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+underling_execute_long_n1_to_long_n2(
+        const underling_plan plan)
+{
+    if (SUZERAIN_UNLIKELY(plan == NULL)) {
+        SUZERAIN_ERROR("plan == NULL", SUZERAIN_EINVAL);
+    }
+    if (SUZERAIN_UNLIKELY(plan->plan_forwardA == NULL)) {
+        SUZERAIN_ERROR("plan->plan_forwardA == NULL", SUZERAIN_EINVAL);
+    }
+
     fftw_execute(plan->plan_forwardA);
 
     return SUZERAIN_SUCCESS;
