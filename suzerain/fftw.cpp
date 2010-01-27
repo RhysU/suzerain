@@ -77,6 +77,11 @@ const char * c_str(rigor r)
     }
 }
 
+void FFTWDefinition::normalize_rigor_string(std::string input)
+{
+    this->rigor_string_ = c_str(rigor_from(input.c_str()));
+}
+
 FFTWDefinition::FFTWDefinition()
     : options_("FFTW definition")
 {
@@ -98,6 +103,10 @@ FFTWDefinition::FFTWDefinition()
     options_.add_options()
         ("rigor",
          po::value<std::string>(&rigor_string_)
+                ->notifier(
+                    std::bind1st(
+                        std::mem_fun(&FFTWDefinition::normalize_rigor_string),
+                        this))
                 ->default_value(rigor_default),
          rigor_description.c_str())
     ;

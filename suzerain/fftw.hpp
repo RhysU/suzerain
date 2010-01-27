@@ -145,6 +145,9 @@ private:
 
     /** Stores the user-specified FFTW rigor string */
     std::string rigor_string_;
+
+    /** Normalizes <tt>this->rigor_string_</tt> to a canonical value. */
+    void normalize_rigor_string(std::string input);
 };
 
 } // namespace fftw
