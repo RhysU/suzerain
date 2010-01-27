@@ -97,6 +97,13 @@ test_multi_array_SOURCES  = test_multi_array.cpp
 test_multi_array_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_multi_array_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+check_PROGRAMS    += test_fftw
+test_fftw_SOURCES  = test_fftw.cpp
+test_fftw_LDADD    = $(FFTW3_LIBS)
+test_fftw_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_fftw_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_fftw_LDADD   += ../suzerain/libsuzerain.la
+
 check_PROGRAMS       += test_fftw_1D
 test_fftw_1D_SOURCES  = test_fftw_1D.cpp
 test_fftw_1D_LDADD    = $(FFTW3_LIBS)
