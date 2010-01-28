@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     int howmany = 1;
     namespace po = boost::program_options;
     options.add_options()
-        ("howmany", po::value<int>(&nrep)->default_value(1),
+        ("howmany", po::value<int>(&howmany)->default_value(1),
         "Number of interleaved real-valued fields to transpose")
         ("rep", po::value<int>(&nrep)->default_value(1),
         "Number of repetitions to perform for timing purposes")
