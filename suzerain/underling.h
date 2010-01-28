@@ -356,19 +356,17 @@ underling_local_memory(
         const underling_problem problem);
 
 /**
- * Find the theoretical optimum (minimum) amount of memory required to
- * store the given problem on each processor on the given grid assuming no
- * communications buffer overhead.
+ * Find the amount of local storage necessary to merely hold a problem in
+ * memory.  This includes holding the data long in the <tt>n{0,1,2}</tt>
+ * directions but not any additional communication buffer overhead.
  *
- * @param grid Grid for which to retrieve information.
  * @param problem Problem for which to retrieve information.
  *
- * @return On success, the minimal local memory required to handle
- *         the problem.  On failure, calls suzerain_error and returns zero.
+ * @return On success, the amount of storage required in units of
+ *         underling_real.  On failure, calls suzerain_error and returns zero.
  */
 size_t
 underling_local_memory_optimum(
-        const underling_grid    grid,
         const underling_problem problem);
 
 /**

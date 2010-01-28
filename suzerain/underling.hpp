@@ -151,7 +151,14 @@ public:
     }
 
     /** @see underling_local_memory */
-    size_t local_memory() const { return underling_local_memory(problem_); }
+    size_t local_memory() const {
+        return underling_local_memory(problem_);
+    }
+
+    /** @see underling_local_memory_optimum */
+    size_t local_memory_optimum() const {
+        return underling_local_memory_optimum(problem_);
+    }
 
     /** @return True if the wrapped underling_problem instance is non-NULL. */
     operator bool () const { return problem_ != NULL; };
@@ -159,18 +166,6 @@ public:
 private:
     underling_problem problem_; /**< The wrapped underling_problem instance */
 };
-
-/** @see underling_local_memory */
-inline
-size_t local_memory(const problem &p) {
-    return p.local_memory();
-}
-
-/** @see underling_local_memory_optimum */
-inline
-size_t local_memory_optimum(const grid &g, const problem &p) {
-    return underling_local_memory_optimum(g.get(), p.get());
-}
 
 /** @see underling_local_memory_maximum */
 inline

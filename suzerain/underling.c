@@ -720,6 +720,23 @@ underling_local_memory(
     return problem->local_memory;
 }
 
+size_t
+underling_local_memory_optimum(
+        const underling_problem problem)
+{
+    // Optimum local memory is the maximum required be long in any direction
+
+    int retval = problem->long_n[0].extent;
+    if (retval < problem->long_n[1].extent) {
+        retval = problem->long_n[1].extent;
+    }
+    if (retval < problem->long_n[2].extent) {
+        retval = problem->long_n[2].extent;
+    }
+
+    return retval;
+}
+
 static
 size_t
 underling_local_memory_allreduce(
@@ -785,27 +802,6 @@ underling_global_memory_optimum(
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
     return problem->howmany * grid->n[0] * grid->n[1] * grid->n[2];
-}
-
-size_t
-underling_local_memory_optimum(
-        const underling_grid    grid,
-        const underling_problem problem)
-{
-    const size_t memory      = underling_global_memory_optimum(grid, problem);
-    const size_t nprocessors = grid->pA * grid->pB;
-    const size_t result      = memory / nprocessors;
-    const size_t remainder   = memory % nprocessors;
-
-    int g_rank;
-    const int error = MPI_Comm_rank(grid->g_comm, &g_rank);
-    if (error) {
-        SUZERAIN_MPICHKR(error /* MPI_Comm_rank */);
-        return 0;
-    }
-
-    // Round up result iff necessary and our 2D rank is low enough
-    return result + (!!remainder)*(g_rank <= remainder);
 }
 
 size_t
