@@ -42,6 +42,8 @@
 // INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS
 // *******************************************************************
 
+// TODO Document internal structures
+
 struct underling_grid_s {
     int      n[3];
     int      pA;
@@ -84,6 +86,8 @@ struct underling_plan_s {
 // ********************************************************************
 // INTERNAL PROTOTYPES INTERNAL PROTOTYPES INTERNAL PROTOTYPES INTERNAL
 // ********************************************************************
+
+// TODO Document internal-only methods
 
 MPI_Comm
 underling_MPI_Comm_dup_with_name(MPI_Comm comm);
