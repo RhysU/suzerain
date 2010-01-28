@@ -34,10 +34,6 @@
 #include <ostream>
 #include <suzerain/underling.h>
 
-// TODO Document the C++ API
-// TODO Add basic_ostream details
-// TODO Overload operator<< for underling_extents
-
 namespace suzerain {
 
 /**
@@ -47,28 +43,43 @@ namespace suzerain {
  */
 namespace underling {
 
+/** @see underling_real */
 typedef underling_real real;
 
+/** @see underling_extents */
 typedef underling_extents extents;
 
+/** Wraps transpose direction flags */
 namespace transpose {
+
+    /** @see UNDERLING_TRANSPOSE_LONG_N2_TO_LONG_N1 */
     const unsigned long_n2_to_long_n1 = UNDERLING_TRANSPOSE_LONG_N2_TO_LONG_N1;
 
+    /** @see UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N0 */
     const unsigned long_n1_to_long_n0 = UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N0;
 
+    /** @see UNDERLING_TRANSPOSE_LONG_N0_TO_LONG_N1 */
     const unsigned long_n0_to_long_n1 = UNDERLING_TRANSPOSE_LONG_N0_TO_LONG_N1;
 
+    /** @see UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N2 */
     const unsigned long_n1_to_long_n2 = UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N2;
 
+    /** @see UNDERLING_TRANSPOSE_ALL */
     const unsigned all                =  UNDERLING_TRANSPOSE_ALL;
 };
 
+/**
+ * Provides a thin RAII wrapper for underling_grid.
+ * @see underling_grid.
+ */
 class grid {
 public:
 
+    /** @see underling_grid_create */
     grid(MPI_Comm comm, int n0, int n1, int n2, int pA = 0, int pB = 0)
         : grid_(underling_grid_create(comm, n0, n1, n2, pA, pB)) {};
 
+    /** @see underling_grid_create */
     template< class InputIterator1, class InputIterator2 >
     grid(MPI_Comm comm, InputIterator1 n, InputIterator2 p)
         : grid_(NULL)
@@ -79,6 +90,7 @@ public:
         grid_ = underling_grid_create(comm, n0, n1, n2, pA, pB);
     }
 
+    /** @see underling_grid_create */
     template< class InputIterator >
     grid(MPI_Comm comm, InputIterator n)
         : grid_(NULL)
@@ -88,30 +100,42 @@ public:
         grid_ = underling_grid_create(comm, n0, n1, n2, 0, 0);
     }
 
+    /** @see underling_grid_destroy */
     ~grid() { underling_grid_destroy(grid_); }
 
+    /** @return The wrapped underling_grid instance. */
     const underling_grid get() const { return grid_; }
 
+    /** @return True if the wrapped underling_grid instance is non-NULL. */
     operator bool () const { return grid_ != NULL; };
 
 private:
-    underling_grid grid_;
+    underling_grid grid_; /**< The wrapped underling_grid instance */
 };
 
+/**
+ * Provides a thin RAII wrapper for underling_problem.
+ * @see underling_problem.
+ */
 class problem {
 public:
 
+    /** @see underling_problem_create */
     problem(const grid &g, int howmany)
         : problem_(underling_problem_create(g.get(), howmany)) {};
 
+    /** @see underling_problem_destroy */
     ~problem() { underling_problem_destroy(problem_); }
 
+    /** @return The wrapped underling_problem instance. */
     const underling_problem get() const { return problem_; }
 
+    /** @see underling_local_extents */
     underling_extents local_extents(int i) const {
         return underling_local_extents(problem_, i);
     }
 
+    /** @see underling_local */
     size_t local(int i,
                  int *start,
                  int *size,
@@ -120,47 +144,60 @@ public:
         return underling_local(problem_, i, start, size, stride, strideorder);
     }
 
+    /** @see underling_local_memory */
     size_t local_memory() const { return underling_local_memory(problem_); }
 
+    /** @return True if the wrapped underling_problem instance is non-NULL. */
     operator bool () const { return problem_ != NULL; };
 
 private:
-    underling_problem problem_;
+    underling_problem problem_; /**< The wrapped underling_problem instance */
 };
 
+/** @see underling_local_memory */
 inline
 size_t local_memory(const problem &p) {
     return p.local_memory();
 }
 
+/** @see underling_local_memory_optimum */
 inline
 size_t local_memory_optimum(const grid &g, const problem &p) {
     return underling_local_memory_optimum(g.get(), p.get());
 }
 
+/** @see underling_local_memory_maximum */
 inline
 size_t local_memory_maximum(const grid &g, const problem &p) {
     return underling_local_memory_maximum(g.get(), p.get());
 }
 
+/** @see underling_local_memory_minimum */
 inline
 size_t local_memory_minimum(const grid &g, const problem &p) {
     return underling_local_memory_minimum(g.get(), p.get());
 }
 
+/** @see underling_global_memory */
 inline
 size_t global_memory(const grid &g, const problem &p) {
     return underling_global_memory(g.get(), p.get());
 }
 
+/** @see underling_global_memory_optimum */
 inline
 size_t global_memory_optimum(const grid &g, const problem &p) {
     return underling_global_memory_optimum(g.get(), p.get());
 }
 
+/**
+ * Provides a thin RAII wrapper for underling_plan.
+ * @see underling_plan.
+ */
 class plan {
 public:
 
+    /** @see underling_plan_create */
     plan(const problem &p,
          underling_real * data,
          unsigned transform_flags  = 0,
@@ -170,36 +207,52 @@ public:
                                       transform_flags,
                                       fftw_rigor_flags)) {}
 
+    /** @see underling_plan_destroy */
     ~plan() { underling_plan_destroy(plan_); }
 
+    /** @return The wrapped underling_plan instance. */
     const underling_plan get() const { return plan_; }
 
+    /** @see underling_execute_long_n2_to_long_n1 */
     int execute_long_n2_to_long_n1() const {
         return underling_execute_long_n2_to_long_n1(plan_);
     }
 
+    /** @see underling_execute_long_n1_to_long_n0 */
     int execute_long_n1_to_long_n0() const {
         return underling_execute_long_n1_to_long_n0(plan_);
     }
 
+    /** @see underling_execute_long_n0_to_long_n1 */
     int execute_long_n0_to_long_n1() const {
         return underling_execute_long_n0_to_long_n1(plan_);
     }
 
+    /** @see underling_execute_long_n1_to_long_n2 */
     int execute_long_n1_to_long_n2() const {
         return underling_execute_long_n1_to_long_n2(plan_);
     }
 
+    /** @return True if the wrapped underling_problem instance is non-NULL. */
     operator bool () const { return plan_ != NULL; };
 
 private:
-    underling_plan plan_;
+    underling_plan plan_;  /**< The wrapped underling_plan instance */
 };
 
 } // namespace underling
 
 } // namespace suzerain
 
+/**
+ * Outputs an underling_extents or suzerain::underling::extents instance
+ * as a human-readable string on any std::basic_ostream.
+ *
+ * @param os On which to output \c e.
+ * @param e  To be output.
+ *
+ * @return The modified \c os.
+ */
 template< typename charT, typename traits >
 std::basic_ostream<charT,traits>& operator<<(
         std::basic_ostream<charT,traits> &os,
