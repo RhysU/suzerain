@@ -36,8 +36,9 @@
 #include <fftw3-mpi.h>
 #include <log4cxx/logger.h>
 
-#include <boost/iostreams/device/file_descriptor.hpp>
-#include <boost/iostreams/stream.hpp>
+#ifdef HAVE_HPCT
+#include <hpct.h>
+#endif
 
 #include <suzerain/error.h>
 #include <suzerain/fftw.hpp>
@@ -47,9 +48,7 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/types.hpp>
-#include <suzerain/underling.h>
-
-#define ONLYPROC0(expr) if (!procid) { expr ; } else
+#include <suzerain/underling.hpp>
 
 int main(int argc, char *argv[])
 {
@@ -58,17 +57,27 @@ int main(int argc, char *argv[])
     fftw_mpi_init();                          // Initialize FFTW MPI
     atexit((void (*) ()) fftw_mpi_cleanup);   // Finalize FFTW MPI at exit
 
+    // Initialize logging subsystem
     const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
     const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
     log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(
             suzerain::mpi::comm_rank_identifier(MPI_COMM_WORLD));
 
+    // Process command-line options
     suzerain::ProgramOptions options;
     suzerain::problem::GridDefinition<> griddef;
     options.add_definition(griddef);
     suzerain::fftw::FFTWDefinition fftwdef;
     options.add_definition(fftwdef);
+    int nrep    = 1;
+    int howmany = 1;
     namespace po = boost::program_options;
+    options.add_options()
+        ("howmany", po::value<int>(&nrep)->default_value(1),
+        "Number of interleaved real-valued fields to transpose")
+        ("rep", po::value<int>(&nrep)->default_value(1),
+        "Number of repetitions to perform for timing purposes")
+    ;
     if (!procid) {
         options.process(argc, argv);
     } else {
@@ -77,114 +86,94 @@ int main(int argc, char *argv[])
                         nullstream, nullstream, nullstream, nullstream);
     }
 
-    /* Create a grid and a problem*/
-    underling_grid grid = underling_grid_create(
-            MPI_COMM_WORLD, griddef.nx(), griddef.ny(), griddef.nz(),
-            griddef.pa(), griddef.pb());
-    underling_problem problem = underling_problem_create(grid, 1);
+    // Create a grid and a problem
+    namespace underling = suzerain::underling;
+    underling::grid grid(MPI_COMM_WORLD,
+                         griddef.global_extents().begin(),
+                         griddef.processor_grid().begin());
+    underling::problem problem(grid, howmany);
 
-    { // Dump grid and problem information
-        // TODO: Error checking on these pipe and FILE* operations
-        FILE *pipewrite;
-        int pipereadfd;
-        suzerain_fpipe(&pipereadfd, O_NONBLOCK, &pipewrite, O_NONBLOCK);
-        namespace io = boost::iostreams;
-        io::stream<io::file_descriptor_source> piperead(pipereadfd);
-        ONLYPROC0(
-            underling_fprint_grid(grid, pipewrite); fflush(pipewrite);
-            LOG4CXX_INFO(logger, piperead.rdbuf());
-        );
-        underling_fprint_problem(problem, pipewrite); fflush(pipewrite);
-        LOG4CXX_DEBUG(logger, piperead.rdbuf());
-        fclose(pipewrite);
-        close(piperead);
+    // Allocate automatically free, aligned storage
+    boost::shared_ptr<underling_real>
+        data(static_cast<underling_real *>(
+                fftw_malloc(problem.local_memory()*sizeof(underling_real))),
+             &fftw_free);
+
+    // Obtain some grid-wide memory usage information
+    const size_t local_memory_minimum
+        = underling::local_memory_minimum(grid, problem);
+    const size_t local_memory_maximum
+        = underling::local_memory_maximum(grid, problem);
+
+    // Report grid geometry and memory characteristics
+    if (!procid) {
+        LOG4CXX_INFO(logger,
+                     "Number of processors:  " << nproc);
+        LOG4CXX_INFO(logger,
+                     "Extents:               " << griddef.global_extents()
+                     << " by " << howmany << " scalar field(s)");
+        LOG4CXX_INFO(logger,
+                     "Processor grid:        " << griddef.processor_grid());
+        LOG4CXX_INFO(logger,
+                     "Planning rigor:        "
+                     << suzerain::fftw::c_str(fftwdef.plan_rigor()));
+        LOG4CXX_INFO(logger,
+                     "Number of repetitions: " << nrep);
+        LOG4CXX_INFO(logger,
+                     "Process storage:       "
+                     << (local_memory_maximum*sizeof(underling_real))/1024
+                     << " KB min, "
+                     << (local_memory_minimum*sizeof(underling_real))/1024
+                     << " KB max");
     }
 
-    /* Report memory usage characteristics */
-    const size_t local_memory
-            = underling_local_memory(problem);
-    const size_t local_memory_optimum
-            = underling_local_memory_optimum(grid, problem);
-    LOG4CXX_DEBUG(logger,    "problem local memory "
-                          << local_memory
-                          << " versus optimum "
-                          << local_memory_optimum
-                          << ", ratio = "
-                          << ((double)local_memory)/local_memory_optimum);
-    const size_t global_memory
-            = underling_global_memory(grid, problem); // Collective
-    const size_t global_memory_optimum
-            = underling_global_memory_optimum(grid, problem);
-    ONLYPROC0(LOG4CXX_INFO(logger,
-            "problem global memory "
-              << global_memory
-              << " versus optimum "
-              << global_memory_optimum
-              << ", ratio = "
-              << ((double)global_memory)/global_memory_optimum));
+#ifdef HAVE_HPCT
+    hpct_timer_init("underling");
+    hpct_timer_begin("plan");
+#endif
+    // Create the plan once
+    underling::plan plan(problem,
+                         data.get(),
+                         underling::transpose::all,
+                         fftwdef.plan_rigor());
+#ifdef HAVE_HPCT
+    hpct_timer_end("plan");
+#endif
 
-    /* Allocate storage and create a plan */
-    underling_real * const data
-        = (underling_real *) fftw_malloc(local_memory*sizeof(underling_real));
-    underling_plan plan = underling_plan_create(
-            problem, data, UNDERLING_TRANSPOSE_ALL, fftwdef.plan_rigor());
+    // Execute the plan the appropriate number of times
+    for (int i = 0; i < nrep; ++i) {
 
-    MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
+        if (!procid) LOG4CXX_DEBUG(logger, "Repetition " << i);
 
-    /* Initialize test data in wave space */
-    for (int i = 0; i < local_memory; ++i) {
-        data[i] = procid*10000 + i;
-        LOG4CXX_TRACE(logger, "initial data["
-                << std::setw(8) << std::setfill('0') << i << "] = "
-                << std::setw(8) << std::setfill(' ') << data[i]);
+#ifdef HAVE_HPCT
+        hpct_timer_begin("long_n2_to_long_n1");
+#endif
+        plan.execute_long_n2_to_long_n1();
+#ifdef HAVE_HPCT
+        hpct_timer_end(  "long_n2_to_long_n1");
+        hpct_timer_begin("long_n1_to_long_n0");
+#endif
+        plan.execute_long_n1_to_long_n0();
+#ifdef HAVE_HPCT
+        hpct_timer_end(  "long_n1_to_long_n0");
+        hpct_timer_begin("long_n0_to_long_n1");
+#endif
+        plan.execute_long_n0_to_long_n1();
+#ifdef HAVE_HPCT
+        hpct_timer_end(  "long_n0_to_long_n1");
+        hpct_timer_begin("long_n1_to_long_n2");
+#endif
+        plan.execute_long_n1_to_long_n2();
+#ifdef HAVE_HPCT
+        hpct_timer_end(  "long_n1_to_long_n2");
+#endif
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
+#ifdef HAVE_HPCT
+    hpct_timer_finalize();
+    if (!procid) hpct_timer_summarize();
+#endif
 
-    /* Transform to physical space */
-    LOG4CXX_TRACE(logger, "underling_execute");
-    underling_execute_long_n2_to_long_n1(plan);
-    underling_execute_long_n1_to_long_n0(plan);
-    for (int i = 0; i < local_memory; ++i) {
-        LOG4CXX_TRACE(logger, "post backward data["
-                << std::setw(8) << std::setfill('0') << i << "] = "
-                << std::setw(8) << std::setfill(' ') << data[i]);
-    }
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    /* Transform to wave space */
-    LOG4CXX_TRACE(logger, "underling_execute");
-    underling_execute_long_n0_to_long_n1(plan);
-    underling_execute_long_n1_to_long_n2(plan);
-    for (int i = 0; i < local_memory; ++i) {
-        LOG4CXX_TRACE(logger, "post forward data["
-                << std::setw(8) << std::setfill('0') << i << "] = "
-                << std::setw(8) << std::setfill(' ') << data[i]);
-    }
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    /* Primitive check for data corruption */
-    int corruption = 0;
-    const size_t long_n2_data
-        = underling_local(problem, 2, NULL, NULL, NULL, NULL);
-    for (int i = 0; i < long_n2_data; ++i) {
-        if (data[i] != (procid*10000 + i)) {
-            LOG4CXX_WARN(logger, "test result discrepancy at index " << i);
-            corruption = 1;
-            break;
-        }
-    }
-    int retval;
-    SUZERAIN_MPICHKQ(MPI_Allreduce(
-            &corruption, &retval, 1, MPI_INT, MPI_BOR, MPI_COMM_WORLD));
-
-    /* Clean up after ourselves */
-    underling_plan_destroy(plan);
-    fftw_free(data);
-    underling_problem_destroy(problem);
-    underling_grid_destroy(grid);
-
-    return retval;
+    return EXIT_SUCCESS;
 }
