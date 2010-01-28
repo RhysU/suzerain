@@ -214,5 +214,4 @@ std::basic_ostream<charT,traits>& operator<<(
               << ')';
 }
 
-
 #endif // __SUZERAIN_UNDERLING_HPP
