@@ -301,6 +301,44 @@ underling_grid_create(
     return g;
 }
 
+int
+underling_grid_pA_size(
+        const underling_grid grid)
+{
+    if (SUZERAIN_UNLIKELY(grid == NULL)) {
+        SUZERAIN_ERROR_VAL("grid == NULL", SUZERAIN_EINVAL, 0);
+    }
+
+    int retval;
+
+    const int error = MPI_Comm_size(grid->pA_comm, &retval);
+    if (error) {
+        SUZERAIN_MPICHKR(error /* MPI_Comm_size */);
+        return 0;
+    }
+
+    return retval;
+}
+
+int
+underling_grid_pB_size(
+        const underling_grid grid)
+{
+    if (SUZERAIN_UNLIKELY(grid == NULL)) {
+        SUZERAIN_ERROR_VAL("grid == NULL", SUZERAIN_EINVAL, 0);
+    }
+
+    int retval;
+
+    const int error = MPI_Comm_size(grid->pB_comm, &retval);
+    if (error) {
+        SUZERAIN_MPICHKR(error /* MPI_Comm_size */);
+        return 0;
+    }
+
+    return retval;
+}
+
 void
 underling_grid_destroy(underling_grid grid)
 {

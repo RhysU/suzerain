@@ -103,6 +103,12 @@ public:
     /** @see underling_grid_destroy */
     ~grid() { underling_grid_destroy(grid_); }
 
+    /** @see underling_grid_pA_size */
+    int pA_size() const { return underling_grid_pA_size(grid_); }
+
+    /** @see underling_grid_pB_size */
+    int pB_size() const { return underling_grid_pB_size(grid_); }
+
     /** @return The wrapped underling_grid instance. */
     const underling_grid get() const { return grid_; }
 

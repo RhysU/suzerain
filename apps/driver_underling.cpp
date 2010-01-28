@@ -108,19 +108,23 @@ int main(int argc, char *argv[])
     // Report grid geometry and memory characteristics
     if (!procid) {
         LOG4CXX_INFO(logger,
-                     "Number of processors:  " << nproc);
+                     "Number of processors:     " << nproc);
         LOG4CXX_INFO(logger,
-                     "Extents:               " << griddef.global_extents()
+                     "Extents:                  " << griddef.global_extents()
                      << " by " << howmany << " scalar field(s)");
         LOG4CXX_INFO(logger,
-                     "Processor grid:        " << griddef.processor_grid());
+                     "Requested processor grid: "
+                     << griddef.processor_grid());
         LOG4CXX_INFO(logger,
-                     "Planning rigor:        "
+                     "Actual processor grid:    "
+                     << grid.pA_size() << " by " << grid.pB_size());
+        LOG4CXX_INFO(logger,
+                     "Planning rigor:           "
                      << suzerain::fftw::c_str(fftwdef.plan_rigor()));
         LOG4CXX_INFO(logger,
-                     "Number of repetitions: " << nrep);
+                     "Number of repetitions:    " << nrep);
         LOG4CXX_INFO(logger,
-                     "Process storage:       "
+                     "Process storage:          "
                      << (local_memory_maximum*sizeof(underling_real))/1024
                      << " KB min, "
                      << (local_memory_minimum*sizeof(underling_real))/1024

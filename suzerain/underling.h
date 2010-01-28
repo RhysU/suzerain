@@ -220,6 +220,34 @@ underling_grid_create(
         int pB);
 
 /**
+ * Obtain the size of the processor grid in the \c pA direction.
+ *
+ * @param grid Grid for which to retrieve information.
+ *
+ * @return On success, the runtime size of the \c pA direction.
+ *         On failure, calls suzerain_error and returns null.
+ * @see The method underling_grid_create for how and when data
+ *      is split across the \c pA processor grid direction.
+ */
+int
+underling_grid_pA_size(
+        const underling_grid grid);
+
+/**
+ * Obtain the size of the processor grid in the \c pB direction.
+ *
+ * @param grid Grid for which to retrieve information.
+ *
+ * @return On success, the runtime size of the \c pB direction.
+ *         On failure, calls suzerain_error and returns null.
+ * @see The method underling_grid_create for how and when data
+ *      is split across the \c pB processor grid direction.
+ */
+int
+underling_grid_pB_size(
+        const underling_grid grid);
+
+/**
  * Destroy all resources associated with the given grid.
  *
  * @param grid Grid to be destroyed.
