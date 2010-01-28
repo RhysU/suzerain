@@ -31,6 +31,7 @@
 #ifndef __SUZERAIN_UNDERLING_HPP
 #define __SUZERAIN_UNDERLING_HPP
 
+#include <ostream>
 #include <suzerain/underling.h>
 
 // TODO Document the C++ API
@@ -198,5 +199,20 @@ private:
 } // namespace underling
 
 } // namespace suzerain
+
+template< typename charT, typename traits >
+std::basic_ostream<charT,traits>& operator<<(
+        std::basic_ostream<charT,traits> &os,
+        const suzerain::underling::extents &e)
+{
+    return os << '['
+              << e.start[0] << ',' << (e.start[0] + e.size[0])
+              << ")x["
+              << e.start[1] << ',' << (e.start[1] + e.size[1])
+              << ")x["
+              << e.start[2] << ',' << (e.start[2] + e.size[2])
+              << ')';
+}
+
 
 #endif // __SUZERAIN_UNDERLING_HPP

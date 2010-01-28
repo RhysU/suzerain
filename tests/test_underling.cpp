@@ -4,7 +4,6 @@
 #define BOOST_TEST_MODULE $Id$
 #include <mpi.h>
 #include <fftw3-mpi.h>
-#include <boost/array.hpp>
 #include <boost/mpl/list_c.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
@@ -80,16 +79,10 @@ void round_trip_test(const int howmany,
         MPI_Barrier(MPI_COMM_WORLD);
         if (procid == i) {
             // Dump out the process' portion of the global grid
-            boost::format formatter("long_n%d: [%d,%d)x[%d,%d)x[%d,%d)");
             std::ostringstream oss;
             oss << "Rank " << procid << " has ";
             for (int i = 0; i < 3; ++i) {
-                formatter % i;
-                for (int j = 0; j < 3; ++j) {
-                    formatter % long_n[i].start[j]
-                              % (long_n[i].start[j] + long_n[i].size[j]);
-                }
-                oss << formatter.str();
+                oss << "long_n" << i << ": " << long_n[i];
                 if (i < 2) oss << ", ";
             }
             BOOST_TEST_MESSAGE(oss.str());
