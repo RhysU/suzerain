@@ -185,7 +185,7 @@ extern const underling_extents UNDERLING_EXTENTS_INVALID;
  *  - When "long in n1" storage is <tt>(n2/pA x n0/pB) x n1</tt>.
  *  - When "long in n0" storage is <tt>(n1/pB x n2/pA) x n0</tt>.
  *
- * All orders given are row-major; that is, the rightmost index is fastest.
+ * All orders given are row-major; the rightmost index is fastest.
  * Expressions like <tt>n{0,1,2}/p{A,B}</tt> indicate that the
  * <tt>n{0,1,2}</tt> direction is decomposed across a grid of size
  * <tt>p{A,B}</tt>.  The decomposition is balanced given communication overhead
@@ -328,9 +328,9 @@ underling_local_memory(
         const underling_problem problem);
 
 /**
- * Find the theoretical optimum (i.e. minimum) amount of memory required to
- * store the given problem on each processor on the given grid
- * assuming no communications buffer overhead.
+ * Find the theoretical optimum (minimum) amount of memory required to
+ * store the given problem on each processor on the given grid assuming no
+ * communications buffer overhead.
  *
  * @param grid Grid for which to retrieve information.
  * @param problem Problem for which to retrieve information.
@@ -392,9 +392,9 @@ underling_global_memory(
         const underling_problem problem);
 
 /**
- * Find the theoretical optimum (i.e. minimum) amount of memory required to
- * store the given problem on all processors on the given grid
- * assuming no communications buffer overhead.
+ * Find the theoretical optimum (minimum) amount of memory required to
+ * store the given problem on all processors on the given grid assuming no
+ * communications buffer overhead.
  *
  * @param grid Grid for which to retrieve information.
  * @param problem Problem for which to retrieve information.
