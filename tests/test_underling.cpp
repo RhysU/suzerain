@@ -9,7 +9,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <suzerain/error.h>
-#include <suzerain/underling.h>
+#include <suzerain/underling.hpp>
 
 // Currently this test focuses on round-trip correctness
 // TODO Test that data which should be long is in fact long
@@ -36,6 +36,8 @@ BOOST_GLOBAL_FIXTURE(FFTWMPIFixture);
 void round_trip_test(const int howmany,
                      const int NX, const int NY, const int NZ)
 {
+    namespace underling = suzerain::underling;
+
     int procid;
     BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_rank(MPI_COMM_WORLD, &procid));
 
@@ -49,20 +51,14 @@ void round_trip_test(const int howmany,
                            << (nproc > 1 ? "s" : "") );
     }
 
-    // Create a grid that will be automagically cleaned up
-    boost::shared_ptr<boost::remove_pointer<underling_grid>::type>
-        grid(underling_grid_create(MPI_COMM_WORLD, NX, NY, NZ, 0, 0),
-             &underling_grid_destroy);
+    underling::grid grid(MPI_COMM_WORLD, NX, NY, NZ);
     BOOST_REQUIRE(grid);
 
-    // Create a problem that will be automagically cleaned up
-    boost::shared_ptr<boost::remove_pointer<underling_problem>::type>
-        problem(underling_problem_create(grid.get(), howmany),
-                &underling_problem_destroy);
+    underling::problem problem(grid, howmany);
     BOOST_REQUIRE(problem);
 
     // Allocate space that will be automagically cleaned up
-    const size_t local_memory = underling_local_memory(problem.get());
+    const size_t local_memory = problem.local_memory();
     boost::shared_ptr<underling_real>
         data((underling_real *) fftw_malloc(
                     local_memory*sizeof(underling_real)),
@@ -73,7 +69,7 @@ void round_trip_test(const int howmany,
     // Also gives us a reason to look up stride information
     underling_extents long_n[3];
     for (int i = 0; i < sizeof(long_n)/sizeof(long_n[0]); ++i) {
-        long_n[i] = underling_local_extents(problem.get(), i);
+        long_n[i] = problem.local_extents(i);
     }
     BOOST_REQUIRE_LE(long_n[0].extent, local_memory);
     BOOST_REQUIRE_LE(long_n[1].extent, local_memory);
@@ -100,12 +96,10 @@ void round_trip_test(const int howmany,
         }
     }
 
-    // Create a plan that will be automagically cleaned up
-    boost::shared_ptr<boost::remove_pointer<underling_plan>::type>
-        plan(underling_plan_create(
-                    problem.get(), data.get(),
-                    UNDERLING_TRANSPOSE_ALL, FFTW_ESTIMATE),
-             &underling_plan_destroy);
+    underling::plan plan(problem,
+                         data.get(),
+                         underling::transpose::all,
+                         FFTW_ESTIMATE);
     BOOST_REQUIRE(plan);
 
     // Initialize entire local memory buffer while long in n2
@@ -114,15 +108,11 @@ void round_trip_test(const int howmany,
               data.get());
 
     // Transform from long in n2 to long in n0
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
-                        underling_execute_long_n2_to_long_n1(plan.get()));
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
-                        underling_execute_long_n1_to_long_n0(plan.get()));
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, plan.execute_long_n2_to_long_n1());
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, plan.execute_long_n1_to_long_n0());
     // Transform from long in n0 to long in n2
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
-                        underling_execute_long_n0_to_long_n1(plan.get()));
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
-                        underling_execute_long_n1_to_long_n2(plan.get()));
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, plan.execute_long_n0_to_long_n1());
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, plan.execute_long_n1_to_long_n2());
 
     // Ensure we successfully round-tripped back to long_n2 storage.
     // Buffer reqions beyond total_extent are excluded from the check.

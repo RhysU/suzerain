@@ -49,6 +49,7 @@ pkginclude_HEADERS += richardson.h
 pkginclude_HEADERS += timestepper.hpp
 pkginclude_HEADERS += types.hpp
 pkginclude_HEADERS += underling.h
+pkginclude_HEADERS += underling.hpp
 
 noinst_LTLIBRARIES     += libsuzerain.la
 libsuzerain_la_LDFLAGS  = -release $(PACKAGE_VERSION)
