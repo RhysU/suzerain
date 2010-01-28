@@ -88,6 +88,12 @@ AC_SUBST(FFTW3_LIBS)
 PKG_CHECK_MODULES(P3DFFT, suzerain-p3dfft)
 AC_SUBST(P3DFFT_CFLAGS)
 AC_SUBST(P3DFFT_LIBS)
+PKG_CHECK_MODULES(HPCT,
+                  [hpct >= 0.26],
+                  AC_DEFINE([HAVE_HPCT],[1],[Defined if HPC Toolkit found]),
+                  AC_MSG_WARN([Could not find HPC Toolkit; Continuing...]))
+AC_SUBST(HPCT_CFLAGS)
+AC_SUBST(HPCT_LIBS)
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
