@@ -35,6 +35,9 @@
 #include <suzerain/underling.h>
 #include <fftw3-mpi.h>
 
+// TODO Ensure grid/problem compatibility when both provided to methods!
+// TODO Add wisdom broadcasting and FFTW_WISDOM_ONLY handling
+
 // *******************************************************************
 // INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS
 // *******************************************************************
@@ -191,7 +194,10 @@ underling_grid_create(
         int pA,
         int pB)
 {
-    // Sanity check incoming, non-MPI arguments
+    // Sanity check incoming arguments
+    if (SUZERAIN_UNLIKELY(comm == MPI_COMM_NULL)) {
+        SUZERAIN_ERROR_NULL("comm != MPI_COMM_NULL required", SUZERAIN_EINVAL);
+    }
     if (SUZERAIN_UNLIKELY(n0 < 1)) {
         SUZERAIN_ERROR_NULL("n0 >= 1 required", SUZERAIN_EINVAL);
     }
@@ -557,7 +563,7 @@ underling_problem_create(
 
     // Determine all necessary strides for row-major storage
     // -----------------------------------------------------
-    // Compute strides when long in n2: (n0/pB x  n1/pA) x n2
+    // Compute strides when long in n2: (n0/pB x n1/pA) x n2
     p->long_n[2].stride[2] = p->howmany;
     p->long_n[2].stride[1] = p->long_n[2].stride[2] * p->long_n[2].size[2];
     p->long_n[2].stride[0] = p->long_n[2].stride[1] * p->long_n[2].size[1];
@@ -578,6 +584,15 @@ underling_problem_create(
     p->long_n[0].strideorder[0] = 0; // Fastest
     p->long_n[0].strideorder[1] = 2;
     p->long_n[0].strideorder[2] = 1; // Slowest
+
+    // Compute extent when long in each direction; redundant but convenient
+    for (int i = 0; i < 3; ++i) {
+        p->long_n[i].extent =
+              p->howmany
+            * p->long_n[i].size[0]
+            * p->long_n[i].size[1]
+            * p->long_n[i].size[2];
+    }
 
     // Transpose pA details: (n0/pB x n1/pA) x n2 to n2/pA x (n0/pB x n1)
     const ptrdiff_t pA_d[2] = { p->long_n[2].size[0] * grid->n[1],
@@ -674,7 +689,7 @@ underling_local_memory_allreduce(
         SUZERAIN_ERROR_VAL("grid == NULL", SUZERAIN_EINVAL, 0);
     }
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
-        SUZERAIN_ERROR_NULL("problem == NULL", SUZERAIN_EINVAL);
+        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
 
     // Use unsigned long values for safety in heterogeneous environments.
@@ -754,46 +769,48 @@ underling_local_memory_optimum(
 size_t
 underling_local(
         const underling_problem problem,
-        int n,
+        int i,
         int *start,
         int *size,
         int *stride,
         int *strideorder)
 {
-    if (SUZERAIN_UNLIKELY(n < 0 || n > 2)) {
-        SUZERAIN_ERROR_VAL("n < 0 or n > 2", SUZERAIN_EINVAL, 0);
+    if (SUZERAIN_UNLIKELY(i < 0 || i > 2)) {
+        SUZERAIN_ERROR_VAL("i < 0 or i > 2", SUZERAIN_EINVAL, 0);
     }
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
 
-    const underling_extents * const e = &problem->long_n[n];
+    const underling_extents * const e = &problem->long_n[i];
+
     if (start) {
-        for (int i = 0; i < 3; ++i)
-            start[i] = e->start[i];
+        for (int j = 0; j < 3; ++j)
+            start[j] = e->start[j];
     }
     if (size) {
-        for (int i = 0; i < 3; ++i)
-            size[i] = e->size[i];
+        for (int j = 0; j < 3; ++j)
+            size[j] = e->size[j];
     }
     if (stride) {
-        for (int i = 0; i < 3; ++i)
-            stride[i] = e->stride[i];
+        for (int j = 0; j < 3; ++j)
+            stride[j] = e->stride[j];
     }
     if (strideorder) {
-        for (int i = 0; i < 3; ++i)
-            strideorder[i] = e->strideorder[i];
+        for (int j = 0; j < 3; ++j)
+            strideorder[j] = e->strideorder[j];
     }
-    return e->size[0] * e->size[1] * e->size[2];
+
+    return e->extent;
 }
 
 underling_extents
 underling_local_extents(
         const underling_problem problem,
-        int n)
+        int i)
 {
-    if (SUZERAIN_UNLIKELY(n < 0 || n > 2)) {
-        SUZERAIN_ERROR_VAL("n < 0 or n > 2",
+    if (SUZERAIN_UNLIKELY(i < 0 || i > 2)) {
+        SUZERAIN_ERROR_VAL("i < 0 or i > 2",
                 SUZERAIN_EINVAL, UNDERLING_EXTENTS_INVALID);
     }
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
@@ -801,7 +818,7 @@ underling_local_extents(
                 SUZERAIN_EINVAL, UNDERLING_EXTENTS_INVALID);
     }
 
-    underling_extents retval = problem->long_n[n]; // Create temporary
+    underling_extents retval = problem->long_n[i]; // Create temporary
     return retval;                                 // Return temporary
 }
 

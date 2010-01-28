@@ -72,15 +72,12 @@ void round_trip_test(const int howmany,
     // Sanity check the buffer vs local extent information
     // Also gives us a reason to look up stride information
     underling_extents long_n[3];
-    size_t extent_n[3];
     for (int i = 0; i < sizeof(long_n)/sizeof(long_n[0]); ++i) {
         long_n[i] = underling_local_extents(problem.get(), i);
-        extent_n[i]
-            = long_n[i].size[0] * long_n[i].size[1] * long_n[i].size[2];
     }
-    BOOST_REQUIRE_LE(extent_n[0], local_memory);
-    BOOST_REQUIRE_LE(extent_n[1], local_memory);
-    BOOST_REQUIRE_LE(extent_n[2], local_memory);
+    BOOST_REQUIRE_LE(long_n[0].extent, local_memory);
+    BOOST_REQUIRE_LE(long_n[1].extent, local_memory);
+    BOOST_REQUIRE_LE(long_n[2].extent, local_memory);
 
     // Sync up processors to output trace information
     for (int i = 0; i < nproc; ++i) {
@@ -94,7 +91,7 @@ void round_trip_test(const int howmany,
                 formatter % i;
                 for (int j = 0; j < 3; ++j) {
                     formatter % long_n[i].start[j]
-                               % (long_n[i].start[j] + long_n[i].size[j]);
+                              % (long_n[i].start[j] + long_n[i].size[j]);
                 }
                 oss << formatter.str();
                 if (i < 2) oss << ", ";
@@ -131,9 +128,9 @@ void round_trip_test(const int howmany,
     // Buffer reqions beyond total_extent are excluded from the check.
     BOOST_REQUIRE_EQUAL_COLLECTIONS(
             data.get(),
-            data.get() + extent_n[2],
+            data.get() + long_n[2].extent,
             boost::make_counting_iterator(procid*10000.0),
-            boost::make_counting_iterator(procid*10000.0 + extent_n[2]));
+            boost::make_counting_iterator(procid*10000.0 + long_n[2].extent));
 }
 
 typedef boost::mpl::list_c<int,1,2,3,5,7,11> howmany_values;
