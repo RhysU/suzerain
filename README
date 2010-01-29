@@ -4,8 +4,8 @@
 0. Introduction
 ---------------
 
-This document describes how to build suzerain from source code on
-Unix-like systems.
+This document describes how to build suzerain from source code on Unix-like
+systems.
 
 
 1. Dependencies
@@ -16,17 +16,19 @@ The code depends upon the following libraries:
     1) GNU Scientific Library (GSL) from http://www.gnu.org/software/gsl/
     2) Boost from http://www.boost.org/
     3) Eigen from http://eigen.tuxfamily.org/
+    4) Log4cxx from http://logging.apache.org/log4cxx/
 
 
 2. Configuration
 ----------------
 
-If you have no `configure' script in the top level directory, run
-`bootstrap' to create one using GNU autoconf and automake.
+If you have no `configure' script in the top level directory, run `bootstrap'
+to create one using GNU autoconf and automake.  Using bootstrap will require a
+recent version of autoconf, automake, and pkg-config's pkg.m4 macros.
 
-Before compiling suzerain, you need to run the provided `configure'
-script.  Generally, just `./configure' will work, but you may wish to
-provide more parameters.  Run `./configure --help' for details.
+Before compiling suzerain, you need to run the provided `configure' script.
+Generally, just `./configure' will work, but you may wish to provide more
+parameters.  Run `./configure --help' for details.
 
 
 3. Compilation
@@ -34,9 +36,8 @@ provide more parameters.  Run `./configure --help' for details.
 
 To compile suzerain after it has been configured, simply type 'make'.
 
-After the compilation one or more ready-to-use executables should reside
-in the src directory.  Related documentation will be built in the doc
-subdirectory.
+After the compilation one or more ready-to-use executables should reside in the
+src directory.  Related documentation will be built in the doc subdirectory.
 
 
 4. Testing
