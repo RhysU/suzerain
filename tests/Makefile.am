@@ -9,8 +9,9 @@ AM_LDFLAGS     = # Append below
 bin_PROGRAMS   = # Append below
 check_PROGRAMS = # Append below
 noinst_HEADERS = # Append below
-EXTRA_DIST     = # Append below
 CLEANFILES     = # Append below
+EXTRA_DIST     = # Append below
+TESTS          = # Append below
 
 noinst_HEADERS += test_tools.hpp
 
@@ -23,22 +24,29 @@ CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
 # Clean up from Intel Compiler's precompiled header output
 CLEANFILES += *.pchi
 
+# Provide a test-ready logging configuration
+TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
+
+TESTS              += test_error
 check_PROGRAMS     += test_error
 test_error_SOURCES  = test_error.cpp
 test_error_LDADD    = ../suzerain/libsuzerain.la
 test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-check_PROGRAMS     += test_os
+TESTS           += test_os
+check_PROGRAMS  += test_os
 test_os_SOURCES  = test_os.c
 test_os_LDADD    = ../suzerain/libsuzerain.la
 
+TESTS                   += test_blas_et_al
 check_PROGRAMS          += test_blas_et_al
 test_blas_et_al_SOURCES  = test_blas_et_al.c
 test_blas_et_al_LDADD    = $(GSL_LIBS)
 test_blas_et_al_LDADD   += $(MKL_LIBS)
 test_blas_et_al_LDADD   += ../suzerain/libsuzerain.la
 
+TESTS                += test_bspline
 check_PROGRAMS       += test_bspline
 test_bspline_SOURCES  = test_bspline.cpp
 test_bspline_LDADD    = ../suzerain/libsuzerain.la
@@ -47,16 +55,19 @@ test_bspline_LDADD   += $(LOG4CXX_LIBS)
 test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS             += test_math
 check_PROGRAMS    += test_math
 test_math_SOURCES  = test_math.cpp
 test_math_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_math_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS               += test_complex
 check_PROGRAMS      += test_complex
 test_complex_SOURCES = test_complex.cpp
 test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_complex_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS               += test_state
 check_PROGRAMS      += test_state
 test_state_SOURCES   = test_state.cpp
 test_state_LDADD     = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
@@ -64,6 +75,7 @@ test_state_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 test_state_LDADD    += $(MKL_LIBS)
 test_state_LDADD    += ../suzerain/libsuzerain.la
 
+TESTS               += test_pencil
 check_PROGRAMS      += test_pencil
 test_pencil_SOURCES  = test_pencil.cpp
 test_pencil_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
@@ -73,17 +85,20 @@ test_pencil_LDADD   += $(FFTW3_LIBS)
 test_pencil_LDADD   += $(GSL_LIBS)
 test_pencil_LDADD   += ../suzerain/libsuzerain.la
 
+TESTS                    += test_orthonormal
 check_PROGRAMS           += test_orthonormal
 test_orthonormal_SOURCES  = test_orthonormal.cpp
 test_orthonormal_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_orthonormal_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 EXTRA_DIST               += test_orthonormal.sage
 
+TESTS                   += test_richardson
 check_PROGRAMS          += test_richardson
 test_richardson_SOURCES  = test_richardson.c
 test_richardson_LDADD    = $(GSL_LIBS)
 test_richardson_LDADD   += ../suzerain/libsuzerain.la
 
+TESTS                    += test_timestepper
 check_PROGRAMS           += test_timestepper
 test_timestepper_SOURCES  = test_timestepper.cpp
 test_timestepper_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
@@ -92,11 +107,13 @@ test_timestepper_LDADD   += $(GSL_LIBS)
 test_timestepper_LDADD   += $(MKL_LIBS)
 test_timestepper_LDADD   += ../suzerain/libsuzerain.la
 
+TESTS                    += test_multi_array
 check_PROGRAMS           += test_multi_array
 test_multi_array_SOURCES  = test_multi_array.cpp
 test_multi_array_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_multi_array_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS             += test_fftw
 check_PROGRAMS    += test_fftw
 test_fftw_SOURCES  = test_fftw.cpp
 test_fftw_LDADD    = $(FFTW3_LIBS)
@@ -105,36 +122,43 @@ test_fftw_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 test_fftw_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 test_fftw_LDADD   += ../suzerain/libsuzerain.la
 
+TESTS                += test_fftw_1D
 check_PROGRAMS       += test_fftw_1D
 test_fftw_1D_SOURCES  = test_fftw_1D.cpp
 test_fftw_1D_LDADD    = $(FFTW3_LIBS)
 test_fftw_1D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_fftw_1D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                          += test_pencilfft_utility
 check_PROGRAMS                 += test_pencilfft_utility
 test_pencilfft_utility_SOURCES  = test_pencilfft_utility.cpp
 test_pencilfft_utility_LDADD    = $(FFTW3_LIBS)
 test_pencilfft_utility_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencilfft_utility_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                     += test_pencilfft_1D
 check_PROGRAMS            += test_pencilfft_1D
 test_pencilfft_1D_SOURCES  = test_pencilfft_1D.cpp
 test_pencilfft_1D_LDADD    = $(FFTW3_LIBS)
 test_pencilfft_1D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencilfft_1D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                     += test_pencilfft_2D
 check_PROGRAMS            += test_pencilfft_2D
 test_pencilfft_2D_SOURCES  = test_pencilfft_2D.cpp
 test_pencilfft_2D_LDADD    = $(FFTW3_LIBS)
 test_pencilfft_2D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencilfft_2D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                     += test_pencilfft_3D
 check_PROGRAMS            += test_pencilfft_3D
 test_pencilfft_3D_SOURCES  = test_pencilfft_3D.cpp
 test_pencilfft_3D_LDADD    = $(FFTW3_LIBS)
 test_pencilfft_3D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencilfft_3D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                  += test_underling.sh          # NB Wrapper script
+EXTRA_DIST             += test_underling.sh          # NB Wrapper script
 check_PROGRAMS         += test_underling
 test_underling_SOURCES  = test_underling.cpp
 test_underling_LDADD    = ../suzerain/libunderling.la
@@ -142,9 +166,6 @@ test_underling_LDADD   += -lfftw3_mpi
 test_underling_LDADD   += $(FFTW3_LIBS)
 test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
-TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
-TESTS = $(check_PROGRAMS)
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
