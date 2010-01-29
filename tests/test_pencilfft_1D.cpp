@@ -150,7 +150,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         real_type z_real, z_imag;
         suzerain::complex::assign_components(z_real, z_imag, out[0]);
         BOOST_REQUIRE_SMALL(z_real, close_enough);
-        BOOST_REQUIRE_CLOSE(z_imag, 17, close_enough);
+        BOOST_REQUIRE_CLOSE(z_imag, 17.0, close_enough);
     }
 }
 
