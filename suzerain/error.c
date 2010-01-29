@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <config.h>
+#include <suzerain/config.h>
 #include <suzerain/common.h>
 #pragma hdrstop
 #include <suzerain/error.h>

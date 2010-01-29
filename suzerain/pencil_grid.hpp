@@ -34,7 +34,6 @@
 #include <suzerain/types.hpp>
 #include <suzerain/mpi.hpp>
 #include <p3dfft_d.h>
-#include <mpi.h>
 
 namespace suzerain
 {

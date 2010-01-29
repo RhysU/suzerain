@@ -28,10 +28,9 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#include <mpi.h>
-#include <p3dfft_d.h>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <p3dfft_d.h>
 
 namespace suzerain {
 

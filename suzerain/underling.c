@@ -28,10 +28,11 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#include <config.h>
+#include <suzerain/config.h>
 #include <suzerain/common.h>
 #pragma hdrstop
 #include <suzerain/error.h>
+#include <suzerain/mpi.h>
 #include <suzerain/underling.h>
 #include <fftw3-mpi.h>
 
@@ -754,9 +755,11 @@ underling_local_memory_allreduce(
     // Use unsigned long values for safety in heterogeneous environments.
     assert(((size_t)-1) <= ((unsigned long int)-1)); // "Type safety"
 
-    unsigned long int retval = underling_local_memory(problem);
+    unsigned long int retval;
+
+    unsigned long int sendbuf = underling_local_memory(problem);
     const int error = MPI_Allreduce(
-            MPI_IN_PLACE, &retval, 1, MPI_UNSIGNED_LONG,
+            &sendbuf, &retval, 1, MPI_UNSIGNED_LONG,
             op, grid->g_comm);
     if (SUZERAIN_UNLIKELY(error)) {
         SUZERAIN_MPICHKR(error /* allreduce local_memory */);

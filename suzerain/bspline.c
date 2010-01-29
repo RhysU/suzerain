@@ -28,7 +28,7 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#include <config.h>
+#include <suzerain/config.h>
 #include <suzerain/common.h>
 #pragma hdrstop
 #include <gsl/gsl_bspline.h>

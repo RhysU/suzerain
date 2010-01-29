@@ -284,7 +284,7 @@ FILE * suzerain_set_stream(FILE * new_stream);
  * SUZERAIN_ERROR.
  *
  * @param stmt Statement, presumably an MPI call, to be executed.
- * @note <tt>mpi.h</tt> must be <tt>include</tt>d for the macro
+ * @note <tt>suzerain/mpi.h</tt> must be <tt>include</tt>d for the macro
  *       expansion to compile correctly.
  * @warning This macro expands to a not insignificant amount of code.
  *          It should not be used in performance critical regions.
@@ -299,7 +299,7 @@ FILE * suzerain_set_stream(FILE * new_stream);
  * MPI_Error_string and reported.
  *
  * @param stmt Statement, presumably an MPI call, to be executed.
- * @note <tt>mpi.h</tt> must be <tt>include</tt>d for the macro
+ * @note <tt>suzerain/mpi.h</tt> must be <tt>include</tt>d for the macro
  *       expansion to compile correctly.
  * @warning This macro expands to a not insignificant amount of code.
  *          It should not be used in performance critical regions.
@@ -314,7 +314,7 @@ FILE * suzerain_set_stream(FILE * new_stream);
  * MPI_Error_string and reported.
  *
  * @param stmt Statement, presumably an MPI call, to be executed.
- * @note <tt>mpi.h</tt> must be <tt>include</tt>d for the macro
+ * @note <tt>suzerain/mpi.h</tt> must be <tt>include</tt>d for the macro
  *       expansion to compile correctly.
  * @warning This macro expands to a not insignificant amount of code.
  *          It should not be used in performance critical regions.
@@ -329,7 +329,7 @@ FILE * suzerain_set_stream(FILE * new_stream);
  * relevant message is looked up using \c MPI_Error_string and reported.
  *
  * @param stmt Statement, presumably an MPI call, to be executed.
- * @note <tt>mpi.h</tt> must be <tt>include</tt>d for the macro
+ * @note <tt>suzerain/mpi.h</tt> must be <tt>include</tt>d for the macro
  *       expansion to compile correctly.
  * @warning This macro expands to a not insignificant amount of code.
  *          It should not be used in performance critical regions.

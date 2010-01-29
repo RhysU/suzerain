@@ -2,13 +2,13 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
-#include <mpi.h>
-#include <fftw3-mpi.h>
 #include <boost/mpl/list_c.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <suzerain/error.h>
+#include <suzerain/mpi.hpp>
 #include <suzerain/underling.hpp>
+#include <fftw3-mpi.h>
 
 // Currently this test focuses on round-trip correctness
 // TODO Test that data which should be long is in fact long

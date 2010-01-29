@@ -32,7 +32,7 @@
 #define __SUZERAIN_MPI_HPP
 
 #include <suzerain/common.hpp>
-#include <mpi.h>
+#include <suzerain/mpi.h>
 
 namespace suzerain {
 
@@ -89,11 +89,11 @@ std::string comm_rank_identifier(MPI_Comm comm);
 
 /**
  * Create a division of processors in a Cartesian grid.
- * The dimensionality is chosen via the templated second parameter type.  On
- * error, throws an appropriate exception.  Any zero value contained in the
- * sequence (<tt>dimsBegin</tt>,<tt>dimsEnd</tt>] indicates that the method
- * should choose a suitable value.  The dimensionality of the problem is taken
- * from <tt>std::distance(dimsBegin,dimsEnd)</tt>.
+ * The dimensionality is chosen via the distance between \c dimsBegin and \c
+ * dimsEnd.  On error, throws an appropriate exception.  Any zero value
+ * contained in the sequence (<tt>dimsBegin</tt>,<tt>dimsEnd</tt>] indicates
+ * that the method should choose a suitable value.  The dimensionality of the
+ * problem is taken from <tt>std::distance(dimsBegin,dimsEnd)</tt>.
  *
  * @param nnodes The number of nodes in a grid
  * @param dimsBegin The beginning iterator for the dimension lengths to choose.
@@ -109,20 +109,20 @@ void dims_create(const Integer nnodes,
     typedef typename
         std::iterator_traits<ForwardIterator>::value_type value_type;
 
-    // Cast/copy input types as type 'int' to match MPI API
+    // numeric_cast and/or copy input types to type int to match MPI API
     using boost::numeric_cast;
-    const int int_N      = numeric_cast<int>(std::distance(dimsBegin,dimsEnd));
     const int int_nnodes = numeric_cast<int>(nnodes);
-    std::vector<int> int_dims(int_nnodes);
-    std::transform(dimsBegin, dimsEnd, int_dims.begin(),
+    const int int_ndims  = numeric_cast<int>(std::distance(dimsBegin,dimsEnd));
+    boost::scoped_array<int> int_dims(new int[int_ndims]);
+    std::transform(dimsBegin, dimsEnd, int_dims.get(),
             boost::numeric::converter<int,value_type>());
 
     // Invoke the MPI API
-    const int status = MPI_Dims_create(int_nnodes, int_N, int_dims.data());
+    const int status = MPI_Dims_create(int_nnodes, int_ndims, int_dims.get());
     if (status != MPI_SUCCESS) throw std::runtime_error(error_string(status));
 
     // Copy the output back to the caller
-    std::transform(int_dims.begin(), int_dims.end(), dimsBegin,
+    std::transform(int_dims.get(), int_dims.get() + int_ndims, dimsBegin,
             boost::numeric::converter<value_type,int>());
 }
 

@@ -29,7 +29,6 @@
  *-------------------------------------------------------------------------- */
 
 #include <suzerain/mpi.hpp>
-#include <mpi.h>
 
 namespace suzerain {
 

@@ -28,7 +28,7 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#include <config.h>
+#include <suzerain/config.h>
 #include <suzerain/common.h>
 #include <suzerain/error.h>
 #pragma hdrstop
