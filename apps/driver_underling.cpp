@@ -36,15 +36,22 @@
 #include <fftw3-mpi.h>
 #include <log4cxx/logger.h>
 
+// We use HPCT, if available, for some fine-scale timing.
 #ifdef HAVE_HPCT
 #include <hpct.h>
 #endif
+
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
 
 #include <suzerain/error.h>
 #include <suzerain/fftw.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/os.h>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/types.hpp>
@@ -93,10 +100,11 @@ int main(int argc, char *argv[])
                          griddef.processor_grid().begin());
     underling::problem problem(grid, howmany);
 
-    // Allocate automatically free, aligned storage
+    // Allocate automatically freed, aligned storage
+    const size_t local_memory = problem.local_memory();
     boost::shared_ptr<underling_real>
         data(static_cast<underling_real *>(
-                fftw_malloc(problem.local_memory()*sizeof(underling_real))),
+                fftw_malloc(local_memory*sizeof(underling_real))),
              &fftw_free);
 
     // Obtain some grid-wide memory usage information
@@ -125,9 +133,9 @@ int main(int argc, char *argv[])
                      "Number of repetitions:    " << nrep);
         LOG4CXX_INFO(logger,
                      "Process storage:          "
-                     << (local_memory_maximum*sizeof(underling_real))/1024
-                     << " KB min, "
                      << (local_memory_minimum*sizeof(underling_real))/1024
+                     << " KB min, "
+                     << (local_memory_maximum*sizeof(underling_real))/1024
                      << " KB max");
     }
 
@@ -144,12 +152,25 @@ int main(int argc, char *argv[])
     hpct_timer_end("plan");
 #endif
 
+    // Seed the local memory buffer with processor-dependent, ordered data
+    for (int i = 0; i < local_memory; ++i) {
+        data.get()[i] = (procid*1e6 + i);
+    }
+
+    // Prepare the statistical accumulator for round trip timing
+    using namespace boost::accumulators;
+    accumulator_set<
+            double,
+            stats<tag::mean, tag::variance, tag::min, tag::max>
+        > roundtrip;
+
     // Execute the plan the appropriate number of times
     for (int i = 0; i < nrep; ++i) {
 
         MPI_Barrier(MPI_COMM_WORLD);
         if (!procid) LOG4CXX_DEBUG(logger, "Repetition " << i);
 
+        const double start_trip = MPI_Wtime();   // Start timer
 #ifdef HAVE_HPCT
         hpct_timer_begin("long_n2_to_long_n1");
 #endif
@@ -172,12 +193,51 @@ int main(int argc, char *argv[])
 #ifdef HAVE_HPCT
         hpct_timer_end(  "long_n1_to_long_n2");
 #endif
+        const double end_trip = MPI_Wtime();     // End timer
+
+        // Our round trip time is only as good as the weakest link.
+        // In particular, final in-memory transposes may be slower
+        // on systems with a poorly balanced problem distribution.
+        double sendbuf = end_trip - start_trip;
+        double elapsed;
+        MPI_Allreduce(&sendbuf, &elapsed, 1,
+                      MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+        // Accumulate statistics
+        roundtrip(elapsed);
     }
 
 #ifdef HAVE_HPCT
     hpct_timer_finalize();
     if (!procid) hpct_timer_summarize();
 #endif
+
+    // Dump out the round trip timing statistics
+    if (!procid) {
+        LOG4CXX_INFO(logger,
+                     "Round trip min time:      "
+                     << ((min)(roundtrip)) << " seconds");
+        LOG4CXX_INFO(logger,
+                     "Round trip mean time:     "
+                     << ((mean)(roundtrip)) << " seconds");
+        LOG4CXX_INFO(logger,
+                     "Round trip max time:      "
+                     << ((max)(roundtrip)) << " seconds");
+        LOG4CXX_INFO(logger,
+                     "Round trip stddev:        "
+                     << sqrt(variance(roundtrip)) << " seconds");
+    }
+
+    // Ensure we recover our seeded processor-dependent, ordered data
+    MPI_Barrier(MPI_COMM_WORLD);
+    const underling_extents long_n2 = problem.local_extents(2);
+    for (int i = 0; i < long_n2.extent; ++i) {
+        if (data.get()[i] != (procid*1e6 + i)) {
+            LOG4CXX_ERROR(
+                    logger,
+                    "Did not recover seeded data starting from index " << i);
+            break;
+        }
+    }
 
     return EXIT_SUCCESS;
 }
