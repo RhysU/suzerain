@@ -162,12 +162,20 @@ void test_c2c(MPI_Comm comm,
               const int howmany,
               const int long_i)
 {
+    namespace underling = suzerain::underling;
+
     UnderlingFixture f(comm, n0, n1, n2, howmany);
+    underling::fftplan fftplan(underling::fftplan::c2c_forward(),
+                               f.problem,
+                               long_i,
+                               f.data.get(),
+                               FFTW_ESTIMATE);
+    BOOST_REQUIRE(fftplan);
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2c )
 {
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 1, 0);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

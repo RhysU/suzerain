@@ -50,11 +50,11 @@ struct underling_fftplan_s {
 // ********************************************************************
 
 underling_fftplan
-underling_fftw_plan_c2c(
+underling_fftplan_create_c2c(
         const underling_problem problem,
         int i,
         underling_real * data,
-        unsigned fftw_sign,
+        int fftw_sign,
         unsigned fftw_rigor_flags);
 
 // **************************************************************************
@@ -62,36 +62,34 @@ underling_fftw_plan_c2c(
 // **************************************************************************
 
 underling_fftplan
-underling_fftw_plan_c2c_forward(
+underling_fftplan_create_c2c_forward(
         const underling_problem problem,
         int i,
         underling_real * data,
-        unsigned fftw_sign,
         unsigned fftw_rigor_flags)
 {
-    return underling_fftw_plan_c2c(
+    return underling_fftplan_create_c2c(
             problem, i, data, FFTW_FORWARD, fftw_rigor_flags);
 }
 
 underling_fftplan
-underling_fftw_plan_c2c_backward(
+underling_fftplan_create_c2c_backward(
         const underling_problem problem,
         int i,
         underling_real * data,
-        unsigned fftw_sign,
         unsigned fftw_rigor_flags)
 {
-    return underling_fftw_plan_c2c(
+    return underling_fftplan_create_c2c(
             problem, i, data, FFTW_BACKWARD, fftw_rigor_flags);
 }
 
 static
 underling_fftplan
-underling_fftw_plan_c2c(
+underling_fftplan_create_c2c(
         const underling_problem problem,
         int i,
         underling_real * data,
-        unsigned fftw_sign,
+        int fftw_sign,
         unsigned fftw_rigor_flags)
 {
     // Sanity check input arguments
@@ -111,7 +109,7 @@ underling_fftw_plan_c2c(
         SUZERAIN_ERROR_NULL("data == NULL", SUZERAIN_EINVAL);
     }
     if (SUZERAIN_UNLIKELY(   fftw_sign != FFTW_FORWARD
-                          || fftw_sign != FFTW_BACKWARD)) {
+                          && fftw_sign != FFTW_BACKWARD)) {
         SUZERAIN_ERROR_NULL(
                 "fftw_sign not one of FFTW_{FORWARD,BACKWARD}",
                 SUZERAIN_EINVAL);
