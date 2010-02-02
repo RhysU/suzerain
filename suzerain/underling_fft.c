@@ -100,7 +100,7 @@ underling_fftplan_create_c2c(
         SUZERAIN_ERROR_VAL("i < 0 or i > 2", SUZERAIN_EINVAL, 0);
     }
     const underling_extents extents = underling_local_extents(problem, i);
-    if (SUZERAIN_UNLIKELY(extents.stride[extents.strideorder[0]] % 2)) {
+    if (SUZERAIN_UNLIKELY(extents.stride[extents.order[0]] % 2)) {
         SUZERAIN_ERROR_NULL(
                 "problem must have an even number of underling_real fields",
                 SUZERAIN_EINVAL);
@@ -127,11 +127,11 @@ underling_fftplan_create_c2c(
     // allows using underling_extents.strides directly.  The tranform is purely
     // in place which sets our output strides equal to our input strides.
 
-    // We transform the long dimension given by extents.strideorder[0]
+    // We transform the long dimension given by extents.order[0]
     const fftw_iodim dims[] = {
-        extents.size[extents.strideorder[0]],   // n
-        extents.stride[extents.strideorder[0]], // is
-        extents.stride[extents.strideorder[0]]  // os
+        extents.size[extents.order[0]],   // n
+        extents.stride[extents.order[0]], // is
+        extents.stride[extents.order[0]]  // os
     };
     const int rank = sizeof(dims)/sizeof(dims[0]);
 
@@ -140,19 +140,19 @@ underling_fftplan_create_c2c(
     // order.
     const fftw_iodim howmany_dims[3] = {
         {
-            extents.size[extents.strideorder[2]],
-            extents.stride[extents.strideorder[2]],
-            extents.stride[extents.strideorder[2]]
+            extents.size[extents.order[2]],
+            extents.stride[extents.order[2]],
+            extents.stride[extents.order[2]]
         },
         {
-            extents.size[extents.strideorder[1]],
-            extents.stride[extents.strideorder[1]],
-            extents.stride[extents.strideorder[1]]
+            extents.size[extents.order[1]],
+            extents.stride[extents.order[1]],
+            extents.stride[extents.order[1]]
         },
         {
-            extents.stride[extents.strideorder[0]] / 2, // howmany/2
-            2,                                          // is, interleaved
-            2                                           // os, interleaved
+            extents.stride[extents.order[0]] / 2, // howmany/2
+            2,                                    // is, interleaved
+            2                                     // os, interleaved
         }
     };
     const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);

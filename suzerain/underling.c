@@ -612,23 +612,23 @@ underling_problem_create(
     p->long_n[2].stride[2] = p->howmany;
     p->long_n[2].stride[1] = p->long_n[2].stride[2] * p->long_n[2].size[2];
     p->long_n[2].stride[0] = p->long_n[2].stride[1] * p->long_n[2].size[1];
-    p->long_n[2].strideorder[0] = 2; // Fastest
-    p->long_n[2].strideorder[1] = 1;
-    p->long_n[2].strideorder[2] = 0; // Slowest
+    p->long_n[2].order[0] = 2; // Fastest
+    p->long_n[2].order[1] = 1;
+    p->long_n[2].order[2] = 0; // Slowest
     // Compute strides when long in n1: (n2/pA x n0/pB) x n1
     p->long_n[1].stride[1] = p->howmany;
     p->long_n[1].stride[0] = p->long_n[1].stride[1] * p->long_n[1].size[1];
     p->long_n[1].stride[2] = p->long_n[1].stride[0] * p->long_n[1].size[0];
-    p->long_n[1].strideorder[0] = 1; // Fastest
-    p->long_n[1].strideorder[1] = 0;
-    p->long_n[1].strideorder[2] = 2; // Slowest
+    p->long_n[1].order[0] = 1; // Fastest
+    p->long_n[1].order[1] = 0;
+    p->long_n[1].order[2] = 2; // Slowest
     // Compute strides when long in n0: (n1/pB x n2/pA) x n0
     p->long_n[0].stride[0] = p->howmany;
     p->long_n[0].stride[2] = p->long_n[0].stride[0] * p->long_n[0].size[0];
     p->long_n[0].stride[1] = p->long_n[0].stride[2] * p->long_n[0].size[2];
-    p->long_n[0].strideorder[0] = 0; // Fastest
-    p->long_n[0].strideorder[1] = 2;
-    p->long_n[0].strideorder[2] = 1; // Slowest
+    p->long_n[0].order[0] = 0; // Fastest
+    p->long_n[0].order[1] = 2;
+    p->long_n[0].order[2] = 1; // Slowest
 
     // Compute extent when long in each direction; redundant but convenient
     for (int i = 0; i < 3; ++i) {
@@ -816,7 +816,7 @@ underling_local(
         int *start,
         int *size,
         int *stride,
-        int *strideorder)
+        int *order)
 {
     if (SUZERAIN_UNLIKELY(i < 0 || i > 2)) {
         SUZERAIN_ERROR_VAL("i < 0 or i > 2", SUZERAIN_EINVAL, 0);
@@ -839,9 +839,9 @@ underling_local(
         for (int j = 0; j < 3; ++j)
             stride[j] = e->stride[j];
     }
-    if (strideorder) {
+    if (order) {
         for (int j = 0; j < 3; ++j)
-            strideorder[j] = e->strideorder[j];
+            order[j] = e->order[j];
     }
 
     return e->extent;

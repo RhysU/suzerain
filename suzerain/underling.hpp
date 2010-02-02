@@ -148,8 +148,8 @@ public:
                  int *start,
                  int *size,
                  int *stride,
-                 int *strideorder) const {
-        return underling_local(problem_, i, start, size, stride, strideorder);
+                 int *order) const {
+        return underling_local(problem_, i, start, size, stride, order);
     }
 
     /** @see underling_local_memory */

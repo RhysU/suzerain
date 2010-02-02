@@ -108,17 +108,17 @@ typedef struct underling_extents {
 
     /**
      * The storage order from the fastest index to the slowest.  That is,
-     * <tt>strideorder[0]</tt> gives the index in {0,1,2} of the fastest
-     * direction, <tt>strideorder[1]</tt> gives the index of the next fastest
+     * <tt>order[0]</tt> gives the index in {0,1,2} of the fastest
+     * direction, <tt>order[1]</tt> gives the index of the next fastest
      * direction, etc.  Useful in generic algorithms which are independent of
      * which direction is long but in which you need to walk memory optimally.
      *
-     * Note that <tt>stride[strideorder[0]]</tt> provides how many interleaved
+     * Note that <tt>stride[order[0]]</tt> provides how many interleaved
      * fields of type underling_real are being simultaneously manipulated.
      * This is equivalent to the \c howmany argument provided to
      * underling_problem_create.
      */
-    int strideorder[3];
+    int order[3];
 
     /**
      * The total extent of all local information, excluding communication
@@ -127,7 +127,7 @@ typedef struct underling_extents {
      * this size.
      *
      * It is technically redundant to store separately since <tt>extent ==
-     * stride[strideorder[0]] * size[0] * size[1] * size[2]</tt>, but it is
+     * stride[order[0]] * size[0] * size[1] * size[2]</tt>, but it is
      * convenient to have handy.
      */
     size_t extent;
@@ -321,8 +321,8 @@ underling_local_extents(
  *                underling_extents.size on successful return.
  * @param[in,out] stride If non-NULL on entry, contains
  *                underling_extents.stride on successful return.
- * @param[in,out] strideorder If non-NULL on entry, contains
- *                underling_extents.strideorder on successful return.
+ * @param[in,out] order If non-NULL on entry, contains
+ *                underling_extents.order on successful return.
  *
  * @return The value of underling_extents.extent on successful return.
  *         On error calls suzerain_error and returns 0.  Note that a
@@ -339,7 +339,7 @@ underling_local(
         int *start,
         int *size,
         int *stride,
-        int *strideorder);
+        int *order);
 
 /**
  * Find the amount of local storage necessary to plan and execute a problem.
