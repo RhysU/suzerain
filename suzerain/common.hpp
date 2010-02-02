@@ -82,6 +82,7 @@
 #include <boost/preprocessor/seq/to_tuple.hpp>
 #include <boost/program_options.hpp>
 #include <boost/scoped_array.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>

@@ -49,7 +49,7 @@ struct UnderlingFixture {
 
     suzerain::underling::grid grid;
     suzerain::underling::problem problem;
-    boost::shared_ptr<underling_real> data;
+    boost::shared_array<underling_real> data;
     suzerain::underling::plan plan;
 
 };
@@ -164,18 +164,153 @@ void test_c2c(MPI_Comm comm,
 {
     namespace underling = suzerain::underling;
 
+    int procid;
+    BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_rank(comm, &procid));
+
+    int nproc;
+    BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_size(comm, &nproc));
+
+    if (!procid) {
+        BOOST_TEST_MESSAGE("Testing howmany = " << howmany
+                           << " on " << n0 << "x" << n1 << "x" << n2
+                           << " using " << nproc << " processor"
+                           << (nproc > 1 ? "s" : "") );
+    }
+
+    const underling_real close
+        = std::numeric_limits<underling_real>::epsilon()*10*n0*n1*n2;
+
     UnderlingFixture f(comm, n0, n1, n2, howmany);
-    underling::fftplan fftplan(underling::fftplan::c2c_forward(),
+    underling::fftplan forward(underling::fftplan::c2c_forward(),
                                f.problem,
                                long_i,
                                f.data.get(),
                                FFTW_ESTIMATE);
-    BOOST_REQUIRE(fftplan);
+    BOOST_REQUIRE(forward);
+    underling::fftplan backward(underling::fftplan::c2c_forward(),
+                                f.problem,
+                                long_i,
+                                f.data.get(),
+                                FFTW_ESTIMATE);
+    BOOST_REQUIRE(backward);
+
+    const underling_extents e = f.problem.local_extents(long_i);
+
+    // Load up sample data that is constant on each pencil
+    for (int i = 0; i < e.size[e.strideorder[2]]; ++i) {
+        for (int j = 0; j < e.size[e.strideorder[1]]; ++j) {
+            for (int k = 0; k < e.stride[e.strideorder[0]]; k += 2) {
+
+                const underling_real v_re = (i+1)*(j+1)*(k+1);
+                const underling_real v_im = -v_re;
+
+                underling_real * const base = &f.data[
+                      i*e.stride[e.strideorder[2]]
+                    + j*e.stride[e.strideorder[1]]
+                    + k
+                ];
+
+                for (int l = 0; l < e.size[e.strideorder[0]]; ++l) {
+                    base[ l*e.stride[e.strideorder[0]]     ] = v_re;
+                    base[ l*e.stride[e.strideorder[0]] + 1 ] = v_im;
+                }
+            }
+        }
+    }
+
+    // Transform from physical to wave space
+    forward.execute();
+
+    // Check the sample data transformed as expected
+    for (int i = 0; i < e.size[e.strideorder[2]]; ++i) {
+        for (int j = 0; j < e.size[e.strideorder[1]]; ++j) {
+            for (int k = 0; k < e.stride[e.strideorder[0]]; k += 2) {
+
+                // Constant magnitude mode is scaled by transform length
+                const underling_real expected_re
+                    = (i+1)*(j+1)*(k+1) * e.size[e.strideorder[0]];
+                const underling_real expected_im
+                    = -expected_re;
+
+                const underling_real * const base = &f.data[
+                      i*e.stride[e.strideorder[2]]
+                    + j*e.stride[e.strideorder[1]]
+                    + k
+                ];
+
+                // Do we see expected zero (constant) mode magnitude?
+                BOOST_CHECK_CLOSE(base[0], expected_re, close);
+                BOOST_CHECK_CLOSE(base[1], expected_im, close);
+
+                // Do we see no other modes?
+                for (int l = 1; l < e.size[e.strideorder[0]]; ++l) {
+                    BOOST_CHECK_SMALL(
+                            base[ l*e.stride[e.strideorder[0]]     ], close);
+                    BOOST_CHECK_SMALL(
+                            base[ l*e.stride[e.strideorder[0]] + 1 ], close);
+                }
+            }
+        }
+    }
+
+    // Transform from wave space to physical space
+    backward.execute();
+
+    // Check that we recovered the original sample data
+    for (int i = 0; i < e.size[e.strideorder[2]]; ++i) {
+        for (int j = 0; j < e.size[e.strideorder[1]]; ++j) {
+            for (int k = 0; k < e.stride[e.strideorder[0]]; k += 2) {
+
+                // Result is scaled by transform length
+                const underling_real expected_re
+                    = (i+1)*(j+1)*(k+1) * e.size[e.strideorder[0]];
+                const underling_real expected_im
+                    = -expected_re;
+
+                const underling_real * const base = &f.data[
+                      i*e.stride[e.strideorder[2]]
+                    + j*e.stride[e.strideorder[1]]
+                    + k
+                ];
+
+                for (int l = 0; l < e.size[e.strideorder[0]]; ++l) {
+                    BOOST_CHECK_CLOSE(
+                            expected_re,
+                            base[ l*e.stride[e.strideorder[0]]     ],
+                            close);
+                    BOOST_CHECK_CLOSE(
+                            expected_im,
+                            base[ l*e.stride[e.strideorder[0]] + 1 ],
+                            close);
+                }
+            }
+        }
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2c )
 {
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 0);
+    // Cubic domain
+    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 2, 0); // 1 field
+    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 2, 1);
+    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 2, 2);
+    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 4, 0); // 2 fields
+    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 4, 1);
+    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 4, 2);
+    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 6, 0); // 3 fields
+    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 6, 1);
+    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 6, 2);
+
+    // Non-cubic domain
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 0); // 1 field
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 1);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 2);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 0); // 2 fields
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 1);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 2);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 0); // 3 fields
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 1);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
