@@ -63,11 +63,11 @@ typedef struct underling_fftplan_s *underling_fftplan;
  * transform is not normalized.
  *
  * @param problem Problem to use for layout and stride information.
- * @param data Pointer to the start of the memory allocated to execute
- *             the problem.
  * @param i    Direction across which to perform the FFT, which is assumed
  *             to be long and therefore stride one whenever the returned
  *             plan is executed.
+ * @param data Pointer to the start of the memory allocated to execute
+ *             the problem.
  * @param fftw_sign Either FFTW_FORWARD or FFTW_BACKWARD.
  * @param fftw_rigor_flags One of FFTW's rigor planning flags, e.g.
  *                         FFTW_MEASURE.  Note that \c data is overwritten
@@ -91,8 +91,8 @@ underling_fftplan_create_c2c(
 underling_fftplan
 underling_fftplan_create_r2c(
         const underling_problem problem,
-        underling_real * data,
         int i,
+        underling_real * data,
         unsigned fftw_rigor_flags);
 
 // FIXME Implement

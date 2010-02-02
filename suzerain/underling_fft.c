@@ -52,19 +52,26 @@ struct underling_fftplan_s {
 underling_fftplan
 underling_fftw_plan_c2c(
         const underling_problem problem,
-        underling_real * data,
         int i,
+        underling_real * data,
         unsigned fftw_sign,
         unsigned fftw_rigor_flags)
 {
+    // Sanity check input arguments
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
-        SUZERAIN_ERROR_NULL("problem == NULL", SUZERAIN_EINVAL);
+        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
+    }
+    if (SUZERAIN_UNLIKELY(i < 0 || i > 2)) {
+        SUZERAIN_ERROR_VAL("i < 0 or i > 2", SUZERAIN_EINVAL, 0);
+    }
+    const underling_extents extents = underling_local_extents(problem, i);
+    if (SUZERAIN_UNLIKELY(extents.stride[extents.strideorder[0]] % 2)) {
+        SUZERAIN_ERROR_NULL(
+                "problem must have an even number of underling_real fields",
+                SUZERAIN_EINVAL);
     }
     if (SUZERAIN_UNLIKELY(data == NULL)) {
         SUZERAIN_ERROR_NULL("data == NULL", SUZERAIN_EINVAL);
-    }
-    if (SUZERAIN_UNLIKELY(i < 0 || i > 2)) {
-        SUZERAIN_ERROR_NULL("i < 0 or i > 2", SUZERAIN_EINVAL);
     }
     if (SUZERAIN_UNLIKELY(   fftw_sign != FFTW_FORWARD
                           || fftw_sign != FFTW_BACKWARD)) {
@@ -81,9 +88,58 @@ underling_fftw_plan_c2c(
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
 
-    fftw_plan fftwp = NULL; // TODO Implement and sanity check
+    // Prepare the input to fftw_plan_guru_split_dft.  FFTW split interface
+    // allows using underling_extents.strides directly.  The tranform is purely
+    // in place which sets our output strides equal to our input strides.
 
-    // Create and initialize the grid workspace
+    // We transform the long dimension given by extents.strideorder[0]
+    const fftw_iodim dims[] = {
+        extents.size[extents.strideorder[0]],   // n
+        extents.stride[extents.strideorder[0]], // is
+        extents.stride[extents.strideorder[0]]  // os
+    };
+    const int rank = sizeof(dims)/sizeof(dims[0]);
+
+    // We loop over the slowest direction, the second slowest
+    // direction, and the individual state fields in row-major
+    // order.
+    const fftw_iodim howmany_dims[3] = {
+        {
+            extents.size[extents.strideorder[2]],
+            extents.stride[extents.strideorder[2]],
+            extents.stride[extents.strideorder[2]]
+        },
+        {
+            extents.size[extents.strideorder[1]],
+            extents.stride[extents.strideorder[1]],
+            extents.stride[extents.strideorder[1]]
+        },
+        {
+            extents.stride[extents.strideorder[0]] / 2, // howmany/2
+            2,                                          // is, interleaved
+            2                                           // os, interleaved
+        }
+    };
+    const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
+
+    // For interleaved storage, the imaginary data starts one underling_real
+    // after data itself.  Per FFTW manual section 4.5.3, FFTW_BACKWARD is
+    // FFTW_FORWARD with the real and imaginary parts flipped.
+    underling_real * const ri = (fftw_sign == FFTW_FORWARD) ? data : data + 1;
+    underling_real * const ii = (fftw_sign == FFTW_FORWARD) ? data + 1 : data;
+    underling_real * const ro = ri;
+    underling_real * const io = ii;
+
+    fftw_plan fftwp = fftw_plan_guru_split_dft(rank, dims,
+                                               howmany_rank, howmany_dims,
+                                               ri, ii, ro, io,
+                                               fftw_rigor_flags);
+
+    if (SUZERAIN_UNLIKELY(fftwp == NULL)) {
+        SUZERAIN_ERROR_NULL("FFTW returned a NULL plan", SUZERAIN_ESANITY);
+    }
+
+    // Create and initialize the fftplan workspace
     underling_fftplan f = calloc(1, sizeof(struct underling_fftplan_s));
     if (SUZERAIN_UNLIKELY(f == NULL)) {
         SUZERAIN_ERROR_NULL("failed to allocate space for fftplan",
