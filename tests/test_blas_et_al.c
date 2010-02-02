@@ -1,4 +1,6 @@
+#ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
+#endif
 #include <suzerain/common.h>
 #pragma hdrstop
 #include <gsl/gsl_ieee_utils.h>

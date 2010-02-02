@@ -1,4 +1,6 @@
+#ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
+#endif
 #include <suzerain/common.hpp>
 #include <suzerain/pencilfft.hpp>
 #pragma hdrstop

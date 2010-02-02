@@ -17,7 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
+#endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
