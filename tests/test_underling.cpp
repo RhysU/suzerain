@@ -8,7 +8,7 @@
 #include <suzerain/error.h>
 #include <suzerain/mpi.hpp>
 #include <suzerain/underling.hpp>
-#include <suzerain/underling_fft.h>
+#include <suzerain/underling_fft.hpp>
 #include <fftw3-mpi.h>
 
 // A test fixture to setup and teardown MPI and FFTW MPI

@@ -56,7 +56,7 @@ __BEGIN_DECLS
 typedef struct underling_fftplan_s *underling_fftplan;
 
 /**
- * Create an FFT plan to perform a complex-to-complex transpose on the given
+ * Create a plan to perform a forward complex-to-complex FFT on the given
  * data when long in the <tt>i</tt>th direction.  The problem must have had
  * <tt>howmany</tt> specified as a multiple of two at creation time, and it
  * will be treated as <tt>howmany/2</tt> complex fields.  Note that the
@@ -68,7 +68,6 @@ typedef struct underling_fftplan_s *underling_fftplan;
  *             plan is executed.
  * @param data Pointer to the start of the memory allocated to execute
  *             the problem.
- * @param fftw_sign Either FFTW_FORWARD or FFTW_BACKWARD.
  * @param fftw_rigor_flags One of FFTW's rigor planning flags, e.g.
  *                         FFTW_MEASURE.  Note that \c data is overwritten
  *                         during the planning process for any value other
@@ -79,29 +78,57 @@ typedef struct underling_fftplan_s *underling_fftplan;
  * @see The method underling_fftplan_destroy for how to destroy an instance.
  */
 underling_fftplan
-underling_fftplan_create_c2c(
-        const underling_problem problem,
-        underling_real * data,
-        int i,
-        unsigned fftw_sign,
-        unsigned fftw_rigor_flags);
-
-// FIXME Implement
-// FIXME Document
-underling_fftplan
-underling_fftplan_create_r2c(
+underling_fftplan_create_c2c_forward(
         const underling_problem problem,
         int i,
         underling_real * data,
         unsigned fftw_rigor_flags);
 
+/**
+ * Create a plan to perform a backward complex-to-complex FFT on the given
+ * data when long in the <tt>i</tt>th direction.  The problem must have had
+ * <tt>howmany</tt> specified as a multiple of two at creation time, and it
+ * will be treated as <tt>howmany/2</tt> complex fields.  Note that the
+ * transform is not normalized.
+ *
+ * @param problem Problem to use for layout and stride information.
+ * @param i    Direction across which to perform the FFT, which is assumed
+ *             to be long and therefore stride one whenever the returned
+ *             plan is executed.
+ * @param data Pointer to the start of the memory allocated to execute
+ *             the problem.
+ * @param fftw_rigor_flags One of FFTW's rigor planning flags, e.g.
+ *                         FFTW_MEASURE.  Note that \c data is overwritten
+ *                         during the planning process for any value other
+ *                         than FFTW_ESTIMATE.
+ *
+ * @return On success, return a valid \c underling_fftplan.  On failure, calls
+ *         suzerain_error and returns NULL.
+ * @see The method underling_fftplan_destroy for how to destroy an instance.
+ */
+underling_fftplan
+underling_fftplan_create_c2c_backward(
+        const underling_problem problem,
+        int i,
+        underling_real * data,
+        unsigned fftw_rigor_flags);
+
 // FIXME Implement
 // FIXME Document
 underling_fftplan
-underling_fftplan_create_c2r(
+underling_fftplan_create_r2c_forward(
         const underling_problem problem,
-        underling_real * data,
         int i,
+        underling_real * data,
+        unsigned fftw_rigor_flags);
+
+// FIXME Implement
+// FIXME Document
+underling_fftplan
+underling_fftplan_create_c2r_backward(
+        const underling_problem problem,
+        int i,
+        underling_real * data,
         unsigned fftw_rigor_flags);
 
 /**

@@ -34,13 +34,15 @@
 #include <ostream>
 #include <suzerain/underling.h>
 
-namespace suzerain {
-
 /**
- * Provides C++ wrappers for the C-based API in underling.h.  In particular,
- * provides RAII semantics for underling's opaque types and some
+ * @file Provides C++ wrappers for the C-based API in underling.h.  In
+ * particular, provides RAII semantics for underling's opaque types and some
  * std::basic_ostream helpers.
  */
+
+namespace suzerain {
+
+/** Provides C++ wrappers for underling's C-based API. */
 namespace underling {
 
 /** @see underling_real */

@@ -45,10 +45,47 @@ struct underling_fftplan_s {
     fftw_plan fftwp;
 };
 
+// ********************************************************************
+// INTERNAL PROTOTYPES INTERNAL PROTOTYPES INTERNAL PROTOTYPES INTERNAL
+// ********************************************************************
+
+underling_fftplan
+underling_fftw_plan_c2c(
+        const underling_problem problem,
+        int i,
+        underling_real * data,
+        unsigned fftw_sign,
+        unsigned fftw_rigor_flags);
+
 // **************************************************************************
 // IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION
 // **************************************************************************
 
+underling_fftplan
+underling_fftw_plan_c2c_forward(
+        const underling_problem problem,
+        int i,
+        underling_real * data,
+        unsigned fftw_sign,
+        unsigned fftw_rigor_flags)
+{
+    return underling_fftw_plan_c2c(
+            problem, i, data, FFTW_FORWARD, fftw_rigor_flags);
+}
+
+underling_fftplan
+underling_fftw_plan_c2c_backward(
+        const underling_problem problem,
+        int i,
+        underling_real * data,
+        unsigned fftw_sign,
+        unsigned fftw_rigor_flags)
+{
+    return underling_fftw_plan_c2c(
+            problem, i, data, FFTW_BACKWARD, fftw_rigor_flags);
+}
+
+static
 underling_fftplan
 underling_fftw_plan_c2c(
         const underling_problem problem,
