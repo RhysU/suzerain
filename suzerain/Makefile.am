@@ -50,6 +50,7 @@ pkginclude_HEADERS += richardson.h
 pkginclude_HEADERS += timestepper.hpp
 pkginclude_HEADERS += types.hpp
 pkginclude_HEADERS += underling.h
+pkginclude_HEADERS += underling_fft.h
 pkginclude_HEADERS += underling.hpp
 
 noinst_LTLIBRARIES     += libsuzerain.la
@@ -67,6 +68,7 @@ noinst_LTLIBRARIES      += libunderling.la
 libunderling_la_LDFLAGS  = -release $(PACKAGE_VERSION)
 libunderling_la_SOURCES  = error.c
 libunderling_la_SOURCES += underling.c
+libunderling_la_SOURCES += underling_fft.c
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
