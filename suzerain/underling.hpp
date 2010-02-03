@@ -145,10 +145,10 @@ public:
 
     /** @see underling_local */
     size_t local(int i,
-                 int *start,
-                 int *size,
-                 int *stride,
-                 int *order) const {
+                 int *start  = NULL,
+                 int *size   = NULL,
+                 int *stride = NULL,
+                 int *order  = NULL) const {
         return underling_local(problem_, i, start, size, stride, order);
     }
 

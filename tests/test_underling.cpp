@@ -152,6 +152,49 @@ BOOST_AUTO_TEST_CASE( roundtrip2x3x5 )
     test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 11);
 }
 
+BOOST_AUTO_TEST_CASE( extents_consistency )
+{
+    UnderlingFixture f(MPI_COMM_WORLD, 2, 3, 5, 7);
+
+    const underling_extents long_n[3] = {
+        f.problem.local_extents(0),
+        f.problem.local_extents(1),
+        f.problem.local_extents(2)
+    };
+
+    for (int i = 0; i < 3; ++i) {
+        BOOST_CHECK_EQUAL(long_n[i].extent, f.problem.local(i));
+
+        int start[4];
+
+        BOOST_CHECK_EQUAL(long_n[i].extent,
+                          f.problem.local(i, start));
+        BOOST_CHECK_EQUAL_COLLECTIONS(long_n[i].start, long_n[i].start + 4,
+                                      start, start + 4);
+
+        int size[4];
+
+        BOOST_CHECK_EQUAL(long_n[i].extent,
+                          f.problem.local(i, start, size));
+        BOOST_CHECK_EQUAL_COLLECTIONS(long_n[i].size, long_n[i].size + 4,
+                                      size, size + 4);
+
+        int stride[4];
+
+        BOOST_CHECK_EQUAL(long_n[i].extent,
+                          f.problem.local(i, start, size, stride));
+        BOOST_CHECK_EQUAL_COLLECTIONS(long_n[i].stride, long_n[i].stride + 4,
+                                      stride, stride + 4);
+
+        int order[4];
+
+        BOOST_CHECK_EQUAL(long_n[i].extent,
+                          f.problem.local(i, start, size, stride, order));
+        BOOST_CHECK_EQUAL_COLLECTIONS(long_n[i].stride, long_n[i].stride + 4,
+                                      stride, stride + 4);
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
@@ -197,22 +240,22 @@ void test_c2c(MPI_Comm comm,
     const underling_extents e = f.problem.local_extents(long_i);
 
     // Load up sample data that is constant on each pencil
-    for (int i = 0; i < e.size[e.order[2]]; ++i) {
-        for (int j = 0; j < e.size[e.order[1]]; ++j) {
-            for (int k = 0; k < e.stride[e.order[0]]; k += 2) {
+    for (int i = 0; i < e.size[e.order[3]]; ++i) {
+        for (int j = 0; j < e.size[e.order[2]]; ++j) {
+            for (int k = 0; k < e.size[e.order[0]]; k += 2) {
 
                 const underling_real v_re = (i+1)*(j+1)*(k+1);
                 const underling_real v_im = -v_re;
 
                 underling_real * const base = &f.data[
-                      i*e.stride[e.order[2]]
-                    + j*e.stride[e.order[1]]
+                      i*e.stride[e.order[3]]
+                    + j*e.stride[e.order[2]]
                     + k
                 ];
 
-                for (int l = 0; l < e.size[e.order[0]]; ++l) {
-                    base[ l*e.stride[e.order[0]]     ] = v_re;
-                    base[ l*e.stride[e.order[0]] + 1 ] = v_im;
+                for (int l = 0; l < e.size[e.order[1]]; ++l) {
+                    base[ l*e.size[3]     ] = v_re;
+                    base[ l*e.size[3] + 1 ] = v_im;
                 }
             }
         }
@@ -222,19 +265,19 @@ void test_c2c(MPI_Comm comm,
     forward.execute();
 
     // Check the sample data transformed as expected
-    for (int i = 0; i < e.size[e.order[2]]; ++i) {
-        for (int j = 0; j < e.size[e.order[1]]; ++j) {
-            for (int k = 0; k < e.stride[e.order[0]]; k += 2) {
+    for (int i = 0; i < e.size[e.order[3]]; ++i) {
+        for (int j = 0; j < e.size[e.order[2]]; ++j) {
+            for (int k = 0; k < e.size[e.order[0]]; k += 2) {
 
                 // Constant magnitude mode is scaled by transform length
                 const underling_real expected_re
-                    = (i+1)*(j+1)*(k+1) * e.size[e.order[0]];
+                    = (i+1)*(j+1)*(k+1) * e.size[e.order[1]];
                 const underling_real expected_im
                     = -expected_re;
 
                 const underling_real * const base = &f.data[
-                      i*e.stride[e.order[2]]
-                    + j*e.stride[e.order[1]]
+                      i*e.stride[e.order[3]]
+                    + j*e.stride[e.order[2]]
                     + k
                 ];
 
@@ -243,11 +286,11 @@ void test_c2c(MPI_Comm comm,
                 BOOST_CHECK_CLOSE(base[1], expected_im, close);
 
                 // Do we see no other modes?
-                for (int l = 1; l < e.size[e.order[0]]; ++l) {
+                for (int l = 1; l < e.size[e.order[1]]; ++l) {
                     BOOST_CHECK_SMALL(
-                            base[ l*e.stride[e.order[0]]     ], close);
+                            base[ l*e.stride[e.order[1]]     ], close);
                     BOOST_CHECK_SMALL(
-                            base[ l*e.stride[e.order[0]] + 1 ], close);
+                            base[ l*e.stride[e.order[1]] + 1 ], close);
                 }
             }
         }
@@ -257,30 +300,30 @@ void test_c2c(MPI_Comm comm,
     backward.execute();
 
     // Check that we recovered the original sample data
-    for (int i = 0; i < e.size[e.order[2]]; ++i) {
-        for (int j = 0; j < e.size[e.order[1]]; ++j) {
-            for (int k = 0; k < e.stride[e.order[0]]; k += 2) {
+    for (int i = 0; i < e.size[e.order[3]]; ++i) {
+        for (int j = 0; j < e.size[e.order[2]]; ++j) {
+            for (int k = 0; k < e.size[e.order[0]]; k += 2) {
 
                 // Result is scaled by transform length
                 const underling_real expected_re
-                    = (i+1)*(j+1)*(k+1) * e.size[e.order[0]];
+                    = (i+1)*(j+1)*(k+1) * e.size[e.order[1]];
                 const underling_real expected_im
                     = -expected_re;
 
                 const underling_real * const base = &f.data[
-                      i*e.stride[e.order[2]]
-                    + j*e.stride[e.order[1]]
+                      i*e.stride[e.order[3]]
+                    + j*e.stride[e.order[2]]
                     + k
                 ];
 
-                for (int l = 0; l < e.size[e.order[0]]; ++l) {
+                for (int l = 0; l < e.size[e.order[1]]; ++l) {
                     BOOST_CHECK_CLOSE(
                             expected_re,
-                            base[ l*e.stride[e.order[0]]     ],
+                            base[ l*e.stride[e.order[1]]     ],
                             close);
                     BOOST_CHECK_CLOSE(
                             expected_im,
-                            base[ l*e.stride[e.order[0]] + 1 ],
+                            base[ l*e.stride[e.order[1]] + 1 ],
                             close);
                 }
             }

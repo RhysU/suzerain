@@ -568,6 +568,12 @@ underling_problem_create(
     p->long_n[0].size[0]  = grid->n[0];
     p->long_n[0].start[0] = 0;
 
+    // Fix interleaved data field details in p->long_{n2,n1,n0}
+    for (int i = 0; i < 3; ++i) {
+        p->long_n[i].start[3]  = 0;
+        p->long_n[i].size[3]   = p->howmany;
+    }
+
     // Decompose {n0,n1}/pB and store details in p->long_{(n2,n1),n0}
     {
         ptrdiff_t local_d0, local_d0_start, local_d1, local_d1_start;
@@ -608,35 +614,43 @@ underling_problem_create(
 
     // Determine all necessary strides for row-major storage
     // -----------------------------------------------------
-    // Compute strides when long in n2: (n0/pB x n1/pA) x n2
-    p->long_n[2].stride[2] = p->howmany;
+    // Compute strides when long in n2: (n0/pB x n1/pA) x n2 x howmany
+    p->long_n[2].stride[3] = 1;
+    p->long_n[2].stride[2] = p->long_n[2].stride[3] * p->long_n[2].size[3];
     p->long_n[2].stride[1] = p->long_n[2].stride[2] * p->long_n[2].size[2];
     p->long_n[2].stride[0] = p->long_n[2].stride[1] * p->long_n[2].size[1];
-    p->long_n[2].order[0] = 2; // Fastest
-    p->long_n[2].order[1] = 1;
-    p->long_n[2].order[2] = 0; // Slowest
-    // Compute strides when long in n1: (n2/pA x n0/pB) x n1
-    p->long_n[1].stride[1] = p->howmany;
+    p->long_n[2].order[0] = 3; // Fastest
+    p->long_n[2].order[1] = 2;
+    p->long_n[2].order[2] = 1;
+    p->long_n[2].order[3] = 0; // Slowest
+    // Compute strides when long in n1: (n2/pA x n0/pB) x n1 x howmany
+    p->long_n[1].stride[3] = 1;
+    p->long_n[1].stride[1] = p->long_n[1].stride[3] * p->long_n[1].size[3];
     p->long_n[1].stride[0] = p->long_n[1].stride[1] * p->long_n[1].size[1];
     p->long_n[1].stride[2] = p->long_n[1].stride[0] * p->long_n[1].size[0];
-    p->long_n[1].order[0] = 1; // Fastest
-    p->long_n[1].order[1] = 0;
-    p->long_n[1].order[2] = 2; // Slowest
-    // Compute strides when long in n0: (n1/pB x n2/pA) x n0
-    p->long_n[0].stride[0] = p->howmany;
+    p->long_n[1].order[0] = 3; // Fastest
+    p->long_n[1].order[1] = 1;
+    p->long_n[1].order[2] = 0;
+    p->long_n[1].order[3] = 2; // Slowest
+    // Compute strides when long in n0: (n1/pB x n2/pA) x n0 x howmany
+    p->long_n[0].stride[3] = 1;
+    p->long_n[0].stride[0] = p->long_n[0].stride[3] * p->long_n[0].size[3];
     p->long_n[0].stride[2] = p->long_n[0].stride[0] * p->long_n[0].size[0];
     p->long_n[0].stride[1] = p->long_n[0].stride[2] * p->long_n[0].size[2];
-    p->long_n[0].order[0] = 0; // Fastest
-    p->long_n[0].order[1] = 2;
-    p->long_n[0].order[2] = 1; // Slowest
+    p->long_n[0].order[0] = 3; // Fastest
+    p->long_n[0].order[1] = 0;
+    p->long_n[0].order[2] = 2;
+    p->long_n[0].order[3] = 1; // Slowest
+
+    // FIXME Collapse above
 
     // Compute extent when long in each direction; redundant but convenient
     for (int i = 0; i < 3; ++i) {
         p->long_n[i].extent =
-              p->howmany
-            * p->long_n[i].size[0]
+              p->long_n[i].size[0]
             * p->long_n[i].size[1]
-            * p->long_n[i].size[2];
+            * p->long_n[i].size[2]
+            * p->long_n[i].size[3];
     }
 
     // Transpose pA details: (n0/pB x n1/pA) x n2 to n2/pA x (n0/pB x n1)
@@ -828,19 +842,19 @@ underling_local(
     const underling_extents * const e = &problem->long_n[i];
 
     if (start) {
-        for (int j = 0; j < 3; ++j)
+        for (int j = 0; j < 4; ++j)
             start[j] = e->start[j];
     }
     if (size) {
-        for (int j = 0; j < 3; ++j)
+        for (int j = 0; j < 4; ++j)
             size[j] = e->size[j];
     }
     if (stride) {
-        for (int j = 0; j < 3; ++j)
+        for (int j = 0; j < 4; ++j)
             stride[j] = e->stride[j];
     }
     if (order) {
-        for (int j = 0; j < 3; ++j)
+        for (int j = 0; j < 4; ++j)
             order[j] = e->order[j];
     }
 

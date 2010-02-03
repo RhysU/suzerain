@@ -83,52 +83,55 @@ typedef struct underling_plan_s *underling_plan;
  * A transparent type storing the local sizes, strides, and storage when the
  * data is long in a particular direction \c n0, \c n1, or \c n2.
  *
- * The global data stored locally in direction <tt>i</tt> in {0,1,2} is
+ * The global data stored locally in direction <tt>i</tt> in {0,1,2,3} is
  * <tt>[start[i],start[i] + size[i])</tt> where the lower index is inclusive
  * and the upper index exclusive.  If both indices are the same then no data is
  * stored locally in the given direction.
+ *
+ * Indices {0,1,2} correspond to information about directions n{0,1,2},
+ * respectively.  Index <tt>3</tt> gives information regarding the interleaved
+ * data fields whose number is determined by the <tt>howmany</tt> parameter to
+ * underling_problem_create.
  */
 typedef struct underling_extents {
     /**
      * The inclusive global data starting offset in directions
-     * <tt>n{0,1,2}</tt>.
+     * <tt>n{0,1,2}</tt>.  Index <tt>3</tt> gives information on the
+     * interleaved data fields and is always equal to zero.
      **/
-    int start[3];
+    int start[4];
 
     /**
      * The amount of global data stored locally in directions
-     * <tt>n{0,1,2}</tt>.
+     * <tt>n{0,1,2}</tt>.  Index <tt>3</tt> gives information on the
+     * interleaved data fields and is always equal to the <tt>howmany</tt>
+     * parameter provided to underling_problem_create.
      */
-    int size[3];
+    int size[4];
 
     /**
      * The stride between adjacent elements in directions <tt>n{0,1,2}</tt>.
+     * Index <tt>3</tt> gives information on the interleaved data fields.
      */
-    int stride[3];
+    int stride[4];
 
     /**
      * The storage order from the fastest index to the slowest.  That is,
-     * <tt>order[0]</tt> gives the index in {0,1,2} of the fastest
+     * <tt>order[0]</tt> gives the index in {0,1,2,3} of the fastest
      * direction, <tt>order[1]</tt> gives the index of the next fastest
      * direction, etc.  Useful in generic algorithms which are independent of
      * which direction is long but in which you need to walk memory optimally.
-     *
-     * Note that <tt>stride[order[0]]</tt> provides how many interleaved
-     * fields of type underling_real are being simultaneously manipulated.
-     * This is equivalent to the \c howmany argument provided to
-     * underling_problem_create.
      */
-    int order[3];
+    int order[4];
 
     /**
      * The total extent of all local information, excluding communication
-     * buffers, in units of underling_real.  Computation over all data
-     * when long in a direction, e.g. uniform scaling, should use
-     * this size.
+     * buffers, in units of underling_real.  Computation over all data when
+     * long in a direction, e.g. uniform scaling, should use this size.
      *
-     * It is technically redundant to store separately since <tt>extent ==
-     * stride[order[0]] * size[0] * size[1] * size[2]</tt>, but it is
-     * convenient to have handy.
+     * It is technically redundant to store this information separately since
+     * <tt>extent == size[0] * size[1] * size[2] * size[3]</tt>. However, is
+     * very convenient to have the result handy.
      */
     size_t extent;
 } underling_extents;
