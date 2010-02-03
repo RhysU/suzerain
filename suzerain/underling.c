@@ -614,43 +614,31 @@ underling_problem_create(
 
     // Determine all necessary strides for row-major storage
     // -----------------------------------------------------
-    // Compute strides when long in n2: (n0/pB x n1/pA) x n2 x howmany
-    p->long_n[2].stride[3] = 1;
-    p->long_n[2].stride[2] = p->long_n[2].stride[3] * p->long_n[2].size[3];
-    p->long_n[2].stride[1] = p->long_n[2].stride[2] * p->long_n[2].size[2];
-    p->long_n[2].stride[0] = p->long_n[2].stride[1] * p->long_n[2].size[1];
-    p->long_n[2].order[0] = 3; // Fastest
-    p->long_n[2].order[1] = 2;
+    // Set stride order when long in n2: (n0/pB x n1/pA) x (n2 x howmany)
+    p->long_n[2].order[0] = 3; // Fastest, interleaved data
+    p->long_n[2].order[1] = 2; // Long direction
     p->long_n[2].order[2] = 1;
     p->long_n[2].order[3] = 0; // Slowest
-    // Compute strides when long in n1: (n2/pA x n0/pB) x n1 x howmany
-    p->long_n[1].stride[3] = 1;
-    p->long_n[1].stride[1] = p->long_n[1].stride[3] * p->long_n[1].size[3];
-    p->long_n[1].stride[0] = p->long_n[1].stride[1] * p->long_n[1].size[1];
-    p->long_n[1].stride[2] = p->long_n[1].stride[0] * p->long_n[1].size[0];
-    p->long_n[1].order[0] = 3; // Fastest
-    p->long_n[1].order[1] = 1;
+    // Set stride order when long in n1: (n2/pA x n0/pB) x (n1 x howmany)
+    p->long_n[1].order[0] = 3; // Fastest, interleaved data
+    p->long_n[1].order[1] = 1; // Long direction
     p->long_n[1].order[2] = 0;
     p->long_n[1].order[3] = 2; // Slowest
-    // Compute strides when long in n0: (n1/pB x n2/pA) x n0 x howmany
-    p->long_n[0].stride[3] = 1;
-    p->long_n[0].stride[0] = p->long_n[0].stride[3] * p->long_n[0].size[3];
-    p->long_n[0].stride[2] = p->long_n[0].stride[0] * p->long_n[0].size[0];
-    p->long_n[0].stride[1] = p->long_n[0].stride[2] * p->long_n[0].size[2];
-    p->long_n[0].order[0] = 3; // Fastest
-    p->long_n[0].order[1] = 0;
+    // Set stride order when long in n0: (n1/pB x n2/pA) x (n0 x howmany)
+    p->long_n[0].order[0] = 3; // Fastest, interleaved data
+    p->long_n[0].order[1] = 0; // Long direction
     p->long_n[0].order[2] = 2;
     p->long_n[0].order[3] = 1; // Slowest
-
-    // FIXME Collapse above
-
-    // Compute extent when long in each direction; redundant but convenient
+    // Use the stride ordering to compute strides in each configuration
     for (int i = 0; i < 3; ++i) {
-        p->long_n[i].extent =
-              p->long_n[i].size[0]
-            * p->long_n[i].size[1]
-            * p->long_n[i].size[2]
-            * p->long_n[i].size[3];
+        underling_extents * const e = &p->long_n[i];
+        e->stride[e->order[0]] = 1;
+        e->stride[e->order[1]] = e->stride[e->order[0]] * e->size[e->order[0]];
+        e->stride[e->order[2]] = e->stride[e->order[1]] * e->size[e->order[1]];
+        e->stride[e->order[3]] = e->stride[e->order[2]] * e->size[e->order[2]];
+
+        // Compute extent; redundant information but very convenient
+        e->extent = e->size[0] * e->size[1] * e->size[2] * e->size[3];
     }
 
     // Transpose pA details: (n0/pB x n1/pA) x n2 to n2/pA x (n0/pB x n1)
