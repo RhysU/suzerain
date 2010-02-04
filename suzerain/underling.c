@@ -572,9 +572,6 @@ underling_problem_create(
     // Copy the problem parameters to the problem workspace
     p->howmany = howmany;
 
-    // TODO Account for UNDERLING_TRANSPOSED_LONG_N2
-    // TODO Account for UNDERLING_TRANSPOSED_LONG_N0
-
     // Global pencil decomposition details
     // assuming transposed_flags == 0
     // -------------------------------------------------------
@@ -634,24 +631,44 @@ underling_problem_create(
         p->long_n[0].start[2] = local_d1_start;
     }
 
-    // Determine all necessary strides for row-major storage
-    // -----------------------------------------------------
-    // Set stride order when long in n2: (n0/pB x n1/pA) x (n2 x howmany)
-    p->long_n[2].order[0] = 3; // Fastest, interleaved data
-    p->long_n[2].order[1] = 2; // Long direction
-    p->long_n[2].order[2] = 1;
-    p->long_n[2].order[3] = 0; // Slowest
+    // Determine all necessary stride orders for row-major storage
+    // -----------------------------------------------------------
+    if (transposed_flags & UNDERLING_TRANSPOSED_LONG_N2) {
+        // Set stride order when long in n2: n2 x (n0/pB x n1/pA) x howmany
+        // TODO Confirm this ordering with FFTW_MPI_TRANSPOSED_IN
+        p->long_n[2].order[0] = 3; // Fastest, interleaved data
+        p->long_n[2].order[1] = 1;
+        p->long_n[2].order[2] = 0;
+        p->long_n[2].order[3] = 2; // Slowest, long direction
+    } else {
+        // Set stride order when long in n2: (n0/pB x n1/pA) x (n2 x howmany)
+        p->long_n[2].order[0] = 3; // Fastest, interleaved data
+        p->long_n[2].order[1] = 2; // Long direction
+        p->long_n[2].order[2] = 1;
+        p->long_n[2].order[3] = 0; // Slowest
+    }
     // Set stride order when long in n1: (n2/pA x n0/pB) x (n1 x howmany)
     p->long_n[1].order[0] = 3; // Fastest, interleaved data
     p->long_n[1].order[1] = 1; // Long direction
     p->long_n[1].order[2] = 0;
     p->long_n[1].order[3] = 2; // Slowest
-    // Set stride order when long in n0: (n1/pB x n2/pA) x (n0 x howmany)
-    p->long_n[0].order[0] = 3; // Fastest, interleaved data
-    p->long_n[0].order[1] = 0; // Long direction
-    p->long_n[0].order[2] = 2;
-    p->long_n[0].order[3] = 1; // Slowest
-    // Use the stride ordering to compute strides in each configuration
+    if (transposed_flags & UNDERLING_TRANSPOSED_LONG_N0) {
+        // Set stride order when long in n0: n0 x (n1/pB x n2/pA) x howmany
+        // TODO Confirm this ordering with FFTW_MPI_TRANSPOSED_OUT
+        p->long_n[0].order[0] = 3; // Fastest, interleaved data
+        p->long_n[0].order[1] = 2;
+        p->long_n[0].order[2] = 1;
+        p->long_n[0].order[3] = 0; // Slowest, long direction
+    } else {
+        // Set stride order when long in n0: (n1/pB x n2/pA) x (n0 x howmany)
+        p->long_n[0].order[0] = 3; // Fastest, interleaved data
+        p->long_n[0].order[1] = 0; // Long direction
+        p->long_n[0].order[2] = 2;
+        p->long_n[0].order[3] = 1; // Slowest
+    }
+
+    // Use stride ordering to compute strides in each configuration
+    // ------------------------------------------------------------
     for (int i = 0; i < 3; ++i) {
         underling_extents * const e = &p->long_n[i];
         e->stride[e->order[0]] = 1;
@@ -678,13 +695,17 @@ underling_problem_create(
     SUZERAIN_MPICHKN(MPI_Bcast(pB_block, 2, MPI_LONG, 0, grid->pB_comm));
 
     // Wave towards physical MPI transpose: long in n2 to long in n1
+    const unsigned backwardA_flags
+        = (transposed_flags & UNDERLING_TRANSPOSED_LONG_N2)
+        ? FFTW_MPI_TRANSPOSED_IN
+        : 0;
     p->backwardA = underling_transpose_create(pA_d[0],
                                               pA_d[1],
                                               p->howmany,
                                               pA_block[0],
                                               pA_block[1],
                                               grid->pA_comm,
-                                              /*flags*/0);
+                                              backwardA_flags);
     if (SUZERAIN_UNLIKELY(p->backwardA == NULL)) {
         underling_problem_destroy(p);
         SUZERAIN_ERROR_NULL("failed creating p->backwardA",
@@ -692,13 +713,17 @@ underling_problem_create(
     }
 
     // Wave towards physical MPI transpose: long in n1 to long in n0
+    const unsigned backwardB_flags
+        = (transposed_flags & UNDERLING_TRANSPOSED_LONG_N0)
+        ? FFTW_MPI_TRANSPOSED_OUT
+        : 0;
     p->backwardB = underling_transpose_create(pB_d[0],
                                               pB_d[1],
                                               p->howmany,
                                               pB_block[0],
                                               pB_block[1],
                                               grid->pB_comm,
-                                              /*flags*/0);
+                                              backwardB_flags);
     if (SUZERAIN_UNLIKELY(p->backwardB == NULL)) {
         underling_problem_destroy(p);
         SUZERAIN_ERROR_NULL("failed creating p->backwardB",

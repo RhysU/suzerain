@@ -32,9 +32,10 @@ struct UnderlingFixture {
 
     UnderlingFixture(MPI_Comm comm,
                      const int n0, const int n1, const int n2,
-                     const int howmany)
+                     const int howmany,
+                     const unsigned transposed_flags = 0)
         : grid(comm, n0, n1, n2),
-          problem(grid, howmany),
+          problem(grid, howmany, transposed_flags),
           data((underling_real *) fftw_malloc(
                     problem.local_memory()*sizeof(underling_real)),
                 &fftw_free),
@@ -65,7 +66,8 @@ BOOST_AUTO_TEST_SUITE(RoundTrip)
 
 void test_round_trip(MPI_Comm comm,
                      const int n0, const int n1, const int n2,
-                     const int howmany)
+                     const int howmany,
+                     const unsigned transposed_flags)
 {
     namespace underling = suzerain::underling;
 
@@ -83,7 +85,7 @@ void test_round_trip(MPI_Comm comm,
     }
 
     // Establish the test fixture
-    UnderlingFixture f(comm, n0, n1, n2, howmany);
+    UnderlingFixture f(comm, n0, n1, n2, howmany, transposed_flags);
     const size_t local_memory = f.problem.local_memory();
 
     // Sanity check the buffer vs local extent information
@@ -134,22 +136,96 @@ void test_round_trip(MPI_Comm comm,
 
 BOOST_AUTO_TEST_CASE( roundtrip8x8x8 )
 {
-    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  1);
-    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  2);
-    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  3);
-    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  5);
-    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  7);
-    test_round_trip(MPI_COMM_WORLD, 8, 8, 8, 11);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  1, 0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  2, 0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  3, 0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  5, 0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  7, 0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8, 11, 0);
+}
+
+BOOST_AUTO_TEST_CASE( roundtrip8x8x8_transposed_long_n2 )
+{
+    using suzerain::underling::transposed::long_n2;
+
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  1, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  2, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  3, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  5, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  7, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8, 11, long_n2);
+}
+
+BOOST_AUTO_TEST_CASE( roundtrip8x8x8_transposed_long_n0 )
+{
+    using suzerain::underling::transposed::long_n0;
+
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  1, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  2, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  3, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  5, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  7, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8, 11, long_n0);
+}
+
+BOOST_AUTO_TEST_CASE( roundtrip8x8x8_transposed_both )
+{
+    using suzerain::underling::transposed::long_n2;
+    using suzerain::underling::transposed::long_n0;
+
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  1, long_n2 | long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  2, long_n2 | long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  3, long_n2 | long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  5, long_n2 | long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8,  7, long_n2 | long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8, 11, long_n2 | long_n0);
 }
 
 BOOST_AUTO_TEST_CASE( roundtrip2x3x5 )
 {
-    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  1);
-    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  2);
-    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  3);
-    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  5);
-    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  7);
-    test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 11);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  1, 0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  2, 0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  3, 0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  5, 0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  7, 0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 11, 0);
+}
+
+BOOST_AUTO_TEST_CASE( roundtrip2x3x5_transposed_long_n2 )
+{
+    using suzerain::underling::transposed::long_n2;
+
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  1, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  2, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  3, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  5, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  7, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 11, long_n2);
+}
+
+BOOST_AUTO_TEST_CASE( roundtrip2x3x5_transposed_long_n0 )
+{
+    using suzerain::underling::transposed::long_n0;
+
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  1, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  2, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  3, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  5, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  7, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 11, long_n0);
+}
+
+BOOST_AUTO_TEST_CASE( roundtrip2x3x5_transposed_long_both )
+{
+    using suzerain::underling::transposed::long_n2;
+    using suzerain::underling::transposed::long_n0;
+
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  1, long_n2 | long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  2, long_n2 | long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  3, long_n2 | long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  5, long_n2 | long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  7, long_n2 | long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 11, long_n2 | long_n0);
 }
 
 BOOST_AUTO_TEST_CASE( extents_consistency )

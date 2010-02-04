@@ -71,7 +71,7 @@ namespace transpose {
 };
 
 /** Wraps transposed storage flags */
-namespace transpose {
+namespace transposed {
 
     /** @see UNDERLING_TRANSPOSED_LONG_N2 */
     const unsigned long_n2 = UNDERLING_TRANSPOSED_LONG_N2;
