@@ -42,12 +42,16 @@
 // *******************************************************************
 
 struct underling_fftplan_s {
-    fftw_plan fftwp;
+    fftw_plan plan_reorder;
+    fftw_plan plan_fft;
 };
 
 // ********************************************************************
 // INTERNAL PROTOTYPES INTERNAL PROTOTYPES INTERNAL PROTOTYPES INTERNAL
 // ********************************************************************
+
+fftw_plan
+underling_fftw_plan_nop();
 
 underling_fftplan
 underling_fftplan_create_c2c(
@@ -60,6 +64,23 @@ underling_fftplan_create_c2c(
 // **************************************************************************
 // IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION
 // **************************************************************************
+
+static
+fftw_plan
+underling_fftw_plan_nop()
+{
+    // Create a non-NULL NOP FFTW plan
+    fftw_plan nop_plan = fftw_plan_guru_r2r(/*rank*/0,
+                                            /*dims*/NULL,
+                                            /*howmany_rank*/0,
+                                            /*dims*/NULL,
+                                            /*in*/NULL,
+                                            /*out*/NULL,
+                                            /*kind*/NULL,
+                                            /*flags*/0);
+    assert(nop_plan);
+    return nop_plan;
+}
 
 underling_fftplan
 underling_fftplan_create_c2c_forward(
@@ -128,6 +149,13 @@ underling_fftplan_create_c2c(
                 SUZERAIN_EINVAL);
     }
 
+    // Prepare the reordering plan for the input data
+    // No reordering necessary for complex-to-complex transformations
+    fftw_plan plan_reorder = underling_fftw_plan_nop();
+    if (SUZERAIN_UNLIKELY(plan_reorder == NULL)) {
+        SUZERAIN_ERROR_NULL("FFTW returned a NULL NOP plan", SUZERAIN_ESANITY);
+    }
+
     // Prepare the input to fftw_plan_guru_split_dft.  FFTW split interface
     // allows using underling_extents.strides directly.  The tranform is purely
     // in place which sets our output strides equal to our input strides.
@@ -170,12 +198,12 @@ underling_fftplan_create_c2c(
     underling_real * const ro = ri;
     underling_real * const io = ii;
 
-    fftw_plan fftwp = fftw_plan_guru_split_dft(rank, dims,
-                                               howmany_rank, howmany_dims,
-                                               ri, ii, ro, io,
-                                               fftw_rigor_flags);
+    fftw_plan plan_fft = fftw_plan_guru_split_dft(rank, dims,
+                                                  howmany_rank, howmany_dims,
+                                                  ri, ii, ro, io,
+                                                  fftw_rigor_flags);
 
-    if (SUZERAIN_UNLIKELY(fftwp == NULL)) {
+    if (SUZERAIN_UNLIKELY(plan_fft == NULL)) {
         SUZERAIN_ERROR_NULL("FFTW returned a NULL plan", SUZERAIN_ESANITY);
     }
 
@@ -185,8 +213,9 @@ underling_fftplan_create_c2c(
         SUZERAIN_ERROR_NULL("failed to allocate space for fftplan",
                              SUZERAIN_ENOMEM);
     }
-    // Copy the fftplan parameters to the fftplan workspace
-    f->fftwp = fftwp;
+    // Copy the relevant parameters to the fftplan workspace
+    f->plan_reorder = plan_reorder;
+    f->plan_fft     = plan_fft;
 
     return f;
 }
@@ -198,11 +227,15 @@ underling_fftplan_execute(
     if (SUZERAIN_UNLIKELY(fftplan == NULL)) {
         SUZERAIN_ERROR("fftplan == NULL", SUZERAIN_EINVAL);
     }
-    if (SUZERAIN_UNLIKELY(fftplan->fftwp == NULL)) {
-        SUZERAIN_ERROR("fftplan->fftwp == NULL", SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(fftplan->plan_reorder == NULL)) {
+        SUZERAIN_ERROR("fftplan->plan_reorder == NULL", SUZERAIN_EINVAL);
+    }
+    if (SUZERAIN_UNLIKELY(fftplan->plan_fft == NULL)) {
+        SUZERAIN_ERROR("fftplan->plan_fft == NULL", SUZERAIN_EINVAL);
     }
 
-    fftw_execute(fftplan->fftwp);
+    fftw_execute(fftplan->plan_reorder);
+    fftw_execute(fftplan->plan_fft);
 
     return SUZERAIN_SUCCESS;
 }
@@ -212,9 +245,13 @@ underling_fftplan_destroy(
         underling_fftplan fftplan)
 {
     if (fftplan) {
-        if (fftplan->fftwp) {
-            fftw_destroy_plan(fftplan->fftwp);
-            fftplan->fftwp = NULL;
+        if (fftplan->plan_reorder) {
+            fftw_destroy_plan(fftplan->plan_reorder);
+            fftplan->plan_reorder = NULL;
+        }
+        if (fftplan->plan_fft) {
+            fftw_destroy_plan(fftplan->plan_fft);
+            fftplan->plan_fft = NULL;
         }
         free(fftplan);
     }
@@ -229,9 +266,14 @@ underling_fprint_fftplan(
     if (!fftplan) {
         fprintf(output_file, "NULL");
     } else {
-        if (fftplan->fftwp) {
-            fprintf(output_file, "{fftwp:");
-            fftw_fprint_plan(fftplan->fftwp, output_file);
+        if (fftplan->plan_reorder) {
+            fprintf(output_file, "{plan_reorder:");
+            fftw_fprint_plan(fftplan->plan_reorder, output_file);
+            fprintf(output_file, "}");
+        }
+        if (fftplan->plan_fft) {
+            fprintf(output_file, "{plan_fft:");
+            fftw_fprint_plan(fftplan->plan_fft, output_file);
             fprintf(output_file, "}");
         }
     }
