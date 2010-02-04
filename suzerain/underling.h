@@ -188,14 +188,18 @@ extern const underling_extents UNDERLING_EXTENTS_INVALID;
  *  - When "long in n1" storage is <tt>(n2/pA x n0/pB) x n1</tt>.
  *  - When "long in n0" storage is <tt>(n1/pB x n2/pA) x n0</tt>.
  *
- * All orders given are row-major; the rightmost index is fastest.
- * Expressions like <tt>n{0,1,2}/p{A,B}</tt> indicate that the
- * <tt>n{0,1,2}</tt> direction is decomposed across a grid of size
- * <tt>p{A,B}</tt>.  The decomposition is balanced given communication overhead
- * expectations.
+ * All orders given are row-major; the rightmost index is fastest.  Expressions
+ * like <tt>n{0,1,2}/p{A,B}</tt> indicate that the <tt>n{0,1,2}</tt> direction
+ * is decomposed across a grid of size <tt>p{A,B}</tt>.  The decomposition is
+ * balanced given communication overhead expectations.
+ *
+ * \note It is much, much easier to obtain the appropriate storage order and
+ * stride information from underling_local_extents or underling_local rather
+ * than to compute it yourself.
  *
  * Specifying zero for either or both of \c pA and \c pB results in an
- * decomposition of the communicator per <tt>MPI_Dims_create</tt>.
+ * automatic decomposition of the communicator into a 2D Cartesian grid using
+ * <tt>MPI_Dims_create</tt>.
  *
  * @param comm MPI communicator indicating the processes to be used
  *             for the parallel domain decomposition.  The communicator
