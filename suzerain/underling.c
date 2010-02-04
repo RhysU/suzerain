@@ -435,9 +435,11 @@ underling_transpose_create_inverse(
     if (SUZERAIN_UNLIKELY(forward == NULL)) {
         SUZERAIN_ERROR_NULL("forward == NULL", SUZERAIN_EINVAL);
     }
-    // TODO Handle FFTW_MPI_TRANSPOSED_IN, FFTW_MPI_TRANSPOSED_OUT correctly
-    if (SUZERAIN_UNLIKELY(forward->flags)) {
-        SUZERAIN_ERROR_NULL("Nontrivial transpose flags not yet implemented!",
+    const unsigned non_transposed_inout_mask = ~FFTW_MPI_TRANSPOSED_IN
+                                             & ~FFTW_MPI_TRANSPOSED_OUT;
+    if (SUZERAIN_UNLIKELY(forward->flags & non_transposed_inout_mask)) {
+        SUZERAIN_ERROR_NULL(
+                "Flags contains non-FFTW_MPI_TRANSPOSED_{IN,OUT}",
                 SUZERAIN_ESANITY);
     }
 
@@ -456,7 +458,15 @@ underling_transpose_create_inverse(
     backward->block[0] = forward->block[1];
     backward->block[1] = forward->block[0];
     backward->comm     = underling_MPI_Comm_dup_with_name(forward->comm);
-    backward->flags    = forward->flags;
+    backward->flags    = 0;
+
+    // Handle transposed input and output flags
+    if (forward->flags & FFTW_MPI_TRANSPOSED_IN) {
+        backward->flags |= FFTW_MPI_TRANSPOSED_OUT;
+    }
+    if (forward->flags & FFTW_MPI_TRANSPOSED_OUT) {
+        backward->flags |= FFTW_MPI_TRANSPOSED_IN;
+    }
 
     if (backward->comm == MPI_COMM_NULL) {
         underling_transpose_destroy(backward);
