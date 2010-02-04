@@ -176,6 +176,7 @@ underling_MPI_Comm_dup_with_name(MPI_Comm comm)
     return retval;
 }
 
+static
 fftw_plan
 underling_fftw_plan_nop()
 {
