@@ -546,13 +546,21 @@ underling_transpose_fftw_plan(
 underling_problem
 underling_problem_create(
         underling_grid grid,
-        int howmany)
+        int howmany,
+        unsigned transposed_flags)
 {
     if (SUZERAIN_UNLIKELY(grid == NULL)) {
         SUZERAIN_ERROR_NULL("grid == NULL", SUZERAIN_EINVAL);
     }
     if (SUZERAIN_UNLIKELY(howmany < 1)) {
         SUZERAIN_ERROR_NULL("howmany >= 1 required", SUZERAIN_EINVAL);
+    }
+    const unsigned non_transposed_mask =   ~UNDERLING_TRANSPOSED_LONG_N2
+                                         & ~UNDERLING_TRANSPOSED_LONG_N0;
+    if (SUZERAIN_UNLIKELY(transposed_flags & non_transposed_mask)) {
+        SUZERAIN_ERROR_NULL(
+            "transposed_flags contains non-UNDERLING_TRANSPOSED_LONG_N{0,2}",
+            SUZERAIN_EINVAL);
     }
 
     // Create and initialize the problem workspace
@@ -564,7 +572,11 @@ underling_problem_create(
     // Copy the problem parameters to the problem workspace
     p->howmany = howmany;
 
+    // TODO Account for UNDERLING_TRANSPOSED_LONG_N2
+    // TODO Account for UNDERLING_TRANSPOSED_LONG_N0
+
     // Global pencil decomposition details
+    // assuming transposed_flags == 0
     // -------------------------------------------------------
     // Long in n2:                        (n0/pB x n1/pA) x n2
     // Long in n1: n2/pA x (n0/pB x n1) = (n2/pA x n0/pB) x n1

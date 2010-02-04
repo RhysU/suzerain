@@ -70,6 +70,16 @@ namespace transpose {
     const unsigned all                =  UNDERLING_TRANSPOSE_ALL;
 };
 
+/** Wraps transposed storage flags */
+namespace transpose {
+
+    /** @see UNDERLING_TRANSPOSED_LONG_N2 */
+    const unsigned long_n2 = UNDERLING_TRANSPOSED_LONG_N2;
+
+    /** @see UNDERLING_TRANSPOSED_LONG_N0 */
+    const unsigned long_n0 = UNDERLING_TRANSPOSED_LONG_N0;
+};
+
 /**
  * Provides a thin RAII wrapper for underling_grid.
  * @see underling_grid.
@@ -129,8 +139,10 @@ class problem {
 public:
 
     /** @see underling_problem_create */
-    problem(const grid &g, int howmany)
-        : problem_(underling_problem_create(g.get(), howmany)) {};
+    problem(const grid &g, int howmany, unsigned transposed_flags = 0)
+        : problem_(underling_problem_create(g.get(),
+                                            howmany,
+                                            transposed_flags)) {};
 
     /** @see underling_problem_destroy */
     ~problem() { underling_problem_destroy(problem_); }

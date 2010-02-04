@@ -179,6 +179,34 @@ extern const underling_extents UNDERLING_EXTENTS_INVALID;
            | UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N2 )
 
 /**
+ * Flag indicating that "long in n2" storage is stored as <tt>n2 x (n0/pB x
+ * n1/pA) x n2</tt> in row-major order.  This differs from the normal storage
+ * documented at underling_grid_create.  Using this flag may speed up
+ * underling_execute_long_n2_to_long_n1 and
+ * underling_execute_long_n1_to_long_n2.  Both underling_local_extents and
+ * underling_local will automatically return information reflecting this
+ * storage choice.
+ *
+ * @see The documentation for underling_grid_create for more
+ *      details on storage ordering.
+ */
+#define UNDERLING_TRANSPOSED_LONG_N2 (1U << 4)
+
+/**
+ * Flag indicating that "long in n0" storage is stored as <tt>n0 x (n1/pB x
+ * n2/pA)</tt> in row-major order.  This differs from the normal storage
+ * documented at underling_grid_create.  Using this flag may speed up
+ * underling_execute_long_n1_to_long_n0 and
+ * underling_execute_long_n0_to_long_n1.  Both underling_local_extents and
+ * underling_local will automatically return information reflecting this
+ * storage choice.
+ *
+ * @see The documentation for underling_grid_create for more
+ *      details on storage ordering.
+ */
+#define UNDERLING_TRANSPOSED_LONG_N0 (1U << 5)
+
+/**
  * Collectively create a reusable domain-to-processor mapping across the given
  * MPI communicator.
  *
@@ -272,16 +300,21 @@ underling_grid_destroy(
  *        used to create multiple underling_problem instances.
  * @param howmany Number of interleaved scalar fields of type underling_real to
  *        simultaneously transpose.
+ * @param transposed_flags Either zero or some combination of
+ *        UNDERLING_TRANSPOSED_LONG_N2 and UNDERLING_TRANSPOSED_LONG_N0.
  *
  * @return A valid, non-NULL underling_problem instance on success.  On failure,
  *         suzerain_error is invoked and NULL is returned.
  *
+ * @see UNDERLING_TRANSPOSED_LONG_N2 and/or UNDERLING_TRANSPOSED_LONG_N0
+ *      for information on how their usage effects storage ordering.
  * @see The method underling_problem_destroy for how to destroy an instance.
  */
 underling_problem
 underling_problem_create(
         underling_grid grid,
-        int howmany);
+        int howmany,
+        unsigned transposed_flags);
 
 /**
  * Destroy all resources associated with the given problem.
