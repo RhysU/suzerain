@@ -299,4 +299,127 @@ typename boost::enable_if<
     fill(x, ::suzerain::complex::NaN<typename MultiArray::element>());
 }
 
+
+
+/** Provides a periodic function useful for testing FFT behavior */
+template<typename FPT, typename Integer>
+class periodic_function {
+public:
+
+    /**
+     * Produce a periodic real signal with known frequency content on domain of
+     * supplied length.
+     *
+     * @param NR Number of points in the physical domain
+     * @param max_mode_exclusive Exclusive upper bound on the signal's
+     *        frequency content.
+     * @param shift Phase shift in the signal
+     * @param length Domain size over which the signal is periodic
+     * @param constant The constant content of the signal
+     */
+     periodic_function(const Integer NR,
+                       const Integer max_mode_exclusive,
+                       const FPT shift = M_PI/3.0,
+                       const FPT length = 2.0*M_PI,
+                       const FPT constant = 17)
+        : NR(NR),
+          max_mode_exclusive(max_mode_exclusive),
+          shift(shift),
+          length(length),
+          constant(constant)
+        {}
+
+    /**
+     * Retrieve the real-valued signal amplitude at the given gridpoint.
+     *
+     * @param i Zero-indexed value of the desired grid location.
+     *        Must be within <tt>[0,NR)</tt>
+     * @param derivative Desired derivative of the signal with zero
+     *        indicating the signal itself.
+     *
+     * @param Returns the requested value.
+     */
+    FPT physical(const Integer i, const Integer derivative = 0) const;
+
+    /**
+     * Retrieve the requested complex-valued signal modes in wave space.
+     *
+     * @param i Zero-indexed mode number, where zero is the constant
+     *        mode.
+     * @param derivative Desired derivative of the signal with zero
+     *        indicating the signal itself.
+     *
+     * @param Returns the requested value.
+     */
+    typename std::complex<FPT> wave(const Integer i,
+                                    const Integer derivative = 0) const;
+
+    const Integer NR;
+    const Integer max_mode_exclusive;
+    const FPT shift;
+    const FPT length;
+    const Integer constant;
+};
+
+
+template<typename FPT, typename Integer>
+FPT periodic_function<FPT,Integer>::physical(
+        const Integer i,
+        const Integer derivative) const
+{
+    assert(0 <= i);
+    assert(i < NR);
+    assert(0 <= (derivative % 4) && (derivative % 4) <= 3);
+
+    const FPT xi = i*length/NR;
+    FPT retval = (max_mode_exclusive > 0 && derivative == 0 )
+        ? constant : 0;
+    for (Integer i = 1; i < max_mode_exclusive; ++i) {
+        switch (derivative % 4) {
+            case 0:
+                retval +=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * sin(i*(2.0*M_PI/length)*xi + shift);
+                break;
+            case 1:
+                retval +=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * cos(i*(2.0*M_PI/length)*xi + shift);
+                break;
+            case 2:
+                retval -=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * sin(i*(2.0*M_PI/length)*xi + shift);
+                break;
+            case 3:
+                retval -=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * cos(i*(2.0*M_PI/length)*xi + shift);
+                break;
+        }
+    }
+    return retval;
+}
+
+template<typename FPT, typename Integer>
+typename std::complex<FPT> periodic_function<FPT,Integer>::wave(
+        const Integer i,
+        const Integer derivative) const
+{
+    typedef typename std::complex<FPT> complex_type;
+
+    assert(0 <= i);
+    assert(i < max_mode_exclusive);
+
+    complex_type retval;
+    if (i == 0) {
+        retval = complex_type(constant, 0);
+    } else {
+        retval = complex_type( i * sin(shift) * 1.0/2.0,
+                              -i * cos(shift) * 1.0/2.0);
+    }
+
+    for (int j = 0; j < derivative; ++j) {
+        retval *= complex_type(0,2*M_PI/length);
+    }
+
+    return retval;
+}
+
 #endif // PECOS_SUZERAIN_TEST_TOOLS_HPP

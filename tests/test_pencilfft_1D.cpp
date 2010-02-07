@@ -41,46 +41,10 @@ void debug_dump(const std::string &prefix,
     cout << endl;
 }
 
-// Produce a periodic real signal with known frequency content
-// on domain of supplied length
-template<typename FPT, typename Integer>
-FPT real_test_function(const Integer NR,
-                       const Integer max_mode_exclusive,
-                       const Integer i,
-                       const FPT shift = M_PI/3.0,
-                       const FPT length = 2.0*M_PI,
-                       const Integer derivative = 0) {
-    const FPT xi = i*length/NR;
-    FPT retval = (max_mode_exclusive > 0 && derivative == 0 )
-        ? 17.0 : 0; // Zero mode fixed
-    for (Integer i = 1; i < max_mode_exclusive; ++i) {
-        switch (derivative % 4) {
-            case 0:
-                retval +=   i * pow(i*(2.0*M_PI/length), derivative)
-                          * sin(i*(2.0*M_PI/length)*xi + shift);
-                break;
-            case 1:
-                retval +=   i * pow(i*(2.0*M_PI/length), derivative)
-                          * cos(i*(2.0*M_PI/length)*xi + shift);
-                break;
-            case 2:
-                retval -=   i * pow(i*(2.0*M_PI/length), derivative)
-                          * sin(i*(2.0*M_PI/length)*xi + shift);
-                break;
-            case 3:
-                retval -=   i * pow(i*(2.0*M_PI/length), derivative)
-                          * cos(i*(2.0*M_PI/length)*xi + shift);
-                break;
-            default:
-                BOOST_ERROR("Unexpected derivative % 4 result");
-        }
-    }
-    return retval;
-}
-
 // Helper function that kicks the tires of a 1D c2c transform
 template<class ComplexMultiArray1, class ComplexMultiArray2>
-void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
+void symmetry_1D_complex_forward(ComplexMultiArray1 &in,
+                                 ComplexMultiArray2 &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
@@ -90,14 +54,13 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
     const int NC = out.shape()[0];
     const real_type close_enough
         = std::numeric_limits<real_type>::epsilon()*10*NR*NR;
-    const real_type shift = M_PI/3.0;
+    const periodic_function<real_type,int> pf(NR, (NR+1)/2);
 
     // Load a real-valued function into the input array and transform it
     fill_with_NaN(in);
     fill_with_NaN(out);
     for (int i = 0; i < NR; ++i) {
-        suzerain::complex::assign_complex(in[i],
-                real_test_function<real_type>(NR, (NR+1)/2, i, shift), 0.0);
+        suzerain::complex::assign_complex(in[i], pf.physical(i), 0.0);
     }
     pencilfft::forward_c2c(0, in, out);
 
@@ -110,25 +73,24 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         BOOST_REQUIRE_CLOSE(a_imag, -b_imag, close_enough);
 
         // We should also see the expected frequency content
-        const real_type real_expected = i * sin(shift) * 1.0/2.0;
-        const real_type imag_expected = i * cos(shift) * 1.0/2.0;
-        BOOST_REQUIRE_CLOSE(b_real, real_expected, sqrt(close_enough));
-        BOOST_REQUIRE_CLOSE(b_imag, imag_expected, sqrt(close_enough));
+        const std::complex<real_type> expected = pf.wave(i);
+        BOOST_REQUIRE_CLOSE(a_real, expected.real(), sqrt(close_enough));
+        BOOST_REQUIRE_CLOSE(a_imag, expected.imag(), sqrt(close_enough));
     }
     // Ensure we see the expected zero mode magnitude
     {
         real_type z_real, z_imag;
         suzerain::complex::assign_components(z_real, z_imag, out[0]);
+        const std::complex<real_type> expected = pf.wave(0);
+        BOOST_REQUIRE_CLOSE(z_real, expected.real(), close_enough);
         BOOST_REQUIRE_SMALL(z_imag, close_enough);
-        BOOST_REQUIRE_CLOSE(z_real, 17.0, close_enough);
     }
 
     // Load an imaginary-valued function into the input array and transform it
     fill_with_NaN(in);
     fill_with_NaN(out);
     for (int i = 0; i < NR; ++i) {
-        suzerain::complex::assign_complex(in[i], 0.0,
-                real_test_function<real_type>(NR, (NR+1)/2, i, shift));
+        suzerain::complex::assign_complex(in[i], 0.0, pf.physical(i));
     }
     pencilfft::forward_c2c(0, in, out);
 
@@ -142,17 +104,18 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in, ComplexMultiArray2 &out
         BOOST_REQUIRE_CLOSE(a_imag,  b_imag, close_enough);
 
         // We should also see the expected frequency content
-        const real_type real_expected = - i * cos(shift) * 1.0/2.0;
-        const real_type imag_expected =   i * sin(shift) * 1.0/2.0;
-        BOOST_REQUIRE_CLOSE(b_real, real_expected, sqrt(close_enough));
-        BOOST_REQUIRE_CLOSE(b_imag, imag_expected, sqrt(close_enough));
+        std::complex<real_type> expected
+            = std::complex<real_type>(0,1) * pf.wave(i);
+        BOOST_REQUIRE_CLOSE(a_real, expected.real(), sqrt(close_enough));
+        BOOST_REQUIRE_CLOSE(a_imag, expected.imag(), sqrt(close_enough));
     }
     // Ensure we see the expected zero mode magnitude
     {
         real_type z_real, z_imag;
         suzerain::complex::assign_components(z_real, z_imag, out[0]);
+        std::complex<real_type> expected = pf.wave(0);
         BOOST_REQUIRE_SMALL(z_real, close_enough);
-        BOOST_REQUIRE_CLOSE(z_imag, 17.0, close_enough);
+        BOOST_REQUIRE_CLOSE(z_imag, expected.real(), close_enough);
     }
 }
 
@@ -168,12 +131,12 @@ void check_1D_forward_r2c(RealMultiArray &in, ComplexMultiArray &out)
     const int NC = out.shape()[0];
     const real_type close_enough
         = std::numeric_limits<real_type>::epsilon()*10*NR*NR;
-    const real_type shift = M_PI/3.0;
+    const periodic_function<real_type,int> pf(NR, (NR+1)/2);
 
     // Load a real-valued function into the input array and transform it
     fill_with_NaN(out);
     for (int i = 0; i < NR; ++i) {
-        in[i] = real_test_function<real_type>(NR, (NR+1)/2, i, shift);
+        in[i] = pf.physical(i);
     }
     pencilfft::forward_r2c(0, in, out);
 
@@ -181,17 +144,17 @@ void check_1D_forward_r2c(RealMultiArray &in, ComplexMultiArray &out)
     for (int i = 1; i < (std::min(NC,NR)+1)/2; ++i) {
         real_type z_real, z_imag;
         suzerain::complex::assign_components(z_real, z_imag, out[i]);
-        const real_type real_expected =  i * sin(shift) * 1.0/2.0;
-        const real_type imag_expected = -i * cos(shift) * 1.0/2.0;
-        BOOST_REQUIRE_CLOSE(z_real, real_expected, sqrt(close_enough));
-        BOOST_REQUIRE_CLOSE(z_imag, imag_expected, sqrt(close_enough));
+        const std::complex<real_type> expected = pf.wave(i);
+        BOOST_REQUIRE_CLOSE(z_real, expected.real(), sqrt(close_enough));
+        BOOST_REQUIRE_CLOSE(z_imag, expected.imag(), sqrt(close_enough));
     }
     // Ensure we see the expected zero mode magnitude
     {
         real_type z_real, z_imag;
         suzerain::complex::assign_components(z_real, z_imag, out[0]);
+        const std::complex<real_type> expected = pf.wave(0);
+        BOOST_REQUIRE_CLOSE(z_real, expected.real(), close_enough);
         BOOST_REQUIRE_SMALL(z_imag, close_enough);
-        BOOST_REQUIRE_CLOSE(z_real, 17.0, close_enough);
     }
 }
 
@@ -202,10 +165,14 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
+    typedef typename pencilfft::detail::transform_traits<
+        typename ComplexMultiArray1::element>::real_type real_type;
     const int NC = in.shape()[0];
     const int NR = out.shape()[0];
     const double close_enough
         = std::numeric_limits<double>::epsilon()*5e2*NC*NC;
+    const periodic_function<real_type,int> pf1(NR, (NR+1)/2, 3.0/M_PI);
+    const periodic_function<real_type,int> pf2(NR, (NR+1)/2, 5.0/M_PI);
 
     // Plan before loading in the data since planning overwrites in
     boost::shared_array<fftw_complex> buffer(
@@ -237,9 +204,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     fill_with_NaN(out);
     for (int i = 0; i < NR; ++i) {
         suzerain::complex::assign_complex(
-                in[i],
-                real_test_function<double>(NR, (NR+1)/2, i, M_PI/3.0),
-                real_test_function<double>(NR, (NR+1)/2, i, M_PI/5.0));
+                in[i], pf1.physical(i), pf2.physical(i));
     }
 
     // Transform input FFTW directly and also our wrapper
@@ -350,7 +315,6 @@ void check_1D_backward_c2r(ComplexMultiArray &in, RealMultiArray &out)
     const int NR = out.shape()[0];
     const real_type close_enough
         = std::numeric_limits<real_type>::epsilon()*10*NR*NR;
-    const real_type shift = M_PI/3.0;
 
     // Load a function into the input array...
     // ...with known frequency content and constant offset 17
@@ -454,11 +418,12 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
+    typedef typename pencilfft::detail::transform_traits<
+        typename ComplexMultiArray1::element>::real_type real_type;
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
     const double close_enough
         = std::numeric_limits<double>::epsilon()*10*NR*NR;
-    const double shift = M_PI/3.0;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
@@ -466,9 +431,10 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
             // Load a complex function into the input array
             fill_with_NaN(in);
             fill_with_NaN(out);
+            const periodic_function<real_type,int> pf(
+                    NR, (std::min(NR,NC)+1)/2, M_PI/3.0, length[l]);
             for (int i = 0; i < NR; ++i) {
-                const double val = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
+                const double val =  pf.physical(i, 0);
                 suzerain::complex::assign_complex(in[i], val, -val);
             }
 
@@ -480,9 +446,7 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
 
             // Ensure we see what we expect
             for (int i = 0; i < NR; ++i) {
-                const double expected_val = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
-                        derivative);
+                const double expected_val = pf.physical(i, derivative);
                 double real, imag;
                 suzerain::complex::assign_components(real, imag, in[i]);
                 if (fabs(expected_val) < close_enough) {
@@ -505,11 +469,12 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
+    typedef typename pencilfft::detail::transform_traits<
+        typename ComplexMultiArray1::element>::real_type real_type;
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
     const double close_enough
         = std::numeric_limits<double>::epsilon()*10*NR*NR;
-    const double shift = M_PI/3.0;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
@@ -517,9 +482,10 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
             // Load a complex function into the input array
             fill_with_NaN(in);
             fill_with_NaN(out);
+            const periodic_function<real_type,int> pf(
+                    NR, (std::min(NR,NC)+1)/2, M_PI/3.0, length[l]);
             for (int i = 0; i < NR; ++i) {
-                const double val = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
+                const double val = pf.physical(i, 0);
                 suzerain::complex::assign_complex(in[i], val, -val);
             }
 
@@ -531,9 +497,7 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
 
             // Ensure we see what we expect as the derivative
             for (int i = 0; i < NR; ++i) {
-                const double expected_val = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
-                        derivative);
+                const double expected_val = pf.physical(i, derivative);
                 double real, imag;
                 suzerain::complex::assign_components(real, imag, in[i]);
                 if (fabs(expected_val) < close_enough) {
@@ -560,7 +524,7 @@ void differentiate_on_forward_1D_r2c(RealMultiArray &in,
     const int NC = out.shape()[0];
     const double close_enough
         = std::numeric_limits<double>::epsilon()*10*NR*NR;
-    const double shift = M_PI/3.0;
+    typedef typename RealMultiArray::element real_type;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
@@ -568,9 +532,10 @@ void differentiate_on_forward_1D_r2c(RealMultiArray &in,
             // Load a real-valued function into the input array
             fill_with_NaN(in);
             fill_with_NaN(out);
+            const periodic_function<real_type,int> pf(
+                    NR, (std::min(NR,NC)+1)/2, M_PI/3.0, length[l]);
             for (int i = 0; i < NR; ++i) {
-                in[i] = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
+                in[i] = pf.physical(i, 0);
             }
 
             // Forward transform and differentiate
@@ -581,9 +546,7 @@ void differentiate_on_forward_1D_r2c(RealMultiArray &in,
 
             // Ensure we see what we expect
             for (int i = 0; i < NR; ++i) {
-                const double expected_val = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
-                        derivative);
+                const double expected_val = pf.physical(i, derivative);
                 const double observed_val = in[i];
                 if (fabs(expected_val) < close_enough) {
                     BOOST_REQUIRE_SMALL(observed_val, close_enough);
@@ -602,11 +565,11 @@ void differentiate_on_backward_1D_c2r(RealMultiArray &in,
 {
     BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
+    typedef typename RealMultiArray::element real_type;
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
     const double close_enough
         = std::numeric_limits<double>::epsilon()*10*NR*NR;
-    const double shift = M_PI/3.0;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
@@ -614,9 +577,10 @@ void differentiate_on_backward_1D_c2r(RealMultiArray &in,
             // Load a real-valued function into the input array
             fill_with_NaN(in);
             fill_with_NaN(out);
+            const periodic_function<real_type,int> pf(
+                    NR, (std::min(NR,NC)+1)/2, M_PI/3.0, length[l]);
             for (int i = 0; i < NR; ++i) {
-                in[i] = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l], 0);
+                in[i] = pf.physical(i, 0);
             }
 
             // Forward transform without differentiating
@@ -627,9 +591,7 @@ void differentiate_on_backward_1D_c2r(RealMultiArray &in,
 
             // Ensure we see what we expect
             for (int i = 0; i < NR; ++i) {
-                const double expected_val = real_test_function<double>(
-                        NR, (std::min(NR,NC)+1)/2, i, shift, length[l],
-                        derivative);
+                const double expected_val = pf.physical(i, derivative);
                 const double observed_val = in[i];
                 if (fabs(expected_val) < close_enough) {
                     BOOST_REQUIRE_SMALL(observed_val, close_enough);
