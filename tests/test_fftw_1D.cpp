@@ -5,140 +5,213 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
-#include "test_tools.hpp"
 #include <fftw3.h>
+#include "test_tools.hpp"
 
-template<int NR = 8, int NC = (NR/2) + 1>
-class data {
-public:
-    typedef double                 Real;
-    typedef std::complex<Real>     Complex;
-    typedef std::valarray<Real>    VectorReal;
-    typedef std::valarray<Complex> VectorComplex;
+// Not so much a test as a way to check our periodic test function definition.
 
-    const Real L;           /* domain size in physical space */
-    VectorReal x;           /* discrete grid in physical space */
-    VectorReal r;           /* r_i = f(x_i) */
-    VectorReal k;           /* k_i = wavenumber i */
-    VectorComplex c;        /* c_i = \hat{f}_{k_i} */
-
-    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan_r2c;
-    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan_c2r;
-
-    data() throw(std::logic_error)
-        :   L(2*M_PI),
-            x(NR),
-            r(Real(0), NR),
-            k(NC),
-            c(Complex(0), NC),
-            plan_r2c(fftw_plan_dft_r2c_1d(
-                       NR,
-                       &r[0],
-                       reinterpret_cast<fftw_complex*>(&c[0]),
-                       FFTW_ESTIMATE),
-                    std::ptr_fun(fftw_destroy_plan)),
-            plan_c2r(fftw_plan_dft_c2r_1d(
-                       NR,
-                       reinterpret_cast<fftw_complex*>(&c[0]),
-                       &r[0],
-                       FFTW_ESTIMATE),
-                    std::ptr_fun(fftw_destroy_plan))
-    {
-        if (!plan_r2c.get()) throw std::logic_error("invalid r2c plan");
-        if (!plan_c2r.get()) throw std::logic_error("invalid c2r plan");
-
-        x[0] = 0.0;
-        for (std::size_t i = 1; i < NR; ++i) x[i] = x[i-1] + L/NR;
-        for (std::size_t i = 0; i < NC; ++i) k[i] = 2*M_PI*i/L;
-    }
-
-    void to_wave_space()
-    {
-        fftw_execute(plan_r2c.get());
-        c /= NR;
-    }
-
-    void differentiate()
-    {
-        for (int i = 0; i < NC; ++i) c[i] *= Complex(0,k[i]);
-    }
-
-    void to_physical_space()
-    {
-        fftw_execute(plan_c2r.get());
-    }
-};
-
-BOOST_AUTO_TEST_CASE( forward_and_backward )
+void test_c2c_forward(const int N, const int max_mode_exclusive)
 {
-    typedef data<> Data;
-    Data d;
+    const double close = std::numeric_limits<double>::epsilon()*10*N*N*N;
+    typedef std::complex<double> complex_type;
+    using boost::scoped_array;
+    using boost::shared_ptr;
 
-    d.r = sin(2.0*d.x);
-    const Data::VectorReal expected(d.r);
+    scoped_array<complex_type> buf(new complex_type[N]);
 
-    d.to_wave_space();
-    d.to_physical_space();
+    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
+        fftw_plan_dft_1d(N,
+                         (fftw_complex *) buf.get(),
+                         (fftw_complex *) buf.get(),
+                         FFTW_FORWARD, FFTW_ESTIMATE),
+        &fftw_destroy_plan);
+    BOOST_REQUIRE(forward);
 
-    check_close_collections(
-            &d.r[0], &d.r[d.r.size()],
-            &expected[0], &expected[expected.size()],
-            std::numeric_limits<Data::Real>::epsilon() * 1.0e+3);
+    periodic_function<double,int> pf(N, max_mode_exclusive);
+    for (int i = 0; i < N; ++i) {
+        buf[i] = pf.physical(i);
+    }
+
+    fftw_execute(forward.get());
+
+    for (int i = 0; i < N; ++i)  {
+        const complex_type expected = ((double) N) * pf.wave(i);
+        if (std::abs(expected.real()) < close) {
+            BOOST_CHECK_SMALL(buf[i].real(), close);
+        } else {
+            BOOST_CHECK_CLOSE(buf[i].real(), expected.real(), close);
+        }
+        if (std::abs(expected.imag()) < close) {
+            BOOST_CHECK_SMALL(buf[i].imag(), close);
+        } else {
+            BOOST_CHECK_CLOSE(buf[i].imag(), expected.imag(), close);
+        }
+    }
 }
 
-BOOST_AUTO_TEST_CASE( poor_mans_dealiasing )
+BOOST_AUTO_TEST_CASE( check_c2c_forward )
 {
-    typedef data<8> Data8;
-    typedef data<16> Data16;
-    Data8 d8;
-    Data16 d16;
+    test_c2c_forward(4, 1);
+    test_c2c_forward(4, 2);
+    test_c2c_forward(4, 3);
+    test_c2c_forward(5, 1);
+    test_c2c_forward(5, 2);
+    test_c2c_forward(5, 3);
+    test_c2c_forward(6, 1);
+    test_c2c_forward(6, 2);
+    test_c2c_forward(6, 3);
+    test_c2c_forward(6, 4);
+}
 
-    d8.r = sin(2.0*d8.x);
-    const Data8::VectorReal expected(d8.r);
-    d8.to_wave_space();
+void test_c2c_backward(const int N, const int max_mode_exclusive)
+{
+    const double close = std::numeric_limits<double>::epsilon()*10*N*N*N;
+    typedef std::complex<double> complex_type;
+    using boost::scoped_array;
+    using boost::shared_ptr;
 
-    for (std::size_t i = 0; i < d8.c.size(); ++i) {
-        d16.c[i] = d8.c[i];
+    scoped_array<complex_type> buf(new complex_type[N]);
+
+    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> backward(
+        fftw_plan_dft_1d(N,
+                         (fftw_complex *) buf.get(),
+                         (fftw_complex *) buf.get(),
+                         FFTW_BACKWARD, FFTW_ESTIMATE),
+        &fftw_destroy_plan);
+    BOOST_REQUIRE(backward);
+
+    periodic_function<double,int> pf(N, max_mode_exclusive);
+    for (int i = 0; i < N; ++i) {
+        buf[i] = pf.wave(i);
     }
-    d8.to_physical_space();
-    d16.to_physical_space();
 
-    const Data8::Real close_enough =
-        std::numeric_limits<Data8::Real>::epsilon() * 1.0e+3;
+    fftw_execute(backward.get());
 
-    check_close_collections(
-            &d8.r[0], &d8.r[d8.r.size()],
-            &expected[0], &expected[expected.size()],
-            close_enough);
+    for (int i = 0; i < N; ++i)  {
+        const complex_type expected = pf.physical(i);
+        if (std::abs(expected.real()) < close) {
+            BOOST_CHECK_SMALL(buf[i].real(), close);
+        } else {
+            BOOST_CHECK_CLOSE(buf[i].real(), expected.real(), close);
+        }
+        if (std::abs(expected.imag()) < close) {
+            BOOST_CHECK_SMALL(buf[i].imag(), close);
+        } else {
+            BOOST_CHECK_CLOSE(buf[i].imag(), expected.imag(), close);
+        }
+    }
 
-    // Make sure we recovered the same data on the 16 mode grid
-    Data8::VectorReal error(d16.r[std::slice(0,d8.r.size(),2)]);
-    error = abs(error - d8.r);
-    BOOST_CHECK_SMALL(error.sum(), close_enough);
 }
 
-BOOST_AUTO_TEST_CASE( differentiate )
+BOOST_AUTO_TEST_CASE( check_c2c_backward )
 {
-    typedef data<32> Data;
-    Data d;
-
-    d.r = sin(2.0*d.x);
-    d.to_wave_space();
-    d.differentiate();
-    d.to_physical_space();
-
-    Data::VectorReal expected = 2.0*cos(2.0*d.x);
-
-    BOOST_CHECK_SMALL(
-            (abs(expected-d.r)).sum(),
-            std::numeric_limits<Data::Real>::epsilon() * 1.0e+4);
+    test_c2c_backward(4, 1);
+    test_c2c_backward(4, 2);
+    test_c2c_backward(4, 3);
+    test_c2c_backward(5, 1);
+    test_c2c_backward(5, 2);
+    test_c2c_backward(5, 3);
+    test_c2c_backward(6, 1);
+    test_c2c_backward(6, 2);
+    test_c2c_backward(6, 3);
+    test_c2c_backward(6, 4);
 }
 
-BOOST_AUTO_TEST_CASE( simple_r2c )
+void test_r2c_forward(const int N, const int max_mode_exclusive)
 {
-    const int N = 4;
-    double buffer[6] = {1.0, 4.0, 7.0, 10.0, -555.0, -555.0 };
-    fftw_plan plan  = fftw_plan_dft_r2c_1d(
-            N, buffer, reinterpret_cast<fftw_complex *>(buffer), 0);
-    fftw_execute(plan);
+    const double close = std::numeric_limits<double>::epsilon()*10*N*N*N;
+    typedef std::complex<double> complex_type;
+    using boost::scoped_array;
+    using boost::shared_ptr;
+
+    scoped_array<double> buf(new double[2*(N/2+1)]);
+    double       * const rbuf = buf.get();
+    complex_type * const cbuf = (complex_type *) buf.get();
+
+    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
+        fftw_plan_dft_r2c_1d(N, rbuf, (fftw_complex *)cbuf, FFTW_ESTIMATE),
+        &fftw_destroy_plan);
+    BOOST_REQUIRE(forward);
+
+    periodic_function<double,int> pf(N, max_mode_exclusive);
+    for (int i = 0; i < N; ++i) {
+        rbuf[i] = pf.physical(i);
+    }
+
+    fftw_execute(forward.get());
+
+    for (int i = 0; i < (N/2+1); ++i)  {
+        const complex_type expected = ((double) N) * pf.wave(i);
+        if (std::abs(expected.real()) < close) {
+            BOOST_CHECK_SMALL(cbuf[i].real(), close);
+        } else {
+            BOOST_CHECK_CLOSE(cbuf[i].real(), expected.real(), close);
+        }
+        if (std::abs(expected.imag()) < close) {
+            BOOST_CHECK_SMALL(cbuf[i].imag(), close);
+        } else {
+            BOOST_CHECK_CLOSE(cbuf[i].imag(), expected.imag(), close);
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE( check_r2c_forward )
+{
+    test_r2c_forward(4, 1);
+    test_r2c_forward(4, 2);
+    test_r2c_forward(4, 3);
+    test_r2c_forward(5, 1);
+    test_r2c_forward(5, 2);
+    test_r2c_forward(5, 3);
+    test_r2c_forward(6, 1);
+    test_r2c_forward(6, 2);
+    test_r2c_forward(6, 3);
+    test_r2c_forward(6, 4);
+}
+
+void test_c2r_backward(const int N, const int max_mode_exclusive)
+{
+    const double close = std::numeric_limits<double>::epsilon()*10*N*N*N;
+    typedef std::complex<double> complex_type;
+    using boost::scoped_array;
+    using boost::shared_ptr;
+
+    scoped_array<double> buf(new double[2*(N/2+1)]);
+    double       * const rbuf = buf.get();
+    complex_type * const cbuf = (complex_type *) buf.get();
+
+    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
+        fftw_plan_dft_c2r_1d(N, (fftw_complex *)cbuf, rbuf, FFTW_ESTIMATE),
+        &fftw_destroy_plan);
+    BOOST_REQUIRE(forward);
+
+    periodic_function<double,int> pf(N, max_mode_exclusive);
+    for (int i = 0; i < (N/2+1); ++i) {
+        cbuf[i] = pf.wave(i);
+    }
+
+    fftw_execute(forward.get());
+
+    for (int i = 0; i < N; ++i)  {
+        const double expected = pf.physical(i);
+        if (std::abs(expected) < close) {
+            BOOST_CHECK_SMALL(rbuf[i], close);
+        } else {
+            BOOST_CHECK_CLOSE(rbuf[i], expected, close);
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE( check_c2r_backward )
+{
+    test_c2r_backward(4, 1);
+    test_c2r_backward(4, 2);
+    test_c2r_backward(4, 3);
+    test_c2r_backward(5, 1);
+    test_c2r_backward(5, 2);
+    test_c2r_backward(5, 3);
+    test_c2r_backward(6, 1);
+    test_c2r_backward(6, 2);
+    test_c2r_backward(6, 3);
+    test_c2r_backward(6, 4);
 }

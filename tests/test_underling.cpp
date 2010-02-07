@@ -10,6 +10,10 @@
 #include <suzerain/underling.hpp>
 #include <suzerain/underling_fft.hpp>
 #include <fftw3-mpi.h>
+#include "test_tools.hpp"
+
+// Useful namespace import
+namespace underling = suzerain::underling;
 
 // A test fixture to setup and teardown MPI and FFTW MPI
 struct FFTWMPIFixture {
@@ -40,7 +44,7 @@ struct UnderlingFixture {
                     problem.local_memory()*sizeof(underling_real)),
                 &fftw_free),
           plan(problem, data.get(),
-               suzerain::underling::transpose::all, FFTW_ESTIMATE)
+               underling::transpose::all, FFTW_ESTIMATE)
     {
         BOOST_REQUIRE(grid);
         BOOST_REQUIRE(problem);
@@ -48,10 +52,10 @@ struct UnderlingFixture {
         BOOST_REQUIRE(plan);
     }
 
-    suzerain::underling::grid grid;
-    suzerain::underling::problem problem;
+    underling::grid grid;
+    underling::problem problem;
     boost::shared_array<underling_real> data;
-    suzerain::underling::plan plan;
+    underling::plan plan;
 
 };
 
@@ -69,8 +73,6 @@ void test_round_trip(MPI_Comm comm,
                      const int howmany,
                      const unsigned transposed_flags)
 {
-    namespace underling = suzerain::underling;
-
     int procid;
     BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_rank(comm, &procid));
 
@@ -281,8 +283,6 @@ void test_c2c(MPI_Comm comm,
               const int howmany,
               const int long_i)
 {
-    namespace underling = suzerain::underling;
-
     int procid;
     BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_rank(comm, &procid));
 
@@ -430,6 +430,76 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c )
     test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 0); // 3 fields
     test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 1);
     test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 2);
+}
+
+BOOST_AUTO_TEST_CASE( underling_fft_c2r )
+{
+    MPI_Comm comm = MPI_COMM_SELF;
+    const int n0 = 3, n1 = 1, n2 = 1, howmany = 2;
+    const int long_i = 0;
+    UnderlingFixture f(comm, n0, n1, n2, howmany);
+
+    underling::fftplan backward(underling::fftplan::c2r_backward(),
+                               f.problem,
+                               0,
+                               f.data.get(),
+                               FFTW_ESTIMATE);
+    BOOST_REQUIRE(backward);
+
+    underling_extents e = f.problem.local_extents(long_i);
+    const double close_enough 
+        =   std::numeric_limits<double>::epsilon()
+          * 100*e.size[long_i]*e.size[long_i]*e.size[long_i];
+
+    // Load up non-trivial sample data
+    for (int i = 0; i < e.size[e.order[3]]; ++i) {
+        for (int j = 0; j < e.size[e.order[2]]; ++j) {
+            for (int k = 0; k < e.size[e.order[0]]; k += 2) {
+
+                const periodic_function<double,int> pf(
+                        2*(e.size[0]-1), e.size[0],
+                        M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
+
+                underling_real * const base = &f.data[
+                      i*e.stride[e.order[3]]
+                    + j*e.stride[e.order[2]]
+                    + k
+                ];
+
+                for (int l = 0; l < e.size[e.order[1]]; ++l) {
+                    std::complex<double> val = pf.wave(l);
+                    base[ l*e.stride[e.order[1]]     ] = val.real();
+                    base[ l*e.stride[e.order[1]] + 1 ] = val.imag();
+                }
+            }
+        }
+    }
+
+    backward.execute();
+
+    // Check data transformed as expected
+    for (int i = 0; i < e.size[e.order[3]]; ++i) {
+        for (int j = 0; j < e.size[e.order[2]]; ++j) {
+            for (int k = 0; k < e.size[e.order[0]] / 2; ++k) {
+
+                const periodic_function<double,int> pf(
+                        2*(e.size[0]-1), e.size[0],
+                        M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
+
+                underling_real * const base = &f.data[
+                      i*e.stride[e.order[3]]
+                    + j*e.stride[e.order[2]]
+                    + k
+                ];
+
+                for (int l = 0; l < 2*(e.size[0]-1); ++l) {
+                    const double expected = pf.physical(l);
+                    const double actual   = base[ l*(e.stride[e.order[1]]/2) ];
+                    BOOST_CHECK_CLOSE(expected, actual, close_enough);
+                }
+            }
+        }
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

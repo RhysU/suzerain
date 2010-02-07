@@ -302,7 +302,7 @@ typename boost::enable_if<
 
 
 /** Provides a periodic function useful for testing FFT behavior */
-template<typename FPT, typename Integer>
+template<typename FPT = double, typename Integer = int>
 class periodic_function {
 public:
 
@@ -310,30 +310,33 @@ public:
      * Produce a periodic real signal with known frequency content on domain of
      * supplied length.
      *
-     * @param NR Number of points in the physical domain
+     * @param N Number of points in the physical domain
      * @param max_mode_exclusive Exclusive upper bound on the signal's
      *        frequency content.
      * @param shift Phase shift in the signal
      * @param length Domain size over which the signal is periodic
      * @param constant The constant content of the signal
      */
-     periodic_function(const Integer NR,
-                       const Integer max_mode_exclusive,
-                       const FPT shift = M_PI/3.0,
-                       const FPT length = 2.0*M_PI,
+     periodic_function(const Integer N,
+                       const Integer max_mode_exclusive = -1,
+                       const FPT shift = M_PI/3,
+                       const FPT length = 2*M_PI,
                        const FPT constant = 17)
-        : NR(NR),
-          max_mode_exclusive(max_mode_exclusive),
+        : N(N),
+          max_mode_exclusive(
+                    max_mode_exclusive >= 0 ? max_mode_exclusive : N/2+1),
           shift(shift),
           length(length),
           constant(constant)
-        {}
+        {
+            assert(max_mode_exclusive <= (N/2+1));
+        }
 
     /**
      * Retrieve the real-valued signal amplitude at the given gridpoint.
      *
      * @param i Zero-indexed value of the desired grid location.
-     *        Must be within <tt>[0,NR)</tt>
+     *        Must be within <tt>[0,N)</tt>
      * @param derivative Desired derivative of the signal with zero
      *        indicating the signal itself.
      *
@@ -354,7 +357,7 @@ public:
     typename std::complex<FPT> wave(const Integer i,
                                     const Integer derivative = 0) const;
 
-    const Integer NR;
+    const Integer N;
     const Integer max_mode_exclusive;
     const FPT shift;
     const FPT length;
@@ -368,10 +371,10 @@ FPT periodic_function<FPT,Integer>::physical(
         const Integer derivative) const
 {
     assert(0 <= i);
-    assert(i < NR);
+    assert(i < N);
     assert(0 <= (derivative % 4) && (derivative % 4) <= 3);
 
-    const FPT xi = i*length/NR;
+    const FPT xi = i*length/N;
     FPT retval = (max_mode_exclusive > 0 && derivative == 0 )
         ? constant : 0;
     for (Integer i = 1; i < max_mode_exclusive; ++i) {
@@ -402,21 +405,34 @@ typename std::complex<FPT> periodic_function<FPT,Integer>::wave(
         const Integer i,
         const Integer derivative) const
 {
+    assert(0 <= i && i < N);
+
     typedef typename std::complex<FPT> complex_type;
-
-    assert(0 <= i);
-    assert(i < max_mode_exclusive);
-
     complex_type retval;
     if (i == 0) {
-        retval = complex_type(constant, 0);
+        if (i < max_mode_exclusive) {
+            retval = complex_type(constant, 0);
+        }
+    } else if (i < (N/2)) {
+        if (i < max_mode_exclusive) {
+            retval = complex_type(   (i)*sin(shift)/2, -  (i)*cos(shift)/2 );
+        }
+    } else if (i == (N/2) &&  (N%2)) {
+        if (i < max_mode_exclusive) {
+            retval = complex_type(   (i)*sin(shift)/2, -  (i)*cos(shift)/2 );
+        }
+    } else if (i == (N/2) && !(N%2)) { // Highest half mode on even grid
+        if (i < max_mode_exclusive) {
+            retval = complex_type(   (i)*sin(shift), 0    );
+        }
     } else {
-        retval = complex_type( i * sin(shift) * 1.0/2.0,
-                              -i * cos(shift) * 1.0/2.0);
+        if ((N-i) < max_mode_exclusive) {
+            retval = complex_type( (N-i)*sin(shift)/2, +(N-i)*cos(shift)/2 );
+        }
     }
 
     for (int j = 0; j < derivative; ++j) {
-        retval *= complex_type(0,2*M_PI/length);
+        retval *= complex_type(0, 2*M_PI/length);
     }
 
     return retval;

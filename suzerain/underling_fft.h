@@ -122,7 +122,6 @@ underling_fftplan_create_r2c_forward(
         underling_real * data,
         unsigned fftw_rigor_flags);
 
-// FIXME Implement
 // FIXME Document
 underling_fftplan
 underling_fftplan_create_c2r_backward(
