@@ -180,7 +180,7 @@ extern const underling_extents UNDERLING_EXTENTS_INVALID;
 
 /**
  * Flag indicating that "long in n2" storage is stored as <tt>n2 x (n0/pB x
- * n1/pA) x n2</tt> in row-major order.  This differs from the normal storage
+ * n1/pA)</tt> in row-major order.  This differs from the normal storage
  * documented at underling_grid_create.  Using this flag may speed up
  * underling_execute_long_n2_to_long_n1 and
  * underling_execute_long_n1_to_long_n2.  Both underling_local_extents and
