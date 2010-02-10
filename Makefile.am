@@ -4,10 +4,10 @@ AUTOMAKE_OPTIONS = foreign
 CLEANFILES       = # Append below
 
 # Build in these directories:
-SUBDIRS = lib suzerain tests apps doc
+SUBDIRS = lib suzerain tests apps writeup
 
 # Distribute these items:
-DIST_SUBDIRS = lib suzerain tests apps doc
+DIST_SUBDIRS = lib suzerain tests apps writeup
 EXTRA_DIST= bootstrap $(DX_CONFIG)
 
 # Eliminate .svn directories in dist tarball
