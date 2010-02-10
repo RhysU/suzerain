@@ -71,6 +71,14 @@ underling_fft_plan_create_c2c(
         int fftw_sign,
         unsigned fftw_rigor_flags);
 
+void
+underling_fft_extents_copy(
+        const underling_fft_extents * const e,
+        int *start,
+        int *size,
+        int *stride,
+        int *order);
+
 static const unsigned non_rigor_mask =   ~FFTW_ESTIMATE
                                        & ~FFTW_MEASURE
                                        & ~FFTW_PATIENT
@@ -629,7 +637,7 @@ underling_fft_local_extents_input(
     }
 
     underling_fft_extents retval = plan->input; // Create temporary
-    return retval;                                 // Return temporary
+    return retval;                              // Return temporary
 }
 
 underling_fft_extents
@@ -642,7 +650,34 @@ underling_fft_local_extents_output(
     }
 
     underling_fft_extents retval = plan->output; // Create temporary
-    return retval;                                  // Return temporary
+    return retval;                               // Return temporary
+}
+
+static
+void
+underling_fft_extents_copy(
+        const underling_fft_extents * const e,
+        int *start,
+        int *size,
+        int *stride,
+        int *order)
+{
+    if (start) {
+        for (int j = 0; j < sizeof(e->start)/sizeof(e->start[0]); ++j)
+            start[j] = e->start[j];
+    }
+    if (size) {
+        for (int j = 0; j < sizeof(e->size)/sizeof(e->size[0]); ++j)
+            size[j] = e->size[j];
+    }
+    if (stride) {
+        for (int j = 0; j < sizeof(e->stride)/sizeof(e->stride[0]); ++j)
+            stride[j] = e->stride[j];
+    }
+    if (order) {
+        for (int j = 0; j < sizeof(e->order)/sizeof(e->order[0]); ++j)
+            order[j] = e->order[j];
+    }
 }
 
 void
@@ -657,24 +692,7 @@ underling_fft_local_input(
         SUZERAIN_ERROR_VOID("plan == NULL", SUZERAIN_EINVAL);
     }
 
-    const underling_fft_extents * const e = &plan->input;
-
-    if (start) {
-        for (int j = 0; j < 5; ++j)
-            start[j] = e->start[j];
-    }
-    if (size) {
-        for (int j = 0; j < 5; ++j)
-            size[j] = e->size[j];
-    }
-    if (stride) {
-        for (int j = 0; j < 5; ++j)
-            stride[j] = e->stride[j];
-    }
-    if (order) {
-        for (int j = 0; j < 5; ++j)
-            order[j] = e->order[j];
-    }
+    underling_fft_extents_copy(&plan->input, start, size, stride, order);
 }
 
 void
@@ -689,24 +707,7 @@ underling_fft_local_output(
         SUZERAIN_ERROR_VOID("plan == NULL", SUZERAIN_EINVAL);
     }
 
-    const underling_fft_extents * const e = &plan->output;
-
-    if (start) {
-        for (int j = 0; j < 5; ++j)
-            start[j] = e->start[j];
-    }
-    if (size) {
-        for (int j = 0; j < 5; ++j)
-            size[j] = e->size[j];
-    }
-    if (stride) {
-        for (int j = 0; j < 5; ++j)
-            stride[j] = e->stride[j];
-    }
-    if (order) {
-        for (int j = 0; j < 5; ++j)
-            order[j] = e->order[j];
-    }
+    underling_fft_extents_copy(&plan->output, start, size, stride, order);
 }
 
 int

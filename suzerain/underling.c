@@ -880,19 +880,19 @@ underling_local(
     const underling_extents * const e = &problem->long_n[i];
 
     if (start) {
-        for (int j = 0; j < 4; ++j)
+        for (int j = 0; j < sizeof(e->start)/sizeof(e->start[0]); ++j)
             start[j] = e->start[j];
     }
     if (size) {
-        for (int j = 0; j < 4; ++j)
+        for (int j = 0; j < sizeof(e->size)/sizeof(e->size[0]); ++j)
             size[j] = e->size[j];
     }
     if (stride) {
-        for (int j = 0; j < 4; ++j)
+        for (int j = 0; j < sizeof(e->stride)/sizeof(e->stride[0]); ++j)
             stride[j] = e->stride[j];
     }
     if (order) {
-        for (int j = 0; j < 4; ++j)
+        for (int j = 0; j < sizeof(e->order)/sizeof(e->order[0]); ++j)
             order[j] = e->order[j];
     }
 
