@@ -54,31 +54,41 @@ typedef underling_extents extents;
 /** Wraps transpose direction flags */
 namespace transpose {
 
-    /** @see UNDERLING_TRANSPOSE_LONG_N2_TO_LONG_N1 */
-    const unsigned long_n2_to_long_n1 = UNDERLING_TRANSPOSE_LONG_N2_TO_LONG_N1;
+    enum { // Anonymous to avoid introducing an unnecessary type
 
-    /** @see UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N0 */
-    const unsigned long_n1_to_long_n0 = UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N0;
+        /** @see UNDERLING_TRANSPOSE_LONG_N2_TO_LONG_N1 */
+        long_n2_to_long_n1 = UNDERLING_TRANSPOSE_LONG_N2_TO_LONG_N1,
 
-    /** @see UNDERLING_TRANSPOSE_LONG_N0_TO_LONG_N1 */
-    const unsigned long_n0_to_long_n1 = UNDERLING_TRANSPOSE_LONG_N0_TO_LONG_N1;
+        /** @see UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N0 */
+        long_n1_to_long_n0 = UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N0,
 
-    /** @see UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N2 */
-    const unsigned long_n1_to_long_n2 = UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N2;
+        /** @see UNDERLING_TRANSPOSE_LONG_N0_TO_LONG_N1 */
+        long_n0_to_long_n1 = UNDERLING_TRANSPOSE_LONG_N0_TO_LONG_N1,
 
-    /** @see UNDERLING_TRANSPOSE_ALL */
-    const unsigned all                =  UNDERLING_TRANSPOSE_ALL;
-};
+        /** @see UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N2 */
+        long_n1_to_long_n2 = UNDERLING_TRANSPOSE_LONG_N1_TO_LONG_N2,
+
+        /** @see UNDERLING_TRANSPOSE_ALL */
+        all                =  UNDERLING_TRANSPOSE_ALL
+
+    };
+
+}
 
 /** Wraps transposed storage flags */
 namespace transposed {
 
-    /** @see UNDERLING_TRANSPOSED_LONG_N2 */
-    const unsigned long_n2 = UNDERLING_TRANSPOSED_LONG_N2;
+    enum { // Anonymous to avoid introducing an unnecessary type
 
-    /** @see UNDERLING_TRANSPOSED_LONG_N0 */
-    const unsigned long_n0 = UNDERLING_TRANSPOSED_LONG_N0;
-};
+        /** @see UNDERLING_TRANSPOSED_LONG_N2 */
+        long_n2 = UNDERLING_TRANSPOSED_LONG_N2,
+
+        /** @see UNDERLING_TRANSPOSED_LONG_N0 */
+        long_n0 = UNDERLING_TRANSPOSED_LONG_N0
+
+    };
+
+}
 
 /**
  * Provides a thin RAII wrapper for underling_grid.
