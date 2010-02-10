@@ -58,7 +58,7 @@ void rotate_left(int *array, int len);
 underling_fftplan
 underling_fftplan_create_c2c(
         const underling_problem problem,
-        int i,
+        int long_ni,
         underling_real * data,
         int fftw_sign,
         unsigned fftw_rigor_flags);
@@ -104,30 +104,30 @@ void rotate_left(int *array, int len)
 underling_fftplan
 underling_fftplan_create_c2c_forward(
         const underling_problem problem,
-        int i,
+        int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
     return underling_fftplan_create_c2c(
-            problem, i, data, FFTW_FORWARD, fftw_rigor_flags);
+            problem, long_ni, data, FFTW_FORWARD, fftw_rigor_flags);
 }
 
 underling_fftplan
 underling_fftplan_create_c2c_backward(
         const underling_problem problem,
-        int i,
+        int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
     return underling_fftplan_create_c2c(
-            problem, i, data, FFTW_BACKWARD, fftw_rigor_flags);
+            problem, long_ni, data, FFTW_BACKWARD, fftw_rigor_flags);
 }
 
 static
 underling_fftplan
 underling_fftplan_create_c2c(
         const underling_problem problem,
-        int i,
+        int long_ni,
         underling_real * data,
         int fftw_sign,
         unsigned fftw_rigor_flags)
@@ -136,10 +136,10 @@ underling_fftplan_create_c2c(
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
-    if (SUZERAIN_UNLIKELY(i < 0 || i > 2)) {
-        SUZERAIN_ERROR_VAL("i < 0 or i > 2", SUZERAIN_EINVAL, 0);
+    if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
+        SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2", SUZERAIN_EINVAL, 0);
     }
-    const underling_extents extents = underling_local_extents(problem, i);
+    const underling_extents extents = underling_local_extents(problem, long_ni);
     if (SUZERAIN_UNLIKELY(extents.size[3] % 2)) {
         SUZERAIN_ERROR_NULL(
                 "problem must have an even number of underling_real fields",
@@ -166,9 +166,9 @@ underling_fftplan_create_c2c(
     // Prepare the reordering plan for the input data
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
-    if (SUZERAIN_UNLIKELY(extents.order[1] != i)) {
+    if (SUZERAIN_UNLIKELY(extents.order[1] != long_ni)) {
         SUZERAIN_ERROR_NULL(
-                "transformed direction not long: extents.order[1] != i",
+                "transformed direction not long: extents.order[1] != long_ni",
                 SUZERAIN_ESANITY);
     }
     fftw_plan plan_reorder = underling_fftw_plan_nop();
@@ -244,7 +244,7 @@ underling_fftplan_create_c2c(
 underling_fftplan
 underling_fftplan_create_c2r_backward(
         const underling_problem problem,
-        int i,
+        int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
@@ -252,10 +252,11 @@ underling_fftplan_create_c2r_backward(
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
     }
-    if (SUZERAIN_UNLIKELY(i < 0 || i > 2)) {
-        SUZERAIN_ERROR_VAL("i < 0 or i > 2", SUZERAIN_EINVAL, 0);
+    if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
+        SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2", SUZERAIN_EINVAL, 0);
     }
-    const underling_extents extents = underling_local_extents(problem, i);
+    const underling_extents extents
+        = underling_local_extents(problem, long_ni);
     if (SUZERAIN_UNLIKELY(extents.size[3] % 2)) {
         SUZERAIN_ERROR_NULL(
                 "problem must have an even number of underling_real fields",
@@ -276,9 +277,9 @@ underling_fftplan_create_c2r_backward(
     // Determine the storage ordering necessary for the FFT
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
-    if (SUZERAIN_UNLIKELY(extents.order[1] != i)) {
+    if (SUZERAIN_UNLIKELY(extents.order[1] != long_ni)) {
         SUZERAIN_ERROR_NULL(
-                "transformed direction not long: extents.order[1] != i",
+                "transformed direction not long: extents.order[1] != long_ni",
                 SUZERAIN_ESANITY);
     }
 

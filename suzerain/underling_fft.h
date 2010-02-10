@@ -56,16 +56,15 @@ __BEGIN_DECLS
 typedef struct underling_fftplan_s *underling_fftplan;
 
 /**
- * Create a plan to perform a forward complex-to-complex FFT on the given
- * data when long in the <tt>i</tt>th direction.  The problem must have had
+ * Create a plan to perform a forward complex-to-complex FFT on the given data
+ * when long in the <tt>long_ni</tt>th direction.  The problem must have had
  * <tt>howmany</tt> specified as a multiple of two at creation time, and it
  * will be treated as <tt>howmany/2</tt> complex fields.  Note that the
  * transform is not normalized.
  *
  * @param problem Problem to use for layout and stride information.
- * @param i    Direction across which to perform the FFT, which is assumed
- *             to be long and therefore stride one whenever the returned
- *             plan is executed.
+ * @param long_ni Direction across which to perform the FFT, which is assumed
+ *                to be long whenever the returned plan is executed.
  * @param data Pointer to the start of the memory allocated to execute
  *             the problem.
  * @param fftw_rigor_flags One of FFTW's rigor planning flags, e.g.
@@ -80,21 +79,20 @@ typedef struct underling_fftplan_s *underling_fftplan;
 underling_fftplan
 underling_fftplan_create_c2c_forward(
         const underling_problem problem,
-        int i,
+        int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags);
 
 /**
- * Create a plan to perform a backward complex-to-complex FFT on the given
- * data when long in the <tt>i</tt>th direction.  The problem must have had
+ * Create a plan to perform a backward complex-to-complex FFT on the given data
+ * when long in the <tt>long_ni</tt>th direction.  The problem must have had
  * <tt>howmany</tt> specified as a multiple of two at creation time, and it
  * will be treated as <tt>howmany/2</tt> complex fields.  Note that the
  * transform is not normalized.
  *
  * @param problem Problem to use for layout and stride information.
- * @param i    Direction across which to perform the FFT, which is assumed
- *             to be long and therefore stride one whenever the returned
- *             plan is executed.
+ * @param long_ni Direction across which to perform the FFT, which is assumed
+ *                to be long whenever the returned plan is executed.
  * @param data Pointer to the start of the memory allocated to execute
  *             the problem.
  * @param fftw_rigor_flags One of FFTW's rigor planning flags, e.g.
@@ -109,7 +107,7 @@ underling_fftplan_create_c2c_forward(
 underling_fftplan
 underling_fftplan_create_c2c_backward(
         const underling_problem problem,
-        int i,
+        int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags);
 
@@ -118,7 +116,7 @@ underling_fftplan_create_c2c_backward(
 underling_fftplan
 underling_fftplan_create_r2c_forward(
         const underling_problem problem,
-        int i,
+        int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags);
 
@@ -126,7 +124,7 @@ underling_fftplan_create_r2c_forward(
 underling_fftplan
 underling_fftplan_create_c2r_backward(
         const underling_problem problem,
-        int i,
+        int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags);
 

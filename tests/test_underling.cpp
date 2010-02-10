@@ -441,7 +441,7 @@ void test_c2r(MPI_Comm comm,
 
     underling::fftplan backward(underling::fftplan::c2r_backward(),
                                f.problem,
-                               0,
+                               long_i,
                                f.data.get(),
                                FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
@@ -457,7 +457,7 @@ void test_c2r(MPI_Comm comm,
             for (int k = 0; k < e.size[e.order[0]]; k += 2) {
 
                 const periodic_function<double,int> pf(
-                        2*(e.size[0]-1), e.size[0],
+                        2*(e.size[e.order[1]]-1), e.size[e.order[1]],
                         M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                 underling_real * const base = &f.data[
@@ -484,7 +484,7 @@ void test_c2r(MPI_Comm comm,
             for (int k = 0; k < e.size[e.order[0]] / 2; ++k) {
 
                 const periodic_function<double,int> pf(
-                        2*(e.size[0]-1), e.size[0],
+                        2*(e.size[e.order[1]]-1), e.size[e.order[1]],
                         M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*((k*2)+1));
 
                 underling_real * const base = &f.data[
@@ -493,7 +493,7 @@ void test_c2r(MPI_Comm comm,
                     + k
                 ];
 
-                for (int l = 0; l < 2*(e.size[0]-1); ++l) {
+                for (int l = 0; l < 2*(e.size[e.order[1]]-1); ++l) {
                     const double expected = pf.physical(l);
                     const double actual   = base[ l*(e.stride[e.order[1]]/2) ];
                     BOOST_CHECK_CLOSE(expected, actual, close_enough);
@@ -503,11 +503,115 @@ void test_c2r(MPI_Comm comm,
     }
 }
 
-BOOST_AUTO_TEST_CASE( underling_fft_c2r )
+BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0 )
 {
+    // Long in n0, transform a single pencil
     test_c2r(MPI_COMM_SELF, 3, 1, 1, 2, 0);
     test_c2r(MPI_COMM_SELF, 3, 1, 1, 4, 0);
     test_c2r(MPI_COMM_SELF, 3, 1, 1, 6, 0);
+
+    test_c2r(MPI_COMM_SELF, 4, 1, 1, 2, 0);
+    test_c2r(MPI_COMM_SELF, 4, 1, 1, 4, 0);
+    test_c2r(MPI_COMM_SELF, 4, 1, 1, 6, 0);
+
+    test_c2r(MPI_COMM_SELF, 5, 1, 1, 2, 0);
+    test_c2r(MPI_COMM_SELF, 5, 1, 1, 4, 0);
+    test_c2r(MPI_COMM_SELF, 5, 1, 1, 6, 0);
+
+    test_c2r(MPI_COMM_SELF, 6, 1, 1, 2, 0);
+    test_c2r(MPI_COMM_SELF, 6, 1, 1, 4, 0);
+    test_c2r(MPI_COMM_SELF, 6, 1, 1, 6, 0);
+
+    // Long in n0, transform multiple pencils
+    test_c2r(MPI_COMM_SELF, 3, 2, 2, 2, 0);
+    test_c2r(MPI_COMM_SELF, 3, 2, 3, 4, 0);
+    test_c2r(MPI_COMM_SELF, 3, 3, 2, 6, 0);
+
+    test_c2r(MPI_COMM_SELF, 4, 2, 2, 2, 0);
+    test_c2r(MPI_COMM_SELF, 4, 2, 3, 4, 0);
+    test_c2r(MPI_COMM_SELF, 4, 3, 2, 6, 0);
+
+    test_c2r(MPI_COMM_SELF, 5, 2, 2, 2, 0);
+    test_c2r(MPI_COMM_SELF, 5, 2, 3, 4, 0);
+    test_c2r(MPI_COMM_SELF, 5, 3, 2, 6, 0);
+
+    test_c2r(MPI_COMM_SELF, 6, 2, 2, 2, 0);
+    test_c2r(MPI_COMM_SELF, 6, 2, 3, 4, 0);
+    test_c2r(MPI_COMM_SELF, 6, 3, 2, 6, 0);
+}
+
+BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n1 )
+{
+    // Long in n1, transform a single pencil
+    test_c2r(MPI_COMM_SELF, 1, 3, 1, 2, 1);
+    test_c2r(MPI_COMM_SELF, 1, 3, 1, 4, 1);
+    test_c2r(MPI_COMM_SELF, 1, 3, 1, 6, 1);
+
+    test_c2r(MPI_COMM_SELF, 1, 4, 1, 2, 1);
+    test_c2r(MPI_COMM_SELF, 1, 4, 1, 4, 1);
+    test_c2r(MPI_COMM_SELF, 1, 4, 1, 6, 1);
+
+    test_c2r(MPI_COMM_SELF, 1, 5, 1, 2, 1);
+    test_c2r(MPI_COMM_SELF, 1, 5, 1, 4, 1);
+    test_c2r(MPI_COMM_SELF, 1, 5, 1, 6, 1);
+
+    test_c2r(MPI_COMM_SELF, 1, 6, 1, 2, 1);
+    test_c2r(MPI_COMM_SELF, 1, 6, 1, 4, 1);
+    test_c2r(MPI_COMM_SELF, 1, 6, 1, 6, 1);
+
+    // Long in n1, transform multiple pencils
+    test_c2r(MPI_COMM_SELF, 2, 3, 2, 2, 1);
+    test_c2r(MPI_COMM_SELF, 2, 3, 3, 4, 1);
+    test_c2r(MPI_COMM_SELF, 3, 3, 2, 6, 1);
+
+    test_c2r(MPI_COMM_SELF, 2, 4, 2, 2, 1);
+    test_c2r(MPI_COMM_SELF, 2, 4, 3, 4, 1);
+    test_c2r(MPI_COMM_SELF, 3, 4, 2, 6, 1);
+
+    test_c2r(MPI_COMM_SELF, 2, 5, 2, 2, 1);
+    test_c2r(MPI_COMM_SELF, 2, 5, 3, 4, 1);
+    test_c2r(MPI_COMM_SELF, 3, 5, 2, 6, 1);
+
+    test_c2r(MPI_COMM_SELF, 2, 6, 2, 2, 1);
+    test_c2r(MPI_COMM_SELF, 2, 6, 3, 4, 1);
+    test_c2r(MPI_COMM_SELF, 3, 6, 2, 6, 1);
+}
+
+BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2 )
+{
+    // Long in n2, transform a single pencil
+    test_c2r(MPI_COMM_SELF, 1, 1, 3, 2, 2);
+    test_c2r(MPI_COMM_SELF, 1, 1, 3, 4, 2);
+    test_c2r(MPI_COMM_SELF, 1, 1, 3, 6, 2);
+
+    test_c2r(MPI_COMM_SELF, 1, 1, 4, 2, 2);
+    test_c2r(MPI_COMM_SELF, 1, 1, 4, 4, 2);
+    test_c2r(MPI_COMM_SELF, 1, 1, 4, 6, 2);
+
+    test_c2r(MPI_COMM_SELF, 1, 1, 5, 2, 2);
+    test_c2r(MPI_COMM_SELF, 1, 1, 5, 4, 2);
+    test_c2r(MPI_COMM_SELF, 1, 1, 5, 6, 2);
+
+    test_c2r(MPI_COMM_SELF, 1, 1, 6, 2, 2);
+    test_c2r(MPI_COMM_SELF, 1, 1, 6, 4, 2);
+    test_c2r(MPI_COMM_SELF, 1, 1, 6, 6, 2);
+
+    // Long in n2, transform multiple pencils
+    test_c2r(MPI_COMM_SELF, 2, 2, 3, 2, 2);
+    test_c2r(MPI_COMM_SELF, 2, 3, 3, 4, 2);
+    test_c2r(MPI_COMM_SELF, 3, 2, 3, 6, 2);
+
+    test_c2r(MPI_COMM_SELF, 2, 2, 4, 2, 2);
+    test_c2r(MPI_COMM_SELF, 2, 3, 4, 4, 2);
+    test_c2r(MPI_COMM_SELF, 3, 2, 4, 6, 2);
+
+    test_c2r(MPI_COMM_SELF, 2, 2, 5, 2, 2);
+    test_c2r(MPI_COMM_SELF, 2, 3, 5, 4, 2);
+    test_c2r(MPI_COMM_SELF, 3, 2, 5, 6, 2);
+
+    test_c2r(MPI_COMM_SELF, 2, 2, 6, 2, 2);
+    test_c2r(MPI_COMM_SELF, 2, 3, 6, 4, 2);
+    test_c2r(MPI_COMM_SELF, 3, 2, 6, 6, 2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

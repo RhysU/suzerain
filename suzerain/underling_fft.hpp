@@ -65,38 +65,38 @@ public:
     /** @see underling_fftplan_create_c2c_forward */
     fftplan(const c2c_forward tag,
             const problem &p,
-            int i,
+            int long_ni,
             underling_real *data,
             unsigned fftw_rigor_flags)
         : fftplan_(underling_fftplan_create_c2c_forward(
-                    p.get(), i, data, fftw_rigor_flags)) {};
+                    p.get(), long_ni, data, fftw_rigor_flags)) {};
 
     /** @see underling_fftplan_create_c2c_backward */
     fftplan(const c2c_backward tag,
             const problem &p,
-            int i,
+            int long_ni,
             underling_real *data,
             unsigned fftw_rigor_flags)
         : fftplan_(underling_fftplan_create_c2c_backward(
-                    p.get(), i, data, fftw_rigor_flags)) {};
+                    p.get(), long_ni, data, fftw_rigor_flags)) {};
 
     /** @see underling_fftplan_create_r2c_forward */
     fftplan(const r2c_forward tag,
             const problem &p,
-            int i,
+            int long_ni,
             underling_real *data,
             unsigned fftw_rigor_flags)
         : fftplan_(underling_fftplan_create_r2c_forward(
-                    p.get(), i, data, fftw_rigor_flags)) {};
+                    p.get(), long_ni, data, fftw_rigor_flags)) {};
 
     /** @see underling_fftplan_create_c2r_backward */
     fftplan(const c2r_backward tag,
             const problem &p,
-            int i,
+            int long_ni,
             underling_real *data,
             unsigned fftw_rigor_flags)
         : fftplan_(underling_fftplan_create_c2r_backward(
-                    p.get(), i, data, fftw_rigor_flags)) {};
+                    p.get(), long_ni, data, fftw_rigor_flags)) {};
 
     /** @see underling_fftplan_destroy */
     ~fftplan() { underling_fftplan_destroy(fftplan_); }
