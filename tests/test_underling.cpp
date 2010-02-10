@@ -300,17 +300,17 @@ void test_c2c(MPI_Comm comm,
         = std::numeric_limits<underling_real>::epsilon()*10*n0*n1*n2;
 
     UnderlingFixture f(comm, n0, n1, n2, howmany);
-    underling::fftplan forward(underling::fftplan::c2c_forward(),
-                               f.problem,
-                               long_i,
-                               f.data.get(),
-                               FFTW_ESTIMATE);
+    underling::fft::plan forward(underling::fft::plan::c2c_forward(),
+                                 f.problem,
+                                 long_i,
+                                 f.data.get(),
+                                 FFTW_ESTIMATE);
     BOOST_REQUIRE(forward);
-    underling::fftplan backward(underling::fftplan::c2c_forward(),
-                                f.problem,
-                                long_i,
-                                f.data.get(),
-                                FFTW_ESTIMATE);
+    underling::fft::plan backward(underling::fft::plan::c2c_forward(),
+                                  f.problem,
+                                  long_i,
+                                  f.data.get(),
+                                  FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
 
     const underling_extents e = f.problem.local_extents(long_i);
@@ -439,11 +439,11 @@ void test_c2r(MPI_Comm comm,
 {
     UnderlingFixture f(comm, n0, n1, n2, howmany);
 
-    underling::fftplan backward(underling::fftplan::c2r_backward(),
-                               f.problem,
-                               long_i,
-                               f.data.get(),
-                               FFTW_ESTIMATE);
+    underling::fft::plan backward(underling::fft::plan::c2r_backward(),
+                                  f.problem,
+                                  long_i,
+                                  f.data.get(),
+                                  FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
 
     underling_extents e = f.problem.local_extents(long_i);
@@ -621,11 +621,11 @@ void test_r2c(MPI_Comm comm,
 {
     UnderlingFixture f(comm, n0, n1, n2, howmany);
 
-    underling::fftplan forward(underling::fftplan::r2c_forward(),
-                               f.problem,
-                               long_i,
-                               f.data.get(),
-                               FFTW_ESTIMATE);
+    underling::fft::plan forward(underling::fft::plan::r2c_forward(),
+                                 f.problem,
+                                 long_i,
+                                 f.data.get(),
+                                 FFTW_ESTIMATE);
     BOOST_REQUIRE(forward);
 
     underling_extents e = f.problem.local_extents(long_i);

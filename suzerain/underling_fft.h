@@ -45,17 +45,30 @@
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-// TODO Add a way to access relevant stride information
-
 /** @file
  * Provides FFTW-like planning routines atop Underling's pencil decomposition
  * information via the underling_extents struct.
  */
 
+// FIXME Document underling_fft_extents
+
+typedef struct underling_fft_extents {
+    int start[5];
+
+    int size[5];
+
+    int stride[5];
+
+    int order[5];
+} underling_fft_extents;
+
+/** A static instance used to communicate wholly invalid extents */
+extern const underling_fft_extents UNDERLING_FFT_EXTENTS_INVALID;
+
 /**
  * A type encapsulating FFTW-like planning information.
  */
-typedef struct underling_fftplan_s *underling_fftplan;
+typedef struct underling_fft_plan_s *underling_fft_plan;
 
 /**
  * Create a plan to perform a forward complex-to-complex FFT on the given data
@@ -74,12 +87,12 @@ typedef struct underling_fftplan_s *underling_fftplan;
  *                         during the planning process for any value other
  *                         than FFTW_ESTIMATE.
  *
- * @return On success, return a valid \c underling_fftplan.  On failure, calls
+ * @return On success, return a valid \c underling_fft_plan.  On failure, calls
  *         suzerain_error and returns NULL.
- * @see The method underling_fftplan_destroy for how to destroy an instance.
+ * @see The method underling_fft_plan_destroy for how to destroy an instance.
  */
-underling_fftplan
-underling_fftplan_create_c2c_forward(
+underling_fft_plan
+underling_fft_plan_create_c2c_forward(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
@@ -102,12 +115,12 @@ underling_fftplan_create_c2c_forward(
  *                         during the planning process for any value other
  *                         than FFTW_ESTIMATE.
  *
- * @return On success, return a valid \c underling_fftplan.  On failure, calls
+ * @return On success, return a valid \c underling_fft_plan.  On failure, calls
  *         suzerain_error and returns NULL.
- * @see The method underling_fftplan_destroy for how to destroy an instance.
+ * @see The method underling_fft_plan_destroy for how to destroy an instance.
  */
-underling_fftplan
-underling_fftplan_create_c2c_backward(
+underling_fft_plan
+underling_fft_plan_create_c2c_backward(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
@@ -117,8 +130,8 @@ underling_fftplan_create_c2c_backward(
 
 // FIXME Implement
 // FIXME Document
-underling_fftplan
-underling_fftplan_create_r2c_forward(
+underling_fft_plan
+underling_fft_plan_create_r2c_forward(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
@@ -143,47 +156,71 @@ underling_fftplan_create_r2c_forward(
  *                         during the planning process for any value other
  *                         than FFTW_ESTIMATE.
  *
- * @return On success, return a valid \c underling_fftplan.  On failure, calls
+ * @return On success, return a valid \c underling_fft_plan.  On failure, calls
  *         suzerain_error and returns NULL.
- * @see The method underling_fftplan_destroy for how to destroy an instance.
+ * @see The method underling_fft_plan_destroy for how to destroy an instance.
  */
-underling_fftplan
-underling_fftplan_create_c2r_backward(
+underling_fft_plan
+underling_fft_plan_create_c2r_backward(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags);
 
+underling_fft_extents
+underling_fft_local_extents_input(
+        const underling_fft_plan plan);
+
+underling_fft_extents
+underling_fft_local_extents_output(
+        const underling_fft_plan plan);
+
+void
+underling_fft_local_input(
+        const underling_fft_plan plan,
+        int *start,
+        int *size,
+        int *stride,
+        int *order);
+
+void
+underling_fft_local_output(
+        const underling_fft_plan plan,
+        int *start,
+        int *size,
+        int *stride,
+        int *order);
+
 /**
  * Perform a previously planned FFT.  Appropriate calls to the underlying FFT
  * implementation will occur.
  *
- * @param fftplan Plan to be executed.
+ * @param plan Plan to be executed.
  *
  * @return SUZERAIN_SUCCESS (zero) on success and non-zero on failure.
  */
 int
-underling_fftplan_execute(
-        const underling_fftplan fftplan);
+underling_fft_plan_execute(
+        const underling_fft_plan plan);
 /**
- * Destroy all resources associated with the given fftplan.
+ * Destroy all resources associated with the given plan.
  *
- * @param fftplan Plan to be destroyed.
+ * @param plan Plan to be destroyed.
  */
 void
-underling_fftplan_destroy(
-        underling_fftplan fftplan);
+underling_fft_plan_destroy(
+        underling_fft_plan plan);
 
 /**
  * Dump an instance's internals in a debugging-friendly format.
  *
- * @param fftplan Plan to be dumped.
+ * @param plan Plan to be dumped.
  * @param output_file Desired output handle,
  *                    which may be \c stdout or \c stderr.
  */
 void
-underling_fprint_fftplan(
-        const underling_fftplan fftplan,
+underling_fft_fprint_plan(
+        const underling_fft_plan plan,
         FILE *output_file);
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS

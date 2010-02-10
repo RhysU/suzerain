@@ -43,11 +43,16 @@ namespace suzerain {
 
 namespace underling {
 
+namespace fft {
+
+/** @see underling_fft_extents */
+typedef underling_fft_extents extents;
+
 /**
- * Provides a thin RAII wrapper for underling_fftplan.
- * @see underling_fftplan.
+ * Provides a thin RAII wrapper for underling_fft_plan.
+ * @see underling_fft_plan.
  */
-class fftplan {
+class plan {
 public:
 
     /** A tag type used to indicate a complex-to-complex forward transform */
@@ -62,59 +67,61 @@ public:
     /** A tag type used to indicate a complex-to-real backward transform */
     struct c2r_backward {};
 
-    /** @see underling_fftplan_create_c2c_forward */
-    fftplan(const c2c_forward tag,
-            const problem &p,
-            int long_ni,
-            underling_real *data,
-            unsigned fftw_rigor_flags)
-        : fftplan_(underling_fftplan_create_c2c_forward(
+    /** @see underling_fft_plan_create_c2c_forward */
+    plan(const c2c_forward tag,
+         const problem &p,
+         int long_ni,
+         underling_real *data,
+         unsigned fftw_rigor_flags)
+        : plan_(underling_fft_plan_create_c2c_forward(
                     p.get(), long_ni, data, fftw_rigor_flags)) {};
 
-    /** @see underling_fftplan_create_c2c_backward */
-    fftplan(const c2c_backward tag,
-            const problem &p,
-            int long_ni,
-            underling_real *data,
-            unsigned fftw_rigor_flags)
-        : fftplan_(underling_fftplan_create_c2c_backward(
+    /** @see underling_fft_plan_create_c2c_backward */
+    plan(const c2c_backward tag,
+         const problem &p,
+         int long_ni,
+         underling_real *data,
+         unsigned fftw_rigor_flags)
+        : plan_(underling_fft_plan_create_c2c_backward(
                     p.get(), long_ni, data, fftw_rigor_flags)) {};
 
-    /** @see underling_fftplan_create_r2c_forward */
-    fftplan(const r2c_forward tag,
-            const problem &p,
-            int long_ni,
-            underling_real *data,
-            unsigned fftw_rigor_flags)
-        : fftplan_(underling_fftplan_create_r2c_forward(
+    /** @see underling_fft_plan_create_r2c_forward */
+    plan(const r2c_forward tag,
+         const problem &p,
+         int long_ni,
+         underling_real *data,
+         unsigned fftw_rigor_flags)
+        : plan_(underling_fft_plan_create_r2c_forward(
                     p.get(), long_ni, data, fftw_rigor_flags)) {};
 
-    /** @see underling_fftplan_create_c2r_backward */
-    fftplan(const c2r_backward tag,
-            const problem &p,
-            int long_ni,
-            underling_real *data,
-            unsigned fftw_rigor_flags)
-        : fftplan_(underling_fftplan_create_c2r_backward(
+    /** @see underling_fft_plan_create_c2r_backward */
+    plan(const c2r_backward tag,
+         const problem &p,
+         int long_ni,
+         underling_real *data,
+         unsigned fftw_rigor_flags)
+        : plan_(underling_fft_plan_create_c2r_backward(
                     p.get(), long_ni, data, fftw_rigor_flags)) {};
 
-    /** @see underling_fftplan_destroy */
-    ~fftplan() { underling_fftplan_destroy(fftplan_); }
+    /** @see underling_fft_plan_destroy */
+    ~plan() { underling_fft_plan_destroy(plan_); }
 
-    /** @return The wrapped underling_fftplan instance. */
-    const underling_fftplan get() const { return fftplan_; }
+    /** @return The wrapped underling_fft_plan instance. */
+    const underling_fft_plan get() const { return plan_; }
 
-    /** @return True if the wrapped underling_fftplan instance is non-NULL. */
-    operator bool () const { return fftplan_ != NULL; };
+    /** @return True if the wrapped underling_fft_plan instance is non-NULL. */
+    operator bool () const { return plan_ != NULL; };
 
-    /** @see underling_fftplan_execute */
+    /** @see underling_fft_plan_execute */
     int execute() const {
-        return underling_fftplan_execute(fftplan_);
+        return underling_fft_plan_execute(plan_);
     }
 
 private:
-    underling_fftplan fftplan_; /**< The wrapped underling_fftplan instance */
+    underling_fft_plan plan_; /**< The wrapped underling_fft_plan instance */
 };
+
+} // namespace fft
 
 } // namespace underling
 

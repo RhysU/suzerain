@@ -41,10 +41,12 @@
 // INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS
 // *******************************************************************
 
-struct underling_fftplan_s {
-    fftw_plan plan_preorder;    // Executed before the FFT
-    fftw_plan plan_fft;         // Performs the FFT
-    fftw_plan plan_postorder;   // Executed after the FFT
+struct underling_fft_plan_s {
+    underling_fft_extents input;  // Input data layout
+    fftw_plan plan_preorder;      // Executed before the FFT
+    fftw_plan plan_fft;           // Performs the FFT
+    fftw_plan plan_postorder;     // Executed after the FFT
+    underling_fft_extents output; // Output data layout
 };
 
 // ********************************************************************
@@ -56,8 +58,13 @@ underling_fftw_plan_nop();
 
 void rotate_left(int *array, int len);
 
-underling_fftplan
-underling_fftplan_create_c2c(
+underling_fft_extents
+underling_fft_extents_c2c(
+        const underling_problem problem,
+        int long_ni);
+
+underling_fft_plan
+underling_fft_plan_create_c2c(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
@@ -73,6 +80,10 @@ static const unsigned non_rigor_mask =   ~FFTW_ESTIMATE
 // **************************************************************************
 // IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION IMPLEMENTATION
 // **************************************************************************
+
+const underling_fft_extents UNDERLING_FFT_EXTENTS_INVALID = {
+    {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}
+};
 
 static
 fftw_plan
@@ -93,7 +104,9 @@ underling_fftw_plan_nop()
     return nop_plan;
 }
 
-void rotate_left(int *array, int len)
+static
+void
+rotate_left(int *array, int len)
 {
     if (len > 0) {
         const int tmp = array[0];
@@ -104,31 +117,83 @@ void rotate_left(int *array, int len)
     }
 }
 
-underling_fftplan
-underling_fftplan_create_c2c_forward(
+static
+underling_fft_extents
+underling_fft_extents_c2c(
+        const underling_problem problem,
+        int long_ni)
+{
+    if (SUZERAIN_UNLIKELY(problem == NULL)) {
+        SUZERAIN_ERROR_VAL("problem == NULL",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
+    if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
+        SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
+
+    // Start by copying information from the domain decomposition
+    underling_fft_extents retval;
+    underling_local(problem, long_ni,
+                    retval.start, retval.size, retval.stride, retval.order);
+
+    // Sanity check layout assumptions
+    if (SUZERAIN_UNLIKELY(retval.size[3] % 2)) {
+        SUZERAIN_ERROR_VAL(
+                "problem must have an even number of underling_real fields",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
+    if (SUZERAIN_UNLIKELY(retval.order[0] != 3)) {
+        SUZERAIN_ERROR_VAL(
+                "transformed fields not interleaved: retval.order[0] != 3",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
+
+    // The returned layout's indices 3 and 4 describe interleaved, complex
+    // fields built from underling.extents index 3:
+    retval.size[3]   /= 2; // Two adjacent real fields make one complex field
+    retval.stride[3] *= 2;
+    retval.size[4]    = 2; // Each complex value consists of two reals
+    retval.stride[4]  = 1; // Real-valued components are adjacent
+    retval.start[4]   = 0; // Complex-values are always local
+    // Real-valued components are fastest index
+    for (int i = 3; i >= 0; --i) {
+        retval.order[i+1] = retval.order[i];
+    }
+    retval.order[0] = 4;
+
+    return retval;
+}
+
+underling_fft_plan
+underling_fft_plan_create_c2c_forward(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
-    return underling_fftplan_create_c2c(
+    return underling_fft_plan_create_c2c(
             problem, long_ni, data, FFTW_FORWARD, fftw_rigor_flags);
 }
 
-underling_fftplan
-underling_fftplan_create_c2c_backward(
+underling_fft_plan
+underling_fft_plan_create_c2c_backward(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
-    return underling_fftplan_create_c2c(
+    return underling_fft_plan_create_c2c(
             problem, long_ni, data, FFTW_BACKWARD, fftw_rigor_flags);
 }
 
 static
-underling_fftplan
-underling_fftplan_create_c2c(
+underling_fft_plan
+underling_fft_plan_create_c2c(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
@@ -141,17 +206,6 @@ underling_fftplan_create_c2c(
     }
     if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
         SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2", SUZERAIN_EINVAL, 0);
-    }
-    const underling_extents extents = underling_local_extents(problem, long_ni);
-    if (SUZERAIN_UNLIKELY(extents.size[3] % 2)) {
-        SUZERAIN_ERROR_NULL(
-                "problem must have an even number of underling_real fields",
-                SUZERAIN_EINVAL);
-    }
-    if (SUZERAIN_UNLIKELY(extents.order[0] != 3)) {
-        SUZERAIN_ERROR_NULL(
-                "transformed fields not interleaved: extents.order[0] != 3",
-                SUZERAIN_EINVAL);
     }
     if (SUZERAIN_UNLIKELY(data == NULL)) {
         SUZERAIN_ERROR_NULL("data == NULL", SUZERAIN_EINVAL);
@@ -166,12 +220,17 @@ underling_fftplan_create_c2c(
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
 
-    // Prepare the reordering plan for the input data
+    // Prepare the input data layout based on the provided underling_problem
+    const underling_fft_extents input
+        = underling_fft_extents_c2c(problem, long_ni);
+
+    // Prepare the output data layout based on the provided underling_problem
+    const underling_fft_extents output = input;
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
-    if (SUZERAIN_UNLIKELY(extents.order[1] != long_ni)) {
+    if (SUZERAIN_UNLIKELY(input.order[2] != long_ni)) {
         SUZERAIN_ERROR_NULL(
-                "transformed direction not long: extents.order[1] != long_ni",
+                "transformed direction not long: input.order[2] != long_ni",
                 SUZERAIN_ESANITY);
     }
     const fftw_plan plan_preorder = underling_fftw_plan_nop();
@@ -180,11 +239,11 @@ underling_fftplan_create_c2c(
     // allows using underling_extents.strides directly.  The tranform is purely
     // in place which sets our output strides equal to our input strides.
 
-    // We transform the long dimension given by extents.order[1]
+    // We transform the long dimension given by output.order[2]
     const fftw_iodim dims[] = {
-        extents.size[extents.order[1]],   // n
-        extents.stride[extents.order[1]], // is
-        extents.stride[extents.order[1]]  // os
+        output.size[output.order[2]],
+        output.stride[output.order[2]],
+        output.stride[output.order[2]]
     };
     const int rank = sizeof(dims)/sizeof(dims[0]);
 
@@ -193,19 +252,19 @@ underling_fftplan_create_c2c(
     // order.
     const fftw_iodim howmany_dims[3] = {
         {
-            extents.size[extents.order[3]],
-            extents.stride[extents.order[3]],
-            extents.stride[extents.order[3]]
+            output.size[output.order[4]],
+            output.stride[output.order[4]],
+            output.stride[output.order[4]]
         },
         {
-            extents.size[extents.order[2]],
-            extents.stride[extents.order[2]],
-            extents.stride[extents.order[2]]
+            output.size[output.order[3]],
+            output.stride[output.order[3]],
+            output.stride[output.order[3]]
         },
         {
-            extents.size[3] / 2, // howmany/2
-            2,                   // is, interleaved
-            2                    // os, interleaved
+            output.size[3],
+            output.size[4],
+            output.size[4]
         }
     };
     const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
@@ -230,29 +289,31 @@ underling_fftplan_create_c2c(
     // Prepare the reordering plan for the output data
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
-    if (SUZERAIN_UNLIKELY(extents.order[1] != long_ni)) {
+    if (SUZERAIN_UNLIKELY(input.order[2] != long_ni)) {
         SUZERAIN_ERROR_NULL(
-                "transformed direction not long: extents.order[1] != long_ni",
+                "transformed direction not long: input.order[2] != long_ni",
                 SUZERAIN_ESANITY);
     }
     const fftw_plan plan_postorder = underling_fftw_plan_nop();
 
-    // Create and initialize the fftplan workspace
-    underling_fftplan f = calloc(1, sizeof(struct underling_fftplan_s));
+    // Create and initialize the plan workspace
+    underling_fft_plan f = calloc(1, sizeof(struct underling_fft_plan_s));
     if (SUZERAIN_UNLIKELY(f == NULL)) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for fftplan",
+        SUZERAIN_ERROR_NULL("failed to allocate space for plan",
                              SUZERAIN_ENOMEM);
     }
-    // Copy the relevant parameters to the fftplan workspace
+    // Copy the relevant parameters to the plan workspace
+    f->input          = input;
     f->plan_preorder  = plan_preorder;
     f->plan_fft       = plan_fft;
     f->plan_postorder = plan_postorder;
+    f->output         = output;
 
     return f;
 }
 
-underling_fftplan
-underling_fftplan_create_c2r_backward(
+underling_fft_plan
+underling_fft_plan_create_c2r_backward(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
@@ -391,13 +452,13 @@ underling_fftplan_create_c2r_backward(
     }
     const fftw_plan plan_postorder = underling_fftw_plan_nop();
 
-    // Create and initialize the fftplan workspace
-    underling_fftplan f = calloc(1, sizeof(struct underling_fftplan_s));
+    // Create and initialize the plan workspace
+    underling_fft_plan f = calloc(1, sizeof(struct underling_fft_plan_s));
     if (SUZERAIN_UNLIKELY(f == NULL)) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for fftplan",
+        SUZERAIN_ERROR_NULL("failed to allocate space for plan",
                              SUZERAIN_ENOMEM);
     }
-    // Copy the relevant parameters to the fftplan workspace
+    // Copy the relevant parameters to the plan workspace
     f->plan_preorder  = plan_preorder;
     f->plan_fft       = plan_fft;
     f->plan_postorder = plan_postorder;
@@ -406,8 +467,8 @@ underling_fftplan_create_c2r_backward(
 
 }
 
-underling_fftplan
-underling_fftplan_create_r2c_forward(
+underling_fft_plan
+underling_fft_plan_create_r2c_forward(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
@@ -543,13 +604,13 @@ underling_fftplan_create_r2c_forward(
                 SUZERAIN_ESANITY);
     }
 
-    // Create and initialize the fftplan workspace
-    underling_fftplan f = calloc(1, sizeof(struct underling_fftplan_s));
+    // Create and initialize the plan workspace
+    underling_fft_plan f = calloc(1, sizeof(struct underling_fft_plan_s));
     if (SUZERAIN_UNLIKELY(f == NULL)) {
-        SUZERAIN_ERROR_NULL("failed to allocate space for fftplan",
+        SUZERAIN_ERROR_NULL("failed to allocate space for plan",
                              SUZERAIN_ENOMEM);
     }
-    // Copy the relevant parameters to the fftplan workspace
+    // Copy the relevant parameters to the plan workspace
     f->plan_preorder  = plan_preorder;
     f->plan_fft       = plan_fft;
     f->plan_postorder = plan_postorder;
@@ -558,73 +619,163 @@ underling_fftplan_create_r2c_forward(
 
 }
 
-int
-underling_fftplan_execute(
-        const underling_fftplan fftplan)
+underling_fft_extents
+underling_fft_local_extents_input(
+        const underling_fft_plan plan)
 {
-    if (SUZERAIN_UNLIKELY(fftplan == NULL)) {
-        SUZERAIN_ERROR("fftplan == NULL", SUZERAIN_EINVAL);
-    }
-    if (SUZERAIN_UNLIKELY(fftplan->plan_preorder == NULL)) {
-        SUZERAIN_ERROR("fftplan->plan_preorder == NULL", SUZERAIN_EINVAL);
-    }
-    if (SUZERAIN_UNLIKELY(fftplan->plan_fft == NULL)) {
-        SUZERAIN_ERROR("fftplan->plan_fft == NULL", SUZERAIN_EINVAL);
-    }
-    if (SUZERAIN_UNLIKELY(fftplan->plan_postorder == NULL)) {
-        SUZERAIN_ERROR("fftplan->plan_postorder == NULL", SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(plan == NULL)) {
+        SUZERAIN_ERROR_VAL("plan == NULL",
+                SUZERAIN_EINVAL, UNDERLING_FFT_EXTENTS_INVALID);
     }
 
-    fftw_execute(fftplan->plan_preorder);
-    fftw_execute(fftplan->plan_fft);
-    fftw_execute(fftplan->plan_postorder);
+    underling_fft_extents retval = plan->input; // Create temporary
+    return retval;                                 // Return temporary
+}
+
+underling_fft_extents
+underling_fft_local_extents_output(
+        const underling_fft_plan plan)
+{
+    if (SUZERAIN_UNLIKELY(plan == NULL)) {
+        SUZERAIN_ERROR_VAL("plan == NULL",
+                SUZERAIN_EINVAL, UNDERLING_FFT_EXTENTS_INVALID);
+    }
+
+    underling_fft_extents retval = plan->output; // Create temporary
+    return retval;                                  // Return temporary
+}
+
+void
+underling_fft_local_input(
+        const underling_fft_plan plan,
+        int *start,
+        int *size,
+        int *stride,
+        int *order)
+{
+    if (SUZERAIN_UNLIKELY(plan == NULL)) {
+        SUZERAIN_ERROR_VOID("plan == NULL", SUZERAIN_EINVAL);
+    }
+
+    const underling_fft_extents * const e = &plan->input;
+
+    if (start) {
+        for (int j = 0; j < 5; ++j)
+            start[j] = e->start[j];
+    }
+    if (size) {
+        for (int j = 0; j < 5; ++j)
+            size[j] = e->size[j];
+    }
+    if (stride) {
+        for (int j = 0; j < 5; ++j)
+            stride[j] = e->stride[j];
+    }
+    if (order) {
+        for (int j = 0; j < 5; ++j)
+            order[j] = e->order[j];
+    }
+}
+
+void
+underling_fft_local_output(
+        const underling_fft_plan plan,
+        int *start,
+        int *size,
+        int *stride,
+        int *order)
+{
+    if (SUZERAIN_UNLIKELY(plan == NULL)) {
+        SUZERAIN_ERROR_VOID("plan == NULL", SUZERAIN_EINVAL);
+    }
+
+    const underling_fft_extents * const e = &plan->output;
+
+    if (start) {
+        for (int j = 0; j < 5; ++j)
+            start[j] = e->start[j];
+    }
+    if (size) {
+        for (int j = 0; j < 5; ++j)
+            size[j] = e->size[j];
+    }
+    if (stride) {
+        for (int j = 0; j < 5; ++j)
+            stride[j] = e->stride[j];
+    }
+    if (order) {
+        for (int j = 0; j < 5; ++j)
+            order[j] = e->order[j];
+    }
+}
+
+int
+underling_fft_plan_execute(
+        const underling_fft_plan plan)
+{
+    if (SUZERAIN_UNLIKELY(plan == NULL)) {
+        SUZERAIN_ERROR("plan == NULL", SUZERAIN_EINVAL);
+    }
+    if (SUZERAIN_UNLIKELY(plan->plan_preorder == NULL)) {
+        SUZERAIN_ERROR("plan->plan_preorder == NULL", SUZERAIN_EINVAL);
+    }
+    if (SUZERAIN_UNLIKELY(plan->plan_fft == NULL)) {
+        SUZERAIN_ERROR("plan->plan_fft == NULL", SUZERAIN_EINVAL);
+    }
+    if (SUZERAIN_UNLIKELY(plan->plan_postorder == NULL)) {
+        SUZERAIN_ERROR("plan->plan_postorder == NULL", SUZERAIN_EINVAL);
+    }
+
+    fftw_execute(plan->plan_preorder);
+    fftw_execute(plan->plan_fft);
+    fftw_execute(plan->plan_postorder);
 
     return SUZERAIN_SUCCESS;
 }
 
 void
-underling_fftplan_destroy(
-        underling_fftplan fftplan)
+underling_fft_plan_destroy(
+        underling_fft_plan plan)
 {
-    if (fftplan) {
-        if (fftplan->plan_preorder) {
-            fftw_destroy_plan(fftplan->plan_preorder);
-            fftplan->plan_preorder = NULL;
+    if (plan) {
+        if (plan->plan_preorder) {
+            fftw_destroy_plan(plan->plan_preorder);
+            plan->plan_preorder = NULL;
         }
-        if (fftplan->plan_fft) {
-            fftw_destroy_plan(fftplan->plan_fft);
-            fftplan->plan_fft = NULL;
+        if (plan->plan_fft) {
+            fftw_destroy_plan(plan->plan_fft);
+            plan->plan_fft = NULL;
         }
-        if (fftplan->plan_postorder) {
-            fftw_destroy_plan(fftplan->plan_postorder);
-            fftplan->plan_postorder = NULL;
+        if (plan->plan_postorder) {
+            fftw_destroy_plan(plan->plan_postorder);
+            plan->plan_postorder = NULL;
         }
-        free(fftplan);
+        free(plan);
     }
 }
 
 void
-underling_fprint_fftplan(
-        const underling_fftplan fftplan,
+underling_fprint_fft_plan(
+        const underling_fft_plan plan,
         FILE *output_file)
 {
-    fprintf(output_file, "{underling_fftplan:");
-    if (!fftplan) {
+    fprintf(output_file, "{underling_fft_plan:");
+    if (!plan) {
         fprintf(output_file, "NULL");
     } else {
-        if (fftplan->plan_preorder) {
+        if (plan->plan_preorder) {
             fprintf(output_file, "{plan_preorder:");
-            fftw_fprint_plan(fftplan->plan_preorder, output_file);
+            fftw_fprint_plan(plan->plan_preorder, output_file);
             fprintf(output_file, "}");
         }
-        if (fftplan->plan_fft) {
+        if (plan->plan_fft) {
             fprintf(output_file, "{plan_fft:");
-            fftw_fprint_plan(fftplan->plan_fft, output_file);
+            fftw_fprint_plan(plan->plan_fft, output_file);
             fprintf(output_file, "}");
         }
-        if (fftplan->plan_postorder) {
+        if (plan->plan_postorder) {
             fprintf(output_file, "{plan_postorder:");
-            fftw_fprint_plan(fftplan->plan_postorder, output_file);
+            fftw_fprint_plan(plan->plan_postorder, output_file);
             fprintf(output_file, "}");
         }
     }
