@@ -614,4 +614,190 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2 )
     test_c2r(MPI_COMM_SELF, 3, 2, 6, 6, 2);
 }
 
+void test_r2c(MPI_Comm comm,
+              const int n0, const int n1, const int n2,
+              const int howmany,
+              const int long_i)
+{
+    UnderlingFixture f(comm, n0, n1, n2, howmany);
+
+    underling::fftplan forward(underling::fftplan::r2c_forward(),
+                               f.problem,
+                               long_i,
+                               f.data.get(),
+                               FFTW_ESTIMATE);
+    BOOST_REQUIRE(forward);
+
+    underling_extents e = f.problem.local_extents(long_i);
+    const double close_enough
+        =   std::numeric_limits<double>::epsilon()
+          * 100*e.size[long_i]*e.size[long_i]*e.size[long_i];
+
+    // Load up non-trivial sample data; note k indexing
+    for (int i = 0; i < e.size[e.order[3]]; ++i) {
+        for (int j = 0; j < e.size[e.order[2]]; ++j) {
+            for (int k = 0; k < e.size[e.order[0]] / 2; ++k) {
+
+                const periodic_function<double,int> pf(
+                        2*(e.size[e.order[1]]-1), e.size[e.order[1]],
+                        M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
+
+                underling_real * const base = &f.data[
+                      i*e.stride[e.order[3]]
+                    + j*e.stride[e.order[2]]
+                    + k
+                ];
+
+                for (int l = 0; l < 2*(e.size[e.order[1]]-1); ++l) {
+                    base[ l*(e.stride[e.order[1]]/2) ] = pf.physical(l);
+                }
+            }
+        }
+    }
+
+    forward.execute();
+
+    // Check data transformed as expected; note k indexing
+    for (int i = 0; i < e.size[e.order[3]]; ++i) {
+        for (int j = 0; j < e.size[e.order[2]]; ++j) {
+            for (int k = 0; k < e.size[e.order[0]]; k += 2) {
+
+                const periodic_function<double,int> pf(
+                        2*(e.size[e.order[1]]-1), e.size[e.order[1]],
+                        M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*((k/2)+1));
+
+                underling_real * const base = &f.data[
+                      i*e.stride[e.order[3]]
+                    + j*e.stride[e.order[2]]
+                    + k
+                ];
+
+                for (int l = 0; l < (e.size[e.order[1]]/2+1); ++l) {
+                    std::complex<double> expected
+                        = pf.wave(l) * (2.0*(e.size[e.order[1]]-1));
+                    BOOST_CHECK_CLOSE(
+                            expected.real(),
+                            base[ l*e.stride[e.order[1]]     ],
+                            close_enough);
+                    BOOST_CHECK_CLOSE(
+                            expected.imag(),
+                            base[ l*e.stride[e.order[1]] + 1 ],
+                            close_enough);
+                }
+            }
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n0 )
+{
+    // Long in n0, transform a single pencil
+    test_r2c(MPI_COMM_SELF, 3, 1, 1, 2, 0);
+    test_r2c(MPI_COMM_SELF, 3, 1, 1, 4, 0);
+    test_r2c(MPI_COMM_SELF, 3, 1, 1, 6, 0);
+
+    test_r2c(MPI_COMM_SELF, 4, 1, 1, 2, 0);
+    test_r2c(MPI_COMM_SELF, 4, 1, 1, 4, 0);
+    test_r2c(MPI_COMM_SELF, 4, 1, 1, 6, 0);
+
+    test_r2c(MPI_COMM_SELF, 5, 1, 1, 2, 0);
+    test_r2c(MPI_COMM_SELF, 5, 1, 1, 4, 0);
+    test_r2c(MPI_COMM_SELF, 5, 1, 1, 6, 0);
+
+    test_r2c(MPI_COMM_SELF, 6, 1, 1, 2, 0);
+    test_r2c(MPI_COMM_SELF, 6, 1, 1, 4, 0);
+    test_r2c(MPI_COMM_SELF, 6, 1, 1, 6, 0);
+
+    // Long in n0, transform multiple pencils
+    test_r2c(MPI_COMM_SELF, 3, 2, 2, 2, 0);
+    test_r2c(MPI_COMM_SELF, 3, 2, 3, 4, 0);
+    test_r2c(MPI_COMM_SELF, 3, 3, 2, 6, 0);
+
+    test_r2c(MPI_COMM_SELF, 4, 2, 2, 2, 0);
+    test_r2c(MPI_COMM_SELF, 4, 2, 3, 4, 0);
+    test_r2c(MPI_COMM_SELF, 4, 3, 2, 6, 0);
+
+    test_r2c(MPI_COMM_SELF, 5, 2, 2, 2, 0);
+    test_r2c(MPI_COMM_SELF, 5, 2, 3, 4, 0);
+    test_r2c(MPI_COMM_SELF, 5, 3, 2, 6, 0);
+
+    test_r2c(MPI_COMM_SELF, 6, 2, 2, 2, 0);
+    test_r2c(MPI_COMM_SELF, 6, 2, 3, 4, 0);
+    test_r2c(MPI_COMM_SELF, 6, 3, 2, 6, 0);
+}
+
+BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n1 )
+{
+    // Long in n1, transform a single pencil
+    test_r2c(MPI_COMM_SELF, 1, 3, 1, 2, 1);
+    test_r2c(MPI_COMM_SELF, 1, 3, 1, 4, 1);
+    test_r2c(MPI_COMM_SELF, 1, 3, 1, 6, 1);
+
+    test_r2c(MPI_COMM_SELF, 1, 4, 1, 2, 1);
+    test_r2c(MPI_COMM_SELF, 1, 4, 1, 4, 1);
+    test_r2c(MPI_COMM_SELF, 1, 4, 1, 6, 1);
+
+    test_r2c(MPI_COMM_SELF, 1, 5, 1, 2, 1);
+    test_r2c(MPI_COMM_SELF, 1, 5, 1, 4, 1);
+    test_r2c(MPI_COMM_SELF, 1, 5, 1, 6, 1);
+
+    test_r2c(MPI_COMM_SELF, 1, 6, 1, 2, 1);
+    test_r2c(MPI_COMM_SELF, 1, 6, 1, 4, 1);
+    test_r2c(MPI_COMM_SELF, 1, 6, 1, 6, 1);
+
+    // Long in n1, transform multiple pencils
+    test_r2c(MPI_COMM_SELF, 2, 3, 2, 2, 1);
+    test_r2c(MPI_COMM_SELF, 2, 3, 3, 4, 1);
+    test_r2c(MPI_COMM_SELF, 3, 3, 2, 6, 1);
+
+    test_r2c(MPI_COMM_SELF, 2, 4, 2, 2, 1);
+    test_r2c(MPI_COMM_SELF, 2, 4, 3, 4, 1);
+    test_r2c(MPI_COMM_SELF, 3, 4, 2, 6, 1);
+
+    test_r2c(MPI_COMM_SELF, 2, 5, 2, 2, 1);
+    test_r2c(MPI_COMM_SELF, 2, 5, 3, 4, 1);
+    test_r2c(MPI_COMM_SELF, 3, 5, 2, 6, 1);
+
+    test_r2c(MPI_COMM_SELF, 2, 6, 2, 2, 1);
+    test_r2c(MPI_COMM_SELF, 2, 6, 3, 4, 1);
+    test_r2c(MPI_COMM_SELF, 3, 6, 2, 6, 1);
+}
+
+BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n2 )
+{
+    // Long in n2, transform a single pencil
+    test_r2c(MPI_COMM_SELF, 1, 1, 3, 2, 2);
+    test_r2c(MPI_COMM_SELF, 1, 1, 3, 4, 2);
+    test_r2c(MPI_COMM_SELF, 1, 1, 3, 6, 2);
+
+    test_r2c(MPI_COMM_SELF, 1, 1, 4, 2, 2);
+    test_r2c(MPI_COMM_SELF, 1, 1, 4, 4, 2);
+    test_r2c(MPI_COMM_SELF, 1, 1, 4, 6, 2);
+
+    test_r2c(MPI_COMM_SELF, 1, 1, 5, 2, 2);
+    test_r2c(MPI_COMM_SELF, 1, 1, 5, 4, 2);
+    test_r2c(MPI_COMM_SELF, 1, 1, 5, 6, 2);
+
+    test_r2c(MPI_COMM_SELF, 1, 1, 6, 2, 2);
+    test_r2c(MPI_COMM_SELF, 1, 1, 6, 4, 2);
+    test_r2c(MPI_COMM_SELF, 1, 1, 6, 6, 2);
+
+    // Long in n2, transform multiple pencils
+    test_r2c(MPI_COMM_SELF, 2, 2, 3, 2, 2);
+    test_r2c(MPI_COMM_SELF, 2, 3, 3, 4, 2);
+    test_r2c(MPI_COMM_SELF, 3, 2, 3, 6, 2);
+
+    test_r2c(MPI_COMM_SELF, 2, 2, 4, 2, 2);
+    test_r2c(MPI_COMM_SELF, 2, 3, 4, 4, 2);
+    test_r2c(MPI_COMM_SELF, 3, 2, 4, 6, 2);
+
+    test_r2c(MPI_COMM_SELF, 2, 2, 5, 2, 2);
+    test_r2c(MPI_COMM_SELF, 2, 3, 5, 4, 2);
+    test_r2c(MPI_COMM_SELF, 3, 2, 5, 6, 2);
+
+    test_r2c(MPI_COMM_SELF, 2, 2, 6, 2, 2);
+    test_r2c(MPI_COMM_SELF, 2, 3, 6, 4, 2);
+    test_r2c(MPI_COMM_SELF, 3, 2, 6, 6, 2);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
