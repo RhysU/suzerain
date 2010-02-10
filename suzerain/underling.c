@@ -189,7 +189,9 @@ underling_fftw_plan_nop()
                                             /*out*/NULL,
                                             /*kind*/NULL,
                                             /*flags*/0);
-    assert(nop_plan);
+    if (SUZERAIN_UNLIKELY(nop_plan == NULL)) {
+        SUZERAIN_ERROR_NULL("FFTW returned a NULL NOP plan", SUZERAIN_ESANITY);
+    }
     return nop_plan;
 }
 

@@ -42,8 +42,9 @@
 // *******************************************************************
 
 struct underling_fftplan_s {
-    fftw_plan plan_reorder;
-    fftw_plan plan_fft;
+    fftw_plan plan_preorder;    // Executed before the FFT
+    fftw_plan plan_fft;         // Performs the FFT
+    fftw_plan plan_postorder;   // Executed after the FFT
 };
 
 // ********************************************************************
@@ -86,7 +87,9 @@ underling_fftw_plan_nop()
                                             /*out*/NULL,
                                             /*kind*/NULL,
                                             /*flags*/0);
-    assert(nop_plan);
+    if (SUZERAIN_UNLIKELY(nop_plan == NULL)) {
+        SUZERAIN_ERROR_NULL("FFTW returned a NULL NOP plan", SUZERAIN_ESANITY);
+    }
     return nop_plan;
 }
 
@@ -171,10 +174,7 @@ underling_fftplan_create_c2c(
                 "transformed direction not long: extents.order[1] != long_ni",
                 SUZERAIN_ESANITY);
     }
-    fftw_plan plan_reorder = underling_fftw_plan_nop();
-    if (SUZERAIN_UNLIKELY(plan_reorder == NULL)) {
-        SUZERAIN_ERROR_NULL("FFTW returned a NULL NOP plan", SUZERAIN_ESANITY);
-    }
+    const fftw_plan plan_preorder = underling_fftw_plan_nop();
 
     // Prepare the input to fftw_plan_guru_split_dft.  FFTW split interface
     // allows using underling_extents.strides directly.  The tranform is purely
@@ -224,8 +224,18 @@ underling_fftplan_create_c2c(
                                                   fftw_rigor_flags);
 
     if (SUZERAIN_UNLIKELY(plan_fft == NULL)) {
-        SUZERAIN_ERROR_NULL("FFTW returned a NULL plan", SUZERAIN_ESANITY);
+        SUZERAIN_ERROR_NULL("FFTW returned a NULL FFT plan", SUZERAIN_ESANITY);
     }
+
+    // Prepare the reordering plan for the output data
+    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
+    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
+    if (SUZERAIN_UNLIKELY(extents.order[1] != long_ni)) {
+        SUZERAIN_ERROR_NULL(
+                "transformed direction not long: extents.order[1] != long_ni",
+                SUZERAIN_ESANITY);
+    }
+    const fftw_plan plan_postorder = underling_fftw_plan_nop();
 
     // Create and initialize the fftplan workspace
     underling_fftplan f = calloc(1, sizeof(struct underling_fftplan_s));
@@ -234,13 +244,13 @@ underling_fftplan_create_c2c(
                              SUZERAIN_ENOMEM);
     }
     // Copy the relevant parameters to the fftplan workspace
-    f->plan_reorder = plan_reorder;
-    f->plan_fft     = plan_fft;
+    f->plan_preorder  = plan_preorder;
+    f->plan_fft       = plan_fft;
+    f->plan_postorder = plan_postorder;
 
     return f;
 }
 
-// FIXME Implement
 underling_fftplan
 underling_fftplan_create_c2r_backward(
         const underling_problem problem,
@@ -285,7 +295,7 @@ underling_fftplan_create_c2r_backward(
 
     // Prepare the reordering plan for the input data.  We "rotate" adjacent
     // real and imaginary components so the stride between them is identical.
-    fftw_plan plan_reorder = NULL;
+    fftw_plan plan_preorder = NULL;
     {
         const fftw_iodim howmany_dims[] = {
             { // Loop
@@ -316,19 +326,18 @@ underling_fftplan_create_c2r_backward(
         };
         const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
 
-        plan_reorder = fftw_plan_guru_r2r(/*rank*/0, /*dims*/NULL,
-                                          howmany_rank, howmany_dims,
-                                          data, data,
-                                          /*kind*/NULL, fftw_rigor_flags);
+        plan_preorder = fftw_plan_guru_r2r(/*rank*/0, /*dims*/NULL,
+                                           howmany_rank, howmany_dims,
+                                           data, data,
+                                           /*kind*/NULL, fftw_rigor_flags);
     }
-    if (SUZERAIN_UNLIKELY(plan_reorder == NULL)) {
-        SUZERAIN_ERROR_NULL("FFTW returned a NULL reordering plan",
+    if (SUZERAIN_UNLIKELY(plan_preorder == NULL)) {
+        SUZERAIN_ERROR_NULL("FFTW returned a NULL preorder plan",
                 SUZERAIN_ESANITY);
     }
 
-    // We transform the long dimension given by extents.order[1] The transform
-    // is purely in place which sets our output strides equal to our input
-    // strides.
+    // We transform the long dimension given by extents.order[1]
+    // The transform is purely in place.
     fftw_plan plan_fft = NULL;
     {
         const fftw_iodim dims[] = {
@@ -369,7 +378,169 @@ underling_fftplan_create_c2r_backward(
                                                 fftw_rigor_flags);
     }
     if (SUZERAIN_UNLIKELY(plan_fft == NULL)) {
-        SUZERAIN_ERROR_NULL("FFTW returned a NULL plan", SUZERAIN_ESANITY);
+        SUZERAIN_ERROR_NULL("FFTW returned a NULL FFT plan", SUZERAIN_ESANITY);
+    }
+
+    // Prepare the reordering plan for the output data
+    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
+    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
+    if (SUZERAIN_UNLIKELY(extents.order[1] != long_ni)) {
+        SUZERAIN_ERROR_NULL(
+                "transformed direction not long: extents.order[1] != long_ni",
+                SUZERAIN_ESANITY);
+    }
+    const fftw_plan plan_postorder = underling_fftw_plan_nop();
+
+    // Create and initialize the fftplan workspace
+    underling_fftplan f = calloc(1, sizeof(struct underling_fftplan_s));
+    if (SUZERAIN_UNLIKELY(f == NULL)) {
+        SUZERAIN_ERROR_NULL("failed to allocate space for fftplan",
+                             SUZERAIN_ENOMEM);
+    }
+    // Copy the relevant parameters to the fftplan workspace
+    f->plan_preorder  = plan_preorder;
+    f->plan_fft       = plan_fft;
+    f->plan_postorder = plan_postorder;
+
+    return f;
+
+}
+
+underling_fftplan
+underling_fftplan_create_r2c_forward(
+        const underling_problem problem,
+        int long_ni,
+        underling_real * data,
+        unsigned fftw_rigor_flags)
+{
+    // Sanity check input arguments
+    if (SUZERAIN_UNLIKELY(problem == NULL)) {
+        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
+    }
+    if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
+        SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2", SUZERAIN_EINVAL, 0);
+    }
+    const underling_extents extents
+        = underling_local_extents(problem, long_ni);
+    if (SUZERAIN_UNLIKELY(extents.size[3] % 2)) {
+        SUZERAIN_ERROR_NULL(
+                "problem must have an even number of underling_real fields",
+                SUZERAIN_EINVAL);
+    }
+    if (SUZERAIN_UNLIKELY(extents.order[0] != 3)) {
+        SUZERAIN_ERROR_NULL(
+                "fields not interleaved: extents.order[0] != 3",
+                SUZERAIN_EINVAL);
+    }
+    if (SUZERAIN_UNLIKELY(data == NULL)) {
+        SUZERAIN_ERROR_NULL("data == NULL", SUZERAIN_EINVAL);
+    }
+    if (SUZERAIN_UNLIKELY(fftw_rigor_flags & non_rigor_mask)) {
+        SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
+    }
+
+    // Determine the storage ordering necessary for the FFT
+    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
+    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
+    if (SUZERAIN_UNLIKELY(extents.order[1] != long_ni)) {
+        SUZERAIN_ERROR_NULL(
+                "transformed direction not long: extents.order[1] != long_ni",
+                SUZERAIN_ESANITY);
+    }
+    const fftw_plan plan_preorder = underling_fftw_plan_nop();
+
+    // We transform the long dimension given by extents.order[1]
+    // The transform is purely in place.
+    fftw_plan plan_fft = NULL;
+    {
+        const fftw_iodim dims[] = {
+            {
+                2*(extents.size[extents.order[1]] - 1),
+                extents.size[extents.order[0]] / 2,
+                extents.size[extents.order[0]]
+            }
+        };
+        const int rank = sizeof(dims)/sizeof(dims[0]);
+
+        const fftw_iodim howmany_dims[] = {
+            {
+                extents.size[extents.order[3]],
+                extents.stride[extents.order[3]],
+                extents.stride[extents.order[3]]
+            },
+            {
+                extents.size[extents.order[2]],
+                extents.stride[extents.order[2]],
+                extents.stride[extents.order[2]]
+            },
+            {
+                extents.size[extents.order[0]] / 2, // howmany/2
+                1,                                  // is, interleaved
+                1                                   // os, interleaved
+            }
+        };
+        const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
+
+        underling_real * const in = data;
+        underling_real * const ro = data;
+        underling_real * const io = data + extents.size[extents.order[0]] / 2;
+
+        plan_fft = fftw_plan_guru_split_dft_r2c(rank, dims,
+                                                howmany_rank, howmany_dims,
+                                                in, ro, io,
+                                                fftw_rigor_flags);
+    }
+    if (SUZERAIN_UNLIKELY(plan_fft == NULL)) {
+        SUZERAIN_ERROR_NULL("FFTW returned a NULL FFT plan", SUZERAIN_ESANITY);
+    }
+
+    // Prepare the reordering plan for the output data
+    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
+    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
+    if (SUZERAIN_UNLIKELY(extents.order[1] != long_ni)) {
+        SUZERAIN_ERROR_NULL(
+                "transformed direction not long: extents.order[1] != long_ni",
+                SUZERAIN_ESANITY);
+    }
+    fftw_plan plan_postorder = NULL;
+    {
+        const fftw_iodim howmany_dims[] = {
+            { // Loop
+                extents.size[extents.order[3]],
+                extents.stride[extents.order[3]],
+                extents.stride[extents.order[3]]
+            },
+            { // Loop
+                extents.size[extents.order[2]],
+                extents.stride[extents.order[2]],
+                extents.stride[extents.order[2]]
+            },
+            { // Loop
+                extents.size[extents.order[1]],
+                extents.stride[extents.order[1]],
+                extents.stride[extents.order[1]]
+            },
+            { // Transposed
+                2,
+                extents.size[extents.order[0]] / 2,
+                1
+            },
+            { // Transposed
+                extents.size[extents.order[0]] / 2,
+                1,
+                2
+            }
+        };
+        const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
+
+        plan_postorder = fftw_plan_guru_r2r(/*rank*/0, /*dims*/NULL,
+                                            howmany_rank, howmany_dims,
+                                            data, data,
+                                            /*kind*/NULL, fftw_rigor_flags);
+    }
+    if (SUZERAIN_UNLIKELY(plan_postorder == NULL)) {
+        SUZERAIN_ERROR_NULL("FFTW returned a NULL postorder plan",
+                SUZERAIN_ESANITY);
     }
 
     // Create and initialize the fftplan workspace
@@ -379,8 +550,9 @@ underling_fftplan_create_c2r_backward(
                              SUZERAIN_ENOMEM);
     }
     // Copy the relevant parameters to the fftplan workspace
-    f->plan_reorder = plan_reorder;
-    f->plan_fft     = plan_fft;
+    f->plan_preorder  = plan_preorder;
+    f->plan_fft       = plan_fft;
+    f->plan_postorder = plan_postorder;
 
     return f;
 
@@ -393,15 +565,19 @@ underling_fftplan_execute(
     if (SUZERAIN_UNLIKELY(fftplan == NULL)) {
         SUZERAIN_ERROR("fftplan == NULL", SUZERAIN_EINVAL);
     }
-    if (SUZERAIN_UNLIKELY(fftplan->plan_reorder == NULL)) {
-        SUZERAIN_ERROR("fftplan->plan_reorder == NULL", SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(fftplan->plan_preorder == NULL)) {
+        SUZERAIN_ERROR("fftplan->plan_preorder == NULL", SUZERAIN_EINVAL);
     }
     if (SUZERAIN_UNLIKELY(fftplan->plan_fft == NULL)) {
         SUZERAIN_ERROR("fftplan->plan_fft == NULL", SUZERAIN_EINVAL);
     }
+    if (SUZERAIN_UNLIKELY(fftplan->plan_postorder == NULL)) {
+        SUZERAIN_ERROR("fftplan->plan_postorder == NULL", SUZERAIN_EINVAL);
+    }
 
-    fftw_execute(fftplan->plan_reorder);
+    fftw_execute(fftplan->plan_preorder);
     fftw_execute(fftplan->plan_fft);
+    fftw_execute(fftplan->plan_postorder);
 
     return SUZERAIN_SUCCESS;
 }
@@ -411,13 +587,17 @@ underling_fftplan_destroy(
         underling_fftplan fftplan)
 {
     if (fftplan) {
-        if (fftplan->plan_reorder) {
-            fftw_destroy_plan(fftplan->plan_reorder);
-            fftplan->plan_reorder = NULL;
+        if (fftplan->plan_preorder) {
+            fftw_destroy_plan(fftplan->plan_preorder);
+            fftplan->plan_preorder = NULL;
         }
         if (fftplan->plan_fft) {
             fftw_destroy_plan(fftplan->plan_fft);
             fftplan->plan_fft = NULL;
+        }
+        if (fftplan->plan_postorder) {
+            fftw_destroy_plan(fftplan->plan_postorder);
+            fftplan->plan_postorder = NULL;
         }
         free(fftplan);
     }
@@ -432,14 +612,19 @@ underling_fprint_fftplan(
     if (!fftplan) {
         fprintf(output_file, "NULL");
     } else {
-        if (fftplan->plan_reorder) {
-            fprintf(output_file, "{plan_reorder:");
-            fftw_fprint_plan(fftplan->plan_reorder, output_file);
+        if (fftplan->plan_preorder) {
+            fprintf(output_file, "{plan_preorder:");
+            fftw_fprint_plan(fftplan->plan_preorder, output_file);
             fprintf(output_file, "}");
         }
         if (fftplan->plan_fft) {
             fprintf(output_file, "{plan_fft:");
             fftw_fprint_plan(fftplan->plan_fft, output_file);
+            fprintf(output_file, "}");
+        }
+        if (fftplan->plan_postorder) {
+            fprintf(output_file, "{plan_postorder:");
+            fftw_fprint_plan(fftplan->plan_postorder, output_file);
             fprintf(output_file, "}");
         }
     }

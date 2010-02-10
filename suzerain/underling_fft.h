@@ -45,6 +45,8 @@
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+// TODO Add a way to access relevant stride information
+
 /** @file
  * Provides FFTW-like planning routines atop Underling's pencil decomposition
  * information via the underling_extents struct.
@@ -111,6 +113,8 @@ underling_fftplan_create_c2c_backward(
         underling_real * data,
         unsigned fftw_rigor_flags);
 
+// FIXME Add expected input stride information
+
 // FIXME Implement
 // FIXME Document
 underling_fftplan
@@ -120,7 +124,29 @@ underling_fftplan_create_r2c_forward(
         underling_real * data,
         unsigned fftw_rigor_flags);
 
-// FIXME Document
+// FIXME Add relevant transform size information to documentation
+
+/**
+ * Create a plan to perform a backward complex-to-real FFT on the given data
+ * when long in the <tt>long_ni</tt>th direction.  The problem must have had
+ * <tt>howmany</tt> specified as a multiple of two at creation time, and it
+ * will be treated as <tt>howmany/2</tt> complex fields.  Note that the
+ * transform is not normalized.
+ *
+ * @param problem Problem to use for layout and stride information.
+ * @param long_ni Direction across which to perform the FFT, which is assumed
+ *                to be long whenever the returned plan is executed.
+ * @param data Pointer to the start of the memory allocated to execute
+ *             the problem.
+ * @param fftw_rigor_flags One of FFTW's rigor planning flags, e.g.
+ *                         FFTW_MEASURE.  Note that \c data is overwritten
+ *                         during the planning process for any value other
+ *                         than FFTW_ESTIMATE.
+ *
+ * @return On success, return a valid \c underling_fftplan.  On failure, calls
+ *         suzerain_error and returns NULL.
+ * @see The method underling_fftplan_destroy for how to destroy an instance.
+ */
 underling_fftplan
 underling_fftplan_create_c2r_backward(
         const underling_problem problem,
