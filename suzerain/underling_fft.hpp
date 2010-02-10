@@ -109,6 +109,32 @@ public:
     /** @return The wrapped underling_fft_plan instance. */
     const underling_fft_plan get() const { return plan_; }
 
+    /** @see underling_fft_local_extents_input */
+    underling_fft_extents local_extents_input() const {
+        return underling_fft_local_extents_input(plan_);
+    }
+
+    /** @see underling_fft_local_extents_output */
+    underling_fft_extents local_extents_output() const {
+        return underling_fft_local_extents_output(plan_);
+    }
+
+    /** @see underling_fft_local_input */
+    void local_input(int *start  = NULL,
+                     int *size   = NULL,
+                     int *stride = NULL,
+                     int *order  = NULL) const {
+        return underling_fft_local_input(plan_, start, size, stride, order);
+    }
+
+    /** @see underling_fft_local_output */
+    void local_output(int *start  = NULL,
+                      int *size   = NULL,
+                      int *stride = NULL,
+                      int *order  = NULL) const {
+        return underling_fft_local_output(plan_, start, size, stride, order);
+    }
+
     /** @return True if the wrapped underling_fft_plan instance is non-NULL. */
     operator bool () const { return plan_ != NULL; };
 

@@ -92,7 +92,7 @@ void test_round_trip(MPI_Comm comm,
 
     // Sanity check the buffer vs local extent information
     // Also gives us a reason to look up stride information
-    underling_extents long_n[3];
+    underling::extents long_n[3];
     for (int i = 0; i < sizeof(long_n)/sizeof(long_n[0]); ++i) {
         long_n[i] = f.problem.local_extents(i);
     }
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE( extents_consistency )
 {
     UnderlingFixture f(MPI_COMM_WORLD, 2, 3, 5, 7);
 
-    const underling_extents long_n[3] = {
+    const underling::extents long_n[3] = {
         f.problem.local_extents(0),
         f.problem.local_extents(1),
         f.problem.local_extents(2)
@@ -278,6 +278,69 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( underling_fft )
 
+BOOST_AUTO_TEST_CASE( extents_consistency )
+{
+    UnderlingFixture f(MPI_COMM_WORLD, 2, 3, 5, 6);
+
+    underling::fft::plan backward(underling::fft::plan::c2c_forward(),
+                                  f.problem,
+                                  0,
+                                  f.data.get(),
+                                  FFTW_ESTIMATE);
+
+    const int N = 5;
+
+    // Check input information
+    {
+        const underling::fft::extents input = backward.local_extents_input();
+
+        int start[N];
+        backward.local_input(start);
+        BOOST_CHECK_EQUAL_COLLECTIONS(input.start, input.start + N,
+                                      start, start + N);
+
+        int size[N];
+        backward.local_input(start, size);
+        BOOST_CHECK_EQUAL_COLLECTIONS(input.size, input.size + N,
+                                      size, size + N);
+
+        int stride[5];
+        backward.local_input(start, size, stride);
+        BOOST_CHECK_EQUAL_COLLECTIONS(input.stride, input.stride + N,
+                                      stride, stride + N);
+
+        int order[5];
+        backward.local_input(start, size, stride, order);
+        BOOST_CHECK_EQUAL_COLLECTIONS(input.stride, input.stride + N,
+                                      stride, stride + N);
+    }
+
+    // Check output information
+    {
+        const underling::fft::extents output = backward.local_extents_output();
+
+        int start[N];
+        backward.local_output(start);
+        BOOST_CHECK_EQUAL_COLLECTIONS(output.start, output.start + N,
+                                      start, start + N);
+
+        int size[N];
+        backward.local_output(start, size);
+        BOOST_CHECK_EQUAL_COLLECTIONS(output.size, output.size + N,
+                                      size, size + N);
+
+        int stride[5];
+        backward.local_output(start, size, stride);
+        BOOST_CHECK_EQUAL_COLLECTIONS(output.stride, output.stride + N,
+                                      stride, stride + N);
+
+        int order[5];
+        backward.local_output(start, size, stride, order);
+        BOOST_CHECK_EQUAL_COLLECTIONS(output.stride, output.stride + N,
+                                      stride, stride + N);
+    }
+}
+
 void test_c2c(MPI_Comm comm,
               const int n0, const int n1, const int n2,
               const int howmany,
@@ -313,7 +376,7 @@ void test_c2c(MPI_Comm comm,
                                   FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
 
-    const underling_extents e = f.problem.local_extents(long_i);
+    const underling::extents e = f.problem.local_extents(long_i);
 
     // Load up sample data that is constant on each pencil
     for (int i = 0; i < e.size[e.order[3]]; ++i) {
@@ -446,7 +509,7 @@ void test_c2r(MPI_Comm comm,
                                   FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
 
-    underling_extents e = f.problem.local_extents(long_i);
+    underling::extents e = f.problem.local_extents(long_i);
     const double close_enough
         =   std::numeric_limits<double>::epsilon()
           * 100*e.size[long_i]*e.size[long_i]*e.size[long_i];
@@ -628,7 +691,7 @@ void test_r2c(MPI_Comm comm,
                                  FFTW_ESTIMATE);
     BOOST_REQUIRE(forward);
 
-    underling_extents e = f.problem.local_extents(long_i);
+    underling::extents e = f.problem.local_extents(long_i);
     const double close_enough
         =   std::numeric_limits<double>::epsilon()
           * 100*e.size[long_i]*e.size[long_i]*e.size[long_i];
