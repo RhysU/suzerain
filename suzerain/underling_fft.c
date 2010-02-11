@@ -456,16 +456,14 @@ underling_fft_plan_create_c2r_backward(
     // real and imaginary components so the stride between them is identical.
     fftw_plan plan_preorder;
     {
-        fftw_iodim howmany_dims[5];
-        const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
+        const int howmany_rank = sizeof(input.size)/sizeof(input.size[0]);
+        fftw_iodim howmany_dims[howmany_rank];
         for (int i  = 0; i < howmany_rank; ++i) {
             const int io       = input.order[howmany_rank - 1 - i];
             howmany_dims[i].n  = input.size[io];
             howmany_dims[i].is = input.stride[io];
-            howmany_dims[i].os = output.stride[io];
-            if (io == long_ni) {
-                howmany_dims[i].os = howmany_dims[i].is;
-            }
+            howmany_dims[i].os = (io == long_ni)
+                               ? howmany_dims[i].is : output.stride[io];
         }
         howmany_dims[howmany_rank - 1].os *= input.size[3];
 
