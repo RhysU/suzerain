@@ -59,7 +59,12 @@ underling_fftw_plan_nop();
 void rotate_left(int *array, int len);
 
 underling_fft_extents
-underling_fft_extents_c2c(
+create_underling_fft_extents_for_complex(
+        const underling_problem problem,
+        int long_ni);
+
+underling_fft_extents
+create_underling_fft_extents_for_real(
         const underling_problem problem,
         int long_ni);
 
@@ -146,7 +151,7 @@ rotate_left(int *array, int len)
 
 static
 underling_fft_extents
-underling_fft_extents_c2c(
+create_underling_fft_extents_for_complex(
         const underling_problem problem,
         int long_ni)
 {
@@ -187,6 +192,76 @@ underling_fft_extents_c2c(
     retval.size[4]    = 2; // Each complex value consists of two reals
     retval.stride[4]  = 1; // Real-valued components are adjacent
     retval.start[4]   = 0; // Complex-values are always local
+    // Real-valued components are fastest index
+    for (int i = 3; i >= 0; --i) {
+        retval.order[i+1] = retval.order[i];
+    }
+    retval.order[0] = 4;
+
+    return retval;
+}
+
+static
+underling_fft_extents
+create_underling_fft_extents_for_real(
+        const underling_problem problem,
+        int long_ni)
+{
+    if (SUZERAIN_UNLIKELY(problem == NULL)) {
+        SUZERAIN_ERROR_VAL("problem == NULL",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
+    if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
+        SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
+
+    // Start by copying information from the domain decomposition
+    underling_fft_extents retval;
+    underling_local(problem, long_ni,
+                    retval.start, retval.size, retval.stride, retval.order);
+
+    // Sanity check layout assumptions
+    if (SUZERAIN_UNLIKELY(retval.size[3] % 2)) {
+        SUZERAIN_ERROR_VAL(
+                "problem must have an even number of underling_real fields",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
+    if (SUZERAIN_UNLIKELY(retval.order[0] != 3)) {
+        SUZERAIN_ERROR_VAL(
+                "transformed fields not interleaved: retval.order[0] != 3",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
+    if (SUZERAIN_UNLIKELY(retval.start[long_ni] != 0)) {
+        SUZERAIN_ERROR_VAL(
+                "field does not start at zero: retval.start[long_ni] != 0",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
+    if (SUZERAIN_UNLIKELY(retval.start[long_ni] % 2)) {
+        SUZERAIN_ERROR_VAL(
+                "field does not have even stride",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
+
+    // The returned layout's index 3 describes real fields built from
+    // underling.extents index 3 and the long index.  The long direction does
+    // not "cover" the entire underlying memory to allow for real-to-complex
+    // padding.  Index 4 reflects that a real scalar value has a single
+    // real-valued component.  Definitely a bit goofy, but consistent with
+    // complex extents.
+    retval.size[long_ni]    = 2*(retval.size[long_ni]-1);
+    retval.stride[long_ni] /= 2;
+    retval.size[3]         /= 2;
+    retval.stride[3]        = 1;
+    retval.size[4]          = 1;
+    retval.start[4]         = 0;
+    retval.stride[4]        = 1;
     // Real-valued components are fastest index
     for (int i = 3; i >= 0; --i) {
         retval.order[i+1] = retval.order[i];
@@ -249,7 +324,7 @@ underling_fft_plan_create_c2c(
 
     // Prepare the input data layout based on the provided underling_problem
     const underling_fft_extents input
-        = underling_fft_extents_c2c(problem, long_ni);
+        = create_underling_fft_extents_for_complex(problem, long_ni);
 
     // Prepare the output data layout based on the provided underling_problem
     const underling_fft_extents output = input;
@@ -372,6 +447,14 @@ underling_fft_plan_create_c2r_backward(
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
 
+    // Prepare the input data layout based on the provided underling_problem
+    const underling_fft_extents input
+        = create_underling_fft_extents_for_complex(problem, long_ni);
+
+    // Prepare the input data layout based on the provided underling_problem
+    const underling_fft_extents output
+        = create_underling_fft_extents_for_real(problem, long_ni);
+
     // Determine the storage ordering necessary for the FFT
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
@@ -385,6 +468,7 @@ underling_fft_plan_create_c2r_backward(
     // real and imaginary components so the stride between them is identical.
     fftw_plan plan_preorder = NULL;
     {
+        // FIXME Incorporate input and output
         const fftw_iodim howmany_dims[] = {
             { // Loop
                 extents.size[extents.order[3]],
@@ -428,6 +512,7 @@ underling_fft_plan_create_c2r_backward(
     // The transform is purely in place.
     fftw_plan plan_fft = NULL;
     {
+        // FIXME Incorporate output
         const fftw_iodim dims[] = {
             {
                 2*(extents.size[extents.order[1]] - 1),
@@ -486,9 +571,11 @@ underling_fft_plan_create_c2r_backward(
                              SUZERAIN_ENOMEM);
     }
     // Copy the relevant parameters to the plan workspace
+    f->input          = input;
     f->plan_preorder  = plan_preorder;
     f->plan_fft       = plan_fft;
     f->plan_postorder = plan_postorder;
+    f->output         = output;
 
     return f;
 
