@@ -93,6 +93,25 @@ const underling_fft_extents UNDERLING_FFT_EXTENTS_INVALID = {
     {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}
 };
 
+int
+underling_fft_extents_cmp(const underling_fft_extents * const e1,
+                          const underling_fft_extents * const e2)
+{
+    const int start_cmp = memcmp(e1->start, e2->start, sizeof(e1->start));
+    if (start_cmp) return start_cmp;
+
+    const int size_cmp = memcmp(e1->size, e2->size, sizeof(e1->size));
+    if (size_cmp) return size_cmp;
+
+    const int stride_cmp = memcmp(e1->stride, e2->stride, sizeof(e1->stride));
+    if (stride_cmp) return stride_cmp;
+
+    const int order_cmp = memcmp(e1->order, e2->order, sizeof(e1->order));
+    if (order_cmp) return order_cmp;
+
+    return 0;
+}
+
 static
 fftw_plan
 underling_fftw_plan_nop()

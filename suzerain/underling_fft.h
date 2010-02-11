@@ -66,6 +66,20 @@ typedef struct underling_fft_extents {
 extern const underling_fft_extents UNDERLING_FFT_EXTENTS_INVALID;
 
 /**
+ * Compare two underling_fft_extents instances using lexicographic ordering.
+ *
+ * @param e1 First instance to compare.
+ * @param e2 Second instance to compare.
+ *
+ * @return Returns an integer less than, equal to, or greater than zero if
+ *         <tt>*e1</tt> is found, respectively, to be less than, to match,
+ *         or be greater than <tt>*e2</tt>.
+ */
+int
+underling_fft_extents_cmp(const underling_fft_extents * const e1,
+                          const underling_fft_extents * const e2);
+
+/**
  * A type encapsulating FFTW-like planning information.
  */
 typedef struct underling_fft_plan_s *underling_fft_plan;

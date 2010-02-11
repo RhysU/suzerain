@@ -292,4 +292,10 @@ std::basic_ostream<charT,traits>& operator<<(
               << ')';
 }
 
+/** @see underling_extents_cmp */
+bool operator==(const suzerain::underling::extents &e1,
+                const suzerain::underling::extents &e2) {
+    return !underling_extents_cmp(&e1, &e2);
+}
+
 #endif // __SUZERAIN_UNDERLING_HPP

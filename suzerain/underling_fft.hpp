@@ -153,4 +153,37 @@ private:
 
 } // namespace suzerain
 
+/**
+ * Outputs an underling_extents or suzerain::underling::fft::extents instance
+ * as a human-readable string on any std::basic_ostream.
+ *
+ * @param os On which to output \c e.
+ * @param e  To be output.
+ *
+ * @return The modified \c os.
+ */
+template< typename charT, typename traits >
+std::basic_ostream<charT,traits>& operator<<(
+        std::basic_ostream<charT,traits> &os,
+        const suzerain::underling::fft::extents &e)
+{
+    return os << '['
+              << e.start[0] << ',' << (e.start[0] + e.size[0])
+              << ")x["
+              << e.start[1] << ',' << (e.start[1] + e.size[1])
+              << ")x["
+              << e.start[2] << ',' << (e.start[2] + e.size[2])
+              << ")x["
+              << e.start[3] << ',' << (e.start[3] + e.size[3])
+              << ")x["
+              << e.start[4] << ',' << (e.start[4] + e.size[4])
+              << ')';
+}
+
+/** @see underling_fft_extents_cmp */
+bool operator==(const suzerain::underling::fft::extents &e1,
+                const suzerain::underling::fft::extents &e2) {
+    return !underling_fft_extents_cmp(&e1, &e2);
+}
+
 #endif // __SUZERAIN_UNDERLING_FFT_HPP

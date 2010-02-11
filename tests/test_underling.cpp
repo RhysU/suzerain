@@ -356,13 +356,15 @@ void test_c2c(MPI_Comm comm,
         BOOST_TEST_MESSAGE("Testing howmany = " << howmany
                            << " on " << n0 << "x" << n1 << "x" << n2
                            << " using " << nproc << " processor"
-                           << (nproc > 1 ? "s" : "") );
+                           << (nproc > 1 ? "s" : "")
+                           << " when long in " << long_i);
     }
 
     const underling_real close
         = std::numeric_limits<underling_real>::epsilon()*10*n0*n1*n2;
 
     UnderlingFixture f(comm, n0, n1, n2, howmany);
+    const underling::extents extents = f.problem.local_extents(long_i);
     underling::fft::plan forward(underling::fft::plan::c2c_forward(),
                                  f.problem,
                                  long_i,
@@ -376,25 +378,36 @@ void test_c2c(MPI_Comm comm,
                                   FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
 
-    const underling::extents e = f.problem.local_extents(long_i);
+    // Stride information consistency check
+    BOOST_REQUIRE_EQUAL(forward.local_extents_output(),
+                        backward.local_extents_input());
+    BOOST_REQUIRE_EQUAL(backward.local_extents_output(),
+                        forward.local_extents_input());
+
 
     // Load up sample data that is constant on each pencil
-    for (int i = 0; i < e.size[e.order[3]]; ++i) {
-        for (int j = 0; j < e.size[e.order[2]]; ++j) {
-            for (int k = 0; k < e.size[e.order[0]]; k += 2) {
+    {
+        const underling::fft::extents e = forward.local_extents_input();
 
-                const underling_real v_re = (i+1)*(j+1)*(k+1);
-                const underling_real v_im = -v_re;
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
 
-                underling_real * const base = &f.data[
-                      i*e.stride[e.order[3]]
-                    + j*e.stride[e.order[2]]
-                    + k
-                ];
+                    const underling_real v_re = (i+1)*(j+1)*(k+1);
+                    const underling_real v_im = -v_re;
 
-                for (int l = 0; l < e.size[e.order[1]]; ++l) {
-                    base[ l*e.size[3]     ] = v_re;
-                    base[ l*e.size[3] + 1 ] = v_im;
+                    underling_real * const pencil = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
+
+                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                        underling_real * const base
+                            = pencil + l*e.stride[e.order[2]];
+                        base[0]                    = v_re;
+                        base[e.stride[e.order[0]]] = v_im;
+                    }
                 }
             }
         }
@@ -404,32 +417,40 @@ void test_c2c(MPI_Comm comm,
     forward.execute();
 
     // Check the sample data transformed as expected
-    for (int i = 0; i < e.size[e.order[3]]; ++i) {
-        for (int j = 0; j < e.size[e.order[2]]; ++j) {
-            for (int k = 0; k < e.size[e.order[0]]; k += 2) {
+    {
+        const underling::fft::extents e = forward.local_extents_output();
 
-                // Constant magnitude mode is scaled by transform length
-                const underling_real expected_re
-                    = (i+1)*(j+1)*(k+1) * e.size[e.order[1]];
-                const underling_real expected_im
-                    = -expected_re;
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
 
-                const underling_real * const base = &f.data[
-                      i*e.stride[e.order[3]]
-                    + j*e.stride[e.order[2]]
-                    + k
-                ];
+                    // Constant magnitude mode is scaled by transform length
+                    const underling_real expected_re
+                        = (i+1)*(j+1)*(k+1) * e.size[e.order[2]];
+                    const underling_real expected_im
+                        = -expected_re;
 
-                // Do we see expected zero (constant) mode magnitude?
-                BOOST_CHECK_CLOSE(base[0], expected_re, close);
-                BOOST_CHECK_CLOSE(base[1], expected_im, close);
+                    const underling_real * const pencil = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
 
-                // Do we see no other modes?
-                for (int l = 1; l < e.size[e.order[1]]; ++l) {
-                    BOOST_CHECK_SMALL(
-                            base[ l*e.stride[e.order[1]]     ], close);
-                    BOOST_CHECK_SMALL(
-                            base[ l*e.stride[e.order[1]] + 1 ], close);
+                    // Do we see expected zero (constant) mode magnitude?
+                    BOOST_CHECK_CLOSE(
+                            pencil[0], expected_re, close);
+                    BOOST_CHECK_CLOSE(
+                            pencil[e.stride[e.order[0]]], expected_im, close);
+
+                    // Do we see no other modes?
+                    for (int l = 1; l < e.size[e.order[2]]; ++l) {
+                        const underling_real * const base
+                            = pencil + l*e.stride[e.order[2]];
+                        BOOST_CHECK_SMALL(
+                                base[0], close);
+                        BOOST_CHECK_SMALL(
+                                base[e.stride[e.order[0]]], close);
+                    }
                 }
             }
         }
@@ -439,31 +460,37 @@ void test_c2c(MPI_Comm comm,
     backward.execute();
 
     // Check that we recovered the original sample data
-    for (int i = 0; i < e.size[e.order[3]]; ++i) {
-        for (int j = 0; j < e.size[e.order[2]]; ++j) {
-            for (int k = 0; k < e.size[e.order[0]]; k += 2) {
+    {
+        const underling::fft::extents e = backward.local_extents_output();
 
-                // Result is scaled by transform length
-                const underling_real expected_re
-                    = (i+1)*(j+1)*(k+1) * e.size[e.order[1]];
-                const underling_real expected_im
-                    = -expected_re;
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
 
-                const underling_real * const base = &f.data[
-                      i*e.stride[e.order[3]]
-                    + j*e.stride[e.order[2]]
-                    + k
-                ];
+                    // Result is scaled by transform length
+                    const underling_real expected_re
+                        = (i+1)*(j+1)*(k+1) * e.size[e.order[2]];
+                    const underling_real expected_im
+                        = -expected_re;
 
-                for (int l = 0; l < e.size[e.order[1]]; ++l) {
-                    BOOST_CHECK_CLOSE(
-                            expected_re,
-                            base[ l*e.stride[e.order[1]]     ],
-                            close);
-                    BOOST_CHECK_CLOSE(
-                            expected_im,
-                            base[ l*e.stride[e.order[1]] + 1 ],
-                            close);
+                    const underling_real * const pencil = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
+
+                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                        const underling_real * const base
+                            = pencil + l*e.stride[e.order[2]];
+                        BOOST_CHECK_CLOSE(
+                                expected_re,
+                                base[0],
+                                close);
+                        BOOST_CHECK_CLOSE(
+                                expected_im,
+                                base[e.stride[e.order[0]]],
+                                close);
+                    }
                 }
             }
         }
@@ -472,6 +499,17 @@ void test_c2c(MPI_Comm comm,
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2c )
 {
+    // Non-cubic domain
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 0); // 1 field
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 1);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 2);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 0); // 2 fields
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 1);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 2);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 0); // 3 fields
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 1);
+    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 2);
+
     // Cubic domain
     test_c2c(MPI_COMM_WORLD, 8, 8, 8, 2, 0); // 1 field
     test_c2c(MPI_COMM_WORLD, 8, 8, 8, 2, 1);
@@ -483,16 +521,6 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c )
     test_c2c(MPI_COMM_WORLD, 8, 8, 8, 6, 1);
     test_c2c(MPI_COMM_WORLD, 8, 8, 8, 6, 2);
 
-    // Non-cubic domain
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 0); // 1 field
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 1);
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 2);
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 0); // 2 fields
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 1);
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 2);
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 0); // 3 fields
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 1);
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 2);
 }
 
 void test_c2r(MPI_Comm comm,
