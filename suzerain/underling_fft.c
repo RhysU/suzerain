@@ -477,42 +477,40 @@ underling_fft_plan_create_c2r_backward(
         }
     }
 
-    // We transform the long dimension given by extents.order[1]
+    // We transform the long dimension given by output.order[2]
     // The transform is purely in place.
     fftw_plan plan_fft;
     {
-        // FIXME Incorporate output
-        const underling_extents extents = underling_local_extents(problem, long_ni);
         const fftw_iodim dims[] = {
             {
-                2*(extents.size[extents.order[1]] - 1),
-                extents.size[extents.order[0]],
-                extents.size[extents.order[0]] / 2
+                output.size[output.order[2]],
+                input.stride[output.order[2]],
+                output.stride[output.order[2]]
             }
         };
         const int rank = sizeof(dims)/sizeof(dims[0]);
 
         const fftw_iodim howmany_dims[] = {
             {
-                extents.size[extents.order[3]],
-                extents.stride[extents.order[3]],
-                extents.stride[extents.order[3]]
+                output.size[output.order[4]],
+                output.stride[output.order[4]],
+                output.stride[output.order[4]]
             },
             {
-                extents.size[extents.order[2]],
-                extents.stride[extents.order[2]],
-                extents.stride[extents.order[2]]
+                output.size[output.order[3]],
+                output.stride[output.order[3]],
+                output.stride[output.order[3]]
             },
             {
-                extents.size[extents.order[0]] / 2, // howmany/2
-                1,                                  // is, interleaved
-                1                                   // os, interleaved
+                output.size[output.order[1]],
+                output.stride[output.order[1]],
+                output.stride[output.order[1]]
             }
         };
         const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
 
         underling_real * const ri = data;
-        underling_real * const ii = data + extents.size[extents.order[0]] / 2;
+        underling_real * const ii = data + output.stride[output.order[2]];
         underling_real * const out = data;
 
         plan_fft = fftw_plan_guru_split_dft_c2r(rank, dims,
