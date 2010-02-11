@@ -167,7 +167,7 @@ underling_MPI_Comm_dup_with_name(MPI_Comm comm)
 {
     if (comm == MPI_COMM_NULL) return MPI_COMM_NULL;
 
-    char buffer[MPI_MAX_OBJECT_NAME];
+    char buffer[MPI_MAX_OBJECT_NAME] = ""; // Why does valgrind complain?
     int resultlen = 0;
     const int get_name_error = MPI_Comm_get_name(comm, buffer, &resultlen);
     if (get_name_error) {
