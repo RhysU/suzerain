@@ -228,6 +228,18 @@ underling_fft_plan_destroy(
 /**
  * Dump an instance's internals in a debugging-friendly format.
  *
+ * @param extents Extents to dump.
+ * @param output_file Desired output handle,
+ *                    which may be \c stdout or \c stderr.
+ */
+void
+underling_fft_fprint_extents(
+        const underling_fft_extents *extents,
+        FILE *output_file);
+
+/**
+ * Dump an instance's internals in a debugging-friendly format.
+ *
  * @param plan Plan to be dumped.
  * @param output_file Desired output handle,
  *                    which may be \c stdout or \c stderr.

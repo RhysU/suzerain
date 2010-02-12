@@ -37,11 +37,21 @@
 #include <suzerain/underling_fft.h>
 #include <fftw3.h>
 
-// *******************************************************************
-// INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS
-// *******************************************************************
+// ********************************************************************
+// INTERNAL TYPES INTERNAL TYPES INTERNAL TYPES INTERNAL TYPES INTERNAL
+// ********************************************************************
+
+enum transform_type {
+    transform_type_unspecified,
+    transform_type_c2c_forward,
+    transform_type_c2c_backward,
+    transform_type_c2r_backward,
+    transform_type_r2c_forward
+};
 
 struct underling_fft_plan_s {
+    int long_ni;                  // Transformed pencil in {0,1,2}
+    enum transform_type type;     // Type of transform
     underling_fft_extents input;  // Input data layout
     fftw_plan plan_preorder;      // Executed before the FFT
     fftw_plan plan_fft;           // Performs the FFT
@@ -56,8 +66,15 @@ struct underling_fft_plan_s {
 fftw_plan
 underling_fftw_plan_nop();
 
+void
+rotate_left(
+        int *array,
+        int len);
+
 int
-rotate_left(int *array, int len, int count);
+align_extents_with_long_direction(
+        underling_extents * const extents,
+        const int long_ni);
 
 underling_fft_extents
 create_underling_fft_extents_for_complex(
@@ -158,20 +175,41 @@ underling_fftw_plan_nop()
 }
 
 static
-int
-rotate_left(int *array, int len, int count)
+void
+rotate_left(int *array, int len)
 {
-    if (len > 0) {
-        for (int j = 0; j < count; ++j) {
-            const int tmp = array[0];
-            for (int i = 0; i < len - 1; ++i) {
-                array[i] = array[i+1];
-            }
-            array[len - 1] = tmp;
+    if (len) {
+        const int tmp = array[0];
+        for (int i = 0; i < len - 1; ++i) {
+            array[i] = array[i+1];
         }
+        array[len - 1] = tmp;
+    }
+}
+
+static
+int
+align_extents_with_long_direction(
+        underling_extents * const e,
+        int long_ni)
+{
+    int nrotate = 0;
+
+    while (e->order[1] != long_ni) {
+        ++nrotate;
+        rotate_left(e->start,     3); // start[3] not touched
+        rotate_left(e->size,      3); // size[3]  not touched
+        rotate_left(e->order + 1, 3); // order[0] not touched
     }
 
-    return count;
+    if (nrotate) {
+        assert(e->stride[e->order[0]] == 1);
+        e->stride[e->order[1]] = e->stride[e->order[0]] * e->size[e->order[0]];
+        e->stride[e->order[2]] = e->stride[e->order[1]] * e->size[e->order[1]];
+        e->stride[e->order[3]] = e->stride[e->order[2]] * e->size[e->order[2]];
+    }
+
+    return nrotate;
 }
 
 static
@@ -291,11 +329,15 @@ underling_fft_plan_create_c2c_forward(
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
-    const underling_fft_extents input
-        = create_underling_fft_extents_for_complex(
-                underling_local_extents(problem, long_ni), long_ni);
+    underling_extents e = underling_local_extents(problem, long_ni);
 
-    const underling_fft_extents output = input;
+    const underling_fft_extents input
+        = create_underling_fft_extents_for_complex(e, long_ni);
+
+    align_extents_with_long_direction(&e, long_ni);
+
+    const underling_fft_extents output
+        = create_underling_fft_extents_for_complex(e, long_ni);
 
     return underling_fft_plan_create_c2c_internal(
             problem, long_ni, data, FFTW_FORWARD, fftw_rigor_flags,
@@ -309,11 +351,15 @@ underling_fft_plan_create_c2c_backward(
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
-    const underling_fft_extents input
-        = create_underling_fft_extents_for_complex(
-                underling_local_extents(problem, long_ni), long_ni);
+    underling_extents e = underling_local_extents(problem, long_ni);
 
-    const underling_fft_extents output = input;
+    const underling_fft_extents input
+        = create_underling_fft_extents_for_complex(e, long_ni);
+
+    align_extents_with_long_direction(&e, long_ni);
+
+    const underling_fft_extents output
+        = create_underling_fft_extents_for_complex(e, long_ni);
 
     return underling_fft_plan_create_c2c_internal(
             problem, long_ni, data, FFTW_BACKWARD, fftw_rigor_flags,
@@ -356,62 +402,71 @@ underling_fft_plan_create_c2c_internal(
     if (input.order[2] == long_ni) {
         plan_preorder = underling_fftw_plan_nop();
     } else {
-        // TODO Fix ESANITY by reordering for UNDERLING_TRANSPOSED_LONG_N2
-        // TODO Fix ESANITY by reordering for UNDERLING_TRANSPOSED_LONG_N0
-        SUZERAIN_ERROR_NULL(
-                "transformed direction not long: input.order[2] != long_ni",
-                SUZERAIN_ESANITY);
+        const int howmany_rank = sizeof(input.size)/sizeof(input.size[0]);
+        fftw_iodim howmany_dims[howmany_rank];
+        for (int i  = 0; i < howmany_rank; ++i) {
+            const int io       = input.order[howmany_rank - 1 - i];
+            howmany_dims[i].n  = input.size[io];
+            howmany_dims[i].is = input.stride[io];
+            howmany_dims[i].os = output.stride[io];
+        }
+        plan_preorder = fftw_plan_guru_r2r(
+                0, NULL, howmany_rank, howmany_dims, data, data,
+                NULL, FFTW_ESTIMATE);
+        if (SUZERAIN_UNLIKELY(plan_preorder == NULL)) {
+            SUZERAIN_ERROR_NULL("FFTW returned a NULL preorder plan",
+                    SUZERAIN_ESANITY);
+        }
     }
 
-    // Prepare the input to fftw_plan_guru_split_dft.  FFTW split interface
-    // allows using underling_extents.strides directly.  The tranform is purely
-    // in place which sets our output strides equal to our input strides.
+    // Prepare the input to fftw_plan_guru_split_dft, which allows using
+    // underling_fft_extents.strides directly.  The transform is in place.
+    fftw_plan plan_fft = NULL;
+    {
+        // Transform the long dimension given by output.order[2]
+        const fftw_iodim dims[] = {
+            output.size[output.order[2]],
+            output.stride[output.order[2]],
+            output.stride[output.order[2]]
+        };
 
-    // We transform the long dimension given by output.order[2]
-    const fftw_iodim dims[] = {
-        output.size[output.order[2]],
-        output.stride[output.order[2]],
-        output.stride[output.order[2]]
-    };
-    const int rank = sizeof(dims)/sizeof(dims[0]);
+        // Loop over non-transformed dimensions
+        const fftw_iodim howmany_dims[3] = {
+            {
+                output.size[output.order[4]],
+                output.stride[output.order[4]],
+                output.stride[output.order[4]]
+            },
+            {
+                output.size[output.order[3]],
+                output.stride[output.order[3]],
+                output.stride[output.order[3]]
+            },
+            {
+                output.size[3],
+                output.size[4],
+                output.size[4]
+            }
+        };
 
-    // We loop over the slowest direction, the second slowest
-    // direction, and the individual state fields in row-major
-    // order.
-    const fftw_iodim howmany_dims[3] = {
-        {
-            output.size[output.order[4]],
-            output.stride[output.order[4]],
-            output.stride[output.order[4]]
-        },
-        {
-            output.size[output.order[3]],
-            output.stride[output.order[3]],
-            output.stride[output.order[3]]
-        },
-        {
-            output.size[3],
-            output.size[4],
-            output.size[4]
+        // FFTW manual section 4.5.3, FFTW_BACKWARD is FFTW_FORWARD with the
+        // components flipped.
+        underling_real * const ri
+            = (fftw_sign == FFTW_FORWARD) ? data : data + output.stride[4];
+        underling_real * const ii
+            = (fftw_sign == FFTW_FORWARD) ? data + output.stride[4] : data;
+        underling_real * const ro = ri;
+        underling_real * const io = ii;
+
+        plan_fft = fftw_plan_guru_split_dft(
+                sizeof(dims)/sizeof(dims[0]), dims,
+                sizeof(howmany_dims)/sizeof(howmany_dims[0]), howmany_dims,
+                ri, ii, ro, io, fftw_rigor_flags);
+
+        if (SUZERAIN_UNLIKELY(plan_fft == NULL)) {
+            SUZERAIN_ERROR_NULL("FFTW returned a NULL FFT plan",
+                    SUZERAIN_ESANITY);
         }
-    };
-    const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
-
-    // For interleaved storage, the imaginary data starts one underling_real
-    // after data itself.  Per FFTW manual section 4.5.3, FFTW_BACKWARD is
-    // FFTW_FORWARD with the real and imaginary parts flipped.
-    underling_real * const ri = (fftw_sign == FFTW_FORWARD) ? data : data + 1;
-    underling_real * const ii = (fftw_sign == FFTW_FORWARD) ? data + 1 : data;
-    underling_real * const ro = ri;
-    underling_real * const io = ii;
-
-    fftw_plan plan_fft = fftw_plan_guru_split_dft(rank, dims,
-                                                  howmany_rank, howmany_dims,
-                                                  ri, ii, ro, io,
-                                                  fftw_rigor_flags);
-
-    if (SUZERAIN_UNLIKELY(plan_fft == NULL)) {
-        SUZERAIN_ERROR_NULL("FFTW returned a NULL FFT plan", SUZERAIN_ESANITY);
     }
 
     // Prepare the reordering plan for the output data
@@ -431,6 +486,10 @@ underling_fft_plan_create_c2c_internal(
                              SUZERAIN_ENOMEM);
     }
     // Copy the relevant parameters to the plan workspace
+    f->long_ni        = long_ni;
+    f->type           = (fftw_sign == FFTW_FORWARD)
+                      ? transform_type_c2c_forward
+                      : transform_type_c2c_backward;
     f->input          = input;
     f->plan_preorder  = plan_preorder;
     f->plan_fft       = plan_fft;
@@ -583,6 +642,8 @@ underling_fft_plan_create_c2r_backward_internal(
                              SUZERAIN_ENOMEM);
     }
     // Copy the relevant parameters to the plan workspace
+    f->long_ni        = long_ni;
+    f->type           = transform_type_c2r_backward;
     f->input          = input;
     f->plan_preorder  = plan_preorder;
     f->plan_fft       = plan_fft;
@@ -750,6 +811,8 @@ underling_fft_plan_create_r2c_forward_internal(
                              SUZERAIN_ENOMEM);
     }
     // Copy the relevant parameters to the plan workspace
+    f->long_ni        = long_ni;
+    f->type           = transform_type_r2c_forward;
     f->input          = input;
     f->plan_preorder  = plan_preorder;
     f->plan_fft       = plan_fft;
@@ -885,6 +948,34 @@ underling_fft_plan_destroy(
             plan->plan_postorder = NULL;
         }
         free(plan);
+    }
+}
+
+void
+underling_fft_fprint_extents(
+        const underling_fft_extents *extents,
+        FILE *output_file)
+{
+    if (!extents) {
+        fprintf(output_file, "NULL");
+    } else {
+        fprintf(output_file, "extents=[%d,%d)x[%d,%d)x[%d,%d)x[%d,%d)x[%d,%d)",
+                extents->start[0],
+                extents->start[0] + extents->size[0],
+                extents->start[1],
+                extents->start[1] + extents->size[1],
+                extents->start[2],
+                extents->start[2] + extents->size[2],
+                extents->start[3],
+                extents->start[3] + extents->size[3],
+                extents->start[4],
+                extents->start[4] + extents->size[4]);
+        fprintf(output_file, ",strides={%d,%d,%d,%d,%d}",
+                extents->stride[0],
+                extents->stride[1],
+                extents->stride[2],
+                extents->stride[3],
+                extents->stride[4]);
     }
 }
 
