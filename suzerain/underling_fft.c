@@ -61,21 +61,41 @@ rotate_left(int *array, int len, int count);
 
 underling_fft_extents
 create_underling_fft_extents_for_complex(
-        const underling_problem problem,
-        int long_ni);
+        const underling_extents extents,
+        const int long_ni);
 
 underling_fft_extents
 create_underling_fft_extents_for_real(
-        const underling_problem problem,
-        int long_ni);
+        const underling_extents extents,
+        const int long_ni);
 
 underling_fft_plan
-underling_fft_plan_create_c2c(
+underling_fft_plan_create_c2c_internal(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
         int fftw_sign,
-        unsigned fftw_rigor_flags);
+        unsigned fftw_rigor_flags,
+        const underling_fft_extents input,
+        const underling_fft_extents output);
+
+underling_fft_plan
+underling_fft_plan_create_c2r_backward_internal(
+        const underling_problem problem,
+        int long_ni,
+        underling_real * data,
+        unsigned fftw_rigor_flags,
+        const underling_fft_extents input,
+        const underling_fft_extents output);
+
+underling_fft_plan
+underling_fft_plan_create_r2c_forward_internal(
+        const underling_problem problem,
+        int long_ni,
+        underling_real * data,
+        unsigned fftw_rigor_flags,
+        const underling_fft_extents input,
+        const underling_fft_extents output);
 
 void
 underling_fft_extents_copy(
@@ -157,24 +177,15 @@ rotate_left(int *array, int len, int count)
 static
 underling_fft_extents
 create_underling_fft_extents_for_complex(
-        const underling_problem problem,
-        int long_ni)
+        const underling_extents extents,
+        const int long_ni)
 {
-    if (SUZERAIN_UNLIKELY(problem == NULL)) {
-        SUZERAIN_ERROR_VAL("problem == NULL",
-                SUZERAIN_EINVAL,
-                UNDERLING_FFT_EXTENTS_INVALID);
-    }
-    if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
-        SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2",
-                SUZERAIN_EINVAL,
-                UNDERLING_FFT_EXTENTS_INVALID);
-    }
-
     // Start by copying information from the domain decomposition
     underling_fft_extents retval;
-    underling_local(problem, long_ni,
-                    retval.start, retval.size, retval.stride, retval.order);
+    memcpy(retval.start,  extents.start,  sizeof(extents.start));
+    memcpy(retval.size,   extents.size,   sizeof(extents.size));
+    memcpy(retval.stride, extents.stride, sizeof(extents.stride));
+    memcpy(retval.order,  extents.order,  sizeof(extents.order));
 
     // Sanity check layout assumptions
     if (SUZERAIN_UNLIKELY(retval.size[3] % 2)) {
@@ -189,10 +200,16 @@ create_underling_fft_extents_for_complex(
                 SUZERAIN_EINVAL,
                 UNDERLING_FFT_EXTENTS_INVALID);
     }
+    if (SUZERAIN_UNLIKELY(retval.start[long_ni] != 0)) {
+        SUZERAIN_ERROR_VAL(
+                "field does not start at zero: retval.start[long_ni] != 0",
+                SUZERAIN_EINVAL,
+                UNDERLING_FFT_EXTENTS_INVALID);
+    }
 
-    // The returned layout's indices 3 and 4 describe interleaved, complex
-    // fields built from underling_extents index 3:
-    retval.size[3]   /= 2; // Two adjacent real fields make one complex field
+    // Returned indices 3 and 4 describe interleaved, complex fields
+    // built atop extents index 3:
+    retval.size[3]   /= 2; // Two adjacent reals make one complex field
     retval.stride[3] *= 2;
     retval.size[4]    = 2; // Each complex value consists of two reals
     retval.stride[4]  = 1; // Real-valued components are adjacent
@@ -209,24 +226,15 @@ create_underling_fft_extents_for_complex(
 static
 underling_fft_extents
 create_underling_fft_extents_for_real(
-        const underling_problem problem,
-        int long_ni)
+        const underling_extents extents,
+        const int long_ni)
 {
-    if (SUZERAIN_UNLIKELY(problem == NULL)) {
-        SUZERAIN_ERROR_VAL("problem == NULL",
-                SUZERAIN_EINVAL,
-                UNDERLING_FFT_EXTENTS_INVALID);
-    }
-    if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
-        SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2",
-                SUZERAIN_EINVAL,
-                UNDERLING_FFT_EXTENTS_INVALID);
-    }
-
     // Start by copying information from the domain decomposition
     underling_fft_extents retval;
-    underling_local(problem, long_ni,
-                    retval.start, retval.size, retval.stride, retval.order);
+    memcpy(retval.start,  extents.start,  sizeof(extents.start));
+    memcpy(retval.size,   extents.size,   sizeof(extents.size));
+    memcpy(retval.stride, extents.stride, sizeof(extents.stride));
+    memcpy(retval.order,  extents.order,  sizeof(extents.order));
 
     // Sanity check layout assumptions
     if (SUZERAIN_UNLIKELY(retval.size[3] % 2)) {
@@ -283,8 +291,15 @@ underling_fft_plan_create_c2c_forward(
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
-    return underling_fft_plan_create_c2c(
-            problem, long_ni, data, FFTW_FORWARD, fftw_rigor_flags);
+    const underling_fft_extents input
+        = create_underling_fft_extents_for_complex(
+                underling_local_extents(problem, long_ni), long_ni);
+
+    const underling_fft_extents output = input;
+
+    return underling_fft_plan_create_c2c_internal(
+            problem, long_ni, data, FFTW_FORWARD, fftw_rigor_flags,
+            input, output);
 }
 
 underling_fft_plan
@@ -294,18 +309,27 @@ underling_fft_plan_create_c2c_backward(
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
-    return underling_fft_plan_create_c2c(
-            problem, long_ni, data, FFTW_BACKWARD, fftw_rigor_flags);
+    const underling_fft_extents input
+        = create_underling_fft_extents_for_complex(
+                underling_local_extents(problem, long_ni), long_ni);
+
+    const underling_fft_extents output = input;
+
+    return underling_fft_plan_create_c2c_internal(
+            problem, long_ni, data, FFTW_BACKWARD, fftw_rigor_flags,
+            input, output);
 }
 
 static
 underling_fft_plan
-underling_fft_plan_create_c2c(
+underling_fft_plan_create_c2c_internal(
         const underling_problem problem,
         int long_ni,
         underling_real * data,
         int fftw_sign,
-        unsigned fftw_rigor_flags)
+        unsigned fftw_rigor_flags,
+        const underling_fft_extents input,
+        const underling_fft_extents output)
 {
     // Sanity check input arguments
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
@@ -326,13 +350,6 @@ underling_fft_plan_create_c2c(
     if (SUZERAIN_UNLIKELY(fftw_rigor_flags & non_rigor_mask)) {
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
-
-    // Prepare the input data layout based on the provided underling_problem
-    const underling_fft_extents input
-        = create_underling_fft_extents_for_complex(problem, long_ni);
-
-    // Prepare the output data layout based on the provided underling_problem
-    const underling_fft_extents output = input;
 
     // Prepare the reordering plan for the input data.
     fftw_plan plan_preorder = NULL;
@@ -430,6 +447,31 @@ underling_fft_plan_create_c2r_backward(
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
+
+    // Prepare the input data layout based on the provided underling_problem
+    const underling_fft_extents input
+        = create_underling_fft_extents_for_complex(
+                underling_local_extents(problem, long_ni), long_ni);
+
+    // Prepare the input data layout based on the provided underling_problem
+    const underling_fft_extents output
+        = create_underling_fft_extents_for_real(
+                underling_local_extents(problem, long_ni), long_ni);
+
+    return underling_fft_plan_create_c2r_backward_internal(
+            problem, long_ni, data, fftw_rigor_flags, input, output);
+}
+
+static
+underling_fft_plan
+underling_fft_plan_create_c2r_backward_internal(
+        const underling_problem problem,
+        int long_ni,
+        underling_real * data,
+        unsigned fftw_rigor_flags,
+        const underling_fft_extents input,
+        const underling_fft_extents output)
+{
     // Sanity check input arguments
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
@@ -443,14 +485,6 @@ underling_fft_plan_create_c2r_backward(
     if (SUZERAIN_UNLIKELY(fftw_rigor_flags & non_rigor_mask)) {
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
-
-    // Prepare the input data layout based on the provided underling_problem
-    const underling_fft_extents input
-        = create_underling_fft_extents_for_complex(problem, long_ni);
-
-    // Prepare the input data layout based on the provided underling_problem
-    const underling_fft_extents output
-        = create_underling_fft_extents_for_real(problem, long_ni);
 
     // Determine the storage ordering necessary for the FFT
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
@@ -566,6 +600,30 @@ underling_fft_plan_create_r2c_forward(
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
+    // Prepare the input data layout based on the provided underling_problem
+    const underling_fft_extents input
+        = create_underling_fft_extents_for_real(
+                underling_local_extents(problem, long_ni), long_ni);
+
+    // Prepare the input data layout based on the provided underling_problem
+    const underling_fft_extents output
+        = create_underling_fft_extents_for_complex(
+                underling_local_extents(problem, long_ni), long_ni);
+
+    return underling_fft_plan_create_r2c_forward_internal(
+            problem, long_ni, data, fftw_rigor_flags, input, output);
+}
+
+static
+underling_fft_plan
+underling_fft_plan_create_r2c_forward_internal(
+        const underling_problem problem,
+        int long_ni,
+        underling_real * data,
+        unsigned fftw_rigor_flags,
+        const underling_fft_extents input,
+        const underling_fft_extents output)
+{
     // Sanity check input arguments
     if (SUZERAIN_UNLIKELY(problem == NULL)) {
         SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
@@ -579,14 +637,6 @@ underling_fft_plan_create_r2c_forward(
     if (SUZERAIN_UNLIKELY(fftw_rigor_flags & non_rigor_mask)) {
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
-
-    // Prepare the input data layout based on the provided underling_problem
-    const underling_fft_extents input
-        = create_underling_fft_extents_for_real(problem, long_ni);
-
-    // Prepare the input data layout based on the provided underling_problem
-    const underling_fft_extents output
-        = create_underling_fft_extents_for_complex(problem, long_ni);
 
     // Prepare the reordering plan for the input data.
     fftw_plan plan_preorder = NULL;
