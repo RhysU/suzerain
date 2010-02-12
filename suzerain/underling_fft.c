@@ -186,7 +186,7 @@ create_underling_fft_extents_for_complex(
     }
 
     // The returned layout's indices 3 and 4 describe interleaved, complex
-    // fields built from underling.extents index 3:
+    // fields built from underling_extents index 3:
     retval.size[3]   /= 2; // Two adjacent real fields make one complex field
     retval.stride[3] *= 2;
     retval.size[4]    = 2; // Each complex value consists of two reals
@@ -250,7 +250,7 @@ create_underling_fft_extents_for_real(
     }
 
     // The returned layout's index 3 describes real fields built from
-    // underling.extents index 3 and the long index.  The long direction does
+    // underling_extents index 3 and the long index.  The long direction does
     // not "cover" the entire underlying memory to allow for real-to-complex
     // padding.  Index 4 reflects that a real scalar value has a single
     // real-valued component.  Definitely a bit goofy, but consistent with
@@ -448,7 +448,7 @@ underling_fft_plan_create_c2r_backward(
     // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
     if (SUZERAIN_UNLIKELY(input.order[2] != long_ni)) {
         SUZERAIN_ERROR_NULL(
-                "transformed direction not long: extents.order[1] != long_ni",
+                "transformed direction not long: input.order[2] != long_ni",
                 SUZERAIN_ESANITY);
     }
 
@@ -691,9 +691,11 @@ underling_fft_plan_create_r2c_forward(
                              SUZERAIN_ENOMEM);
     }
     // Copy the relevant parameters to the plan workspace
+    f->input          = input;
     f->plan_preorder  = plan_preorder;
     f->plan_fft       = plan_fft;
     f->plan_postorder = plan_postorder;
+    f->output         = output;
 
     return f;
 

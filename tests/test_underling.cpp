@@ -727,28 +727,31 @@ void test_r2c(MPI_Comm comm,
                                  FFTW_ESTIMATE);
     BOOST_REQUIRE(forward);
 
-    underling::extents e = f.problem.local_extents(long_i);
+    const underling::extents extents = f.problem.local_extents(long_i);
     const double close_enough
         =   std::numeric_limits<double>::epsilon()
-          * 100*e.size[long_i]*e.size[long_i]*e.size[long_i];
+          * 100*extents.size[long_i]*extents.size[long_i]*extents.size[long_i];
 
-    // Load up non-trivial sample data; note k indexing
-    for (int i = 0; i < e.size[e.order[3]]; ++i) {
-        for (int j = 0; j < e.size[e.order[2]]; ++j) {
-            for (int k = 0; k < e.size[e.order[0]] / 2; ++k) {
+    // Load up sample data
+    {
+        const underling::fft::extents e = forward.local_extents_input();
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
 
-                const periodic_function<double,int> pf(
-                        2*(e.size[e.order[1]]-1), e.size[e.order[1]],
-                        M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
+                    const periodic_function<double,int> pf(
+                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
-                underling_real * const base = &f.data[
-                      i*e.stride[e.order[3]]
-                    + j*e.stride[e.order[2]]
-                    + k
-                ];
+                    underling_real * const base = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
 
-                for (int l = 0; l < 2*(e.size[e.order[1]]-1); ++l) {
-                    base[ l*(e.stride[e.order[1]]/2) ] = pf.physical(l);
+                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                        base[ l*e.stride[e.order[2]] ] = pf.physical(l);
+                    }
                 }
             }
         }
@@ -756,32 +759,38 @@ void test_r2c(MPI_Comm comm,
 
     forward.execute();
 
-    // Check data transformed as expected; note k indexing
-    for (int i = 0; i < e.size[e.order[3]]; ++i) {
-        for (int j = 0; j < e.size[e.order[2]]; ++j) {
-            for (int k = 0; k < e.size[e.order[0]]; k += 2) {
+    // Check data transformed as expected
+    {
+        const underling::fft::extents e = forward.local_extents_output();
 
-                const periodic_function<double,int> pf(
-                        2*(e.size[e.order[1]]-1), e.size[e.order[1]],
-                        M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*((k/2)+1));
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
 
-                underling_real * const base = &f.data[
-                      i*e.stride[e.order[3]]
-                    + j*e.stride[e.order[2]]
-                    + k
-                ];
+                    const periodic_function<double,int> pf(
+                            2*(e.size[e.order[2]]-1), e.size[e.order[2]],
+                            M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
-                for (int l = 0; l < (e.size[e.order[1]]/2+1); ++l) {
-                    std::complex<double> expected
-                        = pf.wave(l) * (2.0*(e.size[e.order[1]]-1));
-                    BOOST_CHECK_CLOSE(
-                            expected.real(),
-                            base[ l*e.stride[e.order[1]]     ],
-                            close_enough);
-                    BOOST_CHECK_CLOSE(
-                            expected.imag(),
-                            base[ l*e.stride[e.order[1]] + 1 ],
-                            close_enough);
+                    const underling_real * const pencil = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
+
+                    for (int l = 0; l < e.size[e.order[1]]; ++l) {
+                        const underling_real * const base
+                            = pencil + l*e.stride[e.order[2]];
+                        std::complex<double> expected
+                            = pf.wave(l) * (2.0*(e.size[e.order[2]]-1));
+                        BOOST_CHECK_CLOSE(
+                                expected.real(),
+                                base[0],
+                                close_enough);
+                        BOOST_CHECK_CLOSE(
+                                expected.imag(),
+                                base[e.stride[e.order[0]]],
+                                close_enough);
+                    }
                 }
             }
         }
