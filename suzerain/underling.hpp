@@ -289,6 +289,8 @@ std::basic_ostream<charT,traits>& operator<<(
               << e.start[1] << ',' << (e.start[1] + e.size[1])
               << ")x["
               << e.start[2] << ',' << (e.start[2] + e.size[2])
+              << ")x["
+              << e.start[3] << ',' << (e.start[3] + e.size[3])
               << ')';
 }
 

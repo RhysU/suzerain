@@ -41,9 +41,9 @@
 // TODO Ensure grid/problem compatibility when both provided to methods!
 // TODO Add wisdom broadcasting and FFTW_WISDOM_ONLY handling
 
-// *******************************************************************
-// INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS INTERNAL STRUCTS
-// *******************************************************************
+// ********************************************************************
+// INTERNAL TYPES INTERNAL TYPES INTERNAL TYPES INTERNAL TYPES INTERNAL
+// ********************************************************************
 
 // TODO Document internal structures
 
@@ -1298,16 +1298,19 @@ underling_fprint_extents(
     if (!extents) {
         fprintf(output_file, "NULL");
     } else {
-        fprintf(output_file, "extents=[%d,%d)x[%d,%d)x[%d,%d)",
+        fprintf(output_file, "extents=[%d,%d)x[%d,%d)x[%d,%d)x[%d,%d)",
                 extents->start[0],
                 extents->start[0] + extents->size[0],
                 extents->start[1],
                 extents->start[1] + extents->size[1],
                 extents->start[2],
-                extents->start[2] + extents->size[2]);
-        fprintf(output_file, ",strides={%d,%d,%d}",
+                extents->start[2] + extents->size[2],
+                extents->start[3],
+                extents->start[3] + extents->size[3]);
+        fprintf(output_file, ",strides={%d,%d,%d,%d}",
                 extents->stride[0],
                 extents->stride[1],
-                extents->stride[2]);
+                extents->stride[2],
+                extents->stride[3]);
     }
 }
