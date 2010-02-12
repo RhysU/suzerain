@@ -56,7 +56,8 @@ struct underling_fft_plan_s {
 fftw_plan
 underling_fftw_plan_nop();
 
-void rotate_left(int *array, int len);
+int
+rotate_left(int *array, int len, int count);
 
 underling_fft_extents
 create_underling_fft_extents_for_complex(
@@ -137,16 +138,20 @@ underling_fftw_plan_nop()
 }
 
 static
-void
-rotate_left(int *array, int len)
+int
+rotate_left(int *array, int len, int count)
 {
     if (len > 0) {
-        const int tmp = array[0];
-        for (int i = 0; i < len - 1; ++i) {
-            array[i] = array[i+1];
+        for (int j = 0; j < count; ++j) {
+            const int tmp = array[0];
+            for (int i = 0; i < len - 1; ++i) {
+                array[i] = array[i+1];
+            }
+            array[len - 1] = tmp;
         }
-        array[len - 1] = tmp;
     }
+
+    return count;
 }
 
 static
@@ -328,14 +333,18 @@ underling_fft_plan_create_c2c(
 
     // Prepare the output data layout based on the provided underling_problem
     const underling_fft_extents output = input;
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
-    if (SUZERAIN_UNLIKELY(input.order[2] != long_ni)) {
+
+    // Prepare the reordering plan for the input data.
+    fftw_plan plan_preorder = NULL;
+    if (input.order[2] == long_ni) {
+        plan_preorder = underling_fftw_plan_nop();
+    } else {
+        // TODO Fix ESANITY by reordering for UNDERLING_TRANSPOSED_LONG_N2
+        // TODO Fix ESANITY by reordering for UNDERLING_TRANSPOSED_LONG_N0
         SUZERAIN_ERROR_NULL(
                 "transformed direction not long: input.order[2] != long_ni",
                 SUZERAIN_ESANITY);
     }
-    const fftw_plan plan_preorder = underling_fftw_plan_nop();
 
     // Prepare the input to fftw_plan_guru_split_dft.  FFTW split interface
     // allows using underling_extents.strides directly.  The tranform is purely
@@ -389,14 +398,14 @@ underling_fft_plan_create_c2c(
     }
 
     // Prepare the reordering plan for the output data
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
-    if (SUZERAIN_UNLIKELY(input.order[2] != long_ni)) {
+    fftw_plan plan_postorder = NULL;
+    if (output.order[2] == long_ni) {
+        plan_postorder = underling_fftw_plan_nop();
+    } else {
         SUZERAIN_ERROR_NULL(
-                "transformed direction not long: input.order[2] != long_ni",
+                "transformed direction not long: output.order[2] != long_ni",
                 SUZERAIN_ESANITY);
     }
-    const fftw_plan plan_postorder = underling_fftw_plan_nop();
 
     // Create and initialize the plan workspace
     underling_fft_plan f = calloc(1, sizeof(struct underling_fft_plan_s));
@@ -454,7 +463,7 @@ underling_fft_plan_create_c2r_backward(
 
     // Prepare the reordering plan for the input data.  We "rotate" adjacent
     // real and imaginary components so the stride between them is identical.
-    fftw_plan plan_preorder;
+    fftw_plan plan_preorder = NULL;
     {
         const int howmany_rank = sizeof(input.size)/sizeof(input.size[0]);
         fftw_iodim howmany_dims[howmany_rank];
@@ -479,7 +488,7 @@ underling_fft_plan_create_c2r_backward(
 
     // We transform the long dimension given by output.order[2]
     // The transform is purely in place.
-    fftw_plan plan_fft;
+    fftw_plan plan_fft = NULL;
     {
         const fftw_iodim dims[] = {
             {
@@ -524,14 +533,14 @@ underling_fft_plan_create_c2r_backward(
     }
 
     // Prepare the reordering plan for the output data
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
-    if (SUZERAIN_UNLIKELY(output.order[2] != long_ni)) {
+    fftw_plan plan_postorder = NULL;
+    if (output.order[2] == long_ni) {
+        plan_postorder = underling_fftw_plan_nop();
+    } else {
         SUZERAIN_ERROR_NULL(
                 "transformed direction not long: output.order[2] != long_ni",
                 SUZERAIN_ESANITY);
     }
-    const fftw_plan plan_postorder = underling_fftw_plan_nop();
 
     // Create and initialize the plan workspace
     underling_fft_plan f = calloc(1, sizeof(struct underling_fft_plan_s));
@@ -579,19 +588,21 @@ underling_fft_plan_create_r2c_forward(
     const underling_fft_extents output
         = create_underling_fft_extents_for_complex(problem, long_ni);
 
-    // Determine the storage ordering necessary for the FFT
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
-    if (SUZERAIN_UNLIKELY(input.order[2] != long_ni)) {
+    // Prepare the reordering plan for the input data.
+    fftw_plan plan_preorder = NULL;
+    if (input.order[2] == long_ni) {
+        plan_preorder = underling_fftw_plan_nop();
+    } else {
+        // TODO Fix ESANITY by reordering for UNDERLING_TRANSPOSED_LONG_N2
+        // TODO Fix ESANITY by reordering for UNDERLING_TRANSPOSED_LONG_N0
         SUZERAIN_ERROR_NULL(
                 "transformed direction not long: input.order[2] != long_ni",
                 SUZERAIN_ESANITY);
     }
-    const fftw_plan plan_preorder = underling_fftw_plan_nop();
 
     // We transform the long dimension given by input.order[2]
     // The transform is purely in place.
-    fftw_plan plan_fft;
+    fftw_plan plan_fft = NULL;
     {
         const fftw_iodim dims[] = {
             {
@@ -636,14 +647,12 @@ underling_fft_plan_create_r2c_forward(
     }
 
     // Prepare the reordering plan for the output data
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
-    if (SUZERAIN_UNLIKELY(input.order[2] != long_ni)) {
+    if (SUZERAIN_UNLIKELY(output.order[2] != long_ni)) {
         SUZERAIN_ERROR_NULL(
-                "transformed direction not long: input.order[2] != long_ni",
+                "transformed direction not long: output.order[2] != long_ni",
                 SUZERAIN_ESANITY);
     }
-    fftw_plan plan_postorder;
+    fftw_plan plan_postorder = NULL;
     {
         const fftw_iodim howmany_dims[] = {
             {
