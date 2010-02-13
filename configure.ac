@@ -77,7 +77,7 @@ AC_CACHE_SAVE
 dnl ------------------------------------------------
 dnl C library requirements
 dnl ------------------------------------------------
-AC_LANG([C])
+AC_LANG_PUSH([C])
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LIBS} ${FLIBS}"
@@ -94,12 +94,13 @@ PKG_CHECK_MODULES(HPCT,
                   AC_MSG_WARN([Could not find HPC Toolkit; Continuing...]))
 AC_SUBST(HPCT_CFLAGS)
 AC_SUBST(HPCT_LIBS)
+AC_LANG_POP([C])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
 dnl C++ library requirements
 dnl ------------------------------------------------
-AC_LANG([C++])
+AC_LANG_PUSH([C++])
 PKG_CHECK_MODULES(LOG4CXX,
     [liblog4cxx >= 0.10 apr-1 >= 1.3.3 apr-util-1 >= 1.3.4],
     AC_DEFINE([HAVE_LOG4CXX],1,[Define if log4cxx is available])
@@ -121,6 +122,7 @@ PKG_CHECK_MODULES(EIGEN,
     AC_DEFINE([HAVE_EIGEN],1,[Define if Eigen is available])
     dnl EIGEN_LIBS should be empty and is so no AC_SUBST is used
     AC_SUBST(EIGEN_CFLAGS))
+AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
@@ -142,10 +144,13 @@ AC_CACHE_SAVE
 dnl ------------------------------------------------
 dnl MPI toolchain checks
 dnl ------------------------------------------------
-AC_LANG([C])
+AC_LANG_PUSH([C])
 ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C, e.g. mpicc.))
-AC_LANG([C++])
+ACX_MPIP()
+AC_LANG_POP([C])
+AC_LANG_PUSH([C++])
 ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C++, e.g. mpicxx.))
+AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
