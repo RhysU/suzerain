@@ -146,7 +146,7 @@ dnl MPI toolchain checks
 dnl ------------------------------------------------
 AC_LANG_PUSH([C])
 ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C, e.g. mpicc.))
-ACX_MPIP()
+AX_MPIP()
 AC_LANG_POP([C])
 AC_LANG_PUSH([C++])
 ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C++, e.g. mpicxx.))

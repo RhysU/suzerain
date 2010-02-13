@@ -1,5 +1,5 @@
 # ===========================================================================
-#                http://autoconf-archive.cryp.to/acx_mpip.html
+#                http://autoconf-archive.cryp.to/ax_mpip.html
 # ===========================================================================
 #
 # SYNOPSIS
@@ -7,7 +7,7 @@
 #   Test for mpiP: Lightweight, Scalable MPI Profiling
 #   (http://mpip.sourceforge.net/)
 #
-#   ACX_MPIP([ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]])
+#   AX_MPIP([ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]])
 #
 # DESCRIPTION
 #
@@ -53,7 +53,7 @@
 #   distribute a modified version of the Autoconf Macro, you may extend this
 #   special exception to the GPL to apply to your modified version as well.
 
-AC_DEFUN([ACX_MPIP], [
+AC_DEFUN([AX_MPIP], [
 AC_PREREQ(2.60)
 AC_REQUIRE([ACX_MPI])
 AC_ARG_VAR([MPIP],[mpiP options])
@@ -66,9 +66,9 @@ AC_ARG_WITH(
     [with_mpiP=no])
 
 if test "${with_mpiP}" != no ; then
-    acx_mpiP_save_CC="$CC"
-    acx_mpiP_save_LDFLAGS="$LDFLAGS"
-    acx_mpiP_save_LIBS="$LIBS"
+    ax_mpiP_save_CC="$CC"
+    ax_mpiP_save_LDFLAGS="$LDFLAGS"
+    ax_mpiP_save_LIBS="$LIBS"
 
     MPIP_LDFLAGS=""
     MPIP_LIBS="-lmpiP -lbfd -liberty"
@@ -85,16 +85,16 @@ if test "${with_mpiP}" != no ; then
     AC_LANG_PUSH([C])
     AC_CHECK_LIB([mpiP],
                  [mpiPi],
-                 [acx_mpiP_cv_found=yes],
-                 [acx_mpiP_cv_found=no],
+                 [ax_mpiP_cv_found=yes],
+                 [ax_mpiP_cv_found=no],
                  [-lbfd -liberty])
     AC_LANG_POP([C])
 
-    CC="$acx_mpiP_save_CC"
-    LDFLAGS="$acx_mpiP_save_LDFLAGS"
-    LIBS="$acx_mpiP_save_LIBS"
+    CC="$ax_mpiP_save_CC"
+    LDFLAGS="$ax_mpiP_save_LDFLAGS"
+    LIBS="$ax_mpiP_save_LIBS"
 
-    if test "$acx_mpiP_cv_found" = no; then
+    if test "$ax_mpiP_cv_found" = no; then
         ifelse([$2],,AC_MSG_ERROR([mpiP not found.  Try --with-mpiP=DIR.]),
             [$2])
     else
@@ -104,4 +104,4 @@ if test "${with_mpiP}" != no ; then
         ifelse([$1],,,[$1])
     fi
 fi
-])dnl ACX_MPIP
+])dnl AX_MPIP
