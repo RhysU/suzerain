@@ -74,7 +74,7 @@ if test "${with_mpiP}" != no ; then
     MPIP_LIBS="-lmpiP -lbfd -liberty"
     if test "${with_mpiP}" != yes; then
         if test -d "${with_mpiP}/lib"; then
-            MPIP_LDFLAGS="${with_mpiP}/lib"
+            MPIP_LDFLAGS="-L${with_mpiP}/lib"
         else
             AC_MSG_WARN([--with-mpiP expected ${with_mpiP}/lib to be a directory])
         fi
