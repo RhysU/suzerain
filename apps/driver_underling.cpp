@@ -62,6 +62,9 @@
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);                   // Initialize MPI
+#ifdef HAVE_MPIP
+    MPI_Pcontrol(0);                          // Disable mpiP
+#endif
     atexit((void (*) ()) MPI_Finalize);       // Finalize MPI at exit
     fftw_mpi_init();                          // Initialize FFTW MPI
     atexit((void (*) ()) fftw_mpi_cleanup);   // Finalize FFTW MPI at exit
@@ -172,6 +175,9 @@ int main(int argc, char *argv[])
         MPI_Barrier(MPI_COMM_WORLD);
         if (!procid) LOG4CXX_DEBUG(logger, "Repetition " << i);
 
+#ifdef HAVE_MPIP
+        MPI_Pcontrol(1);                         // Enable mpiP
+#endif
         const double start_trip = MPI_Wtime();   // Start timer
 #ifdef HAVE_HPCT
         hpct_timer_begin("long_n2_to_long_n1");
@@ -196,6 +202,9 @@ int main(int argc, char *argv[])
         hpct_timer_end(  "long_n1_to_long_n2");
 #endif
         const double end_trip = MPI_Wtime();     // End timer
+#ifdef HAVE_MPIP
+        MPI_Pcontrol(0);                         // Disable mpiP
+#endif
 
         // Our round trip time is only as good as the weakest link.
         // In particular, final in-memory transposes may be slower
