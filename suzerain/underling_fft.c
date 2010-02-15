@@ -696,48 +696,38 @@ underling_fft_plan_create_r2c_forward_internal(
     if (input.order[2] == long_ni) {
         plan_preorder = underling_fftw_plan_nop();
     } else {
-        // TODO Fix ESANITY by reordering for UNDERLING_TRANSPOSED_LONG_N2
-        // TODO Fix ESANITY by reordering for UNDERLING_TRANSPOSED_LONG_N0
+        // TODO Fix ESANITY by reordering when necessary
         SUZERAIN_ERROR_NULL(
                 "transformed direction not long: input.order[2] != long_ni",
                 SUZERAIN_ESANITY);
     }
 
-    // We transform the long dimension given by input.order[2]
     // The transform is purely in place.
     fftw_plan plan_fft = NULL;
     {
-        const fftw_iodim dims[] = {
+        const fftw_iodim dims[] = {       // Transform long_ni
             {
-                input.size[input.order[2]],
-                input.stride[input.order[2]],
-                output.stride[input.order[2]] // N.B. output
+                input.size[long_ni],
+                input.stride[long_ni],
+                output.stride[long_ni] // N.B. output
             }
         };
         const int rank = sizeof(dims)/sizeof(dims[0]);
 
-        const fftw_iodim howmany_dims[] = {
-            {
-                input.size[input.order[4]],
-                input.stride[input.order[4]],
-                input.stride[input.order[4]]
-            },
-            {
-                input.size[input.order[3]],
-                input.stride[input.order[3]],
-                input.stride[input.order[3]]
-            },
-            {
-                input.size[input.order[1]],
-                input.stride[input.order[1]],
-                input.stride[input.order[1]]
-            }
-        };
-        const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
+        const int howmany_rank = 3;       // Loop over other directions
+        fftw_iodim howmany_dims[howmany_rank];
+        int j = 0;
+        for (const int *io = input.order+4; io >= input.order+1; --io) {
+            if (*io == long_ni) continue; // Skip transformed direction
+            howmany_dims[j].n  = input.size[*io];
+            howmany_dims[j].is = input.stride[*io];
+            howmany_dims[j].os = input.stride[*io];
+            ++j;
+        }
 
         underling_real * const in = data;
         underling_real * const ro = data;
-        underling_real * const io = data + input.stride[input.order[2]];
+        underling_real * const io = data + input.stride[long_ni];
 
         plan_fft = fftw_plan_guru_split_dft_r2c(rank, dims,
                                                 howmany_rank, howmany_dims,
@@ -812,7 +802,6 @@ underling_fft_plan_create_r2c_forward_internal(
     f->output         = output;
 
     return f;
-
 }
 
 underling_fft_extents
