@@ -545,27 +545,19 @@ underling_fft_plan_create_c2r_backward_internal(
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
 
-    // Determine the storage ordering necessary for the FFT
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N2
-    // TODO Fix ESANITY below by reordering for UNDERLING_TRANSPOSED_LONG_N0
-    if (SUZERAIN_UNLIKELY(input.order[2] != long_ni)) {
-        SUZERAIN_ERROR_NULL(
-                "transformed direction not long: input.order[2] != long_ni",
-                SUZERAIN_ESANITY);
-    }
-
-    // Prepare the reordering plan for the input data.  We "rotate" adjacent
-    // real and imaginary components so the stride between them is identical.
+    // Prepare the reordering plan for the input data.
     fftw_plan plan_preorder = NULL;
     {
         const int howmany_rank = sizeof(input.size)/sizeof(input.size[0]);
         fftw_iodim howmany_dims[howmany_rank];
-        for (int i  = 0; i < howmany_rank; ++i) {
+        for (int i = 0; i < howmany_rank; ++i) {
             const int io       = input.order[howmany_rank - 1 - i];
             howmany_dims[i].n  = input.size[io];
             howmany_dims[i].is = input.stride[io];
-            howmany_dims[i].os = (io == long_ni)
-                               ? howmany_dims[i].is : output.stride[io];
+            howmany_dims[i].os = output.stride[io];
+            if (io == long_ni) {
+                howmany_dims[i].os *= 2; // Complex to real stride adjustment
+            }
         }
         howmany_dims[howmany_rank - 1].os *= input.size[3];
 
