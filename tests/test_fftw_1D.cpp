@@ -9,11 +9,16 @@
 #include "test_tools.hpp"
 
 // Not so much a test as a way to check our periodic test function definition.
+// Getting it correct is key to all other FFT-related tests
 
 void test_c2c_forward(const int N, const int max_mode_exclusive)
 {
-    const double close = std::numeric_limits<double>::epsilon()*10*N*N*N;
+    BOOST_TEST_MESSAGE("Testing N = " << N
+                       << " with max_mode_exclusive = " << max_mode_exclusive);
+
+    const double close = std::numeric_limits<double>::epsilon()*50*N*N*N;
     typedef std::complex<double> complex_type;
+    const complex_type I(0, 1);
     using boost::scoped_array;
     using boost::shared_ptr;
 
@@ -29,13 +34,40 @@ void test_c2c_forward(const int N, const int max_mode_exclusive)
 
     periodic_function<double,int> pf(N, max_mode_exclusive);
     for (int i = 0; i < N; ++i) {
-        buf[i] = pf.physical(i);
+        const complex_type::value_type val = pf.physical(i);
+        buf[i] = complex_type(val, -val);
     }
 
     fftw_execute(forward.get());
 
     for (int i = 0; i < N; ++i)  {
-        const complex_type expected = ((double) N) * pf.wave(i);
+        const complex_type val = pf.wave(i);
+        const complex_type expected = ((double) N) * (val - I*val);
+        if (std::abs(expected.real()) < close) {
+            BOOST_CHECK_SMALL(buf[i].real(), close);
+        } else {
+            BOOST_CHECK_CLOSE(buf[i].real(), expected.real(), close);
+        }
+        if (std::abs(expected.imag()) < close) {
+            BOOST_CHECK_SMALL(buf[i].imag(), close);
+        } else {
+            BOOST_CHECK_CLOSE(buf[i].imag(), expected.imag(), close);
+        }
+    }
+
+    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> backward(
+        fftw_plan_dft_1d(N,
+                         (fftw_complex *) buf.get(),
+                         (fftw_complex *) buf.get(),
+                         FFTW_BACKWARD, FFTW_ESTIMATE),
+        &fftw_destroy_plan);
+    BOOST_REQUIRE(backward);
+
+    fftw_execute(backward.get());
+
+    for (int i = 0; i < N; ++i) {
+        const complex_type::value_type val = ((double) N) * pf.physical(i);
+        const complex_type expected(val, -val);
         if (std::abs(expected.real()) < close) {
             BOOST_CHECK_SMALL(buf[i].real(), close);
         } else {
@@ -51,22 +83,21 @@ void test_c2c_forward(const int N, const int max_mode_exclusive)
 
 BOOST_AUTO_TEST_CASE( check_c2c_forward )
 {
-    test_c2c_forward(4, 1);
-    test_c2c_forward(4, 2);
-    test_c2c_forward(4, 3);
-    test_c2c_forward(5, 1);
-    test_c2c_forward(5, 2);
-    test_c2c_forward(5, 3);
-    test_c2c_forward(6, 1);
-    test_c2c_forward(6, 2);
-    test_c2c_forward(6, 3);
-    test_c2c_forward(6, 4);
+    for (int i = 1; i < 17; ++i) {
+        for (int j = 0; j < i/2+1; ++j) {
+            test_c2c_forward(i, j);
+        }
+    }
 }
 
 void test_c2c_backward(const int N, const int max_mode_exclusive)
 {
-    const double close = std::numeric_limits<double>::epsilon()*10*N*N*N;
+    BOOST_TEST_MESSAGE("Testing N = " << N
+                       << " with max_mode_exclusive = " << max_mode_exclusive);
+
+    const double close = std::numeric_limits<double>::epsilon()*50*N*N*N;
     typedef std::complex<double> complex_type;
+    const complex_type I(0, 1);
     using boost::scoped_array;
     using boost::shared_ptr;
 
@@ -82,13 +113,15 @@ void test_c2c_backward(const int N, const int max_mode_exclusive)
 
     periodic_function<double,int> pf(N, max_mode_exclusive);
     for (int i = 0; i < N; ++i) {
-        buf[i] = pf.wave(i);
+        const complex_type val = pf.wave(i);
+        buf[i] = val - I*val;
     }
 
     fftw_execute(backward.get());
 
     for (int i = 0; i < N; ++i)  {
-        const complex_type expected = pf.physical(i);
+        const complex_type::value_type val = pf.physical(i);
+        const complex_type expected(val, -val);
         if (std::abs(expected.real()) < close) {
             BOOST_CHECK_SMALL(buf[i].real(), close);
         } else {
@@ -101,25 +134,47 @@ void test_c2c_backward(const int N, const int max_mode_exclusive)
         }
     }
 
+    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
+        fftw_plan_dft_1d(N,
+                         (fftw_complex *) buf.get(),
+                         (fftw_complex *) buf.get(),
+                         FFTW_FORWARD, FFTW_ESTIMATE),
+        &fftw_destroy_plan);
+    BOOST_REQUIRE(forward);
+
+    fftw_execute(forward.get());
+
+    for (int i = 0; i < N; ++i) {
+        const complex_type val = pf.wave(i);
+        const complex_type expected = ((double) N) * (val - I*val);
+        if (std::abs(expected.real()) < close) {
+            BOOST_CHECK_SMALL(buf[i].real(), close);
+        } else {
+            BOOST_CHECK_CLOSE(buf[i].real(), expected.real(), close);
+        }
+        if (std::abs(expected.imag()) < close) {
+            BOOST_CHECK_SMALL(buf[i].imag(), close);
+        } else {
+            BOOST_CHECK_CLOSE(buf[i].imag(), expected.imag(), close);
+        }
+    }
 }
 
 BOOST_AUTO_TEST_CASE( check_c2c_backward )
 {
-    test_c2c_backward(4, 1);
-    test_c2c_backward(4, 2);
-    test_c2c_backward(4, 3);
-    test_c2c_backward(5, 1);
-    test_c2c_backward(5, 2);
-    test_c2c_backward(5, 3);
-    test_c2c_backward(6, 1);
-    test_c2c_backward(6, 2);
-    test_c2c_backward(6, 3);
-    test_c2c_backward(6, 4);
+    for (int i = 1; i < 17; ++i) {
+        for (int j = 0; j < i/2+1; ++j) {
+            test_c2c_backward(i, j);
+        }
+    }
 }
 
 void test_r2c_forward(const int N, const int max_mode_exclusive)
 {
-    const double close = std::numeric_limits<double>::epsilon()*10*N*N*N;
+    BOOST_TEST_MESSAGE("Testing N = " << N
+                       << " with max_mode_exclusive = " << max_mode_exclusive);
+
+    const double close = std::numeric_limits<double>::epsilon()*50*N*N*N;
     typedef std::complex<double> complex_type;
     using boost::scoped_array;
     using boost::shared_ptr;
@@ -157,21 +212,19 @@ void test_r2c_forward(const int N, const int max_mode_exclusive)
 
 BOOST_AUTO_TEST_CASE( check_r2c_forward )
 {
-    test_r2c_forward(4, 1);
-    test_r2c_forward(4, 2);
-    test_r2c_forward(4, 3);
-    test_r2c_forward(5, 1);
-    test_r2c_forward(5, 2);
-    test_r2c_forward(5, 3);
-    test_r2c_forward(6, 1);
-    test_r2c_forward(6, 2);
-    test_r2c_forward(6, 3);
-    test_r2c_forward(6, 4);
+    for (int i = 1; i < 17; ++i) {
+        for (int j = 0; j < i/2+1; ++j) {
+            test_r2c_forward(i, j);
+        }
+    }
 }
 
 void test_c2r_backward(const int N, const int max_mode_exclusive)
 {
-    const double close = std::numeric_limits<double>::epsilon()*10*N*N*N;
+    BOOST_TEST_MESSAGE("Testing N = " << N
+                       << " with max_mode_exclusive = " << max_mode_exclusive);
+
+    const double close = std::numeric_limits<double>::epsilon()*50*N*N*N;
     typedef std::complex<double> complex_type;
     using boost::scoped_array;
     using boost::shared_ptr;
@@ -204,14 +257,9 @@ void test_c2r_backward(const int N, const int max_mode_exclusive)
 
 BOOST_AUTO_TEST_CASE( check_c2r_backward )
 {
-    test_c2r_backward(4, 1);
-    test_c2r_backward(4, 2);
-    test_c2r_backward(4, 3);
-    test_c2r_backward(5, 1);
-    test_c2r_backward(5, 2);
-    test_c2r_backward(5, 3);
-    test_c2r_backward(6, 1);
-    test_c2r_backward(6, 2);
-    test_c2r_backward(6, 3);
-    test_c2r_backward(6, 4);
+    for (int i = 1; i < 17; ++i) {
+        for (int j = 0; j < i/2+1; ++j) {
+            test_c2r_backward(i, j);
+        }
+    }
 }
