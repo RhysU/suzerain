@@ -341,10 +341,11 @@ BOOST_AUTO_TEST_CASE( extents_consistency )
     }
 }
 
-void test_c2c(MPI_Comm comm,
-              const int n0, const int n1, const int n2,
-              const int howmany,
-              const int long_i)
+// Forward physical-to-wave followed by wave-to-physical
+void test_c2c_forward(MPI_Comm comm,
+                      const int n0, const int n1, const int n2,
+                      const int howmany,
+                      const int long_i)
 {
     int procid;
     BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_rank(comm, &procid));
@@ -361,7 +362,7 @@ void test_c2c(MPI_Comm comm,
     }
 
     const underling_real close
-        = std::numeric_limits<underling_real>::epsilon()*10*n0*n1*n2;
+        = std::numeric_limits<underling_real>::epsilon()*100*n0*n1*n2;
 
     UnderlingFixture f(comm, n0, n1, n2, howmany);
     const underling::extents extents = f.problem.local_extents(long_i);
@@ -371,7 +372,7 @@ void test_c2c(MPI_Comm comm,
                                  f.data.get(),
                                  FFTW_ESTIMATE);
     BOOST_REQUIRE(forward);
-    underling::fft::plan backward(underling::fft::plan::c2c_forward(),
+    underling::fft::plan backward(underling::fft::plan::c2c_backward(),
                                   f.problem,
                                   long_i,
                                   f.data.get(),
@@ -384,8 +385,7 @@ void test_c2c(MPI_Comm comm,
     BOOST_REQUIRE_EQUAL(backward.local_extents_output(),
                         forward.local_extents_input());
 
-
-    // Load up sample data that is constant on each pencil
+    // Load up sample data
     {
         const underling::fft::extents e = forward.local_extents_input();
 
@@ -393,8 +393,9 @@ void test_c2c(MPI_Comm comm,
             for (int j = 0; j < e.size[e.order[3]]; ++j) {
                 for (int k = 0; k < e.size[e.order[1]]; ++k) {
 
-                    const underling_real v_re = (i+1)*(j+1)*(k+1);
-                    const underling_real v_im = -v_re;
+                    const periodic_function<double,int> pf(
+                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     underling_real * const pencil = &f.data[
                           i*e.stride[e.order[4]]
@@ -405,6 +406,8 @@ void test_c2c(MPI_Comm comm,
                     for (int l = 0; l < e.size[e.order[2]]; ++l) {
                         underling_real * const base
                             = pencil + l*e.stride[e.order[2]];
+                        const underling_real v_re =  pf.physical(l);
+                        const underling_real v_im = -v_re;
                         base[0]                    = v_re;
                         base[e.stride[e.order[0]]] = v_im;
                     }
@@ -424,54 +427,9 @@ void test_c2c(MPI_Comm comm,
             for (int j = 0; j < e.size[e.order[3]]; ++j) {
                 for (int k = 0; k < e.size[e.order[1]]; ++k) {
 
-                    // Constant magnitude mode is scaled by transform length
-                    const underling_real expected_re
-                        = (i+1)*(j+1)*(k+1) * e.size[e.order[2]];
-                    const underling_real expected_im
-                        = -expected_re;
-
-                    const underling_real * const pencil = &f.data[
-                          i*e.stride[e.order[4]]
-                        + j*e.stride[e.order[3]]
-                        + k*e.stride[e.order[1]]
-                    ];
-
-                    // Do we see expected zero (constant) mode magnitude?
-                    BOOST_CHECK_CLOSE(
-                            pencil[0], expected_re, close);
-                    BOOST_CHECK_CLOSE(
-                            pencil[e.stride[e.order[0]]], expected_im, close);
-
-                    // Do we see no other modes?
-                    for (int l = 1; l < e.size[e.order[2]]; ++l) {
-                        const underling_real * const base
-                            = pencil + l*e.stride[e.order[2]];
-                        BOOST_CHECK_SMALL(
-                                base[0], close);
-                        BOOST_CHECK_SMALL(
-                                base[e.stride[e.order[0]]], close);
-                    }
-                }
-            }
-        }
-    }
-
-    // Transform from wave space to physical space
-    backward.execute();
-
-    // Check that we recovered the original sample data
-    {
-        const underling::fft::extents e = backward.local_extents_output();
-
-        for (int i = 0; i < e.size[e.order[4]]; ++i) {
-            for (int j = 0; j < e.size[e.order[3]]; ++j) {
-                for (int k = 0; k < e.size[e.order[1]]; ++k) {
-
-                    // Result is scaled by transform length
-                    const underling_real expected_re
-                        = (i+1)*(j+1)*(k+1) * e.size[e.order[2]];
-                    const underling_real expected_im
-                        = -expected_re;
+                    const periodic_function<double,int> pf(
+                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     const underling_real * const pencil = &f.data[
                           i*e.stride[e.order[4]]
@@ -482,6 +440,51 @@ void test_c2c(MPI_Comm comm,
                     for (int l = 0; l < e.size[e.order[2]]; ++l) {
                         const underling_real * const base
                             = pencil + l*e.stride[e.order[2]];
+                        const std::complex<double> mode
+                            = pf.wave(l) * (double) e.size[e.order[2]];
+                        const double expected_re = mode.real() + mode.imag();
+                        const double expected_im = mode.imag() - mode.real();
+                        BOOST_CHECK_CLOSE(
+                                expected_re,
+                                base[0],
+                                close);
+                        BOOST_CHECK_CLOSE(
+                                expected_im,
+                                base[e.stride[e.order[0]]],
+                                close);
+                    }
+                }
+            }
+        }
+    }
+
+    // Transform from wave space to physical space
+    backward.execute();
+
+    // Check that we recovered the scaled sample data
+    {
+        const underling::fft::extents e = backward.local_extents_output();
+
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+
+                    const periodic_function<double,int> pf(
+                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
+
+                    const underling_real * const pencil = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
+
+                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                        const underling_real * const base
+                            = pencil + l*e.stride[e.order[2]];
+                        const double expected_re
+                            = pf.physical(l) * e.size[e.order[2]];
+                        const double expected_im = - expected_re;
                         BOOST_CHECK_CLOSE(
                                 expected_re,
                                 base[0],
@@ -497,30 +500,211 @@ void test_c2c(MPI_Comm comm,
     }
 }
 
-BOOST_AUTO_TEST_CASE( underling_fft_c2c )
+BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward )
 {
     // Non-cubic domain
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 0); // 1 field
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 1);
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 2, 2);
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 0); // 2 fields
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 1);
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 4, 2);
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 0); // 3 fields
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 1);
-    test_c2c(MPI_COMM_WORLD, 2, 3, 5, 6, 2);
+    test_c2c_forward(MPI_COMM_WORLD, 3, 5, 7, 2, 0); // 1 field
+    test_c2c_forward(MPI_COMM_WORLD, 3, 5, 7, 2, 1);
+    test_c2c_forward(MPI_COMM_WORLD, 3, 5, 7, 2, 2);
+    test_c2c_forward(MPI_COMM_WORLD, 3, 5, 7, 4, 0); // 2 fields
+    test_c2c_forward(MPI_COMM_WORLD, 3, 5, 7, 4, 1);
+    test_c2c_forward(MPI_COMM_WORLD, 3, 5, 7, 4, 2);
+    test_c2c_forward(MPI_COMM_WORLD, 3, 5, 7, 6, 0); // 3 fields
+    test_c2c_forward(MPI_COMM_WORLD, 3, 5, 7, 6, 1);
+    test_c2c_forward(MPI_COMM_WORLD, 3, 5, 7, 6, 2);
 
     // Cubic domain
-    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 2, 0); // 1 field
-    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 2, 1);
-    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 2, 2);
-    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 4, 0); // 2 fields
-    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 4, 1);
-    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 4, 2);
-    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 6, 0); // 3 fields
-    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 6, 1);
-    test_c2c(MPI_COMM_WORLD, 8, 8, 8, 6, 2);
+    test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 2, 0); // 1 field
+    test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 2, 1);
+    test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 2, 2);
+    test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 4, 0); // 2 fields
+    test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 4, 1);
+    test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 4, 2);
+    test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 6, 0); // 3 fields
+    test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 6, 1);
+    test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 6, 2);
+}
 
+// Backward wave-to-physical followed by physical-to-wave
+void test_c2c_backward(MPI_Comm comm,
+                       const int n0, const int n1, const int n2,
+                       const int howmany,
+                       const int long_i)
+{
+    int procid;
+    BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_rank(comm, &procid));
+
+    int nproc;
+    BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_size(comm, &nproc));
+
+    if (!procid) {
+        BOOST_TEST_MESSAGE("Testing howmany = " << howmany
+                           << " on " << n0 << "x" << n1 << "x" << n2
+                           << " using " << nproc << " processor"
+                           << (nproc > 1 ? "s" : "")
+                           << " when long in " << long_i);
+    }
+
+    const underling_real close
+        = std::numeric_limits<underling_real>::epsilon()*100*n0*n1*n2;
+
+    UnderlingFixture f(comm, n0, n1, n2, howmany);
+    underling::fft::plan backward(underling::fft::plan::c2c_backward(),
+                                  f.problem,
+                                  long_i,
+                                  f.data.get(),
+                                  FFTW_ESTIMATE);
+    BOOST_REQUIRE(backward);
+    const underling::extents extents = f.problem.local_extents(long_i);
+    underling::fft::plan forward(underling::fft::plan::c2c_forward(),
+                                 f.problem,
+                                 long_i,
+                                 f.data.get(),
+                                 FFTW_ESTIMATE);
+    BOOST_REQUIRE(forward);
+
+    // Stride information consistency check
+    BOOST_REQUIRE_EQUAL(backward.local_extents_output(),
+                        forward.local_extents_input());
+    BOOST_REQUIRE_EQUAL(forward.local_extents_output(),
+                        backward.local_extents_input());
+
+    // Load up sample data
+    {
+        const underling::fft::extents e = backward.local_extents_input();
+
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+
+                    const periodic_function<double,int> pf(
+                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
+
+                    underling_real * const pencil = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
+
+                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                        underling_real * const base
+                            = pencil + l*e.stride[e.order[2]];
+                        const std::complex<double> mode = pf.wave(l);
+                        base[0]                    = mode.real() + mode.imag();
+                        base[e.stride[e.order[0]]] = mode.imag() - mode.real();
+                    }
+                }
+            }
+        }
+    }
+
+    // Transform from wave space to physical space
+    backward.execute();
+
+    // Check the sample data transformed as expected
+    {
+        const underling::fft::extents e = backward.local_extents_output();
+
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+
+                    const periodic_function<double,int> pf(
+                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
+
+                    const underling_real * const pencil = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
+
+                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                        const underling_real * const base
+                            = pencil + l*e.stride[e.order[2]];
+                        const underling_real expected_re =  pf.physical(l);
+                        const underling_real expected_im = -expected_re;
+                        BOOST_CHECK_CLOSE(
+                                expected_re,
+                                base[0],
+                                close);
+                        BOOST_CHECK_CLOSE(
+                                expected_im,
+                                base[e.stride[e.order[0]]],
+                                close);
+                    }
+                }
+            }
+        }
+    }
+
+    // Transform from physical to wave space
+    forward.execute();
+
+    // Check the sample data transformed as expected
+    {
+        const underling::fft::extents e = forward.local_extents_output();
+
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+
+                    const periodic_function<double,int> pf(
+                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
+
+                    const underling_real * const pencil = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
+
+                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                        const underling_real * const base
+                            = pencil + l*e.stride[e.order[2]];
+                        const std::complex<double> mode
+                            = pf.wave(l) * (double) e.size[e.order[2]];
+                        const double expected_re = mode.real() + mode.imag();
+                        const double expected_im = mode.imag() - mode.real();
+                        BOOST_CHECK_CLOSE(
+                                expected_re,
+                                base[0],
+                                close);
+                        BOOST_CHECK_CLOSE(
+                                expected_im,
+                                base[e.stride[e.order[0]]],
+                                close);
+                    }
+                }
+            }
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward )
+{
+    // Non-cubic domain
+    test_c2c_backward(MPI_COMM_WORLD, 3, 5, 7, 2, 0); // 1 field
+    test_c2c_backward(MPI_COMM_WORLD, 3, 5, 7, 2, 1);
+    test_c2c_backward(MPI_COMM_WORLD, 3, 5, 7, 2, 2);
+    test_c2c_backward(MPI_COMM_WORLD, 3, 5, 7, 4, 0); // 2 fields
+    test_c2c_backward(MPI_COMM_WORLD, 3, 5, 7, 4, 1);
+    test_c2c_backward(MPI_COMM_WORLD, 3, 5, 7, 4, 2);
+    test_c2c_backward(MPI_COMM_WORLD, 3, 5, 7, 6, 0); // 3 fields
+    test_c2c_backward(MPI_COMM_WORLD, 3, 5, 7, 6, 1);
+    test_c2c_backward(MPI_COMM_WORLD, 3, 5, 7, 6, 2);
+
+    // Cubic domain
+    test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 2, 0); // 1 field
+    test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 2, 1);
+    test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 2, 2);
+    test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 4, 0); // 2 fields
+    test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 4, 1);
+    test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 4, 2);
+    test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 6, 0); // 3 fields
+    test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 6, 1);
+    test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 6, 2);
 }
 
 void test_c2r(MPI_Comm comm,

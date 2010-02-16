@@ -103,6 +103,13 @@ public:
         : plan_(underling_fft_plan_create_c2r_backward(
                     p.get(), long_ni, data, fftw_rigor_flags)) {};
 
+    /** @see underling_fft_plan_create_inverse */
+    plan(const plan& plan_to_invert,
+         underling_real * data,
+         unsigned fftw_rigor_flags)
+        : plan_(underling_fft_plan_create_inverse(
+                    plan_to_invert.get(), data, fftw_rigor_flags)) {};
+
     /** @see underling_fft_plan_destroy */
     ~plan() { underling_fft_plan_destroy(plan_); }
 
