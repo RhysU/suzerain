@@ -181,6 +181,12 @@ underling_fft_plan_create_c2r_backward(
         underling_real * data,
         unsigned fftw_rigor_flags);
 
+underling_fft_plan
+underling_fft_plan_create_inverse(
+        const underling_fft_plan plan,
+        underling_real * data,
+        unsigned fftw_rigor_flags);
+
 underling_fft_extents
 underling_fft_local_extents_input(
         const underling_fft_plan plan);

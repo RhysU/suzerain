@@ -88,8 +88,7 @@ create_underling_fft_extents_for_real(
 
 underling_fft_plan
 underling_fft_plan_create_c2c_internal(
-        const underling_problem problem,
-        int long_ni,
+        const int long_ni,
         underling_real * data,
         int fftw_sign,
         unsigned fftw_rigor_flags,
@@ -98,8 +97,7 @@ underling_fft_plan_create_c2c_internal(
 
 underling_fft_plan
 underling_fft_plan_create_c2r_backward_internal(
-        const underling_problem problem,
-        int long_ni,
+        const int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags,
         const underling_fft_extents input,
@@ -107,8 +105,7 @@ underling_fft_plan_create_c2r_backward_internal(
 
 underling_fft_plan
 underling_fft_plan_create_r2c_forward_internal(
-        const underling_problem problem,
-        int long_ni,
+        const int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags,
         const underling_fft_extents input,
@@ -340,7 +337,7 @@ underling_fft_plan_create_c2c_forward(
         = create_underling_fft_extents_for_complex(e, long_ni);
 
     return underling_fft_plan_create_c2c_internal(
-            problem, long_ni, data, FFTW_FORWARD, fftw_rigor_flags,
+            long_ni, data, FFTW_FORWARD, fftw_rigor_flags,
             input, output);
 }
 
@@ -362,15 +359,14 @@ underling_fft_plan_create_c2c_backward(
         = create_underling_fft_extents_for_complex(e, long_ni);
 
     return underling_fft_plan_create_c2c_internal(
-            problem, long_ni, data, FFTW_BACKWARD, fftw_rigor_flags,
+            long_ni, data, FFTW_BACKWARD, fftw_rigor_flags,
             input, output);
 }
 
 static
 underling_fft_plan
 underling_fft_plan_create_c2c_internal(
-        const underling_problem problem,
-        int long_ni,
+        const int long_ni,
         underling_real * data,
         int fftw_sign,
         unsigned fftw_rigor_flags,
@@ -378,9 +374,6 @@ underling_fft_plan_create_c2c_internal(
         const underling_fft_extents output)
 {
     // Sanity check input arguments
-    if (SUZERAIN_UNLIKELY(problem == NULL)) {
-        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
-    }
     if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
         SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2", SUZERAIN_EINVAL, 0);
     }
@@ -518,23 +511,19 @@ underling_fft_plan_create_c2r_backward(
                 underling_local_extents(problem, long_ni), long_ni);
 
     return underling_fft_plan_create_c2r_backward_internal(
-            problem, long_ni, data, fftw_rigor_flags, input, output);
+            long_ni, data, fftw_rigor_flags, input, output);
 }
 
 static
 underling_fft_plan
 underling_fft_plan_create_c2r_backward_internal(
-        const underling_problem problem,
-        int long_ni,
+        const int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags,
         const underling_fft_extents input,
         const underling_fft_extents output)
 {
     // Sanity check input arguments
-    if (SUZERAIN_UNLIKELY(problem == NULL)) {
-        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
-    }
     if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
         SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2", SUZERAIN_EINVAL, 0);
     }
@@ -664,23 +653,19 @@ underling_fft_plan_create_r2c_forward(
                 underling_local_extents(problem, long_ni), long_ni);
 
     return underling_fft_plan_create_r2c_forward_internal(
-            problem, long_ni, data, fftw_rigor_flags, input, output);
+            long_ni, data, fftw_rigor_flags, input, output);
 }
 
 static
 underling_fft_plan
 underling_fft_plan_create_r2c_forward_internal(
-        const underling_problem problem,
-        int long_ni,
+        const int long_ni,
         underling_real * data,
         unsigned fftw_rigor_flags,
         const underling_fft_extents input,
         const underling_fft_extents output)
 {
     // Sanity check input arguments
-    if (SUZERAIN_UNLIKELY(problem == NULL)) {
-        SUZERAIN_ERROR_VAL("problem == NULL", SUZERAIN_EINVAL, 0);
-    }
     if (SUZERAIN_UNLIKELY(long_ni < 0 || long_ni > 2)) {
         SUZERAIN_ERROR_VAL("long_ni < 0 or long_ni > 2", SUZERAIN_EINVAL, 0);
     }
@@ -802,6 +787,47 @@ underling_fft_plan_create_r2c_forward_internal(
     f->output         = output;
 
     return f;
+}
+
+underling_fft_plan
+underling_fft_plan_create_inverse(
+        const underling_fft_plan plan,
+        underling_real * data,
+        unsigned fftw_rigor_flags)
+{
+    if (SUZERAIN_UNLIKELY(plan == NULL)) {
+        SUZERAIN_ERROR_NULL("plan == NULL", SUZERAIN_EINVAL);
+    }
+
+    underling_fft_plan retval = NULL;
+
+    switch (plan->type) {
+    case transform_type_c2c_forward:
+        retval = underling_fft_plan_create_c2c_internal(
+                    plan->long_ni, data, FFTW_BACKWARD,
+                    fftw_rigor_flags, plan->output, plan->input);
+        break;
+    case transform_type_c2c_backward:
+        retval = underling_fft_plan_create_c2c_internal(
+                    plan->long_ni, data, FFTW_FORWARD,
+                    fftw_rigor_flags, plan->output, plan->input);
+        break;
+    case transform_type_c2r_backward:
+        retval = underling_fft_plan_create_r2c_forward_internal(
+                    plan->long_ni, data,
+                    fftw_rigor_flags, plan->output, plan->input);
+        break;
+    case transform_type_r2c_forward:
+        retval = underling_fft_plan_create_c2r_backward_internal(
+                    plan->long_ni, data,
+                    fftw_rigor_flags, plan->output, plan->input);
+        break;
+    case transform_type_unspecified:
+    default:
+        SUZERAIN_ERROR_NULL("Unrecognized plan->type", SUZERAIN_ESANITY);
+    }
+
+    return retval;
 }
 
 underling_fft_extents
