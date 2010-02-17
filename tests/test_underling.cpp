@@ -372,9 +372,7 @@ void test_c2c_forward(MPI_Comm comm,
                                  f.data.get(),
                                  FFTW_ESTIMATE);
     BOOST_REQUIRE(forward);
-    underling::fft::plan backward(underling::fft::plan::c2c_backward(),
-                                  f.problem,
-                                  long_i,
+    underling::fft::plan backward(forward,         // Inverse constructor!
                                   f.data.get(),
                                   FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
@@ -556,9 +554,7 @@ void test_c2c_backward(MPI_Comm comm,
                                   FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
     const underling::extents extents = f.problem.local_extents(long_i);
-    underling::fft::plan forward(underling::fft::plan::c2c_forward(),
-                                 f.problem,
-                                 long_i,
+    underling::fft::plan forward(backward,         // Inverse constructor!
                                  f.data.get(),
                                  FFTW_ESTIMATE);
     BOOST_REQUIRE(forward);
@@ -707,6 +703,7 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward )
     test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 6, 2);
 }
 
+// Test wave to physical transformation and inverse transform
 void test_c2r(MPI_Comm comm,
               const int n0, const int n1, const int n2,
               const int howmany,
@@ -720,6 +717,16 @@ void test_c2r(MPI_Comm comm,
                                   f.data.get(),
                                   FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
+    underling::fft::plan forward(backward,       // Inverse constructor!
+                                 f.data.get(),
+                                 FFTW_ESTIMATE);
+    BOOST_REQUIRE(forward);
+
+    // Stride information consistency check
+    BOOST_REQUIRE_EQUAL(backward.local_extents_output(),
+                        forward.local_extents_input());
+    BOOST_REQUIRE_EQUAL(forward.local_extents_output(),
+                        backward.local_extents_input());
 
     const underling::extents extents = f.problem.local_extents(long_i);
     const double close_enough
@@ -756,6 +763,7 @@ void test_c2r(MPI_Comm comm,
         }
     }
 
+    // Transform from wave to physical space
     backward.execute();
 
     // Check data transformed as expected
@@ -779,6 +787,46 @@ void test_c2r(MPI_Comm comm,
                         const double expected = pf.physical(l);
                         const double actual   = base[ l*e.stride[e.order[2]] ];
                         BOOST_CHECK_CLOSE(expected, actual, close_enough);
+                    }
+                }
+            }
+        }
+    }
+
+    // Transform physical to wave space
+    forward.execute();
+
+    // Check data transformed as expected
+    {
+        const underling::fft::extents e = backward.local_extents_input();
+
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+
+                    const periodic_function<double,int> pf(
+                            2*(e.size[e.order[2]]-1), e.size[e.order[2]],
+                            M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
+
+                    const underling_real * const pencil = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
+
+                    for (int l = 0; l < e.size[e.order[1]]; ++l) {
+                        const underling_real * const base
+                            = pencil + l*e.stride[e.order[2]];
+                        const std::complex<double> expected
+                            = pf.wave(l) * (2.0*(e.size[e.order[2]]-1));
+                        BOOST_CHECK_CLOSE(
+                                expected.real(),
+                                base[0],
+                                close_enough);
+                        BOOST_CHECK_CLOSE(
+                                expected.imag(),
+                                base[e.stride[e.order[0]]],
+                                close_enough);
                     }
                 }
             }
@@ -897,6 +945,7 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2 )
     test_c2r(MPI_COMM_SELF, 3, 2, 6, 6, 2);
 }
 
+// Test physical to wave transformation and inverse transform
 void test_r2c(MPI_Comm comm,
               const int n0, const int n1, const int n2,
               const int howmany,
@@ -910,6 +959,16 @@ void test_r2c(MPI_Comm comm,
                                  f.data.get(),
                                  FFTW_ESTIMATE);
     BOOST_REQUIRE(forward);
+    underling::fft::plan backward(forward,        // Inverse constructor!
+                                  f.data.get(),
+                                  FFTW_ESTIMATE);
+    BOOST_REQUIRE(backward);
+
+    // Stride information consistency check
+    BOOST_REQUIRE_EQUAL(forward.local_extents_output(),
+                        backward.local_extents_input());
+    BOOST_REQUIRE_EQUAL(backward.local_extents_output(),
+                        forward.local_extents_input());
 
     const underling::extents extents = f.problem.local_extents(long_i);
     const double close_enough
@@ -941,6 +1000,7 @@ void test_r2c(MPI_Comm comm,
         }
     }
 
+    // Transform physical to wave space
     forward.execute();
 
     // Check data transformed as expected
@@ -974,6 +1034,38 @@ void test_r2c(MPI_Comm comm,
                                 expected.imag(),
                                 base[e.stride[e.order[0]]],
                                 close_enough);
+                    }
+                }
+            }
+        }
+    }
+
+    // Transform wave to physical
+    backward.execute();
+
+    // Checking data transformed as expected
+    {
+        const underling::fft::extents e = forward.local_extents_input();
+        for (int i = 0; i < e.size[e.order[4]]; ++i) {
+            for (int j = 0; j < e.size[e.order[3]]; ++j) {
+                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+
+                    const periodic_function<double,int> pf(
+                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
+
+                    underling_real * const base = &f.data[
+                          i*e.stride[e.order[4]]
+                        + j*e.stride[e.order[3]]
+                        + k*e.stride[e.order[1]]
+                    ];
+
+                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                        const double expected
+                            = pf.physical(l) * e.size[e.order[2]];
+                        const double actual
+                            = base[ l*e.stride[e.order[2]] ];
+                        BOOST_CHECK_CLOSE(expected, actual, close_enough);
                     }
                 }
             }
