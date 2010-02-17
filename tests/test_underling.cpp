@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE( extents_consistency )
 void test_c2c_forward(MPI_Comm comm,
                       const int n0, const int n1, const int n2,
                       const int howmany,
-                      const int long_i)
+                      const int long_ni)
 {
     int procid;
     BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_rank(comm, &procid));
@@ -358,17 +358,17 @@ void test_c2c_forward(MPI_Comm comm,
                            << " on " << n0 << "x" << n1 << "x" << n2
                            << " using " << nproc << " processor"
                            << (nproc > 1 ? "s" : "")
-                           << " when long in " << long_i);
+                           << " when long in " << long_ni);
     }
 
     const underling_real close
         = std::numeric_limits<underling_real>::epsilon()*100*n0*n1*n2;
 
     UnderlingFixture f(comm, n0, n1, n2, howmany);
-    const underling::extents extents = f.problem.local_extents(long_i);
+    const underling::extents extents = f.problem.local_extents(long_ni);
     underling::fft::plan forward(underling::fft::plan::c2c_forward(),
                                  f.problem,
-                                 long_i,
+                                 long_ni,
                                  f.data.get(),
                                  FFTW_ESTIMATE);
     BOOST_REQUIRE(forward);
@@ -386,24 +386,27 @@ void test_c2c_forward(MPI_Comm comm,
     // Load up sample data
     {
         const underling::fft::extents e = forward.local_extents_input();
+        const int dir_i = e.order[4];
+        const int dir_j = e.order[3];
+        const int dir_k = e.order[1];
 
-        for (int i = 0; i < e.size[e.order[4]]; ++i) {
-            for (int j = 0; j < e.size[e.order[3]]; ++j) {
-                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+        for (int i = 0; i < e.size[dir_i]; ++i) {
+            for (int j = 0; j < e.size[dir_j]; ++j) {
+                for (int k = 0; k < e.size[dir_k]; ++k) {
 
                     const periodic_function<double,int> pf(
-                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            e.size[long_ni], e.size[long_ni]/2+1,
                             M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     underling_real * const pencil = &f.data[
-                          i*e.stride[e.order[4]]
-                        + j*e.stride[e.order[3]]
-                        + k*e.stride[e.order[1]]
+                          i*e.stride[dir_i]
+                        + j*e.stride[dir_j]
+                        + k*e.stride[dir_k]
                     ];
 
-                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                    for (int l = 0; l < e.size[long_ni]; ++l) {
                         underling_real * const base
-                            = pencil + l*e.stride[e.order[2]];
+                            = pencil + l*e.stride[long_ni];
                         const underling_real v_re =  pf.physical(l);
                         const underling_real v_im = -v_re;
                         base[0]                    = v_re;
@@ -420,26 +423,29 @@ void test_c2c_forward(MPI_Comm comm,
     // Check the sample data transformed as expected
     {
         const underling::fft::extents e = forward.local_extents_output();
+        const int dir_i = e.order[4];
+        const int dir_j = e.order[3];
+        const int dir_k = e.order[1];
 
-        for (int i = 0; i < e.size[e.order[4]]; ++i) {
-            for (int j = 0; j < e.size[e.order[3]]; ++j) {
-                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+        for (int i = 0; i < e.size[dir_i]; ++i) {
+            for (int j = 0; j < e.size[dir_j]; ++j) {
+                for (int k = 0; k < e.size[dir_k]; ++k) {
 
                     const periodic_function<double,int> pf(
-                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            e.size[long_ni], e.size[long_ni]/2+1,
                             M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     const underling_real * const pencil = &f.data[
-                          i*e.stride[e.order[4]]
-                        + j*e.stride[e.order[3]]
-                        + k*e.stride[e.order[1]]
+                          i*e.stride[dir_i]
+                        + j*e.stride[dir_j]
+                        + k*e.stride[dir_k]
                     ];
 
-                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                    for (int l = 0; l < e.size[long_ni]; ++l) {
                         const underling_real * const base
-                            = pencil + l*e.stride[e.order[2]];
+                            = pencil + l*e.stride[long_ni];
                         const std::complex<double> mode
-                            = pf.wave(l) * (double) e.size[e.order[2]];
+                            = pf.wave(l) * (double) e.size[long_ni];
                         const double expected_re = mode.real() + mode.imag();
                         const double expected_im = mode.imag() - mode.real();
                         BOOST_CHECK_CLOSE(
@@ -462,26 +468,29 @@ void test_c2c_forward(MPI_Comm comm,
     // Check that we recovered the scaled sample data
     {
         const underling::fft::extents e = backward.local_extents_output();
+        const int dir_i = e.order[4];
+        const int dir_j = e.order[3];
+        const int dir_k = e.order[1];
 
-        for (int i = 0; i < e.size[e.order[4]]; ++i) {
-            for (int j = 0; j < e.size[e.order[3]]; ++j) {
-                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+        for (int i = 0; i < e.size[dir_i]; ++i) {
+            for (int j = 0; j < e.size[dir_j]; ++j) {
+                for (int k = 0; k < e.size[dir_k]; ++k) {
 
                     const periodic_function<double,int> pf(
-                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            e.size[long_ni], e.size[long_ni]/2+1,
                             M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     const underling_real * const pencil = &f.data[
-                          i*e.stride[e.order[4]]
-                        + j*e.stride[e.order[3]]
-                        + k*e.stride[e.order[1]]
+                          i*e.stride[dir_i]
+                        + j*e.stride[dir_j]
+                        + k*e.stride[dir_k]
                     ];
 
-                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                    for (int l = 0; l < e.size[long_ni]; ++l) {
                         const underling_real * const base
-                            = pencil + l*e.stride[e.order[2]];
+                            = pencil + l*e.stride[long_ni];
                         const double expected_re
-                            = pf.physical(l) * e.size[e.order[2]];
+                            = pf.physical(l) * e.size[long_ni];
                         const double expected_im = - expected_re;
                         BOOST_CHECK_CLOSE(
                                 expected_re,
@@ -527,7 +536,7 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward )
 void test_c2c_backward(MPI_Comm comm,
                        const int n0, const int n1, const int n2,
                        const int howmany,
-                       const int long_i)
+                       const int long_ni)
 {
     int procid;
     BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_rank(comm, &procid));
@@ -540,7 +549,7 @@ void test_c2c_backward(MPI_Comm comm,
                            << " on " << n0 << "x" << n1 << "x" << n2
                            << " using " << nproc << " processor"
                            << (nproc > 1 ? "s" : "")
-                           << " when long in " << long_i);
+                           << " when long in " << long_ni);
     }
 
     const underling_real close
@@ -549,11 +558,11 @@ void test_c2c_backward(MPI_Comm comm,
     UnderlingFixture f(comm, n0, n1, n2, howmany);
     underling::fft::plan backward(underling::fft::plan::c2c_backward(),
                                   f.problem,
-                                  long_i,
+                                  long_ni,
                                   f.data.get(),
                                   FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
-    const underling::extents extents = f.problem.local_extents(long_i);
+    const underling::extents extents = f.problem.local_extents(long_ni);
     underling::fft::plan forward(backward,         // Inverse constructor!
                                  f.data.get(),
                                  FFTW_ESTIMATE);
@@ -568,24 +577,27 @@ void test_c2c_backward(MPI_Comm comm,
     // Load up sample data
     {
         const underling::fft::extents e = backward.local_extents_input();
+        const int dir_i = e.order[4];
+        const int dir_j = e.order[3];
+        const int dir_k = e.order[1];
 
-        for (int i = 0; i < e.size[e.order[4]]; ++i) {
-            for (int j = 0; j < e.size[e.order[3]]; ++j) {
-                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+        for (int i = 0; i < e.size[dir_i]; ++i) {
+            for (int j = 0; j < e.size[dir_j]; ++j) {
+                for (int k = 0; k < e.size[dir_k]; ++k) {
 
                     const periodic_function<double,int> pf(
-                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            e.size[long_ni], e.size[long_ni]/2+1,
                             M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     underling_real * const pencil = &f.data[
-                          i*e.stride[e.order[4]]
-                        + j*e.stride[e.order[3]]
-                        + k*e.stride[e.order[1]]
+                          i*e.stride[dir_i]
+                        + j*e.stride[dir_j]
+                        + k*e.stride[dir_k]
                     ];
 
-                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                    for (int l = 0; l < e.size[long_ni]; ++l) {
                         underling_real * const base
-                            = pencil + l*e.stride[e.order[2]];
+                            = pencil + l*e.stride[long_ni];
                         const std::complex<double> mode = pf.wave(l);
                         base[0]                    = mode.real() + mode.imag();
                         base[e.stride[e.order[0]]] = mode.imag() - mode.real();
@@ -601,24 +613,27 @@ void test_c2c_backward(MPI_Comm comm,
     // Check the sample data transformed as expected
     {
         const underling::fft::extents e = backward.local_extents_output();
+        const int dir_i = e.order[4];
+        const int dir_j = e.order[3];
+        const int dir_k = e.order[1];
 
-        for (int i = 0; i < e.size[e.order[4]]; ++i) {
-            for (int j = 0; j < e.size[e.order[3]]; ++j) {
-                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+        for (int i = 0; i < e.size[dir_i]; ++i) {
+            for (int j = 0; j < e.size[dir_j]; ++j) {
+                for (int k = 0; k < e.size[dir_k]; ++k) {
 
                     const periodic_function<double,int> pf(
-                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            e.size[long_ni], e.size[long_ni]/2+1,
                             M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     const underling_real * const pencil = &f.data[
-                          i*e.stride[e.order[4]]
-                        + j*e.stride[e.order[3]]
-                        + k*e.stride[e.order[1]]
+                          i*e.stride[dir_i]
+                        + j*e.stride[dir_j]
+                        + k*e.stride[dir_k]
                     ];
 
-                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                    for (int l = 0; l < e.size[long_ni]; ++l) {
                         const underling_real * const base
-                            = pencil + l*e.stride[e.order[2]];
+                            = pencil + l*e.stride[long_ni];
                         const underling_real expected_re =  pf.physical(l);
                         const underling_real expected_im = -expected_re;
                         BOOST_CHECK_CLOSE(
@@ -641,26 +656,29 @@ void test_c2c_backward(MPI_Comm comm,
     // Check the sample data transformed as expected
     {
         const underling::fft::extents e = forward.local_extents_output();
+        const int dir_i = e.order[4];
+        const int dir_j = e.order[3];
+        const int dir_k = e.order[1];
 
-        for (int i = 0; i < e.size[e.order[4]]; ++i) {
-            for (int j = 0; j < e.size[e.order[3]]; ++j) {
-                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+        for (int i = 0; i < e.size[dir_i]; ++i) {
+            for (int j = 0; j < e.size[dir_j]; ++j) {
+                for (int k = 0; k < e.size[dir_k]; ++k) {
 
                     const periodic_function<double,int> pf(
-                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            e.size[long_ni], e.size[long_ni]/2+1,
                             M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     const underling_real * const pencil = &f.data[
-                          i*e.stride[e.order[4]]
-                        + j*e.stride[e.order[3]]
-                        + k*e.stride[e.order[1]]
+                          i*e.stride[dir_i]
+                        + j*e.stride[dir_j]
+                        + k*e.stride[dir_k]
                     ];
 
-                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                    for (int l = 0; l < e.size[long_ni]; ++l) {
                         const underling_real * const base
-                            = pencil + l*e.stride[e.order[2]];
+                            = pencil + l*e.stride[long_ni];
                         const std::complex<double> mode
-                            = pf.wave(l) * (double) e.size[e.order[2]];
+                            = pf.wave(l) * (double) e.size[long_ni];
                         const double expected_re = mode.real() + mode.imag();
                         const double expected_im = mode.imag() - mode.real();
                         BOOST_CHECK_CLOSE(
@@ -707,13 +725,13 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward )
 void test_c2r(MPI_Comm comm,
               const int n0, const int n1, const int n2,
               const int howmany,
-              const int long_i)
+              const int long_ni)
 {
     UnderlingFixture f(comm, n0, n1, n2, howmany);
 
     underling::fft::plan backward(underling::fft::plan::c2r_backward(),
                                   f.problem,
-                                  long_i,
+                                  long_ni,
                                   f.data.get(),
                                   FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
@@ -728,35 +746,38 @@ void test_c2r(MPI_Comm comm,
     BOOST_REQUIRE_EQUAL(forward.local_extents_output(),
                         backward.local_extents_input());
 
-    const underling::extents extents = f.problem.local_extents(long_i);
+    const underling::extents extents = f.problem.local_extents(long_ni);
     const double close_enough
-        =   std::numeric_limits<double>::epsilon()
-          * 100*extents.size[long_i]*extents.size[long_i]*extents.size[long_i];
+        =   std::numeric_limits<double>::epsilon()*100
+          * extents.size[long_ni]*extents.size[long_ni]*extents.size[long_ni];
 
     // Load up sample data
     {
         const underling::fft::extents e = backward.local_extents_input();
+        const int dir_i = e.order[4];
+        const int dir_j = e.order[3];
+        const int dir_k = e.order[1];
 
-        for (int i = 0; i < e.size[e.order[4]]; ++i) {
-            for (int j = 0; j < e.size[e.order[3]]; ++j) {
-                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+        for (int i = 0; i < e.size[dir_i]; ++i) {
+            for (int j = 0; j < e.size[dir_j]; ++j) {
+                for (int k = 0; k < e.size[dir_k]; ++k) {
 
                     const periodic_function<double,int> pf(
-                            2*(e.size[e.order[2]]-1), e.size[e.order[2]],
+                            2*(e.size[long_ni]-1), e.size[long_ni],
                             M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     underling_real * const pencil = &f.data[
-                          i*e.stride[e.order[4]]
-                        + j*e.stride[e.order[3]]
-                        + k*e.stride[e.order[1]]
+                          i*e.stride[dir_i]
+                        + j*e.stride[dir_j]
+                        + k*e.stride[dir_k]
                     ];
 
-                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                    for (int l = 0; l < e.size[long_ni]; ++l) {
                         underling_real * const base
-                            = pencil + l*e.stride[e.order[2]];
+                            = pencil + l*e.stride[long_ni];
                         const std::complex<double> val = pf.wave(l);
-                        base[0]                    = val.real();
-                        base[e.stride[e.order[0]]] = val.imag();
+                        base[0]                        = val.real();
+                        base[e.stride[e.order[0]]]     = val.imag();
                     }
                 }
             }
@@ -769,23 +790,27 @@ void test_c2r(MPI_Comm comm,
     // Check data transformed as expected
     {
         const underling::fft::extents e = backward.local_extents_output();
-        for (int i = 0; i < e.size[e.order[4]]; ++i) {
-            for (int j = 0; j < e.size[e.order[3]]; ++j) {
-                for (int k = 0; k < e.size[e.order[1]] / 2; ++k) {
+        const int dir_i = e.order[4];
+        const int dir_j = e.order[3];
+        const int dir_k = e.order[1];
+
+        for (int i = 0; i < e.size[dir_i]; ++i) {
+            for (int j = 0; j < e.size[dir_j]; ++j) {
+                for (int k = 0; k < e.size[dir_k]; ++k) {
 
                     const periodic_function<double,int> pf(
-                            e.size[e.order[2]], e.size[e.order[2]]/2+1,
+                            e.size[long_ni], e.size[long_ni]/2+1,
                             M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     underling_real * const base = &f.data[
-                          i*e.stride[e.order[4]]
-                        + j*e.stride[e.order[3]]
-                        + k*e.stride[e.order[1]]
+                          i*e.stride[dir_i]
+                        + j*e.stride[dir_j]
+                        + k*e.stride[dir_k]
                     ];
 
-                    for (int l = 0; l < e.size[e.order[2]]; ++l) {
+                    for (int l = 0; l < e.size[long_ni]; ++l) {
                         const double expected = pf.physical(l);
-                        const double actual   = base[ l*e.stride[e.order[2]] ];
+                        const double actual   = base[ l*e.stride[long_ni] ];
                         BOOST_CHECK_CLOSE(expected, actual, close_enough);
                     }
                 }
@@ -799,26 +824,29 @@ void test_c2r(MPI_Comm comm,
     // Check data transformed as expected
     {
         const underling::fft::extents e = backward.local_extents_input();
+        const int dir_i = e.order[4];
+        const int dir_j = e.order[3];
+        const int dir_k = e.order[1];
 
-        for (int i = 0; i < e.size[e.order[4]]; ++i) {
-            for (int j = 0; j < e.size[e.order[3]]; ++j) {
-                for (int k = 0; k < e.size[e.order[1]]; ++k) {
+        for (int i = 0; i < e.size[dir_i]; ++i) {
+            for (int j = 0; j < e.size[dir_j]; ++j) {
+                for (int k = 0; k < e.size[dir_k]; ++k) {
 
                     const periodic_function<double,int> pf(
-                            2*(e.size[e.order[2]]-1), e.size[e.order[2]],
+                            2*(e.size[long_ni]-1), e.size[long_ni],
                             M_PI/3.0, 2.0*M_PI, (i+1)*(j+1)*(k+1));
 
                     const underling_real * const pencil = &f.data[
-                          i*e.stride[e.order[4]]
-                        + j*e.stride[e.order[3]]
-                        + k*e.stride[e.order[1]]
+                          i*e.stride[dir_i]
+                        + j*e.stride[dir_j]
+                        + k*e.stride[dir_k]
                     ];
 
-                    for (int l = 0; l < e.size[e.order[1]]; ++l) {
+                    for (int l = 0; l < e.size[long_ni]; ++l) {
                         const underling_real * const base
-                            = pencil + l*e.stride[e.order[2]];
+                            = pencil + l*e.stride[long_ni];
                         const std::complex<double> expected
-                            = pf.wave(l) * (2.0*(e.size[e.order[2]]-1));
+                            = pf.wave(l) * (2.0*(e.size[long_ni]-1));
                         BOOST_CHECK_CLOSE(
                                 expected.real(),
                                 base[0],
@@ -949,13 +977,13 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2 )
 void test_r2c(MPI_Comm comm,
               const int n0, const int n1, const int n2,
               const int howmany,
-              const int long_i)
+              const int long_ni)
 {
     UnderlingFixture f(comm, n0, n1, n2, howmany);
 
     underling::fft::plan forward(underling::fft::plan::r2c_forward(),
                                  f.problem,
-                                 long_i,
+                                 long_ni,
                                  f.data.get(),
                                  FFTW_ESTIMATE);
     BOOST_REQUIRE(forward);
@@ -970,10 +998,10 @@ void test_r2c(MPI_Comm comm,
     BOOST_REQUIRE_EQUAL(backward.local_extents_output(),
                         forward.local_extents_input());
 
-    const underling::extents extents = f.problem.local_extents(long_i);
+    const underling::extents extents = f.problem.local_extents(long_ni);
     const double close_enough
         =   std::numeric_limits<double>::epsilon()
-          * 100*extents.size[long_i]*extents.size[long_i]*extents.size[long_i];
+          * 100*extents.size[long_ni]*extents.size[long_ni]*extents.size[long_ni];
 
     // Load up sample data
     {
