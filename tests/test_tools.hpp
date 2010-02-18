@@ -34,6 +34,7 @@
 
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/test_tools.hpp>
+#include <suzerain/error.h>
 #include <suzerain/common.hpp>
 #include <suzerain/complex.hpp>
 #include <suzerain/multi_array.hpp>
@@ -437,5 +438,36 @@ typename std::complex<FPT> periodic_function<FPT,Integer>::wave(
 
     return retval;
 }
+
+/** A fixture for the Boost.Test that replaces suzerain_error */
+class BoostFailErrorHandlerFixture {
+public:
+    /** A suzerain_error_handler_t that invokes BOOST_FAIL */
+    static void boost_fail_error_handler(
+            const char *reason, const char *file, int line, int suzerain_errno)
+    {
+        std::ostringstream oss;
+        oss << "Encountered '"
+            << suzerain_strerror(suzerain_errno)
+            << "' at "
+            << file
+            << ':'
+            << line
+            << " with reason '"
+            << reason
+            << "'";
+        BOOST_FAIL(oss.str());
+    }
+
+    BoostFailErrorHandlerFixture() {
+        previous_ = suzerain_set_error_handler(&boost_fail_error_handler);
+    }
+
+    ~BoostFailErrorHandlerFixture() {
+        suzerain_set_error_handler(previous_);
+    }
+private:
+    suzerain_error_handler_t * previous_;
+};
 
 #endif // PECOS_SUZERAIN_TEST_TOOLS_HPP
