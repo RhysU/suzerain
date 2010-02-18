@@ -72,7 +72,7 @@ rotate_left(
         int len);
 
 int
-align_extents_with_long_direction(
+adjust_for_fast_stride_in_long_direction(
         underling_extents * const extents,
         const int long_ni);
 
@@ -186,7 +186,7 @@ rotate_left(int *array, int len)
 
 static
 int
-align_extents_with_long_direction(
+adjust_for_fast_stride_in_long_direction(
         underling_extents * const e,
         int long_ni)
 {
@@ -194,8 +194,6 @@ align_extents_with_long_direction(
 
     while (e->order[1] != long_ni) {
         ++nrotate;
-        rotate_left(e->start,     3); // start[3] not touched
-        rotate_left(e->size,      3); // size[3]  not touched
         rotate_left(e->order + 1, 3); // order[0] not touched
     }
 
@@ -331,7 +329,7 @@ underling_fft_plan_create_c2c_forward(
     const underling_fft_extents input
         = create_underling_fft_extents_for_complex(e, long_ni);
 
-    align_extents_with_long_direction(&e, long_ni);
+    adjust_for_fast_stride_in_long_direction(&e, long_ni);
 
     const underling_fft_extents output
         = create_underling_fft_extents_for_complex(e, long_ni);
@@ -353,7 +351,7 @@ underling_fft_plan_create_c2c_backward(
     const underling_fft_extents input
         = create_underling_fft_extents_for_complex(e, long_ni);
 
-    align_extents_with_long_direction(&e, long_ni);
+    adjust_for_fast_stride_in_long_direction(&e, long_ni);
 
     const underling_fft_extents output
         = create_underling_fft_extents_for_complex(e, long_ni);

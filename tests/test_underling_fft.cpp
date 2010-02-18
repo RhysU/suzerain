@@ -39,7 +39,8 @@ void slow_non_long_directions(
 }
 
 
-BOOST_FIXTURE_TEST_SUITE( underling_fft_general, BoostFailErrorHandlerFixture )
+BOOST_FIXTURE_TEST_SUITE( underling_fft_general,
+                          BoostFailErrorHandlerFixture )
 
 BOOST_AUTO_TEST_CASE( extents_consistency )
 {
@@ -107,7 +108,8 @@ BOOST_AUTO_TEST_CASE( extents_consistency )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_FIXTURE_TEST_SUITE( underling_fft_c2c_forward, BoostFailErrorHandlerFixture )
+BOOST_FIXTURE_TEST_SUITE( underling_fft_c2c_forward,
+                          BoostFailErrorHandlerFixture )
 
 // Forward physical-to-wave followed by wave-to-physical
 void test_c2c_forward(MPI_Comm comm,
@@ -384,7 +386,8 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_both )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_FIXTURE_TEST_SUITE( underling_fft_c2c_backward, BoostFailErrorHandlerFixture )
+BOOST_FIXTURE_TEST_SUITE( underling_fft_c2c_backward,
+                          BoostFailErrorHandlerFixture )
 
 // Backward wave-to-physical followed by physical-to-wave
 void test_c2c_backward(MPI_Comm comm,
@@ -659,7 +662,8 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_both )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_FIXTURE_TEST_SUITE( underling_fft_c2r, BoostFailErrorHandlerFixture )
+BOOST_FIXTURE_TEST_SUITE( underling_fft_c2r,
+                          BoostFailErrorHandlerFixture )
 
 // Test wave to physical transformation and inverse transform
 void test_c2r(MPI_Comm comm,
@@ -1282,7 +1286,8 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2_transposed_both )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_FIXTURE_TEST_SUITE( underling_fft_r2c, BoostFailErrorHandlerFixture )
+BOOST_FIXTURE_TEST_SUITE( underling_fft_r2c,
+                          BoostFailErrorHandlerFixture )
 
 // Test physical to wave transformation and inverse transform
 void test_r2c(MPI_Comm comm,
