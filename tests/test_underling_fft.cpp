@@ -20,6 +20,26 @@ namespace underling = suzerain::underling;
 
 BOOST_AUTO_TEST_SUITE( underling_fft )
 
+// Pull out the two slow directions, excluding long_ni
+void slow_non_long_directions(
+        const int * const order, const int long_ni, int &dir_i, int &dir_j)
+{
+    BOOST_REQUIRE(order);
+
+    if (order[2] == long_ni) {
+        dir_i = order[4];
+        dir_j = order[3];
+    } else if (order[3] == long_ni) {
+        dir_i = order[4];
+        dir_j = order[2];
+    } else if (order[4] == long_ni) {
+        dir_i = order[3];
+        dir_j = order[2];
+    } else {
+        BOOST_FAIL("long_ni not in {2, 3, 4}");
+    }
+}
+
 BOOST_AUTO_TEST_CASE( extents_consistency )
 {
     UnderlingFixture f(MPI_COMM_WORLD, 2, 3, 5, 6);
@@ -128,8 +148,8 @@ void test_c2c_forward(MPI_Comm comm,
     // Load up sample data
     {
         const underling::fft::extents e = forward.local_extents_input();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -164,8 +184,8 @@ void test_c2c_forward(MPI_Comm comm,
     // Check the sample data transformed as expected
     {
         const underling::fft::extents e = forward.local_extents_output();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -208,8 +228,8 @@ void test_c2c_forward(MPI_Comm comm,
     // Check that we recovered the scaled sample data
     {
         const underling::fft::extents e = backward.local_extents_output();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -315,8 +335,8 @@ void test_c2c_backward(MPI_Comm comm,
     // Load up sample data
     {
         const underling::fft::extents e = backward.local_extents_input();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -350,8 +370,8 @@ void test_c2c_backward(MPI_Comm comm,
     // Check the sample data transformed as expected
     {
         const underling::fft::extents e = backward.local_extents_output();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -392,8 +412,8 @@ void test_c2c_backward(MPI_Comm comm,
     // Check the sample data transformed as expected
     {
         const underling::fft::extents e = forward.local_extents_output();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -489,8 +509,8 @@ void test_c2r(MPI_Comm comm,
     // Load up sample data
     {
         const underling::fft::extents e = backward.local_extents_input();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -524,8 +544,8 @@ void test_c2r(MPI_Comm comm,
     // Check data transformed as expected
     {
         const underling::fft::extents e = backward.local_extents_output();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -557,8 +577,8 @@ void test_c2r(MPI_Comm comm,
     // Check data transformed as expected
     {
         const underling::fft::extents e = backward.local_extents_input();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -738,8 +758,8 @@ void test_r2c(MPI_Comm comm,
     // Load up sample data
     {
         const underling::fft::extents e = forward.local_extents_input();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -769,8 +789,8 @@ void test_r2c(MPI_Comm comm,
     // Check data transformed as expected
     {
         const underling::fft::extents e = forward.local_extents_output();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
@@ -811,8 +831,8 @@ void test_r2c(MPI_Comm comm,
     // Checking data transformed as expected
     {
         const underling::fft::extents e = forward.local_extents_input();
-        const int dir_i = e.order[4];
-        const int dir_j = e.order[3];
+        int dir_i, dir_j;
+        slow_non_long_directions(e.order, long_ni, dir_i, dir_j);
         const int dir_k = e.order[1];
 
         for (int i = 0; i < e.size[dir_i]; ++i) {
