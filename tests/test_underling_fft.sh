@@ -14,4 +14,4 @@ if ! which mpiexec > /dev/null ; then
     exit 0
 fi
 
-mpiexec -np 1 ./test_underling
+mpiexec -np 1 ./test_underling_fft
