@@ -700,16 +700,11 @@ underling_fft_plan_create_r2c_forward_internal(
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
 
-    // Prepare the reordering plan for the input data.
-    fftw_plan plan_preorder = NULL;
-    if (input.order[2] == long_ni) {
-        plan_preorder = underling_fftw_plan_nop();
-    } else {
-        // TODO Fix ESANITY by reordering when necessary
-        SUZERAIN_ERROR_NULL(
-                "transformed direction not long: input.order[2] != long_ni",
-                SUZERAIN_ESANITY);
-    }
+    // Prepare the reordering plan for the input data. We must always pay to
+    // reorder the output data.  Ignoring the input reordering process avoids
+    // touching everything a third separate time.
+    // TODO Evaluate performance impact since FFT may be non-stride 1
+    const fftw_plan plan_preorder = underling_fftw_plan_nop();
 
     // The transform is purely in place.
     fftw_plan plan_fft = NULL;
