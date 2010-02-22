@@ -301,6 +301,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward )
     test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 6, 2);
 }
 
+// FIXME Transforming n2 when transposed_long_n2 design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_c2c_forward_transposed_long_n2,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_long_n2 )
 {
     using suzerain::underling::transposed::long_n2;
@@ -328,6 +334,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_long_n2 )
     test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 6, 2, long_n2);
 }
 
+// FIXME Transforming n0 when transposed_long_n0 design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_c2c_forward_transposed_long_n0,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_long_n0 )
 {
     using suzerain::underling::transposed::long_n0;
@@ -355,6 +367,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_long_n0 )
     test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 6, 2, long_n0);
 }
 
+// FIXME Transforming n{0,2} when transposed_both design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_c2c_forward_transposed_both,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_both )
 {
     using suzerain::underling::transposed::long_n2;
@@ -577,6 +595,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward )
     test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 6, 2);
 }
 
+// FIXME Transforming n2 when transposed_long_n2 design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_c2c_backward_transposed_long_n2,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_long_n2 )
 {
     using suzerain::underling::transposed::long_n2;
@@ -604,6 +628,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_long_n2 )
     test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 6, 2, long_n2);
 }
 
+// FIXME Transforming n0 when transposed_long_n0 design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_c2c_backward_transposed_long_n0,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_long_n0 )
 {
     using suzerain::underling::transposed::long_n0;
@@ -631,6 +661,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_long_n0 )
     test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 6, 2, long_n0);
 }
 
+// FIXME Transforming n{0,2} when transposed_both design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_c2c_backward_transposed_both,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_both )
 {
     using suzerain::underling::transposed::long_n2;
@@ -894,6 +930,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0_transposed_long_n2 )
     test_c2r(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n2);
 }
 
+// FIXME Transforming n0 when transposed_long_n0 design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_c2r_simple_n0_transposed_long_n0,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0_transposed_long_n0 )
 {
     using suzerain::underling::transposed::long_n0;
@@ -933,6 +975,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0_transposed_long_n0 )
     test_c2r(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n0);
 }
 
+// FIXME Transforming n0 when transposed_both design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_c2r_simple_n0_transposed_long_both,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0_transposed_long_both )
 {
     using suzerain::underling::transposed::long_n2;
@@ -1165,6 +1213,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2 )
     test_c2r(MPI_COMM_WORLD, 3, 2, 6, 6, 2);
 }
 
+// FIXME Transforming n2 when transposed_long_n2 design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_c2r_simple_n2_transposed_long_n2,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2_transposed_long_n2 )
 {
     using suzerain::underling::transposed::long_n2;
@@ -1243,6 +1297,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2_transposed_long_n0 )
     test_c2r(MPI_COMM_WORLD, 3, 2, 6, 6, 2, long_n0);
 }
 
+// FIXME Transforming n2 when transposed_both design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_c2r_simple_n2_transposed_both,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2_transposed_both )
 {
     using suzerain::underling::transposed::long_n2;
@@ -1516,6 +1576,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n0_transposed_long_n2 )
     test_r2c(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n2);
 }
 
+// FIXME Transforming n0 when transposed_long_n0 design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_r2c_simple_n0_transposed_long_n0,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n0_transposed_long_n0 )
 {
     using suzerain::underling::transposed::long_n0;
@@ -1555,6 +1621,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n0_transposed_long_n0 )
     test_r2c(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n0);
 }
 
+// FIXME Transforming n0 when transposed_both design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_r2c_simple_n0_transposed_both,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n0_transposed_both )
 {
     using suzerain::underling::transposed::long_n2;
@@ -1787,6 +1859,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n2 )
     test_r2c(MPI_COMM_WORLD, 3, 2, 6, 6, 2);
 }
 
+// FIXME Transforming n2 when transposed_long_n2 design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_r2c_simple_n2_transposed_long_n2,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n2_transposed_long_n2 )
 {
     using suzerain::underling::transposed::long_n2;
@@ -1865,6 +1943,12 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n2_transposed_long_n0 )
     test_r2c(MPI_COMM_WORLD, 3, 2, 6, 6, 2, long_n0);
 }
 
+// FIXME Transforming n2 when transposed_both design problem
+// Email currently out to FFTW folks to get clarification: 20100218
+// Problem stems from FFTW in-place transpose API issues
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
+        underling_fft_r2c_simple_n2_transposed_both,
+        1);
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n2_transposed_both )
 {
     using suzerain::underling::transposed::long_n2;
