@@ -66,6 +66,12 @@ struct underling_fft_plan_s {
 fftw_plan
 underling_fftw_plan_nop();
 
+fftw_plan
+underling_fftw_plan_reorder_complex(
+        underling_real * const data,
+        const underling_fft_extents * const input,
+        const underling_fft_extents * const output);
+
 void
 rotate_left(
         int *array,
@@ -169,6 +175,33 @@ underling_fftw_plan_nop()
         SUZERAIN_ERROR_NULL("FFTW returned a NULL NOP plan", SUZERAIN_ESANITY);
     }
     return nop_plan;
+}
+
+static
+fftw_plan
+underling_fftw_plan_reorder_complex(
+        underling_real * const data,
+        const underling_fft_extents * const input,
+        const underling_fft_extents * const output)
+{
+    const int howmany_rank = sizeof(input->size)/sizeof(input->size[0]);
+    fftw_iodim howmany_dims[howmany_rank];
+    for (int i  = 0; i < howmany_rank; ++i) {
+        const int io       = input->order[howmany_rank - 1 - i];
+        howmany_dims[i].n  = input->size[io];
+        howmany_dims[i].is = input->stride[io];
+        howmany_dims[i].os = output->stride[io];
+    }
+    fftw_plan retval = fftw_plan_guru_r2r(
+            0, NULL, howmany_rank, howmany_dims, data, data,
+            NULL, FFTW_ESTIMATE);
+
+    if (SUZERAIN_UNLIKELY(retval == NULL)) {
+        SUZERAIN_ERROR_NULL("FFTW returned a NULL reorder_complex plan",
+                SUZERAIN_ESANITY);
+    }
+
+    return retval;
 }
 
 static
@@ -388,64 +421,64 @@ underling_fft_plan_create_c2c_internal(
         SUZERAIN_ERROR_NULL("FFTW non-rigor bits disallowed", SUZERAIN_EINVAL);
     }
 
-    // Prepare the reordering plan for the input data.
-    fftw_plan plan_preorder = NULL;
-    if (input.order[2] == long_ni) {
-        plan_preorder = underling_fftw_plan_nop();
+    // Determine when if/when we reorder relative to the FFT itself
+    // Do so by maintaining pointers to the relevant information
+    const underling_fft_extents *reorder_in, *reorder_out, *transform;
+    const int input_is_long  = input.order[2]  == long_ni;
+    const int output_is_long = output.order[2] == long_ni;
+    if (input_is_long) {
+        transform   = &input;  // First, transform the input in-place
+        reorder_in  = &input;  // Then reorder the transformed data...
+        reorder_out = &output; // to match with the desired output.
+    } else if (output_is_long) {
+        reorder_in  = &input;  // First, reorder the data ...
+        reorder_out = &output; // ...to make it long for the transform.
+        transform   = &output; // Then transform it.
     } else {
-        const int howmany_rank = sizeof(input.size)/sizeof(input.size[0]);
-        fftw_iodim howmany_dims[howmany_rank];
-        for (int i  = 0; i < howmany_rank; ++i) {
-            const int io       = input.order[howmany_rank - 1 - i];
-            howmany_dims[i].n  = input.size[io];
-            howmany_dims[i].is = input.stride[io];
-            howmany_dims[i].os = output.stride[io];
-        }
-        plan_preorder = fftw_plan_guru_r2r(
-                0, NULL, howmany_rank, howmany_dims, data, data,
-                NULL, FFTW_ESTIMATE);
-        if (SUZERAIN_UNLIKELY(plan_preorder == NULL)) {
-            SUZERAIN_ERROR_NULL("FFTW returned a NULL preorder plan",
-                    SUZERAIN_ESANITY);
-        }
+        SUZERAIN_ERROR_NULL(
+                "Neither {input,output}_is_long", SUZERAIN_ESANITY);
     }
+
+    // Cook the reordering plan
+    fftw_plan plan_reorder
+        = underling_fftw_plan_reorder_complex(data, reorder_in, reorder_out);
 
     // Prepare the input to fftw_plan_guru_split_dft, which allows using
     // underling_fft_extents.strides directly.  The transform is in place.
     fftw_plan plan_fft = NULL;
     {
-        // Transform the long dimension given by output.order[2]
+        // Transform the long dimension given by transform->order[2]
         const fftw_iodim dims[] = {
-            output.size[output.order[2]],
-            output.stride[output.order[2]],
-            output.stride[output.order[2]]
+            transform->size[transform->order[2]],
+            transform->stride[transform->order[2]],
+            transform->stride[transform->order[2]]
         };
 
         // Loop over non-transformed dimensions
         const fftw_iodim howmany_dims[3] = {
             {
-                output.size[output.order[4]],
-                output.stride[output.order[4]],
-                output.stride[output.order[4]]
+                transform->size[transform->order[4]],
+                transform->stride[transform->order[4]],
+                transform->stride[transform->order[4]]
             },
             {
-                output.size[output.order[3]],
-                output.stride[output.order[3]],
-                output.stride[output.order[3]]
+                transform->size[transform->order[3]],
+                transform->stride[transform->order[3]],
+                transform->stride[transform->order[3]]
             },
             {
-                output.size[3],
-                output.size[4],
-                output.size[4]
+                transform->size[3],
+                transform->size[4],
+                transform->size[4]
             }
         };
 
         // FFTW manual section 4.5.3, FFTW_BACKWARD is FFTW_FORWARD with the
         // components flipped.
         underling_real * const ri
-            = (fftw_sign == FFTW_FORWARD) ? data : data + output.stride[4];
+            = (fftw_sign == FFTW_FORWARD) ? data : data + transform->stride[4];
         underling_real * const ii
-            = (fftw_sign == FFTW_FORWARD) ? data + output.stride[4] : data;
+            = (fftw_sign == FFTW_FORWARD) ? data + transform->stride[4] : data;
         underling_real * const ro = ri;
         underling_real * const io = ii;
 
@@ -460,9 +493,6 @@ underling_fft_plan_create_c2c_internal(
         }
     }
 
-    // There is never a reordering plan for the output data in the C2C case.
-    const fftw_plan plan_postorder = underling_fftw_plan_nop();
-
     // Create and initialize the plan workspace
     underling_fft_plan f = calloc(1, sizeof(struct underling_fft_plan_s));
     if (SUZERAIN_UNLIKELY(f == NULL)) {
@@ -475,10 +505,19 @@ underling_fft_plan_create_c2c_internal(
                       ? transform_type_c2c_forward
                       : transform_type_c2c_backward;
     f->input          = input;
-    f->plan_preorder  = plan_preorder;
     f->plan_fft       = plan_fft;
-    f->plan_postorder = plan_postorder;
     f->output         = output;
+    // Fix when the data is reordered relative to the FFT
+    if (input_is_long) {
+        f->plan_preorder  = underling_fftw_plan_nop();
+        f->plan_postorder = plan_reorder;
+    } else if (output_is_long) {
+        f->plan_preorder  = plan_reorder;
+        f->plan_postorder = underling_fftw_plan_nop();
+    } else {
+        SUZERAIN_ERROR_NULL(
+                "Neither {input,output}_is_long", SUZERAIN_ESANITY);
+    }
 
     return f;
 }
