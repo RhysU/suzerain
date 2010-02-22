@@ -499,7 +499,8 @@ underling_fft_plan_create_c2c_internal(
         SUZERAIN_ERROR_NULL("failed to allocate space for plan",
                              SUZERAIN_ENOMEM);
     }
-    // Copy the relevant parameters to the plan workspace
+
+    // Copy the relevant parameters to the plan workspace...
     f->long_ni        = long_ni;
     f->type           = (fftw_sign == FFTW_FORWARD)
                       ? transform_type_c2c_forward
@@ -507,7 +508,7 @@ underling_fft_plan_create_c2c_internal(
     f->input          = input;
     f->plan_fft       = plan_fft;
     f->output         = output;
-    // Fix when the data is reordered relative to the FFT
+    // ...and fix when the data is reordered relative to the FFT
     if (input_is_long) {
         f->plan_preorder  = underling_fftw_plan_nop();
         f->plan_postorder = plan_reorder;
@@ -636,15 +637,8 @@ underling_fft_plan_create_c2r_backward_internal(
         }
     }
 
-    // Prepare the reordering plan for the output data
-    fftw_plan plan_postorder = NULL;
-    if (output.order[2] == long_ni) {
-        plan_postorder = underling_fftw_plan_nop();
-    } else {
-        SUZERAIN_ERROR_NULL(
-                "transformed direction not long: output.order[2] != long_ni",
-                SUZERAIN_ESANITY);
-    }
+    // No reordering plan necessary for the output data
+    const fftw_plan plan_postorder = underling_fftw_plan_nop();
 
     // Create and initialize the plan workspace
     underling_fft_plan f = calloc(1, sizeof(struct underling_fft_plan_s));
