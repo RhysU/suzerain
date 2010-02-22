@@ -44,7 +44,7 @@ void slow_non_long_directions(
 void ensureFFTWTensor7PatchInPlace() {
     double buffer[30];
     const fftw_iodim howmany_dims[] = {
-        { 5,  15,   1 },
+        { 5,   6,   1 },
         { 2,   3,  15 }, // This direction...
         { 3,   1,   5 }, // ...and this one should be merged.
     };
