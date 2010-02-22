@@ -38,6 +38,26 @@ void slow_non_long_directions(
     }
 }
 
+// Ensure that FFTW can handle compressing directions, which will require at
+// patch above FFTW 3.3alpha1 submitted to Stephen and Matteo directly.
+// Suspect the FFTW installation has not been patched if this fails.
+void ensureFFTWTensor7PatchInPlace() {
+    double buffer[30];
+    const fftw_iodim howmany_dims[] = {
+        { 5,  15,   1 },
+        { 2,   3,  15 }, // This direction...
+        { 3,   1,   5 }, // ...and this one should be merged.
+    };
+    int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
+    // If the two directions are not merged, the in-place transpose planner
+    // cannot handle the case and we will get a NULL plan.
+    const fftw_plan plan = fftw_plan_guru_r2r(
+            0, NULL, howmany_rank, howmany_dims, buffer, buffer,
+            NULL, FFTW_ESTIMATE);
+    BOOST_REQUIRE_MESSAGE(
+            plan, "Critical FFTW3 patch may not have been applied.");
+}
+
 
 BOOST_FIXTURE_TEST_SUITE( underling_fft_general,
                           BoostFailErrorHandlerFixture )
@@ -301,14 +321,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward )
     test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 6, 2);
 }
 
-// FIXME Transforming n2 when transposed_long_n2 design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_c2c_forward_transposed_long_n2,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_long_n2 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
 
     // Non-cubic domain
@@ -334,14 +350,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_long_n2 )
     test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 6, 2, long_n2);
 }
 
-// FIXME Transforming n0 when transposed_long_n0 design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_c2c_forward_transposed_long_n0,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_long_n0 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n0;
 
     // Non-cubic domain
@@ -367,14 +379,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_long_n0 )
     test_c2c_forward(MPI_COMM_WORLD, 8, 8, 8, 6, 2, long_n0);
 }
 
-// FIXME Transforming n{0,2} when transposed_both design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_c2c_forward_transposed_both,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_forward_transposed_both )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
     using suzerain::underling::transposed::long_n0;
 
@@ -595,14 +603,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward )
     test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 6, 2);
 }
 
-// FIXME Transforming n2 when transposed_long_n2 design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_c2c_backward_transposed_long_n2,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_long_n2 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
 
     // Non-cubic domain
@@ -628,14 +632,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_long_n2 )
     test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 6, 2, long_n2);
 }
 
-// FIXME Transforming n0 when transposed_long_n0 design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_c2c_backward_transposed_long_n0,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_long_n0 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n0;
 
     // Non-cubic domain
@@ -661,14 +661,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_long_n0 )
     test_c2c_backward(MPI_COMM_WORLD, 8, 8, 8, 6, 2, long_n0);
 }
 
-// FIXME Transforming n{0,2} when transposed_both design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_c2c_backward_transposed_both,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2c_backward_transposed_both )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
     using suzerain::underling::transposed::long_n0;
 
@@ -893,6 +889,8 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0 )
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0_transposed_long_n2 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
 
     // Long in n0, transform a single pencil
@@ -930,14 +928,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0_transposed_long_n2 )
     test_c2r(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n2);
 }
 
-// FIXME Transforming n0 when transposed_long_n0 design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_c2r_simple_n0_transposed_long_n0,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0_transposed_long_n0 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n0;
 
     // Long in n0, transform a single pencil
@@ -975,14 +969,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0_transposed_long_n0 )
     test_c2r(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n0);
 }
 
-// FIXME Transforming n0 when transposed_both design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_c2r_simple_n0_transposed_long_both,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n0_transposed_long_both )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
     using suzerain::underling::transposed::long_n0;
 
@@ -1213,14 +1203,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2 )
     test_c2r(MPI_COMM_WORLD, 3, 2, 6, 6, 2);
 }
 
-// FIXME Transforming n2 when transposed_long_n2 design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_c2r_simple_n2_transposed_long_n2,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2_transposed_long_n2 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
 
     // Long in n2, transform a single pencil
@@ -1297,14 +1283,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2_transposed_long_n0 )
     test_c2r(MPI_COMM_WORLD, 3, 2, 6, 6, 2, long_n0);
 }
 
-// FIXME Transforming n2 when transposed_both design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_c2r_simple_n2_transposed_both,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_simple_n2_transposed_both )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
     using suzerain::underling::transposed::long_n0;
 
@@ -1576,14 +1558,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n0_transposed_long_n2 )
     test_r2c(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n2);
 }
 
-// FIXME Transforming n0 when transposed_long_n0 design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_r2c_simple_n0_transposed_long_n0,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n0_transposed_long_n0 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n0;
 
     // Long in n0, transform a single pencil
@@ -1621,14 +1599,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n0_transposed_long_n0 )
     test_r2c(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n0);
 }
 
-// FIXME Transforming n0 when transposed_both design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_r2c_simple_n0_transposed_both,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n0_transposed_both )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
     using suzerain::underling::transposed::long_n0;
 
@@ -1859,14 +1833,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n2 )
     test_r2c(MPI_COMM_WORLD, 3, 2, 6, 6, 2);
 }
 
-// FIXME Transforming n2 when transposed_long_n2 design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_r2c_simple_n2_transposed_long_n2,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n2_transposed_long_n2 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
 
     // Long in n2, transform a single pencil
@@ -1943,14 +1913,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n2_transposed_long_n0 )
     test_r2c(MPI_COMM_WORLD, 3, 2, 6, 6, 2, long_n0);
 }
 
-// FIXME Transforming n2 when transposed_both design problem
-// Email currently out to FFTW folks to get clarification: 20100218
-// Problem stems from FFTW in-place transpose API issues
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(
-        underling_fft_r2c_simple_n2_transposed_both,
-        1);
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_simple_n2_transposed_both )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
     using suzerain::underling::transposed::long_n0;
 
