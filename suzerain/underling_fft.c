@@ -460,15 +460,8 @@ underling_fft_plan_create_c2c_internal(
         }
     }
 
-    // Prepare the reordering plan for the output data
-    fftw_plan plan_postorder = NULL;
-    if (output.order[2] == long_ni) {
-        plan_postorder = underling_fftw_plan_nop();
-    } else {
-        SUZERAIN_ERROR_NULL(
-                "transformed direction not long: output.order[2] != long_ni",
-                SUZERAIN_ESANITY);
-    }
+    // There is never a reordering plan for the output data in the C2C case.
+    const fftw_plan plan_postorder = underling_fftw_plan_nop();
 
     // Create and initialize the plan workspace
     underling_fft_plan f = calloc(1, sizeof(struct underling_fft_plan_s));
