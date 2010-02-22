@@ -1007,7 +1007,7 @@ void transform_c2c(
                 detail::complex_copy());
         }
 
-        // Pull the strings!  Pull the strings!
+        // Pull the string!  Pull the string!
         TransformTraits::execute_plan(plan.get());
 
         // Obtain index for the current output pencil's starting position
@@ -1319,7 +1319,7 @@ void forward_r2c(
             }
         }
 
-        // Pull the strings!  Pull the strings!
+        // Pull the string!  Pull the string!
         transform_traits::execute_plan(plan.get());
 
         // Obtain index for the current output pencil's starting position
@@ -1522,7 +1522,7 @@ void backward_c2r(
             }
         }
 
-        // Pull the strings!  Pull the strings!
+        // Pull the string!  Pull the string!
         transform_traits::execute_plan(plan.get());
 
         // Obtain index for the current output pencil's starting position
