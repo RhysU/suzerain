@@ -424,8 +424,8 @@ underling_fft_plan_create_c2c_internal(
     // Determine when if/when we reorder relative to the FFT itself
     // Do so by maintaining pointers to the relevant information
     const underling_fft_extents *reorder_in, *reorder_out, *transform;
-    const int input_is_long  = input.order[2]  == long_ni;
-    const int output_is_long = output.order[2] == long_ni;
+    const int input_is_long  = (input.order[2]  == long_ni);
+    const int output_is_long = (output.order[2] == long_ni);
     if (input_is_long) {
         transform   = &input;  // First, transform the input in-place
         reorder_in  = &input;  // Then reorder the transformed data...
@@ -448,6 +448,7 @@ underling_fft_plan_create_c2c_internal(
     fftw_plan plan_fft = NULL;
     {
         // Transform the long dimension given by transform->order[2]
+        assert(transform->order[2] == long_ni);
         const fftw_iodim dims[] = {
             transform->size[transform->order[2]],
             transform->stride[transform->order[2]],
@@ -530,16 +531,15 @@ underling_fft_plan_create_c2r_backward(
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
+    underling_extents e = underling_local_extents(problem, long_ni);
 
-    // Prepare the input data layout based on the provided underling_problem
     const underling_fft_extents input
-        = create_underling_fft_extents_for_complex(
-                underling_local_extents(problem, long_ni), long_ni);
+        = create_underling_fft_extents_for_complex(e, long_ni);
 
-    // Prepare the input data layout based on the provided underling_problem
+    adjust_for_fast_stride_in_long_direction(&e, long_ni);
+
     const underling_fft_extents output
-        = create_underling_fft_extents_for_real(
-                underling_local_extents(problem, long_ni), long_ni);
+        = create_underling_fft_extents_for_real(e, long_ni);
 
     return underling_fft_plan_create_c2r_backward_internal(
             long_ni, data, fftw_rigor_flags, input, output);
@@ -591,40 +591,33 @@ underling_fft_plan_create_c2r_backward_internal(
         }
     }
 
-    // We transform the long dimension given by output.order[2]
-    // The transform is purely in place.
+    // We transform in-place the dimension given by long_ni.
     fftw_plan plan_fft = NULL;
     {
         const fftw_iodim dims[] = {
             {
-                output.size[output.order[2]],
-                input.stride[output.order[2]], // N.B. input
-                output.stride[output.order[2]]
+                output.size[long_ni],
+                input.stride[long_ni], // N.B. input
+                output.stride[long_ni]
             }
         };
         const int rank = sizeof(dims)/sizeof(dims[0]);
 
-        const fftw_iodim howmany_dims[] = {
-            {
-                output.size[output.order[4]],
-                output.stride[output.order[4]],
-                output.stride[output.order[4]]
-            },
-            {
-                output.size[output.order[3]],
-                output.stride[output.order[3]],
-                output.stride[output.order[3]]
-            },
-            {
-                output.size[output.order[1]],
-                output.stride[output.order[1]],
-                output.stride[output.order[1]]
-            }
-        };
-        const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
+        const int howmany_rank = 3;       // Loop over other directions
+        fftw_iodim howmany_dims[howmany_rank];
+        int j = 0;
+        for (const int *oo = output.order+4; oo >= output.order+1; --oo) {
+            if (*oo == long_ni) continue; // Skip transformed direction
+            assert(j < sizeof(howmany_dims)/sizeof(howmany_dims[0]));
+            howmany_dims[j].n  = output.size[*oo];
+            howmany_dims[j].is = output.stride[*oo];
+            howmany_dims[j].os = output.stride[*oo];
+            ++j;
+        }
+        assert(j == sizeof(howmany_dims)/sizeof(howmany_dims[0]));
 
         underling_real * const ri = data;
-        underling_real * const ii = data + output.stride[output.order[2]];
+        underling_real * const ii = data + output.stride[long_ni];
         underling_real * const out = data;
 
         plan_fft = fftw_plan_guru_split_dft_c2r(rank, dims,
@@ -666,15 +659,15 @@ underling_fft_plan_create_r2c_forward(
         underling_real * data,
         unsigned fftw_rigor_flags)
 {
-    // Prepare the input data layout based on the provided underling_problem
-    const underling_fft_extents input
-        = create_underling_fft_extents_for_real(
-                underling_local_extents(problem, long_ni), long_ni);
+    underling_extents e = underling_local_extents(problem, long_ni);
 
-    // Prepare the input data layout based on the provided underling_problem
+    const underling_fft_extents input
+        = create_underling_fft_extents_for_real(e, long_ni);
+
+    adjust_for_fast_stride_in_long_direction(&e, long_ni);
+
     const underling_fft_extents output
-        = create_underling_fft_extents_for_complex(
-                underling_local_extents(problem, long_ni), long_ni);
+        = create_underling_fft_extents_for_complex(e, long_ni);
 
     return underling_fft_plan_create_r2c_forward_internal(
             long_ni, data, fftw_rigor_flags, input, output);
@@ -723,11 +716,13 @@ underling_fft_plan_create_r2c_forward_internal(
         int j = 0;
         for (const int *io = input.order+4; io >= input.order+1; --io) {
             if (*io == long_ni) continue; // Skip transformed direction
+            assert(j < sizeof(howmany_dims)/sizeof(howmany_dims[0]));
             howmany_dims[j].n  = input.size[*io];
             howmany_dims[j].is = input.stride[*io];
             howmany_dims[j].os = input.stride[*io];
             ++j;
         }
+        assert(j == sizeof(howmany_dims)/sizeof(howmany_dims[0]));
 
         underling_real * const in = data;
         underling_real * const ro = data;
@@ -744,41 +739,31 @@ underling_fft_plan_create_r2c_forward_internal(
     }
 
     // Prepare the reordering plan for the output data
-    if (SUZERAIN_UNLIKELY(output.order[2] != long_ni)) {
-        SUZERAIN_ERROR_NULL(
-                "transformed direction not long: output.order[2] != long_ni",
-                SUZERAIN_ESANITY);
-    }
     fftw_plan plan_postorder = NULL;
     {
-        const fftw_iodim howmany_dims[] = {
-            {
-                output.size[output.order[4]],
-                output.stride[output.order[4]],
-                output.stride[output.order[4]]
-            },
-            {
-                output.size[output.order[3]],
-                output.stride[output.order[3]],
-                output.stride[output.order[3]]
-            },
-            {
-                output.size[output.order[2]],
-                output.stride[output.order[2]],
-                output.stride[output.order[2]]
-            },
-            {
-                output.size[output.order[0]],
-                output.stride[output.order[0]] * output.size[3],
-                output.stride[output.order[0]]
-            },
-            {
-                output.size[output.order[1]],
-                output.stride[output.order[1]] / 2,
-                output.stride[output.order[1]]
+        const int howmany_rank = sizeof(input.size)/sizeof(input.size[0]);
+        fftw_iodim howmany_dims[howmany_rank];
+        int j = 0;
+        for (const int *io = input.order+4; io >= input.order+2; --io) {
+            assert(j < sizeof(howmany_dims)/sizeof(howmany_dims[0]));
+            if (*io == long_ni) {                        // Transformed above
+                howmany_dims[j].n  = output.size[*io];
+                howmany_dims[j].is = output.stride[*io];
+                howmany_dims[j].os = output.stride[*io];
+            } else {                                     // Maybe reorder
+                howmany_dims[j].n  = output.size[*io];
+                howmany_dims[j].is = input.stride[*io];
+                howmany_dims[j].os = output.stride[*io];
             }
-        };
-        const int howmany_rank = sizeof(howmany_dims)/sizeof(howmany_dims[0]);
+            ++j;
+        }
+        assert(j == sizeof(howmany_dims)/sizeof(howmany_dims[0]) - 2);
+        howmany_dims[3].n  = output.size[4];
+        howmany_dims[3].is = output.stride[4] * output.size[3];
+        howmany_dims[3].os = output.stride[4];
+        howmany_dims[4].n  = output.size[3];
+        howmany_dims[4].is = output.stride[3] / 2;
+        howmany_dims[4].os = output.stride[3];
 
         plan_postorder = fftw_plan_guru_r2r(/*rank*/0, /*dims*/NULL,
                                             howmany_rank, howmany_dims,
