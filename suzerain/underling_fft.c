@@ -751,7 +751,7 @@ underling_fft_plan_create_r2c_forward_internal(
                 howmany_dims[j].is = output.stride[*io];
                 howmany_dims[j].os = output.stride[*io];
             } else {                                     // Maybe reorder
-                howmany_dims[j].n  = output.size[*io];
+                howmany_dims[j].n  = input.size[*io];
                 howmany_dims[j].is = input.stride[*io];
                 howmany_dims[j].os = output.stride[*io];
             }
