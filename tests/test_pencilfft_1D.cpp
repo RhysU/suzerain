@@ -53,7 +53,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in,
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
     const real_type close_enough
-        = std::numeric_limits<real_type>::epsilon()*10*NR*NR;
+        = std::numeric_limits<real_type>::epsilon()*10*NR*NR*NR;
     const periodic_function<real_type,int> pf(NR, (NR+1)/2);
 
     // Load a real-valued function into the input array and transform it
@@ -130,7 +130,7 @@ void check_1D_forward_r2c(RealMultiArray &in, ComplexMultiArray &out)
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
     const real_type close_enough
-        = std::numeric_limits<real_type>::epsilon()*10*NR*NR;
+        = std::numeric_limits<real_type>::epsilon()*10*NR*NR*NR;
     const periodic_function<real_type,int> pf(NR, (NR+1)/2);
 
     // Load a real-valued function into the input array and transform it
@@ -423,7 +423,7 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
     const double close_enough
-        = std::numeric_limits<double>::epsilon()*10*NR*NR;
+        = std::numeric_limits<double>::epsilon()*10*NR*NR*NR;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
@@ -474,7 +474,7 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
     const double close_enough
-        = std::numeric_limits<double>::epsilon()*10*NR*NR;
+        = std::numeric_limits<double>::epsilon()*10*NR*NR*NR;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
@@ -523,7 +523,7 @@ void differentiate_on_forward_1D_r2c(RealMultiArray &in,
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
     const double close_enough
-        = std::numeric_limits<double>::epsilon()*10*NR*NR;
+        = std::numeric_limits<double>::epsilon()*100*NR*NR*NR;
     typedef typename RealMultiArray::element real_type;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
@@ -569,7 +569,7 @@ void differentiate_on_backward_1D_c2r(RealMultiArray &in,
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
     const double close_enough
-        = std::numeric_limits<double>::epsilon()*10*NR*NR;
+        = std::numeric_limits<double>::epsilon()*100*NR*NR*NR;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
     for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
