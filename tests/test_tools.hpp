@@ -316,7 +316,8 @@ public:
      *        frequency content.
      * @param shift Phase shift in the signal
      * @param length Domain size over which the signal is periodic
-     * @param constant The constant content of the signal
+     * @param constant The constant content of the signal and an amplitude
+     *                 factor used to scale all modes.
      */
      periodic_function(const Integer N,
                        const Integer max_mode_exclusive = -1,
@@ -382,18 +383,22 @@ FPT periodic_function<FPT,Integer>::physical(
         switch (derivative % 4) {
             case 0:
                 retval +=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * constant
                           * sin(i*(2.0*M_PI/length)*xi + shift);
                 break;
             case 1:
                 retval +=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * constant
                           * cos(i*(2.0*M_PI/length)*xi + shift);
                 break;
             case 2:
                 retval -=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * constant
                           * sin(i*(2.0*M_PI/length)*xi + shift);
                 break;
             case 3:
                 retval -=   i * pow(i*(2.0*M_PI/length), derivative)
+                          * constant
                           * cos(i*(2.0*M_PI/length)*xi + shift);
                 break;
         }
@@ -412,7 +417,7 @@ typename std::complex<FPT> periodic_function<FPT,Integer>::wave(
     complex_type retval;
     if (i == 0) {
         if (i < max_mode_exclusive) {
-            retval = complex_type(constant, 0);
+            retval = complex_type(1, 0);
         }
     } else if (i < (N/2)) {
         if (i < max_mode_exclusive) {
@@ -431,6 +436,7 @@ typename std::complex<FPT> periodic_function<FPT,Integer>::wave(
             retval = complex_type( (N-i)*sin(shift)/2, +(N-i)*cos(shift)/2 );
         }
     }
+    retval *= constant;
 
     for (int j = 0; j < derivative; ++j) {
         retval *= complex_type(0, 2*M_PI/length);
