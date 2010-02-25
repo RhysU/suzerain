@@ -862,10 +862,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_n0_simple )
 
     // Long in n0, transform multiple pencils
     for (int howmany = 2; howmany < 8; howmany += 2) {
-        test_c2r(MPI_COMM_WORLD, 3, 2, 2, howmany, 0);
-        test_c2r(MPI_COMM_WORLD, 4, 2, 2, howmany, 0);
+        test_c2r(MPI_COMM_WORLD, 3, 2, 3, howmany, 0);
+        test_c2r(MPI_COMM_WORLD, 4, 3, 2, howmany, 0);
         test_c2r(MPI_COMM_WORLD, 5, 2, 2, howmany, 0);
-        test_c2r(MPI_COMM_WORLD, 6, 2, 2, howmany, 0);
+        test_c2r(MPI_COMM_WORLD, 6, 3, 3, howmany, 0);
     }
 }
 
@@ -881,10 +881,10 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_n1_simple )
 
     // Long in n1, transform multiple pencils
     for (int howmany = 2; howmany < 8; howmany += 2) {
-        test_c2r(MPI_COMM_WORLD, 2, 3, 2, howmany, 1);
-        test_c2r(MPI_COMM_WORLD, 2, 4, 2, howmany, 1);
+        test_c2r(MPI_COMM_WORLD, 2, 3, 3, howmany, 1);
+        test_c2r(MPI_COMM_WORLD, 3, 4, 2, howmany, 1);
         test_c2r(MPI_COMM_WORLD, 2, 5, 2, howmany, 1);
-        test_c2r(MPI_COMM_WORLD, 2, 6, 2, howmany, 1);
+        test_c2r(MPI_COMM_WORLD, 3, 6, 3, howmany, 1);
     }
 }
 
