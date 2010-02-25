@@ -172,7 +172,7 @@ underling_fftw_plan_nop()
                                             /*kind*/NULL,
                                             /*flags*/0);
     if (SUZERAIN_UNLIKELY(nop_plan == NULL)) {
-        SUZERAIN_ERROR_NULL("FFTW returned a NULL NOP plan", SUZERAIN_ESANITY);
+        SUZERAIN_ERROR_NULL("FFTW returned NULL NOP plan", SUZERAIN_ESANITY);
     }
     return nop_plan;
 }
@@ -197,7 +197,7 @@ underling_fftw_plan_reorder_complex(
             NULL, FFTW_ESTIMATE);
 
     if (SUZERAIN_UNLIKELY(retval == NULL)) {
-        SUZERAIN_ERROR_NULL("FFTW returned a NULL reorder_complex plan",
+        SUZERAIN_ERROR_NULL("FFTW returned NULL reorder_complex plan",
                 SUZERAIN_ESANITY);
     }
 
@@ -489,7 +489,7 @@ underling_fft_plan_create_c2c_internal(
                 ri, ii, ro, io, fftw_rigor_flags);
 
         if (SUZERAIN_UNLIKELY(plan_fft == NULL)) {
-            SUZERAIN_ERROR_NULL("FFTW returned a NULL FFT plan",
+            SUZERAIN_ERROR_NULL("FFTW returned NULL FFT plan",
                     SUZERAIN_ESANITY);
         }
     }
@@ -540,6 +540,15 @@ underling_fft_plan_create_c2r_backward(
 
     const underling_fft_extents output
         = create_underling_fft_extents_for_real(e, long_ni);
+
+    // TODO Remove this restriction; Requires smartening up the reordering.
+    if (SUZERAIN_UNLIKELY(input.order[2] != long_ni)) {
+        SUZERAIN_ERROR_NULL(
+                "Creation of c2r_backward plans in non-stride one directions"
+                " is unavailable.  Check the UNDERLING_TRANSPOSED_LONG_N{0,2}"
+                " flags provided when creating the underling_problem.",
+                SUZERAIN_ESANITY);
+    }
 
     return underling_fft_plan_create_c2r_backward_internal(
             long_ni, data, fftw_rigor_flags, input, output);
@@ -592,7 +601,8 @@ underling_fft_plan_create_c2r_backward_internal(
                                            data, data,
                                            /*kind*/NULL, fftw_rigor_flags);
         if (SUZERAIN_UNLIKELY(plan_preorder == NULL)) {
-            SUZERAIN_ERROR_NULL("FFTW returned a NULL preorder plan",
+            SUZERAIN_ERROR_NULL(
+                    "FFTW returned NULL c2r_backward preorder plan",
                     SUZERAIN_ESANITY);
         }
     }
@@ -635,7 +645,7 @@ underling_fft_plan_create_c2r_backward_internal(
                                                 ri, ii, out,
                                                 fftw_rigor_flags);
         if (SUZERAIN_UNLIKELY(plan_fft == NULL)) {
-            SUZERAIN_ERROR_NULL("FFTW returned a NULL FFT plan",
+            SUZERAIN_ERROR_NULL("FFTW returned NULL c2r_backward FFT plan",
                     SUZERAIN_ESANITY);
         }
     }
@@ -670,7 +680,8 @@ underling_fft_plan_create_c2r_backward_internal(
                                            data, data,
                                            /*kind*/NULL, fftw_rigor_flags);
         if (SUZERAIN_UNLIKELY(plan_postorder == NULL)) {
-            SUZERAIN_ERROR_NULL("FFTW returned a NULL postorder plan",
+            SUZERAIN_ERROR_NULL(
+                    "FFTW returned NULL c2r_backward postorder plan",
                     SUZERAIN_ESANITY);
         }
     }
@@ -710,6 +721,15 @@ underling_fft_plan_create_r2c_forward(
 
     const underling_fft_extents output
         = create_underling_fft_extents_for_complex(e, long_ni);
+
+    // TODO Remove this restriction; Requires smartening up the reordering.
+    if (SUZERAIN_UNLIKELY(input.order[2] != long_ni)) {
+        SUZERAIN_ERROR_NULL(
+                "Creation of c2r_backward plans in non-stride one directions"
+                " is unavailable.  Check the UNDERLING_TRANSPOSED_LONG_N{0,2}"
+                " flags provided when creating the underling_problem.",
+                SUZERAIN_ESANITY);
+    }
 
     return underling_fft_plan_create_r2c_forward_internal(
             long_ni, data, fftw_rigor_flags, input, output);
@@ -775,7 +795,7 @@ underling_fft_plan_create_r2c_forward_internal(
                                                 in, ro, io,
                                                 fftw_rigor_flags);
         if (SUZERAIN_UNLIKELY(plan_fft == NULL)) {
-            SUZERAIN_ERROR_NULL("FFTW returned a NULL FFT plan",
+            SUZERAIN_ERROR_NULL("FFTW returned NULL r2c_forward FFT plan",
                     SUZERAIN_ESANITY);
         }
     }
@@ -810,7 +830,8 @@ underling_fft_plan_create_r2c_forward_internal(
                                             data, data,
                                             /*kind*/NULL, fftw_rigor_flags);
         if (SUZERAIN_UNLIKELY(plan_postorder == NULL)) {
-            SUZERAIN_ERROR_NULL("FFTW returned a NULL postorder plan",
+            SUZERAIN_ERROR_NULL(
+                    "FFTW returned NULL r2c_forward postorder plan",
                     SUZERAIN_ESANITY);
         }
     }
