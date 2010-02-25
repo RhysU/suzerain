@@ -127,18 +127,18 @@ public:
     }
 
     /** @see underling_fft_local_input */
-    void local_input(int *start  = NULL,
-                     int *size   = NULL,
-                     int *stride = NULL,
-                     int *order  = NULL) const {
+    int local_input(int *start  = NULL,
+                    int *size   = NULL,
+                    int *stride = NULL,
+                    int *order  = NULL) const {
         return underling_fft_local_input(plan_, start, size, stride, order);
     }
 
     /** @see underling_fft_local_output */
-    void local_output(int *start  = NULL,
-                      int *size   = NULL,
-                      int *stride = NULL,
-                      int *order  = NULL) const {
+    int local_output(int *start  = NULL,
+                     int *size   = NULL,
+                     int *stride = NULL,
+                     int *order  = NULL) const {
         return underling_fft_local_output(plan_, start, size, stride, order);
     }
 
