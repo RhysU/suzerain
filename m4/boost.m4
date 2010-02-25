@@ -21,10 +21,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# serial 10
-# Original sources can be found at http://repo.or.cz/w/boost.m4.git
+m4_define([_BOOST_SERIAL], [m4_translit([
+# serial 12
+], [#
+], [])])
+
+# Original sources can be found at http://github.com/tsuna/boost.m4
 # You can fetch the latest version of the script by doing:
-#   wget 'http://repo.or.cz/w/boost.m4.git?a=blob_plain;f=build-aux/boost.m4;hb=HEAD' -O boost.m4
+#   wget http://github.com/tsuna/boost.m4/raw/master/build-aux/boost.m4
 
 # ------ #
 # README #
@@ -37,7 +41,7 @@
 # your configure so that users can specify non standard locations.
 # If the user's environment contains BOOST_ROOT and --with-boost was not
 # specified, --with-boost=$BOOST_ROOT is implicitly used.
-# For more README and documentation, go to http://repo.or.cz/w/boost.m4.git
+# For more README and documentation, go to http://github.com/tsuna/boost.m4
 # Note: THESE MACROS ASSUME THAT YOU USE LIBTOOL.  If you don't, don't worry,
 # simply read the README, it will show you what to do step by step.
 
@@ -56,31 +60,39 @@ AC_REQUIRE([AC_PROG_SED])dnl
 AC_LANG_CONFTEST([AC_LANG_SOURCE([[$2]])])
 AS_IF([dnl eval is necessary to expand ac_cpp.
 dnl Ultrix and Pyramid sh refuse to redirect output of eval, so use subshell.
+dnl Beware of Windows end-of-lines, for instance if we are running
+dnl some Windows programs under Wine.  In that case, boost/version.hpp
+dnl is certainly using "\r\n", but the regular Unix shell will only
+dnl strip `\n' with backquotes, not the `\r'.  This results in
+dnl boost_cv_lib_version='1_37\r' for instance, which breaks
+dnl everything else.
 dnl Cannot use 'dnl' after [$4] because a trailing dnl may break AC_CACHE_CHECK
 (eval "$ac_cpp conftest.$ac_ext") 2>&AS_MESSAGE_LOG_FD |
+  tr -d '\r' |
   $SED -n -e "$1" >conftest.i 2>&1],
   [$3],
   [$4])
-rm -f conftest*
+rm -rf conftest*
 ])# AC_EGREP_CPP
 
 
 
 # BOOST_REQUIRE([VERSION], [ACTION-IF-NOT-FOUND])
-# ------------------------
+# -----------------------------------------------
 # Look for Boost.  If version is given, it must either be a literal of the form
 # "X.Y.Z" where X, Y and Z are integers (the ".Z" part being optional) or a
 # variable "$var".
 # Defines the value BOOST_CPPFLAGS.  This macro only checks for headers with
-# the required version, it does not check for any of the Boost libraries.  On
-# success, defines HAVE_BOOST.  On failure, calls the optional
+# the required version, it does not check for any of the Boost libraries.
+# On # success, defines HAVE_BOOST.  On failure, calls the optional
 # ACTION-IF-NOT-FOUND action if one was supplied.
-# Otherwise it aborts with an error message.
+# Otherwise aborts with an error message.
 AC_DEFUN([BOOST_REQUIRE],
-[
+[AC_REQUIRE([AC_PROG_CXX])dnl
 AC_REQUIRE([AC_PROG_GREP])dnl
+echo "$as_me: this is boost.m4[]_BOOST_SERIAL" >&AS_MESSAGE_LOG_FD
 boost_save_IFS=$IFS
-boost_version_req="$1"
+boost_version_req=$1
 IFS=.
 set x $boost_version_req 0 0 0
 IFS=$boost_save_IFS
@@ -133,13 +145,9 @@ m4_pattern_allow([^BOOST_VERSION$])dnl
     # searching $boost_dir" itself.  Entries are whitespace separated.
     #
     # I didn't indent this loop on purpose (to avoid over-indented code)
-    boost_layout_system_search_list=`                         \
-          (                                                   \
-                 cd "$boost_dir" 2>/dev/null                  \
-              && ls -1 | "${GREP}" ^boost- | sort -rn -t- -k2 \
-          )                                                   \
-        ; echo .                                              \
-        `
+    boost_layout_system_search_list=`cd "$boost_dir" 2>/dev/null \
+        && ls -1 | "${GREP}" '^boost-' | sort -rn -t- -k2 \
+        && echo .`
     for boost_inc in $boost_layout_system_search_list
     do
       if test x"$boost_inc" != x.; then
@@ -147,7 +155,21 @@ m4_pattern_allow([^BOOST_VERSION$])dnl
       else
         boost_inc="$boost_dir" # Uses sentinel in boost_layout_system_search_list
       fi
-      test x"$boost_inc" != x && CPPFLAGS="$CPPFLAGS -I$boost_inc"
+      if test x"$boost_inc" != x; then
+        # We are going to check whether the version of Boost installed
+        # in $boost_inc is usable by running a compilation that
+        # #includes it.  But if we pass a -I/some/path in which Boost
+        # is not installed, the compiler will just skip this -I and
+        # use other locations (either from CPPFLAGS, or from its list
+        # of system include directories).  As a result we would use
+        # header installed on the machine instead of the /some/path
+        # specified by the user.  So in that precise case (trying
+        # $boost_inc), make sure the version.hpp exists.
+        #
+        # Use test -e as there can be symlinks.
+        test -e "$boost_inc/boost/version.hpp" || continue
+        CPPFLAGS="$CPPFLAGS -I$boost_inc"
+      fi
       AC_COMPILE_IFELSE([], [boost_cv_inc_path=yes], [boost_cv_version=no])
       if test x"$boost_cv_inc_path" = xyes; then
         if test x"$boost_inc" != x; then
@@ -160,18 +182,26 @@ m4_pattern_allow([^BOOST_VERSION$])dnl
 AC_LANG_POP([C++])dnl
     ])
     case $boost_cv_inc_path in #(
-      no)   AC_MSG_NOTICE([cannot find Boost headers version >= $boost_version_req])
-            m4_default([$2], AC_MSG_ERROR([unable to satisfy Boost version requirement]))
-            ;;#(
-      yes)  BOOST_CPPFLAGS=
-            ;;#(
-      *)    AC_SUBST([BOOST_CPPFLAGS], ["-I$boost_cv_inc_path"])
-            ;;
+      no)
+        boost_errmsg="cannot find Boost headers version >= $boost_version_req"
+        m4_if([$2], [],  [AC_MSG_ERROR([$boost_errmsg])],
+                        [AC_MSG_NOTICE([$boost_errmsg])])
+        $2
+        ;;#(
+      yes)
+        BOOST_CPPFLAGS=
+        ;;#(
+      *)
+        AC_SUBST([BOOST_CPPFLAGS], ["-I$boost_cv_inc_path"])
+        ;;
     esac
     case $boost_cv_inc_path in #(
-      no)   ;;#(
-      *)    AC_DEFINE([HAVE_BOOST], [1],
-                [Define if requested minimum BOOST version is satisfied])
+      no)
+        ;;#(
+      *)
+        AC_DEFINE([HAVE_BOOST], [1],
+                  [Defined if the requested minimum BOOST version is satisfied])
+        ;;
     esac
   AC_CACHE_CHECK([for Boost's header version],
     [boost_cv_lib_version],
@@ -184,7 +214,7 @@ boost-lib-version = BOOST_LIB_VERSION],
     boost_major_version=`echo "$boost_cv_lib_version" | sed 's/_//;s/_.*//'`
     case $boost_major_version in #(
       '' | *[[!0-9]]*)
-        AC_MSG_ERROR([Invalid value: boost_major_version=$boost_major_version])
+        AC_MSG_ERROR([invalid value: boost_major_version=$boost_major_version])
         ;;
     esac
 CPPFLAGS=$boost_save_CPPFLAGS
@@ -205,33 +235,31 @@ AC_DEFUN([BOOST_STATIC],
 # --------------------------------------------------------------------------
 # Wrapper around AC_CHECK_HEADER for Boost headers.  Useful to check for
 # some parts of the Boost library which are only made of headers and don't
-# require linking (such as Boost.Foreach).  Will only succeed if BOOST_REQUIRE
-# succeeds in finding the requested minimum version.
+# require linking (such as Boost.Foreach).
 #
-# Default ACTION-IF-NOT-FOUND: Fail with a fatal error if the requested
-# Boost version was found but the header was not.  Otherwise, notify
-# the user that the test is being skipped and continue.
+# Default ACTION-IF-NOT-FOUND: Fail with a fatal error unless Boost couldn't be
+# found in the first place, in which case by default a notice is issued to the
+# user.  Presumably if we haven't died already it's because it's OK to not have
+# Boost, which is why only a notice is issued instead of a hard error.
 #
 # Default ACTION-IF-FOUND: define the preprocessor symbol HAVE_<HEADER-NAME> in
 # case of success # (where HEADER-NAME is written LIKE_THIS, e.g.,
 # HAVE_BOOST_FOREACH_HPP).
 AC_DEFUN([BOOST_FIND_HEADER],
 [AC_REQUIRE([BOOST_REQUIRE])dnl
+if test x"$boost_cv_inc_path" = xno; then
+  m4_default([$2], [AC_MSG_NOTICE([Boost not available, not searching for $1])])
+else
 AC_LANG_PUSH([C++])dnl
 boost_save_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-case $boost_cv_inc_path in #(
-    no) m4_default([$2], [AC_MSG_NOTICE(
-            [could not find requested Boost version; skipping looking for $1])])
-        ;;#(
-    *)  AC_CHECK_HEADER([$1],
-            [m4_default([$3], [AC_DEFINE(AS_TR_CPP([HAVE_$1]), [1],
-                                        [Define to 1 if you have <$1>])])],
-            [m4_default([$2], [AC_MSG_ERROR([cannot find $1])])])
-        ;;
-esac
+AC_CHECK_HEADER([$1],
+  [m4_default([$3], [AC_DEFINE(AS_TR_CPP([HAVE_$1]), [1],
+                               [Define to 1 if you have <$1>])])],
+  [m4_default([$2], [AC_MSG_ERROR([cannot find $1])])])
 CPPFLAGS=$boost_save_CPPFLAGS
 AC_LANG_POP([C++])dnl
+fi
 ])# BOOST_FIND_HEADER
 
 
@@ -257,10 +285,14 @@ AC_LANG_POP([C++])dnl
 # ...  If you want to make sure you have a specific version of Boost
 # (eg, >= 1.33) you *must* invoke BOOST_REQUIRE before this macro.
 AC_DEFUN([BOOST_FIND_LIB],
-[AC_REQUIRE([_BOOST_FIND_COMPILER_TAG])dnl
-AC_REQUIRE([BOOST_REQUIRE])dnl
+[AC_REQUIRE([BOOST_REQUIRE])dnl
+AC_REQUIRE([_BOOST_FIND_COMPILER_TAG])dnl
 AC_REQUIRE([BOOST_STATIC])dnl
 AC_REQUIRE([_BOOST_GUESS_WHETHER_TO_USE_MT])dnl
+if test x"$boost_cv_inc_path" = xno; then
+  AC_MSG_NOTICE([Boost not available, not searching for the Boost $1 library])
+else
+dnl The else branch is huge and wasn't intended on purpose.
 AC_LANG_PUSH([C++])dnl
 AS_VAR_PUSHDEF([Boost_lib], [boost_cv_lib_$1])dnl
 AS_VAR_PUSHDEF([Boost_lib_LDFLAGS], [boost_cv_lib_$1_LDFLAGS])dnl
@@ -268,129 +300,123 @@ AS_VAR_PUSHDEF([Boost_lib_LIBS], [boost_cv_lib_$1_LIBS])dnl
 BOOST_FIND_HEADER([$3])
 boost_save_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-case $boost_cv_inc_path in #(
-    no) m4_default([$2], [AC_MSG_NOTICE(
-            [could not find requested Boost version; skipping looking for $1 library])])
-        ;;#(
-    *)
-    # Now let's try to find the library.  The algorithm is as follows: first look
-    # for a given library name according to the user's PREFERRED-RT-OPT.  For each
-    # library name, we prefer to use the ones that carry the tag (toolset name).
-    # Each library is searched through the various standard paths were Boost is
-    # usually installed.  If we can't find the standard variants, we try to
-    # enforce -mt (for instance on MacOSX, libboost_threads.dylib doesn't exist
-    # but there's -obviously- libboost_threads-mt.dylib).
-    AC_CACHE_CHECK([for the Boost $1 library], [Boost_lib],
-    [Boost_lib=no
-    case "$2" in #(
-        mt | mt-) boost_mt=-mt; boost_rtopt=;; #(
-        mt* | mt-*) boost_mt=-mt; boost_rtopt=`expr "X$2" : 'Xmt-*\(.*\)'`;; #(
-        *) boost_mt=; boost_rtopt=$2;;
+# Now let's try to find the library.  The algorithm is as follows: first look
+# for a given library name according to the user's PREFERRED-RT-OPT.  For each
+# library name, we prefer to use the ones that carry the tag (toolset name).
+# Each library is searched through the various standard paths were Boost is
+# usually installed.  If we can't find the standard variants, we try to
+# enforce -mt (for instance on MacOSX, libboost_threads.dylib doesn't exist
+# but there's -obviously- libboost_threads-mt.dylib).
+AC_CACHE_CHECK([for the Boost $1 library], [Boost_lib],
+  [Boost_lib=no
+  case "$2" in #(
+    mt | mt-) boost_mt=-mt; boost_rtopt=;; #(
+    mt* | mt-*) boost_mt=-mt; boost_rtopt=`expr "X$2" : 'Xmt-*\(.*\)'`;; #(
+    *) boost_mt=; boost_rtopt=$2;;
+  esac
+  if test $enable_static_boost = yes; then
+    boost_rtopt="s$boost_rtopt"
+  fi
+  # Find the proper debug variant depending on what we've been asked to find.
+  case $boost_rtopt in #(
+    *d*) boost_rt_d=$boost_rtopt;; #(
+    *[[sgpn]]*) # Insert the `d' at the right place (in between `sg' and `pn')
+      boost_rt_d=`echo "$boost_rtopt" | sed 's/\(s*g*\)\(p*n*\)/\1\2/'`;; #(
+    *) boost_rt_d='-d';;
+  esac
+  # If the PREFERRED-RT-OPT are not empty, prepend a `-'.
+  test -n "$boost_rtopt" && boost_rtopt="-$boost_rtopt"
+  $boost_guess_use_mt && boost_mt=-mt
+  # Look for the abs path the static archive.
+  # $libext is computed by Libtool but let's make sure it's non empty.
+  test -z "$libext" &&
+    AC_MSG_ERROR([the libext variable is empty, did you invoke Libtool?])
+  boost_save_ac_objext=$ac_objext
+  # Generate the test file.
+  AC_LANG_CONFTEST([AC_LANG_PROGRAM([#include <$3>
+$5], [$4])])
+dnl Optimization hacks: compiling C++ is slow, especially with Boost.  What
+dnl we're trying to do here is guess the right combination of link flags
+dnl (LIBS / LDFLAGS) to use a given library.  This can take several
+dnl iterations before it succeeds and is thus *very* slow.  So what we do
+dnl instead is that we compile the code first (and thus get an object file,
+dnl typically conftest.o).  Then we try various combinations of link flags
+dnl until we succeed to link conftest.o in an executable.  The problem is
+dnl that the various TRY_LINK / COMPILE_IFELSE macros of Autoconf always
+dnl remove all the temporary files including conftest.o.  So the trick here
+dnl is to temporarily change the value of ac_objext so that conftest.o is
+dnl preserved accross tests.  This is obviously fragile and I will burn in
+dnl hell for not respecting Autoconf's documented interfaces, but in the
+dnl mean time, it optimizes the macro by a factor of 5 to 30.
+dnl Another small optimization: the first argument of AC_COMPILE_IFELSE left
+dnl empty because the test file is generated only once above (before we
+dnl start the for loops).
+  AC_COMPILE_IFELSE([],
+    [ac_objext=do_not_rm_me_plz],
+    [AC_MSG_ERROR([cannot compile a test that uses Boost $1])])
+  ac_objext=$boost_save_ac_objext
+  boost_failed_libs=
+# Don't bother to ident the 6 nested for loops, only the 2 innermost ones
+# matter.
+for boost_tag_ in -$boost_cv_lib_tag ''; do
+for boost_ver_ in -$boost_cv_lib_version ''; do
+for boost_mt_ in $boost_mt -mt ''; do
+for boost_rtopt_ in $boost_rtopt '' -d; do
+  for boost_lib in \
+    boost_$1$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
+    boost_$1$boost_tag_$boost_rtopt_$boost_ver_ \
+    boost_$1$boost_tag_$boost_mt_$boost_ver_ \
+    boost_$1$boost_tag_$boost_ver_
+  do
+    # Avoid testing twice the same lib
+    case $boost_failed_libs in #(
+      *@$boost_lib@*) continue;;
     esac
-    if test $enable_static_boost = yes; then
-        boost_rtopt="s$boost_rtopt"
-    fi
-    # Find the proper debug variant depending on what we've been asked to find.
-    case $boost_rtopt in #(
-        *d*) boost_rt_d=$boost_rtopt;; #(
-        *[[sgpn]]*) # Insert the `d' at the right place (in between `sg' and `pn')
-        boost_rt_d=`echo "$boost_rtopt" | sed 's/\(s*g*\)\(p*n*\)/\1\2/'`;; #(
-        *) boost_rt_d='-d';;
-    esac
-    # If the PREFERRED-RT-OPT are not empty, prepend a `-'.
-    test -n "$boost_rtopt" && boost_rtopt="-$boost_rtopt"
-    $boost_guess_use_mt && boost_mt=-mt
-    # Look for the abs path the static archive.
-    # $libext is computed by Libtool but let's make sure it's non empty.
-    test -z "$libext" &&
-        AC_MSG_ERROR([the libext variable is empty, did you invoke Libtool?])
-    boost_save_ac_objext=$ac_objext
-    # Generate the test file.
-    AC_LANG_CONFTEST([AC_LANG_PROGRAM([#include <$3>
-    $5], [$4])])
-    dnl Optimization hacks: compiling C++ is slow, especially with Boost.  What
-    dnl we're trying to do here is guess the right combination of link flags
-    dnl (LIBS / LDFLAGS) to use a given library.  This can take several
-    dnl iterations before it succeeds and is thus *very* slow.  So what we do
-    dnl instead is that we compile the code first (and thus get an object file,
-    dnl typically conftest.o).  Then we try various combinations of link flags
-    dnl until we succeed to link conftest.o in an executable.  The problem is
-    dnl that the various TRY_LINK / COMPILE_IFELSE macros of Autoconf always
-    dnl remove all the temporary files including conftest.o.  So the trick here
-    dnl is to temporarily change the value of ac_objext so that conftest.o is
-    dnl preserved accross tests.  This is obviously fragile and I will burn in
-    dnl hell for not respecting Autoconf's documented interfaces, but in the
-    dnl mean time, it optimizes the macro by a factor of 5 to 30.
-    dnl Another small optimization: the first argument of AC_COMPILE_IFELSE left
-    dnl empty because the test file is generated only once above (before we
-    dnl start the for loops).
-    AC_COMPILE_IFELSE([],
-        [ac_objext=do_not_rm_me_plz],
-        [AC_MSG_ERROR([Cannot compile a test that uses Boost $1])])
-    ac_objext=$boost_save_ac_objext
-    boost_failed_libs=
-    # Don't bother to ident the 6 nested for loops, only the 2 innermost ones
-    # matter.
-    for boost_tag_ in -$boost_cv_lib_tag ''; do
-    for boost_ver_ in -$boost_cv_lib_version ''; do
-    for boost_mt_ in $boost_mt -mt ''; do
-    for boost_rtopt_ in $boost_rtopt '' -d; do
-    for boost_lib in \
-        boost_$1$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
-        boost_$1$boost_tag_$boost_rtopt_$boost_ver_ \
-        boost_$1$boost_tag_$boost_mt_$boost_ver_ \
-        boost_$1$boost_tag_$boost_ver_
+    # If with_boost is empty, we'll search in /lib first, which is not quite
+    # right so instead we'll try to a location based on where the headers are.
+    boost_tmp_lib=$with_boost
+    test x"$with_boost" = x && boost_tmp_lib=${boost_cv_inc_path%/include}
+    for boost_ldpath in "$boost_tmp_lib/lib" '' \
+             /opt/local/lib /usr/local/lib /opt/lib /usr/lib \
+             "$with_boost" C:/Boost/lib /lib /usr/lib64 /lib64
     do
-        # Avoid testing twice the same lib
-        case $boost_failed_libs in #(
-        *@$boost_lib@*) continue;;
-        esac
-        # If with_boost is empty, we'll search in /lib first, which is not quite
-        # right so instead we'll try to a location based on where the headers are.
-        boost_tmp_lib=$with_boost
-        test x"$with_boost" = x && boost_tmp_lib=${boost_cv_inc_path%/include}
-        for boost_ldpath in "$boost_tmp_lib/lib" '' \
-                /opt/local/lib /usr/local/lib /opt/lib /usr/lib \
-                "$with_boost" C:/Boost/lib /lib /usr/lib64 /lib64
-        do
-        test -e "$boost_ldpath" || continue
-        boost_save_LDFLAGS=$LDFLAGS
-        # Are we looking for a static library?
-        case $boost_ldpath:$boost_rtopt_ in #(
-            *?*:*s*) # Yes (Non empty boost_ldpath + s in rt opt)
-            Boost_lib_LIBS="$boost_ldpath/lib$boost_lib.$libext"
-            test -e "$Boost_lib_LIBS" || continue;; #(
-            *) # No: use -lboost_foo to find the shared library.
-            Boost_lib_LIBS="-l$boost_lib";;
-        esac
-        boost_save_LIBS=$LIBS
-        LIBS="$Boost_lib_LIBS $LIBS"
-        test x"$boost_ldpath" != x && LDFLAGS="$LDFLAGS -L$boost_ldpath"
-    dnl First argument of AC_LINK_IFELSE left empty because the test file is
-    dnl generated only once above (before we start the for loops).
-        _BOOST_AC_LINK_IFELSE([],
-                                [Boost_lib=yes], [Boost_lib=no])
-        ac_objext=$boost_save_ac_objext
-        LDFLAGS=$boost_save_LDFLAGS
-        LIBS=$boost_save_LIBS
-        if test x"$Boost_lib" = xyes; then
-            Boost_lib_LDFLAGS="-L$boost_ldpath -R$boost_ldpath"
-            break 6
-        else
-            boost_failed_libs="$boost_failed_libs@$boost_lib@"
-        fi
-        done
+      test -e "$boost_ldpath" || continue
+      boost_save_LDFLAGS=$LDFLAGS
+      # Are we looking for a static library?
+      case $boost_ldpath:$boost_rtopt_ in #(
+        *?*:*s*) # Yes (Non empty boost_ldpath + s in rt opt)
+          Boost_lib_LIBS="$boost_ldpath/lib$boost_lib.$libext"
+          test -e "$Boost_lib_LIBS" || continue;; #(
+        *) # No: use -lboost_foo to find the shared library.
+          Boost_lib_LIBS="-l$boost_lib";;
+      esac
+      boost_save_LIBS=$LIBS
+      LIBS="$Boost_lib_LIBS $LIBS"
+      test x"$boost_ldpath" != x && LDFLAGS="$LDFLAGS -L$boost_ldpath"
+dnl First argument of AC_LINK_IFELSE left empty because the test file is
+dnl generated only once above (before we start the for loops).
+      _BOOST_AC_LINK_IFELSE([],
+                            [Boost_lib=yes], [Boost_lib=no])
+      ac_objext=$boost_save_ac_objext
+      LDFLAGS=$boost_save_LDFLAGS
+      LIBS=$boost_save_LIBS
+      if test x"$Boost_lib" = xyes; then
+        Boost_lib_LDFLAGS="-L$boost_ldpath -R$boost_ldpath"
+        break 6
+      else
+        boost_failed_libs="$boost_failed_libs@$boost_lib@"
+      fi
     done
-    done
-    done
-    done
-    done
-    rm -f conftest.$ac_objext
-    ])
-    ;;
-esac
+  done
+done
+done
+done
+done
+rm -f conftest.$ac_objext
+])
 case $Boost_lib in #(
-  no) AC_MSG_ERROR([Could not find the flags to link with Boost $1])
+  no) _AC_MSG_LOG_CONFTEST
+    AC_MSG_ERROR([cannot not find the flags to link with Boost $1])
     ;;
 esac
 AC_SUBST(AS_TR_CPP([BOOST_$1_LDFLAGS]), [$Boost_lib_LDFLAGS])
@@ -400,6 +426,7 @@ AS_VAR_POPDEF([Boost_lib])dnl
 AS_VAR_POPDEF([Boost_lib_LDFLAGS])dnl
 AS_VAR_POPDEF([Boost_lib_LIBS])dnl
 AC_LANG_POP([C++])dnl
+fi
 ])# BOOST_FIND_LIB
 
 
@@ -412,7 +439,7 @@ AC_LANG_POP([C++])dnl
 # version of each library (among other things).
 
 # BOOST_ARRAY()
-# ---------------
+# -------------
 # Look for Boost.Array
 AC_DEFUN([BOOST_ARRAY],
 [BOOST_FIND_HEADER([boost/array.hpp])])
@@ -539,21 +566,26 @@ AC_DEFUN([BOOST_LAMBDA],
 
 
 # BOOST_MATH()
-# ---------------
+# ------------
 # Look for Boost.Math
+# TODO: This library isn't header-only but it comes in multiple different
+# flavors that don't play well with BOOST_FIND_LIB (e.g, libboost_math_c99,
+# libboost_math_c99f, libboost_math_c99l, libboost_math_tr1,
+# libboost_math_tr1f, libboost_math_tr1l).  This macro must be fixed to do the
+# right thing anyway.
 AC_DEFUN([BOOST_MATH],
 [BOOST_FIND_HEADER([boost/math/special_functions.hpp])])
 
 
 # BOOST_MULTIARRAY()
-# ---------------
+# ------------------
 # Look for Boost.MultiArray
 AC_DEFUN([BOOST_MULTIARRAY],
 [BOOST_FIND_HEADER([boost/multi_array.hpp])])
 
 
 # BOOST_NUMERIC_CONVERSION()
-# ------------------
+# --------------------------
 # Look for Boost.NumericConversion (policy-based numeric conversion)
 AC_DEFUN([BOOST_NUMERIC_CONVERSION],
 [BOOST_FIND_HEADER([boost/numeric/conversion/converter.hpp])
@@ -893,7 +925,8 @@ AC_CACHE_CHECK([for the toolset name used by Boost for $CXX], [boost_cv_lib_tag]
          || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw" \
     _BOOST_gcc_test(3, 4) \
     _BOOST_gcc_test(3, 3) \
-    "defined _MSC_VER && _MSC_VER >= 1400 @ vc80" \
+    "defined _MSC_VER && _MSC_VER >= 1500 @ vc90" \
+    "defined _MSC_VER && _MSC_VER == 1400 @ vc80" \
     _BOOST_gcc_test(3, 2) \
     "defined _MSC_VER && _MSC_VER == 1310 @ vc71" \
     _BOOST_gcc_test(3, 1) \
@@ -968,11 +1001,14 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 # rm -f conftest.$ac_objext in between to really different tests, otherwise
 # you will try to link a conftest.o left behind by a previous test.
 # Used to aggressively optimize BOOST_FIND_LIB (see the big comment in this
-# macro)
+# macro).
+#
+# Don't use "break" in the actions, as it would short-circuit some code
+# this macro runs after the actions.
 m4_define([_BOOST_AC_LINK_IFELSE],
 [m4_ifvaln([$1], [AC_LANG_CONFTEST([$1])])dnl
 rm -f conftest$ac_exeext
-boost_ac_ext_save=$ac_ext
+boost_save_ac_ext=$ac_ext
 boost_use_source=:
 # If we already have a .o, re-use it.  We change $ac_ext so that $ac_link
 # tries to link the existing object file instead of compiling from source.
@@ -991,6 +1027,8 @@ dnl FIXME: use AS_TEST_X instead when 2.61 is widespread enough.
          _AC_MSG_LOG_CONFTEST
        fi
        $3])
+ac_objext=$boost_save_ac_objext
+ac_ext=$boost_save_ac_ext
 dnl Delete also the IPA/IPO (Inter Procedural Analysis/Optimization)
 dnl information created by the PGI compiler (conftest_ipa8_conftest.oo),
 dnl as it would interfere with the next link command.
