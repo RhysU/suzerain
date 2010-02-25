@@ -16,7 +16,7 @@ void test_c2c_forward(const int N, const int max_mode_exclusive)
     BOOST_TEST_MESSAGE("Testing N = " << N
                        << " with max_mode_exclusive = " << max_mode_exclusive);
 
-    const double close = std::numeric_limits<double>::epsilon()*50*N*N*N;
+    const double close = std::numeric_limits<double>::epsilon()*100*N*N*N;
     typedef std::complex<double> complex_type;
     const complex_type I(0, 1);
     using boost::scoped_array;
