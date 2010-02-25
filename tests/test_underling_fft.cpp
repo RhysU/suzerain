@@ -853,112 +853,58 @@ void test_c2r(MPI_Comm comm,
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n0_simple )
 {
     // Long in n0, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 2, 0);
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 4, 0);
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 6, 0);
-
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 2, 0);
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 4, 0);
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 6, 0);
-
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 2, 0);
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 4, 0);
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 6, 0);
-
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 2, 0);
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 4, 0);
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 6, 0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 3, 1, 1, howmany, 0);
+        test_c2r(MPI_COMM_WORLD, 4, 1, 1, howmany, 0);
+        test_c2r(MPI_COMM_WORLD, 5, 1, 1, howmany, 0);
+        test_c2r(MPI_COMM_WORLD, 6, 1, 1, howmany, 0);
+    }
 
     // Long in n0, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 3, 2, 2, 2, 0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 3, 4, 0);
-    test_c2r(MPI_COMM_WORLD, 3, 3, 2, 6, 0);
-
-    test_c2r(MPI_COMM_WORLD, 4, 2, 2, 2, 0);
-    test_c2r(MPI_COMM_WORLD, 4, 2, 3, 4, 0);
-    test_c2r(MPI_COMM_WORLD, 4, 3, 2, 6, 0);
-
-    test_c2r(MPI_COMM_WORLD, 5, 2, 2, 2, 0);
-    test_c2r(MPI_COMM_WORLD, 5, 2, 3, 4, 0);
-    test_c2r(MPI_COMM_WORLD, 5, 3, 2, 6, 0);
-
-    test_c2r(MPI_COMM_WORLD, 6, 2, 2, 2, 0);
-    test_c2r(MPI_COMM_WORLD, 6, 2, 3, 4, 0);
-    test_c2r(MPI_COMM_WORLD, 6, 3, 2, 6, 0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 3, 2, 2, howmany, 0);
+        test_c2r(MPI_COMM_WORLD, 4, 2, 2, howmany, 0);
+        test_c2r(MPI_COMM_WORLD, 5, 2, 2, howmany, 0);
+        test_c2r(MPI_COMM_WORLD, 6, 2, 2, howmany, 0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n1_simple )
 {
     // Long in n1, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 2, 1);
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 4, 1);
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 6, 1);
-
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 2, 1);
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 4, 1);
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 6, 1);
-
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 2, 1);
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 4, 1);
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 6, 1);
-
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 2, 1);
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 4, 1);
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 6, 1);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 1, 3, 1, howmany, 1);
+        test_c2r(MPI_COMM_WORLD, 1, 4, 1, howmany, 1);
+        test_c2r(MPI_COMM_WORLD, 1, 5, 1, howmany, 1);
+        test_c2r(MPI_COMM_WORLD, 1, 6, 1, howmany, 1);
+    }
 
     // Long in n1, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 2, 3, 2, 2, 1);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 3, 4, 1);
-    test_c2r(MPI_COMM_WORLD, 3, 3, 2, 6, 1);
-
-    test_c2r(MPI_COMM_WORLD, 2, 4, 2, 2, 1);
-    test_c2r(MPI_COMM_WORLD, 2, 4, 3, 4, 1);
-    test_c2r(MPI_COMM_WORLD, 3, 4, 2, 6, 1);
-
-    test_c2r(MPI_COMM_WORLD, 2, 5, 2, 2, 1);
-    test_c2r(MPI_COMM_WORLD, 2, 5, 3, 4, 1);
-    test_c2r(MPI_COMM_WORLD, 3, 5, 2, 6, 1);
-
-    test_c2r(MPI_COMM_WORLD, 2, 6, 2, 2, 1);
-    test_c2r(MPI_COMM_WORLD, 2, 6, 3, 4, 1);
-    test_c2r(MPI_COMM_WORLD, 3, 6, 2, 6, 1);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 2, 3, 2, howmany, 1);
+        test_c2r(MPI_COMM_WORLD, 2, 4, 2, howmany, 1);
+        test_c2r(MPI_COMM_WORLD, 2, 5, 2, howmany, 1);
+        test_c2r(MPI_COMM_WORLD, 2, 6, 2, howmany, 1);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n2_simple )
 {
     // Long in n2, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 2, 2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 4, 2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 6, 2);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 2, 2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 4, 2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 6, 2);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 2, 2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 4, 2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 6, 2);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 2, 2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 4, 2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 6, 2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 1, 1, 3, howmany, 2);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 4, howmany, 2);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 5, howmany, 2);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 6, howmany, 2);
+    }
 
     // Long in n2, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 2, 2, 3, 2, 2);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 3, 4, 2);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 3, 6, 2);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 4, 2, 2);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 4, 4, 2);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 4, 6, 2);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 5, 2, 2);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 5, 4, 2);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 5, 6, 2);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 6, 2, 2);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 6, 4, 2);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 6, 6, 2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 2, 2, 3, howmany, 2);
+        test_c2r(MPI_COMM_WORLD, 2, 3, 4, howmany, 2);
+        test_c2r(MPI_COMM_WORLD, 3, 2, 5, howmany, 2);
+        test_c2r(MPI_COMM_WORLD, 2, 3, 6, howmany, 2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n0_transposed_long_n2 )
@@ -968,77 +914,43 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_n0_transposed_long_n2 )
     using suzerain::underling::transposed::long_n2;
 
     // Long in n0, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 2, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 4, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 6, 0, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 2, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 4, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 6, 0, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 2, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 4, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 6, 0, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 2, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 4, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 6, 0, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 3, 1, 1, howmany, 0, long_n2);
+        test_c2r(MPI_COMM_WORLD, 4, 1, 1, howmany, 0, long_n2);
+        test_c2r(MPI_COMM_WORLD, 5, 1, 1, howmany, 0, long_n2);
+        test_c2r(MPI_COMM_WORLD, 6, 1, 1, howmany, 0, long_n2);
+    }
 
     // Long in n0, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 3, 2, 2, 2, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 3, 4, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 3, 2, 6, 0, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 4, 2, 2, 2, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 4, 2, 3, 4, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 4, 3, 2, 6, 0, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 5, 2, 2, 2, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 5, 2, 3, 4, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 5, 3, 2, 6, 0, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 6, 2, 2, 2, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 6, 2, 3, 4, 0, long_n2);
-    test_c2r(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 3, 2, 3, howmany, 0, long_n2);
+        test_c2r(MPI_COMM_WORLD, 4, 2, 3, howmany, 0, long_n2);
+        test_c2r(MPI_COMM_WORLD, 5, 3, 2, howmany, 0, long_n2);
+        test_c2r(MPI_COMM_WORLD, 6, 2, 3, howmany, 0, long_n2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n1_transposed_long_n2 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
 
     // Long in n1, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 2, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 4, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 6, 1, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 2, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 4, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 6, 1, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 2, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 4, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 6, 1, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 2, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 4, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 6, 1, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 1, 3, 1, howmany, 1, long_n2);
+        test_c2r(MPI_COMM_WORLD, 1, 4, 1, howmany, 1, long_n2);
+        test_c2r(MPI_COMM_WORLD, 1, 5, 1, howmany, 1, long_n2);
+        test_c2r(MPI_COMM_WORLD, 1, 6, 1, howmany, 1, long_n2);
+    }
 
     // Long in n1, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 2, 3, 2, 2, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 3, 4, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 3, 2, 6, 1, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 2, 4, 2, 2, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 2, 4, 3, 4, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 4, 2, 6, 1, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 2, 5, 2, 2, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 2, 5, 3, 4, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 5, 2, 6, 1, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 2, 6, 2, 2, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 2, 6, 3, 4, 1, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 6, 2, 6, 1, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 2, 3, 3, howmany, 1, long_n2);
+        test_c2r(MPI_COMM_WORLD, 3, 4, 2, howmany, 1, long_n2);
+        test_c2r(MPI_COMM_WORLD, 2, 5, 2, howmany, 1, long_n2);
+        test_c2r(MPI_COMM_WORLD, 3, 6, 2, howmany, 1, long_n2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n2_transposed_long_n2 )
@@ -1048,38 +960,20 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_n2_transposed_long_n2 )
     using suzerain::underling::transposed::long_n2;
 
     // Long in n2, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 2, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 4, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 6, 2, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 2, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 4, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 6, 2, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 2, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 4, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 6, 2, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 2, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 4, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 6, 2, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 1, 1, 3, howmany, 2, long_n2);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 4, howmany, 2, long_n2);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 5, howmany, 2, long_n2);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 6, howmany, 2, long_n2);
+    }
 
     // Long in n2, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 2, 2, 3, 2, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 3, 4, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 3, 6, 2, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 4, 2, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 4, 4, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 4, 6, 2, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 5, 2, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 5, 4, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 5, 6, 2, long_n2);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 6, 2, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 6, 4, 2, long_n2);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 6, 6, 2, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 2, 2, 3, howmany, 2, long_n2);
+        test_c2r(MPI_COMM_WORLD, 2, 3, 4, howmany, 2, long_n2);
+        test_c2r(MPI_COMM_WORLD, 3, 2, 5, howmany, 2, long_n2);
+        test_c2r(MPI_COMM_WORLD, 2, 3, 6, howmany, 2, long_n2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n0_transposed_long_n0 )
@@ -1089,38 +983,20 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_n0_transposed_long_n0 )
     using suzerain::underling::transposed::long_n0;
 
     // Long in n0, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 2, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 4, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 6, 0, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 2, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 4, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 6, 0, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 2, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 4, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 6, 0, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 2, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 4, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 6, 0, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 3, 1, 1, howmany, 0, long_n0);
+        test_c2r(MPI_COMM_WORLD, 4, 1, 1, howmany, 0, long_n0);
+        test_c2r(MPI_COMM_WORLD, 5, 1, 1, howmany, 0, long_n0);
+        test_c2r(MPI_COMM_WORLD, 6, 1, 1, howmany, 0, long_n0);
+    }
 
     // Long in n0, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 3, 2, 2, 2, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 3, 4, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 3, 2, 6, 0, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 4, 2, 2, 2, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 4, 2, 3, 4, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 4, 3, 2, 6, 0, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 5, 2, 2, 2, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 5, 2, 3, 4, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 5, 3, 2, 6, 0, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 6, 2, 2, 2, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 6, 2, 3, 4, 0, long_n0);
-    test_c2r(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 3, 2, 3, howmany, 0, long_n0);
+        test_c2r(MPI_COMM_WORLD, 4, 3, 2, howmany, 0, long_n0);
+        test_c2r(MPI_COMM_WORLD, 5, 3, 3, howmany, 0, long_n0);
+        test_c2r(MPI_COMM_WORLD, 6, 2, 2, howmany, 0, long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n1_transposed_long_n0 )
@@ -1128,77 +1004,43 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_n1_transposed_long_n0 )
     using suzerain::underling::transposed::long_n0;
 
     // Long in n1, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 2, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 4, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 6, 1, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 2, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 4, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 6, 1, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 2, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 4, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 6, 1, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 2, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 4, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 6, 1, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 1, 3, 1, howmany, 1, long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 4, 1, howmany, 1, long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 5, 1, howmany, 1, long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 6, 1, howmany, 1, long_n0);
+    }
 
     // Long in n1, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 2, 3, 2, 2, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 3, 4, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 3, 2, 6, 1, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 4, 2, 2, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 4, 3, 4, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 4, 2, 6, 1, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 5, 2, 2, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 5, 3, 4, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 5, 2, 6, 1, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 6, 2, 2, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 6, 3, 4, 1, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 6, 2, 6, 1, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 2, 3, 3, howmany, 1, long_n0);
+        test_c2r(MPI_COMM_WORLD, 3, 4, 2, howmany, 1, long_n0);
+        test_c2r(MPI_COMM_WORLD, 2, 5, 2, howmany, 1, long_n0);
+        test_c2r(MPI_COMM_WORLD, 3, 6, 3, howmany, 1, long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n2_transposed_long_n0 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n0;
 
     // Long in n2, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 2, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 4, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 6, 2, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 2, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 4, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 6, 2, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 2, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 4, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 6, 2, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 2, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 4, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 6, 2, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 1, 1, 3, howmany, 2, long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 4, howmany, 2, long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 5, howmany, 2, long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 6, howmany, 2, long_n0);
+    }
 
     // Long in n2, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 2, 2, 3, 2, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 3, 4, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 3, 6, 2, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 4, 2, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 4, 4, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 4, 6, 2, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 5, 2, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 5, 4, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 5, 6, 2, long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 6, 2, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 6, 4, 2, long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 6, 6, 2, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 2, 2, 3, howmany, 2, long_n0);
+        test_c2r(MPI_COMM_WORLD, 2, 3, 4, howmany, 2, long_n0);
+        test_c2r(MPI_COMM_WORLD, 3, 2, 5, howmany, 2, long_n0);
+        test_c2r(MPI_COMM_WORLD, 2, 3, 6, howmany, 2, long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n0_transposed_long_both )
@@ -1209,78 +1051,44 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_n0_transposed_long_both )
     using suzerain::underling::transposed::long_n0;
 
     // Long in n0, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 2, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 4, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 1, 1, 6, 0, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 2, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 4, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 4, 1, 1, 6, 0, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 2, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 4, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 5, 1, 1, 6, 0, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 2, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 4, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 6, 1, 1, 6, 0, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 3, 1, 1, howmany, 0, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 4, 1, 1, howmany, 0, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 5, 1, 1, howmany, 0, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 6, 1, 1, howmany, 0, long_n2 | long_n0);
+    }
 
     // Long in n0, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 3, 2, 2, 2, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 3, 4, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 3, 2, 6, 0, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 4, 2, 2, 2, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 4, 2, 3, 4, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 4, 3, 2, 6, 0, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 5, 2, 2, 2, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 5, 2, 3, 4, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 5, 3, 2, 6, 0, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 6, 2, 2, 2, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 6, 2, 3, 4, 0, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 3, 2, 3, howmany, 0, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 4, 3, 2, howmany, 0, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 5, 3, 3, howmany, 0, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 6, 2, 2, howmany, 0, long_n2 | long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n1_transposed_long_both )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n2;
     using suzerain::underling::transposed::long_n0;
 
     // Long in n1, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 2, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 4, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 3, 1, 6, 1, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 2, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 4, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 4, 1, 6, 1, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 2, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 4, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 5, 1, 6, 1, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 2, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 4, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 6, 1, 6, 1, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 1, 3, 1, howmany, 1, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 4, 1, howmany, 1, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 5, 1, howmany, 1, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 6, 1, howmany, 1, long_n2 | long_n0);
+    }
 
     // Long in n1, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 2, 3, 2, 2, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 3, 4, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 3, 2, 6, 1, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 4, 2, 2, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 4, 3, 4, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 4, 2, 6, 1, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 5, 2, 2, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 5, 3, 4, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 5, 2, 6, 1, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 6, 2, 2, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 6, 3, 4, 1, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 6, 2, 6, 1, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 2, 3, 3, howmany, 1, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 3, 4, 2, howmany, 1, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 3, 5, 3, howmany, 1, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 2, 6, 2, howmany, 1, long_n2 | long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_c2r_n2_transposed_long_both )
@@ -1291,38 +1099,20 @@ BOOST_AUTO_TEST_CASE( underling_fft_c2r_n2_transposed_long_both )
     using suzerain::underling::transposed::long_n0;
 
     // Long in n2, transform a single pencil
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 2, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 4, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 3, 6, 2, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 2, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 4, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 4, 6, 2, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 2, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 4, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 5, 6, 2, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 2, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 4, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 1, 1, 6, 6, 2, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 1, 1, 3, howmany, 2, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 4, howmany, 2, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 5, howmany, 2, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 1, 1, 6, howmany, 2, long_n2 | long_n0);
+    }
 
     // Long in n2, transform multiple pencils
-    test_c2r(MPI_COMM_WORLD, 2, 2, 3, 2, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 3, 4, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 3, 6, 2, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 4, 2, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 4, 4, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 4, 6, 2, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 5, 2, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 5, 4, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 5, 6, 2, long_n2 | long_n0);
-
-    test_c2r(MPI_COMM_WORLD, 2, 2, 6, 2, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 2, 3, 6, 4, 2, long_n2 | long_n0);
-    test_c2r(MPI_COMM_WORLD, 3, 2, 6, 6, 2, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_c2r(MPI_COMM_WORLD, 2, 2, 3, howmany, 2, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 2, 3, 4, howmany, 2, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 3, 2, 5, howmany, 2, long_n2 | long_n0);
+        test_c2r(MPI_COMM_WORLD, 2, 3, 6, howmany, 2, long_n2 | long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1485,112 +1275,58 @@ void test_r2c(MPI_Comm comm,
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n0_simple )
 {
     // Long in n0, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 2, 0);
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 4, 0);
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 6, 0);
-
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 2, 0);
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 4, 0);
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 6, 0);
-
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 2, 0);
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 4, 0);
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 6, 0);
-
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 2, 0);
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 4, 0);
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 6, 0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 3, 1, 1, howmany, 0);
+        test_r2c(MPI_COMM_WORLD, 4, 1, 1, howmany, 0);
+        test_r2c(MPI_COMM_WORLD, 5, 1, 1, howmany, 0);
+        test_r2c(MPI_COMM_WORLD, 6, 1, 1, howmany, 0);
+    }
 
     // Long in n0, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 3, 2, 2, 2, 0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 3, 4, 0);
-    test_r2c(MPI_COMM_WORLD, 3, 3, 2, 6, 0);
-
-    test_r2c(MPI_COMM_WORLD, 4, 2, 2, 2, 0);
-    test_r2c(MPI_COMM_WORLD, 4, 2, 3, 4, 0);
-    test_r2c(MPI_COMM_WORLD, 4, 3, 2, 6, 0);
-
-    test_r2c(MPI_COMM_WORLD, 5, 2, 2, 2, 0);
-    test_r2c(MPI_COMM_WORLD, 5, 2, 3, 4, 0);
-    test_r2c(MPI_COMM_WORLD, 5, 3, 2, 6, 0);
-
-    test_r2c(MPI_COMM_WORLD, 6, 2, 2, 2, 0);
-    test_r2c(MPI_COMM_WORLD, 6, 2, 3, 4, 0);
-    test_r2c(MPI_COMM_WORLD, 6, 3, 2, 6, 0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 3, 2, 3, howmany, 0);
+        test_r2c(MPI_COMM_WORLD, 4, 3, 2, howmany, 0);
+        test_r2c(MPI_COMM_WORLD, 5, 3, 3, howmany, 0);
+        test_r2c(MPI_COMM_WORLD, 6, 2, 2, howmany, 0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n1_simple )
 {
     // Long in n1, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 2, 1);
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 4, 1);
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 6, 1);
-
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 2, 1);
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 4, 1);
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 6, 1);
-
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 2, 1);
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 4, 1);
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 6, 1);
-
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 2, 1);
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 4, 1);
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 6, 1);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 1, 3, 1, howmany, 1);
+        test_r2c(MPI_COMM_WORLD, 1, 4, 1, howmany, 1);
+        test_r2c(MPI_COMM_WORLD, 1, 5, 1, howmany, 1);
+        test_r2c(MPI_COMM_WORLD, 1, 6, 1, howmany, 1);
+    }
 
     // Long in n1, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 2, 3, 2, 2, 1);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 3, 4, 1);
-    test_r2c(MPI_COMM_WORLD, 3, 3, 2, 6, 1);
-
-    test_r2c(MPI_COMM_WORLD, 2, 4, 2, 2, 1);
-    test_r2c(MPI_COMM_WORLD, 2, 4, 3, 4, 1);
-    test_r2c(MPI_COMM_WORLD, 3, 4, 2, 6, 1);
-
-    test_r2c(MPI_COMM_WORLD, 2, 5, 2, 2, 1);
-    test_r2c(MPI_COMM_WORLD, 2, 5, 3, 4, 1);
-    test_r2c(MPI_COMM_WORLD, 3, 5, 2, 6, 1);
-
-    test_r2c(MPI_COMM_WORLD, 2, 6, 2, 2, 1);
-    test_r2c(MPI_COMM_WORLD, 2, 6, 3, 4, 1);
-    test_r2c(MPI_COMM_WORLD, 3, 6, 2, 6, 1);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 2, 3, 3, howmany, 1);
+        test_r2c(MPI_COMM_WORLD, 3, 4, 2, howmany, 1);
+        test_r2c(MPI_COMM_WORLD, 3, 5, 3, howmany, 1);
+        test_r2c(MPI_COMM_WORLD, 2, 6, 2, howmany, 1);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n2_simple )
 {
     // Long in n2, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 2, 2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 4, 2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 6, 2);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 2, 2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 4, 2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 6, 2);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 2, 2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 4, 2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 6, 2);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 2, 2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 4, 2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 6, 2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 1, 1, 3, howmany, 2);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 4, howmany, 2);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 5, howmany, 2);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 6, howmany, 2);
+    }
 
     // Long in n2, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 2, 2, 3, 2, 2);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 3, 4, 2);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 3, 6, 2);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 4, 2, 2);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 4, 4, 2);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 4, 6, 2);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 5, 2, 2);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 5, 4, 2);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 5, 6, 2);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 6, 2, 2);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 6, 4, 2);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 6, 6, 2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 2, 3, 3, howmany, 2);
+        test_r2c(MPI_COMM_WORLD, 3, 2, 4, howmany, 2);
+        test_r2c(MPI_COMM_WORLD, 3, 3, 5, howmany, 2);
+        test_r2c(MPI_COMM_WORLD, 2, 2, 6, howmany, 2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n0_transposed_long_n2 )
@@ -1598,38 +1334,20 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_n0_transposed_long_n2 )
     using suzerain::underling::transposed::long_n2;
 
     // Long in n0, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 2, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 4, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 6, 0, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 2, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 4, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 6, 0, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 2, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 4, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 6, 0, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 2, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 4, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 6, 0, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 3, 1, 1, howmany, 0, long_n2);
+        test_r2c(MPI_COMM_WORLD, 4, 1, 1, howmany, 0, long_n2);
+        test_r2c(MPI_COMM_WORLD, 5, 1, 1, howmany, 0, long_n2);
+        test_r2c(MPI_COMM_WORLD, 6, 1, 1, howmany, 0, long_n2);
+    }
 
     // Long in n0, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 3, 2, 2, 2, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 3, 4, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 3, 2, 6, 0, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 4, 2, 2, 2, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 4, 2, 3, 4, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 4, 3, 2, 6, 0, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 5, 2, 2, 2, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 5, 2, 3, 4, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 5, 3, 2, 6, 0, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 6, 2, 2, 2, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 6, 2, 3, 4, 0, long_n2);
-    test_r2c(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 3, 2, 3, howmany, 0, long_n2);
+        test_r2c(MPI_COMM_WORLD, 4, 3, 2, howmany, 0, long_n2);
+        test_r2c(MPI_COMM_WORLD, 5, 3, 3, howmany, 0, long_n2);
+        test_r2c(MPI_COMM_WORLD, 6, 2, 2, howmany, 0, long_n2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n1_transposed_long_n2 )
@@ -1637,38 +1355,20 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_n1_transposed_long_n2 )
     using suzerain::underling::transposed::long_n2;
 
     // Long in n1, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 2, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 4, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 6, 1, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 2, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 4, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 6, 1, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 2, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 4, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 6, 1, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 2, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 4, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 6, 1, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 1, 3, 1, howmany, 1, long_n2);
+        test_r2c(MPI_COMM_WORLD, 1, 4, 1, howmany, 1, long_n2);
+        test_r2c(MPI_COMM_WORLD, 1, 5, 1, howmany, 1, long_n2);
+        test_r2c(MPI_COMM_WORLD, 1, 6, 1, howmany, 1, long_n2);
+    }
 
     // Long in n1, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 2, 3, 2, 2, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 3, 4, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 3, 2, 6, 1, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 2, 4, 2, 2, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 2, 4, 3, 4, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 4, 2, 6, 1, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 2, 5, 2, 2, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 2, 5, 3, 4, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 5, 2, 6, 1, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 2, 6, 2, 2, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 2, 6, 3, 4, 1, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 6, 2, 6, 1, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 2, 3, 3, howmany, 1, long_n2);
+        test_r2c(MPI_COMM_WORLD, 3, 4, 2, howmany, 1, long_n2);
+        test_r2c(MPI_COMM_WORLD, 3, 5, 3, howmany, 1, long_n2);
+        test_r2c(MPI_COMM_WORLD, 2, 6, 2, howmany, 1, long_n2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n2_transposed_long_n2 )
@@ -1678,79 +1378,41 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_n2_transposed_long_n2 )
     using suzerain::underling::transposed::long_n2;
 
     // Long in n2, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 2, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 4, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 6, 2, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 2, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 4, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 6, 2, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 2, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 4, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 6, 2, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 2, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 4, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 6, 2, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 1, 1, 3, howmany, 2, long_n2);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 4, howmany, 2, long_n2);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 5, howmany, 2, long_n2);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 6, howmany, 2, long_n2);
+    }
 
     // Long in n2, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 2, 2, 3, 2, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 3, 4, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 3, 6, 2, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 4, 2, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 4, 4, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 4, 6, 2, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 5, 2, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 5, 4, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 5, 6, 2, long_n2);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 6, 2, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 6, 4, 2, long_n2);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 6, 6, 2, long_n2);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 2, 3, 3, howmany, 2, long_n2);
+        test_r2c(MPI_COMM_WORLD, 3, 2, 4, howmany, 2, long_n2);
+        test_r2c(MPI_COMM_WORLD, 3, 3, 5, howmany, 2, long_n2);
+        test_r2c(MPI_COMM_WORLD, 2, 2, 6, howmany, 2, long_n2);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n0_transposed_long_n0 )
 {
-    ensureFFTWTensor7PatchInPlace();
-
     using suzerain::underling::transposed::long_n0;
 
     // Long in n0, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 2, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 4, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 6, 0, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 2, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 4, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 6, 0, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 2, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 4, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 6, 0, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 2, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 4, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 6, 0, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 3, 1, 1, howmany, 0, long_n0);
+        test_r2c(MPI_COMM_WORLD, 4, 1, 1, howmany, 0, long_n0);
+        test_r2c(MPI_COMM_WORLD, 5, 1, 1, howmany, 0, long_n0);
+        test_r2c(MPI_COMM_WORLD, 6, 1, 1, howmany, 0, long_n0);
+    }
 
     // Long in n0, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 3, 2, 2, 2, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 3, 4, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 3, 2, 6, 0, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 4, 2, 2, 2, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 4, 2, 3, 4, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 4, 3, 2, 6, 0, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 5, 2, 2, 2, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 5, 2, 3, 4, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 5, 3, 2, 6, 0, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 6, 2, 2, 2, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 6, 2, 3, 4, 0, long_n0);
-    test_r2c(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 3, 2, 3, howmany, 0, long_n0);
+        test_r2c(MPI_COMM_WORLD, 4, 3, 2, howmany, 0, long_n0);
+        test_r2c(MPI_COMM_WORLD, 5, 3, 3, howmany, 0, long_n0);
+        test_r2c(MPI_COMM_WORLD, 6, 2, 2, howmany, 0, long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n1_transposed_long_n0 )
@@ -1758,119 +1420,64 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_n1_transposed_long_n0 )
     using suzerain::underling::transposed::long_n0;
 
     // Long in n1, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 2, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 4, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 6, 1, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 2, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 4, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 6, 1, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 2, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 4, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 6, 1, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 2, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 4, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 6, 1, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 1, 3, 1, howmany, 1, long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 4, 1, howmany, 1, long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 5, 1, howmany, 1, long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 6, 1, howmany, 1, long_n0);
+    }
 
     // Long in n1, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 2, 3, 2, 2, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 3, 4, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 3, 2, 6, 1, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 4, 2, 2, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 4, 3, 4, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 4, 2, 6, 1, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 5, 2, 2, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 5, 3, 4, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 5, 2, 6, 1, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 6, 2, 2, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 6, 3, 4, 1, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 6, 2, 6, 1, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 2, 3, 3, howmany, 1, long_n0);
+        test_r2c(MPI_COMM_WORLD, 3, 4, 2, howmany, 1, long_n0);
+        test_r2c(MPI_COMM_WORLD, 3, 5, 3, howmany, 1, long_n0);
+        test_r2c(MPI_COMM_WORLD, 2, 6, 2, howmany, 1, long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n2_transposed_long_n0 )
 {
+    ensureFFTWTensor7PatchInPlace();
+
     using suzerain::underling::transposed::long_n0;
 
     // Long in n2, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 2, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 4, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 6, 2, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 2, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 4, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 6, 2, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 2, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 4, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 6, 2, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 2, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 4, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 6, 2, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 1, 1, 3, howmany, 2, long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 4, howmany, 2, long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 5, howmany, 2, long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 6, howmany, 2, long_n0);
+    }
 
     // Long in n2, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 2, 2, 3, 2, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 3, 4, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 3, 6, 2, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 4, 2, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 4, 4, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 4, 6, 2, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 5, 2, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 5, 4, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 5, 6, 2, long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 6, 2, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 6, 4, 2, long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 6, 6, 2, long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 2, 3, 3, howmany, 2, long_n0);
+        test_r2c(MPI_COMM_WORLD, 3, 2, 4, howmany, 2, long_n0);
+        test_r2c(MPI_COMM_WORLD, 3, 3, 5, howmany, 2, long_n0);
+        test_r2c(MPI_COMM_WORLD, 2, 2, 6, howmany, 2, long_n0);
+    }
 }
-
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n0_transposed_long_both )
 {
-    ensureFFTWTensor7PatchInPlace();
-
     using suzerain::underling::transposed::long_n2;
     using suzerain::underling::transposed::long_n0;
 
     // Long in n0, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 2, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 4, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 1, 1, 6, 0, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 2, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 4, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 4, 1, 1, 6, 0, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 2, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 4, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 5, 1, 1, 6, 0, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 2, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 4, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 6, 1, 1, 6, 0, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 3, 1, 1, howmany, 0, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 4, 1, 1, howmany, 0, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 5, 1, 1, howmany, 0, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 6, 1, 1, howmany, 0, long_n2 | long_n0);
+    }
 
     // Long in n0, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 3, 2, 2, 2, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 3, 4, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 3, 2, 6, 0, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 4, 2, 2, 2, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 4, 2, 3, 4, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 4, 3, 2, 6, 0, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 5, 2, 2, 2, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 5, 2, 3, 4, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 5, 3, 2, 6, 0, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 6, 2, 2, 2, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 6, 2, 3, 4, 0, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 6, 3, 2, 6, 0, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 3, 2, 3, howmany, 0, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 4, 3, 2, howmany, 0, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 5, 3, 3, howmany, 0, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 6, 2, 2, howmany, 0, long_n2 | long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n1_transposed_long_both )
@@ -1879,38 +1486,20 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_n1_transposed_long_both )
     using suzerain::underling::transposed::long_n0;
 
     // Long in n1, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 2, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 4, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 3, 1, 6, 1, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 2, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 4, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 4, 1, 6, 1, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 2, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 4, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 5, 1, 6, 1, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 2, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 4, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 6, 1, 6, 1, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 1, 3, 1, howmany, 1, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 4, 1, howmany, 1, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 5, 1, howmany, 1, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 6, 1, howmany, 1, long_n2 | long_n0);
+    }
 
     // Long in n1, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 2, 3, 2, 2, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 3, 4, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 3, 2, 6, 1, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 4, 2, 2, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 4, 3, 4, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 4, 2, 6, 1, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 5, 2, 2, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 5, 3, 4, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 5, 2, 6, 1, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 6, 2, 2, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 6, 3, 4, 1, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 6, 2, 6, 1, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 2, 3, 3, howmany, 1, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 3, 4, 2, howmany, 1, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 3, 5, 3, howmany, 1, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 2, 6, 2, howmany, 1, long_n2 | long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( underling_fft_r2c_n2_transposed_long_both )
@@ -1921,38 +1510,20 @@ BOOST_AUTO_TEST_CASE( underling_fft_r2c_n2_transposed_long_both )
     using suzerain::underling::transposed::long_n0;
 
     // Long in n2, transform a single pencil
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 2, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 4, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 3, 6, 2, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 2, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 4, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 4, 6, 2, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 2, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 4, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 5, 6, 2, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 2, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 4, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 1, 1, 6, 6, 2, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 1, 1, 3, howmany, 2, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 4, howmany, 2, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 5, howmany, 2, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 1, 1, 6, howmany, 2, long_n2 | long_n0);
+    }
 
     // Long in n2, transform multiple pencils
-    test_r2c(MPI_COMM_WORLD, 2, 2, 3, 2, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 3, 4, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 3, 6, 2, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 4, 2, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 4, 4, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 4, 6, 2, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 5, 2, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 5, 4, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 5, 6, 2, long_n2 | long_n0);
-
-    test_r2c(MPI_COMM_WORLD, 2, 2, 6, 2, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 2, 3, 6, 4, 2, long_n2 | long_n0);
-    test_r2c(MPI_COMM_WORLD, 3, 2, 6, 6, 2, long_n2 | long_n0);
+    for (int howmany = 2; howmany < 8; howmany += 2) {
+        test_r2c(MPI_COMM_WORLD, 2, 3, 3, howmany, 2, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 3, 2, 4, howmany, 2, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 3, 3, 5, howmany, 2, long_n2 | long_n0);
+        test_r2c(MPI_COMM_WORLD, 2, 2, 6, howmany, 2, long_n2 | long_n0);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
