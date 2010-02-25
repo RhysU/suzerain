@@ -877,8 +877,8 @@ underling_fft_plan_create_inverse(
     }
 
     // Sanity check that the inverse is indeed an inverse
-    assert(!underling_fft_extents_cmp(plan_to_invert->input,  retval->output));
-    assert(!underling_fft_extents_cmp(plan_to_invert->output, retval->input));
+    assert(!underling_fft_extents_cmp(&plan_to_invert->input,  &retval->output));
+    assert(!underling_fft_extents_cmp(&plan_to_invert->output, &retval->input));
 
     return retval;
 }
@@ -962,7 +962,7 @@ underling_fft_local_output(
         int *order)
 {
     if (SUZERAIN_UNLIKELY(plan == NULL)) {
-        SUZERAIN_ERROR_VOID("plan == NULL", SUZERAIN_EINVAL);
+        SUZERAIN_ERROR("plan == NULL", SUZERAIN_EINVAL);
     }
 
     underling_fft_extents_copy(&plan->output, start, size, stride, order);
