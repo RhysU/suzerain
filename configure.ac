@@ -82,9 +82,39 @@ AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LIBS} ${FLIBS}"
 AX_PATH_GSL(1.13,,AC_MSG_ERROR([Could not find required GSL version.]))
+dnl --------BEGIN FFTW3 checks---------------------
 PKG_CHECK_MODULES(FFTW3, fftw3 > 3.2)
+dnl Since FFTW3 can only be compiled with one of {openmp,pthread} support
+dnl presumably at most one of the following two behemoths will pass.
+AX_OPENMP([
+    AC_DEFINE(HAVE_OPENMP,[1],[Define if OpenMP is enabled])
+    AC_CHECK_LIB([fftw3_threads],[fftw_init_threads],
+        [
+          AC_DEFINE([HAVE_FFTW_THREADS],[1],[Defined if FFTW threads available])
+          FFTW3_CFLAGS="$OPENMP_CFLAGS $FFTW3_CFLAGS"
+          FFTW3_LIBS="-lfftw3_threads $FFTW3_LIBS $OPENMP_CFLAGS"
+          AC_MSG_NOTICE([Detected OpenMP-enabled FFTW threading])
+        ],
+        [AC_MSG_NOTICE([Detected OpenMP but not OpenMP-enabled FFTW threading])],
+        [$OPENMP_CFLAGS])
+    ])
+ACX_PTHREAD([
+    AC_DEFINE(HAVE_PTHREAD,[1],
+              [Define if you have POSIX threads libraries and header files])
+    AC_CHECK_LIB([fftw3_threads],[fftw_init_threads],
+        [
+          AC_DEFINE([HAVE_FFTW_THREADS],[1],[Defined if FFTW threads available])
+          FFTW3_CFLAGS="$PTHREAD_CFLAGS $FFTW3_CFLAGS"
+          FFTW3_LIBS="-lfftw3_threads $FFTW3_LIBS $PTHREAD_LIBS"
+          AC_MSG_NOTICE([Detected pthread-enabled FFTW threading])
+        ],
+        [AC_MSG_NOTICE([Detected pthread but not pthread-enabled FFTW threading])],
+        [$PTHREAD_LIBS])
+    ])
 AC_SUBST(FFTW3_CFLAGS)
 AC_SUBST(FFTW3_LIBS)
+dnl --------END FFTW3 checks-----------------------
+dnl END FFTW3 checks
 PKG_CHECK_MODULES(P3DFFT, suzerain-p3dfft)
 AC_SUBST(P3DFFT_CFLAGS)
 AC_SUBST(P3DFFT_LIBS)
@@ -96,6 +126,11 @@ AC_SUBST(HPCT_CFLAGS)
 AC_SUBST(HPCT_LIBS)
 AC_LANG_POP([C])
 AC_CACHE_SAVE
+
+dnl ------------------------------------------------
+dnl C library requirements
+dnl ------------------------------------------------
+
 
 dnl ------------------------------------------------
 dnl C++ library requirements
