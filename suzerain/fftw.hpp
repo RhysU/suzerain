@@ -136,7 +136,15 @@ public:
      * @return FFTW plan rigor flags.
      * @see rigor for more details.
      */
-    rigor plan_rigor() { return rigor_from(rigor_string_.c_str()); }
+    rigor plan_rigor() const { return rigor_from(rigor_string_.c_str()); }
+
+    /**
+     * Retrieve the number of threads to use in an FFTW multi-threaded
+     * environment.
+     *
+     * @return Number of threads to use.
+     */
+    int nthreads() const { return nthreads_; }
 
 private:
 
@@ -145,6 +153,9 @@ private:
 
     /** Stores the user-specified FFTW rigor string */
     std::string rigor_string_;
+
+    /** Stores the number of threads to use in a threaded environment */
+    int nthreads_;
 
     /** Normalizes <tt>this->rigor_string_</tt> to a canonical value. */
     void normalize_rigor_string(std::string input);

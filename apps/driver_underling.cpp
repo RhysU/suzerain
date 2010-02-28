@@ -61,13 +61,21 @@
 
 int main(int argc, char *argv[])
 {
-    MPI_Init(&argc, &argv);                   // Initialize MPI
-#ifdef HAVE_MPIP
-    MPI_Pcontrol(0);                          // Disable mpiP
+    // Initialize external dependencies
+    MPI_Init(&argc, &argv);
+    MPI_Pcontrol(0);             // Disable MPI profiling on start
+#ifdef HAVE_FFTW_THREADS
+    assert(fftw_init_threads());
 #endif
-    atexit((void (*) ()) MPI_Finalize);       // Finalize MPI at exit
-    fftw_mpi_init();                          // Initialize FFTW MPI
-    atexit((void (*) ()) fftw_mpi_cleanup);   // Finalize FFTW MPI at exit
+    fftw_mpi_init();
+
+    // Finalize external dependencies atexit
+    atexit((void (*) ()) MPI_Finalize);
+    atexit((void (*) ()) fftw_cleanup);
+#ifdef HAVE_FFTW_THREADS
+    atexit((void (*) ()) fftw_cleanup_threads);
+#endif
+    atexit((void (*) ()) fftw_mpi_cleanup);
 
     // Initialize logging subsystem
     const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
@@ -97,6 +105,9 @@ int main(int argc, char *argv[])
         options.process(argc, argv,
                         nullstream, nullstream, nullstream, nullstream);
     }
+#ifdef HAVE_FFTW_THREADS
+    fftw_plan_with_nthreads(fftwdef.nthreads());
+#endif
 
     // Create a grid and a problem
     namespace underling = suzerain::underling;
@@ -175,9 +186,7 @@ int main(int argc, char *argv[])
         MPI_Barrier(MPI_COMM_WORLD);
         if (!procid) LOG4CXX_DEBUG(logger, "Repetition " << i);
 
-#ifdef HAVE_MPIP
-        MPI_Pcontrol(1);                         // Enable mpiP
-#endif
+        MPI_Pcontrol(1);                         // Enable MPI profiling
         const double start_trip = MPI_Wtime();   // Start timer
 #ifdef HAVE_HPCT
         hpct_timer_begin("long_n2_to_long_n1");
@@ -202,9 +211,7 @@ int main(int argc, char *argv[])
         hpct_timer_end(  "long_n1_to_long_n2");
 #endif
         const double end_trip = MPI_Wtime();     // End timer
-#ifdef HAVE_MPIP
-        MPI_Pcontrol(0);                         // Disable mpiP
-#endif
+        MPI_Pcontrol(0);                         // Disable MPI profiling
 
         // Our round trip time is only as good as the weakest link.
         // In particular, final in-memory transposes may be slower

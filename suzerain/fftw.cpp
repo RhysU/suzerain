@@ -29,6 +29,7 @@
  *-------------------------------------------------------------------------- */
 
 #include <suzerain/fftw.hpp>
+#include <cstdlib>
 
 namespace suzerain {
 
@@ -100,6 +101,28 @@ FFTWDefinition::FFTWDefinition()
 
     std::string rigor_default(c_str(measure));
 
+    std::string nthreads_description(
+            "Number of threads to use for FFTW planning");
+#ifdef HAVE_FFTW_THREADS
+#if defined HAVE_OPENMP
+    nthreads_description += " (OpenMP per OMP_NUM_THREADS)";
+    const int nthreads_default =
+        (getenv("OMP_NUM_THREADS") && atoi(getenv("OMP_NUM_THREADS")) > 0)
+        ? atoi(getenv("OMP_NUM_THREADS")) : 1;
+#elif defined HAVE_PTHREAD
+    // TODO Provide sane nthreads default for FFTW pthread environment
+    nthreads_description += " (pthread)";
+    const int nthreads_default = 1;
+#else
+#error "Sanity check failed; unknown FFTW threading model in use."
+#endif
+#else  /* HAVE_FFTW_THREADS not defined */
+    nthreads_description += " (Disabled)";
+    const int nthreads_default = 1;
+#endif /* HAVE_FFTW_THREADS */
+
+    this->nthreads_ = nthreads_default;
+
     options_.add_options()
         ("rigor",
          po::value<std::string>(&rigor_string_)
@@ -109,6 +132,10 @@ FFTWDefinition::FFTWDefinition()
                         this))
                 ->default_value(rigor_default),
          rigor_description.c_str())
+        ("nthreads",
+         po::value<int>(&nthreads_)
+                ->default_value(nthreads_default),
+         nthreads_description.c_str())
     ;
 }
 
