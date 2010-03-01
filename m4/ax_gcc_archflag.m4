@@ -1,77 +1,40 @@
-# ===========================================================================
-#            http://autoconf-archive.cryp.to/ax_gcc_archflag.html
-# ===========================================================================
-#
-# SYNOPSIS
-#
-#   AX_GCC_ARCHFLAG([PORTABLE?], [ACTION-SUCCESS], [ACTION-FAILURE])
-#
-# DESCRIPTION
-#
-#   This macro tries to guess the "native" arch corresponding to the target
-#   architecture for use with gcc's -march=arch or -mtune=arch flags. If
-#   found, the cache variable $ax_cv_gcc_archflag is set to this flag and
-#   ACTION-SUCCESS is executed; otherwise $ax_cv_gcc_archflag is is set to
-#   "unknown" and ACTION-FAILURE is executed. The default ACTION-SUCCESS is
-#   to add $ax_cv_gcc_archflag to the end of $CFLAGS.
-#
-#   PORTABLE? should be either [yes] (default) or [no]. In the former case,
-#   the flag is set to -mtune (or equivalent) so that the architecture is
-#   only used for tuning, but the instruction set used is still portable. In
-#   the latter case, the flag is set to -march (or equivalent) so that
-#   architecture-specific instructions are enabled.
-#
-#   The user can specify --with-gcc-arch=<arch> in order to override the
-#   macro's choice of architecture, or --without-gcc-arch to disable this.
-#
-#   When cross-compiling, or if $CC is not gcc, then ACTION-FAILURE is
-#   called unless the user specified --with-gcc-arch manually.
-#
-#   Requires macros: AX_CHECK_COMPILER_FLAGS, AX_GCC_X86_CPUID
-#
-#   (The main emphasis here is on recent CPUs, on the principle that doing
-#   high-performance computing on old hardware is uncommon.)
-#
-# LAST MODIFICATION
-#
-#   2008-04-12
-#
-# COPYLEFT
-#
-#   Copyright (c) 2008 Steven G. Johnson <stevenj@alum.mit.edu>
-#   Copyright (c) 2008 Matteo Frigo
-#
-#   This program is free software: you can redistribute it and/or modify it
-#   under the terms of the GNU General Public License as published by the
-#   Free Software Foundation, either version 3 of the License, or (at your
-#   option) any later version.
-#
-#   This program is distributed in the hope that it will be useful, but
-#   WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-#   Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License along
-#   with this program. If not, see <http://www.gnu.org/licenses/>.
-#
-#   As a special exception, the respective Autoconf Macro's copyright owner
-#   gives unlimited permission to copy, distribute and modify the configure
-#   scripts that are the output of Autoconf when processing the Macro. You
-#   need not follow the terms of the GNU General Public License when using
-#   or distributing such scripts, even though portions of the text of the
-#   Macro appear in them. The GNU General Public License (GPL) does govern
-#   all other use of the material that constitutes the Autoconf Macro.
-#
-#   This special exception to the GPL applies to versions of the Autoconf
-#   Macro released by the Autoconf Macro Archive. When you make and
-#   distribute a modified version of the Autoconf Macro, you may extend this
-#   special exception to the GPL to apply to your modified version as well.
-
+dnl @synopsis AX_GCC_ARCHFLAG([PORTABLE?], [ACTION-SUCCESS], [ACTION-FAILURE])
+dnl @summary find target architecture name for gcc -march/-mtune flags
+dnl @category Misc
+dnl
+dnl This macro tries to guess the "native" arch corresponding to
+dnl the target architecture for use with gcc's -march=arch or -mtune=arch
+dnl flags.  If found, the cache variable $ax_cv_gcc_archflag is set to this
+dnl flag and ACTION-SUCCESS is executed; otherwise $ax_cv_gcc_archflag is
+dnl is set to "unknown" and ACTION-FAILURE is executed.  The default
+dnl ACTION-SUCCESS is to add $ax_cv_gcc_archflag to the end of $CFLAGS.
+dnl
+dnl PORTABLE? should be either [yes] (default) or [no].  In the former case,
+dnl the flag is set to -mtune (or equivalent) so that the architecture
+dnl is only used for tuning, but the instruction set used is still
+dnl portable.  In the latter case, the flag is set to -march (or equivalent)
+dnl so that architecture-specific instructions are enabled.
+dnl
+dnl The user can specify --with-gcc-arch=<arch> in order to override
+dnl the macro's choice of architecture, or --without-gcc-arch to
+dnl disable this.
+dnl
+dnl When cross-compiling, or if $CC is not gcc, then ACTION-FAILURE is
+dnl called unless the user specified --with-gcc-arch manually.
+dnl
+dnl Requires macros: AX_CHECK_COMPILER_FLAGS, AX_GCC_X86_CPUID
+dnl
+dnl (The main emphasis here is on recent CPUs, on the principle that
+dnl  doing high-performance computing on old hardware is uncommon.)
+dnl
+dnl @version 2007-03-20
+dnl @license GPLWithACException
+dnl @author Steven G. Johnson <stevenj@alum.mit.edu> and Matteo Frigo.
 AC_DEFUN([AX_GCC_ARCHFLAG],
 [AC_REQUIRE([AC_PROG_CC])
 AC_REQUIRE([AC_CANONICAL_HOST])
 
-AC_ARG_WITH(gcc-arch, [AC_HELP_STRING([--with-gcc-arch=<arch>], [use architecture <arch> for gcc -march/-mtune, instead of guessing])],
+AC_ARG_WITH(gcc-arch, [AC_HELP_STRING([--with-gcc-arch=<arch>], [use architecture <arch> for gcc -march/-mtune, instead of guessing])], 
 	ax_gcc_arch=$withval, ax_gcc_arch=yes)
 
 AC_MSG_CHECKING([for gcc architecture flag])
@@ -86,7 +49,7 @@ if test "x$ax_gcc_arch" = xyes; then
 ax_gcc_arch=""
 if test "$cross_compiling" = no; then
 case $host_cpu in
-  i[[3456]]86*|x86_64*) # use cpuid codes, in part from x86info-1.7 by D. Jones
+  i[[3456]]86*|x86_64*|amd64*) # use cpuid codes, in part from x86info-1.21 by D. Jones
      AX_GCC_X86_CPUID(0)
      AX_GCC_X86_CPUID(1)
      case $ax_cv_gcc_x86_cpuid_0 in
@@ -97,26 +60,28 @@ case $host_cpu in
 	    *6[[3456]]?:*:*:*) ax_gcc_arch="pentium2 pentiumpro" ;;
 	    *6a?:*[[01]]:*:*) ax_gcc_arch="pentium2 pentiumpro" ;;
 	    *6a?:*[[234]]:*:*) ax_gcc_arch="pentium3 pentiumpro" ;;
-	    *6[[9d]]?:*:*:*) ax_gcc_arch="pentium-m pentium3 pentiumpro" ;;
 	    *6[[78b]]?:*:*:*) ax_gcc_arch="pentium3 pentiumpro" ;;
-	    *6??:*:*:*) ax_gcc_arch=pentiumpro ;;
-            *f3[[347]]:*:*:*|*f4[1347]:*:*:*)
+	    *6[[9d]]?:*:*:*) ax_gcc_arch="pentium-m pentium3 pentiumpro" ;;
+	    *6[[e]]?:*:*:*) ax_gcc_arch="native pentium-m pentium3 pentiumpro" ;; # Core Duo
+	    *6f?:*:*:*) ax_gcc_arch="core2 native pentium-m pentium3 pentiumpro" ;;
+	    *6??:*:*:*) ax_gcc_arch="native pentiumpro" ;;
+            *f3[[347]]:*:*:*|*f4[[1347]]:*:*:*)
 		case $host_cpu in
-                  x86_64*) ax_gcc_arch="nocona pentium4 pentiumpro" ;;
+                  x86_64*|amd64*) ax_gcc_arch="nocona pentium4 pentiumpro" ;;
                   *) ax_gcc_arch="prescott pentium4 pentiumpro" ;;
                 esac ;;
-            *f??:*:*:*) ax_gcc_arch="pentium4 pentiumpro";;
+            *f??:*:*:*) ax_gcc_arch="native pentium4 pentiumpro";;
           esac ;;
        *:68747541:*:*) # AMD
           case $ax_cv_gcc_x86_cpuid_1 in
 	    *5[[67]]?:*:*:*) ax_gcc_arch=k6 ;;
-	    *5[[8d]]?:*:*:*) ax_gcc_arch="k6-2 k6" ;;
-	    *5[[9]]?:*:*:*) ax_gcc_arch="k6-3 k6" ;;
+	    *5[[8c]]?:*:*:*) ax_gcc_arch="k6-2 k6" ;;
+	    *5[[9d]]?:*:*:*) ax_gcc_arch="k6-3 k6" ;;
 	    *60?:*:*:*) ax_gcc_arch=k7 ;;
 	    *6[[12]]?:*:*:*) ax_gcc_arch="athlon k7" ;;
 	    *6[[34]]?:*:*:*) ax_gcc_arch="athlon-tbird k7" ;;
 	    *67?:*:*:*) ax_gcc_arch="athlon-4 athlon k7" ;;
-	    *6[[68a]]?:*:*:*)
+	    *6[[68a]]?:*:*:*) 
 	       AX_GCC_X86_CPUID(0x80000006) # L2 cache size
 	       case $ax_cv_gcc_x86_cpuid_0x80000006 in
                  *:*:*[[1-9a-f]]??????:*) # (L2 = ecx >> 16) >= 256
@@ -126,7 +91,7 @@ case $host_cpu in
 	    *f[[4cef8b]]?:*:*:*) ax_gcc_arch="athlon64 k8" ;;
 	    *f5?:*:*:*) ax_gcc_arch="opteron k8" ;;
 	    *f7?:*:*:*) ax_gcc_arch="athlon-fx opteron k8" ;;
-	    *f??:*:*:*) ax_gcc_arch="k8" ;;
+	    *f??:*:*:*) ax_gcc_arch="native k8" ;;
           esac ;;
 	*:746e6543:*:*) # IDT
 	   case $ax_cv_gcc_x86_cpuid_1 in
@@ -138,10 +103,11 @@ case $host_cpu in
      esac
      if test x"$ax_gcc_arch" = x; then # fallback
 	case $host_cpu in
-	  i586*) ax_gcc_arch=pentium ;;
-	  i686*) ax_gcc_arch=pentiumpro ;;
+	  i586*) ax_gcc_arch="native pentium" ;;
+	  i686*) ax_gcc_arch="native pentiumpro" ;;
+          x86_64*|amd64*) ax_gcc_arch="native" ;;
         esac
-     fi
+     fi 
      ;;
 
   sparc*)
@@ -180,7 +146,8 @@ case $host_cpu in
        *POWER4*|*power4*|*gq*) ax_gcc_arch="power4 970";;
        *POWER5*|*power5*|*gr*|*gs*) ax_gcc_arch="power5 power4 970";;
        603ev|8240) ax_gcc_arch="$cputype 603e 603";;
-       *) ax_gcc_arch=$cputype ;;
+       *Cell*) ax_gcc_arch="cellppu cell";;
+       *) ax_gcc_arch="$cputype native" ;;
      esac
      ax_gcc_arch="$ax_gcc_arch powerpc"
      ;;
@@ -194,7 +161,7 @@ for arch in $ax_gcc_arch; do
     flags="-mtune=$arch"
     # -mcpu=$arch and m$arch generate nonportable code on every arch except
     # x86.  And some other arches (e.g. Alpha) don't accept -mtune.  Grrr.
-    case $host_cpu in i*86|x86_64*) flags="$flags -mcpu=$arch -m$arch";; esac
+    case $host_cpu in i*86|x86_64*|amd64*) flags="$flags -mcpu=$arch -m$arch";; esac
   else
     flags="-march=$arch -mcpu=$arch -m$arch"
   fi
