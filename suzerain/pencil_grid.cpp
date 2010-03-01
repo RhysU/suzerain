@@ -28,6 +28,9 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
+#endif
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <p3dfft_d.h>
