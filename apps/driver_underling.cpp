@@ -145,6 +145,13 @@ int main(int argc, char *argv[])
         LOG4CXX_INFO(logger,
                      "Planning rigor:           "
                      << suzerain::fftw::c_str(fftwdef.plan_rigor()));
+#ifdef HAVE_FFTW3_THREADS
+        LOG4CXX_INFO(logger,
+                     "FFTW threads:             " << fftwdef.nthreads());
+#else
+        LOG4CXX_INFO(logger,
+                     "FFTW threads:             Unavailable");
+#endif
         LOG4CXX_INFO(logger,
                      "Number of repetitions:    " << nrep);
         LOG4CXX_INFO(logger,
