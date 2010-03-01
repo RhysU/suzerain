@@ -103,7 +103,7 @@ FFTWDefinition::FFTWDefinition()
 
     std::string nthreads_description(
             "Number of threads to use for FFTW planning");
-#ifdef HAVE_FFTW_THREADS
+#ifdef HAVE_FFTW3_THREADS
 #if defined HAVE_OPENMP
     nthreads_description += " (OpenMP per OMP_NUM_THREADS)";
     const int nthreads_default =
@@ -116,10 +116,10 @@ FFTWDefinition::FFTWDefinition()
 #else
 #error "Sanity check failed; unknown FFTW threading model in use."
 #endif
-#else  /* HAVE_FFTW_THREADS not defined */
+#else  /* HAVE_FFTW3_THREADS not defined */
     nthreads_description += " (Disabled)";
     const int nthreads_default = 1;
-#endif /* HAVE_FFTW_THREADS */
+#endif /* HAVE_FFTW3_THREADS */
 
     this->nthreads_ = nthreads_default;
 

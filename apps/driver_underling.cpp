@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     // Initialize external dependencies
     MPI_Init(&argc, &argv);
     MPI_Pcontrol(0);             // Disable MPI profiling on start
-#ifdef HAVE_FFTW_THREADS
+#ifdef HAVE_FFTW3_THREADS
     assert(fftw_init_threads());
 #endif
     fftw_mpi_init();
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     // Finalize external dependencies atexit
     atexit((void (*) ()) MPI_Finalize);
     atexit((void (*) ()) fftw_cleanup);
-#ifdef HAVE_FFTW_THREADS
+#ifdef HAVE_FFTW3_THREADS
     atexit((void (*) ()) fftw_cleanup_threads);
 #endif
     atexit((void (*) ()) fftw_mpi_cleanup);
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
         options.process(argc, argv,
                         nullstream, nullstream, nullstream, nullstream);
     }
-#ifdef HAVE_FFTW_THREADS
+#ifdef HAVE_FFTW3_THREADS
     fftw_plan_with_nthreads(fftwdef.nthreads());
 #endif
 
