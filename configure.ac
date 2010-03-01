@@ -95,8 +95,6 @@ AX_OPENMP([
           AC_DEFINE([HAVE_FFTW3_THREADS],[1],[Defined if FFTW3 threads available])
           FFTW3_THREADS_CFLAGS="$OPENMP_CFLAGS $FFTW3_CFLAGS"
           FFTW3_THREADS_LIBS="-lfftw3_threads $FFTW3_LIBS $OPENMP_CFLAGS"
-          AC_SUBST(FFTW3_THREADS_CFLAGS)
-          AC_SUBST(FFTW3_THREADS_LIBS)
           AC_MSG_NOTICE([Detected OpenMP-enabled FFTW threading])
           found_fftw3_threads=yes
         ],
@@ -113,8 +111,6 @@ ACX_PTHREAD([
           AC_DEFINE([HAVE_FFTW3_THREADS],[1],[Defined if FFTW3 threads available])
           FFTW3_THREADS_CFLAGS="$PTHREAD_CFLAGS $FFTW3_CFLAGS"
           FFTW3_THREADS_LIBS="-lfftw3_threads $FFTW3_LIBS $PTHREAD_LIBS"
-          AC_SUBST(FFTW3_THREADS_CFLAGS)
-          AC_SUBST(FFTW3_THREADS_LIBS)
           AC_MSG_NOTICE([Detected pthread-enabled FFTW threading])
           found_fftw3_threads=yes
         ],
@@ -122,6 +118,13 @@ ACX_PTHREAD([
         [$FFTW3_LIBS $PTHREAD_LIBS])
     ])
 fi
+if test "${found_fftw3_threads}" != yes; then
+  FFTW3_THREADS_CFLAGS=$FFTW3_CFLAGS
+  FFTW3_THREADS_LIBS=$FFTW3_LIBS
+  AC_MSG_NOTICE([FFTW threading not detected])
+fi
+AC_SUBST(FFTW3_THREADS_CFLAGS)
+AC_SUBST(FFTW3_THREADS_LIBS)
 dnl --------END FFTW3 checks-----------------------
 dnl END FFTW3 checks
 PKG_CHECK_MODULES(P3DFFT, suzerain-p3dfft)
