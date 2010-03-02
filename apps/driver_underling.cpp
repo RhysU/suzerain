@@ -87,14 +87,16 @@ int main(int argc, char *argv[])
     int howmany       =  1;
     int sleep_barrier = -1;
     namespace po = boost::program_options;
+    // TODO Weirdly, add_options() is failing for more than 2 options...
     options.add_options()
         ("howmany", po::value<int>(&howmany)->default_value(1),
-        "Number of interleaved real-valued fields to transpose")
+        "Number of interleaved real-valued fields to transpose");
+    options.add_options()
         ("rep", po::value<int>(&nrep)->default_value(1),
-        "Number of repetitions to perform for timing purposes"),
+        "Number of repetitions to perform for timing purposes");
+    options.add_options()
         ("sleep_barrier", po::value<int>(&sleep_barrier)->default_value(-1),
-        "Debugging: If > 0, process rank at which to create a sleep barrier.")
-    ;
+        "DEBUG: If > 0, the process rank at which to create a sleep barrier.");
     if (!procid) {
         options.process(argc, argv);
     } else {
