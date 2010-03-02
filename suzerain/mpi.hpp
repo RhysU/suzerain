@@ -126,6 +126,81 @@ void dims_create(const Integer nnodes,
             boost::numeric::converter<value_type,int>());
 }
 
+/**
+ * Create two MPI_Barriers across the communicator and sleep indefinitely
+ * between them on the given rank.  Useful when one needs to attach a debugger
+ * to a process.
+ *
+ * @param comm The MPI Communicator used in the two \c MPI_Barrier calls.
+ * @param sleep_rank The rank of the process to enter an indefinite sleep loop.
+ * @param os   The output stream on which to write the ready message.
+ *
+ * @return The modified output stream.
+ * @see The <a href="http://www.open-mpi.org/faq/">
+ *      Open MPI FAQ</a> for more information.
+ */
+template< typename charT, typename traits >
+std::basic_ostream<charT,traits>& sleep_barrier(
+        MPI_Comm comm = MPI_COMM_SELF,
+        const int sleep_rank = 0,
+        std::basic_ostream<charT,traits> &os = std::cerr)
+{
+    if (sleep_rank < 0) {
+        throw (std::runtime_error("sleep_rank < 0"));
+    }
+    if (sleep_rank >= comm_size(comm)) {
+        throw (std::runtime_error("sleep_rank > comm_size(comm)"));
+    }
+
+    // Retrieve the current hostname in a beyond-paranoid manner, continuing
+    // the sleep_barrier iff the hostname retrieval succeeds.
+    char hostname[256];
+    {
+        const std::string id = comm_rank_identifier(comm);
+        // Ensure null termination in event of truncation
+        hostname[sizeof(hostname)/sizeof(hostname[0]) - 1] = 0;
+        errno = 0;
+        int local_gethostname_err
+            = gethostname(hostname, sizeof(hostname)/sizeof(hostname[0]) - 1);
+        if (local_gethostname_err) {
+            os << "Error from gethostname on " << id
+               << ":" << strerror(errno)
+               << "; skipping sleep_barrier."  << std::endl;
+        }
+        int global_gethostname_err = 0;
+        const int err = MPI_Allreduce(&local_gethostname_err,
+                                      &global_gethostname_err,
+                                      1, MPI_INT, MPI_LOR, comm);
+        if (err) throw std::runtime_error(error_string(err));
+        if (global_gethostname_err) return;
+    }
+
+    // Force all processes to sync up prior to sleeping
+    {
+        const int err = MPI_Barrier(comm);
+        if (err) throw std::runtime_error(error_string(err));
+    }
+
+    // Sleep indefinitely if we're the lucky process.
+    // Set i nonzero using a debugger to exit infinite loop below.
+    if (comm_rank(comm) == sleep_rank) {
+        os << "sleep_barrier: pid " << getpid() << " on host "
+           << hostname  << " ready for attach." << std::endl;
+        int i = 0;
+        while (0 == i) {
+            sleep(5);
+        }
+    }
+
+    // Force all processes to sync up after sleeping
+    {
+        const int err = MPI_Barrier(comm);
+        if (err) throw std::runtime_error(error_string(err));
+    }
+
+    return os;
+}
+
 } // namespace mpi
 
 } // namespace suzerain

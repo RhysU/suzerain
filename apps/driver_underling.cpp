@@ -63,18 +63,12 @@ int main(int argc, char *argv[])
 {
     // Initialize external dependencies
     MPI_Init(&argc, &argv);
-    MPI_Pcontrol(0);             // Disable MPI profiling on start
-#ifdef HAVE_FFTW3_THREADS
-    assert(fftw_init_threads());
-#endif
+    MPI_Pcontrol(0);             // Disable MPI profiling on startup
     fftw_mpi_init();
 
-    // Finalize external dependencies atexit
+    // Arrange to finalize external dependencies
     atexit((void (*) ()) MPI_Finalize);
     atexit((void (*) ()) fftw_cleanup);
-#ifdef HAVE_FFTW3_THREADS
-    atexit((void (*) ()) fftw_cleanup_threads);
-#endif
     atexit((void (*) ()) fftw_mpi_cleanup);
 
     // Initialize logging subsystem
@@ -89,14 +83,17 @@ int main(int argc, char *argv[])
     options.add_definition(griddef);
     suzerain::fftw::FFTWDefinition fftwdef;
     options.add_definition(fftwdef);
-    int nrep    = 1;
-    int howmany = 1;
+    int nrep          =  1;
+    int howmany       =  1;
+    int sleep_barrier = -1;
     namespace po = boost::program_options;
     options.add_options()
         ("howmany", po::value<int>(&howmany)->default_value(1),
         "Number of interleaved real-valued fields to transpose")
         ("rep", po::value<int>(&nrep)->default_value(1),
-        "Number of repetitions to perform for timing purposes")
+        "Number of repetitions to perform for timing purposes"),
+        ("sleep_barrier", po::value<int>(&sleep_barrier)->default_value(-1),
+        "Debugging: If > 0, process rank at which to create a sleep barrier.")
     ;
     if (!procid) {
         options.process(argc, argv);
@@ -105,7 +102,12 @@ int main(int argc, char *argv[])
         options.process(argc, argv,
                         nullstream, nullstream, nullstream, nullstream);
     }
+    if (sleep_barrier >= 0) {
+        suzerain::mpi::sleep_barrier(MPI_COMM_WORLD, sleep_barrier, std::cerr);
+    }
 #ifdef HAVE_FFTW3_THREADS
+    assert(fftw_init_threads());
+    atexit((void (*) ()) fftw_cleanup_threads);
     fftw_plan_with_nthreads(fftwdef.nthreads());
 #endif
 
