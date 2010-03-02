@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
         ("howmany", po::value<int>(&howmany)->default_value(1),
         "Number of interleaved real-valued fields to transpose");
     options.add_options()
-        ("rep", po::value<int>(&nrep)->default_value(1),
+        ("nrep", po::value<int>(&nrep)->default_value(1),
         "Number of repetitions to perform for timing purposes");
     options.add_options()
         ("sleep_barrier", po::value<int>(&sleep_barrier)->default_value(-1),
