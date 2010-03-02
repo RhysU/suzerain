@@ -3,9 +3,6 @@
 #endif
 #include <suzerain/common.h>
 #pragma hdrstop
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <suzerain/os.h>
 
 int

@@ -87,12 +87,14 @@ Provides hint to the compiler to optimize for the expression being false.
 // C++-specific functionality is included in common.hpp
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 /**
  * Compute the BLAS-compatible offset to <tt>a(i,j)</tt> for general
