@@ -102,6 +102,16 @@ rigor rigor_from(unsigned flags);
 const char * c_str(rigor r);
 
 /**
+ * Retrieve a sensible default number of threads for threaded FFTW planning.
+ * Takes into account whether or not threading is available and the desired
+ * threading method.  For example, it uses <tt>OMP_NUM_THREADS</tt> when OpenMP
+ * threading is used.
+ *
+ * @return a sensible default number of threads.
+ */
+int default_nthreads();
+
+/**
  * Enable output of a rigor on a <tt>basic_ostream</tt>.
  *
  * @param os on which to output \c r.

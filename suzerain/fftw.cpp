@@ -80,13 +80,35 @@ const char * c_str(rigor r)
     }
 }
 
+int default_nthreads()
+{
+    int retval = 1;
+
+#ifdef HAVE_FFTW3_THREADS
+#if defined HAVE_OPENMP
+    const char * const envstr = getenv("OMP_NUM_THREADS");
+    if (envstr) {
+        const int envnum = atoi(envstr);
+        if (envnum > 0) retval = envnum;
+    }
+#elif defined HAVE_PTHREAD
+    // TODO Provide sane nthreads default for FFTW pthread environment
+#else
+#error "Sanity check failed; unknown FFTW threading model in use."
+#endif
+#endif
+
+    return retval;
+}
+
 void FFTWDefinition::normalize_rigor_string(std::string input)
 {
     this->rigor_string_ = c_str(rigor_from(input.c_str()));
 }
 
 FFTWDefinition::FFTWDefinition()
-    : options_("FFTW definition")
+    : options_("FFTW definition"),
+      nthreads_(default_nthreads())    // Default obtained here
 {
     namespace po = ::boost::program_options;
 
@@ -103,40 +125,29 @@ FFTWDefinition::FFTWDefinition()
 
     std::string rigor_default(c_str(measure));
 
-    std::string nthreads_description(
-            "Number of threads to use for FFTW planning");
+    std::string nthreads_description("Number of FFTW threads to use");
 #ifdef HAVE_FFTW3_THREADS
 #if defined HAVE_OPENMP
     nthreads_description += " (OpenMP per OMP_NUM_THREADS)";
-    const int nthreads_default =
-        (getenv("OMP_NUM_THREADS") && atoi(getenv("OMP_NUM_THREADS")) > 0)
-        ? atoi(getenv("OMP_NUM_THREADS")) : 1;
 #elif defined HAVE_PTHREAD
-    // TODO Provide sane nthreads default for FFTW pthread environment
     nthreads_description += " (pthread)";
-    const int nthreads_default = 1;
 #else
 #error "Sanity check failed; unknown FFTW threading model in use."
 #endif
 #else  /* HAVE_FFTW3_THREADS not defined */
     nthreads_description += " (Disabled)";
-    const int nthreads_default = 1;
 #endif /* HAVE_FFTW3_THREADS */
 
-    this->nthreads_ = nthreads_default;
-
     options_.add_options()
-        ("rigor",
-         po::value<std::string>(&rigor_string_)
-                ->notifier(
-                    std::bind1st(
-                        std::mem_fun(&FFTWDefinition::normalize_rigor_string),
-                        this))
-                ->default_value(rigor_default),
+        ("rigor", po::value<std::string>(&rigor_string_)
+            ->notifier(
+                std::bind1st(
+                    std::mem_fun(&FFTWDefinition::normalize_rigor_string),
+                    this))
+            ->default_value(rigor_default),
          rigor_description.c_str())
-        ("nthreads",
-         po::value<int>(&nthreads_)
-                ->default_value(nthreads_default),
+        ("nthreads", po::value<int>(&nthreads_)
+                ->default_value(nthreads_),
          nthreads_description.c_str())
     ;
 }
