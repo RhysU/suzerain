@@ -15,6 +15,9 @@ AC_SUBST(FFTW3_LIBS)
 # Prepare for FFTW threading search
 ax_fftw3_libs_pre=`echo  $FFTW3_LIBS | $SED -e 's/-lfftw3.*$//'`
 ax_fftw3_libs_post=`echo $FFTW3_LIBS | $SED -e 's/^.*-lfftw3/-lfftw3/'`
+# Default values overridden on success
+FFTW3_THREADS_CFLAGS=$FFTW3_CFLAGS
+FFTW3_THREADS_LIBS=$FFTW3_LIBS
 ax_fftw3_found_threads=no
 
 # Check if we can link in threading without any additional help
@@ -68,10 +71,6 @@ fi
 # Finish up FFTW thread-related processing
 if test "${ax_fftw3_found_threads}" = yes; then
     AC_DEFINE([HAVE_FFTW3_THREADS],[1],[Defined if FFTW3 threads available])
-else
-    # Give up and provide serial-only versions
-    FFTW3_THREADS_CFLAGS=$FFTW3_CFLAGS
-    FFTW3_THREADS_LIBS=$FFTW3_LIBS
 fi
 AC_SUBST(FFTW3_THREADS_CFLAGS)
 AC_SUBST(FFTW3_THREADS_LIBS)
@@ -92,9 +91,13 @@ AC_CHECK_LIB([fftw3_mpi],[fftw_mpi_init], [
     AC_SUBST(FFTW3_MPI_LIBS)
 
     # Prepare libraries for FFTW MPI and threading
-    ax_fftw3_threads_libs_pre=`echo  $FFTW3_THREADS_LIBS | $SED -e 's/-lfftw3_threads.*$//'`
-    ax_fftw3_threads_libs_post=`echo $FFTW3_THREADS_LIBS | $SED -e 's/^.*-lfftw3_threads/-lfftw3_threads/'`
-    FFTW3_MPI_THREADS_LIBS="$ax_fftw3_threads_libs_pre -lfftw3_mpi $ax_fftw3_threads_libs_post"
+    if test "${ax_fftw3_found_threads}" = yes; then
+        ax_fftw3_threads_libs_pre=`echo  $FFTW3_THREADS_LIBS | $SED -e 's/-lfftw3_threads.*$//'`
+        ax_fftw3_threads_libs_post=`echo $FFTW3_THREADS_LIBS | $SED -e 's/^.*-lfftw3_threads/-lfftw3_threads/'`
+        FFTW3_MPI_THREADS_LIBS="$ax_fftw3_threads_libs_pre -lfftw3_mpi $ax_fftw3_threads_libs_post"
+    else
+        FFTW3_MPI_THREADS_LIBS="$ax_fftw3_libs_pre -lfftw3_mpi $ax_fftw3_libs_post"
+    fi
     AC_SUBST(FFTW3_MPI_THREADS_LIBS)
 ], [
     AC_MSG_ERROR([Could not find FFTW MPI functionality])
