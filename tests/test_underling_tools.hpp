@@ -32,6 +32,7 @@
 #ifndef PECOS_SUZERAIN_TEST_UNDERLING_TOOLS_HPP
 #define PECOS_SUZERAIN_TEST_UNDERLING_TOOLS_HPP
 
+#include <suzerain/common.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/underling.hpp>
 #include <fftw3-mpi.h>
@@ -41,11 +42,31 @@ struct FFTWMPIFixture {
 
     FFTWMPIFixture() {
         MPI_Init(NULL, NULL); // NULL valid per MPI standard section 8.7
+#ifdef HAVE_FFTW3_THREADS
+        assert(fftw_init_threads());
+        int nthreads = 1;
+#if defined HAVE_OPENMP
+        const char * const envstr = getenv("OMP_NUM_THREADS");
+        if (envstr) {
+            const int envnum = atoi(envstr);
+            if (envnum > 0) nthreads = envnum;
+        }
+#elif defined HAVE_PTHREAD
+    // TODO Provide sane nthreads default for FFTW pthread environment
+#else
+#error "Sanity check failed; unknown FFTW threading model in use."
+#endif
+        BOOST_TEST_MESSAGE("Using FFTW with " << nthreads << " threads.");
+        fftw_plan_with_nthreads(nthreads);
+#endif
         fftw_mpi_init();
     }
 
     ~FFTWMPIFixture() {
         fftw_mpi_cleanup();
+#ifdef HAVE_FFTW3_THREADS
+        fftw_cleanup_threads();
+#endif
         MPI_Finalize();
     }
 };
