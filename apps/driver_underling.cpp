@@ -84,17 +84,11 @@ int main(int argc, char *argv[])
     options.add_definition(griddef);
     suzerain::fftw::FFTWDefinition fftwdef;
     options.add_definition(fftwdef);
-    int nrep          =  1;
-    int howmany       =  1;
+    suzerain::ProfileDefinition profile;
+    options.add_definition(profile);
     int sleep_barrier = -1;
     namespace po = boost::program_options;
     // TODO Weirdly, add_options() is failing for more than 2 options...
-    options.add_options()
-        ("howmany", po::value<int>(&howmany)->default_value(1),
-        "Number of interleaved real-valued fields to transpose");
-    options.add_options()
-        ("nrep", po::value<int>(&nrep)->default_value(1),
-        "Number of repetitions to perform for timing purposes");
     options.add_options()
         ("sleep_barrier", po::value<int>(&sleep_barrier)->default_value(-1),
         "DEBUG: If > 0, the process rank at which to create a sleep barrier.");
@@ -114,12 +108,12 @@ int main(int argc, char *argv[])
     fftw_plan_with_nthreads(fftwdef.nthreads());
 #endif
 
-    // Create a grid and a problem
+    // Create a grid and relevant problems
     namespace underling = suzerain::underling;
     underling::grid grid(MPI_COMM_WORLD,
                          griddef.global_extents().begin(),
                          griddef.processor_grid().begin());
-    underling::problem problem(grid, howmany);
+    underling::problem problem(grid, profile.howmany());
 
     // Allocate automatically freed, aligned storage
     const size_t local_memory = problem.local_memory();
@@ -139,8 +133,9 @@ int main(int argc, char *argv[])
         LOG4CXX_INFO(logger,
                      "Number of processors:     " << nproc);
         LOG4CXX_INFO(logger,
-                     "Extents:                  " << griddef.global_extents()
-                     << " by " << howmany << " scalar field(s)");
+                     "Extents:                  " << griddef.global_extents());
+        LOG4CXX_INFO(logger,
+                     "State components:         " << profile.howmany());
         LOG4CXX_INFO(logger,
                      "Requested processor grid: "
                      << griddef.processor_grid());
@@ -158,7 +153,13 @@ int main(int argc, char *argv[])
                      "FFTW threads:             Unavailable");
 #endif
         LOG4CXX_INFO(logger,
-                     "Number of repetitions:    " << nrep);
+                     "Fields wave -> physical:  " << profile.backward());
+        LOG4CXX_INFO(logger,
+                     "Fields physical -> wave:  " << profile.forward());
+        LOG4CXX_INFO(logger,
+                     "Fields round tripping:    " << profile.roundtrip());
+        LOG4CXX_INFO(logger,
+                     "Number of repetitions:    " << profile.nrep());
         LOG4CXX_INFO(logger,
                      "Process storage:          "
                      << (local_memory_minimum*sizeof(underling_real))/1024
@@ -193,7 +194,7 @@ int main(int argc, char *argv[])
         > roundtrip;
 
     // Execute the plan the appropriate number of times
-    for (int i = 0; i < nrep; ++i) {
+    for (int i = 0; i < profile.nrep(); ++i) {
 
         MPI_Barrier(MPI_COMM_WORLD);
         if (!procid) LOG4CXX_DEBUG(logger, "Repetition " << i);
