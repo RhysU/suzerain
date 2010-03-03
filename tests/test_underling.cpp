@@ -142,6 +142,17 @@ BOOST_AUTO_TEST_CASE( roundtrip8x8x8_transposed_both )
     test_round_trip(MPI_COMM_WORLD, 8, 8, 8, 11, long_n2 | long_n0);
 }
 
+BOOST_AUTO_TEST_CASE( roundtrip8x8x8_degenerate_howmany )
+{
+    using suzerain::underling::transposed::long_n2;
+    using suzerain::underling::transposed::long_n0;
+
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8, 0, 0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8, 0, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8, 0, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 8, 8, 8, 0, long_n2 | long_n0);
+}
+
 BOOST_AUTO_TEST_CASE( roundtrip2x3x5 )
 {
     test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  1, 0);
@@ -187,6 +198,17 @@ BOOST_AUTO_TEST_CASE( roundtrip2x3x5_transposed_long_both )
     test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  5, long_n2 | long_n0);
     test_round_trip(MPI_COMM_WORLD, 2, 3, 5,  7, long_n2 | long_n0);
     test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 11, long_n2 | long_n0);
+}
+
+BOOST_AUTO_TEST_CASE( roundtrip2x3x5_degenerate_howmany )
+{
+    using suzerain::underling::transposed::long_n2;
+    using suzerain::underling::transposed::long_n0;
+
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 0, 0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 0, long_n2);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 0, long_n0);
+    test_round_trip(MPI_COMM_WORLD, 2, 3, 5, 0, long_n2 | long_n0);
 }
 
 BOOST_AUTO_TEST_CASE( extents_consistency )

@@ -95,9 +95,6 @@ struct underling_plan_s {
 MPI_Comm
 underling_MPI_Comm_dup_with_name(MPI_Comm comm);
 
-fftw_plan
-underling_fftw_plan_nop();
-
 underling_transpose
 underling_transpose_create(
         ptrdiff_t d0,
@@ -193,25 +190,6 @@ underling_MPI_Comm_dup_with_name(MPI_Comm comm)
     }
 
     return retval;
-}
-
-static
-fftw_plan
-underling_fftw_plan_nop()
-{
-    // Create a non-NULL NOP FFTW plan
-    fftw_plan nop_plan = fftw_plan_guru_r2r(/*rank*/0,
-                                            /*dims*/NULL,
-                                            /*howmany_rank*/0,
-                                            /*dims*/NULL,
-                                            /*in*/NULL,
-                                            /*out*/NULL,
-                                            /*kind*/NULL,
-                                            /*flags*/0);
-    if (SUZERAIN_UNLIKELY(nop_plan == NULL)) {
-        SUZERAIN_ERROR_NULL("FFTW returned a NULL NOP plan", SUZERAIN_ESANITY);
-    }
-    return nop_plan;
 }
 
 underling_grid
@@ -423,9 +401,11 @@ underling_transpose_create(
                             SUZERAIN_ESANITY);
     }
 
-    if (SUZERAIN_UNLIKELY(t->d[0] == 0 || t->d[1] == 0)) {
+    if (SUZERAIN_UNLIKELY(    t->howmany == 0
+                           || t->d[0] == 0
+                           || t->d[1] == 0)) {
         // Trivial transpose required;
-        // fftw_mpi_local_size_many_transpose divides-by-zero on zero size
+        // fftw_mpi_local_size_many_transposed divides-by-zero on zero size
         t->local[0]       = 0;
         t->local[1]       = 0;
         t->local_start[0] = 0;
@@ -496,9 +476,11 @@ underling_transpose_create_inverse(
                             SUZERAIN_ESANITY);
     }
 
-    if (SUZERAIN_UNLIKELY(backward->d[0] == 0 || backward->d[1] == 0)) {
+    if (SUZERAIN_UNLIKELY(    backward->howmany == 0
+                           || backward->d[0] == 0
+                           || backward->d[1] == 0)) {
         // Trivial transpose required;
-        // fftw_mpi_local_size_many_transpose divides-by-zero on zero size
+        // fftw_mpi_local_size_many_transposed divides-by-zero on zero size
         backward->local[0]       = 0;
         backward->local[1]       = 0;
         backward->local_start[0] = 0;
@@ -548,10 +530,12 @@ underling_transpose_fftw_plan(
         SUZERAIN_ERROR_NULL("transpose == NULL", SUZERAIN_EINVAL);
     }
 
-    if (SUZERAIN_UNLIKELY(transpose->d[0] == 0 || transpose->d[1] == 0)) {
-        // Trivial transpose required;
-        // fftw_mpi_plan_many_transpose returns NULL on trivial input
-        return underling_fftw_plan_nop();
+    if (SUZERAIN_UNLIKELY(    transpose->howmany == 0
+                           || transpose->d[0] == 0
+                           || transpose->d[1] == 0)) {
+        // fftw_mpi_plan_many_transpose returns NULL on some trivial input.
+        // Create a NOP fftw_plan and return it to sidestep the issue.
+        return fftw_plan_guru_r2r(0, NULL, 0, NULL, NULL, NULL, NULL, 0);
     } else {
         return fftw_mpi_plan_many_transpose(transpose->d[0],
                                             transpose->d[1],
@@ -574,8 +558,8 @@ underling_problem_create(
     if (SUZERAIN_UNLIKELY(grid == NULL)) {
         SUZERAIN_ERROR_NULL("grid == NULL", SUZERAIN_EINVAL);
     }
-    if (SUZERAIN_UNLIKELY(howmany < 1)) {
-        SUZERAIN_ERROR_NULL("howmany >= 1 required", SUZERAIN_EINVAL);
+    if (SUZERAIN_UNLIKELY(howmany < 0)) {
+        SUZERAIN_ERROR_NULL("howmany >= 0 required", SUZERAIN_EINVAL);
     }
     const unsigned non_transposed_mask =   ~UNDERLING_TRANSPOSED_LONG_N2
                                          & ~UNDERLING_TRANSPOSED_LONG_N0;
@@ -611,15 +595,17 @@ underling_problem_create(
 
     // Fix interleaved data field details in p->long_{n2,n1,n0}
     for (int i = 0; i < 3; ++i) {
-        p->long_n[i].start[3]  = 0;
-        p->long_n[i].size[3]   = p->howmany;
+        p->long_n[i].start[3] = 0;
+        p->long_n[i].size[3]  = p->howmany;
     }
 
     // Decompose {n0,n1}/pB and store details in p->long_{(n2,n1),n0}
     {
         ptrdiff_t local_d0, local_d0_start, local_d1, local_d1_start;
         ptrdiff_t dB[2] = {grid->n[0], grid->n[1]}; // Never performed
-        fftw_mpi_local_size_many_transposed(2, dB, p->howmany,
+        const int howmany_tmp                       // Allows howmany == 0
+            = SUZERAIN_UNLIKELY(p->howmany == 0) ? 1 : p->howmany;
+        fftw_mpi_local_size_many_transposed(2, dB, howmany_tmp,
                 FFTW_MPI_DEFAULT_BLOCK, FFTW_MPI_DEFAULT_BLOCK, grid->pB_comm,
                 &local_d0, &local_d0_start, &local_d1, & local_d1_start);
         assert(local_d0       <= INT_MAX);
@@ -638,7 +624,9 @@ underling_problem_create(
     {
         ptrdiff_t local_d0, local_d0_start, local_d1, local_d1_start;
         ptrdiff_t dA[2] = {grid->n[1], grid->n[2]}; // Never performed
-        fftw_mpi_local_size_many_transposed(2, dA, p->howmany,
+        const int howmany_tmp                       // Allow howmany == 0
+            = SUZERAIN_UNLIKELY(p->howmany == 0) ? 1 : p->howmany;
+        fftw_mpi_local_size_many_transposed(2, dA, howmany_tmp,
                 FFTW_MPI_DEFAULT_BLOCK, FFTW_MPI_DEFAULT_BLOCK, grid->pA_comm,
                 &local_d0, &local_d0_start, &local_d1, &local_d1_start);
         assert(local_d0       <= INT_MAX);
