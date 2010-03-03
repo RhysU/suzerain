@@ -33,6 +33,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/types.hpp>
+#include <suzerain/validation.hpp>
 
 /** @file
  * Provides classes handling grid definitions, which are runtime
@@ -42,22 +43,6 @@
 namespace suzerain {
 
 namespace problem {
-
-namespace detail {
-
-template< typename T >
-void ensure_positive(const T &t)
-throw(std::invalid_argument)
-{
-    BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
-    if (boost::is_signed<T>::value && t <= T(0)) {
-        std::ostringstream msg;
-        msg << "Value " << t << " is non-positive";
-        throw std::invalid_argument(msg.str());
-    }
-}
-
-} // namespace detail
 
 /**
  * Holds basic three dimensional computational grid dimensions,
@@ -193,46 +178,47 @@ GridDefinition<FPT>::GridDefinition(size_type default_size,
 
     namespace po = ::boost::program_options;
 
+    using ::std::bind2nd;
+    using ::std::ptr_fun;
+    using ::suzerain::validation::ensure_nonnegative;
+    using ::suzerain::validation::ensure_positive;
+
+    // Created to solve ambiguous type issues below
+    ::std::pointer_to_binary_function<FPT,const char*,void>
+        ptr_fun_ensure_positive_FPT(ensure_positive<FPT>);
+
     options_.add_options()
-        ("lx",
-         po::value<FPT>(&lx_)
-                ->notifier(detail::ensure_positive<FPT>)
-                ->default_value(default_length),
+        ("lx", po::value<FPT>(&lx_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"lx"))
+            ->default_value(default_length),
         "Nondimensional grid length in X (streamwise) direction")
-        ("ly",
-         po::value<FPT>(&ly_)
-                ->notifier(detail::ensure_positive<FPT>)
-                ->default_value(default_length),
+        ("ly", po::value<FPT>(&ly_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"ly"))
+            ->default_value(default_length),
         "Nondimensional grid length in Y (wall normal) direction")
-        ("lz",
-         po::value<FPT>(&lz_)
-                ->notifier(detail::ensure_positive<FPT>)
-                ->default_value(default_length),
+        ("lz", po::value<FPT>(&lz_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"lz"))
+            ->default_value(default_length),
         "Nondimensional grid length in Z (spanwise) direction")
-        ("nx",
-         po::value<size_type>(&global_extents_[0])
-                ->notifier(detail::ensure_positive<size_type>)
-                ->default_value(default_size),
+        ("nx", po::value<size_type>(&global_extents_[0])
+            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"nx"))
+            ->default_value(default_size),
         "Number of grid points in X (streamwise) direction")
-        ("ny",
-         po::value<size_type>(&global_extents_[1])
-                ->notifier(detail::ensure_positive<size_type>)
-                ->default_value(default_size),
+        ("ny", po::value<size_type>(&global_extents_[1])
+            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"ny"))
+            ->default_value(default_size),
         "Number of grid points in Y (wall normal) direction")
-        ("nz",
-         po::value<size_type>(&global_extents_[2])
-                ->notifier(detail::ensure_positive<size_type>)
-                ->default_value(default_size),
+        ("nz", po::value<size_type>(&global_extents_[2])
+            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"nz"))
+            ->default_value(default_size),
         "Number of grid points in Z (spanwise) direction")
-        ("pa",
-         po::value<size_type>(&processor_grid_[0])
-                ->notifier(detail::ensure_positive<size_type>)
-                ->default_value(0),
+        ("pa", po::value<size_type>(&processor_grid_[0])
+            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"pa"))
+            ->default_value(0),
         "Processor count in the P_A decomposition direction; 0 for automatic")
-        ("pb",
-         po::value<size_type>(&processor_grid_[1])
-                ->notifier(detail::ensure_positive<size_type>)
-                ->default_value(0),
+        ("pb", po::value<size_type>(&processor_grid_[1])
+            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"pb"))
+            ->default_value(0),
         "Processor count in the P_B decomposition direction; 0 for automatic")
     ;
 }

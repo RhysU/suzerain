@@ -45,6 +45,7 @@ pkginclude_HEADERS += pencilfft.hpp
 pkginclude_HEADERS += pencil_grid.hpp
 pkginclude_HEADERS += pencil.hpp
 pkginclude_HEADERS += problem.hpp
+pkginclude_HEADERS += profile.hpp
 pkginclude_HEADERS += program_options.hpp
 pkginclude_HEADERS += richardson.h
 pkginclude_HEADERS += timestepper.hpp
@@ -53,6 +54,7 @@ pkginclude_HEADERS += underling_fft.h
 pkginclude_HEADERS += underling_fft.hpp
 pkginclude_HEADERS += underling.h
 pkginclude_HEADERS += underling.hpp
+pkginclude_HEADERS += validation.hpp
 
 noinst_LTLIBRARIES     += libsuzerain.la
 libsuzerain_la_LDFLAGS  = -release $(PACKAGE_VERSION)
@@ -63,6 +65,7 @@ libsuzerain_la_SOURCES += fftw.cpp
 libsuzerain_la_SOURCES += mpi.cpp
 libsuzerain_la_SOURCES += os.c
 libsuzerain_la_SOURCES += pencil_grid.cpp
+libsuzerain_la_SOURCES += profile.cpp
 libsuzerain_la_SOURCES += richardson.c
 
 noinst_LTLIBRARIES      += libunderling.la

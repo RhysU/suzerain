@@ -55,6 +55,7 @@
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/problem.hpp>
+#include <suzerain/profile.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/types.hpp>
 #include <suzerain/underling.hpp>
