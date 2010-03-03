@@ -82,51 +82,8 @@ AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LIBS} ${FLIBS}"
 AX_PATH_GSL(1.13,,AC_MSG_ERROR([Could not find required GSL version.]))
-dnl --------BEGIN FFTW3 checks---------------------
-PKG_CHECK_MODULES(FFTW3, fftw3 > 3.2)
-AC_SUBST(FFTW3_CFLAGS)
-AC_SUBST(FFTW3_LIBS)
-found_fftw3_threads=no
-if test "${found_fftw3_threads}" != yes; then
-AX_OPENMP([
-    AC_DEFINE(HAVE_OPENMP,[1],[Define if OpenMP is enabled])
-    AC_CHECK_LIB([fftw3_threads],[fftw_init_threads],
-        [
-          AC_DEFINE([HAVE_FFTW3_THREADS],[1],[Defined if FFTW3 threads available])
-          FFTW3_THREADS_CFLAGS="$OPENMP_CFLAGS $FFTW3_CFLAGS"
-          FFTW3_THREADS_LIBS="-lfftw3_threads $FFTW3_LIBS $OPENMP_CFLAGS"
-          AC_MSG_NOTICE([Detected OpenMP-enabled FFTW threading])
-          found_fftw3_threads=yes
-        ],
-        [AC_MSG_NOTICE([Detected OpenMP but not OpenMP-enabled FFTW threading])],
-        [$FFTW3_LIBS $OPENMP_CFLAGS])
-    ])
-fi
-if test "${found_fftw3_threads}" != yes; then
-ACX_PTHREAD([
-    AC_DEFINE(HAVE_PTHREAD,[1],
-              [Define if you have POSIX threads libraries and header files])
-    AC_CHECK_LIB([fftw3_threads],[fftw_init_threads],
-        [
-          AC_DEFINE([HAVE_FFTW3_THREADS],[1],[Defined if FFTW3 threads available])
-          FFTW3_THREADS_CFLAGS="$PTHREAD_CFLAGS $FFTW3_CFLAGS"
-          FFTW3_THREADS_LIBS="-lfftw3_threads $FFTW3_LIBS $PTHREAD_LIBS"
-          AC_MSG_NOTICE([Detected pthread-enabled FFTW threading])
-          found_fftw3_threads=yes
-        ],
-        [AC_MSG_NOTICE([Detected pthread but not pthread-enabled FFTW threading])],
-        [$FFTW3_LIBS $PTHREAD_LIBS])
-    ])
-fi
-if test "${found_fftw3_threads}" != yes; then
-  FFTW3_THREADS_CFLAGS=$FFTW3_CFLAGS
-  FFTW3_THREADS_LIBS=$FFTW3_LIBS
-  AC_MSG_NOTICE([FFTW threading not detected])
-fi
-AC_SUBST(FFTW3_THREADS_CFLAGS)
-AC_SUBST(FFTW3_THREADS_LIBS)
-dnl --------END FFTW3 checks-----------------------
-dnl END FFTW3 checks
+dnl Lots of automagic in the next one...
+AX_FFTW3()
 PKG_CHECK_MODULES(P3DFFT, suzerain-p3dfft)
 AC_SUBST(P3DFFT_CFLAGS)
 AC_SUBST(P3DFFT_LIBS)
