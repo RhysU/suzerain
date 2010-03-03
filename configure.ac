@@ -75,6 +75,18 @@ AC_SUBST(LIBTOOL_DEPS)
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
+dnl MPI toolchain checks
+dnl ------------------------------------------------
+AC_LANG_PUSH([C])
+ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C, e.g. mpicc.))
+AX_MPIP()
+AC_LANG_POP([C])
+AC_LANG_PUSH([C++])
+ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C++, e.g. mpicxx.))
+AC_LANG_POP([C++])
+AC_CACHE_SAVE
+
+dnl ------------------------------------------------
 dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG_PUSH([C])
@@ -95,11 +107,6 @@ AC_SUBST(HPCT_CFLAGS)
 AC_SUBST(HPCT_LIBS)
 AC_LANG_POP([C])
 AC_CACHE_SAVE
-
-dnl ------------------------------------------------
-dnl C library requirements
-dnl ------------------------------------------------
-
 
 dnl ------------------------------------------------
 dnl C++ library requirements
@@ -143,18 +150,6 @@ AC_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
 dnl Need to determine how to enable some but not of Intel's ICPC babble
 dnl AX_CFLAGS_WARN_ALL_ANSI(CFLAGS)
 dnl AX_CFLAGS_WARN_ALL_ANSI(CXXFLAGS)
-AC_CACHE_SAVE
-
-dnl ------------------------------------------------
-dnl MPI toolchain checks
-dnl ------------------------------------------------
-AC_LANG_PUSH([C])
-ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C, e.g. mpicc.))
-AX_MPIP()
-AC_LANG_POP([C])
-AC_LANG_PUSH([C++])
-ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C++, e.g. mpicxx.))
-AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
