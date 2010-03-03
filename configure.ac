@@ -94,7 +94,6 @@ AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LIBS} ${FLIBS}"
 AX_PATH_GSL(1.13,,AC_MSG_ERROR([Could not find required GSL version.]))
-dnl Lots of automagic in the next one...
 AX_FFTW3()
 PKG_CHECK_MODULES(P3DFFT, suzerain-p3dfft)
 AC_SUBST(P3DFFT_CFLAGS)
