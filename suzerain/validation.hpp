@@ -54,10 +54,10 @@ throw(std::invalid_argument)
     // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
 
     BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
-    if (!(boost::is_signed<T>::value && t > T(0))) {
+    if (!(t > T(0))) {
         std::ostringstream msg;
         if (name) {
-            msg << "Value of " << name << " (" << t << ") must be positive";
+            msg << "Value of '" << name << "' (" << t << ") must be positive";
         } else {
             msg << "Value " << t << " must be positive";
         }
@@ -78,10 +78,12 @@ throw(std::invalid_argument)
     // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
 
     BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
-    if (!(t >= T(0))) {
+    const bool applies =    boost::is_floating_point<T>::value
+                         || boost::is_signed<T>::value;
+    if (applies && !(t >= T(0))) {
         std::ostringstream msg;
         if (name) {
-            msg << "Value of " << name << " (" << t << ") must be nonnegative";
+            msg << "Value of '" << name << "' (" << t << ") must be nonnegative";
         } else {
             msg << "Value " << t << " must be nonnegative";
         }
