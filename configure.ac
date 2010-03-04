@@ -32,6 +32,7 @@ dnl ------------------------------------------------------
 AX_CHECK_ENABLE_DEBUG
 AC_LANG([C])
 AC_PROG_CC
+AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 AX_COMPILER_VENDOR
 if test "x$ax_enable_debug" != "xyes"; then
     dnl Determine good optimization flags for C and store in CFLAGS_MAXOPT
@@ -48,9 +49,16 @@ if test "x$ax_enable_debug" != "xyes"; then
     FFLAGS="${FFLAGS} ${CFLAGS_MAXOPT}"
     FCFLAGS="${FCFLAGS} ${CFLAGS_MAXOPT}"
 fi
+if test "x$ax_enable_debug" != "xno"; then
+    AX_TRACEBACK()
+fi
 AC_LANG([C++])
 AC_PROG_CXX
 AX_COMPILER_VENDOR
+if test "x$ax_enable_debug" != "xno"; then
+    AX_TRACEBACK()
+fi
+AC_LANG([C++])
 AC_PROG_RANLIB
 AC_PROG_SED
 AX_AM_JOBSERVER([no])
@@ -90,7 +98,6 @@ dnl ------------------------------------------------
 dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG_PUSH([C])
-AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LIBS} ${FLIBS}"
 AX_PATH_GSL(1.13,,AC_MSG_ERROR([Could not find required GSL version.]))
