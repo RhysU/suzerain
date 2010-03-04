@@ -197,7 +197,6 @@ int main(int argc, char *argv[])
     for (int i = 0; i < profile.nrep(); ++i) {
 
         MPI_Barrier(MPI_COMM_WORLD);
-        if (!procid) LOG4CXX_DEBUG(logger, "Repetition " << i);
 
         MPI_Pcontrol(1);                         // Enable MPI profiling
         const double start_trip = MPI_Wtime();   // Start timer
@@ -229,12 +228,20 @@ int main(int argc, char *argv[])
         // Our round trip time is only as good as the weakest link.
         // In particular, final in-memory transposes may be slower
         // on systems with a poorly balanced problem distribution.
-        double sendbuf = end_trip - start_trip;
-        double elapsed;
-        MPI_Allreduce(&sendbuf, &elapsed, 1,
+        double elapsed = end_trip - start_trip;
+        double maximum, minimum;
+        MPI_Allreduce(&elapsed, &maximum, 1,
                       MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-        // Accumulate statistics
-        roundtrip(elapsed);
+        MPI_Allreduce(&elapsed, &minimum, 1,
+                      MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+        // Accumulate maximum time statistics
+        roundtrip(maximum);
+
+        if (!procid) {
+            LOG4CXX_DEBUG(logger,
+                          "Repetition " << i  << " time: "
+                          << minimum << " to " << maximum << " seconds");
+        }
     }
 
 #ifdef HAVE_HPCT
@@ -245,16 +252,16 @@ int main(int argc, char *argv[])
     // Dump out the round trip timing statistics
     if (!procid) {
         LOG4CXX_INFO(logger,
-                     "Round trip min time:      "
+                     "Round trip maximum min time:      "
                      << ((min)(roundtrip)) << " seconds");
         LOG4CXX_INFO(logger,
-                     "Round trip mean time:     "
+                     "Round trip maximum mean time:     "
                      << ((mean)(roundtrip)) << " seconds");
         LOG4CXX_INFO(logger,
-                     "Round trip max time:      "
+                     "Round trip maximum max time:      "
                      << ((max)(roundtrip)) << " seconds");
         LOG4CXX_INFO(logger,
-                     "Round trip stddev:        "
+                     "Round trip maximum stddev:        "
                      << sqrt(variance(roundtrip)) << " seconds");
     }
 
