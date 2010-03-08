@@ -46,10 +46,12 @@ suzerain_richardson_extrapolation_step(
     const double t,
     const double ki)
 {
+#pragma warning(push,disable:1572)
     if (ki == 0.0) {
         SUZERAIN_ERROR("ki == 0 invalid as it will cause a division-by-zero",
                 SUZERAIN_EDOM);
     }
+#pragma warning(pop)
 
     const double tki       = pow(t, ki);
     const double inv_tkim1 = 1.0/(tki-1.0);
