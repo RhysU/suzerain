@@ -34,6 +34,7 @@
 #include <suzerain/common.h>
 #include <suzerain/error.h>
 #pragma hdrstop
+#include <suzerain/os.h>
 
 int suzerain_fpipe(int *rfd, int rflags, FILE **w, int wflags)
 {
