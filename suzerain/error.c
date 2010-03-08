@@ -70,19 +70,16 @@ suzerain_set_error_handler_off(void)
     return previous_handler;
 }
 
+#pragma warning(push,disable:869)
 static void
 no_error_handler(const char *reason,
                  const char *file,
                  int line,
                  int suzerain_errno)
 {
-    /* do nothing */
-    reason = 0;
-    file = 0;
-    line = 0;
-    suzerain_errno = 0;
-    return;
+    return; /* do nothing */
 }
+#pragma warning(pop)
 
 FILE * suzerain_stream = NULL ;
 suzerain_stream_handler_t * suzerain_stream_handler = NULL;

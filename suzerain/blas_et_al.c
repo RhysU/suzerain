@@ -320,6 +320,7 @@ suzerain_blas_saxpby(
         float *y,
         const int incy)
 {
+#pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate saxpby since MKL lacks the routine. */
     if (SUZERAIN_UNLIKELY((alpha == 0.0f && beta == 1.0f) || n <= 0)) return;
@@ -340,6 +341,7 @@ suzerain_blas_saxpby(
 #else
 #error "Sanity failure"
 #endif
+#pragma warning(pop)
 }
 
 void
@@ -352,6 +354,7 @@ suzerain_blas_daxpby(
         double *y,
         const int incy)
 {
+#pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate daxpby since MKL lacks the routine. */
     if (SUZERAIN_UNLIKELY((alpha == 0.0 && beta == 1.0) || n <= 0)) return;
@@ -372,6 +375,7 @@ suzerain_blas_daxpby(
 #else
 #error "Sanity failure"
 #endif
+#pragma warning(pop)
 }
 
 void
@@ -386,6 +390,7 @@ suzerain_blas_swaxpby(
         float *w,
         const int incw)
 {
+#pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate swaxpby since MKL lacks the routine. */
 
@@ -408,6 +413,7 @@ suzerain_blas_swaxpby(
 #else
 #error "Sanity failure"
 #endif
+#pragma warning(pop)
 }
 
 void
@@ -422,6 +428,7 @@ suzerain_blas_dwaxpby(
         double *w,
         const int incw)
 {
+#pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate dwaxpby since MKL lacks the routine. */
 
@@ -444,6 +451,7 @@ suzerain_blas_dwaxpby(
 #else
 #error "Sanity failure"
 #endif
+#pragma warning(pop)
 }
 
 void
@@ -577,7 +585,9 @@ suzerain_blas_sgb_acc(
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate sgb_acc since MKL lacks the routine. */
+#pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY((alpha == 0.0f && beta == 1.0f) || m <= 0)) return;
+#pragma warning(pop)
 
     const int veclength = ku + 1 + kl;
     const float * const bj_end = b + n *ldb;
@@ -607,7 +617,9 @@ suzerain_blas_dgb_acc(
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate dgb_acc since MKL lacks the routine. */
+#pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY((alpha == 0.0 && beta == 1.0) || m <= 0)) return;
+#pragma warning(pop)
 
     const int veclength = ku + 1 + kl;
     const double * const bj_end = b + n *ldb;
@@ -795,7 +807,9 @@ suzerain_blasext_i2s_zaxpby2(
     const double beta_re  = (beta == NULL)  ? 0.0 : beta[0];
     const double beta_im  = (beta == NULL)  ? 0.0 : beta[1];
 
+#pragma warning(push,disable:1572)
     if (alpha_im == 0.0 && beta_im == 0.0) {
+#pragma warning(pop)
 
         // Avoid complex arithmetic for real-valued scaling
         for (int j = 0; j < m; ++j) {

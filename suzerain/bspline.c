@@ -43,12 +43,17 @@
 #include <suzerain/bspline.h>
 #include <suzerain/error.h>
 
+static
 int
-suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w);
+suzerain_bspline_determine_operator_bandwidths(
+        suzerain_bspline_workspace *w);
 
+static
 int
-suzerain_bspline_create_operators(suzerain_bspline_workspace *w);
+suzerain_bspline_create_operators(
+        suzerain_bspline_workspace *w);
 
+static
 int
 compute_banded_collocation_derivative_submatrix(
     const int ioffset,
@@ -64,12 +69,29 @@ compute_banded_collocation_derivative_submatrix(
     gsl_matrix * db,
     double ** const D);
 
+static
+int
+suzerain_bspline_lu_solve_contiguous(
+    int nrhs,
+    double *b,
+    int ldb,
+    const suzerain_bspline_lu_workspace *luw);
+
+static
+int
+suzerain_bspline_lu_solve_noncontiguous(
+    int nrhs,
+    double *b,
+    int incb,
+    int ldb,
+    const suzerain_bspline_lu_workspace *luw);
+
 suzerain_bspline_workspace *
 suzerain_bspline_alloc(int order,
-                                int nderivatives,
-                                int nbreakpoints,
-                                const double * breakpoints,
-                                enum suzerain_bspline_method method)
+                       int nderivatives,
+                       int nbreakpoints,
+                       const double * breakpoints,
+                       enum suzerain_bspline_method method)
 {
     /* Parameter sanity checks */
     if (order < 1) {
@@ -344,6 +366,7 @@ suzerain_bspline_evaluate(
     return SUZERAIN_SUCCESS;
 }
 
+static
 int
 suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
 {
@@ -432,7 +455,6 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     /* Reduce kl/ku for each zero off-diagonal in ul_D and lr_D */
     for (int k = 0; k <= w->nderivatives; ++k) {
         const int fixed_ku_k = w->ku[k];
-        const int fixed_kl_k = w->kl[k];
         const int fixed_ld   = w->ld;
 
         for (int i=0; i < fixed_ku_k; ++i) {
@@ -440,7 +462,9 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
                 = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_ld);
             const double lr_asum
                 = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_ld);
+#pragma warning(push,disable:1572)
             if (ul_asum + lr_asum == 0.0) {
+#pragma warning(pop)
                 --w->ku[k];
             } else {
                 break; /* Skip all after nonzero superdiagonal */
@@ -451,7 +475,9 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
                 = suzerain_blas_dasum(w->order, ul_D[k]+i, fixed_ld);
             const double lr_asum
                 = suzerain_blas_dasum(w->order, lr_D[k]+i, fixed_ld);
+#pragma warning(push,disable:1572)
             if (ul_asum + lr_asum == 0.0) {
+#pragma warning(pop)
                 --w->kl[k];
             } else {
                 break; /* Skip all after nonzero subdiagonal */
@@ -466,6 +492,7 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     return SUZERAIN_SUCCESS;
 }
 
+static
 int
 suzerain_bspline_create_operators(suzerain_bspline_workspace *w)
 {
@@ -508,6 +535,7 @@ suzerain_bspline_create_operators(suzerain_bspline_workspace *w)
     return SUZERAIN_SUCCESS;
 }
 
+static
 int
 compute_banded_collocation_derivative_submatrix(
     const int ioffset,
@@ -545,7 +573,9 @@ compute_banded_collocation_derivative_submatrix(
 
                 if (in_band) {
                     D[k][offset] = value;
+#pragma warning(push,disable:1572)
                 } else if (value == 0.0) {
+#pragma warning(pop)
                     /* OK: value outside band is identically zero */
                 } else {
                     /* NOT COOL: nonzero value outside bandwidth */
@@ -722,6 +752,7 @@ suzerain_bspline_lu_form_mass(
     return suzerain_bspline_lu_form_general(i_one, &d_one, w, luw);
 }
 
+static
 int
 suzerain_bspline_lu_solve_contiguous(
     int nrhs,
@@ -752,6 +783,7 @@ suzerain_bspline_lu_solve_contiguous(
     return SUZERAIN_SUCCESS;
 }
 
+static
 int
 suzerain_bspline_lu_solve_noncontiguous(
     int nrhs,
