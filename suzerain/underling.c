@@ -92,9 +92,11 @@ struct underling_plan_s {
 
 // TODO Document internal-only methods
 
+static
 MPI_Comm
 underling_MPI_Comm_dup_with_name(MPI_Comm comm);
 
+static
 underling_transpose
 underling_transpose_create(
         ptrdiff_t d0,
@@ -105,14 +107,17 @@ underling_transpose_create(
         MPI_Comm comm,
         unsigned flags);
 
+static
 underling_transpose
 underling_transpose_create_inverse(
         const underling_transpose forward);
 
+static
 void
 underling_transpose_destroy(
         underling_transpose transpose);
 
+static
 fftw_plan
 underling_transpose_fftw_plan(
         const underling_transpose transpose,
@@ -120,12 +125,14 @@ underling_transpose_fftw_plan(
         underling_real *out,
         unsigned fftw_flags);
 
+static
 size_t
 underling_local_memory_allreduce(
         const underling_grid    grid,
         const underling_problem problem,
         MPI_Op op);
 
+static
 void
 underling_fprint_transpose(
         const underling_transpose transpose,
@@ -1218,7 +1225,7 @@ underling_fprint_problem(
     if (!problem) {
         fprintf(output_file, "NULL");
     } else {
-        fprintf(output_file,"{howmany=%d,local_memory=%ld}",
+        fprintf(output_file,"{howmany=%d,local_memory=%lu}",
                 problem->howmany, problem->local_memory);
         for (int i = 2; i >= 0; --i) {
             fprintf(output_file,"{long_n%d:", i);
