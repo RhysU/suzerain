@@ -37,7 +37,7 @@
 namespace suzerain {
 
 ProfileDefinition::ProfileDefinition()
-    : options_("Profiling definition"),
+    : options_(std::string("Profiling definition")),
       howmany_(2),                       // Default is one complex field
       backward_(0),
       forward_(0),
