@@ -90,7 +90,8 @@ int main(int argc, char *argv[])
     namespace po = boost::program_options;
     // TODO Weirdly, add_options() is failing for more than 2 options...
     options.add_options()
-        ("sleep_barrier", po::value<int>(&sleep_barrier)->default_value(-1),
+        ("sleep_barrier",
+         po::value<int>(&sleep_barrier)->default_value(sleep_barrier),
         "DEBUG: If > 0, the process rank at which to create a sleep barrier.");
     if (!procid) {
         options.process(argc, argv);
@@ -269,7 +270,9 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
     const underling_extents long_n2 = problem.local_extents(2);
     for (int i = 0; i < long_n2.extent; ++i) {
+#pragma warning(push,disable:1572)
         if (data.get()[i] != (procid*1e6 + i)) {
+#pragma warning(pop)
             LOG4CXX_ERROR(
                     logger,
                     "Did not recover seeded data starting from index " << i);
