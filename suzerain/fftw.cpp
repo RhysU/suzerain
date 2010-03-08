@@ -107,8 +107,8 @@ void FFTWDefinition::normalize_rigor_string(std::string input)
 }
 
 FFTWDefinition::FFTWDefinition()
-    : options_("FFTW definition"),
-      nthreads_(default_nthreads())    // Default obtained here
+    : options_(std::string("FFTW definition")),
+      nthreads_(default_nthreads())              // Default obtained
 {
     namespace po = ::boost::program_options;
 
@@ -143,7 +143,10 @@ FFTWDefinition::FFTWDefinition()
             ->notifier(
                 std::bind1st(
                     std::mem_fun(&FFTWDefinition::normalize_rigor_string),
-                    this))
+#pragma warning(push,disable:383)
+                    this)
+#pragma warning(pop)
+                )
             ->default_value(rigor_default),
          rigor_description.c_str())
         ("nthreads", po::value<int>(&nthreads_)
