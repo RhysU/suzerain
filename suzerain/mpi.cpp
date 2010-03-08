@@ -125,7 +125,11 @@ std::string comm_rank_identifier(MPI_Comm comm)
     // Take care so that all results from the same comm are the same length
     std::ostringstream oss;
     oss.write(p_buffer, resultlen);
-    oss << sep << std::setfill('0') << std::setw(ceil(log10(size))) << rank;
+    oss << sep << std::setfill('0')
+#pragma warning(push,disable:810)
+        << std::setw(ceil(log10(size)))
+#pragma warning(pop)
+        << rank;
     return oss.str();
 }
 
