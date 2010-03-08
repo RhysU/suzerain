@@ -9,6 +9,8 @@
 #include <fftw3.h>
 #include "test_tools.hpp"
 
+#pragma warning(disable:383 424 1418)
+
 using namespace suzerain;
 
 template<class MultiArray>
