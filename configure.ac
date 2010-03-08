@@ -143,9 +143,12 @@ AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
-dnl C++ compilation strictness and compatibility
+dnl C/C++ compilation strictness and compatibility
 dnl ------------------------------------------------
 dnl Strictness must come after libraries to avoid breaking AC_CHECK_LIB
+AX_CFLAGS_WARN_ALL(CFLAGS)
+AX_CFLAGS_WARN_ALL(CXXFLAGS)
+AX_CXX_WALL_SANITIZE
 AC_CXX_HAVE_STL
 AC_CXX_HEADER_STDCXX_98
 AC_CXX_HEADER_STDCXX_TR1
@@ -153,9 +156,6 @@ AC_CXX_COMPILE_STDCXX_0X
 AC_CXX_CPPFLAGS_STD_LANG(AM_CPPFLAGS)
 AC_CXX_CXXFLAGS_STD_LANG(AM_CXXFLAGS)
 AC_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
-dnl Need to determine how to enable some but not of Intel's ICPC babble
-dnl AX_CFLAGS_WARN_ALL_ANSI(CFLAGS)
-dnl AX_CFLAGS_WARN_ALL_ANSI(CXXFLAGS)
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
