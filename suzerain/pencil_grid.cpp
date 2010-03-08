@@ -46,10 +46,12 @@ pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
     {
         int flag;
         if (MPI_Initialized(&flag) != MPI_SUCCESS || !flag) {
-            throw std::logic_error("MPI stack not yet initialized");
+            throw std::logic_error(
+                    std::string("MPI stack not yet initialized"));
         }
         if (MPI_Finalized(&flag) != MPI_SUCCESS || flag) {
-            throw std::logic_error("MPI stack already finalized");
+            throw std::logic_error(
+                    std::string("MPI stack already finalized"));
         }
     }
 
@@ -102,10 +104,12 @@ pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
     std::swap(wend   [0], wend   [1]);
     std::swap(wextent[0], wextent[1]);
     // Transform indices for C conventions; want ranges like [istart, iend)
+#pragma warning(push,disable:383)
     std::transform(pstart.begin(), pstart.end(), pstart.begin(),
             std::bind2nd(std::minus<int>(),1));
     std::transform(wstart.begin(), wstart.end(), wstart.begin(),
             std::bind2nd(std::minus<int>(),1));
+#pragma warning(pop)
 
     // Convert modified P3DFFT dimensions to have appropriate numeric type
     boost::numeric::converter<index,int> converter;
