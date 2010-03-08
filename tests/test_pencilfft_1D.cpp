@@ -701,12 +701,14 @@ BOOST_AUTO_TEST_SUITE( test_1d_out_of_place_one_reversed );
         { test_1d_out_of_place_one_reversed(elem); }
 void test_1d_out_of_place_one_reversed(const int N)
 {
+    const int ndim = 1;
+
     // C2C: Test multi_array using std::complex
     {
-        typedef boost::multi_array<std::complex<double>,1> array_type;
-        typedef boost::general_storage_order<array_type::dimensionality> storage;
-        array_type::size_type ordering[array_type::dimensionality] = { 0 };
-        const bool ascending[array_type::dimensionality] = { false };
+        typedef boost::multi_array<std::complex<double>,ndim> array_type;
+        typedef boost::general_storage_order<ndim> storage;
+        array_type::size_type ordering[ndim] = { 0 };
+        const bool ascending[ndim] = { false };
 
         array_type in(boost::extents[N], storage(ordering, ascending));
         array_type out(boost::extents[N]);
@@ -721,13 +723,12 @@ void test_1d_out_of_place_one_reversed(const int N)
 
     // R2C: Test multi_array using std::complex when real storage reversed
     {
-        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
-        typedef boost::multi_array<double,1>               real_array_type;
+        typedef boost::multi_array<std::complex<double>,ndim> complex_array_type;
+        typedef boost::multi_array<double,ndim>               real_array_type;
 
-        const real_array_type::size_type N = real_array_type::dimensionality;
-        typedef boost::general_storage_order<N> storage;
-        real_array_type::size_type ordering[N] = { 0 };
-        const bool ascending[N] = { false };
+        typedef boost::general_storage_order<ndim> storage;
+        real_array_type::size_type ordering[ndim] = { 0 };
+        const bool ascending[ndim] = { false };
 
         real_array_type in(boost::extents[N], storage(ordering, ascending));
         complex_array_type out(boost::extents[N/2+1]);
@@ -738,14 +739,12 @@ void test_1d_out_of_place_one_reversed(const int N)
 
     // R2C: Test multi_array using std::complex when complex storage reversed
     {
-        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
-        typedef boost::multi_array<double,1>               real_array_type;
+        typedef boost::multi_array<std::complex<double>,ndim> complex_array_type;
+        typedef boost::multi_array<double,ndim>               real_array_type;
 
-        const complex_array_type::size_type N
-            = complex_array_type::dimensionality;
-        typedef boost::general_storage_order<N> storage;
-        complex_array_type::size_type ordering[N] = { 0 };
-        const bool ascending[N] = { false };
+        typedef boost::general_storage_order<ndim> storage;
+        complex_array_type::size_type ordering[ndim] = { 0 };
+        const bool ascending[ndim] = { false };
 
         real_array_type in(boost::extents[N]);
         complex_array_type out(boost::extents[N/2+1],
@@ -757,13 +756,12 @@ void test_1d_out_of_place_one_reversed(const int N)
 
     // C2R: Test multi_array using std::complex when real storage reversed
     {
-        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
-        typedef boost::multi_array<double,1>               real_array_type;
+        typedef boost::multi_array<std::complex<double>,ndim> complex_array_type;
+        typedef boost::multi_array<double,ndim>               real_array_type;
 
-        const real_array_type::size_type N = real_array_type::dimensionality;
-        typedef boost::general_storage_order<N> storage;
-        real_array_type::size_type ordering[N] = { 0 };
-        const bool ascending[N] = { false };
+        typedef boost::general_storage_order<ndim> storage;
+        real_array_type::size_type ordering[ndim] = { 0 };
+        const bool ascending[ndim] = { false };
 
         complex_array_type in(boost::extents[N/2+1]);
         real_array_type out(boost::extents[N], storage(ordering, ascending));
@@ -774,14 +772,12 @@ void test_1d_out_of_place_one_reversed(const int N)
 
     // C2R: Test multi_array using std::complex when complex storage reversed
     {
-        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
-        typedef boost::multi_array<double,1>               real_array_type;
+        typedef boost::multi_array<std::complex<double>,ndim> complex_array_type;
+        typedef boost::multi_array<double,ndim>               real_array_type;
 
-        const complex_array_type::size_type N
-            = complex_array_type::dimensionality;
-        typedef boost::general_storage_order<N> storage;
-        complex_array_type::size_type ordering[N] = { 0 };
-        const bool ascending[N] = { false };
+        typedef boost::general_storage_order<ndim> storage;
+        complex_array_type::size_type ordering[ndim] = { 0 };
+        const bool ascending[ndim] = { false };
 
         complex_array_type in(boost::extents[N/2+1],
                                storage(ordering, ascending));
@@ -802,12 +798,14 @@ BOOST_AUTO_TEST_SUITE( test_1d_out_of_place_two_reversed );
         { test_1d_out_of_place_two_reversed(elem); }
 void test_1d_out_of_place_two_reversed(const int N)
 {
+    const int ndim = 1;
+
     // C2C: Test multi_array using std::complex
     {
-        typedef boost::multi_array<std::complex<double>,1> array_type;
-        typedef boost::general_storage_order<array_type::dimensionality> storage;
-        array_type::size_type ordering[array_type::dimensionality] = { 0 };
-        const bool ascending[array_type::dimensionality] = { false };
+        typedef boost::multi_array<std::complex<double>,ndim> array_type;
+        typedef boost::general_storage_order<ndim> storage;
+        array_type::size_type ordering[ndim] = { 0 };
+        const bool ascending[ndim] = { false };
 
         array_type in(boost::extents[N], storage(ordering, ascending));
         array_type out(boost::extents[N], storage(ordering, ascending));
@@ -822,13 +820,12 @@ void test_1d_out_of_place_two_reversed(const int N)
 
     // R2C: Test multi_array using std::complex
     {
-        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
-        typedef boost::multi_array<double,1>               real_array_type;
+        typedef boost::multi_array<std::complex<double>,ndim> complex_array_type;
+        typedef boost::multi_array<double,ndim>               real_array_type;
 
-        const real_array_type::size_type N = real_array_type::dimensionality;
-        typedef boost::general_storage_order<N> storage;
-        real_array_type::size_type ordering[N] = { 0 };
-        const bool ascending[N] = { false };
+        typedef boost::general_storage_order<ndim> storage;
+        real_array_type::size_type ordering[ndim] = { 0 };
+        const bool ascending[ndim] = { false };
 
         real_array_type in(boost::extents[N],
                            storage(ordering, ascending));
@@ -841,13 +838,12 @@ void test_1d_out_of_place_two_reversed(const int N)
 
     // C2R: Test multi_array using std::complex
     {
-        typedef boost::multi_array<std::complex<double>,1> complex_array_type;
-        typedef boost::multi_array<double,1>               real_array_type;
+        typedef boost::multi_array<std::complex<double>,ndim> complex_array_type;
+        typedef boost::multi_array<double,ndim>               real_array_type;
 
-        const real_array_type::size_type N = real_array_type::dimensionality;
-        typedef boost::general_storage_order<N> storage;
-        real_array_type::size_type ordering[N] = { 0 };
-        const bool ascending[N] = { false };
+        typedef boost::general_storage_order<ndim> storage;
+        real_array_type::size_type ordering[ndim] = { 0 };
+        const bool ascending[ndim] = { false };
 
         complex_array_type in(boost::extents[N/2+1],
                               storage(ordering, ascending));
