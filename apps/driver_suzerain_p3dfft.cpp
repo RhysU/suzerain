@@ -43,7 +43,8 @@
 
 #define ONLYPROC0(expr) if (!procid) { expr ; } else
 
-double real_data(const double x, const double y, const double z) {
+static double real_data(const double x, const double y, const double z)
+{
     return   1.0* 1.0
            +      2.0*y
            + 2.0* 3.0*sin(x)
@@ -66,14 +67,14 @@ int main(int argc, char **argv)
             suzerain::mpi::comm_rank_identifier(MPI_COMM_WORLD));
 
     // Program-specific option storage
-    int nrep;  // Number of times to repeat the test
+    int nrep = 1;  // Number of times to repeat the test
 
     suzerain::ProgramOptions options;
     suzerain::problem::GridDefinition<> grid;
     options.add_definition(grid);
     namespace po = boost::program_options;
     options.add_options()
-        ("rep", po::value<int>(&nrep)->default_value(1),
+        ("nrep", po::value<int>(&nrep)->default_value(nrep),
         "Number of repetitions to perform for timing purposes")
     ;
     if (!procid) {
@@ -84,6 +85,7 @@ int main(int argc, char **argv)
                         nullstream, nullstream, nullstream, nullstream);
     }
 
+#pragma warning(push,disable:383)
     ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Physical grid dimensions: "
@@ -93,7 +95,7 @@ int main(int argc, char **argv)
     ONLYPROC0(LOG4CXX_INFO(logger, "Processor grid dimensions: "
                            << boost::format("(%d, %d)")
                            % grid.pa() % grid.pb()));
-
+#pragma warning(pop)
 
     // pencil_grid handles P3DFFT setup/clean RAII
     using suzerain::pencil_grid;
@@ -180,11 +182,13 @@ int main(int argc, char **argv)
             if (abs(*it) > 1e-8) {
                 pencil<>::index i, j, k;
                 A.wave.inverse_global_offset(it - A.wave.begin(), i, j, k);
+#pragma warning(push,disable:383)
                 LOG4CXX_INFO(logger,
                         boost::format("(%3d, %3d, %3d) = (%12g, %12g) at index %3d")
                         % i % j % k
                         % it->real() % it->imag()
                         % (it-A.wave.begin()) );
+#pragma warning(pop)
             }
         }
 
