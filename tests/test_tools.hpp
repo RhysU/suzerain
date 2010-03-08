@@ -365,7 +365,7 @@ public:
     const Integer max_mode_exclusive;
     const FPT shift;
     const FPT length;
-    const Integer constant;
+    const FPT constant;
 };
 
 
@@ -381,27 +381,27 @@ FPT periodic_function<FPT,Integer>::physical(
     const FPT xi = i*length/N;
     FPT retval = (max_mode_exclusive > 0 && derivative == 0 )
         ? constant : 0;
-    for (Integer i = 1; i < max_mode_exclusive; ++i) {
+    for (Integer j = 1; j < max_mode_exclusive; ++j) {
         switch (derivative % 4) {
             case 0:
-                retval +=   i * pow(i*(2.0*M_PI/length), derivative)
+                retval +=   j * pow(j*(2.0*M_PI/length), derivative)
                           * constant
-                          * sin(i*(2.0*M_PI/length)*xi + shift);
+                          * sin(j*(2.0*M_PI/length)*xi + shift);
                 break;
             case 1:
-                retval +=   i * pow(i*(2.0*M_PI/length), derivative)
+                retval +=   j * pow(j*(2.0*M_PI/length), derivative)
                           * constant
-                          * cos(i*(2.0*M_PI/length)*xi + shift);
+                          * cos(j*(2.0*M_PI/length)*xi + shift);
                 break;
             case 2:
-                retval -=   i * pow(i*(2.0*M_PI/length), derivative)
+                retval -=   j * pow(j*(2.0*M_PI/length), derivative)
                           * constant
-                          * sin(i*(2.0*M_PI/length)*xi + shift);
+                          * sin(j*(2.0*M_PI/length)*xi + shift);
                 break;
             case 3:
-                retval -=   i * pow(i*(2.0*M_PI/length), derivative)
+                retval -=   j * pow(j*(2.0*M_PI/length), derivative)
                           * constant
-                          * cos(i*(2.0*M_PI/length)*xi + shift);
+                          * cos(j*(2.0*M_PI/length)*xi + shift);
                 break;
         }
     }

@@ -8,10 +8,12 @@
 #include <fftw3.h>
 #include "test_tools.hpp"
 
+#pragma warning(disable:383)
+
 // Not so much a test as a way to check our periodic test function definition.
 // Getting it correct is key to all other FFT-related tests
 
-void test_c2c_forward(const int N, const int max_mode_exclusive)
+static void test_c2c_forward(const int N, const int max_mode_exclusive)
 {
     BOOST_TEST_MESSAGE("Testing N = " << N
                        << " with max_mode_exclusive = " << max_mode_exclusive);
@@ -90,7 +92,7 @@ BOOST_AUTO_TEST_CASE( check_c2c_forward )
     }
 }
 
-void test_c2c_backward(const int N, const int max_mode_exclusive)
+static void test_c2c_backward(const int N, const int max_mode_exclusive)
 {
     BOOST_TEST_MESSAGE("Testing N = " << N
                        << " with max_mode_exclusive = " << max_mode_exclusive);
@@ -169,7 +171,7 @@ BOOST_AUTO_TEST_CASE( check_c2c_backward )
     }
 }
 
-void test_r2c_forward(const int N, const int max_mode_exclusive)
+static void test_r2c_forward(const int N, const int max_mode_exclusive)
 {
     BOOST_TEST_MESSAGE("Testing N = " << N
                        << " with max_mode_exclusive = " << max_mode_exclusive);
@@ -219,7 +221,7 @@ BOOST_AUTO_TEST_CASE( check_r2c_forward )
     }
 }
 
-void test_c2r_backward(const int N, const int max_mode_exclusive)
+static void test_c2r_backward(const int N, const int max_mode_exclusive)
 {
     BOOST_TEST_MESSAGE("Testing N = " << N
                        << " with max_mode_exclusive = " << max_mode_exclusive);
