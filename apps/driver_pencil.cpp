@@ -39,6 +39,7 @@
 
 #define ONLYPROC0(expr) if (!procid) { expr ; } else
 
+#pragma warning(push,disable:1418)
 template< typename Integer >
 std::pair<Integer,Integer> calculate_processor_extents(
         const Integer nproc,
@@ -46,7 +47,7 @@ std::pair<Integer,Integer> calculate_processor_extents(
         const Integer npoints)
 {
     const Integer remainder = npoints - nproc*(npoints/nproc);
-    Integer start           = 0;
+    Integer start = 0;
     for (Integer i = 0; i < procid; ++i){
         start += npoints/nproc;
         if (i >= nproc - remainder) start += 1;
@@ -57,11 +58,12 @@ std::pair<Integer,Integer> calculate_processor_extents(
 
     return std::make_pair(start, end); // [start, end)
 }
+#pragma warning(pop)
 
 int main(int argc, char **argv)
 {
-    const int NDIM = 2;         // Dimensionality of the problem
-    boost::array<int,NDIM> N;   // Global index extents in X, Y direction
+    const int NDIM = 2;                      // Dimensionality of the problem
+    boost::array<int,NDIM> N = { 16, 16 };   // Global extents in X, Y direction
 
     MPI_Init(&argc, &argv);                   // Initialize MPI on startup
     atexit((void (*) ()) MPI_Finalize);       // Finalize MPI at exit
@@ -75,9 +77,9 @@ int main(int argc, char **argv)
     suzerain::ProgramOptions options;
     namespace po = boost::program_options;
     options.add_options()
-        ("nx", po::value<int>(&N[0])->default_value(16),
+        ("nx", po::value<int>(&N[0])->default_value(N[0]),
         "Processor grid size in X direction.")
-        ("ny", po::value<int>(&N[1])->default_value(16),
+        ("ny", po::value<int>(&N[1])->default_value(N[1]),
         "Processor grid size in Y direction.")
     ;
     if (!procid) {
