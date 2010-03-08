@@ -63,35 +63,42 @@ struct underling_fft_plan_s {
 // INTERNAL PROTOTYPES INTERNAL PROTOTYPES INTERNAL PROTOTYPES INTERNAL
 // ********************************************************************
 
+static
 fftw_plan
-underling_fftw_plan_nop();
+underling_fftw_plan_nop( void );
 
+static
 fftw_plan
 underling_fftw_plan_reorder_complex(
         underling_real * const data,
         const underling_fft_extents * const input,
         const underling_fft_extents * const output);
 
+static
 void
 rotate_left(
         int *array,
         int len);
 
+static
 int
 adjust_for_fast_stride_in_long_direction(
         underling_extents * const extents,
         const int long_ni);
 
+static
 underling_fft_extents
 create_underling_fft_extents_for_complex(
         const underling_extents extents,
         const int long_ni);
 
+static
 underling_fft_extents
 create_underling_fft_extents_for_real(
         const underling_extents extents,
         const int long_ni);
 
+static
 underling_fft_plan
 underling_fft_plan_create_c2c_internal(
         const int long_ni,
@@ -101,6 +108,7 @@ underling_fft_plan_create_c2c_internal(
         const underling_fft_extents input,
         const underling_fft_extents output);
 
+static
 underling_fft_plan
 underling_fft_plan_create_c2r_backward_internal(
         const int long_ni,
@@ -109,6 +117,7 @@ underling_fft_plan_create_c2r_backward_internal(
         const underling_fft_extents input,
         const underling_fft_extents output);
 
+static
 underling_fft_plan
 underling_fft_plan_create_r2c_forward_internal(
         const int long_ni,
@@ -117,6 +126,7 @@ underling_fft_plan_create_r2c_forward_internal(
         const underling_fft_extents input,
         const underling_fft_extents output);
 
+static
 void
 underling_fft_extents_copy(
         const underling_fft_extents * const e,
@@ -160,7 +170,7 @@ underling_fft_extents_cmp(const underling_fft_extents * const e1,
 
 static
 fftw_plan
-underling_fftw_plan_nop()
+underling_fftw_plan_nop( void )
 {
     // Create a non-NULL NOP FFTW plan
     fftw_plan nop_plan = fftw_plan_guru_r2r(/*rank*/0,
@@ -1065,7 +1075,7 @@ underling_fft_fprint_extents(
 }
 
 void
-underling_fprint_fft_plan(
+underling_fft_fprint_plan(
         const underling_fft_plan plan,
         FILE *output_file)
 {
