@@ -8,6 +8,7 @@
 #include <gsl/gsl_test.h>
 #include <suzerain/blas_et_al.h>
 
+static
 void
 test_daxpby()
 {
@@ -40,6 +41,7 @@ test_daxpby()
     }
 }
 
+static
 void
 test_saxpby()
 {
@@ -72,6 +74,7 @@ test_saxpby()
     }
 }
 
+static
 void
 test_dwaxpby()
 {
@@ -104,6 +107,7 @@ test_dwaxpby()
     }
 }
 
+static
 void
 test_swaxpby()
 {
@@ -136,6 +140,7 @@ test_swaxpby()
     }
 }
 
+static
 void
 test_daxpby_nop()
 {
@@ -161,6 +166,7 @@ test_daxpby_nop()
     }
 }
 
+static
 void
 test_saxpby_nop()
 {
@@ -186,6 +192,7 @@ test_saxpby_nop()
     }
 }
 
+static
 void
 test_dswap()
 {
@@ -217,6 +224,7 @@ test_dswap()
     }
 }
 
+static
 void
 test_sswap()
 {
@@ -248,6 +256,7 @@ test_sswap()
     }
 }
 
+static
 void
 test_dscal()
 {
@@ -287,6 +296,7 @@ test_dscal()
     }
 }
 
+static
 void
 test_sscal()
 {
@@ -326,6 +336,7 @@ test_sscal()
     }
 }
 
+static
 void
 test_dcopy()
 {
@@ -350,6 +361,7 @@ test_dcopy()
     }
 }
 
+static
 void
 test_scopy()
 {
@@ -375,6 +387,7 @@ test_scopy()
 }
 
 
+static
 void
 test_dgb_acc()
 {
@@ -415,8 +428,8 @@ test_dgb_acc()
     const double *a = a_data + lda-(ku+1+kl);
     double       *b = b_data + ldb-(ku+1+kl);
 
-    const double nb        = sizeof(b_data)/sizeof(b_data[0]);
-    const double nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
     gsl_test_int(nb, nexpected, "Expected results' length");
 
     suzerain_blas_dgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
@@ -426,6 +439,7 @@ test_dgb_acc()
     }
 }
 
+static
 void
 test_sgb_acc()
 {
@@ -477,6 +491,7 @@ test_sgb_acc()
     }
 }
 
+static
 void
 test_dgb_acc_nop()
 {
@@ -511,8 +526,8 @@ test_dgb_acc_nop()
     const double *a = a_data + lda-(ku+1+kl);
     double       *b = b_data + ldb-(ku+1+kl);
 
-    const double nb        = sizeof(b_data)/sizeof(b_data[0]);
-    const double nexpected = nb;
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = nb;
     gsl_test_int(nb, nexpected, "Expected results' length");
 
     suzerain_blas_dgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
@@ -522,6 +537,7 @@ test_dgb_acc_nop()
     }
 }
 
+static
 void
 test_blasext_i2s_zaxpby2()
 {

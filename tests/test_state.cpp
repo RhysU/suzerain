@@ -7,11 +7,14 @@
 #include <suzerain/state.hpp>
 #include <boost/test/included/unit_test.hpp>
 
+#pragma warning(disable:383)
+
 BOOST_AUTO_TEST_SUITE( RealState )
 
 BOOST_AUTO_TEST_CASE( declare_pointer )
 {
-    suzerain::RealState<double> *state = NULL;
+    suzerain::RealState<double> *state;
+    (void)state;
 }
 
 BOOST_AUTO_TEST_CASE( constructors )
@@ -278,7 +281,8 @@ BOOST_AUTO_TEST_SUITE( ComplexState )
 
 BOOST_AUTO_TEST_CASE( declare_pointer )
 {
-    suzerain::ComplexState<double> *state = NULL;
+    suzerain::ComplexState<double> *state;
+    (void)state;
 }
 
 BOOST_AUTO_TEST_CASE( constructor )

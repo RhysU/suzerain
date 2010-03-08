@@ -9,6 +9,8 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/complex.hpp>
 
+#pragma warning(disable:383)
+
 BOOST_AUTO_TEST_SUITE( fill_multi_array )
 
 using boost::array_view_gen;

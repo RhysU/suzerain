@@ -8,6 +8,8 @@
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/included/unit_test.hpp>
 
+#pragma warning(disable:383 1599)
+
 // Provides data for the test field
 //      rho = 2*(x^2)*y*z + 3*x*(y^2)*z + 5*x*y*(z^2)
 //      m   = {
@@ -20,6 +22,7 @@
 //
 // Floating point values evaluated using test_orthonormal.sage
 // to 200 bits of precision.
+static
 void orthonormal_rhome_test_data(
         double          &rho,
         Eigen::Vector3d &grad_rho,

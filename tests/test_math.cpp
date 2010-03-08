@@ -8,6 +8,7 @@
 #include <suzerain/math.hpp>
 #include "test_tools.hpp"
 
+#pragma warning(push,disable:383)
 BOOST_AUTO_TEST_CASE( integer_power )
 {
     using suzerain::math::integer_power;
@@ -54,3 +55,4 @@ BOOST_AUTO_TEST_CASE( integer_power )
     BOOST_CHECK_EQUAL( 1.0f, integer_power(0.0f, 0));
     BOOST_CHECK_EQUAL( 0.0f, integer_power(0.0f, 1));
 }
+#pragma warning(pop)

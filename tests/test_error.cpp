@@ -28,6 +28,7 @@
 
 #define CHECK(x) errors[n].number = x ; errors[n].name = #x ; n++ ;
 #define MAX_ERRS 64
+#pragma warning(disable:383)
 
 int verbose = 0 ;
 

@@ -18,6 +18,8 @@ log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
 #include "test_tools.hpp"
 
+#pragma warning(disable:383 1572)
+
 // TODO compute_derivatives_of_a_general_polynomial for more orders
 
 BOOST_AUTO_TEST_CASE( allocation_okay )
@@ -290,11 +292,15 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
 
 // Polynomial test helpers
 typedef struct { int n; double c[]; } poly_params; // Flexible array
+
+static
 double poly_f(double x, void *params)
 {
     poly_params *p = (poly_params *) params;
     return gsl_poly_eval(p->c, p->n, x);
 }
+
+static
 void poly_params_differentiate(poly_params *params)
 {
     for (int i = 1; i < params->n; ++i) params->c[i-1] = params->c[i] *i;
@@ -524,6 +530,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
     free(p);
 }
 
+static
 void
 log4cxx_error_handler(const char *reason, const char *file,
                       int line, int err)

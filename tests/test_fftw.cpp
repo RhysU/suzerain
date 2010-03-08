@@ -7,6 +7,8 @@
 #include <boost/test/included/unit_test.hpp>
 #include <suzerain/fftw.hpp>
 
+#pragma warning(disable:383)
+
 BOOST_AUTO_TEST_SUITE( rigor_suite )
 
 using namespace suzerain::fftw;

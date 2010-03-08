@@ -5,8 +5,9 @@
 #pragma hdrstop
 #include <suzerain/os.h>
 
+static
 int
-test_suzerain_fpipe()
+test_suzerain_fpipe( void )
 {
     int rfd;
     FILE *w;

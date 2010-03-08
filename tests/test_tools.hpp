@@ -51,6 +51,8 @@
             BOOST_CHECK_MESSAGE(!errormsg.length(), errormsg);       \
         }
 
+#pragma warning(push,disable:1418)
+
 template<typename FPT>
 std::string
 _suzerain_check_gbmatrix_close(
@@ -222,9 +224,9 @@ bool check_close_collections(const FPT *left_begin, const FPT *left_end,
         if( *left_begin == 0 && *right_begin == 0 ) {
             // NOP on both identically zero
         } else if ( *left_begin == 0 ) {
-            if (abs(*right_begin) > percent_tolerance) pos_okay = false;
+            if (std::abs(*right_begin) > percent_tolerance) pos_okay = false;
         } else if ( *right_begin == 0 ) {
-            if (abs(*left_begin) > percent_tolerance) pos_okay = false;
+            if (std::abs(*left_begin) > percent_tolerance) pos_okay = false;
         } else if( !is_close(*left_begin,*right_begin) ) {
             pos_okay = false;
         }
@@ -462,7 +464,9 @@ public:
             << " with reason '"
             << reason
             << "'";
+#pragma warning(push,disable:383)
         BOOST_FAIL(oss.str());
+#pragma warning(pop)
     }
 
     BoostFailErrorHandlerFixture() {
@@ -476,4 +480,5 @@ private:
     suzerain_error_handler_t * previous_;
 };
 
+#pragma warning(pop)
 #endif // PECOS_SUZERAIN_TEST_TOOLS_HPP

@@ -13,6 +13,8 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
+#pragma warning(disable:383)
+
 // Purely explicit Riccati equation nonlinear operator
 // is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
 template< typename FPT >
@@ -35,6 +37,8 @@ public:
                               const bool delta_t_requested = false) const
                               throw(std::exception)
     {
+        (void)delta_t_requested; // Unused
+
         suzerain::RealState<FPT> &realstate
             = dynamic_cast<suzerain::RealState<FPT>&>(state);
         typedef typename suzerain::RealState<FPT>::index index;
@@ -70,6 +74,8 @@ public:
                               const bool delta_t_requested = false) const
                               throw(std::exception)
     {
+        (void)delta_t_requested; // Unused
+
         suzerain::RealState<FPT> &realstate
             = dynamic_cast<suzerain::RealState<FPT>&>(state);
         typedef typename suzerain::RealState<FPT>::index index;
@@ -89,7 +95,10 @@ class RiccatiLinearOperator
 {
 public:
     RiccatiLinearOperator(const FPT a, const FPT b)
-        : suzerain::timestepper::lowstorage::MultiplicativeOperator<FPT>(b) {};
+        : suzerain::timestepper::lowstorage::MultiplicativeOperator<FPT>(b)
+    {
+        (void)a; // Unused
+    };
 };
 
 // Functor returning the solution (d/dt) y = y^2 + b y - a^2 -a b

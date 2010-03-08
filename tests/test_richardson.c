@@ -9,6 +9,7 @@
 #include <gsl/gsl_sys.h>
 #include <gsl/gsl_test.h>
 
+static
 void
 test_richardson_extrapolation_step()
 {
@@ -41,6 +42,7 @@ test_richardson_extrapolation_step()
     gsl_vector_free(Ah);
 }
 
+static
 void
 test_richardson_extrapolation_defaults()
 {
@@ -141,11 +143,13 @@ test_richardson_extrapolation_defaults()
 
         for (int i = 0; i < normtable1->size1; ++i) {
             for (int j = 0; j < i + 1; ++j) {
+#pragma warning(push,disable:981)
                 gsl_test_abs(gsl_matrix_get(normtable1, i, j),
                              gsl_matrix_get(normtable2, i, j),
                              GSL_DBL_EPSILON,
                              "%s identical normtable results at (%d, %d)",
                              __func__, i, j);
+#pragma warning(pop)
             }
         }
 
@@ -157,6 +161,7 @@ test_richardson_extrapolation_defaults()
     gsl_matrix_free(data1);
 }
 
+static
 void
 test_richardson_extrapolation_twolevels()
 {
@@ -288,6 +293,7 @@ test_richardson_extrapolation_twolevels()
 
 }
 
+static
 void
 test_richardson_extrapolation_multiplelevels()
 {
@@ -408,6 +414,7 @@ test_richardson_extrapolation_multiplelevels()
     gsl_matrix_free(data2);
 }
 
+static
 void
 test_richardson_extrapolation_vectorinputs()
 {
