@@ -1,32 +1,32 @@
-/*--------------------------------------------------------------------------
- *--------------------------------------------------------------------------
- *
- * Copyright (C) 2009 The PECOS Development Team
- *
- * Please see http://pecos.ices.utexas.edu for more information.
- *
- * This file is part of Suzerain.
- *
- * Suzerain is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- *
- * Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Suzerain.  If not, see <http://www.gnu.org/licenses/>.
- *
- *--------------------------------------------------------------------------
- *
- * pencil_grid.cpp: Class to manage data layout concerns for P3DFFT usage
- *
- * $Id$
- *--------------------------------------------------------------------------
- *-------------------------------------------------------------------------- */
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+//
+// Copyright (C) 2009 The PECOS Development Team
+//
+// Please see http://pecos.ices.utexas.edu for more information.
+//
+// This file is part of Suzerain.
+//
+// Suzerain is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+// details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+//
+//--------------------------------------------------------------------------
+//
+// pencil_grid.cpp: Class to manage data layout concerns for P3DFFT usage
+//
+// $Id$
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
@@ -37,10 +37,12 @@
 
 namespace suzerain {
 
+#pragma warning(push, disable:2022)
 pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
                          const pencil_grid::size_type_2d &processor_grid)
     : global_extents_(global_extents),
       processor_grid_(processor_grid)
+#pragma warning(pop)
 {
     // Ensure MPI is in a sane state at construction time
     {
@@ -84,15 +86,15 @@ pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
                     boost::numeric_cast<int>(global_extents_[0]),
                     boost::numeric_cast<int>(global_extents_[2]),
                     boost::numeric_cast<int>(global_extents_[1]),
-                    1 /* nuke btrans */);
+                    1); // nuke btrans
         p3dfft_setup_called_ = true;
     }
 
     // Retrieve information for local input and output pencils
     // P3DFFT uses int types; defensively ensure we do too
     boost::array<int,3> pstart, pextent, pend, wstart, wextent, wend;
-    get_dims(pstart.data(), pend.data(), pextent.data(), 1/* physical */);
-    get_dims(wstart.data(), wend.data(), wextent.data(), 2/* wave */);
+    get_dims(pstart.data(), pend.data(), pextent.data(), 1); // physical
+    get_dims(wstart.data(), wend.data(), wextent.data(), 2); // wave
     // P3DFFT STRIDE1 physical space get_dims returns in (X, Z, Y) ordering
     // Suzerain's pencils require (X, Y, Z) ordering; flip Z and Y data
     std::swap(pstart [1], pstart [2]);
@@ -121,9 +123,11 @@ pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
     std::transform(wextent.begin(),wextent.end(),wextent_.begin(),converter);
 }
 
+#pragma warning(push,disable:2017)
 pencil_grid::~pencil_grid()
 {
     if (p3dfft_setup_called_) p3dfft_clean();
 }
+#pragma warning(pop)
 
 } // namespace suzerain

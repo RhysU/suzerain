@@ -1,32 +1,32 @@
-/*--------------------------------------------------------------------------
- *--------------------------------------------------------------------------
- *
- * Copyright (C) 2010 The PECOS Development Team
- *
- * Please see http://pecos.ices.utexas.edu for more information.
- *
- * This file is part of Suzerain.
- *
- * Suzerain is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- *
- * Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Suzerain.  If not, see <http://www.gnu.org/licenses/>.
- *
- *--------------------------------------------------------------------------
- *
- * fftw.cpp: miscellaneous utilities for working with FFTW's C interface
- *
- * $Id$
- *--------------------------------------------------------------------------
- *-------------------------------------------------------------------------- */
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+//
+// Copyright (C) 2010 The PECOS Development Team
+//
+// Please see http://pecos.ices.utexas.edu for more information.
+//
+// This file is part of Suzerain.
+//
+// Suzerain is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+// details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+//
+//--------------------------------------------------------------------------
+//
+// fftw.cpp: miscellaneous utilities for working with FFTW's C interface
+//
+// $Id$
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
@@ -108,6 +108,7 @@ void FFTWDefinition::normalize_rigor_string(std::string input)
 
 FFTWDefinition::FFTWDefinition()
     : options_(std::string("FFTW definition")),
+      rigor_string_(c_str(measure)),             // Default obtained
       nthreads_(default_nthreads())              // Default obtained
 {
     namespace po = ::boost::program_options;
@@ -123,8 +124,6 @@ FFTWDefinition::FFTWDefinition()
     rigor_description += c_str(exhaustive);
     rigor_description += "}";
 
-    std::string rigor_default(c_str(measure));
-
     std::string nthreads_description("Number of FFTW threads to use");
 #ifdef HAVE_FFTW3_THREADS
 #if defined HAVE_OPENMP
@@ -134,9 +133,9 @@ FFTWDefinition::FFTWDefinition()
 #else
 #error "Sanity check failed; unknown FFTW threading model in use."
 #endif
-#else  /* HAVE_FFTW3_THREADS not defined */
+#else  // HAVE_FFTW3_THREADS not defined
     nthreads_description += " (Disabled)";
-#endif /* HAVE_FFTW3_THREADS */
+#endif // HAVE_FFTW3_THREADS
 
     options_.add_options()
         ("rigor", po::value<std::string>(&rigor_string_)
@@ -147,7 +146,7 @@ FFTWDefinition::FFTWDefinition()
                     this)
 #pragma warning(pop)
                 )
-            ->default_value(rigor_default),
+            ->default_value(rigor_string_),
          rigor_description.c_str())
         ("nthreads", po::value<int>(&nthreads_)
                 ->default_value(nthreads_),

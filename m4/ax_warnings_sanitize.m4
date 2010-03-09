@@ -5,8 +5,10 @@
 # DESCRIPTION
 #
 #   Some compiler vendors, in particular Intel, offer no -pedantic option and
-#   have -Wall complain about more than necessary.  This macro disables some
-#   warnings via CFLAGS and CXXFLAGS.
+#   have -Wall complain about more than necessary.  Some compiler vendors also
+#   offer diagnostic information above and beyond -Wall.  This macro enables
+#   the nicer diagnostics and also disables some useless warnings via CFLAGS
+#   and CXXFLAGS.
 #
 #   Requires macros: AX_COMPILER_VENDOR, AX_CHECK_COMPILER_FLAGS
 #
@@ -54,10 +56,15 @@ case $ax_cv_c_compiler_vendor in #(
   sun)   ;;#(
   hp)    ;;#(
   ibm)   ;;#(
-  intel) # remark #424: extra ";" ignored
+  intel) # Enable -Wcheck for more diagnostic information
+         AX_CHECK_COMPILER_FLAGS([-Wcheck], [CFLAGS="$CFLAGS -Wcheck"])
+         # Enable diagnostics about questionable pointer arithmetic
+         AX_CHECK_COMPILER_FLAGS([-Wpointer-arith], [CFLAGS="$CFLAGS -Wpointer-arith"])
+         # Disable remark #424: extra ";" ignored
          AX_CHECK_COMPILER_FLAGS([-wd424], [CFLAGS="$CFLAGS -wd424"])
          ;;#(
-  gnu)   ;;#(
+  gnu)   AX_CHECK_COMPILER_FLAGS([-Wextra], [CFLAGS="$CFLAGS -Wextra"])
+         ;;#(
   *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
          AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_c_compiler_vendor = $ax_cv_c_compiler_vendor unknown])
          ;;
@@ -69,12 +76,21 @@ case $ax_cv_cxx_compiler_vendor in #(
   sun)   ;;#(
   hp)    ;;#(
   ibm)   ;;#(
-  intel) # remark #424: extra ";" ignored
+  intel) # Enable -Wcheck for more diagnostic information
+         AX_CHECK_COMPILER_FLAGS([-Wcheck], [CXXFLAGS="$CXXFLAGS -Wcheck"])
+         # Enable -Weffc++ for warnings related to C++ programming guidelines
+         AX_CHECK_COMPILER_FLAGS([-Weffc++], [CXXFLAGS="$CXXFLAGS -Weffc++"])
+         # Enable diagnostics about questionable pointer arithmetic
+         AX_CHECK_COMPILER_FLAGS([-Wpointer-arith], [CXXFLAGS="$CXXFLAGS -Wpointer-arith"])
+         # Disable remark #424: extra ";" ignored
          AX_CHECK_COMPILER_FLAGS([-wd424], [CXXFLAGS="$CXXFLAGS -wd424"])
-         # remark #981: operands are evaluated in unspecified order
+         # Disable remark #981: operands are evaluated in unspecified order
          AX_CHECK_COMPILER_FLAGS([-wd981], [CXXFLAGS="$CXXFLAGS -wd981"])
+         # Disable warning #2012: Effective C++ Item 1 prefer const and inline to #define
+         AX_CHECK_COMPILER_FLAGS([-wd2012], [CXXFLAGS="$CXXFLAGS -wd2012"])
          ;;#(
-  gnu)   ;;#(
+  gnu)   AX_CHECK_COMPILER_FLAGS([-Wextra], [CXXFLAGS="$CXXFLAGS -Wextra"])
+         ;;#(
   *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
          AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_cxx_compiler_vendor = $ax_cv_cxx_compiler_vendor unknown])
          ;;
