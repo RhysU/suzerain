@@ -37,7 +37,7 @@ public:
                               const bool delta_t_requested = false) const
                               throw(std::exception)
     {
-        (void)delta_t_requested; // Unused
+        SUZERAIN_UNUSED(delta_t_requested);
 
         suzerain::RealState<FPT> &realstate
             = dynamic_cast<suzerain::RealState<FPT>&>(state);
@@ -74,7 +74,7 @@ public:
                               const bool delta_t_requested = false) const
                               throw(std::exception)
     {
-        (void)delta_t_requested; // Unused
+        SUZERAIN_UNUSED(delta_t_requested);
 
         suzerain::RealState<FPT> &realstate
             = dynamic_cast<suzerain::RealState<FPT>&>(state);
@@ -97,7 +97,7 @@ public:
     RiccatiLinearOperator(const FPT a, const FPT b)
         : suzerain::timestepper::lowstorage::MultiplicativeOperator<FPT>(b)
     {
-        (void)a; // Unused
+        SUZERAIN_UNUSED(a);
     };
 };
 

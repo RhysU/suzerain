@@ -83,6 +83,13 @@ Provides hint to the compiler to optimize for the expression being false.
 #define SUZERAIN_FORCEINLINE inline
 #endif
 
+/**
+ * Explicitly marks a variable as unused to avoid compiler warnings.
+ *
+ * @param variable Variable to be marked.
+ */
+#define SUZERAIN_UNUSED(variable) do {(void)(variable);} while (0)
+
 // Required standard C functionality appearing through Suzerain
 // C++-specific functionality is included in common.hpp
 #include <assert.h>

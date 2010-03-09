@@ -11,6 +11,8 @@
 #include <fftw3-mpi.h>
 #include "test_tools.hpp"
 
+#pragma warning(disable:383)
+
 // Contains UnderlingFixture, FFTWMPIFixture
 #include "test_underling_tools.hpp"
 BOOST_GLOBAL_FIXTURE(FFTWMPIFixture);
@@ -27,10 +29,10 @@ BOOST_AUTO_TEST_SUITE(RoundTrip)
 // TODO Test reuse of problems on multiple data sets
 // TODO Test unidirectional (i.e. down-only) transforms
 
-void test_round_trip(MPI_Comm comm,
-                     const int n0, const int n1, const int n2,
-                     const int howmany,
-                     const unsigned transposed_flags)
+static void test_round_trip(MPI_Comm comm,
+                            const int n0, const int n1, const int n2,
+                            const int howmany,
+                            const unsigned transposed_flags)
 {
     int procid;
     BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_rank(comm, &procid));
@@ -66,9 +68,9 @@ void test_round_trip(MPI_Comm comm,
             // Dump out the process' portion of the global grid
             std::ostringstream oss;
             oss << "Rank " << procid << " has ";
-            for (int i = 0; i < 3; ++i) {
-                oss << "long_n" << i << ": " << long_n[i];
-                if (i < 2) oss << ", ";
+            for (int j = 0; j < 3; ++j) {
+                oss << "long_n" << j << ": " << long_n[j];
+                if (j < 2) oss << ", ";
             }
             BOOST_TEST_MESSAGE(oss.str());
         }

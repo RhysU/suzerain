@@ -1,18 +1,18 @@
 # SYNOPSIS
 #
-#   AX_CXX_WALL_SANITIZE
+#   AX_WARNINGS_SANITIZE
 #
 # DESCRIPTION
 #
 #   Some compiler vendors, in particular Intel, offer no -pedantic option and
 #   have -Wall complain about more than necessary.  This macro disables some
-#   warnings via CXXFLAGS.
+#   warnings via CFLAGS and CXXFLAGS.
 #
 #   Requires macros: AX_COMPILER_VENDOR, AX_CHECK_COMPILER_FLAGS
 #
 # LAST MODIFICATION
 #
-#   2010-03-08
+#   2010-03-09
 #
 # COPYLEFT
 #
@@ -46,21 +46,38 @@
 #   distribute a modified version of the Autoconf Macro, you may extend this
 #   special exception to the GPL to apply to your modified version as well.
 
-AC_DEFUN([AX_CXX_WALL_SANITIZE],
+AC_DEFUN([AX_WARNINGS_SANITIZE],
 [
+AC_LANG_PUSH([C])
+case $ax_cv_c_compiler_vendor in #(
+  dec)   ;;#(
+  sun)   ;;#(
+  hp)    ;;#(
+  ibm)   ;;#(
+  intel) # remark #424: extra ";" ignored
+         AX_CHECK_COMPILER_FLAGS([-wd424], [CFLAGS="$CFLAGS -wd424"])
+         ;;#(
+  gnu)   ;;#(
+  *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
+         AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_c_compiler_vendor = $ax_cv_c_compiler_vendor unknown])
+         ;;
+esac
+AC_LANG_POP()
 AC_LANG_PUSH([C++])
-AC_REQUIRE([AX_COMPILER_VENDOR])
-AC_REQUIRE([AX_CHECK_COMPILER_FLAGS])
 case $ax_cv_cxx_compiler_vendor in #(
   dec)   ;;#(
   sun)   ;;#(
   hp)    ;;#(
   ibm)   ;;#(
-  intel)
+  intel) # remark #424: extra ";" ignored
+         AX_CHECK_COMPILER_FLAGS([-wd424], [CXXFLAGS="$CXXFLAGS -wd424"])
          # remark #981: operands are evaluated in unspecified order
          AX_CHECK_COMPILER_FLAGS([-wd981], [CXXFLAGS="$CXXFLAGS -wd981"])
          ;;#(
-  gnu)   ;;
+  gnu)   ;;#(
+  *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
+         AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_cxx_compiler_vendor = $ax_cv_cxx_compiler_vendor unknown])
+         ;;
 esac
 AC_LANG_POP()
 ])

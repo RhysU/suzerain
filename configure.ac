@@ -148,7 +148,7 @@ dnl ------------------------------------------------
 dnl Strictness must come after libraries to avoid breaking AC_CHECK_LIB
 AX_CFLAGS_WARN_ALL(CFLAGS)
 AX_CFLAGS_WARN_ALL(CXXFLAGS)
-AX_CXX_WALL_SANITIZE
+AX_WARNINGS_SANITIZE
 AC_CXX_HAVE_STL
 AC_CXX_HEADER_STDCXX_98
 AC_CXX_HEADER_STDCXX_TR1

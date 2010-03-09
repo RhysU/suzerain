@@ -11,6 +11,8 @@
 #include <fftw3-mpi.h>
 #include "test_tools.hpp"
 
+#pragma warning(disable:383)
+
 // Contains UnderlingFixture, FFTWMPIFixture
 #include "test_underling_tools.hpp"
 BOOST_GLOBAL_FIXTURE(FFTWMPIFixture);
@@ -19,7 +21,7 @@ BOOST_GLOBAL_FIXTURE(FFTWMPIFixture);
 namespace underling = suzerain::underling;
 
 // Pull out the two slow directions, excluding long_ni
-void slow_non_long_directions(
+static void slow_non_long_directions(
         const int * const order, const int long_ni, int &dir_i, int &dir_j)
 {
     BOOST_REQUIRE(order);
@@ -41,7 +43,7 @@ void slow_non_long_directions(
 // Ensure that FFTW can handle compressing directions, which will require at
 // patch above FFTW 3.3alpha1 submitted to Stephen and Matteo directly.
 // Suspect the FFTW installation has not been patched if this fails.
-void ensureFFTWTensor7PatchInPlace() {
+static void ensureFFTWTensor7PatchInPlace() {
     double buffer[30];
     const fftw_iodim howmany_dims[] = {
         { 5,   6,   1 },
@@ -132,11 +134,11 @@ BOOST_FIXTURE_TEST_SUITE( underling_fft_c2c_forward,
                           BoostFailErrorHandlerFixture )
 
 // Forward physical-to-wave followed by wave-to-physical
-void test_c2c_forward(MPI_Comm comm,
-                      const int n0, const int n1, const int n2,
-                      const int howmany,
-                      const int long_ni,
-                      const unsigned transposed_flags = 0)
+static void test_c2c_forward(MPI_Comm comm,
+                             const int n0, const int n1, const int n2,
+                             const int howmany,
+                             const int long_ni,
+                             const unsigned transposed_flags = 0)
 
 {
     int procid;
@@ -158,7 +160,6 @@ void test_c2c_forward(MPI_Comm comm,
         = std::numeric_limits<underling_real>::epsilon()*100*n0*n1*n2;
 
     UnderlingFixture f(comm, n0, n1, n2, howmany, transposed_flags);
-    const underling::extents extents = f.problem.local_extents(long_ni);
     underling::fft::plan forward(underling::fft::plan::c2c_forward(),
                                  f.problem,
                                  long_ni,
@@ -416,11 +417,11 @@ BOOST_FIXTURE_TEST_SUITE( underling_fft_c2c_backward,
                           BoostFailErrorHandlerFixture )
 
 // Backward wave-to-physical followed by physical-to-wave
-void test_c2c_backward(MPI_Comm comm,
-                       const int n0, const int n1, const int n2,
-                       const int howmany,
-                       const int long_ni,
-                       const unsigned transposed_flags = 0)
+static void test_c2c_backward(MPI_Comm comm,
+                              const int n0, const int n1, const int n2,
+                              const int howmany,
+                              const int long_ni,
+                              const unsigned transposed_flags = 0)
 {
     int procid;
     BOOST_REQUIRE_EQUAL(MPI_SUCCESS, MPI_Comm_rank(comm, &procid));
@@ -447,7 +448,6 @@ void test_c2c_backward(MPI_Comm comm,
                                   f.data.get(),
                                   FFTW_ESTIMATE);
     BOOST_REQUIRE(backward);
-    const underling::extents extents = f.problem.local_extents(long_ni);
     underling::fft::plan forward(backward,         // Inverse constructor!
                                  f.data.get(),
                                  FFTW_ESTIMATE);
@@ -698,11 +698,11 @@ BOOST_FIXTURE_TEST_SUITE( underling_fft_c2r,
                           BoostFailErrorHandlerFixture )
 
 // Test wave to physical transformation and inverse transform
-void test_c2r(MPI_Comm comm,
-              const int n0, const int n1, const int n2,
-              const int howmany,
-              const int long_ni,
-              const unsigned transposed_flags = 0)
+static void test_c2r(MPI_Comm comm,
+                     const int n0, const int n1, const int n2,
+                     const int howmany,
+                     const int long_ni,
+                     const unsigned transposed_flags = 0)
 {
     // FIXME Implement proper handling and enable these tests
     if (    long_ni == 2
@@ -1160,11 +1160,11 @@ BOOST_FIXTURE_TEST_SUITE( underling_fft_r2c,
                           BoostFailErrorHandlerFixture )
 
 // Test physical to wave transformation and inverse transform
-void test_r2c(MPI_Comm comm,
-              const int n0, const int n1, const int n2,
-              const int howmany,
-              const int long_ni,
-              const unsigned transposed_flags = 0)
+static void test_r2c(MPI_Comm comm,
+                     const int n0, const int n1, const int n2,
+                     const int howmany,
+                     const int long_ni,
+                     const unsigned transposed_flags = 0)
 {
     // FIXME Implement proper handling and enable these tests
     if (    long_ni == 2
