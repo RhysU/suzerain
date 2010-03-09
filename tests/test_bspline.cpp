@@ -18,7 +18,7 @@ log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
 #include "test_tools.hpp"
 
-#pragma warning(disable:383 1572)
+#pragma warning(disable:383 1572 2014 2015)
 
 // TODO compute_derivatives_of_a_general_polynomial for more orders
 

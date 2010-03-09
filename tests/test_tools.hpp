@@ -448,6 +448,7 @@ typename std::complex<FPT> periodic_function<FPT,Integer>::wave(
 }
 
 /** A fixture for the Boost.Test that replaces suzerain_error */
+#pragma warning(push,disable:2017 2021)
 class BoostFailErrorHandlerFixture {
 public:
     /** A suzerain_error_handler_t that invokes BOOST_FAIL */
@@ -469,9 +470,8 @@ public:
 #pragma warning(pop)
     }
 
-    BoostFailErrorHandlerFixture() {
-        previous_ = suzerain_set_error_handler(&boost_fail_error_handler);
-    }
+    BoostFailErrorHandlerFixture()
+        : previous_(suzerain_set_error_handler(&boost_fail_error_handler)) {}
 
     ~BoostFailErrorHandlerFixture() {
         suzerain_set_error_handler(previous_);
@@ -479,6 +479,7 @@ public:
 private:
     suzerain_error_handler_t * previous_;
 };
+#pragma warning(pop)
 
 #pragma warning(pop)
 #endif // PECOS_SUZERAIN_TEST_TOOLS_HPP

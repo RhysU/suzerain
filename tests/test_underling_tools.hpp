@@ -1,33 +1,33 @@
-/*--------------------------------------------------------------------------
- *--------------------------------------------------------------------------
- *
- * Copyright (C) 2009 The PECOS Development Team
- * Based heavily on the Boost Test predicate utilities
- *
- * Please see http://pecos.ices.utexas.edu for more information.
- *
- * This file is part of Suzerain.
- *
- * Suzerain is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- *
- * Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Suzerain.  If not, see <http://www.gnu.org/licenses/>.
- *
- *--------------------------------------------------------------------------
- *
- * test_underling_tools.hpp: one-off test tools for underling
- *
- * $Id$
- *--------------------------------------------------------------------------
- *-------------------------------------------------------------------------- */
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+//
+// Copyright (C) 2009 The PECOS Development Team
+// Based heavily on the Boost Test predicate utilities
+//
+// Please see http://pecos.ices.utexas.edu for more information.
+//
+// This file is part of Suzerain.
+//
+// Suzerain is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+// details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+//
+//--------------------------------------------------------------------------
+//
+// test_underling_tools.hpp: one-off test tools for underling
+//
+// $Id$
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 
 #ifndef PECOS_SUZERAIN_TEST_UNDERLING_TOOLS_HPP
 #define PECOS_SUZERAIN_TEST_UNDERLING_TOOLS_HPP
@@ -99,4 +99,4 @@ struct UnderlingFixture {
 
 };
 
-#endif /* PECOS_SUZERAIN_TEST_UNDERLING_TOOLS_HPP */
+#endif // PECOS_SUZERAIN_TEST_UNDERLING_TOOLS_HPP
