@@ -82,6 +82,8 @@ case $ax_cv_cxx_compiler_vendor in #(
          AX_CHECK_COMPILER_FLAGS([-Weffc++], [CXXFLAGS="$CXXFLAGS -Weffc++"])
          # Enable diagnostics about questionable pointer arithmetic
          AX_CHECK_COMPILER_FLAGS([-Wpointer-arith], [CXXFLAGS="$CXXFLAGS -Wpointer-arith"])
+         # Enable warnings if generated code is not C++ ABI compliant
+         AX_CHECK_COMPILER_FLAGS([-Wabi], [CXXFLAGS="$CXXFLAGS -Wabi"])
          # Disable remark #424: extra ";" ignored
          AX_CHECK_COMPILER_FLAGS([-wd424], [CXXFLAGS="$CXXFLAGS -wd424"])
          # Disable remark #981: operands are evaluated in unspecified order
