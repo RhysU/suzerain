@@ -82,6 +82,60 @@ BOOST_AUTO_TEST_CASE( real_type )
     BOOST_CHECK((is_same<real<fftwl_complex>::type,long double>::value));
 }
 
+BOOST_AUTO_TEST_CASE( is_complex_float )
+{
+    using suzerain::complex::traits::is_complex_float;
+
+    BOOST_CHECK(is_complex_float<std::complex<long double> >::value == false);
+    BOOST_CHECK(is_complex_float<std::complex<double> >::value == false);
+    BOOST_CHECK(is_complex_float<std::complex<float> >::value == true);
+    BOOST_CHECK(is_complex_float<std::complex<int> >::value == false);
+
+    BOOST_CHECK(is_complex_float<double>::value == false);
+    BOOST_CHECK(is_complex_float<float>::value == false);
+    BOOST_CHECK(is_complex_float<int>::value == false);
+
+    BOOST_CHECK(is_complex_float<fftwf_complex>::value == true);
+    BOOST_CHECK(is_complex_float<fftw_complex>::value == false);
+    BOOST_CHECK(is_complex_float<fftwl_complex>::value == false);
+}
+
+BOOST_AUTO_TEST_CASE( is_complex_double )
+{
+    using suzerain::complex::traits::is_complex_double;
+
+    BOOST_CHECK(is_complex_double<std::complex<long double> >::value == false);
+    BOOST_CHECK(is_complex_double<std::complex<double> >::value == true);
+    BOOST_CHECK(is_complex_double<std::complex<float> >::value == false);
+    BOOST_CHECK(is_complex_double<std::complex<int> >::value == false);
+
+    BOOST_CHECK(is_complex_double<double>::value == false);
+    BOOST_CHECK(is_complex_double<float>::value == false);
+    BOOST_CHECK(is_complex_double<int>::value == false);
+
+    BOOST_CHECK(is_complex_double<fftwf_complex>::value == false);
+    BOOST_CHECK(is_complex_double<fftw_complex>::value == true);
+    BOOST_CHECK(is_complex_double<fftwl_complex>::value == false);
+}
+
+BOOST_AUTO_TEST_CASE( is_complex_long_double )
+{
+    using suzerain::complex::traits::is_complex_long_double;
+
+    BOOST_CHECK(is_complex_long_double<std::complex<long double> >::value == true);
+    BOOST_CHECK(is_complex_long_double<std::complex<double> >::value == false);
+    BOOST_CHECK(is_complex_long_double<std::complex<float> >::value == false);
+    BOOST_CHECK(is_complex_long_double<std::complex<int> >::value == false);
+
+    BOOST_CHECK(is_complex_long_double<double>::value == false);
+    BOOST_CHECK(is_complex_long_double<float>::value == false);
+    BOOST_CHECK(is_complex_long_double<int>::value == false);
+
+    BOOST_CHECK(is_complex_long_double<fftwf_complex>::value == false);
+    BOOST_CHECK(is_complex_long_double<fftw_complex>::value == false);
+    BOOST_CHECK(is_complex_long_double<fftwl_complex>::value == true);
+}
+
 BOOST_AUTO_TEST_CASE( NaN )
 {
     using suzerain::complex::NaN;

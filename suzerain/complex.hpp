@@ -59,9 +59,9 @@ namespace traits {
  * An <tt>is_complex</tt> type trait similar to <tt>boost::is_complex</tt>.  If
  * the template parameter \c T is complex, then <tt>is_complex</tt> will
  * inherit from <tt>boost::true_type</tt>.  Otherwise it inherits from
- * <tt>boost.false_type</tt>.
+ * <tt>boost::false_type</tt>.
  */
-template<class T, class Enable = void >
+template<class T, class Enable = void>
 struct is_complex
         : public boost::is_complex<T> {};
 
@@ -89,6 +89,48 @@ template<class T> struct real<std::complex<T> > {
 template<class T> struct real<T[2]> {
     typedef T type;
 };
+
+/**
+ * An type trait similar to <tt>is_complex</tt> which additionally checks that
+ * the underlying real type is <tt>float</tt>.  Inherits from
+ * <tt>boost::true_type</tt> if that is the case.  Otherwise it inherits from
+ * <tt>boost::false_type</tt>.
+ */
+template<class T, class Enable = void>
+struct is_complex_float : public boost::false_type {};
+
+/** A specialization to handle recognized complex types */
+template<class T>
+struct is_complex_float<T, typename boost::enable_if<is_complex<T> >::type>
+    : public boost::is_same<float,typename real<T>::type> {};
+
+/**
+ * An type trait similar to <tt>is_complex</tt> which additionally checks that
+ * the underlying real type is <tt>double</tt>.  Inherits from
+ * <tt>boost::true_type</tt> if that is the case.  Otherwise it inherits from
+ * <tt>boost::false_type</tt>.
+ */
+template<class T, class Enable = void>
+struct is_complex_double : public boost::false_type {};
+
+/** A specialization to handle recognized complex types */
+template<class T>
+struct is_complex_double<T, typename boost::enable_if<is_complex<T> >::type>
+    : public boost::is_same<double,typename real<T>::type> {};
+
+/**
+ * An type trait similar to <tt>is_complex</tt> which additionally checks that
+ * the underlying real type is <tt>long double</tt>.  Inherits from
+ * <tt>boost::true_type</tt> if that is the case.  Otherwise it inherits from
+ * <tt>boost::false_type</tt>.
+ */
+template<class T, class Enable = void>
+struct is_complex_long_double : public boost::false_type {};
+
+/** A specialization to handle recognized complex types */
+template<class T>
+struct is_complex_long_double<T, typename boost::enable_if<is_complex<T> >::type>
+    : public boost::is_same<long double,typename real<T>::type> {};
 
 } // namespace traits
 
