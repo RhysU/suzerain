@@ -47,13 +47,26 @@ namespace suzerain
  * Implementations are expected to make the underlying information available
  * through the Boost.MultiArray concept.
  *
+ * When the template parameter \c Interleaved is true, state variables are
+ * interleaved with one another.  That is, variables are the fastest index.
+ * When \c Interleaved is false, each state variable is stored in a contiguous
+ * block of memory.
+ *
  * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
  *      Boost.MultiArray</a> for more information on the MultiArray concept.
  */
-template< typename FPT >
+template< typename FPT, bool Interleaved = true >
 class IState
 {
 public:
+
+    /**
+     * Are state variables interleaved with one another?  When true, variables
+     * are the fastest index.  When false, each state variable is stored in a
+     * separate, contiguous block of memory.
+     */
+    static const bool interleaved = Interleaved;
+
     /**
      * A signed integral type used to index into MultiArrays.
      * Provided as a convenience typedef from boost::multi_array::types.
@@ -102,7 +115,8 @@ public:
      *
      * @param other instance to mimic in shape.
      */
-    IState(const IState& other)
+    template<bool OtherInterleaved>
+    IState(const IState<FPT,OtherInterleaved>& other)
         : variable_count(other.variable_count),
           vector_length(other.vector_length),
           vector_count(other.vector_count) {}
@@ -112,13 +126,15 @@ public:
 
     /**
      * Is \c this instance's shape "conformant" with <tt>other</tt>'s?
+     * Interleaving of state variables does not influence the comparison.
      *
      * @param other another instance to compare against.
      *
      * @return True if all of #variable_count, #vector_length, and
      *         #vector_count are identical.  False otherwise.
      */
-    virtual bool isConformant(const IState &other) const
+    template<bool OtherInterleaved>
+    bool isConformant(const IState<FPT,OtherInterleaved> &other) const
     {
         return    variable_count == other.variable_count
                && vector_length  == other.vector_length
@@ -144,7 +160,21 @@ public:
      * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(const FPT factor,
-                           const IState<FPT> &other)
+                           const IState<FPT,Interleaved> &other)
+                           throw(std::bad_cast, std::logic_error) = 0;
+
+    /**
+     * Accumulate scaled state information by computing \f$\mbox{this}
+     * \leftarrow{} \mbox{this} + \mbox{factor}\times\mbox{other}\f$.
+     *
+     * @param factor Scale factor to apply to <tt>other</tt>'s
+     *               state information.
+     * @param other Another state instance to scale and add to \c this.
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw std::logic_error if \c other is not conformant.
+     */
+    virtual void addScaled(const FPT factor,
+                           const IState<FPT,!Interleaved> &other)
                            throw(std::bad_cast, std::logic_error) = 0;
 
     /**
@@ -154,7 +184,17 @@ public:
      *
      * @return *this
      */
-    virtual IState& operator=(const IState<FPT>& that)
+    virtual IState& operator=(const IState<FPT,Interleaved>& that)
+                              throw(std::bad_cast, std::logic_error) = 0;
+
+    /**
+     * Assign to this instance the state information from another instance.
+     *
+     * @param that instance to copy.
+     *
+     * @return *this
+     */
+    virtual IState& operator=(const IState<FPT,!Interleaved>& that)
                               throw(std::bad_cast, std::logic_error) = 0;
 
     /**
@@ -167,7 +207,20 @@ public:
      * @throw std::bad_cast if \c that does not have a compatible type.
      * @throw std::logic_error if \c that is not conformant.
      */
-    virtual void exchange(IState<FPT>& other)
+    virtual void exchange(IState<FPT,Interleaved>& other)
+                          throw(std::bad_cast, std::logic_error) = 0;
+
+    /**
+     * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
+     * the relevant data without incurring a lot of memory overhead.  In
+     * contrast with potentially optimized swap semantics, this method should
+     * swap data instead of playing tricks with underlying pointers.
+     *
+     * @param other instance with which to exchange data.
+     * @throw std::bad_cast if \c that does not have a compatible type.
+     * @throw std::logic_error if \c that is not conformant.
+     */
+    virtual void exchange(IState<FPT,!Interleaved>& other)
                           throw(std::bad_cast, std::logic_error) = 0;
 
     // TODO Add IState<FPT>::swap(IState<FPT>&) to public interface
@@ -176,10 +229,29 @@ public:
 /**
  * An implementation of IState<FPT> for real-valued state information.
  */
-template< typename FPT >
-class RealState : public IState<FPT>
+template< typename FPT, bool Interleaved = true >
+class RealState : public IState<FPT,Interleaved>
 {
 public:
+    /**
+     * A signed integral type used to index into MultiArrays.
+     * Provided as a convenience typedef from IState<FPT,Interleaved>::index.
+     **/
+    typedef typename IState<FPT,Interleaved>::index index;
+
+    /**
+     * An unsigned integral type used to express a MultiArray's shape.
+     * Provided as a convenience typedef from IState<FPT,Interleaved>::size_type.
+     **/
+    typedef typename IState<FPT,Interleaved>::size_type size_type;
+
+    /**
+     * A signed integral type used to express index offsets for MultiArrays.
+     * Provided as a convenience typedef from
+     * IState<FPT,Interleaved>::difference_type.
+     **/
+    typedef typename IState<FPT,Interleaved>::difference_type difference_type;
+
     /**
      * Construct an instance holding the given amount of real-valued state
      * information.
@@ -190,10 +262,10 @@ public:
      * @param vector_count   Number of independent state vectors to store.
      * @throw std::bad_alloc if a memory allocation error occurs.
      */
-    explicit RealState(typename IState<FPT>::size_type variable_count,
-                       typename IState<FPT>::size_type vector_length,
-                       typename IState<FPT>::size_type vector_count)
-                       throw(std::bad_alloc);
+    RealState(size_type variable_count,
+              size_type vector_length,
+              size_type vector_count)
+              throw(std::bad_alloc);
 
     /**
      * Construct an instance with the same amount of state information
@@ -204,7 +276,8 @@ public:
      * @param other instance to mimic in shape.
      * @throw std::bad_alloc if a memory allocation error occurs.
      */
-    explicit RealState(const RealState& other)
+    template<bool OtherInterleaved>
+    explicit RealState(const RealState<FPT,OtherInterleaved>& other)
                        throw(std::bad_alloc);
 
     /**
@@ -226,7 +299,21 @@ public:
      * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(const FPT factor,
-                           const IState<FPT> &other)
+                           const IState<FPT,Interleaved> &other)
+                           throw(std::bad_cast, std::logic_error);
+
+    /**
+     * Accumulate scaled state information by computing \f$\mbox{this}
+     * \leftarrow{} \mbox{this} + \mbox{factor}\times\mbox{other}\f$.
+     *
+     * @param factor Scale factor to apply to <tt>other</tt>'s
+     *               state information.
+     * @param other Another state instance to scale and add to \c this.
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw std::logic_error if \c other is not conformant.
+     */
+    virtual void addScaled(const FPT factor,
+                           const IState<FPT,!Interleaved> &other)
                            throw(std::bad_cast, std::logic_error);
 
     /**
@@ -236,7 +323,18 @@ public:
      * @return *this
      * @throw std::logic_error if \c other is not conformant.
      */
-    RealState& operator=(const RealState& that) throw(std::logic_error);
+    RealState& operator=(const RealState<FPT,Interleaved>& that)
+                         throw(std::logic_error);
+
+    /**
+     * Assign to this instance the state information from another instance.
+     *
+     * @param that instance to copy.
+     * @return *this
+     * @throw std::logic_error if \c other is not conformant.
+     */
+    RealState& operator=(const RealState<FPT,!Interleaved>& that)
+                         throw(std::logic_error);
 
     /**
      * Assign to this instance the state information from another instance.
@@ -246,10 +344,24 @@ public:
      * @throw std::bad_cast if \c other does not have a compatible type.
      * @throw std::logic_error if \c other is not conformant.
      */
-    virtual RealState& operator=(const IState<FPT>& that)
+    virtual RealState& operator=(const IState<FPT,Interleaved>& that)
                                  throw(std::bad_cast, std::logic_error)
     {
-        return operator=(dynamic_cast<const RealState<FPT>&>(that));
+        return operator=(dynamic_cast<const RealState<FPT,Interleaved>&>(that));
+    }
+
+    /**
+     * Assign to this instance the state information from another instance.
+     *
+     * @param that instance to copy.
+     * @return *this
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw std::logic_error if \c other is not conformant.
+     */
+    virtual RealState& operator=(const IState<FPT,!Interleaved>& that)
+                                 throw(std::bad_cast, std::logic_error)
+    {
+        return operator=(dynamic_cast<const RealState<FPT,!Interleaved>&>(that));
     }
 
     /**
@@ -262,7 +374,20 @@ public:
      * @throw std::bad_cast if \c that does not have a compatible type.
      * @throw std::logic_error if \c that is not conformant.
      */
-    virtual void exchange(IState<FPT>& other)
+    virtual void exchange(IState<FPT,Interleaved>& other)
+                          throw(std::bad_cast, std::logic_error);
+
+    /**
+     * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
+     * the relevant data without incurring a lot of memory overhead.  In
+     * contrast with potentially optimized swap semantics, this method should
+     * swap data instead of playing tricks with underlying pointers.
+     *
+     * @param other instance with which to exchange data.
+     * @throw std::bad_cast if \c that does not have a compatible type.
+     * @throw std::logic_error if \c that is not conformant.
+     */
+    virtual void exchange(IState<FPT,!Interleaved>& other)
                           throw(std::bad_cast, std::logic_error);
 
     // TODO Implement swap using https://svn.boost.org/trac/boost/ticket/1045
@@ -274,6 +399,9 @@ protected:
      * IState<FPT>#vector_length, and IState<FPT>#vector_count.
      **/
     boost::shared_array<double> raw;
+
+    // TODO Document
+    static boost::general_storage_order<3> storage_order();
 
 public:
     /** Type of the Boost.MultiArray exposed through RealState#data. */
@@ -288,27 +416,46 @@ public:
     state_type data;
 };
 
-template< typename FPT >
-RealState<FPT>::RealState(typename IState<FPT>::size_type variable_count,
-                          typename IState<FPT>::size_type vector_length,
-                          typename IState<FPT>::size_type vector_count)
+template< typename FPT, bool Interleaved >
+boost::general_storage_order<3> RealState<FPT,Interleaved>::storage_order()
+{
+    if (Interleaved) {
+        const size_type ordering[3]  = { 0, 1, 2 }; // Real variables fastest
+        const bool      ascending[3] = { true, true, true };
+        boost::general_storage_order<3> result(ordering, ascending);
+        return result;
+    } else {
+        const size_type ordering[3]  = { 2, 0, 1 }; // Real variables slowest
+        const bool      ascending[3] = { true, true, true };
+        boost::general_storage_order<3> result(ordering, ascending);
+        return result;
+    }
+}
+
+template< typename FPT, bool Interleaved >
+RealState<FPT,Interleaved>::RealState(
+        typename IState<FPT,Interleaved>::size_type variable_count,
+        typename IState<FPT,Interleaved>::size_type vector_length,
+        typename IState<FPT,Interleaved>::size_type vector_count)
 throw(std::bad_alloc)
-    : IState<FPT>(variable_count, vector_length, vector_count),
+    : IState<FPT,Interleaved>(variable_count, vector_length, vector_count),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
                   sizeof(state_type::element)
                 * variable_count*vector_length*vector_count)),
           std::ptr_fun(free)),
       data(raw.get(),
            boost::extents[variable_count][vector_length][vector_count],
-           boost::fortran_storage_order())
+           RealState<FPT,Interleaved>::storage_order())
 {
     if (!raw) throw std::bad_alloc();
 }
 
-template< typename FPT >
-RealState<FPT>::RealState(const RealState<FPT> &other)
+template< typename FPT, bool Interleaved >
+template< bool OtherInterleaved >
+RealState<FPT,Interleaved>::RealState(
+        const RealState<FPT,OtherInterleaved> &other)
 throw(std::bad_alloc)
-    : IState<FPT>(other),
+    : IState<FPT,Interleaved>(other),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
                 sizeof(state_type::element)
               * other.variable_count
@@ -319,15 +466,20 @@ throw(std::bad_alloc)
            boost::extents[other.variable_count]
                          [other.vector_length]
                          [other.vector_count],
-           boost::fortran_storage_order())
+           RealState<FPT,Interleaved>::storage_order())
 {
     if (!raw) throw std::bad_alloc();
-    memcpy(data.data(), other.data.data(),
-           sizeof(state_type::element)*data.num_elements());
+    if (Interleaved == OtherInterleaved) {
+        memcpy(data.data(), other.data.data(),
+            sizeof(state_type::element)*data.num_elements());
+    } else {
+        data = other.data;
+    }
 }
 
-template< typename FPT >
-void RealState<FPT>::scale(const FPT factor)
+template< typename FPT, bool Interleaved >
+void RealState<FPT,Interleaved>::scale(
+        const FPT factor)
 {
     if (factor == FPT(0)) {
         memset(data.data(), 0,
@@ -339,24 +491,47 @@ void RealState<FPT>::scale(const FPT factor)
     }
 }
 
-template< typename FPT >
-void RealState<FPT>::addScaled(const FPT factor,
-                               const IState<FPT> &other)
+template< typename FPT, bool Interleaved >
+void RealState<FPT,Interleaved>::addScaled(
+        const FPT factor,
+        const IState<FPT,Interleaved> &other)
 throw(std::bad_cast,
       std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
 
-    const RealState<FPT> &o = dynamic_cast<const RealState<FPT>&>(other);
+    const RealState<FPT,Interleaved> &o
+        = dynamic_cast<const RealState<FPT,Interleaved>&>(other);
 
-    suzerain::blas::axpy(data.num_elements(),
-                         factor, o.data.data(), 1,
+    suzerain::blas::axpy(data.num_elements(), factor,
+                         o.data.data(), 1,
                          data.data(), 1);
 }
 
-template< typename FPT >
-RealState<FPT>& RealState<FPT>::operator=(const RealState<FPT> &that)
+template< typename FPT, bool Interleaved >
+void RealState<FPT,Interleaved>::addScaled(
+        const FPT factor,
+        const IState<FPT,!Interleaved> &other)
+throw(std::bad_cast,
+      std::logic_error)
+{
+    if (!isConformant(other))
+        throw std::logic_error("Nonconformant other in addScaled");
+
+    const RealState<FPT,!Interleaved> &o
+        = dynamic_cast<const RealState<FPT,!Interleaved>&>(other);
+
+    for (int i = 0; i < this->variable_count; ++i) {
+        suzerain::blas::axpy(this->vector_length*this->vector_count, factor,
+                             &o.data[i][0][0], o.data.strides()[1],
+                             &data[i][0][0], data.strides()[1]);
+    }
+}
+
+template< typename FPT, bool Interleaved >
+RealState<FPT,Interleaved>& RealState<FPT,Interleaved>::operator=(
+        const RealState<FPT,Interleaved> &that)
 throw(std::logic_error)
 {
     if (this != &that) {
@@ -370,8 +545,22 @@ throw(std::logic_error)
     return *this;
 }
 
-template< typename FPT >
-void RealState<FPT>::exchange(IState<FPT> &other)
+template< typename FPT, bool Interleaved >
+RealState<FPT,Interleaved>& RealState<FPT,Interleaved>::operator=(
+        const RealState<FPT,!Interleaved> &that)
+throw(std::logic_error)
+{
+    if (!isConformant(that))
+        throw std::logic_error("Nonconformant that in operator=");
+
+    this->data = that.data;
+
+    return *this;
+}
+
+template< typename FPT, bool Interleaved >
+void RealState<FPT,Interleaved>::exchange(
+        IState<FPT,Interleaved> &other)
 throw(std::bad_cast,
       std::logic_error)
 {
@@ -379,7 +568,8 @@ throw(std::bad_cast,
         if (!isConformant(other))
             throw std::logic_error("Nonconformant other in exchange");
 
-        RealState<FPT> &o = dynamic_cast<RealState<FPT>&>(other);
+        RealState<FPT,Interleaved> &o
+            = dynamic_cast<RealState<FPT,Interleaved>&>(other);
 
         suzerain::blas::swap(data.num_elements(),
                              o.data.data(), 1,
@@ -387,14 +577,52 @@ throw(std::bad_cast,
     }
 }
 
+template< typename FPT, bool Interleaved >
+void RealState<FPT,Interleaved>::exchange(
+        IState<FPT,!Interleaved> &other)
+throw(std::bad_cast,
+      std::logic_error)
+{
+    if (!isConformant(other))
+        throw std::logic_error("Nonconformant other in exchange");
+
+    RealState<FPT,!Interleaved> &o
+        = dynamic_cast<RealState<FPT,!Interleaved>&>(other);
+
+    for (int i = 0; i < this->variable_count; ++i) {
+        suzerain::blas::swap(this->vector_length*this->vector_count,
+                                &o.data[i][0][0], o.data.strides()[1],
+                                &data[i][0][0], data.strides()[1]);
+    }
+}
+
 /**
  * An implementation of IState<FPT> for complex-valued state information.
  * \c FPT is the real scalar type used underneath the complex type.
  */
-template< typename FPT >
-class ComplexState : public IState<FPT>
+template< typename FPT, bool Interleaved = true >
+class ComplexState : public IState<FPT,Interleaved>
 {
 public:
+    /**
+     * A signed integral type used to index into MultiArrays.
+     * Provided as a convenience typedef from IState<FPT,Interleaved>::index.
+     **/
+    typedef typename IState<FPT,Interleaved>::index index;
+
+    /**
+     * An unsigned integral type used to express a MultiArray's shape.
+     * Provided as a convenience typedef from IState<FPT,Interleaved>::size_type.
+     **/
+    typedef typename IState<FPT,Interleaved>::size_type size_type;
+
+    /**
+     * A signed integral type used to express index offsets for MultiArrays.
+     * Provided as a convenience typedef from
+     * IState<FPT,Interleaved>::difference_type.
+     **/
+    typedef typename IState<FPT,Interleaved>::difference_type difference_type;
+
     /**
      * Construct an instance holding the given amount of complex-valued state
      * information.
@@ -405,10 +633,10 @@ public:
      * @param vector_count   Number of independent state vectors to store.
      * @throw std::bad_alloc if a memory allocation error occurs
      */
-    explicit ComplexState(typename IState<FPT>::size_type variable_count,
-                          typename IState<FPT>::size_type vector_length,
-                          typename IState<FPT>::size_type vector_count)
-                          throw(std::bad_alloc);
+    ComplexState(size_type variable_count,
+                 size_type vector_length,
+                 size_type vector_count)
+                 throw(std::bad_alloc);
 
     /**
      * Construct an instance with the same amount of state information as
@@ -419,7 +647,8 @@ public:
      * @param other instance to mimic in shape.
      * @throw std::bad_alloc if a memory allocation error occurs.
      */
-    explicit ComplexState(const ComplexState& other)
+    template<bool OtherInterleaved>
+    explicit ComplexState(const ComplexState<FPT,OtherInterleaved>& other)
                           throw(std::bad_alloc);
 
     /**
@@ -441,9 +670,22 @@ public:
      * @throw std::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
-                           const IState<FPT> &other)
-                           throw(std::bad_cast,
-                                 std::logic_error);
+                           const IState<FPT,Interleaved> &other)
+                           throw(std::bad_cast, std::logic_error);
+
+    /**
+     * Accumulate scaled state information by computing \f$\mbox{this}
+     * \leftarrow{} \mbox{this} + \mbox{factor}\times\mbox{other}\f$.
+     *
+     * @param factor Scale factor to apply to <tt>other</tt>'s
+     *               state information.
+     * @param other Another state instance to scale and add to \c this.
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw std::logic_error if \c other is not conformant in shape.
+     */
+    virtual void addScaled(const FPT factor,
+                           const IState<FPT,!Interleaved> &other)
+                           throw(std::bad_cast, std::logic_error);
 
     /**
      * Assign to this instance the state information from another instance.
@@ -452,7 +694,18 @@ public:
      * @return *this
      * @throw std::logic_error if \c other is not conformant.
      */
-    ComplexState& operator=(const ComplexState& that) throw(std::logic_error);
+    ComplexState& operator=(const ComplexState<FPT,Interleaved>& that)
+                            throw(std::logic_error);
+
+    /**
+     * Assign to this instance the state information from another instance.
+     *
+     * @param that instance to copy.
+     * @return *this
+     * @throw std::logic_error if \c other is not conformant.
+     */
+    ComplexState& operator=(const ComplexState<FPT,!Interleaved>& that)
+                            throw(std::logic_error);
 
     /**
      * Assign to this instance the state information from another instance.
@@ -462,10 +715,26 @@ public:
      * @throw std::bad_cast if \c other does not have a compatible type.
      * @throw std::logic_error if \c other is not conformant.
      */
-    virtual ComplexState& operator=(const IState<FPT>& that)
+    virtual ComplexState& operator=(const IState<FPT,Interleaved>& that)
                                     throw(std::bad_cast, std::logic_error)
     {
-        return operator=(dynamic_cast<const ComplexState<FPT>&>(that));
+        return operator=(
+                dynamic_cast<const ComplexState<FPT,Interleaved>&>(that));
+    }
+
+    /**
+     * Assign to this instance the state information from another instance.
+     *
+     * @param that instance to copy.
+     * @return *this
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     * @throw std::logic_error if \c other is not conformant.
+     */
+    virtual ComplexState& operator=(const IState<FPT,!Interleaved>& that)
+                                    throw(std::bad_cast, std::logic_error)
+    {
+        return operator=(
+                dynamic_cast<const ComplexState<FPT,!Interleaved>&>(that));
     }
 
     /**
@@ -478,7 +747,20 @@ public:
      * @throw std::bad_cast if \c that does not have a compatible type.
      * @throw std::logic_error if \c that is not conformant.
      */
-    virtual void exchange(IState<FPT>& other)
+    virtual void exchange(IState<FPT,Interleaved>& other)
+                          throw(std::bad_cast, std::logic_error);
+
+    /**
+     * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
+     * the relevant data without incurring a lot of memory overhead.  In
+     * contrast with potentially optimized swap semantics, this method should
+     * swap data instead of playing tricks with underlying pointers.
+     *
+     * @param other instance with which to exchange data.
+     * @throw std::bad_cast if \c that does not have a compatible type.
+     * @throw std::logic_error if \c that is not conformant.
+     */
+    virtual void exchange(IState<FPT,!Interleaved>& other)
                           throw(std::bad_cast, std::logic_error);
 
     // TODO Implement swap using https://svn.boost.org/trac/boost/ticket/1045
@@ -490,6 +772,12 @@ protected:
      * #variable_count, #vector_length, and #vector_count.
      **/
     boost::shared_array<FPT> raw;
+
+    // TODO Document
+    static boost::general_storage_order<4> components_storage_order();
+
+    // TODO Document
+    static boost::general_storage_order<3> storage_order();
 
 public:
     /** Type of the Boost.MultiArray exposed through #components. */
@@ -534,19 +822,54 @@ public:
     state_type data;
 };
 
-template< typename FPT >
-ComplexState<FPT>::ComplexState(typename IState<FPT>::size_type variable_count,
-                                typename IState<FPT>::size_type vector_length,
-                                typename IState<FPT>::size_type vector_count)
+template< typename FPT, bool Interleaved >
+boost::general_storage_order<4>
+ComplexState<FPT,Interleaved>::components_storage_order()
+{
+    if (Interleaved) {
+        const size_type ordering[4]  = { 0, 1, 2, 3 }; // Complex variables fastest
+        const bool      ascending[4] = { true, true, true, true };
+        boost::general_storage_order<4> result(ordering, ascending);
+        return result;
+    } else {
+        const size_type ordering[4]  = { 0, 3, 1, 2 }; // Complex variables slowest
+        const bool      ascending[4] = { true, true, true };
+        boost::general_storage_order<4> result(ordering, ascending);
+        return result;
+    }
+}
+
+template< typename FPT, bool Interleaved >
+boost::general_storage_order<3>
+ComplexState<FPT,Interleaved>::storage_order()
+{
+    if (Interleaved) {
+        const size_type ordering[3]  = { 0, 1, 2 }; // Complex variables fastest
+        const bool      ascending[3] = { true, true, true };
+        boost::general_storage_order<3> result(ordering, ascending);
+        return result;
+    } else {
+        const size_type ordering[3]  = { 2, 0, 1 }; // Complex variables slowest
+        const bool      ascending[3] = { true, true, true };
+        boost::general_storage_order<3> result(ordering, ascending);
+        return result;
+    }
+}
+
+template< typename FPT, bool Interleaved >
+ComplexState<FPT,Interleaved>::ComplexState(
+        typename IState<FPT,Interleaved>::size_type variable_count,
+        typename IState<FPT,Interleaved>::size_type vector_length,
+        typename IState<FPT,Interleaved>::size_type vector_count)
 throw(std::bad_alloc)
-    : IState<FPT>(variable_count, vector_length, vector_count),
+    : IState<FPT,Interleaved>(variable_count, vector_length, vector_count),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
                   sizeof(state_type::element)
                 * variable_count*vector_length*vector_count)),
           std::ptr_fun(free)),
       components(raw.get(),
            boost::extents[2][variable_count][vector_length][vector_count],
-           boost::fortran_storage_order()),
+           ComplexState<FPT,Interleaved>::components_storage_order()),
       real(components[boost::indices[0]
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]
@@ -557,15 +880,17 @@ throw(std::bad_alloc)
                                     [boost::multi_array_types::index_range()]]),
       data(reinterpret_cast<std::complex<FPT> *>(raw.get()),
            boost::extents[variable_count][vector_length][vector_count],
-           boost::fortran_storage_order())
+           ComplexState<FPT,Interleaved>::storage_order())
 {
     if (!raw) throw std::bad_alloc();
 }
 
-template< typename FPT >
-ComplexState<FPT>::ComplexState(const ComplexState<FPT> &other)
+template< typename FPT, bool Interleaved >
+template< bool OtherInterleaved >
+ComplexState<FPT,Interleaved>::ComplexState(
+        const ComplexState<FPT,OtherInterleaved> &other)
 throw(std::bad_alloc)
-    : IState<FPT>(other),
+    : IState<FPT,Interleaved>(other),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
                    sizeof(state_type::element)
                  * other.variable_count
@@ -577,7 +902,7 @@ throw(std::bad_alloc)
                          [other.variable_count]
                          [other.vector_length]
                          [other.vector_count],
-           boost::fortran_storage_order()),
+           ComplexState<FPT,Interleaved>::components_storage_order()),
       real(components[boost::indices[0]
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]
@@ -590,15 +915,19 @@ throw(std::bad_alloc)
            boost::extents[other.variable_count]
                          [other.vector_length]
                          [other.vector_count],
-           boost::fortran_storage_order())
+           ComplexState<FPT,Interleaved>::storage_order())
 {
     if (!raw) throw std::bad_alloc();
-    memcpy(data.data(), other.data.data(),
-           sizeof(state_type::element)*data.num_elements());
+    if (Interleaved == OtherInterleaved) {
+        memcpy(data.data(), other.data.data(),
+            sizeof(state_type::element)*data.num_elements());
+    } else {
+        data = other.data;
+    }
 }
 
-template< typename FPT >
-void ComplexState<FPT>::scale(const FPT factor)
+template< typename FPT, bool Interleaved >
+void ComplexState<FPT,Interleaved>::scale(const FPT factor)
 {
     if (factor == FPT(0)) {
         memset(data.data(), 0,
@@ -611,24 +940,47 @@ void ComplexState<FPT>::scale(const FPT factor)
     }
 }
 
-template< typename FPT >
-void ComplexState<FPT>::addScaled(const FPT factor,
-                                  const IState<FPT> &other)
+template< typename FPT, bool Interleaved >
+void ComplexState<FPT,Interleaved>::addScaled(
+        const FPT factor,
+        const IState<FPT,Interleaved> &other)
 throw(std::bad_cast,
       std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
 
-    const ComplexState<FPT> &o = dynamic_cast<const ComplexState<FPT>&>(other);
+    const ComplexState<FPT,Interleaved> &o
+        = dynamic_cast<const ComplexState<FPT,Interleaved>&>(other);
 
     suzerain::blas::axpy(components.num_elements(),
                          factor, o.components.data(), 1,
                          components.data(), 1);
 }
 
-template< typename FPT >
-ComplexState<FPT>& ComplexState<FPT>::operator=(const ComplexState<FPT> &that)
+template< typename FPT, bool Interleaved >
+void ComplexState<FPT,Interleaved>::addScaled(
+        const FPT factor,
+        const IState<FPT,!Interleaved> &other)
+throw(std::bad_cast,
+      std::logic_error)
+{
+    if (!isConformant(other))
+        throw std::logic_error("Nonconformant other in addScaled");
+
+    const ComplexState<FPT,!Interleaved> &o
+        = dynamic_cast<const ComplexState<FPT,!Interleaved>&>(other);
+
+    for (int i = 0; i < this->variable_count; ++i) {
+        suzerain::blas::axpy(this->vector_length*this->vector_count, factor,
+                             &o.data[i][0][0], o.data.strides()[1],
+                             &data[i][0][0], data.strides()[1]);
+    }
+}
+
+template< typename FPT, bool Interleaved >
+ComplexState<FPT,Interleaved>& ComplexState<FPT,Interleaved>::operator=(
+        const ComplexState<FPT,Interleaved> &that)
 throw(std::logic_error)
 {
     if (this != &that) {
@@ -642,8 +994,22 @@ throw(std::logic_error)
     return *this;
 }
 
-template< typename FPT >
-void ComplexState<FPT>::exchange(IState<FPT> &other)
+template< typename FPT, bool Interleaved >
+ComplexState<FPT,Interleaved>& ComplexState<FPT,Interleaved>::operator=(
+        const ComplexState<FPT,!Interleaved> &that)
+throw(std::logic_error)
+{
+    if (!isConformant(that))
+        throw std::logic_error("Nonconformant that in operator=");
+
+    this->data = that.data;
+
+    return *this;
+}
+
+template< typename FPT, bool Interleaved >
+void ComplexState<FPT,Interleaved>::exchange(
+        IState<FPT,Interleaved> &other)
 throw(std::bad_cast,
       std::logic_error)
 {
@@ -651,11 +1017,31 @@ throw(std::bad_cast,
         if (!isConformant(other))
             throw std::logic_error("Nonconformant other in exchange");
 
-        ComplexState<FPT> &o = dynamic_cast<ComplexState<FPT>&>(other);
+        ComplexState<FPT,Interleaved> &o
+            = dynamic_cast<ComplexState<FPT,Interleaved>&>(other);
 
         suzerain::blas::swap(components.num_elements(),
                              o.components.data(), 1,
                              components.data(), 1);
+    }
+}
+
+template< typename FPT, bool Interleaved >
+void ComplexState<FPT,Interleaved>::exchange(
+        IState<FPT,!Interleaved> &other)
+throw(std::bad_cast,
+      std::logic_error)
+{
+    if (!isConformant(other))
+        throw std::logic_error("Nonconformant other in exchange");
+
+    ComplexState<FPT,!Interleaved> &o
+        = dynamic_cast<ComplexState<FPT,!Interleaved>&>(other);
+
+    for (int i = 0; i < this->variable_count; ++i) {
+        suzerain::blas::swap(this->vector_length*this->vector_count,
+                                &o.data[i][0][0], o.data.strides()[1],
+                                &data[i][0][0], data.strides()[1]);
     }
 }
 
