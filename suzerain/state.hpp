@@ -332,6 +332,8 @@ void RealState<FPT>::scale(const FPT factor)
     if (factor == FPT(0)) {
         memset(data.data(), 0,
                data.num_elements()*sizeof(state_type::element));
+    } else if (factor == FPT(1)) {
+        // NOP
     } else {
         suzerain::blas::scal(data.num_elements(), factor, data.data(), 1);
     }
@@ -601,6 +603,8 @@ void ComplexState<FPT>::scale(const FPT factor)
     if (factor == FPT(0)) {
         memset(data.data(), 0,
                data.num_elements()*sizeof(state_type::element));
+    } else if (factor == FPT(1)) {
+        // NOP
     } else {
         suzerain::blas::scal(
                 components.num_elements(), factor, components.data(), 1);

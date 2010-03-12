@@ -140,6 +140,16 @@ BOOST_AUTO_TEST_CASE( scale )
     foo.data[0][0][2] = 11.0;
     foo.data[0][1][2] = 13.0;
 
+    foo.scale(1.0);
+
+    // Ensure foo.data is unchanged
+    BOOST_CHECK_EQUAL(foo.data[0][0][0],  2.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][0],  3.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][1],  5.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][1],  7.0);
+    BOOST_CHECK_EQUAL(foo.data[0][0][2], 11.0);
+    BOOST_CHECK_EQUAL(foo.data[0][1][2], 13.0);
+
     foo.scale(2.0);
 
     // Ensure foo.data was modified appropriately
@@ -545,6 +555,22 @@ BOOST_AUTO_TEST_CASE( scale )
     foo.data[0][1][1] = complex( 7.0, - 7.0);
     foo.data[0][0][2] = complex(11.0, -11.0);
     foo.data[0][1][2] = complex(13.0, -13.0);
+
+    foo.scale(1.0);
+
+    // Ensure foo.data is unchanged
+    BOOST_CHECK_EQUAL(foo.real[0][0][0],   2.0);
+    BOOST_CHECK_EQUAL(foo.real[0][1][0],   3.0);
+    BOOST_CHECK_EQUAL(foo.real[0][0][1],   5.0);
+    BOOST_CHECK_EQUAL(foo.real[0][1][1],   7.0);
+    BOOST_CHECK_EQUAL(foo.real[0][0][2],  11.0);
+    BOOST_CHECK_EQUAL(foo.real[0][1][2],  13.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][0][0], - 2.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][1][0], - 3.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][0][1], - 5.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][1][1], - 7.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][0][2], -11.0);
+    BOOST_CHECK_EQUAL(foo.imag[0][1][2], -13.0);
 
     foo.scale(2.0);
 
