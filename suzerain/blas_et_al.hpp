@@ -35,6 +35,8 @@
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/is_integral.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <suzerain/complex.hpp>
 
 /** @file
  * C++ wrappers for external BLAS and LAPACK routines necessary for Suzerain.
@@ -107,6 +109,52 @@ inline void swap(
                                x,
                                boost::numeric_cast<int>(incx),
                                y,
+                               boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_sswap */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>
+> >::type swap(
+        const Integer1 n,
+        Complex1 *x,
+        const Integer2 incx,
+        Complex2 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_cswap(boost::numeric_cast<int>(n),
+                               reinterpret_cast<float (*)[2]>(x),
+                               boost::numeric_cast<int>(incx),
+                               reinterpret_cast<float (*)[2]>(y),
+                               boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_sswap */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>
+> >::type swap(
+        const Integer1 n,
+        Complex1 *x,
+        const Integer2 incx,
+        Complex2 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_zswap(boost::numeric_cast<int>(n),
+                               reinterpret_cast<double (*)[2]>(x),
+                               boost::numeric_cast<int>(incx),
+                               reinterpret_cast<double (*)[2]>(y),
                                boost::numeric_cast<int>(incy));
 }
 
@@ -253,6 +301,110 @@ inline void axpy(
                                x,
                                boost::numeric_cast<int>(incx),
                                y,
+                               boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpy */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2, typename Complex3 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>,
+    suzerain::complex::traits::is_complex_float<Complex3>
+> >::type axpy(
+        const Integer1 n,
+        const Complex1 alpha,
+        const Complex2 *x,
+        const Integer2 incx,
+        Complex3 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_caxpy(boost::numeric_cast<int>(n),
+                               reinterpret_cast<const float (*)[2]>(alpha),
+                               reinterpret_cast<const float (*)[2]>(x),
+                               boost::numeric_cast<int>(incx),
+                               reinterpret_cast<float (*)[2]>(y),
+                               boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpy */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>
+> >::type axpy(
+        const Integer1 n,
+        const float alpha,
+        const Complex1 *x,
+        const Integer2 incx,
+        Complex2 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    const float alpha_complex[2] = { alpha, 0 };
+    return suzerain_blas_caxpy(boost::numeric_cast<int>(n),
+                               alpha_complex,
+                               reinterpret_cast<const float (*)[2]>(x),
+                               boost::numeric_cast<int>(incx),
+                               reinterpret_cast<float (*)[2]>(y),
+                               boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpy */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2, typename Complex3 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>,
+    suzerain::complex::traits::is_complex_double<Complex3>
+> >::type axpy(
+        const Integer1 n,
+        const Complex1 alpha,
+        const Complex2 *x,
+        const Integer2 incx,
+        Complex3 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_zaxpy(boost::numeric_cast<int>(n),
+                               reinterpret_cast<const double (*)[2]>(alpha),
+                               reinterpret_cast<const double (*)[2]>(x),
+                               boost::numeric_cast<int>(incx),
+                               reinterpret_cast<double (*)[2]>(y),
+                               boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpy */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>
+> >::type axpy(
+        const Integer1 n,
+        const double alpha,
+        const Complex1 *x,
+        const Integer2 incx,
+        Complex2 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    const double alpha_complex[2] = { alpha, 0 };
+    return suzerain_blas_zaxpy(boost::numeric_cast<int>(n),
+                               alpha_complex,
+                               reinterpret_cast<const double (*)[2]>(x),
+                               boost::numeric_cast<int>(incx),
+                               reinterpret_cast<double (*)[2]>(y),
                                boost::numeric_cast<int>(incy));
 }
 
