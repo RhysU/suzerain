@@ -122,6 +122,24 @@ suzerain_blas_dswap(
         double *y,
         const int incy);
 
+/*! \copydoc suzerain_blas_sswap */
+void
+suzerain_blas_cswap(
+        const int n,
+        float (*x)[2],
+        const int incx,
+        float (*y)[2],
+        const int incy);
+
+/*! \copydoc suzerain_blas_sswap */
+void
+suzerain_blas_zswap(
+        const int n,
+        double (*x)[2],
+        const int incx,
+        double (*y)[2],
+        const int incy);
+
 /*!
  * \brief Perform \f$ y \leftarrow{} x \f$ using BLAS's copy.
  *
@@ -233,6 +251,26 @@ suzerain_blas_daxpy(
         const double *x,
         const int incx,
         double *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_saxpy */
+void
+suzerain_blas_caxpy(
+        const int n,
+        const float alpha[2],
+        const float (*x)[2],
+        const int incx,
+        float (*y)[2],
+        const int incy);
+
+/*! \copydoc suzerain_blas_saxpy */
+void
+suzerain_blas_zaxpy(
+        const int n,
+        const double alpha[2],
+        const double (*x)[2],
+        const int incx,
+        double (*y)[2],
         const int incy);
 
 /*!

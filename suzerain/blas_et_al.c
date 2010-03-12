@@ -93,13 +93,13 @@ suzerain_blas_sswap(
 {
 #ifdef SUZERAIN_HAVE_MKL
     if (sizeof(MKL_INT) == sizeof(int)) {
-        return sswap(&n, x, &incx, y, &incy);
+        sswap(&n, x, &incx, y, &incy);
     } else {
         const MKL_INT _n    = n;
         const MKL_INT _incx = incx;
         const MKL_INT _incy = incy;
 
-        return sswap(&_n, x, &_incx, y, &_incy);
+        sswap(&_n, x, &_incx, y, &_incy);
     }
 #else
 #error "Sanity failure"
@@ -116,13 +116,59 @@ suzerain_blas_dswap(
 {
 #ifdef SUZERAIN_HAVE_MKL
     if (sizeof(MKL_INT) == sizeof(int)) {
-        return dswap(&n, x, &incx, y, &incy);
+        dswap(&n, x, &incx, y, &incy);
     } else {
         const MKL_INT _n    = n;
         const MKL_INT _incx = incx;
         const MKL_INT _incy = incy;
 
-        return dswap(&_n, x, &_incx, y, &_incy);
+        dswap(&_n, x, &_incx, y, &_incy);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_cswap(
+        const int n,
+        float  (*x)[2],
+        const int incx,
+        float  (*y)[2],
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        cswap(&n, (MKL_Complex8 *) x, &incx, (MKL_Complex8 *) y, &incy);
+    } else {
+        const MKL_INT n_    = n;
+        const MKL_INT incx_ = incx;
+        const MKL_INT incy_ = incy;
+
+        cswap(&n_, (MKL_Complex8 *) x, &incx_, (MKL_Complex8 *) y, &incy_);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_zswap(
+        const int n,
+        double (*x)[2],
+        const int incx,
+        double (*y)[2],
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        zswap(&n, (MKL_Complex16 *) x, &incx, (MKL_Complex16 *) y, &incy);
+    } else {
+        const MKL_INT n_    = n;
+        const MKL_INT incx_ = incx;
+        const MKL_INT incy_ = incy;
+
+        zswap(&n_, (MKL_Complex16 *) x, &incx_, (MKL_Complex16 *) y, &incy_);
     }
 #else
 #error "Sanity failure"
@@ -304,6 +350,66 @@ suzerain_blas_daxpy(
         const MKL_INT _incy = incy;
 
         daxpy(&_n, &alpha, x, &_incx, y, &_incy);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_caxpy(
+        const int n,
+        const float alpha[2],
+        const float (*x)[2],
+        const int incx,
+        float (*y)[2],
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        caxpy(&n,
+            (const MKL_Complex8 *) alpha,
+            (const MKL_Complex8 *) x, &incx,
+            (      MKL_Complex8 *) y, &incy);
+    } else {
+        const MKL_INT n_    = n;
+        const MKL_INT incx_ = incx;
+        const MKL_INT incy_ = incy;
+
+        caxpy(&n_,
+            (const MKL_Complex8 *) alpha,
+            (const MKL_Complex8 *) x, &incx_,
+            (      MKL_Complex8 *) y, &incy_);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_zaxpy(
+        const int n,
+        const double alpha[2],
+        const double (*x)[2],
+        const int incx,
+        double (*y)[2],
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        zaxpy(&n,
+            (const MKL_Complex16 *) alpha,
+            (const MKL_Complex16 *) x, &incx,
+            (      MKL_Complex16 *) y, &incy);
+    } else {
+        const MKL_INT n_    = n;
+        const MKL_INT incx_ = incx;
+        const MKL_INT incy_ = incy;
+
+        zaxpy(&n_,
+            (const MKL_Complex16 *) alpha,
+            (const MKL_Complex16 *) x, &incx_,
+            (      MKL_Complex16 *) y, &incy_);
     }
 #else
 #error "Sanity failure"

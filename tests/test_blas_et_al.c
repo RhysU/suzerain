@@ -258,6 +258,78 @@ test_sswap()
 
 static
 void
+test_cswap()
+{
+    int i;
+
+    float        x[][2]    = {{1.0, -1.0}, {2.0, -2.0}, {3.0, -3.0}};
+    float        y[][2]    = {{4.0, -4.0}, {5.0, -5.0}, {6.0, -6.0}};
+    const int    incx   = 1;
+    const int    incy   = 1;
+    const int    nx     = sizeof(x)/sizeof(x[0]);
+    const int    ny     = sizeof(y)/sizeof(y[0]);
+    const float  x_expected[][2] = { {4.0, -4.0}, {5.0, -5.0}, {6.0, -6.0} };
+    const float  y_expected[][2] = { {1.0, -1.0}, {2.0, -2.0}, {3.0, -3.0} };
+    const int nx_expected = sizeof(x_expected)/sizeof(x_expected[0]);
+    const int ny_expected = sizeof(y_expected)/sizeof(y_expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Consistent vector lengths");
+    gsl_test_int(nx, nx_expected, "Expected x results' length");
+    gsl_test_int(ny, ny_expected, "Expected y results' length");
+
+    suzerain_blas_cswap(nx/incx, x, incx, y, incy);
+    for (i = 0; i < nx_expected; ++i) {
+        gsl_test_abs(x[i][0], x_expected[i][0], GSL_FLT_EPSILON,
+                "cswap x real index %d", i);
+        gsl_test_abs(x[i][1], x_expected[i][1], GSL_FLT_EPSILON,
+                "cswap x imag index %d", i);
+    }
+    for (i = 0; i < ny_expected; ++i) {
+        gsl_test_abs(y[i][0], y_expected[i][0], GSL_FLT_EPSILON,
+                "cswap y real index %d", i);
+        gsl_test_abs(y[i][1], y_expected[i][1], GSL_FLT_EPSILON,
+                "cswap y imag index %d", i);
+    }
+}
+
+static
+void
+test_zswap()
+{
+    int i;
+
+    double       x[][2]    = {{1.0, -1.0}, {2.0, -2.0}, {3.0, -3.0}};
+    double       y[][2]    = {{4.0, -4.0}, {5.0, -5.0}, {6.0, -6.0}};
+    const int    incx   = 1;
+    const int    incy   = 1;
+    const int    nx     = sizeof(x)/sizeof(x[0]);
+    const int    ny     = sizeof(y)/sizeof(y[0]);
+    const double x_expected[][2] = { {4.0, -4.0}, {5.0, -5.0}, {6.0, -6.0} };
+    const double y_expected[][2] = { {1.0, -1.0}, {2.0, -2.0}, {3.0, -3.0} };
+    const int nx_expected = sizeof(x_expected)/sizeof(x_expected[0]);
+    const int ny_expected = sizeof(y_expected)/sizeof(y_expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Consistent vector lengths");
+    gsl_test_int(nx, nx_expected, "Expected x results' length");
+    gsl_test_int(ny, ny_expected, "Expected y results' length");
+
+    suzerain_blas_zswap(nx/incx, x, incx, y, incy);
+    for (i = 0; i < nx_expected; ++i) {
+        gsl_test_abs(x[i][0], x_expected[i][0], GSL_DBL_EPSILON,
+                "zswap x real index %d", i);
+        gsl_test_abs(x[i][1], x_expected[i][1], GSL_DBL_EPSILON,
+                "zswap x imag index %d", i);
+    }
+    for (i = 0; i < ny_expected; ++i) {
+        gsl_test_abs(y[i][0], y_expected[i][0], GSL_DBL_EPSILON,
+                "zswap y real index %d", i);
+        gsl_test_abs(y[i][1], y_expected[i][1], GSL_DBL_EPSILON,
+                "zswap y imag index %d", i);
+    }
+}
+
+static
+void
 test_dscal()
 {
     int i;
@@ -386,6 +458,179 @@ test_scopy()
     }
 }
 
+static
+void
+test_daxpy()
+{
+    int i;
+
+    const double alpha      = 2.0;
+    const double x[]        = {1.0, 2.0, 3.0};
+    const int    incx       = 1;
+    double       y[]        = {4.0, -1, 5.0, -2, 6.0, -3};
+    const int    incy       = 2;
+    const int    nx         = sizeof(x)/sizeof(x[0]);
+    const int    ny         = sizeof(y)/sizeof(y[0]);
+    const double expected[] = {
+        alpha*x[0] + y[0],
+        y[1],
+        alpha*x[1] + y[2],
+        y[3],
+        alpha*x[2] + y[4],
+        y[5]
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_daxpy(nx/incx, alpha, x, incx, y, incy);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON, "daxpy index %d", i);
+    }
+}
+
+static
+void
+test_saxpy()
+{
+    int i;
+
+    const float  alpha      = 2.0;
+    const float  x[]        = {1.0, 2.0, 3.0};
+    const int    incx       = 1;
+    float        y[]        = {4.0, -1, 5.0, -2, 6.0, -3};
+    const int    incy       = 2;
+    const int    nx         = sizeof(x)/sizeof(x[0]);
+    const int    ny         = sizeof(y)/sizeof(y[0]);
+    const float expected[] = {
+        alpha*x[0] + y[0],
+        y[1],
+        alpha*x[1] + y[2],
+        y[3],
+        alpha*x[2] + y[4],
+        y[5]
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_saxpy(nx/incx, alpha, x, incx, y, incy);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i], expected[i], GSL_FLT_EPSILON, "saxpy index %d", i);
+    }
+}
+
+static
+void
+test_zaxpy()
+{
+    int i;
+
+    const double alpha[2] = {2.0, -0.25};
+    const double x[][2]   = {{1.0,-1.0}, {2.0,-2.0}, {3.0,-3.0}};
+    const int    incx     = 1;
+    double       y[][2]
+        = {{4.0,-4.0}, {-1,-1}, {5.0,-5.0}, {-2,-2}, {6.0,-6.0}, {-3,-3}};
+    const int incy        = 2;
+    const int nx          = sizeof(x)/sizeof(x[0]);
+    const int ny          = sizeof(y)/sizeof(y[0]);
+    const double expected[][2] = {
+        {
+            alpha[0]*x[0][0] - alpha[1]*x[0][1] + y[0][0],
+            alpha[0]*x[0][1] + alpha[1]*x[0][0] + y[0][1]
+        },
+        {
+            y[1][0],
+            y[1][1]
+        },
+        {
+            alpha[0]*x[1][0] - alpha[1]*x[1][1] + y[2][0],
+            alpha[0]*x[1][1] + alpha[1]*x[1][0] + y[2][1]
+        },
+        {
+            y[3][0],
+            y[3][1]
+        },
+        {
+            alpha[0]*x[2][0] - alpha[1]*x[2][1] + y[4][0],
+            alpha[0]*x[2][1] + alpha[1]*x[2][0] + y[4][1]
+        },
+        {
+            y[5][0],
+            y[5][1]
+        }
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_zaxpy(nx/incx, alpha, x, incx, y, incy);
+
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
+                "zaxpy real index %d", i);
+        gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
+                "zaxpy imag index %d", i);
+    }
+}
+
+static
+void
+test_caxpy()
+{
+    int i;
+
+    const float  alpha[2] = {2.0, -0.25};
+    const float  x[][2]   = {{1.0,-1.0}, {2.0,-2.0}, {3.0,-3.0}};
+    const int    incx     = 1;
+    float        y[][2]
+        = {{4.0,-4.0}, {-1,-1}, {5.0,-5.0}, {-2,-2}, {6.0,-6.0}, {-3,-3}};
+    const int incy        = 2;
+    const int nx          = sizeof(x)/sizeof(x[0]);
+    const int ny          = sizeof(y)/sizeof(y[0]);
+    const float  expected[][2] = {
+        {
+            alpha[0]*x[0][0] - alpha[1]*x[0][1] + y[0][0],
+            alpha[0]*x[0][1] + alpha[1]*x[0][0] + y[0][1]
+        },
+        {
+            y[1][0],
+            y[1][1]
+        },
+        {
+            alpha[0]*x[1][0] - alpha[1]*x[1][1] + y[2][0],
+            alpha[0]*x[1][1] + alpha[1]*x[1][0] + y[2][1]
+        },
+        {
+            y[3][0],
+            y[3][1]
+        },
+        {
+            alpha[0]*x[2][0] - alpha[1]*x[2][1] + y[4][0],
+            alpha[0]*x[2][1] + alpha[1]*x[2][0] + y[4][1]
+        },
+        {
+            y[5][0],
+            y[5][1]
+        }
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_caxpy(nx/incx, alpha, x, incx, y, incy);
+
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i][0], expected[i][0], GSL_FLT_EPSILON,
+                "caxpy real index %d", i);
+        gsl_test_abs(y[i][1], expected[i][1], GSL_FLT_EPSILON,
+                "caxpy imag index %d", i);
+    }
+}
 
 static
 void
@@ -768,12 +1013,19 @@ main(int argc, char **argv)
 
     test_dswap();
     test_sswap();
+    test_zswap();
+    test_cswap();
 
     test_dscal();
     test_sscal();
 
     test_dcopy();
     test_scopy();
+
+    test_daxpy();
+    test_saxpy();
+    test_zaxpy();
+    test_caxpy();
 
     test_dgb_acc();
     test_dgb_acc_nop();
