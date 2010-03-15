@@ -28,6 +28,13 @@ CLEANFILES += *.pchi
 # Provide a test-ready logging configuration
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
 
+TESTS                  += test_allocator
+check_PROGRAMS         += test_allocator
+test_allocator_SOURCES  = test_allocator.cpp
+test_allocator_LDADD    = ../suzerain/libsuzerain.la
+test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS              += test_error
 check_PROGRAMS     += test_error
 test_error_SOURCES  = test_error.cpp
