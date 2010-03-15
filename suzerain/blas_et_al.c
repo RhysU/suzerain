@@ -84,6 +84,13 @@ suzerain_blas_calloc(size_t nmemb, size_t size)
 }
 
 void
+suzerain_blas_free(void *ptr)
+{
+    // Must match suzerain_blas_malloc's malloc-like routine!
+    if (ptr) free(ptr);
+}
+
+void
 suzerain_blas_sswap(
         const int n,
         float *x,

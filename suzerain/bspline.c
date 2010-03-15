@@ -117,7 +117,7 @@ suzerain_bspline_alloc(int order,
 
     /* Allocate workspace */
     suzerain_bspline_workspace * const w
-        = malloc(sizeof(suzerain_bspline_workspace));
+        = suzerain_blas_malloc(sizeof(suzerain_bspline_workspace));
     if (w == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
@@ -130,13 +130,13 @@ suzerain_bspline_alloc(int order,
     w->db          = NULL;
     w->D           = NULL;
     /* Prepare workspace */
-    w->kl = malloc((nderivatives+1)*sizeof(w->kl[0]));
+    w->kl = suzerain_blas_malloc((nderivatives+1)*sizeof(w->kl[0]));
     if (w->kl == NULL) {
         suzerain_bspline_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate workspace kl",
                             SUZERAIN_ENOMEM);
     }
-    w->ku = malloc((nderivatives+1)*sizeof(w->ku[0]));
+    w->ku = suzerain_blas_malloc((nderivatives+1)*sizeof(w->ku[0]));
     if (w->ku == NULL) {
         suzerain_bspline_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate workspace ku",
@@ -195,13 +195,13 @@ suzerain_bspline_alloc(int order,
     w->ld     = w->max_ku + 1 + w->max_kl;
 
     /* Allocate space for pointers to matrices */
-    w->D = malloc((w->nderivatives + 1) * sizeof(w->D[0]));
+    w->D = suzerain_blas_malloc((w->nderivatives + 1) * sizeof(w->D[0]));
     if (w->D == NULL) {
         suzerain_bspline_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix pointers",
                             SUZERAIN_ENOMEM);
     }
-    /* Allocate one block for all derivative operator matrices */
+    /* Allocate one aligned block for all derivative operator matrices */
     const size_t an_operators_storage = w->ld * w->ndof;
     const size_t all_operators_storage
         = an_operators_storage * (w->nderivatives+1);
@@ -240,11 +240,11 @@ suzerain_bspline_free(suzerain_bspline_workspace * w)
                 // Must free originally allocated memory offset, not the
                 // computed offset.  See suzerain_bspline_alloc.
                 w->D[0] -= (w->max_ku - w->ku[0]);
-                free(w->D[0]);
+                suzerain_blas_free(w->D[0]);
                 w->D[0] = NULL;
             }
 
-            free(w->D);
+            suzerain_blas_free(w->D);
             w->D = NULL;
         }
 
@@ -257,13 +257,13 @@ suzerain_bspline_free(suzerain_bspline_workspace * w)
         gsl_bspline_free(w->bw);
         w->bw = NULL;
 
-        free(w->ku);
+        suzerain_blas_free(w->ku);
         w->ku = NULL;
 
-        free(w->kl);
+        suzerain_blas_free(w->kl);
         w->kl = NULL;
 
-        free(w);
+        suzerain_blas_free(w);
     }
 }
 
@@ -306,7 +306,7 @@ suzerain_bspline_apply_operator(
             0.0, b_j, incb);
     }
 
-    free(scratch);
+    suzerain_blas_free(scratch);
     return SUZERAIN_SUCCESS;
 }
 
@@ -391,7 +391,8 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     w->ld     = w->max_kl + 1 + w->max_ku;
 
     /* Compute collocation points at which we will check bandwidth */
-    double * const points = malloc(2*w->order*sizeof(w->bw->knots->data[0]));
+    double * const points = suzerain_blas_malloc(
+            2*w->order*sizeof(w->bw->knots->data[0]));
     if (points == NULL) {
         SUZERAIN_ERROR("Unable to allocate space for collocation points",
                        SUZERAIN_ENOMEM);
@@ -404,9 +405,9 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
 
     /* Allocate space for collocation operator submatrices */
     double ** const scratch
-        = malloc(2*(w->nderivatives+1) * sizeof(scratch[0]));
+        = suzerain_blas_malloc(2*(w->nderivatives+1) * sizeof(scratch[0]));
     if (scratch == NULL) {
-        free(points);
+        suzerain_blas_free(points);
         SUZERAIN_ERROR("Unable to allocate scratch pointers",
                 SUZERAIN_ENOMEM);
     }
@@ -414,8 +415,8 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     const size_t total_storage = 2*(w->nderivatives+1)*an_operators_storage;
     scratch[0] = suzerain_blas_calloc(total_storage, sizeof(w->D[0][0]));
     if (scratch[0] == NULL) {
-        free(scratch);
-        free(points);
+        suzerain_blas_free(scratch);
+        suzerain_blas_free(points);
         SUZERAIN_ERROR_NULL("failed to allocate scratch",
                             SUZERAIN_ENOMEM);
     }
@@ -434,9 +435,9 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
              0, 0,
              w->nderivatives, w->kl, w->ku, w->ld,
              w->order, ul_points, w->bw, w->dbw, w->db, ul_D)) {
-        free(scratch[0]);
-        free(scratch);
-        free(points);
+        suzerain_blas_free(scratch[0]);
+        suzerain_blas_free(scratch);
+        suzerain_blas_free(points);
         SUZERAIN_ERROR("Error computing operator UL submatrices",
                        SUZERAIN_ESANITY);
     }
@@ -445,9 +446,9 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
              lr_offset, lr_offset,
              w->nderivatives, w->kl, w->ku, w->ld,
              w->order, lr_points, w->bw, w->dbw, w->db, lr_D)) {
-        free(scratch[0]);
-        free(scratch);
-        free(points);
+        suzerain_blas_free(scratch[0]);
+        suzerain_blas_free(scratch);
+        suzerain_blas_free(points);
         SUZERAIN_ERROR("Error computing operator LR submatrices",
                        SUZERAIN_ESANITY);
     }
@@ -485,9 +486,9 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
         }
     }
 
-    free(scratch[0]);
-    free(scratch);
-    free(points);
+    suzerain_blas_free(scratch[0]);
+    suzerain_blas_free(scratch);
+    suzerain_blas_free(points);
 
     return SUZERAIN_SUCCESS;
 }
@@ -508,7 +509,7 @@ suzerain_bspline_create_operators(suzerain_bspline_workspace *w)
 
     /* Evaluate basis at the Greville abscissae: d^k/dx^k B_j(\xi_i) */
     double * const points
-        = malloc(w->ndof*sizeof(w->bw->knots->data[0]));
+        = suzerain_blas_malloc(w->ndof*sizeof(w->bw->knots->data[0]));
     if (points == NULL) {
         SUZERAIN_ERROR("Unable to allocate space for Greville abscissae",
                        SUZERAIN_ENOMEM);
@@ -526,11 +527,11 @@ suzerain_bspline_create_operators(suzerain_bspline_workspace *w)
     if (compute_banded_collocation_derivative_submatrix(
              0, 0, w->nderivatives, w->kl, w->ku, w->ld,
              w->ndof, points, w->bw, w->dbw, w->db, w->D)) {
-        free(points);
+        suzerain_blas_free(points);
         SUZERAIN_ERROR("Error computing operator matrices", SUZERAIN_ESANITY);
     }
 
-    free(points);
+    suzerain_blas_free(points);
 
     return SUZERAIN_SUCCESS;
 }
@@ -635,7 +636,7 @@ suzerain_bspline_lu_alloc(
 {
     /* Allocate space for the luw workspace */
     suzerain_bspline_lu_workspace * const luw
-        = malloc(sizeof(suzerain_bspline_lu_workspace));
+        = suzerain_blas_malloc(sizeof(suzerain_bspline_lu_workspace));
     if (luw == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
@@ -651,7 +652,7 @@ suzerain_bspline_lu_alloc(
     luw->ld            = luw->kl + luw->ku + 1;
 
     /* Allocate memory for LU factorization pivot storage */
-    luw->ipiv = malloc(w->ndof * sizeof(luw->ipiv[0]));
+    luw->ipiv = suzerain_blas_malloc(w->ndof * sizeof(luw->ipiv[0]));
     if (luw->ipiv == NULL) {
         suzerain_bspline_lu_free(luw);
         SUZERAIN_ERROR_NULL("failed to allocate space for pivot storage",
@@ -675,13 +676,13 @@ void
 suzerain_bspline_lu_free(suzerain_bspline_lu_workspace * luw)
 {
     if (luw != NULL) {
-        free(luw->A);
+        suzerain_blas_free(luw->A);
         luw->A = NULL;
 
-        free(luw->ipiv);
+        suzerain_blas_free(luw->ipiv);
         luw->ipiv = NULL;
 
-        free(luw);
+        suzerain_blas_free(luw);
     }
 }
 
@@ -820,14 +821,14 @@ suzerain_bspline_lu_solve_noncontiguous(
                                                 scratch,
                                                 luw->ndof);
         if (info) {
-            free(scratch);
+            suzerain_blas_free(scratch);
             SUZERAIN_ERROR("suzerain_lapack_dgbtrs reported an error",
                         SUZERAIN_ESANITY);
         }
         suzerain_blas_dcopy(luw->ndof, scratch, 1, b_j, incb);
     }
 
-    free(scratch);
+    suzerain_blas_free(scratch);
 
     return SUZERAIN_SUCCESS;
 }

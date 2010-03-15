@@ -53,7 +53,7 @@
 __BEGIN_DECLS
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-/*! \name Memory allocation
+/*! \name Aligned memory allocation and deallocation
  * @{
  */
 
@@ -62,7 +62,7 @@ __BEGIN_DECLS
  * recommendations for performance and numerical stability.
  *
  * The memory is not cleared.  Any returned memory must later be freed using \c
- * free.
+ * suzerain_blas_free().
  *
  * \param size Number of bytes to allocate.
  *
@@ -77,7 +77,7 @@ suzerain_blas_malloc(size_t size);
  * recommendations for performance and numerical stability.
  *
  * The memory is set to zero.  Any returned memory must later be freed using \c
- * free.
+ * suzerain_blas_free.
  *
  * \param nmemb Number of elements to allocate
  * \param size Size of each member in bytes.
@@ -87,6 +87,15 @@ suzerain_blas_malloc(size_t size);
  */
 void *
 suzerain_blas_calloc(size_t nmemb, size_t size);
+
+/*!
+ * \brief Free memory previously allocated by suzerain_blas_malloc() or
+ * suzerain_blas_calloc().
+ *
+ * \param ptr Pointer to the previously allocated memory, which may be NULL.
+ */
+void
+suzerain_blas_free(void *ptr);
 
 /*! @} */
 

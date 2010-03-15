@@ -69,6 +69,12 @@ inline void * calloc(size_t nmemb, size_t size)
     return suzerain_blas_calloc(nmemb, size);
 }
 
+/*! @copydoc suzerain_blas_free(void*) */
+inline void free(void *ptr)
+{
+    return suzerain_blas_free(ptr);
+}
+
 /*! @} */
 
 /*! \name BLAS level 1 operations
@@ -768,7 +774,7 @@ public:
         return reinterpret_cast<pointer>(
                 ::suzerain::blas::malloc(cnt * sizeof(T)));
     }
-    void deallocate(pointer p, size_type) { ::std::free(p); }
+    void deallocate(pointer p, size_type) { ::suzerain::blas::free(p); }
     //@}
 
     /** max_size method following std::allocator contract */
