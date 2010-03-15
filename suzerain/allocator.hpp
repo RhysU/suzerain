@@ -171,7 +171,7 @@ public:
     /** Provides required rebind templated typedef */
     template<typename U>
     struct rebind {
-        typedef allocator<U,typename Policy::rebind<U>::other> other;
+        typedef allocator<U,Policy::rebind<U>::other> other;
     };
 
     // Make explicit all constructors, including copy constructors
