@@ -36,6 +36,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <suzerain/allocator.hpp>
 #include <suzerain/complex.hpp>
 
 /** @file
@@ -725,6 +726,89 @@ inline void gb_acc(
  */
 
 /*! @} */
+
+/**
+ * An aligned, heap-based allocation policy using <tt>suzerain::blas::malloc</tt>
+ * and <tt>free</tt>.
+ *
+ * @see Lai Shiaw San Kent's article <a
+ * href="http://www.codeproject.com/KB/cpp/allocator.aspx">C++ Standard
+ * Allocator, An Introduction and Implementation</a> for more information.
+ */
+template<typename T>
+class allocator_blas_policy {
+public:
+    // Typedefs following std::allocator contract
+    typedef T value_type;
+    typedef value_type* pointer;
+    typedef const value_type* const_pointer;
+    typedef value_type& reference;
+    typedef const value_type& const_reference;
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
+
+    /** Rebind to obtain allocator_blas_policy<U> */
+    template<typename U>
+    struct rebind {
+        typedef allocator_blas_policy<U> other;
+    };
+
+    // Make explicit all constructors, including copy constructors
+    explicit allocator_blas_policy() {}
+    ~allocator_blas_policy() {}
+    explicit allocator_blas_policy(allocator_blas_policy const&) {}
+    template <typename U>
+    explicit allocator_blas_policy(allocator_blas_policy<U> const&) {}
+
+    /** Memory allocation uses ::suzerain::blas::malloc and std::free */
+    //@{
+    pointer allocate(size_type cnt,
+                     typename std::allocator<void>::const_pointer = 0)
+    {
+        return reinterpret_cast<pointer>(
+                ::suzerain::blas::malloc(cnt * sizeof(T)));
+    }
+    void deallocate(pointer p, size_type) { ::std::free(p); }
+    //@}
+
+    /** max_size method following std::allocator contract */
+    size_type max_size() const
+    {
+        return std::numeric_limits<size_type>::max() / sizeof(T);
+    }
+};
+
+/** Provide information about compatibility between different allocators. */
+//@{
+/**
+ * Memory can be deallocated from other allocator_blas_policy
+ * instantiations.
+ **/
+template<typename T, typename T2>
+inline bool operator==(allocator_blas_policy<T> const&,
+                       allocator_blas_policy<T2> const&)
+{
+    return true;
+}
+
+/** Memory cannot be deallocated by other allocator types */
+template<typename T, typename OtherAllocator>
+inline bool operator==(allocator_blas_policy<T> const&,
+                       OtherAllocator const&)
+{
+    return false;
+}
+//@}
+
+/**
+ * Simulate a template typedef for a BLAS-aligned STL allocator.
+ * Combines suzerain::allocator with allocator_blas_policy.
+ */
+template<class T>
+struct allocator
+{
+    typedef typename ::suzerain::allocator<T, allocator_blas_policy<T> > type;
+};
 
 } // namespace blas
 

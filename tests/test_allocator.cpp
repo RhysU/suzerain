@@ -32,6 +32,7 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <suzerain/allocator.hpp>
+#include <suzerain/blas_et_al.hpp>
 #include <boost/test/included/unit_test.hpp>
 
 #pragma warning(disable:383 1418)
@@ -62,6 +63,7 @@ BOOST_AUTO_TEST_SUITE( suzerain_allocator )
 
 BOOST_AUTO_TEST_CASE( allocator_default_policy )
 {
+    // Test the default allocator policy
     suzerain::allocator<int> a;
     StlAllocatorTestbed::TestAlloc( a );
 }
@@ -72,9 +74,10 @@ BOOST_AUTO_TEST_CASE( allocator_freestore_policy )
     StlAllocatorTestbed::TestAlloc( a );
 }
 
-BOOST_AUTO_TEST_CASE( allocator_aligned_malloc_policy )
+BOOST_AUTO_TEST_CASE( allocator_blas )
 {
-    // FIXME Test suzerain::allocator_aligned_malloc_policy
+    suzerain::blas::allocator<int>::type a; // Aligned allocator, usually
+    StlAllocatorTestbed::TestAlloc( a );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
