@@ -528,8 +528,8 @@ throw(std::bad_alloc)
 {
     if (!raw) throw std::bad_alloc();
 
-    memcpy(data.data(), other.data.data(),
-        sizeof(state_type::element)*data.num_elements());
+    std::memcpy(data.data(), other.data.data(),
+                sizeof(state_type::element)*data.num_elements());
 }
 
 template< typename FPT, bool Interleaved >
@@ -614,8 +614,8 @@ throw(std::logic_error)
         if (!isConformant(that))
             throw std::logic_error("Nonconformant that in operator=");
 
-        memcpy(data.data(), that.data.data(),
-               sizeof(state_type::element)*data.num_elements());
+        std::memcpy(data.data(), that.data.data(),
+                    sizeof(state_type::element)*data.num_elements());
     }
 
     return *this;
@@ -1010,8 +1010,8 @@ throw(std::bad_alloc)
 {
     if (!raw) throw std::bad_alloc();
 
-    memcpy(data.data(), other.data.data(),
-        sizeof(state_type::element)*data.num_elements());
+    std::memcpy(data.data(), other.data.data(),
+                sizeof(state_type::element)*data.num_elements());
 }
 
 
@@ -1112,8 +1112,8 @@ throw(std::logic_error)
         if (!isConformant(that))
             throw std::logic_error("Nonconformant that in operator=");
 
-        memcpy(data.data(), that.data.data(),
-               sizeof(state_type::element)*data.num_elements());
+        std::memcpy(data.data(), that.data.data(),
+                    sizeof(state_type::element)*data.num_elements());
     }
 
     return *this;
