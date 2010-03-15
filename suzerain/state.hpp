@@ -453,18 +453,15 @@ public:
 
 protected:
     /**
-     * Raw, aligned storage of all state information stored in column-major
-     * storage over indices IState<FPT>#variable_count,
-     * IState<FPT>#vector_length, and IState<FPT>#vector_count.
+     * Provides MultiArray storage order information for the template
+     * instantiation.
      **/
-    boost::shared_array<double> raw;
-
-    // TODO Document
     static boost::general_storage_order<3> storage_order();
 
 public:
     /** Type of the Boost.MultiArray exposed through RealState#data. */
-    typedef typename boost::multi_array_ref<FPT, 3> state_type;
+    typedef typename boost::multi_array< FPT, 3,
+            typename ::suzerain::blas::allocator<FPT>::type > state_type;
 
     /**
      * A three-dimensional Boost.MultiArray of real-valued state kept
@@ -498,15 +495,10 @@ RealState<FPT,Interleaved>::RealState(
         typename IState<FPT,Interleaved>::size_type vector_count)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(variable_count, vector_length, vector_count),
-      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
-                  sizeof(state_type::element)
-                * variable_count*vector_length*vector_count)),
-          std::ptr_fun(free)),
-      data(raw.get(),
-           boost::extents[variable_count][vector_length][vector_count],
+      data(boost::extents[variable_count][vector_length][vector_count],
            RealState<FPT,Interleaved>::storage_order())
 {
-    if (!raw) throw std::bad_alloc();
+    // NOP
 }
 
 template< typename FPT, bool Interleaved >
@@ -514,20 +506,11 @@ RealState<FPT,Interleaved>::RealState(
         const RealState& other)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(other),
-      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
-                sizeof(state_type::element)
-              * other.variable_count
-              * other.vector_length
-              * other.vector_count)),
-          std::ptr_fun(free)),
-      data(raw.get(),
-           boost::extents[other.variable_count]
+      data(boost::extents[other.variable_count]
                          [other.vector_length]
                          [other.vector_count],
            RealState<FPT,Interleaved>::storage_order())
 {
-    if (!raw) throw std::bad_alloc();
-
     std::memcpy(data.data(), other.data.data(),
                 sizeof(state_type::element)*data.num_elements());
 }
@@ -537,21 +520,12 @@ RealState<FPT,Interleaved>::RealState(
         const RealState<FPT,!Interleaved>& other)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(other),
-      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
-                sizeof(state_type::element)
-              * other.variable_count
-              * other.vector_length
-              * other.vector_count)),
-          std::ptr_fun(free)),
-      data(raw.get(),
-           boost::extents[other.variable_count]
+      data(boost::extents[other.variable_count]
                          [other.vector_length]
                          [other.vector_count],
            RealState<FPT,Interleaved>::storage_order())
 {
-    if (!raw) throw std::bad_alloc();
-
-    data = other.data;
+    data = other.data; // TODO Ensure deep assignment has adequate performance
 }
 
 template< typename FPT, bool Interleaved >
@@ -666,8 +640,8 @@ throw(std::bad_cast,
 
     for (int i = 0; i < this->variable_count; ++i) {
         suzerain::blas::swap(this->vector_length*this->vector_count,
-                                &o.data[i][0][0], o.data.strides()[1],
-                                &data[i][0][0], data.strides()[1]);
+                             &o.data[i][0][0], o.data.strides()[1],
+                             &data[i][0][0], data.strides()[1]);
     }
 }
 
@@ -859,24 +833,25 @@ public:
 
 protected:
     /**
-     * Raw, aligned storage of all state information stored in column-major
-     * storage over \c FPT real-valued components (i.e. real and imaginary),
-     * #variable_count, #vector_length, and #vector_count.
+     * Provides MultiArray complex component storage order information for the
+     * template instantiation.
      **/
-    boost::shared_array<FPT> raw;
-
-    // TODO Document
     static boost::general_storage_order<4> components_storage_order();
 
-    // TODO Document
+    /**
+     * Provides MultiArray complex-valued storage order information for the
+     * template instantiation.
+     **/
     static boost::general_storage_order<3> storage_order();
 
 public:
     /** Type of the Boost.MultiArray exposed through #components. */
-    typedef typename boost::multi_array_ref<FPT, 4> components_type;
+    typedef typename boost::multi_array< FPT, 4,
+            typename ::suzerain::blas::allocator<FPT>::type > components_type;
 
     /** Type of the Boost.MultiArray exposed through #real and #imag. */
-    typedef typename boost::array_view_gen<components_type,3>::type component_type;
+    typedef typename boost::array_view_gen<
+        components_type,3>::type component_type;
 
     /** Type of the Boost.MultiArray exposed through #data. */
     typedef typename boost::multi_array_ref<std::complex<FPT>, 3> state_type;
@@ -955,11 +930,7 @@ ComplexState<FPT,Interleaved>::ComplexState(
         typename IState<FPT,Interleaved>::size_type vector_count)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(variable_count, vector_length, vector_count),
-      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
-                  sizeof(state_type::element)
-                * variable_count*vector_length*vector_count)),
-          std::ptr_fun(free)),
-      components(raw.get(),
+      components(
            boost::extents[2][variable_count][vector_length][vector_count],
            ComplexState<FPT,Interleaved>::components_storage_order()),
       real(components[boost::indices[0]
@@ -970,11 +941,11 @@ throw(std::bad_alloc)
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]]),
-      data(reinterpret_cast<std::complex<FPT> *>(raw.get()),
+      data(reinterpret_cast<std::complex<FPT> *>(components.data()),
            boost::extents[variable_count][vector_length][vector_count],
            ComplexState<FPT,Interleaved>::storage_order())
 {
-    if (!raw) throw std::bad_alloc();
+    // NOP
 }
 
 template< typename FPT, bool Interleaved >
@@ -982,18 +953,11 @@ ComplexState<FPT,Interleaved>::ComplexState(
         const ComplexState& other)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(other),
-      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
-                   sizeof(state_type::element)
-                 * other.variable_count
-                 * other.vector_length
-                 * other.vector_count)),
-          std::ptr_fun(free)),
-      components(raw.get(),
-           boost::extents[2]
-                         [other.variable_count]
-                         [other.vector_length]
-                         [other.vector_count],
-           ComplexState<FPT,Interleaved>::components_storage_order()),
+      components(boost::extents[2]
+                               [other.variable_count]
+                               [other.vector_length]
+                               [other.vector_count],
+                 ComplexState<FPT,Interleaved>::components_storage_order()),
       real(components[boost::indices[0]
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]
@@ -1002,14 +966,12 @@ throw(std::bad_alloc)
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]]),
-      data(reinterpret_cast<std::complex<FPT> *>(raw.get()),
+      data(reinterpret_cast<std::complex<FPT> *>(components.data()),
            boost::extents[other.variable_count]
                          [other.vector_length]
                          [other.vector_count],
            ComplexState<FPT,Interleaved>::storage_order())
 {
-    if (!raw) throw std::bad_alloc();
-
     std::memcpy(data.data(), other.data.data(),
                 sizeof(state_type::element)*data.num_elements());
 }
@@ -1020,18 +982,11 @@ ComplexState<FPT,Interleaved>::ComplexState(
         const ComplexState<FPT,!Interleaved>& other)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(other),
-      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
-                   sizeof(state_type::element)
-                 * other.variable_count
-                 * other.vector_length
-                 * other.vector_count)),
-          std::ptr_fun(free)),
-      components(raw.get(),
-           boost::extents[2]
-                         [other.variable_count]
-                         [other.vector_length]
-                         [other.vector_count],
-           ComplexState<FPT,Interleaved>::components_storage_order()),
+      components(boost::extents[2]
+                               [other.variable_count]
+                               [other.vector_length]
+                               [other.vector_count],
+                 ComplexState<FPT,Interleaved>::components_storage_order()),
       real(components[boost::indices[0]
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]
@@ -1040,15 +995,13 @@ throw(std::bad_alloc)
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]
                                     [boost::multi_array_types::index_range()]]),
-      data(reinterpret_cast<std::complex<FPT> *>(raw.get()),
+      data(reinterpret_cast<std::complex<FPT> *>(components.data()),
            boost::extents[other.variable_count]
                          [other.vector_length]
                          [other.vector_count],
            ComplexState<FPT,Interleaved>::storage_order())
 {
-    if (!raw) throw std::bad_alloc();
-
-    data = other.data;
+    components = other.components;
 }
 
 template< typename FPT, bool Interleaved >
