@@ -511,8 +511,8 @@ throw(std::bad_alloc)
                          [other.vector_count],
            RealState<FPT,Interleaved>::storage_order())
 {
-    std::memcpy(data.data(), other.data.data(),
-                sizeof(state_type::element)*data.num_elements());
+    suzerain::blas::copy(
+            data.num_elements(), other.data.data(), 1, data.data(), 1);
 }
 
 template< typename FPT, bool Interleaved >
@@ -588,8 +588,8 @@ throw(std::logic_error)
         if (!isConformant(that))
             throw std::logic_error("Nonconformant that in operator=");
 
-        std::memcpy(data.data(), that.data.data(),
-                    sizeof(state_type::element)*data.num_elements());
+        suzerain::blas::copy(
+                data.num_elements(), that.data.data(), 1, data.data(), 1);
     }
 
     return *this;
@@ -972,8 +972,8 @@ throw(std::bad_alloc)
                          [other.vector_count],
            ComplexState<FPT,Interleaved>::storage_order())
 {
-    std::memcpy(data.data(), other.data.data(),
-                sizeof(state_type::element)*data.num_elements());
+    suzerain::blas::copy(components.num_elements(),
+                         other.components.data(), 1, components.data(), 1);
 }
 
 
@@ -1001,6 +1001,7 @@ throw(std::bad_alloc)
                          [other.vector_count],
            ComplexState<FPT,Interleaved>::storage_order())
 {
+    // TODO Ensure deep assignment has adequate performance
     components = other.components;
 }
 
@@ -1065,8 +1066,8 @@ throw(std::logic_error)
         if (!isConformant(that))
             throw std::logic_error("Nonconformant that in operator=");
 
-        std::memcpy(data.data(), that.data.data(),
-                    sizeof(state_type::element)*data.num_elements());
+        suzerain::blas::copy(components.num_elements(),
+                             that.components.data(), 1, components.data(), 1);
     }
 
     return *this;
@@ -1080,7 +1081,8 @@ throw(std::logic_error)
     if (!isConformant(that))
         throw std::logic_error("Nonconformant that in operator=");
 
-    this->data = that.data;
+    // TODO Ensure deep assignment has adequate performance
+    this->components = that.components;
 
     return *this;
 }
