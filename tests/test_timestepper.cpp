@@ -12,6 +12,9 @@
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
+#include "test_tools.hpp"
+
+BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 #pragma warning(disable:383)
 

@@ -34,6 +34,9 @@
 #include <suzerain/allocator.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <boost/test/included/unit_test.hpp>
+#include "test_tools.hpp"
+
+BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 #pragma warning(disable:383 1418)
 #include "StlAllocatorTestPolicy.hpp" // The default policy for testing
@@ -42,7 +45,6 @@
 // SET_DEFAULT_CONSTRUCTABLE_OFF( MyAlloc )
 
 #include "StlAllocatorTestMain.hpp" // Allocator test code
-
 
 // Testing std::allocator increases confidence Allocator tests are well-formed
 BOOST_AUTO_TEST_SUITE( std_allocator )

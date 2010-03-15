@@ -8,6 +8,10 @@
 #include <gsl/gsl_test.h>
 #include <suzerain/blas_et_al.h>
 
+#ifdef SUZERAIN_HAVE_MKL
+#include <mkl_service.h>
+#endif
+
 static
 void
 test_daxpby()
@@ -1033,6 +1037,10 @@ main(int argc, char **argv)
     test_sgb_acc();
 
     test_blasext_i2s_zaxpby2();
+
+#ifdef SUZERAIN_HAVE_MKL
+    MKL_FreeBuffers();
+#endif
 
     exit(gsl_test_summary());
 }

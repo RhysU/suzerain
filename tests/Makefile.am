@@ -60,6 +60,7 @@ check_PROGRAMS       += test_bspline
 test_bspline_SOURCES  = test_bspline.cpp
 test_bspline_LDADD    = ../suzerain/libsuzerain.la
 test_bspline_LDADD   += $(GSL_LIBS)
+test_bspline_LDADD   += $(MKL_LIBS)
 test_bspline_LDADD   += $(LOG4CXX_LIBS)
 test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)

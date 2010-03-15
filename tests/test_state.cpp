@@ -6,6 +6,9 @@
 #define BOOST_TEST_MODULE $Id$
 #include <suzerain/state.hpp>
 #include <boost/test/included/unit_test.hpp>
+#include "test_tools.hpp"
+
+BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 #pragma warning(disable:383)
 

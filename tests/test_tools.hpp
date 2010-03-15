@@ -481,5 +481,17 @@ private:
 };
 #pragma warning(pop)
 
+#ifdef SUZERAIN_HAVE_MKL
+#include <mkl_service.h>
+#endif
+class BlasCleanupFixture {
+public:
+    BlasCleanupFixture() {
+#ifdef SUZERAIN_HAVE_MKL
+        MKL_FreeBuffers();
+#endif
+    }
+};
+
 #pragma warning(pop)
 #endif // PECOS_SUZERAIN_TEST_TOOLS_HPP
