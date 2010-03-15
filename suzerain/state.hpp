@@ -115,8 +115,18 @@ public:
      *
      * @param other instance to mimic in shape.
      */
-    template<bool OtherInterleaved>
-    IState(const IState<FPT,OtherInterleaved>& other)
+    IState(const IState& other)
+        : variable_count(other.variable_count),
+          vector_length(other.vector_length),
+          vector_count(other.vector_count) {}
+
+    /**
+     * Construct an instance with the same amount of state information
+     * as another.  The other instance varies in how it is interleaved.
+     *
+     * @param other instance to mimic in shape.
+     */
+    IState(const IState<FPT,!Interleaved>& other)
         : variable_count(other.variable_count),
           vector_length(other.vector_length),
           vector_count(other.vector_count) {}
@@ -126,19 +136,32 @@ public:
 
     /**
      * Is \c this instance's shape "conformant" with <tt>other</tt>'s?
-     * Interleaving of state variables does not influence the comparison.
+     * Interleaving of state variables does not influence the comparison,
+     * but subclasses are free to change this behavior.
      *
      * @param other another instance to compare against.
      *
      * @return True if all of #variable_count, #vector_length, and
      *         #vector_count are identical.  False otherwise.
      */
-    template<bool OtherInterleaved>
-    bool isConformant(const IState<FPT,OtherInterleaved> &other) const
+    virtual bool isConformant(const IState& other) const
     {
-        return    variable_count == other.variable_count
-               && vector_length  == other.vector_length
-               && vector_count   == other.vector_count;
+        return isConformantHelper(other);
+    }
+
+    /**
+     * Is \c this instance's shape "conformant" with <tt>other</tt>'s?
+     * Interleaving of state variables does not influence the comparison,
+     * but subclasses are free to change this behavior.
+     *
+     * @param other another instance to compare against.
+     *
+     * @return True if all of #variable_count, #vector_length, and
+     *         #vector_count are identical.  False otherwise.
+     */
+    virtual bool isConformant(const IState<FPT,!Interleaved> &other) const
+    {
+        return isConformantHelper(other);
     }
 
     /**
@@ -224,6 +247,24 @@ public:
                           throw(std::bad_cast, std::logic_error) = 0;
 
     // TODO Add IState<FPT>::swap(IState<FPT>&) to public interface
+
+private:
+
+    /**
+     * Is \c this instance's shape equivalent to <tt>other</tt>'s?
+     * Interleaving of state variables does not influence the comparison.
+     *
+     * @param other another instance to compare against.
+     *
+     * @return True if all of #variable_count, #vector_length, and
+     *         #vector_count are identical.  False otherwise.
+     */
+    template<bool OtherInterleaved>
+    bool isConformantHelper(const IState<FPT,OtherInterleaved>& other) const {
+        return    variable_count == other.variable_count
+               && vector_length  == other.vector_length
+               && vector_count   == other.vector_count;
+    }
 };
 
 /**
@@ -233,6 +274,13 @@ template< typename FPT, bool Interleaved = true >
 class RealState : public IState<FPT,Interleaved>
 {
 public:
+    /**
+     * Are state variables interleaved with one another?  When true, variables
+     * are the fastest index.  When false, each state variable is stored in a
+     * separate, contiguous block of memory.
+     */
+    static const bool interleaved = Interleaved;
+
     /**
      * A signed integral type used to index into MultiArrays.
      * Provided as a convenience typedef from IState<FPT,Interleaved>::index.
@@ -276,8 +324,19 @@ public:
      * @param other instance to mimic in shape.
      * @throw std::bad_alloc if a memory allocation error occurs.
      */
-    template<bool OtherInterleaved>
-    explicit RealState(const RealState<FPT,OtherInterleaved>& other)
+    explicit RealState(const RealState& other)
+                       throw(std::bad_alloc);
+
+    /**
+     * Construct an instance with the same amount of state information
+     * as another.  The copy constructor is explicit because instances maintain
+     * non-trivial amounts of information; unintentional copying would be
+     * problematic.
+     *
+     * @param other instance to mimic in shape.
+     * @throw std::bad_alloc if a memory allocation error occurs.
+     */
+    explicit RealState(const RealState<FPT,!Interleaved>& other)
                        throw(std::bad_alloc);
 
     /**
@@ -323,7 +382,7 @@ public:
      * @return *this
      * @throw std::logic_error if \c other is not conformant.
      */
-    RealState& operator=(const RealState<FPT,Interleaved>& that)
+    RealState& operator=(const RealState& that)
                          throw(std::logic_error);
 
     /**
@@ -347,7 +406,7 @@ public:
     virtual RealState& operator=(const IState<FPT,Interleaved>& that)
                                  throw(std::bad_cast, std::logic_error)
     {
-        return operator=(dynamic_cast<const RealState<FPT,Interleaved>&>(that));
+        return operator=(dynamic_cast<const RealState&>(that));
     }
 
     /**
@@ -451,9 +510,8 @@ throw(std::bad_alloc)
 }
 
 template< typename FPT, bool Interleaved >
-template< bool OtherInterleaved >
 RealState<FPT,Interleaved>::RealState(
-        const RealState<FPT,OtherInterleaved> &other)
+        const RealState& other)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(other),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
@@ -469,12 +527,31 @@ throw(std::bad_alloc)
            RealState<FPT,Interleaved>::storage_order())
 {
     if (!raw) throw std::bad_alloc();
-    if (Interleaved == OtherInterleaved) {
-        memcpy(data.data(), other.data.data(),
-            sizeof(state_type::element)*data.num_elements());
-    } else {
-        data = other.data;
-    }
+
+    memcpy(data.data(), other.data.data(),
+        sizeof(state_type::element)*data.num_elements());
+}
+
+template< typename FPT, bool Interleaved >
+RealState<FPT,Interleaved>::RealState(
+        const RealState<FPT,!Interleaved> &other)
+throw(std::bad_alloc)
+    : IState<FPT,Interleaved>(other),
+      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
+                sizeof(state_type::element)
+              * other.variable_count
+              * other.vector_length
+              * other.vector_count)),
+          std::ptr_fun(free)),
+      data(raw.get(),
+           boost::extents[other.variable_count]
+                         [other.vector_length]
+                         [other.vector_count],
+           RealState<FPT,Interleaved>::storage_order())
+{
+    if (!raw) throw std::bad_alloc();
+
+    data = other.data;
 }
 
 template< typename FPT, bool Interleaved >
@@ -531,7 +608,7 @@ throw(std::bad_cast,
 
 template< typename FPT, bool Interleaved >
 RealState<FPT,Interleaved>& RealState<FPT,Interleaved>::operator=(
-        const RealState<FPT,Interleaved> &that)
+        const RealState &that)
 throw(std::logic_error)
 {
     if (this != &that) {
@@ -605,6 +682,13 @@ class ComplexState : public IState<FPT,Interleaved>
 {
 public:
     /**
+     * Are state variables interleaved with one another?  When true, variables
+     * are the fastest index.  When false, each state variable is stored in a
+     * separate, contiguous block of memory.
+     */
+    static const bool interleaved = Interleaved;
+
+    /**
      * A signed integral type used to index into MultiArrays.
      * Provided as a convenience typedef from IState<FPT,Interleaved>::index.
      **/
@@ -647,8 +731,19 @@ public:
      * @param other instance to mimic in shape.
      * @throw std::bad_alloc if a memory allocation error occurs.
      */
-    template<bool OtherInterleaved>
-    explicit ComplexState(const ComplexState<FPT,OtherInterleaved>& other)
+    explicit ComplexState(const ComplexState& other)
+                          throw(std::bad_alloc);
+
+    /**
+     * Construct an instance with the same amount of state information as
+     * another.  The copy constructor is explicit because instances maintain
+     * non-trivial amounts of information; unintentional copying would be
+     * problematic.
+     *
+     * @param other instance to mimic in shape.
+     * @throw std::bad_alloc if a memory allocation error occurs.
+     */
+    explicit ComplexState(const ComplexState<FPT,!Interleaved>& other)
                           throw(std::bad_alloc);
 
     /**
@@ -694,7 +789,7 @@ public:
      * @return *this
      * @throw std::logic_error if \c other is not conformant.
      */
-    ComplexState& operator=(const ComplexState<FPT,Interleaved>& that)
+    ComplexState& operator=(const ComplexState& that)
                             throw(std::logic_error);
 
     /**
@@ -718,8 +813,7 @@ public:
     virtual ComplexState& operator=(const IState<FPT,Interleaved>& that)
                                     throw(std::bad_cast, std::logic_error)
     {
-        return operator=(
-                dynamic_cast<const ComplexState<FPT,Interleaved>&>(that));
+        return operator=( dynamic_cast<const ComplexState&>(that));
     }
 
     /**
@@ -886,9 +980,8 @@ throw(std::bad_alloc)
 }
 
 template< typename FPT, bool Interleaved >
-template< bool OtherInterleaved >
 ComplexState<FPT,Interleaved>::ComplexState(
-        const ComplexState<FPT,OtherInterleaved> &other)
+        const ComplexState &other)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(other),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
@@ -918,12 +1011,46 @@ throw(std::bad_alloc)
            ComplexState<FPT,Interleaved>::storage_order())
 {
     if (!raw) throw std::bad_alloc();
-    if (Interleaved == OtherInterleaved) {
-        memcpy(data.data(), other.data.data(),
-            sizeof(state_type::element)*data.num_elements());
-    } else {
-        data = other.data;
-    }
+
+    memcpy(data.data(), other.data.data(),
+        sizeof(state_type::element)*data.num_elements());
+}
+
+
+template< typename FPT, bool Interleaved >
+ComplexState<FPT,Interleaved>::ComplexState(
+        const ComplexState<FPT,!Interleaved> &other)
+throw(std::bad_alloc)
+    : IState<FPT,Interleaved>(other),
+      raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
+                   sizeof(state_type::element)
+                 * other.variable_count
+                 * other.vector_length
+                 * other.vector_count)),
+          std::ptr_fun(free)),
+      components(raw.get(),
+           boost::extents[2]
+                         [other.variable_count]
+                         [other.vector_length]
+                         [other.vector_count],
+           ComplexState<FPT,Interleaved>::components_storage_order()),
+      real(components[boost::indices[0]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]]),
+      imag(components[boost::indices[1]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]
+                                    [boost::multi_array_types::index_range()]]),
+      data(reinterpret_cast<std::complex<FPT> *>(raw.get()),
+           boost::extents[other.variable_count]
+                         [other.vector_length]
+                         [other.vector_count],
+           ComplexState<FPT,Interleaved>::storage_order())
+{
+    if (!raw) throw std::bad_alloc();
+
+    data = other.data;
 }
 
 template< typename FPT, bool Interleaved >
@@ -980,7 +1107,7 @@ throw(std::bad_cast,
 
 template< typename FPT, bool Interleaved >
 ComplexState<FPT,Interleaved>& ComplexState<FPT,Interleaved>::operator=(
-        const ComplexState<FPT,Interleaved> &that)
+        const ComplexState& that)
 throw(std::logic_error)
 {
     if (this != &that) {
