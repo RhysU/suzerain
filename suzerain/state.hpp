@@ -1,32 +1,32 @@
-/*--------------------------------------------------------------------------
- *--------------------------------------------------------------------------
- *
- * Copyright (C) 2009 The PECOS Development Team
- *
- * Please see http://pecos.ices.utexas.edu for more information.
- *
- * This file is part of Suzerain.
- *
- * Suzerain is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Suzerain is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
- *
- *--------------------------------------------------------------------------
- *
- * state.hpp: Class to manage mutable state vectors
- *
- * $Id$
- *--------------------------------------------------------------------------
- *-------------------------------------------------------------------------- */
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+//
+// Copyright (C) 2010 The PECOS Development Team
+//
+// Please see http://pecos.ices.utexas.edu for more information.
+//
+// This file is part of Suzerain.
+//
+// Suzerain is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Suzerain is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+//
+//--------------------------------------------------------------------------
+//
+// state.hpp: Class to manage mutable state vectors
+//
+// $Id$
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 #ifndef __SUZERAIN_STATE_HPP
 #define __SUZERAIN_STATE_HPP
 
@@ -159,7 +159,7 @@ public:
      * @return True if all of #variable_count, #vector_length, and
      *         #vector_count are identical.  False otherwise.
      */
-    virtual bool isConformant(const IState<FPT,!Interleaved> &other) const
+    virtual bool isConformant(const IState<FPT,!Interleaved>& other) const
     {
         return isConformantHelper(other);
     }
@@ -183,7 +183,7 @@ public:
      * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(const FPT factor,
-                           const IState<FPT,Interleaved> &other)
+                           const IState<FPT,Interleaved>& other)
                            throw(std::bad_cast, std::logic_error) = 0;
 
     /**
@@ -197,7 +197,7 @@ public:
      * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(const FPT factor,
-                           const IState<FPT,!Interleaved> &other)
+                           const IState<FPT,!Interleaved>& other)
                            throw(std::bad_cast, std::logic_error) = 0;
 
     /**
@@ -358,7 +358,7 @@ public:
      * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(const FPT factor,
-                           const IState<FPT,Interleaved> &other)
+                           const IState<FPT,Interleaved>& other)
                            throw(std::bad_cast, std::logic_error);
 
     /**
@@ -372,7 +372,7 @@ public:
      * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(const FPT factor,
-                           const IState<FPT,!Interleaved> &other)
+                           const IState<FPT,!Interleaved>& other)
                            throw(std::bad_cast, std::logic_error);
 
     /**
@@ -534,7 +534,7 @@ throw(std::bad_alloc)
 
 template< typename FPT, bool Interleaved >
 RealState<FPT,Interleaved>::RealState(
-        const RealState<FPT,!Interleaved> &other)
+        const RealState<FPT,!Interleaved>& other)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(other),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
@@ -571,15 +571,14 @@ void RealState<FPT,Interleaved>::scale(
 template< typename FPT, bool Interleaved >
 void RealState<FPT,Interleaved>::addScaled(
         const FPT factor,
-        const IState<FPT,Interleaved> &other)
+        const IState<FPT,Interleaved>& other)
 throw(std::bad_cast,
       std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
 
-    const RealState<FPT,Interleaved> &o
-        = dynamic_cast<const RealState<FPT,Interleaved>&>(other);
+    const RealState& o = dynamic_cast<const RealState&>(other);
 
     suzerain::blas::axpy(data.num_elements(), factor,
                          o.data.data(), 1,
@@ -589,14 +588,14 @@ throw(std::bad_cast,
 template< typename FPT, bool Interleaved >
 void RealState<FPT,Interleaved>::addScaled(
         const FPT factor,
-        const IState<FPT,!Interleaved> &other)
+        const IState<FPT,!Interleaved>& other)
 throw(std::bad_cast,
       std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
 
-    const RealState<FPT,!Interleaved> &o
+    const RealState<FPT,!Interleaved>& o
         = dynamic_cast<const RealState<FPT,!Interleaved>&>(other);
 
     for (int i = 0; i < this->variable_count; ++i) {
@@ -608,7 +607,7 @@ throw(std::bad_cast,
 
 template< typename FPT, bool Interleaved >
 RealState<FPT,Interleaved>& RealState<FPT,Interleaved>::operator=(
-        const RealState &that)
+        const RealState& that)
 throw(std::logic_error)
 {
     if (this != &that) {
@@ -624,7 +623,7 @@ throw(std::logic_error)
 
 template< typename FPT, bool Interleaved >
 RealState<FPT,Interleaved>& RealState<FPT,Interleaved>::operator=(
-        const RealState<FPT,!Interleaved> &that)
+        const RealState<FPT,!Interleaved>& that)
 throw(std::logic_error)
 {
     if (!isConformant(that))
@@ -637,7 +636,7 @@ throw(std::logic_error)
 
 template< typename FPT, bool Interleaved >
 void RealState<FPT,Interleaved>::exchange(
-        IState<FPT,Interleaved> &other)
+        IState<FPT,Interleaved>& other)
 throw(std::bad_cast,
       std::logic_error)
 {
@@ -645,8 +644,7 @@ throw(std::bad_cast,
         if (!isConformant(other))
             throw std::logic_error("Nonconformant other in exchange");
 
-        RealState<FPT,Interleaved> &o
-            = dynamic_cast<RealState<FPT,Interleaved>&>(other);
+        RealState& o = dynamic_cast<RealState&>(other);
 
         suzerain::blas::swap(data.num_elements(),
                              o.data.data(), 1,
@@ -656,14 +654,14 @@ throw(std::bad_cast,
 
 template< typename FPT, bool Interleaved >
 void RealState<FPT,Interleaved>::exchange(
-        IState<FPT,!Interleaved> &other)
+        IState<FPT,!Interleaved>& other)
 throw(std::bad_cast,
       std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in exchange");
 
-    RealState<FPT,!Interleaved> &o
+    RealState<FPT,!Interleaved>& o
         = dynamic_cast<RealState<FPT,!Interleaved>&>(other);
 
     for (int i = 0; i < this->variable_count; ++i) {
@@ -765,7 +763,7 @@ public:
      * @throw std::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
-                           const IState<FPT,Interleaved> &other)
+                           const IState<FPT,Interleaved>& other)
                            throw(std::bad_cast, std::logic_error);
 
     /**
@@ -779,7 +777,7 @@ public:
      * @throw std::logic_error if \c other is not conformant in shape.
      */
     virtual void addScaled(const FPT factor,
-                           const IState<FPT,!Interleaved> &other)
+                           const IState<FPT,!Interleaved>& other)
                            throw(std::bad_cast, std::logic_error);
 
     /**
@@ -981,7 +979,7 @@ throw(std::bad_alloc)
 
 template< typename FPT, bool Interleaved >
 ComplexState<FPT,Interleaved>::ComplexState(
-        const ComplexState &other)
+        const ComplexState& other)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(other),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
@@ -1019,7 +1017,7 @@ throw(std::bad_alloc)
 
 template< typename FPT, bool Interleaved >
 ComplexState<FPT,Interleaved>::ComplexState(
-        const ComplexState<FPT,!Interleaved> &other)
+        const ComplexState<FPT,!Interleaved>& other)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(other),
       raw(reinterpret_cast<FPT *>(suzerain_blas_malloc(
@@ -1070,14 +1068,14 @@ void ComplexState<FPT,Interleaved>::scale(const FPT factor)
 template< typename FPT, bool Interleaved >
 void ComplexState<FPT,Interleaved>::addScaled(
         const FPT factor,
-        const IState<FPT,Interleaved> &other)
+        const IState<FPT,Interleaved>& other)
 throw(std::bad_cast,
       std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
 
-    const ComplexState<FPT,Interleaved> &o
+    const ComplexState<FPT,Interleaved>& o
         = dynamic_cast<const ComplexState<FPT,Interleaved>&>(other);
 
     suzerain::blas::axpy(components.num_elements(),
@@ -1088,14 +1086,14 @@ throw(std::bad_cast,
 template< typename FPT, bool Interleaved >
 void ComplexState<FPT,Interleaved>::addScaled(
         const FPT factor,
-        const IState<FPT,!Interleaved> &other)
+        const IState<FPT,!Interleaved>& other)
 throw(std::bad_cast,
       std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
 
-    const ComplexState<FPT,!Interleaved> &o
+    const ComplexState<FPT,!Interleaved>& o
         = dynamic_cast<const ComplexState<FPT,!Interleaved>&>(other);
 
     for (int i = 0; i < this->variable_count; ++i) {
@@ -1123,7 +1121,7 @@ throw(std::logic_error)
 
 template< typename FPT, bool Interleaved >
 ComplexState<FPT,Interleaved>& ComplexState<FPT,Interleaved>::operator=(
-        const ComplexState<FPT,!Interleaved> &that)
+        const ComplexState<FPT,!Interleaved>& that)
 throw(std::logic_error)
 {
     if (!isConformant(that))
@@ -1136,7 +1134,7 @@ throw(std::logic_error)
 
 template< typename FPT, bool Interleaved >
 void ComplexState<FPT,Interleaved>::exchange(
-        IState<FPT,Interleaved> &other)
+        IState<FPT,Interleaved>& other)
 throw(std::bad_cast,
       std::logic_error)
 {
@@ -1144,7 +1142,7 @@ throw(std::bad_cast,
         if (!isConformant(other))
             throw std::logic_error("Nonconformant other in exchange");
 
-        ComplexState<FPT,Interleaved> &o
+        ComplexState<FPT,Interleaved>& o
             = dynamic_cast<ComplexState<FPT,Interleaved>&>(other);
 
         suzerain::blas::swap(components.num_elements(),
@@ -1155,20 +1153,20 @@ throw(std::bad_cast,
 
 template< typename FPT, bool Interleaved >
 void ComplexState<FPT,Interleaved>::exchange(
-        IState<FPT,!Interleaved> &other)
+        IState<FPT,!Interleaved>& other)
 throw(std::bad_cast,
       std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in exchange");
 
-    ComplexState<FPT,!Interleaved> &o
+    ComplexState<FPT,!Interleaved>& o
         = dynamic_cast<ComplexState<FPT,!Interleaved>&>(other);
 
     for (int i = 0; i < this->variable_count; ++i) {
         suzerain::blas::swap(this->vector_length*this->vector_count,
-                                &o.data[i][0][0], o.data.strides()[1],
-                                &data[i][0][0], data.strides()[1]);
+                             &o.data[i][0][0], o.data.strides()[1],
+                             &data[i][0][0], data.strides()[1]);
     }
 }
 
