@@ -35,6 +35,9 @@
 #ifndef __SUZERAIN_ALLOCATOR_HPP
 #define __SUZERAIN_ALLOCATOR_HPP
 
+// FIXME Policy-based framework lacks allocator<void> specializations
+// See http://msdn.microsoft.com/en-us/library/w3b7688x.aspx for information.
+
 namespace suzerain {
 
 /**
@@ -171,7 +174,7 @@ public:
     /** Provides required rebind templated typedef */
     template<typename U>
     struct rebind {
-        typedef allocator<U,Policy::rebind<U>::other> other;
+        typedef allocator<U,typename Policy::template rebind<U>::other> other;
     };
 
     // Make explicit all constructors, including copy constructors
@@ -208,7 +211,7 @@ template<typename T, typename P, typename Tr>
 inline bool operator==(allocator<T, P, Tr> const& lhs,
                        allocator<T, P, Tr> const& rhs)
 {
-    return operator==(static_cast<P&>(lhs), static_cast<P&>(rhs));
+    return operator==(static_cast<P const&>(lhs), static_cast<P const&>(rhs));
 }
 
 template<typename T,  typename P,  typename Tr,
@@ -216,14 +219,14 @@ template<typename T,  typename P,  typename Tr,
 inline bool operator==(allocator<T,  P,  Tr>  const& lhs,
                        allocator<T2, P2, Tr2> const& rhs)
 {
-    return operator==(static_cast<P&>(lhs), static_cast<P2&>(rhs));
+    return operator==(static_cast<P const&>(lhs), static_cast<P2 const&>(rhs));
 }
 
 template<typename T, typename P, typename Tr, typename OtherAllocator>
 inline bool operator==(allocator<T, P, Tr> const& lhs,
                        OtherAllocator const& rhs)
 {
-    return operator==(static_cast<P&>(lhs), rhs);
+    return operator==(static_cast<P const&>(lhs), rhs);
 }
 
 template<typename T, typename P, typename Tr>

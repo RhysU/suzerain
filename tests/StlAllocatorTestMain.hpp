@@ -54,7 +54,7 @@ void TestAlloc( const Allocator& a )
     typename Allocator::template rebind< void* >::other  v( a ); // void pointers
     typename Allocator::template rebind< char* >::other  p( a ); // regular pointers
     // FIXME Disabled!  See http://msdn.microsoft.com/en-us/library/w3b7688x.aspx
-//     typename Allocator::template rebind< void >::other   x( a ); // must provide this specialization
+    // typename Allocator::template rebind< void >::other   x( a ); // must provide this specialization
 
     TestMemberFunctionPresence( a ); // in StlAllocatorTestMembers.hpp
 

@@ -13,6 +13,18 @@
 // warranties.
 //-----------------------------------------------------------------------------
 
+#ifdef __ICC
+/**
+ * Replacement of unknown atomic function by Johannes Singler.
+ * Workaround copyright (C) 2007 by Johnannes Singler <singler@ira.uka.de>.
+ * @see Intel Software Network Forum Thread <a
+ * href="http://software.intel.com/en-us/forums/showthread.php?t=55544"> "Icpc
+ * can't compile nothing"</a> for more information.
+ **/
+#define __sync_fetch_and_add(ptr,addend) _InterlockedExchangeAdd( \
+        const_cast<void*>(reinterpret_cast<volatile void*>(ptr)), addend);
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
@@ -39,7 +51,6 @@ BOOST_AUTO_TEST_CASE( allocator_test_bed )
     // Although some allocator type must be specified (like int), the testing
     // functions internally use allocator::rebind to test a wide variety of
     // other types.
-
     std::allocator<int> a;
     StlAllocatorTestbed::TestAlloc( a );
 }
@@ -49,9 +60,16 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( suzerain_allocator )
 
+BOOST_AUTO_TEST_CASE( allocator_default_policy )
+{
+    suzerain::allocator<int> a;
+    StlAllocatorTestbed::TestAlloc( a );
+}
+
 BOOST_AUTO_TEST_CASE( allocator_freestore_policy )
 {
-    // FIXME Test suzerain::allocator_freestore_policy
+    suzerain::allocator<int, suzerain::allocator_freestore_policy<int> > a;
+    StlAllocatorTestbed::TestAlloc( a );
 }
 
 BOOST_AUTO_TEST_CASE( allocator_aligned_malloc_policy )
