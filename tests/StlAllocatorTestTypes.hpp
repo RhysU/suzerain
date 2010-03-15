@@ -170,7 +170,7 @@ public:
 
     explicit D( int i )
     :
-#pragma warning(push,disable:2259)
+#pragma warning(push,disable:810 2259)
         p( new char( static_cast<char>(i) ) )
 #pragma warning(pop)
     {
