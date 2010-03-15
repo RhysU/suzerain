@@ -68,6 +68,7 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/list.hpp>
+#include <boost/mpl/list_c.hpp>
 #include <boost/mpl/logical.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/noncopyable.hpp>
