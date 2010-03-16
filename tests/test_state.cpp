@@ -19,12 +19,16 @@ BOOST_AUTO_TEST_SUITE( RealState )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( declare_pointer, Interleaved, bool_values )
 {
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
     suzerain::RealState<double,Interleaved::value> *state;
     (void)state;
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, Interleaved, bool_values )
 {
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
     // Regular constructor
     suzerain::RealState<double,Interleaved::value> foo(2, 2, 3);
     BOOST_CHECK_EQUAL(foo.variable_count, 2);
@@ -129,6 +133,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, Interleaved, bool_values )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, Interleaved, bool_values )
 {
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
     suzerain::RealState<double,Interleaved::value> foo(2, 2, 3), bar(2,2,3);
 
     foo.data[0][0][0] =   2.0;
@@ -230,6 +236,8 @@ BOOST_AUTO_TEST_CASE( non_interleaved_storage_order )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( isConformant, Interleaved, bool_values )
 {
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
     suzerain::RealState<double,Interleaved::value>  foo(2, 2, 2);
     suzerain::RealState<double,Interleaved::value>  bar(2, 2, 2);
     suzerain::RealState<double,Interleaved::value>  baz(1, 2, 2);
@@ -247,6 +255,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isConformant, Interleaved, bool_values )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scale, Interleaved, bool_values )
 {
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
     suzerain::RealState<double,Interleaved::value> foo(1, 2, 3);
     foo.data[0][0][0] =  2.0;
     foo.data[0][1][0] =  3.0;
@@ -288,6 +298,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scale, Interleaved, bool_values )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, Interleaved, bool_values )
 {
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
     suzerain::RealState<double,Interleaved::value> foo(2, 2, 3);
     foo.data[0][0][0] =   2.0;
     foo.data[0][1][0] =   3.0;
@@ -369,8 +381,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, Interleaved, bool_values )
     BOOST_CHECK_EQUAL(bar.data[1][1][2], 137.0 + 4.0*113.0);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(comparison_and_assignment, Interleaved, bool_values)
+BOOST_AUTO_TEST_CASE_TEMPLATE(comparison_and_assignment,
+                              Interleaved, bool_values)
 {
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
     suzerain::RealState<double,Interleaved::value> foo(2, 2, 3);
 
     foo.data[0][0][0] =   2.0;
@@ -458,6 +473,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(comparison_and_assignment, Interleaved, bool_value
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, Interleaved, bool_values )
 {
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
     suzerain::RealState<double,Interleaved::value> foo(2, 2, 3);
 
     foo.data[0][0][0] =   2.0;
@@ -575,16 +592,20 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( ComplexState )
 
-BOOST_AUTO_TEST_CASE( declare_pointer )
+BOOST_AUTO_TEST_CASE_TEMPLATE( declare_pointer, Interleaved, bool_values )
 {
-    suzerain::ComplexState<double> *state;
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
+    suzerain::ComplexState<double,Interleaved::value> *state;
     (void)state;
 }
 
-BOOST_AUTO_TEST_CASE( constructor )
+BOOST_AUTO_TEST_CASE_TEMPLATE( constructor, Interleaved, bool_values )
 {
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
     // Regular constructor
-    suzerain::ComplexState<double> foo(1, 2, 3);
+    suzerain::ComplexState<double,Interleaved::value> foo(1, 2, 3);
     BOOST_CHECK_EQUAL(foo.variable_count, 1);
     BOOST_CHECK_EQUAL(foo.vector_length, 2);
     BOOST_CHECK_EQUAL(foo.vector_count, 3);
@@ -638,7 +659,7 @@ BOOST_AUTO_TEST_CASE( constructor )
     BOOST_CHECK_EQUAL(foo.imag[0][1][2], -13.0);
 
     // Copy construct a second instance
-    suzerain::ComplexState<double> bar(foo);
+    suzerain::ComplexState<double,Interleaved::value> bar(foo);
     BOOST_CHECK_EQUAL(bar.variable_count, 1);
     BOOST_CHECK_EQUAL(bar.vector_length, 2);
     BOOST_CHECK_EQUAL(bar.vector_count, 3);
@@ -693,9 +714,11 @@ BOOST_AUTO_TEST_CASE( constructor )
     BOOST_CHECK_EQUAL(bar.imag[0][1][2], -13.0);
 }
 
-BOOST_AUTO_TEST_CASE( assignment )
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, Interleaved, bool_values )
 {
-    suzerain::ComplexState<double> foo(1, 2, 3), bar(1,2,3);
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
+    suzerain::ComplexState<double,Interleaved::value> foo(1, 2, 3), bar(1,2,3);
 
     typedef std::complex<double> complex;
     foo.data[0][0][0] = complex( 2.0, - 2.0);
@@ -765,17 +788,17 @@ BOOST_AUTO_TEST_CASE( assignment )
     BOOST_CHECK_EQUAL(bar.imag[0][1][2], -13.0);
 
     // Ensure we catch an operation between two nonconforming states
-    suzerain::ComplexState<double> baz(2, 2, 2);
+    suzerain::ComplexState<double,Interleaved::value> baz(2, 2, 2);
     BOOST_CHECK_THROW(baz = foo, std::logic_error);
 
     // Ensure we catch an operation between two different subclasses
-    BOOST_CHECK_THROW(baz = suzerain::RealState<double>(1,2,3),
-                      std::bad_cast);
+    suzerain::RealState<double,Interleaved::value> qux(1,2,3);
+    BOOST_CHECK_THROW(baz = qux, std::bad_cast);
 }
 
 BOOST_AUTO_TEST_CASE( interleaved_storage_order )
 {
-    suzerain::ComplexState<double> foo(2, 2, 2);
+    suzerain::ComplexState<double,true> foo(2, 2, 2);
 
     BOOST_CHECK_EQUAL( &(foo.data[0][0][0]) +   1, &(foo.data[1][0][0]));
     BOOST_CHECK_EQUAL( &(foo.data[0][0][0]) +   2, &(foo.data[0][1][0]));
@@ -816,24 +839,30 @@ BOOST_AUTO_TEST_CASE( interleaved_storage_order )
     BOOST_CHECK_EQUAL( 2*2*2, foo.imag.strides()[2] );
 }
 
-BOOST_AUTO_TEST_CASE( isConformant )
+BOOST_AUTO_TEST_CASE_TEMPLATE( isConformant, Interleaved, bool_values )
 {
-    suzerain::ComplexState<double> foo(2, 2, 2);
-    suzerain::ComplexState<double> bar(2, 2, 2);
-    suzerain::ComplexState<double> baz(1, 2, 2);
-    suzerain::ComplexState<double> qux(2, 1, 2);
-    suzerain::ComplexState<double> quux(2, 2, 1);
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
+    suzerain::ComplexState<double,Interleaved::value>  foo(2, 2, 2);
+    suzerain::ComplexState<double,Interleaved::value>  bar(2, 2, 2);
+    suzerain::ComplexState<double,Interleaved::value>  baz(1, 2, 2);
+    suzerain::ComplexState<double,Interleaved::value>  qux(2, 1, 2);
+    suzerain::ComplexState<double,Interleaved::value>  quux(2, 2, 1);
+    suzerain::ComplexState<double,!Interleaved::value> quuux(2, 2, 2);
 
     BOOST_CHECK_EQUAL(true,  foo.isConformant(foo));
     BOOST_CHECK_EQUAL(true,  foo.isConformant(bar));
     BOOST_CHECK_EQUAL(false, foo.isConformant(baz));
     BOOST_CHECK_EQUAL(false, foo.isConformant(qux));
     BOOST_CHECK_EQUAL(false, foo.isConformant(quux));
+    BOOST_CHECK_EQUAL(true,  foo.isConformant(quuux));
 }
 
-BOOST_AUTO_TEST_CASE( scale )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scale, Interleaved, bool_values )
 {
-    suzerain::ComplexState<double> foo(1, 2, 3);
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
+    suzerain::ComplexState<double,Interleaved::value> foo(1, 2, 3);
     typedef std::complex<double> complex;
     foo.data[0][0][0] = complex( 2.0, - 2.0);
     foo.data[0][1][0] = complex( 3.0, - 3.0);
@@ -891,9 +920,11 @@ BOOST_AUTO_TEST_CASE( scale )
     BOOST_CHECK_EQUAL(foo.imag[0][1][2], 0.0);
 }
 
-BOOST_AUTO_TEST_CASE( addScaled )
+BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, Interleaved, bool_values )
 {
-    suzerain::ComplexState<double> foo(1, 2, 3);
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
+    suzerain::ComplexState<double,Interleaved::value> foo(1, 2, 3);
     typedef std::complex<double> complex;
     foo.data[0][0][0] = complex( 2.0, - 2.0);
     foo.data[0][1][0] = complex( 3.0, - 3.0);
@@ -902,7 +933,7 @@ BOOST_AUTO_TEST_CASE( addScaled )
     foo.data[0][0][2] = complex(11.0, -11.0);
     foo.data[0][1][2] = complex(13.0, -13.0);
 
-    suzerain::ComplexState<double> bar(1, 2, 3);
+    suzerain::ComplexState<double,Interleaved::value> bar(1, 2, 3);
     bar.data[0][0][0] = complex(17.0, -17.0);
     bar.data[0][1][0] = complex(19.0, -19.0);
     bar.data[0][0][1] = complex(23.0, -23.0);
@@ -927,13 +958,16 @@ BOOST_AUTO_TEST_CASE( addScaled )
     BOOST_CHECK_EQUAL(foo.imag[0][1][2], -13.0 - 3.0*37.0);
 
     // Ensure we catch an operation between two nonconforming states
-    suzerain::ComplexState<double> baz(2, 2, 2);
+    suzerain::ComplexState<double,Interleaved::value> baz(2, 2, 2);
     BOOST_CHECK_THROW(foo.addScaled(3.0, baz), std::logic_error);
 }
 
-BOOST_AUTO_TEST_CASE( comparison_and_assignment )
+BOOST_AUTO_TEST_CASE_TEMPLATE(comparison_and_assignment,
+                              Interleaved, bool_values )
 {
-    suzerain::ComplexState<double> foo(1, 2, 3);
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
+    suzerain::ComplexState<double,Interleaved::value> foo(1, 2, 3);
 
     typedef std::complex<double> complex;
     foo.data[0][0][0] = complex( 2.0, - 2.0);
@@ -943,7 +977,7 @@ BOOST_AUTO_TEST_CASE( comparison_and_assignment )
     foo.data[0][0][2] = complex(11.0, -11.0);
     foo.data[0][1][2] = complex(13.0, -13.0);
 
-    suzerain::ComplexState<double> bar(1, 2, 3);
+    suzerain::ComplexState<double,Interleaved::value> bar(1, 2, 3);
     bar.data = foo.data;
     BOOST_CHECK_EQUAL(true, bar.data == foo.data);
     BOOST_CHECK_EQUAL(true, foo.data == bar.data);
@@ -967,9 +1001,11 @@ BOOST_AUTO_TEST_CASE( comparison_and_assignment )
     BOOST_CHECK_EQUAL(bar.data[0][1][2], complex( 13.0, - 13.0));
 }
 
-BOOST_AUTO_TEST_CASE( exchange )
+BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, Interleaved, bool_values )
 {
-    suzerain::ComplexState<double> foo(1, 2, 3);
+    BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
+
+    suzerain::ComplexState<double,Interleaved::value> foo(1, 2, 3);
 
     typedef std::complex<double> complex;
     foo.data[0][0][0] = complex( 2.0, - 2.0);
@@ -979,7 +1015,7 @@ BOOST_AUTO_TEST_CASE( exchange )
     foo.data[0][0][2] = complex(11.0, -11.0);
     foo.data[0][1][2] = complex(13.0, -13.0);
 
-    suzerain::ComplexState<double> bar(1, 2, 3);
+    suzerain::ComplexState<double,Interleaved::value> bar(1, 2, 3);
     bar.data[0][0][0] = complex(17.0, -17.0);
     bar.data[0][1][0] = complex(19.0, -19.0);
     bar.data[0][0][1] = complex(23.0, -23.0);
@@ -1004,11 +1040,11 @@ BOOST_AUTO_TEST_CASE( exchange )
     BOOST_CHECK_EQUAL(bar.data[0][1][2], complex(13.0, -13.0));
 
     // Ensure we catch an operation between two nonconforming states
-    suzerain::ComplexState<double> baz(2, 2, 2);
+    suzerain::ComplexState<double,Interleaved::value> baz(2, 2, 2);
     BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
 
     // Ensure we catch an operation between two different subclasses
-    suzerain::RealState<double> qux(1,2,3);
+    suzerain::RealState<double,Interleaved::value> qux(1,2,3);
     BOOST_CHECK_THROW(foo.exchange(qux), std::bad_cast);
 }
 
