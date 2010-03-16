@@ -198,7 +198,11 @@ public:
      */
     virtual void addScaled(const FPT factor,
                            const IState<FPT,!Interleaved>& other)
-                           throw(std::bad_cast, std::logic_error) = 0;
+                           throw(std::bad_cast, std::logic_error)
+    {
+        throw std::logic_error(
+                std::string(__PRETTY_FUNCTION__) + " not implemented");
+    }
 
     /**
      * Assign to this instance the state information from another instance.
@@ -218,7 +222,11 @@ public:
      * @return *this
      */
     virtual IState& operator=(const IState<FPT,!Interleaved>& that)
-                              throw(std::bad_cast, std::logic_error) = 0;
+                              throw(std::bad_cast, std::logic_error)
+    {
+        throw std::logic_error(
+                std::string(__PRETTY_FUNCTION__) + " not implemented");
+    }
 
     /**
      * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
@@ -244,7 +252,11 @@ public:
      * @throw std::logic_error if \c that is not conformant.
      */
     virtual void exchange(IState<FPT,!Interleaved>& other)
-                          throw(std::bad_cast, std::logic_error) = 0;
+                          throw(std::bad_cast, std::logic_error)
+    {
+        throw std::logic_error(
+                std::string(__PRETTY_FUNCTION__) + " not implemented");
+    }
 
 private:
 
@@ -537,8 +549,8 @@ void RealState<FPT,Interleaved>::addScaled(
         const IState<FPT,Interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
-    if (!isConformant(other))
-        throw std::logic_error("Nonconformant other in addScaled");
+    if (!isConformant(other)) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
     const RealState& o = dynamic_cast<const RealState&>(other);
 
@@ -553,8 +565,8 @@ void RealState<FPT,Interleaved>::addScaled(
         const IState<FPT,!Interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
-    if (!isConformant(other))
-        throw std::logic_error("Nonconformant other in addScaled");
+    if (!isConformant(other)) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
     const RealState<FPT,!Interleaved>& o
         = dynamic_cast<const RealState<FPT,!Interleaved>&>(other);
@@ -572,8 +584,8 @@ RealState<FPT,Interleaved>& RealState<FPT,Interleaved>::operator=(
 throw(std::logic_error)
 {
     if (this != &that) {
-        if (!isConformant(that))
-            throw std::logic_error("Nonconformant that in operator=");
+        if (!isConformant(that)) throw std::logic_error(
+                std::string("Nonconformant that in ") + __PRETTY_FUNCTION__);
 
         suzerain::blas::copy(
                 data.num_elements(), that.data.data(), 1, data.data(), 1);
@@ -587,8 +599,8 @@ RealState<FPT,Interleaved>& RealState<FPT,Interleaved>::operator=(
         const RealState<FPT,!Interleaved>& that)
 throw(std::logic_error)
 {
-    if (!isConformant(that))
-        throw std::logic_error("Nonconformant that in operator=");
+    if (!isConformant(that)) throw std::logic_error(
+            std::string("Nonconformant that in ") + __PRETTY_FUNCTION__);
 
     this->data = that.data;
 
@@ -601,8 +613,8 @@ void RealState<FPT,Interleaved>::exchange(
 throw(std::bad_cast, std::logic_error)
 {
     if (this != &other) {
-        if (!isConformant(other))
-            throw std::logic_error("Nonconformant other in exchange");
+        if (!isConformant(other)) throw std::logic_error(
+                std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
         RealState& o = dynamic_cast<RealState&>(other);
 
@@ -617,8 +629,8 @@ void RealState<FPT,Interleaved>::exchange(
         IState<FPT,!Interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
-    if (!isConformant(other))
-        throw std::logic_error("Nonconformant other in exchange");
+    if (!isConformant(other)) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
     RealState<FPT,!Interleaved>& o
         = dynamic_cast<RealState<FPT,!Interleaved>&>(other);
@@ -1000,8 +1012,8 @@ void ComplexState<FPT,Interleaved>::addScaled(
         const IState<FPT,Interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
-    if (!isConformant(other))
-        throw std::logic_error("Nonconformant other in addScaled");
+    if (!isConformant(other)) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
     const ComplexState<FPT,Interleaved>& o
         = dynamic_cast<const ComplexState<FPT,Interleaved>&>(other);
@@ -1017,8 +1029,8 @@ void ComplexState<FPT,Interleaved>::addScaled(
         const IState<FPT,!Interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
-    if (!isConformant(other))
-        throw std::logic_error("Nonconformant other in addScaled");
+    if (!isConformant(other)) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
     const ComplexState<FPT,!Interleaved>& o
         = dynamic_cast<const ComplexState<FPT,!Interleaved>&>(other);
@@ -1036,8 +1048,8 @@ ComplexState<FPT,Interleaved>& ComplexState<FPT,Interleaved>::operator=(
 throw(std::logic_error)
 {
     if (this != &that) {
-        if (!isConformant(that))
-            throw std::logic_error("Nonconformant that in operator=");
+        if (!isConformant(that)) throw std::logic_error(
+                std::string("Nonconformant that in ") + __PRETTY_FUNCTION__);
 
         suzerain::blas::copy(components.num_elements(),
                              that.components.data(), 1, components.data(), 1);
@@ -1051,8 +1063,8 @@ ComplexState<FPT,Interleaved>& ComplexState<FPT,Interleaved>::operator=(
         const ComplexState<FPT,!Interleaved>& that)
 throw(std::logic_error)
 {
-    if (!isConformant(that))
-        throw std::logic_error("Nonconformant that in operator=");
+    if (!isConformant(that)) throw std::logic_error(
+            std::string("Nonconformant that in ") + __PRETTY_FUNCTION__);
 
     // TODO Ensure deep assignment has adequate performance
     this->components = that.components;
@@ -1066,8 +1078,8 @@ void ComplexState<FPT,Interleaved>::exchange(
 throw(std::bad_cast, std::logic_error)
 {
     if (this != &other) {
-        if (!isConformant(other))
-            throw std::logic_error("Nonconformant other in exchange");
+        if (!isConformant(other)) throw std::logic_error(
+                std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
         ComplexState<FPT,Interleaved>& o
             = dynamic_cast<ComplexState<FPT,Interleaved>&>(other);
@@ -1083,8 +1095,8 @@ void ComplexState<FPT,Interleaved>::exchange(
         IState<FPT,!Interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
-    if (!isConformant(other))
-        throw std::logic_error("Nonconformant other in exchange");
+    if (!isConformant(other)) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
     ComplexState<FPT,!Interleaved>& o
         = dynamic_cast<ComplexState<FPT,!Interleaved>&>(other);
