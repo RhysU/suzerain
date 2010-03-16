@@ -647,12 +647,6 @@ template< typename FPT, bool Interleaved = true >
 class ComplexState : public IState<FPT,Interleaved>
 {
 public:
-    /**
-     * Are state variables interleaved with one another?  When true, variables
-     * are the fastest index.  When false, each state variable is stored in a
-     * separate, contiguous block of memory.
-     */
-    static const bool interleaved = Interleaved;
 
     /**
      * A signed integral type used to index into MultiArrays.
