@@ -246,8 +246,6 @@ public:
     virtual void exchange(IState<FPT,!Interleaved>& other)
                           throw(std::bad_cast, std::logic_error) = 0;
 
-    // TODO Add IState<FPT>::swap(IState<FPT>&) to public interface
-
 private:
 
     /**
@@ -443,8 +441,6 @@ public:
     virtual void exchange(IState<FPT,!Interleaved>& other)
                           throw(std::bad_cast, std::logic_error);
 
-    // TODO Implement swap using https://svn.boost.org/trac/boost/ticket/1045
-
 protected:
     /**
      * Provides MultiArray storage order information for the template
@@ -539,8 +535,7 @@ template< typename FPT, bool Interleaved >
 void RealState<FPT,Interleaved>::addScaled(
         const FPT factor,
         const IState<FPT,Interleaved>& other)
-throw(std::bad_cast,
-      std::logic_error)
+throw(std::bad_cast, std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
@@ -556,8 +551,7 @@ template< typename FPT, bool Interleaved >
 void RealState<FPT,Interleaved>::addScaled(
         const FPT factor,
         const IState<FPT,!Interleaved>& other)
-throw(std::bad_cast,
-      std::logic_error)
+throw(std::bad_cast, std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
@@ -604,8 +598,7 @@ throw(std::logic_error)
 template< typename FPT, bool Interleaved >
 void RealState<FPT,Interleaved>::exchange(
         IState<FPT,Interleaved>& other)
-throw(std::bad_cast,
-      std::logic_error)
+throw(std::bad_cast, std::logic_error)
 {
     if (this != &other) {
         if (!isConformant(other))
@@ -622,8 +615,7 @@ throw(std::bad_cast,
 template< typename FPT, bool Interleaved >
 void RealState<FPT,Interleaved>::exchange(
         IState<FPT,!Interleaved>& other)
-throw(std::bad_cast,
-      std::logic_error)
+throw(std::bad_cast, std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in exchange");
@@ -816,8 +808,6 @@ public:
     virtual void exchange(IState<FPT,!Interleaved>& other)
                           throw(std::bad_cast, std::logic_error);
 
-    // TODO Implement swap using https://svn.boost.org/trac/boost/ticket/1045
-
 protected:
     /**
      * Provides MultiArray complex component storage order information for the
@@ -1008,8 +998,7 @@ template< typename FPT, bool Interleaved >
 void ComplexState<FPT,Interleaved>::addScaled(
         const FPT factor,
         const IState<FPT,Interleaved>& other)
-throw(std::bad_cast,
-      std::logic_error)
+throw(std::bad_cast, std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
@@ -1026,8 +1015,7 @@ template< typename FPT, bool Interleaved >
 void ComplexState<FPT,Interleaved>::addScaled(
         const FPT factor,
         const IState<FPT,!Interleaved>& other)
-throw(std::bad_cast,
-      std::logic_error)
+throw(std::bad_cast, std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in addScaled");
@@ -1075,8 +1063,7 @@ throw(std::logic_error)
 template< typename FPT, bool Interleaved >
 void ComplexState<FPT,Interleaved>::exchange(
         IState<FPT,Interleaved>& other)
-throw(std::bad_cast,
-      std::logic_error)
+throw(std::bad_cast, std::logic_error)
 {
     if (this != &other) {
         if (!isConformant(other))
@@ -1094,8 +1081,7 @@ throw(std::bad_cast,
 template< typename FPT, bool Interleaved >
 void ComplexState<FPT,Interleaved>::exchange(
         IState<FPT,!Interleaved>& other)
-throw(std::bad_cast,
-      std::logic_error)
+throw(std::bad_cast, std::logic_error)
 {
     if (!isConformant(other))
         throw std::logic_error("Nonconformant other in exchange");
