@@ -34,8 +34,8 @@
 #include <ostream>
 #include <suzerain/underling.h>
 
-/**
- * @file Provides C++ wrappers for the C-based API in underling.h.  In
+/** @file
+ * Provides C++ wrappers for the C-based API in underling.h.  In
  * particular, provides RAII semantics for underling's opaque types and some
  * std::basic_ostream helpers.
  */

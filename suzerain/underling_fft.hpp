@@ -34,8 +34,8 @@
 #include <suzerain/underling_fft.h>
 #include <suzerain/underling.hpp>
 
-/**
- * @file Provides C++ wrappers for the C-based API in underling_fft.h.  In
+/** @file
+ * Provides C++ wrappers for the C-based API in underling_fft.h.  In
  * particular, provides RAII semantics for opaque types.
  */
 
