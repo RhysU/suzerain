@@ -78,7 +78,7 @@ typedef struct underling_fft_extents {
      * The amount of global data stored locally in directions
      * <tt>n{0,1,2}</tt>.  Index <tt>3</tt> gives information on the
      * interleaved data fields and is always equal to the <tt>howmany/2</tt>
-     * parameter provided to underling_problem_create.  Index <tt>4<tt> is
+     * parameter provided to underling_problem_create.  Index <tt>4</tt> is
      * <tt>2</tt> for a complex-valued field and <tt>1</tt> for a real-valued
      * field.
      */
@@ -318,9 +318,7 @@ underling_fft_local_extents_output(
  * Fortran-ready interface.  All strides and sizes are given in units of
  * underling_real.
  *
- * @param plan Plan for which to retrieve information.
- * @param[in] i Retrieve information when long in n<tt>i</tt> for \c i in
- *            <tt>{0, 1, 2, 3, 4}</tt>.
+ * @param[in]     plan Plan for which to retrieve information.
  * @param[in,out] start If non-NULL on entry, contains
  *                underling_extents.start on successful return.
  * @param[in,out] size If non-NULL on entry, contains
@@ -351,9 +349,7 @@ underling_fft_local_input(
  * Fortran-ready interface.  All strides and sizes are given in units of
  * underling_real.
  *
- * @param plan Plan for which to retrieve information.
- * @param[in] i Retrieve information when long in n<tt>i</tt> for \c i in
- *            <tt>{0, 1, 2, 3, 4}</tt>.
+ * @param[in]     plan Plan for which to retrieve information.
  * @param[in,out] start If non-NULL on entry, contains
  *                underling_extents.start on successful return.
  * @param[in,out] size If non-NULL on entry, contains
