@@ -491,9 +491,9 @@ boost::general_storage_order<3> RealState<FPT,Interleaved>::storage_order()
 
 template< typename FPT, bool Interleaved >
 RealState<FPT,Interleaved>::RealState(
-        typename IState<FPT,Interleaved>::size_type variable_count,
-        typename IState<FPT,Interleaved>::size_type vector_length,
-        typename IState<FPT,Interleaved>::size_type vector_count)
+        size_type variable_count,
+        size_type vector_length,
+        size_type vector_count)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(variable_count, vector_length, vector_count),
       data(boost::extents[variable_count][vector_length][vector_count],
@@ -912,9 +912,9 @@ ComplexState<FPT,Interleaved>::storage_order()
 
 template< typename FPT, bool Interleaved >
 ComplexState<FPT,Interleaved>::ComplexState(
-        typename IState<FPT,Interleaved>::size_type variable_count,
-        typename IState<FPT,Interleaved>::size_type vector_length,
-        typename IState<FPT,Interleaved>::size_type vector_count)
+        size_type variable_count,
+        size_type vector_length,
+        size_type vector_count)
 throw(std::bad_alloc)
     : IState<FPT,Interleaved>(variable_count, vector_length, vector_count),
       components(
