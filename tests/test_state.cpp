@@ -619,6 +619,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( declare_pointer, Interleaved, bool_values )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructor, Interleaved, bool_values )
 {
+    typedef std::complex<double> complex;
     BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
 
     // Regular constructor
@@ -627,7 +628,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor, Interleaved, bool_values )
     BOOST_CHECK_EQUAL(foo.vector_length, 2);
     BOOST_CHECK_EQUAL(foo.vector_count, 3);
 
-    typedef std::complex<double> complex;
     for (int i = 0; i < foo.variable_count; ++i) {
         foo.data[i][0][0] = complex(100*i + 2.0, -100*i - 2.0);
         foo.data[i][1][0] = complex(100*i + 3.0, -100*i - 3.0);
@@ -725,11 +725,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor, Interleaved, bool_values )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, Interleaved, bool_values )
 {
+    typedef std::complex<double> complex;
     BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
 
     suzerain::ComplexState<double,Interleaved::value> foo(2, 2, 3), bar(2,2,3);
-
-    typedef std::complex<double> complex;
     for (int i = 0; i < foo.variable_count; ++i) {
         foo.data[i][0][0] = complex( 100*i + 2.0, -100*i - 2.0);
         foo.data[i][1][0] = complex( 100*i + 3.0, -100*i - 3.0);
@@ -917,10 +916,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isConformant, Interleaved, bool_values )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scale, Interleaved, bool_values )
 {
+    typedef std::complex<double> complex;
     BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
 
     suzerain::ComplexState<double,Interleaved::value> foo(1, 2, 3);
-    typedef std::complex<double> complex;
     foo.data[0][0][0] = complex( 2.0, - 2.0);
     foo.data[0][1][0] = complex( 3.0, - 3.0);
     foo.data[0][0][1] = complex( 5.0, - 5.0);
@@ -985,10 +984,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scale, Interleaved, bool_values )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, Interleaved, bool_values )
 {
+    typedef std::complex<double> complex;
     BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
 
     suzerain::ComplexState<double,Interleaved::value> foo(2, 2, 3);
-    typedef std::complex<double> complex;
     for (int i = 0; i < foo.variable_count; ++i) {
         foo.data[i][0][0] = complex( 100*i + 2.0, -100*i - 2.0);
         foo.data[i][1][0] = complex( 100*i + 3.0, -100*i - 3.0);
@@ -1069,87 +1068,183 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, Interleaved, bool_values )
 BOOST_AUTO_TEST_CASE_TEMPLATE(comparison_and_assignment,
                               Interleaved, bool_values )
 {
+    typedef std::complex<double> complex;
     BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
 
-    suzerain::ComplexState<double,Interleaved::value> foo(1, 2, 3);
+    // Check comparison and assignment to a same interleaving
+    suzerain::ComplexState<double,Interleaved::value> foo(2, 2, 3);
+    for (int i = 0; i < foo.variable_count; ++i) {
+        foo.data[i][0][0] = complex( 100*i + 2.0, -100*i - 2.0);
+        foo.data[i][1][0] = complex( 100*i + 3.0, -100*i - 3.0);
+        foo.data[i][0][1] = complex( 100*i + 5.0, -100*i - 5.0);
+        foo.data[i][1][1] = complex( 100*i + 7.0, -100*i - 7.0);
+        foo.data[i][0][2] = complex( 100*i +11.0, -100*i -11.0);
+        foo.data[i][1][2] = complex( 100*i +13.0, -100*i -13.0);
+    }
 
-    typedef std::complex<double> complex;
-    foo.data[0][0][0] = complex( 2.0, - 2.0);
-    foo.data[0][1][0] = complex( 3.0, - 3.0);
-    foo.data[0][0][1] = complex( 5.0, - 5.0);
-    foo.data[0][1][1] = complex( 7.0, - 7.0);
-    foo.data[0][0][2] = complex(11.0, -11.0);
-    foo.data[0][1][2] = complex(13.0, -13.0);
-
-    suzerain::ComplexState<double,Interleaved::value> bar(1, 2, 3);
+    suzerain::ComplexState<double,Interleaved::value> bar(2, 2, 3);
+    BOOST_CHECK_EQUAL(foo.interleaved(), bar.interleaved());
     bar.data = foo.data;
     BOOST_CHECK_EQUAL(true, bar.data == foo.data);
     BOOST_CHECK_EQUAL(true, foo.data == bar.data);
-    bar.data[0][1][0] = complex(555.0, -555.0);
-    bar.data[0][1][1] = 777.0;
+    for (int i = 0; i < bar.variable_count; ++i) {
+        bar.data[i][1][0] = complex(100*i + 555.0, -100*i - 555.0);
+        bar.data[i][1][1] = 100*i + 777.0;
+    }
     BOOST_CHECK_EQUAL(false, bar.data == foo.data);
     BOOST_CHECK_EQUAL(false, foo.data == bar.data);
 
-    BOOST_CHECK_EQUAL(foo.data[0][0][0], complex( 2.0, - 2.0));
-    BOOST_CHECK_EQUAL(foo.data[0][1][0], complex( 3.0, - 3.0));
-    BOOST_CHECK_EQUAL(foo.data[0][0][1], complex( 5.0, - 5.0));
-    BOOST_CHECK_EQUAL(foo.data[0][1][1], complex( 7.0, - 7.0));
-    BOOST_CHECK_EQUAL(foo.data[0][0][2], complex(11.0, -11.0));
-    BOOST_CHECK_EQUAL(foo.data[0][1][2], complex(13.0, -13.0));
+    for (int i = 0; i < foo.variable_count; ++i) {
+        BOOST_CHECK_EQUAL(foo.data[i][0][0],complex(100*i+ 2.0,-100*i- 2.0));
+        BOOST_CHECK_EQUAL(foo.data[i][1][0],complex(100*i+ 3.0,-100*i- 3.0));
+        BOOST_CHECK_EQUAL(foo.data[i][0][1],complex(100*i+ 5.0,-100*i- 5.0));
+        BOOST_CHECK_EQUAL(foo.data[i][1][1],complex(100*i+ 7.0,-100*i- 7.0));
+        BOOST_CHECK_EQUAL(foo.data[i][0][2],complex(100*i+11.0,-100*i-11.0));
+        BOOST_CHECK_EQUAL(foo.data[i][1][2],complex(100*i+13.0,-100*i-13.0));
+    }
 
-    BOOST_CHECK_EQUAL(bar.data[0][0][0], complex(  2.0, -  2.0));
-    BOOST_CHECK_EQUAL(bar.data[0][1][0], complex(555.0, -555.0));
-    BOOST_CHECK_EQUAL(bar.data[0][0][1], complex(  5.0, -  5.0));
-    BOOST_CHECK_EQUAL(bar.data[0][1][1], complex(777.0,    0.0));
-    BOOST_CHECK_EQUAL(bar.data[0][0][2], complex( 11.0, - 11.0));
-    BOOST_CHECK_EQUAL(bar.data[0][1][2], complex( 13.0, - 13.0));
+    checkSelfConsistent(foo);
+
+    for (int i = 0; i < bar.variable_count; ++i) {
+        BOOST_CHECK_EQUAL(bar.data[i][0][0],complex(100*i+  2.0,-100*i-  2.0));
+        BOOST_CHECK_EQUAL(bar.data[i][1][0],complex(100*i+555.0,-100*i-555.0));
+        BOOST_CHECK_EQUAL(bar.data[i][0][1],complex(100*i+  5.0,-100*i-  5.0));
+        BOOST_CHECK_EQUAL(bar.data[i][1][1],complex(100*i+777.0,         0.0));
+        BOOST_CHECK_EQUAL(bar.data[i][0][2],complex(100*i+ 11.0,-100*i- 11.0));
+        BOOST_CHECK_EQUAL(bar.data[i][1][2],complex(100*i+ 13.0,-100*i- 13.0));
+    }
+
+    checkSelfConsistent(bar);
+
+    // Check comparison and assignment to a different interleaving
+    suzerain::ComplexState<double,!Interleaved::value> qux(2, 2, 3);
+    BOOST_CHECK_NE(qux.interleaved(), bar.interleaved());
+    qux.data = bar.data;
+    BOOST_CHECK_EQUAL(true, qux.data == bar.data);
+    BOOST_CHECK_EQUAL(true, bar.data == qux.data);
+    for (int i = 0; i < bar.variable_count; ++i) {
+        qux.data[i][1][0] = complex( 100*i + 3.0, -100*i - 3.0);
+        qux.data[i][1][1] = complex( 100*i + 7.0, -100*i - 7.0);
+    }
+    BOOST_CHECK_EQUAL(false, qux.data == bar.data);
+    BOOST_CHECK_EQUAL(false, bar.data == qux.data);
+
+    for (int i = 0; i < qux.variable_count; ++i) {
+        BOOST_CHECK_EQUAL(qux.data[i][0][0],complex(100*i+ 2.0,-100*i- 2.0));
+        BOOST_CHECK_EQUAL(qux.data[i][1][0],complex(100*i+ 3.0,-100*i- 3.0));
+        BOOST_CHECK_EQUAL(qux.data[i][0][1],complex(100*i+ 5.0,-100*i- 5.0));
+        BOOST_CHECK_EQUAL(qux.data[i][1][1],complex(100*i+ 7.0,-100*i- 7.0));
+        BOOST_CHECK_EQUAL(qux.data[i][0][2],complex(100*i+11.0,-100*i-11.0));
+        BOOST_CHECK_EQUAL(qux.data[i][1][2],complex(100*i+13.0,-100*i-13.0));
+    }
+
+    checkSelfConsistent(qux);
+
+    for (int i = 0; i < bar.variable_count; ++i) {
+        BOOST_CHECK_EQUAL(bar.data[i][0][0],complex(100*i+  2.0,-100*i-  2.0));
+        BOOST_CHECK_EQUAL(bar.data[i][1][0],complex(100*i+555.0,-100*i-555.0));
+        BOOST_CHECK_EQUAL(bar.data[i][0][1],complex(100*i+  5.0,-100*i-  5.0));
+        BOOST_CHECK_EQUAL(bar.data[i][1][1],complex(100*i+777.0,         0.0));
+        BOOST_CHECK_EQUAL(bar.data[i][0][2],complex(100*i+ 11.0,-100*i- 11.0));
+        BOOST_CHECK_EQUAL(bar.data[i][1][2],complex(100*i+ 13.0,-100*i- 13.0));
+    }
+
+    checkSelfConsistent(bar);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, Interleaved, bool_values )
 {
+    typedef std::complex<double> complex;
     BOOST_TEST_MESSAGE("Interleaved = " << !!Interleaved::value);
 
-    suzerain::ComplexState<double,Interleaved::value> foo(1, 2, 3);
+    // Exchange with same interleaving
+    suzerain::ComplexState<double,Interleaved::value> foo(2, 2, 3);
+    for (int i = 0; i < foo.variable_count; ++i) {
+        foo.data[i][0][0] = complex(100*i + 2.0, -100*i -  2.0);
+        foo.data[i][1][0] = complex(100*i + 3.0, -100*i -  3.0);
+        foo.data[i][0][1] = complex(100*i + 5.0, -100*i -  5.0);
+        foo.data[i][1][1] = complex(100*i + 7.0, -100*i -  7.0);
+        foo.data[i][0][2] = complex(100*i +11.0, -100*i - 11.0);
+        foo.data[i][1][2] = complex(100*i +13.0, -100*i - 13.0);
+    }
 
-    typedef std::complex<double> complex;
-    foo.data[0][0][0] = complex( 2.0, - 2.0);
-    foo.data[0][1][0] = complex( 3.0, - 3.0);
-    foo.data[0][0][1] = complex( 5.0, - 5.0);
-    foo.data[0][1][1] = complex( 7.0, - 7.0);
-    foo.data[0][0][2] = complex(11.0, -11.0);
-    foo.data[0][1][2] = complex(13.0, -13.0);
-
-    suzerain::ComplexState<double,Interleaved::value> bar(1, 2, 3);
-    bar.data[0][0][0] = complex(17.0, -17.0);
-    bar.data[0][1][0] = complex(19.0, -19.0);
-    bar.data[0][0][1] = complex(23.0, -23.0);
-    bar.data[0][1][1] = complex(29.0, -29.0);
-    bar.data[0][0][2] = complex(31.0, -31.0);
-    bar.data[0][1][2] = complex(37.0, -37.0);
+    suzerain::ComplexState<double,Interleaved::value> bar(2, 2, 3);
+    for (int i = 0; i < bar.variable_count; ++i) {
+        bar.data[i][0][0] = complex(100*i + 17.0, -100*i - 17.0);
+        bar.data[i][1][0] = complex(100*i + 19.0, -100*i - 19.0);
+        bar.data[i][0][1] = complex(100*i + 23.0, -100*i - 23.0);
+        bar.data[i][1][1] = complex(100*i + 29.0, -100*i - 29.0);
+        bar.data[i][0][2] = complex(100*i + 31.0, -100*i - 31.0);
+        bar.data[i][1][2] = complex(100*i + 37.0, -100*i - 37.0);
+    }
 
     foo.exchange(bar);
 
-    BOOST_CHECK_EQUAL(foo.data[0][0][0], complex(17.0, -17.0));
-    BOOST_CHECK_EQUAL(foo.data[0][1][0], complex(19.0, -19.0));
-    BOOST_CHECK_EQUAL(foo.data[0][0][1], complex(23.0, -23.0));
-    BOOST_CHECK_EQUAL(foo.data[0][1][1], complex(29.0, -29.0));
-    BOOST_CHECK_EQUAL(foo.data[0][0][2], complex(31.0, -31.0));
-    BOOST_CHECK_EQUAL(foo.data[0][1][2], complex(37.0, -37.0));
+    for (int i = 0; i < foo.variable_count; ++i) {
+        BOOST_CHECK_EQUAL(foo.data[i][0][0], complex(100*i+17.0, -100*i-17.0));
+        BOOST_CHECK_EQUAL(foo.data[i][1][0], complex(100*i+19.0, -100*i-19.0));
+        BOOST_CHECK_EQUAL(foo.data[i][0][1], complex(100*i+23.0, -100*i-23.0));
+        BOOST_CHECK_EQUAL(foo.data[i][1][1], complex(100*i+29.0, -100*i-29.0));
+        BOOST_CHECK_EQUAL(foo.data[i][0][2], complex(100*i+31.0, -100*i-31.0));
+        BOOST_CHECK_EQUAL(foo.data[i][1][2], complex(100*i+37.0, -100*i-37.0));
+    }
 
-    BOOST_CHECK_EQUAL(bar.data[0][0][0], complex( 2.0, - 2.0));
-    BOOST_CHECK_EQUAL(bar.data[0][1][0], complex( 3.0, - 3.0));
-    BOOST_CHECK_EQUAL(bar.data[0][0][1], complex( 5.0, - 5.0));
-    BOOST_CHECK_EQUAL(bar.data[0][1][1], complex( 7.0, - 7.0));
-    BOOST_CHECK_EQUAL(bar.data[0][0][2], complex(11.0, -11.0));
-    BOOST_CHECK_EQUAL(bar.data[0][1][2], complex(13.0, -13.0));
+    checkSelfConsistent(foo);
+
+    for (int i = 0; i < bar.variable_count; ++i) {
+        BOOST_CHECK_EQUAL(bar.data[i][0][0], complex(100*i+ 2.0, -100*i- 2.0));
+        BOOST_CHECK_EQUAL(bar.data[i][1][0], complex(100*i+ 3.0, -100*i- 3.0));
+        BOOST_CHECK_EQUAL(bar.data[i][0][1], complex(100*i+ 5.0, -100*i- 5.0));
+        BOOST_CHECK_EQUAL(bar.data[i][1][1], complex(100*i+ 7.0, -100*i- 7.0));
+        BOOST_CHECK_EQUAL(bar.data[i][0][2], complex(100*i+11.0, -100*i-11.0));
+        BOOST_CHECK_EQUAL(bar.data[i][1][2], complex(100*i+13.0, -100*i-13.0));
+    }
+
+    checkSelfConsistent(bar);
 
     // Ensure we catch an operation between two nonconforming states
     suzerain::ComplexState<double,Interleaved::value> baz(2, 2, 2);
     BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
 
     // Ensure we catch an operation between two different subclasses
-    suzerain::RealState<double,Interleaved::value> qux(1,2,3);
+    suzerain::RealState<double,Interleaved::value> qux(2,2,3);
     BOOST_CHECK_THROW(foo.exchange(qux), std::bad_cast);
+
+    // Exchange with different interleaving
+    suzerain::ComplexState<double,!Interleaved::value> quux(2, 2, 3);
+    BOOST_CHECK_NE(quux.interleaved(), foo.interleaved());
+    for (int i = 0; i < quux.variable_count; ++i) {
+        quux.data[i][0][0] = complex(100*i + 2.0, -100*i -  2.0);
+        quux.data[i][1][0] = complex(100*i + 3.0, -100*i -  3.0);
+        quux.data[i][0][1] = complex(100*i + 5.0, -100*i -  5.0);
+        quux.data[i][1][1] = complex(100*i + 7.0, -100*i -  7.0);
+        quux.data[i][0][2] = complex(100*i +11.0, -100*i - 11.0);
+        quux.data[i][1][2] = complex(100*i +13.0, -100*i - 13.0);
+    }
+
+    foo.exchange(quux);
+
+    for (int i = 0; i < foo.variable_count; ++i) {
+        BOOST_CHECK_EQUAL(foo.data[i][0][0], complex(100*i+ 2.0, -100*i- 2.0));
+        BOOST_CHECK_EQUAL(foo.data[i][1][0], complex(100*i+ 3.0, -100*i- 3.0));
+        BOOST_CHECK_EQUAL(foo.data[i][0][1], complex(100*i+ 5.0, -100*i- 5.0));
+        BOOST_CHECK_EQUAL(foo.data[i][1][1], complex(100*i+ 7.0, -100*i- 7.0));
+        BOOST_CHECK_EQUAL(foo.data[i][0][2], complex(100*i+11.0, -100*i-11.0));
+        BOOST_CHECK_EQUAL(foo.data[i][1][2], complex(100*i+13.0, -100*i-13.0));
+    }
+
+    checkSelfConsistent(foo);
+
+    for (int i = 0; i < quux.variable_count; ++i) {
+        BOOST_CHECK_EQUAL(quux.data[i][0][0],complex(100*i+17.0, -100*i-17.0));
+        BOOST_CHECK_EQUAL(quux.data[i][1][0],complex(100*i+19.0, -100*i-19.0));
+        BOOST_CHECK_EQUAL(quux.data[i][0][1],complex(100*i+23.0, -100*i-23.0));
+        BOOST_CHECK_EQUAL(quux.data[i][1][1],complex(100*i+29.0, -100*i-29.0));
+        BOOST_CHECK_EQUAL(quux.data[i][0][2],complex(100*i+31.0, -100*i-31.0));
+        BOOST_CHECK_EQUAL(quux.data[i][1][2],complex(100*i+37.0, -100*i-37.0));
+    }
+
+    checkSelfConsistent(quux);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
