@@ -65,7 +65,7 @@ public:
      * are the fastest index.  When false, each state variable is stored in a
      * separate, contiguous block of memory.
      */
-    static const bool interleaved = Interleaved;
+    static bool interleaved() { return Interleaved; }
 
     /**
      * A signed integral type used to index into MultiArrays.
@@ -274,12 +274,6 @@ template< typename FPT, bool Interleaved = true >
 class RealState : public IState<FPT,Interleaved>
 {
 public:
-    /**
-     * Are state variables interleaved with one another?  When true, variables
-     * are the fastest index.  When false, each state variable is stored in a
-     * separate, contiguous block of memory.
-     */
-    static const bool interleaved = Interleaved;
 
     /**
      * A signed integral type used to index into MultiArrays.
@@ -481,7 +475,7 @@ boost::general_storage_order<3> RealState<FPT,Interleaved>::storage_order()
         boost::general_storage_order<3> result(ordering, ascending);
         return result;
     } else {
-        const size_type ordering[3]  = { 2, 0, 1 }; // Real variables slowest
+        const size_type ordering[3]  = { 1, 2, 0 }; // Real variables slowest
         const bool      ascending[3] = { true, true, true };
         boost::general_storage_order<3> result(ordering, ascending);
         return result;
@@ -899,7 +893,7 @@ ComplexState<FPT,Interleaved>::components_storage_order()
         boost::general_storage_order<4> result(ordering, ascending);
         return result;
     } else {
-        const size_type ordering[4]  = { 0, 3, 1, 2 }; // Complex variables slowest
+        const size_type ordering[4]  = { 1, 2, 3, 0 }; // Complex variables slowest
         const bool      ascending[4] = { true, true, true };
         boost::general_storage_order<4> result(ordering, ascending);
         return result;
@@ -916,7 +910,7 @@ ComplexState<FPT,Interleaved>::storage_order()
         boost::general_storage_order<3> result(ordering, ascending);
         return result;
     } else {
-        const size_type ordering[3]  = { 2, 0, 1 }; // Complex variables slowest
+        const size_type ordering[3]  = { 1, 2, 0 }; // Complex variables slowest
         const bool      ascending[3] = { true, true, true };
         boost::general_storage_order<3> result(ordering, ascending);
         return result;
