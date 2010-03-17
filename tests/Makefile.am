@@ -77,6 +77,12 @@ test_complex_SOURCES = test_complex.cpp
 test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_complex_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                += test_iterator
+check_PROGRAMS       += test_iterator
+test_iterator_SOURCES = test_iterator.cpp
+test_iterator_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_iterator_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS               += test_state
 check_PROGRAMS      += test_state
 test_state_SOURCES   = test_state.cpp
