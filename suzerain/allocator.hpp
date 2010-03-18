@@ -67,8 +67,8 @@ public:
 
     /** Address-related methods */
     //@{
-    T* address(T& r) { return &r; }
-    T const* address(T const& r) { return &r; }
+    T* address(T& r) { return boost::addressof(r); }
+    T const* address(T const& r) { return boost::addressof(r); }
     //@}
 
     /** Copy construction and destruction helpers */
