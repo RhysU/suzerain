@@ -50,15 +50,14 @@ namespace suzerain
  * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
  *      Boost.MultiArray</a> for more information on the MultiArray concept.
  */
-template< typename Storage, typename OtherStorage = Storage >
+template< typename Storage, typename CompatibleStorage = Storage >
 class IState
 {
     BOOST_STATIC_ASSERT((Storage::dimensionality == 3));
-    BOOST_STATIC_ASSERT((boost::is_same<typename Storage::element_type, typename OtherStorage::element_type>::value));
+    BOOST_STATIC_ASSERT((CompatibleStorage::dimensionality == 3));
+    BOOST_STATIC_ASSERT((boost::is_same<typename Storage::element_type, typename CompatibleStorage::element_type>::value));
 
 public:
-    typedef Storage storage_type;
-
     typedef typename Storage::element_type element_type;
 
     /** Number of state variables present at each position in a state vector */
@@ -92,8 +91,8 @@ public:
      *
      * @param istate instance to mimic in shape.
      */
-    template< typename T >
-    IState(const IState<T>& istate)
+    template< typename T, typename U >
+    IState(const IState<T, U>& istate)
         : variable_count(istate.variable_count),
           vector_length(istate.vector_length),
           vector_count(istate.vector_count) {}
@@ -109,7 +108,8 @@ public:
      * @return True if all of #variable_count, #vector_length, and
      *         #vector_count are identical.  False otherwise.
      */
-    virtual bool isConformant(const IState<OtherStorage>& other) const
+    virtual bool isConformant(
+            const IState<CompatibleStorage,Storage>& other) const
     {
         return    variable_count == other.variable_count
                && vector_length  == other.vector_length
@@ -135,7 +135,7 @@ public:
      * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(const element_type &factor,
-                           const IState<OtherStorage>& other)
+                           const IState<CompatibleStorage,Storage>& other)
                            throw(std::bad_cast, std::logic_error) = 0;
 
     /**
@@ -145,8 +145,8 @@ public:
      *
      * @return *this
      */
-    virtual IState& operator=(const IState<OtherStorage>& other)
-                              throw(std::bad_cast, std::logic_error) = 0;
+    virtual void copy(const IState<CompatibleStorage,Storage>& other)
+                      throw(std::bad_cast, std::logic_error) = 0;
 
     /**
      * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
@@ -158,7 +158,7 @@ public:
      * @throw std::bad_cast if \c that does not have a compatible type.
      * @throw std::logic_error if \c that is not conformant.
      */
-    virtual void exchange(IState<OtherStorage>& other)
+    virtual void exchange(IState<CompatibleStorage,Storage>& other)
                           throw(std::bad_cast, std::logic_error) = 0;
 };
 

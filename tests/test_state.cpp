@@ -4,7 +4,7 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
-#include <suzerain/state.hpp>
+#include <suzerain/state_impl.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include "test_tools.hpp"

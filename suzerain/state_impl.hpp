@@ -36,11 +36,93 @@
 #include <suzerain/state.hpp>
 
 /** @file
- * Provides an interface and implementations for an abstract state concept.
+ * Provides implementations of the IState interface.
  */
 
 namespace suzerain
 {
+
+template<
+    typename Element,
+    typename Allocator = std::allocator<Element>
+>
+class InterleavedState
+    : public boost::noncopyable,
+      public IState<typename suzerain::storage::Interleaved<Element> >
+{
+public:
+    typedef typename suzerain::storage::Interleaved<Element>
+        interleaved_storage;
+
+    template< typename Integer1,
+              typename Integer2,
+              typename Integer3,
+              typename Integer4 >
+    InterleavedState(Integer1 variable_count,
+                     Integer2 vector_length,
+                     Integer3 vector_count,
+                     Integer4 min_contiguous_block = 0,
+                     const Allocator &allocator = Allocator() );
+
+    virtual ~InterleavedState();
+
+    virtual void scale(const Element &factor);
+
+    virtual void addScaled(
+            const Element &factor,
+            const IState<interleaved_storage>& other)
+            throw(std::bad_cast, std::logic_error);
+
+    virtual void copy(
+            const IState<interleaved_storage>& other)
+            throw(std::bad_cast, std::logic_error);
+
+    virtual void exchange(
+            IState<interleaved_storage>& other)
+            throw(std::bad_cast, std::logic_error);
+
+private:
+    typedef typename boost::multi_array_ref<
+                Element, interleaved_storage::dimensionality> root_type_;
+
+    Allocator allocator_;
+    typename Allocator::size_type block_size_;
+    typename Allocator::pointer raw_;
+    root_type_ root_;
+};
+
+template< typename Element, typename Allocator >
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4 >
+InterleavedState<Element,Allocator>::InterleavedState(
+        Integer1 variable_count,
+        Integer2 vector_length,
+        Integer3 vector_count,
+        Integer4 min_contiguous_block,
+        const Allocator &allocator)
+    : IState<interleaved_storage>(variable_count, vector_length, vector_count),
+      allocator_(allocator),
+      block_size_(std::max(
+           variable_count*vector_length*vector_count, min_contiguous_block)),
+      raw_(allocator_.allocate(block_size_)),
+      root_(raw_,
+            boost::extents[variable_count][variable_length][vector_count],
+            interleaved_storage::element_storage_order())
+{
+    // NOP
+}
+
+template< typename Element, typename Allocator >
+InterleavedState<Element,Allocator>::~InterleavedState()
+{
+    allocator_.deallocate(raw_, block_size_);
+}
+
+
+// FIXME
+#ifdef FIXME_BLOCK_DISABLED
 
 /**
  * An implementation of IState<FPT> for real-valued state information.
@@ -872,6 +954,8 @@ throw(std::bad_cast, std::logic_error)
                              &data[i][0][0], data.strides()[1]);
     }
 }
+
+#endif // FIXME_BLOCK_DISABLED
 
 } // namespace suzerain
 
