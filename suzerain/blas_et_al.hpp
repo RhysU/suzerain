@@ -768,11 +768,21 @@ public:
 
     /** Memory allocation uses ::suzerain::blas::malloc and std::free */
     //@{
+    /**
+     * Allocate space for \c cnt instances of type \c value_type.
+     * @throws std::bad_alloc on allocation failure
+     */
     pointer allocate(size_type cnt,
                      typename std::allocator<void>::const_pointer = 0)
     {
-        return reinterpret_cast<pointer>(
+        if (SUZERAIN_UNLIKELY(cnt == 0)) return NULL;
+
+        pointer p = reinterpret_cast<pointer>(
                 ::suzerain::blas::malloc(cnt * sizeof(T)));
+
+        if (SUZERAIN_UNLIKELY(!p)) throw std::bad_alloc();
+
+        return p;
     }
     void deallocate(pointer p, size_type) { ::suzerain::blas::free(p); }
     //@}
