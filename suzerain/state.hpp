@@ -31,13 +31,9 @@
 #define __SUZERAIN_STATE_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/iterator.hpp>
 #include <suzerain/blas_et_al.hpp>
-
-#include <boost/mpl/assert.hpp>
-#include <boost/mpl/at.hpp>
-#include <boost/mpl/size.hpp>
-#include <boost/mpl/vector_c.hpp>
+#include <suzerain/iterator.hpp>
+#include <suzerain/mpl.hpp>
 
 /** @file
  * Provides an interface and implementations for an abstract state concept.
@@ -53,115 +49,38 @@ namespace suzerain
 namespace storage
 {
 
-namespace detail
-{
-
-template<
-    typename Element,
-    typename ElementStorageOrder
->
-class RealStorageTypeGenerator {
+// FIXME Document
+template< typename Element, typename StorageOrderSequence >
+class General {
 private:
-    BOOST_MPL_ASSERT_RELATION(
-        boost::mpl::size<ElementStorageOrder>::type::value, ==, 3);
+    typedef typename suzerain::mpl::sequence_array<StorageOrderSequence>
+            sequence_array_type;
 
 public:
     typedef Element element;
+    typedef StorageOrderSequence storage_order_sequence;
+    static const std::size_t dimensionality = sequence_array_type::N;
 
-    static boost::general_storage_order<3> element_storage_order() {
-        const bool ascending[3] = { true, true, true };
-        const typename ElementStorageOrder::value_type ordering[3] = {
-            boost::mpl::at_c<ElementStorageOrder,0>::type::value,
-            boost::mpl::at_c<ElementStorageOrder,1>::type::value,
-            boost::mpl::at_c<ElementStorageOrder,2>::type::value
-        };
-        boost::general_storage_order<3> result(ordering, ascending);
+    typedef boost::general_storage_order<dimensionality>
+            element_storage_order_type;
+
+    static element_storage_order_type element_storage_order() {
+        element_storage_order_type result(
+                sequence_array_type().begin(),
+                suzerain::iterator::make_infinite_constant(true));
         return result;
     }
 };
 
-template<
-    typename Element,
-    typename ElementStorageOrder,
-    typename ComponentStorageOrder
->
-class ComplexStorageTypeGenerator
-    : public RealStorageTypeGenerator<
-        typename suzerain::complex::traits::real<Element>::type,
-        ElementStorageOrder
-      >
-{
-private:
-    BOOST_MPL_ASSERT_RELATION(
-        boost::mpl::size<ComponentStorageOrder>::type::value, ==, 4);
+// FIXME Document
+template< typename Element >
+struct Interleaved
+    : public General<Element, boost::mpl::vector_c<std::size_t,0,1,2> > {};
 
-public:
-    typedef Element element;
-    typedef typename suzerain::complex::traits::real<Element>::type component;
-
-    static boost::general_storage_order<4> element_storage_order() {
-        const bool ascending[4] = { true, true, true, true };
-        const typename ComponentStorageOrder::value_type ordering[4] = {
-            boost::mpl::at_c<ComponentStorageOrder,0>::type::value,
-            boost::mpl::at_c<ComponentStorageOrder,1>::type::value,
-            boost::mpl::at_c<ComponentStorageOrder,2>::type::value,
-            boost::mpl::at_c<ComponentStorageOrder,3>::type::value
-        };
-        boost::general_storage_order<4> result(ordering, ascending);
-        return result;
-    }
-};
-
-} // namespace detail
-
-// template< typename Element, class Enable = void >
-// struct Interleaved {
-//     typedef Element element;
-//     typedef Element component;
-
-//     static boost::general_storage_order<3> storage_order()
-//     {
-//         const int ordering[3] = { 0, 1, 2 };
-//         return boost::general_storage_order<3>(
-//                 ordering, suzerain::iterator::make_infinite_constant(true));
-//     }
-
-//     static boost::general_storage_order<3> components_storage_order() {
-//         return storage_order();
-//     }
-// };
-
-// template< typename Element >
-// struct Interleaved<
-//     Element,
-//     boost::enable_if<
-//         typename suzerain::complex::traits::is_complex<Element> >::type
-// > : public Interleaved<typename suzerain::complex::traits::real<Element>::type>
-// {
-//     typedef Element element;
-//     typedef typename suzerain::complex::traits::real<Element>::type component;
-
-//     static boost::general_storage_order<4> components_storage_order()
-//     {
-//         const size_type ordering[4] = { 0, 1, 2, 3 };
-//         return boost::general_storage_order<3>(
-//                 ordering, suzerain::iterator::make_infinite_constant(true));
-//     }
-// }
-
-
-// template< typename Element, class Enable = void >
-// struct NonInterleaved {
-//     typedef Element element;
-//     typedef Element component;
-
-//     static boost::general_storage_order<3> storage_order()
-//     {
-//         const int ordering[3] = { 1, 2, 0 };
-//         return boost::general_storage_order<3>(
-//                 ordering, ::suzerain::iterator::make_infinite_constant(true));
-//     }
-// };
+// FIXME Document
+template< typename Element >
+struct NonInterleaved
+    : public General<Element, boost::mpl::vector_c<std::size_t,1,2,0> > {};
 
 } // namespace storage
 
