@@ -67,9 +67,12 @@
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/mpl/and.hpp>
-#include <boost/mpl/list.hpp>
+#include <boost/mpl/for_each.hpp>
 #include <boost/mpl/list_c.hpp>
+#include <boost/mpl/list.hpp>
 #include <boost/mpl/logical.hpp>
+#include <boost/mpl/size.hpp>
+#include <boost/mpl/vector_c.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/numeric/conversion/cast.hpp>
@@ -95,7 +98,7 @@
 #include <boost/type_traits.hpp>
 #include <boost/utility.hpp>
 
-// Provide a general operator<<(basic_ostream, boost::array) template in ::boost
+// Provide an operator<<(basic_ostream, boost::array) template in ::boost
 namespace boost {
 template< typename charT, typename traits, typename T, ::std::size_t N >
 ::std::basic_ostream<charT,traits>& operator<<(

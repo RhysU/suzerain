@@ -47,6 +47,12 @@ test_blas_et_al_LDADD    = $(GSL_LIBS)
 test_blas_et_al_LDADD   += $(MKL_LIBS)
 test_blas_et_al_LDADD   += ../suzerain/libsuzerain.la
 
+TESTS            += test_mpl
+check_PROGRAMS   += test_mpl
+test_mpl_SOURCES  = test_mpl.cpp
+test_mpl_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_mpl_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                  += test_allocator
 check_PROGRAMS         += test_allocator
 test_allocator_SOURCES  = test_allocator.cpp
