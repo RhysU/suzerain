@@ -13,10 +13,34 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 #pragma warning(disable:383)
 
+BOOST_AUTO_TEST_SUITE( InterleavedState )
+
+BOOST_AUTO_TEST_CASE( concept_check )
+{
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( InterleavedState_Real )
+
 BOOST_AUTO_TEST_CASE( nop )
 {
     suzerain::InterleavedState<double> state(2, 2, 3);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( InterleavedState_Complex )
+
+BOOST_AUTO_TEST_CASE( nop )
+{
+    suzerain::InterleavedState<std::complex<double> > state(2, 2, 3);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 // FIXME Tests disabled
 #ifdef FIXME_DISABLED_BLOCK
