@@ -59,7 +59,7 @@ private:
 public:
     typedef Element element_type;
     typedef StorageOrderSequence storage_order_sequence;
-    static const std::size_t dimensionality = sequence_array_type::N;
+    static const std::size_t dimensionality = sequence_array_type::static_size;
 
     typedef boost::general_storage_order<dimensionality>
             element_storage_order_type;

@@ -54,14 +54,11 @@ public:
     typedef typename suzerain::storage::Interleaved<Element>
         interleaved_storage;
 
-    template< typename Integer1,
-              typename Integer2,
-              typename Integer3,
-              typename Integer4 >
-    InterleavedState(Integer1 variable_count,
-                     Integer2 vector_length,
-                     Integer3 vector_count,
-                     Integer4 min_contiguous_block = 0,
+    template< typename Integer >
+    InterleavedState(Integer variable_count,
+                     Integer vector_length,
+                     Integer vector_count,
+                     Integer min_contiguous_block = 0,
                      const Allocator &allocator = Allocator() );
 
     virtual ~InterleavedState();
@@ -92,15 +89,12 @@ private:
 };
 
 template< typename Element, typename Allocator >
-template< typename Integer1,
-          typename Integer2,
-          typename Integer3,
-          typename Integer4 >
+template< typename Integer >
 InterleavedState<Element,Allocator>::InterleavedState(
-        Integer1 variable_count,
-        Integer2 vector_length,
-        Integer3 vector_count,
-        Integer4 min_contiguous_block,
+        Integer variable_count,
+        Integer vector_length,
+        Integer vector_count,
+        Integer min_contiguous_block,
         const Allocator &allocator)
     : IState<interleaved_storage>(variable_count, vector_length, vector_count),
       allocator_(allocator),
@@ -108,7 +102,7 @@ InterleavedState<Element,Allocator>::InterleavedState(
            variable_count*vector_length*vector_count, min_contiguous_block)),
       raw_(allocator_.allocate(block_size_)),
       root_(raw_,
-            boost::extents[variable_count][variable_length][vector_count],
+            boost::extents[variable_count][vector_length][vector_count],
             interleaved_storage::element_storage_order())
 {
     // NOP

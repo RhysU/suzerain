@@ -15,7 +15,7 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 BOOST_AUTO_TEST_CASE( nop )
 {
-    // NOP
+    suzerain::InterleavedState<double> state(2, 2, 3);
 }
 
 // FIXME Tests disabled

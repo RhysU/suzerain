@@ -77,10 +77,10 @@ public:
      * @param vector_length  Number of positions per full state vector.
      * @param vector_count   Number of independent state vectors to store.
      */
-    template< typename Integer1, typename Integer2, typename Integer3 >
-    IState(Integer1 variable_count,
-           Integer2 vector_length,
-           Integer3 vector_count)
+    template< typename Integer >
+    IState(Integer variable_count,
+           Integer vector_length,
+           Integer vector_count)
         :   variable_count(boost::numeric_cast<int>(variable_count)),
             vector_length(boost::numeric_cast<int>(vector_length)),
             vector_count(boost::numeric_cast<int>(vector_count)) {}
@@ -92,7 +92,7 @@ public:
      * @param istate instance to mimic in shape.
      */
     template< typename T, typename U >
-    IState(const IState<T, U>& istate)
+    IState(const IState<T,U>& istate)
         : variable_count(istate.variable_count),
           vector_length(istate.vector_length),
           vector_count(istate.vector_count) {}
