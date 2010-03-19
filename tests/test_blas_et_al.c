@@ -458,9 +458,9 @@ test_zscal()
 
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(x[i][0], expected[i][0], GSL_DBL_EPSILON,
-                "zaxpy real index %d", i);
+                "zscal real index %d", i);
         gsl_test_abs(x[i][1], expected[i][1], GSL_DBL_EPSILON,
-                "zaxpy imag index %d", i);
+                "zscal imag index %d", i);
     }
 }
 
@@ -510,9 +510,9 @@ test_cscal()
 
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(x[i][0], expected[i][0], GSL_FLT_EPSILON,
-                "zaxpy real index %d", i);
+                "zscal real index %d", i);
         gsl_test_abs(x[i][1], expected[i][1], GSL_FLT_EPSILON,
-                "zaxpy imag index %d", i);
+                "zscal imag index %d", i);
     }
 }
 
@@ -800,6 +800,42 @@ test_caxpy()
         gsl_test_abs(y[i][1], expected[i][1], GSL_FLT_EPSILON,
                 "caxpy imag index %d", i);
     }
+}
+
+static
+void
+test_ddot()
+{
+    const double x[]        = {1.0, 2.0, 3.0};
+    const int    incx       = 1;
+    double       y[]        = {4.0, -1, 5.0, -2, 6.0, -3};
+    const int    incy       = 2;
+    const int    nx         = sizeof(x)/sizeof(x[0]);
+    const int    ny         = sizeof(y)/sizeof(y[0]);
+    const double expected   = (x[0]*y[0]) + (x[1]*y[2]) + (x[2]*y[4]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+
+    const double result = suzerain_blas_ddot(nx/incx, x, incx, y, incy);
+    gsl_test_abs(result, expected, GSL_DBL_EPSILON, "ddot result");
+}
+
+static
+void
+test_sdot()
+{
+    const float  x[]        = {1.0, 2.0, 3.0};
+    const int    incx       = 1;
+    float        y[]        = {4.0, -1, 5.0, -2, 6.0, -3};
+    const int    incy       = 2;
+    const int    nx         = sizeof(x)/sizeof(x[0]);
+    const int    ny         = sizeof(y)/sizeof(y[0]);
+    const float  expected   = (x[0]*y[0]) + (x[1]*y[2]) + (x[2]*y[4]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+
+    const float  result = suzerain_blas_sdot(nx/incx, x, incx, y, incy);
+    gsl_test_abs(result, expected, GSL_DBL_EPSILON, "ddot result");
 }
 
 static
@@ -1200,6 +1236,9 @@ main(int argc, char **argv)
     test_saxpy();
     test_zaxpy();
     test_caxpy();
+
+    test_ddot();
+    test_sdot();
 
     test_dgb_acc();
     test_dgb_acc_nop();
