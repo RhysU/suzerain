@@ -610,14 +610,14 @@ inline typename boost::enable_if<boost::mpl::and_<
 > >::type scal(
         const Integer1 n,
         const Complex1 alpha,
-        const Complex2 *x,
+        Complex2 *x,
         const Integer2 incx)
 {
     BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
     BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
     return suzerain_blas_cscal(boost::numeric_cast<int>(n),
                                reinterpret_cast<const float (*)[2]>(&alpha),
-                               reinterpret_cast<const float (*)[2]>(x),
+                               reinterpret_cast<float (*)[2]>(x),
                                boost::numeric_cast<int>(incx));
 }
 
@@ -626,10 +626,10 @@ template< typename Integer1, typename Integer2,
           typename Complex1 >
 inline typename boost::enable_if<boost::mpl::and_<
     suzerain::complex::traits::is_complex_float<Complex1>
-> >::type axpy(
+> >::type scal(
         const Integer1 n,
         const float alpha,
-        const Complex1 *x,
+        Complex1 *x,
         const Integer2 incx)
 {
     BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
@@ -637,7 +637,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     const float alpha_complex[2] = { alpha, 0 };
     return suzerain_blas_cscal(boost::numeric_cast<int>(n),
                                alpha_complex,
-                               reinterpret_cast<const float (*)[2]>(x),
+                               reinterpret_cast<float (*)[2]>(x),
                                boost::numeric_cast<int>(incx));
 }
 
@@ -650,14 +650,22 @@ inline typename boost::enable_if<boost::mpl::and_<
 > >::type scal(
         const Integer1 n,
         const Complex1 alpha,
-        const Complex2 *x,
+        Complex2 *x,
         const Integer2 incx)
 {
     BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
     BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+// FIXME: ICPC 10.1 20081024 internal error assertion_failed
+//        shared/edgcpfe/lower_il.c line 14342
+//        http://software.intel.com/en-us/forums/showthread.php?t=72886
+// Problematic code was
+//  return suzerain_blas_zscal(boost::numeric_cast<int>(n),
+//                             reinterpret_cast<const double (*)[2]>(&alpha),
+//                             reinterpret_cast<double (*)[2]>(x),
+//                             boost::numeric_cast<int>(incx));
     return suzerain_blas_zscal(boost::numeric_cast<int>(n),
                                reinterpret_cast<const double (*)[2]>(&alpha),
-                               reinterpret_cast<const double (*)[2]>(x),
+                               reinterpret_cast<double (*)[2]>(x),
                                boost::numeric_cast<int>(incx));
 }
 
@@ -666,10 +674,10 @@ template< typename Integer1, typename Integer2,
           typename Complex1 >
 inline typename boost::enable_if<boost::mpl::and_<
     suzerain::complex::traits::is_complex_double<Complex1>
-> >::type axpy(
+> >::type scal(
         const Integer1 n,
         const double alpha,
-        const Complex1 *x,
+        Complex1 *x,
         const Integer2 incx)
 {
     BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
@@ -677,7 +685,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     const double alpha_complex[2] = { alpha, 0 };
     return suzerain_blas_zscal(boost::numeric_cast<int>(n),
                                alpha_complex,
-                               reinterpret_cast<const double (*)[2]>(x),
+                               reinterpret_cast<double (*)[2]>(x),
                                boost::numeric_cast<int>(incx));
 }
 
