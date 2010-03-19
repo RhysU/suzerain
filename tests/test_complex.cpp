@@ -37,6 +37,14 @@ BOOST_AUTO_TEST_CASE( shared_c_array )
     }
 }
 
+BOOST_AUTO_TEST_CASE( casting_sanity )
+{
+    std::complex<double> z(3,4);
+    double (*a)[2] = reinterpret_cast<double (*)[2]>(&z);
+    BOOST_CHECK_EQUAL((*a)[0], 3.0);
+    BOOST_CHECK_EQUAL((*a)[1], 4.0);
+}
+
 BOOST_AUTO_TEST_CASE( real_and_imag_return_lvalues )
 {
     // Officially, std::complex do not return lvalues,

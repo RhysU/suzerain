@@ -376,7 +376,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
     BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
     return suzerain_blas_caxpy(boost::numeric_cast<int>(n),
-                               reinterpret_cast<const float (*)[2]>(alpha),
+                               reinterpret_cast<const float (*)[2]>(&alpha),
                                reinterpret_cast<const float (*)[2]>(x),
                                boost::numeric_cast<int>(incx),
                                reinterpret_cast<float (*)[2]>(y),
@@ -428,7 +428,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
     BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
     return suzerain_blas_zaxpy(boost::numeric_cast<int>(n),
-                               reinterpret_cast<const double (*)[2]>(alpha),
+                               reinterpret_cast<const double (*)[2]>(&alpha),
                                reinterpret_cast<const double (*)[2]>(x),
                                boost::numeric_cast<int>(incx),
                                reinterpret_cast<double (*)[2]>(y),
@@ -616,7 +616,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
     BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
     return suzerain_blas_cscal(boost::numeric_cast<int>(n),
-                               reinterpret_cast<const float (*)[2]>(alpha),
+                               reinterpret_cast<const float (*)[2]>(&alpha),
                                reinterpret_cast<const float (*)[2]>(x),
                                boost::numeric_cast<int>(incx));
 }
@@ -656,7 +656,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
     BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
     return suzerain_blas_zscal(boost::numeric_cast<int>(n),
-                               reinterpret_cast<const double (*)[2]>(alpha),
+                               reinterpret_cast<const double (*)[2]>(&alpha),
                                reinterpret_cast<const double (*)[2]>(x),
                                boost::numeric_cast<int>(incx));
 }
