@@ -203,6 +203,52 @@ inline void copy(
                                boost::numeric_cast<int>(incy));
 }
 
+/*! @copydoc suzerain_blas_scopy */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>
+> >::type copy(
+        const Integer1 n,
+        const Complex1 *x,
+        const Integer2 incx,
+        Complex2 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_ccopy(boost::numeric_cast<int>(n),
+                               reinterpret_cast<const float (*)[2]>(x),
+                               boost::numeric_cast<int>(incx),
+                               reinterpret_cast<float (*)[2]>(y),
+                               boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_scopy */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>
+> >::type copy(
+        const Integer1 n,
+        const Complex1 *x,
+        const Integer2 incx,
+        Complex2 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_zcopy(boost::numeric_cast<int>(n),
+                               reinterpret_cast<const double (*)[2]>(x),
+                               boost::numeric_cast<int>(incx),
+                               reinterpret_cast<double (*)[2]>(y),
+                               boost::numeric_cast<int>(incy));
+}
+
 /*! @copydoc suzerain_blas_sdot */
 template< typename Integer1, typename Integer2, typename Integer3 >
 inline float dot(
