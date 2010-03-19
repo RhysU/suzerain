@@ -41,6 +41,44 @@ namespace suzerain {
 namespace functional {
 
 /**
+ * Compute the product of the values in the range <tt>[first,last)</tt>. This
+ * combines <tt>std::accumulate</tt> with <tt>std::multiplies<typename
+ * std::iterator_traits<InputIterator>::value_type ></tt>.
+ *
+ * @param first Initial position in a sequence.
+ * @param last Final position in a sequence.
+ *
+ * @return The result of taking the product of all values
+ *         in the range <tt>[first,last)</tt>.
+ */
+template<class InputIterator>
+typename std::iterator_traits<InputIterator>::value_type
+product(InputIterator first, InputIterator last) {
+    typedef typename
+        std::iterator_traits<InputIterator>::value_type value_type;
+    return std::accumulate(
+            first, last, value_type(1), std::multiplies<value_type>());
+}
+
+/**
+ * Compute the product of the values in the range <tt>[first,last)</tt> with \c
+ * init.  This combines <tt>std::accumulate</tt> with
+ * <tt>std::multiplies<T></tt>.  Note that \c init controls the multiplication
+ * rules in use.
+ *
+ * @param first Initial position in a sequence.
+ * @param last Final position in a sequence.
+ * @param init Initial value for the product.
+ *
+ * @return The result of taking the product of \c init with all values
+ *         in the range <tt>[first,last)</tt>.
+ */
+template<class InputIterator, class T>
+T product(InputIterator first, InputIterator last, T init) {
+    return std::accumulate(first, last, init, std::multiplies<T>());
+}
+
+/**
  * A functor that performs assignment to type \c Target from type \c Source.
  * \c Target must be assignable from \c Source.
  *

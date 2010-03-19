@@ -89,6 +89,12 @@ test_iterator_SOURCES = test_iterator.cpp
 test_iterator_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_iterator_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                  += test_functional
+check_PROGRAMS         += test_functional
+test_functional_SOURCES = test_functional.cpp
+test_functional_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_functional_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS               += test_state
 check_PROGRAMS      += test_state
 test_state_SOURCES   = test_state.cpp
