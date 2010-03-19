@@ -177,6 +177,24 @@ suzerain_blas_dcopy(
         double *y,
         const int incy);
 
+/*! \copydoc suzerain_blas_scopy */
+void
+suzerain_blas_ccopy(
+        const int n,
+        const float (*x)[2],
+        const int incx,
+        float (*y)[2],
+        const int incy);
+
+/*! \copydoc suzerain_blas_scopy */
+void
+suzerain_blas_zcopy(
+        const int n,
+        const double (*x)[2],
+        const int incx,
+        double (*y)[2],
+        const int incy);
+
 /*!
  * \brief Compute \f$ x \cdot{} y \f$ using BLAS's dot.
  *

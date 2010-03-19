@@ -464,6 +464,68 @@ test_scopy()
 
 static
 void
+test_zcopy()
+{
+    int i;
+
+    const double x[][2]        = {{1.0,-1.0}, {2.0,-2.0}, {3.0,-3.0}};
+    const int    incx          = 1;
+    double       y[][2]        = {{555.0,555.0}, {777.0,777.0},
+                                  {555.0,555.0}, {777.0,777.0},
+                                  {555.0,555.0}, {777.0,777.0}};
+    const int incy             = 2;
+    const int nx               = sizeof(x)/sizeof(x[0]);
+    const int ny               = sizeof(y)/sizeof(y[0]);
+    const double expected[][2] = {{  1.0, -1.0}, {777.0,777.0},
+                                  {  2.0, -2.0}, {777.0,777.0},
+                                  {  3.0, -3.0}, {777.0,777.0}};
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_zcopy(nx/incx, x, incx, y, incy);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
+                "zcopy real index %d", i);
+        gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
+                "zcopy imag index %d", i);
+    }
+}
+
+static
+void
+test_ccopy()
+{
+    int i;
+
+    const float  x[][2]        = {{1.0,-1.0}, {2.0,-2.0}, {3.0,-3.0}};
+    const int    incx          = 1;
+    float        y[][2]        = {{555.0,555.0}, {777.0,777.0},
+                                  {555.0,555.0}, {777.0,777.0},
+                                  {555.0,555.0}, {777.0,777.0}};
+    const int incy             = 2;
+    const int nx               = sizeof(x)/sizeof(x[0]);
+    const int ny               = sizeof(y)/sizeof(y[0]);
+    const float  expected[][2] = {{  1.0, -1.0}, {777.0,777.0},
+                                  {  2.0, -2.0}, {777.0,777.0},
+                                  {  3.0, -3.0}, {777.0,777.0}};
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_ccopy(nx/incx, x, incx, y, incy);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i][0], expected[i][0], GSL_FLT_EPSILON,
+                "ccopy real index %d", i);
+        gsl_test_abs(y[i][1], expected[i][1], GSL_FLT_EPSILON,
+                "ccopy imag index %d", i);
+    }
+}
+
+static
+void
 test_daxpy()
 {
     int i;
@@ -1025,6 +1087,8 @@ main(int argc, char **argv)
 
     test_dcopy();
     test_scopy();
+    test_zcopy();
+    test_ccopy();
 
     test_daxpy();
     test_saxpy();

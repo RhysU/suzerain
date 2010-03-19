@@ -228,6 +228,59 @@ suzerain_blas_dcopy(
 #endif
 }
 
+void
+suzerain_blas_ccopy(
+        const int n,
+        const float (*x)[2],
+        const int incx,
+        float (*y)[2],
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        ccopy(&n,
+             (const MKL_Complex8 *) x, &incx,
+             (      MKL_Complex8 *) y, &incy);
+    } else {
+        const MKL_INT n_    = n;
+        const MKL_INT incx_ = incx;
+        const MKL_INT incy_ = incy;
+
+        ccopy(&n_,
+             (const MKL_Complex8 *) x, &incx_,
+             (      MKL_Complex8 *) y, &incy_);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_zcopy(
+        const int n,
+        const double (*x)[2],
+        const int incx,
+        double (*y)[2],
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        zcopy(&n,
+             (const MKL_Complex16 *) x, &incx,
+             (      MKL_Complex16 *) y, &incy);
+    } else {
+        const MKL_INT n_    = n;
+        const MKL_INT incx_ = incx;
+        const MKL_INT incy_ = incy;
+
+        zcopy(&n_,
+             (const MKL_Complex16 *) x, &incx_,
+             (      MKL_Complex16 *) y, &incy_);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
 
 float
 suzerain_blas_sdot(
