@@ -90,7 +90,7 @@ public:
                      I3 vector_count,
                      typename Allocator::size_type min_contiguous_count = 0);
 
-    virtual ~InterleavedState();
+    virtual ~InterleavedState() {}
 
     virtual void scale(const Element &factor);
 
