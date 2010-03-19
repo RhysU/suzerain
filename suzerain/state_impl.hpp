@@ -46,20 +46,49 @@ template<
     typename Element,
     typename Allocator = std::allocator<Element>
 >
-class InterleavedState
-    : public boost::noncopyable,
-      public IState<typename suzerain::storage::Interleaved<Element> >
+class RawMemory
 {
 public:
-    typedef typename suzerain::storage::Interleaved<Element>
-        interleaved_storage;
+    typedef typename Allocator::pointer pointer;
+    typedef typename Allocator::size_type size_type;
 
-    template< typename Integer >
-    InterleavedState(Integer variable_count,
-                     Integer vector_length,
-                     Integer vector_count,
-                     Integer min_contiguous_block = 0,
-                     const Allocator &allocator = Allocator() );
+    template< typename I >
+    RawMemory(I count)
+        : count_(boost::numeric_cast<size_type>(count)),
+          a_(Allocator()),
+          p_(a_.allocate(count)) {}
+
+    ~RawMemory() { a_.deallocate(p_, count_); }
+
+    pointer raw_memory() const { return pointer(p_); /* defensive copy */ }
+
+private:
+    const size_type count_;
+    Allocator a_;
+    pointer p_;
+};
+
+template<
+    typename Element,
+    typename Allocator = typename suzerain::blas::allocator<Element>::type
+>
+class InterleavedState
+    : public IState<Element,suzerain::storage::interleaved>,
+      protected RawMemory<Element,Allocator>,
+      public boost::multi_array_ref<
+            Element, suzerain::storage::interleaved::dimensionality>,
+      public boost::noncopyable
+{
+public:
+    typedef typename boost::multi_array_ref<
+            Element, suzerain::storage::interleaved::dimensionality
+        > multi_array_type;
+
+    template< typename I1, typename I2, typename I3 >
+    InterleavedState(I1 variable_count,
+                     I2 vector_length,
+                     I3 vector_count,
+                     typename Allocator::size_type min_contiguous_count = 0);
 
     virtual ~InterleavedState();
 
@@ -67,53 +96,93 @@ public:
 
     virtual void addScaled(
             const Element &factor,
-            const IState<interleaved_storage>& other)
+            const IState<Element,suzerain::storage::interleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
-    virtual void copy(
-            const IState<interleaved_storage>& other)
+    virtual void assign(
+            const IState<Element,suzerain::storage::interleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
     virtual void exchange(
-            IState<interleaved_storage>& other)
+            IState<Element,suzerain::storage::interleaved>& other)
             throw(std::bad_cast, std::logic_error);
-
-private:
-    typedef typename boost::multi_array_ref<
-                Element, interleaved_storage::dimensionality> root_type_;
-
-    Allocator allocator_;
-    typename Allocator::size_type block_size_;
-    typename Allocator::pointer raw_;
-    root_type_ root_;
 };
 
 template< typename Element, typename Allocator >
-template< typename Integer >
+template< typename I1, typename I2, typename I3 >
 InterleavedState<Element,Allocator>::InterleavedState(
-        Integer variable_count,
-        Integer vector_length,
-        Integer vector_count,
-        Integer min_contiguous_block,
-        const Allocator &allocator)
-    : IState<interleaved_storage>(variable_count, vector_length, vector_count),
-      allocator_(allocator),
-      block_size_(std::max(
-           variable_count*vector_length*vector_count, min_contiguous_block)),
-      raw_(allocator_.allocate(block_size_)),
-      root_(raw_,
-            boost::extents[variable_count][vector_length][vector_count],
-            interleaved_storage::element_storage_order())
+        I1 variable_count,
+        I2 vector_length,
+        I3 vector_count,
+        typename Allocator::size_type min_contiguous_count)
+    : IStateBase<Element>(variable_count, vector_length, vector_count),
+      IState<Element,suzerain::storage::interleaved>(
+            variable_count, vector_length, vector_count),
+      RawMemory<Element,Allocator>(std::max<typename Allocator::size_type>(
+            variable_count*vector_length*vector_count, min_contiguous_count)),
+      multi_array_type(
+              RawMemory<Element,Allocator>::raw_memory(),
+              boost::extents[variable_count][vector_length][vector_count],
+              suzerain::storage::interleaved::storage_order())
 {
     // NOP
 }
 
 template< typename Element, typename Allocator >
-InterleavedState<Element,Allocator>::~InterleavedState()
+void InterleavedState<Element,Allocator>::scale(
+        const Element &factor)
 {
-    allocator_.deallocate(raw_, block_size_);
+    suzerain::blas::scal(this->num_elements(), factor, this->data(), 1);
 }
 
+template< typename Element, typename Allocator >
+void InterleavedState<Element,Allocator>::addScaled(
+            const Element &factor,
+            const IState<Element,suzerain::storage::interleaved>& other)
+throw(std::bad_cast, std::logic_error)
+{
+    if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
+
+    const InterleavedState<Element,Allocator>& o
+        = dynamic_cast<const InterleavedState<Element,Allocator>&>(other);
+    assert(o.num_elements() == this->num_elements());
+
+    suzerain::blas::axpy(
+            this->num_elements(), factor, o.data(), 1, this->data(), 1);
+}
+
+template< typename Element, typename Allocator >
+void InterleavedState<Element,Allocator>::assign(
+            const IState<Element,suzerain::storage::interleaved>& other)
+throw(std::bad_cast, std::logic_error)
+{
+    if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
+
+    const InterleavedState<Element,Allocator>& o
+        = dynamic_cast<const InterleavedState<Element,Allocator>&>(other);
+    assert(o.num_elements() == this->num_elements());
+
+    suzerain::blas::copy(
+            this->num_elements(), o.data(), 1, this->data(), 1);
+}
+
+template< typename Element, typename Allocator >
+void InterleavedState<Element,Allocator>::exchange(
+            IState<Element,suzerain::storage::interleaved>& other)
+throw(std::bad_cast, std::logic_error)
+{
+    if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
+
+    InterleavedState<Element,Allocator>& o
+        = dynamic_cast<InterleavedState<Element,Allocator>&>(other);
+    assert(o.num_elements() == this->num_elements());
+
+    suzerain::blas::swap(
+            this->num_elements(), o.data(), 1, this->data(), 1);
+}
 
 // FIXME
 #ifdef FIXME_BLOCK_DISABLED

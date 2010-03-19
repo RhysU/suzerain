@@ -22,7 +22,7 @@
 //
 //--------------------------------------------------------------------------
 //
-// state.hpp: Class to manage mutable state vectors
+// state.hpp: Interfaces for describing/manipulating mutable state vectors
 //
 // $Id$
 //--------------------------------------------------------------------------
@@ -33,42 +33,18 @@
 #include <suzerain/common.hpp>
 
 /** @file
- * Provides an interface for an abstract state vector collection.
+ * Provide interfaces for describing and manipulating mutable state vectors.
  */
 
 namespace suzerain
 {
 
-// FIXME Update documentation
-/**
- * An interface describing a state space consisting of one or more state
- * vectors containing one or more state variables.  IState instances of the
- * same subtype and shape may be scaled by type \c FPT and added together.
- * Implementations are expected to make the underlying information available
- * through the Boost.MultiArray concept.
- *
- * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
- *      Boost.MultiArray</a> for more information on the MultiArray concept.
- */
-template< typename Storage, typename CompatibleStorage = Storage >
-class IState
+// FIXME Document
+
+template< typename Element >
+class IStateBase
 {
-    BOOST_STATIC_ASSERT((Storage::dimensionality == 3));
-    BOOST_STATIC_ASSERT((CompatibleStorage::dimensionality == 3));
-    BOOST_STATIC_ASSERT((boost::is_same<typename Storage::element_type, typename CompatibleStorage::element_type>::value));
-
 public:
-    typedef typename Storage::element_type element_type;
-
-    /** Number of state variables present at each position in a state vector */
-    const int variable_count;
-
-    /** Number of positions within each state vector */
-    const int vector_length;
-
-    /** Number of state vectors maintained within this instance */
-    const int vector_count;
-
     /**
      * Construct an instance holding the given amount of state information.
      *
@@ -77,28 +53,25 @@ public:
      * @param vector_length  Number of positions per full state vector.
      * @param vector_count   Number of independent state vectors to store.
      */
-    template< typename Integer >
-    IState(Integer variable_count,
-           Integer vector_length,
-           Integer vector_count)
-        :   variable_count(boost::numeric_cast<int>(variable_count)),
-            vector_length(boost::numeric_cast<int>(vector_length)),
-            vector_count(boost::numeric_cast<int>(vector_count)) {}
+    template< typename I1, typename I2, typename I3 >
+    IStateBase(I1 variable_count, I2 vector_length, I3 vector_count)
+        : variable_count(boost::numeric_cast<int>(variable_count)),
+          vector_length(boost::numeric_cast<int>(vector_length)),
+          vector_count(boost::numeric_cast<int>(vector_count)) {}
 
     /**
      * Construct an instance with the same amount of state information
      * as another.
      *
-     * @param istate instance to mimic in shape.
+     * @param other instance to mimic in shape.
      */
-    template< typename T, typename U >
-    IState(const IState<T,U>& istate)
-        : variable_count(istate.variable_count),
-          vector_length(istate.vector_length),
-          vector_count(istate.vector_count) {}
+    IStateBase(const IStateBase& other)
+        : variable_count(other.variable_count),
+          vector_length(other.vector_length),
+          vector_count(other.vector_count) {}
 
     /** Destructor is virtual as appropriate for an abstract base class */
-    virtual ~IState() {}
+    virtual ~IStateBase() {}
 
     /**
      * Is \c this instance's shape "conformant" with <tt>other</tt>'s?
@@ -108,8 +81,7 @@ public:
      * @return True if all of #variable_count, #vector_length, and
      *         #vector_count are identical.  False otherwise.
      */
-    virtual bool isConformant(
-            const IState<CompatibleStorage,Storage>& other) const
+    virtual bool isConformant(const IStateBase& other) const
     {
         return    variable_count == other.variable_count
                && vector_length  == other.vector_length
@@ -122,7 +94,64 @@ public:
      *
      * @param factor Scale factor to use.
      */
-    virtual void scale(const element_type &factor) = 0;
+    virtual void scale(const Element &factor) = 0;
+
+    /** Number of state variables present at each position in a state vector */
+    const int variable_count;
+
+    /** Number of positions within each state vector */
+    const int vector_length;
+
+    /** Number of state vectors maintained within this instance */
+    const int vector_count;
+};
+
+// FIXME Update documentation
+/**
+ * An interface describing a state space consisting of one or more state
+ * vectors containing one or more state variables.  IState instances of the
+ * same subtype and shape may be scaled by type \c FPT and added together.
+ * Implementations are expected to make the underlying information available
+ * through the Boost.MultiArray concept.
+ *
+ * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
+ *      Boost.MultiArray</a> for more information on the MultiArray concept.
+ */
+template<
+    typename Element,
+    typename Storage,
+    typename CompatibleStorage = Storage
+>
+class IState : public virtual IStateBase<Element>
+{
+    BOOST_STATIC_ASSERT(
+            (Storage::dimensionality == CompatibleStorage::dimensionality));
+
+public:
+    /**
+     * Construct an instance holding the given amount of state information.
+     *
+     * @param variable_count Number of individual variables or
+     *                       pieces of state at a given position.
+     * @param vector_length  Number of positions per full state vector.
+     * @param vector_count   Number of independent state vectors to store.
+     */
+    template< typename I1, typename I2, typename I3 >
+    IState(I1 variable_count, I2 vector_length, I3 vector_count)
+        : IStateBase<Element>(variable_count, vector_length, vector_count) {}
+
+    /**
+     * Copy construct an instance with the same amount of state information
+     * as another.
+     *
+     * @param other instance to mimic in shape.
+     */
+    template< typename T, typename U >
+    IState(const IState<Element,T,U>& other)
+        : IStateBase<Element>(other) {}
+
+    /** Destructor is virtual as appropriate for an abstract base class */
+    virtual ~IState() {}
 
     /**
      * Accumulate scaled state information by computing \f$\mbox{this}
@@ -134,19 +163,22 @@ public:
      * @throw std::bad_cast if \c other does not have a compatible type.
      * @throw std::logic_error if \c other is not conformant.
      */
-    virtual void addScaled(const element_type &factor,
-                           const IState<CompatibleStorage,Storage>& other)
-                           throw(std::bad_cast, std::logic_error) = 0;
+    virtual void addScaled(
+            const Element &factor,
+            const IState<Element,CompatibleStorage,Storage>& other)
+            throw(std::bad_cast, std::logic_error) = 0;
 
     /**
-     * Assign to this instance the state information from another instance.
+     * Assign to this instance the state information from another instance
+     * holding compatibly stored elements.
      *
-     * @param other instance to copy.
+     * @param other instance with state to be deep copied.
      *
      * @return *this
      */
-    virtual void copy(const IState<CompatibleStorage,Storage>& other)
-                      throw(std::bad_cast, std::logic_error) = 0;
+    virtual void assign(
+            const IState<Element,CompatibleStorage,Storage>& other)
+            throw(std::bad_cast, std::logic_error) = 0;
 
     /**
      * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
@@ -158,8 +190,9 @@ public:
      * @throw std::bad_cast if \c that does not have a compatible type.
      * @throw std::logic_error if \c that is not conformant.
      */
-    virtual void exchange(IState<CompatibleStorage,Storage>& other)
-                          throw(std::bad_cast, std::logic_error) = 0;
+    virtual void exchange(
+            IState<Element,CompatibleStorage,Storage>& other)
+            throw(std::bad_cast, std::logic_error) = 0;
 };
 
 } // namespace suzerain

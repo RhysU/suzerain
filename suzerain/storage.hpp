@@ -50,37 +50,33 @@ namespace storage
 {
 
 // FIXME Document
-template< typename Element, typename StorageOrderSequence >
-class General {
+template< typename StorageOrderSequence >
+class general {
 private:
     typedef typename suzerain::mpl::sequence_array<StorageOrderSequence>
             sequence_array_type;
 
 public:
-    typedef Element element_type;
     typedef StorageOrderSequence storage_order_sequence;
     static const std::size_t dimensionality = sequence_array_type::static_size;
+    typedef boost::general_storage_order<dimensionality> storage_order_type;
 
-    typedef boost::general_storage_order<dimensionality>
-            element_storage_order_type;
-
-    static element_storage_order_type element_storage_order() {
-        element_storage_order_type result(
+    static storage_order_type storage_order() {
+        storage_order_type result(
                 sequence_array_type().begin(),
                 suzerain::iterator::make_infinite_constant(true));
         return result;
     }
 };
 
-// FIXME Document
-template< typename Element >
-struct Interleaved
-    : public General<Element, boost::mpl::vector_c<std::size_t,0,1,2> > {};
+// TODO No reason these couldn't be parameterized on the number of dimensions
+// Implementation would use MPL's range_c insert_range push_back etc.
 
 // FIXME Document
-template< typename Element >
-struct NonInterleaved
-    : public General<Element, boost::mpl::vector_c<std::size_t,1,2,0> > {};
+typedef general< boost::mpl::vector_c<std::size_t,0,1,2> > interleaved;
+
+// FIXME Document
+typedef general< boost::mpl::vector_c<std::size_t,1,2,0> > noninterleaved;
 
 } // namespace storage
 
