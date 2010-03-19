@@ -601,6 +601,86 @@ inline void scal(
                                boost::numeric_cast<int>(incx));
 }
 
+/*! @copydoc suzerain_blas_sscal */
+template< typename Integer1, typename Integer2,
+          typename Complex1, typename Complex2  >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>
+> >::type scal(
+        const Integer1 n,
+        const Complex1 alpha,
+        const Complex2 *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_cscal(boost::numeric_cast<int>(n),
+                               reinterpret_cast<const float (*)[2]>(alpha),
+                               reinterpret_cast<const float (*)[2]>(x),
+                               boost::numeric_cast<int>(incx));
+}
+
+/*! @copydoc suzerain_blas_sscal */
+template< typename Integer1, typename Integer2,
+          typename Complex1 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>
+> >::type axpy(
+        const Integer1 n,
+        const float alpha,
+        const Complex1 *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    const float alpha_complex[2] = { alpha, 0 };
+    return suzerain_blas_cscal(boost::numeric_cast<int>(n),
+                               alpha_complex,
+                               reinterpret_cast<const float (*)[2]>(x),
+                               boost::numeric_cast<int>(incx));
+}
+
+/*! @copydoc suzerain_blas_sscal */
+template< typename Integer1, typename Integer2,
+          typename Complex1, typename Complex2  >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>
+> >::type scal(
+        const Integer1 n,
+        const Complex1 alpha,
+        const Complex2 *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_zscal(boost::numeric_cast<int>(n),
+                               reinterpret_cast<const double (*)[2]>(alpha),
+                               reinterpret_cast<const double (*)[2]>(x),
+                               boost::numeric_cast<int>(incx));
+}
+
+/*! @copydoc suzerain_blas_sscal */
+template< typename Integer1, typename Integer2,
+          typename Complex1 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>
+> >::type axpy(
+        const Integer1 n,
+        const double alpha,
+        const Complex1 *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    const double alpha_complex[2] = { alpha, 0 };
+    return suzerain_blas_zscal(boost::numeric_cast<int>(n),
+                               alpha_complex,
+                               reinterpret_cast<const double (*)[2]>(x),
+                               boost::numeric_cast<int>(incx));
+}
+
 /*! @} */
 
 /*! \name BLAS level 2 operations
