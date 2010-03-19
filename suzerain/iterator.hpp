@@ -48,7 +48,7 @@ class infinite_constant
 public:
     infinite_constant(const T& t) : t_(t) {}
 
-    infinite_constant(const infinite_constant& other) : t_(other.t) {}
+    infinite_constant(const infinite_constant& other) : t_(other.t_) {}
 
     infinite_constant& operator++() { return *this; }
     infinite_constant& operator++(int) { return *this; }
