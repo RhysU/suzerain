@@ -663,6 +663,56 @@ suzerain_blas_dscal(
 }
 
 void
+suzerain_blas_cscal(
+        const int n,
+        const float alpha[2],
+        float (*x)[2],
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        cscal(&n,
+             (const MKL_Complex8 *) alpha,
+             (      MKL_Complex8 *) x, &incx);
+    } else {
+        const MKL_INT n_    = n;
+        const MKL_INT incx_ = incx;
+
+        cscal(&n_,
+             (const MKL_Complex8 *) alpha,
+             (      MKL_Complex8 *) x, &incx_);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_zscal(
+        const int n,
+        const double alpha[2],
+        double (*x)[2],
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        zscal(&n,
+             (const MKL_Complex16 *) alpha,
+             (      MKL_Complex16 *) x, &incx);
+    } else {
+        const MKL_INT n_    = n;
+        const MKL_INT incx_ = incx;
+
+        zscal(&n_,
+             (const MKL_Complex16 *) alpha,
+             (      MKL_Complex16 *) x, &incx_);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
 suzerain_blas_sgbmv(
         const char trans,
         const int m,

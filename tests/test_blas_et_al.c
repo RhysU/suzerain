@@ -414,6 +414,110 @@ test_sscal()
 
 static
 void
+test_zscal()
+{
+    int i;
+
+    const double alpha[2]      = {2.0, -0.25};
+    double       x[][2]        = {{4.0,-4.0}, {1,-1},
+                                  {5.0,-5.0}, {2,-2},
+                                  {6.0,-6.0}, {3,-3}};
+    const int    incx          = 2;
+    const int    nx            = sizeof(x)/sizeof(x[0]);
+    const double expected[][2] = {
+        {
+            alpha[0]*x[0][0] - alpha[1]*x[0][1],
+            alpha[0]*x[0][1] + alpha[1]*x[0][0]
+        },
+        {
+            x[1][0],
+            x[1][1]
+        },
+        {
+            alpha[0]*x[2][0] - alpha[1]*x[2][1],
+            alpha[0]*x[2][1] + alpha[1]*x[2][0]
+        },
+        {
+            x[3][0],
+            x[3][1]
+        },
+        {
+            alpha[0]*x[4][0] - alpha[1]*x[4][1],
+            alpha[0]*x[4][1] + alpha[1]*x[4][0]
+        },
+        {
+            x[5][0],
+            x[5][1]
+        }
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx, nexpected, "Expected results' length");
+
+    suzerain_blas_zscal(nx/incx, alpha, x, incx);
+
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(x[i][0], expected[i][0], GSL_DBL_EPSILON,
+                "zaxpy real index %d", i);
+        gsl_test_abs(x[i][1], expected[i][1], GSL_DBL_EPSILON,
+                "zaxpy imag index %d", i);
+    }
+}
+
+static
+void
+test_cscal()
+{
+    int i;
+
+    const float  alpha[2]      = {2.0, -0.25};
+    float        x[][2]        = {{4.0,-4.0}, {1,-1},
+                                  {5.0,-5.0}, {2,-2},
+                                  {6.0,-6.0}, {3,-3}};
+    const int    incx          = 2;
+    const int    nx            = sizeof(x)/sizeof(x[0]);
+    const float  expected[][2] = {
+        {
+            alpha[0]*x[0][0] - alpha[1]*x[0][1],
+            alpha[0]*x[0][1] + alpha[1]*x[0][0]
+        },
+        {
+            x[1][0],
+            x[1][1]
+        },
+        {
+            alpha[0]*x[2][0] - alpha[1]*x[2][1],
+            alpha[0]*x[2][1] + alpha[1]*x[2][0]
+        },
+        {
+            x[3][0],
+            x[3][1]
+        },
+        {
+            alpha[0]*x[4][0] - alpha[1]*x[4][1],
+            alpha[0]*x[4][1] + alpha[1]*x[4][0]
+        },
+        {
+            x[5][0],
+            x[5][1]
+        }
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx, nexpected, "Expected results' length");
+
+    suzerain_blas_cscal(nx/incx, alpha, x, incx);
+
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(x[i][0], expected[i][0], GSL_FLT_EPSILON,
+                "zaxpy real index %d", i);
+        gsl_test_abs(x[i][1], expected[i][1], GSL_FLT_EPSILON,
+                "zaxpy imag index %d", i);
+    }
+}
+
+static
+void
 test_dcopy()
 {
     int i;
@@ -1084,6 +1188,8 @@ main(int argc, char **argv)
 
     test_dscal();
     test_sscal();
+    test_zscal();
+    test_cscal();
 
     test_dcopy();
     test_scopy();

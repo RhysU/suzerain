@@ -406,6 +406,22 @@ suzerain_blas_dscal(
         double *x,
         const int incx);
 
+/*! \copydoc suzerain_blas_sscal */
+void
+suzerain_blas_cscal(
+        const int n,
+        const float alpha[2],
+        float (*x)[2],
+        const int incx);
+
+/*! \copydoc suzerain_blas_sscal */
+void
+suzerain_blas_zscal(
+        const int n,
+        const double alpha[2],
+        double (*x)[2],
+        const int incx);
+
 /*! @} */
 
 /*! \name BLAS level 2 operations
