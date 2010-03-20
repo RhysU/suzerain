@@ -17,6 +17,7 @@ BOOST_AUTO_TEST_SUITE( InterleavedState )
 
 BOOST_AUTO_TEST_CASE( concept_check )
 {
+    // FIXME Add MultiArray Concept checking for several types...
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -24,9 +25,73 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( InterleavedState_Real )
 
-BOOST_AUTO_TEST_CASE( nop )
+BOOST_AUTO_TEST_CASE( constructors )
 {
-    suzerain::InterleavedState<double> state(2, 2, 3);
+    // Regular constructor
+    suzerain::InterleavedState<double> foo(2, 2, 3);
+    BOOST_CHECK_EQUAL(foo.variable_count, 2);
+    BOOST_CHECK_EQUAL(foo.vector_length,  2);
+    BOOST_CHECK_EQUAL(foo.vector_count,   3);
+
+    foo[0][0][0] =   2.0;
+    foo[0][1][0] =   3.0;
+    foo[0][0][1] =   5.0;
+    foo[0][1][1] =   7.0;
+    foo[0][0][2] =  11.0;
+    foo[0][1][2] =  13.0;
+    foo[1][0][0] = 102.0;
+    foo[1][1][0] = 103.0;
+    foo[1][0][1] = 105.0;
+    foo[1][1][1] = 107.0;
+    foo[1][0][2] = 111.0;
+    foo[1][1][2] = 113.0;
+
+    BOOST_CHECK_EQUAL(foo[0][0][0],   2.0);
+    BOOST_CHECK_EQUAL(foo[0][1][0],   3.0);
+    BOOST_CHECK_EQUAL(foo[0][0][1],   5.0);
+    BOOST_CHECK_EQUAL(foo[0][1][1],   7.0);
+    BOOST_CHECK_EQUAL(foo[0][0][2],  11.0);
+    BOOST_CHECK_EQUAL(foo[0][1][2],  13.0);
+    BOOST_CHECK_EQUAL(foo[1][0][0], 102.0);
+    BOOST_CHECK_EQUAL(foo[1][1][0], 103.0);
+    BOOST_CHECK_EQUAL(foo[1][0][1], 105.0);
+    BOOST_CHECK_EQUAL(foo[1][1][1], 107.0);
+    BOOST_CHECK_EQUAL(foo[1][0][2], 111.0);
+    BOOST_CHECK_EQUAL(foo[1][1][2], 113.0);
+
+    // Copy construct a second instance from the first
+    suzerain::InterleavedState<double> bar(foo);
+    BOOST_CHECK_EQUAL(bar.variable_count, 2);
+    BOOST_CHECK_EQUAL(bar.vector_length,  2);
+    BOOST_CHECK_EQUAL(bar.vector_count,   3);
+
+    // Modify first instance's data
+    foo[0][0][0] +=   2.0;
+    foo[0][1][0] +=   3.0;
+    foo[0][0][1] +=   5.0;
+    foo[0][1][1] +=   7.0;
+    foo[0][0][2] +=  11.0;
+    foo[0][1][2] +=  13.0;
+    foo[1][0][0] += 102.0;
+    foo[1][1][0] += 103.0;
+    foo[1][0][1] += 105.0;
+    foo[1][1][1] += 107.0;
+    foo[1][0][2] += 111.0;
+    foo[1][1][2] += 113.0;
+
+    // Ensure copy constructed data in second instance not modified
+    BOOST_CHECK_EQUAL(bar[0][0][0],   2.0);
+    BOOST_CHECK_EQUAL(bar[0][1][0],   3.0);
+    BOOST_CHECK_EQUAL(bar[0][0][1],   5.0);
+    BOOST_CHECK_EQUAL(bar[0][1][1],   7.0);
+    BOOST_CHECK_EQUAL(bar[0][0][2],  11.0);
+    BOOST_CHECK_EQUAL(bar[0][1][2],  13.0);
+    BOOST_CHECK_EQUAL(bar[1][0][0], 102.0);
+    BOOST_CHECK_EQUAL(bar[1][1][0], 103.0);
+    BOOST_CHECK_EQUAL(bar[1][0][1], 105.0);
+    BOOST_CHECK_EQUAL(bar[1][1][1], 107.0);
+    BOOST_CHECK_EQUAL(bar[1][0][2], 111.0);
+    BOOST_CHECK_EQUAL(bar[1][1][2], 113.0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

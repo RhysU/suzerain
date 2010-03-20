@@ -53,16 +53,28 @@ public:
     typedef typename Allocator::size_type size_type;
 
     template< typename I >
-    RawMemory(I count)
+    RawMemory(
+        I count,
+        typename boost::enable_if<boost::is_integral<I> >::type* dummy = 0)
         : count_(boost::numeric_cast<size_type>(count)),
           a_(Allocator()),
           p_(a_.allocate(count)) {}
+
+    RawMemory(const RawMemory &other)
+        : count_(other.count_), a_(other.a_), p_(a_.allocate(count_))
+    {
+        std::memcpy(p_, other.p_, count_*sizeof(Element));
+    }
 
     ~RawMemory() { a_.deallocate(p_, count_); }
 
     pointer raw_memory() const { return pointer(p_); /* defensive copy */ }
 
+    size_type raw_memory_count() const { return count_; }
+
 private:
+    const RawMemory& operator=( const RawMemory& ); // Disable
+
     const size_type count_;
     Allocator a_;
     pointer p_;
@@ -76,8 +88,7 @@ class InterleavedState
     : public IState<Element,suzerain::storage::interleaved>,
       protected RawMemory<Element,Allocator>,
       public boost::multi_array_ref<
-            Element, suzerain::storage::interleaved::dimensionality>,
-      public boost::noncopyable
+            Element, suzerain::storage::interleaved::dimensionality>
 {
 public:
     typedef typename boost::multi_array_ref<
@@ -89,6 +100,8 @@ public:
                      I2 vector_length,
                      I3 vector_count,
                      typename Allocator::size_type min_contiguous_count = 0);
+
+    InterleavedState(const InterleavedState& other);
 
     virtual ~InterleavedState() {}
 
@@ -106,6 +119,10 @@ public:
     virtual void exchange(
             IState<Element,suzerain::storage::interleaved>& other)
             throw(std::bad_cast, std::logic_error);
+
+private:
+    const multi_array_type& operator=( const multi_array_type& ); // Disable
+    const InterleavedState& operator=( const InterleavedState& ); // Disable
 };
 
 template< typename Element, typename Allocator >
@@ -126,6 +143,22 @@ InterleavedState<Element,Allocator>::InterleavedState(
               suzerain::storage::interleaved::storage_order())
 {
     // NOP
+}
+
+template< typename Element, typename Allocator >
+InterleavedState<Element,Allocator>::InterleavedState(
+        const InterleavedState &other)
+    : IStateBase<Element>(other),
+      IState<Element,suzerain::storage::interleaved>(other),
+      RawMemory<Element,Allocator>(other),
+      multi_array_type(
+              RawMemory<Element,Allocator>::raw_memory(),
+              boost::extents[other.variable_count]
+                            [other.vector_length]
+                            [other.vector_count],
+              suzerain::storage::interleaved::storage_order())
+{
+    // Data copied by RawMemory's copy constructor
 }
 
 template< typename Element, typename Allocator >
