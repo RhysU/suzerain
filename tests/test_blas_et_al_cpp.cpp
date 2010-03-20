@@ -77,7 +77,46 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
             y.begin(), y.end(), y_expected.begin(), y_expected.end());
 }
 
-// TODO Add complex_valued swap test
+BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued, T, complex_types )
+{
+    const long incx = 2;
+    array<T,6> x;
+    assign_complex(x[0],   1, -  1);
+    assign_complex(x[1], 555, -555);
+    assign_complex(x[2],   2, -  2);
+    assign_complex(x[3], 555, -555);
+    assign_complex(x[4],   3, -  3);
+    assign_complex(x[5], 555, -555);
+
+    const long incy = 1;
+    array<T,3> y;
+    assign_complex(y[0],   4, -  4);
+    assign_complex(y[1],   5, -  5);
+    assign_complex(y[2],   6, -  6);
+
+    BOOST_REQUIRE_EQUAL(x.size()/incx, y.size()/incy);
+    blas::swap(x.size()/incx, x.c_array(), incx, y.c_array(), incy);
+
+    BOOST_CHECK_EQUAL(real(x[0]),  4);
+    BOOST_CHECK_EQUAL(imag(x[0]), -4);
+    BOOST_CHECK_EQUAL(real(x[1]),  555);
+    BOOST_CHECK_EQUAL(imag(x[1]), -555);
+    BOOST_CHECK_EQUAL(real(x[2]),  5);
+    BOOST_CHECK_EQUAL(imag(x[2]), -5);
+    BOOST_CHECK_EQUAL(real(x[3]),  555);
+    BOOST_CHECK_EQUAL(imag(x[3]), -555);
+    BOOST_CHECK_EQUAL(real(x[4]),  6);
+    BOOST_CHECK_EQUAL(imag(x[4]), -6);
+    BOOST_CHECK_EQUAL(real(x[5]),  555);
+    BOOST_CHECK_EQUAL(imag(x[5]), -555);
+
+    BOOST_CHECK_EQUAL(real(y[0]),  1);
+    BOOST_CHECK_EQUAL(imag(y[0]), -1);
+    BOOST_CHECK_EQUAL(real(y[1]),  2);
+    BOOST_CHECK_EQUAL(imag(y[1]), -2);
+    BOOST_CHECK_EQUAL(real(y[2]),  3);
+    BOOST_CHECK_EQUAL(imag(y[2]), -3);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -176,6 +215,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
     const array<T,6> x = {   1, -555,   2, -555,   3, -555 };
     array<T,3> y       = { 555,  555, 555 };
     const long incx = 2, incy = 1;
+
+    BOOST_REQUIRE_EQUAL(x.size()/incx, y.size()/incy);
     blas::copy(x.size()/incx, x.data(), incx, y.c_array(), incy);
 
     const array<T,3> expected = { 1, 2, 3 };
@@ -183,7 +224,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
             y.begin(), y.end(), expected.begin(), expected.end());
 }
 
-// TODO Add complex_valued copy test
+BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued, T, complex_types )
+{
+    const long incx = 2;
+    array<T,6> x;
+    assign_complex(x[0],   1, -  1);
+    assign_complex(x[1], 555, -555);
+    assign_complex(x[2],   2, -  2);
+    assign_complex(x[3], 555, -555);
+    assign_complex(x[4],   3, -  3);
+    assign_complex(x[5], 555, -555);
+
+    const long incy = 1;
+    array<T,3> y;
+    assign_complex(y[0], 777, -777);
+    assign_complex(y[1], 777, -777);
+    assign_complex(y[2], 777, -777);
+
+    BOOST_REQUIRE_EQUAL(x.size()/incx, y.size()/incy);
+    blas::copy(x.size()/incx, x.data(), incx, y.c_array(), incy);
+
+    BOOST_CHECK_EQUAL(real(y[0]),  1);
+    BOOST_CHECK_EQUAL(imag(y[0]), -1);
+    BOOST_CHECK_EQUAL(real(y[1]),  2);
+    BOOST_CHECK_EQUAL(imag(y[1]), -2);
+    BOOST_CHECK_EQUAL(real(y[2]),  3);
+    BOOST_CHECK_EQUAL(imag(y[2]), -3);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -196,6 +263,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
     const long incx = 2;
     array<T,3> y = { 4, 5, 6 };
     const int incy = 1;
+
+    BOOST_REQUIRE_EQUAL(x.size()/incx, y.size()/incy);
     blas::axpy(x.size()/incx, 3, x.data(), incx, y.c_array(), incy);
 
     const array<T,3> expected = { 1*3+4, 2*3+5, 3*3+6 };
@@ -203,8 +272,68 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
             y.begin(), y.end(), expected.begin(), expected.end());
 }
 
-// TODO Add complex_valued axpy test with complex-valued alpha
-// TODO Add complex_valued axpy test with real-valued alpha
+BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued_complex, T, complex_types )
+{
+    // Complex scaling factor
+    T alpha;
+    assign_complex(alpha, 0.25, -.50);
+
+    const long incx = 2;
+    array<T,6> x;
+    assign_complex(x[0],   1, -  1);
+    assign_complex(x[1], 555, -555);
+    assign_complex(x[2],   2, -  2);
+    assign_complex(x[3], 555, -555);
+    assign_complex(x[4],   3, -  3);
+    assign_complex(x[5], 555, -555);
+
+    const long incy = 1;
+    array<T,3> y;
+    assign_complex(y[0],   4, -  4);
+    assign_complex(y[1],   5, -  5);
+    assign_complex(y[2],   6, -  6);
+
+    BOOST_REQUIRE_EQUAL(x.size()/incx, y.size()/incy);
+    blas::axpy(x.size()/incx, alpha, x.data(), incx, y.c_array(), incy);
+
+    BOOST_CHECK_EQUAL(real(y[0]), (1.0* 0.25)-(-1.0*-0.50) + 4);
+    BOOST_CHECK_EQUAL(imag(y[0]), (1.0*-0.50)+(-1.0* 0.25) - 4);
+    BOOST_CHECK_EQUAL(real(y[1]), (2.0* 0.25)-(-2.0*-0.50) + 5);
+    BOOST_CHECK_EQUAL(imag(y[1]), (2.0*-0.50)+(-2.0* 0.25) - 5);
+    BOOST_CHECK_EQUAL(real(y[2]), (3.0* 0.25)-(-3.0*-0.50) + 6);
+    BOOST_CHECK_EQUAL(imag(y[2]), (3.0*-0.50)+(-3.0* 0.25) - 6);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued_real, T, complex_types )
+{
+    // Real scaling factor
+    const typename suzerain::complex::traits::real<T>::type alpha = 0.25;
+
+    const long incx = 2;
+    array<T,6> x;
+    assign_complex(x[0],   1, -  1);
+    assign_complex(x[1], 555, -555);
+    assign_complex(x[2],   2, -  2);
+    assign_complex(x[3], 555, -555);
+    assign_complex(x[4],   3, -  3);
+    assign_complex(x[5], 555, -555);
+
+    const long incy = 1;
+    array<T,3> y;
+    assign_complex(y[0],   4, -  4);
+    assign_complex(y[1],   5, -  5);
+    assign_complex(y[2],   6, -  6);
+
+    BOOST_REQUIRE_EQUAL(x.size()/incx, y.size()/incy);
+    blas::axpy(x.size()/incx, alpha, x.data(), incx, y.c_array(), incy);
+
+    BOOST_CHECK_EQUAL(real(y[0]), ( 1.0*0.25) + 4);
+    BOOST_CHECK_EQUAL(imag(y[0]), (-1.0*0.25) - 4);
+    BOOST_CHECK_EQUAL(real(y[1]), ( 2.0*0.25) + 5);
+    BOOST_CHECK_EQUAL(imag(y[1]), (-2.0*0.25) - 5);
+    BOOST_CHECK_EQUAL(real(y[2]), ( 3.0*0.25) + 6);
+    BOOST_CHECK_EQUAL(imag(y[2]), (-3.0*0.25) - 6);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -217,6 +346,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
     const int incx = 2;
     const array<T,3> y = { 4, 5, 6 };
     const long incy = 1;
+
+    BOOST_REQUIRE_EQUAL(x.size()/incx, y.size()/incy);
     const T result = blas::dot(x.size()/incx, x.data(), incx, y.data(), incy);
 
     const T expected = (1*4) + (2*5) + (3*6);
@@ -249,6 +380,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
     const long incx = 2;
     array<T,3> y = { 4, 5, 6 };
     const int incy = 1;
+
+    BOOST_REQUIRE_EQUAL(x.size()/incx, y.size()/incy);
     blas::axpby(x.size()/incx, 3, x.data(), incx, 7, y.c_array(), incy);
 
     const array<T,3> expected = { 1*3+7*4, 2*3+7*5, 3*3+7*6 };
