@@ -90,6 +90,8 @@ case $ax_cv_cxx_compiler_vendor in #(
          AX_CHECK_COMPILER_FLAGS([-wd981], [CXXFLAGS="$CXXFLAGS -wd981"])
          # Disable warning #2012: Effective C++ Item 1 prefer const and inline to #define
          AX_CHECK_COMPILER_FLAGS([-wd2012], [CXXFLAGS="$CXXFLAGS -wd2012"])
+         # Disable warning #2015: Effective C++ Item 4 prefer C++ style comments
+         AX_CHECK_COMPILER_FLAGS([-wd2015], [CXXFLAGS="$CXXFLAGS -wd2015"])
          ;;#(
   gnu)   AX_CHECK_COMPILER_FLAGS([-Wextra], [CXXFLAGS="$CXXFLAGS -Wextra"])
          ;;#(
