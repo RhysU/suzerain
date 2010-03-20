@@ -12,13 +12,54 @@
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
-typedef boost::mpl::list<double,float> real_types;
-typedef boost::mpl::list< std::complex<double>,
-                          std::complex<float>  > complex_types;
+#pragma warning(disable:383)
+
+// Real-valued types to test
+typedef boost::mpl::list<
+    double
+   ,float
+> real_types;
+
+// Complex-valued types to test
+typedef boost::mpl::list<
+    std::complex<double>
+   ,std::complex<float>
+   ,double[2]
+   ,float[2]
+> complex_types;
 
 // Introduce some shorthand
 namespace blas = suzerain::blas;
 using boost::array;
+using suzerain::complex::assign_complex;
+using suzerain::complex::real;
+using suzerain::complex::imag;
+
+
+// Ensure our traits classes recognize what they should.  Lots and lots of
+// error emitted if these do not compile and pass cleanly.
+BOOST_AUTO_TEST_SUITE( traits_sanity )
+
+namespace traits = suzerain::complex::traits;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( trait_is_complex, T, complex_types )
+{
+   BOOST_CHECK(traits::is_complex<T>::value);
+}
+
+BOOST_AUTO_TEST_CASE( traits_is_complex_real )
+{
+    typedef double d_array[2];
+    BOOST_CHECK(traits::is_complex_double<d_array>::value);
+    BOOST_CHECK(traits::is_complex_double<double[2]>::value);
+
+    typedef float f_array[2];
+    BOOST_CHECK(traits::is_complex_float<f_array>::value);
+    BOOST_CHECK(traits::is_complex_float<float[2]>::value);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 BOOST_AUTO_TEST_SUITE( swap )
 
@@ -66,8 +107,64 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
     }
 }
 
-// TODO Add complex_valued scal test with complex scaling factor
-// TODO Add complex_valued scal test with real scaling factor
+BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued_complex, T, complex_types )
+{
+    // Complex scaling factor
+    T alpha;
+    assign_complex(alpha, 0.25, -.50);
+
+    const long inc = 2;
+    array<T,6> x;
+    assign_complex(x[0],   1, -  1);
+    assign_complex(x[1], 555, -555);
+    assign_complex(x[2],   2, -  2);
+    assign_complex(x[3], 555, -555);
+    assign_complex(x[4],   3, -  3);
+    assign_complex(x[5], 555, -555);
+
+    blas::scal(x.size()/inc, alpha, x.c_array(), inc);
+    BOOST_CHECK_EQUAL(real(x[0]), (1.0* 0.25)-(-1.0*-0.50));
+    BOOST_CHECK_EQUAL(imag(x[0]), (1.0*-0.50)+(-1.0* 0.25));
+    BOOST_CHECK_EQUAL(real(x[1]),  555);
+    BOOST_CHECK_EQUAL(imag(x[1]), -555);
+    BOOST_CHECK_EQUAL(real(x[2]), (2.0* 0.25)-(-2.0*-0.50));
+    BOOST_CHECK_EQUAL(imag(x[2]), (2.0*-0.50)+(-2.0* 0.25));
+    BOOST_CHECK_EQUAL(real(x[3]),  555);
+    BOOST_CHECK_EQUAL(imag(x[3]), -555);
+    BOOST_CHECK_EQUAL(real(x[4]), (3.0* 0.25)-(-3.0*-0.50));
+    BOOST_CHECK_EQUAL(imag(x[4]), (3.0*-0.50)+(-3.0* 0.25));
+    BOOST_CHECK_EQUAL(real(x[5]),  555);
+    BOOST_CHECK_EQUAL(imag(x[5]), -555);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued_real, T, complex_types )
+{
+    // Real scaling factor
+    typename suzerain::complex::traits::real<T>::type alpha = 0.25;
+
+    const long inc = 2;
+    array<T,6> x;
+    assign_complex(x[0],   1, -  1);
+    assign_complex(x[1], 555, -555);
+    assign_complex(x[2],   2, -  2);
+    assign_complex(x[3], 555, -555);
+    assign_complex(x[4],   3, -  3);
+    assign_complex(x[5], 555, -555);
+
+    blas::scal(x.size()/inc, alpha, x.c_array(), inc);
+    BOOST_CHECK_EQUAL(real(x[0]), ( 1.0*0.25));
+    BOOST_CHECK_EQUAL(imag(x[0]), (-1.0*0.25));
+    BOOST_CHECK_EQUAL(real(x[1]),  555);
+    BOOST_CHECK_EQUAL(imag(x[1]), -555);
+    BOOST_CHECK_EQUAL(real(x[2]), ( 2.0*0.25));
+    BOOST_CHECK_EQUAL(imag(x[2]), (-2.0*0.25));
+    BOOST_CHECK_EQUAL(real(x[3]),  555);
+    BOOST_CHECK_EQUAL(imag(x[3]), -555);
+    BOOST_CHECK_EQUAL(real(x[4]), ( 3.0*0.25));
+    BOOST_CHECK_EQUAL(imag(x[4]), (-3.0*0.25));
+    BOOST_CHECK_EQUAL(real(x[5]),  555);
+    BOOST_CHECK_EQUAL(imag(x[5]), -555);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -366,7 +366,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     suzerain::complex::traits::is_complex_float<Complex3>
 > >::type axpy(
         const Integer1 n,
-        const Complex1 alpha,
+        const Complex1 &alpha,
         const Complex2 *x,
         const Integer2 incx,
         Complex3 *y,
@@ -376,7 +376,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
     BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
     return suzerain_blas_caxpy(boost::numeric_cast<int>(n),
-                               reinterpret_cast<const float (*)[2]>(&alpha),
+                               reinterpret_cast<const float *>(&alpha),
                                reinterpret_cast<const float (*)[2]>(x),
                                boost::numeric_cast<int>(incx),
                                reinterpret_cast<float (*)[2]>(y),
@@ -418,7 +418,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     suzerain::complex::traits::is_complex_double<Complex3>
 > >::type axpy(
         const Integer1 n,
-        const Complex1 alpha,
+        const Complex1 &alpha,
         const Complex2 *x,
         const Integer2 incx,
         Complex3 *y,
@@ -428,7 +428,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
     BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
     return suzerain_blas_zaxpy(boost::numeric_cast<int>(n),
-                               reinterpret_cast<const double (*)[2]>(&alpha),
+                               reinterpret_cast<const double *>(&alpha),
                                reinterpret_cast<const double (*)[2]>(x),
                                boost::numeric_cast<int>(incx),
                                reinterpret_cast<double (*)[2]>(y),
@@ -609,14 +609,14 @@ inline typename boost::enable_if<boost::mpl::and_<
     suzerain::complex::traits::is_complex_float<Complex2>
 > >::type scal(
         const Integer1 n,
-        const Complex1 alpha,
+        const Complex1 &alpha,
         Complex2 *x,
         const Integer2 incx)
 {
     BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
     BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
     return suzerain_blas_cscal(boost::numeric_cast<int>(n),
-                               reinterpret_cast<const float (*)[2]>(&alpha),
+                               reinterpret_cast<const float *>(&alpha),
                                reinterpret_cast<float (*)[2]>(x),
                                boost::numeric_cast<int>(incx));
 }
@@ -624,9 +624,9 @@ inline typename boost::enable_if<boost::mpl::and_<
 /*! @copydoc suzerain_blas_sscal */
 template< typename Integer1, typename Integer2,
           typename Complex1 >
-inline typename boost::enable_if<boost::mpl::and_<
+inline typename boost::enable_if<
     suzerain::complex::traits::is_complex_float<Complex1>
-> >::type scal(
+>::type scal(
         const Integer1 n,
         const float alpha,
         Complex1 *x,
@@ -649,7 +649,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     suzerain::complex::traits::is_complex_double<Complex2>
 > >::type scal(
         const Integer1 n,
-        const Complex1 alpha,
+        const Complex1 &alpha,
         Complex2 *x,
         const Integer2 incx)
 {
@@ -664,7 +664,7 @@ inline typename boost::enable_if<boost::mpl::and_<
 //                             reinterpret_cast<double (*)[2]>(x),
 //                             boost::numeric_cast<int>(incx));
     return suzerain_blas_zscal(boost::numeric_cast<int>(n),
-                               reinterpret_cast<const double (*)[2]>(&alpha),
+                               reinterpret_cast<const double *>(&alpha),
                                reinterpret_cast<double (*)[2]>(x),
                                boost::numeric_cast<int>(incx));
 }
@@ -672,9 +672,9 @@ inline typename boost::enable_if<boost::mpl::and_<
 /*! @copydoc suzerain_blas_sscal */
 template< typename Integer1, typename Integer2,
           typename Complex1 >
-inline typename boost::enable_if<boost::mpl::and_<
+inline typename boost::enable_if<
     suzerain::complex::traits::is_complex_double<Complex1>
-> >::type scal(
+>::type scal(
         const Integer1 n,
         const double alpha,
         Complex1 *x,
