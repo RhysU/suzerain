@@ -126,7 +126,7 @@ std::string comm_rank_identifier(MPI_Comm comm)
     std::ostringstream oss;
     oss.write(p_buffer, resultlen);
     oss << sep << std::setfill('0')
-#pragma warning(push,disable:810)
+#pragma warning(push,disable:810 2259)
         << std::setw(ceil(log10(size)))
 #pragma warning(pop)
         << rank;
