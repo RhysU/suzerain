@@ -1,33 +1,33 @@
-/*--------------------------------------------------------------------------
- *--------------------------------------------------------------------------
- *
- * Copyright (C) 2009 The PECOS Development Team
- * Based heavily on the Boost Test predicate utilities
- *
- * Please see http://pecos.ices.utexas.edu for more information.
- *
- * This file is part of Suzerain.
- *
- * Suzerain is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- *
- * Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Suzerain.  If not, see <http://www.gnu.org/licenses/>.
- *
- *--------------------------------------------------------------------------
- *
- * test_tools.hpp: one-off test predicates and checks
- *
- * $Id$
- *--------------------------------------------------------------------------
- *-------------------------------------------------------------------------- */
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+//
+// Copyright (C) 2009 The PECOS Development Team
+// Based heavily on the Boost Test predicate utilities
+//
+// Please see http://pecos.ices.utexas.edu for more information.
+//
+// This file is part of Suzerain.
+//
+// Suzerain is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+// details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+//
+//--------------------------------------------------------------------------
+//
+// test_tools.hpp: one-off test predicates and checks
+//
+// $Id$
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 
 #ifndef PECOS_SUZERAIN_TEST_TOOLS_HPP
 #define PECOS_SUZERAIN_TEST_TOOLS_HPP
@@ -321,11 +321,11 @@ public:
      * @param constant The constant content of the signal and an amplitude
      *                 factor used to scale all modes.
      */
-     periodic_function(const Integer N,
-                       const Integer max_mode_exclusive = -1,
-                       const FPT shift = M_PI/3,
-                       const FPT length = 2*M_PI,
-                       const FPT constant = 17)
+     explicit periodic_function(const Integer N,
+                                const Integer max_mode_exclusive = -1,
+                                const FPT shift = M_PI/3,
+                                const FPT length = 2*M_PI,
+                                const FPT constant = 17)
         : N(N),
           max_mode_exclusive(
                     max_mode_exclusive >= 0 ? max_mode_exclusive : N/2+1),
