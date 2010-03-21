@@ -174,6 +174,9 @@ void InterleavedState<Element,Allocator>::addScaled(
             const IState<Element,suzerain::storage::interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
+        throw std::logic_error("Unable to handle this->addScaled(...,this)");
+
     if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
             std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
@@ -190,6 +193,8 @@ void InterleavedState<Element,Allocator>::assign(
             const IState<Element,suzerain::storage::interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
     if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
             std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
@@ -206,6 +211,8 @@ void InterleavedState<Element,Allocator>::exchange(
             IState<Element,suzerain::storage::interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
     if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
             std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
