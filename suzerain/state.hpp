@@ -54,7 +54,7 @@ public:
      *
      * @param factor Scale factor to use.
      */
-    virtual void scale(const Element &factor) = 0;
+    virtual void scale(const Element& factor) = 0;
 };
 
 // FIXME Update documentation
@@ -107,7 +107,7 @@ public:
      * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(
-        const Element &factor,
+        const Element& factor,
         const IState<NumDims,Element,CompatibleStorage,Storage>& other)
         throw(std::bad_cast, std::logic_error) = 0;
 

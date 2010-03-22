@@ -105,14 +105,14 @@ public:
 
     virtual ~InterleavedState() {}
 
-    virtual void scale(const Element &factor);
+    virtual void scale(const Element& factor);
 
     virtual bool isConformant(
         const IState<NumDims,Element,storage_interleaved>& other) const
         throw(std::bad_cast);
 
     virtual void addScaled(
-            const Element &factor,
+            const Element& factor,
             const IState<NumDims,Element,storage_interleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
@@ -168,7 +168,7 @@ InterleavedState<NumDims,Element,Allocator>::InterleavedState(
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 void InterleavedState<NumDims,Element,Allocator>::scale(
-        const Element &factor)
+        const Element& factor)
 {
     suzerain::blas::scal(this->num_elements(), factor, this->data(), 1);
 }
@@ -185,7 +185,7 @@ throw(std::bad_cast)
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 void InterleavedState<NumDims,Element,Allocator>::addScaled(
-            const Element &factor,
+            const Element& factor,
             const IState<NumDims,Element,storage_interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
