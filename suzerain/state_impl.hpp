@@ -86,7 +86,7 @@ template<
 >
 class InterleavedState
     : public IState<Element,suzerain::storage::interleaved>,
-      protected RawMemory<Element,Allocator>,
+      public RawMemory<Element,Allocator>,
       public boost::multi_array_ref<
             Element, suzerain::storage::interleaved::dimensionality>
 {

@@ -131,11 +131,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 {
     // Regular constructor
     suzerain::InterleavedState<T> foo(2, 2, 3);
+    BOOST_CHECK_EQUAL(foo.raw_memory_count(), 2*2*3);
     load223(foo, 1);
     verify223(foo, 1);
 
     // Copy construct a second instance from the first
     suzerain::InterleavedState<T> bar(foo);
+    BOOST_CHECK_EQUAL(bar.raw_memory_count(), 2*2*3);
     verify223(bar, 1);
 
     // Modify first instance's data
@@ -146,6 +148,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 
     // Ensure copy constructed data in second instance not modified
     verify223(bar, 1);
+
+    // Create padded instance and ensure content lies within padding
+    suzerain::InterleavedState<T> baz(2, 2, 3, 2*2*3*7);
+    BOOST_CHECK_EQUAL(baz.raw_memory_count(), 2*2*3*7);
+    BOOST_CHECK_GE(baz.raw_memory(), &(baz[0][0][0]));
+    BOOST_CHECK_LT(&(baz[1][1][2]), baz.raw_memory() + baz.raw_memory_count());
+
+    // Ensure padded information present propagated in copy operations
+    suzerain::InterleavedState<T> qux(baz);
+    BOOST_CHECK_EQUAL(qux.raw_memory_count(), 2*2*3*7);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
