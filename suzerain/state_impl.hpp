@@ -85,14 +85,14 @@ template<
     typename Allocator = typename suzerain::blas::allocator<Element>::type
 >
 class InterleavedState
-    : public IState<Element,suzerain::storage::interleaved>,
+    : public IState<Element,suzerain::storage::interleaved<3> >,
       public RawMemory<Element,Allocator>,
       public boost::multi_array_ref<
-            Element, suzerain::storage::interleaved::dimensionality>
+            Element, suzerain::storage::interleaved<3>::dimensionality>
 {
 public:
     typedef typename boost::multi_array_ref<
-            Element, suzerain::storage::interleaved::dimensionality
+            Element, suzerain::storage::interleaved<3>::dimensionality
         > multi_array_type;
 
     template< typename I1, typename I2, typename I3 >
@@ -109,15 +109,15 @@ public:
 
     virtual void addScaled(
             const Element &factor,
-            const IState<Element,suzerain::storage::interleaved>& other)
+            const IState<Element,suzerain::storage::interleaved<3> >& other)
             throw(std::bad_cast, std::logic_error);
 
     virtual void assign(
-            const IState<Element,suzerain::storage::interleaved>& other)
+            const IState<Element,suzerain::storage::interleaved<3> >& other)
             throw(std::bad_cast, std::logic_error);
 
     virtual void exchange(
-            IState<Element,suzerain::storage::interleaved>& other)
+            IState<Element,suzerain::storage::interleaved<3> >& other)
             throw(std::bad_cast, std::logic_error);
 
 private:
@@ -133,14 +133,14 @@ InterleavedState<Element,Allocator>::InterleavedState(
         I3 vector_count,
         typename Allocator::size_type min_contiguous_count)
     : IStateBase<Element>(variable_count, vector_length, vector_count),
-      IState<Element,suzerain::storage::interleaved>(
+      IState<Element,suzerain::storage::interleaved<3> >(
             variable_count, vector_length, vector_count),
       RawMemory<Element,Allocator>(std::max<typename Allocator::size_type>(
             variable_count*vector_length*vector_count, min_contiguous_count)),
       multi_array_type(
               RawMemory<Element,Allocator>::raw_memory(),
               boost::extents[variable_count][vector_length][vector_count],
-              suzerain::storage::interleaved::storage_order())
+              suzerain::storage::interleaved<3>::storage_order())
 {
     // NOP
 }
@@ -149,14 +149,14 @@ template< typename Element, typename Allocator >
 InterleavedState<Element,Allocator>::InterleavedState(
         const InterleavedState &other)
     : IStateBase<Element>(other),
-      IState<Element,suzerain::storage::interleaved>(other),
+      IState<Element,suzerain::storage::interleaved<3> >(other),
       RawMemory<Element,Allocator>(other),
       multi_array_type(
               RawMemory<Element,Allocator>::raw_memory(),
               boost::extents[other.variable_count]
                             [other.vector_length]
                             [other.vector_count],
-              suzerain::storage::interleaved::storage_order())
+              suzerain::storage::interleaved<3>::storage_order())
 {
     // Data copied by RawMemory's copy constructor
 }
@@ -171,7 +171,7 @@ void InterleavedState<Element,Allocator>::scale(
 template< typename Element, typename Allocator >
 void InterleavedState<Element,Allocator>::addScaled(
             const Element &factor,
-            const IState<Element,suzerain::storage::interleaved>& other)
+            const IState<Element,suzerain::storage::interleaved<3> >& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
@@ -190,7 +190,7 @@ throw(std::bad_cast, std::logic_error)
 
 template< typename Element, typename Allocator >
 void InterleavedState<Element,Allocator>::assign(
-            const IState<Element,suzerain::storage::interleaved>& other)
+            const IState<Element,suzerain::storage::interleaved<3> >& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -208,7 +208,7 @@ throw(std::bad_cast, std::logic_error)
 
 template< typename Element, typename Allocator >
 void InterleavedState<Element,Allocator>::exchange(
-            IState<Element,suzerain::storage::interleaved>& other)
+            IState<Element,suzerain::storage::interleaved<3> >& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
