@@ -84,7 +84,7 @@ public:
      * @throw std::exception if a non-recoverable error occurs
      *        during initialization.
      */
-    virtual void init(const IOperatorConfig &config)
+    virtual void init(const IOperatorConfig& config)
                       throw(std::exception) {};
 
     /**
@@ -127,7 +127,7 @@ public:
      * @throw std::exception if a non-recoverable error occurs
      *        during operator splitting.
      */
-    virtual void establishSplit(const IOperatorSplit &split)
+    virtual void establishSplit(const IOperatorSplit& split)
                                 throw(std::exception) {};
 
     /** Virtual destructor to support interface-like behavior. */
@@ -137,10 +137,16 @@ public:
 /**
  * Defines the nonlinear operator interface required for timestepping.
  *
- * @see suzerain::IState<FPT> for more information on state vectors.
+ * @see suzerain::IState<NumDims,Element,Storage,CompatibleStorage>
+ *      for more information on state vectors.
  * @see suzerain::timestepper::lowstorage for low storage schemes.
  */
-template< typename FPT >
+template<
+    std::size_t NumDims,
+    typename Element,
+    typename Storage,
+    typename CompatibleStorage = Storage
+>
 class INonlinearOperator : public IOperatorLifecycle
 {
 public:
@@ -157,9 +163,11 @@ public:
      * @return a stable timestep if \c delta_t_requested is true.  Otherwise
      *        the return value is meaningless.
      */
-    virtual FPT applyOperator(suzerain::IState<FPT> &state,
-                              const bool delta_t_requested = false) const
-                              throw(std::exception) = 0;
+    virtual const Element& applyOperator(
+        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state,
+        const bool delta_t_requested = false)
+        const
+        throw(std::exception) = 0;
 };
 
 
@@ -180,9 +188,15 @@ namespace lowstorage
 /**
  * Defines the linear operator interface required for low storage timestepping.
  *
- * @see suzerain::IState<FPT> for more information on state vectors.
+ * @see suzerain::IState<NumDims,Element,Storage,CompatibleStorage>
+ *      for more information on state vectors.
  */
-template< typename FPT >
+template<
+    std::size_t NumDims,
+    typename Element,
+    typename Storage,
+    typename CompatibleStorage = Storage
+>
 class ILinearOperator : public IOperatorLifecycle
 {
 public:
@@ -197,9 +211,10 @@ public:
      * @throw std::exception if an unrecoverable error occurs.
      */
     virtual void applyMassPlusScaledOperator(
-                     const FPT scale,
-                     suzerain::IState<FPT> &state) const
-                     throw(std::exception) = 0;
+        const Element& scale,
+        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
+        const
+        throw(std::exception) = 0;
 
     /**
      * Accumulate \f$M+\phi{}L\f$ out-of-place for real scalar \f$\phi\f$.
@@ -212,10 +227,11 @@ public:
      * @throw std::exception if an unrecoverable error occurs.
      */
     virtual void accumulateMassPlusScaledOperator(
-                     const FPT scale,
-                     const suzerain::IState<FPT> &input,
-                           suzerain::IState<FPT> &output) const
-                     throw(std::exception) = 0;
+        const Element& scale,
+        const suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& input,
+        suzerain::IState<NumDims,Element,CompatibleStorage,Storage>& output)
+        const
+        throw(std::exception) = 0;
 
     /**
      * Invert \f$M+\phi{}L\f$ in-place for real scalar \f$\phi\f$.
@@ -227,9 +243,10 @@ public:
      * @throw std::exception if an unrecoverable error occurs.
      */
     virtual void invertMassPlusScaledOperator(
-                     const FPT scale,
-                     suzerain::IState<FPT> &state) const
-                     throw(std::exception) = 0;
+        const Element& scale,
+        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
+        const
+        throw(std::exception) = 0;
 };
 
 /**
@@ -237,13 +254,19 @@ public:
  * variables by a uniform factor.  The associated mass matrix \f$M\f$
  * is identity.
  */
-template< typename FPT >
+template<
+    std::size_t NumDims,
+    typename Element,
+    typename Storage,
+    typename CompatibleStorage = Storage
+>
 class MultiplicativeOperator
-    : public ILinearOperator<FPT>, public INonlinearOperator<FPT>
+    : public ILinearOperator<NumDims,Element,Storage,CompatibleStorage>,
+      public INonlinearOperator<NumDims,Element,Storage,CompatibleStorage>
 {
 private:
-    const FPT factor;   /**< Uniform scale factor to apply */
-    const FPT delta_t;  /**< Uniform stable time step to report */
+    const Element factor;   /**< Uniform scale factor to apply */
+    const Element delta_t;  /**< Uniform stable time step to report */
 
 public:
 
@@ -252,12 +275,13 @@ public:
      * \c delta_t as a stable timestep.
      *
      * @param factor uniform scaling factor to apply.
-     * @param delta_t uniform stable timestep to return from ::applyOperator.
-     *                If not provided, it defaults to NaN.
+     * @param delta_t uniform, presumably stable timestep to
+     *        always return from ::applyOperator.
      */
+    template< typename FactorType, typename DeltaTType >
     MultiplicativeOperator(
-            const FPT factor,
-            const FPT delta_t = std::numeric_limits<FPT>::quiet_NaN())
+            const FactorType& factor,
+            const DeltaTType& delta_t)
         : factor(factor), delta_t(delta_t) {};
 
     /**
@@ -268,9 +292,11 @@ public:
      *
      * @return The \c delta_t provided at construction time.
      */
-    virtual FPT applyOperator(suzerain::IState<FPT> &state,
-                              const bool delta_t_requested = false) const
-                              throw(std::exception)
+    virtual const Element& applyOperator(
+        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state,
+        const bool delta_t_requested = false)
+        const
+        throw(std::exception)
     {
         state.scale(factor);
         return delta_t;
@@ -285,11 +311,13 @@ public:
      * @param state to modify in place.
      */
     virtual void applyMassPlusScaledOperator(
-                     const FPT scale,
-                     suzerain::IState<FPT> &state) const
-                     throw(std::exception)
+        const Element& scale,
+        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
+        const
+        throw(std::exception)
     {
-        state.scale(1 + scale*factor);
+        // Assumes Element has operator* and operator+
+        state.scale(scale*factor + 1);
     };
 
     /**
@@ -302,12 +330,14 @@ public:
      * @param output on which to accumulate the result.
      */
     virtual void accumulateMassPlusScaledOperator(
-                     const FPT scale,
-                     const suzerain::IState<FPT> &input,
-                           suzerain::IState<FPT> &output) const
-                     throw(std::exception)
+        const Element& scale,
+        const suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& input,
+        suzerain::IState<NumDims,Element,CompatibleStorage,Storage>& output)
+        const
+        throw(std::exception)
     {
-        output.addScaled(1 + scale*factor, input);
+        // Assumes Element has operator* and operator+
+        output.addScaled(scale*factor + 1, input);
     };
 
     /**
@@ -319,13 +349,41 @@ public:
      * @param state to modify in place.
      */
     virtual void invertMassPlusScaledOperator(
-                     const FPT scale,
-                     suzerain::IState<FPT> &state) const
-                     throw(std::exception)
+        const Element& scale,
+        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
+        const
+        throw(std::exception)
     {
-        state.scale(1/(1 + scale*factor));
+        // Assumes Element has a single argument constructor
+        state.scale((Element(1))/(scale*factor + 1));
     };
 };
+
+/**
+ * Create a multiplicative operator matching particular state types.
+ *
+ * @see MultiplicativeOperator<NumDims,Element,Storage,CompatibleStorage> for
+ *      more details.
+ */
+template<
+    typename FactorType,
+    typename DeltaTType,
+    std::size_t NumDims,
+    typename Element,
+    typename Storage,
+    typename CompatibleStorage = Storage
+>
+MultiplicativeOperator<NumDims,Element,Storage,CompatibleStorage>
+make_multiplicator_operator(
+        const FactorType& factor,
+        const DeltaTType& delta_t,
+        const suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& input,
+        const suzerain::IState<NumDims,Element,CompatibleStorage,Storage>& output)
+{
+    MultiplicativeOperator<NumDims,Element,Storage,CompatibleStorage>
+        retval(factor,delta_t);
+    return retval;
+}
 
 /**
  * Encapsulates a hybrid implicit/explicit low storage Runge-Kutta method to
@@ -349,7 +407,7 @@ public:
  * @see step() or substep() for methods that can advance state variables
  *      according to a timestepping method.
  */
-template< typename FPT >
+template< typename Element >
 class ILowStorageMethod
 {
 public:
@@ -377,7 +435,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual FPT alpha(std::size_t substep) const = 0;
+    virtual const Element& alpha(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\beta_i\f$ coefficient.
@@ -386,7 +444,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual FPT beta(std::size_t substep) const = 0;
+    virtual const Element& beta(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\gamma_i\f$ coefficient.
@@ -395,7 +453,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual FPT gamma(std::size_t substep) const = 0;
+    virtual const Element& gamma(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\zeta_i\f$ coefficient.
@@ -404,7 +462,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual FPT zeta(std::size_t substep) const = 0;
+    virtual const Element& zeta(std::size_t substep) const = 0;
 
     /** Virtual destructor to support interface-like behavior. */
     virtual ~ILowStorageMethod() {};
@@ -419,10 +477,10 @@ public:
  *
  * @return The output stream.
  */
-template< typename charT, typename traits, typename FPT >
+template< typename charT, typename traits, typename Element >
 std::basic_ostream<charT,traits>& operator<<(
-        std::basic_ostream<charT,traits> &os,
-        const ILowStorageMethod<FPT> &m)
+        std::basic_ostream<charT,traits>& os,
+        const ILowStorageMethod<Element>& m)
 {
     return os << m.name();
 }
@@ -433,8 +491,8 @@ std::basic_ostream<charT,traits>& operator<<(
  * with One Infinite and Two Periodic Directions'' published in the
  * <em>Journal of Computational Physics</em> volume 96 pages 297-324.
  */
-template< typename FPT >
-class SMR91Method : public ILowStorageMethod<FPT>
+template< typename Element >
+class SMR91Method : public ILowStorageMethod<Element>
 {
 public:
 
@@ -448,43 +506,51 @@ public:
     virtual std::size_t substeps() const { return 3; };
 
     /*! @copydoc ILowStorageMethod::alpha */
-    virtual FPT alpha(const std::size_t substep) const;
+    virtual const Element& alpha(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::beta */
-    virtual FPT beta(const std::size_t substep) const;
+    virtual const Element& beta(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::gamma */
-    virtual FPT gamma(const std::size_t substep) const;
+    virtual const Element& gamma(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::zeta */
-    virtual FPT zeta(const std::size_t substep) const;
+    virtual const Element& zeta(const std::size_t substep) const;
 };
 
-template< typename FPT >
-FPT SMR91Method<FPT>::alpha(const std::size_t substep) const
+template< typename Element >
+const Element& SMR91Method<Element>::alpha(const std::size_t substep) const
 {
-    const FPT coeff[3] = { FPT(29)/FPT(96),  FPT(-3)/FPT(40), FPT(1)/FPT(6) };
+    const Element coeff[3] = { Element( 29)/Element(96),
+                               Element(- 3)/Element(40),
+                               Element(  1)/Element( 6)  };
     return coeff[substep];
 }
 
-template< typename FPT >
-FPT SMR91Method<FPT>::beta(const std::size_t substep) const
+template< typename Element >
+const Element& SMR91Method<Element>::beta(const std::size_t substep) const
 {
-    const FPT coeff[3] = { FPT(37)/FPT(160), FPT(5)/FPT(24), FPT(1)/FPT(6) };
+    const Element coeff[3] = { Element(37)/Element(160),
+                               Element( 5)/Element( 24),
+                               Element( 1)/Element(  6)  };
     return coeff[substep];
 }
 
-template< typename FPT >
-FPT SMR91Method<FPT>::gamma(const std::size_t substep) const
+template< typename Element >
+const Element& SMR91Method<Element>::gamma(const std::size_t substep) const
 {
-    const FPT coeff[3] = { FPT(8)/FPT(15), FPT(5)/FPT(12), FPT(3)/FPT(4) };
+    const Element coeff[3] = { Element(8)/Element(15),
+                               Element(5)/Element(12),
+                               Element(3)/Element( 4)  };
     return coeff[substep];
 }
 
-template< typename FPT >
-FPT SMR91Method<FPT>::zeta(const std::size_t substep) const
+template< typename Element >
+const Element& SMR91Method<Element>::zeta(const std::size_t substep) const
 {
-    const FPT coeff[3] = { FPT(0), FPT(-17)/FPT(60), FPT(-5)/FPT(12) };
+    const Element coeff[3] = { Element(  0),
+                               Element(-17)/Element(60),
+                               Element(- 5)/Element(12)  };
     return coeff[substep];
 }
 
@@ -508,13 +574,17 @@ FPT SMR91Method<FPT>::zeta(const std::size_t substep) const
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
-template< typename FPT >
-void substep(const ILowStorageMethod<FPT> &m,
-             const ILinearOperator<FPT> &L,
-             const INonlinearOperator<FPT> &N,
-             const FPT delta_t,
-             IState<FPT> &a,
-             IState<FPT> &b,
+template<
+    std::size_t NumDims,
+    typename Element,
+    typename Storage
+>
+void substep(const ILowStorageMethod<Element>& m,
+             const ILinearOperator<NumDims,Element,Storage>& L,
+             const INonlinearOperator<NumDims,Element,Storage>& N,
+             const Element& delta_t,
+             IState<NumDims,Element,Storage>& a,
+             IState<NumDims,Element,Storage>& b,
              const std::size_t substep_index)
 throw(std::exception)
 {
@@ -544,22 +614,26 @@ throw(std::exception)
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
-template< typename FPT >
-void step(const ILowStorageMethod<FPT> &m,
-          const ILinearOperator<FPT> &L,
-          const INonlinearOperator<FPT> &N,
-          const FPT delta_t,
-          IState<FPT> &a,
-          IState<FPT> &b)
+template<
+    std::size_t NumDims,
+    typename Element,
+    typename Storage
+>
+void step(const ILowStorageMethod<Element>& m,
+          const ILinearOperator<NumDims,Element,Storage>& L,
+          const INonlinearOperator<NumDims,Element,Storage>& N,
+          const Element& delta_t,
+          IState<NumDims,Element,Storage>& a,
+          IState<NumDims,Element,Storage>& b)
 throw(std::exception)
 {
-    IState<FPT> *p_a = &a, *p_b = &b;
+    IState<NumDims,Element,Storage> *p_a = &a, *p_b = &b;
 
     // Even substep counts will the roles of a and b at return.
     // Perform one auxiliary flip for odd substep counts.
     // Possible since b = N(u_{i-1}) is wholly ignored for first substep
     if (m.substeps() & 1) {
-        b = a; // TODO Use IState<FPT>::swap(IState<FPT>&) once available
+        b.assign(a);
         boost::swap(p_a, p_b);
     }
 
@@ -588,17 +662,22 @@ throw(std::exception)
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
-template< typename FPT, typename LinearState, typename NonlinearState >
-void step(const ILowStorageMethod<FPT> &m,
-          const ILinearOperator<FPT> &L,
-          const INonlinearOperator<FPT> &N,
-          LinearState &a,
-          NonlinearState &b)
+template<
+    std::size_t NumDims,
+    typename Element,
+    typename StorageA,
+    typename StorageB
+>
+void step(const ILowStorageMethod<Element>& m,
+          const ILinearOperator<NumDims,Element,StorageA,StorageB>& L,
+          const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N,
+          IState<NumDims,Element,StorageA,StorageB>& a,
+          IState<NumDims,Element,StorageB,StorageA>& b)
 throw(std::exception)
 {
     // First substep handling is special since we need to determine delta_t
-    b = a;
-    const FPT delta_t = N.applyOperator(b, true /* we need delta_t */);
+    b.assign(a);
+    const Element delta_t = N.applyOperator(b, true /* we need delta_t */);
     L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a);
     a.addScaled(delta_t * m.gamma(0), b);
     L.invertMassPlusScaledOperator( -delta_t * m.beta(0), a);
