@@ -75,18 +75,19 @@ static void load223(
     BOOST_REQUIRE_EQUAL(state.vector_count, 3);
 
     typedef typename std::complex<FPT> complex;
-    state[0][0][0] = complex(  2, -  2) * scale;
-    state[0][1][0] = complex(  3, -  3) * scale;
-    state[0][0][1] = complex(  5, -  5) * scale;
-    state[0][1][1] = complex(  7, -  7) * scale;
-    state[0][0][2] = complex( 11, - 11) * scale;
-    state[0][1][2] = complex( 13, - 13) * scale;
-    state[1][0][0] = complex(102, -102) * scale;
-    state[1][1][0] = complex(103, -103) * scale;
-    state[1][0][1] = complex(105, -105) * scale;
-    state[1][1][1] = complex(107, -107) * scale;
-    state[1][0][2] = complex(111, -111) * scale;
-    state[1][1][2] = complex(113, -113) * scale;
+    const FPT scaleFactor = boost::numeric_cast<FPT>(scale);
+    state[0][0][0] = complex(  2, -  2) * scaleFactor;
+    state[0][1][0] = complex(  3, -  3) * scaleFactor;
+    state[0][0][1] = complex(  5, -  5) * scaleFactor;
+    state[0][1][1] = complex(  7, -  7) * scaleFactor;
+    state[0][0][2] = complex( 11, - 11) * scaleFactor;
+    state[0][1][2] = complex( 13, - 13) * scaleFactor;
+    state[1][0][0] = complex(102, -102) * scaleFactor;
+    state[1][1][0] = complex(103, -103) * scaleFactor;
+    state[1][0][1] = complex(105, -105) * scaleFactor;
+    state[1][1][1] = complex(107, -107) * scaleFactor;
+    state[1][0][2] = complex(111, -111) * scaleFactor;
+    state[1][1][2] = complex(113, -113) * scaleFactor;
 }
 
 template< typename FPT, typename Scale >
@@ -101,29 +102,29 @@ static void verify223(
     BOOST_REQUIRE_EQUAL(state.vector_count, 3);
 
     typedef typename std::complex<FPT> complex;
-    BOOST_CHECK_EQUAL(state[0][0][0], complex(  2, -  2) * scale);
-    BOOST_CHECK_EQUAL(state[0][1][0], complex(  3, -  3) * scale);
-    BOOST_CHECK_EQUAL(state[0][0][1], complex(  5, -  5) * scale);
-    BOOST_CHECK_EQUAL(state[0][1][1], complex(  7, -  7) * scale);
-    BOOST_CHECK_EQUAL(state[0][0][2], complex( 11, - 11) * scale);
-    BOOST_CHECK_EQUAL(state[0][1][2], complex( 13, - 13) * scale);
-    BOOST_CHECK_EQUAL(state[1][0][0], complex(102, -102) * scale);
-    BOOST_CHECK_EQUAL(state[1][1][0], complex(103, -103) * scale);
-    BOOST_CHECK_EQUAL(state[1][0][1], complex(105, -105) * scale);
-    BOOST_CHECK_EQUAL(state[1][1][1], complex(107, -107) * scale);
-    BOOST_CHECK_EQUAL(state[1][0][2], complex(111, -111) * scale);
-    BOOST_CHECK_EQUAL(state[1][1][2], complex(113, -113) * scale);
+    const FPT scaleFactor = boost::numeric_cast<FPT>(scale);
+    BOOST_CHECK_EQUAL(state[0][0][0], complex(  2, -  2) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[0][1][0], complex(  3, -  3) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[0][0][1], complex(  5, -  5) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[0][1][1], complex(  7, -  7) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[0][0][2], complex( 11, - 11) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[0][1][2], complex( 13, - 13) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[1][0][0], complex(102, -102) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[1][1][0], complex(103, -103) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[1][0][1], complex(105, -105) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[1][1][1], complex(107, -107) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[1][0][2], complex(111, -111) * scaleFactor);
+    BOOST_CHECK_EQUAL(state[1][1][2], complex(113, -113) * scaleFactor);
 }
 
 BOOST_AUTO_TEST_SUITE( InterleavedState )
 
 // Types to be tested with InterleavedState
-// FIXME Add Complex type
 typedef boost::mpl::list<
     double
    ,float
-//    ,std::complex<double>
-//    ,std::complex<float>
+   ,std::complex<double>
+   ,std::complex<float>
 > test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
