@@ -41,52 +41,12 @@ namespace suzerain
 
 // FIXME Document
 
-template< typename Element >
+template< std::size_t NumDims, typename Element >
 class IStateBase
 {
 public:
-    /**
-     * Construct an instance holding the given amount of state information.
-     *
-     * @param variable_count Number of individual variables or
-     *                       pieces of state at a given position.
-     * @param vector_length  Number of positions per full state vector.
-     * @param vector_count   Number of independent state vectors to store.
-     */
-    template< typename I1, typename I2, typename I3 >
-    IStateBase(I1 variable_count, I2 vector_length, I3 vector_count)
-        : variable_count(boost::numeric_cast<int>(variable_count)),
-          vector_length(boost::numeric_cast<int>(vector_length)),
-          vector_count(boost::numeric_cast<int>(vector_count)) {}
-
-    /**
-     * Construct an instance with the same amount of state information
-     * as another.
-     *
-     * @param other instance to mimic in shape.
-     */
-    IStateBase(const IStateBase& other)
-        : variable_count(other.variable_count),
-          vector_length(other.vector_length),
-          vector_count(other.vector_count) {}
-
     /** Destructor is virtual as appropriate for an abstract base class */
     virtual ~IStateBase() {}
-
-    /**
-     * Is \c this instance's shape "conformant" with <tt>other</tt>'s?
-     *
-     * @param other another instance to compare against.
-     *
-     * @return True if all of #variable_count, #vector_length, and
-     *         #vector_count are identical.  False otherwise.
-     */
-    virtual bool isConformant(const IStateBase& other) const
-    {
-        return    variable_count == other.variable_count
-               && vector_length  == other.vector_length
-               && vector_count   == other.vector_count;
-    }
 
     /**
      * Scale all state information by the given scale factor, i.e.
@@ -95,15 +55,6 @@ public:
      * @param factor Scale factor to use.
      */
     virtual void scale(const Element &factor) = 0;
-
-    /** Number of state variables present at each position in a state vector */
-    const int variable_count;
-
-    /** Number of positions within each state vector */
-    const int vector_length;
-
-    /** Number of state vectors maintained within this instance */
-    const int vector_count;
 };
 
 // FIXME Update documentation
@@ -118,40 +69,32 @@ public:
  *      Boost.MultiArray</a> for more information on the MultiArray concept.
  */
 template<
+    std::size_t NumDims,
     typename Element,
     typename Storage,
     typename CompatibleStorage = Storage
 >
-class IState : public virtual IStateBase<Element>
+class IState : public virtual IStateBase<NumDims,Element>
 {
-    BOOST_STATIC_ASSERT(
-            (Storage::dimensionality == CompatibleStorage::dimensionality));
+    BOOST_STATIC_ASSERT( (NumDims == Storage::dimensionality) );
+    BOOST_STATIC_ASSERT( (NumDims == CompatibleStorage::dimensionality) );
 
 public:
-    /**
-     * Construct an instance holding the given amount of state information.
-     *
-     * @param variable_count Number of individual variables or
-     *                       pieces of state at a given position.
-     * @param vector_length  Number of positions per full state vector.
-     * @param vector_count   Number of independent state vectors to store.
-     */
-    template< typename I1, typename I2, typename I3 >
-    IState(I1 variable_count, I2 vector_length, I3 vector_count)
-        : IStateBase<Element>(variable_count, vector_length, vector_count) {}
-
-    /**
-     * Copy construct an instance with the same amount of state information
-     * as another.
-     *
-     * @param other instance to mimic in shape.
-     */
-    template< typename T, typename U >
-    IState(const IState<Element,T,U>& other)
-        : IStateBase<Element>(other) {}
-
     /** Destructor is virtual as appropriate for an abstract base class */
     virtual ~IState() {}
+
+    /**
+     * Is \c this instance's shape "conformant" with <tt>other</tt>'s?
+     *
+     * @param other another instance to compare against.
+     *
+     * @return True if other's shape matches this instances.
+     *         False otherwise.
+     * @throw std::bad_cast if \c other does not have a compatible type.
+     */
+    virtual bool isConformant(
+        const IState<NumDims,Element,CompatibleStorage,Storage>& other) const
+        throw(std::bad_cast) = 0;
 
     /**
      * Accumulate scaled state information by computing \f$\mbox{this}
@@ -164,9 +107,9 @@ public:
      * @throw std::logic_error if \c other is not conformant.
      */
     virtual void addScaled(
-            const Element &factor,
-            const IState<Element,CompatibleStorage,Storage>& other)
-            throw(std::bad_cast, std::logic_error) = 0;
+        const Element &factor,
+        const IState<NumDims,Element,CompatibleStorage,Storage>& other)
+        throw(std::bad_cast, std::logic_error) = 0;
 
     /**
      * Assign to this instance the state information from another instance
@@ -177,8 +120,8 @@ public:
      * @return *this
      */
     virtual void assign(
-            const IState<Element,CompatibleStorage,Storage>& other)
-            throw(std::bad_cast, std::logic_error) = 0;
+        const IState<NumDims,Element,CompatibleStorage,Storage>& other)
+        throw(std::bad_cast, std::logic_error) = 0;
 
     /**
      * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
@@ -191,8 +134,8 @@ public:
      * @throw std::logic_error if \c that is not conformant.
      */
     virtual void exchange(
-            IState<Element,CompatibleStorage,Storage>& other)
-            throw(std::bad_cast, std::logic_error) = 0;
+        IState<NumDims,Element,CompatibleStorage,Storage>& other)
+        throw(std::bad_cast, std::logic_error) = 0;
 };
 
 } // namespace suzerain

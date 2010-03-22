@@ -32,6 +32,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/functional.hpp>
 #include <suzerain/storage.hpp>
 #include <suzerain/state.hpp>
 
@@ -81,25 +82,25 @@ private:
 };
 
 template<
+    std::size_t NumDims,
     typename Element,
     typename Allocator = typename suzerain::blas::allocator<Element>::type
 >
 class InterleavedState
-    : public IState<Element,suzerain::storage::interleaved<3> >,
+    : public IState<NumDims,Element,suzerain::storage::interleaved<NumDims> >,
       public RawMemory<Element,Allocator>,
-      public boost::multi_array_ref<
-            Element, suzerain::storage::interleaved<3>::dimensionality>
+      public boost::multi_array_ref<Element, NumDims>
 {
 public:
-    typedef typename boost::multi_array_ref<
-            Element, suzerain::storage::interleaved<3>::dimensionality
-        > multi_array_type;
+    typedef typename boost::multi_array_ref<Element, NumDims>
+            multi_array_type;
+    typedef typename suzerain::storage::interleaved<NumDims>
+            storage_interleaved;
 
-    template< typename I1, typename I2, typename I3 >
-    InterleavedState(I1 variable_count,
-                     I2 vector_length,
-                     I3 vector_count,
-                     typename Allocator::size_type min_contiguous_count = 0);
+    template< typename ExtentList >
+    explicit InterleavedState(
+            const ExtentList& sizes,
+            typename Allocator::size_type min_contiguous_count = 0);
 
     InterleavedState(const InterleavedState& other);
 
@@ -107,71 +108,86 @@ public:
 
     virtual void scale(const Element &factor);
 
+    virtual bool isConformant(
+        const IState<NumDims,Element,storage_interleaved>& other) const
+        throw(std::bad_cast);
+
     virtual void addScaled(
             const Element &factor,
-            const IState<Element,suzerain::storage::interleaved<3> >& other)
+            const IState<NumDims,Element,storage_interleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
     virtual void assign(
-            const IState<Element,suzerain::storage::interleaved<3> >& other)
+            const IState<NumDims,Element,storage_interleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
     virtual void exchange(
-            IState<Element,suzerain::storage::interleaved<3> >& other)
+            IState<NumDims,Element,storage_interleaved>& other)
             throw(std::bad_cast, std::logic_error);
+
+protected:
+    virtual boost::array<std::size_t,NumDims> shapeContainer() const {
+        boost::array<std::size_t,NumDims> a;
+        std::copy(this->shape(), this->shape() + NumDims, a.begin());
+        return a;
+    }
 
 private:
     const multi_array_type& operator=( const multi_array_type& ); // Disable
     const InterleavedState& operator=( const InterleavedState& ); // Disable
 };
 
-template< typename Element, typename Allocator >
-template< typename I1, typename I2, typename I3 >
-InterleavedState<Element,Allocator>::InterleavedState(
-        I1 variable_count,
-        I2 vector_length,
-        I3 vector_count,
+template< std::size_t NumDims, typename Element, typename Allocator >
+template< typename ExtentList >
+InterleavedState<NumDims,Element,Allocator>::InterleavedState(
+        const ExtentList& sizes,
         typename Allocator::size_type min_contiguous_count)
-    : IStateBase<Element>(variable_count, vector_length, vector_count),
-      IState<Element,suzerain::storage::interleaved<3> >(
-            variable_count, vector_length, vector_count),
+    : IStateBase<NumDims,Element>(),
+      IState<NumDims,Element,storage_interleaved>(),
       RawMemory<Element,Allocator>(std::max<typename Allocator::size_type>(
-            variable_count*vector_length*vector_count, min_contiguous_count)),
-      multi_array_type(
-              RawMemory<Element,Allocator>::raw_memory(),
-              boost::extents[variable_count][vector_length][vector_count],
-              suzerain::storage::interleaved<3>::storage_order())
+                    suzerain::functional::product(sizes.begin(), sizes.end()),
+                    min_contiguous_count)),
+      multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
+                       sizes,
+                       storage_interleaved::storage_order())
 {
     // NOP
 }
 
-template< typename Element, typename Allocator >
-InterleavedState<Element,Allocator>::InterleavedState(
+template< std::size_t NumDims, typename Element, typename Allocator >
+InterleavedState<NumDims,Element,Allocator>::InterleavedState(
         const InterleavedState &other)
-    : IStateBase<Element>(other),
-      IState<Element,suzerain::storage::interleaved<3> >(other),
+    : IStateBase<NumDims,Element>(other),
+      IState<NumDims,Element,storage_interleaved>(other),
       RawMemory<Element,Allocator>(other),
-      multi_array_type(
-              RawMemory<Element,Allocator>::raw_memory(),
-              boost::extents[other.variable_count]
-                            [other.vector_length]
-                            [other.vector_count],
-              suzerain::storage::interleaved<3>::storage_order())
+      multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
+                       other.shapeContainer(),
+                       storage_interleaved::storage_order())
 {
     // Data copied by RawMemory's copy constructor
 }
 
-template< typename Element, typename Allocator >
-void InterleavedState<Element,Allocator>::scale(
+template< std::size_t NumDims, typename Element, typename Allocator >
+void InterleavedState<NumDims,Element,Allocator>::scale(
         const Element &factor)
 {
     suzerain::blas::scal(this->num_elements(), factor, this->data(), 1);
 }
 
-template< typename Element, typename Allocator >
-void InterleavedState<Element,Allocator>::addScaled(
+template< std::size_t NumDims, typename Element, typename Allocator >
+bool InterleavedState<NumDims,Element,Allocator>::isConformant(
+            const IState<NumDims,Element,storage_interleaved>& other) const
+throw(std::bad_cast)
+{
+    const InterleavedState& o = dynamic_cast<const InterleavedState&>(other);
+
+    return std::equal(this->shape(), this->shape() + NumDims, o.shape());
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void InterleavedState<NumDims,Element,Allocator>::addScaled(
             const Element &factor,
-            const IState<Element,suzerain::storage::interleaved<3> >& other)
+            const IState<NumDims,Element,storage_interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
@@ -180,17 +196,16 @@ throw(std::bad_cast, std::logic_error)
     if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
             std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
-    const InterleavedState<Element,Allocator>& o
-        = dynamic_cast<const InterleavedState<Element,Allocator>&>(other);
+    const InterleavedState& o = dynamic_cast<const InterleavedState&>(other);
     assert(o.num_elements() == this->num_elements());
 
     suzerain::blas::axpy(
             this->num_elements(), factor, o.data(), 1, this->data(), 1);
 }
 
-template< typename Element, typename Allocator >
-void InterleavedState<Element,Allocator>::assign(
-            const IState<Element,suzerain::storage::interleaved<3> >& other)
+template< std::size_t NumDims, typename Element, typename Allocator >
+void InterleavedState<NumDims,Element,Allocator>::assign(
+            const IState<NumDims,Element,storage_interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -198,17 +213,16 @@ throw(std::bad_cast, std::logic_error)
     if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
             std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
-    const InterleavedState<Element,Allocator>& o
-        = dynamic_cast<const InterleavedState<Element,Allocator>&>(other);
+    const InterleavedState& o = dynamic_cast<const InterleavedState&>(other);
     assert(o.num_elements() == this->num_elements());
 
     suzerain::blas::copy(
             this->num_elements(), o.data(), 1, this->data(), 1);
 }
 
-template< typename Element, typename Allocator >
-void InterleavedState<Element,Allocator>::exchange(
-            IState<Element,suzerain::storage::interleaved<3> >& other)
+template< std::size_t NumDims, typename Element, typename Allocator >
+void InterleavedState<NumDims,Element,Allocator>::exchange(
+            IState<NumDims,Element,storage_interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -216,8 +230,7 @@ throw(std::bad_cast, std::logic_error)
     if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
             std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
-    InterleavedState<Element,Allocator>& o
-        = dynamic_cast<InterleavedState<Element,Allocator>&>(other);
+    InterleavedState& o = dynamic_cast<InterleavedState&>(other);
     assert(o.num_elements() == this->num_elements());
 
     suzerain::blas::swap(
