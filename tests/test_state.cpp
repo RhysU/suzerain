@@ -5,6 +5,7 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <suzerain/state_impl.hpp>
+#include <boost/concept/assert.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include "test_tools.hpp"
@@ -272,7 +273,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( comparison, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
 {
-    // FIXME Add MultiArray Concept checking for several types...
+   using boost::detail::multi_array::MutableMultiArrayConcept;
+   using suzerain::InterleavedState;
+   BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<InterleavedState<3,T>,3>));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

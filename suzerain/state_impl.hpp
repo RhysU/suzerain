@@ -50,14 +50,11 @@ template<
 class RawMemory
 {
 public:
-    typedef typename Allocator::pointer pointer;
-    typedef typename Allocator::size_type size_type;
-
     template< typename I >
     RawMemory(
         I count,
         typename boost::enable_if<boost::is_integral<I> >::type* dummy = 0)
-        : count_(boost::numeric_cast<size_type>(count)),
+        : count_(boost::numeric_cast<std::size_t>(count)),
           a_(Allocator()),
           p_(a_.allocate(count)) {}
 
@@ -69,16 +66,18 @@ public:
 
     ~RawMemory() { a_.deallocate(p_, count_); }
 
-    pointer raw_memory() const { return pointer(p_); /* defensive copy */ }
+    typename Allocator::pointer raw_memory() const {
+        return typename Allocator::pointer(p_); // defensive copy
+    }
 
-    size_type raw_memory_count() const { return count_; }
+    std::size_t raw_memory_count() const { return count_; }
 
 private:
     const RawMemory& operator=( const RawMemory& ); // Disable
 
-    const size_type count_;
+    const std::size_t count_;
     Allocator a_;
-    pointer p_;
+    typename Allocator::pointer p_;
 };
 
 template<
@@ -126,7 +125,7 @@ public:
             throw(std::bad_cast, std::logic_error);
 
 protected:
-    virtual boost::array<std::size_t,NumDims> shapeContainer() const {
+    virtual boost::array<std::size_t,NumDims> shape_container_() const {
         boost::array<std::size_t,NumDims> a;
         std::copy(this->shape(), this->shape() + NumDims, a.begin());
         return a;
@@ -161,7 +160,7 @@ InterleavedState<NumDims,Element,Allocator>::InterleavedState(
       IState<NumDims,Element,storage_interleaved>(other),
       RawMemory<Element,Allocator>(other),
       multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
-                       other.shapeContainer(),
+                       other.shape_container_(),
                        storage_interleaved::storage_order())
 {
     // Data copied by RawMemory's copy constructor
