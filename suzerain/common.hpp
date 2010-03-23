@@ -73,7 +73,7 @@
 #include <boost/mpl/logical.hpp>
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/vector_c.hpp>
-#include <boost/multi_array.hpp>
+// <boost/multi_array.hpp> is included by boost_multi_array_hack.hpp below
 #include <boost/noncopyable.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/numeric/conversion/converter.hpp>
@@ -97,6 +97,7 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/utility.hpp>
+#include <suzerain/boost_multi_array_hack.hpp>
 
 // Provide an operator<<(basic_ostream, boost::array) template in ::boost
 namespace boost {
