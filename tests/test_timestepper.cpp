@@ -27,8 +27,6 @@ using suzerain::timestepper::INonlinearOperator;
 using suzerain::timestepper::lowstorage::ILinearOperator;
 using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91Method;
-using suzerain::timestepper::lowstorage::step;
-using suzerain::timestepper::lowstorage::substep;
 
 // Explicit template instantiation to hopefully speed compilation
 template class InterleavedState<3,double>;
@@ -261,15 +259,16 @@ BOOST_AUTO_TEST_CASE( invertMassPlusScaledOperator )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE( substep_suite )
+BOOST_AUTO_TEST_SUITE( substep )
 
 BOOST_AUTO_TEST_CASE( substep_explicit )
 {
+    using suzerain::timestepper::lowstorage::substep;
     // See test_timestepper.sage for manufactured answers
 
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
     const SMR91Method<double> m;
-    const MultiplicativeOperator<3,double,interleaved<3> >  trivial_linear_op(0);
+    const MultiplicativeOperator<3,double,interleaved<3> > trivial_linear_op(0);
     const RiccatiExplicitOperator riccati_op(2, 3);
     InterleavedState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
 
@@ -317,11 +316,12 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
 
     // Requesting an out-of-bounds substep_index should balk
     BOOST_CHECK_THROW(substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 3),
-                      std::invalid_argument);
+             std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE( substep_hybrid )
 {
+    using suzerain::timestepper::lowstorage::substep;
     // See test_timestepper.sage for manufactured answers
 
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
@@ -379,7 +379,6 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-#ifdef FIXME_DISABLED // FIXME
 
 BOOST_AUTO_TEST_SUITE( step_delta_t_provided )
 
@@ -388,37 +387,36 @@ BOOST_AUTO_TEST_SUITE( step_delta_t_provided )
 BOOST_AUTO_TEST_CASE( step_explicit )
 {
     // Fix test problem parameters
-    const ExponentialSolution<double> soln(2.0, 1.0);
+    const ExponentialSolution soln(2.0, 1.0);
     const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
 
     // Fix method, operators, and storage space
-    using namespace suzerain::timestepper;
-    const lowstorage::SMR91Method<double> m;
-    const lowstorage::MultiplicativeOperator<double> trivial_linear_op(0);
-    const lowstorage::MultiplicativeOperator<double> nonlinear_op(soln.a);
-    suzerain::RealState<double> a(1,1,1), b(1,1,1);
+    const SMR91Method<double> m;
+    const MultiplicativeOperator<3,double,interleaved<3> > trivial_linear_op(0);
+    const MultiplicativeOperator<3,double,interleaved<3> > nonlinear_op(soln.a);
+    InterleavedState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
 
     // Coarse grid calculation
     const std::size_t coarse_nsteps = 16;
-    a.data[0][0][0] = soln(t_initial);
+    a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < coarse_nsteps; ++i) {
         suzerain::timestepper::lowstorage::step(
                 m, trivial_linear_op, nonlinear_op,
                 (t_final - t_initial)/coarse_nsteps, a, b);
     }
-    const double coarse_final = a.data[0][0][0];
+    const double coarse_final = a[0][0][0];
     const double coarse_error = fabs(coarse_final - soln(t_final));
     BOOST_CHECK_SMALL(coarse_error, 1.0e-12); // Tolerance found using Octave
 
     // Finer grid calculation
     const std::size_t finer_nsteps = 2*coarse_nsteps;
-    a.data[0][0][0] = soln(t_initial);
+    a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < finer_nsteps; ++i) {
         suzerain::timestepper::lowstorage::step(
                 m, trivial_linear_op, nonlinear_op,
                 (t_final - t_initial)/finer_nsteps, a, b);
     }
-    const double finer_final = a.data[0][0][0];
+    const double finer_final = a[0][0][0];
     const double finer_error = fabs(finer_final - soln(t_final));
     BOOST_CHECK_SMALL(finer_error, 1.0e-13); // Tolerance found using Octave
 
@@ -468,36 +466,36 @@ BOOST_AUTO_TEST_CASE( step_explicit )
 BOOST_AUTO_TEST_CASE( step_hybrid )
 {
     // Fix test problem parameters
-    const RiccatiSolution<double> soln(2.0, 2.0, -50.0);
+    const RiccatiSolution soln(2.0, 2.0, -50.0);
     const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
 
     // Fix method, operators, and storage space
-    const suzerain::timestepper::lowstorage::SMR91Method<double> m;
-    const RiccatiNonlinearOperator<double> nonlinear_op(soln.a, soln.b);
-    const RiccatiLinearOperator<double>    linear_op(soln.a, soln.b);
-    suzerain::RealState<double> a(1,1,1), b(1,1,1);
+    const SMR91Method<double> m;
+    const RiccatiNonlinearOperator nonlinear_op(soln.a, soln.b);
+    const RiccatiLinearOperator    linear_op(soln.a, soln.b);
+    InterleavedState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
 
     // Coarse grid calculation
     const std::size_t coarse_nsteps = 16;
-    a.data[0][0][0] = soln(t_initial);
+    a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < coarse_nsteps; ++i) {
         suzerain::timestepper::lowstorage::step(
                 m, linear_op, nonlinear_op,
                 (t_final - t_initial)/coarse_nsteps, a, b);
     }
-    const double coarse_final = a.data[0][0][0];
+    const double coarse_final = a[0][0][0];
     const double coarse_error = fabs(coarse_final - soln(t_final));
     BOOST_CHECK_SMALL(coarse_error, 1.0e-10); // Tolerance found using Octave
 
     // Finer grid calculation
     const std::size_t finer_nsteps = 2*coarse_nsteps;
-    a.data[0][0][0] = soln(t_initial);
+    a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < finer_nsteps; ++i) {
         suzerain::timestepper::lowstorage::step(
                 m, linear_op, nonlinear_op,
                 (t_final - t_initial)/finer_nsteps, a, b);
     }
-    const double finer_final = a.data[0][0][0];
+    const double finer_final = a[0][0][0];
     const double finer_error = fabs(finer_final - soln(t_final));
     BOOST_CHECK_SMALL(finer_error, 1.0e-11); // Tolerance found using Octave
 
@@ -544,6 +542,7 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+#ifdef FIXME_DISABLED // FIXME
 
 BOOST_AUTO_TEST_SUITE( step_delta_t_computed )
 
