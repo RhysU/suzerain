@@ -33,6 +33,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/functional.hpp>
+#include <suzerain/mpl.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/storage.hpp>
 #include <suzerain/state.hpp>
@@ -260,7 +261,7 @@ public:
     template< typename ExtentList >
     explicit NoninterleavedState(
             const ExtentList& sizes,
-            typename Allocator::size_type min_variable_contiguous_count = 0);
+            typename Allocator::size_type min_variable_stride = 0);
 
     NoninterleavedState(const NoninterleavedState& other);
 
@@ -289,7 +290,68 @@ private:
     // Disable assignment operators
     const multi_array_type& operator=( const multi_array_type& );
     const NoninterleavedState& operator=( const NoninterleavedState& );
+
+    // Compute stride information, including variable padding requirements
+    template< typename ExtentList >
+    static boost::array<typename multi_array_type::index,NumDims>
+        computeStrides(
+            const ExtentList& extents_list,
+            typename Allocator::size_type min_variable_stride = 0);
+
+    template< typename ExtentList >
+    static std::size_t computeRawMemoryCount(
+            const ExtentList& extents_list,
+            typename Allocator::size_type min_variable_stride = 0);
 };
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+template< typename ExtentList >
+boost::array< typename NoninterleavedState<
+        NumDims,Element,Allocator
+    >::multi_array_type::index,NumDims>
+NoninterleavedState<NumDims,Element,Allocator>::computeStrides(
+        const ExtentList &extents,
+        typename Allocator::size_type min_variable_stride)
+{
+    // Slow, but we need random access to extents_list's contents
+    boost::array<typename ExtentList::value_type,NumDims> extents;
+    std::copy(extents.begin(), extents.end(), extents_list.begin());
+
+    // Obtain storage ordering type information in runtime array
+    const suzerain::mpl::sequence_array<storage_noninterleaved> storage;
+    assert(storage.size() == stride.size());
+    assert(storage.size > 0);
+    assert(storage[NumDims-1] == 0);
+
+    // Compute the usual stride information by the usual means
+    boost::array<index,NumDims> stride;
+    stride[storage[0]] = 1;
+    for (index i = 1; i < NumDims; ++i) {
+        stride[storage[i]] = stride[storage[i-1]]*extents[storage[i-1]];
+    }
+    // Enforce the minimum stride requirement on the final stride
+    stride[storage[NumDims-1]] = std::max(
+            boost::numeric_cast<index>(min_variable_stride),
+            stride[storage[NumDims-1]]);
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+template< typename ExtentList >
+std::size_t
+NoninterleavedState<NumDims,Element,Allocator>::computeRawMemoryCount(
+        const ExtentList &extents,
+        typename Allocator::size_type min_variable_stride)
+{
+    assert(extents_list.begin() != extents_list.end())
+
+    using suzerain::functional::product;
+    const std::size_t nonpadded_count
+        = product(extents_list.begin(), extents_list.end());
+    const std::size_t padded_count
+        = *(extents_list.begin()) * min_variable_stride;
+
+    return std::max(padded, nonpadded);
+}
 
 } // namespace suzerain
 
