@@ -285,6 +285,18 @@ public:
         : factor(factor), delta_t(delta_t) {};
 
     /**
+     * Construct an instance which scales by \c factor and reports \c NaN as a
+     * stable timestep.  Useful in testing contexts or during operator
+     * composition.
+     *
+     * @param factor uniform scaling factor to apply.
+     */
+    template< typename FactorType >
+    MultiplicativeOperator(
+            const FactorType& factor)
+        : factor(factor), delta_t(std::numeric_limits<Element>::quiet_NaN()) {};
+
+    /**
      * Scale \c state by the factor set at construction time.
      *
      * @param state to scale in place.
@@ -317,7 +329,7 @@ public:
         throw(std::exception)
     {
         // Assumes Element has operator* and operator+
-        state.scale(scale*factor + 1);
+        state.scale(scale*factor + Element(1));
     };
 
     /**
@@ -337,7 +349,7 @@ public:
         throw(std::exception)
     {
         // Assumes Element has operator* and operator+
-        output.addScaled(scale*factor + 1, input);
+        output.addScaled(scale*factor + Element(1), input);
     };
 
     /**
@@ -355,7 +367,7 @@ public:
         throw(std::exception)
     {
         // Assumes Element has a single argument constructor
-        state.scale((Element(1))/(scale*factor + 1));
+        state.scale((Element(1))/(scale*factor + Element(1)));
     };
 };
 
