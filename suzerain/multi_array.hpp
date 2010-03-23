@@ -46,13 +46,34 @@ namespace suzerain
 namespace multi_array
 {
 
+/**
+ * Obtain a <tt>boost::array</tt> containing the shape information from a
+ * MultiArray implementation.
+ *
+ * @param a MultiArray to interrogate.
+ *
+ * @return A copy of the MultiArray's shape information with a length
+ *         equal to the MultiArray's dimensionality.
+ */
+template< typename MultiArray >
+boost::array<typename MultiArray::size_type,MultiArray::dimensionality>
+    shape_array(const MultiArray &a)
+{
+    typedef typename MultiArray::size_type size_type;
+    boost::array<size_type,MultiArray::dimensionality> retval;
+    const size_type *shapeBegin = a.shape();
+    std::copy(shapeBegin, shapeBegin + MultiArray::dimensionality,
+              retval.begin());
+    return retval;
+}
+
 namespace { // anonymous
 
 template<std::size_t D>
 struct for_each_functor {
 
     BOOST_STATIC_ASSERT(D != 0); // Nonsensical behavior for zero dimensions
-    BOOST_STATIC_ASSERT(D > 1);  // Ensure not instantiated for specialized values
+    BOOST_STATIC_ASSERT(D > 1);  // Ensure not instantiated for special values
 
     // See http://groups.google.com/group/boost-list/browse_thread/thread/e16f32c4411dea08
     // for details about why MultiArray::iterator::reference is used below.

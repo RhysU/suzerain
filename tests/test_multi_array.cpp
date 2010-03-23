@@ -11,8 +11,49 @@
 
 #pragma warning(disable:383)
 
+BOOST_AUTO_TEST_SUITE( shape_array )
+
+// Shorthand
+using boost::array;
+using boost::extents;
+using boost::multi_array;
+using boost::multi_array_ref;
+using boost::multi_array_types::size_type;
+using suzerain::multi_array::shape_array;
+
+BOOST_AUTO_TEST_CASE( D1 )
+{
+    multi_array<int,1> ma(extents[1]);
+    array<size_type,1> a = shape_array(ma);
+    BOOST_CHECK_EQUAL(a.size(), 1);
+    BOOST_CHECK_EQUAL(a[0], 1);
+}
+
+BOOST_AUTO_TEST_CASE( D2 )
+{
+    multi_array_ref<int,2> mar(NULL, extents[1][2]);
+    array<size_type,2> a = shape_array(mar);
+    BOOST_CHECK_EQUAL(a.size(), 2);
+    BOOST_CHECK_EQUAL(a[0], 1);
+    BOOST_CHECK_EQUAL(a[1], 2);
+}
+
+BOOST_AUTO_TEST_CASE( D3 )
+{
+    multi_array<int,3> ma(extents[1][2][3]);
+    array<size_type,3> a = shape_array(ma);
+    BOOST_CHECK_EQUAL(a.size(), 3);
+    BOOST_CHECK_EQUAL(a[0], 1);
+    BOOST_CHECK_EQUAL(a[1], 2);
+    BOOST_CHECK_EQUAL(a[2], 3);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 BOOST_AUTO_TEST_SUITE( fill_multi_array )
 
+// Shorthand
 using boost::array_view_gen;
 using boost::extents;
 using boost::indices;
