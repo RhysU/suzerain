@@ -33,6 +33,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/functional.hpp>
+#include <suzerain/multi_array.hpp>
 #include <suzerain/storage.hpp>
 #include <suzerain/state.hpp>
 
@@ -130,13 +131,6 @@ public:
             IState<NumDims,Element,storage_interleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
-protected:
-    virtual boost::array<std::size_t,NumDims> shape_container_() const {
-        boost::array<std::size_t,NumDims> a;
-        std::copy(this->shape(), this->shape() + NumDims, a.begin());
-        return a;
-    }
-
 private:
     // Disable assignment operators
     const multi_array_type& operator=( const multi_array_type& );
@@ -167,7 +161,7 @@ InterleavedState<NumDims,Element,Allocator>::InterleavedState(
       IState<NumDims,Element,storage_interleaved>(other),
       RawMemory<Element,Allocator>(other),
       multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
-                       other.shape_container_(),
+                       suzerain::multi_array::shape_array(other),
                        storage_interleaved::storage_order())
 {
     // Data copied by RawMemory's copy constructor
@@ -290,13 +284,6 @@ public:
     virtual void exchange(
             IState<NumDims,Element,storage_noninterleaved>& other)
             throw(std::bad_cast, std::logic_error);
-
-protected:
-    virtual boost::array<std::size_t,NumDims> shape_container_() const {
-        boost::array<std::size_t,NumDims> a;
-        std::copy(this->shape(), this->shape() + NumDims, a.begin());
-        return a;
-    }
 
 private:
     // Disable assignment operators
