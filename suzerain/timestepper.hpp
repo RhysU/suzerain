@@ -163,7 +163,7 @@ public:
      * @return a stable timestep if \c delta_t_requested is true.  Otherwise
      *        the return value is meaningless.
      */
-    virtual const Element& applyOperator(
+    virtual Element applyOperator(
         suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state,
         const bool delta_t_requested = false)
         const
@@ -211,7 +211,7 @@ public:
      * @throw std::exception if an unrecoverable error occurs.
      */
     virtual void applyMassPlusScaledOperator(
-        const Element& scale,
+        const Element scale,
         suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
         const
         throw(std::exception) = 0;
@@ -227,7 +227,7 @@ public:
      * @throw std::exception if an unrecoverable error occurs.
      */
     virtual void accumulateMassPlusScaledOperator(
-        const Element& scale,
+        const Element scale,
         const suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& input,
         suzerain::IState<NumDims,Element,CompatibleStorage,Storage>& output)
         const
@@ -243,7 +243,7 @@ public:
      * @throw std::exception if an unrecoverable error occurs.
      */
     virtual void invertMassPlusScaledOperator(
-        const Element& scale,
+        const Element scale,
         suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
         const
         throw(std::exception) = 0;
@@ -304,7 +304,7 @@ public:
      *
      * @return The \c delta_t provided at construction time.
      */
-    virtual const Element& applyOperator(
+    virtual Element applyOperator(
         suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state,
         const bool delta_t_requested = false)
         const
@@ -323,7 +323,7 @@ public:
      * @param state to modify in place.
      */
     virtual void applyMassPlusScaledOperator(
-        const Element& scale,
+        const Element scale,
         suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
         const
         throw(std::exception)
@@ -342,7 +342,7 @@ public:
      * @param output on which to accumulate the result.
      */
     virtual void accumulateMassPlusScaledOperator(
-        const Element& scale,
+        const Element scale,
         const suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& input,
         suzerain::IState<NumDims,Element,CompatibleStorage,Storage>& output)
         const
@@ -361,7 +361,7 @@ public:
      * @param state to modify in place.
      */
     virtual void invertMassPlusScaledOperator(
-        const Element& scale,
+        const Element scale,
         suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
         const
         throw(std::exception)
@@ -447,7 +447,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual const Element& alpha(std::size_t substep) const = 0;
+    virtual Element alpha(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\beta_i\f$ coefficient.
@@ -456,7 +456,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual const Element& beta(std::size_t substep) const = 0;
+    virtual Element beta(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\gamma_i\f$ coefficient.
@@ -465,7 +465,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual const Element& gamma(std::size_t substep) const = 0;
+    virtual Element gamma(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\zeta_i\f$ coefficient.
@@ -474,7 +474,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual const Element& zeta(std::size_t substep) const = 0;
+    virtual Element zeta(std::size_t substep) const = 0;
 
     /** Virtual destructor to support interface-like behavior. */
     virtual ~ILowStorageMethod() {};
@@ -518,20 +518,20 @@ public:
     virtual std::size_t substeps() const { return 3; };
 
     /*! @copydoc ILowStorageMethod::alpha */
-    virtual const Element& alpha(const std::size_t substep) const;
+    virtual Element alpha(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::beta */
-    virtual const Element& beta(const std::size_t substep) const;
+    virtual Element beta(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::gamma */
-    virtual const Element& gamma(const std::size_t substep) const;
+    virtual Element gamma(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::zeta */
-    virtual const Element& zeta(const std::size_t substep) const;
+    virtual Element zeta(const std::size_t substep) const;
 };
 
 template< typename Element >
-const Element& SMR91Method<Element>::alpha(const std::size_t substep) const
+Element SMR91Method<Element>::alpha(const std::size_t substep) const
 {
     const Element coeff[3] = { Element( 29)/Element(96),
                                Element(- 3)/Element(40),
@@ -540,7 +540,7 @@ const Element& SMR91Method<Element>::alpha(const std::size_t substep) const
 }
 
 template< typename Element >
-const Element& SMR91Method<Element>::beta(const std::size_t substep) const
+Element SMR91Method<Element>::beta(const std::size_t substep) const
 {
     const Element coeff[3] = { Element(37)/Element(160),
                                Element( 5)/Element( 24),
@@ -549,7 +549,7 @@ const Element& SMR91Method<Element>::beta(const std::size_t substep) const
 }
 
 template< typename Element >
-const Element& SMR91Method<Element>::gamma(const std::size_t substep) const
+Element SMR91Method<Element>::gamma(const std::size_t substep) const
 {
     const Element coeff[3] = { Element(8)/Element(15),
                                Element(5)/Element(12),
@@ -558,7 +558,7 @@ const Element& SMR91Method<Element>::gamma(const std::size_t substep) const
 }
 
 template< typename Element >
-const Element& SMR91Method<Element>::zeta(const std::size_t substep) const
+Element SMR91Method<Element>::zeta(const std::size_t substep) const
 {
     const Element coeff[3] = { Element(  0),
                                Element(-17)/Element(60),
@@ -594,7 +594,7 @@ template<
 void substep(const ILowStorageMethod<Element>& m,
              const ILinearOperator<NumDims,Element,Storage>& L,
              const INonlinearOperator<NumDims,Element,Storage>& N,
-             const Element& delta_t,
+             const Element delta_t,
              IState<NumDims,Element,Storage>& a,
              IState<NumDims,Element,Storage>& b,
              const std::size_t substep_index)
@@ -634,7 +634,7 @@ template<
 void step(const ILowStorageMethod<Element>& m,
           const ILinearOperator<NumDims,Element,Storage>& L,
           const INonlinearOperator<NumDims,Element,Storage>& N,
-          const Element& delta_t,
+          const Element delta_t,
           IState<NumDims,Element,Storage>& a,
           IState<NumDims,Element,Storage>& b)
 throw(std::exception)

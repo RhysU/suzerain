@@ -5,6 +5,7 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
+#include <boost/test/test_case_template.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/state_impl.hpp>
 #include <suzerain/timestepper.hpp>
@@ -28,17 +29,17 @@ using suzerain::timestepper::lowstorage::ILinearOperator;
 using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91Method;
 typedef MultiplicativeOperator<3,double,interleaved<3> >
-   MultiplicativeOperatorD3;
+    MultiplicativeOperatorD3;
 
 // Explicit template instantiation to hopefully speed compilation
 template class InterleavedState<3,double>;
 
 // Helper method for providing 3D size information
 static boost::array<std::size_t,3> size3(
-      std::size_t x, std::size_t y, std::size_t z)
+    std::size_t x, std::size_t y, std::size_t z)
 {
-   boost::array<std::size_t,3> a = { x, y, z };
-   return a;
+    boost::array<std::size_t,3> a = { x, y, z };
+    return a;
 }
 
 // Purely explicit Riccati equation nonlinear operator
@@ -58,7 +59,7 @@ public:
             const double delta_t = std::numeric_limits<double>::quiet_NaN())
         : a(a), b(b), delta_t(delta_t) { };
 
-    virtual const double& applyOperator(
+    virtual double applyOperator(
             IState<3,double,interleaved<3> >& state,
             const bool delta_t_requested = false) const
             throw(std::exception)
@@ -99,7 +100,7 @@ public:
             const double delta_t = std::numeric_limits<double>::quiet_NaN())
         : a(a), b(b), delta_t(delta_t) {};
 
-    virtual const double& applyOperator(
+    virtual double applyOperator(
             IState<3,double,interleaved<3> >& state,
             const bool delta_t_requested = false) const
             throw(std::exception)
@@ -169,34 +170,27 @@ BOOST_AUTO_TEST_CASE( name )
     BOOST_CHECK(m.name());
 }
 
-BOOST_AUTO_TEST_CASE( constants )
+typedef boost::mpl::list< float ,double ,long double > constants_test_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
 {
-    {
-        const float close_enough = std::numeric_limits<float>::epsilon();
-        const SMR91Method<float> m;
+    { // Real-valued constants
+        const T close_enough = std::numeric_limits<T>::epsilon();
+        const SMR91Method<T> m;
         for (int i = 0; i < m.substeps(); ++i) {
-            const float res = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
+            const T res = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
             BOOST_CHECK_SMALL(res, close_enough);
         }
     }
 
-    {
-        const double close_enough = std::numeric_limits<double>::epsilon();
-        const SMR91Method<double> m;
+    { // Complex-valued constants
+        const T close_enough = std::numeric_limits<T>::epsilon();
+        typedef typename std::complex<T> complex;
+        const SMR91Method<complex> m;
         for (int i = 0; i < m.substeps(); ++i) {
-            const double res = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
-            BOOST_CHECK_SMALL(res, close_enough);
-        }
-    }
-
-    {
-        const long double close_enough
-            = std::numeric_limits<long double>::epsilon();
-        const SMR91Method<long double> m;
-        for (int i = 0; i < m.substeps(); ++i) {
-            const long double res
+            const complex res
                 = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
-            BOOST_CHECK_SMALL(res, close_enough);
+            BOOST_CHECK_SMALL(std::abs(res), close_enough);
         }
     }
 }
