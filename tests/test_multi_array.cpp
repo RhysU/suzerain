@@ -11,41 +11,61 @@
 
 #pragma warning(disable:383)
 
-BOOST_AUTO_TEST_SUITE( shape_array )
+BOOST_AUTO_TEST_SUITE( shape_and_strides_array )
 
 // Shorthand
 using boost::array;
 using boost::extents;
 using boost::multi_array;
 using boost::multi_array_ref;
+using boost::multi_array_types::index;
 using boost::multi_array_types::size_type;
 using suzerain::multi_array::shape_array;
+using suzerain::multi_array::strides_array;
 
 BOOST_AUTO_TEST_CASE( D1 )
 {
-    multi_array<int,1> ma(extents[1]);
+    multi_array<int,1> ma(extents[1]); // C storage
+
     array<size_type,1> a = shape_array(ma);
     BOOST_CHECK_EQUAL(a.size(), 1);
     BOOST_CHECK_EQUAL(a[0], 1);
+
+    array<index,1> b = strides_array(ma);
+    BOOST_CHECK_EQUAL(b.size(), 1);
+    BOOST_CHECK_EQUAL(b[0], 1);
 }
 
 BOOST_AUTO_TEST_CASE( D2 )
 {
-    multi_array_ref<int,2> mar(NULL, extents[1][2]);
+    multi_array_ref<int,2> mar(NULL, extents[2][3]); // C storage
+
     array<size_type,2> a = shape_array(mar);
     BOOST_CHECK_EQUAL(a.size(), 2);
-    BOOST_CHECK_EQUAL(a[0], 1);
-    BOOST_CHECK_EQUAL(a[1], 2);
+    BOOST_CHECK_EQUAL(a[0], 2);
+    BOOST_CHECK_EQUAL(a[1], 3);
+
+    array<index,2> b = strides_array(mar);
+    BOOST_CHECK_EQUAL(b.size(), 2);
+    BOOST_CHECK_EQUAL(b[0], 3);
+    BOOST_CHECK_EQUAL(b[1], 1);
 }
 
 BOOST_AUTO_TEST_CASE( D3 )
 {
-    multi_array<int,3> ma(extents[1][2][3]);
+    multi_array<int,3> ma(extents[2][3][4]); // C storage
+
     array<size_type,3> a = shape_array(ma);
     BOOST_CHECK_EQUAL(a.size(), 3);
-    BOOST_CHECK_EQUAL(a[0], 1);
-    BOOST_CHECK_EQUAL(a[1], 2);
-    BOOST_CHECK_EQUAL(a[2], 3);
+    BOOST_CHECK_EQUAL(a[0], 2);
+    BOOST_CHECK_EQUAL(a[1], 3);
+    BOOST_CHECK_EQUAL(a[2], 4);
+
+    array<index,3> b = strides_array(ma);
+    BOOST_CHECK_EQUAL(b.size(), 3);
+    BOOST_CHECK_EQUAL(b[0], 12);
+    BOOST_CHECK_EQUAL(b[1],  4);
+    BOOST_CHECK_EQUAL(b[2],  1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

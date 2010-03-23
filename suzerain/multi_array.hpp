@@ -67,6 +67,27 @@ boost::array<typename MultiArray::size_type,MultiArray::dimensionality>
     return retval;
 }
 
+/**
+ * Obtain a <tt>boost::array</tt> containing the stride information from a
+ * MultiArray implementation.
+ *
+ * @param a MultiArray to interrogate.
+ *
+ * @return A copy of the MultiArray's stride information with a length
+ *         equal to the MultiArray's dimensionality.
+ */
+template< typename MultiArray >
+boost::array<typename MultiArray::index,MultiArray::dimensionality>
+    strides_array(const MultiArray &a)
+{
+    typedef typename MultiArray::index index;
+    boost::array<index,MultiArray::dimensionality> retval;
+    const index *stridesBegin = a.strides();
+    std::copy(stridesBegin, stridesBegin + MultiArray::dimensionality,
+              retval.begin());
+    return retval;
+}
+
 namespace { // anonymous
 
 template<std::size_t D>
