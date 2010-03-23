@@ -147,7 +147,7 @@ template<
     typename Storage,
     typename CompatibleStorage = Storage
 >
-class INonlinearOperator : public IOperatorLifecycle
+class INonlinearOperator : public virtual IOperatorLifecycle
 {
 public:
 
@@ -197,7 +197,7 @@ template<
     typename Storage,
     typename CompatibleStorage = Storage
 >
-class ILinearOperator : public IOperatorLifecycle
+class ILinearOperator : public virtual IOperatorLifecycle
 {
 public:
 
