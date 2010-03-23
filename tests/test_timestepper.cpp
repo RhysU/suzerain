@@ -27,6 +27,8 @@ using suzerain::timestepper::INonlinearOperator;
 using suzerain::timestepper::lowstorage::ILinearOperator;
 using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91Method;
+using suzerain::timestepper::lowstorage::step;
+using suzerain::timestepper::lowstorage::substep;
 
 // Explicit template instantiation to hopefully speed compilation
 template class InterleavedState<3,double>;
@@ -258,65 +260,59 @@ BOOST_AUTO_TEST_CASE( invertMassPlusScaledOperator )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-#ifdef FIXME_DISABLED // FIXME
 
-BOOST_AUTO_TEST_SUITE( substep )
+BOOST_AUTO_TEST_SUITE( substep_suite )
 
 BOOST_AUTO_TEST_CASE( substep_explicit )
 {
     // See test_timestepper.sage for manufactured answers
 
-    using suzerain::RealState;
-    using suzerain::timestepper::lowstorage::MultiplicativeOperator;
-    using suzerain::timestepper::lowstorage::SMR91Method;
-    using suzerain::timestepper::lowstorage::substep;
-
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
     const SMR91Method<double> m;
-    const MultiplicativeOperator<double>  trivial_linear_op(0);
-    const RiccatiExplicitOperator<double> riccati_op(2, 3);
-    RealState<double> a(2,1,1), b(2,1,1);
+    const MultiplicativeOperator<3,double,interleaved<3> >  trivial_linear_op(0);
+    const RiccatiExplicitOperator riccati_op(2, 3);
+    InterleavedState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
 
     {
-        a.data[0][0][0] =  5.0;
-        a.data[1][0][0] =  7.0;
-        b.data[0][0][0] = 11.0;
-        b.data[1][0][0] = 13.0;
+        a[0][0][0] =  5.0;
+        a[1][0][0] =  7.0;
+        b[0][0][0] = 11.0;
+        b[1][0][0] = 13.0;
 
         substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 0);
 
-        BOOST_CHECK_CLOSE(a.data[0][0][0],  30.0, close_enough);
-        BOOST_CHECK_CLOSE(a.data[1][0][0],  60.0, close_enough);
-        BOOST_CHECK_CLOSE(b.data[0][0][0], 277.0, close_enough);
-        BOOST_CHECK_CLOSE(b.data[1][0][0], 551.0, close_enough);
+        BOOST_CHECK_CLOSE(a[0][0][0],  30.0, close_enough);
+        BOOST_CHECK_CLOSE(a[1][0][0],  60.0, close_enough);
+        BOOST_CHECK_CLOSE(b[0][0][0], 277.0, close_enough);
+        BOOST_CHECK_CLOSE(b[1][0][0], 551.0, close_enough);
     }
 
     {
-        a.data[0][0][0] =  5.0;
-        a.data[1][0][0] =  7.0;
-        b.data[0][0][0] = 11.0;
-        b.data[1][0][0] = 13.0;
+        a[0][0][0] =  5.0;
+        a[1][0][0] =  7.0;
+        b[0][0][0] = 11.0;
+        b[1][0][0] = 13.0;
 
         substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 1);
 
-        BOOST_CHECK_CLOSE(a.data[0][0][0],    30.0,      close_enough);
-        BOOST_CHECK_CLOSE(a.data[1][0][0],    60.0,      close_enough);
-        BOOST_CHECK_CLOSE(b.data[0][0][0],  9871.0/60.0, close_enough);
-        BOOST_CHECK_CLOSE(b.data[1][0][0], 22163.0/60.0, close_enough);
+        BOOST_CHECK_CLOSE(a[0][0][0],    30.0,      close_enough);
+        BOOST_CHECK_CLOSE(a[1][0][0],    60.0,      close_enough);
+        BOOST_CHECK_CLOSE(b[0][0][0],  9871.0/60.0, close_enough);
+        BOOST_CHECK_CLOSE(b[1][0][0], 22163.0/60.0, close_enough);
     }
 
     {
-        a.data[0][0][0] =  5.0;
-        a.data[1][0][0] =  7.0;
-        b.data[0][0][0] = 11.0;
-        b.data[1][0][0] = 13.0;
+        a[0][0][0] =  5.0;
+        a[1][0][0] =  7.0;
+        b[0][0][0] = 11.0;
+        b[1][0][0] = 13.0;
 
         substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 2);
 
-        BOOST_CHECK_CLOSE(a.data[0][0][0],  30.0,       close_enough);
-        BOOST_CHECK_CLOSE(a.data[1][0][0],  60.0,       close_enough);
-        BOOST_CHECK_CLOSE(b.data[0][0][0], 3715.0/12.0, close_enough);
-        BOOST_CHECK_CLOSE(b.data[1][0][0], 8159.0/12.0, close_enough);
+        BOOST_CHECK_CLOSE(a[0][0][0],  30.0,       close_enough);
+        BOOST_CHECK_CLOSE(a[1][0][0],  60.0,       close_enough);
+        BOOST_CHECK_CLOSE(b[0][0][0], 3715.0/12.0, close_enough);
+        BOOST_CHECK_CLOSE(b[1][0][0], 8159.0/12.0, close_enough);
     }
 
     // Requesting an out-of-bounds substep_index should balk
@@ -328,56 +324,52 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
 {
     // See test_timestepper.sage for manufactured answers
 
-    using suzerain::RealState;
-    using suzerain::timestepper::lowstorage::SMR91Method;
-    using suzerain::timestepper::lowstorage::substep;
-
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
     const SMR91Method<double> m;
-    const RiccatiNonlinearOperator<double> nonlinear_op(2, 3);
-    const RiccatiLinearOperator<double>    linear_op(2, 3);
-    RealState<double> a(2,1,1), b(2,1,1);
+    const RiccatiNonlinearOperator nonlinear_op(2, 3);
+    const RiccatiLinearOperator    linear_op(2, 3);
+    InterleavedState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
 
     {
-        a.data[0][0][0] =  5.0;
-        a.data[1][0][0] =  7.0;
-        b.data[0][0][0] = 11.0;
-        b.data[1][0][0] = 13.0;
+        a[0][0][0] =  5.0;
+        a[1][0][0] =  7.0;
+        b[0][0][0] = 11.0;
+        b[1][0][0] = 13.0;
 
         substep(m, linear_op, nonlinear_op, 17.0, a, b, 0);
 
-        BOOST_CHECK_CLOSE( a.data[0][0][0],            15.0, close_enough);
-        BOOST_CHECK_CLOSE( a.data[1][0][0],            39.0, close_enough);
-        BOOST_CHECK_CLOSE( b.data[0][0][0], -34885.0/1727.0, close_enough);
-        BOOST_CHECK_CLOSE( b.data[1][0][0], -74951.0/1727.0, close_enough);
+        BOOST_CHECK_CLOSE( a[0][0][0],            15.0, close_enough);
+        BOOST_CHECK_CLOSE( a[1][0][0],            39.0, close_enough);
+        BOOST_CHECK_CLOSE( b[0][0][0], -34885.0/1727.0, close_enough);
+        BOOST_CHECK_CLOSE( b[1][0][0], -74951.0/1727.0, close_enough);
     }
 
     {
-        a.data[0][0][0] =  5.0;
-        a.data[1][0][0] =  7.0;
-        b.data[0][0][0] = 11.0;
-        b.data[1][0][0] = 13.0;
+        a[0][0][0] =  5.0;
+        a[1][0][0] =  7.0;
+        b[0][0][0] = 11.0;
+        b[1][0][0] = 13.0;
 
         substep(m, linear_op, nonlinear_op, 17.0, a, b, 1);
 
-        BOOST_CHECK_CLOSE(a.data[0][0][0],            15.0, close_enough);
-        BOOST_CHECK_CLOSE(a.data[1][0][0],            39.0, close_enough);
-        BOOST_CHECK_CLOSE(b.data[0][0][0], -   61.0/  15.0, close_enough);
-        BOOST_CHECK_CLOSE(b.data[1][0][0], -23263.0/1155.0, close_enough);
+        BOOST_CHECK_CLOSE(a[0][0][0],            15.0, close_enough);
+        BOOST_CHECK_CLOSE(a[1][0][0],            39.0, close_enough);
+        BOOST_CHECK_CLOSE(b[0][0][0], -   61.0/  15.0, close_enough);
+        BOOST_CHECK_CLOSE(b[1][0][0], -23263.0/1155.0, close_enough);
     }
 
     {
-        a.data[0][0][0] =  5.0;
-        a.data[1][0][0] =  7.0;
-        b.data[0][0][0] = 11.0;
-        b.data[1][0][0] = 13.0;
+        a[0][0][0] =  5.0;
+        a[1][0][0] =  7.0;
+        b[0][0][0] = 11.0;
+        b[1][0][0] = 13.0;
 
         substep(m, linear_op, nonlinear_op, 17.0, a, b, 2);
 
-        BOOST_CHECK_CLOSE(a.data[0][0][0],       15.0, close_enough);
-        BOOST_CHECK_CLOSE(a.data[1][0][0],       39.0, close_enough);
-        BOOST_CHECK_CLOSE(b.data[0][0][0], -193.0/9.0, close_enough);
-        BOOST_CHECK_CLOSE(b.data[1][0][0], -566.0/9.0, close_enough);
+        BOOST_CHECK_CLOSE(a[0][0][0],       15.0, close_enough);
+        BOOST_CHECK_CLOSE(a[1][0][0],       39.0, close_enough);
+        BOOST_CHECK_CLOSE(b[0][0][0], -193.0/9.0, close_enough);
+        BOOST_CHECK_CLOSE(b[1][0][0], -566.0/9.0, close_enough);
     }
 
     // Requesting an out-of-bounds substep_index should balk
@@ -387,6 +379,7 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+#ifdef FIXME_DISABLED // FIXME
 
 BOOST_AUTO_TEST_SUITE( step_delta_t_provided )
 
