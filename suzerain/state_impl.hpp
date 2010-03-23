@@ -80,6 +80,12 @@ private:
     typename Allocator::pointer p_;
 };
 
+// Forward declarations
+template< std::size_t NumDims, typename Element, typename Allocator >
+    class InterleavedState;
+template< std::size_t NumDims, typename Element, typename Allocator >
+    class NoninterleavedState;
+
 template<
     std::size_t NumDims,
     typename Element,
@@ -99,7 +105,7 @@ public:
     template< typename ExtentList >
     explicit InterleavedState(
             const ExtentList& sizes,
-            typename Allocator::size_type min_contiguous_count = 0);
+            typename Allocator::size_type min_total_contiguous_count = 0);
 
     InterleavedState(const InterleavedState& other);
 
@@ -132,20 +138,21 @@ protected:
     }
 
 private:
-    const multi_array_type& operator=( const multi_array_type& ); // Disable
-    const InterleavedState& operator=( const InterleavedState& ); // Disable
+    // Disable assignment operators
+    const multi_array_type& operator=( const multi_array_type& );
+    const InterleavedState& operator=( const InterleavedState& );
 };
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 template< typename ExtentList >
 InterleavedState<NumDims,Element,Allocator>::InterleavedState(
         const ExtentList& sizes,
-        typename Allocator::size_type min_contiguous_count)
+        typename Allocator::size_type min_total_contiguous_count)
     : IStateBase<NumDims,Element>(),
       IState<NumDims,Element,storage_interleaved>(),
       RawMemory<Element,Allocator>(std::max<typename Allocator::size_type>(
                     suzerain::functional::product(sizes.begin(), sizes.end()),
-                    min_contiguous_count)),
+                    min_total_contiguous_count)),
       multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
                        sizes,
                        storage_interleaved::storage_order())
@@ -235,6 +242,67 @@ throw(std::bad_cast, std::logic_error)
     suzerain::blas::swap(
             this->num_elements(), o.data(), 1, this->data(), 1);
 }
+
+template<
+    std::size_t NumDims,
+    typename Element,
+    typename Allocator = typename suzerain::blas::allocator<Element>::type
+>
+class NoninterleavedState
+    : public IState<NumDims,
+                    Element,
+                    suzerain::storage::noninterleaved<NumDims> >,
+      public RawMemory<Element,Allocator>,
+      public boost::detail::multi_array::multi_array_view<Element, NumDims>
+{
+public:
+    typedef typename
+        boost::detail::multi_array::multi_array_view<Element, NumDims>
+        multi_array_type;
+    typedef typename
+        suzerain::storage::noninterleaved<NumDims>
+        storage_noninterleaved;
+
+    template< typename ExtentList >
+    explicit NoninterleavedState(
+            const ExtentList& sizes,
+            typename Allocator::size_type min_variable_contiguous_count = 0);
+
+    NoninterleavedState(const NoninterleavedState& other);
+
+    virtual ~NoninterleavedState() {}
+
+    virtual void scale(const Element& factor);
+
+    virtual bool isConformant(
+        const IState<NumDims,Element,storage_noninterleaved>& other) const
+        throw(std::bad_cast);
+
+    virtual void addScaled(
+            const Element& factor,
+            const IState<NumDims,Element,storage_noninterleaved>& other)
+            throw(std::bad_cast, std::logic_error);
+
+    virtual void assign(
+            const IState<NumDims,Element,storage_noninterleaved>& other)
+            throw(std::bad_cast, std::logic_error);
+
+    virtual void exchange(
+            IState<NumDims,Element,storage_noninterleaved>& other)
+            throw(std::bad_cast, std::logic_error);
+
+protected:
+    virtual boost::array<std::size_t,NumDims> shape_container_() const {
+        boost::array<std::size_t,NumDims> a;
+        std::copy(this->shape(), this->shape() + NumDims, a.begin());
+        return a;
+    }
+
+private:
+    // Disable assignment operators
+    const multi_array_type& operator=( const multi_array_type& );
+    const NoninterleavedState& operator=( const NoninterleavedState& );
+};
 
 } // namespace suzerain
 
