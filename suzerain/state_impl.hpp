@@ -286,6 +286,12 @@ public:
             IState<NumDims,Element,storage_noninterleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
+    // Not available from superclass
+    Element * data() { return this->raw_memory(); }
+
+    // Not available from superclass
+    const Element * data() const { return this->raw_memory(); }
+
 private:
     // Disable assignment operators
     const multi_array_type& operator=( const multi_array_type& );
@@ -351,6 +357,158 @@ NoninterleavedState<NumDims,Element,Allocator>::computeRawMemoryCount(
         = *(extents_list.begin()) * min_variable_stride;
 
     return std::max(padded, nonpadded);
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+template< typename ExtentList >
+NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
+        const ExtentList& sizes,
+        typename Allocator::size_type min_variable_stride = 0)
+    : IStateBase<NumDims,Element>(),
+      IState<NumDims,Element,storage_noninterleaved>(),
+      RawMemory<Element,Allocator>(
+              computeRawMemoryCount(sizes, min_variable_stride)),
+      multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
+                       sizes,
+                       computeStrides(sizes, min_variable_stride))
+{
+    // NOP
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
+        const NoninterleavedState &other)
+    : IStateBase<NumDims,Element>(other),
+      IState<NumDims,Element,storage_interleaved>(other),
+      RawMemory<Element,Allocator>(other),
+      multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
+                       suzerain::multi_array::shape_array(other),
+                       suzerain::multi_array::strides_array(other))
+{
+    // Data copied by RawMemory's copy constructor
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void NoninterleavedState<NumDims,Element,Allocator>::scale(
+        const Element& factor)
+{
+    suzerain::blas::scal(this->raw_memory_count(),
+                         factor, this->raw_memory(), 1);
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+bool NoninterleavedState<NumDims,Element,Allocator>::isConformant(
+            const IState<NumDims,Element,storage_noninterleaved>& other) const
+throw(std::bad_cast)
+{
+    const NoninterleavedState& o
+        = dynamic_cast<const NoninterleavedState&>(other);
+
+    return std::equal(this->shape(), this->shape() + NumDims, o.shape());
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void NoninterleavedState<NumDims,Element,Allocator>::addScaled(
+            const Element& factor,
+            const IState<NumDims,Element,storage_noninterleaved>& other)
+throw(std::bad_cast, std::logic_error)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
+        throw std::logic_error("Unable to handle this->addScaled(...,this)");
+
+    if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
+
+    const NoninterleavedState& o
+        = dynamic_cast<const NoninterleavedState&>(other);
+    assert(std::equal(this->strides() + 1, this->strides() + NumDims,
+                      o.strides() + 1));
+
+    if (SUZERAIN_UNLIKELY(this->strides()[0] != o.strides()[0])) {
+        // Different padding between variables: requires multiple BLAS calls
+        const size_type count = suzerain::functional::product(
+                this->shape() + 1, this->shape() + NumDims);
+
+        Element       *p = this->raw_memory();
+        const Element *q = o.raw_memory();
+        while (p < this->raw_memory() + this->raw_memory_count()) {
+            suzerain::blas::axpy(count, factor, q, 1, p, 1);
+            p += this->strides()[0];
+            q += o.strides()[0];
+        }
+    } else {
+        // Identical padding between variables: use a single BLAS call
+        suzerain::blas::axpy(this->raw_memory_count(),
+                             factor, o.raw_memory(), 1, this->raw_memory(), 1);
+    }
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void NoninterleavedState<NumDims,Element,Allocator>::assign(
+            const IState<NumDims,Element,storage_noninterleaved>& other)
+throw(std::bad_cast, std::logic_error)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
+    if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
+
+    const NoninterleavedState& o
+        = dynamic_cast<const NoninterleavedState&>(other);
+    assert(std::equal(this->strides()+1, this->strides() + NumDims,
+                      o.strides()+1));
+
+    if (SUZERAIN_UNLIKELY(this->strides()[0] != o.strides()[0])) {
+        // Different padding between variables: requires multiple BLAS calls
+        const size_type count = suzerain::functional::product(
+                this->shape() + 1, this->shape() + NumDims);
+
+        Element       *p = this->raw_memory();
+        const Element *q = o.raw_memory();
+        while (p < this->raw_memory() + this->raw_memory_count()) {
+            suzerain::blas::copy(count, q, 1, p, 1);
+            p += this->strides()[0];
+            q += o.strides()[0];
+        }
+    } else {
+        // Identical padding between variables: use a single BLAS call
+        suzerain::blas::copy(this->raw_memory_count(),
+                             o.raw_memory(), 1, this->raw_memory(), 1);
+    }
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void NoninterleavedState<NumDims,Element,Allocator>::exchange(
+            const IState<NumDims,Element,storage_noninterleaved>& other)
+throw(std::bad_cast, std::logic_error)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
+    if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
+            std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
+
+    const NoninterleavedState& o
+        = dynamic_cast<const NoninterleavedState&>(other);
+    assert(std::equal(this->strides()+1, this->strides() + NumDims,
+                      o.strides()+1));
+
+    if (SUZERAIN_UNLIKELY(this->strides()[0] != o.strides()[0])) {
+        // Different padding between variables: requires multiple BLAS calls
+        const size_type count = suzerain::functional::product(
+                this->shape() + 1, this->shape() + NumDims);
+
+        Element       *p = this->raw_memory();
+        const Element *q = o.raw_memory();
+        while (p < this->raw_memory() + this->raw_memory_count()) {
+            suzerain::blas::swap(count, q, 1, p, 1);
+            p += this->strides()[0];
+            q += o.strides()[0];
+        }
+    } else {
+        // Identical padding between variables: use a single BLAS call
+        suzerain::blas::swap(this->raw_memory_count(),
+                             o.raw_memory(), 1, this->raw_memory(), 1);
+    }
 }
 
 } // namespace suzerain
