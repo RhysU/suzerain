@@ -14,7 +14,7 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 #pragma warning(disable:383)
 
-// Types to be tested with InterleavedState
+// Types to be tested with InterleavedState and NoninterleavedState
 typedef boost::mpl::list<
     double
    ,float
@@ -22,8 +22,7 @@ typedef boost::mpl::list<
    ,std::complex<float>
 > test_types;
 
-BOOST_AUTO_TEST_SUITE( InterleavedState )
-
+// Helper for specifying extents information
 static boost::array<std::size_t,3> size3(
       std::size_t x, std::size_t y, std::size_t z)
 {
@@ -31,9 +30,14 @@ static boost::array<std::size_t,3> size3(
    return a;
 }
 
-template< typename FPT, typename Scale >
+template<
+   template <std::size_t,typename,typename> class State,
+   typename Allocator,
+   typename FPT,
+   typename Scale
+>
 static void load223(
-      typename suzerain::InterleavedState<3,FPT> &state,
+      State<3,FPT,Allocator> &state,
       const Scale scale,
       typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -56,9 +60,14 @@ static void load223(
     state[1][1][2] = FPT(113) * scale;
 }
 
-template< typename FPT, typename Scale >
+template<
+   template <std::size_t,typename,typename> class State,
+   typename Allocator,
+   typename FPT,
+   typename Scale
+>
 static void verify223(
-      const typename suzerain::InterleavedState<3,FPT> &state,
+      const State<3,FPT,Allocator> &state,
       const Scale scale,
       typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -81,9 +90,14 @@ static void verify223(
     BOOST_CHECK_EQUAL(state[1][1][2], FPT(113) * scale);
 }
 
-template< typename FPT, typename Scale >
+template<
+   template <std::size_t,typename,typename> class State,
+   typename Allocator,
+   typename FPT,
+   typename Scale
+>
 static void load223(
-      typename suzerain::InterleavedState<3,std::complex<FPT> > &state,
+      State<3,std::complex<FPT>,Allocator> &state,
       const Scale scale,
       typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -108,9 +122,14 @@ static void load223(
     state[1][1][2] = complex(113, -113) * scaleFactor;
 }
 
-template< typename FPT, typename Scale >
+template<
+   template <std::size_t,typename,typename> class State,
+   typename Allocator,
+   typename FPT,
+   typename Scale
+>
 static void verify223(
-      const typename suzerain::InterleavedState<3,std::complex<FPT> > &state,
+      const State<3,std::complex<FPT>,Allocator> &state,
       const Scale scale,
       typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -134,6 +153,9 @@ static void verify223(
     BOOST_CHECK_EQUAL(state[1][0][2], complex(111, -111) * scaleFactor);
     BOOST_CHECK_EQUAL(state[1][1][2], complex(113, -113) * scaleFactor);
 }
+
+
+BOOST_AUTO_TEST_SUITE( InterleavedState )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 {
