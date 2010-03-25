@@ -320,24 +320,24 @@ typedef boost::mpl::list<
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 {
     // Regular constructor
-//  NoninterleavedState<3,T> foo(size3(2,2,3));
-//  BOOST_CHECK_EQUAL(foo.raw_memory_count(), 2*2*3);
-//  load223(foo, 1);
-//  verify223(foo, 1);
+    NoninterleavedState<3,T> foo(size3(2,2,3));
+    BOOST_CHECK_EQUAL(foo.raw_memory_count(), 2*2*3);
+    load223(foo, 1);
+    verify223(foo, 1);
 
     // Copy construct a second instance from the first
-//  NoninterleavedState<3,T> bar(foo);
-//  BOOST_CHECK_EQUAL(bar.raw_memory_count(), 2*2*3);
-//  verify223(bar, 1);
+    NoninterleavedState<3,T> bar(foo);
+    BOOST_CHECK_EQUAL(bar.raw_memory_count(), 2*2*3);
+    verify223(bar, 1);
 
     // Modify first instance's data
-//  for (int i = 0; i < foo.shape()[0]; ++i)
-//      for (int j = 0; j < foo.shape()[1]; ++j)
-//          for (int k = 0; k < foo.shape()[2]; ++k)
-//              foo[i][j][k] += (i+1)*(j+1)*(k+1);
+    for (int i = 0; i < foo.shape()[0]; ++i)
+        for (int j = 0; j < foo.shape()[1]; ++j)
+            for (int k = 0; k < foo.shape()[2]; ++k)
+                foo[i][j][k] += (i+1)*(j+1)*(k+1);
 
     // Ensure copy constructed data in second instance not modified
-//  verify223(bar, 1);
+    verify223(bar, 1);
 
 //  // Create padded instance and ensure content lies within padding
 //  NoninterleavedState<3,T> baz(size3(2,2,3), 2*2*3*7);

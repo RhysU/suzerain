@@ -248,11 +248,11 @@ class NoninterleavedState
                     Element,
                     suzerain::storage::noninterleaved<NumDims> >,
       public RawMemory<Element,Allocator>,
-      public boost::detail::multi_array::multi_array_view<Element, NumDims>
+      public boost::multi_array_ref<Element, NumDims>
 {
 public:
     typedef typename
-        boost::detail::multi_array::multi_array_view<Element, NumDims>
+        boost::multi_array_ref<Element, NumDims>
         multi_array_type;
     typedef typename
         suzerain::storage::noninterleaved<NumDims>
@@ -286,61 +286,16 @@ public:
             IState<NumDims,Element,storage_noninterleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
-    // Not available from superclass
-    Element * data() { return this->raw_memory(); }
-
-    // Not available from superclass
-    const Element * data() const { return this->raw_memory(); }
-
 private:
     // Disable assignment operators
     const multi_array_type& operator=( const multi_array_type& );
     const NoninterleavedState& operator=( const NoninterleavedState& );
-
-    // Compute stride information, including variable padding requirements
-    template< typename ExtentList >
-    static boost::array<boost::multi_array_types::index,NumDims>
-        computeStrides(
-            const ExtentList& extent_list,
-            typename Allocator::size_type min_variable_stride = 0);
 
     template< typename ExtentList >
     static std::size_t computeRawMemoryCount(
             const ExtentList& extent_list,
             typename Allocator::size_type min_variable_stride = 0);
 };
-
-template< std::size_t NumDims, typename Element, typename Allocator >
-template< typename ExtentList >
-boost::array<boost::multi_array_types::index,NumDims>
-NoninterleavedState<NumDims,Element,Allocator>::computeStrides(
-        const ExtentList &extent_list,
-        typename Allocator::size_type min_variable_stride)
-{
-    typedef typename multi_array_type::index index;
-
-    // Slow, but we need random access to extent_list's contents
-    boost::array<typename ExtentList::value_type,NumDims> extents;
-    std::copy(extent_list.begin(), extent_list.end(), extents.begin());
-
-    // Obtain storage ordering type information in runtime array
-    const suzerain::mpl::sequence_array<
-        typename storage_noninterleaved::storage_order_sequence> storage;
-    assert(storage.size > 0);
-    assert(storage[NumDims-1] == 0);
-
-    // Compute the usual stride information by the usual means
-    boost::array<index,NumDims> stride;
-    assert(storage.size() == stride.size());
-    stride[storage[0]] = 1;
-    for (index i = 1; i < NumDims; ++i) {
-        stride[storage[i]] = stride[storage[i-1]]*extents[storage[i-1]];
-    }
-    // Enforce the minimum stride requirement on the final stride
-    stride[storage[NumDims-1]] = std::max(
-            boost::numeric_cast<index>(min_variable_stride),
-            stride[storage[NumDims-1]]);
-}
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 template< typename ExtentList >
@@ -371,9 +326,15 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
               computeRawMemoryCount(sizes, min_variable_stride)),
       multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
                        sizes,
-                       computeStrides(sizes, min_variable_stride))
+                       storage_noninterleaved::storage_order())
 {
-    // NOP
+    typedef typename multi_array_type::index index;
+
+    // Abuse encapsulation; stride_list_ is protected from our
+    // boost::const_multi_array_ref ancestor.
+    this->stride_list_[0] = std::max(
+            this->stride_list_[0],
+            boost::numeric_cast<index>(min_variable_stride));
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
@@ -382,11 +343,18 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
     : IStateBase<NumDims,Element>(other),
       IState<NumDims,Element,storage_noninterleaved>(other),
       RawMemory<Element,Allocator>(other),
-      multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
+      multi_array_type(this->raw_memory(),
                        suzerain::multi_array::shape_array(other),
-                       suzerain::multi_array::strides_array(other))
+                       storage_noninterleaved::storage_order())
 {
     // Data copied by RawMemory's copy constructor
+
+    // Beware that boost::multi_array_ref has a shallow copy constructor; we
+    // must use non-copy constructor and now explicitly copy strides.  Abuse
+    // encapsulation; stride_list_ is protected from our
+    // boost::const_multi_array_ref ancestor.
+    std::copy(other.stride_list_.begin(), other.stride_list_.end(),
+              this->stride_list_.begin());
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
