@@ -299,7 +299,7 @@ private:
 
     // Compute stride information, including variable padding requirements
     template< typename ExtentList >
-    static boost::array<typename multi_array_type::index,NumDims>
+    static boost::array<boost::multi_array_types::index,NumDims>
         computeStrides(
             const ExtentList& extent_list,
             typename Allocator::size_type min_variable_stride = 0);
@@ -312,9 +312,7 @@ private:
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 template< typename ExtentList >
-boost::array< typename NoninterleavedState<
-        NumDims,Element,Allocator
-    >::multi_array_type::index,NumDims>
+boost::array<boost::multi_array_types::index,NumDims>
 NoninterleavedState<NumDims,Element,Allocator>::computeStrides(
         const ExtentList &extent_list,
         typename Allocator::size_type min_variable_stride)
