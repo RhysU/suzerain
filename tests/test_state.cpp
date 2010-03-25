@@ -390,7 +390,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
 
     BOOST_TEST_MESSAGE("Both instances with padding");
     {
-        NoninterleavedState<3,T> foo(size223(), 7), bar(size223(), 7);
+        NoninterleavedState<3,T> foo(size223(), 7), bar(size223(), 10);
         load223(foo, 1);
 
         foo.assign(foo); // Self
@@ -405,9 +405,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
         NoninterleavedState<3,T> foo(size223()), bar(size223(), 7);
         load223(foo, 1);
 
-        foo.assign(foo); // Self
-        verify223(foo, 1);
-
         bar.assign(foo);
         verify223(bar, 1);
     }
@@ -417,11 +414,145 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
         NoninterleavedState<3,T> foo(size223(),7), bar(size223());
         load223(foo, 1);
 
-        foo.assign(foo); // Self
-        verify223(foo, 1);
-
         bar.assign(foo);
         verify223(bar, 1);
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( storage_order, T, test_types )
+{
+    BOOST_TEST_MESSAGE("Instance without padding");
+    {
+        NoninterleavedState<3,T> foo(size3(2,2,2));
+
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) + 2*2, &(foo[1][0][0]));
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   1, &(foo[0][1][0]));
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   2, &(foo[0][0][1]));
+
+        BOOST_CHECK_EQUAL( 2*2, foo.strides()[0] );
+        BOOST_CHECK_EQUAL(   1, foo.strides()[1] );
+        BOOST_CHECK_EQUAL(   2, foo.strides()[2] );
+    }
+
+    BOOST_TEST_MESSAGE("Instance with padding");
+    {
+        NoninterleavedState<3,T> foo(size3(2,2,2), 10);
+
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +  10, &(foo[1][0][0]));
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   1, &(foo[0][1][0]));
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   2, &(foo[0][0][1]));
+
+        BOOST_CHECK_EQUAL(  10, foo.strides()[0] );
+        BOOST_CHECK_EQUAL(   1, foo.strides()[1] );
+        BOOST_CHECK_EQUAL(   2, foo.strides()[2] );
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( isConformant, T, test_types )
+{
+    NoninterleavedState<3,T> foo(  size3(2,2,2));
+    NoninterleavedState<3,T> bar(  size3(2,2,2), 7);
+    NoninterleavedState<3,T> baz(  size3(2,2,2), 10);
+    NoninterleavedState<3,T> qux(  size3(1,2,2));
+    NoninterleavedState<3,T> quux( size3(2,1,2));
+    NoninterleavedState<3,T> quuux(size3(2,2,1));
+
+    BOOST_CHECK_EQUAL(true,  foo.isConformant(foo));
+    BOOST_CHECK_EQUAL(true,  foo.isConformant(bar));
+    BOOST_CHECK_EQUAL(true,  foo.isConformant(baz));
+    BOOST_CHECK_EQUAL(true,  bar.isConformant(foo));
+    BOOST_CHECK_EQUAL(true,  bar.isConformant(bar));
+    BOOST_CHECK_EQUAL(true,  bar.isConformant(baz));
+    BOOST_CHECK_EQUAL(true,  baz.isConformant(foo));
+    BOOST_CHECK_EQUAL(true,  baz.isConformant(bar));
+    BOOST_CHECK_EQUAL(true,  baz.isConformant(baz));
+
+    BOOST_CHECK_EQUAL(false, foo.isConformant(qux));
+    BOOST_CHECK_EQUAL(false, foo.isConformant(quux));
+    BOOST_CHECK_EQUAL(false, foo.isConformant(quuux));
+    BOOST_CHECK_EQUAL(false, bar.isConformant(qux));
+    BOOST_CHECK_EQUAL(false, bar.isConformant(quux));
+    BOOST_CHECK_EQUAL(false, bar.isConformant(quuux));
+    BOOST_CHECK_EQUAL(false, baz.isConformant(qux));
+    BOOST_CHECK_EQUAL(false, baz.isConformant(quux));
+    BOOST_CHECK_EQUAL(false, baz.isConformant(quuux));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
+{
+    BOOST_TEST_MESSAGE("Instance without padding");
+    {
+        NoninterleavedState<3,T> foo(size223());
+        load223(foo, 1);
+        verify223(foo, 1);
+
+        foo.scale(1);
+        verify223(foo, 1);
+
+        foo.scale(2);
+        verify223(foo, 2);
+
+        foo.scale(0);
+        verify223(foo, 0);
+    }
+
+    BOOST_TEST_MESSAGE("Instance with padding");
+    {
+        NoninterleavedState<3,T> foo(size223(), 7);
+        load223(foo, 1);
+        verify223(foo, 1);
+
+        foo.scale(1);
+        verify223(foo, 1);
+
+        foo.scale(2);
+        verify223(foo, 2);
+
+        foo.scale(0);
+        verify223(foo, 0);
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
+{
+    BOOST_TEST_MESSAGE("Both instances without padding");
+    {
+        NoninterleavedState<3,T> foo(size223()), bar(size223());
+        load223(foo, 1);
+        load223(bar, 2);
+        foo.addScaled(3, bar);
+        verify223(foo, 7);
+
+        // Operation between two nonconforming states throws
+        NoninterleavedState<3,T> baz(size3(2,2,2));
+        BOOST_CHECK_THROW(foo.addScaled(3, baz), std::logic_error);
+    }
+
+    BOOST_TEST_MESSAGE("Both instances with padding");
+    {
+        NoninterleavedState<3,T> foo(size223(), 7), bar(size223(), 10);
+        load223(foo, 1);
+        load223(bar, 2);
+        foo.addScaled(3, bar);
+        verify223(foo, 7);
+    }
+
+    BOOST_TEST_MESSAGE("Target instance with padding");
+    {
+        NoninterleavedState<3,T> foo(size223(),7), bar(size223());
+        load223(foo, 1);
+        load223(bar, 2);
+        foo.addScaled(3, bar);
+        verify223(foo, 7);
+    }
+
+    BOOST_TEST_MESSAGE("Source instance with padding");
+    {
+        NoninterleavedState<3,T> foo(size223()), bar(size223(), 10);
+        load223(foo, 1);
+        load223(bar, 2);
+        foo.addScaled(3, bar);
+        verify223(foo, 7);
     }
 }
 
