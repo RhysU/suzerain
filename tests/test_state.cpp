@@ -14,14 +14,6 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 #pragma warning(disable:383)
 
-// Types to be tested with InterleavedState and NoninterleavedState
-typedef boost::mpl::list<
-    double
-   ,float
-   ,std::complex<double>
-   ,std::complex<float>
-> test_types;
-
 // Helper for specifying extents information
 static boost::array<std::size_t,3> size3(
       std::size_t x, std::size_t y, std::size_t z)
@@ -157,16 +149,26 @@ static void verify223(
 
 BOOST_AUTO_TEST_SUITE( InterleavedState )
 
+using suzerain::InterleavedState;
+
+// Types to be tested with InterleavedState
+typedef boost::mpl::list<
+    double
+   ,float
+   ,std::complex<double>
+   ,std::complex<float>
+> test_types;
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 {
     // Regular constructor
-    suzerain::InterleavedState<3,T> foo(size3(2,2,3));
+    InterleavedState<3,T> foo(size3(2,2,3));
     BOOST_CHECK_EQUAL(foo.raw_memory_count(), 2*2*3);
     load223(foo, 1);
     verify223(foo, 1);
 
     // Copy construct a second instance from the first
-    suzerain::InterleavedState<3,T> bar(foo);
+    InterleavedState<3,T> bar(foo);
     BOOST_CHECK_EQUAL(bar.raw_memory_count(), 2*2*3);
     verify223(bar, 1);
 
@@ -180,19 +182,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
     verify223(bar, 1);
 
     // Create padded instance and ensure content lies within padding
-    suzerain::InterleavedState<3,T> baz(size3(2,2,3), 2*2*3*7);
+    InterleavedState<3,T> baz(size3(2,2,3), 2*2*3*7);
     BOOST_CHECK_EQUAL(baz.raw_memory_count(), 2*2*3*7);
     BOOST_CHECK_GE(baz.raw_memory(), &(baz[0][0][0]));
     BOOST_CHECK_LT(&(baz[1][1][2]), baz.raw_memory() + baz.raw_memory_count());
 
     // Ensure padded information present propagated in copy operations
-    suzerain::InterleavedState<3,T> qux(baz);
+    InterleavedState<3,T> qux(baz);
     BOOST_CHECK_EQUAL(qux.raw_memory_count(), 2*2*3*7);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
 {
-    suzerain::InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
+    InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
     load223(foo, 1);
 
     foo.assign(foo); // Self
@@ -202,13 +204,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
     verify223(bar, 1);
 
     // Operation between two nonconforming states throws
-    suzerain::InterleavedState<3,T> baz(size3(2,2,2));
+    InterleavedState<3,T> baz(size3(2,2,2));
     BOOST_CHECK_THROW(baz.assign(foo), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( storage_order, T, test_types )
 {
-    suzerain::InterleavedState<3,T> foo(size3(2,2,2));
+    InterleavedState<3,T> foo(size3(2,2,2));
 
     BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   1, &(foo[1][0][0]));
     BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   2, &(foo[0][1][0]));
@@ -221,11 +223,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storage_order, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( isConformant, T, test_types )
 {
-    suzerain::InterleavedState<3,T> foo( size3(2,2,2));
-    suzerain::InterleavedState<3,T> bar( size3(2,2,2));
-    suzerain::InterleavedState<3,T> baz( size3(1,2,2));
-    suzerain::InterleavedState<3,T> qux( size3(2,1,2));
-    suzerain::InterleavedState<3,T> quux(size3(2,2,1));
+    InterleavedState<3,T> foo( size3(2,2,2));
+    InterleavedState<3,T> bar( size3(2,2,2));
+    InterleavedState<3,T> baz( size3(1,2,2));
+    InterleavedState<3,T> qux( size3(2,1,2));
+    InterleavedState<3,T> quux(size3(2,2,1));
 
     BOOST_CHECK_EQUAL(true,  foo.isConformant(foo));
     BOOST_CHECK_EQUAL(true,  foo.isConformant(bar));
@@ -236,7 +238,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isConformant, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
 {
-    suzerain::InterleavedState<3,T> foo(size3(2,2,3));
+    InterleavedState<3,T> foo(size3(2,2,3));
     load223(foo, 1);
     verify223(foo, 1);
 
@@ -252,20 +254,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
 {
-    suzerain::InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
+    InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
     load223(foo, 1);
     load223(bar, 2);
     foo.addScaled(3, bar);
     verify223(foo, 7);
 
     // Operation between two nonconforming states throws
-    suzerain::InterleavedState<3,T> baz(size3(2,2,2));
+    InterleavedState<3,T> baz(size3(2,2,2));
     BOOST_CHECK_THROW(foo.addScaled(3, baz), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
 {
-    suzerain::InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
+    InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
     load223(foo, 1);
     load223(bar, 2);
     foo.exchange(bar);
@@ -276,13 +278,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
     verify223(bar, 2);
 
     // Operation between two nonconforming states throws
-    suzerain::InterleavedState<3,T> baz(size3(2,2,2));
+    InterleavedState<3,T> baz(size3(2,2,2));
     BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( comparison, T, test_types )
 {
-    suzerain::InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
+    InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
     load223(foo, 1);
     load223(bar, 1);
 
@@ -296,8 +298,56 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( comparison, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
 {
    using boost::detail::multi_array::MutableMultiArrayConcept;
-   using suzerain::InterleavedState;
    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<InterleavedState<3,T>,3>));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( NoninterleavedState )
+
+using suzerain::NoninterleavedState;
+
+// FIXME Extend types under test
+// Types to be tested with NoninterleavedState
+typedef boost::mpl::list<
+    double
+//    ,float
+//    ,std::complex<double>
+//    ,std::complex<float>
+> test_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
+{
+    // Regular constructor
+//  NoninterleavedState<3,T> foo(size3(2,2,3));
+//  BOOST_CHECK_EQUAL(foo.raw_memory_count(), 2*2*3);
+//  load223(foo, 1);
+//  verify223(foo, 1);
+
+    // Copy construct a second instance from the first
+//  NoninterleavedState<3,T> bar(foo);
+//  BOOST_CHECK_EQUAL(bar.raw_memory_count(), 2*2*3);
+//  verify223(bar, 1);
+
+    // Modify first instance's data
+//  for (int i = 0; i < foo.shape()[0]; ++i)
+//      for (int j = 0; j < foo.shape()[1]; ++j)
+//          for (int k = 0; k < foo.shape()[2]; ++k)
+//              foo[i][j][k] += (i+1)*(j+1)*(k+1);
+
+    // Ensure copy constructed data in second instance not modified
+//  verify223(bar, 1);
+
+//  // Create padded instance and ensure content lies within padding
+//  NoninterleavedState<3,T> baz(size3(2,2,3), 2*2*3*7);
+//  BOOST_CHECK_EQUAL(baz.raw_memory_count(), 2*2*3*7);
+//  BOOST_CHECK_GE(baz.raw_memory(), &(baz[0][0][0]));
+//  BOOST_CHECK_LT(&(baz[1][1][2]), baz.raw_memory() + baz.raw_memory_count());
+
+//  // Ensure padded information present propagated in copy operations
+//  NoninterleavedState<3,T> qux(baz);
+//  BOOST_CHECK_EQUAL(qux.raw_memory_count(), 2*2*3*7);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
