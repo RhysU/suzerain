@@ -150,6 +150,105 @@ static void verify223(
     BOOST_CHECK_EQUAL(state[1][1][2], complex(113, -113) * scaleFactor);
 }
 
+template<
+    template <std::size_t,typename,typename> class State1,
+    template <std::size_t,typename,typename> class State2,
+    typename Allocator1,
+    typename Allocator2,
+    typename Element
+>
+static void test_assignment_helper(
+    State1<3,Element,Allocator1> &foo,
+    State2<3,Element,Allocator2> &bar)
+{
+    load223(foo, 1);
+
+    foo.assign(foo); // Self
+    verify223(foo, 1);
+
+    bar.assign(foo);
+    verify223(bar, 1);
+}
+
+template<
+    template <std::size_t,typename,typename> class State,
+    typename Allocator,
+    typename Element
+>
+static void test_scale_helper(State<3,Element,Allocator> &foo)
+{
+    load223(foo, 1);
+    verify223(foo, 1);
+
+    foo.scale(1);
+    verify223(foo, 1);
+
+    foo.scale(2);
+    verify223(foo, 2);
+
+    foo.scale(0);
+    verify223(foo, 0);
+}
+
+template<
+    template <std::size_t,typename,typename> class State1,
+    template <std::size_t,typename,typename> class State2,
+    typename Allocator1,
+    typename Allocator2,
+    typename Element
+>
+static void test_addScaled_helper(
+    State1<3,Element,Allocator1> &foo,
+    State2<3,Element,Allocator2> &bar)
+{
+    load223(foo, 1);
+    load223(bar, 2);
+    foo.addScaled(3, bar);
+    verify223(foo, 7);
+}
+
+template<
+    template <std::size_t,typename,typename> class State1,
+    template <std::size_t,typename,typename> class State2,
+    typename Allocator1,
+    typename Allocator2,
+    typename Element
+>
+static void test_exchange_helper(
+    State1<3,Element,Allocator1> &foo,
+    State2<3,Element,Allocator2> &bar)
+{
+    load223(foo, 1);
+    load223(bar, 2);
+    foo.exchange(bar);
+    verify223(foo, 2);
+    verify223(bar, 1);
+    bar.exchange(foo);
+    verify223(foo, 1);
+    verify223(bar, 2);
+}
+
+template<
+    template <std::size_t,typename,typename> class State1,
+    template <std::size_t,typename,typename> class State2,
+    typename Allocator1,
+    typename Allocator2,
+    typename Element
+>
+static void test_comparison_helper(
+    State1<3,Element,Allocator1> &foo,
+    State2<3,Element,Allocator2> &bar)
+{
+    load223(foo, 1);
+    load223(bar, 1);
+
+    BOOST_CHECK(foo == bar);
+    BOOST_CHECK(bar == foo);
+    foo[0][0][0] += foo[0][0][0];
+    BOOST_CHECK(foo != bar);
+    BOOST_CHECK(bar != foo);
+}
+
 
 BOOST_AUTO_TEST_SUITE( InterleavedState )
 
@@ -199,13 +298,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
 {
     InterleavedState<3,T> foo(size223()), bar(size223());
-    load223(foo, 1);
-
-    foo.assign(foo); // Self
-    verify223(foo, 1);
-
-    bar.assign(foo);
-    verify223(bar, 1);
+    test_assignment_helper(foo, bar);
 
     // Operation between two nonconforming states throws
     InterleavedState<3,T> baz(size3(2,2,2));
@@ -243,26 +336,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isConformant, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
 {
     InterleavedState<3,T> foo(size223());
-    load223(foo, 1);
-    verify223(foo, 1);
-
-    foo.scale(1);
-    verify223(foo, 1);
-
-    foo.scale(2);
-    verify223(foo, 2);
-
-    foo.scale(0);
-    verify223(foo, 0);
+    test_scale_helper(foo);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
 {
     InterleavedState<3,T> foo(size223()), bar(size223());
-    load223(foo, 1);
-    load223(bar, 2);
-    foo.addScaled(3, bar);
-    verify223(foo, 7);
+    test_addScaled_helper(foo, bar);
 
     // Operation between two nonconforming states throws
     InterleavedState<3,T> baz(size3(2,2,2));
@@ -272,14 +352,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
 {
     InterleavedState<3,T> foo(size223()), bar(size223());
-    load223(foo, 1);
-    load223(bar, 2);
-    foo.exchange(bar);
-    verify223(foo, 2);
-    verify223(bar, 1);
-    bar.exchange(foo);
-    verify223(foo, 1);
-    verify223(bar, 2);
+    test_exchange_helper(foo, bar);
 
     // Operation between two nonconforming states throws
     InterleavedState<3,T> baz(size3(2,2,2));
@@ -289,14 +362,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( comparison, T, test_types )
 {
     InterleavedState<3,T> foo(size223()), bar(size223());
-    load223(foo, 1);
-    load223(bar, 1);
-
-    BOOST_CHECK(foo == bar);
-    BOOST_CHECK(bar == foo);
-    foo[0][0][0] += foo[0][0][0];
-    BOOST_CHECK(foo != bar);
-    BOOST_CHECK(bar != foo);
+    test_comparison_helper(foo, bar);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
@@ -312,13 +378,12 @@ BOOST_AUTO_TEST_SUITE( NoninterleavedState )
 
 using suzerain::NoninterleavedState;
 
-// FIXME Extend types under test
 // Types to be tested with NoninterleavedState
 typedef boost::mpl::list<
     double
-//    ,float
-//    ,std::complex<double>
-//    ,std::complex<float>
+   ,float
+   ,std::complex<double>
+   ,std::complex<float>
 > test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
@@ -375,13 +440,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
     BOOST_TEST_MESSAGE("Both instances without padding");
     {
         NoninterleavedState<3,T> foo(size223()), bar(size223());
-        load223(foo, 1);
-
-        foo.assign(foo); // Self
-        verify223(foo, 1);
-
-        bar.assign(foo);
-        verify223(bar, 1);
+        test_assignment_helper(foo, bar);
 
         // Operation between two nonconforming states throws
         NoninterleavedState<3,T> baz(size3(2,2,2));
@@ -391,31 +450,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
     BOOST_TEST_MESSAGE("Both instances with padding");
     {
         NoninterleavedState<3,T> foo(size223(), 7), bar(size223(), 10);
-        load223(foo, 1);
-
-        foo.assign(foo); // Self
-        verify223(foo, 1);
-
-        bar.assign(foo);
-        verify223(bar, 1);
+        test_assignment_helper(foo, bar);
     }
 
     BOOST_TEST_MESSAGE("Target instance with padding");
     {
         NoninterleavedState<3,T> foo(size223()), bar(size223(), 7);
-        load223(foo, 1);
-
-        bar.assign(foo);
-        verify223(bar, 1);
+        test_assignment_helper(foo, bar);
     }
 
     BOOST_TEST_MESSAGE("Source instance with padding");
     {
         NoninterleavedState<3,T> foo(size223(),7), bar(size223());
-        load223(foo, 1);
-
-        bar.assign(foo);
-        verify223(bar, 1);
+        test_assignment_helper(foo, bar);
     }
 }
 
@@ -483,33 +530,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
     BOOST_TEST_MESSAGE("Instance without padding");
     {
         NoninterleavedState<3,T> foo(size223());
-        load223(foo, 1);
-        verify223(foo, 1);
-
-        foo.scale(1);
-        verify223(foo, 1);
-
-        foo.scale(2);
-        verify223(foo, 2);
-
-        foo.scale(0);
-        verify223(foo, 0);
+        test_scale_helper(foo);
     }
 
     BOOST_TEST_MESSAGE("Instance with padding");
     {
         NoninterleavedState<3,T> foo(size223(), 7);
-        load223(foo, 1);
-        verify223(foo, 1);
-
-        foo.scale(1);
-        verify223(foo, 1);
-
-        foo.scale(2);
-        verify223(foo, 2);
-
-        foo.scale(0);
-        verify223(foo, 0);
+        test_scale_helper(foo);
     }
 }
 
@@ -518,10 +545,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
     BOOST_TEST_MESSAGE("Both instances without padding");
     {
         NoninterleavedState<3,T> foo(size223()), bar(size223());
-        load223(foo, 1);
-        load223(bar, 2);
-        foo.addScaled(3, bar);
-        verify223(foo, 7);
+        test_addScaled_helper(foo, bar);
 
         // Operation between two nonconforming states throws
         NoninterleavedState<3,T> baz(size3(2,2,2));
@@ -531,29 +555,84 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
     BOOST_TEST_MESSAGE("Both instances with padding");
     {
         NoninterleavedState<3,T> foo(size223(), 7), bar(size223(), 10);
-        load223(foo, 1);
-        load223(bar, 2);
-        foo.addScaled(3, bar);
-        verify223(foo, 7);
+        test_addScaled_helper(foo, bar);
     }
 
     BOOST_TEST_MESSAGE("Target instance with padding");
     {
         NoninterleavedState<3,T> foo(size223(),7), bar(size223());
-        load223(foo, 1);
-        load223(bar, 2);
-        foo.addScaled(3, bar);
-        verify223(foo, 7);
+        test_addScaled_helper(foo, bar);
     }
 
     BOOST_TEST_MESSAGE("Source instance with padding");
     {
         NoninterleavedState<3,T> foo(size223()), bar(size223(), 10);
-        load223(foo, 1);
-        load223(bar, 2);
-        foo.addScaled(3, bar);
-        verify223(foo, 7);
+        test_addScaled_helper(foo, bar);
     }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
+{
+    BOOST_TEST_MESSAGE("Both instances without padding");
+    {
+        NoninterleavedState<3,T> foo(size223()), bar(size223());
+        test_exchange_helper(foo, bar);
+
+        // Operation between two nonconforming states throws
+        NoninterleavedState<3,T> baz(size3(2,2,2));
+        BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
+    }
+
+    BOOST_TEST_MESSAGE("Both instances with padding");
+    {
+        NoninterleavedState<3,T> foo(size223(),11), bar(size223(),13);
+        test_exchange_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Target instance with padding");
+    {
+        NoninterleavedState<3,T> foo(size223(),9), bar(size223());
+        test_exchange_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Source instance with padding");
+    {
+        NoninterleavedState<3,T> foo(size223()), bar(size223(),17);
+        test_exchange_helper(foo, bar);
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( comparison, T, test_types )
+{
+    BOOST_TEST_MESSAGE("Both instances without padding");
+    {
+        NoninterleavedState<3,T> foo(size223()), bar(size223());
+        test_comparison_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Both instances with padding");
+    {
+        NoninterleavedState<3,T> foo(size223(),19), bar(size223(),21);
+        test_comparison_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Target instance with padding");
+    {
+        NoninterleavedState<3,T> foo(size223(),9), bar(size223());
+        test_comparison_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Source instance with padding");
+    {
+        NoninterleavedState<3,T> foo(size223()), bar(size223(),17);
+        test_comparison_helper(foo, bar);
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
+{
+    using boost::detail::multi_array::MutableMultiArrayConcept;
+    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<NoninterleavedState<3,T>,3>));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
