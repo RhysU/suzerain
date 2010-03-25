@@ -339,15 +339,31 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
     // Ensure copy constructed data in second instance not modified
     verify223(bar, 1);
 
-//  // Create padded instance and ensure content lies within padding
-//  NoninterleavedState<3,T> baz(size3(2,2,3), 2*2*3*7);
-//  BOOST_CHECK_EQUAL(baz.raw_memory_count(), 2*2*3*7);
-//  BOOST_CHECK_GE(baz.raw_memory(), &(baz[0][0][0]));
-//  BOOST_CHECK_LT(&(baz[1][1][2]), baz.raw_memory() + baz.raw_memory_count());
+    // Create padded instance and ensure content lies within padding
+    NoninterleavedState<3,T> baz(size3(2,2,3), 7);
+    BOOST_CHECK_EQUAL(baz.raw_memory_count(), 2*7);
+    BOOST_CHECK_EQUAL(baz.strides()[0], 7);
+    BOOST_CHECK_GE(baz.raw_memory(), &(baz[0][0][0]));
+    BOOST_CHECK_LT(&(baz[1][1][2]), baz.raw_memory() + baz.raw_memory_count());
+    load223(baz, 1);
+    verify223(baz, 1);
 
-//  // Ensure padded information present propagated in copy operations
-//  NoninterleavedState<3,T> qux(baz);
-//  BOOST_CHECK_EQUAL(qux.raw_memory_count(), 2*2*3*7);
+    // Ensure padded information present propagated in copy operations
+    NoninterleavedState<3,T> qux(baz);
+    BOOST_CHECK_EQUAL(qux.raw_memory_count(), 2*7);
+    BOOST_CHECK_EQUAL(baz.strides()[0], qux.strides()[0]);
+    BOOST_CHECK_EQUAL(baz.strides()[1], qux.strides()[1]);
+    BOOST_CHECK_EQUAL(baz.strides()[2], qux.strides()[2]);
+    verify223(qux, 1);
+
+    // Modify first padded instance's data
+    for (int i = 0; i < foo.shape()[0]; ++i)
+        for (int j = 0; j < foo.shape()[1]; ++j)
+            for (int k = 0; k < foo.shape()[2]; ++k)
+                baz[i][j][k] += (i+1)*(j+1)*(k+1);
+
+    // Ensure copy constructed data in second padded instance not modified
+    verify223(qux, 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
