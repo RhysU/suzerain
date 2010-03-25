@@ -16,22 +16,26 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 // Helper for specifying extents information
 static boost::array<std::size_t,3> size3(
-      std::size_t x, std::size_t y, std::size_t z)
+    std::size_t x, std::size_t y, std::size_t z)
 {
-   boost::array<std::size_t,3> a = { x, y, z };
-   return a;
+    boost::array<std::size_t,3> a = { x, y, z };
+    return a;
+}
+
+static boost::array<std::size_t,3> size223() {
+    return size3(2,2,3);
 }
 
 template<
-   template <std::size_t,typename,typename> class State,
-   typename Allocator,
-   typename FPT,
-   typename Scale
+    template <std::size_t,typename,typename> class State,
+    typename Allocator,
+    typename FPT,
+    typename Scale
 >
 static void load223(
-      State<3,FPT,Allocator> &state,
-      const Scale scale,
-      typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
+    State<3,FPT,Allocator> &state,
+    const Scale scale,
+    typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
     BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
@@ -53,15 +57,15 @@ static void load223(
 }
 
 template<
-   template <std::size_t,typename,typename> class State,
-   typename Allocator,
-   typename FPT,
-   typename Scale
+    template <std::size_t,typename,typename> class State,
+    typename Allocator,
+    typename FPT,
+    typename Scale
 >
 static void verify223(
-      const State<3,FPT,Allocator> &state,
-      const Scale scale,
-      typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
+    const State<3,FPT,Allocator> &state,
+    const Scale scale,
+    typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
     BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
@@ -83,15 +87,15 @@ static void verify223(
 }
 
 template<
-   template <std::size_t,typename,typename> class State,
-   typename Allocator,
-   typename FPT,
-   typename Scale
+    template <std::size_t,typename,typename> class State,
+    typename Allocator,
+    typename FPT,
+    typename Scale
 >
 static void load223(
-      State<3,std::complex<FPT>,Allocator> &state,
-      const Scale scale,
-      typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
+    State<3,std::complex<FPT>,Allocator> &state,
+    const Scale scale,
+    typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
     BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
@@ -115,15 +119,15 @@ static void load223(
 }
 
 template<
-   template <std::size_t,typename,typename> class State,
-   typename Allocator,
-   typename FPT,
-   typename Scale
+    template <std::size_t,typename,typename> class State,
+    typename Allocator,
+    typename FPT,
+    typename Scale
 >
 static void verify223(
-      const State<3,std::complex<FPT>,Allocator> &state,
-      const Scale scale,
-      typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
+    const State<3,std::complex<FPT>,Allocator> &state,
+    const Scale scale,
+    typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
     BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
@@ -162,7 +166,7 @@ typedef boost::mpl::list<
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 {
     // Regular constructor
-    InterleavedState<3,T> foo(size3(2,2,3));
+    InterleavedState<3,T> foo(size223());
     BOOST_CHECK_EQUAL(foo.raw_memory_count(), 2*2*3);
     load223(foo, 1);
     verify223(foo, 1);
@@ -182,7 +186,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
     verify223(bar, 1);
 
     // Create padded instance and ensure content lies within padding
-    InterleavedState<3,T> baz(size3(2,2,3), 2*2*3*7);
+    InterleavedState<3,T> baz(size223(), 2*2*3*7);
     BOOST_CHECK_EQUAL(baz.raw_memory_count(), 2*2*3*7);
     BOOST_CHECK_GE(baz.raw_memory(), &(baz[0][0][0]));
     BOOST_CHECK_LT(&(baz[1][1][2]), baz.raw_memory() + baz.raw_memory_count());
@@ -194,7 +198,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
 {
-    InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
+    InterleavedState<3,T> foo(size223()), bar(size223());
     load223(foo, 1);
 
     foo.assign(foo); // Self
@@ -238,7 +242,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isConformant, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
 {
-    InterleavedState<3,T> foo(size3(2,2,3));
+    InterleavedState<3,T> foo(size223());
     load223(foo, 1);
     verify223(foo, 1);
 
@@ -254,7 +258,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
 {
-    InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
+    InterleavedState<3,T> foo(size223()), bar(size223());
     load223(foo, 1);
     load223(bar, 2);
     foo.addScaled(3, bar);
@@ -267,7 +271,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
 {
-    InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
+    InterleavedState<3,T> foo(size223()), bar(size223());
     load223(foo, 1);
     load223(bar, 2);
     foo.exchange(bar);
@@ -284,7 +288,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( comparison, T, test_types )
 {
-    InterleavedState<3,T> foo(size3(2,2,3)), bar(size3(2,2,3));
+    InterleavedState<3,T> foo(size223()), bar(size223());
     load223(foo, 1);
     load223(bar, 1);
 
@@ -297,8 +301,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( comparison, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
 {
-   using boost::detail::multi_array::MutableMultiArrayConcept;
-   BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<InterleavedState<3,T>,3>));
+    using boost::detail::multi_array::MutableMultiArrayConcept;
+    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<InterleavedState<3,T>,3>));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -320,7 +324,7 @@ typedef boost::mpl::list<
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 {
     // Regular constructor
-    NoninterleavedState<3,T> foo(size3(2,2,3));
+    NoninterleavedState<3,T> foo(size223());
     BOOST_CHECK_EQUAL(foo.raw_memory_count(), 2*2*3);
     load223(foo, 1);
     verify223(foo, 1);
@@ -340,7 +344,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
     verify223(bar, 1);
 
     // Create padded instance and ensure content lies within padding
-    NoninterleavedState<3,T> baz(size3(2,2,3), 7);
+    NoninterleavedState<3,T> baz(size223(), 7);
     BOOST_CHECK_EQUAL(baz.raw_memory_count(), 2*7);
     BOOST_CHECK_EQUAL(baz.strides()[0], 7);
     BOOST_CHECK_GE(baz.raw_memory(), &(baz[0][0][0]));
@@ -364,6 +368,61 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 
     // Ensure copy constructed data in second padded instance not modified
     verify223(qux, 1);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
+{
+    BOOST_TEST_MESSAGE("Both instances without padding");
+    {
+        NoninterleavedState<3,T> foo(size223()), bar(size223());
+        load223(foo, 1);
+
+        foo.assign(foo); // Self
+        verify223(foo, 1);
+
+        bar.assign(foo);
+        verify223(bar, 1);
+
+        // Operation between two nonconforming states throws
+        NoninterleavedState<3,T> baz(size3(2,2,2));
+        BOOST_CHECK_THROW(baz.assign(foo), std::logic_error);
+    }
+
+    BOOST_TEST_MESSAGE("Both instances with padding");
+    {
+        NoninterleavedState<3,T> foo(size223(), 7), bar(size223(), 7);
+        load223(foo, 1);
+
+        foo.assign(foo); // Self
+        verify223(foo, 1);
+
+        bar.assign(foo);
+        verify223(bar, 1);
+    }
+
+    BOOST_TEST_MESSAGE("Target instance with padding");
+    {
+        NoninterleavedState<3,T> foo(size223()), bar(size223(), 7);
+        load223(foo, 1);
+
+        foo.assign(foo); // Self
+        verify223(foo, 1);
+
+        bar.assign(foo);
+        verify223(bar, 1);
+    }
+
+    BOOST_TEST_MESSAGE("Source instance with padding");
+    {
+        NoninterleavedState<3,T> foo(size223(),7), bar(size223());
+        load223(foo, 1);
+
+        foo.assign(foo); // Self
+        verify223(foo, 1);
+
+        bar.assign(foo);
+        verify223(bar, 1);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
