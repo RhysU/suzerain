@@ -301,12 +301,12 @@ private:
     template< typename ExtentList >
     static boost::array<typename multi_array_type::index,NumDims>
         computeStrides(
-            const ExtentList& extents_list,
+            const ExtentList& extent_list,
             typename Allocator::size_type min_variable_stride = 0);
 
     template< typename ExtentList >
     static std::size_t computeRawMemoryCount(
-            const ExtentList& extents_list,
+            const ExtentList& extent_list,
             typename Allocator::size_type min_variable_stride = 0);
 };
 
@@ -316,21 +316,24 @@ boost::array< typename NoninterleavedState<
         NumDims,Element,Allocator
     >::multi_array_type::index,NumDims>
 NoninterleavedState<NumDims,Element,Allocator>::computeStrides(
-        const ExtentList &extents,
+        const ExtentList &extent_list,
         typename Allocator::size_type min_variable_stride)
 {
-    // Slow, but we need random access to extents_list's contents
+    typedef typename multi_array_type::index index;
+
+    // Slow, but we need random access to extent_list's contents
     boost::array<typename ExtentList::value_type,NumDims> extents;
-    std::copy(extents.begin(), extents.end(), extents_list.begin());
+    std::copy(extent_list.begin(), extent_list.end(), extents.begin());
 
     // Obtain storage ordering type information in runtime array
-    const suzerain::mpl::sequence_array<storage_noninterleaved> storage;
-    assert(storage.size() == stride.size());
+    const suzerain::mpl::sequence_array<
+        typename storage_noninterleaved::storage_order_sequence> storage;
     assert(storage.size > 0);
     assert(storage[NumDims-1] == 0);
 
     // Compute the usual stride information by the usual means
     boost::array<index,NumDims> stride;
+    assert(storage.size() == stride.size());
     stride[storage[0]] = 1;
     for (index i = 1; i < NumDims; ++i) {
         stride[storage[i]] = stride[storage[i-1]]*extents[storage[i-1]];
@@ -345,18 +348,18 @@ template< std::size_t NumDims, typename Element, typename Allocator >
 template< typename ExtentList >
 std::size_t
 NoninterleavedState<NumDims,Element,Allocator>::computeRawMemoryCount(
-        const ExtentList &extents,
+        const ExtentList &extent_list,
         typename Allocator::size_type min_variable_stride)
 {
-    assert(extents_list.begin() != extents_list.end())
+    assert(extent_list.begin() != extent_list.end());
 
     using suzerain::functional::product;
     const std::size_t nonpadded_count
-        = product(extents_list.begin(), extents_list.end());
+        = product(extent_list.begin(), extent_list.end());
     const std::size_t padded_count
-        = *(extents_list.begin()) * min_variable_stride;
+        = *(extent_list.begin()) * min_variable_stride;
 
-    return std::max(padded, nonpadded);
+    return std::max(padded_count, nonpadded_count);
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
@@ -379,7 +382,7 @@ template< std::size_t NumDims, typename Element, typename Allocator >
 NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
         const NoninterleavedState &other)
     : IStateBase<NumDims,Element>(other),
-      IState<NumDims,Element,storage_interleaved>(other),
+      IState<NumDims,Element,storage_noninterleaved>(other),
       RawMemory<Element,Allocator>(other),
       multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
                        suzerain::multi_array::shape_array(other),
@@ -413,6 +416,8 @@ void NoninterleavedState<NumDims,Element,Allocator>::addScaled(
             const IState<NumDims,Element,storage_noninterleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
+    typedef typename multi_array_type::size_type size_type;
+
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
         throw std::logic_error("Unable to handle this->addScaled(...,this)");
 
@@ -448,6 +453,8 @@ void NoninterleavedState<NumDims,Element,Allocator>::assign(
             const IState<NumDims,Element,storage_noninterleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
+    typedef typename multi_array_type::size_type size_type;
+
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
     if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
@@ -479,16 +486,17 @@ throw(std::bad_cast, std::logic_error)
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 void NoninterleavedState<NumDims,Element,Allocator>::exchange(
-            const IState<NumDims,Element,storage_noninterleaved>& other)
+            IState<NumDims,Element,storage_noninterleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
+    typedef typename multi_array_type::size_type size_type;
+
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
     if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
             std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
-    const NoninterleavedState& o
-        = dynamic_cast<const NoninterleavedState&>(other);
+    NoninterleavedState& o = dynamic_cast<NoninterleavedState&>(other);
     assert(std::equal(this->strides()+1, this->strides() + NumDims,
                       o.strides()+1));
 
@@ -497,8 +505,8 @@ throw(std::bad_cast, std::logic_error)
         const size_type count = suzerain::functional::product(
                 this->shape() + 1, this->shape() + NumDims);
 
-        Element       *p = this->raw_memory();
-        const Element *q = o.raw_memory();
+        Element *p = this->raw_memory();
+        Element *q = o.raw_memory();
         while (p < this->raw_memory() + this->raw_memory_count()) {
             suzerain::blas::swap(count, q, 1, p, 1);
             p += this->strides()[0];
