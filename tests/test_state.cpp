@@ -228,28 +228,6 @@ static void test_exchange_helper(
     verify223(bar, 2);
 }
 
-template<
-    template <std::size_t,typename,typename> class State1,
-    template <std::size_t,typename,typename> class State2,
-    typename Allocator1,
-    typename Allocator2,
-    typename Element
->
-static void test_comparison_helper(
-    State1<3,Element,Allocator1> &foo,
-    State2<3,Element,Allocator2> &bar)
-{
-    load223(foo, 1);
-    load223(bar, 1);
-
-    BOOST_CHECK(foo == bar);
-    BOOST_CHECK(bar == foo);
-    foo[0][0][0] += foo[0][0][0];
-    BOOST_CHECK(foo != bar);
-    BOOST_CHECK(bar != foo);
-}
-
-
 BOOST_AUTO_TEST_SUITE( InterleavedState )
 
 using suzerain::InterleavedState;
@@ -266,13 +244,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 {
     // Regular constructor
     InterleavedState<3,T> foo(size223());
-    BOOST_CHECK_EQUAL(foo.raw_memory_count(), 2*2*3);
+    BOOST_CHECK_EQUAL(
+          std::distance(foo.memory_begin(),foo.memory_end()), 2*2*3);
     load223(foo, 1);
     verify223(foo, 1);
 
     // Copy construct a second instance from the first
     InterleavedState<3,T> bar(foo);
-    BOOST_CHECK_EQUAL(bar.raw_memory_count(), 2*2*3);
+    BOOST_CHECK_EQUAL(
+          std::distance(bar.memory_begin(),bar.memory_end()), 2*2*3);
     verify223(bar, 1);
 
     // Modify first instance's data
@@ -286,13 +266,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 
     // Create padded instance and ensure content lies within padding
     InterleavedState<3,T> baz(size223(), 2*2*3*7);
-    BOOST_CHECK_EQUAL(baz.raw_memory_count(), 2*2*3*7);
-    BOOST_CHECK_GE(baz.raw_memory(), &(baz[0][0][0]));
-    BOOST_CHECK_LT(&(baz[1][1][2]), baz.raw_memory() + baz.raw_memory_count());
+    BOOST_CHECK_EQUAL(
+          std::distance(baz.memory_begin(),baz.memory_end()), 2*2*3*7);
+    BOOST_CHECK_GE(baz.memory_begin(), &(baz[0][0][0]));
+    BOOST_CHECK_LT(&(baz[1][1][2]), baz.memory_end());
 
     // Ensure padded information present propagated in copy operations
     InterleavedState<3,T> qux(baz);
-    BOOST_CHECK_EQUAL(qux.raw_memory_count(), 2*2*3*7);
+    BOOST_CHECK_EQUAL(
+          std::distance(qux.memory_begin(),qux.memory_end()), 2*2*3*7);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
@@ -359,12 +341,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
     BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( comparison, T, test_types )
-{
-    InterleavedState<3,T> foo(size223()), bar(size223());
-    test_comparison_helper(foo, bar);
-}
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
 {
     using boost::detail::multi_array::MutableMultiArrayConcept;
@@ -390,13 +366,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 {
     // Regular constructor
     NoninterleavedState<3,T> foo(size223());
-    BOOST_CHECK_EQUAL(foo.raw_memory_count(), 2*2*3);
+    BOOST_CHECK_EQUAL(
+          std::distance(foo.memory_begin(),foo.memory_end()), 2*2*3);
     load223(foo, 1);
     verify223(foo, 1);
 
     // Copy construct a second instance from the first
     NoninterleavedState<3,T> bar(foo);
-    BOOST_CHECK_EQUAL(bar.raw_memory_count(), 2*2*3);
+    BOOST_CHECK_EQUAL(
+          std::distance(bar.memory_begin(),bar.memory_end()), 2*2*3);
     verify223(bar, 1);
 
     // Modify first instance's data
@@ -410,16 +388,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 
     // Create padded instance and ensure content lies within padding
     NoninterleavedState<3,T> baz(size223(), 7);
-    BOOST_CHECK_EQUAL(baz.raw_memory_count(), 2*7);
+    BOOST_CHECK_EQUAL(
+          std::distance(baz.memory_begin(),baz.memory_end()), 2*7);
     BOOST_CHECK_EQUAL(baz.strides()[0], 7);
-    BOOST_CHECK_GE(baz.raw_memory(), &(baz[0][0][0]));
-    BOOST_CHECK_LT(&(baz[1][1][2]), baz.raw_memory() + baz.raw_memory_count());
+    BOOST_CHECK_GE(baz.memory_begin(), &(baz[0][0][0]));
+    BOOST_CHECK_LT(&(baz[1][1][2]), baz.memory_end());
     load223(baz, 1);
     verify223(baz, 1);
 
     // Ensure padded information present propagated in copy operations
     NoninterleavedState<3,T> qux(baz);
-    BOOST_CHECK_EQUAL(qux.raw_memory_count(), 2*7);
+    BOOST_CHECK_EQUAL(
+          std::distance(qux.memory_begin(),qux.memory_end()), 2*7);
     BOOST_CHECK_EQUAL(baz.strides()[0], qux.strides()[0]);
     BOOST_CHECK_EQUAL(baz.strides()[1], qux.strides()[1]);
     BOOST_CHECK_EQUAL(baz.strides()[2], qux.strides()[2]);
@@ -599,33 +579,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
     {
         NoninterleavedState<3,T> foo(size223()), bar(size223(),17);
         test_exchange_helper(foo, bar);
-    }
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( comparison, T, test_types )
-{
-    BOOST_TEST_MESSAGE("Both instances without padding");
-    {
-        NoninterleavedState<3,T> foo(size223()), bar(size223());
-        test_comparison_helper(foo, bar);
-    }
-
-    BOOST_TEST_MESSAGE("Both instances with padding");
-    {
-        NoninterleavedState<3,T> foo(size223(),19), bar(size223(),21);
-        test_comparison_helper(foo, bar);
-    }
-
-    BOOST_TEST_MESSAGE("Target instance with padding");
-    {
-        NoninterleavedState<3,T> foo(size223(),9), bar(size223());
-        test_comparison_helper(foo, bar);
-    }
-
-    BOOST_TEST_MESSAGE("Source instance with padding");
-    {
-        NoninterleavedState<3,T> foo(size223()), bar(size223(),17);
-        test_comparison_helper(foo, bar);
     }
 }
 

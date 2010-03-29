@@ -49,37 +49,47 @@ template<
     typename Element,
     typename Allocator = std::allocator<Element>
 >
-class RawMemory
+class ContiguousMemory
+    : private Allocator // permits empty base class optimization
 {
 public:
     template< typename I >
-    RawMemory(
+    ContiguousMemory(
         I count,
         typename boost::enable_if<boost::is_integral<I> >::type* dummy = 0)
-        : count_(boost::numeric_cast<std::size_t>(count)),
-          a_(Allocator()),
-          p_(a_.allocate(count)) {}
+        : Allocator(),
+          pbegin_(Allocator::allocate(boost::numeric_cast<
+                      typename Allocator::size_type>(count))),
+          pend_(pbegin_ + count) {}
 
-    RawMemory(const RawMemory &other)
-        : count_(other.count_), a_(other.a_), p_(a_.allocate(count_))
+    ContiguousMemory(const ContiguousMemory &other)
+        : Allocator(other),
+          pbegin_(Allocator::allocate(boost::numeric_cast<
+                      typename Allocator::size_type>(
+                      std::distance(other.pbegin_,other.pend_)))),
+          pend_(pbegin_ + std::distance(other.pbegin_,other.pend_))
     {
-        std::memcpy(p_, other.p_, count_*sizeof(Element));
+        std::memcpy(pbegin_, other.pbegin_,
+            std::distance(other.pbegin_, other.pend_) * sizeof(Element));
     }
 
-    ~RawMemory() { a_.deallocate(p_, count_); }
-
-    typename Allocator::pointer raw_memory() const {
-        return typename Allocator::pointer(p_); // defensive copy
+    ~ContiguousMemory() {
+        Allocator::deallocate(pbegin_, std::distance(pbegin_,pend_));
     }
 
-    std::size_t raw_memory_count() const { return count_; }
+    typename Allocator::pointer const memory_begin() const {
+        return pbegin_;
+    }
+
+    typename Allocator::pointer const memory_end() const {
+        return pend_;
+    }
 
 private:
-    const RawMemory& operator=( const RawMemory& ); // Disable
+    const ContiguousMemory& operator=( const ContiguousMemory& ); // Disable
 
-    const std::size_t count_;
-    Allocator a_;
-    typename Allocator::pointer p_;
+    typename Allocator::pointer const pbegin_;
+    typename Allocator::pointer const pend_;
 };
 
 // Forward declarations
@@ -95,19 +105,25 @@ template<
 >
 class InterleavedState
     : public IState<NumDims,Element,suzerain::storage::interleaved<NumDims> >,
-      public RawMemory<Element,Allocator>,
+      public ContiguousMemory<Element,Allocator>,
       public boost::multi_array_ref<Element, NumDims>
 {
 public:
-    typedef typename boost::multi_array_ref<Element, NumDims>
-            multi_array_type;
     typedef typename suzerain::storage::interleaved<NumDims>
             storage_interleaved;
+
+    typedef typename boost::multi_array_ref<Element, NumDims> multi_array_type;
+    typedef typename multi_array_type::value_type value_type;
+    typedef typename multi_array_type::reference reference;
+    typedef typename multi_array_type::const_reference const_reference;
+    typedef typename multi_array_type::size_type size_type;
+    typedef typename multi_array_type::difference_type difference_type;
+    typedef typename multi_array_type::index index;
 
     template< typename ExtentList >
     explicit InterleavedState(
             const ExtentList& sizes,
-            typename Allocator::size_type min_total_contiguous_count = 0);
+            size_type min_total_contiguous_count = 0);
 
     InterleavedState(const InterleavedState& other);
 
@@ -142,13 +158,13 @@ template< std::size_t NumDims, typename Element, typename Allocator >
 template< typename ExtentList >
 InterleavedState<NumDims,Element,Allocator>::InterleavedState(
         const ExtentList& sizes,
-        typename Allocator::size_type min_total_contiguous_count)
+        size_type min_total_contiguous_count)
     : IStateBase<NumDims,Element>(),
       IState<NumDims,Element,storage_interleaved>(),
-      RawMemory<Element,Allocator>(std::max<typename Allocator::size_type>(
+      ContiguousMemory<Element,Allocator>(std::max<size_type>(
                     suzerain::functional::product(sizes.begin(), sizes.end()),
                     min_total_contiguous_count)),
-      multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
+      multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
                        sizes,
                        storage_interleaved::storage_order())
 {
@@ -160,12 +176,12 @@ InterleavedState<NumDims,Element,Allocator>::InterleavedState(
         const InterleavedState &other)
     : IStateBase<NumDims,Element>(other),
       IState<NumDims,Element,storage_interleaved>(other),
-      RawMemory<Element,Allocator>(other),
-      multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
+      ContiguousMemory<Element,Allocator>(other),
+      multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
                        suzerain::multi_array::shape_array(other),
                        storage_interleaved::storage_order())
 {
-    // Data copied by RawMemory's copy constructor
+    // Data copied by ContiguousMemory's copy constructor
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
@@ -247,21 +263,26 @@ class NoninterleavedState
     : public IState<NumDims,
                     Element,
                     suzerain::storage::noninterleaved<NumDims> >,
-      public RawMemory<Element,Allocator>,
+      public ContiguousMemory<Element,Allocator>,
       public boost::multi_array_ref<Element, NumDims>
 {
 public:
     typedef typename
-        boost::multi_array_ref<Element, NumDims>
-        multi_array_type;
-    typedef typename
         suzerain::storage::noninterleaved<NumDims>
         storage_noninterleaved;
+
+    typedef typename boost::multi_array_ref<Element, NumDims> multi_array_type;
+    typedef typename multi_array_type::value_type value_type;
+    typedef typename multi_array_type::reference reference;
+    typedef typename multi_array_type::const_reference const_reference;
+    typedef typename multi_array_type::size_type size_type;
+    typedef typename multi_array_type::difference_type difference_type;
+    typedef typename multi_array_type::index index;
 
     template< typename ExtentList >
     explicit NoninterleavedState(
             const ExtentList& sizes,
-            typename Allocator::size_type min_variable_stride = 0);
+            size_type min_variable_stride = 0);
 
     NoninterleavedState(const NoninterleavedState& other);
 
@@ -292,17 +313,17 @@ private:
     const NoninterleavedState& operator=( const NoninterleavedState& );
 
     template< typename ExtentList >
-    static std::size_t computeRawMemoryCount(
+    static std::size_t computeContiguousMemoryCount(
             const ExtentList& extent_list,
-            typename Allocator::size_type min_variable_stride = 0);
+            size_type min_variable_stride = 0);
 };
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 template< typename ExtentList >
 std::size_t
-NoninterleavedState<NumDims,Element,Allocator>::computeRawMemoryCount(
+NoninterleavedState<NumDims,Element,Allocator>::computeContiguousMemoryCount(
         const ExtentList &extent_list,
-        typename Allocator::size_type min_variable_stride)
+        size_type min_variable_stride)
 {
     assert(extent_list.begin() != extent_list.end());
 
@@ -319,17 +340,15 @@ template< std::size_t NumDims, typename Element, typename Allocator >
 template< typename ExtentList >
 NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
         const ExtentList& sizes,
-        typename Allocator::size_type min_variable_stride = 0)
+        size_type min_variable_stride = 0)
     : IStateBase<NumDims,Element>(),
       IState<NumDims,Element,storage_noninterleaved>(),
-      RawMemory<Element,Allocator>(
-              computeRawMemoryCount(sizes, min_variable_stride)),
-      multi_array_type(RawMemory<Element,Allocator>::raw_memory(),
+      ContiguousMemory<Element,Allocator>(
+              computeContiguousMemoryCount(sizes, min_variable_stride)),
+      multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
                        sizes,
                        storage_noninterleaved::storage_order())
 {
-    typedef typename multi_array_type::index index;
-
     // Abuse encapsulation; stride_list_ is protected from our
     // boost::const_multi_array_ref ancestor.
     this->stride_list_[0] = std::max(
@@ -342,12 +361,12 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
         const NoninterleavedState &other)
     : IStateBase<NumDims,Element>(other),
       IState<NumDims,Element,storage_noninterleaved>(other),
-      RawMemory<Element,Allocator>(other),
-      multi_array_type(this->raw_memory(),
+      ContiguousMemory<Element,Allocator>(other),
+      multi_array_type(this->memory_begin(),
                        suzerain::multi_array::shape_array(other),
                        storage_noninterleaved::storage_order())
 {
-    // Data copied by RawMemory's copy constructor
+    // Data copied by ContiguousMemory's copy constructor
 
     // Beware that boost::multi_array_ref has a shallow copy constructor; we
     // must use non-copy constructor and now explicitly copy strides.  Abuse
@@ -361,8 +380,9 @@ template< std::size_t NumDims, typename Element, typename Allocator >
 void NoninterleavedState<NumDims,Element,Allocator>::scale(
         const Element& factor)
 {
-    suzerain::blas::scal(this->raw_memory_count(),
-                         factor, this->raw_memory(), 1);
+    suzerain::blas::scal(
+            std::distance(this->memory_begin(),this->memory_end()),
+            factor, this->memory_begin(), 1);
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
@@ -382,8 +402,6 @@ void NoninterleavedState<NumDims,Element,Allocator>::addScaled(
             const IState<NumDims,Element,storage_noninterleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
-    typedef typename multi_array_type::size_type size_type;
-
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
         throw std::logic_error("Unable to handle this->addScaled(...,this)");
 
@@ -400,17 +418,18 @@ throw(std::bad_cast, std::logic_error)
         const size_type count = suzerain::functional::product(
                 this->shape() + 1, this->shape() + NumDims);
 
-        Element       *p = this->raw_memory();
-        const Element *q = o.raw_memory();
-        while (p < this->raw_memory() + this->raw_memory_count()) {
+        Element       *p = this->memory_begin();
+        const Element *q = o.memory_begin();
+        while (p < this->memory_end()) {
             suzerain::blas::axpy(count, factor, q, 1, p, 1);
             p += this->strides()[0];
             q += o.strides()[0];
         }
     } else {
         // Identical padding between variables: use a single BLAS call
-        suzerain::blas::axpy(this->raw_memory_count(),
-                             factor, o.raw_memory(), 1, this->raw_memory(), 1);
+        suzerain::blas::axpy(
+                std::distance(this->memory_begin(),this->memory_end()),
+                factor, o.memory_begin(), 1, this->memory_begin(), 1);
     }
 }
 
@@ -419,8 +438,6 @@ void NoninterleavedState<NumDims,Element,Allocator>::assign(
             const IState<NumDims,Element,storage_noninterleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
-    typedef typename multi_array_type::size_type size_type;
-
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
     if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
@@ -436,17 +453,18 @@ throw(std::bad_cast, std::logic_error)
         const size_type count = suzerain::functional::product(
                 this->shape() + 1, this->shape() + NumDims);
 
-        Element       *p = this->raw_memory();
-        const Element *q = o.raw_memory();
-        while (p < this->raw_memory() + this->raw_memory_count()) {
+        Element       *p = this->memory_begin();
+        const Element *q = o.memory_begin();
+        while (p < this->memory_end()) {
             suzerain::blas::copy(count, q, 1, p, 1);
             p += this->strides()[0];
             q += o.strides()[0];
         }
     } else {
         // Identical padding between variables: use a single BLAS call
-        suzerain::blas::copy(this->raw_memory_count(),
-                             o.raw_memory(), 1, this->raw_memory(), 1);
+        suzerain::blas::copy(
+                std::distance(this->memory_begin(),this->memory_end()),
+                o.memory_begin(), 1, this->memory_begin(), 1);
     }
 }
 
@@ -455,8 +473,6 @@ void NoninterleavedState<NumDims,Element,Allocator>::exchange(
             IState<NumDims,Element,storage_noninterleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
-    typedef typename multi_array_type::size_type size_type;
-
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
     if (SUZERAIN_UNLIKELY(!isConformant(other))) throw std::logic_error(
@@ -471,17 +487,18 @@ throw(std::bad_cast, std::logic_error)
         const size_type count = suzerain::functional::product(
                 this->shape() + 1, this->shape() + NumDims);
 
-        Element *p = this->raw_memory();
-        Element *q = o.raw_memory();
-        while (p < this->raw_memory() + this->raw_memory_count()) {
+        Element *p = this->memory_begin();
+        Element *q = o.memory_begin();
+        while (p < this->memory_end()) {
             suzerain::blas::swap(count, q, 1, p, 1);
             p += this->strides()[0];
             q += o.strides()[0];
         }
     } else {
         // Identical padding between variables: use a single BLAS call
-        suzerain::blas::swap(this->raw_memory_count(),
-                             o.raw_memory(), 1, this->raw_memory(), 1);
+        suzerain::blas::swap(
+                std::distance(this->memory_begin(),this->memory_end()),
+                o.memory_begin(), 1, this->memory_begin(), 1);
     }
 }
 
