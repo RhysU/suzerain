@@ -78,7 +78,7 @@ FPT integer_power(FPT x, Integer n)
 }
 
 /**
- * Output \n linearly spaced values between <tt>[xbegin, xend]</tt>
+ * Output \n linearly spaced values spanning the range <tt>[xbegin, xend]</tt>
  * (inclusive).
  *
  * @param xbegin Beginning value
@@ -107,7 +107,45 @@ OutputIterator linspace(const FPT xbegin,
         for (Integer i = 1; i < n-1; ++i) {
             *x++ = xh*i + xbegin;
         }
-        *x++ = xend; // Use endpoint to avoid floating point error
+        *x++ = xend;
+    }
+
+    return x;
+}
+
+/**
+ * Output \n logarithmically spaced values spanning the range
+ * <tt>[pow(base,xbegin), pow(base,xend)]</tt> (inclusive).
+ *
+ * @param xbegin Beginning value
+ * @param xend   Ending value
+ * @param n      Number of linearly spaced values to use.  Must be
+ *               nonnegative.
+ * @param x      Output locations
+ * @param base   Exponent base
+ * @return One plus that last output location.
+ */
+template<typename FPT, typename Integer, typename OutputIterator>
+OutputIterator logspace(const FPT xbegin,
+                        const FPT xend,
+                        const Integer n,
+                        OutputIterator x,
+                        const FPT base = 10)
+{
+    BOOST_STATIC_ASSERT(std::numeric_limits<Integer>::is_integer);
+    if (SUZERAIN_UNLIKELY(n <= 0)) throw std::invalid_argument("n < 0");
+
+    if (SUZERAIN_UNLIKELY(n == 1)) {
+        if (SUZERAIN_UNLIKELY(xbegin != xend))
+            throw std::invalid_argument("n == 1 && xbegin != xend");
+        *x++ = std::pow(base, xbegin);
+    } else {
+        const FPT xh = (xend - xbegin)/(n-1);
+        *x++ = pow(base, xbegin);
+        for (Integer i = 1; i < n-1; ++i) {
+            *x++ = std::pow(base, xh*i + xbegin);
+        }
+        *x++ = std::pow(base, xend);
     }
 
     return x;

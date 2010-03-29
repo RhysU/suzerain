@@ -11,7 +11,7 @@
 
 #pragma warning(disable:383)
 
-typedef boost::mpl::list< double ,float > test_types;
+typedef boost::mpl::list< double, float > test_types;
 
 BOOST_AUTO_TEST_CASE( integer_power )
 {
@@ -141,5 +141,78 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( linspace, T, test_types )
         BOOST_CHECK_CLOSE(result[2],T(3),close_enough);
         BOOST_CHECK_CLOSE(result[3],T(4),close_enough);
         BOOST_CHECK_EQUAL(result[4],T(5));
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( logspace, T, test_types )
+{
+    using suzerain::math::logspace;
+
+    BOOST_CHECK_THROW(logspace(T(0),T(10),0,(T*)NULL), std::invalid_argument);
+
+    {
+        T result;
+
+        BOOST_CHECK_EQUAL(logspace(T(5),T(5),1,&result,T(5)), &result+1);
+        BOOST_CHECK_EQUAL(result, std::pow(T(5),T(5)));
+
+        BOOST_CHECK_EQUAL(logspace(T(-123),T(-123),1,&result,T(7)), &result+1);
+        BOOST_CHECK_EQUAL(result, std::pow(T(7),T(-123)));
+
+        BOOST_CHECK_THROW(
+                logspace(T(0),T(10),1,(T *)NULL), std::invalid_argument);
+    }
+
+    {
+        T result[2];
+
+        // Strictly positive, increasing
+        BOOST_CHECK_EQUAL(logspace(T(2),T(5),2,result),result+2);
+        BOOST_CHECK_EQUAL(result[0],std::pow(T(10),T(2)));
+        BOOST_CHECK_EQUAL(result[1],std::pow(T(10),T(5)));
+
+        // Spans zero, increasing
+        BOOST_CHECK_EQUAL(logspace(T(-2),T(5),2,result,T(8)),result+2);
+        BOOST_CHECK_EQUAL(result[0],std::pow(T(8),T(-2)));
+        BOOST_CHECK_EQUAL(result[1],std::pow(T(8),T( 5)));
+
+        // Strictly negative, increasing
+        BOOST_CHECK_EQUAL(logspace(T(-5),T(-2),2,result,T(3)),result+2);
+        BOOST_CHECK_EQUAL(result[0],std::pow(T(3),T(-5)));
+        BOOST_CHECK_EQUAL(result[1],std::pow(T(3),T(-2)));
+
+        // Strictly negative, decreasing
+        BOOST_CHECK_EQUAL(logspace(T(-2),T(-5),2,result),result+2);
+        BOOST_CHECK_EQUAL(result[0],std::pow(T(10),T(-2)));
+        BOOST_CHECK_EQUAL(result[1],std::pow(T(10),T(-5)));
+    }
+
+    {
+        const T close_enough = std::numeric_limits<T>::epsilon();
+        T result[3];
+
+        // Strictly positive, increasing
+        BOOST_CHECK_EQUAL(logspace(T(2),T(5),3,result),result+3);
+        BOOST_CHECK_EQUAL(result[0],std::pow(T(10),T(2)));
+        BOOST_CHECK_CLOSE(result[1],std::pow(T(10),T(2+5)/2),close_enough);
+        BOOST_CHECK_EQUAL(result[2],std::pow(T(10),T(5)));
+
+        // Spans zero, increasing
+        BOOST_CHECK_EQUAL(logspace(T(-2),T(5),3,result,T(6)),result+3);
+        BOOST_CHECK_EQUAL(result[0],std::pow(T(6),T(-2)));
+        BOOST_CHECK_CLOSE(result[1],std::pow(T(6),T(-2+5)/2),close_enough);
+        BOOST_CHECK_EQUAL(result[2],std::pow(T(6),T( 5)));
+
+        // Strictly negative, increasing
+        BOOST_CHECK_EQUAL(logspace(T(-5),T(-2),3,result),result+3);
+        BOOST_CHECK_EQUAL(result[0],std::pow(T(10),T(-5)));
+        BOOST_CHECK_CLOSE(result[1],std::pow(T(10),T(-5-2)/2),close_enough);
+        BOOST_CHECK_EQUAL(result[2],std::pow(T(10),T(-2)));
+
+        // Strictly negative, decreasing
+        BOOST_CHECK_EQUAL(logspace(T(-2),T(-5),3,result,T(4)),result+3);
+        BOOST_CHECK_EQUAL(result[0],std::pow(T(4),T(-2)));
+        BOOST_CHECK_CLOSE(result[1],std::pow(T(4),T(-2-5)/2),close_enough);
+        BOOST_CHECK_EQUAL(result[2],std::pow(T(4),T(-5)));
     }
 }
