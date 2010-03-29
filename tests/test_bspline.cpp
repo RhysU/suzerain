@@ -12,6 +12,7 @@
 #include <suzerain/bspline.h>
 #include <suzerain/error.h>
 #include <suzerain/function.h>
+#include <suzerain/math.hpp>
 #include <log4cxx/logger.h>
 
 log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
@@ -695,6 +696,53 @@ BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
         suzerain_bspline_evaluate(
                 nderiv, coefficients, npoints, points, values, 0, w);
         BOOST_CHECK_CLOSE(-1./ 2., values[0], 1.0e-13); // 2nd derivative
+    }
+
+    suzerain_bspline_free(w);
+}
+
+BOOST_AUTO_TEST_CASE( collocation_point_evaluation_is_operator_application )
+{
+    double breakpoints[35];
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+    const int order  = 7;
+    const int ndof   = nbreak + order - 2;
+    const int nderiv = order - 1;
+    double points[ndof];
+    double coefficients[ndof];
+    double values_eval[ndof];
+    double values_apply[ndof];
+
+    // Establish workspace and get collocation point information
+    suzerain::math::logspace(0.1, 3.0, nbreak, breakpoints);
+    suzerain_bspline_workspace *w
+        = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
+            SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
+    BOOST_REQUIRE_EQUAL(ndof, w->ndof);
+    suzerain_bspline_collocation_points(points, 1, w);
+
+    // Generate "random" coefficients
+    srand(634949092u);
+    for (int i = 0; i < ndof; ++i) {
+        coefficients[i] = 100.0 * (rand() / (RAND_MAX + 1.0)) - 50.0;
+    }
+
+    for (int k = 0; k <= nderiv; ++k) {
+        BOOST_TEST_MESSAGE("Testing nderiv = " << k);
+
+        // Evaluate coefficients times derivatives of basis functions
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bspline_evaluate(
+                k, coefficients, ndof, points, values_eval, 0, w));
+
+        // Apply derivative matrices directly
+        std::memcpy(values_apply, coefficients, ndof*sizeof(double));
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bspline_apply_operator(
+                k, 1, values_apply, 1, ndof, w));
+
+        // Check that both mechanisms give the same result
+        check_close_collections(values_eval, values_eval + ndof,
+                                values_apply, values_apply + ndof,
+                                1.0e-12 * pow(10.0, k));
     }
 
     suzerain_bspline_free(w);
