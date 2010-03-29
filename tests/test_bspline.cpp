@@ -76,16 +76,18 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
 
         /* Check w->D[0] application against multiple vectors */
         const int nrhs = 2;
-        double vector[] = { 1, 2, 3, 4,
+        double vapply[] = { 1, 2, 3, 4,
                             5, 6, 7, 8 };
-        const double good_result[] = { 1, 2, 3, 4,
+        const double vapply_good[] = { 1, 2, 3, 4,
                                        5, 6, 7, 8 };
-        const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
+        const int ldb = sizeof(vapply)/(sizeof(vapply[0]))/nrhs;
         const int incb = 1;
-        suzerain_bspline_apply_operator(0, nrhs, vector, incb, ldb, w);
+        suzerain_bspline_apply_operator(0, nrhs, vapply, incb, ldb, w);
         BOOST_CHECK_EQUAL_COLLECTIONS(
-            good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
-            vector, vector + sizeof(vector)/sizeof(vector[0]));
+            vapply_good,
+            vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
+            vapply,
+            vapply + sizeof(vapply)/sizeof(vapply[0]));
     }
 
     {
@@ -108,20 +110,22 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
         /* Check w->D[1] application against multiple vectors */
         /* Includes b having non-unit stride */
         const int nrhs = 2;
-        double vector[] = {
+        double vapply[] = {
             1, /*DK*/555, 3, /*DK*/555, 2, /*DK*/555, 4,
             7, /*DK*/555, 6, /*DK*/555, 5, /*DK*/555, 8
         };
-        const double good_result[] = {
+        const double vapply_good[] = {
             2, /*DK*/555, -1, /*DK*/555, 2, /*DK*/555, 2,
            -1, /*DK*/555, -1, /*DK*/555, 3, /*DK*/555, 3
         };
-        const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
+        const int ldb = sizeof(vapply)/(sizeof(vapply[0]))/nrhs;
         const int incb = 2;
-        suzerain_bspline_apply_operator(1, nrhs, vector, incb, ldb, w);
+        suzerain_bspline_apply_operator(1, nrhs, vapply, incb, ldb, w);
         BOOST_CHECK_EQUAL_COLLECTIONS(
-            good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
-            vector, vector + sizeof(vector)/sizeof(vector[0]));
+            vapply_good,
+            vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
+            vapply,
+            vapply + sizeof(vapply)/sizeof(vapply[0]));
     }
 
     {
@@ -170,20 +174,22 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
     /* Also ensures that non-unit stride works as expected */
     {
         const int nrhs = 2;
-        double vector[] = {
+        double vapply[] = {
              1, /*DK*/555,  2, /*DK*/555, 3, /*DK*/555, 4,
             -4, /*DK*/555, -1, /*DK*/555, 1, /*DK*/555, 3
         };
-        const double good_result[] = {
+        const double vapply_good[] = {
             1.25, /*DK*/555, 1.75, /*DK*/555, 2.25, /*DK*/555, 2.75,
            -0.20, /*DK*/555, 1.00, /*DK*/555, 2.00, /*DK*/555, 3.00
         };
-        const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
+        const int ldb = sizeof(vapply)/(sizeof(vapply[0]))/nrhs;
         const int incb = 2;
-        suzerain_bspline_lu_solve(nrhs, vector, incb, ldb, luw);
+        suzerain_bspline_lu_solve(nrhs, vapply, incb, ldb, luw);
         check_close_collections(
-            good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
-            vector, vector + sizeof(vector)/sizeof(vector[0]),
+            vapply_good,
+            vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
+            vapply,
+            vapply + sizeof(vapply)/sizeof(vapply[0]),
             1.0e-12);
     }
 
@@ -224,15 +230,17 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
 
         /* Check w->D[0] application against multiple vectors */
         const int nrhs = 2;
-        double vector[] = { 1, 2, 3, 4, 5,
+        double vapply[] = { 1, 2, 3, 4, 5,
                             5, 6, 7, 8, 9 };
-        const double good_result[] = { 1., 15./8., 3., 33./8., 5.,
+        const double vapply_good[] = { 1., 15./8., 3., 33./8., 5.,
                                        5., 47./8., 7., 65./8., 9. };
-        const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-        suzerain_bspline_apply_operator(0, nrhs, vector, 1, ldb, w);
+        const int ldb = sizeof(vapply)/(sizeof(vapply[0]))/nrhs;
+        suzerain_bspline_apply_operator(0, nrhs, vapply, 1, ldb, w);
         BOOST_CHECK_EQUAL_COLLECTIONS(
-            good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
-            vector, vector + sizeof(vector)/sizeof(vector[0]));
+            vapply_good,
+            vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
+            vapply,
+            vapply + sizeof(vapply)/sizeof(vapply[0]));
     }
 
     suzerain_bspline_free(w);
@@ -277,17 +285,19 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
         /* Check w->D[0] application against multiple vectors */
         {
             const int nrhs = 2;
-            double vector[] = { 1, 2, 3, 4, 5, 6,
+            double vapply[] = { 1, 2, 3, 4, 5, 6,
                                 4, 5, 6, 7, 8, 9  };
-            const double good_result[] = {
+            const double vapply_good[] = {
                 1., 599./324., 35./12., 49./12., 1669./324., 6.,
                 4., 1571./324., 71./12., 85./12., 2641./324., 9.
             };
-            const int ldb = sizeof(vector)/(sizeof(vector[0]))/nrhs;
-            suzerain_bspline_apply_operator(0, nrhs, vector, 1, ldb, w);
+            const int ldb = sizeof(vapply)/(sizeof(vapply[0]))/nrhs;
+            suzerain_bspline_apply_operator(0, nrhs, vapply, 1, ldb, w);
             check_close_collections(
-                good_result, good_result + sizeof(good_result)/sizeof(good_result[0]),
-                vector, vector + sizeof(vector)/sizeof(vector[0]),
+                vapply_good,
+                vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
+                vapply,
+                vapply + sizeof(vapply)/sizeof(vapply[0]),
                 1.0e-12);
         }
     }

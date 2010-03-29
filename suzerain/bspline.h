@@ -274,13 +274,50 @@ suzerain_bspline_free(
     suzerain_bspline_workspace *w);
 
 /**
+ * Apply the <tt>nderivative</tt>-th derivative operator to coefficients \c x
+ * accumulating the result in \c y.  Multiplies \c alpha times the precomputed
+ * banded derivative operator against one or more coefficient vectors stored in
+ * \c x.  Results are added to \c beta times \c y.  Each coefficient vector is
+ * of length suzerain_bspline_ndof().  \c x and \c y cannot be aliased.
+ *
+ * @param[in] nderivative Derivative operator to apply.  May be zero.
+ * @param[in] nrhs Number of vectors stored in \c x and \c y.
+ * @param[in] alpha Multiplicative factor to use on \c x.
+ * @param[in] x Coefficients to be multiplied.
+ * @param[in] incx Stride between elements stored in \c x.
+ * @param[in] ldx Leading dimension of the data stored in \c x.
+ * @param[in] beta Multiplicative factor to use on \c y.
+ * @param[in,out] y Locations in which to accumulate the result.
+ * @param[in] incy Stride between elements stored in \c y.
+ * @param[in] ldy Leading dimension of the data stored in \c y.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ * @see suzerain_bspline_apply_operator for a way to apply an operator in place.
+ */
+int
+suzerain_bspline_accumulate_operator(
+    int nderivative,
+    int nrhs,
+    double alpha,
+    const double *x,
+    int incx,
+    int ldx,
+    double beta,
+    double *y,
+    int incy,
+    int ldy,
+    const suzerain_bspline_workspace *w);
+
+/**
  * Apply the <tt>nderivative</tt>-th derivative operator to coefficients \c b.
  * Multiplies the precomputed banded derivative operator against one or more
  * coefficient vectors stored in \c b.  Results overwrite \c b.  Each
  * coefficient vector is of length suzerain_bspline_ndof().
  *
  * @param[in] nderivative Derivative operator to apply.  May be zero.
- * @param[in] nrhs Number of coefficient vectors stored in b.
+ * @param[in] nrhs Number of coefficient vectors stored in \c b.
  * @param[in,out] b Coefficients to be multiplied.
  * @param[in] incb Stride between elements stored in \c b.
  * @param[in] ldb Leading dimension of the data stored in \c b.

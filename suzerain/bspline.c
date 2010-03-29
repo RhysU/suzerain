@@ -268,6 +268,47 @@ suzerain_bspline_free(suzerain_bspline_workspace * w)
 }
 
 int
+suzerain_bspline_accumulate_operator(
+    int nderivative,
+    int nrhs,
+    double alpha,
+    const double *x,
+    int incx,
+    int ldx,
+    double beta,
+    double *y,
+    int incy,
+    int ldy,
+    const suzerain_bspline_workspace *w)
+{
+    /* Parameter sanity checks */
+    if (nderivative < 0 || w->nderivatives < nderivative) {
+        SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
+    }
+    if (ldx < w->ndof) {
+        SUZERAIN_ERROR("ldx < w->ndof", SUZERAIN_EINVAL);
+    }
+    if (ldy < w->ndof) {
+        SUZERAIN_ERROR("ldy < w->ndof", SUZERAIN_EINVAL);
+    }
+    if (x == y) {
+        /* BLAS' behavior on aliased pointers is undefined */
+        SUZERAIN_ERROR("x == y not allowed", SUZERAIN_EINVAL);
+    }
+
+    for (int j = 0; j < nrhs; ++j) {
+        const double * const  x_j = x + j *ldx;
+        double       * const  y_j = y + j *ldy;
+        suzerain_blas_dgbmv('N', w->ndof, w->ndof,
+                            w->kl[nderivative], w->ku[nderivative],
+                            alpha, w->D[nderivative], w->ld, x_j, incx,
+                            beta, y_j, incy);
+    }
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
 suzerain_bspline_apply_operator(
     int nderivative,
     int nrhs,
@@ -298,12 +339,10 @@ suzerain_bspline_apply_operator(
         double * const b_j = b + j*ldb;
         /* Compute bi := w->D[nderivative]*b_j */
         suzerain_blas_dcopy(w->ndof, b_j, incb, scratch, incscratch);
-        suzerain_blas_dgbmv(
-            'N', w->ndof, w->ndof,
-            w->kl[nderivative], w->ku[nderivative],
-            1.0, w->D[nderivative], w->ld,
-            scratch, incscratch,
-            0.0, b_j, incb);
+        suzerain_blas_dgbmv('N', w->ndof, w->ndof,
+                            w->kl[nderivative], w->ku[nderivative],
+                            1.0, w->D[nderivative], w->ld, scratch, incscratch,
+                            0.0, b_j, incb);
     }
 
     suzerain_blas_free(scratch);
