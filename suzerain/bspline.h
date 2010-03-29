@@ -294,7 +294,8 @@ suzerain_bspline_free(
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
- * @see suzerain_bspline_apply_operator for a way to apply an operator in place.
+ * @see suzerain_bspline_apply_operator() for a way to apply an operator in
+ *      place.
  */
 int
 suzerain_bspline_accumulate_operator(
@@ -325,6 +326,8 @@ suzerain_bspline_accumulate_operator(
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
+ * @see suzerain_bspline_accumulate_operator() for a way to accumulate the
+ *      effect of an operator against other storage.
  */
 int
 suzerain_bspline_apply_operator(
