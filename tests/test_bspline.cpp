@@ -34,11 +34,13 @@ BOOST_AUTO_TEST_CASE( allocation_okay )
     suzerain_bspline_workspace *w
         = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
+    BOOST_REQUIRE(w != NULL);
 
     suzerain_bspline_lu_workspace *luw
         = suzerain_bspline_lu_alloc(w);
-    suzerain_bspline_lu_free(luw);
+    BOOST_REQUIRE(luw != NULL);
 
+    suzerain_bspline_lu_free(luw);
     suzerain_bspline_free(w);
 }
 
