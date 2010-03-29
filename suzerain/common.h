@@ -101,6 +101,7 @@ Provides hint to the compiler to optimize for the expression being false.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 /**
