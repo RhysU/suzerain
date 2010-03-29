@@ -88,6 +88,25 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
             vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
             vapply,
             vapply + sizeof(vapply)/sizeof(vapply[0]));
+
+        /* Check w->D[0] accumulation against multiple vectors */
+        const double vaccum_x[] = { 1, 2, 3, 4,
+                                    5, 6, 7, 8 };
+        const int ldx  = sizeof(vaccum_x)/sizeof(vaccum_x[0])/nrhs;
+        const int incx = 1;
+        double vaccum_y[] = {  1,  1,  1,  1,
+                              -1, -1, -1, -1 };
+        const double vaccum_y_good[] = { 2, 3, 4, 5,
+                                         4, 5, 6, 7 };
+        const int ldy  = sizeof(vaccum_y)/sizeof(vaccum_y[0])/nrhs;
+        const int incy = 1;
+        suzerain_bspline_accumulate_operator(
+            0, nrhs, 1.0, vaccum_x, incx, ldx, 1.0, vaccum_y, incy, ldy, w);
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+            vaccum_y_good,
+            vaccum_y_good + sizeof(vaccum_y_good)/sizeof(vaccum_y_good[0]),
+            vaccum_y,
+            vaccum_y + sizeof(vaccum_y)/sizeof(vaccum_y[0]));
     }
 
     {
@@ -241,6 +260,27 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
             vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
             vapply,
             vapply + sizeof(vapply)/sizeof(vapply[0]));
+
+        /* Check w->D[0] accumulation against multiple vectors */
+        const double vaccum_x[] = { 1, 2, 3, 4, 5,
+                                    5, 6, 7, 8, 9 };
+        const int ldx  = sizeof(vaccum_x)/sizeof(vaccum_x[0])/nrhs;
+        const int incx = 1;
+        double vaccum_y[] = {  3, -4,  5, -6,  7,
+                              -3,  4, -5,  6, -7 };
+        const int ldy  = sizeof(vaccum_y)/sizeof(vaccum_y[0])/nrhs;
+        const int incy = 1;
+        const double vaccum_y_good[] = {
+            1.+3, 15./8.-4, 3.+5, 33./8.-6, 5.+7,
+            5.-3, 47./8.+4, 7.-5, 65./8.+6, 9.-7
+        };
+        suzerain_bspline_accumulate_operator(
+            0, nrhs, 1.0, vaccum_x, incx, ldx, 1.0, vaccum_y, incy, ldy, w);
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+            vaccum_y_good,
+            vaccum_y_good + sizeof(vaccum_y_good)/sizeof(vaccum_y_good[0]),
+            vaccum_y,
+            vaccum_y + sizeof(vaccum_y)/sizeof(vaccum_y[0]));
     }
 
     suzerain_bspline_free(w);

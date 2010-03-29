@@ -297,8 +297,8 @@ suzerain_bspline_accumulate_operator(
     }
 
     for (int j = 0; j < nrhs; ++j) {
-        const double * const  x_j = x + j *ldx;
-        double       * const  y_j = y + j *ldy;
+        const double * const  x_j = x + j*ldx;
+        double       * const  y_j = y + j*ldy;
         suzerain_blas_dgbmv('N', w->ndof, w->ndof,
                             w->kl[nderivative], w->ku[nderivative],
                             alpha, w->D[nderivative], w->ld, x_j, incx,
