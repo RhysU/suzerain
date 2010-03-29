@@ -372,6 +372,43 @@ suzerain_bspline_find_interpolation_problem_rhs(
     double * rhs,
     const suzerain_bspline_workspace *w);
 
+
+/**
+ * For collocation methods like ::SUZERAIN_BSPLINE_COLLOCATION_GREVILLE, obtain
+ * the <tt>j</tt>-th collocation point \f$x_j\f$.
+ *
+ * @param[in] j      Index of the desired collocation point.
+ *                   Must be in the range <tt>[0,w->ndof)</tt>.
+ * @param[out] x_j Location of collocation point \f$x_j\f$.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bspline_collocation_point(
+    int j,
+    double *x_j,
+    const suzerain_bspline_workspace *w);
+
+/**
+ * For collocation methods like ::SUZERAIN_BSPLINE_COLLOCATION_GREVILLE obtain
+ * all collocation points \f$x_j\f$ for x in <tt>[0,w->ndof)</tt>.
+ *
+ * @param[out] x   Memory in which to store collocation points.
+ * @param[in] incx Increment between collocation points, measured in
+ *                 <tt>sizeof(double)</tt>.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bspline_collocation_points(
+    double *x,
+    int incx,
+    const suzerain_bspline_workspace *w);
+
 /**
  * Encapsulates the LU decomposition of a linear combination of derivative
  * operators.  Callers obtain a workspace using suzerain_bspline_lu_alloc() and

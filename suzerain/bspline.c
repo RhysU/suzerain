@@ -398,9 +398,10 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
                        SUZERAIN_ENOMEM);
     }
     for (int i = 0; i < w->order; ++i) {
-        points[i] = gsl_bspline_greville_abscissa(i, w->bw);
-        points[i + w->order] = gsl_bspline_greville_abscissa(
-                w->ndof-w->order+i, w->bw);
+        suzerain_bspline_collocation_point(
+                i, points + i, w);
+        suzerain_bspline_collocation_point(
+                w->ndof-w->order+i, points + i + w->order, w);
     }
 
     /* Allocate space for collocation operator submatrices */
@@ -497,26 +498,14 @@ static
 int
 suzerain_bspline_create_operators(suzerain_bspline_workspace *w)
 {
-    /* Compute the operator matrices based on the supplied method */
-    switch (w->method) {
-    case SUZERAIN_BSPLINE_COLLOCATION_GREVILLE:
-        /* Logic will need to change here once multiple methods available
-         * For now, continue since only one method is implemented */
-        break;
-    default:
-        SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
-    }
-
-    /* Evaluate basis at the Greville abscissae: d^k/dx^k B_j(\xi_i) */
+    /* Evaluate basis at collocation points: d^k/dx^k B_j(\xi_i) */
     double * const points
         = suzerain_blas_malloc(w->ndof*sizeof(w->bw->knots->data[0]));
     if (points == NULL) {
         SUZERAIN_ERROR("Unable to allocate space for Greville abscissae",
                        SUZERAIN_ENOMEM);
     }
-    for (int i = 0; i < w->ndof; ++i) {
-        points[i] = gsl_bspline_greville_abscissa(i, w->bw);
-    }
+    suzerain_bspline_collocation_points(points, 1, w);
 
     /* Zero the full derivative operator matrices */
     w->D[0] -= (w->max_ku - w->ku[0]); /* See suzerain_bspline_alloc */
@@ -611,20 +600,49 @@ suzerain_bspline_find_interpolation_problem_rhs(
     double * rhs,
     const suzerain_bspline_workspace *w)
 {
+    /* Evaluate the function at the collocation points */
+    const int n = w->ndof;
+    for (int i = 0; i < n; ++i) {
+        double x;
+        suzerain_bspline_collocation_point(i, &x, w);
+        rhs[i] = SUZERAIN_FN_EVAL(function, x);
+    }
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_collocation_point(
+    int j,
+    double *x_j,
+    const suzerain_bspline_workspace *w)
+{
     switch (w->method) {
     case SUZERAIN_BSPLINE_COLLOCATION_GREVILLE:
-        /* Logic will need to change here once multiple methods available */
-        /* For now, continue since only one method is implemented */
+        *x_j = gsl_bspline_greville_abscissa(j, w->bw);
         break;
     default:
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
 
-    /* Evaluate the function at the Greville abscissae */
-    const int n = w->ndof;
-    for (int i = 0; i < n; ++i) {
-        const double x = gsl_bspline_greville_abscissa(i, w->bw);
-        rhs[i] = SUZERAIN_FN_EVAL(function, x);
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_collocation_points(
+    double *x,
+    int incx,
+    const suzerain_bspline_workspace *w)
+{
+    switch (w->method) {
+    case SUZERAIN_BSPLINE_COLLOCATION_GREVILLE:
+        for (int j = 0; j < w->ndof; ++j) {
+            *x = gsl_bspline_greville_abscissa(j, w->bw);
+            x += incx;
+        }
+        break;
+    default:
+        SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
 
     return SUZERAIN_SUCCESS;
