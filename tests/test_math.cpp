@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( logspace, T, test_types )
     }
 
     {
-        const T close_enough = std::numeric_limits<T>::epsilon();
+        const T close_enough = std::numeric_limits<T>::epsilon()*100;
         T result[3];
 
         // Strictly positive, increasing
