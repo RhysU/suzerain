@@ -5,10 +5,14 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
+#include <boost/test/test_case_template.hpp>
 #include <suzerain/math.hpp>
 #include "test_tools.hpp"
 
-#pragma warning(push,disable:383)
+#pragma warning(disable:383)
+
+typedef boost::mpl::list< double ,float > test_types;
+
 BOOST_AUTO_TEST_CASE( integer_power )
 {
     using suzerain::math::integer_power;
@@ -55,4 +59,87 @@ BOOST_AUTO_TEST_CASE( integer_power )
     BOOST_CHECK_EQUAL( 1.0f, integer_power(0.0f, 0));
     BOOST_CHECK_EQUAL( 0.0f, integer_power(0.0f, 1));
 }
-#pragma warning(pop)
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( linspace, T, test_types )
+{
+    using suzerain::math::linspace;
+
+    BOOST_CHECK_THROW(linspace(T(0),T(10),0,(T*)NULL), std::invalid_argument);
+
+    {
+        T result;
+
+        BOOST_CHECK_EQUAL(linspace(T(567),T(567),1,&result), &result+1);
+        BOOST_CHECK_EQUAL(result, T(567));
+
+        BOOST_CHECK_EQUAL(linspace(T(-123),T(-123),1,&result), &result+1);
+        BOOST_CHECK_EQUAL(result, T(-123));
+
+        BOOST_CHECK_THROW(
+                linspace(T(0),T(10),1,(T *)NULL), std::invalid_argument);
+    }
+
+    {
+        T result[2];
+
+        // Strictly positive, increasing
+        BOOST_CHECK_EQUAL(linspace(T(234),T(567),2,result),result+2);
+        BOOST_CHECK_EQUAL(result[0],T(234));
+        BOOST_CHECK_EQUAL(result[1],T(567));
+
+        // Spans zero, increasing
+        BOOST_CHECK_EQUAL(linspace(T(-234),T(567),2,result),result+2);
+        BOOST_CHECK_EQUAL(result[0],T(-234));
+        BOOST_CHECK_EQUAL(result[1],T( 567));
+
+        // Strictly negative, increasing
+        BOOST_CHECK_EQUAL(linspace(T(-567),T(-234),2,result),result+2);
+        BOOST_CHECK_EQUAL(result[0],T(-567));
+        BOOST_CHECK_EQUAL(result[1],T(-234));
+
+        // Strictly negative, decreasing
+        BOOST_CHECK_EQUAL(linspace(T(-234),T(-567),2,result),result+2);
+        BOOST_CHECK_EQUAL(result[0],T(-234));
+        BOOST_CHECK_EQUAL(result[1],T(-567));
+    }
+
+    {
+        const T close_enough = std::numeric_limits<T>::epsilon();
+        T result[3];
+
+        // Strictly positive, increasing
+        BOOST_CHECK_EQUAL(linspace(T(234),T(567),3,result),result+3);
+        BOOST_CHECK_EQUAL(result[0],T(234));
+        BOOST_CHECK_CLOSE(result[1],T(234+567)/2,close_enough);
+        BOOST_CHECK_EQUAL(result[2],T(567));
+
+        // Spans zero, increasing
+        BOOST_CHECK_EQUAL(linspace(T(-234),T(567),3,result),result+3);
+        BOOST_CHECK_EQUAL(result[0],T(-234));
+        BOOST_CHECK_CLOSE(result[1],T(-234+567)/2,close_enough);
+        BOOST_CHECK_EQUAL(result[2],T( 567));
+
+        // Strictly negative, increasing
+        BOOST_CHECK_EQUAL(linspace(T(-567),T(-234),3,result),result+3);
+        BOOST_CHECK_EQUAL(result[0],T(-567));
+        BOOST_CHECK_CLOSE(result[1],T(-567-234)/2,close_enough);
+        BOOST_CHECK_EQUAL(result[2],T(-234));
+
+        // Strictly negative, decreasing
+        BOOST_CHECK_EQUAL(linspace(T(-234),T(-567),3,result),result+3);
+        BOOST_CHECK_EQUAL(result[0],T(-234));
+        BOOST_CHECK_CLOSE(result[1],T(-234-567)/2,close_enough);
+        BOOST_CHECK_EQUAL(result[2],T(-567));
+    }
+
+    {
+        const T close_enough = std::numeric_limits<T>::epsilon();
+        T result[5];
+        BOOST_CHECK_EQUAL(linspace(T(1),T(5),5,result),result+5);
+        BOOST_CHECK_EQUAL(result[0],T(1));
+        BOOST_CHECK_CLOSE(result[1],T(2),close_enough);
+        BOOST_CHECK_CLOSE(result[2],T(3),close_enough);
+        BOOST_CHECK_CLOSE(result[3],T(4),close_enough);
+        BOOST_CHECK_EQUAL(result[4],T(5));
+    }
+}

@@ -50,16 +50,16 @@ namespace math {
  *
  * @return \f$x^n\f$
  */
-template<typename FPT, typename Integral>
-FPT integer_power(FPT x, Integral n)
+template<typename FPT, typename Integer>
+FPT integer_power(FPT x, Integer n)
 {
     using std::numeric_limits;
 
     // Avoid shooting ourselves by accidentally requesting a negative power for
     // an integer input.  Long lines to ensure messages appear in compiler
     // error output when used improperly.
-    BOOST_STATIC_ASSERT(numeric_limits<Integral>::is_integer);
-    BOOST_STATIC_ASSERT(!numeric_limits<Integral>::is_signed || !numeric_limits<FPT>::is_integer);
+    BOOST_STATIC_ASSERT(numeric_limits<Integer>::is_integer);
+    BOOST_STATIC_ASSERT(!numeric_limits<Integer>::is_signed || !numeric_limits<FPT>::is_integer);
 
     FPT retval = 1;
     // Convert all requests into one involving a positive power
@@ -75,6 +75,42 @@ FPT integer_power(FPT x, Integral n)
     } while (n);
 
     return retval;
+}
+
+/**
+ * Output \n linearly spaced values between <tt>[xbegin, xend]</tt>
+ * (inclusive).
+ *
+ * @param xbegin Beginning value
+ * @param xend   Ending value
+ * @param n      Number of linearly spaced values to use.  Must be
+ *               nonnegative.
+ * @param x      Output locations
+ * @return One plus that last output location.
+ */
+template<typename FPT, typename Integer, typename OutputIterator>
+OutputIterator linspace(const FPT xbegin,
+                        const FPT xend,
+                        const Integer n,
+                        OutputIterator x)
+{
+    BOOST_STATIC_ASSERT(std::numeric_limits<Integer>::is_integer);
+    if (SUZERAIN_UNLIKELY(n <= 0)) throw std::invalid_argument("n < 0");
+
+    if (SUZERAIN_UNLIKELY(n == 1)) {
+        if (SUZERAIN_UNLIKELY(xbegin != xend))
+            throw std::invalid_argument("n == 1 && xbegin != xend");
+        *x++ = xbegin;
+    } else {
+        const FPT xh = (xend - xbegin)/(n-1);
+        *x++ = xbegin;
+        for (Integer i = 1; i < n-1; ++i) {
+            *x++ = xh*i + xbegin;
+        }
+        *x++ = xend; // Use endpoint to avoid floating point error
+    }
+
+    return x;
 }
 
 } // namespace math
