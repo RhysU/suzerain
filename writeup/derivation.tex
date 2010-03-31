@@ -59,6 +59,7 @@
 \begin{document}
 
 \section{Model derivation}
+\label{seq:derivation}
 
 Here we derive the mathematical model used in Suzerain.  Special attention is
 paid to the origins of all conservation laws and constitutive relations
@@ -581,15 +582,183 @@ dimensionless.  We arrive at the following nondimensional equations:
 \end{subequations}
 
 
+
+\section{Discretization}
+\label{sec:discretization}
+
+\subsection{Spatial discretization}
+
+To begin spatially discretizing the continuous nonlinear system
+\begin{align}
+  \partial_t u &= N\!\left(u\right)
+\intertext{
+  on the spatial domain
+  $[0,L_x]\times{}[0,L_y]\times{}[0,L_z]$,
+  we introduce its finite dimensional analog
+}
+  \partial_t u^h &= N\!\left(u^h\right) + R^h
+  \label{eq:discrete_system_with_residual}
+\end{align}
+where continuous $u = u\!\left(x,y,z,t\right)$ has been replaced by discrete
+$u^h = u^h\!\left(x,y,z,t\right)$ with $N_x\times{}N_y\times{}N_z$ degrees of
+freedom.  Here, $R^h$ is the discretization error that arises because the
+discrete solution cannot satisfy the continuous equations everywhere in space.
+We select Fourier expansions in the periodic $x$ and $z$ directions and a
+B-spline expansion in the wall-normal $y$ direction.  That is,
+\begin{align}
+u^h(x,y,z,t)
+&=
+  \sum_{l=0}^{N_y}
+  \sum_{m=-\frac{N_x}{2}+1}^{\frac{N_x}{2}}
+  \sum_{n=-\frac{N_z}{2}+1}^{\frac{N_z}{2}}
+  \hat{u}_{l,m,n}(t)
+  B_l(y)
+  e^{i \frac{2\pi{}m}{L_x}x}
+  e^{i \frac{2\pi{}n}{L_z}z}
+  \\
+&=
+  \sum_{l}\sum_{k_x}\sum_{k_z}
+  \hat{u}_{l,m,n}(t)B_l(y)e^{i k_x x}e^{i k_z z}
+  \label{eq:u_h_expansion}
+\end{align}
+where $k_x = 2\pi{}m/L_x$, $k_z = 2\pi{}n/L_z$, and $B_l(y)$ represents
+the fixed order B-spline basis functions.
+
+Now, within the method of weighted residuals framework, we choose a mixed
+Galerkin/collocation approach employing the $L^2$ inner product and test
+``functions'' like $\delta(y-y_i) e^{i k_x' x}e^{i k_z' z}$ for fixed
+collocation points $y_i$.  We catalog three relevant results
+\begin{align}
+   \int_0^{L_y} \delta(y-y_i) \, \varphi(y) \,d\!y
+&= \varphi(y_i),
+&
+   \int_0^{L_x} e^{i k_x x} e^{-i k_x' x} \,d\!x
+&= L_x \delta_{k_x k_x'}, \text{ and}
+&
+   \int_0^{L_z} e^{i k_z z} e^{-i k_z' z} \,d\!z
+&= L_z \delta_{k_z k_z'}
+\end{align}
+where the inner product's conjugate operation is accounted for by introducing a
+negative sign into the latter two exponentials.  We substitute
+\eqref{eq:u_h_expansion} into \eqref{eq:discrete_system_with_residual}, force
+our residual $R^h$ to be zero at each $y_i$, and test with our chosen test
+functions.  Simplifying each side separately we obtain the following:
+\begin{align}
+  \int_{0}^{L_y} \int_{0}^{L_x} \int_{0}^{L_z}
+ &\partial_t
+  \left(
+    \sum_{l}\sum_{k_x}\sum_{k_z}
+    \hat{u}_{l,m,n}(t)B_l(y)e^{i k_x x}e^{i k_z z}
+  \right)
+  \left(
+    \delta(y-y_i) e^{-i k_x' x}e^{-i k_z' z}
+  \right)
+  \, dz \, dx \, dy
+\\
+  &=
+  L_x L_z \sum_{l} B_l(y_i)
+  \partial_t \hat{u}_{l,m,n}(t)
+\\
+  \int_{0}^{L_y} \int_{0}^{L_x} \int_{0}^{L_z}
+ &N\left(
+    \sum_{l}\sum_{k_x}\sum_{k_z}
+    \hat{u}_{l,m,n}(t)B_l(y)e^{i k_x x}e^{i k_z z}
+  \right)
+  \left(
+    \delta(y-y_i) e^{-i k_x' x}e^{-i k_z' z}
+  \right)
+  \, dz \, dx \, dy
+\\
+  &=
+  \int_{0}^{L_x} \int_{0}^{L_z}
+  N\left(
+    \sum_{k_x}\sum_{k_z}
+    \left(
+      \sum_{l} B_l(y_i)
+      \hat{u}_{l,m,n}(t)
+    \right)
+    e^{i k_x x}e^{i k_z z}
+  \right)
+  \left(
+    e^{-i k_x' x}e^{-i k_z' z}
+  \right)
+  \, dz \, dx
+\intertext{
+  Reequating the two sides and rearranging gives
+}
+  \sum_{l} B_l(y_i)
+  \partial_t \hat{u}_{l,m,n}(t)
+&=
+  \frac{1}{L_x L_z}
+  \int_{0}^{L_x} \int_{0}^{L_z}
+  N\left(
+    \sum_{k_x}\sum_{k_z}
+    \left(
+      \sum_{l} B_l(y_i)
+      \hat{u}_{l,m,n}(t)
+    \right)
+    e^{i k_x x}e^{i k_z z}
+  \right)
+  \left(
+    e^{-i k_x' x}e^{-i k_z' z}
+  \right)
+  \, dz \, dx
+\\
+&\approx
+  \frac{1}{L_x L_z}
+  \sum_{k_x'} \sum_{k_z'}
+  N\left(
+    \sum_{k_x}\sum_{k_z}
+    \left(
+      \sum_{l} B_l(y_i)
+      \hat{u}_{l,m,n}(t)
+    \right)
+    e^{i k_x x}e^{i k_z z}
+  \right)
+  \left(
+    e^{-i k_x' x}e^{-i k_z' z}
+  \right)
+  \label{eq:spatial_discretization}
+\end{align}
+\nopagebreak
+where we have introduced quadrature error by approximating two integrals using
+finite sums.  This error can be mitigated via an appropriate dealiasing
+technique.  We are left with $N_x\times{}N_z$ time-dependent systems containing
+$N_y$ equations coupled in the $x$ and $z$ directions only through Fourier
+transform-like operations and the requirements of the nonlinear operator $N$.
+% FIXME Need dealiasing reference!
+
+Calling $\hat{u}_{l,m,n}(t)$ the wave space coefficients of the
+solution at some time $t$, the right hand side may be efficiently computed by
+\begin{enumerate}
+ \item performing $m\times{}n$ matrix-vector products
+       $\sum_{l} B_l(y_i) \hat{u}_{l,m,n}(t)$,
+ \item using an inverse fast Fourier transform across
+       the $x$ and $z$ directions to convert state information from wave space
+       to physical space,
+ \item applying the nonlinear operator $N$ in physical space, and
+ \item using a forward fast Fourier transform across the $x$ and $z$
+       directions to convert information from physical space to wave space.
+\end{enumerate}
+Note that the inverse Fourier transform is not normalized while the forward
+transform must be normalized.  Note also that the left hand side
+contains a mass matrix arising from the B-spline basis and collocation details.
+We retain it on the same side as the time derivative in anticipation of the
+time discretization scheme.
+
+\subsection{Time discretization}
+
+
 \section{Numerical considerations}
 
-Here we take the complete mathematical model and put it into the form which we
-will compute.  Though less clean in appearance, this section's equations will
-better reflect the spectral implementation details used in Suzerain than those
-given in the previous section.  We continue to use $\nabla$-notation instead of
-switching to Cartesian index notation in anticipation of $\nabla$ being
-decomposed into slow- and fast-growth contributions and/or needing to account
-for curvature in the domain.
+Here we take the complete mathematical model from section \ref{seq:derivation}
+and put it into the form which we will compute per section
+\ref{sec:discretization}.  Though less clean in appearance, this section's
+equations will better reflect the spectral implementation details used in
+Suzerain than those given in the previous section.  We continue to use
+$\nabla$-notation instead of switching to Cartesian index notation in
+anticipation of $\nabla$ being decomposed into slow- and fast-growth
+contributions and/or needing to account for curvature in the domain.
 
 \subsection{Convective derivative operator form}
 
@@ -1068,56 +1237,6 @@ values.
 \bibliographystyle{amsplain}
 \bibliography{derivation}
 
-
-
-\section{Discretization}
-
-\subsection{Time discretization}
-
-\subsection{Spatial discretization}
-
-\begin{align}
-  \partial_t u &= f(u)
-\\
-  \partial_t u^h &= f(u^h) + R^h
-\\
-u^h(x,y,z,t)
-&=
-  \sum_{l=0}^{N_y}
-  \sum_{m=-\frac{N_x}{2}+1}^{\frac{N_x}{2}}
-  \sum_{n=-\frac{N_z}{2}+1}^{\frac{N_z}{2}}
-  \hat{u}_{l,m,n}(t)
-  B_l(y)
-  e^{i \frac{2\pi{}m}{L_x}x}
-  e^{i \frac{2\pi{}n}{L_z}z}
-= \sum_{l}\sum_{k_x}\sum_{k_z}
-  \hat{u}_{l,m,n}(t)B_l(y)e^{i k_x x}e^{i k_z z}
-\end{align}
-
-\begin{align}
-\int_{0}^{L_y} \int_{0}^{L_x} \int_{0}^{L_z}
-&\delta(y-y_i) e^{-i k_x x}e^{-i k_z z}
-\partial_t
-\sum_{l}\sum_{k_x}\sum_{k_z}
-\hat{u}_{l,m,n}(t)B_l(y)e^{i k_x x}e^{i k_z z}
-\, dz \, dx \, dy
-\\
-&=
-\sum_{l}
-B_l(y_i) e^{i k_x x}e^{i k_z z}
-\partial_t
-\hat{u}_{l,m,n}(t)
-\end{align}
-
-\begin{align}
-\int_{0}^{L_y} \int_{0}^{L_x} \int_{0}^{L_z}
-\delta(y-y_i) e^{-i k_x x}e^{-i k_z z}
-f\left(
-  \sum_{l}\sum_{k_x}\sum_{k_z}
-  \hat{u}_{l,m,n}(t)B_l(y)e^{i k_x x}e^{i k_z z}
-\right)
-\, dz \, dx \, dy
-\end{align}
 
 
 \end{document}
