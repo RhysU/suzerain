@@ -52,7 +52,10 @@
  *      \quad \forall{} j.
  * \f]
  * The \f$k\f$-th collocation derivative operator matrix is given by
- * \f$D^k_{i,j}=\left(B^{(k)}_i(x_j)\right)\f$.
+ * \f$D^k_{i,j}=\left(B^{(k)}_j(x_i)\right)\f$.  Conveniently, the
+ * matrix-vector product of a collocation derivative matrix with a B-spline
+ * coefficient vector is equivalent to evaluating the linear combination of the
+ * basis functions at the collocation points.
  * For Galerkin-based operators, the relationship \f$ \left( B_j,
  * \tilde{\gamma}\right) = \left(B_j, \mathcal{D}\tilde{\phi}\right)\f$ must
  * hold for each spline basis index \f$j\f$ where \f$(f,g)\f$ denotes the
@@ -62,7 +65,7 @@
  *      =   \sum_{i} \alpha_{j} \left( B_j, \mathcal{D}B_i \right).
  * \f]
  * The \f$k\f$-th Galerkin derivative operator matrix is given by
- * \f$D^k_{i,j}=\left(B_i,B^{(k)}_j\right)\f$.  For either method, applying
+ * \f$D^k_{i,j}=\left(B_j,B^{(k)}_i\right)\f$.  For either method, applying
  * the \f$k\f$-th derivative operator requires solving the linear problem
  * \f$D^{0} \beta = D^{k} \alpha\f$.  The method to use is chosen
  * through the ::suzerain_bspline_method value provided to
