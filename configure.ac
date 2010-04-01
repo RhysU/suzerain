@@ -48,6 +48,17 @@ if test "x$ax_enable_debug" != "xyes"; then
     CXXFLAGS="${CXXFLAGS} ${CFLAGS_MAXOPT}"
     FFLAGS="${FFLAGS} ${CFLAGS_MAXOPT}"
     FCFLAGS="${FCFLAGS} ${CFLAGS_MAXOPT}"
+    dnl Enable IPO if the (Intel) compiler supports it, assumes that
+    dnl C/C++/Fortran dnl all support IPO if the compiler supports it.
+    dnl Assumption required because we must replace linker ar with xiar.
+    AC_LANG_PUSH([C])
+    AX_CHECK_COMPILER_FLAGS([-ipo], [
+        AR="xiar"
+        CFLAGS="$CFLAGS -ipo"
+        CXXFLAGS="$CXXFLAGS -ipo"
+        FFLAGS="$FFLAGS -ipo"
+    ])
+    AC_LANG_POP()
 fi
 if test "x$ax_enable_debug" != "xno"; then
     AX_TRACEBACK()
