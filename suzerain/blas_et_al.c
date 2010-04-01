@@ -1001,6 +1001,56 @@ suzerain_lapack_dgbtrs(
 }
 
 void
+suzerain_blasext_dgbmzv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double *a,
+        const int lda,
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy)
+{
+#pragma warning(push,disable:1572)
+    if (alpha[1] == 0.0 && beta[1] == 0.0) {
+#pragma warning(pop)
+        /* Real-valued alpha and beta: scale y as we go */
+        suzerain_blas_dgbmv(trans, m, n, kl, ku,
+                            alpha[0], a, lda, &(x[0][0]), 2*incx,
+                            beta[0], &(y[0][0]), 2*incy);
+        suzerain_blas_dgbmv(trans, m, n, kl, ku,
+                            -alpha[1], a, lda, &(x[0][1]), 2*incx,
+                            1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_dgbmv(trans, m, n, kl, ku,
+                            alpha[0], a, lda, &(x[0][1]), 2*incx,
+                            beta[0], &(y[0][1]), 2*incy);
+        suzerain_blas_dgbmv(trans, m, n, kl, ku,
+                            alpha[1], a, lda, &(x[0][0]), 2*incx,
+                            1.0, &(y[0][1]), 2*incy);
+    } else {
+        /* Complex-valued alpha and/or beta: scale y and then accumulate */
+        suzerain_blas_zscal(n, beta, y, incy); /* NB zscal */
+        suzerain_blas_dgbmv(trans, m, n, kl, ku,
+                            alpha[0], a, lda, &(x[0][0]), 2*incx,
+                            1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_dgbmv(trans, m, n, kl, ku,
+                            alpha[1], a, lda, &(x[0][0]), 2*incx,
+                            1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_dgbmv(trans, m, n, kl, ku,
+                            alpha[0], a, lda, &(x[0][1]), 2*incx,
+                            1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_dgbmv(trans, m, n, kl, ku,
+                            -alpha[1], a, lda, &(x[0][1]), 2*incx,
+                            1.0, &(y[0][0]), 2*incy);
+    }
+}
+
+void
 suzerain_blasext_i2s_zaxpby2(
         const int m,
         const int n,

@@ -647,8 +647,8 @@ suzerain_lapack_dgbtrs(
 /*! @} */
 
 /*! \name BLAS-like extensions
- * These are extensions built on vendor-specific BLAS-like routines and/or on
- * custom coded loops.
+ * These are extensions built atop the BLAS, on vendor-specific BLAS-like routines,
+ * and/or on custom coded loops.
  *
  * Some of these extensions refer to interleaved versus split complex storage.
  * Interleaved complex storage stores the imaginary component immediately after
@@ -661,6 +661,47 @@ suzerain_lapack_dgbtrs(
  * interleaved versus split complex storage</a>.
  * @{
  */
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
+ * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$.
+ * Real-valued strides are in units of <tt>double</tt> while complex-valued
+ * strides are in units of <tt>double[2]</tt>.
+ *
+ * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
+ *
+ * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
+ *      or a conjugate transpose, respectively.
+ * \param m Number of rows in matrix \c a.
+ * \param n Number of columns in matrix \c a.
+ * \param kl Number of subdiagonals in band storage of \c a.
+ * \param ku Number of superdiagonals in band storage of \c a.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$.
+ * \param a General band storage for matrix \f$ A \f$.
+ * \param lda Leading dimension of \c a in units of <tt>double</tt>.
+ * \param x Vector to be multiplied.
+ * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
+ * \param beta Multiplicative scalar \f$ \beta \f$.
+ * \param y Vector to be added to product and to contain result.
+ * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
+ *
+ * \see A BLAS reference for for general band storage matrix requirements.
+ */
+void
+suzerain_blasext_dgbmzv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double *a,
+        const int lda,
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy);
 
 /*!
  * \brief Compute two-strided \f$ Y \leftarrow{} \alpha{}X+\beta{}Y \f$

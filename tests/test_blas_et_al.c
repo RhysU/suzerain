@@ -1245,6 +1245,10 @@ main(int argc, char **argv)
 
     test_sgb_acc();
 
+    // TODO Add suzerain_blasext_dgbmzv test cases
+    // suzerain_blasext_dgbmzv exercised somewhat in test_bspline via
+    // zaccumulate and zapply
+
     test_blasext_i2s_zaxpby2();
 
 #ifdef SUZERAIN_HAVE_MKL

@@ -337,63 +337,13 @@ suzerain_bspline_zaccumulate_operator(
         SUZERAIN_ERROR("x == y not allowed", SUZERAIN_EINVAL);
     }
 
-#pragma warning(push,disable:1572)
-    if (alpha[1] == 0.0 && beta[1] == 0.0) {
-#pragma warning(pop)
-        /* Real-valued alpha and beta: scale y as we go */
-        for (int j = 0; j < nrhs; ++j) {
-            const double (*const x_j)[2] = x + j*ldx;
-            double       (*const y_j)[2] = y + j*ldy;
-
-            suzerain_blas_dgbmv(
-                    'N', w->ndof, w->ndof,
-                    w->kl[nderivative], w->ku[nderivative],
-                    alpha[0], w->D[nderivative], w->ld, &(x_j[0][0]), 2*incx,
-                    beta[0], &(y_j[0][0]), 2*incy);
-            suzerain_blas_dgbmv(
-                    'N', w->ndof, w->ndof,
-                    w->kl[nderivative], w->ku[nderivative],
-                    -alpha[1], w->D[nderivative], w->ld, &(x_j[0][1]), 2*incx,
-                    1.0, &(y_j[0][0]), 2*incy);
-            suzerain_blas_dgbmv(
-                    'N', w->ndof, w->ndof,
-                    w->kl[nderivative], w->ku[nderivative],
-                    alpha[0], w->D[nderivative], w->ld, &(x_j[0][1]), 2*incx,
-                    beta[0], &(y_j[0][1]), 2*incy);
-            suzerain_blas_dgbmv(
-                    'N', w->ndof, w->ndof,
-                    w->kl[nderivative], w->ku[nderivative],
-                    alpha[1], w->D[nderivative], w->ld, &(x_j[0][0]), 2*incx,
-                    1.0, &(y_j[0][1]), 2*incy);
-        }
-    } else {
-        /* Complex-valued alpha and/or beta: scale y and then accumulate */
-        for (int j = 0; j < nrhs; ++j) {
-            const double (*const x_j)[2] = x + j*ldx;
-            double       (*const y_j)[2] = y + j*ldy;
-
-            suzerain_blas_zscal(w->ndof, beta, y_j, incy); /* NB zscal */
-            suzerain_blas_dgbmv(
-                    'N', w->ndof, w->ndof,
-                    w->kl[nderivative], w->ku[nderivative],
-                    alpha[0], w->D[nderivative], w->ld, &(x_j[0][0]), 2*incx,
-                    1.0, &(y_j[0][0]), 2*incy);
-            suzerain_blas_dgbmv(
-                    'N', w->ndof, w->ndof,
-                    w->kl[nderivative], w->ku[nderivative],
-                    alpha[1], w->D[nderivative], w->ld, &(x_j[0][0]), 2*incx,
-                    1.0, &(y_j[0][1]), 2*incy);
-            suzerain_blas_dgbmv(
-                    'N', w->ndof, w->ndof,
-                    w->kl[nderivative], w->ku[nderivative],
-                    alpha[0], w->D[nderivative], w->ld, &(x_j[0][1]), 2*incx,
-                    1.0, &(y_j[0][1]), 2*incy);
-            suzerain_blas_dgbmv(
-                    'N', w->ndof, w->ndof,
-                    w->kl[nderivative], w->ku[nderivative],
-                    -alpha[1], w->D[nderivative], w->ld, &(x_j[0][1]), 2*incx,
-                    1.0, &(y_j[0][0]), 2*incy);
-        }
+    for (int j = 0; j < nrhs; ++j) {
+        const double (*const x_j)[2] = x + j*ldx;
+        double       (*const y_j)[2] = y + j*ldy;
+        suzerain_blasext_dgbmzv('N', w->ndof, w->ndof,
+                                w->kl[nderivative], w->ku[nderivative],
+                                alpha, w->D[nderivative], w->ld, x_j, incx,
+                                beta, y_j, incy);
     }
 
     return SUZERAIN_SUCCESS;
