@@ -285,11 +285,11 @@ suzerain_bspline_accumulate_operator(
     if (nderivative < 0 || w->nderivatives < nderivative) {
         SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
     }
-    if (ldx < w->ndof) {
-        SUZERAIN_ERROR("ldx < w->ndof", SUZERAIN_EINVAL);
+    if (nrhs > 1 && ldx < w->ndof) {
+        SUZERAIN_ERROR("nrhs > 1 && ldx < w->ndof", SUZERAIN_EINVAL);
     }
-    if (ldy < w->ndof) {
-        SUZERAIN_ERROR("ldy < w->ndof", SUZERAIN_EINVAL);
+    if (nrhs > 1 && ldy < w->ndof) {
+        SUZERAIN_ERROR("nrhs > 1 && ldy < w->ndof", SUZERAIN_EINVAL);
     }
     if (x == y) {
         /* BLAS' behavior on aliased pointers is undefined */
@@ -309,6 +309,97 @@ suzerain_bspline_accumulate_operator(
 }
 
 int
+suzerain_bspline_zaccumulate_operator(
+    int nderivative,
+    int nrhs,
+    const double alpha[2],
+    const double (*x)[2],
+    int incx,
+    int ldx,
+    const double beta[2],
+    double (*y)[2],
+    int incy,
+    int ldy,
+    const suzerain_bspline_workspace *w)
+{
+    /* Parameter sanity checks */
+    if (nderivative < 0 || w->nderivatives < nderivative) {
+        SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
+    }
+    if (nrhs > 1 && ldx < w->ndof) {
+        SUZERAIN_ERROR("nrhs > 1 && ldx < w->ndof", SUZERAIN_EINVAL);
+    }
+    if (nrhs > 1 && ldy < w->ndof) {
+        SUZERAIN_ERROR("nrhs > 1 && ldy < w->ndof", SUZERAIN_EINVAL);
+    }
+    if ((void*) x == (void*) y) {
+        /* BLAS' behavior on aliased pointers is undefined */
+        SUZERAIN_ERROR("x == y not allowed", SUZERAIN_EINVAL);
+    }
+
+#pragma warning(push,disable:1572)
+    if (alpha[1] == 0.0 && beta[1] == 0.0) {
+#pragma warning(pop)
+        /* Real-valued alpha and beta: scale y as we go */
+        for (int j = 0; j < nrhs; ++j) {
+            const double (*const x_j)[2] = x + j*ldx;
+            double       (*const y_j)[2] = y + j*ldy;
+
+            suzerain_blas_dgbmv(
+                    'N', w->ndof, w->ndof,
+                    w->kl[nderivative], w->ku[nderivative],
+                    alpha[0], w->D[nderivative], w->ld, &(x_j[0][0]), 2*incx,
+                    beta[0], &(y_j[0][0]), 2*incy);
+            suzerain_blas_dgbmv(
+                    'N', w->ndof, w->ndof,
+                    w->kl[nderivative], w->ku[nderivative],
+                    -alpha[1], w->D[nderivative], w->ld, &(x_j[0][1]), 2*incx,
+                    1.0, &(y_j[0][0]), 2*incy);
+            suzerain_blas_dgbmv(
+                    'N', w->ndof, w->ndof,
+                    w->kl[nderivative], w->ku[nderivative],
+                    alpha[0], w->D[nderivative], w->ld, &(x_j[0][1]), 2*incx,
+                    beta[0], &(y_j[0][1]), 2*incy);
+            suzerain_blas_dgbmv(
+                    'N', w->ndof, w->ndof,
+                    w->kl[nderivative], w->ku[nderivative],
+                    alpha[1], w->D[nderivative], w->ld, &(x_j[0][0]), 2*incx,
+                    1.0, &(y_j[0][1]), 2*incy);
+        }
+    } else {
+        /* Complex-valued alpha and/or beta: scale y and then accumulate */
+        for (int j = 0; j < nrhs; ++j) {
+            const double (*const x_j)[2] = x + j*ldx;
+            double       (*const y_j)[2] = y + j*ldy;
+
+            suzerain_blas_zscal(w->ndof, beta, y_j, incy); /* NB zscal */
+            suzerain_blas_dgbmv(
+                    'N', w->ndof, w->ndof,
+                    w->kl[nderivative], w->ku[nderivative],
+                    alpha[0], w->D[nderivative], w->ld, &(x_j[0][0]), 2*incx,
+                    1.0, &(y_j[0][0]), 2*incy);
+            suzerain_blas_dgbmv(
+                    'N', w->ndof, w->ndof,
+                    w->kl[nderivative], w->ku[nderivative],
+                    alpha[1], w->D[nderivative], w->ld, &(x_j[0][0]), 2*incx,
+                    1.0, &(y_j[0][1]), 2*incy);
+            suzerain_blas_dgbmv(
+                    'N', w->ndof, w->ndof,
+                    w->kl[nderivative], w->ku[nderivative],
+                    alpha[0], w->D[nderivative], w->ld, &(x_j[0][1]), 2*incx,
+                    1.0, &(y_j[0][1]), 2*incy);
+            suzerain_blas_dgbmv(
+                    'N', w->ndof, w->ndof,
+                    w->kl[nderivative], w->ku[nderivative],
+                    -alpha[1], w->D[nderivative], w->ld, &(x_j[0][1]), 2*incx,
+                    1.0, &(y_j[0][0]), 2*incy);
+        }
+    }
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
 suzerain_bspline_apply_operator(
     int nderivative,
     int nrhs,
@@ -321,8 +412,8 @@ suzerain_bspline_apply_operator(
     if (nderivative < 0 || w->nderivatives < nderivative) {
         SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
     }
-    if (ldb < w->ndof) {
-        SUZERAIN_ERROR("ldb < w->ndof", SUZERAIN_EINVAL);
+    if (nrhs > 1 && ldb < w->ndof) {
+        SUZERAIN_ERROR("nrhs > 1 && ldb < w->ndof", SUZERAIN_EINVAL);
     }
 
     /* Allocate scratch space; Required because BLAS operations' behavior on
@@ -337,7 +428,7 @@ suzerain_bspline_apply_operator(
 
     for (int j = 0; j < nrhs; ++j) {
         double * const b_j = b + j*ldb;
-        /* Compute bi := w->D[nderivative]*b_j */
+        /* Compute b_j := w->D[nderivative]*b_j */
         suzerain_blas_dcopy(w->ndof, b_j, incb, scratch, incscratch);
         suzerain_blas_dgbmv('N', w->ndof, w->ndof,
                             w->kl[nderivative], w->ku[nderivative],
@@ -349,6 +440,50 @@ suzerain_bspline_apply_operator(
     return SUZERAIN_SUCCESS;
 }
 
+int
+suzerain_bspline_zapply_operator(
+    int nderivative,
+    int nrhs,
+    double (*b)[2],
+    int incb,
+    int ldb,
+    const suzerain_bspline_workspace *w)
+{
+    /* Parameter sanity checks */
+    if (nderivative < 0 || w->nderivatives < nderivative) {
+        SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
+    }
+    if (nrhs > 1 && ldb < w->ndof) {
+        SUZERAIN_ERROR("nrhs > 1 && ldb < w->ndof", SUZERAIN_EINVAL);
+    }
+
+    /* Allocate scratch space; Required because BLAS operations' behavior on
+     * aliased pointers is undefined. */
+    double * const scratch
+        = suzerain_blas_malloc(w->ndof*sizeof(scratch[0]));
+    const int incscratch = 1;
+    if (scratch == NULL) {
+        SUZERAIN_ERROR("failed to allocate scratch space",
+                       SUZERAIN_ENOMEM);
+    }
+
+    for (int j = 0; j < nrhs; ++j) {
+        double (*const b_j)[2] = b + j*ldb;
+        /* Compute b_j := w->D[nderivative]*b_j for real/imaginary parts */
+        for (int i = 0; i < 2; ++i) {
+            suzerain_blas_dcopy(
+                    w->ndof, &(b_j[0][i]), 2*incb, scratch, incscratch);
+            suzerain_blas_dgbmv(
+                    'N', w->ndof, w->ndof,
+                    w->kl[nderivative], w->ku[nderivative],
+                    1.0, w->D[nderivative], w->ld, scratch, incscratch,
+                    0.0, &(b_j[0][i]), 2*incb);
+        }
+    }
+
+    suzerain_blas_free(scratch);
+    return SUZERAIN_SUCCESS;
+}
 
 int
 suzerain_bspline_evaluate(
