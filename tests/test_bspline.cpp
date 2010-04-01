@@ -74,39 +74,125 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
             w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld,
             1e-12);
 
-        /* Check w->D[0] application against multiple vectors */
-        const int nrhs = 2;
-        double vapply[] = { 1, 2, 3, 4,
-                            5, 6, 7, 8 };
-        const double vapply_good[] = { 1, 2, 3, 4,
-                                       5, 6, 7, 8 };
-        const int ldb = sizeof(vapply)/(sizeof(vapply[0]))/nrhs;
-        const int incb = 1;
-        suzerain_bspline_apply_operator(0, nrhs, vapply, incb, ldb, w);
-        BOOST_CHECK_EQUAL_COLLECTIONS(
-            vapply_good,
-            vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
-            vapply,
-            vapply + sizeof(vapply)/sizeof(vapply[0]));
+        {
+            /* Check w->D[0] application against multiple real vectors */
+            const int nrhs = 2;
+            double b[] = { 1, 2, 3, 4,
+                           5, 6, 7, 8 };
+            const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+            const int incb = 1;
+            suzerain_bspline_apply_operator(0, nrhs, b, incb, ldb, w);
+            const double b_good[] = { 1, 2, 3, 4,
+                                      5, 6, 7, 8 };
+            BOOST_CHECK_EQUAL_COLLECTIONS(
+                b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
+                b, b + sizeof(b)/sizeof(b[0]));
+        }
 
-        /* Check w->D[0] accumulation against multiple vectors */
-        const double vaccum_x[] = { 1, 2, 3, 4,
-                                    5, 6, 7, 8 };
-        const int ldx  = sizeof(vaccum_x)/sizeof(vaccum_x[0])/nrhs;
-        const int incx = 1;
-        double vaccum_y[] = {  1,  1,  1,  1,
-                              -1, -1, -1, -1 };
-        const double vaccum_y_good[] = { 2, 3, 4, 5,
-                                         4, 5, 6, 7 };
-        const int ldy  = sizeof(vaccum_y)/sizeof(vaccum_y[0])/nrhs;
-        const int incy = 1;
-        suzerain_bspline_accumulate_operator(
-            0, nrhs, 1.0, vaccum_x, incx, ldx, 1.0, vaccum_y, incy, ldy, w);
-        BOOST_CHECK_EQUAL_COLLECTIONS(
-            vaccum_y_good,
-            vaccum_y_good + sizeof(vaccum_y_good)/sizeof(vaccum_y_good[0]),
-            vaccum_y,
-            vaccum_y + sizeof(vaccum_y)/sizeof(vaccum_y[0]));
+        {
+            /* Check w->D[0] application against multiple complex vectors */
+            const int nrhs = 2;
+            double b[][2] = {
+                { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8},
+                {11, 12}, {13, 14}, {15, 16}, {17, 18}
+            };
+            const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+            const int incb = 1;
+            suzerain_bspline_zapply_operator(0, nrhs, b, incb, ldb, w);
+            const double b_good[][2] = {
+                { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8},
+                {11, 12}, {13, 14}, {15, 16}, {17, 18}
+            };
+            BOOST_CHECK_EQUAL_COLLECTIONS(
+                (double *) b_good,
+                (double *)(b_good + sizeof(b_good)/sizeof(b_good[0])),
+                (double *) b,
+                (double *)(b + sizeof(b)/sizeof(b[0])));
+        }
+
+        {
+            /* Check w->D[0] accumulation against multiple real vectors */
+            const int nrhs = 2;
+            const double x[] = { 1, 2, 3, 4,
+                                 5, 6, 7, 8 };
+            const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+            const int incx = 1;
+            double y[] = {  1,  1,  1,  1,
+                           -1, -1, -1, -1 };
+            const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+            const int incy = 1;
+            suzerain_bspline_accumulate_operator(
+                0, nrhs, 1.0, x, incx, ldx, 1.0, y, incy, ldy, w);
+            const double y_good[] = { 2, 3, 4, 5,
+                                      4, 5, 6, 7 };
+            BOOST_CHECK_EQUAL_COLLECTIONS(
+                y_good,
+                y_good + sizeof(y_good)/sizeof(y_good[0]),
+                y,
+                y + sizeof(y)/sizeof(y[0]));
+        }
+
+        {
+            /* Check w->D[0] accumulation against multiple complex vectors */
+            /* using complex-valued coefficients                           */
+            const int nrhs = 2;
+            const double x[][2] = {
+                { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8},
+                {11, 12}, {13, 14}, {15, 16}, {17, 18}
+            };
+            const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+            const int incx = 1;
+            double y[][2] = {
+                { 1,  1}, { 1,  1}, {-1, -1}, {-1, -1},
+                {-1, -1}, {-1, -1}, { 1,  1}, { 1,  1}
+            };
+            const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+            const int incy = 1;
+            const double alpha[2] = { 2, 3 }; /* NB complex-valued */
+            const double beta[2]  = { 5, 7 }; /* NB complex-valued */
+            suzerain_bspline_zaccumulate_operator(
+                0, nrhs, alpha, x, incx, ldx, beta, y, incy, ldy, w);
+            const double y_good[][2] = {
+                 { -6, 19},  { -8, 29},  { -6, 15},  { -8, 25},
+                 {-12, 45},  {-14, 55},  {-20, 89},  {-22, 99}
+            };
+            BOOST_CHECK_EQUAL_COLLECTIONS(
+                (double *) y_good,
+                (double *)(y_good + sizeof(y_good)/sizeof(y_good[0])),
+                (double *) y,
+                (double *)(y + sizeof(y)/sizeof(y[0])));
+        }
+
+        {
+            /* Check w->D[0] accumulation against multiple complex vectors */
+            /* using real-valued coefficients                              */
+            const int nrhs = 2;
+            const double x[][2] = {
+                { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8},
+                {11, 12}, {13, 14}, {15, 16}, {17, 18}
+            };
+            const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+            const int incx = 1;
+            double y[][2] = {
+                { 1,  1}, { 1,  1}, {-1, -1}, {-1, -1},
+                {-1, -1}, {-1, -1}, { 1,  1}, { 1,  1}
+            };
+            const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+            const int incy = 1;
+            const double alpha[2] = { 2, 0 }; /* NB real-valued */
+            const double beta[2]  = { 5, 0 }; /* NB real-valued */
+            suzerain_bspline_zaccumulate_operator(
+                0, nrhs, alpha, x, incx, ldx, beta, y, incy, ldy, w);
+            const double y_good[][2] = {
+                { 7,  9}, {11, 13}, { 5,  7}, { 9, 11},
+                {17, 19}, {21, 23}, {35, 37}, {39, 41}
+            };
+            BOOST_CHECK_EQUAL_COLLECTIONS(
+                (double *) y_good,
+                (double *)(y_good + sizeof(y_good)/sizeof(y_good[0])),
+                (double *) y,
+                (double *)(y + sizeof(y)/sizeof(y[0])));
+        }
     }
 
     {
@@ -247,40 +333,125 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
             w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld,
             1e-12);
 
-        /* Check w->D[0] application against multiple vectors */
-        const int nrhs = 2;
-        double vapply[] = { 1, 2, 3, 4, 5,
-                            5, 6, 7, 8, 9 };
-        const double vapply_good[] = { 1., 15./8., 3., 33./8., 5.,
-                                       5., 47./8., 7., 65./8., 9. };
-        const int ldb = sizeof(vapply)/(sizeof(vapply[0]))/nrhs;
-        suzerain_bspline_apply_operator(0, nrhs, vapply, 1, ldb, w);
-        BOOST_CHECK_EQUAL_COLLECTIONS(
-            vapply_good,
-            vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
-            vapply,
-            vapply + sizeof(vapply)/sizeof(vapply[0]));
+        {
+            /* Check w->D[0] application against multiple real vectors */
+            const int nrhs = 2;
+            double b[] = { 1, 2, 3, 4, 5,
+                           5, 6, 7, 8, 9 };
+            const double b_good[] = { 1., 15./8., 3., 33./8., 5.,
+                                      5., 47./8., 7., 65./8., 9. };
+            const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+            suzerain_bspline_apply_operator(0, nrhs, b, 1, ldb, w);
+            BOOST_CHECK_EQUAL_COLLECTIONS(
+                b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
+                b, b + sizeof(b)/sizeof(b[0]));
+        }
 
-        /* Check w->D[0] accumulation against multiple vectors */
-        const double vaccum_x[] = { 1, 2, 3, 4, 5,
-                                    5, 6, 7, 8, 9 };
-        const int ldx  = sizeof(vaccum_x)/sizeof(vaccum_x[0])/nrhs;
-        const int incx = 1;
-        double vaccum_y[] = {  3, -4,  5, -6,  7,
-                              -3,  4, -5,  6, -7 };
-        const int ldy  = sizeof(vaccum_y)/sizeof(vaccum_y[0])/nrhs;
-        const int incy = 1;
-        const double vaccum_y_good[] = {
-            1.+3, 15./8.-4, 3.+5, 33./8.-6, 5.+7,
-            5.-3, 47./8.+4, 7.-5, 65./8.+6, 9.-7
-        };
-        suzerain_bspline_accumulate_operator(
-            0, nrhs, 1.0, vaccum_x, incx, ldx, 1.0, vaccum_y, incy, ldy, w);
-        BOOST_CHECK_EQUAL_COLLECTIONS(
-            vaccum_y_good,
-            vaccum_y_good + sizeof(vaccum_y_good)/sizeof(vaccum_y_good[0]),
-            vaccum_y,
-            vaccum_y + sizeof(vaccum_y)/sizeof(vaccum_y[0]));
+        {
+            /* Check w->D[0] application against multiple complex vectors */
+            const int nrhs = 2;
+            double b[][2] = {
+                { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8}, { 9, 10},
+                {11, 12}, {13, 14}, {15, 16}, {17, 18}, {19, 20}
+            };
+            const double b_good[][2] = {
+                { 1.,  2.}, { 2.75,  3.75}, { 5.,  6.}, { 7.25,  8.25}, { 9., 10.},
+                {11., 12.}, {12.75, 13.75}, {15., 16.}, {17.25, 18.25}, {19., 20.}
+            };
+            const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+            suzerain_bspline_zapply_operator(0, nrhs, b, 1, ldb, w);
+            BOOST_CHECK_EQUAL_COLLECTIONS(
+                (double *)  b_good,
+                (double *) (b_good + sizeof(b_good)/sizeof(b_good[0])),
+                (double *)  b,
+                (double *) (b + sizeof(b)/sizeof(b[0])));
+        }
+
+        {
+            /* Check w->D[0] accumulation against multiple real vectors */
+            const int nrhs = 2;
+            const double x[] = { 1, 2, 3, 4, 5,
+                                 5, 6, 7, 8, 9 };
+            const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+            const int incx = 1;
+            double y[] = {  3, -4,  5, -6,  7,
+                           -3,  4, -5,  6, -7 };
+            const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+            const int incy = 1;
+            const double y_good[] = {
+                1.+3, 15./8.-4, 3.+5, 33./8.-6, 5.+7,
+                5.-3, 47./8.+4, 7.-5, 65./8.+6, 9.-7
+            };
+            suzerain_bspline_accumulate_operator(
+                0, nrhs, 1.0, x, incx, ldx, 1.0, y, incy, ldy, w);
+            BOOST_CHECK_EQUAL_COLLECTIONS(
+                y_good, y_good + sizeof(y_good)/sizeof(y_good[0]),
+                y, y + sizeof(y)/sizeof(y[0]));
+        }
+
+        {
+            /* Check w->D[0] accumulation against multiple complex vectors */
+            /* using complex-valued coefficients                           */
+            const int nrhs = 2;
+            const double x[][2] = {
+                { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8}, { 9, 10},
+                {11, 12}, {13, 14}, {15, 16}, {17, 18}, {19, 20}
+            };
+            const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+            const int incx = 1;
+            double y[][2] = {
+                { 1,  1}, { 1,  1}, { 1, -1}, {-1, -1}, {-1, -1},
+                {-1, -1}, {-1, -1}, {-1,  1}, { 1,  1}, { 1,  1}
+            };
+            const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+            const int incy = 1;
+            const double alpha[2] = { 2, 3 }; /* NB complex-valued */
+            const double beta[2]  = { 5, 7 }; /* NB complex-valued */
+            suzerain_bspline_zaccumulate_operator(
+                0, nrhs, alpha, x, incx, ldx, beta, y, incy, ldy, w);
+            const double y_good[][2] = {
+                {- 6.00, 19.00}, {- 7.75,  27.75}, {  4.00,  29.00},
+                                 {- 8.25,  26.25}, {-10.00,  35.00},
+                {-12.00, 45.00}, {-13.75,  53.75}, {-30.00,  75.00},
+                                 {-22.25, 100.25}, {-24.00, 109.00}
+            };
+            BOOST_CHECK_EQUAL_COLLECTIONS(
+                (double *) y_good,
+                (double *)(y_good + sizeof(y_good)/sizeof(y_good[0])),
+                (double *) y,
+                (double *)(y + sizeof(y)/sizeof(y[0])));
+        }
+
+        {
+            /* Check w->D[0] accumulation against multiple complex vectors */
+            /* using real-valued coefficients                              */
+            const int nrhs = 2;
+            const double x[][2] = {
+                { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8}, { 9, 10},
+                {11, 12}, {13, 14}, {15, 16}, {17, 18}, {19, 20}
+            };
+            const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+            const int incx = 1;
+            double y[][2] = {
+                { 1,  1}, { 1,  1}, { 1, -1}, {-1, -1}, {-1, -1},
+                {-1, -1}, {-1, -1}, {-1,  1}, { 1,  1}, { 1,  1}
+            };
+            const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+            const int incy = 1;
+            const double alpha[2] = { 2, 0 }; /* NB real-valued */
+            const double beta[2]  = { 5, 0 }; /* NB real-valued */
+            suzerain_bspline_zaccumulate_operator(
+                0, nrhs, alpha, x, incx, ldx, beta, y, incy, ldy, w);
+            const double y_good[][2] = {
+                { 7.,  9.}, {10.5, 12.5}, {15.,  7.}, { 9.5, 11.5}, {13., 15.},
+                {17., 19.}, {20.5, 22.5}, {25., 37.}, {39.5, 41.5}, {43., 45.}
+            };
+            BOOST_CHECK_EQUAL_COLLECTIONS(
+                (double *) y_good,
+                (double *)(y_good + sizeof(y_good)/sizeof(y_good[0])),
+                (double *) y,
+                (double *)(y + sizeof(y)/sizeof(y[0])));
+        }
     }
 
     suzerain_bspline_free(w);
