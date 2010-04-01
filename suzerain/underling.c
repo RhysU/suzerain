@@ -1190,7 +1190,7 @@ underling_fprint_transpose(
         fprintf(output_file, "NULL");
     } else {
         fprintf(output_file,
-                "{d0=%ld,d1=%ld},{block0=%ld,block1=%ld},",
+                "{d0=%td,d1=%td},{block0=%td,block1=%td},",
                 transpose->d[0], transpose->d[1],
                 transpose->block[0], transpose->block[1]);
 
@@ -1203,14 +1203,14 @@ underling_fprint_transpose(
             fprintf(output_file, "{comm=%s", buffer);
         }
         fprintf(output_file,
-                ",flags=%u,local_size=%ld},",
+                ",flags=%u,local_size=%td},",
                 transpose->flags,transpose->local_size);
 
         fprintf(output_file,
-                "{local0=%ld,local_start0=%ld},",
+                "{local0=%td,local_start0=%td},",
                 transpose->local[0],transpose->local_start[0]);
         fprintf(output_file,
-                "{local1=%ld,local_start1=%ld}",
+                "{local1=%td,local_start1=%td}",
                 transpose->local[1],transpose->local_start[1]);
     }
     fprintf(output_file, "}");
@@ -1225,7 +1225,7 @@ underling_fprint_problem(
     if (!problem) {
         fprintf(output_file, "NULL");
     } else {
-        fprintf(output_file,"{howmany=%d,local_memory=%lu}",
+        fprintf(output_file,"{howmany=%d,local_memory=%zu}",
                 problem->howmany, problem->local_memory);
         for (int i = 2; i >= 0; --i) {
             fprintf(output_file,"{long_n%d:", i);
