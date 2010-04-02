@@ -80,6 +80,114 @@ test_saxpby()
 
 static
 void
+test_caxpby()
+{
+    int i;
+
+    const float alpha[2] = {2., -0.25};
+    const float x[][2]   = {{1., -1.}, {2., -2.}, {3., -3.}};
+    const int   incx     = 1;
+    const float beta[2]  = {3., -0.50};
+    float       y[][2]   = {{4.,-4.}, {-1,1},{5.,-5},{-2,2},{6.,-6},{-3,3}};
+    const int   incy     = 2;
+    const int   nx       = sizeof(x)/sizeof(x[0]);
+    const int   ny       = sizeof(y)/sizeof(y[0]);
+    const float  expected[][2] = {
+        {
+            alpha[0]*x[0][0]-alpha[1]*x[0][1]+beta[0]*y[0][0]-beta[1]*y[0][1],
+            alpha[0]*x[0][1]+alpha[1]*x[0][0]+beta[0]*y[0][1]+beta[1]*y[0][0]
+        },
+        {
+            y[1][0],
+            y[1][1]
+        },
+        {
+            alpha[0]*x[1][0]-alpha[1]*x[1][1]+beta[0]*y[2][0]-beta[1]*y[2][1],
+            alpha[0]*x[1][1]+alpha[1]*x[1][0]+beta[0]*y[2][1]+beta[1]*y[2][0]
+        },
+        {
+            y[3][0],
+            y[3][1]
+        },
+        {
+            alpha[0]*x[2][0]-alpha[1]*x[2][1]+beta[0]*y[4][0]-beta[1]*y[4][1],
+            alpha[0]*x[2][1]+alpha[1]*x[2][0]+beta[0]*y[4][1]+beta[1]*y[4][0]
+        },
+        {
+            y[5][0],
+            y[5][1]
+        }
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_caxpby(nx/incx, alpha, x, incx, beta, y, incy);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i][0], expected[i][0], GSL_FLT_EPSILON,
+                "caxpby real index %d", i);
+        gsl_test_abs(y[i][1], expected[i][1], GSL_FLT_EPSILON,
+                "caxpby imag index %d", i);
+    }
+}
+
+static
+void
+test_zaxpby()
+{
+    int i;
+
+    const double alpha[2] = {2., -0.25};
+    const double x[][2]   = {{1., -1.}, {2., -2.}, {3., -3.}};
+    const int    incx     = 1;
+    const double beta[2]  = {3., -0.50};
+    double       y[][2]   = {{4.,-4.},{-1,1},{5.,-5},{-2,2},{6.,-6},{-3,3}};
+    const int    incy     = 2;
+    const int    nx       = sizeof(x)/sizeof(x[0]);
+    const int    ny       = sizeof(y)/sizeof(y[0]);
+    const double expected[][2] = {
+        {
+            alpha[0]*x[0][0]-alpha[1]*x[0][1]+beta[0]*y[0][0]-beta[1]*y[0][1],
+            alpha[0]*x[0][1]+alpha[1]*x[0][0]+beta[0]*y[0][1]+beta[1]*y[0][0]
+        },
+        {
+            y[1][0],
+            y[1][1]
+        },
+        {
+            alpha[0]*x[1][0]-alpha[1]*x[1][1]+beta[0]*y[2][0]-beta[1]*y[2][1],
+            alpha[0]*x[1][1]+alpha[1]*x[1][0]+beta[0]*y[2][1]+beta[1]*y[2][0]
+        },
+        {
+            y[3][0],
+            y[3][1]
+        },
+        {
+            alpha[0]*x[2][0]-alpha[1]*x[2][1]+beta[0]*y[4][0]-beta[1]*y[4][1],
+            alpha[0]*x[2][1]+alpha[1]*x[2][0]+beta[0]*y[4][1]+beta[1]*y[4][0]
+        },
+        {
+            y[5][0],
+            y[5][1]
+        }
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_zaxpby(nx/incx, alpha, x, incx, beta, y, incy);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
+                "zaxpby real index %d", i);
+        gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
+                "zaxpby imag index %d", i);
+    }
+}
+
+static
+void
 test_dwaxpby()
 {
     int i;
@@ -944,6 +1052,114 @@ test_sgb_acc()
 
 static
 void
+test_cgb_acc()
+{
+    int i;
+
+    const int    m        = 4;
+    const int    n        = m;
+    const int    ku       = 2;
+    const int    kl       = 1;
+    const int    lda      = 5;
+    const int    ldb      = 6;
+    const float  alpha[2] = {2.0, 0.0}; /* TODO Nontrivial imaginary part */
+    const float  beta[2]  = {3.0, 0.0}; /* TODO Nontrivial imaginary part */
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const float  a_data[][2]  = {
+        /*lda buffer*/ /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-1.1,-1.1},   {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-1.1,-1.1},   {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        {-1.1,-1.1},   { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {-1.1,-1.1},   {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    float  b_data[][2]  = {
+        /*ldb buffer*/            /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        {-2.2,-2.2}, {-1.1,-1.1}, { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {-2.2,-2.2}, {-1.1,-1.1}, {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    const float  expected_data[][2]  = {
+        /*ldb buffer*/            /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-2.2,-2.2}, {-1.1,-1.1}, {-5,-5}, {-5,-5}, { 5, 5}, {10,10},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-5,-5}, {15,15}, {20,20}, {25,25},
+        {-2.2,-2.2}, {-1.1,-1.1}, {30,30}, {35,35}, {40,40}, {45,45},
+        {-2.2,-2.2}, {-1.1,-1.1}, {50,50}, {55,55}, {60,60}, {-5,-5}
+    };
+    const float  (*a)[2] = a_data + lda-(ku+1+kl);
+    float        (*b)[2] = b_data + ldb-(ku+1+kl);
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blas_cgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
+                "cgb_acc real index %d", i);
+        gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
+                "cgb_acc imag index %d", i);
+    }
+}
+
+static
+void
+test_zgb_acc()
+{
+    int i;
+
+    const int    m        = 4;
+    const int    n        = m;
+    const int    ku       = 2;
+    const int    kl       = 1;
+    const int    lda      = 5;
+    const int    ldb      = 6;
+    const double alpha[2] = {2.0, 0.0}; /* TODO Nontrivial imaginary part */
+    const double beta[2]  = {3.0, 0.0}; /* TODO Nontrivial imaginary part */
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const double a_data[][2]  = {
+        /*lda buffer*/ /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-1.1,-1.1},   {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-1.1,-1.1},   {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        {-1.1,-1.1},   { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {-1.1,-1.1},   {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    double b_data[][2]  = {
+        /*ldb buffer*/            /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        {-2.2,-2.2}, {-1.1,-1.1}, { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {-2.2,-2.2}, {-1.1,-1.1}, {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    const double expected_data[][2]  = {
+        /*ldb buffer*/            /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-2.2,-2.2}, {-1.1,-1.1}, {-5,-5}, {-5,-5}, { 5, 5}, {10,10},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-5,-5}, {15,15}, {20,20}, {25,25},
+        {-2.2,-2.2}, {-1.1,-1.1}, {30,30}, {35,35}, {40,40}, {45,45},
+        {-2.2,-2.2}, {-1.1,-1.1}, {50,50}, {55,55}, {60,60}, {-5,-5}
+    };
+    const double (*a)[2] = a_data + lda-(ku+1+kl);
+    double       (*b)[2] = b_data + ldb-(ku+1+kl);
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blas_zgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
+                "zgb_acc real index %d", i);
+        gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
+                "zgb_acc imag index %d", i);
+    }
+}
+
+static
+void
 test_dgb_acc_nop()
 {
     int i;
@@ -973,19 +1189,185 @@ test_dgb_acc_nop()
          -2.2,   -1.1,      6.0,     7.0,     8.0,      9.0,
          -2.2,   -1.1,     10.0,    11.0,    12.0,     -1.0
     };
-    const double *expected_data = b_data;
     const double *a = a_data + lda-(ku+1+kl);
     double       *b = b_data + ldb-(ku+1+kl);
+    double       *expected_data;
 
     const int nb        = sizeof(b_data)/sizeof(b_data[0]);
     const int nexpected = nb;
     gsl_test_int(nb, nexpected, "Expected results' length");
+
+    /* Make a clean copy of the original data */
+    expected_data = malloc(nb*sizeof(b_data[0]));
+    memcpy(expected_data, b_data, nb*sizeof(b_data[0]));
 
     suzerain_blas_dgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i], expected_data[i], GSL_DBL_EPSILON,
                 "dgb_acc index %d", i);
     }
+
+    free(expected_data);
+}
+
+static
+void
+test_sgb_acc_nop()
+{
+    int i;
+
+    const int    m     = 4;
+    const int    n     = m;
+    const int    ku    = 2;
+    const int    kl    = 1;
+    const int    lda   = 5;
+    const int    ldb   = 6;
+    const float alpha  = 0.0; /* NOP zero */
+    const float beta   = 1.0; /* NOP one */
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const float a_data[]  = {
+        /*lda buffer*/   /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
+                 -1.1,     -1.0,    -1.0,     1.0,      2.0,
+                 -1.1,     -1.0,     3.0,     4.0,      5.0,
+                 -1.1,      6.0,     7.0,     8.0,      9.0,
+                 -1.1,     10.0,    11.0,    12.0,     -1.0
+    };
+    float b_data[]  = {
+        /*ldb buffer*/   /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
+         -2.2,   -1.1,     -1.0,    -1.0,     1.0,      2.0,
+         -2.2,   -1.1,     -1.0,     3.0,     4.0,      5.0,
+         -2.2,   -1.1,      6.0,     7.0,     8.0,      9.0,
+         -2.2,   -1.1,     10.0,    11.0,    12.0,     -1.0
+    };
+    const float *a = a_data + lda-(ku+1+kl);
+    float       *b = b_data + ldb-(ku+1+kl);
+    float       *expected_data;
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = nb;
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    /* Make a clean copy of the original data */
+    expected_data = malloc(nb*sizeof(b_data[0]));
+    memcpy(expected_data, b_data, nb*sizeof(b_data[0]));
+
+    suzerain_blas_sgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i], expected_data[i], GSL_DBL_EPSILON,
+                "sgb_acc index %d", i);
+    }
+
+    free(expected_data);
+}
+
+static
+void
+test_cgb_acc_nop()
+{
+    int i;
+
+    const int    m       = 4;
+    const int    n       = m;
+    const int    ku      = 2;
+    const int    kl      = 1;
+    const int    lda     = 5;
+    const int    ldb     = 6;
+    const float alpha[2] = {0.0, 0.0}; /* NOP zero */
+    const float beta[2]  = {1.0, 0.0}; /* NOP one */
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const float  a_data[][2]  = {
+        /*lda buffer*/ /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-1.1,-1.1},   {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-1.1,-1.1},   {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        {-1.1,-1.1},   { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {-1.1,-1.1},   {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    float  b_data[][2]  = {
+        /*ldb buffer*/            /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        {-2.2,-2.2}, {-1.1,-1.1}, { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {-2.2,-2.2}, {-1.1,-1.1}, {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    const float  (*a)[2] = a_data + lda-(ku+1+kl);
+    float        (*b)[2] = b_data + ldb-(ku+1+kl);
+    float        (*expected_data)[2];
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = nb;
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    /* Make a clean copy of the original data */
+    expected_data = malloc(nb*sizeof(b_data[0]));
+    memcpy(expected_data, b_data, nb*sizeof(b_data[0]));
+
+    suzerain_blas_cgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
+                "cgb_acc real index %d", i);
+        gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
+                "cgb_acc imag index %d", i);
+    }
+
+    free(expected_data);
+}
+
+static
+void
+test_zgb_acc_nop()
+{
+    int i;
+
+    const int    m        = 4;
+    const int    n        = m;
+    const int    ku       = 2;
+    const int    kl       = 1;
+    const int    lda      = 5;
+    const int    ldb      = 6;
+    const double alpha[2] = {0.0, 0.0}; /* NOP zero */
+    const double beta[2]  = {1.0, 0.0}; /* NOP one */
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const double a_data[][2]  = {
+        /*lda buffer*/ /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-1.1,-1.1},   {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-1.1,-1.1},   {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        {-1.1,-1.1},   { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {-1.1,-1.1},   {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    double b_data[][2]  = {
+        /*ldb buffer*/            /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        {-2.2,-2.2}, {-1.1,-1.1}, { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {-2.2,-2.2}, {-1.1,-1.1}, {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    const double (*a)[2] = a_data + lda-(ku+1+kl);
+    double       (*b)[2] = b_data + ldb-(ku+1+kl);
+    double       (*expected_data)[2];
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = nb;
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    /* Make a clean copy of the original data */
+    expected_data = malloc(nb*sizeof(b_data[0]));
+    memcpy(expected_data, b_data, nb*sizeof(b_data[0]));
+
+    suzerain_blas_zgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
+                "zgb_acc real index %d", i);
+        gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
+                "zgb_acc imag index %d", i);
+    }
+
+    free(expected_data);
 }
 
 static
@@ -1214,6 +1596,12 @@ main(int argc, char **argv)
     test_saxpby();
     test_saxpby_nop();
 
+    test_caxpby();
+    /* TODO test_caxpby_nop */ 
+
+    test_zaxpby();
+    /* TODO test_zaxpby_nop */ 
+
     test_dwaxpby();
     test_swaxpby();
 
@@ -1234,8 +1622,8 @@ main(int argc, char **argv)
 
     test_daxpy();
     test_saxpy();
-    test_zaxpy();
     test_caxpy();
+    test_zaxpy();
 
     test_ddot();
     test_sdot();
@@ -1244,6 +1632,13 @@ main(int argc, char **argv)
     test_dgb_acc_nop();
 
     test_sgb_acc();
+    test_sgb_acc_nop();
+
+    test_zgb_acc();
+    test_zgb_acc_nop();
+
+    test_cgb_acc();
+    test_cgb_acc_nop();
 
     // TODO Add suzerain_blasext_dgbmzv test cases
     // suzerain_blasext_dgbmzv exercised somewhat in test_bspline via

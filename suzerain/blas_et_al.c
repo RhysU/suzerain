@@ -428,18 +428,18 @@ suzerain_blas_caxpy(
 #ifdef SUZERAIN_HAVE_MKL
     if (sizeof(MKL_INT) == sizeof(int)) {
         caxpy(&n,
-            (const MKL_Complex8 *) alpha,
-            (const MKL_Complex8 *) x, &incx,
-            (      MKL_Complex8 *) y, &incy);
+              (const MKL_Complex8 *) alpha,
+              (const MKL_Complex8 *) x, &incx,
+              (      MKL_Complex8 *) y, &incy);
     } else {
         const MKL_INT n_    = n;
         const MKL_INT incx_ = incx;
         const MKL_INT incy_ = incy;
 
         caxpy(&n_,
-            (const MKL_Complex8 *) alpha,
-            (const MKL_Complex8 *) x, &incx_,
-            (      MKL_Complex8 *) y, &incy_);
+              (const MKL_Complex8 *) alpha,
+              (const MKL_Complex8 *) x, &incx_,
+              (      MKL_Complex8 *) y, &incy_);
     }
 #else
 #error "Sanity failure"
@@ -538,6 +538,64 @@ suzerain_blas_daxpby(
             dscal(&_n, &beta, y, &_incy);
         daxpy(&_n, &alpha, x, &_incx, y, &_incy);
     }
+#else
+#error "Sanity failure"
+#endif
+#pragma warning(pop)
+}
+
+void
+suzerain_blas_caxpby(
+        const int n,
+        const float alpha[2],
+        const float (*x)[2],
+        const int incx,
+        const float beta[2],
+        float (*y)[2],
+        const int incy)
+{
+#pragma warning(push,disable:1572)
+#ifdef SUZERAIN_HAVE_MKL
+    /* Simulate caxpby since MKL lacks the routine. */
+    const int beta_is_one = (beta[0] == 1.0f && beta[1] == 0.0f);
+
+    if (SUZERAIN_UNLIKELY((   alpha[0] == 0.0f && alpha[1] == 0.0f
+                           && beta_is_one) || n <= 0)) {
+        return;
+    }
+
+    if (!beta_is_one)
+        suzerain_blas_cscal(n, beta, y, incy);
+    suzerain_blas_caxpy(n, alpha, x, incx, y, incy);
+#else
+#error "Sanity failure"
+#endif
+#pragma warning(pop)
+}
+
+void
+suzerain_blas_zaxpby(
+        const int n,
+        const double alpha[2],
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy)
+{
+#pragma warning(push,disable:1572)
+#ifdef SUZERAIN_HAVE_MKL
+    /* Simulate caxpby since MKL lacks the routine. */
+    const int beta_is_one = (beta[0] == 1.0 && beta[1] == 0.0);
+
+    if (SUZERAIN_UNLIKELY((   alpha[0] == 0.0 && alpha[1] == 0.0
+                           && beta_is_one) || n <= 0)) {
+        return;
+    }
+
+    if (!beta_is_one)
+        suzerain_blas_zscal(n, beta, y, incy);
+    suzerain_blas_zaxpy(n, alpha, x, incx, y, incy);
 #else
 #error "Sanity failure"
 #endif
@@ -806,7 +864,7 @@ suzerain_blas_sgb_acc(
 #pragma warning(pop)
 
     const int veclength = ku + 1 + kl;
-    const float * const bj_end = b + n *ldb;
+    const float * const bj_end = b + n*ldb;
     const float *aj;
     float       *bj;
 
@@ -838,12 +896,82 @@ suzerain_blas_dgb_acc(
 #pragma warning(pop)
 
     const int veclength = ku + 1 + kl;
-    const double * const bj_end = b + n *ldb;
+    const double * const bj_end = b + n*ldb;
     const double *aj;
     double       *bj;
 
     for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
         suzerain_blas_daxpby(veclength, alpha, aj, 1, beta, bj, 1);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_cgb_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha[2],
+        const float (*a)[2],
+        const int lda,
+        const float beta[2],
+        float (*b)[2],
+        const int ldb)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    /* Simulate sgb_acc since MKL lacks the routine. */
+#pragma warning(push,disable:1572)
+    if (SUZERAIN_UNLIKELY((   alpha[0] == 0.0f && alpha[1] == 0.0f
+                           && beta[0]  == 1.0f && beta[1]  == 0.0f) || m <= 0)) {
+         return;
+    }
+#pragma warning(pop)
+
+    const int veclength = ku + 1 + kl;
+    float (* const bj_end)[2] = b + n*ldb;
+    const float (*aj)[2];
+    float       (*bj)[2];
+
+    for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
+        suzerain_blas_caxpby(veclength, alpha, aj, 1, beta, bj, 1);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_zgb_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double (*a)[2],
+        const int lda,
+        const double beta[2],
+        double (*b)[2],
+        const int ldb)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    /* Simulate sgb_acc since MKL lacks the routine. */
+#pragma warning(push,disable:1572)
+    if (SUZERAIN_UNLIKELY((   alpha[0] == 0.0 && alpha[1] == 0.0
+                           && beta[0]  == 1.0 && beta[1]  == 0.0) || m <= 0)) {
+         return;
+    }
+#pragma warning(pop)
+
+    const int veclength = ku + 1 + kl;
+    double (* const bj_end)[2] = b + n*ldb;
+    const double (*aj)[2];
+    double       (*bj)[2];
+
+    for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
+        suzerain_blas_zaxpby(veclength, alpha, aj, 1, beta, bj, 1);
     }
 #else
 #error "Sanity failure"

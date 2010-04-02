@@ -337,6 +337,28 @@ suzerain_blas_daxpby(
         double *y,
         const int incy);
 
+/*! \copydoc suzerain_blas_saxpby */
+void
+suzerain_blas_caxpby(
+        const int n,
+        const float alpha[2],
+        const float (*x)[2],
+        const int incx,
+        const float beta[2],
+        float (*y)[2],
+        const int incy);
+
+/*! \copydoc suzerain_blas_saxpby */
+void
+suzerain_blas_zaxpby(
+        const int n,
+        const double alpha[2],
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy);
+
 /*!
  * \brief Compute \f$ w \leftarrow{} \alpha{}x + \beta{}y \f$
  * using BLAS's waxpby.
@@ -533,6 +555,35 @@ suzerain_blas_dgb_acc(
         const double beta,
         double *b,
         const int ldb);
+
+/*! \copydoc suzerain_blas_sgb_acc */
+void
+suzerain_blas_cgb_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha[2],
+        const float (*a)[2],
+        const int lda,
+        const float beta[2],
+        float (*b)[2],
+        const int ldb);
+
+/*! \copydoc suzerain_blas_sgb_acc */
+void
+suzerain_blas_zgb_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double (*a)[2],
+        const int lda,
+        const double beta[2],
+        double (*b)[2],
+        const int ldb);
+
 
 /*! @} */
 
