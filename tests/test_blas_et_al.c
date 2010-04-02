@@ -1640,11 +1640,14 @@ main(int argc, char **argv)
     test_cgb_acc();
     test_cgb_acc_nop();
 
-    // TODO Add suzerain_blasext_dgbmzv test cases
-    // suzerain_blasext_dgbmzv exercised somewhat in test_bspline via
-    // zaccumulate and zapply
+    /* TODO Add suzerain_blasext_dgbmzv test cases                    */
+    /* suzerain_blasext_dgbmzv exercised somewhat in test_bspline via */
+    /* zaccumulate and zapply                                         */
 
     test_blasext_i2s_zaxpby2();
+
+    /* TODO Add test_{c,z}gbtr{f,s} */
+    /* Already exercised to some extent in test_bspline */
 
 #ifdef SUZERAIN_HAVE_MKL
     MKL_FreeBuffers();
