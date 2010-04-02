@@ -764,6 +764,29 @@ suzerain_lapack_zgbtrs(
  */
 
 /*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{}x + y \f$ where \f$x\f$ is
+ * real-valued and \f$\alpha\f$ and \f$y\f$ are complex-valued.  Real-valued
+ * strides are in units of <tt>double</tt> while complex-valued strides are in
+ * units of <tt>double[2]</tt>.
+ *
+ * \param n Number of elements in \c x and \c y.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param x First source vector.
+ * \param incx First source vector stride in units of <tt>double</tt>.
+ * \param y Second source vector and target vector.
+ * \param incy Second source vector and target vector stride in
+ *             units of <tt>double[2]</tt>.
+ */
+void
+suzerain_blasext_daxpzy(
+        const int n,
+        const double alpha[2],
+        const double *x,
+        const int incx,
+        double (*y)[2],
+        const int incy);
+
+/*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$.
  * Real-valued strides are in units of <tt>double</tt> while complex-valued
@@ -788,6 +811,7 @@ suzerain_lapack_zgbtrs(
  *
  * \see A BLAS reference for for general band storage matrix requirements.
  */
+
 void
 suzerain_blasext_dgbmzv(
         const char trans,

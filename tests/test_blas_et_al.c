@@ -1372,6 +1372,117 @@ test_zgb_acc_nop()
 
 static
 void
+test_daxpzy()
+{
+    int i;
+
+    {
+        /* Both x and y stride 1 */
+        const double alpha[2] = {2.0, 3.0};
+        const double x[]      = {1.0, 2.0, 3.0};
+        const int    incx     = 1;
+        double       y[][2]   = {{4,-4}, {5,-5}, {6,-6}};
+        const int    incy     = 1;
+        const int    nx       = sizeof(x)/sizeof(x[0]);
+        const int    ny       = sizeof(y)/sizeof(y[0]);
+        const double expected[][2] = {
+            {2*1+4,3*1-4}, {2*2+5,3*2-5}, {2*3+6,3*3-6}
+        };
+        const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+        gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+        gsl_test_int(ny, nexpected, "Expected results' length");
+
+        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
+        for (i = 0; i < nexpected; ++i) {
+            gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
+                    "daxpzy real index %d", i);
+            gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
+                    "daxpzy imag index %d", i);
+        }
+    }
+
+    {
+        /* x stride 2 */
+        const double alpha[2] = {2.0, 3.0};
+        const double x[]      = {1.0, -1, 2.0, -2, 3.0, -3};
+        const int    incx     = 2;
+        double       y[][2]   = {{4,-4}, {5,-5}, {6,-6}};
+        const int    incy     = 1;
+        const int    nx       = sizeof(x)/sizeof(x[0]);
+        const int    ny       = sizeof(y)/sizeof(y[0]);
+        const double expected[][2] = {
+            {2*1+4,3*1-4}, {2*2+5,3*2-5}, {2*3+6,3*3-6}
+        };
+        const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+        gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+        gsl_test_int(ny, nexpected, "Expected results' length");
+
+        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
+        for (i = 0; i < nexpected; ++i) {
+            gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
+                    "daxpzy real index %d", i);
+            gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
+                    "daxpzy imag index %d", i);
+        }
+    }
+
+    {
+        /* y stride 2 */
+        const double alpha[2] = {2.0, 3.0};
+        const double x[]      = {1.0, 2.0, 3.0};
+        const int    incx     = 1;
+        double       y[][2]   = {{4,-4},{1,-1},{5,-5},{2,-2},{6,-6},{3,-3}};
+        const int    incy     = 2;
+        const int    nx       = sizeof(x)/sizeof(x[0]);
+        const int    ny       = sizeof(y)/sizeof(y[0]);
+        const double expected[][2] = {
+            {2*1+4,3*1-4}, {1,-1}, {2*2+5,3*2-5}, {2,-2}, {2*3+6,3*3-6}, {3,-3}
+        };
+        const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+        gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+        gsl_test_int(ny, nexpected, "Expected results' length");
+
+        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
+        for (i = 0; i < nexpected; ++i) {
+            gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
+                    "daxpzy real index %d", i);
+            gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
+                    "daxpzy imag index %d", i);
+        }
+    }
+
+    {
+        /* Both x and y stride 2 */
+        const double alpha[2] = {2.0, 3.0};
+        const double x[]      = {1.0, -555, 2.0, -666, 3.0, -777};
+        const int    incx     = 2;
+        double       y[][2]   = {{4,-4},{1,-1},{5,-5},{2,-2},{6,-6},{3,-3}};
+        const int    incy     = 2;
+        const int    nx       = sizeof(x)/sizeof(x[0]);
+        const int    ny       = sizeof(y)/sizeof(y[0]);
+        const double expected[][2] = {
+            {2*1+4,3*1-4}, {1,-1}, {2*2+5,3*2-5}, {2,-2}, {2*3+6,3*3-6}, {3,-3}
+        };
+        const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+        gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+        gsl_test_int(ny, nexpected, "Expected results' length");
+
+        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
+        for (i = 0; i < nexpected; ++i) {
+            gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
+                    "daxpzy real index %d", i);
+            gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
+                    "daxpzy imag index %d", i);
+        }
+    }
+}
+
+static
+void
 test_blasext_i2s_zaxpby2()
 {
     { /* Test pure copy for single, stride one vectors */
@@ -1639,6 +1750,8 @@ main(int argc, char **argv)
 
     test_cgb_acc();
     test_cgb_acc_nop();
+
+    test_daxpzy();
 
     /* TODO Add suzerain_blasext_dgbmzv test cases                    */
     /* suzerain_blasext_dgbmzv exercised somewhat in test_bspline via */
