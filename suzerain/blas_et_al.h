@@ -758,7 +758,7 @@ suzerain_lapack_zgbtrs(
  * imaginary components in wholly separate locations.
  *
  * \see The FFTW manual for further discussion on
- * <a href="http://www.fftw.org/fftw3_doc/Interleaved-and-split-arrays.html>
+ * <a href="http://www.fftw.org/fftw3_doc/Interleaved-and-split-arrays.html">
  * interleaved versus split complex storage</a>.
  * @{
  */
@@ -852,6 +852,42 @@ suzerain_blasext_dgbmzv(
         const double beta[2],
         double (*y)[2],
         const int incy);
+
+/*!
+ * \brief Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using where
+ * \f$B\f$, \f$\alpha\f$, and \f$\beta\f$ are complex-valued and \f$A\f$ is
+ * real-valued.  Real-valued strides are in units of <tt>double</tt> while
+ * complex-valued strides are in units of <tt>double[2]</tt>.
+ *
+ * Matrices \f$ A \f$ and \f$ B \f$ both have
+ * band storage and must have the same shape and same number
+ * of super- and subdiagonals.
+ *
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$.
+ * \param kl Number of subdiagonals in band storage of \c ab.
+ * \param ku Number of superdiagonals in band storage of \c ab.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param a General band storage of the matrix \f$ A \f$.
+ * \param lda Leading dimension of \c a in units of <tt>double</tt>.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param b General band storage of the matrix \f$ B \f$.
+ * \param ldb Leading dimension of \c b in units of <tt>double[2]</tt>.
+ *
+ * \see A BLAS reference for general band storage matrix requirements.
+ */
+void
+suzerain_blasext_zgb_dacc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double *a,
+        const int lda,
+        const double beta[2],
+        double (*b)[2],
+        const int ldb);
 
 /*!
  * \brief Compute two-strided \f$ Y \leftarrow{} \alpha{}X+\beta{}Y \f$

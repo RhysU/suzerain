@@ -2032,6 +2032,176 @@ test_blasext_i2s_zaxpby2()
     }
 }
 
+static
+void
+test_zgb_dacc1()
+{
+    int i;
+
+    const int    m        = 25;
+    const int    n        = 5;
+    const int    ku       = 2;
+    const int    kl       = 1;
+    const int    lda      = 5;
+    const int    ldb      = 6;
+    const double alpha[2] = {2.0, -3.0};
+    const double beta[2]  = {7.0, -5.0};
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const double a_data[] = {
+        /*lda buffer*/ /*ku2*/ /*ku1*/ /*diag*/ /*kl1*/
+        -1.1,          -1,     -1,      1,       2,
+        -1.1,          -1,      3,      4,       5,
+        -1.1,           6,      7,      8,       9,
+        -1.1,           6,      7,      8,       9,
+        -1.1,          10,     11,     12,      -1
+    };
+    double b_data[][2]  = {
+        /*ldb buffer*/            /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        {-2.2,-2.2}, {-1.1,-1.1}, { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {-2.2,-2.2}, {-1.1,-1.1}, { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {-2.2,-2.2}, {-1.1,-1.1}, {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    const double expected_data[][2]  = {
+        /*ldb buffer*/            /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-2.2,-2.2}, {-1.1,-1.1}, {-14,  1}, {-14,  1}, { 14,- 1}, { 28,-2},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-14,  1}, { 42,- 3}, { 56,- 4}, { 70,-5},
+        {-2.2,-2.2}, {-1.1,-1.1}, { 84,- 6}, { 98,- 7}, {112,- 8}, {126,-9},
+        {-2.2,-2.2}, {-1.1,-1.1}, { 84,- 6}, { 98,- 7}, {112,- 8}, {126,-9},
+        {-2.2,-2.2}, {-1.1,-1.1}, {140,-10}, {154,-11}, {168,-12}, {-14, 1}
+    };
+    const double  *a     = a_data + lda-(ku+1+kl);
+    double       (*b)[2] = b_data + ldb-(ku+1+kl);
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blasext_zgb_dacc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
+                "zgb_dacc real index %d", i);
+        gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
+                "zgb_dacc imag index %d", i);
+    }
+}
+
+static
+void
+test_zgb_dacc2()
+{
+    int i;
+
+    const int    m        = 25;
+    const int    n        = 5;
+    const int    ku       = 2;
+    const int    kl       = 1;
+    const int    lda      = ku + 1 + kl;
+    const int    ldb      = ku + 1 + kl;
+    const double alpha[2] = {2.0, -3.0};
+    const double beta[2]  = {7.0, -5.0};
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const double a_data[] = {
+        /*ku2*/ /*ku1*/ /*diag*/ /*kl1*/
+        -1,     -1,      1,       2,
+        -1,      3,      4,       5,
+         6,      7,      8,       9,
+         6,      7,      8,       9,
+        10,     11,     12,      -1
+    };
+    double b_data[][2]  = {
+        /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    const double expected_data[][2]  = {
+        /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-14,  1}, {-14,  1}, { 14,- 1}, { 28,-2},
+        {-14,  1}, { 42,- 3}, { 56,- 4}, { 70,-5},
+        { 84,- 6}, { 98,- 7}, {112,- 8}, {126,-9},
+        { 84,- 6}, { 98,- 7}, {112,- 8}, {126,-9},
+        {140,-10}, {154,-11}, {168,-12}, {-14, 1}
+    };
+    const double  *a     = a_data + lda-(ku+1+kl);
+    double       (*b)[2] = b_data + ldb-(ku+1+kl);
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blasext_zgb_dacc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
+                "zgb_dacc real index %d", i);
+        gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
+                "zgb_dacc imag index %d", i);
+    }
+}
+
+static
+void
+test_zgb_dacc_nop()
+{
+    int i;
+
+    const int    m        = 25;
+    const int    n        = 5;
+    const int    ku       = 2;
+    const int    kl       = 1;
+    const int    lda      = ku + 1 + kl;
+    const int    ldb      = ku + 1 + kl;
+    const double alpha[2] = {0.0, 0.0}; /* NOP zero */
+    const double beta[2]  = {1.0, 0.0}; /* NOP one */
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const double a_data[] = {
+        /*ku2*/ /*ku1*/ /*diag*/ /*kl1*/
+        -1,     -1,      1,       2,
+        -1,      3,      4,       5,
+         6,      7,      8,       9,
+         6,      7,      8,       9,
+        10,     11,     12,      -1
+    };
+    double b_data[][2]  = {
+        /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        { 6, 6}, { 7, 7}, { 8, 8}, { 9, 9},
+        {10,10}, {11,11}, {12,12}, {-1,-1}
+    };
+    const double  *a     = a_data + lda-(ku+1+kl);
+    double       (*b)[2] = b_data + ldb-(ku+1+kl);
+    double       (*expected_data)[2];
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = nb;
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    /* Make a clean copy of the original data */
+    expected_data = malloc(nb*sizeof(b_data[0]));
+    memcpy(expected_data, b_data, nb*sizeof(b_data[0]));
+
+    suzerain_blasext_zgb_dacc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
+                "zgb_dacc real index %d", i);
+        gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
+                "zgb_dacc imag index %d", i);
+    }
+
+    free(expected_data);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -2097,6 +2267,10 @@ main(int argc, char **argv)
     /* TODO Add suzerain_blasext_dgbmzv test cases                    */
     /* suzerain_blasext_dgbmzv exercised somewhat in test_bspline via */
     /* zaccumulate and zapply                                         */
+
+    test_zgb_dacc1();
+    test_zgb_dacc2();
+    test_zgb_dacc_nop();
 
     test_blasext_i2s_zaxpby2();
 

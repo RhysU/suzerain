@@ -1347,6 +1347,12 @@ suzerain_blasext_daxpzby(
         double (* restrict y)[2],
         const int incy)
 {
+#pragma warning(push,disable:1572)
+    if (SUZERAIN_UNLIKELY((beta[0] == 1.0 && beta[1] == 0.0))) {
+#pragma warning(pop)
+        return suzerain_blasext_daxpzy(n, alpha, x, incx, y, incy);
+    }
+
     const double alpha_re = alpha[0];
     const double alpha_im = alpha[1];
     const double beta_re  = beta[0];
@@ -1426,6 +1432,41 @@ suzerain_blasext_dgbmzv(
         suzerain_blas_dgbmv(trans, m, n, kl, ku,
                             -alpha[1], a, lda, &(x[0][1]), 2*incx,
                             1.0, &(y[0][0]), 2*incy);
+    }
+}
+
+void
+suzerain_blasext_zgb_dacc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double *a,
+        const int lda,
+        const double beta[2],
+        double (*b)[2],
+        const int ldb)
+{
+#pragma warning(push,disable:1572)
+    if (SUZERAIN_UNLIKELY((   alpha[0] == 0.0 && alpha[1] == 0.0
+                           && beta[0]  == 1.0 && beta[1]  == 0.0) || m <= 0)) {
+         return;
+    }
+#pragma warning(pop)
+
+    const int veclength = ku + 1 + kl;
+    if (veclength == lda && veclength == ldb) {
+        /* Contiguous block optimization */
+        suzerain_blasext_daxpzby(veclength*n, alpha, a, 1, beta, b, 1);
+    } else {
+        double (* const bj_end)[2] = b + n*ldb;
+        const double  *aj;
+        double       (*bj)[2];
+
+        for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
+            suzerain_blasext_daxpzby(veclength, alpha, aj, 1, beta, bj, 1);
+        }
     }
 }
 
