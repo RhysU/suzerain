@@ -864,12 +864,17 @@ suzerain_blas_sgb_acc(
 #pragma warning(pop)
 
     const int veclength = ku + 1 + kl;
-    const float * const bj_end = b + n*ldb;
-    const float *aj;
-    float       *bj;
+    if (veclength == lda && veclength == ldb) {
+        /* Contiguous block optimization */
+        suzerain_blas_saxpby(veclength*n, alpha, a, 1, beta, b, 1);
+    } else {
+        const float * const bj_end = b + n*ldb;
+        const float *aj;
+        float       *bj;
 
-    for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
-        suzerain_blas_saxpby(veclength, alpha, aj, 1, beta, bj, 1);
+        for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
+            suzerain_blas_saxpby(veclength, alpha, aj, 1, beta, bj, 1);
+        }
     }
 #else
 #error "Sanity failure"
@@ -896,12 +901,17 @@ suzerain_blas_dgb_acc(
 #pragma warning(pop)
 
     const int veclength = ku + 1 + kl;
-    const double * const bj_end = b + n*ldb;
-    const double *aj;
-    double       *bj;
+    if (veclength == lda && veclength == ldb) {
+        /* Contiguous block optimization */
+        suzerain_blas_daxpby(veclength*n, alpha, a, 1, beta, b, 1);
+    } else {
+        const double * const bj_end = b + n*ldb;
+        const double *aj;
+        double       *bj;
 
-    for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
-        suzerain_blas_daxpby(veclength, alpha, aj, 1, beta, bj, 1);
+        for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
+            suzerain_blas_daxpby(veclength, alpha, aj, 1, beta, bj, 1);
+        }
     }
 #else
 #error "Sanity failure"
@@ -931,12 +941,17 @@ suzerain_blas_cgb_acc(
 #pragma warning(pop)
 
     const int veclength = ku + 1 + kl;
-    float (* const bj_end)[2] = b + n*ldb;
-    const float (*aj)[2];
-    float       (*bj)[2];
+    if (veclength == lda && veclength == ldb) {
+        /* Contiguous block optimization */
+        suzerain_blas_caxpby(veclength*n, alpha, a, 1, beta, b, 1);
+    } else {
+        float (* const bj_end)[2] = b + n*ldb;
+        const float (*aj)[2];
+        float       (*bj)[2];
 
-    for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
-        suzerain_blas_caxpby(veclength, alpha, aj, 1, beta, bj, 1);
+        for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
+            suzerain_blas_caxpby(veclength, alpha, aj, 1, beta, bj, 1);
+        }
     }
 #else
 #error "Sanity failure"
@@ -966,12 +981,17 @@ suzerain_blas_zgb_acc(
 #pragma warning(pop)
 
     const int veclength = ku + 1 + kl;
-    double (* const bj_end)[2] = b + n*ldb;
-    const double (*aj)[2];
-    double       (*bj)[2];
+    if (veclength == lda && veclength == ldb) {
+        /* Contiguous block optimization */
+        suzerain_blas_zaxpby(veclength*n, alpha, a, 1, beta, b, 1);
+    } else {
+        double (* const bj_end)[2] = b + n*ldb;
+        const double (*aj)[2];
+        double       (*bj)[2];
 
-    for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
-        suzerain_blas_zaxpby(veclength, alpha, aj, 1, beta, bj, 1);
+        for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
+            suzerain_blas_zaxpby(veclength, alpha, aj, 1, beta, bj, 1);
+        }
     }
 #else
 #error "Sanity failure"

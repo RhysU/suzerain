@@ -948,12 +948,12 @@ test_sdot()
 
 static
 void
-test_dgb_acc()
+test_dgb_acc1()
 {
     int i;
 
-    const int    m     = 4;
-    const int    n     = m;
+    const int    m     = 100;
+    const int    n     = 7;
     const int    ku    = 2;
     const int    kl    = 1;
     const int    lda   = 5;
@@ -968,6 +968,9 @@ test_dgb_acc()
                  -1.1,     -1.0,    -1.0,     1.0,      2.0,
                  -1.1,     -1.0,     3.0,     4.0,      5.0,
                  -1.1,      6.0,     7.0,     8.0,      9.0,
+                 -1.1,     10.0,    11.0,    12.0,      1.0,
+                 -1.1,     -1.0,     3.0,     4.0,      5.0,
+                 -1.1,      6.0,     7.0,     8.0,      9.0,
                  -1.1,     10.0,    11.0,    12.0,     -1.0
     };
     double b_data[]  = {
@@ -975,11 +978,17 @@ test_dgb_acc()
          -2.2,   -1.1,     -1.0,    -1.0,     1.0,      2.0,
          -2.2,   -1.1,     -1.0,     3.0,     4.0,      5.0,
          -2.2,   -1.1,      6.0,     7.0,     8.0,      9.0,
+         -2.2,   -1.1,     10.0,    11.0,    12.0,      1.0,
+         -2.2,   -1.1,     -1.0,     3.0,     4.0,      5.0,
+         -2.2,   -1.1,      6.0,     7.0,     8.0,      9.0,
          -2.2,   -1.1,     10.0,    11.0,    12.0,     -1.0
     };
     const double expected_data[]  = {
         /*ldb buffer*/   /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
          -2.2,   -1.1,     -5.0,    -5.0,     5.0,     10.0,
+         -2.2,   -1.1,     -5.0,    15.0,    20.0,     25.0,
+         -2.2,   -1.1,     30.0,    35.0,    40.0,     45.0,
+         -2.2,   -1.1,     50.0,    55.0,    60.0,      5.0,
          -2.2,   -1.1,     -5.0,    15.0,    20.0,     25.0,
          -2.2,   -1.1,     30.0,    35.0,    40.0,     45.0,
          -2.2,   -1.1,     50.0,    55.0,    60.0,     -5.0
@@ -1000,12 +1009,57 @@ test_dgb_acc()
 
 static
 void
-test_sgb_acc()
+test_dgb_acc2()
 {
     int i;
 
-    const int    m     = 4;
-    const int    n     = m;
+    const int    m     = 6;
+    const int    n     = 2;
+    const int    ku    = 2;
+    const int    kl    = 1;
+    const int    lda   = ku + 1 + kl;
+    const int    ldb   = ku + 1 + kl;
+    const double alpha = 2.0;
+    const double beta  = 3.0;
+
+    /* Negative one represents values outside of the band */
+    const double a_data[]  = {
+        /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
+          -1.0,    -1.0,     1.0,      2.0,
+          -1.0,     3.0,     4.0,     -5.0
+    };
+    double b_data[]  = {
+        /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
+          -1.0,    -1.0,     1.0,      2.0,
+          -1.0,     3.0,     4.0,     -5.0
+    };
+    const double expected_data[]  = {
+        /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
+          -5.0,    -5.0,     5.0,     10.0,
+          -5.0,    15.0,    20.0,    -25.0
+    };
+    const double *a = a_data + lda-(ku+1+kl);
+    double       *b = b_data + ldb-(ku+1+kl);
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blas_dgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i], expected_data[i], GSL_DBL_EPSILON,
+                "dgb_acc index %d", i);
+    }
+}
+
+static
+void
+test_sgb_acc1()
+{
+    int i;
+
+    const int    m     = 15;
+    const int    n     = 4;
     const int    ku    = 2;
     const int    kl    = 1;
     const int    lda   = 5;
@@ -1052,12 +1106,66 @@ test_sgb_acc()
 
 static
 void
-test_cgb_acc()
+test_sgb_acc2()
 {
     int i;
 
-    const int    m        = 4;
-    const int    n        = m;
+    const int    m     = 4;
+    const int    n     = 5;
+    const int    ku    = 2;
+    const int    kl    = 0;
+    const int    lda   = ku + 1 + kl;
+    const int    ldb   = ku + 1 + kl;
+    const float  alpha = 2.0;
+    const float  beta  = 3.0;
+
+    /* Negative one represents values outside of the band */
+    const float  a_data[] = {
+        /*ku2*/  /*ku1*/ /*diag*/
+          -1.0,    -1.0,     1.0,
+          -1.0,     3.0,     4.0,
+           6.0,     7.0,     8.0,
+          10.0,    11.0,    12.0,
+          10.0,    11.0,    12.0
+    };
+    float  b_data[] = {
+        /*ku2*/  /*ku1*/ /*diag*/
+          -1.0,    -1.0,     1.0,
+          -1.0,     3.0,     4.0,
+           6.0,     7.0,     8.0,
+          10.0,    11.0,    12.0,
+          10.0,    11.0,    12.0
+    };
+    const float  expected_data[] = {
+        /*ku2*/  /*ku1*/ /*diag*/
+          -5.0,    -5.0,     5.0,
+          -5.0,    15.0,    20.0,
+          30.0,    35.0,    40.0,
+          50.0,    55.0,    60.0,
+          50.0,    55.0,    60.0
+    };
+    const float  *a = a_data + lda-(ku+1+kl);
+    float        *b = b_data + ldb-(ku+1+kl);
+
+    const float  nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const float  nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blas_sgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i], expected_data[i], GSL_FLT_EPSILON,
+                "dgb_acc index %d", i);
+    }
+}
+
+static
+void
+test_cgb_acc1()
+{
+    int i;
+
+    const int    m        = 17;
+    const int    n        = 4;
     const int    ku       = 2;
     const int    kl       = 1;
     const int    lda      = 5;
@@ -1106,12 +1214,74 @@ test_cgb_acc()
 
 static
 void
-test_zgb_acc()
+test_cgb_acc2()
 {
     int i;
 
     const int    m        = 4;
-    const int    n        = m;
+    const int    n        = 7;
+    const int    ku       = 1;
+    const int    kl       = 1;
+    const int    lda      = ku + 1 + kl;
+    const int    ldb      = ku + 1 + kl;
+    const float  alpha[2] = {2.0, 0.0}; /* TODO Nontrivial imaginary part */
+    const float  beta[2]  = {3.0, 0.0}; /* TODO Nontrivial imaginary part */
+
+    /* Negative one represents values outside of the band */
+    const float  a_data[][2]  = {
+        /*ku1*/  /*diag*/ /*kl1*/
+        {-1,-1}, { 1, 1}, { 2, 2},
+        { 3, 3}, { 4, 4}, { 5, 5},
+        { 7, 7}, { 8, 8}, { 9, 9},
+        {11,11}, {12,12}, { 1, 1},
+        { 3, 3}, { 4, 4}, { 5, 5},
+        { 7, 7}, { 8, 8}, { 9, 9},
+        {11,11}, {12,12}, {-1,-1}
+    };
+    float  b_data[][2]  = {
+        /*ku1*/  /*diag*/ /*kl1*/
+        {-1,-1}, { 1, 1}, { 2, 2},
+        { 3, 3}, { 4, 4}, { 5, 5},
+        { 7, 7}, { 8, 8}, { 9, 9},
+        {11,11}, {12,12}, { 1, 1},
+        { 3, 3}, { 4, 4}, { 5, 5},
+        { 7, 7}, { 8, 8}, { 9, 9},
+        {11,11}, {12,12}, {-1,-1}
+    };
+    const float  expected_data[][2]  = {
+        /*ku1*/  /*diag*/ /*kl1*/
+        {-5,-5}, { 5, 5}, {10,10},
+        {15,15}, {20,20}, {25,25},
+        {35,35}, {40,40}, {45,45},
+        {55,55}, {60,60}, { 5, 5},
+        {15,15}, {20,20}, {25,25},
+        {35,35}, {40,40}, {45,45},
+        {55,55}, {60,60}, {-5,-5}
+    };
+    const float  (*a)[2] = a_data + lda-(ku+1+kl);
+    float        (*b)[2] = b_data + ldb-(ku+1+kl);
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blas_cgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
+                "cgb_acc real index %d", i);
+        gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
+                "cgb_acc imag index %d", i);
+    }
+}
+
+static
+void
+test_zgb_acc1()
+{
+    int i;
+
+    const int    m        = 25;
+    const int    n        = 4;
     const int    ku       = 2;
     const int    kl       = 1;
     const int    lda      = 5;
@@ -1141,6 +1311,57 @@ test_zgb_acc()
         {-2.2,-2.2}, {-1.1,-1.1}, {-5,-5}, {15,15}, {20,20}, {25,25},
         {-2.2,-2.2}, {-1.1,-1.1}, {30,30}, {35,35}, {40,40}, {45,45},
         {-2.2,-2.2}, {-1.1,-1.1}, {50,50}, {55,55}, {60,60}, {-5,-5}
+    };
+    const double (*a)[2] = a_data + lda-(ku+1+kl);
+    double       (*b)[2] = b_data + ldb-(ku+1+kl);
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blas_zgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
+                "zgb_acc real index %d", i);
+        gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
+                "zgb_acc imag index %d", i);
+    }
+}
+
+static
+void
+test_zgb_acc2()
+{
+    int i;
+
+    const int    m        = 100;
+    const int    n        = 3;
+    const int    ku       = 2;
+    const int    kl       = 1;
+    const int    lda      = ku + 1 + kl;
+    const int    ldb      = ku + 1 + kl;
+    const double alpha[2] = {2.0, 0.0}; /* TODO Nontrivial imaginary part */
+    const double beta[2]  = {3.0, 0.0}; /* TODO Nontrivial imaginary part */
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const double a_data[][2]  = {
+        /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        { 6, 6}, { 7, 7}, { 8, 8}, {-9,-9}
+    };
+    double b_data[][2]  = {
+        /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-1,-1}, {-1,-1}, { 1, 1}, { 2, 2},
+        {-1,-1}, { 3, 3}, { 4, 4}, { 5, 5},
+        { 6, 6}, { 7, 7}, { 8, 8}, {-9,-9}
+    };
+    const double expected_data[][2]  = {
+        /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
+        {-5,-5}, {-5,-5}, { 5, 5}, { 10, 10},
+        {-5,-5}, {15,15}, {20,20}, { 25, 25},
+        {30,30}, {35,35}, {40,40}, {-45,-45}
     };
     const double (*a)[2] = a_data + lda-(ku+1+kl);
     double       (*b)[2] = b_data + ldb-(ku+1+kl);
@@ -1739,16 +1960,20 @@ main(int argc, char **argv)
     test_ddot();
     test_sdot();
 
-    test_dgb_acc();
+    test_dgb_acc1();
+    test_dgb_acc2();
     test_dgb_acc_nop();
 
-    test_sgb_acc();
+    test_sgb_acc1();
+    test_sgb_acc2();
     test_sgb_acc_nop();
 
-    test_zgb_acc();
+    test_zgb_acc1();
+    test_zgb_acc2();
     test_zgb_acc_nop();
 
-    test_cgb_acc();
+    test_cgb_acc1();
+    test_cgb_acc2();
     test_cgb_acc_nop();
 
     test_daxpzy();
