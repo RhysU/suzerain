@@ -1311,10 +1311,46 @@ suzerain_blasext_daxpzy(
         double (* restrict y)[2],
         const int incy)
 {
-    /* Painfully load/compute/store to presumably help the compiler */
-
     const double alpha_re = alpha[0];
     const double alpha_im = alpha[1];
+
+    if (SUZERAIN_UNLIKELY(incx != 1 || incy != 1)) {
+        /* General stride case */
+#pragma unroll
+        for (int i = 0; i < n; ++i) {
+            const double      xi    = x[i * incx];
+            double * restrict yi    = y[i * incy];
+
+            yi[0] += alpha_re*xi;
+            yi[1] += alpha_im*xi;
+        }
+    } else {
+        /* Unit stride case */
+#pragma unroll
+        for (int i = 0; i < n; ++i) {
+            const double      xi    = x[i];
+            double * restrict yi    = y[i];
+
+            yi[0] += alpha_re*xi;
+            yi[1] += alpha_im*xi;
+        }
+    }
+}
+
+void
+suzerain_blasext_daxpzby(
+        const int n,
+        const double alpha[2],
+        const double * restrict x,
+        const int incx,
+        const double beta[2],
+        double (* restrict y)[2],
+        const int incy)
+{
+    const double alpha_re = alpha[0];
+    const double alpha_im = alpha[1];
+    const double beta_re  = beta[0];
+    const double beta_im  = beta[1];
 
     if (SUZERAIN_UNLIKELY(incx != 1 || incy != 1)) {
         /* General stride case */
@@ -1325,11 +1361,8 @@ suzerain_blasext_daxpzy(
             double            yi_re = yi[0];
             double            yi_im = yi[1];
 
-            yi_re = yi_re + alpha_re*xi;
-            yi_im = yi_im + alpha_im*xi;
-
-            yi[0] = yi_re;
-            yi[1] = yi_im;
+            yi[0] = beta_re*yi_re - beta_im*yi_im + alpha_re*xi;
+            yi[1] = beta_re*yi_im + beta_im*yi_re + alpha_im*xi;
         }
     } else {
         /* Unit stride case */
@@ -1340,11 +1373,8 @@ suzerain_blasext_daxpzy(
             double            yi_re = yi[0];
             double            yi_im = yi[1];
 
-            yi_re = yi_re + alpha_re*xi;
-            yi_im = yi_im + alpha_im*xi;
-
-            yi[0] = yi_re;
-            yi[1] = yi_im;
+            yi[0] = beta_re*yi_re - beta_im*yi_im + alpha_re*xi;
+            yi[1] = beta_re*yi_im + beta_im*yi_re + alpha_im*xi;
         }
     }
 }

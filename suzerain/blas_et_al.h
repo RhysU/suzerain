@@ -787,6 +787,31 @@ suzerain_blasext_daxpzy(
         const int incy);
 
 /*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$ where \f$x\f$ is
+ * real-valued and \f$\alpha\f$, \f$\beta\f$, and \f$y\f$ are complex-valued.
+ * Real-valued strides are in units of <tt>double</tt> while complex-valued
+ * strides are in units of <tt>double[2]</tt>.
+ *
+ * \param n Number of elements in \c x and \c y.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param x First source vector.
+ * \param incx First source vector stride in units of <tt>double</tt>.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param y Second source vector and target vector.
+ * \param incy Second source vector and target vector stride in
+ *             units of <tt>double[2]</tt>.
+ */
+void
+suzerain_blasext_daxpzby(
+        const int n,
+        const double alpha[2],
+        const double *x,
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy);
+
+/*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$.
  * Real-valued strides are in units of <tt>double</tt> while complex-valued
