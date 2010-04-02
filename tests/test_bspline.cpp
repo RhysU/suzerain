@@ -61,6 +61,7 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
     suzerain_bspline_workspace *w
         = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
+    BOOST_CHECK_EQUAL(suzerain_bspline_ndof(w), w->ndof);
 
     {
         /* Check w->D[0], the mass matrix, against known good solution:
@@ -373,10 +374,12 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
         };
         const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
         suzerain_bspline_luz_solve(nrhs, b, ldb, luzw);
+        /* Tolerance requirement adequate? condest(A) ~= 122.7 */
+        /* Also, using approximate rationals via 'format rat'  */
         check_close_complex_collections(
             b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
             b, b + sizeof(b)/sizeof(b[0]),
-            1.0e-6); /* Tolerance requirement adequate? condest(A) ~= 122.7 */
+            1.0e-5);
     }
 
     suzerain_bspline_luz_free(luzw);
@@ -395,6 +398,7 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
     suzerain_bspline_workspace *w
         = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
+    BOOST_CHECK_EQUAL(suzerain_bspline_ndof(w), w->ndof);
 
     {
         /* Check w->D[0], the mass matrix, against known good solution:
@@ -551,6 +555,7 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
     suzerain_bspline_workspace *w
         = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
             SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
+    BOOST_CHECK_EQUAL(suzerain_bspline_ndof(w), w->ndof);
 
     {
         /* Check w->D[0], the mass matrix, against known good solution:

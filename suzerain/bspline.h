@@ -279,6 +279,22 @@ suzerain_bspline_free(
     suzerain_bspline_workspace *w);
 
 /**
+ * Obtain the number of degrees of freedom for the basis in the given workspace.
+ * This information is also available via <tt>w->ndof</tt>.
+ *
+ * @param[in] w Workspace to use.
+ *
+ * @return the number of degrees of freedom.
+ */
+inline
+int
+suzerain_bspline_ndof(
+    const suzerain_bspline_workspace *w)
+{
+    return w->ndof;
+}
+
+/**
  * Apply the <tt>nderivative</tt>-th derivative operator to coefficients \c x
  * accumulating the result in \c y.  Multiplies \c alpha times the precomputed
  * banded derivative operator against one or more coefficient vectors stored in
