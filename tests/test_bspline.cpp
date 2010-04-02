@@ -41,6 +41,11 @@ BOOST_AUTO_TEST_CASE( allocation_okay )
         = suzerain_bspline_lu_alloc(w);
     BOOST_REQUIRE(luw != NULL);
 
+    suzerain_bspline_luz_workspace *luzw
+        = suzerain_bspline_luz_alloc(w);
+    BOOST_REQUIRE(luzw != NULL);
+
+    suzerain_bspline_luz_free(luzw);
     suzerain_bspline_lu_free(luw);
     suzerain_bspline_free(w);
 }
@@ -246,6 +251,10 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
             1e-12);
     }
 
+    /********************************/
+    /* Real-valued LU functionality */
+    /********************************/
+
     suzerain_bspline_lu_workspace *luw
         = suzerain_bspline_lu_alloc(w);
 
@@ -263,42 +272,115 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
      * Known good is in general banded matrix column-major order with
      * additional superdiagonal to allow for LU factorization fill-in.
      */
-    const double good_A0[] = { /*DK*/0, /*DK*/0,   5,         0,
-                               /*DK*/0,      -3,   5,         0,
-                                     0,      -3,   5,         0.6,
-                                     0,      -3,   0.8, /*DK*/0    };
-    const double coeff[] = { 2.0, -3.0, 999.0 };
-    suzerain_bspline_lu_form_general(
-        sizeof(coeff)/sizeof(coeff[0]), coeff, w, luw);
-    CHECK_GBMATRIX_CLOSE(
-                4,         4,       1,       2, good_A0,       4,
-        luw->ndof, luw->ndof, luw->kl, luw->ku,  luw->A, luw->ld,
-        1e-12);
+    {
+        const double good_A0[] = { /*DK*/0, /*DK*/0,   5,         0,
+                                   /*DK*/0,      -3,   5,         0,
+                                         0,      -3,   5,         0.6,
+                                         0,      -3,   0.8, /*DK*/0    };
+        const double coeff[] = { 2.0, -3.0, 999.0 };
+        suzerain_bspline_lu_form_general(
+            sizeof(coeff)/sizeof(coeff[0]), coeff, w, luw);
+        CHECK_GBMATRIX_CLOSE(
+                    4,         4,       1,       2, good_A0,       4,
+            luw->ndof, luw->ndof, luw->kl, luw->ku,  luw->A, luw->ld,
+            1e-12);
+    }
 
     /* Check that multiple rhs solution works for operator found just above */
     /* Also ensures that non-unit stride works as expected */
     {
         const int nrhs = 2;
-        double vapply[] = {
+        double b[] = {
              1, /*DK*/555,  2, /*DK*/555, 3, /*DK*/555, 4,
             -4, /*DK*/555, -1, /*DK*/555, 1, /*DK*/555, 3
         };
-        const double vapply_good[] = {
+        const double b_good[] = {
             1.25, /*DK*/555, 1.75, /*DK*/555, 2.25, /*DK*/555, 2.75,
            -0.20, /*DK*/555, 1.00, /*DK*/555, 2.00, /*DK*/555, 3.00
         };
-        const int ldb = sizeof(vapply)/(sizeof(vapply[0]))/nrhs;
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
         const int incb = 2;
-        suzerain_bspline_lu_solve(nrhs, vapply, incb, ldb, luw);
+        suzerain_bspline_lu_solve(nrhs, b, incb, ldb, luw);
         check_close_collections(
-            vapply_good,
-            vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
-            vapply,
-            vapply + sizeof(vapply)/sizeof(vapply[0]),
+            b_good,
+            b_good + sizeof(b_good)/sizeof(b_good[0]),
+            b,
+            b + sizeof(b)/sizeof(b[0]),
             1.0e-12);
     }
 
     suzerain_bspline_lu_free(luw);
+
+    /***********************************/
+    /* Complex-valued LU functionality */
+    /***********************************/
+
+    suzerain_bspline_luz_workspace *luzw
+        = suzerain_bspline_luz_alloc(w);
+
+    /* Form (2-3*i)*D[0] + (7-5*i)*D[1] operator in LU-ready banded storage.
+     * Answer is
+     *   -5+2i   7-5i   0-0i   0-0i
+     *    0-0i  -5+2i   7-5i   0-0i
+     *    0-0i   0-0i  -5+2i   7-5i
+     *    0-0i   0-0i  -7+5i   9-8i
+     * which, in LU-form where L has ones on the main diagonal, is
+     *   -5+2i   7-5i       0+    0i       0+     0i
+     *    0+0i  -5+2i       7-    5i       0+     0i
+     *    0+0i   0+0i      -7+    5i       9-     8i
+     *    0+0i   0+0i   45/74+11/74i   25/74-109/74i
+     * The pivot matrix is
+     *    1   0   0   0
+     *    0   1   0   0
+     *    0   0   0   1
+     *    0   0   1   0
+     * Check it in octave using [l,u,p] = lu(A).
+     * Known good is in general banded matrix column-major order with
+     * additional superdiagonal to allow for LU factorization fill-in.
+     */
+    {
+        BOOST_TEST_MESSAGE("suzerain_bspline_luz_form_general");
+        const double good_A0[][2] = {
+            /*DK*/{0,0}, /*DK*/{0, 0}, {     -5,2},               {0,0},
+            /*DK*/{0,0},       {7,-5}, {     -5,2},               {0,0},
+                  {0,0},       {7,-5}, {     -7,5},         {45./74.,11./74.},
+                  {0,0},       {9,-8}, {25./74.,-109./74.}, /*DK*/{0,0}
+        };
+        const double coeff[][2] = { {2.0, -3.0}, {7.0, -5.0}, {999.0, -999.0} };
+        suzerain_bspline_luz_form_general(
+            sizeof(coeff)/sizeof(coeff[0]), coeff, w, luzw);
+        CHECK_GBMATRIX_CLOSE(
+                     4,          4,        1,        2,  good_A0,        4,
+            luzw->ndof, luzw->ndof, luzw->kl, luzw->ku,  luzw->A, luzw->ld,
+            1e-12);
+    }
+
+    /* Check that multiple rhs solution works for operator found just above */
+    {
+        BOOST_TEST_MESSAGE("suzerain_bspline_luz_solve");
+        const int nrhs = 2;
+        double b[][2] = {
+            { 1,7}, { 2,5}, {3,-2}, {4,-6},
+            {-4,6}, {-1,3}, {1,-1}, {3, 6}
+        };
+        const double b_good[][2] = {
+            {-3889./1033.,    88./1869.}, {-4186./1565.,  377./1897.},
+                                          {- 305./ 169.,   56./ 169.},
+                                          {- 123./ 169.,-   9./ 169.},
+            { 2157./ 232., -1235./ 102.}, { 4869./ 730.,-7076./1245.},
+                                          {  778./ 169.,- 380./ 169.},
+                                          {  557./ 169.,- 120./ 169.}
+        };
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+        suzerain_bspline_luz_solve(nrhs, b, ldb, luzw);
+        check_close_complex_collections(
+            b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
+            b, b + sizeof(b)/sizeof(b[0]),
+            1.0e-6); /* Tolerance requirement adequate? condest(A) ~= 122.7 */
+    }
+
+    suzerain_bspline_luz_free(luzw);
+
     suzerain_bspline_free(w);
 }
 
