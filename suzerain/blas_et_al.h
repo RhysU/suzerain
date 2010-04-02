@@ -641,9 +641,31 @@ suzerain_lapack_dgbtrf(
         const int ldab,
         int *ipiv);
 
+/*! \copydoc suzerain_lapack_sgbtrf */
+int
+suzerain_lapack_cgbtrf(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        float (*ab)[2],
+        const int ldab,
+        int *ipiv);
+
+/*! \copydoc suzerain_lapack_sgbtrf */
+int
+suzerain_lapack_zgbtrf(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        double (*ab)[2],
+        const int ldab,
+        int *ipiv);
+
 /*!
- * \brief Solve \f$ AX = B \f$ using the previously LUP decomposed general band matrix
- * \f$ A \f$ and LAPACK's gbtrs.
+ * \brief Solve \f$ AX = B \f$ using the previously LUP decomposed general band
+ * matrix \f$ A \f$ and LAPACK's gbtrs.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -693,6 +715,34 @@ suzerain_lapack_dgbtrs(
         const int ldab,
         const int *ipiv,
         double *b,
+        const int ldb);
+
+/*! \copydoc suzerain_lapack_sgbtrs */
+int
+suzerain_lapack_cgbtrs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        const float (*ab)[2],
+        const int ldab,
+        const int *ipiv,
+        float (*b)[2],
+        const int ldb);
+
+/*! \copydoc suzerain_lapack_sgbtrs */
+int
+suzerain_lapack_zgbtrs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        const double (*ab)[2],
+        const int ldab,
+        const int *ipiv,
+        double (*b)[2],
         const int ldb);
 
 /*! @} */
