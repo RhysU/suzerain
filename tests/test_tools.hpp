@@ -53,6 +53,8 @@
 
 #pragma warning(push,disable:1418)
 
+// TODO Two versions _suzerain_check_gbmatrix_close have mucho copy'n'paste
+
 template<typename FPT>
 std::string
 _suzerain_check_gbmatrix_close(
@@ -198,6 +200,161 @@ _suzerain_check_gbmatrix_close(
     return errors.str();
 }
 
+template<typename FPT>
+std::string
+_suzerain_check_gbmatrix_close(
+    int e_m, int e_n, int e_kl, int e_ku, const FPT (* const e)[2], int e_ld,
+    int r_m, int r_n, int r_kl, int r_ku, const FPT (* const r)[2], int r_ld,
+    FPT abs_tolerance)
+{
+    bool checkequality = true;
+    std::ostringstream errors;
+
+    // Test sanity checks for expected values
+    if (e_m < 0) {
+        errors << "\nParameter e_m = " << e_m << " < 0";
+        checkequality = false;
+    }
+    if (e_n < 0) {
+        errors << "\nParameter e_n = " << e_n << " < 0";
+        checkequality = false;
+    }
+    if (e_kl < 0) {
+        errors << "\nParameter e_kl = " << e_kl << " < 0";
+        checkequality = false;
+    }
+    if (e_ku < 0) {
+        errors << "\nParameter e_ku = " << e_ku << " < 0";
+        checkequality = false;
+    }
+    if (e_ld < 0) {
+        errors << "\nParameter e_ld = " << e_ld << " < 0";
+        checkequality = false;
+    }
+    if (e == NULL) {
+        errors << "\nParameter e == NULL";
+        checkequality = false;
+    }
+
+    // Test sanity checks for result values
+    if (r_m < 0) {
+        errors << "\nParameter r_m = " << r_m << " < 0";
+        checkequality = false;
+    }
+    if (r_n < 0) {
+        errors << "\nParameter r_n = " << r_n << " < 0";
+        checkequality = false;
+    }
+    if (r_kl < 0) {
+        errors << "\nParameter r_kl = " << r_kl << " < 0";
+        checkequality = false;
+    }
+    if (r_ku < 0) {
+        errors << "\nParameter r_ku = " << r_ku << " < 0";
+        checkequality = false;
+    }
+    if (r_ld < 0) {
+        errors << "\nParameter r_ld = " << r_ld << " < 0";
+        checkequality = false;
+    }
+    if (r == NULL) {
+        errors << "\nParameter r == NULL";
+        checkequality = false;
+    }
+
+    // Check that expected and results have compatible shapes
+    if (e_m != r_m) {
+        errors << "\nMismatch in number of rows: " << e_m << " vs " << r_m;
+        checkequality = false;
+    }
+    if (e_n != r_n) {
+        errors << "\nMismatch in number of columns: " << e_n << " vs " << r_n;
+        checkequality = false;
+    }
+
+    // Any further error messages are useless if the above tests fail
+    // so short circuit the remainder of the test if any did.
+    if (checkequality) {
+
+        for (int j = 0; j < e_n; ++j) {
+            for (int i = 0; i < e_m; ++i) {
+
+                const bool e_in_band
+                    = suzerain_gbmatrix_in_band(e_ld, e_kl, e_ku, i, j);
+                const bool r_in_band
+                    = suzerain_gbmatrix_in_band(r_ld, r_kl, r_ku, i, j);
+                const int e_offset
+                    = suzerain_gbmatrix_offset(e_ld, e_kl, e_ku, i, j);
+                const int r_offset
+                    = suzerain_gbmatrix_offset(r_ld, r_kl, r_ku, i, j);
+
+                 if (e_in_band && r_in_band) {
+                    const FPT r_value_re = r[r_offset][0];
+                    const FPT r_value_im = r[r_offset][1];
+                    const FPT e_value_re = e[e_offset][0];
+                    const FPT e_value_im = e[e_offset][1];
+
+                    const FPT diff_re  = r_value_re - e_value_re;
+                    const FPT diff_im  = r_value_im - e_value_im;
+                    const FPT diff_abs
+                        = std::sqrt(diff_re*diff_re+ diff_im*diff_im);
+                    const bool is_close = diff_abs <= abs_tolerance;
+
+                    if (!is_close) {
+                        errors << "\nMismatch to "
+                            << abs_tolerance << "% at index ("
+                            << std::setw(2) << i << ","
+                            << std::setw(2) << j << "): ";
+                        const std::ios_base::fmtflags flags = errors.flags();
+                        const std::streamsize prec = errors.precision();
+                        errors.flags(std::ios::scientific | std::ios::showpos);
+                        errors.precision(std::numeric_limits<FPT>::digits10);
+                        errors <<'{'<< e_value_re <<','<< e_value_im <<'}'
+                               << " != "
+                               <<'{'<< r_value_re <<','<< r_value_im <<'}';
+                        errors.flags(flags);
+                        errors.precision(prec);
+                    }
+                } else if (!e_in_band && !r_in_band) {
+                    // NOP
+                } else if (!e_in_band) {
+                    const FPT r_value_re = r[r_offset][0];
+                    const FPT r_value_im = r[r_offset][1];
+                    if (r_value_re != 0.0 || r_value_im != 0.0) {
+                        errors << "\nNonzero outside expected's band "
+                            << "at result index (" << std::setw(2) << i
+                            << "," << std::setw(2) << j << "): ";
+                        const std::ios_base::fmtflags flags = errors.flags();
+                        const std::streamsize prec = errors.precision();
+                        errors.flags(std::ios::scientific | std::ios::showpos);
+                        errors.precision(std::numeric_limits<FPT>::digits10);
+                        errors <<'{'<< r_value_re <<','<< r_value_im <<'}';
+                        errors.flags(flags);
+                        errors.precision(prec);
+                    }
+                } else if (!r_in_band) {
+                    const FPT e_value_re = e[e_offset][0];
+                    const FPT e_value_im = e[e_offset][1];
+                    if (e_value_re != 0.0 || e_value_im != 0.0) {
+                        errors << "\nNonzero outside result's band "
+                            << "at expected index (" << std::setw(2) << i
+                            << "," << std::setw(2) << j << "): ";
+                        const std::ios_base::fmtflags flags = errors.flags();
+                        const std::streamsize prec = errors.precision();
+                        errors.flags(std::ios::scientific | std::ios::showpos);
+                        errors.precision(std::numeric_limits<FPT>::digits10);
+                        errors <<'{'<< e_value_re <<','<< e_value_im <<'}';
+                        errors.flags(flags);
+                        errors.precision(prec);
+                    }
+                }
+            }
+        }
+    }
+
+    return errors.str();
+}
+
 // Like BOOST_CHECK_EQUAL_COLLECTION but uses BOOST_CHECK_CLOSE, which allows
 // for a floating point tolerance on each comparison.  Have submitted a request
 // to Boost Test maintainer to add an official BOOST_<level>_CLOSE_COLLECTION
@@ -239,6 +396,71 @@ bool check_close_collections(const FPT *left_begin, const FPT *left_end,
             errormsg.flags(::std::ios::scientific | ::std::ios::showpos);
             errormsg.precision(::std::numeric_limits<FPT>::digits10 + 1);
             errormsg << *left_begin << " != " << *right_begin;
+            errormsg.flags(flags);
+            errormsg.precision(prec);
+            res = false;
+        }
+    }
+
+    if( left_begin != left_end ) {
+        std::size_t r_size = pos;
+        while( left_begin != left_end ) {
+            ++pos;
+            ++left_begin;
+        }
+
+        errormsg << "\nCollections size mismatch: " << pos << " != " << r_size;
+        res = false;
+    }
+
+    if( right_begin != right_end ) {
+        std::size_t l_size = pos;
+        while( right_begin != right_end ) {
+            ++pos;
+            ++right_begin;
+        }
+
+        errormsg << "\nCollections size mismatch: " << l_size << " != " << pos;
+        res = false;
+    }
+
+    BOOST_CHECK_MESSAGE(res, errormsg.str());
+
+    return res;
+}
+
+// Like BOOST_CHECK_EQUAL_COLLECTION but uses BOOST_CHECK_SMALL and
+// compares the absolute value of a complex difference.
+template<typename FPT>
+bool check_close_complex_collections(
+        const FPT (*left_begin )[2], const FPT (*left_end )[2],
+        const FPT (*right_begin)[2], const FPT (*right_end)[2],
+        FPT abs_tolerance)
+{
+    int pos = 0;
+    bool res = true;
+    std::ostringstream errormsg;
+
+    for( ;
+         left_begin != left_end && right_begin != right_end;
+         ++left_begin, ++right_begin, ++pos ) {
+
+        const FPT diff_re  = (*left_begin)[0] - (*right_begin)[0];
+        const FPT diff_im  = (*left_begin)[1] - (*right_begin)[1];
+        const FPT diff_abs = std::sqrt(diff_re*diff_re + diff_im*diff_im);
+
+        const bool pos_okay = diff_abs <= abs_tolerance;
+
+        if (!pos_okay) {
+            errormsg << "\nMismatch to abs tolerance "
+                << abs_tolerance << " at position " << pos << ": ";
+            const ::std::ios_base::fmtflags flags = errormsg.flags();
+            const ::std::streamsize         prec  = errormsg.precision();
+            errormsg.flags(::std::ios::scientific | ::std::ios::showpos);
+            errormsg.precision(::std::numeric_limits<FPT>::digits10 + 1);
+            errormsg <<'{'<<(*left_begin)[0] <<','<<(*left_begin)[1] <<'}'
+                     << " != "
+                     <<'{'<<(*right_begin)[0]<<','<<(*right_begin)[1]<<'}';
             errormsg.flags(flags);
             errormsg.precision(prec);
             res = false;
