@@ -772,6 +772,10 @@ suzerain_bspline_collocation_points(
     return SUZERAIN_SUCCESS;
 }
 
+/********************************/
+/* Real-valued LU functionality */
+/********************************/
+
 suzerain_bspline_lu_workspace *
 suzerain_bspline_lu_alloc(
     const suzerain_bspline_workspace *w)
@@ -891,7 +895,7 @@ suzerain_bspline_lu_form_mass(
     suzerain_bspline_lu_workspace *luw)
 {
     const double d_one = 1.0;
-    int i_one = 1;
+    const int i_one = 1;
     return suzerain_bspline_lu_form_general(i_one, &d_one, w, luw);
 }
 
@@ -904,8 +908,9 @@ suzerain_bspline_lu_solve_contiguous(
     const suzerain_bspline_lu_workspace *luw)
 {
     if (luw->ipiv[0] == -1) {
-        SUZERAIN_ERROR("One of suzerain_bspline_lu_form_* not called before solve",
-                       SUZERAIN_EINVAL);
+        SUZERAIN_ERROR(
+                "One of suzerain_bspline_lu_form_* not called before solve",
+                SUZERAIN_EINVAL);
     }
 
     const int info = suzerain_lapack_dgbtrs('N',
@@ -990,4 +995,163 @@ suzerain_bspline_lu_solve(
         return suzerain_bspline_lu_solve_noncontiguous(
                 nrhs, b, incb, ldb, luw);
     }
+}
+
+/***********************************/
+/* Complex-valued LU functionality */
+/***********************************/
+
+suzerain_bspline_luz_workspace *
+suzerain_bspline_luz_alloc(
+    const suzerain_bspline_workspace *w)
+{
+    /* Allocate space for the luzw workspace */
+    suzerain_bspline_luz_workspace * const luzw
+        = suzerain_blas_malloc(sizeof(suzerain_bspline_luz_workspace));
+    if (luzw == NULL) {
+        SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
+                            SUZERAIN_ENOMEM);
+    }
+    /* Make workspace pointers NULL */
+    luzw->A    = NULL;
+    luzw->ipiv = NULL;
+
+    /* Determine general banded matrix shape parameters */
+    luzw->ndof  = w->ndof;
+    luzw->kl    = w->max_kl;
+    luzw->ku    = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS */
+    luzw->ld    = luzw->kl + luzw->ku + 1;
+
+    /* Allocate memory for LU factorization pivot storage */
+    luzw->ipiv = suzerain_blas_malloc(w->ndof * sizeof(luzw->ipiv[0]));
+    if (luzw->ipiv == NULL) {
+        suzerain_bspline_luz_free(luzw);
+        SUZERAIN_ERROR_NULL("failed to allocate space for pivot storage",
+                            SUZERAIN_ENOMEM);
+    }
+    /* Flag that decomposition has not occurred; Allows catching errors */
+    luzw->ipiv[0] = -1;
+
+    /* Allocate memory for the matrix formed within luz_form_general */
+    luzw->A = suzerain_blas_malloc(luzw->ld*luzw->ndof*sizeof(luzw->A[0]));
+    if (luzw->A == NULL) {
+        suzerain_bspline_luz_free(luzw);
+        SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
+                            SUZERAIN_ENOMEM);
+    }
+
+    return luzw;
+}
+
+void
+suzerain_bspline_luz_free(suzerain_bspline_luz_workspace * luzw)
+{
+    if (luzw != NULL) {
+        suzerain_blas_free(luzw->A);
+        luzw->A = NULL;
+
+        suzerain_blas_free(luzw->ipiv);
+        luzw->ipiv = NULL;
+
+        suzerain_blas_free(luzw);
+    }
+}
+
+int
+suzerain_bspline_luz_form_general(
+    int ncoefficients,
+    const double (*coefficients)[2],
+    const suzerain_bspline_workspace * w,
+    suzerain_bspline_luz_workspace *luzw)
+{
+    /* Parameter sanity checks */
+    if (ncoefficients < 0) {
+        SUZERAIN_ERROR("Number of coefficients cannot be negative",
+                       SUZERAIN_EINVAL);
+    }
+    if (ncoefficients > w->nderivatives + 1) {
+        SUZERAIN_ERROR("More coefficients provided than derivatives available",
+                       SUZERAIN_EINVAL);
+    }
+    if (luzw->ndof < w->ndof) {
+        SUZERAIN_ERROR("Incompatible workspaces:"
+                       " luzw->ndof < w->ndof",
+                       SUZERAIN_EINVAL);
+    }
+    /* Banded LU operator dimensions depend on largest derivative band */
+    if (luzw->ku < w->max_kl + w->max_ku) {
+        SUZERAIN_ERROR("Incompatible workspaces: luzw->ku too small",
+                       SUZERAIN_EINVAL);
+    }
+
+    /* Clear operator storage, including superdiagonals not touched below */
+    memset(luzw->A, 0, luzw->ld*luzw->ndof*sizeof(luzw->A[0]));
+
+    /* Accumulate scaled derivative operators into luzw->A */
+    const double z_one[2] = { 1.0, 0.0 };
+    for (int k = 0; k < ncoefficients; ++k) {
+        suzerain_blasext_zgb_dacc(
+            luzw->ndof, luzw->ndof, w->max_kl, w->max_ku,
+            coefficients[k], w->D[k] - (w->max_ku - w->ku[k]), w->ld,
+            z_one, luzw->A + w->max_kl, luzw->ld);
+    }
+
+    /* Compute LU factorization of the just-formed operator */
+    const int info = suzerain_lapack_zgbtrf(luzw->ndof,
+                                            luzw->ndof,
+                                            luzw->kl,
+                                            luzw->ku - luzw->kl, /* NB */
+                                            luzw->A,
+                                            luzw->ld,
+                                            luzw->ipiv);
+    if (info) {
+        SUZERAIN_ERROR("suzerain_lapack_zgbtrf reported an error",
+                       SUZERAIN_ESANITY);
+    }
+
+    /* Factorization overwrote luzw->ipiv[0] == -1; This is our flag to
+     * check that factorization occurred in suzerain_bspline_luz_solve */
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_luz_form_mass(
+    const suzerain_bspline_workspace * w,
+    suzerain_bspline_luz_workspace *luzw)
+{
+    const double z_one[2] = { 1.0, 0.0 };
+    const int i_one = 1;
+    return suzerain_bspline_luz_form_general(i_one, &z_one, w, luzw);
+}
+
+int
+suzerain_bspline_luz_solve(
+    int nrhs,
+    double (*b)[2],
+    int ldb,
+    const suzerain_bspline_luz_workspace *luzw)
+{
+    if (luzw->ipiv[0] == -1) {
+        SUZERAIN_ERROR(
+                "One of suzerain_bspline_luz_form_* not called before solve",
+                SUZERAIN_EINVAL);
+    }
+
+    const int info = suzerain_lapack_zgbtrs('N',
+                                            luzw->ndof,
+                                            luzw->kl,
+                                            luzw->ku - luzw->kl, /* NB */
+                                            nrhs,
+                                            (const double (*)[2]) luzw->A,
+                                            luzw->ld,
+                                            luzw->ipiv,
+                                            b,
+                                            ldb);
+    if (info) {
+        SUZERAIN_ERROR("suzerain_lapack_zgbtrs reported an error",
+                       SUZERAIN_ESANITY);
+    }
+
+    return SUZERAIN_SUCCESS;
 }
