@@ -609,7 +609,7 @@ B-spline expansion in the wall-normal $y$ direction.  That is,
 \begin{align}
 u^h(x,y,z,t)
 &=
-  \sum_{l=0}^{N_y}
+  \sum_{l=1}^{N_y}
   \sum_{m=-\frac{N_x}{2}+1}^{\frac{N_x}{2}}
   \sum_{n=-\frac{N_z}{2}+1}^{\frac{N_z}{2}}
   \hat{u}_{l,m,n}(t)
@@ -618,53 +618,53 @@ u^h(x,y,z,t)
   e^{\ii\frac{2\pi{}n}{L_z}z}
   \\
 &=
-  \sum_{l}\sum_{k_x}\sum_{k_z}
-  \hat{u}_{l,m,n}(t)B_l(y)e^{\ii k_x x}e^{\ii k_z z}
+  \sum_{l}\sum_{k_m}\sum_{k_n}
+  \hat{u}_{l,m,n}(t)B_l(y)e^{\ii k_m x}e^{\ii k_n z}
   \label{eq:u_h_expansion}
 \end{align}
-where $k_x = 2\pi{}m/L_x$, $k_z = 2\pi{}n/L_z$, and $B_l(y)$ represents
-the fixed order B-spline basis functions.
+where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l(y)$ are a B-spline
+basis for some order and knot selection.
 
 Now, within the method of weighted residuals framework, we choose a mixed
 Galerkin/collocation approach employing the $L^2$ inner product and test
-``functions'' like $\delta(y-y_i) e^{\ii k_x' x}e^{\ii k_z' z}$ for fixed
+``functions'' like $\delta(y-y_i) e^{\ii k_m' x}e^{\ii k_n' z}$ for fixed
 collocation points $y_i$.  We catalog three relevant results
 \begin{align}
    \int_0^{L_y} \varphi(y) \, \delta(y-y_i) \,d\!y
 &= \varphi(y_i),
 &
-   \int_0^{L_x} e^{\ii k_x x} e^{-\ii k_x' x} \,d\!x
-&= L_x \delta_{k_x k_x'}, \text{ and}
+   \int_0^{L_x} e^{\ii k_m x} e^{-\ii k_m' x} \,d\!x
+&= L_x \delta_{k_m k_m'}, \text{ and}
 &
-   \int_0^{L_z} e^{\ii k_z z} e^{-\ii k_z' z} \,d\!z
-&= L_z \delta_{k_z k_z'}
+   \int_0^{L_z} e^{\ii k_n z} e^{-\ii k_n' z} \,d\!z
+&= L_z \delta_{k_n k_n'}
 \end{align}
 where the inner product's conjugate operation is accounted for by introducing a
 negative sign into the latter two exponentials.  We force the weighted residual
 to be zero in the sense that
 \begin{align}
  \int_0^{L_y}\!\!\int_0^{L_x}\!\!\int_0^{L_z}
- R^h\!\left(x,y,z\right) \delta(y-y_i) e^{-\ii k_x' x}e^{-\ii k_z' z}
+ R^h\!\left(x,y,z\right) \delta(y-y_i) e^{-\ii k_m' x}e^{-\ii k_n' z}
  \,d\!z \,d\!x \,d\!y
  &=
  \int_0^{L_x}\!\!\int_0^{L_z}
- R^h\!\left(x,y_i,z\right) e^{-\ii k_x' x}e^{-\ii k_z' z}
+ R^h\!\left(x,y_i,z\right) e^{-\ii k_m' x}e^{-\ii k_n' z}
  \,d\!z \,d\!x
  =
  0
 \end{align}
-holds for all $y_i$, $k_x'$, and $k_z'$.  Inserting \eqref{eq:u_h_expansion}
+holds for all $y_i$, $k_m'$, and $k_n'$.  Inserting \eqref{eq:u_h_expansion}
 into \eqref{eq:discrete_system_with_residual}, testing with our test functions,
 and simplifying each side separately we obtain the following:
 \begin{align}
   \int_{0}^{L_y}\!\!\int_{0}^{L_x}\!\!\int_{0}^{L_z}
  &\partial_t
   \left(
-    \sum_{l}\sum_{k_x}\sum_{k_z}
-    \hat{u}_{l,m,n}(t)B_l(y)e^{\ii k_x x}e^{\ii k_z z}
+    \sum_{l}\sum_{k_m}\sum_{k_n}
+    \hat{u}_{l,m,n}(t)B_l(y)e^{\ii k_m x}e^{\ii k_n z}
   \right)
   \left(
-    \delta(y-y_i) e^{-\ii k_x' x}e^{-\ii k_z' z}
+    \delta(y-y_i) e^{-\ii k_m' x}e^{-\ii k_n' z}
   \right)
   \, dz \, dx \, dy
 \\
@@ -674,72 +674,79 @@ and simplifying each side separately we obtain the following:
 \\
   \int_{0}^{L_y}\!\!\int_{0}^{L_x}\!\!\int_{0}^{L_z}
  &N\left(
-    \sum_{l}\sum_{k_x}\sum_{k_z}
-    \hat{u}_{l,m,n}(t)B_l(y)e^{\ii k_x x}e^{\ii k_z z}
+    \sum_{l}\sum_{k_m}\sum_{k_n}
+    \hat{u}_{l,m,n}(t)B_l(y)e^{\ii k_m x}e^{\ii k_n z}
   \right)
   \left(
-    \delta(y-y_i) e^{-\ii k_x' x}e^{-\ii k_z' z}
+    \delta(y-y_i) e^{-\ii k_m' x}e^{-\ii k_n' z}
   \right)
   \, dz \, dx \, dy
 \\
   &=
   \int_{0}^{L_x}\!\!\int_{0}^{L_z}
   N\left(
-    \sum_{k_x}\sum_{k_z}
+    \sum_{k_m}\sum_{k_n}
     \left(
       \sum_{l} B_l(y_i)
       \hat{u}_{l,m,n}(t)
     \right)
-    e^{\ii k_x x}e^{\ii k_z z}
+    e^{\ii k_m x}e^{\ii k_n z}
   \right)
   \left(
-    e^{-\ii k_x' x}e^{-\ii k_z' z}
+    e^{-\ii k_m' x}e^{-\ii k_n' z}
   \right)
   \, dz \, dx
 \intertext{
-  Reequating the two sides and rearranging gives
+  Reequating the two sides we have
 }
+  L_x L_z
   \sum_{l} B_l(y_i)
   \partial_t \hat{u}_{l,m,n}(t)
 &=
-  \frac{1}{L_x L_z}
   \int_{0}^{L_x}\!\!\int_{0}^{L_z}
   N\left(
-    \sum_{k_x}\sum_{k_z}
+    \sum_{k_m}\sum_{k_n}
     \left(
       \sum_{l} B_l(y_i)
       \hat{u}_{l,m,n}(t)
     \right)
-    e^{\ii k_x x}e^{\ii k_z z}
+    e^{\ii k_m x}e^{\ii k_n z}
   \right)
   \left(
-    e^{-\ii k_x' x}e^{-\ii k_z' z}
+    e^{-\ii k_m' x}e^{-\ii k_n' z}
   \right)
   \, dz \, dx
-\\
+  .
+ \end{align}
+
+Finally, approximating the two integrals by discrete sums and moving the
+resulting constants $N_x$ and $N_z$ to the left hand side leaves us with
+\begin{align}
+  L_x L_z N_x N_z
+  \sum_{l} B_l(y_i)
+  \partial_t \hat{u}_{l,m,n}(t)
 &\approx
-  \frac{1}{L_x L_z}
-  \sum_{k_x'} \sum_{k_z'}
+  \sum_{k_m'} \sum_{k_n'}
   N\left(
-    \sum_{k_x}\sum_{k_z}
+    \sum_{k_m}\sum_{k_n}
     \left(
       \sum_{l} B_l(y_i)
       \hat{u}_{l,m,n}(t)
     \right)
-    e^{\ii k_x x}e^{\ii k_z z}
+    e^{\ii k_m x}e^{\ii k_n z}
   \right)
   \left(
-    e^{-\ii k_x' x}e^{-\ii k_z' z}
+    e^{-\ii k_m' x}e^{-\ii k_n' z}
   \right)
+  .
   \label{eq:spatial_discretization}
 \end{align}
-\nopagebreak
-where we have introduced quadrature error by approximating two integrals using
-finite sums.  This error can be mitigated via an appropriate dealiasing
-technique.  We are left with $N_x\times{}N_z$ time-dependent systems containing
-$N_y$ equations coupled in the $x$ and $z$ directions only through Fourier
-transform-like operations and the requirements of the nonlinear operator $N$.
-% FIXME Need dealiasing reference!
+Given knowledge of the nonlinear operator $N$, the introduced quadrature error
+can be mitigated via an appropriate dealiasing technique (see,
+e.g.,~\cite{Canuto2006}).  We are left with $N_x\times{}N_z$ time-dependent
+systems containing $N_y$ equations coupled in the $x$ and $z$ directions only
+through Fourier transform-like operations and the requirements of the nonlinear
+operator $N$.
 
 Calling $\hat{u}_{l,m,n}(t)$ the wave space coefficients of the
 solution at some time $t$, the right hand side may be efficiently computed by
@@ -753,11 +760,13 @@ solution at some time $t$, the right hand side may be efficiently computed by
  \item using a forward fast Fourier transform across the $x$ and $z$
        directions to convert information from physical space to wave space.
 \end{enumerate}
-Note that the inverse Fourier transform is not normalized while the forward
-transform must be normalized.  Note also that the left hand side
-contains a mass matrix arising from the B-spline basis and collocation details.
-We retain it on the same side as the time derivative in anticipation of the
-time discretization scheme.
+Note that the left hand side contains a mass matrix arising from the B-spline
+basis, collocation point choices, and constants $L_x$, $L_z$, $N_x$, and $N_z$.
+Rolling $N_x$ and $N_z$ into the mass matrix allows us to hide the cost of
+normalizing the forward fast Fourier transform.  We retain the mass matrix on
+the same side as the time derivative in anticipation of the time discretization
+scheme.
+
 
 \subsection{Time discretization}
 
