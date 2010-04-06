@@ -103,6 +103,13 @@ test_functional_SOURCES = test_functional.cpp
 test_functional_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_functional_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                 += test_storage
+check_PROGRAMS        += test_storage
+test_storage_SOURCES   = test_storage.cpp
+test_storage_LDADD     = ../suzerain/libsuzerain.la
+test_storage_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_storage_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS               += test_state
 check_PROGRAMS      += test_state
 test_state_SOURCES   = test_state.cpp

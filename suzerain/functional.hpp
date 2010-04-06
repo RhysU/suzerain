@@ -78,6 +78,22 @@ T product(InputIterator first, InputIterator last, T init) {
     return std::accumulate(first, last, init, std::multiplies<T>());
 }
 
+/** A binary operator that computes the minimum of two values. */
+template<class T>
+struct minimum : std::binary_function <T,T,T> {
+    T operator() (const T& x, const T& y) const {
+        return std::min(x,y);
+    }
+};
+
+/** A binary operator that computes the maximum of two values. */
+template<class T>
+struct maximum : std::binary_function <T,T,T> {
+    T operator() (const T& x, const T& y) const {
+        return std::max(x,y);
+    }
+};
+
 /**
  * A functor that performs assignment to type \c Target from type \c Source.
  * \c Target must be assignable from \c Source.
