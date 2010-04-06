@@ -109,7 +109,6 @@ BsplineDefinition<FPT>::BsplineDefinition(size_type default_k,
 
     using ::std::bind2nd;
     using ::std::ptr_fun;
-    using ::suzerain::validation::ensure_nonnegative;
     using ::suzerain::validation::ensure_positive;
 
     // Created to solve ambiguous type issues below
@@ -117,7 +116,7 @@ BsplineDefinition<FPT>::BsplineDefinition(size_type default_k,
         ptr_fun_ensure_positive_FPT(ensure_positive<FPT>);
 
     options_.add_options()
-        ("k", po::value<size_type>(&global_extents_[0])
+        ("k", po::value<size_type>(&k_)
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"k"))
             ->default_value(default_size),
         "B-spline basis order where k = 4 indicates piecewise cubics")
