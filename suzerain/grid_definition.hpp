@@ -216,15 +216,15 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
         ("Nx", po::value<size_type>(&global_extents_[0])
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nx"))
             ->default_value(default_Nx),
-        "Number of grid points in X (streamwise) direction")
+        "Grid point count in X (streamwise) direction")
         ("Ny", po::value<size_type>(&global_extents_[1])
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Ny"))
             ->default_value(default_Ny),
-        "Number of grid points in Y (wall normal) direction")
+        "Grid point count in Y (wall normal) direction")
         ("Nz", po::value<size_type>(&global_extents_[2])
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nz"))
             ->default_value(default_Nz),
-        "Number of grid points in Z (spanwise) direction")
+        "Grid point count in Z (spanwise) direction")
         ("Pa", po::value<size_type>(&processor_grid_[0])
             ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pa"))
             ->default_value(0),
