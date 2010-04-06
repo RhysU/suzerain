@@ -216,3 +216,132 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( logspace, T, test_types )
         BOOST_CHECK_EQUAL(result[2],std::pow(T(4),T(-5)));
     }
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( stretchspace, T, test_types )
+{
+    using suzerain::math::stretchspace;
+
+    BOOST_CHECK_THROW(
+            stretchspace(T(0),T(10),0,T(1),(T*)NULL), std::invalid_argument);
+    BOOST_CHECK_THROW(
+            stretchspace(T(0),T(10),1,T(1),(T*)NULL), std::invalid_argument);
+    BOOST_CHECK_THROW(
+            stretchspace(T(0),T(10),2,T(1),(T*)NULL), std::invalid_argument);
+
+    {
+        const std::size_t N = 3;
+        T result[N];
+        const T close_enough = std::numeric_limits<T>::epsilon()*1000;
+
+        // Strictly positive, increasing, alpha = 1
+        BOOST_CHECK_EQUAL(stretchspace(T(1),T(5),N,T(1),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(1));
+        BOOST_CHECK_EQUAL(result[1],T(3));
+        BOOST_CHECK_EQUAL(result[2],T(5));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),T(1),close_enough);
+
+        // Spans zero, increasing, alpha = 1
+        BOOST_CHECK_EQUAL(stretchspace(T(-1),T(3),N,T(1),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(-1));
+        BOOST_CHECK_EQUAL(result[1],T( 1));
+        BOOST_CHECK_EQUAL(result[2],T( 3));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),T(1),close_enough);
+
+        // Strictly negative, increasing, alpha = 1
+        BOOST_CHECK_EQUAL(stretchspace(T(-5),T(-1),N,T(1),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(-5));
+        BOOST_CHECK_EQUAL(result[1],T(-3));
+        BOOST_CHECK_EQUAL(result[2],T(-1));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),T(1),close_enough);
+
+        // Strictly negative, decreasing, alpha = 1
+        BOOST_CHECK_EQUAL(stretchspace(T(-1),T(-5),N,T(1),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(-1));
+        BOOST_CHECK_EQUAL(result[1],T(-3));
+        BOOST_CHECK_EQUAL(result[2],T(-5));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),T(1),close_enough);
+
+        // Strictly positive, increasing, alpha = 2
+        BOOST_CHECK_EQUAL(stretchspace(T(1),T(5),N,T(2),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(1));
+        BOOST_CHECK_CLOSE(result[1],T(7)/T(3),close_enough);
+        BOOST_CHECK_EQUAL(result[2],T(5));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),T(2),close_enough);
+
+        // Spans zero, increasing, alpha = 2
+        BOOST_CHECK_EQUAL(stretchspace(T(-1),T(3),N,T(2),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(-1));
+        BOOST_CHECK_CLOSE(result[1],T( 1)/T(3),close_enough);
+        BOOST_CHECK_EQUAL(result[2],T( 3));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),T(2),close_enough);
+
+        // Strictly negative, increasing, alpha = 2
+        BOOST_CHECK_EQUAL(stretchspace(T(-5),T(-1),N,T(2),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(-5));
+        BOOST_CHECK_CLOSE(result[1],T(-11)/T(3),close_enough);
+        BOOST_CHECK_EQUAL(result[2],T(-1));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),T(2),close_enough);
+
+        // Strictly negative, decreasing, alpha = 2
+        BOOST_CHECK_EQUAL(stretchspace(T(-1),T(-5),N,T(2),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(-1));
+        BOOST_CHECK_CLOSE(result[1],T(-7)/T(3),close_enough);
+        BOOST_CHECK_EQUAL(result[2],T(-5));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),T(2),close_enough);
+
+        // Strictly positive, increasing, alpha = 1/2
+        BOOST_CHECK_EQUAL(stretchspace(T(1),T(5),N,1/T(2),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(1));
+        BOOST_CHECK_CLOSE(result[1],T(11)/T(3),close_enough);
+        BOOST_CHECK_EQUAL(result[2],T(5));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),1/T(2),close_enough);
+
+        // Spans zero, increasing, alpha = 1/2
+        BOOST_CHECK_EQUAL(stretchspace(T(-1),T(3),N,1/T(2),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(-1));
+        BOOST_CHECK_CLOSE(result[1],T( 5)/T(3),close_enough);
+        BOOST_CHECK_EQUAL(result[2],T( 3));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),1/T(2),close_enough);
+
+        // Strictly negative, increasing, alpha = 1/2
+        BOOST_CHECK_EQUAL(stretchspace(T(-5),T(-1),N,1/T(2),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(-5));
+        BOOST_CHECK_CLOSE(result[1],T(-7)/T(3),close_enough);
+        BOOST_CHECK_EQUAL(result[2],T(-1));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),1/T(2),close_enough);
+
+        // Strictly negative, decreasing, alpha = 1/2
+        BOOST_CHECK_EQUAL(stretchspace(T(-1),T(-5),N,1/T(2),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(-1));
+        BOOST_CHECK_EQUAL(result[1],T(-11)/T(3));
+        BOOST_CHECK_EQUAL(result[2],T(-5));
+        BOOST_CHECK_CLOSE(
+            (result[2]-result[1])/(result[1]-result[0]),1/T(2),close_enough);
+    }
+
+    {
+        const std::size_t N = 5;
+        T result[N];
+        const T close_enough = std::numeric_limits<T>::epsilon()*1000;
+
+        BOOST_CHECK_EQUAL(stretchspace(T(1),T(5),N,T(2),result),result+N);
+        BOOST_CHECK_EQUAL(result[0],T(1));
+        BOOST_CHECK_CLOSE(result[1],T(5)/T(3),close_enough);
+        BOOST_CHECK_CLOSE(result[2],T(23)/T(9),close_enough);
+        BOOST_CHECK_CLOSE(result[3],T(11)/T(3),close_enough);
+        BOOST_CHECK_EQUAL(result[4],T(5));
+        BOOST_CHECK_CLOSE(
+            (result[N-1]-result[N-2])/(result[1]-result[0]),T(2),close_enough);
+    }
+}

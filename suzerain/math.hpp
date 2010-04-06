@@ -95,7 +95,7 @@ OutputIterator linspace(const FPT xbegin,
                         OutputIterator x)
 {
     BOOST_STATIC_ASSERT(std::numeric_limits<Integer>::is_integer);
-    if (SUZERAIN_UNLIKELY(n <= 0)) throw std::invalid_argument("n < 0");
+    if (SUZERAIN_UNLIKELY(n <= 0)) throw std::invalid_argument("n <= 0");
 
     if (SUZERAIN_UNLIKELY(n == 1)) {
         if (SUZERAIN_UNLIKELY(xbegin != xend))
@@ -133,7 +133,7 @@ OutputIterator logspace(const FPT xbegin,
                         const FPT base = 10)
 {
     BOOST_STATIC_ASSERT(std::numeric_limits<Integer>::is_integer);
-    if (SUZERAIN_UNLIKELY(n <= 0)) throw std::invalid_argument("n < 0");
+    if (SUZERAIN_UNLIKELY(n <= 0)) throw std::invalid_argument("n <= 0");
 
     if (SUZERAIN_UNLIKELY(n == 1)) {
         if (SUZERAIN_UNLIKELY(xbegin != xend))
@@ -147,6 +147,53 @@ OutputIterator logspace(const FPT xbegin,
         }
         *x++ = std::pow(base, xend);
     }
+
+    return x;
+}
+
+/**
+ * Output \n values spanning the range <tt>[xbegin, xend]</tt> (inclusive)
+ * stretched linearly according to \f$\Delta{}x_\text{end} = \alpha
+ * \Delta{}x_\text{begin}\f$.
+ *
+ * @param xbegin Beginning value
+ * @param xend   Ending value
+ * @param n      Number of linearly spaced values to use.  Must be
+ *               greater than two.
+ * @param alpha  The stretching factor relating the ratio of the last
+ *               interval width to the first interval width.  Must be
+ *               greater than zero.
+ * @param x      Output locations
+ * @return One plus that last output location.
+ */
+template<typename FPT, typename Integer, typename OutputIterator>
+OutputIterator stretchspace(const FPT xbegin,
+                            const FPT xend,
+                            const Integer n,
+                            const FPT alpha,
+                            OutputIterator x)
+{
+    BOOST_STATIC_ASSERT(std::numeric_limits<Integer>::is_integer);
+    if (SUZERAIN_UNLIKELY(n < 3))
+        throw std::invalid_argument("n < 3");
+    if (SUZERAIN_UNLIKELY(alpha <= 0))
+        throw std::invalid_argument("alpha <= 0");
+
+    // Compute parameters; see notes dated 6 April 2010.  Expressions arise
+    // from setting dx_{n-1} = alpha * dx_{0} = beta*(n-1) + dx_{0}, expressing
+    // beta in terms of dx_{0}, and solving b-a = \sum_{i=0}^{ninterval} dx_{i}
+    // for dx0.
+    const Integer ninterval = n - 1;
+    const FPT dx0           = (2*(xend - xbegin)) / (ninterval*(1 + alpha));
+    const FPT beta          = (alpha - 1) / (ninterval - 1) * dx0;
+
+    // Use parameters to compute the output sequence
+    FPT xlast = xbegin;
+    for (Integer i = 0; i < ninterval; ++i) {
+        *x++ = xlast;
+        xlast += beta*i + dx0;
+    }
+    *x++ = xend;
 
     return x;
 }
