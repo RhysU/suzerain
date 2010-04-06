@@ -281,8 +281,12 @@ public:
 
     template< typename ExtentList >
     explicit NoninterleavedState(
+            const ExtentList& sizes);
+
+    template< typename ExtentList, typename MinStrideList >
+    explicit NoninterleavedState(
             const ExtentList& sizes,
-            size_type min_variable_stride = 0);
+            const MinStrideList& minstrides);
 
     NoninterleavedState(const NoninterleavedState& other);
 
@@ -311,49 +315,44 @@ private:
     // Disable assignment operators
     const multi_array_type& operator=( const multi_array_type& );
     const NoninterleavedState& operator=( const NoninterleavedState& );
-
-    template< typename ExtentList >
-    static std::size_t computeContiguousMemoryCount(
-            const ExtentList& extent_list,
-            size_type min_variable_stride = 0);
 };
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 template< typename ExtentList >
-std::size_t
-NoninterleavedState<NumDims,Element,Allocator>::computeContiguousMemoryCount(
-        const ExtentList &extent_list,
-        size_type min_variable_stride)
-{
-    assert(extent_list.begin() != extent_list.end());
-
-    using suzerain::functional::product;
-    const std::size_t nonpadded_count
-        = product(extent_list.begin(), extent_list.end());
-    const std::size_t padded_count
-        = *(extent_list.begin()) * min_variable_stride;
-
-    return std::max(padded_count, nonpadded_count);
-}
-
-template< std::size_t NumDims, typename Element, typename Allocator >
-template< typename ExtentList >
 NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
-        const ExtentList& sizes,
-        size_type min_variable_stride = 0)
+        const ExtentList& sizes)
     : IStateBase<NumDims,Element>(),
       IState<NumDims,Element,storage_noninterleaved>(),
       ContiguousMemory<Element,Allocator>(
-              computeContiguousMemoryCount(sizes, min_variable_stride)),
+              storage_noninterleaved::compute_storage(sizes.begin())),
       multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
                        sizes,
                        storage_noninterleaved::storage_order())
 {
     // Abuse encapsulation; stride_list_ is protected from our
     // boost::const_multi_array_ref ancestor.
-    this->stride_list_[0] = std::max(
-            this->stride_list_[0],
-            boost::numeric_cast<index>(min_variable_stride));
+    storage_noninterleaved::compute_strides(
+            sizes.begin(), this->stride_list_.begin());
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+template< typename ExtentList, typename MinStrideList >
+NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
+        const ExtentList& sizes,
+        const MinStrideList& minstrides)
+    : IStateBase<NumDims,Element>(),
+      IState<NumDims,Element,storage_noninterleaved>(),
+      ContiguousMemory<Element,Allocator>(
+              storage_noninterleaved::compute_storage(
+                  sizes.begin(), minstrides.begin())),
+      multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
+                       sizes,
+                       storage_noninterleaved::storage_order())
+{
+    // Abuse encapsulation; stride_list_ is protected from our
+    // boost::const_multi_array_ref ancestor.
+    storage_noninterleaved::compute_strides(
+            sizes.begin(), minstrides.begin(), this->stride_list_.begin());
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
