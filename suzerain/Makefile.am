@@ -29,6 +29,7 @@ pkginclude_HEADERS += allocator.hpp
 pkginclude_HEADERS += blas_et_al.h
 pkginclude_HEADERS += blas_et_al.hpp
 pkginclude_HEADERS += bspline.h
+pkginclude_HEADERS += bspline_definition.hpp
 pkginclude_HEADERS += common.h
 pkginclude_HEADERS += common.hpp
 pkginclude_HEADERS += complex.hpp
