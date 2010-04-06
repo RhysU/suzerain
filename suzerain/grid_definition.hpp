@@ -52,37 +52,44 @@ template< typename FPT = double >
 class GridDefinition : public IDefinition, public integral_types
 {
 public:
-    typedef FPT floating_point_type; /**< Floating point type in use */
-
     /**
      * Construct an instance with the given default size in each direction
      * and the given default length.
      *
-     * @param default_size Default grid size in the X, Y, and Z directions.
-     * @param default_length Default grid length in the X, Y, and Z directions.
+     * @param default_Nx Default grid size in the X direction.
+     * @param default_Ny Default grid size in the Y direction.
+     * @param default_Nz Default grid size in the Z direction.
+     * @param default_Lx Default domain length in the X direction.
+     * @param default_Ly Default domain length in the Y direction.
+     * @param default_Lz Default domain length in the Z direction.
      */
-    GridDefinition(size_type default_size = 16, FPT default_length = 2.0*M_PI);
+    GridDefinition(size_type default_Nx = 16,
+                   size_type default_Ny = 16,
+                   size_type default_Nz = 16,
+                   FPT default_Lx = 2.0*M_PI,
+                   FPT default_Ly = 2.0*M_PI,
+                   FPT default_Lz = 2.0*M_PI);
 
     /**
      * Retrieve the domain length in the X direction.
      *
      * @return the domain's X length.
      */
-    FPT lx() const { return lx_; }
+    FPT Lx() const { return Lx_; }
 
     /**
      * Retrieve the domain length in the Y direction.
      *
      * @return the domain's Y length.
      */
-    FPT ly() const { return ly_; }
+    FPT Ly() const { return Ly_; }
 
     /**
      * Retrieve the domain length in the Z direction.
      *
      * @return the domain's Z length.
      */
-    FPT lz() const { return lz_; }
+    FPT Lz() const { return Lz_; }
 
     /**
      * Retrieve global computational grid extents.
@@ -97,7 +104,7 @@ public:
      *
      * @return the grid size in the X direction.
      */
-    size_type nx() const { return global_extents_[0]; }
+    size_type Nx() const { return global_extents_[0]; }
 
     /**
      * Retrieve computational grid size in the Y direction.
@@ -105,7 +112,7 @@ public:
      *
      * @return the grid size in the Y direction.
      */
-    size_type ny() const { return global_extents_[1]; }
+    size_type Ny() const { return global_extents_[1]; }
 
     /**
      * Retrieve computational grid size in the Z direction.
@@ -113,7 +120,7 @@ public:
      *
      * @return the grid size in the Z direction.
      */
-    size_type nz() const { return global_extents_[2]; }
+    size_type Nz() const { return global_extents_[2]; }
 
     /**
      * Retrieve the two dimensional processor grid extents.
@@ -134,7 +141,7 @@ public:
      * @return the processor grid extents in the \f$ P_A \f$ direction.
      * @see processor_grid() for more details.
      */
-    size_type pa() const { return processor_grid_[0]; }
+    size_type Pa() const { return processor_grid_[0]; }
 
     /**
      * Retrieve the processor grid extent in the \f$ P_B \f$ direction.
@@ -142,7 +149,7 @@ public:
      * @return the processor grid extents in the \f$ P_B \f$ direction.
      * @see processor_grid() for more details.
      */
-    size_type pb() const { return processor_grid_[1]; }
+    size_type Pb() const { return processor_grid_[1]; }
 
     /*! @copydoc IDefinition::options */
     const boost::program_options::options_description& options() {
@@ -154,9 +161,9 @@ private:
     /** Stores the program options processing information */
     boost::program_options::options_description options_;
 
-    FPT lx_;  /**< Stores the X direction length */
-    FPT ly_;  /**< Stores the Y direction length */
-    FPT lz_;  /**< Stores the Z direction length */
+    FPT Lx_;  /**< Stores the X direction length */
+    FPT Ly_;  /**< Stores the Y direction length */
+    FPT Lz_;  /**< Stores the Z direction length */
 
     /** Stores the computational grid extents */
     size_type_3d global_extents_;
@@ -166,14 +173,20 @@ private:
 };
 
 template< typename FPT >
-GridDefinition<FPT>::GridDefinition(size_type default_size,
-                                    FPT default_length)
+GridDefinition<FPT>::GridDefinition(size_type default_Nx,
+                                    size_type default_Ny,
+                                    size_type default_Nz,
+                                    FPT default_Lx,
+                                    FPT default_Ly,
+                                    FPT default_Lz)
     : options_("Grid definition"),
-      lx_(default_length),
-      ly_(default_length),
-      lz_(default_length)
+      Lx_(default_Lx),
+      Ly_(default_Ly),
+      Lz_(default_Lz)
 {
-    std::fill(global_extents_.begin(), global_extents_.end(), default_size);
+    global_extents_[0] = default_Nx;
+    global_extents_[1] = default_Ny;
+    global_extents_[2] = default_Nz;
     std::fill(processor_grid_.begin(), processor_grid_.end(), 0);
 
     namespace po = ::boost::program_options;
@@ -188,40 +201,71 @@ GridDefinition<FPT>::GridDefinition(size_type default_size,
         ptr_fun_ensure_positive_FPT(ensure_positive<FPT>);
 
     options_.add_options()
-        ("lx", po::value<FPT>(&lx_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"lx"))
-            ->default_value(default_length),
+        ("Lx", po::value<FPT>(&Lx_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lx"))
+            ->default_value(default_Lx),
         "Nondimensional grid length in X (streamwise) direction")
-        ("ly", po::value<FPT>(&ly_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"ly"))
-            ->default_value(default_length),
+        ("Ly", po::value<FPT>(&Ly_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Ly"))
+            ->default_value(default_Ly),
         "Nondimensional grid length in Y (wall normal) direction")
-        ("lz", po::value<FPT>(&lz_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"lz"))
-            ->default_value(default_length),
+        ("Lz", po::value<FPT>(&Lz_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lz"))
+            ->default_value(default_Lz),
         "Nondimensional grid length in Z (spanwise) direction")
-        ("nx", po::value<size_type>(&global_extents_[0])
-            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"nx"))
-            ->default_value(default_size),
+        ("Nx", po::value<size_type>(&global_extents_[0])
+            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nx"))
+            ->default_value(default_Nx),
         "Number of grid points in X (streamwise) direction")
-        ("ny", po::value<size_type>(&global_extents_[1])
-            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"ny"))
-            ->default_value(default_size),
+        ("Ny", po::value<size_type>(&global_extents_[1])
+            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Ny"))
+            ->default_value(default_Ny),
         "Number of grid points in Y (wall normal) direction")
-        ("nz", po::value<size_type>(&global_extents_[2])
-            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"nz"))
-            ->default_value(default_size),
+        ("Nz", po::value<size_type>(&global_extents_[2])
+            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nz"))
+            ->default_value(default_Nz),
         "Number of grid points in Z (spanwise) direction")
-        ("pa", po::value<size_type>(&processor_grid_[0])
-            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"pa"))
+        ("Pa", po::value<size_type>(&processor_grid_[0])
+            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pa"))
             ->default_value(0),
         "Processor count in the P_A decomposition direction; 0 for automatic")
-        ("pb", po::value<size_type>(&processor_grid_[1])
-            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"pb"))
+        ("Pb", po::value<size_type>(&processor_grid_[1])
+            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pb"))
             ->default_value(0),
         "Processor count in the P_B decomposition direction; 0 for automatic")
     ;
 }
+
+/**
+ * Holds three dimensional computational grid dimensions for a channel problem.
+ * This is just a subclass of GridDefinition which provides some better default
+ * values.
+ */
+template< typename FPT = double >
+class ChannelDefinition : public GridDefinition<FPT>
+{
+public:
+    /**
+     * Construct an instance with the given default size in each direction
+     * and the given default length.
+     *
+     * @param default_Nx Default grid size in the X direction.
+     * @param default_Ny Default grid size in the Y direction.
+     * @param default_Nz Default grid size in the Z direction.
+     * @param default_Lx Default domain length in the X direction.
+     * @param default_Ly Default domain length in the Y direction.
+     * @param default_Lz Default domain length in the Z direction.
+     */
+    ChannelDefinition(typename GridDefinition<FPT>::size_type default_Nx = 16,
+                      typename GridDefinition<FPT>::size_type default_Ny = 16,
+                      typename GridDefinition<FPT>::size_type default_Nz = 16,
+                      FPT default_Lx = 4.0*M_PI,
+                      FPT default_Ly = 2.0,
+                      FPT default_Lz = 4.0*M_PI/3.0)
+        : GridDefinition<FPT>(default_Nx, default_Ny, default_Nz,
+                              default_Lx, default_Ly, default_Lz);
+};
+
 
 } // namespace problem
 
