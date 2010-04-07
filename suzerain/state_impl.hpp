@@ -395,6 +395,126 @@ throw(std::bad_cast)
     return std::equal(this->shape(), this->shape() + NumDims, o.shape());
 }
 
+namespace detail {
+
+template< typename BLASFunctor, typename Element, typename Allocator >
+void apply(BLASFunctor functor,
+           NoninterleavedState<1,Element,Allocator>& x,
+           NoninterleavedState<1,Element,Allocator>& y)
+{
+    assert(std::equal(x.shape(), x.shape() + 1, y.shape()));
+
+    functor(x.shape()[0],
+            x.memory_begin(), x.strides()[0],
+            y.memory_begin(), y.strides()[0]);
+}
+
+template< typename BLASFunctor, typename Element, typename Allocator >
+void apply(BLASFunctor functor,
+           NoninterleavedState<2,Element,Allocator>& x,
+           NoninterleavedState<2,Element,Allocator>& y)
+{
+    typedef typename NoninterleavedState<2,Element,Allocator>::index index;
+    assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
+
+    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+         ix < x.index_bases()[0] + x.shape()[0];
+         ++ix, ++iy) {
+
+        functor(x.shape()[1],
+                &(x[ix][x.index_bases()[1]]), x.strides()[1],
+                &(y[iy][y.index_bases()[1]]), y.strides()[1]);
+    }
+}
+
+template< typename BLASFunctor, typename Element, typename Allocator >
+void apply(BLASFunctor functor,
+           NoninterleavedState<3,Element,Allocator>& x,
+           NoninterleavedState<3,Element,Allocator>& y)
+{
+    typedef typename NoninterleavedState<3,Element,Allocator>::index index;
+    assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
+
+    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+        ix < x.index_bases()[0] + x.shape()[0];
+        ++ix, ++iy) {
+
+        for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
+             kx < x.index_bases()[2] + x.shape()[2];
+             ++kx, ++ky) {
+
+            functor(x.shape()[1],
+                    &(x[ix][x.index_bases()[1]][kx]), x.strides()[1],
+                    &(y[iy][y.index_bases()[1]][ky]), y.strides()[1]);
+        }
+    }
+}
+
+template< typename BLASFunctor, typename Element, typename Allocator >
+void apply(BLASFunctor functor,
+           NoninterleavedState<4,Element,Allocator>& x,
+           NoninterleavedState<4,Element,Allocator>& y)
+{
+    typedef typename NoninterleavedState<4,Element,Allocator>::index index;
+    assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
+
+    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+        ix < x.index_bases()[0] + x.shape()[0];
+        ++ix, ++iy) {
+
+        for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
+            lx < x.index_bases()[3] + x.shape()[3];
+            ++lx, ++ly) {
+
+            for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
+                kx < x.index_bases()[2] + x.shape()[2];
+                ++kx, ++ky) {
+
+                functor(x.shape()[1],
+                        &(x[ix][x.index_bases()[1]][kx][lx]), x.strides()[1],
+                        &(y[iy][y.index_bases()[1]][ky][ly]), y.strides()[1]);
+            }
+        }
+    }
+}
+
+template< typename BLASFunctor, typename Element, typename Allocator >
+void apply(BLASFunctor functor,
+           NoninterleavedState<5,Element,Allocator>& x,
+           NoninterleavedState<5,Element,Allocator>& y)
+{
+    typedef typename NoninterleavedState<5,Element,Allocator>::index index;
+    assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
+
+    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+        ix < x.index_bases()[0] + x.shape()[0];
+        ++ix, ++iy) {
+
+        for (index mx = x.index_bases()[4], my = y.index_bases()[4];
+            mx < x.index_bases()[4] + x.shape()[4];
+            ++mx, ++my) {
+
+            for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
+                lx < x.index_bases()[3] + x.shape()[3];
+                ++lx, ++ly) {
+
+                for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
+                    kx < x.index_bases()[2] + x.shape()[2];
+                    ++kx, ++ky) {
+
+                    functor(x.shape()[1],
+                            &(x[ix][x.index_bases()[1]][kx][lx][mx]),
+                            x.strides()[1],
+                            &(y[iy][y.index_bases()[1]][ky][ly][my]),
+                            y.strides()[1]);
+                }
+            }
+        }
+    }
+}
+
+} // namespace detail
+
 template< std::size_t NumDims, typename Element, typename Allocator >
 void NoninterleavedState<NumDims,Element,Allocator>::addScaled(
             const Element& factor,
@@ -409,26 +529,17 @@ throw(std::bad_cast, std::logic_error)
 
     const NoninterleavedState& o
         = dynamic_cast<const NoninterleavedState&>(other);
-    assert(std::equal(this->strides() + 1, this->strides() + NumDims,
-                      o.strides() + 1));
 
-    if (SUZERAIN_UNLIKELY(this->strides()[0] != o.strides()[0])) {
-        // Different padding between variables: requires multiple BLAS calls
-        const size_type count = suzerain::functional::product(
-                this->shape() + 1, this->shape() + NumDims);
-
-        Element       *p = this->memory_begin();
-        const Element *q = o.memory_begin();
-        while (p < this->memory_end()) {
-            suzerain::blas::axpy(count, factor, q, 1, p, 1);
-            p += this->strides()[0];
-            q += o.strides()[0];
-        }
-    } else {
+    if (SUZERAIN_UNLIKELY(
+        std::equal(o.strides(), o.strides() + NumDims, this->strides()))) {
         // Identical padding between variables: use a single BLAS call
         suzerain::blas::axpy(
                 std::distance(this->memory_begin(),this->memory_end()),
                 factor, o.memory_begin(), 1, this->memory_begin(), 1);
+    } else {
+        // Different padding between variables: loop over BLAS calls
+        detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
+                      const_cast<NoninterleavedState&>(o), *this);
     }
 }
 
@@ -444,26 +555,17 @@ throw(std::bad_cast, std::logic_error)
 
     const NoninterleavedState& o
         = dynamic_cast<const NoninterleavedState&>(other);
-    assert(std::equal(this->strides()+1, this->strides() + NumDims,
-                      o.strides()+1));
 
-    if (SUZERAIN_UNLIKELY(this->strides()[0] != o.strides()[0])) {
-        // Different padding between variables: requires multiple BLAS calls
-        const size_type count = suzerain::functional::product(
-                this->shape() + 1, this->shape() + NumDims);
-
-        Element       *p = this->memory_begin();
-        const Element *q = o.memory_begin();
-        while (p < this->memory_end()) {
-            suzerain::blas::copy(count, q, 1, p, 1);
-            p += this->strides()[0];
-            q += o.strides()[0];
-        }
-    } else {
+    if (SUZERAIN_UNLIKELY(
+        std::equal(o.strides(), o.strides() + NumDims, this->strides()))) {
         // Identical padding between variables: use a single BLAS call
         suzerain::blas::copy(
                 std::distance(this->memory_begin(),this->memory_end()),
                 o.memory_begin(), 1, this->memory_begin(), 1);
+    } else {
+        // Different padding between variables: loop over BLAS calls
+        detail::apply(::suzerain::blas::functor::copy(),
+                      const_cast<NoninterleavedState&>(o), *this);
     }
 }
 
@@ -478,26 +580,16 @@ throw(std::bad_cast, std::logic_error)
             std::string("Nonconformant other in ") + __PRETTY_FUNCTION__);
 
     NoninterleavedState& o = dynamic_cast<NoninterleavedState&>(other);
-    assert(std::equal(this->strides()+1, this->strides() + NumDims,
-                      o.strides()+1));
 
-    if (SUZERAIN_UNLIKELY(this->strides()[0] != o.strides()[0])) {
-        // Different padding between variables: requires multiple BLAS calls
-        const size_type count = suzerain::functional::product(
-                this->shape() + 1, this->shape() + NumDims);
-
-        Element *p = this->memory_begin();
-        Element *q = o.memory_begin();
-        while (p < this->memory_end()) {
-            suzerain::blas::swap(count, q, 1, p, 1);
-            p += this->strides()[0];
-            q += o.strides()[0];
-        }
-    } else {
+    if (SUZERAIN_UNLIKELY(
+        std::equal(o.strides(), o.strides() + NumDims, this->strides()))) {
         // Identical padding between variables: use a single BLAS call
         suzerain::blas::swap(
                 std::distance(this->memory_begin(),this->memory_end()),
                 o.memory_begin(), 1, this->memory_begin(), 1);
+    } else {
+        // Different padding between variables: loop over BLAS calls
+        detail::apply(::suzerain::blas::functor::swap(), o, *this);
     }
 }
 
