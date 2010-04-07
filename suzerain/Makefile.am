@@ -63,6 +63,7 @@ pkginclude_HEADERS += underling_fft.h
 pkginclude_HEADERS += underling_fft.hpp
 pkginclude_HEADERS += underling.h
 pkginclude_HEADERS += underling.hpp
+pkginclude_HEADERS += utility.hpp
 pkginclude_HEADERS += validation.hpp
 
 noinst_LTLIBRARIES     += libsuzerain.la
