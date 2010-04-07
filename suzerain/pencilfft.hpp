@@ -623,7 +623,8 @@ struct complex_copy_differentiate {
     complex_copy_differentiate(
         const int derivative,
         const real_type length)
-        : derivative_(derivative), twopioverlength_(2.0*M_PI/length) {}
+        : derivative_(derivative),
+          twopioverlength_(2*boost::math::constants::pi<real_type>()/length) {}
 
     /**
      * Copies <tt>(2*pi*n*I/length)^derivative * src</tt> to \c dest
@@ -679,7 +680,7 @@ struct complex_copy_scale_differentiate {
         const real_type length)
         : alpha_(alpha),
           derivative_(derivative),
-          twopioverlength_(2.0*M_PI/length) {}
+          twopioverlength_(2*boost::math::constants::pi<real_type>()/length) {}
 
     /**
      * Copies <tt>(2*pi*n*I/length)^derivative * alpha * src</tt> to \c dest
