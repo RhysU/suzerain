@@ -168,6 +168,7 @@ InterleavedState<NumDims,Element,Allocator>::InterleavedState(
                        sizes,
                        storage_interleaved::storage_order())
 {
+    assert(NumDims == std::distance(sizes.begin(),sizes.end()));
     // NOP
 }
 
@@ -329,6 +330,8 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
                        sizes,
                        storage_noninterleaved::storage_order())
 {
+    assert(NumDims == std::distance(sizes.begin(),sizes.end()));
+
     // Abuse encapsulation; stride_list_ is protected from our
     // boost::const_multi_array_ref ancestor.
     storage_noninterleaved::compute_strides(
@@ -349,6 +352,9 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
                        sizes,
                        storage_noninterleaved::storage_order())
 {
+    assert(NumDims == std::distance(sizes.begin(),sizes.end()));
+    assert(NumDims == std::distance(minstrides.begin(),minstrides.end()));
+
     // Abuse encapsulation; stride_list_ is protected from our
     // boost::const_multi_array_ref ancestor.
     storage_noninterleaved::compute_strides(
