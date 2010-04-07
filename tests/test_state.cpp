@@ -228,9 +228,6 @@ static void test_exchange_helper(
     verify223(bar, 2);
 }
 
-// FIXME Correct InterleavedState implementation and enable tests
-#ifdef FIXME_INTERLEAVED_STATE_TESTS_DISABLED
-#warning 'FIXME: suzerain::InterleavedState tests disabled'
 BOOST_AUTO_TEST_SUITE( InterleavedState )
 
 using suzerain::InterleavedState;
@@ -351,7 +348,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-#endif /* FIXME_INTERLEAVED_STATE_TESTS_DISABLED */
 
 
 BOOST_AUTO_TEST_SUITE( NoninterleavedState )
