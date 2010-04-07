@@ -960,6 +960,67 @@ struct allocator
     typedef typename ::suzerain::allocator<T, allocator_blas_policy<T> > type;
 };
 
+
+/**
+ * Provides functors for BLAS operations.  These are sometimes useful when
+ * mapping operations with common or nearly common signatures across data
+ * fields, especially for higher dimensional cases.
+ */
+namespace functor {
+
+/*! \name BLAS level 1 functors
+ * @{
+ */
+
+/** A functor performing suzerain::blas::swap when invoked. */
+class swap {
+public:
+    template< typename TN,
+              typename TX, typename TINCX,
+              typename TY, typename TINCY >
+    void operator()(TN n, TX x, TINCX incx, TY y, TINCY incy) const
+    {
+        return ::suzerain::blas::swap(n, x, incx, y, incy);
+    }
+};
+
+/** A functor performing suzerain::blas::copy when invoked. */
+class copy {
+public:
+    template< typename TN,
+              typename TX, typename TINCX,
+              typename TY, typename TINCY >
+    void operator()(TN n, TX x, TINCX incx, TY y, TINCY incy) const
+    {
+        return ::suzerain::blas::copy(n, x, incx, y, incy);
+    }
+};
+
+/**
+ * A functor performing suzerain::blas::axpy when invoked.
+ * The \c alpha parameter is set at construction time.
+ **/
+template< typename Element >
+class axpy {
+public:
+    axpy(const Element& alpha) : alpha_(alpha) {}
+
+    template< typename TN,
+              typename TX, typename TINCX,
+              typename TY, typename TINCY >
+    void operator()(TN n, TX x, TINCX incx, TY y, TINCY incy) const
+    {
+        return ::suzerain::blas::axpy(n, alpha_, x, incx, y, incy);
+    }
+
+private:
+    const Element& alpha_;
+};
+
+/*! @} */
+
+} // namespace functor
+
 } // namespace blas
 
 /**
