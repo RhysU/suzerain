@@ -15,14 +15,13 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 #pragma warning(disable:383)
 
 // Helper for specifying extents information
-static boost::array<std::size_t,3> size3(
-    std::size_t x, std::size_t y, std::size_t z)
+static boost::array<int,3> size3(int x, int y, int z)
 {
-    boost::array<std::size_t,3> a = { x, y, z };
+    boost::array<int,3> a = { x, y, z };
     return a;
 }
 
-static boost::array<std::size_t,3> size223() {
+static boost::array<int,3> size223() {
     return size3(2,2,3);
 }
 
@@ -432,18 +431,34 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
         NoninterleavedState<3,T> foo(size223(),size3(7,1,1));
         NoninterleavedState<3,T> bar(size223(),size3(10,1,1));
         test_assignment_helper(foo, bar);
+
+        NoninterleavedState<3,T> baz(size223(),size3(1,2,1));
+        NoninterleavedState<3,T> qux(size223(),size3(1,1,4));
+        test_assignment_helper(baz, qux);
     }
 
     BOOST_TEST_MESSAGE("Target instance with padding");
     {
         NoninterleavedState<3,T> foo(size223()), bar(size223(),size3(7,1,1));
         test_assignment_helper(foo, bar);
+
+        NoninterleavedState<3,T> baz(size223(),size3(1,2,1));
+        test_assignment_helper(foo, baz);
+
+        NoninterleavedState<3,T> qux(size223(),size3(1,2,3));
+        test_assignment_helper(foo, qux);
     }
 
     BOOST_TEST_MESSAGE("Source instance with padding");
     {
         NoninterleavedState<3,T> foo(size223(),size3(7,1,1)), bar(size223());
         test_assignment_helper(foo, bar);
+
+        NoninterleavedState<3,T> baz(size223(),size3(1,3,1));
+        test_assignment_helper(baz, bar);
+
+        NoninterleavedState<3,T> qux(size223(),size3(4,4,4));
+        test_assignment_helper(qux, bar);
     }
 }
 
@@ -462,7 +477,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storage_order, T, test_types )
         BOOST_CHECK_EQUAL(   2, foo.strides()[2] );
     }
 
-    BOOST_TEST_MESSAGE("Instance with padding");
+    BOOST_TEST_MESSAGE("Instance with padding 0");
     {
         NoninterleavedState<3,T> foo(size3(2,2,2), size3(10,1,1));
 
@@ -473,6 +488,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storage_order, T, test_types )
         BOOST_CHECK_EQUAL(  10, foo.strides()[0] );
         BOOST_CHECK_EQUAL(   1, foo.strides()[1] );
         BOOST_CHECK_EQUAL(   2, foo.strides()[2] );
+    }
+
+    BOOST_TEST_MESSAGE("Instance with padding 1");
+    {
+        NoninterleavedState<3,T> foo(size3(2,2,2), size3(1,2,1));
+
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   8, &(foo[1][0][0]));
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   2, &(foo[0][1][0]));
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   4, &(foo[0][0][1]));
+
+        BOOST_CHECK_EQUAL(   8, foo.strides()[0] );
+        BOOST_CHECK_EQUAL(   2, foo.strides()[1] );
+        BOOST_CHECK_EQUAL(   4, foo.strides()[2] );
+    }
+
+    BOOST_TEST_MESSAGE("Instance with padding 3");
+    {
+        NoninterleavedState<3,T> foo(size3(2,2,2), size3(1,1,3));
+
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   6, &(foo[1][0][0]));
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   1, &(foo[0][1][0]));
+        BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   3, &(foo[0][0][1]));
+
+        BOOST_CHECK_EQUAL(   6, foo.strides()[0] );
+        BOOST_CHECK_EQUAL(   1, foo.strides()[1] );
+        BOOST_CHECK_EQUAL(   3, foo.strides()[2] );
     }
 }
 
@@ -514,9 +555,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
         test_scale_helper(foo);
     }
 
-    BOOST_TEST_MESSAGE("Instance with padding");
+    BOOST_TEST_MESSAGE("Instance with padding 0");
     {
         NoninterleavedState<3,T> foo(size223(), size3(7,1,1));
+        test_scale_helper(foo);
+    }
+
+    BOOST_TEST_MESSAGE("Instance with padding 1");
+    {
+        NoninterleavedState<3,T> foo(size223(), size3(1,2,1));
+        test_scale_helper(foo);
+    }
+
+    BOOST_TEST_MESSAGE("Instance with padding 3");
+    {
+        NoninterleavedState<3,T> foo(size223(), size3(1,1,3));
         test_scale_helper(foo);
     }
 }
@@ -538,18 +591,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
         NoninterleavedState<3,T> foo(size223(),size3(7,1,1));
         NoninterleavedState<3,T> bar(size223(),size3(10,1,1));
         test_addScaled_helper(foo, bar);
+
+        NoninterleavedState<3,T> baz(size223(),size3(1,2,1));
+        test_addScaled_helper(foo, baz);
+
+        NoninterleavedState<3,T> qux(size223(),size3(1,1,7));
+        test_addScaled_helper(foo, qux);
     }
 
     BOOST_TEST_MESSAGE("Target instance with padding");
     {
         NoninterleavedState<3,T> foo(size223(),size3(7,1,1)), bar(size223());
         test_addScaled_helper(foo, bar);
+
+        NoninterleavedState<3,T> baz(size223(),size3(1,2,1));
+        test_addScaled_helper(baz, bar);
+
+        NoninterleavedState<3,T> qux(size223(),size3(1,1,7));
+        test_addScaled_helper(qux, bar);
     }
 
     BOOST_TEST_MESSAGE("Source instance with padding");
     {
         NoninterleavedState<3,T> foo(size223()), bar(size223(),size3(10,1,1));
         test_addScaled_helper(foo, bar);
+
+        NoninterleavedState<3,T> qux(size223(),size3(1,9,25));
+        test_addScaled_helper(foo, qux);
     }
 }
 
@@ -570,18 +638,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
         NoninterleavedState<3,T> foo(size223(),size3(11,1,1));
         NoninterleavedState<3,T> bar(size223(),size3(13,1,1));
         test_exchange_helper(foo, bar);
+
+        NoninterleavedState<3,T> baz(size223(),size3(1,4,1));
+        test_exchange_helper(foo, baz);
+
+        NoninterleavedState<3,T> qux(size223(),size3(25,1,5));
+        test_exchange_helper(foo, qux);
     }
 
     BOOST_TEST_MESSAGE("Target instance with padding");
     {
         NoninterleavedState<3,T> foo(size223(),size3(9,1,1)), bar(size223());
         test_exchange_helper(foo, bar);
+
+        NoninterleavedState<3,T> baz(size223(),size3(1,4,10)), qux(size223());
+        test_exchange_helper(baz, qux);
     }
 
     BOOST_TEST_MESSAGE("Source instance with padding");
     {
         NoninterleavedState<3,T> foo(size223()), bar(size223(),size3(17,1,1));
         test_exchange_helper(foo, bar);
+
+        NoninterleavedState<3,T> baz(size223()), qux(size223(),size3(11,17,1));
+        test_exchange_helper(baz, qux);
     }
 }
 
