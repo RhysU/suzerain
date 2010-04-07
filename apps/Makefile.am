@@ -29,13 +29,6 @@ driver_suzerain_p3dfft_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
 driver_suzerain_p3dfft_LDADD   += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
 driver_suzerain_p3dfft_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 
-bin_PROGRAMS          += driver_pencil
-driver_pencil_SOURCES  = driver_pencil.cpp
-driver_pencil_LDADD    = ../suzerain/libsuzerain.la
-driver_pencil_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
-driver_pencil_LDADD   += $(FFTW3_THREADS_LIBS)
-driver_pencil_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
-
 bin_PROGRAMS             += driver_underling
 driver_underling_SOURCES  = driver_underling.cpp
 driver_underling_LDADD    = ../suzerain/libsuzerain.la
