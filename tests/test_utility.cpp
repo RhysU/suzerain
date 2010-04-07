@@ -1,0 +1,100 @@
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
+#endif
+#include <suzerain/common.hpp>
+#pragma hdrstop
+#define BOOST_TEST_MODULE $Id$
+#include <boost/assign.hpp>
+#include <boost/test/included/unit_test.hpp>
+#include <boost/test/test_case_template.hpp>
+#include <suzerain/utility.hpp>
+
+#pragma warning(disable:383)
+
+BOOST_AUTO_TEST_CASE( to_yxz )
+{
+    using suzerain::to_yxz;
+    {
+        boost::array<char,3> xyz = { 'x', 'y', 'z' };
+        BOOST_CHECK_EQUAL(to_yxz(xyz),
+                          boost::assign::list_of('y')('x')('z'));
+    }
+    {
+        boost::array<char,3> xyz = { 'x', 'y', 'z' };
+        BOOST_CHECK_EQUAL(to_yxz('w', xyz),
+                          boost::assign::list_of('w')('y')('x')('z'));
+    }
+}
+
+BOOST_AUTO_TEST_CASE( to_xzy )
+{
+    using suzerain::to_xzy;
+    {
+        boost::array<char,3> xyz = { 'x', 'y', 'z' };
+        BOOST_CHECK_EQUAL(to_xzy(xyz),
+                          boost::assign::list_of('x')('z')('y'));
+    }
+    {
+        boost::array<char,3> xyz = { 'x', 'y', 'z' };
+        BOOST_CHECK_EQUAL(to_xzy('w', xyz),
+                          boost::assign::list_of('w')('x')('z')('y'));
+    }
+}
+
+BOOST_AUTO_TEST_CASE( strides_cm )
+{
+    using suzerain::strides_cm;
+
+    {
+        boost::array<int,1> extents = { 2 };
+        BOOST_CHECK_EQUAL(strides_cm(extents),
+                          boost::assign::list_of(1));
+    }
+
+    {
+        boost::array<int,2> extents = { 2, 3 };
+        BOOST_CHECK_EQUAL(strides_cm(extents),
+                          boost::assign::list_of(1)(2));
+    }
+
+    {
+        boost::array<int,3> extents = { 2, 3, 4 };
+        BOOST_CHECK_EQUAL(strides_cm(extents),
+                          boost::assign::list_of(1)(2)(6));
+    }
+
+    {
+        boost::array<int,4> extents = { 2, 3, 4, 5 };
+        BOOST_CHECK_EQUAL(strides_cm(extents),
+                          boost::assign::list_of(1)(2)(6)(24));
+    }
+}
+
+BOOST_AUTO_TEST_CASE( strides_rm )
+{
+    using suzerain::strides_rm;
+
+    {
+        boost::array<int,1> extents = { 2 };
+        BOOST_CHECK_EQUAL(strides_rm(extents),
+                          boost::assign::list_of(1));
+    }
+
+    {
+        boost::array<int,2> extents = { 2, 3 };
+        BOOST_CHECK_EQUAL(strides_rm(extents),
+                          boost::assign::list_of(3)(1));
+    }
+
+    {
+        boost::array<int,3> extents = { 2, 3, 4 };
+        BOOST_CHECK_EQUAL(strides_rm(extents),
+                          boost::assign::list_of(12)(4)(1));
+    }
+
+    {
+        boost::array<int,4> extents = { 2, 3, 4, 5 };
+        BOOST_CHECK_EQUAL(strides_rm(extents),
+                          boost::assign::list_of(60)(20)(5)(1));
+    }
+}

@@ -109,7 +109,7 @@ template< typename T, std::size_t N >
 boost::array<T,N> strides_cm(const boost::array<T,N>& extents)
 {
     boost::array<T,N> retval = { 1 };
-    for (boost::array<T,N>::size_type i = 1; i < N; ++i) {
+    for (typename boost::array<T,N>::size_type i = 1; i < N; ++i) {
         retval[i] = retval[i-1] * extents[i-1];
     }
     return retval;
@@ -136,7 +136,7 @@ boost::array<T,N> strides_rm(const boost::array<T,N>& extents)
 {
     boost::array<T,N> retval;
     retval[N-1] = 1;
-    for (boost::array<T,N>::size_type i = N-1; i > 0; --i) {
+    for (typename boost::array<T,N>::size_type i = N-1; i > 0; --i) {
         retval[i-1] = retval[i] * extents[i];
     }
     return retval;

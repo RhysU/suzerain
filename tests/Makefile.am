@@ -77,6 +77,12 @@ test_math_SOURCES  = test_math.cpp
 test_math_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_math_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                += test_utility
+check_PROGRAMS       += test_utility
+test_utility_SOURCES  = test_utility.cpp
+test_utility_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_utility_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS               += test_complex
 check_PROGRAMS      += test_complex
 test_complex_SOURCES = test_complex.cpp
