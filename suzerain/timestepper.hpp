@@ -37,6 +37,8 @@
  * Provides time integration schemes.
  */
 
+// TODO Time integration interfaces might try using const Element&
+
 namespace suzerain
 {
 
@@ -533,36 +535,36 @@ public:
 template< typename Element >
 Element SMR91Method<Element>::alpha(const std::size_t substep) const
 {
-    const Element coeff[3] = { Element( 29)/Element(96),
-                               Element(- 3)/Element(40),
-                               Element(  1)/Element( 6)  };
+    static const Element coeff[3] = { Element( 29)/Element(96),
+                                      Element(- 3)/Element(40),
+                                      Element(  1)/Element( 6)  };
     return coeff[substep];
 }
 
 template< typename Element >
 Element SMR91Method<Element>::beta(const std::size_t substep) const
 {
-    const Element coeff[3] = { Element(37)/Element(160),
-                               Element( 5)/Element( 24),
-                               Element( 1)/Element(  6)  };
+    static const Element coeff[3] = { Element(37)/Element(160),
+                                      Element( 5)/Element( 24),
+                                      Element( 1)/Element(  6)  };
     return coeff[substep];
 }
 
 template< typename Element >
 Element SMR91Method<Element>::gamma(const std::size_t substep) const
 {
-    const Element coeff[3] = { Element(8)/Element(15),
-                               Element(5)/Element(12),
-                               Element(3)/Element( 4)  };
+    static const Element coeff[3] = { Element(8)/Element(15),
+                                      Element(5)/Element(12),
+                                      Element(3)/Element( 4)  };
     return coeff[substep];
 }
 
 template< typename Element >
 Element SMR91Method<Element>::zeta(const std::size_t substep) const
 {
-    const Element coeff[3] = { Element(  0),
-                               Element(-17)/Element(60),
-                               Element(- 5)/Element(12)  };
+    static const Element coeff[3] = { Element(  0),
+                                      Element(-17)/Element(60),
+                                      Element(- 5)/Element(12)  };
     return coeff[substep];
 }
 
