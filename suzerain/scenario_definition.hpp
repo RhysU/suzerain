@@ -77,7 +77,8 @@ public:
     FPT Re() const { return Re_; }
 
     /**
-     * Retrieve the Prandtl number $\mbox{Pr}=\frac{\mu_{0} C_{p}}{\kappa_{0}}\f$.
+     * Retrieve the Prandtl number \f$\mbox{Pr}=\frac{\mu_{0}
+     * C_{p}}{\kappa_{0}}\f$.
      *
      * @return the Prandtl number.
      */
