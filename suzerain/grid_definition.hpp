@@ -45,30 +45,39 @@ namespace suzerain {
 namespace problem {
 
 /**
- * Holds basic three dimensional computational grid dimensions,
- * including the two dimensional processor grid definition.
+ * Holds basic three dimensional computational grid dimensions, including
+ * physical and discrete grid sizes, dealiasing factors, and the two
+ * dimensional processor grid definition.
  */
 template< typename FPT = double >
 class GridDefinition : public IDefinition, public integral_types
 {
 public:
     /**
-     * Construct an instance with the given default size in each direction
-     * and the given default length.
+     * Construct an instance with the given default logical, size
+     * in each direction, the given default length, and the given 
+     * multiplicative dealiasing factors.
      *
-     * @param default_Nx Default grid size in the X direction.
-     * @param default_Ny Default grid size in the Y direction.
-     * @param default_Nz Default grid size in the Z direction.
+     * @param default_Nx Default logical grid size in the X direction.
+     * @param default_Ny Default logical grid size in the Y direction.
+     * @param default_Nz Default logical grid size in the Z direction.
      * @param default_Lx Default domain length in the X direction.
      * @param default_Ly Default domain length in the Y direction.
      * @param default_Lz Default domain length in the Z direction.
+     * @param default_DAFx Default dealiasing factor in the X direction.
+     * @param default_DAFy Default dealiasing factor in the Y direction.
+     * @param default_DAFz Default dealiasing factor in the Z direction.
      */
-    GridDefinition(size_type default_Nx = 16,
-                   size_type default_Ny = 16,
-                   size_type default_Nz = 16,
-                   FPT default_Lx = 2.0*M_PI,
-                   FPT default_Ly = 2.0*M_PI,
-                   FPT default_Lz = 2.0*M_PI);
+    explicit GridDefinition(
+            size_type default_Nx = 16,
+            size_type default_Ny = 16,
+            size_type default_Nz = 16,
+            FPT default_Lx = 2*boost::math::constants::pi<FPT>(),
+            FPT default_Ly = 2*boost::math::constants::pi<FPT>(),
+            FPT default_Lz = 2*boost::math::constants::pi<FPT>(),
+            FPT default_DAFx = 1,
+            FPT default_DAFy = 1,
+            FPT default_DAFz = 1);
 
     /**
      * Retrieve the domain length in the X direction.
@@ -92,35 +101,78 @@ public:
     FPT Lz() const { return Lz_; }
 
     /**
-     * Retrieve global computational grid extents.
+     * Retrieve global logical computational grid extents.  It does
+     * not account for dealiasing factors.
      *
-     * @return the global grid extents in the X, Y, and Z directions.
+     * @return the global logical grid extents in the X, Y, and Z directions.
      */
     const size_type_3d& global_extents() const { return global_extents_; }
 
     /**
-     * Retrieve computational grid size in the X direction.
-     * This is the number of points in the domain.
+     * Retrieve global dealiased computational grid extents. These are the
+     * global_extents() multiplied by the dealiasing factors DAFx(), DAFy(),
+     * and DAFz().
      *
-     * @return the grid size in the X direction.
+     * @return the global dealiased grid extents in the X, Y, and Z directions.
+     */
+    size_type_3d dealiased_extents() const {
+        size_type_3d retval = global_extents_;
+        retval[0] += DAFx_;
+        retval[1] += DAFy_;
+        retval[2] += DAFz_;
+        return retval;
+    }
+
+    /**
+     * Retrieve computational grid size in the X direction.  This is the number
+     * of points in the domain without accounting for any dealiasing.
+     *
+     * @return the logical grid size in the X direction.
      */
     size_type Nx() const { return global_extents_[0]; }
 
     /**
-     * Retrieve computational grid size in the Y direction.
-     * This is the number of points in the domain.
+     * Retrieve computational grid size in the Y direction.  This is the number
+     * of points in the domain without accounting for any dealiasing.
      *
-     * @return the grid size in the Y direction.
+     * @return the logical grid size in the Y direction.
      */
     size_type Ny() const { return global_extents_[1]; }
 
     /**
-     * Retrieve computational grid size in the Z direction.
-     * This is the number of points in the domain.
+     * Retrieve grid size in the Z direction.  This is the number
+     * of points in the domain without accounting for any dealiasing.
      *
-     * @return the grid size in the Z direction.
+     * @return the logical grid size in the Z direction.
      */
     size_type Nz() const { return global_extents_[2]; }
+
+    /**
+     * Retrieve the dealiasing factor for the X direction.  This factor
+     * should be multiplied times Nx() to obtain an extent for Fourier
+     * transformations.
+     *
+     * @return the dealiasing factor for the X direction.
+     */
+    FPT DAFx() const { return DAFx_; }
+
+    /**
+     * Retrieve the dealiasing factor for the Y direction.  This factor
+     * should be multiplied times Ny() to obtain an extent for Fourier
+     * transformations.
+     *
+     * @return the dealiasing factor for the Y direction.
+     */
+    FPT DAFy() const { return DAFy_; }
+
+    /**
+     * Retrieve the dealiasing factor for the Z direction.  This factor
+     * should be multiplied times Nz() to obtain an extent for Fourier
+     * transformations.
+     *
+     * @return the dealiasing factor for the Z direction.
+     */
+    FPT DAFz() const { return DAFz_; }
 
     /**
      * Retrieve the two dimensional processor grid extents.
@@ -168,6 +220,10 @@ private:
     /** Stores the computational grid extents */
     size_type_3d global_extents_;
 
+    FPT DAFx_;  /**< Stores the X direction dealiasing factor */
+    FPT DAFy_;  /**< Stores the Y direction dealiasing factor */
+    FPT DAFz_;  /**< Stores the Z direction dealiasing factor */
+
     /** Stores the processor grid extents */
     size_type_2d processor_grid_;
 };
@@ -178,11 +234,17 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
                                     size_type default_Nz,
                                     FPT default_Lx,
                                     FPT default_Ly,
-                                    FPT default_Lz)
+                                    FPT default_Lz,
+                                    FPT default_DAFx,
+                                    FPT default_DAFy,
+                                    FPT default_DAFz)
     : options_("Grid definition"),
       Lx_(default_Lx),
       Ly_(default_Ly),
-      Lz_(default_Lz)
+      Lz_(default_Lz),
+      DAFx_(default_DAFx),
+      DAFy_(default_DAFy),
+      DAFz_(default_DAFz)
 {
     global_extents_[0] = default_Nx;
     global_extents_[1] = default_Ny;
@@ -201,18 +263,6 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
         ptr_fun_ensure_positive_FPT(ensure_positive<FPT>);
 
     options_.add_options()
-        ("Lx", po::value<FPT>(&Lx_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lx"))
-            ->default_value(default_Lx),
-        "Nondimensional grid length in X (streamwise) direction")
-        ("Ly", po::value<FPT>(&Ly_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Ly"))
-            ->default_value(default_Ly),
-        "Nondimensional grid length in Y (wall normal) direction")
-        ("Lz", po::value<FPT>(&Lz_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lz"))
-            ->default_value(default_Lz),
-        "Nondimensional grid length in Z (spanwise) direction")
         ("Nx", po::value<size_type>(&global_extents_[0])
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nx"))
             ->default_value(default_Nx),
@@ -225,6 +275,30 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nz"))
             ->default_value(default_Nz),
         "Grid point count in Z (spanwise) direction")
+        ("Lx", po::value<FPT>(&Lx_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lx"))
+            ->default_value(default_Lx),
+        "Nondimensional grid length in X (streamwise) direction")
+        ("Ly", po::value<FPT>(&Ly_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Ly"))
+            ->default_value(default_Ly),
+        "Nondimensional grid length in Y (wall normal) direction")
+        ("Lz", po::value<FPT>(&Lz_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lz"))
+            ->default_value(default_Lz),
+        "Nondimensional grid length in Z (spanwise) direction")
+        ("DAFx", po::value<FPT>(&DAFx_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFx"))
+            ->default_value(default_DAFx),
+        "Dealiasing factor in X (streamwise) direction")
+        ("DAFy", po::value<FPT>(&DAFy_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFy"))
+            ->default_value(default_DAFy),
+        "Dealiasing factor in Y (wall normal) direction")
+        ("DAFz", po::value<FPT>(&DAFz_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFz"))
+            ->default_value(default_DAFz),
+        "Dealiasing factor in Z (spanwise) direction")
         ("Pa", po::value<size_type>(&processor_grid_[0])
             ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pa"))
             ->default_value(0),
@@ -259,11 +333,15 @@ public:
     ChannelDefinition(typename GridDefinition<FPT>::size_type default_Nx = 16,
                       typename GridDefinition<FPT>::size_type default_Ny = 16,
                       typename GridDefinition<FPT>::size_type default_Nz = 16,
-                      FPT default_Lx = 4.0*M_PI,
-                      FPT default_Ly = 2.0,
-                      FPT default_Lz = 4.0*M_PI/3.0)
-        : GridDefinition<FPT>(default_Nx, default_Ny, default_Nz,
-                              default_Lx, default_Ly, default_Lz);
+                      FPT default_Lx = 4*boost::math::constants::pi<FPT>(),
+                      FPT default_Ly = 2,
+                      FPT default_Lz = 4*boost::math::constants::pi<FPT>()/3,
+                      FPT default_DAFx = 3/FPT(2),
+                      FPT default_DAFy = 1,
+                      FPT default_DAFz = 3/FPT(2))
+        : GridDefinition<FPT>(default_Nx,   default_Ny,   default_Nz,
+                              default_Lx,   default_Ly,   default_Lz,
+                              default_DAFx, default_DAFy, default_DAFz);
 };
 
 
