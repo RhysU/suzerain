@@ -45,14 +45,107 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/scenario_definition.hpp>
+#include <suzerain/state.hpp>
+#include <suzerain/state_impl.hpp>
+#include <suzerain/storage.hpp>
+#include <suzerain/timestepper.hpp>
 
 #pragma warning(disable:383 1572)
 
-// Global scenario parameters, initialized by ProgramOptions in main()
+// Global scenario parameters and Bspline details initialized in main()
 static suzerain::problem::ScenarioDefinition<> def_scenario(100);
 static suzerain::problem::ChannelDefinition<>  def_grid;
 static suzerain::problem::BsplineDefinition<>  def_bspline;
+static boost::shared_ptr<suzerain::bspline>    bspw;
 
+// Explict timestepping scheme uses only complex double 4D NoninterleavedState
+// State indices range over (scalar field, Y, X, Z) in wave space
+// Establish some shorthand for some overly-templated operator and state types
+typedef std::complex<double> complex_type;
+typedef suzerain::storage::noninterleaved<4> storage_type;
+typedef suzerain::IState<
+            storage_type::dimensionality, complex_type, storage_type
+        > istate_type;
+typedef suzerain::timestepper::lowstorage::ILinearOperator<
+            storage_type::dimensionality, complex_type, storage_type
+        > ilinearoperator_type;
+typedef suzerain::timestepper::INonlinearOperator<
+            storage_type::dimensionality, complex_type, storage_type
+        > inonlinearoperator_type;
+typedef suzerain::NoninterleavedState<
+            storage_type::dimensionality, complex_type
+        > state_type;
+
+// TODO Incorporate IOperatorLifecycle semantics
+// TODO Refactor MassOperator into templated BsplineMassOperator
+
+class MassOperator : public ilinearoperator_type
+{
+public:
+    explicit MassOperator(double scale_factor = 1.0) : luzw_(*bspw)
+    {
+        const complex_type coefficient = scale_factor;
+        luzw_.form_general(1, &coefficient, *bspw);
+    }
+
+    virtual void applyMassPlusScaledOperator(
+            const complex_type scale,
+            istate_type &istate) const throw (std::exception)
+    {
+        state_type &state = dynamic_cast<state_type&>(istate);
+        const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
+        assert(1 == state.strides()[1]);
+        assert(luzw_.ndof() == state.shape()[1]);
+        assert(nrhs == state.strides()[0]);
+        //FIXME Starthere
+    }
+
+    virtual void accumulateMassPlusScaledOperator(
+            const complex_type scale,
+            const istate_type &iinput,
+            istate_type &ioutput) const throw (std::exception)
+    {
+        const state_type &input = dynamic_cast<const state_type&>(iinput);
+        state_type output = dynamic_cast<state_type&>(ioutput);
+
+    }
+
+    virtual void invertMassPlusScaledOperator(
+            const complex_type scale,
+            istate_type &istate) const throw (std::exception)
+    {
+        state_type &state = dynamic_cast<state_type&>(istate);
+
+        const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
+        assert(1 == state.strides()[1]);
+        assert(luzw_.ndof() == state.shape()[1]);
+        assert(nrhs == state.strides()[0]);
+        luzw_.solve(nrhs, state.memory_begin(), state.strides()[2]);
+    }
+
+private:
+    suzerain::bspline_luz luzw_;
+};
+
+class NonlinearOperator : public inonlinearoperator_type
+{
+
+};
+
+/**
+ * Compute \c n B-spline breakpoints locations across <tt>[xbegin,xend]</tt>
+ * using stretching parameter \c alpha to cluster points near the edges.
+ *
+ * @param[in]  xbegin One edge
+ * @param[in]  xend   The opposite edge
+ * @param[in]  n      Number of breakpoints
+ * @param[in]  alpha  Stretching parameter
+ * @param[out] output Starting location in which to save the breakpoints:
+ *                    <tt>output[0]</tt> to <tt>output[n-1]</tt> must
+ *                    be valid storage locations.
+ *
+ * @see suzerain::math::stretchspace for more information on \c alpha
+ */
 template<typename FPT, typename SizeType>
 static void compute_breakpoints(
         FPT xbegin, FPT xend, SizeType n, FPT alpha, FPT *output)
@@ -122,7 +215,8 @@ int main(int argc, char **argv)
         LOG4CXX_TRACE(log,
                       "B-spline breakpoint[" << i << "] = " << breakpoints[i]);
     }
-    suzerain::bspline bspw(def_bspline.k(), 2, def_grid.Ny(), breakpoints);
+    bspw = boost::make_shared<suzerain::bspline>(
+                def_bspline.k(), 2, def_grid.Ny(), breakpoints);
     suzerain::blas::free(breakpoints);
 
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
