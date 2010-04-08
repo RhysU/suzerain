@@ -94,7 +94,7 @@ namespace transposed {
  * Provides a thin RAII wrapper for underling_grid.
  * @see underling_grid.
  */
-class grid {
+class grid : public boost::noncopyable {
 public:
 
     /** @see underling_grid_create */
@@ -145,7 +145,7 @@ private:
  * Provides a thin RAII wrapper for underling_problem.
  * @see underling_problem.
  */
-class problem {
+class problem : public boost::noncopyable {
 public:
 
     /** @see underling_problem_create */
@@ -219,7 +219,7 @@ size_t global_memory_optimum(const grid &g, const problem &p) {
  * Provides a thin RAII wrapper for underling_plan.
  * @see underling_plan.
  */
-class plan {
+class plan : public boost::noncopyable {
 public:
 
     /** @see underling_plan_create */

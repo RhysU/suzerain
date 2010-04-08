@@ -52,7 +52,7 @@ typedef underling_fft_extents extents;
  * Provides a thin RAII wrapper for underling_fft_plan.
  * @see underling_fft_plan.
  */
-class plan {
+class plan : public boost::noncopyable {
 public:
 
     /** A tag type used to indicate a complex-to-complex forward transform */
