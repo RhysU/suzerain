@@ -267,7 +267,7 @@ public:
     template< typename Complex >
     typename boost::enable_if<
         suzerain::complex::traits::is_complex_double<Complex>, int
-    >::type solve(int nrhs, Complex *b, int incb, int ldb) const
+    >::type solve(int nrhs, Complex *b, int ldb) const
     {
         return suzerain_bspline_luz_solve(
                 nrhs, reinterpret_cast<const double (*)[2]>(b), ldb, luzw_);
