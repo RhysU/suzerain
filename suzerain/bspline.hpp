@@ -276,7 +276,7 @@ public:
     >::type solve(int nrhs, Complex *b, int ldb) const
     {
         return suzerain_bspline_luz_solve(
-                nrhs, reinterpret_cast<const double (*)[2]>(b), ldb, luzw_);
+                nrhs, reinterpret_cast<double (*)[2]>(b), ldb, luzw_);
     }
 
 private:
