@@ -118,11 +118,11 @@ BsplineDefinition<FPT>::BsplineDefinition(size_type default_k,
     options_.add_options()
         ("k", po::value<size_type>(&k_)
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"k"))
-            ->default_value(default_size),
+            ->default_value(default_k),
         "B-spline basis order where k = 4 indicates piecewise cubics")
         ("alpha", po::value<FPT>(&alpha_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"alpha"))
-            ->default_value(default_length),
+            ->default_value(default_alpha),
         "B-spline breakpoint stretching parameter")
     ;
 }

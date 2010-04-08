@@ -341,7 +341,7 @@ public:
                       FPT default_DAFz = 3/FPT(2))
         : GridDefinition<FPT>(default_Nx,   default_Ny,   default_Nz,
                               default_Lx,   default_Ly,   default_Lz,
-                              default_DAFx, default_DAFy, default_DAFz);
+                              default_DAFx, default_DAFy, default_DAFz) {}
 };
 
 

@@ -140,19 +140,19 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
     options_.add_options()
         ("Re", po::value<FPT>(&Re_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Re"))
-            ->default_value(default_length),
+            ->default_value(default_Re),
         "Reynolds number")
         ("Pr", po::value<FPT>(&Pr_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Pr"))
-            ->default_value(default_length),
+            ->default_value(default_Pr),
         "Prandtl number")
         ("gamma", po::value<FPT>(&gamma_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"gamma"))
-            ->default_value(default_length),
+            ->default_value(default_gamma),
         "Ratio of specific heats")
         ("beta", po::value<FPT>(&beta_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"beta"))
-            ->default_value(default_length),
+            ->default_value(default_beta),
         "Temperature power law exponent")
     ;
 }
