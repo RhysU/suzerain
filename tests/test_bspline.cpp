@@ -15,6 +15,10 @@
 #include <suzerain/math.hpp>
 #include <log4cxx/logger.h>
 
+// We test C API but include C++ API to ensure it compiles
+// TODO Exercise C++ API, including bspline, bspline_lu, bspline_luz
+#include <suzerain/bspline.hpp>
+
 log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
 #include "test_tools.hpp"

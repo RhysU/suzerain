@@ -63,7 +63,7 @@ public:
      * @param default_k Default B-spline basis order.
      * @param default_alpha Default grid stretching parameter.
      */
-    BsplineDefinition(size_type default_k = 16, FPT default_alpha = 5.0);
+    BsplineDefinition(size_type default_k = 6, FPT default_alpha = 5.0);
 
     /**
      * Retrieve the B-spline basis order.
@@ -119,7 +119,7 @@ BsplineDefinition<FPT>::BsplineDefinition(size_type default_k,
         ("k", po::value<size_type>(&k_)
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"k"))
             ->default_value(default_k),
-        "B-spline basis order where k = 4 indicates piecewise cubics")
+        "B-spline basis order; k = 4 indicates piecewise cubics")
         ("alpha", po::value<FPT>(&alpha_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"alpha"))
             ->default_value(default_alpha),
