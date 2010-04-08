@@ -29,7 +29,7 @@ dnl ------------------------------------------------------
 dnl Check for compiler toolchain and optimization level
 dnl Ordering very specific: AX_CC_MAXOPT usage is fragile
 dnl ------------------------------------------------------
-AX_CHECK_ENABLE_DEBUG
+AX_CHECK_ENABLE_DEBUG([info])
 AC_LANG([C])
 AC_PROG_CC
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
