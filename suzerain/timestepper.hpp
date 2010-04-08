@@ -204,7 +204,7 @@ class ILinearOperator : public virtual IOperatorLifecycle
 public:
 
     /**
-     * Apply \f$M+\phi{}L\f$ in-place for real scalar \f$\phi\f$.
+     * Apply \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.
      * That is,
      * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)\mbox{state}\f$.
      *
@@ -219,7 +219,7 @@ public:
         throw(std::exception) = 0;
 
     /**
-     * Accumulate \f$M+\phi{}L\f$ out-of-place for real scalar \f$\phi\f$.
+     * Accumulate \f$M+\phi{}L\f$ out-of-place for scalar \f$\phi\f$.
      * That is, \f$\mbox{output}\leftarrow{}\mbox{output} +
      * \left(M+\phi{}L\right)\mbox{input}\f$.
      *
@@ -236,7 +236,7 @@ public:
         throw(std::exception) = 0;
 
     /**
-     * Invert \f$M+\phi{}L\f$ in-place for real scalar \f$\phi\f$.
+     * Invert \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.
      * That is,
      * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)^{-1}\mbox{state}\f$.
      *
