@@ -91,9 +91,9 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
                            5, 6, 7, 8 };
             const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
             const int incb = 1;
-            suzerain_bspline_apply_operator(0, nrhs, b, incb, ldb, w);
-            const double b_good[] = { 1, 2, 3, 4,
-                                      5, 6, 7, 8 };
+            suzerain_bspline_apply_operator(0, nrhs, 3.0, b, incb, ldb, w);
+            const double b_good[] = { 3*1, 3*2, 3*3, 3*4,
+                                      3*5, 3*6, 3*7, 3*8 };
             BOOST_CHECK_EQUAL_COLLECTIONS(
                 b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
                 b, b + sizeof(b)/sizeof(b[0]));
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
             };
             const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
             const int incb = 1;
-            suzerain_bspline_zapply_operator(0, nrhs, b, incb, ldb, w);
+            suzerain_bspline_zapply_operator(0, nrhs, 1.0, b, incb, ldb, w);
             const double b_good[][2] = {
                 { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8},
                 {11, 12}, {13, 14}, {15, 16}, {17, 18}
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
         };
         const int ldb = sizeof(vapply)/(sizeof(vapply[0]))/nrhs;
         const int incb = 2;
-        suzerain_bspline_apply_operator(1, nrhs, vapply, incb, ldb, w);
+        suzerain_bspline_apply_operator(1, nrhs, 1.0, vapply, incb, ldb, w);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             vapply_good,
             vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
@@ -428,10 +428,10 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
             const int nrhs = 2;
             double b[] = { 1, 2, 3, 4, 5,
                            5, 6, 7, 8, 9 };
-            const double b_good[] = { 1., 15./8., 3., 33./8., 5.,
-                                      5., 47./8., 7., 65./8., 9. };
+            const double b_good[] = { 2*1., 2*15./8., 2*3., 2*33./8., 2*5.,
+                                      2*5., 2*47./8., 2*7., 2*65./8., 2*9. };
             const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
-            suzerain_bspline_apply_operator(0, nrhs, b, 1, ldb, w);
+            suzerain_bspline_apply_operator(0, nrhs, 2.0, b, 1, ldb, w);
             BOOST_CHECK_EQUAL_COLLECTIONS(
                 b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
                 b, b + sizeof(b)/sizeof(b[0]));
@@ -445,11 +445,11 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
                 {11, 12}, {13, 14}, {15, 16}, {17, 18}, {19, 20}
             };
             const double b_good[][2] = {
-                { 1.,  2.}, { 2.75,  3.75}, { 5.,  6.}, { 7.25,  8.25}, { 9., 10.},
-                {11., 12.}, {12.75, 13.75}, {15., 16.}, {17.25, 18.25}, {19., 20.}
+                { 1., 2.}, { 2.75, 3.75}, { 5., 6.}, { 7.25, 8.25}, { 9.,10.},
+                {11.,12.}, {12.75,13.75}, {15.,16.}, {17.25,18.25}, {19.,20.}
             };
             const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
-            suzerain_bspline_zapply_operator(0, nrhs, b, 1, ldb, w);
+            suzerain_bspline_zapply_operator(0, nrhs, 1.0, b, 1, ldb, w);
             BOOST_CHECK_EQUAL_COLLECTIONS(
                 (double *)  b_good,
                 (double *) (b_good + sizeof(b_good)/sizeof(b_good[0])),
@@ -594,7 +594,7 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
                 4., 1571./324., 71./12., 85./12., 2641./324., 9.
             };
             const int ldb = sizeof(vapply)/(sizeof(vapply[0]))/nrhs;
-            suzerain_bspline_apply_operator(0, nrhs, vapply, 1, ldb, w);
+            suzerain_bspline_apply_operator(0, nrhs, 1.0, vapply, 1, ldb, w);
             check_close_collections(
                 vapply_good,
                 vapply_good + sizeof(vapply_good)/sizeof(vapply_good[0]),
@@ -718,7 +718,7 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
     // ...starting by applying the derivative operators
     for (int i = 0; i <= nderiv; ++i) {
         suzerain_bspline_apply_operator(
-                i, 1, actual + i*w->ndof, 1, w->ndof, w);
+                i, 1, 1.0, actual + i*w->ndof, 1, w->ndof, w);
     }
     // ...finish by solving with the mass matrix
     suzerain_bspline_lu_solve(nderiv+1, actual, 1, w->ndof, mass);
@@ -775,7 +775,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
 
         // Take the n-th derivative of the coefficients using M x' = D x
         suzerain_bspline_apply_operator(
-                derivative, 1, coefficient, 1, w->ndof, w);
+                derivative, 1, 1.0, coefficient, 1, w->ndof, w);
         suzerain_bspline_lu_solve(1, coefficient, 1, w->ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
@@ -803,7 +803,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
 
         // Take the n-th derivative of the coefficients using M x' = D x
         suzerain_bspline_apply_operator(
-                derivative, 1, coefficient, 1, w->ndof, w);
+                derivative, 1, 1.0, coefficient, 1, w->ndof, w);
         suzerain_bspline_lu_solve(1, coefficient, 1, w->ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
@@ -831,7 +831,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
 
         // Take the n-th derivative of the coefficients using M x' = D x
         suzerain_bspline_apply_operator(
-                derivative, 1, coefficient, 1, w->ndof, w);
+                derivative, 1, 1.0, coefficient, 1, w->ndof, w);
         suzerain_bspline_lu_solve(1, coefficient, 1, w->ndof, mass);
 
         // Ensure we recover the leading order, scaled monomial coefficients
@@ -1049,7 +1049,7 @@ BOOST_AUTO_TEST_CASE( collocation_point_evaluation_is_operator_application )
         // Apply derivative matrices directly
         std::memcpy(values_apply, coefficients, ndof*sizeof(double));
         BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bspline_apply_operator(
-                k, 1, values_apply, 1, ndof, w));
+                k, 1, 1.0, values_apply, 1, ndof, w));
 
         // Check that both mechanisms give the same result
         check_close_collections(values_eval, values_eval + ndof,

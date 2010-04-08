@@ -97,7 +97,7 @@
  *  suzerain_bspline_lu_solve(1, x, 1, mass);
  *
  *  // Solve D[0] x' = D[1] x by forming right hand side and solving
- *  suzerain_bspline_apply_operator(1, 1, x, 1, w->ndof, w);
+ *  suzerain_bspline_apply_operator(1, 1, 1, x, 1, w->ndof, w);
  *  suzerain_bspline_lu_solve(1, x, 1, mass);
  *  // x now contains an approximation to the derivative of f
  *
@@ -295,13 +295,13 @@ suzerain_bspline_ndof(
 }
 
 /**
- * Apply the <tt>nderivative</tt>-th derivative operator to coefficients \c x
- * accumulating the result in \c y.  Multiplies \c alpha times the precomputed
- * banded derivative operator against one or more coefficient vectors stored in
- * \c x.  Results are added to \c beta times \c y.  Each coefficient vector is
- * of length suzerain_bspline_ndof().  \c x and \c y cannot be aliased.
- * Increments and leading dimensions are specified in <tt>double</tt>-sized
- * units.
+ * Apply the <tt>nderivative</tt>-th derivative operator to real coefficients
+ * \c x accumulating the results in \c y.  Multiplies \c alpha times the
+ * precomputed banded derivative operator against one or more coefficient
+ * vectors stored in \c x.  Results are added to \c beta times \c y.  Each
+ * coefficient vector is of length suzerain_bspline_ndof().  \c x and \c y
+ * cannot be aliased.  Increments and leading dimensions are specified in
+ * <tt>double</tt>-sized units.
  *
  * @param[in] nderivative Derivative operator to apply.  May be zero.
  * @param[in] nrhs Number of vectors stored in \c x and \c y.
@@ -379,17 +379,19 @@ suzerain_bspline_zaccumulate_operator(
     const suzerain_bspline_workspace *w);
 
 /**
- * Apply the <tt>nderivative</tt>-th derivative operator to coefficients \c b.
- * Multiplies the precomputed banded derivative operator against one or more
- * coefficient vectors stored in \c b.  Results overwrite \c b.  Each
- * coefficient vector is of length suzerain_bspline_ndof().  Increments and
- * leading dimensions are specified in <tt>double</tt>-sized units.
+ * Apply the <tt>nderivative</tt>-th derivative operator to real coefficients
+ * \c x.  Multiplies the precomputed banded derivative operator scaled by \c
+ * alpha against one or more coefficient vectors stored in \c x.  Results
+ * overwrite \c x.  Each coefficient vector is of length
+ * suzerain_bspline_ndof().  Increments and leading dimensions are specified in
+ * <tt>double</tt>-sized units.
  *
  * @param[in] nderivative Derivative operator to apply.  May be zero.
- * @param[in] nrhs Number of coefficient vectors stored in \c b.
- * @param[in,out] b Coefficients to be multiplied.
- * @param[in] incb Stride between elements stored in \c b.
- * @param[in] ldb Leading dimension of the data stored in \c b.
+ * @param[in] nrhs Number of coefficient vectors stored in \c x.
+ * @param[in] alpha Real scaling factor to apply.
+ * @param[in,out] x Coefficients to be multiplied.
+ * @param[in] incx Stride between elements stored in \c x.
+ * @param[in] ldx Leading dimension of the data stored in \c x.
  * @param[in] w Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
@@ -403,24 +405,26 @@ int
 suzerain_bspline_apply_operator(
     int nderivative,
     int nrhs,
-    double *b,
-    int incb,
-    int ldb,
+    double alpha,
+    double *x,
+    int incx,
+    int ldx,
     const suzerain_bspline_workspace *w);
 
 /**
  * Apply the <tt>nderivative</tt>-th derivative operator to complex
- * coefficients \c b.  Multiplies the precomputed banded derivative operator
- * against one or more coefficient vectors stored in \c b.  Results overwrite
- * \c b.  Each coefficient vector is of length suzerain_bspline_ndof().
- * Increments and leading dimensions are specified in <tt>double[2]</tt>-sized
- * units.
+ * coefficients \c x.  Multiplies the precomputed banded derivative operator
+ * scaled by real-valued \c alpha against one or more coefficient vectors
+ * stored in \c x.  Results overwrite \c x.  Each coefficient vector is of
+ * length suzerain_bspline_ndof().  Increments and leading dimensions are
+ * specified in <tt>double[2]</tt>-sized units.
  *
  * @param[in] nderivative Derivative operator to apply.  May be zero.
- * @param[in] nrhs Number of coefficient vectors stored in \c b.
- * @param[in,out] b Coefficients to be multiplied.
- * @param[in] incb Stride between elements stored in \c b.
- * @param[in] ldb Leading dimension of the data stored in \c b.
+ * @param[in] nrhs Number of coefficient vectors stored in \c x.
+ * @param[in] alpha Real scaling factor to apply.
+ * @param[in,out] x Coefficients to be multiplied.
+ * @param[in] incx Stride between elements stored in \c x.
+ * @param[in] ldx Leading dimension of the data stored in \c x.
  * @param[in] w Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
@@ -434,9 +438,10 @@ int
 suzerain_bspline_zapply_operator(
     int nderivative,
     int nrhs,
-    double (*b)[2],
-    int incb,
-    int ldb,
+    double alpha,
+    double (*x)[2],
+    int incx,
+    int ldx,
     const suzerain_bspline_workspace *w);
 
 /**

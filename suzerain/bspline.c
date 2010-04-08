@@ -353,17 +353,18 @@ int
 suzerain_bspline_apply_operator(
     int nderivative,
     int nrhs,
-    double *b,
-    int incb,
-    int ldb,
+    double alpha,
+    double *x,
+    int incx,
+    int ldx,
     const suzerain_bspline_workspace *w)
 {
     /* Parameter sanity checks */
     if (nderivative < 0 || w->nderivatives < nderivative) {
         SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
     }
-    if (nrhs > 1 && ldb < w->ndof) {
-        SUZERAIN_ERROR("nrhs > 1 && ldb < w->ndof", SUZERAIN_EINVAL);
+    if (nrhs > 1 && ldx < w->ndof) {
+        SUZERAIN_ERROR("nrhs > 1 && ldx < w->ndof", SUZERAIN_EINVAL);
     }
 
     /* Allocate scratch space; Required because BLAS operations' behavior on
@@ -377,13 +378,14 @@ suzerain_bspline_apply_operator(
     }
 
     for (int j = 0; j < nrhs; ++j) {
-        double * const b_j = b + j*ldb;
-        /* Compute b_j := w->D[nderivative]*b_j */
-        suzerain_blas_dcopy(w->ndof, b_j, incb, scratch, incscratch);
-        suzerain_blas_dgbmv('N', w->ndof, w->ndof,
-                            w->kl[nderivative], w->ku[nderivative],
-                            1.0, w->D[nderivative], w->ld, scratch, incscratch,
-                            0.0, b_j, incb);
+        double * const x_j = x + j*ldx;
+        /* Compute x_j := w->D[nderivative]*x_j */
+        suzerain_blas_dcopy(w->ndof, x_j, incx, scratch, incscratch);
+        suzerain_blas_dgbmv(
+                'N', w->ndof, w->ndof,
+                w->kl[nderivative], w->ku[nderivative],
+                alpha, w->D[nderivative], w->ld, scratch, incscratch,
+                0.0, x_j, incx);
     }
 
     suzerain_blas_free(scratch);
@@ -394,17 +396,18 @@ int
 suzerain_bspline_zapply_operator(
     int nderivative,
     int nrhs,
-    double (*b)[2],
-    int incb,
-    int ldb,
+    double alpha,
+    double (*x)[2],
+    int incx,
+    int ldx,
     const suzerain_bspline_workspace *w)
 {
     /* Parameter sanity checks */
     if (nderivative < 0 || w->nderivatives < nderivative) {
         SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
     }
-    if (nrhs > 1 && ldb < w->ndof) {
-        SUZERAIN_ERROR("nrhs > 1 && ldb < w->ndof", SUZERAIN_EINVAL);
+    if (nrhs > 1 && ldx < w->ndof) {
+        SUZERAIN_ERROR("nrhs > 1 && ldx < w->ndof", SUZERAIN_EINVAL);
     }
 
     /* Allocate scratch space; Required because BLAS operations' behavior on
@@ -418,16 +421,16 @@ suzerain_bspline_zapply_operator(
     }
 
     for (int j = 0; j < nrhs; ++j) {
-        double (*const b_j)[2] = b + j*ldb;
-        /* Compute b_j := w->D[nderivative]*b_j for real/imaginary parts */
+        double (*const x_j)[2] = x + j*ldx;
+        /* Compute x_j := w->D[nderivative]*x_j for real/imaginary parts */
         for (int i = 0; i < 2; ++i) {
             suzerain_blas_dcopy(
-                    w->ndof, &(b_j[0][i]), 2*incb, scratch, incscratch);
+                    w->ndof, &(x_j[0][i]), 2*incx, scratch, incscratch);
             suzerain_blas_dgbmv(
                     'N', w->ndof, w->ndof,
                     w->kl[nderivative], w->ku[nderivative],
-                    1.0, w->D[nderivative], w->ld, scratch, incscratch,
-                    0.0, &(b_j[0][i]), 2*incb);
+                    alpha, w->D[nderivative], w->ld, scratch, incscratch,
+                    0.0, &(x_j[0][i]), 2*incx);
         }
     }
 

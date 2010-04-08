@@ -127,24 +127,24 @@ public:
     }
 
     /** @see suzerain_bspline_apply_operator */
-    int apply_operator(
-            int nderivative, int nrhs, double *b, int incb, int ldb) const
+    int apply_operator(int nderivative, int nrhs, double alpha,
+                       double *x, int incx, int ldx) const
     {
-        return suzerain_bspline_apply_operator(nderivative, nrhs,
-                                               b, incb, ldb, w_);
+        return suzerain_bspline_apply_operator(
+                nderivative, nrhs, alpha, x, incx, ldx, w_);
     }
 
     /** @see suzerain_bspline_zapply_operator */
     template< typename Complex >
     typename boost::enable_if<
         suzerain::complex::traits::is_complex_double<Complex>, int
-    >::type apply_operator(int nderivative, int nrhs,
-                           Complex *b, int incb, int ldb) const
+    >::type apply_operator(int nderivative, int nrhs, double alpha,
+                           Complex *x, int incx, int ldx) const
     {
         return suzerain_bspline_zapply_operator(
-                nderivative, nrhs,
-                reinterpret_cast<double (*)[2]>(b),
-                incb, ldb, w_);
+                nderivative, nrhs, alpha,
+                reinterpret_cast<double (*)[2]>(x),
+                incx, ldx, w_);
     }
 
     /** @see suzerain_bspline_evaluate */
@@ -156,7 +156,6 @@ public:
                 coefficients, npoints, points,
                 values, ldvalues, w_);
     }
-
 
     /** @see suzerain_bspline_find_interpolation_problem_rhs */
     int find_interpolation_problem_rhs(const suzerain_function * function,
