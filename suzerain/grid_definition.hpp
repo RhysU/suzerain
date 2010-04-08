@@ -117,9 +117,9 @@ public:
      */
     size_type_3d dealiased_extents() const {
         size_type_3d retval = global_extents_;
-        retval[0] += DAFx_;
-        retval[1] += DAFy_;
-        retval[2] += DAFz_;
+        retval[0] *= DAFx_;
+        retval[1] *= DAFy_;
+        retval[2] *= DAFz_;
         return retval;
     }
 
