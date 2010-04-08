@@ -116,12 +116,23 @@ AX_FFTW3()
 PKG_CHECK_MODULES(P3DFFT, suzerain-p3dfft)
 AC_SUBST(P3DFFT_CFLAGS)
 AC_SUBST(P3DFFT_LIBS)
-PKG_CHECK_MODULES(HPCT,
-                  [hpct >= 0.26],
-                  AC_DEFINE([HAVE_HPCT],[1],[Defined if HPC Toolkit found]),
-                  AC_MSG_WARN([Could not find HPC Toolkit; Continuing...]))
-AC_SUBST(HPCT_CFLAGS)
-AC_SUBST(HPCT_LIBS)
+dnl TODO Update for post 0.27 release with corrected pkg-config
+dnl This check is currently a mess to avoid a broken name change in HPCT
+PKG_CHECK_MODULES(HPCT_DONOTUSE, [hpct >= 0.26], [
+    AC_CHECK_LIB([hpct],[hpct_timer_init],[
+        AC_CHECK_HEADER([hpct.h],[
+            AC_DEFINE([HAVE_HPCT],[1],[Defined if HPC Toolkit found])
+            AC_SUBST(HPCT_CFLAGS,[${HPCT_DONOTUSE_CFLAGS}])
+            AC_SUBST(HPCT_LIBS,[${HPCT_DONOTUSE_LIBS}])
+        ],[
+            AC_MSG_WARN([Found HPCT's pkg-config file but not hpct.h; Continuing...])
+        ],[${HPCT_DONOTUSE_CFLAGS}])
+    ],[
+        AC_MSG_WARN([Found HPCT's pkg-config file but not -lhpct; Continuing...])
+    ],[${HPCT_DONOTUSE_LIBS}])
+], [
+    AC_MSG_WARN([Could not find HPCT pkg-config file; Continuing...])
+])
 AC_LANG_POP([C])
 AC_CACHE_SAVE
 
