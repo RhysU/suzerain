@@ -60,7 +60,7 @@ static void compute_breakpoints(
     using suzerain::math::stretchspace;
     const FPT xhalf = (xbegin + xend)/2;
 
-    if (n % 1) {
+    if (n & 1) {
         stretchspace(xbegin, xhalf, n/2+1, alpha,   output);
         stretchspace(xhalf,  xend,  n/2+1, 1/alpha, output+n/2);
     } else {
