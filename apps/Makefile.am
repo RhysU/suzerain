@@ -20,7 +20,7 @@ CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
 # Clean up from Intel Compiler's precompiled header output
 CLEANFILES += *.pchi
 
-# Progams
+# Test progams and/or performance drivers
 bin_PROGRAMS                   += driver_suzerain_p3dfft
 driver_suzerain_p3dfft_SOURCES  = driver_suzerain_p3dfft.cpp
 driver_suzerain_p3dfft_LDADD    = ../suzerain/libsuzerain.la
@@ -38,6 +38,15 @@ driver_underling_LDADD   += $(FFTW3_MPI_THREADS_LIBS) $(HPCT_LIBS)
 driver_underling_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
 driver_underling_LDADD   += $(BOOST_IOSTREAMS_LIBS)
 driver_underling_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
+
+# Applications
+bin_PROGRAMS       += channel_ex
+channel_ex_SOURCES  = channel_ex.cpp
+channel_ex_LDADD    = ../suzerain/libsuzerain.la
+channel_ex_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
+channel_ex_LDADD   += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
+channel_ex_LDADD   += $(BOOST_IOSTREAMS_LIBS)
+channel_ex_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
