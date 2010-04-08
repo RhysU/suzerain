@@ -65,8 +65,8 @@ public:
     /** @return The wrapped suzerain_bspline_workspace pointer. */
     const suzerain_bspline_workspace* get() const { return w_; }
 
-    /** @see suzerain_bspline_free */
-    int ndof() const { return suzerain_bspline_ndof(w_); }
+    /** @see suzerain_bspline_workspace#ndof */
+    int ndof() const { return w_->ndof; }
 
     /** @see suzerain_bspline_accumulate_operator */
     int accumulate_operator(
@@ -200,6 +200,9 @@ public:
     /** @return The wrapped suzerain_bspline_lu_workspace pointer. */
     const suzerain_bspline_lu_workspace* get() const { return luw_; }
 
+    /** @see suzerain_bspline_lu_workspace#ndof */
+    int ndof() const { return luw_->ndof; }
+
     /** @see suzerain_bspline_lu_form_general */
     int form_general(int ncoefficients,
                      const double * coefficients,
@@ -242,6 +245,9 @@ public:
 
     /** @return The wrapped suzerain_bspline_luz_workspace pointer. */
     const suzerain_bspline_luz_workspace* get() const { return luzw_; }
+
+    /** @see suzerain_bspline_luz_workspace#ndof */
+    int ndof() const { return luzw_->ndof; }
 
     /** @see suzerain_bspline_luz_form_general */
     template< typename Complex >
