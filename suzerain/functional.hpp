@@ -90,6 +90,22 @@ T product(InputIterator first, InputIterator last, T init) {
     return std::accumulate(first, last, init, std::multiplies<T>());
 }
 
+/**
+ * Compute the product of values in the range <tt>[c.begin(),c.end())</tt>.
+ *
+ * @param c Collection whose values should be computed.
+ *
+ * @return The result of taking the product of all values in the range
+ *         <tt>[c.begin(),c.end())</tt>.
+ * @see The Boost <a
+ * href="http://www.boost.org/doc/libs/release/libs/utility/Collection.html">
+ * Collection concept documentation</a> for more information.
+ */
+template<class Collection>
+typename Collection::value_type product(const Collection& c) {
+    return product(c.begin(), c.end());
+}
+
 /** A binary operator that computes the minimum of two values. */
 template<class T>
 struct minimum : std::binary_function <T,T,T> {
