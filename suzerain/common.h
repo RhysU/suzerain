@@ -91,10 +91,11 @@ Provides hint to the compiler to optimize for the expression being false.
 #define SUZERAIN_UNUSED(variable) do {(void)(variable);} while (0)
 
 // Required standard C functionality appearing through Suzerain
+// Care taken to include C++ header versions for C++ compilation
 // C++-specific functionality is included in common.hpp
+#ifndef __cplusplus
 #include <assert.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <limits.h>
 #include <math.h>
 #include <stddef.h>
@@ -102,6 +103,18 @@ Provides hint to the compiler to optimize for the expression being false.
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#else
+#include <cassert>
+#include <cerrno>
+#include <climits>
+#include <cmath>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#endif
+#include <fcntl.h>
 #include <unistd.h>
 
 /**
