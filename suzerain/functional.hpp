@@ -32,6 +32,9 @@
 #define __SUZERAIN_FUNCTIONAL_HPP
 
 #include <suzerain/common.hpp>
+// Pull in libstdc++'s STL algorithm extensions.
+// We can reimplement the necessary if this becomes a portability issue.
+#include <ext/algorithm>
 
 namespace suzerain {
 
@@ -39,6 +42,15 @@ namespace suzerain {
  * Provides general functional programming tools.
  */
 namespace functional {
+
+/**
+ * Import SGI STL's copy_n implementation.
+ * @see The SGI STL <a href="http://www.sgi.com/tech/stl/copy_n.html">copy_n</a>
+ *      or GNU
+ *      <a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/ext_algorithms.html">
+ *      libstdc++'s algorithm extensions</a> for more information.
+ */
+using __gnu_cxx::copy_n;
 
 /**
  * Compute the product of the values in the range <tt>[first,last)</tt>. This
