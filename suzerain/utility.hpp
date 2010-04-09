@@ -59,8 +59,8 @@ boost::array<T,3> to_yxz(const boost::array<T,3>& xyz)
  * @return A copy of <tt>xyz</tt> with the elements reordered
  *         and <tt>prepend</tt> prepended.
  */
-template< typename T >
-boost::array<T,4> to_yxz(const T& prepend, const boost::array<T,3>& xyz)
+template< typename T, typename U >
+boost::array<T,4> to_yxz(const U& prepend, const boost::array<T,3>& xyz)
 {
     boost::array<T,4> retval = { prepend, xyz[1], xyz[0], xyz[2] };
     return retval;
@@ -90,8 +90,8 @@ boost::array<T,3> to_xzy(const boost::array<T,3>& xyz)
  * @return A copy of <tt>xyz</tt> with the elements reordered
  *         and <tt>prepend</tt> prepended.
  */
-template< typename T >
-boost::array<T,4> to_xzy(const T& prepend, const boost::array<T,3>& xyz)
+template< typename T, typename U >
+boost::array<T,4> to_xzy(const U& prepend, const boost::array<T,3>& xyz)
 {
     boost::array<T,4> retval = { prepend, xyz[0], xyz[2], xyz[1] };
     return retval;
