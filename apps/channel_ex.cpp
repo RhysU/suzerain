@@ -82,9 +82,11 @@ typedef suzerain::NoninterleavedState<
 class MassOperator : public ilinearoperator_type
 {
 public:
-    explicit MassOperator(double scale_factor = 1.0) : luzw_(*bspw)
+    explicit MassOperator(double scaling = 1.0)
+        : opscaling_(scaling), luzw_(*bspw)
     {
-        const complex_type coefficient = scale_factor;
+        complex_type coefficient;
+        suzerain::complex::assign_complex(coefficient, scaling);
         luzw_.form_general(1, &coefficient, *bspw);
     }
 
@@ -92,12 +94,14 @@ public:
             const complex_type scale,
             istate_type &istate) const throw (std::exception)
     {
+        SUZERAIN_UNUSED(scale);
         state_type &state = dynamic_cast<state_type&>(istate);
+
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
-        assert(1 == state.strides()[1]);
         assert(luzw_.ndof() == state.shape()[1]);
         assert(nrhs == state.strides()[0]);
-        //FIXME Starthere
+        bspw->apply_operator(0, nrhs, opscaling_,
+                state.memory_begin(), state.strides()[1], state.strides()[2]);
     }
 
     virtual void accumulateMassPlusScaledOperator(
@@ -105,15 +109,34 @@ public:
             const istate_type &iinput,
             istate_type &ioutput) const throw (std::exception)
     {
-        const state_type &input = dynamic_cast<const state_type&>(iinput);
-        state_type output = dynamic_cast<state_type&>(ioutput);
+        SUZERAIN_UNUSED(scale);
+        const state_type &x = dynamic_cast<const state_type&>(iinput);
+        state_type y = dynamic_cast<state_type&>(ioutput);
+        assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
 
+        typedef state_type::index index;
+        for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+            ix < x.index_bases()[0] + x.shape()[0];
+            ++ix, ++iy) {
+
+            for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
+                lx < x.index_bases()[3] + x.shape()[3];
+                ++lx, ++ly) {
+
+                bspw->accumulate_operator(0, x.shape()[2], opscaling_,
+                        &(x[ix][x.index_bases()[1]][x.index_bases()[2]][lx]),
+                        x.strides()[1], x.strides()[2],
+                        1.0, &(y[iy][y.index_bases()[1]][y.index_bases()[2]][ly]),
+                        y.strides()[1], y.strides()[2]);
+            }
+        }
     }
 
     virtual void invertMassPlusScaledOperator(
             const complex_type scale,
             istate_type &istate) const throw (std::exception)
     {
+        SUZERAIN_UNUSED(scale);
         state_type &state = dynamic_cast<state_type&>(istate);
 
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
@@ -124,6 +147,7 @@ public:
     }
 
 private:
+    const double opscaling_;
     suzerain::bspline_luz luzw_;
 };
 
@@ -131,6 +155,10 @@ class NonlinearOperator : public inonlinearoperator_type
 {
 
 };
+
+// TODO This definition of breakpoint locations is lousy.
+// Moser mentioned looking at Kolmogorov theory regarding the viscous scales
+// near the wall, and then looking at their growth through the log layer.
 
 /**
  * Compute \c n B-spline breakpoints locations across <tt>[xbegin,xend]</tt>
