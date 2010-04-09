@@ -49,30 +49,34 @@
 #include <suzerain/state_impl.hpp>
 #include <suzerain/storage.hpp>
 #include <suzerain/timestepper.hpp>
+#include <suzerain/utility.hpp>
 
 #pragma warning(disable:383 1572)
 
-// Global scenario parameters and Bspline details initialized in main()
-static suzerain::problem::ScenarioDefinition<> def_scenario(100);
-static suzerain::problem::ChannelDefinition<>  def_grid;
-static suzerain::problem::BsplineDefinition<>  def_bspline;
-static boost::shared_ptr<suzerain::bspline>    bspw;
+// Introduce shorthand for common names
+namespace sz = ::suzerain;
 
-// Explict timestepping scheme uses only complex double 4D NoninterleavedState
+// Global scenario parameters and Bspline details initialized in main()
+static sz::problem::ScenarioDefinition<> def_scenario(100);
+static sz::problem::ChannelDefinition<>  def_grid;
+static sz::problem::BsplineDefinition<>  def_bspline;
+static boost::shared_ptr<sz::bspline>    bspw;
+
+// Explicit timestepping scheme uses only complex double 4D NoninterleavedState
 // State indices range over (scalar field, Y, X, Z) in wave space
 // Establish some shorthand for some overly-templated operator and state types
 typedef std::complex<double> complex_type;
-typedef suzerain::storage::noninterleaved<4> storage_type;
-typedef suzerain::IState<
+typedef sz::storage::noninterleaved<4> storage_type;
+typedef sz::IState<
             storage_type::dimensionality, complex_type, storage_type
         > istate_type;
-typedef suzerain::timestepper::lowstorage::ILinearOperator<
+typedef sz::timestepper::lowstorage::ILinearOperator<
             storage_type::dimensionality, complex_type, storage_type
         > ilinearoperator_type;
-typedef suzerain::timestepper::INonlinearOperator<
+typedef sz::timestepper::INonlinearOperator<
             storage_type::dimensionality, complex_type, storage_type
         > inonlinearoperator_type;
-typedef suzerain::NoninterleavedState<
+typedef sz::NoninterleavedState<
             storage_type::dimensionality, complex_type
         > state_type;
 
@@ -86,7 +90,7 @@ public:
         : opscaling_(scaling), luzw_(*bspw)
     {
         complex_type coefficient;
-        suzerain::complex::assign_complex(coefficient, scaling);
+        sz::complex::assign_complex(coefficient, scaling);
         luzw_.form_general(1, &coefficient, *bspw);
     }
 
@@ -112,7 +116,8 @@ public:
         SUZERAIN_UNUSED(scale);
         const state_type &x = dynamic_cast<const state_type&>(iinput);
         state_type y = dynamic_cast<state_type&>(ioutput);
-        assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
+        assert(std::equal(x.shape(), x.shape() + state_type::dimensionality,
+                          y.shape()));
 
         typedef state_type::index index;
         for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
@@ -148,7 +153,7 @@ public:
 
 private:
     const double opscaling_;
-    suzerain::bspline_luz luzw_;
+    sz::bspline_luz luzw_;
 };
 
 class NonlinearOperator : public inonlinearoperator_type
@@ -172,13 +177,13 @@ class NonlinearOperator : public inonlinearoperator_type
  *                    <tt>output[0]</tt> to <tt>output[n-1]</tt> must
  *                    be valid storage locations.
  *
- * @see suzerain::math::stretchspace for more information on \c alpha
+ * @see sz::math::stretchspace for more information on \c alpha
  */
 template<typename FPT, typename SizeType>
 static void compute_breakpoints(
         FPT xbegin, FPT xend, SizeType n, FPT alpha, FPT *output)
 {
-    using suzerain::math::stretchspace;
+    using sz::math::stretchspace;
     const FPT xhalf = (xbegin + xend)/2;
 
     if (n & 1) {
@@ -201,15 +206,15 @@ int main(int argc, char **argv)
     atexit((void (*) ()) MPI_Finalize);       // Finalize MPI at exit
 
     // Initialize logger using MPI environment details.
-    const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
-    const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+    const int nproc  = sz::mpi::comm_size(MPI_COMM_WORLD);
+    const int procid = sz::mpi::comm_rank(MPI_COMM_WORLD);
     log4cxx::LoggerPtr log = log4cxx::Logger::getLogger(
-            suzerain::mpi::comm_rank_identifier(MPI_COMM_WORLD));
+            sz::mpi::comm_rank_identifier(MPI_COMM_WORLD));
     // NB: Log only warnings and above from ranks 1 and higher
     if (procid > 0) log->setLevel(log4cxx::Level::getWarn());
 
     // Process command line arguments
-    suzerain::ProgramOptions options;
+    sz::ProgramOptions options;
     options.add_definition(def_scenario);
     options.add_definition(def_grid);
     options.add_definition(def_bspline);
@@ -235,7 +240,7 @@ int main(int argc, char **argv)
 
     // Initialize B-spline workspace using [0, Ly] and Ny
     double *breakpoints
-        = (double *)suzerain::blas::malloc(def_grid.Ny()*sizeof(double));
+        = (double *)sz::blas::malloc(def_grid.Ny()*sizeof(double));
     assert(breakpoints);
     compute_breakpoints(0.0, def_grid.Ly(), def_grid.Ny(),
                         def_bspline.alpha(), breakpoints);
@@ -243,12 +248,46 @@ int main(int argc, char **argv)
         LOG4CXX_TRACE(log,
                       "B-spline breakpoint[" << i << "] = " << breakpoints[i]);
     }
-    bspw = boost::make_shared<suzerain::bspline>(
+    bspw = boost::make_shared<sz::bspline>(
                 def_bspline.k(), 2, def_grid.Ny(), breakpoints);
-    suzerain::blas::free(breakpoints);
+    sz::blas::free(breakpoints);
 
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
-    suzerain::pencil_grid pg(def_grid.dealiased_extents(),
+    sz::pencil_grid pg(def_grid.dealiased_extents(),
                              def_grid.processor_grid());
     LOG4CXX_INFO(log, "Processor grid used: " << pg.processor_grid());
+    LOG4CXX_DEBUG(log, "Local dealiased wave start:  " << pg.local_wave_start());
+    LOG4CXX_DEBUG(log, "Local dealiased wave end:    " << pg.local_wave_end());
+    LOG4CXX_DEBUG(log, "Local dealiased wave extent: " << pg.local_wave_extent());
+
+    // Create the state storage for the linear and nonlinear operators
+    // Compute how much non-dealiased XYZ state is local to this rank
+    // Additional munging necessary X direction has (Nx/2+1) complex values
+    const boost::array<sz::pencil_grid::index,3> state_start
+        = pg.local_wave_start();
+    const boost::array<sz::pencil_grid::index,3> state_end = {
+        std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[0]/2+1,
+                                             pg.local_wave_end()[0]),
+        std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[1],
+                                             pg.local_wave_end()[1]),
+        std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[2],
+                                             pg.local_wave_end()[2])
+    };
+    const boost::array<sz::pencil_grid::index,3> state_extent = {
+        state_end[0] - state_start[0],
+        state_end[1] - state_start[1],
+        state_end[2] - state_start[2]
+    };
+    LOG4CXX_DEBUG(log, "Local state wave start:  " << state_start);
+    LOG4CXX_DEBUG(log, "Local state wave end:    " << state_end);
+    LOG4CXX_DEBUG(log, "Local state wave extent: " << state_extent);
+    // Create the state instances with appropriate padding
+    using sz::functional::product;
+    state_type state_linear(sz::to_yxz(5, state_extent));
+    state_type state_nonlinear(
+            sz::to_yxz(5, state_extent),
+            sz::to_yxz(std::max(
+                        product(pg.local_wave_extent()),
+                        product(pg.local_physical_extent())/2+1
+                    ), sz::strides_cm(pg.local_wave_extent())));
 }
