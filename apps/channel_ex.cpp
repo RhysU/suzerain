@@ -210,8 +210,10 @@ int main(int argc, char **argv)
     const int procid = sz::mpi::comm_rank(MPI_COMM_WORLD);
     log4cxx::LoggerPtr log = log4cxx::Logger::getLogger(
             sz::mpi::comm_rank_identifier(MPI_COMM_WORLD));
-    // NB: Log only warnings and above from ranks 1 and higher
-    if (procid > 0) log->setLevel(log4cxx::Level::getWarn());
+    // Log only warnings and above from ranks 1 and higher when not debugging
+    if (procid > 0 && !log->isDebugEnabled()) {
+        log->setLevel(log4cxx::Level::getWarn());
+    }
 
     // Process command line arguments
     sz::ProgramOptions options;
@@ -271,12 +273,12 @@ int main(int argc, char **argv)
         std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[1],
                                              pg.local_wave_end()[1]),
         std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[2],
-                                             pg.local_wave_end()[2])
+                                            pg.local_wave_end()[2])
     };
     const boost::array<sz::pencil_grid::index,3> state_extent = {
-        state_end[0] - state_start[0],
-        state_end[1] - state_start[1],
-        state_end[2] - state_start[2]
+        std::max<sz::pencil_grid::index>(state_end[0] - state_start[0], 0),
+        std::max<sz::pencil_grid::index>(state_end[1] - state_start[1], 0),
+        std::max<sz::pencil_grid::index>(state_end[2] - state_start[2], 0)
     };
     LOG4CXX_DEBUG(log, "Local state wave start:  " << state_start);
     LOG4CXX_DEBUG(log, "Local state wave end:    " << state_end);

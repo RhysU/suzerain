@@ -150,6 +150,16 @@ boost::array<T,0> strides_rm(const boost::array<T,0>& extents)
     return retval;
 }
 
+/**
+ * Return the minimum of three arguments.
+ *
+ * @return <tt>std::min(a,std::min(b,c))</tt>.
+ */
+template<class T>
+const T& min(const T& a,const T& b, const T& c) {
+    return ::std::min(a, ::std::min(b,c));
+}
+
 } // namespace suzerain
 
 #endif // __SUZERAIN_UTILITY_HPP
