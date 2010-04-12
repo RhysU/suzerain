@@ -41,6 +41,34 @@ BOOST_AUTO_TEST_CASE( to_xzy )
     }
 }
 
+BOOST_AUTO_TEST_CASE( prepend )
+{
+    using suzerain::prepend;
+    {
+        boost::array<int,0> a;
+        BOOST_CHECK_EQUAL(prepend(0, a),
+                          boost::assign::list_of(0));
+    }
+
+    {
+        boost::array<int,1> a = { 2 };
+        BOOST_CHECK_EQUAL(prepend(0, a),
+                          boost::assign::list_of(0)(2));
+    }
+
+    {
+        boost::array<int,2> a = { 2, 3 };
+        BOOST_CHECK_EQUAL(prepend(0, a),
+                          boost::assign::list_of(0)(2)(3));
+    }
+
+    {
+        boost::array<int,3> a = { 2, 3, 4 };
+        BOOST_CHECK_EQUAL(prepend(0, a),
+                          boost::assign::list_of(0)(2)(3)(4));
+    }
+}
+
 BOOST_AUTO_TEST_CASE( strides_cm )
 {
     using suzerain::strides_cm;
@@ -61,6 +89,12 @@ BOOST_AUTO_TEST_CASE( strides_cm )
         boost::array<int,3> extents = { 2, 3, 4 };
         BOOST_CHECK_EQUAL(strides_cm(extents),
                           boost::assign::list_of(1)(2)(6));
+    }
+
+    {
+        boost::array<int,3> extents = { 13, 16, 24 };
+        BOOST_CHECK_EQUAL(strides_cm(extents),
+                          boost::assign::list_of(1)(13)(208));
     }
 
     {

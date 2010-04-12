@@ -36,7 +36,7 @@
 namespace suzerain {
 
 /**
- * Convert a boost::array from XYZ to YXZ ordering.
+ * Convert a 3 element boost::array from XYZ to YXZ ordering.
  *
  * @param xyz to convert.
  *
@@ -50,7 +50,7 @@ boost::array<T,3> to_yxz(const boost::array<T,3>& xyz)
 }
 
 /**
- * Convert a 3D boost::array from XYZ to YXZ ordering with an
+ * Convert a 3 element  boost::array from XYZ to YXZ ordering with an
  * additional element prepended.
  *
  * @param prepend to prepend.
@@ -67,7 +67,7 @@ boost::array<T,4> to_yxz(const U& prepend, const boost::array<T,3>& xyz)
 }
 
 /**
- * Convert a boost::array from XYZ to XZY ordering.
+ * Convert a 3 element boost::array from XYZ to XZY ordering.
  *
  * @param xyz to convert.
  *
@@ -81,8 +81,8 @@ boost::array<T,3> to_xzy(const boost::array<T,3>& xyz)
 }
 
 /**
- * Convert a 3D boost::array from XYZ to XZY ordering with an
- * additional element prepended.
+ * Convert a 3 element boost::array from XYZ to XZY ordering with an additional
+ * element prepended.
  *
  * @param prepend to prepend.
  * @param xyz to convert.
@@ -96,6 +96,24 @@ boost::array<T,4> to_xzy(const U& prepend, const boost::array<T,3>& xyz)
     boost::array<T,4> retval = { prepend, xyz[0], xyz[2], xyz[1] };
     return retval;
 }
+
+/**
+ * Return a copy of a boost::array with an element prepended.
+ *
+ * @param prepend to prepend.
+ * @param array to copy.
+ *
+ * @return A boost::array with one more entry than \c array.
+ */
+template<typename T, typename U, std::size_t N>
+boost::array<T, N+1> prepend(const U& prepend, const boost::array<T,N>& array)
+{
+    boost::array<T,N+1> retval;
+    retval[0] = prepend;
+    std::copy(array.begin(), array.end(), retval.begin() + 1);
+    return retval;
+}
+
 
 /**
  * Compute column-major strides given a boost::array of extents.

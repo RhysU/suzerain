@@ -230,15 +230,15 @@ int main(int argc, char **argv)
     assert(def_grid.DAFy() == 1.0);  // Wall normal dealiasing disallowed
 
     // Dump relevant global scenario parameters
-    LOG4CXX_INFO(log, "Number of MPI ranks: " << nproc);
-    LOG4CXX_INFO(log, "Global extents:      " << def_grid.global_extents());
-    LOG4CXX_INFO(log, "Dealiased extents:   " << def_grid.dealiased_extents());
-    LOG4CXX_INFO(log, "B-spline order:      " << def_bspline.k());
-    LOG4CXX_INFO(log, "B-spline stretching: " << def_bspline.alpha());
-    LOG4CXX_INFO(log, "Reynolds number:     " << def_scenario.Re());
-    LOG4CXX_INFO(log, "Prandtl number:      " << def_scenario.Pr());
-    LOG4CXX_INFO(log, "gamma = C_p/C_v:     " << def_scenario.gamma());
-    LOG4CXX_INFO(log, "beta = ln mu/ln T:   " << def_scenario.beta());
+    LOG4CXX_INFO(log, "Number of MPI ranks:     " << nproc);
+    LOG4CXX_INFO(log, "Global extents (XYZ):    " << def_grid.global_extents());
+    LOG4CXX_INFO(log, "Dealiased extents (XYZ): " << def_grid.dealiased_extents());
+    LOG4CXX_INFO(log, "B-spline order:          " << def_bspline.k());
+    LOG4CXX_INFO(log, "B-spline stretching:     " << def_bspline.alpha());
+    LOG4CXX_INFO(log, "Reynolds number:         " << def_scenario.Re());
+    LOG4CXX_INFO(log, "Prandtl number:          " << def_scenario.Pr());
+    LOG4CXX_INFO(log, "gamma = C_p/C_v:         " << def_scenario.gamma());
+    LOG4CXX_INFO(log, "beta = ln mu/ln T:       " << def_scenario.beta());
 
     // Initialize B-spline workspace using [0, Ly] and Ny
     double *breakpoints
@@ -258,9 +258,12 @@ int main(int argc, char **argv)
     sz::pencil_grid pg(def_grid.dealiased_extents(),
                              def_grid.processor_grid());
     LOG4CXX_INFO(log, "Processor grid used: " << pg.processor_grid());
-    LOG4CXX_DEBUG(log, "Local dealiased wave start:  " << pg.local_wave_start());
-    LOG4CXX_DEBUG(log, "Local dealiased wave end:    " << pg.local_wave_end());
-    LOG4CXX_DEBUG(log, "Local dealiased wave extent: " << pg.local_wave_extent());
+    LOG4CXX_DEBUG(log, "Local dealiased wave start  (XYZ): "
+                       << pg.local_wave_start());
+    LOG4CXX_DEBUG(log, "Local dealiased wave end    (XYZ): "
+                       << pg.local_wave_end());
+    LOG4CXX_DEBUG(log, "Local dealiased wave extent (XYZ): "
+                       << pg.local_wave_extent());
 
     // Create the state storage for the linear and nonlinear operators
     // Compute how much non-dealiased XYZ state is local to this rank
@@ -280,16 +283,26 @@ int main(int argc, char **argv)
         std::max<sz::pencil_grid::index>(state_end[1] - state_start[1], 0),
         std::max<sz::pencil_grid::index>(state_end[2] - state_start[2], 0)
     };
-    LOG4CXX_DEBUG(log, "Local state wave start:  " << state_start);
-    LOG4CXX_DEBUG(log, "Local state wave end:    " << state_end);
-    LOG4CXX_DEBUG(log, "Local state wave extent: " << state_extent);
+    LOG4CXX_DEBUG(log, "Local state wave start  (XYZ): " << state_start);
+    LOG4CXX_DEBUG(log, "Local state wave end    (XYZ): " << state_end);
+    LOG4CXX_DEBUG(log, "Local state wave extent (XYZ): " << state_extent);
     // Create the state instances with appropriate padding
     using sz::functional::product;
     state_type state_linear(sz::to_yxz(5, state_extent));
     state_type state_nonlinear(
             sz::to_yxz(5, state_extent),
-            sz::to_yxz(std::max(
+            sz::prepend(std::max(
                         product(pg.local_wave_extent()),
                         product(pg.local_physical_extent())/2+1
-                    ), sz::strides_cm(pg.local_wave_extent())));
+                    ), sz::strides_cm(sz::to_yxz(pg.local_wave_extent()))));
+    if (log->isDebugEnabled()) {
+        boost::array<sz::pencil_grid::index,4> strides;
+        std::copy(state_linear.strides(),
+                  state_linear.strides() + 4, strides.begin());
+        LOG4CXX_DEBUG(log, "Linear state strides    (FYXZ): " << strides);
+        std::copy(state_nonlinear.strides(),
+                  state_nonlinear.strides() + 4, strides.begin());
+        LOG4CXX_DEBUG(log, "Nonlinear state strides (FYXZ): " << strides);
+    }
+
 }
