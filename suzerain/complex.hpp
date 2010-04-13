@@ -388,7 +388,8 @@ typename traits::real<Complex>::type imag_ipower(const Complex &z)
  */
 template<class Complex, class Source>
 SUZERAIN_FORCEINLINE
-void assign_complex(Complex &dest, const Source &src)
+void assign_complex(Complex &SUZERAIN_RESTRICT dest,
+                    const Source &SUZERAIN_RESTRICT src)
 {
     real(dest) = real(src);
     imag(dest) = imag(src);
@@ -425,10 +426,10 @@ SUZERAIN_FORCEINLINE
 typename boost::enable_if<boost::mpl::and_<
     boost::mpl::not_<traits::is_complex<Beta> >,
     boost::mpl::not_<traits::is_complex<Alpha> >
-> >::type accumulate_complex(const Beta& beta,
-                             Complex &dest,
-                             const Alpha& alpha,
-                             const Source &src)
+> >::type accumulate_complex(const Beta &SUZERAIN_RESTRICT beta,
+                             Complex &SUZERAIN_RESTRICT dest,
+                             const Alpha &SUZERAIN_RESTRICT alpha,
+                             const Source &SUZERAIN_RESTRICT src)
 {
     real(dest) = beta*real(dest) + alpha*real(src);
     imag(dest) = beta*imag(dest) + alpha*imag(src);
@@ -447,10 +448,10 @@ SUZERAIN_FORCEINLINE
 typename boost::enable_if<boost::mpl::and_<
     traits::is_complex<Beta>,
     boost::mpl::not_<traits::is_complex<Alpha> >
-> >::type accumulate_complex(const Beta& beta,
-                             Complex &dest,
-                             const Alpha& alpha,
-                             const Source &src)
+> >::type accumulate_complex(const Beta &SUZERAIN_RESTRICT beta,
+                             Complex &SUZERAIN_RESTRICT dest,
+                             const Alpha &SUZERAIN_RESTRICT alpha,
+                             const Source &SUZERAIN_RESTRICT src)
 {
     typedef typename traits::real<Complex>::type real_type;
     const real_type odest_real = real(dest);
@@ -475,10 +476,10 @@ SUZERAIN_FORCEINLINE
 typename boost::enable_if<boost::mpl::and_<
     boost::mpl::not_<traits::is_complex<Beta> >,
     traits::is_complex<Alpha>
-> >::type accumulate_complex(const Beta& beta,
-                             Complex &dest,
-                             const Alpha& alpha,
-                             const Source &src)
+> >::type accumulate_complex(const Beta &SUZERAIN_RESTRICT beta,
+                             Complex &SUZERAIN_RESTRICT dest,
+                             const Alpha &SUZERAIN_RESTRICT alpha,
+                             const Source &SUZERAIN_RESTRICT src)
 {
     real(dest) =   beta*real(dest)
                  + real(alpha)*real(src) - imag(alpha)*imag(src);
@@ -499,10 +500,10 @@ SUZERAIN_FORCEINLINE
 typename boost::enable_if<boost::mpl::and_<
     traits::is_complex<Beta>,
     traits::is_complex<Alpha>
-> >::type accumulate_complex(const Beta& beta,
-                             Complex &dest,
-                             const Alpha& alpha,
-                             const Source &src)
+> >::type accumulate_complex(const Beta &SUZERAIN_RESTRICT beta,
+                             Complex &SUZERAIN_RESTRICT dest,
+                             const Alpha &SUZERAIN_RESTRICT alpha,
+                             const Source &SUZERAIN_RESTRICT src)
 {
     typedef typename traits::real<Complex>::type real_type;
     const real_type odest_real = real(dest);
@@ -524,9 +525,9 @@ typename boost::enable_if<boost::mpl::and_<
  */
 template<typename FPT, class Source>
 SUZERAIN_FORCEINLINE
-void assign_components(FPT &dest_real,
-                       FPT &dest_imag,
-                       const Source &src)
+void assign_components(FPT &SUZERAIN_RESTRICT dest_real,
+                       FPT &SUZERAIN_RESTRICT dest_imag,
+                       const Source &SUZERAIN_RESTRICT src)
 {
     dest_real = real(src);
     dest_imag = imag(src);
@@ -541,8 +542,8 @@ void assign_components(FPT &dest_real,
  */
 template<class Complex1, class Complex2, typename FPT>
 SUZERAIN_FORCEINLINE
-void assign_complex_scaled(Complex1 &dest,
-                           const Complex2 &src,
+void assign_complex_scaled(Complex1 &SUZERAIN_RESTRICT dest,
+                           const Complex2 &SUZERAIN_RESTRICT src,
                            const FPT alpha)
 {
     real(dest) = alpha*real(src);
@@ -560,8 +561,8 @@ void assign_complex_scaled(Complex1 &dest,
  */
 template<class Complex1, class Complex2, typename FPT>
 SUZERAIN_FORCEINLINE
-void assign_complex_scaled_ipower(Complex1 &dest,
-                                  const Complex2 &src,
+void assign_complex_scaled_ipower(Complex1 &SUZERAIN_RESTRICT dest,
+                                  const Complex2 &SUZERAIN_RESTRICT src,
                                   const FPT alpha,
                                   const int ipower)
 {

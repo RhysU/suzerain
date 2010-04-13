@@ -83,6 +83,14 @@ Provides hint to the compiler to optimize for the expression being false.
 #define SUZERAIN_FORCEINLINE inline
 #endif
 
+#ifndef __cplusplus
+/** Define synonym for C99 restrict keyword */
+#define SUZERAIN_RESTRICT restrict
+#else
+/** Define synonym for C++ __restrict__ keyword */
+#define SUZERAIN_RESTRICT __restrict__
+#endif
+
 /**
  * Explicitly marks a variable as unused to avoid compiler warnings.
  *
@@ -117,6 +125,7 @@ Provides hint to the compiler to optimize for the expression being false.
 #include <fcntl.h>
 #include <unistd.h>
 
+/* TODO Move function suzerain_gbmatrix_offset to a more suitable header */
 /**
  * Compute the BLAS-compatible offset to <tt>a(i,j)</tt> for general
  * banded matrices <tt>a(i,j) -> storage(ku+i-j,j)</tt> where storage
@@ -137,6 +146,7 @@ int suzerain_gbmatrix_offset(int lda, int kl, int ku, int i, int j) {
     return j*lda+(ku+i-j);
 }
 
+/* TODO Move function suzerain_gbmatrix_in_band to a more suitable header */
 /** Determine if indices fall within the band of a general banded matrix.
  *
  * @param lda Leading dimension for column-major ordering
