@@ -55,18 +55,45 @@ void z_assert(const int N, const int dN, const int dkb, const int dke)
     assert(dkb <= dke);
 }
 
-int suzerain_diffwave_accumulate_y0x0z0(
-    const double alpha, const double * restrict x,
-    const double beta,  double * restrict y,
+void suzerain_diffwave_accumulate_y0x0z0(
+    const double alpha, const double * SUZERAIN_RESTRICT x,
+    const double beta,  double * SUZERAIN_RESTRICT y,
     const double Lx,
-    const double Ly,
+    const double Lz,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez)
 {
+    SUZERAIN_UNUSED(Lx);
+    SUZERAIN_UNUSED(Lz);
+
     assert((void*) x != (void *)y);
     y_assert(Ny);
     x_assert(Nx, dNx, dkbx, dkex);
     z_assert(Nz, dNz, dkbz, dkez);
 
+    for (int n = dkbz; n < dkez; ++n) {
+        const int nk = suzerain_diffwave_freqindex(Nz, dNz, n);
+        if (nk) {
+            for (int m = dkbx; m < dkex; ++m) {
+                const int mk = suzerain_diffwave_freqindex(Nx, dNx, m);
+                if (mk) {
+                    for (int l = 0; l < Ny; ++l) {
+                        *y++ = beta*(*y) + alpha*(*x++); // Real
+                        *y++ = beta*(*y) + alpha*(*x++); // Imag
+                    }
+                } else {
+                    const size_t fillcount = Ny*2;
+                    memset(y, 0, fillcount*sizeof(y[0]));
+                    y += fillcount;
+                    x += fillcount;
+                }
+            }
+        } else {
+            const size_t fillcount = (dkex-dkbx)*Ny*2;
+            memset(y, 0, fillcount*sizeof(y[0]));
+            y += fillcount;
+            x += fillcount;
+        }
+    }
 }
