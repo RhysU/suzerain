@@ -56,6 +56,8 @@ __BEGIN_DECLS
 inline
 int suzerain_diffwave_freqindex(const int N, const int dN, const int i)
 {
+    assert(0 <= i && i < dN);
+    assert(N <= dN);
     return i*(i < (N+1)/2) + (-dN+i)*(i >= dN - (N-1)/2);
 }
 
