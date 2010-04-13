@@ -218,6 +218,109 @@ BOOST_AUTO_TEST_CASE( assign_complex_with_complex_source )
     BOOST_CHECK_EQUAL(c.imag(), 4.0);
 }
 
+BOOST_AUTO_TEST_CASE( accumulate_complex )
+{
+    using suzerain::complex::accumulate_complex;
+    typedef std::complex<double> complex_type;
+    typedef double real_type;
+
+    { // CCC
+        const complex_type beta(2,3);
+        complex_type       dest(5,7);
+        const complex_type alpha(11,13);
+        const complex_type src(17,19);
+
+        accumulate_complex(beta, dest, alpha, src);
+
+        BOOST_CHECK_EQUAL(- 71, real(dest));
+        BOOST_CHECK_EQUAL( 459, imag(dest));
+    }
+
+    { // CCR
+        const complex_type beta(2,3);
+        complex_type       dest(5,7);
+        const complex_type alpha(11,13);
+        const real_type    src(17);
+
+        accumulate_complex(beta, dest, alpha, src);
+
+        BOOST_CHECK_EQUAL( 176, real(dest));
+        BOOST_CHECK_EQUAL( 250, imag(dest));
+    }
+
+    { // CRC
+        const complex_type beta(2,3);
+        complex_type       dest(5,7);
+        const real_type    alpha(11);
+        const complex_type src(17,19);
+
+        accumulate_complex(beta, dest, alpha, src);
+
+        BOOST_CHECK_EQUAL( 176, real(dest));
+        BOOST_CHECK_EQUAL( 238, imag(dest));
+    }
+
+    { // CRR
+        const complex_type beta(2,3);
+        complex_type       dest(5,7);
+        const real_type    alpha(11);
+        const real_type    src(17);
+
+        accumulate_complex(beta, dest, alpha, src);
+
+        BOOST_CHECK_EQUAL( 176, real(dest));
+        BOOST_CHECK_EQUAL(  29, imag(dest));
+    }
+
+    { // RCC
+        const real_type    beta(2);
+        complex_type       dest(5,7);
+        const complex_type alpha(11,13);
+        const complex_type src(17,19);
+
+        accumulate_complex(beta, dest, alpha, src);
+
+        BOOST_CHECK_EQUAL(- 50, real(dest));
+        BOOST_CHECK_EQUAL( 444, imag(dest));
+    }
+
+    { // RCR
+        const real_type    beta(2);
+        complex_type       dest(5,7);
+        const complex_type alpha(11,13);
+        const real_type    src(17);
+
+        accumulate_complex(beta, dest, alpha, src);
+
+        BOOST_CHECK_EQUAL( 197, real(dest));
+        BOOST_CHECK_EQUAL( 235, imag(dest));
+    }
+
+    { // RRC
+        const real_type    beta(2);
+        complex_type       dest(5,7);
+        const real_type    alpha(11);
+        const complex_type src(17,19);
+
+        accumulate_complex(beta, dest, alpha, src);
+
+        BOOST_CHECK_EQUAL( 197, real(dest));
+        BOOST_CHECK_EQUAL( 223, imag(dest));
+    }
+
+    { // RRR
+        const real_type    beta(2);
+        complex_type       dest(5,7);
+        const real_type    alpha(11);
+        const real_type    src(17);
+
+        accumulate_complex(beta, dest, alpha, src);
+
+        BOOST_CHECK_EQUAL( 197, real(dest));
+        BOOST_CHECK_EQUAL(  14, imag(dest));
+    }
+}
+
 BOOST_AUTO_TEST_CASE( assign_complex_with_arithmetic_source )
 {
     using suzerain::complex::assign_complex;

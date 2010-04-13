@@ -34,7 +34,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/functional.hpp>
 
-// TODO Broken details::assign_* if FFTW3 discovers the C99 _Complex type
+// TODO Broken assign_* if FFTW3 discovers the C99 _Complex type
 // This header does not currently require fftw3.h to function, but fixing
 // the above TODO may change that fact.
 
@@ -226,6 +226,145 @@ const FPT& imag(const FPT (&z)[2]) {
 }
 
 /**
+ * Obtain the real part of a real number.
+ *
+ * @param x real number.
+ *
+ * @return <tt>x</tt>
+ */
+template<typename FPT>
+SUZERAIN_FORCEINLINE
+typename boost::enable_if<
+    boost::is_arithmetic<FPT>, const FPT&
+>::type real(const FPT& x) {
+    return x;
+}
+
+/**
+ * Obtain the real part of a real number.
+ *
+ * @param x real number.
+ *
+ * @return <tt>x</tt>
+ */
+template<typename FPT>
+SUZERAIN_FORCEINLINE
+typename boost::enable_if<
+    boost::is_arithmetic<FPT>, FPT&
+>::type real(FPT& x) {
+    return x;
+}
+
+/**
+ * Obtain the trivial imaginary part of a real number.
+ *
+ * @param x real number.
+ *
+ * @return <tt>0</tt>
+ * @note There is no similar method taking <tt>FPT&</tt> and returning
+ *       <tt>FPT&</tt> because we cannot mutate the imaginary
+ *       part of a real number.
+ */
+template<typename FPT>
+SUZERAIN_FORCEINLINE
+typename boost::enable_if<
+    boost::is_arithmetic<FPT>, const FPT&
+>::type imag(const FPT& x) {
+    static const FPT zero = 0;
+    return 0;
+}
+
+namespace {
+
+template<int N> struct impl_ipower;
+
+template<> struct impl_ipower<0> { // I^0 = 1
+
+    template<typename Complex>
+    SUZERAIN_FORCEINLINE
+    static typename traits::real<Complex>::type
+    real_ipower(const Complex &z) {
+        return real(z);
+    }
+
+    template<typename Complex>
+    SUZERAIN_FORCEINLINE
+    static typename traits::real<Complex>::type
+    imag_ipower(const Complex &z) {
+        return imag(z);
+    }
+};
+
+template<> struct impl_ipower<1> { // I^1 = I = I^-3
+
+    template<typename Complex>
+    SUZERAIN_FORCEINLINE
+    static typename traits::real<Complex>::type
+    real_ipower(const Complex &z) {
+        return -imag(z);
+    }
+
+    template<typename Complex>
+    SUZERAIN_FORCEINLINE
+    static typename traits::real<Complex>::type
+    imag_ipower(const Complex &z) {
+        return real(z);
+    }
+};
+
+template<> struct impl_ipower<2> { // I^2 = -1 = I^-2
+
+    template<typename Complex>
+    SUZERAIN_FORCEINLINE
+    static typename traits::real<Complex>::type
+    real_ipower(const Complex &z) {
+        return -real(z);
+    }
+
+    template<typename Complex>
+    SUZERAIN_FORCEINLINE
+    static typename traits::real<Complex>::type
+    imag_ipower(const Complex &z) {
+        return -imag(z);
+    }
+};
+
+template<> struct impl_ipower<3> { // I^3 = -I = I^-1
+
+    template<typename Complex>
+    SUZERAIN_FORCEINLINE
+    static typename traits::real<Complex>::type
+    real_ipower(const Complex &z) {
+        return imag(z);
+    }
+
+    template<typename Complex>
+    SUZERAIN_FORCEINLINE
+    static typename traits::real<Complex>::type
+    imag_ipower(const Complex &z) {
+        return -real(z);
+    }
+};
+
+} // anonymous
+
+template<int IPower, typename Complex>
+SUZERAIN_FORCEINLINE
+typename traits::real<Complex>::type real_ipower(const Complex &z)
+{
+    // Modulo-four-like operation for 2s complement
+    return impl_ipower<IPower & 3>::real_ipower(z);
+}
+
+template<int IPower, typename Complex>
+SUZERAIN_FORCEINLINE
+typename traits::real<Complex>::type imag_ipower(const Complex &z)
+{
+    // Modulo-four-like operation for 2s complement
+    return impl_ipower<IPower & 3>::imag_ipower(z);
+}
+
+/**
  * Overwrite \c dest with \c src.
  *
  * @param dest destination
@@ -233,29 +372,10 @@ const FPT& imag(const FPT (&z)[2]) {
  */
 template<class Complex, class Source>
 SUZERAIN_FORCEINLINE
-typename boost::enable_if<
-    traits::is_complex<Source>, void
->::type assign_complex(Complex &dest, const Source &src)
+void assign_complex(Complex &dest, const Source &src)
 {
     real(dest) = real(src);
     imag(dest) = imag(src);
-}
-
-/**
- * Overwrite \c dest with \c src.  The imaginary
- * part of \c dest is set to zero.
- *
- * @param dest destination
- * @param src source
- */
-template<class Complex, class Source>
-SUZERAIN_FORCEINLINE
-typename boost::enable_if<
-    boost::is_arithmetic<Source>, void
->::type assign_complex(Complex &dest, const Source &src)
-{
-    real(dest) = src;
-    imag(dest) = 0;
 }
 
 /**
@@ -277,6 +397,108 @@ void assign_complex(Complex &dest,
 }
 
 /**
+ * Overwrite \c dest with <tt>alpha*source + beta*dest</tt>
+ *
+ * @param beta  destination scaling factor
+ * @param dest  destination
+ * @param alpha source scaling factor
+ * @param src   source
+ */
+template<class Beta, class Complex, class Alpha, class Source>
+SUZERAIN_FORCEINLINE
+typename boost::enable_if<boost::mpl::and_<
+    boost::mpl::not_<traits::is_complex<Beta> >,
+    boost::mpl::not_<traits::is_complex<Alpha> >
+> >::type accumulate_complex(const Beta& beta,
+                             Complex &dest,
+                             const Alpha& alpha,
+                             const Source &src)
+{
+    real(dest) = beta*real(dest) + alpha*real(src);
+    imag(dest) = beta*imag(dest) + alpha*imag(src);
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*source + beta*dest</tt>
+ *
+ * @param beta  destination scaling factor
+ * @param dest  destination
+ * @param alpha source scaling factor
+ * @param src   source
+ */
+template<class Beta, class Complex, class Alpha, class Source>
+SUZERAIN_FORCEINLINE
+typename boost::enable_if<boost::mpl::and_<
+    traits::is_complex<Beta>,
+    boost::mpl::not_<traits::is_complex<Alpha> >
+> >::type accumulate_complex(const Beta& beta,
+                             Complex &dest,
+                             const Alpha& alpha,
+                             const Source &src)
+{
+    typedef typename traits::real<Complex>::type real_type;
+    const real_type odest_real = real(dest);
+    const real_type odest_imag = imag(dest);
+
+    real(dest) =   real(beta)*odest_real - imag(beta)*odest_imag
+                 + alpha*real(src);
+    imag(dest) = real(beta)*odest_imag + imag(beta)*odest_real
+                 + alpha*imag(src);
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*source + beta*dest</tt>
+ *
+ * @param beta  destination scaling factor
+ * @param dest  destination
+ * @param alpha source scaling factor
+ * @param src   source
+ */
+template<class Beta, class Complex, class Alpha, class Source>
+SUZERAIN_FORCEINLINE
+typename boost::enable_if<boost::mpl::and_<
+    boost::mpl::not_<traits::is_complex<Beta> >,
+    traits::is_complex<Alpha>
+> >::type accumulate_complex(const Beta& beta,
+                             Complex &dest,
+                             const Alpha& alpha,
+                             const Source &src)
+{
+    real(dest) =   beta*real(dest)
+                 + real(alpha)*real(src) - imag(alpha)*imag(src);
+    imag(dest) =   beta*imag(dest)
+                 + real(alpha)*imag(src) + imag(alpha)*real(src);
+}
+
+/**
+ * Overwrite \c dest with <tt>alpha*source + beta*dest</tt>
+ *
+ * @param beta  destination scaling factor
+ * @param dest  destination
+ * @param alpha source scaling factor
+ * @param src   source
+ */
+template<class Beta, class Complex, class Alpha, class Source>
+SUZERAIN_FORCEINLINE
+typename boost::enable_if<boost::mpl::and_<
+    traits::is_complex<Beta>,
+    traits::is_complex<Alpha>
+> >::type accumulate_complex(const Beta& beta,
+                             Complex &dest,
+                             const Alpha& alpha,
+                             const Source &src)
+{
+    typedef typename traits::real<Complex>::type real_type;
+    const real_type odest_real = real(dest);
+    const real_type odest_imag = imag(dest);
+
+    real(dest) =   real(beta)*odest_real - imag(beta)*odest_imag
+                 + real(alpha)*real(src) - imag(alpha)*imag(src);
+    imag(dest) =   real(beta)*odest_imag + imag(beta)*odest_real
+                 + real(alpha)*imag(src) + imag(alpha)*real(src);
+}
+
+/**
  * Overwrite \c dest_real with Re <tt>src</tt> and \c dest_imag with Re
  * <tt>src_imag</tt>.
  *
@@ -284,11 +506,11 @@ void assign_complex(Complex &dest,
  * @param dest_imag destination imag part
  * @param src source
  */
-template<typename FPT, class Complex>
+template<typename FPT, class Source>
 SUZERAIN_FORCEINLINE
 void assign_components(FPT &dest_real,
                        FPT &dest_imag,
-                       const Complex &src)
+                       const Source &src)
 {
     dest_real = real(src);
     dest_imag = imag(src);
@@ -329,20 +551,20 @@ void assign_complex_scaled_ipower(Complex1 &dest,
 {
     switch (ipower & 3) { // Modulo-four-like operation for 2s complement
         case 3: // I^3 = -I = I^-1
-            real(dest) =  alpha*imag(src);
-            imag(dest) = -alpha*real(src);
+            real(dest) = alpha*real_ipower<3>(src);
+            imag(dest) = alpha*imag_ipower<3>(src);
             break;
         case 2: // I^2 = -1 = I^-2
-            real(dest) = -alpha*real(src);
-            imag(dest) = -alpha*imag(src);
+            real(dest) = alpha*real_ipower<2>(src);
+            imag(dest) = alpha*imag_ipower<2>(src);
             break;
         case 1: // I^1 = I = I^-3
-            real(dest) = -alpha*imag(src);
-            imag(dest) =  alpha*real(src);
+            real(dest) = alpha*real_ipower<1>(src);
+            imag(dest) = alpha*imag_ipower<1>(src);
             break;
         case 0: // I^0 = 1
-            real(dest) =  alpha*real(src);
-            imag(dest) =  alpha*imag(src);
+            real(dest) = alpha*real_ipower<0>(src);
+            imag(dest) = alpha*imag_ipower<0>(src);
             break;
     }
 }
