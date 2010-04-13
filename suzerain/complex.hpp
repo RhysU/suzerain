@@ -348,6 +348,14 @@ template<> struct impl_ipower<3> { // I^3 = -I = I^-1
 
 } // anonymous
 
+/**
+ * Return the real portion of \c z multiplied by <tt>I^N</tt> where
+ * \c I is the imaginary unit.
+ *
+ * @param z to process.
+ *
+ * @return <tt>Re(I^N * z)</tt>
+ */
 template<int IPower, typename Complex>
 SUZERAIN_FORCEINLINE
 typename traits::real<Complex>::type real_ipower(const Complex &z)
@@ -356,6 +364,14 @@ typename traits::real<Complex>::type real_ipower(const Complex &z)
     return impl_ipower<IPower & 3>::real_ipower(z);
 }
 
+/**
+ * Return the imaginary portion of \c z multiplied by <tt>I^N</tt> where
+ * \c I is the imaginary unit.
+ *
+ * @param z to process.
+ *
+ * @return <tt>Im(I^N * z)</tt>
+ */
 template<int IPower, typename Complex>
 SUZERAIN_FORCEINLINE
 typename traits::real<Complex>::type imag_ipower(const Complex &z)
