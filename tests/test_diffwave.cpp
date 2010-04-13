@@ -72,13 +72,14 @@ BOOST_AUTO_TEST_CASE( freqindex_dealiasing )
 
 BOOST_AUTO_TEST_CASE( y0x0z0 )
 {
-    const int Ny = 2, Nx = 4, Nz = 4;
-    double * const x = (double *) malloc(2*Ny*(Nx/2+1)*Nz*sizeof(x[0]));
-    double * const y = (double *) malloc(2*Ny*(Nx/2+1)*Nz*sizeof(y[0]));
+    const int  Ny = 2,  Nx = 4,  Nz = 5;
+    const int          dNx = 6, dNz = 5;
+    double * const x = (double *) malloc(2*Ny*(dNx/2+1)*dNz*sizeof(x[0]));
+    double * const y = (double *) malloc(2*Ny*(dNx/2+1)*dNz*sizeof(y[0]));
     {
         double *p = x, *q = y;
-        for (int n = 0; n < Nz; ++n) {
-            for (int m = 0; m < (Nx/2+1); ++m) {
+        for (int n = 0; n < dNz; ++n) {
+            for (int m = 0; m < (dNx/2+1); ++m) {
                 for (int l = 0; l < Ny; ++l) {
                     *p++ =  (l+1)*(m+1)*(n+1); // Fill x
                     *p++ = -(l+1)*(m+1)*(n+1);
@@ -90,17 +91,23 @@ BOOST_AUTO_TEST_CASE( y0x0z0 )
     }
 
     suzerain_diffwave_accumulate_y0x0z0(
-            2, x, 3, y, 555, 777, Ny, Nx, Nx, 0, (Nx/2+1), Nz, Nz, 0, Nz);
+            2, x, 3, y, 555, 777, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
 
     {
         double *q = y;
-        for (int n = 0; n < Nz; ++n) {
-            for (int m = 0; m < (Nx/2+1); ++m) {
+        for (int n = 0; n < dNz; ++n) {
+            for (int m = 0; m < (dNx/2+1); ++m) {
                 for (int l = 0; l < Ny; ++l) {
-                    BOOST_CHECK_EQUAL(
+                    if (   (n <= (Nz+1)/2 || n >= (dNz - (Nz-1)/2))
+                        && (m <= (Nx+1)/2 || m >= (dNx - (Nx-1)/2))) {
+                        BOOST_CHECK_EQUAL(
                             *q++,  2*(l+1)*(m+1)*(n+1) +  3*(l+2)*(m+3)*(n+4));
-                    BOOST_CHECK_EQUAL(
+                        BOOST_CHECK_EQUAL(
                             *q++, -2*(l+1)*(m+1)*(n+1) + -3*(l+2)*(m+3)*(n+4));
+                    } else {
+                        BOOST_CHECK_EQUAL(*q++, 0);
+                        BOOST_CHECK_EQUAL(*q++, 0);
+                    }
                 }
             }
         }
