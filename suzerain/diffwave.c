@@ -42,7 +42,7 @@ void x_assert(const int N, const int dN, const int dkb, const int dke)
 {
     assert(N >= 0);
     assert(dN >= N);
-    assert(dke <= dN/2);
+    assert(dke <= dN/2+1);
     assert(dkb <= dke);
 }
 
@@ -72,12 +72,17 @@ void suzerain_diffwave_accumulate_y0x0z0(
     x_assert(Nx, dNx, dkbx, dkex);
     z_assert(Nz, dNz, dkbz, dkez);
 
+    // {n,m}keeper complexity because we must not nuke zero and Nyquist modes
     for (int n = dkbz; n < dkez; ++n) {
-        const int nk = suzerain_diffwave_freqindex(Nz, dNz, n);
-        if (nk) {
+        const int nkeeper =     (n == 0)
+                             || (!(Nz & 1) && n == Nz/2)
+                             || suzerain_diffwave_freqindex(Nz, dNz, n);
+        if (nkeeper) {
             for (int m = dkbx; m < dkex; ++m) {
-                const int mk = suzerain_diffwave_freqindex(Nx, dNx, m);
-                if (mk) {
+                const int mkeeper =    (m == 0)
+                                    || (!(Nx & 1) && m == Nx/2)
+                                    || suzerain_diffwave_freqindex(Nx, dNx, m);
+                if (mkeeper) {
                     for (int l = 0; l < Ny; ++l) {
                         *y++ = beta*(*y) + alpha*(*x++); // Real
                         *y++ = beta*(*y) + alpha*(*x++); // Imag
