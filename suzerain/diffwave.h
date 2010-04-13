@@ -30,14 +30,12 @@
 #ifndef __SUZERAIN_DIFFWAVE_H
 #define __SUZERAIN_DIFFWAVE_H
 
-#include <suzerain/common.h>
-
 /** @file
  * Provides computational kernels for differentiating a three dimensional
- * wavespace field stored (Y, X, Z) in column-major order.  The X direction
- * storage must exhibit conjugate symmetry.  Only differentiation of the X and
- * Z directions is supported.  Additional padding (e.g. due to dealiasing) may
- * be present and will be zeroed during processing.
+ * wavespace field stored (Y, X, Z) in column-major order.  Only
+ * differentiation of the X and Z directions is supported.  Additional padding
+ * (e.g. due to dealiasing) may be present and will be zeroed during
+ * processing.
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -62,8 +60,8 @@ int suzerain_diffwave_freqindex(const int N, const int dN, const int i)
 }
 
 void suzerain_diffwave_accumulate_y0x0z0(
-    const double alpha, const double * SUZERAIN_RESTRICT x,
-    const double beta,  double * SUZERAIN_RESTRICT y,
+    const double alpha, const double * x,
+    const double beta,  double * y,
     const double Lx,
     const double Lz,
     const int Ny,

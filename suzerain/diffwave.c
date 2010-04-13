@@ -28,7 +28,7 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#include <assert.h>
+#include <suzerain/common.h>
 #include <suzerain/diffwave.h>
 
 inline
@@ -38,20 +38,11 @@ void y_assert(const int Ny)
 }
 
 inline
-void x_assert(const int N, const int dN, const int dkb, const int dke)
+void xz_assert(const int N, const int dN, const int dkb, const int dke)
 {
     assert(N >= 0);
     assert(dN >= N);
-    assert(dke <= dN/2+1);
-    assert(dkb <= dke);
-}
-
-inline
-void z_assert(const int N, const int dN, const int dkb, const int dke)
-{
-    assert(N >= 0);
-    assert(dN >= N);
-    assert(dke <= dN);
+    assert(dke <= dN);  // Usually dkex <= dNx/2+1 for X, but not required.
     assert(dkb <= dke);
 }
 
@@ -69,8 +60,8 @@ void suzerain_diffwave_accumulate_y0x0z0(
 
     assert((void*) x != (void *)y);
     y_assert(Ny);
-    x_assert(Nx, dNx, dkbx, dkex);
-    z_assert(Nz, dNz, dkbz, dkez);
+    xz_assert(Nx, dNx, dkbx, dkex);
+    xz_assert(Nz, dNz, dkbz, dkez);
 
     // {n,m}keeper complexity because we must not nuke zero and Nyquist modes
     for (int n = dkbz; n < dkez; ++n) {

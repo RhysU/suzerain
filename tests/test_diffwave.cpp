@@ -70,10 +70,10 @@ BOOST_AUTO_TEST_CASE( freqindex_dealiasing )
     }
 }
 
-BOOST_AUTO_TEST_CASE( y0x0z0 )
+static void test_y0x0z0_helper(const int Ny,
+                               const int Nx, const int dNx,
+                               const int Nz, const int dNz)
 {
-    const int  Ny = 2,  Nx = 4,  Nz = 5;
-    const int          dNx = 6, dNz = 5;
     double * const x = (double *) malloc(2*Ny*(dNx/2+1)*dNz*sizeof(x[0]));
     double * const y = (double *) malloc(2*Ny*(dNx/2+1)*dNz*sizeof(y[0]));
     {
@@ -115,4 +115,19 @@ BOOST_AUTO_TEST_CASE( y0x0z0 )
 
     free(x);
     free(y);
+}
+
+BOOST_AUTO_TEST_CASE( y0x0z0 )
+{
+    boost::array<int,5> c[] = {
+        /* Ny, Nx, dNx, Nz, dNz */
+        {   3,  8,   8,  8,   8  },
+        {   3,  7,   7,  7,   7  },
+        {   3,  8,  12, 16,  24  }
+    };
+
+    for (int i = 0; i < sizeof(c)/sizeof(c[0]); ++i) {
+        BOOST_TEST_MESSAGE("Testing " << c[i]);
+        test_y0x0z0_helper(c[i][0], c[i][1], c[i][2], c[i][3], c[i][4]);
+    }
 }
