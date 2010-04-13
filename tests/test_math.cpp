@@ -60,6 +60,41 @@ BOOST_AUTO_TEST_CASE( integer_power )
     BOOST_CHECK_EQUAL( 0.0f, integer_power(0.0f, 1));
 }
 
+BOOST_AUTO_TEST_CASE( fixed_integer_power )
+{
+    using suzerain::math::fixed_integer_power;
+
+    BOOST_CHECK_EQUAL( 1u, fixed_integer_power<0>(2u));
+    BOOST_CHECK_EQUAL( 2u, fixed_integer_power<1>(2u));
+    BOOST_CHECK_EQUAL( 4u, fixed_integer_power<2>(2u));
+    BOOST_CHECK_EQUAL( 8u, fixed_integer_power<3>(2u));
+    BOOST_CHECK_EQUAL(16u, fixed_integer_power<4>(2u));
+
+    BOOST_CHECK_EQUAL( 1ul, fixed_integer_power<0>(2ul));
+    BOOST_CHECK_EQUAL( 2ul, fixed_integer_power<1>(2ul));
+    BOOST_CHECK_EQUAL( 4ul, fixed_integer_power<2>(2ul));
+    BOOST_CHECK_EQUAL( 8ul, fixed_integer_power<3>(2ul));
+    BOOST_CHECK_EQUAL(16ul, fixed_integer_power<4>(2ul));
+
+    BOOST_CHECK_EQUAL( 1.0, fixed_integer_power<0>(2.0));
+    BOOST_CHECK_EQUAL( 2.0, fixed_integer_power<1>(2.0));
+    BOOST_CHECK_EQUAL( 4.0, fixed_integer_power<2>(2.0));
+    BOOST_CHECK_EQUAL( 8.0, fixed_integer_power<3>(2.0));
+    BOOST_CHECK_EQUAL(16.0, fixed_integer_power<4>(2.0));
+
+    BOOST_CHECK_EQUAL( 1.0f, fixed_integer_power<0>(2.0f));
+    BOOST_CHECK_EQUAL( 2.0f, fixed_integer_power<1>(2.0f));
+    BOOST_CHECK_EQUAL( 4.0f, fixed_integer_power<2>(2.0f));
+    BOOST_CHECK_EQUAL( 8.0f, fixed_integer_power<3>(2.0f));
+    BOOST_CHECK_EQUAL(16.0f, fixed_integer_power<4>(2.0f));
+
+    BOOST_CHECK_EQUAL( 1.0, fixed_integer_power<0>(0.0));
+    BOOST_CHECK_EQUAL( 0.0, fixed_integer_power<1>(0.0));
+
+    BOOST_CHECK_EQUAL( 1.0f, fixed_integer_power<0>(0.0f));
+    BOOST_CHECK_EQUAL( 0.0f, fixed_integer_power<1>(0.0f));
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( linspace, T, test_types )
 {
     using suzerain::math::linspace;

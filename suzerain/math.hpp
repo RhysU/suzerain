@@ -77,6 +77,57 @@ FPT integer_power(FPT x, Integer n)
     return retval;
 }
 
+
+namespace {
+
+template<typename T, int N> struct impl_fixed_integer_power;
+
+template<typename T> struct impl_fixed_integer_power<T,0> {
+    SUZERAIN_FORCEINLINE static T fixed_integer_power(const T t) {
+        return 1;
+    }
+};
+
+template<typename T> struct impl_fixed_integer_power<T,1> {
+    SUZERAIN_FORCEINLINE static T fixed_integer_power(const T t) {
+        return t;
+    }
+};
+
+template<typename T> struct impl_fixed_integer_power<T,2> {
+    SUZERAIN_FORCEINLINE static T fixed_integer_power(const T t) {
+        return t*t;
+    }
+};
+
+template<typename T> struct impl_fixed_integer_power<T,3> {
+    SUZERAIN_FORCEINLINE static T fixed_integer_power(const T t) {
+        return t*t*t;
+    }
+};
+
+template<typename T> struct impl_fixed_integer_power<T,4> {
+    SUZERAIN_FORCEINLINE static T fixed_integer_power(const T t) {
+        T tmp = t*t;
+        return tmp*tmp;
+    }
+};
+
+} // anonymous
+
+/**
+ * Compute <tt>t^N</tt> for small, fixed integer powers.
+ *
+ * @param t to process.
+ *
+ * @return <tt>t^N</tt>.
+ */
+template<int N, typename T>
+T fixed_integer_power(const T t)
+{
+    return impl_fixed_integer_power<T,N>::fixed_integer_power(t);
+}
+
 /**
  * Output \n linearly spaced values spanning the range <tt>[xbegin, xend]</tt>
  * (inclusive).
