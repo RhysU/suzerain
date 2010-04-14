@@ -751,14 +751,15 @@ resulting constants $N_x$ and $N_z$ to the left hand side leaves us with
   \right)
   \label{eq:spatial_discretization}
 \end{align}
-where $x_{m'}=L_x m' / N_x$ and $z_{n'}=L_z n' / N_z$.  Given knowledge of the
-nonlinear operator $N$, the introduced quadrature error can be mitigated via an
-appropriate dealiasing technique (see, e.g.,~\cite{Canuto2006}).
-Interestingly, our weighted residual \eqref{eq:R_h_weighted_residual_zero} need
-now only be zero in this weaker, discrete sense.  We are left with
-$N_x\times{}N_z$ time-dependent systems containing $N_y$ equations coupled in
-the $x$ and $z$ directions only through discrete Fourier transforms and the
-requirements of the nonlinear operator $N$.
+where $x_{m'}=L_x m' / N_x$ and $z_{n'}=L_z n' / N_z$.  This approximation is
+nothing but a quadrature error (see, e.g., theorem~19 in~\cite{Boyd2001}).
+With knowledge of the nonlinear operator $N$, such quadrature error can be
+mitigated via an appropriate dealiasing technique (see,
+e.g.,~\cite{Canuto2006}).  Interestingly, our weighted residual
+\eqref{eq:R_h_weighted_residual_zero} need now only be zero in this weaker,
+discrete sense.  We are left with $N_x\times{}N_z$ time-dependent systems
+containing $N_y$ equations coupled in the $x$ and $z$ directions only through
+discrete Fourier transforms and the requirements of the nonlinear operator $N$.
 
 Calling $\hat{u}_{l,m,n}(t)$ the wave space coefficients of the solution at
 some time $t$, the right hand side of \eqref{eq:spatial_discretization} may be
