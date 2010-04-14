@@ -60,8 +60,8 @@ int suzerain_diffwave_freqindex(const int N, const int dN, const int i)
 }
 
 void suzerain_diffwave_accumulate_y0x0z0(
-    const double alpha, const double * x,
-    const double beta,  double * y,
+    const double alpha, const double (*x)[2],
+    const double beta,  double (*y)[2],
     const double Lx,
     const double Lz,
     const int Ny,

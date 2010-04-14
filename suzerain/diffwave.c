@@ -47,8 +47,8 @@ void xz_assert(const int N, const int dN, const int dkb, const int dke)
 }
 
 void suzerain_diffwave_accumulate_y0x0z0(
-    const double alpha, const double * SUZERAIN_RESTRICT x,
-    const double beta,  double * SUZERAIN_RESTRICT y,
+    const double alpha, const double (* SUZERAIN_RESTRICT x)[2],
+    const double beta,  double (* SUZERAIN_RESTRICT y)[2],
     const double Lx,
     const double Lz,
     const int Ny,
@@ -75,18 +75,20 @@ void suzerain_diffwave_accumulate_y0x0z0(
                                     || suzerain_diffwave_freqindex(Nx, dNx, m);
                 if (mkeeper) {
                     for (int l = 0; l < Ny; ++l) {
-                        *y++ = beta*(*y) + alpha*(*x++); // Real
-                        *y++ = beta*(*y) + alpha*(*x++); // Imag
+                        (*y)[0] = beta*(*y)[0] + alpha*(*x)[0];  // Real
+                        (*y)[1] = beta*(*y)[1] + alpha*(*x)[1];  // Imag
+                        y++;
+                        x++;
                     }
                 } else {
-                    const size_t fillcount = Ny*2;
+                    const size_t fillcount = Ny;
                     memset(y, 0, fillcount*sizeof(y[0]));
                     y += fillcount;
                     x += fillcount;
                 }
             }
         } else {
-            const size_t fillcount = (dkex-dkbx)*Ny*2;
+            const size_t fillcount = (dkex-dkbx)*Ny;
             memset(y, 0, fillcount*sizeof(y[0]));
             y += fillcount;
             x += fillcount;

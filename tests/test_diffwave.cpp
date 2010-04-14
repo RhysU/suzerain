@@ -74,17 +74,20 @@ static void test_y0x0z0_helper(const int Ny,
                                const int Nx, const int dNx,
                                const int Nz, const int dNz)
 {
-    double * const x = (double *) malloc(2*Ny*(dNx/2+1)*dNz*sizeof(x[0]));
-    double * const y = (double *) malloc(2*Ny*(dNx/2+1)*dNz*sizeof(y[0]));
+    const int nelem = Ny*(dNx/2+1)*dNz;
+    double (* const x)[2] = (double (*)[2]) malloc(nelem*sizeof(x[0]));
+    double (* const y)[2] = (double (*)[2]) malloc(nelem*sizeof(y[0]));
     {
-        double *p = x, *q = y;
+        double (*p)[2] = x, (*q)[2] = y;
         for (int n = 0; n < dNz; ++n) {
             for (int m = 0; m < (dNx/2+1); ++m) {
                 for (int l = 0; l < Ny; ++l) {
-                    *p++ =  (l+1)*(m+1)*(n+1); // Fill x
-                    *p++ = -(l+1)*(m+1)*(n+1);
-                    *q++ =  (l+2)*(m+3)*(n+4); // Fill y
-                    *q++ = -(l+2)*(m+3)*(n+4);
+                    (*p)[0] =  (l+1)*(m+1)*(n+1); // Fill x
+                    (*p)[1] = -(l+1)*(m+1)*(n+1);
+                    p++;
+                    (*q)[0] =  (l+2)*(m+3)*(n+4); // Fill y
+                    (*q)[1] = -(l+2)*(m+3)*(n+4);
+                    q++;
                 }
             }
         }
@@ -94,19 +97,21 @@ static void test_y0x0z0_helper(const int Ny,
             2, x, 3, y, 555, 777, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
 
     {
-        double *q = y;
+        double (*q)[2] = y;
         for (int n = 0; n < dNz; ++n) {
             for (int m = 0; m < (dNx/2+1); ++m) {
                 for (int l = 0; l < Ny; ++l) {
                     if (   (n <= (Nz+1)/2 || n >= (dNz - (Nz-1)/2))
                         && (m <= (Nx+1)/2 || m >= (dNx - (Nx-1)/2))) {
                         BOOST_CHECK_EQUAL(
-                            *q++,  2*(l+1)*(m+1)*(n+1) +  3*(l+2)*(m+3)*(n+4));
+                            (*q)[0], 2*(l+1)*(m+1)*(n+1)+ 3*(l+2)*(m+3)*(n+4));
                         BOOST_CHECK_EQUAL(
-                            *q++, -2*(l+1)*(m+1)*(n+1) + -3*(l+2)*(m+3)*(n+4));
+                            (*q)[1],-2*(l+1)*(m+1)*(n+1)+-3*(l+2)*(m+3)*(n+4));
+                        q++;
                     } else {
-                        BOOST_CHECK_EQUAL(*q++, 0);
-                        BOOST_CHECK_EQUAL(*q++, 0);
+                        BOOST_CHECK_EQUAL((*q)[0], 0);
+                        BOOST_CHECK_EQUAL((*q)[1], 0);
+                        q++;
                     }
                 }
             }
