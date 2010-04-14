@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 //
-// Copyright (C) 2009 The PECOS Development Team
+// Copyright (C) 2010 The PECOS Development Team
 // Based heavily on the Boost Test predicate utilities
 //
 // Please see http://pecos.ices.utexas.edu for more information.
