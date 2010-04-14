@@ -6,6 +6,9 @@
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
 #include <suzerain/diffwave.h>
+#include "test_tools.hpp"
+
+BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 #pragma warning(disable:383)
 
@@ -93,8 +96,10 @@ static void test_y0x0z0_helper(const int Ny,
         }
     }
 
-    suzerain_diffwave_accumulate_y0x0z0(
-            2, x, 3, y, 555, 777, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
+    const double alpha[2] = {2, 0};
+    const double beta[2]  = {3, 0};
+    suzerain_diffwave_accumulate_y0x0z0(alpha, x, beta, y,
+            555, 777, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
 
     {
         double (*q)[2] = y;
@@ -107,12 +112,11 @@ static void test_y0x0z0_helper(const int Ny,
                             (*q)[0], 2*(l+1)*(m+1)*(n+1)+ 3*(l+2)*(m+3)*(n+4));
                         BOOST_CHECK_EQUAL(
                             (*q)[1],-2*(l+1)*(m+1)*(n+1)+-3*(l+2)*(m+3)*(n+4));
-                        q++;
                     } else {
-                        BOOST_CHECK_EQUAL((*q)[0], 0);
-                        BOOST_CHECK_EQUAL((*q)[1], 0);
-                        q++;
+                        BOOST_CHECK_EQUAL((*q)[0],  3*(l+2)*(m+3)*(n+4));
+                        BOOST_CHECK_EQUAL((*q)[1], -3*(l+2)*(m+3)*(n+4));
                     }
+                    ++q;
                 }
             }
         }
@@ -126,6 +130,7 @@ BOOST_AUTO_TEST_CASE( y0x0z0 )
 {
     boost::array<int,5> c[] = {
         /* Ny, Nx, dNx, Nz, dNz */
+        {   3,  4,   4,  4,   4  },
         {   3,  8,   8,  8,   8  },
         {   3,  7,   7,  7,   7  },
         {   3,  8,  12, 16,  24  }

@@ -28,7 +28,12 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
+#endif
 #include <suzerain/common.h>
+#pragma hdrstop
+#include <suzerain/blas_et_al.h>
 #include <suzerain/diffwave.h>
 
 inline
@@ -47,8 +52,8 @@ void xz_assert(const int N, const int dN, const int dkb, const int dke)
 }
 
 void suzerain_diffwave_accumulate_y0x0z0(
-    const double alpha, const double (* SUZERAIN_RESTRICT x)[2],
-    const double beta,  double (* SUZERAIN_RESTRICT y)[2],
+    const double alpha[2], const double (* const x)[2],
+    const double beta[2],        double (* const y)[2],
     const double Lx,
     const double Lz,
     const int Ny,
@@ -64,34 +69,24 @@ void suzerain_diffwave_accumulate_y0x0z0(
     xz_assert(Nz, dNz, dkbz, dkez);
 
     // {n,m}keeper complexity because we must not nuke zero and Nyquist modes
+    const int sx = Ny, sz = (dkex - dkbx)*sx; // Compute X, Z strides
     for (int n = dkbz; n < dkez; ++n) {
-        const int nkeeper =     (n == 0)
-                             || (!(Nz & 1) && n == Nz/2)
-                             || suzerain_diffwave_freqindex(Nz, dNz, n);
+        const int noff = sz*(n - dkbz);
+        const int nkeeper =    suzerain_diffwave_freqindex(Nz, dNz, n)
+                            || (n == 0) || (!(Nz & 1) && n == Nz/2);
         if (nkeeper) {
             for (int m = dkbx; m < dkex; ++m) {
-                const int mkeeper =    (m == 0)
-                                    || (!(Nx & 1) && m == Nx/2)
-                                    || suzerain_diffwave_freqindex(Nx, dNx, m);
+                const int moff = noff + sx*(m - dkbx);
+                const int mkeeper =    suzerain_diffwave_freqindex(Nx, dNx, m)
+                                    || (m == 0) || (!(Nx & 1) && m == Nx/2);
                 if (mkeeper) {
-                    for (int l = 0; l < Ny; ++l) {
-                        (*y)[0] = beta*(*y)[0] + alpha*(*x)[0];  // Real
-                        (*y)[1] = beta*(*y)[1] + alpha*(*x)[1];  // Imag
-                        y++;
-                        x++;
-                    }
+                    suzerain_blas_zaxpby(Ny,alpha,x+moff,1,beta,y+moff,1);
                 } else {
-                    const size_t fillcount = Ny;
-                    memset(y, 0, fillcount*sizeof(y[0]));
-                    y += fillcount;
-                    x += fillcount;
+                    suzerain_blas_zscal(Ny,beta,y+moff,1);
                 }
             }
         } else {
-            const size_t fillcount = (dkex-dkbx)*Ny;
-            memset(y, 0, fillcount*sizeof(y[0]));
-            y += fillcount;
-            x += fillcount;
+            suzerain_blas_zscal(sz,beta,y+noff,1);
         }
     }
 }
