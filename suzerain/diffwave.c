@@ -33,10 +33,36 @@
 #endif
 #include <suzerain/common.h>
 #pragma hdrstop
+#include <gsl/gsl_sf_pow_int.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/diffwave.h>
 
-static void suzerain_diffwave_accumulate_y0x0z0(
+inline
+void scale_by_imaginary_power(const double in[2], double out[2], int p)
+{
+    // Modulo-four-like operation for 2's complement p
+    switch (p & 3) {
+        case 0: // I^0 = 1
+            out[0] = in[0];
+            out[1] = in[1];
+            break;
+        case 1: // I^1 = I = I^-3
+            out[0] = -in[1];
+            out[1] =  in[0];
+            break;
+        case 2: // I^2 = -1 = I^-2
+            out[0] = -in[0];
+            out[1] = -in[1];
+            break;
+        case 3: // I^3 = -I = I^-1
+            out[0] =  in[1];
+            out[1] = -in[0];
+            break;
+    }
+}
+
+static
+void suzerain_diffwave_accumulate_y0x0z0(
     const double alpha[2], const double (* const x)[2],
     const double beta[2],        double (* const y)[2],
     const int Ny,
@@ -44,7 +70,6 @@ static void suzerain_diffwave_accumulate_y0x0z0(
     const int Nz, const int dNz, const int dkbz, const int dkez)
 {
     // {n,m}keeper complexity because we must include zero and Nyquist modes
-    // for the trivial derivative case.
     const int sx = Ny, sz = (dkex - dkbx)*sx; // Compute X, Z strides
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
@@ -91,12 +116,41 @@ void suzerain_diffwave_accumulate(
     assert(dkez <= dNz);
     assert(dkbz <= dkez);
 
+    // No derivatives case is sufficiently weird to warrant special handling
     if (dxcnt == 0 && dzcnt == 0) {
-        // The no derivative case is sufficiently different to warrant
-        // special handling.
         return suzerain_diffwave_accumulate_y0x0z0(alpha, x, beta,  y,
                                                    Ny,
                                                    Nx, dNx, dkbx, dkex,
                                                    Nz, dNz, dkbz, dkez);
+    }
+
+    // Compute loop independent constants
+    const double twopioverLx = 2*M_PI/Lx;
+    const double twopioverLz = 2*M_PI/Lz;
+    double alpha_ipow[2];
+    scale_by_imaginary_power(alpha, alpha_ipow, dxcnt + dzcnt);
+
+    const int sx = Ny, sz = (dkex - dkbx)*sx; // Compute X, Z strides
+    for (int n = dkbz; n < dkez; ++n) {
+        const int noff = sz*(n - dkbz);
+        const int nfreqidx = suzerain_diffwave_freqindex(Nz, dNz, n);
+        if (nfreqidx) {
+            const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
+            for (int m = dkbx; m < dkex; ++m) {
+                const int moff = noff + sx*(m - dkbx);
+                const int mfreqidx = suzerain_diffwave_freqindex(Nx, dNx, m);
+                if (mfreqidx) {
+                    const double mscale
+                        = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
+                    const double malpha[2] = { mscale*alpha_ipow[0],
+                                               mscale*alpha_ipow[1] };
+                    suzerain_blas_zaxpby(Ny,malpha,x+moff,1,beta,y+moff,1);
+                } else {
+                    suzerain_blas_zscal(Ny,beta,y+moff,1);
+                }
+            }
+        } else {
+            suzerain_blas_zscal(sz,beta,y+noff,1);
+        }
     }
 }

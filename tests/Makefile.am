@@ -93,6 +93,7 @@ TESTS                 += test_diffwave
 check_PROGRAMS        += test_diffwave
 test_diffwave_SOURCES  = test_diffwave.cpp
 test_diffwave_LDADD    = ../suzerain/libsuzerain.la
+test_diffwave_LDADD   += $(GSL_LIBS)
 test_diffwave_LDADD   += $(MKL_LIBS)
 test_diffwave_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_diffwave_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
