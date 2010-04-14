@@ -36,20 +36,16 @@
 #include <suzerain/blas_et_al.h>
 #include <suzerain/diffwave.h>
 
-inline
-void y_assert(const int Ny)
-{
-    assert(Ny >= 0);
-}
+#define Y_ASSERT(N) \
+    do {assert((N) >= 0);} while (0)
 
-inline
-void xz_assert(const int N, const int dN, const int dkb, const int dke)
-{
-    assert(N >= 0);
-    assert(dN >= N);
-    assert(dke <= dN);  // Usually dkex <= dNx/2+1 for X, but not required.
-    assert(dkb <= dke);
-}
+#define XZ_ASSERT(N,dN,dkb,dke) \
+    do { \
+        assert((N) >= 0); \
+        assert((dN) >= (N)); \
+        assert((dke) <= (dN));  \
+        assert((dkb) <= (dke)); \
+    } while (0)
 
 void suzerain_diffwave_accumulate_y0x0z0(
     const double alpha[2], const double (* const x)[2],
@@ -64,9 +60,9 @@ void suzerain_diffwave_accumulate_y0x0z0(
     SUZERAIN_UNUSED(Lz);
 
     assert((void*) x != (void *)y);
-    y_assert(Ny);
-    xz_assert(Nx, dNx, dkbx, dkex);
-    xz_assert(Nz, dNz, dkbz, dkez);
+    Y_ASSERT(Ny);
+    XZ_ASSERT(Nx, dNx, dkbx, dkex);
+    XZ_ASSERT(Nz, dNz, dkbz, dkez);
 
     // {n,m}keeper complexity because we must not nuke zero and Nyquist modes
     const int sx = Ny, sz = (dkex - dkbx)*sx; // Compute X, Z strides
