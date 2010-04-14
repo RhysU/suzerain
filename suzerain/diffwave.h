@@ -59,7 +59,9 @@ int suzerain_diffwave_freqindex(const int N, const int dN, const int i)
     return i*(i < (N+1)/2) + (-dN+i)*(i >= dN - (N-1)/2);
 }
 
-void suzerain_diffwave_accumulate_y0x0z0(
+void suzerain_diffwave_accumulate(
+    const int dxcnt,
+    const int dzcnt,
     const double alpha[2], const double (*x)[2],
     const double beta[2],        double (*y)[2],
     const double Lx,

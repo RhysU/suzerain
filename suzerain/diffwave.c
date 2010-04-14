@@ -36,35 +36,15 @@
 #include <suzerain/blas_et_al.h>
 #include <suzerain/diffwave.h>
 
-#define Y_ASSERT(N) \
-    do {assert((N) >= 0);} while (0)
-
-#define XZ_ASSERT(N,dN,dkb,dke) \
-    do { \
-        assert((N) >= 0); \
-        assert((dN) >= (N)); \
-        assert((dke) <= (dN));  \
-        assert((dkb) <= (dke)); \
-    } while (0)
-
-void suzerain_diffwave_accumulate_y0x0z0(
+static void suzerain_diffwave_accumulate_y0x0z0(
     const double alpha[2], const double (* const x)[2],
     const double beta[2],        double (* const y)[2],
-    const double Lx,
-    const double Lz,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez)
 {
-    SUZERAIN_UNUSED(Lx);
-    SUZERAIN_UNUSED(Lz);
-
-    assert((void*) x != (void *)y);
-    Y_ASSERT(Ny);
-    XZ_ASSERT(Nx, dNx, dkbx, dkex);
-    XZ_ASSERT(Nz, dNz, dkbz, dkez);
-
-    // {n,m}keeper complexity because we must not nuke zero and Nyquist modes
+    // {n,m}keeper complexity because we must include zero and Nyquist modes
+    // for the trivial derivative case.
     const int sx = Ny, sz = (dkex - dkbx)*sx; // Compute X, Z strides
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
@@ -84,5 +64,39 @@ void suzerain_diffwave_accumulate_y0x0z0(
         } else {
             suzerain_blas_zscal(sz,beta,y+noff,1);
         }
+    }
+}
+
+void suzerain_diffwave_accumulate(
+    const int dxcnt,
+    const int dzcnt,
+    const double alpha[2], const double (* const x)[2],
+    const double beta[2],        double (* const y)[2],
+    const double Lx,
+    const double Lz,
+    const int Ny,
+    const int Nx, const int dNx, const int dkbx, const int dkex,
+    const int Nz, const int dNz, const int dkbz, const int dkez)
+{
+    assert(dxcnt >= 0);             // Only differentiation supported
+    assert(dzcnt >= 0);
+    assert((void*) x != (void *)y); // Sanity check aliasing requirements
+    assert(Ny >= 0);                // Sanity check Y direction
+    assert(Nx >= 0);                // Sanity check X direction
+    assert(dNx >= Nx);
+    assert(dkex <= dNx);            // Often dkex <= (dNx/2+1)
+    assert(dkbx <= dkex);
+    assert(Nz >= 0);                // Sanity check Z direction
+    assert(dNz >= Nz);
+    assert(dkez <= dNz);
+    assert(dkbz <= dkez);
+
+    if (dxcnt == 0 && dzcnt == 0) {
+        // The no derivative case is sufficiently different to warrant
+        // special handling.
+        return suzerain_diffwave_accumulate_y0x0z0(alpha, x, beta,  y,
+                                                   Ny,
+                                                   Nx, dNx, dkbx, dkex,
+                                                   Nz, dNz, dkbz, dkez);
     }
 }

@@ -98,7 +98,7 @@ static void test_y0x0z0_helper(const int Ny,
 
     const double alpha[2] = {2, 0};
     const double beta[2]  = {3, 0};
-    suzerain_diffwave_accumulate_y0x0z0(alpha, x, beta, y,
+    suzerain_diffwave_accumulate(0, 0, alpha, x, beta, y,
             555, 777, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
 
     {
