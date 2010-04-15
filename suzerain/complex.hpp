@@ -261,16 +261,14 @@ typename boost::enable_if<
  * @param x real number.
  *
  * @return <tt>0</tt>
- * @note There is no similar method taking <tt>FPT&</tt> and returning
- *       <tt>FPT&</tt> because we cannot mutate the imaginary
- *       part of a real number.
+ * @note The result is not an lvalue because one cannot mutate
+ *       the imaginary part of a real number.
  */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 typename boost::enable_if<
-    boost::is_arithmetic<FPT>, const FPT&
+    boost::is_arithmetic<FPT>, FPT
 >::type imag(const FPT& x) {
-    static const FPT zero = 0;
     return 0;
 }
 
