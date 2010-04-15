@@ -221,6 +221,8 @@ BOOST_AUTO_TEST_CASE( assign_complex_with_complex_source )
 BOOST_AUTO_TEST_CASE( accumulate_complex )
 {
     using suzerain::complex::accumulate_complex;
+    using suzerain::complex::real;
+    using suzerain::complex::imag;
     typedef std::complex<double> complex_type;
     typedef double real_type;
 
