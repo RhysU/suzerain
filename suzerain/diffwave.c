@@ -92,6 +92,19 @@ void suzerain_diffwave_accumulate_y0x0z0(
     }
 }
 
+#pragma float_control(precise, on)
+#pragma fenv_access(on)
+#pragma float_control(except, on)
+#pragma fp_contract(off)
+inline double twopiover(const double L)
+{
+    return 2*M_PI/L;
+}
+#pragma float_control(except, off)
+#pragma fenv_access(off)
+#pragma float_control(precise, off)
+#pragma fp_contract(on)
+
 void suzerain_diffwave_accumulate(
     const int dxcnt,
     const int dzcnt,
@@ -125,8 +138,8 @@ void suzerain_diffwave_accumulate(
     }
 
     // Compute loop independent constants
-    const double twopioverLx = 2*M_PI/Lx;
-    const double twopioverLz = 2*M_PI/Lz;
+    const double twopioverLx = twopiover(Lx);  // Weird looking for FP control
+    const double twopioverLz = twopiover(Lz);  // Weird looking for FP control
     double alpha_ipow[2];
     scale_by_imaginary_power(alpha, alpha_ipow, dxcnt + dzcnt);
 
