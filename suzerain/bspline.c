@@ -1128,8 +1128,9 @@ suzerain_bspline_luz_form_mass(
     return suzerain_bspline_luz_form_general(i_one, &z_one, w, luzw);
 }
 
+static
 int
-suzerain_bspline_luz_solve(
+suzerain_bspline_luz_solve_contiguous(
     int nrhs,
     double (*b)[2],
     int ldb,
@@ -1157,4 +1158,72 @@ suzerain_bspline_luz_solve(
     }
 
     return SUZERAIN_SUCCESS;
+}
+
+static
+int
+suzerain_bspline_luz_solve_noncontiguous(
+    int nrhs,
+    double (*b)[2],
+    int incb,
+    int ldb,
+    const suzerain_bspline_luz_workspace *luzw)
+{
+    if (luzw->ipiv[0] == -1) {
+        SUZERAIN_ERROR("One of suzerain_bspline_luz_form_* not called before solve",
+                       SUZERAIN_EINVAL);
+    }
+
+    /* Allocate scratch space because ZBTRS requires contiguous vectors */
+    double (* const scratch)[2]
+        = suzerain_blas_malloc(luzw->ndof*sizeof(scratch[0]));
+    if (scratch == NULL) {
+        SUZERAIN_ERROR("failed to allocate scratch space",
+                       SUZERAIN_ENOMEM);
+    }
+
+    for (int j = 0; j < nrhs; ++j) {
+        double (* const b_j)[2] = b + j*ldb;
+
+        suzerain_blas_zcopy(
+                luzw->ndof, (const double (*)[2]) b_j, incb, scratch, 1);
+        const int info = suzerain_lapack_zgbtrs('N',
+                                                luzw->ndof,
+                                                luzw->kl,
+                                                luzw->ku - luzw->kl, /* NB */
+                                                1, /* One RHS at a time */
+                                                (const double (*)[2]) luzw->A,
+                                                luzw->ld,
+                                                luzw->ipiv,
+                                                scratch,
+                                                luzw->ndof);
+        if (info) {
+            suzerain_blas_free(scratch);
+            SUZERAIN_ERROR("suzerain_lapack_zgbtrs reported an error",
+                        SUZERAIN_ESANITY);
+        }
+        suzerain_blas_zcopy(
+                luzw->ndof, (const double (*)[2]) scratch, 1, b_j, incb);
+    }
+
+    suzerain_blas_free(scratch);
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_luz_solve(
+    int nrhs,
+    double (*b)[2],
+    int incb,
+    int ldb,
+    const suzerain_bspline_luz_workspace *luzw)
+{
+    if (incb == 1) {
+        return suzerain_bspline_luz_solve_contiguous(
+                nrhs, b, ldb, luzw);
+    } else {
+        return suzerain_bspline_luz_solve_noncontiguous(
+                nrhs, b, incb, ldb, luzw);
+    }
 }

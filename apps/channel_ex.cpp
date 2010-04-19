@@ -148,7 +148,7 @@ public:
         assert(1 == state.strides()[1]);
         assert(luzw_.ndof() == state.shape()[1]);
         assert(nrhs == state.strides()[0]);
-        luzw_.solve(nrhs, state.memory_begin(), state.strides()[2]);
+        luzw_.solve(nrhs, state.memory_begin(), 1, state.strides()[2]);
     }
 
 private:

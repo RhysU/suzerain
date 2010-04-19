@@ -787,8 +787,6 @@ suzerain_bspline_luz_form_mass(
     const suzerain_bspline_workspace * w,
     suzerain_bspline_luz_workspace *luzw);
 
-/* TODO Add noncontiguous luz_solve support to match lu_solve */
-
 /**
  * Solves the equation <tt>A x = b</tt> using the factored operator
  * stored in \c luzw.
@@ -798,7 +796,8 @@ suzerain_bspline_luz_form_mass(
  * @param[in,out] b Matrix of right hand sides to solve and the resulting
  *      solutions.  On input, contains data \c b.  On output, contains
  *      solutions \c x.
- * @param[in] ldb Leading dimension of matrix \c b.
+ * @param[in] incb Stride between elements in matrix \c b.
+ * @param[in] ldb  Leading dimension of matrix \c b.
  * @param[in] luzw Workspace containing the factored operator to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
@@ -808,6 +807,7 @@ int
 suzerain_bspline_luz_solve(
     int nrhs,
     double (*b)[2],
+    int incb,
     int ldb,
     const suzerain_bspline_luz_workspace *luzw);
 

@@ -362,22 +362,64 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
 
     /* Check that multiple rhs solution works for operator found just above */
     {
-        BOOST_TEST_MESSAGE("suzerain_bspline_luz_solve");
+        BOOST_TEST_MESSAGE("suzerain_bspline_luz_solve contiguous");
         const int nrhs = 2;
         double b[][2] = {
             { 1,7}, { 2,5}, {3,-2}, {4,-6},
             {-4,6}, {-1,3}, {1,-1}, {3, 6}
         };
         const double b_good[][2] = {
-            {-3889./1033.,    88./1869.}, {-4186./1565.,  377./1897.},
-                                          {- 305./ 169.,   56./ 169.},
-                                          {- 123./ 169.,-   9./ 169.},
-            { 2157./ 232., -1235./ 102.}, { 4869./ 730.,-7076./1245.},
-                                          {  778./ 169.,- 380./ 169.},
-                                          {  557./ 169.,- 120./ 169.}
+            // Vector 1
+            {-3889./1033.,    88./1869.},
+            {-4186./1565.,   377./1897.},
+            {- 305./ 169.,    56./ 169.},
+            {- 123./ 169.,  -  9./ 169.},
+            // Vector 2
+            { 2157./ 232., -1235./ 102.},
+            { 4869./ 730., -7076./1245.},
+            {  778./ 169., - 380./ 169.},
+            {  557./ 169., - 120./ 169.}
         };
+        const int incb = 1;
         const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
-        suzerain_bspline_luz_solve(nrhs, b, ldb, luzw);
+        suzerain_bspline_luz_solve(nrhs, b, incb, ldb, luzw);
+        /* Tolerance requirement adequate? condest(A) ~= 122.7 */
+        /* Also, using approximate rationals via 'format rat'  */
+        check_close_complex_collections(
+            b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
+            b, b + sizeof(b)/sizeof(b[0]),
+            1.0e-5);
+    }
+
+    /* Check that multiple rhs solution works for operator found just above */
+    {
+        BOOST_TEST_MESSAGE("suzerain_bspline_luz_solve noncontiguous");
+        const int nrhs = 2;
+        double b[][2] = {
+            { 1,7}, {55,-55}, { 2,5}, {66,-66}, {3,-2}, {77,-77}, {4,-6},
+            {-4,6}, {55,-55}, {-1,3}, {66,-66}, {1,-1}, {77,-77}, {3, 6}
+        };
+        const double b_good[][2] = {
+            // Vector 1
+            {-3889./1033.,    88./1869.},
+            {55,-55},
+            {-4186./1565.,   377./1897.},
+            {66,-66},
+            {- 305./ 169.,    56./ 169.},
+            {77,-77},
+            {- 123./ 169.,  -  9./ 169.},
+            // Vector 2
+            { 2157./ 232., -1235./ 102.},
+            {55,-55},
+            { 4869./ 730., -7076./1245.},
+            {66,-66},
+            {  778./ 169., - 380./ 169.},
+            {77,-77},
+            {  557./ 169., - 120./ 169.}
+        };
+        const int incb = 2;
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+        suzerain_bspline_luz_solve(nrhs, b, incb, ldb, luzw);
         /* Tolerance requirement adequate? condest(A) ~= 122.7 */
         /* Also, using approximate rationals via 'format rat'  */
         check_close_complex_collections(
