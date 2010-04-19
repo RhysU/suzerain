@@ -11,6 +11,7 @@
 \usepackage{ifthen}
 \usepackage{lastpage}
 \usepackage{latexsym}
+\usepackage{mathrsfs}
 \usepackage{mathtools}
 \usepackage{pstricks}
 \usepackage{setspace}
@@ -587,18 +588,24 @@ dimensionless.  We arrive at the following nondimensional equations:
 \section{Discretization}
 \label{sec:discretization}
 
+Here we discuss the space and time discretization techniques employed to solve
+the continuous model equations.
+
 \subsection{Spatial discretization}
 
 We start with the continuous system
 \begin{align}
-  \frac{\partial}{\partial{}t} u &= Lu + N\!\left(u\right)
+  \frac{\partial}{\partial{}t} u &= \mathscr{L}u + \mathscr{N}\!\left(u\right)
 \end{align}
 on the spatial domain $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{}
-[0,L_y] \times{} \left[-\frac{L_z}{2},\frac{L_z}{2}\right]$.  The operators $L$
-and $N$ are linear and nonlinear, respectively.  To begin spatially
-discretizing the system, we introduce its finite dimensional analog
+[0,L_y] \times{} \left[-\frac{L_z}{2},\frac{L_z}{2}\right]$.  The operators
+$\mathscr{L}$ and $\mathscr{N}$ are linear and nonlinear, respectively.  To
+begin spatially discretizing the system, we introduce its finite dimensional
+analog
 \begin{align}
-  \frac{\partial}{\partial{}t} u^h &= Lu^h + N\!\left(u^h\right) + R^h
+  \frac{\partial}{\partial{}t} u^h
+  &=
+  \mathscr{L}u^h + \mathscr{N}\!\left(u^h\right) + R^h
   \label{eq:discrete_system_with_residual}
 \end{align}
 where continuous $u = u\!\left(x,y,z,t\right)$ has been replaced by discrete
@@ -682,7 +689,7 @@ term separately we obtain the following:
  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
  \,
- &L
+ &\mathscr{L}
   \left(
     \sum_{l}\sum_{m}\sum_{n}
     \hat{u}_{l,m,n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
@@ -694,7 +701,7 @@ term separately we obtain the following:
 \\
   &=
   L_x L_z
-  L\left(
+  \mathscr{L}\left(
      \sum_{l}
       B_l\!\left(y_{l'}\right)
      \hat{u}_{l,m,n}(t)
@@ -703,7 +710,7 @@ term separately we obtain the following:
   \int_0^{L_y}
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  &N\left(
+  &\mathscr{N}\left(
      \sum_{l}\sum_{m}\sum_{n}
      \hat{u}_{l,m,n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
    \right)
@@ -715,7 +722,7 @@ term separately we obtain the following:
   &=
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  N\left(
+  \mathscr{N}\left(
     \sum_{m}\sum_{n}
     \left(
       \sum_{l} B_l\!\left(y_{l'}\right)
@@ -735,7 +742,7 @@ term separately we obtain the following:
   \frac{\partial}{\partial{}t} \hat{u}_{l,m,n}(t)
   &=
   L_x L_z
-  L\left(
+  \mathscr{L}\left(
     \sum_{l}
      B_l\!\left(y_{l'}\right)
     \hat{u}_{l,m,n}(t)
@@ -744,7 +751,7 @@ term separately we obtain the following:
   &{}+
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  N\left(
+  \mathscr{N}\left(
     \sum_{m}\sum_{n}
     \left(
       \sum_{l} B_l\!\left(y_{l'}\right)
@@ -768,7 +775,7 @@ by $N_x$ and $N_z$ leaves us with
 \\
   &\approx
   L_x L_z N_x N_z
-  L\left(
+  \mathscr{L}\left(
     \sum_{l}
      B_l\!\left(y_{l'}\right)
     \hat{u}_{l,m,n}(t)
@@ -776,7 +783,7 @@ by $N_x$ and $N_z$ leaves us with
 \\
   &{}+
   \sum_{m'} \sum_{n'}
-  N\left(
+  \mathscr{N}\left(
     \sum_{m}
     \sum_{n}
     \left(
@@ -792,13 +799,14 @@ by $N_x$ and $N_z$ leaves us with
 \end{align}
 where $x_{m'}=L_x m' / N_x$ and $z_{n'}=L_z n' / N_z$.  This approximation is
 nothing but a quadrature error (see, e.g., theorem~19 in~\cite{Boyd2001}).
-With knowledge of the nonlinear operator $N$, such quadrature error can be
-mitigated via an appropriate dealiasing technique (see,
+With knowledge of the nonlinear operator $\mathscr{N}$, such quadrature error
+can be mitigated via an appropriate dealiasing technique (see,
 e.g.,~\cite{Canuto2006}).  Interestingly, our weighted residual
 \eqref{eq:R_h_weighted_residual_zero} need now only be zero in this weaker,
 discrete sense.  We are left with $N_x\times{}N_z$ time-dependent systems
 containing $N_y$ equations coupled in the $x$ and $z$ directions only through
-discrete Fourier transforms and the requirements of the $L$ and $N$ operators.
+discrete Fourier transforms and the requirements of the $\mathscr{L}$ and
+$\mathscr{N}$ operators.
 
 Calling $\hat{u}_{l,m,n}(t)$ the wave space coefficients of the solution at
 some time $t$, the nonlinear portion of \eqref{eq:spatial_discretization} may
@@ -809,7 +817,7 @@ be efficiently computed by
  \item using an inverse fast Fourier transform across
        the $x$ and $z$ directions to convert state information from wave space
        to physical space,
- \item applying the nonlinear operator $N$ in physical space, and
+ \item applying the nonlinear operator $\mathscr{N}$ in physical space, and
  \item using a forward fast Fourier transform across the $x$ and $z$
        directions to convert information from physical space to wave space.
 \end{enumerate}
@@ -827,11 +835,11 @@ point values $\hat{u}_{y_{l'},m,n}(t) = \sum_{l} B_l\!\left(y_{l'}\right)
 \begin{align}
   \frac{\partial}{\partial{}t} \hat{u}_{y_{l'},m,n}(t)
   &\approx
-  L\left(\hat{u}_{y_{l'},m,n}(t)\right)
+  \mathscr{L}\left(\hat{u}_{y_{l'},m,n}(t)\right)
   +
   \frac{1}{L_x L_z N_x N_z}
   \sum_{m'} \sum_{n'}
-  N\left(
+  \mathscr{N}\left(
     \sum_{m}
     \sum_{n}
     \hat{u}_{y_{l'},m,n}(t)
@@ -847,9 +855,10 @@ Equation \eqref{eq:spatial_discretization_gridpoints} is obviously simpler than
 equation \eqref{eq:spatial_discretization}.  In particular, it lacks a mass
 matrix in the time derivative term.  We choose to work with
 \eqref{eq:spatial_discretization} because there are computational advantages to
-having operators $L$ and $N$ operate on B-spline coefficients rather than
-collocation point values.  For a discussion on moving operators between these
-two representations, see \textsection{}5.5 in~\cite{Boyd2001}.
+having operators $\mathscr{L}$ and $\mathscr{N}$ operate on B-spline
+coefficients rather than collocation point values.  For a discussion on moving
+operators between these two representations, see \textsection{}5.5
+in~\cite{Boyd2001}.
 
 
 \subsection{Time discretization}
