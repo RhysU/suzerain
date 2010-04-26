@@ -5,9 +5,10 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
+#include <suzerain/diffwave.h>
+#include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/utility.hpp>
-#include <suzerain/diffwave.h>
 #include "test_tools.hpp"
 
 /** A test fixture to setup and teardown MPI */
@@ -22,11 +23,25 @@ BOOST_AUTO_TEST_SUITE(accumulate)
 
 using suzerain::pencil_grid;
 
-static void test_accumulate_helper(const pencil_grid &pg,
+static void test_accumulate_helper(MPI_Comm comm,
+                                   const pencil_grid &pg,
+                                   const int dxcnt,
+                                   const int dzcnt,
                                    const double Lx,
                                    const double Ly,
-                                   const double Lz)
+                                   const double Lz,
+                                   const int dNx,
+                                   const int dNz)
 {
+    const int procid = suzerain::mpi::comm_rank(comm);
+    const int nproc  = suzerain::mpi::comm_size(comm);
+    if (!procid) {
+        BOOST_TEST_MESSAGE("Testing " << pg.global_extents()
+                           << " derivative {" << dxcnt << ", " << dzcnt
+                           << "} using " << nproc << " processor"
+                           << (nproc > 1 ? "s" : "") );
+    }
+
     typedef pencil_grid::index index;
     typedef pencil_grid::size_type size_type;
 
@@ -57,10 +72,10 @@ static void test_accumulate_helper(const pencil_grid &pg,
 
     // Create composable test functions in the X and Z directions
     // TODO Incorporate dealiasing considerations
-    periodic_function<> funcx1(pg.global_extents()[0], -1, M_PI/3, Lx, 11);
-    periodic_function<> funcx2(pg.global_extents()[0], -1, M_PI/7, Lx, 13);
-    periodic_function<> funcz1(pg.global_extents()[2], -1, M_PI/4, Lz, 17);
-    periodic_function<> funcz2(pg.global_extents()[2], -1, M_PI/9, Lz, 19);
+    periodic_function<> fx1(pg.global_extents()[0], dNx/2+1, M_PI/3, Lx, 11);
+    periodic_function<> fx2(pg.global_extents()[0], dNx/2+1, M_PI/7, Lx, 13);
+    periodic_function<> fz1(pg.global_extents()[2], dNz/2+1, M_PI/4, Lz, 17);
+    periodic_function<> fz2(pg.global_extents()[2], dNz/2+1, M_PI/9, Lz, 19);
 
     // Populate the synthetic fields
     {
@@ -68,18 +83,39 @@ static void test_accumulate_helper(const pencil_grid &pg,
         for (index j = 0; j < gridy.size(); ++j) {
             for (index k = 0; k < gridz.size(); ++k) {
                 for (index i = 0; i < gridx.size(); ++i) {
-                    *pA++ = funcx1.physical_evaluate(gridx[i])
-                          + funcz1.physical_evaluate(gridz[k]);
-                    *pB++ = funcx2.physical_evaluate(gridx[i])
-                          + funcz2.physical_evaluate(gridz[k]);
+                    *pA++ = fx1.physical_evaluate(gridx[i])
+                          + fz1.physical_evaluate(gridz[k]);
+                    *pB++ = fx2.physical_evaluate(gridx[i])
+                          + fz2.physical_evaluate(gridz[k]);
                 }
             }
         }
     }
 
-    // Transform to and from wave space
+    // Transform to wave space
     pg.transform_physical_to_wave(A.get());
     pg.transform_physical_to_wave(B.get());
+
+    // Accumulate the results
+    {
+        const double alpha[2] = { 2.0, 0.0 };
+        const double (*x)[2]  = reinterpret_cast<const double (*)[2]>(A.get());
+        const double beta[2]  = { 3.0, 0.0 };
+        double (*y)[2]        = reinterpret_cast<double (*)[2]>(B.get());
+        const int Ny          = pg.global_extents()[1];
+        const int Nx          = pg.global_extents()[0];
+        const int dkbx        = pg.local_wave_start()[0];
+        const int dkex        = pg.local_wave_end()[0];
+        const int Nz          = pg.global_extents()[2];
+        const int dkbz        = pg.local_wave_start()[2];
+        const int dkez        = pg.local_wave_end()[2];
+
+        suzerain_diffwave_accumulate(
+            dxcnt, dzcnt, alpha, x, beta, y, Lx, Lz,
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
+    }
+
+    // Transform to physical space
     pg.transform_wave_to_physical(A.get());
     pg.transform_wave_to_physical(B.get());
 
@@ -92,13 +128,15 @@ static void test_accumulate_helper(const pencil_grid &pg,
             for (index k = 0; k < gridz.size(); ++k) {
                 for (index i = 0; i < gridx.size(); ++i) {
                     const double expected_A = scale*(
-                              funcx1.physical_evaluate(gridx[i])
-                            + funcz1.physical_evaluate(gridz[k]));
+                              fx1.physical_evaluate(gridx[i])
+                            + fz1.physical_evaluate(gridz[k]));
                     BOOST_CHECK_CLOSE(*pA++, expected_A, close);
 
                     const double expected_B = scale*(
-                              funcx2.physical_evaluate(gridx[i])
-                            + funcz2.physical_evaluate(gridz[k]));
+                              2.0*fx1.physical_evaluate(gridx[i], dxcnt)
+                            + 2.0*fz1.physical_evaluate(gridz[k], dzcnt)
+                            + 3.0*fx2.physical_evaluate(gridx[i])
+                            + 3.0*fz2.physical_evaluate(gridz[k]));
                     BOOST_CHECK_CLOSE(*pB++, expected_B, close);
                 }
             }
@@ -111,7 +149,9 @@ BOOST_AUTO_TEST_CASE( getting_started )
     pencil_grid::size_type_3d global_extents = { 8, 8, 8 };
     pencil_grid::size_type_2d processor_grid = { 0, 0 };
     pencil_grid pg(global_extents, processor_grid);
-    test_accumulate_helper(pg, 2*M_PI, 2, 2*M_PI);
+
+    test_accumulate_helper(MPI_COMM_WORLD, pg, 0, 0, 2*M_PI, 2, 2*M_PI,
+                           pg.global_extents()[0], pg.global_extents()[1]);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
