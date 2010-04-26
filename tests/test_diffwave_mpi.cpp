@@ -11,20 +11,20 @@
 #include <suzerain/utility.hpp>
 #include "test_tools.hpp"
 
-/** A test fixture to setup and teardown MPI */
+BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);       // Tear down BLAS
+
 struct MPIFixture {
     MPIFixture()  { MPI_Init(NULL, NULL); }
     ~MPIFixture() { MPI_Finalize(); }
 };
-BOOST_GLOBAL_FIXTURE(MPIFixture);
+BOOST_GLOBAL_FIXTURE(MPIFixture);               // Setup and tear down MPI
 
 
 BOOST_AUTO_TEST_SUITE(accumulate)
 
 using suzerain::pencil_grid;
 
-static void test_accumulate_helper(MPI_Comm comm,
-                                   const pencil_grid &pg,
+static void test_accumulate_helper(const pencil_grid &pg,
                                    const int dxcnt,
                                    const int dzcnt,
                                    const double Lx,
@@ -33,15 +33,6 @@ static void test_accumulate_helper(MPI_Comm comm,
                                    const int dNx,
                                    const int dNz)
 {
-    const int procid = suzerain::mpi::comm_rank(comm);
-    const int nproc  = suzerain::mpi::comm_size(comm);
-    if (!procid) {
-        BOOST_TEST_MESSAGE("Testing " << pg.global_extents()
-                           << " derivative {" << dxcnt << ", " << dzcnt
-                           << "} using " << nproc << " processor"
-                           << (nproc > 1 ? "s" : "") );
-    }
-
     typedef pencil_grid::index index;
     typedef pencil_grid::size_type size_type;
 
@@ -64,10 +55,6 @@ static void test_accumulate_helper(MPI_Comm comm,
 
     // Retrieve storage size, strides, and allocate working arrays
     const int nelem = pg.local_physical_storage();
-//     const pencil_grid::index_3d wstrides
-//         = suzerain::strides_cm(suzerain::to_yxz(pg.local_wave_extent()));
-//     const pencil_grid::index_3d pstrides
-//         = suzerain::strides_cm(suzerain::to_xzy(pg.local_physical_extent()));
     boost::shared_array<double> A(new double[nelem]), B(new double[nelem]);
 
     // Create composable test functions in the X and Z directions
@@ -96,7 +83,7 @@ static void test_accumulate_helper(MPI_Comm comm,
     pg.transform_physical_to_wave(A.get());
     pg.transform_physical_to_wave(B.get());
 
-    // Accumulate the results
+    // Differentiate-and-accumulate
     {
         const double alpha[2] = { 2.0, 0.0 };
         const double (*x)[2]  = reinterpret_cast<const double (*)[2]>(A.get());
@@ -120,8 +107,10 @@ static void test_accumulate_helper(MPI_Comm comm,
     pg.transform_wave_to_physical(B.get());
 
     // Ensure the synthetic fields came back cleanly
-    const size_type scale = pg.global_extents()[0] * pg.global_extents()[2];
-    const double close = std::numeric_limits<double>::epsilon()*1e3*scale;
+    const size_type scale = pg.global_extents()[0] *pg.global_extents()[2];
+    const double    close = std::pow(10, -10 + (dxcnt+dzcnt)/2.5)
+                          * std::sqrt((double) scale)
+                          * 5;
     {
         double *pA = A.get(), *pB = B.get();
         for (index j = 0; j < gridy.size(); ++j) {
@@ -144,14 +133,32 @@ static void test_accumulate_helper(MPI_Comm comm,
     }
 }
 
-BOOST_AUTO_TEST_CASE( getting_started )
+BOOST_AUTO_TEST_CASE( accumulate )
 {
-    pencil_grid::size_type_3d global_extents = { 8, 8, 8 };
-    pencil_grid::size_type_2d processor_grid = { 0, 0 };
-    pencil_grid pg(global_extents, processor_grid);
+    const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+    const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
-    test_accumulate_helper(MPI_COMM_WORLD, pg, 0, 0, 2*M_PI, 2, 2*M_PI,
-                           pg.global_extents()[0], pg.global_extents()[1]);
+    boost::array<int,7> c[] = {
+        /* Ny,  Nx, dNx,  Nz, dNz, dxcnt, dzcnt */
+        {   4,  24,  24,  40,  40,     0,     0  }
+//     ,{   4,  24,  24,  40,  40,     1,     0  }
+    };
+
+    for (int l = 0; l < sizeof(c)/sizeof(c[0]); ++l) {
+        pencil_grid::size_type_3d global_extents = { c[l][1], c[l][0], c[l][3] };
+        pencil_grid::size_type_2d processor_grid = { 0, 0 };
+        pencil_grid pg(global_extents, processor_grid);
+
+        if (!procid) {
+            BOOST_TEST_MESSAGE("Testing " << c[l]
+                            << " using " << nproc << " processor"
+                            << (nproc > 1 ? "s" : "") );
+        }
+
+        test_accumulate_helper(
+            pg, c[l][5], c[l][6], 4*M_PI, 2, 4*M_PI/3, c[l][2], c[l][4]);
+
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
