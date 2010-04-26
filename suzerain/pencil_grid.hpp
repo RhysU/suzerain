@@ -173,7 +173,7 @@ public:
      *
      * @param inout Field to transform in place.
      */
-    void transform_wave_to_physical(double * inout) {
+    void transform_wave_to_physical(double * inout) const {
         p3dfft_btran_c2r(inout, inout);
     }
 
@@ -186,7 +186,7 @@ public:
      * @param in  Input complex-valued field.
      * @param out Output real-valued field.
      */
-    void transform_wave_to_physical(double * in, double * out) {
+    void transform_wave_to_physical(double * in, double * out) const {
         p3dfft_btran_c2r(in, out);
     }
 
@@ -199,7 +199,7 @@ public:
      *
      * @param inout Field to transform in place.
      */
-    void transform_physical_to_wave(double * inout) {
+    void transform_physical_to_wave(double * inout) const {
         p3dfft_ftran_r2c(inout, inout);
     }
 
@@ -213,7 +213,7 @@ public:
      * @param in  Input real-valued field.
      * @param out Output complex-valued field.
      */
-    void transform_physical_to_wave(double * in, double * out) {
+    void transform_physical_to_wave(double * in, double * out) const {
         p3dfft_ftran_r2c(in, out);
     }
 
