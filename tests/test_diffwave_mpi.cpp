@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE( accumulate )
     boost::array<int,7> c[] = {
         /* Ny,  Nx, dNx,  Nz, dNz, dxcnt, dzcnt */
         {   4,  24,  24,  40,  40,     0,     0  }
-//     ,{   4,  24,  24,  40,  40,     1,     0  }
+       ,{   4,  24,  24,  40,  40,     0,     0  } // FIXME Duplicate
     };
 
     for (int l = 0; l < sizeof(c)/sizeof(c[0]); ++l) {
