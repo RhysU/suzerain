@@ -35,18 +35,9 @@
  * href="http://www.mcs.anl.gov/petsc/">PETSc</a>.
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-#undef __BEGIN_DECLS
-#undef __END_DECLS
 #ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+extern "C" {
 #endif
-__BEGIN_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
  * Standardized error status codes used throughout Suzerain.
@@ -338,8 +329,8 @@ FILE * suzerain_set_stream(FILE * new_stream);
 #define SUZERAIN_MPICHKR(stmt) \
     SUZERAIN_MPICHKx_TEMPLATE(SUZERAIN_ERROR_REPORT,stmt)
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-__END_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* __SUZERAIN_ERRNO_H__ */

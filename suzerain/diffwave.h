@@ -38,18 +38,9 @@
  * processing.
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-#undef __BEGIN_DECLS
-#undef __END_DECLS
 #ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+extern "C" {
 #endif
-__BEGIN_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 inline
 int suzerain_diffwave_freqindex(const int N, const int dN, const int i)
@@ -70,8 +61,8 @@ void suzerain_diffwave_accumulate(
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez);
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-__END_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif // __SUZERAIN_DIFFWAVE_H

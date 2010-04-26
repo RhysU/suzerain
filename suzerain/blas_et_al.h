@@ -40,18 +40,9 @@
  * parameter differences.
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-#undef __BEGIN_DECLS
-#undef __END_DECLS
 #ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+extern "C" {
 #endif
-__BEGIN_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /*! \name Aligned memory allocation and deallocation
  * @{
@@ -943,8 +934,8 @@ suzerain_blasext_i2s_zaxpby2(
 
 /*! @} */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-__END_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* __SUZERAIN_BLAS_ET_AL_H__ */

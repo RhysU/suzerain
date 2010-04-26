@@ -38,19 +38,9 @@
  * incompatibilities as much as possible.
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-#undef __BEGIN_DECLS
-#undef __END_DECLS
 #ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+extern "C" {
 #endif
-__BEGIN_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
-
 
 /* The MPI standard uses MPI_MAX_OBJECT_NAME for MPI_Comm_get_name, etc.  */
 #ifndef MPI_MAX_OBJECT_NAME
@@ -60,9 +50,8 @@ __BEGIN_DECLS
 #endif /* MPI_MAX_NAME_STRING */
 #endif /* MPI_MAX_OBJECT_NAME */
 
-
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-__END_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* __SUZERAIN_MPI_H__ */

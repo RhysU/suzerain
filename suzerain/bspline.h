@@ -127,18 +127,9 @@
  * (January 2005) for information about Greville abscissae.
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-#undef __BEGIN_DECLS
-#undef __END_DECLS
 #ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+extern "C" {
 #endif
-__BEGIN_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /* Conditional forward declarations of implementation-related structs */
 #ifndef __GSL_MATRIX_DOUBLE_H__
@@ -811,8 +802,8 @@ suzerain_bspline_luz_solve(
     int ldb,
     const suzerain_bspline_luz_workspace *luzw);
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-__END_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif // __SUZERAIN_BSPLINE_OPERATOR_H

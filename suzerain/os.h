@@ -38,18 +38,9 @@
  * Provides utilities atop POSIX methods.
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-#undef __BEGIN_DECLS
-#undef __END_DECLS
 #ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+extern "C" {
 #endif
-__BEGIN_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
  * Create a POSIX pipe, set the provided flags on the read and write
@@ -73,8 +64,8 @@ __BEGIN_DECLS
  */
 int suzerain_fpipe(int *rfd, int rflags, FILE **w, int wflags);
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-__END_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* __SUZERAIN_OS_H__ */

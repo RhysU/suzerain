@@ -32,18 +32,9 @@
 
 #include <suzerain/underling.h>
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-#undef __BEGIN_DECLS
-#undef __END_DECLS
 #ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+extern "C" {
 #endif
-__BEGIN_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /** @file
  * Provides FFTW-like planning routines atop Underling's pencil decomposition
@@ -416,8 +407,8 @@ underling_fft_fprint_plan(
         const underling_fft_plan plan,
         FILE *output_file);
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-__END_DECLS
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif // __SUZERAIN_UNDERLING_FFT_H
