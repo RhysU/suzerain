@@ -287,14 +287,11 @@ int main(int argc, char **argv)
     LOG4CXX_DEBUG(log, "Local state wave end    (XYZ): " << state_end);
     LOG4CXX_DEBUG(log, "Local state wave extent (XYZ): " << state_extent);
     // Create the state instances with appropriate padding
-    using sz::functional::product;
     state_type state_linear(sz::to_yxz(5, state_extent));
     state_type state_nonlinear(
             sz::to_yxz(5, state_extent),
-            sz::prepend(std::max(
-                        product(pg.local_wave_extent()),
-                        product(pg.local_physical_extent())/2+1
-                    ), sz::strides_cm(sz::to_yxz(pg.local_wave_extent()))));
+            sz::prepend(pg.local_wave_storage(),
+                        sz::strides_cm(sz::to_yxz(pg.local_wave_extent()))));
     if (log->isDebugEnabled()) {
         boost::array<sz::pencil_grid::index,4> strides;
         std::copy(state_linear.strides(),

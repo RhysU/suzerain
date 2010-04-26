@@ -118,6 +118,17 @@ public:
     const index_3d& local_physical_extent() const { return pextent_; }
 
     /**
+     * Retrieve the number of contiguous real scalars required to store
+     * a pencil's worth of data.  This accounts for any padding required
+     * due to differences in the local physical and wave space extents
+     * and the fact that wave storage requires complex scalars.
+     *
+     * @return Number of real-valued scalars (i.e. <tt>double</tt>s)
+     *         required to store one pencil's contiguous data.
+     */
+    size_type local_physical_storage() const;
+
+    /**
      * Retrieve local pencil wave space starting indices (inclusive) within
      * the global extents.
      *
@@ -142,6 +153,17 @@ public:
      * directions.
      */
     const index_3d& local_wave_extent() const { return wextent_; }
+
+    /**
+     * Retrieve the number of contiguous complex scalars required to store
+     * a pencil's worth of data.  This accounts for any padding required
+     * due to differences in the local physical and wave space extents
+     * and the fact that physical space storage requires real-valued scalars.
+     *
+     * @return Number of complex-valued scalars (i.e. <tt>double[2]</tt>s)
+     *         required to store one pencil's contiguous data.
+     */
+    size_type local_wave_storage() const;
 
 private:
     /**

@@ -32,6 +32,7 @@
 #include <suzerain/config.h>
 #endif
 #include <suzerain/mpi.hpp>
+#include <suzerain/functional.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <p3dfft_d.h>
 
@@ -106,12 +107,10 @@ pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
     std::swap(wend   [0], wend   [1]);
     std::swap(wextent[0], wextent[1]);
     // Transform indices for C conventions; want ranges like [istart, iend)
-#pragma warning(push,disable:383)
     std::transform(pstart.begin(), pstart.end(), pstart.begin(),
             std::bind2nd(std::minus<int>(),1));
     std::transform(wstart.begin(), wstart.end(), wstart.begin(),
             std::bind2nd(std::minus<int>(),1));
-#pragma warning(pop)
 
     // Convert modified P3DFFT dimensions to have appropriate numeric type
     boost::numeric::converter<index,int> converter;
@@ -129,5 +128,20 @@ pencil_grid::~pencil_grid()
     if (p3dfft_setup_called_) p3dfft_clean();
 }
 #pragma warning(pop)
+
+pencil_grid::size_type pencil_grid::local_physical_storage() const
+{
+    // Wave space scalars are twice as big as physical space scalars
+    using suzerain::functional::product;
+    return std::max(2*product(wextent_), product(pextent_));
+}
+
+pencil_grid::size_type pencil_grid::local_wave_storage() const
+{
+    // Physical space scalars are half as big, but we must round up
+    using suzerain::functional::product;
+    const index prodphys = product(pextent_);
+    return std::max(product(wextent_), prodphys/2 + (prodphys % 2));
+}
 
 } // namespace suzerain
