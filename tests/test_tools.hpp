@@ -559,6 +559,18 @@ public:
         }
 
     /**
+     * Retrieve the real-valued signal amplitude at the given location.
+     *
+     * @param x The desired grid location.
+     *          Should be within <tt>[0,length)</tt>.
+     * @param derivative Desired derivative of the signal with zero
+     *        indicating the signal itself.
+     *
+     * @param Returns the requested value.
+     */
+    FPT physical_evaluate(const FPT x, const Integer derivative = 0) const;
+
+    /**
      * Retrieve the real-valued signal amplitude at the given gridpoint.
      *
      * @param i Zero-indexed value of the desired grid location.
@@ -590,17 +602,13 @@ public:
     const FPT constant;
 };
 
-
 template<typename FPT, typename Integer>
-FPT periodic_function<FPT,Integer>::physical(
-        const Integer i,
+FPT periodic_function<FPT,Integer>::physical_evaluate(
+        const FPT x,
         const Integer derivative) const
 {
-    assert(0 <= i);
-    assert(i < N);
     assert(0 <= (derivative % 4) && (derivative % 4) <= 3);
 
-    const FPT xi = i*length/N;
     FPT retval = (max_mode_exclusive > 0 && derivative == 0 )
         ? constant : 0;
     for (Integer j = 1; j < max_mode_exclusive; ++j) {
@@ -608,26 +616,38 @@ FPT periodic_function<FPT,Integer>::physical(
             case 0:
                 retval +=   j * pow(j*(2.0*M_PI/length), derivative)
                           * constant
-                          * sin(j*(2.0*M_PI/length)*xi + shift);
+                          * sin(j*(2.0*M_PI/length)*x + shift);
                 break;
             case 1:
                 retval +=   j * pow(j*(2.0*M_PI/length), derivative)
                           * constant
-                          * cos(j*(2.0*M_PI/length)*xi + shift);
+                          * cos(j*(2.0*M_PI/length)*x + shift);
                 break;
             case 2:
                 retval -=   j * pow(j*(2.0*M_PI/length), derivative)
                           * constant
-                          * sin(j*(2.0*M_PI/length)*xi + shift);
+                          * sin(j*(2.0*M_PI/length)*x + shift);
                 break;
             case 3:
                 retval -=   j * pow(j*(2.0*M_PI/length), derivative)
                           * constant
-                          * cos(j*(2.0*M_PI/length)*xi + shift);
+                          * cos(j*(2.0*M_PI/length)*x + shift);
                 break;
         }
     }
     return retval;
+}
+
+template<typename FPT, typename Integer>
+FPT periodic_function<FPT,Integer>::physical(
+        const Integer i,
+        const Integer derivative) const
+{
+    assert(0 <= i);
+    assert(i <  N);
+
+    const FPT xi = i*length/N;
+    return physical_evaluate(xi, derivative);
 }
 
 template<typename FPT, typename Integer>
