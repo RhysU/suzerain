@@ -165,6 +165,58 @@ public:
      */
     size_type local_wave_storage() const;
 
+    /**
+     * Collectively transform a field from wave space to physical space.  The
+     * input will be complex-valued and stored according to local_wave_start()
+     * and local_wave_end().  The output will be real-valued and stored
+     * according to local_physical_state() and local_physical_end().
+     *
+     * @param inout Field to transform in place.
+     */
+    void transform_wave_to_physical(double * inout) {
+        p3dfft_btran_c2r(inout, inout);
+    }
+
+    /**
+     * Collectively transform a field from wave space to physical space.  The
+     * input will be complex-valued and stored according to local_wave_start()
+     * and local_wave_end().  The output will be real-valued and stored
+     * according to local_physical_state() and local_physical_end().
+     *
+     * @param in  Input complex-valued field.
+     * @param out Output real-valued field.
+     */
+    void transform_wave_to_physical(double * in, double * out) {
+        p3dfft_btran_c2r(in, out);
+    }
+
+    /**
+     * Collectively transform a field from physical space to wave space.  The
+     * input will be complex-valued and stored according to
+     * local_physical_start() and local_physical_end().  The output will be
+     * real-valued and stored according to local_wave_state() and
+     * local_wave_end().
+     *
+     * @param inout Field to transform in place.
+     */
+    void transform_physical_to_wave(double * inout) {
+        p3dfft_ftran_r2c(inout, inout);
+    }
+
+    /**
+     * Collectively transform a field from physical space to wave space.  The
+     * input will be complex-valued and stored according to
+     * local_physical_start() and local_physical_end().  The output will be
+     * real-valued and stored according to local_wave_state() and
+     * local_wave_end().
+     *
+     * @param in  Input real-valued field.
+     * @param out Output complex-valued field.
+     */
+    void transform_physical_to_wave(double * in, double * out) {
+        p3dfft_ftran_r2c(in, out);
+    }
+
 private:
     /**
      * Global grid extent in the streamwise, wall-normal,
