@@ -12,8 +12,6 @@
 #include <fftw3.h>
 #include "test_tools.hpp"
 
-#pragma warning(disable:383)
-
 typedef boost::mpl::list_c<int,0,1> int_zero_one_type;
 
 using namespace suzerain;

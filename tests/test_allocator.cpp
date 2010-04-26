@@ -38,7 +38,7 @@
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
-#pragma warning(disable:383 1418)
+#pragma warning(disable:1418)
 #include "StlAllocatorTestPolicy.hpp" // The default policy for testing
 
 // Use DEFAULT_CONSTRUCTABLE_OFF if the allocator cannot be default constructed

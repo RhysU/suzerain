@@ -9,7 +9,7 @@
 #include <fftw3.h>
 #include "test_tools.hpp"
 
-#pragma warning(disable:383 1418)
+#pragma warning(disable:1418)
 
 using namespace suzerain;
 

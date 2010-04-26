@@ -687,9 +687,7 @@ public:
             << " with reason '"
             << reason
             << "'";
-#pragma warning(push,disable:383)
         BOOST_FAIL(oss.str());
-#pragma warning(pop)
     }
 
     BoostFailErrorHandlerFixture()

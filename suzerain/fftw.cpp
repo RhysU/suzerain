@@ -142,9 +142,7 @@ FFTWDefinition::FFTWDefinition()
             ->notifier(
                 std::bind1st(
                     std::mem_fun(&FFTWDefinition::normalize_rigor_string),
-#pragma warning(push,disable:383)
                     this)
-#pragma warning(pop)
                 )
             ->default_value(rigor_string_),
          rigor_description.c_str())

@@ -9,8 +9,6 @@
 #include <boost/test/test_case_template.hpp>
 #include <suzerain/storage.hpp>
 
-#pragma warning(disable:383)
-
 BOOST_AUTO_TEST_SUITE( compute_strides_and_storage )
 
 BOOST_AUTO_TEST_CASE( interleaved )

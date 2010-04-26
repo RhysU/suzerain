@@ -9,8 +9,6 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/complex.hpp>
 
-#pragma warning(disable:383)
-
 BOOST_AUTO_TEST_SUITE( shape_and_strides_array )
 
 // Shorthand

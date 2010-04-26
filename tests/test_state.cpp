@@ -12,8 +12,6 @@
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
-#pragma warning(disable:383)
-
 /** Helper for specifying 3D extents information */
 static boost::array<int,3> size(int x, int y, int z)
 {

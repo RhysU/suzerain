@@ -8,8 +8,6 @@
 #include <boost/mpl/vector_c.hpp>
 #include <boost/test/included/unit_test.hpp>
 
-#pragma warning(disable:383)
-
 BOOST_AUTO_TEST_SUITE( sequence_array )
 
 using boost::mpl::vector_c;

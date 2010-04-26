@@ -9,8 +9,6 @@
 #include <boost/test/test_case_template.hpp>
 #include <suzerain/utility.hpp>
 
-#pragma warning(disable:383)
-
 BOOST_AUTO_TEST_CASE( to_yxz )
 {
     using suzerain::to_yxz;

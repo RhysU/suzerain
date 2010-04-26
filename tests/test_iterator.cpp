@@ -7,8 +7,6 @@
 #include <suzerain/iterator.hpp>
 #include <boost/test/included/unit_test.hpp>
 
-#pragma warning(disable:383)
-
 BOOST_AUTO_TEST_SUITE( infinite_constant )
 
 using suzerain::iterator::infinite_constant;

@@ -13,8 +13,6 @@
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
-#pragma warning(disable:383)
-
 BOOST_AUTO_TEST_CASE( freqindex_nodealiasing )
 {
     const int expected[][8] = { {0},

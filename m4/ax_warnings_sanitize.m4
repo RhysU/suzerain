@@ -14,7 +14,7 @@
 #
 # LAST MODIFICATION
 #
-#   2010-03-09
+#   2010-04-23
 #
 # COPYLEFT
 #
@@ -84,6 +84,8 @@ dnl      # Enable diagnostics about questionable pointer arithmetic
          AX_CHECK_COMPILER_FLAGS([-Wpointer-arith], [CXXFLAGS="$CXXFLAGS -Wpointer-arith"])
          # Enable warnings if generated code is not C++ ABI compliant
          AX_CHECK_COMPILER_FLAGS([-Wabi], [CXXFLAGS="$CXXFLAGS -Wabi"])
+         # Disable remark #383: value copied to temporary, reference to temporary used
+         AX_CHECK_COMPILER_FLAGS([-wd383], [CXXFLAGS="$CXXFLAGS -wd383"])
          # Disable remark #424: extra ";" ignored
          AX_CHECK_COMPILER_FLAGS([-wd424], [CXXFLAGS="$CXXFLAGS -wd424"])
          # Disable remark #981: operands are evaluated in unspecified order

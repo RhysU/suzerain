@@ -12,8 +12,6 @@
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
-#pragma warning(disable:383)
-
 // Real-valued types to test
 typedef boost::mpl::list<
     double

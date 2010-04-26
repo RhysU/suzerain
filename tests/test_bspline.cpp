@@ -25,7 +25,7 @@ log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
-#pragma warning(disable:383 1572 2014 2015)
+#pragma warning(disable:1572 2014 2015)
 
 // TODO compute_derivatives_of_a_general_polynomial for more orders
 

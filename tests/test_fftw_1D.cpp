@@ -8,8 +8,6 @@
 #include <fftw3.h>
 #include "test_tools.hpp"
 
-#pragma warning(disable:383)
-
 // Not so much a test as a way to check our periodic test function definition.
 // Getting it correct is key to all other FFT-related tests
 

@@ -22,7 +22,7 @@
 //
 //--------------------------------------------------------------------------
 //
-// driver_p3dfft.cc: A P3DFFT test driver based on work by Dmitry Pekurovsky
+// driver_suzerain_p3dfft.cpp: Test driver based on Dmitry Pekurovsky's work
 //
 // $Id$
 //--------------------------------------------------------------------------

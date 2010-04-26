@@ -7,8 +7,6 @@
 #include <suzerain/pencil.hpp>
 #include <boost/test/included/unit_test.hpp>
 
-#pragma warning(disable:383)
-
 BOOST_AUTO_TEST_CASE( declare_pointer )
 {
 

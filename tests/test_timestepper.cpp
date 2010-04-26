@@ -18,8 +18,6 @@
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
-#pragma warning(disable:383)
-
 // Shorthand
 using suzerain::NoninterleavedState;
 using suzerain::IState;

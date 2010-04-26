@@ -9,8 +9,6 @@
 #include <suzerain/math.hpp>
 #include "test_tools.hpp"
 
-#pragma warning(disable:383)
-
 typedef boost::mpl::list< double, float > test_types;
 
 BOOST_AUTO_TEST_CASE( integer_power )

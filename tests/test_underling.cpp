@@ -11,8 +11,6 @@
 #include <fftw3-mpi.h>
 #include "test_tools.hpp"
 
-#pragma warning(disable:383)
-
 // Contains UnderlingFixture, FFTWMPIFixture
 #include "test_underling_tools.hpp"
 BOOST_GLOBAL_FIXTURE(FFTWMPIFixture);

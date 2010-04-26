@@ -8,7 +8,7 @@
 #include <suzerain/complex.hpp>
 #include <boost/test/included/unit_test.hpp>
 
-#pragma warning(disable:383 1572)
+#pragma warning(disable:1572)
 
 // Ensure we can use std::complex<double> as two consecutive doubles
 BOOST_AUTO_TEST_CASE( shared_c_array )

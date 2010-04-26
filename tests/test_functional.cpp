@@ -7,8 +7,6 @@
 #include <suzerain/functional.hpp>
 #include <boost/test/included/unit_test.hpp>
 
-#pragma warning(disable:383)
-
 BOOST_AUTO_TEST_SUITE( copy_n )
 
 BOOST_AUTO_TEST_CASE( characters )
