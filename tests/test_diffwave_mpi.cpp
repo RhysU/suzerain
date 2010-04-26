@@ -1,0 +1,117 @@
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
+#endif
+#include <suzerain/common.hpp>
+#pragma hdrstop
+#define BOOST_TEST_MODULE $Id$
+#include <boost/test/included/unit_test.hpp>
+#include <suzerain/pencil_grid.hpp>
+#include <suzerain/utility.hpp>
+#include <suzerain/diffwave.h>
+#include "test_tools.hpp"
+
+/** A test fixture to setup and teardown MPI */
+struct MPIFixture {
+    MPIFixture()  { MPI_Init(NULL, NULL); }
+    ~MPIFixture() { MPI_Finalize(); }
+};
+BOOST_GLOBAL_FIXTURE(MPIFixture);
+
+
+BOOST_AUTO_TEST_SUITE(accumulate)
+
+using suzerain::pencil_grid;
+
+static void test_accumulate_helper(const pencil_grid &pg,
+                                   const double Lx,
+                                   const double Ly,
+                                   const double Lz)
+{
+    typedef pencil_grid::index index;
+    typedef pencil_grid::size_type size_type;
+
+    // Create a uniform grid on [0, Lx) x [0, Ly) x [0, Lz)
+    std::valarray<double> gridx(pg.local_physical_extent()[0]);
+    std::valarray<double> gridy(pg.local_physical_extent()[1]);
+    std::valarray<double> gridz(pg.local_physical_extent()[2]);
+    for (index i = 0; i < pg.local_physical_extent()[0]; ++i) {
+        gridx[i] = double(i+pg.local_physical_start()[0]);
+    }
+    for (index j = 0; j < pg.local_physical_extent()[1]; ++j) {
+        gridy[j] = double(j+pg.local_physical_start()[1]);
+    }
+    for (index k = 0; k < pg.local_physical_extent()[2]; ++k) {
+        gridz[k] = double(k+pg.local_physical_start()[2]);
+    }
+    gridx *= Lx/pg.global_extents()[0];
+    gridy *= Ly/pg.global_extents()[1];
+    gridz *= Lz/pg.global_extents()[2];
+
+    // Retrieve storage size, strides, and allocate working arrays
+    const int nelem = pg.local_physical_storage();
+//     const pencil_grid::index_3d wstrides
+//         = suzerain::strides_cm(suzerain::to_yxz(pg.local_wave_extent()));
+//     const pencil_grid::index_3d pstrides
+//         = suzerain::strides_cm(suzerain::to_xzy(pg.local_physical_extent()));
+    boost::shared_array<double> A(new double[nelem]), B(new double[nelem]);
+
+    // Create composable test functions in the X and Z directions
+    // TODO Incorporate dealiasing considerations
+    periodic_function<> funcx1(pg.global_extents()[0], -1, M_PI/3, Lx, 11);
+    periodic_function<> funcx2(pg.global_extents()[0], -1, M_PI/7, Lx, 13);
+    periodic_function<> funcz1(pg.global_extents()[2], -1, M_PI/4, Lz, 17);
+    periodic_function<> funcz2(pg.global_extents()[2], -1, M_PI/9, Lz, 19);
+
+    // Populate the synthetic fields
+    {
+        double *pA = A.get(), *pB = B.get();
+        for (index j = 0; j < gridy.size(); ++j) {
+            for (index k = 0; k < gridz.size(); ++k) {
+                for (index i = 0; i < gridx.size(); ++i) {
+                    *pA++ = funcx1.physical_evaluate(gridx[i])
+                          + funcz1.physical_evaluate(gridz[k]);
+                    *pB++ = funcx2.physical_evaluate(gridx[i])
+                          + funcz2.physical_evaluate(gridz[k]);
+                }
+            }
+        }
+    }
+
+    // Transform to and from wave space
+    pg.transform_physical_to_wave(A.get());
+    pg.transform_physical_to_wave(B.get());
+    pg.transform_wave_to_physical(A.get());
+    pg.transform_wave_to_physical(B.get());
+
+    // Ensure the synthetic fields came back cleanly
+    const size_type scale = pg.global_extents()[0] * pg.global_extents()[2];
+    const double close = std::numeric_limits<double>::epsilon()*1e3*scale;
+    {
+        double *pA = A.get(), *pB = B.get();
+        for (index j = 0; j < gridy.size(); ++j) {
+            for (index k = 0; k < gridz.size(); ++k) {
+                for (index i = 0; i < gridx.size(); ++i) {
+                    const double expected_A = scale*(
+                              funcx1.physical_evaluate(gridx[i])
+                            + funcz1.physical_evaluate(gridz[k]));
+                    BOOST_CHECK_CLOSE(*pA++, expected_A, close);
+
+                    const double expected_B = scale*(
+                              funcx2.physical_evaluate(gridx[i])
+                            + funcz2.physical_evaluate(gridz[k]));
+                    BOOST_CHECK_CLOSE(*pB++, expected_B, close);
+                }
+            }
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE( getting_started )
+{
+    pencil_grid::size_type_3d global_extents = { 8, 8, 8 };
+    pencil_grid::size_type_2d processor_grid = { 0, 0 };
+    pencil_grid pg(global_extents, processor_grid);
+    test_accumulate_helper(pg, 2*M_PI, 2, 2*M_PI);
+}
+
+BOOST_AUTO_TEST_SUITE_END()

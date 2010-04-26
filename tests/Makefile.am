@@ -89,15 +89,6 @@ test_complex_SOURCES = test_complex.cpp
 test_complex_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_complex_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-TESTS                 += test_diffwave
-check_PROGRAMS        += test_diffwave
-test_diffwave_SOURCES  = test_diffwave.cpp
-test_diffwave_LDADD    = ../suzerain/libsuzerain.la
-test_diffwave_LDADD   += $(GSL_LIBS)
-test_diffwave_LDADD   += $(MKL_LIBS)
-test_diffwave_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_diffwave_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
 TESTS                       += test_blas_et_al_cpp
 check_PROGRAMS              += test_blas_et_al_cpp
 test_blas_et_al_cpp_SOURCES  = test_blas_et_al_cpp.cpp
@@ -240,6 +231,28 @@ test_underling_fft_LDADD    = ../suzerain/libunderling.la
 test_underling_fft_LDADD   += $(FFTW3_MPI_THREADS_LIBS)
 test_underling_fft_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_underling_fft_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
+TESTS                 += test_diffwave
+check_PROGRAMS        += test_diffwave
+test_diffwave_SOURCES  = test_diffwave.cpp
+test_diffwave_LDADD    = ../suzerain/libsuzerain.la
+test_diffwave_LDADD   += $(GSL_LIBS)
+test_diffwave_LDADD   += $(MKL_LIBS)
+test_diffwave_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_diffwave_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
+TESTS                      += test_diffwave_mpi.sh  # NB Wrapper script
+EXTRA_DIST                 += test_diffwave_mpi.sh  # NB Wrapper script
+check_PROGRAMS             += test_diffwave_mpi
+test_diffwave_mpi_SOURCES   = test_diffwave_mpi.cpp
+test_diffwave_mpi_CPPFLAGS  = $(AM_CPPFLAGS) $(FFTW3_THREADS_CFLAGS)
+test_diffwave_mpi_LDADD     = ../suzerain/libsuzerain.la
+test_diffwave_mpi_LDADD    += $(GSL_LIBS)
+test_diffwave_mpi_LDADD    += $(MKL_LIBS)
+test_diffwave_mpi_LDADD    += $(P3DFFT_LIBS)
+test_diffwave_mpi_LDADD    += $(FFTW3_THREADS_LIBS)
+test_diffwave_mpi_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_diffwave_mpi_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
