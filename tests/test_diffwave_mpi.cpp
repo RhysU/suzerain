@@ -68,11 +68,11 @@ static void test_accumulate_helper(const pencil_grid &pg,
     std::fill(B.get(),B.get()+nelem,std::numeric_limits<double>::quiet_NaN());
 
     // Create composable test functions in the X and Z directions
-    // Note that maximum wavenumber is (N-1)/2.
-    periodic_function<> fx1(pg.global_extents()[0], (Nx-1)/2, M_PI/3, Lx, 11);
-    periodic_function<> fx2(pg.global_extents()[0], (Nx-1)/2, M_PI/7, Lx, 13);
-    periodic_function<> fz1(pg.global_extents()[2], (Nz-1)/2, M_PI/4, Lz, 17);
-    periodic_function<> fz2(pg.global_extents()[2], (Nz-1)/2, M_PI/9, Lz, 19);
+    // Note that maximum wavenumber (inclusive) is (N-1)/2.
+    periodic_function<> fx1(pg.global_extents()[0], Nx/2, M_PI/3, Lx, 11);
+    periodic_function<> fx2(pg.global_extents()[0], Nx/2, M_PI/7, Lx, 13);
+    periodic_function<> fz1(pg.global_extents()[2], Nz/2, M_PI/4, Lz, 17);
+    periodic_function<> fz2(pg.global_extents()[2], Nz/2, M_PI/9, Lz, 19);
 
     // Populate the synthetic fields
     {
@@ -118,7 +118,7 @@ static void test_accumulate_helper(const pencil_grid &pg,
 
     // Ensure the synthetic fields came back cleanly
     const size_type scale = pg.global_extents()[0] *pg.global_extents()[2];
-    const double    close = std::pow(10, -10 + (dxcnt+dzcnt)/2.5)
+    const double    close = std::pow(10, -9 + (dxcnt+dzcnt)/2.5)
                           * std::sqrt((double) scale)
                           * 5;
     {
@@ -153,6 +153,8 @@ BOOST_AUTO_TEST_CASE( accumulate )
 
     boost::array<int,7> c[] = {
         /* Ny,  Nx, dNx,  Nz, dNz */
+//         {   1,   1,   1,   6,   6 }
+
         {   4,  24,  24,  40,  40 }
        ,{   4,  24,  24,  40,  60 } // Dealiased Z
        ,{   4,  24,  36,  40,  40 } // Dealiased X
