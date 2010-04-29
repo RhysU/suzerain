@@ -69,17 +69,18 @@ void suzerain_diffwave_accumulate_y0x0z0(
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez)
 {
-    // {n,m}keeper complexity because we must include zero and Nyquist modes
+    // {n,m}keeper test expression taken from looking at {N,dN} cases like
+    // {6,8}, {6,9}, {5,8}, {5,9}.  Note that we're neglecting to accumulate
+    // the data in the Nyquist mode for N even, which may be a bad thing.
+
     const int sx = Ny, sz = (dkex - dkbx)*sx; // Compute X, Z strides
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
-        const int nkeeper =    suzerain_diffwave_freqindex(Nz, dNz, n)
-                            || (n == 0) || (!(Nz & 1) && n == Nz/2);
+        const int nkeeper = suzerain_absfreqindex(dNz, n) <= (Nz-1)/2;
         if (nkeeper) {
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
-                const int mkeeper =    suzerain_diffwave_freqindex(Nx, dNx, m)
-                                    || (m == 0) || (!(Nx & 1) && m == Nx/2);
+                const int mkeeper = suzerain_absfreqindex(dNx, m) <= (Nx-1)/2;
                 if (mkeeper) {
                     suzerain_blas_zaxpby(Ny,alpha,x+moff,1,beta,y+moff,1);
                 } else {
@@ -146,12 +147,12 @@ void suzerain_diffwave_accumulate(
     const int sx = Ny, sz = (dkex - dkbx)*sx; // Compute X, Z strides
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
-        const int nfreqidx = suzerain_diffwave_freqindex(Nz, dNz, n);
+        const int nfreqidx = suzerain_freqdiffindex(Nz, dNz, n);
         if (nfreqidx) {
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
-                const int mfreqidx = suzerain_diffwave_freqindex(Nx, dNx, m);
+                const int mfreqidx = suzerain_freqdiffindex(Nx, dNx, m);
                 if (mfreqidx) {
                     const double mscale
                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);

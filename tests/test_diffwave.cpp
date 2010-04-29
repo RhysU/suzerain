@@ -13,7 +13,55 @@
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
-BOOST_AUTO_TEST_CASE( freqindex_nodealiasing )
+BOOST_AUTO_TEST_CASE( freqindex )
+{
+    const int expected[][10] = {
+        { 0                                    },
+        { 0, 1                                 },
+        { 0, 1,                             -1 },
+        { 0, 1,  2,                         -1 },
+        { 0, 1,  2,                     -2, -1 },
+        { 0, 1,  2,  3,                 -2, -1 },
+        { 0, 1,  2,  3,             -3, -2, -1 },
+        { 0, 1,  2,  3,  4,         -3, -2, -1 },
+        { 0, 1,  2,  3,  4,     -4, -3, -2, -1 },
+        { 0, 1,  2,  3,  4,  5, -4, -3, -2, -1 }
+    };
+    for (int i = 0; i < sizeof(expected)/sizeof(expected[0]); ++i) {
+        int result[sizeof(expected[0])/sizeof(expected[0][0])];
+        for (int j = 0; j < i+1; ++j) {
+            result[j] = suzerain_freqindex(i + 1, j);
+        }
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+                expected[i], expected[i] + i + 1, result, result + i + 1);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( absfreqindex )
+{
+    const int expected[][10] = {
+        { 0                                    },
+        { 0, 1                                 },
+        { 0, 1,                              1 },
+        { 0, 1,  2,                          1 },
+        { 0, 1,  2,                      2,  1 },
+        { 0, 1,  2,  3,                  2,  1 },
+        { 0, 1,  2,  3,              3,  2,  1 },
+        { 0, 1,  2,  3,  4,          3,  2,  1 },
+        { 0, 1,  2,  3,  4,      4,  3,  2,  1 },
+        { 0, 1,  2,  3,  4,  5,  4,  3,  2,  1 }
+    };
+    for (int i = 0; i < sizeof(expected)/sizeof(expected[0]); ++i) {
+        int result[sizeof(expected[0])/sizeof(expected[0][0])];
+        for (int j = 0; j < i+1; ++j) {
+            result[j] = suzerain_absfreqindex(i + 1, j);
+        }
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+                expected[i], expected[i] + i + 1, result, result + i + 1);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( freqdiffindex_nodealiasing )
 {
     const int expected[][8] = { {0},
                                 {0,               0},
@@ -28,12 +76,12 @@ BOOST_AUTO_TEST_CASE( freqindex_nodealiasing )
         const int N = i + 1, dN = N;
         for (int j = 0; j < dN; ++j) {
             BOOST_CHECK_EQUAL(expected[i][j],
-                              suzerain_diffwave_freqindex(N, dN, j));
+                              suzerain_freqdiffindex(N, dN, j));
         }
     }
 }
 
-BOOST_AUTO_TEST_CASE( freqindex_dealiasing )
+BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
 {
     {
         const int expected[][12] = { {0,0,0,0,0,0,0,0,0, 0, 0, 0},
@@ -50,7 +98,7 @@ BOOST_AUTO_TEST_CASE( freqindex_dealiasing )
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
                 BOOST_CHECK_EQUAL(expected[i][j],
-                                  suzerain_diffwave_freqindex(N, dN, j));
+                                  suzerain_freqdiffindex(N, dN, j));
             }
         }
     }
@@ -70,7 +118,7 @@ BOOST_AUTO_TEST_CASE( freqindex_dealiasing )
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
                 BOOST_CHECK_EQUAL(expected[i][j],
-                                  suzerain_diffwave_freqindex(N, dN, j));
+                                  suzerain_freqdiffindex(N, dN, j));
             }
         }
     }
@@ -91,17 +139,23 @@ BOOST_AUTO_TEST_CASE( freqindex_dealiasing )
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
                 BOOST_CHECK_EQUAL(expected[i][j],
-                                  suzerain_diffwave_freqindex(N, dN, j));
+                                  suzerain_freqdiffindex(N, dN, j));
             }
         }
     }
 }
 
+// Tests mainly that the implementation accesses memory in the way that we
+// anticipate.  The implementation walks memory linearly with little branching
+// and utilizes the BLAS.  Here we inefficiently check that it did what we
+// expect.  Functional correctness in terms of representing known functions is
+// handled in test_diffwave_mpi.
 static void test_accumulate_helper(const int dxcnt, const int dzcnt,
                                    const double Lx, const double Lz,
                                    const int Ny,
                                    const int Nx, const int dNx,
-                                   const int Nz, const int dNz)
+                                   const int Nz, const int dNz,
+                                   const double small_enough)
 {
     // Allocate test arrays
     const int nelem = Ny*(dNx/2+1)*dNz;
@@ -136,15 +190,11 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
     const gsl_complex itwopioverLx = gsl_complex_rect(0, 2*M_PI/Lx);
     const gsl_complex itwopioverLz = gsl_complex_rect(0, 2*M_PI/Lz);
 
-    // Empirical tolerance choice: maybe too small, maybe not.
-    const double small_enough = 7*std::pow(10, -10 + (dxcnt+dzcnt)/2.5);
-    BOOST_TEST_MESSAGE("Small enough is " << small_enough);
-
     double (*q)[2] = y;
     for (int n = 0; n < dNz; ++n) {
-        const int nfreqidx = suzerain_diffwave_freqindex(Nz, dNz, n);
+        const int nfreqidx = suzerain_freqdiffindex(Nz, dNz, n);
         for (int m = 0; m < (dNx/2+1); ++m) {
-            const int mfreqidx = suzerain_diffwave_freqindex(Nx, dNx, m);
+            const int mfreqidx = suzerain_freqdiffindex(Nx, dNx, m);
             for (int l = 0; l < Ny; ++l) {
                 const gsl_complex observed = gsl_complex_rect((*q)[0],(*q)[1]);
 
@@ -156,8 +206,8 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
                 gsl_complex expected;
 
                 if (dxcnt != 0 || dzcnt != 0) {
-                    if (   (n <= (Nz+1)/2 || n >= (dNz - (Nz-1)/2))
-                        && (m <= (Nx+1)/2 || m >= (dNx - (Nx-1)/2))) {
+                    if (   (n <= (Nz-1)/2 || n >= (dNz - (Nz-1)/2))
+                        && (m <= (Nx-1)/2 || m >= (dNx - (Nx-1)/2))) {
 
                         const gsl_complex xfactor
                             = gsl_complex_mul_real(itwopioverLx, mfreqidx);
@@ -184,8 +234,8 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
                 } else {
                     // Special handling for the no derivative case
                     // since we do not nuke the zeroth and Nyquist frequencies.
-                    if (   (n <= (Nz+1)/2 || n >= (dNz - (Nz-1)/2))
-                        && (m <= (Nx+1)/2 || m >= (dNx - (Nx-1)/2))) {
+                    if (   (n <= (Nz-1)/2 || n >= (dNz - (Nz-1)/2))
+                        && (m <= (Nx-1)/2 || m >= (dNx - (Nx-1)/2))) {
 
                         expected = gsl_complex_add(
                                 gsl_complex_mul(alpha, xsrc),
@@ -216,23 +266,41 @@ BOOST_AUTO_TEST_CASE( accumulate )
 
     boost::array<int,7> c[] = {
         /* Lx, Lz, Ny, Nx, dNx, Nz, dNz */
-        {   5,  7,  3,  4,   4,  4,   4  },
-        {   5,  7,  3,  8,   8,  8,   8  },
-        {   5,  7,  3,  7,   7,  7,   7  },
-        {   5,  7,  3,  8,  12, 16,  24  },
-        {   5,  7,  1,  1,   1,  6,   9  },
-        {   5,  7,  1,  6,   9,  1,   1  },
-        {   5,  7,  1,  6,   9,  6,   9  }
+        // Beat on the Z direction in quasi-1D cases
+        {   5,  7,  1,  1,   1,  6,   9  }
+       ,{   5,  7,  1,  1,   1,  6,   8  }
+       ,{   5,  7,  1,  1,   1,  5,   8  }
+       ,{   5,  7,  1,  1,   1,  5,   9  }
+        // Beat on the X direction in quasi-1D cases
+       ,{   5,  7,  1,  6,   9,  1,   1  }
+       ,{   5,  7,  1,  6,   8,  1,   1  }
+       ,{   5,  7,  1,  5,   8,  1,   1  }
+       ,{   5,  7,  1,  5,   9,  1,   1  }
+        // Beat on the X and Z directions in quasi-2D cases
+       ,{   5,  7,  1,  6,   9,  6,   9  }
+       ,{   5,  7,  1,  6,   8,  6,   8  }
+       ,{   5,  7,  1,  5,   8,  5,   8  }
+       ,{   5,  7,  1,  5,   9,  5,   9  }
+        // Beat on everything in full 3D cases
+       ,{   5,  7,  3,  4,   4,  4,   4  }
+       ,{   5,  7,  3,  8,   8,  8,   8  }
+       ,{   5,  7,  3,  7,   7,  7,   7  }
+       ,{   5,  7,  3,  8,  12, 16,  24  }
     };
 
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
         for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {
             for (int k = 0; k < sizeof(c)/sizeof(c[0]); ++k) {
+
+                // Empirical tolerance choice: maybe too small, maybe not.
+                const double small = 7*std::pow(10, -10 + (dxcnt+dzcnt)/2.5);
                 BOOST_TEST_MESSAGE("Testing dxcnt = " << dxcnt
                                                     << ", dzcnt = " << dzcnt
-                                                    << " for params " << c[k]);
+                                                    << " for params " << c[k]
+                                                    << " using tol " << small);
+
                 test_accumulate_helper(dxcnt, dzcnt, c[k][0], c[k][1],
-                        c[k][2], c[k][3], c[k][4], c[k][5], c[k][6]);
+                        c[k][2], c[k][3], c[k][4], c[k][5], c[k][6], small);
             }
         }
     }

@@ -43,11 +43,30 @@ extern "C" {
 #endif
 
 inline
-int suzerain_diffwave_freqindex(const int N, const int dN, const int i)
+int suzerain_freqindex(const int N, const int i)
 {
-    assert(0 <= i && i < dN);
-    assert(N <= dN);
-    return i*(i < (N+1)/2) + (-dN+i)*(i >= dN - (N-1)/2);
+    assert(0 <= i && i < N);
+    return (i < N/2+1) ? i : -N + i;
+}
+
+inline
+int suzerain_absfreqindex(const int N, const int i)
+{
+    assert(0 <= i && i < N);
+    return (i < N/2+1) ? i : N - i;
+}
+
+inline
+int suzerain_freqdiffindex(const int N, const int dN, const int i)
+{
+    assert(0 <= i && i < dN && N <= dN);
+    if (i < (N+1)/2) {
+        return i;
+    } else if (i >= dN - (N-1)/2) {
+        return -dN+i;
+    } else {
+        return 0;
+    }
 }
 
 void suzerain_diffwave_accumulate(
