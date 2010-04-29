@@ -19,6 +19,13 @@ struct MPIFixture {
 };
 BOOST_GLOBAL_FIXTURE(MPIFixture);               // Setup and tear down MPI
 
+// Performs an MPI_Barrier call at construction and destruction
+struct MPIBarrierRAII {
+    const MPI_Comm comm_;
+    MPIBarrierRAII(MPI_Comm comm) : comm_(comm) { MPI_Barrier(comm_); }
+    ~MPIBarrierRAII()                           { MPI_Barrier(comm_); }
+};
+
 
 BOOST_AUTO_TEST_SUITE(accumulate)
 
@@ -30,9 +37,10 @@ static void test_accumulate_helper(const pencil_grid &pg,
                                    const double Lx,
                                    const double Ly,
                                    const double Lz,
-                                   const int dNx,
-                                   const int dNz)
+                                   const int Nx,
+                                   const int Nz)
 {
+    // Note: Incoming pencil_grid describes dealiased extents
     typedef pencil_grid::index index;
     typedef pencil_grid::size_type size_type;
 
@@ -56,13 +64,15 @@ static void test_accumulate_helper(const pencil_grid &pg,
     // Retrieve storage size, strides, and allocate working arrays
     const int nelem = pg.local_physical_storage();
     boost::shared_array<double> A(new double[nelem]), B(new double[nelem]);
+    std::fill(A.get(),A.get()+nelem,std::numeric_limits<double>::quiet_NaN());
+    std::fill(B.get(),B.get()+nelem,std::numeric_limits<double>::quiet_NaN());
 
     // Create composable test functions in the X and Z directions
-    // TODO Incorporate dealiasing considerations
-    periodic_function<> fx1(pg.global_extents()[0], dNx/2+1, M_PI/3, Lx, 11);
-    periodic_function<> fx2(pg.global_extents()[0], dNx/2+1, M_PI/7, Lx, 13);
-    periodic_function<> fz1(pg.global_extents()[2], dNz/2+1, M_PI/4, Lz, 17);
-    periodic_function<> fz2(pg.global_extents()[2], dNz/2+1, M_PI/9, Lz, 19);
+    // Note that maximum wavenumber is (N-1)/2.
+    periodic_function<> fx1(pg.global_extents()[0], (Nx-1)/2, M_PI/3, Lx, 11);
+    periodic_function<> fx2(pg.global_extents()[0], (Nx-1)/2, M_PI/7, Lx, 13);
+    periodic_function<> fz1(pg.global_extents()[2], (Nz-1)/2, M_PI/4, Lz, 17);
+    periodic_function<> fz2(pg.global_extents()[2], (Nz-1)/2, M_PI/9, Lz, 19);
 
     // Populate the synthetic fields
     {
@@ -90,10 +100,10 @@ static void test_accumulate_helper(const pencil_grid &pg,
         const double beta[2]  = { 3.0, 0.0 };
         double (*y)[2]        = reinterpret_cast<double (*)[2]>(B.get());
         const int Ny          = pg.global_extents()[1];
-        const int Nx          = pg.global_extents()[0];
+        const int dNx         = pg.global_extents()[0];
         const int dkbx        = pg.local_wave_start()[0];
         const int dkex        = pg.local_wave_end()[0];
-        const int Nz          = pg.global_extents()[2];
+        const int dNz         = pg.global_extents()[2];
         const int dkbz        = pg.local_wave_start()[2];
         const int dkez        = pg.local_wave_end()[2];
 
@@ -141,13 +151,17 @@ BOOST_AUTO_TEST_CASE( accumulate )
     boost::array<int,7> c[] = {
         /* Ny,  Nx, dNx,  Nz, dNz, dxcnt, dzcnt */
         {   4,  24,  24,  40,  40,     0,     0  }
-       ,{   4,  24,  24,  40,  40,     0,     0  } // FIXME Duplicate
+       ,{   4,  24,  24,  40,  60,     0,     0  } // Dealiased Z
+       ,{   4,  24,  36,  40,  40,     0,     0  } // Dealiased X
+       ,{   4,  24,  36,  40,  60,     0,     0  } // Dealiased X,Z
     };
 
     for (int l = 0; l < sizeof(c)/sizeof(c[0]); ++l) {
-        pencil_grid::size_type_3d global_extents = { c[l][1], c[l][0], c[l][3] };
+        // global_extents use dealiased dimensions
+        pencil_grid::size_type_3d global_extents = { c[l][2], c[l][0], c[l][4] };
         pencil_grid::size_type_2d processor_grid = { 0, 0 };
         pencil_grid pg(global_extents, processor_grid);
+        assert(pg.local_wave_extent()[1] == c[l][0]); // P3DFFT using STRIDE1?
 
         if (!procid) {
             BOOST_TEST_MESSAGE("Testing " << c[l]
@@ -155,9 +169,9 @@ BOOST_AUTO_TEST_CASE( accumulate )
                             << (nproc > 1 ? "s" : "") );
         }
 
+        MPIBarrierRAII barrier(MPI_COMM_WORLD);
         test_accumulate_helper(
-            pg, c[l][5], c[l][6], 4*M_PI, 2, 4*M_PI/3, c[l][2], c[l][4]);
-
+            pg, c[l][5], c[l][6], 4*M_PI, 2, 4*M_PI/3, c[l][1], c[l][3]);
     }
 }
 
