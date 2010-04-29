@@ -145,15 +145,18 @@ static void test_accumulate_helper(const pencil_grid &pg,
 
 BOOST_AUTO_TEST_CASE( accumulate )
 {
+    const int MAX_DXCNT_INCLUSIVE = 0;
+    const int MAX_DZCNT_INCLUSIVE = 0;
+
     const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
     const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
     boost::array<int,7> c[] = {
-        /* Ny,  Nx, dNx,  Nz, dNz, dxcnt, dzcnt */
-        {   4,  24,  24,  40,  40,     0,     0  }
-       ,{   4,  24,  24,  40,  60,     0,     0  } // Dealiased Z
-       ,{   4,  24,  36,  40,  40,     0,     0  } // Dealiased X
-       ,{   4,  24,  36,  40,  60,     0,     0  } // Dealiased X,Z
+        /* Ny,  Nx, dNx,  Nz, dNz */
+        {   4,  24,  24,  40,  40 }
+       ,{   4,  24,  24,  40,  60 } // Dealiased Z
+       ,{   4,  24,  36,  40,  40 } // Dealiased X
+       ,{   4,  24,  36,  40,  60 } // Dealiased X,Z
     };
 
     for (int l = 0; l < sizeof(c)/sizeof(c[0]); ++l) {
@@ -163,15 +166,20 @@ BOOST_AUTO_TEST_CASE( accumulate )
         pencil_grid pg(global_extents, processor_grid);
         assert(pg.local_wave_extent()[1] == c[l][0]); // P3DFFT using STRIDE1?
 
-        if (!procid) {
-            BOOST_TEST_MESSAGE("Testing " << c[l]
-                            << " using " << nproc << " processor"
-                            << (nproc > 1 ? "s" : "") );
+        for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
+            for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {
+                if (!procid) {
+                    BOOST_TEST_MESSAGE("Testing " << c[l]
+                                       << " for dxcnt = " << dxcnt
+                                       << ", dzcnt = " << dzcnt
+                                       << " using " << nproc << " processor"
+                                       << (nproc > 1 ? "s" : "") );
+                }
+                MPIBarrierRAII barrier(MPI_COMM_WORLD);
+                test_accumulate_helper(
+                    pg, dxcnt, dzcnt, 4*M_PI, 2, 4*M_PI/3, c[l][1], c[l][3]);
+            }
         }
-
-        MPIBarrierRAII barrier(MPI_COMM_WORLD);
-        test_accumulate_helper(
-            pg, c[l][5], c[l][6], 4*M_PI, 2, 4*M_PI/3, c[l][1], c[l][3]);
     }
 }
 
