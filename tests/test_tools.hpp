@@ -690,7 +690,7 @@ typename std::complex<FPT> periodic_function<FPT,Integer>::wave(
 }
 
 // Relative error routine pulled from <boost/math/tools/test.hpp>.
-// Could not use directly without adding a link-time dependency.
+// Could not use original directly without adding a link-time dependency.
 // Slightly simplified from the source version.
 template <class T>
 T relative_error(T a, T b)
