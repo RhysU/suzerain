@@ -27,7 +27,9 @@ struct MPIBarrierRAII {
 };
 
 
-BOOST_AUTO_TEST_SUITE(accumulate)
+// Test accumulate and apply in one shot to speed test execution,
+// otherwise we have to setup and teardown P3DFFT twice
+BOOST_AUTO_TEST_SUITE(accumulateAndApply)
 
 using suzerain::pencil_grid;
 
@@ -42,15 +44,15 @@ static bool smallrelerror(const double expected,
 }
 
 // Return value is worst observed relative error
-static double test_accumulate_helper(const pencil_grid &pg,
-                                     const int dxcnt,
-                                     const int dzcnt,
-                                     const double Lx,
-                                     const double Ly,
-                                     const double Lz,
-                                     const int Nx,
-                                     const int Nz,
-                                     const double maxrelerror)
+static double test_accumulateAndApply_helper(const pencil_grid &pg,
+                                             const int dxcnt,
+                                             const int dzcnt,
+                                             const double Lx,
+                                             const double Ly,
+                                             const double Lz,
+                                             const int Nx,
+                                             const int Nz,
+                                             const double maxrelerror)
 {
     // Note: Incoming pencil_grid describes dealiased extents
     typedef pencil_grid::index index;
@@ -76,8 +78,6 @@ static double test_accumulate_helper(const pencil_grid &pg,
     // Retrieve storage size, strides, and allocate working arrays
     const int nelem = pg.local_physical_storage();
     boost::shared_array<double> A(new double[nelem]), B(new double[nelem]);
-    std::fill(A.get(),A.get()+nelem,std::numeric_limits<double>::quiet_NaN());
-    std::fill(B.get(),B.get()+nelem,std::numeric_limits<double>::quiet_NaN());
 
     // Create composable test functions in the X and Z directions
     // Note that maximum wavenumber (inclusive) is (N-1)/2.
@@ -86,7 +86,21 @@ static double test_accumulate_helper(const pencil_grid &pg,
     periodic_function<> fz1(pg.global_extents()[2], Nz/2, M_PI/4, Lz, 17);
     periodic_function<> fz2(pg.global_extents()[2], Nz/2, M_PI/9, Lz, 19);
 
+    // Track worst point-wise error magnitude for either test Gives an idea of
+    // any lost precision and how loose any test tolerances may be in practice.
+    double worstrelerror = 0;
+
+    // P3DFFT does not normalize after transformations;
+    // we need the rescaling factor handy.
+    const size_type scale = pg.global_extents()[0] *pg.global_extents()[2];
+
+    // ---------------------------------
+    // Test suzerain_diffwave_accumulate
+    // ---------------------------------
+
     // Populate the synthetic fields
+    std::fill(A.get(),A.get()+nelem,std::numeric_limits<double>::quiet_NaN());
+    std::fill(B.get(),B.get()+nelem,std::numeric_limits<double>::quiet_NaN());
     {
         double *pA = A.get(), *pB = B.get();
         for (index j = 0; j < gridy.size(); ++j) {
@@ -109,7 +123,6 @@ static double test_accumulate_helper(const pencil_grid &pg,
 
     // Differentiate-and-accumulate
     // Build FFT forward-and-inverse normalization factor into accumulation
-    const size_type scale = pg.global_extents()[0] *pg.global_extents()[2];
     {
         const double alpha[2] = { 2.0/scale, 0.0/scale };
         const double (*x)[2]  = reinterpret_cast<const double (*)[2]>(A.get());
@@ -131,9 +144,6 @@ static double test_accumulate_helper(const pencil_grid &pg,
     // Transform to physical space
     pg.transform_wave_to_physical(A.get());
     pg.transform_wave_to_physical(B.get());
-
-    // Track worst point-wise error magnitude
-    double worstrelerror = 0;
 
     // Ensure the synthetic accumulated field came back cleanly
     {
@@ -165,14 +175,83 @@ static double test_accumulate_helper(const pencil_grid &pg,
         }
     }
 
+    // ---------------------------------
+    // Test suzerain_diffwave_apply
+    // ---------------------------------
+
+    // Populate the synthetic fields
+    std::fill(A.get(),A.get()+nelem,std::numeric_limits<double>::quiet_NaN());
+    {
+        double *pA = A.get();
+        for (index j = 0; j < gridy.size(); ++j) {
+            for (index k = 0; k < gridz.size(); ++k) {
+                for (index i = 0; i < gridx.size(); ++i) {
+                    *pA++ = fx1.physical_evaluate(gridx[i])
+                          * fz1.physical_evaluate(gridz[k])
+                          * (j+1);
+                }
+            }
+        }
+    }
+
+    // Transform to wave space
+    pg.transform_physical_to_wave(A.get());
+
+    // Differentiate-and-accumulate
+    // Build FFT forward-and-inverse normalization factor into accumulation
+    {
+        const double alpha[2] = { 2.0/scale, 0.0/scale };
+        double (*x)[2]        = reinterpret_cast<double (*)[2]>(A.get());
+        const int Ny          = pg.global_extents()[1];
+        const int dNx         = pg.global_extents()[0];
+        const int dkbx        = pg.local_wave_start()[0];
+        const int dkex        = pg.local_wave_end()[0];
+        const int dNz         = pg.global_extents()[2];
+        const int dkbz        = pg.local_wave_start()[2];
+        const int dkez        = pg.local_wave_end()[2];
+
+        suzerain_diffwave_apply(
+            dxcnt, dzcnt, alpha, x, Lx, Lz,
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
+    }
+
+    // Transform to physical space
+    pg.transform_wave_to_physical(A.get());
+
+    // Ensure the synthetic accumulated field came back cleanly
+    {
+        const double *pA = A.get();
+        for (index j = 0; j < gridy.size(); ++j) {
+            for (index k = 0; k < gridz.size(); ++k) {
+                for (index i = 0; i < gridx.size(); ++i) {
+                    {
+                        const double cfx1
+                            = fx1.physical_evaluate(gridx[i], dxcnt);
+                        const double cfz1
+                            = fz1.physical_evaluate(gridz[k], dzcnt);
+                        const double expected_A
+                            = 2*cfx1*cfz1*(j+1);
+
+                        double relerror = relative_error(*pA, expected_A);
+                        BOOST_CHECK_PREDICATE(smallrelerror,
+                                (expected_A)(*pA)(relerror)(maxrelerror));
+                        worstrelerror = std::max(worstrelerror, relerror);
+
+                        ++pA;
+                    }
+                }
+            }
+        }
+    }
+
     return worstrelerror;
 }
 
-static void test_accumulate(const int Ny,
-                            const int Nx,
-                            const int dNx,
-                            const int Nz,
-                            const int dNz)
+static void test_accumulateAndApply(const int Ny,
+                                    const int Nx,
+                                    const int dNx,
+                                    const int Nz,
+                                    const int dNz)
 {
     const int MAX_DXCNT_INCLUSIVE = 4;
     const int MAX_DZCNT_INCLUSIVE = 4;
@@ -186,7 +265,7 @@ static void test_accumulate(const int Ny,
 
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
         for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {
-            const double maxrelerror = 5*std::pow(10, -11 + (dxcnt+dzcnt)/4.0);
+            const double maxrelerror = 2*std::pow(10, -11 + (dxcnt+dzcnt)/3.0);
             if (!procid) {
                 BOOST_TEST_MESSAGE("Testing"
                                     << " Ny=" << Ny
@@ -200,7 +279,7 @@ static void test_accumulate(const int Ny,
                                     << ", maxrelerror=" << maxrelerror);
             }
             MPIBarrierRAII barrier(MPI_COMM_WORLD);
-            const double worstrelerror = test_accumulate_helper(
+            const double worstrelerror = test_accumulateAndApply_helper(
                 pg, dxcnt, dzcnt, 4*M_PI, 2, 4*M_PI/3, Nx, Nz, maxrelerror);
             BOOST_TEST_MESSAGE("Rank " << procid
                                << " observed local maximum relative error = "
@@ -222,11 +301,11 @@ BOOST_AUTO_TEST_CASE( accumulate_quasi_1D_not_dealiased )
     // Check small grids with odd sizes only in the single rank case.
     // P3DFFT cannot distribute them on non-1x1 Cartesian processor grids.
     if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
-        /*               Ny,  Nx, dNx,  Nz, dNz */
-        test_accumulate(  1,   1,   1,   8,   8);
-        test_accumulate(  1,   1,   1,   7,   7);
-        test_accumulate(  1,   8,   8,   1,   1);
-        test_accumulate(  1,   7,   7,   1,   1);
+        /*                       Ny,  Nx, dNx,  Nz, dNz */
+        test_accumulateAndApply(  1,   1,   1,   8,   8);
+        test_accumulateAndApply(  1,   1,   1,   7,   7);
+        test_accumulateAndApply(  1,   8,   8,   1,   1);
+        test_accumulateAndApply(  1,   7,   7,   1,   1);
     }
 }
 
@@ -235,11 +314,11 @@ BOOST_AUTO_TEST_CASE( accumulate_quasi_1D_dealiased_z )
     // Check small grids with odd sizes only in the single rank case.
     // P3DFFT cannot distribute them on non-1x1 Cartesian processor grids.
     if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
-        /*               Ny,  Nx, dNx,  Nz, dNz */
-        test_accumulate(  1,   1,   1,   6,   8);
-        test_accumulate(  1,   1,   1,   6,   9);
-        test_accumulate(  1,   1,   1,   5,   8);
-        test_accumulate(  1,   1,   1,   5,   9);
+        /*                       Ny,  Nx, dNx,  Nz, dNz */
+        test_accumulateAndApply(  1,   1,   1,   6,   8);
+        test_accumulateAndApply(  1,   1,   1,   6,   9);
+        test_accumulateAndApply(  1,   1,   1,   5,   8);
+        test_accumulateAndApply(  1,   1,   1,   5,   9);
     }
 }
 
@@ -248,11 +327,11 @@ BOOST_AUTO_TEST_CASE( accumulate_quasi_1D_dealiased_x )
     // Check small grids with odd sizes only in the single rank case.
     // P3DFFT cannot distribute them on non-1x1 Cartesian processor grids.
     if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
-        /*               Ny,  Nx, dNx,  Nz, dNz */
-        test_accumulate(  1,   6,   8,   1,   1);
-        test_accumulate(  1,   6,   9,   1,   1);
-        test_accumulate(  1,   5,   8,   1,   1);
-        test_accumulate(  1,   5,   9,   1,   1);
+        /*                       Ny,  Nx, dNx,  Nz, dNz */
+        test_accumulateAndApply(  1,   6,   8,   1,   1);
+        test_accumulateAndApply(  1,   6,   9,   1,   1);
+        test_accumulateAndApply(  1,   5,   8,   1,   1);
+        test_accumulateAndApply(  1,   5,   9,   1,   1);
     }
 }
 
@@ -261,36 +340,36 @@ BOOST_AUTO_TEST_CASE( accumulate_quasi_2D_not_dealiased )
     // Check small grids with odd sizes only in the single rank case.
     // P3DFFT cannot distribute them on non-1x1 Cartesian processor grids.
     if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
-        /*               Ny,  Nx, dNx,  Nz, dNz */
-        test_accumulate(  1,   8,   8,   8,   8);
-        test_accumulate(  1,   7,   7,   7,   7);
-        test_accumulate(  1,   7,   7,   8,   8);
-        test_accumulate(  1,   8,   8,   7,   7);
+        /*                       Ny,  Nx, dNx,  Nz, dNz */
+        test_accumulateAndApply(  1,   8,   8,   8,   8);
+        test_accumulateAndApply(  1,   7,   7,   7,   7);
+        test_accumulateAndApply(  1,   7,   7,   8,   8);
+        test_accumulateAndApply(  1,   8,   8,   7,   7);
     }
 }
 
 BOOST_AUTO_TEST_CASE( accumulate_not_dealiased )
 {
-    /*               Ny,  Nx, dNx,  Nz, dNz */
-    test_accumulate(  3,  24,  24,  40,  40 );
+    /*                       Ny,  Nx, dNx,  Nz, dNz */
+    test_accumulateAndApply(  3,  24,  24,  40,  40 );
 }
 
 BOOST_AUTO_TEST_CASE( accumulate_dealiased_z )
 {
-    /*               Ny,  Nx, dNx,  Nz, dNz */
-    test_accumulate(  2,  24,  24,  40,  60 );
+    /*                       Ny,  Nx, dNx,  Nz, dNz */
+    test_accumulateAndApply(  2,  24,  24,  40,  60 );
 }
 
 BOOST_AUTO_TEST_CASE( accumulate_dealiased_x )
 {
-    /*               Ny,  Nx, dNx,  Nz, dNz */
-    test_accumulate(  2,  24,  36,  40,  40 );
+    /*                       Ny,  Nx, dNx,  Nz, dNz */
+    test_accumulateAndApply(  2,  24,  36,  40,  40 );
 }
 
 BOOST_AUTO_TEST_CASE( accumulate_dealiased_xz )
 {
-    /*               Ny,  Nx, dNx,  Nz, dNz */
-    test_accumulate(  2,  24,  36,  40,  40 );
+    /*                       Ny,  Nx, dNx,  Nz, dNz */
+    test_accumulateAndApply(  2,  24,  36,  40,  40 );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
