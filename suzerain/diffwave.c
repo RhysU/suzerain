@@ -37,6 +37,9 @@
 #include <suzerain/blas_et_al.h>
 #include <suzerain/diffwave.h>
 
+// TODO suzerain_diffwave_apply is painfully like suzerain_diffwave_accumulate
+// Would be nice to rework them so that only the BLAS calls are different.
+
 inline
 void scale_by_imaginary_power(const double in[2], double out[2], int p)
 {
@@ -74,6 +77,71 @@ inline double twopiover(const double L)
 #pragma float_control(precise, off)
 #pragma fp_contract(on)
 
+void suzerain_diffwave_apply(
+    const int dxcnt,
+    const int dzcnt,
+    const double alpha[2], double (* const x)[2],
+    const double Lx,
+    const double Lz,
+    const int Ny,
+    const int Nx, const int dNx, const int dkbx, const int dkex,
+    const int Nz, const int dNz, const int dkbz, const int dkez)
+{
+    assert(dxcnt >= 0);             // Only differentiation supported
+    assert(dzcnt >= 0);
+    assert(Ny >= 0);                // Sanity check Y direction
+    assert(Nx >= 0);                // Sanity check X direction
+    assert(dNx >= Nx);
+    assert(dkex <= dNx);            // Often dkex <= (dNx/2+1)
+    assert(dkbx <= dkex);
+    assert(Nz >= 0);                // Sanity check Z direction
+    assert(dNz >= Nz);
+    assert(dkez <= dNz);
+    assert(dkbz <= dkez);
+
+    // Compute loop independent constants
+    const double twopioverLx = twopiover(Lx);  // Weird looking for FP control
+    const double twopioverLz = twopiover(Lz);  // Weird looking for FP control
+    double alpha_ipow[2];
+    scale_by_imaginary_power(alpha, alpha_ipow, dxcnt + dzcnt);
+
+    // Compute X, Z strides
+    const int sx = Ny, sz = (dkex - dkbx)*sx;
+
+    // Overwrite x with alpha*D*x for storage, dealiasing assumptions
+    for (int n = dkbz; n < dkez; ++n) {
+        const int noff     = sz*(n - dkbz);
+        const int nfreqidx = suzerain_diffwave_freqdiffindex(Nz, dNz, n);
+        const int nkeeper  = (dzcnt > 0)
+                ? nfreqidx
+                : suzerain_diffwave_absfreqindex(dNz, n) <= (Nz-1)/2;
+        if (nkeeper) {
+            // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
+            const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
+            for (int m = dkbx; m < dkex; ++m) {
+                const int moff     = noff + sx*(m - dkbx);
+                const int mfreqidx
+                        = suzerain_diffwave_freqdiffindex(Nx, dNx, m);
+                const int mkeeper  = (dxcnt > 0)
+                        ? mfreqidx
+                        : suzerain_diffwave_absfreqindex(dNx, m) <= (Nx-1)/2;
+                if (mkeeper) {
+                    // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
+                    const double mscale
+                        = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
+                    const double malpha[2] = { mscale*alpha_ipow[0],
+                                               mscale*alpha_ipow[1] };
+                    suzerain_blas_zscal(Ny,malpha,x+moff,1);
+                } else {
+                    memset(x+moff, 0, Ny*sizeof(x[0])); // Scale by zero
+                }
+            }
+        } else {
+            memset(x+noff, 0, sz*sizeof(x[0]));  // Scale by zero
+        }
+    }
+}
+
 void suzerain_diffwave_accumulate(
     const int dxcnt,
     const int dzcnt,
@@ -110,19 +178,20 @@ void suzerain_diffwave_accumulate(
     // Accumulate y <- alpha*D*x + beta*y for storage, dealiasing assumptions
     for (int n = dkbz; n < dkez; ++n) {
         const int noff     = sz*(n - dkbz);
-        const int nfreqidx = suzerain_freqdiffindex(Nz, dNz, n);
+        const int nfreqidx = suzerain_diffwave_freqdiffindex(Nz, dNz, n);
         const int nkeeper  = (dzcnt > 0)
-                           ? nfreqidx
-                           : suzerain_absfreqindex(dNz, n) <= (Nz-1)/2;
+                ? nfreqidx
+                : suzerain_diffwave_absfreqindex(dNz, n) <= (Nz-1)/2;
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
-                const int moff     = noff + sx*(m - dkbx);
-                const int mfreqidx = suzerain_freqdiffindex(Nx, dNx, m);
+                const int moff = noff + sx*(m - dkbx);
+                const int mfreqidx
+                    = suzerain_diffwave_freqdiffindex(Nx, dNx, m);
                 const int mkeeper  = (dxcnt > 0)
-                                   ? mfreqidx
-                                   : suzerain_absfreqindex(dNx, m) <= (Nx-1)/2;
+                        ? mfreqidx
+                        : suzerain_diffwave_absfreqindex(dNx, m) <= (Nx-1)/2;
                 if (mkeeper) {
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale

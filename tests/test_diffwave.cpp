@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE( freqindex )
     for (int i = 0; i < sizeof(expected)/sizeof(expected[0]); ++i) {
         int result[sizeof(expected[0])/sizeof(expected[0][0])];
         for (int j = 0; j < i+1; ++j) {
-            result[j] = suzerain_freqindex(i + 1, j);
+            result[j] = suzerain_diffwave_freqindex(i + 1, j);
         }
         BOOST_CHECK_EQUAL_COLLECTIONS(
                 expected[i], expected[i] + i + 1, result, result + i + 1);
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE( absfreqindex )
     for (int i = 0; i < sizeof(expected)/sizeof(expected[0]); ++i) {
         int result[sizeof(expected[0])/sizeof(expected[0][0])];
         for (int j = 0; j < i+1; ++j) {
-            result[j] = suzerain_absfreqindex(i + 1, j);
+            result[j] = suzerain_diffwave_absfreqindex(i + 1, j);
         }
         BOOST_CHECK_EQUAL_COLLECTIONS(
                 expected[i], expected[i] + i + 1, result, result + i + 1);
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_nodealiasing )
         const int N = i + 1, dN = N;
         for (int j = 0; j < dN; ++j) {
             BOOST_CHECK_EQUAL(expected[i][j],
-                              suzerain_freqdiffindex(N, dN, j));
+                              suzerain_diffwave_freqdiffindex(N, dN, j));
         }
     }
 }
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
                 BOOST_CHECK_EQUAL(expected[i][j],
-                                  suzerain_freqdiffindex(N, dN, j));
+                                  suzerain_diffwave_freqdiffindex(N, dN, j));
             }
         }
     }
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
                 BOOST_CHECK_EQUAL(expected[i][j],
-                                  suzerain_freqdiffindex(N, dN, j));
+                                  suzerain_diffwave_freqdiffindex(N, dN, j));
             }
         }
     }
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
                 BOOST_CHECK_EQUAL(expected[i][j],
-                                  suzerain_freqdiffindex(N, dN, j));
+                                  suzerain_diffwave_freqdiffindex(N, dN, j));
             }
         }
     }
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
 // anticipate.  The implementation walks memory linearly with little branching
 // and utilizes the BLAS.  Here we inefficiently check that it did what we
 // expect.  Functional correctness in terms of representing known functions is
-// handled in test_diffwave_mpi.
+// handled in test_diffwave_p3dfft.
 static void test_accumulate_helper(const int dxcnt, const int dzcnt,
                                    const double Lx, const double Lz,
                                    const int Ny,
@@ -201,7 +201,7 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
     double (*q)[2] = y;
     for (int n = 0; n < dNz; ++n) {
         // Z-wavenumber-dependent scaling
-        const int nfreqidx = suzerain_freqdiffindex(Nz, dNz, n);
+        const int nfreqidx = suzerain_diffwave_freqdiffindex(Nz, dNz, n);
         const gsl_complex zfactor = gsl_complex_mul_real(
                 itwopioverLz, nfreqidx);
         const gsl_complex zscale = (dzcnt == 0)
@@ -210,7 +210,7 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
 
         for (int m = 0; m < (dNx/2+1); ++m) {
             // X-wavenumber-dependent scaling
-            const int mfreqidx = suzerain_freqdiffindex(Nx, dNx, m);
+            const int mfreqidx = suzerain_diffwave_freqdiffindex(Nx, dNx, m);
             const gsl_complex xfactor = gsl_complex_mul_real(
                     itwopioverLx, mfreqidx);
             const gsl_complex xscale = (dxcnt == 0)
