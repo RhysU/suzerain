@@ -61,38 +61,6 @@ void scale_by_imaginary_power(const double in[2], double out[2], int p)
     }
 }
 
-static
-void suzerain_diffwave_accumulate_y0x0z0(
-    const double alpha[2], const double (* const x)[2],
-    const double beta[2],        double (* const y)[2],
-    const int Ny,
-    const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez)
-{
-    // {n,m}keeper test expression taken from looking at {N,dN} cases like
-    // {6,8}, {6,9}, {5,8}, {5,9}.  Note that we're neglecting to accumulate
-    // the data in the Nyquist mode for N even, which may be a bad thing.
-
-    const int sx = Ny, sz = (dkex - dkbx)*sx; // Compute X, Z strides
-    for (int n = dkbz; n < dkez; ++n) {
-        const int noff = sz*(n - dkbz);
-        const int nkeeper = suzerain_absfreqindex(dNz, n) <= (Nz-1)/2;
-        if (nkeeper) {
-            for (int m = dkbx; m < dkex; ++m) {
-                const int moff = noff + sx*(m - dkbx);
-                const int mkeeper = suzerain_absfreqindex(dNx, m) <= (Nx-1)/2;
-                if (mkeeper) {
-                    suzerain_blas_zaxpby(Ny,alpha,x+moff,1,beta,y+moff,1);
-                } else {
-                    suzerain_blas_zscal(Ny,beta,y+moff,1);
-                }
-            }
-        } else {
-            suzerain_blas_zscal(sz,beta,y+noff,1);
-        }
-    }
-}
-
 #pragma float_control(precise, on)
 #pragma fenv_access(on)
 #pragma float_control(except, on)
@@ -130,30 +98,31 @@ void suzerain_diffwave_accumulate(
     assert(dkez <= dNz);
     assert(dkbz <= dkez);
 
-    // No derivatives case is sufficiently weird to warrant special handling
-    if (dxcnt == 0 && dzcnt == 0) {
-        return suzerain_diffwave_accumulate_y0x0z0(alpha, x, beta,  y,
-                                                   Ny,
-                                                   Nx, dNx, dkbx, dkex,
-                                                   Nz, dNz, dkbz, dkez);
-    }
-
     // Compute loop independent constants
     const double twopioverLx = twopiover(Lx);  // Weird looking for FP control
     const double twopioverLz = twopiover(Lz);  // Weird looking for FP control
     double alpha_ipow[2];
     scale_by_imaginary_power(alpha, alpha_ipow, dxcnt + dzcnt);
 
-    const int sx = Ny, sz = (dkex - dkbx)*sx; // Compute X, Z strides
+    // Compute X, Z strides
+    const int sx = Ny, sz = (dkex - dkbx)*sx;
+
+    // Accumulate y <- alpha*D*x + beta*y for storage, dealiasing assumptions
     for (int n = dkbz; n < dkez; ++n) {
-        const int noff = sz*(n - dkbz);
+        const int noff     = sz*(n - dkbz);
         const int nfreqidx = suzerain_freqdiffindex(Nz, dNz, n);
-        if (nfreqidx) {
+        const int nkeeper  = (dzcnt > 0)
+                           ? nfreqidx
+                           : suzerain_absfreqindex(dNz, n) <= (Nz-1)/2;
+        if (nkeeper) {
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
-                const int moff = noff + sx*(m - dkbx);
+                const int moff     = noff + sx*(m - dkbx);
                 const int mfreqidx = suzerain_freqdiffindex(Nx, dNx, m);
-                if (mfreqidx) {
+                const int mkeeper  = (dxcnt > 0)
+                                   ? mfreqidx
+                                   : suzerain_absfreqindex(dNx, m) <= (Nx-1)/2;
+                if (mkeeper) {
                     const double mscale
                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
                     const double malpha[2] = { mscale*alpha_ipow[0],

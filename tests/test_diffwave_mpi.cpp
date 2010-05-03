@@ -126,17 +126,26 @@ static void test_accumulate_helper(const pencil_grid &pg,
         for (index j = 0; j < gridy.size(); ++j) {
             for (index k = 0; k < gridz.size(); ++k) {
                 for (index i = 0; i < gridx.size(); ++i) {
-                    const double expected_A = scale*(
-                              fx1.physical_evaluate(gridx[i])
-                            + fz1.physical_evaluate(gridz[k]));
-                    BOOST_CHECK_CLOSE(*pA++, expected_A, close);
+                    {
+                        const double cfx1 = fx1.physical_evaluate(gridx[i]);
+                        const double cfz1 = fz1.physical_evaluate(gridz[k]);
+                        const double expected_A = scale*(cfx1 + cfz1);
+                        BOOST_CHECK_CLOSE(*pA++, expected_A, close);
+                    }
 
-                    const double expected_B = scale*(
-                              2.0*fx1.physical_evaluate(gridx[i], dxcnt)
-                            + 2.0*fz1.physical_evaluate(gridz[k], dzcnt)
-                            + 3.0*fx2.physical_evaluate(gridx[i])
-                            + 3.0*fz2.physical_evaluate(gridz[k]));
-                    BOOST_CHECK_CLOSE(*pB++, expected_B, close);
+                    {
+                        const double cfx1
+                            = fx1.physical_evaluate(gridx[i], dxcnt);
+                        const double cfz1
+                            = fz1.physical_evaluate(gridz[k], dzcnt);
+                        const double cfx2
+                            = fx2.physical_evaluate(gridx[i]);
+                        const double cfz2
+                            = fz2.physical_evaluate(gridz[k]);
+                        const double expected_B
+                            = scale*(2*cfx1 + 2*cfz1 + 3*cfx2 + 3*cfz2);
+                        BOOST_CHECK_CLOSE(*pB++, expected_B, close);
+                    }
                 }
             }
         }
@@ -145,25 +154,25 @@ static void test_accumulate_helper(const pencil_grid &pg,
 
 BOOST_AUTO_TEST_CASE( accumulate )
 {
-    const int MAX_DXCNT_INCLUSIVE = 0;
-    const int MAX_DZCNT_INCLUSIVE = 0;
+    const int MAX_DXCNT_INCLUSIVE = 4;
+    const int MAX_DZCNT_INCLUSIVE = 4;
 
     const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
     const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
-    boost::array<int,7> c[] = {
+    boost::array<int,5> c[] = {
         /* Ny,  Nx, dNx,  Nz, dNz */
-//         {   1,   1,   1,   6,   6 }
+        {   1,   1,   1,   6,   6 }
 
-        {   4,  24,  24,  40,  40 }
-       ,{   4,  24,  24,  40,  60 } // Dealiased Z
-       ,{   4,  24,  36,  40,  40 } // Dealiased X
-       ,{   4,  24,  36,  40,  60 } // Dealiased X,Z
+//      {   4,  24,  24,  40,  40 }
+//     ,{   4,  24,  24,  40,  60 } // Dealiased Z
+//     ,{   4,  24,  36,  40,  40 } // Dealiased X
+//     ,{   4,  24,  36,  40,  60 } // Dealiased X,Z
     };
 
     for (int l = 0; l < sizeof(c)/sizeof(c[0]); ++l) {
         // global_extents use dealiased dimensions
-        pencil_grid::size_type_3d global_extents = { c[l][2], c[l][0], c[l][4] };
+        pencil_grid::size_type_3d global_extents = { c[l][2],c[l][0],c[l][4] };
         pencil_grid::size_type_2d processor_grid = { 0, 0 };
         pencil_grid pg(global_extents, processor_grid);
         assert(pg.local_wave_extent()[1] == c[l][0]); // P3DFFT using STRIDE1?
