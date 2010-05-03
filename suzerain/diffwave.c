@@ -115,6 +115,7 @@ void suzerain_diffwave_accumulate(
                            ? nfreqidx
                            : suzerain_absfreqindex(dNz, n) <= (Nz-1)/2;
         if (nkeeper) {
+            // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff     = noff + sx*(m - dkbx);
@@ -123,6 +124,7 @@ void suzerain_diffwave_accumulate(
                                    ? mfreqidx
                                    : suzerain_absfreqindex(dNx, m) <= (Nx-1)/2;
                 if (mkeeper) {
+                    // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
                     const double malpha[2] = { mscale*alpha_ipow[0],
