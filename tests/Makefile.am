@@ -244,18 +244,18 @@ test_diffwave_LDADD   += $(MKL_LIBS)
 test_diffwave_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_diffwave_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-TESTS                      += test_diffwave_mpi.sh  # NB Wrapper script
-EXTRA_DIST                 += test_diffwave_mpi.sh  # NB Wrapper script
-check_PROGRAMS             += test_diffwave_mpi
-test_diffwave_mpi_SOURCES   = test_diffwave_mpi.cpp
-test_diffwave_mpi_CPPFLAGS  = $(AM_CPPFLAGS) $(FFTW3_THREADS_CFLAGS)
-test_diffwave_mpi_LDADD     = ../suzerain/libsuzerain.la
-test_diffwave_mpi_LDADD    += $(GSL_LIBS)
-test_diffwave_mpi_LDADD    += $(MKL_LIBS)
-test_diffwave_mpi_LDADD    += $(P3DFFT_LIBS)
-test_diffwave_mpi_LDADD    += $(FFTW3_THREADS_LIBS)
-test_diffwave_mpi_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_diffwave_mpi_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+TESTS                         += test_diffwave_p3dfft.sh  # NB Wrapper script
+EXTRA_DIST                    += test_diffwave_p3dfft.sh  # NB Wrapper script
+check_PROGRAMS                += test_diffwave_p3dfft
+test_diffwave_p3dfft_SOURCES   = test_diffwave_p3dfft.cpp
+test_diffwave_p3dfft_CPPFLAGS  = $(AM_CPPFLAGS) $(FFTW3_THREADS_CFLAGS)
+test_diffwave_p3dfft_LDADD     = ../suzerain/libsuzerain.la
+test_diffwave_p3dfft_LDADD    += $(GSL_LIBS)
+test_diffwave_p3dfft_LDADD    += $(MKL_LIBS)
+test_diffwave_p3dfft_LDADD    += $(P3DFFT_LIBS)
+test_diffwave_p3dfft_LDADD    += $(FFTW3_THREADS_LIBS)
+test_diffwave_p3dfft_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_diffwave_p3dfft_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
