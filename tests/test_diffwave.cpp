@@ -8,10 +8,18 @@
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_sf_pow_int.h>
 #include <suzerain/diffwave.h>
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
+
+BOOST_AUTO_TEST_CASE( gsl_sf_pow_int_zero_to_zero )
+{
+    // We rely on 0.0^0 == 1.0 according to gsl_sf_pow_int
+    // If it changes, then some rework is required in diffwave.c
+    BOOST_CHECK_EQUAL(gsl_sf_pow_int(0.0, 0), 1.0);
+}
 
 BOOST_AUTO_TEST_CASE( freqindex )
 {
@@ -192,57 +200,45 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
 
     double (*q)[2] = y;
     for (int n = 0; n < dNz; ++n) {
+        // Z-wavenumber-dependent scaling
         const int nfreqidx = suzerain_freqdiffindex(Nz, dNz, n);
+        const gsl_complex zfactor = gsl_complex_mul_real(
+                itwopioverLz, nfreqidx);
+        const gsl_complex zscale = (dzcnt == 0)
+                ? gsl_complex_rect(1, 0)
+                : gsl_complex_pow_real(zfactor, dzcnt);
+
         for (int m = 0; m < (dNx/2+1); ++m) {
+            // X-wavenumber-dependent scaling
             const int mfreqidx = suzerain_freqdiffindex(Nx, dNx, m);
+            const gsl_complex xfactor = gsl_complex_mul_real(
+                    itwopioverLx, mfreqidx);
+            const gsl_complex xscale = (dxcnt == 0)
+                    ? gsl_complex_rect(1, 0)
+                    : gsl_complex_pow_real(xfactor, dxcnt);
+
+            // Combine Z- and X-wavenumber-dependent scaling
+            const gsl_complex xzscale = gsl_complex_mul(xscale, zscale);
+
             for (int l = 0; l < Ny; ++l) {
                 const gsl_complex observed = gsl_complex_rect((*q)[0],(*q)[1]);
 
                 const gsl_complex xsrc = gsl_complex_rect(
-                     (l+1+2)*(m+1+ 3)*(n+1+ 5),  -(l+1+ 7)*(m+1+11)*(n+1+13));
+                     (l+1+ 2)*(m+1+ 3)*(n+1+ 5), -(l+1+ 7)*(m+1+11)*(n+1+13));
                 const gsl_complex ysrc = gsl_complex_rect(
                      (l+1+17)*(m+1+19)*(n+1+23), -(l+1+29)*(m+1+31)*(n+1+37));
 
+                const gsl_complex alpha_D_x
+                    = gsl_complex_mul(gsl_complex_mul(xzscale, alpha), xsrc);
+                const gsl_complex beta_y
+                    = gsl_complex_mul(beta, ysrc);
+
                 gsl_complex expected;
-
-                if (dxcnt != 0 || dzcnt != 0) {
-                    if (   (n <= (Nz-1)/2 || n >= (dNz - (Nz-1)/2))
-                        && (m <= (Nx-1)/2 || m >= (dNx - (Nx-1)/2))) {
-
-                        const gsl_complex xfactor
-                            = gsl_complex_mul_real(itwopioverLx, mfreqidx);
-                        const gsl_complex xscale
-                            = gsl_complex_pow_real(xfactor, dxcnt);
-
-                        const gsl_complex zfactor
-                            = gsl_complex_mul_real(itwopioverLz, nfreqidx);
-                        const gsl_complex zscale
-                            = gsl_complex_pow_real(zfactor, dzcnt);
-
-                        const gsl_complex scale
-                            = gsl_complex_mul(xscale, zscale);
-                        const gsl_complex alpha_D_x
-                            = gsl_complex_mul(gsl_complex_mul(scale, alpha),
-                                              xsrc);
-
-                        expected = gsl_complex_add(gsl_complex_mul(beta, ysrc),
-                                                   alpha_D_x);
-
-                    } else {
-                        expected = gsl_complex_mul(beta, ysrc);
-                    }
+                if (   (n <= (Nz-1)/2 || n >= (dNz - (Nz-1)/2))
+                    && (m <= (Nx-1)/2 || m >= (dNx - (Nx-1)/2))) {
+                    expected = gsl_complex_add(alpha_D_x, beta_y);
                 } else {
-                    // Special handling for the no derivative case
-                    // since we do not nuke the zeroth and Nyquist frequencies.
-                    if (   (n <= (Nz-1)/2 || n >= (dNz - (Nz-1)/2))
-                        && (m <= (Nx-1)/2 || m >= (dNx - (Nx-1)/2))) {
-
-                        expected = gsl_complex_add(
-                                gsl_complex_mul(alpha, xsrc),
-                                gsl_complex_mul(beta,  ysrc));
-                    } else {
-                        expected = gsl_complex_mul(beta, ysrc);
-                    }
+                    expected = beta_y;
                 }
 
                 const double diff = gsl_complex_abs(
