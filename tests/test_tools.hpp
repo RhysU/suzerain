@@ -689,6 +689,44 @@ typename std::complex<FPT> periodic_function<FPT,Integer>::wave(
     return retval;
 }
 
+// Relative error routine pulled from <boost/math/tools/test.hpp>.
+// Could not use directly without adding a link-time dependency.
+// Slightly simplified from the source version.
+template <class T>
+T relative_error(T a, T b)
+{
+#pragma warning(push,disable:1572)
+    T min_val = std::numeric_limits<T>::min();
+    T max_val = std::numeric_limits<T>::max();
+
+    if((a != 0) && (b != 0)) {
+        if(std::abs(b) >= max_val) {
+            if(std::abs(a) >= max_val)
+                return 0;  // one infinity is as good as another!
+        }
+        // If the result is denormalised, treat all denorms as equivalent:
+        if((a < min_val) && (a > 0))
+            a = min_val;
+        else if((a > -min_val) && (a < 0))
+            a = -min_val;
+        if((b < min_val) && (b > 0))
+            b = min_val;
+        else if((b > -min_val) && (b < 0))
+            b = -min_val;
+        return (std::max)(std::abs((a-b)/a), std::abs((a-b)/b));
+    }
+
+    // Handle special case where one or both are zero:
+    if(min_val == 0)
+        return std::abs(a-b);
+    if(std::abs(a) < min_val)
+        a = min_val;
+    if(std::abs(b) < min_val)
+        b = min_val;
+    return (std::max)(std::abs((a-b)/a), std::abs((a-b)/b));
+#pragma warning(pop)
+}
+
 /** A fixture for the Boost.Test that replaces suzerain_error */
 #pragma warning(push,disable:2017 2021)
 class BoostFailErrorHandlerFixture {
