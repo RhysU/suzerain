@@ -31,14 +31,26 @@ BOOST_AUTO_TEST_SUITE(accumulate)
 
 using suzerain::pencil_grid;
 
-static void test_accumulate_helper(const pencil_grid &pg,
-                                   const int dxcnt,
-                                   const int dzcnt,
-                                   const double Lx,
-                                   const double Ly,
-                                   const double Lz,
-                                   const int Nx,
-                                   const int Nz)
+static bool smallrelerror(const double expected,
+                          const double actual,
+                          const double relerror,
+                          const double maxrelerror)
+{
+    SUZERAIN_UNUSED(expected); // Included for predicate logging
+    SUZERAIN_UNUSED(actual);   // Included for predicate logging
+    return relerror <= maxrelerror;
+}
+
+// Return value is worst observed relative error
+static double test_accumulate_helper(const pencil_grid &pg,
+                                     const int dxcnt,
+                                     const int dzcnt,
+                                     const double Lx,
+                                     const double Ly,
+                                     const double Lz,
+                                     const int Nx,
+                                     const int Nz,
+                                     const double maxrelerror)
 {
     // Note: Incoming pencil_grid describes dealiased extents
     typedef pencil_grid::index index;
@@ -81,9 +93,11 @@ static void test_accumulate_helper(const pencil_grid &pg,
             for (index k = 0; k < gridz.size(); ++k) {
                 for (index i = 0; i < gridx.size(); ++i) {
                     *pA++ = fx1.physical_evaluate(gridx[i])
-                          + fz1.physical_evaluate(gridz[k]);
+                          * fz1.physical_evaluate(gridz[k])
+                          * (j+1);
                     *pB++ = fx2.physical_evaluate(gridx[i])
-                          + fz2.physical_evaluate(gridz[k]);
+                          * fz2.physical_evaluate(gridz[k])
+                          * (j+1);
                 }
             }
         }
@@ -94,10 +108,12 @@ static void test_accumulate_helper(const pencil_grid &pg,
     pg.transform_physical_to_wave(B.get());
 
     // Differentiate-and-accumulate
+    // Build FFT forward-and-inverse normalization factor into accumulation
+    const size_type scale = pg.global_extents()[0] *pg.global_extents()[2];
     {
-        const double alpha[2] = { 2.0, 0.0 };
+        const double alpha[2] = { 2.0/scale, 0.0/scale };
         const double (*x)[2]  = reinterpret_cast<const double (*)[2]>(A.get());
-        const double beta[2]  = { 3.0, 0.0 };
+        const double beta[2]  = { 3.0/scale, 0.0/scale };
         double (*y)[2]        = reinterpret_cast<double (*)[2]>(B.get());
         const int Ny          = pg.global_extents()[1];
         const int dNx         = pg.global_extents()[0];
@@ -116,23 +132,15 @@ static void test_accumulate_helper(const pencil_grid &pg,
     pg.transform_wave_to_physical(A.get());
     pg.transform_wave_to_physical(B.get());
 
-    // Ensure the synthetic fields came back cleanly
-    const size_type scale = pg.global_extents()[0] *pg.global_extents()[2];
-    const double    close = std::pow(10, -9 + (dxcnt+dzcnt)/2.5)
-                          * std::sqrt((double) scale)
-                          * 5;
+    // Track worst point-wise error magnitude
+    double worstrelerror = 0;
+
+    // Ensure the synthetic accumulated field came back cleanly
     {
-        double *pA = A.get(), *pB = B.get();
+        const double *pB = B.get();
         for (index j = 0; j < gridy.size(); ++j) {
             for (index k = 0; k < gridz.size(); ++k) {
                 for (index i = 0; i < gridx.size(); ++i) {
-                    {
-                        const double cfx1 = fx1.physical_evaluate(gridx[i]);
-                        const double cfz1 = fz1.physical_evaluate(gridz[k]);
-                        const double expected_A = scale*(cfx1 + cfz1);
-                        BOOST_CHECK_CLOSE(*pA++, expected_A, close);
-                    }
-
                     {
                         const double cfx1
                             = fx1.physical_evaluate(gridx[i], dxcnt);
@@ -143,55 +151,146 @@ static void test_accumulate_helper(const pencil_grid &pg,
                         const double cfz2
                             = fz2.physical_evaluate(gridz[k]);
                         const double expected_B
-                            = scale*(2*cfx1 + 2*cfz1 + 3*cfx2 + 3*cfz2);
-                        BOOST_CHECK_CLOSE(*pB++, expected_B, close);
+                            = 2*cfx1*cfz1*(j+1) + 3*cfx2*cfz2*(j+1);
+
+                        double relerror = relative_error(*pB, expected_B);
+                        BOOST_CHECK_PREDICATE(smallrelerror,
+                                (expected_B)(*pB)(relerror)(maxrelerror));
+                        worstrelerror = std::max(worstrelerror, relerror);
+
+                        ++pB;
                     }
                 }
             }
         }
     }
+
+    return worstrelerror;
 }
 
-BOOST_AUTO_TEST_CASE( accumulate )
+static void test_accumulate(const int Ny,
+                            const int Nx,
+                            const int dNx,
+                            const int Nz,
+                            const int dNz)
 {
     const int MAX_DXCNT_INCLUSIVE = 4;
     const int MAX_DZCNT_INCLUSIVE = 4;
 
     const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
-    const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
+    const int np     = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
-    boost::array<int,5> c[] = {
-        /* Ny,  Nx, dNx,  Nz, dNz */
-        {   1,   1,   1,   6,   6 }
+    pencil_grid::size_type_3d global_extents = { dNx, Ny, dNz };
+    pencil_grid::size_type_2d processor_grid = { 0, 0 };
+    pencil_grid pg(global_extents, processor_grid);
 
-//      {   4,  24,  24,  40,  40 }
-//     ,{   4,  24,  24,  40,  60 } // Dealiased Z
-//     ,{   4,  24,  36,  40,  40 } // Dealiased X
-//     ,{   4,  24,  36,  40,  60 } // Dealiased X,Z
-    };
-
-    for (int l = 0; l < sizeof(c)/sizeof(c[0]); ++l) {
-        // global_extents use dealiased dimensions
-        pencil_grid::size_type_3d global_extents = { c[l][2],c[l][0],c[l][4] };
-        pencil_grid::size_type_2d processor_grid = { 0, 0 };
-        pencil_grid pg(global_extents, processor_grid);
-        assert(pg.local_wave_extent()[1] == c[l][0]); // P3DFFT using STRIDE1?
-
-        for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
-            for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {
-                if (!procid) {
-                    BOOST_TEST_MESSAGE("Testing " << c[l]
-                                       << " for dxcnt = " << dxcnt
-                                       << ", dzcnt = " << dzcnt
-                                       << " using " << nproc << " processor"
-                                       << (nproc > 1 ? "s" : "") );
-                }
-                MPIBarrierRAII barrier(MPI_COMM_WORLD);
-                test_accumulate_helper(
-                    pg, dxcnt, dzcnt, 4*M_PI, 2, 4*M_PI/3, c[l][1], c[l][3]);
+    for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
+        for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {
+            const double maxrelerror = 5*std::pow(10, -11 + (dxcnt+dzcnt)/4.0);
+            if (!procid) {
+                BOOST_TEST_MESSAGE("Testing"
+                                    << " Ny=" << Ny
+                                    << ", Nx=" << Nx
+                                    << ", dNx=" << dNx
+                                    << ", Nz=" << Nz
+                                    << ", dNz=" << dNz
+                                    << " for dx=" << dxcnt
+                                    << ", dz=" << dzcnt
+                                    << ", np=" << np
+                                    << ", maxrelerror=" << maxrelerror);
             }
+            MPIBarrierRAII barrier(MPI_COMM_WORLD);
+            const double worstrelerror = test_accumulate_helper(
+                pg, dxcnt, dzcnt, 4*M_PI, 2, 4*M_PI/3, Nx, Nz, maxrelerror);
+            BOOST_TEST_MESSAGE("Rank " << procid
+                               << " observed local maximum relative error = "
+                               << std::scientific
+                               << std::setw(16)
+                               << worstrelerror);
         }
     }
+}
+
+BOOST_AUTO_TEST_CASE( p3dfft_sanity_check )
+{
+    BOOST_REQUIRE(p3dfft_using_stride1());
+    BOOST_REQUIRE_EQUAL(p3dfft_get_precision(), 2);
+}
+
+BOOST_AUTO_TEST_CASE( accumulate_quasi_1D_not_dealiased )
+{
+    // Check small grids with odd sizes only in the single rank case.
+    // P3DFFT cannot distribute them on non-1x1 Cartesian processor grids.
+    if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
+        /*               Ny,  Nx, dNx,  Nz, dNz */
+        test_accumulate(  1,   1,   1,   8,   8);
+        test_accumulate(  1,   1,   1,   7,   7);
+        test_accumulate(  1,   8,   8,   1,   1);
+        test_accumulate(  1,   7,   7,   1,   1);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( accumulate_quasi_1D_dealiased_z )
+{
+    // Check small grids with odd sizes only in the single rank case.
+    // P3DFFT cannot distribute them on non-1x1 Cartesian processor grids.
+    if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
+        /*               Ny,  Nx, dNx,  Nz, dNz */
+        test_accumulate(  1,   1,   1,   6,   8);
+        test_accumulate(  1,   1,   1,   6,   9);
+        test_accumulate(  1,   1,   1,   5,   8);
+        test_accumulate(  1,   1,   1,   5,   9);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( accumulate_quasi_1D_dealiased_x )
+{
+    // Check small grids with odd sizes only in the single rank case.
+    // P3DFFT cannot distribute them on non-1x1 Cartesian processor grids.
+    if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
+        /*               Ny,  Nx, dNx,  Nz, dNz */
+        test_accumulate(  1,   6,   8,   1,   1);
+        test_accumulate(  1,   6,   9,   1,   1);
+        test_accumulate(  1,   5,   8,   1,   1);
+        test_accumulate(  1,   5,   9,   1,   1);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( accumulate_quasi_2D_not_dealiased )
+{
+    // Check small grids with odd sizes only in the single rank case.
+    // P3DFFT cannot distribute them on non-1x1 Cartesian processor grids.
+    if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
+        /*               Ny,  Nx, dNx,  Nz, dNz */
+        test_accumulate(  1,   8,   8,   8,   8);
+        test_accumulate(  1,   7,   7,   7,   7);
+        test_accumulate(  1,   7,   7,   8,   8);
+        test_accumulate(  1,   8,   8,   7,   7);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( accumulate_not_dealiased )
+{
+    /*               Ny,  Nx, dNx,  Nz, dNz */
+    test_accumulate(  3,  24,  24,  40,  40 );
+}
+
+BOOST_AUTO_TEST_CASE( accumulate_dealiased_z )
+{
+    /*               Ny,  Nx, dNx,  Nz, dNz */
+    test_accumulate(  2,  24,  24,  40,  60 );
+}
+
+BOOST_AUTO_TEST_CASE( accumulate_dealiased_x )
+{
+    /*               Ny,  Nx, dNx,  Nz, dNz */
+    test_accumulate(  2,  24,  36,  40,  40 );
+}
+
+BOOST_AUTO_TEST_CASE( accumulate_dealiased_xz )
+{
+    /*               Ny,  Nx, dNx,  Nz, dNz */
+    test_accumulate(  2,  24,  36,  40,  40 );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
