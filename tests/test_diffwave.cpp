@@ -14,6 +14,9 @@
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
+
+BOOST_AUTO_TEST_SUITE( utilities )
+
 BOOST_AUTO_TEST_CASE( gsl_sf_pow_int_zero_to_zero )
 {
     // We rely on 0.0^0 == 1.0 according to gsl_sf_pow_int
@@ -152,6 +155,11 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
         }
     }
 }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( accumulate )
 
 // Tests mainly that the implementation accesses memory in the way that we
 // anticipate.  The implementation walks memory linearly with little branching
@@ -301,3 +309,5 @@ BOOST_AUTO_TEST_CASE( accumulate )
         }
     }
 }
+
+BOOST_AUTO_TEST_SUITE_END()
