@@ -4,14 +4,14 @@
 # always use mpiexec on some login nodes.  Better to warn the user that a test
 # was skipped then worry them when make check fails as a result.
 
-if ! [ -x test_diffwave_mpi ]; then
-    echo "test_diffwave_mpi binary not found or not executable"
+if ! [ -x test_diffwave_p3dfft ]; then
+    echo "test_diffwave_p3dfft binary not found or not executable"
     exit 1
 fi
 
 if ! which mpiexec > /dev/null ; then
-    echo "WARNING: Unable to find mpiexec; skipping test_diffwave_mpi"
+    echo "WARNING: Unable to find mpiexec; skipping test_diffwave_p3dfft"
     exit 0
 fi
 
-mpiexec -np 1 ./test_diffwave_mpi
+mpiexec -np 1 ./test_diffwave_p3dfft
