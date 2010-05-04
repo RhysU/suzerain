@@ -1431,7 +1431,7 @@ Vector u(const Scalar &rho,
  * \f]
  *
  * @param[in]  rho \f$\rho\f$
- * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
+ * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$
  * @param[in]  m \f$\vec{m}\f$
  * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
  *
