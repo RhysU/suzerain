@@ -31,41 +31,54 @@
 #ifndef __SUZERAIN_HTSTRETCH_H__
 #define __SUZERAIN_HTSTRETCH_H__
 
-/** @file
- * Provides utilities atop POSIX methods.
- */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 double
-suzerain_htstretch_onesided_continuous(const double I,
-                                       const double delta,
-                                       const double xi);
+suzerain_htstretch1(const double delta,
+                    const double L,
+                    const double x);
 
 double
-suzerain_htstretch_onesided_discrete(const double I,
-                                     const double delta,
-                                     const int N,
-                                     const int j);
+suzerain_htstretch1_ddelta(const double delta,
+                           const double L,
+                           const double x);
 
 double
-suzerain_htstretch_twosided_continuous(const double I,
-                                       const double delta,
-                                       const double xi);
+suzerain_htstretch1_dL(const double delta,
+                       const double L,
+                       const double x);
 
 double
-suzerain_htstretch_twosided_discrete(const double I,
-                                     const double delta,
-                                     const int N,
-                                     const int j);
+suzerain_htstretch1_dx(const double delta,
+                       const double L,
+                       const double x);
 
 double
-suzerain_htstretch_twosided_discrete_delta(const double I,
-                                           const int N,
-                                           const int k,
-                                           const double u_crit);
+suzerain_htstretch2(const double delta,
+                    const double L,
+                    const double x);
+
+double
+suzerain_htstretch2_ddelta(const double delta,
+                           const double L,
+                           const double x);
+
+double
+suzerain_htstretch2_dL(const double delta,
+                       const double L,
+                       const double x);
+
+double
+suzerain_htstretch2_dx(const double delta,
+                       const double L,
+                       const double x);
+
+double
+suzerain_htstretch_twosided_delta(const double L,
+                                  const double xi_crit,
+                                  const double u_crit);
 
 
 #ifdef __cplusplus

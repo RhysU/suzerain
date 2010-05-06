@@ -36,46 +36,107 @@
 #include <gsl/gsl_roots.h>
 #include <suzerain/htstretch.h>
 
+#pragma warning(disable:981)
+
 double
-suzerain_htstretch_onesided_continuous(const double I,
-                                       const double delta,
-                                       const double xi)
+suzerain_htstretch1(const double delta,
+                    const double L,
+                    const double x)
 {
-#pragma warning(push,disable:981)
-    return 1 + tanh(delta*(xi/I - 1))/tanh(delta);
-#pragma warning(pop)
+    assert(L > 0);
+    assert(0 <= x && x <= L);
+    return 1 + tanh(delta*(x/L - 1))/tanh(delta);
 }
 
 double
-suzerain_htstretch_onesided_discrete(const double I,
-                                     const double delta,
-                                     const int N,
-                                     const int j)
+suzerain_htstretch1_ddelta(const double delta,
+                           const double L,
+                           const double x)
 {
-    return suzerain_htstretch_onesided_continuous(I, delta, j*I/N);
+    assert(L > 0);
+    assert(0 <= x && x <= L);
+    const double xoverLlessone = x/L-1;
+    const double cosh_expr     = cosh(delta*xoverLlessone);
+    const double tanh_expr     = tanh(delta*xoverLlessone);
+    const double sinh_expr     = sinh(delta);
+    return xoverLlessone/(tanh(delta)*cosh_expr*cosh_expr)
+        -  tanh_expr/(sinh_expr*sinh_expr);
 }
 
 double
-suzerain_htstretch_twosided_continuous(const double I,
-                                       const double delta,
-                                       const double xi)
+suzerain_htstretch1_dL(const double delta,
+                       const double L,
+                       const double x)
 {
-#pragma warning(push,disable:981)
-    return 0.5*(1 + tanh(delta*(xi/I - 0.5))/tanh(delta/2.));
-#pragma warning(pop)
+    assert(L > 0);
+    assert(0 <= x && x <= L);
+    const double xoverLlessone = x/L-1;
+    const double cosh_expr     = cosh(delta*xoverLlessone);
+    return -x*delta/(L*L*tanh(delta)*cosh_expr*cosh_expr);
 }
 
 double
-suzerain_htstretch_twosided_discrete(const double I,
-                                     const double delta,
-                                     const int N,
-                                     const int j)
+suzerain_htstretch1_dx(const double delta,
+                       const double L,
+                       const double x)
 {
-    return suzerain_htstretch_twosided_continuous(I, delta, j*I/N);
+    assert(L > 0);
+    assert(0 <= x && x <= L);
+    const double cosh_expr = cosh(delta*(x/L-1));
+    return delta/(L*tanh(delta)*cosh_expr*cosh_expr);
+}
+
+
+double
+suzerain_htstretch2(const double delta,
+                    const double L,
+                    const double x)
+{
+    assert(L > 0);
+    assert(0 <= x && x <= L);
+    return 0.5*(1 + tanh(delta*(x/L - 0.5))/tanh(delta/2.));
+}
+
+double
+suzerain_htstretch2_ddelta(const double delta,
+                           const double L,
+                           const double x)
+{
+    assert(L > 0);
+    assert(0 <= x && x <= L);
+    const double xoverLlesshalf = x/L - 0.5;
+    const double sinh_halfdelta = sinh(delta/2);
+    const double cosh_term      = cosh(delta*xoverLlesshalf);
+    return -  ((L-2*x)*sinh(delta)+L*sinh((2*x/L-1)*delta))
+            / (8*L*cosh_term*cosh_term*sinh_halfdelta*sinh_halfdelta);
+}
+
+double
+suzerain_htstretch2_dL(const double delta,
+                       const double L,
+                       const double x)
+{
+    assert(L > 0);
+    assert(0 <= x && x <= L);
+    const double xoverLlesshalf = x/L - 0.5;
+    const double cosh_term      = cosh(delta*xoverLlesshalf);
+    return -x*delta/(tanh(delta/2)*2*L*L*cosh_term*cosh_term);
+}
+
+double
+suzerain_htstretch2_dx(const double delta,
+                       const double L,
+                       const double x)
+{
+    assert(L > 0);
+    assert(0 <= x && x <= L);
+    const double xoverLlesshalf = x/L - 0.5;
+    const double cosh_term      = cosh(delta*xoverLlesshalf);
+    return delta/(tanh(delta/2)*2*L*cosh_term*cosh_term);
 }
 
 typedef struct vinokur_delta_problem_params {
-    double I;
+    double L;
     int    k;
     int    N;
     double u_crit;
@@ -109,11 +170,9 @@ double doublesided_df(double delta, void *params)
     const double csch_expr = 1./sinh(delta/2.);
     const double sech_expr = 1./cosh(koverNlesshalf*delta);
     const double twokoverNlessone = (2.*vp->k)/vp->N - 1.;
-#pragma warning(push,disable:981)
     const double retval = -(csch_expr*csch_expr*sech_expr*sech_expr)*(
                 (vp->N-2*vp->k)*sinh(delta)+vp->N*sinh(twokoverNlessone*delta)
             )/(8*vp->N);
-#pragma warning(pop)
 
     return retval;
 }
@@ -137,9 +196,7 @@ void doublesided_fdf(double delta, void *params, double *f, double *df)
     const double csch_expr = 1./sinh(delta/2.);
     const double sech_expr = 1./cosh(koverNlesshalf*delta);
     const double twokoverNlessone = (2.*vp->k)/vp->N - 1.;
-#pragma warning(push,disable:981)
     *df = -(csch_expr*csch_expr*sech_expr*sech_expr)*(
                 (vp->N-2*vp->k)*sinh(delta)+vp->N*sinh(twokoverNlessone*delta)
             )/(8*vp->N);
-#pragma warning(pop)
 }
