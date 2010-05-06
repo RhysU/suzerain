@@ -160,6 +160,88 @@ struct ExponentialSolution
 };
 
 
+BOOST_AUTO_TEST_SUITE( timestep_stability )
+
+typedef boost::mpl::list< float ,double ,long double > constants_test_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( convective, T, constants_test_types )
+{
+    using suzerain::timestepper::convective_stability_criterion;
+
+    const T pi            = boost::math::constants::pi<T>();
+    const T u_x           = - 3;
+    const T delta_x       =   5;
+    const T u_y           = - 7;
+    const T delta_y       =   9;
+    const T u_z           =  11;
+    const T delta_z       =  13;
+    const T evmaxmag_imag =  17;
+
+    { // Ensure default a behavior correct
+        const T with_a = convective_stability_criterion(
+                u_x, T(1)/delta_x, u_y, T(1)/delta_y, u_z, T(1)/delta_z,
+                evmaxmag_imag, T(0));
+        const T without_a = convective_stability_criterion(
+                u_x, T(1)/delta_x, u_y, T(1)/delta_y, u_z, T(1)/delta_z,
+                evmaxmag_imag);
+        BOOST_CHECK_EQUAL(with_a, without_a);
+    }
+
+    { // Ensure <= restriction correct as documented
+        const T a = 19;
+        const T delta_t = convective_stability_criterion(
+                u_x, T(1)/delta_x, u_y, T(1)/delta_y, u_z, T(1)/delta_z,
+                evmaxmag_imag, a);
+        const T lhs = pi*(  (std::abs(u_x)+a)/delta_x
+                          + (std::abs(u_y)+a)/delta_y
+                          + (std::abs(u_z)+a)/delta_z)*delta_t;
+        BOOST_CHECK_LE(
+                lhs, evmaxmag_imag + 10*std::numeric_limits<T>::epsilon());
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( diffusive, T, constants_test_types )
+{
+    using suzerain::timestepper::diffusive_stability_criterion;
+
+    const T pi            = boost::math::constants::pi<T>();
+    const T delta_x       =  5;
+    const T delta_y       =  9;
+    const T delta_z       = 13;
+    const T Re            = 17;
+    const T Pr            = 19;
+    const T gamma         = 23;
+    const T evmaxmag_real = 29;
+    const T nu            = 37;
+
+    { // Ensure default a behavior correct
+        const T with_nu0 = diffusive_stability_criterion(
+                T(1)/delta_x, T(1)/delta_y, T(1)/delta_z, Re, Pr, gamma,
+                evmaxmag_real, nu, T(0));
+        const T without_nu0 = diffusive_stability_criterion(
+                T(1)/delta_x, T(1)/delta_y, T(1)/delta_z, Re, Pr, gamma,
+                evmaxmag_real, nu);
+        BOOST_CHECK_EQUAL(with_nu0, without_nu0);
+    }
+
+    { // Ensure <= restriction correct as documented
+        const T nu0 = 31;
+        BOOST_REQUIRE_LE(nu0, nu); // Legit restriction?
+        const T delta_t = diffusive_stability_criterion(
+                T(1)/delta_x, T(1)/delta_y, T(1)/delta_z, Re, Pr, gamma,
+                evmaxmag_real, nu, nu0);
+        const T coeff = std::max(gamma*(nu-nu0)/(Re*Pr), (nu-nu0)/Re);
+        const T lhs   = coeff*pi*pi*(   T(1)/(delta_x*delta_x)
+                                      + T(1)/(delta_y*delta_y)
+                                      + T(1)/(delta_z*delta_z))*delta_t;
+        BOOST_CHECK_LE(
+                lhs, evmaxmag_real + 30*std::numeric_limits<T>::epsilon());
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 BOOST_AUTO_TEST_SUITE( SMR91Method_sanity )
 
 BOOST_AUTO_TEST_CASE( name )
