@@ -238,21 +238,23 @@ FPT convective_stability_criterion(
  * Kwok's thesis (2002) and equations 4.29 and 4.30 in Stephen Guarini's thesis
  * (1998):
  * \f[
- *     \mbox{max}\!\left(
- *          \frac{\gamma\left(\nu-\nu_{0}\right)}{\mbox{Re}\mbox{Pr}},
- *          \frac{\nu-\nu_{0}}{\mbox{Re}}
- *     \right)
- *     \pi^{2}
- *     \left(
- *         \frac{1}{\Delta{}x^{2}}
- *       + \frac{1}{\Delta{}y^{2}}
- *       + \frac{1}{\Delta{}z^{2}}
- *     \right)
- *     \Delta{}t \leq \left|\lambda_{R}\Delta_{}t\right|_{\mbox{max}}
+ *   \mbox{max}\!\left(
+ *     \left|\frac{\gamma\left(\nu-\nu_{0}\right)}{\mbox{Re}\mbox{Pr}}\right|,
+ *     \left|\frac{\nu-\nu_{0}}{\mbox{Re}}\right|
+ *   \right)
+ *   \pi^{2}
+ *   \left(
+ *       \frac{1}{\Delta{}x^{2}}
+ *     + \frac{1}{\Delta{}y^{2}}
+ *     + \frac{1}{\Delta{}z^{2}}
+ *   \right)
+ *   \Delta{}t \leq \left|\lambda_{R}\Delta_{}t\right|_{\mbox{max}}
  * \f]
  * The maximum pure real eigenvalue magnitude,
  * \f$\left|\lambda_{R}\Delta{}t\right|_{\mbox{max}}\f$, is a feature of the
  * chosen timestepping method.  For example, it is 2.512 for the SMR91 scheme.
+ * The absolute values within the maximum operation account for the possibility
+ * that \f$\nu<\nu_{0}\f$.
  *
  * @note Using a hybrid implicit/explicit %timestepper with viscous terms
  * computed implicitly sets \f$\nu_0\f$ to be the reference kinematic viscosity
@@ -286,9 +288,9 @@ FPT diffusive_stability_criterion(
         const FPT nu,
         const FPT nu0 = 0)
 {
-    // Precision for a 128-bit IEEE quad found via Sage's N(1/(pi*pi),digits=34)
-    const FPT one_over_pi_squared = (FPT) 0.1013211836423377714438794632097276L;
-    const FPT nu_less_nu0 = nu - nu0;
+    // Precision for a 128-bit quad found via Sage's N(1/(pi*pi),digits=34)
+    const FPT one_over_pi_squared = (FPT)0.1013211836423377714438794632097276L;
+    const FPT nu_less_nu0 = std::abs(nu - nu0);
     const FPT maxcoeff = std::max((gamma*nu_less_nu0)/(Re*Pr), nu_less_nu0/Re);
     return (evmaxmag_real * one_over_pi_squared)
         /  (maxcoeff * (   one_over_delta_x*one_over_delta_x

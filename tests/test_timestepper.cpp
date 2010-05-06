@@ -230,7 +230,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diffusive, T, constants_test_types )
         const T delta_t = diffusive_stability_criterion(
                 T(1)/delta_x, T(1)/delta_y, T(1)/delta_z, Re, Pr, gamma,
                 evmaxmag_real, nu, nu0);
-        const T coeff = std::max(gamma*(nu-nu0)/(Re*Pr), (nu-nu0)/Re);
+        using std::abs;
+        const T coeff = std::max(gamma*(abs(nu-nu0))/(Re*Pr), abs(nu-nu0)/Re);
+        const T lhs   = coeff*pi*pi*(   T(1)/(delta_x*delta_x)
+                                      + T(1)/(delta_y*delta_y)
+                                      + T(1)/(delta_z*delta_z))*delta_t;
+        BOOST_CHECK_LE(
+                lhs, evmaxmag_real + 30*std::numeric_limits<T>::epsilon());
+    }
+
+    { // Ensure we handle nu < nu0 correctly
+        const T nu0 = 11;
+        BOOST_REQUIRE_LE(nu0, nu); // Legit restriction?
+        const T delta_t = diffusive_stability_criterion(
+                T(1)/delta_x, T(1)/delta_y, T(1)/delta_z, Re, Pr, gamma,
+                evmaxmag_real, nu, nu0);
+        using std::abs;
+        const T coeff = std::max(gamma*(abs(nu-nu0))/(Re*Pr), abs(nu-nu0)/Re);
         const T lhs   = coeff*pi*pi*(   T(1)/(delta_x*delta_x)
                                       + T(1)/(delta_y*delta_y)
                                       + T(1)/(delta_z*delta_z))*delta_t;
