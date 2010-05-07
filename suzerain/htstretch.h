@@ -31,45 +31,180 @@
 #ifndef __SUZERAIN_HTSTRETCH_H__
 #define __SUZERAIN_HTSTRETCH_H__
 
+/* @file
+ * Computes quantities related to the common hyperbolic tangent-based grid
+ * stretching scheme associated with Marcel Vinokur.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/**
+ * Compute the one-sided hyperbolic tangent stretching function.
+ * The function has domain \f$\left[0,L\right]\f$, range \f$\left[0,1\right]\f$
+ * and is given by
+ * \f[
+ *      s\left(x\right) = 1 + \frac{
+ *          \mbox{tanh}\left[\delta\left(x/L-1\right)\right]
+ *      }{
+ *          \mbox{tanh}\left[\delta\right]
+ *      }
+ * \f]
+ *
+ * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param L     The domain endpoint \f$L\f$
+ * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
+ *
+ * @return The one-sided hyperbolic tangent stretching function evaluated
+ *         for the given parameters.
+ *
+ * @see CFD Online's <a
+ * href="http://www.cfd-online.com/Wiki/Structured_mesh_generation">structured
+ * mesh generation</a> topic for more information.
+ */
 double
 suzerain_htstretch1(const double delta,
                     const double L,
                     const double x);
 
+/**
+ * Compute the partial derivative of the one-sided hyperbolic tangent
+ * stretching function with respect to the stretching factor \f$\delta\f$.
+ *
+ * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param L     The domain endpoint \f$L\f$
+ * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
+ *
+ * @return The one-sided hyperbolic tangent stretching function partial
+ *         derivative with respect to the stretching factor evaluated
+ *         for the given parameters.
+ *
+ * @see suzerain_htstretch1() for the form of the function.
+ */
 double
 suzerain_htstretch1_ddelta(const double delta,
                            const double L,
                            const double x);
 
+/**
+ * Compute the partial derivative of the one-sided hyperbolic tangent
+ * stretching function with respect to the domain size \f$L\f$.
+ *
+ * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param L     The domain endpoint \f$L\f$
+ * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
+ *
+ * @return The one-sided hyperbolic tangent stretching function partial
+ *         derivative with respect to the domain size evaluated
+ *         for the given parameters.
+ *
+ * @see suzerain_htstretch1() for the form of the function.
+ */
 double
 suzerain_htstretch1_dL(const double delta,
                        const double L,
                        const double x);
 
+/**
+ * Compute the partial derivative of the one-sided hyperbolic tangent
+ * stretching function with respect to the evaluation point \f$x\f$.
+ *
+ * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param L     The domain endpoint \f$L\f$
+ * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
+ *
+ * @return The one-sided hyperbolic tangent stretching function partial
+ *         derivative with respect to the evaluation point
+ *         for the given parameters.
+ *
+ * @see suzerain_htstretch1() for the form of the function.
+ */
 double
 suzerain_htstretch1_dx(const double delta,
                        const double L,
                        const double x);
 
+/**
+ * Compute the two-sided hyperbolic tangent stretching function.
+ * The function has domain \f$\left[0,L\right]\f$, range \f$\left[0,1\right]\f$
+ * and is given by
+ * \f[
+ *      u\left(x\right) = \frac{1}{2}\left(1 + \frac{
+ *          \mbox{tanh}\left[\delta\left(x/L-1/2\right)\right]
+ *      }{
+ *          \mbox{tanh}\left[\delta/2\right]
+ *      }\right)
+ * \f]
+ *
+ * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param L     The domain endpoint \f$L\f$
+ * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
+ *
+ * @return The two-sided hyperbolic tangent stretching function evaluated
+ *         for the given parameters.
+ *
+ * @see CFD Online's <a
+ * href="http://www.cfd-online.com/Wiki/Structured_mesh_generation">structured
+ * mesh generation</a> topic for more information.
+ */
 double
 suzerain_htstretch2(const double delta,
                     const double L,
                     const double x);
 
+/**
+ * Compute the partial derivative of the two-sided hyperbolic tangent
+ * stretching function with respect to the stretching factor \f$\delta\f$.
+ *
+ * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param L     The domain endpoint \f$L\f$
+ * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
+ *
+ * @return The two-sided hyperbolic tangent stretching function partial
+ *         derivative with respect to the stretching factor evaluated
+ *         for the given parameters.
+ *
+ * @see suzerain_htstretch2() for the form of the function.
+ */
 double
 suzerain_htstretch2_ddelta(const double delta,
                            const double L,
                            const double x);
 
+/**
+ * Compute the partial derivative of the two-sided hyperbolic tangent
+ * stretching function with respect to the domain size \f$L\f$.
+ *
+ * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param L     The domain endpoint \f$L\f$
+ * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
+ *
+ * @return The two-sided hyperbolic tangent stretching function partial
+ *         derivative with respect to the domain size evaluated
+ *         for the given parameters.
+ *
+ * @see suzerain_htstretch2() for the form of the function.
+ */
 double
 suzerain_htstretch2_dL(const double delta,
                        const double L,
                        const double x);
 
+/**
+ * Compute the partial derivative of the two-sided hyperbolic tangent
+ * stretching function with respect to the evaluation point \f$x\f$.
+ *
+ * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param L     The domain endpoint \f$L\f$
+ * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
+ *
+ * @return The two-sided hyperbolic tangent stretching function partial
+ *         derivative with respect to the evaluation point
+ *         for the given parameters.
+ *
+ * @see suzerain_htstretch2() for the form of the function.
+ */
 double
 suzerain_htstretch2_dx(const double delta,
                        const double L,
