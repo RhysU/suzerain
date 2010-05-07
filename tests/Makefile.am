@@ -47,6 +47,13 @@ test_blas_et_al_LDADD    = ../suzerain/libsuzerain.la
 test_blas_et_al_LDADD   += $(GSL_LIBS)
 test_blas_et_al_LDADD   += $(MKL_LIBS)
 
+TESTS                  += test_htstretch
+check_PROGRAMS         += test_htstretch
+test_htstretch_SOURCES  = test_htstretch.c
+test_htstretch_LDADD    = ../suzerain/libsuzerain.la
+test_htstretch_LDADD   += $(GSL_LIBS)
+test_htstretch_LDADD   += $(MKL_LIBS)
+
 TESTS            += test_mpl
 check_PROGRAMS   += test_mpl
 test_mpl_SOURCES  = test_mpl.cpp
