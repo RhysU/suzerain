@@ -34,6 +34,7 @@
 #include <suzerain/common.h>
 #pragma hdrstop
 #include <gsl/gsl_roots.h>
+#include <suzerain/error.h>
 #include <suzerain/htstretch.h>
 
 #pragma warning(disable:981)
@@ -135,68 +136,82 @@ suzerain_htstretch2_dx(const double delta,
     return delta/(tanh(delta/2)*2*L*cosh_term*cosh_term);
 }
 
-typedef struct vinokur_delta_problem_params {
+typedef struct delta_problem_params {
     double L;
-    int    k;
-    int    N;
-    double u_crit;
-} vinokur_delta_problem_params;
+    double crit_x;
+    double crit_val;
+} delta_problem_params;
 
 static
-double doublesided_f(double delta, void *params)
+double htstretch1_delta_problem_f(double delta, void *params)
 {
-    const vinokur_delta_problem_params * const vp
-        = (vinokur_delta_problem_params *) params;
+    const delta_problem_params * const dpp = (delta_problem_params *) params;
 
-    const double koverNlesshalf = ((double) vp->k)/((double) vp->N) - 1./2.;
-    double retval;
-    retval  = delta*koverNlesshalf;
-    retval  = tanh(retval);
-    retval /= tanh(delta/2.);
-    retval += 1.;
-    retval *= 1./2.;
-    retval -= vp->u_crit;
-
-    return retval;
+    return   suzerain_htstretch1(delta, dpp->L, dpp->crit_x)
+           - 0.0 /* == suzerain_htstretch1(  0.0, dpp->L, dpp->crit_x) */
+           - dpp->crit_val;
 }
 
 static
-double doublesided_df(double delta, void *params)
+double htstretch2_delta_problem_f(double delta, void *params)
 {
-    const vinokur_delta_problem_params * const vp
-        = (vinokur_delta_problem_params *) params;
+    const delta_problem_params * const dpp = (delta_problem_params *) params;
 
-    const double koverNlesshalf = ((double) vp->k)/((double) vp->N) - 1./2.;
-    const double csch_expr = 1./sinh(delta/2.);
-    const double sech_expr = 1./cosh(koverNlesshalf*delta);
-    const double twokoverNlessone = (2.*vp->k)/vp->N - 1.;
-    const double retval = -(csch_expr*csch_expr*sech_expr*sech_expr)*(
-                (vp->N-2*vp->k)*sinh(delta)+vp->N*sinh(twokoverNlessone*delta)
-            )/(8*vp->N);
-
-    return retval;
+    return   suzerain_htstretch2(delta, dpp->L, dpp->crit_x)
+           - 0.0 /* == suzerain_htstretch2(  0.0, dpp->L, dpp->crit_x) */
+           - dpp->crit_val;
 }
 
-static
-void doublesided_fdf(double delta, void *params, double *f, double *df)
+int
+suzerain_htstretch1_find_delta(double *delta,
+                               const double L,
+                               const double crit_x,
+                               const double crit_val)
 {
-    const vinokur_delta_problem_params * const vp
-        = (vinokur_delta_problem_params *) params;
-    const double koverNlesshalf = ((double) vp->k)/((double) vp->N) - 1./2.;
+    // Initial bounds guess and sanity check
+    const double delta_lower = 1e-8;
+    const double crit_val_lower = suzerain_htstretch1(delta_lower, L, crit_x);
+    const double delta_upper = 1e3;
+    const double crit_val_upper = suzerain_htstretch1(delta_upper, L, crit_x);
+    if (crit_val >= crit_val_lower) {
+        SUZERAIN_ERROR("(crit_x, crit_val) incompatible with delta_lower",
+                       SUZERAIN_FAILURE);
+    }
+    if (crit_val <= crit_val_upper) {
+        SUZERAIN_ERROR("(crit_x, crit_val) incompatible with delta_upper",
+                       SUZERAIN_FAILURE);
+    }
 
-    // Function evaluation
-    *f  = delta*koverNlesshalf;
-    *f  = tanh(*f);
-    *f /= tanh(delta/2.);
-    *f += 1.;
-    *f *= 1./2.;
-    *f -= vp->u_crit;
+    // Initialize nonlinear function to solve
+    delta_problem_params dpp;
+    dpp.L          = L;
+    dpp.crit_x     = crit_x;
+    dpp.crit_val   = crit_val;
+    gsl_function F = { &htstretch1_delta_problem_f, &dpp };
 
-    // Derivative evaluation
-    const double csch_expr = 1./sinh(delta/2.);
-    const double sech_expr = 1./cosh(koverNlesshalf*delta);
-    const double twokoverNlessone = (2.*vp->k)/vp->N - 1.;
-    *df = -(csch_expr*csch_expr*sech_expr*sech_expr)*(
-                (vp->N-2*vp->k)*sinh(delta)+vp->N*sinh(twokoverNlessone*delta)
-            )/(8*vp->N);
+    // Initialize the solver
+    gsl_root_fsolver *fsolver = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
+    if (!fsolver) {
+        SUZERAIN_ERROR("Unable to allocate solver", SUZERAIN_ENOMEM);
+    }
+    if (gsl_root_fsolver_set(fsolver, &F, delta_lower, delta_upper)) {
+        gsl_root_fsolver_free(fsolver);
+        SUZERAIN_ERROR("Unable to initialize solver", SUZERAIN_ESANITY);
+    }
+
+    // Iterate until convergence or tolerance reached
+    for (int i = 0; i < 100; ++i)
+    {
+        const int err = gsl_root_fsolver_iterate(fsolver);
+        if (err) SUZERAIN_ERROR("Error during solver iteration", err);
+        const double bracket =   gsl_root_fsolver_x_upper(fsolver)
+                               - gsl_root_fsolver_x_lower(fsolver);
+        if (fabs(bracket) < 1000*GSL_DBL_EPSILON) break;
+    }
+
+    // Save the root to delta and tear down the solver
+    *delta = gsl_root_fsolver_root(fsolver);
+    gsl_root_fsolver_free(fsolver);
+
+    return SUZERAIN_SUCCESS;
 }

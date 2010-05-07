@@ -125,6 +125,12 @@ suzerain_htstretch1_dx(const double delta,
                        const double L,
                        const double x);
 
+// TODO Document
+double
+suzerain_htstretch1_pick_delta(const double L,
+                               const double crit_x,
+                               const double crit_val);
+
 /**
  * Compute the two-sided hyperbolic tangent stretching function.
  * The function has domain \f$\left[0,L\right]\f$, range \f$\left[0,1\right]\f$
