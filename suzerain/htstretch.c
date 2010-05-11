@@ -258,6 +258,13 @@ suzerain_htstretch1_find_delta(const double L,
                                const int maxiter,
                                double *delta)
 {
+    assert(L > 0);
+    assert(0.0 <= crit_x && crit_x <= L);
+    assert(0.0 <= crit_val && crit_val <= 1.0);
+    assert(epsabs > 0);
+    assert(maxiter > 0);
+    assert(delta != NULL);
+
     delta_problem_params dpp = { L, crit_x, crit_val };
     gsl_function_fdf fdf     = { &htstretch1_delta_problem_f,
                                  &htstretch1_delta_problem_df,
@@ -275,6 +282,13 @@ suzerain_htstretch2_find_delta(const double L,
                                const int maxiter,
                                double *delta)
 {
+    assert(L > 0);
+    assert(0.0 <= crit_x && crit_x <= L);
+    assert(0.0 <= crit_val && crit_val <= 1.0);
+    assert(epsabs > 0);
+    assert(maxiter > 0);
+    assert(delta != NULL);
+
     delta_problem_params dpp = { L, crit_x, crit_val };
     gsl_function_fdf fdf     = { &htstretch2_delta_problem_f,
                                  &htstretch2_delta_problem_df,
