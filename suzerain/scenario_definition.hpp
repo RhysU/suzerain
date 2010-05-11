@@ -69,7 +69,7 @@ public:
                        FPT default_beta  = 0.666 );
 
     /**
-     * Retrieve the Reynolds number $\mbox{Re}=\frac{\rho_{0} u_{0}
+     * Retrieve the Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
      * l_{0}}{\mu_{0}}\f$.
      *
      * @return the Reynolds number.
