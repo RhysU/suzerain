@@ -219,7 +219,7 @@ int find_delta(gsl_function_fdf *problem_fdf,
                        SUZERAIN_FAILURE);
     }
 
-    // Initialize the bracketing solver to start the search
+    // Initialize a bracketing solver
     gsl_function problem_f = { problem_fdf->f, problem_fdf->params };
     gsl_root_fsolver *fsolver = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
     if (!fsolver) {
@@ -230,15 +230,14 @@ int find_delta(gsl_function_fdf *problem_fdf,
         SUZERAIN_ERROR("Unable to initialize solver", SUZERAIN_ESANITY);
     }
 
-    // Search for a root at half the requested tolerance
     // Iterate until either iteration or tolerance criteria is met
     int iter = 0;
     do {
-        const int status = gsl_root_test_interval(
-                gsl_root_fsolver_x_lower(fsolver),
-                gsl_root_fsolver_x_upper(fsolver),
-                epsabs/2, 0);
-        if (status == GSL_SUCCESS) break;
+        *delta = gsl_root_fsolver_root(fsolver);
+        const double residual = GSL_FN_EVAL(&problem_f, *delta);
+        if (GSL_SUCCESS == gsl_root_test_residual(residual, epsabs))
+            break;
+
         const int err = gsl_root_fsolver_iterate(fsolver);
         if (err) {
             gsl_root_fsolver_free(fsolver);
@@ -246,41 +245,8 @@ int find_delta(gsl_function_fdf *problem_fdf,
         }
     } while (iter++ < maxiter);
 
-    // Save the result and tear down bracketing solver
-    *delta = gsl_root_fsolver_root(fsolver);
+    // Tear down solver and finish up
     gsl_root_fsolver_free(fsolver);
-
-    // Check if bracketing failed and bomb if so
-    if (iter >= maxiter) return SUZERAIN_EMAXITER;
-
-    // Initialize the Newton solver to finish the search to full tolerance
-    gsl_root_fdfsolver *fdfsolver = gsl_root_fdfsolver_alloc(
-            gsl_root_fdfsolver_steffenson);
-    if (!fdfsolver) {
-        SUZERAIN_ERROR("Unable to allocate solver", SUZERAIN_ENOMEM);
-    }
-    if (gsl_root_fdfsolver_set(fdfsolver, problem_fdf, *delta)) {
-        gsl_root_fdfsolver_free(fdfsolver);
-        SUZERAIN_ERROR("Unable to initialize solver", SUZERAIN_ESANITY);
-    }
-
-    // Search for a root at full requested tolerance
-    // Iterate until either iteration or tolerance criteria is met
-    do {
-        const int err = gsl_root_fdfsolver_iterate(fdfsolver);
-        if (err) {
-            gsl_root_fdfsolver_free(fdfsolver);
-            SUZERAIN_ERROR("Error during solver iteration", err);
-        }
-        const double residual = GSL_FN_FDF_EVAL_F(
-                problem_fdf, gsl_root_fdfsolver_root(fdfsolver));
-        if (GSL_SUCCESS == gsl_root_test_residual(residual, epsabs)) break;
-    } while (iter++ < maxiter);
-
-    // Save the result and tear down Newton solver
-    *delta = gsl_root_fdfsolver_root(fdfsolver);
-    gsl_root_fdfsolver_free(fdfsolver);
-
     return (iter < maxiter) ? SUZERAIN_SUCCESS : SUZERAIN_EMAXITER;
 }
 

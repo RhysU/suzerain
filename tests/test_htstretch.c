@@ -79,20 +79,19 @@ void test_htstretch1_find_delta()
     /* Test case found by direct evaluation in Mathematica */
     const double L        = 2.0;
     const double crit_x   = 0.5;
-    const double crit_val = 0.0401277;
+    const double crit_val = 0.04012773950620386L;
 
     const double expected = 2.345678901234567;
-    const double epsabs   = 1e-14;
     const int maxiter     = 50;
 
     double delta;
 
     /* Attempt to recover expected */
     gsl_test_int(suzerain_htstretch1_find_delta(
-                    L, crit_x, crit_val, epsabs, maxiter, &delta),
+                    L, crit_x, crit_val, GSL_DBL_EPSILON, maxiter, &delta),
                  SUZERAIN_SUCCESS,
             "htstretch1_find_delta returns SUZERAIN_SUCCESS");
-    gsl_test_abs(delta, expected, epsabs,
+    gsl_test_abs(delta, expected, 100*GSL_DBL_EPSILON,
             "htstretch1_find_delta(delta, %g, %g, %g)", L, crit_x, crit_val);
 }
 
@@ -102,20 +101,19 @@ void test_htstretch2_find_delta()
     /* Test case found by direct evaluation in Mathematica */
     const double L        = 2.0;
     const double crit_x   = 0.5;
-    const double crit_val = 0.0314135;
+    const double crit_val = 0.03141345703210717;
 
     const double expected = 6.7890123456789012;
-    const double epsabs   = 1e-6;
     const int maxiter     = 50;
 
     double delta;
 
     /* Attempt to recover expected */
     gsl_test_int(suzerain_htstretch2_find_delta(
-                    L, crit_x, crit_val, epsabs, maxiter, &delta),
+                    L, crit_x, crit_val, GSL_DBL_EPSILON, maxiter, &delta),
                  SUZERAIN_SUCCESS,
             "htstretch2_find_delta returns SUZERAIN_SUCCESS");
-    gsl_test_abs(delta, expected, epsabs,
+    gsl_test_abs(delta, expected, 100*GSL_DBL_EPSILON,
             "htstretch2_find_delta(delta, %g, %g, %g)", L, crit_x, crit_val);
 }
 
