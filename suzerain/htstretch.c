@@ -252,20 +252,20 @@ int find_delta(gsl_function_fdf *problem_fdf,
 
 int
 suzerain_htstretch1_find_delta(const double L,
-                               const double crit_x,
-                               const double crit_val,
+                               const double x_crit,
+                               const double s_crit,
                                const double epsabs,
                                const int maxiter,
                                double *delta)
 {
     assert(L > 0);
-    assert(0.0 <= crit_x && crit_x <= L);
-    assert(0.0 <= crit_val && crit_val <= 1.0);
+    assert(0.0 <= x_crit && x_crit <= L);
+    assert(0.0 <= s_crit && s_crit <= 1.0);
     assert(epsabs > 0);
     assert(maxiter > 0);
     assert(delta != NULL);
 
-    delta_problem_params dpp = { L, crit_x, crit_val };
+    delta_problem_params dpp = { L, x_crit, s_crit };
     gsl_function_fdf fdf     = { &htstretch1_delta_problem_f,
                                  &htstretch1_delta_problem_df,
                                  &htstretch1_delta_problem_fdf,
@@ -276,20 +276,20 @@ suzerain_htstretch1_find_delta(const double L,
 
 int
 suzerain_htstretch2_find_delta(const double L,
-                               const double crit_x,
-                               const double crit_val,
+                               const double x_crit,
+                               const double u_crit,
                                const double epsabs,
                                const int maxiter,
                                double *delta)
 {
     assert(L > 0);
-    assert(0.0 <= crit_x && crit_x <= L);
-    assert(0.0 <= crit_val && crit_val <= 1.0);
+    assert(0.0 <= x_crit && x_crit <= L);
+    assert(0.0 <= u_crit && u_crit <= 1.0);
     assert(epsabs > 0);
     assert(maxiter > 0);
     assert(delta != NULL);
 
-    delta_problem_params dpp = { L, crit_x, crit_val };
+    delta_problem_params dpp = { L, x_crit, u_crit };
     gsl_function_fdf fdf     = { &htstretch2_delta_problem_f,
                                  &htstretch2_delta_problem_df,
                                  &htstretch2_delta_problem_fdf,

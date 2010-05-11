@@ -31,7 +31,7 @@
 #ifndef __SUZERAIN_HTSTRETCH_H__
 #define __SUZERAIN_HTSTRETCH_H__
 
-/* @file
+/** @file
  * Computes quantities related to the common hyperbolic tangent-based grid
  * stretching scheme associated with Marcel Vinokur.
  */
@@ -125,11 +125,42 @@ suzerain_htstretch1_dx(const double delta,
                        const double L,
                        const double x);
 
-// TODO Document
-double
-suzerain_htstretch1_pick_delta(const double L,
-                               const double crit_x,
-                               const double crit_val);
+/**
+ * Find a stretching factor \f$\delta\f$ so that
+ * \f$s\left(x_{\mbox{crit}}\right) \approx{} s_{\mbox{crit}}\f$.
+ *
+ * @param[in]  L       The domain endpoint \f$L\f$
+ * @param[in]  x_crit  The desired evaluation point
+ *                     \f$x_{\mbox{crit}}\in\left[0,L\right]\f$
+ * @param[in]  s_crit  The desired evaluation value
+ *                     \f$s_{\mbox{crit}}\in\left[0,1\right]\f$
+ * @param[in]  epsabs  The absolute tolerance criteria for stopping the
+ *                     iterative process per <tt>gsl_root_test_residual()</tt>
+ * @param[in]  maxiter The maximum number of iterations to attempt
+ * @param[out] delta   An approximation to the necessary stretching factor
+ *                     \f$\delta\f$ to solve the problem.
+ *                     When ::SUZERAIN_SUCCESS is returned, this meets the
+ *                     given tolerance.  When ::SUZERAIN_EMAXITER is returned,
+ *                     this is a best guess but does not meet the tolerance.
+ *                     For any other return value, \c delta is undefined.
+ *
+ * @return ::SUZERAIN_SUCCESS (zero) on success.  Returns ::SUZERAIN_EMAXITER
+ *         if the maximum number of iterations was reached without meeting the
+ *         given tolerance requirement.  On any other error, calls
+ *         suzerain_error() and returns one of #suzerain_error_status.
+ *
+ * @see suzerain_htstretch1() for the form of \f$s\left(x\right)\f$.
+ * @see GSL's <a href="http://www.gnu.org/software/gsl/manual/html_node/Search-Stopping-Parameters.html">Search Stopping Parameters</a>
+ * documentation on <tt>gsl_root_test_residual()</tt> for more information
+ * on the convergence criterion.
+ */
+int
+suzerain_htstretch1_find_delta(const double L,
+                               const double x_crit,
+                               const double s_crit,
+                               const double epsabs,
+                               const int maxiter,
+                               double *delta);
 
 /**
  * Compute the two-sided hyperbolic tangent stretching function.
@@ -216,22 +247,42 @@ suzerain_htstretch2_dx(const double delta,
                        const double L,
                        const double x);
 
-int
-suzerain_htstretch1_find_delta(const double L,
-                               const double crit_x,
-                               const double crit_val,
-                               const double epsabs,
-                               const int maxiter,
-                               double *delta);
-
+/**
+ * Find a stretching factor \f$\delta\f$ so that
+ * \f$u\left(x_{\mbox{crit}}\right) \approx{} u_{\mbox{crit}}\f$.
+ *
+ * @param[in]  L       The domain endpoint \f$L\f$
+ * @param[in]  x_crit  The desired evaluation point
+ *                     \f$x_{\mbox{crit}}\in\left[0,L\right]\f$
+ * @param[in]  u_crit  The desired evaluation value
+ *                     \f$u_{\mbox{crit}}\in\left[0,1\right]\f$
+ * @param[in]  epsabs  The absolute tolerance criteria for stopping the
+ *                     iterative process per <tt>gsl_root_test_residual()</tt>
+ * @param[in]  maxiter The maximum number of iterations to attempt
+ * @param[out] delta   An approximation to the necessary stretching factor
+ *                     \f$\delta\f$ to solve the problem.
+ *                     When ::SUZERAIN_SUCCESS is returned, this meets the
+ *                     given tolerance.  When ::SUZERAIN_EMAXITER is returned,
+ *                     this is a best guess but does not meet the tolerance.
+ *                     For any other return value, \c delta is undefined.
+ *
+ * @return ::SUZERAIN_SUCCESS (zero) on success.  Returns ::SUZERAIN_EMAXITER
+ *         if the maximum number of iterations was reached without meeting the
+ *         given tolerance requirement.  On any other error, calls
+ *         suzerain_error() and returns one of #suzerain_error_status.
+ *
+ * @see suzerain_htstretch2() for the form of \f$u\left(x\right)\f$.
+ * @see GSL's <a href="http://www.gnu.org/software/gsl/manual/html_node/Search-Stopping-Parameters.html">Search Stopping Parameters</a>
+ * documentation on <tt>gsl_root_test_residual()</tt> for more information
+ * on the convergence criterion.
+ */
 int
 suzerain_htstretch2_find_delta(const double L,
-                               const double crit_x,
-                               const double crit_val,
+                               const double x_crit,
+                               const double u_crit,
                                const double epsabs,
                                const int maxiter,
                                double *delta);
-
 
 #ifdef __cplusplus
 } /* extern "C" */
