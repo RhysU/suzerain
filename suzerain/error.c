@@ -146,6 +146,8 @@ suzerain_strerror(const int suzerain_errno)
         return "malloc failed" ;
     case SUZERAIN_EBADFUNC:
         return "problem with user-supplied function";
+    case SUZERAIN_EMAXITER:
+        return "exceeded max number of iterations";
     case SUZERAIN_EZERODIV:
         return "tried to divide by zero" ;
     case SUZERAIN_EBADLEN:
