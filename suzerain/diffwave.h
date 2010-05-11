@@ -42,6 +42,22 @@
 extern "C" {
 #endif
 
+/**
+ * For a one dimensional DFT of length \c N, compute the frequency index
+ * associated with "in-order" entry \c i.  That is, the integer \f$i\f$ such
+ * that \f$k_i = \frac{2\pi{}i}{L}\f$ for \f$i\in\left\{0,1,\dots,N\right\}\f$
+ * ranges over the frequencies supported on a domain of length \f$L\f$.
+ *
+ * For example, for <tt>N=5</tt> the values <tt>{ 0, 1,  2,  3, -2, -1 }</tt>
+ * will be returned for <tt>i=0, 1, 2, 3, 4</tt>.
+ *
+ * @param N The length of the DFT.
+ * @param i The entry of interest where <tt>0 <= i < N</tt>.
+ *
+ * @return The frequency index associated with in-order entry <tt>i</tt>.
+ * @see FFTW's discussion of <a href="http://www.fftw.org/fftw3.3alpha_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">The 1d Discrete Fourier Transform</a>
+ *      for an extended description of in-order storage.
+ */
 inline
 int suzerain_diffwave_freqindex(const int N, const int i)
 {
@@ -49,6 +65,20 @@ int suzerain_diffwave_freqindex(const int N, const int i)
     return (i < N/2+1) ? i : -N + i;
 }
 
+/**
+ * Compute the absolute value of suzerain_diffwave_freqindex().  This can be
+ * computed at reduced cost relative to taking the absolute value of
+ * suzerain_diffwave_freqindex().
+ *
+ * For example, for <tt>N=5</tt> the values <tt>{ 0, 1,  2,  3, 2, 1 }</tt>
+ * will be returned for <tt>i=0, 1, 2, 3, 4</tt>.
+ *
+ * @param N The length of the DFT.
+ * @param i The entry of interest where <tt>0 <= i < N</tt>.
+ *
+ * @return The absolute value of the frequency index associated with in-order
+ *         entry <tt>i</tt>.
+ */
 inline
 int suzerain_diffwave_absfreqindex(const int N, const int i)
 {
@@ -56,6 +86,23 @@ int suzerain_diffwave_absfreqindex(const int N, const int i)
     return (i < N/2+1) ? i : N - i;
 }
 
+/**
+ * Compute the frequency index of the scaling factor used to differentiate
+ * a wave-space signal on a dealiased grid of length <tt>dN</tt>.  This
+ * method returns zero for modes which cannot be supported on a grid of
+ * length <tt>N</tt> or which are removed by differentiation.
+ *
+ * For example, for <tt>dN=9</tt> and <tt>N=6</tt> the values <tt> {0, 1, 2, 0,
+ * 0, 0, 0, -2, -1}</tt> will be returned for <tt>i=0, 1, 2, 3, 4, 5, 6, 7,
+ * 8</tt>.
+ *
+ * @param N The length of the DFT.
+ * @param dN The dealiased length of the DFT.
+ * @param i The entry of interest where <tt>0 <= i < dN</tt>.
+ *
+ * @return The frequency index of the scaling factor
+ *         associated with in-order entry <tt>i</tt>.
+ */
 inline
 int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i)
 {
