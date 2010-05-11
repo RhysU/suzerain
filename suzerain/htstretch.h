@@ -216,10 +216,21 @@ suzerain_htstretch2_dx(const double delta,
                        const double L,
                        const double x);
 
-double
-suzerain_htstretch_twosided_delta(const double L,
-                                  const double xi_crit,
-                                  const double u_crit);
+int
+suzerain_htstretch1_find_delta(const double L,
+                               const double crit_x,
+                               const double crit_val,
+                               const double epsabs,
+                               const int maxiter,
+                               double *delta);
+
+int
+suzerain_htstretch2_find_delta(const double L,
+                               const double crit_x,
+                               const double crit_val,
+                               const double epsabs,
+                               const int maxiter,
+                               double *delta);
 
 
 #ifdef __cplusplus

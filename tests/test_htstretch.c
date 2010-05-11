@@ -6,6 +6,7 @@
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_test.h>
+#include <suzerain/error.h>
 #include <suzerain/htstretch.h>
 
 #define CASE(f, x, y, z, e) \
@@ -13,8 +14,7 @@
         #f "(%g, %g, %g)", (x), (y), (z) );
 
 static
-void
-test_htstretch1()
+void test_htstretch1()
 {
     /* Check boundaries for varying delta values */
     for (int i = 1; i < 10; i += 2) {
@@ -42,9 +42,9 @@ test_htstretch1()
     CASE(htstretch1_dL,     4., 1., 1.0e-08, -5.367403079566020e-11);
     CASE(htstretch1_dx,     4., 1., 1.0e-08, +0.005367403079566020);
 }
+
 static
-void
-test_htstretch2()
+void test_htstretch2()
 {
     /* Check boundaries for varying delta values */
     for (int i = 1; i < 10; i += 2) {
@@ -73,8 +73,53 @@ test_htstretch2()
     CASE(htstretch2_dx,     4., 1., 1.0e-08, +0.1465742926075948);
 }
 
-int
-main(int argc, char **argv)
+static
+void test_htstretch1_find_delta()
+{
+    /* Test case found by direct evaluation in Mathematica */
+    const double L        = 2.0;
+    const double crit_x   = 0.5;
+    const double crit_val = 0.0401277;
+
+    const double expected = 2.345678901234567;
+    const double epsabs   = 1e-14;
+    const int maxiter     = 50;
+
+    double delta;
+
+    /* Attempt to recover expected */
+    gsl_test_int(suzerain_htstretch1_find_delta(
+                    L, crit_x, crit_val, epsabs, maxiter, &delta),
+                 SUZERAIN_SUCCESS,
+            "htstretch1_find_delta returns SUZERAIN_SUCCESS");
+    gsl_test_abs(delta, expected, epsabs,
+            "htstretch1_find_delta(delta, %g, %g, %g)", L, crit_x, crit_val);
+}
+
+static
+void test_htstretch2_find_delta()
+{
+    /* Test case found by direct evaluation in Mathematica */
+    const double L        = 2.0;
+    const double crit_x   = 0.5;
+    const double crit_val = 0.0314135;
+
+    const double expected = 6.7890123456789012;
+    const double epsabs   = 1e-6;
+    const int maxiter     = 50;
+
+    double delta;
+
+    /* Attempt to recover expected */
+    gsl_test_int(suzerain_htstretch2_find_delta(
+                    L, crit_x, crit_val, epsabs, maxiter, &delta),
+                 SUZERAIN_SUCCESS,
+            "htstretch2_find_delta returns SUZERAIN_SUCCESS");
+    gsl_test_abs(delta, expected, epsabs,
+            "htstretch2_find_delta(delta, %g, %g, %g)", L, crit_x, crit_val);
+}
+
+int main(int argc, char **argv)
 {
     gsl_ieee_env_setup();
 
@@ -84,6 +129,9 @@ main(int argc, char **argv)
 
     test_htstretch1();
     test_htstretch2();
+
+    test_htstretch1_find_delta();
+    test_htstretch2_find_delta();
 
     exit(gsl_test_summary());
 }

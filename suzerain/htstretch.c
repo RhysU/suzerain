@@ -33,6 +33,7 @@
 #endif
 #include <suzerain/common.h>
 #pragma hdrstop
+#include <gsl/gsl_errno.h>
 #include <gsl/gsl_roots.h>
 #include <suzerain/error.h>
 #include <suzerain/htstretch.h>
@@ -146,33 +147,69 @@ static
 double htstretch1_delta_problem_f(double delta, void *params)
 {
     const delta_problem_params * const dpp = (delta_problem_params *) params;
-
     return   suzerain_htstretch1(delta, dpp->L, dpp->crit_x)
            - 0.0 /* == suzerain_htstretch1(  0.0, dpp->L, dpp->crit_x) */
            - dpp->crit_val;
 }
 
 static
+double htstretch1_delta_problem_df(double delta, void *params)
+{
+    const delta_problem_params * const dpp = (delta_problem_params *) params;
+    return suzerain_htstretch1_ddelta(delta, dpp->L, dpp->crit_x);
+}
+
+static
+void htstretch1_delta_problem_fdf(double delta,
+                                  void *params,
+                                  double *f,
+                                  double *df)
+{
+    *f  = htstretch1_delta_problem_f( delta, params);
+    *df = htstretch1_delta_problem_df(delta, params);
+}
+
+static
 double htstretch2_delta_problem_f(double delta, void *params)
 {
     const delta_problem_params * const dpp = (delta_problem_params *) params;
-
     return   suzerain_htstretch2(delta, dpp->L, dpp->crit_x)
            - 0.0 /* == suzerain_htstretch2(  0.0, dpp->L, dpp->crit_x) */
            - dpp->crit_val;
 }
 
-int
-suzerain_htstretch1_find_delta(double *delta,
-                               const double L,
-                               const double crit_x,
-                               const double crit_val)
+static
+double htstretch2_delta_problem_df(double delta, void *params)
 {
-    // Initial bounds guess and sanity check
-    const double delta_lower = 1e-8;
-    const double crit_val_lower = suzerain_htstretch1(delta_lower, L, crit_x);
-    const double delta_upper = 1e3;
-    const double crit_val_upper = suzerain_htstretch1(delta_upper, L, crit_x);
+    const delta_problem_params * const dpp = (delta_problem_params *) params;
+    return suzerain_htstretch2_ddelta(delta, dpp->L, dpp->crit_x);
+}
+
+static
+void htstretch2_delta_problem_fdf(double delta,
+                                  void *params,
+                                  double *f,
+                                  double *df)
+{
+    *f  = htstretch2_delta_problem_f( delta, params);
+    *df = htstretch2_delta_problem_df(delta, params);
+}
+
+static
+int find_delta(gsl_function_fdf *problem_fdf,
+               const double delta_lower,
+               const double delta_upper,
+               const double epsabs,
+               const int maxiter,
+               double *delta)
+{
+    // Initial bounds sanity check.
+    // Hopefully ensures root existence for hyperbolic tangent functions,
+    // At least for the class of things we care about here.
+    const double crit_val
+        = ((delta_problem_params*) problem_fdf->params)->crit_val;
+    const double crit_val_lower = GSL_FN_FDF_EVAL_F(problem_fdf, delta_lower);
+    const double crit_val_upper = GSL_FN_FDF_EVAL_F(problem_fdf, delta_upper);
     if (crit_val >= crit_val_lower) {
         SUZERAIN_ERROR("(crit_x, crit_val) incompatible with delta_lower",
                        SUZERAIN_FAILURE);
@@ -182,36 +219,101 @@ suzerain_htstretch1_find_delta(double *delta,
                        SUZERAIN_FAILURE);
     }
 
-    // Initialize nonlinear function to solve
-    delta_problem_params dpp;
-    dpp.L          = L;
-    dpp.crit_x     = crit_x;
-    dpp.crit_val   = crit_val;
-    gsl_function F = { &htstretch1_delta_problem_f, &dpp };
-
-    // Initialize the solver
+    // Initialize the bracketing solver to start the search
+    gsl_function problem_f = { problem_fdf->f, problem_fdf->params };
     gsl_root_fsolver *fsolver = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
     if (!fsolver) {
         SUZERAIN_ERROR("Unable to allocate solver", SUZERAIN_ENOMEM);
     }
-    if (gsl_root_fsolver_set(fsolver, &F, delta_lower, delta_upper)) {
+    if (gsl_root_fsolver_set(fsolver, &problem_f, delta_lower, delta_upper)) {
         gsl_root_fsolver_free(fsolver);
         SUZERAIN_ERROR("Unable to initialize solver", SUZERAIN_ESANITY);
     }
 
-    // Iterate until convergence or tolerance reached
-    for (int i = 0; i < 100; ++i)
-    {
+    // Search for a root at half the requested tolerance
+    // Iterate until either iteration or tolerance criteria is met
+    int iter = 0;
+    do {
+        const int status = gsl_root_test_interval(
+                gsl_root_fsolver_x_lower(fsolver),
+                gsl_root_fsolver_x_upper(fsolver),
+                epsabs/2, 0);
+        if (status == GSL_SUCCESS) break;
         const int err = gsl_root_fsolver_iterate(fsolver);
-        if (err) SUZERAIN_ERROR("Error during solver iteration", err);
-        const double bracket =   gsl_root_fsolver_x_upper(fsolver)
-                               - gsl_root_fsolver_x_lower(fsolver);
-        if (fabs(bracket) < 1000*GSL_DBL_EPSILON) break;
-    }
+        if (err) {
+            gsl_root_fsolver_free(fsolver);
+            SUZERAIN_ERROR("Error during solver iteration", err);
+        }
+    } while (iter++ < maxiter);
 
-    // Save the root to delta and tear down the solver
+    // Save the result and tear down bracketing solver
     *delta = gsl_root_fsolver_root(fsolver);
     gsl_root_fsolver_free(fsolver);
 
-    return SUZERAIN_SUCCESS;
+    // Check if bracketing failed and bomb if so
+    if (iter >= maxiter) return SUZERAIN_EMAXITER;
+
+    // Initialize the Newton solver to finish the search to full tolerance
+    gsl_root_fdfsolver *fdfsolver = gsl_root_fdfsolver_alloc(
+            gsl_root_fdfsolver_steffenson);
+    if (!fdfsolver) {
+        SUZERAIN_ERROR("Unable to allocate solver", SUZERAIN_ENOMEM);
+    }
+    if (gsl_root_fdfsolver_set(fdfsolver, problem_fdf, *delta)) {
+        gsl_root_fdfsolver_free(fdfsolver);
+        SUZERAIN_ERROR("Unable to initialize solver", SUZERAIN_ESANITY);
+    }
+
+    // Search for a root at full requested tolerance
+    // Iterate until either iteration or tolerance criteria is met
+    do {
+        const int err = gsl_root_fdfsolver_iterate(fdfsolver);
+        if (err) {
+            gsl_root_fdfsolver_free(fdfsolver);
+            SUZERAIN_ERROR("Error during solver iteration", err);
+        }
+        const double residual = GSL_FN_FDF_EVAL_F(
+                problem_fdf, gsl_root_fdfsolver_root(fdfsolver));
+        if (GSL_SUCCESS == gsl_root_test_residual(residual, epsabs)) break;
+    } while (iter++ < maxiter);
+
+    // Save the result and tear down Newton solver
+    *delta = gsl_root_fdfsolver_root(fdfsolver);
+    gsl_root_fdfsolver_free(fdfsolver);
+
+    return (iter < maxiter) ? SUZERAIN_SUCCESS : SUZERAIN_EMAXITER;
+}
+
+int
+suzerain_htstretch1_find_delta(const double L,
+                               const double crit_x,
+                               const double crit_val,
+                               const double epsabs,
+                               const int maxiter,
+                               double *delta)
+{
+    delta_problem_params dpp = { L, crit_x, crit_val };
+    gsl_function_fdf fdf     = { &htstretch1_delta_problem_f,
+                                 &htstretch1_delta_problem_df,
+                                 &htstretch1_delta_problem_fdf,
+                                 &dpp };
+
+    return find_delta(&fdf, 1e-8, 1e3, epsabs, maxiter, delta);
+}
+
+int
+suzerain_htstretch2_find_delta(const double L,
+                               const double crit_x,
+                               const double crit_val,
+                               const double epsabs,
+                               const int maxiter,
+                               double *delta)
+{
+    delta_problem_params dpp = { L, crit_x, crit_val };
+    gsl_function_fdf fdf     = { &htstretch2_delta_problem_f,
+                                 &htstretch2_delta_problem_df,
+                                 &htstretch2_delta_problem_fdf,
+                                 &dpp };
+
+    return find_delta(&fdf, 1e-8, 1e3, epsabs, maxiter, delta);
 }
