@@ -116,6 +116,49 @@ int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i)
     }
 }
 
+/**
+ * Given a complex-valued, wave-space field \f$x\f$, compute \f$ x \leftarrow{}
+ * \alpha \partial{}x^{\mbox{dxcnt}} \partial{}z^{\mbox{dzcnt}} x\f$.  The
+ * implementation accounts for the field potentially being dealiased,
+ * distributed across multiple machines, and representing a domain of arbitrary
+ * length in the X and Z directions.
+ *
+ * The input and output data \c x is stored column-major over the Y direction
+ * (index range <tt>0</tt> to <tt>Ny-1</tt>), X direction (index range
+ * <tt>dkbx</tt> to <tt>dkex</tt>), and Z direction (index range <tt>dkbz</tt>
+ * to <tt>dkez</tt>).  This layout is equivalent to Dmitry Pekurovsky's P3DFFT
+ * storage order when Y is specified to be STRIDE1 in wave space.  Complex
+ * values are stored as C arrays of length two with the real part preceding
+ * the imaginary part.
+ *
+ * @param[in]     dxcnt Partial derivative order to compute in the X direction
+ * @param[in]     dzcnt Partial derivative order to compute in the Z direction
+ * @param[in]     alpha Complex-valued scaling factor \f$\alpha\f$
+ * @param[in,out] x     Input and output wave-space field
+ * @param[in]     Lx    Length of the domain in the X direction
+ * @param[in]     Lz    Length of the domain in the Y direction
+ * @param[in]     Ny    Number of points in the Y direction
+ * @param[in]     Nx    Number of points in the X direction, which
+ *                      determines the maximum wavenumbers which are
+ *                      retained when differentiating.
+ * @param[in]     dNx   Number of dealiased points in the X direction,
+ *                      which determines of offsets are translated into
+ *                      frequencies.
+ * @param[in]     dkbx  The first (inclusive) in-order frequency contained
+ *                      in field \c x in the X direction.
+ * @param[in]     dkbx  The last (exclusive) in-order frequency contained
+ *                      in field \c x in the X direction.
+ * @param[in]     Nz    Number of points in the Z direction, which
+ *                      determines the maximum wavenumbers which are
+ *                      retained when differentiating.
+ * @param[in]     dNz   Number of dealiased points in the Z direction,
+ *                      which determines of offsets are translated into
+ *                      frequencies.
+ * @param[in]     dkbz  The first (inclusive) in-order frequency contained
+ *                      in field \c z in the Z direction.
+ * @param[in]     dkbz  The last (exclusive) in-order frequency contained
+ *                      in field \c z in the Z direction.
+ */
 void suzerain_diffwave_apply(
     const int dxcnt,
     const int dzcnt,
@@ -126,6 +169,48 @@ void suzerain_diffwave_apply(
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez);
 
+/**
+ * Given two complex-valued, wave-space fields \f$x\f$ and \f$y\f$, compute \f$
+ * y \leftarrow{} \alpha \partial{}x^{\mbox{dxcnt}} \partial{}z^{\mbox{dzcnt}}
+ * x + \beta{}y\f$.  The implementation accounts for the field potentially
+ * being dealiased, distributed across multiple machines, and representing a
+ * domain of arbitrary length in the X and Z directions.
+ *
+ * @param[in]     dxcnt Partial derivative order to compute in the X direction
+ * @param[in]     dzcnt Partial derivative order to compute in the Z direction
+ * @param[in]     alpha Complex-valued scaling factor \f$\alpha\f$
+ * @param[in]     x     Input wave-space field to be differentiated
+ * @param[in]     beta  Complex-valued scaling factor \f$\beta\f$
+ * @param[in,out] y     Input and output wave-space field where
+ *                      accumulation takes place.
+ * @param[in]     Lx    Length of the domain in the X direction
+ * @param[in]     Lz    Length of the domain in the Y direction
+ * @param[in]     Ny    Number of points in the Y direction
+ * @param[in]     Nx    Number of points in the X direction, which
+ *                      determines the maximum wavenumbers which are
+ *                      retained when differentiating.
+ * @param[in]     dNx   Number of dealiased points in the X direction,
+ *                      which determines of offsets are translated into
+ *                      frequencies.
+ * @param[in]     dkbx  The first (inclusive) in-order frequency contained
+ *                      in field \c x in the X direction.
+ * @param[in]     dkbx  The last (exclusive) in-order frequency contained
+ *                      in field \c x in the X direction.
+ * @param[in]     Nz    Number of points in the Z direction, which
+ *                      determines the maximum wavenumbers which are
+ *                      retained when differentiating.
+ * @param[in]     dNz   Number of dealiased points in the Z direction,
+ *                      which determines of offsets are translated into
+ *                      frequencies.
+ * @param[in]     dkbz  The first (inclusive) in-order frequency contained
+ *                      in field \c z in the Z direction.
+ * @param[in]     dkbz  The last (exclusive) in-order frequency contained
+ *                      in field \c z in the Z direction.
+ *
+ * @see suzerain_diffwave_apply() for more information on the storage layout
+ *      for field \c x.  Field \c y has storage requirements identical to
+ *      those of \c x.
+ */
 void suzerain_diffwave_accumulate(
     const int dxcnt,
     const int dzcnt,
