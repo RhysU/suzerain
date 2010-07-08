@@ -266,7 +266,7 @@ static void test_accumulateAndApply(const int Ny,
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
         for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {
             const double maxrelerror
-                = 2.5*std::pow(10, -11 + (dxcnt+dzcnt)/3.0);
+                = 3.0*std::pow(10, -11 + (dxcnt+dzcnt)/3.0);
             if (!procid) {
                 BOOST_TEST_MESSAGE("Testing"
                                     << " Ny=" << Ny
