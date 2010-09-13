@@ -42,6 +42,7 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/orthonormal.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/pencil.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/scenario_definition.hpp>
@@ -159,6 +160,67 @@ private:
 class NonlinearOperator : public inonlinearoperator_type
 {
 
+public:
+
+    NonlinearOperator(const sz::pencil_grid &pg) :
+        rho_x(pg), rho_z(pg), rho_xx(pg), rho_xz(pg), rho_zz(pg),
+        mx_x(pg), my_x(pg), mz_x(pg),
+        mx_z(pg), my_z(pg), mz_z(pg),
+        mx_xx(pg), my_xx(pg), mz_xx(pg),
+        mx_xz(pg), my_xz(pg), mz_xz(pg),
+        mx_zz(pg), my_zz(pg), mz_zz(pg),
+        e_x(pg), e_z(pg), div_grad_e(pg)
+    {
+        // NOP
+    }
+
+    complex_type applyOperator(
+        istate_type &state,
+        const bool delta_t_requested = false)
+        const
+        throw(std::exception) {
+
+        // TODO Prepare to convert to physical space
+        // TODO Convert to physical space
+        // TODO Compute nonlinear terms
+        // TODO Convert to wave space
+        // TODO Compute stable timestep
+
+        return complex_type(0);
+    }
+
+
+private:
+    sz::pencil<> rho_x;
+    sz::pencil<> rho_z;
+
+    sz::pencil<> rho_xx;
+    sz::pencil<> rho_xz;
+    sz::pencil<> rho_zz;
+
+    sz::pencil<> mx_x;
+    sz::pencil<> my_x;
+    sz::pencil<> mz_x;
+
+    sz::pencil<> mx_z;
+    sz::pencil<> my_z;
+    sz::pencil<> mz_z;
+
+    sz::pencil<> mx_xx;
+    sz::pencil<> my_xx;
+    sz::pencil<> mz_xx;
+
+    sz::pencil<> mx_xz;
+    sz::pencil<> my_xz;
+    sz::pencil<> mz_xz;
+
+    sz::pencil<> mx_zz;
+    sz::pencil<> my_zz;
+    sz::pencil<> mz_zz;
+
+    sz::pencil<> e_x;
+    sz::pencil<> e_z;
+    sz::pencil<> div_grad_e;
 };
 
 // TODO This definition of breakpoint locations is lousy.
@@ -216,6 +278,8 @@ int main(int argc, char **argv)
     }
 
     // Process command line arguments
+    // TODO Rank 0 should read and broadcast these to all other ranks
+    // Otherwise we will encounter an IO bottleneck on large job starts
     sz::ProgramOptions options;
     options.add_definition(def_scenario);
     options.add_definition(def_grid);
