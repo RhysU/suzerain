@@ -37,6 +37,7 @@
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bspline_definition.hpp>
 #include <suzerain/bspline.hpp>
+#include <suzerain/diffwave.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
@@ -163,22 +164,85 @@ class NonlinearOperator : public inonlinearoperator_type
 public:
 
     NonlinearOperator(const sz::pencil_grid &pg) :
-        rho_x(pg), rho_z(pg), rho_xx(pg), rho_xz(pg), rho_zz(pg),
-        mx_x(pg), my_x(pg), mz_x(pg),
-        mx_z(pg), my_z(pg), mz_z(pg),
-        mx_xx(pg), my_xx(pg), mz_xx(pg),
-        mx_xz(pg), my_xz(pg), mz_xz(pg),
-        mx_zz(pg), my_zz(pg), mz_zz(pg),
-        e_x(pg), e_z(pg), div_grad_e(pg)
+        Ny(pg.global_extents()[1]),
+        dNx(pg.global_extents()[0]),
+        dkbx(pg.local_wave_start()[0]),
+        dkex(pg.local_wave_end()[0]),
+        dNz(pg.global_extents()[2]),
+        dkbz(pg.local_wave_start()[2]),
+        dkez(pg.local_wave_end()[2]),
+        rho_x(pg), rho_y(pg), rho_z(pg),
+        rho_xx(pg), rho_xy(pg), rho_xz(pg), rho_yy(pg), rho_yz(pg), rho_zz(pg),
+        mx_x(pg), mx_y(pg), mx_z(pg),
+        mx_xx(pg), mx_xy(pg), mx_xz(pg), mx_yy(pg), mx_yz(pg), mx_zz(pg),
+        my_x(pg), my_y(pg), my_z(pg),
+        my_xx(pg), my_xy(pg), my_xz(pg), my_yy(pg), my_yz(pg), my_zz(pg),
+        mz_x(pg), mz_y(pg), mz_z(pg),
+        mz_xx(pg), mz_xy(pg), mz_xz(pg), mz_yy(pg), mz_yz(pg), mz_zz(pg),
+        e_x(pg), e_y(pg), e_z(pg), div_grad_e(pg)
     {
         // NOP
     }
 
     complex_type applyOperator(
-        istate_type &state,
+        istate_type &istate,
         const bool delta_t_requested = false)
         const
         throw(std::exception) {
+
+        state_type &state = dynamic_cast<state_type&>(istate);
+
+        const double complex_one[2]  = { 1.0, 0.0 };
+        const double complex_zero[2] = { 0.0, 0.0 };
+
+        // Compute rho_x, rho_y, rho_z in wave space
+        sz::diffwave::accumulate(/* dx */ 1, /* dz */ 0,
+            complex_one, &(state[0][0][0][0]),
+            complex_zero, rho_x.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        bspw->accumulate_operator(/* dy */ 1,
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[0][0][0][0]), 1, state.shape()[1],
+            complex_zero, rho_y.wave.begin(), 1, state.shape()[1]);
+        sz::diffwave::accumulate(/* dx */ 0, /* dz */ 1,
+            complex_one, &(state[0][0][0][0]),
+            complex_zero, rho_z.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+
+        // Compute rho_xx, rho_xy, and rho_xz in wave space
+        sz::diffwave::accumulate(/* dx */ 2, /* dz */ 0,
+            complex_one, &(state[0][0][0][0]),
+            complex_zero, rho_xx.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        bspw->accumulate_operator(/* dy */ 1,
+            state.shape()[2]*state.shape()[3],
+            complex_one, rho_x.wave.begin(), 1, state.shape()[1],
+            complex_zero, rho_xy.wave.begin(), 1, state.shape()[1]);
+        sz::diffwave::accumulate(/* dx */ 1, /* dz */ 1,
+            complex_one, &(state[0][0][0][0]),
+            complex_zero, rho_xz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+
+        // Compute rho_yy and rho_yz in wave space
+        bspw->accumulate_operator(/* dy */ 2,
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[0][0][0][0]), 1, state.shape()[1],
+            complex_zero, rho_yy.wave.begin(), 1, state.shape()[1]);
+        bspw->accumulate_operator(/* dy */ 1,
+            state.shape()[2]*state.shape()[3],
+            complex_one, rho_z.wave.begin(), 1, state.shape()[1],
+            complex_zero, rho_yz.wave.begin(), 1, state.shape()[1]);
+
+        // Compute rho_zz in wave space
+        sz::diffwave::accumulate(/* dx */ 0, /* dz */ 2,
+            complex_one, &(state[0][0][0][0]),
+            complex_zero, rho_zz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
 
         // TODO Prepare to convert to physical space
         // TODO Convert to physical space
@@ -191,36 +255,28 @@ public:
 
 
 private:
-    sz::pencil<> rho_x;
-    sz::pencil<> rho_z;
+    // Details for sz::diffwave::* calls
+    const int Ny;
+    const int dNx;
+    const int dkbx;
+    const int dkex;
+    const int dNz;
+    const int dkbz;
+    const int dkez;
 
-    sz::pencil<> rho_xx;
-    sz::pencil<> rho_xz;
-    sz::pencil<> rho_zz;
+    mutable sz::pencil<> rho_x, rho_y, rho_z;
+    mutable sz::pencil<> rho_xx, rho_xy, rho_xz, rho_yy, rho_yz, rho_zz;
 
-    sz::pencil<> mx_x;
-    sz::pencil<> my_x;
-    sz::pencil<> mz_x;
+    mutable sz::pencil<> mx_x, mx_y, mx_z;
+    mutable sz::pencil<> mx_xx, mx_xy, mx_xz, mx_yy, mx_yz, mx_zz;
 
-    sz::pencil<> mx_z;
-    sz::pencil<> my_z;
-    sz::pencil<> mz_z;
+    mutable sz::pencil<> my_x, my_y, my_z;
+    mutable sz::pencil<> my_xx, my_xy, my_xz, my_yy, my_yz, my_zz;
 
-    sz::pencil<> mx_xx;
-    sz::pencil<> my_xx;
-    sz::pencil<> mz_xx;
+    mutable sz::pencil<> mz_x, mz_y, mz_z;
+    mutable sz::pencil<> mz_xx, mz_xy, mz_xz, mz_yy, mz_yz, mz_zz;
 
-    sz::pencil<> mx_xz;
-    sz::pencil<> my_xz;
-    sz::pencil<> mz_xz;
-
-    sz::pencil<> mx_zz;
-    sz::pencil<> my_zz;
-    sz::pencil<> mz_zz;
-
-    sz::pencil<> e_x;
-    sz::pencil<> e_z;
-    sz::pencil<> div_grad_e;
+    mutable sz::pencil<> e_x, e_y, e_z, div_grad_e;
 };
 
 // TODO This definition of breakpoint locations is lousy.
