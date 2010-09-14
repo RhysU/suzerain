@@ -10,6 +10,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_pow_int.h>
 #include <suzerain/diffwave.h>
+#include <suzerain/diffwave.hpp>
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
@@ -198,7 +199,7 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
     // Call the function under test
     const gsl_complex alpha = gsl_complex_rect(2, 0);
     const gsl_complex beta  = gsl_complex_rect(3, 0);
-    suzerain_diffwave_accumulate(dxcnt, dzcnt, alpha.dat, x, beta.dat, y,
+    suzerain::diffwave::accumulate(dxcnt, dzcnt, alpha.dat, x, beta.dat, y,
             Lx, Lz, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
 
     // Ensure the results match the synthetic fields
@@ -347,7 +348,7 @@ static void test_apply_helper(const int dxcnt, const int dzcnt,
 
     // Call the function under test
     const gsl_complex alpha = gsl_complex_rect(2, 0);
-    suzerain_diffwave_apply(dxcnt, dzcnt, alpha.dat, x,
+    suzerain::diffwave::apply(dxcnt, dzcnt, alpha.dat, x,
             Lx, Lz, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
 
     // Ensure the results match the synthetic fields
