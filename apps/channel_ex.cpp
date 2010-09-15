@@ -59,10 +59,12 @@
 namespace sz = ::suzerain;
 
 // Global scenario parameters and Bspline details initialized in main()
-static sz::problem::ScenarioDefinition<> def_scenario(100);
-static sz::problem::ChannelDefinition<>  def_grid;
-static sz::problem::BsplineDefinition<>  def_bspline;
-static boost::shared_ptr<sz::bspline>    bspw;
+static sz::problem::ScenarioDefinition<>  def_scenario(100);
+static sz::problem::ChannelDefinition<>   def_grid;
+static sz::problem::BsplineDefinition<>   def_bspline;
+static boost::shared_ptr<sz::bspline>     bspw;
+static boost::shared_ptr<sz::bspline_luz> bspluzw;
+static boost::shared_ptr<sz::pencil_grid> pg;
 
 // Explicit timestepping scheme uses only complex double 4D NoninterleavedState
 // State indices range over (scalar field, Y, X, Z) in wave space
@@ -158,28 +160,38 @@ private:
     sz::bspline_luz luzw_;
 };
 
+// TODO Incorporate IOperatorLifecycle semantics for NonlinearOperator
+
 class NonlinearOperator : public inonlinearoperator_type
 {
 
 public:
 
-    NonlinearOperator(const sz::pencil_grid &pg) :
-        Ny(pg.global_extents()[1]),
-        dNx(pg.global_extents()[0]),
-        dkbx(pg.local_wave_start()[0]),
-        dkex(pg.local_wave_end()[0]),
-        dNz(pg.global_extents()[2]),
-        dkbz(pg.local_wave_start()[2]),
-        dkez(pg.local_wave_end()[2]),
-        rho_x(pg), rho_y(pg), rho_z(pg),
-        rho_xx(pg), rho_xy(pg), rho_xz(pg), rho_yy(pg), rho_yz(pg), rho_zz(pg),
-        mx_x(pg), mx_y(pg), mx_z(pg),
-        mx_xx(pg), mx_xy(pg), mx_xz(pg), mx_yy(pg), mx_yz(pg), mx_zz(pg),
-        my_x(pg), my_y(pg), my_z(pg),
-        my_xx(pg), my_xy(pg), my_xz(pg), my_yy(pg), my_yz(pg), my_zz(pg),
-        mz_x(pg), mz_y(pg), mz_z(pg),
-        mz_xx(pg), mz_xy(pg), mz_xz(pg), mz_yy(pg), mz_yz(pg), mz_zz(pg),
-        e_x(pg), e_y(pg), e_z(pg), div_grad_e(pg)
+    NonlinearOperator() :
+        Ny(pg->global_extents()[1]),
+        dNx(pg->global_extents()[0]),
+        dkbx(pg->local_wave_start()[0]),
+        dkex(pg->local_wave_end()[0]),
+        dNz(pg->global_extents()[2]),
+        dkbz(pg->local_wave_start()[2]),
+        dkez(pg->local_wave_end()[2]),
+        rho_x(*pg), rho_y(*pg), rho_z(*pg),
+        rho_xx(*pg), rho_xy(*pg), rho_xz(*pg),
+                     rho_yy(*pg), rho_yz(*pg),
+                                  rho_zz(*pg),
+        mx_x(*pg), mx_y(*pg), mx_z(*pg),
+        mx_xx(*pg), mx_xy(*pg), mx_xz(*pg),
+                    mx_yy(*pg), mx_yz(*pg),
+                                mx_zz(*pg),
+        my_x(*pg), my_y(*pg), my_z(*pg),
+        my_xx(*pg), my_xy(*pg), my_xz(*pg),
+                    my_yy(*pg), my_yz(*pg),
+                                my_zz(*pg),
+        mz_x(*pg), mz_y(*pg), mz_z(*pg),
+        mz_xx(*pg), mz_xy(*pg), mz_xz(*pg),
+                    mz_yy(*pg), mz_yz(*pg),
+                                mz_zz(*pg),
+        e_x(*pg), e_y(*pg), e_z(*pg), div_grad_e(*pg)
     {
         // NOP
     }
@@ -195,60 +207,342 @@ public:
         const double complex_one[2]  = { 1.0, 0.0 };
         const double complex_zero[2] = { 0.0, 0.0 };
 
-        // Compute rho_x, rho_y, rho_z in wave space
-        sz::diffwave::accumulate(/* dx */ 1, /* dz */ 0,
+        // All state enters routine as coefficients in X, Y, and Z directions
+
+        // Compute Y derivatives of density at collocation points
+        bspw->accumulate_operator(1, // dy
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[0][0][0][0]), 1, state.shape()[1],
+            complex_zero, rho_y.wave.begin(), 1, state.shape()[1]);
+        bspw->accumulate_operator(2, // d2y
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[0][0][0][0]), 1, state.shape()[1],
+            complex_zero, rho_yy.wave.begin(), 1, state.shape()[1]);
+        // Compute density at collocation points within state storage
+        bspw->apply_operator(0, // eval
+            state.shape()[2]*state.shape()[3],
+            1.0, &(state[0][0][0][0]), 1, state.shape()[1]);
+
+        // Compute X-related derivatives of density at collocation points
+        sz::diffwave::accumulate(1, 0, // dx
             complex_one, &(state[0][0][0][0]),
             complex_zero, rho_x.wave.begin(),
             def_grid.Lx(), def_grid.Lz(),
             Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
-        bspw->accumulate_operator(/* dy */ 1,
-            state.shape()[2]*state.shape()[3],
-            complex_one, &(state[0][0][0][0]), 1, state.shape()[1],
-            complex_zero, rho_y.wave.begin(), 1, state.shape()[1]);
-        sz::diffwave::accumulate(/* dx */ 0, /* dz */ 1,
-            complex_one, &(state[0][0][0][0]),
-            complex_zero, rho_z.wave.begin(),
-            def_grid.Lx(), def_grid.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
-
-        // Compute rho_xx, rho_xy, and rho_xz in wave space
-        sz::diffwave::accumulate(/* dx */ 2, /* dz */ 0,
+        sz::diffwave::accumulate(2, 0, // d2x
             complex_one, &(state[0][0][0][0]),
             complex_zero, rho_xx.wave.begin(),
             def_grid.Lx(), def_grid.Lz(),
             Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
-        bspw->accumulate_operator(/* dy */ 1,
-            state.shape()[2]*state.shape()[3],
-            complex_one, rho_x.wave.begin(), 1, state.shape()[1],
-            complex_zero, rho_xy.wave.begin(), 1, state.shape()[1]);
-        sz::diffwave::accumulate(/* dx */ 1, /* dz */ 1,
+        sz::diffwave::accumulate(1, 0, // dx dy
+            complex_one, rho_y.wave.begin(),
+            complex_zero, rho_xy.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(1, 1, // dx dz
             complex_one, &(state[0][0][0][0]),
             complex_zero, rho_xz.wave.begin(),
             def_grid.Lx(), def_grid.Lz(),
             Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
 
-        // Compute rho_yy and rho_yz in wave space
-        bspw->accumulate_operator(/* dy */ 2,
-            state.shape()[2]*state.shape()[3],
-            complex_one, &(state[0][0][0][0]), 1, state.shape()[1],
-            complex_zero, rho_yy.wave.begin(), 1, state.shape()[1]);
-        bspw->accumulate_operator(/* dy */ 1,
-            state.shape()[2]*state.shape()[3],
-            complex_one, rho_z.wave.begin(), 1, state.shape()[1],
-            complex_zero, rho_yz.wave.begin(), 1, state.shape()[1]);
-
-        // Compute rho_zz in wave space
-        sz::diffwave::accumulate(/* dx */ 0, /* dz */ 2,
+        // Compute Z-related derivatives of density at collocation points
+        sz::diffwave::accumulate(0, 1, // dz
+            complex_one, &(state[0][0][0][0]),
+            complex_zero, rho_z.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(0, 1, // dy dz
+            complex_one, rho_y.wave.begin(),
+            complex_zero, rho_yz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(0, 2, // d2z
             complex_one, &(state[0][0][0][0]),
             complex_zero, rho_zz.wave.begin(),
             def_grid.Lx(), def_grid.Lz(),
             Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
 
-        // TODO Prepare to convert to physical space
-        // TODO Convert to physical space
+
+        // Compute Y derivatives of X momentum at collocation points
+        bspw->accumulate_operator(1, // dy
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[1][0][0][0]), 1, state.shape()[1],
+            complex_zero, mx_y.wave.begin(), 1, state.shape()[1]);
+        bspw->accumulate_operator(2, // d2y
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[1][0][0][0]), 1, state.shape()[1],
+            complex_zero, mx_yy.wave.begin(), 1, state.shape()[1]);
+        // Compute X momentum at collocation points within state storage
+        bspw->apply_operator(0, // eval
+            state.shape()[2]*state.shape()[3],
+            1.0, &(state[1][0][0][0]), 1, state.shape()[1]);
+
+        // Compute X-related derivatives of X momentum at collocation points
+        sz::diffwave::accumulate(1, 0, // dx
+            complex_one, &(state[1][0][0][0]),
+            complex_zero, mx_x.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(2, 0, // d2x
+            complex_one, &(state[1][0][0][0]),
+            complex_zero, mx_xx.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(1, 0, // dx dy
+            complex_one, mx_y.wave.begin(),
+            complex_zero, mx_xy.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(1, 1, // dx dz
+            complex_one, &(state[1][0][0][0]),
+            complex_zero, mx_xz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+
+        // Compute Z-related derivatives of X momentum at collocation points
+        sz::diffwave::accumulate(0, 1, // dz
+            complex_one, &(state[1][0][0][0]),
+            complex_zero, mx_z.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(0, 1, // dy dz
+            complex_one, mx_y.wave.begin(),
+            complex_zero, mx_yz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(0, 2, // d2z
+            complex_one, &(state[1][0][0][0]),
+            complex_zero, mx_zz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+
+
+        // Compute Y derivatives of Y momentum at collocation points
+        bspw->accumulate_operator(1, // dy
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[2][0][0][0]), 1, state.shape()[1],
+            complex_zero, my_y.wave.begin(), 1, state.shape()[1]);
+        bspw->accumulate_operator(2, // d2y
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[2][0][0][0]), 1, state.shape()[1],
+            complex_zero, my_yy.wave.begin(), 1, state.shape()[1]);
+        // Compute Y momentum at collocation points within state storage
+        bspw->apply_operator(0, // eval
+            state.shape()[2]*state.shape()[3],
+            1.0, &(state[2][0][0][0]), 1, state.shape()[1]);
+
+        // Compute X-related derivatives of Y momentum at collocation points
+        sz::diffwave::accumulate(1, 0, // dx
+            complex_one, &(state[2][0][0][0]),
+            complex_zero, my_x.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(2, 0, // d2x
+            complex_one, &(state[2][0][0][0]),
+            complex_zero, my_xx.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(1, 0, // dx dy
+            complex_one, my_y.wave.begin(),
+            complex_zero, my_xy.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(1, 1, // dx dz
+            complex_one, &(state[2][0][0][0]),
+            complex_zero, my_xz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+
+        // Compute Z-related derivatives of Y momentum at collocation points
+        sz::diffwave::accumulate(0, 1, // dz
+            complex_one, &(state[2][0][0][0]),
+            complex_zero, my_z.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(0, 1, // dy dz
+            complex_one, my_y.wave.begin(),
+            complex_zero, my_yz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(0, 2, // d2z
+            complex_one, &(state[2][0][0][0]),
+            complex_zero, my_zz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+
+
+        // Compute Y derivatives of Z momentum at collocation points
+        bspw->accumulate_operator(1, // dy
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[3][0][0][0]), 1, state.shape()[1],
+            complex_zero, mz_y.wave.begin(), 1, state.shape()[1]);
+        bspw->accumulate_operator(2, // d2y
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[3][0][0][0]), 1, state.shape()[1],
+            complex_zero, mz_yy.wave.begin(), 1, state.shape()[1]);
+        // Compute Y momentum at collocation points within state storage
+        bspw->apply_operator(0, // eval
+            state.shape()[2]*state.shape()[3],
+            1.0, &(state[3][0][0][0]), 1, state.shape()[1]);
+
+        // Compute X-related derivatives of Z momentum at collocation points
+        sz::diffwave::accumulate(1, 0, // dx
+            complex_one, &(state[3][0][0][0]),
+            complex_zero, mz_x.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(2, 0, // d2x
+            complex_one, &(state[3][0][0][0]),
+            complex_zero, mz_xx.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(1, 0, // dx dy
+            complex_one, mz_y.wave.begin(),
+            complex_zero, mz_xy.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(1, 1, // dx dz
+            complex_one, &(state[3][0][0][0]),
+            complex_zero, mz_xz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+
+        // Compute Z-related derivatives of Z momentum at collocation points
+        sz::diffwave::accumulate(0, 1, // dz
+            complex_one, &(state[3][0][0][0]),
+            complex_zero, mz_z.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(0, 1, // dy dz
+            complex_one, mz_y.wave.begin(),
+            complex_zero, mz_yz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(0, 2, // d2z
+            complex_one, &(state[3][0][0][0]),
+            complex_zero, mz_zz.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+
+
+        // Compute Y derivatives of total energy at collocation points
+        bspw->accumulate_operator(1, // dy
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[4][0][0][0]), 1, state.shape()[1],
+            complex_zero, e_y.wave.begin(), 1, state.shape()[1]);
+        bspw->accumulate_operator(2, // d2y
+            state.shape()[2]*state.shape()[3],
+            complex_one, &(state[4][0][0][0]), 1, state.shape()[1],
+            complex_zero, div_grad_e.wave.begin(), 1, state.shape()[1]);
+        // Compute total energy at collocation points within state storage
+        bspw->apply_operator(0, // eval
+            state.shape()[2]*state.shape()[3],
+            1.0, &(state[4][0][0][0]), 1, state.shape()[1]);
+
+        // Compute X-related derivatives of total energy at collocation points
+        sz::diffwave::accumulate(1, 0, // dx
+            complex_one, &(state[4][0][0][0]),
+            complex_zero, e_x.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(2, 0, // d2x
+            complex_one, &(state[4][0][0][0]),
+            complex_one, div_grad_e.wave.begin(), // sum with contents
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+
+        // Compute Z-related derivatives of total energy at collocation points
+        sz::diffwave::accumulate(0, 1, // dz
+            complex_one, &(state[4][0][0][0]),
+            complex_zero, e_z.wave.begin(),
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+        sz::diffwave::accumulate(0, 2, // d2z
+            complex_one, &(state[4][0][0][0]),
+            complex_one, div_grad_e.wave.begin(), // sum with contents
+            def_grid.Lx(), def_grid.Lz(),
+            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+
+        // Collectively convert state to physical space
+        pg->transform_wave_to_physical(
+                reinterpret_cast<double *>(&state[0][0][0][0]));
+        pg->transform_wave_to_physical(
+                reinterpret_cast<double *>(&state[1][0][0][0]));
+        pg->transform_wave_to_physical(
+                reinterpret_cast<double *>(&state[2][0][0][0]));
+        pg->transform_wave_to_physical(
+                reinterpret_cast<double *>(&state[3][0][0][0]));
+        pg->transform_wave_to_physical(
+                reinterpret_cast<double *>(&state[4][0][0][0]));
+
+        // Collectively convert state derivatives to physical space
+        pg->transform_wave_to_physical(rho_x.data());   // density
+        pg->transform_wave_to_physical(rho_y.data());
+        pg->transform_wave_to_physical(rho_z.data());
+        pg->transform_wave_to_physical(rho_xx.data());
+        pg->transform_wave_to_physical(rho_xy.data());
+        pg->transform_wave_to_physical(rho_xz.data());
+        pg->transform_wave_to_physical(rho_yy.data());
+        pg->transform_wave_to_physical(rho_yz.data());
+        pg->transform_wave_to_physical(rho_zz.data());
+        pg->transform_wave_to_physical(mx_x.data());   // X momentum
+        pg->transform_wave_to_physical(mx_y.data());
+        pg->transform_wave_to_physical(mx_z.data());
+        pg->transform_wave_to_physical(mx_xx.data());
+        pg->transform_wave_to_physical(mx_xy.data());
+        pg->transform_wave_to_physical(mx_xz.data());
+        pg->transform_wave_to_physical(mx_yy.data());
+        pg->transform_wave_to_physical(mx_yz.data());
+        pg->transform_wave_to_physical(mx_zz.data());
+        pg->transform_wave_to_physical(my_x.data());   // Y momentum
+        pg->transform_wave_to_physical(my_y.data());
+        pg->transform_wave_to_physical(my_z.data());
+        pg->transform_wave_to_physical(my_xx.data());
+        pg->transform_wave_to_physical(my_xy.data());
+        pg->transform_wave_to_physical(my_xz.data());
+        pg->transform_wave_to_physical(my_yy.data());
+        pg->transform_wave_to_physical(my_yz.data());
+        pg->transform_wave_to_physical(my_zz.data());
+        pg->transform_wave_to_physical(mz_x.data());   // Z momentum
+        pg->transform_wave_to_physical(mz_y.data());
+        pg->transform_wave_to_physical(mz_z.data());
+        pg->transform_wave_to_physical(mz_xx.data());
+        pg->transform_wave_to_physical(mz_xy.data());
+        pg->transform_wave_to_physical(mz_xz.data());
+        pg->transform_wave_to_physical(mz_yy.data());
+        pg->transform_wave_to_physical(mz_yz.data());
+        pg->transform_wave_to_physical(mz_zz.data());
+        pg->transform_wave_to_physical(e_x.data());   // Total energy
+        pg->transform_wave_to_physical(e_y.data());
+        pg->transform_wave_to_physical(e_z.data());
+        pg->transform_wave_to_physical(div_grad_e.data());
+
         // TODO Compute nonlinear terms
-        // TODO Convert to wave space
         // TODO Compute stable timestep
+
+        // Convert collocation point values to wave space
+        pg->transform_physical_to_wave(
+                reinterpret_cast<double *>(&state[0][0][0][0]));
+        pg->transform_physical_to_wave(
+                reinterpret_cast<double *>(&state[1][0][0][0]));
+        pg->transform_physical_to_wave(
+                reinterpret_cast<double *>(&state[2][0][0][0]));
+        pg->transform_physical_to_wave(
+                reinterpret_cast<double *>(&state[3][0][0][0]));
+        pg->transform_physical_to_wave(
+                reinterpret_cast<double *>(&state[4][0][0][0]));
+
+        // Convert collocation point values to Bspline coefficients
+        bspluzw->solve(state.shape()[2]*state.shape()[3],
+                &(state[0][0][0][0]), 1, state.shape()[1]);
+        bspluzw->solve(state.shape()[2]*state.shape()[3],
+                &(state[1][0][0][0]), 1, state.shape()[1]);
+        bspluzw->solve(state.shape()[2]*state.shape()[3],
+                &(state[2][0][0][0]), 1, state.shape()[1]);
+        bspluzw->solve(state.shape()[2]*state.shape()[3],
+                &(state[3][0][0][0]), 1, state.shape()[1]);
+        bspluzw->solve(state.shape()[2]*state.shape()[3],
+                &(state[4][0][0][0]), 1, state.shape()[1]);
 
         return complex_type(0);
     }
@@ -371,32 +665,36 @@ int main(int argc, char **argv)
                       "B-spline breakpoint[" << i << "] = " << breakpoints[i]);
     }
     bspw = boost::make_shared<sz::bspline>(
-                def_bspline.k(), 2, def_grid.Ny(), breakpoints);
+             def_bspline.k(), 2, def_grid.Ny(), breakpoints);
     sz::blas::free(breakpoints);
 
+    // Initialize B-spline workspace to find coeffs from collocation points
+    bspluzw = boost::make_shared<sz::bspline_luz>(*bspw);
+    bspluzw->form_mass(*bspw);
+
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
-    sz::pencil_grid pg(def_grid.dealiased_extents(),
-                             def_grid.processor_grid());
-    LOG4CXX_INFO(log, "Processor grid used: " << pg.processor_grid());
+    pg = boost::make_shared<sz::pencil_grid>(def_grid.dealiased_extents(),
+                                             def_grid.processor_grid());
+    LOG4CXX_INFO(log, "Processor grid used: " << pg->processor_grid());
     LOG4CXX_DEBUG(log, "Local dealiased wave start  (XYZ): "
-                       << pg.local_wave_start());
+                       << pg->local_wave_start());
     LOG4CXX_DEBUG(log, "Local dealiased wave end    (XYZ): "
-                       << pg.local_wave_end());
+                       << pg->local_wave_end());
     LOG4CXX_DEBUG(log, "Local dealiased wave extent (XYZ): "
-                       << pg.local_wave_extent());
+                       << pg->local_wave_extent());
 
     // Create the state storage for the linear and nonlinear operators
     // Compute how much non-dealiased XYZ state is local to this rank
     // Additional munging necessary X direction has (Nx/2+1) complex values
     const boost::array<sz::pencil_grid::index,3> state_start
-        = pg.local_wave_start();
+        = pg->local_wave_start();
     const boost::array<sz::pencil_grid::index,3> state_end = {
         std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[0]/2+1,
-                                             pg.local_wave_end()[0]),
+                                             pg->local_wave_end()[0]),
         std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[1],
-                                             pg.local_wave_end()[1]),
+                                             pg->local_wave_end()[1]),
         std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[2],
-                                            pg.local_wave_end()[2])
+                                            pg->local_wave_end()[2])
     };
     const boost::array<sz::pencil_grid::index,3> state_extent = {
         std::max<sz::pencil_grid::index>(state_end[0] - state_start[0], 0),
@@ -410,8 +708,8 @@ int main(int argc, char **argv)
     state_type state_linear(sz::to_yxz(5, state_extent));
     state_type state_nonlinear(
             sz::to_yxz(5, state_extent),
-            sz::prepend(pg.local_wave_storage(),
-                        sz::strides_cm(sz::to_yxz(pg.local_wave_extent()))));
+            sz::prepend(pg->local_wave_storage(),
+                        sz::strides_cm(sz::to_yxz(pg->local_wave_extent()))));
     if (log->isDebugEnabled()) {
         boost::array<sz::pencil_grid::index,4> strides;
         std::copy(state_linear.strides(),
