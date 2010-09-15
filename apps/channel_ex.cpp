@@ -202,6 +202,8 @@ public:
         const
         throw(std::exception) {
 
+        double delta_t = 0.0;
+
         state_type &state = dynamic_cast<state_type&>(istate);
 
         const double complex_one[2]  = { 1.0, 0.0 };
@@ -517,8 +519,233 @@ public:
         pg->transform_wave_to_physical(e_z.data());
         pg->transform_wave_to_physical(div_grad_e.data());
 
-        // TODO Compute nonlinear terms
-        // TODO Compute stable timestep
+        // Compute nonlinear operator
+
+        // Retrieve constants and compute derived constants
+        const double beta             = def_scenario.beta();
+        const double gamma            = def_scenario.gamma();
+        const double Pr               = def_scenario.Pr();
+        const double Re               = def_scenario.Re();
+        const double inv_Re           = 1.0 / Re;
+        const double inv_Re_Pr_gamma1 = 1.0 / (Re * Pr * (gamma - 1));
+
+        // Temporary storage used within following loop
+        Eigen::Vector3d grad_rho;
+        Eigen::Matrix3d grad_grad_rho;
+        Eigen::Vector3d m;
+        Eigen::Matrix3d grad_m;
+        Eigen::Vector3d div_grad_m;
+        Eigen::Vector3d grad_div_m;
+        Eigen::Vector3d grad_e;
+        Eigen::Vector3d u;
+        Eigen::Matrix3d grad_u;
+        Eigen::Vector3d grad_div_u, div_grad_u;
+        Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+        Eigen::Matrix3d tau;
+        Eigen::Vector3d div_tau;
+
+        // Walk physical space state storage in linear fashion
+        for (// Loop initialization
+             double *p_rho    = reinterpret_cast<double *>(&state[0][0][0][0]),
+                    *p_rho_x  = rho_x.physical.begin(),
+                    *p_rho_y  = rho_y.physical.begin(),
+                    *p_rho_z  = rho_z.physical.begin(),
+                    *p_rho_xx = rho_xx.physical.begin(),
+                    *p_rho_xy = rho_xy.physical.begin(),
+                    *p_rho_xz = rho_xz.physical.begin(),
+                    *p_rho_yy = rho_yy.physical.begin(),
+                    *p_rho_yz = rho_yz.physical.begin(),
+                    *p_rho_zz = rho_zz.physical.begin(),
+                    *p_mx     = reinterpret_cast<double *>(&state[1][0][0][0]),
+                    *p_mx_x   = mx_x.physical.begin(),
+                    *p_mx_y   = mx_y.physical.begin(),
+                    *p_mx_z   = mx_z.physical.begin(),
+                    *p_mx_xx  = mx_xx.physical.begin(),
+                    *p_mx_xy  = mx_xy.physical.begin(),
+                    *p_mx_xz  = mx_xz.physical.begin(),
+                    *p_mx_yy  = mx_yy.physical.begin(),
+                    *p_mx_yz  = mx_yz.physical.begin(),
+                    *p_mx_zz  = mx_zz.physical.begin(),
+                    *p_my     = reinterpret_cast<double *>(&state[2][0][0][0]),
+                    *p_my_x   = my_x.physical.begin(),
+                    *p_my_y   = my_y.physical.begin(),
+                    *p_my_z   = my_z.physical.begin(),
+                    *p_my_xx  = my_xx.physical.begin(),
+                    *p_my_xy  = my_xy.physical.begin(),
+                    *p_my_xz  = my_xz.physical.begin(),
+                    *p_my_yy  = my_yy.physical.begin(),
+                    *p_my_yz  = my_yz.physical.begin(),
+                    *p_my_zz  = my_zz.physical.begin(),
+                    *p_mz     = reinterpret_cast<double *>(&state[3][0][0][0]),
+                    *p_mz_x   = mz_x.physical.begin(),
+                    *p_mz_y   = mz_y.physical.begin(),
+                    *p_mz_z   = mz_z.physical.begin(),
+                    *p_mz_xx  = mz_xx.physical.begin(),
+                    *p_mz_xy  = mz_xy.physical.begin(),
+                    *p_mz_xz  = mz_xz.physical.begin(),
+                    *p_mz_yy  = mz_yy.physical.begin(),
+                    *p_mz_yz  = mz_yz.physical.begin(),
+                    *p_mz_zz  = mz_zz.physical.begin(),
+                    *p_e      = reinterpret_cast<double *>(&state[4][0][0][0]),
+                    *p_e_x    = e_x.physical.begin(),
+                    *p_e_y    = e_y.physical.begin(),
+                    *p_e_z    = e_z.physical.begin(),
+                    *p_div_grad_e = div_grad_e.physical.begin();
+             // Loop completion test
+             p_rho_x != rho_x.physical.end();
+             // Loop increment
+             ++p_rho,
+             ++p_rho_x,
+             ++p_rho_y,
+             ++p_rho_z,
+             ++p_rho_xx,
+             ++p_rho_xy,
+             ++p_rho_xz,
+             ++p_rho_yy,
+             ++p_rho_yz,
+             ++p_rho_zz,
+             ++p_mx,
+             ++p_mx_x,
+             ++p_mx_y,
+             ++p_mx_z,
+             ++p_mx_xx,
+             ++p_mx_xy,
+             ++p_mx_xz,
+             ++p_mx_yy,
+             ++p_mx_yz,
+             ++p_mx_zz,
+             ++p_my,
+             ++p_my_x,
+             ++p_my_y,
+             ++p_my_z,
+             ++p_my_xx,
+             ++p_my_xy,
+             ++p_my_xz,
+             ++p_my_yy,
+             ++p_my_yz,
+             ++p_my_zz,
+             ++p_mz,
+             ++p_mz_x,
+             ++p_mz_y,
+             ++p_mz_z,
+             ++p_mz_xx,
+             ++p_mz_xy,
+             ++p_mz_xz,
+             ++p_mz_yy,
+             ++p_mz_yz,
+             ++p_mz_zz,
+             ++p_e,
+             ++p_e_x,
+             ++p_e_y,
+             ++p_e_z,
+             ++p_div_grad_e) {
+
+            // Prepare local density-related quantities
+            const double rho          = *p_rho;
+            grad_rho[0]               = *p_rho_x;
+            grad_rho[1]               = *p_rho_y;
+            grad_rho[2]               = *p_rho_z;
+            const double div_grad_rho = *p_rho_xx + *p_rho_yy + *p_rho_zz;
+            grad_grad_rho(0,0)        = *p_rho_xx;
+            grad_grad_rho(0,1)        = *p_rho_xy;
+            grad_grad_rho(0,2)        = *p_rho_xz;
+            grad_grad_rho(1,0)        = grad_grad_rho(0,1);
+            grad_grad_rho(1,1)        = *p_rho_yy;
+            grad_grad_rho(1,2)        = *p_rho_yz;
+            grad_grad_rho(2,0)        = grad_grad_rho(0,2);
+            grad_grad_rho(2,1)        = grad_grad_rho(1,2);
+            grad_grad_rho(2,2)        = *p_rho_zz;
+
+            // Prepare local momentum-related quantities
+            m[0]               = *p_mx;
+            m[1]               = *p_my;
+            m[2]               = *p_mz;
+            const double div_m = *p_mx_x + *p_my_y + *p_my_z;
+            grad_m(0,0)        = *p_mx_x;
+            grad_m(0,1)        = *p_mx_y;
+            grad_m(0,2)        = *p_mx_z;
+            grad_m(1,0)        = *p_my_x;
+            grad_m(1,1)        = *p_my_y;
+            grad_m(1,2)        = *p_my_z;
+            grad_m(2,0)        = *p_mz_x;
+            grad_m(2,1)        = *p_mz_y;
+            grad_m(2,2)        = *p_mz_z;
+            div_grad_m[0]      = *p_mx_xx + *p_mx_yy + *p_mx_zz;
+            div_grad_m[1]      = *p_my_xx + *p_my_yy + *p_my_zz;
+            div_grad_m[2]      = *p_mz_xx + *p_mz_yy + *p_mz_zz;
+            grad_div_m[0]      = *p_mx_xx + *p_mx_xy + *p_mx_xz;
+            grad_div_m[1]      = *p_mx_xy + *p_mx_yy + *p_mx_yz;
+            grad_div_m[2]      = *p_mx_xz + *p_mx_yz + *p_mx_zz;
+
+            // Prepare local total energy-related quantities
+            const double e          = *p_e;
+            grad_e[0]               = *p_e_x;
+            grad_e[1]               = *p_e_y;
+            grad_e[2]               = *p_e_z;
+            const double div_grad_e = *p_div_grad_e;  // FIXME Shadow
+
+            // Prepare quantities derived from local state and its derivatives
+            u                  = sz::orthonormal::rhome::u(rho, m);
+            const double div_u = sz::orthonormal::rhome::div_u(
+                                    rho, grad_rho, m, div_m);
+            grad_u             = sz::orthonormal::rhome::grad_u(
+                                    rho, grad_rho, m, grad_m);
+            grad_div_u         = sz::orthonormal::rhome::grad_div_u(
+                                    rho, grad_rho, grad_grad_rho,
+                                    m, div_m, grad_m, grad_div_m);
+            div_grad_u         = sz::orthonormal::rhome::div_grad_u(
+                                    rho, grad_rho, div_grad_rho,
+                                    m, grad_m, div_grad_m);
+            double p, T, mu, lambda;
+            sz::orthonormal::rhome::p_T_mu_lambda(
+                beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+                p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+            const double div_grad_p = sz::orthonormal::rhome::div_grad_p(
+                                        gamma,
+                                        rho, grad_rho, div_grad_rho,
+                                        m, grad_m, div_grad_m,
+                                        e, grad_e, div_grad_e);
+            const double div_grad_T = sz::orthonormal::rhome::div_grad_T(
+                                        gamma,
+                                        rho, grad_rho, div_grad_rho,
+                                        p, grad_p, div_grad_p);
+            tau     = sz::orthonormal::tau(mu, lambda, div_u, grad_u);
+            div_tau = sz::orthonormal::div_tau(
+                        mu, grad_mu, lambda, grad_lambda,
+                        div_u, grad_u, div_grad_u, grad_div_u);
+
+
+            // TODO Hooks for continuity, momentum, and energy forcing
+
+            // Continuity equation
+            *p_rho = - div_m
+                ;
+
+            // Momentum equation
+            Eigen::Vector3d momentum =
+                - sz::orthonormal::div_u_outer_m(m, grad_m, u, div_u)
+                - grad_p
+                + inv_Re * div_tau
+                ;
+            *p_mx = momentum[0];
+            *p_my = momentum[1];
+            *p_mz = momentum[2];
+
+            // Energy equation
+            *p_e = - sz::orthonormal::div_e_u(e, grad_e, u, div_u)
+                   - sz::orthonormal::div_p_u(p, grad_p, u, div_u)
+                   + inv_Re_Pr_gamma1 * sz::orthonormal::div_mu_grad_T(
+                        grad_T, div_grad_T, mu, grad_mu
+                     )
+                   + inv_Re * sz::orthonormal::div_tau_u<double>(
+                        u, grad_u, tau, div_tau
+                     )
+                   ;
+        }
+
+        // TODO Enforce boundary conditions in wave space
+        // Enforce isothermal lower wall boundary condition
+        // Enforce isothermal upper wall boundary condition
 
         // Convert collocation point values to wave space
         pg->transform_physical_to_wave(
@@ -544,7 +771,7 @@ public:
         bspluzw->solve(state.shape()[2]*state.shape()[3],
                 &(state[4][0][0][0]), 1, state.shape()[1]);
 
-        return complex_type(0);
+        return complex_type(delta_t);
     }
 
 
