@@ -603,6 +603,22 @@ public:
      */
     virtual Element zeta(std::size_t substep) const = 0;
 
+    /**
+     * Obtain the scheme's maximum pure real eigenvalue magnitude.
+     *
+     * @return The scheme's maximum pure real eigenvalue magnitude.
+     * @see diffusive_stability_criterion() for one use of this magnitude.
+     */
+    virtual double evmaxmag_real() const = 0;
+
+    /**
+     * Obtain the scheme's maximum pure imaginary eigenvalue magnitude.
+     *
+     * @return The scheme's maximum pure imaginary eigenvalue magnitude.
+     * @see convective_stability_criterion() for one use of this magnitude.
+     */
+    virtual double evmaxmag_imag() const = 0;
+
     /** Virtual destructor to support interface-like behavior. */
     virtual ~ILowStorageMethod() {};
 };
@@ -655,6 +671,12 @@ public:
 
     /*! @copydoc ILowStorageMethod::zeta */
     virtual Element zeta(const std::size_t substep) const;
+
+    /*! @copydoc ILowStorageMethod::evmaxmag_real */
+    virtual double evmaxmag_real() const { return 2.512; }
+
+    /*! @copydoc ILowStorageMethod::evmaxmag_imag */
+    virtual double evmaxmag_imag() const { return std::sqrt(3.0); }
 };
 
 template< typename Element >

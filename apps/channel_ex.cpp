@@ -202,7 +202,12 @@ public:
         const
         throw(std::exception) {
 
-        double delta_t = 0.0;
+        SUZERAIN_UNUSED(delta_t_requested);
+        double convective_delta_t = std::numeric_limits<double>::max();
+        double diffusive_delta_t  = std::numeric_limits<double>::max();
+        const double one_over_delta_x = def_grid.Lx() / def_grid.Nx();
+        const double one_over_delta_y = def_grid.Ly() / def_grid.Ny();
+        const double one_over_delta_z = def_grid.Lz() / def_grid.Nz();
 
         state_type &state = dynamic_cast<state_type&>(istate);
 
@@ -714,8 +719,21 @@ public:
                         mu, grad_mu, lambda, grad_lambda,
                         div_u, grad_u, div_grad_u, grad_div_u);
 
-
-            // TODO Hooks for continuity, momentum, and energy forcing
+            // Maintain the minimum stable timestep
+            // TODO Operator knows about the scheme's eigenvalues.  Fix that.
+            convective_delta_t = std::min(convective_delta_t,
+                sz::timestepper::convective_stability_criterion(
+                    u.x(), one_over_delta_x,
+                    u.y(), one_over_delta_y,
+                    u.z(), one_over_delta_z,
+                    std::sqrt(3.0),
+                    std::sqrt(T))); // nondimensional a = sqrt(T)
+            diffusive_delta_t = std::min(diffusive_delta_t,
+                sz::timestepper::diffusive_stability_criterion(
+                    one_over_delta_x,
+                    one_over_delta_y,
+                    one_over_delta_z,
+                    Re, Pr, gamma, 2.512, mu / rho));
 
             // Continuity equation
             *p_rho = - div_m
@@ -771,7 +789,7 @@ public:
         bspluzw->solve(state.shape()[2]*state.shape()[3],
                 &(state[4][0][0][0]), 1, state.shape()[1]);
 
-        return complex_type(delta_t);
+        return complex_type(std::min(convective_delta_t, diffusive_delta_t));
     }
 
 
