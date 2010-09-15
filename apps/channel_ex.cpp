@@ -899,18 +899,21 @@ int main(int argc, char **argv)
     LOG4CXX_INFO(log, "gamma = C_p/C_v:         " << def_scenario.gamma());
     LOG4CXX_INFO(log, "beta = ln mu/ln T:       " << def_scenario.beta());
 
-    // Initialize B-spline workspace using [0, Ly] and Ny
+    // Initialize B-spline workspace using [0, Ly] with Ny degrees of freedom
+    const int nbreakpoints = def_grid.Ny() - def_bspline.k() + 2;
+    assert(nbreakpoints > 1);
     double *breakpoints
-        = (double *)sz::blas::malloc(def_grid.Ny()*sizeof(double));
+        = (double *)sz::blas::malloc(nbreakpoints*sizeof(double));
     assert(breakpoints);
-    compute_breakpoints(0.0, def_grid.Ly(), def_grid.Ny(),
+    compute_breakpoints(0.0, def_grid.Ly(), nbreakpoints,
                         def_bspline.alpha(), breakpoints);
     for (int i = 0; i < def_grid.Ny(); ++i) {
         LOG4CXX_TRACE(log,
                       "B-spline breakpoint[" << i << "] = " << breakpoints[i]);
     }
     bspw = boost::make_shared<sz::bspline>(
-             def_bspline.k(), 2, def_grid.Ny(), breakpoints);
+             def_bspline.k(), 2, nbreakpoints, breakpoints);
+    assert(bspw->ndof() == def_grid.Ny());
     sz::blas::free(breakpoints);
 
     // Initialize B-spline workspace to find coeffs from collocation points
@@ -928,7 +931,6 @@ int main(int argc, char **argv)
     LOG4CXX_DEBUG(log, "Local dealiased wave extent (XYZ): "
                        << pg->local_wave_extent());
 
-    // Create the state storage for the linear and nonlinear operators
     // Compute how much non-dealiased XYZ state is local to this rank
     // Additional munging necessary X direction has (Nx/2+1) complex values
     const boost::array<sz::pencil_grid::index,3> state_start
@@ -949,7 +951,9 @@ int main(int argc, char **argv)
     LOG4CXX_DEBUG(log, "Local state wave start  (XYZ): " << state_start);
     LOG4CXX_DEBUG(log, "Local state wave end    (XYZ): " << state_end);
     LOG4CXX_DEBUG(log, "Local state wave extent (XYZ): " << state_extent);
-    // Create the state instances with appropriate padding
+
+    // Create the state storage for the linear and nonlinear operators
+    // with appropriate padding to allow nonlinear state to be P3DFFTified
     state_type state_linear(sz::to_yxz(5, state_extent));
     state_type state_nonlinear(
             sz::to_yxz(5, state_extent),
@@ -965,4 +969,12 @@ int main(int argc, char **argv)
         LOG4CXX_DEBUG(log, "Nonlinear state strides (FYXZ): " << strides);
     }
 
+    // Instantiate the operators and timestepping details
+    // See write up section 2.1 (Spatial Discretization) for coefficient origin
+    const sz::timestepper::lowstorage::SMR91Method<complex_type> smr91;
+    MassOperator L(def_grid.Lx()*def_grid.Lz()*def_grid.Nx()*def_grid.Nz());
+    NonlinearOperator N;
+
+    // Take a timestep
+    sz::timestepper::lowstorage::step(smr91, L, N, state_linear, state_nonlinear);
 }
