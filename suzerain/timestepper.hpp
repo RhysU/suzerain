@@ -814,12 +814,11 @@ throw(std::exception)
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
  * @param N The nonlinear operator to be treated explicitly.
- * @param a On entry contains \f$u^{i}\f$ and on exit contains
- *          \f$N\left(u^{i}\right)\f$.  The linear operator is applied
+ * @param a On entry contains \f$u(t)\f$ and on exit contains
+ *          \f$u(t+\Delta{}t)\f$.  The linear operator is applied
  *          only to this state storage.
- * @param b On entry contains \f$N\left(u^{i-1}\right)\f$ and on exit contains
- *          \f$u^{i+1}\f$.  The nonlinear operator is applied only
- *          to this state storage.
+ * @param b Used as a temporary storage location during substeps.
+ *          The nonlinear operator is applied only to this state storage.
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
