@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE( real_access )
     for (pencil<>::index i = 0; i < p.physical.size_x; ++i) {
         for (pencil<>::index k = 0; k < p.physical.size_z; ++k) {
             for (pencil<>::index j = 0; j < p.physical.size_y; ++j) {
-#pragma warning(push,disable:810)
+#pragma warning(push,disable:810 2259)
                 p.physical(i, j, k) = (i + 1) * (j + 1) * (k + 1);
 #pragma warning(pop)
             }
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE( complex_access )
     for (pencil<>::index i = 0; i < p.wave.size_x; ++i) {
         for (pencil<>::index k = 0; k < p.wave.size_z; ++k) {
             for (pencil<>::index j = 0; j < p.wave.size_y; ++j) {
-#pragma warning(push,disable:810)
+#pragma warning(push,disable:810 2259)
                 p.wave.real(i, j, k) = (i - 123) * (j - 123) * (k - 123);
                 p.wave.imag(i, j, k) = (i + 123) * (j + 123) * (k + 123);
 #pragma warning(pop)
