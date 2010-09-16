@@ -106,10 +106,10 @@ public:
         state_type &state = dynamic_cast<state_type&>(istate);
 
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
+        assert(1 == state.strides()[1]);
         assert(luzw_.ndof() == state.shape()[1]);
-        assert(nrhs == state.strides()[0]);
         bspw->apply_operator(0, nrhs, opscaling_,
-                state.memory_begin(), state.strides()[1], state.strides()[2]);
+                state.memory_begin(), 1, state.strides()[2]);
     }
 
     virtual void accumulateMassPlusScaledOperator(
@@ -151,7 +151,6 @@ public:
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
         assert(1 == state.strides()[1]);
         assert(luzw_.ndof() == state.shape()[1]);
-        assert(nrhs == state.strides()[0]);
         luzw_.solve(nrhs, state.memory_begin(), 1, state.strides()[2]);
     }
 
