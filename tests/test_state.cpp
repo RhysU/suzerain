@@ -496,17 +496,26 @@ template<
 >
 static void test_scale_helper(State<NumDims,Element,Allocator> &foo)
 {
+    BOOST_TEST_PASSPOINT();
     load(foo, 1);
+    BOOST_TEST_PASSPOINT();
     verify(foo, 1);
 
+    BOOST_TEST_PASSPOINT();
     foo.scale(1);
+    BOOST_TEST_PASSPOINT();
     verify(foo, 1);
+    BOOST_TEST_PASSPOINT();
 
     foo.scale(2);
+    BOOST_TEST_PASSPOINT();
     verify(foo, 2);
+    BOOST_TEST_PASSPOINT();
 
     foo.scale(0);
+    BOOST_TEST_PASSPOINT();
     verify(foo, 0);
+    BOOST_TEST_PASSPOINT();
 }
 
 template<
