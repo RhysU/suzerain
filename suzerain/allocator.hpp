@@ -180,11 +180,11 @@ public:
     // Make explicit all constructors, including copy constructors
     explicit allocator() {}
     ~allocator() {}
-    allocator(allocator const& rhs):Traits(rhs), Policy(rhs) {}
+    allocator(allocator const& rhs) : Policy(rhs), Traits(rhs) {}
     template <typename U>
     explicit allocator(allocator<U> const&) {}
     template <typename U, typename P, typename T2>
-    allocator(allocator<U, P, T2> const& rhs) : Traits(rhs), Policy(rhs) {}
+    allocator(allocator<U, P, T2> const& rhs) : Policy(rhs), Traits(rhs) {}
 
     /** Allocation and deallocation uses the policy template parameter */
     //@{
