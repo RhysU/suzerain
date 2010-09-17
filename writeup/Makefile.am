@@ -1,5 +1,9 @@
 ## Process this file with automake to produce Makefile.in
 
+# Building writeups in parallel tends to break LaTeX-related scripting
+# http://www.gnu.org/software/automake/manual/make/Special-Targets.html
+.NOTPARALLEL:
+
 TEXSOURCES  = derivation.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
