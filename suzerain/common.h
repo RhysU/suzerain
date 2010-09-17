@@ -143,6 +143,7 @@ Provides hint to the compiler to optimize for the expression being false.
 inline
 int suzerain_gbmatrix_offset(int lda, int kl, int ku, int i, int j) {
     /* Unused parameters present to be consistent with gbmatrix_in_band */
+    SUZERAIN_UNUSED(kl);
     return j*lda+(ku+i-j);
 }
 
@@ -160,6 +161,7 @@ int suzerain_gbmatrix_offset(int lda, int kl, int ku, int i, int j) {
 inline
 int suzerain_gbmatrix_in_band(int lda, int kl, int ku, int i, int j) {
     /* Unused parameters present to be consistent with gbmatrix_offset */
+    SUZERAIN_UNUSED(lda);
     return j-ku <= i && i <= j+kl;
 }
 

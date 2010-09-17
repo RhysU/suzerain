@@ -77,6 +77,10 @@ no_error_handler(const char *reason,
                  int line,
                  int suzerain_errno)
 {
+    SUZERAIN_UNUSED(reason);
+    SUZERAIN_UNUSED(file);
+    SUZERAIN_UNUSED(line);
+    SUZERAIN_UNUSED(suzerain_errno);
     return; /* do nothing */
 }
 #pragma warning(pop)

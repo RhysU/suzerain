@@ -2205,6 +2205,9 @@ test_zgb_dacc_nop()
 int
 main(int argc, char **argv)
 {
+    SUZERAIN_UNUSED(argc);
+    SUZERAIN_UNUSED(argv);
+
     gsl_ieee_env_setup();
 
     test_daxpby();
