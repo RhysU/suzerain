@@ -38,9 +38,9 @@
 #include <fftw3-mpi.h>
 #include <log4cxx/logger.h>
 
-// We use HPCT, if available, for some fine-scale timing.
-#ifdef HAVE_HPCT
-#include <hpct.h>
+// We use GRVY, if available, for some fine-scale timing.
+#ifdef HAVE_GRVY
+#include <grvy.h>
 #endif
 
 #include <boost/accumulators/accumulators.hpp>
@@ -169,17 +169,17 @@ int main(int argc, char *argv[])
                      << " KB max");
     }
 
-#ifdef HAVE_HPCT
-    hpct_timer_init("underling");
-    hpct_timer_begin("plan");
+#ifdef HAVE_GRVY
+    grvy_timer_init("underling");
+    grvy_timer_begin("plan");
 #endif
     // Create the plan once
     underling::plan plan(problem,
                          data.get(),
                          underling::transpose::all,
                          fftwdef.plan_rigor());
-#ifdef HAVE_HPCT
-    hpct_timer_end("plan");
+#ifdef HAVE_GRVY
+    grvy_timer_end("plan");
 #endif
 
     // Seed the local memory buffer with processor-dependent, ordered data
@@ -201,27 +201,27 @@ int main(int argc, char *argv[])
 
         MPI_Pcontrol(1);                         // Enable MPI profiling
         const double start_trip = MPI_Wtime();   // Start timer
-#ifdef HAVE_HPCT
-        hpct_timer_begin("long_n2_to_long_n1");
+#ifdef HAVE_GRVY
+        grvy_timer_begin("long_n2_to_long_n1");
 #endif
         plan.execute_long_n2_to_long_n1();
-#ifdef HAVE_HPCT
-        hpct_timer_end(  "long_n2_to_long_n1");
-        hpct_timer_begin("long_n1_to_long_n0");
+#ifdef HAVE_GRVY
+        grvy_timer_end(  "long_n2_to_long_n1");
+        grvy_timer_begin("long_n1_to_long_n0");
 #endif
         plan.execute_long_n1_to_long_n0();
-#ifdef HAVE_HPCT
-        hpct_timer_end(  "long_n1_to_long_n0");
-        hpct_timer_begin("long_n0_to_long_n1");
+#ifdef HAVE_GRVY
+        grvy_timer_end(  "long_n1_to_long_n0");
+        grvy_timer_begin("long_n0_to_long_n1");
 #endif
         plan.execute_long_n0_to_long_n1();
-#ifdef HAVE_HPCT
-        hpct_timer_end(  "long_n0_to_long_n1");
-        hpct_timer_begin("long_n1_to_long_n2");
+#ifdef HAVE_GRVY
+        grvy_timer_end(  "long_n0_to_long_n1");
+        grvy_timer_begin("long_n1_to_long_n2");
 #endif
         plan.execute_long_n1_to_long_n2();
-#ifdef HAVE_HPCT
-        hpct_timer_end(  "long_n1_to_long_n2");
+#ifdef HAVE_GRVY
+        grvy_timer_end(  "long_n1_to_long_n2");
 #endif
         const double end_trip = MPI_Wtime();     // End timer
         MPI_Pcontrol(0);                         // Disable MPI profiling
@@ -245,9 +245,9 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifdef HAVE_HPCT
-    hpct_timer_finalize();
-    if (!procid) hpct_timer_summarize();
+#ifdef HAVE_GRVY
+    grvy_timer_finalize();
+    if (!procid) grvy_timer_summarize();
 #endif
 
     // Dump out the round trip timing statistics
