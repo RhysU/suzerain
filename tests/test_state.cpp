@@ -15,14 +15,14 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 /** Helper for specifying 3D extents information */
 static boost::array<int,3> size(int x, int y, int z)
 {
-    boost::array<int,3> a = { x, y, z };
+    boost::array<int,3> a = {{ x, y, z }};
     return a;
 }
 
 /** Helper for specifying 4D extents information */
 static boost::array<int,4> size(int w, int x, int y, int z)
 {
-    boost::array<int,4> a = { w, x, y, z };
+    boost::array<int,4> a = {{ w, x, y, z }};
     return a;
 }
 
@@ -49,9 +49,9 @@ static void load(
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
-    BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[1], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[2], 3);
+    BOOST_REQUIRE_EQUAL(state.shape()[0], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[1], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[2], 3U);
 
     state[0][0][0] = FPT(  2) * scale;
     state[0][1][0] = FPT(  3) * scale;
@@ -80,10 +80,10 @@ static void load(
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
-    BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[1], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[2], 3);
-    BOOST_REQUIRE_EQUAL(state.shape()[3], 4);
+    BOOST_REQUIRE_EQUAL(state.shape()[0], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[1], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[2], 3U);
+    BOOST_REQUIRE_EQUAL(state.shape()[3], 4U);
 
     state[0][0][0][0] = FPT(  2) * scale;
     state[0][1][0][0] = FPT(  3) * scale;
@@ -155,9 +155,9 @@ static void verify(
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
-    BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[1], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[2], 3);
+    BOOST_REQUIRE_EQUAL(state.shape()[0], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[1], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[2], 3U);
 
     BOOST_CHECK_EQUAL(state[0][0][0], FPT(  2) * scale);
     BOOST_CHECK_EQUAL(state[0][1][0], FPT(  3) * scale);
@@ -186,10 +186,10 @@ static void verify(
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
-    BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[1], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[2], 3);
-    BOOST_REQUIRE_EQUAL(state.shape()[3], 4);
+    BOOST_REQUIRE_EQUAL(state.shape()[0], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[1], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[2], 3U);
+    BOOST_REQUIRE_EQUAL(state.shape()[3], 4U);
 
     BOOST_CHECK_EQUAL(state[0][0][0][0], FPT(  2) * scale);
     BOOST_CHECK_EQUAL(state[0][1][0][0], FPT(  3) * scale);
@@ -261,9 +261,9 @@ static void load(
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
-    BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[1], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[2], 3);
+    BOOST_REQUIRE_EQUAL(state.shape()[0], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[1], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[2], 3U);
 
     typedef typename std::complex<FPT> complex;
     const FPT scaleFactor = boost::numeric_cast<FPT>(scale);
@@ -294,10 +294,10 @@ static void load(
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
-    BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[1], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[2], 3);
-    BOOST_REQUIRE_EQUAL(state.shape()[3], 4);
+    BOOST_REQUIRE_EQUAL(state.shape()[0], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[1], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[2], 3U);
+    BOOST_REQUIRE_EQUAL(state.shape()[3], 4U);
 
     typedef typename std::complex<FPT> complex;
     const FPT scaleFactor = boost::numeric_cast<FPT>(scale);
@@ -371,9 +371,9 @@ static void verify(
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
-    BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[1], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[2], 3);
+    BOOST_REQUIRE_EQUAL(state.shape()[0], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[1], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[2], 3U);
 
     typedef typename std::complex<FPT> complex;
     const FPT scaleFactor = boost::numeric_cast<FPT>(scale);
@@ -404,9 +404,9 @@ static void verify(
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
     SUZERAIN_UNUSED(dummy);
-    BOOST_REQUIRE_EQUAL(state.shape()[0], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[1], 2);
-    BOOST_REQUIRE_EQUAL(state.shape()[2], 3);
+    BOOST_REQUIRE_EQUAL(state.shape()[0], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[1], 2U);
+    BOOST_REQUIRE_EQUAL(state.shape()[2], 3U);
 
     typedef typename std::complex<FPT> complex;
     const FPT scaleFactor = boost::numeric_cast<FPT>(scale);
@@ -565,13 +565,15 @@ using suzerain::InterleavedState;
 // Types to be tested with InterleavedState
 typedef boost::mpl::list<
     double
-   ,float
-   ,std::complex<double>
-   ,std::complex<float>
+    ,float
+    ,std::complex<double>
+    ,std::complex<float>
 > test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 {
+    using boost::numeric_cast;
+
     // Regular constructor
     InterleavedState<3,T> foo(size223());
     BOOST_CHECK_EQUAL(
@@ -586,9 +588,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
     verify(bar, 1);
 
     // Modify first instance's data
-    for (int i = 0; i < foo.shape()[0]; ++i)
-        for (int j = 0; j < foo.shape()[1]; ++j)
-            for (int k = 0; k < foo.shape()[2]; ++k)
+    for (int i = 0; i < numeric_cast<int>(foo.shape()[0]); ++i)
+        for (int j = 0; j < numeric_cast<int>(foo.shape()[1]); ++j)
+            for (int k = 0; k < numeric_cast<int>(foo.shape()[2]); ++k)
                 foo[i][j][k] += (i+1)*(j+1)*(k+1);
 
     // Ensure copy constructed data in second instance not modified
@@ -687,13 +689,15 @@ using suzerain::NoninterleavedState;
 // Types to be tested with NoninterleavedState
 typedef boost::mpl::list<
     double
-   ,float
-   ,std::complex<double>
-   ,std::complex<float>
+    ,float
+    ,std::complex<double>
+    ,std::complex<float>
 > test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors3, T, test_types )
 {
+    using boost::numeric_cast;
+
     // Regular constructor
     NoninterleavedState<3,T> foo(size223());
     BOOST_CHECK_EQUAL(
@@ -708,9 +712,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors3, T, test_types )
     verify(bar, 1);
 
     // Modify first instance's data
-    for (int i = 0; i < foo.shape()[0]; ++i)
-        for (int j = 0; j < foo.shape()[1]; ++j)
-            for (int k = 0; k < foo.shape()[2]; ++k)
+    for (int i = 0; i < numeric_cast<int>(foo.shape()[0]); ++i)
+        for (int j = 0; j < numeric_cast<int>(foo.shape()[1]); ++j)
+            for (int k = 0; k < numeric_cast<int>(foo.shape()[2]); ++k)
                 foo[i][j][k] += (i+1)*(j+1)*(k+1);
 
     // Ensure copy constructed data in second instance not modified
@@ -736,9 +740,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors3, T, test_types )
     verify(qux, 1);
 
     // Modify first padded instance's data
-    for (int i = 0; i < foo.shape()[0]; ++i)
-        for (int j = 0; j < foo.shape()[1]; ++j)
-            for (int k = 0; k < foo.shape()[2]; ++k)
+    for (int i = 0; i < numeric_cast<int>(foo.shape()[0]); ++i)
+        for (int j = 0; j < numeric_cast<int>(foo.shape()[1]); ++j)
+            for (int k = 0; k < numeric_cast<int>(foo.shape()[2]); ++k)
                 baz[i][j][k] += (i+1)*(j+1)*(k+1);
 
     // Ensure copy constructed data in second padded instance not modified
@@ -747,6 +751,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors3, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors4, T, test_types )
 {
+    using boost::numeric_cast;
+
     // Regular constructor
     NoninterleavedState<4,T> foo(size2234());
     BOOST_CHECK_EQUAL(
@@ -761,10 +767,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors4, T, test_types )
     verify(bar, 1);
 
     // Modify first instance's data
-    for (int i = 0; i < foo.shape()[0]; ++i)
-        for (int j = 0; j < foo.shape()[1]; ++j)
-            for (int k = 0; k < foo.shape()[2]; ++k)
-                for (int l = 0; l < foo.shape()[3]; ++l)
+    for (int i = 0; i < numeric_cast<int>(foo.shape()[0]); ++i)
+        for (int j = 0; j < numeric_cast<int>(foo.shape()[1]); ++j)
+            for (int k = 0; k < numeric_cast<int>(foo.shape()[2]); ++k)
+                for (int l = 0; l < numeric_cast<int>(foo.shape()[3]); ++l)
                     foo[i][j][k][l] += (i+1)*(j+1)*(k+1)*(l+1);
 
     // Ensure copy constructed data in second instance not modified
@@ -791,10 +797,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors4, T, test_types )
     verify(qux, 1);
 
     // Modify first padded instance's data
-    for (int i = 0; i < foo.shape()[0]; ++i)
-        for (int j = 0; j < foo.shape()[1]; ++j)
-            for (int k = 0; k < foo.shape()[2]; ++k)
-                for (int l = 0; l < foo.shape()[2]; ++l)
+    for (int i = 0; i < numeric_cast<int>(foo.shape()[0]); ++i)
+        for (int j = 0; j < numeric_cast<int>(foo.shape()[1]); ++j)
+            for (int k = 0; k < numeric_cast<int>(foo.shape()[2]); ++k)
+                for (int l = 0; l < numeric_cast<int>(foo.shape()[2]); ++l)
                     baz[i][j][k][l] += (i+1)*(j+1)*(k+1)*(l+1);
 
     // Ensure copy constructed data in second padded instance not modified

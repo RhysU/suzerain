@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE( interleaved )
     typedef suzerain::storage::interleaved<3> storage;
     const std::size_t D = storage::dimensionality;
 
-    const boost::array<int,D> sizes = { 2, 3, 4 };
+    const boost::array<int,D> sizes = {{2, 3, 4}};
 
     {
         BOOST_TEST_MESSAGE(sizes << " without minstrides");
