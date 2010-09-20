@@ -75,9 +75,12 @@ Provides hint to the compiler to optimize for the expression being false.
 #define SUZERAIN_UNLIKELY(expr) expr
 #endif
 
-#if __GNUC__ >= 3
+#ifdef __INTEL_COMPILER
 /** Strongly recommend that a function be inlined */
 #define SUZERAIN_FORCEINLINE __forceinline
+#elif __GNUC__ >= 3
+/** Strongly recommend that a function be inlined */
+#define SUZERAIN_FORCEINLINE __attribute__((always_inline))
 #else
 /** Strongly recommend that a function be inlined */
 #define SUZERAIN_FORCEINLINE inline
@@ -124,45 +127,5 @@ Provides hint to the compiler to optimize for the expression being false.
 #endif
 #include <fcntl.h>
 #include <unistd.h>
-
-/* TODO Move function suzerain_gbmatrix_offset to a more suitable header */
-/**
- * Compute the BLAS-compatible offset to <tt>a(i,j)</tt> for general
- * banded matrices <tt>a(i,j) -> storage(ku+i-j,j)</tt> where storage
- * is column-major with LDA lda.  When comparing with BLAS documentation, note
- * missing constant one compared to Fortran due to C's 0-indexing.
- *
- * @param lda Leading dimension for column-major ordering
- * @param kl Number of superdiagonals
- * @param ku Number of subdiagonals
- * @param i Row index desired
- * @param j Column index desired
- *
- * @return Column-major offset where entry <tt>(i,j)</tt> is stored.
- */
-inline
-int suzerain_gbmatrix_offset(int lda, int kl, int ku, int i, int j) {
-    /* Unused parameters present to be consistent with gbmatrix_in_band */
-    SUZERAIN_UNUSED(kl);
-    return j*lda+(ku+i-j);
-}
-
-/* TODO Move function suzerain_gbmatrix_in_band to a more suitable header */
-/** Determine if indices fall within the band of a general banded matrix.
- *
- * @param lda Leading dimension for column-major ordering
- * @param kl Number of superdiagonals
- * @param ku Number of subdiagonals
- * @param i Row index desired
- * @param j Column index desired
- *
- * @return true if entry <tt>(i,j)</tt> falls within the matrix's band.
- */
-inline
-int suzerain_gbmatrix_in_band(int lda, int kl, int ku, int i, int j) {
-    /* Unused parameters present to be consistent with gbmatrix_offset */
-    SUZERAIN_UNUSED(lda);
-    return j-ku <= i && i <= j+kl;
-}
 
 #endif // __SUZERAIN_COMMON_H

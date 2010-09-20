@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE( invertMassPlusScaledOperator )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE( substep )
+BOOST_AUTO_TEST_SUITE( substep_suite )
 
 BOOST_AUTO_TEST_CASE( substep_explicit )
 {

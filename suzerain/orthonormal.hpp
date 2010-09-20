@@ -57,6 +57,13 @@ namespace suzerain
  *   - \f$\lambda\f$ or \c lambda is the second viscosity.
  *   - \f$\accentset{\leftrightarrow}{\tau}\f$ or \c tau is the
  *          viscous stress tensor.
+ *
+ * Templated \c Scalar, \c Vector, \c and Tensor types
+ * are used.  These functions are intended to be used with <a
+ * href="http://eigen.tuxfamily.org/">Eigen</a>'s vector and matrix
+ * types.  For example, when <tt>Scalar == double</tt> \c Vector
+ * and \c Tensor may be <tt>Eigen::Matrix<<Scalar,3,1>/tt> and
+ * <tt>Eigen::Matrix<<Scalar,3,3>/tt>, respectively.
  */
 namespace orthonormal
 {
@@ -82,7 +89,7 @@ namespace orthonormal
  * @return The viscous stress tensor based on the provided fields.
  */
 template<typename Scalar,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Tensor >
 Tensor tau(
         const Scalar &mu,
         const Scalar &lambda,
@@ -118,8 +125,8 @@ Tensor tau(
  * @return The convective derivative computed from the divergence form.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector,
+         typename Tensor >
 Vector div_rho_inverse_m_outer_m(
         const Scalar &rho,
         const Vector &grad_rho,
@@ -155,8 +162,8 @@ Vector div_rho_inverse_m_outer_m(
  * @return The convective derivative computed from the divergence form.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector,
+         typename Tensor >
 Vector div_u_outer_m(
         const Vector &m,
         const Tensor &grad_m,
@@ -201,8 +208,8 @@ Vector div_u_outer_m(
  *         fields.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector,
+         typename Tensor >
 Vector div_tau(
         const Scalar &mu,
         const Vector &grad_mu,
@@ -238,7 +245,7 @@ Vector div_tau(
  * @return The divergence of the product of total energy and velocity.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 Scalar div_e_u(
         const Scalar &e,
         const Vector &grad_e,
@@ -270,7 +277,7 @@ Scalar div_e_u(
  *      the temperature gradient.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 Scalar div_mu_grad_T(
         const Vector &grad_T,
         const Scalar &div_grad_T,
@@ -301,7 +308,7 @@ Scalar div_mu_grad_T(
  * @return The divergence of the product of pressure and velocity.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 Scalar div_p_u(
         const Scalar &p,
         const Vector &grad_p,
@@ -343,8 +350,8 @@ Scalar div_p_u(
  *      velocity.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector,
+         typename Tensor >
 Scalar div_tau_u(
         const Vector &u,
         const Tensor &grad_u,
@@ -389,7 +396,7 @@ Scalar explicit_div_p_u_refcoeff_div_m(
  *      operator.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 inline
 Vector explicit_div_p_u_refcoeff_grad_rho(
         const Scalar &rho,
@@ -445,9 +452,9 @@ Vector explicit_div_p_u_refcoeff_grad_rho(
  *         times velocity.
  */
 template<typename Scalar,
-         typename Vector            = Eigen::Matrix<Scalar,3,1>,
-         typename ScalarCoefficient = Scalar,
-         typename VectorCoefficient = Vector >
+         typename Vector,
+         typename ScalarCoefficient,
+         typename VectorCoefficient >
 Scalar explicit_div_p_u(
         const Scalar            &rho,
         const Vector            &grad_rho,
@@ -484,7 +491,7 @@ Scalar explicit_div_p_u(
  *      operator.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 inline
 Scalar explicit_div_e_plus_p_u_refcoeff_div_m(
         const Scalar &gamma,
@@ -514,7 +521,7 @@ Scalar explicit_div_e_plus_p_u_refcoeff_div_m(
  *      operator.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 inline
 Vector explicit_div_e_plus_p_u_refcoeff_grad_rho(
         const Scalar &gamma,
@@ -543,7 +550,7 @@ Vector explicit_div_e_plus_p_u_refcoeff_grad_rho(
  *      operator.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 inline
 Vector explicit_div_e_plus_p_u_refcoeff_grad_e(
         const Scalar &gamma,
@@ -624,11 +631,11 @@ Vector explicit_div_e_plus_p_u_refcoeff_grad_e(
  *         the pressure times velocity.
  */
 template<typename Scalar,
-         typename Vector             = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor             = Eigen::Matrix<Scalar,3,3>,
-         typename ScalarCoefficient  = Scalar,
-         typename VectorCoefficient1 = Vector,
-         typename VectorCoefficient2 = Vector >
+         typename Vector,
+         typename Tensor,
+         typename ScalarCoefficient,
+         typename VectorCoefficient1,
+         typename VectorCoefficient2 >
 Scalar explicit_div_e_plus_p_u(
         const Scalar             &gamma,
         const Scalar             &rho,
@@ -697,7 +704,7 @@ Scalar explicit_mu_div_grad_u_refcoeff_div_grad_m(
  *      operator.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 inline
 Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
         const Scalar &mu,
@@ -757,10 +764,10 @@ Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
  *         of velocity.
  */
 template<typename Scalar,
-         typename Vector            = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor            = Eigen::Matrix<Scalar,3,3>,
-         typename ScalarCoefficient = Scalar,
-         typename VectorCoefficient = Vector >
+         typename Vector,
+         typename Tensor,
+         typename ScalarCoefficient,
+         typename VectorCoefficient >
 Vector explicit_mu_div_grad_u(
         const Scalar            &mu,
         const Scalar            &rho,
@@ -831,7 +838,7 @@ Scalar explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
  *      operator.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 inline
 Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
         const Scalar &mu,
@@ -905,10 +912,10 @@ Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
  *         the gradient of the divergence of velocity.
  */
 template<typename Scalar,
-         typename Vector            = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor            = Eigen::Matrix<Scalar,3,3>,
-         typename ScalarCoefficient = Scalar,
-         typename VectorCoefficient = Vector >
+         typename Vector,
+         typename Tensor,
+         typename ScalarCoefficient,
+         typename VectorCoefficient >
 Vector explicit_mu_plus_lambda_grad_div_u(
         const Scalar            &mu,
         const Scalar            &lambda,
@@ -978,7 +985,7 @@ Scalar explicit_mu_div_grad_T_refcoeff_div_grad_e(
  *      operator.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 inline
 Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
         const Scalar &mu,
@@ -1008,7 +1015,7 @@ Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
  *      operator.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 inline
 Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
         const Scalar &gamma,
@@ -1114,11 +1121,11 @@ Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
  *         the Laplacian of temperature.
  */
 template<typename Scalar,
-         typename Vector             = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor             = Eigen::Matrix<Scalar,3,3>,
-         typename ScalarCoefficient1 = Scalar,
-         typename ScalarCoefficient2 = Scalar,
-         typename VectorCoefficient  = Vector >
+         typename Vector,
+         typename Tensor,
+         typename ScalarCoefficient1,
+         typename ScalarCoefficient2,
+         typename VectorCoefficient >
 Scalar explicit_mu_div_grad_T(
         const Scalar             &gamma,
         const Scalar             &mu,
@@ -1241,8 +1248,8 @@ namespace rhome
  * @param[out] grad_lambda \f$\vec{\nabla}\lambda\f$
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector,
+         typename Tensor >
 void p_T_mu_lambda(
         const Scalar &beta,
         const Scalar &gamma,
@@ -1319,8 +1326,8 @@ void p_T_mu_lambda(
  * @return The Laplacian of pressure.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector,
+         typename Tensor >
 Scalar div_grad_p(
         const Scalar &gamma,
         const Scalar &rho,
@@ -1380,7 +1387,7 @@ Scalar div_grad_p(
  * @return The Laplacian of temperature.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 Scalar div_grad_T(
         const Scalar &gamma,
         const Scalar &rho,
@@ -1410,7 +1417,7 @@ Scalar div_grad_T(
  * @return The velocity vector.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 Vector u(const Scalar &rho,
          const Vector &m)
 {
@@ -1438,8 +1445,8 @@ Vector u(const Scalar &rho,
  * @return The gradient of the velocity based on the provided fields.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector,
+         typename Tensor >
 Tensor grad_u(
         const Scalar &rho,
         const Vector &grad_rho,
@@ -1469,7 +1476,7 @@ Tensor grad_u(
  * @return The divergence of the velocity based on the provided fields.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1> >
+         typename Vector >
 Scalar div_u(
         const Scalar &rho,
         const Vector &grad_rho,
@@ -1510,8 +1517,8 @@ Scalar div_u(
  *         fields.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector,
+         typename Tensor >
 Vector grad_div_u(
         const Scalar &rho,
         const Vector &grad_rho,
@@ -1559,8 +1566,8 @@ Vector grad_div_u(
  *         fields.
  */
 template<typename Scalar,
-         typename Vector = Eigen::Matrix<Scalar,3,1>,
-         typename Tensor = Eigen::Matrix<Scalar,3,3> >
+         typename Vector,
+         typename Tensor >
 Vector div_grad_u(
         const Scalar &rho,
         const Vector &grad_rho,

@@ -456,7 +456,7 @@ public:
 
 template<typename FPT>
 inline
-pencil<FPT>::real_iterator
+typename pencil<FPT>::real_iterator
 pencil<FPT>::begin()
 {
     return data_.get();
@@ -464,7 +464,7 @@ pencil<FPT>::begin()
 
 template<typename FPT>
 inline
-pencil<FPT>::const_real_iterator
+typename pencil<FPT>::const_real_iterator
 pencil<FPT>::begin() const
 {
     return data_.get();
@@ -472,7 +472,7 @@ pencil<FPT>::begin() const
 
 template<typename FPT>
 inline
-pencil<FPT>::real_iterator
+typename pencil<FPT>::real_iterator
 pencil<FPT>::end()
 {
     return data_.get() + data_nelem_;
@@ -480,7 +480,7 @@ pencil<FPT>::end()
 
 template<typename FPT>
 inline
-pencil<FPT>::const_real_iterator
+typename pencil<FPT>::const_real_iterator
 pencil<FPT>::end() const
 {
     return data_.get() + data_nelem_;
@@ -488,7 +488,7 @@ pencil<FPT>::end() const
 
 template<typename FPT>
 inline
-pencil<FPT>::real_pointer
+typename pencil<FPT>::real_pointer
 pencil<FPT>::data()
 {
     return data_.get();
@@ -496,7 +496,7 @@ pencil<FPT>::data()
 
 template<typename FPT>
 inline
-pencil<FPT>::index
+typename pencil<FPT>::index
 pencil<FPT>::physical_space::offset(
     const index x,
     const index y,
@@ -536,7 +536,7 @@ pencil<FPT>::physical_space::inverse_global_offset(
 
 template<typename FPT>
 inline
-pencil<FPT>::index
+typename pencil<FPT>::index
 pencil<FPT>::wave_space::offset(
     const index x,
     const index y,
@@ -577,7 +577,7 @@ pencil<FPT>::wave_space::inverse_global_offset(
 
 template<typename FPT>
 inline
-pencil<FPT>::real_reference
+typename pencil<FPT>::real_reference
 pencil<FPT>::physical_space::operator()(
     const index x, const index y, const index z)
 {
@@ -586,7 +586,7 @@ pencil<FPT>::physical_space::operator()(
 
 template<typename FPT>
 inline
-pencil<FPT>::const_real_reference
+typename pencil<FPT>::const_real_reference
 pencil<FPT>::physical_space::operator()(
     const index x, const index y, const index z) const
 {
@@ -595,7 +595,7 @@ pencil<FPT>::physical_space::operator()(
 
 template<typename FPT>
 inline
-pencil<FPT>::complex_reference
+typename pencil<FPT>::complex_reference
 pencil<FPT>::wave_space::operator()(
     const index x, const index y, const index z)
 {
@@ -604,7 +604,7 @@ pencil<FPT>::wave_space::operator()(
 
 template<typename FPT>
 inline
-pencil<FPT>::const_complex_reference
+typename pencil<FPT>::const_complex_reference
 pencil<FPT>::wave_space::operator()(
     const index x, const index y, const index z) const
 {
@@ -613,7 +613,7 @@ pencil<FPT>::wave_space::operator()(
 
 template<typename FPT>
 inline
-pencil<FPT>::real_reference
+typename pencil<FPT>::real_reference
 pencil<FPT>::wave_space::real(
     const index x, const index y, const index z)
 {
@@ -622,7 +622,7 @@ pencil<FPT>::wave_space::real(
 
 template<typename FPT>
 inline
-pencil<FPT>::const_real_reference
+typename pencil<FPT>::const_real_reference
 pencil<FPT>::wave_space::real(
     const index x, const index y, const index z) const
 {
@@ -631,7 +631,7 @@ pencil<FPT>::wave_space::real(
 
 template<typename FPT>
 inline
-pencil<FPT>::real_reference
+typename pencil<FPT>::real_reference
 pencil<FPT>::wave_space::imag(
     const index x, const index y, const index z)
 {
@@ -640,7 +640,7 @@ pencil<FPT>::wave_space::imag(
 
 template<typename FPT>
 inline
-pencil<FPT>::const_real_reference
+typename pencil<FPT>::const_real_reference
 pencil<FPT>::wave_space::imag(
     const index x, const index y, const index z) const
 {
@@ -649,7 +649,7 @@ pencil<FPT>::wave_space::imag(
 
 template<typename FPT>
 inline
-pencil<FPT>::real_iterator
+typename pencil<FPT>::real_iterator
 pencil<FPT>::physical_space::begin()
 {
     return data_;
@@ -657,7 +657,7 @@ pencil<FPT>::physical_space::begin()
 
 template<typename FPT>
 inline
-pencil<FPT>::const_real_iterator
+typename pencil<FPT>::const_real_iterator
 pencil<FPT>::physical_space::begin() const
 {
     return data_;
@@ -665,7 +665,7 @@ pencil<FPT>::physical_space::begin() const
 
 template<typename FPT>
 inline
-pencil<FPT>::real_iterator
+typename pencil<FPT>::real_iterator
 pencil<FPT>::physical_space::end()
 {
     return data_ + size;
@@ -673,7 +673,7 @@ pencil<FPT>::physical_space::end()
 
 template<typename FPT>
 inline
-pencil<FPT>::const_real_iterator
+typename pencil<FPT>::const_real_iterator
 pencil<FPT>::physical_space::end() const
 {
     return data_ + size;
@@ -681,7 +681,7 @@ pencil<FPT>::physical_space::end() const
 
 template<typename FPT>
 inline
-pencil<FPT>::complex_iterator
+typename pencil<FPT>::complex_iterator
 pencil<FPT>::wave_space::begin()
 {
     return data_complex_;
@@ -689,7 +689,7 @@ pencil<FPT>::wave_space::begin()
 
 template<typename FPT>
 inline
-pencil<FPT>::const_complex_iterator
+typename pencil<FPT>::const_complex_iterator
 pencil<FPT>::wave_space::begin() const
 {
     return data_complex_;
@@ -697,7 +697,7 @@ pencil<FPT>::wave_space::begin() const
 
 template<typename FPT>
 inline
-pencil<FPT>::complex_iterator
+typename pencil<FPT>::complex_iterator
 pencil<FPT>::wave_space::end()
 {
     return data_complex_ + size;
@@ -705,7 +705,7 @@ pencil<FPT>::wave_space::end()
 
 template<typename FPT>
 inline
-pencil<FPT>::const_complex_iterator
+typename pencil<FPT>::const_complex_iterator
 pencil<FPT>::wave_space::end() const
 {
     return data_complex_ + size;

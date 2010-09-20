@@ -510,14 +510,14 @@ template<
     std::size_t NumDims,
     typename Element,
     typename Storage,
-    typename CompatibleStorage = Storage
+    typename CompatibleStorage
 >
 MultiplicativeOperator<NumDims,Element,Storage,CompatibleStorage>
 make_multiplicator_operator(
-        const FactorType& factor,
-        const DeltaTType& delta_t,
-        const suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& input,
-        const suzerain::IState<NumDims,Element,CompatibleStorage,Storage>& output)
+    const FactorType& factor,
+    const DeltaTType& delta_t,
+    const suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& input,
+    const suzerain::IState<NumDims,Element,CompatibleStorage,Storage>& output)
 {
     MultiplicativeOperator<NumDims,Element,Storage,CompatibleStorage>
         retval(factor,delta_t);
@@ -749,7 +749,7 @@ void substep(const ILowStorageMethod<Element>& m,
              const std::size_t substep_index)
 throw(std::exception)
 {
-    if (substep_index >= m.substeps())
+    if (SUZERAIN_UNLIKELY(substep_index >= m.substeps()))
         throw std::invalid_argument("Requested substep too large");
 
     b.scale(delta_t * m.zeta(substep_index));

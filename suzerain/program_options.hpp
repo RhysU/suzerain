@@ -127,12 +127,12 @@ public:
               typename InfoOStream,
               typename WarnOStream,
               typename ErrorOStream >
-    void ProgramOptions::process(int argc,
-                                 charT **argv,
-                                 DebugOStream &debug,
-                                 InfoOStream &info,
-                                 WarnOStream &warn,
-                                 ErrorOStream &error);
+    void process(int argc,
+                 charT **argv,
+                 DebugOStream &debug,
+                 InfoOStream &info,
+                 WarnOStream &warn,
+                 ErrorOStream &error);
 
     /**
      * A convenience method suppressing debugging messages and

@@ -42,6 +42,7 @@
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bspline.h>
 #include <suzerain/error.h>
+#include <suzerain/gbmatrix.h>
 
 static
 int

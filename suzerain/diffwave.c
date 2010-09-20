@@ -37,10 +37,24 @@
 #include <suzerain/blas_et_al.h>
 #include <suzerain/diffwave.h>
 
+
 // TODO suzerain_diffwave_apply is painfully like suzerain_diffwave_accumulate
 // Would be nice to rework them so that only the BLAS calls are different.
 
-inline
+
+// C99 extern declaration for inlined function in diffwave.h
+extern
+int suzerain_diffwave_freqindex(const int N, const int i);
+
+// C99 extern declaration for inlined function in diffwave.h
+extern
+int suzerain_diffwave_absfreqindex(const int N, const int i);
+
+// C99 extern declaration for inlined function in diffwave.h
+extern
+int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i);
+
+static inline
 void scale_by_imaginary_power(const double in[2], double out[2], int p)
 {
     // Modulo-four-like operation for 2's complement p
@@ -68,7 +82,8 @@ void scale_by_imaginary_power(const double in[2], double out[2], int p)
 #pragma fenv_access(on)
 #pragma float_control(except, on)
 #pragma fp_contract(off)
-inline double twopiover(const double L)
+static inline
+double twopiover(const double L)
 {
     return 2*M_PI/L;
 }

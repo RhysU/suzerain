@@ -172,7 +172,7 @@ std::basic_ostream<charT,traits>& sleep_barrier(
                                       &global_gethostname_err,
                                       1, MPI_INT, MPI_LOR, comm);
         if (err) throw std::runtime_error(error_string(err));
-        if (global_gethostname_err) return;
+        if (global_gethostname_err) return os;
     }
 
     // Force all processes to sync up prior to sleeping

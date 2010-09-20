@@ -37,6 +37,7 @@
 #include <suzerain/error.h>
 #include <suzerain/common.hpp>
 #include <suzerain/complex.hpp>
+#include <suzerain/gbmatrix.h>
 #include <suzerain/multi_array.hpp>
 
 #define CHECK_GBMATRIX_CLOSE(                                        \

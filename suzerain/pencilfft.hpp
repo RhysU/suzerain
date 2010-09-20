@@ -419,26 +419,40 @@ struct transform_traits<fftwf_complex> {
     /** Corresponding precision FFTW plan type */
     typedef fftwf_plan fftw_plan_type;
 
-    /** FFTW complex-to-complex planning function */
-    static fftw_plan_type (* const plan_c2c_1d)(
-                int, fftw_complex_type*, fftw_complex_type*, int, unsigned
-            ) = &fftwf_plan_dft_1d;
+    /** FFTW complex-to-complex planning */
+    static fftw_plan_type plan_c2c_1d(int n,
+                                      fftw_complex_type *in,
+                                      fftw_complex_type *out,
+                                      int sign,
+                                      unsigned flags) {
+        return fftwf_plan_dft_1d(n, in, out, sign, flags);
+    }
 
-    /** FFTW real-to-complex planning function */
-    static fftw_plan_type (* const plan_r2c_1d)(
-                int, real_type*, fftw_complex_type*, unsigned
-            ) = &fftwf_plan_dft_r2c_1d;
+    /** FFTW real-to-complex planning */
+    static fftw_plan_type plan_r2c_1d(int n,
+                                      real_type *in,
+                                      fftw_complex_type *out,
+                                      unsigned flags) {
+        return fftwf_plan_dft_r2c_1d(n, in, out, flags);
+    }
 
-    /** FFTW complex-to-real planning function */
-    static fftw_plan_type (* const plan_c2r_1d)(
-                int, fftw_complex_type*, real_type*, unsigned
-            ) = &fftwf_plan_dft_c2r_1d;
+    /** FFTW complex-to-real planning */
+    static fftw_plan_type plan_c2r_1d(int n,
+                                      fftw_complex_type *in,
+                                      real_type *out,
+                                      unsigned flags) {
+        return fftwf_plan_dft_c2r_1d(n, in, out, flags);
+    }
 
-    /** FFTW execute plan function */
-    static void (* const execute_plan)(fftw_plan_type) = &fftwf_execute;
+    /** FFTW execute plan */
+    static void execute_plan(fftw_plan_type p) {
+        return fftwf_execute(p);
+    }
 
-    /** FFTW destroy plan function */
-    static void (* const destroy_plan)(fftw_plan_type) = &fftwf_destroy_plan;
+    /** FFTW destroy plan */
+    static void destroy_plan(fftw_plan_type p) {
+        return fftwf_destroy_plan(p);
+    }
 };
 
 /** FFT traits specialized for \c fftw_complex */
@@ -457,26 +471,40 @@ struct transform_traits<fftw_complex> {
     /** Corresponding precision FFTW plan type */
     typedef fftw_plan fftw_plan_type;
 
-    /** FFTW complex-to-complex planning function */
-    static fftw_plan_type (* const plan_c2c_1d)(
-                int, fftw_complex_type*, fftw_complex_type*, int, unsigned
-            ) = &fftw_plan_dft_1d;
+    /** FFTW complex-to-complex planning */
+    static fftw_plan_type plan_c2c_1d(int n,
+                                      fftw_complex_type *in,
+                                      fftw_complex_type *out,
+                                      int sign,
+                                      unsigned flags) {
+        return fftw_plan_dft_1d(n, in, out, sign, flags);
+    }
 
-    /** FFTW real-to-complex planning function */
-    static fftw_plan_type (* const plan_r2c_1d)(
-                int, real_type*, fftw_complex_type*, unsigned
-            ) = &fftw_plan_dft_r2c_1d;
+    /** FFTW real-to-complex planning */
+    static fftw_plan_type plan_r2c_1d(int n,
+                                      real_type *in,
+                                      fftw_complex_type *out,
+                                      unsigned flags) {
+        return fftw_plan_dft_r2c_1d(n, in, out, flags);
+    }
 
-    /** FFTW complex-to-real planning function */
-    static fftw_plan_type (* const plan_c2r_1d)(
-                int, fftw_complex_type*, real_type*, unsigned
-            ) = &fftw_plan_dft_c2r_1d;
+    /** FFTW complex-to-real planning */
+    static fftw_plan_type plan_c2r_1d(int n,
+                                      fftw_complex_type *in,
+                                      real_type *out,
+                                      unsigned flags) {
+        return fftw_plan_dft_c2r_1d(n, in, out, flags);
+    }
 
-    /** FFTW execute plan function */
-    static void (* const execute_plan)(fftw_plan_type) = &fftw_execute;
+    /** FFTW execute plan */
+    static void execute_plan(fftw_plan_type p) {
+        return fftw_execute(p);
+    }
 
-    /** FFTW destroy plan function */
-    static void (* const destroy_plan)(fftw_plan_type) = &fftw_destroy_plan;
+    /** FFTW destroy plan */
+    static void destroy_plan(fftw_plan_type p) {
+        return fftw_destroy_plan(p);
+    }
 };
 
 /** FFT traits specialized for \c fftwl_complex */
@@ -495,26 +523,40 @@ struct transform_traits<fftwl_complex> {
     /** Corresponding precision FFTW plan type */
     typedef fftwl_plan fftw_plan_type;
 
-    /** FFTW complex-to-complex planning function */
-    static fftw_plan_type (* const plan_c2c_1d)(
-                int, fftw_complex_type*, fftw_complex_type*, int, unsigned
-            ) = &fftwl_plan_dft_1d;
+    /** FFTW complex-to-complex planning */
+    static fftw_plan_type plan_c2c_1d(int n,
+                                      fftw_complex_type *in,
+                                      fftw_complex_type *out,
+                                      int sign,
+                                      unsigned flags) {
+        return fftwl_plan_dft_1d(n, in, out, sign, flags);
+    }
 
-    /** FFTW real-to-complex planning function */
-    static fftw_plan_type (* const plan_r2c_1d)(
-                int, real_type*, fftw_complex_type*, unsigned
-            ) = &fftwl_plan_dft_r2c_1d;
+    /** FFTW real-to-complex planning */
+    static fftw_plan_type plan_r2c_1d(int n,
+                                      real_type *in,
+                                      fftw_complex_type *out,
+                                      unsigned flags) {
+        return fftwl_plan_dft_r2c_1d(n, in, out, flags);
+    }
 
-    /** FFTW complex-to-real planning function */
-    static fftw_plan_type (* const plan_c2r_1d)(
-                int, fftw_complex_type*, real_type*, unsigned
-            ) = &fftwl_plan_dft_c2r_1d;
+    /** FFTW complex-to-real planning */
+    static fftw_plan_type plan_c2r_1d(int n,
+                                      fftw_complex_type *in,
+                                      real_type *out,
+                                      unsigned flags) {
+        return fftwl_plan_dft_c2r_1d(n, in, out, flags);
+    }
 
-    /** FFTW execute plan function */
-    static void (* const execute_plan)(fftw_plan_type) = &fftwl_execute;
+    /** FFTW execute plan */
+    static void execute_plan(fftw_plan_type p) {
+        return fftwl_execute(p);
+    }
 
-    /** FFTW destroy plan function */
-    static void (* const destroy_plan)(fftw_plan_type) = &fftwl_destroy_plan;
+    /** FFTW destroy plan */
+    static void destroy_plan(fftw_plan_type p) {
+        return fftwl_destroy_plan(p);
+    }
 };
 
 /** FFT traits specialized for <tt>std::complex<float></tt> */
@@ -523,7 +565,7 @@ struct transform_traits<std::complex<float> >
     : transform_traits<fftwf_complex> {
 
     /** Complex number type */
-    typedef typename std::complex<float> complex_type;
+    typedef std::complex<float> complex_type;
 
 };
 
@@ -533,7 +575,7 @@ struct transform_traits<std::complex<double> >
     : transform_traits<fftw_complex> {
 
     /** Complex number type */
-    typedef typename std::complex<double> complex_type;
+    typedef std::complex<double> complex_type;
 
 };
 
@@ -543,7 +585,7 @@ struct transform_traits<std::complex<long double> >
     : transform_traits<fftwl_complex> {
 
     /** Complex number type */
-    typedef typename std::complex<long double> complex_type;
+    typedef std::complex<long double> complex_type;
 };
 
 /** A copy-only functor for manipulating complex values */
