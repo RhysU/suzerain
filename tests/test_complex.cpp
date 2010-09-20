@@ -153,32 +153,38 @@ BOOST_AUTO_TEST_CASE( is_complex_long_double )
     BOOST_CHECK(is_complex_long_double<fftwl_complex>::value == true);
 }
 
+// When GCC's -ffast-math is enabled the usual (x != x) test for NaN fails
+// See http://gcc.gnu.org/onlinedocs/gcc-4.3.5/gcc/Optimize-Options.html
+#if defined __GNUC__ && defined __FAST_MATH__
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( NaN, 8 );
+#endif
+
 BOOST_AUTO_TEST_CASE( NaN )
 {
     using suzerain::complex::NaN;
 
     {
         std::complex<double> z = NaN<std::complex<double> >();
-        BOOST_CHECK(z.real() != z.real());
-        BOOST_CHECK(z.imag() != z.imag());
+        BOOST_CHECK_NE(z.real(), z.real());
+        BOOST_CHECK_NE(z.imag(), z.imag());
     }
 
     {
         std::complex<double> z = NaN<double>();
-        BOOST_CHECK(z.real() != z.real());
-        BOOST_CHECK(z.imag() != z.imag());
+        BOOST_CHECK_NE(z.real(), z.real());
+        BOOST_CHECK_NE(z.imag(), z.imag());
     }
 
     {
         std::complex<float> z = NaN<std::complex<float> >();
-        BOOST_CHECK(z.real() != z.real());
-        BOOST_CHECK(z.imag() != z.imag());
+        BOOST_CHECK_NE(z.real(), z.real());
+        BOOST_CHECK_NE(z.imag(), z.imag());
     }
 
     {
         std::complex<float> z = NaN<float>();
-        BOOST_CHECK(z.real() != z.real());
-        BOOST_CHECK(z.imag() != z.imag());
+        BOOST_CHECK_NE(z.real(), z.real());
+        BOOST_CHECK_NE(z.imag(), z.imag());
     }
 }
 
