@@ -76,6 +76,11 @@ AX_AM_JOBSERVER([no])
 AC_CACHE_SAVE
 
 dnl ----------------------------------------------
+dnl Optionally enable code coverage tool
+dnl ----------------------------------------------
+AX_CODE_COVERAGE
+
+dnl ----------------------------------------------
 dnl Enable rudimentary precompiled header support
 dnl Currently very, very Intel-specific
 dnl ----------------------------------------------
