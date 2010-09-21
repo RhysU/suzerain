@@ -459,11 +459,11 @@ underling_fft_plan_create_c2c_internal(
     {
         // Transform the long dimension given by transform->order[2]
         assert(transform->order[2] == long_ni);
-        const fftw_iodim dims[] = {
+        const fftw_iodim dims[] = {{
             transform->size[transform->order[2]],
             transform->stride[transform->order[2]],
             transform->stride[transform->order[2]]
-        };
+        }};
 
         // Loop over non-transformed dimensions
         const fftw_iodim howmany_dims[3] = {
@@ -788,13 +788,13 @@ underling_fft_plan_create_r2c_forward_internal(
         int j = 0;
         for (const int *io = input.order+4; io >= input.order+1; --io) {
             if (*io == long_ni) continue; // Skip transformed direction
-            assert(j < sizeof(howmany_dims)/sizeof(howmany_dims[0]));
+            assert((size_t) j < sizeof(howmany_dims)/sizeof(howmany_dims[0]));
             howmany_dims[j].n  = input.size[*io];
             howmany_dims[j].is = input.stride[*io];
             howmany_dims[j].os = input.stride[*io];
             ++j;
         }
-        assert(j == sizeof(howmany_dims)/sizeof(howmany_dims[0]));
+        assert((size_t) j == sizeof(howmany_dims)/sizeof(howmany_dims[0]));
 
         underling_real * const in = data;
         underling_real * const ro = data;
@@ -818,7 +818,7 @@ underling_fft_plan_create_r2c_forward_internal(
         fftw_iodim howmany_dims[howmany_rank];
         int j = 0;
         for (const int *io = input.order+4; io >= input.order+2; --io) {
-            assert(j < sizeof(howmany_dims)/sizeof(howmany_dims[0]));
+            assert((size_t) j < sizeof(howmany_dims)/sizeof(howmany_dims[0]));
             howmany_dims[j].n  = output.size[*io];
             howmany_dims[j].is = input.stride[*io];
             howmany_dims[j].os = output.stride[*io];
@@ -827,7 +827,7 @@ underling_fft_plan_create_r2c_forward_internal(
             }
             ++j;
         }
-        assert(j == sizeof(howmany_dims)/sizeof(howmany_dims[0]) - 2);
+        assert((size_t) j == sizeof(howmany_dims)/sizeof(howmany_dims[0]) - 2);
         howmany_dims[3].n  = output.size[3];
         howmany_dims[3].is = 1;
         howmany_dims[3].os = 2;
@@ -950,19 +950,19 @@ underling_fft_extents_copy(
         int *order)
 {
     if (start) {
-        for (int j = 0; j < sizeof(e->start)/sizeof(e->start[0]); ++j)
+        for (size_t j = 0; j < sizeof(e->start)/sizeof(e->start[0]); ++j)
             start[j] = e->start[j];
     }
     if (size) {
-        for (int j = 0; j < sizeof(e->size)/sizeof(e->size[0]); ++j)
+        for (size_t j = 0; j < sizeof(e->size)/sizeof(e->size[0]); ++j)
             size[j] = e->size[j];
     }
     if (stride) {
-        for (int j = 0; j < sizeof(e->stride)/sizeof(e->stride[0]); ++j)
+        for (size_t j = 0; j < sizeof(e->stride)/sizeof(e->stride[0]); ++j)
             stride[j] = e->stride[j];
     }
     if (order) {
-        for (int j = 0; j < sizeof(e->order)/sizeof(e->order[0]); ++j)
+        for (size_t j = 0; j < sizeof(e->order)/sizeof(e->order[0]); ++j)
             order[j] = e->order[j];
     }
 }

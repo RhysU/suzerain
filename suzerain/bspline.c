@@ -678,8 +678,8 @@ compute_banded_collocation_derivative_submatrix(
                                        &dbjstart, &dbjend, bw, dbw);
 
         /* Coerce dbjstart/dbjend to stay within the submatrix of interest */
-        const size_t jstart = GSL_MAX(dbjstart, joffset);
-        const size_t jend   = GSL_MIN(dbjend, npoints-1+joffset);
+        const size_t jstart = GSL_MAX(dbjstart, (size_t) joffset);
+        const int    jend   = GSL_MIN(dbjend, (size_t)(npoints-1+joffset));
 
         for (int k = 0; k <= nderivatives; ++k) {
             for (int j = jstart; j <= jend; ++j) {

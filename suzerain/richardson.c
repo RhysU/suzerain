@@ -102,7 +102,7 @@ suzerain_richardson_extrapolation(
         if (exact) {
             scratch = gsl_vector_alloc(A->size1);
         }
-        for (int i = 0; i < normtable->size2; ++i) {
+        for (size_t i = 0; i < normtable->size2; ++i) {
             double norm;
             if (exact) {
                 gsl_matrix_get_col(scratch, A, i);
@@ -116,7 +116,7 @@ suzerain_richardson_extrapolation(
         }
     }
 
-    for (int i = 0; i < A->size2; ++i) {
+    for (size_t i = 0; i < A->size2; ++i) {
 
         /* Provide automagic around the k parameter */
         double ki;
@@ -135,7 +135,7 @@ suzerain_richardson_extrapolation(
         }
 
         /* Perform the extrapolation using leading term order ki */
-        for (int j = 0; j < A->size2 - i - 1; ++j) {
+        for (size_t j = 0; j < A->size2 - i - 1; ++j) {
             gsl_vector_view Aih  = gsl_matrix_column(A, j);
             gsl_vector_view Aiht = gsl_matrix_column(A, j+1);
 
