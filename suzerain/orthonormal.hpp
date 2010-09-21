@@ -1340,6 +1340,9 @@ Scalar div_grad_p(
         const Vector &grad_e,
         const Scalar &div_grad_e)
 {
+    SUZERAIN_UNUSED(e);
+    SUZERAIN_UNUSED(grad_e);
+
     const Scalar rho_inverse = 1.0/rho;
     const Scalar m_dot_m     = m.squaredNorm();
 

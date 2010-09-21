@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE( interleaved )
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {1, 1, 1}, {1, 2, 6} };
+        const boost::array<int,D> minstrides[] = { {{1, 1, 1}}, {{1, 2, 6}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( interleaved )
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {2, 1, 1}, {2, 4, 12} };
+        const boost::array<int,D> minstrides[] = { {{2, 1, 1}}, {{2, 4, 12}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE( interleaved )
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {1, 3, 1}, {1, 3, 8} };
+        const boost::array<int,D> minstrides[] = { {{1, 3, 1}}, {{1, 3, 8}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE( interleaved )
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {1, 1, 24} };
+        const boost::array<int,D> minstrides[] = { {{1, 1, 24}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( noninterleaved )
     typedef suzerain::storage::noninterleaved<3> storage;
     const std::size_t D = storage::dimensionality;
 
-    const boost::array<int,D> sizes = { 2, 3, 4 };
+    const boost::array<int,D> sizes = {{ 2, 3, 4 }};
 
     {
         BOOST_TEST_MESSAGE(sizes << " without minstrides");
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE( noninterleaved )
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {1, 1, 1}, {12, 1, 3} };
+        const boost::array<int,D> minstrides[] = { {{1, 1, 1}}, {{12, 1, 3}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE( noninterleaved )
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {1, 2, 1} };
+        const boost::array<int,D> minstrides[] = { {{1, 2, 1}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE( noninterleaved )
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {1, 1, 4} };
+        const boost::array<int,D> minstrides[] = { {{1, 1, 4}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE( noninterleaved )
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {20, 1, 1} };
+        const boost::array<int,D> minstrides[] = { {{20, 1, 1}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {

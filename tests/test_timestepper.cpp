@@ -36,7 +36,7 @@ template class NoninterleavedState<3,double>;
 static boost::array<std::size_t,3> size3(
     std::size_t x, std::size_t y, std::size_t z)
 {
-    boost::array<std::size_t,3> a = { x, y, z };
+    boost::array<std::size_t,3> a = {{ x, y, z }};
     return a;
 }
 
@@ -68,9 +68,9 @@ public:
             = dynamic_cast<NoninterleavedState<3,double>&>(state);
 
         typedef NoninterleavedState<3,double>::index index;
-        for (index i = 0; i < s.shape()[0]; ++i) {
-            for (index k = 0; k < s.shape()[2]; ++k) {
-                for (index j = 0; j < s.shape()[1]; ++j) {
+        for (std::size_t i = 0; i < s.shape()[0]; ++i) {
+            for (std::size_t k = 0; k < s.shape()[2]; ++k) {
+                for (std::size_t j = 0; j < s.shape()[1]; ++j) {
                     double &y = s[i][j][k];
                     y = y*y + b*y - a*a - a*b;
                 }
@@ -109,9 +109,9 @@ public:
             = dynamic_cast<NoninterleavedState<3,double>&>(state);
 
         typedef NoninterleavedState<3,double>::index index;
-        for (index i = 0; i < s.shape()[0]; ++i) {
-            for (index k = 0; k < s.shape()[2]; ++k) {
-                for (index j = 0; j < s.shape()[1]; ++j) {
+        for (index i = 0; i < (index) s.shape()[0]; ++i) {
+            for (index k = 0; k < (index) s.shape()[2]; ++k) {
+                for (index j = 0; j < (index) s.shape()[1]; ++j) {
                     double &y = s[i][j][k];
                     y = y*y - a*a - a*b;
                 }
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
     { // Real-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
         const SMR91Method<T> m;
-        for (int i = 0; i < m.substeps(); ++i) {
+        for (std::size_t i = 0; i < m.substeps(); ++i) {
             const T res = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
             BOOST_CHECK_SMALL(res, close_enough);
         }
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
         const T close_enough = std::numeric_limits<T>::epsilon();
         typedef typename std::complex<T> complex;
         const SMR91Method<complex> m;
-        for (int i = 0; i < m.substeps(); ++i) {
+        for (std::size_t i = 0; i < m.substeps(); ++i) {
             const complex res
                 = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
             BOOST_CHECK_SMALL(std::abs(res), close_enough);
@@ -527,7 +527,7 @@ BOOST_AUTO_TEST_CASE( step_explicit )
         gsl_vector_set(exact, 0, soln(t_final));
 
         double richardson_h_error[4];
-        for (int i = 0;
+        for (std::size_t i = 0;
              i < sizeof(richardson_h_error)/sizeof(richardson_h_error[0]);
              ++i) {
             gsl_matrix_set(data, 0, 0, coarse_final);
@@ -606,7 +606,7 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
         gsl_vector_set(exact, 0, soln(t_final));
 
         double richardson_h_error[4];
-        for (int i = 0;
+        for (std::size_t i = 0;
              i < sizeof(richardson_h_error)/sizeof(richardson_h_error[0]);
              ++i) {
             gsl_matrix_set(data, 0, 0, coarse_final);
@@ -697,7 +697,7 @@ BOOST_AUTO_TEST_CASE( step_explicit )
         gsl_vector_set(exact, 0, soln(t_final));
 
         double richardson_h_error[4];
-        for (int i = 0;
+        for (std::size_t i = 0;
              i < sizeof(richardson_h_error)/sizeof(richardson_h_error[0]);
              ++i) {
             gsl_matrix_set(data, 0, 0, coarse_final);
@@ -783,7 +783,7 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
         gsl_vector_set(exact, 0, soln(t_final));
 
         double richardson_h_error[4];
-        for (int i = 0;
+        for (std::size_t i = 0;
              i < sizeof(richardson_h_error)/sizeof(richardson_h_error[0]);
              ++i) {
             gsl_matrix_set(data, 0, 0, coarse_final);

@@ -132,7 +132,7 @@ public:
     int pB_size() const { return underling_grid_pB_size(grid_); }
 
     /** @return The wrapped underling_grid instance. */
-    const underling_grid get() const { return grid_; }
+    underling_grid get() const { return grid_; }
 
     /** @return True if the wrapped underling_grid instance is non-NULL. */
     operator bool () const { return grid_ != NULL; };
@@ -158,7 +158,7 @@ public:
     ~problem() { underling_problem_destroy(problem_); }
 
     /** @return The wrapped underling_problem instance. */
-    const underling_problem get() const { return problem_; }
+    underling_problem get() const { return problem_; }
 
     /** @see underling_local_extents */
     underling_extents local_extents(int i) const {
@@ -236,7 +236,7 @@ public:
     ~plan() { underling_plan_destroy(plan_); }
 
     /** @return The wrapped underling_plan instance. */
-    const underling_plan get() const { return plan_; }
+    underling_plan get() const { return plan_; }
 
     /** @see underling_execute_long_n2_to_long_n1 */
     int execute_long_n2_to_long_n1() const {

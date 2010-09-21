@@ -76,6 +76,8 @@ test_suzerain_fpipe( void )
 
 int main(int argc, char *argv[])
 {
+    SUZERAIN_UNUSED(argc);
+    SUZERAIN_UNUSED(argv);
     int status = 0;
 
     status |= test_suzerain_fpipe();

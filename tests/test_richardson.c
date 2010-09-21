@@ -107,8 +107,8 @@ test_richardson_extrapolation_defaults()
         gsl_test_abs(result1, 3.0, GSL_DBL_EPSILON,
                 "%s correct extrapolation answer");
 
-        for (int i = 0; i < normtable1->size1 - 1; ++i) {
-            for (int j = i+1; j < normtable1->size2; ++j) {
+        for (size_t i = 0; i < normtable1->size1 - 1; ++i) {
+            for (size_t j = i+1; j < normtable1->size2; ++j) {
                 gsl_test(!gsl_isnan(gsl_matrix_get(normtable1, i, j)),
                         "%s expected NAN in normtable1 at (%d, %d)",
                         __func__, i, j);
@@ -130,8 +130,8 @@ test_richardson_extrapolation_defaults()
         gsl_vector_free(exact);
         const double result2 = gsl_matrix_get(data2, 0, 0);
 
-        for (int i = 0; i < normtable2->size1 - 1; ++i) {
-            for (int j = i+1; j < normtable2->size2; ++j) {
+        for (size_t i = 0; i < normtable2->size1 - 1; ++i) {
+            for (size_t j = i+1; j < normtable2->size2; ++j) {
                 gsl_test(!gsl_isnan(gsl_matrix_get(normtable2, i, j)),
                         "%s expected NAN in normtable2 at (%d, %d)",
                         __func__, i, j);
@@ -141,8 +141,8 @@ test_richardson_extrapolation_defaults()
         gsl_test_abs(result1, result2, GSL_DBL_EPSILON,
                 "%s with exact == NULL", __func__);
 
-        for (int i = 0; i < normtable1->size1; ++i) {
-            for (int j = 0; j < i + 1; ++j) {
+        for (size_t i = 0; i < normtable1->size1; ++i) {
+            for (size_t j = 0; j < i + 1; ++j) {
 #pragma warning(push,disable:981)
                 gsl_test_abs(gsl_matrix_get(normtable1, i, j),
                              gsl_matrix_get(normtable2, i, j),
@@ -234,8 +234,8 @@ test_richardson_extrapolation_twolevels()
                 "%s scalar correct result at %s:%d",
                 __func__, __FILE__, __LINE__);
 
-        for (int i = 0; i < normtable->size1 - 1; ++i) {
-            for (int j = i+1; j < normtable->size2; ++j) {
+        for (size_t i = 0; i < normtable->size1 - 1; ++i) {
+            for (size_t j = i+1; j < normtable->size2; ++j) {
                 gsl_test(!gsl_isnan(gsl_matrix_get(normtable, i, j)),
                         "%s expected NAN in normtable at (%d, %d)",
                         __func__, i, j);
@@ -375,8 +375,8 @@ test_richardson_extrapolation_multiplelevels()
                 "%s scalar correct result at %s:%d",
                 __func__, __FILE__, __LINE__);
 
-        for (int i = 0; i < normtable->size1 - 1; ++i) {
-            for (int j = i+1; j < normtable->size2; ++j) {
+        for (size_t i = 0; i < normtable->size1 - 1; ++i) {
+            for (size_t j = i+1; j < normtable->size2; ++j) {
                 gsl_test(!gsl_isnan(gsl_matrix_get(normtable, i, j)),
                         "%s expected NAN in normtable at (%d, %d)",
                         __func__, i, j);
@@ -471,6 +471,8 @@ test_richardson_extrapolation_vectorinputs()
 int
 main(int argc, char **argv)
 {
+    SUZERAIN_UNUSED(argc);
+    SUZERAIN_UNUSED(argv);
     gsl_ieee_env_setup();
 
     test_richardson_extrapolation_step();

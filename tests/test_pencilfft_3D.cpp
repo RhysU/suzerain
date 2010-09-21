@@ -203,31 +203,31 @@ BOOST_AUTO_TEST_CASE( c2c_3d_complex_forward_out_of_place )
     typedef boost::general_storage_order<3> storage;
 
     const boost::array<std::size_t,3> ordering[] = {
-        { 0, 1, 2 }, // Fortran storage
-        { 0, 2, 1 },
-        { 1, 0, 2 },
-        { 1, 2, 0 },
-        { 2, 0, 1 },
-        { 2, 1, 0 }  // C storage
+        {{ 0, 1, 2 }}, // Fortran storage
+        {{ 0, 2, 1 }},
+        {{ 1, 0, 2 }},
+        {{ 1, 2, 0 }},
+        {{ 2, 0, 1 }},
+        {{ 2, 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
     const boost::array<bool,3> ascending[] = {
-        { true,  true,  true  }, // All ascending
-        { false, true,  true  }, // One descending...
-        { true,  false, true  },
-        { true,  true,  false },
-        { false, false, true  }, // Two descending...
-        { false, true,  false },
-        { true,  false, false },
-        { false, false, false }  // Three descending
+        {{ true,  true,  true  }}, // All ascending
+        {{ false, true,  true  }}, // One descending...
+        {{ true,  false, true  }},
+        {{ true,  true,  false }},
+        {{ false, false, true  }}, // Two descending...
+        {{ false, true,  false }},
+        {{ true,  false, false }},
+        {{ false, false, false }}  // Three descending
     };
     const std::size_t n_ascending = sizeof(ascending)/sizeof(ascending[0]);
 
-    for (int i = 0; i < n_ordering; ++i) {
-        for (int j = 0; j < n_ascending; ++j) {
-            for (int k = 0; k < n_ordering; ++k) {
-                for (int l = 0; l < n_ascending; ++l) {
+    for (std::size_t i = 0; i < n_ordering; ++i) {
+        for (std::size_t j = 0; j < n_ascending; ++j) {
+            for (std::size_t k = 0; k < n_ordering; ++k) {
+                for (std::size_t l = 0; l < n_ascending; ++l) {
                     BOOST_TEST_MESSAGE("Testing c2c forward out-of-place {"
                             << ordering[i] << ", " << ascending[j]
                             << "} to {"
@@ -252,29 +252,29 @@ BOOST_AUTO_TEST_CASE( c2c_3d_complex_forward_in_place )
     typedef boost::general_storage_order<3> storage;
 
     const boost::array<std::size_t,3> ordering[] = {
-        { 0, 1, 2 }, // Fortran storage
-        { 0, 2, 1 },
-        { 1, 0, 2 },
-        { 1, 2, 0 },
-        { 2, 0, 1 },
-        { 2, 1, 0 }  // C storage
+        {{ 0, 1, 2 }}, // Fortran storage
+        {{ 0, 2, 1 }},
+        {{ 1, 0, 2 }},
+        {{ 1, 2, 0 }},
+        {{ 2, 0, 1 }},
+        {{ 2, 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
     const boost::array<bool,3> ascending[] = {
-        { true,  true,  true  }, // All ascending
-        { false, true,  true  }, // One descending...
-        { true,  false, true  },
-        { true,  true,  false },
-        { false, false, true  }, // Two descending...
-        { false, true,  false },
-        { true,  false, false },
-        { false, false, false }  // Three descending
+        {{ true,  true,  true  }}, // All ascending
+        {{ false, true,  true  }}, // One descending...
+        {{ true,  false, true  }},
+        {{ true,  true,  false }},
+        {{ false, false, true  }}, // Two descending...
+        {{ false, true,  false }},
+        {{ true,  false, false }},
+        {{ false, false, false }}  // Three descending
     };
     const std::size_t n_ascending = sizeof(ascending)/sizeof(ascending[0]);
 
-    for (int i = 0; i < n_ordering; ++i) {
-        for (int j = 0; j < n_ascending; ++j) {
+    for (std::size_t i = 0; i < n_ordering; ++i) {
+        for (std::size_t j = 0; j < n_ascending; ++j) {
             BOOST_TEST_MESSAGE("Testing c2c forward in-place {"
                     << ordering[i] << ", " << ascending[j]
                     << "}");
@@ -348,9 +348,9 @@ void r2c_3d_forward_4_by_3_by_2(RealArray &in, ComplexArray &out)
             = out[boost::indices[range().finish(L/2+1)][range()][range()]];
         pencilfft::forward_r2c(0, in, out_view);
 
-        for (int i = 0; i < out_view.shape()[0]; ++i) {
-            for (int j = 0; j < out_view.shape()[1]; ++j) {
-                for (int k = 0; k < out_view.shape()[2]; ++k) {
+        for (int i = 0; i < (int) out_view.shape()[0]; ++i) {
+            for (int j = 0; j < (int) out_view.shape()[1]; ++j) {
+                for (int k = 0; k < (int) out_view.shape()[2]; ++k) {
                     double e_real, e_imag;
                     assign_components(e_real, e_imag, expected0[i][j][k]);
                     if (fabs(e_real) < close) {
@@ -399,9 +399,9 @@ void r2c_3d_forward_4_by_3_by_2(RealArray &in, ComplexArray &out)
             = out[boost::indices[range()][range().finish(M/2+1)][range()]];
         pencilfft::forward_r2c(1, in, out_view);
 
-        for (int i = 0; i < out_view.shape()[0]; ++i) {
-            for (int j = 0; j < out_view.shape()[1]; ++j) {
-                for (int k = 0; k < out_view.shape()[2]; ++k) {
+        for (int i = 0; i < (int) out_view.shape()[0]; ++i) {
+            for (int j = 0; j < (int) out_view.shape()[1]; ++j) {
+                for (int k = 0; k < (int) out_view.shape()[2]; ++k) {
                     double e_real, e_imag;
                     assign_components(e_real, e_imag, expected1[i][j][k]);
                     if (fabs(e_real) < close) {
@@ -454,9 +454,9 @@ void r2c_3d_forward_4_by_3_by_2(RealArray &in, ComplexArray &out)
             = out[boost::indices[range()][range()][range().finish(N/2+1)]];
         pencilfft::forward_r2c(2, in, out_view);
 
-        for (int i = 0; i < out_view.shape()[0]; ++i) {
-            for (int j = 0; j < out_view.shape()[1]; ++j) {
-                for (int k = 0; k < out_view.shape()[2]; ++k) {
+        for (int i = 0; i < (int) out_view.shape()[0]; ++i) {
+            for (int j = 0; j < (int) out_view.shape()[1]; ++j) {
+                for (int k = 0; k < (int) out_view.shape()[2]; ++k) {
                     double e_real, e_imag;
                     assign_components(e_real, e_imag, expected2[i][j][k]);
                     if (fabs(e_real) < close) {
@@ -482,31 +482,31 @@ BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_out_of_place )
     typedef boost::general_storage_order<3> storage;
 
     const boost::array<std::size_t,3> ordering[] = {
-        { 0, 1, 2 }, // Fortran storage
-        { 0, 2, 1 },
-        { 1, 0, 2 },
-        { 1, 2, 0 },
-        { 2, 0, 1 },
-        { 2, 1, 0 }  // C storage
+        {{ 0, 1, 2 }}, // Fortran storage
+        {{ 0, 2, 1 }},
+        {{ 1, 0, 2 }},
+        {{ 1, 2, 0 }},
+        {{ 2, 0, 1 }},
+        {{ 2, 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
     const boost::array<bool,3> ascending[] = {
-        { true,  true,  true  }, // All ascending
-        { false, true,  true  }, // One descending...
-        { true,  false, true  },
-        { true,  true,  false },
-        { false, false, true  }, // Two descending...
-        { false, true,  false },
-        { true,  false, false },
-        { false, false, false }  // Three descending
+        {{ true,  true,  true  }}, // All ascending
+        {{ false, true,  true  }}, // One descending...
+        {{ true,  false, true  }},
+        {{ true,  true,  false }},
+        {{ false, false, true  }}, // Two descending...
+        {{ false, true,  false }},
+        {{ true,  false, false }},
+        {{ false, false, false }}  // Three descending
     };
     const std::size_t n_ascending = sizeof(ascending)/sizeof(ascending[0]);
 
-    for (int i = 0; i < n_ordering; ++i) {
-        for (int j = 0; j < n_ascending; ++j) {
-            for (int k = 0; k < n_ordering; ++k) {
-                for (int l = 0; l < n_ascending; ++l) {
+    for (std::size_t i = 0; i < n_ordering; ++i) {
+        for (std::size_t j = 0; j < n_ascending; ++j) {
+            for (std::size_t k = 0; k < n_ordering; ++k) {
+                for (std::size_t l = 0; l < n_ascending; ++l) {
                     BOOST_TEST_MESSAGE("Testing r2c out-of-place {"
                             << ordering[i] << ", " << ascending[j]
                             << "} to {"
@@ -569,24 +569,24 @@ void test_r2c_3d_complex_forward_in_place(
 BOOST_AUTO_TEST_CASE( r2c_3d_complex_forward_in_place )
 {
     const boost::array<std::size_t,3> ordering[] = {
-        { 0, 1, 2 }, // Fortran storage
-//      { 0, 2, 1 },
-//      { 1, 0, 2 },
-//      { 1, 2, 0 },
-//      { 2, 0, 1 },
-//      { 2, 1, 0 }  // C storage
+        {{ 0, 1, 2 }}, // Fortran storage
+//      {{ 0, 2, 1 }},
+//      {{ 1, 0, 2 }},
+//      {{ 1, 2, 0 }},
+//      {{ 2, 0, 1 }},
+//      {{ 2, 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
     const boost::array<bool,3> ascending[] = {
-        { true,  true,  true  }, // All ascending
-        { false, true,  true  }, // One descending...
-//      { true,  false, true  },
-        { true,  true,  false },
-//      { false, false, true  }, // Two descending...
-        { false, true,  false },
-        { true,  false, false },
-        { false, false, false }  // Three descending
+        {{ true,  true,  true  }}, // All ascending
+        {{ false, true,  true  }}, // One descending...
+//      {{ true,  false, true  }},
+        {{ true,  true,  false }},
+//      {{ false, false, true  }}, // Two descending...
+        {{ false, true,  false }},
+        {{ true,  false, false }},
+        {{ false, false, false }}  // Three descending
     };
     const std::size_t n_ascending = sizeof(ascending)/sizeof(ascending[0]);
 

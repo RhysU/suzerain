@@ -34,6 +34,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/complex.hpp>
 #include <suzerain/math.hpp>
+#include <suzerain/utility.hpp>
 #include <fftw3.h>
 
 // TODO Much of transform_c2c, forward_r2c, and backward_c2r is boilerplate
@@ -111,8 +112,8 @@ bool increment(Mutable_RandomAccessIterator indices,
         const max_index_type &max_index = max_indices[*index_order];
 
         assert(1 <= max_index);
-        assert(0 <= index);
-        assert(index < max_index);
+        assert(suzerain::is_nonnegative(index));
+        assert(boost::numeric_cast<max_index_type>(index) < max_index);
 
         index    += overflow;           // Handle incoming overflow
         overflow  = index/max_index;    // Check outgoing overflow
@@ -175,8 +176,8 @@ bool decrement(Mutable_RandomAccessIterator indices,
         const max_index_type &max_index = max_indices[*index_order];
 
         assert(1 <= max_index);
-        assert(0 <= index);
-        assert(index < max_index);
+        assert(suzerain::is_nonnegative(index));
+        assert(boost::numeric_cast<max_index_type>(index) < max_index);
 
         index     -= underflow;                  // Handle incoming underflow
         underflow  = (index == index_type(-1));  // Check outgoing underflow
@@ -247,8 +248,8 @@ bool crement(Mutable_RandomAccessIterator indices,
         const max_index_type &max_index    = max_indices[*index_order];
 
         assert(1 <= max_index);
-        assert(0 <= index);
-        assert(index < max_index);
+        assert(suzerain::is_nonnegative(index));
+        assert(boost::numeric_cast<max_index_type>(index) < max_index);
 
         index += is_increasing*carry_bit - !is_increasing*carry_bit;
         const bool overflow  = is_increasing*(index/max_index);
@@ -605,6 +606,7 @@ struct complex_copy {
                     const ComplexSource &src,
                     const SignedInteger& dontcare) const
     {
+        SUZERAIN_UNUSED(dontcare);
         suzerain::complex::assign_complex(dest, src);
     }
 };
@@ -636,6 +638,7 @@ struct complex_copy_scale {
                     const ComplexSource &src,
                     const SignedInteger& dontcare) const
     {
+        SUZERAIN_UNUSED(dontcare);
         suzerain::complex::assign_complex_scaled(dest, src, alpha_);
     }
 };
@@ -922,6 +925,8 @@ void transform_c2c(
     const int derivative,
     const unsigned fftw_flags)
 {
+    using suzerain::is_nonnegative;
+
     // Typedefs fixed separately by ComplexMultiArray template parameters
     typedef typename ComplexMultiArray1::element element1;
     typedef typename ComplexMultiArray2::element element2;
@@ -954,7 +959,7 @@ void transform_c2c(
     typedef boost::array<shape_type,dimensionality>  shape_array;
 
     // Ensure we transform a dimension that exists in the data
-    assert(0 <= transform_dim && transform_dim < dimensionality);
+    assert(is_nonnegative(transform_dim) && transform_dim < dimensionality);
     // Copy all shape information into integers well-suited for FFTW
     shape_array shape_in, shape_out;
     {
@@ -1020,7 +1025,7 @@ void transform_c2c(
 
     // Walk fastest dimensions first when incrementing across pencils
     index_array1 increment_order;
-    for (index1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
+    for (size_type1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
     std::sort(
         increment_order.begin(), increment_order.end(),
         detail::make_indexed_element_magnitude_comparator(in.strides()));
@@ -1237,6 +1242,8 @@ void forward_r2c(
     const int derivative      = 0,
     const unsigned fftw_flags = 0)
 {
+    using suzerain::is_nonnegative;
+
     // TransformTraits fixed by the wave space type
     typedef detail::transform_traits<
             typename ComplexMultiArray::element> transform_traits;
@@ -1273,7 +1280,7 @@ void forward_r2c(
     typedef boost::array<shape_type,dimensionality>  shape_array;
 
     // Ensure we transform a dimension that exists in the data
-    assert(0 <= transform_dim && transform_dim < dimensionality);
+    assert(is_nonnegative(transform_dim) && transform_dim < dimensionality);
     // Copy all shape information into integers well-suited for FFTW
     shape_array shape_in, shape_out;
     {
@@ -1322,7 +1329,6 @@ void forward_r2c(
               index_bases_out.begin());
     const index1     stride_in_transform_dim  = in.strides()[transform_dim];
     const index2     stride_out_transform_dim = out.strides()[transform_dim];
-    const shape_type shape_in_transform_dim   = shape_in[transform_dim];
     const shape_type shape_out_transform_dim  = shape_out[transform_dim];
 
     // Prepare per-pencil outer loop index and loop bounds
@@ -1336,7 +1342,7 @@ void forward_r2c(
 
     // Walk fastest dimensions first when decrementing across pencils
     index_array1 decrement_order;
-    for (index1 n = 0; n < dimensionality; ++n) { decrement_order[n] = n; }
+    for (size_type1 n = 0; n < dimensionality; ++n) { decrement_order[n] = n; }
     std::sort(
         decrement_order.begin(), decrement_order.end(),
         detail::make_indexed_element_magnitude_comparator(in.strides()));
@@ -1433,6 +1439,8 @@ void backward_c2r(
     const int derivative      = 0,
     const unsigned fftw_flags = 0)
 {
+    using suzerain::is_nonnegative;
+
     // TransformTraits fixed by the wave space type
     typedef detail::transform_traits<
             typename ComplexMultiArray::element> transform_traits;
@@ -1469,7 +1477,7 @@ void backward_c2r(
     typedef boost::array<shape_type,dimensionality>  shape_array;
 
     // Ensure we transform a dimension that exists in the data
-    assert(0 <= transform_dim && transform_dim < dimensionality);
+    assert(is_nonnegative(transform_dim) && transform_dim < dimensionality);
     // Copy all shape information into integers well-suited for FFTW
     shape_array shape_in, shape_out;
     {
@@ -1519,7 +1527,6 @@ void backward_c2r(
     const index1     stride_in_transform_dim  = in.strides()[transform_dim];
     const index2     stride_out_transform_dim = out.strides()[transform_dim];
     const shape_type shape_in_transform_dim   = shape_in[transform_dim];
-    const shape_type shape_out_transform_dim  = shape_out[transform_dim];
 
     // Prepare per-pencil outer loop index and loop bounds
     shape_array loop_shape(shape_in);   // Iterate over all dimensions...
@@ -1533,7 +1540,7 @@ void backward_c2r(
 
     // Walk fastest dimensions first when incrementing across pencils
     index_array1 increment_order;
-    for (index1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
+    for (size_type1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
     std::sort(
         increment_order.begin(), increment_order.end(),
         detail::make_indexed_element_magnitude_comparator(in.strides()));

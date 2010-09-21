@@ -103,9 +103,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     std::fill(B.get(),B.get()+nelem,std::numeric_limits<double>::quiet_NaN());
     {
         double *pA = A.get(), *pB = B.get();
-        for (index j = 0; j < gridy.size(); ++j) {
-            for (index k = 0; k < gridz.size(); ++k) {
-                for (index i = 0; i < gridx.size(); ++i) {
+        for (index j = 0; j < (index) gridy.size(); ++j) {
+            for (index k = 0; k < (index) gridz.size(); ++k) {
+                for (index i = 0; i < (index) gridx.size(); ++i) {
                     *pA++ = fx1.physical_evaluate(gridx[i])
                           * fz1.physical_evaluate(gridz[k])
                           * (j+1);
@@ -148,9 +148,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     // Ensure the synthetic accumulated field came back cleanly
     {
         const double *pB = B.get();
-        for (index j = 0; j < gridy.size(); ++j) {
-            for (index k = 0; k < gridz.size(); ++k) {
-                for (index i = 0; i < gridx.size(); ++i) {
+        for (index j = 0; j < (index) gridy.size(); ++j) {
+            for (index k = 0; k < (index) gridz.size(); ++k) {
+                for (index i = 0; i < (index) gridx.size(); ++i) {
                     {
                         const double cfx1
                             = fx1.physical_evaluate(gridx[i], dxcnt);
@@ -183,9 +183,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     std::fill(A.get(),A.get()+nelem,std::numeric_limits<double>::quiet_NaN());
     {
         double *pA = A.get();
-        for (index j = 0; j < gridy.size(); ++j) {
-            for (index k = 0; k < gridz.size(); ++k) {
-                for (index i = 0; i < gridx.size(); ++i) {
+        for (index j = 0; j < (index) gridy.size(); ++j) {
+            for (index k = 0; k < (index) gridz.size(); ++k) {
+                for (index i = 0; i < (index) gridx.size(); ++i) {
                     *pA++ = fx1.physical_evaluate(gridx[i])
                           * fz1.physical_evaluate(gridz[k])
                           * (j+1);
@@ -221,9 +221,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     // Ensure the synthetic accumulated field came back cleanly
     {
         const double *pA = A.get();
-        for (index j = 0; j < gridy.size(); ++j) {
-            for (index k = 0; k < gridz.size(); ++k) {
-                for (index i = 0; i < gridx.size(); ++i) {
+        for (index j = 0; j < (index) gridy.size(); ++j) {
+            for (index k = 0; k < (index) gridz.size(); ++k) {
+                for (index i = 0; i < (index) gridx.size(); ++i) {
                     {
                         const double cfx1
                             = fx1.physical_evaluate(gridx[i], dxcnt);
@@ -259,8 +259,8 @@ static void test_accumulateAndApply(const int Ny,
     const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
     const int np     = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
-    pencil_grid::size_type_3d global_extents = { dNx, Ny, dNz };
-    pencil_grid::size_type_2d processor_grid = { 0, 0 };
+    pencil_grid::size_type_3d global_extents = {{ dNx, Ny, dNz }};
+    pencil_grid::size_type_2d processor_grid = {{ 0, 0 }};
     pencil_grid pg(global_extents, processor_grid);
 
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {

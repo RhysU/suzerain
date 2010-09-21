@@ -45,7 +45,7 @@ namespace suzerain {
 template< typename T >
 boost::array<T,3> to_yxz(const boost::array<T,3>& xyz)
 {
-    boost::array<T,3> retval = { xyz[1], xyz[0], xyz[2] };
+    boost::array<T,3> retval = {{ xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
 
@@ -62,7 +62,7 @@ boost::array<T,3> to_yxz(const boost::array<T,3>& xyz)
 template< typename T, typename U >
 boost::array<T,4> to_yxz(const U& prepend, const boost::array<T,3>& xyz)
 {
-    boost::array<T,4> retval = { prepend, xyz[1], xyz[0], xyz[2] };
+    boost::array<T,4> retval = {{ prepend, xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
 
@@ -76,7 +76,7 @@ boost::array<T,4> to_yxz(const U& prepend, const boost::array<T,3>& xyz)
 template< typename T >
 boost::array<T,3> to_xzy(const boost::array<T,3>& xyz)
 {
-    boost::array<T,3> retval = { xyz[0], xyz[2], xyz[1] };
+    boost::array<T,3> retval = {{ xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
 
@@ -93,7 +93,7 @@ boost::array<T,3> to_xzy(const boost::array<T,3>& xyz)
 template< typename T, typename U >
 boost::array<T,4> to_xzy(const U& prepend, const boost::array<T,3>& xyz)
 {
-    boost::array<T,4> retval = { prepend, xyz[0], xyz[2], xyz[1] };
+    boost::array<T,4> retval = {{ prepend, xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
 
@@ -114,7 +114,6 @@ boost::array<T, N+1> prepend(const U& prepend, const boost::array<T,N>& array)
     return retval;
 }
 
-
 /**
  * Compute column-major strides given a boost::array of extents.
  *
@@ -126,7 +125,7 @@ boost::array<T, N+1> prepend(const U& prepend, const boost::array<T,N>& array)
 template< typename T, std::size_t N >
 boost::array<T,N> strides_cm(const boost::array<T,N>& extents)
 {
-    boost::array<T,N> retval = { 1 };
+    boost::array<T,N> retval = {{ 1 }};
     for (typename boost::array<T,N>::size_type i = 1; i < N; ++i) {
         retval[i] = retval[i-1] * extents[i-1];
     }
@@ -173,9 +172,32 @@ boost::array<T,0> strides_rm(const boost::array<T,0>& extents)
  *
  * @return <tt>std::min(a,std::min(b,c))</tt>.
  */
-template<class T>
+template< typename T >
 const T& min(const T& a,const T& b, const T& c) {
     return ::std::min(a, ::std::min(b,c));
+}
+
+/**
+* Check if the argument is nonnegative.
+*
+* @return True if <tt>t >= 0</tt> and false otherwise.
+*/
+template< typename T >
+typename boost::disable_if<boost::is_unsigned<T>, bool>::type
+is_nonnegative(T t) {
+    return t >= 0;
+}
+
+/**
+* Check if the argument is nonnegative.
+*
+* @return True if <tt>t >= 0</tt> and false otherwise.
+*/
+template< typename T >
+typename boost::enable_if<boost::is_unsigned<T>, bool>::type
+is_nonnegative(T t) {
+    SUZERAIN_UNUSED(t);
+    return true;
 }
 
 } // namespace suzerain

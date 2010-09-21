@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE( ostream )
 BOOST_AUTO_TEST_CASE( round_trip )
 {
     const rigor rigors[] = { estimate, patient, measure, exhaustive };
-    for (int i = 0; i < sizeof(rigors)/sizeof(rigors[0]); ++i) {
+    for (std::size_t i = 0; i < sizeof(rigors)/sizeof(rigors[0]); ++i) {
         BOOST_CHECK_EQUAL(rigors[i], rigor_from(c_str(rigors[i])));
     }
 }

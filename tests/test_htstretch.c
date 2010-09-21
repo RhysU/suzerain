@@ -119,6 +119,8 @@ void test_htstretch2_find_delta()
 
 int main(int argc, char **argv)
 {
+    SUZERAIN_UNUSED(argc);
+    SUZERAIN_UNUSED(argv);
     gsl_ieee_env_setup();
 
     if (argc > 1) {

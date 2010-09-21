@@ -51,15 +51,14 @@ namespace math {
  * @return \f$x^n\f$
  */
 template<typename FPT, typename Integer>
-FPT integer_power(FPT x, Integer n)
+typename boost::enable_if< boost::is_signed<Integer>, FPT >::type
+integer_power(FPT x, Integer n)
 {
     using std::numeric_limits;
-
-    // Avoid shooting ourselves by accidentally requesting a negative power for
-    // an integer input.  Long lines to ensure messages appear in compiler
-    // error output when used improperly.
     BOOST_STATIC_ASSERT(numeric_limits<Integer>::is_integer);
-    BOOST_STATIC_ASSERT(!numeric_limits<Integer>::is_signed || !numeric_limits<FPT>::is_integer);
+
+    // Prevent accidentally requesting a negative power for integer x.
+    BOOST_STATIC_ASSERT(!numeric_limits<FPT>::is_integer);
 
     FPT retval = 1;
     // Convert all requests into one involving a positive power
@@ -77,6 +76,34 @@ FPT integer_power(FPT x, Integer n)
     return retval;
 }
 
+/**
+ * Computes \f$x^n\f$ efficiently for small integer \f$n\f$.
+ * No overflow checking is performed.  Algorithm taken
+ * from the GNU Scientific Library's \c gsl_pow_int.
+ *
+ * @param x \f$x\f$
+ * @param n \f$n\f$
+ *
+ * @return \f$x^n\f$
+ */
+template<typename FPT, typename Integer>
+typename boost::disable_if< boost::is_signed<Integer>, FPT >::type
+integer_power(FPT x, Integer n)
+{
+    using std::numeric_limits;
+    BOOST_STATIC_ASSERT(numeric_limits<Integer>::is_integer);
+
+    FPT retval = 1;
+    // Repeated squaring method.  Returns 0.0^0 = 1; continuous in x
+    do {
+        if (n & 1) retval *= x;  /* for n odd */
+        n >>= 1;
+        x *= x;
+    } while (n);
+
+    return retval;
+}
+
 
 namespace {
 
@@ -84,6 +111,7 @@ template<typename T, int N> struct impl_fixed_integer_power;
 
 template<typename T> struct impl_fixed_integer_power<T,0> {
     SUZERAIN_FORCEINLINE static T fixed_integer_power(const T t) {
+        SUZERAIN_UNUSED(t);
         return 1;
     }
 };

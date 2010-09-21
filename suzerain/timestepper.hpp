@@ -87,7 +87,9 @@ public:
      *        during initialization.
      */
     virtual void init(const IOperatorConfig& config)
-                      throw(std::exception) {};
+                      throw(std::exception) {
+        SUZERAIN_UNUSED(config);
+    };
 
     /**
      * Destroy any resources associated with the previous \c init invocation.
@@ -130,7 +132,9 @@ public:
      *        during operator splitting.
      */
     virtual void establishSplit(const IOperatorSplit& split)
-                                throw(std::exception) {};
+                                throw(std::exception) {
+        SUZERAIN_UNUSED(split);
+    };
 
     /** Virtual destructor to support interface-like behavior. */
     virtual ~IAdjustableSplitOperator() {};
@@ -437,6 +441,7 @@ public:
         const
         throw(std::exception)
     {
+        SUZERAIN_UNUSED(delta_t_requested);
         state.scale(factor);
         return delta_t;
     };

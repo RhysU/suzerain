@@ -70,7 +70,8 @@ pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
     }
 
     // Sanity check the 2D decomposition
-    if (processor_grid_[0]*processor_grid_[1] != nproc) {
+    if (   processor_grid_[0]*processor_grid_[1]
+        != boost::numeric_cast<pencil_grid::size_type>(nproc)) {
         std::ostringstream what;
         what << "Processor grid dimensions " << processor_grid_
              << " incompatible with number of processors " << nproc;

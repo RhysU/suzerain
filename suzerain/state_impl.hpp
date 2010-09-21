@@ -60,7 +60,9 @@ public:
         : Allocator(),
           pbegin_(Allocator::allocate(boost::numeric_cast<
                       typename Allocator::size_type>(count))),
-          pend_(pbegin_ + count) {}
+          pend_(pbegin_ + count) {
+        SUZERAIN_UNUSED(dummy);
+    }
 
     ContiguousMemory(const ContiguousMemory &other)
         : Allocator(other),
@@ -422,9 +424,11 @@ void apply(BLASFunctor functor,
 {
     typedef typename NoninterleavedState<2,Element,Allocator>::index index;
     assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
 
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-         ix < x.index_bases()[0] + x.shape()[0];
+         ix < iu;
          ++ix, ++iy) {
 
         functor(x.shape()[1],
@@ -440,13 +444,16 @@ void apply(BLASFunctor functor,
 {
     typedef typename NoninterleavedState<3,Element,Allocator>::index index;
     assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+    const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
 
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-        ix < x.index_bases()[0] + x.shape()[0];
+        ix < iu;
         ++ix, ++iy) {
 
         for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
-             kx < x.index_bases()[2] + x.shape()[2];
+             kx < ku;
              ++kx, ++ky) {
 
             functor(x.shape()[1],
@@ -463,17 +470,21 @@ void apply(BLASFunctor functor,
 {
     typedef typename NoninterleavedState<4,Element,Allocator>::index index;
     assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+    const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
+    const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
 
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-        ix < x.index_bases()[0] + x.shape()[0];
+        ix < iu;
         ++ix, ++iy) {
 
         for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
-            lx < x.index_bases()[3] + x.shape()[3];
+            lx < lu;
             ++lx, ++ly) {
 
             for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
-                kx < x.index_bases()[2] + x.shape()[2];
+                kx < ku;
                 ++kx, ++ky) {
 
                 functor(x.shape()[1],
@@ -491,21 +502,26 @@ void apply(BLASFunctor functor,
 {
     typedef typename NoninterleavedState<5,Element,Allocator>::index index;
     assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+    const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
+    const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
+    const index mu = numeric_cast<index>(x.index_bases()[4] + x.shape()[4]);
 
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-        ix < x.index_bases()[0] + x.shape()[0];
+        ix < iu;
         ++ix, ++iy) {
 
         for (index mx = x.index_bases()[4], my = y.index_bases()[4];
-            mx < x.index_bases()[4] + x.shape()[4];
+            mx < mu;
             ++mx, ++my) {
 
             for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
-                lx < x.index_bases()[3] + x.shape()[3];
+                lx < lu;
                 ++lx, ++ly) {
 
                 for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
-                    kx < x.index_bases()[2] + x.shape()[2];
+                    kx < ku;
                     ++kx, ++ky) {
 
                     functor(x.shape()[1],

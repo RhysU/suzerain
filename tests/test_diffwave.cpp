@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE( freqindex )
         { 0, 1,  2,  3,  4,     -4, -3, -2, -1 },
         { 0, 1,  2,  3,  4,  5, -4, -3, -2, -1 }
     };
-    for (int i = 0; i < sizeof(expected)/sizeof(expected[0]); ++i) {
+    for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
         int result[sizeof(expected[0])/sizeof(expected[0][0])];
         for (int j = 0; j < i+1; ++j) {
             result[j] = suzerain_diffwave_freqindex(i + 1, j);
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( absfreqindex )
         { 0, 1,  2,  3,  4,      4,  3,  2,  1 },
         { 0, 1,  2,  3,  4,  5,  4,  3,  2,  1 }
     };
-    for (int i = 0; i < sizeof(expected)/sizeof(expected[0]); ++i) {
+    for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
         int result[sizeof(expected[0])/sizeof(expected[0][0])];
         for (int j = 0; j < i+1; ++j) {
             result[j] = suzerain_diffwave_absfreqindex(i + 1, j);
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_nodealiasing )
                                 {0,1,2,3,  -3,-2,-1},
                                 {0,1,2,3,0,-3,-2,-1} };
 
-    for (int i = 0; i < sizeof(expected)/sizeof(expected[0]); ++i) {
+    for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
         const int N = i + 1, dN = N;
         for (int j = 0; j < dN; ++j) {
             BOOST_CHECK_EQUAL(expected[i][j],
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
                                      {0,1,2,3,0,0,0,0,0,-3,-2,-1},
                                      {0,1,2,3,0,0,0,0,0,-3,-2,-1} };
 
-        for (int i = 0; i < sizeof(expected)/sizeof(expected[0]); ++i) {
+        for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
             const int N  = i + 1;
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
                                      {0,1,2,3,0,0,0,0,-3,-2,-1},
                                      {0,1,2,3,0,0,0,0,-3,-2,-1} };
 
-        for (int i = 0; i < sizeof(expected)/sizeof(expected[0]); ++i) {
+        for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
             const int N  = i + 1;
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
                                     {0,1,2,3,0, 0,-3,-2,-1},
                                     {0,1,2,3,4,-4,-3,-2,-1} };
 
-        for (int i = 0; i < sizeof(expected)/sizeof(expected[0]); ++i) {
+        for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
             const int N  = i + 1;
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
@@ -272,30 +272,30 @@ BOOST_AUTO_TEST_CASE( accumulate )
     boost::array<int,7> c[] = {
         /* Lx, Lz, Ny, Nx, dNx, Nz, dNz */
         // Beat on the Z direction in quasi-1D cases
-        {   5,  7,  1,  1,   1,  6,   9  }
-       ,{   5,  7,  1,  1,   1,  6,   8  }
-       ,{   5,  7,  1,  1,   1,  5,   8  }
-       ,{   5,  7,  1,  1,   1,  5,   9  }
+        {{   5,  7,  1,  1,   1,  6,   9  }}
+       ,{{   5,  7,  1,  1,   1,  6,   8  }}
+       ,{{   5,  7,  1,  1,   1,  5,   8  }}
+       ,{{   5,  7,  1,  1,   1,  5,   9  }}
         // Beat on the X direction in quasi-1D cases
-       ,{   5,  7,  1,  6,   9,  1,   1  }
-       ,{   5,  7,  1,  6,   8,  1,   1  }
-       ,{   5,  7,  1,  5,   8,  1,   1  }
-       ,{   5,  7,  1,  5,   9,  1,   1  }
+       ,{{   5,  7,  1,  6,   9,  1,   1  }}
+       ,{{   5,  7,  1,  6,   8,  1,   1  }}
+       ,{{   5,  7,  1,  5,   8,  1,   1  }}
+       ,{{   5,  7,  1,  5,   9,  1,   1  }}
         // Beat on the X and Z directions in quasi-2D cases
-       ,{   5,  7,  1,  6,   9,  6,   9  }
-       ,{   5,  7,  1,  6,   8,  6,   8  }
-       ,{   5,  7,  1,  5,   8,  5,   8  }
-       ,{   5,  7,  1,  5,   9,  5,   9  }
+       ,{{   5,  7,  1,  6,   9,  6,   9  }}
+       ,{{   5,  7,  1,  6,   8,  6,   8  }}
+       ,{{   5,  7,  1,  5,   8,  5,   8  }}
+       ,{{   5,  7,  1,  5,   9,  5,   9  }}
         // Beat on everything in full 3D cases
-       ,{   5,  7,  3,  4,   4,  4,   4  }
-       ,{   5,  7,  3,  8,   8,  8,   8  }
-       ,{   5,  7,  3,  7,   7,  7,   7  }
-       ,{   5,  7,  3,  8,  12, 16,  24  }
+       ,{{   5,  7,  3,  4,   4,  4,   4  }}
+       ,{{   5,  7,  3,  8,   8,  8,   8  }}
+       ,{{   5,  7,  3,  7,   7,  7,   7  }}
+       ,{{   5,  7,  3,  8,  12, 16,  24  }}
     };
 
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
         for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {
-            for (int k = 0; k < sizeof(c)/sizeof(c[0]); ++k) {
+            for (int k = 0; k < (int) (sizeof(c)/sizeof(c[0])); ++k) {
 
                 // Empirical tolerance choice: maybe too small, maybe not.
                 const double small = 7*std::pow(10, -10 + (dxcnt+dzcnt)/2.5);
@@ -416,30 +416,30 @@ BOOST_AUTO_TEST_CASE( apply )
     boost::array<int,7> c[] = {
         /* Lx, Lz, Ny, Nx, dNx, Nz, dNz */
         // Beat on the Z direction in quasi-1D cases
-        {   5,  7,  1,  1,   1,  6,   9  }
-       ,{   5,  7,  1,  1,   1,  6,   8  }
-       ,{   5,  7,  1,  1,   1,  5,   8  }
-       ,{   5,  7,  1,  1,   1,  5,   9  }
+        {{   5,  7,  1,  1,   1,  6,   9  }}
+       ,{{   5,  7,  1,  1,   1,  6,   8  }}
+       ,{{   5,  7,  1,  1,   1,  5,   8  }}
+       ,{{   5,  7,  1,  1,   1,  5,   9  }}
         // Beat on the X direction in quasi-1D cases
-       ,{   5,  7,  1,  6,   9,  1,   1  }
-       ,{   5,  7,  1,  6,   8,  1,   1  }
-       ,{   5,  7,  1,  5,   8,  1,   1  }
-       ,{   5,  7,  1,  5,   9,  1,   1  }
+       ,{{   5,  7,  1,  6,   9,  1,   1  }}
+       ,{{   5,  7,  1,  6,   8,  1,   1  }}
+       ,{{   5,  7,  1,  5,   8,  1,   1  }}
+       ,{{   5,  7,  1,  5,   9,  1,   1  }}
         // Beat on the X and Z directions in quasi-2D cases
-       ,{   5,  7,  1,  6,   9,  6,   9  }
-       ,{   5,  7,  1,  6,   8,  6,   8  }
-       ,{   5,  7,  1,  5,   8,  5,   8  }
-       ,{   5,  7,  1,  5,   9,  5,   9  }
+       ,{{   5,  7,  1,  6,   9,  6,   9  }}
+       ,{{   5,  7,  1,  6,   8,  6,   8  }}
+       ,{{   5,  7,  1,  5,   8,  5,   8  }}
+       ,{{   5,  7,  1,  5,   9,  5,   9  }}
         // Beat on everything in full 3D cases
-       ,{   5,  7,  3,  4,   4,  4,   4  }
-       ,{   5,  7,  3,  8,   8,  8,   8  }
-       ,{   5,  7,  3,  7,   7,  7,   7  }
-       ,{   5,  7,  3,  8,  12, 16,  24  }
+       ,{{   5,  7,  3,  4,   4,  4,   4  }}
+       ,{{   5,  7,  3,  8,   8,  8,   8  }}
+       ,{{   5,  7,  3,  7,   7,  7,   7  }}
+       ,{{   5,  7,  3,  8,  12, 16,  24  }}
     };
 
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
         for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {
-            for (int k = 0; k < sizeof(c)/sizeof(c[0]); ++k) {
+            for (int k = 0; k < (int) (sizeof(c)/sizeof(c[0])); ++k) {
 
                 // Empirical tolerance choice: maybe too small, maybe not.
                 const double small = 7*std::pow(10, -10 + (dxcnt+dzcnt)/2.5);

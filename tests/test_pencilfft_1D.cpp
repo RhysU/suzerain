@@ -428,7 +428,7 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
         = std::numeric_limits<double>::epsilon()*10*NR*NR*NR;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
-    for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
+    for (std::size_t l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
         for (int derivative = 0; derivative < 8; ++derivative) {
             // Load a complex function into the input array
             fill_with_NaN(in);
@@ -479,7 +479,7 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
         = std::numeric_limits<double>::epsilon()*10*NR*NR*NR;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
-    for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
+    for (std::size_t l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
         for (int derivative = 0; derivative < 8; ++derivative) {
             // Load a complex function into the input array
             fill_with_NaN(in);
@@ -529,7 +529,7 @@ void differentiate_on_forward_1D_r2c(RealMultiArray &in,
     typedef typename RealMultiArray::element real_type;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
-    for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
+    for (std::size_t l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
         for (int derivative = 0; derivative < 8; ++derivative) {
             // Load a real-valued function into the input array
             fill_with_NaN(in);
@@ -574,7 +574,7 @@ void differentiate_on_backward_1D_c2r(RealMultiArray &in,
         = std::numeric_limits<double>::epsilon()*100*NR*NR*NR;
 
     const double length[2] = { 2.0 * M_PI, 10.0 };
-    for (int l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
+    for (std::size_t l = 0; l < sizeof(length)/sizeof(length[0]); ++l) {
         for (int derivative = 0; derivative < 8; ++derivative) {
             // Load a real-valued function into the input array
             fill_with_NaN(in);

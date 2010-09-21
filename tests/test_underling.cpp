@@ -52,7 +52,7 @@ static void test_round_trip(MPI_Comm comm,
     // Sanity check the buffer vs local extent information
     // Also gives us a reason to look up stride information
     underling::extents long_n[3];
-    for (int i = 0; i < sizeof(long_n)/sizeof(long_n[0]); ++i) {
+    for (std::size_t i = 0; i < sizeof(long_n)/sizeof(long_n[0]); ++i) {
         long_n[i] = f.problem.local_extents(i);
     }
     BOOST_REQUIRE_LE(long_n[0].extent, local_memory);

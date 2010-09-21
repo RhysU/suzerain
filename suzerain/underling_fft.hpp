@@ -74,7 +74,9 @@ public:
          underling_real *data,
          unsigned fftw_rigor_flags)
         : plan_(underling_fft_plan_create_c2c_forward(
-                    p.get(), long_ni, data, fftw_rigor_flags)) {};
+                    p.get(), long_ni, data, fftw_rigor_flags)) {
+        SUZERAIN_UNUSED(tag);
+    }
 
     /** @see underling_fft_plan_create_c2c_backward */
     plan(const c2c_backward tag,
@@ -83,7 +85,9 @@ public:
          underling_real *data,
          unsigned fftw_rigor_flags)
         : plan_(underling_fft_plan_create_c2c_backward(
-                    p.get(), long_ni, data, fftw_rigor_flags)) {};
+                    p.get(), long_ni, data, fftw_rigor_flags)) {
+        SUZERAIN_UNUSED(tag);
+    }
 
     /** @see underling_fft_plan_create_r2c_forward */
     plan(const r2c_forward tag,
@@ -92,7 +96,9 @@ public:
          underling_real *data,
          unsigned fftw_rigor_flags)
         : plan_(underling_fft_plan_create_r2c_forward(
-                    p.get(), long_ni, data, fftw_rigor_flags)) {};
+                    p.get(), long_ni, data, fftw_rigor_flags)) {
+        SUZERAIN_UNUSED(tag);
+    }
 
     /** @see underling_fft_plan_create_c2r_backward */
     plan(const c2r_backward tag,
@@ -101,7 +107,9 @@ public:
          underling_real *data,
          unsigned fftw_rigor_flags)
         : plan_(underling_fft_plan_create_c2r_backward(
-                    p.get(), long_ni, data, fftw_rigor_flags)) {};
+                    p.get(), long_ni, data, fftw_rigor_flags)) {
+        SUZERAIN_UNUSED(tag);
+    }
 
     /** @see underling_fft_plan_create_inverse */
     plan(const plan& plan_to_invert,
@@ -114,7 +122,7 @@ public:
     ~plan() { underling_fft_plan_destroy(plan_); }
 
     /** @return The wrapped underling_fft_plan instance. */
-    const underling_fft_plan get() const { return plan_; }
+    underling_fft_plan get() const { return plan_; }
 
     /** @see underling_fft_local_extents_input */
     underling_fft_extents local_extents_input() const {

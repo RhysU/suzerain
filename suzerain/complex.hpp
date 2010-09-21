@@ -269,6 +269,7 @@ SUZERAIN_FORCEINLINE
 typename boost::enable_if<
     boost::is_arithmetic<FPT>, FPT
 >::type imag(const FPT& x) {
+    SUZERAIN_UNUSED(x);
     return 0;
 }
 

@@ -1253,16 +1253,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( crement_3d_spot_check_behavior_1, ASCENDING, int_
     array_type::const_iterator shape       = shape_array.begin();
 
     const array_type order_fast_dontcare_slow[] = {
-        { 0, 1, 2 },
-        { 1, 0, 2 },
-        { 0, 2, 1 }
+        {{ 0, 1, 2 }},
+        {{ 1, 0, 2 }},
+        {{ 0, 2, 1 }}
     };
     const std::size_t n_order
         = sizeof(order_fast_dontcare_slow)/sizeof(order_fast_dontcare_slow[0]);
     const array_type order_slow_dontcare_fast[n_order] = {
-        { 1, 2, 0 },
-        { 2, 1, 0 },
-        { 2, 0, 1 }
+        {{ 1, 2, 0 }},
+        {{ 2, 1, 0 }},
+        {{ 2, 0, 1 }}
     };
 
     for (std::size_t i = 0; i < n_order; ++i) {
@@ -1420,16 +1420,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( crement_3d_spot_check_behavior_2, ASCENDING, int_
     array_type::const_iterator shape       = shape_array.begin();
 
     const array_type order_dontcare_fast_slow[] = {
-        { 0, 1, 2 },
-        { 1, 0, 2 },
-        { 1, 2, 0 }
+        {{ 0, 1, 2 }},
+        {{ 1, 0, 2 }},
+        {{ 1, 2, 0 }}
     };
     const std::size_t n_order
         = sizeof(order_dontcare_fast_slow)/sizeof(order_dontcare_fast_slow[0]);
     const array_type order_dontcare_slow_fast[n_order] = {
-        { 0, 2, 1 },
-        { 2, 0, 1 },
-        { 2, 1, 0 }
+        {{ 0, 2, 1 }},
+        {{ 2, 0, 1 }},
+        {{ 2, 1, 0 }}
     };
 
     for (std::size_t i = 0; i < n_order; ++i) {

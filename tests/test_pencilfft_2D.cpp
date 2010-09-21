@@ -44,10 +44,10 @@ void c2c_2d_forward_4_by_3(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 
         typedef std::complex<double> z;
         const z expected0[M][N] = {
-            z( 5.5, 0.),  z( 6.5, 0.),  z( 7.5, 0.),
-            z(-1.5, 1.5), z(-1.5, 1.5), z(-1.5, 1.5),
-            z(-1.5, 0.),  z(-1.5, 0.),  z(-1.5, 0.),
-            z(-1.5,-1.5), z(-1.5,-1.5), z(-1.5,-1.5)
+            { z( 5.5, 0.),  z( 6.5, 0.),  z( 7.5, 0.)  },
+            { z(-1.5, 1.5), z(-1.5, 1.5), z(-1.5, 1.5) },
+            { z(-1.5, 0.),  z(-1.5, 0.),  z(-1.5, 0.)  },
+            { z(-1.5,-1.5), z(-1.5,-1.5), z(-1.5,-1.5) }
         };
         pencilfft::forward_c2c(0, in, out);
         for (int i = 0; i < M; ++i) {
@@ -76,10 +76,10 @@ void c2c_2d_forward_4_by_3(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
 
         typedef std::complex<double> z;
         const z expected1[M][N] = {
-            z( 2.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813),
-            z( 5.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813),
-            z( 8.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813),
-            z(11.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813)
+            {z( 2.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813)},
+            {z( 5.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813)},
+            {z( 8.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813)},
+            {z(11.,0.), z(-0.5,0.288675134594813), z(-0.5,-0.288675134594813)}
         };
         pencilfft::forward_c2c(1, in, out);
         for (int i = 0; i < M; ++i) {
@@ -107,23 +107,23 @@ BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward_out_of_place )
     typedef boost::general_storage_order<2> storage;
 
     const boost::array<std::size_t,2> ordering[] = {
-        { 0, 1 }, // Fortran storage
-        { 1, 0 }  // C storage
+        {{ 0, 1 }}, // Fortran storage
+        {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
     const boost::array<bool,2> ascending[] = {
-        { true,  true,  }, // All ascending
-        { false, true,  }, // One descending...
-        { true,  false, },
-        { false, false, }  // Two descending
+        {{ true,  true  }}, // All ascending
+        {{ false, true  }}, // One descending...
+        {{ true,  false }},
+        {{ false, false }}  // Two descending
     };
     const std::size_t n_ascending = sizeof(ascending)/sizeof(ascending[0]);
 
-    for (int i = 0; i < n_ordering; ++i) {
-        for (int j = 0; j < n_ascending; ++j) {
-            for (int k = 0; k < n_ordering; ++k) {
-                for (int l = 0; l < n_ascending; ++l) {
+    for (std::size_t i = 0; i < n_ordering; ++i) {
+        for (std::size_t j = 0; j < n_ascending; ++j) {
+            for (std::size_t k = 0; k < n_ordering; ++k) {
+                for (std::size_t l = 0; l < n_ascending; ++l) {
                     BOOST_TEST_MESSAGE("Testing c2c forward out-of-place {"
                             << ordering[i] << ", " << ascending[j]
                             << "} to {"
@@ -148,21 +148,21 @@ BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward_in_place )
     typedef boost::general_storage_order<2> storage;
 
     const boost::array<std::size_t,2> ordering[] = {
-        { 0, 1 }, // Fortran storage
-        { 1, 0 }  // C storage
+        {{ 0, 1 }}, // Fortran storage
+        {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
     const boost::array<bool,2> ascending[] = {
-        { true,  true,  }, // All ascending
-        { false, true,  }, // One descending...
-        { true,  false, },
-        { false, false, }  // Two descending
+        {{ true,  true  }}, // All ascending
+        {{ false, true  }}, // One descending...
+        {{ true,  false }},
+        {{ false, false }}  // Two descending
     };
     const std::size_t n_ascending = sizeof(ascending)/sizeof(ascending[0]);
 
-    for (int i = 0; i < n_ordering; ++i) {
-        for (int j = 0; j < n_ascending; ++j) {
+    for (std::size_t i = 0; i < n_ordering; ++i) {
+        for (std::size_t j = 0; j < n_ascending; ++j) {
             BOOST_TEST_MESSAGE("Testing c2c forward in-place {"
                     << ordering[i] << ", " << ascending[j]
                     << "}");
@@ -193,7 +193,7 @@ void r2c_2d_forward_4_by_3(RealArray &in, ComplexArray &out)
     BOOST_REQUIRE_GE(out.shape()[0], std::max(M,M/2+1));
     BOOST_REQUIRE_GE(out.shape()[1], std::max(N,N/2+1));
 
-    const double data[M][N] = {1,2,3, 4,5,6, 7,8,9, 10,11,12};
+    const double data[M][N] = {{1,2,3}, {4,5,6}, {7,8,9}, {10,11,12}};
     const double close = std::numeric_limits<double>::epsilon()*10*M*M*N*N;
 
     // Need to create views of out to match expected dimensions
@@ -215,17 +215,17 @@ void r2c_2d_forward_4_by_3(RealArray &in, ComplexArray &out)
 
         typedef std::complex<double> z;
         const z expected0[M/2+1][N] = {
-            z( 5.5, 0.),  z( 6.5, 0.),  z( 7.5, 0.),
-            z(-1.5, 1.5), z(-1.5, 1.5), z(-1.5, 1.5),
-            z(-1.5, 0.),  z(-1.5, 0.),  z(-1.5, 0.)
+            { z( 5.5, 0.),  z( 6.5, 0.),  z( 7.5, 0.)  },
+            { z(-1.5, 1.5), z(-1.5, 1.5), z(-1.5, 1.5) },
+            { z(-1.5, 0.),  z(-1.5, 0.),  z(-1.5, 0.)  }
         };
 
         complex_view out_view
             = out[boost::indices[range().finish(M/2+1)][range()]];
         pencilfft::forward_r2c(0, in, out_view);
 
-        for (int i = 0; i < out_view.shape()[0]; ++i) {
-            for (int j = 0; j < out_view.shape()[1]; ++j) {
+        for (int i = 0; i < (int) out_view.shape()[0]; ++i) {
+            for (int j = 0; j < (int) out_view.shape()[1]; ++j) {
                 double e_real, e_imag;
                 assign_components(e_real, e_imag, expected0[i][j]);
                 if (fabs(e_real) < close) {
@@ -250,18 +250,18 @@ void r2c_2d_forward_4_by_3(RealArray &in, ComplexArray &out)
 
         typedef std::complex<double> z;
         const z expected1[M][N/2+1] = {
-            z( 2.,0.), z(-0.5,0.288675134594813),
-            z( 5.,0.), z(-0.5,0.288675134594813),
-            z( 8.,0.), z(-0.5,0.288675134594813),
-            z(11.,0.), z(-0.5,0.288675134594813)
+            { z( 2.,0.), z(-0.5,0.288675134594813) },
+            { z( 5.,0.), z(-0.5,0.288675134594813) },
+            { z( 8.,0.), z(-0.5,0.288675134594813) },
+            { z(11.,0.), z(-0.5,0.288675134594813) }
         };
 
         complex_view out_view
             = out[boost::indices[range()][range().finish(N/2+1)]];
         pencilfft::forward_r2c(1, in, out_view);
 
-        for (int i = 0; i < out_view.shape()[0]; ++i) {
-            for (int j = 0; j < out_view.shape()[1]; ++j) {
+        for (int i = 0; i < (int) out_view.shape()[0]; ++i) {
+            for (int j = 0; j < (int) out_view.shape()[1]; ++j) {
                 double e_real, e_imag;
                 assign_components(e_real, e_imag, expected1[i][j]);
                 if (fabs(e_real) < close) {
@@ -286,23 +286,23 @@ BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_out_of_place )
     typedef boost::general_storage_order<2> storage;
 
     const boost::array<std::size_t,2> ordering[] = {
-        { 0, 1 }, // Fortran storage
-        { 1, 0 }  // C storage
+        {{ 0, 1 }}, // Fortran storage
+        {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
     const boost::array<bool,2> ascending[] = {
-        { true,  true,  }, // All ascending
-        { false, true,  }, // One descending...
-        { true,  false, },
-        { false, false, }  // Two descending
+        {{ true,  true  }}, // All ascending
+        {{ false, true  }}, // One descending...
+        {{ true,  false }},
+        {{ false, false }}  // Two descending
     };
     const std::size_t n_ascending = sizeof(ascending)/sizeof(ascending[0]);
 
-    for (int i = 0; i < n_ordering; ++i) {
-        for (int j = 0; j < n_ascending; ++j) {
-            for (int k = 0; k < n_ordering; ++k) {
-                for (int l = 0; l < n_ascending; ++l) {
+    for (std::size_t i = 0; i < n_ordering; ++i) {
+        for (std::size_t j = 0; j < n_ascending; ++j) {
+            for (std::size_t k = 0; k < n_ordering; ++k) {
+                for (std::size_t l = 0; l < n_ascending; ++l) {
                     BOOST_TEST_MESSAGE("Testing r2c forward out-of-place {"
                             << ordering[i] << ", " << ascending[j]
                             << "} to {"
@@ -362,16 +362,16 @@ void test_r2c_2d_complex_forward_in_place(
 BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_in_place )
 {
     const boost::array<std::size_t,2> ordering[] = {
-        { 0, 1 }, // Fortran storage
-        { 1, 0 }  // C storage
+        {{ 0, 1 }}, // Fortran storage
+        {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
     const boost::array<bool,2> ascending[] = {
-        { true,  true,  }, // All ascending
-        { false, true,  }, // One descending...
-        { true,  false, },
-        { false, false, }  // Two descending
+        {{ true,  true  }}, // All ascending
+        {{ false, true  }}, // One descending...
+        {{ true,  false }},
+        {{ false, false }}  // Two descending
     };
     const std::size_t n_ascending = sizeof(ascending)/sizeof(ascending[0]);
 
@@ -401,7 +401,7 @@ void c2r_2d_backward_4_by_3(ComplexArray &in, RealArray &out)
     BOOST_REQUIRE_EQUAL(out.shape()[0], M);
     BOOST_REQUIRE_EQUAL(out.shape()[1], N);
 
-    const double expected[M][N] = {1,2,3, 4,5,6, 7,8,9, 10,11,12};
+    const double expected[M][N] = {{1,2,3}, {4,5,6}, {7,8,9}, {10,11,12}};
     const double close = std::numeric_limits<double>::epsilon()*10*M*M*N*N;
 
     // Need to create views of in to match expected dimensions
@@ -413,20 +413,20 @@ void c2r_2d_backward_4_by_3(ComplexArray &in, RealArray &out)
     {
         typedef std::complex<double> z;
         const z data[M/2+1][N] = {
-            z( 5.5, 0.),  z( 6.5, 0.),  z( 7.5, 0.),
-            z(-1.5, 1.5), z(-1.5, 1.5), z(-1.5, 1.5),
-            z(-1.5, 0.),  z(-1.5, 0.),  z(-1.5, 0.)
+            { z( 5.5, 0.),  z( 6.5, 0.),  z( 7.5, 0.)  },
+            { z(-1.5, 1.5), z(-1.5, 1.5), z(-1.5, 1.5) },
+            { z(-1.5, 0.),  z(-1.5, 0.),  z(-1.5, 0.)  }
         };
         complex_view in_view
             = in[boost::indices[range().finish(M/2+1)][range()]];
-        for (index i = 0; i < in_view.shape()[0]; ++i)
-            for (index j = 0; j < in_view.shape()[1]; ++j)
+        for (index i = 0; i < (index) in_view.shape()[0]; ++i)
+            for (index j = 0; j < (index) in_view.shape()[1]; ++j)
                 in_view[i][j] = data[i][j];
 
         pencilfft::backward_c2r(0, in_view, out);
 
-        for (int i = 0; i < out.shape()[0]; ++i) {
-            for (int j = 0; j < out.shape()[1]; ++j) {
+        for (int i = 0; i < (int) out.shape()[0]; ++i) {
+            for (int j = 0; j < (int) out.shape()[1]; ++j) {
                 if (fabs(expected[i][j]) < close) {
                     BOOST_CHECK_SMALL(out[i][j], close);
                 } else {
@@ -440,21 +440,21 @@ void c2r_2d_backward_4_by_3(ComplexArray &in, RealArray &out)
     {
         typedef std::complex<double> z;
         const z data[M][N/2+1] = {
-            z( 2.,0.), z(-0.5,0.288675134594813),
-            z( 5.,0.), z(-0.5,0.288675134594813),
-            z( 8.,0.), z(-0.5,0.288675134594813),
-            z(11.,0.), z(-0.5,0.288675134594813)
+            { z( 2.,0.), z(-0.5,0.288675134594813) },
+            { z( 5.,0.), z(-0.5,0.288675134594813) },
+            { z( 8.,0.), z(-0.5,0.288675134594813) },
+            { z(11.,0.), z(-0.5,0.288675134594813) }
         };
         complex_view in_view
             = in[boost::indices[range()][range().finish(N/2+1)]];
-        for (index i = 0; i < in_view.shape()[0]; ++i)
-            for (index j = 0; j < in_view.shape()[1]; ++j)
+        for (index i = 0; i < (index) in_view.shape()[0]; ++i)
+            for (index j = 0; j < (index) in_view.shape()[1]; ++j)
                 in_view[i][j] = data[i][j];
 
         pencilfft::backward_c2r(1, in_view, out);
 
-        for (int i = 0; i < out.shape()[0]; ++i) {
-            for (int j = 0; j < out.shape()[1]; ++j) {
+        for (int i = 0; i < (int) out.shape()[0]; ++i) {
+            for (int j = 0; j < (int) out.shape()[1]; ++j) {
                 if (fabs(expected[i][j]) < close) {
                     BOOST_CHECK_SMALL(out[i][j], close);
                 } else {
@@ -472,23 +472,23 @@ BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_out_of_place )
     typedef boost::general_storage_order<2> storage;
 
     const boost::array<std::size_t,2> ordering[] = {
-        { 0, 1 }, // Fortran storage
-        { 1, 0 }  // C storage
+        {{ 0, 1 }}, // Fortran storage
+        {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
     const boost::array<bool,2> ascending[] = {
-        { true,  true,  }, // All ascending
-        { false, true,  }, // One descending...
-        { true,  false, },
-        { false, false, }  // Two descending
+        {{ true,  true  }}, // All ascending
+        {{ false, true  }}, // One descending...
+        {{ true,  false }},
+        {{ false, false }}  // Two descending
     };
     const std::size_t n_ascending = sizeof(ascending)/sizeof(ascending[0]);
 
-    for (int i = 0; i < n_ordering; ++i) {
-        for (int j = 0; j < n_ascending; ++j) {
-            for (int k = 0; k < n_ordering; ++k) {
-                for (int l = 0; l < n_ascending; ++l) {
+    for (std::size_t i = 0; i < n_ordering; ++i) {
+        for (std::size_t j = 0; j < n_ascending; ++j) {
+            for (std::size_t k = 0; k < n_ordering; ++k) {
+                for (std::size_t l = 0; l < n_ascending; ++l) {
                     BOOST_TEST_MESSAGE("Testing c2r backward out-of-place {"
                             << ordering[i] << ", " << ascending[j]
                             << "} to {"
@@ -548,16 +548,16 @@ void test_c2r_2d_complex_backward_in_place(
 BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_in_place_c_storage )
 {
     const boost::array<std::size_t,2> ordering[] = {
-        { 0, 1 }, // Fortran storage
-        { 1, 0 }  // C storage
+        {{ 0, 1 }}, // Fortran storage
+        {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
     const boost::array<bool,2> ascending[] = {
-        { true,  true,  }, // All ascending
-        { false, true,  }, // One descending...
-        { true,  false, },
-        { false, false, }  // Two descending
+        {{ true,  true  }}, // All ascending
+        {{ false, true  }}, // One descending...
+        {{ true,  false }},
+        {{ false, false }}  // Two descending
     };
     const std::size_t n_ascending = sizeof(ascending)/sizeof(ascending[0]);
 

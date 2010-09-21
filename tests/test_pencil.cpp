@@ -21,10 +21,10 @@ BOOST_AUTO_TEST_CASE( constructor )
 
     using namespace suzerain;
 
-    const pencil<>::index_3d pstart = { 0, 0,  0};
-    const pencil<>::index_3d psize  = {16, 7,  4};
-    const pencil<>::index_3d wstart = { 0, 0,  0};
-    const pencil<>::index_3d wsize  = { 7, 4, 16};
+    const pencil<>::index_3d pstart = {{ 0, 0,  0}};
+    const pencil<>::index_3d psize  = {{16, 7,  4}};
+    const pencil<>::index_3d wstart = {{ 0, 0,  0}};
+    const pencil<>::index_3d wsize  = {{ 7, 4, 16}};
 
     pencil<> p(pstart, psize, wstart, wsize);
 
@@ -53,10 +53,10 @@ BOOST_AUTO_TEST_CASE( storage_order )
 {
     using namespace suzerain;
 
-    const pencil<>::index_3d pstart = {  0,  0,  0};
-    const pencil<>::index_3d psize  = { 11, 13, 17};
-    const pencil<>::index_3d wstart = {  0,  0,  0};
-    const pencil<>::index_3d wsize  = {  3,  5,  7};
+    const pencil<>::index_3d pstart = {{  0,  0,  0}};
+    const pencil<>::index_3d psize  = {{ 11, 13, 17}};
+    const pencil<>::index_3d wstart = {{  0,  0,  0}};
+    const pencil<>::index_3d wsize  = {{  3,  5,  7}};
 
     pencil<> p(pstart, psize, wstart, wsize);
 
@@ -92,18 +92,19 @@ BOOST_AUTO_TEST_CASE( storage_order )
 BOOST_AUTO_TEST_CASE( offsets_and_inverse_offsets )
 {
     using namespace suzerain;
+    typedef pencil<>::index index;
 
-    const pencil<>::index_3d pstart = {  5,  6,  7};
-    const pencil<>::index_3d psize  = {  2,  3,  5};
-    const pencil<>::index_3d wstart = {  1,  2,  3};
-    const pencil<>::index_3d wsize  = {  3,  5,  7};
+    const pencil<>::index_3d pstart = {{  5,  6,  7}};
+    const pencil<>::index_3d psize  = {{  2,  3,  5}};
+    const pencil<>::index_3d wstart = {{  1,  2,  3}};
+    const pencil<>::index_3d wsize  = {{  3,  5,  7}};
 
     pencil<> p(pstart, psize, wstart, wsize);
 
     // Check that we can invert physical space offsets
-    for (pencil<>::index i = 0; i < p.physical.size_x; ++i) {
-        for (pencil<>::index j = 0; j < p.physical.size_y; ++j) {
-            for (pencil<>::index k = 0; k < p.physical.size_z; ++k) {
+    for (index i = 0; i < (index) p.physical.size_x; ++i) {
+        for (index j = 0; j < (index) p.physical.size_y; ++j) {
+            for (index k = 0; k < (index) p.physical.size_z; ++k) {
                 // Local offsets
                 pencil<>::index x, y, z;
                 p.physical.inverse_offset(
@@ -123,9 +124,9 @@ BOOST_AUTO_TEST_CASE( offsets_and_inverse_offsets )
     }
 
     // Check that we can invert wave space offsets
-    for (pencil<>::index i = 0; i < p.wave.size_x; ++i) {
-        for (pencil<>::index j = 0; j < p.wave.size_y; ++j) {
-            for (pencil<>::index k = 0; k < p.wave.size_z; ++k) {
+    for (index i = 0; i < (index) p.wave.size_x; ++i) {
+        for (index j = 0; j < (index) p.wave.size_y; ++j) {
+            for (index k = 0; k < (index) p.wave.size_z; ++k) {
                 // Local offsets
                 pencil<>::index x, y, z;
                 p.wave.inverse_offset(
@@ -147,20 +148,20 @@ BOOST_AUTO_TEST_CASE( offsets_and_inverse_offsets )
 
 BOOST_AUTO_TEST_CASE( real_access )
 {
-
     using namespace suzerain;
+    typedef pencil<>::index index;
 
-    const pencil<>::index_3d pstart = { 0, 0,  0};
-    const pencil<>::index_3d psize  = { 2, 2,  2};
-    const pencil<>::index_3d wstart = { 0, 0,  0};
-    const pencil<>::index_3d wsize  = { 2, 1,  1};
+    const pencil<>::index_3d pstart = {{ 0, 0,  0}};
+    const pencil<>::index_3d psize  = {{ 2, 2,  2}};
+    const pencil<>::index_3d wstart = {{ 0, 0,  0}};
+    const pencil<>::index_3d wsize  = {{ 2, 1,  1}};
 
     pencil<> p(pstart, psize, wstart, wsize);
 
     // X, Z, Y loop order
-    for (pencil<>::index i = 0; i < p.physical.size_x; ++i) {
-        for (pencil<>::index k = 0; k < p.physical.size_z; ++k) {
-            for (pencil<>::index j = 0; j < p.physical.size_y; ++j) {
+    for (index i = 0; i < (index) p.physical.size_x; ++i) {
+        for (index k = 0; k < (index) p.physical.size_z; ++k) {
+            for (index j = 0; j < (index) p.physical.size_y; ++j) {
 #pragma warning(push,disable:810 2259)
                 p.physical(i, j, k) = (i + 1) * (j + 1) * (k + 1);
 #pragma warning(pop)
@@ -169,9 +170,9 @@ BOOST_AUTO_TEST_CASE( real_access )
     }
 
     // Y, Z, X loop order
-    for (pencil<>::index j = 0; j < p.physical.size_y; ++j) {
-        for (pencil<>::index k = 0; k < p.physical.size_z; ++k) {
-            for (pencil<>::index i = 0; i < p.physical.size_x; ++i) {
+    for (index j = 0; j < (index) p.physical.size_y; ++j) {
+        for (index k = 0; k < (index) p.physical.size_z; ++k) {
+            for (index i = 0; i < (index) p.physical.size_x; ++i) {
                 BOOST_CHECK_EQUAL(p.physical(i, j, k), (i + 1)*(j + 1)*(k + 1));
             }
         }
@@ -180,9 +181,9 @@ BOOST_AUTO_TEST_CASE( real_access )
     // Clear contents using iterator
     std::fill(p.physical.begin(), p.physical.end(), 0);
     // Check contents are clear
-    for (pencil<>::index j = 0; j < p.physical.size_y; ++j) {
-        for (pencil<>::index k = 0; k < p.physical.size_z; ++k) {
-            for (pencil<>::index i = 0; i < p.physical.size_x; ++i) {
+    for (index j = 0; j < (index) p.physical.size_y; ++j) {
+        for (index k = 0; k < (index) p.physical.size_z; ++k) {
+            for (index i = 0; i < (index) p.physical.size_x; ++i) {
                 BOOST_CHECK_EQUAL(p.physical(i, j, k), 0);
             }
         }
@@ -191,20 +192,20 @@ BOOST_AUTO_TEST_CASE( real_access )
 
 BOOST_AUTO_TEST_CASE( complex_access )
 {
-
     using namespace suzerain;
+    typedef pencil<>::index index;
 
-    const pencil<>::index_3d pstart = { 1,  1,  1};
-    const pencil<>::index_3d psize  = { 2,  3,  5};
-    const pencil<>::index_3d wstart = { 2,  2,  2};
-    const pencil<>::index_3d wsize  = { 7, 11, 13};
+    const pencil<>::index_3d pstart = {{ 1,  1,  1}};
+    const pencil<>::index_3d psize  = {{ 2,  3,  5}};
+    const pencil<>::index_3d wstart = {{ 2,  2,  2}};
+    const pencil<>::index_3d wsize  = {{ 7, 11, 13}};
 
     pencil<> p(pstart, psize, wstart, wsize);
 
     // X, Z, Y loop order, assign complex value
-    for (pencil<>::index i = 0; i < p.wave.size_x; ++i) {
-        for (pencil<>::index k = 0; k < p.wave.size_z; ++k) {
-            for (pencil<>::index j = 0; j < p.wave.size_y; ++j) {
+    for (index i = 0; i < (index) p.wave.size_x; ++i) {
+        for (index k = 0; k < (index) p.wave.size_z; ++k) {
+            for (index j = 0; j < (index) p.wave.size_y; ++j) {
                 p.wave(i, j, k) = pencil<>::complex_type(
                     (i + 1) * (j + 1) * (k + 1),
                     (i - 1) * (j - 1) * (k - 1));
@@ -213,9 +214,9 @@ BOOST_AUTO_TEST_CASE( complex_access )
     }
 
     // Y, Z, X loop order, check values are correct
-    for (pencil<>::index j = 0; j < p.wave.size_y; ++j) {
-        for (pencil<>::index k = 0; k < p.wave.size_z; ++k) {
-            for (pencil<>::index i = 0; i < p.wave.size_x; ++i) {
+    for (index j = 0; j < (index) p.wave.size_y; ++j) {
+        for (index k = 0; k < (index) p.wave.size_z; ++k) {
+            for (index i = 0; i < (index) p.wave.size_x; ++i) {
                 BOOST_CHECK_EQUAL(p.wave(i, j, k), pencil<>::complex_type(
                     (i + 1)*(j + 1)*(k + 1),
                     (i - 1)*(j - 1)*(k - 1)));
@@ -226,9 +227,9 @@ BOOST_AUTO_TEST_CASE( complex_access )
     }
 
     // X, Z, Y loop order, assign real and imag values
-    for (pencil<>::index i = 0; i < p.wave.size_x; ++i) {
-        for (pencil<>::index k = 0; k < p.wave.size_z; ++k) {
-            for (pencil<>::index j = 0; j < p.wave.size_y; ++j) {
+    for (index i = 0; i < (index) p.wave.size_x; ++i) {
+        for (index k = 0; k < (index) p.wave.size_z; ++k) {
+            for (index j = 0; j < (index) p.wave.size_y; ++j) {
 #pragma warning(push,disable:810 2259)
                 p.wave.real(i, j, k) = (i - 123) * (j - 123) * (k - 123);
                 p.wave.imag(i, j, k) = (i + 123) * (j + 123) * (k + 123);
@@ -238,9 +239,9 @@ BOOST_AUTO_TEST_CASE( complex_access )
     }
 
     // Y, Z, X loop order, check values are correct
-    for (pencil<>::index j = 0; j < p.wave.size_y; ++j) {
-        for (pencil<>::index k = 0; k < p.wave.size_z; ++k) {
-            for (pencil<>::index i = 0; i < p.wave.size_x; ++i) {
+    for (index j = 0; j < (index) p.wave.size_y; ++j) {
+        for (index k = 0; k < (index) p.wave.size_z; ++k) {
+            for (index i = 0; i < (index) p.wave.size_x; ++i) {
                 BOOST_CHECK_EQUAL(p.wave(i, j, k), pencil<>::complex_type(
                     (i - 123)*(j - 123)*(k - 123),
                     (i + 123)*(j + 123)*(k + 123)));
@@ -255,9 +256,9 @@ BOOST_AUTO_TEST_CASE( complex_access )
     // Clear contents using iterator
     std::fill(p.wave.begin(), p.wave.end(), pencil<>::complex_type(0));
     // Check contents are clear
-    for (pencil<>::index j = 0; j < p.wave.size_y; ++j) {
-        for (pencil<>::index k = 0; k < p.wave.size_z; ++k) {
-            for (pencil<>::index i = 0; i < p.wave.size_x; ++i) {
+    for (index j = 0; j < (index) p.wave.size_y; ++j) {
+        for (index k = 0; k < (index) p.wave.size_z; ++k) {
+            for (index i = 0; i < (index) p.wave.size_x; ++i) {
                 BOOST_CHECK_EQUAL(
                     p.wave(i, j, k), pencil<>::complex_type(0));
             }

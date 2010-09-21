@@ -143,7 +143,7 @@ underling_fprint_transpose(
 // **************************************************************************
 
 const underling_extents UNDERLING_EXTENTS_INVALID = {
-    {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}
+    {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, 0
 };
 
 int
@@ -765,13 +765,13 @@ underling_problem_create(
 
     // p->local_memory is overall maximum of all local_size values
     p->local_memory = p->backwardA->local_size;
-    if (p->local_memory < p->backwardB->local_size) {
+    if (p->local_memory < (size_t) p->backwardB->local_size) {
         p->local_memory = p->backwardB->local_size;
     }
-    if (p->local_memory < p->forwardB->local_size) {
+    if (p->local_memory < (size_t) p->forwardB->local_size) {
         p->local_memory = p->forwardB->local_size;
     }
-    if (p->local_memory < p->forwardA->local_size) {
+    if (p->local_memory < (size_t) p->forwardA->local_size) {
         p->local_memory = p->forwardA->local_size;
     }
 
@@ -795,7 +795,7 @@ underling_local_memory_optimum(
 {
     // Optimum local memory is the maximum required be long in any direction
 
-    int retval = problem->long_n[0].extent;
+    size_t retval = problem->long_n[0].extent;
     if (retval < problem->long_n[1].extent) {
         retval = problem->long_n[1].extent;
     }
@@ -894,19 +894,19 @@ underling_local(
     const underling_extents * const e = &problem->long_n[i];
 
     if (start) {
-        for (int j = 0; j < sizeof(e->start)/sizeof(e->start[0]); ++j)
+        for (size_t j = 0; j < sizeof(e->start)/sizeof(e->start[0]); ++j)
             start[j] = e->start[j];
     }
     if (size) {
-        for (int j = 0; j < sizeof(e->size)/sizeof(e->size[0]); ++j)
+        for (size_t j = 0; j < sizeof(e->size)/sizeof(e->size[0]); ++j)
             size[j] = e->size[j];
     }
     if (stride) {
-        for (int j = 0; j < sizeof(e->stride)/sizeof(e->stride[0]); ++j)
+        for (size_t j = 0; j < sizeof(e->stride)/sizeof(e->stride[0]); ++j)
             stride[j] = e->stride[j];
     }
     if (order) {
-        for (int j = 0; j < sizeof(e->order)/sizeof(e->order[0]); ++j)
+        for (size_t j = 0; j < sizeof(e->order)/sizeof(e->order[0]); ++j)
             order[j] = e->order[j];
     }
 
