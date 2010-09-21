@@ -14,7 +14,7 @@
 #
 # LAST MODIFICATION
 #
-#   2010-04-23
+#   2010-09-21
 #
 # COPYLEFT
 #
@@ -69,6 +69,9 @@ case $ax_cv_c_compiler_vendor in #(
          AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_c_compiler_vendor = $ax_cv_c_compiler_vendor unknown])
          ;;
 esac
+# Disable warnings on unrecognized pragmas for any compiler
+AX_CHECK_COMPILER_FLAGS([-Wno-unknown-pragmas],
+                        [CFLAGS="$CFLAGS -Wno-unknown-pragmas"])
 AC_LANG_POP()
 AC_LANG_PUSH([C++])
 case $ax_cv_cxx_compiler_vendor in #(
@@ -101,5 +104,8 @@ dnl      AX_CHECK_COMPILER_FLAGS([-wd2015], [CXXFLAGS="$CXXFLAGS -wd2015"])
          AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_cxx_compiler_vendor = $ax_cv_cxx_compiler_vendor unknown])
          ;;
 esac
+# Disable warnings on unrecognized pragmas for any compiler
+AX_CHECK_COMPILER_FLAGS([-Wno-unknown-pragmas],
+                        [CXXFLAGS="$CXXFLAGS -Wno-unknown-pragmas"])
 AC_LANG_POP()
 ])
