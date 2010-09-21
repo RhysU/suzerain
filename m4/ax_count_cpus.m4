@@ -1,5 +1,5 @@
 # ===========================================================================
-#             http://autoconf-archive.cryp.to/ax_count_cpus.html
+#       http://www.gnu.org/software/autoconf-archive/ax_count_cpus.html
 # ===========================================================================
 #
 # SYNOPSIS
@@ -20,7 +20,10 @@
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
-#   and this notice are preserved.
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 8
 
 AC_DEFUN([AX_COUNT_CPUS], [
     AC_REQUIRE([AC_PROG_EGREP])

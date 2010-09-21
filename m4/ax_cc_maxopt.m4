@@ -1,5 +1,5 @@
 # ===========================================================================
-#              http://autoconf-archive.cryp.to/ax_cc_maxopt.html
+#       http://www.gnu.org/software/autoconf-archive/ax_cc_maxopt.html
 # ===========================================================================
 #
 # SYNOPSIS
@@ -24,11 +24,7 @@
 #   Requires macros: AX_CHECK_COMPILER_FLAGS, AX_COMPILER_VENDOR,
 #   AX_GCC_ARCHFLAG, AX_GCC_X86_CPUID.
 #
-# LAST MODIFICATION
-#
-#   2008-09-06
-#
-# COPYLEFT
+# LICENSE
 #
 #   Copyright (c) 2008 Steven G. Johnson <stevenj@alum.mit.edu>
 #   Copyright (c) 2008 Matteo Frigo
@@ -55,19 +51,21 @@
 #   all other use of the material that constitutes the Autoconf Macro.
 #
 #   This special exception to the GPL applies to versions of the Autoconf
-#   Macro released by the Autoconf Macro Archive. When you make and
-#   distribute a modified version of the Autoconf Macro, you may extend this
-#   special exception to the GPL to apply to your modified version as well.
+#   Macro released by the Autoconf Archive. When you make and distribute a
+#   modified version of the Autoconf Macro, you may extend this special
+#   exception to the GPL to apply to your modified version as well.
+
+#serial 8
 
 AC_DEFUN([AX_CC_MAXOPT],
 [
+AC_REQUIRE([AC_PROG_CC])
 AC_REQUIRE([AX_COMPILER_VENDOR])
 AC_REQUIRE([AC_CANONICAL_HOST])
 
-AC_ARG_ENABLE(portable-binary, [AC_HELP_STRING([--enable-portable-binary], [disable compiler optimizations that would produce unportable binaries])],
+AC_ARG_ENABLE(portable-binary, [AS_HELP_STRING([--enable-portable-binary], [disable compiler optimizations that would produce unportable binaries])],
 	acx_maxopt_portable=$withval, acx_maxopt_portable=no)
 
-AC_LANG_PUSH([C])
 # Try to determine "good" native compiler flags if none specified via CFLAGS
 if test "$ac_test_CFLAGS" != "set"; then
   CFLAGS=""
@@ -107,7 +105,7 @@ if test "$ac_test_CFLAGS" != "set"; then
                 echo "******************************************************"])
          ;;
 
-    intel) CFLAGS="-O3"
+    intel) CFLAGS="-O3 -ansi_alias"
 	if test "x$acx_maxopt_portable" = xno; then
 	  icc_archflag=unknown
 	  icc_flags=""
@@ -179,5 +177,4 @@ if test "$ac_test_CFLAGS" != "set"; then
   ])
 
 fi
-AC_LANG_POP([C])
 ])

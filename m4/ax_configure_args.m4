@@ -1,5 +1,5 @@
 # ===========================================================================
-#           http://autoconf-archive.cryp.to/ax_configure_args.html
+#     http://www.gnu.org/software/autoconf-archive/ax_configure_args.html
 # ===========================================================================
 #
 # SYNOPSIS
@@ -22,16 +22,12 @@
 #
 #   Example:
 #
-#      AC_DEFUN([AX_ENABLE_SUBDIR],[dnl
-#        AC_REQUIRE([AX_CONFIGURE_ARGS])dnl
-#        eval $SHELL $ac_configure_args || exit $?
-#        ...])
+#     AC_DEFUN([AX_ENABLE_SUBDIR],[dnl
+#       AC_REQUIRE([AX_CONFIGURE_ARGS])dnl
+#       eval $SHELL $ac_configure_args || exit $?
+#       ...])
 #
-# LAST MODIFICATION
-#
-#   2008-04-12
-#
-# COPYLEFT
+# LICENSE
 #
 #   Copyright (c) 2008 Guido U. Draheim <guidod@gmx.de>
 #
@@ -57,9 +53,11 @@
 #   all other use of the material that constitutes the Autoconf Macro.
 #
 #   This special exception to the GPL applies to versions of the Autoconf
-#   Macro released by the Autoconf Macro Archive. When you make and
-#   distribute a modified version of the Autoconf Macro, you may extend this
-#   special exception to the GPL to apply to your modified version as well.
+#   Macro released by the Autoconf Archive. When you make and distribute a
+#   modified version of the Autoconf Macro, you may extend this special
+#   exception to the GPL to apply to your modified version as well.
+
+#serial 8
 
 AC_DEFUN([AX_CONFIGURE_ARGS],[
    # [$]@ is unsable in 2.60+ but earlier autoconf had no ac_configure_args

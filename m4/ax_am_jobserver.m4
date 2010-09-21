@@ -1,5 +1,5 @@
 # ===========================================================================
-#            http://autoconf-archive.cryp.to/ax_am_jobserver.html
+#      http://www.gnu.org/software/autoconf-archive/ax_am_jobserver.html
 # ===========================================================================
 #
 # SYNOPSIS
@@ -30,7 +30,10 @@
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
-#   and this notice are preserved.
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 7
 
 AC_DEFUN([AX_AM_JOBSERVER], [
     AC_REQUIRE([AX_COUNT_CPUS])

@@ -1,5 +1,5 @@
 # ===========================================================================
-#              http://autoconf-archive.cryp.to/ax_with_perl.html
+#       http://www.gnu.org/software/autoconf-archive/ax_with_perl.html
 # ===========================================================================
 #
 # SYNOPSIS
@@ -17,19 +17,18 @@
 #
 #   A typical use could be the following one:
 #
-#         AX_WITH_PERL
+#     AX_WITH_PERL
 #
-# LAST MODIFICATION
+# LICENSE
 #
-#   2008-05-05
-#
-# COPYLEFT
-#
-#   Copyright (c) 2008 Francesco Salvestrini <salvestrini@users.sourceforge.net>
+#   Copyright (c) 2009 Francesco Salvestrini <salvestrini@users.sourceforge.net>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
-#   and this notice are preserved.
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 12
 
 AC_DEFUN([AX_WITH_PERL],[
     AX_WITH_PROG(PERL,perl,$1,$2)

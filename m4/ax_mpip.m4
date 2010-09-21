@@ -1,15 +1,15 @@
 # ===========================================================================
-#                http://autoconf-archive.cryp.to/ax_mpip.html
+#          http://www.gnu.org/software/autoconf-archive/ax_mpip.html
 # ===========================================================================
 #
 # SYNOPSIS
 #
-#   Test for mpiP: Lightweight, Scalable MPI Profiling
-#   (http://mpip.sourceforge.net/)
-#
 #   AX_MPIP([ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]])
 #
 # DESCRIPTION
+#
+#   Test for mpiP: Lightweight, Scalable MPI Profiling
+#   (http://mpip.sourceforge.net/)
 #
 #   Provides a --with-mpiP=DIR option. Searches --with-mpiP location and the
 #   usual places for mpiP and required libraries.  Marks MPIP as a precious
@@ -19,11 +19,7 @@
 #   ACTION-IF-FOUND. When ACTION-IF-NOT-FOUND is not specified, the default
 #   behavior is for configure to fail.
 #
-# LAST MODIFICATION
-#
-#   2010-02-13
-#
-# COPYLEFT
+# LICENSE
 #
 #   Copyright (c) 2010 Rhys Ulerich <rhys.ulerich@gmail.com>
 #
@@ -52,6 +48,8 @@
 #   Macro released by the Autoconf Macro Archive. When you make and
 #   distribute a modified version of the Autoconf Macro, you may extend this
 #   special exception to the GPL to apply to your modified version as well.
+
+#serial 2
 
 AC_DEFUN([AX_MPIP], [
 AC_PREREQ(2.60)
