@@ -180,6 +180,13 @@ AC_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
+dnl Display optimization details
+dnl ------------------------------------------------
+if test "x$ax_enable_debug" != "xno"; then
+    AX_VECTORIZATION_REPORT()
+fi
+
+dnl ------------------------------------------------
 dnl Documentation generation
 dnl ------------------------------------------------
 DX_DOXYGEN_FEATURE([ON])

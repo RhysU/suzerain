@@ -91,7 +91,7 @@ if test "$ac_test_CFLAGS" != "set"; then
            xlc_opt="-qtune=auto"
 	 fi
          AX_CHECK_COMPILER_FLAGS($xlc_opt,
-         	CFLAGS="-O3 -qansialias -w $xlc_opt",
+		CFLAGS="-O3 -qansialias -w $xlc_opt",
                [CFLAGS="-O3 -qansialias -w"
                 echo "******************************************************"
                 echo "*  You seem to have the IBM  C compiler.  It is      *"
@@ -105,7 +105,14 @@ if test "$ac_test_CFLAGS" != "set"; then
                 echo "******************************************************"])
          ;;
 
-    intel) CFLAGS="-O3 -ansi_alias"
+    intel) CFLAGS="-O3"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+        [[#if __INTEL_COMPILER >= 1110
+         ah ha: icc is at least version 11.1
+        #endif
+        ]])],
+                           [],
+                           [CFLAGS="$CFLAGS -ansi-alias"])
 	if test "x$acx_maxopt_portable" = xno; then
 	  icc_archflag=unknown
 	  icc_flags=""
@@ -114,7 +121,7 @@ if test "$ac_test_CFLAGS" != "set"; then
               # icc accepts gcc assembly syntax, so these should work:
 	      AX_GCC_X86_CPUID(0)
               AX_GCC_X86_CPUID(1)
-	      case $ax_cv_gcc_x86_cpuid_0 in # see AX_GCC_ARCHFLAG
+	      case $ax_cv_gcc_x86_cpuid_0 in # TODO see AX_GCC_ARCHFLAG
                 *:756e6547:*:*) # Intel
                   case $ax_cv_gcc_x86_cpuid_1 in
                     *6a?:*[[234]]:*:*|*6[[789b]]?:*:*:*) icc_flags="-xK";;
