@@ -532,7 +532,9 @@ BOOST_AUTO_TEST_CASE( step_explicit )
              ++i) {
             gsl_matrix_set(data, 0, 0, coarse_final);
             gsl_matrix_set(data, 0, 1, finer_final);
+#pragma warning(push,disable:810 2259)
             gsl_vector_set(k,0,i+1);
+#pragma warning(pop)
             suzerain_richardson_extrapolation(
                     data, finer_nsteps/coarse_nsteps,
                     k, normtable, exact);
@@ -611,7 +613,9 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
              ++i) {
             gsl_matrix_set(data, 0, 0, coarse_final);
             gsl_matrix_set(data, 0, 1, finer_final);
+#pragma warning(push,disable:810 2259)
             gsl_vector_set(k,0,i+1);
+#pragma warning(pop)
             suzerain_richardson_extrapolation(
                     data, finer_nsteps/coarse_nsteps,
                     k, normtable, exact);
@@ -702,7 +706,9 @@ BOOST_AUTO_TEST_CASE( step_explicit )
              ++i) {
             gsl_matrix_set(data, 0, 0, coarse_final);
             gsl_matrix_set(data, 0, 1, finer_final);
+#pragma warning(push,disable:810 2259)
             gsl_vector_set(k,0,i+1);
+#pragma warning(pop)
             suzerain_richardson_extrapolation(
                     data, finer_nsteps/coarse_nsteps,
                     k, normtable, exact);
@@ -788,7 +794,9 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
              ++i) {
             gsl_matrix_set(data, 0, 0, coarse_final);
             gsl_matrix_set(data, 0, 1, finer_final);
+#pragma warning(push,disable:810 2259)
             gsl_vector_set(k,0,i+1);
+#pragma warning(pop)
             suzerain_richardson_extrapolation(
                     data, finer_nsteps/coarse_nsteps,
                     k, normtable, exact);

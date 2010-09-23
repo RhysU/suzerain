@@ -131,7 +131,7 @@ suzerain_richardson_extrapolation(
                 ki = last_ki + (i - (k_size-1))*increment;
             }
         } else {
-#pragma warning(push,disable:2259)
+#pragma warning(push,disable:810 2259)
             ki = i+1;
 #pragma warning(pop)
         }
