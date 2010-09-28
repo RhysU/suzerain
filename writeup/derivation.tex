@@ -52,6 +52,7 @@
 % Document-specific commands
 \newcommand{\ii}{\ensuremath{\mathrm{i}}}
 \newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
+\newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
 \newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
 \newcommand{\Prandtl}[1][]{\ensuremath{\mbox{Pr}_{#1}}}
 \newcommand{\reference}[1]{\ensuremath{\left\{#1\right\}_{0}}}
@@ -64,7 +65,7 @@
 \begin{document}
 
 \section{Model derivation}
-\label{seq:derivation}
+\label{sec:derivation}
 
 Here we derive the mathematical model used in Suzerain.  Special attention is
 paid to the origins of all conservation laws and constitutive relations
@@ -401,8 +402,10 @@ and assumptions, we arrive at the dimensional equations
 \end{subequations}
 
 \subsection{Nondimensionalization}
+\label{sec:nondim}
 
 \subsubsection{Introduction of nondimensional variables}
+\label{sec:intronondim}
 
 We rewrite the dimensional equations using nondimensional variables
 combined with arbitrary reference quantities.  For each dimensional
@@ -498,6 +501,7 @@ At this stage, we have many more reference quantities than the underlying
 dimensions warrant.
 
 \subsubsection{Reference quantity selections}
+\label{sec:nondimrefq}
 
 We choose a reference length $l_{0}$, temperature $T_{0}$, and density
 $\rho_{0}$.  These selections fix all other dimensional reference
@@ -1062,7 +1066,7 @@ computation follows algorithm \vref{alg:step}.
 
 \section{Numerical considerations}
 
-Here we take the complete mathematical model from section \ref{seq:derivation}
+Here we take the complete mathematical model from section \ref{sec:derivation}
 and put it into the form which we will compute per section
 \ref{sec:discretization}.  Though less clean in appearance, this section's
 equations will better reflect the spectral implementation details used in
@@ -1549,5 +1553,34 @@ values.
 \bibliography{derivation}
 
 
+
+
+\appendix
+
+\section{Miscellaneous}
+
+\subsection{The Variable Density Equations}
+
+The limits of the compressible Navier--Stokes equations as the Mach number
+$\Mach = u_{0} / a_{0} \to 0$ while allowing finite temperature and density
+fluctuations are called the variable density equations.  We cannot directly
+obtain this limit from section~\ref{nondim_equations}'s nondimensional
+equations because their reference velocity $u_{0}$ is also their reference
+sound speed $a_{0}$.
+
+We will obtain the variable density equations following
+section~\ref{sec:nondim}'s nondimensionalization by
+\begin{enumerate}
+ \item obtaining different nondimensional equations in which \Mach appears,
+ \item taking the classical variable density limit of these equations,
+ \item reexpressing these equations to match the choices made in
+       section~\ref{sec:nondimrefq}.
+\end{enumerate}
+
+\subsubsection{Nondimensionalization including the Mach number}
+
+Departing slightly from section~\ref{sec:nondimrefq}, we choose a reference
+length $l_{0}$ and velocity $u_{0}$.  We select a reference thermodynamic state
+using temperature $T_{0}$ and density $\rho_{0}$.
 
 \end{document}
