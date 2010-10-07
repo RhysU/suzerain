@@ -113,6 +113,14 @@ if test "$ac_test_CFLAGS" != "set"; then
         ]])],
                            [],
                            [CFLAGS="$CFLAGS -ansi-alias"])
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+        [[#if __INTEL_COMPILER >= 1110 && __INTEL_COMPILER < 1200
+         ah ha: icc is exactly version 11.1
+         introducing a version 11.1 workaround from Intel support #602718
+        #endif
+        ]])],
+                           [],
+                           [CFLAGS="$CFLAGS -mP2OPT_cndxform_max_new=-1"])
 	if test "x$acx_maxopt_portable" = xno; then
 	  icc_archflag=unknown
 	  icc_flags=""
