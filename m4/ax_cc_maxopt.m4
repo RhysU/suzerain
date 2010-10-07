@@ -110,45 +110,46 @@ if test "$ac_test_CFLAGS" != "set"; then
         [[#if __INTEL_COMPILER >= 1110
          ah ha: icc is at least version 11.1
         #endif
-        ]])],
-                           [],
-                           [CFLAGS="$CFLAGS -ansi-alias"])
+        ]])], [], [CFLAGS="$CFLAGS -ansi-alias"])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
         [[#if __INTEL_COMPILER >= 1110 && __INTEL_COMPILER < 1200
          ah ha: icc is exactly version 11.1
          introducing a version 11.1 workaround from Intel support #602718
         #endif
-        ]])],
-                           [],
-                           [CFLAGS="$CFLAGS -mP2OPT_cndxform_max_new=-1"])
+        ]])], [], [CFLAGS="$CFLAGS -mP2OPT_cndxform_max_new=-1"])
 	if test "x$acx_maxopt_portable" = xno; then
 	  icc_archflag=unknown
 	  icc_flags=""
+	  AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+	  [[#if __INTEL_COMPILER >= 1110
+	   ah ha: icc is at least version 11.1
+	  #endif
+	  ]])], [], [icc_flags=-xHost])
 	  case $host_cpu in
 	    i686*|x86_64*)
-              # icc accepts gcc assembly syntax, so these should work:
+	      # icc accepts gcc assembly syntax, so these should work:
 	      AX_GCC_X86_CPUID(0)
-              AX_GCC_X86_CPUID(1)
+	      AX_GCC_X86_CPUID(1)
 	      case $ax_cv_gcc_x86_cpuid_0 in # TODO see AX_GCC_ARCHFLAG
-                *:756e6547:*:*) # Intel
-                  case $ax_cv_gcc_x86_cpuid_1 in
-                    *6a?:*[[234]]:*:*|*6[[789b]]?:*:*:*) icc_flags="-xK";;
-                    *f3[[347]]:*:*:*|*f4[1347]:*:*:*) icc_flags="-xP -xN -xW -xK";;
-                    *f??:*:*:*) icc_flags="-xN -xW -xK";;
-                  esac ;;
-              esac ;;
-          esac
-          if test "x$icc_flags" != x; then
-            for flag in $icc_flags; do
-              AX_CHECK_COMPILER_FLAGS($flag, [icc_archflag=$flag; break])
-            done
-          fi
-          AC_MSG_CHECKING([for icc architecture flag])
+	        *:756e6547:*:*) # Intel
+	          case $ax_cv_gcc_x86_cpuid_1 in
+	            *6a?:*[[234]]:*:*|*6[[789b]]?:*:*:*) icc_flags="-xK";;
+	            *f3[[347]]:*:*:*|*f4[1347]:*:*:*) icc_flags="-xP -xN -xW -xK";;
+	            *f??:*:*:*) icc_flags="-xN -xW -xK";;
+	          esac ;;
+	      esac ;;
+	  esac
+	  if test "x$icc_flags" != x; then
+	    for flag in $icc_flags; do
+	      AX_CHECK_COMPILER_FLAGS($flag, [icc_archflag=$flag; break])
+	    done
+	  fi
+	  AC_MSG_CHECKING([for icc architecture flag])
 	  AC_MSG_RESULT($icc_archflag)
-          if test "x$icc_archflag" != xunknown; then
-            CFLAGS="$CFLAGS $icc_archflag"
-          fi
-        fi
+	  if test "x$icc_archflag" != xunknown; then
+	    CFLAGS="$CFLAGS $icc_archflag"
+	  fi
+	fi
 	;;
 
     gnu)
