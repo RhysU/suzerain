@@ -28,6 +28,10 @@ CLEANFILES += *.pchi
 # Provide a test-ready logging configuration
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
 
+# Demand that all tests build for 'make all' target to be successful.
+# Much of the C++ functionality is header-only; this ensures it builds.
+all-local: $(check_PROGRAMS)
+
 TESTS              += test_error
 check_PROGRAMS     += test_error
 test_error_SOURCES  = test_error.cpp
