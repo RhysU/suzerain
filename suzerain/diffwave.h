@@ -146,7 +146,7 @@ int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i)
  *                      frequencies.
  * @param[in]     dkbx  The first (inclusive) in-order frequency contained
  *                      in field \c x in the X direction.
- * @param[in]     dkbx  The last (exclusive) in-order frequency contained
+ * @param[in]     dkex  The last (exclusive) in-order frequency contained
  *                      in field \c x in the X direction.
  * @param[in]     Nz    Number of points in the Z direction, which
  *                      determines the maximum wavenumbers which are
@@ -156,7 +156,7 @@ int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i)
  *                      frequencies.
  * @param[in]     dkbz  The first (inclusive) in-order frequency contained
  *                      in field \c z in the Z direction.
- * @param[in]     dkbz  The last (exclusive) in-order frequency contained
+ * @param[in]     dkez  The last (exclusive) in-order frequency contained
  *                      in field \c z in the Z direction.
  */
 void suzerain_diffwave_apply(
@@ -194,7 +194,7 @@ void suzerain_diffwave_apply(
  *                      frequencies.
  * @param[in]     dkbx  The first (inclusive) in-order frequency contained
  *                      in field \c x in the X direction.
- * @param[in]     dkbx  The last (exclusive) in-order frequency contained
+ * @param[in]     dkex  The last (exclusive) in-order frequency contained
  *                      in field \c x in the X direction.
  * @param[in]     Nz    Number of points in the Z direction, which
  *                      determines the maximum wavenumbers which are
@@ -204,7 +204,7 @@ void suzerain_diffwave_apply(
  *                      frequencies.
  * @param[in]     dkbz  The first (inclusive) in-order frequency contained
  *                      in field \c z in the Z direction.
- * @param[in]     dkbz  The last (exclusive) in-order frequency contained
+ * @param[in]     dkez  The last (exclusive) in-order frequency contained
  *                      in field \c z in the Z direction.
  *
  * @see suzerain_diffwave_apply() for more information on the storage layout
