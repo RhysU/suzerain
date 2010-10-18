@@ -49,10 +49,10 @@ extern "C" {
  * get \f$A_{i+1}(h)\f$.
  *
  * Given \f$A_{i}(h)\f$, an approximation of \f$A\f$ such that \f$A - A(h) =
- * a_{i}*h^k_{i} + a_{i+1}*h^k_{i+1} + \dots\f$ use Richardson extrapolation to
+ * a_{i} h^k_{i} + a_{i+1} h^k_{i+1} + \dots\f$ use Richardson extrapolation to
  * find an approximation to leading order \f$k_{i+1}\f$ from evaluations at
  * \f$A_{i}(h)\f$ and \f$A_{i}(h/t)\f$ for \f$t > 0\f$.  Specifically,
- * \f$A_{i+1}(h) = (t**k_{i}*A_{i}(h/t) - A_{i}(h)) / (t**k_{i} - 1)\f$.
+ * \f$A_{i+1}(h) = (t^{k_{i}} A_{i}(h/t) - A_{i}(h)) / (t^{k_{i}} - 1)\f$.
  *
  * @param[in,out] Ah On entry, the coarser approximation \f$A_{i}(h)\f$.
  *      On exit, the extrapolated approximation \f$A_{i+1}(h)\f$.
@@ -81,7 +81,7 @@ suzerain_richardson_extrapolation_step(
  *      extrapolation step and the terminology used.
  *
  * @param[in,out] A On entry, column \c i of \c A contains
- *              \f$ A_{0}(h/t**i)\f$.  On exit, column \c 0 of \c A
+ *              \f$ A_{0}(h/t^{i})\f$.  On exit, column \c 0 of \c A
  *              contains \f$ A_{A->size2}(h) \f$.  Other columns will be
  *              overwritten.
  * @param[in] t The refinement factor between the two approximations.
