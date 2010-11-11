@@ -12,6 +12,7 @@ AM_CONFIG_HEADER([suzerain/config.h])
 AX_PREFIX_CONFIG_H([suzerain/suzerain-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE(1.9 nostdinc no-define tar-ustar -Wall -Werror foreign)
 AC_PREREQ([2.61])
@@ -118,10 +119,10 @@ ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LIBS} ${FLIBS}"
 AX_PATH_GSL(1.13,,AC_MSG_ERROR([Could not find required GSL version.]))
 AX_FFTW3()
-PKG_CHECK_MODULES(P3DFFT, suzerain-p3dfft)
+PKG_CHECK_MODULES([P3DFFT],[suzerain-p3dfft])
 AC_SUBST(P3DFFT_CFLAGS)
 AC_SUBST(P3DFFT_LIBS)
-PKG_CHECK_MODULES(GRVY, [grvy >= 0.27.1],[
+PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
         AC_DEFINE([HAVE_GRVY],[1],[Defined if GRVY Toolkit found])
         AC_SUBST(GRVY_CFLAGS)
         AC_SUBST(GRVY_LIBS)
@@ -135,7 +136,7 @@ dnl ------------------------------------------------
 dnl C++ library requirements
 dnl ------------------------------------------------
 AC_LANG_PUSH([C++])
-PKG_CHECK_MODULES(LOG4CXX,
+PKG_CHECK_MODULES([LOG4CXX],
     [liblog4cxx >= 0.10 apr-1 >= 1.3.3 apr-util-1 >= 1.3.4],
     AC_DEFINE([HAVE_LOG4CXX],1,[Define if log4cxx is available])
     AC_SUBST(LOG4CXX_CFLAGS)
@@ -154,7 +155,7 @@ BOOST_PROGRAM_OPTIONS
 BOOST_STATICASSERT
 BOOST_TEST
 BOOST_TYPETRAITS
-PKG_CHECK_MODULES(EIGEN,
+PKG_CHECK_MODULES([EIGEN],
     [eigen2 >= 2.0.5],
     AC_DEFINE([HAVE_EIGEN],1,[Define if Eigen is available])
     dnl EIGEN_LIBS should be empty and is so no AC_SUBST is used

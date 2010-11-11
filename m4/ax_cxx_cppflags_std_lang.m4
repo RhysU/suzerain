@@ -1,10 +1,10 @@
-# ===========================================================================
-#        http://autoconf-archive.cryp.to/ac_cxx_cppflags_std_lang.html
-# ===========================================================================
+# ============================================================================
+#  http://www.gnu.org/software/autoconf-archive/ax_cxx_cppflags_std_lang.html
+# ============================================================================
 #
 # SYNOPSIS
 #
-#   AC_CXX_CPPFLAGS_STD_LANG(CPP-FLAGS)
+#   AX_CXX_CPPFLAGS_STD_LANG(CPP-FLAGS)
 #
 # DESCRIPTION
 #
@@ -13,21 +13,23 @@
 #   ANSI C++ standard (eg. use of standard iostream classes in the `std'
 #   namespace, etc.).
 #
-# LAST MODIFICATION
+# LICENSE
 #
-#   2008-04-12
-#
-# COPYLEFT
-#
-#   Copyright (c) 2008 Ludovic Courtès <ludo@chbouib.org>
+#   Copyright (c) 2008 Ludovic Courtes <ludo@chbouib.org>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
-#   and this notice are preserved.
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
 
-AC_DEFUN([AC_CXX_CPPFLAGS_STD_LANG],
-  [AC_REQUIRE([AC_CXX_COMPILER_VENDOR])
-   case "$ac_cv_cxx_compiler_vendor" in
+#serial 7
+
+AU_ALIAS([AC_CXX_CPPFLAGS_STD_LANG], [AX_CXX_CPPFLAGS_STD_LANG])
+AC_DEFUN([AX_CXX_CPPFLAGS_STD_LANG],
+  [AC_LANG_ASSERT([C++])
+   AC_REQUIRE([AX_COMPILER_VENDOR])
+   case "$ax_cv_cxx_compiler_vendor" in
+     dec)
      compaq)
       # By default, Compaq CXX has an iostream classes implementation
       # that is _not_ in the `std' namespace.
