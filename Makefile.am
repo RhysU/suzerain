@@ -51,6 +51,9 @@ all-local:  libtool
 # Documentation hooks in with the 'html' target
 html-local: doxygen-run
 
+# Target for all documentation
+docs: doxygen-run
+
 # Make sure that libtool is up to date
 libtool: $(LIBTOOL_DEPS)
 	$(SHELL) ./config.status --recheck
