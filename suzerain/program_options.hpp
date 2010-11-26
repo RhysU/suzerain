@@ -242,6 +242,9 @@ void ProgramOptions::process(int argc,
                              WarnOStream &warn,
                              ErrorOStream &error)
 {
+    SUZERAIN_UNUSED(info);
+    SUZERAIN_UNUSED(error);
+
     typedef std::basic_string<charT> string_charT;
     namespace po = boost::program_options;
 
