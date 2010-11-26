@@ -37,8 +37,6 @@
  * Provides time integration schemes.
  */
 
-// TODO Time integration interfaces might try using const Element&
-
 namespace suzerain
 {
 
@@ -748,7 +746,7 @@ template<
 void substep(const ILowStorageMethod<Element>& m,
              const ILinearOperator<NumDims,Element,Storage>& L,
              const INonlinearOperator<NumDims,Element,Storage>& N,
-             const Element delta_t,
+             const Element& delta_t,
              IState<NumDims,Element,Storage>& a,
              IState<NumDims,Element,Storage>& b,
              const std::size_t substep_index)
@@ -788,7 +786,7 @@ template<
 void step(const ILowStorageMethod<Element>& m,
           const ILinearOperator<NumDims,Element,Storage>& L,
           const INonlinearOperator<NumDims,Element,Storage>& N,
-          const Element delta_t,
+          const Element& delta_t,
           IState<NumDims,Element,Storage>& a,
           IState<NumDims,Element,Storage>& b)
 throw(std::exception)
