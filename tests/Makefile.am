@@ -103,6 +103,13 @@ test_complex_CPPFLAGS = $(AM_CPPFLAGS) $(FFTW3_CFLAGS)
 test_complex_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_complex_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                += test_traits
+check_PROGRAMS       += test_traits
+test_traits_SOURCES   = test_traits.cpp
+test_traits_CPPFLAGS  = $(AM_CPPFLAGS)
+test_traits_LDADD     = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_traits_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                       += test_blas_et_al_cpp
 check_PROGRAMS              += test_blas_et_al_cpp
 test_blas_et_al_cpp_SOURCES  = test_blas_et_al_cpp.cpp
