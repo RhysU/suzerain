@@ -31,6 +31,7 @@
 #define __SUZERAIN_TIMESTEPPER_HPP
 
 #include <suzerain/common.hpp>
+#include <suzerain/traits.hpp>
 #include <suzerain/state.hpp>
 
 /** @file
@@ -162,9 +163,9 @@ public:
      * @param state The state location to use.  It is expected that certain
      *        implementations will require more specific state types.
      * @param delta_t_requested If true, the operator must compute
-     *        and return a stable timestep.
+     *        and return a stable time step.
      *
-     * @return a stable timestep if \c delta_t_requested is true.  Otherwise
+     * @return a stable time step if \c delta_t_requested is true.  Otherwise
      *        the return value is meaningless.
      */
     virtual Element applyOperator(
@@ -175,7 +176,7 @@ public:
 };
 
 /**
- * Compute an approximation to the maximum stable timestep according to the
+ * Compute an approximation to the maximum stable time step according to the
  * convective criterion for the three dimensional Euler equations.  This
  * surrogate is a model for the convective portion of the Navier-Stokes
  * operator.  This criterion appears as equation 2.39 in Wai Y. Kwok's thesis
@@ -210,7 +211,7 @@ public:
  *        in Guarini's thesis.
  * @param a                The local sound speed \f$a\f$
  *
- * @return The maximum stable timestep \f$\Delta{}t\f$ according to
+ * @return The maximum stable time step \f$\Delta{}t\f$ according to
  *         the convective CFL criterion.
  */
 template<typename FPT>
@@ -233,7 +234,7 @@ FPT convective_stability_criterion(
 }
 
 /**
- * Compute an approximation to the maximum stable timestep according to the
+ * Compute an approximation to the maximum stable time step according to the
  * viscous stability criterion for a three dimensional model diffusion
  * equation.  This surrogate is a model for the diffusive part of the
  * Navier-Stokes operator.  This criterion appears as equation 2.40 in Wai Y.
@@ -275,7 +276,7 @@ FPT convective_stability_criterion(
  * @param nu                The local kinematic viscosity \f$\nu\f$
  * @param nu0               The kinematic viscosity reference value \f$\nu_{0}\f$
  *
- * @return The maximum stable timestep \f$\Delta{}t\f$ according to
+ * @return The maximum stable time step \f$\Delta{}t\f$ according to
  *         the diffusive criterion.
  */
 template<typename FPT>
@@ -401,10 +402,10 @@ public:
 
     /**
      * Construct an instance which scales by \c factor and reports
-     * \c delta_t as a stable timestep.
+     * \c delta_t as a stable time step.
      *
      * @param factor uniform scaling factor to apply.
-     * @param delta_t uniform, presumably stable timestep to
+     * @param delta_t uniform, presumably stable time step to
      *        always return from ::applyOperator.
      */
     template< typename FactorType, typename DeltaTType >
@@ -415,7 +416,7 @@ public:
 
     /**
      * Construct an instance which scales by \c factor and reports \c NaN as a
-     * stable timestep.  Useful in testing contexts or during operator
+     * stable time step.  Useful in testing contexts or during operator
      * composition.
      *
      * @param factor uniform scaling factor to apply.
@@ -612,7 +613,8 @@ public:
      * @return The scheme's maximum pure real eigenvalue magnitude.
      * @see diffusive_stability_criterion() for one use of this magnitude.
      */
-    virtual double evmaxmag_real() const = 0;
+    virtual typename ::suzerain::traits::component<Element>::type
+        evmaxmag_real() const = 0;
 
     /**
      * Obtain the scheme's maximum pure imaginary eigenvalue magnitude.
@@ -620,7 +622,8 @@ public:
      * @return The scheme's maximum pure imaginary eigenvalue magnitude.
      * @see convective_stability_criterion() for one use of this magnitude.
      */
-    virtual double evmaxmag_imag() const = 0;
+    virtual typename ::suzerain::traits::component<Element>::type
+        evmaxmag_imag() const = 0;
 
     /** Virtual destructor to support interface-like behavior. */
     virtual ~ILowStorageMethod() {};
@@ -676,10 +679,12 @@ public:
     virtual Element zeta(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::evmaxmag_real */
-    virtual double evmaxmag_real() const { return 2.512; }
+    virtual typename ::suzerain::traits::component<Element>::type
+        evmaxmag_real() const { return 2.512; }
 
     /*! @copydoc ILowStorageMethod::evmaxmag_imag */
-    virtual double evmaxmag_imag() const { return std::sqrt(3.0); }
+    virtual typename ::suzerain::traits::component<Element>::type
+        evmaxmag_imag() const { return std::sqrt(3.0); }
 };
 
 template< typename Element >
