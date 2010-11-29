@@ -164,7 +164,7 @@ if test "$ac_test_CFLAGS" != "set"; then
 	CFLAGS="$CFLAGS -fstrict-aliasing")
 
      # note that we enable "unsafe" fp optimization with other compilers, too
-     AX_CHECK_COMPILER_FLAGS(-ffast-math, CFLAGS="$CFLAGS -ffast-math")
+     AX_CHECK_COMPILER_FLAGS(-funsafe-math-optimizations, CFLAGS="$CFLAGS -funsafe-math-optimizations")
 
      AX_GCC_ARCHFLAG($acx_maxopt_portable)
      ;;
