@@ -382,7 +382,7 @@ public:
 /**
  * Implements simple multiplicative operator which scales all state
  * variables by a uniform factor.  The associated mass matrix \f$M\f$
- * is identity.
+ * is the identity matrix.
  */
 template<
     std::size_t NumDims,

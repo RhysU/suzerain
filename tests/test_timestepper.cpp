@@ -486,7 +486,7 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE( step_delta_t_provided )
+BOOST_AUTO_TEST_SUITE( same_storage )
 
 // Run the explicit timestepper against (d/dt) y = a*y
 // where it is expected to be third order.
@@ -499,30 +499,35 @@ BOOST_AUTO_TEST_CASE( step_explicit )
     // Fix method, operators, and storage space
     const SMR91Method<double> m;
     const MultiplicativeOperatorD3 trivial_linear_op(0);
-    const MultiplicativeOperatorD3 nonlinear_op(soln.a);
     NoninterleavedState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
 
-    // Coarse grid calculation
+    // Coarse grid calculation using explicitly provided time step
     const std::size_t coarse_nsteps = 16;
     const double delta_t_coarse = (t_final - t_initial)/coarse_nsteps;
     a[0][0][0] = soln(t_initial);
-    for (std::size_t i = 0; i < coarse_nsteps; ++i) {
-        const double delta_t_used = suzerain::timestepper::lowstorage::step(
-                m, trivial_linear_op, nonlinear_op, a, b, delta_t_coarse);
-        BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
+    {
+        const MultiplicativeOperatorD3 nonlinear_op(soln.a);
+        for (std::size_t i = 0; i < coarse_nsteps; ++i) {
+            const double delta_t_used = suzerain::timestepper::lowstorage::step(
+                    m, trivial_linear_op, nonlinear_op, a, b, delta_t_coarse);
+            BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
+        }
     }
     const double coarse_final = a[0][0][0];
     const double coarse_error = fabs(coarse_final - soln(t_final));
     BOOST_CHECK_SMALL(coarse_error, 1.0e-12); // Tolerance found using Octave
 
-    // Finer grid calculation
+    // Finer grid calculation using "dynamically" computed time step
     const std::size_t finer_nsteps = 2*coarse_nsteps;
     const double delta_t_finer = (t_final - t_initial)/finer_nsteps;
     a[0][0][0] = soln(t_initial);
-    for (std::size_t i = 0; i < finer_nsteps; ++i) {
-        const double delta_t_used = suzerain::timestepper::lowstorage::step(
-                m, trivial_linear_op, nonlinear_op, a, b, delta_t_finer);
-        BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
+    {
+        const MultiplicativeOperatorD3 nonlinear_op(soln.a, delta_t_finer);
+        for (std::size_t i = 0; i < finer_nsteps; ++i) {
+            const double delta_t_used = suzerain::timestepper::lowstorage::step(
+                    m, trivial_linear_op, nonlinear_op, a, b);
+            BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
+        }
     }
     const double finer_final = a[0][0][0];
     const double finer_error = fabs(finer_final - soln(t_final));
@@ -655,7 +660,8 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE( step_delta_t_computed )
+// FIXME implement test case correctly
+BOOST_AUTO_TEST_SUITE( different_storage )
 
 // Run the timestepper purely explicitly against (d/dt) y = a*y
 // where it is expected to be third order.
@@ -670,29 +676,27 @@ BOOST_AUTO_TEST_CASE( step_explicit )
     const MultiplicativeOperatorD3 trivial_linear_op(0);
     NoninterleavedState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
 
-    // Coarse grid calculation
+    // Coarse grid calculation using explicitly provided time step
     const std::size_t coarse_nsteps = 16;
+    const double delta_t_coarse = (t_final - t_initial)/coarse_nsteps;
     a[0][0][0] = soln(t_initial);
     {
-        // Nonlinear operator provides timestep size information
-        const MultiplicativeOperatorD3 nonlinear_op(
-                soln.a, (t_final - t_initial)/coarse_nsteps);
+        const MultiplicativeOperatorD3 nonlinear_op(soln.a);
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
             suzerain::timestepper::lowstorage::step(
-                    m, trivial_linear_op, nonlinear_op, a, b);
+                    m, trivial_linear_op, nonlinear_op, a, b, delta_t_coarse);
         }
     }
     const double coarse_final = a[0][0][0];
     const double coarse_error = fabs(coarse_final - soln(t_final));
     BOOST_CHECK_SMALL(coarse_error, 1.0e-12); // Tolerance found using Octave
 
-    // Finer grid calculation
+    // Finer grid calculation using "dynamically" computed time step
     const std::size_t finer_nsteps = 2*coarse_nsteps;
+    const double delta_t_finer = (t_final - t_initial)/finer_nsteps;
     a[0][0][0] = soln(t_initial);
     {
-        // Nonlinear operator provides timestep size information
-        const MultiplicativeOperatorD3 nonlinear_op(
-                soln.a, (t_final - t_initial)/finer_nsteps);
+        const MultiplicativeOperatorD3 nonlinear_op(soln.a, delta_t_finer);
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
             suzerain::timestepper::lowstorage::step(
                     m, trivial_linear_op, nonlinear_op, a, b);
