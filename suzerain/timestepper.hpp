@@ -810,7 +810,7 @@ throw(std::exception)
 {
     IState<NumDims,Element,Storage> *p_a = &a, *p_b = &b;
 
-    // Even substep counts will the roles of a and b at return.
+    // Even substep counts will maintain the roles of a and b on return.
     // Perform one auxiliary flip for odd substep counts.
     // Possible since b = N(u_{i-1}) is wholly ignored for first substep
     if (m.substeps() & 1) {
