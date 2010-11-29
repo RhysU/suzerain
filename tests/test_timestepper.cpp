@@ -356,6 +356,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
     using suzerain::timestepper::lowstorage::substep;
     // See test_timestepper.sage for manufactured answers
 
+    const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
     const SMR91Method<double> m;
     const MultiplicativeOperatorD3 trivial_linear_op(0);
@@ -368,7 +369,9 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 0);
+        const double delta_t_used
+            = substep(m, trivial_linear_op, riccati_op, a, b, delta_t, 0);
+        BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],  30.0, close_enough);
         BOOST_CHECK_CLOSE(a[1][0][0],  60.0, close_enough);
@@ -382,7 +385,9 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 1);
+        const double delta_t_used
+            = substep(m, trivial_linear_op, riccati_op, a, b, delta_t, 1);
+        BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],    30.0,      close_enough);
         BOOST_CHECK_CLOSE(a[1][0][0],    60.0,      close_enough);
@@ -396,7 +401,9 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 2);
+        const double delta_t_used
+            = substep(m, trivial_linear_op, riccati_op, a, b, delta_t, 2);
+        BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],  30.0,       close_enough);
         BOOST_CHECK_CLOSE(a[1][0][0],  60.0,       close_enough);
@@ -405,8 +412,9 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
     }
 
     // Requesting an out-of-bounds substep_index should balk
-    BOOST_CHECK_THROW(substep(m, trivial_linear_op, riccati_op, 17.0, a, b, 3),
-             std::invalid_argument);
+    BOOST_CHECK_THROW(
+            substep(m, trivial_linear_op, riccati_op, a, b, delta_t, 3),
+            std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE( substep_hybrid )
@@ -414,6 +422,7 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
     using suzerain::timestepper::lowstorage::substep;
     // See test_timestepper.sage for manufactured answers
 
+    const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
     const SMR91Method<double> m;
     const RiccatiNonlinearOperator nonlinear_op(2, 3);
@@ -426,7 +435,9 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        substep(m, linear_op, nonlinear_op, 17.0, a, b, 0);
+        const double delta_t_used
+            = substep(m, linear_op, nonlinear_op, a, b, delta_t, 0);
+        BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE( a[0][0][0],            15.0, close_enough);
         BOOST_CHECK_CLOSE( a[1][0][0],            39.0, close_enough);
@@ -440,7 +451,9 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        substep(m, linear_op, nonlinear_op, 17.0, a, b, 1);
+        const double delta_t_used
+            = substep(m, linear_op, nonlinear_op, a, b, delta_t, 1);
+        BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],            15.0, close_enough);
         BOOST_CHECK_CLOSE(a[1][0][0],            39.0, close_enough);
@@ -454,7 +467,9 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        substep(m, linear_op, nonlinear_op, 17.0, a, b, 2);
+        const double delta_t_used
+            = substep(m, linear_op, nonlinear_op, a, b, delta_t, 2);
+        BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],       15.0, close_enough);
         BOOST_CHECK_CLOSE(a[1][0][0],       39.0, close_enough);
@@ -463,8 +478,9 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
     }
 
     // Requesting an out-of-bounds substep_index should balk
-    BOOST_CHECK_THROW(substep(m, linear_op, nonlinear_op, 17.0, a, b, 3),
-                      std::invalid_argument);
+    BOOST_CHECK_THROW(
+            substep(m, linear_op, nonlinear_op, a, b, delta_t, 3),
+            std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -488,11 +504,12 @@ BOOST_AUTO_TEST_CASE( step_explicit )
 
     // Coarse grid calculation
     const std::size_t coarse_nsteps = 16;
+    const double delta_t_coarse = (t_final - t_initial)/coarse_nsteps;
     a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < coarse_nsteps; ++i) {
-        suzerain::timestepper::lowstorage::step(
-                m, trivial_linear_op, nonlinear_op,
-                (t_final - t_initial)/coarse_nsteps, a, b);
+        const double delta_t_used = suzerain::timestepper::lowstorage::step(
+                m, trivial_linear_op, nonlinear_op, a, b, delta_t_coarse);
+        BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
     }
     const double coarse_final = a[0][0][0];
     const double coarse_error = fabs(coarse_final - soln(t_final));
@@ -500,11 +517,12 @@ BOOST_AUTO_TEST_CASE( step_explicit )
 
     // Finer grid calculation
     const std::size_t finer_nsteps = 2*coarse_nsteps;
+    const double delta_t_finer = (t_final - t_initial)/finer_nsteps;
     a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < finer_nsteps; ++i) {
-        suzerain::timestepper::lowstorage::step(
-                m, trivial_linear_op, nonlinear_op,
-                (t_final - t_initial)/finer_nsteps, a, b);
+        const double delta_t_used = suzerain::timestepper::lowstorage::step(
+                m, trivial_linear_op, nonlinear_op, a, b, delta_t_finer);
+        BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
     }
     const double finer_final = a[0][0][0];
     const double finer_error = fabs(finer_final - soln(t_final));
@@ -572,8 +590,8 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
     a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < coarse_nsteps; ++i) {
         suzerain::timestepper::lowstorage::step(
-                m, linear_op, nonlinear_op,
-                (t_final - t_initial)/coarse_nsteps, a, b);
+                m, linear_op, nonlinear_op, a, b,
+                (t_final - t_initial)/coarse_nsteps);
     }
     const double coarse_final = a[0][0][0];
     const double coarse_error = fabs(coarse_final - soln(t_final));
@@ -584,8 +602,8 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
     a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < finer_nsteps; ++i) {
         suzerain::timestepper::lowstorage::step(
-                m, linear_op, nonlinear_op,
-                (t_final - t_initial)/finer_nsteps, a, b);
+                m, linear_op, nonlinear_op, a, b,
+                (t_final - t_initial)/finer_nsteps);
     }
     const double finer_final = a[0][0][0];
     const double finer_error = fabs(finer_final - soln(t_final));

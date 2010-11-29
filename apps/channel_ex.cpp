@@ -195,7 +195,7 @@ public:
         // NOP
     }
 
-    complex_type applyOperator(
+    double applyOperator(
         istate_type &istate,
         const bool delta_t_requested = false)
         const
@@ -788,7 +788,7 @@ public:
         bspluzw->solve(state.shape()[2]*state.shape()[3],
                 &(state[4][0][0][0]), 1, state.shape()[1]);
 
-        return complex_type(std::min(convective_delta_t, diffusive_delta_t));
+        return std::min(convective_delta_t, diffusive_delta_t);
     }
 
 

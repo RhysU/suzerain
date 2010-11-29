@@ -168,7 +168,7 @@ public:
      * @return a stable time step if \c delta_t_requested is true.  Otherwise
      *        the return value is meaningless.
      */
-    virtual Element applyOperator(
+    virtual typename suzerain::traits::component<Element>::type applyOperator(
         suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state,
         const bool delta_t_requested = false)
         const
@@ -395,8 +395,11 @@ class MultiplicativeOperator
       public INonlinearOperator<NumDims,Element,Storage,CompatibleStorage>
 {
 private:
-    const Element factor;   /**< Uniform scale factor to apply */
-    const Element delta_t;  /**< Uniform stable time step to report */
+    /** Uniform scale factor to apply as part of operator */
+    const Element factor;
+
+    /** Uniform stable time step to report */
+    const typename suzerain::traits::component<Element>::type delta_t;
 
 public:
 
@@ -424,7 +427,10 @@ public:
     template< typename FactorType >
     MultiplicativeOperator(
             const FactorType& factor)
-        : factor(factor), delta_t(std::numeric_limits<Element>::quiet_NaN()) {};
+        : factor(factor),
+          delta_t(std::numeric_limits<
+                    typename suzerain::traits::component<Element>::type
+                >::quiet_NaN()) {};
 
     /**
      * Scale \c state by the factor set at construction time.
@@ -434,7 +440,7 @@ public:
      *
      * @return The \c delta_t provided at construction time.
      */
-    virtual Element applyOperator(
+    virtual typename suzerain::traits::component<Element>::type applyOperator(
         suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state,
         const bool delta_t_requested = false)
         const
@@ -613,7 +619,7 @@ public:
      * @return The scheme's maximum pure real eigenvalue magnitude.
      * @see diffusive_stability_criterion() for one use of this magnitude.
      */
-    virtual typename ::suzerain::traits::component<Element>::type
+    virtual typename suzerain::traits::component<Element>::type
         evmaxmag_real() const = 0;
 
     /**
@@ -622,7 +628,7 @@ public:
      * @return The scheme's maximum pure imaginary eigenvalue magnitude.
      * @see convective_stability_criterion() for one use of this magnitude.
      */
-    virtual typename ::suzerain::traits::component<Element>::type
+    virtual typename suzerain::traits::component<Element>::type
         evmaxmag_imag() const = 0;
 
     /** Virtual destructor to support interface-like behavior. */
@@ -679,11 +685,11 @@ public:
     virtual Element zeta(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::evmaxmag_real */
-    virtual typename ::suzerain::traits::component<Element>::type
+    virtual typename suzerain::traits::component<Element>::type
         evmaxmag_real() const { return 2.512; }
 
     /*! @copydoc ILowStorageMethod::evmaxmag_imag */
-    virtual typename ::suzerain::traits::component<Element>::type
+    virtual typename suzerain::traits::component<Element>::type
         evmaxmag_imag() const { return std::sqrt(3.0); }
 };
 
@@ -733,13 +739,14 @@ Element SMR91Method<Element>::zeta(const std::size_t substep) const
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
  * @param N The nonlinear operator to be treated explicitly.
- * @param delta_t The time step \f$\Delta{}t\f$ to take.  The same time step
- *                must be supplied for all substep computations.
  * @param a On entry contains \f$u^{i}\f$ and on exit contains
  *          \f$N\left(u^{i}\right)\f$.
  * @param b On entry contains \f$N\left(u^{i-1}\right)\f$ and on exit contains
  *          \f$u^{i+1}\f$.
  * @param substep_index The substep number to take.
+ * @param delta_t The time step \f$\Delta{}t\f$ to take.  The same time step
+ *                must be supplied for all substep computations.
+ * @return The time step \f$\Delta{}t\f$ used.
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
@@ -748,13 +755,14 @@ template<
     typename Element,
     typename Storage
 >
-void substep(const ILowStorageMethod<Element>& m,
-             const ILinearOperator<NumDims,Element,Storage>& L,
-             const INonlinearOperator<NumDims,Element,Storage>& N,
-             const Element& delta_t,
-             IState<NumDims,Element,Storage>& a,
-             IState<NumDims,Element,Storage>& b,
-             const std::size_t substep_index)
+const typename suzerain::traits::component<Element>::type substep(
+    const ILowStorageMethod<Element>& m,
+    const ILinearOperator<NumDims,Element,Storage>& L,
+    const INonlinearOperator<NumDims,Element,Storage>& N,
+    IState<NumDims,Element,Storage>& a,
+    IState<NumDims,Element,Storage>& b,
+    const typename suzerain::traits::component<Element>::type delta_t,
+    const std::size_t substep_index)
 throw(std::exception)
 {
     if (SUZERAIN_UNLIKELY(substep_index >= m.substeps()))
@@ -766,6 +774,8 @@ throw(std::exception)
     N.applyOperator(a);
     b.addScaled(delta_t * m.gamma(substep_index), a);
     L.invertMassPlusScaledOperator( -delta_t * m.beta(substep_index), b);
+
+    return delta_t;
 }
 
 /**
@@ -776,10 +786,11 @@ throw(std::exception)
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
  * @param N The nonlinear operator to be treated explicitly.
- * @param delta_t The time step \f$\Delta{}t\f$ to take.
  * @param a On entry contains \f$u(t)\f$ and on exit contains
  *          \f$u(t+\Delta{}t)\f$.
  * @param b Used as a temporary storage location during the substeps.
+ * @param delta_t The time step \f$\Delta{}t\f$ to take.
+ * @return The time step \f$\Delta{}t\f$ used.
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
@@ -788,12 +799,13 @@ template<
     typename Element,
     typename Storage
 >
-void step(const ILowStorageMethod<Element>& m,
-          const ILinearOperator<NumDims,Element,Storage>& L,
-          const INonlinearOperator<NumDims,Element,Storage>& N,
-          const Element& delta_t,
-          IState<NumDims,Element,Storage>& a,
-          IState<NumDims,Element,Storage>& b)
+const typename suzerain::traits::component<Element>::type step(
+    const ILowStorageMethod<Element>& m,
+    const ILinearOperator<NumDims,Element,Storage>& L,
+    const INonlinearOperator<NumDims,Element,Storage>& N,
+    IState<NumDims,Element,Storage>& a,
+    IState<NumDims,Element,Storage>& b,
+    const typename suzerain::traits::component<Element>::type delta_t)
 throw(std::exception)
 {
     IState<NumDims,Element,Storage> *p_a = &a, *p_b = &b;
@@ -807,9 +819,11 @@ throw(std::exception)
     }
 
     for (std::size_t i = 0; i < m.substeps(); ++i) {
-        substep(m, L, N, delta_t, *p_a, *p_b, i);
+        substep(m, L, N, *p_a, *p_b, delta_t, i);
         boost::swap(p_a, p_b);
     }
+
+    return delta_t;
 }
 
 /**
@@ -827,6 +841,7 @@ throw(std::exception)
  *          only to this state storage.
  * @param b Used as a temporary storage location during substeps.
  *          The nonlinear operator is applied only to this state storage.
+ * @return The time step \f$\Delta{}t\f$ used.
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
@@ -836,16 +851,19 @@ template<
     typename StorageA,
     typename StorageB
 >
-void step(const ILowStorageMethod<Element>& m,
-          const ILinearOperator<NumDims,Element,StorageA,StorageB>& L,
-          const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N,
-          IState<NumDims,Element,StorageA,StorageB>& a,
-          IState<NumDims,Element,StorageB,StorageA>& b)
+const typename suzerain::traits::component<Element>::type step(
+    const ILowStorageMethod<Element>& m,
+    const ILinearOperator<NumDims,Element,StorageA,StorageB>& L,
+    const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N,
+    IState<NumDims,Element,StorageA,StorageB>& a,
+    IState<NumDims,Element,StorageB,StorageA>& b)
 throw(std::exception)
 {
+    typename suzerain::traits::component<Element>::type delta_t;
+
     // First substep handling is special since we need to determine delta_t
     b.assign(a);
-    const Element delta_t = N.applyOperator(b, true /* we need delta_t */);
+    delta_t = N.applyOperator(b, true /* we need delta_t */);
     L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a);
     a.addScaled(delta_t * m.gamma(0), b);
     L.invertMassPlusScaledOperator( -delta_t * m.beta(0), a);
@@ -859,6 +877,8 @@ throw(std::exception)
         a.addScaled(delta_t * m.gamma(i), b);
         L.invertMassPlusScaledOperator( -delta_t * m.beta(i), a);
     }
+
+    return delta_t;
 }
 
 } // namespace lowstorage
