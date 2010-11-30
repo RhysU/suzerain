@@ -31,8 +31,9 @@ dnl Check for compiler toolchain and optimization level
 dnl Ordering very specific: AX_CC_MAXOPT usage is fragile
 dnl ------------------------------------------------------
 AX_CHECK_ENABLE_DEBUG([info])
-AC_LANG([C])
+AC_LANG_PUSH([C])
 AC_PROG_CC
+AC_LANG_WERROR
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 AX_COMPILER_VENDOR
 if test "x$ax_enable_debug" != "xyes"; then
@@ -64,16 +65,18 @@ fi
 if test "x$ax_enable_debug" != "xno"; then
     AX_TRACEBACK()
 fi
-AC_LANG([C++])
+AC_LANG_POP([C])
+AC_LANG_PUSH([C++])
 AC_PROG_CXX
+AC_LANG_WERROR
 AX_COMPILER_VENDOR
 if test "x$ax_enable_debug" != "xno"; then
     AX_TRACEBACK()
 fi
-AC_LANG([C++])
 AC_PROG_RANLIB
 AC_PROG_SED
 AX_AM_JOBSERVER([no])
+AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
 dnl ----------------------------------------------
@@ -85,10 +88,12 @@ dnl ----------------------------------------------
 dnl Enable rudimentary precompiled header support
 dnl Currently very, very Intel-specific
 dnl ----------------------------------------------
-dnl AC_LANG([C])
+dnl AC_LANG_PUSH([C])
 dnl AX_CHECK_COMPILER_FLAGS([-pch],[CFLAGS="${CFLAGS} -pch"])
-dnl AC_LANG([C++])
+dnl AC_LANG_POP([C])
+dnl AC_LANG_PUSH([C++])
 dnl AX_CHECK_COMPILER_FLAGS([-pch],[CXXFLAGS="${CXXFLAGS} -pch"])
+dnl AC_LANG_POP([C++])
 
 dnl ------------------------------------------------
 dnl Enable GNU libtool
@@ -167,10 +172,13 @@ dnl ------------------------------------------------
 dnl C/C++ compilation strictness and compatibility
 dnl ------------------------------------------------
 dnl Strictness must come after libraries to avoid breaking AC_CHECK_LIB
+AC_LANG_PUSH([C])
 AX_CFLAGS_WARN_ALL(CFLAGS)
 AX_CFLAGS_WARN_ALL(CXXFLAGS)
 AX_WARNINGS_SANITIZE
 AX_INTEL_SC_ANALYSIS
+AC_LANG_POP([C])
+AC_LANG_PUSH([C++])
 AC_CXX_HAVE_STL
 AC_CXX_HEADER_STDCXX_98
 AC_CXX_HEADER_STDCXX_TR1
@@ -178,6 +186,7 @@ AC_CXX_COMPILE_STDCXX_0X
 AC_CXX_CPPFLAGS_STD_LANG(AM_CPPFLAGS)
 AC_CXX_CXXFLAGS_STD_LANG(AM_CXXFLAGS)
 AC_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
+AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
