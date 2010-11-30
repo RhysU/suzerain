@@ -817,10 +817,7 @@ private:
     mutable sz::pencil<> e_x, e_y, e_z, div_grad_e;
 };
 
-// TODO This definition of breakpoint locations is lousy.
-// Moser mentioned looking at Kolmogorov theory regarding the viscous scales
-// near the wall, and then looking at their growth through the log layer.
-
+// FIXME Incorporate hyperbolic tangent breakpoint stretching per ticket #1197
 /**
  * Compute \c n B-spline breakpoints locations across <tt>[xbegin,xend]</tt>
  * using stretching parameter \c alpha to cluster points near the edges.
