@@ -19,8 +19,10 @@
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 // Shorthand
-using suzerain::NoninterleavedState;
 using suzerain::IState;
+using suzerain::InterleavedState;
+using suzerain::NoninterleavedState;
+using suzerain::storage::interleaved;
 using suzerain::storage::noninterleaved;
 using suzerain::timestepper::INonlinearOperator;
 using suzerain::timestepper::lowstorage::ILinearOperator;
@@ -30,6 +32,7 @@ typedef MultiplicativeOperator<3,double,noninterleaved<3> >
     MultiplicativeOperatorD3;
 
 // Explicit template instantiation to hopefully speed compilation
+template class InterleavedState<3,double>;
 template class NoninterleavedState<3,double>;
 
 // Helper method for providing 3D size information
@@ -40,51 +43,11 @@ static boost::array<std::size_t,3> size3(
     return a;
 }
 
-// Purely explicit Riccati equation nonlinear operator
-// is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
-class RiccatiExplicitOperator
-    : public INonlinearOperator<3, double, noninterleaved<3> >
-{
-private:
-    const double a;
-    const double b;
-    const double delta_t;
-
-public:
-    RiccatiExplicitOperator(
-            const double a,
-            const double b,
-            const double delta_t = std::numeric_limits<double>::quiet_NaN())
-        : a(a), b(b), delta_t(delta_t) { };
-
-    virtual double applyOperator(
-            IState<3,double,noninterleaved<3> >& state,
-            const bool delta_t_requested = false) const
-            throw(std::exception)
-    {
-        SUZERAIN_UNUSED(delta_t_requested);
-
-        NoninterleavedState<3,double>& s
-            = dynamic_cast<NoninterleavedState<3,double>&>(state);
-
-        typedef NoninterleavedState<3,double>::index index;
-        for (std::size_t i = 0; i < s.shape()[0]; ++i) {
-            for (std::size_t k = 0; k < s.shape()[2]; ++k) {
-                for (std::size_t j = 0; j < s.shape()[1]; ++j) {
-                    double &y = s[i][j][k];
-                    y = y*y + b*y - a*a - a*b;
-                }
-            }
-        }
-
-        return delta_t;
-    }
-};
-
 // Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
 // right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
 class RiccatiNonlinearOperator
-    : public INonlinearOperator<3, double, noninterleaved<3> >
+    : public INonlinearOperator<3, double, noninterleaved<3> >,
+      public INonlinearOperator<3, double, noninterleaved<3>, interleaved<3> >
 {
 private:
     const double a;
@@ -120,16 +83,47 @@ public:
 
         return delta_t;
     };
+
+    virtual double applyOperator(
+            IState<3,double,noninterleaved<3>,interleaved<3> >& state,
+            const bool delta_t_requested = false) const
+            throw(std::exception)
+    {
+        SUZERAIN_UNUSED(delta_t_requested);
+
+        NoninterleavedState<3,double>& s
+            = dynamic_cast<NoninterleavedState<3,double>&>(state);
+
+        typedef NoninterleavedState<3,double>::index index;
+        for (index i = 0; i < (index) s.shape()[0]; ++i) {
+            for (index k = 0; k < (index) s.shape()[2]; ++k) {
+                for (index j = 0; j < (index) s.shape()[1]; ++j) {
+                    double &y = s[i][j][k];
+                    y = y*y - a*a - a*b;
+                }
+            }
+        }
+
+        return delta_t;
+    };
+
 };
 
-class RiccatiLinearOperator : public MultiplicativeOperatorD3
+class RiccatiLinearOperator
+    : public MultiplicativeOperator<3,double,noninterleaved<3> >,
+      public MultiplicativeOperator<3,double,interleaved<3>,noninterleaved<3> >
 {
 public:
     RiccatiLinearOperator(
             const double a,
             const double b,
             const double delta_t = std::numeric_limits<double>::quiet_NaN())
-        : MultiplicativeOperatorD3(b, delta_t)
+        : MultiplicativeOperator<3,double,noninterleaved<3> >(
+                b, delta_t
+          ),
+          MultiplicativeOperator<3,double,interleaved<3>,noninterleaved<3> >(
+                b, delta_t
+          )
     {
         SUZERAIN_UNUSED(a);
     }
@@ -350,6 +344,45 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE( substep_suite )
+
+// Purely explicit Riccati equation nonlinear operator
+// is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
+class RiccatiExplicitOperator
+    : public INonlinearOperator<3, double, noninterleaved<3> >
+{
+private:
+    const double a, b, delta_t;
+
+public:
+    RiccatiExplicitOperator(
+            const double a,
+            const double b,
+            const double delta_t = std::numeric_limits<double>::quiet_NaN())
+        : a(a), b(b), delta_t(delta_t) { };
+
+    virtual double applyOperator(
+            IState<3,double,noninterleaved<3> >& state,
+            const bool delta_t_requested = false) const
+            throw(std::exception)
+    {
+        SUZERAIN_UNUSED(delta_t_requested);
+
+        NoninterleavedState<3,double>& s
+            = dynamic_cast<NoninterleavedState<3,double>&>(state);
+
+        typedef NoninterleavedState<3,double>::index index;
+        for (std::size_t i = 0; i < s.shape()[0]; ++i) {
+            for (std::size_t k = 0; k < s.shape()[2]; ++k) {
+                for (std::size_t j = 0; j < s.shape()[1]; ++j) {
+                    double &y = s[i][j][k];
+                    y = y*y + b*y - a*a - a*b;
+                }
+            }
+        }
+
+        return delta_t;
+    }
+};
 
 BOOST_AUTO_TEST_CASE( substep_explicit )
 {
@@ -673,15 +706,25 @@ BOOST_AUTO_TEST_CASE( step_explicit )
 
     // Fix method, operators, and storage space
     const SMR91Method<double> m;
-    const MultiplicativeOperatorD3 trivial_linear_op(0);
-    NoninterleavedState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
+// FIXME
+//  const MultiplicativeOperator<3,double,interleaved<3>,noninterleaved<3> >
+//      trivial_linear_op(0);
+//  InterleavedState<3,double>    a(size3(1,1,1));
+//  NoninterleavedState<3,double> b(size3(1,1,1));
+    const MultiplicativeOperator<3,double,interleaved<3> >
+        trivial_linear_op(0);
+    InterleavedState<3,double>    a(size3(1,1,1)), b(size3(1,1,1));
 
     // Coarse grid calculation using explicitly provided time step
     const std::size_t coarse_nsteps = 16;
     const double delta_t_coarse = (t_final - t_initial)/coarse_nsteps;
     a[0][0][0] = soln(t_initial);
     {
-        const MultiplicativeOperatorD3 nonlinear_op(soln.a);
+// FIXME
+//      const MultiplicativeOperator<3,double,noninterleaved<3>,interleaved<3> >
+//          nonlinear_op(soln.a);
+        const MultiplicativeOperator<3,double,interleaved<3> >
+            nonlinear_op(soln.a);
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
             suzerain::timestepper::lowstorage::step(
                     m, trivial_linear_op, nonlinear_op, a, b, delta_t_coarse);
@@ -696,7 +739,11 @@ BOOST_AUTO_TEST_CASE( step_explicit )
     const double delta_t_finer = (t_final - t_initial)/finer_nsteps;
     a[0][0][0] = soln(t_initial);
     {
-        const MultiplicativeOperatorD3 nonlinear_op(soln.a, delta_t_finer);
+// FIXME
+//      const MultiplicativeOperator<3,double,noninterleaved<3>,interleaved<3> >
+//          nonlinear_op(soln.a, delta_t_finer);
+        const MultiplicativeOperator<3,double,interleaved<3> >
+            nonlinear_op(soln.a, delta_t_finer);
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
             suzerain::timestepper::lowstorage::step(
                     m, trivial_linear_op, nonlinear_op, a, b);
