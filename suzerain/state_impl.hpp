@@ -100,19 +100,23 @@ template< std::size_t NumDims, typename Element, typename Allocator >
 template< std::size_t NumDims, typename Element, typename Allocator >
     class NoninterleavedState;
 
+// FIXME Add inheritance from IState<...,interleaved,noninterleaved>
 template<
     std::size_t NumDims,
     typename Element,
     typename Allocator = typename suzerain::blas::allocator<Element>::type
 >
 class InterleavedState
-    : public IState<NumDims,Element,suzerain::storage::interleaved<NumDims> >,
+    : public IState<NumDims,Element,suzerain::storage::interleaved<NumDims>,
+                                    suzerain::storage::interleaved<NumDims> >,
       public ContiguousMemory<Element,Allocator>,
       public boost::multi_array_ref<Element, NumDims>
 {
 public:
     typedef typename suzerain::storage::interleaved<NumDims>
             storage_interleaved;
+    typedef typename suzerain::storage::noninterleaved<NumDims>
+            storage_noninterleaved;
 
     typedef typename boost::multi_array_ref<Element, NumDims> multi_array_type;
     typedef typename multi_array_type::value_type value_type;
@@ -134,20 +138,30 @@ public:
     virtual void scale(const Element& factor);
 
     virtual bool isConformant(
-        const IState<NumDims,Element,storage_interleaved>& other) const
+        const IState<NumDims,Element,storage_interleaved,
+                                     storage_interleaved>& other) const
         throw(std::bad_cast);
+
+// FIXME Signature and implementation
+//  virtual bool isConformant(
+//      const IState<NumDims,Element,storage_noninterleaved,
+//                                   storage_interleaved>& other) const
+//      throw(std::bad_cast);
 
     virtual void addScaled(
             const Element& factor,
-            const IState<NumDims,Element,storage_interleaved>& other)
+            const IState<NumDims,Element,storage_interleaved,
+                                         storage_interleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
     virtual void assign(
-            const IState<NumDims,Element,storage_interleaved>& other)
+            const IState<NumDims,Element,storage_interleaved,
+                                         storage_interleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
     virtual void exchange(
-            IState<NumDims,Element,storage_interleaved>& other)
+            IState<NumDims,Element,storage_interleaved,
+                                   storage_interleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
 private:
@@ -162,7 +176,8 @@ InterleavedState<NumDims,Element,Allocator>::InterleavedState(
         const ExtentList& sizes,
         size_type min_total_contiguous_count)
     : IStateBase<NumDims,Element>(),
-      IState<NumDims,Element,storage_interleaved>(),
+      IState<NumDims,Element,storage_interleaved,
+                             storage_interleaved>(),
       ContiguousMemory<Element,Allocator>(std::max<size_type>(
                     suzerain::functional::product(sizes.begin(), sizes.end()),
                     min_total_contiguous_count)),
@@ -178,7 +193,8 @@ template< std::size_t NumDims, typename Element, typename Allocator >
 InterleavedState<NumDims,Element,Allocator>::InterleavedState(
         const InterleavedState &other)
     : IStateBase<NumDims,Element>(other),
-      IState<NumDims,Element,storage_interleaved>(other),
+      IState<NumDims,Element,storage_interleaved,
+                             storage_interleaved>(other),
       ContiguousMemory<Element,Allocator>(other),
       multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
                        suzerain::multi_array::shape_array(other),
@@ -196,7 +212,8 @@ void InterleavedState<NumDims,Element,Allocator>::scale(
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 bool InterleavedState<NumDims,Element,Allocator>::isConformant(
-            const IState<NumDims,Element,storage_interleaved>& other) const
+            const IState<NumDims,Element,storage_interleaved,
+                                         storage_interleaved>& other) const
 throw(std::bad_cast)
 {
     const InterleavedState& o = dynamic_cast<const InterleavedState&>(other);
@@ -207,7 +224,8 @@ throw(std::bad_cast)
 template< std::size_t NumDims, typename Element, typename Allocator >
 void InterleavedState<NumDims,Element,Allocator>::addScaled(
             const Element& factor,
-            const IState<NumDims,Element,storage_interleaved>& other)
+            const IState<NumDims,Element,storage_interleaved,
+                                         storage_interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
@@ -225,7 +243,8 @@ throw(std::bad_cast, std::logic_error)
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 void InterleavedState<NumDims,Element,Allocator>::assign(
-            const IState<NumDims,Element,storage_interleaved>& other)
+            const IState<NumDims,Element,storage_interleaved,
+                                         storage_interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -242,7 +261,8 @@ throw(std::bad_cast, std::logic_error)
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 void InterleavedState<NumDims,Element,Allocator>::exchange(
-            IState<NumDims,Element,storage_interleaved>& other)
+            IState<NumDims,Element,storage_interleaved,
+                                   storage_interleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -265,14 +285,16 @@ template<
 class NoninterleavedState
     : public IState<NumDims,
                     Element,
+                    suzerain::storage::noninterleaved<NumDims>,
                     suzerain::storage::noninterleaved<NumDims> >,
       public ContiguousMemory<Element,Allocator>,
       public boost::multi_array_ref<Element, NumDims>
 {
 public:
-    typedef typename
-        suzerain::storage::noninterleaved<NumDims>
-        storage_noninterleaved;
+    typedef typename suzerain::storage::interleaved<NumDims>
+            storage_interleaved;
+    typedef typename suzerain::storage::noninterleaved<NumDims>
+            storage_noninterleaved;
 
     typedef typename boost::multi_array_ref<Element, NumDims> multi_array_type;
     typedef typename multi_array_type::value_type value_type;
@@ -298,20 +320,24 @@ public:
     virtual void scale(const Element& factor);
 
     virtual bool isConformant(
-        const IState<NumDims,Element,storage_noninterleaved>& other) const
+        const IState<NumDims,Element,storage_noninterleaved,
+                                     storage_noninterleaved>& other) const
         throw(std::bad_cast);
 
     virtual void addScaled(
             const Element& factor,
-            const IState<NumDims,Element,storage_noninterleaved>& other)
+            const IState<NumDims,Element,storage_noninterleaved,
+                                         storage_noninterleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
     virtual void assign(
-            const IState<NumDims,Element,storage_noninterleaved>& other)
+            const IState<NumDims,Element,storage_noninterleaved,
+                                         storage_noninterleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
     virtual void exchange(
-            IState<NumDims,Element,storage_noninterleaved>& other)
+            IState<NumDims,Element,storage_noninterleaved,
+                                   storage_noninterleaved>& other)
             throw(std::bad_cast, std::logic_error);
 
 private:
@@ -325,7 +351,8 @@ template< typename ExtentList >
 NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
         const ExtentList& sizes)
     : IStateBase<NumDims,Element>(),
-      IState<NumDims,Element,storage_noninterleaved>(),
+      IState<NumDims,Element,storage_noninterleaved,
+                             storage_noninterleaved>(),
       ContiguousMemory<Element,Allocator>(
               storage_noninterleaved::compute_storage(sizes.begin())),
       multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
@@ -346,7 +373,8 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
         const ExtentList& sizes,
         const MinStrideList& minstrides)
     : IStateBase<NumDims,Element>(),
-      IState<NumDims,Element,storage_noninterleaved>(),
+      IState<NumDims,Element,storage_noninterleaved,
+                             storage_noninterleaved>(),
       ContiguousMemory<Element,Allocator>(
               storage_noninterleaved::compute_storage(
                   sizes.begin(), minstrides.begin())),
@@ -367,7 +395,8 @@ template< std::size_t NumDims, typename Element, typename Allocator >
 NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
         const NoninterleavedState &other)
     : IStateBase<NumDims,Element>(other),
-      IState<NumDims,Element,storage_noninterleaved>(other),
+      IState<NumDims,Element,storage_noninterleaved,
+                             storage_noninterleaved>(other),
       ContiguousMemory<Element,Allocator>(other),
       multi_array_type(this->memory_begin(),
                        suzerain::multi_array::shape_array(other),
@@ -394,7 +423,8 @@ void NoninterleavedState<NumDims,Element,Allocator>::scale(
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 bool NoninterleavedState<NumDims,Element,Allocator>::isConformant(
-            const IState<NumDims,Element,storage_noninterleaved>& other) const
+            const IState<NumDims,Element,storage_noninterleaved,
+                                         storage_noninterleaved>& other) const
 throw(std::bad_cast)
 {
     const NoninterleavedState& o
@@ -540,7 +570,8 @@ void apply(BLASFunctor functor,
 template< std::size_t NumDims, typename Element, typename Allocator >
 void NoninterleavedState<NumDims,Element,Allocator>::addScaled(
             const Element& factor,
-            const IState<NumDims,Element,storage_noninterleaved>& other)
+            const IState<NumDims,Element,storage_noninterleaved,
+                                         storage_noninterleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
@@ -567,7 +598,8 @@ throw(std::bad_cast, std::logic_error)
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 void NoninterleavedState<NumDims,Element,Allocator>::assign(
-            const IState<NumDims,Element,storage_noninterleaved>& other)
+            const IState<NumDims,Element,storage_noninterleaved,
+                                         storage_noninterleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -593,7 +625,8 @@ throw(std::bad_cast, std::logic_error)
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 void NoninterleavedState<NumDims,Element,Allocator>::exchange(
-            IState<NumDims,Element,storage_noninterleaved>& other)
+            IState<NumDims,Element,storage_noninterleaved,
+                                   storage_noninterleaved>& other)
 throw(std::bad_cast, std::logic_error)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
