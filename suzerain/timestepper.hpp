@@ -815,24 +815,20 @@ const typename suzerain::traits::component<Element>::type step(
     const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N,
     IState<NumDims,Element,StorageA,StorageB>& a,
     IState<NumDims,Element,StorageB,StorageA>& b,
-    const typename suzerain::traits::component<Element>::type max_delta_t
-        = std::numeric_limits<
-                typename suzerain::traits::component<Element>::type
-            >::max()
-    )
+    const typename suzerain::traits::component<Element>::type max_delta_t = 0)
 throw(std::exception)
 {
     // First substep handling is special since we need to determine delta_t
     b.assign(a);
     typename suzerain::traits::component<Element>::type delta_t
         = N.applyOperator(b, true /* need delta_t */);
-    if (SUZERAIN_UNLIKELY(boost::math::isnan(delta_t))) {
-        if (SUZERAIN_UNLIKELY(boost::math::isnan(max_delta_t))) {
-            throw std::logic_error("Non-NaN delta_t unavailable");
-        }
+    if (delta_t > 0) {
+        if (max_delta_t > 0) delta_t = std::min(delta_t, max_delta_t);
+    } else if (max_delta_t > 0) {
         delta_t = max_delta_t;
     } else {
-        delta_t = std::min(delta_t, max_delta_t);
+        // Both delta_t, max_delta_t are either non-positive or NaN
+        throw std::logic_error("No usable delta_t available for time step");
     }
     L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a);
     a.addScaled(delta_t * m.gamma(0), b);
@@ -882,11 +878,7 @@ const typename suzerain::traits::component<Element>::type step(
     const INonlinearOperator<NumDims,Element,Storage,Storage>& N,
     IState<NumDims,Element,Storage,Storage>& a,
     IState<NumDims,Element,Storage,Storage>& b,
-    const typename suzerain::traits::component<Element>::type max_delta_t
-        = std::numeric_limits<
-                typename suzerain::traits::component<Element>::type
-            >::max()
-    )
+    const typename suzerain::traits::component<Element>::type max_delta_t = 0)
 throw(std::exception)
 {
     // Algorithm is essentially the same as the other step() implementation,
@@ -904,13 +896,13 @@ throw(std::exception)
     }
     typename suzerain::traits::component<Element>::type delta_t
         = N.applyOperator(*p_b, true /* need delta_t */);
-    if (SUZERAIN_UNLIKELY(boost::math::isnan(delta_t))) {
-        if (SUZERAIN_UNLIKELY(boost::math::isnan(max_delta_t))) {
-            throw std::logic_error("Non-NaN delta_t unavailable");
-        }
+    if (delta_t > 0) {
+        if (max_delta_t > 0) delta_t = std::min(delta_t, max_delta_t);
+    } else if (max_delta_t > 0) {
         delta_t = max_delta_t;
     } else {
-        delta_t = std::min(delta_t, max_delta_t);
+        // Both delta_t, max_delta_t are either non-positive or NaN
+        throw std::logic_error("No usable delta_t available for time step");
     }
     L.applyMassPlusScaledOperator(delta_t * m.alpha(0), *p_a);
     p_a->addScaled(delta_t * m.gamma(0), *p_b);
