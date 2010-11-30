@@ -34,12 +34,7 @@ AX_CHECK_ENABLE_DEBUG([info])
 AC_LANG_PUSH([C])
 AC_PROG_CC
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
-AC_LANG_WERROR
 AX_COMPILER_VENDOR
-case $ax_cv_cxx_compiler_vendor in #(
-  intel) ac_cxx_werror_flag=no ;;#(
-  *)                           ;;
-esac
 if test "x$ax_enable_debug" != "xyes"; then
     dnl Determine good optimization flags for C and store in CFLAGS_MAXOPT
     CFLAGS_pre_AX_CC_MAXOPT=${CFLAGS}
@@ -72,12 +67,7 @@ fi
 AC_LANG_POP([C])
 AC_LANG_PUSH([C++])
 AC_PROG_CXX
-AC_LANG_WERROR
 AX_COMPILER_VENDOR
-case $ax_cv_cxx_compiler_vendor in #(
-  intel) ac_cxx_werror_flag=no ;;#(
-  *)                           ;;
-esac
 if test "x$ax_enable_debug" != "xno"; then
     AX_TRACEBACK()
 fi
