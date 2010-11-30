@@ -7,7 +7,7 @@
 #   Test for Intel(R) Math Kernel Library
 #   (http://software.intel.com/en-us/intel-mkl/)
 #
-#   ACX_MKL([USE_THREADED,[ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]]])
+#   ACX_MKL([USE_THREADED,[ACTION-IF-FOUND[,ACTION-IF-NOT-FOUND]]])
 #
 # DESCRIPTION
 #
@@ -20,17 +20,18 @@
 #   Allows specifying whether or not threaded MKL routines should be used,
 #   with a default to use non-threaded MKL routines.
 #
-#   On success, sets MKL_CFLAGS, MKL_LIBS, and #defines HAVE_MKL.  When
-#   ACTION-IF-NOT-FOUND is not specified, the default behavior is for configure
-#   to fail.
+#   On success, sets MKL_CFLAGS, MKL_LDFLAGS, MKL_LIBS, and #defines
+#   HAVE_MKL.  When ACTION-IF-NOT-FOUND is not specified, the default
+#   behavior is for configure to fail.
+#
 #
 # LAST MODIFICATION
 #
-#   2009-07-14
+#   2010-11-29
 #
 # COPYLEFT
 #
-#   Copyright (c) 2009 Rhys Ulerich <rhys.ulerich@gmail.com>
+#   Copyright (c) 2010 Rhys Ulerich <rhys.ulerich@gmail.com>
 #   Copyright (c) 2008 Steven G. Johnson <stevenj@alum.mit.edu>
 #   Copyright (c) 2008 Thomas Porschberg <thomas@randspringer.de>
 #   Copyright (c) 2008 Caolan McNamara <caolan@skynet.ie>
@@ -168,18 +169,22 @@ if test "${with_mkl}" != no ; then
     MKL_LIBS="${MKL_LIBS} -lm"
 
     if test -d "${acx_mkl_libdir}" ; then
-        MKL_LIBS="-L${acx_mkl_libdir} ${MKL_LIBS}"
+        MKL_LDFLAGS="-L${acx_mkl_libdir}"
+    else
+        MKL_LDFLAGS=""
     fi
-    MKL_CFLAGS=""
     if test -d "${acx_mkl_include}" ; then
-        MKL_CFLAGS="-I${acx_mkl_include} ${MKL_CFLAGS}"
+        MKL_CFLAGS="-I${acx_mkl_include}"
+    else
+        MKL_CFLAGS=""
     fi
 
     acx_mkl_save_CFLAGS="$CFLAGS"
     acx_mkl_save_LDFLAGS="$LDFLAGS"
     acx_mkl_save_LIBS="$LIBS"
-    CFLAGS="${MKL_CFLAGS} ${CFLAGS}"
-    LDFLAGS="${MKL_LIBS} ${LDFLAGS}"
+    CFLAGS="${CFLAGS} ${MKL_CFLAGS}"
+    LDFLAGS="${LDFLAGS} ${MKL_LDFLAGS}"
+    LIBS="${LIBS} ${MKL_LIBS}"
     AC_LANG_PUSH([C])
     AC_MSG_NOTICE([Ensuring we can use Intel MKL routines using a known link line])
     AC_CHECK_HEADER([mkl.h],[acx_mkl_found_header=yes],[acx_mkl_found_header=no])
@@ -187,8 +192,8 @@ if test "${with_mkl}" != no ; then
     AC_SEARCH_LIBS(dgemm,[],[acx_mkl_found_blas=yes],[acx_mkl_found_blas=no])
     AC_SEARCH_LIBS(dgbtrf,[],[acx_mkl_found_lapack=yes],[acx_mkl_found_lapack=no])
     AC_LANG_POP([C])
-    LDFLAGS="$acx_mkl_save_LDFLAGS"
     CFLAGS="$acx_mkl_save_CFLAGS"
+    LDFLAGS="$acx_mkl_save_LDFLAGS"
     LIBS="$acx_mkl_save_LIBS"
 
     acx_mkl_succeeded=no
@@ -208,6 +213,7 @@ if test "${with_mkl}" != no ; then
     else
         AC_DEFINE(HAVE_MKL,1,[Define if MKL is available])
         AC_SUBST(MKL_CFLAGS)
+        AC_SUBST(MKL_LDFLAGS)
         AC_SUBST(MKL_LIBS)
         ifelse([$1],,,[$1])
     fi
