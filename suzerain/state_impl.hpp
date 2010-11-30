@@ -100,7 +100,12 @@ template< std::size_t NumDims, typename Element, typename Allocator >
 template< std::size_t NumDims, typename Element, typename Allocator >
     class NoninterleavedState;
 
-// FIXME Add inheritance from IState<...,interleaved,noninterleaved>
+// FIXME: Have InterleavedState interoperate with NoninterleavedState
+// Will require inheritance from
+//  public IState<NumDims,Element,suzerain::storage::interleaved<NumDims>,
+//                                suzerain::storage::noninterleaved<NumDims> >
+// See Redmine ticket #1194
+
 template<
     std::size_t NumDims,
     typename Element,
@@ -141,12 +146,6 @@ public:
         const IState<NumDims,Element,storage_interleaved,
                                      storage_interleaved>& other) const
         throw(std::bad_cast);
-
-// FIXME Signature and implementation
-//  virtual bool isConformant(
-//      const IState<NumDims,Element,storage_noninterleaved,
-//                                   storage_interleaved>& other) const
-//      throw(std::bad_cast);
 
     virtual void addScaled(
             const Element& factor,
@@ -276,6 +275,12 @@ throw(std::bad_cast, std::logic_error)
     suzerain::blas::swap(
             this->num_elements(), o.data(), 1, this->data(), 1);
 }
+
+// FIXME: Have NoninterleavedState interoperate with InterleavedState
+// Will require inheritance from
+//  public IState<NumDims,Element,suzerain::storage::noninterleaved<NumDims>,
+//                                suzerain::storage::interleaved<NumDims> >
+// See Redmine ticket #1194
 
 template<
     std::size_t NumDims,
