@@ -62,6 +62,7 @@ pkginclude_HEADERS += scenario_definition.hpp
 pkginclude_HEADERS += state.hpp
 pkginclude_HEADERS += state_impl.hpp
 pkginclude_HEADERS += storage.hpp
+pkginclude_HEADERS += timecontroller.hpp
 pkginclude_HEADERS += timestepper.hpp
 pkginclude_HEADERS += traits.hpp
 pkginclude_HEADERS += types.hpp

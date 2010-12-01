@@ -301,19 +301,6 @@ FPT diffusive_stability_criterion(
                          + one_over_delta_z*one_over_delta_z));
 }
 
-
-/**
- * Provides an abstract interface for a step-based time advancement scheme.
- */
-template<typename FPT>
-class Stepper
-{
-public:
-    virtual ~Stepper() {}
-
-    virtual const FPT step(const FPT max_delta_t) const = 0;
-};
-
 /**
  * Provides low-storage Runge-Kutta time integration schemes and the associated
  * operator interfaces.  A hybrid implicit/explicit scheme is available.  The

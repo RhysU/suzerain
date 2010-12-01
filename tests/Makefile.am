@@ -177,6 +177,15 @@ test_timestepper_LDADD   += $(MKL_LDFLAGS) $(MKL_LIBS)
 test_timestepper_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_timestepper_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                       += test_timecontroller
+check_PROGRAMS              += test_timecontroller
+test_timecontroller_SOURCES  = test_timecontroller.cpp
+test_timecontroller_LDADD    = ../suzerain/libsuzerain.la
+test_timecontroller_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_timecontroller_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_timecontroller_LDADD   += $(BOOST_SIGNALS_LDFLAGS)
+test_timecontroller_LDADD   += $(BOOST_SIGNALS_LIBS)
+
 TESTS                    += test_multi_array
 check_PROGRAMS           += test_multi_array
 test_multi_array_SOURCES  = test_multi_array.cpp
