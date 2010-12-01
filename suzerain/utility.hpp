@@ -200,6 +200,38 @@ is_nonnegative(T t) {
     return true;
 }
 
+/**
+ * Check if any of the values in the sequence is true.
+ *
+ * @return True if any value in the sequence is true.  False otherwise.
+ */
+template<class InputIterator>
+bool any(InputIterator first, InputIterator last)
+{
+    using std::iterator_traits;
+    typedef typename iterator_traits<InputIterator>::value_type value_type;
+    return std::accumulate(first,
+                           last,
+                           false,
+                           std::logical_or<value_type>());
+}
+
+/**
+ * Check if all of the values in the sequence are true.
+ *
+ * @return True if all values in the sequence are true.  False otherwise.
+ */
+template<class InputIterator>
+bool all(InputIterator first, InputIterator last)
+{
+    using std::iterator_traits;
+    typedef typename iterator_traits<InputIterator>::value_type value_type;
+    return std::accumulate(first,
+                           last,
+                           true,
+                           std::logical_and<value_type>());
+}
+
 } // namespace suzerain
 
 #endif // __SUZERAIN_UTILITY_HPP

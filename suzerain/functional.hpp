@@ -32,6 +32,7 @@
 #define __SUZERAIN_FUNCTIONAL_HPP
 
 #include <suzerain/common.hpp>
+#include <suzerain/utility.hpp>
 // Pull in libstdc++'s STL algorithm extensions.
 // We can reimplement the necessary if this becomes a portability issue.
 #include <ext/algorithm>
@@ -119,6 +120,28 @@ template<class T>
 struct maximum : std::binary_function <T,T,T> {
     T operator() (const T& x, const T& y) const {
         return std::max(x,y);
+    }
+};
+
+/** An functor computing suzerain::any */
+struct any {
+    typedef bool result_type;
+
+    template<typename InputIterator>
+    bool operator()(InputIterator first, InputIterator last) const
+    {
+        return suzerain::any(first, last);
+    }
+};
+
+/** An functor computing suzerain::all */
+struct all {
+    typedef bool result_type;
+
+    template<typename InputIterator>
+    bool operator()(InputIterator first, InputIterator last) const
+    {
+        return suzerain::all(first, last);
     }
 };
 

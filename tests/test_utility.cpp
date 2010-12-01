@@ -155,3 +155,41 @@ BOOST_AUTO_TEST_CASE( is_nonnegative )
    BOOST_CHECK( suzerain::is_nonnegative<double>( 0.0) );
    BOOST_CHECK( suzerain::is_nonnegative<double>( 1.0) );
 }
+
+BOOST_AUTO_TEST_CASE( any )
+{
+   boost::array<bool,0> empty;
+   boost::array<bool,1> f     = {{ false }};
+   boost::array<bool,1> t     = {{ true  }};
+   boost::array<bool,2> ff    = {{ false, false }};
+   boost::array<bool,2> ft    = {{ false, true  }};
+   boost::array<bool,2> tf    = {{ true,  false }};
+   boost::array<bool,2> tt    = {{ true,  true  }};
+
+   BOOST_CHECK(!suzerain::any(empty.begin(), empty.end()));
+   BOOST_CHECK(!suzerain::any(f.begin(),     f.end()    ));
+   BOOST_CHECK( suzerain::any(t.begin(),     t.end()    ));
+   BOOST_CHECK(!suzerain::any(ff.begin(),    ff.end()   ));
+   BOOST_CHECK( suzerain::any(ft.begin(),    ft.end()   ));
+   BOOST_CHECK( suzerain::any(tf.begin(),    tf.end()   ));
+   BOOST_CHECK( suzerain::any(tt.begin(),    tt.end()   ));
+}
+
+BOOST_AUTO_TEST_CASE( all )
+{
+   boost::array<bool,0> empty;
+   boost::array<bool,1> f     = {{ false }};
+   boost::array<bool,1> t     = {{ true  }};
+   boost::array<bool,2> ff    = {{ false, false }};
+   boost::array<bool,2> ft    = {{ false, true  }};
+   boost::array<bool,2> tf    = {{ true,  false }};
+   boost::array<bool,2> tt    = {{ true,  true  }};
+
+   BOOST_CHECK( suzerain::all(empty.begin(), empty.end()));
+   BOOST_CHECK(!suzerain::all(f.begin(),     f.end()    ));
+   BOOST_CHECK( suzerain::all(t.begin(),     t.end()    ));
+   BOOST_CHECK(!suzerain::all(ff.begin(),    ff.end()   ));
+   BOOST_CHECK(!suzerain::all(ft.begin(),    ft.end()   ));
+   BOOST_CHECK(!suzerain::all(tf.begin(),    tf.end()   ));
+   BOOST_CHECK( suzerain::all(tt.begin(),    tt.end()   ));
+}
