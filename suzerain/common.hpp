@@ -45,6 +45,7 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <list>
 #include <memory>
 #include <new>
 #include <numeric>
@@ -90,6 +91,7 @@
 #include <boost/preprocessor/seq/size.hpp>
 #include <boost/preprocessor/seq/to_tuple.hpp>
 #include <boost/program_options.hpp>
+#include <boost/ptr_container/ptr_list.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_array.hpp>
