@@ -57,11 +57,23 @@ class AbstractTimeController
 {
 
 public:
-    AbstractTimeController(FPT intial_t = 0,
+    AbstractTimeController(FPT initial_t = 0,
                            FPT min_dt = 1e-8,
                            FPT max_dt = std::numeric_limits<FPT>::max());
 
     virtual ~AbstractTimeController();
+
+    FPT current_t() const { return current_t_; }
+
+    Integer current_nt() const { return current_nt_; }
+
+    FPT min_dt() const { return min_dt_; }
+
+    void min_dt(FPT new_min_dt) { min_dt_ = new_min_dt; }
+
+    FPT max_dt() const { return max_dt_; }
+
+    void max_dt(FPT new_max_dt) { max_dt_ = new_max_dt; }
 
     template<typename Callback>
     void addCallback(FPT every_dt,
@@ -76,7 +88,6 @@ protected:
     virtual FPT stepTime(FPT max_dt) const = 0;
 
 private:
-
     struct Entry {
         FPT     every_dt;
         Integer every_nt;
@@ -86,20 +97,22 @@ private:
                       suzerain::functional::all> signal; // noncopyable
     };
 
-    const FPT min_dt;
-    const FPT max_dt;
-    FPT current_t;
-    Integer current_nt;
-    boost::ptr_vector<Entry> entries;
+    typedef boost::ptr_vector<Entry> EntryList;
+
+    FPT min_dt_;
+    FPT max_dt_;
+    FPT current_t_;
+    Integer current_nt_;
+    EntryList entries_;
 };
 
 template< typename FPT, typename Integer >
 AbstractTimeController<FPT,Integer>::AbstractTimeController(FPT initial_t,
                                                             FPT min_dt,
                                                             FPT max_dt)
-    : min_dt(min_dt), max_dt(max_dt),
-      current_t(initial_t), current_nt(0),
-      entries(5)
+    : min_dt_(min_dt), max_dt_(max_dt),
+      current_t_(initial_t), current_nt_(0),
+      entries_(5)
 {
     // NOP
 }
@@ -107,7 +120,7 @@ AbstractTimeController<FPT,Integer>::AbstractTimeController(FPT initial_t,
 template< typename FPT, typename Integer >
 AbstractTimeController<FPT,Integer>::~AbstractTimeController()
 {
-    // boost::ptr_vector<Entry> semantics automatically destroys entries
+    // boost::ptr_vector<Entry> semantics automatically destroys entries_
 }
 
 template< typename FPT, typename Integer >
@@ -116,9 +129,12 @@ void AbstractTimeController<FPT,Integer>::addCallback(FPT every_dt,
                                                       Integer every_nt,
                                                       Callback callback)
 {
+    if (every_dt <= 0) throw std::invalid_argument("every_dt <= 0");
+    if (every_nt <= 0) throw std::invalid_argument("every_nt <= 0");
+
     // Linear search for existing Entry with same every_dt, every_nt
-    typename boost::ptr_vector<Entry>::iterator iter       = entries.begin();
-    typename boost::ptr_vector<Entry>::const_iterator end  = entries.end();
+    typename EntryList::iterator iter      = entries_.begin();
+    typename EntryList::const_iterator end = entries_.end();
     for (;iter != end; ++iter) {
         if ((*iter).every_dt == every_dt && (*iter).every_nt == every_nt) {
             break;
@@ -133,10 +149,10 @@ void AbstractTimeController<FPT,Integer>::addCallback(FPT every_dt,
         Entry *e    = new Entry;      // Allocate Entry on heap
         e->every_dt = every_dt;
         e->every_nt = every_nt;
-        e->next_t   = current_t + every_dt;
-        e->next_nt  = current_nt + every_nt;
+        e->next_t   = current_t_ + every_dt;
+        e->next_nt  = current_nt_ + every_nt;
         e->signal.connect(callback);
-        entries.push_back(e);         // Transfer Entry ownership
+        entries_.push_back(e);         // Transfer Entry ownership
     }
 }
 
@@ -144,51 +160,50 @@ template< typename FPT, typename Integer >
 FPT AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
                                                      const Integer final_nt)
 {
-    FPT dt;
+    while (current_t_ < final_t && current_nt_ < final_nt) {
 
-    while (current_t < final_t && current_nt < final_nt) {
-
-        // Determine maximum step allowed by all criteria
-        dt = std::min(max_dt, final_t - current_t);
-        for (typename boost::ptr_vector<Entry>::iterator iter = entries.begin();
-             iter != entries.end();
+        // Determine maximum possible step size allowed by all criteria
+        FPT possible_dt = std::min(max_dt_, final_t - current_t_);
+        for (typename EntryList::iterator iter = entries_.begin();
+             iter != entries_.end();
              ++iter) {
-            dt = std::min(dt, (*iter).next_t - current_t);
+            possible_dt = std::min(possible_dt, (*iter).next_t - current_t_);
         }
 
         // Take time step and advance simulation time
-        // Actual time step is likely smaller than dt
-        dt          = this->stepTime(dt);
-        current_t  += dt;
-        current_nt += 1;
+        const FPT actual_dt = this->stepTime(possible_dt);
+        current_t_  += actual_dt;
+        current_nt_ += 1;
 
         // Check callbacks
-        for (typename boost::ptr_vector<Entry>::iterator iter = entries.begin();
-             iter != entries.end();
+        for (typename EntryList::iterator iter = entries_.begin();
+             iter != entries_.end();
              ++iter) {
 
             // Callback required?
-            if (SUZERAIN_UNLIKELY(    current_t == (*iter).next_t
-                                   || current_nt == (*iter).next_nt)) {
+            if (SUZERAIN_UNLIKELY(    current_t_ == (*iter).next_t
+                                   || current_nt_ == (*iter).next_nt)) {
 
                 // Update Entry with time of next required callback
-                (*iter).next_t  = current_t  + (*iter).every_dt;
-                (*iter).next_nt = current_nt + (*iter).every_nt;
+                (*iter).next_t  = current_t_  + (*iter).every_dt;
+                (*iter).next_nt = current_nt_ + (*iter).every_nt;
 
                 // Perform callback with abort if callback returns false
-                if (!((*iter).signal(current_t, current_nt))) {
+                if (!((*iter).signal(current_t_, current_nt_))) {
                     goto abort;
                 }
             }
         }
 
-        // Abort if the step size was too small
-        if (SUZERAIN_UNLIKELY(dt < min_dt)) goto abort;
+        // Abort if the step size was too small, but only if driven by physics
+        if (SUZERAIN_UNLIKELY(possible_dt >= min_dt_ && actual_dt < min_dt_)) {
+            goto abort;
+        }
     }
 
 abort:
 
-    return current_t;
+    return current_t_;
 }
 
 } // namespace timestepper
