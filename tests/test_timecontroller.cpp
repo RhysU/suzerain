@@ -8,6 +8,12 @@
 #include <suzerain/timecontroller.hpp>
 #include "test_tools.hpp"
 
+class TestTimeController
+    : public suzerain::timestepper::AbstractTimeController<double>
+{
+    double stepTime(double max_dt) const { return max_dt / 10; }
+};
+
 BOOST_AUTO_TEST_CASE( nop )
 {
     // FIXME Stubbed

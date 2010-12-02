@@ -80,17 +80,17 @@ private:
     struct Entry {
         FPT     every_dt;
         Integer every_nt;
-        FPT     last_t;
-        Integer last_nt;
+        FPT     next_t;
+        Integer next_nt;
         boost::signal<bool (FPT t, Integer nt),
-                      suzerain::functional::all> signal;
+                      suzerain::functional::all> signal; // noncopyable
     };
 
     const FPT min_dt;
     const FPT max_dt;
     FPT current_t;
     Integer current_nt;
-    boost::ptr_list<Entry> entries;
+    boost::ptr_vector<Entry> entries;
 };
 
 template< typename FPT, typename Integer >
@@ -99,7 +99,7 @@ AbstractTimeController<FPT,Integer>::AbstractTimeController(FPT initial_t,
                                                             FPT max_dt)
     : min_dt(min_dt), max_dt(max_dt),
       current_t(initial_t), current_nt(0),
-      entries()
+      entries(5)
 {
     // NOP
 }
@@ -107,7 +107,7 @@ AbstractTimeController<FPT,Integer>::AbstractTimeController(FPT initial_t,
 template< typename FPT, typename Integer >
 AbstractTimeController<FPT,Integer>::~AbstractTimeController()
 {
-    // boost::ptr_list<Entry> semantics automatically destroys entries
+    // boost::ptr_vector<Entry> semantics automatically destroys entries
 }
 
 template< typename FPT, typename Integer >
@@ -117,8 +117,8 @@ void AbstractTimeController<FPT,Integer>::addCallback(FPT every_dt,
                                                       Callback callback)
 {
     // Linear search for existing Entry with same every_dt, every_nt
-    typename boost::ptr_list<Entry>::iterator iter       = entries.begin();
-    typename boost::ptr_list<Entry>::const_iterator end  = entries.end();
+    typename boost::ptr_vector<Entry>::iterator iter       = entries.begin();
+    typename boost::ptr_vector<Entry>::const_iterator end  = entries.end();
     for (;iter != end; ++iter) {
         if ((*iter).every_dt == every_dt && (*iter).every_nt == every_nt) {
             break;
@@ -133,25 +133,60 @@ void AbstractTimeController<FPT,Integer>::addCallback(FPT every_dt,
         Entry *e    = new Entry;      // Allocate Entry on heap
         e->every_dt = every_dt;
         e->every_nt = every_nt;
-        e->last_t   = current_t;
-        e->last_nt  = current_nt;
+        e->next_t   = current_t + every_dt;
+        e->next_nt  = current_nt + every_nt;
         e->signal.connect(callback);
         entries.push_back(e);         // Transfer Entry ownership
     }
 }
 
 template< typename FPT, typename Integer >
-FPT AbstractTimeController<FPT,Integer>::advanceTime(FPT final_t,
-                                                     Integer final_nt)
+FPT AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
+                                                     const Integer final_nt)
 {
-    while (current_t < final_t) {
-        FPT max_dt = final_t - current_t;
-        for (typename boost::ptr_list<Entry>::iterator iter = entries.begin();
+    FPT dt;
+
+    while (current_t < final_t && current_nt < final_nt) {
+
+        // Determine maximum step allowed by all criteria
+        dt = std::min(max_dt, final_t - current_t);
+        for (typename boost::ptr_vector<Entry>::iterator iter = entries.begin();
              iter != entries.end();
              ++iter) {
-            // FIXME Continue implementing
+            dt = std::min(dt, (*iter).next_t - current_t);
         }
+
+        // Take time step and advance simulation time
+        // Actual time step is likely smaller than dt
+        dt          = this->stepTime(dt);
+        current_t  += dt;
+        current_nt += 1;
+
+        // Check callbacks
+        for (typename boost::ptr_vector<Entry>::iterator iter = entries.begin();
+             iter != entries.end();
+             ++iter) {
+
+            // Callback required?
+            if (SUZERAIN_UNLIKELY(    current_t == (*iter).next_t
+                                   || current_nt == (*iter).next_nt)) {
+
+                // Update Entry with time of next required callback
+                (*iter).next_t  = current_t  + (*iter).every_dt;
+                (*iter).next_nt = current_nt + (*iter).every_nt;
+
+                // Perform callback with abort if callback returns false
+                if (!((*iter).signal(current_t, current_nt))) {
+                    goto abort;
+                }
+            }
+        }
+
+        // Abort if the step size was too small
+        if (SUZERAIN_UNLIKELY(dt < min_dt)) goto abort;
     }
+
+abort:
 
     return current_t;
 }
