@@ -46,8 +46,7 @@ static boost::array<std::size_t,3> size3(
 // Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
 // right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
 class RiccatiNonlinearOperator
-    : public INonlinearOperator<3, double, noninterleaved<3> >,
-      public INonlinearOperator<3, double, noninterleaved<3>, interleaved<3> >
+    : public INonlinearOperator<3, double, noninterleaved<3> >
 {
 private:
     const double a;
@@ -84,34 +83,10 @@ public:
         return delta_t;
     };
 
-    virtual double applyOperator(
-            IState<3,double,noninterleaved<3>,interleaved<3> >& state,
-            const bool delta_t_requested = false) const
-            throw(std::exception)
-    {
-        SUZERAIN_UNUSED(delta_t_requested);
-
-        NoninterleavedState<3,double>& s
-            = dynamic_cast<NoninterleavedState<3,double>&>(state);
-
-        typedef NoninterleavedState<3,double>::index index;
-        for (index i = 0; i < (index) s.shape()[0]; ++i) {
-            for (index k = 0; k < (index) s.shape()[2]; ++k) {
-                for (index j = 0; j < (index) s.shape()[1]; ++j) {
-                    double &y = s[i][j][k];
-                    y = y*y - a*a - a*b;
-                }
-            }
-        }
-
-        return delta_t;
-    };
-
 };
 
 class RiccatiLinearOperator
-    : public MultiplicativeOperator<3,double,noninterleaved<3> >,
-      public MultiplicativeOperator<3,double,interleaved<3>,noninterleaved<3> >
+    : public MultiplicativeOperator<3,double,noninterleaved<3> >
 {
 public:
     RiccatiLinearOperator(
@@ -119,9 +94,6 @@ public:
             const double b,
             const double delta_t = std::numeric_limits<double>::quiet_NaN())
         : MultiplicativeOperator<3,double,noninterleaved<3> >(
-                b, delta_t
-          ),
-          MultiplicativeOperator<3,double,interleaved<3>,noninterleaved<3> >(
                 b, delta_t
           )
     {
