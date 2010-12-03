@@ -10,6 +10,7 @@
 
 using suzerain::timestepper::AbstractTimeController;
 
+// Concrete class used for testing
 class TestTimeController : public AbstractTimeController<double>
 {
 public:
@@ -20,6 +21,25 @@ public:
 
 protected:
     double stepTime(double max_dt) const { return max_dt; }
+};
+
+// Helper class used to count callbacks
+// Noncopyable as we want to ensure we're handling references
+template<typename FPT = double, typename Integer = unsigned long>
+struct Callback : public boost::noncopyable
+{
+    bool retval;
+    Integer count;
+    FPT last_t;
+    Integer last_nt;
+
+    Callback(bool retval = true, Integer count = 0)
+        : retval(retval), count(count), last_t(0), last_nt(0) {};
+
+    bool operator()(FPT t, Integer nt)
+    {
+        ++count; last_t  = t; last_nt = nt; return retval;
+    };
 };
 
 // Simple tests of the outer loop logic
@@ -74,13 +94,13 @@ BOOST_AUTO_TEST_CASE( no_callbacks )
     BOOST_REQUIRE_EQUAL(100.0, tc.current_t());
     BOOST_REQUIRE_EQUAL(10u,   tc.current_nt());
 
-    // No advance: final_t == current_t
-    BOOST_REQUIRE_EQUAL(100.0, tc.advanceTime(100.0, 100u + tc.current_nt()));
+    // No advance: final_t < current_t
+    BOOST_REQUIRE_EQUAL(100.0, tc.advanceTime(100.0 - 1.0, 100u + tc.current_nt()));
     BOOST_REQUIRE_EQUAL(100.0, tc.current_t());
     BOOST_REQUIRE_EQUAL(10u,   tc.current_nt());
 
-    // No advance: final_nt == current_nt
-    BOOST_REQUIRE_EQUAL(100.0, tc.advanceTime(200.0, 0u + tc.current_nt()));
+    // No advance: final_nt < current_nt
+    BOOST_REQUIRE_EQUAL(100.0, tc.advanceTime(200.0, tc.current_nt() - 1));
     BOOST_REQUIRE_EQUAL(100.0, tc.current_t());
     BOOST_REQUIRE_EQUAL(10u,   tc.current_nt());
 
@@ -89,4 +109,22 @@ BOOST_AUTO_TEST_CASE( no_callbacks )
     BOOST_REQUIRE_EQUAL(200.0, tc.advanceTime(200.0, 1000u + tc.current_nt()));
     BOOST_REQUIRE_EQUAL(200.0, tc.current_t());
     BOOST_REQUIRE_EQUAL(110u,  tc.current_nt());
+}
+
+BOOST_AUTO_TEST_CASE( simple_callback_nt )
+{
+    const double       forever_t  = std::numeric_limits<double>::max();
+    const unsigned int forever_nt = std::numeric_limits<unsigned int>::max();
+    Callback<> cb;
+
+    TestTimeController tc(0, 1e-8, 1);
+    tc.addCallback(forever_t, 10u, boost::ref(cb));
+
+    BOOST_REQUIRE_EQUAL(9.0, tc.advanceTime(9.0, forever_nt));
+    BOOST_CHECK_EQUAL(cb.count, 0u);
+
+    BOOST_REQUIRE_EQUAL(15.0, tc.advanceTime(15.0, forever_nt));
+    BOOST_CHECK_EQUAL(cb.count, 1u);
+    BOOST_CHECK_EQUAL(cb.last_t, 10.0);
+    BOOST_CHECK_EQUAL(cb.last_nt, 10u);
 }

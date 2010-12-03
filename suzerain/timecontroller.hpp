@@ -78,7 +78,7 @@ public:
     template<typename Callback>
     void addCallback(FPT every_dt,
                      Integer every_nt,
-                     const Callback callback);
+                     Callback callback);
 
     FPT advanceTime(FPT final_t,
                     Integer final_nt = std::numeric_limits<Integer>::max());
