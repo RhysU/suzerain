@@ -80,8 +80,8 @@ public:
                      Integer every_nt,
                      Callback callback);
 
-    FPT advanceTime(FPT final_t,
-                    Integer final_nt = std::numeric_limits<Integer>::max());
+    bool advanceTime(FPT final_t,
+                     Integer final_nt = std::numeric_limits<Integer>::max());
 
 protected:
 
@@ -157,8 +157,8 @@ void AbstractTimeController<FPT,Integer>::addCallback(FPT every_dt,
 }
 
 template< typename FPT, typename Integer >
-FPT AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
-                                                     const Integer final_nt)
+bool AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
+                                                      const Integer final_nt)
 {
     while (current_t_ < final_t && current_nt_ < final_nt) {
 
@@ -188,22 +188,22 @@ FPT AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
                 (*iter).next_t  = current_t_  + (*iter).every_dt;
                 (*iter).next_nt = current_nt_ + (*iter).every_nt;
 
-                // Perform callback with abort if callback returns false
+                // Perform callback
                 if (!((*iter).signal(current_t_, current_nt_))) {
-                    goto abort;
+                    // Stop advancing if callback says so
+                    return false;
                 }
             }
         }
 
         // Abort if the step size was too small, but only if driven by physics
         if (SUZERAIN_UNLIKELY(possible_dt >= min_dt_ && actual_dt < min_dt_)) {
-            goto abort;
+            return false;
         }
     }
 
-abort:
-
-    return current_t_;
+    // Successfully advanced up to provided criteria
+    return true;
 }
 
 } // namespace timestepper
