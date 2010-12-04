@@ -11,13 +11,14 @@
 using suzerain::timestepper::AbstractTimeController;
 
 // Concrete AbstractTimeController subclass used for testing base logic
-class TestTimeController : public AbstractTimeController<double>
+template <typename Integer = unsigned int>
+class TestTimeController : public AbstractTimeController<double, Integer>
 {
 public:
     TestTimeController(double initial_t = 0,
                        double min_dt = 1e-8,
                        double max_dt = std::numeric_limits<double>::max())
-        : AbstractTimeController<double>(initial_t, min_dt, max_dt),
+        : AbstractTimeController<double,Integer>(initial_t, min_dt, max_dt),
           actual_dt(std::numeric_limits<double>::max()) {};
 
     double actual_dt;
@@ -57,22 +58,22 @@ static const unsigned int forever_nt
 // Simple tests of the outer loop logic
 BOOST_AUTO_TEST_CASE( basic )
 {
-    TestTimeController tc1;
+    TestTimeController<> tc1;
     BOOST_CHECK_EQUAL(0,  tc1.current_t());
     BOOST_CHECK_EQUAL(0u, tc1.current_nt());
 
-    TestTimeController tc2(5);
+    TestTimeController<> tc2(5);
     BOOST_CHECK_EQUAL(5,  tc2.current_t());
     BOOST_CHECK_EQUAL(0u, tc2.current_nt());
 
-    TestTimeController tc3(5, 1e-6);
+    TestTimeController<> tc3(5, 1e-6);
     BOOST_CHECK_EQUAL(5,    tc3.current_t());
     BOOST_CHECK_EQUAL(0u,   tc3.current_nt());
     BOOST_CHECK_EQUAL(1e-6, tc3.min_dt());
     tc3.min_dt(1e-7);
     BOOST_CHECK_EQUAL(1e-7, tc3.min_dt());
 
-    TestTimeController tc4(5, 1e-6, 1e7);
+    TestTimeController<> tc4(5, 1e-6, 1e7);
     BOOST_CHECK_EQUAL(5,    tc4.current_t());
     BOOST_CHECK_EQUAL(0u,   tc4.current_nt());
     BOOST_CHECK_EQUAL(1e-6, tc4.min_dt());
@@ -84,7 +85,7 @@ BOOST_AUTO_TEST_CASE( basic )
 // Simple tests of the outer loop logic
 BOOST_AUTO_TEST_CASE( no_callbacks )
 {
-    TestTimeController tc(0, 1e-8, 10);
+    TestTimeController<> tc(0, 1e-8, 10);
 
     // No advance: final_t == current_t
     BOOST_REQUIRE(tc.advanceTime(0.0, 100u));
@@ -127,7 +128,7 @@ BOOST_AUTO_TEST_CASE( simple_callback_nt )
 {
     Callback<> cb;
 
-    TestTimeController tc(0, 1e-8, 1);
+    TestTimeController<> tc(0, 1e-8, 1);
     tc.addCallback(forever_t, 10u, boost::ref(cb));
 
     BOOST_REQUIRE(tc.advanceTime(9.0, forever_nt));
@@ -151,7 +152,7 @@ BOOST_AUTO_TEST_CASE( two_simultaneous_callbacks_nt )
 {
     Callback<> cb1, cb2;
 
-    TestTimeController tc(0, 1e-8, 1);
+    TestTimeController<> tc(0, 1e-8, 1);
     tc.addCallback(forever_t, 10u, boost::ref(cb1));
     tc.addCallback(forever_t, 10u, boost::ref(cb2));
 
@@ -178,7 +179,7 @@ BOOST_AUTO_TEST_CASE( two_different_callbacks_nt )
 {
     Callback<> cb1, cb2;
 
-    TestTimeController tc(0, 1e-8, 1);
+    TestTimeController<> tc(0, 1e-8, 1);
     tc.addCallback(forever_t, 10u, boost::ref(cb1));
     tc.addCallback(forever_t,  5u, boost::ref(cb2));
 
@@ -205,7 +206,7 @@ BOOST_AUTO_TEST_CASE( simple_callback_t )
 {
     Callback<> cb;
 
-    TestTimeController tc(0, 1e-8, 1);
+    TestTimeController<> tc(0, 1e-8, 1);
     tc.addCallback(10.0, forever_nt, boost::ref(cb));
 
     BOOST_REQUIRE(tc.advanceTime(forever_t, 9u));
@@ -229,7 +230,7 @@ BOOST_AUTO_TEST_CASE( two_simultaneous_callbacks_t )
 {
     Callback<> cb1, cb2;
 
-    TestTimeController tc(0, 1e-8, 1);
+    TestTimeController<> tc(0, 1e-8, 1);
     tc.addCallback(10.0, forever_nt, boost::ref(cb1));
     tc.addCallback(10.0, forever_nt, boost::ref(cb2));
 
@@ -256,7 +257,7 @@ BOOST_AUTO_TEST_CASE( two_different_callbacks_t )
 {
     Callback<> cb1, cb2;
 
-    TestTimeController tc(0, 1e-8, 1);
+    TestTimeController<> tc(0, 1e-8, 1);
     tc.addCallback(10.0, forever_nt, boost::ref(cb1));
     tc.addCallback( 5.0, forever_nt, boost::ref(cb2));
 
@@ -283,7 +284,7 @@ BOOST_AUTO_TEST_CASE( mixed_callback_criteria )
 {
     Callback<> cb;
 
-    TestTimeController tc(0); // Different from other cases
+    TestTimeController<> tc(0); // Different from other cases
     tc.addCallback(10.0, 5u, boost::ref(cb));
 
     // Deliberately trip the nt-based criteria
@@ -308,7 +309,7 @@ BOOST_AUTO_TEST_CASE( callback_initiated_abort )
 {
     Callback<> cb(false); // Callback returns false when invoked
 
-    TestTimeController tc(0, 1e-8, 1);
+    TestTimeController<> tc(0, 1e-8, 1);
     tc.addCallback(forever_t, 10u, boost::ref(cb));
 
     // Successful advance prior to callback
@@ -324,7 +325,7 @@ BOOST_AUTO_TEST_CASE( callback_initiated_abort )
 
 BOOST_AUTO_TEST_CASE( physics_initiated_abort )
 {
-    TestTimeController tc(0.0, 1 /* min_dt */, 2 /* max_dt */);
+    TestTimeController<> tc(0.0, 1 /* min_dt */, 2 /* max_dt */);
 
     // Successful advance for step smaller than min_dt
     // when the controller demands it.
@@ -337,4 +338,49 @@ BOOST_AUTO_TEST_CASE( physics_initiated_abort )
     // Unsuccessful advance because physics dt < dt_min
     BOOST_REQUIRE(!tc.advanceTime(forever_t, forever_nt));
     BOOST_REQUIRE_EQUAL(1.0, tc.current_t());
+}
+
+// Sane behavior when every_values should cause floating point overflow?
+BOOST_AUTO_TEST_CASE( every_values_too_large )
+{
+    TestTimeController<> tc(0.0, 1e-8, std::numeric_limits<double>::max());
+    BOOST_REQUIRE(tc.advanceTime(1.0, forever_nt));
+    BOOST_REQUIRE_EQUAL(1.0, tc.current_t());
+    BOOST_REQUIRE_EQUAL(1u,  tc.current_nt());
+
+    // Now every_XX = forever should cause a numeric overflow
+    // Code should silently coerce these to maximum representable value
+    Callback<> cb;
+    tc.addCallback(forever_t, forever_nt, boost::ref(cb));
+
+    // Advance to the end of days in a single step
+    BOOST_REQUIRE(tc.advanceTime(forever_t, forever_nt));
+    BOOST_REQUIRE_EQUAL(forever_t,  tc.current_t());
+    BOOST_REQUIRE_EQUAL(2u, tc.current_nt());
+
+    // Check that the callback was only hit at the very end
+    BOOST_CHECK_EQUAL(cb.count, 1u);
+    BOOST_CHECK_EQUAL(cb.last_t,  forever_t);
+    BOOST_CHECK_EQUAL(cb.last_nt, 2u);
+}
+
+// Sane behavior when we hit the maximum number of time steps?
+BOOST_AUTO_TEST_CASE( largest_possible_time_step_count )
+{
+    // Use an artificially small step counting type to avoid being here all day
+    const unsigned char forever_nt = std::numeric_limits<unsigned char>::max();
+
+    // Set up a controller which will definitely exhaust forever_nt;
+    const double epsilon = std::numeric_limits<double>::epsilon();
+    TestTimeController<unsigned char> tc(
+            0.0, epsilon, (1.0 / forever_nt) - epsilon);
+    BOOST_REQUIRE_LE(tc.min_dt(), tc.max_dt());
+
+    // Advance to the end of days in many steps
+    BOOST_REQUIRE(tc.advanceTime(forever_t, forever_nt));
+    BOOST_REQUIRE_EQUAL(forever_nt, tc.current_nt());
+
+    // There's nothing out there, really
+    BOOST_REQUIRE(tc.advanceTime(forever_t, forever_nt));
+    BOOST_REQUIRE_EQUAL(forever_nt, tc.current_nt());
 }

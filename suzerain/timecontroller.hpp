@@ -149,7 +149,7 @@ public:
      *                 between callbacks.
      * @param callback The callback to invoke.
      *
-     * @see <tt>std::numeric_limits<T>::max()/tt> is you want to
+     * @see <tt>std::numeric_limits<T>::max()</tt> if you want to
      *      specify either no criteria for \c every_dt or \c every_nt.
      * @see <a href="http://www.boost.org/doc/html/ref.html">Boost.Ref</a>
      *      if you need to provide a stateful or noncopyable functor
@@ -230,6 +230,18 @@ private:
     FPT current_t_;
     Integer current_nt_;
     EntryList entries_;
+
+    template< typename T >
+    static T add_and_coerce_overflow_to_max(T a, T b)
+    {
+        // Overflow occurs when max < a + b or equivalently max - b < a.
+        // This overflow detection works if-and-only-if b is nonnegative!
+        if (SUZERAIN_UNLIKELY(std::numeric_limits<T>::max() - b < a)) {
+            return std::numeric_limits<T>::max();
+        } else {
+            return a + b;
+        }
+    }
 };
 
 template< typename FPT, typename Integer >
@@ -257,6 +269,7 @@ void AbstractTimeController<FPT,Integer>::addCallback(FPT every_dt,
 {
     if (every_dt <= 0) throw std::invalid_argument("every_dt <= 0");
     if (every_nt <= 0) throw std::invalid_argument("every_nt <= 0");
+    assert(min_dt_ <= max_dt_);
 
     // Linear search for existing Entry with same every_dt, every_nt
     typename EntryList::iterator iter      = entries_.begin();
@@ -275,8 +288,8 @@ void AbstractTimeController<FPT,Integer>::addCallback(FPT every_dt,
         Entry *e    = new Entry;      // Allocate Entry on heap
         e->every_dt = every_dt;
         e->every_nt = every_nt;
-        e->next_t   = current_t_ + every_dt;
-        e->next_nt  = current_nt_ + every_nt;
+        e->next_t   = add_and_coerce_overflow_to_max(current_t_,  every_dt);
+        e->next_nt  = add_and_coerce_overflow_to_max(current_nt_, every_nt);
         e->signal.connect(callback);
         entries_.push_back(e);         // Transfer Entry ownership
     }
@@ -297,6 +310,7 @@ bool AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
         }
 
         // Take time step and advance simulation time
+        assert(possible_dt > 0);
         const FPT actual_dt = this->stepTime(possible_dt);
         assert(actual_dt <= possible_dt);
         current_t_  += actual_dt;
@@ -308,12 +322,14 @@ bool AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
              ++iter) {
 
             // Callback required?
-            if (SUZERAIN_UNLIKELY(    current_t_ == (*iter).next_t
+            if (SUZERAIN_UNLIKELY(    current_t_  == (*iter).next_t
                                    || current_nt_ == (*iter).next_nt)) {
 
                 // Update Entry with time of next required callback
-                (*iter).next_t  = current_t_  + (*iter).every_dt;
-                (*iter).next_nt = current_nt_ + (*iter).every_nt;
+                (*iter).next_t = add_and_coerce_overflow_to_max(
+                        current_t_,  (*iter).every_dt);
+                (*iter).next_nt = add_and_coerce_overflow_to_max(
+                        current_nt_, (*iter).every_nt);
 
                 // Perform callback
                 if (!((*iter).signal(current_t_, current_nt_))) {
