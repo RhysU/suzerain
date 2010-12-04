@@ -135,34 +135,47 @@ public:
     //@}
 
     /**
+     * Register a one-time callback to be invoked during advance()
+     * when the simulation reaches \c what_t or \c what_nt, whichever
+     * comes first.
+     *
+     * The argument \c callback must be a function or functor compatible with
+     * <tt>boost::function<bool (FPT, Integer)></tt>.  When invoked, the first
+     * argument will contain the current_t() and the second argument will
+     * contain current_nt().  The callback must return \c true if the
+     * controller should continue advancing.  If the callback returns \c false,
+     * the controller will immediately stop advancing time.
+     *
+     * @param what_t  The simulation time to perform the callback.
+     * @param what_nt The simulation time step to perform the callback.
+     * @param callback The callback to invoke.
+     *
+     * @see <tt>std::numeric_limits<T>::max()</tt> if you want to
+     *      specify either no criteria for \c what_t or \c what_nt.
+     * @see <a href="http://www.boost.org/doc/html/ref.html">Boost.Ref</a>
+     *      if you need to provide a stateful or noncopyable functor
+     *      as the \c callback argument.
+     */
+    template<typename CallbackType>
+    void add_callback(FPT what_t,
+                      Integer what_nt,
+                      CallbackType callback);
+
+    /**
      * Register a periodic callback to be invoked during advance().  As the
      * controller marches the simulation, \c callback will be invoked \c
      * every_dt time steps or after \c every_t simulation time passes,
      * whichever comes first.
      *
-     * Callbacks must be functions or functors taking two arguments and
-     * returning a boolean value.  The first argument is of type \c FPT and
-     * will contain the current simulation time.  The second argument is of
-     * type \c Integer wand will contain the current simulation time step.  One
-     * example signature would be
-     * @code
-     *   bool my_callback(FPT t, Integer nt);
-     * @endcode
-     * The callback should return \c true if the controller should continue
-     * advancing.  If the callback returns \c false, the controller will
-     * immediately stop advancing time.
-     *
      * @param every_dt The maximum simulation time duration
      *                 between callbacks.
      * @param every_nt The simulation time step count
      *                 between callbacks.
-     * @param callback The callback to invoke.
+     * @param callback The callback to invoke.  See add_callback() for
+     *                 a discussion of this argument's semantics.
      *
      * @see <tt>std::numeric_limits<T>::max()</tt> if you want to
      *      specify either no criteria for \c every_dt or \c every_nt.
-     * @see <a href="http://www.boost.org/doc/html/ref.html">Boost.Ref</a>
-     *      if you need to provide a stateful or noncopyable functor
-     *      to \c callback.
      */
     template<typename CallbackType>
     void add_periodic_callback(FPT every_dt,
@@ -213,6 +226,7 @@ private:
 
     // Mark Entry as noncopyable to avoid accidental performance hits
     struct Entry : public boost::noncopyable {
+        bool periodic;
         FPT     every_dt, next_t;
         Integer every_nt, next_nt;
         boost::function<bool (FPT t, Integer nt)> callback;
@@ -257,27 +271,44 @@ TimeController<FPT,Integer>::TimeController(StepperType stepper,
 
 template< typename FPT, typename Integer >
 template< typename CallbackType >
+void TimeController<FPT,Integer>::add_callback(FPT what_t,
+                                               Integer what_nt,
+                                               CallbackType callback)
+{
+    Entry *e    = new Entry;      // Allocate Entry on heap
+    e->periodic = false;
+    e->every_dt = 0;
+    e->every_nt = 0;
+    e->next_t   = what_t;
+    e->next_nt  = what_nt;
+    e->callback = callback;
+    entries_.push_back(e);        // Transfer Entry memory ownership
+}
+
+template< typename FPT, typename Integer >
+template< typename CallbackType >
 void TimeController<FPT,Integer>::add_periodic_callback(FPT every_dt,
                                                         Integer every_nt,
                                                         CallbackType callback)
 {
     if (every_dt <= 0) throw std::invalid_argument("every_dt <= 0");
     if (every_nt <= 0) throw std::invalid_argument("every_nt <= 0");
-    assert(min_dt_ <= max_dt_);
 
     Entry *e    = new Entry;      // Allocate Entry on heap
+    e->periodic = true;
     e->every_dt = every_dt;
     e->every_nt = every_nt;
     e->next_t   = add_and_coerce_overflow_to_max(current_t_,  every_dt);
     e->next_nt  = add_and_coerce_overflow_to_max(current_nt_, every_nt);
     e->callback = callback;
-    entries_.push_back(e);         // Transfer Entry memory ownership
+    entries_.push_back(e);        // Transfer Entry memory ownership
 }
 
 template< typename FPT, typename Integer >
 bool TimeController<FPT,Integer>::advance(const FPT final_t,
                                           const Integer final_nt)
 {
+    assert(min_dt_ <= max_dt_);
     using std::min;
 
     // Maintain the next simulation time something interesting must happen
@@ -306,29 +337,37 @@ bool TimeController<FPT,Integer>::advance(const FPT final_t,
 
         // Check callbacks and determine next callback simulation time
         next_event_t = std::numeric_limits<FPT>::max();
-        for (typename EntryList::iterator iter = entries_.begin();
-             iter != entries_.end();
-             ++iter) {
+        typename EntryList::iterator iter = entries_.begin();
+        while (iter != entries_.end()) {
 
             // Callback required?  If so, do it.
             if (SUZERAIN_UNLIKELY(    current_t_  == (*iter).next_t
                                    || current_nt_ == (*iter).next_nt)) {
-
-                // Update Entry with time of next required callback
-                (*iter).next_t = add_and_coerce_overflow_to_max(
-                        current_t_,  (*iter).every_dt);
-                (*iter).next_nt = add_and_coerce_overflow_to_max(
-                        current_nt_, (*iter).every_nt);
 
                 // Perform callback
                 if (!((*iter).callback(current_t_, current_nt_))) {
                     // Stop advancing if callback says so
                     return false;
                 }
+
+                if ((*iter).periodic) {
+                    // Update periodic Entry with time of next required callback
+                    (*iter).next_t = add_and_coerce_overflow_to_max(
+                            current_t_,  (*iter).every_dt);
+                    (*iter).next_nt = add_and_coerce_overflow_to_max(
+                            current_nt_, (*iter).every_nt);
+                } else {
+                    // Remove single-shot Entry from further consideration
+                    iter = entries_.erase(iter);
+                    continue;
+                }
             }
 
             // Update next_event_t based on this callback's needs
             next_event_t = min(next_event_t, (*iter).next_t);
+
+            // Next!
+            ++iter;
         }
 
         // Abort if the step size was too small, but only if driven by physics
