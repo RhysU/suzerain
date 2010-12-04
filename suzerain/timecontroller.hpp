@@ -299,29 +299,38 @@ template< typename FPT, typename Integer >
 bool AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
                                                       const Integer final_nt)
 {
+    // Maintain the next simulation time something interesting must happen
+    FPT next_event_t = std::numeric_limits<FPT>::max();
+
+    // Find the simulation time of the first callback
+    for (typename EntryList::iterator iter = entries_.begin();
+         iter != entries_.end();
+         ++iter) {
+        next_event_t = std::min(next_event_t, (*iter).next_t);
+    }
+
+    // Advance time until done or we abort for some reason
     while (current_t_ < final_t && current_nt_ < final_nt) {
 
         // Determine maximum possible step size allowed by all criteria
-        FPT possible_dt = std::min(max_dt_, final_t - current_t_);
-        for (typename EntryList::iterator iter = entries_.begin();
-             iter != entries_.end();
-             ++iter) {
-            possible_dt = std::min(possible_dt, (*iter).next_t - current_t_);
-        }
+        FPT possible_dt = max_dt_;
+        possible_dt = std::min(possible_dt, final_t - current_t_);
+        possible_dt = std::min(possible_dt, next_event_t - current_t_);
 
-        // Take time step and advance simulation time
+        // Take time step and then advance simulation time
         assert(possible_dt > 0);
         const FPT actual_dt = this->stepTime(possible_dt);
         assert(actual_dt <= possible_dt);
         current_t_  += actual_dt;
         current_nt_ += 1;
 
-        // Check callbacks
+        // Check callbacks and determine next callback simulation time
+        next_event_t = std::numeric_limits<FPT>::max();
         for (typename EntryList::iterator iter = entries_.begin();
              iter != entries_.end();
              ++iter) {
 
-            // Callback required?
+            // Callback required?  If so, do it.
             if (SUZERAIN_UNLIKELY(    current_t_  == (*iter).next_t
                                    || current_nt_ == (*iter).next_nt)) {
 
@@ -337,6 +346,9 @@ bool AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
                     return false;
                 }
             }
+
+            // Update next_event_t based on this callback's needs
+            next_event_t = std::min(next_event_t, (*iter).next_t);
         }
 
         // Abort if the step size was too small, but only if driven by physics
