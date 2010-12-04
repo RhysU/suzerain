@@ -299,6 +299,8 @@ template< typename FPT, typename Integer >
 bool AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
                                                       const Integer final_nt)
 {
+    using std::min;
+
     // Maintain the next simulation time something interesting must happen
     FPT next_event_t = std::numeric_limits<FPT>::max();
 
@@ -306,19 +308,18 @@ bool AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
     for (typename EntryList::iterator iter = entries_.begin();
          iter != entries_.end();
          ++iter) {
-        next_event_t = std::min(next_event_t, (*iter).next_t);
+        next_event_t = min(next_event_t, (*iter).next_t);
     }
 
     // Advance time until done or we abort for some reason
     while (current_t_ < final_t && current_nt_ < final_nt) {
 
         // Determine maximum possible step size allowed by all criteria
-        FPT possible_dt = max_dt_;
-        possible_dt = std::min(possible_dt, final_t - current_t_);
-        possible_dt = std::min(possible_dt, next_event_t - current_t_);
+        const FPT possible_dt
+            = min(max_dt_, min(final_t, next_event_t) - current_t_);
+        assert(possible_dt > 0);
 
         // Take time step and then advance simulation time
-        assert(possible_dt > 0);
         const FPT actual_dt = this->stepTime(possible_dt);
         assert(actual_dt <= possible_dt);
         current_t_  += actual_dt;
@@ -348,7 +349,7 @@ bool AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
             }
 
             // Update next_event_t based on this callback's needs
-            next_event_t = std::min(next_event_t, (*iter).next_t);
+            next_event_t = min(next_event_t, (*iter).next_t);
         }
 
         // Abort if the step size was too small, but only if driven by physics
