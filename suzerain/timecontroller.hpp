@@ -340,30 +340,36 @@ bool TimeController<FPT,Integer>::advance(const FPT final_t,
         typename EntryList::iterator iter = entries_.begin();
         while (iter != entries_.end()) {
 
-            // Callback required?  If so, do it.
+            // Callback required?
             if (SUZERAIN_UNLIKELY(    current_t_  == (*iter).next_t
                                    || current_nt_ == (*iter).next_nt)) {
 
-                // Perform callback
-                if (!((*iter).callback(current_t_, current_nt_))) {
-                    // Stop advancing if callback says so
-                    return false;
+                // Perform required callback
+                // Must perform state updates prior to any possible abort
+                const bool keep_advancing
+                    = (*iter).callback(current_t_, current_nt_);
+
+                // Remove single-shot Entry from further consideration
+                if (SUZERAIN_UNLIKELY(!((*iter).periodic))) {
+                    iter = entries_.erase(iter);
+                    if (SUZERAIN_UNLIKELY(!keep_advancing)) {
+                        return false;
+                    }
+                    continue;
                 }
 
-                if ((*iter).periodic) {
-                    // Update periodic Entry with time of next required callback
-                    (*iter).next_t = add_and_coerce_overflow_to_max(
-                            current_t_,  (*iter).every_dt);
-                    (*iter).next_nt = add_and_coerce_overflow_to_max(
-                            current_nt_, (*iter).every_nt);
-                } else {
-                    // Remove single-shot Entry from further consideration
-                    iter = entries_.erase(iter);
-                    continue;
+                // Update periodic Entry with time of next required callback
+                (*iter).next_t = add_and_coerce_overflow_to_max(
+                        current_t_,  (*iter).every_dt);
+                (*iter).next_nt = add_and_coerce_overflow_to_max(
+                        current_nt_, (*iter).every_nt);
+
+                if (SUZERAIN_UNLIKELY(!keep_advancing)) {
+                    return false;
                 }
             }
 
-            // Update next_event_t based on this callback's needs
+            // Update next_event_t based on this Entry's needs
             next_event_t = min(next_event_t, (*iter).next_t);
 
             // Next!
