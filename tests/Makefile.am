@@ -183,8 +183,6 @@ test_timecontroller_SOURCES  = test_timecontroller.cpp
 test_timecontroller_LDADD    = ../suzerain/libsuzerain.la
 test_timecontroller_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_timecontroller_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-test_timecontroller_LDADD   += $(BOOST_SIGNALS_LDFLAGS)
-test_timecontroller_LDADD   += $(BOOST_SIGNALS_LIBS)
 
 TESTS                    += test_multi_array
 check_PROGRAMS           += test_multi_array

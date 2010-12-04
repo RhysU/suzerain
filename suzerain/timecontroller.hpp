@@ -31,7 +31,6 @@
 #define __SUZERAIN_TIMECONTROLLER_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/functional.hpp>
 #include <suzerain/timestepper.hpp>
 #include <suzerain/traits.hpp>
 
@@ -155,10 +154,10 @@ public:
      *      if you need to provide a stateful or noncopyable functor
      *      to \c callback.
      */
-    template<typename Callback>
+    template<typename CallbackType>
     void addCallback(FPT every_dt,
                      Integer every_nt,
-                     Callback callback);
+                     CallbackType callback);
 
     /**
      * Advance the simulation in time using stepTime() and perform required
@@ -214,20 +213,18 @@ protected:
     virtual FPT stepTime(FPT max_dt) const = 0;
 
 private:
-    struct Entry {
-        FPT     every_dt;
-        Integer every_nt;
-        FPT     next_t;
-        Integer next_nt;
-        boost::signal<bool (FPT t, Integer nt),
-                      suzerain::functional::all> signal; // noncopyable
+    // Mark Entry as noncopyable to avoid accidental performance hits
+    struct Entry : public boost::noncopyable {
+        FPT     every_dt, next_t;
+        Integer every_nt, next_nt;
+        boost::function<bool (FPT t, Integer nt)> callback;
     };
 
+    // ptr_container to explicitly manage noncopyable instances
+    // ptr_vector to keep data as contiguous as possible in memory
     typedef boost::ptr_vector<Entry> EntryList;
 
-    FPT min_dt_;
-    FPT max_dt_;
-    FPT current_t_;
+    FPT min_dt_, max_dt_, current_t_;
     Integer current_nt_;
     EntryList entries_;
 
@@ -248,9 +245,9 @@ template< typename FPT, typename Integer >
 AbstractTimeController<FPT,Integer>::AbstractTimeController(FPT initial_t,
                                                             FPT min_dt,
                                                             FPT max_dt)
-    : min_dt_(min_dt), max_dt_(max_dt),
-      current_t_(initial_t), current_nt_(0),
-      entries_(5)
+    : min_dt_(min_dt), max_dt_(max_dt), current_t_(initial_t),
+      current_nt_(0),
+      entries_(7)
 {
     // NOP
 }
@@ -262,37 +259,22 @@ AbstractTimeController<FPT,Integer>::~AbstractTimeController()
 }
 
 template< typename FPT, typename Integer >
-template< typename Callback >
+template< typename CallbackType >
 void AbstractTimeController<FPT,Integer>::addCallback(FPT every_dt,
                                                       Integer every_nt,
-                                                      Callback callback)
+                                                      CallbackType callback)
 {
     if (every_dt <= 0) throw std::invalid_argument("every_dt <= 0");
     if (every_nt <= 0) throw std::invalid_argument("every_nt <= 0");
     assert(min_dt_ <= max_dt_);
 
-    // Linear search for existing Entry with same every_dt, every_nt
-    typename EntryList::iterator iter      = entries_.begin();
-    typename EntryList::const_iterator end = entries_.end();
-    for (;iter != end; ++iter) {
-        if ((*iter).every_dt == every_dt && (*iter).every_nt == every_nt) {
-            break;
-        }
-    }
-
-    if (iter != end) {
-        // Found a match.  Connect callback to the entry.
-        (*iter).signal.connect(callback);
-    } else {
-        //  No exact match found.  Create a new Entry and track it.
-        Entry *e    = new Entry;      // Allocate Entry on heap
-        e->every_dt = every_dt;
-        e->every_nt = every_nt;
-        e->next_t   = add_and_coerce_overflow_to_max(current_t_,  every_dt);
-        e->next_nt  = add_and_coerce_overflow_to_max(current_nt_, every_nt);
-        e->signal.connect(callback);
-        entries_.push_back(e);         // Transfer Entry ownership
-    }
+    Entry *e    = new Entry;      // Allocate Entry on heap
+    e->every_dt = every_dt;
+    e->every_nt = every_nt;
+    e->next_t   = add_and_coerce_overflow_to_max(current_t_,  every_dt);
+    e->next_nt  = add_and_coerce_overflow_to_max(current_nt_, every_nt);
+    e->callback = callback;
+    entries_.push_back(e);         // Transfer Entry memory ownership
 }
 
 template< typename FPT, typename Integer >
@@ -342,7 +324,7 @@ bool AbstractTimeController<FPT,Integer>::advanceTime(const FPT final_t,
                         current_nt_, (*iter).every_nt);
 
                 // Perform callback
-                if (!((*iter).signal(current_t_, current_nt_))) {
+                if (!((*iter).callback(current_t_, current_nt_))) {
                     // Stop advancing if callback says so
                     return false;
                 }

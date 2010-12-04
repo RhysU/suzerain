@@ -98,7 +98,6 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/signal.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/swap.hpp>
 #include <boost/test/utils/nullstream.hpp>
