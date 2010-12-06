@@ -49,27 +49,33 @@ namespace timestepper
  * used, for example, to periodically write restart files, write statistics,
  * and output status.
  *
- * @tparam FPT Floating point type used to track the current time.
- * @tparam Integer Integer type used to track the current time step.
+ * @tparam TimeType Floating point type used to track the current time.
+ * @tparam StepType Integer type used to track the current time step.
  */
 template<
-    typename FPT     = double,
-    typename Integer = unsigned long
+    typename TimeType = double,
+    typename StepType = unsigned long
 >
 class TimeController
 {
 
 public:
 
+    /** Type used to express simulation time quantities. */
+    typedef TimeType time_type;
+
+    /** Type used to express discrete simulation step quantities. */
+    typedef StepType step_type;
+
     /**
      * Construct a TimeController with the given parameters.
      *
      * The \c stepper argument is how one provides the time stepper that will
      * be driven by the constructed TimeController instance.  It must be a
-     * function or functor compatible with <tt>boost::function<FPT (FPT)></tt>.
-     * When the stepper is invoked, the argument will be the maximum possible
-     * time step that the stepper can take.  The <tt>stepper</tt>'s return
-     * value must be the actual time step size taken.
+     * function or functor compatible with <tt>boost::function<time_type
+     * (time_type)></tt>.  When the stepper is invoked, the argument will be
+     * the maximum possible time step that the stepper can take.  The
+     * <tt>stepper</tt>'s return value must be the actual time step size taken.
      *
      * @param stepper   Time step logic wrapped by this controller.
      * @param initial_t Initial simulation time.
@@ -86,10 +92,16 @@ public:
      *      as the \c stepper argument.
      */
     template<typename StepperType>
-    TimeController(StepperType stepper,
-                   FPT initial_t = 0,
-                   FPT min_dt = std::numeric_limits<FPT>::epsilon(),
-                   FPT max_dt = std::numeric_limits<FPT>::max());
+    TimeController(
+            StepperType stepper,
+            time_type initial_t = 0,
+            time_type min_dt = std::numeric_limits<time_type>::epsilon(),
+            time_type max_dt = std::numeric_limits<time_type>::max());
+
+    /**
+     * Virtual destructor since others may subclass this logic.
+     */
+    virtual ~TimeController() {};
 
     //@{
 
@@ -100,7 +112,7 @@ public:
      *
      * @return The current minimum acceptable time step.
      */
-    FPT min_dt() const { return min_dt_; }
+    time_type min_dt() const { return min_dt_; }
 
     /**
      * Set the minimum acceptable time step.
@@ -108,7 +120,7 @@ public:
      * @param new_min_dt Minimum acceptable time step to set.
      * @see min_dt() for more details.
      */
-    void min_dt(FPT new_min_dt) { min_dt_ = new_min_dt; }
+    void min_dt(time_type new_min_dt) { min_dt_ = new_min_dt; }
 
     //@}
 
@@ -120,7 +132,7 @@ public:
      *
      * @return The current maximum acceptable time step.
      */
-    FPT max_dt() const { return max_dt_; }
+    time_type max_dt() const { return max_dt_; }
 
     /**
      * Set the maximum acceptable time step.
@@ -128,7 +140,7 @@ public:
      * @param new_max_dt Minimum acceptable time step to set.
      * @see max_dt() for more details.
      */
-    void max_dt(FPT new_max_dt) { max_dt_ = new_max_dt; }
+    void max_dt(time_type new_max_dt) { max_dt_ = new_max_dt; }
 
     //@}
 
@@ -138,9 +150,9 @@ public:
      * comes first.
      *
      * The argument \c callback must be a function or functor compatible with
-     * <tt>boost::function<bool (FPT, Integer)></tt>.  When invoked, the first
-     * argument will contain the current_t() and the second argument will
-     * contain current_nt().  The callback must return \c true if the
+     * <tt>boost::function<bool (time_type, step_type)></tt>.  When invoked,
+     * the first argument will contain the current_t() and the second argument
+     * will contain current_nt().  The callback must return \c true if the
      * controller should continue advancing.  If the callback returns \c false,
      * the controller will immediately stop advancing time.
      *
@@ -155,8 +167,8 @@ public:
      *      as the \c callback argument.
      */
     template<typename CallbackType>
-    void add_callback(FPT what_t,
-                      Integer what_nt,
+    void add_callback(time_type what_t,
+                      step_type what_nt,
                       CallbackType callback);
 
     /**
@@ -176,8 +188,8 @@ public:
      *      specify either no criteria for \c every_dt or \c every_nt.
      */
     template<typename CallbackType>
-    void add_periodic_callback(FPT every_dt,
-                               Integer every_nt,
+    void add_periodic_callback(time_type every_dt,
+                               step_type every_nt,
                                CallbackType callback);
 
     /**
@@ -199,8 +211,8 @@ public:
      * @return True if the controller completed the request successfully.
      *         False if the controller aborted for some reason.
      */
-    bool advance(FPT final_t,
-                 Integer final_nt = std::numeric_limits<Integer>::max());
+    bool advance(time_type final_t,
+                 step_type final_nt = std::numeric_limits<step_type>::max());
 
     //@{
 
@@ -209,14 +221,14 @@ public:
      *
      * @return The current simulation time.
      */
-    FPT current_t() const { return current_t_; }
+    time_type current_t() const { return current_t_; }
 
     /**
      * Retrieve the current simulation time step.
      *
      * @return The current simulation discrete time step.
      */
-    Integer current_nt() const { return current_nt_; }
+    step_type current_nt() const { return current_nt_; }
 
     //@}
 
@@ -225,9 +237,9 @@ private:
     // Mark Entry as noncopyable to avoid accidental performance hits
     struct Entry : public boost::noncopyable {
         bool periodic;
-        FPT     every_dt, next_t;
-        Integer every_nt, next_nt;
-        boost::function<bool (FPT t, Integer nt)> callback;
+        time_type every_dt, next_t;
+        step_type every_nt, next_nt;
+        boost::function<bool (time_type t, step_type nt)> callback;
     };
 
     // ptr_container to explicitly manage noncopyable instances with minimal
@@ -235,9 +247,9 @@ private:
     // ptr_vector to keep data as contiguous as possible in memory.
     typedef boost::ptr_vector<Entry> EntryList;
 
-    typename boost::function<FPT (FPT)> stepper_;
-    FPT min_dt_, max_dt_, current_t_;
-    Integer current_nt_;
+    typename boost::function<time_type (time_type)> stepper_;
+    time_type min_dt_, max_dt_, current_t_;
+    step_type current_nt_;
     EntryList entries_;
 
     template< typename T >
@@ -253,12 +265,12 @@ private:
     }
 };
 
-template< typename FPT, typename Integer >
+template< typename TimeType, typename StepType >
 template< typename StepperType >
-TimeController<FPT,Integer>::TimeController(StepperType stepper,
-                                            FPT initial_t,
-                                            FPT min_dt,
-                                            FPT max_dt)
+TimeController<TimeType,StepType>::TimeController(StepperType stepper,
+                                                  time_type initial_t,
+                                                  time_type min_dt,
+                                                  time_type max_dt)
     : stepper_(stepper),
       min_dt_(min_dt), max_dt_(max_dt), current_t_(initial_t),
       current_nt_(0),
@@ -267,11 +279,11 @@ TimeController<FPT,Integer>::TimeController(StepperType stepper,
     // NOP
 }
 
-template< typename FPT, typename Integer >
+template< typename TimeType, typename StepType >
 template< typename CallbackType >
-void TimeController<FPT,Integer>::add_callback(FPT what_t,
-                                               Integer what_nt,
-                                               CallbackType callback)
+void TimeController<TimeType,StepType>::add_callback(time_type what_t,
+                                                     step_type what_nt,
+                                                     CallbackType callback)
 {
     Entry *e    = new Entry;      // Allocate Entry on heap
     e->periodic = false;
@@ -283,11 +295,12 @@ void TimeController<FPT,Integer>::add_callback(FPT what_t,
     entries_.push_back(e);        // Transfer Entry memory ownership
 }
 
-template< typename FPT, typename Integer >
+template< typename TimeType, typename StepType >
 template< typename CallbackType >
-void TimeController<FPT,Integer>::add_periodic_callback(FPT every_dt,
-                                                        Integer every_nt,
-                                                        CallbackType callback)
+void TimeController<TimeType,StepType>::add_periodic_callback(
+        time_type every_dt,
+        step_type every_nt,
+        CallbackType callback)
 {
     if (every_dt <= 0) throw std::invalid_argument("every_dt <= 0");
     if (every_nt <= 0) throw std::invalid_argument("every_nt <= 0");
@@ -302,15 +315,15 @@ void TimeController<FPT,Integer>::add_periodic_callback(FPT every_dt,
     entries_.push_back(e);        // Transfer Entry memory ownership
 }
 
-template< typename FPT, typename Integer >
-bool TimeController<FPT,Integer>::advance(const FPT final_t,
-                                          const Integer final_nt)
+template< typename TimeType, typename StepType >
+bool TimeController<TimeType,StepType>::advance(const time_type final_t,
+                                                const step_type final_nt)
 {
     assert(min_dt_ <= max_dt_);
     using std::min;
 
     // Maintain the next simulation time something interesting must happen
-    FPT next_event_t = std::numeric_limits<FPT>::max();
+    time_type next_event_t = std::numeric_limits<time_type>::max();
 
     // Find the simulation time of the first callback
     for (typename EntryList::iterator iter = entries_.begin();
@@ -323,18 +336,18 @@ bool TimeController<FPT,Integer>::advance(const FPT final_t,
     while (current_t_ < final_t && current_nt_ < final_nt) {
 
         // Determine maximum possible step size allowed by all criteria
-        const FPT possible_dt
+        const time_type possible_dt
             = min(max_dt_, min(final_t, next_event_t) - current_t_);
         assert(possible_dt > 0);
 
         // Take time step and record new simulation time
-        const FPT actual_dt = stepper_(possible_dt);
+        const time_type actual_dt = stepper_(possible_dt);
         assert(actual_dt <= possible_dt);
         current_t_  += actual_dt;
         current_nt_ += 1;
 
         // Check callbacks and determine next callback simulation time
-        next_event_t = std::numeric_limits<FPT>::max();
+        next_event_t = std::numeric_limits<time_type>::max();
         typename EntryList::iterator iter = entries_.begin();
         while (iter != entries_.end()) {
 
