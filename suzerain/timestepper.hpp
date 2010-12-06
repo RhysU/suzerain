@@ -33,6 +33,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/traits.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/timecontroller.hpp>
 
 /** @file
  * Provides time integration schemes.

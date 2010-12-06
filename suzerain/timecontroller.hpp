@@ -31,8 +31,6 @@
 #define __SUZERAIN_TIMECONTROLLER_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/timestepper.hpp>
-#include <suzerain/traits.hpp>
 
 /** @file
  * Provides higher-level control mechanisms based atop abstract
