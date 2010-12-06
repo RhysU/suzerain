@@ -28,6 +28,7 @@ using suzerain::timestepper::INonlinearOperator;
 using suzerain::timestepper::lowstorage::ILinearOperator;
 using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91Method;
+using suzerain::timestepper::lowstorage::LowStorageTimeController;
 typedef MultiplicativeOperator<3,double,noninterleaved<3> >
     MultiplicativeOperatorD3;
 
@@ -669,5 +670,32 @@ BOOST_AUTO_TEST_SUITE( mixed_storage )
 
 // FIXME: Implement explicit/hybrid tests against Interleaved/Noninterleaved
 // See Redmine ticket #1194
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+// Tests for control logic of LowStorageTimeController in test_timecontroller.
+// Presumably getting LowStorageTimeController to type check is the big deal.
+// Explicitly instantiate it to ensure the template looks okay.
+template class LowStorageTimeController<
+        3, double, interleaved<3>, noninterleaved<3>
+    >;
+
+BOOST_AUTO_TEST_SUITE( low_storage_controller_suite )
+
+BOOST_AUTO_TEST_CASE ( make_controller )
+{
+    const SMR91Method<double> m;
+    const MultiplicativeOperatorD3 trivial_linear_op(0);
+    const RiccatiNonlinearOperator riccati_op(2, 3);
+    NoninterleavedState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
+
+    // Compilation and instantiation is half the battle.  Go Joe!
+    using suzerain::timestepper::TimeController;
+    boost::scoped_ptr<TimeController<double> > p(
+        make_LowStorageTimeController(m, trivial_linear_op, riccati_op, a, b));
+
+    BOOST_REQUIRE(p);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
