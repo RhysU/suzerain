@@ -31,9 +31,9 @@
 #define __SUZERAIN_TIMESTEPPER_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/traits.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/timecontroller.hpp>
+#include <suzerain/traits.hpp>
 
 /** @file
  * Provides time integration schemes.
@@ -847,6 +847,128 @@ throw(std::exception)
 
     return delta_t;
 }
+
+/**
+ * Provides higher-level control mechanisms built atop low storage time
+ * integration schemes.  This class is a thin wrapper combining TimeController
+ * with step().
+ *
+ * @see TimeController for details on the time controller logic.
+ * @see make_LowStorageTimeController for an easy way to create
+ *      an instance with the appropriate type signature.
+ */
+template<
+    std::size_t NumDims,
+    typename Element,
+    typename StorageA,
+    typename StorageB,
+    typename StepType = unsigned long
+>
+class LowStorageTimeController
+    : public TimeController<
+        typename suzerain::traits::component<Element>::type,
+        StepType
+      >
+{
+private:
+
+    /** Shorthand for the superclass controller */
+    typedef TimeController<
+        typename suzerain::traits::component<Element>::type,
+        StepType
+      > super;
+
+public:
+
+    /**
+     * Construct an instance that will advance a simulation built atop the
+     * given operators and storage.
+     *
+     * @param m The low storage scheme to use.  For example, SMR91Method.
+     * @param L The linear operator to be treated implicitly.
+     * @param N The nonlinear operator to be treated explicitly.
+     * @param a On entry contains \f$u(t)\f$ and on exit contains
+     *          \f$u(t+\Delta{}t)\f$.  The linear operator is applied
+     *          only to this state storage.
+     * @param b Used as a temporary storage location during substeps.
+     *          The nonlinear operator is applied only to this state storage.
+     * @param initial_t Initial simulation time.
+     * @param min_dt    Initial minimum acceptable time step.  Specifying
+     *                  zero, the default, is equivalent to providing
+     *                  <tt>std::numeric_limits<time_type>::epsilon()</tt>.
+     *                  See min_dt() for the associated semantics.
+     * @param max_dt    Initial maximum acceptable time step.  Specifying
+     *                  zero, the default, is equivalent to providing
+     *                  <tt>std::numeric_limits<time_type>::max()</tt>.
+     *                  See max_dt() for the associated semantics.
+     *
+     * @see The method step() for more details on \c m, \c L, \c N, \c a,
+     *      and \c b.
+     */
+    LowStorageTimeController(
+            const ILowStorageMethod<Element>& m,
+            const ILinearOperator<NumDims,Element,StorageA,StorageB>& L,
+            const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N,
+            IState<NumDims,Element,StorageA,StorageB>& a,
+            IState<NumDims,Element,StorageB,StorageA>& b,
+            typename super::time_type initial_t = 0,
+            typename super::time_type min_dt = 0,
+            typename super::time_type max_dt = 0)
+        : super(boost::bind(&LowStorageTimeController::stepper, this, _1),
+                initial_t,
+                min_dt,
+                max_dt),
+          m(m), L(L), N(N), a(a), b(b) {}
+
+private:
+
+    const ILowStorageMethod<Element>& m;
+    const ILinearOperator<NumDims,Element,StorageA,StorageB>& L;
+    const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N;
+    IState<NumDims,Element,StorageA,StorageB>& a;
+    IState<NumDims,Element,StorageB,StorageA>& b;
+
+    typename super::time_type stepper(
+            typename super::time_type max_dt)
+    {
+        return suzerain::timestepper::lowstorage::step(m, L, N, a, b, max_dt);
+    }
+
+};
+
+/**
+ * A helper method so the compiler can deduce the appropriate template
+ * types for a LowStorageTimeController.
+ *
+ * \copydoc #LowStorageTimeController
+ */
+template<
+    std::size_t NumDims,
+    typename Element,
+    typename StorageA,
+    typename StorageB
+>
+LowStorageTimeController<NumDims,Element,StorageA,StorageB>*
+make_LowStorageTimeController(
+            const ILowStorageMethod<Element>& m,
+            const ILinearOperator<NumDims,Element,StorageA,StorageB>& L,
+            const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N,
+            IState<NumDims,Element,StorageA,StorageB>& a,
+            IState<NumDims,Element,StorageB,StorageA>& b,
+            typename LowStorageTimeController<
+                    NumDims,Element,StorageA,StorageB
+                >::time_type initial_t = 0,
+            typename LowStorageTimeController<
+                    NumDims,Element,StorageA,StorageB
+                >::time_type min_dt = 0,
+            typename LowStorageTimeController<
+                    NumDims,Element,StorageA,StorageB
+                >::time_type max_dt = 0)
+{
+    return new LowStorageTimeController<NumDims,Element,StorageA,StorageB>(
+            m, L, N, a, b, initial_t, min_dt, max_dt);
+}
+
 
 } // namespace lowstorage
 
