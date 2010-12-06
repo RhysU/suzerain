@@ -79,9 +79,13 @@ public:
      *
      * @param stepper   Time step logic wrapped by this controller.
      * @param initial_t Initial simulation time.
-     * @param min_dt    Initial minimum acceptable time step.
+     * @param min_dt    Initial minimum acceptable time step.  Specifying
+     *                  zero, the default, is equivalent to providing
+     *                  <tt>std::numeric_limits<time_type>::epsilon()</tt>.
      *                  See min_dt() for the associated semantics.
-     * @param max_dt    Initial maximum acceptable time step.
+     * @param max_dt    Initial maximum acceptable time step.  Specifying
+     *                  zero, the default, is equivalent to providing
+     *                  <tt>std::numeric_limits<time_type>::max()</tt>.
      *                  See max_dt() for the associated semantics.
      *
      * @see <a href="http://www.boost.org/doc/html/function.html">
@@ -92,11 +96,10 @@ public:
      *      as the \c stepper argument.
      */
     template<typename StepperType>
-    TimeController(
-            StepperType stepper,
-            time_type initial_t = 0,
-            time_type min_dt = std::numeric_limits<time_type>::epsilon(),
-            time_type max_dt = std::numeric_limits<time_type>::max());
+    TimeController(StepperType stepper,
+                   time_type initial_t = 0,
+                   time_type min_dt = 0,
+                   time_type max_dt = 0);
 
     /**
      * Virtual destructor since others may subclass this logic.
@@ -157,7 +160,9 @@ public:
      * the controller will immediately stop advancing time.
      *
      * @param what_t  The simulation time to perform the callback.
+     *                The provided value must be larger than current_t().
      * @param what_nt The simulation time step to perform the callback.
+     *                The provided value must be larger than current_nt().
      * @param callback The callback to invoke.
      *
      * @see <tt>std::numeric_limits<T>::max()</tt> if you want to
@@ -177,15 +182,16 @@ public:
      * every_dt time steps or after \c every_t simulation time passes,
      * whichever comes first.
      *
-     * @param every_dt The maximum simulation time duration
-     *                 between callbacks.
-     * @param every_nt The simulation time step count
-     *                 between callbacks.
+     * @param every_dt The maximum simulation time duration between callbacks.
+     * @param every_nt The simulation time step count between callbacks.
      * @param callback The callback to invoke.  See add_callback() for
      *                 a discussion of this argument's semantics.
      *
      * @see <tt>std::numeric_limits<T>::max()</tt> if you want to
      *      specify either no criteria for \c every_dt or \c every_nt.
+     * @see <a href="http://www.boost.org/doc/html/ref.html">Boost.Ref</a>
+     *      if you need to provide a stateful or noncopyable functor
+     *      as the \c callback argument.
      */
     template<typename CallbackType>
     void add_periodic_callback(time_type every_dt,
@@ -272,7 +278,9 @@ TimeController<TimeType,StepType>::TimeController(StepperType stepper,
                                                   time_type min_dt,
                                                   time_type max_dt)
     : stepper_(stepper),
-      min_dt_(min_dt), max_dt_(max_dt), current_t_(initial_t),
+      min_dt_(min_dt != 0 ? min_dt : std::numeric_limits<time_type>::epsilon()),
+      max_dt_(max_dt != 0 ? max_dt : std::numeric_limits<time_type>::max()),
+      current_t_(initial_t),
       current_nt_(0),
       entries_(7)
 {
@@ -285,6 +293,17 @@ void TimeController<TimeType,StepType>::add_callback(time_type what_t,
                                                      step_type what_nt,
                                                      CallbackType callback)
 {
+    // Callbacks established in the past are likely usage errors (<).  The
+    // advance() method does not perform callbacks prior to advancing
+    // simulation time, so we cannot handle "immediate" callback requests (==).
+    // Combined, these provide the (<=) constraints just below.
+    if (what_t <= current_t_) {
+        throw std::invalid_argument("what_t <= current_t()");
+    }
+    if (what_nt <= current_nt_) {
+        throw std::invalid_argument("what_nt <= current_nt()");
+    }
+
     Entry *e    = new Entry;      // Allocate Entry on heap
     e->periodic = false;
     e->every_dt = 0;
