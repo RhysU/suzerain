@@ -68,7 +68,7 @@ public:
      *
      * @param description Description to display for <tt>--help</tt> option
      */
-    ProgramOptions(std::string &description);
+    ProgramOptions(const std::string &description);
 
     /**
      * Adds all the options stored within the given IDefinition to the
@@ -203,7 +203,7 @@ ProgramOptions::ProgramOptions()
     // NOP
 }
 
-ProgramOptions::ProgramOptions(std::string &description)
+ProgramOptions::ProgramOptions(const std::string &description)
     : variables_(),
       options_("Configuration options"),
       application_description_(description)

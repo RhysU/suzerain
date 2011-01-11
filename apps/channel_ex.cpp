@@ -47,6 +47,7 @@
 #include <suzerain/pencil.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
+#include <suzerain/restart_definition.hpp>
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/state_impl.hpp>
@@ -63,6 +64,11 @@ namespace sz = ::suzerain;
 static sz::problem::ScenarioDefinition<>  def_scenario(100);
 static sz::problem::ChannelDefinition<>   def_grid;
 static sz::problem::BsplineDefinition<>   def_bspline;
+static sz::problem::RestartDefinition<>   def_restart("",
+                                                      "metadata.h5",
+                                                      "uncommitted.h5",
+                                                      "restart#.h5",
+                                                      1);
 static boost::shared_ptr<sz::bspline>     bspw;
 static boost::shared_ptr<sz::bspline_luz> bspluzw;
 static boost::shared_ptr<sz::pencil_grid> pg;
@@ -108,7 +114,7 @@ public:
 
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
         assert(1 == state.strides()[1]);
-        assert(luzw_.ndof() == state.shape()[1]);
+        assert(static_cast<unsigned>(luzw_.ndof()) == state.shape()[1]);
         bspw->apply_operator(0, nrhs, opscaling_,
                 state.memory_begin(), 1, state.strides()[2]);
     }
@@ -126,11 +132,11 @@ public:
 
         typedef state_type::index index;
         for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-            ix < x.index_bases()[0] + x.shape()[0];
+            ix < static_cast<index>(x.index_bases()[0] + x.shape()[0]);
             ++ix, ++iy) {
 
             for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
-                lx < x.index_bases()[3] + x.shape()[3];
+                lx < static_cast<index>(x.index_bases()[3] + x.shape()[3]);
                 ++lx, ++ly) {
 
                 bspw->accumulate_operator(0, x.shape()[2], opscaling_,
@@ -151,7 +157,7 @@ public:
 
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
         assert(1 == state.strides()[1]);
-        assert(luzw_.ndof() == state.shape()[1]);
+        assert(static_cast<unsigned>(luzw_.ndof()) == state.shape()[1]);
         luzw_.solve(nrhs, state.memory_begin(), 1, state.strides()[2]);
     }
 
@@ -882,10 +888,12 @@ int main(int argc, char **argv)
     // Process command line arguments
     // TODO Rank 0 should read and broadcast these to all other ranks
     // Otherwise we will encounter an IO bottleneck on large job starts
-    sz::ProgramOptions options;
+    sz::ProgramOptions options(
+            "Suzerain-based explicit compressible channel simulation");
     options.add_definition(def_scenario);
     options.add_definition(def_grid);
     options.add_definition(def_bspline);
+    options.add_definition(def_restart);
     if (!procid) {
         options.process(argc, argv);
     } else {
@@ -914,13 +922,13 @@ int main(int argc, char **argv)
     assert(breakpoints);
     compute_breakpoints(0.0, def_grid.Ly(), nbreakpoints,
                         def_bspline.alpha(), breakpoints);
-    for (int i = 0; i < def_grid.Ny(); ++i) {
+    for (int i = 0; i < static_cast<int>(def_grid.Ny()); ++i) {
         LOG4CXX_TRACE(log,
                       "B-spline breakpoint[" << i << "] = " << breakpoints[i]);
     }
     bspw = boost::make_shared<sz::bspline>(
              def_bspline.k(), 2, nbreakpoints, breakpoints);
-    assert(bspw->ndof() == def_grid.Ny());
+    assert(static_cast<unsigned>(bspw->ndof()) == def_grid.Ny());
     sz::blas::free(breakpoints);
 
     // Initialize B-spline workspace to find coeffs from collocation points
@@ -942,19 +950,19 @@ int main(int argc, char **argv)
     // Additional munging necessary X direction has (Nx/2+1) complex values
     const boost::array<sz::pencil_grid::index,3> state_start
         = pg->local_wave_start();
-    const boost::array<sz::pencil_grid::index,3> state_end = {
+    const boost::array<sz::pencil_grid::index,3> state_end = {{
         std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[0]/2+1,
                                              pg->local_wave_end()[0]),
         std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[1],
                                              pg->local_wave_end()[1]),
         std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[2],
                                             pg->local_wave_end()[2])
-    };
-    const boost::array<sz::pencil_grid::index,3> state_extent = {
+    }};
+    const boost::array<sz::pencil_grid::index,3> state_extent = {{
         std::max<sz::pencil_grid::index>(state_end[0] - state_start[0], 0),
         std::max<sz::pencil_grid::index>(state_end[1] - state_start[1], 0),
         std::max<sz::pencil_grid::index>(state_end[2] - state_start[2], 0)
-    };
+    }};
     LOG4CXX_DEBUG(log, "Local state wave start  (XYZ): " << state_start);
     LOG4CXX_DEBUG(log, "Local state wave end    (XYZ): " << state_end);
     LOG4CXX_DEBUG(log, "Local state wave extent (XYZ): " << state_extent);
