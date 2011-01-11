@@ -34,6 +34,7 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #include <log4cxx/logger.h>
+#include <esio/esio.h>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bspline_definition.hpp>
 #include <suzerain/bspline.hpp>
@@ -853,10 +854,20 @@ static void compute_breakpoints(
     assert(output[n-1] == xend);
 }
 
+/** Global handle for ESIO operations across MPI_COMM_WORLD. */
+static esio_handle esioh = NULL;
+
+/** <tt>atexit</tt> callback to ensure we finalize esioh. */
+static void atexit_esio(void) {
+    if (esioh) esio_handle_finalize(esioh);
+}
+
 int main(int argc, char **argv)
 {
-    MPI_Init(&argc, &argv);                   // Initialize MPI on startup
-    atexit((void (*) ()) MPI_Finalize);       // Finalize MPI at exit
+    MPI_Init(&argc, &argv);                         // Initialize MPI
+    atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
+    esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
+    atexit(&atexit_esio);                           // Finalize ESIO at exit
 
     // Initialize logger using MPI environment details.
     const int nproc  = sz::mpi::comm_size(MPI_COMM_WORLD);

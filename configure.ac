@@ -123,15 +123,12 @@ export GSL_CBLAS_LIB="${MKL_LDFLAGS} ${MKL_LIBS} ${FLIBS}"
 AX_PATH_GSL(1.13,,AC_MSG_ERROR([Could not find required GSL version.]))
 AX_FFTW3()
 PKG_CHECK_MODULES([P3DFFT],[suzerain-p3dfft])
-AC_SUBST(P3DFFT_CFLAGS)
-AC_SUBST(P3DFFT_LIBS)
 PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
         AC_DEFINE([HAVE_GRVY],[1],[Defined if GRVY Toolkit found])
-        AC_SUBST(GRVY_CFLAGS)
-        AC_SUBST(GRVY_LIBS)
     ], [
         AC_MSG_WARN([Could not find GRVY pkg-config file; Continuing...])
     ])
+PKG_CHECK_MODULES([ESIO],[esio-hdf5])
 AC_LANG_POP([C])
 AC_CACHE_SAVE
 
@@ -141,9 +138,7 @@ dnl ------------------------------------------------
 AC_LANG_PUSH([C++])
 PKG_CHECK_MODULES([LOG4CXX],
     [liblog4cxx >= 0.10 apr-1 >= 1.3.3 apr-util-1 >= 1.3.4],
-    AC_DEFINE([HAVE_LOG4CXX],1,[Define if log4cxx is available])
-    AC_SUBST(LOG4CXX_CFLAGS)
-    AC_SUBST(LOG4CXX_LIBS))
+    AC_DEFINE([HAVE_LOG4CXX],1,[Define if log4cxx is available]))
 BOOST_REQUIRE([1.39])
 BOOST_BIND
 BOOST_FOREACH
@@ -160,9 +155,7 @@ BOOST_TEST
 BOOST_TYPETRAITS
 PKG_CHECK_MODULES([EIGEN],
     [eigen2 >= 2.0.5],
-    AC_DEFINE([HAVE_EIGEN],1,[Define if Eigen is available])
-    dnl EIGEN_LIBS should be empty and is so no AC_SUBST is used
-    AC_SUBST(EIGEN_CFLAGS))
+    AC_DEFINE([HAVE_EIGEN],1,[Define if Eigen is available]))
 AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
