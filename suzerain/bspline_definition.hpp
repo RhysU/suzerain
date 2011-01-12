@@ -57,13 +57,13 @@ class BsplineDefinition : public IDefinition, public integral_types
 {
 public:
     /**
-     * Construct an instance with the given default order k and breakpoint
-     * stretching parameter alpha.
+     * Construct an instance with the given default order k and hyperbolic
+     * tangent stretching parameter htdelta.
      *
-     * @param default_k Default B-spline basis order.
-     * @param default_alpha Default grid stretching parameter.
+     * @param default_k       Default B-spline basis order.
+     * @param default_htdelta Default hyperbolic tangent stretching parameter.
      */
-    BsplineDefinition(size_type default_k = 6, FPT default_alpha = 5.0);
+    BsplineDefinition(size_type default_k = 6, FPT default_htdelta = 7.0);
 
     /**
      * Retrieve the B-spline basis order.
@@ -74,15 +74,15 @@ public:
     size_type k() const { return k_; }
 
     /**
-     * Retrieve the breakpoint stretching parameter.  The parameter is used to
-     * cluster breakpoints near solid boundaries, e.g. at a flat plate or at
-     * the top and bottom wall in a channel flow.
+     * Retrieve the hyperbolic tangent stretching parameter \f$\delta\f$.  The
+     * parameter is used to cluster breakpoints near solid boundaries, e.g. at
+     * a flat plate or at the top and bottom wall in a channel flow.
      *
-     * @return the breakpoint stretching parameter.
-     * @see For information on how alpha is used, see suzerain::math::stretchspace.
-     *
+     * @return the hyperbolic tangent stretching parameter.
+     * @see For information on how htdelta is used, see suzerain_htstretch1()
+     *      and suzerain_htstretch2().
      */
-    FPT alpha() const { return alpha_; }
+    FPT htdelta() const { return htdelta_; }
 
     /*! @copydoc IDefinition::options */
     const boost::program_options::options_description& options() {
@@ -95,15 +95,15 @@ private:
     boost::program_options::options_description options_;
 
     size_type k_;  /**< Stores the B-spline basis order */
-    FPT alpha_;    /**< Stores the breakpoint stretching parameter */
+    FPT htdelta_;    /**< Stores the breakpoint stretching parameter */
 };
 
 template< typename FPT >
 BsplineDefinition<FPT>::BsplineDefinition(size_type default_k,
-                                          FPT default_alpha)
+                                          FPT default_htdelta)
     : options_("B-spline basis definition"),
       k_(default_k),
-      alpha_(default_alpha)
+      htdelta_(default_htdelta)
 {
     namespace po = ::boost::program_options;
 
@@ -120,10 +120,10 @@ BsplineDefinition<FPT>::BsplineDefinition(size_type default_k,
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"k"))
             ->default_value(default_k),
         "B-spline basis order; k = 4 indicates piecewise cubics")
-        ("alpha", po::value<FPT>(&alpha_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"alpha"))
-            ->default_value(default_alpha),
-        "B-spline breakpoint stretching parameter")
+        ("htdelta", po::value<FPT>(&htdelta_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"htdelta"))
+            ->default_value(default_htdelta),
+        "Hyperbolic tangent stretching parameter")
     ;
 }
 

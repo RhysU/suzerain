@@ -40,6 +40,7 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/grid_definition.hpp>
+#include <suzerain/htstretch.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/orthonormal.hpp>
@@ -824,42 +825,6 @@ private:
     mutable sz::pencil<> e_x, e_y, e_z, div_grad_e;
 };
 
-// FIXME Incorporate hyperbolic tangent breakpoint stretching per ticket #1197
-/**
- * Compute \c n B-spline breakpoints locations across <tt>[xbegin,xend]</tt>
- * using stretching parameter \c alpha to cluster points near the edges.
- *
- * @param[in]  xbegin One edge
- * @param[in]  xend   The opposite edge
- * @param[in]  n      Number of breakpoints
- * @param[in]  alpha  Stretching parameter
- * @param[out] output Starting location in which to save the breakpoints:
- *                    <tt>output[0]</tt> to <tt>output[n-1]</tt> must
- *                    be valid storage locations.
- *
- * @see sz::math::stretchspace for more information on \c alpha
- */
-template<typename FPT, typename SizeType>
-static void compute_breakpoints(
-        FPT xbegin, FPT xend, SizeType n, FPT alpha, FPT *output)
-{
-    using sz::math::stretchspace;
-    const FPT xhalf = (xbegin + xend)/2;
-
-    if (n & 1) {
-        stretchspace(xbegin, xhalf, n/2+1, alpha,   output);
-        stretchspace(xhalf,  xend,  n/2+1, 1/alpha, output+n/2);
-    } else {
-        const FPT aitch    = (xend-xbegin)/(n + 1);
-        const FPT xhalflen = aitch*(n/2);
-        stretchspace(xbegin, xbegin+xhalflen, n/2, alpha,   output);
-        stretchspace(xend-xhalflen, xend,     n/2, 1/alpha, output+n/2);
-    }
-
-    assert(output[0] == xbegin);
-    assert(output[n-1] == xend);
-}
-
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
 
@@ -908,7 +873,7 @@ int main(int argc, char **argv)
     LOG4CXX_INFO(log, "Global extents (XYZ):    " << def_grid.global_extents());
     LOG4CXX_INFO(log, "Dealiased extents (XYZ): " << def_grid.dealiased_extents());
     LOG4CXX_INFO(log, "B-spline order:          " << def_bspline.k());
-    LOG4CXX_INFO(log, "B-spline stretching:     " << def_bspline.alpha());
+    LOG4CXX_INFO(log, "Breakpoint stretching:   " << def_bspline.htdelta());
     LOG4CXX_INFO(log, "Reynolds number:         " << def_scenario.Re());
     LOG4CXX_INFO(log, "Prandtl number:          " << def_scenario.Pr());
     LOG4CXX_INFO(log, "gamma = C_p/C_v:         " << def_scenario.gamma());
@@ -920,9 +885,12 @@ int main(int argc, char **argv)
     double *breakpoints
         = (double *)sz::blas::malloc(nbreakpoints*sizeof(double));
     assert(breakpoints);
-    compute_breakpoints(0.0, def_grid.Ly(), nbreakpoints,
-                        def_bspline.alpha(), breakpoints);
-    for (int i = 0; i < static_cast<int>(def_grid.Ny()); ++i) {
+    sz::math::linspace(0.0, 1.0, nbreakpoints, breakpoints); // Uniform [0, 1]
+    for (int i = 0; i < nbreakpoints; ++i) {                 // Stretch 'em out
+        breakpoints[i] = def_grid.Ly() * suzerain_htstretch2(
+                def_bspline.htdelta(), 1.0, breakpoints[i]);
+    }
+    for (int i = 0; i < nbreakpoints; ++i) {
         LOG4CXX_TRACE(log,
                       "B-spline breakpoint[" << i << "] = " << breakpoints[i]);
     }
