@@ -936,7 +936,7 @@ BOOST_AUTO_TEST_CASE( ensure_create_operation_in_alloc_succeeds )
     suzerain_set_error_handler(previous_handler);
 }
 
-BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
+BOOST_AUTO_TEST_CASE( bspline_evaluation_routine_for_real_coefficients )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
@@ -1050,6 +1050,206 @@ BOOST_AUTO_TEST_CASE( bspline_evaluation_routine )
         suzerain_bspline_evaluate(
                 nderiv, coefficients, npoints, points, values, 0, w);
         BOOST_CHECK_CLOSE(-1./ 2., values[0], 1.0e-13); // 2nd derivative
+    }
+
+    suzerain_bspline_free(w);
+}
+
+BOOST_AUTO_TEST_CASE( bspline_evaluation_routine_for_complex_coefficients )
+{
+    const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+    const int order  = 4;
+    const int nderiv = 2;
+    const int ndof = 6;
+
+    suzerain_bspline_workspace *w
+        = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
+            SUZERAIN_BSPLINE_COLLOCATION_GREVILLE);
+
+    // Sanity check on fixed storage assumption for test case
+    BOOST_REQUIRE_EQUAL(ndof, w->ndof);
+
+    // Check that we have a partition of unity for real-only coefficients
+    {
+        double coefficients[ndof][2];
+        for (int i = 0; i < ndof; ++i) {
+            coefficients[i][0] = 1.0;
+            coefficients[i][1] = 0.0;
+        }
+
+        const double * points = breakpoints;
+        const int npoints = sizeof(breakpoints)/sizeof(breakpoints[0]);
+
+        const int ldvalues = npoints;
+        const int nvalues = (nderiv+1) * ldvalues;
+        double values[nvalues][2];
+
+        // Compute 0...nderiv derivatives
+        suzerain_bspline_zevaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        for (int i=0; i < ldvalues; ++i) {
+            BOOST_CHECK_CLOSE(values[i][0], 1.0, 1.0e-13); // Partition of 1
+            BOOST_CHECK_EQUAL(values[i][1], 0.0);          // No imag content
+        }
+        for (int i=ldvalues; i < nvalues; ++i) {
+            BOOST_CHECK_EQUAL(values[i][0], 0.0); // Derivatives all zero
+            BOOST_CHECK_EQUAL(values[i][1], 0.0); // Derivatives all zero
+        }
+
+        // Compute only nderiv-th derivative
+        suzerain_bspline_zevaluate(
+                nderiv, coefficients, npoints, points, values, 0, w);
+        for (int i=0; i < ldvalues; ++i) {
+            BOOST_CHECK_EQUAL(values[i][0], 0.0); // Partition of unity
+            BOOST_CHECK_EQUAL(values[i][1], 0.0); // Partition of unity
+        }
+    }
+
+    // Check that we have a partition of unity for imag-only coefficients
+    {
+        double coefficients[ndof][2];
+        for (int i = 0; i < ndof; ++i) {
+            coefficients[i][0] = 0.0;
+            coefficients[i][1] = 1.0;
+        }
+
+        const double * points = breakpoints;
+        const int npoints = sizeof(breakpoints)/sizeof(breakpoints[0]);
+
+        const int ldvalues = npoints;
+        const int nvalues = (nderiv+1) * ldvalues;
+        double values[nvalues][2];
+
+        // Compute 0...nderiv derivatives
+        suzerain_bspline_zevaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        for (int i=0; i < ldvalues; ++i) {
+            BOOST_CHECK_EQUAL(values[i][0], 0.0);          // No real content
+            BOOST_CHECK_CLOSE(values[i][1], 1.0, 1.0e-13); // Partition of 1
+        }
+        for (int i=ldvalues; i < nvalues; ++i) {
+            BOOST_CHECK_EQUAL(values[i][0], 0.0); // Derivatives all zero
+            BOOST_CHECK_EQUAL(values[i][1], 0.0); // Derivatives all zero
+        }
+
+        // Compute only nderiv-th derivative
+        suzerain_bspline_zevaluate(
+                nderiv, coefficients, npoints, points, values, 0, w);
+        for (int i=0; i < ldvalues; ++i) {
+            BOOST_CHECK_EQUAL(values[i][0], 0.0); // Partition of unity
+            BOOST_CHECK_EQUAL(values[i][1], 0.0); // Partition of unity
+        }
+    }
+
+    // Check basis function evaluation, derivatives, and ddot behavior
+    // Note we assume that GSL bspline functionality is sound and
+    // only do some minor spot checks here
+    {
+        BOOST_REQUIRE_EQUAL(6, w->ndof); // Sanity
+        BOOST_REQUIRE_EQUAL(2, nderiv);  // Sanity
+
+        double       coefficients[ndof][2];
+        const double points[]               = { 1.0 };
+        const int    npoints                = sizeof(points)/sizeof(points[0]);
+        const int    ldvalues               = npoints;
+        const int    nvalues                = (nderiv+1) *ldvalues;
+        double       values[nvalues][2];
+
+        // Investigate second basis function
+        for (int i = 0; i < ndof; ++i) {
+            coefficients[i][0] = 0.0;
+            coefficients[i][1] = 0.0;
+        }
+        coefficients[1][0] =  1.0;
+        coefficients[1][1] = -0.5;
+
+        suzerain_bspline_zevaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        BOOST_CHECK_EQUAL( 1./4., values[0][0]); // Re(0th deriv)
+        BOOST_CHECK_EQUAL(-1./8., values[0][1]); // Im(0th deriv)
+        BOOST_CHECK_EQUAL(-3./4., values[1][0]); // Re(1st deriv)
+        BOOST_CHECK_EQUAL( 3./8., values[1][1]); // Im(1st deriv)
+        BOOST_CHECK_EQUAL( 3./2., values[2][0]); // Re(2nd deriv)
+        BOOST_CHECK_EQUAL(-3./4., values[2][1]); // Im(2nd deriv)
+
+        // Investigate third basis function
+        for (int i = 0; i < ndof; ++i) {
+            coefficients[i][0] = 0.0;
+            coefficients[i][1] = 0.0;
+        }
+        coefficients[2][0] =  1.0;
+        coefficients[2][1] = -0.5;
+        suzerain_bspline_zevaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        BOOST_CHECK_CLOSE( 7./12., values[0][0], 1.0e-13); // Re(0th deriv)
+        BOOST_CHECK_CLOSE(-7./24., values[0][1], 1.0e-13); // Im(0th deriv)
+        BOOST_CHECK_EQUAL( 1./ 4., values[1][0]);          // Re(1st deriv)
+        BOOST_CHECK_EQUAL(-1./ 8., values[1][1]);          // Im(1st deriv)
+        BOOST_CHECK_EQUAL(-5./ 2., values[2][0]);          // Re(2nd deriv)
+        BOOST_CHECK_EQUAL( 5./ 4., values[2][1]);          // Im(2nd deriv)
+
+        // Investigate fourth basis function
+        for (int i = 0; i < ndof; ++i) {
+            coefficients[i][0] = 0.0;
+            coefficients[i][1] = 0.0;
+        }
+        coefficients[3][0] =  1.0;
+        coefficients[3][1] = -0.5;
+        suzerain_bspline_zevaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        BOOST_CHECK_EQUAL( 1./ 6., values[0][0]); // Re(0th deriv)
+        BOOST_CHECK_EQUAL(-1./12., values[0][1]); // Im(0th deriv)
+        BOOST_CHECK_EQUAL( 1./ 2., values[1][0]); // Re(1st deriv)
+        BOOST_CHECK_EQUAL(-1./ 4., values[1][1]); // Im(1st deriv)
+        BOOST_CHECK_EQUAL(     1., values[2][0]); // Re(2nd deriv)
+        BOOST_CHECK_EQUAL(  -0.5 , values[2][1]); // Im(2nd deriv)
+
+        // Investigate fifth basis function
+        for (int i = 0; i < ndof; ++i) {
+            coefficients[i][0] = 0.0;
+            coefficients[i][1] = 0.0;
+        }
+        coefficients[4][0] =  1.0;
+        coefficients[4][1] = -0.5;
+        suzerain_bspline_zevaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        // All zero due to influence of endpoints/repeated knots
+        BOOST_CHECK_EQUAL( 0., values[0][0]); // Re(0th deriv)
+        BOOST_CHECK_EQUAL( 0., values[0][1]); // Im(0th deriv)
+        BOOST_CHECK_EQUAL( 0., values[1][0]); // Re(1st deriv)
+        BOOST_CHECK_EQUAL( 0., values[1][1]); // Im(1st deriv)
+        BOOST_CHECK_EQUAL( 0., values[2][0]); // Re(2nd deriv)
+        BOOST_CHECK_EQUAL( 0., values[2][1]); // Im(2nd deriv)
+
+        // Check behavior of linear combinations of basis functions
+        coefficients[0][0] = GSL_NAN; // Poison value checks ddot bounds
+        coefficients[0][1] = GSL_NAN; // Poison value checks ddot bounds
+        coefficients[1][0] =  1.0;
+        coefficients[1][1] = -0.5;
+        coefficients[2][0] =  2.0;
+        coefficients[2][1] = -1.0;
+        coefficients[3][0] =  3.0;
+        coefficients[3][1] = -1.5;
+        coefficients[4][0] =  4.0;
+        coefficients[4][1] = -2.0;
+        coefficients[5][0] = GSL_NAN; // Poison value checks ddot bounds
+        coefficients[5][1] = GSL_NAN; // Poison value checks ddot bounds
+        suzerain_bspline_zevaluate(
+                nderiv, coefficients, npoints, points, values, ldvalues, w);
+        BOOST_CHECK_CLOSE( 23./12., values[0][0], 1.0e-13); // Re(0th deriv)
+        BOOST_CHECK_CLOSE(-23./24., values[0][1], 1.0e-13); // Im(0th deriv)
+        BOOST_CHECK_CLOSE(  5./ 4., values[1][0], 1.0e-13); // Re(1st deriv)
+        BOOST_CHECK_CLOSE(- 5./ 8., values[1][1], 1.0e-13); // Im(1st deriv)
+        BOOST_CHECK_CLOSE(- 1./ 2., values[2][0], 1.0e-13); // Re(2nd deriv)
+        BOOST_CHECK_CLOSE(  1./ 4., values[2][1], 1.0e-13); // Im(2nd deriv)
+
+        // Check behavior of linear combinations of basis functions
+        // when ldvalues == 0 so only highest deriv is computed
+        suzerain_bspline_zevaluate(
+                nderiv, coefficients, npoints, points, values, 0, w);
+        BOOST_CHECK_CLOSE(-1./ 2., values[0][0], 1.0e-13); // Re(2nd deriv)
+        BOOST_CHECK_CLOSE( 1./ 4., values[0][1], 1.0e-13); // Im(2nd deriv)
     }
 
     suzerain_bspline_free(w);

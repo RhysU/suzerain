@@ -287,6 +287,39 @@ suzerain_bspline_ndof(
 
 /**
  * Apply the <tt>nderivative</tt>-th derivative operator to real coefficients
+ * \c x.  Multiplies the precomputed banded derivative operator scaled by \c
+ * alpha against one or more coefficient vectors stored in \c x.  Results
+ * overwrite \c x.  Each coefficient vector is of length
+ * suzerain_bspline_ndof().  Increments and leading dimensions are specified in
+ * <tt>double</tt>-sized units.
+ *
+ * @param[in] nderivative Derivative operator to apply.  May be zero.
+ * @param[in] nrhs Number of coefficient vectors stored in \c x.
+ * @param[in] alpha Real scaling factor to apply.
+ * @param[in,out] x Coefficients to be multiplied.
+ * @param[in] incx Stride between elements stored in \c x.
+ * @param[in] ldx Leading dimension of the data stored in \c x.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ * @see suzerain_bspline_zapply_operator() for a way to apply an operator
+ *      to complex-valued coefficients.
+ * @see suzerain_bspline_accumulate_operator() for a way to accumulate the
+ *      effect of an operator against other storage.
+ */
+int
+suzerain_bspline_apply_operator(
+    int nderivative,
+    int nrhs,
+    double alpha,
+    double *x,
+    int incx,
+    int ldx,
+    const suzerain_bspline_workspace *w);
+
+/**
+ * Apply the <tt>nderivative</tt>-th derivative operator to real coefficients
  * \c x accumulating the results in \c y.  Multiplies \c alpha times the
  * precomputed banded derivative operator against one or more coefficient
  * vectors stored in \c x.  Results are added to \c beta times \c y.  Each
@@ -369,38 +402,6 @@ suzerain_bspline_zaccumulate_operator(
     int ldy,
     const suzerain_bspline_workspace *w);
 
-/**
- * Apply the <tt>nderivative</tt>-th derivative operator to real coefficients
- * \c x.  Multiplies the precomputed banded derivative operator scaled by \c
- * alpha against one or more coefficient vectors stored in \c x.  Results
- * overwrite \c x.  Each coefficient vector is of length
- * suzerain_bspline_ndof().  Increments and leading dimensions are specified in
- * <tt>double</tt>-sized units.
- *
- * @param[in] nderivative Derivative operator to apply.  May be zero.
- * @param[in] nrhs Number of coefficient vectors stored in \c x.
- * @param[in] alpha Real scaling factor to apply.
- * @param[in,out] x Coefficients to be multiplied.
- * @param[in] incx Stride between elements stored in \c x.
- * @param[in] ldx Leading dimension of the data stored in \c x.
- * @param[in] w Workspace to use.
- *
- * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
- *      returns one of #suzerain_error_status.
- * @see suzerain_bspline_zapply_operator() for a way to apply an operator
- *      to complex-valued coefficients.
- * @see suzerain_bspline_accumulate_operator() for a way to accumulate the
- *      effect of an operator against other storage.
- */
-int
-suzerain_bspline_apply_operator(
-    int nderivative,
-    int nrhs,
-    double alpha,
-    double *x,
-    int incx,
-    int ldx,
-    const suzerain_bspline_workspace *w);
 
 /**
  * Apply the <tt>nderivative</tt>-th derivative operator to complex
@@ -438,10 +439,10 @@ suzerain_bspline_zapply_operator(
 /**
  * Evaluate a function and its derivatives based upon a linear combination of
  * the basis functions.  At each \c point in \c points, evaluate the function
- * and its derivatives determined from a linear combination of the supplied \c
- * coefficients times the B-spline basis functions at \c point.  Derivatives \c
- * 0 through \c nderivative (inclusive) are computed and stored as columns
- * within \c values.
+ * and its derivatives determined from a linear combination of the supplied
+ * real-valued \c coefficients times the B-spline basis functions at \c point.
+ * Derivatives \c 0 through \c nderivative (inclusive) are computed and stored
+ * as columns within \c values.
  * That is, \f[
  *  \mbox{values}\left[i + k\,\mbox{ldvalues}\right] = \frac{d^k}{dx^k}
  *  \sum_{j=0}^{\mbox{ndof}} \mbox{coefficients}_{j}\,B_{j}(\mbox{points}_{i})
@@ -459,19 +460,24 @@ suzerain_bspline_zapply_operator(
  *
  * @param[in] nderivative Maximum requested derivative.  This may be higher
  *      than the number of derivatives requested in suzerain_bspline_alloc().
- * @param[in] coefficients Expansion coefficients for a function in terms
- *      of the B-spline basis.  Must be of length suzerain_bspline_ndof().
+ * @param[in] coefficients Real-valued expansion coefficients for a function in
+ *      terms of the B-spline basis.  Must be of length
+ *      suzerain_bspline_ndof().
  * @param[in] npoints Number of evaluation points.
  * @param[in] points Points at which to evaluate the function.
- * @param[out] values Matrix of values resulting from evaluating the function
- *      and its derivatives.  Matrix dimensions are suzerain_bspline_ndof()
- *      by \c nderivative if \c ldvalues >= \c suzerain_bspline_ndof().
- *      If \c ldvalues is zero, only a single column is returned in \c values.
- * @param[in] ldvalues Leading dimension of the output matrix \c values.
+ * @param[out] values Matrix of real values resulting from evaluating the
+ *      function and its derivatives.  Matrix dimensions are
+ *      suzerain_bspline_ndof() by \c nderivative if \c ldvalues >=
+ *      \c suzerain_bspline_ndof().  If \c ldvalues is zero, only a single
+ *      column is returned in \c values.
+ * @param[in] ldvalues Leading dimension of the output matrix \c values
+ *            measured as real-valued strides.
  * @param[in] w Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
+ * @see suzerain_bspline_zevaluate() for a way to evaluate a function and
+ *      its derivatives when the coefficients are complex-valued.
  */
 int
 suzerain_bspline_evaluate(
@@ -484,8 +490,61 @@ suzerain_bspline_evaluate(
     const suzerain_bspline_workspace *w);
 
 /**
+ * Evaluate a function and its derivatives based upon a linear combination of
+ * the basis functions.  At each \c point in \c points, evaluate the function
+ * and its derivatives determined from a linear combination of the supplied
+ * complex-valued \c coefficients times the B-spline basis functions at \c
+ * point.  Derivatives \c 0 through \c nderivative (inclusive) are computed and
+ * stored as columns within \c values.
+ * That is, \f[
+ *  \mbox{values}\left[i + k\,\mbox{ldvalues}\right] = \frac{d^k}{dx^k}
+ *  \sum_{j=0}^{\mbox{ndof}} \mbox{coefficients}_{j}\,B_{j}(\mbox{points}_{i})
+ * \f]
+ * for \f$ i\in\left\{0,\ldots,\mbox{npoints}\right\} \f$,
+ *\f$ k\in\left\{0,\ldots,\mbox{nderivative}\right\} \f$,
+ * \f$\mbox{ndof} = \f$ suzerain_bspline_ndof(w), and B-spline basis
+ * functions \f$ B_{j} \f$.  If only a single derivative is desired, passing \c
+ * 0 to \c ldvalues will cause only that single derivative to be written in the
+ * first column of \c values.
+ *
+ * \note It is more efficient to compute a function and its derivatives
+ * simultaneously than to request each derivative separately.  This is due to
+ * the recurrence relationship used to compute B-spline derivatives.
+ *
+ * @param[in] nderivative Maximum requested derivative.  This may be higher
+ *      than the number of derivatives requested in suzerain_bspline_alloc().
+ * @param[in] coefficients Complex-valued expansion coefficients for a function
+ *      in terms of the B-spline basis.  Must be of length
+ *      suzerain_bspline_ndof().
+ * @param[in] npoints Number of evaluation points.
+ * @param[in] points Points at which to evaluate the function.
+ * @param[out] values Matrix of complex values resulting from evaluating the
+ *      function and its derivatives.  Matrix dimensions are
+ *      suzerain_bspline_ndof() by \c nderivative if \c ldvalues >=
+ *      \c suzerain_bspline_ndof().  If \c ldvalues is zero, only a single
+ *      column is returned in \c values.
+ * @param[in] ldvalues Leading dimension of the output matrix \c values
+ *            measured as complex-valued strides.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ * @see suzerain_bspline_evaluate() for a way to evaluate a function and
+ *      its derivatives when the coefficients are real-valued.
+ */
+int
+suzerain_bspline_zevaluate(
+    int nderivative,
+    const double (* coefficients)[2],
+    int npoints,
+    const double * points,
+    double (* values)[2],
+    int ldvalues,
+    const suzerain_bspline_workspace *w);
+
+/**
  * Determine the right hand side of the interpolation problem <tt>D[0] x
- * =rhs</tt>.  Here <tt>D[0]</tt> is the zeroth derivative operator (i.e. mass
+ * = rhs</tt>.  Here <tt>D[0]</tt> is the zeroth derivative operator (i.e. mass
  * matrix), \c x are the basis function coefficients that will best represent
  * \c function for the given method, and \c rhs is the vector computed by this
  * routine.

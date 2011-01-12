@@ -149,10 +149,20 @@ public:
 
     /** @see suzerain_bspline_evaluate */
     int evaluate(int nderivative,
-            const double * coefficients, int npoints, const double * points,
-            double * values, int ldvalues) const
+            const double * coefficients, int npoints,
+            const double * points, double * values, int ldvalues) const
     {
         return suzerain_bspline_evaluate(nderivative,
+                coefficients, npoints, points,
+                values, ldvalues, w_);
+    }
+
+    /** @see suzerain_bspline_zevaluate */
+    int zevaluate(int nderivative,
+            const double (* coefficients)[2], int npoints,
+            const double * points, double (* values)[2], int ldvalues) const
+    {
+        return suzerain_bspline_zevaluate(nderivative,
                 coefficients, npoints, points,
                 values, ldvalues, w_);
     }
