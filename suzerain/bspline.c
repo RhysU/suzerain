@@ -728,12 +728,21 @@ suzerain_bspline_find_interpolation_problem_rhs(
     double * rhs,
     const suzerain_bspline_workspace *w)
 {
-    /* Evaluate the function at the collocation points */
-    const int n = w->ndof;
-    for (int i = 0; i < n; ++i) {
-        double x;
-        suzerain_bspline_collocation_point(i, &x, w);
-        rhs[i] = SUZERAIN_FN_EVAL(function, x);
+    switch (w->method) {
+    case SUZERAIN_BSPLINE_COLLOCATION_GREVILLE:
+        {
+            /* Evaluate the function at the collocation points */
+            const int n = w->ndof;
+            for (int i = 0; i < n; ++i) {
+                double x;
+                suzerain_bspline_collocation_point(i, &x, w);
+                rhs[i] = SUZERAIN_FN_EVAL(function, x);
+            }
+        }
+
+        break;
+    default:
+        SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
 
     return SUZERAIN_SUCCESS;
