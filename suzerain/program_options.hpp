@@ -108,6 +108,28 @@ public:
      */
     boost::program_options::options_description& options();
 
+protected:
+
+    /**
+     * Protected implementation of processing logic.  Implementation kept
+     * separate from public API to allow use of boost::onullstream on non-zero
+     * ranks.
+     *
+     * @see process for the public API.
+     */
+    template< typename DebugOStream,
+              typename InfoOStream,
+              typename WarnOStream,
+              typename ErrorOStream >
+    void process_internal(int argc,
+                          char **argv,
+                          MPI_Comm comm,
+                          DebugOStream &debug,
+                          InfoOStream &info,
+                          WarnOStream &warn,
+                          ErrorOStream &error);
+
+public:
 
     /**
      * Process <tt>main</tt>'s <tt>argc</tt> and <tt>argv</tt> according to the
@@ -138,12 +160,22 @@ public:
                  DebugOStream &debug,
                  InfoOStream &info,
                  WarnOStream &warn,
-                 ErrorOStream &error);
+                 ErrorOStream &error)
+    {
+        const int rank = suzerain::mpi::comm_rank(comm);
+        if (rank == 0) {
+            return process_internal(argc, argv, comm,
+                                    debug, info, warn, error);
+        } else {
+            boost::onullstream nullstream;
+            return process_internal(argc, argv, comm,
+                                    nullstream, nullstream, nullstream, nullstream);
+        }
+    }
 
     /**
-     * A convenience method suppressing debugging messages and
-     * supplying <tt>std::cout</tt> and <tt>std::cerr</tt> to
-     * <tt>process</tt>.
+     * A convenience method suppressing debugging messages and supplying
+     * <tt>std::cout</tt> and <tt>std::cerr</tt> to <tt>process</tt>.
      *
      * @param argc Should contain <tt>main</tt>'s \c argc.
      * @param argv Should contain <tt>main</tt>'s \c argv.
@@ -153,7 +185,7 @@ public:
                  char **argv,
                  MPI_Comm comm = MPI_COMM_WORLD)
     {
-        boost::basic_onullstream<char> nullstream;
+        boost::onullstream nullstream;
         return process(argc,
                        argv,
                        comm,
@@ -267,13 +299,13 @@ template< typename DebugOStream,
           typename InfoOStream,
           typename WarnOStream,
           typename ErrorOStream >
-void ProgramOptions::process(int argc,
-                             char **argv,
-                             MPI_Comm comm,
-                             DebugOStream &debug,
-                             InfoOStream &info,
-                             WarnOStream &warn,
-                             ErrorOStream &error)
+void ProgramOptions::process_internal(int argc,
+                                      char **argv,
+                                      MPI_Comm comm,
+                                      DebugOStream &debug,
+                                      InfoOStream &info,
+                                      WarnOStream &warn,
+                                      ErrorOStream &error)
 {
     SUZERAIN_UNUSED(info);
     SUZERAIN_UNUSED(error);
@@ -321,7 +353,7 @@ void ProgramOptions::process(int argc,
 
     // Warn whenever an unrecognized option is encountered on the CLI
     // Warn instead of balk because MPI stacks may utilize argc/argv
-    if (!rank) {
+    {
         vector<string> unrecognized = po::collect_unrecognized(
                 parsed_cli.options, po::exclude_positional);
         BOOST_FOREACH( string option, unrecognized ) {
@@ -333,11 +365,11 @@ void ProgramOptions::process(int argc,
 
     // Process command-line only parameters
     if (variables_.count("help")) {
-        if (!rank) print_help(std::cout, argv[0]);
+        print_help(std::cout, argv[0]);
         exit(0);
     }
     if (variables_.count("version")) {
-        if (!rank) print_version(std::cout, argv[0]);
+        print_version(std::cout, argv[0]);
         exit(0);
     }
 
@@ -347,20 +379,41 @@ void ProgramOptions::process(int argc,
         BOOST_FOREACH(const string &filename,
                       variables_["input-file"].as< vector<string> >()) {
 
-            if (!rank) {
-                debug << "Reading additional options from file '"
-                      << filename << "'" << std::endl;
-            }
+            debug << "Reading additional options from file '"
+                  << filename << "'" << std::endl;
 
-            std::ifstream ifs(filename.c_str(), std::ifstream::in);
+            // Rank zero reads the file and broadcasts it to other ranks
+            // TODO Error handling on fopen, fseek, ftell, fread, fclose
+            long len;
+            FILE *fp = NULL;
+            if (rank == 0) {
+                fp = fopen(filename.c_str(), "rb");
+                fseek(fp, 0, SEEK_END);
+                len = ftell(fp);
+            }
+            MPI_Bcast(&len, 1, MPI_LONG, 0, comm);
+            boost::scoped_array<char> buf(new char[len]);
+            if (rank == 0) {
+                fseek(fp, 0, SEEK_SET);
+                fread(buf.get(), 1, len, fp);
+                fclose(fp);
+                fp = NULL;
+            }
+            MPI_Bcast(buf.get(), len, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+            // Create an istream from the buffer contents
+            basic_membuf<char> mb(buf.get(), len);
+            std::basic_istream<char> is(&mb);
+
+            // Parse and store from the buffer-based istream
             po::parsed_options parsed_file
-                = po::parse_config_file(ifs, opts_file, true);
+                = po::parse_config_file(is, opts_file, true);
             po::store(parsed_file, variables_);
 
             // TODO Display appropriate warning on unrecognized options
             // collect_unrecognized/parse_config_file broken in Boost 1.40
             // Refer to https://svn.boost.org/trac/boost/ticket/3775
-            if (!rank) {
+            {
                 vector< string > unrecognized = po::collect_unrecognized(
                         parsed_file.options, po::exclude_positional);
                 BOOST_FOREACH( string option, unrecognized ) {

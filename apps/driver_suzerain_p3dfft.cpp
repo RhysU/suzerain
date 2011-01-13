@@ -77,13 +77,7 @@ int main(int argc, char **argv)
         ("nrep", po::value<int>(&nrep)->default_value(nrep),
         "Number of repetitions to perform for timing purposes")
     ;
-    if (!procid) {
-        options.process(argc, argv, MPI_COMM_WORLD);
-    } else {
-        boost::onullstream nullstream;
-        options.process(argc, argv, MPI_COMM_WORLD,
-                        nullstream, nullstream, nullstream, nullstream);
-    }
+    options.process(argc, argv);
 
 #pragma warning(push,disable:383)
     ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
