@@ -860,10 +860,10 @@ int main(int argc, char **argv)
     options.add_definition(def_bspline);
     options.add_definition(def_restart);
     if (!procid) {
-        options.process(argc, argv);
+        options.process(argc, argv, MPI_COMM_WORLD);
     } else {
         boost::onullstream nullstream;
-        options.process(argc, argv,
+        options.process(argc, argv, MPI_COMM_WORLD,
                         nullstream, nullstream, nullstream, nullstream);
     }
     assert(def_grid.DAFy() == 1.0);  // Wall normal dealiasing disallowed

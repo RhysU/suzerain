@@ -94,10 +94,10 @@ int main(int argc, char *argv[])
          po::value<int>(&sleep_barrier)->default_value(sleep_barrier),
         "DEBUG: If > 0, the process rank at which to create a sleep barrier.");
     if (!procid) {
-        options.process(argc, argv);
+        options.process(argc, argv, MPI_COMM_WORLD);
     } else {
         boost::onullstream nullstream;
-        options.process(argc, argv,
+        options.process(argc, argv, MPI_COMM_WORLD,
                         nullstream, nullstream, nullstream, nullstream);
     }
     if (sleep_barrier >= 0) {

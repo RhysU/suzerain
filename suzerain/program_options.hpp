@@ -31,6 +31,7 @@
 #define __SUZERAIN_PROGRAM_OPTIONS_HPP
 
 #include <suzerain/common.hpp>
+#include <suzerain/mpi.hpp>
 #include <suzerain/problem.hpp>
 
 /** @file
@@ -53,6 +54,8 @@ namespace suzerain {
  *   - Warns whenever an unrecognized option is provided
  *   - Provides <tt>--help</tt> and <tt>--version</tt> functionality
  *   - Optionally provides a program description for <tt>--help</tt>
+ *   - Reads any input files in a scalable way by reading them on
+ *     the root process and then broadcasting the contents to all ranks.
  */
 class ProgramOptions
 {
@@ -107,28 +110,31 @@ public:
 
 
     /**
-     * Process <tt>main</tt>'s <tt>argc</tt> and <tt>argv</tt> according
-     * to the previously provided options and IDefinition instances.
-     * This method performs all necessary parsing, file handling,
-     * and notification callbacks.  It will throw exceptions on errors.
-     * If either <tt>--help</tt> or <tt>--version</tt> is encountered the
-     * appropriate message will be written on <tt>std::cout</tt> and
-     * <tt>exit(0)</tt> will be called.
+     * Process <tt>main</tt>'s <tt>argc</tt> and <tt>argv</tt> according to the
+     * previously provided options and IDefinition instances.  This method
+     * performs all necessary parsing, file handling, and notification
+     * callbacks.  It will throw exceptions on errors.  If either
+     * <tt>--help</tt> or <tt>--version</tt> is encountered the appropriate
+     * message will be written on <tt>std::cout</tt> and <tt>exit(0)</tt> will
+     * be called.  Any input files are read by only rank zero of <tt>comm</tt>
+     * and are then broadcast to all other ranks.  Error messages are only
+     * output by rank zero.
      *
-     * @param argc Should contain <tt>main</tt>'s \c argc.
-     * @param argv Should contain <tt>main</tt>'s \c argv.
+     * @param argc  Should contain <tt>main</tt>'s \c argc.
+     * @param argv  Should contain <tt>main</tt>'s \c argv.
+     * @param comm  MPI Communicator over which the processing is collective.
      * @param debug Stream on which debugging messages will be output.
-     * @param info Stream on which informational messages will be output.
-     * @param warn Stream on which warning messages will be output.
+     * @param info  Stream on which informational messages will be output.
+     * @param warn  Stream on which warning messages will be output.
      * @param error Stream on which fatal error messages will be output.
      */
-    template< typename charT,
-              typename DebugOStream,
+    template< typename DebugOStream,
               typename InfoOStream,
               typename WarnOStream,
               typename ErrorOStream >
     void process(int argc,
-                 charT **argv,
+                 char **argv,
+                 MPI_Comm comm,
                  DebugOStream &debug,
                  InfoOStream &info,
                  WarnOStream &warn,
@@ -141,9 +147,21 @@ public:
      *
      * @param argc Should contain <tt>main</tt>'s \c argc.
      * @param argv Should contain <tt>main</tt>'s \c argv.
+     * @param comm MPI Communicator over which the processing is collective.
      */
-    template< typename charT >
-    void process(int argc, charT **argv);
+    void process(int argc,
+                 char **argv,
+                 MPI_Comm comm = MPI_COMM_WORLD)
+    {
+        boost::basic_onullstream<char> nullstream;
+        return process(argc,
+                       argv,
+                       comm,
+                       nullstream, // Debug messages
+                       std::cout,  // Info messages
+                       std::cerr,  // Warn messages
+                       std::cerr); // Error messages
+    }
 
     /**
      * Provides access to the variable map used to store options.  Useful if
@@ -230,13 +248,28 @@ ProgramOptions::options() {
     return options_;
 };
 
-template< typename charT,
-          typename DebugOStream,
+namespace {
+
+
+/**
+ * Subclass of basic_streambuf to allow using a buffer of fixed size.
+ * @see http://bytes.com/topic/c/answers/582365-making-istream-char-array
+ */
+template< class Elem, class Tr = std::char_traits<Elem> >
+struct basic_membuf : public std::basic_streambuf<Elem, Tr>
+{
+    basic_membuf(Elem *b, size_t n) { this->setg(b, b, b + n); }
+};
+
+} // anonymous namespace
+
+template< typename DebugOStream,
           typename InfoOStream,
           typename WarnOStream,
           typename ErrorOStream >
 void ProgramOptions::process(int argc,
-                             charT **argv,
+                             char **argv,
+                             MPI_Comm comm,
                              DebugOStream &debug,
                              InfoOStream &info,
                              WarnOStream &warn,
@@ -244,9 +277,10 @@ void ProgramOptions::process(int argc,
 {
     SUZERAIN_UNUSED(info);
     SUZERAIN_UNUSED(error);
-
-    typedef std::basic_string<charT> string_charT;
+    using std::string;
+    using std::vector;
     namespace po = boost::program_options;
+    const int rank = suzerain::mpi::comm_rank(comm);
 
     // Prepare options allowed only on command line
     po::options_description desc_clionly("Program information");
@@ -259,7 +293,7 @@ void ProgramOptions::process(int argc,
     // These are never shown to the user
     po::options_description desc_hidden("Hidden options");
     desc_hidden.add_options()
-        ("input-file", po::value< std::vector<std::string> >(), "input file")
+        ("input-file", po::value< vector<string> >(), "input file")
     ;
 
     // Build the options acceptable on the CLI, in a file, and in help message
@@ -278,21 +312,19 @@ void ProgramOptions::process(int argc,
     opts_positional.add("input-file", -1);
 
     // Parse all the command line options
-    po::basic_parsed_options<charT> parsed_cli
-        = po::basic_command_line_parser<charT>(argc, argv)
-                .options(opts_cli)
-                .positional(opts_positional)
-                .allow_unregistered()
-                .run();
+    po::parsed_options parsed_cli = po::command_line_parser(argc, argv)
+                                        .options(opts_cli)
+                                        .positional(opts_positional)
+                                        .allow_unregistered()
+                                        .run();
     po::store(parsed_cli, variables_);
 
     // Warn whenever an unrecognized option is encountered on the CLI
     // Warn instead of balk because MPI stacks may utilize argc/argv
-    {
-        std::vector< string_charT > unrecognized
-            = po::collect_unrecognized(parsed_cli.options,
-                                       po::exclude_positional);
-        BOOST_FOREACH( string_charT option, unrecognized ) {
+    if (!rank) {
+        vector<string> unrecognized = po::collect_unrecognized(
+                parsed_cli.options, po::exclude_positional);
+        BOOST_FOREACH( string option, unrecognized ) {
             warn << "Unrecognized option '" << option << "'"
                  << " on command line"
                  << std::endl;
@@ -301,40 +333,41 @@ void ProgramOptions::process(int argc,
 
     // Process command-line only parameters
     if (variables_.count("help")) {
-        print_help(std::cout, argv[0]);
+        if (!rank) print_help(std::cout, argv[0]);
         exit(0);
     }
     if (variables_.count("version")) {
-        print_version(std::cout, argv[0]);
+        if (!rank) print_version(std::cout, argv[0]);
         exit(0);
     }
 
     // Parse any input files provided on the command line
     // Earlier files shadow/override settings found in later files
     if (variables_.count("input-file")) {
-        using std::vector;
-        BOOST_FOREACH(const string_charT &filename,
-                      variables_["input-file"].as< vector<string_charT> >()) {
+        BOOST_FOREACH(const string &filename,
+                      variables_["input-file"].as< vector<string> >()) {
 
-            debug << "Reading additional options from file '"
-                  << filename << "'" << std::endl;
+            if (!rank) {
+                debug << "Reading additional options from file '"
+                      << filename << "'" << std::endl;
+            }
 
-            std::basic_ifstream<charT> ifs(
-                    filename.c_str(), std::ifstream::in);
-            po::basic_parsed_options<charT> parsed_file
+            std::ifstream ifs(filename.c_str(), std::ifstream::in);
+            po::parsed_options parsed_file
                 = po::parse_config_file(ifs, opts_file, true);
             po::store(parsed_file, variables_);
 
             // TODO Display appropriate warning on unrecognized options
             // collect_unrecognized/parse_config_file broken in Boost 1.40
             // Refer to https://svn.boost.org/trac/boost/ticket/3775
-            vector< string_charT > unrecognized
-                = po::collect_unrecognized(parsed_file.options,
-                                           po::exclude_positional);
-            BOOST_FOREACH( string_charT option, unrecognized ) {
-                warn << "Unrecognized option '" << option << "'"
-                     << " in file '" << filename << "'"
-                     << std::endl;
+            if (!rank) {
+                vector< string > unrecognized = po::collect_unrecognized(
+                        parsed_file.options, po::exclude_positional);
+                BOOST_FOREACH( string option, unrecognized ) {
+                    warn << "Unrecognized option '" << option << "'"
+                        << " in file '" << filename << "'"
+                        << std::endl;
+                }
             }
 
             // TODO Display appropriate debug message on shadowed options
@@ -345,17 +378,6 @@ void ProgramOptions::process(int argc,
     po::notify(variables_);
 }
 
-template< typename charT >
-void ProgramOptions::process(int argc, charT **argv)
-{
-    boost::basic_onullstream<charT> nullstream;
-    return process(argc,
-                   argv,
-                   nullstream, // Debug messages
-                   std::cout,  // Info messages
-                   std::cerr,  // Warn messages
-                   std::cerr); // Error messages
-}
 
 inline
 boost::program_options::variables_map& ProgramOptions::variables() {

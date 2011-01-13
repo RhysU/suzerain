@@ -78,10 +78,10 @@ int main(int argc, char **argv)
         "Number of repetitions to perform for timing purposes")
     ;
     if (!procid) {
-        options.process(argc, argv);
+        options.process(argc, argv, MPI_COMM_WORLD);
     } else {
         boost::onullstream nullstream;
-        options.process(argc, argv,
+        options.process(argc, argv, MPI_COMM_WORLD,
                         nullstream, nullstream, nullstream, nullstream);
     }
 
