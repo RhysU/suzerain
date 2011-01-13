@@ -110,6 +110,13 @@ test_traits_CPPFLAGS  = $(AM_CPPFLAGS)
 test_traits_LDADD     = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_traits_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                      += test_mpi_datatype
+check_PROGRAMS             += test_mpi_datatype
+test_mpi_datatype_SOURCES   = test_mpi_datatype.cpp
+test_mpi_datatype_CPPFLAGS  = $(AM_CPPFLAGS)
+test_mpi_datatype_LDADD     = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_mpi_datatype_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                       += test_blas_et_al_cpp
 check_PROGRAMS              += test_blas_et_al_cpp
 test_blas_et_al_cpp_SOURCES  = test_blas_et_al_cpp.cpp

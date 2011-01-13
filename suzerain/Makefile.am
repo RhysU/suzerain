@@ -47,6 +47,7 @@ pkginclude_HEADERS += iterator.hpp
 pkginclude_HEADERS += math.hpp
 pkginclude_HEADERS += mpi.h
 pkginclude_HEADERS += mpi.hpp
+pkginclude_HEADERS += mpi_datatype.hpp
 pkginclude_HEADERS += mpl.hpp
 pkginclude_HEADERS += multi_array.hpp
 pkginclude_HEADERS += orthonormal.hpp
