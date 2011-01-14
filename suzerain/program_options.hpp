@@ -64,14 +64,20 @@ public:
     /**
      * Default constructor which does not supply a program description.
      */
-    ProgramOptions();
+    ProgramOptions()
+        : variables_(),
+          options_("Configuration options"),
+          application_description_() {}
 
     /**
      * Constructor providing a program description.
      *
      * @param description Description to display for <tt>--help</tt> option
      */
-    ProgramOptions(const std::string &description);
+    ProgramOptions(const std::string &description)
+        : variables_(),
+          options_("Configuration options"),
+          application_description_(description) {}
 
     /**
      * Adds all the options stored within the given IDefinition to the
@@ -85,7 +91,11 @@ public:
      *
      * @see suzerain::problem::IDefinition for the necessary contract.
      */
-    ProgramOptions& add_definition(suzerain::problem::IDefinition &definition);
+    ProgramOptions& add_definition(suzerain::problem::IDefinition &definition)
+    {
+        options_.add(definition.options());
+        return *this;
+    }
 
     /**
      * Allows callers to add new options using the Boost.Program_options
@@ -97,7 +107,10 @@ public:
      * @see The <a href="http://www.boost.org/doc/html/program_options.html">
      *      Boost.Program_options documention</a> for more details.
      */
-    boost::program_options::options_description_easy_init add_options();
+    boost::program_options::options_description_easy_init add_options()
+    {
+        return options_.add_options();
+    }
 
     /**
      * Obtain the underlying <tt>options_description</tt> maintaining
@@ -106,30 +119,7 @@ public:
      *
      * @return the underlying <tt>options_description</tt> instance.
      */
-    boost::program_options::options_description& options();
-
-protected:
-
-    /**
-     * Protected implementation of processing logic.  Implementation kept
-     * separate from public API to allow use of boost::onullstream on non-zero
-     * ranks.
-     *
-     * @see process for the public API.
-     */
-    template< typename DebugOStream,
-              typename InfoOStream,
-              typename WarnOStream,
-              typename ErrorOStream >
-    void process_internal(int argc,
-                          char **argv,
-                          MPI_Comm comm,
-                          DebugOStream &debug,
-                          InfoOStream &info,
-                          WarnOStream &warn,
-                          ErrorOStream &error);
-
-public:
+    boost::program_options::options_description& options() { return options_; }
 
     /**
      * Process <tt>main</tt>'s <tt>argc</tt> and <tt>argv</tt> according to the
@@ -150,28 +140,13 @@ public:
      * @param warn  Stream on which warning messages will be output.
      * @param error Stream on which fatal error messages will be output.
      */
-    template< typename DebugOStream,
-              typename InfoOStream,
-              typename WarnOStream,
-              typename ErrorOStream >
     void process(int argc,
                  char **argv,
                  MPI_Comm comm,
-                 DebugOStream &debug,
-                 InfoOStream &info,
-                 WarnOStream &warn,
-                 ErrorOStream &error)
-    {
-        const int rank = suzerain::mpi::comm_rank(comm);
-        if (rank == 0) {
-            return process_internal(argc, argv, comm,
-                                    debug, info, warn, error);
-        } else {
-            boost::onullstream nullstream;
-            return process_internal(argc, argv, comm,
-                                    nullstream, nullstream, nullstream, nullstream);
-        }
-    }
+                 std::ostream &debug,
+                 std::ostream &info,
+                 std::ostream &warn,
+                 std::ostream &error);
 
     /**
      * A convenience method suppressing debugging messages and supplying
@@ -204,9 +179,24 @@ public:
      * @return The Boost.Program_options <tt>variables_map</tt> used by
      *         this instance.
      */
-    boost::program_options::variables_map& variables();
+    boost::program_options::variables_map& variables() { return variables_; }
 
 protected:
+
+    /**
+     * Protected implementation of processing logic.  Implementation kept
+     * separate from public API to simplify using of
+     * <tt>boost::onullstream</tt> on non-zero ranks.
+     *
+     * @see process for the public API.
+     */
+    void process_internal(int argc,
+                          char **argv,
+                          MPI_Comm comm,
+                          std::ostream &debug,
+                          std::ostream &info,
+                          std::ostream &warn,
+                          std::ostream &error);
 
     /**
      * Print version information on the given stream.  Includes
@@ -215,8 +205,7 @@ protected:
      * @param out Stream on which to write the information.
      * @param application_name Application name to be written.
      */
-    template< typename OStream >
-    void print_version(OStream&out, const std::string &application_name);
+    void print_version(std::ostream &out, const std::string &application_name);
 
     /**
      * Print help information on the given stream.  Includes
@@ -226,8 +215,7 @@ protected:
      * @param out Stream on which to write the information.
      * @param application_name Application name to be written.
      */
-    template< typename OStream >
-    void print_help(OStream &out, const std::string &application_name);
+    void print_help(std::ostream &out, const std::string &application_name);
 
     /**
      * The Boost.Program_options variables_map used internally.
@@ -244,233 +232,6 @@ protected:
     /** The application description used for user-oriented messages. */
     std::string application_description_;
 };
-
-ProgramOptions::ProgramOptions()
-    : variables_(),
-      options_("Configuration options"),
-      application_description_()
-{
-    // NOP
-}
-
-ProgramOptions::ProgramOptions(const std::string &description)
-    : variables_(),
-      options_("Configuration options"),
-      application_description_(description)
-{
-    // NOP
-}
-
-ProgramOptions& ProgramOptions::add_definition(
-        suzerain::problem::IDefinition &definition)
-{
-    options_.add(definition.options());
-    return *this;
-}
-
-inline
-boost::program_options::options_description_easy_init
-ProgramOptions::add_options() {
-    return options_.add_options();
-};
-
-inline
-boost::program_options::options_description&
-ProgramOptions::options() {
-    return options_;
-};
-
-namespace {
-
-
-/**
- * Subclass of basic_streambuf to allow using a buffer of fixed size.
- * @see http://bytes.com/topic/c/answers/582365-making-istream-char-array
- */
-template< class Elem, class Tr = std::char_traits<Elem> >
-struct basic_membuf : public std::basic_streambuf<Elem, Tr>
-{
-    basic_membuf(Elem *b, size_t n) { this->setg(b, b, b + n); }
-};
-
-} // anonymous namespace
-
-template< typename DebugOStream,
-          typename InfoOStream,
-          typename WarnOStream,
-          typename ErrorOStream >
-void ProgramOptions::process_internal(int argc,
-                                      char **argv,
-                                      MPI_Comm comm,
-                                      DebugOStream &debug,
-                                      InfoOStream &info,
-                                      WarnOStream &warn,
-                                      ErrorOStream &error)
-{
-    SUZERAIN_UNUSED(info);
-    SUZERAIN_UNUSED(error);
-    using std::string;
-    using std::vector;
-    namespace po = boost::program_options;
-    const int rank = suzerain::mpi::comm_rank(comm);
-
-    // Prepare options allowed only on command line
-    po::options_description desc_clionly("Program information");
-    desc_clionly.add_options()
-        ("help,h",    "show usage information")
-        ("version,v", "print version string")
-    ;
-
-    // Prepare options allowed on command line and in configuration file
-    // These are never shown to the user
-    po::options_description desc_hidden("Hidden options");
-    desc_hidden.add_options()
-        ("input-file", po::value< vector<string> >(), "input file")
-    ;
-
-    // Build the options acceptable on the CLI, in a file, and in help message
-    po::options_description opts_cli;
-    opts_cli.add(options_).add(desc_hidden).add(desc_clionly);
-
-    po::options_description opts_file;
-    opts_file.add(options_).add(desc_hidden);
-
-    po::options_description opts_visible;
-    opts_visible.add(options_).add(desc_clionly);
-
-    // Have positional parameters act like input-file
-    po::positional_options_description opts_positional;
-
-    opts_positional.add("input-file", -1);
-
-    // Parse all the command line options
-    po::parsed_options parsed_cli = po::command_line_parser(argc, argv)
-                                        .options(opts_cli)
-                                        .positional(opts_positional)
-                                        .allow_unregistered()
-                                        .run();
-    po::store(parsed_cli, variables_);
-
-    // Warn whenever an unrecognized option is encountered on the CLI
-    // Warn instead of balk because MPI stacks may utilize argc/argv
-    {
-        vector<string> unrecognized = po::collect_unrecognized(
-                parsed_cli.options, po::exclude_positional);
-        BOOST_FOREACH( string option, unrecognized ) {
-            warn << "Unrecognized option '" << option << "'"
-                 << " on command line"
-                 << std::endl;
-        }
-    }
-
-    // Process command-line only parameters
-    if (variables_.count("help")) {
-        print_help(std::cout, argv[0]);
-        exit(0);
-    }
-    if (variables_.count("version")) {
-        print_version(std::cout, argv[0]);
-        exit(0);
-    }
-
-    // Parse any input files provided on the command line
-    // Earlier files shadow/override settings found in later files
-    if (variables_.count("input-file")) {
-        BOOST_FOREACH(const string &filename,
-                      variables_["input-file"].as< vector<string> >()) {
-
-            debug << "Reading additional options from file '"
-                  << filename << "'" << std::endl;
-
-            // Rank zero reads the file and broadcasts it to other ranks
-            // TODO Error handling on fopen, fseek, ftell, fread, fclose
-            long len;
-            FILE *fp = NULL;
-            if (rank == 0) {
-                fp = fopen(filename.c_str(), "rb");
-                fseek(fp, 0, SEEK_END);
-                len = ftell(fp);
-            }
-            MPI_Bcast(&len, 1, MPI_LONG, 0, comm);
-            boost::scoped_array<char> buf(new char[len]);
-            if (rank == 0) {
-                fseek(fp, 0, SEEK_SET);
-                fread(buf.get(), 1, len, fp);
-                fclose(fp);
-                fp = NULL;
-            }
-            MPI_Bcast(buf.get(), len, MPI_CHAR, 0, MPI_COMM_WORLD);
-
-            // Create an istream from the buffer contents
-            basic_membuf<char> mb(buf.get(), len);
-            std::basic_istream<char> is(&mb);
-
-            // Parse and store from the buffer-based istream
-            po::parsed_options parsed_file
-                = po::parse_config_file(is, opts_file, true);
-            po::store(parsed_file, variables_);
-
-            // TODO Display appropriate warning on unrecognized options
-            // collect_unrecognized/parse_config_file broken in Boost 1.40
-            // Refer to https://svn.boost.org/trac/boost/ticket/3775
-            {
-                vector< string > unrecognized = po::collect_unrecognized(
-                        parsed_file.options, po::exclude_positional);
-                BOOST_FOREACH( string option, unrecognized ) {
-                    warn << "Unrecognized option '" << option << "'"
-                        << " in file '" << filename << "'"
-                        << std::endl;
-                }
-            }
-
-            // TODO Display appropriate debug message on shadowed options
-        }
-    }
-
-    // Perform all notification callbacks because all processing is done
-    po::notify(variables_);
-}
-
-
-inline
-boost::program_options::variables_map& ProgramOptions::variables() {
-    return variables_;
-};
-
-template< typename OStream >
-void ProgramOptions::print_version(OStream& out,
-                                   const std::string &application_name)
-{
-#ifdef PACKAGE_STRING
-    out << PACKAGE_STRING << " ";
-#endif
-    out << application_name
-        << " (built " __DATE__ " " __TIME__
-#if defined(__INTEL_COMPILER)
-        << " using Intel "
-        << __INTEL_COMPILER << " " << __INTEL_COMPILER_BUILD_DATE
-#elif defined(__GNUC__)
-        << " using GNU "
-        << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__
-#else
-        << " using an unknown compiler"
-#endif
-        << ")"
-        << std::endl;
-}
-
-template< typename OStream >
-void ProgramOptions::print_help(OStream &out,
-                                const std::string &application_name)
-{
-    out << "\nUsage: " << application_name << " [OPTION] [FILE]...\n";
-
-    if (!application_description_.empty()) {
-        out << application_description_ << '\n';
-    }
-
-    out << '\n' << options_ << std::endl;
-}
 
 } // namespace suzerain
 

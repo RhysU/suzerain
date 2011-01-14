@@ -88,6 +88,7 @@ libsuzerain_la_SOURCES += mpi.cpp
 libsuzerain_la_SOURCES += os.c
 libsuzerain_la_SOURCES += pencil_grid.cpp
 libsuzerain_la_SOURCES += profile.cpp
+libsuzerain_la_SOURCES += program_options.cpp
 libsuzerain_la_SOURCES += richardson.c
 
 noinst_LTLIBRARIES      += libunderling.la
