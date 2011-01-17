@@ -266,39 +266,39 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
         ("Nx", po::value<size_type>(&global_extents_[0])
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nx"))
             ->default_value(default_Nx),
-        "Grid point count in X (streamwise) direction")
+        "Grid point count in streamwise X direction")
         ("Ny", po::value<size_type>(&global_extents_[1])
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Ny"))
             ->default_value(default_Ny),
-        "Grid point count in Y (wall normal) direction")
+        "Grid point count in wall normal Y direction")
         ("Nz", po::value<size_type>(&global_extents_[2])
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nz"))
             ->default_value(default_Nz),
-        "Grid point count in Z (spanwise) direction")
+        "Grid point count in spanwise Z direction")
         ("Lx", po::value<FPT>(&Lx_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lx"))
             ->default_value(default_Lx),
-        "Nondimensional grid length in X (streamwise) direction")
+        "Nondimensional grid length in streamwise X direction")
         ("Ly", po::value<FPT>(&Ly_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Ly"))
             ->default_value(default_Ly),
-        "Nondimensional grid length in Y (wall normal) direction")
+        "Nondimensional grid length in wall normal Y direction")
         ("Lz", po::value<FPT>(&Lz_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lz"))
             ->default_value(default_Lz),
-        "Nondimensional grid length in Z (spanwise) direction")
+        "Nondimensional grid length in spanwise Z direction")
         ("DAFx", po::value<FPT>(&DAFx_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFx"))
             ->default_value(default_DAFx),
-        "Dealiasing factor in X (streamwise) direction")
+        "Dealiasing factor in streamwise X direction")
         ("DAFy", po::value<FPT>(&DAFy_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFy"))
             ->default_value(default_DAFy),
-        "Dealiasing factor in Y (wall normal) direction")
+        "Dealiasing factor in wall normal Y direction")
         ("DAFz", po::value<FPT>(&DAFz_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFz"))
             ->default_value(default_DAFz),
-        "Dealiasing factor in Z (spanwise) direction")
+        "Dealiasing factor in spanwise Z direction")
         ("Pa", po::value<size_type>(&processor_grid_[0])
             ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pa"))
             ->default_value(0),

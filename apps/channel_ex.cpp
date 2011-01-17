@@ -60,6 +60,7 @@
 
 // Introduce shorthand for common names
 namespace sz = ::suzerain;
+namespace po = ::boost::program_options;
 
 // Global scenario parameters and Bspline details initialized in main()
 static sz::problem::ScenarioDefinition<>  def_scenario(100);
@@ -850,26 +851,41 @@ int main(int argc, char **argv)
         log->setLevel(log4cxx::Level::getWarn());
     }
 
-    // Process command line arguments
-    sz::ProgramOptions options(
-            "Suzerain-based explicit compressible channel simulation");
-    options.add_definition(def_scenario);
-    options.add_definition(def_grid);
-    options.add_definition(def_bspline);
-    options.add_definition(def_restart);
-    options.process(argc, argv);
-    assert(def_grid.DAFy() == 1.0);  // Wall normal dealiasing disallowed
+    // Process incoming program arguments from command line, input files
+    {
+        sz::ProgramOptions options(
+                "Suzerain-based explicit compressible channel simulation");
+        options.add_definition(def_scenario);
+        options.add_definition(def_grid);
+        options.add_definition(def_bspline);
+        options.add_definition(def_restart);
+        options.process(argc, argv);
+        assert(def_grid.DAFy() == 1.0);  // Wall normal dealiasing disallowed
 
-    // Dump relevant global scenario parameters
-    LOG4CXX_INFO(log, "Number of MPI ranks:     " << nproc);
-    LOG4CXX_INFO(log, "Global extents (XYZ):    " << def_grid.global_extents());
-    LOG4CXX_INFO(log, "Dealiased extents (XYZ): " << def_grid.dealiased_extents());
-    LOG4CXX_INFO(log, "B-spline order:          " << def_bspline.k());
-    LOG4CXX_INFO(log, "Breakpoint stretching:   " << def_bspline.htdelta());
-    LOG4CXX_INFO(log, "Reynolds number:         " << def_scenario.Re());
-    LOG4CXX_INFO(log, "Prandtl number:          " << def_scenario.Pr());
-    LOG4CXX_INFO(log, "gamma = C_p/C_v:         " << def_scenario.gamma());
-    LOG4CXX_INFO(log, "beta = ln mu/ln T:       " << def_scenario.beta());
+        // TODO Store program arguments in restart file
+        // TODO This "generic" argument processing logic is awful, awful stuff
+        if (procid == 0) {
+            log4cxx::LoggerPtr l = log4cxx::Logger::getLogger("SCENARIO");
+            BOOST_FOREACH(const boost::shared_ptr<po::option_description> &opt,
+                        options.options().options()) {
+                const std::string &n = opt->long_name();
+                const boost::any &v  = options.variables()[n].value();
+                std::ostringstream msg;
+                msg << n << " = ";
+                using boost::any_cast;
+#define MATCHES(type) (any_cast<type>(&v)) { msg << any_cast<type>(v); }
+                if      MATCHES(int)
+                else if MATCHES(float)
+                else if MATCHES(double)
+                else if MATCHES(std::size_t)
+                else if MATCHES(std::string)
+                else { msg << "UNKNOWN_TYPE"; }
+#undef MATCHES
+                msg << " #" << opt->description();
+                LOG4CXX_INFO(l, msg.str());
+            }
+        }
+    }
 
     // Initialize B-spline workspace using [0, Ly] with Ny degrees of freedom
     const int nbreakpoints = def_grid.Ny() - def_bspline.k() + 2;
@@ -898,6 +914,7 @@ int main(int argc, char **argv)
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
     pg = boost::make_shared<sz::pencil_grid>(def_grid.dealiased_extents(),
                                              def_grid.processor_grid());
+    LOG4CXX_INFO(log, "Processor count: " << nproc);
     LOG4CXX_INFO(log, "Processor grid used: " << pg->processor_grid());
     LOG4CXX_DEBUG(log, "Local dealiased wave start  (XYZ): "
                        << pg->local_wave_start());
