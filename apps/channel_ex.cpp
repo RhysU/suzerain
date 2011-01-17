@@ -851,8 +851,6 @@ int main(int argc, char **argv)
     }
 
     // Process command line arguments
-    // TODO Rank 0 should read and broadcast these to all other ranks
-    // Otherwise we will encounter an IO bottleneck on large job starts
     sz::ProgramOptions options(
             "Suzerain-based explicit compressible channel simulation");
     options.add_definition(def_scenario);
