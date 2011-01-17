@@ -862,28 +862,43 @@ int main(int argc, char **argv)
         options.process(argc, argv);
         assert(def_grid.DAFy() == 1.0);  // Wall normal dealiasing disallowed
 
-        // TODO Store program arguments in restart file
-        // TODO This "generic" argument processing logic is awful, awful stuff
+        // This "generic" argument processing logic is awful stuff.  Sorry.
+        // http://article.gmane.org/gmane.comp.lib.boost.user/65180
+        // TODO Save option descriptions in something akin to HDF5 comments
         if (procid == 0) {
             log4cxx::LoggerPtr l = log4cxx::Logger::getLogger("SCENARIO");
+            esio_handle h = esio_handle_initialize(MPI_COMM_SELF);
+            esio_file_create(h, def_restart.metadata().c_str(), 1);
+            LOG4CXX_DEBUG(l, "Scenario metadata in " << esio_file_path(h));
             BOOST_FOREACH(const boost::shared_ptr<po::option_description> &opt,
                         options.options().options()) {
                 const std::string &n = opt->long_name();
+                const std::string &d = opt->description();
                 const boost::any &v  = options.variables()[n].value();
-                std::ostringstream msg;
-                msg << n << " = ";
                 using boost::any_cast;
-#define MATCHES(type) (any_cast<type>(&v)) { msg << any_cast<type>(v); }
-                if      MATCHES(int)
-                else if MATCHES(float)
-                else if MATCHES(double)
-                else if MATCHES(std::size_t)
-                else if MATCHES(std::string)
-                else { msg << "UNKNOWN_TYPE"; }
-#undef MATCHES
-                msg << " #" << opt->description();
-                LOG4CXX_INFO(l, msg.str());
+                if (any_cast<int>(&v)) {
+                    const int val = any_cast<int>(v);
+                    esio_attribute_write_int(h, n.c_str(), &val);
+                    LOG4CXX_INFO(l, n << " = " << val << " # " << d);
+                } else if (any_cast<std::size_t>(&v)) {
+                    const int val = any_cast<std::size_t>(v);
+                    esio_attribute_write_int(h, n.c_str(), &val);
+                    LOG4CXX_INFO(l, n << " = " << val << " # " << d);
+                } else if (any_cast<double>(&v)) {
+                    const double val = any_cast<double>(v);
+                    esio_attribute_write_double(h, n.c_str(), &val);
+                    LOG4CXX_INFO(l, n << " = " << val << " # " << d);
+                } else if (any_cast<std::string>(&v)) {
+                    const std::string &val = any_cast<std::string>(v);
+                    esio_string_set(h, n.c_str(), val.c_str());
+                    LOG4CXX_INFO(l, n << " = " << val << " # " << d);
+                } else {
+                    LOG4CXX_WARN(l, n << " = UNKNOWN_TYPE");
+                }
             }
+
+            esio_file_close(h);
+            esio_handle_finalize(h);
         }
     }
 
