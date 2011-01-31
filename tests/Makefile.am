@@ -14,7 +14,6 @@ EXTRA_DIST     = # Append below
 TESTS          = # Append below
 
 noinst_HEADERS += test_tools.hpp
-noinst_HEADERS += test_underling_tools.hpp
 
 # FIXME: Ugly, separate MPI compilation into separate dir, maybe
 CXX=@MPICXX@
@@ -246,26 +245,6 @@ test_pencilfft_3D_CPPFLAGS = $(AM_CPPFLAGS) $(FFTW3_CFLAGS)
 test_pencilfft_3D_LDADD    = $(FFTW3_LIBS)
 test_pencilfft_3D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencilfft_3D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
-TESTS                  += test_underling.sh          # NB Wrapper script
-EXTRA_DIST             += test_underling.sh          # NB Wrapper script
-check_PROGRAMS         += test_underling
-test_underling_SOURCES  = test_underling.cpp
-test_underling_CPPFLAGS = $(AM_CPPFLAGS) $(FFTW3_THREADS_CFLAGS)
-test_underling_LDADD    = ../suzerain/libunderling.la
-test_underling_LDADD   += $(FFTW3_MPI_THREADS_LIBS)
-test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_underling_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
-TESTS                      += test_underling_fft.sh  # NB Wrapper script
-EXTRA_DIST                 += test_underling_fft.sh  # NB Wrapper script
-check_PROGRAMS             += test_underling_fft
-test_underling_fft_SOURCES  = test_underling_fft.cpp
-test_underling_fft_CPPFLAGS = $(AM_CPPFLAGS) $(FFTW3_THREADS_CFLAGS)
-test_underling_fft_LDADD    = ../suzerain/libunderling.la
-test_underling_fft_LDADD   += $(FFTW3_MPI_THREADS_LIBS)
-test_underling_fft_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_underling_fft_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                 += test_diffwave
 check_PROGRAMS        += test_diffwave

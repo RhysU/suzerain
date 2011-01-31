@@ -68,10 +68,6 @@ pkginclude_HEADERS += timecontroller.hpp
 pkginclude_HEADERS += timestepper.hpp
 pkginclude_HEADERS += traits.hpp
 pkginclude_HEADERS += types.hpp
-pkginclude_HEADERS += underling_fft.h
-pkginclude_HEADERS += underling_fft.hpp
-pkginclude_HEADERS += underling.h
-pkginclude_HEADERS += underling.hpp
 pkginclude_HEADERS += utility.hpp
 pkginclude_HEADERS += validation.hpp
 
@@ -90,12 +86,6 @@ libsuzerain_la_SOURCES += pencil_grid.cpp
 libsuzerain_la_SOURCES += profile.cpp
 libsuzerain_la_SOURCES += program_options.cpp
 libsuzerain_la_SOURCES += richardson.c
-
-noinst_LTLIBRARIES      += libunderling.la
-libunderling_la_LDFLAGS  = -release $(PACKAGE_VERSION)
-libunderling_la_SOURCES  = error.c
-libunderling_la_SOURCES += underling.c
-libunderling_la_SOURCES += underling_fft.c
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

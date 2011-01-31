@@ -30,16 +30,6 @@ driver_suzerain_p3dfft_LDADD   += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
 driver_suzerain_p3dfft_LDADD   += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
 driver_suzerain_p3dfft_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 
-bin_PROGRAMS             += driver_underling
-driver_underling_SOURCES  = driver_underling.cpp
-driver_underling_LDADD    = ../suzerain/libsuzerain.la
-driver_underling_LDADD   += ../suzerain/libunderling.la
-driver_underling_LDADD   += $(MPIP_LIBS)
-driver_underling_LDADD   += $(FFTW3_MPI_THREADS_LIBS) $(GRVY_LIBS)
-driver_underling_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
-driver_underling_LDADD   += $(BOOST_IOSTREAMS_LIBS)
-driver_underling_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
-
 # Applications
 bin_PROGRAMS       += channel_ex
 channel_ex_SOURCES  = channel_ex.cpp
