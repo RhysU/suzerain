@@ -61,9 +61,6 @@ public:
      * @param default_Nx Default logical grid size in the X direction.
      * @param default_Ny Default logical grid size in the Y direction.
      * @param default_Nz Default logical grid size in the Z direction.
-     * @param default_Lx Default domain length in the X direction.
-     * @param default_Ly Default domain length in the Y direction.
-     * @param default_Lz Default domain length in the Z direction.
      * @param default_DAFx Default dealiasing factor in the X direction.
      * @param default_DAFy Default dealiasing factor in the Y direction.
      * @param default_DAFz Default dealiasing factor in the Z direction.
@@ -72,33 +69,9 @@ public:
             size_type default_Nx = 16,
             size_type default_Ny = 16,
             size_type default_Nz = 16,
-            FPT default_Lx = 2*boost::math::constants::pi<FPT>(),
-            FPT default_Ly = 2*boost::math::constants::pi<FPT>(),
-            FPT default_Lz = 2*boost::math::constants::pi<FPT>(),
             FPT default_DAFx = 1,
             FPT default_DAFy = 1,
             FPT default_DAFz = 1);
-
-    /**
-     * Retrieve the domain length in the X direction.
-     *
-     * @return the domain's X length.
-     */
-    FPT Lx() const { return Lx_; }
-
-    /**
-     * Retrieve the domain length in the Y direction.
-     *
-     * @return the domain's Y length.
-     */
-    FPT Ly() const { return Ly_; }
-
-    /**
-     * Retrieve the domain length in the Z direction.
-     *
-     * @return the domain's Z length.
-     */
-    FPT Lz() const { return Lz_; }
 
     /**
      * Retrieve global logical computational grid extents.  It does
@@ -213,10 +186,6 @@ private:
     /** Stores the program options processing information */
     boost::program_options::options_description options_;
 
-    FPT Lx_;  /**< Stores the X direction length */
-    FPT Ly_;  /**< Stores the Y direction length */
-    FPT Lz_;  /**< Stores the Z direction length */
-
     /** Stores the computational grid extents */
     size_type_3d global_extents_;
 
@@ -232,16 +201,10 @@ template< typename FPT >
 GridDefinition<FPT>::GridDefinition(size_type default_Nx,
                                     size_type default_Ny,
                                     size_type default_Nz,
-                                    FPT default_Lx,
-                                    FPT default_Ly,
-                                    FPT default_Lz,
                                     FPT default_DAFx,
                                     FPT default_DAFy,
                                     FPT default_DAFz)
     : options_("Grid definition"),
-      Lx_(default_Lx),
-      Ly_(default_Ly),
-      Lz_(default_Lz),
       DAFx_(default_DAFx),
       DAFy_(default_DAFy),
       DAFz_(default_DAFz)
@@ -275,18 +238,6 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nz"))
             ->default_value(default_Nz),
         "Grid point count in spanwise Z direction")
-        ("Lx", po::value<FPT>(&Lx_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lx"))
-            ->default_value(default_Lx),
-        "Nondimensional grid length in streamwise X direction")
-        ("Ly", po::value<FPT>(&Ly_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Ly"))
-            ->default_value(default_Ly),
-        "Nondimensional grid length in wall normal Y direction")
-        ("Lz", po::value<FPT>(&Lz_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lz"))
-            ->default_value(default_Lz),
-        "Nondimensional grid length in spanwise Z direction")
         ("DAFx", po::value<FPT>(&DAFx_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFx"))
             ->default_value(default_DAFx),
@@ -326,9 +277,6 @@ public:
      * @param default_Nx Default grid size in the X direction.
      * @param default_Ny Default grid size in the Y direction.
      * @param default_Nz Default grid size in the Z direction.
-     * @param default_Lx Default domain length in the X direction.
-     * @param default_Ly Default domain length in the Y direction.
-     * @param default_Lz Default domain length in the Z direction.
      */
     ChannelDefinition(typename GridDefinition<FPT>::size_type default_Nx = 16,
                       typename GridDefinition<FPT>::size_type default_Ny = 16,

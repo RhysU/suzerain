@@ -36,7 +36,7 @@
 #include <suzerain/validation.hpp>
 
 /** @file
- * Provides classes handling problem scenario parameters, which are either
+ * Provides classes handling problem scenario parameters which are either
  * reference quantities or nondimensional parameters describing a particular
  * problem setup.
  */
@@ -46,10 +46,9 @@ namespace suzerain {
 namespace problem {
 
 /**
- * Holds nondimensional parameters like the Reynolds and Prandtl numbers.  See
- * the Suzerain model document's nondimensionalization section for more
- * information.
- *
+ * Holds nondimensional parameters like the Reynolds and Prandtl numbers as
+ * well as nondimensional problem geometry.  See the Suzerain model document's
+ * nondimensionalization section for more information.
  */
 template< typename FPT = double >
 class ScenarioDefinition : public IDefinition
@@ -62,11 +61,17 @@ public:
      * @param default_Pr Default Prandtl number.
      * @param default_gamma Default ratio of specific heats.
      * @param default_beta Default temperature power law exponent.
+     * @param default_Lx Default domain length in the X direction.
+     * @param default_Ly Default domain length in the Y direction.
+     * @param default_Lz Default domain length in the Z direction.
      */
     ScenarioDefinition(FPT default_Re,
-                       FPT default_Pr    = 0.7,
-                       FPT default_gamma = 1.4,
-                       FPT default_beta  = 0.666 );
+                       FPT default_Pr,
+                       FPT default_gamma,
+                       FPT default_beta,
+                       FPT default_Lx,
+                       FPT default_Ly,
+                       FPT default_Lz);
 
     /**
      * Retrieve the Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
@@ -99,6 +104,27 @@ public:
      */
     FPT beta() const { return beta_; }
 
+    /**
+     * Retrieve the domain length in the X direction.
+     *
+     * @return the domain's X length.
+     */
+    FPT Lx() const { return Lx_; }
+
+    /**
+     * Retrieve the domain length in the Y direction.
+     *
+     * @return the domain's Y length.
+     */
+    FPT Ly() const { return Ly_; }
+
+    /**
+     * Retrieve the domain length in the Z direction.
+     *
+     * @return the domain's Z length.
+     */
+    FPT Lz() const { return Lz_; }
+
     /*! @copydoc IDefinition::options */
     const boost::program_options::options_description& options() {
         return options_;
@@ -113,6 +139,10 @@ private:
     FPT Pr_;     /**< Stores the Prandtl number */
     FPT gamma_;  /**< Stores the ratio of specific heats */
     FPT beta_;   /**< Stores the temperature power law exponent */
+    FPT Lx_;     /**< Stores the X direction length */
+    FPT Ly_;     /**< Stores the Y direction length */
+    FPT Lz_;     /**< Stores the Z direction length */
+
 };
 
 template< typename FPT >
@@ -120,12 +150,18 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         FPT default_Re,
         FPT default_Pr,
         FPT default_gamma,
-        FPT default_beta)
+        FPT default_beta,
+        FPT default_Lx,
+        FPT default_Ly,
+        FPT default_Lz)
     : options_("Nondimensional scenario parameters"),
       Re_(default_Re),
       Pr_(default_Pr),
       gamma_(default_gamma),
-      beta_(default_beta)
+      beta_(default_beta),
+      Lx_(default_Lx),
+      Ly_(default_Ly),
+      Lz_(default_Lz)
 {
     namespace po = ::boost::program_options;
 
@@ -154,8 +190,30 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"beta"))
             ->default_value(default_beta),
         "Temperature power law exponent")
+        ("Lx", po::value<FPT>(&Lx_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lx"))
+            ->default_value(default_Lx),
+        "Nondimensional grid length in streamwise X direction")
+        ("Ly", po::value<FPT>(&Ly_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Ly"))
+            ->default_value(default_Ly),
+        "Nondimensional grid length in wall normal Y direction")
+        ("Lz", po::value<FPT>(&Lz_)
+            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lz"))
+            ->default_value(default_Lz),
+        "Nondimensional grid length in spanwise Z direction")
     ;
 }
+
+/**
+ * Holds scenario details for a channel problem.  This is just a subclass of
+ * ScenarioDefinition which provides some better default values.
+ */
+template< typename FPT = double >
+class ChannelScenarioDefinition : public ScenarioDefinition<FPT>
+{
+
+};
 
 } // namespace problem
 
