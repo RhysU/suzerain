@@ -36,8 +36,7 @@
 #include <suzerain/validation.hpp>
 
 /** @file
- * Provides classes handling grid definitions, which are runtime
- * arguments or scenario parameters used to perform calculations.
+ * Provides classes handling problem grid definitions.
  */
 
 namespace suzerain {
@@ -45,33 +44,36 @@ namespace suzerain {
 namespace problem {
 
 /**
- * Holds basic three dimensional computational grid dimensions, including
- * physical and discrete grid sizes, dealiasing factors, and the two
- * dimensional processor grid definition.
+ * Holds basic three dimensional computational grid details for a distributed,
+ * mixed Fourier/B-spline method.  The B-spline representation is used in the
+ * wall-normal Y direction.
  */
 template< typename FPT = double >
 class GridDefinition : public IDefinition, public integral_types
 {
 public:
     /**
-     * Construct an instance with the given default logical, size
-     * in each direction, the given default length, and the given 
-     * multiplicative dealiasing factors.
+     * Construct an instance with the given default values.
      *
-     * @param default_Nx Default logical grid size in the X direction.
-     * @param default_Ny Default logical grid size in the Y direction.
-     * @param default_Nz Default logical grid size in the Z direction.
+     * @param default_Nx   Default logical grid size in the X direction.
      * @param default_DAFx Default dealiasing factor in the X direction.
-     * @param default_DAFy Default dealiasing factor in the Y direction.
+     * @param default_Ny   Default logical grid size in the Y direction.
+     *                     This is the number of B-spline basis functions
+     *                     (equivalently, wall-normal degrees of freedom)
+     *                     to use.
+     * @param default_k    Default uniform B-spline basis order plus one.
+     *                     Piecewise cubics correspond to
+     *                     <tt>default_k == 4</tt>.
+     * @param default_Nz   Default logical grid size in the Z direction.
      * @param default_DAFz Default dealiasing factor in the Z direction.
      */
     explicit GridDefinition(
-            size_type default_Nx = 16,
-            size_type default_Ny = 16,
-            size_type default_Nz = 16,
-            FPT default_DAFx = 1,
-            FPT default_DAFy = 1,
-            FPT default_DAFz = 1);
+            size_type default_Nx,
+            FPT       default_DAFx,
+            size_type default_Ny,
+            size_type default_k,
+            size_type default_Nz,
+            FPT       default_DAFz);
 
     /**
      * Retrieve global logical computational grid extents.  It does
@@ -83,7 +85,7 @@ public:
 
     /**
      * Retrieve global dealiased computational grid extents. These are the
-     * global_extents() multiplied by the dealiasing factors DAFx(), DAFy(),
+     * global_extents() multiplied by the dealiasing factors DAFx(), one,
      * and DAFz().
      *
      * @return the global dealiased grid extents in the X, Y, and Z directions.
@@ -91,7 +93,6 @@ public:
     size_type_3d dealiased_extents() const {
         size_type_3d retval = global_extents_;
         retval[0] *= DAFx_;
-        retval[1] *= DAFy_;
         retval[2] *= DAFz_;
         return retval;
     }
@@ -105,12 +106,30 @@ public:
     size_type Nx() const { return global_extents_[0]; }
 
     /**
+     * Retrieve the dealiasing factor for the X direction.  This factor
+     * should be multiplied times Nx() to obtain an extent for Fourier
+     * transformations.
+     *
+     * @return the dealiasing factor for the X direction.
+     */
+    FPT DAFx() const { return DAFx_; }
+
+    /**
      * Retrieve computational grid size in the Y direction.  This is the number
-     * of points in the domain without accounting for any dealiasing.
+     * of B-spline basis functions (equivalently, wall-normal degrees of
+     * freedom) in use.  This direction does not support dealiasing.
      *
      * @return the logical grid size in the Y direction.
      */
     size_type Ny() const { return global_extents_[1]; }
+
+    /**
+     * Retrieve the B-spline basis order plus one.  For example,
+     * piecewise cubics have <tt>k() == 4</tt>.
+     *
+     * @return the B-spline basis order.
+     */
+    size_type k() const { return k_; }
 
     /**
      * Retrieve grid size in the Z direction.  This is the number
@@ -121,24 +140,6 @@ public:
     size_type Nz() const { return global_extents_[2]; }
 
     /**
-     * Retrieve the dealiasing factor for the X direction.  This factor
-     * should be multiplied times Nx() to obtain an extent for Fourier
-     * transformations.
-     *
-     * @return the dealiasing factor for the X direction.
-     */
-    FPT DAFx() const { return DAFx_; }
-
-    /**
-     * Retrieve the dealiasing factor for the Y direction.  This factor
-     * should be multiplied times Ny() to obtain an extent for Fourier
-     * transformations.
-     *
-     * @return the dealiasing factor for the Y direction.
-     */
-    FPT DAFy() const { return DAFy_; }
-
-    /**
      * Retrieve the dealiasing factor for the Z direction.  This factor
      * should be multiplied times Nz() to obtain an extent for Fourier
      * transformations.
@@ -146,6 +147,7 @@ public:
      * @return the dealiasing factor for the Z direction.
      */
     FPT DAFz() const { return DAFz_; }
+
 
     /**
      * Retrieve the two dimensional processor grid extents.
@@ -189,9 +191,9 @@ private:
     /** Stores the computational grid extents */
     size_type_3d global_extents_;
 
-    FPT DAFx_;  /**< Stores the X direction dealiasing factor */
-    FPT DAFy_;  /**< Stores the Y direction dealiasing factor */
-    FPT DAFz_;  /**< Stores the Z direction dealiasing factor */
+    FPT DAFx_;     /**< Stores the X direction dealiasing factor */
+    size_type k_;  /**< Stores the B-spline basis order */
+    FPT DAFz_;     /**< Stores the Z direction dealiasing factor */
 
     /** Stores the processor grid extents */
     size_type_2d processor_grid_;
@@ -199,14 +201,14 @@ private:
 
 template< typename FPT >
 GridDefinition<FPT>::GridDefinition(size_type default_Nx,
+                                    FPT       default_DAFx,
                                     size_type default_Ny,
+                                    size_type default_k,
                                     size_type default_Nz,
-                                    FPT default_DAFx,
-                                    FPT default_DAFy,
-                                    FPT default_DAFz)
-    : options_("Grid definition"),
+                                    FPT       default_DAFz)
+    : options_("Mixed Fourier/B-spline grid definition"),
       DAFx_(default_DAFx),
-      DAFy_(default_DAFy),
+      k_(default_k),
       DAFz_(default_DAFz)
 {
     global_extents_[0] = default_Nx;
@@ -229,23 +231,23 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
         ("Nx", po::value<size_type>(&global_extents_[0])
             ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nx"))
             ->default_value(default_Nx),
-        "Grid point count in streamwise X direction")
-        ("Ny", po::value<size_type>(&global_extents_[1])
-            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Ny"))
-            ->default_value(default_Ny),
-        "Grid point count in wall normal Y direction")
-        ("Nz", po::value<size_type>(&global_extents_[2])
-            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nz"))
-            ->default_value(default_Nz),
-        "Grid point count in spanwise Z direction")
+        "Spectral coefficient count in streamwise X direction")
         ("DAFx", po::value<FPT>(&DAFx_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFx"))
             ->default_value(default_DAFx),
         "Dealiasing factor in streamwise X direction")
-        ("DAFy", po::value<FPT>(&DAFy_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFy"))
-            ->default_value(default_DAFy),
-        "Dealiasing factor in wall normal Y direction")
+        ("Ny", po::value<size_type>(&global_extents_[1])
+            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Ny"))
+            ->default_value(default_Ny),
+        "Collocation point count in wall-normal Y direction")
+        ("k", po::value<size_type>(&k_)
+            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"k"))
+            ->default_value(default_k),
+        "B-spline basis order; k = 4 indicates piecewise cubics")
+        ("Nz", po::value<size_type>(&global_extents_[2])
+            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nz"))
+            ->default_value(default_Nz),
+        "Spectral coefficient count in spanwise Z direction")
         ("DAFz", po::value<FPT>(&DAFz_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFz"))
             ->default_value(default_DAFz),
@@ -260,38 +262,6 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
         "Processor count in the P_B decomposition direction; 0 for automatic")
     ;
 }
-
-/**
- * Holds three dimensional computational grid dimensions for a channel problem.
- * This is just a subclass of GridDefinition which provides some better default
- * values.
- */
-template< typename FPT = double >
-class ChannelDefinition : public GridDefinition<FPT>
-{
-public:
-    /**
-     * Construct an instance with the given default size in each direction
-     * and the given default length.
-     *
-     * @param default_Nx Default grid size in the X direction.
-     * @param default_Ny Default grid size in the Y direction.
-     * @param default_Nz Default grid size in the Z direction.
-     */
-    ChannelDefinition(typename GridDefinition<FPT>::size_type default_Nx = 16,
-                      typename GridDefinition<FPT>::size_type default_Ny = 16,
-                      typename GridDefinition<FPT>::size_type default_Nz = 16,
-                      FPT default_Lx = 4*boost::math::constants::pi<FPT>(),
-                      FPT default_Ly = 2,
-                      FPT default_Lz = 4*boost::math::constants::pi<FPT>()/3,
-                      FPT default_DAFx = 3/FPT(2),
-                      FPT default_DAFy = 1,
-                      FPT default_DAFz = 3/FPT(2))
-        : GridDefinition<FPT>(default_Nx,   default_Ny,   default_Nz,
-                              default_Lx,   default_Ly,   default_Lz,
-                              default_DAFx, default_DAFy, default_DAFz) {}
-};
-
 
 } // namespace problem
 

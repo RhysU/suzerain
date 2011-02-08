@@ -205,16 +205,6 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
     ;
 }
 
-/**
- * Holds scenario details for a channel problem.  This is just a subclass of
- * ScenarioDefinition which provides some better default values.
- */
-template< typename FPT = double >
-class ChannelScenarioDefinition : public ScenarioDefinition<FPT>
-{
-
-};
-
 } // namespace problem
 
 } // namespace suzerain

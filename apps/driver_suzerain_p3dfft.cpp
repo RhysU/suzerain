@@ -67,11 +67,17 @@ int main(int argc, char **argv)
             suzerain::mpi::comm_rank_identifier(MPI_COMM_WORLD));
 
     // Program-specific option storage
-    int nrep = 1;  // Number of times to repeat the test
 
     suzerain::ProgramOptions options;
-    suzerain::problem::GridDefinition<> grid;
+    suzerain::problem::GridDefinition<> grid(/* default_Nx    */ 16,
+                                             /* default_DAFx  */ 3./2.,
+                                             /* default_Ny    */ 16,
+                                             /* default_k     */ 6,
+                                             /* default_Nz    */ 16,
+                                             /* default_DAFz  */ 3./2.);
     options.add_definition(grid);
+
+    int nrep = 1;  // Number of times to repeat the test
     namespace po = boost::program_options;
     options.add_options()
         ("nrep", po::value<int>(&nrep)->default_value(nrep),
