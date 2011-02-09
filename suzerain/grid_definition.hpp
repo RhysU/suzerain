@@ -53,7 +53,9 @@ class GridDefinition : public IDefinition, public integral_types
 {
 public:
     /**
-     * Construct an instance with the given default values.
+     * Construct an instance with the given default values.  Setting default
+     * values of zero changes option semantics so the parameters become
+     * optional.
      *
      * @param default_Nx   Default logical grid size in the X direction.
      * @param default_DAFx Default dealiasing factor in the X direction.
@@ -206,61 +208,113 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
                                     size_type default_k,
                                     size_type default_Nz,
                                     FPT       default_DAFz)
-    : options_("Mixed Fourier/B-spline grid definition"),
-      DAFx_(default_DAFx),
-      k_(default_k),
-      DAFz_(default_DAFz)
+    : options_("Mixed Fourier/B-spline computational grid definition")
 {
-    global_extents_[0] = default_Nx;
-    global_extents_[1] = default_Ny;
-    global_extents_[2] = default_Nz;
-    std::fill(processor_grid_.begin(), processor_grid_.end(), 0);
-
-    namespace po = ::boost::program_options;
-
+    using ::std::auto_ptr;
     using ::std::bind2nd;
     using ::std::ptr_fun;
     using ::suzerain::validation::ensure_nonnegative;
     using ::suzerain::validation::ensure_positive;
+    using ::boost::program_options::typed_value;
+    using ::boost::program_options::value;
 
     // Created to solve ambiguous type issues below
     ::std::pointer_to_binary_function<FPT,const char*,void>
         ptr_fun_ensure_positive_FPT(ensure_positive<FPT>);
+    ::std::pointer_to_binary_function<FPT,const char*,void>
+        ptr_fun_ensure_nonnegative_FPT(ensure_nonnegative<FPT>);
 
-    options_.add_options()
-        ("Nx", po::value<size_type>(&global_extents_[0])
-            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nx"))
-            ->default_value(default_Nx),
-        "Spectral coefficient count in streamwise X direction")
-        ("DAFx", po::value<FPT>(&DAFx_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFx"))
-            ->default_value(default_DAFx),
-        "Dealiasing factor in streamwise X direction")
-        ("Ny", po::value<size_type>(&global_extents_[1])
-            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Ny"))
-            ->default_value(default_Ny),
-        "Collocation point count in wall-normal Y direction")
-        ("k", po::value<size_type>(&k_)
-            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"k"))
-            ->default_value(default_k),
-        "B-spline basis order; k = 4 indicates piecewise cubics")
-        ("Nz", po::value<size_type>(&global_extents_[2])
-            ->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),"Nz"))
-            ->default_value(default_Nz),
-        "Spectral coefficient count in spanwise Z direction")
-        ("DAFz", po::value<FPT>(&DAFz_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"DAFz"))
-            ->default_value(default_DAFz),
-        "Dealiasing factor in spanwise Z direction")
-        ("Pa", po::value<size_type>(&processor_grid_[0])
-            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pa"))
-            ->default_value(0),
-        "Processor count in the P_A decomposition direction; 0 for automatic")
-        ("Pb", po::value<size_type>(&processor_grid_[1])
-            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pb"))
-            ->default_value(0),
-        "Processor count in the P_B decomposition direction; 0 for automatic")
-    ;
+    // Complicated add_options() calls done to allow changing the validation
+    // routine in use when the default provided value is zero.  Zero is
+    // generally used a NOP value by some client code.
+
+    { // Nx
+        auto_ptr<typed_value<size_type> > v(value(&global_extents_[0]));
+        if (default_Nx) {
+            v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "Nx"));
+        } else {
+            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Nx"));
+        }
+        v->default_value(default_Nx);
+        options_.add_options()("Nx", v.release(),
+                "Spectral coefficient count in streamwise X direction");
+    }
+
+    { // DAFx
+        auto_ptr<typed_value<FPT> > v(value(&DAFx_));
+        if (default_DAFx) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,   "DAFx"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT,"DAFx"));
+        }
+        v->default_value(default_DAFx);
+        options_.add_options()("DAFx", v.release(),
+            "Dealiasing factor in streamwise X direction");
+    }
+
+    { // Ny
+        auto_ptr<typed_value<size_type> > v(value(&global_extents_[1]));
+        if (default_Ny) {
+            v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "Ny"));
+        } else {
+            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Ny"));
+        }
+        v->default_value(default_Ny);
+        options_.add_options()("Ny", v.release(),
+                "Collocation point count in wall-normal Y direction");
+    }
+
+    { // k
+        auto_ptr<typed_value<size_type> > v(value(&k_));
+        if (default_k) {
+            v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "k"));
+        } else {
+            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"k"));
+        }
+        v->default_value(default_k);
+        options_.add_options()("k", v.release(),
+                "B-spline basis order where k = 4 indicates piecewise cubics");
+    }
+
+    { // Nz
+        auto_ptr<typed_value<size_type> > v(value(&global_extents_[2]));
+        if (default_Nz) {
+            v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "Nz"));
+        } else {
+            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Nz"));
+        }
+        v->default_value(default_Nz);
+        options_.add_options()("Nz", v.release(),
+                "Spectral coefficient count in spanwise Z direction");
+    }
+
+    { // DAFz
+        auto_ptr<typed_value<FPT> > v(value(&DAFz_));
+        if (default_DAFz) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,   "DAFz"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT,"DAFz"));
+        }
+        v->default_value(default_DAFz);
+        options_.add_options()("DAFz", v.release(),
+                "Dealiasing factor in spanwise Z direction");
+    }
+
+    { // Pa
+        auto_ptr<typed_value<size_type> > v(value(&processor_grid_[0]));
+        v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pa"));
+        v->default_value(0);
+        options_.add_options()("Pa", v.release(),
+            "Processor count in the P_A decomposition direction");
+    }
+
+    { // Pb
+        auto_ptr<typed_value<size_type> > v(value(&processor_grid_[1]));
+        v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pb"));
+        v->default_value(0);
+        options_.add_options()("Pb", v.release(),
+            "Processor count in the P_B decomposition direction");
+    }
 }
 
 } // namespace problem
