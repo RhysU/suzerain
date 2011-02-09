@@ -154,55 +154,107 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         FPT default_Lx,
         FPT default_Ly,
         FPT default_Lz)
-    : options_("Nondimensional scenario parameters"),
-      Re_(default_Re),
-      Pr_(default_Pr),
-      gamma_(default_gamma),
-      beta_(default_beta),
-      Lx_(default_Lx),
-      Ly_(default_Ly),
-      Lz_(default_Lz)
+    : options_("Nondimensional scenario parameters")
 {
-    namespace po = ::boost::program_options;
-
+    using ::std::auto_ptr;
     using ::std::bind2nd;
     using ::std::ptr_fun;
+    using ::suzerain::validation::ensure_nonnegative;
     using ::suzerain::validation::ensure_positive;
+    using ::boost::program_options::typed_value;
+    using ::boost::program_options::value;
 
     // Created to solve ambiguous type issues below
     ::std::pointer_to_binary_function<FPT,const char*,void>
         ptr_fun_ensure_positive_FPT(ensure_positive<FPT>);
+    ::std::pointer_to_binary_function<FPT,const char*,void>
+        ptr_fun_ensure_nonnegative_FPT(ensure_nonnegative<FPT>);
 
-    options_.add_options()
-        ("Re", po::value<FPT>(&Re_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Re"))
-            ->default_value(default_Re),
-        "Reynolds number")
-        ("Pr", po::value<FPT>(&Pr_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Pr"))
-            ->default_value(default_Pr),
-        "Prandtl number")
-        ("gamma", po::value<FPT>(&gamma_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"gamma"))
-            ->default_value(default_gamma),
-        "Ratio of specific heats")
-        ("beta", po::value<FPT>(&beta_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"beta"))
-            ->default_value(default_beta),
-        "Temperature power law exponent")
-        ("Lx", po::value<FPT>(&Lx_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lx"))
-            ->default_value(default_Lx),
-        "Nondimensional grid length in streamwise X direction")
-        ("Ly", po::value<FPT>(&Ly_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Ly"))
-            ->default_value(default_Ly),
-        "Nondimensional grid length in wall normal Y direction")
-        ("Lz", po::value<FPT>(&Lz_)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT,"Lz"))
-            ->default_value(default_Lz),
-        "Nondimensional grid length in spanwise Z direction")
-    ;
+    // Complicated add_options() calls done to allow changing the validation
+    // routine in use when the default provided value is zero.  Zero is
+    // generally used a NOP value by some client code.
+
+    { // Re
+        auto_ptr<typed_value<FPT> > v(value(&Re_));
+        if (default_Re) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Re"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Re"));
+        }
+        v->default_value(default_Re);
+        options_.add_options()("Re", v.release(), "Reynolds number");
+    }
+
+    { // Pr
+        auto_ptr<typed_value<FPT> > v(value(&Pr_));
+        if (default_Pr) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Pr"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Pr"));
+        }
+        v->default_value(default_Pr);
+        options_.add_options()("Pr", v.release(), "Prandtl number");
+    }
+
+    { // gamma
+        auto_ptr<typed_value<FPT> > v(value(&gamma_));
+        if (default_gamma) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "gamma"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "gamma"));
+        }
+        v->default_value(default_gamma);
+        options_.add_options()("gamma", v.release(),
+                "Ratio of specific heats");
+    }
+
+    { // beta
+        auto_ptr<typed_value<FPT> > v(value(&beta_));
+        if (default_beta) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "beta"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "beta"));
+        }
+        v->default_value(default_beta);
+        options_.add_options()("beta", v.release(),
+                "Temperature power law exponent");
+    }
+
+    { // Lx
+        auto_ptr<typed_value<FPT> > v(value(&Lx_));
+        if (default_Lx) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Lx"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Lx"));
+        }
+        v->default_value(default_Lx);
+        options_.add_options()("Lx", v.release(),
+                "Nondimensional grid length in streamwise X direction");
+    }
+
+    { // Ly
+        auto_ptr<typed_value<FPT> > v(value(&Ly_));
+        if (default_Ly) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Ly"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Ly"));
+        }
+        v->default_value(default_Ly);
+        options_.add_options()("Ly", v.release(),
+                "Nondimensional grid length in wall normal Y direction");
+    }
+
+    { // Lz
+        auto_ptr<typed_value<FPT> > v(value(&Lz_));
+        if (default_Lz) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Lz"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Lz"));
+        }
+        v->default_value(default_Lz);
+        options_.add_options()("Lz", v.release(),
+                "Nondimensional grid length in spanwise Z direction");
+    }
 }
 
 } // namespace problem
