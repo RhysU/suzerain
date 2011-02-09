@@ -72,15 +72,14 @@ throw(std::invalid_argument)
  * @param name Optional name to use in the exception message
  */
 template< typename T >
-void ensure_nonnegative(T t, const char * name = NULL)
+typename boost::disable_if<boost::is_unsigned<T> >::type
+    ensure_nonnegative(T t, const char * name = NULL)
 throw(std::invalid_argument)
 {
     // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
 
     BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
-    const bool applies =    boost::is_floating_point<T>::value
-                         || boost::is_signed<T>::value;
-    if (applies && !(t >= T(0))) {
+    if (!(t >= T(0))) {
         std::ostringstream msg;
         if (name) {
             msg << "Value of '" << name << "' (" << t << ") must be nonnegative";
@@ -89,6 +88,26 @@ throw(std::invalid_argument)
         }
         throw std::invalid_argument(msg.str());
     }
+}
+
+/**
+ * Throws an \c invalid_argument exception if a value is not nonnegative.
+ *
+ * @param t    Value to check.
+ * @param name Optional name to use in the exception message
+ */
+template< typename T >
+typename boost::enable_if<boost::is_unsigned<T> >::type
+ensure_nonnegative(T t, const char * name = NULL)
+throw(std::invalid_argument)
+{
+    // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
+
+    BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
+
+    // NOP: Unsigned types are trivially nonnegative
+    SUZERAIN_UNUSED(t);
+    SUZERAIN_UNUSED(name);
 }
 
 } // namespace validation
