@@ -65,8 +65,40 @@ public:
     /** @return The wrapped suzerain_bspline_workspace pointer. */
     const suzerain_bspline_workspace* get() const { return w_; }
 
+    /** @see suzerain_bspline_workspace#order */
+    int order() const { return w_->order; }
+
+    /** @see suzerain_bspline_workspace#nbreakpoints */
+    int nbreakpoints() const { return w_->nbreakpoints; }
+
+    /** @see suzerain_bspline_workspace#nderivatives */
+    int nderivatives() const { return w_->nderivatives; }
+
     /** @see suzerain_bspline_workspace#ndof */
     int ndof() const { return w_->ndof; }
+
+    // Not exposing suzerain_bspline_workspace#method at this time
+
+    /** @see suzerain_bspline_workspace#kl */
+    int kl(int i) const { return w_->kl[i]; }
+
+    /** @see suzerain_bspline_workspace#ku */
+    int ku(int i) const { return w_->ku[i]; }
+
+    /** @see suzerain_bspline_workspace#max_kl */
+    int max_kl() const { return w_->max_kl; }
+
+    /** @see suzerain_bspline_workspace#max_ku */
+    int max_ku() const { return w_->max_ku; }
+
+    /** @see suzerain_bspline_workspace#ld */
+    int ld() const { return w_->ld; }
+
+    /** @see suzerain_bspline_workspace#D */
+    const double * D(int i) const { return w_->D[i]; }
+
+    /** @see suzerain_bspline_workspace#D */
+    double * D(int i) { return w_->D[i]; }
 
     /** @see suzerain_bspline_accumulate_operator */
     int accumulate_operator(
@@ -212,6 +244,27 @@ public:
     /** @see suzerain_bspline_lu_workspace#ndof */
     int ndof() const { return luw_->ndof; }
 
+    /** @see suzerain_bspline_lu_workspace#kl */
+    int kl() const { return luw_->kl; }
+
+    /** @see suzerain_bspline_lu_workspace#ku */
+    int ku() const { return luw_->ku; }
+
+    /** @see suzerain_bspline_lu_workspace#ld */
+    int ld() const { return luw_->ld; }
+
+    /** @see suzerain_bspline_lu_workspace#ipiv */
+    const int * ipiv() const { return luw_->ipiv; }
+
+    /** @see suzerain_bspline_lu_workspace#ipiv */
+    int * ipiv() { return luw_->ipiv; }
+
+    /** @see suzerain_bspline_lu_workspace#A */
+    const double * A() const { return luw_->A; }
+
+    /** @see suzerain_bspline_lu_workspace#A */
+    double * A() { return luw_->A; }
+
     /** @see suzerain_bspline_lu_form_general */
     int form_general(int ncoefficients,
                      const double * coefficients,
@@ -257,6 +310,27 @@ public:
 
     /** @see suzerain_bspline_luz_workspace#ndof */
     int ndof() const { return luzw_->ndof; }
+
+    /** @see suzerain_bspline_luz_workspace#kl */
+    int kl() const { return luzw_->kl; }
+
+    /** @see suzerain_bspline_luz_workspace#ku */
+    int ku() const { return luzw_->ku; }
+
+    /** @see suzerain_bspline_luz_workspace#ld */
+    int ld() const { return luzw_->ld; }
+
+    /** @see suzerain_bspline_luz_workspace#ipiv */
+    const int * ipiv() const { return luzw_->ipiv; }
+
+    /** @see suzerain_bspline_luz_workspace#ipiv */
+    int * ipiv() { return luzw_->ipiv; }
+
+    /** @see suzerain_bspline_luz_workspace#A */
+    const double (*A() const)[2] { return luzw_->A; }
+
+    /** @see suzerain_bspline_luz_workspace#A */
+    double (*A())[2] { return luzw_->A; }
 
     /** @see suzerain_bspline_luz_form_general */
     template< typename Complex >
