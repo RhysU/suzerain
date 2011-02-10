@@ -79,7 +79,7 @@ static pb::GridDefinition<real_t> def_grid(
         /* default_Nz    */ 1,
         /* default_DAFz  */ real_t(3)/real_t(2));
 
-// Global grid-details initialized in main()
+// Global B-spline -details initialized in main()
 static shared_ptr<sz::bspline>     bspw;
 static shared_ptr<sz::bspline_luz> bspluzw;
 
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
         options.add_options()
             ("create", po::value<std::string>(&restart_file)
                 ->default_value("restart0.h5"),
-             "Name of new restart file to create"),
+             "Name of new restart file to create")
             ("htdelta", po::value<real_t>(&htdelta)
                 ->notifier(std::bind2nd(ptr_fun_ensure_positive,"htdelta"))
                 ->default_value(7),
@@ -138,124 +138,95 @@ int main(int argc, char **argv)
         options.process(argc, argv);
     }
 
+    if (def_grid.k() < 4 /* cubics */) {
+        LOG4CXX_FATAL(log,
+            "k >= 4 required to compute two non-trivial spatial derivatives");
+        return EXIT_FAILURE;
+    }
+
     LOG4CXX_INFO(log, "Creating new restart file " << restart_file);
     esio_file_create(esioh, restart_file.c_str(), false /* no clobber */);
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Storing basic scenario parameters");
-    esio_attribute_write_double(esioh, "Re",    def_scenario.Re());
-    esio_attribute_write_double(esioh, "Pr",    def_scenario.Pr());
-    esio_attribute_write_double(esioh, "gamma", def_scenario.gamma());
-    esio_attribute_write_double(esioh, "beta",  def_scenario.beta());
-    esio_attribute_write_double(esioh, "Lx",    def_scenario.Lx());
-    esio_attribute_write_double(esioh, "Ly",    def_scenario.Ly());
-    esio_attribute_write_double(esioh, "Lz",    def_scenario.Lz());
+    {
+        double d;
+        d = def_scenario.Re();    esio_attribute_write_double(esioh, "Re",    &d);
+        d = def_scenario.Pr();    esio_attribute_write_double(esioh, "Pr",    &d);
+        d = def_scenario.gamma(); esio_attribute_write_double(esioh, "gamma", &d);
+        d = def_scenario.beta();  esio_attribute_write_double(esioh, "beta",  &d);
+        d = def_scenario.Lx();    esio_attribute_write_double(esioh, "Lx",    &d);
+        d = def_scenario.Ly();    esio_attribute_write_double(esioh, "Ly",    &d);
+        d = def_scenario.Lz();    esio_attribute_write_double(esioh, "Lz",    &d);
+    }
     esio_file_flush(esioh);
 
-    LOG4CXX_INFO(log, "Finding B-spline basis of uniform order "
+    LOG4CXX_INFO(log, "Storing basic grid parameters");
+    {
+        double d;
+        d = def_grid.DAFx(); esio_attribute_write_double(esioh, "DAFx",  &d);
+        d = def_grid.DAFz(); esio_attribute_write_double(esioh, "DAFz",  &d);
+    }
+    {
+        int i;
+        i = def_grid.Nx();  esio_attribute_write_int(esioh, "Nx", &i);
+        i = def_grid.Ny();  esio_attribute_write_int(esioh, "Ny", &i);
+        i = def_grid.k();   esio_attribute_write_int(esioh, "k",  &i);
+        i = def_grid.Nz();  esio_attribute_write_int(esioh, "Nz", &i);
+    }
+    esio_file_flush(esioh);
+
+    LOG4CXX_INFO(log, "Storing B-spline basis of uniform order "
                       << (def_grid.k() - 1) << " on [0, Ly] with "
                       << def_grid.Ny() << " DOF");
     {
-        boost::scoped_array<real_t> buf(new real_t[def_scenario.Ny()]);
+        boost::scoped_array<real_t> buf(new real_t[def_grid.Ny()]);
 
         // Compute and store breakpoint locations
-        const int nbreak = def_grid.Ny() + 2 - k;
-        sz::math::linspace(0.0, 1.0, nbreak, buf.begin()); // Uniform [0, 1]
-        for (int i = 0; i < nbreak; ++i) {                 // Stretch 'em out
+        const int nbreak = def_grid.Ny() + 2 - def_grid.k();
+        sz::math::linspace(0.0, 1.0, nbreak, buf.get()); // Uniform [0, 1]
+        for (int i = 0; i < nbreak; ++i) {               // Stretch 'em out
             buf[i] = def_scenario.Ly()
                    * suzerain_htstretch2(htdelta, 1.0, buf[i]);
         }
-        esio_attribute_writev_double(
-                esioh, "breakpoints", buf.begin(), nbreak);
+        esio_attribute_writev_double(esioh, "breakpoints", buf.get(), nbreak);
 
         // Generate the B-spline workspace based on order and breakpoints
-        bspw = make_shared<sz::bspline>(def_grid.k(), 2, nbreak, breakpoints);
+        // Maximum non-trivial derivative operators included
+        bspw = make_shared<sz::bspline>(
+                def_grid.k(), def_grid.k() - 2, nbreak, buf.get());
         assert(static_cast<unsigned>(bspw->ndof()) == def_grid.Ny());
 
         // Store collocation points to restart file
-        bspw->collocation_points(buf.begin(), 1);
+        bspw->collocation_points(buf.get(), 1);
         esio_attribute_writev_double(
-                esioh, "colpoints", buf.begin(), bspw->ndof());
+                esioh, "colpoints", buf.get(), bspw->ndof());
     }
     esio_file_flush(esioh);
 
-
-    const int nbreak = def_grid.Ny() + 2 - def_grid.k();
-    real_t *breakpoints = (real_t *) sz::blas::malloc(nbreak*sizeof(real_t));
-    assert(breakpoints);
-    sz::math::linspace(0.0, 1.0, nbreak, breakpoints); // Uniform [0, 1]
-    for (int i = 0; i < nbreak; ++i) {                 // Stretch 'em out
-        breakpoints[i] = def_scenario.Ly()
-                       * suzerain_htstretch2(htdelta, 1.0, breakpoints[i]);
+    LOG4CXX_INFO(log,
+            "Storing B-spline derivative operators in general band form");
+    {
+        char buf[63];
+        const int buflen = sizeof(buf)/sizeof(buf[0]);
+        for (int i = 0; i <= bspw->nderivatives(); ++i) {
+            const int kl = bspw->kl(i);
+            const int ku = bspw->ku(i);
+            snprintf(buf, buflen, "bspw_D%d_kl", i);
+            esio_attribute_write_int(esioh, buf, &kl);
+            snprintf(buf, buflen, "bspw_D%d_ku", i);
+            esio_attribute_write_int(esioh, buf, &ku);
+            snprintf(buf, buflen, "bspw_D%d", i);
+            esio_attribute_writev_double(esioh, buf, bspw->D(i),
+                    (kl + 1 + ku) * bspw->ndof());
+        }
     }
-    esio_attribute_writev_double(esioh, "breakpoints", breakpoints, nbreak);
     esio_file_flush(esioh);
-
-    bspw = make_shared<sz::bspline>(def_grid.k(), 2, nbreak, breakpoints);
-    assert(static_cast<unsigned>(bspw->ndof()) == def_grid.Ny());
-    sz::blas::free(breakpoints);
 
     // Initialize B-spline workspace to find coeffs from collocation points
     bspluzw = make_shared<sz::bspline_luz>(*bspw);
     bspluzw->form_mass(*bspw);
 
-    // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
-    pg = make_shared<sz::pencil_grid>(def_grid.dealiased_extents(),
-                                      def_grid.processor_grid());
-    LOG4CXX_INFO(log, "Processor count: " << nproc);
-    LOG4CXX_INFO(log, "Processor grid used: " << pg->processor_grid());
-    LOG4CXX_DEBUG(log, "Local dealiased wave start  (XYZ): "
-                       << pg->local_wave_start());
-    LOG4CXX_DEBUG(log, "Local dealiased wave end    (XYZ): "
-                       << pg->local_wave_end());
-    LOG4CXX_DEBUG(log, "Local dealiased wave extent (XYZ): "
-                       << pg->local_wave_extent());
-
-    // Compute how much non-dealiased XYZ state is local to this rank
-    // Additional munging necessary X direction has (Nx/2+1) complex values
-    const boost::array<sz::pencil_grid::index,3> state_start
-        = pg->local_wave_start();
-    const boost::array<sz::pencil_grid::index,3> state_end = {{
-        std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[0]/2+1,
-                                             pg->local_wave_end()[0]),
-        std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[1],
-                                             pg->local_wave_end()[1]),
-        std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[2],
-                                             pg->local_wave_end()[2])
-    }};
-    const boost::array<sz::pencil_grid::index,3> state_extent = {{
-        std::max<sz::pencil_grid::index>(state_end[0] - state_start[0], 0),
-        std::max<sz::pencil_grid::index>(state_end[1] - state_start[1], 0),
-        std::max<sz::pencil_grid::index>(state_end[2] - state_start[2], 0)
-    }};
-    LOG4CXX_DEBUG(log, "Local state wave start  (XYZ): " << state_start);
-    LOG4CXX_DEBUG(log, "Local state wave end    (XYZ): " << state_end);
-    LOG4CXX_DEBUG(log, "Local state wave extent (XYZ): " << state_extent);
-
-    // Create the state storage for the linear and nonlinear operators
-    // with appropriate padding to allow nonlinear state to be P3DFFTified
-    state_type state_linear(sz::to_yxz(5, state_extent));
-    state_type state_nonlinear(
-            sz::to_yxz(5, state_extent),
-            sz::prepend(pg->local_wave_storage(),
-                        sz::strides_cm(sz::to_yxz(pg->local_wave_extent()))));
-    if (log->isDebugEnabled()) {
-        boost::array<sz::pencil_grid::index,4> strides;
-        std::copy(state_linear.strides(),
-                  state_linear.strides() + 4, strides.begin());
-        LOG4CXX_DEBUG(log, "Linear state strides    (FYXZ): " << strides);
-        std::copy(state_nonlinear.strides(),
-                  state_nonlinear.strides() + 4, strides.begin());
-        LOG4CXX_DEBUG(log, "Nonlinear state strides (FYXZ): " << strides);
-    }
-
-    // Instantiate the operators and timestepping details
-    // See write up section 2.1 (Spatial Discretization) for coefficient origin
-    const sz::timestepper::lowstorage::SMR91Method<complex_t> smr91;
-    MassOperator L(   def_scenario.Lx() * def_scenario.Lz()
-                    * def_grid.Nx()     * def_grid.Nz());
-    NonlinearOperator N;
-
-    // Take a timestep
-    sz::timestepper::lowstorage::step(smr91, L, N, state_linear, state_nonlinear);
+    LOG4CXX_INFO(log, "Closing newly initialized restart file");
+    esio_file_close(esioh);
 }
