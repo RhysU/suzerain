@@ -55,6 +55,7 @@ namespace po = ::boost::program_options;
 using boost::make_shared;
 using boost::math::constants::pi;
 using boost::numeric_cast;
+using boost::scoped_array;
 using boost::shared_ptr;
 using std::numeric_limits;
 
@@ -150,29 +151,74 @@ int main(int argc, char **argv)
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Storing basic scenario parameters");
-    esio_attribute_write(esioh, "/", "Re",    def_scenario.Re()   );
-    esio_attribute_write(esioh, "/", "Pr",    def_scenario.Pr()   );
-    esio_attribute_write(esioh, "/", "gamma", def_scenario.gamma());
-    esio_attribute_write(esioh, "/", "beta",  def_scenario.beta() );
-    esio_attribute_write(esioh, "/", "Lx",    def_scenario.Lx()   );
-    esio_attribute_write(esioh, "/", "Ly",    def_scenario.Ly()   );
-    esio_attribute_write(esioh, "/", "Lz",    def_scenario.Lz()   );
+    {
+        esio_line_establish(esioh, 1, 0, 1); // Store as lines to allow comments
+
+        const double Re = def_scenario.Re();
+        esio_line_write(esioh, "Re", &Re, 0,
+                def_scenario.options().find("Re",false).description().c_str());
+
+        const double Pr = def_scenario.Pr();
+        esio_line_write(esioh, "Pr", &Pr, 0,
+                def_scenario.options().find("Pr",false).description().c_str());
+
+        const double gamma = def_scenario.gamma();
+        esio_line_write(esioh, "gamma", &gamma, 0,
+                def_scenario.options().find("gamma",false).description().c_str());
+
+        const double beta = def_scenario.beta();
+        esio_line_write(esioh, "beta", &beta, 0,
+                def_scenario.options().find("beta",false).description().c_str());
+
+        const double Lx = def_scenario.Lx();
+        esio_line_write(esioh, "Lx", &Lx, 0,
+                def_scenario.options().find("Lx",false).description().c_str());
+
+        const double Ly = def_scenario.Ly();
+        esio_line_write(esioh, "Ly", &Ly, 0,
+                def_scenario.options().find("Ly",false).description().c_str());
+
+        const double Lz = def_scenario.Lz();
+        esio_line_write(esioh, "Lz", &Lz, 0,
+                def_scenario.options().find("Lz",false).description().c_str());
+    }
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Storing basic grid parameters");
-    esio_attribute_write(esioh, "/", "Nx",   numeric_cast<int>(def_grid.Nx())  );
-    esio_attribute_write(esioh, "/", "DAFx",                   def_grid.DAFx() );
-    esio_attribute_write(esioh, "/", "Ny",   numeric_cast<int>(def_grid.Ny())  );
-    esio_attribute_write(esioh, "/", "k",    numeric_cast<int>(def_grid.k())   );
-    esio_attribute_write(esioh, "/", "Nz",   numeric_cast<int>(def_grid.Nz())  );
-    esio_attribute_write(esioh, "/", "DAFz",                   def_grid.DAFz() );
+    {
+        esio_line_establish(esioh, 1, 0, 1); // Store as lines to allow comments
+
+        const int Nx = numeric_cast<int>(def_grid.Nx());
+        esio_line_write(esioh, "Nx", &Nx, 0,
+                def_grid.options().find("Nx",false).description().c_str());
+
+        const double DAFx = def_grid.DAFx();
+        esio_line_write(esioh, "DAFx", &DAFx, 0,
+                def_grid.options().find("DAFx",false).description().c_str());
+
+        const int Ny = numeric_cast<int>(def_grid.Ny());
+        esio_line_write(esioh, "Ny", &Ny, 0,
+                def_grid.options().find("Ny",false).description().c_str());
+
+        const int k = numeric_cast<int>(def_grid.k());
+        esio_line_write(esioh, "k", &k, 0,
+                def_grid.options().find("k",false).description().c_str());
+
+        const int Nz = numeric_cast<int>(def_grid.Nz());
+        esio_line_write(esioh, "Nz", &Nz, 0,
+                def_grid.options().find("Nz",false).description().c_str());
+
+        const double DAFz = def_grid.DAFz();
+        esio_line_write(esioh, "DAFz", &DAFz, 0,
+                def_grid.options().find("DAFz",false).description().c_str());
+    }
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Storing B-spline basis of uniform order "
                       << (def_grid.k() - 1) << " on [0, Ly] with "
                       << def_grid.Ny() << " DOF");
     {
-        boost::scoped_array<real_t> buf(new real_t[def_grid.Ny()]);
+        scoped_array<real_t> buf(new real_t[def_grid.Ny()]);
 
         // Compute and store breakpoint locations
         const int nbreak = def_grid.Ny() + 2 - def_grid.k();
@@ -181,7 +227,9 @@ int main(int argc, char **argv)
             buf[i] = def_scenario.Ly()
                    * suzerain_htstretch2(htdelta, 1.0, buf[i]);
         }
-        esio_attribute_writev(esioh, "/", "breakpoints", buf.get(), nbreak);
+        esio_line_establish(esioh, nbreak, 0, nbreak);
+        esio_line_write(esioh, "breakpoints", buf.get(), 0,
+                "Breakpoint locations used to build B-spline basis");
 
         // Generate the B-spline workspace based on order and breakpoints
         // Maximum non-trivial derivative operators included
@@ -191,25 +239,28 @@ int main(int argc, char **argv)
 
         // Store collocation points to restart file
         bspw->collocation_points(buf.get(), 1);
-        esio_attribute_writev(esioh, "/", "colpoints", buf.get(), bspw->ndof());
+        esio_line_establish(esioh, bspw->ndof(), 0, bspw->ndof());
+        esio_line_write(esioh, "colpoints", buf.get(), 0,
+                "Collocation points used to build discrete operators");
     }
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log,
-            "Storing B-spline derivative operators in general band form");
+            "Storing B-spline derivative operators in general band format");
     {
-        char buf[63];
-        const int buflen = sizeof(buf)/sizeof(buf[0]);
-        for (int i = 0; i <= bspw->nderivatives(); ++i) {
-            const int kl = bspw->kl(i);
-            const int ku = bspw->ku(i);
-            snprintf(buf, buflen, "bspw_D%d_kl", i);
-            esio_attribute_write(esioh, "/", buf, &kl);
-            snprintf(buf, buflen, "bspw_D%d_ku", i);
-            esio_attribute_write(esioh, "/", buf, &ku);
-            snprintf(buf, buflen, "bspw_D%d", i);
-            esio_attribute_writev(esioh, "/", buf, bspw->D(i),
-                    (kl + 1 + ku) * bspw->ndof());
+        char name[8];
+        char comment[127];
+        for (int k = 0; k <= bspw->nderivatives(); ++k) {
+            snprintf(name, sizeof(name)/sizeof(name[0]), "D%d", k);
+            snprintf(comment, sizeof(comment)/sizeof(comment[0]),
+                    "Wall-normal derivative D%d(i,j) = D%d[i+ku+j*(kl+ku)]"
+                    " for 0 <= i,j < N when (j-ku <= i && i <= j+kl)", k, k);
+            const int aglobal = (bspw->ku(k) + 1 + bspw->kl(k)) * bspw->ndof();
+            esio_line_establish(esioh, aglobal, 0, aglobal);
+            esio_line_write(esioh, name, bspw->D(k), 0, comment);
+            esio_attribute_write(esioh, name, "kl", bspw->kl(k));
+            esio_attribute_write(esioh, name, "ku", bspw->ku(k));
+            esio_attribute_write(esioh, name, "N",  bspw->ndof());
         }
     }
     esio_file_flush(esioh);
