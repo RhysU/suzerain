@@ -909,23 +909,23 @@ int main(int argc, char **argv)
                 using boost::any_cast;
                 if (any_cast<int>(&v)) {
                     const int val = any_cast<int>(v);
-                    esio_attribute_write_int(h, n.c_str(), &val);
+                    esio_attribute_write(h, "/", n.c_str(), &val);
                     LOG4CXX_INFO(l, n << " = " << val << " # " << d);
                 } else if (any_cast<std::size_t>(&v)) {
                     const int val = any_cast<std::size_t>(v);
-                    esio_attribute_write_int(h, n.c_str(), &val);
+                    esio_attribute_write(h, "/", n.c_str(), &val);
                     LOG4CXX_INFO(l, n << " = " << val << " # " << d);
                 } else if (any_cast<double>(&v)) {
                     const double val = any_cast<double>(v);
-                    esio_attribute_write_double(h, n.c_str(), &val);
+                    esio_attribute_write(h, "/", n.c_str(), &val);
                     LOG4CXX_INFO(l, n << " = " << val << " # " << d);
                 } else if (any_cast<float>(&v)) {
                     const float val = any_cast<float>(v);
-                    esio_attribute_write_float(h, n.c_str(), &val);
+                    esio_attribute_write(h, "/", n.c_str(), &val);
                     LOG4CXX_INFO(l, n << " = " << val << " # " << d);
                 } else if (any_cast<std::string>(&v)) {
                     const std::string &val = any_cast<std::string>(v);
-                    esio_string_set(h, n.c_str(), val.c_str());
+                    esio_string_set(h, "/", n.c_str(), val.c_str());
                     LOG4CXX_INFO(l, n << " = " << val << " # " << d);
                 } else {
                     LOG4CXX_WARN(l, n << " = UNKNOWN_TYPE");

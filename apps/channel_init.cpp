@@ -54,6 +54,7 @@ namespace pb = ::suzerain::problem;
 namespace po = ::boost::program_options;
 using boost::make_shared;
 using boost::math::constants::pi;
+using boost::numeric_cast;
 using boost::shared_ptr;
 using std::numeric_limits;
 
@@ -149,31 +150,22 @@ int main(int argc, char **argv)
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Storing basic scenario parameters");
-    {
-        double d;
-        d = def_scenario.Re();    esio_attribute_write_double(esioh, "Re",    &d);
-        d = def_scenario.Pr();    esio_attribute_write_double(esioh, "Pr",    &d);
-        d = def_scenario.gamma(); esio_attribute_write_double(esioh, "gamma", &d);
-        d = def_scenario.beta();  esio_attribute_write_double(esioh, "beta",  &d);
-        d = def_scenario.Lx();    esio_attribute_write_double(esioh, "Lx",    &d);
-        d = def_scenario.Ly();    esio_attribute_write_double(esioh, "Ly",    &d);
-        d = def_scenario.Lz();    esio_attribute_write_double(esioh, "Lz",    &d);
-    }
+    esio_attribute_write(esioh, "/", "Re",    def_scenario.Re()   );
+    esio_attribute_write(esioh, "/", "Pr",    def_scenario.Pr()   );
+    esio_attribute_write(esioh, "/", "gamma", def_scenario.gamma());
+    esio_attribute_write(esioh, "/", "beta",  def_scenario.beta() );
+    esio_attribute_write(esioh, "/", "Lx",    def_scenario.Lx()   );
+    esio_attribute_write(esioh, "/", "Ly",    def_scenario.Ly()   );
+    esio_attribute_write(esioh, "/", "Lz",    def_scenario.Lz()   );
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Storing basic grid parameters");
-    {
-        double d;
-        d = def_grid.DAFx(); esio_attribute_write_double(esioh, "DAFx",  &d);
-        d = def_grid.DAFz(); esio_attribute_write_double(esioh, "DAFz",  &d);
-    }
-    {
-        int i;
-        i = def_grid.Nx();  esio_attribute_write_int(esioh, "Nx", &i);
-        i = def_grid.Ny();  esio_attribute_write_int(esioh, "Ny", &i);
-        i = def_grid.k();   esio_attribute_write_int(esioh, "k",  &i);
-        i = def_grid.Nz();  esio_attribute_write_int(esioh, "Nz", &i);
-    }
+    esio_attribute_write(esioh, "/", "Nx",   numeric_cast<int>(def_grid.Nx())  );
+    esio_attribute_write(esioh, "/", "DAFx",                   def_grid.DAFx() );
+    esio_attribute_write(esioh, "/", "Ny",   numeric_cast<int>(def_grid.Ny())  );
+    esio_attribute_write(esioh, "/", "k",    numeric_cast<int>(def_grid.k())   );
+    esio_attribute_write(esioh, "/", "Nz",   numeric_cast<int>(def_grid.Nz())  );
+    esio_attribute_write(esioh, "/", "DAFz",                   def_grid.DAFz() );
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Storing B-spline basis of uniform order "
@@ -189,7 +181,7 @@ int main(int argc, char **argv)
             buf[i] = def_scenario.Ly()
                    * suzerain_htstretch2(htdelta, 1.0, buf[i]);
         }
-        esio_attribute_writev_double(esioh, "breakpoints", buf.get(), nbreak);
+        esio_attribute_writev(esioh, "/", "breakpoints", buf.get(), nbreak);
 
         // Generate the B-spline workspace based on order and breakpoints
         // Maximum non-trivial derivative operators included
@@ -199,8 +191,7 @@ int main(int argc, char **argv)
 
         // Store collocation points to restart file
         bspw->collocation_points(buf.get(), 1);
-        esio_attribute_writev_double(
-                esioh, "colpoints", buf.get(), bspw->ndof());
+        esio_attribute_writev(esioh, "/", "colpoints", buf.get(), bspw->ndof());
     }
     esio_file_flush(esioh);
 
@@ -213,11 +204,11 @@ int main(int argc, char **argv)
             const int kl = bspw->kl(i);
             const int ku = bspw->ku(i);
             snprintf(buf, buflen, "bspw_D%d_kl", i);
-            esio_attribute_write_int(esioh, buf, &kl);
+            esio_attribute_write(esioh, "/", buf, &kl);
             snprintf(buf, buflen, "bspw_D%d_ku", i);
-            esio_attribute_write_int(esioh, buf, &ku);
+            esio_attribute_write(esioh, "/", buf, &ku);
             snprintf(buf, buflen, "bspw_D%d", i);
-            esio_attribute_writev_double(esioh, buf, bspw->D(i),
+            esio_attribute_writev(esioh, "/", buf, bspw->D(i),
                     (kl + 1 + ku) * bspw->ndof());
         }
     }
