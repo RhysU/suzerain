@@ -38,6 +38,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_minmax.h>
 #include <gsl/gsl_statistics_int.h>
+#include <gsl/gsl_integration.h>
 #include <gsl/gsl_vector.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bspline.h>
@@ -86,6 +87,50 @@ suzerain_bspline_lu_solve_noncontiguous(
     int incb,
     int ldb,
     const suzerain_bspline_lu_workspace *luw);
+
+// gsl_integration_glfixed in GSL 1.14 but
+// gsl_integration_glfixed_point is 1.14+ so build it atop 1.14's public API
+// Source code lifted from GSL which is cool since it's my copyright :)
+// FIXME: Remove this logic once GSL 1.15 becomes widespread
+#if GSL_MAJOR_VERSION < 2 && GSL_MINOR_VERSION < 15
+static
+int
+gsl_integration_glfixed_point (
+        double a,
+        double b,
+        size_t i,
+        double *xi,
+        double *wi,
+        const gsl_integration_glfixed_table * t)
+{
+    const double A = (b - a) / 2;  /* Length of [a,b] */
+    const double B = (a + b) / 2;  /* Midpoint of [a,b] */
+
+    if (i >= t->n) {
+        GSL_ERROR ("i must be less than t->n", GSL_EINVAL);
+    }
+
+    /* See comments above gsl_integration_glfixed for struct's x, w layout. */
+    /* Simply unpack that layout into a sorted set of points, weights. */
+    if (GSL_IS_ODD(t->n)) {
+        const int k = ((int) i) - ((int) t->n) / 2;
+        const int s = k < 0 ? -1 : 1;
+
+        *xi = B + s*A*t->x[s*k];
+        *wi =       A*t->w[s*k];
+    } else if (/* GSL_IS_EVEN(t->n) && */ i < t->n / 2) {
+        i = (t->n / 2) - 1 - i;
+        *xi = B - A*t->x[i];
+        *wi =     A*t->w[i];
+    } else /* GSL_IS_EVEN(t->n) && i >= n / 2 */ {
+        i  -= t->n / 2;
+        *xi = B + A*t->x[i];
+        *wi =     A*t->w[i];
+    }
+
+    return GSL_SUCCESS;
+}
+#endif
 
 suzerain_bspline_workspace *
 suzerain_bspline_alloc(int order,
