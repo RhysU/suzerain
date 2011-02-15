@@ -100,6 +100,12 @@ public:
     /** @see suzerain_bspline_workspace#D */
     double * D(int i) { return w_->D[i]; }
 
+    /** @see suzerain_bspline_workspace#I */
+    const double * I() const { return w_->I; }
+
+    /** @see suzerain_bspline_workspace#I */
+    double * I() { return w_->I; }
+
     /** @see suzerain_bspline_accumulate_operator */
     int accumulate_operator(
             int nderivative, int nrhs,
@@ -189,6 +195,12 @@ public:
                 values, ldvalues, w_);
     }
 
+    /** @see suzerain_bspline_integrate */
+    int integrate(const double * coefficients, double * value) const
+    {
+        return suzerain_bspline_integrate(coefficients, value, w_);
+    }
+
     /** @see suzerain_bspline_zevaluate */
     int zevaluate(int nderivative,
             const double (* coefficients)[2], int npoints,
@@ -197,6 +209,12 @@ public:
         return suzerain_bspline_zevaluate(nderivative,
                 coefficients, npoints, points,
                 values, ldvalues, w_);
+    }
+
+    /** @see suzerain_bspline_zintegrate */
+    int zintegrate(const double (* coefficients)[2], double (* value)[2]) const
+    {
+        return suzerain_bspline_zintegrate(coefficients, value, w_);
     }
 
     /** @see suzerain_bspline_find_interpolation_problem_rhs */
