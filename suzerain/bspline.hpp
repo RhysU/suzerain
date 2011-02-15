@@ -225,11 +225,11 @@ public:
         suzerain::complex::traits::is_complex_double<Complex1>,
         suzerain::complex::traits::is_complex_double<Complex2>
     >, int>::type zintegrate(
-            const Complex1 *coefficients, Complex2 *value) const
+            const Complex1 *coefficients, Complex2 &value) const
     {
         return suzerain_bspline_zintegrate(
                 reinterpret_cast<const double (*)[2]>(coefficients),
-                reinterpret_cast<double (*)[2]>(value),
+                reinterpret_cast<double (*)[2]>(&value),
                 w_);
     }
 

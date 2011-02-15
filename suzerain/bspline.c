@@ -909,7 +909,7 @@ suzerain_bspline_integration_coefficients(
         const double a
             = GSL_MAX_DBL(left, gsl_vector_get(bw->knots, i));
         const double b
-            = GSL_MIN_DBL(right, gsl_vector_get(bw->knots, i + w->order - 1));
+            = GSL_MIN_DBL(right, gsl_vector_get(bw->knots, i + w->order));
 
         /* Loop over the Gauss points, evaluate basis, and accumulate */
         for (size_t j = 0; j < tbl->n; ++j) {
