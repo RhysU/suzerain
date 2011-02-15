@@ -73,6 +73,11 @@ compute_banded_collocation_derivative_submatrix(
 
 static
 int
+suzerain_bspline_integration_coefficients(
+        suzerain_bspline_workspace *w);
+
+static
+int
 suzerain_bspline_lu_solve_contiguous(
     int nrhs,
     double *b,
@@ -175,6 +180,7 @@ suzerain_bspline_alloc(int order,
     w->dbw         = NULL;
     w->db          = NULL;
     w->D           = NULL;
+    w->I           = NULL;
     /* Prepare workspace */
     w->kl = suzerain_blas_malloc((nderivatives+1)*sizeof(w->kl[0]));
     if (w->kl == NULL) {
@@ -274,6 +280,21 @@ suzerain_bspline_alloc(int order,
                             SUZERAIN_EFAILED);
     }
 
+    /* Allocate space for integration coefficients */
+    w->I = suzerain_blas_malloc(w->ndof * sizeof(w->I[0]));
+    if (w->I == NULL) {
+        suzerain_bspline_free(w);
+        SUZERAIN_ERROR_NULL(
+                "failed to allocate space for integration coefficients",
+                SUZERAIN_ENOMEM);
+    }
+    /* Calculate integration coefficients */
+    if (suzerain_bspline_integration_coefficients(w)) {
+        suzerain_bspline_free(w);
+        SUZERAIN_ERROR_NULL("Error computing integration coefficients",
+                            SUZERAIN_EFAILED);
+    }
+
     return w;
 }
 
@@ -292,6 +313,11 @@ suzerain_bspline_free(suzerain_bspline_workspace * w)
 
             suzerain_blas_free(w->D);
             w->D = NULL;
+        }
+
+        if (w->I != NULL) {
+            suzerain_blas_free(w->I);
+            w->I = NULL;
         }
 
         gsl_matrix_free(w->db);
@@ -540,6 +566,17 @@ suzerain_bspline_evaluate(
 }
 
 int
+suzerain_bspline_integrate(
+    const double * coefficients,
+    double * value,
+    const suzerain_bspline_workspace *w)
+{
+    *value = suzerain_blas_ddot(w->ndof, coefficients, 1, w->I, 1);
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
 suzerain_bspline_zevaluate(
     int nderivative,
     const double (* coefficients)[2],
@@ -593,6 +630,18 @@ suzerain_bspline_zevaluate(
             values[storage_offset][1] = imag_value;
         }
     }
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_zintegrate(
+    const double (* coefficients)[2],
+    double (* value)[2],
+    const suzerain_bspline_workspace *w)
+{
+    (*value)[0] = suzerain_blas_ddot(w->ndof, &(*coefficients)[0], 2, w->I, 1);
+    (*value)[1] = suzerain_blas_ddot(w->ndof, &(*coefficients)[1], 2, w->I, 1);
 
     return SUZERAIN_SUCCESS;
 }
@@ -821,6 +870,59 @@ compute_banded_collocation_derivative_submatrix(
             }
         }
     }
+
+    return SUZERAIN_SUCCESS;
+}
+
+static
+int
+suzerain_bspline_integration_coefficients(
+        suzerain_bspline_workspace *w)
+{
+    /* Zero any existing coefficient values */
+    memset(w->I, 0, w->ndof * sizeof(w->I[0]));
+
+    /* Dereference workspace pointer */
+    gsl_bspline_workspace * const bw = w->bw;
+
+    /* "Borrow" some temporary storage from the gsl_bspline_workspace */
+    /* Makes (safe) assumptions about GSL's implementation details */
+    gsl_vector * const Bk = bw->B;
+    assert(Bk->size == (size_t) w->order);
+
+    /* Obtain an appropriate order Gauss-Legendre integration rule */
+    gsl_integration_glfixed_table * const tbl
+        = gsl_integration_glfixed_table_alloc((w->order + 1)/2);
+    if (tbl == NULL) {
+        SUZERAIN_ERROR_NULL("failed to obtain Gauss-Legendre rule from GSL",
+                            SUZERAIN_ESANITY);
+    }
+
+    /* Compute the overall endpoints of the integration interval */
+    const double left  = gsl_bspline_breakpoint(0, bw);
+    const double right = gsl_bspline_breakpoint(w->ndof - 1, bw);
+
+    /* Use the rule to integrate each piecewise polynomial separately */
+    for (int i = 0; i < w->ndof; ++i) {
+
+        /* Compute the integration endpoints for this piecewise polynomial */
+        const double a
+            = GSL_MAX_DBL(left, gsl_vector_get(bw->knots, i));
+        const double b
+            = GSL_MIN_DBL(right, gsl_vector_get(bw->knots, i + w->order - 1));
+
+        /* Loop over the Gauss points, evaluate basis, and accumulate */
+        for (size_t j = 0; j < tbl->n; ++j) {
+            size_t istart, iend;
+            double xj, wj;
+
+            gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
+            gsl_bspline_eval_nonzero(xj, Bk, &istart, &iend, bw);
+            w->I[i] += wj * gsl_vector_get(Bk, i - istart);
+        }
+    }
+
+    gsl_integration_glfixed_table_free(tbl);
 
     return SUZERAIN_SUCCESS;
 }

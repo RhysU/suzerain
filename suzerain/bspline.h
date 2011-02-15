@@ -212,6 +212,9 @@ typedef struct suzerain_bspline_workspace {
      **/
     double **D;
 
+    /** Storage for integration coefficients */
+    double *I;
+
     /* @} */
 
     /**
@@ -428,6 +431,28 @@ suzerain_bspline_evaluate(
     const suzerain_bspline_workspace *w);
 
 /**
+ * Compute the integral \f$ \int \sum_{i} \beta_{i} B_{i}(x) \, dx \f$.
+ *
+ * @param[in] coefficients Real-valued expansion coefficients \f$ \beta_{i} \f$
+ *      for a function in terms of the B-spline basis.  Must be of length
+ *      suzerain_bspline_ndof().
+ * @param[out] value Real-valued result of the integration.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ * @see suzerain_bspline_zintegrate() for a way to integrate a function
+ *      when the coefficients are complex-valued.
+ *
+ * \memberof suzerain_bspline_workspace
+ */
+int
+suzerain_bspline_integrate(
+    const double * coefficients,
+    double * value,
+    const suzerain_bspline_workspace *w);
+
+/**
  * Apply the <tt>nderivative</tt>-th derivative operator to real coefficients
  * \c x.  Multiplies the precomputed banded derivative operator scaled by \c
  * alpha against one or more coefficient vectors stored in \c x.  Results
@@ -564,6 +589,28 @@ suzerain_bspline_zevaluate(
     const double * points,
     double (* values)[2],
     int ldvalues,
+    const suzerain_bspline_workspace *w);
+
+/**
+ * Compute the integral \f$ \int \sum_{i} \beta_{i} B_{i}(x) \, dx \f$.
+ *
+ * @param[in] coefficients Complex-valued expansion coefficients for a
+ *      function in terms of the B-spline basis.  Must be of length
+ *      suzerain_bspline_ndof().
+ * @param[out] value Complex-valued result of the integration.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ * @see suzerain_bspline_integrate() for a way to integrate a function
+ *      when the coefficients are real-valued.
+ *
+ * \memberof suzerain_bspline_workspace
+ */
+int
+suzerain_bspline_zintegrate(
+    const double (* coefficients)[2],
+    double (* value)[2],
     const suzerain_bspline_workspace *w);
 
 /**
