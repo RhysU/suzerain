@@ -879,9 +879,6 @@ int
 suzerain_bspline_integration_coefficients(
         suzerain_bspline_workspace *w)
 {
-    /* Zero any existing coefficient values */
-    memset(w->I, 0, w->ndof * sizeof(w->I[0]));
-
     /* Dereference workspace pointer */
     gsl_bspline_workspace * const bw = w->bw;
 
@@ -898,30 +895,32 @@ suzerain_bspline_integration_coefficients(
                             SUZERAIN_ESANITY);
     }
 
-    /* Compute the overall endpoints of the integration interval */
-    const double left  = gsl_bspline_breakpoint(0, bw);
-    const double right = gsl_bspline_breakpoint(w->ndof - 1, bw);
+    /* Zero integration coefficient values */
+    memset(w->I, 0, w->ndof * sizeof(w->I[0]));
 
-    /* Use the rule to integrate each piecewise polynomial separately */
-    for (int i = 0; i < w->ndof; ++i) {
+    /* Accumulate the breakpoint-by-breakpoint contributions to coefficients */
+    for (size_t i = 0; i < (bw->nbreak - 1); ++i) {
 
-        /* Compute the integration endpoints for this piecewise polynomial */
-        const double a
-            = GSL_MAX_DBL(left, gsl_vector_get(bw->knots, i));
-        const double b
-            = GSL_MIN_DBL(right, gsl_vector_get(bw->knots, i + w->order));
-
-        /* Loop over the Gauss points, evaluate basis, and accumulate */
         for (size_t j = 0; j < tbl->n; ++j) {
-            size_t istart, iend;
-            double xj, wj;
 
+            /* Get j-th Gauss point xj and weight wj */
+            double xj, wj;
+            const double a = gsl_bspline_breakpoint(i,   bw);
+            const double b = gsl_bspline_breakpoint(i+1, bw);
             gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
-            gsl_bspline_eval_nonzero(xj, Bk, &istart, &iend, bw);
-            w->I[i] += wj * gsl_vector_get(Bk, i - istart);
+
+            /* Evaluate basis functions at point xj */
+            size_t kstart, kend;
+            gsl_bspline_eval_nonzero(xj, Bk, &kstart, &kend, bw);
+
+            /* Accumulate weighted basis evaluations into w->I */
+            for (size_t k = kstart; k <= kend; ++k) {
+                w->I[k] += wj * gsl_vector_get(Bk, k - kstart);
+            }
         }
     }
 
+    /* Free integration rule resources */
     gsl_integration_glfixed_table_free(tbl);
 
     return SUZERAIN_SUCCESS;

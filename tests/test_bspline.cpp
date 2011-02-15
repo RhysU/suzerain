@@ -256,6 +256,35 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
             1e-12);
     }
 
+    /************************************************************************
+     * Integration functionality
+     * Exact integration solutions found using Mathematica 7 as follows:
+     *  k = 2;
+     *  b = {0, 1, 2, 3};
+     *  n = Length[b] + k - 2;
+     *  knots = Join[ ConstantArray[First[b], k - 1],
+     *                b, ConstantArray[Last[b], k - 1]];
+     *  B[i_, x_] := BSplineBasis[{k - 1, knots}, i, x]
+     *  Table[Integrate[B[i, x], {x, Min[b], Max[b]}], {i, 0, n - 1}]
+     ***********************************************************************/
+    {
+        const double expected[] = { .5, 1, 1, .5 };
+        check_close_collections(
+            expected, expected + sizeof(expected)/sizeof(expected[0]),
+            w->I, w->I + w->ndof, 1e-12);
+
+        const double coeffs[] = { 1, 2, 3, 4 };
+        double value;
+        suzerain_bspline_integrate(coeffs, &value, w);
+        BOOST_CHECK_CLOSE(value, 15./2, 1e-12);
+
+        const double zcoeffs[][2] = { {1,5}, {2,6}, {3,7}, {4,8} };
+        double zvalue[2];
+        suzerain_bspline_zintegrate(zcoeffs, &zvalue, w);
+        BOOST_CHECK_CLOSE(zvalue[0], 15./2, 1e-12);
+        BOOST_CHECK_CLOSE(zvalue[1], 39./2, 1e-12);
+    }
+
     /********************************/
     /* Real-valued LU functionality */
     /********************************/
@@ -586,6 +615,35 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
         }
     }
 
+    /************************************************************************
+     * Integration functionality
+     * Exact integration solutions found using Mathematica 7 as follows:
+     *  k = 3;
+     *  b = {0, 1, 2, 3};
+     *  n = Length[b] + k - 2;
+     *  knots = Join[ ConstantArray[First[b], k - 1],
+     *                b, ConstantArray[Last[b], k - 1]];
+     *  B[i_, x_] := BSplineBasis[{k - 1, knots}, i, x]
+     *  Table[Integrate[B[i, x], {x, Min[b], Max[b]}], {i, 0, n - 1}]
+     ***********************************************************************/
+    {
+        const double expected[] = { 1./3, 2./3, 1, 2./3, 1./3 };
+        check_close_collections(
+            expected, expected + sizeof(expected)/sizeof(expected[0]),
+            w->I, w->I + w->ndof, 1e-12);
+
+        const double coeffs[] = { 1, 2, 3, 4, 5 };
+        double value;
+        suzerain_bspline_integrate(coeffs, &value, w);
+        BOOST_CHECK_CLOSE(value, 9.0, 1e-12);
+
+        const double zcoeffs[][2] = { {1,6}, {2,7}, {3,8}, {4,9}, {5,10} };
+        double zvalue[2];
+        suzerain_bspline_zintegrate(zcoeffs, &zvalue, w);
+        BOOST_CHECK_CLOSE(zvalue[0],  9.0, 1e-12);
+        BOOST_CHECK_CLOSE(zvalue[1], 24.0, 1e-12);
+    }
+
     suzerain_bspline_free(w);
 }
 
@@ -644,6 +702,37 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
                 vapply + sizeof(vapply)/sizeof(vapply[0]),
                 1.0e-12);
         }
+    }
+
+    /************************************************************************
+     * Integration functionality
+     * Exact integration solutions found using Mathematica 7 as follows:
+     *  k = 4;
+     *  b = {0, 1, 2, 3};
+     *  n = Length[b] + k - 2;
+     *  knots = Join[ ConstantArray[First[b], k - 1],
+     *                b, ConstantArray[Last[b], k - 1]];
+     *  B[i_, x_] := BSplineBasis[{k - 1, knots}, i, x]
+     *  Table[Integrate[B[i, x], {x, Min[b], Max[b]}], {i, 0, n - 1}]
+     ***********************************************************************/
+    {
+        const double expected[] = { 1./4, 1./2, 3./4, 3./4, 1./2, 1./4 };
+        check_close_collections(
+            expected, expected + sizeof(expected)/sizeof(expected[0]),
+            w->I, w->I + w->ndof, 1e-12);
+
+        const double coeffs[] = { 1, 2, 3, 4, 5, 6 };
+        double value;
+        suzerain_bspline_integrate(coeffs, &value, w);
+        BOOST_CHECK_CLOSE(value, 21./2, 1e-12);
+
+        const double zcoeffs[][2] = {
+            {1,7}, {2,8}, {3,9}, {4,10}, {5,11}, {6,12}
+        };
+        double zvalue[2];
+        suzerain_bspline_zintegrate(zcoeffs, &zvalue, w);
+        BOOST_CHECK_CLOSE(zvalue[0], 21./2, 1e-12);
+        BOOST_CHECK_CLOSE(zvalue[1], 57./2, 1e-12);
     }
 
     suzerain_bspline_free(w);
