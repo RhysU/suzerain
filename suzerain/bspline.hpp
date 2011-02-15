@@ -202,19 +202,35 @@ public:
     }
 
     /** @see suzerain_bspline_zevaluate */
-    int zevaluate(int nderivative,
-            const double (* coefficients)[2], int npoints,
-            const double * points, double (* values)[2], int ldvalues) const
+    template< typename Complex1,
+              typename Complex2 >
+    typename boost::enable_if<boost::mpl::and_<
+        suzerain::complex::traits::is_complex_double<Complex1>,
+        suzerain::complex::traits::is_complex_double<Complex2>
+    >, int>::type zevaluate(int nderivative,
+            const Complex1 *coefficients, int npoints,
+            const double * points, Complex2 *values, int ldvalues) const
     {
         return suzerain_bspline_zevaluate(nderivative,
-                coefficients, npoints, points,
-                values, ldvalues, w_);
+                reinterpret_cast<const double (*)[2]>(coefficients),
+                npoints, points,
+                reinterpret_cast<double (*)[2]>(values),
+                ldvalues, w_);
     }
 
     /** @see suzerain_bspline_zintegrate */
-    int zintegrate(const double (* coefficients)[2], double (* value)[2]) const
+    template< typename Complex1,
+              typename Complex2 >
+    typename boost::enable_if<boost::mpl::and_<
+        suzerain::complex::traits::is_complex_double<Complex1>,
+        suzerain::complex::traits::is_complex_double<Complex2>
+    >, int>::type zintegrate(
+            const Complex1 *coefficients, Complex2 *value) const
     {
-        return suzerain_bspline_zintegrate(coefficients, value, w_);
+        return suzerain_bspline_zintegrate(
+                reinterpret_cast<const double (*)[2]>(coefficients),
+                reinterpret_cast<double (*)[2]>(value),
+                w_);
     }
 
     /** @see suzerain_bspline_find_interpolation_problem_rhs */
