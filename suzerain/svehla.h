@@ -1,0 +1,65 @@
+/*--------------------------------------------------------------------------
+ *--------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010 The PECOS Development Team
+ *
+ * Please see http://pecos.ices.utexas.edu for more information.
+ *
+ * This file is part of Suzerain.
+ *
+ * Suzerain is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *--------------------------------------------------------------------------
+ *
+ * svehla.h: Provides information from NASA TR R-132 by Svehla Roger (1962)
+ *
+ * $Id$
+ *--------------------------------------------------------------------------
+ *-------------------------------------------------------------------------- */
+
+#ifndef __SUZERAIN_SVEHLA_H__
+#define __SUZERAIN_SVEHLA_H__
+
+#include <gsl/gsl_spline.h>
+
+/** @file
+ * Provides information from
+ * <a href="http://ntrs.nasa.gov/details.jsp?R=1020958">
+ * NASA TR R-132</a> by Svehla Roger (1962).
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * Obtain a lookup table of air's viscosity in Pascal-seconds versus
+ * temperature in degrees Kelvin according to Svehla 1962 table IV on page 117.
+ * The returned <tt>gsl_spline*</tt> can be interrogated using <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
+ * the usual routines</a>.  The return value must be subsequently cleaned up
+ * using <tt>gsl_spline_free()</tt>.
+ *
+ * @return On success, a <tt>gsl_spline *</tt> suitable for evaluation using,
+ *         for example, <tt>gsl_spline_eval()</tt>.  The return value must be 
+ *         subsequently cleaned up using <tt>gsl_spline_free()</tt>.  On failure
+ *         \c NULL is returned.
+ */
+gsl_spline * suzerain_svehla_air_mu_vs_T();
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* __SUZERAIN_SVEHLA_H__ */

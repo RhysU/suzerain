@@ -63,6 +63,7 @@ pkginclude_HEADERS += scenario_definition.hpp
 pkginclude_HEADERS += state.hpp
 pkginclude_HEADERS += state_impl.hpp
 pkginclude_HEADERS += storage.hpp
+pkginclude_HEADERS += svehla.h
 pkginclude_HEADERS += timecontroller.hpp
 pkginclude_HEADERS += timestepper.hpp
 pkginclude_HEADERS += traits.hpp
@@ -85,6 +86,7 @@ libsuzerain_la_SOURCES += pencil_grid.cpp
 libsuzerain_la_SOURCES += profile.cpp
 libsuzerain_la_SOURCES += program_options.cpp
 libsuzerain_la_SOURCES += richardson.c
+libsuzerain_la_SOURCES += svehla.c
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
