@@ -35,6 +35,10 @@
 #pragma hdrstop
 #include <log4cxx/logger.h>
 #include <esio/esio.h>
+#include <gsl/gsl_const_mksa.h>
+#include <gsl/gsl_const_num.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_roots.h>
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/htstretch.h>
@@ -44,6 +48,7 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/scenario_definition.hpp>
+#include <suzerain/svehla.h>
 #include <suzerain/utility.hpp>
 
 #pragma warning(disable:383 1572)
@@ -93,6 +98,22 @@ static void atexit_esio(void) {
     if (esioh) esio_handle_finalize(esioh);
 }
 
+/** Struct used for iterative solver to find wall temperature */
+struct tsolver {
+    double Re, L, gamma, R, Ma, p_wall;
+    gsl_spline *s;
+};
+
+/** Function for iterative solver to find wall temperature */
+static double f_tsolver(double T_wall, void *params) {
+    tsolver *p            = (tsolver *) params;
+    const double rho_wall = p->p_wall / (p->R * T_wall);
+    const double mu       = gsl_spline_eval(p->s, T_wall, NULL);
+    const double lhs      = mu * p->Re / (rho_wall * p->L);
+    const double rhs      = p->Ma * sqrt(p->gamma * p->R * T_wall);
+    return rhs - lhs;
+}
+
 int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
@@ -118,11 +139,14 @@ int main(int argc, char **argv)
     }
 
     // Process incoming program arguments from command line, input files
+    real_t Ma     = 1.15;
+    real_t M      = SUZERAIN_SVEHLA_AIR_M;
+    real_t p_wall = GSL_CONST_MKSA_STD_ATMOSPHERE;
     std::string restart_file;
     real_t htdelta;
+    sz::ProgramOptions options(
+            "Suzerain-based compressible channel initialization");
     {
-        sz::ProgramOptions options(
-                "Suzerain-based compressible channel initialization");
         options.add_definition(def_scenario);
         options.add_definition(def_grid);
         using ::suzerain::validation::ensure_positive;
@@ -132,6 +156,18 @@ int main(int argc, char **argv)
             ("create", po::value<std::string>(&restart_file)
                 ->default_value("restart0.h5"),
              "Name of new restart file to create")
+            ("Ma", po::value<real_t>(&Ma)
+                ->notifier(std::bind2nd(ptr_fun_ensure_positive,"Ma"))
+                ->default_value(Ma),
+             "Mach number based on bulk velocity and wall sound speed")
+            ("M", po::value<real_t>(&M)
+                ->notifier(std::bind2nd(ptr_fun_ensure_positive,"M"))
+                ->default_value(M),
+             "Molar mass of species in grams per mole")
+            ("p_wall", po::value<real_t>(&p_wall)
+                ->notifier(std::bind2nd(ptr_fun_ensure_positive,"p_wall"))
+                ->default_value(p_wall),
+             "Pressure in N/m^2 used to obtain reference wall density")
             ("htdelta", po::value<real_t>(&htdelta)
                 ->notifier(std::bind2nd(ptr_fun_ensure_positive,"htdelta"))
                 ->default_value(7),
@@ -139,6 +175,9 @@ int main(int argc, char **argv)
         ;
         options.process(argc, argv);
     }
+    const real_t R = GSL_CONST_MKSA_MOLAR_GAS * GSL_CONST_NUM_KILO / M;
+
+
 
     if (def_grid.k() < 4 /* cubics */) {
         LOG4CXX_FATAL(log,
@@ -162,9 +201,17 @@ int main(int argc, char **argv)
         esio_line_write(esioh, "Pr", &Pr, 0,
                 def_scenario.options().find("Pr",false).description().c_str());
 
+        esio_line_write(esioh, "Ma", &Ma, 0,
+                options.options().find("Ma",false).description().c_str());
+
         const double gamma = def_scenario.gamma();
         esio_line_write(esioh, "gamma", &gamma, 0,
                 def_scenario.options().find("gamma",false).description().c_str());
+
+        esio_line_write(esioh, "M", &M, 0,
+                options.options().find("M",false).description().c_str());
+
+        esio_line_write(esioh, "R", &R, 0, "Specific gas constant in J/kg/K");
 
         const double beta = def_scenario.beta();
         esio_line_write(esioh, "beta", &beta, 0,
@@ -264,6 +311,49 @@ int main(int argc, char **argv)
         }
     }
     esio_file_flush(esioh);
+
+    LOG4CXX_INFO(log, "Computing derived, dimensional scenario parameters");
+    real_t T_wall;
+    {
+        if (def_scenario.gamma() != 1.4) {
+            LOG4CXX_WARN(log, "Using air viscosity vs temperature for non-air");
+        }
+
+        tsolver p;
+        p.Re     = def_scenario.Re();
+        p.L      = def_scenario.Ly();
+        p.gamma  = def_scenario.gamma();
+        p.R      = R;
+        p.Ma     = Ma;
+        p.p_wall = p_wall;
+        p.s = suzerain_svehla_air_mu_vs_T();
+        assert(p.s);
+
+        gsl_function F;
+        F.function = &f_tsolver;
+        F.params   = &p;
+
+        gsl_root_fsolver * solver
+            = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
+        assert(solver);
+        gsl_root_fsolver_set(solver, &F, 100 /* K */, 5000 /* K */);
+
+        real_t low, high;
+        int status, iter, maxiter = 100;
+        do {
+            status = gsl_root_fsolver_iterate(solver);
+            T_wall = gsl_root_fsolver_root(solver);
+            low    = gsl_root_fsolver_x_lower(solver);
+            high   = gsl_root_fsolver_x_upper(solver);
+            LOG4CXX_INFO(log, "Looking for desired wall temperature within ["
+                    << low << "," << high << "");
+            status = gsl_root_test_interval(low, high, 0, 1e-8);
+            ++iter;
+        } while (status == GSL_CONTINUE && iter < maxiter);
+
+        gsl_root_fsolver_free(solver);
+        gsl_spline_free(p.s);
+    }
 
     // Initialize B-spline workspace to find coeffs from collocation points
     bspluzw = make_shared<sz::bspline_luz>(*bspw);

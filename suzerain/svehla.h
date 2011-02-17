@@ -58,6 +58,9 @@ extern "C" {
  */
 gsl_spline * suzerain_svehla_air_mu_vs_T();
 
+/** Molar mass of dry air according to Table IV in grams per mole */
+#define SUZERAIN_SVEHLA_AIR_M (28.97)
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
