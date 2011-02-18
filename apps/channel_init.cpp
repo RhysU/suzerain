@@ -40,6 +40,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_roots.h>
 #include <suzerain/bspline.hpp>
+#include <suzerain/diffwave.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/htstretch.h>
 #include <suzerain/math.hpp>
@@ -118,6 +119,26 @@ static double f_tsolver(double T_wall, void *params) {
     return lhs - rhs;
 }
 
+/** Struct used for evaluating momentum and total energy profiles */
+struct mesolver {
+    double Ma, L, gamma, R, T_wall;
+};
+
+/** Function for evaluating the momentum profile given rho* = 1 */
+static double f_msolver(double y, void *params) {
+    mesolver *p = (mesolver *) params;
+    return p->Ma * 6 * y * (p->L - y) / (p->L * p->L);
+}
+
+/** Function for evaluating the total energy profile given rho*, T* = 1 */
+static double f_esolver(double y, void *params) {
+    mesolver *p = (mesolver *) params;
+    const double const_contrib = 1 / (p->gamma * (p->gamma - 1));
+    const double U = f_msolver(y, p);
+    const double vel_contrib   = 0.5 * U * U / (p->gamma * p->R * p->T_wall);
+    return const_contrib + vel_contrib;
+}
+
 int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
@@ -182,11 +203,19 @@ int main(int argc, char **argv)
     }
     const real_t R = GSL_CONST_MKSA_MOLAR_GAS * GSL_CONST_NUM_KILO / M;
 
-
-
     if (def_grid.k() < 4 /* cubics */) {
         LOG4CXX_FATAL(log,
             "k >= 4 required to compute two non-trivial spatial derivatives");
+        return EXIT_FAILURE;
+    }
+
+    if (def_grid.Nx() != 1) {
+        LOG4CXX_FATAL(log, argv[0] << " can only handle Nx == 1");
+        return EXIT_FAILURE;
+    }
+
+    if (def_grid.Nz() != 1) {
+        LOG4CXX_FATAL(log, argv[0] << " can only handle Nz == 1");
         return EXIT_FAILURE;
     }
 
@@ -304,9 +333,9 @@ int main(int argc, char **argv)
         char name[8];
         char comment[127];
         for (int k = 0; k <= bspw->nderivatives(); ++k) {
-            snprintf(name, sizeof(name)/sizeof(name[0]), "D%d", k);
+            snprintf(name, sizeof(name)/sizeof(name[0]), "Dy%d", k);
             snprintf(comment, sizeof(comment)/sizeof(comment[0]),
-                    "Wall-normal derivative D%d(i,j) = D%d[i+ku+j*(kl+ku)]"
+                    "Wall-normal derivative Dy%d(i,j) = D%d[i+ku+j*(kl+ku)]"
                     " for 0 <= i,j < N when (j-ku <= i && i <= j+kl)", k, k);
             const int aglobal = (bspw->ku(k) + 1 + bspw->kl(k)) * bspw->ndof();
             esio_line_establish(esioh, aglobal, 0, aglobal);
@@ -318,8 +347,35 @@ int main(int argc, char **argv)
     }
     esio_file_flush(esioh);
 
-    LOG4CXX_INFO(log, "Computing derived, dimensional scenario parameters");
-    real_t T_wall;
+    LOG4CXX_INFO(log, "Storing wavenumber vectors for Fourier bases");
+    {
+        const int Nx = numeric_cast<int>(def_grid.Nx());
+        const int Nz = numeric_cast<int>(def_grid.Nz());
+        const int N  = std::max(Nx, Nz);
+        scoped_array<complex_t> buf(new complex_t[N]);
+
+        // Obtain wavenumbers via computing 1*(i*kx)/i
+        std::fill_n(buf.get(), N, complex_t(1,0));
+        sz::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
+                def_scenario.Lx(), def_scenario.Lz(),
+                1, Nx, Nx, 0, Nx, 1, 1, 0, 1);
+        esio_line_establish(esioh, Nx, 0, Nx);
+        esio_line_write(esioh, "kx", reinterpret_cast<real_t *>(buf.get()),
+                2, "Wavenumbers in streamwise X direction"); // Re(buf)
+
+        // Obtain wavenumbers via computing 1*(i*kz)/i
+        std::fill_n(buf.get(), N, complex_t(1,0));
+        sz::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
+                def_scenario.Lx(), def_scenario.Lz(),
+                1, 1, 1, 0, 1, Nz, Nz, 0, Nz);
+        esio_line_establish(esioh, Nz, 0, Nz);
+        esio_line_write(esioh, "kz", reinterpret_cast<real_t *>(buf.get()),
+                2, "Wavenumbers in spanwise Z direction"); // Re(buf)
+    }
+    esio_file_flush(esioh);
+
+    LOG4CXX_INFO(log, "Computing derived, dimensional reference parameters");
+    real_t T_wall, rho_wall;
     {
         if (def_scenario.gamma() != 1.4) {
             LOG4CXX_WARN(log, "Using air viscosity values for non-air!");
@@ -379,6 +435,9 @@ int main(int argc, char **argv)
                         << std::scientific
                         << GSL_FN_EVAL(&F,T_wall));
 
+        rho_wall = p_wall / R / T_wall;
+        LOG4CXX_INFO(log, "Wall density is " << rho_wall << " kg/m^3");
+
         gsl_root_fsolver_free(solver);
         gsl_spline_free(p.s);
     }
@@ -386,6 +445,60 @@ int main(int argc, char **argv)
     // Initialize B-spline workspace to find coeffs from collocation points
     bspluzw = make_shared<sz::bspline_luz>(*bspw);
     bspluzw->form_mass(*bspw);
+
+    LOG4CXX_INFO(log, "Computing nondimensional mean profiles for restart");
+    {
+        const int Ny = numeric_cast<int>(def_grid.Ny());
+        esio_field_establish(esioh, 1, 0, 1, 1, 0, 1, Ny, 0, Ny);
+        scoped_array<complex_t> buf(new complex_t[Ny]);
+
+        // Nondimensional spanwise and wall-normal velocities are zero
+        std::fill_n(buf.get(), Ny, complex_t(0,0));
+        esio_field_writev(esioh, "rhov",
+                reinterpret_cast<real_t *>(buf.get()), 0, 0, 0, 2,
+                "Nondimensional Y momentum coefficients stored row-major ZXY");
+        esio_field_writev(esioh, "rhow",
+                reinterpret_cast<real_t *>(buf.get()), 0, 0, 0, 2,
+                "Nondimensional Z momentum coefficients stored row-major ZXY");
+
+        // Nondimensional density is the constant one
+        std::fill_n(buf.get(), Ny, complex_t(1,0));
+        esio_field_writev(esioh, "rho",
+                reinterpret_cast<real_t *>(buf.get()), 0, 0, 0, 2,
+                "Nondimensional density coefficient stored row-major ZXY");
+
+        // Set up to evaluate Y momentum and total energy profile coefficients
+        scoped_array<double> rhs(new double[Ny]);
+        mesolver params;
+        params.Ma     = Ma;
+        params.L      = def_scenario.Ly();
+        params.gamma  = def_scenario.gamma();
+        params.R      = R;
+        params.T_wall = T_wall;
+
+        suzerain_function F;
+        F.params = &params;
+
+        // Find Y momentum coefficients
+        F.function = &f_msolver;
+        bspw->find_interpolation_problem_rhs(&F, rhs.get());
+        for (int i = 0; i < Ny; ++i) buf[i] = rhs[i];
+        bspluzw->solve(1, buf.get(), 1, Ny);
+        esio_field_writev(esioh, "rhou",
+                reinterpret_cast<real_t *>(buf.get()), 0, 0, 0, 2,
+                "Nondimensional X momentum coefficients stored row-major ZXY");
+
+        // Find total energy coefficients
+        F.function = &f_esolver;
+        bspw->find_interpolation_problem_rhs(&F, rhs.get());
+        for (int i = 0; i < Ny; ++i) buf[i] = rhs[i];
+        bspluzw->solve(1, buf.get(), 1, Ny);
+        esio_field_writev(esioh, "rhoe",
+                reinterpret_cast<real_t *>(buf.get()), 0, 0, 0, 2,
+                "Nondimensional total energy coefficients stored row-major ZXY");
+
+    }
+    esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Closing newly initialized restart file");
     esio_file_close(esioh);
