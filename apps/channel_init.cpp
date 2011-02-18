@@ -98,6 +98,10 @@ static void atexit_esio(void) {
     if (esioh) esio_handle_finalize(esioh);
 }
 
+/** Description of equation to find wall temperature */
+static const char tsolver_desc[]
+    = "mu(T) Re / (p / R / T) / L - Ma ( gamma R T )**(1/2) == 0";
+
 /** Struct used for iterative solver to find wall temperature */
 struct tsolver {
     double Re, L, gamma, R, Ma, p_wall;
@@ -111,7 +115,7 @@ static double f_tsolver(double T_wall, void *params) {
     const double mu       = gsl_spline_eval(p->s, T_wall, NULL);
     const double lhs      = mu * p->Re / (rho_wall * p->L);
     const double rhs      = p->Ma * sqrt(p->gamma * p->R * T_wall);
-    return rhs - lhs;
+    return lhs - rhs;
 }
 
 int main(int argc, char **argv)
@@ -141,7 +145,7 @@ int main(int argc, char **argv)
     // Process incoming program arguments from command line, input files
     real_t Ma     = 1.15;
     real_t M      = SUZERAIN_SVEHLA_AIR_M;
-    real_t p_wall = GSL_CONST_MKSA_STD_ATMOSPHERE;
+    real_t p_wall = GSL_CONST_MKSA_STD_ATMOSPHERE / 100000;
     std::string restart_file;
     real_t htdelta;
     sz::ProgramOptions options(
@@ -156,6 +160,7 @@ int main(int argc, char **argv)
             ("create", po::value<std::string>(&restart_file)
                 ->default_value("restart0.h5"),
              "Name of new restart file to create")
+            ("clobber", "Overwrite existing restart file?")
             ("Ma", po::value<real_t>(&Ma)
                 ->notifier(std::bind2nd(ptr_fun_ensure_positive,"Ma"))
                 ->default_value(Ma),
@@ -186,7 +191,8 @@ int main(int argc, char **argv)
     }
 
     LOG4CXX_INFO(log, "Creating new restart file " << restart_file);
-    esio_file_create(esioh, restart_file.c_str(), false /* no clobber */);
+    esio_file_create(esioh, restart_file.c_str(),
+                     options.variables().count("clobber"));
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Storing basic scenario parameters");
@@ -316,7 +322,7 @@ int main(int argc, char **argv)
     real_t T_wall;
     {
         if (def_scenario.gamma() != 1.4) {
-            LOG4CXX_WARN(log, "Using air viscosity vs temperature for non-air");
+            LOG4CXX_WARN(log, "Using air viscosity values for non-air!");
         }
 
         tsolver p;
@@ -329,6 +335,15 @@ int main(int argc, char **argv)
         p.s = suzerain_svehla_air_mu_vs_T();
         assert(p.s);
 
+        LOG4CXX_INFO(log, "Solving " << tsolver_desc << " for T_wall");
+        LOG4CXX_INFO(log, "Using Re = " << p.Re
+                          << ", L = " << p.L
+                          << ", gamma = " << p.gamma
+                          << ", R = " << p.R
+                          << ", Ma = " << p.Ma
+                          << ", p_wall = " << p.p_wall
+                          << ", and mu(T) from Svehla 1962");
+
         gsl_function F;
         F.function = &f_tsolver;
         F.params   = &p;
@@ -336,20 +351,33 @@ int main(int argc, char **argv)
         gsl_root_fsolver * solver
             = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
         assert(solver);
-        gsl_root_fsolver_set(solver, &F, 100 /* K */, 5000 /* K */);
+        real_t low  = 100;  // (degrees K) Low side of Svehla's data
+        real_t high = 5000; // (degrees K) High side of Svehla's data
+        {
+            const real_t low_residual = GSL_FN_EVAL(&F,low);
+            const real_t high_residual = GSL_FN_EVAL(&F,high);
+            if ((low_residual >= 0) == (high_residual >= 0)) {
+                LOG4CXX_FATAL(log, "Likely no solution in interval ["
+                        << low <<"," << high << "]!");
+            }
+        }
+        gsl_root_fsolver_set(solver, &F, low, high);
 
-        real_t low, high;
-        int status, iter, maxiter = 100;
-        do {
-            status = gsl_root_fsolver_iterate(solver);
+        const real_t tol = numeric_limits<real_t>::epsilon() * 1e4;
+        int status = GSL_CONTINUE;
+        for (int iter = 0; iter < 100 && status == GSL_CONTINUE; ++iter) {
+            gsl_root_fsolver_iterate(solver);
             T_wall = gsl_root_fsolver_root(solver);
-            low    = gsl_root_fsolver_x_lower(solver);
-            high   = gsl_root_fsolver_x_upper(solver);
-            LOG4CXX_INFO(log, "Looking for desired wall temperature within ["
-                    << low << "," << high << "");
-            status = gsl_root_test_interval(low, high, 0, 1e-8);
-            ++iter;
-        } while (status == GSL_CONTINUE && iter < maxiter);
+            low  = gsl_root_fsolver_x_lower(solver);
+            high = gsl_root_fsolver_x_upper(solver);
+            status = gsl_root_test_interval(low, high, tol, 0);
+        }
+        LOG4CXX_INFO(log, std::setprecision(numeric_limits<real_t>::digits10)
+                        << "Wall temperature "
+                        << T_wall
+                        << " K gives residual "
+                        << std::scientific
+                        << GSL_FN_EVAL(&F,T_wall));
 
         gsl_root_fsolver_free(solver);
         gsl_spline_free(p.s);
