@@ -335,14 +335,16 @@ int main(int argc, char **argv)
         for (int k = 0; k <= bspw->nderivatives(); ++k) {
             snprintf(name, sizeof(name)/sizeof(name[0]), "Dy%d", k);
             snprintf(comment, sizeof(comment)/sizeof(comment[0]),
-                    "Wall-normal derivative Dy%d(i,j) = D%d[i+ku+j*(kl+ku)]"
-                    " for 0 <= i,j < N when (j-ku <= i && i <= j+kl)", k, k);
-            const int aglobal = (bspw->ku(k) + 1 + bspw->kl(k)) * bspw->ndof();
-            esio_line_establish(esioh, aglobal, 0, aglobal);
-            esio_line_write(esioh, name, bspw->D(k), 0, comment);
+                    "Wall-normal derivative Dy%d(i,j) = D%d[j,ku+i-j] for"
+                    " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
+            const int lda = bspw->ku(k) + 1 + bspw->kl(k);
+            esio_plane_establish(
+                    esioh, bspw->ndof(), 0, bspw->ndof(), lda, 0, lda);
+            esio_plane_write(esioh, name, bspw->D(k), 0, 0, comment);
             esio_attribute_write(esioh, name, "kl", bspw->kl(k));
             esio_attribute_write(esioh, name, "ku", bspw->ku(k));
-            esio_attribute_write(esioh, name, "N",  bspw->ndof());
+            esio_attribute_write(esioh, name, "m",  bspw->ndof());
+            esio_attribute_write(esioh, name, "n",  bspw->ndof());
         }
     }
     esio_file_flush(esioh);
