@@ -9,6 +9,7 @@ AM_LDFLAGS     = $(MPIP_LDFLAGS)
 AM_LDFLAGS    += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 AM_LDFLAGS    += $(BOOST_IOSTREAMS_LDFLAGS)
 bin_PROGRAMS   = # Append below
+bin_SCRIPTS    = # Append below
 check_PROGRAMS = # Append below
 CLEANFILES     = # Append below
 
@@ -52,6 +53,10 @@ channel_ex_LDADD    += $(GSL_LIBS) $(LOG4CXX_LIBS)
 channel_ex_LDADD    += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
 channel_ex_LDADD    += $(BOOST_IOSTREAMS_LIBS)
 channel_ex_LDADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
+
+# (Probably half-baked) analysis tools
+
+bin_SCRIPTS += channel_mean.py
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
