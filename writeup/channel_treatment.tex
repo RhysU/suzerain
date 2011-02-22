@@ -50,75 +50,119 @@
 \setlength{\parskip}{2.0ex plus 0.75ex minus 0.75ex}
 
 % Document-specific commands
-\newcommand{\ii}{\ensuremath{\mathrm{i}}}
-\newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
-\newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
-\newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
-\newcommand{\Prandtl}[1][]{\ensuremath{\mbox{Pr}_{#1}}}
-\newcommand{\reference}[1]{\ensuremath{\left\{#1\right\}_{0}}}
-\newcommand{\lessreference}[1]
-  {\ensuremath{\left({#1}-\reference{#1}\right)}}
-\newcommand{\symmetricpart}[1]
-  {\ensuremath{\operatorname{Sym}\left(#1\right)}}
-\DeclareMathOperator{\trace}{tr}
 
 \begin{document}
 
-We advance the isothermal channel's nondimensional density $\rho$, momentum
-$m=\rho{}u$, and total energy $e = \rho{}\tilde{e}$ according to
+\subsection*{Setting}
+
+We advance nondimensional density $\rho$, momentum $\vec{m}=\rho{}\vec{u}$, and
+total energy $e = \rho{}\tilde{e}$ according to
 \begin{subequations}
 \begin{align}
-  \label{eq:state_continuity}
-  \partial_{t} \rho{}
-&=
-  - \nabla\cdot{}m
+  \partial_{t} \rho{} &= R_{\rho}\!\left(\rho,\vec{m},e\right)
+                       + f_{\rho}(t)
   \\
-  \label{eq:state_momentum}
-  \partial_{t} m
-&=
-  - \nabla\cdot\left(\frac{m}{\rho}\otimes{}m\right)
-  - \nabla{} p
-  + \frac{1}{\Reynolds} \nabla\cdot\tau
+  \partial_{t} m      &= \vec{R}_{m}\!\left(\rho,\vec{m},e\right)
+                       + \rho \vec{f}_{m}(t)
   \\
-  \label{eq:state_energy}
-  \partial_{t} e
-&=
-  - \nabla\cdot{}\left(e + p\right)\frac{m}{\rho}
-  + \frac{1}{\Reynolds\,\Prandtl\,\left( \gamma - 1 \right)}
-    \nabla\cdot\mu\nabla{} T
-  + \frac{1}{\Reynolds} \nabla\cdot\tau{}\frac{m}{\rho}
-\intertext{
-  where the non-state quantities are fixed by
-}
-  \label{eq:state_pressure}
-  p &= \left(\gamma-1\right) \left(
-    e - \frac{m^2}{2\rho}
-  \right)
-  \\
-  \label{eq:state_temperature}
-  T &= \gamma{} \frac{p}{\rho}
-  \\
-  \label{eq:state_viscosity}
-  \mu &= T^{\beta}
-  \\
-  \label{eq:state_secondviscosity}
-  \lambda &= - \frac{2}{3} \mu
-  \\
-  \label{eq:state_viscousstress}
-  \tau &= 2 \mu \symmetricpart{\nabla{}\frac{m}{\rho}}
-        + \lambda\left(\nabla\cdot{}\frac{m}{\rho}\right) I
+  \partial_{t} e      &= R_{e}\!\left(\rho,\vec{m},e\right)
+                       + \vec{f}_{m}(t) \cdot \vec{m}
 \end{align}
 \end{subequations}
-and where $m^2=m\cdot{}m$ and
-$\symmetricpart{A}=\frac{1}{2}\left(A+\trans{A}\right)$.  Note that no forcing
-terms enter into the above equations.  We now determine the appropriate forcing
-and boundary condition treatments for this problem.
+where $R_{\rho}$, $\vec{R}_{m}$, and $R_{e}$ are the spatial portion of the
+compressible Navier--Stokes operator appropriate for the nondimensionalization.
+We will determine the space-invariant form of continuity forcing $f_{\rho}$ and
+body forcing $\vec{f}_{m}$ necessary to drive the isothermal channel problem
+similar to Coleman et al.~\cite{Coleman1995Numerical}.
 
+We assume a Fourier basis in the streamwise $x$ and spanwise $z$ direction as
+well as an inhomogeneous treatment for wall-normal
+$y\in\left[-\delta,\delta\right]$.  We assume that mean state quantities can be
+obtained as a function of wall-normal position using the constant (``zero
+zero'') Fourier modes.  Under this ergodic assumption, we denote
+$\rho\!\left(\cdot,y,\cdot\right) =
+\left<\rho\left(x,y,z\right)\right>_{x,z}$ and likewise
+$\vec{m}\!\left(\cdot,y,\cdot\right) \coloneqq
+\left<\vec{m}\left(x,y,z\right)\right>_{x,z}$.  We will work with the
+nondimensional equation of state
+\begin{align}
+  p  = \frac{\rho{}T}{\gamma}
+    &= \left(\gamma-1\right)
+       \left( \rho\tilde{e} - \frac{\vec{m}\cdot\vec{m}}{2\rho} \right)
+\end{align}
+and assume that temperature $T$ has been nondimensionalized so that
+$T_\text{wall}=1$ though other choices should have a minimal impact on
+the anaysis that follows.
+
+Coleman et al.'s isothermal channel is characterized by
+\begin{enumerate}
+  \item A time-invariant bulk density $\bar{\rho} \coloneqq \frac{1}{2\delta}
+        \int_{-\delta}^{\delta} \rho\!\left(\cdot,y,\cdot\right)\,dy $
+  \item The no slip, isothermal boundary condition
+        $\vec{u}=0$, $T = 1$ at $y = \pm\delta$
+  \item A time-invariant bulk streamwise momentum
+        $\bar{m}_{x} \coloneqq \frac{1}{2\delta}
+        \int_{-\delta}^{\delta} \bar{m}_{x}\!\left(\cdot,y,\cdot\right)\,dy $
+\end{enumerate}
+
+\subsection*{Analysis}
+
+First, we find $f_{\rho}(t)$ such that the bulk density $\bar{\rho}$
+remains constant in time:
+\begin{align}
+  \partial_{t} \bar{\rho}
+  &= \frac{1}{2\delta} \int_{-\delta}^{\delta}
+     \partial_{t} \rho\!\left(\cdot,y,\cdot\right) \, dy
+   = \frac{1}{2\delta} \int_{-\delta}^{\delta}
+     \left[ R_{\rho}\!\left(\cdot,y,\cdot\right) + f_{\rho} \right] \, dy
+   = \frac{1}{2\delta} \int_{-\delta}^{\delta}
+     R_{\rho}\!\left(\cdot,y,\cdot\right) \, dy + f_{\rho}
+   = 0
+\end{align}
+Rearranging we find $f_{\rho} = - \frac{1}{2\delta} \int_{-\delta}^{\delta}
+R_{\rho}\!\left(\cdot,y,\cdot\right) \, dy$.
+
+Next, the boundary condition $\vec{u} = 0$ at $y = \pm\delta$ implies
+that at the wall
+\begin{align}
+  \partial_{t} \vec{m}
+  =   \rho \cancel{\partial_{t} \vec{u}}
+    + \cancel{\vec{u}} \partial_{t} \rho
+  = 0.
+\end{align}
+The condition $T=1$ combined with the no-slip condition is equivalent to fixing
+$\tilde{e}=\frac{1}{\gamma\left(\gamma-1\right)}$.  This demands
+\begin{align}
+  \partial_{t} e
+  &=  \rho \cancel{\partial_{t} \tilde{e}}
+    + \tilde{e} \partial_{t} \rho
+  = \frac{1}{\gamma\left(\gamma-1\right)} \partial_{t} \rho
+\end{align}
+to hold at the wall.
+
+Last, we find $\vec{f}_{m} = \left(f_{m_x},0,0\right)^{\textrm{T}}$ such that
+the bulk streamwise momentum $\bar{m}_{x}$ remains constant in time:
+\begin{align}
+  \partial_{t} \bar{m}_x
+   = \frac{1}{2\delta} \int_{-\delta}^{\delta}
+     \partial_{t} m_{x} \!\left(\cdot,y,\cdot\right) \, dy
+  &= \frac{1}{2\delta} \int_{-\delta}^{\delta}
+     \left[  R_{m_x}\!\left(\cdot,y,\cdot\right)
+           + \rho\!\left(\cdot,y,\cdot\right)  f_{m_x}
+     \right] \, dy
+  \\
+  &= \frac{1}{2\delta} \int_{-\delta}^{\delta}
+     R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy + \bar{\rho} f_{m_x}
+   = 0
+\end{align}
+Rearranging we find $\bar{\rho} f_{m_x} = - \frac{1}{2\delta}
+\int_{-\delta}^{\delta} R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy$.
+
+\subsection*{Implementation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\nocite{Coleman1995Numerical}
 \bibliographystyle{amsplain}
 \bibliography{references}
 
