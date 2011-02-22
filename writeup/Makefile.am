@@ -4,12 +4,13 @@
 # http://www.gnu.org/software/automake/manual/make/Special-Targets.html
 .NOTPARALLEL:
 
-TEXSOURCES  = derivation.tex
+TEXSOURCES  = channel_treatment.tex
+TEXSOURCES += derivation.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 TEXSOURCES += timestepping.tex
 
-EXTRA_DIST = derivation.bib skewadjoint.bib
+EXTRA_DIST = references.bib
 
 all-local: dvi-local pdf-local
 dvi-local: $(TEXSOURCES:.tex=.dvi)
