@@ -72,7 +72,7 @@ typedef double               real_t;
 typedef std::complex<real_t> complex_t;
 
 // Global scenario parameters initialized in main()
-static pb::ScenarioDefinition<real_t> def_scenario(
+static pb::ScenarioDefinition<real_t> scenario(
         /* default_Re    */ 100,
         /* default_Pr    */ real_t(7)/real_t(10),
         /* default_gamma */ real_t(14)/real_t(10),
@@ -80,7 +80,7 @@ static pb::ScenarioDefinition<real_t> def_scenario(
         /* default_Lx    */ 4*pi<real_t>(),
         /* default_Ly    */ 2,
         /* default_Lz    */ 4*pi<real_t>()/3);
-static pb::GridDefinition<real_t> def_grid(
+static pb::GridDefinition<real_t> grid(
         /* default_Nx    */ 16,
         /* default_DAFx  */ real_t(3)/real_t(2),
         /* default_Ny    */ 16,
@@ -236,9 +236,9 @@ public:
         SUZERAIN_UNUSED(delta_t_requested);
         real_t convective_delta_t = numeric_limits<real_t>::max();
         real_t diffusive_delta_t  = numeric_limits<real_t>::max();
-        const real_t one_over_delta_x = def_scenario.Lx() / def_grid.Nx();
-        const real_t one_over_delta_y = def_scenario.Ly() / def_grid.Ny();
-        const real_t one_over_delta_z = def_scenario.Lz() / def_grid.Nz();
+        const real_t one_over_delta_x = scenario.Lx / grid.Nx();
+        const real_t one_over_delta_y = scenario.Ly / grid.Ny();
+        const real_t one_over_delta_z = scenario.Lz / grid.Nz();
 
         state_type &state = dynamic_cast<state_type&>(istate);
 
@@ -265,40 +265,40 @@ public:
         sz::diffwave::accumulate(1, 0, // dx
             complex_one, &(state[0][0][0][0]),
             complex_zero, rho_x.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(2, 0, // d2x
             complex_one, &(state[0][0][0][0]),
             complex_zero, rho_xx.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(1, 0, // dx dy
             complex_one, rho_y.wave.begin(),
             complex_zero, rho_xy.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(1, 1, // dx dz
             complex_one, &(state[0][0][0][0]),
             complex_zero, rho_xz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of density at collocation points
         sz::diffwave::accumulate(0, 1, // dz
             complex_one, &(state[0][0][0][0]),
             complex_zero, rho_z.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(0, 1, // dy dz
             complex_one, rho_y.wave.begin(),
             complex_zero, rho_yz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(0, 2, // d2z
             complex_one, &(state[0][0][0][0]),
             complex_zero, rho_zz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
 
 
         // Compute Y derivatives of X momentum at collocation points
@@ -319,40 +319,40 @@ public:
         sz::diffwave::accumulate(1, 0, // dx
             complex_one, &(state[1][0][0][0]),
             complex_zero, mx_x.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(2, 0, // d2x
             complex_one, &(state[1][0][0][0]),
             complex_zero, mx_xx.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(1, 0, // dx dy
             complex_one, mx_y.wave.begin(),
             complex_zero, mx_xy.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(1, 1, // dx dz
             complex_one, &(state[1][0][0][0]),
             complex_zero, mx_xz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of X momentum at collocation points
         sz::diffwave::accumulate(0, 1, // dz
             complex_one, &(state[1][0][0][0]),
             complex_zero, mx_z.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(0, 1, // dy dz
             complex_one, mx_y.wave.begin(),
             complex_zero, mx_yz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(0, 2, // d2z
             complex_one, &(state[1][0][0][0]),
             complex_zero, mx_zz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
 
 
         // Compute Y derivatives of Y momentum at collocation points
@@ -373,40 +373,40 @@ public:
         sz::diffwave::accumulate(1, 0, // dx
             complex_one, &(state[2][0][0][0]),
             complex_zero, my_x.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(2, 0, // d2x
             complex_one, &(state[2][0][0][0]),
             complex_zero, my_xx.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(1, 0, // dx dy
             complex_one, my_y.wave.begin(),
             complex_zero, my_xy.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(1, 1, // dx dz
             complex_one, &(state[2][0][0][0]),
             complex_zero, my_xz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of Y momentum at collocation points
         sz::diffwave::accumulate(0, 1, // dz
             complex_one, &(state[2][0][0][0]),
             complex_zero, my_z.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(0, 1, // dy dz
             complex_one, my_y.wave.begin(),
             complex_zero, my_yz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(0, 2, // d2z
             complex_one, &(state[2][0][0][0]),
             complex_zero, my_zz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
 
 
         // Compute Y derivatives of Z momentum at collocation points
@@ -427,40 +427,40 @@ public:
         sz::diffwave::accumulate(1, 0, // dx
             complex_one, &(state[3][0][0][0]),
             complex_zero, mz_x.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(2, 0, // d2x
             complex_one, &(state[3][0][0][0]),
             complex_zero, mz_xx.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(1, 0, // dx dy
             complex_one, mz_y.wave.begin(),
             complex_zero, mz_xy.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(1, 1, // dx dz
             complex_one, &(state[3][0][0][0]),
             complex_zero, mz_xz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of Z momentum at collocation points
         sz::diffwave::accumulate(0, 1, // dz
             complex_one, &(state[3][0][0][0]),
             complex_zero, mz_z.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(0, 1, // dy dz
             complex_one, mz_y.wave.begin(),
             complex_zero, mz_yz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(0, 2, // d2z
             complex_one, &(state[3][0][0][0]),
             complex_zero, mz_zz.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
 
 
         // Compute Y derivatives of total energy at collocation points
@@ -481,25 +481,25 @@ public:
         sz::diffwave::accumulate(1, 0, // dx
             complex_one, &(state[4][0][0][0]),
             complex_zero, e_x.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(2, 0, // d2x
             complex_one, &(state[4][0][0][0]),
             complex_one, div_grad_e.wave.begin(), // sum with contents
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of total energy at collocation points
         sz::diffwave::accumulate(0, 1, // dz
             complex_one, &(state[4][0][0][0]),
             complex_zero, e_z.wave.begin(),
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
         sz::diffwave::accumulate(0, 2, // d2z
             complex_one, &(state[4][0][0][0]),
             complex_one, div_grad_e.wave.begin(), // sum with contents
-            def_scenario.Lx(), def_scenario.Lz(),
-            Ny, def_grid.Nx(), dNx, dkbx, dkex, def_grid.Nz(), dNz, dkbz, dkez);
+            scenario.Lx, scenario.Lz,
+            Ny, grid.Nx(), dNx, dkbx, dkex, grid.Nz(), dNz, dkbz, dkez);
 
         // Collectively convert state to physical space
         pg->transform_wave_to_physical(
@@ -558,10 +558,10 @@ public:
         // Compute nonlinear operator
 
         // Retrieve constants and compute derived constants
-        const real_t beta             = def_scenario.beta();
-        const real_t gamma            = def_scenario.gamma();
-        const real_t Pr               = def_scenario.Pr();
-        const real_t Re               = def_scenario.Re();
+        const real_t beta             = scenario.beta;
+        const real_t gamma            = scenario.gamma;
+        const real_t Pr               = scenario.Pr;
+        const real_t Re               = scenario.Re;
         const real_t inv_Re           = 1 / Re;
         const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
 
@@ -879,8 +879,8 @@ int main(int argc, char **argv)
     {
         sz::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation");
-        options.add_definition(def_scenario);
-        options.add_definition(def_grid);
+        options.add_definition(scenario);
+        options.add_definition(grid);
         options.add_definition(def_restart);
         using ::suzerain::validation::ensure_positive;
         ::std::pointer_to_binary_function<real_t,const char*,void>
@@ -938,20 +938,20 @@ int main(int argc, char **argv)
     }
 
     // Initialize B-spline workspace using [0, Ly] with Ny degrees of freedom
-    const int nbreak = def_grid.Ny() + 2 - def_grid.k();
+    const int nbreak = grid.Ny() + 2 - grid.k();
     real_t *breakpoints = (real_t *) sz::blas::malloc(nbreak*sizeof(real_t));
     assert(breakpoints);
     sz::math::linspace(0.0, 1.0, nbreak, breakpoints); // Uniform [0, 1]
     for (int i = 0; i < nbreak; ++i) {                 // Stretch 'em out
-        breakpoints[i] = def_scenario.Ly()
+        breakpoints[i] = scenario.Ly
                        * suzerain_htstretch2(htdelta, 1.0, breakpoints[i]);
     }
     for (int i = 0; i < nbreak; ++i) {
         LOG4CXX_TRACE(log,
                       "B-spline breakpoint[" << i << "] = " << breakpoints[i]);
     }
-    bspw = make_shared<sz::bspline>(def_grid.k(), 2, nbreak, breakpoints);
-    assert(static_cast<unsigned>(bspw->ndof()) == def_grid.Ny());
+    bspw = make_shared<sz::bspline>(grid.k(), 2, nbreak, breakpoints);
+    assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny());
     sz::blas::free(breakpoints);
 
     // Initialize B-spline workspace to find coeffs from collocation points
@@ -959,8 +959,8 @@ int main(int argc, char **argv)
     bspluzw->form_mass(*bspw);
 
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
-    pg = make_shared<sz::pencil_grid>(def_grid.dealiased_extents(),
-                                      def_grid.processor_grid());
+    pg = make_shared<sz::pencil_grid>(grid.dealiased_extents(),
+                                      grid.processor_grid());
     LOG4CXX_INFO(log, "Processor count: " << nproc);
     LOG4CXX_INFO(log, "Processor grid used: " << pg->processor_grid());
     LOG4CXX_DEBUG(log, "Local dealiased wave start  (XYZ): "
@@ -975,11 +975,11 @@ int main(int argc, char **argv)
     const boost::array<sz::pencil_grid::index,3> state_start
         = pg->local_wave_start();
     const boost::array<sz::pencil_grid::index,3> state_end = {{
-        std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[0]/2+1,
+        std::min<sz::pencil_grid::size_type>(grid.global_extents()[0]/2+1,
                                              pg->local_wave_end()[0]),
-        std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[1],
+        std::min<sz::pencil_grid::size_type>(grid.global_extents()[1],
                                              pg->local_wave_end()[1]),
-        std::min<sz::pencil_grid::size_type>(def_grid.global_extents()[2],
+        std::min<sz::pencil_grid::size_type>(grid.global_extents()[2],
                                              pg->local_wave_end()[2])
     }};
     const boost::array<sz::pencil_grid::index,3> state_extent = {{
@@ -1011,8 +1011,7 @@ int main(int argc, char **argv)
     // Instantiate the operators and timestepping details
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
     const sz::timestepper::lowstorage::SMR91Method<complex_t> smr91;
-    MassOperator L(   def_scenario.Lx() * def_scenario.Lz()
-                    * def_grid.Nx()     * def_grid.Nz());
+    MassOperator L(   scenario.Lx * scenario.Lz * grid.Nx() * grid.Nz());
     NonlinearOperator N;
 
     // Take a timestep

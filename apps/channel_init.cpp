@@ -232,19 +232,16 @@ int main(int argc, char **argv)
     {
         esio_line_establish(esioh, 1, 0, 1); // Store as lines to allow comments
 
-        const double Re = scenario.Re();
-        esio_line_write(esioh, "Re", &Re, 0,
+        esio_line_write(esioh, "Re", &scenario.Re, 0,
                 scenario.options().find("Re",false).description().c_str());
 
-        const double Pr = scenario.Pr();
-        esio_line_write(esioh, "Pr", &Pr, 0,
+        esio_line_write(esioh, "Pr", &scenario.Pr, 0,
                 scenario.options().find("Pr",false).description().c_str());
 
         esio_line_write(esioh, "Ma", &Ma, 0,
                 options.options().find("Ma",false).description().c_str());
 
-        const double gamma = scenario.gamma();
-        esio_line_write(esioh, "gamma", &gamma, 0,
+        esio_line_write(esioh, "gamma", &scenario.gamma, 0,
                 scenario.options().find("gamma",false).description().c_str());
 
         esio_line_write(esioh, "M", &M, 0,
@@ -252,20 +249,16 @@ int main(int argc, char **argv)
 
         esio_line_write(esioh, "R", &R, 0, "Specific gas constant in J/kg/K");
 
-        const double beta = scenario.beta();
-        esio_line_write(esioh, "beta", &beta, 0,
+        esio_line_write(esioh, "beta", &scenario.beta, 0,
                 scenario.options().find("beta",false).description().c_str());
 
-        const double Lx = scenario.Lx();
-        esio_line_write(esioh, "Lx", &Lx, 0,
+        esio_line_write(esioh, "Lx", &scenario.Lx, 0,
                 scenario.options().find("Lx",false).description().c_str());
 
-        const double Ly = scenario.Ly();
-        esio_line_write(esioh, "Ly", &Ly, 0,
+        esio_line_write(esioh, "Ly", &scenario.Ly, 0,
                 scenario.options().find("Ly",false).description().c_str());
 
-        const double Lz = scenario.Lz();
-        esio_line_write(esioh, "Lz", &Lz, 0,
+        esio_line_write(esioh, "Lz", &scenario.Lz, 0,
                 scenario.options().find("Lz",false).description().c_str());
     }
     esio_file_flush(esioh);
@@ -310,8 +303,7 @@ int main(int argc, char **argv)
         const int nbreak = grid.Ny() + 2 - grid.k();
         sz::math::linspace(0.0, 1.0, nbreak, buf.get()); // Uniform [0, 1]
         for (int i = 0; i < nbreak; ++i) {               // Stretch 'em out
-            buf[i] = scenario.Ly()
-                   * suzerain_htstretch2(htdelta, 1.0, buf[i]);
+            buf[i] = scenario.Ly * suzerain_htstretch2(htdelta, 1.0, buf[i]);
         }
         esio_line_establish(esioh, nbreak, 0, nbreak);
         esio_line_write(esioh, "breakpoints", buf.get(), 0,
@@ -363,8 +355,7 @@ int main(int argc, char **argv)
         // Obtain wavenumbers via computing 1*(i*kx)/i
         std::fill_n(buf.get(), N, complex_t(1,0));
         sz::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
-                scenario.Lx(), scenario.Lz(),
-                1, Nx, Nx, 0, Nx, 1, 1, 0, 1);
+                scenario.Lx, scenario.Lz, 1, Nx, Nx, 0, Nx, 1, 1, 0, 1);
         esio_line_establish(esioh, Nx, 0, Nx);
         esio_line_write(esioh, "kx", reinterpret_cast<real_t *>(buf.get()),
                 2, "Wavenumbers in streamwise X direction"); // Re(buf)
@@ -372,8 +363,7 @@ int main(int argc, char **argv)
         // Obtain wavenumbers via computing 1*(i*kz)/i
         std::fill_n(buf.get(), N, complex_t(1,0));
         sz::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
-                scenario.Lx(), scenario.Lz(),
-                1, 1, 1, 0, 1, Nz, Nz, 0, Nz);
+                scenario.Lx, scenario.Lz, 1, 1, 1, 0, 1, Nz, Nz, 0, Nz);
         esio_line_establish(esioh, Nz, 0, Nz);
         esio_line_write(esioh, "kz", reinterpret_cast<real_t *>(buf.get()),
                 2, "Wavenumbers in spanwise Z direction"); // Re(buf)
@@ -383,14 +373,14 @@ int main(int argc, char **argv)
     LOG4CXX_INFO(log, "Computing derived, dimensional reference parameters");
     real_t T_wall, rho_wall;
     {
-        if (scenario.gamma() != 1.4) {
+        if (scenario.gamma != 1.4) {
             LOG4CXX_WARN(log, "Using air viscosity values for non-air!");
         }
 
         tsolver p;
-        p.Re     = scenario.Re();
-        p.L      = scenario.Ly();
-        p.gamma  = scenario.gamma();
+        p.Re     = scenario.Re;
+        p.L      = scenario.Ly;
+        p.gamma  = scenario.gamma;
         p.R      = R;
         p.Ma     = Ma;
         p.p_wall = p_wall;
@@ -477,8 +467,8 @@ int main(int argc, char **argv)
         scoped_array<double> rhs(new double[Ny]);
         mesolver params;
         params.Ma     = Ma;
-        params.L      = scenario.Ly();
-        params.gamma  = scenario.gamma();
+        params.L      = scenario.Ly;
+        params.gamma  = scenario.gamma;
         params.R      = R;
         params.T_wall = T_wall;
 

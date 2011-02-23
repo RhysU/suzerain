@@ -55,15 +55,15 @@ class ScenarioDefinition : public IDefinition
 {
 public:
     /**
-     * Construct an instance with the given default parameters.
+     * Construct an instance with the given parameters.
      *
-     * @param default_Re Default Reynolds number.
-     * @param default_Pr Default Prandtl number.
+     * @param default_Re    Default Reynolds number.
+     * @param default_Pr    Default Prandtl number.
      * @param default_gamma Default ratio of specific heats.
-     * @param default_beta Default temperature power law exponent.
-     * @param default_Lx Default domain length in the X direction.
-     * @param default_Ly Default domain length in the Y direction.
-     * @param default_Lz Default domain length in the Z direction.
+     * @param default_beta  Default temperature power law exponent.
+     * @param default_Lx    Default domain length in the X direction.
+     * @param default_Ly    Default domain length in the Y direction.
+     * @param default_Lz    Default domain length in the Z direction.
      */
     ScenarioDefinition(FPT default_Re,
                        FPT default_Pr,
@@ -74,88 +74,42 @@ public:
                        FPT default_Lz);
 
     /**
-     * Retrieve the Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
+     * The Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
      * l_{0}}{\mu_{0}}\f$.
-     *
-     * @return the Reynolds number.
      */
-    FPT Re() const { return Re_; }
-
-    /** \copydoc Re() const */
-    FPT& Re() { return Re_; }
+    FPT Re;
 
     /**
-     * Retrieve the Prandtl number \f$\mbox{Pr}=\frac{\mu_{0}
+     * The Prandtl number \f$\mbox{Pr}=\frac{\mu_{0}
      * C_{p}}{\kappa_{0}}\f$.
-     *
-     * @return the Prandtl number.
      */
-    FPT Pr() const { return Pr_; }
-
-    /** \copydoc Pr() const */
-    FPT& Pr() { return Pr_; }
+    FPT Pr;
 
     /**
-     * Retrieve the ratio of specific heats \f$\gamma=C_p/C_v\f$.
-     *
-     * @return the ratio of specific heats.
+     * The ratio of specific heats \f$\gamma=C_p/C_v\f$.
      */
-    FPT gamma() const { return gamma_; }
-
-    /** \copydoc gamma() const */
-    FPT& gamma() { return gamma_; }
+    FPT gamma;
 
     /**
-     * Retrieve the temperature power law exponent \f$\beta\f$ where
+     * The temperature power law exponent \f$\beta\f$ where
      * \f$\frac{\mu}{\mu_0} = \left(\frac{T}{T_0}\right)^{\beta}\f$.
-     *
-     * @return the temperature power law exponent.
      */
-    FPT beta() const { return beta_; }
-
-    /** \copydoc beta() const */
-    FPT& beta() { return beta_; }
+    FPT beta;
 
     /**
-     * Retrieve the domain length in the X direction.
-     *
-     * @return the domain's X length.
+     * The domain length in the X direction.
      */
-    FPT Lx() const { return Lx_; }
-
-    /** \copydoc Lx() const */
-    FPT& Lx() { return Lx_; }
+    FPT Lx;
 
     /**
-     * Retrieve the domain length in the Y direction.
-     *
-     * @return the domain's Y length.
+     * The domain length in the Y direction.
      */
-    FPT Ly() const { return Ly_; }
-
-    /** \copydoc Ly() const */
-    FPT& Ly() { return Ly_; }
+    FPT Ly;
 
     /**
-     * Retrieve the domain length in the Z direction.
-     *
-     * @return the domain's Z length.
+     * The domain length in the Z direction.
      */
-    FPT Lz() const { return Lz_; }
-
-    /** \copydoc Lz() const */
-    FPT& Lz() { return Lz_; }
-
-private:
-
-    FPT Re_;     /**< Stores the Reynolds number */
-    FPT Pr_;     /**< Stores the Prandtl number */
-    FPT gamma_;  /**< Stores the ratio of specific heats */
-    FPT beta_;   /**< Stores the temperature power law exponent */
-    FPT Lx_;     /**< Stores the X direction length */
-    FPT Ly_;     /**< Stores the Y direction length */
-    FPT Lz_;     /**< Stores the Z direction length */
-
+    FPT Lz;
 };
 
 template< typename FPT >
@@ -188,7 +142,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
     // generally used a NOP value by some client code.
 
     { // Re
-        auto_ptr<typed_value<FPT> > v(value(&Re_));
+        auto_ptr<typed_value<FPT> > v(value(&this->Re));
         if (default_Re) {
             v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Re"));
         } else {
@@ -199,7 +153,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
     }
 
     { // Pr
-        auto_ptr<typed_value<FPT> > v(value(&Pr_));
+        auto_ptr<typed_value<FPT> > v(value(&this->Pr));
         if (default_Pr) {
             v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Pr"));
         } else {
@@ -210,7 +164,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
     }
 
     { // gamma
-        auto_ptr<typed_value<FPT> > v(value(&gamma_));
+        auto_ptr<typed_value<FPT> > v(value(&this->gamma));
         if (default_gamma) {
             v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "gamma"));
         } else {
@@ -221,7 +175,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
     }
 
     { // beta
-        auto_ptr<typed_value<FPT> > v(value(&beta_));
+        auto_ptr<typed_value<FPT> > v(value(&this->beta));
         if (default_beta) {
             v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "beta"));
         } else {
@@ -233,7 +187,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
     }
 
     { // Lx
-        auto_ptr<typed_value<FPT> > v(value(&Lx_));
+        auto_ptr<typed_value<FPT> > v(value(&this->Lx));
         if (default_Lx) {
             v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Lx"));
         } else {
@@ -245,7 +199,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
     }
 
     { // Ly
-        auto_ptr<typed_value<FPT> > v(value(&Ly_));
+        auto_ptr<typed_value<FPT> > v(value(&this->Ly));
         if (default_Ly) {
             v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Ly"));
         } else {
@@ -257,7 +211,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
     }
 
     { // Lz
-        auto_ptr<typed_value<FPT> > v(value(&Lz_));
+        auto_ptr<typed_value<FPT> > v(value(&this->Lz));
         if (default_Lz) {
             v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Lz"));
         } else {
