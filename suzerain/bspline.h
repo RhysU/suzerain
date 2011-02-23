@@ -303,6 +303,100 @@ suzerain_bspline_ndof(
 }
 
 /**
+ * Obtain the number of knots for the basis in the given workspace.
+ * This is equal to <tt>w->ndof + w->order - 1</tt>.
+ *
+ * @param[in] w Workspace to use.
+ *
+ * @return the number of knots.
+ *
+ * \memberof suzerain_bspline_workspace
+ */
+inline
+int
+suzerain_bspline_nknots(
+    const suzerain_bspline_workspace *w)
+{
+    return w->ndof + w->order - 1;
+}
+
+/**
+ * Obtain the <tt>j</tt>-th breakpoint \f$x_j\f$.
+ *
+ * @param[in] j    Index of the desired breakpoint.
+ *                 Must be in the range <tt>[0,w->ndof)</tt>.
+ * @param[out] x_j Location of collocation point \f$x_j\f$.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bspline_workspace
+ */
+int
+suzerain_bspline_breakpoint(
+    int j,
+    double *x_j,
+    const suzerain_bspline_workspace *w);
+
+/**
+ * Obtain all breakpoints \f$x_j\f$ for x in <tt>[0,w->ndof)</tt>.
+ *
+ * @param[out] x   Memory in which to store breakpoints.
+ * @param[in] incx Increment between breakpoints, measured in
+ *                 <tt>sizeof(double)</tt>.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bspline_workspace
+ */
+int
+suzerain_bspline_breakpoints(
+    double *x,
+    int incx,
+    const suzerain_bspline_workspace *w);
+
+/**
+ * Obtain the <tt>j</tt>-th B-spline knot \f$x_j\f$.
+ *
+ * @param[in] j    Index of the desired knot.
+ *                 Must be in the range <tt>[0,w->ndof + w->order - 1)</tt>.
+ * @param[out] x_j Location of knot \f$x_j\f$.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bspline_workspace
+ */
+int
+suzerain_bspline_knot(
+    int j,
+    double *x_j,
+    const suzerain_bspline_workspace *w);
+
+/**
+ * Obtain all knots \f$x_j\f$ for x in <tt>[0,w->ndof + w->order - 1)</tt>.
+ *
+ * @param[out] x   Memory in which to store knots.
+ * @param[in] incx Increment between knots, measured in
+ *                 <tt>sizeof(double)</tt>.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bspline_workspace
+ */
+int
+suzerain_bspline_knots(
+    double *x,
+    int incx,
+    const suzerain_bspline_workspace *w);
+
+/**
  * For collocation methods like ::SUZERAIN_BSPLINE_COLLOCATION_GREVILLE, obtain
  * the <tt>j</tt>-th collocation point \f$x_j\f$.
  *
@@ -431,9 +525,9 @@ suzerain_bspline_evaluate(
     const suzerain_bspline_workspace *w);
 
 /**
- * Compute the integral \f$ \int \sum_{i} \x_{i} B_{i}(x) \, dx \f$.
+ * Compute the integral \f$ \int \sum_{i} x_{i} B_{i}(x) \, dx \f$.
  *
- * @param[in] x Real-valued expansion coefficients \f$ \x_{i} \f$
+ * @param[in] x Real-valued expansion coefficients \f$ x_{i} \f$
  *      for a function in terms of the B-spline basis.  Must be of length
  *      suzerain_bspline_ndof().
  * @param[in] incx Stride between elements of \c x
@@ -594,9 +688,9 @@ suzerain_bspline_zevaluate(
     const suzerain_bspline_workspace *w);
 
 /**
- * Compute the integral \f$ \int \sum_{i} \x_{i} B_{i}(x) \, dx \f$.
+ * Compute the integral \f$ \int \sum_{i} x_{i} B_{i}(x) \, dx \f$.
  *
- * @param[in] x Complex-valued expansion coefficients \f$ \x_{i} \f$ for a
+ * @param[in] x Complex-valued expansion coefficients \f$ x_{i} \f$ for a
  *      function in terms of the B-spline basis.  Must be of length
  *      suzerain_bspline_ndof().
  * @param[in] incx Stride between elements of \c x

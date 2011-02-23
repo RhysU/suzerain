@@ -242,6 +242,33 @@ public:
                 function, rhs, w_);
     }
 
+    /** @see suzerain_bspline_workspace#ndof */
+    int nknots() const { return suzerain_bspline_nknots(w_); }
+
+    /** @see suzerain_bspline_breakpoint */
+    int breakpoint(int j, double *x_j) const
+    {
+        return suzerain_bspline_breakpoint(j, x_j, w_);
+    }
+
+    /** @see suzerain_bspline_breakpoints */
+    int breakpoints(double *x, int incx) const
+    {
+        return suzerain_bspline_breakpoints(x, incx, w_);
+    }
+
+    /** @see suzerain_bspline_knot */
+    int knot(int j, double *x_j) const
+    {
+        return suzerain_bspline_knot(j, x_j, w_);
+    }
+
+    /** @see suzerain_bspline_knots */
+    int knots(double *x, int incx) const
+    {
+        return suzerain_bspline_knots(x, incx, w_);
+    }
+
     /** @see suzerain_bspline_collocation_point */
     int collocation_point(int j, double *x_j) const
     {

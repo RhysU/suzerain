@@ -955,6 +955,56 @@ suzerain_bspline_find_interpolation_problem_rhs(
 }
 
 int
+suzerain_bspline_breakpoint(
+    int j,
+    double *x_j,
+    const suzerain_bspline_workspace *w)
+{
+    *x_j = gsl_bspline_breakpoint(j, w->bw);
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_breakpoints(
+    double *x,
+    int incx,
+    const suzerain_bspline_workspace *w)
+{
+    for (int j = 0; j < w->ndof; ++j) {
+        *x = gsl_bspline_breakpoint(j, w->bw);
+        x += incx;
+    }
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_knot(
+    int j,
+    double *x_j,
+    const suzerain_bspline_workspace *w)
+{
+    *x_j = gsl_vector_get(w->bw->knots, j);
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_knots(
+    double *x,
+    int incx,
+    const suzerain_bspline_workspace *w)
+{
+    for (int j = 0; j < w->order + w->ndof - 1; ++j) {
+        *x = gsl_vector_get(w->bw->knots, j);
+        x += incx;
+    }
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
 suzerain_bspline_collocation_point(
     int j,
     double *x_j,
