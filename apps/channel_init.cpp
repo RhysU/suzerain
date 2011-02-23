@@ -71,7 +71,7 @@ typedef double               real_t;
 typedef std::complex<real_t> complex_t;
 
 // Global scenario parameters initialized in main()
-static pb::ScenarioDefinition<real_t> def_scenario(
+static const pb::ScenarioDefinition<real_t> scenario(
         /* default_Re    */ 100,
         /* default_Pr    */ real_t(7)/real_t(10),
         /* default_gamma */ real_t(14)/real_t(10),
@@ -79,7 +79,7 @@ static pb::ScenarioDefinition<real_t> def_scenario(
         /* default_Lx    */ 4*pi<real_t>(),
         /* default_Ly    */ 2,
         /* default_Lz    */ 4*pi<real_t>()/3);
-static pb::GridDefinition<real_t> def_grid(
+static const pb::GridDefinition<real_t> grid(
         /* default_Nx    */ 1,
         /* default_DAFx  */ real_t(3)/real_t(2),
         /* default_Ny    */ 16,
@@ -172,8 +172,12 @@ int main(int argc, char **argv)
     sz::ProgramOptions options(
             "Suzerain-based compressible channel initialization");
     {
-        options.add_definition(def_scenario);
-        options.add_definition(def_grid);
+        // Cast away const so options processing can modify settings
+        options.add_definition(
+                const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
+        options.add_definition(
+                const_cast<pb::GridDefinition<real_t>& >(grid));
+
         using ::suzerain::validation::ensure_positive;
         ::std::pointer_to_binary_function<real_t,const char*,void>
             ptr_fun_ensure_positive(ensure_positive<real_t>);
@@ -203,18 +207,18 @@ int main(int argc, char **argv)
     }
     const real_t R = GSL_CONST_MKSA_MOLAR_GAS * GSL_CONST_NUM_KILO / M;
 
-    if (def_grid.k() < 4 /* cubics */) {
+    if (grid.k() < 4 /* cubics */) {
         LOG4CXX_FATAL(log,
             "k >= 4 required to compute two non-trivial spatial derivatives");
         return EXIT_FAILURE;
     }
 
-    if (def_grid.Nx() != 1) {
+    if (grid.Nx() != 1) {
         LOG4CXX_FATAL(log, argv[0] << " can only handle Nx == 1");
         return EXIT_FAILURE;
     }
 
-    if (def_grid.Nz() != 1) {
+    if (grid.Nz() != 1) {
         LOG4CXX_FATAL(log, argv[0] << " can only handle Nz == 1");
         return EXIT_FAILURE;
     }
@@ -228,41 +232,41 @@ int main(int argc, char **argv)
     {
         esio_line_establish(esioh, 1, 0, 1); // Store as lines to allow comments
 
-        const double Re = def_scenario.Re();
+        const double Re = scenario.Re();
         esio_line_write(esioh, "Re", &Re, 0,
-                def_scenario.options().find("Re",false).description().c_str());
+                scenario.options().find("Re",false).description().c_str());
 
-        const double Pr = def_scenario.Pr();
+        const double Pr = scenario.Pr();
         esio_line_write(esioh, "Pr", &Pr, 0,
-                def_scenario.options().find("Pr",false).description().c_str());
+                scenario.options().find("Pr",false).description().c_str());
 
         esio_line_write(esioh, "Ma", &Ma, 0,
                 options.options().find("Ma",false).description().c_str());
 
-        const double gamma = def_scenario.gamma();
+        const double gamma = scenario.gamma();
         esio_line_write(esioh, "gamma", &gamma, 0,
-                def_scenario.options().find("gamma",false).description().c_str());
+                scenario.options().find("gamma",false).description().c_str());
 
         esio_line_write(esioh, "M", &M, 0,
                 options.options().find("M",false).description().c_str());
 
         esio_line_write(esioh, "R", &R, 0, "Specific gas constant in J/kg/K");
 
-        const double beta = def_scenario.beta();
+        const double beta = scenario.beta();
         esio_line_write(esioh, "beta", &beta, 0,
-                def_scenario.options().find("beta",false).description().c_str());
+                scenario.options().find("beta",false).description().c_str());
 
-        const double Lx = def_scenario.Lx();
+        const double Lx = scenario.Lx();
         esio_line_write(esioh, "Lx", &Lx, 0,
-                def_scenario.options().find("Lx",false).description().c_str());
+                scenario.options().find("Lx",false).description().c_str());
 
-        const double Ly = def_scenario.Ly();
+        const double Ly = scenario.Ly();
         esio_line_write(esioh, "Ly", &Ly, 0,
-                def_scenario.options().find("Ly",false).description().c_str());
+                scenario.options().find("Ly",false).description().c_str());
 
-        const double Lz = def_scenario.Lz();
+        const double Lz = scenario.Lz();
         esio_line_write(esioh, "Lz", &Lz, 0,
-                def_scenario.options().find("Lz",false).description().c_str());
+                scenario.options().find("Lz",false).description().c_str());
     }
     esio_file_flush(esioh);
 
@@ -270,43 +274,43 @@ int main(int argc, char **argv)
     {
         esio_line_establish(esioh, 1, 0, 1); // Store as lines to allow comments
 
-        const int Nx = numeric_cast<int>(def_grid.Nx());
+        const int Nx = numeric_cast<int>(grid.Nx());
         esio_line_write(esioh, "Nx", &Nx, 0,
-                def_grid.options().find("Nx",false).description().c_str());
+                grid.options().find("Nx",false).description().c_str());
 
-        const double DAFx = def_grid.DAFx();
+        const double DAFx = grid.DAFx();
         esio_line_write(esioh, "DAFx", &DAFx, 0,
-                def_grid.options().find("DAFx",false).description().c_str());
+                grid.options().find("DAFx",false).description().c_str());
 
-        const int Ny = numeric_cast<int>(def_grid.Ny());
+        const int Ny = numeric_cast<int>(grid.Ny());
         esio_line_write(esioh, "Ny", &Ny, 0,
-                def_grid.options().find("Ny",false).description().c_str());
+                grid.options().find("Ny",false).description().c_str());
 
-        const int k = numeric_cast<int>(def_grid.k());
+        const int k = numeric_cast<int>(grid.k());
         esio_line_write(esioh, "k", &k, 0,
-                def_grid.options().find("k",false).description().c_str());
+                grid.options().find("k",false).description().c_str());
 
-        const int Nz = numeric_cast<int>(def_grid.Nz());
+        const int Nz = numeric_cast<int>(grid.Nz());
         esio_line_write(esioh, "Nz", &Nz, 0,
-                def_grid.options().find("Nz",false).description().c_str());
+                grid.options().find("Nz",false).description().c_str());
 
-        const double DAFz = def_grid.DAFz();
+        const double DAFz = grid.DAFz();
         esio_line_write(esioh, "DAFz", &DAFz, 0,
-                def_grid.options().find("DAFz",false).description().c_str());
+                grid.options().find("DAFz",false).description().c_str());
     }
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Storing B-spline basis of uniform order "
-                      << (def_grid.k() - 1) << " on [0, Ly] with "
-                      << def_grid.Ny() << " DOF");
+                      << (grid.k() - 1) << " on [0, Ly] with "
+                      << grid.Ny() << " DOF");
     {
-        scoped_array<real_t> buf(new real_t[def_grid.Ny()]);
+        scoped_array<real_t> buf(new real_t[grid.Ny()]);
 
         // Compute and store breakpoint locations
-        const int nbreak = def_grid.Ny() + 2 - def_grid.k();
+        const int nbreak = grid.Ny() + 2 - grid.k();
         sz::math::linspace(0.0, 1.0, nbreak, buf.get()); // Uniform [0, 1]
         for (int i = 0; i < nbreak; ++i) {               // Stretch 'em out
-            buf[i] = def_scenario.Ly()
+            buf[i] = scenario.Ly()
                    * suzerain_htstretch2(htdelta, 1.0, buf[i]);
         }
         esio_line_establish(esioh, nbreak, 0, nbreak);
@@ -316,8 +320,8 @@ int main(int argc, char **argv)
         // Generate the B-spline workspace based on order and breakpoints
         // Maximum non-trivial derivative operators included
         bspw = make_shared<sz::bspline>(
-                def_grid.k(), def_grid.k() - 2, nbreak, buf.get());
-        assert(static_cast<unsigned>(bspw->ndof()) == def_grid.Ny());
+                grid.k(), grid.k() - 2, nbreak, buf.get());
+        assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny());
 
         // Store collocation points to restart file
         bspw->collocation_points(buf.get(), 1);
@@ -351,15 +355,15 @@ int main(int argc, char **argv)
 
     LOG4CXX_INFO(log, "Storing wavenumber vectors for Fourier bases");
     {
-        const int Nx = numeric_cast<int>(def_grid.Nx());
-        const int Nz = numeric_cast<int>(def_grid.Nz());
+        const int Nx = numeric_cast<int>(grid.Nx());
+        const int Nz = numeric_cast<int>(grid.Nz());
         const int N  = std::max(Nx, Nz);
         scoped_array<complex_t> buf(new complex_t[N]);
 
         // Obtain wavenumbers via computing 1*(i*kx)/i
         std::fill_n(buf.get(), N, complex_t(1,0));
         sz::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
-                def_scenario.Lx(), def_scenario.Lz(),
+                scenario.Lx(), scenario.Lz(),
                 1, Nx, Nx, 0, Nx, 1, 1, 0, 1);
         esio_line_establish(esioh, Nx, 0, Nx);
         esio_line_write(esioh, "kx", reinterpret_cast<real_t *>(buf.get()),
@@ -368,7 +372,7 @@ int main(int argc, char **argv)
         // Obtain wavenumbers via computing 1*(i*kz)/i
         std::fill_n(buf.get(), N, complex_t(1,0));
         sz::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
-                def_scenario.Lx(), def_scenario.Lz(),
+                scenario.Lx(), scenario.Lz(),
                 1, 1, 1, 0, 1, Nz, Nz, 0, Nz);
         esio_line_establish(esioh, Nz, 0, Nz);
         esio_line_write(esioh, "kz", reinterpret_cast<real_t *>(buf.get()),
@@ -379,14 +383,14 @@ int main(int argc, char **argv)
     LOG4CXX_INFO(log, "Computing derived, dimensional reference parameters");
     real_t T_wall, rho_wall;
     {
-        if (def_scenario.gamma() != 1.4) {
+        if (scenario.gamma() != 1.4) {
             LOG4CXX_WARN(log, "Using air viscosity values for non-air!");
         }
 
         tsolver p;
-        p.Re     = def_scenario.Re();
-        p.L      = def_scenario.Ly();
-        p.gamma  = def_scenario.gamma();
+        p.Re     = scenario.Re();
+        p.L      = scenario.Ly();
+        p.gamma  = scenario.gamma();
         p.R      = R;
         p.Ma     = Ma;
         p.p_wall = p_wall;
@@ -450,7 +454,7 @@ int main(int argc, char **argv)
 
     LOG4CXX_INFO(log, "Computing nondimensional mean profiles for restart");
     {
-        const int Ny = numeric_cast<int>(def_grid.Ny());
+        const int Ny = numeric_cast<int>(grid.Ny());
         esio_field_establish(esioh, 1, 0, 1, 1, 0, 1, Ny, 0, Ny);
         scoped_array<complex_t> buf(new complex_t[Ny]);
 
@@ -473,8 +477,8 @@ int main(int argc, char **argv)
         scoped_array<double> rhs(new double[Ny]);
         mesolver params;
         params.Ma     = Ma;
-        params.L      = def_scenario.Ly();
-        params.gamma  = def_scenario.gamma();
+        params.L      = scenario.Ly();
+        params.gamma  = scenario.gamma();
         params.R      = R;
         params.T_wall = T_wall;
 

@@ -107,7 +107,7 @@ void FFTWDefinition::normalize_rigor_string(std::string input)
 }
 
 FFTWDefinition::FFTWDefinition()
-    : options_(std::string("FFTW definition")),
+    : IDefinition("FFTW definition"),
       rigor_string_(c_str(measure)),             // Default obtained
       nthreads_(default_nthreads())              // Default obtained
 {
@@ -137,7 +137,7 @@ FFTWDefinition::FFTWDefinition()
     nthreads_description += " (Disabled)";
 #endif // HAVE_FFTW3_THREADS
 
-    options_.add_options()
+    this->add_options()
         ("rigor", po::value<std::string>(&rigor_string_)
             ->notifier(
                 std::bind1st(

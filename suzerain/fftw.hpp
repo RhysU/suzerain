@@ -135,11 +135,6 @@ public:
     /** Default constructor */
     FFTWDefinition();
 
-    /*! @copydoc IDefinition::options */
-    const boost::program_options::options_description& options() {
-        return options_;
-    }
-
     /**
      * Retrieve FFTW plan rigor flags.
      *
@@ -157,9 +152,6 @@ public:
     int nthreads() const { return nthreads_; }
 
 private:
-
-    /** Stores the program options processing information */
-    boost::program_options::options_description options_;
 
     /** Stores the user-specified FFTW rigor string */
     std::string rigor_string_;

@@ -51,10 +51,19 @@ namespace problem {
 class IDefinition
 {
 public:
-    /** Constructor appropriate for an abstract base class */
-    IDefinition() {};
+    /**
+     * Constructor setting no overall options description.
+     */
+    IDefinition() : options_() {};
 
-    /** Virtual destructor appropriate for an abstract base class */
+    /**
+     * Constructor setting an overall options description.
+     *
+     * @param caption Caption to use when describing options
+     **/
+    IDefinition(const std::string &caption) : options_(caption) {};
+
+    /** Virtual destructor */
     virtual ~IDefinition() {};
 
     /**
@@ -67,7 +76,34 @@ public:
      * @see <a href="http://www.boost.org/doc/libs/release/libs/program_options">
      *      Boost.Program_options</a> for more information.
      */
-    virtual const boost::program_options::options_description& options() = 0;
+    const boost::program_options::options_description& options() const {
+        return options_;
+    }
+
+    /*! @copydoc IDefinition::options() const */
+    boost::program_options::options_description& options() {
+        return options_;
+    }
+
+    /**
+     * Return a Boost program_options_easy_init suitable for adding options
+     * to this definition.
+     *
+     * @return An
+     *         <tt>boost::program_options::options_description_easy_init</tt>
+     *         instance.
+     *
+     * @see <a href="http://www.boost.org/doc/libs/release/libs/program_options">
+     *      Boost.Program_options</a> for more information.
+     */
+    boost::program_options::options_description_easy_init add_options() {
+        return options_.add_options();
+    }
+
+protected:
+
+    /** Stores the program options processing information */
+    boost::program_options::options_description options_;
 };
 
 } // namespace problem

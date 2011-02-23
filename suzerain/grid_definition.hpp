@@ -107,6 +107,9 @@ public:
      */
     size_type Nx() const { return global_extents_[0]; }
 
+    /** \copydoc Nx() const */
+    size_type& Nx() { return global_extents_[0]; }
+
     /**
      * Retrieve the dealiasing factor for the X direction.  This factor
      * should be multiplied times Nx() to obtain an extent for Fourier
@@ -115,6 +118,9 @@ public:
      * @return the dealiasing factor for the X direction.
      */
     FPT DAFx() const { return DAFx_; }
+
+    /** \copydoc DAFx() const */
+    FPT& DAFx() { return DAFx_; }
 
     /**
      * Retrieve computational grid size in the Y direction.  This is the number
@@ -125,6 +131,9 @@ public:
      */
     size_type Ny() const { return global_extents_[1]; }
 
+    /** \copydoc Ny() const */
+    size_type& Ny() { return global_extents_[1]; }
+
     /**
      * Retrieve the B-spline basis order plus one.  For example,
      * piecewise cubics have <tt>k() == 4</tt>.
@@ -133,6 +142,9 @@ public:
      */
     size_type k() const { return k_; }
 
+    /** \copydoc k() const */
+    size_type& k() { return k_; }
+
     /**
      * Retrieve grid size in the Z direction.  This is the number
      * of points in the domain without accounting for any dealiasing.
@@ -140,6 +152,9 @@ public:
      * @return the logical grid size in the Z direction.
      */
     size_type Nz() const { return global_extents_[2]; }
+
+    /** \copydoc Nz() const */
+    size_type& Nz() { return global_extents_[2]; }
 
     /**
      * Retrieve the dealiasing factor for the Z direction.  This factor
@@ -150,6 +165,8 @@ public:
      */
     FPT DAFz() const { return DAFz_; }
 
+    /** \copydoc DAFz() const */
+    FPT& DAFz() { return DAFz_; }
 
     /**
      * Retrieve the two dimensional processor grid extents.
@@ -172,6 +189,9 @@ public:
      */
     size_type Pa() const { return processor_grid_[0]; }
 
+    /** \copydoc Pa() const */
+    size_type& Pa() { return processor_grid_[0]; }
+
     /**
      * Retrieve the processor grid extent in the \f$ P_B \f$ direction.
      *
@@ -180,15 +200,10 @@ public:
      */
     size_type Pb() const { return processor_grid_[1]; }
 
-    /*! @copydoc IDefinition::options */
-    const boost::program_options::options_description& options() {
-        return options_;
-    }
+    /** \copydoc Pb() const */
+    size_type& Pb() { return processor_grid_[1]; }
 
 private:
-
-    /** Stores the program options processing information */
-    boost::program_options::options_description options_;
 
     /** Stores the computational grid extents */
     size_type_3d global_extents_;
@@ -208,7 +223,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
                                     size_type default_k,
                                     size_type default_Nz,
                                     FPT       default_DAFz)
-    : options_("Mixed Fourier/B-spline computational grid definition")
+    : IDefinition("Mixed Fourier/B-spline computational grid definition")
 {
     using ::std::auto_ptr;
     using ::std::bind2nd;
@@ -236,7 +251,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
             v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Nx"));
         }
         v->default_value(default_Nx);
-        options_.add_options()("Nx", v.release(),
+        this->add_options()("Nx", v.release(),
                 "Spectral coefficient count in streamwise X direction");
     }
 
@@ -248,7 +263,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
             v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT,"DAFx"));
         }
         v->default_value(default_DAFx);
-        options_.add_options()("DAFx", v.release(),
+        this->add_options()("DAFx", v.release(),
             "Dealiasing factor in streamwise X direction");
     }
 
@@ -260,7 +275,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
             v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Ny"));
         }
         v->default_value(default_Ny);
-        options_.add_options()("Ny", v.release(),
+        this->add_options()("Ny", v.release(),
                 "Collocation point count in wall-normal Y direction");
     }
 
@@ -272,7 +287,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
             v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"k"));
         }
         v->default_value(default_k);
-        options_.add_options()("k", v.release(),
+        this->add_options()("k", v.release(),
                 "B-spline basis order where k = 4 indicates piecewise cubics");
     }
 
@@ -284,7 +299,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
             v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Nz"));
         }
         v->default_value(default_Nz);
-        options_.add_options()("Nz", v.release(),
+        this->add_options()("Nz", v.release(),
                 "Spectral coefficient count in spanwise Z direction");
     }
 
@@ -296,7 +311,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
             v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT,"DAFz"));
         }
         v->default_value(default_DAFz);
-        options_.add_options()("DAFz", v.release(),
+        this->add_options()("DAFz", v.release(),
                 "Dealiasing factor in spanwise Z direction");
     }
 
@@ -304,7 +319,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
         auto_ptr<typed_value<size_type> > v(value(&processor_grid_[0]));
         v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pa"));
         v->default_value(0);
-        options_.add_options()("Pa", v.release(),
+        this->add_options()("Pa", v.release(),
             "Processor count in the P_A decomposition direction");
     }
 
@@ -312,7 +327,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
         auto_ptr<typed_value<size_type> > v(value(&processor_grid_[1]));
         v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pb"));
         v->default_value(0);
-        options_.add_options()("Pb", v.release(),
+        this->add_options()("Pb", v.release(),
             "Processor count in the P_B decomposition direction");
     }
 }

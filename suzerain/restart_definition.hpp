@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * grid_definition.hpp: classes handling grid definitions
+ * restart_definition.hpp: classes handling restart definitions
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -120,15 +120,7 @@ public:
      */
     int retain() const { return retain_; }
 
-    /*! @copydoc IDefinition::options */
-    const boost::program_options::options_description& options() {
-        return options_;
-    }
-
 private:
-
-    /** Stores the program options processing information */
-    boost::program_options::options_description options_;
 
     String load_;         /**< Stores the restart load path */
     String metadata_;     /**< Stores the metadata write path */
@@ -144,7 +136,7 @@ RestartDefinition<String>::RestartDefinition(
         const String& default_uncommitted,
         const String& default_desttemplate,
         int default_retain)
-    : options_("Restart-related parameters"),
+    : IDefinition("Restart-related parameters"),
       load_(default_load),
       metadata_(default_metadata),
       uncommitted_(default_uncommitted),
@@ -160,7 +152,7 @@ RestartDefinition<String>::RestartDefinition(
     ::std::pointer_to_binary_function<int,const char*,void>
         ptr_fun_ensure_positive_int(ensure_positive<int>);
 
-    options_.add_options()
+    this->add_options()
         ("load", po::value<String>(&load_)
             ->default_value(default_load),
         "Restart file to load on startup")

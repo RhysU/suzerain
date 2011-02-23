@@ -81,6 +81,9 @@ public:
      */
     FPT Re() const { return Re_; }
 
+    /** \copydoc Re() const */
+    FPT& Re() { return Re_; }
+
     /**
      * Retrieve the Prandtl number \f$\mbox{Pr}=\frac{\mu_{0}
      * C_{p}}{\kappa_{0}}\f$.
@@ -89,12 +92,18 @@ public:
      */
     FPT Pr() const { return Pr_; }
 
+    /** \copydoc Pr() const */
+    FPT& Pr() { return Pr_; }
+
     /**
      * Retrieve the ratio of specific heats \f$\gamma=C_p/C_v\f$.
      *
      * @return the ratio of specific heats.
      */
     FPT gamma() const { return gamma_; }
+
+    /** \copydoc gamma() const */
+    FPT& gamma() { return gamma_; }
 
     /**
      * Retrieve the temperature power law exponent \f$\beta\f$ where
@@ -104,12 +113,18 @@ public:
      */
     FPT beta() const { return beta_; }
 
+    /** \copydoc beta() const */
+    FPT& beta() { return beta_; }
+
     /**
      * Retrieve the domain length in the X direction.
      *
      * @return the domain's X length.
      */
     FPT Lx() const { return Lx_; }
+
+    /** \copydoc Lx() const */
+    FPT& Lx() { return Lx_; }
 
     /**
      * Retrieve the domain length in the Y direction.
@@ -118,6 +133,9 @@ public:
      */
     FPT Ly() const { return Ly_; }
 
+    /** \copydoc Ly() const */
+    FPT& Ly() { return Ly_; }
+
     /**
      * Retrieve the domain length in the Z direction.
      *
@@ -125,15 +143,10 @@ public:
      */
     FPT Lz() const { return Lz_; }
 
-    /*! @copydoc IDefinition::options */
-    const boost::program_options::options_description& options() {
-        return options_;
-    }
+    /** \copydoc Lz() const */
+    FPT& Lz() { return Lz_; }
 
 private:
-
-    /** Stores the program options processing information */
-    boost::program_options::options_description options_;
 
     FPT Re_;     /**< Stores the Reynolds number */
     FPT Pr_;     /**< Stores the Prandtl number */
@@ -154,7 +167,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         FPT default_Lx,
         FPT default_Ly,
         FPT default_Lz)
-    : options_("Nondimensional scenario parameters")
+    : IDefinition("Nondimensional scenario parameters")
 {
     using ::std::auto_ptr;
     using ::std::bind2nd;
@@ -182,7 +195,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
             v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Re"));
         }
         v->default_value(default_Re);
-        options_.add_options()("Re", v.release(), "Reynolds number");
+        this->add_options()("Re", v.release(), "Reynolds number");
     }
 
     { // Pr
@@ -193,7 +206,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
             v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Pr"));
         }
         v->default_value(default_Pr);
-        options_.add_options()("Pr", v.release(), "Prandtl number");
+        this->add_options()("Pr", v.release(), "Prandtl number");
     }
 
     { // gamma
@@ -204,8 +217,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
             v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "gamma"));
         }
         v->default_value(default_gamma);
-        options_.add_options()("gamma", v.release(),
-                "Ratio of specific heats");
+        this->add_options()("gamma", v.release(), "Ratio of specific heats");
     }
 
     { // beta
@@ -216,7 +228,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
             v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "beta"));
         }
         v->default_value(default_beta);
-        options_.add_options()("beta", v.release(),
+        this->add_options()("beta", v.release(),
                 "Temperature power law exponent");
     }
 
@@ -228,7 +240,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
             v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Lx"));
         }
         v->default_value(default_Lx);
-        options_.add_options()("Lx", v.release(),
+        this->add_options()("Lx", v.release(),
                 "Nondimensional grid length in streamwise X direction");
     }
 
@@ -240,7 +252,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
             v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Ly"));
         }
         v->default_value(default_Ly);
-        options_.add_options()("Ly", v.release(),
+        this->add_options()("Ly", v.release(),
                 "Nondimensional grid length in wall normal Y direction");
     }
 
@@ -252,7 +264,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
             v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Lz"));
         }
         v->default_value(default_Lz);
-        options_.add_options()("Lz", v.release(),
+        this->add_options()("Lz", v.release(),
                 "Nondimensional grid length in spanwise Z direction");
     }
 }
