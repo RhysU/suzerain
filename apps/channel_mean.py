@@ -19,11 +19,11 @@ def process(filename):
     c_rhoe = cvxopt.matrix(numpy.array(h.root.rhoe.read()[0,0,:,0]))
 
     # Obtain banded operator to compute point values at collocation points
-    x = h.root.colpoints.read()
-    m  = h.root.Dy0.attrs.m[0]
-    n  = h.root.Dy0.attrs.n[0]
-    kl = h.root.Dy0.attrs.kl[0]
-    ku = h.root.Dy0.attrs.ku[0]
+    x   = h.root.collocation_points.read()
+    m   = h.root.Dy0.attrs.m[0]
+    n   = h.root.Dy0.attrs.n[0]
+    kl  = h.root.Dy0.attrs.kl[0]
+    ku  = h.root.Dy0.attrs.ku[0]
     Dy0 = cvxopt.matrix(h.root.Dy0.read().transpose())
 
     # Compute values at collocation points

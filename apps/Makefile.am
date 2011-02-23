@@ -36,7 +36,7 @@ driver_suzerain_p3dfft_LDADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
 # Applications
 
 bin_PROGRAMS         += channel_init
-channel_init_SOURCES  = channel_init.cpp
+channel_init_SOURCES  = channel_init.cpp channel_common.cpp
 channel_init_LDADD    = ../suzerain/libsuzerain.la
 channel_init_LDADD   += $(ESIO_LIBS) $(GRVY_LIBS)
 channel_init_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
@@ -44,7 +44,7 @@ channel_init_LDADD   += $(BOOST_IOSTREAMS_LIBS)
 channel_init_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 
 bin_PROGRAMS        += channel_ex
-channel_ex_SOURCES   = channel_ex.cpp
+channel_ex_SOURCES   = channel_ex.cpp channel_common.cpp
 channel_ex_CPPFLAGS  = $(AM_CPPFLAGS)
 channel_ex_CPPFLAGS += $(P3DFFT_CFLAGS) $(FFTW3_THREADS_CFLAGS)
 channel_ex_LDADD     = ../suzerain/libsuzerain.la

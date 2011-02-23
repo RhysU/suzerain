@@ -72,22 +72,9 @@ typedef double               real_t;
 typedef std::complex<real_t> complex_t;
 
 // Global scenario parameters initialized in main()
-static pb::ScenarioDefinition<real_t> scenario(
-        /* default_Re    */ 100,
-        /* default_Pr    */ real_t(7)/real_t(10),
-        /* default_gamma */ real_t(14)/real_t(10),
-        /* default_beta  */ real_t(2)/real_t(3),
-        /* default_Lx    */ 4*pi<real_t>(),
-        /* default_Ly    */ 2,
-        /* default_Lz    */ 4*pi<real_t>()/3);
-static pb::GridDefinition<real_t> grid(
-        /* default_Nx    */ 16,
-        /* default_DAFx  */ real_t(3)/real_t(2),
-        /* default_Ny    */ 16,
-        /* default_k     */ 6,
-        /* default_Nz    */ 16,
-        /* default_DAFz  */ real_t(3)/real_t(2));
-static pb::RestartDefinition<> def_restart(
+static const pb::ScenarioDefinition<real_t> scenario(0, 0, 0, 0, 0, 0, 0);
+static const pb::GridDefinition<real_t> grid(0, 0, 0, 0, 0, 0);
+static const pb::RestartDefinition<> restart(
         /* default_load         */ "",
         /* default_metadata     */ "metadata.h5",
         /* default_uncommitted  */ "uncommitted.h5",
@@ -879,9 +866,15 @@ int main(int argc, char **argv)
     {
         sz::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation");
-        options.add_definition(scenario);
-        options.add_definition(grid);
-        options.add_definition(def_restart);
+
+        // Cast away const so options processing can modify settings
+        options.add_definition(
+                const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
+        options.add_definition(
+                const_cast<pb::GridDefinition<real_t>& >(grid));
+        options.add_definition(
+                const_cast<pb::RestartDefinition<>& >(restart));
+
         using ::suzerain::validation::ensure_positive;
         ::std::pointer_to_binary_function<real_t,const char*,void>
             ptr_fun_ensure_positive(ensure_positive<real_t>);
@@ -899,7 +892,7 @@ int main(int argc, char **argv)
         if (procid == 0) {
             log4cxx::LoggerPtr l = log4cxx::Logger::getLogger("SCENARIO");
             esio_handle h = esio_handle_initialize(MPI_COMM_SELF);
-            esio_file_create(h, def_restart.metadata().c_str(), 1);
+            esio_file_create(h, restart.metadata().c_str(), 1);
             LOG4CXX_DEBUG(l, "Scenario metadata in " << esio_file_path(h));
             BOOST_FOREACH(const shared_ptr<po::option_description> &opt,
                         options.options().options()) {

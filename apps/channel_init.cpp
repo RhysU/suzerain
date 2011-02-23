@@ -52,6 +52,8 @@
 #include <suzerain/svehla.h>
 #include <suzerain/utility.hpp>
 
+#include "channel_common.hpp"
+
 #pragma warning(disable:383 1572)
 
 // Introduce shorthand for common names
@@ -64,11 +66,6 @@ using boost::numeric_cast;
 using boost::scoped_array;
 using boost::shared_ptr;
 using std::numeric_limits;
-
-// Introduce scalar- and complex-valued typedefs
-// Currently only real_t == double is supported by many, many components
-typedef double               real_t;
-typedef std::complex<real_t> complex_t;
 
 // Global scenario parameters initialized in main()
 static const pb::ScenarioDefinition<real_t> scenario(
@@ -223,149 +220,31 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    LOG4CXX_INFO(log, "Creating new restart file " << restart_file);
-    esio_file_create(esioh, restart_file.c_str(),
-                     options.variables().count("clobber"));
-    esio_file_flush(esioh);
-
-    LOG4CXX_INFO(log, "Storing basic scenario parameters");
-    {
-        esio_line_establish(esioh, 1, 0, 1); // Store as lines to allow comments
-
-        esio_line_write(esioh, "Re", &scenario.Re, 0,
-                scenario.options().find("Re",false).description().c_str());
-
-        esio_line_write(esioh, "Pr", &scenario.Pr, 0,
-                scenario.options().find("Pr",false).description().c_str());
-
-        esio_line_write(esioh, "Ma", &Ma, 0,
-                options.options().find("Ma",false).description().c_str());
-
-        esio_line_write(esioh, "gamma", &scenario.gamma, 0,
-                scenario.options().find("gamma",false).description().c_str());
-
-        esio_line_write(esioh, "M", &M, 0,
-                options.options().find("M",false).description().c_str());
-
-        esio_line_write(esioh, "R", &R, 0, "Specific gas constant in J/kg/K");
-
-        esio_line_write(esioh, "beta", &scenario.beta, 0,
-                scenario.options().find("beta",false).description().c_str());
-
-        esio_line_write(esioh, "Lx", &scenario.Lx, 0,
-                scenario.options().find("Lx",false).description().c_str());
-
-        esio_line_write(esioh, "Ly", &scenario.Ly, 0,
-                scenario.options().find("Ly",false).description().c_str());
-
-        esio_line_write(esioh, "Lz", &scenario.Lz, 0,
-                scenario.options().find("Lz",false).description().c_str());
-    }
-    esio_file_flush(esioh);
-
-    LOG4CXX_INFO(log, "Storing basic grid parameters");
-    {
-        esio_line_establish(esioh, 1, 0, 1); // Store as lines to allow comments
-
-        const int Nx = numeric_cast<int>(grid.Nx);
-        esio_line_write(esioh, "Nx", &Nx, 0,
-                grid.options().find("Nx",false).description().c_str());
-
-        esio_line_write(esioh, "DAFx", &grid.DAFx, 0,
-                grid.options().find("DAFx",false).description().c_str());
-
-        const int Ny = numeric_cast<int>(grid.Ny);
-        esio_line_write(esioh, "Ny", &Ny, 0,
-                grid.options().find("Ny",false).description().c_str());
-
-        const int k = numeric_cast<int>(grid.k);
-        esio_line_write(esioh, "k", &k, 0,
-                grid.options().find("k",false).description().c_str());
-
-        const int Nz = numeric_cast<int>(grid.Nz);
-        esio_line_write(esioh, "Nz", &Nz, 0,
-                grid.options().find("Nz",false).description().c_str());
-
-        esio_line_write(esioh, "DAFz", &grid.DAFz, 0,
-                grid.options().find("DAFz",false).description().c_str());
-    }
-    esio_file_flush(esioh);
-
-    LOG4CXX_INFO(log, "Storing B-spline basis of uniform order "
+    LOG4CXX_INFO(log, "Creating B-spline basis of uniform order "
                       << (grid.k - 1) << " on [0, Ly] with "
                       << grid.Ny << " DOF");
     {
         scoped_array<real_t> buf(new real_t[grid.Ny]);
 
-        // Compute and store breakpoint locations
+        // Compute breakpoint locations
         const int nbreak = grid.Ny + 2 - grid.k;
         sz::math::linspace(0.0, 1.0, nbreak, buf.get()); // Uniform [0, 1]
         for (int i = 0; i < nbreak; ++i) {               // Stretch 'em out
             buf[i] = scenario.Ly * suzerain_htstretch2(htdelta, 1.0, buf[i]);
         }
-        esio_line_establish(esioh, nbreak, 0, nbreak);
-        esio_line_write(esioh, "breakpoints", buf.get(), 0,
-                "Breakpoint locations used to build B-spline basis");
 
         // Generate the B-spline workspace based on order and breakpoints
         // Maximum non-trivial derivative operators included
-        bspw = make_shared<sz::bspline>(
-                grid.k, grid.k - 2, nbreak, buf.get());
+        bspw = make_shared<sz::bspline>(grid.k, grid.k - 2, nbreak, buf.get());
         assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny);
-
-        // Store collocation points to restart file
-        bspw->collocation_points(buf.get(), 1);
-        esio_line_establish(esioh, bspw->ndof(), 0, bspw->ndof());
-        esio_line_write(esioh, "colpoints", buf.get(), 0,
-                "Collocation points used to build discrete operators");
     }
-    esio_file_flush(esioh);
 
-    LOG4CXX_INFO(log,
-            "Storing B-spline derivative operators in general band format");
-    {
-        char name[8];
-        char comment[127];
-        for (int k = 0; k <= bspw->nderivatives(); ++k) {
-            snprintf(name, sizeof(name)/sizeof(name[0]), "Dy%d", k);
-            snprintf(comment, sizeof(comment)/sizeof(comment[0]),
-                    "Wall-normal derivative Dy%d(i,j) = D%d[j,ku+i-j] for"
-                    " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
-            const int lda = bspw->ku(k) + 1 + bspw->kl(k);
-            esio_plane_establish(
-                    esioh, bspw->ndof(), 0, bspw->ndof(), lda, 0, lda);
-            esio_plane_write(esioh, name, bspw->D(k), 0, 0, comment);
-            esio_attribute_write(esioh, name, "kl", bspw->kl(k));
-            esio_attribute_write(esioh, name, "ku", bspw->ku(k));
-            esio_attribute_write(esioh, name, "m",  bspw->ndof());
-            esio_attribute_write(esioh, name, "n",  bspw->ndof());
-        }
-    }
-    esio_file_flush(esioh);
-
-    LOG4CXX_INFO(log, "Storing wavenumber vectors for Fourier bases");
-    {
-        const int Nx = numeric_cast<int>(grid.Nx);
-        const int Nz = numeric_cast<int>(grid.Nz);
-        const int N  = std::max(Nx, Nz);
-        scoped_array<complex_t> buf(new complex_t[N]);
-
-        // Obtain wavenumbers via computing 1*(i*kx)/i
-        std::fill_n(buf.get(), N, complex_t(1,0));
-        sz::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
-                scenario.Lx, scenario.Lz, 1, Nx, Nx, 0, Nx, 1, 1, 0, 1);
-        esio_line_establish(esioh, Nx, 0, Nx);
-        esio_line_write(esioh, "kx", reinterpret_cast<real_t *>(buf.get()),
-                2, "Wavenumbers in streamwise X direction"); // Re(buf)
-
-        // Obtain wavenumbers via computing 1*(i*kz)/i
-        std::fill_n(buf.get(), N, complex_t(1,0));
-        sz::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
-                scenario.Lx, scenario.Lz, 1, 1, 1, 0, 1, Nz, Nz, 0, Nz);
-        esio_line_establish(esioh, Nz, 0, Nz);
-        esio_line_write(esioh, "kz", reinterpret_cast<real_t *>(buf.get()),
-                2, "Wavenumbers in spanwise Z direction"); // Re(buf)
-    }
+    LOG4CXX_INFO(log, "Creating new restart file " << restart_file);
+    esio_file_create(esioh, restart_file.c_str(),
+                     options.variables().count("clobber"));
+    store(log, esioh, scenario, MPI_COMM_WORLD);
+    store(log, esioh, grid, MPI_COMM_WORLD, scenario.Lx, scenario.Lz);
+    store(log, esioh, bspw, MPI_COMM_WORLD);
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Computing derived, dimensional reference parameters");
