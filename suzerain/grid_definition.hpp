@@ -78,12 +78,10 @@ public:
             FPT       default_DAFz);
 
     /**
-     * Retrieve global logical computational grid extents.  It does
-     * not account for dealiasing factors.
-     *
-     * @return the global logical grid extents in the X, Y, and Z directions.
+     * Global logical computational grid extents in the X, Y, and Z directions.
+     * These values do not account for dealiasing factors.
      */
-    const size_type_3d& global_extents() const { return global_extents_; }
+    size_type_3d global_extents;
 
     /**
      * Retrieve global dealiased computational grid extents. These are the
@@ -93,127 +91,73 @@ public:
      * @return the global dealiased grid extents in the X, Y, and Z directions.
      */
     size_type_3d dealiased_extents() const {
-        size_type_3d retval = global_extents_;
-        retval[0] *= DAFx_;
-        retval[2] *= DAFz_;
+        size_type_3d retval = global_extents;
+        retval[0] *= DAFx;
+        retval[2] *= DAFz;
         return retval;
     }
 
     /**
-     * Retrieve computational grid size in the X direction.  This is the number
+     * Computational grid size in the X direction.  This is the number
      * of points in the domain without accounting for any dealiasing.
-     *
-     * @return the logical grid size in the X direction.
      */
-    size_type Nx() const { return global_extents_[0]; }
-
-    /** \copydoc Nx() const */
-    size_type& Nx() { return global_extents_[0]; }
+    size_type& Nx;
 
     /**
-     * Retrieve the dealiasing factor for the X direction.  This factor
+     * The dealiasing factor for the X direction.  This factor
      * should be multiplied times Nx() to obtain an extent for Fourier
      * transformations.
-     *
-     * @return the dealiasing factor for the X direction.
      */
-    FPT DAFx() const { return DAFx_; }
-
-    /** \copydoc DAFx() const */
-    FPT& DAFx() { return DAFx_; }
+    FPT DAFx;
 
     /**
-     * Retrieve computational grid size in the Y direction.  This is the number
+     * Computational grid size in the Y direction.  This is the number
      * of B-spline basis functions (equivalently, wall-normal degrees of
      * freedom) in use.  This direction does not support dealiasing.
-     *
-     * @return the logical grid size in the Y direction.
      */
-    size_type Ny() const { return global_extents_[1]; }
-
-    /** \copydoc Ny() const */
-    size_type& Ny() { return global_extents_[1]; }
+    size_type& Ny;
 
     /**
-     * Retrieve the B-spline basis order plus one.  For example,
-     * piecewise cubics have <tt>k() == 4</tt>.
-     *
-     * @return the B-spline basis order.
+     * The B-spline basis order plus one.  For example, piecewise cubics have
+     * <tt>k() == 4</tt>.
      */
-    size_type k() const { return k_; }
-
-    /** \copydoc k() const */
-    size_type& k() { return k_; }
+    size_type k;
 
     /**
-     * Retrieve grid size in the Z direction.  This is the number
+     * Grid size in the Z direction.  This is the number
      * of points in the domain without accounting for any dealiasing.
-     *
-     * @return the logical grid size in the Z direction.
      */
-    size_type Nz() const { return global_extents_[2]; }
-
-    /** \copydoc Nz() const */
-    size_type& Nz() { return global_extents_[2]; }
+    size_type& Nz;
 
     /**
-     * Retrieve the dealiasing factor for the Z direction.  This factor
+     * The dealiasing factor for the Z direction.  This factor
      * should be multiplied times Nz() to obtain an extent for Fourier
      * transformations.
-     *
-     * @return the dealiasing factor for the Z direction.
      */
-    FPT DAFz() const { return DAFz_; }
-
-    /** \copydoc DAFz() const */
-    FPT& DAFz() { return DAFz_; }
+    FPT DAFz;
 
     /**
-     * Retrieve the two dimensional processor grid extents.
+     * The two dimensional processor grid extents.
      *
      * In physical space, \f$ P_A \f$ is the grid extent in the Z direction
      * and \f$ P_B \f$ is the grid extent in the Y direction.
      * In wave space, \f$ P_A \f$ is the grid extent in the X direction
      * and \f$ P_B \f$  is the grid extent in the Z direction.
-     *
-     * @return the processor grid extents in the \f$ P_A \f$ and \f$ P_B \f$
-     *         directions.
      */
-    const size_type_2d& processor_grid() const { return processor_grid_; }
+    size_type_2d processor_grid;
 
     /**
-     * Retrieve the processor grid extent in the \f$ P_A \f$ direction.
-     *
-     * @return the processor grid extents in the \f$ P_A \f$ direction.
+     * The processor grid extent in the \f$ P_A \f$ direction.
      * @see processor_grid() for more details.
      */
-    size_type Pa() const { return processor_grid_[0]; }
-
-    /** \copydoc Pa() const */
-    size_type& Pa() { return processor_grid_[0]; }
+    size_type& Pa;
 
     /**
-     * Retrieve the processor grid extent in the \f$ P_B \f$ direction.
-     *
-     * @return the processor grid extents in the \f$ P_B \f$ direction.
+     * The processor grid extent in the \f$ P_B \f$ direction.
      * @see processor_grid() for more details.
      */
-    size_type Pb() const { return processor_grid_[1]; }
+    size_type& Pb;
 
-    /** \copydoc Pb() const */
-    size_type& Pb() { return processor_grid_[1]; }
-
-private:
-
-    /** Stores the computational grid extents */
-    size_type_3d global_extents_;
-
-    FPT DAFx_;     /**< Stores the X direction dealiasing factor */
-    size_type k_;  /**< Stores the B-spline basis order */
-    FPT DAFz_;     /**< Stores the Z direction dealiasing factor */
-
-    /** Stores the processor grid extents */
-    size_type_2d processor_grid_;
 };
 
 template< typename FPT >
@@ -223,8 +167,21 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
                                     size_type default_k,
                                     size_type default_Nz,
                                     FPT       default_DAFz)
-    : IDefinition("Mixed Fourier/B-spline computational grid definition")
+    : IDefinition("Mixed Fourier/B-spline computational grid definition"),
+      // global_extents below
+      Nx(global_extents[0]), DAFx(default_DAFx),
+      Ny(global_extents[1]), k(default_k),
+      Nz(global_extents[2]), DAFz(default_DAFz),
+      // processor_grid below
+      Pa(processor_grid[0]),
+      Pb(processor_grid[1])
 {
+    global_extents[0] = default_Nx;
+    global_extents[1] = default_Ny;
+    global_extents[2] = default_Nz;
+    processor_grid[0] = 0;
+    processor_grid[1] = 0;
+
     using ::std::auto_ptr;
     using ::std::bind2nd;
     using ::std::ptr_fun;
@@ -244,7 +201,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
     // generally used a NOP value by some client code.
 
     { // Nx
-        auto_ptr<typed_value<size_type> > v(value(&global_extents_[0]));
+        auto_ptr<typed_value<size_type> > v(value(&this->Nx));
         if (default_Nx) {
             v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "Nx"));
         } else {
@@ -256,7 +213,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
     }
 
     { // DAFx
-        auto_ptr<typed_value<FPT> > v(value(&DAFx_));
+        auto_ptr<typed_value<FPT> > v(value(&this->DAFx));
         if (default_DAFx) {
             v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,   "DAFx"));
         } else {
@@ -268,7 +225,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
     }
 
     { // Ny
-        auto_ptr<typed_value<size_type> > v(value(&global_extents_[1]));
+        auto_ptr<typed_value<size_type> > v(value(&this->Ny));
         if (default_Ny) {
             v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "Ny"));
         } else {
@@ -280,7 +237,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
     }
 
     { // k
-        auto_ptr<typed_value<size_type> > v(value(&k_));
+        auto_ptr<typed_value<size_type> > v(value(&this->k));
         if (default_k) {
             v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "k"));
         } else {
@@ -292,7 +249,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
     }
 
     { // Nz
-        auto_ptr<typed_value<size_type> > v(value(&global_extents_[2]));
+        auto_ptr<typed_value<size_type> > v(value(&this->Nz));
         if (default_Nz) {
             v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "Nz"));
         } else {
@@ -304,7 +261,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
     }
 
     { // DAFz
-        auto_ptr<typed_value<FPT> > v(value(&DAFz_));
+        auto_ptr<typed_value<FPT> > v(value(&this->DAFz));
         if (default_DAFz) {
             v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,   "DAFz"));
         } else {
@@ -316,7 +273,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
     }
 
     { // Pa
-        auto_ptr<typed_value<size_type> > v(value(&processor_grid_[0]));
+        auto_ptr<typed_value<size_type> > v(value(&this->Pa));
         v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pa"));
         v->default_value(0);
         this->add_options()("Pa", v.release(),
@@ -324,7 +281,7 @@ GridDefinition<FPT>::GridDefinition(size_type default_Nx,
     }
 
     { // Pb
-        auto_ptr<typed_value<size_type> > v(value(&processor_grid_[1]));
+        auto_ptr<typed_value<size_type> > v(value(&this->Pb));
         v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pb"));
         v->default_value(0);
         this->add_options()("Pb", v.release(),

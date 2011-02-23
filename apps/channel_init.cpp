@@ -207,18 +207,18 @@ int main(int argc, char **argv)
     }
     const real_t R = GSL_CONST_MKSA_MOLAR_GAS * GSL_CONST_NUM_KILO / M;
 
-    if (grid.k() < 4 /* cubics */) {
+    if (grid.k < 4 /* cubics */) {
         LOG4CXX_FATAL(log,
             "k >= 4 required to compute two non-trivial spatial derivatives");
         return EXIT_FAILURE;
     }
 
-    if (grid.Nx() != 1) {
+    if (grid.Nx != 1) {
         LOG4CXX_FATAL(log, argv[0] << " can only handle Nx == 1");
         return EXIT_FAILURE;
     }
 
-    if (grid.Nz() != 1) {
+    if (grid.Nz != 1) {
         LOG4CXX_FATAL(log, argv[0] << " can only handle Nz == 1");
         return EXIT_FAILURE;
     }
@@ -267,40 +267,38 @@ int main(int argc, char **argv)
     {
         esio_line_establish(esioh, 1, 0, 1); // Store as lines to allow comments
 
-        const int Nx = numeric_cast<int>(grid.Nx());
+        const int Nx = numeric_cast<int>(grid.Nx);
         esio_line_write(esioh, "Nx", &Nx, 0,
                 grid.options().find("Nx",false).description().c_str());
 
-        const double DAFx = grid.DAFx();
-        esio_line_write(esioh, "DAFx", &DAFx, 0,
+        esio_line_write(esioh, "DAFx", &grid.DAFx, 0,
                 grid.options().find("DAFx",false).description().c_str());
 
-        const int Ny = numeric_cast<int>(grid.Ny());
+        const int Ny = numeric_cast<int>(grid.Ny);
         esio_line_write(esioh, "Ny", &Ny, 0,
                 grid.options().find("Ny",false).description().c_str());
 
-        const int k = numeric_cast<int>(grid.k());
+        const int k = numeric_cast<int>(grid.k);
         esio_line_write(esioh, "k", &k, 0,
                 grid.options().find("k",false).description().c_str());
 
-        const int Nz = numeric_cast<int>(grid.Nz());
+        const int Nz = numeric_cast<int>(grid.Nz);
         esio_line_write(esioh, "Nz", &Nz, 0,
                 grid.options().find("Nz",false).description().c_str());
 
-        const double DAFz = grid.DAFz();
-        esio_line_write(esioh, "DAFz", &DAFz, 0,
+        esio_line_write(esioh, "DAFz", &grid.DAFz, 0,
                 grid.options().find("DAFz",false).description().c_str());
     }
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Storing B-spline basis of uniform order "
-                      << (grid.k() - 1) << " on [0, Ly] with "
-                      << grid.Ny() << " DOF");
+                      << (grid.k - 1) << " on [0, Ly] with "
+                      << grid.Ny << " DOF");
     {
-        scoped_array<real_t> buf(new real_t[grid.Ny()]);
+        scoped_array<real_t> buf(new real_t[grid.Ny]);
 
         // Compute and store breakpoint locations
-        const int nbreak = grid.Ny() + 2 - grid.k();
+        const int nbreak = grid.Ny + 2 - grid.k;
         sz::math::linspace(0.0, 1.0, nbreak, buf.get()); // Uniform [0, 1]
         for (int i = 0; i < nbreak; ++i) {               // Stretch 'em out
             buf[i] = scenario.Ly * suzerain_htstretch2(htdelta, 1.0, buf[i]);
@@ -312,8 +310,8 @@ int main(int argc, char **argv)
         // Generate the B-spline workspace based on order and breakpoints
         // Maximum non-trivial derivative operators included
         bspw = make_shared<sz::bspline>(
-                grid.k(), grid.k() - 2, nbreak, buf.get());
-        assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny());
+                grid.k, grid.k - 2, nbreak, buf.get());
+        assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny);
 
         // Store collocation points to restart file
         bspw->collocation_points(buf.get(), 1);
@@ -347,8 +345,8 @@ int main(int argc, char **argv)
 
     LOG4CXX_INFO(log, "Storing wavenumber vectors for Fourier bases");
     {
-        const int Nx = numeric_cast<int>(grid.Nx());
-        const int Nz = numeric_cast<int>(grid.Nz());
+        const int Nx = numeric_cast<int>(grid.Nx);
+        const int Nz = numeric_cast<int>(grid.Nz);
         const int N  = std::max(Nx, Nz);
         scoped_array<complex_t> buf(new complex_t[N]);
 
@@ -444,7 +442,7 @@ int main(int argc, char **argv)
 
     LOG4CXX_INFO(log, "Computing nondimensional mean profiles for restart");
     {
-        const int Ny = numeric_cast<int>(grid.Ny());
+        const int Ny = numeric_cast<int>(grid.Ny);
         esio_field_establish(esioh, 1, 0, 1, 1, 0, 1, Ny, 0, Ny);
         scoped_array<complex_t> buf(new complex_t[Ny]);
 
