@@ -196,9 +196,9 @@ public:
     }
 
     /** @see suzerain_bspline_integrate */
-    int integrate(const double * coefficients, double * value) const
+    int integrate(const double * x, int incx, double * value) const
     {
-        return suzerain_bspline_integrate(coefficients, value, w_);
+        return suzerain_bspline_integrate(x, incx, value, w_);
     }
 
     /** @see suzerain_bspline_zevaluate */
@@ -225,10 +225,11 @@ public:
         suzerain::complex::traits::is_complex_double<Complex1>,
         suzerain::complex::traits::is_complex_double<Complex2>
     >, int>::type zintegrate(
-            const Complex1 *coefficients, Complex2 &value) const
+            const Complex1 *x, int incx, Complex2 &value) const
     {
         return suzerain_bspline_zintegrate(
-                reinterpret_cast<const double (*)[2]>(coefficients),
+                reinterpret_cast<const double (*)[2]>(x),
+                incx,
                 reinterpret_cast<double (*)[2]>(&value),
                 w_);
     }

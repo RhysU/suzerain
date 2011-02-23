@@ -431,11 +431,12 @@ suzerain_bspline_evaluate(
     const suzerain_bspline_workspace *w);
 
 /**
- * Compute the integral \f$ \int \sum_{i} \beta_{i} B_{i}(x) \, dx \f$.
+ * Compute the integral \f$ \int \sum_{i} \x_{i} B_{i}(x) \, dx \f$.
  *
- * @param[in] coefficients Real-valued expansion coefficients \f$ \beta_{i} \f$
+ * @param[in] x Real-valued expansion coefficients \f$ \x_{i} \f$
  *      for a function in terms of the B-spline basis.  Must be of length
  *      suzerain_bspline_ndof().
+ * @param[in] incx Stride between elements of \c x
  * @param[out] value Real-valued result of the integration.
  * @param[in] w Workspace to use.
  *
@@ -448,7 +449,8 @@ suzerain_bspline_evaluate(
  */
 int
 suzerain_bspline_integrate(
-    const double * coefficients,
+    const double * x,
+    int incx,
     double * value,
     const suzerain_bspline_workspace *w);
 
@@ -592,11 +594,12 @@ suzerain_bspline_zevaluate(
     const suzerain_bspline_workspace *w);
 
 /**
- * Compute the integral \f$ \int \sum_{i} \beta_{i} B_{i}(x) \, dx \f$.
+ * Compute the integral \f$ \int \sum_{i} \x_{i} B_{i}(x) \, dx \f$.
  *
- * @param[in] coefficients Complex-valued expansion coefficients for a
+ * @param[in] x Complex-valued expansion coefficients \f$ \x_{i} \f$ for a
  *      function in terms of the B-spline basis.  Must be of length
  *      suzerain_bspline_ndof().
+ * @param[in] incx Stride between elements of \c x
  * @param[out] value Complex-valued result of the integration.
  * @param[in] w Workspace to use.
  *
@@ -609,7 +612,8 @@ suzerain_bspline_zevaluate(
  */
 int
 suzerain_bspline_zintegrate(
-    const double (* coefficients)[2],
+    const double (* x)[2],
+    int incx,
     double (* value)[2],
     const suzerain_bspline_workspace *w);
 

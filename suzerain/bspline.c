@@ -567,11 +567,12 @@ suzerain_bspline_evaluate(
 
 int
 suzerain_bspline_integrate(
-    const double * coefficients,
+    const double * x,
+    int incx,
     double * value,
     const suzerain_bspline_workspace *w)
 {
-    *value = suzerain_blas_ddot(w->ndof, coefficients, 1, w->I, 1);
+    *value = suzerain_blas_ddot(w->ndof, x, incx, w->I, 1);
 
     return SUZERAIN_SUCCESS;
 }
@@ -636,12 +637,13 @@ suzerain_bspline_zevaluate(
 
 int
 suzerain_bspline_zintegrate(
-    const double (* coefficients)[2],
+    const double (* x)[2],
+    int incx,
     double (* value)[2],
     const suzerain_bspline_workspace *w)
 {
-    (*value)[0] = suzerain_blas_ddot(w->ndof, &(*coefficients)[0], 2, w->I, 1);
-    (*value)[1] = suzerain_blas_ddot(w->ndof, &(*coefficients)[1], 2, w->I, 1);
+    (*value)[0] = suzerain_blas_ddot(w->ndof, &(*x)[0], 2*incx, w->I, 1);
+    (*value)[1] = suzerain_blas_ddot(w->ndof, &(*x)[1], 2*incx, w->I, 1);
 
     return SUZERAIN_SUCCESS;
 }

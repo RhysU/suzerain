@@ -273,14 +273,20 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
             expected, expected + sizeof(expected)/sizeof(expected[0]),
             w->I, w->I + w->ndof, 1e-12);
 
-        const double coeffs[] = { 1, 2, 3, 4 };
+        const double coeffs[] = { 1, 777, 888,
+                                  2, 777, 888,
+                                  3, 777, 888,
+                                  4, 777, 888 }; // Padded, incx = 3
         double value;
-        suzerain_bspline_integrate(coeffs, &value, w);
+        suzerain_bspline_integrate(coeffs, /*incx*/3, &value, w);
         BOOST_CHECK_CLOSE(value, 15./2, 1e-12);
 
-        const double zcoeffs[][2] = { {1,5}, {2,6}, {3,7}, {4,8} };
+        const double zcoeffs[][2] = { {1,5}, {777,888},
+                                      {2,6}, {777,888},
+                                      {3,7}, {777,888},
+                                      {4,8}, {777,888} }; // Padded, incx = 2
         double zvalue[2];
-        suzerain_bspline_zintegrate(zcoeffs, &zvalue, w);
+        suzerain_bspline_zintegrate(zcoeffs, /*incx*/2, &zvalue, w);
         BOOST_CHECK_CLOSE(zvalue[0], 15./2, 1e-12);
         BOOST_CHECK_CLOSE(zvalue[1], 39./2, 1e-12);
     }
@@ -634,12 +640,12 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
 
         const double coeffs[] = { 1, 2, 3, 4, 5 };
         double value;
-        suzerain_bspline_integrate(coeffs, &value, w);
+        suzerain_bspline_integrate(coeffs, /*incx*/1, &value, w);
         BOOST_CHECK_CLOSE(value, 9.0, 1e-12);
 
         const double zcoeffs[][2] = { {1,6}, {2,7}, {3,8}, {4,9}, {5,10} };
         double zvalue[2];
-        suzerain_bspline_zintegrate(zcoeffs, &zvalue, w);
+        suzerain_bspline_zintegrate(zcoeffs, /*incx*/1, &zvalue, w);
         BOOST_CHECK_CLOSE(zvalue[0],  9.0, 1e-12);
         BOOST_CHECK_CLOSE(zvalue[1], 24.0, 1e-12);
     }
@@ -723,14 +729,14 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
 
         const double coeffs[] = { 1, 2, 3, 4, 5, 6 };
         double value;
-        suzerain_bspline_integrate(coeffs, &value, w);
+        suzerain_bspline_integrate(coeffs, /*incx*/1, &value, w);
         BOOST_CHECK_CLOSE(value, 21./2, 1e-12);
 
         const double zcoeffs[][2] = {
             {1,7}, {2,8}, {3,9}, {4,10}, {5,11}, {6,12}
         };
         double zvalue[2];
-        suzerain_bspline_zintegrate(zcoeffs, &zvalue, w);
+        suzerain_bspline_zintegrate(zcoeffs, /*incx*/1, &zvalue, w);
         BOOST_CHECK_CLOSE(zvalue[0], 21./2, 1e-12);
         BOOST_CHECK_CLOSE(zvalue[1], 57./2, 1e-12);
     }
