@@ -73,6 +73,57 @@ void store(log4cxx::LoggerPtr log,
             scenario.options().find("Lz",false).description().c_str());
 }
 
+void load(log4cxx::LoggerPtr log,
+          const esio_handle esioh,
+          suzerain::problem::ScenarioDefinition<real_t>& scenario)
+{
+    LOG4CXX_INFO(log, "Loading ScenarioDefinition parameters");
+
+    esio_line_establish(esioh, 1, 0, 1); // All ranks load
+
+    if (scenario.Re) {
+        LOG4CXX_INFO(log, "Overriding file using Re = " << scenario.Re);
+    } else {
+        esio_line_read(esioh, "Re", &scenario.Re, 0);
+    }
+
+    if (scenario.Pr) {
+        LOG4CXX_INFO(log, "Overriding file using Pr = " << scenario.Pr);
+    } else {
+        esio_line_read(esioh, "Pr", &scenario.Pr, 0);
+    }
+
+    if (scenario.gamma) {
+        LOG4CXX_INFO(log, "Overriding file using gamma = " << scenario.gamma);
+    } else {
+        esio_line_read(esioh, "gamma", &scenario.gamma, 0);
+    }
+
+    if (scenario.beta) {
+        LOG4CXX_INFO(log, "Overriding file using beta = " << scenario.beta);
+    } else {
+        esio_line_read(esioh, "beta", &scenario.beta, 0);
+    }
+
+    if (scenario.Lx) {
+        LOG4CXX_INFO(log, "Overriding file using Lx = " << scenario.Lx);
+    } else {
+        esio_line_read(esioh, "Lx", &scenario.Lx, 0);
+    }
+
+    if (scenario.Ly) {
+        LOG4CXX_INFO(log, "Overriding file using Ly = " << scenario.Ly);
+    } else {
+        esio_line_read(esioh, "Ly", &scenario.Ly, 0);
+    }
+
+    if (scenario.Lz) {
+        LOG4CXX_INFO(log, "Overriding file using Lz = " << scenario.Lz);
+    } else {
+        esio_line_read(esioh, "Lz", &scenario.Lz, 0);
+    }
+}
+
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
            const suzerain::problem::GridDefinition<real_t>& grid,
@@ -131,9 +182,62 @@ void store(log4cxx::LoggerPtr log,
             2, "Wavenumbers in spanwise Z direction"); // Re(buf)
 }
 
+void load(log4cxx::LoggerPtr log,
+          const esio_handle esioh,
+          suzerain::problem::GridDefinition<real_t>& grid)
+{
+    LOG4CXX_INFO(log, "Loading GridDefinition parameters");
+
+    esio_line_establish(esioh, 1, 0, 1); // All ranks load
+
+    if (grid.Nx) {
+        LOG4CXX_INFO(log, "Overriding file using Nx = " << grid.Nx);
+    } else {
+        int Nx;
+        esio_line_read(esioh, "Nx", &Nx, 0);
+        grid.Nx = Nx;
+    }
+
+    if (grid.DAFx) {
+        LOG4CXX_INFO(log, "Overriding file using DAFx = " << grid.DAFx);
+    } else {
+        esio_line_read(esioh, "DAFx", &grid.DAFx, 0);
+    }
+
+    if (grid.Ny) {
+        LOG4CXX_INFO(log, "Overriding file using Ny = " << grid.Ny);
+    } else {
+        int Ny;
+        esio_line_read(esioh, "Ny", &Ny, 0);
+        grid.Ny = Ny;
+    }
+
+    if (grid.k) {
+        LOG4CXX_INFO(log, "Overriding file using k = " << grid.k);
+    } else {
+        int k;
+        esio_line_read(esioh, "k", &k, 0);
+        grid.k = k;
+    }
+
+    if (grid.Nz) {
+        LOG4CXX_INFO(log, "Overriding file using Nz = " << grid.Nz);
+    } else {
+        int Nz;
+        esio_line_read(esioh, "Nz", &Nz, 0);
+        grid.Nz = Nz;
+    }
+
+    if (grid.DAFz) {
+        LOG4CXX_INFO(log, "Overriding file using DAFz = " << grid.DAFz);
+    } else {
+        esio_line_read(esioh, "DAFz", &grid.DAFz, 0);
+    }
+}
+
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
-           boost::shared_ptr<suzerain::bspline> bspw,
+           boost::shared_ptr<suzerain::bspline>& bspw, // Yes, a reference
            MPI_Comm comm)
 {
     // Only root process writes data
@@ -180,4 +284,18 @@ void store(log4cxx::LoggerPtr log,
         esio_attribute_write(esioh, name, "m",  bspw->ndof());
         esio_attribute_write(esioh, name, "n",  bspw->ndof());
     }
+}
+
+void load(log4cxx::LoggerPtr log,
+          const esio_handle esioh,
+          boost::shared_ptr<suzerain::bspline>& bspw, // Yes, a reference
+          const suzerain::problem::GridDefinition<real_t>& grid)
+{
+    LOG4CXX_INFO(log, "Loading B-spline breakpoints");
+
+    const int nbreak = grid.Ny + 2 - grid.k;
+    scoped_array<real_t> buf(new double[grid.Ny]);
+    esio_line_establish(esioh, nbreak, 0, nbreak); // All ranks load
+    esio_line_read(esioh, "breakpoints", buf.get(), 0);
+    bspw.reset(new suzerain::bspline(grid.k, grid.k - 2, nbreak, buf.get()));
 }

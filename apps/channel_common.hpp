@@ -49,6 +49,10 @@ void store(log4cxx::LoggerPtr log,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario,
            MPI_Comm comm);
 
+void load(log4cxx::LoggerPtr log,
+          const esio_handle esioh,
+          suzerain::problem::ScenarioDefinition<real_t>& scenario);
+
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
            const suzerain::problem::GridDefinition<real_t>& grid,
@@ -56,10 +60,18 @@ void store(log4cxx::LoggerPtr log,
            const real_t Lx,
            const real_t Lz);
 
+void load(log4cxx::LoggerPtr log,
+          const esio_handle esioh,
+          suzerain::problem::GridDefinition<real_t>& grid);
+
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
-           boost::shared_ptr<suzerain::bspline> bspw,
+           boost::shared_ptr<suzerain::bspline>& bspw, // Yes, a reference
            MPI_Comm comm);
 
+void load(log4cxx::LoggerPtr log,
+          const esio_handle esioh,
+          boost::shared_ptr<suzerain::bspline>& bspw, // Yes, a reference
+          const suzerain::problem::GridDefinition<real_t>& grid);
 
 #endif // CHANNEL_COMMON_HPP
