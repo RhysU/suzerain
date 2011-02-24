@@ -55,6 +55,8 @@
 #include <suzerain/timestepper.hpp>
 #include <suzerain/utility.hpp>
 
+#include "channel_common.hpp"
+
 #pragma warning(disable:383 1572)
 
 // Introduce shorthand for common names
@@ -71,7 +73,9 @@ using std::numeric_limits;
 typedef double               real_t;
 typedef std::complex<real_t> complex_t;
 
-// Global scenario parameters initialized in main()
+// Global scenario parameters initialized in main().  These are declared const
+// to avoid accidental modification but have their const-ness const_cast away
+// where necessary to load settings.
 static const pb::ScenarioDefinition<real_t> scenario(0, 0, 0, 0, 0, 0, 0);
 static const pb::GridDefinition<real_t> grid(0, 0, 0, 0, 0, 0);
 static const pb::RestartDefinition<> restart(
@@ -861,12 +865,10 @@ int main(int argc, char **argv)
         log->setLevel(log4cxx::Level::getWarn());
     }
 
-    // Process incoming program arguments from command line, input files
-    real_t htdelta;
+    LOG4CXX_INFO(log, "Processing command line arguments and response files");
     {
         sz::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation");
-
         // Cast away const so options processing can modify settings
         options.add_definition(
                 const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
@@ -874,78 +876,30 @@ int main(int argc, char **argv)
                 const_cast<pb::GridDefinition<real_t>& >(grid));
         options.add_definition(
                 const_cast<pb::RestartDefinition<>& >(restart));
-
-        using ::suzerain::validation::ensure_positive;
-        ::std::pointer_to_binary_function<real_t,const char*,void>
-            ptr_fun_ensure_positive(ensure_positive<real_t>);
-        options.add_options()
-            ("htdelta", po::value<real_t>(&htdelta)
-                ->notifier(bind2nd(ptr_fun_ensure_positive,"htdelta"))
-                ->default_value(7),
-            "Hyperbolic tangent stretching parameter")
-        ;
         options.process(argc, argv);
-
-        // This "generic" argument processing logic is awful stuff.  Sorry.
-        // http://article.gmane.org/gmane.comp.lib.boost.user/65180
-        // TODO Save option descriptions in something akin to HDF5 comments
-        if (procid == 0) {
-            log4cxx::LoggerPtr l = log4cxx::Logger::getLogger("SCENARIO");
-            esio_handle h = esio_handle_initialize(MPI_COMM_SELF);
-            esio_file_create(h, restart.metadata().c_str(), 1);
-            LOG4CXX_DEBUG(l, "Scenario metadata in " << esio_file_path(h));
-            BOOST_FOREACH(const shared_ptr<po::option_description> &opt,
-                        options.options().options()) {
-                const std::string &n = opt->long_name();
-                const std::string &d = opt->description();
-                const boost::any &v  = options.variables()[n].value();
-                using boost::any_cast;
-                if (any_cast<int>(&v)) {
-                    const int val = any_cast<int>(v);
-                    esio_attribute_write(h, "/", n.c_str(), &val);
-                    LOG4CXX_INFO(l, n << " = " << val << " # " << d);
-                } else if (any_cast<std::size_t>(&v)) {
-                    const int val = any_cast<std::size_t>(v);
-                    esio_attribute_write(h, "/", n.c_str(), &val);
-                    LOG4CXX_INFO(l, n << " = " << val << " # " << d);
-                } else if (any_cast<double>(&v)) {
-                    const double val = any_cast<double>(v);
-                    esio_attribute_write(h, "/", n.c_str(), &val);
-                    LOG4CXX_INFO(l, n << " = " << val << " # " << d);
-                } else if (any_cast<float>(&v)) {
-                    const float val = any_cast<float>(v);
-                    esio_attribute_write(h, "/", n.c_str(), &val);
-                    LOG4CXX_INFO(l, n << " = " << val << " # " << d);
-                } else if (any_cast<std::string>(&v)) {
-                    const std::string &val = any_cast<std::string>(v);
-                    esio_string_set(h, "/", n.c_str(), val.c_str());
-                    LOG4CXX_INFO(l, n << " = " << val << " # " << d);
-                } else {
-                    LOG4CXX_WARN(l, n << " = UNKNOWN_TYPE");
-                }
-            }
-
-            esio_file_close(h);
-            esio_handle_finalize(h);
-        }
     }
 
-    // Initialize B-spline workspace using [0, Ly] with Ny degrees of freedom
-    const int nbreak = grid.Ny + 2 - grid.k;
-    real_t *breakpoints = (real_t *) sz::blas::malloc(nbreak*sizeof(real_t));
-    assert(breakpoints);
-    sz::math::linspace(0.0, 1.0, nbreak, breakpoints); // Uniform [0, 1]
-    for (int i = 0; i < nbreak; ++i) {                 // Stretch 'em out
-        breakpoints[i] = scenario.Ly
-                       * suzerain_htstretch2(htdelta, 1.0, breakpoints[i]);
+    // TODO Account for grid differences at load time
+
+    LOG4CXX_INFO(log, "Loading details from restart file " << restart.load());
+    {
+        esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
+        // Cast away const so restart processing can modify settings
+        load(log, esioh,
+                const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
+        load(log, esioh, const_cast<pb::GridDefinition<real_t>& >(grid));
+        load(log, esioh, bspw, const_cast<pb::GridDefinition<real_t>& >(grid));
+        esio_file_close(esioh);
     }
-    for (int i = 0; i < nbreak; ++i) {
-        LOG4CXX_TRACE(log,
-                      "B-spline breakpoint[" << i << "] = " << breakpoints[i]);
+
+    LOG4CXX_INFO(log, "Saving metadata template file " << restart.metadata());
+    {
+        esio_file_create(esioh, restart.metadata().c_str(), 1 /* overwrite */);
+        store(log, esioh, scenario, MPI_COMM_WORLD);
+        store(log, esioh, grid, MPI_COMM_WORLD, scenario.Lx, scenario.Lz);
+        store(log, esioh, bspw, MPI_COMM_WORLD);
+        esio_file_close(esioh);
     }
-    bspw = make_shared<sz::bspline>(grid.k, 2, nbreak, breakpoints);
-    assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny);
-    sz::blas::free(breakpoints);
 
     // Initialize B-spline workspace to find coeffs from collocation points
     bspluzw = make_shared<sz::bspline_luz>(*bspw);
@@ -1001,12 +955,13 @@ int main(int argc, char **argv)
         LOG4CXX_DEBUG(log, "Nonlinear state strides (FYXZ): " << strides);
     }
 
-    // Instantiate the operators and timestepping details
+    // Instantiate the operators and time stepping details
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
     const sz::timestepper::lowstorage::SMR91Method<complex_t> smr91;
-    MassOperator L(   scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
+    MassOperator L(scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
     NonlinearOperator N;
 
-    // Take a timestep
-    sz::timestepper::lowstorage::step(smr91, L, N, state_linear, state_nonlinear);
+    // Take a time step
+    sz::timestepper::lowstorage::step(
+            smr91, L, N, state_linear, state_nonlinear);
 }
