@@ -41,6 +41,7 @@
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/htstretch.h>
 #include <suzerain/math.hpp>
+#include <suzerain/multi_array.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/orthonormal.hpp>
 #include <suzerain/pencil_grid.hpp>
@@ -869,7 +870,6 @@ int main(int argc, char **argv)
     {
         sz::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation");
-        // Cast away const so options processing can modify settings
         options.add_definition(
                 const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
         options.add_definition(
@@ -881,24 +881,22 @@ int main(int argc, char **argv)
 
     // TODO Account for grid differences at load time
 
-    LOG4CXX_INFO(log, "Loading details from restart file " << restart.load());
-    {
-        esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
-        // Cast away const so restart processing can modify settings
-        load(log, esioh,
-                const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
-        load(log, esioh, const_cast<pb::GridDefinition<real_t>& >(grid));
-        load(log, esioh, bspw, const_cast<pb::GridDefinition<real_t>& >(grid));
-        esio_file_close(esioh);
-    }
+    LOG4CXX_INFO(log, "Loading details from restart file: " << restart.load());
+    esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
+    load(log, esioh, const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
+    load(log, esioh, const_cast<pb::GridDefinition<real_t>& >(grid));
+    load(log, esioh, bspw, const_cast<pb::GridDefinition<real_t>& >(grid));
+    esio_file_close(esioh);
 
-    LOG4CXX_INFO(log, "Saving metadata template file " << restart.metadata());
+    LOG4CXX_INFO(log, "Saving metadata template file: " << restart.metadata());
     {
-        esio_file_create(esioh, restart.metadata().c_str(), 1 /* overwrite */);
-        store(log, esioh, scenario, MPI_COMM_WORLD);
-        store(log, esioh, grid, MPI_COMM_WORLD, scenario.Lx, scenario.Lz);
-        store(log, esioh, bspw, MPI_COMM_WORLD);
-        esio_file_close(esioh);
+        esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
+        esio_file_create(h, restart.metadata().c_str(), 1 /* overwrite */);
+        store(log, h, scenario, MPI_COMM_WORLD);
+        store(log, h, grid, MPI_COMM_WORLD, scenario.Lx, scenario.Lz);
+        store(log, h, bspw, MPI_COMM_WORLD);
+        esio_file_close(h);
+        esio_handle_finalize(h);
     }
 
     // Initialize B-spline workspace to find coeffs from collocation points
@@ -955,11 +953,21 @@ int main(int argc, char **argv)
         LOG4CXX_DEBUG(log, "Nonlinear state strides (FYXZ): " << strides);
     }
 
+    // Zero out any garbage in state_{non,}linear
+    // Use fill rather than state_{non,}linear.scale to wipe any NaNs
+    sz::multi_array::fill(state_linear, 0);
+    sz::multi_array::fill(state_nonlinear, 0);
+
     // Instantiate the operators and time stepping details
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
     const sz::timestepper::lowstorage::SMR91Method<complex_t> smr91;
     MassOperator L(scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
     NonlinearOperator N;
+
+    // Load restart state information into state_linear
+    esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
+    // TODO Load rho, rhou, rhov, rhow, rhoe
+    esio_file_close(esioh);
 
     // Take a time step
     sz::timestepper::lowstorage::step(

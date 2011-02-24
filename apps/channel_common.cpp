@@ -254,8 +254,8 @@ void store(log4cxx::LoggerPtr log,
             "Knots used to build B-spline basis");
 
     bspw->breakpoints(buf.get(), 1);
-    esio_line_establish(esioh, bspw->ndof(),
-            0, (procid == 0 ? bspw->ndof() : 0));
+    esio_line_establish(esioh, bspw->nbreakpoints(),
+            0, (procid == 0 ? bspw->nbreakpoints() : 0));
     esio_line_write(esioh, "breakpoints", buf.get(), 0,
             "Breakpoint locations used to build B-spline basis");
 
