@@ -66,6 +66,7 @@ namespace pb = ::suzerain::problem;
 namespace po = ::boost::program_options;
 using boost::make_shared;
 using boost::math::constants::pi;
+using boost::numeric_cast;
 using boost::shared_ptr;
 using std::numeric_limits;
 
@@ -964,9 +965,50 @@ int main(int argc, char **argv)
     MassOperator L(scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
     NonlinearOperator N;
 
-    // Load restart state information into state_linear
+    // Load restart information into state_linear
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
-    // TODO Load rho, rhou, rhov, rhow, rhoe
+    {
+        int zglobal, xglobal, yglobal, ncomponents;
+        esio_field_sizev(esioh, "rho",
+                         &zglobal, &xglobal, &yglobal, &ncomponents);
+        assert(ncomponents == 2);
+        assert(zglobal == scenario.Nz); // TODO Relax restriction
+        assert(xglobal == scenario.Nx);
+        assert(yglobal == scenario.Ny);
+        esio_field_establish(esioh, zglobal, state_start[2], state_extent[2],
+                                    xglobal, state_start[0], state_extent[0],
+                                    yglobal, state_start[1], state_extent[1]);
+        esio_field_readv(esioh, "rho",
+                reinterpret_cast<real_t *>(&state_linear[0][0][0][0]),
+                2*numeric_cast<int>(state_linear.strides()[3]),
+                2*numeric_cast<int>(state_linear.strides()[2]),
+                2*numeric_cast<int>(state_linear.strides()[1]),
+                2);
+        esio_field_readv(esioh, "rhou",
+                reinterpret_cast<real_t *>(&state_linear[1][0][0][0]),
+                2*numeric_cast<int>(state_linear.strides()[3]),
+                2*numeric_cast<int>(state_linear.strides()[2]),
+                2*numeric_cast<int>(state_linear.strides()[1]),
+                2);
+        esio_field_readv(esioh, "rhov",
+                reinterpret_cast<real_t *>(&state_linear[2][0][0][0]),
+                2*numeric_cast<int>(state_linear.strides()[3]),
+                2*numeric_cast<int>(state_linear.strides()[2]),
+                2*numeric_cast<int>(state_linear.strides()[1]),
+                2);
+        esio_field_readv(esioh, "rhow",
+                reinterpret_cast<real_t *>(&state_linear[3][0][0][0]),
+                2*numeric_cast<int>(state_linear.strides()[3]),
+                2*numeric_cast<int>(state_linear.strides()[2]),
+                2*numeric_cast<int>(state_linear.strides()[1]),
+                2);
+        esio_field_readv(esioh, "rhoe",
+                reinterpret_cast<real_t *>(&state_linear[4][0][0][0]),
+                2*numeric_cast<int>(state_linear.strides()[3]),
+                2*numeric_cast<int>(state_linear.strides()[2]),
+                2*numeric_cast<int>(state_linear.strides()[1]),
+                2);
+    }
     esio_file_close(esioh);
 
     // Take a time step
