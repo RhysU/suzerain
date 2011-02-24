@@ -242,9 +242,9 @@ int main(int argc, char **argv)
     LOG4CXX_INFO(log, "Creating new restart file " << restart_file);
     esio_file_create(esioh, restart_file.c_str(),
                      options.variables().count("clobber"));
-    store(log, esioh, scenario, MPI_COMM_WORLD);
-    store(log, esioh, grid, MPI_COMM_WORLD, scenario.Lx, scenario.Lz);
-    store(log, esioh, bspw, MPI_COMM_WORLD);
+    store(log, esioh, scenario);
+    store(log, esioh, grid, scenario.Lx, scenario.Lz);
+    store(log, esioh, bspw);
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Computing derived, dimensional reference parameters");

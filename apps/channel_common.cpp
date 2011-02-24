@@ -41,11 +41,11 @@ using boost::scoped_array;
 
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
-           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
-           MPI_Comm comm)
+           const suzerain::problem::ScenarioDefinition<real_t>& scenario)
 {
     // Only root writes data
-    const int procid = suzerain::mpi::comm_rank(comm);
+    int procid;
+    esio_handle_comm_rank(esioh, &procid);
 
     LOG4CXX_INFO(log, "Storing ScenarioDefinition parameters");
 
@@ -127,12 +127,12 @@ void load(log4cxx::LoggerPtr log,
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
            const suzerain::problem::GridDefinition<real_t>& grid,
-           MPI_Comm comm,
            const real_t Lx,
            const real_t Lz)
 {
-    // Only root process writes
-    const int procid = suzerain::mpi::comm_rank(comm);
+    // Only root writes data
+    int procid;
+    esio_handle_comm_rank(esioh, &procid);
 
     LOG4CXX_INFO(log, "Storing GridDefinition parameters");
 
@@ -237,11 +237,11 @@ void load(log4cxx::LoggerPtr log,
 
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
-           boost::shared_ptr<suzerain::bspline>& bspw, // Yes, a reference
-           MPI_Comm comm)
+           boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */)
 {
-    // Only root process writes data
-    const int procid = suzerain::mpi::comm_rank(comm);
+    // Only root writes data
+    int procid;
+    esio_handle_comm_rank(esioh, &procid);
 
     LOG4CXX_INFO(log, "Storing B-spline knot details");
 

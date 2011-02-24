@@ -892,9 +892,9 @@ int main(int argc, char **argv)
     {
         esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
         esio_file_create(h, restart.metadata().c_str(), 1 /* overwrite */);
-        store(log, h, scenario, MPI_COMM_WORLD);
-        store(log, h, grid, MPI_COMM_WORLD, scenario.Lx, scenario.Lz);
-        store(log, h, bspw, MPI_COMM_WORLD);
+        store(log, h, scenario);
+        store(log, h, grid, scenario.Lx, scenario.Lz);
+        store(log, h, bspw);
         esio_file_close(h);
         esio_handle_finalize(h);
     }

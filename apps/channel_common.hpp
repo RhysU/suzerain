@@ -42,12 +42,9 @@
 typedef double               real_t;
 typedef std::complex<real_t> complex_t;
 
-// TODO Remove MPI_Comm parameters for ESIO > 0.2.0 per feature #1420
-
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
-           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
-           MPI_Comm comm);
+           const suzerain::problem::ScenarioDefinition<real_t>& scenario);
 
 void load(log4cxx::LoggerPtr log,
           const esio_handle esioh,
@@ -56,7 +53,6 @@ void load(log4cxx::LoggerPtr log,
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
            const suzerain::problem::GridDefinition<real_t>& grid,
-           MPI_Comm comm,
            const real_t Lx,
            const real_t Lz);
 
@@ -66,8 +62,7 @@ void load(log4cxx::LoggerPtr log,
 
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
-           boost::shared_ptr<suzerain::bspline>& bspw, // Yes, a reference
-           MPI_Comm comm);
+           boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */);
 
 void load(log4cxx::LoggerPtr log,
           const esio_handle esioh,
