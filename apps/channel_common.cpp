@@ -39,6 +39,18 @@
 using boost::numeric_cast;
 using boost::scoped_array;
 
+const boost::array<const char *,5> field_names = {{
+    "rho", "rhou", "rhov", "rhow", "rhoe"
+}};
+
+const boost::array<const char *,5> field_descriptions = {{
+    "Nondimensional density coefficients stored row-major ZXY",
+    "Nondimensional X momentum coefficients stored row-major ZXY",
+    "Nondimensional Y momentum coefficients stored row-major ZXY",
+    "Nondimensional Z momentum coefficients stored row-major ZXY",
+    "Nondimensional total energy coefficients stored row-major ZXY"
+}};
+
 void store(log4cxx::LoggerPtr log,
            const esio_handle esioh,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario)
@@ -298,4 +310,30 @@ void load(log4cxx::LoggerPtr log,
     esio_line_establish(esioh, nbreak, 0, nbreak); // All ranks load
     esio_line_read(esioh, "breakpoints", buf.get(), 0);
     bspw.reset(new suzerain::bspline(grid.k, grid.k - 2, nbreak, buf.get()));
+}
+
+void store_time(log4cxx::LoggerPtr log,
+                const esio_handle esioh,
+                real_t time)
+{
+    // Root writes details
+    int rank;
+    esio_handle_comm_rank(esioh, &rank);
+    esio_line_establish(esioh, 1, 0, (rank == 0) ? 1 : 0);
+
+    esio_line_write(esioh, "t", &time, 0, "Simulation physical time");
+
+    LOG4CXX_INFO(log, "Stored simulation time " << time);
+}
+
+void load_time(log4cxx::LoggerPtr log,
+               const esio_handle esioh,
+               real_t &time)
+{
+    // All ranks read details
+    esio_line_establish(esioh, 1, 0, 1);
+
+    esio_line_read(esioh, "t", &time, 0);
+
+    LOG4CXX_INFO(log, "Loaded simulation time " << time);
 }

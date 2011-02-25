@@ -327,18 +327,15 @@ int main(int argc, char **argv)
 
         // Nondimensional spanwise and wall-normal velocities are zero
         std::fill_n(buf.get(), Ny, complex_t(0,0));
-        esio_field_writev(esioh, "rhov",
-                reinterpret_cast<real_t *>(buf.get()), 0, 0, 0, 2,
-                "Nondimensional Y momentum coefficients stored row-major ZXY");
-        esio_field_writev(esioh, "rhow",
-                reinterpret_cast<real_t *>(buf.get()), 0, 0, 0, 2,
-                "Nondimensional Z momentum coefficients stored row-major ZXY");
+        complex_field_write(
+                esioh, "rhov", buf.get(), 0, 0, 0, field_descriptions[2]);
+        complex_field_write(
+                esioh, "rhow", buf.get(), 0, 0, 0, field_descriptions[3]);
 
         // Nondimensional density is the constant one
         std::fill_n(buf.get(), Ny, complex_t(1,0));
-        esio_field_writev(esioh, "rho",
-                reinterpret_cast<real_t *>(buf.get()), 0, 0, 0, 2,
-                "Nondimensional density coefficient stored row-major ZXY");
+        complex_field_write(
+                esioh, "rho", buf.get(), 0, 0, 0, field_descriptions[0]);
 
         // Set up to evaluate Y momentum and total energy profile coefficients
         scoped_array<double> rhs(new double[Ny]);
@@ -357,20 +354,22 @@ int main(int argc, char **argv)
         bspw->find_interpolation_problem_rhs(&F, rhs.get());
         for (int i = 0; i < Ny; ++i) buf[i] = rhs[i];
         bspluzw->solve(1, buf.get(), 1, Ny);
-        esio_field_writev(esioh, "rhou",
-                reinterpret_cast<real_t *>(buf.get()), 0, 0, 0, 2,
-                "Nondimensional X momentum coefficients stored row-major ZXY");
+        complex_field_write(
+                esioh, "rhou", buf.get(), 0, 0, 0, field_descriptions[1]);
 
         // Find total energy coefficients
         F.function = &f_esolver;
         bspw->find_interpolation_problem_rhs(&F, rhs.get());
         for (int i = 0; i < Ny; ++i) buf[i] = rhs[i];
         bspluzw->solve(1, buf.get(), 1, Ny);
-        esio_field_writev(esioh, "rhoe",
-                reinterpret_cast<real_t *>(buf.get()), 0, 0, 0, 2,
-                "Nondimensional total energy coefficients stored row-major ZXY");
+        complex_field_write(
+                esioh, "rhoe", buf.get(), 0, 0, 0, field_descriptions[4]);
 
     }
+    esio_file_flush(esioh);
+
+    // Store new simulation zero time
+    store_time(log, esioh, 0);
     esio_file_flush(esioh);
 
     LOG4CXX_INFO(log, "Closing newly initialized restart file");

@@ -50,10 +50,6 @@
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/scenario_definition.hpp>
-#include <suzerain/state.hpp>
-#include <suzerain/state_impl.hpp>
-#include <suzerain/storage.hpp>
-#include <suzerain/timestepper.hpp>
 #include <suzerain/utility.hpp>
 
 #include "channel_common.hpp"
@@ -70,10 +66,31 @@ using boost::numeric_cast;
 using boost::shared_ptr;
 using std::numeric_limits;
 
-// Introduce scalar- and complex-valued typedefs
-// Currently only real_t == double is supported by many, many components
-typedef double               real_t;
-typedef std::complex<real_t> complex_t;
+// Explicit timestepping scheme uses only complex_t 4D NoninterleavedState
+// State indices range over (scalar field, Y, X, Z) in wave space
+// Establish some shorthand for some overly-templated operator and state types
+typedef sz::storage::noninterleaved<4> storage_type;
+typedef sz::IState<
+            storage_type::dimensionality, complex_t, storage_type
+        > istate_type;
+typedef sz::timestepper::lowstorage::ILinearOperator<
+            storage_type::dimensionality, complex_t, storage_type
+        > ilinearoperator_type;
+typedef sz::timestepper::INonlinearOperator<
+            storage_type::dimensionality, complex_t, storage_type
+        > inonlinearoperator_type;
+typedef sz::NoninterleavedState<
+            storage_type::dimensionality, complex_t
+        > state_type;
+
+// Global logger initialized in main() as well as some helper macros
+log4cxx::LoggerPtr logger;
+#define TRACE(expr) LOG4CXX_TRACE(logger,expr)
+#define DEBUG(expr) LOG4CXX_DEBUG(logger,expr)
+#define INFO(expr)  LOG4CXX_INFO( logger,expr)
+#define WARN(expr)  LOG4CXX_WARN( logger,expr)
+#define ERROR(expr) LOG4CXX_ERROR(logger,expr)
+#define FATAL(expr) LOG4CXX_FATAL(logger,expr)
 
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
@@ -92,22 +109,12 @@ static shared_ptr<sz::bspline>     bspw;
 static shared_ptr<sz::bspline_luz> bspluzw;
 static shared_ptr<sz::pencil_grid> pg;
 
-// Explicit timestepping scheme uses only complex_t 4D NoninterleavedState
-// State indices range over (scalar field, Y, X, Z) in wave space
-// Establish some shorthand for some overly-templated operator and state types
-typedef sz::storage::noninterleaved<4> storage_type;
-typedef sz::IState<
-            storage_type::dimensionality, complex_t, storage_type
-        > istate_type;
-typedef sz::timestepper::lowstorage::ILinearOperator<
-            storage_type::dimensionality, complex_t, storage_type
-        > ilinearoperator_type;
-typedef sz::timestepper::INonlinearOperator<
-            storage_type::dimensionality, complex_t, storage_type
-        > inonlinearoperator_type;
-typedef sz::NoninterleavedState<
-            storage_type::dimensionality, complex_t
-        > state_type;
+// State details specific to this rank initialized in main()
+static shared_ptr<state_type> state_linear;
+static shared_ptr<state_type> state_nonlinear;
+static boost::array<suzerain::pencil_grid::index,3> state_start;
+static boost::array<suzerain::pencil_grid::index,3> state_end;
+static boost::array<suzerain::pencil_grid::index,3> state_extent;
 
 // TODO Incorporate IOperatorLifecycle semantics
 // TODO Refactor MassOperator into templated BsplineMassOperator
@@ -850,6 +857,62 @@ static void atexit_esio(void) {
     if (esioh) esio_handle_finalize(esioh);
 }
 
+/** Routine to load state from file.  */
+static void load_state(esio_handle h, state_type &state)
+{
+    assert(state.shape()[0] == field_names.static_size);
+
+    // TODO Load state with different Nx
+    // TODO Load state with different Nz
+    // TODO Load state with different Ny
+    int zglobal, xglobal, yglobal, ncomponents;
+    esio_field_sizev(
+            h, field_names[0], &zglobal, &xglobal, &yglobal, &ncomponents);
+    assert(zglobal == scenario.Nz);
+    assert(xglobal == scenario.Nx);
+    assert(yglobal == scenario.Ny);
+    assert(ncomponents == 2);
+
+    esio_field_establish(h, zglobal, state_start[2], state_extent[2],
+                            xglobal, state_start[0], state_extent[0],
+                            yglobal, state_start[1], state_extent[1]);
+
+    for (size_t i = 0; i < field_names.static_size; ++i) {
+        complex_field_read(h, field_names[i], state[i].origin(),
+                state.strides()[3], state.strides()[2], state.strides()[1]);
+    }
+}
+
+/** Routine to store a restart file.  Signature for Timecontroller use. */
+static void save_restart(double t, unsigned long nt)
+{
+    esio_file_clone(esioh, restart.metadata().c_str(),
+                    restart.uncommitted().c_str(), 1 /*overwrite*/);
+
+    // Save simulation time information
+    store_time(logger, esioh, t);
+
+    // TODO Save only non-dealiased portion of state
+    INFO("Storing simulation fields at simulation step " << nt);
+    esio_field_establish(esioh, grid.Nz, state_start[2], state_extent[2],
+                                grid.Nx, state_start[0], state_extent[0],
+                                grid.Ny, state_start[1], state_extent[1]);
+
+    for (size_t i = 0; i < field_names.static_size; ++i) {
+        complex_field_write(esioh,
+                field_names[i],
+                (*state_linear)[i].origin(),
+                (*state_linear).strides()[3],
+                (*state_linear).strides()[2],
+                (*state_linear).strides()[1],
+                field_descriptions[i]);
+    }
+
+    esio_file_close_restart(esioh,
+                            restart.desttemplate().c_str(),
+                            restart.retain());
+}
+
 int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
@@ -860,14 +923,14 @@ int main(int argc, char **argv)
     // Initialize logger using MPI environment details.
     const int nproc  = sz::mpi::comm_size(MPI_COMM_WORLD);
     const int procid = sz::mpi::comm_rank(MPI_COMM_WORLD);
-    log4cxx::LoggerPtr log = log4cxx::Logger::getLogger(
+    logger = log4cxx::Logger::getLogger(
             sz::mpi::comm_rank_identifier(MPI_COMM_WORLD));
     // Log only warnings and above from ranks 1 and higher when not debugging
-    if (procid > 0 && !log->isDebugEnabled()) {
-        log->setLevel(log4cxx::Level::getWarn());
+    if (procid > 0 && !logger->isDebugEnabled()) {
+        logger->setLevel(log4cxx::Level::getWarn());
     }
 
-    LOG4CXX_INFO(log, "Processing command line arguments and response files");
+    INFO("Processing command line arguments and response files");
     {
         sz::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation");
@@ -882,20 +945,20 @@ int main(int argc, char **argv)
 
     // TODO Account for grid differences at load time
 
-    LOG4CXX_INFO(log, "Loading details from restart file: " << restart.load());
+    INFO("Loading details from restart file: " << restart.load());
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
-    load(log, esioh, const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
-    load(log, esioh, const_cast<pb::GridDefinition<real_t>& >(grid));
-    load(log, esioh, bspw, const_cast<pb::GridDefinition<real_t>& >(grid));
+    load(logger, esioh, const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
+    load(logger, esioh, const_cast<pb::GridDefinition<real_t>& >(grid));
+    load(logger, esioh, bspw, const_cast<pb::GridDefinition<real_t>& >(grid));
     esio_file_close(esioh);
 
-    LOG4CXX_INFO(log, "Saving metadata template file: " << restart.metadata());
+    INFO("Saving metadata template file: " << restart.metadata());
     {
         esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
         esio_file_create(h, restart.metadata().c_str(), 1 /* overwrite */);
-        store(log, h, scenario);
-        store(log, h, grid, scenario.Lx, scenario.Lz);
-        store(log, h, bspw);
+        store(logger, h, scenario);
+        store(logger, h, grid, scenario.Lx, scenario.Lz);
+        store(logger, h, bspw);
         esio_file_close(h);
         esio_handle_finalize(h);
     }
@@ -907,57 +970,51 @@ int main(int argc, char **argv)
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
     pg = make_shared<sz::pencil_grid>(grid.dealiased_extents(),
                                       grid.processor_grid);
-    LOG4CXX_INFO(log, "Processor count: " << nproc);
-    LOG4CXX_INFO(log, "Processor grid used: " << pg->processor_grid());
-    LOG4CXX_DEBUG(log, "Local dealiased wave start  (XYZ): "
-                       << pg->local_wave_start());
-    LOG4CXX_DEBUG(log, "Local dealiased wave end    (XYZ): "
-                       << pg->local_wave_end());
-    LOG4CXX_DEBUG(log, "Local dealiased wave extent (XYZ): "
-                       << pg->local_wave_extent());
+    INFO("Processor count: " << nproc);
+    INFO("Processor grid used: " << pg->processor_grid());
+    DEBUG("Local dealiased wave start  (XYZ): " << pg->local_wave_start());
+    DEBUG("Local dealiased wave end    (XYZ): " << pg->local_wave_end());
+    DEBUG("Local dealiased wave extent (XYZ): " << pg->local_wave_extent());
 
     // Compute how much non-dealiased XYZ state is local to this rank
     // Additional munging necessary X direction has (Nx/2+1) complex values
-    const boost::array<sz::pencil_grid::index,3> state_start
-        = pg->local_wave_start();
-    const boost::array<sz::pencil_grid::index,3> state_end = {{
-        std::min<sz::pencil_grid::size_type>(grid.global_extents[0]/2+1,
-                                             pg->local_wave_end()[0]),
-        std::min<sz::pencil_grid::size_type>(grid.global_extents[1],
-                                             pg->local_wave_end()[1]),
-        std::min<sz::pencil_grid::size_type>(grid.global_extents[2],
-                                             pg->local_wave_end()[2])
-    }};
-    const boost::array<sz::pencil_grid::index,3> state_extent = {{
-        std::max<sz::pencil_grid::index>(state_end[0] - state_start[0], 0),
-        std::max<sz::pencil_grid::index>(state_end[1] - state_start[1], 0),
-        std::max<sz::pencil_grid::index>(state_end[2] - state_start[2], 0)
-    }};
-    LOG4CXX_DEBUG(log, "Local state wave start  (XYZ): " << state_start);
-    LOG4CXX_DEBUG(log, "Local state wave end    (XYZ): " << state_end);
-    LOG4CXX_DEBUG(log, "Local state wave extent (XYZ): " << state_extent);
+    state_start = pg->local_wave_start();
+    state_end[0] = std::min<sz::pencil_grid::index>(
+            grid.global_extents[0]/2+1, pg->local_wave_end()[0]);
+    for (int i = 1; i < state_end.static_size; ++i) {
+        state_end[i] = std::min<sz::pencil_grid::index>(
+                grid.global_extents[i], pg->local_wave_end()[i]);
+    }
+    for (int i = 0; i < state_extent.static_size; ++i) {
+        state_extent[i] = std::max<sz::pencil_grid::index>(
+                state_end[i] - state_start[i], 0);
+    }
+
+    DEBUG("Local state wave start  (XYZ): " << state_start);
+    DEBUG("Local state wave end    (XYZ): " << state_end);
+    DEBUG("Local state wave extent (XYZ): " << state_extent);
 
     // Create the state storage for the linear and nonlinear operators
     // with appropriate padding to allow nonlinear state to be P3DFFTified
-    state_type state_linear(sz::to_yxz(5, state_extent));
-    state_type state_nonlinear(
+    state_linear.reset(new state_type(sz::to_yxz(5, state_extent)));
+    state_nonlinear.reset(new state_type(
             sz::to_yxz(5, state_extent),
             sz::prepend(pg->local_wave_storage(),
-                        sz::strides_cm(sz::to_yxz(pg->local_wave_extent()))));
-    if (log->isDebugEnabled()) {
+                        sz::strides_cm(sz::to_yxz(pg->local_wave_extent())))));
+    if (logger->isDebugEnabled()) {
         boost::array<sz::pencil_grid::index,4> strides;
-        std::copy(state_linear.strides(),
-                  state_linear.strides() + 4, strides.begin());
-        LOG4CXX_DEBUG(log, "Linear state strides    (FYXZ): " << strides);
-        std::copy(state_nonlinear.strides(),
-                  state_nonlinear.strides() + 4, strides.begin());
-        LOG4CXX_DEBUG(log, "Nonlinear state strides (FYXZ): " << strides);
+        std::copy(state_linear->strides(),
+                  state_linear->strides() + 4, strides.begin());
+        DEBUG("Linear state strides    (FYXZ): " << strides);
+        std::copy(state_nonlinear->strides(),
+                  state_nonlinear->strides() + 4, strides.begin());
+        DEBUG("Nonlinear state strides (FYXZ): " << strides);
     }
 
     // Zero out any garbage in state_{non,}linear
     // Use fill rather than state_{non,}linear.scale to wipe any NaNs
-    sz::multi_array::fill(state_linear, 0);
-    sz::multi_array::fill(state_nonlinear, 0);
+    sz::multi_array::fill(*state_linear, 0);
+    sz::multi_array::fill(*state_nonlinear, 0);
 
     // Instantiate the operators and time stepping details
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
@@ -965,53 +1022,21 @@ int main(int argc, char **argv)
     MassOperator L(scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
     NonlinearOperator N;
 
-    // Load restart information into state_linear
+    // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
-    {
-        int zglobal, xglobal, yglobal, ncomponents;
-        esio_field_sizev(esioh, "rho",
-                         &zglobal, &xglobal, &yglobal, &ncomponents);
-        assert(ncomponents == 2);
-        assert(zglobal == scenario.Nz); // TODO Relax restriction
-        assert(xglobal == scenario.Nx);
-        assert(yglobal == scenario.Ny);
-        esio_field_establish(esioh, zglobal, state_start[2], state_extent[2],
-                                    xglobal, state_start[0], state_extent[0],
-                                    yglobal, state_start[1], state_extent[1]);
-        esio_field_readv(esioh, "rho",
-                reinterpret_cast<real_t *>(state_linear[0].origin()),
-                2*numeric_cast<int>(state_linear.strides()[3]),
-                2*numeric_cast<int>(state_linear.strides()[2]),
-                2*numeric_cast<int>(state_linear.strides()[1]),
-                2);
-        esio_field_readv(esioh, "rhou",
-                reinterpret_cast<real_t *>(state_linear[1].origin()),
-                2*numeric_cast<int>(state_linear.strides()[3]),
-                2*numeric_cast<int>(state_linear.strides()[2]),
-                2*numeric_cast<int>(state_linear.strides()[1]),
-                2);
-        esio_field_readv(esioh, "rhov",
-                reinterpret_cast<real_t *>(state_linear[2].origin()),
-                2*numeric_cast<int>(state_linear.strides()[3]),
-                2*numeric_cast<int>(state_linear.strides()[2]),
-                2*numeric_cast<int>(state_linear.strides()[1]),
-                2);
-        esio_field_readv(esioh, "rhow",
-                reinterpret_cast<real_t *>(state_linear[3].origin()),
-                2*numeric_cast<int>(state_linear.strides()[3]),
-                2*numeric_cast<int>(state_linear.strides()[2]),
-                2*numeric_cast<int>(state_linear.strides()[1]),
-                2);
-        esio_field_readv(esioh, "rhoe",
-                reinterpret_cast<real_t *>(state_linear[4].origin()),
-                2*numeric_cast<int>(state_linear.strides()[3]),
-                2*numeric_cast<int>(state_linear.strides()[2]),
-                2*numeric_cast<int>(state_linear.strides()[1]),
-                2);
-    }
+    real_t initial_t;
+    load_time(logger, esioh, initial_t);
+    load_state(esioh, *state_linear);
     esio_file_close(esioh);
 
-    // Take a time step
-    sz::timestepper::lowstorage::step(
-            smr91, L, N, state_linear, state_nonlinear);
+    // Establish TimeController for use with operators and state storage
+    using suzerain::timestepper::TimeController;
+    boost::scoped_ptr<TimeController<double> > tc(
+            make_LowStorageTimeController(
+                smr91, L, N, *state_linear, *state_nonlinear, initial_t));
+
+    // TODO Register callbacks, especially for save_restart()
+
+    // Advance time
+    tc->step(1);
 }
