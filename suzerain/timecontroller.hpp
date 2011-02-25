@@ -199,7 +199,7 @@ public:
                                CallbackType callback);
 
     /**
-     * Advance the simulation in time using the time stepper set and
+     * Advance the simulation in time using the time stepper set at
      * construction time and perform required callbacks along the way.  The
      * simulation will advance until either current_t() reaches \c final_t or
      * current_nt() reaches \c final_nt, whichever comes first.  If any
@@ -216,9 +216,32 @@ public:
      *
      * @return True if the controller completed the request successfully.
      *         False if the controller aborted for some reason.
+     * @see The method step() for an easy way to specify a fixed number of
+     *      time steps.
      */
     bool advance(time_type final_t,
                  step_type final_nt = std::numeric_limits<step_type>::max());
+
+    /**
+     * Advance the simulation in time using the time stepper set at
+     * construction time and perform required callbacks along the way.  The
+     * simulation will advance until \c count_nt time steps have been
+     * completed.  If any physically-determined time step is smaller than
+     * min_dt() or any registered callback returns \c false, the controller
+     * will immediately stop.
+     *
+     * @param count_nt Number of time steps to take.
+     *
+     * @return True if the controller completed the request successfully.
+     *         False if the controller aborted for some reason.
+     * @see The method advance() for a richer interface for controlling
+     *      time advancement.
+     */
+    bool step(step_type count_nt = 1)
+    {
+        return advance(std::numeric_limits<time_type>::max(),
+                       add_and_coerce_overflow_to_max(count_nt, current_nt()));
+    }
 
     //@{
 
