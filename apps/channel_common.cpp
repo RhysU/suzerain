@@ -39,6 +39,17 @@
 using boost::numeric_cast;
 using boost::scoped_array;
 
+// Will likely be replaced with a more descriptive instance in main()
+log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
+
+// Failure to destroy logger prior to running static instance destructors
+// causes segfaults.  Concoct an atexit callback specifically to destroy
+// anything pointed to by logger prior to static instance destructors. 
+static struct DestructLoggerRegistration {
+    DestructLoggerRegistration() { atexit(&destruct_logger); }
+    static void destruct_logger() { logger = 0; }
+} destructLoggerRegistration;
+
 const boost::array<const char *,5> field_names = {{
     "rho", "rhou", "rhov", "rhow", "rhoe"
 }};
@@ -51,15 +62,14 @@ const boost::array<const char *,5> field_descriptions = {{
     "Nondimensional total energy coefficients stored row-major ZXY"
 }};
 
-void store(log4cxx::LoggerPtr log,
-           const esio_handle esioh,
+void store(const esio_handle esioh,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario)
 {
+    DEBUG("Storing ScenarioDefinition parameters");
+
     // Only root writes data
     int procid;
     esio_handle_comm_rank(esioh, &procid);
-
-    LOG4CXX_INFO(log, "Storing ScenarioDefinition parameters");
 
     esio_line_establish(esioh, 1, 0, (procid == 0 ? 1 : 0));
 
@@ -85,59 +95,57 @@ void store(log4cxx::LoggerPtr log,
             scenario.options().find("Lz",false).description().c_str());
 }
 
-void load(log4cxx::LoggerPtr log,
-          const esio_handle esioh,
+void load(const esio_handle esioh,
           suzerain::problem::ScenarioDefinition<real_t>& scenario)
 {
-    LOG4CXX_INFO(log, "Loading ScenarioDefinition parameters");
+    DEBUG("Loading ScenarioDefinition parameters");
 
     esio_line_establish(esioh, 1, 0, 1); // All ranks load
 
     if (scenario.Re) {
-        LOG4CXX_INFO(log, "Overriding file using Re = " << scenario.Re);
+        INFO("Overriding scenario using Re = " << scenario.Re);
     } else {
         esio_line_read(esioh, "Re", &scenario.Re, 0);
     }
 
     if (scenario.Pr) {
-        LOG4CXX_INFO(log, "Overriding file using Pr = " << scenario.Pr);
+        INFO("Overriding scenario using Pr = " << scenario.Pr);
     } else {
         esio_line_read(esioh, "Pr", &scenario.Pr, 0);
     }
 
     if (scenario.gamma) {
-        LOG4CXX_INFO(log, "Overriding file using gamma = " << scenario.gamma);
+        INFO("Overriding scenario using gamma = " << scenario.gamma);
     } else {
         esio_line_read(esioh, "gamma", &scenario.gamma, 0);
     }
 
     if (scenario.beta) {
-        LOG4CXX_INFO(log, "Overriding file using beta = " << scenario.beta);
+        INFO("Overriding scenario using beta = " << scenario.beta);
     } else {
         esio_line_read(esioh, "beta", &scenario.beta, 0);
     }
 
     if (scenario.Lx) {
-        LOG4CXX_INFO(log, "Overriding file using Lx = " << scenario.Lx);
+        INFO("Overriding scenario using Lx = " << scenario.Lx);
     } else {
         esio_line_read(esioh, "Lx", &scenario.Lx, 0);
     }
 
     if (scenario.Ly) {
-        LOG4CXX_INFO(log, "Overriding file using Ly = " << scenario.Ly);
+        INFO("Overriding scenario using Ly = " << scenario.Ly);
     } else {
         esio_line_read(esioh, "Ly", &scenario.Ly, 0);
     }
 
     if (scenario.Lz) {
-        LOG4CXX_INFO(log, "Overriding file using Lz = " << scenario.Lz);
+        INFO("Overriding scenario using Lz = " << scenario.Lz);
     } else {
         esio_line_read(esioh, "Lz", &scenario.Lz, 0);
     }
 }
 
-void store(log4cxx::LoggerPtr log,
-           const esio_handle esioh,
+void store(const esio_handle esioh,
            const suzerain::problem::GridDefinition<real_t>& grid,
            const real_t Lx,
            const real_t Lz)
@@ -146,7 +154,7 @@ void store(log4cxx::LoggerPtr log,
     int procid;
     esio_handle_comm_rank(esioh, &procid);
 
-    LOG4CXX_INFO(log, "Storing GridDefinition parameters");
+    DEBUG("Storing GridDefinition parameters");
 
     esio_line_establish(esioh, 1, 0, (procid == 0 ? 1 : 0));
 
@@ -172,7 +180,7 @@ void store(log4cxx::LoggerPtr log,
     esio_line_write(esioh, "DAFz", &grid.DAFz, 0,
             grid.options().find("DAFz",false).description().c_str());
 
-    LOG4CXX_INFO(log, "Storing wavenumber vectors for Fourier bases");
+    DEBUG("Storing wavenumber vectors for Fourier bases");
 
     const int N  = std::max(grid.Nx, grid.Nz);
     scoped_array<complex_t> buf(new complex_t[N]);
@@ -194,16 +202,15 @@ void store(log4cxx::LoggerPtr log,
             2, "Wavenumbers in spanwise Z direction"); // Re(buf)
 }
 
-void load(log4cxx::LoggerPtr log,
-          const esio_handle esioh,
+void load(const esio_handle esioh,
           suzerain::problem::GridDefinition<real_t>& grid)
 {
-    LOG4CXX_INFO(log, "Loading GridDefinition parameters");
+    DEBUG("Loading GridDefinition parameters");
 
     esio_line_establish(esioh, 1, 0, 1); // All ranks load
 
     if (grid.Nx) {
-        LOG4CXX_INFO(log, "Overriding file using Nx = " << grid.Nx);
+        INFO("Overriding grid using Nx = " << grid.Nx);
     } else {
         int Nx;
         esio_line_read(esioh, "Nx", &Nx, 0);
@@ -211,13 +218,13 @@ void load(log4cxx::LoggerPtr log,
     }
 
     if (grid.DAFx) {
-        LOG4CXX_INFO(log, "Overriding file using DAFx = " << grid.DAFx);
+        INFO("Overriding grid using DAFx = " << grid.DAFx);
     } else {
         esio_line_read(esioh, "DAFx", &grid.DAFx, 0);
     }
 
     if (grid.Ny) {
-        LOG4CXX_INFO(log, "Overriding file using Ny = " << grid.Ny);
+        INFO("Overriding grid using Ny = " << grid.Ny);
     } else {
         int Ny;
         esio_line_read(esioh, "Ny", &Ny, 0);
@@ -225,7 +232,7 @@ void load(log4cxx::LoggerPtr log,
     }
 
     if (grid.k) {
-        LOG4CXX_INFO(log, "Overriding file using k = " << grid.k);
+        INFO("Overriding grid using k = " << grid.k);
     } else {
         int k;
         esio_line_read(esioh, "k", &k, 0);
@@ -233,7 +240,7 @@ void load(log4cxx::LoggerPtr log,
     }
 
     if (grid.Nz) {
-        LOG4CXX_INFO(log, "Overriding file using Nz = " << grid.Nz);
+        INFO("Overriding grid using Nz = " << grid.Nz);
     } else {
         int Nz;
         esio_line_read(esioh, "Nz", &Nz, 0);
@@ -241,21 +248,20 @@ void load(log4cxx::LoggerPtr log,
     }
 
     if (grid.DAFz) {
-        LOG4CXX_INFO(log, "Overriding file using DAFz = " << grid.DAFz);
+        INFO("Overriding grid using DAFz = " << grid.DAFz);
     } else {
         esio_line_read(esioh, "DAFz", &grid.DAFz, 0);
     }
 }
 
-void store(log4cxx::LoggerPtr log,
-           const esio_handle esioh,
+void store(const esio_handle esioh,
            boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */)
 {
     // Only root writes data
     int procid;
     esio_handle_comm_rank(esioh, &procid);
 
-    LOG4CXX_INFO(log, "Storing B-spline knot details");
+    DEBUG("Storing B-spline knot details");
 
     scoped_array<real_t> buf(new real_t[bspw->nknots()]);
 
@@ -277,7 +283,7 @@ void store(log4cxx::LoggerPtr log,
     esio_line_write(esioh, "collocation_points", buf.get(), 0,
             "Collocation points used to build discrete operators");
 
-    LOG4CXX_INFO(log, "Storing B-spline derivative operators");
+    DEBUG("Storing B-spline derivative operators");
 
     char name[8];
     char comment[127];
@@ -298,12 +304,11 @@ void store(log4cxx::LoggerPtr log,
     }
 }
 
-void load(log4cxx::LoggerPtr log,
-          const esio_handle esioh,
+void load(const esio_handle esioh,
           boost::shared_ptr<suzerain::bspline>& bspw, // Yes, a reference
           const suzerain::problem::GridDefinition<real_t>& grid)
 {
-    LOG4CXX_INFO(log, "Loading B-spline breakpoints");
+    DEBUG("Loading B-spline breakpoints");
 
     const int nbreak = grid.Ny + 2 - grid.k;
     scoped_array<real_t> buf(new double[grid.Ny]);
@@ -312,8 +317,7 @@ void load(log4cxx::LoggerPtr log,
     bspw.reset(new suzerain::bspline(grid.k, grid.k - 2, nbreak, buf.get()));
 }
 
-void store_time(log4cxx::LoggerPtr log,
-                const esio_handle esioh,
+void store_time(const esio_handle esioh,
                 real_t time)
 {
     // Root writes details
@@ -323,11 +327,10 @@ void store_time(log4cxx::LoggerPtr log,
 
     esio_line_write(esioh, "t", &time, 0, "Simulation physical time");
 
-    LOG4CXX_INFO(log, "Stored simulation time " << time);
+    DEBUG("Stored simulation time " << time);
 }
 
-void load_time(log4cxx::LoggerPtr log,
-               const esio_handle esioh,
+void load_time(const esio_handle esioh,
                real_t &time)
 {
     // All ranks read details
@@ -335,5 +338,5 @@ void load_time(log4cxx::LoggerPtr log,
 
     esio_line_read(esioh, "t", &time, 0);
 
-    LOG4CXX_INFO(log, "Loaded simulation time " << time);
+    DEBUG("Loaded simulation time " << time);
 }

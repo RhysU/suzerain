@@ -83,15 +83,6 @@ typedef sz::NoninterleavedState<
             storage_type::dimensionality, complex_t
         > state_type;
 
-// Global logger initialized in main() as well as some helper macros
-log4cxx::LoggerPtr logger;
-#define TRACE(expr) LOG4CXX_TRACE(logger,expr)
-#define DEBUG(expr) LOG4CXX_DEBUG(logger,expr)
-#define INFO(expr)  LOG4CXX_INFO( logger,expr)
-#define WARN(expr)  LOG4CXX_WARN( logger,expr)
-#define ERROR(expr) LOG4CXX_ERROR(logger,expr)
-#define FATAL(expr) LOG4CXX_FATAL(logger,expr)
-
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
 // where necessary to load settings.
@@ -890,10 +881,10 @@ static void save_restart(double t, unsigned long nt)
                     restart.uncommitted().c_str(), 1 /*overwrite*/);
 
     // Save simulation time information
-    store_time(logger, esioh, t);
+    store_time(esioh, t);
 
     // TODO Save only non-dealiased portion of state
-    INFO("Storing simulation fields at simulation step " << nt);
+    DEBUG("Storing simulation fields at simulation step " << nt);
     esio_field_establish(esioh, grid.Nz, state_start[2], state_extent[2],
                                 grid.Nx, state_start[0], state_extent[0],
                                 grid.Ny, state_start[1], state_extent[1]);
@@ -911,6 +902,8 @@ static void save_restart(double t, unsigned long nt)
     esio_file_close_restart(esioh,
                             restart.desttemplate().c_str(),
                             restart.retain());
+
+    INFO("Successfully wrote restart file at t = " << t << " for nt = " << nt);
 }
 
 int main(int argc, char **argv)
@@ -920,13 +913,13 @@ int main(int argc, char **argv)
     esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
     atexit(&atexit_esio);                           // Finalize ESIO at exit
 
-    // Initialize logger using MPI environment details.
-    const int nproc  = sz::mpi::comm_size(MPI_COMM_WORLD);
-    const int procid = sz::mpi::comm_rank(MPI_COMM_WORLD);
+    // Prepare logger (from channel_common.hpp) using MPI environment details.
+    const int nranks = sz::mpi::comm_size(MPI_COMM_WORLD);
+    const int rank   = sz::mpi::comm_rank(MPI_COMM_WORLD);
     logger = log4cxx::Logger::getLogger(
             sz::mpi::comm_rank_identifier(MPI_COMM_WORLD));
     // Log only warnings and above from ranks 1 and higher when not debugging
-    if (procid > 0 && !logger->isDebugEnabled()) {
+    if (rank > 0 && !logger->isDebugEnabled()) {
         logger->setLevel(log4cxx::Level::getWarn());
     }
 
@@ -947,18 +940,18 @@ int main(int argc, char **argv)
 
     INFO("Loading details from restart file: " << restart.load());
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
-    load(logger, esioh, const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
-    load(logger, esioh, const_cast<pb::GridDefinition<real_t>& >(grid));
-    load(logger, esioh, bspw, const_cast<pb::GridDefinition<real_t>& >(grid));
+    load(esioh, const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
+    load(esioh, const_cast<pb::GridDefinition<real_t>& >(grid));
+    load(esioh, bspw, const_cast<pb::GridDefinition<real_t>& >(grid));
     esio_file_close(esioh);
 
     INFO("Saving metadata template file: " << restart.metadata());
     {
         esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
         esio_file_create(h, restart.metadata().c_str(), 1 /* overwrite */);
-        store(logger, h, scenario);
-        store(logger, h, grid, scenario.Lx, scenario.Lz);
-        store(logger, h, bspw);
+        store(h, scenario);
+        store(h, grid, scenario.Lx, scenario.Lz);
+        store(h, bspw);
         esio_file_close(h);
         esio_handle_finalize(h);
     }
@@ -970,8 +963,8 @@ int main(int argc, char **argv)
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
     pg = make_shared<sz::pencil_grid>(grid.dealiased_extents(),
                                       grid.processor_grid);
-    INFO("Processor count: " << nproc);
-    INFO("Processor grid used: " << pg->processor_grid());
+    INFO( "Number of MPI ranks:               " << nranks);
+    INFO( "Rank grid used for decomposition:  " << pg->processor_grid());
     DEBUG("Local dealiased wave start  (XYZ): " << pg->local_wave_start());
     DEBUG("Local dealiased wave end    (XYZ): " << pg->local_wave_end());
     DEBUG("Local dealiased wave extent (XYZ): " << pg->local_wave_extent());
@@ -1001,7 +994,7 @@ int main(int argc, char **argv)
             sz::to_yxz(5, state_extent),
             sz::prepend(pg->local_wave_storage(),
                         sz::strides_cm(sz::to_yxz(pg->local_wave_extent())))));
-    if (logger->isDebugEnabled()) {
+    if (DEBUG_ENABLED) {
         boost::array<sz::pencil_grid::index,4> strides;
         std::copy(state_linear->strides(),
                   state_linear->strides() + 4, strides.begin());
@@ -1025,7 +1018,7 @@ int main(int argc, char **argv)
     // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
     real_t initial_t;
-    load_time(logger, esioh, initial_t);
+    load_time(esioh, initial_t);
     load_state(esioh, *state_linear);
     esio_file_close(esioh);
 

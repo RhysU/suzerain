@@ -144,19 +144,18 @@ int main(int argc, char **argv)
     atexit(&atexit_esio);                           // Finalize ESIO at exit
 
     // Obtain some basic MPI environment details.
-    const int nproc  = sz::mpi::comm_size(MPI_COMM_WORLD);
-    const int procid = sz::mpi::comm_rank(MPI_COMM_WORLD);
-    log4cxx::LoggerPtr log = log4cxx::Logger::getLogger(
+    const int nranks = sz::mpi::comm_size(MPI_COMM_WORLD);
+    const int rank   = sz::mpi::comm_rank(MPI_COMM_WORLD);
+    logger = log4cxx::Logger::getLogger(
             sz::mpi::comm_rank_identifier(MPI_COMM_WORLD));
-
     // Log only warnings and above from ranks 1 and higher when not debugging
-    if (procid > 0 && !log->isDebugEnabled()) {
-        log->setLevel(log4cxx::Level::getWarn());
+    if (rank > 0 && !logger->isDebugEnabled()) {
+        logger->setLevel(log4cxx::Level::getWarn());
     }
 
     // Ensure that we're running in a single processor environment
-    if (nproc > 1) {
-        LOG4CXX_FATAL(log, argv[0] << " only intended to run on single rank");
+    if (nranks > 1) {
+        FATAL(argv[0] << " only intended to run on single rank");
         return EXIT_FAILURE;
     }
 
@@ -205,24 +204,23 @@ int main(int argc, char **argv)
     const real_t R = GSL_CONST_MKSA_MOLAR_GAS * GSL_CONST_NUM_KILO / M;
 
     if (grid.k < 4 /* cubics */) {
-        LOG4CXX_FATAL(log,
-            "k >= 4 required to compute two non-trivial spatial derivatives");
+        FATAL("k >= 4 required to compute two non-trivial spatial derivatives");
         return EXIT_FAILURE;
     }
 
     if (grid.Nx != 1) {
-        LOG4CXX_FATAL(log, argv[0] << " can only handle Nx == 1");
+        FATAL(argv[0] << " can only handle Nx == 1");
         return EXIT_FAILURE;
     }
 
     if (grid.Nz != 1) {
-        LOG4CXX_FATAL(log, argv[0] << " can only handle Nz == 1");
+        FATAL(argv[0] << " can only handle Nz == 1");
         return EXIT_FAILURE;
     }
 
-    LOG4CXX_INFO(log, "Creating B-spline basis of uniform order "
-                      << (grid.k - 1) << " on [0, Ly] with "
-                      << grid.Ny << " DOF");
+    INFO("Creating B-spline basis of uniform order "
+         << (grid.k - 1) << " on [0, Ly] with "
+         << grid.Ny << " DOF");
     {
         scoped_array<real_t> buf(new real_t[grid.Ny]);
 
@@ -239,19 +237,19 @@ int main(int argc, char **argv)
         assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny);
     }
 
-    LOG4CXX_INFO(log, "Creating new restart file " << restart_file);
+    INFO("Creating new restart file " << restart_file);
     esio_file_create(esioh, restart_file.c_str(),
                      options.variables().count("clobber"));
-    store(log, esioh, scenario);
-    store(log, esioh, grid, scenario.Lx, scenario.Lz);
-    store(log, esioh, bspw);
+    store(esioh, scenario);
+    store(esioh, grid, scenario.Lx, scenario.Lz);
+    store(esioh, bspw);
     esio_file_flush(esioh);
 
-    LOG4CXX_INFO(log, "Computing derived, dimensional reference parameters");
+    INFO("Computing derived, dimensional reference parameters");
     real_t T_wall, rho_wall;
     {
         if (scenario.gamma != 1.4) {
-            LOG4CXX_WARN(log, "Using air viscosity values for non-air!");
+            WARN("Using air viscosity values for non-air!");
         }
 
         tsolver p;
@@ -264,14 +262,14 @@ int main(int argc, char **argv)
         p.s = suzerain_svehla_air_mu_vs_T();
         assert(p.s);
 
-        LOG4CXX_INFO(log, "Solving " << tsolver_desc << " for T_wall");
-        LOG4CXX_INFO(log, "Using Re = " << p.Re
-                          << ", L = " << p.L
-                          << ", gamma = " << p.gamma
-                          << ", R = " << p.R
-                          << ", Ma = " << p.Ma
-                          << ", p_wall = " << p.p_wall
-                          << ", and mu(T) from Svehla 1962");
+        INFO("Solving " << tsolver_desc << " for T_wall");
+        INFO("Using Re = " << p.Re
+             << ", L = " << p.L
+             << ", gamma = " << p.gamma
+             << ", R = " << p.R
+             << ", Ma = " << p.Ma
+             << ", p_wall = " << p.p_wall
+             << ", and mu(T) from Svehla 1962");
 
         gsl_function F;
         F.function = &f_tsolver;
@@ -286,7 +284,7 @@ int main(int argc, char **argv)
             const real_t low_residual = GSL_FN_EVAL(&F,low);
             const real_t high_residual = GSL_FN_EVAL(&F,high);
             if ((low_residual >= 0) == (high_residual >= 0)) {
-                LOG4CXX_FATAL(log, "Likely no solution in interval ["
+                FATAL("Likely no solution in interval ["
                         << low <<"," << high << "]!");
             }
         }
@@ -301,15 +299,15 @@ int main(int argc, char **argv)
             high = gsl_root_fsolver_x_upper(solver);
             status = gsl_root_test_interval(low, high, tol, 0);
         }
-        LOG4CXX_INFO(log, std::setprecision(numeric_limits<real_t>::digits10)
-                        << "Wall temperature "
-                        << T_wall
-                        << " K gives residual "
-                        << std::scientific
-                        << GSL_FN_EVAL(&F,T_wall));
+        INFO(std::setprecision(numeric_limits<real_t>::digits10)
+             << "Wall temperature "
+             << T_wall
+             << " K gives residual "
+             << std::scientific
+             << GSL_FN_EVAL(&F,T_wall));
 
         rho_wall = p_wall / R / T_wall;
-        LOG4CXX_INFO(log, "Wall density is " << rho_wall << " kg/m^3");
+        INFO("Wall density is " << rho_wall << " kg/m^3");
 
         gsl_root_fsolver_free(solver);
         gsl_spline_free(p.s);
@@ -319,7 +317,7 @@ int main(int argc, char **argv)
     bspluzw = make_shared<sz::bspline_luz>(*bspw);
     bspluzw->form_mass(*bspw);
 
-    LOG4CXX_INFO(log, "Computing nondimensional mean profiles for restart");
+    INFO("Computing nondimensional mean profiles for restart");
     {
         const int Ny = numeric_cast<int>(grid.Ny);
         esio_field_establish(esioh, 1, 0, 1, 1, 0, 1, Ny, 0, Ny);
@@ -369,9 +367,9 @@ int main(int argc, char **argv)
     esio_file_flush(esioh);
 
     // Store new simulation zero time
-    store_time(log, esioh, 0);
+    store_time(esioh, 0);
     esio_file_flush(esioh);
 
-    LOG4CXX_INFO(log, "Closing newly initialized restart file");
+    INFO("Closing newly initialized restart file");
     esio_file_close(esioh);
 }

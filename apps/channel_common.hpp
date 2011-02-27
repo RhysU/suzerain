@@ -46,6 +46,17 @@
 typedef double               real_t;
 typedef std::complex<real_t> complex_t;
 
+/** Global logging infrastructure */
+extern log4cxx::LoggerPtr logger;
+#define TRACE(expr)     LOG4CXX_TRACE(logger,expr)
+#define DEBUG(expr)     LOG4CXX_DEBUG(logger,expr)
+#define INFO(expr)      LOG4CXX_INFO( logger,expr)
+#define WARN(expr)      LOG4CXX_WARN( logger,expr)
+#define ERROR(expr)     LOG4CXX_ERROR(logger,expr)
+#define FATAL(expr)     LOG4CXX_FATAL(logger,expr)
+#define TRACE_ENABLED   (logger->isTraceEnabled())
+#define DEBUG_ENABLED   (logger->isDebugEnabled())
+
 /** Field names as stored in restart files */
 extern const boost::array<const char *,5> field_names;
 
@@ -53,46 +64,38 @@ extern const boost::array<const char *,5> field_names;
 extern const boost::array<const char *,5> field_descriptions;
 
 /** Store a ScenarioDefinition in a restart file */
-void store(log4cxx::LoggerPtr log,
-           const esio_handle esioh,
+void store(const esio_handle esioh,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario);
 
 /** Load a ScenarioDefinition from a restart file */
-void load(log4cxx::LoggerPtr log,
-          const esio_handle esioh,
+void load(const esio_handle esioh,
           suzerain::problem::ScenarioDefinition<real_t>& scenario);
 
 /** Store a GridDefinition in a restart file */
-void store(log4cxx::LoggerPtr log,
-           const esio_handle esioh,
+void store(const esio_handle esioh,
            const suzerain::problem::GridDefinition<real_t>& grid,
            const real_t Lx,
            const real_t Lz);
 
 /** Load a GridDefinition from a restart file */
-void load(log4cxx::LoggerPtr log,
-          const esio_handle esioh,
+void load(const esio_handle esioh,
           suzerain::problem::GridDefinition<real_t>& grid);
 
 /** Store a suzerain::bspline workspace in a restart file */
-void store(log4cxx::LoggerPtr log,
-           const esio_handle esioh,
+void store(const esio_handle esioh,
            boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */);
 
 /** Load a suzerain::bspline workspace from a restart file */
-void load(log4cxx::LoggerPtr log,
-          const esio_handle esioh,
+void load(const esio_handle esioh,
           boost::shared_ptr<suzerain::bspline>& bspw, // Yes, a reference
           const suzerain::problem::GridDefinition<real_t>& grid);
 
 /** Store the current simulation time information */
-void store_time(log4cxx::LoggerPtr log,
-                const esio_handle esioh,
+void store_time(const esio_handle esioh,
                 real_t time);
 
 /** Load the current simulation time information */
-void load_time(log4cxx::LoggerPtr log,
-               const esio_handle esioh,
+void load_time(const esio_handle esioh,
                real_t &time);
 
 /** Read a complex-valued field via ESIO */
