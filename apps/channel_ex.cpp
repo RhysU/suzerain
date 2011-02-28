@@ -56,12 +56,7 @@
 
 #pragma warning(disable:383 1572)
 
-// Introduce shorthand for common names
-namespace sz = ::suzerain;
-namespace pb = ::suzerain::problem;
-namespace po = ::boost::program_options;
 using boost::make_shared;
-using boost::math::constants::pi;
 using boost::numeric_cast;
 using boost::shared_ptr;
 using std::numeric_limits;
@@ -69,45 +64,47 @@ using std::numeric_limits;
 // Explicit timestepping scheme uses only complex_t 4D NoninterleavedState
 // State indices range over (scalar field, Y, X, Z) in wave space
 // Establish some shorthand for some overly-templated operator and state types
-typedef sz::storage::noninterleaved<4> storage_type;
-typedef sz::IState<
+typedef suzerain::storage::noninterleaved<4> storage_type;
+typedef suzerain::IState<
             storage_type::dimensionality, complex_t, storage_type
         > istate_type;
-typedef sz::timestepper::lowstorage::ILinearOperator<
+typedef suzerain::timestepper::lowstorage::ILinearOperator<
             storage_type::dimensionality, complex_t, storage_type
         > ilinearoperator_type;
-typedef sz::timestepper::INonlinearOperator<
+typedef suzerain::timestepper::INonlinearOperator<
             storage_type::dimensionality, complex_t, storage_type
         > inonlinearoperator_type;
-typedef sz::NoninterleavedState<
+typedef suzerain::NoninterleavedState<
             storage_type::dimensionality, complex_t
         > state_type;
 
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
 // where necessary to load settings.
-static const pb::ScenarioDefinition<real_t> scenario(0, 0, 0, 0, 0, 0, 0);
-static const pb::GridDefinition<real_t> grid(0, 0, 0, 0, 0, 0);
-static const pb::RestartDefinition<> restart(
-        /* default_load         */ "",
-        /* default_metadata     */ "metadata.h5",
-        /* default_uncommitted  */ "uncommitted.h5",
-        /* default_desttemplate */ "restart#.h5",
-        /* default_retain       */ 1,
-        /* default_every_dt     */ 0,
-        /* default_every_nt     */ 100);
+using suzerain::problem::ScenarioDefinition;
+using suzerain::problem::GridDefinition;
+using suzerain::problem::RestartDefinition;
+static const ScenarioDefinition<real_t> scenario(0, 0, 0, 0, 0, 0, 0);
+static const GridDefinition<real_t> grid(0, 0, 0, 0, 0, 0);
+static const RestartDefinition<> restart(/* load         */ "",
+                                         /* metadata     */ "metadata.h5",
+                                         /* uncommitted  */ "uncommitted.h5",
+                                         /* desttemplate */ "restart#.h5",
+                                         /* retain       */ 1,
+                                         /* every_dt     */ 0,
+                                         /* every_nt     */ 100);
 
 // Global grid-details initialized in main()
-static shared_ptr<sz::bspline>     bspw;
-static shared_ptr<sz::bspline_luz> bspluzw;
-static shared_ptr<sz::pencil_grid> pg;
+static shared_ptr<suzerain::bspline>     bspw;
+static shared_ptr<suzerain::bspline_luz> bspluzw;
+static shared_ptr<suzerain::pencil_grid> pg;
 
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
 static shared_ptr<state_type> state_nonlinear;
-static boost::array<sz::pencil_grid::index,3> state_start;
-static boost::array<sz::pencil_grid::index,3> state_end;
-static boost::array<sz::pencil_grid::index,3> state_extent;
+static boost::array<suzerain::pencil_grid::index,3> state_start;
+static boost::array<suzerain::pencil_grid::index,3> state_end;
+static boost::array<suzerain::pencil_grid::index,3> state_extent;
 
 // Bulk density is computed in main() and used within NonlinearOperator
 static real_t bulk_density;
@@ -122,7 +119,7 @@ public:
         : opscaling_(scaling), luzw_(*bspw)
     {
         complex_t coefficient;
-        sz::complex::assign_complex(coefficient, scaling);
+        suzerain::complex::assign_complex(coefficient, scaling);
         luzw_.form_general(1, &coefficient, *bspw);
     }
 
@@ -184,7 +181,7 @@ public:
 
 private:
     const real_t opscaling_;
-    sz::bspline_luz luzw_;
+    suzerain::bspline_luz luzw_;
 };
 
 // TODO Incorporate IOperatorLifecycle semantics for NonlinearOperator
@@ -258,39 +255,39 @@ public:
             1.0, state[0].origin(), 1, state.shape()[1]);
 
         // Compute X-related derivatives of density at collocation points
-        sz::diffwave::accumulate(1, 0, // dx
+        suzerain::diffwave::accumulate(1, 0, // dx
             complex_one, state[0].origin(),
             complex_zero, rho_x.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(2, 0, // d2x
+        suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state[0].origin(),
             complex_zero, rho_xx.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(1, 0, // dx dy
+        suzerain::diffwave::accumulate(1, 0, // dx dy
             complex_one, rho_y.wave.begin(),
             complex_zero, rho_xy.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(1, 1, // dx dz
+        suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state[0].origin(),
             complex_zero, rho_xz.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of density at collocation points
-        sz::diffwave::accumulate(0, 1, // dz
+        suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state[0].origin(),
             complex_zero, rho_z.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(0, 1, // dy dz
+        suzerain::diffwave::accumulate(0, 1, // dy dz
             complex_one, rho_y.wave.begin(),
             complex_zero, rho_yz.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(0, 2, // d2z
+        suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state[0].origin(),
             complex_zero, rho_zz.wave.begin(),
             scenario.Lx, scenario.Lz,
@@ -312,39 +309,39 @@ public:
             1.0, state[1].origin(), 1, state.shape()[1]);
 
         // Compute X-related derivatives of X momentum at collocation points
-        sz::diffwave::accumulate(1, 0, // dx
+        suzerain::diffwave::accumulate(1, 0, // dx
             complex_one, state[1].origin(),
             complex_zero, mx_x.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(2, 0, // d2x
+        suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state[1].origin(),
             complex_zero, mx_xx.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(1, 0, // dx dy
+        suzerain::diffwave::accumulate(1, 0, // dx dy
             complex_one, mx_y.wave.begin(),
             complex_zero, mx_xy.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(1, 1, // dx dz
+        suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state[1].origin(),
             complex_zero, mx_xz.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of X momentum at collocation points
-        sz::diffwave::accumulate(0, 1, // dz
+        suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state[1].origin(),
             complex_zero, mx_z.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(0, 1, // dy dz
+        suzerain::diffwave::accumulate(0, 1, // dy dz
             complex_one, mx_y.wave.begin(),
             complex_zero, mx_yz.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(0, 2, // d2z
+        suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state[1].origin(),
             complex_zero, mx_zz.wave.begin(),
             scenario.Lx, scenario.Lz,
@@ -366,39 +363,39 @@ public:
             1.0, state[2].origin(), 1, state.shape()[1]);
 
         // Compute X-related derivatives of Y momentum at collocation points
-        sz::diffwave::accumulate(1, 0, // dx
+        suzerain::diffwave::accumulate(1, 0, // dx
             complex_one, state[2].origin(),
             complex_zero, my_x.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(2, 0, // d2x
+        suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state[2].origin(),
             complex_zero, my_xx.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(1, 0, // dx dy
+        suzerain::diffwave::accumulate(1, 0, // dx dy
             complex_one, my_y.wave.begin(),
             complex_zero, my_xy.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(1, 1, // dx dz
+        suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state[2].origin(),
             complex_zero, my_xz.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of Y momentum at collocation points
-        sz::diffwave::accumulate(0, 1, // dz
+        suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state[2].origin(),
             complex_zero, my_z.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(0, 1, // dy dz
+        suzerain::diffwave::accumulate(0, 1, // dy dz
             complex_one, my_y.wave.begin(),
             complex_zero, my_yz.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(0, 2, // d2z
+        suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state[2].origin(),
             complex_zero, my_zz.wave.begin(),
             scenario.Lx, scenario.Lz,
@@ -420,39 +417,39 @@ public:
             1.0, state[3].origin(), 1, state.shape()[1]);
 
         // Compute X-related derivatives of Z momentum at collocation points
-        sz::diffwave::accumulate(1, 0, // dx
+        suzerain::diffwave::accumulate(1, 0, // dx
             complex_one, state[3].origin(),
             complex_zero, mz_x.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(2, 0, // d2x
+        suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state[3].origin(),
             complex_zero, mz_xx.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(1, 0, // dx dy
+        suzerain::diffwave::accumulate(1, 0, // dx dy
             complex_one, mz_y.wave.begin(),
             complex_zero, mz_xy.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(1, 1, // dx dz
+        suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state[3].origin(),
             complex_zero, mz_xz.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of Z momentum at collocation points
-        sz::diffwave::accumulate(0, 1, // dz
+        suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state[3].origin(),
             complex_zero, mz_z.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(0, 1, // dy dz
+        suzerain::diffwave::accumulate(0, 1, // dy dz
             complex_one, mz_y.wave.begin(),
             complex_zero, mz_yz.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(0, 2, // d2z
+        suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state[3].origin(),
             complex_zero, mz_zz.wave.begin(),
             scenario.Lx, scenario.Lz,
@@ -474,24 +471,24 @@ public:
             1.0, state[4].origin(), 1, state.shape()[1]);
 
         // Compute X-related derivatives of total energy at collocation points
-        sz::diffwave::accumulate(1, 0, // dx
+        suzerain::diffwave::accumulate(1, 0, // dx
             complex_one, state[4].origin(),
             complex_zero, e_x.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(2, 0, // d2x
+        suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state[4].origin(),
             complex_one, div_grad_e.wave.begin(), // sum with contents
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of total energy at collocation points
-        sz::diffwave::accumulate(0, 1, // dz
+        suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state[4].origin(),
             complex_zero, e_z.wave.begin(),
             scenario.Lx, scenario.Lz,
             Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
-        sz::diffwave::accumulate(0, 2, // d2z
+        suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state[4].origin(),
             complex_one, div_grad_e.wave.begin(), // sum with contents
             scenario.Lx, scenario.Lz,
@@ -717,46 +714,47 @@ public:
             const real_t div_grad_e = *p_div_grad_e;  // FIXME Shadow
 
             // Prepare quantities derived from local state and its derivatives
-            u                  = sz::orthonormal::rhome::u(rho, m);
-            const real_t div_u = sz::orthonormal::rhome::div_u(
+            u                  = suzerain::orthonormal::rhome::u(rho, m);
+            const real_t div_u = suzerain::orthonormal::rhome::div_u(
                                     rho, grad_rho, m, div_m);
-            grad_u             = sz::orthonormal::rhome::grad_u(
+            grad_u             = suzerain::orthonormal::rhome::grad_u(
                                     rho, grad_rho, m, grad_m);
-            grad_div_u         = sz::orthonormal::rhome::grad_div_u(
+            grad_div_u         = suzerain::orthonormal::rhome::grad_div_u(
                                     rho, grad_rho, grad_grad_rho,
                                     m, div_m, grad_m, grad_div_m);
-            div_grad_u         = sz::orthonormal::rhome::div_grad_u(
+            div_grad_u         = suzerain::orthonormal::rhome::div_grad_u(
                                     rho, grad_rho, div_grad_rho,
                                     m, grad_m, div_grad_m);
             real_t p, T, mu, lambda;
-            sz::orthonormal::rhome::p_T_mu_lambda(
+            suzerain::orthonormal::rhome::p_T_mu_lambda(
                 beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
                 p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
-            const real_t div_grad_p = sz::orthonormal::rhome::div_grad_p(
+            const real_t div_grad_p = suzerain::orthonormal::rhome::div_grad_p(
                                         gamma,
                                         rho, grad_rho, div_grad_rho,
                                         m, grad_m, div_grad_m,
                                         e, grad_e, div_grad_e);
-            const real_t div_grad_T = sz::orthonormal::rhome::div_grad_T(
+            const real_t div_grad_T = suzerain::orthonormal::rhome::div_grad_T(
                                         gamma,
                                         rho, grad_rho, div_grad_rho,
                                         p, grad_p, div_grad_p);
-            tau     = sz::orthonormal::tau(mu, lambda, div_u, grad_u);
-            div_tau = sz::orthonormal::div_tau(
+            tau     = suzerain::orthonormal::tau(
+                        mu, lambda, div_u, grad_u);
+            div_tau = suzerain::orthonormal::div_tau(
                         mu, grad_mu, lambda, grad_lambda,
                         div_u, grad_u, div_grad_u, grad_div_u);
 
             // Maintain the minimum stable timestep
             // TODO Operator knows about the scheme's eigenvalues.  Fix that.
             convective_delta_t = std::min(convective_delta_t,
-                sz::timestepper::convective_stability_criterion(
+                suzerain::timestepper::convective_stability_criterion(
                     u.x(), one_over_delta_x,
                     u.y(), one_over_delta_y,
                     u.z(), one_over_delta_z,
                     std::sqrt(3.0),
                     std::sqrt(T))); // nondimensional a = sqrt(T)
             diffusive_delta_t = std::min(diffusive_delta_t,
-                sz::timestepper::diffusive_stability_criterion(
+                suzerain::timestepper::diffusive_stability_criterion(
                     one_over_delta_x,
                     one_over_delta_y,
                     one_over_delta_z,
@@ -768,7 +766,7 @@ public:
 
             // Momentum equation
             Eigen::Vector3d momentum =
-                - sz::orthonormal::div_u_outer_m(m, grad_m, u, div_u)
+                - suzerain::orthonormal::div_u_outer_m(m, grad_m, u, div_u)
                 - grad_p
                 + inv_Re * div_tau
                 ;
@@ -777,12 +775,16 @@ public:
             *p_mz = momentum[2];
 
             // Energy equation
-            *p_e = - sz::orthonormal::div_e_u(e, grad_e, u, div_u)
-                   - sz::orthonormal::div_p_u(p, grad_p, u, div_u)
-                   + inv_Re_Pr_gamma1 * sz::orthonormal::div_mu_grad_T(
+            *p_e = - suzerain::orthonormal::div_e_u(
+                        e, grad_e, u, div_u
+                     )
+                   - suzerain::orthonormal::div_p_u(
+                        p, grad_p, u, div_u
+                     )
+                   + inv_Re_Pr_gamma1 * suzerain::orthonormal::div_mu_grad_T(
                         grad_T, div_grad_T, mu, grad_mu
                      )
-                   + inv_Re * sz::orthonormal::div_tau_u<real_t>(
+                   + inv_Re * suzerain::orthonormal::div_tau_u<real_t>(
                         u, grad_u, tau, div_tau
                      )
                    ;
@@ -898,7 +900,7 @@ public:
     }
 
 private:
-    // Details for sz::diffwave::* calls
+    // Details for suzerain::diffwave::* calls
     const int Ny;
     const int dNx;
     const int dkbx;
@@ -907,19 +909,19 @@ private:
     const int dkbz;
     const int dkez;
 
-    mutable sz::pencil<> rho_x, rho_y, rho_z;
-    mutable sz::pencil<> rho_xx, rho_xy, rho_xz, rho_yy, rho_yz, rho_zz;
+    mutable suzerain::pencil<> rho_x, rho_y, rho_z;
+    mutable suzerain::pencil<> rho_xx, rho_xy, rho_xz, rho_yy, rho_yz, rho_zz;
 
-    mutable sz::pencil<> mx_x, mx_y, mx_z;
-    mutable sz::pencil<> mx_xx, mx_xy, mx_xz, mx_yy, mx_yz, mx_zz;
+    mutable suzerain::pencil<> mx_x, mx_y, mx_z;
+    mutable suzerain::pencil<> mx_xx, mx_xy, mx_xz, mx_yy, mx_yz, mx_zz;
 
-    mutable sz::pencil<> my_x, my_y, my_z;
-    mutable sz::pencil<> my_xx, my_xy, my_xz, my_yy, my_yz, my_zz;
+    mutable suzerain::pencil<> my_x, my_y, my_z;
+    mutable suzerain::pencil<> my_xx, my_xy, my_xz, my_yy, my_yz, my_zz;
 
-    mutable sz::pencil<> mz_x, mz_y, mz_z;
-    mutable sz::pencil<> mz_xx, mz_xy, mz_xz, mz_yy, mz_yz, mz_zz;
+    mutable suzerain::pencil<> mz_x, mz_y, mz_z;
+    mutable suzerain::pencil<> mz_xx, mz_xy, mz_xz, mz_yy, mz_yz, mz_zz;
 
-    mutable sz::pencil<> e_x, e_y, e_z, div_grad_e;
+    mutable suzerain::pencil<> e_x, e_y, e_z, div_grad_e;
 };
 
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
@@ -1002,21 +1004,21 @@ int main(int argc, char **argv)
     atexit(&atexit_esio);                           // Finalize ESIO at exit
 
     // Obtain some basic MPI environment details.
-    const int nranks = sz::mpi::comm_size(MPI_COMM_WORLD);
+    const int nranks = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
     // Establish MPI-savvy, rank-dependent logging names
     name_logger_within_comm_world();
 
     INFO("Processing command line arguments and response files");
     {
-        sz::ProgramOptions options(
+        suzerain::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation");
         options.add_definition(
-                const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
+                const_cast<ScenarioDefinition<real_t>&>(scenario));
         options.add_definition(
-                const_cast<pb::GridDefinition<real_t>& >(grid));
+                const_cast<GridDefinition<real_t>&>(grid));
         options.add_definition(
-                const_cast<pb::RestartDefinition<>& >(restart));
+                const_cast<RestartDefinition<>&>(restart));
         options.process(argc, argv);
     }
 
@@ -1024,9 +1026,9 @@ int main(int argc, char **argv)
 
     INFO("Loading details from restart file: " << restart.load());
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
-    load(esioh, const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
-    load(esioh, const_cast<pb::GridDefinition<real_t>& >(grid));
-    load(esioh, bspw, const_cast<pb::GridDefinition<real_t>& >(grid));
+    load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
+    load(esioh, const_cast<GridDefinition<real_t>&>(grid));
+    load(esioh, bspw, const_cast<GridDefinition<real_t>&>(grid));
     esio_file_close(esioh);
 
     INFO("Saving metadata template file: " << restart.metadata());
@@ -1041,12 +1043,12 @@ int main(int argc, char **argv)
     }
 
     // Initialize B-spline workspace to find coeffs from collocation points
-    bspluzw = make_shared<sz::bspline_luz>(*bspw);
+    bspluzw = make_shared<suzerain::bspline_luz>(*bspw);
     bspluzw->form_mass(*bspw);
 
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
-    pg = make_shared<sz::pencil_grid>(grid.dealiased_extents(),
-                                      grid.processor_grid);
+    pg = make_shared<suzerain::pencil_grid>(grid.dealiased_extents(),
+                                            grid.processor_grid);
     INFO( "Number of MPI ranks:               " << nranks);
     INFO( "Rank grid used for decomposition:  " << pg->processor_grid());
     DEBUG("Local dealiased wave start  (XYZ): " << pg->local_wave_start());
@@ -1056,14 +1058,14 @@ int main(int argc, char **argv)
     // Compute how much non-dealiased XYZ state is local to this rank
     // Additional munging necessary X direction has (Nx/2+1) complex values
     state_start = pg->local_wave_start();
-    state_end[0] = std::min<sz::pencil_grid::index>(
+    state_end[0] = std::min<suzerain::pencil_grid::index>(
             grid.global_extents[0]/2+1, pg->local_wave_end()[0]);
     for (int i = 1; i < state_end.static_size; ++i) {
-        state_end[i] = std::min<sz::pencil_grid::index>(
+        state_end[i] = std::min<suzerain::pencil_grid::index>(
                 grid.global_extents[i], pg->local_wave_end()[i]);
     }
     for (int i = 0; i < state_extent.static_size; ++i) {
-        state_extent[i] = std::max<sz::pencil_grid::index>(
+        state_extent[i] = std::max<suzerain::pencil_grid::index>(
                 state_end[i] - state_start[i], 0);
     }
 
@@ -1073,13 +1075,18 @@ int main(int argc, char **argv)
 
     // Create the state storage for the linear and nonlinear operators
     // with appropriate padding to allow nonlinear state to be P3DFFTified
-    state_linear.reset(new state_type(sz::to_yxz(5, state_extent)));
-    state_nonlinear.reset(new state_type(
-            sz::to_yxz(5, state_extent),
-            sz::prepend(pg->local_wave_storage(),
-                        sz::strides_cm(sz::to_yxz(pg->local_wave_extent())))));
+    {
+        using suzerain::to_yxz;
+        using suzerain::prepend;
+        using suzerain::strides_cm;
+        state_linear.reset(new state_type(to_yxz(5, state_extent)));
+        state_nonlinear.reset(new state_type(
+                to_yxz(5, state_extent),
+                prepend(pg->local_wave_storage(),
+                        strides_cm(to_yxz(pg->local_wave_extent())))));
+    }
     if (DEBUG_ENABLED) {
-        boost::array<sz::pencil_grid::index,4> strides;
+        boost::array<suzerain::pencil_grid::index,4> strides;
         std::copy(state_linear->strides(),
                   state_linear->strides() + 4, strides.begin());
         DEBUG("Linear state strides    (FYXZ): " << strides);
@@ -1090,8 +1097,8 @@ int main(int argc, char **argv)
 
     // Zero out any garbage in state_{non,}linear
     // Use fill rather than state_{non,}linear.scale to wipe any NaNs
-    sz::multi_array::fill(*state_linear, 0);
-    sz::multi_array::fill(*state_nonlinear, 0);
+    suzerain::multi_array::fill(*state_linear, 0);
+    suzerain::multi_array::fill(*state_nonlinear, 0);
 
     // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
@@ -1108,7 +1115,7 @@ int main(int argc, char **argv)
 
     // Instantiate the operators and time stepping details
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
-    const sz::timestepper::lowstorage::SMR91Method<complex_t> smr91;
+    const suzerain::timestepper::lowstorage::SMR91Method<complex_t> smr91;
     MassOperator L(scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
     NonlinearOperator N;
 

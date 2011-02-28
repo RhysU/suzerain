@@ -57,9 +57,6 @@
 #pragma warning(disable:383 1572)
 
 // Introduce shorthand for common names
-namespace sz = ::suzerain;
-namespace pb = ::suzerain::problem;
-namespace po = ::boost::program_options;
 using boost::make_shared;
 using boost::math::constants::pi;
 using boost::numeric_cast;
@@ -68,25 +65,27 @@ using boost::shared_ptr;
 using std::numeric_limits;
 
 // Global scenario parameters initialized in main()
-static const pb::ScenarioDefinition<real_t> scenario(
-        /* default_Re    */ 100,
-        /* default_Pr    */ real_t(7)/real_t(10),
-        /* default_gamma */ real_t(14)/real_t(10),
-        /* default_beta  */ real_t(2)/real_t(3),
-        /* default_Lx    */ 4*pi<real_t>(),
-        /* default_Ly    */ 2,
-        /* default_Lz    */ 4*pi<real_t>()/3);
-static const pb::GridDefinition<real_t> grid(
-        /* default_Nx    */ 1,
-        /* default_DAFx  */ real_t(3)/real_t(2),
-        /* default_Ny    */ 16,
-        /* default_k     */ 6,
-        /* default_Nz    */ 1,
-        /* default_DAFz  */ real_t(3)/real_t(2));
+using suzerain::problem::ScenarioDefinition;
+using suzerain::problem::GridDefinition;
+static const ScenarioDefinition<real_t> scenario(
+        /* Re    */ 100,
+        /* Pr    */ real_t(7)/real_t(10),
+        /* gamma */ real_t(14)/real_t(10),
+        /* beta  */ real_t(2)/real_t(3),
+        /* Lx    */ 4*pi<real_t>(),
+        /* Ly    */ 2,
+        /* Lz    */ 4*pi<real_t>()/3);
+static const GridDefinition<real_t> grid(
+        /* Nx    */ 1,
+        /* DAFx  */ real_t(3)/real_t(2),
+        /* Ny    */ 16,
+        /* k     */ 6,
+        /* Nz    */ 1,
+        /* DAFz  */ real_t(3)/real_t(2));
 
 // Global B-spline -details initialized in main()
-static shared_ptr<sz::bspline>     bspw;
-static shared_ptr<sz::bspline_luz> bspluzw;
+static shared_ptr<suzerain::bspline>     bspw;
+static shared_ptr<suzerain::bspline_luz> bspluzw;
 
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
@@ -144,7 +143,7 @@ int main(int argc, char **argv)
     atexit(&atexit_esio);                           // Finalize ESIO at exit
 
     // Obtain some basic MPI environment details.
-    const int nranks = sz::mpi::comm_size(MPI_COMM_WORLD);
+    const int nranks = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
     // Establish MPI-savvy, rank-dependent logging names
     name_logger_within_comm_world();
@@ -161,14 +160,16 @@ int main(int argc, char **argv)
     real_t p_wall = GSL_CONST_MKSA_STD_ATMOSPHERE / 100000;
     std::string restart_file;
     real_t htdelta;
-    sz::ProgramOptions options(
+    suzerain::ProgramOptions options(
             "Suzerain-based compressible channel initialization");
     {
+        namespace po = ::boost::program_options;
+
         // Cast away const so options processing can modify settings
         options.add_definition(
-                const_cast<pb::ScenarioDefinition<real_t>& >(scenario));
+                const_cast<ScenarioDefinition<real_t>& >(scenario));
         options.add_definition(
-                const_cast<pb::GridDefinition<real_t>& >(grid));
+                const_cast<GridDefinition<real_t>& >(grid));
 
         using ::suzerain::validation::ensure_positive;
         ::std::pointer_to_binary_function<real_t,const char*,void>
@@ -222,14 +223,15 @@ int main(int argc, char **argv)
 
         // Compute breakpoint locations
         const int nbreak = grid.Ny + 2 - grid.k;
-        sz::math::linspace(0.0, 1.0, nbreak, buf.get()); // Uniform [0, 1]
-        for (int i = 0; i < nbreak; ++i) {               // Stretch 'em out
+        suzerain::math::linspace(0.0, 1.0, nbreak, buf.get()); // Uniform [0,1]
+        for (int i = 0; i < nbreak; ++i) {                     // Stretch 'em
             buf[i] = scenario.Ly * suzerain_htstretch2(htdelta, 1.0, buf[i]);
         }
 
         // Generate the B-spline workspace based on order and breakpoints
         // Maximum non-trivial derivative operators included
-        bspw = make_shared<sz::bspline>(grid.k, grid.k - 2, nbreak, buf.get());
+        bspw = make_shared<suzerain::bspline>(
+                grid.k, grid.k - 2, nbreak, buf.get());
         assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny);
     }
 
@@ -310,7 +312,7 @@ int main(int argc, char **argv)
     }
 
     // Initialize B-spline workspace to find coeffs from collocation points
-    bspluzw = make_shared<sz::bspline_luz>(*bspw);
+    bspluzw = make_shared<suzerain::bspline_luz>(*bspw);
     bspluzw->form_mass(*bspw);
 
     INFO("Computing nondimensional mean profiles for restart");
