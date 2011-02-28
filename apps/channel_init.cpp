@@ -145,7 +145,6 @@ int main(int argc, char **argv)
 
     // Obtain some basic MPI environment details.
     const int nranks = sz::mpi::comm_size(MPI_COMM_WORLD);
-    const int rank   = sz::mpi::comm_rank(MPI_COMM_WORLD);
 
     // Establish MPI-savvy, rank-dependent logging names
     name_logger_within_comm_world();

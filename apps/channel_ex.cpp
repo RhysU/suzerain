@@ -877,7 +877,7 @@ static void load_state(esio_handle h, state_type &state)
 }
 
 /** Routine to store a restart file.  Signature for Timecontroller use. */
-static bool save_restart(double t, unsigned long nt)
+static bool save_restart(double t, std::size_t nt)
 {
     esio_file_clone(esioh, restart.metadata().c_str(),
                     restart.uncommitted().c_str(), 1 /*overwrite*/);
@@ -1034,7 +1034,7 @@ int main(int argc, char **argv)
                 restart.every_dt() ? restart.every_dt()
                                    : numeric_limits<double>::max(),
                 restart.every_nt() ? restart.every_nt()
-                                   : numeric_limits<unsigned long>::max(),
+                                   : numeric_limits<std::size_t>::max(),
                 &save_restart);
     }
 

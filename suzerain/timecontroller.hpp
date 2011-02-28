@@ -60,7 +60,7 @@ namespace timestepper
  */
 template<
     typename TimeType = double,
-    typename StepType = unsigned long
+    typename StepType = std::size_t
 >
 class TimeController
 {
@@ -263,18 +263,42 @@ public:
      *
      * @return The current simulation discrete time step.
      */
-    step_type current_nt() const { return current_nt_; }
+    step_type current_nt() const {
+        return boost::accumulators::extract::count(dt_stats);
+    }
 
     //@}
 
     //@{
 
+    /**
+     * Retrieve the minimum time step taken during time advancement
+     *
+     * @return The minimum time step taken during time advancement
+     */
     time_type taken_min() const { return min(dt_stats); }
 
+    /**
+     * Retrieve the mean time step taken during time advancement
+     *
+     * @return The mean time step taken during time advancement
+     */
     time_type taken_mean() const { return mean(dt_stats); }
 
+    /**
+     * Retrieve the maximum time step taken during time advancement
+     *
+     * @return The maximum time step taken during time advancement
+     */
     time_type taken_max() const { return max(dt_stats); }
 
+    /**
+     * Retrieve the standard deviation of the time steps taken during
+     * time advancement.
+     *
+     * @return the standard deviation of the time steps taken during
+     * time advancement.
+     */
     time_type taken_stddev() const { return std::sqrt(variance(dt_stats)); }
 
     //@}
@@ -296,13 +320,14 @@ private:
 
     typename boost::function<time_type (time_type)> stepper_;
     time_type min_dt_, max_dt_, current_t_;
-    step_type current_nt_;
     EntryList entries_;
 
-    // Maintain running statistics on time step sizes
+    // Maintain running statistics on the actual time step sizes taken
+    // Also stores the current time step counter as a convenient side effect
     boost::accumulators::accumulator_set<
             time_type,
-            boost::accumulators::stats<
+            boost::accumulators::features<
+                boost::accumulators::tag::count,
                 boost::accumulators::tag::min,
                 boost::accumulators::tag::mean,
                 boost::accumulators::tag::max,
@@ -333,7 +358,6 @@ TimeController<TimeType,StepType>::TimeController(StepperType stepper,
       min_dt_(min_dt != 0 ? min_dt : std::numeric_limits<time_type>::epsilon()),
       max_dt_(max_dt != 0 ? max_dt : std::numeric_limits<time_type>::max()),
       current_t_(initial_t),
-      current_nt_(0),
       entries_(7)
 {
     // NOP
@@ -352,7 +376,7 @@ void TimeController<TimeType,StepType>::add_callback(time_type what_t,
     if (what_t <= current_t_) {
         throw std::invalid_argument("what_t <= current_t()");
     }
-    if (what_nt <= current_nt_) {
+    if (what_nt <= current_nt()) {
         throw std::invalid_argument("what_nt <= current_nt()");
     }
 
@@ -380,8 +404,8 @@ void TimeController<TimeType,StepType>::add_periodic_callback(
     e->periodic = true;
     e->every_dt = every_dt;
     e->every_nt = every_nt;
-    e->next_t   = add_and_coerce_overflow_to_max(current_t_,  every_dt);
-    e->next_nt  = add_and_coerce_overflow_to_max(current_nt_, every_nt);
+    e->next_t   = add_and_coerce_overflow_to_max(current_t_,   every_dt);
+    e->next_nt  = add_and_coerce_overflow_to_max(current_nt(), every_nt);
     e->callback = callback;
     entries_.push_back(e);        // Transfer Entry memory ownership
 }
@@ -404,21 +428,18 @@ bool TimeController<TimeType,StepType>::advance(const time_type final_t,
     }
 
     // Advance time until done or we abort for some reason
-    while (current_t_ < final_t && current_nt_ < final_nt) {
+    while (current_t_ < final_t && current_nt() < final_nt) {
 
         // Determine maximum possible step size allowed by all criteria
         const time_type possible_dt
             = min(max_dt_, min(final_t, next_event_t) - current_t_);
         assert(possible_dt > 0);
 
-        // Take time step and record new simulation time
+        // Take step, accumulate statistics, and record new simulation time
         const time_type actual_dt = stepper_(possible_dt);
         assert(actual_dt <= possible_dt);
-        current_t_  += actual_dt;
-        current_nt_ += 1;
-
-        // Accumulate running statistics on the time steps taken
         dt_stats(actual_dt);
+        current_t_ += actual_dt;
 
         // Check callbacks and determine next callback simulation time
         next_event_t = std::numeric_limits<time_type>::max();
@@ -426,13 +447,13 @@ bool TimeController<TimeType,StepType>::advance(const time_type final_t,
         while (iter != entries_.end()) {
 
             // Callback required?
-            if (SUZERAIN_UNLIKELY(    current_t_  == (*iter).next_t
-                                   || current_nt_ == (*iter).next_nt)) {
+            if (SUZERAIN_UNLIKELY(    current_t_   == (*iter).next_t
+                                   || current_nt() == (*iter).next_nt)) {
 
                 // Perform required callback
                 // Must perform state updates prior to any possible abort
                 const bool keep_advancing
-                    = (*iter).callback(current_t_, current_nt_);
+                    = (*iter).callback(current_t_, current_nt());
 
                 // Remove single-shot Entry from further consideration
                 if (SUZERAIN_UNLIKELY(!((*iter).periodic))) {
@@ -445,9 +466,9 @@ bool TimeController<TimeType,StepType>::advance(const time_type final_t,
 
                 // Update periodic Entry with time of next required callback
                 (*iter).next_t = add_and_coerce_overflow_to_max(
-                        current_t_,  (*iter).every_dt);
+                        current_t_,   (*iter).every_dt);
                 (*iter).next_nt = add_and_coerce_overflow_to_max(
-                        current_nt_, (*iter).every_nt);
+                        current_nt(), (*iter).every_nt);
 
                 if (SUZERAIN_UNLIKELY(!keep_advancing)) {
                     return false;
