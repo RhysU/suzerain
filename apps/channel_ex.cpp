@@ -876,6 +876,8 @@ static void load_state(esio_handle h, state_type &state)
     }
 }
 
+static std::size_t last_restart_saved_nt = 0;
+
 /** Routine to store a restart file.  Signature for Timecontroller use. */
 static bool save_restart(double t, std::size_t nt)
 {
@@ -906,6 +908,8 @@ static bool save_restart(double t, std::size_t nt)
                             restart.retain());
 
     INFO("Successfully wrote restart file at t = " << t << " for nt = " << nt);
+
+    last_restart_saved_nt = nt; // Maintain last successful restart time step
 
     return true; // Continue
 }
@@ -1040,4 +1044,20 @@ int main(int argc, char **argv)
 
     // Advance time
     tc->step(1);
+
+    // Output statistics on time advancement
+    INFO("Advanced simulation from t_initial = " << initial_t
+         << " to t_final = " << tc->current_t()
+         << " in " << tc->current_nt() << " steps");
+    INFO("Min/mean/max/standard deviation of delta_t: "
+         << tc->taken_min()  << ", "
+         << tc->taken_mean() << ", "
+         << tc->taken_max()  << ", "
+         << tc->taken_stddev());
+
+    // Save a final restart before exit if one was not just saved
+    if (last_restart_saved_nt != tc->current_nt()) {
+        INFO("Saving final restart file prior to quitting.");
+        save_restart(tc->current_t(), tc->current_nt());
+    }
 }
