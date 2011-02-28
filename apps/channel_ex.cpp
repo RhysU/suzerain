@@ -93,7 +93,9 @@ static const pb::RestartDefinition<> restart(
         /* default_metadata     */ "metadata.h5",
         /* default_uncommitted  */ "uncommitted.h5",
         /* default_desttemplate */ "restart#.h5",
-        /* default_retain       */ 1);
+        /* default_retain       */ 1,
+        /* default_every_dt     */ 0,
+        /* default_every_nt     */ 100);
 
 // Global grid-details initialized in main()
 static shared_ptr<sz::bspline>     bspw;
@@ -875,7 +877,7 @@ static void load_state(esio_handle h, state_type &state)
 }
 
 /** Routine to store a restart file.  Signature for Timecontroller use. */
-static void save_restart(double t, unsigned long nt)
+static bool save_restart(double t, unsigned long nt)
 {
     esio_file_clone(esioh, restart.metadata().c_str(),
                     restart.uncommitted().c_str(), 1 /*overwrite*/);
@@ -904,6 +906,8 @@ static void save_restart(double t, unsigned long nt)
                             restart.retain());
 
     INFO("Successfully wrote restart file at t = " << t << " for nt = " << nt);
+
+    return true; // Continue
 }
 
 int main(int argc, char **argv)
@@ -1024,7 +1028,15 @@ int main(int argc, char **argv)
             make_LowStorageTimeController(
                 smr91, L, N, *state_linear, *state_nonlinear, initial_t));
 
-    // TODO Register callbacks, especially for save_restart()
+    // Register restart-writing callbacks every_{dt,nt}, if requested
+    if (restart.every_nt() || restart.every_dt()) {
+        tc->add_periodic_callback(
+                restart.every_dt() ? restart.every_dt()
+                                   : numeric_limits<double>::max(),
+                restart.every_nt() ? restart.every_nt()
+                                   : numeric_limits<unsigned long>::max(),
+                &save_restart);
+    }
 
     // Advance time
     tc->step(1);
