@@ -105,9 +105,12 @@ static shared_ptr<sz::pencil_grid> pg;
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
 static shared_ptr<state_type> state_nonlinear;
-static boost::array<suzerain::pencil_grid::index,3> state_start;
-static boost::array<suzerain::pencil_grid::index,3> state_end;
-static boost::array<suzerain::pencil_grid::index,3> state_extent;
+static boost::array<sz::pencil_grid::index,3> state_start;
+static boost::array<sz::pencil_grid::index,3> state_end;
+static boost::array<sz::pencil_grid::index,3> state_extent;
+
+// Bulk density is computed in main() and used within NonlinearOperator
+static real_t bulk_density;
 
 // TODO Incorporate IOperatorLifecycle semantics
 // TODO Refactor MassOperator into templated BsplineMassOperator
@@ -785,10 +788,6 @@ public:
                    ;
         }
 
-        // TODO Enforce boundary conditions in wave space
-        // Enforce isothermal lower wall boundary condition
-        // Enforce isothermal upper wall boundary condition
-
         // Convert collocation point values to wave space
         pg->transform_physical_to_wave(
                 reinterpret_cast<real_t *>(state[0].origin()));
@@ -813,9 +812,90 @@ public:
         bspluzw->solve(state.shape()[2]*state.shape()[3],
                 state[4].origin(), 1, state.shape()[1]);
 
+        // ------------------------------------------------------------------
+        // BEGIN: Boundary conditions and driving forces
+        // See writeup/channel_treatment.tex for full details
+        // ------------------------------------------------------------------
+        const std::size_t lower_wall = 0;                    // index of wall
+        const std::size_t upper_wall = state.shape()[1] - 1; // index of wall
+
+        // Add f_rho to mean density right hand side per writeup step (2)
+        if (dkbx == 0 && dkbz == 0) {                // "zero-zero" rank only
+            real_t f_rho;
+            bspw->integrate(reinterpret_cast<real_t *>(state[0].origin()),
+                            sizeof(complex_t)/sizeof(real_t),
+                            &f_rho);
+            f_rho /= scenario.Ly;
+            for (std::size_t i = 0; i < state.shape()[1]; ++i) {
+                state[0][i][0][0] -= f_rho;
+            }
+        }
+
+        // Set no-slip condition on walls per writeup step (3)
+        // Done as three separate loops to walk memory linearly
+        for (std::size_t j = 0; j < state.shape()[2]; ++j) {      // x momentum
+            for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+                state[1][lower_wall][j][k] = 0;
+                state[1][upper_wall][j][k] = 0;
+            }
+        }
+        for (std::size_t j = 0; j < state.shape()[2]; ++j) {      // y momentum
+            for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+                state[2][lower_wall][j][k] = 0;
+                state[2][upper_wall][j][k] = 0;
+            }
+        }
+        for (std::size_t j = 0; j < state.shape()[2]; ++j) {      // z momentum
+            for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+                state[3][lower_wall][j][k] = 0;
+                state[3][upper_wall][j][k] = 0;
+            }
+        }
+
+        // Set isothermal condition on walls per writeup step (4)
+        const real_t inv_gamma_gamma1
+            = 1 / (scenario.gamma * (scenario.gamma - 1));
+        for (std::size_t j = 0; j < state.shape()[2]; ++j) {
+            for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+                state[4][lower_wall][j][k]
+                    = inv_gamma_gamma1 * state[0][lower_wall][j][k];
+                state[4][upper_wall][j][k]
+                    = inv_gamma_gamma1 * state[0][upper_wall][j][k];
+            }
+        }
+
+        // Apply f_{m_x} term to mean x-momentum, mean energy
+        if (dkbx == 0 && dkbz == 0) {                // "zero-zero" rank only
+
+            // Compute temporary per writeup implementation step (5)
+            real_t alpha;
+            bspw->integrate(reinterpret_cast<real_t *>(state[1].origin()),
+                            sizeof(complex_t)/sizeof(real_t),
+                            &alpha);
+            alpha /= scenario.Ly;
+
+            // Apply to non-wall mean x-momentum right hand side per step (6)
+            for (std::size_t i = lower_wall + 1; i < upper_wall; ++i) {
+                state[1][i][0][0] -= alpha;
+            }
+
+            // Apply to non-wall mean energy right hand side per step (7)
+            // Note use of state_linear to obtain mean x-momentum state values
+            // (NOT right hand sides).  Relies on the low-storage scheme
+            // semantics.
+            alpha /= bulk_density;
+            for (std::size_t i = lower_wall + 1; i < upper_wall; ++i) {
+                state[4][i][0][0] -= alpha * (*state_linear)[1][i][0][0];
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // END: Boundary conditions and driving forces
+        // See writeup/channel_treatment.tex for full details
+        // ------------------------------------------------------------------
+
         return std::min(convective_delta_t, diffusive_delta_t);
     }
-
 
 private:
     // Details for sz::diffwave::* calls
@@ -1013,18 +1093,24 @@ int main(int argc, char **argv)
     sz::multi_array::fill(*state_linear, 0);
     sz::multi_array::fill(*state_nonlinear, 0);
 
-    // Instantiate the operators and time stepping details
-    // See write up section 2.1 (Spatial Discretization) for coefficient origin
-    const sz::timestepper::lowstorage::SMR91Method<complex_t> smr91;
-    MassOperator L(scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
-    NonlinearOperator N;
-
     // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
     real_t initial_t;
     load_time(esioh, initial_t);
     load_state(esioh, *state_linear);
     esio_file_close(esioh);
+
+    // Compute bulk density, which we hold constant in time, from the state
+    bspw->integrate(reinterpret_cast<real_t *>((*state_linear)[0].origin()),
+                    sizeof(complex_t)/sizeof(real_t),
+                    &bulk_density);
+    DEBUG("Bulk density will be held constant at " << bulk_density);
+
+    // Instantiate the operators and time stepping details
+    // See write up section 2.1 (Spatial Discretization) for coefficient origin
+    const sz::timestepper::lowstorage::SMR91Method<complex_t> smr91;
+    MassOperator L(scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
+    NonlinearOperator N;
 
     // Establish TimeController for use with operators and state storage
     using suzerain::timestepper::TimeController;
