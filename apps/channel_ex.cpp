@@ -861,9 +861,9 @@ static void load_state(esio_handle h, state_type &state)
     int zglobal, xglobal, yglobal, ncomponents;
     esio_field_sizev(
             h, field_names[0], &zglobal, &xglobal, &yglobal, &ncomponents);
-    assert(zglobal == scenario.Nz);
-    assert(xglobal == scenario.Nx);
-    assert(yglobal == scenario.Ny);
+    assert(static_cast<unsigned>(zglobal) == grid.Nz);
+    assert(static_cast<unsigned>(xglobal) == grid.Nx);
+    assert(static_cast<unsigned>(yglobal) == grid.Ny);
     assert(ncomponents == 2);
 
     esio_field_establish(h, zglobal, state_start[2], state_extent[2],
