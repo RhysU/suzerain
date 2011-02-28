@@ -33,7 +33,6 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <log4cxx/logger.h>
 #include <esio/esio.h>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bspline.hpp>
@@ -52,6 +51,7 @@
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/utility.hpp>
 
+#include "logger.hpp"
 #include "channel_common.hpp"
 
 #pragma warning(disable:383 1572)
@@ -913,15 +913,11 @@ int main(int argc, char **argv)
     esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
     atexit(&atexit_esio);                           // Finalize ESIO at exit
 
-    // Prepare logger (from channel_common.hpp) using MPI environment details.
+    // Obtain some basic MPI environment details.
     const int nranks = sz::mpi::comm_size(MPI_COMM_WORLD);
-    const int rank   = sz::mpi::comm_rank(MPI_COMM_WORLD);
-    logger = log4cxx::Logger::getLogger(
-            sz::mpi::comm_rank_identifier(MPI_COMM_WORLD));
-    // Log only warnings and above from ranks 1 and higher when not debugging
-    if (rank > 0 && !logger->isDebugEnabled()) {
-        logger->setLevel(log4cxx::Level::getWarn());
-    }
+
+    // Establish MPI-savvy, rank-dependent logging names
+    name_logger_within_comm_world();
 
     INFO("Processing command line arguments and response files");
     {

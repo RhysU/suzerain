@@ -31,7 +31,6 @@
 #define CHANNEL_COMMON_HPP
 
 #include <esio/esio.h>
-#include <log4cxx/logger.h>
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/mpi.hpp>
@@ -45,17 +44,6 @@
 // Currently only real_t == double is supported by many, many components
 typedef double               real_t;
 typedef std::complex<real_t> complex_t;
-
-/** Global logging infrastructure */
-extern log4cxx::LoggerPtr logger;
-#define TRACE(expr)     LOG4CXX_TRACE(logger,expr)
-#define DEBUG(expr)     LOG4CXX_DEBUG(logger,expr)
-#define INFO(expr)      LOG4CXX_INFO( logger,expr)
-#define WARN(expr)      LOG4CXX_WARN( logger,expr)
-#define ERROR(expr)     LOG4CXX_ERROR(logger,expr)
-#define FATAL(expr)     LOG4CXX_FATAL(logger,expr)
-#define TRACE_ENABLED   (logger->isTraceEnabled())
-#define DEBUG_ENABLED   (logger->isDebugEnabled())
 
 /** Field names as stored in restart files */
 extern const boost::array<const char *,5> field_names;

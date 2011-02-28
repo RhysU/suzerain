@@ -34,21 +34,11 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #include <suzerain/diffwave.hpp>
+#include "logger.hpp"
 #include "channel_common.hpp"
 
 using boost::numeric_cast;
 using boost::scoped_array;
-
-// Will likely be replaced with a more descriptive instance in main()
-log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
-
-// Failure to destroy logger prior to running static instance destructors
-// causes segfaults.  Concoct an atexit callback specifically to destroy
-// anything pointed to by logger prior to static instance destructors. 
-static struct DestructLoggerRegistration {
-    DestructLoggerRegistration() { atexit(&destruct_logger); }
-    static void destruct_logger() { logger = 0; }
-} destructLoggerRegistration;
 
 const boost::array<const char *,5> field_names = {{
     "rho", "rhou", "rhov", "rhow", "rhoe"

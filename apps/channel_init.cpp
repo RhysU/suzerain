@@ -33,7 +33,6 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <log4cxx/logger.h>
 #include <esio/esio.h>
 #include <gsl/gsl_const_mksa.h>
 #include <gsl/gsl_const_num.h>
@@ -52,6 +51,7 @@
 #include <suzerain/svehla.h>
 #include <suzerain/utility.hpp>
 
+#include "logger.hpp"
 #include "channel_common.hpp"
 
 #pragma warning(disable:383 1572)
@@ -146,12 +146,9 @@ int main(int argc, char **argv)
     // Obtain some basic MPI environment details.
     const int nranks = sz::mpi::comm_size(MPI_COMM_WORLD);
     const int rank   = sz::mpi::comm_rank(MPI_COMM_WORLD);
-    logger = log4cxx::Logger::getLogger(
-            sz::mpi::comm_rank_identifier(MPI_COMM_WORLD));
-    // Log only warnings and above from ranks 1 and higher when not debugging
-    if (rank > 0 && !logger->isDebugEnabled()) {
-        logger->setLevel(log4cxx::Level::getWarn());
-    }
+
+    // Establish MPI-savvy, rank-dependent logging names
+    name_logger_within_comm_world();
 
     // Ensure that we're running in a single processor environment
     if (nranks > 1) {
