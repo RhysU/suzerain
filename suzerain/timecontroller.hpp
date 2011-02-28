@@ -31,6 +31,12 @@
 #define __SUZERAIN_TIMECONTROLLER_HPP
 
 #include <suzerain/common.hpp>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/count.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
 
 /** @file
  * Provides higher-level control mechanisms based atop abstract
@@ -261,6 +267,18 @@ public:
 
     //@}
 
+    //@{
+
+    time_type taken_min() const { return min(dt_stats); }
+
+    time_type taken_mean() const { return mean(dt_stats); }
+
+    time_type taken_max() const { return max(dt_stats); }
+
+    time_type taken_stddev() const { return std::sqrt(variance(dt_stats)); }
+
+    //@}
+
 private:
 
     // Mark Entry as noncopyable to avoid accidental performance hits
@@ -280,6 +298,17 @@ private:
     time_type min_dt_, max_dt_, current_t_;
     step_type current_nt_;
     EntryList entries_;
+
+    // Maintain running statistics on time step sizes
+    boost::accumulators::accumulator_set<
+            time_type,
+            boost::accumulators::stats<
+                boost::accumulators::tag::min,
+                boost::accumulators::tag::mean,
+                boost::accumulators::tag::max,
+                boost::accumulators::tag::lazy_variance
+            >
+        > dt_stats;
 
     template< typename T >
     static T add_and_coerce_overflow_to_max(T a, T b)
@@ -387,6 +416,9 @@ bool TimeController<TimeType,StepType>::advance(const time_type final_t,
         assert(actual_dt <= possible_dt);
         current_t_  += actual_dt;
         current_nt_ += 1;
+
+        // Accumulate running statistics on the time steps taken
+        dt_stats(actual_dt);
 
         // Check callbacks and determine next callback simulation time
         next_event_t = std::numeric_limits<time_type>::max();
