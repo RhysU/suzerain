@@ -276,21 +276,27 @@ public:
      *
      * @return The minimum time step taken during time advancement
      */
-    time_type taken_min() const { return min(dt_stats); }
+    time_type taken_min() const {
+        return boost::accumulators::extract::min(dt_stats);
+    }
 
     /**
      * Retrieve the mean time step taken during time advancement
      *
      * @return The mean time step taken during time advancement
      */
-    time_type taken_mean() const { return mean(dt_stats); }
+    time_type taken_mean() const {
+        return boost::accumulators::extract::mean(dt_stats);
+    }
 
     /**
      * Retrieve the maximum time step taken during time advancement
      *
      * @return The maximum time step taken during time advancement
      */
-    time_type taken_max() const { return max(dt_stats); }
+    time_type taken_max() const {
+        return boost::accumulators::extract::max(dt_stats);
+    }
 
     /**
      * Retrieve the standard deviation of the time steps taken during
@@ -299,7 +305,9 @@ public:
      * @return the standard deviation of the time steps taken during
      * time advancement.
      */
-    time_type taken_stddev() const { return std::sqrt(variance(dt_stats)); }
+    time_type taken_stddev() const {
+        return std::sqrt(boost::accumulators::extract::variance(dt_stats));
+    }
 
     //@}
 
