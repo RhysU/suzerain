@@ -144,7 +144,7 @@ public:
     {
         SUZERAIN_UNUSED(scale);
         const state_type &x = dynamic_cast<const state_type&>(iinput);
-        state_type y = dynamic_cast<state_type&>(ioutput);
+        state_type &y = dynamic_cast<state_type&>(ioutput);
         assert(std::equal(x.shape(), x.shape() + state_type::dimensionality,
                           y.shape()));
 
