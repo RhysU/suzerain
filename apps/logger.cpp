@@ -37,15 +37,8 @@
 #include "logger.hpp"
 
 // Will likely be replaced with a more descriptive instance in main()
-log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
-
-// Failure to destroy logger prior to running static instance destructors
-// causes segfaults.  Concoct an atexit callback specifically to destroy
-// anything pointed to by logger prior to static instance destructors. 
-static struct DestructLoggerRegistration {
-    DestructLoggerRegistration() { atexit(&destruct_logger); }
-    static void destruct_logger() { logger = 0; }
-} destructLoggerRegistration;
+// Beware http://old.nabble.com/Static-destruction-fiasco--td31026705.html
+log4cxx::LoggerPtr logger(log4cxx::Logger::getRootLogger());
 
 void name_logger_within_comm_world()
 {
