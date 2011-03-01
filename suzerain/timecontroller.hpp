@@ -57,10 +57,17 @@ namespace timestepper
  *
  * @tparam TimeType Floating point type used to track the current time.
  * @tparam StepType Integer type used to track the current time step.
+ *                  Using types with greater ranges than <tt>std::size_t</tt>
+ *                  is not recommended.
+ * @tparam StopType Type used to represent success or failure within callbacks
+ *                  and time advancement routines.  Provided so that this
+ *                  class may use C++'s obvious <tt>bool</tt> choice but may
+ *                  be easily wrapped in a C-based API using <tt>int</tt>s.
  */
 template<
     typename TimeType = double,
-    typename StepType = std::size_t
+    typename StepType = std::size_t,
+    typename StopType = bool
 >
 class TimeController
 {
@@ -73,13 +80,16 @@ public:
     /** Type used to express discrete simulation step quantities. */
     typedef StepType step_type;
 
+    /** Type used by callbacks to tell the controller to stop advancing. */
+    typedef StopType stop_type;
+
     /**
      * Construct a TimeController with the given parameters.
      *
      * The \c stepper argument is how one provides the time stepper that will
      * be driven by the constructed TimeController instance.  It must be a
-     * function or functor compatible with <tt>boost::function<time_type
-     * (time_type)></tt>.  When the stepper is invoked, the argument will be
+     * function or functor compatible with <tt>boost::function<TimeType
+     * (TimeType)></tt>.  When the stepper is invoked, the argument will be
      * the maximum possible time step that the stepper can take.  The
      * <tt>stepper</tt>'s return value must be the actual time step size taken.
      *
@@ -87,11 +97,11 @@ public:
      * @param initial_t Initial simulation time.
      * @param min_dt    Initial minimum acceptable time step.  Specifying
      *                  zero, the default, is equivalent to providing
-     *                  <tt>std::numeric_limits<time_type>::epsilon()</tt>.
+     *                  <tt>std::numeric_limits<TimeType>::epsilon()</tt>.
      *                  See min_dt() for the associated semantics.
      * @param max_dt    Initial maximum acceptable time step.  Specifying
      *                  zero, the default, is equivalent to providing
-     *                  <tt>std::numeric_limits<time_type>::max()</tt>.
+     *                  <tt>std::numeric_limits<TimeType>::max()</tt>.
      *                  See max_dt() for the associated semantics.
      *
      * @see <a href="http://www.boost.org/doc/html/function.html">
@@ -103,9 +113,9 @@ public:
      */
     template<typename StepperType>
     TimeController(StepperType stepper,
-                   time_type initial_t = 0,
-                   time_type min_dt = 0,
-                   time_type max_dt = 0);
+                   TimeType initial_t = 0,
+                   TimeType min_dt = 0,
+                   TimeType max_dt = 0);
 
     /**
      * Virtual destructor since others may subclass this logic.
@@ -121,7 +131,7 @@ public:
      *
      * @return The current minimum acceptable time step.
      */
-    time_type min_dt() const { return min_dt_; }
+    TimeType min_dt() const { return min_dt_; }
 
     /**
      * Set the minimum acceptable time step.
@@ -129,7 +139,7 @@ public:
      * @param new_min_dt Minimum acceptable time step to set.
      * @see min_dt() for more details.
      */
-    void min_dt(time_type new_min_dt) { min_dt_ = new_min_dt; }
+    void min_dt(TimeType new_min_dt) { min_dt_ = new_min_dt; }
 
     //@}
 
@@ -141,7 +151,7 @@ public:
      *
      * @return The current maximum acceptable time step.
      */
-    time_type max_dt() const { return max_dt_; }
+    TimeType max_dt() const { return max_dt_; }
 
     /**
      * Set the maximum acceptable time step.
@@ -149,7 +159,7 @@ public:
      * @param new_max_dt Minimum acceptable time step to set.
      * @see max_dt() for more details.
      */
-    void max_dt(time_type new_max_dt) { max_dt_ = new_max_dt; }
+    void max_dt(TimeType new_max_dt) { max_dt_ = new_max_dt; }
 
     //@}
 
@@ -159,11 +169,11 @@ public:
      * comes first.
      *
      * The argument \c callback must be a function or functor compatible with
-     * <tt>boost::function<bool (time_type, step_type)></tt>.  When invoked,
-     * the first argument will contain the current_t() and the second argument
-     * will contain current_nt().  The callback must return \c true if the
-     * controller should continue advancing.  If the callback returns \c false,
-     * the controller will immediately stop advancing time.
+     * <tt>boost::function<StopType (TimeType, StepType)></tt>.  When
+     * invoked, the first argument will contain the current_t() and the second
+     * argument will contain current_nt().  The callback must return \c true if
+     * the controller should continue advancing.  If the callback returns \c
+     * false, the controller will immediately stop advancing time.
      *
      * @param what_t  The simulation time to perform the callback.
      *                The provided value must be larger than current_t().
@@ -178,8 +188,8 @@ public:
      *      as the \c callback argument.
      */
     template<typename CallbackType>
-    void add_callback(time_type what_t,
-                      step_type what_nt,
+    void add_callback(TimeType what_t,
+                      StepType what_nt,
                       CallbackType callback);
 
     /**
@@ -200,8 +210,8 @@ public:
      *      as the \c callback argument.
      */
     template<typename CallbackType>
-    void add_periodic_callback(time_type every_dt,
-                               step_type every_nt,
+    void add_periodic_callback(TimeType every_dt,
+                               StepType every_nt,
                                CallbackType callback);
 
     /**
@@ -225,8 +235,9 @@ public:
      * @see The method step() for an easy way to specify a fixed number of
      *      time steps.
      */
-    bool advance(time_type final_t,
-                 step_type final_nt = std::numeric_limits<step_type>::max());
+    StopType advance(
+            TimeType final_t,
+            StepType final_nt = std::numeric_limits<StepType>::max());
 
     /**
      * Advance the simulation in time using the time stepper set at
@@ -243,9 +254,9 @@ public:
      * @see The method advance() for a richer interface for controlling
      *      time advancement.
      */
-    bool step(step_type count_nt = 1)
+    StopType step(StepType count_nt = 1)
     {
-        return advance(std::numeric_limits<time_type>::max(),
+        return advance(std::numeric_limits<TimeType>::max(),
                        add_and_coerce_overflow_to_max(count_nt, current_nt()));
     }
 
@@ -256,14 +267,14 @@ public:
      *
      * @return The current simulation time.
      */
-    time_type current_t() const { return current_t_; }
+    TimeType current_t() const { return current_t_; }
 
     /**
      * Retrieve the current simulation time step.
      *
      * @return The current simulation discrete time step.
      */
-    step_type current_nt() const {
+    StepType current_nt() const {
         return boost::accumulators::extract::count(dt_stats);
     }
 
@@ -276,7 +287,7 @@ public:
      *
      * @return The minimum time step taken during time advancement
      */
-    time_type taken_min() const {
+    TimeType taken_min() const {
         return boost::accumulators::extract::min(dt_stats);
     }
 
@@ -285,7 +296,7 @@ public:
      *
      * @return The mean time step taken during time advancement
      */
-    time_type taken_mean() const {
+    TimeType taken_mean() const {
         return boost::accumulators::extract::mean(dt_stats);
     }
 
@@ -294,7 +305,7 @@ public:
      *
      * @return The maximum time step taken during time advancement
      */
-    time_type taken_max() const {
+    TimeType taken_max() const {
         return boost::accumulators::extract::max(dt_stats);
     }
 
@@ -305,7 +316,7 @@ public:
      * @return the standard deviation of the time steps taken during
      * time advancement.
      */
-    time_type taken_stddev() const {
+    TimeType taken_stddev() const {
         return std::sqrt(boost::accumulators::extract::variance(dt_stats));
     }
 
@@ -316,9 +327,9 @@ private:
     // Mark Entry as noncopyable to avoid accidental performance hits
     struct Entry : public boost::noncopyable {
         bool periodic;
-        time_type every_dt, next_t;
-        step_type every_nt, next_nt;
-        boost::function<bool (time_type t, step_type nt)> callback;
+        TimeType every_dt, next_t;
+        StepType every_nt, next_nt;
+        boost::function<StopType (TimeType t, StepType nt)> callback;
     };
 
     // ptr_container to explicitly manage noncopyable instances with minimal
@@ -326,14 +337,14 @@ private:
     // ptr_vector to keep data as contiguous as possible in memory.
     typedef boost::ptr_vector<Entry> EntryList;
 
-    typename boost::function<time_type (time_type)> stepper_;
-    time_type min_dt_, max_dt_, current_t_;
+    typename boost::function<TimeType (TimeType)> stepper_;
+    TimeType min_dt_, max_dt_, current_t_;
     EntryList entries_;
 
     // Maintain running statistics on the actual time step sizes taken
     // Also stores the current time step counter as a convenient side effect
     boost::accumulators::accumulator_set<
-            time_type,
+            TimeType,
             boost::accumulators::features<
                 boost::accumulators::tag::count,
                 boost::accumulators::tag::min,
@@ -356,26 +367,28 @@ private:
     }
 };
 
-template< typename TimeType, typename StepType >
+template< typename TimeType, typename StepType, typename StopType >
 template< typename StepperType >
-TimeController<TimeType,StepType>::TimeController(StepperType stepper,
-                                                  time_type initial_t,
-                                                  time_type min_dt,
-                                                  time_type max_dt)
+TimeController<TimeType,StepType,StopType>::TimeController(
+        StepperType stepper,
+        TimeType initial_t,
+        TimeType min_dt,
+        TimeType max_dt)
     : stepper_(stepper),
-      min_dt_(min_dt != 0 ? min_dt : std::numeric_limits<time_type>::epsilon()),
-      max_dt_(max_dt != 0 ? max_dt : std::numeric_limits<time_type>::max()),
+      min_dt_(min_dt != 0 ? min_dt : std::numeric_limits<TimeType>::epsilon()),
+      max_dt_(max_dt != 0 ? max_dt : std::numeric_limits<TimeType>::max()),
       current_t_(initial_t),
       entries_(7)
 {
     // NOP
 }
 
-template< typename TimeType, typename StepType >
+template< typename TimeType, typename StepType, typename StopType >
 template< typename CallbackType >
-void TimeController<TimeType,StepType>::add_callback(time_type what_t,
-                                                     step_type what_nt,
-                                                     CallbackType callback)
+void TimeController<TimeType,StepType,StopType>::add_callback(
+        TimeType what_t,
+        StepType what_nt,
+        CallbackType callback)
 {
     // Callbacks established in the past are likely usage errors (<).  The
     // advance() method does not perform callbacks prior to advancing
@@ -398,11 +411,11 @@ void TimeController<TimeType,StepType>::add_callback(time_type what_t,
     entries_.push_back(e);        // Transfer Entry memory ownership
 }
 
-template< typename TimeType, typename StepType >
+template< typename TimeType, typename StepType, typename StopType >
 template< typename CallbackType >
-void TimeController<TimeType,StepType>::add_periodic_callback(
-        time_type every_dt,
-        step_type every_nt,
+void TimeController<TimeType,StepType,StopType>::add_periodic_callback(
+        TimeType every_dt,
+        StepType every_nt,
         CallbackType callback)
 {
     if (every_dt <= 0) throw std::invalid_argument("every_dt <= 0");
@@ -418,15 +431,16 @@ void TimeController<TimeType,StepType>::add_periodic_callback(
     entries_.push_back(e);        // Transfer Entry memory ownership
 }
 
-template< typename TimeType, typename StepType >
-bool TimeController<TimeType,StepType>::advance(const time_type final_t,
-                                                const step_type final_nt)
+template< typename TimeType, typename StepType, typename StopType >
+StopType TimeController<TimeType,StepType,StopType>::advance(
+        const TimeType final_t,
+        const StepType final_nt)
 {
     assert(min_dt_ <= max_dt_);
     using std::min;
 
     // Maintain the next simulation time something interesting must happen
-    time_type next_event_t = std::numeric_limits<time_type>::max();
+    TimeType next_event_t = std::numeric_limits<TimeType>::max();
 
     // Find the simulation time of the first callback
     for (typename EntryList::iterator iter = entries_.begin();
@@ -439,18 +453,18 @@ bool TimeController<TimeType,StepType>::advance(const time_type final_t,
     while (current_t_ < final_t && current_nt() < final_nt) {
 
         // Determine maximum possible step size allowed by all criteria
-        const time_type possible_dt
+        const TimeType possible_dt
             = min(max_dt_, min(final_t, next_event_t) - current_t_);
         assert(possible_dt > 0);
 
         // Take step, accumulate statistics, and record new simulation time
-        const time_type actual_dt = stepper_(possible_dt);
+        const TimeType actual_dt = stepper_(possible_dt);
         assert(actual_dt <= possible_dt);
         dt_stats(actual_dt);
         current_t_ += actual_dt;
 
         // Check callbacks and determine next callback simulation time
-        next_event_t = std::numeric_limits<time_type>::max();
+        next_event_t = std::numeric_limits<TimeType>::max();
         typename EntryList::iterator iter = entries_.begin();
         while (iter != entries_.end()) {
 
@@ -460,7 +474,7 @@ bool TimeController<TimeType,StepType>::advance(const time_type final_t,
 
                 // Perform required callback
                 // Must perform state updates prior to any possible abort
-                const bool keep_advancing
+                const StopType keep_advancing
                     = (*iter).callback(current_t_, current_nt());
 
                 // Remove single-shot Entry from further consideration
@@ -497,7 +511,7 @@ bool TimeController<TimeType,StepType>::advance(const time_type final_t,
     }
 
     // Successfully advanced up to provided criteria
-    return true;
+    return StopType(1);
 }
 
 } // namespace timestepper
