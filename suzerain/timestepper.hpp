@@ -861,21 +861,18 @@ template<
     std::size_t NumDims,
     typename Element,
     typename StorageA,
-    typename StorageB,
-    typename StepType = unsigned long
+    typename StorageB
 >
 class LowStorageTimeController
     : public TimeController<
-        typename suzerain::traits::component<Element>::type,
-        StepType
+        typename suzerain::traits::component<Element>::type
       >
 {
 private:
 
-    /** Shorthand for the superclass controller */
+    /** Shorthand for the superclass */
     typedef TimeController<
-        typename suzerain::traits::component<Element>::type,
-        StepType
+        typename suzerain::traits::component<Element>::type
       > super;
 
 public:
@@ -928,8 +925,7 @@ private:
     IState<NumDims,Element,StorageA,StorageB>& a;
     IState<NumDims,Element,StorageB,StorageA>& b;
 
-    typename super::time_type stepper(
-            typename super::time_type max_dt)
+    typename super::time_type stepper(typename super::time_type max_dt)
     {
         return suzerain::timestepper::lowstorage::step(m, L, N, a, b, max_dt);
     }
