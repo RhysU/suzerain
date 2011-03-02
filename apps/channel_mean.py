@@ -43,6 +43,8 @@ def process(filename):
     cvxopt.blas.gbmv(Dy0, m, kl, c_rhoe, rhoe)
 
     # Plot several mean quantities
+    plt.figure(num=None)
+    plt.title("%s for t = %f" % (filename, h.root.t.read()[0]))
     plt.plot(x, rho, label='rho')
     plt.plot(x, rhou, label='rhou')
     plt.plot(x, rhoe, label='rhoe')
