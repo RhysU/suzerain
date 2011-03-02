@@ -52,12 +52,6 @@ struct Callback : public boost::noncopyable
     };
 };
 
-// Helpful constants used within some test cases
-static const double       forever_t
-    = std::numeric_limits<double>::max();
-static const unsigned int forever_nt
-    = std::numeric_limits<unsigned int>::max();
-
 // Simple tests of the outer loop logic
 BOOST_AUTO_TEST_CASE( basic )
 {
@@ -132,19 +126,19 @@ BOOST_AUTO_TEST_CASE( simple_periodic_callback_nt )
     Callback<> cb;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb));
 
-    BOOST_REQUIRE(tc.advance(9.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(9.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(9.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 0u);
 
-    BOOST_REQUIRE(tc.advance(15.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(15.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 1u);
     BOOST_CHECK_EQUAL(cb.last_t, 10.0);
     BOOST_CHECK_EQUAL(cb.last_nt, 10u);
 
-    BOOST_REQUIRE(tc.advance(25.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(25.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 2u);
     BOOST_CHECK_EQUAL(cb.last_t, 20.0);
@@ -156,19 +150,19 @@ BOOST_AUTO_TEST_CASE( simple_one_time_callback_nt )
     Callback<> cb;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_callback(forever_t, 10u, boost::ref(cb));
+    tc.add_callback(tc.forever_t(), 10u, boost::ref(cb));
 
-    BOOST_REQUIRE(tc.advance(9.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(9.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(9.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 0u);
 
-    BOOST_REQUIRE(tc.advance(15.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(15.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 1u);
     BOOST_CHECK_EQUAL(cb.last_t, 10.0);
     BOOST_CHECK_EQUAL(cb.last_nt, 10u);
 
-    BOOST_REQUIRE(tc.advance(25.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(25.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 1u);
     BOOST_CHECK_EQUAL(cb.last_t, 10.0);
@@ -181,11 +175,11 @@ BOOST_AUTO_TEST_CASE( simultaneous_callbacks_nt_SPP )
     Callback<> cb1, cb2, cb3;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_callback(         forever_t, 10u, boost::ref(cb2));
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb1));
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb3));
+    tc.add_callback(         tc.forever_t(), 10u, boost::ref(cb2));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb1));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb3));
 
-    BOOST_REQUIRE(tc.advance(15.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(15.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 1u);
     BOOST_CHECK_EQUAL(cb1.last_t, 10.0);
@@ -197,7 +191,7 @@ BOOST_AUTO_TEST_CASE( simultaneous_callbacks_nt_SPP )
     BOOST_CHECK_EQUAL(cb3.last_t, 10.0);
     BOOST_CHECK_EQUAL(cb3.last_nt, 10u);
 
-    BOOST_REQUIRE(tc.advance(25.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(25.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 2u);
     BOOST_CHECK_EQUAL(cb1.last_t, 20.0);
@@ -216,11 +210,11 @@ BOOST_AUTO_TEST_CASE( simultaneous_callbacks_nt_PSP )
     Callback<> cb1, cb2, cb3;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb1));
-    tc.add_callback(         forever_t, 10u, boost::ref(cb2));
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb3));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb1));
+    tc.add_callback(         tc.forever_t(), 10u, boost::ref(cb2));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb3));
 
-    BOOST_REQUIRE(tc.advance(15.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(15.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 1u);
     BOOST_CHECK_EQUAL(cb1.last_t, 10.0);
@@ -232,7 +226,7 @@ BOOST_AUTO_TEST_CASE( simultaneous_callbacks_nt_PSP )
     BOOST_CHECK_EQUAL(cb3.last_t, 10.0);
     BOOST_CHECK_EQUAL(cb3.last_nt, 10u);
 
-    BOOST_REQUIRE(tc.advance(25.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(25.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 2u);
     BOOST_CHECK_EQUAL(cb1.last_t, 20.0);
@@ -251,11 +245,11 @@ BOOST_AUTO_TEST_CASE( simultaneous_callbacks_nt_PPS )
     Callback<> cb1, cb2, cb3;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb1));
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb3));
-    tc.add_callback(         forever_t, 10u, boost::ref(cb2));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb1));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb3));
+    tc.add_callback(         tc.forever_t(), 10u, boost::ref(cb2));
 
-    BOOST_REQUIRE(tc.advance(15.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(15.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 1u);
     BOOST_CHECK_EQUAL(cb1.last_t, 10.0);
@@ -267,7 +261,7 @@ BOOST_AUTO_TEST_CASE( simultaneous_callbacks_nt_PPS )
     BOOST_CHECK_EQUAL(cb3.last_t, 10.0);
     BOOST_CHECK_EQUAL(cb3.last_nt, 10u);
 
-    BOOST_REQUIRE(tc.advance(25.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(25.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 2u);
     BOOST_CHECK_EQUAL(cb1.last_t, 20.0);
@@ -286,11 +280,11 @@ BOOST_AUTO_TEST_CASE( different_callbacks_nt_SPP )
     Callback<> cb1, cb2, cb3;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_callback(         forever_t,  8u, boost::ref(cb2));
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb1));
-    tc.add_periodic_callback(forever_t,  5u, boost::ref(cb3));
+    tc.add_callback(         tc.forever_t(),  8u, boost::ref(cb2));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb1));
+    tc.add_periodic_callback(tc.forever_t(),  5u, boost::ref(cb3));
 
-    BOOST_REQUIRE(tc.advance(15.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(15.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 1u);
     BOOST_CHECK_EQUAL(cb1.last_t, 10.0);
@@ -302,7 +296,7 @@ BOOST_AUTO_TEST_CASE( different_callbacks_nt_SPP )
     BOOST_CHECK_EQUAL(cb3.last_t, 15.0);
     BOOST_CHECK_EQUAL(cb3.last_nt, 15u);
 
-    BOOST_REQUIRE(tc.advance(25.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(25.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 2u);
     BOOST_CHECK_EQUAL(cb1.last_t, 20.0);
@@ -321,11 +315,11 @@ BOOST_AUTO_TEST_CASE( different_callbacks_nt_PSP )
     Callback<> cb1, cb2, cb3;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb1));
-    tc.add_callback(         forever_t,  8u, boost::ref(cb2));
-    tc.add_periodic_callback(forever_t,  5u, boost::ref(cb3));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb1));
+    tc.add_callback(         tc.forever_t(),  8u, boost::ref(cb2));
+    tc.add_periodic_callback(tc.forever_t(),  5u, boost::ref(cb3));
 
-    BOOST_REQUIRE(tc.advance(15.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(15.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 1u);
     BOOST_CHECK_EQUAL(cb1.last_t, 10.0);
@@ -337,7 +331,7 @@ BOOST_AUTO_TEST_CASE( different_callbacks_nt_PSP )
     BOOST_CHECK_EQUAL(cb3.last_t, 15.0);
     BOOST_CHECK_EQUAL(cb3.last_nt, 15u);
 
-    BOOST_REQUIRE(tc.advance(25.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(25.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 2u);
     BOOST_CHECK_EQUAL(cb1.last_t, 20.0);
@@ -356,11 +350,11 @@ BOOST_AUTO_TEST_CASE( different_callbacks_nt_PPS )
     Callback<> cb1, cb2, cb3;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb1));
-    tc.add_periodic_callback(forever_t,  5u, boost::ref(cb3));
-    tc.add_callback(         forever_t,  8u, boost::ref(cb2));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb1));
+    tc.add_periodic_callback(tc.forever_t(),  5u, boost::ref(cb3));
+    tc.add_callback(         tc.forever_t(),  8u, boost::ref(cb2));
 
-    BOOST_REQUIRE(tc.advance(15.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(15.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 1u);
     BOOST_CHECK_EQUAL(cb1.last_t, 10.0);
@@ -372,7 +366,7 @@ BOOST_AUTO_TEST_CASE( different_callbacks_nt_PPS )
     BOOST_CHECK_EQUAL(cb3.last_t, 15.0);
     BOOST_CHECK_EQUAL(cb3.last_nt, 15u);
 
-    BOOST_REQUIRE(tc.advance(25.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(25.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 2u);
     BOOST_CHECK_EQUAL(cb1.last_t, 20.0);
@@ -390,19 +384,19 @@ BOOST_AUTO_TEST_CASE( simple_periodic_callback_t )
     Callback<> cb;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_periodic_callback(10.0, forever_nt, boost::ref(cb));
+    tc.add_periodic_callback(10.0, tc.forever_nt(), boost::ref(cb));
 
-    BOOST_REQUIRE(tc.advance(forever_t, 9u));
+    BOOST_REQUIRE(tc.advance(tc.forever_t(), 9u));
     BOOST_REQUIRE_EQUAL(9.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 0u);
 
-    BOOST_REQUIRE(tc.advance(forever_t, 15u));
+    BOOST_REQUIRE(tc.advance(tc.forever_t(), 15u));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 1u);
     BOOST_CHECK_EQUAL(cb.last_t, 10.0);
     BOOST_CHECK_EQUAL(cb.last_nt, 10u);
 
-    BOOST_REQUIRE(tc.advance(forever_t, 25u));
+    BOOST_REQUIRE(tc.advance(tc.forever_t(), 25u));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 2u);
     BOOST_CHECK_EQUAL(cb.last_t, 20.0);
@@ -414,10 +408,10 @@ BOOST_AUTO_TEST_CASE( two_simultaneous_callbacks_t )
     Callback<> cb1, cb2;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_periodic_callback(10.0, forever_nt, boost::ref(cb1));
-    tc.add_periodic_callback(10.0, forever_nt, boost::ref(cb2));
+    tc.add_periodic_callback(10.0, tc.forever_nt(), boost::ref(cb1));
+    tc.add_periodic_callback(10.0, tc.forever_nt(), boost::ref(cb2));
 
-    BOOST_REQUIRE(tc.advance(forever_t, 15u));
+    BOOST_REQUIRE(tc.advance(tc.forever_t(), 15u));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 1u);
     BOOST_CHECK_EQUAL(cb1.last_t, 10.0);
@@ -426,7 +420,7 @@ BOOST_AUTO_TEST_CASE( two_simultaneous_callbacks_t )
     BOOST_CHECK_EQUAL(cb2.last_t, 10.0);
     BOOST_CHECK_EQUAL(cb2.last_nt, 10u);
 
-    BOOST_REQUIRE(tc.advance(forever_t, 25u));
+    BOOST_REQUIRE(tc.advance(tc.forever_t(), 25u));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 2u);
     BOOST_CHECK_EQUAL(cb1.last_t, 20.0);
@@ -441,10 +435,10 @@ BOOST_AUTO_TEST_CASE( two_different_callbacks_t )
     Callback<> cb1, cb2;
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_periodic_callback(10.0, forever_nt, boost::ref(cb1));
-    tc.add_periodic_callback( 5.0, forever_nt, boost::ref(cb2));
+    tc.add_periodic_callback(10.0, tc.forever_nt(), boost::ref(cb1));
+    tc.add_periodic_callback( 5.0, tc.forever_nt(), boost::ref(cb2));
 
-    BOOST_REQUIRE(tc.advance(forever_t, 15u));
+    BOOST_REQUIRE(tc.advance(tc.forever_t(), 15u));
     BOOST_REQUIRE_EQUAL(15.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 1u);
     BOOST_CHECK_EQUAL(cb1.last_t, 10.0);
@@ -453,7 +447,7 @@ BOOST_AUTO_TEST_CASE( two_different_callbacks_t )
     BOOST_CHECK_EQUAL(cb2.last_t, 15.0);
     BOOST_CHECK_EQUAL(cb2.last_nt, 15u);
 
-    BOOST_REQUIRE(tc.advance(forever_t, 25u));
+    BOOST_REQUIRE(tc.advance(tc.forever_t(), 25u));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb1.count, 2u);
     BOOST_CHECK_EQUAL(cb1.last_t, 20.0);
@@ -472,7 +466,7 @@ BOOST_AUTO_TEST_CASE( mixed_periodic_callback_criteria )
 
     // Deliberately trip the nt-based criteria
     tc.max_dt(0.5);
-    BOOST_REQUIRE(tc.advance(3.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(3.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(3.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 1u);
     BOOST_CHECK_EQUAL(cb.last_t, 2.5);
@@ -480,7 +474,7 @@ BOOST_AUTO_TEST_CASE( mixed_periodic_callback_criteria )
 
     // Deliberately trip the t-based criteria
     tc.max_dt(5.0);
-    BOOST_REQUIRE(tc.advance(13.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(13.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(13.0, tc.current_t());
     BOOST_REQUIRE_EQUAL(tc.current_nt(), 9u);
     BOOST_CHECK_EQUAL(cb.count, 2u);
@@ -493,20 +487,20 @@ BOOST_AUTO_TEST_CASE( periodic_callback_initiated_abort )
     Callback<> cb(false); // Callback returns false when invoked
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_periodic_callback(forever_t, 10u, boost::ref(cb));
+    tc.add_periodic_callback(tc.forever_t(), 10u, boost::ref(cb));
 
     // Successful advance prior to callback
-    BOOST_REQUIRE(tc.advance(8.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(8.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(8.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 0u);
 
     // Callback returns false and stops advance
-    BOOST_REQUIRE(false == tc.advance(16.0, forever_nt));
+    BOOST_REQUIRE(false == tc.advance(16.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(10.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 1u);
 
     // Trying again shows the callback abort still in effect
-    BOOST_REQUIRE(false == tc.advance(25.0, forever_nt));
+    BOOST_REQUIRE(false == tc.advance(25.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(20.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 2u);
 }
@@ -516,20 +510,20 @@ BOOST_AUTO_TEST_CASE( single_callback_initiated_abort )
     Callback<> cb(false); // Callback returns false when invoked
 
     TestTimeController<> tc(0, 1e-8, 1);
-    tc.add_callback(forever_t, 10u, boost::ref(cb));
+    tc.add_callback(tc.forever_t(), 10u, boost::ref(cb));
 
     // Successful advance prior to callback
-    BOOST_REQUIRE(tc.advance(8.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(8.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(8.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 0u);
 
     // Callback returns false and stops advance
-    BOOST_REQUIRE(false == tc.advance(16.0, forever_nt));
+    BOOST_REQUIRE(false == tc.advance(16.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(10.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 1u);
 
     // Trying again shows the callback has been removed
-    BOOST_REQUIRE(true == tc.advance(25.0, forever_nt));
+    BOOST_REQUIRE(true == tc.advance(25.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(25.0, tc.current_t());
     BOOST_CHECK_EQUAL(cb.count, 1u);
 }
@@ -540,14 +534,14 @@ BOOST_AUTO_TEST_CASE( physics_initiated_abort )
 
     // Successful advance for step smaller than min_dt
     // when the controller demands it.
-    BOOST_REQUIRE(tc.advance(0.5, forever_nt));
+    BOOST_REQUIRE(tc.advance(0.5, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(0.5, tc.current_t());
 
     // Force "physics" to return a dt < dt_min
     tc.actual_dt = 0.5;
 
     // Unsuccessful advance because physics dt < dt_min
-    BOOST_REQUIRE(!tc.advance(forever_t, forever_nt));
+    BOOST_REQUIRE(!tc.advance(tc.forever_t(), tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(1.0, tc.current_t());
 }
 
@@ -555,23 +549,23 @@ BOOST_AUTO_TEST_CASE( physics_initiated_abort )
 BOOST_AUTO_TEST_CASE( every_values_too_large )
 {
     TestTimeController<> tc(0.0, 1e-8, std::numeric_limits<double>::max());
-    BOOST_REQUIRE(tc.advance(1.0, forever_nt));
+    BOOST_REQUIRE(tc.advance(1.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(1.0, tc.current_t());
     BOOST_REQUIRE_EQUAL(1u,  tc.current_nt());
 
     // Now every_XX = forever should cause a numeric overflow
     // Code should silently coerce these to maximum representable value
     Callback<> cb;
-    tc.add_periodic_callback(forever_t, forever_nt, boost::ref(cb));
+    tc.add_periodic_callback(tc.forever_t(), tc.forever_nt(), boost::ref(cb));
 
     // Advance to the end of days in a single step
-    BOOST_REQUIRE(tc.advance(forever_t, forever_nt));
-    BOOST_REQUIRE_EQUAL(forever_t,  tc.current_t());
+    BOOST_REQUIRE(tc.advance(tc.forever_t(), tc.forever_nt()));
+    BOOST_REQUIRE_EQUAL(tc.forever_t(),  tc.current_t());
     BOOST_REQUIRE_EQUAL(2u, tc.current_nt());
 
     // Check that the callback was only hit at the very end
     BOOST_CHECK_EQUAL(cb.count, 1u);
-    BOOST_CHECK_EQUAL(cb.last_t,  forever_t);
+    BOOST_CHECK_EQUAL(cb.last_t,  tc.forever_t());
     BOOST_CHECK_EQUAL(cb.last_nt, 2u);
 }
 
@@ -581,17 +575,17 @@ BOOST_AUTO_TEST_CASE( largest_possible_time_step_count )
     // Use an artificially small step counting type to avoid being here all day
     const unsigned char forever_nt = std::numeric_limits<unsigned char>::max();
 
-    // Set up a controller which will definitely exhaust forever_nt;
+    // Set up a controller which will definitely exhaust forever_nt
     const double epsilon = std::numeric_limits<double>::epsilon();
     TestTimeController<unsigned char> tc(
             0.0, epsilon, (1.0 / forever_nt) - epsilon);
     BOOST_REQUIRE_LE(tc.min_dt(), tc.max_dt());
 
     // Advance to the end of days in many steps
-    BOOST_REQUIRE(tc.advance(forever_t, forever_nt));
-    BOOST_REQUIRE_EQUAL(forever_nt, tc.current_nt());
+    BOOST_REQUIRE(tc.advance(tc.forever_t(), tc.forever_nt()));
+    BOOST_REQUIRE_EQUAL(tc.forever_nt(), tc.current_nt());
 
     // There's nothing out there, really
-    BOOST_REQUIRE(tc.advance(forever_t, forever_nt));
-    BOOST_REQUIRE_EQUAL(forever_nt, tc.current_nt());
+    BOOST_REQUIRE(tc.advance(tc.forever_t(), tc.forever_nt()));
+    BOOST_REQUIRE_EQUAL(tc.forever_nt(), tc.current_nt());
 }

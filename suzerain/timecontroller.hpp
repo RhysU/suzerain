@@ -74,6 +74,8 @@ class TimeController
 
 public:
 
+    //@{
+
     /** Type used to express simulation time quantities. */
     typedef TimeType time_type;
 
@@ -82,6 +84,33 @@ public:
 
     /** Type used by callbacks to tell the controller to stop advancing. */
     typedef StopType stop_type;
+
+    /**
+     * Obtain a simulation time equivalent to running "forever".  This is
+     * useful for specifying callbacks with indefinite time periods (that is,
+     * callbacks never performed based on the current simulation time).  It is
+     * equivalent to using <tt>std::numeric_limits<TimeType>::max()</tt>.
+     *
+     * @return A simulation time equivalent to running forever.
+     */
+    static TimeType forever_t() {
+        return std::numeric_limits<TimeType>::max();
+    }
+
+    /**
+     * Obtain a simulation time step count equivalent to running forever.
+     * This is useful for specifying callbacks with indefinite time step
+     * periods (that is, callbacks never performed based on the current
+     * simulation timestep).  It is equivalent to using
+     * <tt>std::numeric_limits<StepType>::max()</tt>.
+     *
+     * @return A simulation time step count equivalent to running forever.
+     */
+    static StepType forever_nt() {
+        return std::numeric_limits<StepType>::max();
+    }
+
+    //@}
 
     /**
      * Construct a TimeController with the given parameters.
@@ -177,12 +206,14 @@ public:
      *
      * @param what_t  The simulation time to perform the callback.
      *                The provided value must be larger than current_t().
+     *                Use forever_t() if you want no callbacks based on
+     *                the current simulation time.
      * @param what_nt The simulation time step to perform the callback.
      *                The provided value must be larger than current_nt().
+     *                Use forever_nt() if you want no callbacks based on
+     *                the current time step.
      * @param callback The callback to invoke.
      *
-     * @see <tt>std::numeric_limits<T>::max()</tt> if you want to
-     *      specify either no criteria for \c what_t or \c what_nt.
      * @see <a href="http://www.boost.org/doc/html/ref.html">Boost.Ref</a>
      *      if you need to provide a stateful or noncopyable functor
      *      as the \c callback argument.
@@ -199,12 +230,14 @@ public:
      * whichever comes first.
      *
      * @param every_dt The maximum simulation time duration between callbacks.
+     *                 Use forever_t() if you want no callbacks based on
+     *                 the current simulation time.
      * @param every_nt The simulation time step count between callbacks.
+     *                 Use forever_nt() if you want no callbacks based on
+     *                 the current time step.
      * @param callback The callback to invoke.  See add_callback() for
      *                 a discussion of this argument's semantics.
      *
-     * @see <tt>std::numeric_limits<T>::max()</tt> if you want to
-     *      specify either no criteria for \c every_dt or \c every_nt.
      * @see <a href="http://www.boost.org/doc/html/ref.html">Boost.Ref</a>
      *      if you need to provide a stateful or noncopyable functor
      *      as the \c callback argument.
@@ -225,10 +258,12 @@ public:
      *
      * @param final_t  Maximum simulation time.
      *                 If you want to advance some relative amount \c dt,
-     *                 try supplying <tt>current_t() + dt</tt>.
+     *                 try supplying <tt>current_t() + dt</tt>.  For unlimited
+     *                 simulation time, use forever_t().
      * @param final_nt Maximum simulation time step.
      *                 If you want to advance some relative step count \c nt,
-     *                 try supplying <tt>current_nt() + nt</tt>.
+     *                 try supplying <tt>current_nt() + nt</tt>.  For unlimited
+     *                 time step counts, use forever_nt().
      *
      * @return True if the controller completed the request successfully.
      *         False if the controller aborted for some reason.
@@ -237,7 +272,7 @@ public:
      */
     StopType advance(
             TimeType final_t  = std::numeric_limits<TimeType>::max(),
-            StepType final_nt = std::numeric_limits<StepType>::max());
+            StepType final_nt = std::numeric_limits<TimeType>::max());
 
     /**
      * Advance the simulation in time using the time stepper set at
@@ -247,7 +282,8 @@ public:
      * min_dt() or any registered callback returns \c false, the controller
      * will immediately stop.
      *
-     * @param count_nt Number of time steps to take.
+     * @param count_nt Number of time steps to take.  For unlimited
+     *                 time step counts, use forever_nt().
      *
      * @return True if the controller completed the request successfully.
      *         False if the controller aborted for some reason.
