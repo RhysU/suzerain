@@ -49,6 +49,7 @@
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/scenario_definition.hpp>
+#include <suzerain/time_definition.hpp>
 #include <suzerain/utility.hpp>
 
 #include "logger.hpp"
@@ -84,6 +85,7 @@ typedef suzerain::NoninterleavedState<
 using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::RestartDefinition;
+using suzerain::problem::TimeDefinition;
 static const ScenarioDefinition<real_t> scenario(0, 0, 0, 0, 0, 0, 0);
 static const GridDefinition<real_t> grid(0, 0, 0, 0, 0, 0);
 static const RestartDefinition<> restart(/* load         */ "",
@@ -93,6 +95,7 @@ static const RestartDefinition<> restart(/* load         */ "",
                                          /* retain       */ 1,
                                          /* every_dt     */ 0,
                                          /* every_nt     */ 100);
+static const TimeDefinition<real_t> timedef(0, 1, 0, 1);
 
 // Global grid-details initialized in main()
 static shared_ptr<suzerain::bspline>     bspw;
@@ -981,10 +984,16 @@ static void load_state(esio_handle h, state_type &state)
     }
 }
 
+/** Routine to output status.  Signature for TimeController use. */
+static bool log_status(real_t t, std::size_t nt) {
+    INFO("Simulation reached time " << t << " at time step " << nt);
+    return true;
+}
+
 static std::size_t last_restart_saved_nt = 0;
 
-/** Routine to store a restart file.  Signature for Timecontroller use. */
-static bool save_restart(double t, std::size_t nt)
+/** Routine to store a restart file.  Signature for TimeController use. */
+static bool save_restart(real_t t, std::size_t nt)
 {
     esio_file_clone(esioh, restart.metadata().c_str(),
                     restart.uncommitted().c_str(), 1 /*overwrite*/);
@@ -1042,6 +1051,8 @@ int main(int argc, char **argv)
                 const_cast<GridDefinition<real_t>&>(grid));
         options.add_definition(
                 const_cast<RestartDefinition<>&>(restart));
+        options.add_definition(
+                const_cast<TimeDefinition<real_t>&>(timedef));
         options.process(argc, argv);
     }
 
@@ -1144,22 +1155,58 @@ int main(int argc, char **argv)
 
     // Establish TimeController for use with operators and state storage
     using suzerain::timestepper::TimeController;
-    boost::scoped_ptr<TimeController<double> > tc(
+    boost::scoped_ptr<TimeController<real_t> > tc(
             make_LowStorageTimeController(
                 smr91, L, N, *state_linear, *state_nonlinear, initial_t));
 
+    // Register status callbacks status_{dt,nt}, if requested
+    if (timedef.status_dt || timedef.status_nt) {
+        tc->add_periodic_callback(
+                timedef.status_dt ? timedef.status_dt
+                                  : numeric_limits<real_t>::max(),
+                timedef.status_nt ? timedef.status_nt
+                                  : numeric_limits<std::size_t>::max(),
+                &log_status);
+    }
+
     // Register restart-writing callbacks every_{dt,nt}, if requested
-    if (restart.every_nt() || restart.every_dt()) {
+    if (restart.every_dt() || restart.every_nt()) {
         tc->add_periodic_callback(
                 restart.every_dt() ? restart.every_dt()
-                                   : numeric_limits<double>::max(),
+                                   : numeric_limits<real_t>::max(),
                 restart.every_nt() ? restart.every_nt()
                                    : numeric_limits<std::size_t>::max(),
                 &save_restart);
     }
 
-    // Advance time
-    tc->step(1);
+    // Advance time according to advance_dt, advance_nt criteria
+    switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
+        case 0:
+            INFO("Advancing simulation until forcibly terminated");
+            tc->advance();
+            break;
+        case 1:
+            INFO("Advancing simulation " << timedef.advance_nt
+                 << " discrete time steps");
+            tc->step(timedef.advance_nt);
+            break;
+        case 2:
+            INFO("Advancing simulation by " << timedef.advance_dt
+                 << " units of physical time");
+            tc->advance(initial_t + timedef.advance_dt);
+            break;
+        case 3:
+            INFO("Advancing simulation by at most " << timedef.advance_dt
+                 << " units of physical time");
+            INFO("Advancing simulation by at most " << timedef.advance_nt
+                 << " discrete time steps");
+            tc->advance(initial_t + timedef.advance_dt,
+                        timedef.advance_nt);
+            break;
+        default:
+            FATAL("Sanity error in time control");
+            return EXIT_FAILURE;
+    }
 
     // Output statistics on time advancement
     INFO("Advanced simulation from t_initial = " << initial_t

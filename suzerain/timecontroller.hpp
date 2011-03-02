@@ -236,7 +236,7 @@ public:
      *      time steps.
      */
     StopType advance(
-            TimeType final_t,
+            TimeType final_t  = std::numeric_limits<TimeType>::max(),
             StepType final_nt = std::numeric_limits<StepType>::max());
 
     /**
