@@ -1162,20 +1162,16 @@ int main(int argc, char **argv)
     // Register status callbacks status_{dt,nt}, if requested
     if (timedef.status_dt || timedef.status_nt) {
         tc->add_periodic_callback(
-                timedef.status_dt ? timedef.status_dt
-                                  : numeric_limits<real_t>::max(),
-                timedef.status_nt ? timedef.status_nt
-                                  : numeric_limits<std::size_t>::max(),
+                timedef.status_dt ? timedef.status_dt : tc->forever_t(),
+                timedef.status_nt ? timedef.status_nt : tc->forever_nt(),
                 &log_status);
     }
 
     // Register restart-writing callbacks every_{dt,nt}, if requested
     if (restart.every_dt() || restart.every_nt()) {
         tc->add_periodic_callback(
-                restart.every_dt() ? restart.every_dt()
-                                   : numeric_limits<real_t>::max(),
-                restart.every_nt() ? restart.every_nt()
-                                   : numeric_limits<std::size_t>::max(),
+                restart.every_dt() ? restart.every_dt() : tc->forever_t(),
+                restart.every_nt() ? restart.every_nt() : tc->forever_nt(),
                 &save_restart);
     }
 

@@ -8,6 +8,8 @@
 #include <suzerain/timecontroller.hpp>
 #include "test_tools.hpp"
 
+// TODO Add tests for taken_{min,max,mean,stddev}
+
 using suzerain::timestepper::TimeController;
 
 // Subclass TimeController to make the logic a little easier to test
