@@ -59,6 +59,8 @@
 
 using boost::make_shared;
 using boost::numeric_cast;
+using boost::scoped_array;
+using boost::scoped_ptr;
 using boost::shared_ptr;
 using std::numeric_limits;
 
@@ -101,6 +103,7 @@ static const TimeDefinition<real_t> timedef(0, 1, 0, 1);
 static shared_ptr<suzerain::bspline>     bspw;
 static shared_ptr<suzerain::bspline_luz> bspluzw;
 static shared_ptr<suzerain::pencil_grid> pg;
+static scoped_array<real_t>              one_over_delta_y;
 
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
@@ -233,7 +236,6 @@ public:
         real_t convective_delta_t = numeric_limits<real_t>::max();
         real_t diffusive_delta_t  = numeric_limits<real_t>::max();
         const real_t one_over_delta_x = scenario.Lx / grid.Nx;
-        const real_t one_over_delta_y = scenario.Ly / grid.Ny;
         const real_t one_over_delta_z = scenario.Lz / grid.Nz;
 
         // Get state information with appropriate type
@@ -261,7 +263,7 @@ public:
 
         // On "zero-zero" rank save a copy of the constant x-momentum modes
         // Need these later to apply the momentum forcing's energy contribution
-        boost::scoped_array<real_t> original_state_mx;
+        scoped_array<real_t> original_state_mx;
         if (dkbx == 0 && dkbz == 0) {
             original_state_mx.reset(new real_t[state.shape()[1]]);
             for (std::size_t i = 0; i < state.shape()[1]; ++i) {
@@ -603,6 +605,9 @@ public:
         Eigen::Matrix3d tau;
         Eigen::Vector3d div_tau;
 
+        // Used to track local \frac{1}{\Delta{}y} for time criterion
+        size_t ndx_y = 0;
+
         // Walk physical space state storage in linear fashion
         for (// Loop initialization
              real_t *p_rho    = reinterpret_cast<real_t *>(state_rho.origin()),
@@ -779,16 +784,17 @@ public:
             convective_delta_t = std::min(convective_delta_t,
                 suzerain::timestepper::convective_stability_criterion(
                     u.x(), one_over_delta_x,
-                    u.y(), one_over_delta_y,
+                    u.y(), one_over_delta_y[ndx_y],
                     u.z(), one_over_delta_z,
                     std::sqrt(3.0),
                     std::sqrt(T))); // nondimensional a = sqrt(T)
             diffusive_delta_t = std::min(diffusive_delta_t,
                 suzerain::timestepper::diffusive_stability_criterion(
                     one_over_delta_x,
-                    one_over_delta_y,
+                    one_over_delta_y[ndx_y],
                     one_over_delta_z,
                     Re, Pr, gamma, 2.512, mu / rho));
+            ndx_y = (ndx_y + 1) % grid.Ny;
 
             // Continuity equation
             *p_rho = - div_m
@@ -1076,6 +1082,30 @@ int main(int argc, char **argv)
         esio_handle_finalize(h);
     }
 
+    // Initialize array holding \frac{1}{\Delta{}y} grid spacing
+    one_over_delta_y.reset(new real_t[grid.Ny]);
+    {
+        // Determine minimum delta y observable from each collocation point
+        real_t a, b, c;
+        bspw->collocation_point(0, &a);                  // First point
+        bspw->collocation_point(1, &b);
+        one_over_delta_y[0] = std::abs(b - a);
+        for (size_t i = 1; i < grid.Ny - 1; ++i) {          // Intermediates
+            bspw->collocation_point(i-1, &a);
+            bspw->collocation_point(i,   &b);
+            bspw->collocation_point(i+1, &c);
+            one_over_delta_y[i] = std::min(std::abs(b-a), std::abs(c-b));
+        }
+        bspw->collocation_point(grid.Ny - 2, &a);        // Last point
+        bspw->collocation_point(grid.Ny - 1, &b);
+        one_over_delta_y[grid.Ny - 1] = std::abs(b - a);
+
+        // Invert to find \frac{1}{\Delta{}y}
+        for (size_t i = 0; i < grid.Ny; ++i) { // Invert
+            one_over_delta_y[i] = 1 / one_over_delta_y[i];
+        }
+    }
+
     // Initialize B-spline workspace to find coeffs from collocation points
     bspluzw = make_shared<suzerain::bspline_luz>(*bspw);
     bspluzw->form_mass(*bspw);
@@ -1155,8 +1185,7 @@ int main(int argc, char **argv)
 
     // Establish TimeController for use with operators and state storage
     using suzerain::timestepper::TimeController;
-    boost::scoped_ptr<TimeController<real_t> > tc(
-            make_LowStorageTimeController(
+    scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
                 smr91, L, N, *state_linear, *state_nonlinear, initial_t));
 
     // Register status callbacks status_{dt,nt}, if requested
