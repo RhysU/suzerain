@@ -83,7 +83,7 @@ bool process(const char * filename)
     shared_ptr<boost::remove_pointer<esio_handle>::type> h(
             esio_handle_initialize(MPI_COMM_WORLD), esio_handle_finalize);
 
-    INFO("Opening file " << filename);
+    INFO("Loading file " << filename);
     esio_file_open(h.get(), filename, 0 /* read-only */);
 
     // Load time, scenario, grid, and B-spline details from file
@@ -118,7 +118,7 @@ bool process(const char * filename)
 
     // Prepare column names and indices for later use
     std::vector<std::string> column_names;
-#define QUANTITY(SYM)                              \
+#define QUANTITY(SYM)                            \
         const int n_##SYM = column_names.size(); \
         column_names.push_back(#SYM)
     QUANTITY(t);    // Point-like information
@@ -137,8 +137,8 @@ bool process(const char * filename)
     QUANTITY(mu);
     QUANTITY(nu);
 #undef QUANTITY
-#define QUANTITY_DERIVATIVE_1(SYM)                             \
-        const int n_##SYM##_y = column_names.size();         \
+#define QUANTITY_DERIVATIVE_1(SYM)                            \
+        const int n_##SYM##_y = column_names.size();          \
         column_names.push_back(column_names[n_##SYM] + "_y")
     QUANTITY_DERIVATIVE_1(rho);  // Conserved state
     QUANTITY_DERIVATIVE_1(rhou);
@@ -172,13 +172,16 @@ bool process(const char * filename)
     QUANTITY_DERIVATIVE_2(nu);
 #undef QUANTITY_DERIVATIVE_2
 
+    INFO("Computing " << column_names.size() << " nondimensional quantities");
+
     // Declare storage for all of the quantities of interest
     matrix_t<>::real s(s_coeffs.rows(), column_names.size());
     s.setZero();
 
-    // Populate point-like information
+    // Populate point-like information of (t,y \in (-L/2, L/2))
     s.col(n_t).setConstant(t);
     bspw->collocation_points(&s.col(n_y)[0], 1);
+    s.col(n_y).cwise() -= scenario.Ly / 2;
 
     // Compute 0th, 1st, and 2nd derivatives of conserved state
     // at collocation points
@@ -192,9 +195,17 @@ bool process(const char * filename)
     bspw->accumulate_operator(1, field_names.static_size,
             1.0, &s_coeffs(0,0),     1, s_coeffs.stride(),
             0.0, &s.col(n_rho_y)[0], 1, s.stride());
+    (void) n_rhou_y;  // Unused
+    (void) n_rhov_y;
+    (void) n_rhow_y;
+    (void) n_rhoe_y;
     bspw->accumulate_operator(2, field_names.static_size,
             1.0, &s_coeffs(0,0),      1, s_coeffs.stride(),
             0.0, &s.col(n_rho_yy)[0], 1, s.stride());
+    (void) n_rhou_yy; // Unused
+    (void) n_rhov_yy;
+    (void) n_rhow_yy;
+    (void) n_rhoe_yy;
 
     // Compute specific and primitive state at collocation points
     s.col(n_u)  = s.col(n_rhou).cwise() / s.col(n_rho);
@@ -254,16 +265,63 @@ bool process(const char * filename)
     bspw->apply_operator(2, n_nu_yy - n_u_yy + 1,
             1.0, &s.col(n_u_yy)[0], 1, s.stride());
 
-    // Finally, we are done computing all the quantities we want.
-
-    // Output the column name heading and data
-    for (size_t i = 0; i < column_names.size(); ++i) {
-        std::cout << std::setw(14) << column_names[i];
-        if (i < column_names.size() - 1) std::cout << ", ";
+    // Save nondimensional quantities to filename.star
+    INFO("Saving nondimensional quantities to " << filename << ".star");
+    {
+        std::ofstream starfile((std::string(filename) + ".star").c_str());
+        for (size_t i = 0; i < column_names.size(); ++i) {  // Headings
+            starfile << std::setw(14) << column_names[i];
+            if (i < column_names.size() - 1) starfile << ", ";
+        }
+        starfile << std::endl;
+        Eigen::IOFormat iofmt(8, Eigen::AlignCols, ", ", "\n");
+        starfile << s.format(iofmt) << std::endl;;
+        starfile.close();
     }
-    std::cout << std::endl;
-    Eigen::IOFormat iofmt(8, Eigen::AlignCols, ", ", "\n");
-    std::cout << s.format(iofmt);
+
+    INFO("Computing quantities in plus units");
+
+    // Re-adjust collocation point offsets so lowest point is at y = 0
+    s.col(n_y).cwise() -= s.col(n_y)[0];
+
+    // Compute wall shear stress, friction velocity, and viscous length scale.
+    // These are "almost correct" as they are off by reference factors.
+    // We correct for those factors later.
+    const real_t rho_w    = s.col(n_rho)[0];
+    const real_t nu_w     = s.col(n_nu)[0];
+    const real_t tau_w    = rho_w * nu_w * s.col(n_u_y)[0];
+    const real_t u_tau    = std::sqrt(tau_w / rho_w);
+    const real_t delta_nu = nu_w / u_tau;
+
+    // We only use data from the lower half of the channel
+    const int nplus = (grid.Ny + 1) / 2;
+
+    // Compute the quantities in plus units
+    matrix_t<>::real r(nplus, 1 /* t */ + 1 /* y */ + 1 /* y+ */ +  3);
+    r.setZero();
+    for (int i = 0; i < nplus; ++i) {
+        r(i,0) = t;
+        r(i,1) = s.col(n_y)[i];
+        r(i,2) = s.col(n_y)[i] / delta_nu * std::sqrt(scenario.Re);
+        r(i,3) = s.col(n_u)[i] / u_tau    * std::sqrt(scenario.Re);
+        r(i,4) = s.col(n_v)[i] / u_tau    * std::sqrt(scenario.Re);
+        r(i,5) = s.col(n_w)[i] / u_tau    * std::sqrt(scenario.Re);
+        // TODO: \partial{} U^{+} / \partial{} y^{+} and friends
+    }
+
+    INFO("Saving plus unit quantities to " << filename << ".plus");
+    {
+        std::ofstream plusfile((std::string(filename) + ".plus").c_str());
+        plusfile << std::setw(15) << "t, ";
+        plusfile << std::setw(15) << "y, ";
+        plusfile << std::setw(15) << "y+, ";
+        plusfile << std::setw(15) << "u+, ";
+        plusfile << std::setw(15) << "v+, ";
+        plusfile << std::setw(13) << "w+" << std::endl;
+        Eigen::IOFormat iofmt(8, Eigen::AlignCols, ", ", "\n");
+        plusfile << r.format(iofmt) << std::endl;
+        plusfile.close();
+    }
 
     return true;
 }
