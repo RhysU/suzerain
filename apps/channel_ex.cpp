@@ -96,8 +96,8 @@ static const RestartDefinition<> restart(/* load         */ "",
                                          /* desttemplate */ "restart#.h5",
                                          /* retain       */ 1,
                                          /* every_dt     */ 0,
-                                         /* every_nt     */ 100);
-static const TimeDefinition<real_t> timedef(0, 1, 0, 1);
+                                         /* every_nt     */ 0);
+static const TimeDefinition<real_t> timedef(0, 0, 0, 0);
 
 // Global grid-details initialized in main()
 static shared_ptr<suzerain::bspline>     bspw;
@@ -1062,6 +1062,13 @@ int main(int argc, char **argv)
         options.process(argc, argv);
     }
 
+    if (!timedef.advance_dt && !timedef.advance_nt) {
+        if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+            FATAL("At least one of --advance_dt or --advance_nt is required");
+        }
+        return EXIT_FAILURE;
+    }
+
     // TODO Account for grid differences at load time
 
     INFO("Loading details from restart file: " << restart.load());
@@ -1188,21 +1195,27 @@ int main(int argc, char **argv)
     scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
                 smr91, L, N, *state_linear, *state_nonlinear, initial_t));
 
-    // Register status callbacks status_{dt,nt}, if requested
-    if (timedef.status_dt || timedef.status_nt) {
-        tc->add_periodic_callback(
-                timedef.status_dt ? timedef.status_dt : tc->forever_t(),
-                timedef.status_nt ? timedef.status_nt : tc->forever_nt(),
-                &log_status);
-    }
+    // Register status callbacks status_{dt,nt} as requested
+    // When either is not provided, default to a reasonable behavior
+    tc->add_periodic_callback(
+            timedef.status_dt  ? timedef.status_dt                          :
+            timedef.advance_dt ? timedef.advance_dt / restart.retain() / 10 :
+                                 tc->forever_t(),
+            timedef.status_nt  ? timedef.status_nt                          :
+            timedef.advance_nt ? timedef.advance_nt / restart.retain() / 10 :
+                                 tc->forever_nt(),
+            &log_status);
 
-    // Register restart-writing callbacks every_{dt,nt}, if requested
-    if (restart.every_dt() || restart.every_nt()) {
-        tc->add_periodic_callback(
-                restart.every_dt() ? restart.every_dt() : tc->forever_t(),
-                restart.every_nt() ? restart.every_nt() : tc->forever_nt(),
-                &save_restart);
-    }
+    // Register restart-writing callbacks every_{dt,nt} as requested
+    // When either is not provided, default to a reasonable behavior
+    tc->add_periodic_callback(
+            restart.every_dt() ? restart.every_dt()                    :
+            timedef.advance_dt ? timedef.advance_dt / restart.retain() :
+                                 tc->forever_t(),
+            restart.every_nt() ? restart.every_nt()                    :
+            timedef.advance_nt ? timedef.advance_nt / restart.retain() :
+                                 tc->forever_nt(),
+            &save_restart);
 
     // Advance time according to advance_dt, advance_nt criteria
     switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
