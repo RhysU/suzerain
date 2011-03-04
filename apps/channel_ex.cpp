@@ -1041,7 +1041,7 @@ int main(int argc, char **argv)
     // Establish MPI-savvy, rank-dependent logging names
     name_logger_within_comm_world();
 
-    INFO("Processing command line arguments and response files");
+    DEBUG("Processing command line arguments and response files");
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation");
