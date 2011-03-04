@@ -227,14 +227,16 @@ int main(int argc, char **argv)
 
         // Compute breakpoint locations
         const int nbreak = grid.Ny + 2 - grid.k;
-        suzerain::math::linspace(0.0, 1.0, nbreak, buf.get()); // Uniform [0,1]
+        suzerain::math::linspace(
+                0.0, scenario.Ly, nbreak, buf.get()); // Uniform
         if (htdelta == 0.0) {
             INFO("Breakpoints distributed uniformly");
         } else {
             INFO("Breakpoints stretched with hyperbolic tangent delta = "
                  << htdelta);
-            for (int i = 0; i < nbreak; ++i) {                     // Stretch 'em
-                buf[i] = scenario.Ly * suzerain_htstretch2(htdelta, 1.0, buf[i]);
+            for (int i = 0; i < nbreak; ++i) {        // Stretch
+                buf[i] = scenario.Ly
+                       * suzerain_htstretch2(htdelta, scenario.Ly, buf[i]);
             }
         }
 
