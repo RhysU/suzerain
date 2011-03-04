@@ -55,7 +55,7 @@ using boost::numeric_cast;
 using boost::shared_ptr;
 using std::numeric_limits;
 
-bool process(const char * filename);
+static bool process(const char * filename);
 
 int main(int argc, char **argv)
 {
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     return retval;
 }
 
-bool process(const char * filename)
+static bool process(const char * filename)
 {
     // Create a file-specific ESIO handle using RAII
     shared_ptr<boost::remove_pointer<esio_handle>::type> h(
