@@ -121,7 +121,14 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         FPT default_Lx,
         FPT default_Ly,
         FPT default_Lz)
-    : IDefinition("Nondimensional scenario parameters")
+    : IDefinition("Nondimensional scenario parameters"),
+      Re(default_Re),
+      Pr(default_Pr),
+      gamma(default_gamma),
+      beta(default_beta),
+      Lx(default_Lx),
+      Ly(default_Ly),
+      Lz(default_Lz)
 {
     using ::std::auto_ptr;
     using ::std::bind2nd;

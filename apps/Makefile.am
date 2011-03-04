@@ -54,9 +54,14 @@ channel_ex_LDADD    += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
 channel_ex_LDADD    += $(BOOST_IOSTREAMS_LIBS)
 channel_ex_LDADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
 
-# (Probably half-baked) analysis tools
+bin_PROGRAMS         += channel_mean
+channel_mean_SOURCES  = channel_mean.cpp channel_common.cpp logger.cpp
+channel_mean_LDADD    = ../suzerain/libsuzerain.la
+channel_mean_LDADD   += $(ESIO_LIBS) $(GRVY_LIBS)
+channel_mean_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
+channel_mean_LDADD   += $(BOOST_IOSTREAMS_LIBS)
+channel_mean_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
 
-bin_SCRIPTS += channel_mean.py
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

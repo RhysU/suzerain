@@ -30,6 +30,7 @@
 #ifndef CHANNEL_COMMON_HPP
 #define CHANNEL_COMMON_HPP
 
+#include <Eigen/Core>
 #include <esio/esio.h>
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_definition.hpp>
@@ -40,10 +41,28 @@
 #include <suzerain/storage.hpp>
 #include <suzerain/timestepper.hpp>
 
-// Introduce scalar- and complex-valued typedefs
+// Scalar- and complex-valued typedefs
 // Currently only real_t == double is supported by many, many components
-typedef double               real_t;
-typedef std::complex<real_t> complex_t;
+typedef double                real_t;
+typedef std::complex<real_t>  complex_t;
+
+// A "template typedef" for real- and complex-valued matrices
+template <int Rows = Eigen::Dynamic, int Cols = Eigen::Dynamic>
+struct matrix_t {
+    typedef Eigen::Matrix<real_t,Rows,Cols,Eigen::ColMajor> real;
+    typedef Eigen::Matrix<complex_t,Rows,Cols,Eigen::ColMajor> complex;
+private:
+    matrix_t();
+};
+
+// A "template typedef" for real- and complex-valued vectors
+template <int Rows = Eigen::Dynamic>
+struct vector_t {
+    typedef Eigen::Matrix<real_t,Rows,1,Eigen::ColMajor> real;
+    typedef Eigen::Matrix<complex_t,Rows,1,Eigen::ColMajor> complex;
+private:
+    vector_t();
+};
 
 /** Field names as stored in restart files */
 extern const boost::array<const char *,5> field_names;
@@ -101,6 +120,14 @@ void complex_field_read(esio_handle h, const char *name, complex_t *field,
                      2);
 }
 
+/** Read a complex-valued field via ESIO */
+inline
+void complex_field_read(esio_handle h, const char *name, complex_t *field)
+{
+    // When no strides are provided, we must specify the stride type.
+    return complex_field_read<int>(h, name, field);
+}
+
 /** Write a complex-valued field via ESIO */
 template< typename I >
 inline
@@ -115,6 +142,14 @@ void complex_field_write(esio_handle h, const char *name, complex_t *field,
                       2*numeric_cast<int>(bstride),
                       2*numeric_cast<int>(astride),
                       2, comment);
+}
+
+/** Write a complex-valued field via ESIO */
+inline
+void complex_field_write(esio_handle h, const char *name, complex_t *field)
+{
+    // When no strides are provided, we must specify the stride type.
+    return complex_field_write<int>(h, name, field);
 }
 
 #endif // CHANNEL_COMMON_HPP

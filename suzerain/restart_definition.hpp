@@ -80,7 +80,7 @@ public:
             const String& default_uncommitted  = "",
             const String& default_desttemplate = "",
             int default_retain                 = 1,
-            double default_every_dt             = 0,
+            double default_every_dt            = 0,
             int default_every_nt               = 0);
 
     /**
