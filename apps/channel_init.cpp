@@ -174,6 +174,10 @@ int main(int argc, char **argv)
         using ::suzerain::validation::ensure_positive;
         ::std::pointer_to_binary_function<real_t,const char*,void>
             ptr_fun_ensure_positive(ensure_positive<real_t>);
+        using ::suzerain::validation::ensure_nonnegative;
+        ::std::pointer_to_binary_function<real_t,const char*,void>
+            ptr_fun_ensure_nonnegative(ensure_nonnegative<real_t>);
+
         options.add_options()
             ("create", po::value<std::string>(&restart_file)
                 ->default_value("restart0.h5"),
@@ -192,7 +196,7 @@ int main(int argc, char **argv)
                 ->default_value(p_wall),
              "Pressure in N/m^2 used to obtain reference wall density")
             ("htdelta", po::value<real_t>(&htdelta)
-                ->notifier(std::bind2nd(ptr_fun_ensure_positive,"htdelta"))
+                ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative,"htdelta"))
                 ->default_value(7),
              "Hyperbolic tangent stretching parameter for breakpoints")
         ;
@@ -224,8 +228,14 @@ int main(int argc, char **argv)
         // Compute breakpoint locations
         const int nbreak = grid.Ny + 2 - grid.k;
         suzerain::math::linspace(0.0, 1.0, nbreak, buf.get()); // Uniform [0,1]
-        for (int i = 0; i < nbreak; ++i) {                     // Stretch 'em
-            buf[i] = scenario.Ly * suzerain_htstretch2(htdelta, 1.0, buf[i]);
+        if (htdelta == 0.0) {
+            INFO("Breakpoints distributed uniformly");
+        } else {
+            INFO("Breakpoints stretched with hyperbolic tangent delta = "
+                 << htdelta);
+            for (int i = 0; i < nbreak; ++i) {                     // Stretch 'em
+                buf[i] = scenario.Ly * suzerain_htstretch2(htdelta, 1.0, buf[i]);
+            }
         }
 
         // Generate the B-spline workspace based on order and breakpoints
