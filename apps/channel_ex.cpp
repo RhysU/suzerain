@@ -1197,25 +1197,53 @@ int main(int argc, char **argv)
 
     // Register status callbacks status_{dt,nt} as requested
     // When either is not provided, default to a reasonable behavior
-    tc->add_periodic_callback(
-            timedef.status_dt  ? timedef.status_dt                          :
-            timedef.advance_dt ? timedef.advance_dt / restart.retain() / 10 :
-                                 tc->forever_t(),
-            timedef.status_nt  ? timedef.status_nt                          :
-            timedef.advance_nt ? timedef.advance_nt / restart.retain() / 10 :
-                                 tc->forever_nt(),
-            &log_status);
+    {
+        TimeController<real_t>::time_type dt;
+        if (timedef.status_dt) {
+            dt = timedef.status_dt;
+        } else if (timedef.advance_dt) {
+            dt = timedef.advance_dt / restart.retain() / 10;
+        } else {
+            dt = tc->forever_t();
+        }
+
+        TimeController<real_t>::step_type nt;
+        if (timedef.status_nt) {
+            nt = timedef.status_nt;
+        } else if (timedef.advance_nt) {
+            nt = timedef.advance_nt / restart.retain() / 10;
+            nt = std::max<TimeController<real_t>::step_type>(1, nt);
+        } else {
+            nt = tc->forever_nt();
+        }
+
+        tc->add_periodic_callback(dt, nt, &log_status);
+    }
 
     // Register restart-writing callbacks every_{dt,nt} as requested
     // When either is not provided, default to a reasonable behavior
-    tc->add_periodic_callback(
-            restart.every_dt() ? restart.every_dt()                    :
-            timedef.advance_dt ? timedef.advance_dt / restart.retain() :
-                                 tc->forever_t(),
-            restart.every_nt() ? restart.every_nt()                    :
-            timedef.advance_nt ? timedef.advance_nt / restart.retain() :
-                                 tc->forever_nt(),
-            &save_restart);
+    {
+        TimeController<real_t>::time_type dt;
+        if (restart.every_dt()) {
+            dt = restart.every_dt();
+        } else if (timedef.advance_dt) {
+            dt = timedef.advance_dt / restart.retain();
+        } else {
+            dt = tc->forever_t();
+        }
+
+        TimeController<real_t>::step_type nt;
+        if (restart.every_nt()) {
+            nt = restart.every_nt();
+        } else if (timedef.advance_nt) {
+            nt = timedef.advance_nt / restart.retain();
+            nt = std::max<TimeController<real_t>::step_type>(1, nt);
+        } else {
+            nt = tc->forever_nt();
+        }
+
+        tc->add_periodic_callback(dt, nt, &save_restart);
+    }
 
     // Advance time according to advance_dt, advance_nt criteria
     switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
