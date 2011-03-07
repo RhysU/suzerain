@@ -55,6 +55,9 @@ using boost::numeric_cast;
 using boost::shared_ptr;
 using std::numeric_limits;
 
+static const Eigen::IOFormat iofmt(numeric_limits<real_t>::digits10,
+                                   Eigen::AlignCols, ", ", "\n");
+
 static bool process(const char * filename);
 
 int main(int argc, char **argv)
@@ -270,11 +273,10 @@ static bool process(const char * filename)
     {
         std::ofstream starfile((std::string(filename) + ".star").c_str());
         for (size_t i = 0; i < column_names.size(); ++i) {  // Headings
-            starfile << std::setw(14) << column_names[i];
+            starfile << std::setw(iofmt.precision + 6) << column_names[i];
             if (i < column_names.size() - 1) starfile << ", ";
         }
         starfile << std::endl;
-        Eigen::IOFormat iofmt(8, Eigen::AlignCols, ", ", "\n");
         starfile << s.format(iofmt) << std::endl;;
         starfile.close();
     }
@@ -312,13 +314,12 @@ static bool process(const char * filename)
     INFO("Saving plus unit quantities to " << filename << ".plus");
     {
         std::ofstream plusfile((std::string(filename) + ".plus").c_str());
-        plusfile << std::setw(15) << "t, ";
-        plusfile << std::setw(15) << "y, ";
-        plusfile << std::setw(15) << "y+, ";
-        plusfile << std::setw(15) << "u+, ";
-        plusfile << std::setw(15) << "v+, ";
-        plusfile << std::setw(13) << "w+" << std::endl;
-        Eigen::IOFormat iofmt(8, Eigen::AlignCols, ", ", "\n");
+        plusfile << std::setw(iofmt.precision + 7) << "t, ";
+        plusfile << std::setw(iofmt.precision + 7) << "y, ";
+        plusfile << std::setw(iofmt.precision + 7) << "y+, ";
+        plusfile << std::setw(iofmt.precision + 7) << "u+, ";
+        plusfile << std::setw(iofmt.precision + 7) << "v+, ";
+        plusfile << std::setw(iofmt.precision + 6) << "w+" << std::endl;
         plusfile << r.format(iofmt) << std::endl;
         plusfile.close();
     }
