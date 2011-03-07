@@ -44,6 +44,9 @@ static boost::array<std::size_t,3> size3(
     return a;
 }
 
+// Shorthand for a double NaN used in may places below
+static const double double_NaN = std::numeric_limits<double>::quiet_NaN();
+
 // Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
 // right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
 class RiccatiNonlinearOperator
@@ -63,9 +66,13 @@ public:
 
     virtual double applyOperator(
             IState<3,double,noninterleaved<3> >& state,
+            const double evmaxmag_real,
+            const double evmaxmag_imag,
             const bool delta_t_requested = false) const
             throw(std::exception)
     {
+        SUZERAIN_UNUSED(evmaxmag_real);
+        SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(delta_t_requested);
 
         NoninterleavedState<3,double>& s
@@ -270,11 +277,11 @@ BOOST_AUTO_TEST_CASE( applyOperator )
     a[0][0][0] = 1.0;
 
     MultiplicativeOperatorD3 op(2.0);
-    op.applyOperator(a);
+    op.applyOperator(a, double_NaN, double_NaN);
     BOOST_CHECK_CLOSE(a[0][0][0], 2.0, close_enough);
-    op.applyOperator(a);
+    op.applyOperator(a, double_NaN, double_NaN);
     BOOST_CHECK_CLOSE(a[0][0][0], 4.0, close_enough);
-    op.applyOperator(a);
+    op.applyOperator(a, double_NaN, double_NaN);
     BOOST_CHECK_CLOSE(a[0][0][0], 8.0, close_enough);
 
     // Ensure we can instantiate
@@ -335,9 +342,13 @@ public:
 
     virtual double applyOperator(
             IState<3,double,noninterleaved<3> >& state,
+            const double evmaxmag_real,
+            const double evmaxmag_imag,
             const bool delta_t_requested = false) const
             throw(std::exception)
     {
+        SUZERAIN_UNUSED(evmaxmag_real);
+        SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(delta_t_requested);
 
         NoninterleavedState<3,double>& s

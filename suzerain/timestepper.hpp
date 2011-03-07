@@ -163,6 +163,14 @@ public:
      *
      * @param state The state location to use.  It is expected that certain
      *        implementations will require more specific state types.
+     * @param evmaxmag_real The timestepping scheme's maximum pure real
+     *        eigenvalue magnitude.  When <tt>delta_t_requested == true</tt>
+     *        the operator should use this information to compute a
+     *        stable time step per its convective criteria.
+     * @param evmaxmag_imag The timestepping scheme's maximum pure imaginary
+     *        eigenvalue magnitude.  When <tt>delta_t_requested == true</tt>
+     *        the operator should use this information to compute a
+     *        stable time step per its diffusive criteria.
      * @param delta_t_requested If true, the operator must compute
      *        and return a stable time step.
      *
@@ -171,6 +179,8 @@ public:
      */
     virtual typename suzerain::traits::component<Element>::type applyOperator(
         suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state,
+        const typename suzerain::traits::component<Element>::type evmaxmag_real,
+        const typename suzerain::traits::component<Element>::type evmaxmag_imag,
         const bool delta_t_requested = false)
         const
         throw(std::exception) = 0;
@@ -443,10 +453,14 @@ public:
      */
     virtual typename suzerain::traits::component<Element>::type applyOperator(
         suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state,
+        const typename suzerain::traits::component<Element>::type evmaxmag_real,
+        const typename suzerain::traits::component<Element>::type evmaxmag_imag,
         const bool delta_t_requested = false)
         const
         throw(std::exception)
     {
+        SUZERAIN_UNUSED(evmaxmag_real);
+        SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(delta_t_requested);
         state.scale(factor);
         return delta_t;
@@ -775,7 +789,7 @@ throw(std::exception)
     b.scale(delta_t * m.zeta(substep_index));
     L.accumulateMassPlusScaledOperator(
             delta_t * m.alpha(substep_index), a, b);
-    N.applyOperator(a);
+    N.applyOperator(a, m.evmaxmag_real(), m.evmaxmag_imag());
     b.addScaled(delta_t * m.gamma(substep_index), a);
     L.invertMassPlusScaledOperator( -delta_t * m.beta(substep_index), b);
 
@@ -822,7 +836,8 @@ throw(std::exception)
     // First substep handling is special since we need to determine delta_t
     b.assign(a);
     typename suzerain::traits::component<Element>::type delta_t
-        = N.applyOperator(b, true /* need delta_t */);
+        = N.applyOperator(b, m.evmaxmag_real(), m.evmaxmag_imag(),
+                          true /* need delta_t during first substep */);
     if (delta_t > 0) {
         if (max_delta_t > 0) delta_t = std::min(delta_t, max_delta_t);
     } else if (max_delta_t > 0) {
@@ -840,7 +855,8 @@ throw(std::exception)
         b.scale(delta_t * m.zeta(i));
         L.accumulateMassPlusScaledOperator(delta_t * m.alpha(i), a, b);
         b.exchange(a); // Note nonlinear storage controls exchange operation
-        N.applyOperator(b, false /* delta_t not needed */);
+        N.applyOperator(b, m.evmaxmag_real(), m.evmaxmag_imag(),
+                        false /* delta_t not needed */);
         a.addScaled(delta_t * m.gamma(i), b);
         L.invertMassPlusScaledOperator( -delta_t * m.beta(i), a);
     }

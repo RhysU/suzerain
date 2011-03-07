@@ -228,6 +228,8 @@ public:
 
     real_t applyOperator(
         istate_type &istate,
+        const real_t evmaxmag_real,
+        const real_t evmaxmag_imag,
         const bool delta_t_requested = false)
         const
         throw(std::exception) {
@@ -780,20 +782,19 @@ public:
                         div_u, grad_u, div_grad_u, grad_div_u);
 
             // Maintain the minimum stable time step
-            // TODO Operator knows about the scheme's eigenvalues.  Fix that.
             convective_delta_t = std::min(convective_delta_t,
                 suzerain::timestepper::convective_stability_criterion(
                     u.x(), one_over_delta_x,
                     u.y(), one_over_delta_y[ndx_y],
                     u.z(), one_over_delta_z,
-                    std::sqrt(3.0),
+                    evmaxmag_real,
                     std::sqrt(T))); // nondimensional a = sqrt(T)
             diffusive_delta_t = std::min(diffusive_delta_t,
                 suzerain::timestepper::diffusive_stability_criterion(
                     one_over_delta_x,
                     one_over_delta_y[ndx_y],
                     one_over_delta_z,
-                    Re, Pr, gamma, 2.512, mu / rho));
+                    Re, Pr, gamma, evmaxmag_imag, mu / rho));
             ndx_y = (ndx_y + 1) % grid.Ny;
 
             // Continuity equation
