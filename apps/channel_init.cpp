@@ -129,10 +129,8 @@ static double f_msolver(double y, void *params) {
 /** Function for evaluating the total energy profile given rho*, T* = 1 */
 static double f_esolver(double y, void *params) {
     mesolver *p = (mesolver *) params;
-    const double const_contrib = 1 / (p->gamma * (p->gamma - 1));
-    const double U = f_msolver(y, p);
-    const double vel_contrib   = 0.5 * U * U / (p->gamma * p->R * p->T_wall);
-    return const_contrib + vel_contrib;
+    const double m = f_msolver(y, p);
+    return 1 / (p->gamma * (p->gamma - 1)) + 0.5 * m * m;
 }
 
 int main(int argc, char **argv)

@@ -212,7 +212,7 @@ static bool process(const char * filename)
     s.col(n_v)  = s.col(n_rhov).cwise() / s.col(n_rho);
     s.col(n_w)  = s.col(n_rhow).cwise() / s.col(n_rho);
     s.col(n_e)  = s.col(n_rhoe).cwise() / s.col(n_rho);
-    s.col(n_p)  = (scenario.gamma - 1) * (s.col(n_e)
+    s.col(n_p)  = (scenario.gamma - 1) * (s.col(n_rhoe)
                         - s.col(n_rhou).cwise() * s.col(n_u) / 2
                         - s.col(n_rhov).cwise() * s.col(n_v) / 2
                         - s.col(n_rhow).cwise() * s.col(n_w) / 2);
