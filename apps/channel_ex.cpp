@@ -97,7 +97,13 @@ static const RestartDefinition<> restart(/* load         */ "",
                                          /* retain       */ 1,
                                          /* every_dt     */ 0,
                                          /* every_nt     */ 0);
-static const TimeDefinition<real_t> timedef(0, 0, 0, 0);
+static const TimeDefinition<real_t> timedef(/* advance_dt           */ 0,
+                                            /* advance_nt           */ 0,
+                                            /* status_dt            */ 0,
+                                            /* status_nt            */ 0,
+                                            /* min_dt               */ 0,
+                                            /* max_dt               */ 0,
+                                            /* evmagfactor per Prem */ 0.72);
 
 // Global grid-details initialized in main()
 static shared_ptr<suzerain::bspline>     bspw;
@@ -1187,14 +1193,16 @@ int main(int argc, char **argv)
 
     // Instantiate the operators and time stepping details
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
-    const suzerain::timestepper::lowstorage::SMR91Method<complex_t> smr91;
+    using suzerain::timestepper::lowstorage::SMR91Method;
+    const SMR91Method<complex_t> smr91(timedef.evmagfactor);
     MassOperator L(scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
     NonlinearOperator N;
 
     // Establish TimeController for use with operators and state storage
     using suzerain::timestepper::TimeController;
     scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
-                smr91, L, N, *state_linear, *state_nonlinear, initial_t));
+                smr91, L, N, *state_linear, *state_nonlinear,
+                initial_t, timedef.min_dt, timedef.max_dt));
 
     // Register status callbacks status_{dt,nt} as requested
     // When either is not provided, default to a reasonable behavior
@@ -1203,7 +1211,7 @@ int main(int argc, char **argv)
         if (timedef.status_dt) {
             dt = timedef.status_dt;
         } else if (timedef.advance_dt) {
-            dt = timedef.advance_dt / restart.retain() / 10;
+            dt = timedef.advance_dt / restart.retain() / 5;
         } else {
             dt = tc->forever_t();
         }
@@ -1212,7 +1220,7 @@ int main(int argc, char **argv)
         if (timedef.status_nt) {
             nt = timedef.status_nt;
         } else if (timedef.advance_nt) {
-            nt = timedef.advance_nt / restart.retain() / 10;
+            nt = timedef.advance_nt / restart.retain() / 5;
             nt = std::max<TimeController<real_t>::step_type>(1, nt);
         } else {
             nt = tc->forever_nt();

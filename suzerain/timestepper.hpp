@@ -678,8 +678,20 @@ class SMR91Method : public ILowStorageMethod<Element>
 {
 public:
 
-    /** Explicit default constructor */
-    SMR91Method() {};
+    /**
+     * Explicit constructor.
+     *
+     * @param evmagfactor The multiplicative factor to use when reporting
+     *                    maximum pure real and pure imaginary eigenvalue
+     *                    magnitudes in evmaxmag_real() and evmaxmag_imag(),
+     *                    respectively.
+     **/
+    explicit SMR91Method(
+            typename suzerain::traits::component<Element>::type evmagfactor = 1)
+        : evmagfactor(evmagfactor)
+    {
+        assert(evmagfactor > 0);
+    }
 
     /*! @copydoc ILowStorageMethod::name */
     virtual const char * name() const { return "SMR91"; }
@@ -701,11 +713,16 @@ public:
 
     /*! @copydoc ILowStorageMethod::evmaxmag_real */
     virtual typename suzerain::traits::component<Element>::type
-        evmaxmag_real() const { return 2.512; }
+        evmaxmag_real() const { return evmagfactor * 2.512; }
 
     /*! @copydoc ILowStorageMethod::evmaxmag_imag */
     virtual typename suzerain::traits::component<Element>::type
-        evmaxmag_imag() const { return std::sqrt(3.0); }
+        evmaxmag_imag() const { return evmagfactor * std::sqrt(3.0); }
+
+private:
+
+    /** Multiplicative factor to use when reporting eigenvalue magnitudes */
+    typename suzerain::traits::component<Element>::type evmagfactor;
 };
 
 template< typename Element >
