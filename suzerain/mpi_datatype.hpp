@@ -65,7 +65,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     char
 > >::type> {
-    operator MPI_Datatype () const { return MPI_CHAR; }
+    static const MPI_Datatype value = MPI_CHAR;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>signed char</tt>s */
@@ -74,7 +75,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     signed char
 > >::type> {
-    operator MPI_Datatype () const { return MPI_SIGNED_CHAR; }
+    static const MPI_Datatype value = MPI_SIGNED_CHAR;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>unsigned char</tt>s */
@@ -83,7 +85,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     unsigned char
 > >::type> {
-    operator MPI_Datatype () const { return MPI_UNSIGNED_CHAR; }
+    static const MPI_Datatype value = MPI_UNSIGNED_CHAR;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>signed short int</tt>s */
@@ -92,7 +95,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     signed short int
 > >::type> {
-    operator MPI_Datatype () const { return MPI_SHORT; }
+    static const MPI_Datatype value = MPI_SHORT;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>signed int</tt>s */
@@ -101,7 +105,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     signed int
 > >::type> {
-    operator MPI_Datatype () const { return MPI_INT; }
+    static const MPI_Datatype value = MPI_INT;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>signed long int</tt>s */
@@ -110,7 +115,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     signed long int
 > >::type> {
-    operator MPI_Datatype () const { return MPI_LONG; }
+    static const MPI_Datatype value = MPI_LONG;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>signed long long int</tt>s */
@@ -119,7 +125,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     signed long long int
 > >::type> {
-    operator MPI_Datatype () const { return MPI_LONG_LONG; }
+    static const MPI_Datatype value = MPI_LONG_LONG;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>unsigned short int</tt>s */
@@ -128,7 +135,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     unsigned short int
 > >::type> {
-    operator MPI_Datatype () const { return MPI_UNSIGNED_SHORT; }
+    static const MPI_Datatype value = MPI_UNSIGNED_SHORT;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>unsigned int</tt>s */
@@ -137,7 +145,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     unsigned int
 > >::type> {
-    operator MPI_Datatype () const { return MPI_UNSIGNED; }
+    static const MPI_Datatype value = MPI_UNSIGNED;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>unsigned long int</tt>s */
@@ -146,7 +155,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     unsigned long int
 > >::type> {
-    operator MPI_Datatype () const { return MPI_UNSIGNED_LONG; }
+    static const MPI_Datatype value = MPI_UNSIGNED_LONG;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>unsigned long long int</tt>s */
@@ -155,7 +165,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     unsigned long long int
 > >::type> {
-    operator MPI_Datatype () const { return MPI_UNSIGNED_LONG_LONG; }
+    static const MPI_Datatype value = MPI_UNSIGNED_LONG_LONG;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>float</tt>s */
@@ -164,7 +175,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     float
 > >::type> {
-    operator MPI_Datatype () const { return MPI_FLOAT; }
+    static const MPI_Datatype value = MPI_FLOAT;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>double</tt>s */
@@ -173,7 +185,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     double
 > >::type> {
-    operator MPI_Datatype () const { return MPI_DOUBLE; }
+    static const MPI_Datatype value = MPI_DOUBLE;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>long double</tt>s */
@@ -182,7 +195,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     long double
 > >::type> {
-    operator MPI_Datatype () const { return MPI_LONG_DOUBLE; }
+    static const MPI_Datatype value = MPI_LONG_DOUBLE;
+    operator MPI_Datatype () const { return value; }
 };
 
 /** Provides MPI_Datatype lookup for <tt>long double</tt>s */
@@ -191,7 +205,8 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
     wchar_t
 > >::type> {
-    operator MPI_Datatype () const { return MPI_WCHAR; }
+    static const MPI_Datatype value = MPI_WCHAR;
+    operator MPI_Datatype () const { return value; }
 };
 
 /**
