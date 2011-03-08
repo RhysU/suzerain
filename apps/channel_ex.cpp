@@ -37,11 +37,13 @@
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
+#include <suzerain/error.h>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/htstretch.h>
 #include <suzerain/math.hpp>
-#include <suzerain/multi_array.hpp>
+#include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/multi_array.hpp>
 #include <suzerain/orthonormal.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
@@ -241,8 +243,10 @@ public:
         throw(std::exception) {
 
         SUZERAIN_UNUSED(delta_t_requested);
-        real_t convective_delta_t = numeric_limits<real_t>::max();
-        real_t diffusive_delta_t  = numeric_limits<real_t>::max();
+        real_t delta_t_candidates[2] = { numeric_limits<real_t>::max(),
+                                         numeric_limits<real_t>::max()  };
+        real_t &convective_delta_t = delta_t_candidates[0];
+        real_t &diffusive_delta_t  = delta_t_candidates[1];
         const real_t one_over_delta_x = scenario.Lx / grid.Nx;
         const real_t one_over_delta_z = scenario.Lz / grid.Nz;
 
@@ -787,21 +791,23 @@ public:
                         mu, grad_mu, lambda, grad_lambda,
                         div_u, grad_u, div_grad_u, grad_div_u);
 
-            // Maintain the minimum stable time step
-            convective_delta_t = std::min(convective_delta_t,
-                suzerain::timestepper::convective_stability_criterion(
-                    u.x(), one_over_delta_x,
-                    u.y(), one_over_delta_y[ndx_y],
-                    u.z(), one_over_delta_z,
-                    evmaxmag_real,
-                    std::sqrt(T))); // nondimensional a = sqrt(T)
-            diffusive_delta_t = std::min(diffusive_delta_t,
-                suzerain::timestepper::diffusive_stability_criterion(
-                    one_over_delta_x,
-                    one_over_delta_y[ndx_y],
-                    one_over_delta_z,
-                    Re, Pr, gamma, evmaxmag_imag, mu / rho));
-            ndx_y = (ndx_y + 1) % grid.Ny;
+            // Maintain the minimum observed stable time step
+            convective_delta_t = suzerain::math::minnan(
+                    suzerain::timestepper::convective_stability_criterion(
+                            u.x(), one_over_delta_x,
+                            u.y(), one_over_delta_y[ndx_y],
+                            u.z(), one_over_delta_z,
+                            evmaxmag_real,
+                            std::sqrt(T)), // nondimensional a = sqrt(T)
+                    convective_delta_t);
+            diffusive_delta_t = suzerain::math::minnan(
+                    suzerain::timestepper::diffusive_stability_criterion(
+                            one_over_delta_x,
+                            one_over_delta_y[ndx_y],
+                            one_over_delta_z,
+                            Re, Pr, gamma, evmaxmag_imag, mu / rho),
+                    diffusive_delta_t);
+            ndx_y = (ndx_y + 1) % grid.Ny; // Circular incr on one_over_delta_y
 
             // Continuity equation
             *p_rho = - div_m
@@ -935,7 +941,15 @@ public:
         // See writeup/channel_treatment.tex for full details
         // ------------------------------------------------------------------
 
-        return std::min(convective_delta_t, diffusive_delta_t);
+        // Perform Allreduce on stable time step sizes
+        // Note delta_t_candidates aliases {convective,diffusive}_delta_t
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, delta_t_candidates,
+                    sizeof(delta_t_candidates)/sizeof(delta_t_candidates[0]),
+                    suzerain::mpi::datatype<real_t>::value,
+                    MPI_MIN, MPI_COMM_WORLD));
+
+        // Return minimum of either time step criterion, accounting for NaNs
+        return suzerain::math::minnan(convective_delta_t, diffusive_delta_t);
     }
 
 private:
@@ -1255,28 +1269,29 @@ int main(int argc, char **argv)
     }
 
     // Advance time according to advance_dt, advance_nt criteria
+    bool advance_success;
     switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
         case 0:
             INFO("Advancing simulation until forcibly terminated");
-            tc->advance();
+            advance_success = tc->advance();
             break;
         case 1:
             INFO("Advancing simulation " << timedef.advance_nt
                  << " discrete time steps");
-            tc->step(timedef.advance_nt);
+            advance_success = tc->step(timedef.advance_nt);
             break;
         case 2:
             INFO("Advancing simulation by " << timedef.advance_dt
                  << " units of physical time");
-            tc->advance(initial_t + timedef.advance_dt);
+            advance_success = tc->advance(initial_t + timedef.advance_dt);
             break;
         case 3:
             INFO("Advancing simulation by at most " << timedef.advance_dt
                  << " units of physical time");
             INFO("Advancing simulation by at most " << timedef.advance_nt
                  << " discrete time steps");
-            tc->advance(initial_t + timedef.advance_dt,
-                        timedef.advance_nt);
+            advance_success = tc->advance(initial_t + timedef.advance_dt,
+                                          timedef.advance_nt);
             break;
         default:
             FATAL("Sanity error in time control");
@@ -1284,6 +1299,9 @@ int main(int argc, char **argv)
     }
 
     // Output statistics on time advancement
+    if (!advance_success && suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+        WARN("TimeController stopped advancing time unexpectedly");
+    }
     INFO("Advanced simulation from t_initial = " << initial_t
          << " to t_final = " << tc->current_t()
          << " in " << tc->current_nt() << " steps");
@@ -1294,8 +1312,10 @@ int main(int argc, char **argv)
          << tc->taken_stddev());
 
     // Save a final restart before exit if one was not just saved
-    if (last_restart_saved_nt != tc->current_nt()) {
+    if (advance_success && last_restart_saved_nt != tc->current_nt()) {
         INFO("Saving final restart file prior to quitting.");
         save_restart(tc->current_t(), tc->current_nt());
     }
+
+    return advance_success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
