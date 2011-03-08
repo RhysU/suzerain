@@ -31,6 +31,7 @@
 #define __SUZERAIN_TIMESTEPPER_HPP
 
 #include <suzerain/common.hpp>
+#include <suzerain/math.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/timecontroller.hpp>
 #include <suzerain/traits.hpp>
@@ -441,7 +442,7 @@ public:
         : factor(factor),
           delta_t(std::numeric_limits<
                     typename suzerain::traits::component<Element>::type
-                >::quiet_NaN()) {};
+                >::infinity()) {};
 
     /**
      * Scale \c state by the factor set at construction time.
@@ -855,13 +856,8 @@ throw(std::exception)
     typename suzerain::traits::component<Element>::type delta_t
         = N.applyOperator(b, m.evmaxmag_real(), m.evmaxmag_imag(),
                           true /* need delta_t during first substep */);
-    if (delta_t > 0) {
-        if (max_delta_t > 0) delta_t = std::min(delta_t, max_delta_t);
-    } else if (max_delta_t > 0) {
-        delta_t = max_delta_t;
-    } else {
-        // Both delta_t, max_delta_t are either non-positive or NaN
-        throw std::logic_error("No usable delta_t available for time step");
+    if (max_delta_t > 0) {
+        delta_t = suzerain::math::minnan(delta_t, max_delta_t);
     }
     L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a);
     a.addScaled(delta_t * m.gamma(0), b);

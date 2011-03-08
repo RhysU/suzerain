@@ -61,7 +61,7 @@ public:
     RiccatiNonlinearOperator(
             const double a,
             const double b,
-            const double delta_t = std::numeric_limits<double>::quiet_NaN())
+            const double delta_t = std::numeric_limits<double>::infinity())
         : a(a), b(b), delta_t(delta_t) {};
 
     virtual double applyOperator(
@@ -100,7 +100,7 @@ public:
     RiccatiLinearOperator(
             const double a,
             const double b,
-            const double delta_t = std::numeric_limits<double>::quiet_NaN())
+            const double delta_t = std::numeric_limits<double>::infinity())
         : MultiplicativeOperator<3,double,noninterleaved<3> >(
                 b, delta_t
           )
