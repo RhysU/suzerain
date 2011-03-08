@@ -11,6 +11,42 @@
 
 typedef boost::mpl::list< double, float > test_types;
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( minnan, T, test_types )
+{
+    using boost::math::isnan;
+    using std::numeric_limits;
+    using suzerain::math::minnan;
+
+    const T a   = 1;
+    const T b   = 2;
+    const T nan = std::numeric_limits<T>::quiet_NaN();
+
+    BOOST_CHECK_EQUAL(a, minnan(a,b));
+    BOOST_CHECK_EQUAL(a, minnan(b,a));
+    BOOST_CHECK(isnan(minnan(nan,a)));
+    BOOST_CHECK(isnan(minnan(nan,b)));
+    BOOST_CHECK(isnan(minnan(a,nan)));
+    BOOST_CHECK(isnan(minnan(b,nan)));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( maxnan, T, test_types )
+{
+    using boost::math::isnan;
+    using std::numeric_limits;
+    using suzerain::math::maxnan;
+
+    const T a   = 2;
+    const T b   = 1;
+    const T nan = std::numeric_limits<T>::quiet_NaN();
+
+    BOOST_CHECK_EQUAL(a, maxnan(a,b));
+    BOOST_CHECK_EQUAL(a, maxnan(b,a));
+    BOOST_CHECK(isnan(maxnan(nan,a)));
+    BOOST_CHECK(isnan(maxnan(nan,b)));
+    BOOST_CHECK(isnan(maxnan(a,nan)));
+    BOOST_CHECK(isnan(maxnan(b,nan)));
+}
+
 BOOST_AUTO_TEST_CASE( integer_power )
 {
     using suzerain::math::integer_power;

@@ -40,6 +40,35 @@ namespace suzerain {
  */
 namespace math {
 
+
+/**
+ * Return the lesser of \c a and \c b favoring <tt>NaN</tt>s over numbers.
+ * See <a href="http://en.wikipedia.org/wiki/IEEE_754_revision#min_and_max">
+ * IEEE 754 revision on Wikipedia</a> for why <tt>std::min</tt> is not
+ * usable when <tt>NaN</tt>s are preferred.
+ */
+template<class T>
+inline
+const T& minnan(const T& a, const T& b)
+{
+    return SUZERAIN_UNLIKELY((boost::math::isnan)(a)) ? a :
+           (a < b)                                    ? a : b;
+}
+
+/**
+ * Return the greater of \c a and \c b favoring <tt>NaN</tt>s over numbers.
+ * See <a href="http://en.wikipedia.org/wiki/IEEE_754_revision#min_and_max">
+ * IEEE 754 revision on Wikipedia</a> for why <tt>std::max</tt> is not
+ * usable when <tt>NaN</tt>s are preferred.
+ */
+template<class T>
+inline
+const T& maxnan(const T& a, const T& b)
+{
+    return SUZERAIN_UNLIKELY((boost::math::isnan)(a)) ? a :
+           (b < a)                                    ? a : b;
+}
+
 /**
  * Computes \f$x^n\f$ efficiently for small integer \f$n\f$, including
  * \f$n <= 0\f$.  No overflow checking is performed.  Algorithm taken
