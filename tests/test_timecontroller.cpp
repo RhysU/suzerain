@@ -31,7 +31,9 @@ public:
 private:
     double stepTime(double max_dt) const
     {
-        return std::min(actual_dt, max_dt);
+        return (boost::math::isfinite)(actual_dt)
+            ? std::min(actual_dt, max_dt)
+            : actual_dt;
     }
 };
 
@@ -545,6 +547,44 @@ BOOST_AUTO_TEST_CASE( physics_initiated_abort )
     // Unsuccessful advance because physics dt < dt_min
     BOOST_REQUIRE(!tc.advance(tc.forever_t(), tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(1.0, tc.current_t());
+}
+
+BOOST_AUTO_TEST_CASE( nan_actual_dt_abort )
+{
+    TestTimeController<> tc(0.0, 1 /* min_dt */, 2 /* max_dt */);
+
+    // Successful advance for step smaller than min_dt
+    // when the controller demands it.
+    BOOST_REQUIRE(tc.advance(0.5, tc.forever_nt()));
+    BOOST_REQUIRE_EQUAL(0.5, tc.current_t());
+
+    // Force "physics" to return a NaN
+    tc.actual_dt = std::numeric_limits<double>::quiet_NaN();
+
+    // Unsuccessful advance because NaN encountered
+    BOOST_REQUIRE(!tc.advance(tc.forever_t(), tc.forever_nt()));
+
+    // Current time should indicate a NaN was encountered
+    BOOST_REQUIRE((boost::math::isnan)(tc.current_t()));
+}
+
+BOOST_AUTO_TEST_CASE( inf_actual_dt_abort )
+{
+    TestTimeController<> tc(0.0, 1 /* min_dt */, 2 /* max_dt */);
+
+    // Successful advance for step smaller than min_dt
+    // when the controller demands it.
+    BOOST_REQUIRE(tc.advance(0.5, tc.forever_nt()));
+    BOOST_REQUIRE_EQUAL(0.5, tc.current_t());
+
+    // Force "physics" to return INF
+    tc.actual_dt = std::numeric_limits<double>::infinity();
+
+    // Unsuccessful advance because INF encountered
+    BOOST_REQUIRE(!tc.advance(tc.forever_t(), tc.forever_nt()));
+
+    // Current time should indicate INF was encountered
+    BOOST_REQUIRE((boost::math::isinf)(tc.current_t()));
 }
 
 // Sane behavior when every_values should cause floating point overflow?

@@ -254,7 +254,8 @@ public:
      * current_nt() reaches \c final_nt, whichever comes first.  If any
      * physically-determined time step is smaller than min_dt() or any
      * registered callback returns \c false, the controller will immediately
-     * stop.
+     * stop.  The controller will also stop if it encounters a step size for
+     * which <tt>isfinite</tt> is \c false.
      *
      * @param final_t  Maximum simulation time.
      *                 If you want to advance some relative amount \c dt,
@@ -280,7 +281,8 @@ public:
      * simulation will advance until \c count_nt time steps have been
      * completed.  If any physically-determined time step is smaller than
      * min_dt() or any registered callback returns \c false, the controller
-     * will immediately stop.
+     * will immediately stop.  The controller will also stop if it encounters a
+     * step size for which <tt>isfinite</tt> is \c false.
      *
      * @param count_nt Number of time steps to take.  For unlimited
      *                 time step counts, use forever_nt().
@@ -493,11 +495,16 @@ StopType TimeController<TimeType,StepType,StopType>::advance(
             = min(max_dt_, min(final_t, next_event_t) - current_t_);
         assert(possible_dt > 0);
 
-        // Take step, accumulate statistics, and record new simulation time
+        // Take a single step, record new simulation time, and update statistics
         const TimeType actual_dt = stepper_(possible_dt);
-        assert(actual_dt <= possible_dt);
-        dt_stats(actual_dt);
         current_t_ += actual_dt;
+        dt_stats(actual_dt);
+
+        // Sanity check the time step we just took
+        if (SUZERAIN_UNLIKELY(!(boost::math::isfinite)(actual_dt))) {
+            return false; // By design !isfinite(current_t_)
+        }
+        assert(actual_dt <= possible_dt);
 
         // Check callbacks and determine next callback simulation time
         next_event_t = std::numeric_limits<TimeType>::max();
