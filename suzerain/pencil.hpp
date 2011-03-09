@@ -407,6 +407,7 @@ public:
 
     /**
      * Construct a scalar pencil with the given characteristics.
+     * The pencil is filled with zeros at construction time.
      *
      * @warning Note that unlike P3DFFT's \c get_dims return values, \c pstart
      * and \c wstart are to be zero-indexed.
@@ -424,8 +425,8 @@ public:
     throw(std::invalid_argument);
 
     /**
-     * Construct a local pencil matching the characteristics of
-     * a global pencil_grid.
+     * Construct a local pencil matching the characteristics of a global
+     * pencil_grid.  The pencil is filled with zeros at construction time.
      *
      * @param pg The pencil_grid to match.
      */
@@ -723,7 +724,7 @@ throw(std::invalid_argument)
         physical(pstart, psize, data_.get()),
         wave(wstart, wsize, data_.get())
 {
-    // NOP
+    std::fill_n(data_.get(), data_nelem_, real_type(0)); // Fill with zeros
 }
 
 template<typename FPT>
@@ -741,7 +742,7 @@ pencil<FPT>::pencil(const pencil_grid &pg)
         wave(pg.local_wave_start(),
              pg.local_wave_extent(), data_.get())
 {
-    // NOP
+    std::fill_n(data_.get(), data_nelem_, real_type(0)); // Fill with zeros
 }
 
 template<typename FPT>
