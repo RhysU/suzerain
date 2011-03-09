@@ -714,7 +714,8 @@ public:
              ++p_e_x,
              ++p_e_y,
              ++p_e_z,
-             ++p_div_grad_e) {
+             ++p_div_grad_e,
+             ndx_y = (ndx_y + 1) % grid.Ny) {
 
             // Prepare local density-related quantities
             const real_t rho          = *p_rho;
@@ -749,16 +750,15 @@ public:
             div_grad_m[0]      = *p_mx_xx + *p_mx_yy + *p_mx_zz;
             div_grad_m[1]      = *p_my_xx + *p_my_yy + *p_my_zz;
             div_grad_m[2]      = *p_mz_xx + *p_mz_yy + *p_mz_zz;
-            grad_div_m[0]      = *p_mx_xx + *p_mx_xy + *p_mx_xz;
-            grad_div_m[1]      = *p_mx_xy + *p_mx_yy + *p_mx_yz;
-            grad_div_m[2]      = *p_mx_xz + *p_mx_yz + *p_mx_zz;
+            grad_div_m[0]      = *p_mx_xx + *p_my_xy + *p_mz_xz;
+            grad_div_m[1]      = *p_mx_xy + *p_my_yy + *p_mz_yz;
+            grad_div_m[2]      = *p_mx_xz + *p_my_yz + *p_mz_zz;
 
             // Prepare local total energy-related quantities
             const real_t e          = *p_e;
             grad_e[0]               = *p_e_x;
             grad_e[1]               = *p_e_y;
             grad_e[2]               = *p_e_z;
-            const real_t div_grad_e = *p_div_grad_e;  // FIXME Shadow
 
             // Prepare quantities derived from local state and its derivatives
             u                  = suzerain::orthonormal::rhome::u(rho, m);
@@ -780,7 +780,7 @@ public:
                                         gamma,
                                         rho, grad_rho, div_grad_rho,
                                         m, grad_m, div_grad_m,
-                                        e, grad_e, div_grad_e);
+                                        e, grad_e, *p_div_grad_e);
             const real_t div_grad_T = suzerain::orthonormal::rhome::div_grad_T(
                                         gamma,
                                         rho, grad_rho, div_grad_rho,
@@ -790,6 +790,35 @@ public:
             div_tau = suzerain::orthonormal::div_tau(
                         mu, grad_mu, lambda, grad_lambda,
                         div_u, grad_u, div_grad_u, grad_div_u);
+
+            // Continuity equation right hand side
+            *p_rho = - div_m
+                ;
+
+            // Momentum equation right hand side
+            Eigen::Vector3d momentum =
+                - suzerain::orthonormal::div_u_outer_m(m, grad_m, u, div_u)
+                - grad_p
+                + inv_Re * div_tau
+                ;
+            *p_mx = momentum[0];
+            *p_my = momentum[1];
+            *p_mz = momentum[2];
+
+            // Energy equation right hand side
+            *p_e = - suzerain::orthonormal::div_e_u(
+                        e, grad_e, u, div_u
+                     )
+                   - suzerain::orthonormal::div_p_u(
+                        p, grad_p, u, div_u
+                     )
+                   + inv_Re_Pr_gamma1 * suzerain::orthonormal::div_mu_grad_T(
+                        grad_T, div_grad_T, mu, grad_mu
+                     )
+                   + inv_Re * suzerain::orthonormal::div_tau_u<real_t>(
+                        u, grad_u, tau, div_tau
+                     )
+                   ;
 
             // Maintain the minimum observed stable time step
             convective_delta_t = suzerain::math::minnan(
@@ -807,36 +836,6 @@ public:
                             one_over_delta_z,
                             Re, Pr, gamma, evmaxmag_imag, mu / rho),
                     diffusive_delta_t);
-            ndx_y = (ndx_y + 1) % grid.Ny; // Circular incr on one_over_delta_y
-
-            // Continuity equation
-            *p_rho = - div_m
-                ;
-
-            // Momentum equation
-            Eigen::Vector3d momentum =
-                - suzerain::orthonormal::div_u_outer_m(m, grad_m, u, div_u)
-                - grad_p
-                + inv_Re * div_tau
-                ;
-            *p_mx = momentum[0];
-            *p_my = momentum[1];
-            *p_mz = momentum[2];
-
-            // Energy equation
-            *p_e = - suzerain::orthonormal::div_e_u(
-                        e, grad_e, u, div_u
-                     )
-                   - suzerain::orthonormal::div_p_u(
-                        p, grad_p, u, div_u
-                     )
-                   + inv_Re_Pr_gamma1 * suzerain::orthonormal::div_mu_grad_T(
-                        grad_T, div_grad_T, mu, grad_mu
-                     )
-                   + inv_Re * suzerain::orthonormal::div_tau_u<real_t>(
-                        u, grad_u, tau, div_tau
-                     )
-                   ;
         }
 
         // Convert collocation point values to wave space
