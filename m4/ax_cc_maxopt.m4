@@ -1,10 +1,7 @@
-# ===========================================================================
-#       http://www.gnu.org/software/autoconf-archive/ax_cc_maxopt.html
-# ===========================================================================
-#
 # SYNOPSIS
 #
 #   AX_CC_MAXOPT
+#   Modified per Suzerain's needs-- this is not the traditional macro
 #
 # DESCRIPTION
 #
@@ -64,34 +61,34 @@ AC_REQUIRE([AX_COMPILER_VENDOR])
 AC_REQUIRE([AC_CANONICAL_HOST])
 
 AC_ARG_ENABLE(portable-binary, [AS_HELP_STRING([--enable-portable-binary], [disable compiler optimizations that would produce unportable binaries])],
-	acx_maxopt_portable=$withval, acx_maxopt_portable=no)
+        acx_maxopt_portable=$withval, acx_maxopt_portable=no)
 
 # Try to determine "good" native compiler flags if none specified via CFLAGS
 if test "$ac_test_CFLAGS" != "set"; then
   CFLAGS=""
   case $ax_cv_c_compiler_vendor in
     dec) CFLAGS="-newc -w0 -O5 -ansi_alias -ansi_args -fp_reorder -tune host"
-	 if test "x$acx_maxopt_portable" = xno; then
+         if test "x$acx_maxopt_portable" = xno; then
            CFLAGS="$CFLAGS -arch host"
          fi;;
 
     sun) CFLAGS="-native -fast -xO5 -dalign"
-	 if test "x$acx_maxopt_portable" = xyes; then
-	   CFLAGS="$CFLAGS -xarch=generic"
+         if test "x$acx_maxopt_portable" = xyes; then
+           CFLAGS="$CFLAGS -xarch=generic"
          fi;;
 
     hp)  CFLAGS="+Oall +Optrs_ansi +DSnative"
-	 if test "x$acx_maxopt_portable" = xyes; then
-	   CFLAGS="$CFLAGS +DAportable"
-	 fi;;
+         if test "x$acx_maxopt_portable" = xyes; then
+           CFLAGS="$CFLAGS +DAportable"
+         fi;;
 
     ibm) if test "x$acx_maxopt_portable" = xno; then
            xlc_opt="-qarch=auto -qtune=auto"
-	 else
+         else
            xlc_opt="-qtune=auto"
-	 fi
+         fi
          AX_CHECK_COMPILER_FLAGS($xlc_opt,
-		CFLAGS="-O3 -qansialias -w $xlc_opt",
+                CFLAGS="-O3 -qansialias -w $xlc_opt",
                [CFLAGS="-O3 -qansialias -w"
                 echo "******************************************************"
                 echo "*  You seem to have the IBM  C compiler.  It is      *"
@@ -117,51 +114,51 @@ if test "$ac_test_CFLAGS" != "set"; then
          introducing a version 11.1 workaround from Intel support #602718
         #endif
         ]])], [], [CFLAGS="$CFLAGS -mP2OPT_cndxform_max_new=-1"])
-	if test "x$acx_maxopt_portable" = xno; then
-	  icc_archflag=unknown
-	  icc_flags=""
-	  AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-	  [[#if __INTEL_COMPILER >= 1110
-	   ah ha: icc is at least version 11.1
-	  #endif
-	  ]])], [], [icc_flags=-xHost])
-	  case $host_cpu in
-	    i686*|x86_64*)
-	      # icc accepts gcc assembly syntax, so these should work:
-	      AX_GCC_X86_CPUID(0)
-	      AX_GCC_X86_CPUID(1)
-	      case $ax_cv_gcc_x86_cpuid_0 in # TODO see AX_GCC_ARCHFLAG
-	        *:756e6547:*:*) # Intel
-	          case $ax_cv_gcc_x86_cpuid_1 in
-	            *6a?:*[[234]]:*:*|*6[[789b]]?:*:*:*) icc_flags="-xK";;
-	            *f3[[347]]:*:*:*|*f4[1347]:*:*:*) icc_flags="-xP -xN -xW -xK";;
-	            *f??:*:*:*) icc_flags="-xN -xW -xK";;
-	          esac ;;
-	      esac ;;
-	  esac
-	  if test "x$icc_flags" != x; then
-	    for flag in $icc_flags; do
-	      AX_CHECK_COMPILER_FLAGS($flag, [icc_archflag=$flag; break])
-	    done
-	  fi
-	  AC_MSG_CHECKING([for icc architecture flag])
-	  AC_MSG_RESULT($icc_archflag)
-	  if test "x$icc_archflag" != xunknown; then
-	    CFLAGS="$CFLAGS $icc_archflag"
-	  fi
-	fi
-	;;
+        if test "x$acx_maxopt_portable" = xno; then
+          icc_archflag=unknown
+          icc_flags=""
+          AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+          [[#if __INTEL_COMPILER >= 1110
+           ah ha: icc is at least version 11.1
+          #endif
+          ]])], [], [icc_flags=-xHost])
+          case $host_cpu in
+            i686*|x86_64*)
+              # icc accepts gcc assembly syntax, so these should work:
+              AX_GCC_X86_CPUID(0)
+              AX_GCC_X86_CPUID(1)
+              case $ax_cv_gcc_x86_cpuid_0 in # TODO see AX_GCC_ARCHFLAG
+                *:756e6547:*:*) # Intel
+                  case $ax_cv_gcc_x86_cpuid_1 in
+                    *6a?:*[[234]]:*:*|*6[[789b]]?:*:*:*) icc_flags="-xK";;
+                    *f3[[347]]:*:*:*|*f4[1347]:*:*:*) icc_flags="-xP -xN -xW -xK";;
+                    *f??:*:*:*) icc_flags="-xN -xW -xK";;
+                  esac ;;
+              esac ;;
+          esac
+          if test "x$icc_flags" != x; then
+            for flag in $icc_flags; do
+              AX_CHECK_COMPILER_FLAGS($flag, [icc_archflag=$flag; break])
+            done
+          fi
+          AC_MSG_CHECKING([for icc architecture flag])
+          AC_MSG_RESULT($icc_archflag)
+          if test "x$icc_archflag" != xunknown; then
+            CFLAGS="$CFLAGS $icc_archflag"
+          fi
+        fi
+        ;;
 
     gnu)
      # default optimization flags for gcc on all systems
-     CFLAGS="-O3 -fomit-frame-pointer"
+     CFLAGS="-O3"
 
      # -malign-double for x86 systems
      AX_CHECK_COMPILER_FLAGS(-malign-double, CFLAGS="$CFLAGS -malign-double")
 
      #  -fstrict-aliasing for gcc-2.95+
      AX_CHECK_COMPILER_FLAGS(-fstrict-aliasing,
-	CFLAGS="$CFLAGS -fstrict-aliasing")
+        CFLAGS="$CFLAGS -fstrict-aliasing")
 
      # note that we enable "unsafe" fp optimization with other compilers, too
      AX_CHECK_COMPILER_FLAGS(-funsafe-math-optimizations, CFLAGS="$CFLAGS -funsafe-math-optimizations")
@@ -171,18 +168,18 @@ if test "$ac_test_CFLAGS" != "set"; then
   esac
 
   if test -z "$CFLAGS"; then
-	echo ""
-	echo "********************************************************"
+        echo ""
+        echo "********************************************************"
         echo "* WARNING: Don't know the best CFLAGS for this system  *"
         echo "* Use ./configure CFLAGS=... to specify your own flags *"
-	echo "* (otherwise, a default of CFLAGS=-O3 will be used)    *"
-	echo "********************************************************"
-	echo ""
+        echo "* (otherwise, a default of CFLAGS=-O3 will be used)    *"
+        echo "********************************************************"
+        echo ""
         CFLAGS="-O3"
   fi
 
   AX_CHECK_COMPILER_FLAGS($CFLAGS, [], [
-	echo ""
+        echo ""
         echo "********************************************************"
         echo "* WARNING: The guessed CFLAGS don't seem to work with  *"
         echo "* your compiler.                                       *"
