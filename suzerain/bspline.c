@@ -901,12 +901,12 @@ suzerain_bspline_integration_coefficients(
     memset(w->I, 0, w->ndof * sizeof(w->I[0]));
 
     /* Accumulate the breakpoint-by-breakpoint contributions to coefficients */
+    double xj = 0, wj = 0;
     for (size_t i = 0; i < (bw->nbreak - 1); ++i) {
 
         for (size_t j = 0; j < tbl->n; ++j) {
 
             /* Get j-th Gauss point xj and weight wj */
-            double xj, wj;
             const double a = gsl_bspline_breakpoint(i,   bw);
             const double b = gsl_bspline_breakpoint(i+1, bw);
             gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
