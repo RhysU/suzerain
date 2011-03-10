@@ -237,7 +237,8 @@ public:
         const real_t evmaxmag_imag,
         const bool delta_t_requested = false)
         const
-        throw(std::exception) {
+        throw(std::exception)
+    {
 
         SUZERAIN_UNUSED(delta_t_requested);
         real_t delta_t_candidates[2] = { numeric_limits<real_t>::max(),
@@ -979,6 +980,28 @@ private:
     mutable suzerain::pencil<> e_x, e_y, e_z, div_grad_e;
 };
 
+class NonlinearOperatorWithBoundaryConditions : public NonlinearOperator
+{
+private:
+    typedef NonlinearOperator base;
+
+public:
+
+    real_t applyOperator(
+        istate_type &istate,
+        const real_t evmaxmag_real,
+        const real_t evmaxmag_imag,
+        const bool delta_t_requested = false)
+        const
+        throw(std::exception)
+    {
+        return base::applyOperator(istate,
+                                   evmaxmag_real,
+                                   evmaxmag_imag,
+                                   delta_t_requested);
+    }
+};
+
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
 
@@ -1218,7 +1241,7 @@ int main(int argc, char **argv)
     using suzerain::timestepper::lowstorage::SMR91Method;
     const SMR91Method<complex_t> smr91(timedef.evmagfactor);
     MassOperator L(scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
-    NonlinearOperator N;
+    NonlinearOperatorWithBoundaryConditions N;
 
     // Establish TimeController for use with operators and state storage
     using suzerain::timestepper::TimeController;
