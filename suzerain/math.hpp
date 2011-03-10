@@ -51,8 +51,7 @@ template<class T>
 inline
 const T& minnan(const T& a, const T& b)
 {
-    return SUZERAIN_UNLIKELY((boost::math::isnan)(a)) ? a :
-           (a < b)                                    ? a : b;
+    return (a < b) || SUZERAIN_UNLIKELY((boost::math::isnan)(a)) ? a : b;
 }
 
 /**
@@ -65,8 +64,7 @@ template<class T>
 inline
 const T& maxnan(const T& a, const T& b)
 {
-    return SUZERAIN_UNLIKELY((boost::math::isnan)(a)) ? a :
-           (b < a)                                    ? a : b;
+    return (a > b) || SUZERAIN_UNLIKELY((boost::math::isnan)(a)) ? a : b;
 }
 
 /**
