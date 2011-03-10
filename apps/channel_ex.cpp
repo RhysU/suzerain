@@ -984,6 +984,17 @@ static void atexit_esio(void) {
     if (esioh) esio_handle_finalize(esioh);
 }
 
+/** <tt>atexit</tt> callback to remove the metadata file. */
+static void atexit_metadata(void) {
+    if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+        if (0 == unlink(restart.metadata().c_str())) {
+            DEBUG("Cleaned up temporary file " << restart.metadata());
+        } else {
+            WARN("Error cleaning up temporary file " << restart.metadata());
+        }
+    }
+}
+
 /** Routine to load state from file.  */
 static void load_state(esio_handle h, state_type &state)
 {
@@ -1107,6 +1118,7 @@ int main(int argc, char **argv)
         store(h, bspw);
         esio_file_close(h);
         esio_handle_finalize(h);
+        atexit(&atexit_metadata); // Delete lingering metadata file at exit
     }
 
     // Initialize array holding \frac{1}{\Delta{}y} grid spacing
