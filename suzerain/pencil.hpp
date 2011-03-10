@@ -48,10 +48,14 @@ namespace suzerain
  * is arranged so that the wall-normal direction is stride one in wave space
  * while the streamwise direction is stride one in physical space.
  */
-template< typename FPT = double >
+template<
+    typename FPT       = double,
+    typename Allocator = std::allocator<FPT>
+    >
 class pencil
     : public integral_types,
-      boost::noncopyable
+             boost::noncopyable,
+      private Allocator
 {
 public:
 
@@ -82,6 +86,11 @@ public:
     typedef const_complex_pointer      const_complex_iterator;
     /**  @} */
 
+    /**
+     * Typedef required because Allocator EMBCO makes \c size_type ambiguous.
+     **/
+    typedef integral_types::size_type size_type;
+
 private: // Declared above public members to enforce initialization order
 
     /** Total amount of real_type data stored within the pencil, including both
@@ -93,7 +102,7 @@ private: // Declared above public members to enforce initialization order
      * data.  Contained physical and wave instances store information within
      * this array.
      */
-    const boost::scoped_array<real_type> data_;
+    real_pointer const data_;
 
 public:
 
@@ -432,6 +441,9 @@ public:
      */
     pencil(const pencil_grid &pg);
 
+    /** Virtual destructor */
+    virtual ~pencil();
+
     /**
      * @name Iterator-based access to all physical and wave space data.
      * Iteration access is linear across the underlying storage.
@@ -455,50 +467,50 @@ public:
     wave_space wave;
 };
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::real_iterator
-pencil<FPT>::begin()
+typename pencil<FPT,Allocator>::real_iterator
+pencil<FPT,Allocator>::begin()
 {
-    return data_.get();
+    return data_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::const_real_iterator
-pencil<FPT>::begin() const
+typename pencil<FPT,Allocator>::const_real_iterator
+pencil<FPT,Allocator>::begin() const
 {
-    return data_.get();
+    return data_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::real_iterator
-pencil<FPT>::end()
+typename pencil<FPT,Allocator>::real_iterator
+pencil<FPT,Allocator>::end()
 {
-    return data_.get() + data_nelem_;
+    return data_ + data_nelem_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::const_real_iterator
-pencil<FPT>::end() const
+typename pencil<FPT,Allocator>::const_real_iterator
+pencil<FPT,Allocator>::end() const
 {
-    return data_.get() + data_nelem_;
+    return data_ + data_nelem_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::real_pointer
-pencil<FPT>::data()
+typename pencil<FPT,Allocator>::real_pointer
+pencil<FPT,Allocator>::data()
 {
-    return data_.get();
+    return data_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::index
-pencil<FPT>::physical_space::offset(
+typename pencil<FPT,Allocator>::index
+pencil<FPT,Allocator>::physical_space::offset(
     const index x,
     const index y,
     const index z) const
@@ -506,10 +518,10 @@ pencil<FPT>::physical_space::offset(
     return x + z*size_x + y*size_xz_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
 void
-pencil<FPT>::physical_space::inverse_offset(
+pencil<FPT,Allocator>::physical_space::inverse_offset(
     const index  i,
     index &x,
     index &y,
@@ -520,10 +532,10 @@ pencil<FPT>::physical_space::inverse_offset(
     x = i - y*size_xz_ - z*size_x;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
 void
-pencil<FPT>::physical_space::inverse_global_offset(
+pencil<FPT,Allocator>::physical_space::inverse_global_offset(
     const index  i,
     index &x,
     index &y,
@@ -535,10 +547,10 @@ pencil<FPT>::physical_space::inverse_global_offset(
     z += start_z;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::index
-pencil<FPT>::wave_space::offset(
+typename pencil<FPT,Allocator>::index
+pencil<FPT,Allocator>::wave_space::offset(
     const index x,
     const index y,
     const index z) const
@@ -547,10 +559,10 @@ pencil<FPT>::wave_space::offset(
     return y + x*size_y + z*size_xy_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
 void
-pencil<FPT>::wave_space::inverse_offset(
+pencil<FPT,Allocator>::wave_space::inverse_offset(
     const index  i,
     index &x,
     index &y,
@@ -561,10 +573,10 @@ pencil<FPT>::wave_space::inverse_offset(
     y = i - z*size_xy_ - x*size_y;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
 void
-pencil<FPT>::wave_space::inverse_global_offset(
+pencil<FPT,Allocator>::wave_space::inverse_global_offset(
     const index  i,
     index &x,
     index &y,
@@ -576,159 +588,159 @@ pencil<FPT>::wave_space::inverse_global_offset(
     z += start_z;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::real_reference
-pencil<FPT>::physical_space::operator()(
+typename pencil<FPT,Allocator>::real_reference
+pencil<FPT,Allocator>::physical_space::operator()(
     const index x, const index y, const index z)
 {
     return data_[offset(x, y, z)];
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::const_real_reference
-pencil<FPT>::physical_space::operator()(
+typename pencil<FPT,Allocator>::const_real_reference
+pencil<FPT,Allocator>::physical_space::operator()(
     const index x, const index y, const index z) const
 {
     return data_[offset(x, y, z)];
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::complex_reference
-pencil<FPT>::wave_space::operator()(
+typename pencil<FPT,Allocator>::complex_reference
+pencil<FPT,Allocator>::wave_space::operator()(
     const index x, const index y, const index z)
 {
     return data_complex_[offset(x, y, z)];
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::const_complex_reference
-pencil<FPT>::wave_space::operator()(
+typename pencil<FPT,Allocator>::const_complex_reference
+pencil<FPT,Allocator>::wave_space::operator()(
     const index x, const index y, const index z) const
 {
     return data_complex_[offset(x, y, z)];
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::real_reference
-pencil<FPT>::wave_space::real(
+typename pencil<FPT,Allocator>::real_reference
+pencil<FPT,Allocator>::wave_space::real(
     const index x, const index y, const index z)
 {
     return data_real_[2*offset(x, y, z)];
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::const_real_reference
-pencil<FPT>::wave_space::real(
+typename pencil<FPT,Allocator>::const_real_reference
+pencil<FPT,Allocator>::wave_space::real(
     const index x, const index y, const index z) const
 {
     return data_real_[2*offset(x, y, z)];
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::real_reference
-pencil<FPT>::wave_space::imag(
+typename pencil<FPT,Allocator>::real_reference
+pencil<FPT,Allocator>::wave_space::imag(
     const index x, const index y, const index z)
 {
     return data_real_[2*offset(x, y, z) + 1];
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::const_real_reference
-pencil<FPT>::wave_space::imag(
+typename pencil<FPT,Allocator>::const_real_reference
+pencil<FPT,Allocator>::wave_space::imag(
     const index x, const index y, const index z) const
 {
     return data_real_[2*offset(x, y, z) + 1];
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::real_iterator
-pencil<FPT>::physical_space::begin()
+typename pencil<FPT,Allocator>::real_iterator
+pencil<FPT,Allocator>::physical_space::begin()
 {
     return data_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::const_real_iterator
-pencil<FPT>::physical_space::begin() const
+typename pencil<FPT,Allocator>::const_real_iterator
+pencil<FPT,Allocator>::physical_space::begin() const
 {
     return data_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::real_iterator
-pencil<FPT>::physical_space::end()
+typename pencil<FPT,Allocator>::real_iterator
+pencil<FPT,Allocator>::physical_space::end()
 {
     return data_ + size;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::const_real_iterator
-pencil<FPT>::physical_space::end() const
+typename pencil<FPT,Allocator>::const_real_iterator
+pencil<FPT,Allocator>::physical_space::end() const
 {
     return data_ + size;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::complex_iterator
-pencil<FPT>::wave_space::begin()
+typename pencil<FPT,Allocator>::complex_iterator
+pencil<FPT,Allocator>::wave_space::begin()
 {
     return data_complex_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::const_complex_iterator
-pencil<FPT>::wave_space::begin() const
+typename pencil<FPT,Allocator>::const_complex_iterator
+pencil<FPT,Allocator>::wave_space::begin() const
 {
     return data_complex_;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::complex_iterator
-pencil<FPT>::wave_space::end()
+typename pencil<FPT,Allocator>::complex_iterator
+pencil<FPT,Allocator>::wave_space::end()
 {
     return data_complex_ + size;
 }
 
-template<typename FPT>
+template<typename FPT, typename Allocator>
 inline
-typename pencil<FPT>::const_complex_iterator
-pencil<FPT>::wave_space::end() const
+typename pencil<FPT,Allocator>::const_complex_iterator
+pencil<FPT,Allocator>::wave_space::end() const
 {
     return data_complex_ + size;
 }
 
-template<typename FPT>
-pencil<FPT>::pencil(
+template<typename FPT, typename Allocator>
+pencil<FPT,Allocator>::pencil(
     const index_3d &pstart, const index_3d &psize,
     const index_3d &wstart, const index_3d &wsize)
 throw(std::invalid_argument)
         : data_nelem_(std::max(
               psize[0]*psize[1]*psize[2],
               2*wsize[0]*wsize[1]*wsize[2])),
-        data_(new real_type[data_nelem_]),
-        physical(pstart, psize, data_.get()),
-        wave(wstart, wsize, data_.get())
+        data_(Allocator::allocate(data_nelem_)),
+        physical(pstart, psize, data_),
+        wave(wstart, wsize, data_)
 {
-    std::fill_n(data_.get(), data_nelem_, real_type(0)); // Fill with zeros
+    std::fill_n(data_, data_nelem_, real_type(0)); // Fill with zeros
 }
 
-template<typename FPT>
-pencil<FPT>::pencil(const pencil_grid &pg)
+template<typename FPT, typename Allocator>
+pencil<FPT,Allocator>::pencil(const pencil_grid &pg)
         : data_nelem_(std::max(
                  pg.local_physical_extent()[0]
                     *pg.local_physical_extent()[1]
@@ -736,17 +748,23 @@ pencil<FPT>::pencil(const pencil_grid &pg)
                  2*pg.local_wave_extent()[0]
                     *pg.local_wave_extent()[1]
                     *pg.local_wave_extent()[2])),
-        data_(new real_type[data_nelem_]),
+        data_(Allocator::allocate(data_nelem_)),
         physical(pg.local_physical_start(),
-                 pg.local_physical_extent(), data_.get()),
+                 pg.local_physical_extent(), data_),
         wave(pg.local_wave_start(),
-             pg.local_wave_extent(), data_.get())
+             pg.local_wave_extent(), data_)
 {
-    std::fill_n(data_.get(), data_nelem_, real_type(0)); // Fill with zeros
+    std::fill_n(data_, data_nelem_, real_type(0)); // Fill with zeros
 }
 
-template<typename FPT>
-pencil<FPT>::physical_space::physical_space(
+template<typename FPT, typename Allocator>
+pencil<FPT,Allocator>::~pencil()
+{
+    Allocator::deallocate(data_, data_nelem_);
+}
+
+template<typename FPT, typename Allocator>
+pencil<FPT,Allocator>::physical_space::physical_space(
     const index_3d &start, const index_3d &size, real_pointer data)
     :
     start_x(start[0]), start_y(start[1]), start_z(start[2]),
@@ -759,8 +777,8 @@ pencil<FPT>::physical_space::physical_space(
     // NOP
 }
 
-template<typename FPT>
-pencil<FPT>::wave_space::wave_space(
+template<typename FPT, typename Allocator>
+pencil<FPT,Allocator>::wave_space::wave_space(
     const index_3d &start, const index_3d &size, real_pointer data)
     :
     start_x(start[0]), start_y(start[1]), start_z(start[2]),
