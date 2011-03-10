@@ -120,9 +120,6 @@ static boost::array<suzerain::pencil_grid::index,3> state_start;
 static boost::array<suzerain::pencil_grid::index,3> state_end;
 static boost::array<suzerain::pencil_grid::index,3> state_extent;
 
-// Bulk density is computed in main() and used within NonlinearOperator
-static real_t bulk_density;
-
 // TODO Incorporate IOperatorLifecycle semantics
 // TODO Refactor MassOperator into templated BsplineMassOperator
 
@@ -273,15 +270,21 @@ public:
 
         // All state enters routine as coefficients in X, Y, and Z directions
 
-        // On "zero-zero" rank save a copy of the constant x-momentum modes
-        // Need these later to apply the momentum forcing's energy contribution
+        // Special handling on the rank containing the "zero-zero" mode
         scoped_array<real_t> original_state_mx;
+        real_t bulk_density = numeric_limits<real_t>::quiet_NaN();
         if (dkbx == 0 && dkbz == 0) {
+            // Save a copy of the constant x-momentum modes
             original_state_mx.reset(new real_t[state.shape()[1]]);
             for (std::size_t i = 0; i < state.shape()[1]; ++i) {
                 original_state_mx[i]
                     = suzerain::complex::real(state_rhou[i][0][0]);
             }
+
+            // Compute the bulk density so we can hold it constant in time
+            bspw->integrate(reinterpret_cast<real_t *>(state_rho.origin()),
+                    sizeof(complex_t)/sizeof(real_t),
+                    &bulk_density);
         }
 
         // Compute Y derivatives of density at collocation points
@@ -822,20 +825,20 @@ public:
 
             // Maintain the minimum observed stable time step
             convective_delta_t = suzerain::math::minnan(
+                    convective_delta_t,
                     suzerain::timestepper::convective_stability_criterion(
                             u.x(), one_over_delta_x,
                             u.y(), one_over_delta_y[ndx_y],
                             u.z(), one_over_delta_z,
                             evmaxmag_real,
-                            std::sqrt(T)), // nondimensional a = sqrt(T)
-                    convective_delta_t);
+                            std::sqrt(T)) /* nondimensional a = sqrt(T) */);
             diffusive_delta_t = suzerain::math::minnan(
+                    diffusive_delta_t,
                     suzerain::timestepper::diffusive_stability_criterion(
                             one_over_delta_x,
                             one_over_delta_y[ndx_y],
                             one_over_delta_z,
-                            Re, Pr, gamma, evmaxmag_imag, mu / rho),
-                    diffusive_delta_t);
+                            Re, Pr, gamma, evmaxmag_imag, mu / rho));
         }
 
         // Convert collocation point values to wave space
@@ -1109,7 +1112,7 @@ int main(int argc, char **argv)
     load(esioh, bspw, const_cast<GridDefinition<real_t>&>(grid));
     esio_file_close(esioh);
 
-    INFO("Saving metadata template file: " << restart.metadata());
+    INFO("Saving metadata temporary file: " << restart.metadata());
     {
         esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
         esio_file_create(h, restart.metadata().c_str(), 1 /* overwrite */);
@@ -1209,12 +1212,6 @@ int main(int argc, char **argv)
     load_time(esioh, initial_t);
     load_state(esioh, *state_linear);
     esio_file_close(esioh);
-
-    // Compute bulk density, which we hold constant in time, from the state
-    bspw->integrate(reinterpret_cast<real_t *>((*state_linear)[0].origin()),
-                    sizeof(complex_t)/sizeof(real_t),
-                    &bulk_density);
-    DEBUG("Bulk density will be held constant at " << bulk_density);
 
     // Instantiate the operators and time stepping details
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
