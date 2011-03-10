@@ -239,7 +239,6 @@ public:
         const
         throw(std::exception)
     {
-
         SUZERAIN_UNUSED(delta_t_requested);
         real_t delta_t_candidates[2] = { numeric_limits<real_t>::max(),
                                          numeric_limits<real_t>::max()  };
@@ -270,23 +269,6 @@ public:
         const real_t complex_zero[2] = { 0.0, 0.0 };
 
         // All state enters routine as coefficients in X, Y, and Z directions
-
-        // Special handling on the rank containing the "zero-zero" mode
-        scoped_array<real_t> original_state_mx;
-        real_t bulk_density = numeric_limits<real_t>::quiet_NaN();
-        if (dkbx == 0 && dkbz == 0) {
-            // Save a copy of the constant x-momentum modes
-            original_state_mx.reset(new real_t[state.shape()[1]]);
-            for (std::size_t i = 0; i < state.shape()[1]; ++i) {
-                original_state_mx[i]
-                    = suzerain::complex::real(state_rhou[i][0][0]);
-            }
-
-            // Compute the bulk density so we can hold it constant in time
-            bspw->integrate(reinterpret_cast<real_t *>(state_rho.origin()),
-                    sizeof(complex_t)/sizeof(real_t),
-                    &bulk_density);
-        }
 
         // Compute Y derivatives of density at collocation points
         bspw->accumulate_operator(1, // dy
@@ -719,7 +701,7 @@ public:
              ++p_e_y,
              ++p_e_z,
              ++p_div_grad_e,
-             ndx_y = (ndx_y + 1) % grid.Ny) {
+             ndx_y = (ndx_y + 1) % Ny) {
 
             // Prepare local density-related quantities
             const real_t rho          = *p_rho;
@@ -866,15 +848,108 @@ public:
         bspluzw->solve(state.shape()[2]*state.shape()[3],
                 state_rhoe.origin(), 1, state.shape()[1]);
 
-        // ------------------------------------------------------------------
-        // BEGIN: Boundary conditions and driving forces
-        // See writeup/channel_treatment.tex for full details
-        // ------------------------------------------------------------------
+        // Perform Allreduce on stable time step sizes
+        // Note delta_t_candidates aliases {convective,diffusive}_delta_t
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, delta_t_candidates,
+                    sizeof(delta_t_candidates)/sizeof(delta_t_candidates[0]),
+                    suzerain::mpi::datatype<real_t>::value,
+                    MPI_MIN, MPI_COMM_WORLD));
+
+        // Return minimum of either time step criterion, accounting for NaNs
+        return suzerain::math::minnan(convective_delta_t, diffusive_delta_t);
+    }
+
+protected:
+
+    // Details for suzerain::diffwave::* calls
+    const int Ny;
+    const int dNx;
+    const int dkbx;
+    const int dkex;
+    const int dNz;
+    const int dkbz;
+    const int dkez;
+
+private:
+    mutable suzerain::pencil<> rho_x, rho_y, rho_z;
+    mutable suzerain::pencil<> rho_xx, rho_xy, rho_xz, rho_yy, rho_yz, rho_zz;
+
+    mutable suzerain::pencil<> mx_x, mx_y, mx_z;
+    mutable suzerain::pencil<> mx_xx, mx_xy, mx_xz, mx_yy, mx_yz, mx_zz;
+
+    mutable suzerain::pencil<> my_x, my_y, my_z;
+    mutable suzerain::pencil<> my_xx, my_xy, my_xz, my_yy, my_yz, my_zz;
+
+    mutable suzerain::pencil<> mz_x, mz_y, mz_z;
+    mutable suzerain::pencil<> mz_xx, mz_xy, mz_xz, mz_yy, mz_yz, mz_zz;
+
+    mutable suzerain::pencil<> e_x, e_y, e_z, div_grad_e;
+};
+
+/** See writeup/channel_treatment.tex for full details */
+class NonlinearOperatorWithBoundaryConditions : public NonlinearOperator
+{
+private:
+    typedef NonlinearOperator base;
+
+public:
+
+    real_t applyOperator(
+        istate_type &istate,
+        const real_t evmaxmag_real,
+        const real_t evmaxmag_imag,
+        const bool delta_t_requested = false)
+        const
+        throw(std::exception)
+    {
+        // Get state information with appropriate type
+        state_type &state = dynamic_cast<state_type&>(istate);
+
+        // Create 3D views of 4D state information
+        using boost::array_view_gen;
+        using boost::indices;
+        using boost::multi_array_types::index_range;
+        array_view_gen<state_type,3>::type state_rho
+            = state[indices[0][index_range()][index_range()][index_range()]];
+        array_view_gen<state_type,3>::type state_rhou
+            = state[indices[1][index_range()][index_range()][index_range()]];
+        array_view_gen<state_type,3>::type state_rhov
+            = state[indices[2][index_range()][index_range()][index_range()]];
+        array_view_gen<state_type,3>::type state_rhow
+            = state[indices[3][index_range()][index_range()][index_range()]];
+        array_view_gen<state_type,3>::type state_rhoe
+            = state[indices[4][index_range()][index_range()][index_range()]];
+
+        // Special handling occurs only on rank holding the "zero-zero" mode
+        const bool zero_zero_rank = (dkbx == 0) && (dkbz == 0);
+
+        // Precompute and store quantities necessary for BC implementation
+        scoped_array<real_t> original_state_mx;
+        real_t bulk_density = numeric_limits<real_t>::quiet_NaN();
+        if (zero_zero_rank) {
+            // Save a copy of the constant x-momentum modes
+            original_state_mx.reset(new real_t[state.shape()[1]]);
+            for (std::size_t i = 0; i < state.shape()[1]; ++i) {
+                original_state_mx[i]
+                    = suzerain::complex::real(state_rhou[i][0][0]);
+            }
+
+            // Compute the bulk density so we can hold it constant in time
+            bspw->integrate(reinterpret_cast<real_t *>(state_rho.origin()),
+                    sizeof(complex_t)/sizeof(real_t),
+                    &bulk_density);
+        }
+
+        // Apply an operator that cares nothing about the boundaries
+        const real_t delta_t = base::applyOperator(
+                istate, evmaxmag_real, evmaxmag_imag, delta_t_requested);
+
+        // Indices that will be useful as shorthand
         const std::size_t lower_wall = 0;                    // index of wall
         const std::size_t upper_wall = state.shape()[1] - 1; // index of wall
 
-        // Add f_rho to mean density right hand side per writeup step (2)
-        if (dkbx == 0 && dkbz == 0) {                // "zero-zero" rank only
+        // Add f_rho to mean density per writeup step (2)
+        if (zero_zero_rank) {
             real_t f_rho;
             bspw->integrate(reinterpret_cast<real_t *>(state_rho.origin()),
                             sizeof(complex_t)/sizeof(real_t),
@@ -907,7 +982,8 @@ public:
         }
 
         // Set isothermal condition on walls per writeup step (4)
-        const real_t inv_gamma_gamma1 = 1 / (gamma * (gamma - 1));
+        const real_t inv_gamma_gamma1
+            = 1 / (scenario.gamma * (scenario.gamma - 1));
         for (std::size_t j = 0; j < state.shape()[2]; ++j) {
             for (std::size_t k = 0; k < state.shape()[3]; ++k) {
                 state_rhoe[lower_wall][j][k]
@@ -917,8 +993,8 @@ public:
             }
         }
 
-        // Apply f_{m_x} term to mean x-momentum, mean energy
-        if (dkbx == 0 && dkbz == 0) {                // "zero-zero" rank only
+        // Apply f_{m_x} to mean x-momentum, mean energy
+        if (zero_zero_rank) {
 
             // Compute temporary per writeup implementation step (5)
             real_t alpha;
@@ -939,66 +1015,8 @@ public:
             }
         }
 
-        // ------------------------------------------------------------------
-        // END: Boundary conditions and driving forces
-        // See writeup/channel_treatment.tex for full details
-        // ------------------------------------------------------------------
-
-        // Perform Allreduce on stable time step sizes
-        // Note delta_t_candidates aliases {convective,diffusive}_delta_t
-        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, delta_t_candidates,
-                    sizeof(delta_t_candidates)/sizeof(delta_t_candidates[0]),
-                    suzerain::mpi::datatype<real_t>::value,
-                    MPI_MIN, MPI_COMM_WORLD));
-
-        // Return minimum of either time step criterion, accounting for NaNs
-        return suzerain::math::minnan(convective_delta_t, diffusive_delta_t);
-    }
-
-private:
-    // Details for suzerain::diffwave::* calls
-    const int Ny;
-    const int dNx;
-    const int dkbx;
-    const int dkex;
-    const int dNz;
-    const int dkbz;
-    const int dkez;
-
-    mutable suzerain::pencil<> rho_x, rho_y, rho_z;
-    mutable suzerain::pencil<> rho_xx, rho_xy, rho_xz, rho_yy, rho_yz, rho_zz;
-
-    mutable suzerain::pencil<> mx_x, mx_y, mx_z;
-    mutable suzerain::pencil<> mx_xx, mx_xy, mx_xz, mx_yy, mx_yz, mx_zz;
-
-    mutable suzerain::pencil<> my_x, my_y, my_z;
-    mutable suzerain::pencil<> my_xx, my_xy, my_xz, my_yy, my_yz, my_zz;
-
-    mutable suzerain::pencil<> mz_x, mz_y, mz_z;
-    mutable suzerain::pencil<> mz_xx, mz_xy, mz_xz, mz_yy, mz_yz, mz_zz;
-
-    mutable suzerain::pencil<> e_x, e_y, e_z, div_grad_e;
-};
-
-class NonlinearOperatorWithBoundaryConditions : public NonlinearOperator
-{
-private:
-    typedef NonlinearOperator base;
-
-public:
-
-    real_t applyOperator(
-        istate_type &istate,
-        const real_t evmaxmag_real,
-        const real_t evmaxmag_imag,
-        const bool delta_t_requested = false)
-        const
-        throw(std::exception)
-    {
-        return base::applyOperator(istate,
-                                   evmaxmag_real,
-                                   evmaxmag_imag,
-                                   delta_t_requested);
+        // Return the time step found by the BC-agnostic operator
+        return delta_t;
     }
 };
 
