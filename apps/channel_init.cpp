@@ -153,11 +153,11 @@ int main(int argc, char **argv)
     }
 
     // Process incoming program arguments from command line, input files
-    real_t Ma     = 1.15;
-    real_t M      = SUZERAIN_SVEHLA_AIR_M;
-    real_t p_wall = GSL_CONST_MKSA_STD_ATMOSPHERE / 100000;
-    std::string restart_file;
-    real_t htdelta;
+    real_t Ma               = 1.15;
+    real_t M                = SUZERAIN_SVEHLA_AIR_M;
+    real_t p_wall           = GSL_CONST_MKSA_STD_ATMOSPHERE / 100000;
+    std::string create_file = "restart0.h5";
+    real_t htdelta          = 5;
     suzerain::ProgramOptions options(
             "Suzerain-based compressible channel initialization");
     {
@@ -177,8 +177,8 @@ int main(int argc, char **argv)
             ptr_fun_ensure_nonnegative(ensure_nonnegative<real_t>);
 
         options.add_options()
-            ("create", po::value<std::string>(&restart_file)
-                ->default_value("restart0.h5"),
+            ("create", po::value<std::string>(&create_file)
+                ->default_value(create_file),
              "Name of new restart file to create")
             ("clobber", "Overwrite existing restart file?")
             ("Ma", po::value<real_t>(&Ma)
@@ -195,7 +195,7 @@ int main(int argc, char **argv)
              "Pressure in N/m^2 used to obtain reference wall density")
             ("htdelta", po::value<real_t>(&htdelta)
                 ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative,"htdelta"))
-                ->default_value(7),
+                ->default_value(htdelta),
              "Hyperbolic tangent stretching parameter for breakpoints")
         ;
         options.process(argc, argv);
@@ -245,8 +245,8 @@ int main(int argc, char **argv)
         assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny);
     }
 
-    INFO("Creating new restart file " << restart_file);
-    esio_file_create(esioh, restart_file.c_str(),
+    INFO("Creating new restart file " << create_file);
+    esio_file_create(esioh, create_file.c_str(),
                      options.variables().count("clobber"));
     store(esioh, scenario);
     store(esioh, grid, scenario.Lx, scenario.Lz);
