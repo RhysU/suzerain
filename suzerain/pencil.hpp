@@ -31,6 +31,7 @@
 #define __SUZERAIN_PENCIL_H
 
 #include <suzerain/common.hpp>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/types.hpp>
 
@@ -50,7 +51,7 @@ namespace suzerain
  */
 template<
     typename FPT       = double,
-    typename Allocator = std::allocator<FPT>
+    typename Allocator = typename suzerain::blas::allocator<FPT>::type
     >
 class pencil
     : public integral_types,
