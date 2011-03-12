@@ -2,66 +2,47 @@
 
 AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
 AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
+AM_CPPFLAGS   += $(P3DFFT_CFLAGS) $(FFTW3_THREADS_CFLAGS)
 AM_CPPFLAGS   += $(MKL_CFLAGS) $(GSL_CFLAGS)
 AM_CPPFLAGS   += $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
 AM_CPPFLAGS   += $(EIGEN_CFLAGS) $(GRVY_CFLAGS) $(ESIO_CFLAGS)
-AM_LDFLAGS     = $(MPIP_LDFLAGS)
-AM_LDFLAGS    += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
-AM_LDFLAGS    += $(BOOST_IOSTREAMS_LDFLAGS)
 bin_PROGRAMS   = # Append below
 bin_SCRIPTS    = # Append below
 check_PROGRAMS = # Append below
 CLEANFILES     = # Append below
 
-# FIXME: Ugly, separate MPI compilation into separate dir, maybe
-CXX=@MPICXX@
-
-# Clean up from Intel Compiler's -prof-gen output
-CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
-# Clean up from Intel Compiler's precompiled header output
-CLEANFILES += *.pchi
-
+# Default to MPI-based C++ compilation
+CXX                   = @MPICXX@
+AM_DEFAULT_SOURCE_EXT = .cpp
 
 # Test progams and/or performance drivers
+
 bin_PROGRAMS                    += driver_suzerain_p3dfft
-driver_suzerain_p3dfft_SOURCES   = driver_suzerain_p3dfft.cpp
-driver_suzerain_p3dfft_CPPFLAGS  = $(AM_CPPFLAGS)
-driver_suzerain_p3dfft_CPPFLAGS += $(P3DFFT_CFLAGS) $(FFTW3_THREADS_CFLAGS)
+driver_suzerain_p3dfft_LDFLAGS   = $(MPIP_LDFLAGS)
 driver_suzerain_p3dfft_LDADD     = ../suzerain/libsuzerain.la
-driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS)
-driver_suzerain_p3dfft_LDADD    += $(GSL_LIBS) $(LOG4CXX_LIBS)
-driver_suzerain_p3dfft_LDADD    += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
-driver_suzerain_p3dfft_LDADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
+driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS) $(LOG4CXX_LIBS)
+
 
 # Applications
 
-bin_PROGRAMS         += channel_init
-channel_init_SOURCES  = channel_init.cpp channel_common.cpp logger.cpp
-channel_init_LDADD    = ../suzerain/libsuzerain.la
-channel_init_LDADD   += $(ESIO_LIBS) $(GRVY_LIBS)
-channel_init_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
-channel_init_LDADD   += $(BOOST_IOSTREAMS_LIBS)
-channel_init_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
+noinst_LTLIBRARIES     = libchannel.la
+libchannel_la_SOURCES  = logger.cpp         logger.hpp
+libchannel_la_SOURCES += channel_common.cpp channel_common.hpp
+libchannel_la_LDFLAGS  = $(ESIO_LIBS) $(LOG4CXX_LIBS)
+libchannel_la_LIBADD   = ../suzerain/libsuzerain.la
 
-bin_PROGRAMS        += channel_ex
-channel_ex_SOURCES   = channel_ex.cpp channel_common.cpp logger.cpp
-channel_ex_CPPFLAGS  = $(AM_CPPFLAGS)
-channel_ex_CPPFLAGS += $(P3DFFT_CFLAGS) $(FFTW3_THREADS_CFLAGS)
-channel_ex_LDADD     = ../suzerain/libsuzerain.la
-channel_ex_LDADD    += $(ESIO_LIBS) $(GRVY_LIBS)
-channel_ex_LDADD    += $(GSL_LIBS) $(LOG4CXX_LIBS)
-channel_ex_LDADD    += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
-channel_ex_LDADD    += $(BOOST_IOSTREAMS_LIBS)
-channel_ex_LDADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
+bin_PROGRAMS       += channel_init
+channel_init_LDADD  = libchannel.la
 
-bin_PROGRAMS         += channel_mean
-channel_mean_SOURCES  = channel_mean.cpp channel_common.cpp logger.cpp
-channel_mean_LDADD    = ../suzerain/libsuzerain.la
-channel_mean_LDADD   += $(ESIO_LIBS) $(GRVY_LIBS)
-channel_mean_LDADD   += $(GSL_LIBS) $(LOG4CXX_LIBS)
-channel_mean_LDADD   += $(BOOST_IOSTREAMS_LIBS)
-channel_mean_LDADD   += $(BOOST_PROGRAM_OPTIONS_LIBS)
+bin_PROGRAMS       += channel_ex
+channel_ex_LDADD    = libchannel.la
 
+bin_PROGRAMS       += channel_mean
+channel_mean_LDADD  = libchannel.la
+
+# Clean up from Intel Compiler's -prof-gen output and precomiled headers
+CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
+CLEANFILES += *.pchi
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

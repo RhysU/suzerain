@@ -71,7 +71,6 @@ AX_COMPILER_VENDOR
 if test "x$ax_enable_debug" != "xno"; then
     AX_TRACEBACK()
 fi
-AC_PROG_RANLIB
 AC_PROG_SED
 AX_AM_JOBSERVER([no])
 AC_LANG_POP([C++])

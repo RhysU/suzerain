@@ -72,22 +72,29 @@ pkginclude_HEADERS += types.hpp
 pkginclude_HEADERS += utility.hpp
 pkginclude_HEADERS += validation.hpp
 
-noinst_LTLIBRARIES     += libsuzerain.la
-libsuzerain_la_LDFLAGS  = -release $(PACKAGE_VERSION)
-libsuzerain_la_SOURCES  = blas_et_al.c
-libsuzerain_la_SOURCES += bspline.c
-libsuzerain_la_SOURCES += diffwave.c
-libsuzerain_la_SOURCES += error.c
-libsuzerain_la_SOURCES += fftw.cpp
-libsuzerain_la_SOURCES += gbmatrix.c
-libsuzerain_la_SOURCES += htstretch.c
-libsuzerain_la_SOURCES += mpi.cpp
-libsuzerain_la_SOURCES += os.c
-libsuzerain_la_SOURCES += pencil_grid.cpp
-libsuzerain_la_SOURCES += profile.cpp
-libsuzerain_la_SOURCES += program_options.cpp
-libsuzerain_la_SOURCES += richardson.c
-libsuzerain_la_SOURCES += svehla.c
+noinst_LTLIBRARIES           += libsuzerain.la
+libsuzerain_la_SOURCES        = blas_et_al.c
+libsuzerain_la_SOURCES       += bspline.c
+libsuzerain_la_SOURCES       += diffwave.c
+libsuzerain_la_SOURCES       += error.c
+libsuzerain_la_SOURCES       += fftw.cpp
+libsuzerain_la_SOURCES       += gbmatrix.c
+libsuzerain_la_SOURCES       += htstretch.c
+libsuzerain_la_SOURCES       += mpi.cpp
+libsuzerain_la_SOURCES       += os.c
+libsuzerain_la_SOURCES       += pencil_grid.cpp
+libsuzerain_la_SOURCES       += profile.cpp
+libsuzerain_la_SOURCES       += program_options.cpp
+libsuzerain_la_SOURCES       += richardson.c
+libsuzerain_la_SOURCES       += svehla.c
+libsuzerain_la_LDFLAGS        = -release $(PACKAGE_VERSION)
+libsuzerain_la_LDFLAGS       += $(GRVY_LIBS)
+libsuzerain_la_LDFLAGS       += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
+libsuzerain_la_LDFLAGS       += $(GSL_LIBS)
+libsuzerain_la_LDFLAGS       += $(BOOST_IOSTREAMS_LDFLAGS)
+libsuzerain_la_LDFLAGS       += $(BOOST_IOSTREAMS_LIBS)
+libsuzerain_la_LDFLAGS       += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
+libsuzerain_la_LDFLAGS       += $(BOOST_PROGRAM_OPTIONS_LIBS)
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

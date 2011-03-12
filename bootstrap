@@ -1,47 +1,35 @@
 #! /bin/sh
-# $Id: bootstrap 469 2008-09-05 00:16:18Z rhys $
-#
-# bootstrap: Utility to easy autoconf/automake toolchain setup on
-#            checkout from revision control.
-#
-# Copyright (c) 2002  Daniel Elstner  <daniel.elstner@gmx.net>
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License VERSION 2 as
-# published by the Free Software Foundation.  You are not allowed to
-# use any other version of the license; unless you got the explicit
-# permission from the author to do so.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# $Id$
+set -e # Fail on first error
 
-dir=`echo "$0" | sed 's,[^/]*$,,'`
-test "x${dir}" = "x" && dir='.'
+autoreconf -v -i
 
-if test "x`cd "${dir}" 2>/dev/null && pwd`" != "x`pwd`"
-then
-    echo "This script must be executed directly from the source directory."
-    exit 1
-fi
-
-rm -f config.cache acconfig.h
-
-echo "- libtoolize."          && \
-libtoolize --automake --copy  && \
-echo "- aclocal."             && \
-aclocal -I m4                 && \
-echo "- autoconf."            && \
-autoconf                      && \
-echo "- autoheader."          && \
-autoheader                    && \
-echo "- automake."            && \
-automake --add-missing --copy && \
-exit 0
-
-exit 1
+echo
+echo -------------------------------------------------------------------------
+echo Binaries linked against libsuzerain.la run into linker problems because
+echo current versions of libtool do not preserve OpenMP flags.  Workaround per
+echo http://lists.gnu.org/archive/html/bug-libtool/2011-03/msg00015.html.
+echo -------------------------------------------------------------------------
+echo
+patch -p0 -N --verbose <<\EOF
+--- build-aux/ltmain.sh
++++ build-aux/ltmain.sh
+@@ -5643,7 +5643,7 @@
+ 	continue
+ 	;;
+ 
++      -mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=omp)
+-      -mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads)
+ 	func_append compiler_flags " $arg"
+ 	func_append compile_command " $arg"
+ 	func_append finalize_command " $arg"
+@@ -6147,7 +6147,7 @@
+ 	lib=
+ 	found=no
+ 	case $deplib in
++	-mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=omp)
+-	-mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads)
+ 	  if test "$linkmode,$pass" = "prog,link"; then
+ 	    compile_deplibs="$deplib $compile_deplibs"
+ 	    finalize_deplibs="$deplib $finalize_deplibs"
+EOF
