@@ -246,8 +246,8 @@ public:
                                          numeric_limits<real_t>::max()  };
         real_t &convective_delta_t = delta_t_candidates[0];
         real_t &diffusive_delta_t  = delta_t_candidates[1];
-        const real_t one_over_delta_x = scenario.Lx / Nx; // FIXME dNx
-        const real_t one_over_delta_z = scenario.Lz / Nz; // FIXME dNz
+        const real_t one_over_delta_x = scenario.Lx / Nx; // !dNx, dealiasing
+        const real_t one_over_delta_z = scenario.Lz / Nz; // !dNz, dealiasing
 
         // Get state information with appropriate type
         state_type &state = dynamic_cast<state_type&>(istate);
