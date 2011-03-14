@@ -11,7 +11,7 @@ echo current versions of libtool do not preserve OpenMP flags.  Workaround per
 echo http://lists.gnu.org/archive/html/bug-libtool/2011-03/msg00015.html.
 echo -------------------------------------------------------------------------
 echo
-patch -p0 -N --verbose <<\EOF
+patch -p0 -N -r - --verbose <<\EOF
 --- build-aux/ltmain.sh
 +++ build-aux/ltmain.sh
 @@ -5643,7 +5643,7 @@
