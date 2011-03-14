@@ -204,9 +204,11 @@ public:
 
     NonlinearOperator() :
         Ny(pg->global_extents()[1]),
+        Nx(grid.Nx),
         dNx(pg->global_extents()[0]),
         dkbx(pg->local_wave_start()[0]),
         dkex(pg->local_wave_end()[0]),
+        Nz(grid.Nz),
         dNz(pg->global_extents()[2]),
         dkbz(pg->local_wave_start()[2]),
         dkez(pg->local_wave_end()[2]),
@@ -244,8 +246,8 @@ public:
                                          numeric_limits<real_t>::max()  };
         real_t &convective_delta_t = delta_t_candidates[0];
         real_t &diffusive_delta_t  = delta_t_candidates[1];
-        const real_t one_over_delta_x = scenario.Lx / grid.Nx;
-        const real_t one_over_delta_z = scenario.Lz / grid.Nz;
+        const real_t one_over_delta_x = scenario.Lx / Nx; // FIXME dNx
+        const real_t one_over_delta_z = scenario.Lz / Nz; // FIXME dNz
 
         // Get state information with appropriate type
         state_type &state = dynamic_cast<state_type&>(istate);
@@ -289,39 +291,39 @@ public:
             complex_one, state_rho.origin(),
             complex_zero, rho_x.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state_rho.origin(),
             complex_zero, rho_xx.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 0, // dx dy
             complex_one, rho_y.wave.begin(),
             complex_zero, rho_xy.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state_rho.origin(),
             complex_zero, rho_xz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of density at collocation points
         suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state_rho.origin(),
             complex_zero, rho_z.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 1, // dy dz
             complex_one, rho_y.wave.begin(),
             complex_zero, rho_yz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state_rho.origin(),
             complex_zero, rho_zz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
 
         // Compute Y derivatives of X momentum at collocation points
@@ -343,39 +345,39 @@ public:
             complex_one, state_rhou.origin(),
             complex_zero, mx_x.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state_rhou.origin(),
             complex_zero, mx_xx.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 0, // dx dy
             complex_one, mx_y.wave.begin(),
             complex_zero, mx_xy.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state_rhou.origin(),
             complex_zero, mx_xz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of X momentum at collocation points
         suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state_rhou.origin(),
             complex_zero, mx_z.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 1, // dy dz
             complex_one, mx_y.wave.begin(),
             complex_zero, mx_yz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state_rhou.origin(),
             complex_zero, mx_zz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
 
         // Compute Y derivatives of Y momentum at collocation points
@@ -397,39 +399,39 @@ public:
             complex_one, state_rhov.origin(),
             complex_zero, my_x.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state_rhov.origin(),
             complex_zero, my_xx.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 0, // dx dy
             complex_one, my_y.wave.begin(),
             complex_zero, my_xy.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state_rhov.origin(),
             complex_zero, my_xz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of Y momentum at collocation points
         suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state_rhov.origin(),
             complex_zero, my_z.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 1, // dy dz
             complex_one, my_y.wave.begin(),
             complex_zero, my_yz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state_rhov.origin(),
             complex_zero, my_zz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
 
         // Compute Y derivatives of Z momentum at collocation points
@@ -451,39 +453,39 @@ public:
             complex_one, state_rhow.origin(),
             complex_zero, mz_x.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state_rhow.origin(),
             complex_zero, mz_xx.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 0, // dx dy
             complex_one, mz_y.wave.begin(),
             complex_zero, mz_xy.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state_rhow.origin(),
             complex_zero, mz_xz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of Z momentum at collocation points
         suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state_rhow.origin(),
             complex_zero, mz_z.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 1, // dy dz
             complex_one, mz_y.wave.begin(),
             complex_zero, mz_yz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state_rhow.origin(),
             complex_zero, mz_zz.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
 
         // Compute Y derivatives of total energy at collocation points
@@ -505,24 +507,24 @@ public:
             complex_one, state_rhoe.origin(),
             complex_zero, e_x.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state_rhoe.origin(),
             complex_one, div_grad_e.wave.begin(), // sum with contents
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of total energy at collocation points
         suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state_rhoe.origin(),
             complex_zero, e_z.wave.begin(),
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state_rhoe.origin(),
             complex_one, div_grad_e.wave.begin(), // sum with contents
             scenario.Lx, scenario.Lz,
-            Ny, grid.Nx, dNx, dkbx, dkex, grid.Nz, dNz, dkbz, dkez);
+            Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Collectively convert state to physical space
         pg->transform_wave_to_physical(
@@ -863,9 +865,11 @@ protected:
 
     // Details for suzerain::diffwave::* calls
     const int Ny;
+    const int Nx;
     const int dNx;
     const int dkbx;
     const int dkex;
+    const int Nz;
     const int dNz;
     const int dkbz;
     const int dkez;
