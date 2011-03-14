@@ -48,8 +48,8 @@ extern "C" {
  * that \f$k_i = \frac{2\pi{}i}{L}\f$ for \f$i\in\left\{0,1,\dots,N\right\}\f$
  * ranges over the frequencies supported on a domain of length \f$L\f$.
  *
- * For example, for <tt>N=5</tt> the values <tt>{ 0, 1,  2,  3, -2, -1 }</tt>
- * will be returned for <tt>i=0, 1, 2, 3, 4</tt>.
+ * For example, for <tt>N=6</tt> the values <tt>{ 0, 1, 2, 3, -2, -1 }</tt>
+ * will be returned for <tt>i = 0, 1, 2, 3, 4, 5</tt>.
  *
  * @param N The length of the DFT.
  * @param i The entry of interest where <tt>0 <= i < N</tt>.
@@ -70,8 +70,8 @@ int suzerain_diffwave_freqindex(const int N, const int i)
  * computed at reduced cost relative to taking the absolute value of
  * suzerain_diffwave_freqindex().
  *
- * For example, for <tt>N=5</tt> the values <tt>{ 0, 1,  2,  3, 2, 1 }</tt>
- * will be returned for <tt>i=0, 1, 2, 3, 4</tt>.
+ * For example, for <tt>N=6</tt> the values <tt>{ 0, 1,  2,  3, 2, 1 }</tt>
+ * will be returned for <tt>i = 0, 1, 2, 3, 4, 5</tt>.
  *
  * @param N The length of the DFT.
  * @param i The entry of interest where <tt>0 <= i < N</tt>.
