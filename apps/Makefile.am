@@ -11,11 +11,9 @@ bin_SCRIPTS    = # Append below
 check_PROGRAMS = # Append below
 CLEANFILES     = # Append below
 
-# Default to MPI-based C++ compilation and linking
-CXX                   = @MPICXX@
-CC                    = @MPICC@
-AM_DEFAULT_SOURCE_EXT = .cpp
-AM_LIBTOOLFLAGS       = --tag=CXX
+# MPI-based compilation and linking
+CXX = @MPICXX@
+CC  = @MPICC@
 
 # Test progams and/or performance drivers
 
@@ -33,14 +31,17 @@ libchannel_la_SOURCES += channel_common.cpp channel_common.hpp
 libchannel_la_LDFLAGS  = $(ESIO_LIBS) $(LOG4CXX_LIBS)
 libchannel_la_LIBADD   = ../suzerain/libsuzerain.la
 
-bin_PROGRAMS       += channel_init
-channel_init_LDADD  = libchannel.la
+bin_PROGRAMS         += channel_init
+channel_init_SOURCES  = channel_init.cpp
+channel_init_LDADD    = libchannel.la
 
 bin_PROGRAMS       += channel_ex
+channel_ex_SOURCES  = channel_ex.cpp
 channel_ex_LDADD    = libchannel.la
 
-bin_PROGRAMS       += channel_mean
-channel_mean_LDADD  = libchannel.la
+bin_PROGRAMS         += channel_mean
+channel_mean_SOURCES  = channel_mean.cpp
+channel_mean_LDADD    = libchannel.la
 
 # Clean up from Intel Compiler's -prof-gen output and precomiled headers
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi

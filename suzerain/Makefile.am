@@ -14,11 +14,9 @@ noinst_LTLIBRARIES = # Append below
 pkginclude_HEADERS = # Append below
 CLEANFILES         = # Append below
 
-# Default to MPI-based C++ compilation and linking
-CXX                   = @MPICXX@
-CC                    = @MPICC@
-AM_DEFAULT_SOURCE_EXT = .cpp
-AM_LIBTOOLFLAGS       = --tag=CXX
+# MPI-based compilation and linking
+CXX = @MPICXX@
+CC  = @MPICC@
 
 BUILT_SOURCES = suzerain-config.h
 

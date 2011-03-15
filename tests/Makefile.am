@@ -15,11 +15,9 @@ TESTS          = # Append below
 
 noinst_HEADERS += test_tools.hpp
 
-# Default to MPI-based C++ compilation and linking
-CXX                   = @MPICXX@
-CC                    = @MPICC@
-AM_DEFAULT_SOURCE_EXT = .cpp
-AM_LIBTOOLFLAGS       = --tag=CXX
+# MPI-based compilation and linking
+CXX = @MPICXX@
+CC  = @MPICC@
 
 # Provide a test-ready logging configuration
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
@@ -53,7 +51,8 @@ test_htstretch_LDADD    = ../suzerain/libsuzerain.la
 TESTS            += test_mpl
 check_PROGRAMS   += test_mpl
 test_mpl_SOURCES  = test_mpl.cpp
-test_mpl_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_mpl_LDADD    = ../suzerain/libsuzerain.la
+test_mpl_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_mpl_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 ### Disabled: Dies for ICPC > 10.1
@@ -76,31 +75,36 @@ test_bspline_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 TESTS             += test_math
 check_PROGRAMS    += test_math
 test_math_SOURCES  = test_math.cpp
-test_math_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_math_LDADD    = ../suzerain/libsuzerain.la
+test_math_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_math_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                += test_utility
 check_PROGRAMS       += test_utility
 test_utility_SOURCES  = test_utility.cpp
-test_utility_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_utility_LDADD    = ../suzerain/libsuzerain.la
+test_utility_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_utility_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                += test_complex
 check_PROGRAMS       += test_complex
 test_complex_SOURCES  = test_complex.cpp
-test_complex_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_complex_LDADD    = ../suzerain/libsuzerain.la
+test_complex_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_complex_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                += test_traits
 check_PROGRAMS       += test_traits
 test_traits_SOURCES   = test_traits.cpp
-test_traits_LDADD     = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_traits_LDADD     = ../suzerain/libsuzerain.la
+test_traits_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_traits_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                      += test_mpi_datatype
 check_PROGRAMS             += test_mpi_datatype
 test_mpi_datatype_SOURCES   = test_mpi_datatype.cpp
-test_mpi_datatype_LDADD     = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_mpi_datatype_LDADD     = ../suzerain/libsuzerain.la
+test_mpi_datatype_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_mpi_datatype_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                       += test_blas_et_al_cpp
@@ -113,13 +117,15 @@ test_blas_et_al_cpp_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 TESTS                += test_iterator
 check_PROGRAMS       += test_iterator
 test_iterator_SOURCES = test_iterator.cpp
-test_iterator_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_iterator_LDADD   = ../suzerain/libsuzerain.la
+test_iterator_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_iterator_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                  += test_functional
 check_PROGRAMS         += test_functional
 test_functional_SOURCES = test_functional.cpp
-test_functional_LDADD   = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_functional_LDADD   = ../suzerain/libsuzerain.la
+test_functional_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_functional_LDADD  += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                 += test_storage
@@ -158,7 +164,8 @@ test_richardson_LDADD    = ../suzerain/libsuzerain.la
 TESTS                       += test_timecontroller
 check_PROGRAMS              += test_timecontroller
 test_timecontroller_SOURCES  = test_timecontroller.cpp
-test_timecontroller_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_timecontroller_LDADD    = ../suzerain/libsuzerain.la
+test_timecontroller_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_timecontroller_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                    += test_timestepper
@@ -171,7 +178,8 @@ test_timestepper_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 TESTS                    += test_multi_array
 check_PROGRAMS           += test_multi_array
 test_multi_array_SOURCES  = test_multi_array.cpp
-test_multi_array_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_multi_array_LDADD    = ../suzerain/libsuzerain.la
+test_multi_array_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_multi_array_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS             += test_fftw
