@@ -152,7 +152,8 @@ test_pencil_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 TESTS                    += test_orthonormal
 check_PROGRAMS           += test_orthonormal
 test_orthonormal_SOURCES  = test_orthonormal.cpp
-test_orthonormal_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_orthonormal_LDADD    = ../suzerain/libsuzerain.la
+test_orthonormal_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_orthonormal_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 EXTRA_DIST               += test_orthonormal.sage
 
