@@ -71,6 +71,13 @@ void suzerain_diffwave_nondealiasedoffsets(
         int*  kb1, int*  ke1, int*  kb2, int*  ke2,
         int* dkb1, int* dke1, int* dkb2, int* dke2)
 {
+    // Sanity check incoming arguments
+    assert(0 < N);
+    assert(0 < dN);
+    assert(0 <= dkb && dkb <= dN);
+    assert(0 <= dke && dke <= dN);
+    assert(dkb <= dke);
+
     // Find <tt>[dkb1,dke1)</tt> and <tt>[dkb2,dke2)</tt>
     *dkb1 = dkb;
     while (*dkb1 < dke && !suzerain_diffwave_nondealiased(N, dN, *dkb1)) {
@@ -89,28 +96,32 @@ void suzerain_diffwave_nondealiasedoffsets(
         ++*dke2;
     }
 
+    // Sanity check intermediate results
+    assert(0 <= *dkb1 && *dkb1 <= dN);
+    assert(0 <= *dke1 && *dke1 <= dN);
+    assert(0 <= *dkb2 && *dkb2 <= dN);
+    assert(0 <= *dke2 && *dke2 <= dN);
+    assert(dkb1 <= dke1 && dke1 <= dkb2 && dkb2 <= dke2);
 
     // Find <tt>[kb1,ke1)</tt>
-    *kb1 = *ke1 = N;
-    if (*dkb1 < dke) {
-        *kb1 = suzerain_diffwave_indexfreq(N,
-                suzerain_diffwave_freqindex(dN, *dkb1));
+    *kb1 = N;
+    if (*dkb1 < dN) {
+        const int f = suzerain_diffwave_freqindex(dN, *dkb1);
+        if (suzerain_diffwave_freqindexsupported(N, f)) {
+            *kb1 = suzerain_diffwave_indexfreq(N, f);
+        }
     }
-    if (*dke1 < dke) {
-        *ke1 = suzerain_diffwave_indexfreq(N,
-                suzerain_diffwave_freqindex(dN, *dke1));
-    }
+    *ke1 = *kb1 + (*dke1 - *dkb1);
 
     // Find <tt>[kb2,ke2)</tt>
-    *kb2 = *ke2 = N;
-    if (*dkb2 < dke) {
-        *kb2 = suzerain_diffwave_indexfreq(N,
-                suzerain_diffwave_freqindex(dN, *dkb2));
+    *kb2 = *ke1;
+    if (*dkb2 < dN) {
+        const int f = suzerain_diffwave_freqindex(dN, *dkb2);
+        if (suzerain_diffwave_freqindexsupported(N, f)) {
+            *kb2 = suzerain_diffwave_indexfreq(N, f);
+        }
     }
-    if (*dke2 < dke) {
-        *ke2 = suzerain_diffwave_indexfreq(N,
-                suzerain_diffwave_freqindex(dN, *dke2));
-    }
+    *ke2 = *kb2 + (*dke2 - *dkb2);
 }
 
 static inline

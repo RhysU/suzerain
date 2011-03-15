@@ -336,6 +336,47 @@ BOOST_AUTO_TEST_CASE( nondealiased_dealiasing )
     }
 }
 
+BOOST_AUTO_TEST_CASE( nondealiasedoffsets )
+{
+    using suzerain::diffwave::nondealiasedoffsets;
+
+    // Obtain vectors as solutions to ease test case writing
+    int dat[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
+    int & kb1 = dat[0], & ke1 = dat[1], & kb2 = dat[2], & ke2 = dat[3];
+    int &dkb1 = dat[4], &dke1 = dat[5], &dkb2 = dat[6], &dke2 = dat[7];
+
+    // Low side for dN = 13
+    {
+        nondealiasedoffsets(/*N*/ 8, /*dN*/13, /*dkb*/0, /*dke*/4,
+                            kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+        const int ex[8] = {   0,   4,   4,   4,    0,    4,    4,    4 };
+        BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
+    }
+
+    {
+        nondealiasedoffsets(/*N*/ 7, /*dN*/13, /*dkb*/0, /*dke*/4,
+                            kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+        const int ex[8] = {   0,   4,   4,   4,    0,    4,    4,    4 };
+        BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
+    }
+
+    // High side for dN = 13
+    {
+        nondealiasedoffsets(/*N*/ 8, /*dN*/13, /*dkb*/10, /*dke*/13,
+                            kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+        const int ex[8] = {   5,   8,   8,   8,   10,   13,   13,   13 };
+        BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
+    }
+
+    {
+        nondealiasedoffsets(/*N*/ 7, /*dN*/13, /*dkb*/10, /*dke*/13,
+                            kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+        const int ex[8] = {   4,   7,   7,   7,   10,   13,   13,   13 };
+        BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
+    }
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
