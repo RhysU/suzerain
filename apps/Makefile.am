@@ -11,9 +11,11 @@ bin_SCRIPTS    = # Append below
 check_PROGRAMS = # Append below
 CLEANFILES     = # Append below
 
-# Default to MPI-based C++ compilation
+# Default to MPI-based C++ compilation and linking
 CXX                   = @MPICXX@
+CC                    = @MPICC@
 AM_DEFAULT_SOURCE_EXT = .cpp
+AM_LIBTOOLFLAGS       = --tag=CXX
 
 # Test progams and/or performance drivers
 

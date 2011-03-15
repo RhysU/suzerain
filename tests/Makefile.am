@@ -15,9 +15,11 @@ TESTS          = # Append below
 
 noinst_HEADERS += test_tools.hpp
 
-# Default to MPI-based C++ and C compilation
-CXX = @MPICXX@
-CC  = @MPICC@
+# Default to MPI-based C++ compilation and linking
+CXX                   = @MPICXX@
+CC                    = @MPICC@
+AM_DEFAULT_SOURCE_EXT = .cpp
+AM_LIBTOOLFLAGS       = --tag=CXX
 
 # Provide a test-ready logging configuration
 TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties

@@ -14,14 +14,11 @@ noinst_LTLIBRARIES = # Append below
 pkginclude_HEADERS = # Append below
 CLEANFILES         = # Append below
 
-# FIXME: Ugly, separate MPI compilation into separate dir, maybe
-CXX=@MPICXX@
-CC=@MPICC@
-
-# Clean up from Intel Compiler's -prof-gen output
-CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
-# Clean up from Intel Compiler's precompiled header output
-CLEANFILES += *.pchi
+# Default to MPI-based C++ compilation and linking
+CXX                   = @MPICXX@
+CC                    = @MPICC@
+AM_DEFAULT_SOURCE_EXT = .cpp
+AM_LIBTOOLFLAGS       = --tag=CXX
 
 BUILT_SOURCES = suzerain-config.h
 
@@ -95,6 +92,10 @@ libsuzerain_la_LDFLAGS       += $(BOOST_IOSTREAMS_LDFLAGS)
 libsuzerain_la_LDFLAGS       += $(BOOST_IOSTREAMS_LIBS)
 libsuzerain_la_LDFLAGS       += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 libsuzerain_la_LDFLAGS       += $(BOOST_PROGRAM_OPTIONS_LIBS)
+
+# Clean up from Intel Compiler's -prof-gen output and precompiled headers
+CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
+CLEANFILES += *.pchi
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
