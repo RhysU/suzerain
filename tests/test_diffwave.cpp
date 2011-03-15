@@ -27,6 +27,8 @@ BOOST_AUTO_TEST_CASE( gsl_sf_pow_int_zero_to_zero )
 
 BOOST_AUTO_TEST_CASE( freqindex )
 {
+    using suzerain::diffwave::freqindex;
+
     const int expected[][10] = {
         { 0                                    },
         { 0, 1                                 },
@@ -42,7 +44,7 @@ BOOST_AUTO_TEST_CASE( freqindex )
     for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
         int result[sizeof(expected[0])/sizeof(expected[0][0])];
         for (int j = 0; j < i+1; ++j) {
-            result[j] = suzerain_diffwave_freqindex(i + 1, j);
+            result[j] = freqindex(i + 1, j);
         }
         BOOST_CHECK_EQUAL_COLLECTIONS(
                 expected[i], expected[i] + i + 1, result, result + i + 1);
@@ -51,48 +53,52 @@ BOOST_AUTO_TEST_CASE( freqindex )
 
 BOOST_AUTO_TEST_CASE( freqindexsupported )
 {
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(1, -1));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(1,  0));
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(1,  1));
+    using suzerain::diffwave::freqindexsupported;
 
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(2, -1));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(2,  0));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(2,  1));
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(2,  2));
+    BOOST_CHECK(!freqindexsupported(1, -1));
+    BOOST_CHECK( freqindexsupported(1,  0));
+    BOOST_CHECK(!freqindexsupported(1,  1));
 
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(3, -2));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(3, -1));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(3,  0));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(3,  1));
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(3,  2));
+    BOOST_CHECK(!freqindexsupported(2, -1));
+    BOOST_CHECK( freqindexsupported(2,  0));
+    BOOST_CHECK( freqindexsupported(2,  1));
+    BOOST_CHECK(!freqindexsupported(2,  2));
 
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(4, -2));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(4, -1));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(4,  0));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(4,  1));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(4,  2));
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(4,  3));
+    BOOST_CHECK(!freqindexsupported(3, -2));
+    BOOST_CHECK( freqindexsupported(3, -1));
+    BOOST_CHECK( freqindexsupported(3,  0));
+    BOOST_CHECK( freqindexsupported(3,  1));
+    BOOST_CHECK(!freqindexsupported(3,  2));
 
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(5, -3));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(5, -2));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(5, -1));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(5,  0));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(5,  1));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(5,  2));
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(5,  3));
+    BOOST_CHECK(!freqindexsupported(4, -2));
+    BOOST_CHECK( freqindexsupported(4, -1));
+    BOOST_CHECK( freqindexsupported(4,  0));
+    BOOST_CHECK( freqindexsupported(4,  1));
+    BOOST_CHECK( freqindexsupported(4,  2));
+    BOOST_CHECK(!freqindexsupported(4,  3));
 
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(6, -3));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(6, -2));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(6, -1));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(6,  0));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(6,  1));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(6,  2));
-    BOOST_CHECK( suzerain_diffwave_freqindexsupported(6,  3));
-    BOOST_CHECK(!suzerain_diffwave_freqindexsupported(6,  4));
+    BOOST_CHECK(!freqindexsupported(5, -3));
+    BOOST_CHECK( freqindexsupported(5, -2));
+    BOOST_CHECK( freqindexsupported(5, -1));
+    BOOST_CHECK( freqindexsupported(5,  0));
+    BOOST_CHECK( freqindexsupported(5,  1));
+    BOOST_CHECK( freqindexsupported(5,  2));
+    BOOST_CHECK(!freqindexsupported(5,  3));
+
+    BOOST_CHECK(!freqindexsupported(6, -3));
+    BOOST_CHECK( freqindexsupported(6, -2));
+    BOOST_CHECK( freqindexsupported(6, -1));
+    BOOST_CHECK( freqindexsupported(6,  0));
+    BOOST_CHECK( freqindexsupported(6,  1));
+    BOOST_CHECK( freqindexsupported(6,  2));
+    BOOST_CHECK( freqindexsupported(6,  3));
+    BOOST_CHECK(!freqindexsupported(6,  4));
 }
 
 BOOST_AUTO_TEST_CASE( indexfreq )
 {
+    using suzerain::diffwave::indexfreq;
+
     const int freq[][10] = {
         { 0                                    },
         { 0, 1                                 },
@@ -120,7 +126,7 @@ BOOST_AUTO_TEST_CASE( indexfreq )
     for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
         int result[sizeof(expected[0])/sizeof(expected[0][0])];
         for (int j = 0; j < i+1; ++j) {
-            result[j] = suzerain_diffwave_indexfreq(i + 1, freq[i][j]);
+            result[j] = indexfreq(i + 1, freq[i][j]);
         }
         BOOST_CHECK_EQUAL_COLLECTIONS(
                 expected[i], expected[i] + i + 1, result, result + i + 1);
@@ -129,6 +135,8 @@ BOOST_AUTO_TEST_CASE( indexfreq )
 
 BOOST_AUTO_TEST_CASE( absfreqindex )
 {
+    using suzerain::diffwave::absfreqindex;
+
     const int expected[][10] = {
         { 0                                    },
         { 0, 1                                 },
@@ -144,7 +152,7 @@ BOOST_AUTO_TEST_CASE( absfreqindex )
     for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
         int result[sizeof(expected[0])/sizeof(expected[0][0])];
         for (int j = 0; j < i+1; ++j) {
-            result[j] = suzerain_diffwave_absfreqindex(i + 1, j);
+            result[j] = absfreqindex(i + 1, j);
         }
         BOOST_CHECK_EQUAL_COLLECTIONS(
                 expected[i], expected[i] + i + 1, result, result + i + 1);
@@ -153,6 +161,8 @@ BOOST_AUTO_TEST_CASE( absfreqindex )
 
 BOOST_AUTO_TEST_CASE( freqdiffindex_nodealiasing )
 {
+    using suzerain::diffwave::freqdiffindex;
+
     const int expected[][8] = { {0},
                                 {0,               0},
                                 {0,1,            -1},
@@ -165,14 +175,15 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_nodealiasing )
     for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
         const int N = i + 1, dN = N;
         for (int j = 0; j < dN; ++j) {
-            BOOST_CHECK_EQUAL(expected[i][j],
-                              suzerain_diffwave_freqdiffindex(N, dN, j));
+            BOOST_CHECK_EQUAL(expected[i][j], freqdiffindex(N, dN, j));
         }
     }
 }
 
 BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
 {
+    using suzerain::diffwave::freqdiffindex;
+
     {
         const int expected[][12] = { {0,0,0,0,0,0,0,0,0, 0, 0, 0},
                                      {0,0,0,0,0,0,0,0,0, 0, 0, 0},
@@ -187,8 +198,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
             const int N  = i + 1;
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
-                BOOST_CHECK_EQUAL(expected[i][j],
-                                  suzerain_diffwave_freqdiffindex(N, dN, j));
+                BOOST_CHECK_EQUAL(expected[i][j], freqdiffindex(N, dN, j));
             }
         }
     }
@@ -207,8 +217,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
             const int N  = i + 1;
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
-                BOOST_CHECK_EQUAL(expected[i][j],
-                                  suzerain_diffwave_freqdiffindex(N, dN, j));
+                BOOST_CHECK_EQUAL(expected[i][j], freqdiffindex(N, dN, j));
             }
         }
     }
@@ -228,8 +237,7 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
             const int N  = i + 1;
             const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
             for (int j = 0; j < dN; ++j) {
-                BOOST_CHECK_EQUAL(expected[i][j],
-                                  suzerain_diffwave_freqdiffindex(N, dN, j));
+                BOOST_CHECK_EQUAL(expected[i][j], freqdiffindex(N, dN, j));
             }
         }
     }

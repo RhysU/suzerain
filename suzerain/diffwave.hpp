@@ -46,6 +46,47 @@ namespace suzerain {
  */
 namespace diffwave {
 
+/** @{ */
+
+/** @see suzerain_diffwave_freqindex */
+inline
+int freqindex(const int N, const int i)
+{
+    return suzerain_diffwave_freqindex(N, i);
+}
+
+/** @see suzerain_diffwave_freqindexsupported */
+inline
+int freqindexsupported(const int N, const int i)
+{
+    return suzerain_diffwave_freqindexsupported(N, i);
+}
+
+/** @see suzerain_diffwave_indexfreq */
+inline
+int indexfreq(const int N, const int i)
+{
+    return suzerain_diffwave_indexfreq(N, i);
+}
+
+/** @see suzerain_diffwave_absfreqindex */
+inline
+int absfreqindex(const int N, const int i)
+{
+    return suzerain_diffwave_absfreqindex(N, i);
+}
+
+/** @see suzerain_diffwave_freqdiffindex */
+inline
+int freqdiffindex(const int N, const int dN, const int i)
+{
+    return suzerain_diffwave_freqdiffindex(N, dN, i);
+}
+
+/** @} */
+
+/** @{ */
+
 /** @see suzerain_diffwave_apply */
 template< typename Complex1,
           typename Complex2 >
@@ -106,6 +147,8 @@ typename boost::enable_if<boost::mpl::and_<
             Nx, dNx, dkbx, dkex,
             Nz, dNz, dkbz, dkez);
 }
+
+/** @} */
 
 } // namespace diffwave
 

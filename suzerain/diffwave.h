@@ -42,6 +42,8 @@
 extern "C" {
 #endif
 
+/** @{ */
+
 /**
  * For a one dimensional DFT of length \c N, compute the frequency index
  * associated with "in-order" entry \c i.  That is, the integer \f$i\f$ such
@@ -163,6 +165,10 @@ int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i)
     }
 }
 
+/** @} */
+
+/** @{ */
+
 /**
  * Given a complex-valued, wave-space field \f$x\f$, compute \f$ x \leftarrow{}
  * \alpha \partial{}x^{\mbox{dxcnt}} \partial{}z^{\mbox{dzcnt}} x\f$.  The
@@ -268,6 +274,8 @@ void suzerain_diffwave_accumulate(
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez);
+
+/** @} */
 
 #ifdef __cplusplus
 } /* extern "C" */
