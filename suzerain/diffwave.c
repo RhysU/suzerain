@@ -54,6 +54,65 @@ int suzerain_diffwave_absfreqindex(const int N, const int i);
 extern
 int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i);
 
+// C99 extern declaration for inlined function in diffwave.h
+extern
+int suzerain_diffwave_indexfreq(const int N, const int i);
+
+// C99 extern declaration for inlined function in diffwave.h
+extern
+int suzerain_diffwave_freqindexsupported(const int N, const int i);
+
+// C99 extern declaration for inlined function in diffwave.h
+extern
+int suzerain_diffwave_nondealiased(const int N, const int dN, const int i);
+
+void suzerain_diffwave_nondealiasedoffsets(
+        const int N, const int dN, const int dkb, const int dke,
+        int*  kb1, int*  ke1, int*  kb2, int*  ke2,
+        int* dkb1, int* dke1, int* dkb2, int* dke2)
+{
+    // Find <tt>[dkb1,dke1)</tt> and <tt>[dkb2,dke2)</tt>
+    *dkb1 = dkb;
+    while (*dkb1 < dke && !suzerain_diffwave_nondealiased(N, dN, *dkb1)) {
+        ++*dkb1;
+    }
+    *dke1 = *dkb1;
+    while (*dke1 < dke &&  suzerain_diffwave_nondealiased(N, dN, *dke1)) {
+        ++*dke1;
+    }
+    *dkb2 = *dke1;
+    while (*dkb2 < dke && !suzerain_diffwave_nondealiased(N, dN, *dkb2)) {
+        ++*dkb2;
+    }
+    *dke2 = *dkb2;
+    while (*dke2 < dke &&  suzerain_diffwave_nondealiased(N, dN, *dke2)) {
+        ++*dke2;
+    }
+
+
+    // Find <tt>[kb1,ke1)</tt>
+    *kb1 = *ke1 = N;
+    if (*dkb1 < dke) {
+        *kb1 = suzerain_diffwave_indexfreq(N,
+                suzerain_diffwave_freqindex(dN, *dkb1));
+    }
+    if (*dke1 < dke) {
+        *ke1 = suzerain_diffwave_indexfreq(N,
+                suzerain_diffwave_freqindex(dN, *dke1));
+    }
+
+    // Find <tt>[kb2,ke2)</tt>
+    *kb2 = *ke2 = N;
+    if (*dkb2 < dke) {
+        *kb2 = suzerain_diffwave_indexfreq(N,
+                suzerain_diffwave_freqindex(dN, *dkb2));
+    }
+    if (*dke2 < dke) {
+        *ke2 = suzerain_diffwave_indexfreq(N,
+                suzerain_diffwave_freqindex(dN, *dke2));
+    }
+}
+
 static inline
 void scale_by_imaginary_power(const double in[2], double out[2], int p)
 {

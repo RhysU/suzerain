@@ -185,6 +185,37 @@ int suzerain_diffwave_nondealiased(const int N, const int dN, const int i)
             N, suzerain_diffwave_freqindex(dN, i));
 }
 
+/**
+ * Turn dealiased global state offsets into non-dealiased state offsets.
+ * Necessary for saving/loading only the relevant portions of a dealiased
+ * field.  Idea is that one swath of dealiased state contains, assuming no
+ * half-complex compression, at most two contiguous regions of nondealiased
+ * state.
+ *
+ * More specifically, ignoring modes not supportable on a grid of length \c N,
+ * the state kept in <tt>[dkb,dke)</tt> is equivalent to <tt>[dkb1,dke1)</tt>
+ * and <tt>[dkb2,dke2)</tt>.  Further, the range <tt>[dkb1,dke1)</tt> contains
+ * state equivalent to <tt>[kb1,ke1)</tt> and <tt>[dkb2,dke2)</tt> contains
+ * state equivalent to <tt>[kb2,ke2)</tt>.
+ *
+ * @param N     Number of nondealiased modes
+ * @param dN    Number of dealiased modes
+ * @param dkb   Beginning index into dealiased modes
+ * @param dke   Ending index into dealiased modes
+ * @param kb1   Beginning index of first range within nondealiased modes
+ * @param ke1   Ending index of first range within nondealiased modes
+ * @param kb2   Beginning index of second range within nondealiased modes
+ * @param ke2   Ending index of second range within nondealiased modes
+ * @param dkb1  Dealiased index corresponding to \c kb1
+ * @param dke1  Dealiased index corresponding to \c ke1
+ * @param dkb2  Dealiased index corresponding to \c kb2
+ * @param dke2  Dealiased index corresponding to \c ke2
+ */
+void suzerain_diffwave_nondealiasedoffsets(
+        const int N, const int dN, const int dkb, const int dke,
+        int*  kb1, int*  ke1, int*  kb2, int*  ke2,
+        int* dkb1, int* dke1, int* dkb2, int* dke2);
+
 /** @} */
 
 /** @{ */

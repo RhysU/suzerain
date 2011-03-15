@@ -90,6 +90,18 @@ int nondealiased(const int N, const int dN, const int i)
     return suzerain_diffwave_nondealiased(N, dN, i);
 }
 
+/** @see suzerain_diffwave_nondealiasedoffsets */
+inline
+void nondealiasedoffsets(
+        const int N, const int dN, const int dkb, const int dke,
+        int&  kb1, int&  ke1, int&  kb2, int&  ke2,
+        int& dkb1, int& dke1, int& dkb2, int& dke2)
+{
+    return suzerain_diffwave_nondealiasedoffsets(N, dN, dkb, dke,
+                                                 &kb1,  &ke1,  &kb2,  &ke2,
+                                                 &dkb1, &dke1, &dkb2, &dke2);
+}
+
 /** @} */
 
 /** @{ */
