@@ -61,8 +61,52 @@ extern "C" {
 inline
 int suzerain_diffwave_freqindex(const int N, const int i)
 {
+    assert(N > 0);
     assert(0 <= i && i < N);
     return (i < N/2+1) ? i : -N + i;
+}
+
+/**
+ * For a one dimensional DFT of length \c N, determine if the given frequency
+ * index is supportable by the grid.  For example, for <tt>N=6</tt> the values
+ * <tt>{ 0, 1, 2, 3, -2, -1 }</tt> are supportable.  Values less than -2 or
+ * greater than 3 are not.
+ *
+ * @param N The length of the DFT.
+ * @param i The frequency index of interest.
+ *
+ * @return True if the frequency index is supportable.  False otherwise.
+ * @see FFTW's discussion of <a href="http://www.fftw.org/fftw3.3alpha_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">The 1d Discrete Fourier Transform</a>
+ *      for an extended description of in-order storage.
+ */
+inline
+int suzerain_diffwave_freqindexsupported(const int N, const int i)
+{
+    assert(N > 0);
+    return (-N+1)/2 <= i && i <= N/2;
+}
+
+/**
+ * For a one dimensional DFT of length \c N, compute the "in-order" entry
+ * associated with the given frequency index \c i.  This is the inverse
+ * function of suzerain_diffwave_freqindex().
+ *
+ * For example, for <tt>N=6</tt> the values <tt>i = 0, 1, 2, 3, 4, 5</tt>
+ * will be returned for <tt>{ 0, 1, 2, 3, -2, -1 }</tt>
+ *
+ * @param N The length of the DFT.
+ * @param i The frequency index of interest.
+ *
+ * @return The in-order entry index associated with the frequency <tt>i</tt>
+ * @see FFTW's discussion of <a href="http://www.fftw.org/fftw3.3alpha_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">The 1d Discrete Fourier Transform</a>
+ *      for an extended description of in-order storage.
+ */
+inline
+int suzerain_diffwave_indexfreq(const int N, const int i)
+{
+    assert(N > 0);
+    assert(suzerain_diffwave_freqindexsupported(N,i));
+    return (i >= 0) ? i : N + i;
 }
 
 /**
@@ -82,6 +126,7 @@ int suzerain_diffwave_freqindex(const int N, const int i)
 inline
 int suzerain_diffwave_absfreqindex(const int N, const int i)
 {
+    assert(N > 0);
     assert(0 <= i && i < N);
     return (i < N/2+1) ? i : N - i;
 }
@@ -106,6 +151,8 @@ int suzerain_diffwave_absfreqindex(const int N, const int i)
 inline
 int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i)
 {
+    assert(N  > 0);
+    assert(dN > 0);
     assert(0 <= i && i < dN && N <= dN);
     if (i < (N+1)/2) {
         return i;
