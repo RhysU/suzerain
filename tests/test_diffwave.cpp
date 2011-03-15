@@ -243,6 +243,99 @@ BOOST_AUTO_TEST_CASE( freqdiffindex_dealiasing )
     }
 }
 
+BOOST_AUTO_TEST_CASE( nondealiased_nodealiasing )
+{
+    using suzerain::diffwave::nondealiased;
+
+    const int expected[][8] = { {1},
+                                {1,1},
+                                {1,1,1},
+                                {1,1,1,1},
+                                {1,1,1,1,1},
+                                {1,1,1,1,1,1},
+                                {1,1,1,1,1,1,1},
+                                {1,1,1,1,1,1,1,1} };
+
+    for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
+        const int N = i + 1, dN = N;
+        for (int j = 0; j < dN; ++j) {
+            BOOST_CHECK_EQUAL(expected[i][j], nondealiased(N, dN, j));
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE( nondealiased_dealiasing )
+{
+    using suzerain::diffwave::nondealiased;
+
+    {
+        const int expected[][12] = { {1,0,0,0,0,0,0,0,0,0,0,0},
+                                     {1,1,0,0,0,0,0,0,0,0,0,0},
+                                     {1,1,0,0,0,0,0,0,0,0,0,1},
+                                     {1,1,1,0,0,0,0,0,0,0,0,1},
+                                     {1,1,1,0,0,0,0,0,0,0,1,1},
+                                     {1,1,1,1,0,0,0,0,0,0,1,1},
+                                     {1,1,1,1,0,0,0,0,0,1,1,1},
+                                     {1,1,1,1,1,0,0,0,0,1,1,1} };
+
+        for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
+            const int N  = i + 1;
+            const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
+            for (int j = 0; j < dN; ++j) {
+//              BOOST_TEST_MESSAGE("Checking N = " << N  <<
+//                                 ", dN = "       << dN <<
+//                                 ", j = "        << j);
+                BOOST_CHECK_EQUAL(expected[i][j], nondealiased(N, dN, j));
+            }
+        }
+    }
+
+    {
+        const int expected[][11] = { {1,0,0,0,0,0,0,0,0,0,0},
+                                     {1,1,0,0,0,0,0,0,0,0,0},
+                                     {1,1,0,0,0,0,0,0,0,0,1},
+                                     {1,1,1,0,0,0,0,0,0,0,1},
+                                     {1,1,1,0,0,0,0,0,0,1,1},
+                                     {1,1,1,1,0,0,0,0,0,1,1},
+                                     {1,1,1,1,0,0,0,0,1,1,1},
+                                     {1,1,1,1,1,0,0,0,1,1,1} };
+
+        for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
+            const int N  = i + 1;
+            const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
+            for (int j = 0; j < dN; ++j) {
+//              BOOST_TEST_MESSAGE("Checking N = " << N  <<
+//                                 ", dN = "       << dN <<
+//                                 ", j = "        << j);
+                BOOST_CHECK_EQUAL(expected[i][j], nondealiased(N, dN, j));
+            }
+        }
+    }
+
+    {
+        const int expected[][9] = { {1,0,0,0,0,0,0,0,0},
+                                    {1,1,0,0,0,0,0,0,0},
+                                    {1,1,0,0,0,0,0,0,1},
+                                    {1,1,1,0,0,0,0,0,1},
+                                    {1,1,1,0,0,0,0,1,1},
+                                    {1,1,1,1,0,0,0,1,1},
+                                    {1,1,1,1,0,0,1,1,1},
+                                    {1,1,1,1,1,0,1,1,1},
+                                    {1,1,1,1,1,1,1,1,1} };
+
+        for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
+            const int N  = i + 1;
+            const int dN = sizeof(expected[0])/sizeof(expected[0][0]);
+            for (int j = 0; j < dN; ++j) {
+//              BOOST_TEST_MESSAGE("Checking N = " << N  <<
+//                                 ", dN = "       << dN <<
+//                                 ", j = "        << j);
+                BOOST_CHECK_EQUAL(expected[i][j], nondealiased(N, dN, j));
+            }
+        }
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 

@@ -83,6 +83,13 @@ int freqdiffindex(const int N, const int dN, const int i)
     return suzerain_diffwave_freqdiffindex(N, dN, i);
 }
 
+/** @see suzerain_diffwave_nondealiased */
+inline
+int nondealiased(const int N, const int dN, const int i)
+{
+    return suzerain_diffwave_nondealiased(N, dN, i);
+}
+
 /** @} */
 
 /** @{ */

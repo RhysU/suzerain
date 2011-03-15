@@ -116,7 +116,7 @@ int suzerain_diffwave_indexfreq(const int N, const int i)
  * computed at reduced cost relative to taking the absolute value of
  * suzerain_diffwave_freqindex().
  *
- * For example, for <tt>N=6</tt> the values <tt>{ 0, 1,  2,  3, 2, 1 }</tt>
+ * For example, for <tt>N=6</tt> the values <tt>{ 0, 1, 2, 3, 2, 1 }</tt>
  * will be returned for <tt>i = 0, 1, 2, 3, 4, 5</tt>.
  *
  * @param N The length of the DFT.
@@ -153,8 +153,6 @@ int suzerain_diffwave_absfreqindex(const int N, const int i)
 inline
 int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i)
 {
-    assert(N  > 0);
-    assert(dN > 0);
     assert(0 <= i && i < dN && N <= dN);
     if (i < (N+1)/2) {
         return i;
@@ -163,6 +161,28 @@ int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i)
     } else {
         return 0;
     }
+}
+
+/**
+ * Compute an indicator for which modes on a grid of length <tt>dN</tt>
+ * are also supported on a grid of length <tt>N</tt>.
+ *
+ * For example, for <tt>dN=9</tt> and <tt>N=6</tt> the values <tt> {1, 1, 1, 0,
+ * 0, 0, 0, 1, 1}</tt> will be returned for <tt>i=0, 1, 2, 3, 4, 5, 6, 7,
+ * 8</tt>.
+ *
+ * @param N  The length of the DFT.
+ * @param dN The dealiased length of the DFT.
+ * @param i  The entry of interest where <tt>0 <= i < dN</tt>.
+ *
+ * @return True if the in-order entry <tt>i</tt> from grid <tt>dN</tt> is
+ *         also present on a grid of length <tt>N</tt>.
+ */
+inline
+int suzerain_diffwave_nondealiased(const int N, const int dN, const int i)
+{
+    return suzerain_diffwave_freqindexsupported(
+            N, suzerain_diffwave_freqindex(dN, i));
 }
 
 /** @} */
