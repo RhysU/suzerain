@@ -13,6 +13,14 @@
 // warranties.
 //-----------------------------------------------------------------------------
 
+// Tests die on Intel 11.1 compilers with message "invalid SHT_GROUP entry".
+// Disable the StlAllocatorTestBed for this compiler.
+#if defined __INTEL_COMPILER && __INTEL_COMPILER >= 1110 && __INTEL_COMPILER < 1200
+# define PERFORM_TESTBED 0
+#else
+# define PERFORM_TESTBED 1
+#endif
+
 #ifdef __ICC
 /**
  * Replacement of unknown atomic function by Johannes Singler.
@@ -55,7 +63,9 @@ BOOST_AUTO_TEST_CASE( allocator_test_bed )
     // functions internally use allocator::rebind to test a wide variety of
     // other types.
     std::allocator<int> a;
+#if PERFORM_TESTBED
     StlAllocatorTestbed::TestAlloc( a );
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -67,19 +77,25 @@ BOOST_AUTO_TEST_CASE( allocator_default_policy )
 {
     // Test the default allocator policy
     suzerain::allocator<int> a;
+#if PERFORM_TESTBED
     StlAllocatorTestbed::TestAlloc( a );
+#endif
 }
 
 BOOST_AUTO_TEST_CASE( allocator_freestore_policy )
 {
     suzerain::allocator<int, suzerain::allocator_freestore_policy<int> > a;
+#if PERFORM_TESTBED
     StlAllocatorTestbed::TestAlloc( a );
+#endif
 }
 
 BOOST_AUTO_TEST_CASE( allocator_blas )
 {
     suzerain::blas::allocator<int>::type a; // Aligned allocator, usually
+#if PERFORM_TESTBED
     StlAllocatorTestbed::TestAlloc( a );
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()

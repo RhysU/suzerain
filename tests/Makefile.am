@@ -55,14 +55,12 @@ test_mpl_LDADD    = ../suzerain/libsuzerain.la
 test_mpl_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_mpl_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-### Disabled: Dies for ICPC > 10.1
-### Error message like "invalid SHT_GROUP entry"
-##TESTS                  += test_allocator
-##check_PROGRAMS         += test_allocator
-##test_allocator_SOURCES  = test_allocator.cpp
-##test_allocator_LDADD    = ../suzerain/libsuzerain.la
-##test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-##test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+TESTS                  += test_allocator
+check_PROGRAMS         += test_allocator
+test_allocator_SOURCES  = test_allocator.cpp
+test_allocator_LDADD    = ../suzerain/libsuzerain.la
+test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                += test_bspline
 check_PROGRAMS       += test_bspline
