@@ -118,7 +118,7 @@ void suzerain_inorder_wavenumber_translate(
     assert(0 <= *te1 && *te1 <= T);
     assert(0 <= *tb2 && *tb2 <= T);
     assert(0 <= *te2 && *te2 <= T);
-    assert(tb1 <= te1 && te1 <= tb2 && tb2 <= te2);
+    assert(*tb1 <= *te1 && *te1 <= *tb2 && *tb2 <= *te2);
 
     // Find <tt>[sb1,se1)</tt>
     *sb1 = S;
