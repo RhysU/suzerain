@@ -336,6 +336,34 @@ BOOST_AUTO_TEST_CASE( nondealiased_dealiasing )
     }
 }
 
+BOOST_AUTO_TEST_CASE( nondealiasedoffsets_dN_equal_to_N )
+{
+    using suzerain::diffwave::nondealiasedoffsets;
+
+    // Obtain vectors as solutions to ease test case writing
+    int dat[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
+    int & kb1 = dat[0], & ke1 = dat[1], & kb2 = dat[2], & ke2 = dat[3];
+    int &dkb1 = dat[4], &dke1 = dat[5], &dkb2 = dat[6], &dke2 = dat[7];
+
+    // Sanity check that a range of N, dkb, and dke return NOPs
+    for (int N = 4; N < 9; ++N) {
+        for (int dkb = 0; dkb <= N; ++dkb) {
+            for (int dke = dkb; dke <= N; ++dke) {
+                nondealiasedoffsets(N,  N, dkb, dke,
+                        kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+                BOOST_CHECK_EQUAL(dkb, kb1);
+                BOOST_CHECK_EQUAL(dke, ke1);
+                BOOST_CHECK_EQUAL(dke, kb2);
+                BOOST_CHECK_EQUAL(dke, ke2);
+                BOOST_CHECK_EQUAL(kb1, dkb1);
+                BOOST_CHECK_EQUAL(ke1, dke1);
+                BOOST_CHECK_EQUAL(kb2, dkb2);
+                BOOST_CHECK_EQUAL(ke2, dke2);
+            }
+        }
+    }
+}
+
 BOOST_AUTO_TEST_CASE( nondealiasedoffsets_dN_greater_than_N )
 {
     using suzerain::diffwave::nondealiasedoffsets;
