@@ -623,7 +623,44 @@ BOOST_AUTO_TEST_CASE( nondealiasedoffsets_N_greater_than_dN )
         const int ex[8] = {        0,   5,  10,  13,    0,    5,    5,    8};
         BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
     }
+    {
+        const int dkb = 1, dke = 7;
+        nondealiasedoffsets(
+                N, dN, dkb, dke, kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+        const int ex[8] = {        1,   5,  10,  12,    1,    5,    5,    7};
+        BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
+    }
+    {
+        const int dkb = 2, dke = 6;
+        nondealiasedoffsets(
+                N, dN, dkb, dke, kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+        const int ex[8] = {        2,   5,  10,  11,    2,    5,    5,    6};
+        BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
+    }
+    {
+        const int dkb = 3, dke = 5;
+        nondealiasedoffsets(
+                N, dN, dkb, dke, kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+        const int ex[8] = {        3,   5,  10,  10,    3,    5,    5,    5};
+        BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
+    }
 
+    N = 8;
+    dN = 5;
+    {
+        const int dkb = 0, dke = 5;
+        nondealiasedoffsets(
+                N, dN, dkb, dke, kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+        const int ex[8] = {        0,   3,   6,   8,    0,    3,    3,    5};
+        BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
+    }
+    {
+        const int dkb = 1, dke = 4;
+        nondealiasedoffsets(
+                N, dN, dkb, dke, kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+        const int ex[8] = {        1,   3,   6,   7,    1,    3,    3,    4};
+        BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
