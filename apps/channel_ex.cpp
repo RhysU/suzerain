@@ -605,8 +605,11 @@ public:
         Eigen::Matrix3d tau;
         Eigen::Vector3d div_tau;
 
-        // Used to track local \frac{1}{\Delta{}y} for time criterion
-        size_t ndx_y = 0;
+        // Used to track local \frac{1}{\Delta{}y} for time criterion.
+        // In physical space storage is X Z Y with Y direction slowest
+        // Maintain where we are relative to local rank's starting y offset
+        const size_t stride_y = rho_x.physical.size_x * rho_x.physical.size_z;
+        size_t ndx            = stride_y * rho_x.physical.start_y;
 
         // Walk physical space state storage in linear fashion
         for (// Loop initialization
@@ -703,7 +706,7 @@ public:
              ++p_e_y,
              ++p_e_z,
              ++p_div_grad_e,
-             ndx_y = (ndx_y + 1) % Ny) {
+             ++ndx) {
 
             // Prepare local density-related quantities
             const real_t rho          = *p_rho;
@@ -813,7 +816,7 @@ public:
                     convective_delta_t,
                     suzerain::timestepper::convective_stability_criterion(
                             u.x(), one_over_delta_x,
-                            u.y(), one_over_delta_y[ndx_y],
+                            u.y(), one_over_delta_y[ndx / stride_y],
                             u.z(), one_over_delta_z,
                             evmaxmag_real,
                             std::sqrt(T)) /* nondimensional a = sqrt(T) */);
@@ -821,7 +824,7 @@ public:
                     diffusive_delta_t,
                     suzerain::timestepper::diffusive_stability_criterion(
                             one_over_delta_x,
-                            one_over_delta_y[ndx_y],
+                            one_over_delta_y[ndx / stride_y],
                             one_over_delta_z,
                             Re, Pr, gamma, evmaxmag_imag, mu / rho));
         }
