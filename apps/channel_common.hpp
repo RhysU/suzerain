@@ -131,13 +131,14 @@ void complex_field_read(esio_handle h, const char *name, complex_t *field)
 /** Write a complex-valued field via ESIO */
 template< typename I >
 inline
-void complex_field_write(esio_handle h, const char *name, complex_t *field,
+void complex_field_write(esio_handle h,
+                         const char *name, const complex_t *field,
                          I cstride = 0, I bstride = 0, I astride = 0,
                          const char * comment = 0)
 {
     using boost::numeric_cast;
 
-    esio_field_writev(h, name, reinterpret_cast<real_t *>(field),
+    esio_field_writev(h, name, reinterpret_cast<const real_t *>(field),
                       2*numeric_cast<int>(cstride),
                       2*numeric_cast<int>(bstride),
                       2*numeric_cast<int>(astride),
@@ -146,7 +147,8 @@ void complex_field_write(esio_handle h, const char *name, complex_t *field,
 
 /** Write a complex-valued field via ESIO */
 inline
-void complex_field_write(esio_handle h, const char *name, complex_t *field)
+void complex_field_write(esio_handle h,
+                         const char *name, const complex_t *field)
 {
     // When no strides are provided, we must specify the stride type.
     return complex_field_write<int>(h, name, field);

@@ -1052,9 +1052,9 @@ static void load_state(esio_handle h, state_type &state)
 {
     assert(state.shape()[0] == field_names.static_size);
 
-    const int dNz = grid.dealiased_extents()[2];
-    const int  Ny = grid.dealiased_extents()[1];
-    const int dNx = grid.dealiased_extents()[0];
+    const int dNz = numeric_cast<int>(grid.dealiased_extents()[2]);
+    const int  Ny = numeric_cast<int>(grid.dealiased_extents()[1]);
+    const int dNx = numeric_cast<int>(grid.dealiased_extents()[0]);
 
     int Fz, Fx, Fy, ncomponents;
     esio_field_sizev(h, field_names[0], &Fz, &Fx, &Fy, &ncomponents);
@@ -1137,20 +1137,66 @@ static bool save_restart(real_t t, std::size_t nt)
     // Save simulation time information
     store_time(esioh, t);
 
-    // TODO Save only non-dealiased portion of state
-    DEBUG("Storing simulation fields at simulation step " << nt);
-    esio_field_establish(esioh, grid.Nz, state_start[2], state_extent[2],
-                                grid.Nx, state_start[0], state_extent[0],
-                                grid.Ny, state_start[1], state_extent[1]);
+    // Dealiased global extent information
+    const int dNx = numeric_cast<int>(grid.dealiased_extents()[0]);
+    const int dNz = numeric_cast<int>(grid.dealiased_extents()[2]);
 
+    // Restart file contains only non-dealiased wavenumbers
+    const int Fz = numeric_cast<int>(grid.Nz);
+    const int Fx = numeric_cast<int>(grid.Nx);
+    const int Fy = numeric_cast<int>(grid.Ny);
+    assert(numeric_cast<int>(grid.dealiased_extents()[1]) == Fy);
+
+    // Compute wavenumber translation between Fx and dNx
+    // X direction contains only positive wavenumbers so second range is empty
+    const int dkbx = numeric_cast<int>(state_start[0]);
+    const int dkex = numeric_cast<int>(state_end[0]);
+    int fxb[2], fxe[2], dxb[2], dxe[2];
+    suzerain::inorder::wavenumber_translate(Fx, dNx, dkbx, dkex,
+                                            fxb[0], fxe[0], fxb[1], fxe[1],
+                                            dxb[0], dxe[0], dxb[1], dxe[1]);
+    assert(fxb[1] == fxe[1]);
+    assert(dxb[1] == dxe[1]);
+
+    // Compute wavenumber translation between Fz and dNz
+    // One or both ranges may be empty
+    const int dkbz = numeric_cast<int>(state_start[2]);
+    const int dkez = numeric_cast<int>(state_end[2]);
+    int fzb[2], fze[2], dzb[2], dze[2];
+    suzerain::inorder::wavenumber_translate(Fz, dNz, dkbz, dkez,
+                                            fzb[0], fze[0], fzb[1], fze[1],
+                                            dzb[0], dze[0], dzb[1], dze[1]);
+
+    DEBUG("Storing simulation fields at simulation step " << nt);
+
+    // Save each scalar field in turn...
     for (size_t i = 0; i < field_names.static_size; ++i) {
-        complex_field_write(esioh,
-                field_names[i],
-                (*state_linear)[i].origin(),
-                (*state_linear).strides()[3],
-                (*state_linear).strides()[2],
-                (*state_linear).strides()[1],
-                field_descriptions[i]);
+
+        // ...which requires two writes per field, once per Z range
+        for (int j = 0; j < 2; ++j) {
+
+            // Source of write is NULL for empty WRITE operations
+            // Required since MultiArray triggers asserts on invalid indices
+            const complex_t * src = (dxb[0] == dxe[0] || dzb[j] == dze[j])
+                    ? NULL
+                    : &((*state_linear)[i]
+                                       [0]
+                                       [dxb[0] - state_start[0]]
+                                       [dzb[j] - state_start[2]]);
+
+            // Collectively establish size of read across all ranks
+            assert(state_start[1] == 0 && state_extent[1] == Fy);
+            esio_field_establish(esioh, Fz, fzb[j], (fze[j] - fzb[j]),
+                                        Fx, fxb[0], (fxe[0] - fxb[0]),
+                                        Fy,      0, (            Fy));
+
+            // Perform collective write operation from state_linear
+            complex_field_write(esioh, field_names[i], src,
+                    state_linear->strides()[3],
+                    state_linear->strides()[2],
+                    state_linear->strides()[1],
+                    field_descriptions[i]);
+        }
     }
 
     esio_file_close_restart(esioh,
