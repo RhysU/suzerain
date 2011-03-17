@@ -1227,39 +1227,29 @@ int main(int argc, char **argv)
     DEBUG("Local state wave end    (XYZ): " << state_end);
     DEBUG("Local state wave extent (XYZ): " << state_extent);
 
-    // Create the state storage for the linear and nonlinear operators
-    // with appropriate padding to allow nonlinear state to be P3DFFTified
-    {
-        using suzerain::to_yxz;
-        using suzerain::prepend;
-        using suzerain::strides_cm;
-        state_linear.reset(new state_type(to_yxz(5, state_extent)));
-        state_nonlinear.reset(new state_type(
-                to_yxz(5, state_extent),
-                prepend(pg->local_wave_storage(),
-                        strides_cm(to_yxz(pg->local_wave_extent())))));
-    }
-    if (DEBUG_ENABLED) {
-        boost::array<suzerain::pencil_grid::index,4> strides;
-        std::copy(state_linear->strides(),
-                  state_linear->strides() + 4, strides.begin());
-        DEBUG("Linear state strides    (FYXZ): " << strides);
-        std::copy(state_nonlinear->strides(),
-                  state_nonlinear->strides() + 4, strides.begin());
-        DEBUG("Nonlinear state strides (FYXZ): " << strides);
-    }
-
-    // Zero out any garbage in state_{non,}linear
-    // Use fill rather than state_{non,}linear.scale to wipe any NaNs
-    suzerain::multi_array::fill(*state_linear, 0);
-    suzerain::multi_array::fill(*state_nonlinear, 0);
+    // Create state storage for linear operator
+    state_linear.reset(new state_type(suzerain::to_yxz(5, state_extent)));
+    suzerain::multi_array::fill(*state_linear, 0); // FIXME Remove
+    DEBUG("Linear state strides    (FYXZ): "
+            << suzerain::multi_array::strides_array(*state_linear));
 
     // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
     real_t initial_t;
     load_time(esioh, initial_t);
-    load_state(esioh, *state_linear);
+    load_state(esioh, *state_linear); // May have large memory overhead!
     esio_file_close(esioh);
+
+    // Create the state storage for nonlinear operator
+    // with appropriate padding to allow P3DFFTification
+    state_nonlinear.reset(new state_type(
+            suzerain::to_yxz(5, state_extent),
+            suzerain::prepend(pg->local_wave_storage(), suzerain::strides_cm(
+                    suzerain::to_yxz(pg->local_wave_extent())))
+            ));
+    DEBUG("Nonlinear state strides    (FYXZ): "
+            << suzerain::multi_array::strides_array(*state_nonlinear));
+    suzerain::multi_array::fill(*state_nonlinear, 0); // FIXME Remove
 
     // Instantiate the operators and time stepping details
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
