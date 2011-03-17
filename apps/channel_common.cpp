@@ -295,16 +295,24 @@ void store(const esio_handle esioh,
 }
 
 void load(const esio_handle esioh,
-          boost::shared_ptr<suzerain::bspline>& bspw, // Yes, a reference
-          const suzerain::problem::GridDefinition<real_t>& grid)
+          boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */)
 {
     DEBUG("Loading B-spline breakpoints");
 
-    const int nbreak = grid.Ny + 2 - grid.k;
-    scoped_array<real_t> buf(new double[grid.Ny]);
-    esio_line_establish(esioh, nbreak, 0, nbreak); // All ranks load
+    // All ranks load B-spline order
+    int k;
+    esio_line_establish(esioh, 1, 0, 1);
+    esio_line_read(esioh, "k", &k, 0);
+
+    // All ranks load B-spline breakpoints
+    int nbreak;
+    esio_line_size(esioh, "breakpoints", &nbreak);
+    esio_line_establish(esioh, nbreak, 0, nbreak);
+    scoped_array<real_t> buf(new double[nbreak]);
     esio_line_read(esioh, "breakpoints", buf.get(), 0);
-    bspw.reset(new suzerain::bspline(grid.k, grid.k - 2, nbreak, buf.get()));
+
+    // Construct B-spline workspace
+    bspw.reset(new suzerain::bspline(k, k - 2, nbreak, buf.get()));
 }
 
 void store_time(const esio_handle esioh,

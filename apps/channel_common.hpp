@@ -94,8 +94,7 @@ void store(const esio_handle esioh,
 
 /** Load a suzerain::bspline workspace from a restart file */
 void load(const esio_handle esioh,
-          boost::shared_ptr<suzerain::bspline>& bspw, // Yes, a reference
-          const suzerain::problem::GridDefinition<real_t>& grid);
+          boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */);
 
 /** Store the current simulation time information */
 void store_time(const esio_handle esioh,

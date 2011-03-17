@@ -1245,14 +1245,15 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    // TODO Account for grid differences at load time
-
     INFO("Loading details from restart file: " << restart.load());
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
     load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
     load(esioh, const_cast<GridDefinition<real_t>&>(grid));
-    load(esioh, bspw, const_cast<GridDefinition<real_t>&>(grid));
+    load(esioh, bspw);
     esio_file_close(esioh);
+
+    // TODO Account for B-spline differences at load time
+    assert(numeric_cast<unsigned>(bspw->order()) == grid.k);
 
     INFO("Saving metadata temporary file: " << restart.metadata());
     {
