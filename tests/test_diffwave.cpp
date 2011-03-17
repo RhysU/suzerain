@@ -575,6 +575,29 @@ BOOST_AUTO_TEST_CASE( nondealiasedoffsets_dN_greater_than_N )
     }
 }
 
+//FIXME: Implement and test
+//BOOST_AUTO_TEST_CASE( nondealiasedoffsets_N_greater_than_dN )
+//{
+//    using suzerain::diffwave::nondealiasedoffsets;
+//
+//    // Obtain vectors as solutions to ease test case writing
+//    int dat[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
+//    int & kb1 = dat[0], & ke1 = dat[1], & kb2 = dat[2], & ke2 = dat[3];
+//    int &dkb1 = dat[4], &dke1 = dat[5], &dkb2 = dat[6], &dke2 = dat[7];
+//
+//    int N, dN;
+//
+//    N = 13;
+//    dN = 8;
+//    {
+//        const int dkb = 0, dke = 8;
+//        nondealiasedoffsets(
+//                N, dN, dkb, dke, kb1, ke1, kb2, ke2, dkb1, dke1, dkb2, dke2);
+//        const int ex[8] = {        0,   5,  10,  13,    0,    5,    5,    8};
+//        BOOST_CHECK_EQUAL_COLLECTIONS(ex, ex + 8, dat, dat + 8);
+//    }
+//
+//}
 
 BOOST_AUTO_TEST_SUITE_END()
 
