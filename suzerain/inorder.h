@@ -22,138 +22,173 @@
  *
  *--------------------------------------------------------------------------
  *
- * diffwave.h: Computational kernels for differentiating in wave space
+ * inorder.h: Utilities for manipulating "in-order" FFT storage
  *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __SUZERAIN_DIFFWAVE_H
-#define __SUZERAIN_DIFFWAVE_H
+#ifndef __SUZERAIN_INORDER_H
+#define __SUZERAIN_INORDER_H
 
 /** @file
- * Provides computational kernels for differentiating a three dimensional
- * wavespace field stored (Y, X, Z) in column-major order.  Only
- * differentiation of the X and Z directions is supported.  Additional padding
- * (e.g. due to dealiasing) may be present and will be zeroed during
- * processing.
+ * Provides utilities for manipulating one dimensional discrete Fourier
+ * transform coefficients stored "in-order".  From <a
+ * href="http://www.fftw.org/fftw3.3alpha_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">FFTW's
+ * documentation</a>:
+ * <blockquote>
+ *     ...the <tt>k</tt>-th output corresponds to the frequency
+ *     <tt>k/n</tt> (or <tt>k/T</tt>, where <tt>T</tt> is your total
+ *     sampling period). For those who like to think in terms of
+ *     positive and negative frequencies, this means that the positive
+ *     frequencies are stored in the first half of the output and the
+ *     negative frequencies are stored in backwards order in the second
+ *     half of the output. (The frequency <tt>-k/n</tt> is the same as
+ *     the frequency <tt>(n-k)/n</tt>.)
+ * </blockquote>
+ *
+ * The following concepts are used throughout these routine descriptions.  They
+ * are defined assuming one is working with a one-dimensional discrete Fourier
+ * transform (DFT) data of length <tt>N</tt>:
+ * <dl>
+ *   <dt>index</dt>
+ *   <dd>
+ *      The indices are the nonnegative integers <tt>0</tt>, <tt>1</tt>, ...,
+ *      <tt>N-1</tt>.  These are the usual C indices used to access an array of
+ *      length <tt>N</tt>.
+ *   </dd>
+ *   <dt>wavenumber</dt>
+ *   <dd>
+ *      The wavenumbers are the integers <tt>(-N+1)/2</tt>, ..., <tt>-1</tt>,
+ *      <tt>0</tt>, <tt>1</tt>, ..., <tt>N/2</tt></tt> such that \f$k_i =
+ *      \frac{2\pi{}i}{L}\f$ ranges over the frequencies supported on a domain
+ *      of length \f$L\f$.
+ *   </dd>
+ *   <dt>range</dt>
+ *   <dd>
+ *      A range <tt>[a,b)</tt> contains the integers <tt>a</tt>, <tt>a+1</tt>,
+ *      ..., <tt>b-2</tt>, <tt>b-1</tt> assuming <tt>b > a</tt>.  For <tt>b ==
+ *      a</tt> the range contains nothing and is said to be empty.
+ *   </dd>
+ * </dl>
+ * To make these concepts concrete, for <tt>N = 8</tt> the indices run from
+ * <tt>0</tt> to <tt>7</tt>, inclusive.  This is index range <tt>[0,8)</tt>.
+ * The wavenumbers corresponding to these indices are <tt>0</tt>, <tt>1</tt>,
+ * <t>2</t>, <tt>3</tt>, <tt>4</tt>, <tt>-3</tt>, <tt>-2</tt>, <tt>-1</tt>.
  */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/** @{ */
-
 /**
- * For a one dimensional DFT of length \c N, compute the frequency index
- * associated with "in-order" entry \c i.  That is, the integer \f$i\f$ such
- * that \f$k_i = \frac{2\pi{}i}{L}\f$ for \f$i\in\left\{0,1,\dots,N\right\}\f$
- * ranges over the frequencies supported on a domain of length \f$L\f$.
+ * For a length <tt>N</tt> DFT, find the wavenumber associated with index
+ * <tt>i</tt>.
  *
  * For example, for <tt>N=6</tt> the values <tt>{ 0, 1, 2, 3, -2, -1 }</tt>
  * will be returned for <tt>i = 0, 1, 2, 3, 4, 5</tt>.
  *
  * @param N The length of the DFT.
- * @param i The entry of interest where <tt>0 <= i < N</tt>.
+ * @param i The index of interest.
  *
- * @return The frequency index associated with in-order entry <tt>i</tt>.
- * @see FFTW's discussion of <a href="http://www.fftw.org/fftw3.3alpha_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">The 1d Discrete Fourier Transform</a>
- *      for an extended description of in-order storage.
+ * @return The wavenumber associated with index <tt>i</tt>.
+ * @see The documentation for inorder.h for terminology details.
  */
 inline
-int suzerain_diffwave_freqindex(const int N, const int i)
+int suzerain_inorder_wavenumber(const int N, const int i)
 {
-    assert(N > 0);
     assert(0 <= i && i < N);
     return (i < N/2+1) ? i : -N + i;
 }
 
 /**
- * For a one dimensional DFT of length \c N, determine if the given frequency
- * index is supportable by the grid.  For example, for <tt>N=6</tt> the values
- * <tt>{ 0, 1, 2, 3, -2, -1 }</tt> are supportable.  Values less than -2 or
- * greater than 3 are not.
- *
- * @param N The length of the DFT.
- * @param i The frequency index of interest.
- *
- * @return True if the frequency index is supportable.  False otherwise.
- * @see FFTW's discussion of <a href="http://www.fftw.org/fftw3.3alpha_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">The 1d Discrete Fourier Transform</a>
- *      for an extended description of in-order storage.
- */
-inline
-int suzerain_diffwave_freqindexsupported(const int N, const int i)
-{
-    assert(N > 0);
-    return (-N+1)/2 <= i && i <= N/2;
-}
-
-/**
- * For a one dimensional DFT of length \c N, compute the "in-order" entry
- * associated with the given frequency index \c i.  This is the inverse
- * function of suzerain_diffwave_freqindex().
- *
- * For example, for <tt>N=6</tt> the values <tt>i = 0, 1, 2, 3, 4, 5</tt>
- * will be returned for <tt>{ 0, 1, 2, 3, -2, -1 }</tt>
- *
- * @param N The length of the DFT.
- * @param i The frequency index of interest.
- *
- * @return The in-order entry index associated with the frequency <tt>i</tt>
- * @see FFTW's discussion of <a href="http://www.fftw.org/fftw3.3alpha_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">The 1d Discrete Fourier Transform</a>
- *      for an extended description of in-order storage.
- */
-inline
-int suzerain_diffwave_indexfreq(const int N, const int i)
-{
-    assert(N > 0);
-    assert(suzerain_diffwave_freqindexsupported(N,i));
-    return (i >= 0) ? i : N + i;
-}
-
-/**
- * Compute the absolute value of suzerain_diffwave_freqindex().  This can be
- * computed at reduced cost relative to taking the absolute value of
- * suzerain_diffwave_freqindex().
+ * For a length <tt>N</tt> DFT, find the absolute value of the wavenumber
+ * associated with index <tt>i</tt>.  This can be computed at reduced cost
+ * relative to taking the absolute value of suzerain_inorder_wavenumber().
  *
  * For example, for <tt>N=6</tt> the values <tt>{ 0, 1, 2, 3, 2, 1 }</tt>
  * will be returned for <tt>i = 0, 1, 2, 3, 4, 5</tt>.
  *
  * @param N The length of the DFT.
- * @param i The entry of interest where <tt>0 <= i < N</tt>.
+ * @param i The index of interest.
  *
- * @return The absolute value of the frequency index associated with in-order
- *         entry <tt>i</tt>.
+ * @return The absolute value of the wavenumber for index <tt>i</tt>.
+ * @see The documentation for inorder.h for terminology details.
  */
 inline
-int suzerain_diffwave_absfreqindex(const int N, const int i)
+int suzerain_inorder_wavenumber_abs(const int N, const int i)
 {
-    assert(N > 0);
     assert(0 <= i && i < N);
     return (i < N/2+1) ? i : N - i;
 }
 
 /**
- * Compute the frequency index of the scaling factor used to differentiate
- * a wave-space signal on a dealiased grid of length <tt>dN</tt>.  This
- * method returns zero for modes which cannot be supported on a grid of
- * length <tt>N</tt> or which are removed by differentiation.
+ * Find the minimum wavenumber contained in a length <tt>N</tt> DFT.
+ *
+ * @param N The length of the DFT.
+ *
+ * @return the minimum wavenumber <tt>(-N+1)/2</tt>.
+ * @see The documentation for inorder.h for terminology details.
+ */
+inline
+int suzerain_inorder_wavenumber_min(const int N)
+{
+    assert(0 < N);
+    return (-N+1)/2;
+}
+
+/**
+ * Find the maximum wavenumber contained in a length <tt>N</tt> DFT.
+ *
+ * @param N The length of the DFT.
+ *
+ * @return the maximum wavenumber <tt>N/2</tt>.
+ * @see The documentation for inorder.h for terminology details.
+ */
+inline
+int suzerain_inorder_wavenumber_max(const int N)
+{
+    assert(0 < N);
+    return N/2;
+}
+
+/**
+ * Determine if the provided wavenumber is valid for a length <tt>N</tt> DFT.
+ *
+ * @param N The length of the DFT.
+ * @param w The wavenumber of interest.
+ *
+ * @return True if the wavenumber is contained in such a DFT.  False otherwise.
+ * @see The documentation for inorder.h for terminology details.
+ */
+inline
+int suzerain_inorder_wavenumber_valid(const int N, const int w)
+{
+    return    suzerain_inorder_wavenumber_min(N) <= w
+           && w <= suzerain_inorder_wavenumber_max(N);
+}
+
+/**
+ * Compute the real-valued scaling factor used to differentiate a wave-space
+ * signal on a dealiased DFT of length <tt>dN</tt>.  This method returns zero
+ * for modes which cannot be supported on a DFT of length <tt>N</tt> or which
+ * are removed by differentiation.
  *
  * For example, for <tt>dN=9</tt> and <tt>N=6</tt> the values <tt> {0, 1, 2, 0,
  * 0, 0, 0, -2, -1}</tt> will be returned for <tt>i=0, 1, 2, 3, 4, 5, 6, 7,
  * 8</tt>.
  *
- * @param N The length of the DFT.
+ * @param N  The length of the DFT used to compute what wavenumbers are valid.
  * @param dN The dealiased length of the DFT.
- * @param i The entry of interest where <tt>0 <= i < dN</tt>.
+ * @param i  The index of interest where <tt>0 <= i && i < dN</tt>.
  *
- * @return The frequency index of the scaling factor
- *         associated with in-order entry <tt>i</tt>.
+ * @return The wavenumber-like scaling factor associated with index <tt>i</tt>.
+ * @see The documentation for inorder.h for terminology details.
  */
 inline
-int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i)
+int suzerain_inorder_wavenumber_diff(const int N, const int dN, const int i)
 {
-    assert(0 <= i && i < dN && N <= dN);
+    assert(N <= dN);
+    assert(0 <= i && i < dN);
     if (i < (N+1)/2) {
         return i;
     } else if (i >= dN - (N-1)/2) {
@@ -164,172 +199,88 @@ int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i)
 }
 
 /**
- * Compute an indicator for which modes on a grid of length <tt>dN</tt>
- * are also supported on a grid of length <tt>N</tt>.
+ * Compute an indicator for which indices from a length <tt>dN</tt> DFT are
+ * translatable (as wavenumbers) to a smaller length <tt>N</tt> DFT.
  *
  * For example, for <tt>dN=9</tt> and <tt>N=6</tt> the values <tt> {1, 1, 1, 0,
  * 0, 0, 0, 1, 1}</tt> will be returned for <tt>i=0, 1, 2, 3, 4, 5, 6, 7,
  * 8</tt>.
  *
- * @param N  The length of the DFT.
- * @param dN The dealiased length of the DFT.
- * @param i  The entry of interest where <tt>0 <= i < dN</tt>.
+ * @param N  The length of the smaller DFT.
+ * @param dN The length of the larger DFT.
+ * @param i  The index of interest where <tt>0 <= i < dN</tt>.
  *
- * @return True if the in-order entry <tt>i</tt> from grid <tt>dN</tt> is
- *         also present on a grid of length <tt>N</tt>.
+ * @return True if the wavenumber corresponding to index <tt>i</tt> on a
+ *         length <tt>dN</tt> DFT is also present on a length <tt>N</tt> DFT.
+ * @see The documentation for inorder.h for terminology details.
  */
 inline
-int suzerain_diffwave_nondealiased(const int N, const int dN, const int i)
+int suzerain_inorder_wavenumber_translatable(
+        const int N, const int dN, const int i)
 {
-    return suzerain_diffwave_freqindexsupported(
-            N, suzerain_diffwave_freqindex(dN, i));
+    assert(N <= dN);
+    return suzerain_inorder_wavenumber_valid(
+            N, suzerain_inorder_wavenumber(dN, i));
 }
 
 /**
- * Turn dealiased global state offsets into non-dealiased state offsets.
- * Necessary for saving/loading only the relevant portions of a dealiased
- * field.  Idea is that one swath of dealiased state contains, assuming no
- * half-complex compression, at most two contiguous regions of nondealiased
- * state.
+ * Translate the index range <tt>[tb, te)</tt> from a length <tt>T</tt> DFT to
+ * a length <tt>S</tt> DFT.  In-order storage for <tt>T != S</tt> implies the
+ * index range may be broken into at most two contiguous ranges.
  *
- * More specifically, ignoring modes not supportable on a grid of length \c N,
- * the state kept in <tt>[dkb,dke)</tt> is equivalent to <tt>[dkb1,dke1)</tt>
- * and <tt>[dkb2,dke2)</tt>.  Further, the range <tt>[dkb1,dke1)</tt> contains
- * state equivalent to <tt>[kb1,ke1)</tt> and <tt>[dkb2,dke2)</tt> contains
- * state equivalent to <tt>[kb2,ke2)</tt>.
+ * More specifically, when ignoring wavenumbers not found in a length
+ * <tt>S</tt> DFT, the data kept in <tt>[tb,te)</tt> is equivalent to
+ * <tt>[tb1,te1)</tt> and <tt>[tb2,te2)</tt>.  Further, the range
+ * <tt>[tb1,te1)</tt> contains data equivalent to <tt>[sb1,se1)</tt> and
+ * <tt>[tb2,te2)</tt> contains data equivalent to <tt>[sb2,se2)</tt>.
  *
- * @param N     Number of nondealiased modes
- * @param dN    Number of dealiased modes
- * @param dkb   Beginning index into dealiased modes
- * @param dke   Ending index into dealiased modes
- * @param kb1   Beginning index of first range within nondealiased modes
- * @param ke1   Ending index of first range within nondealiased modes
- * @param kb2   Beginning index of second range within nondealiased modes
- * @param ke2   Ending index of second range within nondealiased modes
- * @param dkb1  Dealiased index corresponding to \c kb1
- * @param dke1  Dealiased index corresponding to \c ke1
- * @param dkb2  Dealiased index corresponding to \c kb2
- * @param dke2  Dealiased index corresponding to \c ke2
+ * Such information could be used to copy data prepared for DFTs of disparate
+ * lengths.  Two steps would be necessary.  First, a copy from
+ * <tt>[sb1,se1)</tt> to <tt>[tb1,te1)</tt>.  Second, a copy from
+ * <tt>[sb2,se2)</tt> to <tt>[tb2,te2)</tt>.  Either copy may be of zero
+ * length.
+ *
+ * @param S    Length of source DFT.
+ * @param T    Length of target DFT.
+ * @param tb   Beginning index into target data.
+ * @param te   Ending index into target data.
+ * @param sb1  Beginning index of first range into source data.
+ * @param se1  Ending index of first range into source data.
+ * @param sb2  Beginning index of second range into source data.
+ * @param se2  Ending index of second range into source data.
+ * @param tb1  Dealiased index corresponding to \c sb1
+ * @param te1  Dealiased index corresponding to \c se1
+ * @param tb2  Dealiased index corresponding to \c sb2
+ * @param te2  Dealiased index corresponding to \c se2
  */
-void suzerain_diffwave_nondealiasedoffsets(
-        const int N, const int dN, const int dkb, const int dke,
-        int*  kb1, int*  ke1, int*  kb2, int*  ke2,
-        int* dkb1, int* dke1, int* dkb2, int* dke2);
-
-/** @} */
-
-/** @{ */
+void suzerain_inorder_wavenumber_translate(
+        const int S, const int T, const int tb, const int te,
+        int* sb1, int* se1, int* sb2, int* se2,
+        int* tb1, int* te1, int* tb2, int* te2);
 
 /**
- * Given a complex-valued, wave-space field \f$x\f$, compute \f$ x \leftarrow{}
- * \alpha \partial{}x^{\mbox{dxcnt}} \partial{}z^{\mbox{dzcnt}} x\f$.  The
- * implementation accounts for the field potentially being dealiased,
- * distributed across multiple machines, and representing a domain of arbitrary
- * length in the X and Z directions.
+ * For a length <tt>N</tt> DFT, find the index associated with wavenumber
+ * <tt>w</tt>.
  *
- * The input and output data \c x is stored column-major over the Y direction
- * (index range <tt>0</tt> to <tt>Ny-1</tt>), X direction (index range
- * <tt>dkbx</tt> to <tt>dkex</tt>), and Z direction (index range <tt>dkbz</tt>
- * to <tt>dkez</tt>).  This layout is equivalent to Dmitry Pekurovsky's P3DFFT
- * storage order when Y is specified to be STRIDE1 in wave space.  Complex
- * values are stored as C arrays of length two with the real part preceding
- * the imaginary part.
+ * For example, for <tt>N=6</tt> the values <tt>i = 0, 1, 2, 3, 4, 5</tt>
+ * will be returned for <tt>{ 0, 1, 2, 3, -2, -1 }</tt>
  *
- * @param[in]     dxcnt Partial derivative order to compute in the X direction
- * @param[in]     dzcnt Partial derivative order to compute in the Z direction
- * @param[in]     alpha Complex-valued scaling factor \f$\alpha\f$
- * @param[in,out] x     Input and output wave-space field
- * @param[in]     Lx    Length of the domain in the X direction
- * @param[in]     Lz    Length of the domain in the Y direction
- * @param[in]     Ny    Number of points in the Y direction
- * @param[in]     Nx    Number of points in the X direction, which
- *                      determines the maximum wavenumbers which are
- *                      retained when differentiating.
- * @param[in]     dNx   Number of dealiased points in the X direction,
- *                      which determines of offsets are translated into
- *                      frequencies.
- * @param[in]     dkbx  The first (inclusive) in-order frequency contained
- *                      in field \c x in the X direction.
- * @param[in]     dkex  The last (exclusive) in-order frequency contained
- *                      in field \c x in the X direction.
- * @param[in]     Nz    Number of points in the Z direction, which
- *                      determines the maximum wavenumbers which are
- *                      retained when differentiating.
- * @param[in]     dNz   Number of dealiased points in the Z direction,
- *                      which determines of offsets are translated into
- *                      frequencies.
- * @param[in]     dkbz  The first (inclusive) in-order frequency contained
- *                      in field \c z in the Z direction.
- * @param[in]     dkez  The last (exclusive) in-order frequency contained
- *                      in field \c z in the Z direction.
+ * @param N The length of the DFT.
+ * @param w The wavenumber of interest.
+ *
+ * @return The index associated with wavenumber <tt>w</tt>.
+ * @see The documentation for inorder.h for terminology details.
  */
-void suzerain_diffwave_apply(
-    const int dxcnt,
-    const int dzcnt,
-    const double alpha[2], double (*x)[2],
-    const double Lx,
-    const double Lz,
-    const int Ny,
-    const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez);
+inline
+int suzerain_inorder_index(const int N, const int w)
+{
+    assert(suzerain_inorder_wavenumber_valid(N, w));
+    return (w >= 0) ? w : N + w;
+}
 
-/**
- * Given two complex-valued, wave-space fields \f$x\f$ and \f$y\f$, compute \f$
- * y \leftarrow{} \alpha \partial{}x^{\mbox{dxcnt}} \partial{}z^{\mbox{dzcnt}}
- * x + \beta{}y\f$.  The implementation accounts for the field potentially
- * being dealiased, distributed across multiple machines, and representing a
- * domain of arbitrary length in the X and Z directions.
- *
- * @param[in]     dxcnt Partial derivative order to compute in the X direction
- * @param[in]     dzcnt Partial derivative order to compute in the Z direction
- * @param[in]     alpha Complex-valued scaling factor \f$\alpha\f$
- * @param[in]     x     Input wave-space field to be differentiated
- * @param[in]     beta  Complex-valued scaling factor \f$\beta\f$
- * @param[in,out] y     Input and output wave-space field where
- *                      accumulation takes place.
- * @param[in]     Lx    Length of the domain in the X direction
- * @param[in]     Lz    Length of the domain in the Y direction
- * @param[in]     Ny    Number of points in the Y direction
- * @param[in]     Nx    Number of points in the X direction, which
- *                      determines the maximum wavenumbers which are
- *                      retained when differentiating.
- * @param[in]     dNx   Number of dealiased points in the X direction,
- *                      which determines of offsets are translated into
- *                      frequencies.
- * @param[in]     dkbx  The first (inclusive) in-order frequency contained
- *                      in field \c x in the X direction.
- * @param[in]     dkex  The last (exclusive) in-order frequency contained
- *                      in field \c x in the X direction.
- * @param[in]     Nz    Number of points in the Z direction, which
- *                      determines the maximum wavenumbers which are
- *                      retained when differentiating.
- * @param[in]     dNz   Number of dealiased points in the Z direction,
- *                      which determines of offsets are translated into
- *                      frequencies.
- * @param[in]     dkbz  The first (inclusive) in-order frequency contained
- *                      in field \c z in the Z direction.
- * @param[in]     dkez  The last (exclusive) in-order frequency contained
- *                      in field \c z in the Z direction.
- *
- * @see suzerain_diffwave_apply() for more information on the storage layout
- *      for field \c x.  Field \c y has storage requirements identical to
- *      those of \c x.
- */
-void suzerain_diffwave_accumulate(
-    const int dxcnt,
-    const int dzcnt,
-    const double alpha[2], const double (*x)[2],
-    const double beta[2],        double (*y)[2],
-    const double Lx,
-    const double Lz,
-    const int Ny,
-    const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez);
-
-/** @} */
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif // __SUZERAIN_DIFFWAVE_H
+#endif // __SUZERAIN_INORDER_H

@@ -35,114 +35,8 @@
 #pragma hdrstop
 #include <gsl/gsl_sf_pow_int.h>
 #include <suzerain/blas_et_al.h>
+#include <suzerain/inorder.h>
 #include <suzerain/diffwave.h>
-
-
-// TODO suzerain_diffwave_apply is painfully like suzerain_diffwave_accumulate
-// Would be nice to rework them so that only the BLAS calls are different.
-
-
-// C99 extern declaration for inlined function in diffwave.h
-extern
-int suzerain_diffwave_freqindex(const int N, const int i);
-
-// C99 extern declaration for inlined function in diffwave.h
-extern
-int suzerain_diffwave_absfreqindex(const int N, const int i);
-
-// C99 extern declaration for inlined function in diffwave.h
-extern
-int suzerain_diffwave_freqdiffindex(const int N, const int dN, const int i);
-
-// C99 extern declaration for inlined function in diffwave.h
-extern
-int suzerain_diffwave_indexfreq(const int N, const int i);
-
-// C99 extern declaration for inlined function in diffwave.h
-extern
-int suzerain_diffwave_freqindexsupported(const int N, const int i);
-
-// C99 extern declaration for inlined function in diffwave.h
-extern
-int suzerain_diffwave_nondealiased(const int N, const int dN, const int i);
-
-void suzerain_diffwave_nondealiasedoffsets(
-        const int N, const int dN, const int dkb, const int dke,
-        int*  kb1, int*  ke1, int*  kb2, int*  ke2,
-        int* dkb1, int* dke1, int* dkb2, int* dke2)
-{
-    // This could not be much uglier, could it?  The inline routines used to
-    // cobble together this logic are a minefield of assertions.  Beware.
-
-    // Sanity check incoming arguments
-    assert(0 < N);
-    assert(0 < dN);
-    assert(0 <= dkb && dkb <= dke && dke <= dN);
-
-    // If necessary, transform problem so N <= dN
-    if (N > dN) {
-        int kb = N;
-        if (dkb < dN) {
-            kb = suzerain_diffwave_indexfreq(
-                    N, suzerain_diffwave_freqindex(dN, dkb));
-        }
-        int ke = N;
-        if (dke < dN) {
-            ke = suzerain_diffwave_indexfreq(
-                    N, suzerain_diffwave_freqindex(dN, dke));
-        }
-        return suzerain_diffwave_nondealiasedoffsets(
-                dN, N, kb, ke, dkb1, dke1, dkb2, dke2, kb1, ke1, kb2, ke2);
-    }
-
-    // Sanity check preconditions hold for algorithm
-    assert(N <= dN);
-
-    // Find <tt>[dkb1,dke1)</tt> and <tt>[dkb2,dke2)</tt>
-    *dkb1 = dkb;
-    while (*dkb1 < dke && !suzerain_diffwave_nondealiased(N, dN, *dkb1)) {
-        ++*dkb1;
-    }
-    *dke1 = *dkb1;
-    while (*dke1 < dke &&  suzerain_diffwave_nondealiased(N, dN, *dke1)) {
-        ++*dke1;
-    }
-    *dkb2 = *dke1;
-    while (*dkb2 < dke && !suzerain_diffwave_nondealiased(N, dN, *dkb2)) {
-        ++*dkb2;
-    }
-    *dke2 = *dkb2;
-    while (*dke2 < dke &&  suzerain_diffwave_nondealiased(N, dN, *dke2)) {
-        ++*dke2;
-    }
-
-    // Sanity check intermediate results
-    assert(0 <= *dkb1 && *dkb1 <= dN);
-    assert(0 <= *dke1 && *dke1 <= dN);
-    assert(0 <= *dkb2 && *dkb2 <= dN);
-    assert(0 <= *dke2 && *dke2 <= dN);
-    assert(dkb1 <= dke1 && dke1 <= dkb2 && dkb2 <= dke2);
-
-    // Find <tt>[kb1,ke1)</tt>
-    *kb1 = N;
-    if (*dkb1 < dN) {
-        const int f = suzerain_diffwave_freqindex(dN, *dkb1);
-        if (suzerain_diffwave_freqindexsupported(N, f)) {
-            *kb1 = suzerain_diffwave_indexfreq(N, f);
-        }
-    }
-    *ke1 = *kb1 + (*dke1 - *dkb1);
-
-    // Find <tt>[kb2,ke2)</tt>
-    *kb2 = *ke1;
-    if (*dkb2 < dN) {
-        const int f = suzerain_diffwave_freqindex(dN, *dkb2);
-        if (suzerain_diffwave_freqindexsupported(N, f)) {
-            *kb2 = suzerain_diffwave_indexfreq(N, f);
-        }
-    }
-    *ke2 = *kb2 + (*dke2 - *dkb2);
-}
 
 static inline
 void scale_by_imaginary_power(const double in[2], double out[2], int p)
@@ -216,20 +110,20 @@ void suzerain_diffwave_apply(
     // Overwrite x with alpha*D*x for storage, dealiasing assumptions
     for (int n = dkbz; n < dkez; ++n) {
         const int noff     = sz*(n - dkbz);
-        const int nfreqidx = suzerain_diffwave_freqdiffindex(Nz, dNz, n);
+        const int nfreqidx = suzerain_inorder_wavenumber_diff(Nz, dNz, n);
         const int nkeeper  = (dzcnt > 0)
                 ? nfreqidx
-                : suzerain_diffwave_absfreqindex(dNz, n) <= (Nz-1)/2;
+                : suzerain_inorder_wavenumber_abs(dNz, n) <= (Nz-1)/2;
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff     = noff + sx*(m - dkbx);
                 const int mfreqidx
-                        = suzerain_diffwave_freqdiffindex(Nx, dNx, m);
+                        = suzerain_inorder_wavenumber_diff(Nx, dNx, m);
                 const int mkeeper  = (dxcnt > 0)
                         ? mfreqidx
-                        : suzerain_diffwave_absfreqindex(dNx, m) <= (Nx-1)/2;
+                        : suzerain_inorder_wavenumber_abs(dNx, m) <= (Nx-1)/2;
                 if (mkeeper) {
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
@@ -283,20 +177,20 @@ void suzerain_diffwave_accumulate(
     // Accumulate y <- alpha*D*x + beta*y for storage, dealiasing assumptions
     for (int n = dkbz; n < dkez; ++n) {
         const int noff     = sz*(n - dkbz);
-        const int nfreqidx = suzerain_diffwave_freqdiffindex(Nz, dNz, n);
+        const int nfreqidx = suzerain_inorder_wavenumber_diff(Nz, dNz, n);
         const int nkeeper  = (dzcnt > 0)
                 ? nfreqidx
-                : suzerain_diffwave_absfreqindex(dNz, n) <= (Nz-1)/2;
+                : suzerain_inorder_wavenumber_abs(dNz, n) <= (Nz-1)/2;
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
                 const int mfreqidx
-                    = suzerain_diffwave_freqdiffindex(Nx, dNx, m);
+                    = suzerain_inorder_wavenumber_diff(Nx, dNx, m);
                 const int mkeeper  = (dxcnt > 0)
                         ? mfreqidx
-                        : suzerain_diffwave_absfreqindex(dNx, m) <= (Nx-1)/2;
+                        : suzerain_inorder_wavenumber_abs(dNx, m) <= (Nx-1)/2;
                 if (mkeeper) {
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale

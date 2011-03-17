@@ -223,6 +223,13 @@ test_pencilfft_3D_LDADD    = ../suzerain/libsuzerain.la
 test_pencilfft_3D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencilfft_3D_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                 += test_inorder
+check_PROGRAMS        += test_inorder
+test_inorder_SOURCES   = test_inorder.cpp
+test_inorder_LDADD     = ../suzerain/libsuzerain.la
+test_inorder_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_inorder_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                 += test_diffwave
 check_PROGRAMS        += test_diffwave
 test_diffwave_SOURCES  = test_diffwave.cpp

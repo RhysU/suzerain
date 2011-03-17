@@ -22,155 +22,96 @@
  *
  *--------------------------------------------------------------------------
  *
- * diffwave.hpp: C++ wrappers for the C-based suzerain_diffwave_* API
+ * inorder.hpp: C++ wrappers for the C-based suzerain_inorder_* API
  *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#ifndef __SUZERAIN_DIFFWAVE_HPP
-#define __SUZERAIN_DIFFWAVE_HPP
+#ifndef __SUZERAIN_INORDER_HPP
+#define __SUZERAIN_INORDER_HPP
 
-#include <suzerain/diffwave.h>
-#include <suzerain/complex.hpp>
+#include <suzerain/inorder.h>
 
 /** @file
- * Provides C++ wrappers for the C-based API in diffwave.h.
+ * Provides C++ wrappers for the C-based API in inorder.h.
  */
 
 namespace suzerain {
 
 /**
- * Provides C++ wrappers for C-based API in diffwave.h.
- * @see diffwave.h
+ * Provides C++ wrappers for C-based API in inorder.h.
  */
-namespace diffwave {
+namespace inorder {
 
-/** @{ */
-
-/** @see suzerain_diffwave_freqindex */
+/** @see suzerain_inorder_wavenumber() */
 inline
-int freqindex(const int N, const int i)
+int wavenumber(const int N, const int i)
 {
-    return suzerain_diffwave_freqindex(N, i);
+    return suzerain_inorder_wavenumber(N, i);
 }
 
-/** @see suzerain_diffwave_freqindexsupported */
+/** @see suzerain_inorder_wavenumber_abs() */
 inline
-int freqindexsupported(const int N, const int i)
+int wavenumber_abs(const int N, const int i)
 {
-    return suzerain_diffwave_freqindexsupported(N, i);
+    return suzerain_inorder_wavenumber_abs(N, i);
 }
 
-/** @see suzerain_diffwave_indexfreq */
+/** @see suzerain_inorder_wavenumber_min() */
 inline
-int indexfreq(const int N, const int i)
+int wavenumber_min(const int N)
 {
-    return suzerain_diffwave_indexfreq(N, i);
+    return suzerain_inorder_wavenumber_min(N);
 }
 
-/** @see suzerain_diffwave_absfreqindex */
+/** @see suzerain_inorder_wavenumber_max() */
 inline
-int absfreqindex(const int N, const int i)
+int wavenumber_max(const int N)
 {
-    return suzerain_diffwave_absfreqindex(N, i);
+    return suzerain_inorder_wavenumber_max(N);
 }
 
-/** @see suzerain_diffwave_freqdiffindex */
+/** see suzerain_inorder_wavenumber_valid() */
 inline
-int freqdiffindex(const int N, const int dN, const int i)
+bool wavenumber_valid(const int N, const int w)
 {
-    return suzerain_diffwave_freqdiffindex(N, dN, i);
+    return suzerain_inorder_wavenumber_valid(N, w);
 }
 
-/** @see suzerain_diffwave_nondealiased */
+/** @see suzerain_inorder_wavenumber_diff() */
 inline
-int nondealiased(const int N, const int dN, const int i)
+int wavenumber_diff(const int N, const int dN, const int i)
 {
-    return suzerain_diffwave_nondealiased(N, dN, i);
+    return suzerain_inorder_wavenumber_diff(N, dN, i);
 }
 
-/** @see suzerain_diffwave_nondealiasedoffsets */
+/** @see suzerain_inorder_wavenumber_translatable() */
 inline
-void nondealiasedoffsets(
-        const int N, const int dN, const int dkb, const int dke,
-        int&  kb1, int&  ke1, int&  kb2, int&  ke2,
-        int& dkb1, int& dke1, int& dkb2, int& dke2)
+int wavenumber_translatable(const int N, const int dN, const int i)
 {
-    return suzerain_diffwave_nondealiasedoffsets(N, dN, dkb, dke,
-                                                 &kb1,  &ke1,  &kb2,  &ke2,
-                                                 &dkb1, &dke1, &dkb2, &dke2);
+    return suzerain_inorder_wavenumber_translatable(N, dN, i);
 }
 
-/** @} */
-
-/** @{ */
-
-/** @see suzerain_diffwave_apply */
-template< typename Complex1,
-          typename Complex2 >
-typename boost::enable_if<boost::mpl::and_<
-    suzerain::complex::traits::is_complex_double<Complex1>,
-    suzerain::complex::traits::is_complex_double<Complex2>
->, void>::type apply(
-    const int dxcnt,
-    const int dzcnt,
-    const Complex1 &alpha, Complex2 *x,
-    const double Lx,
-    const double Lz,
-    const int Ny,
-    const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez)
+/** @see suzerain_inorder_wavenumber_translate() */
+inline
+void wavenumber_translate(const int S, const int T, const int tb, const int te,
+                          int& sb1, int& se1, int& sb2, int& se2,
+                          int& tb1, int& te1, int& tb2, int& te2)
 {
-    return suzerain_diffwave_apply(
-            dxcnt, dzcnt,
-            reinterpret_cast<const double *>(&alpha),
-            reinterpret_cast<double (*)[2]>(x),
-            Lx,
-            Lz,
-            Ny,
-            Nx, dNx, dkbx, dkex,
-            Nz, dNz, dkbz, dkez);
+    return suzerain_inorder_wavenumber_translate(
+        S, T, tb, te, &sb1, &se1, &sb2, &se2, &tb1, &te1, &tb2, &te2);
 }
 
-/** @see suzerain_diffwave_accumulate */
-template< typename Complex1,
-          typename Complex2,
-          typename Complex3,
-          typename Complex4 >
-typename boost::enable_if<boost::mpl::and_<
-    suzerain::complex::traits::is_complex_double<Complex1>,
-    suzerain::complex::traits::is_complex_double<Complex2>,
-    suzerain::complex::traits::is_complex_double<Complex3>,
-    suzerain::complex::traits::is_complex_double<Complex4>
->, void>::type accumulate(
-    const int dxcnt,
-    const int dzcnt,
-    const Complex1 &alpha, const Complex2 *x,
-    const Complex3 &beta, Complex4 *y,
-    const double Lx,
-    const double Lz,
-    const int Ny,
-    const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez)
+/** @see suzerain_inorder_index() */
+inline
+int index(const int N, const int w)
 {
-    return suzerain_diffwave_accumulate(
-            dxcnt, dzcnt,
-            reinterpret_cast<const double *>(&alpha),
-            reinterpret_cast<const double (*)[2]>(x),
-            reinterpret_cast<const double *>(&beta),
-            reinterpret_cast<double (*)[2]>(y),
-            Lx,
-            Lz,
-            Ny,
-            Nx, dNx, dkbx, dkex,
-            Nz, dNz, dkbz, dkez);
+    return suzerain_inorder_index(N, w);
 }
 
-/** @} */
-
-} // namespace diffwave
+} // namespace inorder
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_DIFFWAVE_HPP
+#endif // __SUZERAIN_INORDER_HPP
