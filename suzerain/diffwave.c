@@ -71,12 +71,32 @@ void suzerain_diffwave_nondealiasedoffsets(
         int*  kb1, int*  ke1, int*  kb2, int*  ke2,
         int* dkb1, int* dke1, int* dkb2, int* dke2)
 {
+    // This could not be much uglier, could it?  The inline routines used to
+    // cobble together this logic are a minefield of assertions.  Beware.
+
     // Sanity check incoming arguments
     assert(0 < N);
     assert(0 < dN);
-    assert(0 <= dkb && dkb <= dN);
-    assert(0 <= dke && dke <= dN);
-    assert(dkb <= dke);
+    assert(0 <= dkb && dkb <= dke && dke <= dN);
+
+    // If necessary, transform problem so N <= dN
+    if (N > dN) {
+        int kb = N;
+        if (dkb < dN) {
+            kb = suzerain_diffwave_indexfreq(
+                    N, suzerain_diffwave_freqindex(dN, dkb));
+        }
+        int ke = N;
+        if (dke < dN) {
+            ke = suzerain_diffwave_indexfreq(
+                    N, suzerain_diffwave_freqindex(dN, dke));
+        }
+        return suzerain_diffwave_nondealiasedoffsets(
+                dN, N, kb, ke, dkb1, dke1, dkb2, dke2, kb1, ke1, kb2, ke2);
+    }
+
+    // Sanity check preconditions hold for algorithm
+    assert(N <= dN);
 
     // Find <tt>[dkb1,dke1)</tt> and <tt>[dkb2,dke2)</tt>
     *dkb1 = dkb;
