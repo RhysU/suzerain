@@ -55,7 +55,7 @@ const boost::array<const char *,5> field_descriptions = {{
 void store(const esio_handle esioh,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario)
 {
-    DEBUG("Storing ScenarioDefinition parameters");
+    DEBUG0("Storing ScenarioDefinition parameters");
 
     // Only root writes data
     int procid;
@@ -88,48 +88,48 @@ void store(const esio_handle esioh,
 void load(const esio_handle esioh,
           suzerain::problem::ScenarioDefinition<real_t>& scenario)
 {
-    DEBUG("Loading ScenarioDefinition parameters");
+    DEBUG0("Loading ScenarioDefinition parameters");
 
     esio_line_establish(esioh, 1, 0, 1); // All ranks load
 
     if (scenario.Re) {
-        INFO("Overriding scenario using Re = " << scenario.Re);
+        INFO0("Overriding scenario using Re = " << scenario.Re);
     } else {
         esio_line_read(esioh, "Re", &scenario.Re, 0);
     }
 
     if (scenario.Pr) {
-        INFO("Overriding scenario using Pr = " << scenario.Pr);
+        INFO0("Overriding scenario using Pr = " << scenario.Pr);
     } else {
         esio_line_read(esioh, "Pr", &scenario.Pr, 0);
     }
 
     if (scenario.gamma) {
-        INFO("Overriding scenario using gamma = " << scenario.gamma);
+        INFO0("Overriding scenario using gamma = " << scenario.gamma);
     } else {
         esio_line_read(esioh, "gamma", &scenario.gamma, 0);
     }
 
     if (scenario.beta) {
-        INFO("Overriding scenario using beta = " << scenario.beta);
+        INFO0("Overriding scenario using beta = " << scenario.beta);
     } else {
         esio_line_read(esioh, "beta", &scenario.beta, 0);
     }
 
     if (scenario.Lx) {
-        INFO("Overriding scenario using Lx = " << scenario.Lx);
+        INFO0("Overriding scenario using Lx = " << scenario.Lx);
     } else {
         esio_line_read(esioh, "Lx", &scenario.Lx, 0);
     }
 
     if (scenario.Ly) {
-        INFO("Overriding scenario using Ly = " << scenario.Ly);
+        INFO0("Overriding scenario using Ly = " << scenario.Ly);
     } else {
         esio_line_read(esioh, "Ly", &scenario.Ly, 0);
     }
 
     if (scenario.Lz) {
-        INFO("Overriding scenario using Lz = " << scenario.Lz);
+        INFO0("Overriding scenario using Lz = " << scenario.Lz);
     } else {
         esio_line_read(esioh, "Lz", &scenario.Lz, 0);
     }
@@ -144,7 +144,7 @@ void store(const esio_handle esioh,
     int procid;
     esio_handle_comm_rank(esioh, &procid);
 
-    DEBUG("Storing GridDefinition parameters");
+    DEBUG0("Storing GridDefinition parameters");
 
     esio_line_establish(esioh, 1, 0, (procid == 0 ? 1 : 0));
 
@@ -170,7 +170,7 @@ void store(const esio_handle esioh,
     esio_line_write(esioh, "DAFz", &grid.DAFz, 0,
             grid.options().find("DAFz",false).description().c_str());
 
-    DEBUG("Storing wavenumber vectors for Fourier bases");
+    DEBUG0("Storing wavenumber vectors for Fourier bases");
 
     const int N  = std::max(grid.Nx, grid.Nz);
     scoped_array<complex_t> buf(new complex_t[N]);
@@ -195,12 +195,12 @@ void store(const esio_handle esioh,
 void load(const esio_handle esioh,
           suzerain::problem::GridDefinition<real_t>& grid)
 {
-    DEBUG("Loading GridDefinition parameters");
+    DEBUG0("Loading GridDefinition parameters");
 
     esio_line_establish(esioh, 1, 0, 1); // All ranks load
 
     if (grid.Nx) {
-        INFO("Overriding grid using Nx = " << grid.Nx);
+        INFO0("Overriding grid using Nx = " << grid.Nx);
     } else {
         int Nx;
         esio_line_read(esioh, "Nx", &Nx, 0);
@@ -208,13 +208,13 @@ void load(const esio_handle esioh,
     }
 
     if (grid.DAFx) {
-        INFO("Overriding grid using DAFx = " << grid.DAFx);
+        INFO0("Overriding grid using DAFx = " << grid.DAFx);
     } else {
         esio_line_read(esioh, "DAFx", &grid.DAFx, 0);
     }
 
     if (grid.Ny) {
-        INFO("Overriding grid using Ny = " << grid.Ny);
+        INFO0("Overriding grid using Ny = " << grid.Ny);
     } else {
         int Ny;
         esio_line_read(esioh, "Ny", &Ny, 0);
@@ -222,7 +222,7 @@ void load(const esio_handle esioh,
     }
 
     if (grid.k) {
-        INFO("Overriding grid using k = " << grid.k);
+        INFO0("Overriding grid using k = " << grid.k);
     } else {
         int k;
         esio_line_read(esioh, "k", &k, 0);
@@ -230,7 +230,7 @@ void load(const esio_handle esioh,
     }
 
     if (grid.Nz) {
-        INFO("Overriding grid using Nz = " << grid.Nz);
+        INFO0("Overriding grid using Nz = " << grid.Nz);
     } else {
         int Nz;
         esio_line_read(esioh, "Nz", &Nz, 0);
@@ -238,7 +238,7 @@ void load(const esio_handle esioh,
     }
 
     if (grid.DAFz) {
-        INFO("Overriding grid using DAFz = " << grid.DAFz);
+        INFO0("Overriding grid using DAFz = " << grid.DAFz);
     } else {
         esio_line_read(esioh, "DAFz", &grid.DAFz, 0);
     }
@@ -251,7 +251,7 @@ void store(const esio_handle esioh,
     int procid;
     esio_handle_comm_rank(esioh, &procid);
 
-    DEBUG("Storing B-spline knot details");
+    DEBUG0("Storing B-spline knot details");
 
     scoped_array<real_t> buf(new real_t[bspw->nknots()]);
 
@@ -273,7 +273,7 @@ void store(const esio_handle esioh,
     esio_line_write(esioh, "collocation_points", buf.get(), 0,
             "Collocation points used to build discrete operators");
 
-    DEBUG("Storing B-spline derivative operators");
+    DEBUG0("Storing B-spline derivative operators");
 
     char name[8];
     char comment[127];
@@ -297,7 +297,7 @@ void store(const esio_handle esioh,
 void load(const esio_handle esioh,
           boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */)
 {
-    DEBUG("Loading B-spline breakpoints");
+    DEBUG0("Loading B-spline breakpoints");
 
     // All ranks load B-spline order
     int k;
@@ -325,7 +325,7 @@ void store_time(const esio_handle esioh,
 
     esio_line_write(esioh, "t", &time, 0, "Simulation physical time");
 
-    DEBUG("Stored simulation time " << time);
+    DEBUG0("Stored simulation time " << time);
 }
 
 void load_time(const esio_handle esioh,
@@ -336,5 +336,5 @@ void load_time(const esio_handle esioh,
 
     esio_line_read(esioh, "t", &time, 0);
 
-    DEBUG("Loaded simulation time " << time);
+    DEBUG0("Loaded simulation time " << time);
 }
