@@ -1301,6 +1301,8 @@ int main(int argc, char **argv)
     bspluzw->form_mass(*bspw);
 
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
+    INFO0("State global extents:              " << grid.global_extents);
+    INFO0("Dealiased global extents:          " << grid.dealiased_extents());
     pg = make_shared<suzerain::pencil_grid>(grid.dealiased_extents(),
                                             grid.processor_grid);
     INFO0("Number of MPI ranks:               " << nranks);
