@@ -1093,17 +1093,20 @@ static void load_state(esio_handle h, state_type &state)
     // Load each scalar field in turn...
     for (size_t i = 0; i < field_names.static_size; ++i) {
 
+        // Create a view of the state for just the i-th scalar
+        // Not strictly necessary, but aids greatly in debugging
+        boost::multi_array_types::index_range all;
+        boost::array_view_gen<state_type,3>::type field
+            = (*state_linear)[boost::indices[i][all][all][all]];
+
         // ...which requires two reads per field, once per Z range
         for (int j = 0; j < 2; ++j) {
 
             // Destination of read is NULL for empty READ operations
             // Required since MultiArray triggers asserts on invalid indices
             complex_t * const dest = (dxb[0] == dxe[0] || dzb[j] == dze[j])
-                    ? NULL
-                    : &((*state_linear)[i]
-                                       [0]
-                                       [dxb[0] - state_start[0]]
-                                       [dzb[j] - state_start[2]]);
+                ? NULL
+                : &(field[0][dxb[0] - state_start[0]][dzb[j] - state_start[2]]);
 
             // Collectively establish size of read across all ranks
             assert(state_start[1] == 0 && state_extent[1] == Ny);
@@ -1173,17 +1176,20 @@ static bool save_restart(real_t t, std::size_t nt)
     // Save each scalar field in turn...
     for (size_t i = 0; i < field_names.static_size; ++i) {
 
+        // Create a view of the state for just the i-th scalar
+        // Not strictly necessary, but aids greatly in debugging
+        boost::multi_array_types::index_range all;
+        boost::array_view_gen<state_type,3>::type field
+            = (*state_linear)[boost::indices[i][all][all][all]];
+
         // ...which requires two writes per field, once per Z range
         for (int j = 0; j < 2; ++j) {
 
             // Source of write is NULL for empty WRITE operations
             // Required since MultiArray triggers asserts on invalid indices
             const complex_t * src = (dxb[0] == dxe[0] || dzb[j] == dze[j])
-                    ? NULL
-                    : &((*state_linear)[i]
-                                       [0]
-                                       [dxb[0] - state_start[0]]
-                                       [dzb[j] - state_start[2]]);
+                ? NULL
+                : &(field[0][dxb[0] - state_start[0]][dzb[j] - state_start[2]]);
 
             // Collectively establish size of read across all ranks
             assert(state_start[1] == 0 && state_extent[1] == Fy);
