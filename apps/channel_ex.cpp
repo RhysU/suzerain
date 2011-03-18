@@ -1126,7 +1126,8 @@ static bool log_status(real_t t, std::size_t nt) {
     return true;
 }
 
-static std::size_t last_restart_saved_nt = 0;
+/** Tracks last time a restart file was written successfully */
+static std::size_t last_restart_saved_nt = numeric_limits<std::size_t>::max();
 
 /** Routine to store a restart file.  Signature for TimeController use. */
 static bool save_restart(real_t t, std::size_t nt)
@@ -1207,7 +1208,7 @@ static bool save_restart(real_t t, std::size_t nt)
 
     last_restart_saved_nt = nt; // Maintain last successful restart time step
 
-    return true; // Continue
+    return true; // Continue time advancement
 }
 
 int main(int argc, char **argv)
@@ -1450,7 +1451,7 @@ int main(int argc, char **argv)
     }
 
     // Output statistics on time advancement
-    if (!advance_success && suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+    if (!advance_success) {
         WARN0("TimeController stopped advancing time unexpectedly");
     }
     INFO0("Advanced simulation from t_initial = " << initial_t
