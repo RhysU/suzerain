@@ -1467,7 +1467,7 @@ int main(int argc, char **argv)
 
     // Save a final restart before exit if one was not just saved
     if (advance_success && last_restart_saved_nt != tc->current_nt()) {
-        INFO0("Saving final restart file prior to quitting.");
+        INFO0("Saving final restart file prior to quitting");
         save_restart(tc->current_t(), tc->current_nt());
     }
 
