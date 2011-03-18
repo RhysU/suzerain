@@ -100,7 +100,7 @@ static bool process(const char * filename)
     load(h.get(), scenario);
     load(h.get(), grid);
     load(h.get(), bspw);
-    assert(bspw->ndof() == grid.Ny);
+    assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny);
 
     // Load zero-zero mode coefficients for all state variables
     matrix_t<>::real s_coeffs(grid.Ny, field_names.static_size);
