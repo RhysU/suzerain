@@ -248,10 +248,10 @@ int suzerain_inorder_wavenumber_translatable(
  * @param se1  Ending index of first range into source data.
  * @param sb2  Beginning index of second range into source data.
  * @param se2  Ending index of second range into source data.
- * @param tb1  Dealiased index corresponding to \c sb1
- * @param te1  Dealiased index corresponding to \c se1
- * @param tb2  Dealiased index corresponding to \c sb2
- * @param te2  Dealiased index corresponding to \c se2
+ * @param tb1  Target index corresponding to \c sb1
+ * @param te1  Target index corresponding to \c se1
+ * @param tb2  Target index corresponding to \c sb2
+ * @param te2  Target index corresponding to \c se2
  */
 void suzerain_inorder_wavenumber_translate(
         const int S, const int T, const int tb, const int te,
