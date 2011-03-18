@@ -1337,8 +1337,8 @@ int main(int argc, char **argv)
 
     // Create state storage for linear operator
     state_linear.reset(new state_type(suzerain::to_yxz(5, state_extent)));
-    DEBUG("Linear state strides    (FYXZ): "
-            << suzerain::multi_array::strides_array(*state_linear));
+    suzerain::multi_array::fill(*state_linear, 0); // FIXME Remove
+
 
     // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
@@ -1354,9 +1354,17 @@ int main(int argc, char **argv)
             suzerain::prepend(pg->local_wave_storage(), suzerain::strides_cm(
                     suzerain::to_yxz(pg->local_wave_extent())))
             ));
-    DEBUG("Nonlinear state strides    (FYXZ): "
-            << suzerain::multi_array::strides_array(*state_nonlinear));
     suzerain::multi_array::fill(*state_nonlinear, 0); // FIXME Remove
+
+    // Dump some state shape and stride information for debugging purposes
+    DEBUG("Linear state shape      (FYXZ): "
+          << suzerain::multi_array::shape_array(*state_linear));
+    DEBUG("Nonlinear state shape   (FYXZ): "
+          << suzerain::multi_array::shape_array(*state_nonlinear));
+    DEBUG("Linear state strides    (FYXZ): "
+          << suzerain::multi_array::strides_array(*state_linear));
+    DEBUG("Nonlinear state strides (FYXZ): "
+          << suzerain::multi_array::strides_array(*state_nonlinear));
 
     // Instantiate the operators and time stepping details
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
