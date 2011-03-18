@@ -32,8 +32,10 @@
 
 #include <log4cxx/logger.h>
 
-/** Global logging instance usable by anyone */
+// Global logging instance usable by anyone
 extern log4cxx::LoggerPtr logger;
+
+// Logging macros to hide log4cxx specifics
 #define TRACE(expr)     LOG4CXX_TRACE(logger,expr)
 #define DEBUG(expr)     LOG4CXX_DEBUG(logger,expr)
 #define INFO(expr)      LOG4CXX_INFO( logger,expr)
@@ -42,6 +44,21 @@ extern log4cxx::LoggerPtr logger;
 #define FATAL(expr)     LOG4CXX_FATAL(logger,expr)
 #define TRACE_ENABLED   (logger->isTraceEnabled())
 #define DEBUG_ENABLED   (logger->isDebugEnabled())
+
+// Logging macros to log only from MPI rank 0
+// Not intended for use within inner loops
+#define TRACE0(expr) \
+    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) TRACE(expr); }while(0)
+#define DEBUG0(expr) \
+    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) DEBUG(expr); }while(0)
+#define INFO0(expr)  \
+    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) INFO( expr); }while(0)
+#define WARN0(expr)  \
+    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) WARN( expr); }while(0)
+#define ERROR0(expr) \
+    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) ERROR(expr); }while(0)
+#define FATAL0(expr) \
+    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) FATAL(expr); }while(0)
 
 void name_logger_within_comm_world();
 

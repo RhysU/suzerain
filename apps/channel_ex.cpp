@@ -1122,7 +1122,7 @@ static void load_state(esio_handle h, state_type &state)
 
 /** Routine to output status.  Signature for TimeController use. */
 static bool log_status(real_t t, std::size_t nt) {
-    INFO("Simulation reached time " << t << " at time step " << nt);
+    INFO0("Simulation reached time " << t << " at time step " << nt);
     return true;
 }
 
@@ -1167,7 +1167,7 @@ static bool save_restart(real_t t, std::size_t nt)
                                             fzb[0], fze[0], fzb[1], fze[1],
                                             dzb[0], dze[0], dzb[1], dze[1]);
 
-    DEBUG("Storing simulation fields at simulation step " << nt);
+    DEBUG0("Storing simulation fields at simulation step " << nt);
 
     // Save each scalar field in turn...
     for (size_t i = 0; i < field_names.static_size; ++i) {
@@ -1203,7 +1203,7 @@ static bool save_restart(real_t t, std::size_t nt)
                             restart.desttemplate().c_str(),
                             restart.retain());
 
-    INFO("Successfully wrote restart file at t = " << t << " for nt = " << nt);
+    INFO0("Successfully wrote restart at t = " << t << " for nt = " << nt);
 
     last_restart_saved_nt = nt; // Maintain last successful restart time step
 
@@ -1223,7 +1223,9 @@ int main(int argc, char **argv)
     // Establish MPI-savvy, rank-dependent logging names
     name_logger_within_comm_world();
 
-    DEBUG("Processing command line arguments and response files");
+    DEBUG0("Processing command line arguments and response files");
+    bool default_advance_dt;
+    bool default_advance_nt;
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation");
@@ -1236,16 +1238,18 @@ int main(int argc, char **argv)
         options.add_definition(
                 const_cast<TimeDefinition<real_t>&>(timedef));
         options.process(argc, argv);
+
+        default_advance_dt = options.variables()["advance_dt"].defaulted();
+        default_advance_nt = options.variables()["advance_nt"].defaulted();
+
     }
 
-    if (!timedef.advance_dt && !timedef.advance_nt) {
-        if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-            FATAL("At least one of --advance_dt or --advance_nt is required");
-        }
+    if (default_advance_dt && default_advance_nt) {
+        FATAL0("Either --advance_dt or --advance_nt is required");
         return EXIT_FAILURE;
     }
 
-    INFO("Loading details from restart file: " << restart.load());
+    INFO0("Loading details from restart file: " << restart.load());
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
     load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
     load(esioh, const_cast<GridDefinition<real_t>&>(grid));
@@ -1255,7 +1259,7 @@ int main(int argc, char **argv)
     // TODO Account for B-spline differences at load time
     assert(numeric_cast<unsigned>(bspw->order()) == grid.k);
 
-    INFO("Saving metadata temporary file: " << restart.metadata());
+    INFO0("Saving metadata temporary file: " << restart.metadata());
     {
         esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
         esio_file_create(h, restart.metadata().c_str(), 1 /* overwrite */);
@@ -1298,8 +1302,8 @@ int main(int argc, char **argv)
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
     pg = make_shared<suzerain::pencil_grid>(grid.dealiased_extents(),
                                             grid.processor_grid);
-    INFO( "Number of MPI ranks:               " << nranks);
-    INFO( "Rank grid used for decomposition:  " << pg->processor_grid());
+    INFO0("Number of MPI ranks:               " << nranks);
+    INFO0("Rank grid used for decomposition:  " << pg->processor_grid());
     DEBUG("Local dealiased wave start  (XYZ): " << pg->local_wave_start());
     DEBUG("Local dealiased wave end    (XYZ): " << pg->local_wave_end());
     DEBUG("Local dealiased wave extent (XYZ): " << pg->local_wave_extent());
@@ -1409,51 +1413,58 @@ int main(int argc, char **argv)
     }
 
     // Advance time according to advance_dt, advance_nt criteria
-    bool advance_success;
+    bool advance_success = true;
     switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
-        case 0:
-            INFO("Advancing simulation until forcibly terminated");
-            advance_success = tc->advance();
-            break;
-        case 1:
-            INFO("Advancing simulation " << timedef.advance_nt
-                 << " discrete time steps");
-            advance_success = tc->step(timedef.advance_nt);
-            break;
-        case 2:
-            INFO("Advancing simulation by " << timedef.advance_dt
-                 << " units of physical time");
-            advance_success = tc->advance(initial_t + timedef.advance_dt);
-            break;
         case 3:
-            INFO("Advancing simulation by at most " << timedef.advance_dt
-                 << " units of physical time");
-            INFO("Advancing simulation by at most " << timedef.advance_nt
-                 << " discrete time steps");
+            INFO0("Advancing simulation by at most " << timedef.advance_dt
+                   << " units of physical time");
+            INFO0("Advancing simulation by at most " << timedef.advance_nt
+                   << " discrete time steps");
             advance_success = tc->advance(initial_t + timedef.advance_dt,
                                           timedef.advance_nt);
             break;
+        case 2:
+            INFO0("Advancing simulation by " << timedef.advance_dt
+                  << " units of physical time");
+            advance_success = tc->advance(initial_t + timedef.advance_dt);
+            break;
+        case 1:
+            INFO0("Advancing simulation " << timedef.advance_nt
+                   << " discrete time steps");
+            advance_success = tc->step(timedef.advance_nt);
+            break;
+        case 0:
+            if (!default_advance_dt) {
+                INFO0("Advancing simulation until forcibly terminated");
+                advance_success = tc->advance();
+            } else if (!default_advance_nt) {
+                WARN0("Simulation will not be advanced");
+            } else {
+                FATAL0("Sanity error in time control");
+                return EXIT_FAILURE;
+            }
+            break;
         default:
-            FATAL("Sanity error in time control");
+            FATAL0("Sanity error in time control");
             return EXIT_FAILURE;
     }
 
     // Output statistics on time advancement
     if (!advance_success && suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-        WARN("TimeController stopped advancing time unexpectedly");
+        WARN0("TimeController stopped advancing time unexpectedly");
     }
-    INFO("Advanced simulation from t_initial = " << initial_t
-         << " to t_final = " << tc->current_t()
-         << " in " << tc->current_nt() << " steps");
-    INFO("Min/mean/max/standard deviation of delta_t: "
-         << tc->taken_min()  << ", "
-         << tc->taken_mean() << ", "
-         << tc->taken_max()  << ", "
-         << tc->taken_stddev());
+    INFO0("Advanced simulation from t_initial = " << initial_t
+          << " to t_final = " << tc->current_t()
+          << " in " << tc->current_nt() << " steps");
+    INFO0("Min/mean/max/stddev of delta_t: "
+          << tc->taken_min()  << ", "
+          << tc->taken_mean() << ", "
+          << tc->taken_max()  << ", "
+          << tc->taken_stddev());
 
     // Save a final restart before exit if one was not just saved
     if (advance_success && last_restart_saved_nt != tc->current_nt()) {
-        INFO("Saving final restart file prior to quitting.");
+        INFO0("Saving final restart file prior to quitting.");
         save_restart(tc->current_t(), tc->current_nt());
     }
 

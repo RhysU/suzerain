@@ -42,12 +42,20 @@ log4cxx::LoggerPtr logger(log4cxx::Logger::getRootLogger());
 
 void name_logger_within_comm_world()
 {
-    logger = log4cxx::Logger::getLogger(
-            suzerain::mpi::comm_rank_identifier(MPI_COMM_WORLD));
+    using log4cxx::LevelPtr;
+    using log4cxx::Level;
+    using log4cxx::Logger;
+    using suzerain::mpi::comm_rank;
+    using suzerain::mpi::comm_rank_identifier;
 
-    // Log only warnings and above from ranks 1 and higher when not debugging
-    if (    suzerain::mpi::comm_rank(MPI_COMM_WORLD) > 0
-         && !logger->isDebugEnabled()) {
-        logger->setLevel(log4cxx::Level::getWarn());
+    logger = Logger::getLogger(comm_rank_identifier(MPI_COMM_WORLD));
+
+    // If debugging is disabled, ensure level is at least INFO on ranks 1+
+    LevelPtr level = logger->getLevel();
+    if (comm_rank(MPI_COMM_WORLD) > 0 && !logger->isDebugEnabled()) {
+        if (!level->isGreaterOrEqual(Level::getInfo())) {
+            level = Level::getInfo();
+        }
     }
+    logger->setLevel(level);
 }
