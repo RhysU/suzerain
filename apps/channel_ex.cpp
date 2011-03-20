@@ -117,9 +117,6 @@ static scoped_array<real_t>              one_over_delta_y;
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
 static shared_ptr<state_type> state_nonlinear;
-static boost::array<suzerain::pencil_grid::index,3> state_start;
-static boost::array<suzerain::pencil_grid::index,3> state_end;
-static boost::array<suzerain::pencil_grid::index,3> state_extent;
 
 // TODO Incorporate IOperatorLifecycle semantics
 // TODO Refactor MassOperator into templated BsplineMassOperator
@@ -1050,36 +1047,42 @@ static void atexit_metadata(void) {
 /** Routine to load state from file.  */
 static void load_state(esio_handle h, state_type &state)
 {
-    assert(state.shape()[0] == field_names.static_size);
+    // Coerce unsigned dealiased decomposition details into signed variables
+    const int dNx  = numeric_cast<int>(pg->global_extents()[0]);
+    const int dkbx = numeric_cast<int>(pg->local_wave_start()[0]);
+    const int dkex = numeric_cast<int>(pg->local_wave_end()[0]);
+    const int Ny   = numeric_cast<int>(pg->global_extents()[1]);
+    const int dNz  = numeric_cast<int>(pg->global_extents()[2]);
+    const int dkbz = numeric_cast<int>(pg->local_wave_start()[2]);
+    const int dkez = numeric_cast<int>(pg->local_wave_end()[2]);
 
-    const int dNz = numeric_cast<int>(grid.dealiased_extents()[2]);
-    const int  Ny = numeric_cast<int>(grid.dealiased_extents()[1]);
-    const int dNx = numeric_cast<int>(grid.dealiased_extents()[0]);
+    // Ensure local state storage meets this routine's assumptions
+    assert(                  state.shape()[0]  == field_names.size());
+    assert(numeric_cast<int>(state.shape()[1]) == Ny);
+    assert(numeric_cast<int>(state.shape()[2]) == (dkex - dkbx));
+    assert(numeric_cast<int>(state.shape()[3]) == (dkez - dkbz));
 
+    // Obtain details on the restart field's global sizes
     int Fz, Fx, Fy, ncomponents;
     esio_field_sizev(h, field_names[0], &Fz, &Fx, &Fy, &ncomponents);
-    assert(static_cast<int>(Fy) == Ny); // FIXME Different Ny per #1273
+    assert(static_cast<int>(Fy) == Ny); // TODO Allow Ny != Fy per #1273
     assert(ncomponents == 2);
 
     // Compute wavenumber translation between Fx and dNx
-    // X direction contains only positive wavenumbers so second range is empty
-    const int dkbx = numeric_cast<int>(state_start[0]);
-    const int dkex = numeric_cast<int>(state_end[0]);
-    int fxb[2], fxe[2], dxb[2], dxe[2];
+    int fxb[2], fxe[2], mxb[2], mxe[2];
     suzerain::inorder::wavenumber_translate(Fx, dNx, dkbx, dkex,
                                             fxb[0], fxe[0], fxb[1], fxe[1],
-                                            dxb[0], dxe[0], dxb[1], dxe[1]);
+                                            mxb[0], mxe[0], mxb[1], mxe[1]);
+    // X contains only positive wavenumbers => second range must be empty
     assert(fxb[1] == fxe[1]);
-    assert(dxb[1] == dxe[1]);
+    assert(mxb[1] == mxe[1]);
 
     // Compute wavenumber translation between Fz and dNz
     // One or both ranges may be empty
-    const int dkbz = numeric_cast<int>(state_start[2]);
-    const int dkez = numeric_cast<int>(state_end[2]);
-    int fzb[2], fze[2], dzb[2], dze[2];
+    int fzb[2], fze[2], mzb[2], mze[2];
     suzerain::inorder::wavenumber_translate(Fz, dNz, dkbz, dkez,
                                             fzb[0], fze[0], fzb[1], fze[1],
-                                            dzb[0], dze[0], dzb[1], dze[1]);
+                                            mzb[0], mze[0], mzb[1], mze[1]);
 
     // FIXME Necessary when Fy != Ny
     // Allocate and clear temporary storage able to hold a single scalar field
@@ -1104,12 +1107,11 @@ static void load_state(esio_handle h, state_type &state)
 
             // Destination of read is NULL for empty READ operations
             // Required since MultiArray triggers asserts on invalid indices
-            complex_t * const dest = (dxb[0] == dxe[0] || dzb[j] == dze[j])
-                ? NULL
-                : &(field[0][dxb[0] - state_start[0]][dzb[j] - state_start[2]]);
+            complex_t * dest = (mxb[0] == mxe[0] || mzb[j] == mze[j])
+                             ? NULL
+                             : &(field[0][mxb[0] - dkbx][mzb[j] - dkbz]);
 
             // Collectively establish size of read across all ranks
-            assert(state_start[1] == 0 && state_extent[1] == Ny);
             esio_field_establish(h, Fz, fzb[j], (fze[j] - fzb[j]),
                                     Fx, fxb[0], (fxe[0] - fxb[0]),
                                     Fy,      0, (            Fy));
@@ -1141,9 +1143,20 @@ static bool save_restart(real_t t, std::size_t nt)
     // Save simulation time information
     store_time(esioh, t);
 
-    // Dealiased global extent information
-    const int dNx = numeric_cast<int>(grid.dealiased_extents()[0]);
-    const int dNz = numeric_cast<int>(grid.dealiased_extents()[2]);
+    // Coerce unsigned dealiased decomposition details into signed variables
+    const int dNx  = numeric_cast<int>(pg->global_extents()[0]);
+    const int dkbx = numeric_cast<int>(pg->local_wave_start()[0]);
+    const int dkex = numeric_cast<int>(pg->local_wave_end()[0]);
+    const int Ny   = numeric_cast<int>(pg->global_extents()[1]);
+    const int dNz  = numeric_cast<int>(pg->global_extents()[2]);
+    const int dkbz = numeric_cast<int>(pg->local_wave_start()[2]);
+    const int dkez = numeric_cast<int>(pg->local_wave_end()[2]);
+
+    // Ensure local state storage meets this routine's assumptions
+    assert(numeric_cast<int>(state_linear->shape()[0]) == field_names.size());
+    assert(numeric_cast<int>(state_linear->shape()[1]) == Ny);
+    assert(numeric_cast<int>(state_linear->shape()[2]) == (dkex - dkbx));
+    assert(numeric_cast<int>(state_linear->shape()[3]) == (dkez - dkbz));
 
     // Restart file contains only non-dealiased wavenumbers
     const int Fz = numeric_cast<int>(grid.Nz);
@@ -1153,19 +1166,16 @@ static bool save_restart(real_t t, std::size_t nt)
 
     // Compute wavenumber translation between Fx and dNx
     // X direction contains only positive wavenumbers so second range is empty
-    const int dkbx = numeric_cast<int>(state_start[0]);
-    const int dkex = numeric_cast<int>(state_end[0]);
     int fxb[2], fxe[2], dxb[2], dxe[2];
     suzerain::inorder::wavenumber_translate(Fx, dNx, dkbx, dkex,
                                             fxb[0], fxe[0], fxb[1], fxe[1],
                                             dxb[0], dxe[0], dxb[1], dxe[1]);
+    // X contains only positive wavenumbers => second range must be empty
     assert(fxb[1] == fxe[1]);
     assert(dxb[1] == dxe[1]);
 
     // Compute wavenumber translation between Fz and dNz
     // One or both ranges may be empty
-    const int dkbz = numeric_cast<int>(state_start[2]);
-    const int dkez = numeric_cast<int>(state_end[2]);
     int fzb[2], fze[2], dzb[2], dze[2];
     suzerain::inorder::wavenumber_translate(Fz, dNz, dkbz, dkez,
                                             fzb[0], fze[0], fzb[1], fze[1],
@@ -1188,11 +1198,10 @@ static bool save_restart(real_t t, std::size_t nt)
             // Source of write is NULL for empty WRITE operations
             // Required since MultiArray triggers asserts on invalid indices
             const complex_t * src = (dxb[0] == dxe[0] || dzb[j] == dze[j])
-                ? NULL
-                : &(field[0][dxb[0] - state_start[0]][dzb[j] - state_start[2]]);
+                                  ? NULL
+                                  : &(field[0][dxb[0] - dkbx][dzb[j] - dkbz]);
 
             // Collectively establish size of read across all ranks
-            assert(state_start[1] == 0 && state_extent[1] == Fy);
             esio_field_establish(esioh, Fz, fzb[j], (fze[j] - fzb[j]),
                                         Fx, fxb[0], (fxe[0] - fxb[0]),
                                         Fy,      0, (            Fy));
@@ -1307,38 +1316,23 @@ int main(int argc, char **argv)
     bspluzw->form_mass(*bspw);
 
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
-    INFO0("State global extents:              " << grid.global_extents);
-    INFO0("Dealiased global extents:          " << grid.dealiased_extents());
+    INFO0("State global extents:             " << grid.global_extents);
+    INFO0("Dealiased global extents:         " << grid.dealiased_extents());
     pg = make_shared<suzerain::pencil_grid>(grid.dealiased_extents(),
                                             grid.processor_grid);
-    INFO0("Number of MPI ranks:               " << nranks);
-    INFO0("Rank grid used for decomposition:  " << pg->processor_grid());
-    DEBUG("Local dealiased wave start  (XYZ): " << pg->local_wave_start());
-    DEBUG("Local dealiased wave end    (XYZ): " << pg->local_wave_end());
-    DEBUG("Local dealiased wave extent (XYZ): " << pg->local_wave_extent());
-
-    // Compute how much non-dealiased XYZ state is local to this rank
-    // Additional munging necessary X direction has (Nx/2+1) complex values
-    state_start = pg->local_wave_start();
-    state_end[0] = std::min<suzerain::pencil_grid::index>(
-            grid.global_extents[0]/2+1, pg->local_wave_end()[0]);
-    for (int i = 1; i < state_end.static_size; ++i) {
-        state_end[i] = std::min<suzerain::pencil_grid::index>(
-                grid.global_extents[i], pg->local_wave_end()[i]);
-    }
-    for (int i = 0; i < state_extent.static_size; ++i) {
-        state_extent[i] = std::max<suzerain::pencil_grid::index>(
-                state_end[i] - state_start[i], 0);
-    }
-
-    DEBUG("Local state wave start  (XYZ): " << state_start);
-    DEBUG("Local state wave end    (XYZ): " << state_end);
-    DEBUG("Local state wave extent (XYZ): " << state_extent);
+    INFO0("Number of MPI ranks:              " << nranks);
+    INFO0("Rank grid used for decomposition: " << pg->processor_grid());
+    DEBUG("Local wave start      (XYZ):      " << pg->local_wave_start());
+    DEBUG("Local wave end        (XYZ):      " << pg->local_wave_end());
+    DEBUG("Local wave extent     (XYZ):      " << pg->local_wave_extent());
+    DEBUG("Local physical start  (XYZ):      " << pg->local_physical_start());
+    DEBUG("Local physical end    (XYZ):      " << pg->local_physical_end());
+    DEBUG("Local physical extent (XYZ):      " << pg->local_physical_extent());
 
     // Create state storage for linear operator
-    state_linear.reset(new state_type(suzerain::to_yxz(5, state_extent)));
-    suzerain::multi_array::fill(*state_linear, 0); // FIXME Remove
-
+    // TODO Have state_linear only store non-dealiased state
+    state_linear = make_shared<state_type>(
+            suzerain::to_yxz(5, pg->local_wave_extent()));
 
     // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
@@ -1347,14 +1341,14 @@ int main(int argc, char **argv)
     load_state(esioh, *state_linear); // May have large memory overhead!
     esio_file_close(esioh);
 
-    // Create the state storage for nonlinear operator
-    // with appropriate padding to allow P3DFFTification
-    state_nonlinear.reset(new state_type(
-            suzerain::to_yxz(5, state_extent),
+    // Create the state storage for nonlinear operator with appropriate padding
+    // to allow P3DFFTification.  Must clear to avoid lingering NaN issues.
+    state_nonlinear = make_shared<state_type>(
+            suzerain::to_yxz(5, pg->local_wave_extent()),
             suzerain::prepend(pg->local_wave_storage(), suzerain::strides_cm(
                     suzerain::to_yxz(pg->local_wave_extent())))
-            ));
-    suzerain::multi_array::fill(*state_nonlinear, 0); // FIXME Remove
+            );
+    suzerain::multi_array::fill(*state_nonlinear, 0);
 
     // Dump some state shape and stride information for debugging purposes
     DEBUG("Linear state shape      (FYXZ): "
