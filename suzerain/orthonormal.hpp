@@ -358,7 +358,7 @@ Scalar div_tau_u(
         const Tensor &tau,
         const Vector &div_tau)
 {
-    return u.dot(div_tau) + (tau*grad_u).lazy().trace();
+    return u.dot(div_tau) + (tau*grad_u).trace(); // Use lazyProduct?
 }
 
 /**

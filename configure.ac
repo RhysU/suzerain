@@ -153,7 +153,7 @@ BOOST_STATICASSERT
 BOOST_TEST
 BOOST_TYPETRAITS
 PKG_CHECK_MODULES([EIGEN],
-    [eigen2 >= 2.0.5],
+    [eigen3 >= 3.0.0],
     AC_DEFINE([HAVE_EIGEN],1,[Define if Eigen is available]))
 AC_LANG_POP([C++])
 AC_CACHE_SAVE

@@ -55,6 +55,16 @@ private:
     matrix_t();
 };
 
+// A "template typedef" for real- and complex-valued arrays
+// Following Eigen, these are matrices preferring coefficient-wise operations.
+template <int Rows = Eigen::Dynamic, int Cols = Eigen::Dynamic>
+struct array_t {
+    typedef Eigen::Array<real_t,Rows,Cols,Eigen::ColMajor> real;
+    typedef Eigen::Array<complex_t,Rows,Cols,Eigen::ColMajor> complex;
+private:
+    array_t();
+};
+
 // A "template typedef" for real- and complex-valued vectors
 template <int Rows = Eigen::Dynamic>
 struct vector_t {

@@ -34,7 +34,6 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #include <Eigen/Core>
-#include <Eigen/Array>
 #include <esio/esio.h>
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_definition.hpp>
@@ -55,8 +54,7 @@ using boost::numeric_cast;
 using boost::shared_ptr;
 using std::numeric_limits;
 
-static const Eigen::IOFormat iofmt(numeric_limits<real_t>::digits10,
-                                   Eigen::AlignCols, ", ", "\n");
+static const Eigen::IOFormat iofmt(Eigen::FullPrecision, 0, ", ", "\n");
 
 static bool process(const char * filename);
 
@@ -103,7 +101,7 @@ static bool process(const char * filename)
     assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny);
 
     // Load zero-zero mode coefficients for all state variables
-    matrix_t<>::real s_coeffs(grid.Ny, field_names.static_size);
+    array_t<>::real s_coeffs(grid.Ny, field_names.size());
     s_coeffs.setZero();
     {
         vector_t<>::complex tmp(grid.Ny);
@@ -179,13 +177,13 @@ static bool process(const char * filename)
     INFO("Computing " << column_names.size() << " nondimensional quantities");
 
     // Declare storage for all of the quantities of interest
-    matrix_t<>::real s(s_coeffs.rows(), column_names.size());
+    array_t<>::real s(s_coeffs.rows(), column_names.size());
     s.setZero();
 
     // Populate point-like information of (t,y \in (-L/2, L/2))
     s.col(n_t).setConstant(t);
     bspw->collocation_points(&s.col(n_y)[0], 1);
-    s.col(n_y).cwise() -= scenario.Ly / 2;
+    s.col(n_y).array() -= scenario.Ly / 2;
 
     // Compute 0th, 1st, and 2nd derivatives of conserved state
     // at collocation points
@@ -212,17 +210,17 @@ static bool process(const char * filename)
     (void) n_rhoe_yy;
 
     // Compute specific and primitive state at collocation points
-    s.col(n_u)  = s.col(n_rhou).cwise() / s.col(n_rho);
-    s.col(n_v)  = s.col(n_rhov).cwise() / s.col(n_rho);
-    s.col(n_w)  = s.col(n_rhow).cwise() / s.col(n_rho);
-    s.col(n_e)  = s.col(n_rhoe).cwise() / s.col(n_rho);
+    s.col(n_u)  = s.col(n_rhou) / s.col(n_rho);
+    s.col(n_v)  = s.col(n_rhov) / s.col(n_rho);
+    s.col(n_w)  = s.col(n_rhow) / s.col(n_rho);
+    s.col(n_e)  = s.col(n_rhoe) / s.col(n_rho);
     s.col(n_p)  = (scenario.gamma - 1) * (s.col(n_rhoe)
-                        - s.col(n_rhou).cwise() * s.col(n_u) / 2
-                        - s.col(n_rhov).cwise() * s.col(n_v) / 2
-                        - s.col(n_rhow).cwise() * s.col(n_w) / 2);
-    s.col(n_T)  = (scenario.gamma * s.col(n_p)).cwise() / s.col(n_rho);
-    s.col(n_mu) = s.col(n_T).cwise().pow(scenario.beta);
-    s.col(n_nu) = s.col(n_mu).cwise() / s.col(n_rho);
+                        - s.col(n_rhou) * s.col(n_u) / 2
+                        - s.col(n_rhov) * s.col(n_v) / 2
+                        - s.col(n_rhow) * s.col(n_w) / 2);
+    s.col(n_T)  = scenario.gamma * s.col(n_p) / s.col(n_rho);
+    s.col(n_mu) = s.col(n_T).pow(scenario.beta);
+    s.col(n_nu) = s.col(n_mu) / s.col(n_rho);
 
     // Compute derivatives of specific and primitive state. Better would be
     // using conserved state derivatives directly, but that's quite a PITA.
@@ -285,7 +283,7 @@ static bool process(const char * filename)
     INFO("Computing quantities in plus units");
 
     // Re-adjust collocation point offsets so lowest point is at y = 0
-    s.col(n_y).cwise() -= s.col(n_y)[0];
+    s.col(n_y) -= s.col(n_y)[0];
 
     // Compute wall shear stress, friction velocity, and viscous length scale.
     // These are "almost correct" as they are off by reference factors.
@@ -300,7 +298,7 @@ static bool process(const char * filename)
     const int nplus = (grid.Ny + 1) / 2;
 
     // Compute the quantities in plus units
-    matrix_t<>::real r(nplus, 1 /* t */ + 1 /* y */ + 1 /* y+ */ +  3);
+    array_t<>::real r(nplus, 1 /* t */ + 1 /* y */ + 1 /* y+ */ +  3);
     r.setZero();
     for (int i = 0; i < nplus; ++i) {
         r(i,0) = t;
