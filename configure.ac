@@ -138,6 +138,9 @@ AC_LANG_PUSH([C++])
 PKG_CHECK_MODULES([LOG4CXX],
     [liblog4cxx >= 0.10 apr-1 >= 1.3.3 apr-util-1 >= 1.3.4],
     AC_DEFINE([HAVE_LOG4CXX],1,[Define if log4cxx is available]))
+PKG_CHECK_MODULES([EIGEN],
+    [eigen3 >= 3.0.0],
+    AC_DEFINE([HAVE_EIGEN],1,[Define if Eigen is available]))
 BOOST_REQUIRE([1.39])
 BOOST_BIND
 BOOST_FOREACH
@@ -152,9 +155,6 @@ BOOST_PROGRAM_OPTIONS
 BOOST_STATICASSERT
 BOOST_TEST
 BOOST_TYPETRAITS
-PKG_CHECK_MODULES([EIGEN],
-    [eigen3 >= 3.0.0],
-    AC_DEFINE([HAVE_EIGEN],1,[Define if Eigen is available]))
 AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
