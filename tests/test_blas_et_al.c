@@ -651,6 +651,28 @@ test_dcopy()
 
 static
 void
+test_dcopy_fill()
+{
+    int i;
+
+    const double x      = 3;
+    double       y[]    = {555.0, 555.0, 555.0};
+    const int    incy   = 1;
+    const int    ny     = sizeof(y)/sizeof(y[0]);
+    const double y_expected[] = { 3.0, 3.0, 3.0 };
+    const int ny_expected = sizeof(y_expected)/sizeof(y_expected[0]);
+
+    gsl_test_int(ny, ny_expected, "Expected y results' length");
+
+    suzerain_blas_dcopy(ny/incy, &x, 0 /* zero! */, y, incy);
+    for (i = 0; i < ny_expected; ++i) {
+        gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
+                "dcopy y index %d", i);
+    }
+}
+
+static
+void
 test_scopy()
 {
     int i;
@@ -763,6 +785,35 @@ test_daxpy()
     gsl_test_int(ny, nexpected, "Expected results' length");
 
     suzerain_blas_daxpy(nx/incx, alpha, x, incx, y, incy);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON, "daxpy index %d", i);
+    }
+}
+
+static
+void
+test_daxpy_const()
+{
+    int i;
+
+    const double alpha      = 1.0;
+    const double x          = 1.0;
+    double       y[]        = {4.0, -1, 5.0, -2, 6.0, -3};
+    const int    incy       = 2;
+    const int    ny         = sizeof(y)/sizeof(y[0]);
+    const double expected[] = {
+        alpha*x + y[0],
+        y[1],
+        alpha*x + y[2],
+        y[3],
+        alpha*x + y[4],
+        y[5]
+    };
+    const int nexpected = sizeof(expected)/sizeof(expected[0]);
+
+    gsl_test_int(ny, nexpected, "Expected results' length");
+
+    suzerain_blas_daxpy(ny/incy, alpha, &x, 0 /* zero! */, y, incy);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON, "daxpy index %d", i);
     }
@@ -1860,6 +1911,9 @@ test_blasext_i2s_zaxpby2()
         double z_re[(N*incz_re)*(M*ldz_re)];
         double z_im[(N*incz_im)*(M*ldz_im)];
 
+        memset(z_re, 'r', sizeof(z_re)/sizeof(z_re[0])); // Avoid NaNs
+        memset(z_im, 'r', sizeof(z_im)/sizeof(z_im[0])); // Avoid NaNs
+
         for (int j = 0; j < M; ++j) {
             for (int i = 0; i < N; ++i) {
                 z[2*(i*incz + j*ldz)]   = i+1;   /* Real part */
@@ -2236,11 +2290,13 @@ main(int argc, char **argv)
     test_cscal();
 
     test_dcopy();
+    test_dcopy_fill();
     test_scopy();
     test_zcopy();
     test_ccopy();
 
     test_daxpy();
+    test_daxpy_const();
     test_saxpy();
     test_caxpy();
     test_zaxpy();
