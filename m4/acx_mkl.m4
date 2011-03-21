@@ -169,7 +169,7 @@ if test "${with_mkl}" != no ; then
     MKL_LIBS="${MKL_LIBS} -lm"
 
     if test -d "${acx_mkl_libdir}" ; then
-        MKL_LDFLAGS="-L${acx_mkl_libdir}"
+        MKL_LDFLAGS="-R${acx_mkl_libdir} -L${acx_mkl_libdir}"
     else
         MKL_LDFLAGS=""
     fi
