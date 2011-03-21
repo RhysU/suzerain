@@ -39,6 +39,31 @@ BOOST_AUTO_TEST_CASE( to_xzy )
     }
 }
 
+BOOST_AUTO_TEST_CASE( to_physical_xc2r )
+{
+    using suzerain::to_physical_xc2r;
+    {
+        boost::array<int,3> xyz = {{ 1, 777, 888 }};
+        BOOST_CHECK_EQUAL(to_physical_xc2r(xyz),
+                          boost::assign::list_of(1)(777)(888));
+    }
+    {
+        boost::array<int,3> xyz = {{ 2, 777, 888 }};
+        BOOST_CHECK_EQUAL(to_physical_xc2r(xyz),
+                          boost::assign::list_of(2)(777)(888));
+    }
+    {
+        boost::array<int,3> xyz = {{ 3, 777, 888 }};
+        BOOST_CHECK_EQUAL(to_physical_xc2r(xyz),
+                          boost::assign::list_of(5)(777)(888));
+    }
+    {
+        boost::array<int,3> xyz = {{ 4, 777, 888 }};
+        BOOST_CHECK_EQUAL(to_physical_xc2r(xyz),
+                          boost::assign::list_of(6)(777)(888));
+    }
+}
+
 BOOST_AUTO_TEST_CASE( prepend )
 {
     using suzerain::prepend;

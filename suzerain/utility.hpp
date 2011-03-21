@@ -98,6 +98,27 @@ boost::array<T,4> to_xzy(const U& prepend, const boost::array<T,3>& xyz)
 }
 
 /**
+ * Convert a 3 element boost::array from containing wave space XYZ extents to
+ * containing physical space XYZ extents assuming the X-direction is
+ * transformed via a complex-to-real Fourier transform.  The X extent's even or
+ * odd nature is preserved.  That is, @{Nx, Ny, Nz}@ becomes @{2*(Nx-1), Ny,
+ * Nz}@ when @Nx@ is even or it becomes @{2*(Nx-1)+1, Ny, Nz}@ when @Nx is odd.
+ * Preserving oddness is necessary for @Nx == 1@ to return non-trivial extents.
+ *
+ * @param xyz to transform.
+ *
+ * @return A copy of <tt>xyz</tt> with the elements transformed.
+ */
+template< typename T >
+boost::array<T,3> to_physical_xc2r(const boost::array<T,3>& xyz)
+{
+    boost::array<T,3> retval
+        = {{ 2*(xyz[0]-1) + (xyz[0] & T(1)), xyz[1], xyz[2] }};
+    assert((retval[0]/2)+1 == xyz[0]);
+    return retval;
+}
+
+/**
  * Return a copy of a boost::array with an element prepended.
  *
  * @param prepend to prepend.
