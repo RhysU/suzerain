@@ -39,12 +39,16 @@
 namespace suzerain {
 
 #pragma warning(push, disable:2022)
-pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
+pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_physical_extents,
                          const pencil_grid::size_type_2d &processor_grid)
-    : global_extents_(global_extents),
+    : global_physical_extents_(global_physical_extents),
+      global_wave_extents_(global_physical_extents),
       processor_grid_(processor_grid)
 #pragma warning(pop)
 {
+    // Adjust global_wave_extents to account for complex-to-real in X direction
+    global_wave_extents_[0] = global_wave_extents_[0]/2 + 1;
+
     // Ensure MPI is in a sane state at construction time
     {
         int flag;
@@ -85,9 +89,9 @@ pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_extents,
             boost::numeric_cast<int>(processor_grid_[1]),
         };
         p3dfft_setup(pg,
-                    boost::numeric_cast<int>(global_extents_[0]),
-                    boost::numeric_cast<int>(global_extents_[2]),
-                    boost::numeric_cast<int>(global_extents_[1]),
+                    boost::numeric_cast<int>(global_physical_extents_[0]),
+                    boost::numeric_cast<int>(global_physical_extents_[2]),
+                    boost::numeric_cast<int>(global_physical_extents_[1]),
                     1); // nuke btrans
         p3dfft_setup_called_ = true;
     }

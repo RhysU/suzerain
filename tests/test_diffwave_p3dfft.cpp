@@ -71,9 +71,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     for (index k = 0; k < pg.local_physical_extent()[2]; ++k) {
         gridz[k] = double(k+pg.local_physical_start()[2]);
     }
-    gridx *= Lx/pg.global_extents()[0];
-    gridy *= Ly/pg.global_extents()[1];
-    gridz *= Lz/pg.global_extents()[2];
+    gridx *= Lx/pg.global_physical_extents()[0];
+    gridy *= Ly/pg.global_physical_extents()[1];
+    gridz *= Lz/pg.global_physical_extents()[2];
 
     // Retrieve storage size, strides, and allocate working arrays
     const int nelem = pg.local_physical_storage();
@@ -81,10 +81,14 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
 
     // Create composable test functions in the X and Z directions
     // Note that maximum wavenumber (inclusive) is (N-1)/2.
-    periodic_function<> fx1(pg.global_extents()[0], Nx/2, M_PI/3, Lx, 11);
-    periodic_function<> fx2(pg.global_extents()[0], Nx/2, M_PI/7, Lx, 13);
-    periodic_function<> fz1(pg.global_extents()[2], Nz/2, M_PI/4, Lz, 17);
-    periodic_function<> fz2(pg.global_extents()[2], Nz/2, M_PI/9, Lz, 19);
+    periodic_function<> fx1(
+            pg.global_physical_extents()[0], Nx/2, M_PI/3, Lx, 11);
+    periodic_function<> fx2(
+            pg.global_physical_extents()[0], Nx/2, M_PI/7, Lx, 13);
+    periodic_function<> fz1(
+            pg.global_physical_extents()[2], Nz/2, M_PI/4, Lz, 17);
+    periodic_function<> fz2(
+            pg.global_physical_extents()[2], Nz/2, M_PI/9, Lz, 19);
 
     // Track worst point-wise error magnitude for either test Gives an idea of
     // any lost precision and how loose any test tolerances may be in practice.
@@ -92,7 +96,8 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
 
     // P3DFFT does not normalize after transformations;
     // we need the rescaling factor handy.
-    const size_type scale = pg.global_extents()[0] *pg.global_extents()[2];
+    const size_type scale = pg.global_physical_extents()[0]
+                          * pg.global_physical_extents()[2];
 
     // ---------------------------------
     // Test suzerain_diffwave_accumulate
@@ -128,11 +133,11 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
         const double (*x)[2]  = reinterpret_cast<const double (*)[2]>(A.get());
         const double beta[2]  = { 3.0/scale, 0.0/scale };
         double (*y)[2]        = reinterpret_cast<double (*)[2]>(B.get());
-        const int Ny          = pg.global_extents()[1];
-        const int dNx         = pg.global_extents()[0];
+        const int Ny          = pg.global_physical_extents()[1];
+        const int dNx         = pg.global_physical_extents()[0];
         const int dkbx        = pg.local_wave_start()[0];
         const int dkex        = pg.local_wave_end()[0];
-        const int dNz         = pg.global_extents()[2];
+        const int dNz         = pg.global_physical_extents()[2];
         const int dkbz        = pg.local_wave_start()[2];
         const int dkez        = pg.local_wave_end()[2];
 
@@ -202,11 +207,11 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     {
         const double alpha[2] = { 2.0/scale, 0.0/scale };
         double (*x)[2]        = reinterpret_cast<double (*)[2]>(A.get());
-        const int Ny          = pg.global_extents()[1];
-        const int dNx         = pg.global_extents()[0];
+        const int Ny          = pg.global_physical_extents()[1];
+        const int dNx         = pg.global_physical_extents()[0];
         const int dkbx        = pg.local_wave_start()[0];
         const int dkex        = pg.local_wave_end()[0];
-        const int dNz         = pg.global_extents()[2];
+        const int dNz         = pg.global_physical_extents()[2];
         const int dkbz        = pg.local_wave_start()[2];
         const int dkez        = pg.local_wave_end()[2];
 
@@ -259,9 +264,9 @@ static void test_accumulateAndApply(const int Ny,
     const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
     const int np     = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
-    pencil_grid::size_type_3d global_extents = {{ dNx, Ny, dNz }};
+    pencil_grid::size_type_3d global_physical_extents = {{ dNx, Ny, dNz }};
     pencil_grid::size_type_2d processor_grid = {{ 0, 0 }};
-    pencil_grid pg(global_extents, processor_grid);
+    pencil_grid pg(global_physical_extents, processor_grid);
 
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
         for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {

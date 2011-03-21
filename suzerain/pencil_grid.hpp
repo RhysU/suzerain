@@ -50,19 +50,18 @@ class pencil_grid : public integral_types
 
 public:
     /**
-     * Constructs an instance for the given global grid extents.
-     * Under the covers, P3DFFT's <tt>p3dfft_setup</tt> is
-     * invoked to determine pencil decomposition parameters for
-     * the local process.
+     * Constructs an instance for the given global physical grid extents.
+     * Under the covers, P3DFFT's <tt>p3dfft_setup</tt> is invoked to determine
+     * pencil decomposition parameters for the local process.
      *
-     * @param global_extents Global grid extents in the
+     * @param global_physical_extents Global physical grid extents in the
      *        streamwise (X), wall-normal (Y), and spanwise (Z)
      *        directions.
      * @param processor_grid The processor grid decomposition to use in the
      *        \f$ P_0 \f$ and \f$ P_1 \f$ directions.  Providing a zero
      *        for either value causes that value to be determined automatically.
      */
-    pencil_grid(const size_type_3d &global_extents,
+    pencil_grid(const size_type_3d &global_physical_extents,
                 const size_type_2d &processor_grid);
 
     /**
@@ -72,11 +71,22 @@ public:
     ~pencil_grid();
 
     /**
-     * Retrieve global computational grid extents.
+     * Retrieve global computational grid extents using physical space sizes.
      *
      * @return the global grid extents in the X, Y, and Z directions.
      */
-    const size_type_3d& global_extents() const { return global_extents_; }
+    const size_type_3d& global_physical_extents() const {
+        return global_physical_extents_;
+    }
+
+    /**
+     * Retrieve global computational grid extents using wave space sizes.
+     *
+     * @return the global grid extents in the X, Y, and Z directions.
+     */
+    const size_type_3d& global_wave_extents() const {
+        return global_wave_extents_;
+    }
 
     /**
      * Retrieve the processor grid extents.
@@ -219,10 +229,16 @@ public:
 
 private:
     /**
-     * Global grid extent in the streamwise, wall-normal,
+     * Global grid physical extent in the streamwise, wall-normal,
      * and spanwise directions.
      **/
-    size_type_3d global_extents_;
+    size_type_3d global_physical_extents_;
+
+    /**
+     * Global grid wave extent in the streamwise, wall-normal,
+     * and spanwise directions.
+     **/
+    size_type_3d global_wave_extents_;
 
     /** Processor grid extent in the \f$ P_0 \f$ and \f$ P_1 \f$ directions. */
     size_type_2d processor_grid_;
