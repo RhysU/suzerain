@@ -111,7 +111,7 @@ static const TimeDefinition<real_t> timedef(/* advance_dt           */ 0,
 // Global grid-details initialized in main()
 static shared_ptr<suzerain::bspline>     bspw;
 static shared_ptr<suzerain::bspline_luz> bspluzw;
-static shared_ptr<suzerain::pencil_grid> pg;
+static shared_ptr<suzerain::pencil_grid> dgrid;
 static scoped_array<real_t>              one_over_delta_y;
 
 // State details specific to this rank initialized in main()
@@ -201,32 +201,32 @@ class NonlinearOperator : public inonlinearoperator_type
 public:
 
     NonlinearOperator() :
-        Ny(pg->global_extents()[1]),
+        Ny(dgrid->global_wave_extents()[1]),
         Nx(grid.Nx),
-        dNx(pg->global_extents()[0]),
-        dkbx(pg->local_wave_start()[0]),
-        dkex(pg->local_wave_end()[0]),
+        dNx(dgrid->global_wave_extents()[0]),
+        dkbx(dgrid->local_wave_start()[0]),
+        dkex(dgrid->local_wave_end()[0]),
         Nz(grid.Nz),
-        dNz(pg->global_extents()[2]),
-        dkbz(pg->local_wave_start()[2]),
-        dkez(pg->local_wave_end()[2]),
-        rho_x(*pg), rho_y(*pg), rho_z(*pg),
-        rho_xx(*pg), rho_xy(*pg), rho_xz(*pg),
-                     rho_yy(*pg), rho_yz(*pg),
-                                  rho_zz(*pg),
-        mx_x(*pg), mx_y(*pg), mx_z(*pg),
-        mx_xx(*pg), mx_xy(*pg), mx_xz(*pg),
-                    mx_yy(*pg), mx_yz(*pg),
-                                mx_zz(*pg),
-        my_x(*pg), my_y(*pg), my_z(*pg),
-        my_xx(*pg), my_xy(*pg), my_xz(*pg),
-                    my_yy(*pg), my_yz(*pg),
-                                my_zz(*pg),
-        mz_x(*pg), mz_y(*pg), mz_z(*pg),
-        mz_xx(*pg), mz_xy(*pg), mz_xz(*pg),
-                    mz_yy(*pg), mz_yz(*pg),
-                                mz_zz(*pg),
-        e_x(*pg), e_y(*pg), e_z(*pg), div_grad_e(*pg)
+        dNz(dgrid->global_wave_extents()[2]),
+        dkbz(dgrid->local_wave_start()[2]),
+        dkez(dgrid->local_wave_end()[2]),
+        rho_x(*dgrid),  rho_y(*dgrid),  rho_z(*dgrid),
+        rho_xx(*dgrid), rho_xy(*dgrid), rho_xz(*dgrid),
+                        rho_yy(*dgrid), rho_yz(*dgrid),
+                                        rho_zz(*dgrid),
+        mx_x(*dgrid),  mx_y(*dgrid),  mx_z(*dgrid),
+        mx_xx(*dgrid), mx_xy(*dgrid), mx_xz(*dgrid),
+                       mx_yy(*dgrid), mx_yz(*dgrid),
+                                      mx_zz(*dgrid),
+        my_x(*dgrid),  my_y(*dgrid),  my_z(*dgrid),
+        my_xx(*dgrid), my_xy(*dgrid), my_xz(*dgrid),
+                       my_yy(*dgrid), my_yz(*dgrid),
+                                      my_zz(*dgrid),
+        mz_x(*dgrid),  mz_y(*dgrid),  mz_z(*dgrid),
+        mz_xx(*dgrid), mz_xy(*dgrid), mz_xz(*dgrid),
+                       mz_yy(*dgrid), mz_yz(*dgrid),
+                                      mz_zz(*dgrid),
+        e_x(*dgrid), e_y(*dgrid), e_z(*dgrid), div_grad_e(*dgrid)
     {
         // NOP
     }
@@ -525,58 +525,58 @@ public:
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Collectively convert state to physical space
-        pg->transform_wave_to_physical(
+        dgrid->transform_wave_to_physical(
                 reinterpret_cast<real_t *>(state_rho.origin()));
-        pg->transform_wave_to_physical(
+        dgrid->transform_wave_to_physical(
                 reinterpret_cast<real_t *>(state_rhou.origin()));
-        pg->transform_wave_to_physical(
+        dgrid->transform_wave_to_physical(
                 reinterpret_cast<real_t *>(state_rhov.origin()));
-        pg->transform_wave_to_physical(
+        dgrid->transform_wave_to_physical(
                 reinterpret_cast<real_t *>(state_rhow.origin()));
-        pg->transform_wave_to_physical(
+        dgrid->transform_wave_to_physical(
                 reinterpret_cast<real_t *>(state_rhoe.origin()));
 
         // Collectively convert state derivatives to physical space
-        pg->transform_wave_to_physical(rho_x.data());   // density
-        pg->transform_wave_to_physical(rho_y.data());
-        pg->transform_wave_to_physical(rho_z.data());
-        pg->transform_wave_to_physical(rho_xx.data());
-        pg->transform_wave_to_physical(rho_xy.data());
-        pg->transform_wave_to_physical(rho_xz.data());
-        pg->transform_wave_to_physical(rho_yy.data());
-        pg->transform_wave_to_physical(rho_yz.data());
-        pg->transform_wave_to_physical(rho_zz.data());
-        pg->transform_wave_to_physical(mx_x.data());   // X momentum
-        pg->transform_wave_to_physical(mx_y.data());
-        pg->transform_wave_to_physical(mx_z.data());
-        pg->transform_wave_to_physical(mx_xx.data());
-        pg->transform_wave_to_physical(mx_xy.data());
-        pg->transform_wave_to_physical(mx_xz.data());
-        pg->transform_wave_to_physical(mx_yy.data());
-        pg->transform_wave_to_physical(mx_yz.data());
-        pg->transform_wave_to_physical(mx_zz.data());
-        pg->transform_wave_to_physical(my_x.data());   // Y momentum
-        pg->transform_wave_to_physical(my_y.data());
-        pg->transform_wave_to_physical(my_z.data());
-        pg->transform_wave_to_physical(my_xx.data());
-        pg->transform_wave_to_physical(my_xy.data());
-        pg->transform_wave_to_physical(my_xz.data());
-        pg->transform_wave_to_physical(my_yy.data());
-        pg->transform_wave_to_physical(my_yz.data());
-        pg->transform_wave_to_physical(my_zz.data());
-        pg->transform_wave_to_physical(mz_x.data());   // Z momentum
-        pg->transform_wave_to_physical(mz_y.data());
-        pg->transform_wave_to_physical(mz_z.data());
-        pg->transform_wave_to_physical(mz_xx.data());
-        pg->transform_wave_to_physical(mz_xy.data());
-        pg->transform_wave_to_physical(mz_xz.data());
-        pg->transform_wave_to_physical(mz_yy.data());
-        pg->transform_wave_to_physical(mz_yz.data());
-        pg->transform_wave_to_physical(mz_zz.data());
-        pg->transform_wave_to_physical(e_x.data());   // Total energy
-        pg->transform_wave_to_physical(e_y.data());
-        pg->transform_wave_to_physical(e_z.data());
-        pg->transform_wave_to_physical(div_grad_e.data());
+        dgrid->transform_wave_to_physical(rho_x.data());   // density
+        dgrid->transform_wave_to_physical(rho_y.data());
+        dgrid->transform_wave_to_physical(rho_z.data());
+        dgrid->transform_wave_to_physical(rho_xx.data());
+        dgrid->transform_wave_to_physical(rho_xy.data());
+        dgrid->transform_wave_to_physical(rho_xz.data());
+        dgrid->transform_wave_to_physical(rho_yy.data());
+        dgrid->transform_wave_to_physical(rho_yz.data());
+        dgrid->transform_wave_to_physical(rho_zz.data());
+        dgrid->transform_wave_to_physical(mx_x.data());   // X momentum
+        dgrid->transform_wave_to_physical(mx_y.data());
+        dgrid->transform_wave_to_physical(mx_z.data());
+        dgrid->transform_wave_to_physical(mx_xx.data());
+        dgrid->transform_wave_to_physical(mx_xy.data());
+        dgrid->transform_wave_to_physical(mx_xz.data());
+        dgrid->transform_wave_to_physical(mx_yy.data());
+        dgrid->transform_wave_to_physical(mx_yz.data());
+        dgrid->transform_wave_to_physical(mx_zz.data());
+        dgrid->transform_wave_to_physical(my_x.data());   // Y momentum
+        dgrid->transform_wave_to_physical(my_y.data());
+        dgrid->transform_wave_to_physical(my_z.data());
+        dgrid->transform_wave_to_physical(my_xx.data());
+        dgrid->transform_wave_to_physical(my_xy.data());
+        dgrid->transform_wave_to_physical(my_xz.data());
+        dgrid->transform_wave_to_physical(my_yy.data());
+        dgrid->transform_wave_to_physical(my_yz.data());
+        dgrid->transform_wave_to_physical(my_zz.data());
+        dgrid->transform_wave_to_physical(mz_x.data());   // Z momentum
+        dgrid->transform_wave_to_physical(mz_y.data());
+        dgrid->transform_wave_to_physical(mz_z.data());
+        dgrid->transform_wave_to_physical(mz_xx.data());
+        dgrid->transform_wave_to_physical(mz_xy.data());
+        dgrid->transform_wave_to_physical(mz_xz.data());
+        dgrid->transform_wave_to_physical(mz_yy.data());
+        dgrid->transform_wave_to_physical(mz_yz.data());
+        dgrid->transform_wave_to_physical(mz_zz.data());
+        dgrid->transform_wave_to_physical(e_x.data());   // Total energy
+        dgrid->transform_wave_to_physical(e_y.data());
+        dgrid->transform_wave_to_physical(e_z.data());
+        dgrid->transform_wave_to_physical(div_grad_e.data());
 
         // Compute nonlinear operator
 
@@ -828,15 +828,15 @@ public:
         }
 
         // Convert collocation point values to wave space
-        pg->transform_physical_to_wave(
+        dgrid->transform_physical_to_wave(
                 reinterpret_cast<real_t *>(state_rho.origin()));
-        pg->transform_physical_to_wave(
+        dgrid->transform_physical_to_wave(
                 reinterpret_cast<real_t *>(state_rhou.origin()));
-        pg->transform_physical_to_wave(
+        dgrid->transform_physical_to_wave(
                 reinterpret_cast<real_t *>(state_rhov.origin()));
-        pg->transform_physical_to_wave(
+        dgrid->transform_physical_to_wave(
                 reinterpret_cast<real_t *>(state_rhow.origin()));
-        pg->transform_physical_to_wave(
+        dgrid->transform_physical_to_wave(
                 reinterpret_cast<real_t *>(state_rhoe.origin()));
 
         // Convert collocation point values to Bspline coefficients
@@ -1048,13 +1048,13 @@ static void atexit_metadata(void) {
 static void load_state(esio_handle h, state_type &state)
 {
     // Coerce unsigned dealiased decomposition details into signed variables
-    const int dNx  = numeric_cast<int>(pg->global_extents()[0]);
-    const int dkbx = numeric_cast<int>(pg->local_wave_start()[0]);
-    const int dkex = numeric_cast<int>(pg->local_wave_end()[0]);
-    const int Ny   = numeric_cast<int>(pg->global_extents()[1]);
-    const int dNz  = numeric_cast<int>(pg->global_extents()[2]);
-    const int dkbz = numeric_cast<int>(pg->local_wave_start()[2]);
-    const int dkez = numeric_cast<int>(pg->local_wave_end()[2]);
+    const int dNx  = numeric_cast<int>(dgrid->global_wave_extents()[0]);
+    const int dkbx = numeric_cast<int>(dgrid->local_wave_start()[0]);
+    const int dkex = numeric_cast<int>(dgrid->local_wave_end()[0]);
+    const int Ny   = numeric_cast<int>(dgrid->global_wave_extents()[1]);
+    const int dNz  = numeric_cast<int>(dgrid->global_wave_extents()[2]);
+    const int dkbz = numeric_cast<int>(dgrid->local_wave_start()[2]);
+    const int dkez = numeric_cast<int>(dgrid->local_wave_end()[2]);
 
     // Ensure local state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field_names.size());
@@ -1144,16 +1144,16 @@ static bool save_restart(real_t t, std::size_t nt)
     store_time(esioh, t);
 
     // Coerce unsigned dealiased decomposition details into signed variables
-    const int dNx  = numeric_cast<int>(pg->global_extents()[0]);
-    const int dkbx = numeric_cast<int>(pg->local_wave_start()[0]);
-    const int dkex = numeric_cast<int>(pg->local_wave_end()[0]);
-    const int Ny   = numeric_cast<int>(pg->global_extents()[1]);
-    const int dNz  = numeric_cast<int>(pg->global_extents()[2]);
-    const int dkbz = numeric_cast<int>(pg->local_wave_start()[2]);
-    const int dkez = numeric_cast<int>(pg->local_wave_end()[2]);
+    const int dNx  = numeric_cast<int>(dgrid->global_wave_extents()[0]);
+    const int dkbx = numeric_cast<int>(dgrid->local_wave_start()[0]);
+    const int dkex = numeric_cast<int>(dgrid->local_wave_end()[0]);
+    const int Ny   = numeric_cast<int>(dgrid->global_wave_extents()[1]);
+    const int dNz  = numeric_cast<int>(dgrid->global_wave_extents()[2]);
+    const int dkbz = numeric_cast<int>(dgrid->local_wave_start()[2]);
+    const int dkez = numeric_cast<int>(dgrid->local_wave_end()[2]);
 
     // Ensure local state storage meets this routine's assumptions
-    assert(numeric_cast<int>(state_linear->shape()[0]) == field_names.size());
+    assert(                  state_linear->shape()[0]  == field_names.size());
     assert(numeric_cast<int>(state_linear->shape()[1]) == Ny);
     assert(numeric_cast<int>(state_linear->shape()[2]) == (dkex - dkbx));
     assert(numeric_cast<int>(state_linear->shape()[3]) == (dkez - dkbz));
@@ -1315,24 +1315,32 @@ int main(int argc, char **argv)
     bspluzw = make_shared<suzerain::bspline_luz>(*bspw);
     bspluzw->form_mass(*bspw);
 
-    // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
-    INFO0("State global extents:             " << grid.global_extents);
-    INFO0("Dealiased global extents:         " << grid.dealiased_extents());
-    pg = make_shared<suzerain::pencil_grid>(grid.dealiased_extents(),
-                                            grid.processor_grid);
+    // Display global degree of freedom information
+    INFO0("Global degrees of freedom  (DOF): "
+            << suzerain::functional::product(grid.global_extents));
+    INFO0("DOF by direction           (XYZ): " << grid.global_extents);
+    INFO0("Dealiased DOF by direction (XYZ): " << grid.dealiased_extents());
     INFO0("Number of MPI ranks:              " << nranks);
-    INFO0("Rank grid used for decomposition: " << pg->processor_grid());
-    DEBUG("Local wave start      (XYZ):      " << pg->local_wave_start());
-    DEBUG("Local wave end        (XYZ):      " << pg->local_wave_end());
-    DEBUG("Local wave extent     (XYZ):      " << pg->local_wave_extent());
-    DEBUG("Local physical start  (XYZ):      " << pg->local_physical_start());
-    DEBUG("Local physical end    (XYZ):      " << pg->local_physical_end());
-    DEBUG("Local physical extent (XYZ):      " << pg->local_physical_extent());
+
+    // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
+    dgrid = make_shared<suzerain::pencil_grid>(
+                    suzerain::to_physical_xc2r(grid.dealiased_extents()),
+                    grid.processor_grid);
+    assert(grid.dealiased_extents()[0] == dgrid->global_wave_extents()[0]);
+    assert(grid.dealiased_extents()[1] == dgrid->global_wave_extents()[1]);
+    assert(grid.dealiased_extents()[2] == dgrid->global_wave_extents()[2]);
+    INFO0("Rank grid used for decomposition: " << dgrid->processor_grid());
+    DEBUG("Local wave start      (XYZ): " << dgrid->local_wave_start());
+    DEBUG("Local wave end        (XYZ): " << dgrid->local_wave_end());
+    DEBUG("Local wave extent     (XYZ): " << dgrid->local_wave_extent());
+    DEBUG("Local physical start  (XYZ): " << dgrid->local_physical_start());
+    DEBUG("Local physical end    (XYZ): " << dgrid->local_physical_end());
+    DEBUG("Local physical extent (XYZ): " << dgrid->local_physical_extent());
 
     // Create state storage for linear operator
     // TODO Have state_linear only store non-dealiased state
     state_linear = make_shared<state_type>(
-            suzerain::to_yxz(5, pg->local_wave_extent()));
+            suzerain::to_yxz(5, dgrid->local_wave_extent()));
 
     // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
@@ -1343,11 +1351,16 @@ int main(int argc, char **argv)
 
     // Create the state storage for nonlinear operator with appropriate padding
     // to allow P3DFFTification.  Must clear to avoid lingering NaN issues.
-    state_nonlinear = make_shared<state_type>(
-            suzerain::to_yxz(5, pg->local_wave_extent()),
-            suzerain::prepend(pg->local_wave_storage(), suzerain::strides_cm(
-                    suzerain::to_yxz(pg->local_wave_extent())))
-            );
+    {
+        using suzerain::to_yxz;
+        using suzerain::prepend;
+        using suzerain::strides_cm;
+        state_nonlinear = make_shared<state_type>(
+                to_yxz(5, dgrid->local_wave_extent()),
+                prepend(dgrid->local_wave_storage(), strides_cm(
+                        to_yxz(dgrid->local_wave_extent())))
+                );
+    }
     suzerain::multi_array::fill(*state_nonlinear, 0);
 
     // Dump some state shape and stride information for debugging purposes
