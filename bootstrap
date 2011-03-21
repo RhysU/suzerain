@@ -6,9 +6,15 @@ autoreconf -v -i || exit 1
 
 echo
 echo -------------------------------------------------------------------------
-echo Binaries linked against libsuzerain.la run into linker problems because
-echo current versions of libtool do not preserve OpenMP flags.  Workaround per
+echo -------------------------- LIBTOOL PATCHES ------------------------------
+echo -------------------------------------------------------------------------
+echo 1\) Binaries linked against libsuzerain.la run
+echo into linker problems because current versions of
+echo libtool do not preserve OpenMP flags.  Workaround per
 echo http://lists.gnu.org/archive/html/bug-libtool/2011-03/msg00015.html.
+echo
+echo 2\) Enable -R propagation from convenience libraries. See
+echo http://lists.gnu.org/archive/html/automake/2011-03/msg00049.html
 echo -------------------------------------------------------------------------
 echo
 
@@ -33,6 +39,19 @@ patch -p0 -N --verbose <<\EOF
  	  if test "$linkmode,$pass" = "prog,link"; then
  	    compile_deplibs="$deplib $compile_deplibs"
  	    finalize_deplibs="$deplib $finalize_deplibs"
+--- build-aux/ltmain.sh
++++ build-aux/ltmain.sh
+@@ -7127,7 +7127,9 @@
+ 	    # practice:
+ 	    case $deplib in
+ 	    -L*) new_libs="$deplib $new_libs" ;;
++	    ##Enable -R propagation from convenience libraries.  See
++	    ##http://lists.gnu.org/archive/html/automake/2011-03/msg00049.html
++	    ##-R*) ;;
+-	    -R*) ;;
+ 	    *)
+ 	      # And here is the reason: when a library appears more
+ 	      # than once as an explicit dependence of a library, or
 EOF
 # From 'man 1 patch': "... patch exits with status 1 if some
 # hunks failed, or with  2  if there  was real trouble."

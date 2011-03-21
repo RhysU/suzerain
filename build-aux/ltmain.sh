@@ -7127,7 +7127,9 @@ func_mode_link ()
 	    # practice:
 	    case $deplib in
 	    -L*) new_libs="$deplib $new_libs" ;;
-	    -R*) ;;
+	    ##Enable -R propagation from convenience libraries.  See
+	    ##http://lists.gnu.org/archive/html/automake/2011-03/msg00049.html
+	    ##-R*) ;;
 	    *)
 	      # And here is the reason: when a library appears more
 	      # than once as an explicit dependence of a library, or
