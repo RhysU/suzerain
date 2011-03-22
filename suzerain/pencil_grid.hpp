@@ -45,51 +45,51 @@ namespace suzerain
  * in Y in wave space.  Unless otherwise noted, all indices start from
  * zero with X, Y, and Z having indices 0, 1, and 2, respectively.
  */
-class pencil_grid : public integral_types
+class pencil_grid
 {
-
 public:
+    // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     /**
      * Constructs an instance for the given global physical grid extents.
      * Under the covers, P3DFFT's <tt>p3dfft_setup</tt> is invoked to determine
      * pencil decomposition parameters for the local process.
      *
-     * @param global_physical_extents Global physical grid extents in the
+     * @param global_physical_extent Global physical grid extents in the
      *        streamwise (X), wall-normal (Y), and spanwise (Z)
      *        directions.
      * @param processor_grid The processor grid decomposition to use in the
      *        \f$ P_0 \f$ and \f$ P_1 \f$ directions.  Providing a zero
      *        for either value causes that value to be determined automatically.
      */
-    pencil_grid(const size_type_3d &global_physical_extents,
-                const size_type_2d &processor_grid);
+    template < typename RandomAccessContainer1,
+               typename RandomAccessContainer2 >
+    pencil_grid(const RandomAccessContainer1 &global_physical_extent,
+                const RandomAccessContainer2 &processor_grid)
+    {
+        using boost::numeric_cast;
+        this->construct_(numeric_cast<int>(global_physical_extent[0]),
+                         numeric_cast<int>(global_physical_extent[1]),
+                         numeric_cast<int>(global_physical_extent[2]),
+                         numeric_cast<int>(processor_grid[0]),
+                         numeric_cast<int>(processor_grid[1]));
+    }
 
     /**
-     * Tears down an instance.  Under the covers, P3DFFT's <tt>p3dfft_clean</tt>
-     * is invoked.
+     * Tears down an instance.
+     * Under the covers, P3DFFT's <tt>p3dfft_clean</tt> is invoked.
      */
     ~pencil_grid();
 
-    /**
-     * Retrieve global computational grid extents using physical space sizes.
-     *
-     * @return the global grid extents in the X, Y, and Z directions.
-     */
-    const size_type_3d& global_physical_extents() const {
-        return global_physical_extents_;
-    }
+    /** Global grid extents using physical space sizes. */
+    Eigen::Array3i global_physical_extent;
+
+    /** Global grid extents using wave space sizes. */
+    Eigen::Array3i global_wave_extent;
 
     /**
-     * Retrieve global computational grid extents using wave space sizes.
-     *
-     * @return the global grid extents in the X, Y, and Z directions.
-     */
-    const size_type_3d& global_wave_extents() const {
-        return global_wave_extents_;
-    }
-
-    /**
-     * Retrieve the processor grid extents.
+     * The processor grid extents.
      *
      * In physical space, \f$ P_0 \f$ is the grid extent in the Z direction
      * and \f$ P_1 \f$ is the grid extent in the Y direction.
@@ -99,33 +99,24 @@ public:
      * @return the processor grid extents in the \f$ P_0 \f$
      *         and \f$ P_1 \f$ directions as indices 0 and 1, respectively.
      */
-    const size_type_2d& processor_grid() const { return processor_grid_; }
+    Eigen::Array2i processor_grid;
 
     /**
-     * Retrieve local pencil physical space starting indices (inclusive) within
+     * Local pencil physical space starting indices (inclusive) within
      * the global extents.
-     *
-     * @return local pencil physical space starting indices in the X, Y, and Z
-     * directions.
      */
-    const index_3d& local_physical_start() const { return pstart_; }
+    Eigen::Array3i local_physical_start;
 
     /**
-     * Retrieve local pencil physical space ending indices (exclusive)
+     * Local pencil physical space ending indices (exclusive)
      * within the global extents.
-     *
-     * @return local pencil physical space starting indices in the X, Y, and Z
-     * directions.
      */
-    const index_3d& local_physical_end() const { return pend_; }
+    Eigen::Array3i local_physical_end;
 
     /**
-     * Retrieve local pencil physical space extents.
-     *
-     * @return local pencil physical space extents in the X, Y, and Z
-     * directions.
+     * Local pencil physical space extents.
      */
-    const index_3d& local_physical_extent() const { return pextent_; }
+    Eigen::Array3i local_physical_extent;
 
     /**
      * Retrieve the number of contiguous real scalars required to store
@@ -136,33 +127,24 @@ public:
      * @return Number of real-valued scalars (i.e. <tt>double</tt>s)
      *         required to store one pencil's contiguous data.
      */
-    size_type local_physical_storage() const;
+    std::size_t local_physical_storage() const;
 
     /**
-     * Retrieve local pencil wave space starting indices (inclusive) within
+     * Local pencil wave space starting indices (inclusive) within
      * the global extents.
-     *
-     * @return local pencil wave space starting indices in the X, Y, and Z
-     * directions.
      */
-    const index_3d& local_wave_start() const { return wstart_; }
+    Eigen::Array3i local_wave_start;
 
     /**
-     * Retrieve local pencil wave space ending indices (exclusive)
+     * Local pencil wave space ending indices (exclusive)
      * within the global extents.
-     *
-     * @return local pencil wave space starting indices in the X, Y, and Z
-     * directions.
      */
-    const index_3d& local_wave_end() const { return wend_; }
+    Eigen::Array3i local_wave_end;
 
     /**
-     * Retrieve local pencil wave space extents.
-     *
-     * @return local pencil wave space extents in the X, Y, and Z
-     * directions.
+     * Local pencil wave space extents.
      */
-    const index_3d& local_wave_extent() const { return wextent_; }
+    Eigen::Array3i local_wave_extent;
 
     /**
      * Retrieve the number of contiguous complex scalars required to store
@@ -173,7 +155,7 @@ public:
      * @return Number of complex-valued scalars (i.e. <tt>double[2]</tt>s)
      *         required to store one pencil's contiguous data.
      */
-    size_type local_wave_storage() const;
+    std::size_t local_wave_storage() const;
 
     /**
      * Collectively transform a field from wave space to physical space.  The
@@ -228,41 +210,14 @@ public:
     }
 
 private:
-    /**
-     * Global grid physical extent in the streamwise, wall-normal,
-     * and spanwise directions.
-     **/
-    size_type_3d global_physical_extents_;
-
-    /**
-     * Global grid wave extent in the streamwise, wall-normal,
-     * and spanwise directions.
-     **/
-    size_type_3d global_wave_extents_;
-
-    /** Processor grid extent in the \f$ P_0 \f$ and \f$ P_1 \f$ directions. */
-    size_type_2d processor_grid_;
-
-    /** Physical space starting indices for local storage within global grid */
-    index_3d pstart_;
-
-    /** Physical space ending indices for local storage within global grid */
-    index_3d pend_;
-
-    /** Physical space dimensions for local storage */
-    index_3d pextent_;
-
-    /** Wave space starting indices for local storage within global grid */
-    index_3d wstart_;
-
-    /** Wave space ending indices for local storage within global grid */
-    index_3d wend_;
-
-    /** Wave space dimensions for local storage */
-    index_3d wextent_;
 
     /** Was p3dfft_setup successfully called during construction? */
     bool p3dfft_setup_called_;
+
+    /**
+     * Internal routine performing construction-like tasks
+     */
+    void construct_(int Nx, int Ny, int Nz, int Pa, int Pb);
 };
 
 } // namespace suzerain

@@ -39,17 +39,19 @@
 namespace suzerain {
 
 #pragma warning(push, disable:2022)
-pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_physical_extents,
-                         const pencil_grid::size_type_2d &processor_grid)
-    : global_physical_extents_(global_physical_extents),
-      global_wave_extents_(global_physical_extents),
-      processor_grid_(processor_grid)
+void pencil_grid::construct_(int Nx, int Ny, int Nz, int Pa, int Pb)
 #pragma warning(pop)
 {
-    // Adjust global_wave_extents to account for complex-to-real in X direction
-    global_wave_extents_[0] = global_wave_extents_[0]/2 + 1;
+    global_physical_extent[0] = Nx;
+    global_physical_extent[1] = Ny;
+    global_physical_extent[2] = Nz;
+    global_wave_extent[0]     = Nx / 2 + 1;
+    global_wave_extent[1]     = Ny;
+    global_wave_extent[2]     = Nz;
+    processor_grid[0]         = Pa;
+    processor_grid[1]         = Pb;
 
-    // Ensure MPI is in a sane state at construction time
+    // Ensure MPI is in a sane state
     {
         int flag;
         if (MPI_Initialized(&flag) != MPI_SUCCESS || !flag) {
@@ -67,64 +69,56 @@ pencil_grid::pencil_grid(const pencil_grid::size_type_3d &global_physical_extent
 
     // If processor grid was not fully fixed by the arguments,
     // find a 2D Cartesian decomposition where P_1 <= P_2
-    if (processor_grid_[0] == 0 || processor_grid_[1] == 0) {
+    if (processor_grid[0] == 0 || processor_grid[1] == 0) {
         suzerain::mpi::dims_create(
-                nproc, processor_grid_.begin(), processor_grid_.end());
-        std::sort(processor_grid_.begin(), processor_grid_.end());
+                nproc,
+                processor_grid.data(),
+                processor_grid.data() + processor_grid.size());
+        std::sort(processor_grid.data(),
+                  processor_grid.data() + processor_grid.size());
     }
 
     // Sanity check the 2D decomposition
-    if (   processor_grid_[0]*processor_grid_[1]
-        != boost::numeric_cast<pencil_grid::size_type>(nproc)) {
+    if (processor_grid.prod() != nproc) {
         std::ostringstream what;
-        what << "Processor grid dimensions " << processor_grid_
+        what << "Processor grid dimensions " << processor_grid
              << " incompatible with number of processors " << nproc;
         throw std::runtime_error(what.str());
     }
 
     // Initialize P3DFFT using Y as STRIDE1 direction in wave space
     {
-        int pg[2] = {
-            boost::numeric_cast<int>(processor_grid_[0]),
-            boost::numeric_cast<int>(processor_grid_[1]),
-        };
-        p3dfft_setup(pg,
-                    boost::numeric_cast<int>(global_physical_extents_[0]),
-                    boost::numeric_cast<int>(global_physical_extents_[2]),
-                    boost::numeric_cast<int>(global_physical_extents_[1]),
-                    1); // nuke btrans
+        p3dfft_setup(processor_grid.data(),
+                     global_physical_extent[0],
+                     global_physical_extent[2],
+                     global_physical_extent[1],
+                     1); // nuke btrans
         p3dfft_setup_called_ = true;
     }
 
     // Retrieve information for local input and output pencils
     // P3DFFT uses int types; defensively ensure we do too
-    boost::array<int,3> pstart, pextent, pend, wstart, wextent, wend;
-    get_dims(pstart.data(), pend.data(), pextent.data(), 1); // physical
-    get_dims(wstart.data(), wend.data(), wextent.data(), 2); // wave
+    get_dims(local_physical_start.data(),
+             local_physical_end.data(),
+             local_physical_extent.data(),
+             1 /* physical */);
+    get_dims(local_wave_start.data(),
+             local_wave_end.data(),
+             local_wave_extent.data(),
+             2 /* wave */);
     // P3DFFT STRIDE1 physical space get_dims returns in (X, Z, Y) ordering
     // Suzerain's pencils require (X, Y, Z) ordering; flip Z and Y data
-    std::swap(pstart [1], pstart [2]);
-    std::swap(pend   [1], pend   [2]);
-    std::swap(pextent[1], pextent[2]);
+    std::swap(local_physical_start [1], local_physical_start [2]);
+    std::swap(local_physical_end   [1], local_physical_end   [2]);
+    std::swap(local_physical_extent[1], local_physical_extent[2]);
     // P3DFFT STRIDE1 wave space get_dims returns in (Y, X, Z) ordering
     // Suzerain's pencils require (X, Y, Z) ordering; flip Y and X data
-    std::swap(wstart [0], wstart [1]);
-    std::swap(wend   [0], wend   [1]);
-    std::swap(wextent[0], wextent[1]);
+    std::swap(local_wave_start [0], local_wave_start [1]);
+    std::swap(local_wave_end   [0], local_wave_end   [1]);
+    std::swap(local_wave_extent[0], local_wave_extent[1]);
     // Transform indices for C conventions; want ranges like [istart, iend)
-    std::transform(pstart.begin(), pstart.end(), pstart.begin(),
-            std::bind2nd(std::minus<int>(),1));
-    std::transform(wstart.begin(), wstart.end(), wstart.begin(),
-            std::bind2nd(std::minus<int>(),1));
-
-    // Convert modified P3DFFT dimensions to have appropriate numeric type
-    boost::numeric::converter<index,int> converter;
-    std::transform(pstart.begin(), pstart.end(), pstart_.begin(), converter);
-    std::transform(pend.begin(),   pend.end(),   pend_.begin(),   converter);
-    std::transform(pextent.begin(),pextent.end(),pextent_.begin(),converter);
-    std::transform(wstart.begin(), wstart.end(), wstart_.begin(), converter);
-    std::transform(wend.begin(),   wend.end(),   wend_.begin(),   converter);
-    std::transform(wextent.begin(),wextent.end(),wextent_.begin(),converter);
+    local_physical_start -= 1;
+    local_wave_start     -= 1;
 }
 
 #pragma warning(push,disable:2017)
@@ -134,19 +128,18 @@ pencil_grid::~pencil_grid()
 }
 #pragma warning(pop)
 
-pencil_grid::size_type pencil_grid::local_physical_storage() const
+std::size_t pencil_grid::local_physical_storage() const
 {
     // Wave space scalars are twice as big as physical space scalars
-    using suzerain::functional::product;
-    return std::max(2*product(wextent_), product(pextent_));
+    return std::max(2*local_wave_extent.prod(), local_physical_extent.prod());
 }
 
-pencil_grid::size_type pencil_grid::local_wave_storage() const
+std::size_t pencil_grid::local_wave_storage() const
 {
     // Physical space scalars are half as big, but we must round up
-    using suzerain::functional::product;
-    const index prodphys = product(pextent_);
-    return std::max(product(wextent_), prodphys/2 + (prodphys % 2));
+    const std::size_t prodphys = local_physical_extent.prod();
+    const std::size_t prodwave = local_wave_extent.prod();
+    return std::max(prodwave, prodphys/2 + (prodphys % 2));
 }
 
 } // namespace suzerain

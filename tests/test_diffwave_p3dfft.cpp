@@ -55,25 +55,23 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
                                              const double maxrelerror)
 {
     // Note: Incoming pencil_grid describes dealiased extents
-    typedef pencil_grid::index index;
-    typedef pencil_grid::size_type size_type;
 
     // Create a uniform grid on [0, Lx) x [0, Ly) x [0, Lz)
-    std::valarray<double> gridx(pg.local_physical_extent()[0]);
-    std::valarray<double> gridy(pg.local_physical_extent()[1]);
-    std::valarray<double> gridz(pg.local_physical_extent()[2]);
-    for (index i = 0; i < pg.local_physical_extent()[0]; ++i) {
-        gridx[i] = double(i+pg.local_physical_start()[0]);
+    std::valarray<double> gridx(pg.local_physical_extent[0]);
+    std::valarray<double> gridy(pg.local_physical_extent[1]);
+    std::valarray<double> gridz(pg.local_physical_extent[2]);
+    for (int i = 0; i < pg.local_physical_extent[0]; ++i) {
+        gridx[i] = double(i+pg.local_physical_start[0]);
     }
-    for (index j = 0; j < pg.local_physical_extent()[1]; ++j) {
-        gridy[j] = double(j+pg.local_physical_start()[1]);
+    for (int j = 0; j < pg.local_physical_extent[1]; ++j) {
+        gridy[j] = double(j+pg.local_physical_start[1]);
     }
-    for (index k = 0; k < pg.local_physical_extent()[2]; ++k) {
-        gridz[k] = double(k+pg.local_physical_start()[2]);
+    for (int k = 0; k < pg.local_physical_extent[2]; ++k) {
+        gridz[k] = double(k+pg.local_physical_start[2]);
     }
-    gridx *= Lx/pg.global_physical_extents()[0];
-    gridy *= Ly/pg.global_physical_extents()[1];
-    gridz *= Lz/pg.global_physical_extents()[2];
+    gridx *= Lx/pg.global_physical_extent[0];
+    gridy *= Ly/pg.global_physical_extent[1];
+    gridz *= Lz/pg.global_physical_extent[2];
 
     // Retrieve storage size, strides, and allocate working arrays
     const int nelem = pg.local_physical_storage();
@@ -82,13 +80,13 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     // Create composable test functions in the X and Z directions
     // Note that maximum wavenumber (inclusive) is (N-1)/2.
     periodic_function<> fx1(
-            pg.global_physical_extents()[0], Nx/2, M_PI/3, Lx, 11);
+            pg.global_physical_extent[0], Nx/2, M_PI/3, Lx, 11);
     periodic_function<> fx2(
-            pg.global_physical_extents()[0], Nx/2, M_PI/7, Lx, 13);
+            pg.global_physical_extent[0], Nx/2, M_PI/7, Lx, 13);
     periodic_function<> fz1(
-            pg.global_physical_extents()[2], Nz/2, M_PI/4, Lz, 17);
+            pg.global_physical_extent[2], Nz/2, M_PI/4, Lz, 17);
     periodic_function<> fz2(
-            pg.global_physical_extents()[2], Nz/2, M_PI/9, Lz, 19);
+            pg.global_physical_extent[2], Nz/2, M_PI/9, Lz, 19);
 
     // Track worst point-wise error magnitude for either test Gives an idea of
     // any lost precision and how loose any test tolerances may be in practice.
@@ -96,8 +94,8 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
 
     // P3DFFT does not normalize after transformations;
     // we need the rescaling factor handy.
-    const size_type scale = pg.global_physical_extents()[0]
-                          * pg.global_physical_extents()[2];
+    const double scale = pg.global_physical_extent[0]
+                      * pg.global_physical_extent[2];
 
     // ---------------------------------
     // Test suzerain_diffwave_accumulate
@@ -108,9 +106,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     std::fill(B.get(),B.get()+nelem,std::numeric_limits<double>::quiet_NaN());
     {
         double *pA = A.get(), *pB = B.get();
-        for (index j = 0; j < (index) gridy.size(); ++j) {
-            for (index k = 0; k < (index) gridz.size(); ++k) {
-                for (index i = 0; i < (index) gridx.size(); ++i) {
+        for (int j = 0; j < (int) gridy.size(); ++j) {
+            for (int k = 0; k < (int) gridz.size(); ++k) {
+                for (int i = 0; i < (int) gridx.size(); ++i) {
                     *pA++ = fx1.physical_evaluate(gridx[i])
                           * fz1.physical_evaluate(gridz[k])
                           * (j+1);
@@ -133,13 +131,13 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
         const double (*x)[2]  = reinterpret_cast<const double (*)[2]>(A.get());
         const double beta[2]  = { 3.0/scale, 0.0/scale };
         double (*y)[2]        = reinterpret_cast<double (*)[2]>(B.get());
-        const int Ny          = pg.global_physical_extents()[1];
-        const int dNx         = pg.global_physical_extents()[0];
-        const int dkbx        = pg.local_wave_start()[0];
-        const int dkex        = pg.local_wave_end()[0];
-        const int dNz         = pg.global_physical_extents()[2];
-        const int dkbz        = pg.local_wave_start()[2];
-        const int dkez        = pg.local_wave_end()[2];
+        const int Ny          = pg.global_physical_extent[1];
+        const int dNx         = pg.global_physical_extent[0];
+        const int dkbx        = pg.local_wave_start[0];
+        const int dkex        = pg.local_wave_end[0];
+        const int dNz         = pg.global_physical_extent[2];
+        const int dkbz        = pg.local_wave_start[2];
+        const int dkez        = pg.local_wave_end[2];
 
         suzerain_diffwave_accumulate(
             dxcnt, dzcnt, alpha, x, beta, y, Lx, Lz,
@@ -153,9 +151,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     // Ensure the synthetic accumulated field came back cleanly
     {
         const double *pB = B.get();
-        for (index j = 0; j < (index) gridy.size(); ++j) {
-            for (index k = 0; k < (index) gridz.size(); ++k) {
-                for (index i = 0; i < (index) gridx.size(); ++i) {
+        for (int j = 0; j < (int) gridy.size(); ++j) {
+            for (int k = 0; k < (int) gridz.size(); ++k) {
+                for (int i = 0; i < (int) gridx.size(); ++i) {
                     {
                         const double cfx1
                             = fx1.physical_evaluate(gridx[i], dxcnt);
@@ -188,9 +186,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     std::fill(A.get(),A.get()+nelem,std::numeric_limits<double>::quiet_NaN());
     {
         double *pA = A.get();
-        for (index j = 0; j < (index) gridy.size(); ++j) {
-            for (index k = 0; k < (index) gridz.size(); ++k) {
-                for (index i = 0; i < (index) gridx.size(); ++i) {
+        for (int j = 0; j < (int) gridy.size(); ++j) {
+            for (int k = 0; k < (int) gridz.size(); ++k) {
+                for (int i = 0; i < (int) gridx.size(); ++i) {
                     *pA++ = fx1.physical_evaluate(gridx[i])
                           * fz1.physical_evaluate(gridz[k])
                           * (j+1);
@@ -207,13 +205,13 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     {
         const double alpha[2] = { 2.0/scale, 0.0/scale };
         double (*x)[2]        = reinterpret_cast<double (*)[2]>(A.get());
-        const int Ny          = pg.global_physical_extents()[1];
-        const int dNx         = pg.global_physical_extents()[0];
-        const int dkbx        = pg.local_wave_start()[0];
-        const int dkex        = pg.local_wave_end()[0];
-        const int dNz         = pg.global_physical_extents()[2];
-        const int dkbz        = pg.local_wave_start()[2];
-        const int dkez        = pg.local_wave_end()[2];
+        const int Ny          = pg.global_physical_extent[1];
+        const int dNx         = pg.global_physical_extent[0];
+        const int dkbx        = pg.local_wave_start[0];
+        const int dkex        = pg.local_wave_end[0];
+        const int dNz         = pg.global_physical_extent[2];
+        const int dkbz        = pg.local_wave_start[2];
+        const int dkez        = pg.local_wave_end[2];
 
         suzerain_diffwave_apply(
             dxcnt, dzcnt, alpha, x, Lx, Lz,
@@ -226,9 +224,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     // Ensure the synthetic accumulated field came back cleanly
     {
         const double *pA = A.get();
-        for (index j = 0; j < (index) gridy.size(); ++j) {
-            for (index k = 0; k < (index) gridz.size(); ++k) {
-                for (index i = 0; i < (index) gridx.size(); ++i) {
+        for (int j = 0; j < (int) gridy.size(); ++j) {
+            for (int k = 0; k < (int) gridz.size(); ++k) {
+                for (int i = 0; i < (int) gridx.size(); ++i) {
                     {
                         const double cfx1
                             = fx1.physical_evaluate(gridx[i], dxcnt);
@@ -264,8 +262,8 @@ static void test_accumulateAndApply(const int Ny,
     const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
     const int np     = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
-    pencil_grid::size_type_3d global_physical_extents = {{ dNx, Ny, dNz }};
-    pencil_grid::size_type_2d processor_grid = {{ 0, 0 }};
+    boost::array<int,3> global_physical_extents = {{ dNx, Ny, dNz }};
+    boost::array<int,2> processor_grid = {{ 0, 0 }};
     pencil_grid pg(global_physical_extents, processor_grid);
 
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
