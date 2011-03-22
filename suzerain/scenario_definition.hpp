@@ -64,13 +64,13 @@ public:
      * @param default_Ly    Default domain length in the Y direction.
      * @param default_Lz    Default domain length in the Z direction.
      */
-    ScenarioDefinition(FPT default_Re,
-                       FPT default_Pr,
-                       FPT default_gamma,
-                       FPT default_beta,
-                       FPT default_Lx,
-                       FPT default_Ly,
-                       FPT default_Lz);
+    explicit ScenarioDefinition(FPT default_Re    = 0,
+                                FPT default_Pr    = 0,
+                                FPT default_gamma = 0,
+                                FPT default_beta  = 0,
+                                FPT default_Lx    = 0,
+                                FPT default_Ly    = 0,
+                                FPT default_Lz    = 0);
 
     /**
      * The Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
