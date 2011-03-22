@@ -76,6 +76,7 @@ libsuzerain_la_SOURCES += diffwave.c
 libsuzerain_la_SOURCES += error.c
 libsuzerain_la_SOURCES += fftw.cpp
 libsuzerain_la_SOURCES += gbmatrix.c
+libsuzerain_la_SOURCES += grid_definition.cpp
 libsuzerain_la_SOURCES += htstretch.c
 libsuzerain_la_SOURCES += inorder.c
 libsuzerain_la_SOURCES += mpi.cpp

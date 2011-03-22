@@ -32,7 +32,6 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
-#include <suzerain/types.hpp>
 #include <suzerain/validation.hpp>
 
 /** @file
@@ -48,10 +47,12 @@ namespace problem {
  * mixed Fourier/B-spline method.  The B-spline representation is used in the
  * wall-normal Y direction.
  */
-template< typename FPT = double >
-class GridDefinition : public IDefinition, public integral_types
+class GridDefinition : public IDefinition
 {
 public:
+    // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     /**
      * Construct an instance with the given default values.  Setting default
      * values of zero changes option semantics so the parameters become
@@ -69,225 +70,65 @@ public:
      * @param default_Nz   Default logical grid size in the Z direction.
      * @param default_DAFz Default dealiasing factor in the Z direction.
      */
-    explicit GridDefinition(
-            size_type default_Nx,
-            FPT       default_DAFx,
-            size_type default_Ny,
-            size_type default_k,
-            size_type default_Nz,
-            FPT       default_DAFz);
+    explicit GridDefinition(int    default_Nx   = 0,
+                            double default_DAFx = 0,
+                            int    default_Ny   = 0,
+                            int    default_k    = 0,
+                            int    default_Nz   = 0,
+                            double default_DAFz = 0);
 
-    /**
-     * Global logical computational grid extents in the X, Y, and Z directions.
-     * These values do not account for dealiasing factors.
-     */
-    size_type_3d global_extents;
+    /** Global logical extents in the X, Y, and Z directions. */
+    Eigen::Array3i N;
 
-    /**
-     * Retrieve global dealiased computational grid extents. These are the
-     * global_extents() multiplied by the dealiasing factors DAFx(), one,
-     * and DAFz().
-     *
-     * @return the global dealiased grid extents in the X, Y, and Z directions.
-     */
-    size_type_3d dealiased_extents() const {
-        size_type_3d retval = global_extents;
-        retval[0] *= DAFx;
-        retval[2] *= DAFz;
-        return retval;
-    }
-
-    /**
-     * Computational grid size in the X direction.  This is the number
-     * of points in the domain without accounting for any dealiasing.
-     */
-    size_type& Nx;
-
-    /**
-     * The dealiasing factor for the X direction.  This factor
-     * should be multiplied times Nx() to obtain an extent for Fourier
-     * transformations.
-     */
-    FPT DAFx;
-
-    /**
-     * Computational grid size in the Y direction.  This is the number
-     * of B-spline basis functions (equivalently, wall-normal degrees of
-     * freedom) in use.  This direction does not support dealiasing.
-     */
-    size_type& Ny;
+    /** Global dealiased logical extents in the X, Y, and Z directions.  */
+    Eigen::Array3i dN;
 
     /**
      * The B-spline basis order plus one.  For example, piecewise cubics have
      * <tt>k() == 4</tt>.
      */
-    size_type k;
+    int k;
 
     /**
-     * Grid size in the Z direction.  This is the number
-     * of points in the domain without accounting for any dealiasing.
-     */
-    size_type& Nz;
-
-    /**
-     * The dealiasing factor for the Z direction.  This factor
-     * should be multiplied times Nz() to obtain an extent for Fourier
-     * transformations.
-     */
-    FPT DAFz;
-
-    /**
-     * The two dimensional processor grid extents.
+     * The two dimensional processor grid.
      *
-     * In physical space, \f$ P_A \f$ is the grid extent in the Z direction
-     * and \f$ P_B \f$ is the grid extent in the Y direction.
-     * In wave space, \f$ P_A \f$ is the grid extent in the X direction
-     * and \f$ P_B \f$  is the grid extent in the Z direction.
+     * In physical space, \f$ P[0] \f$ is the grid extent in the Z direction
+     * and \f$ P[1] \f$ is the grid extent in the Y direction.  In wave space,
+     * \f$ P[0] \f$ is the grid extent in the X direction and \f$ P[1] \f$  is
+     * the grid extent in the Z direction.
      */
-    size_type_2d processor_grid;
+    Eigen::Vector2i P;
 
     /**
-     * The processor grid extent in the \f$ P_A \f$ direction.
-     * @see processor_grid() for more details.
+     * Obtain the dealiasing factor in the X direction.
+     *
+     * @return <tt>dN.x()/N.x()</tt> performed using floating point division.
      */
-    size_type& Pa;
+    double DAFx() const { return static_cast<double>(dN.x()) / N.x(); }
 
     /**
-     * The processor grid extent in the \f$ P_B \f$ direction.
-     * @see processor_grid() for more details.
+     * Set the dealiasing factor in the X direction.
+     *
+     * @param factor New, nonnegative factor to set.
+     * @return <tt>*this</tt>
      */
-    size_type& Pb;
+    GridDefinition& DAFx(double factor);
 
+    /**
+     * Obtain the dealiasing factor in the Z direction.
+     *
+     * @return <tt>dN.z()/N.z()</tt> performed using floating point division.
+     */
+    double DAFz() const { return static_cast<double>(dN.z()) / N.z(); }
+
+    /**
+     * Set the dealiasing factor in the Z direction.
+     *
+     * @param factor New, nonnegative factor to set.
+     * @return <tt>*this</tt>
+     */
+    GridDefinition& DAFz(double factor);
 };
-
-template< typename FPT >
-GridDefinition<FPT>::GridDefinition(size_type default_Nx,
-                                    FPT       default_DAFx,
-                                    size_type default_Ny,
-                                    size_type default_k,
-                                    size_type default_Nz,
-                                    FPT       default_DAFz)
-    : IDefinition("Mixed Fourier/B-spline computational grid definition"),
-      // global_extents below
-      Nx(global_extents[0]), DAFx(default_DAFx),
-      Ny(global_extents[1]), k(default_k),
-      Nz(global_extents[2]), DAFz(default_DAFz),
-      // processor_grid below
-      Pa(processor_grid[0]),
-      Pb(processor_grid[1])
-{
-    global_extents[0] = default_Nx;
-    global_extents[1] = default_Ny;
-    global_extents[2] = default_Nz;
-    processor_grid[0] = 0;
-    processor_grid[1] = 0;
-
-    using ::std::auto_ptr;
-    using ::std::bind2nd;
-    using ::std::ptr_fun;
-    using ::suzerain::validation::ensure_nonnegative;
-    using ::suzerain::validation::ensure_positive;
-    using ::boost::program_options::typed_value;
-    using ::boost::program_options::value;
-
-    // Created to solve ambiguous type issues below
-    ::std::pointer_to_binary_function<FPT,const char*,void>
-        ptr_fun_ensure_positive_FPT(ensure_positive<FPT>);
-    ::std::pointer_to_binary_function<FPT,const char*,void>
-        ptr_fun_ensure_nonnegative_FPT(ensure_nonnegative<FPT>);
-
-    // Complicated add_options() calls done to allow changing the validation
-    // routine in use when the default provided value is zero.  Zero is
-    // generally used a NOP value by some client code.
-
-    { // Nx
-        auto_ptr<typed_value<size_type> > v(value(&this->Nx));
-        if (default_Nx) {
-            v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "Nx"));
-        } else {
-            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Nx"));
-        }
-        v->default_value(default_Nx);
-        this->add_options()("Nx", v.release(),
-                "Spectral coefficient count in streamwise X direction");
-    }
-
-    { // DAFx
-        auto_ptr<typed_value<FPT> > v(value(&this->DAFx));
-        if (default_DAFx) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,   "DAFx"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT,"DAFx"));
-        }
-        v->default_value(default_DAFx);
-        this->add_options()("DAFx", v.release(),
-            "Dealiasing factor in streamwise X direction");
-    }
-
-    { // Ny
-        auto_ptr<typed_value<size_type> > v(value(&this->Ny));
-        if (default_Ny) {
-            v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "Ny"));
-        } else {
-            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Ny"));
-        }
-        v->default_value(default_Ny);
-        this->add_options()("Ny", v.release(),
-                "Collocation point count in wall-normal Y direction");
-    }
-
-    { // k
-        auto_ptr<typed_value<size_type> > v(value(&this->k));
-        if (default_k) {
-            v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "k"));
-        } else {
-            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"k"));
-        }
-        v->default_value(default_k);
-        this->add_options()("k", v.release(),
-                "B-spline basis order where k = 4 indicates piecewise cubics");
-    }
-
-    { // Nz
-        auto_ptr<typed_value<size_type> > v(value(&this->Nz));
-        if (default_Nz) {
-            v->notifier(bind2nd(ptr_fun(ensure_positive<size_type>),   "Nz"));
-        } else {
-            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Nz"));
-        }
-        v->default_value(default_Nz);
-        this->add_options()("Nz", v.release(),
-                "Spectral coefficient count in spanwise Z direction");
-    }
-
-    { // DAFz
-        auto_ptr<typed_value<FPT> > v(value(&this->DAFz));
-        if (default_DAFz) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,   "DAFz"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT,"DAFz"));
-        }
-        v->default_value(default_DAFz);
-        this->add_options()("DAFz", v.release(),
-                "Dealiasing factor in spanwise Z direction");
-    }
-
-    { // Pa
-        auto_ptr<typed_value<size_type> > v(value(&this->Pa));
-        v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pa"));
-        v->default_value(0);
-        this->add_options()("Pa", v.release(),
-            "Processor count in the P_A decomposition direction");
-    }
-
-    { // Pb
-        auto_ptr<typed_value<size_type> > v(value(&this->Pb));
-        v->notifier(bind2nd(ptr_fun(ensure_nonnegative<size_type>),"Pb"));
-        v->default_value(0);
-        this->add_options()("Pb", v.release(),
-            "Processor count in the P_B decomposition direction");
-    }
-}
 
 } // namespace problem
 
