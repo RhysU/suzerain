@@ -33,7 +33,6 @@
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/types.hpp>
 
 namespace suzerain
 {
@@ -54,11 +53,38 @@ template<
     typename Allocator = typename suzerain::blas::allocator<FPT>::type
     >
 class pencil
-    : public integral_types,
-             boost::noncopyable,
+    : public boost::noncopyable,
       private Allocator
 {
 public:
+
+    /**
+     * @name Index and index offset types
+     * Type choices mimic those found in <tt>boost::multi_array_types</tt>.
+     * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
+     *      Boost.MultiArray</a> for more information on
+     *      <tt>boost::multi_array_types</tt>.
+     * @{ */
+    /**
+     * This is a signed integral type used for indexing into pencils.
+     * It is also used to represent strides and index bases.
+     */
+    typedef boost::multi_array_types::index index;
+
+    /**
+     * This is an unsigned integral type.
+     * It is primarily used to specify pencil shapes.
+     */
+    typedef boost::multi_array_types::size_type size_type;
+
+    /**
+     * This is a signed integral type used to represent the distance
+     * between two iterators.  It is the same type as
+     * <tt>std::iterator_traits<iterator>::difference_type</tt>.
+     **/
+    typedef boost::multi_array_types::difference_type difference_type;
+    /**  @} */
+
 
     /**
      * @name Real-valued types
@@ -86,11 +112,6 @@ public:
     typedef complex_pointer            complex_iterator;
     typedef const_complex_pointer      const_complex_iterator;
     /**  @} */
-
-    /**
-     * Typedef required because Allocator EMBCO makes \c size_type ambiguous.
-     **/
-    typedef integral_types::size_type size_type;
 
 private: // Declared above public members to enforce initialization order
 
@@ -243,8 +264,11 @@ public:
          * @param data  location where coefficients are to be found,
          *              must be sufficiently large to hold all elements.
          */
+        template<typename RandomAccessContainer>
         physical_space(
-            const index_3d &start, const index_3d &size, real_pointer data);
+            const RandomAccessContainer &start,
+            const RandomAccessContainer &size,
+            real_pointer data);
 
         /** Raw real_type data where coefficients are stored. */
         real_pointer const data_;
@@ -402,8 +426,11 @@ public:
          * @param data  location where coefficients are to be found,
          *              must be sufficiently large to hold all elements.
          */
+        template<typename RandomAccessContainer>
         wave_space(
-            const index_3d &start, const index_3d &size, real_pointer data);
+            const RandomAccessContainer &start,
+            const RandomAccessContainer &size,
+            real_pointer data);
 
         /** Raw complex_type data where coefficients are stored. */
         complex_pointer const data_complex_;
@@ -430,8 +457,11 @@ public:
      * @param wsize  size of the pencil in wave space.
      * @throw std::invalid_argument if any index is negative.
      */
-    pencil(const index_3d &pstart, const index_3d &psize,
-           const index_3d &wstart, const index_3d &wsize)
+    template<typename RandomAccessContainer>
+    pencil(const RandomAccessContainer &pstart,
+           const RandomAccessContainer &psize,
+           const RandomAccessContainer &wstart,
+           const RandomAccessContainer &wsize)
     throw(std::invalid_argument);
 
     /**
@@ -726,9 +756,10 @@ pencil<FPT,Allocator>::wave_space::end() const
 }
 
 template<typename FPT, typename Allocator>
+template< typename RandomAccessContainer >
 pencil<FPT,Allocator>::pencil(
-    const index_3d &pstart, const index_3d &psize,
-    const index_3d &wstart, const index_3d &wsize)
+    const RandomAccessContainer &pstart, const RandomAccessContainer &psize,
+    const RandomAccessContainer &wstart, const RandomAccessContainer &wsize)
 throw(std::invalid_argument)
         : data_nelem_(std::max(
               psize[0]*psize[1]*psize[2],
@@ -765,8 +796,11 @@ pencil<FPT,Allocator>::~pencil()
 }
 
 template<typename FPT, typename Allocator>
+template<typename RandomAccessContainer>
 pencil<FPT,Allocator>::physical_space::physical_space(
-    const index_3d &start, const index_3d &size, real_pointer data)
+    const RandomAccessContainer &start,
+    const RandomAccessContainer &size,
+    real_pointer data)
     :
     start_x(start[0]), start_y(start[1]), start_z(start[2]),
     end_x(start[0]+size[0]), end_y(start[1]+size[1]), end_z(start[2]+size[2]),
@@ -779,8 +813,11 @@ pencil<FPT,Allocator>::physical_space::physical_space(
 }
 
 template<typename FPT, typename Allocator>
+template<typename RandomAccessContainer>
 pencil<FPT,Allocator>::wave_space::wave_space(
-    const index_3d &start, const index_3d &size, real_pointer data)
+    const RandomAccessContainer &start,
+    const RandomAccessContainer &size,
+    real_pointer data)
     :
     start_x(start[0]), start_y(start[1]), start_z(start[2]),
     end_x(start[0]+size[0]), end_y(start[1]+size[1]), end_z(start[2]+size[2]),

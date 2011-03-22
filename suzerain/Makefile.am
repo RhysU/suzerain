@@ -65,7 +65,6 @@ pkginclude_HEADERS += timecontroller.hpp
 pkginclude_HEADERS += timestepper.hpp
 pkginclude_HEADERS += time_definition.hpp
 pkginclude_HEADERS += traits.hpp
-pkginclude_HEADERS += types.hpp
 pkginclude_HEADERS += utility.hpp
 pkginclude_HEADERS += validation.hpp
 

@@ -31,7 +31,6 @@
 #define __SUZERAIN_PENCIL_GRID_H
 
 #include <suzerain/common.hpp>
-#include <suzerain/types.hpp>
 #include <suzerain/mpi.hpp>
 #include <p3dfft_d.h>
 

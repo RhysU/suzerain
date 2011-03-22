@@ -21,10 +21,10 @@ BOOST_AUTO_TEST_CASE( constructor )
 
     using namespace suzerain;
 
-    const pencil<>::index_3d pstart = {{ 0, 0,  0}};
-    const pencil<>::index_3d psize  = {{16, 7,  4}};
-    const pencil<>::index_3d wstart = {{ 0, 0,  0}};
-    const pencil<>::index_3d wsize  = {{ 7, 4, 16}};
+    const boost::array<pencil<>::index,3> pstart = {{ 0, 0,  0}};
+    const boost::array<pencil<>::index,3> psize  = {{16, 7,  4}};
+    const boost::array<pencil<>::index,3> wstart = {{ 0, 0,  0}};
+    const boost::array<pencil<>::index,3> wsize  = {{ 7, 4, 16}};
 
     pencil<> p(pstart, psize, wstart, wsize);
 
@@ -53,10 +53,10 @@ BOOST_AUTO_TEST_CASE( storage_order )
 {
     using namespace suzerain;
 
-    const pencil<>::index_3d pstart = {{  0,  0,  0}};
-    const pencil<>::index_3d psize  = {{ 11, 13, 17}};
-    const pencil<>::index_3d wstart = {{  0,  0,  0}};
-    const pencil<>::index_3d wsize  = {{  3,  5,  7}};
+    const boost::array<pencil<>::index,3> pstart = {{  0,  0,  0}};
+    const boost::array<pencil<>::index,3> psize  = {{ 11, 13, 17}};
+    const boost::array<pencil<>::index,3> wstart = {{  0,  0,  0}};
+    const boost::array<pencil<>::index,3> wsize  = {{  3,  5,  7}};
 
     pencil<> p(pstart, psize, wstart, wsize);
 
@@ -94,10 +94,10 @@ BOOST_AUTO_TEST_CASE( offsets_and_inverse_offsets )
     using namespace suzerain;
     typedef pencil<>::index index;
 
-    const pencil<>::index_3d pstart = {{  5,  6,  7}};
-    const pencil<>::index_3d psize  = {{  2,  3,  5}};
-    const pencil<>::index_3d wstart = {{  1,  2,  3}};
-    const pencil<>::index_3d wsize  = {{  3,  5,  7}};
+    const boost::array<pencil<>::index,3> pstart = {{  5,  6,  7}};
+    const boost::array<pencil<>::index,3> psize  = {{  2,  3,  5}};
+    const boost::array<pencil<>::index,3> wstart = {{  1,  2,  3}};
+    const boost::array<pencil<>::index,3> wsize  = {{  3,  5,  7}};
 
     pencil<> p(pstart, psize, wstart, wsize);
 
@@ -151,10 +151,10 @@ BOOST_AUTO_TEST_CASE( real_access )
     using namespace suzerain;
     typedef pencil<>::index index;
 
-    const pencil<>::index_3d pstart = {{ 0, 0,  0}};
-    const pencil<>::index_3d psize  = {{ 2, 2,  2}};
-    const pencil<>::index_3d wstart = {{ 0, 0,  0}};
-    const pencil<>::index_3d wsize  = {{ 2, 1,  1}};
+    const boost::array<pencil<>::index,3> pstart = {{ 0, 0,  0}};
+    const boost::array<pencil<>::index,3> psize  = {{ 2, 2,  2}};
+    const boost::array<pencil<>::index,3> wstart = {{ 0, 0,  0}};
+    const boost::array<pencil<>::index,3> wsize  = {{ 2, 1,  1}};
 
     pencil<> p(pstart, psize, wstart, wsize);
 
@@ -195,10 +195,10 @@ BOOST_AUTO_TEST_CASE( complex_access )
     using namespace suzerain;
     typedef pencil<>::index index;
 
-    const pencil<>::index_3d pstart = {{ 1,  1,  1}};
-    const pencil<>::index_3d psize  = {{ 2,  3,  5}};
-    const pencil<>::index_3d wstart = {{ 2,  2,  2}};
-    const pencil<>::index_3d wsize  = {{ 7, 11, 13}};
+    const boost::array<pencil<>::index,3> pstart = {{ 1,  1,  1}};
+    const boost::array<pencil<>::index,3> psize  = {{ 2,  3,  5}};
+    const boost::array<pencil<>::index,3> wstart = {{ 2,  2,  2}};
+    const boost::array<pencil<>::index,3> wsize  = {{ 7, 11, 13}};
 
     pencil<> p(pstart, psize, wstart, wsize);
 

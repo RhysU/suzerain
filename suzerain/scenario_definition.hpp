@@ -32,7 +32,6 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
-#include <suzerain/types.hpp>
 #include <suzerain/validation.hpp>
 
 /** @file
