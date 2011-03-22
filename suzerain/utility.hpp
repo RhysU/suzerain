@@ -35,22 +35,41 @@
 
 namespace suzerain {
 
+namespace { // anonymous
+
+// Look up scalar type from a Container, e.g. a boost::array
+template< typename T >
+struct scalar {
+    typedef typename T::value_type type;
+};
+
+// Look up scalar type from an Eigen base class
+template< typename Derived >
+struct scalar< Eigen::DenseBase<Derived> > {
+    typedef typename Eigen::internal::traits<Derived>::Scalar type;
+};
+
+} // end namespace anonymous
+
 /**
- * Convert a 3 element boost::array from XYZ to YXZ ordering.
+ * Convert a 3 element array from XYZ to YXZ ordering.
  *
  * @param xyz to convert.
  *
  * @return A copy of <tt>xyz</tt> with the elements reordered.
  */
-template< typename T >
-boost::array<T,3> to_yxz(const boost::array<T,3>& xyz)
+template< typename RandomAccessContainer >
+boost::array<
+    typename scalar<RandomAccessContainer>::type, 3
+> to_yxz(const RandomAccessContainer& xyz)
 {
-    boost::array<T,3> retval = {{ xyz[1], xyz[0], xyz[2] }};
+    boost::array<typename scalar<RandomAccessContainer>::type,3> retval
+            = {{ xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
 
 /**
- * Convert a 3 element  boost::array from XYZ to YXZ ordering with an
+ * Convert a 3 element array from XYZ to YXZ ordering with an
  * additional element prepended.
  *
  * @param prepend to prepend.
@@ -59,29 +78,35 @@ boost::array<T,3> to_yxz(const boost::array<T,3>& xyz)
  * @return A copy of <tt>xyz</tt> with the elements reordered
  *         and <tt>prepend</tt> prepended.
  */
-template< typename T, typename U >
-boost::array<T,4> to_yxz(const U& prepend, const boost::array<T,3>& xyz)
+template< typename RandomAccessContainer, typename U >
+boost::array<
+    typename scalar<RandomAccessContainer>::type, 4
+> to_yxz(const U& prepend, const RandomAccessContainer& xyz)
 {
-    boost::array<T,4> retval = {{ prepend, xyz[1], xyz[0], xyz[2] }};
+    boost::array<typename scalar<RandomAccessContainer>::type,4> retval
+            = {{ prepend, xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
 
 /**
- * Convert a 3 element boost::array from XYZ to XZY ordering.
+ * Convert a 3 element array from XYZ to XZY ordering.
  *
  * @param xyz to convert.
  *
  * @return A copy of <tt>xyz</tt> with the elements reordered.
  */
-template< typename T >
-boost::array<T,3> to_xzy(const boost::array<T,3>& xyz)
+template< typename RandomAccessContainer >
+boost::array<
+    typename scalar<RandomAccessContainer>::type, 3
+> to_xzy(const RandomAccessContainer& xyz)
 {
-    boost::array<T,3> retval = {{ xyz[0], xyz[2], xyz[1] }};
+    boost::array<typename scalar<RandomAccessContainer>::type,3> retval
+            = {{ xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
 
 /**
- * Convert a 3 element boost::array from XYZ to XZY ordering with an additional
+ * Convert a 3 element array from XYZ to XZY ordering with an additional
  * element prepended.
  *
  * @param prepend to prepend.
@@ -90,15 +115,18 @@ boost::array<T,3> to_xzy(const boost::array<T,3>& xyz)
  * @return A copy of <tt>xyz</tt> with the elements reordered
  *         and <tt>prepend</tt> prepended.
  */
-template< typename T, typename U >
-boost::array<T,4> to_xzy(const U& prepend, const boost::array<T,3>& xyz)
+template< typename RandomAccessContainer, typename U >
+boost::array<
+    typename scalar<RandomAccessContainer>::type, 4
+> to_xzy(const U& prepend, const RandomAccessContainer& xyz)
 {
-    boost::array<T,4> retval = {{ prepend, xyz[0], xyz[2], xyz[1] }};
+    boost::array<typename scalar<RandomAccessContainer>::type,4> retval
+        = {{ prepend, xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
 
 /**
- * Convert a 3 element boost::array from containing wave space XYZ extents to
+ * Convert a 3 element array from containing wave space XYZ extents to
  * containing physical space XYZ extents assuming the X-direction is
  * transformed via a complex-to-real Fourier transform.  The X extent's even or
  * odd nature is preserved.  That is, @{Nx, Ny, Nz}@ becomes @{2*(Nx-1), Ny,
@@ -109,11 +137,13 @@ boost::array<T,4> to_xzy(const U& prepend, const boost::array<T,3>& xyz)
  *
  * @return A copy of <tt>xyz</tt> with the elements transformed.
  */
-template< typename T >
-boost::array<T,3> to_physical_xc2r(const boost::array<T,3>& xyz)
+template< typename RandomAccessContainer >
+boost::array<
+    typename scalar<RandomAccessContainer>::type, 3
+> to_physical_xc2r(const RandomAccessContainer& xyz)
 {
-    boost::array<T,3> retval
-        = {{ 2*(xyz[0]-1) + (xyz[0] & T(1)), xyz[1], xyz[2] }};
+    boost::array<typename scalar<RandomAccessContainer>::type,3> retval
+        = {{ 2*(xyz[0]-1) + (xyz[0] & 1), xyz[1], xyz[2] }};
     assert((retval[0]/2)+1 == xyz[0]);
     return retval;
 }
