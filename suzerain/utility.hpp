@@ -53,6 +53,23 @@ boost::array<
 }
 
 /**
+ * Convert a 3 element array from XYZ to YXZ ordering.
+ *
+ * @param xyz to convert.
+ *
+ * @return A copy of <tt>xyz</tt> with the elements reordered.
+ */
+template< typename EigenDenseType >
+boost::array<
+    typename EigenDenseType::Scalar, 3
+> to_yxz(const EigenDenseType& xyz)
+{
+    boost::array<typename EigenDenseType::Scalar,3> retval
+            = {{ xyz[1], xyz[0], xyz[2] }};
+    return retval;
+}
+
+/**
  * Convert a 3 element array from XYZ to YXZ ordering with an
  * additional element prepended.
  *
@@ -73,6 +90,26 @@ boost::array<
 }
 
 /**
+ * Convert a 3 element array from XYZ to YXZ ordering with an
+ * additional element prepended.
+ *
+ * @param prepend to prepend.
+ * @param xyz to convert.
+ *
+ * @return A copy of <tt>xyz</tt> with the elements reordered
+ *         and <tt>prepend</tt> prepended.
+ */
+template< typename EigenDenseType, typename U >
+boost::array<
+    typename EigenDenseType::Scalar, 4
+> to_yxz(const U& prepend, const EigenDenseType& xyz)
+{
+    boost::array<typename EigenDenseType::Scalar,4> retval
+            = {{ prepend, xyz[1], xyz[0], xyz[2] }};
+    return retval;
+}
+
+/**
  * Convert a 3 element array from XYZ to XZY ordering.
  *
  * @param xyz to convert.
@@ -85,6 +122,23 @@ boost::array<
 > to_xzy(const RandomAccessContainer& xyz)
 {
     boost::array<typename RandomAccessContainer::value_type,3> retval
+            = {{ xyz[0], xyz[2], xyz[1] }};
+    return retval;
+}
+
+/**
+ * Convert a 3 element array from XYZ to XZY ordering.
+ *
+ * @param xyz to convert.
+ *
+ * @return A copy of <tt>xyz</tt> with the elements reordered.
+ */
+template< typename EigenDenseType >
+boost::array<
+    typename EigenDenseType::Scalar, 3
+> to_xzy(const EigenDenseType& xyz)
+{
+    boost::array<typename EigenDenseType::Scalar,3> retval
             = {{ xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
@@ -110,25 +164,22 @@ boost::array<
 }
 
 /**
- * Convert a 3 element array from containing wave space XYZ extents to
- * containing physical space XYZ extents assuming the X-direction is
- * transformed via a complex-to-real Fourier transform.  The X extent's even or
- * odd nature is preserved.  That is, @{Nx, Ny, Nz}@ becomes @{2*(Nx-1), Ny,
- * Nz}@ when @Nx@ is even or it becomes @{2*(Nx-1)+1, Ny, Nz}@ when @Nx is odd.
- * Preserving oddness is necessary for @Nx == 1@ to return non-trivial extents.
+ * Convert a 3 element array from XYZ to XZY ordering with an additional
+ * element prepended.
  *
- * @param xyz to transform.
+ * @param prepend to prepend.
+ * @param xyz to convert.
  *
- * @return A copy of <tt>xyz</tt> with the elements transformed.
+ * @return A copy of <tt>xyz</tt> with the elements reordered
+ *         and <tt>prepend</tt> prepended.
  */
-template< typename RandomAccessContainer >
+template< typename EigenDenseType, typename U >
 boost::array<
-    typename RandomAccessContainer::value_type, 3
-> to_physical_xc2r(const RandomAccessContainer& xyz)
+    typename EigenDenseType::Scalar, 4
+> to_xzy(const U& prepend, const EigenDenseType& xyz)
 {
-    boost::array<typename RandomAccessContainer::value_type,3> retval
-        = {{ 2*(xyz[0]-1) + (xyz[0] & 1), xyz[1], xyz[2] }};
-    assert((retval[0]/2)+1 == xyz[0]);
+    boost::array<typename EigenDenseType::Scalar,4> retval
+        = {{ prepend, xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
 

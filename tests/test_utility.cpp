@@ -18,9 +18,19 @@ BOOST_AUTO_TEST_CASE( to_yxz )
                           boost::assign::list_of('y')('x')('z'));
     }
     {
+        Eigen::Vector3i xyz(1,2,3);
+        BOOST_CHECK_EQUAL(to_yxz(xyz),
+                          boost::assign::list_of(2)(1)(3));
+    }
+    {
         boost::array<char,3> xyz = {{ 'x', 'y', 'z' }};
         BOOST_CHECK_EQUAL(to_yxz('w', xyz),
                           boost::assign::list_of('w')('y')('x')('z'));
+    }
+    {
+        Eigen::Vector3i xyz(1,2,3);
+        BOOST_CHECK_EQUAL(to_yxz(4,xyz),
+                          boost::assign::list_of(4)(2)(1)(3));
     }
 }
 
@@ -33,34 +43,19 @@ BOOST_AUTO_TEST_CASE( to_xzy )
                           boost::assign::list_of('x')('z')('y'));
     }
     {
+        Eigen::Vector3i xyz(1,2,3);
+        BOOST_CHECK_EQUAL(to_xzy(xyz),
+                          boost::assign::list_of(1)(3)(2));
+    }
+    {
         boost::array<char,3> xyz = {{ 'x', 'y', 'z' }};
         BOOST_CHECK_EQUAL(to_xzy('w', xyz),
                           boost::assign::list_of('w')('x')('z')('y'));
     }
-}
-
-BOOST_AUTO_TEST_CASE( to_physical_xc2r )
-{
-    using suzerain::to_physical_xc2r;
     {
-        boost::array<int,3> xyz = {{ 1, 777, 888 }};
-        BOOST_CHECK_EQUAL(to_physical_xc2r(xyz),
-                          boost::assign::list_of(1)(777)(888));
-    }
-    {
-        boost::array<int,3> xyz = {{ 2, 777, 888 }};
-        BOOST_CHECK_EQUAL(to_physical_xc2r(xyz),
-                          boost::assign::list_of(2)(777)(888));
-    }
-    {
-        boost::array<int,3> xyz = {{ 3, 777, 888 }};
-        BOOST_CHECK_EQUAL(to_physical_xc2r(xyz),
-                          boost::assign::list_of(5)(777)(888));
-    }
-    {
-        boost::array<int,3> xyz = {{ 4, 777, 888 }};
-        BOOST_CHECK_EQUAL(to_physical_xc2r(xyz),
-                          boost::assign::list_of(6)(777)(888));
+        Eigen::Vector3i xyz(1,2,3);
+        BOOST_CHECK_EQUAL(to_xzy(4, xyz),
+                          boost::assign::list_of(4)(1)(3)(2));
     }
 }
 
