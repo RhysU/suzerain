@@ -35,22 +35,6 @@
 
 namespace suzerain {
 
-namespace { // anonymous
-
-// Look up scalar type from a Container, e.g. a boost::array
-template< typename T >
-struct scalar {
-    typedef typename T::value_type type;
-};
-
-// Look up scalar type from an Eigen base class
-template< typename Derived >
-struct scalar< Eigen::DenseBase<Derived> > {
-    typedef typename Eigen::internal::traits<Derived>::Scalar type;
-};
-
-} // end namespace anonymous
-
 /**
  * Convert a 3 element array from XYZ to YXZ ordering.
  *
@@ -60,10 +44,10 @@ struct scalar< Eigen::DenseBase<Derived> > {
  */
 template< typename RandomAccessContainer >
 boost::array<
-    typename scalar<RandomAccessContainer>::type, 3
+    typename RandomAccessContainer::value_type, 3
 > to_yxz(const RandomAccessContainer& xyz)
 {
-    boost::array<typename scalar<RandomAccessContainer>::type,3> retval
+    boost::array<typename RandomAccessContainer::value_type,3> retval
             = {{ xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
@@ -80,10 +64,10 @@ boost::array<
  */
 template< typename RandomAccessContainer, typename U >
 boost::array<
-    typename scalar<RandomAccessContainer>::type, 4
+    typename RandomAccessContainer::value_type, 4
 > to_yxz(const U& prepend, const RandomAccessContainer& xyz)
 {
-    boost::array<typename scalar<RandomAccessContainer>::type,4> retval
+    boost::array<typename RandomAccessContainer::value_type,4> retval
             = {{ prepend, xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
@@ -97,10 +81,10 @@ boost::array<
  */
 template< typename RandomAccessContainer >
 boost::array<
-    typename scalar<RandomAccessContainer>::type, 3
+    typename RandomAccessContainer::value_type, 3
 > to_xzy(const RandomAccessContainer& xyz)
 {
-    boost::array<typename scalar<RandomAccessContainer>::type,3> retval
+    boost::array<typename RandomAccessContainer::value_type,3> retval
             = {{ xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
@@ -117,10 +101,10 @@ boost::array<
  */
 template< typename RandomAccessContainer, typename U >
 boost::array<
-    typename scalar<RandomAccessContainer>::type, 4
+    typename RandomAccessContainer::value_type, 4
 > to_xzy(const U& prepend, const RandomAccessContainer& xyz)
 {
-    boost::array<typename scalar<RandomAccessContainer>::type,4> retval
+    boost::array<typename RandomAccessContainer::value_type,4> retval
         = {{ prepend, xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
@@ -139,10 +123,10 @@ boost::array<
  */
 template< typename RandomAccessContainer >
 boost::array<
-    typename scalar<RandomAccessContainer>::type, 3
+    typename RandomAccessContainer::value_type, 3
 > to_physical_xc2r(const RandomAccessContainer& xyz)
 {
-    boost::array<typename scalar<RandomAccessContainer>::type,3> retval
+    boost::array<typename RandomAccessContainer::value_type,3> retval
         = {{ 2*(xyz[0]-1) + (xyz[0] & 1), xyz[1], xyz[2] }};
     assert((retval[0]/2)+1 == xyz[0]);
     return retval;
