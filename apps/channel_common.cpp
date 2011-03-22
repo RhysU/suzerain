@@ -136,7 +136,7 @@ void load(const esio_handle esioh,
 }
 
 void store(const esio_handle esioh,
-           const suzerain::problem::GridDefinition<real_t>& grid,
+           const suzerain::problem::GridDefinition& grid,
            const real_t Lx,
            const real_t Lz)
 {
@@ -148,99 +148,93 @@ void store(const esio_handle esioh,
 
     esio_line_establish(esioh, 1, 0, (procid == 0 ? 1 : 0));
 
-    const int Nx = numeric_cast<int>(grid.Nx);
-    esio_line_write(esioh, "Nx", &Nx, 0,
+    esio_line_write(esioh, "Nx", &grid.N.x(), 0,
             grid.options().find("Nx",false).description().c_str());
 
-    esio_line_write(esioh, "DAFx", &grid.DAFx, 0,
+    const double DAFx = grid.DAFx();
+    esio_line_write(esioh, "DAFx", &DAFx, 0,
             grid.options().find("DAFx",false).description().c_str());
 
-    const int Ny = numeric_cast<int>(grid.Ny);
-    esio_line_write(esioh, "Ny", &Ny, 0,
+    esio_line_write(esioh, "Ny", &grid.N.y(), 0,
             grid.options().find("Ny",false).description().c_str());
 
-    const int k = numeric_cast<int>(grid.k);
-    esio_line_write(esioh, "k", &k, 0,
+    esio_line_write(esioh, "k", &grid.k, 0,
             grid.options().find("k",false).description().c_str());
 
-    const int Nz = numeric_cast<int>(grid.Nz);
-    esio_line_write(esioh, "Nz", &Nz, 0,
+    esio_line_write(esioh, "Nz", &grid.N.z(), 0,
             grid.options().find("Nz",false).description().c_str());
 
-    esio_line_write(esioh, "DAFz", &grid.DAFz, 0,
+    const double DAFz = grid.DAFz();
+    esio_line_write(esioh, "DAFz", &DAFz, 0,
             grid.options().find("DAFz",false).description().c_str());
 
     DEBUG0("Storing wavenumber vectors for Fourier bases");
 
-    const int N  = std::max(grid.Nx, grid.Nz);
+    const int N = std::max(grid.N.x(), grid.N.z());
     scoped_array<complex_t> buf(new complex_t[N]);
 
     // Obtain wavenumbers via computing 1*(i*kx)/i
     std::fill_n(buf.get(), N, complex_t(1,0));
     suzerain::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
-            Lx, Lz, 1, Nx, Nx, 0, Nx, 1, 1, 0, 1);
-    esio_line_establish(esioh, Nx, 0, (procid == 0 ? Nx : 0));
+            Lx, Lz, 1, grid.N.x(), grid.N.x(), 0, grid.N.x(), 1, 1, 0, 1);
+    esio_line_establish(esioh, grid.N.x(), 0, (procid == 0 ? grid.N.x() : 0));
     esio_line_write(esioh, "kx", reinterpret_cast<real_t *>(buf.get()),
             2, "Wavenumbers in streamwise X direction"); // Re(buf)
 
     // Obtain wavenumbers via computing 1*(i*kz)/i
     std::fill_n(buf.get(), N, complex_t(1,0));
     suzerain::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
-            Lx, Lz, 1, 1, 1, 0, 1, Nz, Nz, 0, Nz);
-    esio_line_establish(esioh, Nz, 0, (procid == 0 ? Nz : 0));
+            Lx, Lz, 1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
+    esio_line_establish(esioh, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
     esio_line_write(esioh, "kz", reinterpret_cast<real_t *>(buf.get()),
             2, "Wavenumbers in spanwise Z direction"); // Re(buf)
 }
 
 void load(const esio_handle esioh,
-          suzerain::problem::GridDefinition<real_t>& grid)
+          suzerain::problem::GridDefinition& grid)
 {
     DEBUG0("Loading GridDefinition parameters");
 
     esio_line_establish(esioh, 1, 0, 1); // All ranks load
 
-    if (grid.Nx) {
-        INFO0("Overriding grid using Nx = " << grid.Nx);
+    if (grid.N.x()) {
+        INFO0("Overriding grid using Nx = " << grid.N.x());
     } else {
-        int Nx;
-        esio_line_read(esioh, "Nx", &Nx, 0);
-        grid.Nx = Nx;
+        esio_line_read(esioh, "Nx", &grid.N.x(), 0);
     }
 
-    if (grid.DAFx) {
-        INFO0("Overriding grid using DAFx = " << grid.DAFx);
+    if (grid.DAFx()) {
+        INFO0("Overriding grid using DAFx = " << grid.DAFx());
     } else {
-        esio_line_read(esioh, "DAFx", &grid.DAFx, 0);
+        double factor;
+        esio_line_read(esioh, "DAFx", &factor, 0);
+        grid.DAFx(factor);
     }
 
-    if (grid.Ny) {
-        INFO0("Overriding grid using Ny = " << grid.Ny);
+    if (grid.N.y()) {
+        INFO0("Overriding grid using Ny = " << grid.N.y());
     } else {
-        int Ny;
-        esio_line_read(esioh, "Ny", &Ny, 0);
-        grid.Ny = Ny;
+        esio_line_read(esioh, "Ny", &grid.N.y(), 0);
     }
 
     if (grid.k) {
         INFO0("Overriding grid using k = " << grid.k);
     } else {
-        int k;
-        esio_line_read(esioh, "k", &k, 0);
-        grid.k = k;
+        esio_line_read(esioh, "k", &grid.k, 0);
     }
 
-    if (grid.Nz) {
-        INFO0("Overriding grid using Nz = " << grid.Nz);
+    if (grid.N.z()) {
+        INFO0("Overriding grid using Nz = " << grid.N.z());
     } else {
-        int Nz;
-        esio_line_read(esioh, "Nz", &Nz, 0);
-        grid.Nz = Nz;
+        esio_line_read(esioh, "Nz", &grid.N.z(), 0);
     }
 
-    if (grid.DAFz) {
-        INFO0("Overriding grid using DAFz = " << grid.DAFz);
+    if (grid.DAFz()) {
+        INFO0("Overriding grid using DAFz = " << grid.DAFz());
     } else {
-        esio_line_read(esioh, "DAFz", &grid.DAFz, 0);
+        double factor;
+        esio_line_read(esioh, "DAFz", &factor, 0);
+        grid.DAFz(factor);
     }
 }
 

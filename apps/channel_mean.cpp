@@ -89,25 +89,23 @@ static bool process(const char * filename)
 
     // Load time, scenario, grid, and B-spline details from file
     real_t t;
-    suzerain::problem::ScenarioDefinition<real_t> scenario(
-            0, 0, 0, 0, 0, 0, 0);
-    suzerain::problem::GridDefinition<real_t> grid(
-            0, 0, 0, 0, 0, 0);
+    suzerain::problem::ScenarioDefinition<real_t> scenario;
+    suzerain::problem::GridDefinition grid;
     shared_ptr<suzerain::bspline> bspw;
     load_time(h.get(), t);
     load(h.get(), scenario);
     load(h.get(), grid);
     load(h.get(), bspw);
-    assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny);
+    assert(static_cast<unsigned>(bspw->ndof()) == grid.N.y());
 
     // Load zero-zero mode coefficients for all state variables
-    array_t<>::real s_coeffs(grid.Ny, field_names.size());
+    array_t<>::real s_coeffs(grid.N.y(), field_names.size());
     s_coeffs.setZero();
     {
-        vector_t<>::complex tmp(grid.Ny);
-        esio_field_establish(h.get(), grid.Nz, 0, 1,
-                                      grid.Nx, 0, 1,
-                                      grid.Ny, 0, grid.Ny);
+        vector_t<>::complex tmp(grid.N.y());
+        esio_field_establish(h.get(), grid.N.z(), 0, 1,
+                                      grid.N.x(), 0, 1,
+                                      grid.N.y(), 0, grid.N.y());
         for (int i = 0; i < s_coeffs.cols(); ++i) {
             complex_field_read(h.get(), field_names[i], &tmp[0]);
             assert(tmp.imag().squaredNorm() == 0); // Purely real!
@@ -295,7 +293,7 @@ static bool process(const char * filename)
     const real_t delta_nu = nu_w / u_tau;
 
     // We only use data from the lower half of the channel
-    const int nplus = (grid.Ny + 1) / 2;
+    const int nplus = (grid.N.y() + 1) / 2;
 
     // Compute the quantities in plus units
     array_t<>::real r(nplus, 1 /* t */ + 1 /* y */ + 1 /* y+ */ +  3);

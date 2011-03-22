@@ -69,12 +69,12 @@ int main(int argc, char **argv)
     // Program-specific option storage
 
     suzerain::ProgramOptions options;
-    suzerain::problem::GridDefinition<> grid(/* default_Nx    */ 16,
-                                             /* default_DAFx  */ 3./2.,
-                                             /* default_Ny    */ 16,
-                                             /* default_k     */ 6,
-                                             /* default_Nz    */ 16,
-                                             /* default_DAFz  */ 3./2.);
+    suzerain::problem::GridDefinition grid(/* default_Nx    */ 16,
+                                           /* default_DAFx  */ 3./2.,
+                                           /* default_Ny    */ 16,
+                                           /* default_k     */ 6,
+                                           /* default_Nz    */ 16,
+                                           /* default_DAFz  */ 3./2.);
     options.add_definition(grid);
 
     int nrep = 1;  // Number of times to repeat the test
@@ -90,16 +90,16 @@ int main(int argc, char **argv)
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Physical grid dimensions: "
                            << boost::format("(% 4d, % 4d, % 4d)")
-                           % grid.Nx % grid.Ny % grid.Nz));
+                           % grid.N.x() % grid.N.y() % grid.N.z()));
 
     ONLYPROC0(LOG4CXX_INFO(logger, "Processor grid dimensions: "
                            << boost::format("(%d, %d)")
-                           % grid.Pa % grid.Pb));
+                           % grid.P[0] % grid.P[1]));
 #pragma warning(pop)
 
     // pencil_grid handles P3DFFT setup/clean RAII
     using suzerain::pencil_grid;
-    pencil_grid pg(grid.global_extents, grid.processor_grid);
+    pencil_grid pg(grid.N, grid.P);
     // pencil handles memory allocation and storage layout
     using suzerain::pencil;
     pencil<> A(pg);
@@ -107,19 +107,19 @@ int main(int argc, char **argv)
     // Create a uniform tensor product grid
     std::valarray<double> gridx(A.physical.size_x);
     for (size_t i = 0; i < A.physical.size_x; ++i) {
-        gridx[i] = (i+A.physical.start_x) * 2*M_PI/grid.Nx;
+        gridx[i] = (i+A.physical.start_x) * 2*M_PI/grid.N.x();
         LOG4CXX_TRACE(logger, boost::format("gridx[%3d] = % 6g") % i % gridx[i]);
     }
 
     std::valarray<double> gridy(A.physical.size_y);
     for (size_t j = 0; j < A.physical.size_y; ++j) {
-        gridy[j] = (j+A.physical.start_y) * 2*M_PI/grid.Ny;
+        gridy[j] = (j+A.physical.start_y) * 2*M_PI/grid.N.y();
         LOG4CXX_TRACE(logger, boost::format("gridy[%3d] = % 6g") % j % gridy[j]);
     }
 
     std::valarray<double> gridz(A.physical.size_z);
     for (size_t k = 0; k < A.physical.size_z; ++k) {
-        gridz[k] = (k+A.physical.start_z) * 2*M_PI/grid.Nz;
+        gridz[k] = (k+A.physical.start_z) * 2*M_PI/grid.N.z();
         LOG4CXX_TRACE(logger, boost::format("gridz[%3d] = % 6g") % k % gridz[k]);
     }
 
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
     }
 
     // Scale factor in X and Z directions only
-    const double factor = 1.0 / (grid.Nx*grid.Nz);
+    const double factor = 1.0 / (grid.N.x()*grid.N.z());
 
     double rtime1 = 0.0;
 

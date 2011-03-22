@@ -31,8 +31,11 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+
+#define EIGEN_DEFAULT_IO_FORMAT \
+        Eigen::IOFormat(Eigen::StreamPrecision, 0, ", ", ";", "", "", "[", "]")
+
 #include <suzerain/common.hpp>
-#pragma hdrstop
 #include <esio/esio.h>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bspline.hpp>
@@ -91,8 +94,8 @@ using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::RestartDefinition;
 using suzerain::problem::TimeDefinition;
-static const ScenarioDefinition<real_t> scenario(0, 0, 0, 0, 0, 0, 0);
-static const GridDefinition<real_t> grid(0, 0, 0, 0, 0, 0);
+static const ScenarioDefinition<real_t> scenario;
+static const GridDefinition grid;
 static const RestartDefinition<> restart(/* load         */ "",
                                          /* metadata     */ "metadata.h5",
                                          /* uncommitted  */ "uncommitted.h5",
@@ -109,10 +112,10 @@ static const TimeDefinition<real_t> timedef(/* advance_dt           */ 0,
                                             /* evmagfactor per Prem */ 0.72);
 
 // Global grid-details initialized in main()
-static shared_ptr<suzerain::bspline>     bspw;
-static shared_ptr<suzerain::bspline_luz> bspluzw;
-static shared_ptr<suzerain::pencil_grid> dgrid;
-static scoped_array<real_t>              one_over_delta_y;
+static shared_ptr<suzerain::bspline>           bspw;
+static shared_ptr<suzerain::bspline_luz>       bspluzw;
+static shared_ptr<const suzerain::pencil_grid> dgrid;
+static scoped_array<real_t>                    one_over_delta_y;
 
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
@@ -201,15 +204,15 @@ class NonlinearOperator : public inonlinearoperator_type
 public:
 
     NonlinearOperator() :
-        Ny(dgrid->global_wave_extents()[1]),
-        Nx(grid.Nx),
-        dNx(dgrid->global_wave_extents()[0]),
-        dkbx(dgrid->local_wave_start()[0]),
-        dkex(dgrid->local_wave_end()[0]),
-        Nz(grid.Nz),
-        dNz(dgrid->global_wave_extents()[2]),
-        dkbz(dgrid->local_wave_start()[2]),
-        dkez(dgrid->local_wave_end()[2]),
+        Ny(dgrid->global_wave_extent[1]),
+        Nx(grid.N.x()),
+        dNx(dgrid->global_wave_extent[0]),
+        dkbx(dgrid->local_wave_start[0]),
+        dkex(dgrid->local_wave_end[0]),
+        Nz(grid.N.z()),
+        dNz(dgrid->global_wave_extent[2]),
+        dkbz(dgrid->local_wave_start[2]),
+        dkez(dgrid->local_wave_end[2]),
         rho_x(*dgrid),  rho_y(*dgrid),  rho_z(*dgrid),
         rho_xx(*dgrid), rho_xy(*dgrid), rho_xz(*dgrid),
                         rho_yy(*dgrid), rho_yz(*dgrid),
@@ -1048,13 +1051,13 @@ static void atexit_metadata(void) {
 static void load_state(esio_handle h, state_type &state)
 {
     // Coerce unsigned dealiased decomposition details into signed variables
-    const int dNx  = numeric_cast<int>(dgrid->global_wave_extents()[0]);
-    const int dkbx = numeric_cast<int>(dgrid->local_wave_start()[0]);
-    const int dkex = numeric_cast<int>(dgrid->local_wave_end()[0]);
-    const int Ny   = numeric_cast<int>(dgrid->global_wave_extents()[1]);
-    const int dNz  = numeric_cast<int>(dgrid->global_wave_extents()[2]);
-    const int dkbz = numeric_cast<int>(dgrid->local_wave_start()[2]);
-    const int dkez = numeric_cast<int>(dgrid->local_wave_end()[2]);
+    const int dNx  = dgrid->global_wave_extent[0];
+    const int dkbx = dgrid->local_wave_start[0];
+    const int dkex = dgrid->local_wave_end[0];
+    const int Ny   = dgrid->global_wave_extent[1];
+    const int dNz  = dgrid->global_wave_extent[2];
+    const int dkbz = dgrid->local_wave_start[2];
+    const int dkez = dgrid->local_wave_end[2];
 
     // Ensure local state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field_names.size());
@@ -1144,13 +1147,13 @@ static bool save_restart(real_t t, std::size_t nt)
     store_time(esioh, t);
 
     // Coerce unsigned dealiased decomposition details into signed variables
-    const int dNx  = numeric_cast<int>(dgrid->global_wave_extents()[0]);
-    const int dkbx = numeric_cast<int>(dgrid->local_wave_start()[0]);
-    const int dkex = numeric_cast<int>(dgrid->local_wave_end()[0]);
-    const int Ny   = numeric_cast<int>(dgrid->global_wave_extents()[1]);
-    const int dNz  = numeric_cast<int>(dgrid->global_wave_extents()[2]);
-    const int dkbz = numeric_cast<int>(dgrid->local_wave_start()[2]);
-    const int dkez = numeric_cast<int>(dgrid->local_wave_end()[2]);
+    const int dNx  = dgrid->global_wave_extent[0];
+    const int dkbx = dgrid->local_wave_start[0];
+    const int dkex = dgrid->local_wave_end[0];
+    const int Ny   = dgrid->global_wave_extent[1];
+    const int dNz  = dgrid->global_wave_extent[2];
+    const int dkbz = dgrid->local_wave_start[2];
+    const int dkez = dgrid->local_wave_end[2];
 
     // Ensure local state storage meets this routine's assumptions
     assert(                  state_linear->shape()[0]  == field_names.size());
@@ -1159,10 +1162,10 @@ static bool save_restart(real_t t, std::size_t nt)
     assert(numeric_cast<int>(state_linear->shape()[3]) == (dkez - dkbz));
 
     // Restart file contains only non-dealiased wavenumbers
-    const int Fz = numeric_cast<int>(grid.Nz);
-    const int Fx = numeric_cast<int>(grid.Nx);
-    const int Fy = numeric_cast<int>(grid.Ny);
-    assert(numeric_cast<int>(grid.dealiased_extents()[1]) == Fy);
+    const int Fz = grid.N.z();
+    const int Fx = grid.N.x(); // FIXME
+    const int Fy = grid.N.y();
+    assert(grid.dN[1] == Fy);
 
     // Compute wavenumber translation between Fx and dNx
     // X direction contains only positive wavenumbers so second range is empty
@@ -1248,7 +1251,7 @@ int main(int argc, char **argv)
         options.add_definition(
                 const_cast<ScenarioDefinition<real_t>&>(scenario));
         options.add_definition(
-                const_cast<GridDefinition<real_t>&>(grid));
+                const_cast<GridDefinition&>(grid));
         options.add_definition(
                 const_cast<RestartDefinition<>&>(restart));
         options.add_definition(
@@ -1268,12 +1271,12 @@ int main(int argc, char **argv)
     INFO0("Loading details from restart file: " << restart.load());
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
     load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
-    load(esioh, const_cast<GridDefinition<real_t>&>(grid));
+    load(esioh, const_cast<GridDefinition&>(grid));
     load(esioh, bspw);
     esio_file_close(esioh);
 
     // TODO Account for B-spline differences at load time
-    assert(numeric_cast<unsigned>(bspw->order()) == grid.k);
+    assert(bspw->order() == grid.k);
 
     INFO0("Saving metadata temporary file: " << restart.metadata());
     {
@@ -1288,25 +1291,25 @@ int main(int argc, char **argv)
     }
 
     // Initialize array holding \frac{1}{\Delta{}y} grid spacing
-    one_over_delta_y.reset(new real_t[grid.Ny]);
+    one_over_delta_y.reset(new real_t[grid.N.y()]);
     {
         // Determine minimum delta y observable from each collocation point
         real_t a, b, c;
         bspw->collocation_point(0, &a);                  // First point
         bspw->collocation_point(1, &b);
         one_over_delta_y[0] = std::abs(b - a);
-        for (size_t i = 1; i < grid.Ny - 1; ++i) {          // Intermediates
+        for (int i = 1; i < grid.N.y() - 1; ++i) {          // Intermediates
             bspw->collocation_point(i-1, &a);
             bspw->collocation_point(i,   &b);
             bspw->collocation_point(i+1, &c);
             one_over_delta_y[i] = std::min(std::abs(b-a), std::abs(c-b));
         }
-        bspw->collocation_point(grid.Ny - 2, &a);        // Last point
-        bspw->collocation_point(grid.Ny - 1, &b);
-        one_over_delta_y[grid.Ny - 1] = std::abs(b - a);
+        bspw->collocation_point(grid.N.y() - 2, &a);        // Last point
+        bspw->collocation_point(grid.N.y() - 1, &b);
+        one_over_delta_y[grid.N.y() - 1] = std::abs(b - a);
 
         // Invert to find \frac{1}{\Delta{}y}
-        for (size_t i = 0; i < grid.Ny; ++i) { // Invert
+        for (int i = 0; i < grid.N.y(); ++i) { // Invert
             one_over_delta_y[i] = 1 / one_over_delta_y[i];
         }
     }
@@ -1316,31 +1319,26 @@ int main(int argc, char **argv)
     bspluzw->form_mass(*bspw);
 
     // Display global degree of freedom information
-    INFO0("Global degrees of freedom  (DOF): "
-            << suzerain::functional::product(grid.global_extents));
-    INFO0("DOF by direction           (XYZ): " << grid.global_extents);
-    INFO0("Dealiased DOF by direction (XYZ): " << grid.dealiased_extents());
+    INFO0("Global degrees of freedom  (DOF): " << grid.N.prod());
+    INFO0("DOF by direction           (XYZ): " << grid.N);
+    INFO0("Dealiased DOF by direction (XYZ): " << grid.dN);
     INFO0("Number of MPI ranks:              " << nranks);
 
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
-    dgrid = make_shared<suzerain::pencil_grid>(
-                    suzerain::to_physical_xc2r(grid.dealiased_extents()),
-                    grid.processor_grid);
-    assert(grid.dealiased_extents()[0] == dgrid->global_wave_extents()[0]);
-    assert(grid.dealiased_extents()[1] == dgrid->global_wave_extents()[1]);
-    assert(grid.dealiased_extents()[2] == dgrid->global_wave_extents()[2]);
-    INFO0("Rank grid used for decomposition: " << dgrid->processor_grid());
-    DEBUG("Local wave start      (XYZ): " << dgrid->local_wave_start());
-    DEBUG("Local wave end        (XYZ): " << dgrid->local_wave_end());
-    DEBUG("Local wave extent     (XYZ): " << dgrid->local_wave_extent());
-    DEBUG("Local physical start  (XYZ): " << dgrid->local_physical_start());
-    DEBUG("Local physical end    (XYZ): " << dgrid->local_physical_end());
-    DEBUG("Local physical extent (XYZ): " << dgrid->local_physical_extent());
+    dgrid = make_shared<suzerain::pencil_grid>(grid.dN, grid.P);
+    assert((grid.dN == dgrid->global_physical_extent).all());
+    INFO0("Rank grid used for decomposition: " << dgrid->processor_grid);
+    DEBUG("Local wave start      (XYZ): " << dgrid->local_wave_start);
+    DEBUG("Local wave end        (XYZ): " << dgrid->local_wave_end);
+    DEBUG("Local wave extent     (XYZ): " << dgrid->local_wave_extent);
+    DEBUG("Local physical start  (XYZ): " << dgrid->local_physical_start);
+    DEBUG("Local physical end    (XYZ): " << dgrid->local_physical_end);
+    DEBUG("Local physical extent (XYZ): " << dgrid->local_physical_extent);
 
     // Create state storage for linear operator
     // TODO Have state_linear only store non-dealiased state
     state_linear = make_shared<state_type>(
-            suzerain::to_yxz(5, dgrid->local_wave_extent()));
+            suzerain::to_yxz(5, dgrid->local_wave_extent));
 
     // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
@@ -1356,9 +1354,9 @@ int main(int argc, char **argv)
         using suzerain::prepend;
         using suzerain::strides_cm;
         state_nonlinear = make_shared<state_type>(
-                to_yxz(5, dgrid->local_wave_extent()),
+                to_yxz(5, dgrid->local_wave_extent),
                 prepend(dgrid->local_wave_storage(), strides_cm(
-                        to_yxz(dgrid->local_wave_extent())))
+                        to_yxz(dgrid->local_wave_extent)))
                 );
     }
     suzerain::multi_array::fill(*state_nonlinear, 0);
@@ -1377,7 +1375,7 @@ int main(int argc, char **argv)
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
     using suzerain::timestepper::lowstorage::SMR91Method;
     const SMR91Method<complex_t> smr91(timedef.evmagfactor);
-    MassOperator L(scenario.Lx * scenario.Lz * grid.Nx * grid.Nz);
+    MassOperator L(scenario.Lx * scenario.Lz * grid.N.x() * grid.N.z());
     NonlinearOperatorWithBoundaryConditions N;
 
     // Establish TimeController for use with operators and state storage

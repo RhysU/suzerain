@@ -75,13 +75,13 @@ static const ScenarioDefinition<real_t> scenario(
         /* Lx    */ 4*pi<real_t>(),
         /* Ly    */ 2,
         /* Lz    */ 4*pi<real_t>()/3);
-static const GridDefinition<real_t> grid(
+static const GridDefinition grid(
         /* Nx    */ 1,
-        /* DAFx  */ real_t(3)/real_t(2),
+        /* DAFx  */ 1.5,
         /* Ny    */ 16,
         /* k     */ 6,
         /* Nz    */ 1,
-        /* DAFz  */ real_t(3)/real_t(2));
+        /* DAFz  */ 1.5);
 
 // Global B-spline -details initialized in main()
 static shared_ptr<suzerain::bspline>     bspw;
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
         options.add_definition(
                 const_cast<ScenarioDefinition<real_t>& >(scenario));
         options.add_definition(
-                const_cast<GridDefinition<real_t>& >(grid));
+                const_cast<GridDefinition& >(grid));
 
         using ::suzerain::validation::ensure_positive;
         ::std::pointer_to_binary_function<real_t,const char*,void>
@@ -203,28 +203,28 @@ int main(int argc, char **argv)
     const real_t R = GSL_CONST_MKSA_MOLAR_GAS * GSL_CONST_NUM_KILO / M;
 
     if (grid.k < 4 /* cubics */) {
-        FATAL("k >= 4 required to compute two non-trivial spatial derivatives");
+        FATAL("k >= 4 required for two non-trivial spatial derivatives");
         return EXIT_FAILURE;
     }
 
-    if (grid.Nx != 1) {
+    if (grid.N.x() != 1) {
         FATAL(argv[0] << " can only handle Nx == 1");
         return EXIT_FAILURE;
     }
 
-    if (grid.Nz != 1) {
+    if (grid.N.z() != 1) {
         FATAL(argv[0] << " can only handle Nz == 1");
         return EXIT_FAILURE;
     }
 
     INFO("Creating B-spline basis of uniform order "
          << (grid.k - 1) << " on [0, Ly] with "
-         << grid.Ny << " DOF");
+         << grid.N.y() << " DOF");
     {
-        scoped_array<real_t> buf(new real_t[grid.Ny]);
+        scoped_array<real_t> buf(new real_t[grid.N.y()]);
 
         // Compute breakpoint locations
-        const int nbreak = grid.Ny + 2 - grid.k;
+        const int nbreak = grid.N.y() + 2 - grid.k;
         suzerain::math::linspace(
                 0.0, scenario.Ly, nbreak, buf.get()); // Uniform
         if (htdelta == 0.0) {
@@ -242,7 +242,7 @@ int main(int argc, char **argv)
         // Maximum non-trivial derivative operators included
         bspw = make_shared<suzerain::bspline>(
                 grid.k, grid.k - 2, nbreak, buf.get());
-        assert(static_cast<unsigned>(bspw->ndof()) == grid.Ny);
+        assert(static_cast<unsigned>(bspw->ndof()) == grid.N.y());
     }
 
     INFO("Creating new restart file " << create_file);
@@ -327,24 +327,23 @@ int main(int argc, char **argv)
 
     INFO("Computing nondimensional mean profiles for restart");
     {
-        const int Ny = numeric_cast<int>(grid.Ny);
-        esio_field_establish(esioh, 1, 0, 1, 1, 0, 1, Ny, 0, Ny);
-        scoped_array<complex_t> buf(new complex_t[Ny]);
+        esio_field_establish(esioh, 1, 0, 1, 1, 0, 1, grid.N.y(), 0, grid.N.y());
+        scoped_array<complex_t> buf(new complex_t[grid.N.y()]);
 
         // Nondimensional spanwise and wall-normal velocities are zero
-        std::fill_n(buf.get(), Ny, complex_t(0,0));
+        std::fill_n(buf.get(), grid.N.y(), complex_t(0,0));
         complex_field_write(
                 esioh, "rhov", buf.get(), 0, 0, 0, field_descriptions[2]);
         complex_field_write(
                 esioh, "rhow", buf.get(), 0, 0, 0, field_descriptions[3]);
 
         // Nondimensional density is the constant one
-        std::fill_n(buf.get(), Ny, complex_t(1,0));
+        std::fill_n(buf.get(), grid.N.y(), complex_t(1,0));
         complex_field_write(
                 esioh, "rho", buf.get(), 0, 0, 0, field_descriptions[0]);
 
         // Set up to evaluate Y momentum and total energy profile coefficients
-        scoped_array<double> rhs(new double[Ny]);
+        scoped_array<double> rhs(new double[grid.N.y()]);
         mesolver params;
         params.Ma     = Ma;
         params.L      = scenario.Ly;
@@ -358,16 +357,16 @@ int main(int argc, char **argv)
         // Find Y momentum coefficients
         F.function = &f_msolver;
         bspw->find_interpolation_problem_rhs(&F, rhs.get());
-        for (int i = 0; i < Ny; ++i) buf[i] = rhs[i];
-        bspluzw->solve(1, buf.get(), 1, Ny);
+        for (int i = 0; i < grid.N.y(); ++i) buf[i] = rhs[i];
+        bspluzw->solve(1, buf.get(), 1, grid.N.y());
         complex_field_write(
                 esioh, "rhou", buf.get(), 0, 0, 0, field_descriptions[1]);
 
         // Find total energy coefficients
         F.function = &f_esolver;
         bspw->find_interpolation_problem_rhs(&F, rhs.get());
-        for (int i = 0; i < Ny; ++i) buf[i] = rhs[i];
-        bspluzw->solve(1, buf.get(), 1, Ny);
+        for (int i = 0; i < grid.N.y(); ++i) buf[i] = rhs[i];
+        bspluzw->solve(1, buf.get(), 1, grid.N.y());
         complex_field_write(
                 esioh, "rhoe", buf.get(), 0, 0, 0, field_descriptions[4]);
 

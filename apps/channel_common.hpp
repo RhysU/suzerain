@@ -90,13 +90,13 @@ void load(const esio_handle esioh,
 
 /** Store a GridDefinition in a restart file */
 void store(const esio_handle esioh,
-           const suzerain::problem::GridDefinition<real_t>& grid,
+           const suzerain::problem::GridDefinition& grid,
            const real_t Lx,
            const real_t Lz);
 
 /** Load a GridDefinition from a restart file */
 void load(const esio_handle esioh,
-          suzerain::problem::GridDefinition<real_t>& grid);
+          suzerain::problem::GridDefinition& grid);
 
 /** Store a suzerain::bspline workspace in a restart file */
 void store(const esio_handle esioh,
