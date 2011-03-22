@@ -774,17 +774,17 @@ throw(std::invalid_argument)
 template<typename FPT, typename Allocator>
 pencil<FPT,Allocator>::pencil(const pencil_grid &pg)
         : data_nelem_(std::max(
-                 pg.local_physical_extent()[0]
-                    *pg.local_physical_extent()[1]
-                    *pg.local_physical_extent()[2],
-                 2*pg.local_wave_extent()[0]
-                    *pg.local_wave_extent()[1]
-                    *pg.local_wave_extent()[2])),
+                 pg.local_physical_extent[0]
+                    *pg.local_physical_extent[1]
+                    *pg.local_physical_extent[2],
+                 2*pg.local_wave_extent[0]
+                    *pg.local_wave_extent[1]
+                    *pg.local_wave_extent[2])),
         data_(Allocator::allocate(data_nelem_)),
-        physical(pg.local_physical_start(),
-                 pg.local_physical_extent(), data_),
-        wave(pg.local_wave_start(),
-             pg.local_wave_extent(), data_)
+        physical(pg.local_physical_start,
+                 pg.local_physical_extent, data_),
+        wave(pg.local_wave_start,
+             pg.local_wave_extent, data_)
 {
     std::fill_n(data_, data_nelem_, real_type(0)); // Fill with zeros
 }
