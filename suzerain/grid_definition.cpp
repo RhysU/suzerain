@@ -44,20 +44,14 @@ GridDefinition::GridDefinition(int     default_Nx,
                                int     default_Nz,
                                double  default_DAFz)
     : IDefinition("Mixed Fourier/B-spline computational grid definition"),
-      N(extents_ + 1),
-      dN(extents_),
-      k(default_k),
-      P(0, 0)
+      N(default_Nx, default_Ny, default_Nz),
+      DAF(default_DAFx, 1, default_DAFz),
+      dN(default_Nx * default_DAFx, default_Ny, default_Nz * default_DAFz),
+      P(0, 0),
+      k(default_k)
 {
-    extents_[0] = default_Nx * default_DAFx;
-    extents_[1] = default_Nx;
-    extents_[2] = default_Ny;  // DAFy == 1 implies N.y() == dN.y(), always
-    extents_[3] = default_Nz;
-    extents_[4] = default_Nz * default_DAFz;
-
     using ::boost::program_options::typed_value;
     using ::boost::program_options::value;
-    using ::std::auto_ptr;
     using ::std::bind1st;
     using ::std::bind2nd;
     using ::std::mem_fun;
@@ -65,52 +59,20 @@ GridDefinition::GridDefinition(int     default_Nx,
     using ::suzerain::validation::ensure_nonnegative;
     using ::suzerain::validation::ensure_positive;
 
-    // Created to solve ambiguous type issues below
-    ::std::pointer_to_binary_function<double,const char*,void>
-        ptr_fun_ensure_positive_double(ensure_positive<double>);
-    ::std::pointer_to_binary_function<double,const char*,void>
-        ptr_fun_ensure_nonnegative_double(ensure_nonnegative<double>);
+    this->add_options()
+        ("Nx", value<int>()->default_value(N.x())
+            ->notifier(bind1st(mem_fun(&GridDefinition::Nx),this)),
+         "Global logical extents in streamwise X direction")
+        ("DAFx", value<double>()->default_value(DAF.x())
+            ->notifier(bind1st(mem_fun(&GridDefinition::DAFx),this)),
+         "Dealiasing factor in streamwise X direction")
+        ("Ny", value<int>()->default_value(N.y())
+            ->notifier(bind1st(mem_fun(&GridDefinition::Ny),this)),
+         "Global logical extents in wall-normal Y direction")
+        ;
 
-    // Complicated add_options() calls done to allow changing the validation
-    // routine in use when the default provided value is zero.  Zero is
-    // generally used a NOP value by some client code.
-
-    { // Nx
-        auto_ptr<typed_value<int> > v(value(&this->N.x()));
-        if (default_Nx) {
-            v->notifier(bind2nd(ptr_fun(ensure_positive<int>),   "Nx"));
-        } else {
-            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Nx"));
-        }
-        v->default_value(default_Nx);
-        this->add_options()("Nx", v.release(),
-                "Global logical extents in streamwise X direction");
-    }
-
-    { // DAFx
-        auto_ptr<typed_value<double> > v(value<double>());
-        GridDefinition& (GridDefinition::*callback)(double)
-            = &GridDefinition::DAFx;
-        v->notifier(bind1st(mem_fun(callback),this));
-        v->default_value(default_DAFx);
-        this->add_options()("DAFx", v.release(),
-            "Dealiasing factor in streamwise X direction");
-    }
-
-    { // Ny
-        auto_ptr<typed_value<int> > v(value(&this->N.y()));
-        if (default_Ny) {
-            v->notifier(bind2nd(ptr_fun(ensure_positive<int>),   "Ny"));
-        } else {
-            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Ny"));
-        }
-        v->default_value(default_Ny);
-        this->add_options()("Ny", v.release(),
-                "Global logical extents in wall-normal Y direction");
-    }
-
-    { // k
-        auto_ptr<typed_value<int> > v(value(&this->k));
+    { // k requires special handling to change notifier per default_k
+        std::auto_ptr<typed_value<int> > v(value(&this->k));
         if (default_k) {
             v->notifier(bind2nd(ptr_fun(ensure_positive<int>),   "k"));
         } else {
@@ -121,56 +83,74 @@ GridDefinition::GridDefinition(int     default_Nx,
                 "B-spline basis order where k = 4 indicates piecewise cubics");
     }
 
-    { // Nz
-        auto_ptr<typed_value<int> > v(value(&this->N.z()));
-        if (default_Nz) {
-            v->notifier(bind2nd(ptr_fun(ensure_positive<int>),   "Nz"));
-        } else {
-            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Nz"));
-        }
-        v->default_value(default_Nz);
-        this->add_options()("Nz", v.release(),
-                "Global logical extents in spanwise Z direction");
-    }
+    this->add_options()
+        ("Nz", value<int>()->default_value(N.z())
+            ->notifier(bind1st(mem_fun(&GridDefinition::Nz),this)),
+         "Global logical extents in spanwise Z direction")
+        ("DAFz", value<double>()->default_value(DAF.z())
+            ->notifier(bind1st(mem_fun(&GridDefinition::DAFz),this)),
+         "Dealiasing factor in spanwize Z direction")
+        ("Pa", value<int>(&P[0])->default_value(P[0])
+            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pa")),
+            "Processor count in the Pa decomposition direction")
+        ("Pb", value<int>(&P[1])->default_value(P[1])
+            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pb")),
+            "Processor count in the Pb decomposition direction")
+        ;
+}
 
-    { // DAFz
-        auto_ptr<typed_value<double> > v(value<double>());
-        GridDefinition& (GridDefinition::*callback)(double)
-            = &GridDefinition::DAFz;
-        v->notifier(bind1st(mem_fun(callback),this));
-        v->default_value(default_DAFz);
-        this->add_options()("DAFz", v.release(),
-            "Dealiasing factor in spanwise Z direction");
+GridDefinition& GridDefinition::Nx(int value) {
+    if (N.x()) {
+        suzerain::validation::ensure_positive(value,"Nx");
+    } else {
+        suzerain::validation::ensure_nonnegative(value,"Nx");
     }
+    const_cast<int&>(N.x())  = value;
+    const_cast<int&>(dN.x()) = N.x() * DAF.x();
+    return *this;
+}
 
-    { // Pa
-        auto_ptr<typed_value<int> > v(value(&this->P[0]));
-        v->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pa"));
-        v->default_value(0);
-        this->add_options()("Pa", v.release(),
-            "Processor count in the Pa decomposition direction");
+GridDefinition& GridDefinition::Ny(int value) {
+    if (N.y()) {
+        suzerain::validation::ensure_positive(value,"Ny");
+    } else {
+        suzerain::validation::ensure_nonnegative(value,"Ny");
     }
+    const_cast<int&>(N.y())  = value;
+    const_cast<int&>(dN.y()) = N.y() * DAF.y();
+    return *this;
+}
 
-    { // Pb
-        auto_ptr<typed_value<int> > v(value(&this->P[0]));
-        v->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pb"));
-        v->default_value(0);
-        this->add_options()("Pb", v.release(),
-            "Processor count in the Pb decomposition direction");
+GridDefinition& GridDefinition::Nz(int value) {
+    if (N.z()) {
+        suzerain::validation::ensure_positive(value,"Nz");
+    } else {
+        suzerain::validation::ensure_nonnegative(value,"Nz");
     }
+    const_cast<int&>(N.z())  = value;
+    const_cast<int&>(dN.z()) = N.z() * DAF.z();
+    return *this;
 }
 
 GridDefinition& GridDefinition::DAFx(double factor) {
-    suzerain::validation::ensure_nonnegative(factor,"DAFx");
-    DAFx_ = factor;
-    extents_[0] = N.x() * DAFx_;
+    if (DAF.x()) {
+        suzerain::validation::ensure_positive(factor,"DAFx");
+    } else {
+        suzerain::validation::ensure_nonnegative(factor,"DAFx");
+    }
+    const_cast<double&>(DAF.x()) = factor;
+    const_cast<int&   >(dN.x())  = N.x() * DAF.x();
     return *this;
 }
 
 GridDefinition& GridDefinition::DAFz(double factor) {
-    suzerain::validation::ensure_nonnegative(factor,"DAFz");
-    DAFz_ = factor;
-    extents_[4] = N.z() * DAFz_;
+    if (DAF.z()) {
+        suzerain::validation::ensure_positive(factor,"DAFz");
+    } else {
+        suzerain::validation::ensure_nonnegative(factor,"DAFz");
+    }
+    const_cast<double&>(DAF.z()) = factor;
+    const_cast<int&   >(dN.z())  = N.z() * DAF.z();
     return *this;
 }
 

@@ -151,8 +151,7 @@ void store(const esio_handle esioh,
     esio_line_write(esioh, "Nx", &grid.N.x(), 0,
             grid.options().find("Nx",false).description().c_str());
 
-    const double DAFx = grid.DAFx();
-    esio_line_write(esioh, "DAFx", &DAFx, 0,
+    esio_line_write(esioh, "DAFx", &grid.DAF.x(), 0,
             grid.options().find("DAFx",false).description().c_str());
 
     esio_line_write(esioh, "Ny", &grid.N.y(), 0,
@@ -164,8 +163,7 @@ void store(const esio_handle esioh,
     esio_line_write(esioh, "Nz", &grid.N.z(), 0,
             grid.options().find("Nz",false).description().c_str());
 
-    const double DAFz = grid.DAFz();
-    esio_line_write(esioh, "DAFz", &DAFz, 0,
+    esio_line_write(esioh, "DAFz", &grid.DAF.z(), 0,
             grid.options().find("DAFz",false).description().c_str());
 
     DEBUG0("Storing wavenumber vectors for Fourier bases");
@@ -200,11 +198,13 @@ void load(const esio_handle esioh,
     if (grid.N.x()) {
         INFO0("Overriding grid using Nx = " << grid.N.x());
     } else {
-        esio_line_read(esioh, "Nx", &grid.N.x(), 0);
+        int value;
+        esio_line_read(esioh, "Nx", &value, 0);
+        grid.Nx(value);
     }
 
-    if (grid.DAFx()) {
-        INFO0("Overriding grid using DAFx = " << grid.DAFx());
+    if (grid.DAF.x()) {
+        INFO0("Overriding grid using DAFx = " << grid.DAF.x());
     } else {
         double factor;
         esio_line_read(esioh, "DAFx", &factor, 0);
@@ -214,7 +214,9 @@ void load(const esio_handle esioh,
     if (grid.N.y()) {
         INFO0("Overriding grid using Ny = " << grid.N.y());
     } else {
-        esio_line_read(esioh, "Ny", &grid.N.y(), 0);
+        int value;
+        esio_line_read(esioh, "Ny", &value, 0);
+        grid.Ny(value);
     }
 
     if (grid.k) {
@@ -226,11 +228,13 @@ void load(const esio_handle esioh,
     if (grid.N.z()) {
         INFO0("Overriding grid using Nz = " << grid.N.z());
     } else {
-        esio_line_read(esioh, "Nz", &grid.N.z(), 0);
+        int value;
+        esio_line_read(esioh, "Nz", &value, 0);
+        grid.Nz(value);
     }
 
-    if (grid.DAFz()) {
-        INFO0("Overriding grid using DAFz = " << grid.DAFz());
+    if (grid.DAF.z()) {
+        INFO0("Overriding grid using DAFz = " << grid.DAF.z());
     } else {
         double factor;
         esio_line_read(esioh, "DAFz", &factor, 0);

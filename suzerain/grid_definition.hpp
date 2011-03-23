@@ -46,9 +46,6 @@ namespace problem {
  * Holds basic three dimensional computational grid details for a distributed,
  * mixed Fourier/B-spline method.  The B-spline representation is used in the
  * wall-normal Y direction.
- *
- * \bug Modifying <tt>N.x()</tt> and not calling <tt>DAFx(DAFx())</tt> will
- * leave stale <tt>dN.x()</tt> values.
  */
 class GridDefinition : public IDefinition
 {
@@ -80,17 +77,62 @@ public:
                             int    default_Nz   = 0,
                             double default_DAFz = 0);
 
-    /** Global logical extents in the X, Y, and Z directions. */
-    Eigen::Map<Eigen::Array3i, 0, Eigen::InnerStride<1> > N;
+    /**@{*/
 
-    /** Global dealiased logical extents in the X, Y, and Z directions.  */
-    Eigen::Map<const Eigen::Array3i, 0, Eigen::InnerStride<2> > dN;
+    /** Global logical extents in the X, Y, and Z directions. */
+    const Eigen::Array3i N;
 
     /**
-     * The B-spline basis order plus one.  For example, piecewise cubics have
-     * <tt>k() == 4</tt>.
+     * Set the logical extents in the X direction.
+     *
+     * @param value New, nonnegative value to set
+     * @return <tt>*this</tt>
      */
-    int k;
+    GridDefinition& Nx(int value);
+
+    /**
+     * Set the logical extents in the Y direction.
+     *
+     * @param value New, nonnegative value to set
+     * @return <tt>*this</tt>
+     */
+    GridDefinition& Ny(int value);
+
+    /**
+     * Set the logical extents in the Z direction.
+     *
+     * @param value New, nonnegative value to set
+     * @return <tt>*this</tt>
+     */
+    GridDefinition& Nz(int value);
+
+    /**@}*/
+
+    /**@{*/
+
+    /** Dealiasing factors in the X, Y, and Z directions */
+    const Eigen::Array3d DAF;
+
+    /** Global dealiased logical extents in the X, Y, and Z directions. */
+    const Eigen::Array3i dN;
+
+    /**
+     * Set the dealiasing factor in the X direction.
+     *
+     * @param factor New, nonnegative factor to set.
+     * @return <tt>*this</tt>
+     */
+    GridDefinition& DAFx(double factor);
+
+    /**
+     * Set the dealiasing factor in the Z direction.
+     *
+     * @param factor New, nonnegative factor to set.
+     * @return <tt>*this</tt>
+     */
+    GridDefinition& DAFz(double factor);
+
+    /**@}*/
 
     /**
      * The two dimensional processor grid.
@@ -103,47 +145,10 @@ public:
     Eigen::Vector2i P;
 
     /**
-     * Obtain the dealiasing factor in the X direction.
+     * The B-spline basis order plus one.  For example, piecewise cubics have
+     * <tt>k() == 4</tt>.
      */
-    double DAFx() const { return DAFx_; }
-
-    /**
-     * Set the dealiasing factor in the X direction.
-     *
-     * @param factor New, nonnegative factor to set.
-     * @return <tt>*this</tt>
-     */
-    GridDefinition& DAFx(double factor);
-
-    /**
-     * Obtain the dealiasing factor in the Z direction.
-     */
-    double DAFz() const { return DAFz_; }
-
-    /**
-     * Set the dealiasing factor in the Z direction.
-     *
-     * @param factor New, nonnegative factor to set.
-     * @return <tt>*this</tt>
-     */
-    GridDefinition& DAFz(double factor);
-
-private:
-
-    /**
-     * Storage for <tt>dN.x()</tt>, <tt>N.x()</tt>, {<tt>dN.y()</tt>,
-     * <tt>N.y()</tt>}, <tt>N.z()</tt>, <tt>dN.z()</tt>} where the data for
-     * {<tt>dN.y()</tt>, <tt>N.y()</tt>} is deliberately aliased to ensure that
-     * those two values always stay synchronized.
-     **/
-    int extents_[5];
-
-    /**
-     * Storage for the dealiasing factors.  These cannot be backed out from
-     * <tt>N</tt> and <tt>dN</tt> for some cases (e.g. non-integer
-     * <tt>DAFx</tt> and <tt>N =)= 1</tt>) and must be stored separately.
-     */
-    double DAFx_, DAFz_;
+    int k;
 };
 
 } // namespace problem
