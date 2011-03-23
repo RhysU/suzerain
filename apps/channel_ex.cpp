@@ -204,15 +204,15 @@ class NonlinearOperator : public inonlinearoperator_type
 public:
 
     NonlinearOperator() :
-        Ny(dgrid->global_wave_extent[1]),
+        Ny(dgrid->global_wave_extent.y()),
         Nx(grid.N.x()),
-        dNx(dgrid->global_wave_extent[0]),
-        dkbx(dgrid->local_wave_start[0]),
-        dkex(dgrid->local_wave_end[0]),
+        dNx(dgrid->global_wave_extent.x()),
+        dkbx(dgrid->local_wave_start.x()),
+        dkex(dgrid->local_wave_end.x()),
         Nz(grid.N.z()),
-        dNz(dgrid->global_wave_extent[2]),
-        dkbz(dgrid->local_wave_start[2]),
-        dkez(dgrid->local_wave_end[2]),
+        dNz(dgrid->global_wave_extent.z()),
+        dkbz(dgrid->local_wave_start.z()),
+        dkez(dgrid->local_wave_end.z()),
         rho_x(*dgrid),  rho_y(*dgrid),  rho_z(*dgrid),
         rho_xx(*dgrid), rho_xy(*dgrid), rho_xz(*dgrid),
                         rho_yy(*dgrid), rho_yz(*dgrid),
@@ -1050,14 +1050,14 @@ static void atexit_metadata(void) {
 /** Routine to load state from file.  */
 static void load_state(esio_handle h, state_type &state)
 {
-    // Coerce unsigned dealiased decomposition details into signed variables
-    const int dNx  = dgrid->global_wave_extent[0];
-    const int dkbx = dgrid->local_wave_start[0];
-    const int dkex = dgrid->local_wave_end[0];
-    const int Ny   = dgrid->global_wave_extent[1];
-    const int dNz  = dgrid->global_wave_extent[2];
-    const int dkbz = dgrid->local_wave_start[2];
-    const int dkez = dgrid->local_wave_end[2];
+    // Introduce shorthand for some lengthy expressions
+    const int dNx  = dgrid->global_wave_extent.x();
+    const int dkbx = dgrid->local_wave_start.x();
+    const int dkex = dgrid->local_wave_end.x();
+    const int Ny   = dgrid->global_wave_extent.y();
+    const int dNz  = dgrid->global_wave_extent.z();
+    const int dkbz = dgrid->local_wave_start.z();
+    const int dkez = dgrid->local_wave_end.z();
 
     // Ensure local state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field_names.size());
@@ -1121,9 +1121,9 @@ static void load_state(esio_handle h, state_type &state)
 
             // Perform collective read operation into state_linear
             complex_field_read(h, field_names[i], dest,
-                    state_linear->strides()[3],
-                    state_linear->strides()[2],
-                    state_linear->strides()[1]);
+                               field.strides()[2],
+                               field.strides()[1],
+                               field.strides()[0]);
         }
     }
 }
@@ -1146,14 +1146,14 @@ static bool save_restart(real_t t, std::size_t nt)
     // Save simulation time information
     store_time(esioh, t);
 
-    // Coerce unsigned dealiased decomposition details into signed variables
-    const int dNx  = dgrid->global_wave_extent[0];
-    const int dkbx = dgrid->local_wave_start[0];
-    const int dkex = dgrid->local_wave_end[0];
-    const int Ny   = dgrid->global_wave_extent[1];
-    const int dNz  = dgrid->global_wave_extent[2];
-    const int dkbz = dgrid->local_wave_start[2];
-    const int dkez = dgrid->local_wave_end[2];
+    // Introduce shorthand for some lengthy expressions
+    const int dNx  = dgrid->global_wave_extent.x();
+    const int dkbx = dgrid->local_wave_start.x();
+    const int dkex = dgrid->local_wave_end.x();
+    const int Ny   = dgrid->global_wave_extent.y();
+    const int dNz  = dgrid->global_wave_extent.z();
+    const int dkbz = dgrid->local_wave_start.z();
+    const int dkez = dgrid->local_wave_end.z();
 
     // Ensure local state storage meets this routine's assumptions
     assert(                  state_linear->shape()[0]  == field_names.size());
@@ -1211,10 +1211,10 @@ static bool save_restart(real_t t, std::size_t nt)
 
             // Perform collective write operation from state_linear
             complex_field_write(esioh, field_names[i], src,
-                    state_linear->strides()[3],
-                    state_linear->strides()[2],
-                    state_linear->strides()[1],
-                    field_descriptions[i]);
+                                field.strides()[2],
+                                field.strides()[1],
+                                field.strides()[0],
+                                field_descriptions[i]);
         }
     }
 
