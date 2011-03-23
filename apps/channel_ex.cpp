@@ -1063,13 +1063,13 @@ static void load_state(esio_handle h, state_type &state)
     assert(static_cast<int>(Fy) == dgrid->global_wave_extent.y());
     assert(ncomponents == 2);
 
-    // Compute wavenumber translation details for X direction.
+    // Compute wavenumber translation logistics for X direction.
     // Requires turning a C2R FFT complex-valued coefficient count into a
     // real-valued coefficient count.  Further, need to preserve even- or
-    // odd-ness of the coefficient count to handle, for example, Fx = 1.
+    // odd-ness of the coefficient count to handle, for example, Fx == 1.
     int fxb[2], fxe[2], mxb[2], mxe[2];
     suzerain::inorder::wavenumber_translate(2 * (Fx - 1) + (Fx & 1),
-                                            dgrid->global_wave_extent.x(),
+                                            grid.dN.x(),
                                             dgrid->local_wave_start.x(),
                                             dgrid->local_wave_end.x(),
                                             fxb[0], fxe[0], fxb[1], fxe[1],
@@ -1078,11 +1078,11 @@ static void load_state(esio_handle h, state_type &state)
     assert(fxb[1] == fxe[1]);
     assert(mxb[1] == mxe[1]);
 
-    // Compute wavenumber translation details for Y direction
+    // Compute wavenumber translation logistics for Y direction
     // One or both ranges may be empty
     int fzb[2], fze[2], mzb[2], mze[2];
     suzerain::inorder::wavenumber_translate(Fz,
-                                            dgrid->global_wave_extent.z(),
+                                            grid.dN.z(),
                                             dgrid->local_wave_start.z(),
                                             dgrid->local_wave_end.z(),
                                             fzb[0], fze[0], fzb[1], fze[1],
@@ -1098,6 +1098,8 @@ static void load_state(esio_handle h, state_type &state)
 
     // Zero state_linear storage
     suzerain::multi_array::fill(*state_linear, 0);
+
+    DEBUG0("Starting to load simulation fields");
 
     // Load each scalar field in turn...
     for (size_t i = 0; i < field_names.static_size; ++i) {
@@ -1158,29 +1160,29 @@ static bool save_restart(real_t t, std::size_t nt)
     assert(numeric_cast<int>(state_linear->shape()[2]) == dgrid->local_wave_extent.x());
     assert(numeric_cast<int>(state_linear->shape()[3]) == dgrid->local_wave_extent.z());
 
-    // Compute wavenumber translation in X direction
-    int fxb[2], fxe[2], dxb[2], dxe[2];
-    suzerain::inorder::wavenumber_translate(grid.N.x()/2+1,
-                                            dgrid->global_wave_extent.x(),
+    // Compute wavenumber translation logistics for X direction
+    int fxb[2], fxe[2], mxb[2], mxe[2];
+    suzerain::inorder::wavenumber_translate(grid.N.x(),
+                                            grid.dN.x(),
                                             dgrid->local_wave_start.x(),
                                             dgrid->local_wave_end.x(),
                                             fxb[0], fxe[0], fxb[1], fxe[1],
-                                            dxb[0], dxe[0], dxb[1], dxe[1]);
+                                            mxb[0], mxe[0], mxb[1], mxe[1]);
     // X contains only positive wavenumbers => second range must be empty
     assert(fxb[1] == fxe[1]);
-    assert(dxb[1] == dxe[1]);
+    assert(mxb[1] == mxe[1]);
 
-    // Compute wavenumber translation in Z direction
+    // Compute wavenumber translation logistics for Z direction
     // One or both ranges may be empty
-    int fzb[2], fze[2], dzb[2], dze[2];
+    int fzb[2], fze[2], mzb[2], mze[2];
     suzerain::inorder::wavenumber_translate(grid.N.z(),
-                                            dgrid->global_wave_extent.z(),
+                                            grid.dN.z(),
                                             dgrid->local_wave_start.z(),
                                             dgrid->local_wave_end.z(),
                                             fzb[0], fze[0], fzb[1], fze[1],
-                                            dzb[0], dze[0], dzb[1], dze[1]);
+                                            mzb[0], mze[0], mzb[1], mze[1]);
 
-    DEBUG0("Storing simulation fields at simulation step " << nt);
+    DEBUG0("Starting to store simulation fields at step " << nt);
 
     // Save each scalar field in turn...
     for (size_t i = 0; i < field_names.static_size; ++i) {
@@ -1197,10 +1199,10 @@ static bool save_restart(real_t t, std::size_t nt)
             // Source of write is NULL for empty WRITE operations
             // Required since MultiArray triggers asserts on invalid indices
             const complex_t * src = NULL;
-            if (dxb[0] != dxe[0] && dzb[j] != dze[j]) {
+            if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
                 src = &field[0]
-                            [dxb[0] - dgrid->local_wave_start.x()]
-                            [dzb[j] - dgrid->local_wave_start.z()];
+                            [mxb[0] - dgrid->local_wave_start.x()]
+                            [mzb[j] - dgrid->local_wave_start.z()];
             }
 
             // Collectively establish size of read across all ranks
