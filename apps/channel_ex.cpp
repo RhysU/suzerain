@@ -1050,48 +1050,51 @@ static void atexit_metadata(void) {
 /** Routine to load state from file.  */
 static void load_state(esio_handle h, state_type &state)
 {
-    // Introduce shorthand for some lengthy expressions
-    const int dNx  = dgrid->global_wave_extent.x();
-    const int dkbx = dgrid->local_wave_start.x();
-    const int dkex = dgrid->local_wave_end.x();
-    const int Ny   = dgrid->global_wave_extent.y();
-    const int dNz  = dgrid->global_wave_extent.z();
-    const int dkbz = dgrid->local_wave_start.z();
-    const int dkez = dgrid->local_wave_end.z();
-
     // Ensure local state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field_names.size());
-    assert(numeric_cast<int>(state.shape()[1]) == Ny);
-    assert(numeric_cast<int>(state.shape()[2]) == (dkex - dkbx));
-    assert(numeric_cast<int>(state.shape()[3]) == (dkez - dkbz));
+    assert(numeric_cast<int>(state.shape()[1]) == dgrid->global_wave_extent.y());
+    assert(numeric_cast<int>(state.shape()[2]) == dgrid->local_wave_extent.x());
+    assert(numeric_cast<int>(state.shape()[3]) == dgrid->global_wave_extent.z());
 
     // Obtain details on the restart field's global sizes
+    // TODO Allow Ny != Fy per #1273
     int Fz, Fx, Fy, ncomponents;
     esio_field_sizev(h, field_names[0], &Fz, &Fx, &Fy, &ncomponents);
-    assert(static_cast<int>(Fy) == Ny); // TODO Allow Ny != Fy per #1273
+    assert(static_cast<int>(Fy) == dgrid->global_wave_extent.y());
     assert(ncomponents == 2);
 
-    // Compute wavenumber translation between Fx and dNx
+    // Compute wavenumber translation details for X direction.
+    // Requires turning a C2R FFT complex-valued coefficient count into a
+    // real-valued coefficient count.  Further, need to preserve even- or
+    // odd-ness of the coefficient count to handle, for example, Fx = 1.
     int fxb[2], fxe[2], mxb[2], mxe[2];
-    suzerain::inorder::wavenumber_translate(Fx, dNx, dkbx, dkex,
+    suzerain::inorder::wavenumber_translate(2 * (Fx - 1) + (Fx & 1),
+                                            dgrid->global_wave_extent.x(),
+                                            dgrid->local_wave_start.x(),
+                                            dgrid->local_wave_end.x(),
                                             fxb[0], fxe[0], fxb[1], fxe[1],
                                             mxb[0], mxe[0], mxb[1], mxe[1]);
     // X contains only positive wavenumbers => second range must be empty
     assert(fxb[1] == fxe[1]);
     assert(mxb[1] == mxe[1]);
 
-    // Compute wavenumber translation between Fz and dNz
+    // Compute wavenumber translation details for Y direction
     // One or both ranges may be empty
     int fzb[2], fze[2], mzb[2], mze[2];
-    suzerain::inorder::wavenumber_translate(Fz, dNz, dkbz, dkez,
+    suzerain::inorder::wavenumber_translate(Fz,
+                                            dgrid->global_wave_extent.z(),
+                                            dgrid->local_wave_start.z(),
+                                            dgrid->local_wave_end.z(),
                                             fzb[0], fze[0], fzb[1], fze[1],
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
     // FIXME Necessary when Fy != Ny
     // Allocate and clear temporary storage able to hold a single scalar field
-    // boost::array<suzerain::pencil_grid::index,3> tmp_extent = {{ dNx, Fy, dNz }};
+    // boost::array<suzerain::pencil_grid::index,3> tmp_extent
+    //     = {{ global_wave_extent.x(), Fy, global_wave_extent.z() }};
     // state_type tmp_state = suzerain::to_yxz(1, tmp_extent);
     // suzerain::multi_array::fill(tmp_state, 0);
+    // Use this storage to transform between wall normal grids
 
     // Zero state_linear storage
     suzerain::multi_array::fill(*state_linear, 0);
@@ -1110,9 +1113,12 @@ static void load_state(esio_handle h, state_type &state)
 
             // Destination of read is NULL for empty READ operations
             // Required since MultiArray triggers asserts on invalid indices
-            complex_t * dest = (mxb[0] == mxe[0] || mzb[j] == mze[j])
-                             ? NULL
-                             : &(field[0][mxb[0] - dkbx][mzb[j] - dkbz]);
+            complex_t * dest = NULL;
+            if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
+                dest = &field[0]
+                             [mxb[0] - dgrid->local_wave_start.x()]
+                             [mzb[j] - dgrid->local_wave_start.z()];
+            }
 
             // Collectively establish size of read across all ranks
             esio_field_establish(h, Fz, fzb[j], (fze[j] - fzb[j]),
@@ -1146,41 +1152,31 @@ static bool save_restart(real_t t, std::size_t nt)
     // Save simulation time information
     store_time(esioh, t);
 
-    // Introduce shorthand for some lengthy expressions
-    const int dNx  = dgrid->global_wave_extent.x();
-    const int dkbx = dgrid->local_wave_start.x();
-    const int dkex = dgrid->local_wave_end.x();
-    const int Ny   = dgrid->global_wave_extent.y();
-    const int dNz  = dgrid->global_wave_extent.z();
-    const int dkbz = dgrid->local_wave_start.z();
-    const int dkez = dgrid->local_wave_end.z();
-
     // Ensure local state storage meets this routine's assumptions
     assert(                  state_linear->shape()[0]  == field_names.size());
-    assert(numeric_cast<int>(state_linear->shape()[1]) == Ny);
-    assert(numeric_cast<int>(state_linear->shape()[2]) == (dkex - dkbx));
-    assert(numeric_cast<int>(state_linear->shape()[3]) == (dkez - dkbz));
+    assert(numeric_cast<int>(state_linear->shape()[1]) == dgrid->local_wave_extent.y());
+    assert(numeric_cast<int>(state_linear->shape()[2]) == dgrid->local_wave_extent.x());
+    assert(numeric_cast<int>(state_linear->shape()[3]) == dgrid->local_wave_extent.z());
 
-    // Restart file contains only non-dealiased wavenumbers
-    const int Fz = grid.N.z();
-    const int Fx = grid.N.x(); // FIXME
-    const int Fy = grid.N.y();
-    assert(grid.dN[1] == Fy);
-
-    // Compute wavenumber translation between Fx and dNx
-    // X direction contains only positive wavenumbers so second range is empty
+    // Compute wavenumber translation in X direction
     int fxb[2], fxe[2], dxb[2], dxe[2];
-    suzerain::inorder::wavenumber_translate(Fx, dNx, dkbx, dkex,
+    suzerain::inorder::wavenumber_translate(grid.N.x()/2+1,
+                                            dgrid->global_wave_extent.x(),
+                                            dgrid->local_wave_start.x(),
+                                            dgrid->local_wave_end.x(),
                                             fxb[0], fxe[0], fxb[1], fxe[1],
                                             dxb[0], dxe[0], dxb[1], dxe[1]);
     // X contains only positive wavenumbers => second range must be empty
     assert(fxb[1] == fxe[1]);
     assert(dxb[1] == dxe[1]);
 
-    // Compute wavenumber translation between Fz and dNz
+    // Compute wavenumber translation in Z direction
     // One or both ranges may be empty
     int fzb[2], fze[2], dzb[2], dze[2];
-    suzerain::inorder::wavenumber_translate(Fz, dNz, dkbz, dkez,
+    suzerain::inorder::wavenumber_translate(grid.N.z(),
+                                            dgrid->global_wave_extent.z(),
+                                            dgrid->local_wave_start.z(),
+                                            dgrid->local_wave_end.z(),
                                             fzb[0], fze[0], fzb[1], fze[1],
                                             dzb[0], dze[0], dzb[1], dze[1]);
 
@@ -1200,14 +1196,18 @@ static bool save_restart(real_t t, std::size_t nt)
 
             // Source of write is NULL for empty WRITE operations
             // Required since MultiArray triggers asserts on invalid indices
-            const complex_t * src = (dxb[0] == dxe[0] || dzb[j] == dze[j])
-                                  ? NULL
-                                  : &(field[0][dxb[0] - dkbx][dzb[j] - dkbz]);
+            const complex_t * src = NULL;
+            if (dxb[0] != dxe[0] && dzb[j] != dze[j]) {
+                src = &field[0]
+                            [dxb[0] - dgrid->local_wave_start.x()]
+                            [dzb[j] - dgrid->local_wave_start.z()];
+            }
 
             // Collectively establish size of read across all ranks
-            esio_field_establish(esioh, Fz, fzb[j], (fze[j] - fzb[j]),
-                                        Fx, fxb[0], (fxe[0] - fxb[0]),
-                                        Fy,      0, (            Fy));
+            esio_field_establish(esioh,
+                                 grid.N.z(),     fzb[j], (fze[j] - fzb[j]),
+                                 grid.N.x()/2+1, fxb[0], (fxe[0] - fxb[0]),
+                                 grid.N.y(),     0,      (     grid.N.y()));
 
             // Perform collective write operation from state_linear
             complex_field_write(esioh, field_names[i], src,
