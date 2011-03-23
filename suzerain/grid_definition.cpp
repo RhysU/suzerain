@@ -44,12 +44,17 @@ GridDefinition::GridDefinition(int     default_Nx,
                                int     default_Nz,
                                double  default_DAFz)
     : IDefinition("Mixed Fourier/B-spline computational grid definition"),
-      // global_extents below
-      N(default_Nx, default_Ny, default_Nz),
-      dN(default_Nx * default_DAFx, default_Ny, default_Nz * default_DAFz),
+      N(extents_ + 1),
+      dN(extents_),
       k(default_k),
       P(0, 0)
 {
+    extents_[0] = default_Nx * default_DAFx;
+    extents_[1] = default_Nx;
+    extents_[2] = default_Ny;  // DAFy == 1 implies N.y() == dN.y(), always
+    extents_[3] = default_Nz;
+    extents_[4] = default_Nz * default_DAFz;
+
     using ::boost::program_options::typed_value;
     using ::boost::program_options::value;
     using ::std::auto_ptr;
@@ -157,13 +162,15 @@ GridDefinition::GridDefinition(int     default_Nx,
 
 GridDefinition& GridDefinition::DAFx(double factor) {
     suzerain::validation::ensure_nonnegative(factor,"DAFx");
-    dN.x() = N.x() * factor;
+    DAFx_ = factor;
+    extents_[0] = N.x() * DAFx_;
     return *this;
 }
 
 GridDefinition& GridDefinition::DAFz(double factor) {
     suzerain::validation::ensure_nonnegative(factor,"DAFz");
-    dN.z() = N.z() * factor;
+    DAFz_ = factor;
+    extents_[4] = N.z() * DAFz_;
     return *this;
 }
 

@@ -46,6 +46,9 @@ namespace problem {
  * Holds basic three dimensional computational grid details for a distributed,
  * mixed Fourier/B-spline method.  The B-spline representation is used in the
  * wall-normal Y direction.
+ *
+ * \bug Modifying <tt>N.x()</tt> and not calling <tt>DAFx(DAFx())</tt> will
+ * leave stale <tt>dN.x()</tt> values.
  */
 class GridDefinition : public IDefinition
 {
@@ -78,10 +81,10 @@ public:
                             double default_DAFz = 0);
 
     /** Global logical extents in the X, Y, and Z directions. */
-    Eigen::Array3i N;
+    Eigen::Map<Eigen::Array3i, 0, Eigen::InnerStride<1> > N;
 
     /** Global dealiased logical extents in the X, Y, and Z directions.  */
-    Eigen::Array3i dN;
+    Eigen::Map<const Eigen::Array3i, 0, Eigen::InnerStride<2> > dN;
 
     /**
      * The B-spline basis order plus one.  For example, piecewise cubics have
@@ -101,10 +104,8 @@ public:
 
     /**
      * Obtain the dealiasing factor in the X direction.
-     *
-     * @return <tt>dN.x()/N.x()</tt> performed using floating point division.
      */
-    double DAFx() const { return static_cast<double>(dN.x()) / N.x(); }
+    double DAFx() const { return DAFx_; }
 
     /**
      * Set the dealiasing factor in the X direction.
@@ -116,10 +117,8 @@ public:
 
     /**
      * Obtain the dealiasing factor in the Z direction.
-     *
-     * @return <tt>dN.z()/N.z()</tt> performed using floating point division.
      */
-    double DAFz() const { return static_cast<double>(dN.z()) / N.z(); }
+    double DAFz() const { return DAFz_; }
 
     /**
      * Set the dealiasing factor in the Z direction.
@@ -128,6 +127,23 @@ public:
      * @return <tt>*this</tt>
      */
     GridDefinition& DAFz(double factor);
+
+private:
+
+    /**
+     * Storage for <tt>dN.x()</tt>, <tt>N.x()</tt>, {<tt>dN.y()</tt>,
+     * <tt>N.y()</tt>}, <tt>N.z()</tt>, <tt>dN.z()</tt>} where the data for
+     * {<tt>dN.y()</tt>, <tt>N.y()</tt>} is deliberately aliased to ensure that
+     * those two values always stay synchronized.
+     **/
+    int extents_[5];
+
+    /**
+     * Storage for the dealiasing factors.  These cannot be backed out from
+     * <tt>N</tt> and <tt>dN</tt> for some cases (e.g. non-integer
+     * <tt>DAFx</tt> and <tt>N =)= 1</tt>) and must be stored separately.
+     */
+    double DAFx_, DAFz_;
 };
 
 } // namespace problem
