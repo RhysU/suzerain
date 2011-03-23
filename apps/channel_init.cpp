@@ -76,12 +76,13 @@ static const ScenarioDefinition<real_t> scenario(
         /* Ly    */ 2,
         /* Lz    */ 4*pi<real_t>()/3);
 static const GridDefinition grid(
-        /* Nx    */ 1,
-        /* DAFx  */ 1.5,
-        /* Ny    */ 16,
-        /* k     */ 6,
-        /* Nz    */ 1,
-        /* DAFz  */ 1.5);
+        /* Nx      */ 1,
+        /* DAFx    */ 1.5,
+        /* Ny      */ 16,
+        /* k       */ 6,
+        /* htdelta */ 5,
+        /* Nz      */ 1,
+        /* DAFz    */ 1.5);
 
 // Global B-spline -details initialized in main()
 static shared_ptr<suzerain::bspline>     bspw;
@@ -157,7 +158,6 @@ int main(int argc, char **argv)
     real_t M                = SUZERAIN_SVEHLA_AIR_M;
     real_t p_wall           = GSL_CONST_MKSA_STD_ATMOSPHERE / 100000;
     std::string create_file = "restart0.h5";
-    real_t htdelta          = 5;
     suzerain::ProgramOptions options(
             "Suzerain-based compressible channel initialization");
     {
@@ -193,10 +193,6 @@ int main(int argc, char **argv)
                 ->notifier(std::bind2nd(ptr_fun_ensure_positive,"p_wall"))
                 ->default_value(p_wall),
              "Pressure in N/m^2 used to obtain reference wall density")
-            ("htdelta", po::value<real_t>(&htdelta)
-                ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative,"htdelta"))
-                ->default_value(htdelta),
-             "Hyperbolic tangent stretching parameter for breakpoints")
         ;
         options.process(argc, argv);
     }
@@ -227,14 +223,14 @@ int main(int argc, char **argv)
         const int nbreak = grid.N.y() + 2 - grid.k;
         suzerain::math::linspace(
                 0.0, scenario.Ly, nbreak, buf.get()); // Uniform
-        if (htdelta == 0.0) {
+        if (grid.htdelta == 0.0) {
             INFO("Breakpoints distributed uniformly");
         } else {
             INFO("Breakpoints stretched with hyperbolic tangent delta = "
-                 << htdelta);
+                 << grid.htdelta);
             for (int i = 0; i < nbreak; ++i) {        // Stretch
                 buf[i] = scenario.Ly
-                       * suzerain_htstretch2(htdelta, scenario.Ly, buf[i]);
+                       * suzerain_htstretch2(grid.htdelta, scenario.Ly, buf[i]);
             }
         }
 

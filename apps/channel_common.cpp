@@ -160,6 +160,9 @@ void store(const esio_handle esioh,
     esio_line_write(esioh, "k", &grid.k, 0,
             grid.options().find("k",false).description().c_str());
 
+    esio_line_write(esioh, "htdelta", &grid.htdelta, 0,
+            grid.options().find("htdelta",false).description().c_str());
+
     esio_line_write(esioh, "Nz", &grid.N.z(), 0,
             grid.options().find("Nz",false).description().c_str());
 
@@ -223,6 +226,14 @@ void load(const esio_handle esioh,
         INFO0("Overriding grid using k = " << grid.k);
     } else {
         esio_line_read(esioh, "k", &grid.k, 0);
+    }
+
+    if (boost::math::signbit(grid.htdelta)) { // (htdelta == -0.0)
+        INFO0("Overriding grid using degenerate htdelta = " << grid.htdelta);
+    } else if (grid.htdelta) {
+        INFO0("Overriding grid using htdelta = " << grid.htdelta);
+    } else {
+        esio_line_read(esioh, "htdelta", &grid.htdelta, 0);
     }
 
     if (grid.N.z()) {

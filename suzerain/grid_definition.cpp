@@ -41,6 +41,7 @@ GridDefinition::GridDefinition(int     default_Nx,
                                double  default_DAFx,
                                int     default_Ny,
                                int     default_k,
+                               double  default_htdelta,
                                int     default_Nz,
                                double  default_DAFz)
     : IDefinition("Mixed Fourier/B-spline computational grid definition"),
@@ -71,7 +72,7 @@ GridDefinition::GridDefinition(int     default_Nx,
          "Global logical extents in wall-normal Y direction")
         ;
 
-    { // k requires special handling to change notifier per default_k
+    { // k requires handling to change notifier per default_k
         std::auto_ptr<typed_value<int> > v(value(&this->k));
         if (default_k) {
             v->notifier(bind2nd(ptr_fun(ensure_positive<int>),   "k"));
@@ -80,7 +81,19 @@ GridDefinition::GridDefinition(int     default_Nx,
         }
         v->default_value(default_k);
         this->add_options()("k", v.release(),
-                "B-spline basis order where k = 4 indicates piecewise cubics");
+                "Wall-normal B-spline order (4 indicates piecewise cubics)");
+    }
+
+    { // htdelta requires handling to change notifier per default_htdelta
+        std::auto_ptr<typed_value<double> > v(value(&this->htdelta));
+        if (!(boost::math::signbit)(default_htdelta)) {
+            v->notifier(bind2nd(ptr_fun(ensure_positive<double>),   "htdelta"));
+        } else {
+            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<double>),"htdelta"));
+        }
+        v->default_value(default_htdelta);
+        this->add_options()("htdelta", v.release(),
+                "Wall-normal breakpoint hyperbolic tangent stretching");
     }
 
     this->add_options()
@@ -89,7 +102,7 @@ GridDefinition::GridDefinition(int     default_Nx,
          "Global logical extents in spanwise Z direction")
         ("DAFz", value<double>()->default_value(DAF.z())
             ->notifier(bind1st(mem_fun(&GridDefinition::DAFz),this)),
-         "Dealiasing factor in spanwize Z direction")
+         "Dealiasing factor in spanwise Z direction")
         ("Pa", value<int>(&P[0])->default_value(P[0])
             ->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pa")),
             "Processor count in the Pa decomposition direction")
