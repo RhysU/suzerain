@@ -41,6 +41,12 @@ void test_htstretch1()
     CASE(htstretch1_ddelta, 4., 1., 1.0e-08, -9.392957375935146e-11);
     CASE(htstretch1_dL,     4., 1., 1.0e-08, -5.367403079566020e-11);
     CASE(htstretch1_dx,     4., 1., 1.0e-08, +0.005367403079566020);
+
+    /* Spot check evaluation against analytic delta = 0 degeneration */
+    CASE(htstretch1,        0., 2., 1./ 11., +1./22.);
+    CASE(htstretch1_ddelta, 0., 2., 1./ 11., +0.);
+    CASE(htstretch1_dL,     0., 2., 1./ 11., -1./44.);
+    CASE(htstretch1_dx,     0., 2., 1./ 11., +1./2.);
 }
 
 static
@@ -71,6 +77,12 @@ void test_htstretch2()
     CASE(htstretch2_ddelta, 4., 1., 1.0e-08, -1.100290869880845e-9);
     CASE(htstretch2_dL,     4., 1., 1.0e-08, -1.465742926075948e-9);
     CASE(htstretch2_dx,     4., 1., 1.0e-08, +0.1465742926075948);
+
+    /* Spot check evaluation against analytic delta = 0 degeneration */
+    CASE(htstretch2,        0., 3., 1./9., +1./27.);
+    CASE(htstretch2_ddelta, 0., 3., 1./9., +0);
+    CASE(htstretch2_dL,     0., 3., 1./9., -1./81.);
+    CASE(htstretch2_dx,     0., 3., 1./9., 1./3.);
 }
 
 static

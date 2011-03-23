@@ -33,7 +33,11 @@
 
 /** @file
  * Computes quantities related to the common hyperbolic tangent-based grid
- * stretching scheme associated with Marcel Vinokur.
+ * stretching scheme associated with Marcel Vinokur's 1983 Journal of
+ * Computational Physics paper.
+ *
+ * @see The <a href="http://dx.doi.org/10.1016/0021-9991(83)90065-7">original
+ * paper</a> for more details.
  */
 
 #ifdef __cplusplus
@@ -51,8 +55,10 @@ extern "C" {
  *          \mbox{tanh}\left[\delta\right]
  *      }
  * \f]
+ * with the limiting \f$\delta\to{}0\f$ result being simply \f$x/L\f$.
  *
- * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ *
+ * @param delta The stretching factor \f$\delta\in\left[0,\infty\right)\f$
  * @param L     The domain endpoint \f$L\f$
  * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
  *
@@ -72,7 +78,7 @@ suzerain_htstretch1(const double delta,
  * Compute the partial derivative of the one-sided hyperbolic tangent
  * stretching function with respect to the stretching factor \f$\delta\f$.
  *
- * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param delta The stretching factor \f$\delta\in\left[0,\infty\right)\f$
  * @param L     The domain endpoint \f$L\f$
  * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
  *
@@ -91,7 +97,7 @@ suzerain_htstretch1_ddelta(const double delta,
  * Compute the partial derivative of the one-sided hyperbolic tangent
  * stretching function with respect to the domain size \f$L\f$.
  *
- * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param delta The stretching factor \f$\delta\in\left[0,\infty\right)\f$
  * @param L     The domain endpoint \f$L\f$
  * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
  *
@@ -110,7 +116,7 @@ suzerain_htstretch1_dL(const double delta,
  * Compute the partial derivative of the one-sided hyperbolic tangent
  * stretching function with respect to the evaluation point \f$x\f$.
  *
- * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param delta The stretching factor \f$\delta\in\left[0,\infty\right)\f$
  * @param L     The domain endpoint \f$L\f$
  * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
  *
@@ -173,8 +179,9 @@ suzerain_htstretch1_find_delta(const double L,
  *          \mbox{tanh}\left[\delta/2\right]
  *      }\right)
  * \f]
+ * with the limiting \f$\delta\to{}0\f$ result being simply \f$x/L\f$.
  *
- * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param delta The stretching factor \f$\delta\in\left[0,\infty\right)\f$
  * @param L     The domain endpoint \f$L\f$
  * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
  *
@@ -194,7 +201,7 @@ suzerain_htstretch2(const double delta,
  * Compute the partial derivative of the two-sided hyperbolic tangent
  * stretching function with respect to the stretching factor \f$\delta\f$.
  *
- * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param delta The stretching factor \f$\delta\in\left[0,\infty\right)\f$
  * @param L     The domain endpoint \f$L\f$
  * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
  *
@@ -213,7 +220,7 @@ suzerain_htstretch2_ddelta(const double delta,
  * Compute the partial derivative of the two-sided hyperbolic tangent
  * stretching function with respect to the domain size \f$L\f$.
  *
- * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param delta The stretching factor \f$\delta\in\left[0,\infty\right)\f$
  * @param L     The domain endpoint \f$L\f$
  * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
  *
@@ -232,7 +239,7 @@ suzerain_htstretch2_dL(const double delta,
  * Compute the partial derivative of the two-sided hyperbolic tangent
  * stretching function with respect to the evaluation point \f$x\f$.
  *
- * @param delta The stretching factor \f$\delta\in\left(0,\infty\right)\f$
+ * @param delta The stretching factor \f$\delta\in\left[0,\infty\right)\f$
  * @param L     The domain endpoint \f$L\f$
  * @param x     The desired evaluation point \f$x\in\left[0,L\right]\f$
  *
