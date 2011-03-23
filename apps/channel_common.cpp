@@ -38,7 +38,6 @@
 #include "channel_common.hpp"
 
 using boost::numeric_cast;
-using boost::scoped_array;
 
 const boost::array<const char *,5> field_names = {{
     "rho", "rhou", "rhov", "rhow", "rhoe"
@@ -171,23 +170,22 @@ void store(const esio_handle esioh,
 
     DEBUG0("Storing wavenumber vectors for Fourier bases");
 
-    const int N = std::max(grid.N.x(), grid.N.z());
-    scoped_array<complex_t> buf(new complex_t[N]);
+    Eigen::ArrayXc buf(std::max(grid.N.x(), grid.N.z()));
 
     // Obtain wavenumbers via computing 1*(i*kx)/i
-    std::fill_n(buf.get(), N, complex_t(1,0));
-    suzerain::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
+    buf.fill(complex_t(1,0));
+    suzerain::diffwave::apply(1, 0, complex_t(0,-1), buf.data(),
             Lx, Lz, 1, grid.N.x(), grid.N.x(), 0, grid.N.x(), 1, 1, 0, 1);
     esio_line_establish(esioh, grid.N.x(), 0, (procid == 0 ? grid.N.x() : 0));
-    esio_line_write(esioh, "kx", reinterpret_cast<real_t *>(buf.get()),
+    esio_line_write(esioh, "kx", reinterpret_cast<real_t *>(buf.data()),
             2, "Wavenumbers in streamwise X direction"); // Re(buf)
 
     // Obtain wavenumbers via computing 1*(i*kz)/i
-    std::fill_n(buf.get(), N, complex_t(1,0));
-    suzerain::diffwave::apply(1, 0, complex_t(0,-1), buf.get(),
+    buf.fill(complex_t(1,0));
+    suzerain::diffwave::apply(1, 0, complex_t(0,-1), buf.data(),
             Lx, Lz, 1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
     esio_line_establish(esioh, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
-    esio_line_write(esioh, "kz", reinterpret_cast<real_t *>(buf.get()),
+    esio_line_write(esioh, "kz", reinterpret_cast<real_t *>(buf.data()),
             2, "Wavenumbers in spanwise Z direction"); // Re(buf)
 }
 
@@ -262,24 +260,24 @@ void store(const esio_handle esioh,
 
     DEBUG0("Storing B-spline knot details");
 
-    scoped_array<real_t> buf(new real_t[bspw->nknots()]);
+    Eigen::ArrayXr buf(bspw->nknots());
 
-    bspw->knots(buf.get(), 1);
+    bspw->knots(buf.data(), 1);
     esio_line_establish(esioh, bspw->nknots(),
             0, (procid == 0 ? bspw->nknots() : 0));
-    esio_line_write(esioh, "knots", buf.get(), 0,
+    esio_line_write(esioh, "knots", buf.data(), 0,
             "Knots used to build B-spline basis");
 
-    bspw->breakpoints(buf.get(), 1);
+    bspw->breakpoints(buf.data(), 1);
     esio_line_establish(esioh, bspw->nbreakpoints(),
             0, (procid == 0 ? bspw->nbreakpoints() : 0));
-    esio_line_write(esioh, "breakpoints", buf.get(), 0,
+    esio_line_write(esioh, "breakpoints", buf.data(), 0,
             "Breakpoint locations used to build B-spline basis");
 
-    bspw->collocation_points(buf.get(), 1);
+    bspw->collocation_points(buf.data(), 1);
     esio_line_establish(esioh, bspw->ndof(),
             0, (procid == 0 ? bspw->ndof() : 0));
-    esio_line_write(esioh, "collocation_points", buf.get(), 0,
+    esio_line_write(esioh, "collocation_points", buf.data(), 0,
             "Collocation points used to build discrete operators");
 
     DEBUG0("Storing B-spline derivative operators");
@@ -317,11 +315,11 @@ void load(const esio_handle esioh,
     int nbreak;
     esio_line_size(esioh, "breakpoints", &nbreak);
     esio_line_establish(esioh, nbreak, 0, nbreak);
-    scoped_array<real_t> buf(new double[nbreak]);
-    esio_line_read(esioh, "breakpoints", buf.get(), 0);
+    Eigen::ArrayXr buf(nbreak);
+    esio_line_read(esioh, "breakpoints", buf.data(), 0);
 
     // Construct B-spline workspace
-    bspw.reset(new suzerain::bspline(k, k - 2, nbreak, buf.get()));
+    bspw.reset(new suzerain::bspline(k, k - 2, nbreak, buf.data()));
 }
 
 void store_time(const esio_handle esioh,

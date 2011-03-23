@@ -60,7 +60,6 @@
 using boost::make_shared;
 using boost::math::constants::pi;
 using boost::numeric_cast;
-using boost::scoped_array;
 using boost::shared_ptr;
 using std::numeric_limits;
 
@@ -317,22 +316,22 @@ int main(int argc, char **argv)
     INFO("Computing nondimensional mean profiles for restart");
     {
         esio_field_establish(esioh, 1, 0, 1, 1, 0, 1, grid.N.y(), 0, grid.N.y());
-        scoped_array<complex_t> buf(new complex_t[grid.N.y()]);
+        Eigen::ArrayXc buf(grid.N.y());
 
         // Nondimensional spanwise and wall-normal velocities are zero
-        std::fill_n(buf.get(), grid.N.y(), complex_t(0,0));
+        buf.fill(complex_t(0,0));
         complex_field_write(
-                esioh, "rhov", buf.get(), 0, 0, 0, field_descriptions[2]);
+                esioh, "rhov", buf.data(), 0, 0, 0, field_descriptions[2]);
         complex_field_write(
-                esioh, "rhow", buf.get(), 0, 0, 0, field_descriptions[3]);
+                esioh, "rhow", buf.data(), 0, 0, 0, field_descriptions[3]);
 
         // Nondimensional density is the constant one
-        std::fill_n(buf.get(), grid.N.y(), complex_t(1,0));
+        buf.fill(complex_t(1,0));
         complex_field_write(
-                esioh, "rho", buf.get(), 0, 0, 0, field_descriptions[0]);
+                esioh, "rho", buf.data(), 0, 0, 0, field_descriptions[0]);
 
         // Set up to evaluate Y momentum and total energy profile coefficients
-        scoped_array<double> rhs(new double[grid.N.y()]);
+        Eigen::ArrayXd rhs(grid.N.y());
         mesolver params;
         params.Ma     = Ma;
         params.L      = scenario.Ly;
@@ -345,19 +344,19 @@ int main(int argc, char **argv)
 
         // Find Y momentum coefficients
         F.function = &f_msolver;
-        bspw->find_interpolation_problem_rhs(&F, rhs.get());
+        bspw->find_interpolation_problem_rhs(&F, rhs.data());
         for (int i = 0; i < grid.N.y(); ++i) buf[i] = rhs[i];
-        bspluzw->solve(1, buf.get(), 1, grid.N.y());
+        bspluzw->solve(1, buf.data(), 1, grid.N.y());
         complex_field_write(
-                esioh, "rhou", buf.get(), 0, 0, 0, field_descriptions[1]);
+                esioh, "rhou", buf.data(), 0, 0, 0, field_descriptions[1]);
 
         // Find total energy coefficients
         F.function = &f_esolver;
-        bspw->find_interpolation_problem_rhs(&F, rhs.get());
+        bspw->find_interpolation_problem_rhs(&F, rhs.data());
         for (int i = 0; i < grid.N.y(); ++i) buf[i] = rhs[i];
-        bspluzw->solve(1, buf.get(), 1, grid.N.y());
+        bspluzw->solve(1, buf.data(), 1, grid.N.y());
         complex_field_write(
-                esioh, "rhoe", buf.get(), 0, 0, 0, field_descriptions[4]);
+                esioh, "rhoe", buf.data(), 0, 0, 0, field_descriptions[4]);
 
     }
     esio_file_flush(esioh);

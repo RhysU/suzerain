@@ -65,7 +65,6 @@
 
 using boost::make_shared;
 using boost::numeric_cast;
-using boost::scoped_array;
 using boost::scoped_ptr;
 using boost::shared_ptr;
 using std::numeric_limits;
@@ -115,7 +114,7 @@ static const TimeDefinition<real_t> timedef(/* advance_dt           */ 0,
 static shared_ptr<suzerain::bspline>           bspw;
 static shared_ptr<suzerain::bspline_luz>       bspluzw;
 static shared_ptr<const suzerain::pencil_grid> dgrid;
-static scoped_array<real_t>                    one_over_delta_y;
+static Eigen::ArrayXr                          one_over_delta_y;
 
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
@@ -932,11 +931,11 @@ public:
         const bool zero_zero_rank = (dkbx == 0) && (dkbz == 0);
 
         // Precompute and store quantities necessary for BC implementation
-        scoped_array<real_t> original_state_mx;
+        Eigen::ArrayXr original_state_mx;
         real_t bulk_density = numeric_limits<real_t>::quiet_NaN();
         if (zero_zero_rank) {
             // Save a copy of the constant x-momentum modes
-            original_state_mx.reset(new real_t[state.shape()[1]]);
+            original_state_mx.resize(state.shape()[1]);
             for (std::size_t i = 0; i < state.shape()[1]; ++i) {
                 original_state_mx[i]
                     = suzerain::complex::real(state_rhou[i][0][0]);
@@ -1293,7 +1292,7 @@ int main(int argc, char **argv)
     }
 
     // Initialize array holding \frac{1}{\Delta{}y} grid spacing
-    one_over_delta_y.reset(new real_t[grid.N.y()]);
+    one_over_delta_y.resize(grid.N.y());
     {
         // Determine minimum delta y observable from each collocation point
         real_t a, b, c;
