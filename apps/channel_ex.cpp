@@ -592,19 +592,19 @@ public:
         const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
 
         // Temporary storage used within following loop
-        Eigen::Vector3d grad_rho;
-        Eigen::Matrix3d grad_grad_rho;
-        Eigen::Vector3d m;
-        Eigen::Matrix3d grad_m;
-        Eigen::Vector3d div_grad_m;
-        Eigen::Vector3d grad_div_m;
-        Eigen::Vector3d grad_e;
-        Eigen::Vector3d u;
-        Eigen::Matrix3d grad_u;
-        Eigen::Vector3d grad_div_u, div_grad_u;
-        Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
-        Eigen::Matrix3d tau;
-        Eigen::Vector3d div_tau;
+        Eigen::Vector3r grad_rho;
+        Eigen::Matrix3r grad_grad_rho;
+        Eigen::Vector3r m;
+        Eigen::Matrix3r grad_m;
+        Eigen::Vector3r div_grad_m;
+        Eigen::Vector3r grad_div_m;
+        Eigen::Vector3r grad_e;
+        Eigen::Vector3r u;
+        Eigen::Matrix3r grad_u;
+        Eigen::Vector3r grad_div_u, div_grad_u;
+        Eigen::Vector3r grad_p, grad_T, grad_mu, grad_lambda;
+        Eigen::Matrix3r tau;
+        Eigen::Vector3r div_tau;
 
         // Used to track local \frac{1}{\Delta{}y} for time criterion.
         // In physical space storage is X Z Y with Y direction slowest
@@ -788,7 +788,7 @@ public:
                 ;
 
             // Momentum equation right hand side
-            Eigen::Vector3d momentum =
+            Eigen::Vector3r momentum =
                 - suzerain::orthonormal::div_u_outer_m(m, grad_m, u, div_u)
                 - grad_p
                 + inv_Re * div_tau

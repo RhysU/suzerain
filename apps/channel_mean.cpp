@@ -99,15 +99,15 @@ static bool process(const char * filename)
     assert(static_cast<unsigned>(bspw->ndof()) == grid.N.y());
 
     // Load zero-zero mode coefficients for all state variables
-    array_t<>::real s_coeffs(grid.N.y(), field_names.size());
+    Eigen::ArrayXr s_coeffs(grid.N.y(), field_names.size());
     s_coeffs.setZero();
     {
-        vector_t<>::complex tmp(grid.N.y());
+        Eigen::VectorXc tmp(grid.N.y());
         esio_field_establish(h.get(), grid.N.z(), 0, 1,
                                       grid.N.x(), 0, 1,
                                       grid.N.y(), 0, grid.N.y());
         for (int i = 0; i < s_coeffs.cols(); ++i) {
-            complex_field_read(h.get(), field_names[i], &tmp[0]);
+            complex_field_read(h.get(), field_names[i], tmp.data());
             assert(tmp.imag().squaredNorm() == 0); // Purely real!
             s_coeffs.col(i) = tmp.real();
         }
@@ -175,7 +175,7 @@ static bool process(const char * filename)
     INFO("Computing " << column_names.size() << " nondimensional quantities");
 
     // Declare storage for all of the quantities of interest
-    array_t<>::real s(s_coeffs.rows(), column_names.size());
+    Eigen::ArrayXr s(s_coeffs.rows(), column_names.size());
     s.setZero();
 
     // Populate point-like information of (t,y \in (-L/2, L/2))
@@ -296,7 +296,7 @@ static bool process(const char * filename)
     const int nplus = (grid.N.y() + 1) / 2;
 
     // Compute the quantities in plus units
-    array_t<>::real r(nplus, 1 /* t */ + 1 /* y */ + 1 /* y+ */ +  3);
+    Eigen::ArrayXr r(nplus, 1 /* t */ + 1 /* y */ + 1 /* y+ */ +  3);
     r.setZero();
     for (int i = 0; i < nplus; ++i) {
         r(i,0) = t;

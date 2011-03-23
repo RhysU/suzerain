@@ -217,27 +217,20 @@ int main(int argc, char **argv)
          << (grid.k - 1) << " on [0, Ly] with "
          << grid.N.y() << " DOF");
     {
-        scoped_array<real_t> buf(new real_t[grid.N.y()]);
-
         // Compute breakpoint locations
-        const int nbreak = grid.N.y() + 2 - grid.k;
-        suzerain::math::linspace(
-                0.0, scenario.Ly, nbreak, buf.get()); // Uniform
-        if (grid.htdelta == 0.0) {
-            INFO("Breakpoints distributed uniformly");
-        } else {
-            INFO("Breakpoints stretched with hyperbolic tangent delta = "
-                 << grid.htdelta);
-            for (int i = 0; i < nbreak; ++i) {        // Stretch
-                buf[i] = scenario.Ly
-                       * suzerain_htstretch2(grid.htdelta, scenario.Ly, buf[i]);
-            }
+        Eigen::ArrayXd buf(/* nbreak == */ grid.N.y() + 2 - grid.k);
+        suzerain::math::linspace(0.0, scenario.Ly, buf.size(), buf.data());
+        INFO("Breakpoints stretched with hyperbolic tangent delta = "
+             << grid.htdelta);
+        for (int i = 0; i < buf.size(); ++i) {
+            buf[i]  = suzerain_htstretch2(grid.htdelta, scenario.Ly, buf[i]);
+            buf[i] *= scenario.Ly;
         }
 
         // Generate the B-spline workspace based on order and breakpoints
         // Maximum non-trivial derivative operators included
         bspw = make_shared<suzerain::bspline>(
-                grid.k, grid.k - 2, nbreak, buf.get());
+                grid.k, grid.k - 2, buf.size(), buf.data());
         assert(static_cast<unsigned>(bspw->ndof()) == grid.N.y());
     }
 
