@@ -227,12 +227,10 @@ void load(const esio_handle esioh,
         esio_line_read(esioh, "k", &grid.k, 0);
     }
 
-    if (boost::math::signbit(grid.htdelta)) { // (htdelta == -0.0)
-        INFO0("Overriding grid using degenerate htdelta = " << grid.htdelta);
-    } else if (grid.htdelta) {
-        INFO0("Overriding grid using htdelta = " << grid.htdelta);
-    } else {
+    if (boost::math::signbit(grid.htdelta)) { // (-0.0 "<=" htdelta)
         esio_line_read(esioh, "htdelta", &grid.htdelta, 0);
+    } else {
+        INFO0("Overriding grid using htdelta = " << grid.htdelta);
     }
 
     if (grid.N.z()) {
