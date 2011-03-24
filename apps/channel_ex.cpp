@@ -1102,59 +1102,78 @@ static void load_state(esio_handle h, state_type &state)
                                             fzb[0], fze[0], fzb[1], fze[1],
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
-    // Prepare a temporary buffer into which to read each scalar data.
-    // Necessary when bspw->ndof() != Fbspw->ndof(), but use it all the time to
-    // ensure the more complicated code path is execised continuously.  We pay
-    // some memory overhead, but gain dramatically by reducing chances of
-    // subtle bugs.
-    const boost::array<int,3> tmp_extent = {{
-        dgrid->local_wave_extent.x(), Fy, dgrid->local_wave_extent.z()
-    }};
-    boost::multi_array<complex_t,3,suzerain::blas::allocator<complex_t>::type >
-        tmp(suzerain::to_yxz(tmp_extent), boost::fortran_storage_order());
-    assert(tmp.strides()[0] == 1);
+    // Possibly prepare a temporary buffer into which to read each scalar
+    // field.  Used only when !bsplines_same.
+    typedef boost::multi_array<
+        complex_t, 3, suzerain::blas::allocator<complex_t>::type
+    > tmp_type;
+    boost::scoped_ptr<tmp_type> tmp;
+
+    if (!bsplines_same) {
+        DEBUG0("Differences in B-spline basis require restart projection");
+        const boost::array<tmp_type::index,3> extent = {{
+            state.shape()[1], state.shape()[2], state.shape()[3]
+        }};
+        tmp.reset(new tmp_type(extent, boost::fortran_storage_order()));
+    }
 
     DEBUG0("Started loading simulation fields");
 
     // Load each scalar field in turn
     for (size_t i = 0; i < field_names.static_size; ++i) {
 
-        // Clear tmp storage prior to load to zero not-loaded coefficents
-        suzerain::multi_array::fill(tmp, 0);
+        // Create a view of the state for just the i-th scalar
+        boost::multi_array_types::index_range all;
+        boost::array_view_gen<state_type,3>::type field
+            = state[boost::indices[i][all][all][all]];
+
+        // Clear storage prior to load to zero not-loaded coefficents
+        if (bsplines_same) {
+            suzerain::multi_array::fill(field, 0);
+        } else {
+            suzerain::multi_array::fill(*tmp, 0);
+        }
 
         // Two ESIO read operations per field (once per Z range)
         for (int j = 0; j < 2; ++j) {
-
-            // Destination of read is NULL for empty READ operations
-            // Required since MultiArray triggers asserts on invalid indices
-            complex_t * dest = NULL;
-            if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
-                dest = &tmp[0]
-                           [mxb[0] - dgrid->local_wave_start.x()]
-                           [mzb[j] - dgrid->local_wave_start.z()];
-            }
 
             // Collectively establish size of read across all ranks
             esio_field_establish(h, Fz, fzb[j], (fze[j] - fzb[j]),
                                     Fx, fxb[0], (fxe[0] - fxb[0]),
                                     Fy,      0, (            Fy));
 
+
+            // Destination of read is NULL for empty READ operations.
+            // Otherwise find starting point for coefficient loading.
+            complex_t * dst = NULL;
+            boost::array<state_type::index,3> dst_strides = {{ 0, 0, 0 }};
+            if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
+                const boost::array<state_type::index,3> index_list = {{
+                        0,
+                        mxb[0] - dgrid->local_wave_start.x(),
+                        mzb[j] - dgrid->local_wave_start.z()
+                }};
+                if (bsplines_same) {
+                    dst = &field(index_list);
+                    std::copy(field.strides(), field.strides() + 3,
+                              dst_strides.begin());
+                } else {
+                    dst = &(*tmp)(index_list);
+                    std::copy(tmp->strides(), tmp->strides() + 3,
+                              dst_strides.begin());
+                }
+            }
+
             // Perform collective read operation into tmp
-            complex_field_read(h, field_names[i], dest,
-                               tmp.strides()[2],
-                               tmp.strides()[1],
-                               tmp.strides()[0]);
+            complex_field_read(h, field_names[i], dst,
+                               dst_strides[2],
+                               dst_strides[1],
+                               dst_strides[0]);
         }
 
-        // Create a view of the state for just the i-th scalar
-        boost::multi_array_types::index_range all;
-        boost::array_view_gen<state_type,3>::type field
-            = state[boost::indices[i][all][all][all]];
 
         // Transfer the loaded information into field view
-        if (bsplines_same) {
-            field = tmp;   // Deep copy courtesy of boost::multi_array
-        } else {
+        if (!bsplines_same) {
             assert(false); // FIXME Allow Ny != Fy per #1273
         }
     }
