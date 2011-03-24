@@ -41,7 +41,6 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/grid_definition.hpp>
-#include <suzerain/htstretch.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/orthonormal.hpp>
@@ -212,26 +211,10 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    INFO("Creating B-spline basis of uniform order "
-         << (grid.k - 1) << " on [0, Ly] with "
-         << grid.N.y() << " DOF");
-    {
-        // Compute breakpoint locations
-        Eigen::ArrayXd buf(/* nbreak == */ grid.N.y() + 2 - grid.k);
-        suzerain::math::linspace(0.0, scenario.Ly, buf.size(), buf.data());
-        INFO("Breakpoints stretched with hyperbolic tangent delta = "
-             << grid.htdelta);
-        for (int i = 0; i < buf.size(); ++i) {
-            buf[i]  = suzerain_htstretch2(grid.htdelta, scenario.Ly, buf[i]);
-            buf[i] *= scenario.Ly;
-        }
-
-        // Generate the B-spline workspace based on order and breakpoints
-        // Maximum non-trivial derivative operators included
-        bspw = make_shared<const suzerain::bspline>(
-                grid.k, grid.k - 2, buf.size(), buf.data());
-        assert(static_cast<unsigned>(bspw->ndof()) == grid.N.y());
-    }
+    INFO("Creating B-spline basis of order " << (grid.k - 1)
+         << " on [0, " << scenario.Ly << "] with "
+         << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
+    create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
 
     INFO("Creating new restart file " << create_file);
     esio_file_create(esioh, create_file.c_str(),

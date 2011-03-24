@@ -42,7 +42,6 @@
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/grid_definition.hpp>
-#include <suzerain/htstretch.h>
 #include <suzerain/inorder.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>

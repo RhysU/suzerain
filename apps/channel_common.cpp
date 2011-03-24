@@ -34,6 +34,7 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #include <suzerain/diffwave.hpp>
+#include <suzerain/htstretch.h>
 #include "logger.hpp"
 #include "channel_common.hpp"
 
@@ -249,6 +250,28 @@ void load(const esio_handle esioh,
         esio_line_read(esioh, "DAFz", &factor, 0);
         grid.DAFz(factor);
     }
+}
+
+void create(const int ndof,
+            const int k,
+            const double a,
+            const double b,
+            const double htdelta,
+            boost::shared_ptr<const suzerain::bspline>& bspw)
+{
+    // Compute breakpoint locations
+    Eigen::ArrayXd breakpoints(ndof + 2 - k);
+    suzerain::math::linspace(0.0, 1.0, breakpoints.size(), breakpoints.data());
+    for (int i = 0; i < breakpoints.size(); ++i) {
+        breakpoints[i] = suzerain_htstretch2(htdelta, 1.0, breakpoints[i]);
+    }
+    breakpoints = (b - a) * breakpoints + a;
+
+    // Generate the B-spline workspace based on order and breakpoints
+    // Maximum non-trivial derivative operators included
+    bspw = boost::make_shared<const suzerain::bspline>(
+            k, k - 2, breakpoints.size(), breakpoints.data());
+    assert(static_cast<unsigned>(bspw->ndof()) == ndof);
 }
 
 void store(const esio_handle esioh,

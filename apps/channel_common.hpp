@@ -137,6 +137,14 @@ void store(const esio_handle esioh,
 void load(const esio_handle esioh,
           suzerain::problem::GridDefinition& grid);
 
+/** Create a B-spline workspace on [a,b] per ndof, k, and htdelta */
+void create(const int ndof,
+            const int k,
+            const double a,
+            const double b,
+            const double htdelta,
+            boost::shared_ptr<const suzerain::bspline>& bspw);
+
 /** Store a suzerain::bspline workspace in a restart file */
 void store(const esio_handle esioh,
            const boost::shared_ptr<const suzerain::bspline>& bspw);
