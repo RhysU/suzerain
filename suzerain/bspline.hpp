@@ -242,6 +242,18 @@ public:
                 function, rhs, w_);
     }
 
+    /** @see suzerain_bspline_zfind_interpolation_problem_rhs */
+    template< typename Complex >
+    typename boost::enable_if<
+        suzerain::complex::traits::is_complex_double<Complex>, int
+    >::type zfind_interpolation_problem_rhs(
+            const suzerain_zfunction * zfunction,
+            const Complex * rhs) const
+    {
+        return suzerain_bspline_zfind_interpolation_problem_rhs(
+                zfunction, reinterpret_cast<double (*)[2]>(rhs), w_);
+    }
+
     /** @see suzerain_bspline_workspace#ndof */
     int nknots() const { return suzerain_bspline_nknots(w_); }
 

@@ -59,12 +59,14 @@ extern "C" {
 #endif
 
 /**
- * Represents an arbitrary function of two parameters with the second parameter
- * fixed.  Used to fix some parameters of a multivariate function so that it
- * can be passed to a routine expecting a univariate function.  This structure
- * must be binary compatible with GSL's \c gsl_function.
+ * Represents an arbitrary real-valued function of two parameters with the
+ * second parameter fixed.  Used to fix some parameters of a multivariate
+ * function so that it can be passed to a routine expecting a univariate
+ * function.  This structure must be binary compatible with GSL's \c
+ * gsl_function.
  *
  * @see The function evaluation macro SUZERAIN_FN_EVAL.
+ * @see suzerain_function for the complex-valued analogue.
  */
 typedef struct {
 
@@ -86,11 +88,52 @@ typedef struct {
 
 /**
  * \def SUZERAIN_FN_EVAL(F,x)
- * Evalute \c F(x) supplying <tt>F->params</tt> to it under the covers.
- * @param F Function to evaluate.
+ * Evaluate \c F(x) supplying <tt>F->params</tt> to <tt>F->function</tt>.
+ *
+ * @param F Function to evaluate given as a suzerain_function.
  * @param x Point at which \c F should be evaluated.
+ * @return The value \c F(x)
  */
 #define SUZERAIN_FN_EVAL(F,x) (*((F)->function))(x,(F)->params)
+
+/**
+ * Represents an arbitrary complex-valued function of two parameters with the
+ * second parameter fixed.
+ *
+ * @see The function evaluation macro SUZERAIN_ZFN_EVAL.
+ * @see suzerain_zfunction for the real-valued analogue.
+ */
+typedef struct {
+
+    /**
+     * Underlying function to be evaluated
+     *
+     * @param[in]  x Single parameter that will be varied when invoked.
+     * @param[in]  params Arbitrary data to be passed to the function.
+     * @param[out] z Complex-valued result of evaluation.
+     */
+    void (* function) (double x, void * params, double z[2]);
+
+    /**
+     * Fixed data to be provided to \c function on each invocation.
+     * May be safely mutated between invocations.
+     */
+    void * params;
+
+} suzerain_zfunction ;
+
+/**
+ * \def SUZERAIN_ZFN_EVAL(F,x,z)
+ * Evaluate <tt>z == F(x)</tt> supplying <tt>F->params</tt> to
+ * <tt>F->function</tt>.  Unlike SUZERAIN_FN_EVAL, this macro is a statement
+ * unto itself.
+ *
+ * @param F Function to evaluate given as a suzerain_zfunction.
+ * @param x Point at which \c F should be evaluated.
+ * @param z Complex-valued result of evaluation.
+ */
+#define SUZERAIN_ZFN_EVAL(F,x,z) \
+    do { (*((F)->function))(x,(F)->params,z) } while (0)
 
 #ifdef __cplusplus
 } /* extern "C" */

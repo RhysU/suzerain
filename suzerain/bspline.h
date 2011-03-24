@@ -436,34 +436,6 @@ suzerain_bspline_collocation_points(
     int incx,
     const suzerain_bspline_workspace *w);
 
-/**
- * Determine the right hand side of the interpolation problem <tt>D[0] x
- * = rhs</tt>.  Here <tt>D[0]</tt> is the zeroth derivative operator (i.e. mass
- * matrix), \c x are the basis function coefficients that will best represent
- * \c function for the given method, and \c rhs is the vector computed by this
- * routine.
- *
- * @param[in] function Function to use when computing \c rhs.
- * @param[out] rhs Output vector containing computed right hand side
- * @param[in] w Workspace to use.
- *
- * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
- *      returns one of #suzerain_error_status.
- *
- * @see suzerain_bspline_method() for details on available methods.
- *      Different methods will necessarily compute the right hand side
- *      differently.
- * @see suzerain_bspline_lu_form_mass() and suzerain_bspline_lu_solve()
- *      for how to solve the linear equation for \c x.
- *
- * \memberof suzerain_bspline_workspace
- */
-int
-suzerain_bspline_find_interpolation_problem_rhs(
-    const suzerain_function * function,
-    double * rhs,
-    const suzerain_bspline_workspace *w);
-
 /**@}*/
 
 /** @name Real-valued operations */
@@ -627,6 +599,36 @@ suzerain_bspline_accumulate_operator(
     int ldy,
     const suzerain_bspline_workspace *w);
 
+/**
+ * Determine the right hand side of the interpolation problem <tt>D[0] x
+ * = rhs</tt>.  Here <tt>D[0]</tt> is the zeroth derivative operator (i.e. mass
+ * matrix), \c x are the basis function coefficients that will best represent
+ * \c function for the given method, and \c rhs is the vector computed by this
+ * routine.
+ *
+ * @param[in]  function Real-valued function to use when computing \c rhs.
+ * @param[out] rhs Output vector containing computed right hand side
+ * @param[in]  w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see suzerain_bspline_method() for details on available methods.
+ *      Different methods will necessarily compute the right hand side
+ *      differently.
+ * @see suzerain_bspline_lu_form_mass() and suzerain_bspline_lu_solve()
+ *      for how to solve the linear equation for \c x.
+ * @see suzerain_bspline_zfind_interpolation_problem_rhs() for a way to
+ *      perform this operation for a complex-valued function.
+ *
+ * \memberof suzerain_bspline_workspace
+ */
+int
+suzerain_bspline_find_interpolation_problem_rhs(
+    const suzerain_function * function,
+    double * rhs,
+    const suzerain_bspline_workspace *w);
+
 /**@}*/
 
 /** @name Complex-valued operations */
@@ -788,6 +790,36 @@ suzerain_bspline_zaccumulate_operator(
     double (*y)[2],
     int incy,
     int ldy,
+    const suzerain_bspline_workspace *w);
+
+/**
+ * Determine the right hand side of the interpolation problem <tt>D[0] x
+ * = rhs</tt>.  Here <tt>D[0]</tt> is the zeroth derivative operator (i.e. mass
+ * matrix), \c x are the basis function coefficients that will best represent
+ * \c function for the given method, and \c rhs is the vector computed by this
+ * routine.
+ *
+ * @param[in]  zfunction Complex-valued function to use when computing \c rhs.
+ * @param[out] rhs Output vector containing computed right hand side
+ * @param[in]  w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see suzerain_bspline_method() for details on available methods.
+ *      Different methods will necessarily compute the right hand side
+ *      differently.
+ * @see suzerain_bspline_luz_form_mass() and suzerain_bspline_luz_solve()
+ *      for how to solve the linear equation for \c x.
+ * @see suzerain_bspline_find_interpolation_problem_rhs() for a way to
+ *      perform this operation for a real-valued function.
+ *
+ * \memberof suzerain_bspline_workspace
+ */
+int
+suzerain_bspline_zfind_interpolation_problem_rhs(
+    const suzerain_zfunction * zfunction,
+    double (*rhs)[2],
     const suzerain_bspline_workspace *w);
 
 /**@}*/
