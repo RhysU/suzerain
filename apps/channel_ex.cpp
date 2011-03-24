@@ -1055,11 +1055,30 @@ static void load_state(esio_handle h, state_type &state)
     assert(numeric_cast<int>(state.shape()[3]) == dgrid->global_wave_extent.z());
 
     // Obtain details on the restart field's global sizes
-    // TODO Allow Ny != Fy per #1273
     int Fz, Fx, Fy, ncomponents;
     esio_field_sizev(h, field_names[0], &Fz, &Fx, &Fy, &ncomponents);
-    assert(static_cast<int>(Fy) == dgrid->global_wave_extent.y());
     assert(ncomponents == 2);
+
+    // Prepare a file-specific B-spline basis
+    shared_ptr<const suzerain::bspline> Fbspw;
+    load(h, Fbspw);
+    assert(Fy == Fbspw->ndof());
+
+    // Check if the B-spline basis in the file differs from ours.  Use strict
+    // equality as minor knot differences magnify once collocation points
+    // and operators are computed.
+    bool bsplines_same =    bspw->order()  == Fbspw->order()
+                         && bspw->ndof()   == Fbspw->ndof()
+                         && bspw->nknots() == Fbspw->nknots();
+    for (int j = 0; bsplines_same && j < bspw->nknots(); ++j) {
+        double x_j, y_j;
+        bspw->knot(j, &x_j);
+        Fbspw->knot(j, &y_j);
+        bsplines_same = x_j == y_j;
+    }
+
+    // TODO Allow Ny != Fy per #1273
+    assert(bsplines_same);
 
     // Compute wavenumber translation logistics for X direction.
     // Requires turning a C2R FFT complex-valued coefficient count into a
@@ -1272,11 +1291,16 @@ int main(int argc, char **argv)
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
     load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
     load(esioh, const_cast<GridDefinition&>(grid));
-    load(esioh, bspw);
     esio_file_close(esioh);
 
-    // TODO Account for B-spline differences at load time
+    INFO("Using B-splines of order " << (grid.k - 1)
+         << " on [0, " << scenario.Ly << "] with "
+         << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
+    create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
     assert(bspw->order() == grid.k);
+    assert(bspw->ndof()  == grid.N.y());
+    bspluzw = make_shared<suzerain::bspline_luz>(*bspw);
+    bspluzw->form_mass(*bspw);
 
     INFO0("Saving metadata temporary file: " << restart.metadata());
     {
@@ -1290,12 +1314,13 @@ int main(int argc, char **argv)
         atexit(&atexit_metadata); // Delete lingering metadata file at exit
     }
 
+    // FIXME: This can probably be computed elsewhere
     // Initialize array holding \frac{1}{\Delta{}y} grid spacing
     one_over_delta_y.resize(grid.N.y());
     {
         // Determine minimum delta y observable from each collocation point
         real_t a, b, c;
-        bspw->collocation_point(0, &a);                  // First point
+        bspw->collocation_point(0, &a);                     // First point
         bspw->collocation_point(1, &b);
         one_over_delta_y[0] = std::abs(b - a);
         for (int i = 1; i < grid.N.y() - 1; ++i) {          // Intermediates
@@ -1309,14 +1334,8 @@ int main(int argc, char **argv)
         one_over_delta_y[grid.N.y() - 1] = std::abs(b - a);
 
         // Invert to find \frac{1}{\Delta{}y}
-        for (int i = 0; i < grid.N.y(); ++i) { // Invert
-            one_over_delta_y[i] = 1 / one_over_delta_y[i];
-        }
+        one_over_delta_y = one_over_delta_y.inverse();
     }
-
-    // Initialize B-spline workspace to find coeffs from collocation points
-    bspluzw = make_shared<suzerain::bspline_luz>(*bspw);
-    bspluzw->form_mass(*bspw);
 
     // Display global degree of freedom information
     INFO0("Global degrees of freedom  (DOF): " << grid.N.prod());

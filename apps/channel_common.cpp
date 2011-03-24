@@ -325,12 +325,14 @@ void store(const esio_handle esioh,
 void load(const esio_handle esioh,
           boost::shared_ptr<const suzerain::bspline>& bspw)
 {
-    DEBUG0("Loading B-spline breakpoints");
+    DEBUG0("Loading B-spline workspace based on order and breakpoints");
 
     // All ranks load B-spline order
     int k;
     esio_line_establish(esioh, 1, 0, 1);
     esio_line_read(esioh, "k", &k, 0);
+
+    // htdelta is ignored
 
     // All ranks load B-spline breakpoints
     int nbreak;
@@ -338,6 +340,8 @@ void load(const esio_handle esioh,
     esio_line_establish(esioh, nbreak, 0, nbreak);
     Eigen::ArrayXr buf(nbreak);
     esio_line_read(esioh, "breakpoints", buf.data(), 0);
+
+    // Collocation points are ignored
 
     // Construct B-spline workspace
     bspw.reset(new suzerain::bspline(k, k - 2, nbreak, buf.data()));
