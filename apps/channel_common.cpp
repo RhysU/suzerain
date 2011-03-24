@@ -252,7 +252,7 @@ void load(const esio_handle esioh,
 }
 
 void store(const esio_handle esioh,
-           boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */)
+           const boost::shared_ptr<const suzerain::bspline>& bspw)
 {
     // Only root writes data
     int procid;
@@ -302,7 +302,7 @@ void store(const esio_handle esioh,
 }
 
 void load(const esio_handle esioh,
-          boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */)
+          boost::shared_ptr<const suzerain::bspline>& bspw)
 {
     DEBUG0("Loading B-spline breakpoints");
 

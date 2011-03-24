@@ -111,8 +111,8 @@ static const TimeDefinition<real_t> timedef(/* advance_dt           */ 0,
                                             /* evmagfactor per Prem */ 0.72);
 
 // Global grid-details initialized in main()
-static shared_ptr<suzerain::bspline>           bspw;
-static shared_ptr<suzerain::bspline_luz>       bspluzw;
+static shared_ptr<const suzerain::bspline>     bspw;
+static shared_ptr<      suzerain::bspline_luz> bspluzw;
 static shared_ptr<const suzerain::pencil_grid> dgrid;
 static Eigen::ArrayXr                          one_over_delta_y;
 

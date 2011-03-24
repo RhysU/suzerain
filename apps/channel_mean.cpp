@@ -91,7 +91,7 @@ static bool process(const char * filename)
     real_t t;
     suzerain::problem::ScenarioDefinition<real_t> scenario;
     suzerain::problem::GridDefinition grid;
-    shared_ptr<suzerain::bspline> bspw;
+    shared_ptr<const suzerain::bspline> bspw;
     load_time(h.get(), t);
     load(h.get(), scenario);
     load(h.get(), grid);

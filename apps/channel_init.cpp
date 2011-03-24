@@ -84,8 +84,8 @@ static const GridDefinition grid(
         /* DAFz    */ 1.5);
 
 // Global B-spline -details initialized in main()
-static shared_ptr<suzerain::bspline>     bspw;
-static shared_ptr<suzerain::bspline_luz> bspluzw;
+static shared_ptr<const suzerain::bspline>     bspw;
+static shared_ptr<      suzerain::bspline_luz> bspluzw;
 
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
@@ -228,7 +228,7 @@ int main(int argc, char **argv)
 
         // Generate the B-spline workspace based on order and breakpoints
         // Maximum non-trivial derivative operators included
-        bspw = make_shared<suzerain::bspline>(
+        bspw = make_shared<const suzerain::bspline>(
                 grid.k, grid.k - 2, buf.size(), buf.data());
         assert(static_cast<unsigned>(bspw->ndof()) == grid.N.y());
     }

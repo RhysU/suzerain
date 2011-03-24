@@ -139,11 +139,11 @@ void load(const esio_handle esioh,
 
 /** Store a suzerain::bspline workspace in a restart file */
 void store(const esio_handle esioh,
-           boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */);
+           const boost::shared_ptr<const suzerain::bspline>& bspw);
 
 /** Load a suzerain::bspline workspace from a restart file */
 void load(const esio_handle esioh,
-          boost::shared_ptr<suzerain::bspline>& bspw /* Yes, a reference */);
+          boost::shared_ptr<const suzerain::bspline>& bspw);
 
 /** Store the current simulation time information */
 void store_time(const esio_handle esioh,
