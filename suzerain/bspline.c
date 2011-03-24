@@ -955,6 +955,32 @@ suzerain_bspline_find_interpolation_problem_rhs(
 }
 
 int
+suzerain_bspline_zfind_interpolation_problem_rhs(
+    const suzerain_zfunction * zfunction,
+    double (*rhs)[2],
+    const suzerain_bspline_workspace *w)
+{
+    switch (w->method) {
+    case SUZERAIN_BSPLINE_COLLOCATION_GREVILLE:
+        {
+            /* Evaluate the function at the collocation points */
+            const int n = w->ndof;
+            for (int i = 0; i < n; ++i) {
+                double x;
+                suzerain_bspline_collocation_point(i, &x, w);
+                SUZERAIN_ZFN_EVAL(zfunction, x, rhs[i]);
+            }
+        }
+
+        break;
+    default:
+        SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
+    }
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
 suzerain_bspline_breakpoint(
     int j,
     double *x_j,

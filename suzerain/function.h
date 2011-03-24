@@ -133,7 +133,7 @@ typedef struct {
  * @param z Complex-valued result of evaluation.
  */
 #define SUZERAIN_ZFN_EVAL(F,x,z) \
-    do { (*((F)->function))(x,(F)->params,z) } while (0)
+    do { (*((F)->function))(x,(F)->params,z); } while (0)
 
 #ifdef __cplusplus
 } /* extern "C" */
