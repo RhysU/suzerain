@@ -35,12 +35,9 @@
 #pragma hdrstop
 #include <Eigen/Core>
 #include <esio/esio.h>
-#include <suzerain/bspline.hpp>
-#include <suzerain/grid_definition.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/orthonormal.hpp>
-#include <suzerain/scenario_definition.hpp>
 
 #include "logger.hpp"
 #include "channel_common.hpp"

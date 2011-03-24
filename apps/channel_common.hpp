@@ -33,8 +33,11 @@
 #include <Eigen/Core>
 #include <esio/esio.h>
 #include <suzerain/bspline.hpp>
+#include <suzerain/diffwave.hpp>
 #include <suzerain/grid_definition.hpp>
+#include <suzerain/inorder.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/pencil_grid.hpp>
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/state_impl.hpp>
@@ -160,6 +163,13 @@ void store_time(const esio_handle esioh,
 /** Load the current simulation time information */
 void load_time(const esio_handle esioh,
                real_t &time);
+
+/** Load the current simulation state from an open restart file in h */
+void load(const esio_handle esioh,
+          suzerain::NoninterleavedState<4,complex_t> &state,
+          const suzerain::problem::GridDefinition& grid,
+          const suzerain::pencil_grid& dgrid,
+          const suzerain::bspline& bspw);
 
 /** Read a complex-valued field via ESIO */
 template< typename I >

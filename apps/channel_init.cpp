@@ -38,15 +38,11 @@
 #include <gsl/gsl_const_num.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_roots.h>
-#include <suzerain/bspline.hpp>
-#include <suzerain/diffwave.hpp>
-#include <suzerain/grid_definition.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/orthonormal.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
-#include <suzerain/scenario_definition.hpp>
 #include <suzerain/svehla.h>
 #include <suzerain/utility.hpp>
 

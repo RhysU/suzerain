@@ -38,22 +38,16 @@
 #include <suzerain/common.hpp>
 #include <esio/esio.h>
 #include <suzerain/blas_et_al.hpp>
-#include <suzerain/bspline.hpp>
-#include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
-#include <suzerain/grid_definition.hpp>
-#include <suzerain/inorder.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/orthonormal.hpp>
-#include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
-#include <suzerain/scenario_definition.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/utility.hpp>
 
@@ -1045,142 +1039,6 @@ static void atexit_metadata(void) {
     }
 }
 
-/** Routine to load state from file.  */
-static void load_state(esio_handle h, state_type &state)
-{
-    // Ensure local state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == field_names.size());
-    assert(numeric_cast<int>(state.shape()[1]) == dgrid->global_wave_extent.y());
-    assert(numeric_cast<int>(state.shape()[2]) == dgrid->local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3]) == dgrid->global_wave_extent.z());
-
-    // Obtain details on the restart field's global sizes
-    int Fz, Fx, Fy, ncomponents;
-    esio_field_sizev(h, field_names[0], &Fz, &Fx, &Fy, &ncomponents);
-    assert(ncomponents == 2);
-
-    // Prepare a file-specific B-spline basis
-    shared_ptr<const suzerain::bspline> Fbspw;
-    load(h, Fbspw);
-    assert(Fy == Fbspw->ndof());
-
-    // Check if the B-spline basis in the file differs from ours.  Use strict
-    // equality as minor knot differences magnify once collocation points
-    // and operators are computed.
-    bool bsplines_same =    bspw->order()  == Fbspw->order()
-                         && bspw->ndof()   == Fbspw->ndof()
-                         && bspw->nknots() == Fbspw->nknots();
-    for (int j = 0; bsplines_same && j < bspw->nknots(); ++j) {
-        double x_j, y_j;
-        bspw->knot(j, &x_j);
-        Fbspw->knot(j, &y_j);
-        bsplines_same = x_j == y_j;
-    }
-
-    // Compute wavenumber translation logistics for X direction.
-    // Requires turning a C2R FFT complex-valued coefficient count into a
-    // real-valued coefficient count.  Further, need to preserve even- or
-    // odd-ness of the coefficient count to handle, for example, Fx == 1.
-    int fxb[2], fxe[2], mxb[2], mxe[2];
-    suzerain::inorder::wavenumber_translate(2 * (Fx - 1) + (Fx & 1),
-                                            grid.dN.x(),
-                                            dgrid->local_wave_start.x(),
-                                            dgrid->local_wave_end.x(),
-                                            fxb[0], fxe[0], fxb[1], fxe[1],
-                                            mxb[0], mxe[0], mxb[1], mxe[1]);
-    // X contains only positive wavenumbers => second range must be empty
-    assert(fxb[1] == fxe[1]);
-    assert(mxb[1] == mxe[1]);
-
-    // Compute wavenumber translation logistics for Y direction
-    // One or both ranges may be empty
-    int fzb[2], fze[2], mzb[2], mze[2];
-    suzerain::inorder::wavenumber_translate(Fz,
-                                            grid.dN.z(),
-                                            dgrid->local_wave_start.z(),
-                                            dgrid->local_wave_end.z(),
-                                            fzb[0], fze[0], fzb[1], fze[1],
-                                            mzb[0], mze[0], mzb[1], mze[1]);
-
-    // Possibly prepare a temporary buffer into which to read each scalar
-    // field.  Used only when !bsplines_same.
-    typedef boost::multi_array<
-        complex_t, 3, suzerain::blas::allocator<complex_t>::type
-    > tmp_type;
-    boost::scoped_ptr<tmp_type> tmp;
-
-    if (!bsplines_same) {
-        DEBUG0("Differences in B-spline basis require restart projection");
-        const boost::array<tmp_type::index,3> extent = {{
-            state.shape()[1], state.shape()[2], state.shape()[3]
-        }};
-        tmp.reset(new tmp_type(extent, boost::fortran_storage_order()));
-    }
-
-    DEBUG0("Started loading simulation fields");
-
-    // Load each scalar field in turn
-    for (size_t i = 0; i < field_names.static_size; ++i) {
-
-        // Create a view of the state for just the i-th scalar
-        boost::multi_array_types::index_range all;
-        boost::array_view_gen<state_type,3>::type field
-            = state[boost::indices[i][all][all][all]];
-
-        // Clear storage prior to load to zero not-loaded coefficents
-        if (bsplines_same) {
-            suzerain::multi_array::fill(field, 0);
-        } else {
-            suzerain::multi_array::fill(*tmp, 0);
-        }
-
-        // Two ESIO read operations per field (once per Z range)
-        for (int j = 0; j < 2; ++j) {
-
-            // Collectively establish size of read across all ranks
-            esio_field_establish(h, Fz, fzb[j], (fze[j] - fzb[j]),
-                                    Fx, fxb[0], (fxe[0] - fxb[0]),
-                                    Fy,      0, (            Fy));
-
-
-            // Destination of read is NULL for empty READ operations.
-            // Otherwise find starting point for coefficient loading.
-            complex_t * dst = NULL;
-            boost::array<state_type::index,3> dst_strides = {{ 0, 0, 0 }};
-            if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
-                const boost::array<state_type::index,3> index_list = {{
-                        0,
-                        mxb[0] - dgrid->local_wave_start.x(),
-                        mzb[j] - dgrid->local_wave_start.z()
-                }};
-                if (bsplines_same) {
-                    dst = &field(index_list);
-                    std::copy(field.strides(), field.strides() + 3,
-                              dst_strides.begin());
-                } else {
-                    dst = &(*tmp)(index_list);
-                    std::copy(tmp->strides(), tmp->strides() + 3,
-                              dst_strides.begin());
-                }
-            }
-
-            // Perform collective read operation into tmp
-            complex_field_read(h, field_names[i], dst,
-                               dst_strides[2],
-                               dst_strides[1],
-                               dst_strides[0]);
-        }
-
-
-        // Transfer the loaded information into field view
-        if (!bsplines_same) {
-            assert(false); // FIXME Allow Ny != Fy per #1273
-        }
-    }
-
-    DEBUG0("Finished loading simulation fields");
-}
-
 /** Routine to output status.  Signature for TimeController use. */
 static bool log_status(real_t t, std::size_t nt) {
     INFO0("Simulation reached time " << t << " at time step " << nt);
@@ -1391,7 +1249,7 @@ int main(int argc, char **argv)
     esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
     real_t initial_t;
     load_time(esioh, initial_t);
-    load_state(esioh, *state_linear); // May have large memory overhead!
+    load(esioh, *state_linear, grid, *dgrid, *bspw);
     esio_file_close(esioh);
 
     // Create the state storage for nonlinear operator with appropriate padding
