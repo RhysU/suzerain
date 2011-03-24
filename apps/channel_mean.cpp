@@ -93,7 +93,7 @@ static bool process(const char * filename)
     load(h.get(), scenario);
     load(h.get(), grid);
     load(h.get(), bspw);
-    assert(static_cast<unsigned>(bspw->ndof()) == grid.N.y());
+    assert(bspw->ndof() == grid.N.y());
 
     // Load zero-zero mode coefficients for all state variables
     Eigen::ArrayXr s_coeffs(grid.N.y(), field_names.size());

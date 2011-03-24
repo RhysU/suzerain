@@ -370,6 +370,77 @@ void load_time(const esio_handle esioh,
     DEBUG0("Loaded simulation time " << time);
 }
 
+void store(const esio_handle esioh,
+           const suzerain::NoninterleavedState<4,complex_t> &state,
+           const suzerain::problem::GridDefinition& grid,
+           const suzerain::pencil_grid& dgrid)
+{
+    typedef suzerain::NoninterleavedState<4,complex_t> store_type;
+
+    // Ensure state storage meets this routine's assumptions
+    assert(                  state.shape()[0]  == field_names.size());
+    assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+
+    // Compute wavenumber translation logistics for X direction
+    int fxb[2], fxe[2], mxb[2], mxe[2];
+    suzerain::inorder::wavenumber_translate(grid.N.x(),
+                                            grid.dN.x(),
+                                            dgrid.local_wave_start.x(),
+                                            dgrid.local_wave_end.x(),
+                                            fxb[0], fxe[0], fxb[1], fxe[1],
+                                            mxb[0], mxe[0], mxb[1], mxe[1]);
+    // X contains only positive wavenumbers => second range must be empty
+    assert(fxb[1] == fxe[1]);
+    assert(mxb[1] == mxe[1]);
+
+    // Compute wavenumber translation logistics for Z direction
+    // One or both ranges may be empty
+    int fzb[2], fze[2], mzb[2], mze[2];
+    suzerain::inorder::wavenumber_translate(grid.N.z(),
+                                            grid.dN.z(),
+                                            dgrid.local_wave_start.z(),
+                                            dgrid.local_wave_end.z(),
+                                            fzb[0], fze[0], fzb[1], fze[1],
+                                            mzb[0], mze[0], mzb[1], mze[1]);
+
+    // Save each scalar field in turn...
+    for (size_t i = 0; i < field_names.static_size; ++i) {
+
+        // Create a view of the state for just the i-th scalar
+        // Not strictly necessary, but aids greatly in debugging
+        boost::multi_array_types::index_range all;
+        boost::const_array_view_gen<store_type,3>::type field
+            = state[boost::indices[i][all][all][all]];
+
+        // ...which requires two writes per field, once per Z range
+        for (int j = 0; j < 2; ++j) {
+
+            // Source of write is NULL for empty WRITE operations
+            // Required since MultiArray triggers asserts on invalid indices
+            const complex_t * src = NULL;
+            if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
+                src = &field[0]
+                            [mxb[0] - dgrid.local_wave_start.x()]
+                            [mzb[j] - dgrid.local_wave_start.z()];
+            }
+
+            // Collectively establish size of read across all ranks
+            esio_field_establish(esioh,
+                                 grid.N.z(),     fzb[j], (fze[j] - fzb[j]),
+                                 grid.N.x()/2+1, fxb[0], (fxe[0] - fxb[0]),
+                                 grid.N.y(),     0,      (     grid.N.y()));
+
+            // Perform collective write operation from state_linear
+            complex_field_write(esioh, field_names[i], src,
+                                field.strides()[2],
+                                field.strides()[1],
+                                field.strides()[0],
+                                field_descriptions[i]);
+        }
+    }
+}
 
 void load(const esio_handle esioh,
           suzerain::NoninterleavedState<4,complex_t> &state,

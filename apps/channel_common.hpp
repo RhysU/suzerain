@@ -164,7 +164,20 @@ void store_time(const esio_handle esioh,
 void load_time(const esio_handle esioh,
                real_t &time);
 
-/** Load the current simulation state from an open restart file in h */
+/**
+ * Store the current simulation state into an open restart file
+ * Only non-dealiased state content is saved.
+ */
+void store(const esio_handle esioh,
+           const suzerain::NoninterleavedState<4,complex_t> &state,
+           const suzerain::problem::GridDefinition& grid,
+           const suzerain::pencil_grid& dgrid);
+
+/**
+ * Load the current simulation state from an open restart file.
+ * Handles the very non-trivial task of adjusting the restart
+ * to match the provided \c grid, \c dgrid, and \c bspw.
+ */
 void load(const esio_handle esioh,
           suzerain::NoninterleavedState<4,complex_t> &state,
           const suzerain::problem::GridDefinition& grid,
