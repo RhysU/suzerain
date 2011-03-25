@@ -504,19 +504,21 @@ void load(const esio_handle esioh,
                                             fzb[0], fze[0], fzb[1], fze[1],
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
-    // Possibly prepare a temporary buffer into which to read each scalar
-    // field.  Used only when !bsplines_same.
+    // Possibly prepare a temporary buffer into which to read each scalar field
+    // and a factorization of bspw's mass matrix.  Used only when
+    // !bsplines_same.
     typedef boost::multi_array<
         complex_t, 3, suzerain::blas::allocator<complex_t>::type
     > tmp_type;
     boost::scoped_ptr<tmp_type> tmp;
-
+    boost::scoped_ptr<suzerain::bspline_luz> mass;
     if (!bsplines_same) {
-        DEBUG0("Differences in B-spline basis require restart projection");
         const boost::array<tmp_type::index,3> extent = {{
             state.shape()[1], state.shape()[2], state.shape()[3]
         }};
         tmp.reset(new tmp_type(extent, boost::fortran_storage_order()));
+        mass.reset(new suzerain::bspline_luz(bspw));
+        mass->form_mass(bspw);
     }
 
     DEBUG0("Started loading simulation fields");
@@ -572,9 +574,42 @@ void load(const esio_handle esioh,
         }
 
 
-        // Transfer the loaded information into field view
+        // If necessary, interpolate between B-spline bases.
+        // Relies heavily on both bases being collocation-based.
+        // This will change dramatically if we ever go the L_2 route.
         if (!bsplines_same) {
-            assert(false); // FIXME Allow Ny != Fy per #1273
+            DEBUG0("Differences in B-spline basis require restart projection");
+
+            // Step 0: Obtain collocation points for new basis
+            Eigen::ArrayXd points(bspw.ndof());
+            bspw.collocation_points(points.data(), 1);
+
+            // Step 1: Affine transformation of points into old basis domain
+            // Allows stretching of old range onto new range.
+            double oldmin, oldmax, newmin, newmax;
+            bspw.collocation_point(                0, &newmin);
+            bspw.collocation_point(  bspw.ndof() - 1, &newmax);
+            bspw.collocation_point(                0, &oldmin);
+            bspw.collocation_point(Fbspw->ndof() - 1, &oldmax);
+            // Only pay for floating point loss if strictly necessary
+            if (oldmin != newmin || oldmax != newmax) {
+                points = (points - newmin)
+                    * ((oldmax - oldmin) / (newmax - newmin)) + oldmin;
+            }
+
+            // Step 2: Evaluate old basis + coefficients at points into new
+            const int jmax = numeric_cast<int>(field.shape()[1]);
+            const int kmax = numeric_cast<int>(field.shape()[2]);
+            for (int j = 0; j < jmax; ++j) {
+                for (int k = 0; k < kmax; ++k) {
+                    Fbspw->zevaluate(0, &(*tmp)[0][j][k], bspw.ndof(),
+                                     points.data(), &field[0][j][k], 0);
+                }
+            }
+
+            // Step 3: Invert using the mass matrix for new coefficients
+            mass->solve(jmax * kmax, &field[0][0][0],
+                        1, numeric_cast<int>(field.strides()[1]));
         }
     }
 
