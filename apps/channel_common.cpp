@@ -515,7 +515,7 @@ void load(const esio_handle esioh,
     if (!bsplines_same) {
         DEBUG0("Differences in B-spline basis require restart projection");
         const boost::array<tmp_type::index,3> extent = {{
-            state.shape()[1], state.shape()[2], state.shape()[3]
+            Fy, state.shape()[2], state.shape()[3]
         }};
         tmp.reset(new tmp_type(extent, boost::fortran_storage_order()));
         mass.reset(new suzerain::bspline_luz(bspw));
