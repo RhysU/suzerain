@@ -86,11 +86,7 @@ GridDefinition::GridDefinition(int     default_Nx,
 
     { // htdelta requires handling to change notifier per default_htdelta
         std::auto_ptr<typed_value<double> > v(value(&this->htdelta));
-        if (!(boost::math::signbit)(default_htdelta)) {
-            v->notifier(bind2nd(ptr_fun(ensure_positive<double>),   "htdelta"));
-        } else {
-            v->notifier(bind2nd(ptr_fun(ensure_nonnegative<double>),"htdelta"));
-        }
+        v->notifier(bind2nd(ptr_fun(ensure_nonnegative<double>),"htdelta"));
         v->default_value(default_htdelta);
         this->add_options()("htdelta", v.release(),
                 "Wall-normal breakpoint hyperbolic tangent stretching");
