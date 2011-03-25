@@ -44,6 +44,72 @@
 
 #pragma warning(disable:383 1572)
 
+// X-macros employed per http://drdobbs.com/blogs/cpp/228700289
+
+#define FORALL_COORDS(apply)     \
+    apply(t)                     \
+    apply(y)                     \
+    apply(yplus)
+
+#define FORALL_STATE_PLUS(apply) \
+    apply(uplus)                 \
+    apply(vplus)                 \
+    apply(wplus)
+
+#define FORALL_STATE_CONS(apply) \
+    apply(rho)                   \
+    apply(rhou)                  \
+    apply(rhov)                  \
+    apply(rhow)                  \
+    apply(rhoe)
+
+#define FORALL_STATE_PRIM(apply) \
+    apply(u)                     \
+    apply(v)                     \
+    apply(w)                     \
+    apply(e)                     \
+    apply(p)                     \
+    apply(T)                     \
+    apply(mu)                    \
+    apply(nu)
+
+enum columns {
+#define X(a) n_##a,
+FORALL_COORDS(X)
+FORALL_STATE_PLUS(X)
+FORALL_STATE_CONS(X)
+FORALL_STATE_PRIM(X)
+#undef X
+#define X(a) n_##a##_y,
+FORALL_STATE_CONS(X)
+FORALL_STATE_PRIM(X)
+#undef X
+#define X(a) n_##a##_yy,
+FORALL_STATE_CONS(X)
+FORALL_STATE_PRIM(X)
+#undef X
+    n_COUNT
+};
+
+#define STRINGIFY(s) #s
+static const char * column_names[] = {
+#define X(a) STRINGIFY(a),
+FORALL_COORDS(X)
+FORALL_STATE_PLUS(X)
+FORALL_STATE_CONS(X)
+FORALL_STATE_PRIM(X)
+#undef X
+#define X(a) STRINGIFY(a##_y),
+FORALL_STATE_CONS(X)
+FORALL_STATE_PRIM(X)
+#undef X
+#define X(a) STRINGIFY(a##_yy),
+FORALL_STATE_CONS(X)
+FORALL_STATE_PRIM(X)
+#undef X
+};
+#undef STRINGIFY
+
 // Introduce shorthand for common names
 using boost::make_shared;
 using boost::math::constants::pi;
@@ -57,6 +123,9 @@ static bool process(const std::string& filename);
 
 int main(int argc, char **argv)
 {
+    // Sanity check column definitions produced by X-macros
+    assert(n_COUNT == sizeof(column_names)/sizeof(column_names[0]));
+
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
 
@@ -81,7 +150,7 @@ static bool process(const std::string& filename)
     shared_ptr<boost::remove_pointer<esio_handle>::type> h(
             esio_handle_initialize(MPI_COMM_WORLD), esio_handle_finalize);
 
-    INFO("Loading file " << filename);
+    DEBUG("Loading file " << filename);
     esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
 
     // Load time, scenario, grid, and B-spline details from file
@@ -113,70 +182,10 @@ static bool process(const std::string& filename)
     // Close the data file
     esio_file_close(h.get());
 
-    // Prepare column names and indices for later use
-    std::vector<std::string> column_names;
-#define QUANTITY(SYM)                            \
-        const int n_##SYM = column_names.size(); \
-        column_names.push_back(#SYM)
-    QUANTITY(t);     // Point-like information
-    QUANTITY(y);
-    QUANTITY(yplus);
-    QUANTITY(rho);   // Conserved state
-    QUANTITY(rhou);
-    QUANTITY(rhov);
-    QUANTITY(rhow);
-    QUANTITY(rhoe);
-    QUANTITY(u);     // Specific state
-    QUANTITY(v);
-    QUANTITY(w);
-    QUANTITY(uplus);
-    QUANTITY(vplus);
-    QUANTITY(wplus);
-    QUANTITY(e);
-    QUANTITY(p);     // Primitive state
-    QUANTITY(T);
-    QUANTITY(mu);
-    QUANTITY(nu);
-#undef QUANTITY
-#define QUANTITY_DERIVATIVE_1(SYM)                            \
-        const int n_##SYM##_y = column_names.size();          \
-        column_names.push_back(column_names[n_##SYM] + "_y")
-    QUANTITY_DERIVATIVE_1(rho);  // Conserved state
-    QUANTITY_DERIVATIVE_1(rhou);
-    QUANTITY_DERIVATIVE_1(rhov);
-    QUANTITY_DERIVATIVE_1(rhow);
-    QUANTITY_DERIVATIVE_1(rhoe);
-    QUANTITY_DERIVATIVE_1(u);    // Specific state
-    QUANTITY_DERIVATIVE_1(v);
-    QUANTITY_DERIVATIVE_1(w);
-    QUANTITY_DERIVATIVE_1(e);
-    QUANTITY_DERIVATIVE_1(p);    // Primitive state
-    QUANTITY_DERIVATIVE_1(T);
-    QUANTITY_DERIVATIVE_1(mu);
-    QUANTITY_DERIVATIVE_1(nu);
-#undef QUANTITY_DERIVATIVE_1
-#define QUANTITY_DERIVATIVE_2(SYM)                            \
-        const int n_##SYM##_yy = column_names.size();         \
-        column_names.push_back(column_names[n_##SYM] + "_yy")
-    QUANTITY_DERIVATIVE_2(rho);  // Conserved state
-    QUANTITY_DERIVATIVE_2(rhou);
-    QUANTITY_DERIVATIVE_2(rhov);
-    QUANTITY_DERIVATIVE_2(rhow);
-    QUANTITY_DERIVATIVE_2(rhoe);
-    QUANTITY_DERIVATIVE_2(u);    // Specific state
-    QUANTITY_DERIVATIVE_2(v);
-    QUANTITY_DERIVATIVE_2(w);
-    QUANTITY_DERIVATIVE_2(e);
-    QUANTITY_DERIVATIVE_2(p);    // Primitive state
-    QUANTITY_DERIVATIVE_2(T);
-    QUANTITY_DERIVATIVE_2(mu);
-    QUANTITY_DERIVATIVE_2(nu);
-#undef QUANTITY_DERIVATIVE_2
-
-    INFO("Computing " << column_names.size() << " nondimensional quantities");
+    DEBUG("Computing " << n_COUNT << " nondimensional quantities");
 
     // Declare storage for all of the quantities of interest
-    Eigen::ArrayXXr s(s_coeffs.rows(), column_names.size());
+    Eigen::Array<real_t, Eigen::Dynamic, n_COUNT> s(s_coeffs.rows(), n_COUNT);
     s.setZero();
 
     // Populate point-like information of (t,y \in (0, Ly))
@@ -185,7 +194,8 @@ static bool process(const std::string& filename)
     bspw->collocation_points(&s.col(n_y)[0], 1);
 
     // Compute 0th, 1st, and 2nd derivatives of conserved state
-    // at collocation points
+    // at collocation points.  Uses that conserved state is
+    // contained in consecutive column indices.
     assert(n_rhou == n_rho + 1);
     assert(n_rhov == n_rho + 2);
     assert(n_rhow == n_rho + 3);
@@ -196,17 +206,9 @@ static bool process(const std::string& filename)
     bspw->accumulate_operator(1, field_names.static_size,
             1.0, &s_coeffs(0,0),     1, s_coeffs.stride(),
             0.0, &s.col(n_rho_y)[0], 1, s.stride());
-    (void) n_rhou_y;  // Unused
-    (void) n_rhov_y;
-    (void) n_rhow_y;
-    (void) n_rhoe_y;
     bspw->accumulate_operator(2, field_names.static_size,
             1.0, &s_coeffs(0,0),      1, s_coeffs.stride(),
             0.0, &s.col(n_rho_yy)[0], 1, s.stride());
-    (void) n_rhou_yy; // Unused
-    (void) n_rhov_yy;
-    (void) n_rhow_yy;
-    (void) n_rhoe_yy;
 
     // Compute specific and primitive state at collocation points
     s.col(n_u)  = s.col(n_rhou) / s.col(n_rho);
@@ -224,47 +226,32 @@ static bool process(const std::string& filename)
     // Compute derivatives of specific and primitive state. Better would be
     // using conserved state derivatives directly, but that's quite a PITA.
 
-    s.col(n_u_y)  = s.col(n_u);   // Copy values to storage for 1st derivs
-    s.col(n_v_y)  = s.col(n_v);
-    s.col(n_w_y)  = s.col(n_w);
-    s.col(n_e_y)  = s.col(n_e);
-    s.col(n_p_y)  = s.col(n_p);
-    s.col(n_T_y)  = s.col(n_T);
-    s.col(n_mu_y) = s.col(n_mu);
-    s.col(n_nu_y) = s.col(n_nu);
-    assert(n_v_y  == n_u_y + 1);
-    assert(n_w_y  == n_u_y + 2);
-    assert(n_e_y  == n_u_y + 3);
-    assert(n_p_y  == n_u_y + 4);
-    assert(n_T_y  == n_u_y + 5);
-    assert(n_mu_y == n_u_y + 6);
-    assert(n_nu_y == n_u_y + 7);
+    // Copy primitive state collocation values to storage for 1st derivs
+#define X(a) s.col(n_##a##_y) = s.col(n_##a);
+    FORALL_STATE_PRIM(X)
+#undef X
 
-    suzerain::bspline_lu mass(*bspw); // Form mass matrix and obtain coeffs
+    // Form mass matrix and obtain coefficients for primitive state
+    suzerain::bspline_lu mass(*bspw);
     mass.form_mass(*bspw);
-    mass.solve(n_nu_y - n_u_y + 1, &s.col(n_u_y)[0], 1, s.stride());
+#define X(a) mass.solve(1, &s.col(n_##a##_y)[0], 1, s.stride());
+    FORALL_STATE_PRIM(X)
+#undef X
 
-    s.col(n_u_yy)  = s.col(n_u_y);   // Copy coeffs to storage for 2nd derivs
-    s.col(n_v_yy)  = s.col(n_v_y);
-    s.col(n_w_yy)  = s.col(n_w_y);
-    s.col(n_e_yy)  = s.col(n_e_y);
-    s.col(n_p_yy)  = s.col(n_p_y);
-    s.col(n_T_yy)  = s.col(n_T_y);
-    s.col(n_mu_yy) = s.col(n_mu_y);
-    s.col(n_nu_yy) = s.col(n_nu_y);
-    assert(n_v_yy  == n_u_yy + 1);
-    assert(n_w_yy  == n_u_yy + 2);
-    assert(n_e_yy  == n_u_yy + 3);
-    assert(n_p_yy  == n_u_yy + 4);
-    assert(n_T_yy  == n_u_yy + 5);
-    assert(n_mu_yy == n_u_yy + 6);
-    assert(n_nu_yy == n_u_yy + 7);
+    // Copy primitive state coefficients to storage for 2nd derivatives
+#define X(a) s.col(n_##a##_yy) = s.col(n_##a##_y);
+    FORALL_STATE_PRIM(X)
+#undef X
 
-    // Apply 1st and 2nd derivative operator to coefficients
-    bspw->apply_operator(1, n_nu_y - n_u_y + 1,
-            1.0, &s.col(n_u_y)[0], 1, s.stride());
-    bspw->apply_operator(2, n_nu_yy - n_u_yy + 1,
-            1.0, &s.col(n_u_yy)[0], 1, s.stride());
+    // Apply 1st derivative operator to coefficients
+#define X(a) bspw->apply_operator(1, 1, 1.0, &s.col(n_##a##_y)[0], 1, s.stride());
+    FORALL_STATE_PRIM(X)
+#undef X
+
+    // Apply 2nd derivative operator to coefficients
+#define X(a) bspw->apply_operator(2, 1, 1.0, &s.col(n_##a##_yy)[0], 1, s.stride());
+    FORALL_STATE_PRIM(X)
+#undef X
 
     // Compute wall shear stress, friction velocity, and viscous length scale.
     // These are "almost correct" as they are off by reference factors.
@@ -288,13 +275,13 @@ static bool process(const std::string& filename)
     } else {
         outname = filename + ".mean";
     }
-    INFO("Saving nondimensional quantities to " << outname);
+    DEBUG("Saving nondimensional quantities to " << outname);
     {
         std::ofstream outfile(outname.c_str());
-        for (size_t i = 0; i < column_names.size(); ++i) {  // Headings
+        for (size_t i = 0; i < n_COUNT; ++i) {  // Headings
             outfile << std::setw(numeric_limits<real_t>::digits10 + 7)
                     << column_names[i];
-            if (i < column_names.size() - 1) outfile << ", ";
+            if (i < n_COUNT - 1) outfile << ", ";
         }
         outfile << std::endl;
         outfile << s.format(iofmt) << std::endl;;
