@@ -600,16 +600,19 @@ void load(const esio_handle esioh,
             // Step 2: Evaluate old basis + coefficients at points into new
             const int jmax = numeric_cast<int>(field.shape()[1]);
             const int kmax = numeric_cast<int>(field.shape()[2]);
-            for (int j = 0; j < jmax; ++j) {
-                for (int k = 0; k < kmax; ++k) {
+            for (int k = 0; k < kmax; ++k) {
+                for (int j = 0; j < jmax; ++j) {
                     Fbspw->zevaluate(0, &(*tmp)[0][j][k], bspw.ndof(),
                                      points.data(), &field[0][j][k], 0);
                 }
             }
 
-            // Step 3: Invert using the mass matrix for new coefficients
-            mass->solve(jmax * kmax, &field[0][0][0],
-                        1, numeric_cast<int>(field.strides()[1]));
+            // Step 3: Invert for new coefficients using factored mass matrix
+            for (int k = 0; k < kmax; ++k) {
+                mass->solve(jmax, &field[0][0][k],
+                            numeric_cast<int>(field.strides()[0]),
+                            numeric_cast<int>(field.strides()[1]));
+            }
         }
     }
 
