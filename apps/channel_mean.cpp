@@ -53,7 +53,7 @@ using std::numeric_limits;
 
 static const Eigen::IOFormat iofmt(Eigen::FullPrecision, 0, ", ", "\n");
 
-static bool process(const char * filename);
+static bool process(const std::string& filename);
 
 int main(int argc, char **argv)
 {
@@ -75,14 +75,14 @@ int main(int argc, char **argv)
     return retval;
 }
 
-static bool process(const char * filename)
+static bool process(const std::string& filename)
 {
     // Create a file-specific ESIO handle using RAII
     shared_ptr<boost::remove_pointer<esio_handle>::type> h(
             esio_handle_initialize(MPI_COMM_WORLD), esio_handle_finalize);
 
     INFO("Loading file " << filename);
-    esio_file_open(h.get(), filename, 0 /* read-only */);
+    esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
 
     // Load time, scenario, grid, and B-spline details from file
     real_t t;
@@ -118,18 +118,22 @@ static bool process(const char * filename)
 #define QUANTITY(SYM)                            \
         const int n_##SYM = column_names.size(); \
         column_names.push_back(#SYM)
-    QUANTITY(t);    // Point-like information
+    QUANTITY(t);     // Point-like information
     QUANTITY(y);
-    QUANTITY(rho);  // Conserved state
+    QUANTITY(yplus);
+    QUANTITY(rho);   // Conserved state
     QUANTITY(rhou);
     QUANTITY(rhov);
     QUANTITY(rhow);
     QUANTITY(rhoe);
-    QUANTITY(u);    // Specific state
+    QUANTITY(u);     // Specific state
     QUANTITY(v);
     QUANTITY(w);
+    QUANTITY(uplus);
+    QUANTITY(vplus);
+    QUANTITY(wplus);
     QUANTITY(e);
-    QUANTITY(p);    // Primitive state
+    QUANTITY(p);     // Primitive state
     QUANTITY(T);
     QUANTITY(mu);
     QUANTITY(nu);
@@ -175,10 +179,10 @@ static bool process(const char * filename)
     Eigen::ArrayXXr s(s_coeffs.rows(), column_names.size());
     s.setZero();
 
-    // Populate point-like information of (t,y \in (-L/2, L/2))
+    // Populate point-like information of (t,y \in (0, Ly))
+    // We'll compute y^{+} information later
     s.col(n_t).setConstant(t);
     bspw->collocation_points(&s.col(n_y)[0], 1);
-    s.col(n_y).array() -= scenario.Ly / 2;
 
     // Compute 0th, 1st, and 2nd derivatives of conserved state
     // at collocation points
@@ -262,60 +266,39 @@ static bool process(const char * filename)
     bspw->apply_operator(2, n_nu_yy - n_u_yy + 1,
             1.0, &s.col(n_u_yy)[0], 1, s.stride());
 
-    // Save nondimensional quantities to filename.star
-    INFO("Saving nondimensional quantities to " << filename << ".star");
-    {
-        std::ofstream starfile((std::string(filename) + ".star").c_str());
-        for (size_t i = 0; i < column_names.size(); ++i) {  // Headings
-            starfile << std::setw(iofmt.precision + 6) << column_names[i];
-            if (i < column_names.size() - 1) starfile << ", ";
-        }
-        starfile << std::endl;
-        starfile << s.format(iofmt) << std::endl;;
-        starfile.close();
-    }
-
-    INFO("Computing quantities in plus units");
-
-    // Re-adjust collocation point offsets so lowest point is at y = 0
-    s.col(n_y) -= s.col(n_y)[0];
-
     // Compute wall shear stress, friction velocity, and viscous length scale.
     // These are "almost correct" as they are off by reference factors.
-    // We correct for those factors later.
+    // We correct for those factors later during {y,u,v,w}^{+} computation.
     const real_t rho_w    = s.col(n_rho)[0];
     const real_t nu_w     = s.col(n_nu)[0];
     const real_t tau_w    = rho_w * nu_w * s.col(n_u_y)[0];
     const real_t u_tau    = std::sqrt(tau_w / rho_w);
     const real_t delta_nu = nu_w / u_tau;
 
-    // We only use data from the lower half of the channel
-    const int nplus = (grid.N.y() + 1) / 2;
+    // Compute {y,u,v,w}^{+}
+    s.col(n_yplus) = s.col(n_y) / delta_nu * std::sqrt(scenario.Re);
+    s.col(n_uplus) = s.col(n_u) / u_tau    * std::sqrt(scenario.Re);
+    s.col(n_vplus) = s.col(n_v) / u_tau    * std::sqrt(scenario.Re);
+    s.col(n_wplus) = s.col(n_w) / u_tau    * std::sqrt(scenario.Re);
 
-    // Compute the quantities in plus units
-    Eigen::ArrayXXr r(nplus, 1 /* t */ + 1 /* y */ + 1 /* y+ */ +  3);
-    r.setZero();
-    for (int i = 0; i < nplus; ++i) {
-        r(i,0) = t;
-        r(i,1) = s.col(n_y)[i];
-        r(i,2) = s.col(n_y)[i] / delta_nu * std::sqrt(scenario.Re);
-        r(i,3) = s.col(n_u)[i] / u_tau    * std::sqrt(scenario.Re);
-        r(i,4) = s.col(n_v)[i] / u_tau    * std::sqrt(scenario.Re);
-        r(i,5) = s.col(n_w)[i] / u_tau    * std::sqrt(scenario.Re);
-        // TODO: \partial{} U^{+} / \partial{} y^{+} and friends
+    // Save nondimensional quantities to `basename filename .h5`.mean
+    std::string outname;
+    if (filename.rfind(".h5") == filename.length() - 3) {
+        outname = filename.substr(0, filename.length() - 3) + ".mean";
+    } else {
+        outname = filename + ".mean";
     }
-
-    INFO("Saving plus unit quantities to " << filename << ".plus");
+    INFO("Saving nondimensional quantities to " << outname);
     {
-        std::ofstream plusfile((std::string(filename) + ".plus").c_str());
-        plusfile << std::setw(iofmt.precision + 7) << "t, ";
-        plusfile << std::setw(iofmt.precision + 7) << "y, ";
-        plusfile << std::setw(iofmt.precision + 7) << "y+, ";
-        plusfile << std::setw(iofmt.precision + 7) << "u+, ";
-        plusfile << std::setw(iofmt.precision + 7) << "v+, ";
-        plusfile << std::setw(iofmt.precision + 6) << "w+" << std::endl;
-        plusfile << r.format(iofmt) << std::endl;
-        plusfile.close();
+        std::ofstream outfile(outname.c_str());
+        for (size_t i = 0; i < column_names.size(); ++i) {  // Headings
+            outfile << std::setw(numeric_limits<real_t>::digits10 + 7)
+                    << column_names[i];
+            if (i < column_names.size() - 1) outfile << ", ";
+        }
+        outfile << std::endl;
+        outfile << s.format(iofmt) << std::endl;;
+        outfile.close();
     }
 
     return true;
