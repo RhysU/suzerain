@@ -587,10 +587,10 @@ void load(const esio_handle esioh,
             // Step 1: Affine transformation of points into old basis domain
             // Allows stretching of old range onto new range.
             double oldmin, oldmax, newmin, newmax;
-            bspw.collocation_point(                0, &newmin);
-            bspw.collocation_point(  bspw.ndof() - 1, &newmax);
-            bspw.collocation_point(                0, &oldmin);
-            bspw.collocation_point(Fbspw->ndof() - 1, &oldmax);
+            bspw.collocation_point(                  0, &newmin);
+            bspw.collocation_point(    bspw.ndof() - 1, &newmax);
+            Fbspw->collocation_point(                0, &oldmin);
+            Fbspw->collocation_point(Fbspw->ndof() - 1, &oldmax);
             // Only pay for floating point loss if strictly necessary
             if (oldmin != newmin || oldmax != newmax) {
                 points = (points - newmin)
