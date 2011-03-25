@@ -96,7 +96,7 @@ static bool process(const char * filename)
     assert(bspw->ndof() == grid.N.y());
 
     // Load zero-zero mode coefficients for all state variables
-    Eigen::ArrayXr s_coeffs(grid.N.y(), field_names.size());
+    Eigen::ArrayXXr s_coeffs(grid.N.y(), field_names.size());
     s_coeffs.setZero();
     {
         Eigen::VectorXc tmp(grid.N.y());
@@ -172,7 +172,7 @@ static bool process(const char * filename)
     INFO("Computing " << column_names.size() << " nondimensional quantities");
 
     // Declare storage for all of the quantities of interest
-    Eigen::ArrayXr s(s_coeffs.rows(), column_names.size());
+    Eigen::ArrayXXr s(s_coeffs.rows(), column_names.size());
     s.setZero();
 
     // Populate point-like information of (t,y \in (-L/2, L/2))
@@ -293,7 +293,7 @@ static bool process(const char * filename)
     const int nplus = (grid.N.y() + 1) / 2;
 
     // Compute the quantities in plus units
-    Eigen::ArrayXr r(nplus, 1 /* t */ + 1 /* y */ + 1 /* y+ */ +  3);
+    Eigen::ArrayXXr r(nplus, 1 /* t */ + 1 /* y */ + 1 /* y+ */ +  3);
     r.setZero();
     for (int i = 0; i < nplus; ++i) {
         r(i,0) = t;
