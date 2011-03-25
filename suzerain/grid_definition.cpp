@@ -49,7 +49,8 @@ GridDefinition::GridDefinition(int     default_Nx,
       DAF(default_DAFx, 1, default_DAFz),
       dN(default_Nx * default_DAFx, default_Ny, default_Nz * default_DAFz),
       P(0, 0),
-      k(default_k)
+      k(default_k),
+      htdelta(default_htdelta)
 {
     using ::boost::program_options::typed_value;
     using ::boost::program_options::value;
