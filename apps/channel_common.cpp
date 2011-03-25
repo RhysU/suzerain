@@ -513,6 +513,7 @@ void load(const esio_handle esioh,
     boost::scoped_ptr<tmp_type> tmp;
     boost::scoped_ptr<suzerain::bspline_luz> mass;
     if (!bsplines_same) {
+        DEBUG0("Differences in B-spline basis require restart projection");
         const boost::array<tmp_type::index,3> extent = {{
             state.shape()[1], state.shape()[2], state.shape()[3]
         }};
@@ -578,7 +579,6 @@ void load(const esio_handle esioh,
         // Relies heavily on both bases being collocation-based.
         // This will change dramatically if we ever go the L_2 route.
         if (!bsplines_same) {
-            DEBUG0("Differences in B-spline basis require restart projection");
 
             // Step 0: Obtain collocation points for new basis
             Eigen::ArrayXd points(bspw.ndof());
