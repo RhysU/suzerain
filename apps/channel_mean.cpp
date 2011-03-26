@@ -73,42 +73,44 @@
     apply(mu)                    \
     apply(nu)
 
-enum columns {
-#define X(a) n_##a,
-FORALL_COORDS(X)
-FORALL_STATE_PLUS(X)
-FORALL_STATE_CONS(X)
-FORALL_STATE_PRIM(X)
+namespace column {
+    enum {
+#define X(a) a,
+    FORALL_COORDS(X)
+    FORALL_STATE_PLUS(X)
+    FORALL_STATE_CONS(X)
+    FORALL_STATE_PRIM(X)
 #undef X
-#define X(a) n_##a##_y,
-FORALL_STATE_CONS(X)
-FORALL_STATE_PRIM(X)
+#define X(a) a##_y,
+    FORALL_STATE_CONS(X)
+    FORALL_STATE_PRIM(X)
 #undef X
-#define X(a) n_##a##_yy,
-FORALL_STATE_CONS(X)
-FORALL_STATE_PRIM(X)
+#define X(a) a##_yy,
+    FORALL_STATE_CONS(X)
+    FORALL_STATE_PRIM(X)
 #undef X
-    n_COUNT
-};
+        COUNT
+    };
 
 #define STRINGIFY(s) #s
-static const char * column_names[] = {
+    static const char * name[COUNT] = {
 #define X(a) STRINGIFY(a),
-FORALL_COORDS(X)
-FORALL_STATE_PLUS(X)
-FORALL_STATE_CONS(X)
-FORALL_STATE_PRIM(X)
+    FORALL_COORDS(X)
+    FORALL_STATE_PLUS(X)
+    FORALL_STATE_CONS(X)
+    FORALL_STATE_PRIM(X)
 #undef X
 #define X(a) STRINGIFY(a##_y),
-FORALL_STATE_CONS(X)
-FORALL_STATE_PRIM(X)
+    FORALL_STATE_CONS(X)
+    FORALL_STATE_PRIM(X)
 #undef X
 #define X(a) STRINGIFY(a##_yy),
-FORALL_STATE_CONS(X)
-FORALL_STATE_PRIM(X)
+    FORALL_STATE_CONS(X)
+    FORALL_STATE_PRIM(X)
 #undef X
-};
+    };
 #undef STRINGIFY
+}
 
 // Introduce shorthand for common names
 using boost::make_shared;
@@ -123,9 +125,6 @@ static bool process(const std::string& filename);
 
 int main(int argc, char **argv)
 {
-    // Sanity check column definitions produced by X-macros
-    assert(n_COUNT == sizeof(column_names)/sizeof(column_names[0]));
-
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
 
@@ -182,91 +181,94 @@ static bool process(const std::string& filename)
     // Close the data file
     esio_file_close(h.get());
 
-    DEBUG("Computing " << n_COUNT << " nondimensional quantities");
+    DEBUG("Computing " << column::COUNT << " nondimensional quantities");
 
     // Declare storage for all of the quantities of interest
-    Eigen::Array<real_t, Eigen::Dynamic, n_COUNT> s(s_coeffs.rows(), n_COUNT);
+    Eigen::Array<real_t, Eigen::Dynamic, column::COUNT>
+        s(s_coeffs.rows(), (int) column::COUNT);
     s.setZero();
 
     // Populate point-like information of (t,y \in (0, Ly))
     // We'll compute y^{+} information later
-    s.col(n_t).setConstant(t);
-    bspw->collocation_points(&s.col(n_y)[0], 1);
+    s.col(column::t).setConstant(t);
+    bspw->collocation_points(&s.col(column::y)[0], 1);
 
-    // Compute 0th, 1st, and 2nd derivatives of conserved state
-    // at collocation points.  Uses that conserved state is
-    // contained in consecutive column indices.
-    assert(n_rhou == n_rho + 1);
-    assert(n_rhov == n_rho + 2);
-    assert(n_rhow == n_rho + 3);
-    assert(n_rhoe == n_rho + 4);
+    // Compute derivatives of conserved state at collocation points.
     bspw->accumulate_operator(0, field_names.static_size,
-            1.0, &s_coeffs(0,0),     1, s_coeffs.stride(),
-            0.0, &s.col(n_rho)[0],   1, s.stride());
+            1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
+            0.0, &s.col(column::rho)[0], 1, s.stride());
     bspw->accumulate_operator(1, field_names.static_size,
-            1.0, &s_coeffs(0,0),     1, s_coeffs.stride(),
-            0.0, &s.col(n_rho_y)[0], 1, s.stride());
+            1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
+            0.0, &s.col(column::rho_y)[0], 1, s.stride());
     bspw->accumulate_operator(2, field_names.static_size,
-            1.0, &s_coeffs(0,0),      1, s_coeffs.stride(),
-            0.0, &s.col(n_rho_yy)[0], 1, s.stride());
+            1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
+            0.0, &s.col(column::rho_yy)[0], 1, s.stride());
 
     // Compute specific and primitive state at collocation points
-    s.col(n_u)  = s.col(n_rhou) / s.col(n_rho);
-    s.col(n_v)  = s.col(n_rhov) / s.col(n_rho);
-    s.col(n_w)  = s.col(n_rhow) / s.col(n_rho);
-    s.col(n_e)  = s.col(n_rhoe) / s.col(n_rho);
-    s.col(n_p)  = (scenario.gamma - 1) * (s.col(n_rhoe)
-                        - s.col(n_rhou) * s.col(n_u) / 2
-                        - s.col(n_rhov) * s.col(n_v) / 2
-                        - s.col(n_rhow) * s.col(n_w) / 2);
-    s.col(n_T)  = scenario.gamma * s.col(n_p) / s.col(n_rho);
-    s.col(n_mu) = s.col(n_T).pow(scenario.beta);
-    s.col(n_nu) = s.col(n_mu) / s.col(n_rho);
+    {
+        using namespace column;
+        s.col(u)  = s.col(rhou) / s.col(rho);
+        s.col(v)  = s.col(rhov) / s.col(rho);
+        s.col(w)  = s.col(rhow) / s.col(rho);
+        s.col(e)  = s.col(rhoe) / s.col(rho);
+        s.col(p)  = (scenario.gamma - 1) * (s.col(rhoe)
+                            - s.col(rhou) * s.col(u) / 2
+                            - s.col(rhov) * s.col(v) / 2
+                            - s.col(rhow) * s.col(w) / 2);
+        s.col(T)  = scenario.gamma * s.col(p) / s.col(rho);
+        s.col(mu) = s.col(T).pow(scenario.beta);
+        s.col(nu) = s.col(mu) / s.col(rho);
+    }
 
     // Compute derivatives of specific and primitive state. Better would be
     // using conserved state derivatives directly, but that's quite a PITA.
 
     // Copy primitive state collocation values to storage for 1st derivs
-#define X(a) s.col(n_##a##_y) = s.col(n_##a);
+#define X(a) s.col(column::a##_y) = s.col(column::a);
     FORALL_STATE_PRIM(X)
 #undef X
 
     // Form mass matrix and obtain coefficients for primitive state
     suzerain::bspline_lu mass(*bspw);
     mass.form_mass(*bspw);
-#define X(a) mass.solve(1, &s.col(n_##a##_y)[0], 1, s.stride());
+#define X(a) mass.solve(1, &s.col(column::a##_y)[0], 1, s.stride());
     FORALL_STATE_PRIM(X)
 #undef X
 
     // Copy primitive state coefficients to storage for 2nd derivatives
-#define X(a) s.col(n_##a##_yy) = s.col(n_##a##_y);
+#define X(a) s.col(column::a##_yy) = s.col(column::a##_y);
     FORALL_STATE_PRIM(X)
 #undef X
 
     // Apply 1st derivative operator to coefficients
-#define X(a) bspw->apply_operator(1, 1, 1.0, &s.col(n_##a##_y)[0], 1, s.stride());
+#define X(a) bspw->apply_operator(1, 1, 1.0, &s.col(column::a##_y)[0], \
+                                  1, s.stride());
     FORALL_STATE_PRIM(X)
 #undef X
 
     // Apply 2nd derivative operator to coefficients
-#define X(a) bspw->apply_operator(2, 1, 1.0, &s.col(n_##a##_yy)[0], 1, s.stride());
+#define X(a) bspw->apply_operator(2, 1, 1.0, &s.col(column::a##_yy)[0], \
+                                  1, s.stride());
     FORALL_STATE_PRIM(X)
 #undef X
 
     // Compute wall shear stress, friction velocity, and viscous length scale.
     // These are "almost correct" as they are off by reference factors.
     // We correct for those factors later during {y,u,v,w}^{+} computation.
-    const real_t rho_w    = s.col(n_rho)[0];
-    const real_t nu_w     = s.col(n_nu)[0];
-    const real_t tau_w    = rho_w * nu_w * s.col(n_u_y)[0];
+    const real_t rho_w    = s.col(column::rho)[0];
+    const real_t nu_w     = s.col(column::nu)[0];
+    const real_t tau_w    = rho_w * nu_w * s.col(column::u_y)[0];
     const real_t u_tau    = std::sqrt(tau_w / rho_w);
     const real_t delta_nu = nu_w / u_tau;
 
     // Compute {y,u,v,w}^{+}
-    s.col(n_yplus) = s.col(n_y) / delta_nu * std::sqrt(scenario.Re);
-    s.col(n_uplus) = s.col(n_u) / u_tau    * std::sqrt(scenario.Re);
-    s.col(n_vplus) = s.col(n_v) / u_tau    * std::sqrt(scenario.Re);
-    s.col(n_wplus) = s.col(n_w) / u_tau    * std::sqrt(scenario.Re);
+    {
+        using namespace column;
+        s.col(yplus) = s.col(y) / delta_nu * std::sqrt(scenario.Re);
+        s.col(uplus) = s.col(u) / u_tau    * std::sqrt(scenario.Re);
+        s.col(vplus) = s.col(v) / u_tau    * std::sqrt(scenario.Re);
+        s.col(wplus) = s.col(w) / u_tau    * std::sqrt(scenario.Re);
+    }
 
     // Save nondimensional quantities to `basename filename .h5`.mean
     std::string outname;
@@ -278,10 +280,10 @@ static bool process(const std::string& filename)
     DEBUG("Saving nondimensional quantities to " << outname);
     {
         std::ofstream outfile(outname.c_str());
-        for (size_t i = 0; i < n_COUNT; ++i) {  // Headings
+        for (size_t i = 0; i < column::COUNT; ++i) {  // Headings
             outfile << std::setw(numeric_limits<real_t>::digits10 + 7)
-                    << column_names[i];
-            if (i < n_COUNT - 1) outfile << ", ";
+                    << column::name[i];
+            if (i < column::COUNT - 1) outfile << ", ";
         }
         outfile << std::endl;
         outfile << s.format(iofmt) << std::endl;;
