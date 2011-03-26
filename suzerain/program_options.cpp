@@ -36,13 +36,10 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 
-void suzerain::ProgramOptions::process(int argc,
-                                       char **argv,
-                                       MPI_Comm comm,
-                                       std::ostream &debug,
-                                       std::ostream &info,
-                                       std::ostream &warn,
-                                       std::ostream &error)
+std::vector<std::string> suzerain::ProgramOptions::process(
+        int argc, char **argv, MPI_Comm comm,
+        std::ostream &debug, std::ostream &info,
+        std::ostream &warn, std::ostream &error)
 {
     const int rank = suzerain::mpi::comm_rank(comm);
     if (rank == 0) {
@@ -55,13 +52,10 @@ void suzerain::ProgramOptions::process(int argc,
     }
 }
 
-void suzerain::ProgramOptions::process_internal(int argc,
-                                                char **argv,
-                                                MPI_Comm comm,
-                                                std::ostream &debug,
-                                                std::ostream &info,
-                                                std::ostream &warn,
-                                                std::ostream &error)
+std::vector<std::string> suzerain::ProgramOptions::process_internal(
+        int argc, char **argv, MPI_Comm comm,
+        std::ostream &debug, std::ostream &info,
+        std::ostream &warn, std::ostream &error)
 {
     SUZERAIN_UNUSED(debug); // Possibly unused
     SUZERAIN_UNUSED(info);  // Possibly unused
@@ -75,34 +69,40 @@ void suzerain::ProgramOptions::process_internal(int argc,
     namespace po = boost::program_options;
     const int rank = suzerain::mpi::comm_rank(comm);
 
+    // Prepare a response-file option iff non-trivial options available
+    if (options_.options().size() > 0) {
+        options_.add_options()
+            ("response-file", po::value< vector<string> >()->composing(),
+             "File to additionally read for options")
+        ;
+    }
+
     // Prepare options allowed only on command line
     po::options_description desc_clionly("Program information");
     desc_clionly.add_options()
-        ("help,h",    "show usage information")
-        ("version,v", "print version string")
+        ("help,h",
+         "show usage information")
+        ("version,v",
+         "print version string")
     ;
 
     // Prepare options allowed on command line and in configuration file
-    // These are never shown to the user
+    // These are never shown to the user.
+    // TODO Do we want __positional__ available in a response file?  Eh...
     po::options_description desc_hidden("Hidden options");
     desc_hidden.add_options()
-        ("input-file", po::value< vector<string> >(), "input file")
+        ("__positional__", po::value< vector<string> >(), "positional args")
     ;
 
     // Build the options acceptable on the CLI, in a file, and in help message
-    po::options_description opts_cli;
-    opts_cli.add(options_).add(desc_hidden).add(desc_clionly);
+    po::options_description opts_cli, opts_file, opts_visible;
+    opts_cli    .add(options_).add(desc_hidden).add(desc_clionly);
+    opts_file   .add(options_).add(desc_hidden)                  ;
+    opts_visible.add(options_)                 .add(desc_clionly);
 
-    po::options_description opts_file;
-    opts_file.add(options_).add(desc_hidden);
-
-    po::options_description opts_visible;
-    opts_visible.add(options_).add(desc_clionly);
-
-    // Have positional parameters act like input-file
+    // Collect positional arguments into "__positional__"
     po::positional_options_description opts_positional;
-
-    opts_positional.add("input-file", -1);
+    opts_positional.add("__positional__", -1);
 
     // Parse all the command line options
     po::parsed_options parsed_cli = po::command_line_parser(argc, argv)
@@ -124,11 +124,31 @@ void suzerain::ProgramOptions::process_internal(int argc,
         }
     }
 
-    // Process command-line only parameters
+    // Process --help
     if (variables_.count("help")) {
-        print_help(info, argv[0]);
+        info << "\nUsage: " << argv[0]
+             << " [OPTION]... " << argument_synopsis_
+             << '\n';
+
+        if (!application_synopsis_.empty()) {
+            info << application_synopsis_ << '\n';
+        }
+
+        if (opts_visible.options().size() > 0) {
+            if (options_.options().size() > 0) {
+                info << '\n' << "Options:" << '\n';
+            }
+            info << opts_visible << '\n';
+        }
+
+        if (!application_description_.empty()) {
+            info << '\n' << application_description_ << '\n';
+        }
+
         exit(0);
     }
+
+    // Process --version
     if (variables_.count("version")) {
         print_version(info, argv[0]);
         exit(0);
@@ -136,9 +156,9 @@ void suzerain::ProgramOptions::process_internal(int argc,
 
     // Parse any input files provided on the command line
     // Earlier files shadow/override settings found in later files
-    if (variables_.count("input-file")) {
+    if (variables_.count("response-file")) {
         BOOST_FOREACH(const string &filename,
-                      variables_["input-file"].as< vector<string> >()) {
+                      variables_["response-file"].as< vector<string> >()) {
 
             debug << "Reading additional options from file '"
                   << filename << "'" << endl;
@@ -147,11 +167,11 @@ void suzerain::ProgramOptions::process_internal(int argc,
             struct failure : public istream::failure {
                 failure(const string &op, const string& file, int errnum)
                     : istream::failure("Failure during " + op
-                            + " for input-file '" + file
+                            + " for response-file '" + file
                             + "': " + strerror(errnum) ) {}
 
                 failure(const string& file) : istream::failure(
-                        "Failure processing input-file '" + file + "'") {}
+                        "Failure processing response-file '" + file + "'") {}
             };
 
             long len;
@@ -221,7 +241,7 @@ void suzerain::ProgramOptions::process_internal(int argc,
                         parsed_file.options, po::exclude_positional);
                 BOOST_FOREACH( string option, unrecognized ) {
                     warn << "Unrecognized option '" << option << "'"
-                        << " in file '" << filename << "'"
+                        << " in response-file '" << filename << "'"
                         << endl;
                 }
             }
@@ -232,6 +252,15 @@ void suzerain::ProgramOptions::process_internal(int argc,
 
     // Perform all notification callbacks because all processing is done
     po::notify(variables_);
+
+    // Return all position arguments to the caller for his/her use.  Run into
+    // any_cast issues if returning non-existent values, so be a bit careful
+    // about what exactly we return.
+    if (variables_.count("__positional__")) {
+        return variables_["__positional__"].as< vector<string> >();
+    } else {
+        return vector<string>();
+    }
 }
 
 void suzerain::ProgramOptions::print_version(
@@ -253,17 +282,4 @@ void suzerain::ProgramOptions::print_version(
 #endif
         << ")"
         << std::endl;
-}
-
-void suzerain::ProgramOptions::print_help(
-        std::ostream &out,
-        const std::string &application_name)
-{
-    out << "\nUsage: " << application_name << " [OPTION] [FILE]...\n";
-
-    if (!application_description_.empty()) {
-        out << application_description_ << '\n';
-    }
-
-    out << '\n' << options_ << std::endl;
 }

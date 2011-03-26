@@ -38,6 +38,7 @@
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/orthonormal.hpp>
+#include <suzerain/program_options.hpp>
 
 #include "logger.hpp"
 #include "channel_common.hpp"
@@ -128,17 +129,25 @@ int main(int argc, char **argv)
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
 
+    // Process incoming arguments
+    std::vector<std::string> restart_files;
+    {
+        suzerain::ProgramOptions options(
+                "Suzerain-based channel mean quantity computations",
+                "[RESTART-FILE]...");
+        restart_files = options.process(argc, argv);
+    }
+
     // Ensure that we're running in a single processor environment
     if (suzerain::mpi::comm_size(MPI_COMM_WORLD) > 1) {
         FATAL(argv[0] << " only intended to run on single rank");
         return EXIT_FAILURE;
     }
 
-    // We do not use suzerain::ProgramOptions as it eats the command line
     // Process each command line argument as a file name
     int retval = EXIT_SUCCESS;
-    for (int i = 1; i < argc; ++i) {
-        if (!process(argv[i])) retval = EXIT_FAILURE;
+    for (std::size_t i = 0; i < restart_files.size(); ++i) {
+        if (!process(restart_files[i])) retval = EXIT_FAILURE;
     }
     return retval;
 }

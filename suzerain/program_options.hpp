@@ -64,19 +64,27 @@ public:
     /**
      * Default constructor which does not supply a program description.
      */
-    ProgramOptions()
-        : variables_(),
-          options_("Configuration options"),
-          application_description_() {}
+    ProgramOptions() : variables_(), options_() {}
 
     /**
-     * Constructor providing a program description.
+     * Constructor providing a program synopsis, an argument synopsis,
+     * and a more complete application description.
      *
-     * @param description Description to display for <tt>--help</tt> option
+     * @param application_synopsis Application synopsis for <tt>--help</tt>.
+     * @param argument_synopsis    Argument synopsis to display for
+     *                             <tt>--help</tt> option.  For example,
+     *                             "[FILE]..." or "SOURCE... DIRECTORY".
+     * @param description          Extent description of the application to
+     *                             be displayed at the bottom of
+     *                             <tt>--help</tt>.
      */
-    ProgramOptions(const std::string &description)
+    ProgramOptions(const std::string &application_synopsis,
+                   const std::string &argument_synopsis = "",
+                   const std::string &description = "")
         : variables_(),
-          options_("Configuration options"),
+          options_(),
+          application_synopsis_(application_synopsis),
+          argument_synopsis_(argument_synopsis),
           application_description_(description) {}
 
     /**
@@ -139,14 +147,16 @@ public:
      * @param info  Stream on which informational messages will be output.
      * @param warn  Stream on which warning messages will be output.
      * @param error Stream on which fatal error messages will be output.
+     *
+     * @return A vector containing all non-option arguments.
      */
-    void process(int argc,
-                 char **argv,
-                 MPI_Comm comm,
-                 std::ostream &debug,
-                 std::ostream &info,
-                 std::ostream &warn,
-                 std::ostream &error);
+    std::vector<std::string> process(int argc,
+                                     char **argv,
+                                     MPI_Comm comm,
+                                     std::ostream &debug,
+                                     std::ostream &info,
+                                     std::ostream &warn,
+                                     std::ostream &error);
 
     /**
      * A convenience method suppressing debugging messages and supplying
@@ -155,10 +165,12 @@ public:
      * @param argc Should contain <tt>main</tt>'s \c argc.
      * @param argv Should contain <tt>main</tt>'s \c argv.
      * @param comm MPI Communicator over which the processing is collective.
+     *
+     * @return A vector containing all non-option arguments.
      */
-    void process(int argc,
-                 char **argv,
-                 MPI_Comm comm = MPI_COMM_WORLD)
+    std::vector<std::string> process(int argc,
+                                     char **argv,
+                                     MPI_Comm comm = MPI_COMM_WORLD)
     {
         boost::onullstream nullstream;
         return process(argc,
@@ -190,13 +202,13 @@ protected:
      *
      * @see process for the public API.
      */
-    void process_internal(int argc,
-                          char **argv,
-                          MPI_Comm comm,
-                          std::ostream &debug,
-                          std::ostream &info,
-                          std::ostream &warn,
-                          std::ostream &error);
+    std::vector<std::string> process_internal(int argc,
+                                              char **argv,
+                                              MPI_Comm comm,
+                                              std::ostream &debug,
+                                              std::ostream &info,
+                                              std::ostream &warn,
+                                              std::ostream &error);
 
     /**
      * Print version information on the given stream.  Includes
@@ -206,16 +218,6 @@ protected:
      * @param application_name Application name to be written.
      */
     void print_version(std::ostream &out, const std::string &application_name);
-
-    /**
-     * Print help information on the given stream.  Includes
-     * the application name, an optional description from construction time,
-     * and the full options understood by the application.
-     *
-     * @param out Stream on which to write the information.
-     * @param application_name Application name to be written.
-     */
-    void print_help(std::ostream &out, const std::string &application_name);
 
     /**
      * The Boost.Program_options variables_map used internally.
@@ -228,6 +230,16 @@ protected:
      * It should be populated prior to #process invocation.
      */
     boost::program_options::options_description options_;
+
+    /** The application synopsis used for user-oriented messages. */
+    std::string application_synopsis_;
+
+    /**
+     * The synopsis used for arguments in the usage message.
+     * For examples, look at the <tt>cp(1)</tt> SYNOPSIS section
+     * after the string "[OPTION]...".
+     */
+    std::string argument_synopsis_;
 
     /** The application description used for user-oriented messages. */
     std::string application_description_;

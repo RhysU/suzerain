@@ -148,13 +148,15 @@ int main(int argc, char **argv)
     }
 
     // Process incoming program arguments from command line, input files
-    real_t Ma               = 1.15;
-    real_t M                = SUZERAIN_SVEHLA_AIR_M;
-    real_t p_wall           = GSL_CONST_MKSA_STD_ATMOSPHERE / 100000;
-    std::string create_file = "restart0.h5";
-    suzerain::ProgramOptions options(
-            "Suzerain-based compressible channel initialization");
+    std::string restart_file;
+    bool clobber  = false;
+    real_t Ma     = 1.15;
+    real_t M      = SUZERAIN_SVEHLA_AIR_M;
+    real_t p_wall = GSL_CONST_MKSA_STD_ATMOSPHERE / 100000;
     {
+        suzerain::ProgramOptions options(
+                "Suzerain-based compressible channel initialization",
+                "[RESTART-FILE]");
         namespace po = ::boost::program_options;
 
         // Cast away const so options processing can modify settings
@@ -171,10 +173,7 @@ int main(int argc, char **argv)
             ptr_fun_ensure_nonnegative(ensure_nonnegative<real_t>);
 
         options.add_options()
-            ("create", po::value<std::string>(&create_file)
-                ->default_value(create_file),
-             "Name of new restart file to create")
-            ("clobber", "Overwrite existing restart file?")
+            ("clobber", "Overwrite an existing restart file?")
             ("Ma", po::value<real_t>(&Ma)
                 ->notifier(std::bind2nd(ptr_fun_ensure_positive,"Ma"))
                 ->default_value(Ma),
@@ -188,7 +187,13 @@ int main(int argc, char **argv)
                 ->default_value(p_wall),
              "Pressure in N/m^2 used to obtain reference wall density")
         ;
-        options.process(argc, argv);
+        std::vector<std::string> positional = options.process(argc, argv);
+
+        if (positional.size() != 1) {
+            FATAL0("Exactly one restart file name must be specified");
+            return EXIT_FAILURE;
+        }
+        restart_file = positional[0];
     }
     const real_t R = GSL_CONST_MKSA_MOLAR_GAS * GSL_CONST_NUM_KILO / M;
 
@@ -212,9 +217,8 @@ int main(int argc, char **argv)
          << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
     create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
 
-    INFO("Creating new restart file " << create_file);
-    esio_file_create(esioh, create_file.c_str(),
-                     options.variables().count("clobber"));
+    INFO("Creating new restart file " << restart_file);
+    esio_file_create(esioh, restart_file.c_str(), clobber ? 1 : 0);
     store(esioh, scenario);
     store(esioh, grid, scenario.Lx, scenario.Lz);
     store(esioh, bspw);

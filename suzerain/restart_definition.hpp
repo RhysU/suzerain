@@ -45,8 +45,7 @@ namespace problem {
 
 /**
  * Encapsulates flags related to restart file behavior for the simulation.
- * Includes whether or not to load a restart file and the particulars around
- * writing and archiving restart files.
+ * Includes the particulars around writing and archiving restart files.
  */
 template< class String = std::string >
 class RestartDefinition : public IDefinition
@@ -56,8 +55,6 @@ public:
      * Construct an instance with the given default values.
      * All of these can be overridden by command line options.
      *
-     * @param default_load         Restart file path to load at startup.
-     *                             Leave zero-length to specify new simulation.
      * @param default_metadata     Restart file path to use when saving
      *                             common restart file metadata.
      * @param default_uncommitted  Restart file path to use when saving
@@ -75,21 +72,12 @@ public:
      *      default_desttemplate and default_retain.
      */
     explicit RestartDefinition(
-            const String& default_load         = "",
             const String& default_metadata     = "",
             const String& default_uncommitted  = "",
             const String& default_desttemplate = "",
             int default_retain                 = 1,
             double default_every_dt            = 0,
             int default_every_nt               = 0);
-
-    /**
-     * Retrieve the restart file path to load on simulation startup.  A
-     * zero-length value indicates that no restart file should be loaded.
-     *
-     * @return the restart file path to load.
-     */
-    const String& load() const { return load_; }
 
     /**
      * Retrieve the restart file path to use when saving common restart file
@@ -146,18 +134,27 @@ public:
 
 private:
 
-    String load_;         /**< Stores the restart load path */
-    String metadata_;     /**< Stores the metadata write path */
-    String uncommitted_;  /**< Stores the uncommitted restart path */
-    String desttemplate_; /**< Stores the committed restart path */
-    int retain_;          /**< Stores the maximum committed retain */
-    double every_dt_;      /**< Stores restart writing frequency in simulation time */
-    int every_nt_;        /**< Stores restart writing frequency in time steps */
+    /** Stores the metadata write path */
+    String metadata_;     
+
+    /** Stores the uncommitted restart path */
+    String uncommitted_;
+
+    /** Stores the committed restart path */
+    String desttemplate_;
+
+    /** Stores the maximum committed retain count */
+    int retain_;
+
+    /** Stores restart writing frequency in simulation time */
+    double every_dt_;
+
+    /** Stores restart writing frequency in time steps */
+    int every_nt_;
 };
 
 template< class String >
 RestartDefinition<String>::RestartDefinition(
-        const String& default_load,
         const String& default_metadata,
         const String& default_uncommitted,
         const String& default_desttemplate,
@@ -165,7 +162,6 @@ RestartDefinition<String>::RestartDefinition(
         double default_every_dt,
         int default_every_nt)
     : IDefinition("Restart-related parameters"),
-      load_(default_load),
       metadata_(default_metadata),
       uncommitted_(default_uncommitted),
       desttemplate_(default_desttemplate),
@@ -188,9 +184,6 @@ RestartDefinition<String>::RestartDefinition(
         ptr_fun_ensure_nonnegative_double(ensure_nonnegative<double>);
 
     this->add_options()
-        ("load", po::value<String>(&load_)
-            ->default_value(load_),
-         "Restart file to load on startup")
         ("metadata", po::value<String>(&metadata_)
             ->default_value(metadata_),
          "Path to use when saving common restart metadata")

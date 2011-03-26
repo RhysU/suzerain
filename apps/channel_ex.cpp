@@ -88,8 +88,7 @@ using suzerain::problem::RestartDefinition;
 using suzerain::problem::TimeDefinition;
 static const ScenarioDefinition<real_t> scenario;
 static const GridDefinition grid;
-static const RestartDefinition<> restart(/* load         */ "",
-                                         /* metadata     */ "metadata.h5",
+static const RestartDefinition<> restart(/* metadata     */ "metadata.h5",
                                          /* uncommitted  */ "uncommitted.h5",
                                          /* desttemplate */ "restart#.h5",
                                          /* retain       */ 1,
@@ -1086,11 +1085,13 @@ int main(int argc, char **argv)
     name_logger_within_comm_world();
 
     DEBUG0("Processing command line arguments and response files");
+    std::string restart_file;
     bool default_advance_dt;
     bool default_advance_nt;
     {
         suzerain::ProgramOptions options(
-                "Suzerain-based explicit compressible channel simulation");
+                "Suzerain-based explicit compressible channel simulation",
+                "[RESTART-FILE]");
         options.add_definition(
                 const_cast<ScenarioDefinition<real_t>&>(scenario));
         options.add_definition(
@@ -1099,11 +1100,16 @@ int main(int argc, char **argv)
                 const_cast<RestartDefinition<>&>(restart));
         options.add_definition(
                 const_cast<TimeDefinition<real_t>&>(timedef));
-        options.process(argc, argv);
+        std::vector<std::string> positional = options.process(argc, argv);
+
+        if (positional.size() != 1) {
+            FATAL0("Exactly one restart file name must be specified");
+            return EXIT_FAILURE;
+        }
+        restart_file = positional[0];
 
         default_advance_dt = options.variables()["advance_dt"].defaulted();
         default_advance_nt = options.variables()["advance_nt"].defaulted();
-
     }
 
     if (default_advance_dt && default_advance_nt) {
@@ -1111,8 +1117,8 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    INFO0("Loading details from restart file: " << restart.load());
-    esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
+    INFO0("Loading details from restart file: " << restart_file);
+    esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
     load(esioh, const_cast<GridDefinition&>(grid));
     esio_file_close(esioh);
@@ -1184,7 +1190,7 @@ int main(int argc, char **argv)
             suzerain::to_yxz(5, dgrid->local_wave_extent));
 
     // Load restart information into state_linear, including simulation time
-    esio_file_open(esioh, restart.load().c_str(), 0 /* read-only */);
+    esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     real_t initial_t;
     load_time(esioh, initial_t);
     load(esioh, *state_linear, grid, *dgrid, *bspw);
