@@ -673,12 +673,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
     BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
 }
 
-//FIXME Restore
-//BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
-//{
-//    using boost::detail::multi_array::MutableMultiArrayConcept;
-//    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<InterleavedState<3,T>,3>));
-//}
+BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
+{
+    using boost::detail::multi_array::MutableMultiArrayConcept;
+    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<InterleavedState<3,T>,3>));
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -1353,20 +1352,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchange4, T, test_types )
     }
 }
 
-//FIXME Restore
-//BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check3, T, test_types )
-//{
-//    using boost::detail::multi_array::MutableMultiArrayConcept;
-//    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<NoninterleavedState<3,T>,3>));
-//    BOOST_CHECK(true); // Avoids "did not run any assertions" message
-//}
+BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check3, T, test_types )
+{
+    using boost::detail::multi_array::MutableMultiArrayConcept;
+    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<NoninterleavedState<3,T>,3>));
+    BOOST_CHECK(true); // Avoids "did not run any assertions" message
+}
 
-//FIXME Restore
-//BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check4, T, test_types )
-//{
-//    using boost::detail::multi_array::MutableMultiArrayConcept;
-//    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<NoninterleavedState<4,T>,4>));
-//    BOOST_CHECK(true); // Avoids "did not run any assertions" message
-//}
+BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check4, T, test_types )
+{
+    using boost::detail::multi_array::MutableMultiArrayConcept;
+    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<NoninterleavedState<4,T>,4>));
+    BOOST_CHECK(true); // Avoids "did not run any assertions" message
+}
 
 BOOST_AUTO_TEST_SUITE_END()
