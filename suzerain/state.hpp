@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 //
-// Copyright (C) 2010 The PECOS Development Team
+// Copyright (C) 2011 The PECOS Development Team
 //
 // Please see http://pecos.ices.utexas.edu for more information.
 //
@@ -22,7 +22,7 @@
 //
 //--------------------------------------------------------------------------
 //
-// state.hpp: Interfaces for describing/manipulating mutable state vectors
+// state.hpp: Implementations of State classes
 //
 // $Id$
 //--------------------------------------------------------------------------
@@ -31,112 +31,363 @@
 #define __SUZERAIN_STATE_HPP
 
 #include <suzerain/common.hpp>
+#include <suzerain/blas_et_al.hpp>
+#include <suzerain/functional.hpp>
+#include <suzerain/mpl.hpp>
+#include <suzerain/multi_array.hpp>
+#include <suzerain/state_fwd.hpp>
+#include <suzerain/storage.hpp>
 
 /** @file
- * Provide interfaces for describing and manipulating mutable state vectors.
+ * Implementations of StateBase subclasses.
  */
 
 namespace suzerain
 {
 
-// FIXME Document
-
-template< std::size_t NumDims, typename Element >
-class IStateBase
+template< std::size_t NumDims, typename Element, typename Allocator >
+template< typename ExtentList >
+NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
+        const ExtentList& sizes)
+    : ContiguousMemory<Element,Allocator>(
+              storage_type::compute_storage(sizes.begin())),
+      multi_array_type(
+              ContiguousMemory<Element,Allocator>::memory_begin(),
+              sizes, storage_type::storage_order())
 {
-public:
-    /** Destructor is virtual as appropriate for an abstract base class */
-    virtual ~IStateBase() {}
+    assert(NumDims == std::distance(sizes.begin(),sizes.end()));
 
-    /**
-     * Scale all state information by the given scale factor, i.e.
-     * \f$\mbox{this} \leftarrow{} \mbox{factor}\times\mbox{this}\f$.
-     *
-     * @param factor Scale factor to use.
-     */
-    virtual void scale(const Element& factor) = 0;
-};
+    // Abuse encapsulation; stride_list_ is protected from our
+    // boost::const_multi_array_ref ancestor.
+    storage_type::compute_strides(
+            sizes.begin(), this->stride_list_.begin());
+}
 
-// FIXME Update documentation
-/**
- * An interface describing a state space consisting of one or more state
- * vectors containing one or more state variables.  IState instances of the
- * same subtype and shape may be scaled by type \c FPT and added together.
- * Implementations are expected to make the underlying information available
- * through the Boost.MultiArray concept.
- *
- * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
- *      Boost.MultiArray</a> for more information on the MultiArray concept.
- */
-template<
-    std::size_t NumDims,
-    typename Element,
-    typename Storage,
-    typename CompatibleStorage = Storage
->
-class IState : public virtual IStateBase<NumDims,Element>
+template< std::size_t NumDims, typename Element, typename Allocator >
+template< typename ExtentList, typename MinStrideList >
+NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
+        const ExtentList& sizes,
+        const MinStrideList& minstrides)
+    : ContiguousMemory<Element,Allocator>(
+            storage_type::compute_storage(sizes.begin(), minstrides.begin())),
+      multi_array_type(
+            ContiguousMemory<Element,Allocator>::memory_begin(),
+            sizes, storage_type::storage_order())
 {
-    BOOST_STATIC_ASSERT( (NumDims == Storage::dimensionality) );
-    BOOST_STATIC_ASSERT( (NumDims == CompatibleStorage::dimensionality) );
+    assert(NumDims == std::distance(sizes.begin(),sizes.end()));
+    assert(NumDims == std::distance(minstrides.begin(),minstrides.end()));
 
-public:
-    /** Destructor is virtual as appropriate for an abstract base class */
-    virtual ~IState() {}
+    // Abuse encapsulation; stride_list_ is protected from our
+    // boost::const_multi_array_ref ancestor.
+    storage_type::compute_strides(
+            sizes.begin(), minstrides.begin(), this->stride_list_.begin());
+}
 
-    /**
-     * Is \c this instance's shape "conformant" with <tt>other</tt>'s?
-     *
-     * @param other another instance to compare against.
-     *
-     * @return True if other's shape matches this instances.
-     *         False otherwise.
-     * @throw std::bad_cast if \c other does not have a compatible type.
-     */
-    virtual bool isConformant(
-        const IState<NumDims,Element,CompatibleStorage,Storage>& other) const
-        throw(std::bad_cast) = 0;
+template< std::size_t NumDims, typename Element, typename Allocator >
+NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
+        const NoninterleavedState &other)
+    : ContiguousMemory<Element,Allocator>(other),
+      multi_array_type(this->memory_begin(),
+                       suzerain::multi_array::shape_array(other),
+                       storage_type::storage_order())
+{
+    // Data copied by ContiguousMemory's copy constructor
 
-    /**
-     * Accumulate scaled state information by computing \f$\mbox{this}
-     * \leftarrow{} \mbox{this} + \mbox{factor}\times\mbox{other}\f$.
-     *
-     * @param factor Scale factor to apply to <tt>other</tt>'s
-     *               state information.
-     * @param other Another state instance to scale and add to \c this.
-     * @throw std::bad_cast if \c other does not have a compatible type.
-     * @throw std::logic_error if \c other is not conformant.
-     */
-    virtual void addScaled(
-        const Element& factor,
-        const IState<NumDims,Element,CompatibleStorage,Storage>& other)
-        throw(std::bad_cast, std::logic_error) = 0;
+    // Beware that boost::multi_array_ref has a shallow copy constructor; we
+    // must use non-copy constructor and now explicitly copy strides.  Abuse
+    // encapsulation; stride_list_ is protected from our
+    // boost::const_multi_array_ref ancestor.
+    std::copy(other.stride_list_.begin(), other.stride_list_.end(),
+              this->stride_list_.begin());
+}
 
-    /**
-     * Assign to this instance the state information from another instance
-     * holding compatibly stored elements.
-     *
-     * @param other instance with state to be deep copied.
-     *
-     * @return *this
-     */
-    virtual void assign(
-        const IState<NumDims,Element,CompatibleStorage,Storage>& other)
-        throw(std::bad_cast, std::logic_error) = 0;
+template< std::size_t NumDims, typename Element, typename Allocator >
+void NoninterleavedState<NumDims,Element,Allocator>::scale(
+        const Element& factor)
+{
+    suzerain::blas::scal(
+            std::distance(this->memory_begin(),this->memory_end()),
+            factor, this->memory_begin(), 1);
+}
 
-    /**
-     * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
-     * the relevant data without incurring a lot of memory overhead.  In
-     * contrast with potentially optimized swap semantics, this method should
-     * swap data instead of playing tricks with underlying pointers.
-     *
-     * @param other instance with which to exchange data.
-     * @throw std::bad_cast if \c that does not have a compatible type.
-     * @throw std::logic_error if \c that is not conformant.
-     */
-    virtual void exchange(
-        IState<NumDims,Element,CompatibleStorage,Storage>& other)
-        throw(std::bad_cast, std::logic_error) = 0;
-};
+namespace detail {
+
+template< typename BLASFunctor, typename Element, typename Allocator >
+void apply(BLASFunctor functor,
+           NoninterleavedState<1,Element,Allocator>& x,
+           NoninterleavedState<1,Element,Allocator>& y)
+{
+    assert(std::equal(x.shape(), x.shape() + 1, y.shape()));
+
+    functor(x.shape()[0],
+            x.memory_begin(), x.strides()[0],
+            y.memory_begin(), y.strides()[0]);
+}
+
+template< typename BLASFunctor, typename Element, typename Allocator >
+void apply(BLASFunctor functor,
+           NoninterleavedState<2,Element,Allocator>& x,
+           NoninterleavedState<2,Element,Allocator>& y)
+{
+    typedef typename NoninterleavedState<2,Element,Allocator>::index index;
+    assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+
+    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+         ix < iu;
+         ++ix, ++iy) {
+
+        functor(x.shape()[1],
+                &x[ix][x.index_bases()[1]], x.strides()[1],
+                &y[iy][y.index_bases()[1]], y.strides()[1]);
+    }
+}
+
+template< typename BLASFunctor, typename Element, typename Allocator >
+void apply(BLASFunctor functor,
+           NoninterleavedState<3,Element,Allocator>& x,
+           NoninterleavedState<3,Element,Allocator>& y)
+{
+    typedef typename NoninterleavedState<3,Element,Allocator>::index index;
+    assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+    const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
+
+    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+        ix < iu;
+        ++ix, ++iy) {
+
+        for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
+             kx < ku;
+             ++kx, ++ky) {
+
+            functor(x.shape()[1],
+                    &x[ix][x.index_bases()[1]][kx], x.strides()[1],
+                    &y[iy][y.index_bases()[1]][ky], y.strides()[1]);
+        }
+    }
+}
+
+template< typename BLASFunctor, typename Element, typename Allocator >
+void apply(BLASFunctor functor,
+           NoninterleavedState<4,Element,Allocator>& x,
+           NoninterleavedState<4,Element,Allocator>& y)
+{
+    typedef typename NoninterleavedState<4,Element,Allocator>::index index;
+    assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+    const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
+    const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
+
+    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+        ix < iu;
+        ++ix, ++iy) {
+
+        for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
+            lx < lu;
+            ++lx, ++ly) {
+
+            for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
+                kx < ku;
+                ++kx, ++ky) {
+
+                functor(x.shape()[1],
+                        &x[ix][x.index_bases()[1]][kx][lx], x.strides()[1],
+                        &y[iy][y.index_bases()[1]][ky][ly], y.strides()[1]);
+            }
+        }
+    }
+}
+
+template< typename BLASFunctor, typename Element, typename Allocator >
+void apply(BLASFunctor functor,
+           NoninterleavedState<5,Element,Allocator>& x,
+           NoninterleavedState<5,Element,Allocator>& y)
+{
+    typedef typename NoninterleavedState<5,Element,Allocator>::index index;
+    assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+    const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
+    const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
+    const index mu = numeric_cast<index>(x.index_bases()[4] + x.shape()[4]);
+
+    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+        ix < iu;
+        ++ix, ++iy) {
+
+        for (index mx = x.index_bases()[4], my = y.index_bases()[4];
+            mx < mu;
+            ++mx, ++my) {
+
+            for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
+                lx < lu;
+                ++lx, ++ly) {
+
+                for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
+                    kx < ku;
+                    ++kx, ++ky) {
+
+                    functor(x.shape()[1],
+                            &x[ix][x.index_bases()[1]][kx][lx][mx],
+                            x.strides()[1],
+                            &y[iy][y.index_bases()[1]][ky][ly][my],
+                            y.strides()[1]);
+                }
+            }
+        }
+    }
+}
+
+} // namespace detail
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void NoninterleavedState<NumDims,Element,Allocator>::addScaled(
+            const Element& factor,
+            const NoninterleavedState& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
+        throw std::logic_error("Unable to handle this->addScaled(...,this)");
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
+                    other.strides() + NumDims, this->strides()))) {
+        // Identical strides between elements: use a single BLAS call
+        suzerain::blas::axpy(
+                std::distance(this->memory_begin(),this->memory_end()),
+                factor, other.memory_begin(), 1, this->memory_begin(), 1);
+    } else {
+        // Different strides between elements: loop over BLAS calls
+        detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
+                      const_cast<NoninterleavedState&>(other), *this);
+    }
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void NoninterleavedState<NumDims,Element,Allocator>::assign(
+            const NoninterleavedState& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
+                    other.strides() + NumDims, this->strides()))) {
+        // Identical strides between elements: use a single BLAS call
+        suzerain::blas::copy(
+                std::distance(this->memory_begin(),this->memory_end()),
+                other.memory_begin(), 1, this->memory_begin(), 1);
+    } else {
+        // Different strides between elements: loop over BLAS calls
+        detail::apply(::suzerain::blas::functor::copy(),
+                      const_cast<NoninterleavedState&>(other), *this);
+    }
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void NoninterleavedState<NumDims,Element,Allocator>::exchange(
+            NoninterleavedState& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
+                    other.strides() + NumDims, this->strides()))) {
+        // Identical strides between elements: use a single BLAS call
+        suzerain::blas::swap(
+                std::distance(this->memory_begin(),this->memory_end()),
+                other.memory_begin(), 1, this->memory_begin(), 1);
+    } else {
+        // Different strides between elements: loop over BLAS calls
+        detail::apply(::suzerain::blas::functor::swap(), other, *this);
+    }
+}
+
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+template< typename ExtentList >
+InterleavedState<NumDims,Element,Allocator>::InterleavedState(
+        const ExtentList& sizes,
+        size_type min_total_contiguous_count)
+    : ContiguousMemory<Element,Allocator>(std::max<size_type>(
+                    suzerain::functional::product(sizes.begin(), sizes.end()),
+                    min_total_contiguous_count)),
+      multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
+                       sizes, storage_type::storage_order())
+{
+    assert(NumDims == std::distance(sizes.begin(),sizes.end()));
+    // NOP
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+InterleavedState<NumDims,Element,Allocator>::InterleavedState(
+        const InterleavedState &other)
+    : ContiguousMemory<Element,Allocator>(other),
+      multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
+                       suzerain::multi_array::shape_array(other),
+                       storage_type::storage_order())
+{
+    // Data copied by ContiguousMemory's copy constructor
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void InterleavedState<NumDims,Element,Allocator>::scale(
+        const Element& factor)
+{
+    suzerain::blas::scal(this->num_elements(), factor, this->data(), 1);
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void InterleavedState<NumDims,Element,Allocator>::addScaled(
+            const Element& factor,
+            const InterleavedState& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
+        throw std::logic_error("Unable to handle this->addScaled(...,this)");
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    assert(other.num_elements() == this->num_elements());
+    suzerain::blas::axpy(
+            this->num_elements(), factor, other.data(), 1, this->data(), 1);
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void InterleavedState<NumDims,Element,Allocator>::assign(
+            const InterleavedState& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    assert(other.num_elements() == this->num_elements());
+    suzerain::blas::copy(
+            this->num_elements(), other.data(), 1, this->data(), 1);
+}
+
+template< std::size_t NumDims, typename Element, typename Allocator >
+void InterleavedState<NumDims,Element,Allocator>::exchange(
+            InterleavedState& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    assert(other.num_elements() == this->num_elements());
+    suzerain::blas::swap(
+            this->num_elements(), other.data(), 1, this->data(), 1);
+}
 
 } // namespace suzerain
 
