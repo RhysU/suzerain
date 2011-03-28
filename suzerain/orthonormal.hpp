@@ -1456,10 +1456,10 @@ Tensor grad_u(
         const Vector &m,
         const Tensor &grad_m)
 {
-    // Expression broken apart to avoid GCC 4.3 per Redmine issue #1562.
+    // Expression mangled to avoid GCC 4.3 per Redmine issue #1562
     const Scalar rho_inverse = 1.0/rho;
-    Tensor retval(grad_m);
-    retval -= rho_inverse*m*grad_rho.transpose();
+    Tensor retval(-rho_inverse*m*grad_rho.transpose());
+    retval += grad_m;
     retval *= rho_inverse;
     return retval;
 }
