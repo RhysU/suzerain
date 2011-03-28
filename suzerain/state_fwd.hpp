@@ -104,12 +104,7 @@ private:
 template<class Derived>
 class StateBase
 {
-public:
-    typedef typename detail::StateTraits<Derived>::element   element;
-    typedef typename detail::StateTraits<Derived>::index     index;
-    typedef typename detail::StateTraits<Derived>::size_type size_type;
-    static const size_type dimensionality
-        = detail::StateTraits<Derived>::dimensionality;
+private:
 
 /** @name Static polymorphism helpers to simplify casting */
 /**@{*/
@@ -125,6 +120,14 @@ public:
     }
 
 /**@}*/
+
+public:
+    typedef typename detail::StateTraits<Derived>::element   element;
+    typedef typename detail::StateTraits<Derived>::index     index;
+    typedef typename detail::StateTraits<Derived>::size_type size_type;
+    static const size_type dimensionality
+        = detail::StateTraits<Derived>::dimensionality;
+
 
 /** @name Queries supported by subclasses */
 /**@{*/
