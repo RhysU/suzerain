@@ -32,12 +32,12 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/math.hpp>
-#include <suzerain/state.hpp>
+#include <suzerain/state_fwd.hpp>
 #include <suzerain/timecontroller.hpp>
 #include <suzerain/traits.hpp>
 
 /** @file
- * Provides time integration schemes.
+ * Provides time integration-related operator details and advancement schemes.
  */
 
 namespace suzerain
@@ -45,118 +45,28 @@ namespace suzerain
 
 /**
  * Provides time integration schemes and the associated interfaces that the
- * underlying operators must obey.  Also includes the associated operator
- * configuration and lifecycle interfaces.
+ * underlying operators must obey.
  */
 namespace timestepper
 {
 
 /**
- * A marker interface for configuration data supplied to operator at runtime.
- *
- * @see IOperatorLifecycle for more information.
- */
-class IOperatorConfig
-{
-public:
-
-    /** Virtual destructor to support interface-like behavior. */
-    virtual ~IOperatorConfig() {};
-};
-
-/**
- * An interface that runtime configurable operators must implement.  The
- * interface follows the J2EE Servlet pattern.  Prior to being applied, the
- * init method should be called.  One or more operator application methods may
- * be called.  Finally, the destroy method will be called.  After destroy, init
- * may again be invoked with a new operator configuration.
- */
-class IOperatorLifecycle
-{
-public:
-
-    /**
-     * Initialize the operator so that it may process operator application
-     * requests.  The operator should use \c config to determine what resources
-     * it needs, and it should use this information to obtain these resources.
-     * All expensive or one-time set up cost should be completed during this
-     * method.
-     *
-     * @param config operator configuration to set for subsequent
-     *        operator application.
-     * @throw std::exception if a non-recoverable error occurs
-     *        during initialization.
-     */
-    virtual void init(const IOperatorConfig& config)
-                      throw(std::exception) {
-        SUZERAIN_UNUSED(config);
-    };
-
-    /**
-     * Destroy any resources associated with the previous \c init invocation.
-     */
-    virtual void destroy() {};
-
-    /** Virtual destructor to support interface-like behavior. */
-    virtual ~IOperatorLifecycle() {};
-};
-
-/**
- * A marker interface for operator splitting data provided to the
- * operator at runtime.
- *
- * @see IAdjustableSplitOperator for more information.
- */
-class IOperatorSplit
-{
-public:
-
-    /** Virtual destructor to support interface-like behavior. */
-    virtual ~IOperatorSplit() {};
-};
-
-/**
- * An interface indicating that an ILinearOperator and INonlinearOperator
- * implementation pair implement to indicate they support adjustable
- * operator splitting.
- */
-class IAdjustableSplitOperator
-{
-public:
-
-    /**
-     * Establish an operator split using the given information.
-     *
-     * @param split operator split information to set for subsequent
-     *        operator application.
-     * @throw std::exception if a non-recoverable error occurs
-     *        during operator splitting.
-     */
-    virtual void establishSplit(const IOperatorSplit& split)
-                                throw(std::exception) {
-        SUZERAIN_UNUSED(split);
-    };
-
-    /** Virtual destructor to support interface-like behavior. */
-    virtual ~IAdjustableSplitOperator() {};
-};
-
-/**
  * Defines the nonlinear operator interface required for timestepping.
  *
- * @see suzerain::IState<NumDims,Element,Storage,CompatibleStorage>
- *      for more information on state vectors.
+ * @see tparam State A state type which must provide an \c element \c typedef
+ *                   containing its real- or complex-valued scalar type.
  * @see suzerain::timestepper::lowstorage for low storage schemes.
  */
-template<
-    std::size_t NumDims,
-    typename Element,
-    typename Storage,
-    typename CompatibleStorage = Storage
->
-class INonlinearOperator : public virtual IOperatorLifecycle
+template<typename State>
+class INonlinearOperator
 {
 public:
+
+    /** The real- or complex-valued scalar type the operator understands */
+    typedef typename State::element element;
+
+    /** The real-valued scalar corresponding to \c element */
+    typedef typename suzerain::traits::component<element>::type component;
 
     /**
      * Apply the operator in place on a given state location.  That is, compute
@@ -178,13 +88,14 @@ public:
      * @return a stable time step if \c delta_t_requested is true.  Otherwise
      *        the return value is meaningless.
      */
-    virtual typename suzerain::traits::component<Element>::type applyOperator(
-        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state,
-        const typename suzerain::traits::component<Element>::type evmaxmag_real,
-        const typename suzerain::traits::component<Element>::type evmaxmag_imag,
-        const bool delta_t_requested = false)
-        const
-        throw(std::exception) = 0;
+    virtual component applyOperator(
+            State& state,
+            const component evmaxmag_real,
+            const component evmaxmag_imag,
+            const bool delta_t_requested = false) const = 0;
+
+    /** Virtual destructor for peace of mind. */
+    virtual ~INonlinearOperator() {}
 };
 
 /**
@@ -330,18 +241,20 @@ namespace lowstorage
 /**
  * Defines the linear operator interface required for low storage timestepping.
  *
- * @see suzerain::IState<NumDims,Element,Storage,CompatibleStorage>
- *      for more information on state vectors.
+ * @see tparam StateA A state type which must provide an \c element \c typedef
+ *                    containing its real- or complex-valued scalar type.
+ * @see tparam StateB A state type which must provide an \c element \c typedef
+ *                    containing its real- or complex-valued scalar type.
  */
-template<
-    std::size_t NumDims,
-    typename Element,
-    typename Storage,
-    typename CompatibleStorage = Storage
->
-class ILinearOperator : public virtual IOperatorLifecycle
+template<typename StateA, typename StateB = StateA>
+class ILinearOperator
 {
 public:
+
+    /** The real- or complex-valued scalar type the operator understands */
+    typedef typename StateA::element element;
+    BOOST_STATIC_ASSERT(
+            (boost::is_same<element,typename StateB::element>::value));
 
     /**
      * Apply \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.
@@ -350,13 +263,9 @@ public:
      *
      * @param scale Scale factor \f$\phi\f$ to use.
      * @param state State vector on which to apply the operator.
-     * @throw std::exception if an unrecoverable error occurs.
      */
-    virtual void applyMassPlusScaledOperator(
-        const Element scale,
-        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
-        const
-        throw(std::exception) = 0;
+    virtual void applyMassPlusScaledOperator(const element& scale,
+                                             StateA& state) const = 0;
 
     /**
      * Accumulate \f$M+\phi{}L\f$ out-of-place for scalar \f$\phi\f$.
@@ -366,14 +275,10 @@ public:
      * @param scale Scale factor \f$\phi\f$ to use.
      * @param input State vector on which to apply the operator.
      * @param output State vector into which to accumulate the result.
-     * @throw std::exception if an unrecoverable error occurs.
      */
-    virtual void accumulateMassPlusScaledOperator(
-        const Element scale,
-        const suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& input,
-        suzerain::IState<NumDims,Element,CompatibleStorage,Storage>& output)
-        const
-        throw(std::exception) = 0;
+    virtual void accumulateMassPlusScaledOperator(const element& scale,
+                                                  const StateA& input,
+                                                  StateB& output) const = 0;
 
     /**
      * Invert \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.
@@ -382,38 +287,36 @@ public:
      *
      * @param scale Scale factor \f$\phi\f$ to use.
      * @param state State vector on which to apply the operator.
-     * @throw std::exception if an unrecoverable error occurs.
      */
-    virtual void invertMassPlusScaledOperator(
-        const Element scale,
-        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
-        const
-        throw(std::exception) = 0;
+    virtual void invertMassPlusScaledOperator(const element& scale,
+                                              StateA& state) const = 0;
+
+    /** Virtual destructor for peace of mind. */
+    virtual ~ILinearOperator() {}
 };
 
 /**
  * Implements simple multiplicative operator which scales all state
  * variables by a uniform factor.  The associated mass matrix \f$M\f$
  * is the identity matrix.
+ *
+ * @tparam StateA A state type which should descend from suzerain::StateBase.
+ * @tparam StateB A state type which should descend from suzerain::StateBase.
  */
-template<
-    std::size_t NumDims,
-    typename Element,
-    typename Storage,
-    typename CompatibleStorage = Storage
->
+template<typename StateA,typename StateB = StateA>
 class MultiplicativeOperator
-    : public ILinearOperator<NumDims,Element,Storage,CompatibleStorage>,
-      public INonlinearOperator<NumDims,Element,Storage,CompatibleStorage>
+    : public ILinearOperator<StateA,StateB>,
+      public INonlinearOperator<StateB>
 {
-private:
-    /** Uniform scale factor to apply as part of operator */
-    const Element factor;
-
-    /** Uniform stable time step to report */
-    const typename suzerain::traits::component<Element>::type delta_t;
-
 public:
+
+    /** The real- or complex-valued scalar type the operator understands */
+    typedef typename StateA::element element;
+    BOOST_STATIC_ASSERT(
+            (boost::is_same<element, typename StateB::element>::value));
+
+    /** The real-valued scalar corresponding to \c element */
+    typedef typename suzerain::traits::component<element>::type component;
 
     /**
      * Construct an instance which scales by \c factor and reports
@@ -424,10 +327,8 @@ public:
      *        always return from ::applyOperator.
      */
     template< typename FactorType, typename DeltaTType >
-    MultiplicativeOperator(
-            const FactorType& factor,
-            const DeltaTType& delta_t)
-        : factor(factor), delta_t(delta_t) {};
+    MultiplicativeOperator(const FactorType& factor, const DeltaTType& delta_t)
+        : factor(factor), delta_t(delta_t) {}
 
     /**
      * Construct an instance which scales by \c factor and reports the
@@ -437,12 +338,9 @@ public:
      * @param factor uniform scaling factor to apply.
      */
     template< typename FactorType >
-    MultiplicativeOperator(
-            const FactorType& factor)
+    MultiplicativeOperator(const FactorType& factor)
         : factor(factor),
-          delta_t(std::numeric_limits<
-                    typename suzerain::traits::component<Element>::type
-                >::infinity()) {};
+          delta_t(std::numeric_limits<component>::infinity()) {}
 
     /**
      * Scale \c state by the factor set at construction time.
@@ -452,20 +350,17 @@ public:
      *
      * @return The \c delta_t provided at construction time.
      */
-    virtual typename suzerain::traits::component<Element>::type applyOperator(
-        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state,
-        const typename suzerain::traits::component<Element>::type evmaxmag_real,
-        const typename suzerain::traits::component<Element>::type evmaxmag_imag,
-        const bool delta_t_requested = false)
-        const
-        throw(std::exception)
+    virtual component applyOperator(StateB& state,
+                                    const component evmaxmag_real,
+                                    const component evmaxmag_imag,
+                                    const bool delta_t_requested = false) const
     {
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(delta_t_requested);
         state.scale(factor);
         return delta_t;
-    };
+    }
 
     /**
      * Compute \f$\mbox{state}\leftarrow{}
@@ -475,15 +370,11 @@ public:
      * @param scale Additional scaling \f$\phi\f$ to apply.
      * @param state to modify in place.
      */
-    virtual void applyMassPlusScaledOperator(
-        const Element scale,
-        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
-        const
-        throw(std::exception)
+    virtual void applyMassPlusScaledOperator(const element& scale,
+                                             StateA& state) const
     {
-        // Assumes Element has operator* and operator+
-        state.scale(scale*factor + Element(1));
-    };
+        state.scale(scale*factor + element(1));
+    }
 
     /**
      * Compute \f$\mbox{output}\leftarrow{}\mbox{output}+
@@ -494,16 +385,12 @@ public:
      * @param input on which to apply the operator.
      * @param output on which to accumulate the result.
      */
-    virtual void accumulateMassPlusScaledOperator(
-        const Element scale,
-        const suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& input,
-        suzerain::IState<NumDims,Element,CompatibleStorage,Storage>& output)
-        const
-        throw(std::exception)
+    virtual void accumulateMassPlusScaledOperator(const element& scale,
+                                                  const StateA& input,
+                                                  StateB& output) const
     {
-        // Assumes Element has operator* and operator+
-        output.addScaled(scale*factor + Element(1), input);
-    };
+        output.addScaled(scale*factor + element(1), input);
+    }
 
     /**
      * Compute \f$\mbox{state}\leftarrow{}
@@ -513,15 +400,18 @@ public:
      * @param scale Additional scaling \f$\phi\f$ to apply.
      * @param state to modify in place.
      */
-    virtual void invertMassPlusScaledOperator(
-        const Element scale,
-        suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& state)
-        const
-        throw(std::exception)
+    virtual void invertMassPlusScaledOperator(const element& scale,
+                                              StateA& state) const
     {
-        // Assumes Element has a single argument constructor
-        state.scale((Element(1))/(scale*factor + Element(1)));
-    };
+        state.scale((element(1))/(scale*factor + element(1)));
+    }
+
+private:
+    /** Uniform scale factor to apply as part of operator */
+    const element factor;
+
+    /** Uniform stable time step to report */
+    const component delta_t;
 };
 
 /**
@@ -533,20 +423,17 @@ public:
 template<
     typename FactorType,
     typename DeltaTType,
-    std::size_t NumDims,
-    typename Element,
-    typename Storage,
-    typename CompatibleStorage
+    typename A,
+    typename B
 >
-MultiplicativeOperator<NumDims,Element,Storage,CompatibleStorage>
+MultiplicativeOperator<A,B>
 make_multiplicator_operator(
     const FactorType& factor,
     const DeltaTType& delta_t,
-    const suzerain::IState<NumDims,Element,Storage,CompatibleStorage>& input,
-    const suzerain::IState<NumDims,Element,CompatibleStorage,Storage>& output)
+    const StateBase<A>& input,
+    const StateBase<B>& output)
 {
-    MultiplicativeOperator<NumDims,Element,Storage,CompatibleStorage>
-        retval(factor,delta_t);
+    MultiplicativeOperator<A,B> retval(factor,delta_t);
     return retval;
 }
 
@@ -572,10 +459,12 @@ make_multiplicator_operator(
  * @see step() or substep() for methods that can advance state variables
  *      according to a timestepping method.
  */
-template< typename Element >
+template<typename Element>
 class ILowStorageMethod
 {
 public:
+
+/**@}*/
 
     /**
      * A human-readable name for the timestepping method.
@@ -648,7 +537,7 @@ public:
         evmaxmag_imag() const = 0;
 
     /** Virtual destructor to support interface-like behavior. */
-    virtual ~ILowStorageMethod() {};
+    virtual ~ILowStorageMethod() {}
 };
 
 /**
@@ -698,7 +587,7 @@ public:
     virtual const char * name() const { return "SMR91"; }
 
     /*! @copydoc ILowStorageMethod::substeps */
-    virtual std::size_t substeps() const { return 3; };
+    virtual std::size_t substeps() const { return 3; }
 
     /*! @copydoc ILowStorageMethod::alpha */
     virtual Element alpha(const std::size_t substep) const;
@@ -786,21 +675,19 @@ Element SMR91Method<Element>::zeta(const std::size_t substep) const
  * @see The method step() provides more convenient ways to perform multiple
  *      substeps, including dynamic step size computation.
  */
-template<
-    std::size_t NumDims,
-    typename Element,
-    typename Storage
->
+template< typename Element, typename A, typename B >
 const typename suzerain::traits::component<Element>::type substep(
     const ILowStorageMethod<Element>& m,
-    const ILinearOperator<NumDims,Element,Storage>& L,
-    const INonlinearOperator<NumDims,Element,Storage>& N,
-    IState<NumDims,Element,Storage>& a,
-    IState<NumDims,Element,Storage>& b,
+    const ILinearOperator<A,B>& L,
+    const INonlinearOperator<B>& N,
+    A& a,  // FIXME: Would love a StateBase subclass restriction here
+    B& b,  // FIXME: Would love a StateBase subclass restriction here
     const typename suzerain::traits::component<Element>::type delta_t,
     const std::size_t substep_index)
-throw(std::exception)
 {
+    BOOST_STATIC_ASSERT((boost::is_same<Element,typename A::element>::value));
+    BOOST_STATIC_ASSERT((boost::is_same<Element,typename B::element>::value));
+
     if (SUZERAIN_UNLIKELY(substep_index >= m.substeps()))
         throw std::invalid_argument("Requested substep too large");
 
@@ -836,21 +723,18 @@ throw(std::exception)
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
-template<
-    std::size_t NumDims,
-    typename Element,
-    typename StorageA,
-    typename StorageB
->
+template< typename Element, typename A, typename B >
 const typename suzerain::traits::component<Element>::type step(
     const ILowStorageMethod<Element>& m,
-    const ILinearOperator<NumDims,Element,StorageA,StorageB>& L,
-    const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N,
-    IState<NumDims,Element,StorageA,StorageB>& a,
-    IState<NumDims,Element,StorageB,StorageA>& b,
+    const ILinearOperator<A,B>& L,
+    const INonlinearOperator<B>& N,
+    A& a,  // FIXME: Would love a StateBase subclass restriction here
+    B& b,  // FIXME: Would love a StateBase subclass restriction here
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
-throw(std::exception)
 {
+    BOOST_STATIC_ASSERT((boost::is_same<Element,typename A::element>::value));
+    BOOST_STATIC_ASSERT((boost::is_same<Element,typename B::element>::value));
+
     // First substep handling is special since we need to determine delta_t
     b.assign(a);
     typename suzerain::traits::component<Element>::type delta_t
@@ -886,25 +770,24 @@ throw(std::exception)
  * @see make_LowStorageTimeController for an easy way to create
  *      an instance with the appropriate type signature.
  */
-template<
-    std::size_t NumDims,
-    typename Element,
-    typename StorageA,
-    typename StorageB
->
+template<typename A, typename B>
 class LowStorageTimeController
-    : public TimeController<
-        typename suzerain::traits::component<Element>::type
-      >
+    : public TimeController< typename suzerain::traits::component<
+            typename A::element
+      >::type >
 {
 private:
 
     /** Shorthand for the superclass */
-    typedef TimeController<
-        typename suzerain::traits::component<Element>::type
-      > super;
+    typedef TimeController< typename suzerain::traits::component<
+                typename A::element
+            >::type > super;
 
 public:
+
+    /** The real- or complex-valued scalar type the operator understands */
+    typedef typename A::element element;
+    BOOST_STATIC_ASSERT((boost::is_same<element, typename B::element>::value));
 
     /**
      * Construct an instance that will advance a simulation built atop the
@@ -932,11 +815,11 @@ public:
      *      and \c b.
      */
     LowStorageTimeController(
-            const ILowStorageMethod<Element>& m,
-            const ILinearOperator<NumDims,Element,StorageA,StorageB>& L,
-            const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N,
-            IState<NumDims,Element,StorageA,StorageB>& a,
-            IState<NumDims,Element,StorageB,StorageA>& b,
+            const ILowStorageMethod<element>& m,
+            const ILinearOperator<A,B>& L,
+            const INonlinearOperator<B>& N,
+            A& a,  // FIXME: Would love a StateBase subclass restriction here
+            B& b,  // FIXME: Would love a StateBase subclass restriction here
             typename super::time_type initial_t = 0,
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
@@ -948,11 +831,11 @@ public:
 
 private:
 
-    const ILowStorageMethod<Element>& m;
-    const ILinearOperator<NumDims,Element,StorageA,StorageB>& L;
-    const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N;
-    IState<NumDims,Element,StorageA,StorageB>& a;
-    IState<NumDims,Element,StorageB,StorageA>& b;
+    const ILowStorageMethod<element>& m;
+    const ILinearOperator<A,B>& L;
+    const INonlinearOperator<B>& N;
+    A& a;
+    B& b;
 
     typename super::time_type stepper(typename super::time_type max_dt)
     {
@@ -967,30 +850,19 @@ private:
  *
  * \copydoc #LowStorageTimeController
  */
-template<
-    std::size_t NumDims,
-    typename Element,
-    typename StorageA,
-    typename StorageB
->
-LowStorageTimeController<NumDims,Element,StorageA,StorageB>*
+template< typename A, typename B >
+LowStorageTimeController<A,B>*
 make_LowStorageTimeController(
-            const ILowStorageMethod<Element>& m,
-            const ILinearOperator<NumDims,Element,StorageA,StorageB>& L,
-            const INonlinearOperator<NumDims,Element,StorageB,StorageA>& N,
-            IState<NumDims,Element,StorageA,StorageB>& a,
-            IState<NumDims,Element,StorageB,StorageA>& b,
-            typename LowStorageTimeController<
-                    NumDims,Element,StorageA,StorageB
-                >::time_type initial_t = 0,
-            typename LowStorageTimeController<
-                    NumDims,Element,StorageA,StorageB
-                >::time_type min_dt = 0,
-            typename LowStorageTimeController<
-                    NumDims,Element,StorageA,StorageB
-                >::time_type max_dt = 0)
+        const ILowStorageMethod<typename StateBase<A>::element>& m,
+        const ILinearOperator<A,B>& L,
+        const INonlinearOperator<B>& N,
+        A& a,  // FIXME: Would love a StateBase subclass restriction here
+        B& b,  // FIXME: Would love a StateBase subclass restriction here
+        typename LowStorageTimeController<A,B>::time_type initial_t = 0,
+        typename LowStorageTimeController<A,B>::time_type min_dt = 0,
+        typename LowStorageTimeController<A,B>::time_type max_dt = 0)
 {
-    return new LowStorageTimeController<NumDims,Element,StorageA,StorageB>(
+    return new LowStorageTimeController<A,B>(
             m, L, N, a, b, initial_t, min_dt, max_dt);
 }
 

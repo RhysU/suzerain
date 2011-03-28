@@ -64,20 +64,7 @@ using std::numeric_limits;
 
 // Explicit timestepping scheme uses only complex_t 4D NoninterleavedState
 // State indices range over (scalar field, Y, X, Z) in wave space
-// Establish some shorthand for some overly-templated operator and state types
-typedef suzerain::storage::noninterleaved<4> storage_type;
-typedef suzerain::IState<
-            storage_type::dimensionality, complex_t, storage_type
-        > istate_type;
-typedef suzerain::timestepper::lowstorage::ILinearOperator<
-            storage_type::dimensionality, complex_t, storage_type
-        > ilinearoperator_type;
-typedef suzerain::timestepper::INonlinearOperator<
-            storage_type::dimensionality, complex_t, storage_type
-        > inonlinearoperator_type;
-typedef suzerain::NoninterleavedState<
-            storage_type::dimensionality, complex_t
-        > state_type;
+typedef suzerain::NoninterleavedState<4,complex_t> state_type;
 
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
@@ -115,7 +102,8 @@ static shared_ptr<state_type> state_nonlinear;
 // TODO Incorporate IOperatorLifecycle semantics
 // TODO Refactor MassOperator into templated BsplineMassOperator
 
-class MassOperator : public ilinearoperator_type
+class MassOperator
+    : public suzerain::timestepper::lowstorage::ILinearOperator<state_type>
 {
 public:
     explicit MassOperator(real_t scaling = 1)
@@ -127,11 +115,10 @@ public:
     }
 
     virtual void applyMassPlusScaledOperator(
-            const complex_t scale,
-            istate_type &istate) const throw (std::exception)
+            const complex_t &scale,
+            state_type &state) const
     {
         SUZERAIN_UNUSED(scale);
-        state_type &state = dynamic_cast<state_type&>(istate);
 
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
         assert(1 == state.strides()[1]);
@@ -141,15 +128,14 @@ public:
     }
 
     virtual void accumulateMassPlusScaledOperator(
-            const complex_t scale,
-            const istate_type &iinput,
-            istate_type &ioutput) const throw (std::exception)
+            const complex_t &scale,
+            const state_type &input,
+            state_type &output) const
     {
         SUZERAIN_UNUSED(scale);
-        const state_type &x = dynamic_cast<const state_type&>(iinput);
-        state_type &y = dynamic_cast<state_type&>(ioutput);
-        assert(std::equal(x.shape(), x.shape() + state_type::dimensionality,
-                          y.shape()));
+        const state_type &x = input;  // Shorthand
+        state_type &y       = output; // Shorthand
+        assert(x.isIsomorphic(y));
 
         typedef state_type::index index;
         for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
@@ -170,11 +156,10 @@ public:
     }
 
     virtual void invertMassPlusScaledOperator(
-            const complex_t scale,
-            istate_type &istate) const throw (std::exception)
+            const complex_t &scale,
+            state_type &state) const
     {
         SUZERAIN_UNUSED(scale);
-        state_type &state = dynamic_cast<state_type&>(istate);
 
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
         assert(1 == state.strides()[1]);
@@ -189,7 +174,8 @@ private:
 
 // TODO Incorporate IOperatorLifecycle semantics for NonlinearOperator
 
-class NonlinearOperator : public inonlinearoperator_type
+class NonlinearOperator
+    : public suzerain::timestepper::INonlinearOperator<state_type>
 {
 
 public:
@@ -225,13 +211,11 @@ public:
         // NOP
     }
 
-    real_t applyOperator(
-        istate_type &istate,
+    virtual real_t applyOperator(
+        state_type &state,
         const real_t evmaxmag_real,
         const real_t evmaxmag_imag,
-        const bool delta_t_requested = false)
-        const
-        throw(std::exception)
+        const bool delta_t_requested = false) const
     {
         SUZERAIN_UNUSED(delta_t_requested);
         real_t delta_t_candidates[2] = { numeric_limits<real_t>::max(),
@@ -240,9 +224,6 @@ public:
         real_t &diffusive_delta_t  = delta_t_candidates[1];
         const real_t one_over_delta_x = scenario.Lx / Nx; // !dNx, dealiasing
         const real_t one_over_delta_z = scenario.Lz / Nz; // !dNz, dealiasing
-
-        // Get state information with appropriate type
-        state_type &state = dynamic_cast<state_type&>(istate);
 
         // Create 3D views of 4D state information
         using boost::array_view_gen;
@@ -893,17 +874,12 @@ private:
 
 public:
 
-    real_t applyOperator(
-        istate_type &istate,
+    virtual real_t applyOperator(
+        state_type &state,
         const real_t evmaxmag_real,
         const real_t evmaxmag_imag,
-        const bool delta_t_requested = false)
-        const
-        throw(std::exception)
+        const bool delta_t_requested = false) const
     {
-        // Get state information with appropriate type
-        state_type &state = dynamic_cast<state_type&>(istate);
-
         // Create 3D views of 4D state information
         using boost::array_view_gen;
         using boost::indices;
@@ -941,7 +917,7 @@ public:
 
         // Apply an operator that cares nothing about the boundaries
         const real_t delta_t = base::applyOperator(
-                istate, evmaxmag_real, evmaxmag_imag, delta_t_requested);
+                state, evmaxmag_real, evmaxmag_imag, delta_t_requested);
 
         // Indices that will be useful as shorthand
         const std::size_t lower_wall = 0;                    // index of wall

@@ -7,7 +7,6 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <suzerain/state.hpp>
-#include <suzerain/state_impl.hpp>
 #include <suzerain/timestepper.hpp>
 #include <suzerain/richardson.h>
 #include <gsl/gsl_ieee_utils.h>
@@ -19,17 +18,14 @@
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 // Shorthand
-using suzerain::IState;
 using suzerain::InterleavedState;
 using suzerain::NoninterleavedState;
-using suzerain::storage::interleaved;
-using suzerain::storage::noninterleaved;
 using suzerain::timestepper::INonlinearOperator;
 using suzerain::timestepper::lowstorage::ILinearOperator;
 using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91Method;
 using suzerain::timestepper::lowstorage::LowStorageTimeController;
-typedef MultiplicativeOperator<3,double,noninterleaved<3> >
+typedef MultiplicativeOperator<NoninterleavedState<3,double> >
     MultiplicativeOperatorD3;
 
 // Explicit template instantiation to hopefully speed compilation
@@ -50,7 +46,7 @@ static const double double_NaN = std::numeric_limits<double>::quiet_NaN();
 // Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
 // right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
 class RiccatiNonlinearOperator
-    : public INonlinearOperator<3, double, noninterleaved<3> >
+    : public INonlinearOperator<NoninterleavedState<3,double> >
 {
 private:
     const double a;
@@ -65,11 +61,10 @@ public:
         : a(a), b(b), delta_t(delta_t) {};
 
     virtual double applyOperator(
-            IState<3,double,noninterleaved<3> >& state,
+            NoninterleavedState<3,double>& state,
             const double evmaxmag_real,
             const double evmaxmag_imag,
             const bool delta_t_requested = false) const
-            throw(std::exception)
     {
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
@@ -94,16 +89,14 @@ public:
 };
 
 class RiccatiLinearOperator
-    : public MultiplicativeOperator<3,double,noninterleaved<3> >
+    : public MultiplicativeOperator<NoninterleavedState<3,double> >
 {
 public:
     RiccatiLinearOperator(
             const double a,
             const double b,
             const double delta_t = std::numeric_limits<double>::infinity())
-        : MultiplicativeOperator<3,double,noninterleaved<3> >(
-                b, delta_t
-          )
+        : MultiplicativeOperator<NoninterleavedState<3,double> >(b, delta_t)
     {
         SUZERAIN_UNUSED(a);
     }
@@ -285,7 +278,7 @@ BOOST_AUTO_TEST_CASE( applyOperator )
     BOOST_CHECK_CLOSE(a[0][0][0], 8.0, close_enough);
 
     // Ensure we can instantiate
-    MultiplicativeOperator<3,std::complex<double>,noninterleaved<3> > unused(2.0);
+    MultiplicativeOperator<NoninterleavedState<3,double> > unused(2.0);
 }
 
 BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
@@ -328,7 +321,7 @@ BOOST_AUTO_TEST_SUITE( substep_suite )
 // Purely explicit Riccati equation nonlinear operator
 // is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
 class RiccatiExplicitOperator
-    : public INonlinearOperator<3, double, noninterleaved<3> >
+    : public INonlinearOperator<NoninterleavedState<3,double> >
 {
 private:
     const double a, b, delta_t;
@@ -341,24 +334,19 @@ public:
         : a(a), b(b), delta_t(delta_t) { };
 
     virtual double applyOperator(
-            IState<3,double,noninterleaved<3> >& state,
+            NoninterleavedState<3,double> & state,
             const double evmaxmag_real,
             const double evmaxmag_imag,
             const bool delta_t_requested = false) const
-            throw(std::exception)
     {
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(delta_t_requested);
 
-        NoninterleavedState<3,double>& s
-            = dynamic_cast<NoninterleavedState<3,double>&>(state);
-
-        typedef NoninterleavedState<3,double>::index index;
-        for (std::size_t i = 0; i < s.shape()[0]; ++i) {
-            for (std::size_t k = 0; k < s.shape()[2]; ++k) {
-                for (std::size_t j = 0; j < s.shape()[1]; ++j) {
-                    double &y = s[i][j][k];
+        for (std::size_t i = 0; i < state.shape()[0]; ++i) {
+            for (std::size_t k = 0; k < state.shape()[2]; ++k) {
+                for (std::size_t j = 0; j < state.shape()[1]; ++j) {
+                    double &y = state[i][j][k];
                     y = y*y + b*y - a*a - a*b;
                 }
             }
@@ -688,8 +676,12 @@ BOOST_AUTO_TEST_SUITE_END()
 // Tests for control logic of LowStorageTimeController in test_timecontroller.
 // Presumably getting LowStorageTimeController to type check is the big deal.
 // Explicitly instantiate it to ensure the template looks okay.
+// FIXME Instantiate LowStorageTimeController on mixed state
 template class LowStorageTimeController<
-        3, double, interleaved<3>, noninterleaved<3>
+        InterleavedState<3,double>, InterleavedState<3,double>
+    >;
+template class LowStorageTimeController<
+        NoninterleavedState<3,double>, NoninterleavedState<3,double>
     >;
 
 BOOST_AUTO_TEST_SUITE( low_storage_controller_suite )
