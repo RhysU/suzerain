@@ -666,11 +666,17 @@ Element SMR91Method<Element>::zeta(const std::size_t substep) const
  * @see The method step() provides more convenient ways to perform multiple
  *      substeps, including dynamic step size computation.
  */
-template<typename Element, typename A, typename B>
-const typename suzerain::traits::component<Element>::type substep(
+template<
+    typename Element,
+    typename A,
+    typename B,
+    typename C, // FIXME Should not be necessary
+    typename D, // FIXME Should not be necessary
+    typename E  // FIXME Should not be necessary
+> const typename suzerain::traits::component<Element>::type substep(
     const ILowStorageMethod<Element>& m,
-    const ILinearOperator<StateBase<A>,StateBase<B> >& L,
-    const INonlinearOperator<StateBase<B> >& N,
+    const ILinearOperator<C,D>& L, // FIXME const ILinearOperator<A,B>& L,
+    const INonlinearOperator<E>& N,// FIXME const INonlinearOperator<B>& N,
     StateBase<A>& a,
     StateBase<B>& b,
     const typename suzerain::traits::component<Element>::type delta_t,
@@ -716,11 +722,17 @@ const typename suzerain::traits::component<Element>::type substep(
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
-template< typename Element, typename A, typename B >
-const typename suzerain::traits::component<Element>::type step(
+template<
+    typename Element,
+    typename A,
+    typename B,
+    typename C, // FIXME Should not be necessary
+    typename D, // FIXME Should not be necessary
+    typename E  // FIXME Should not be necessary
+> const typename suzerain::traits::component<Element>::type step(
     const ILowStorageMethod<Element>& m,
-    const ILinearOperator<StateBase<A>,StateBase<B> >& L,
-    const INonlinearOperator<StateBase<B> >& N,
+    const ILinearOperator<C,D>& L,  // FIXME
+    const INonlinearOperator<E>& N, // FIXME
     StateBase<A>& a,
     StateBase<B>& b,
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
@@ -848,13 +860,17 @@ private:
  *
  * \copydoc #LowStorageTimeController
  */
-template<typename A, typename B
->
-LowStorageTimeController<A,B>*
+template<
+    typename A,
+    typename B,
+    typename C,  // FIXME Should not be necessary
+    typename D,  // FIXME Should not be necessary
+    typename E   // FIXME Should not be necessary
+> LowStorageTimeController<A,B>*
 make_LowStorageTimeController(
         const ILowStorageMethod<typename StateBase<A>::element>& m,
-        const ILinearOperator<StateBase<A>,StateBase<B> >& L,
-        const INonlinearOperator<StateBase<B> >& N,
+        const ILinearOperator<C,D>& L,   // FIXME
+        const INonlinearOperator<E>& N,  // FIXME
         StateBase<A>& a,
         StateBase<B>& b,
         typename LowStorageTimeController<A,B>::time_type initial_t = 0,
