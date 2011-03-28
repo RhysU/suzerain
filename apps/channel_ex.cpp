@@ -226,19 +226,17 @@ public:
         const real_t one_over_delta_z = scenario.Lz / Nz; // !dNz, dealiasing
 
         // Create 3D views of 4D state information
-        using boost::array_view_gen;
-        using boost::indices;
-        using boost::multi_array_types::index_range;
-        array_view_gen<state_type,3>::type state_rho
-            = state[indices[0][index_range()][index_range()][index_range()]];
-        array_view_gen<state_type,3>::type state_rhou
-            = state[indices[1][index_range()][index_range()][index_range()]];
-        array_view_gen<state_type,3>::type state_rhov
-            = state[indices[2][index_range()][index_range()][index_range()]];
-        array_view_gen<state_type,3>::type state_rhow
-            = state[indices[3][index_range()][index_range()][index_range()]];
-        array_view_gen<state_type,3>::type state_rhoe
-            = state[indices[4][index_range()][index_range()][index_range()]];
+        boost::multi_array_types::index_range all;
+        boost::array_view_gen<state_type,3>::type state_rho
+                = state[boost::indices[0][all][all][all]];
+        boost::array_view_gen<state_type,3>::type state_rhou
+                = state[boost::indices[1][all][all][all]];
+        boost::array_view_gen<state_type,3>::type state_rhov
+                = state[boost::indices[2][all][all][all]];
+        boost::array_view_gen<state_type,3>::type state_rhow
+                = state[boost::indices[3][all][all][all]];
+        boost::array_view_gen<state_type,3>::type state_rhoe
+                = state[boost::indices[4][all][all][all]];
 
         const real_t complex_one[2]  = { 1.0, 0.0 };
         const real_t complex_zero[2] = { 0.0, 0.0 };
@@ -881,19 +879,17 @@ public:
         const bool delta_t_requested = false) const
     {
         // Create 3D views of 4D state information
-        using boost::array_view_gen;
-        using boost::indices;
-        using boost::multi_array_types::index_range;
-        array_view_gen<state_type,3>::type state_rho
-            = state[indices[0][index_range()][index_range()][index_range()]];
-        array_view_gen<state_type,3>::type state_rhou
-            = state[indices[1][index_range()][index_range()][index_range()]];
-        array_view_gen<state_type,3>::type state_rhov
-            = state[indices[2][index_range()][index_range()][index_range()]];
-        array_view_gen<state_type,3>::type state_rhow
-            = state[indices[3][index_range()][index_range()][index_range()]];
-        array_view_gen<state_type,3>::type state_rhoe
-            = state[indices[4][index_range()][index_range()][index_range()]];
+        boost::multi_array_types::index_range all;
+        boost::array_view_gen<state_type,3>::type state_rho
+                = state[boost::indices[0][all][all][all]];
+        boost::array_view_gen<state_type,3>::type state_rhou
+                = state[boost::indices[1][all][all][all]];
+        boost::array_view_gen<state_type,3>::type state_rhov
+                = state[boost::indices[2][all][all][all]];
+        boost::array_view_gen<state_type,3>::type state_rhow
+                = state[boost::indices[3][all][all][all]];
+        boost::array_view_gen<state_type,3>::type state_rhoe
+                = state[boost::indices[4][all][all][all]];
 
         // Special handling occurs only on rank holding the "zero-zero" mode
         const bool zero_zero_rank = (dkbx == 0) && (dkbz == 0);
@@ -935,32 +931,21 @@ public:
             }
         }
 
-        // Set no-slip condition on walls per writeup step (3)
-        // Done as three separate loops to walk memory linearly
-        for (std::size_t j = 0; j < state.shape()[2]; ++j) {      // x momentum
+        // Set no-slip condition for momentum on walls per writeup step (3)
+        for (std::size_t i = 1; i < 4; ++i) {
             for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-                state_rhou[lower_wall][j][k] = 0;
-                state_rhou[upper_wall][j][k] = 0;
-            }
-        }
-        for (std::size_t j = 0; j < state.shape()[2]; ++j) {      // y momentum
-            for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-                state_rhov[lower_wall][j][k] = 0;
-                state_rhov[upper_wall][j][k] = 0;
-            }
-        }
-        for (std::size_t j = 0; j < state.shape()[2]; ++j) {      // z momentum
-            for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-                state_rhow[lower_wall][j][k] = 0;
-                state_rhow[upper_wall][j][k] = 0;
+                for (std::size_t j = 0; j < state.shape()[2]; ++j) {
+                    state[i][lower_wall][j][k] = 0;
+                    state[i][upper_wall][j][k] = 0;
+                }
             }
         }
 
         // Set isothermal condition on walls per writeup step (4)
         const real_t inv_gamma_gamma1
             = 1 / (scenario.gamma * (scenario.gamma - 1));
-        for (std::size_t j = 0; j < state.shape()[2]; ++j) {
-            for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+        for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+            for (std::size_t j = 0; j < state.shape()[2]; ++j) {
                 state_rhoe[lower_wall][j][k]
                     = inv_gamma_gamma1 * state_rho[lower_wall][j][k];
                 state_rhoe[upper_wall][j][k]
