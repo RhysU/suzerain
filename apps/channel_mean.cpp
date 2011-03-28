@@ -177,9 +177,9 @@ static bool process(const std::string& filename)
     s_coeffs.setZero();
     {
         Eigen::VectorXc tmp(grid.N.y());
-        esio_field_establish(h.get(), grid.N.z(), 0, 1,
-                                      grid.N.x(), 0, 1,
-                                      grid.N.y(), 0, grid.N.y());
+        esio_field_establish(h.get(), grid.N.z(),     0, 1,
+                                      grid.N.x()/2+1, 0, 1,
+                                      grid.N.y(),     0, grid.N.y());
         for (int i = 0; i < s_coeffs.cols(); ++i) {
             complex_field_read(h.get(), field_names[i], tmp.data());
             assert(tmp.imag().squaredNorm() == 0); // Purely real!
