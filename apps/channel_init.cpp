@@ -194,6 +194,8 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }
         restart_file = positional[0];
+
+        clobber = options.variables().count("clobber");
     }
     const real_t R = GSL_CONST_MKSA_MOLAR_GAS * GSL_CONST_NUM_KILO / M;
 
@@ -218,7 +220,7 @@ int main(int argc, char **argv)
     create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
 
     INFO("Creating new restart file " << restart_file);
-    esio_file_create(esioh, restart_file.c_str(), clobber ? 1 : 0);
+    esio_file_create(esioh, restart_file.c_str(), clobber);
     store(esioh, scenario);
     store(esioh, grid, scenario.Lx, scenario.Lz);
     store(esioh, bspw);
