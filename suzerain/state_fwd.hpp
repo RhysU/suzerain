@@ -146,7 +146,7 @@ public:
      * @param factor Scale factor to use.
      */
     void scale(const element& factor) {
-        return derived.scale(factor);
+        return derived().scale(factor);
     }
 
     /**
@@ -205,7 +205,7 @@ public:
      */
     template<class OtherDerived>
     void exchange(StateBase<OtherDerived>& other) {
-        return derived.exchange(other.derived());
+        return derived().exchange(other.derived());
     }
 
 /**@}*/
@@ -270,6 +270,7 @@ public:
     void addScaled(const Element& factor,
                    const StateBase<OtherDerived>& other)
     {
+        SUZERAIN_UNUSED(other);
         BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
                 NONINTERLEAVEDSTATE_ADD_SCALED_NOT_OVERLOADED_FOR_OTHER_TYPE,
                 (OtherDerived));
@@ -280,6 +281,7 @@ public:
     template<class OtherDerived>
     void assign(const StateBase<OtherDerived> &other)
     {
+        SUZERAIN_UNUSED(other);
         BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
                 NONINTERLEAVEDSTATE_ASSIGN_NOT_OVERLOADED_FOR_OTHER_TYPE,
                 (OtherDerived));
@@ -290,6 +292,7 @@ public:
     template<class OtherDerived>
     void exchange(StateBase<OtherDerived>& other)
     {
+        SUZERAIN_UNUSED(other);
         BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
                 NONINTERLEAVEDSTATE_EXCHANGE_NOT_OVERLOADED_FOR_OTHER_TYPE,
                 (OtherDerived));
@@ -354,6 +357,8 @@ public:
     void addScaled(const Element& factor,
                    const StateBase<OtherDerived>& other)
     {
+        SUZERAIN_UNUSED(factor);
+        SUZERAIN_UNUSED(other);
         BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
                 INTERLEAVEDSTATE_ADD_SCALED_NOT_OVERLOADED_FOR_OTHER_TYPE,
                 (OtherDerived));
@@ -364,6 +369,7 @@ public:
     template<class OtherDerived>
     void assign(const StateBase<OtherDerived> &other)
     {
+        SUZERAIN_UNUSED(other);
         BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
                 INTERLEAVEDSTATE_ASSIGN_NOT_OVERLOADED_FOR_OTHER_TYPE,
                 (OtherDerived));
@@ -374,6 +380,7 @@ public:
     template<class OtherDerived>
     void exchange(StateBase<OtherDerived>& other)
     {
+        SUZERAIN_UNUSED(other);
         BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
                 INTERLEAVEDSTATE_EXCHANGE_NOT_OVERLOADED_FOR_OTHER_TYPE,
                 (OtherDerived));
