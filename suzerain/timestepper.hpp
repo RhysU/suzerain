@@ -293,18 +293,21 @@ public:
  * Implements simple multiplicative operator which scales all state
  * variables by a uniform factor.  The associated mass matrix \f$M\f$
  * is the identity matrix.
+ *
+ * @tparam StateA A state type which should descend from suzerain::StateBase.
+ * @tparam StateB A state type which should descend from suzerain::StateBase.
  */
-template<typename A,typename B = A>
+template<typename StateA,typename StateB = StateA>
 class MultiplicativeOperator
-    : public ILinearOperator<StateBase<A>,StateBase<B> >,
-      public INonlinearOperator<StateBase<B> >
+    : public ILinearOperator<StateA,StateB>,
+      public INonlinearOperator<StateB>
 {
 public:
 
     /** The real- or complex-valued scalar type the operator understands */
-    typedef typename StateBase<A>::element element;
+    typedef typename StateA::element element;
     BOOST_STATIC_ASSERT(
-            (boost::is_same<element, typename StateBase<B>::element>::value));
+            (boost::is_same<element, typename StateB::element>::value));
 
     /** The real-valued scalar corresponding to \c element */
     typedef typename suzerain::traits::component<element>::type component;
@@ -341,7 +344,7 @@ public:
      *
      * @return The \c delta_t provided at construction time.
      */
-    virtual component applyOperator(StateBase<B>& state,
+    virtual component applyOperator(StateB& state,
                                     const component evmaxmag_real,
                                     const component evmaxmag_imag,
                                     const bool delta_t_requested = false) const
@@ -362,7 +365,7 @@ public:
      * @param state to modify in place.
      */
     virtual void applyMassPlusScaledOperator(const element& scale,
-                                             StateBase<A>& state) const
+                                             StateA& state) const
     {
         state.scale(scale*factor + element(1));
     }
@@ -377,8 +380,8 @@ public:
      * @param output on which to accumulate the result.
      */
     virtual void accumulateMassPlusScaledOperator(const element& scale,
-                                                  const StateBase<A>& input,
-                                                  StateBase<B>& output) const
+                                                  const StateA& input,
+                                                  StateB& output) const
     {
         output.addScaled(scale*factor + element(1), input);
     }
@@ -392,7 +395,7 @@ public:
      * @param state to modify in place.
      */
     virtual void invertMassPlusScaledOperator(const element& scale,
-                                              StateBase<A>& state) const
+                                              StateA& state) const
     {
         state.scale((element(1))/(scale*factor + element(1)));
     }
@@ -666,17 +669,11 @@ Element SMR91Method<Element>::zeta(const std::size_t substep) const
  * @see The method step() provides more convenient ways to perform multiple
  *      substeps, including dynamic step size computation.
  */
-template<
-    typename Element,
-    typename A,
-    typename B,
-    typename C, // FIXME Should not be necessary
-    typename D, // FIXME Should not be necessary
-    typename E  // FIXME Should not be necessary
-> const typename suzerain::traits::component<Element>::type substep(
+template< typename Element, typename A, typename B >
+const typename suzerain::traits::component<Element>::type substep(
     const ILowStorageMethod<Element>& m,
-    const ILinearOperator<C,D>& L, // FIXME const ILinearOperator<A,B>& L,
-    const INonlinearOperator<E>& N,// FIXME const INonlinearOperator<B>& N,
+    const ILinearOperator<A,B>& L,
+    const INonlinearOperator<B>& N,
     StateBase<A>& a,
     StateBase<B>& b,
     const typename suzerain::traits::component<Element>::type delta_t,
@@ -722,17 +719,11 @@ template<
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
-template<
-    typename Element,
-    typename A,
-    typename B,
-    typename C, // FIXME Should not be necessary
-    typename D, // FIXME Should not be necessary
-    typename E  // FIXME Should not be necessary
-> const typename suzerain::traits::component<Element>::type step(
+template< typename Element, typename A, typename B >
+const typename suzerain::traits::component<Element>::type step(
     const ILowStorageMethod<Element>& m,
-    const ILinearOperator<C,D>& L,  // FIXME
-    const INonlinearOperator<E>& N, // FIXME
+    const ILinearOperator<A,B>& L,
+    const INonlinearOperator<B>& N,
     StateBase<A>& a,
     StateBase<B>& b,
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
@@ -860,17 +851,12 @@ private:
  *
  * \copydoc #LowStorageTimeController
  */
-template<
-    typename A,
-    typename B,
-    typename C,  // FIXME Should not be necessary
-    typename D,  // FIXME Should not be necessary
-    typename E   // FIXME Should not be necessary
-> LowStorageTimeController<A,B>*
+template< typename A, typename B >
+LowStorageTimeController<A,B>*
 make_LowStorageTimeController(
         const ILowStorageMethod<typename StateBase<A>::element>& m,
-        const ILinearOperator<C,D>& L,   // FIXME
-        const INonlinearOperator<E>& N,  // FIXME
+        const ILinearOperator<A,B>& L,
+        const INonlinearOperator<B>& N,
         StateBase<A>& a,
         StateBase<B>& b,
         typename LowStorageTimeController<A,B>::time_type initial_t = 0,
