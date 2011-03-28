@@ -674,15 +674,13 @@ const typename suzerain::traits::component<Element>::type substep(
     const ILowStorageMethod<Element>& m,
     const ILinearOperator<A,B>& L,
     const INonlinearOperator<B>& N,
-    StateBase<A>& a,
-    StateBase<B>& b,
+    A& a,  // FIXME: Would love a StateBase subclass restriction here
+    B& b,  // FIXME: Would love a StateBase subclass restriction here
     const typename suzerain::traits::component<Element>::type delta_t,
     const std::size_t substep_index)
 {
-    BOOST_STATIC_ASSERT(
-            (boost::is_same<Element,typename StateBase<A>::element>::value));
-    BOOST_STATIC_ASSERT(
-            (boost::is_same<Element,typename StateBase<B>::element>::value));
+    BOOST_STATIC_ASSERT((boost::is_same<Element,typename A::element>::value));
+    BOOST_STATIC_ASSERT((boost::is_same<Element,typename B::element>::value));
 
     if (SUZERAIN_UNLIKELY(substep_index >= m.substeps()))
         throw std::invalid_argument("Requested substep too large");
@@ -724,14 +722,12 @@ const typename suzerain::traits::component<Element>::type step(
     const ILowStorageMethod<Element>& m,
     const ILinearOperator<A,B>& L,
     const INonlinearOperator<B>& N,
-    StateBase<A>& a,
-    StateBase<B>& b,
+    A& a,  // FIXME: Would love a StateBase subclass restriction here
+    B& b,  // FIXME: Would love a StateBase subclass restriction here
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
 {
-    BOOST_STATIC_ASSERT(
-            (boost::is_same<Element,typename StateBase<A>::element>::value));
-    BOOST_STATIC_ASSERT(
-            (boost::is_same<Element,typename StateBase<B>::element>::value));
+    BOOST_STATIC_ASSERT((boost::is_same<Element,typename A::element>::value));
+    BOOST_STATIC_ASSERT((boost::is_same<Element,typename B::element>::value));
 
     // First substep handling is special since we need to determine delta_t
     b.assign(a);
@@ -771,24 +767,21 @@ const typename suzerain::traits::component<Element>::type step(
 template<typename A, typename B>
 class LowStorageTimeController
     : public TimeController< typename suzerain::traits::component<
-            typename StateBase<A>::element
+            typename A::element
       >::type >
 {
-public:
-
-    /** The real- or complex-valued scalar type the operator understands */
-    typedef typename StateBase<A>::element element;
-    BOOST_STATIC_ASSERT(
-            (boost::is_same<element, typename StateBase<B>::element>::value));
-
 private:
 
     /** Shorthand for the superclass */
-    typedef TimeController<
-        typename suzerain::traits::component<element>::type
-      > super;
+    typedef TimeController< typename suzerain::traits::component<
+                typename A::element
+            >::type > super;
 
 public:
+
+    /** The real- or complex-valued scalar type the operator understands */
+    typedef typename A::element element;
+    BOOST_STATIC_ASSERT((boost::is_same<element, typename B::element>::value));
 
     /**
      * Construct an instance that will advance a simulation built atop the
@@ -817,10 +810,10 @@ public:
      */
     LowStorageTimeController(
             const ILowStorageMethod<element>& m,
-            const ILinearOperator<StateBase<A>,StateBase<B> >& L,
-            const INonlinearOperator<StateBase<B> >& N,
-            StateBase<A>& a,
-            StateBase<B>& b,
+            const ILinearOperator<A,B>& L,
+            const INonlinearOperator<B>& N,
+            A& a,  // FIXME: Would love a StateBase subclass restriction here
+            B& b,  // FIXME: Would love a StateBase subclass restriction here
             typename super::time_type initial_t = 0,
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
@@ -833,10 +826,10 @@ public:
 private:
 
     const ILowStorageMethod<element>& m;
-    const ILinearOperator<StateBase<A>,StateBase<B> >& L;
-    const INonlinearOperator<StateBase<B> >& N;
-    StateBase<A>& a;
-    StateBase<B>& b;
+    const ILinearOperator<A,B>& L;
+    const INonlinearOperator<B>& N;
+    A& a;
+    B& b;
 
     typename super::time_type stepper(typename super::time_type max_dt)
     {
@@ -857,8 +850,8 @@ make_LowStorageTimeController(
         const ILowStorageMethod<typename StateBase<A>::element>& m,
         const ILinearOperator<A,B>& L,
         const INonlinearOperator<B>& N,
-        StateBase<A>& a,
-        StateBase<B>& b,
+        A& a,  // FIXME: Would love a StateBase subclass restriction here
+        B& b,  // FIXME: Would love a StateBase subclass restriction here
         typename LowStorageTimeController<A,B>::time_type initial_t = 0,
         typename LowStorageTimeController<A,B>::time_type min_dt = 0,
         typename LowStorageTimeController<A,B>::time_type max_dt = 0)
