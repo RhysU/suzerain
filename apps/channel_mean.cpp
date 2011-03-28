@@ -120,9 +120,17 @@ using boost::numeric_cast;
 using boost::shared_ptr;
 using std::numeric_limits;
 
+// Used to format output data
 static const Eigen::IOFormat iofmt(Eigen::FullPrecision, 0, ", ", "\n");
 
-static bool process(const std::string& filename);
+// Compute quantities based on real-valued mean state coefficients
+static
+Eigen::Array<real_t, Eigen::Dynamic, column::COUNT>
+process(const Eigen::ArrayXXr &s_coeffs,
+        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::GridDefinition &grid,
+        const suzerain::bspline &bspw,
+        const real_t time);
 
 int main(int argc, char **argv)
 {
@@ -145,52 +153,82 @@ int main(int argc, char **argv)
     }
 
     // Process each command line argument as a file name
-    int retval = EXIT_SUCCESS;
-    for (std::size_t i = 0; i < restart_files.size(); ++i) {
-        if (!process(restart_files[i])) retval = EXIT_FAILURE;
+    BOOST_FOREACH(const std::string& filename, restart_files) {
+
+        // Create a file-specific ESIO handle using RAII
+        shared_ptr<boost::remove_pointer<esio_handle>::type> h(
+                esio_handle_initialize(MPI_COMM_WORLD), esio_handle_finalize);
+
+        DEBUG("Loading file " << filename);
+        esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
+
+        // Load time, scenario, grid, and B-spline details from file
+        real_t time;
+        suzerain::problem::ScenarioDefinition<real_t> scenario;
+        suzerain::problem::GridDefinition grid;
+        shared_ptr<const suzerain::bspline> bspw;
+        load_time(h.get(), time);
+        load(h.get(), scenario);
+        load(h.get(), grid);
+        load(h.get(), bspw);
+        assert(bspw->ndof() == grid.N.y());
+
+        // Load zero-zero mode coefficients for all state variables
+        Eigen::ArrayXXr s_coeffs(grid.N.y(), field_names.size());
+        s_coeffs.setZero();
+        {
+            Eigen::VectorXc tmp(grid.N.y());
+            esio_field_establish(h.get(), grid.N.z(),     0, 1,
+                                        grid.N.x()/2+1, 0, 1,
+                                        grid.N.y(),     0, grid.N.y());
+            for (int i = 0; i < s_coeffs.cols(); ++i) {
+                complex_field_read(h.get(), field_names[i], tmp.data());
+                assert(tmp.imag().squaredNorm() == 0); // Purely real!
+                s_coeffs.col(i) = tmp.real();
+            }
+        }
+
+        // Close the data file
+        esio_file_close(h.get());
+
+        // Compute the quantities of interest
+        Eigen::Array<real_t, Eigen::Dynamic, column::COUNT> s
+            = process(s_coeffs, scenario, grid, *bspw, time);
+
+        // Save nondimensional quantities to `basename filename .h5`.mean
+        std::string outname;
+        if (filename.rfind(".h5") == filename.length() - 3) {
+            outname = filename.substr(0, filename.length() - 3) + ".mean";
+        } else {
+            outname = filename + ".mean";
+        }
+        DEBUG("Saving nondimensional quantities to " << outname);
+        {
+            std::ofstream outfile(outname.c_str());
+            for (size_t i = 0; i < column::COUNT; ++i) {  // Headings
+                outfile << std::setw(numeric_limits<real_t>::digits10 + 7)
+                        << column::name[i];
+                if (i < column::COUNT - 1) outfile << ", ";
+            }
+            outfile << std::endl;
+            outfile << s.format(iofmt) << std::endl;;
+            outfile.close();
+        }
+
     }
-    return retval;
+
+    return EXIT_SUCCESS;
 }
 
-static bool process(const std::string& filename)
+static
+Eigen::Array<real_t, Eigen::Dynamic, column::COUNT>
+process(const Eigen::ArrayXXr &s_coeffs,
+        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::GridDefinition &grid,
+        const suzerain::bspline &bspw,
+        const real_t time)
 {
-    // Create a file-specific ESIO handle using RAII
-    shared_ptr<boost::remove_pointer<esio_handle>::type> h(
-            esio_handle_initialize(MPI_COMM_WORLD), esio_handle_finalize);
-
-    DEBUG("Loading file " << filename);
-    esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
-
-    // Load time, scenario, grid, and B-spline details from file
-    real_t t;
-    suzerain::problem::ScenarioDefinition<real_t> scenario;
-    suzerain::problem::GridDefinition grid;
-    shared_ptr<const suzerain::bspline> bspw;
-    load_time(h.get(), t);
-    load(h.get(), scenario);
-    load(h.get(), grid);
-    load(h.get(), bspw);
-    assert(bspw->ndof() == grid.N.y());
-
-    // Load zero-zero mode coefficients for all state variables
-    Eigen::ArrayXXr s_coeffs(grid.N.y(), field_names.size());
-    s_coeffs.setZero();
-    {
-        Eigen::VectorXc tmp(grid.N.y());
-        esio_field_establish(h.get(), grid.N.z(),     0, 1,
-                                      grid.N.x()/2+1, 0, 1,
-                                      grid.N.y(),     0, grid.N.y());
-        for (int i = 0; i < s_coeffs.cols(); ++i) {
-            complex_field_read(h.get(), field_names[i], tmp.data());
-            assert(tmp.imag().squaredNorm() == 0); // Purely real!
-            s_coeffs.col(i) = tmp.real();
-        }
-    }
-
-    // Close the data file
-    esio_file_close(h.get());
-
-    DEBUG("Computing " << column::COUNT << " nondimensional quantities");
+    SUZERAIN_UNUSED(grid);
 
     // Declare storage for all of the quantities of interest
     Eigen::Array<real_t, Eigen::Dynamic, column::COUNT>
@@ -199,17 +237,17 @@ static bool process(const std::string& filename)
 
     // Populate point-like information of (t,y \in (0, Ly))
     // We'll compute y^{+} information later
-    s.col(column::t).setConstant(t);
-    bspw->collocation_points(&s.col(column::y)[0], 1);
+    s.col(column::t).setConstant(time);
+    bspw.collocation_points(&s.col(column::y)[0], 1);
 
     // Compute derivatives of conserved state at collocation points.
-    bspw->accumulate_operator(0, field_names.static_size,
+    bspw.accumulate_operator(0, field_names.static_size,
             1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
             0.0, &s.col(column::rho)[0], 1, s.stride());
-    bspw->accumulate_operator(1, field_names.static_size,
+    bspw.accumulate_operator(1, field_names.static_size,
             1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
             0.0, &s.col(column::rho_y)[0], 1, s.stride());
-    bspw->accumulate_operator(2, field_names.static_size,
+    bspw.accumulate_operator(2, field_names.static_size,
             1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
             0.0, &s.col(column::rho_yy)[0], 1, s.stride());
 
@@ -238,8 +276,8 @@ static bool process(const std::string& filename)
 #undef X
 
     // Form mass matrix and obtain coefficients for primitive state
-    suzerain::bspline_lu mass(*bspw);
-    mass.form_mass(*bspw);
+    suzerain::bspline_lu mass(bspw);
+    mass.form_mass(bspw);
 #define X(a) mass.solve(1, &s.col(column::a##_y)[0], 1, s.stride());
     FORALL_STATE_PRIM(X)
 #undef X
@@ -250,14 +288,14 @@ static bool process(const std::string& filename)
 #undef X
 
     // Apply 1st derivative operator to coefficients
-#define X(a) bspw->apply_operator(1, 1, 1.0, &s.col(column::a##_y)[0], \
-                                  1, s.stride());
+#define X(a) bspw.apply_operator(1, 1, 1.0, &s.col(column::a##_y)[0], \
+                                 1, s.stride());
     FORALL_STATE_PRIM(X)
 #undef X
 
     // Apply 2nd derivative operator to coefficients
-#define X(a) bspw->apply_operator(2, 1, 1.0, &s.col(column::a##_yy)[0], \
-                                  1, s.stride());
+#define X(a) bspw.apply_operator(2, 1, 1.0, &s.col(column::a##_yy)[0], \
+                                 1, s.stride());
     FORALL_STATE_PRIM(X)
 #undef X
 
@@ -279,25 +317,5 @@ static bool process(const std::string& filename)
         s.col(wplus) = s.col(w) / u_tau    * std::sqrt(scenario.Re);
     }
 
-    // Save nondimensional quantities to `basename filename .h5`.mean
-    std::string outname;
-    if (filename.rfind(".h5") == filename.length() - 3) {
-        outname = filename.substr(0, filename.length() - 3) + ".mean";
-    } else {
-        outname = filename + ".mean";
-    }
-    DEBUG("Saving nondimensional quantities to " << outname);
-    {
-        std::ofstream outfile(outname.c_str());
-        for (size_t i = 0; i < column::COUNT; ++i) {  // Headings
-            outfile << std::setw(numeric_limits<real_t>::digits10 + 7)
-                    << column::name[i];
-            if (i < column::COUNT - 1) outfile << ", ";
-        }
-        outfile << std::endl;
-        outfile << s.format(iofmt) << std::endl;;
-        outfile.close();
-    }
-
-    return true;
+    return s;
 }
