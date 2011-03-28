@@ -676,8 +676,12 @@ BOOST_AUTO_TEST_SUITE_END()
 // Tests for control logic of LowStorageTimeController in test_timecontroller.
 // Presumably getting LowStorageTimeController to type check is the big deal.
 // Explicitly instantiate it to ensure the template looks okay.
+// FIXME Instantiate LowStorageTimeController on mixed state
 template class LowStorageTimeController<
-        InterleavedState<3,double>, NoninterleavedState<3,double>
+        InterleavedState<3,double>, InterleavedState<3,double>
+    >;
+template class LowStorageTimeController<
+        NoninterleavedState<3,double>, NoninterleavedState<3,double>
     >;
 
 BOOST_AUTO_TEST_SUITE( low_storage_controller_suite )
