@@ -40,8 +40,6 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/state.hpp>
-#include <suzerain/state_impl.hpp>
-#include <suzerain/storage.hpp>
 #include <suzerain/timestepper.hpp>
 
 // Scalar- and complex-valued typedefs
