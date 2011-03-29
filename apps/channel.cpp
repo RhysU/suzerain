@@ -43,7 +43,8 @@ const boost::array<const char *,5> field_names = {{
     "rho", "rhou", "rhov", "rhow", "rhoe"
 }};
 
-const boost::array<const char *,5> field_descriptions = {{
+/** State descriptions used within ESIO-based restart files */
+static const boost::array<const char *,5> field_descriptions = {{
     "Nondimensional density coefficients stored row-major ZXY",
     "Nondimensional X momentum coefficients stored row-major ZXY",
     "Nondimensional Y momentum coefficients stored row-major ZXY",

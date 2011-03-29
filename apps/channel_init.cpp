@@ -59,7 +59,7 @@ using boost::numeric_cast;
 using boost::shared_ptr;
 using std::numeric_limits;
 
-// Global scenario parameters initialized in main()
+// Global parameters initialized in main()
 using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
 static const ScenarioDefinition<real_t> scenario(
@@ -75,13 +75,18 @@ static const GridDefinition grid(
         /* DAFx    */ 1.5,
         /* Ny      */ 16,
         /* k       */ 6,
-        /* htdelta */ 5,
+        /* htdelta */ 3,
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
+static shared_ptr<const suzerain::pencil_grid> dgrid;
 
 // Global B-spline -details initialized in main()
 static shared_ptr<const suzerain::bspline>     bspw;
 static shared_ptr<      suzerain::bspline_luz> bspluzw;
+
+// Explicit timestepping scheme uses only complex_t 4D NoninterleavedState
+// State indices range over (scalar field, Y, X, Z) in wave space
+typedef suzerain::NoninterleavedState<4,complex_t> state_type;
 
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
@@ -116,17 +121,27 @@ struct mesolver {
     double Ma, L, gamma, R, T_wall;
 };
 
-/** Function for evaluating the momentum profile given rho* = 1 */
-static double f_msolver(double y, void *params) {
+/**
+ * Function for evaluating the momentum profile given rho* = 1.  Complex-valued
+ * result to play nicely with suzerain::bspline::zfind_interpolation_rhs().
+ */
+static void zf_msolver(double y, void *params, double z[2]) {
     mesolver *p = (mesolver *) params;
-    return p->Ma * 6 * y * (p->L - y) / (p->L * p->L);
+    z[0] = p->Ma * 6 * y * (p->L - y) / (p->L * p->L);
+    z[1] = 0;
 }
 
-/** Function for evaluating the total energy profile given rho*, T* = 1 */
-static double f_esolver(double y, void *params) {
+/**
+ * Function for evaluating the total energy profile given rho*, T* = 1.
+ * Complex-valued result to play nicely with
+ * suzerain::bspline::zfind_interpolation_rhs().
+ */
+static void zf_esolver(double y, void *params, double z[2]) {
     mesolver *p = (mesolver *) params;
-    const double m = f_msolver(y, p);
-    return 1 / (p->gamma * (p->gamma - 1)) + 0.5 * m * m;
+    double m[2];
+    zf_msolver(y, p, m);
+    z[0] = 1 / (p->gamma * (p->gamma - 1)) + 0.5 * m[0] * m[0];
+    z[1] = 0;
 }
 
 int main(int argc, char **argv)
@@ -136,17 +151,8 @@ int main(int argc, char **argv)
     esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
     atexit(&atexit_esio);                           // Finalize ESIO at exit
 
-    // Obtain some basic MPI environment details.
-    const int nranks = suzerain::mpi::comm_size(MPI_COMM_WORLD);
-
     // Establish MPI-savvy, rank-dependent logging names
     name_logger_within_comm_world();
-
-    // Ensure that we're running in a single processor environment
-    if (nranks > 1) {
-        FATAL(argv[0] << " only intended to run on single rank");
-        return EXIT_FAILURE;
-    }
 
     // Process incoming program arguments from command line, input files
     std::string restart_file;
@@ -205,33 +211,23 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    if (grid.N.x() != 1) {
-        FATAL(argv[0] << " can only handle Nx == 1");
-        return EXIT_FAILURE;
-    }
-
-    if (grid.N.z() != 1) {
-        FATAL(argv[0] << " can only handle Nz == 1");
-        return EXIT_FAILURE;
-    }
-
-    INFO("Creating B-spline basis of order " << (grid.k - 1)
-         << " on [0, " << scenario.Ly << "] with "
-         << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
+    INFO0("Creating B-spline basis of order " << (grid.k - 1)
+          << " on [0, " << scenario.Ly << "] with "
+          << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
     channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
 
-    INFO("Creating new restart file " << restart_file);
+    INFO0("Creating new restart file " << restart_file);
     esio_file_create(esioh, restart_file.c_str(), clobber);
     channel::store(esioh, scenario);
     channel::store(esioh, grid, scenario.Lx, scenario.Lz);
     channel::store(esioh, bspw);
     esio_file_flush(esioh);
 
-    INFO("Computing derived, dimensional reference parameters");
+    INFO0("Computing derived, dimensional reference parameters");
     real_t T_wall, rho_wall;
     {
         if (scenario.gamma != 1.4) {
-            WARN("Using air viscosity values for non-air!");
+            WARN0("Using air viscosity values for non-air!");
         }
 
         tsolver p;
@@ -244,14 +240,14 @@ int main(int argc, char **argv)
         p.s = suzerain_svehla_air_mu_vs_T();
         assert(p.s);
 
-        INFO("Solving " << tsolver_desc << " for T_wall");
-        INFO("Using Re = " << p.Re
-             << ", L = " << p.L
-             << ", gamma = " << p.gamma
-             << ", R = " << p.R
-             << ", Ma = " << p.Ma
-             << ", p_wall = " << p.p_wall
-             << ", and mu(T) from Svehla 1962");
+        INFO0("Solving " << tsolver_desc << " for T_wall");
+        INFO0("Using Re = " << p.Re
+              << ", L = " << p.L
+              << ", gamma = " << p.gamma
+              << ", R = " << p.R
+              << ", Ma = " << p.Ma
+              << ", p_wall = " << p.p_wall
+              << ", and mu(T) from Svehla 1962");
 
         gsl_function F;
         F.function = &f_tsolver;
@@ -266,8 +262,8 @@ int main(int argc, char **argv)
             const real_t low_residual = GSL_FN_EVAL(&F,low);
             const real_t high_residual = GSL_FN_EVAL(&F,high);
             if ((low_residual >= 0) == (high_residual >= 0)) {
-                FATAL("Likely no solution in interval ["
-                        << low <<"," << high << "]!");
+                FATAL0("Likely no solution in interval ["
+                       << low <<"," << high << "]!");
             }
         }
         gsl_root_fsolver_set(solver, &F, low, high);
@@ -281,43 +277,50 @@ int main(int argc, char **argv)
             high = gsl_root_fsolver_x_upper(solver);
             status = gsl_root_test_interval(low, high, tol, 0);
         }
-        INFO(std::setprecision(numeric_limits<real_t>::digits10)
-             << "Wall temperature "
-             << T_wall
-             << " K gives residual "
-             << std::scientific
-             << GSL_FN_EVAL(&F,T_wall));
+        INFO0(std::setprecision(numeric_limits<real_t>::digits10)
+              << "Wall temperature "
+              << T_wall
+              << " K gives residual "
+              << std::scientific
+              << GSL_FN_EVAL(&F,T_wall));
 
         rho_wall = p_wall / R / T_wall;
-        INFO("Wall density is " << rho_wall << " kg/m^3");
+        INFO0("Wall density is " << rho_wall << " kg/m^3");
 
         gsl_root_fsolver_free(solver);
         gsl_spline_free(p.s);
     }
 
-    // Initialize B-spline workspace to find coeffs from collocation points
+    // Initialize B-splines to find coefficients from collocation points
     bspluzw = make_shared<suzerain::bspline_luz>(*bspw);
     bspluzw->form_mass(*bspw);
 
-    INFO("Computing nondimensional mean profiles for restart");
-    {
-        esio_field_establish(esioh, 1, 0, 1, 1, 0, 1, grid.N.y(), 0, grid.N.y());
-        Eigen::ArrayXc buf(grid.N.y());
+    // Initialize pencil_grid to obtain parallel decomposition details
+    dgrid = make_shared<suzerain::pencil_grid>(grid.dN, grid.P);
+    assert((grid.dN == dgrid->global_physical_extent).all());
 
-        // Nondimensional spanwise and wall-normal velocities are zero
-        buf.fill(complex_t(0,0));
-        channel::complex_field_write(
-                esioh, "rhov", buf.data(), 0, 0, 0, field_descriptions[2]);
-        channel::complex_field_write(
-                esioh, "rhow", buf.data(), 0, 0, 0, field_descriptions[3]);
+    // Allocate and clear storage for the distributed state
+    state_type state(suzerain::to_yxz(
+                field_names.size(), dgrid->local_wave_extent));
+    suzerain::multi_array::fill(state, 0);
 
-        // Nondimensional density is the constant one
-        buf.fill(complex_t(1,0));
-        channel::complex_field_write(
-                esioh, "rho", buf.data(), 0, 0, 0, field_descriptions[0]);
+    INFO0("Computing mean, nondimensional profiles");
+    if (dgrid->local_wave_start.x() == 0 && dgrid->local_wave_start.z() == 0) {
 
-        // Set up to evaluate Y momentum and total energy profile coefficients
-        Eigen::ArrayXd rhs(grid.N.y());
+        // Create 1D mean views from 4D state storage
+        const boost::multi_array_types::index_range all;
+        boost::array_view_gen<state_type,1>::type mean_rho
+                = state[boost::indices[0][all][0][0]];
+        boost::array_view_gen<state_type,1>::type mean_rhou
+                = state[boost::indices[1][all][0][0]];
+        boost::array_view_gen<state_type,1>::type mean_rhov
+                = state[boost::indices[2][all][0][0]];
+        boost::array_view_gen<state_type,1>::type mean_rhow
+                = state[boost::indices[3][all][0][0]];
+        boost::array_view_gen<state_type,1>::type mean_rhoe
+                = state[boost::indices[4][all][0][0]];
+
+        // Prepare parameter struct for evaluation routines
         mesolver params;
         params.Ma     = Ma;
         params.L      = scenario.Ly;
@@ -325,32 +328,34 @@ int main(int argc, char **argv)
         params.R      = R;
         params.T_wall = T_wall;
 
-        suzerain_function F;
-        F.params = &params;
+        // Nondimensional density is the constant one
+        suzerain::multi_array::fill(mean_rho, 1);
 
-        // Find Y momentum coefficients
-        F.function = &f_msolver;
-        bspw->find_interpolation_problem_rhs(&F, rhs.data());
-        for (int i = 0; i < grid.N.y(); ++i) buf[i] = rhs[i];
-        bspluzw->solve(1, buf.data(), 1, grid.N.y());
-        channel::complex_field_write(
-                esioh, "rhou", buf.data(), 0, 0, 0, field_descriptions[1]);
+        // Find streamwise momentum as a function of wall-normal position
+        const suzerain_zfunction zF_rhou = { &zf_msolver, &params };
+        bspw->zfind_interpolation_problem_rhs(&zF_rhou, &mean_rhou[0]);
+        bspluzw->solve(1, &mean_rhou[0], 1, grid.N.y());
 
-        // Find total energy coefficients
-        F.function = &f_esolver;
-        bspw->find_interpolation_problem_rhs(&F, rhs.data());
-        for (int i = 0; i < grid.N.y(); ++i) buf[i] = rhs[i];
-        bspluzw->solve(1, buf.data(), 1, grid.N.y());
-        channel::complex_field_write(
-                esioh, "rhoe", buf.data(), 0, 0, 0, field_descriptions[4]);
+        // Nondimensional wall-normal momentum is zero
+        suzerain::multi_array::fill(mean_rhov, 0);
 
+        // Nondimensional spanwise momentum is zero
+        suzerain::multi_array::fill(mean_rhow, 0);
+
+        // Find total energy as a function of wall-normal position
+        const suzerain_zfunction zF_rhoe = { &zf_esolver, &params };
+        bspw->zfind_interpolation_problem_rhs(&zF_rhoe, &mean_rhoe[0]);
+        bspluzw->solve(1, &mean_rhoe[0], 1, grid.N.y());
     }
+
+    INFO0("Writing state fields to restart file");
+    channel::store(esioh, state, grid, *dgrid);
     esio_file_flush(esioh);
 
-    // Store new simulation zero time
+    // Store new simulation time of zero
     channel::store_time(esioh, 0);
     esio_file_flush(esioh);
 
-    INFO("Closing newly initialized restart file");
+    INFO0("Closing newly initialized restart file");
     esio_file_close(esioh);
 }

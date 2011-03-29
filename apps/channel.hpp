@@ -47,10 +47,6 @@
 /** Field names as stored in restart files */
 extern const boost::array<const char *,5> field_names;
 
-/** Field descriptions for use in restart file comments */
-extern const boost::array<const char *,5> field_descriptions;
-
-
 /**
  * Contains cross-cutting functionality used within the channel binaries.
  */
