@@ -1,0 +1,175 @@
+\documentclass[letterpaper,11pt,nointlimits,reqno]{amsart}
+
+% Packages
+\usepackage{accents}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{cancel}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage{ifthen}
+\usepackage{lastpage}
+\usepackage{latexsym}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage{pstricks}
+\usepackage{setspace}
+\usepackage{txfonts}
+\usepackage{units}
+\usepackage{varioref}
+\usepackage{wrapfig}
+
+\mathtoolsset{showonlyrefs,showmanualtags}
+\allowdisplaybreaks[1] % Allow grouped equations to be split across pages
+
+% Line Spacing
+\singlespacing
+
+% Set appropriate header/footer information on each page
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headheight}{2.0em}
+    \renewcommand{\headsep}{0.75em}
+    \renewcommand{\headrulewidth}{1.0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \lhead{
+        $L_2$ norm within Suzerain's discretization
+    }
+    \rhead{
+        Page \thepage{} of \pageref{LastPage}
+    }
+}
+\pagestyle{plain}
+
+% Paragraph spacing
+\setlength{\parindent}{0em}
+\setlength{\parskip}{2.0ex plus 0.75ex minus 0.75ex}
+
+% Document-specific commands
+\newcommand{\ii}{\ensuremath{\mathrm{i}}}
+
+\begin{document}
+
+We wish to compute the $L_2$ norm of an instantaneous, real-valued field
+$u\!\left(x,y,z\right)$ on the spatial domain
+$\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
+\left[-\frac{L_z}{2},\frac{L_z}{2}\right]$ which has been discretized as
+\begin{align}
+u^h(x,y,z)
+&=
+  \sum_{l=0}^{N_y - 1}
+  \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \hat{u}_{l,m,n}
+  B_l\!\left(y\right)
+  e^{\ii\frac{2\pi{}m}{L_x}x}
+  e^{\ii\frac{2\pi{}n}{L_z}z}
+=
+  \sum_{l}\sum_{m}\sum_{n}
+  \hat{u}_{l,m,n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+\end{align}
+where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
+B-spline basis for some order and knot selection.
+
+With appropriate smoothness assumptions, by direct computation we find
+\begin{align}
+  \left|\left|u\left(x,y,z\right)\right|\right|_{2}^{2}
+&=
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_0^{L_y}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  u^{2}\!\left(x,y,z\right)
+  \,d\!z \,d\!y \,d\!x
+\\ &=
+  \int_0^{L_y}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  u\!\left(x,y,z\right)
+  u^{\ast}\!\left(x,y,z\right)
+  \,d\!z \,d\!x \,d\!y
+\\ &=
+  \int_0^{L_y}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  \left(
+    \sum_{l}\sum_{m}\sum_{n}
+    \hat{u}_{l,m,n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+  \right)
+  \left(
+    \sum_{l\prime}\sum_{m\prime}\sum_{n\prime}
+    \hat{u}_{l\prime,m\prime,n\prime}
+    B_{l\prime}\!\left(y\right)e^{-\ii k_{m\prime} x}e^{-\ii k_{n\prime} z}
+  \right)
+  \,d\!z \,d\!x \,d\!y
+\\ &=
+  \sum_{l}
+  \sum_{l\prime}
+  \int_0^{L_y}
+  \left(
+    B_{l\prime}\!\left(y\right)
+    B_l\!\left(y\right)
+    \sum_{m}
+    \sum_{m\prime}
+    \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+    \left(
+      e^{\ii k_m x}
+      e^{-\ii k_{m\prime} x}
+      \sum_{n}
+      \sum_{n\prime}
+      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+      \left(
+        e^{\ii k_n z}
+        e^{-\ii k_{n\prime} z}
+        \hat{u}_{l,m,n}
+        \hat{u}_{l\prime,m\prime,n\prime}
+      \right)
+      \,d\!z
+    \right)
+    \,d\!x
+  \right)
+  \,d\!y
+\\ &=
+  \sum_{l}
+  \sum_{l\prime}
+  \int_0^{L_y}
+  \left(
+    B_{l\prime}\!\left(y\right)
+    B_l\!\left(y\right)
+    \sum_{m}
+    \sum_{m\prime}
+    \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+    \left(
+      e^{\ii k_m x}
+      e^{-\ii k_{m\prime} x}
+      L_z \sum_{n} \hat{u}_{l,m,n} \hat{u}_{l\prime,m\prime,n}
+    \right)
+    \,d\!x
+  \right)
+  \,d\!y
+\\ &=
+  \sum_{l}
+  \sum_{l\prime}
+  \int_0^{L_y}
+  \left(
+    B_{l\prime}\!\left(y\right)
+    B_l\!\left(y\right)
+    L_x L_z \sum_{m} \sum_{n} \hat{u}_{l,m,n} \hat{u}_{l\prime,m,n}
+  \right)
+  \,d\!y
+\\ &=
+   L_x L_z \sum_{m} \sum_{n}
+  \sum_{l}
+  \hat{u}_{l,m,n}
+  \sum_{l\prime}
+  \hat{u}_{l\prime,m,n}
+  \int_0^{L_y}
+  B_{l\prime}\!\left(y\right)
+  B_l\!\left(y\right)
+  \,d\!y
+\end{align}
+
+\end{document}

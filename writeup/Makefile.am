@@ -6,6 +6,7 @@
 
 TEXSOURCES  = channel_treatment.tex
 TEXSOURCES += derivation.tex
+TEXSOURCES += L2.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 TEXSOURCES += timestepping.tex
