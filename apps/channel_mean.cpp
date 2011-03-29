@@ -124,6 +124,17 @@ using std::numeric_limits;
 // Used to format output data
 static const Eigen::IOFormat iofmt(Eigen::FullPrecision, 0, ", ", "\n");
 
+// Write column names to an ostream
+static void write_column_names(std::ostream &out)
+{
+    for (size_t i = 0; i < column::COUNT; ++i) {  // Headings
+        out << std::setw(numeric_limits<real_t>::digits10 + 7)
+            << column::name[i];
+        if (i < column::COUNT - 1) out << ", ";
+    }
+    out << std::endl;
+}
+
 // Compute quantities based on real-valued mean state coefficients
 static
 Eigen::Array<real_t, Eigen::Dynamic, column::COUNT>
@@ -140,11 +151,18 @@ int main(int argc, char **argv)
 
     // Process incoming arguments
     std::vector<std::string> restart_files;
+
+    bool use_stdout = false;
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based channel mean quantity computations",
                 "[RESTART-FILE]...");
+        options.add_options()
+            ("stdout,s", "Write results to standard output?")
+            ;
         restart_files = options.process(argc, argv);
+
+        use_stdout = options.variables().count("stdout");
     }
 
     // Ensure that we're running in a single processor environment
@@ -154,6 +172,7 @@ int main(int argc, char **argv)
     }
 
     // Process each command line argument as a file name
+    bool names_written_stdout = false;
     BOOST_FOREACH(const std::string& filename, restart_files) {
 
         // Create a file-specific ESIO handle using RAII
@@ -197,26 +216,39 @@ int main(int argc, char **argv)
         Eigen::Array<real_t, Eigen::Dynamic, column::COUNT> s
             = process(s_coeffs, scenario, grid, *bspw, time);
 
-        // Save nondimensional quantities to `basename filename .h5`.mean
-        std::string outname;
-        if (filename.rfind(".h5") == filename.length() - 3) {
-            outname = filename.substr(0, filename.length() - 3) + ".mean";
-        } else {
-            outname = filename + ".mean";
-        }
-        DEBUG("Saving nondimensional quantities to " << outname);
-        {
-            std::ofstream outfile(outname.c_str());
-            for (size_t i = 0; i < column::COUNT; ++i) {  // Headings
-                outfile << std::setw(numeric_limits<real_t>::digits10 + 7)
-                        << column::name[i];
-                if (i < column::COUNT - 1) outfile << ", ";
+        if (use_stdout) {
+
+            // Display at most one header on stdout
+            if (!names_written_stdout) {
+                write_column_names(std::cout);
+                names_written_stdout = true;
             }
-            outfile << std::endl;
+
+            // Dump quantities followed by an extra newline
+            // Extra newline is to separate multiple files' data
+            std::cout << s.format(iofmt) << std::endl;
+            std::cout << std::endl;
+
+        } else {
+
+            // Save quantities to `basename filename .h5`.mean
+            static const char suffix[] = ".h5";
+            const std::size_t suffix_len = sizeof(suffix) - 1;
+            std::string outname;
+            if (filename.rfind(suffix) == filename.length() - suffix_len) {
+                outname = filename.substr(
+                        0, filename.length() - suffix_len) + ".mean";
+            } else {
+                outname = filename + ".mean";
+            }
+
+            DEBUG("Saving nondimensional quantities to " << outname);
+            std::ofstream outfile(outname.c_str());
+            write_column_names(outfile);
             outfile << s.format(iofmt) << std::endl;;
             outfile.close();
-        }
 
+        }
     }
 
     return EXIT_SUCCESS;
