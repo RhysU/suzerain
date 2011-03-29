@@ -300,7 +300,7 @@ public:
         suzerain::complex::traits::is_complex_double<Complex>, int
     >::type zfind_interpolation_problem_rhs(
             const suzerain_zfunction * zfunction,
-            const Complex * rhs) const
+            Complex * rhs) const
     {
         return suzerain_bspline_zfind_interpolation_problem_rhs(
                 zfunction, reinterpret_cast<double (*)[2]>(rhs), w_);
