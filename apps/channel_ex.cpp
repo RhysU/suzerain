@@ -38,6 +38,7 @@
 #include <suzerain/common.hpp>
 #include <esio/esio.h>
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/bspline_operators.hpp>
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
@@ -99,81 +100,6 @@ static Eigen::ArrayXr                          one_over_delta_y;
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
 static shared_ptr<state_type> state_nonlinear;
-
-// TODO Incorporate IOperatorLifecycle semantics
-// TODO Refactor MassOperator into templated BsplineMassOperator
-
-class MassOperator
-    : public suzerain::timestepper::lowstorage::ILinearOperator<state_type>
-{
-public:
-    explicit MassOperator(real_t scaling = 1)
-        : opscaling_(scaling), luzw_(*bspw)
-    {
-        complex_t coefficient;
-        suzerain::complex::assign_complex(coefficient, scaling);
-        luzw_.form_general(1, &coefficient, *bspw);
-    }
-
-    virtual void applyMassPlusScaledOperator(
-            const complex_t &scale,
-            state_type &state) const
-    {
-        SUZERAIN_UNUSED(scale);
-
-        const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
-        assert(1 == state.strides()[1]);
-        assert(static_cast<unsigned>(luzw_.ndof()) == state.shape()[1]);
-        bspw->apply_operator(0, nrhs, opscaling_,
-                state.memory_begin(), 1, state.strides()[2]);
-    }
-
-    virtual void accumulateMassPlusScaledOperator(
-            const complex_t &scale,
-            const state_type &input,
-            state_type &output) const
-    {
-        SUZERAIN_UNUSED(scale);
-        const state_type &x = input;  // Shorthand
-        state_type &y       = output; // Shorthand
-        assert(x.isIsomorphic(y));
-
-        typedef state_type::index index;
-        for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-            ix < static_cast<index>(x.index_bases()[0] + x.shape()[0]);
-            ++ix, ++iy) {
-
-            for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
-                lx < static_cast<index>(x.index_bases()[3] + x.shape()[3]);
-                ++lx, ++ly) {
-
-                bspw->accumulate_operator(0, x.shape()[2], opscaling_,
-                        &(x[ix][x.index_bases()[1]][x.index_bases()[2]][lx]),
-                        x.strides()[1], x.strides()[2],
-                        1.0, &(y[iy][y.index_bases()[1]][y.index_bases()[2]][ly]),
-                        y.strides()[1], y.strides()[2]);
-            }
-        }
-    }
-
-    virtual void invertMassPlusScaledOperator(
-            const complex_t &scale,
-            state_type &state) const
-    {
-        SUZERAIN_UNUSED(scale);
-
-        const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
-        assert(1 == state.strides()[1]);
-        assert(static_cast<unsigned>(luzw_.ndof()) == state.shape()[1]);
-        luzw_.solve(nrhs, state.memory_begin(), 1, state.strides()[2]);
-    }
-
-private:
-    const real_t opscaling_;
-    suzerain::bspline_luz luzw_;
-};
-
-// TODO Incorporate IOperatorLifecycle semantics for NonlinearOperator
 
 class NonlinearOperator
     : public suzerain::timestepper::INonlinearOperator<state_type>
@@ -1180,7 +1106,8 @@ int main(int argc, char **argv)
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
     using suzerain::timestepper::lowstorage::SMR91Method;
     const SMR91Method<complex_t> smr91(timedef.evmagfactor);
-    MassOperator L(scenario.Lx * scenario.Lz * grid.N.x() * grid.N.z());
+    suzerain::BsplineMassOperator<state_type> L(
+            bspw, scenario.Lx * scenario.Lz * grid.N.x() * grid.N.z());
     NonlinearOperatorWithBoundaryConditions N;
 
     // Establish TimeController for use with operators and state storage
