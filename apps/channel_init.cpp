@@ -301,24 +301,25 @@ int main(int argc, char **argv)
 
     // Allocate and clear storage for the distributed state
     state_type state(suzerain::to_yxz(
-                field_names.size(), dgrid->local_wave_extent));
+                channel::field::count, dgrid->local_wave_extent));
     suzerain::multi_array::fill(state, 0);
 
     INFO0("Computing mean, nondimensional profiles");
     if (dgrid->local_wave_start.x() == 0 && dgrid->local_wave_start.z() == 0) {
+        namespace ndx = channel::field::ndx;
 
         // Create 1D mean views from 4D state storage
         const boost::multi_array_types::index_range all;
         boost::array_view_gen<state_type,1>::type mean_rho
-                = state[boost::indices[0][all][0][0]];
+                = state[boost::indices[ndx::rho][all][0][0]];
         boost::array_view_gen<state_type,1>::type mean_rhou
-                = state[boost::indices[1][all][0][0]];
+                = state[boost::indices[ndx::rhou][all][0][0]];
         boost::array_view_gen<state_type,1>::type mean_rhov
-                = state[boost::indices[2][all][0][0]];
+                = state[boost::indices[ndx::rhov][all][0][0]];
         boost::array_view_gen<state_type,1>::type mean_rhow
-                = state[boost::indices[3][all][0][0]];
+                = state[boost::indices[ndx::rhow][all][0][0]];
         boost::array_view_gen<state_type,1>::type mean_rhoe
-                = state[boost::indices[4][all][0][0]];
+                = state[boost::indices[ndx::rhoe][all][0][0]];
 
         // Prepare parameter struct for evaluation routines
         mesolver params;

@@ -175,16 +175,16 @@ int main(int argc, char **argv)
         assert(bspw->ndof() == grid.N.y());
 
         // Load zero-zero mode coefficients for all state variables
-        Eigen::ArrayXXr s_coeffs(grid.N.y(), field_names.size());
+        Eigen::ArrayXXr s_coeffs(grid.N.y(), channel::field::count);
         s_coeffs.setZero();
         {
             Eigen::VectorXc tmp(grid.N.y());
             esio_field_establish(h.get(), grid.N.z(),     0, 1,
-                                        grid.N.x()/2+1, 0, 1,
-                                        grid.N.y(),     0, grid.N.y());
-            for (int i = 0; i < s_coeffs.cols(); ++i) {
+                                          grid.N.x()/2+1, 0, 1,
+                                          grid.N.y(),     0, grid.N.y());
+            for (std::size_t i = 0; i < channel::field::count; ++i) {
                 channel::complex_field_read(
-                        h.get(), field_names[i], tmp.data());
+                        h.get(), channel::field::name[i], tmp.data());
                 assert(tmp.imag().squaredNorm() == 0); // Purely real!
                 s_coeffs.col(i) = tmp.real();
             }
@@ -243,13 +243,13 @@ process(const Eigen::ArrayXXr &s_coeffs,
     bspw.collocation_points(&s.col(column::y)[0], 1);
 
     // Compute derivatives of conserved state at collocation points.
-    bspw.accumulate_operator(0, field_names.static_size,
+    bspw.accumulate_operator(0, channel::field::count,
             1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
             0.0, &s.col(column::rho)[0], 1, s.stride());
-    bspw.accumulate_operator(1, field_names.static_size,
+    bspw.accumulate_operator(1, channel::field::count,
             1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
             0.0, &s.col(column::rho_y)[0], 1, s.stride());
-    bspw.accumulate_operator(2, field_names.static_size,
+    bspw.accumulate_operator(2, channel::field::count,
             1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
             0.0, &s.col(column::rho_yy)[0], 1, s.stride());
 

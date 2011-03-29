@@ -39,20 +39,12 @@
 
 using boost::numeric_cast;
 
-const boost::array<const char *,5> field_names = {{
-    "rho", "rhou", "rhov", "rhow", "rhoe"
-}};
-
-/** State descriptions used within ESIO-based restart files */
-static const boost::array<const char *,5> field_descriptions = {{
-    "Nondimensional density coefficients stored row-major ZXY",
-    "Nondimensional X momentum coefficients stored row-major ZXY",
-    "Nondimensional Y momentum coefficients stored row-major ZXY",
-    "Nondimensional Z momentum coefficients stored row-major ZXY",
-    "Nondimensional total energy coefficients stored row-major ZXY"
-}};
 
 namespace channel {
+
+const boost::array<const char *,field::count> field::name = {{
+    "rho", "rhou", "rhov", "rhow", "rhoe"
+}};
 
 void store(const esio_handle h,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario)
@@ -373,6 +365,15 @@ void load_time(const esio_handle h,
     DEBUG0("Loaded simulation time " << time);
 }
 
+/** State descriptions used within ESIO-based restart files */
+static const boost::array<const char *,5> field_descriptions = {{
+    "Nondimensional density coefficients stored row-major ZXY",
+    "Nondimensional X momentum coefficients stored row-major ZXY",
+    "Nondimensional Y momentum coefficients stored row-major ZXY",
+    "Nondimensional Z momentum coefficients stored row-major ZXY",
+    "Nondimensional total energy coefficients stored row-major ZXY"
+}};
+
 void store(const esio_handle h,
            const suzerain::NoninterleavedState<4,complex_t> &state,
            const suzerain::problem::GridDefinition& grid,
@@ -381,7 +382,7 @@ void store(const esio_handle h,
     typedef suzerain::NoninterleavedState<4,complex_t> store_type;
 
     // Ensure state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == field_names.size());
+    assert(                  state.shape()[0]  == field::count);
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
@@ -409,7 +410,7 @@ void store(const esio_handle h,
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
     // Save each scalar field in turn...
-    for (size_t i = 0; i < field_names.static_size; ++i) {
+    for (size_t i = 0; i < field::count; ++i) {
 
         // Create a view of the state for just the i-th scalar
         // Not strictly necessary, but aids greatly in debugging
@@ -436,7 +437,7 @@ void store(const esio_handle h,
                                  grid.N.y(),     0,      (     grid.N.y()));
 
             // Perform collective write operation from state_linear
-            complex_field_write(h, field_names[i], src,
+            complex_field_write(h, field::name[i], src,
                                 field.strides()[2],
                                 field.strides()[1],
                                 field.strides()[0],
@@ -454,14 +455,14 @@ void load(const esio_handle h,
     typedef suzerain::NoninterleavedState<4,complex_t> load_type;
 
     // Ensure local state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == field_names.size());
+    assert(                  state.shape()[0]  == field::count);
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.global_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.global_wave_extent.z());
 
     // Obtain details on the restart field's global sizes
     int Fz, Fx, Fy, ncomponents;
-    esio_field_sizev(h, field_names[0], &Fz, &Fx, &Fy, &ncomponents);
+    esio_field_sizev(h, field::name[0], &Fz, &Fx, &Fy, &ncomponents);
     assert(ncomponents == 2);
 
     // Prepare a file-specific B-spline basis
@@ -528,7 +529,7 @@ void load(const esio_handle h,
     DEBUG0("Started loading simulation fields");
 
     // Load each scalar field in turn
-    for (size_t i = 0; i < field_names.static_size; ++i) {
+    for (size_t i = 0; i < field::count; ++i) {
 
         // Create a view of the state for just the i-th scalar
         boost::multi_array_types::index_range all;
@@ -573,7 +574,7 @@ void load(const esio_handle h,
             }
 
             // Perform collective read operation into dst
-            complex_field_read(h, field_names[i], dst,
+            complex_field_read(h, field::name[i], dst,
                                dst_strides[2], dst_strides[1], dst_strides[0]);
         }
 

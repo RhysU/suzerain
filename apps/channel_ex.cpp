@@ -229,15 +229,15 @@ public:
         // Create 3D views of 4D state information
         const boost::multi_array_types::index_range all;
         boost::array_view_gen<state_type,3>::type state_rho
-                = state[boost::indices[0][all][all][all]];
+            = state[boost::indices[channel::field::ndx::rho][all][all][all]];
         boost::array_view_gen<state_type,3>::type state_rhou
-                = state[boost::indices[1][all][all][all]];
+            = state[boost::indices[channel::field::ndx::rhou][all][all][all]];
         boost::array_view_gen<state_type,3>::type state_rhov
-                = state[boost::indices[2][all][all][all]];
+            = state[boost::indices[channel::field::ndx::rhov][all][all][all]];
         boost::array_view_gen<state_type,3>::type state_rhow
-                = state[boost::indices[3][all][all][all]];
+            = state[boost::indices[channel::field::ndx::rhow][all][all][all]];
         boost::array_view_gen<state_type,3>::type state_rhoe
-                = state[boost::indices[4][all][all][all]];
+            = state[boost::indices[channel::field::ndx::rhoe][all][all][all]];
 
         const real_t complex_one[2]  = { 1.0, 0.0 };
         const real_t complex_zero[2] = { 0.0, 0.0 };
@@ -879,18 +879,7 @@ public:
         const real_t evmaxmag_imag,
         const bool delta_t_requested = false) const
     {
-        // Create 3D views of 4D state information
-        const boost::multi_array_types::index_range all;
-        boost::array_view_gen<state_type,3>::type state_rho
-                = state[boost::indices[0][all][all][all]];
-        boost::array_view_gen<state_type,3>::type state_rhou
-                = state[boost::indices[1][all][all][all]];
-        boost::array_view_gen<state_type,3>::type state_rhov
-                = state[boost::indices[2][all][all][all]];
-        boost::array_view_gen<state_type,3>::type state_rhow
-                = state[boost::indices[3][all][all][all]];
-        boost::array_view_gen<state_type,3>::type state_rhoe
-                = state[boost::indices[4][all][all][all]];
+        namespace ndx = channel::field::ndx;
 
         // Special handling occurs only on rank holding the "zero-zero" mode
         const bool zero_zero_rank = (dkbx == 0) && (dkbz == 0);
@@ -903,11 +892,12 @@ public:
             original_state_mx.resize(state.shape()[1]);
             for (std::size_t i = 0; i < state.shape()[1]; ++i) {
                 original_state_mx[i]
-                    = suzerain::complex::real(state_rhou[i][0][0]);
+                    = suzerain::complex::real(state[ndx::rhou][i][0][0]);
             }
 
             // Compute the bulk density so we can hold it constant in time
-            bspw->integrate(reinterpret_cast<real_t *>(state_rho.origin()),
+            bspw->integrate(
+                    reinterpret_cast<real_t *>(&state[ndx::rho][0][0][0]),
                     sizeof(complex_t)/sizeof(real_t),
                     &bulk_density);
         }
@@ -923,17 +913,20 @@ public:
         // Add f_rho to mean density per writeup step (2)
         if (zero_zero_rank) {
             real_t f_rho;
-            bspw->integrate(reinterpret_cast<real_t *>(state_rho.origin()),
-                            sizeof(complex_t)/sizeof(real_t),
-                            &f_rho);
+            bspw->integrate(
+                    reinterpret_cast<real_t *>(&state[ndx::rho][0][0][0]),
+                    sizeof(complex_t)/sizeof(real_t),
+                    &f_rho);
             f_rho /= scenario.Ly;
             for (std::size_t i = 0; i < state.shape()[1]; ++i) {
-                state_rho[i][0][0] -= f_rho;
+                state[ndx::rho][i][0][0] -= f_rho;
             }
         }
 
         // Set no-slip condition for momentum on walls per writeup step (3)
-        for (std::size_t i = 1; i < 4; ++i) {
+        assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
+        assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
+        for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
             for (std::size_t k = 0; k < state.shape()[3]; ++k) {
                 for (std::size_t j = 0; j < state.shape()[2]; ++j) {
                     state[i][lower_wall][j][k] = 0;
@@ -947,10 +940,10 @@ public:
             = 1 / (scenario.gamma * (scenario.gamma - 1));
         for (std::size_t k = 0; k < state.shape()[3]; ++k) {
             for (std::size_t j = 0; j < state.shape()[2]; ++j) {
-                state_rhoe[lower_wall][j][k]
-                    = inv_gamma_gamma1 * state_rho[lower_wall][j][k];
-                state_rhoe[upper_wall][j][k]
-                    = inv_gamma_gamma1 * state_rho[upper_wall][j][k];
+                state[ndx::rhoe][lower_wall][j][k]
+                    = inv_gamma_gamma1 * state[ndx::rho][lower_wall][j][k];
+                state[ndx::rhoe][upper_wall][j][k]
+                    = inv_gamma_gamma1 * state[ndx::rho][upper_wall][j][k];
             }
         }
 
@@ -959,20 +952,21 @@ public:
 
             // Compute temporary per writeup implementation step (5)
             real_t alpha;
-            bspw->integrate(reinterpret_cast<real_t *>(state_rhou.origin()),
-                            sizeof(complex_t)/sizeof(real_t),
-                            &alpha);
+            bspw->integrate(
+                    reinterpret_cast<real_t *>(&state[ndx::rhou][0][0][0]),
+                    sizeof(complex_t)/sizeof(real_t),
+                    &alpha);
             alpha /= scenario.Ly;
 
             // Apply to non-wall mean x-momentum right hand side per step (6)
             for (std::size_t i = lower_wall + 1; i < upper_wall; ++i) {
-                state_rhou[i][0][0] -= alpha;
+                state[ndx::rhou][i][0][0] -= alpha;
             }
 
             // Apply to non-wall mean energy right hand side per step (7)
             alpha /= bulk_density;
             for (std::size_t i = lower_wall + 1; i < upper_wall; ++i) {
-                state_rhoe[i][0][0] -= alpha * original_state_mx[i];
+                state[ndx::rhoe][i][0][0] -= alpha * original_state_mx[i];
             }
         }
 
@@ -1149,7 +1143,7 @@ int main(int argc, char **argv)
     // Create state storage for linear operator
     // TODO Have state_linear only store non-dealiased state
     state_linear = make_shared<state_type>(
-            suzerain::to_yxz(5, dgrid->local_wave_extent));
+            suzerain::to_yxz(channel::field::count, dgrid->local_wave_extent));
 
     // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
@@ -1165,7 +1159,7 @@ int main(int argc, char **argv)
         using suzerain::prepend;
         using suzerain::strides_cm;
         state_nonlinear = make_shared<state_type>(
-                to_yxz(5, dgrid->local_wave_extent),
+                to_yxz(channel::field::count, dgrid->local_wave_extent),
                 prepend(dgrid->local_wave_storage(), strides_cm(
                         to_yxz(dgrid->local_wave_extent)))
                 );

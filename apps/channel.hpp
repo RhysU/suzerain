@@ -44,13 +44,37 @@
 
 #include "precision.hpp"
 
-/** Field names as stored in restart files */
-extern const boost::array<const char *,5> field_names;
-
 /**
  * Contains cross-cutting functionality used within the channel binaries.
  */
 namespace channel {
+
+/** Contains basic details about the scalar state fields employed */
+namespace field {
+
+/** Contains state variable indices within state storage */
+namespace ndx {
+
+// Anonymous enum to declare our state variable storage indices.
+// Update count just below if you modify this enum!
+enum {
+    rho,  /**< Nondimensional density */
+    rhou, /**< Nondimensional streamwise momentum */
+    rhov, /**< Nondimensional wall-normal momentum */
+    rhow, /**< Nondimensional spanwise momentum */
+    rhoe  /**< Nondimensional total energy */
+};
+
+} // end namespace ndx;
+
+/** Contains the number of distinct state variables we track */
+const std::size_t count = static_cast<std::size_t>(ndx::rhoe) + 1;
+
+/** Field names as stored in restart files */
+extern const boost::array<const char *, count> name;
+
+} // end namespace field
+
 
 /** Store a ScenarioDefinition in a restart file */
 void store(const esio_handle h,
