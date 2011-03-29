@@ -760,6 +760,58 @@ test_ccopy()
 
 static
 void
+test_snrm2()
+{
+    const float  x[]      = {3.0, 555.0, 4.0, 555};
+    const int    incx     = 2;
+    const int    nx       = sizeof(x)/sizeof(x[0])/incx;
+    const float  expected = 5;
+
+    gsl_test_abs(suzerain_blas_snrm2(nx, x, incx), expected, GSL_FLT_EPSILON,
+            "snrm2 result");
+}
+
+static
+void
+test_dnrm2()
+{
+    const double x[]      = {3.0, 555.0, 4.0, 555};
+    const int    incx     = 2;
+    const int    nx       = sizeof(x)/sizeof(x[0])/incx;
+    const double expected = 5;
+
+    gsl_test_abs(suzerain_blas_dnrm2(nx, x, incx), expected, GSL_DBL_EPSILON,
+            "dnrm2 result");
+}
+
+static
+void
+test_scnrm2()
+{
+    const float  x[][2]   = {{3.0,4.0},{555,555},{5.0,6.0},{555,555}};
+    const int    incx     = 2;
+    const int    nx       = sizeof(x)/sizeof(x[0])/incx;
+    const float  expected = 9.27361849549570375251641607399; /* Sqrt 86 */
+
+    gsl_test_abs(suzerain_blas_scnrm2(nx, x, incx), expected, GSL_FLT_EPSILON,
+            "scnrm2 result");
+}
+
+static
+void
+test_dznrm2()
+{
+    const double x[][2]   = {{3.0,4.0},{555,555},{5.0,6.0},{555,555}};
+    const int    incx     = 2;
+    const int    nx       = sizeof(x)/sizeof(x[0])/incx;
+    const double expected = 9.27361849549570375251641607399; /* Sqrt 86 */
+
+    gsl_test_abs(suzerain_blas_dznrm2(nx, x, incx), expected, GSL_FLT_EPSILON,
+            "dznrm2 result");
+}
+
+static
+void
 test_daxpy()
 {
     int i;
@@ -2271,10 +2323,10 @@ main(int argc, char **argv)
     test_saxpby_nop();
 
     test_caxpby();
-    /* TODO test_caxpby_nop */ 
+    /* TODO test_caxpby_nop */
 
     test_zaxpby();
-    /* TODO test_zaxpby_nop */ 
+    /* TODO test_zaxpby_nop */
 
     test_dwaxpby();
     test_swaxpby();
@@ -2294,6 +2346,11 @@ main(int argc, char **argv)
     test_scopy();
     test_zcopy();
     test_ccopy();
+
+    test_snrm2();
+    test_dnrm2();
+    test_scnrm2();
+    test_dznrm2();
 
     test_daxpy();
     test_daxpy_const();

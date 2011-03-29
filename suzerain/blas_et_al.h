@@ -217,6 +217,44 @@ suzerain_blas_ddot(
         const int incy);
 
 /*!
+ * \brief Compute \f$ \left|\left| x \right|\right|_{2} \f$ using BLAS's nrm2.
+ *
+ * \param n Number of elements in \c x.
+ * \param x Source vector.
+ * \param incx Source vector stride.
+ *
+ * \return \f$ \left|\left| x \right|\right|_{2} \f$
+ *
+ * \see A BLAS reference for more details.
+ */
+float
+suzerain_blas_snrm2(
+        const int n,
+        const float *x,
+        const int incx);
+
+/*! \copydoc suzerain_blas_snrm2 */
+double
+suzerain_blas_dnrm2(
+        const int n,
+        const double *x,
+        const int incx);
+
+/*! \copydoc suzerain_blas_scnrm2 */
+float
+suzerain_blas_scnrm2(
+        const int n,
+        const float (*x)[2],
+        const int incx);
+
+/*! \copydoc suzerain_blas_scnrm2 */
+double
+suzerain_blas_dznrm2(
+        const int n,
+        const double (*x)[2],
+        const int incx);
+
+/*!
  * \brief Compute \f$ \left|\left| x \right|\right|_{1} \f$ using BLAS's asum.
  *
  * \param n Number of elements in \c x.

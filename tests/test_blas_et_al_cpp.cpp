@@ -354,6 +354,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE( nrm2 )
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
+{
+    const array<T,6> x = {{ 3, -555, 4, -555 }};
+    const long inc = 2;
+    const T result = blas::nrm2(x.size()/inc, x.data(), inc);
+
+    const T expected = 5;
+    BOOST_CHECK_EQUAL(result, expected);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued, T, complex_types )
+{
+    array<T,4> x;
+    assign_complex(x[0],   3,    4);
+    assign_complex(x[1], 555, -555);
+    assign_complex(x[2],   5,    6);
+    assign_complex(x[3], 555, -555);
+    const long inc = 2;
+
+    typedef typename suzerain::complex::traits::real<T>::type real_t;
+    const real_t result   = blas::nrm2(x.size()/inc, x.data(), inc);
+    const real_t expected = std::sqrt(86.0);
+    const real_t epsilon  = std::numeric_limits<real_t>::epsilon();
+    BOOST_CHECK_CLOSE(result, expected, epsilon);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( asum )
 

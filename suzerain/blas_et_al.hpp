@@ -287,6 +287,66 @@ inline double dot(
                               boost::numeric_cast<int>(incy));
 }
 
+/*! @copydoc suzerain_blas_snrm2 */
+template< typename Integer1, typename Integer2 >
+inline float nrm2(
+        const Integer1 n,
+        const float *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_snrm2(boost::numeric_cast<int>(n),
+                               x,
+                               boost::numeric_cast<int>(incx));
+}
+
+/*! @copydoc suzerain_blas_snrm2 */
+template< typename Integer1, typename Integer2 >
+inline double nrm2(
+        const Integer1 n,
+        const double *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_dnrm2(boost::numeric_cast<int>(n),
+                               x,
+                               boost::numeric_cast<int>(incx));
+}
+
+/*! @copydoc suzerain_blas_snrm2 */
+template< typename Integer1, typename Integer2, typename Complex1 >
+inline typename boost::enable_if<
+    suzerain::complex::traits::is_complex_float<Complex1>, float
+>::type nrm2(
+        const Integer1 n,
+        const Complex1 *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_scnrm2(boost::numeric_cast<int>(n),
+                                reinterpret_cast<const float (*)[2]>(x),
+                                boost::numeric_cast<int>(incx));
+}
+
+/*! @copydoc suzerain_blas_snrm2 */
+template< typename Integer1, typename Integer2, typename Complex1 >
+inline typename boost::enable_if<
+    suzerain::complex::traits::is_complex_double<Complex1>, double
+>::type nrm2(
+        const Integer1 n,
+        const Complex1 *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_dznrm2(boost::numeric_cast<int>(n),
+                                reinterpret_cast<const double (*)[2]>(x),
+                                boost::numeric_cast<int>(incx));
+}
+
 /*! @copydoc suzerain_blas_sasum */
 template< typename Integer1, typename Integer2 >
 inline float asum(

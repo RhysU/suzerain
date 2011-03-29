@@ -329,6 +329,86 @@ suzerain_blas_ddot(
 }
 
 float
+suzerain_blas_snrm2(
+        const int n,
+        const float *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        return snrm2(&n, x, &incx);
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _incx = incx;
+
+        return snrm2(&_n, x, &_incx);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+double
+suzerain_blas_dnrm2(
+        const int n,
+        const double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        return dnrm2(&n, x, &incx);
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _incx = incx;
+
+        return dnrm2(&_n, x, &_incx);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+float
+suzerain_blas_scnrm2(
+        const int n,
+        const float (*x)[2],
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        return scnrm2(&n, (const MKL_Complex8 *) x, &incx);
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _incx = incx;
+
+        return scnrm2(&_n, (const MKL_Complex8 *) x, &_incx);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+double
+suzerain_blas_dznrm2(
+        const int n,
+        const double (*x)[2],
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        return dznrm2(&n, (const MKL_Complex16 *) x, &incx);
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _incx = incx;
+
+        return dznrm2(&_n, (const MKL_Complex16 *) x, &_incx);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+float
 suzerain_blas_sasum(
         const int n,
         const float *x,
