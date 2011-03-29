@@ -227,7 +227,7 @@ public:
         const real_t one_over_delta_z = scenario.Lz / Nz; // !dNz, dealiasing
 
         // Create 3D views of 4D state information
-        boost::multi_array_types::index_range all;
+        const boost::multi_array_types::index_range all;
         boost::array_view_gen<state_type,3>::type state_rho
                 = state[boost::indices[0][all][all][all]];
         boost::array_view_gen<state_type,3>::type state_rhou
@@ -880,7 +880,7 @@ public:
         const bool delta_t_requested = false) const
     {
         // Create 3D views of 4D state information
-        boost::multi_array_types::index_range all;
+        const boost::multi_array_types::index_range all;
         boost::array_view_gen<state_type,3>::type state_rho
                 = state[boost::indices[0][all][all][all]];
         boost::array_view_gen<state_type,3>::type state_rhou
