@@ -22,13 +22,13 @@
  *
  *--------------------------------------------------------------------------
  *
- * channel_common.hpp: Channel-related functionality spanning binaries
+ * channel.hpp: Channel-related functionality spanning binaries
  *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef CHANNEL_COMMON_HPP
-#define CHANNEL_COMMON_HPP
+#ifndef CHANNEL_HPP
+#define CHANNEL_HPP
 
 #include <Eigen/Core>
 #include <esio/esio.h>
@@ -49,6 +49,12 @@ extern const boost::array<const char *,5> field_names;
 
 /** Field descriptions for use in restart file comments */
 extern const boost::array<const char *,5> field_descriptions;
+
+
+/**
+ * Contains cross-cutting functionality used within the channel binaries.
+ */
+namespace channel {
 
 /** Store a ScenarioDefinition in a restart file */
 void store(const esio_handle h,
@@ -161,4 +167,6 @@ void complex_field_write(esio_handle h,
     return complex_field_write<int>(h, name, field);
 }
 
-#endif // CHANNEL_COMMON_HPP
+} // end namespace channel
+
+#endif // CHANNEL_HPP

@@ -48,7 +48,7 @@
 
 #include "logger.hpp"
 #include "precision.hpp"
-#include "channel_common.hpp"
+#include "channel.hpp"
 
 #pragma warning(disable:383 1572)
 
@@ -218,13 +218,13 @@ int main(int argc, char **argv)
     INFO("Creating B-spline basis of order " << (grid.k - 1)
          << " on [0, " << scenario.Ly << "] with "
          << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
-    create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
+    channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
 
     INFO("Creating new restart file " << restart_file);
     esio_file_create(esioh, restart_file.c_str(), clobber);
-    store(esioh, scenario);
-    store(esioh, grid, scenario.Lx, scenario.Lz);
-    store(esioh, bspw);
+    channel::store(esioh, scenario);
+    channel::store(esioh, grid, scenario.Lx, scenario.Lz);
+    channel::store(esioh, bspw);
     esio_file_flush(esioh);
 
     INFO("Computing derived, dimensional reference parameters");
@@ -306,14 +306,14 @@ int main(int argc, char **argv)
 
         // Nondimensional spanwise and wall-normal velocities are zero
         buf.fill(complex_t(0,0));
-        complex_field_write(
+        channel::complex_field_write(
                 esioh, "rhov", buf.data(), 0, 0, 0, field_descriptions[2]);
-        complex_field_write(
+        channel::complex_field_write(
                 esioh, "rhow", buf.data(), 0, 0, 0, field_descriptions[3]);
 
         // Nondimensional density is the constant one
         buf.fill(complex_t(1,0));
-        complex_field_write(
+        channel::complex_field_write(
                 esioh, "rho", buf.data(), 0, 0, 0, field_descriptions[0]);
 
         // Set up to evaluate Y momentum and total energy profile coefficients
@@ -333,7 +333,7 @@ int main(int argc, char **argv)
         bspw->find_interpolation_problem_rhs(&F, rhs.data());
         for (int i = 0; i < grid.N.y(); ++i) buf[i] = rhs[i];
         bspluzw->solve(1, buf.data(), 1, grid.N.y());
-        complex_field_write(
+        channel::complex_field_write(
                 esioh, "rhou", buf.data(), 0, 0, 0, field_descriptions[1]);
 
         // Find total energy coefficients
@@ -341,14 +341,14 @@ int main(int argc, char **argv)
         bspw->find_interpolation_problem_rhs(&F, rhs.data());
         for (int i = 0; i < grid.N.y(); ++i) buf[i] = rhs[i];
         bspluzw->solve(1, buf.data(), 1, grid.N.y());
-        complex_field_write(
+        channel::complex_field_write(
                 esioh, "rhoe", buf.data(), 0, 0, 0, field_descriptions[4]);
 
     }
     esio_file_flush(esioh);
 
     // Store new simulation zero time
-    store_time(esioh, 0);
+    channel::store_time(esioh, 0);
     esio_file_flush(esioh);
 
     INFO("Closing newly initialized restart file");

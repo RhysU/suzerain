@@ -42,7 +42,7 @@
 
 #include "logger.hpp"
 #include "precision.hpp"
-#include "channel_common.hpp"
+#include "channel.hpp"
 
 #pragma warning(disable:383 1572)
 
@@ -168,10 +168,10 @@ int main(int argc, char **argv)
         suzerain::problem::ScenarioDefinition<real_t> scenario;
         suzerain::problem::GridDefinition grid;
         shared_ptr<const suzerain::bspline> bspw;
-        load_time(h.get(), time);
-        load(h.get(), scenario);
-        load(h.get(), grid);
-        load(h.get(), bspw);
+        channel::load_time(h.get(), time);
+        channel::load(h.get(), scenario);
+        channel::load(h.get(), grid);
+        channel::load(h.get(), bspw);
         assert(bspw->ndof() == grid.N.y());
 
         // Load zero-zero mode coefficients for all state variables
@@ -183,7 +183,8 @@ int main(int argc, char **argv)
                                         grid.N.x()/2+1, 0, 1,
                                         grid.N.y(),     0, grid.N.y());
             for (int i = 0; i < s_coeffs.cols(); ++i) {
-                complex_field_read(h.get(), field_names[i], tmp.data());
+                channel::complex_field_read(
+                        h.get(), field_names[i], tmp.data());
                 assert(tmp.imag().squaredNorm() == 0); // Purely real!
                 s_coeffs.col(i) = tmp.real();
             }

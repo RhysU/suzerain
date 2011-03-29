@@ -23,12 +23,12 @@ driver_suzerain_p3dfft_LDADD     = ../suzerain/libsuzerain.la
 driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS) $(LOG4CXX_LIBS)
 
 
-# Applications
+# Channel-based Applications
 
 noinst_LTLIBRARIES     = libchannel.la
 libchannel_la_SOURCES  = precision.hpp
-libchannel_la_SOURCES += logger.cpp         logger.hpp
-libchannel_la_SOURCES += channel_common.cpp channel_common.hpp
+libchannel_la_SOURCES += logger.cpp  logger.hpp
+libchannel_la_SOURCES += channel.cpp channel.hpp
 libchannel_la_LDFLAGS  = $(ESIO_LIBS) $(LOG4CXX_LIBS)
 libchannel_la_LIBADD   = ../suzerain/libsuzerain.la
 

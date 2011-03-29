@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * channel_common.cpp: Channel-related functionality spanning binaries
+ * channel.cpp: Channel-related functionality spanning binaries
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -35,7 +35,7 @@
 #pragma hdrstop
 #include <suzerain/htstretch.h>
 #include "logger.hpp"
-#include "channel_common.hpp"
+#include "channel.hpp"
 
 using boost::numeric_cast;
 
@@ -50,6 +50,8 @@ const boost::array<const char *,5> field_descriptions = {{
     "Nondimensional Z momentum coefficients stored row-major ZXY",
     "Nondimensional total energy coefficients stored row-major ZXY"
 }};
+
+namespace channel {
 
 void store(const esio_handle h,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario)
@@ -618,3 +620,5 @@ void load(const esio_handle h,
 
     DEBUG0("Finished loading simulation fields");
 }
+
+} // end namespace channel

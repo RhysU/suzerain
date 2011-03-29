@@ -53,7 +53,7 @@
 
 #include "logger.hpp"
 #include "precision.hpp"
-#include "channel_common.hpp"
+#include "channel.hpp"
 
 #pragma warning(disable:383 1572)
 
@@ -1016,10 +1016,10 @@ static bool save_restart(real_t t, std::size_t nt)
                     restart.uncommitted().c_str(), 1 /*overwrite*/);
 
     DEBUG0("Started to store restart at t = " << t << " and nt = " << nt);
-    store_time(esioh, t);
+    channel::store_time(esioh, t);
 
     DEBUG0("Started to store simulation fields");
-    store(esioh, *state_linear, grid, *dgrid);
+    channel::store(esioh, *state_linear, grid, *dgrid);
 
     DEBUG0("Started to commit restart file");
     esio_file_close_restart(esioh,
@@ -1081,14 +1081,14 @@ int main(int argc, char **argv)
 
     INFO0("Loading details from restart file: " << restart_file);
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
-    load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
-    load(esioh, const_cast<GridDefinition&>(grid));
+    channel::load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
+    channel::load(esioh, const_cast<GridDefinition&>(grid));
     esio_file_close(esioh);
 
     INFO("Using B-splines of order " << (grid.k - 1)
          << " on [0, " << scenario.Ly << "] with "
          << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
-    create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
+    channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
     assert(bspw->order() == grid.k);
     assert(bspw->ndof()  == grid.N.y());
     bspluzw = make_shared<suzerain::bspline_luz>(*bspw);
@@ -1098,9 +1098,9 @@ int main(int argc, char **argv)
     {
         esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
         esio_file_create(h, restart.metadata().c_str(), 1 /* overwrite */);
-        store(h, scenario);
-        store(h, grid, scenario.Lx, scenario.Lz);
-        store(h, bspw);
+        channel::store(h, scenario);
+        channel::store(h, grid, scenario.Lx, scenario.Lz);
+        channel::store(h, bspw);
         esio_file_close(h);
         esio_handle_finalize(h);
         atexit(&atexit_metadata); // Delete lingering metadata file at exit
@@ -1154,8 +1154,8 @@ int main(int argc, char **argv)
     // Load restart information into state_linear, including simulation time
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     real_t initial_t;
-    load_time(esioh, initial_t);
-    load(esioh, *state_linear, grid, *dgrid, *bspw);
+    channel::load_time(esioh, initial_t);
+    channel::load(esioh, *state_linear, grid, *dgrid, *bspw);
     esio_file_close(esioh);
 
     // Create the state storage for nonlinear operator with appropriate padding
