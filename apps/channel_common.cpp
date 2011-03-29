@@ -51,121 +51,121 @@ const boost::array<const char *,5> field_descriptions = {{
     "Nondimensional total energy coefficients stored row-major ZXY"
 }};
 
-void store(const esio_handle esioh,
+void store(const esio_handle h,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario)
 {
     DEBUG0("Storing ScenarioDefinition parameters");
 
     // Only root writes data
     int procid;
-    esio_handle_comm_rank(esioh, &procid);
+    esio_handle_comm_rank(h, &procid);
 
-    esio_line_establish(esioh, 1, 0, (procid == 0 ? 1 : 0));
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
-    esio_line_write(esioh, "Re", &scenario.Re, 0,
+    esio_line_write(h, "Re", &scenario.Re, 0,
             scenario.options().find("Re",false).description().c_str());
 
-    esio_line_write(esioh, "Pr", &scenario.Pr, 0,
+    esio_line_write(h, "Pr", &scenario.Pr, 0,
             scenario.options().find("Pr",false).description().c_str());
 
-    esio_line_write(esioh, "gamma", &scenario.gamma, 0,
+    esio_line_write(h, "gamma", &scenario.gamma, 0,
             scenario.options().find("gamma",false).description().c_str());
 
-    esio_line_write(esioh, "beta", &scenario.beta, 0,
+    esio_line_write(h, "beta", &scenario.beta, 0,
             scenario.options().find("beta",false).description().c_str());
 
-    esio_line_write(esioh, "Lx", &scenario.Lx, 0,
+    esio_line_write(h, "Lx", &scenario.Lx, 0,
             scenario.options().find("Lx",false).description().c_str());
 
-    esio_line_write(esioh, "Ly", &scenario.Ly, 0,
+    esio_line_write(h, "Ly", &scenario.Ly, 0,
             scenario.options().find("Ly",false).description().c_str());
 
-    esio_line_write(esioh, "Lz", &scenario.Lz, 0,
+    esio_line_write(h, "Lz", &scenario.Lz, 0,
             scenario.options().find("Lz",false).description().c_str());
 }
 
-void load(const esio_handle esioh,
+void load(const esio_handle h,
           suzerain::problem::ScenarioDefinition<real_t>& scenario)
 {
     DEBUG0("Loading ScenarioDefinition parameters");
 
-    esio_line_establish(esioh, 1, 0, 1); // All ranks load
+    esio_line_establish(h, 1, 0, 1); // All ranks load
 
     if (scenario.Re) {
         INFO0("Overriding scenario using Re = " << scenario.Re);
     } else {
-        esio_line_read(esioh, "Re", &scenario.Re, 0);
+        esio_line_read(h, "Re", &scenario.Re, 0);
     }
 
     if (scenario.Pr) {
         INFO0("Overriding scenario using Pr = " << scenario.Pr);
     } else {
-        esio_line_read(esioh, "Pr", &scenario.Pr, 0);
+        esio_line_read(h, "Pr", &scenario.Pr, 0);
     }
 
     if (scenario.gamma) {
         INFO0("Overriding scenario using gamma = " << scenario.gamma);
     } else {
-        esio_line_read(esioh, "gamma", &scenario.gamma, 0);
+        esio_line_read(h, "gamma", &scenario.gamma, 0);
     }
 
     if (scenario.beta) {
         INFO0("Overriding scenario using beta = " << scenario.beta);
     } else {
-        esio_line_read(esioh, "beta", &scenario.beta, 0);
+        esio_line_read(h, "beta", &scenario.beta, 0);
     }
 
     if (scenario.Lx) {
         INFO0("Overriding scenario using Lx = " << scenario.Lx);
     } else {
-        esio_line_read(esioh, "Lx", &scenario.Lx, 0);
+        esio_line_read(h, "Lx", &scenario.Lx, 0);
     }
 
     if (scenario.Ly) {
         INFO0("Overriding scenario using Ly = " << scenario.Ly);
     } else {
-        esio_line_read(esioh, "Ly", &scenario.Ly, 0);
+        esio_line_read(h, "Ly", &scenario.Ly, 0);
     }
 
     if (scenario.Lz) {
         INFO0("Overriding scenario using Lz = " << scenario.Lz);
     } else {
-        esio_line_read(esioh, "Lz", &scenario.Lz, 0);
+        esio_line_read(h, "Lz", &scenario.Lz, 0);
     }
 }
 
-void store(const esio_handle esioh,
+void store(const esio_handle h,
            const suzerain::problem::GridDefinition& grid,
            const real_t Lx,
            const real_t Lz)
 {
     // Only root writes data
     int procid;
-    esio_handle_comm_rank(esioh, &procid);
+    esio_handle_comm_rank(h, &procid);
 
     DEBUG0("Storing GridDefinition parameters");
 
-    esio_line_establish(esioh, 1, 0, (procid == 0 ? 1 : 0));
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
-    esio_line_write(esioh, "Nx", &grid.N.x(), 0,
+    esio_line_write(h, "Nx", &grid.N.x(), 0,
             grid.options().find("Nx",false).description().c_str());
 
-    esio_line_write(esioh, "DAFx", &grid.DAF.x(), 0,
+    esio_line_write(h, "DAFx", &grid.DAF.x(), 0,
             grid.options().find("DAFx",false).description().c_str());
 
-    esio_line_write(esioh, "Ny", &grid.N.y(), 0,
+    esio_line_write(h, "Ny", &grid.N.y(), 0,
             grid.options().find("Ny",false).description().c_str());
 
-    esio_line_write(esioh, "k", &grid.k, 0,
+    esio_line_write(h, "k", &grid.k, 0,
             grid.options().find("k",false).description().c_str());
 
-    esio_line_write(esioh, "htdelta", &grid.htdelta, 0,
+    esio_line_write(h, "htdelta", &grid.htdelta, 0,
             grid.options().find("htdelta",false).description().c_str());
 
-    esio_line_write(esioh, "Nz", &grid.N.z(), 0,
+    esio_line_write(h, "Nz", &grid.N.z(), 0,
             grid.options().find("Nz",false).description().c_str());
 
-    esio_line_write(esioh, "DAFz", &grid.DAF.z(), 0,
+    esio_line_write(h, "DAFz", &grid.DAF.z(), 0,
             grid.options().find("DAFz",false).description().c_str());
 
     DEBUG0("Storing wavenumber vectors for Fourier bases");
@@ -176,31 +176,31 @@ void store(const esio_handle esioh,
     buf.fill(complex_t(1,0));
     suzerain::diffwave::apply(1, 0, complex_t(0,-1), buf.data(),
             Lx, Lz, 1, grid.N.x(), grid.N.x(), 0, grid.N.x(), 1, 1, 0, 1);
-    esio_line_establish(esioh, grid.N.x(), 0, (procid == 0 ? grid.N.x() : 0));
-    esio_line_write(esioh, "kx", reinterpret_cast<real_t *>(buf.data()),
+    esio_line_establish(h, grid.N.x(), 0, (procid == 0 ? grid.N.x() : 0));
+    esio_line_write(h, "kx", reinterpret_cast<real_t *>(buf.data()),
             2, "Wavenumbers in streamwise X direction"); // Re(buf)
 
     // Obtain wavenumbers via computing 1*(i*kz)/i
     buf.fill(complex_t(1,0));
     suzerain::diffwave::apply(1, 0, complex_t(0,-1), buf.data(),
             Lx, Lz, 1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
-    esio_line_establish(esioh, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
-    esio_line_write(esioh, "kz", reinterpret_cast<real_t *>(buf.data()),
+    esio_line_establish(h, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
+    esio_line_write(h, "kz", reinterpret_cast<real_t *>(buf.data()),
             2, "Wavenumbers in spanwise Z direction"); // Re(buf)
 }
 
-void load(const esio_handle esioh,
+void load(const esio_handle h,
           suzerain::problem::GridDefinition& grid)
 {
     DEBUG0("Loading GridDefinition parameters");
 
-    esio_line_establish(esioh, 1, 0, 1); // All ranks load
+    esio_line_establish(h, 1, 0, 1); // All ranks load
 
     if (grid.N.x()) {
         INFO0("Overriding grid using Nx = " << grid.N.x());
     } else {
         int value;
-        esio_line_read(esioh, "Nx", &value, 0);
+        esio_line_read(h, "Nx", &value, 0);
         grid.Nx(value);
     }
 
@@ -208,7 +208,7 @@ void load(const esio_handle esioh,
         INFO0("Overriding grid using DAFx = " << grid.DAF.x());
     } else {
         double factor;
-        esio_line_read(esioh, "DAFx", &factor, 0);
+        esio_line_read(h, "DAFx", &factor, 0);
         grid.DAFx(factor);
     }
 
@@ -216,18 +216,18 @@ void load(const esio_handle esioh,
         INFO0("Overriding grid using Ny = " << grid.N.y());
     } else {
         int value;
-        esio_line_read(esioh, "Ny", &value, 0);
+        esio_line_read(h, "Ny", &value, 0);
         grid.Ny(value);
     }
 
     if (grid.k) {
         INFO0("Overriding grid using k = " << grid.k);
     } else {
-        esio_line_read(esioh, "k", &grid.k, 0);
+        esio_line_read(h, "k", &grid.k, 0);
     }
 
     if (boost::math::signbit(grid.htdelta)) { // (-0.0 "<=" htdelta)
-        esio_line_read(esioh, "htdelta", &grid.htdelta, 0);
+        esio_line_read(h, "htdelta", &grid.htdelta, 0);
     } else {
         INFO0("Overriding grid using htdelta = " << grid.htdelta);
     }
@@ -236,7 +236,7 @@ void load(const esio_handle esioh,
         INFO0("Overriding grid using Nz = " << grid.N.z());
     } else {
         int value;
-        esio_line_read(esioh, "Nz", &value, 0);
+        esio_line_read(h, "Nz", &value, 0);
         grid.Nz(value);
     }
 
@@ -244,7 +244,7 @@ void load(const esio_handle esioh,
         INFO0("Overriding grid using DAFz = " << grid.DAF.z());
     } else {
         double factor;
-        esio_line_read(esioh, "DAFz", &factor, 0);
+        esio_line_read(h, "DAFz", &factor, 0);
         grid.DAFz(factor);
     }
 }
@@ -271,33 +271,33 @@ void create(const int ndof,
     assert(bspw->ndof() == ndof);
 }
 
-void store(const esio_handle esioh,
+void store(const esio_handle h,
            const boost::shared_ptr<const suzerain::bspline>& bspw)
 {
     // Only root writes data
     int procid;
-    esio_handle_comm_rank(esioh, &procid);
+    esio_handle_comm_rank(h, &procid);
 
     DEBUG0("Storing B-spline knot details");
 
     Eigen::ArrayXr buf(bspw->nknots());
 
     bspw->knots(buf.data(), 1);
-    esio_line_establish(esioh, bspw->nknots(),
+    esio_line_establish(h, bspw->nknots(),
             0, (procid == 0 ? bspw->nknots() : 0));
-    esio_line_write(esioh, "knots", buf.data(), 0,
+    esio_line_write(h, "knots", buf.data(), 0,
             "Knots used to build B-spline basis");
 
     bspw->breakpoints(buf.data(), 1);
-    esio_line_establish(esioh, bspw->nbreakpoints(),
+    esio_line_establish(h, bspw->nbreakpoints(),
             0, (procid == 0 ? bspw->nbreakpoints() : 0));
-    esio_line_write(esioh, "breakpoints", buf.data(), 0,
+    esio_line_write(h, "breakpoints", buf.data(), 0,
             "Breakpoint locations used to build B-spline basis");
 
     bspw->collocation_points(buf.data(), 1);
-    esio_line_establish(esioh, bspw->ndof(),
+    esio_line_establish(h, bspw->ndof(),
             0, (procid == 0 ? bspw->ndof() : 0));
-    esio_line_write(esioh, "collocation_points", buf.data(), 0,
+    esio_line_write(h, "collocation_points", buf.data(), 0,
             "Collocation points used to build discrete operators");
 
     DEBUG0("Storing B-spline derivative operators");
@@ -310,35 +310,35 @@ void store(const esio_handle esioh,
                 "Wall-normal derivative Dy%d(i,j) = D%d[j,ku+i-j] for"
                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
         const int lda = bspw->ku(k) + 1 + bspw->kl(k);
-        esio_plane_establish(esioh,
+        esio_plane_establish(h,
                 bspw->ndof(), 0, (procid == 0 ? bspw->ndof() : 0),
                 lda,          0, (procid == 0 ? lda          : 0));
-        esio_plane_write(esioh, name, bspw->D(k), 0, 0, comment);
-        esio_attribute_write(esioh, name, "kl", bspw->kl(k));
-        esio_attribute_write(esioh, name, "ku", bspw->ku(k));
-        esio_attribute_write(esioh, name, "m",  bspw->ndof());
-        esio_attribute_write(esioh, name, "n",  bspw->ndof());
+        esio_plane_write(h, name, bspw->D(k), 0, 0, comment);
+        esio_attribute_write(h, name, "kl", bspw->kl(k));
+        esio_attribute_write(h, name, "ku", bspw->ku(k));
+        esio_attribute_write(h, name, "m",  bspw->ndof());
+        esio_attribute_write(h, name, "n",  bspw->ndof());
     }
 }
 
-void load(const esio_handle esioh,
+void load(const esio_handle h,
           boost::shared_ptr<const suzerain::bspline>& bspw)
 {
     DEBUG0("Loading B-spline workspace based on order and breakpoints");
 
     // All ranks load B-spline order
     int k;
-    esio_line_establish(esioh, 1, 0, 1);
-    esio_line_read(esioh, "k", &k, 0);
+    esio_line_establish(h, 1, 0, 1);
+    esio_line_read(h, "k", &k, 0);
 
     // htdelta is ignored
 
     // All ranks load B-spline breakpoints
     int nbreak;
-    esio_line_size(esioh, "breakpoints", &nbreak);
-    esio_line_establish(esioh, nbreak, 0, nbreak);
+    esio_line_size(h, "breakpoints", &nbreak);
+    esio_line_establish(h, nbreak, 0, nbreak);
     Eigen::ArrayXr buf(nbreak);
-    esio_line_read(esioh, "breakpoints", buf.data(), 0);
+    esio_line_read(h, "breakpoints", buf.data(), 0);
 
     // Collocation points are ignored
 
@@ -346,31 +346,31 @@ void load(const esio_handle esioh,
     bspw.reset(new suzerain::bspline(k, k - 2, nbreak, buf.data()));
 }
 
-void store_time(const esio_handle esioh,
+void store_time(const esio_handle h,
                 real_t time)
 {
     // Root writes details
     int rank;
-    esio_handle_comm_rank(esioh, &rank);
-    esio_line_establish(esioh, 1, 0, (rank == 0) ? 1 : 0);
+    esio_handle_comm_rank(h, &rank);
+    esio_line_establish(h, 1, 0, (rank == 0) ? 1 : 0);
 
-    esio_line_write(esioh, "t", &time, 0, "Simulation physical time");
+    esio_line_write(h, "t", &time, 0, "Simulation physical time");
 
     DEBUG0("Stored simulation time " << time);
 }
 
-void load_time(const esio_handle esioh,
+void load_time(const esio_handle h,
                real_t &time)
 {
     // All ranks read details
-    esio_line_establish(esioh, 1, 0, 1);
+    esio_line_establish(h, 1, 0, 1);
 
-    esio_line_read(esioh, "t", &time, 0);
+    esio_line_read(h, "t", &time, 0);
 
     DEBUG0("Loaded simulation time " << time);
 }
 
-void store(const esio_handle esioh,
+void store(const esio_handle h,
            const suzerain::NoninterleavedState<4,complex_t> &state,
            const suzerain::problem::GridDefinition& grid,
            const suzerain::pencil_grid& dgrid)
@@ -427,13 +427,13 @@ void store(const esio_handle esioh,
             }
 
             // Collectively establish size of read across all ranks
-            esio_field_establish(esioh,
+            esio_field_establish(h,
                                  grid.N.z(),     fzb[j], (fze[j] - fzb[j]),
                                  grid.N.x()/2+1, fxb[0], (fxe[0] - fxb[0]),
                                  grid.N.y(),     0,      (     grid.N.y()));
 
             // Perform collective write operation from state_linear
-            complex_field_write(esioh, field_names[i], src,
+            complex_field_write(h, field_names[i], src,
                                 field.strides()[2],
                                 field.strides()[1],
                                 field.strides()[0],
@@ -442,7 +442,7 @@ void store(const esio_handle esioh,
     }
 }
 
-void load(const esio_handle esioh,
+void load(const esio_handle h,
           suzerain::NoninterleavedState<4,complex_t> &state,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
@@ -458,12 +458,12 @@ void load(const esio_handle esioh,
 
     // Obtain details on the restart field's global sizes
     int Fz, Fx, Fy, ncomponents;
-    esio_field_sizev(esioh, field_names[0], &Fz, &Fx, &Fy, &ncomponents);
+    esio_field_sizev(h, field_names[0], &Fz, &Fx, &Fy, &ncomponents);
     assert(ncomponents == 2);
 
     // Prepare a file-specific B-spline basis
     boost::shared_ptr<const suzerain::bspline> Fbspw;
-    load(esioh, Fbspw);
+    load(h, Fbspw);
     assert(Fy == Fbspw->ndof());
 
     // Check if the B-spline basis in the file differs from ours.  Use strict
@@ -543,7 +543,7 @@ void load(const esio_handle esioh,
         for (int j = 0; j < 2; ++j) {
 
             // Collectively establish size of read across all ranks
-            esio_field_establish(esioh, Fz, fzb[j], (fze[j] - fzb[j]),
+            esio_field_establish(h, Fz, fzb[j], (fze[j] - fzb[j]),
                                         Fx, fxb[0], (fxe[0] - fxb[0]),
                                         Fy,      0, (            Fy));
 
@@ -570,7 +570,7 @@ void load(const esio_handle esioh,
             }
 
             // Perform collective read operation into dst
-            complex_field_read(esioh, field_names[i], dst,
+            complex_field_read(h, field_names[i], dst,
                                dst_strides[2], dst_strides[1], dst_strides[0]);
         }
 

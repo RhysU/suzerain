@@ -51,21 +51,21 @@ extern const boost::array<const char *,5> field_names;
 extern const boost::array<const char *,5> field_descriptions;
 
 /** Store a ScenarioDefinition in a restart file */
-void store(const esio_handle esioh,
+void store(const esio_handle h,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario);
 
 /** Load a ScenarioDefinition from a restart file */
-void load(const esio_handle esioh,
+void load(const esio_handle h,
           suzerain::problem::ScenarioDefinition<real_t>& scenario);
 
 /** Store a GridDefinition in a restart file */
-void store(const esio_handle esioh,
+void store(const esio_handle h,
            const suzerain::problem::GridDefinition& grid,
            const real_t Lx,
            const real_t Lz);
 
 /** Load a GridDefinition from a restart file */
-void load(const esio_handle esioh,
+void load(const esio_handle h,
           suzerain::problem::GridDefinition& grid);
 
 /** Create a B-spline workspace on [a,b] per ndof, k, and htdelta */
@@ -77,26 +77,26 @@ void create(const int ndof,
             boost::shared_ptr<const suzerain::bspline>& bspw);
 
 /** Store a suzerain::bspline workspace in a restart file */
-void store(const esio_handle esioh,
+void store(const esio_handle h,
            const boost::shared_ptr<const suzerain::bspline>& bspw);
 
 /** Load a suzerain::bspline workspace from a restart file */
-void load(const esio_handle esioh,
+void load(const esio_handle h,
           boost::shared_ptr<const suzerain::bspline>& bspw);
 
 /** Store the current simulation time information */
-void store_time(const esio_handle esioh,
+void store_time(const esio_handle h,
                 real_t time);
 
 /** Load the current simulation time information */
-void load_time(const esio_handle esioh,
+void load_time(const esio_handle h,
                real_t &time);
 
 /**
  * Store the current simulation state into an open restart file
  * Only non-dealiased state content is saved.
  */
-void store(const esio_handle esioh,
+void store(const esio_handle h,
            const suzerain::NoninterleavedState<4,complex_t> &state,
            const suzerain::problem::GridDefinition& grid,
            const suzerain::pencil_grid& dgrid);
@@ -106,7 +106,7 @@ void store(const esio_handle esioh,
  * Handles the very non-trivial task of adjusting the restart
  * to match the provided \c grid, \c dgrid, and \c bspw.
  */
-void load(const esio_handle esioh,
+void load(const esio_handle h,
           suzerain::NoninterleavedState<4,complex_t> &state,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
