@@ -62,6 +62,9 @@ public:
     /** @see suzerain_bspline_free */
     ~bspline() { suzerain_bspline_free(w_); }
 
+/** @name General inquiry */
+/**@{*/
+
     /** @return The wrapped suzerain_bspline_workspace pointer. */
     const suzerain_bspline_workspace* get() const { return w_; }
 
@@ -106,6 +109,50 @@ public:
     /** @see suzerain_bspline_workspace#I */
     double * I() { return w_->I; }
 
+    /** @see suzerain_bspline_workspace#ndof */
+    int nknots() const { return suzerain_bspline_nknots(w_); }
+
+    /** @see suzerain_bspline_breakpoint */
+    int breakpoint(int j, double *x_j) const
+    {
+        return suzerain_bspline_breakpoint(j, x_j, w_);
+    }
+
+    /** @see suzerain_bspline_breakpoints */
+    int breakpoints(double *x, int incx) const
+    {
+        return suzerain_bspline_breakpoints(x, incx, w_);
+    }
+
+    /** @see suzerain_bspline_knot */
+    int knot(int j, double *x_j) const
+    {
+        return suzerain_bspline_knot(j, x_j, w_);
+    }
+
+    /** @see suzerain_bspline_knots */
+    int knots(double *x, int incx) const
+    {
+        return suzerain_bspline_knots(x, incx, w_);
+    }
+
+    /** @see suzerain_bspline_collocation_point */
+    int collocation_point(int j, double *x_j) const
+    {
+        return suzerain_bspline_collocation_point(j, x_j, w_);
+    }
+
+    /** @see suzerain_bspline_collocation_points */
+    int collocation_points(double *x, int incx) const
+    {
+        return suzerain_bspline_collocation_points(x, incx, w_);
+    }
+
+/**@}*/
+
+/** @name Real-valued operations */
+/**@{*/
+
     /** @see suzerain_bspline_accumulate_operator */
     int accumulate_operator(
             int nderivative, int nrhs,
@@ -116,6 +163,43 @@ public:
                                                     alpha, x, incx, ldx,
                                                     beta, y, incy, ldy, w_);
     }
+
+    /** @see suzerain_bspline_apply_operator */
+    int apply_operator(int nderivative, int nrhs, double alpha,
+                       double *x, int incx, int ldx) const
+    {
+        return suzerain_bspline_apply_operator(
+                nderivative, nrhs, alpha, x, incx, ldx, w_);
+    }
+
+    /** @see suzerain_bspline_evaluate */
+    int evaluate(int nderivative,
+            const double * coefficients, int npoints,
+            const double * points, double * values, int ldvalues) const
+    {
+        return suzerain_bspline_evaluate(nderivative,
+                coefficients, npoints, points,
+                values, ldvalues, w_);
+    }
+
+    /** @see suzerain_bspline_integrate */
+    int integrate(const double * x, int incx, double * value) const
+    {
+        return suzerain_bspline_integrate(x, incx, value, w_);
+    }
+
+    /** @see suzerain_bspline_find_interpolation_problem_rhs */
+    int find_interpolation_problem_rhs(const suzerain_function * function,
+                                       double * rhs) const
+    {
+        return suzerain_bspline_find_interpolation_problem_rhs(
+                function, rhs, w_);
+    }
+
+/**@}*/
+
+/** @name Complex-valued operations */
+/**@{*/
 
     /** @see suzerain_bspline_zaccumulate_operator */
     template< typename Complex1,
@@ -164,14 +248,6 @@ public:
                 incy, ldy, w_);
     }
 
-    /** @see suzerain_bspline_apply_operator */
-    int apply_operator(int nderivative, int nrhs, double alpha,
-                       double *x, int incx, int ldx) const
-    {
-        return suzerain_bspline_apply_operator(
-                nderivative, nrhs, alpha, x, incx, ldx, w_);
-    }
-
     /** @see suzerain_bspline_zapply_operator */
     template< typename Complex >
     typename boost::enable_if<
@@ -183,22 +259,6 @@ public:
                 nderivative, nrhs, alpha,
                 reinterpret_cast<double (*)[2]>(x),
                 incx, ldx, w_);
-    }
-
-    /** @see suzerain_bspline_evaluate */
-    int evaluate(int nderivative,
-            const double * coefficients, int npoints,
-            const double * points, double * values, int ldvalues) const
-    {
-        return suzerain_bspline_evaluate(nderivative,
-                coefficients, npoints, points,
-                values, ldvalues, w_);
-    }
-
-    /** @see suzerain_bspline_integrate */
-    int integrate(const double * x, int incx, double * value) const
-    {
-        return suzerain_bspline_integrate(x, incx, value, w_);
     }
 
     /** @see suzerain_bspline_zevaluate */
@@ -234,14 +294,6 @@ public:
                 w_);
     }
 
-    /** @see suzerain_bspline_find_interpolation_problem_rhs */
-    int find_interpolation_problem_rhs(const suzerain_function * function,
-                                       double * rhs) const
-    {
-        return suzerain_bspline_find_interpolation_problem_rhs(
-                function, rhs, w_);
-    }
-
     /** @see suzerain_bspline_zfind_interpolation_problem_rhs */
     template< typename Complex >
     typename boost::enable_if<
@@ -254,44 +306,7 @@ public:
                 zfunction, reinterpret_cast<double (*)[2]>(rhs), w_);
     }
 
-    /** @see suzerain_bspline_workspace#ndof */
-    int nknots() const { return suzerain_bspline_nknots(w_); }
-
-    /** @see suzerain_bspline_breakpoint */
-    int breakpoint(int j, double *x_j) const
-    {
-        return suzerain_bspline_breakpoint(j, x_j, w_);
-    }
-
-    /** @see suzerain_bspline_breakpoints */
-    int breakpoints(double *x, int incx) const
-    {
-        return suzerain_bspline_breakpoints(x, incx, w_);
-    }
-
-    /** @see suzerain_bspline_knot */
-    int knot(int j, double *x_j) const
-    {
-        return suzerain_bspline_knot(j, x_j, w_);
-    }
-
-    /** @see suzerain_bspline_knots */
-    int knots(double *x, int incx) const
-    {
-        return suzerain_bspline_knots(x, incx, w_);
-    }
-
-    /** @see suzerain_bspline_collocation_point */
-    int collocation_point(int j, double *x_j) const
-    {
-        return suzerain_bspline_collocation_point(j, x_j, w_);
-    }
-
-    /** @see suzerain_bspline_collocation_points */
-    int collocation_points(double *x, int incx) const
-    {
-        return suzerain_bspline_collocation_points(x, incx, w_);
-    }
+/**@}*/
 
 private:
     suzerain_bspline_workspace *w_; /**< The wrapped instance */
