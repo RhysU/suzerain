@@ -47,6 +47,7 @@
 #include <suzerain/utility.hpp>
 
 #include "logger.hpp"
+#include "precision.hpp"
 #include "channel_common.hpp"
 
 #pragma warning(disable:383 1572)
