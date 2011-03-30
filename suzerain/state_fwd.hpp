@@ -265,38 +265,9 @@ public:
 
     void addScaled(const Element& factor,
                    const NoninterleavedState& other);
-
-    template<class OtherDerived>
-    void addScaled(const Element& factor,
-                   const StateBase<OtherDerived>& other)
-    {
-        SUZERAIN_UNUSED(other);
-        BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
-                NONINTERLEAVEDSTATE_ADD_SCALED_NOT_OVERLOADED_FOR_OTHER_TYPE,
-                (OtherDerived));
-    }
-
     void assign(const NoninterleavedState &other);
 
-    template<class OtherDerived>
-    void assign(const StateBase<OtherDerived> &other)
-    {
-        SUZERAIN_UNUSED(other);
-        BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
-                NONINTERLEAVEDSTATE_ASSIGN_NOT_OVERLOADED_FOR_OTHER_TYPE,
-                (OtherDerived));
-    }
-
     void exchange(NoninterleavedState &other);
-
-    template<class OtherDerived>
-    void exchange(StateBase<OtherDerived>& other)
-    {
-        SUZERAIN_UNUSED(other);
-        BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
-                NONINTERLEAVEDSTATE_EXCHANGE_NOT_OVERLOADED_FOR_OTHER_TYPE,
-                (OtherDerived));
-    }
 
 private:
     // Disable assignment operators
@@ -353,38 +324,9 @@ public:
     void addScaled(const Element& factor,
                    const InterleavedState& other);
 
-    template<class OtherDerived>
-    void addScaled(const Element& factor,
-                   const StateBase<OtherDerived>& other)
-    {
-        SUZERAIN_UNUSED(factor);
-        SUZERAIN_UNUSED(other);
-        BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
-                INTERLEAVEDSTATE_ADD_SCALED_NOT_OVERLOADED_FOR_OTHER_TYPE,
-                (OtherDerived));
-    }
-
     void assign(const InterleavedState &other);
 
-    template<class OtherDerived>
-    void assign(const StateBase<OtherDerived> &other)
-    {
-        SUZERAIN_UNUSED(other);
-        BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
-                INTERLEAVEDSTATE_ASSIGN_NOT_OVERLOADED_FOR_OTHER_TYPE,
-                (OtherDerived));
-    }
-
     void exchange(InterleavedState &other);
-
-    template<class OtherDerived>
-    void exchange(StateBase<OtherDerived>& other)
-    {
-        SUZERAIN_UNUSED(other);
-        BOOST_MPL_ASSERT_MSG(sizeof(OtherDerived) == 0,
-                INTERLEAVEDSTATE_EXCHANGE_NOT_OVERLOADED_FOR_OTHER_TYPE,
-                (OtherDerived));
-    }
 
 private:
     // Disable assignment operators
