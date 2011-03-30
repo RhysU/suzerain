@@ -629,6 +629,55 @@ suzerain_bspline_find_interpolation_problem_rhs(
     double * rhs,
     const suzerain_bspline_workspace *w);
 
+/**
+ * Construct a general banded matrix \f$A\f$ that computes the vector
+ * \f$\frac{d^k}{dx^k} \alpha_{i} f(x_{i})\f$ (no summation implied) when it
+ * multiplies the coefficient vector \f$\beta_{j}\f$ where
+ * \f$f(x)=\sum_{j}\beta_{j}B_{j}(x)\f$.  Such banded matrices are useful, for
+ * example, when repeatedly evaluating B-splines on a particular set of points.
+ *
+ * When \c a is \c NULL, the routine computes the minimum acceptable \c kl, \c
+ * ku, and \c lda necessary for storing the coefficients.  When \c a is
+ * <tt>non-NULL</tt>, the banded matrix coefficients are computed and stored
+ * according to whatever \c kl, \c ku, and \c lda is provided.  All other
+ * values within the banded storage will be zeroed.
+ *
+ * The number of rows and columns is stored in \c m and \c n whenever these
+ * variables are <tt>non-NULL</tt> on entry.  Of course, \c m is always equal
+ * to \c npoints while \c n is always equal to the number of degrees of freedom
+ * within B-spline workspace \c w.  These arguments are provided for ease of
+ * interoperation with suzerain_blas_dgbmv().
+ *
+ * @param[in]    nderivative Derivative to evaluate.  May be zero.
+ * @param[in]    npoints  Number of points on which to evaluate basis.
+ * @param[in]    points   Points \f$x_{i}\f$ at which to evaluate basis.
+ * @param[in]    weights  Weights \f$\alpha_{i}$ used to weight \f$x_{i}\f$.
+ * @param[out]   m Number of rows in resulting banded matrix \f$A\f$.
+ * @param[out]   n Number of columns in resulting banded matrix \f$A\f$.
+ * @param[inout] kl Number of subdiagonals in the matrix \f$A\f$
+ * @param[inout] ku Number of superdiagonals in the matrix \f$A\f$
+ * @param[inout] a  Coefficients of \f$A\f$ stored in BLAS-compatible
+ *                  general band matrix format.
+ * @param[inout] lda Leading dimension between columns in \c a.
+ * @param[in]    w  Workspace to use for B-spline evaluation.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bspline_evaluation_matrix(
+    int nderivative,
+    int npoints,
+    const double *points,
+    const double *weights,
+    double *m,
+    double *n,
+    double *kl,
+    double *ku,
+    double *a,
+    double *lda,
+    const suzerain_bspline_workspace *w);
+
 /**@}*/
 
 /** @name Complex-valued operations */
