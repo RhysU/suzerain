@@ -149,7 +149,13 @@ enum suzerain_bspline_method {
     /**
      * Form derivative operators using collocation at the Greville abscissae.
      **/
-    SUZERAIN_BSPLINE_COLLOCATION_GREVILLE = 1
+    SUZERAIN_BSPLINE_COLLOCATION_GREVILLE = 1,
+
+    /**
+     * Form derivative operators using Galerkin's method with the $L^2$
+     * inner product.
+     */
+    SUZERAIN_BSPLINE_GALERKIN_L2,
 };
 
 /**
