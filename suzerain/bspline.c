@@ -924,8 +924,63 @@ suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
 {
     /* PRECONDITION: D[0]...D[nderivatives] must have been filled with zeros */
 
-    SUZERAIN_UNUSED(w);
+    /* Determine the integration order and retrieve Gauss-Legendre rule */
+    /* Maximum quadratic piecewise polynomial order is (w->order-1)^2   */
+    gsl_integration_glfixed_table * const tbl
+        = gsl_integration_glfixed_table_alloc(
+                1 - w->order + (w->order*w->order/2));
+    if (tbl == NULL) {
+        SUZERAIN_ERROR_NULL("failed to obtain Gauss-Legendre rule from GSL",
+                            SUZERAIN_ESANITY);
+    }
+
+    /* For each DOF in the basis... */
+    for (int i = 0; i < w->ndof; ++i) {
+
+        /* ...loop over the nontrivial knot intervals in support... */
+        for (int j = i; j < i + w->order - 1; ++j) {
+            double a, b;
+            suzerain_bspline_knot(j  , &a, w);
+            suzerain_bspline_knot(j+1, &b, w);
+            if (SUZERAIN_UNLIKELY(a == b)) continue;
+
+            /* ...evaluate all derivatives at each Gauss point... */
+            /* scale by the Gauss weight, and accumulate into   */
+            /* the banded derivative matrix. */
+
+            /* ...at each Gauss point... */
+            for (size_t k = 0; k < tbl->n; ++k) {
+                double xk, wk;
+                gsl_integration_glfixed_point(a, b, k, &xk, &wk, tbl);
+
+                /* ...evaluate all derivatives at the Gauss point... */
+                size_t istart, iend;
+                gsl_bspline_deriv_eval_nonzero(xk, w->nderivatives,
+                                               w->db, &istart, &iend,
+                                               w->bw, w->dbw);
+
+                /* ...scale by the corresponding Gauss weight... */
+                gsl_matrix_scale(w->db, wk);
+
+                /* ...and accumulate into the banded derivative matrices. */
+                for (size_t l = istart; l <= iend; ++l) {
+                    for (size_t m = 0; m <= (size_t) w->nderivatives; ++m) {
+                        const int offset = suzerain_gbmatrix_offset(
+                                w->ld, w->kl[k], w->ku[k], i, l);
+                        w->D[m][offset]
+                                += gsl_matrix_get(w->db, l - istart, m);
+                    }
+                }
+            }
+        }
+    }
+
+    /* Free integration rule resources */
+    gsl_integration_glfixed_table_free(tbl);
+
     SUZERAIN_ERROR("unimplemented method", SUZERAIN_ESANITY); // FIXME
+
+    return SUZERAIN_SUCCESS;
 }
 
 static
