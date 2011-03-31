@@ -97,7 +97,8 @@ suzerain_bspline_lu_solve_noncontiguous(
 // gsl_integration_glfixed_point is 1.14+ so build it atop 1.14's public API
 // Source code lifted from GSL which is cool since it's my copyright :)
 // FIXME: Remove this logic once GSL 1.15 becomes widespread
-#if GSL_MAJOR_VERSION < 2 && GSL_MINOR_VERSION < 15
+#if    (!defined GSL_MAJOR_VERSION                     ) \
+    || (GSL_MAJOR_VERSION < 2 && GSL_MINOR_VERSION < 15)
 static
 int
 gsl_integration_glfixed_point (
