@@ -37,7 +37,7 @@
     \renewcommand{\headrulewidth}{1.0pt}
     \renewcommand{\footrulewidth}{0pt}
     \lhead{
-        $L_2$ norm within Suzerain's discretization
+        $L^2$ norm within Suzerain's discretization
     }
     \rhead{
         Page \thepage{} of \pageref{LastPage}
@@ -51,10 +51,12 @@
 
 % Document-specific commands
 \newcommand{\ii}{\ensuremath{\mathrm{i}}}
+\newcommand{\htrans}[1]{{#1}^{\ensuremath{\mathsf{H}}}}
+\newcommand{\OO}[1]{\operatorname{O}\left(#1\right)}
 
 \begin{document}
 
-We wish to compute the $L_2$ norm of an instantaneous, real-valued field
+We wish to compute the $L^2$ norm of an instantaneous, real-valued field
 $u\!\left(x,y,z\right)$ on the spatial domain
 $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
 \left[-\frac{L_z}{2},\frac{L_z}{2}\right]$ which has been discretized as
@@ -64,68 +66,70 @@ u^h(x,y,z)
   \sum_{l=0}^{N_y - 1}
   \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
   \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
-  \hat{u}_{l,m,n}
+  \hat{u}_{l m n}
   B_l\!\left(y\right)
   e^{\ii\frac{2\pi{}m}{L_x}x}
   e^{\ii\frac{2\pi{}n}{L_z}z}
 =
   \sum_{l}\sum_{m}\sum_{n}
-  \hat{u}_{l,m,n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+  \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
 \end{align}
 where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
 B-spline basis for some order and knot selection.
 
-With appropriate smoothness assumptions, by direct computation we find
+By direct computation we find
 \begin{align}
-  \left|\left|u\left(x,y,z\right)\right|\right|_{2}^{2}
+  \left|\left|
+    u
+  \right|\right|^{2}_{L^{2}_{xyz}}
 &=
-  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_0^{L_y}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  u^{2}\!\left(x,y,z\right)
+  u^{2}
   \,d\!z \,d\!y \,d\!x
 \\ &=
   \int_0^{L_y}
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  u\!\left(x,y,z\right)
-  u^{\ast}\!\left(x,y,z\right)
+  u
+  u^{\ast}
   \,d\!z \,d\!x \,d\!y
-\\ &=
+\\ &\approx
   \int_0^{L_y}
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
   \left(
     \sum_{l}\sum_{m}\sum_{n}
-    \hat{u}_{l,m,n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+    \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
   \right)
   \left(
-    \sum_{l\prime}\sum_{m\prime}\sum_{n\prime}
-    \hat{u}_{l\prime,m\prime,n\prime}
-    B_{l\prime}\!\left(y\right)e^{-\ii k_{m\prime} x}e^{-\ii k_{n\prime} z}
+    \sum_{l^\prime}\sum_{m^\prime}\sum_{n^\prime}
+    \hat{u}_{l^\prime m^\prime n^\prime}
+    B_{l^\prime}\!\left(y\right)e^{-\ii k_{m^\prime} x}e^{-\ii k_{n^\prime} z}
   \right)
   \,d\!z \,d\!x \,d\!y
 \\ &=
   \sum_{l}
-  \sum_{l\prime}
+  \sum_{l^\prime}
   \int_0^{L_y}
   \left(
-    B_{l\prime}\!\left(y\right)
     B_l\!\left(y\right)
+    B_{l^\prime}\!\left(y\right)
     \sum_{m}
-    \sum_{m\prime}
+    \sum_{m^\prime}
     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
     \left(
       e^{\ii k_m x}
-      e^{-\ii k_{m\prime} x}
+      e^{-\ii k_{m^\prime} x}
       \sum_{n}
-      \sum_{n\prime}
+      \sum_{n^\prime}
       \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
       \left(
         e^{\ii k_n z}
-        e^{-\ii k_{n\prime} z}
-        \hat{u}_{l,m,n}
-        \hat{u}_{l\prime,m\prime,n\prime}
+        e^{-\ii k_{n^\prime} z}
+        \hat{u}_{l m n}
+        \hat{u}_{l^\prime m^\prime n^\prime}
       \right)
       \,d\!z
     \right)
@@ -134,42 +138,173 @@ With appropriate smoothness assumptions, by direct computation we find
   \,d\!y
 \\ &=
   \sum_{l}
-  \sum_{l\prime}
+  \sum_{l^\prime}
   \int_0^{L_y}
   \left(
-    B_{l\prime}\!\left(y\right)
     B_l\!\left(y\right)
+    B_{l^\prime}\!\left(y\right)
     \sum_{m}
-    \sum_{m\prime}
+    \sum_{m^\prime}
     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
     \left(
       e^{\ii k_m x}
-      e^{-\ii k_{m\prime} x}
-      L_z \sum_{n} \hat{u}_{l,m,n} \hat{u}_{l\prime,m\prime,n}
+      e^{-\ii k_{m^\prime} x}
+      L_z \sum_{n} \hat{u}_{l m n} \hat{u}_{l^\prime m^\prime n}
     \right)
     \,d\!x
   \right)
   \,d\!y
 \\ &=
   \sum_{l}
-  \sum_{l\prime}
+  \sum_{l^\prime}
   \int_0^{L_y}
   \left(
-    B_{l\prime}\!\left(y\right)
     B_l\!\left(y\right)
-    L_x L_z \sum_{m} \sum_{n} \hat{u}_{l,m,n} \hat{u}_{l\prime,m,n}
+    B_{l^\prime}\!\left(y\right)
+    L_x L_z \sum_{m} \sum_{n} \hat{u}_{l m n} \hat{u}_{l^\prime m n}
   \right)
   \,d\!y
 \\ &=
    L_x L_z \sum_{m} \sum_{n}
   \sum_{l}
-  \hat{u}_{l,m,n}
-  \sum_{l\prime}
-  \hat{u}_{l\prime,m,n}
+  \hat{u}_{l m n}
+  \sum_{l^\prime}
+  \hat{u}_{l^\prime m n}
   \int_0^{L_y}
-  B_{l\prime}\!\left(y\right)
   B_l\!\left(y\right)
+  B_{l^\prime}\!\left(y\right)
   \,d\!y
+\\ &=
+   L_x L_z \sum_{m} \sum_{n} \htrans{\hat{u}_{m n}} M \hat{u}_{m n}
+   \quad\text{where}\quad
+   M = \int_0^{L_y} B_l\!\left(y\right) B_{l^\prime}\!\left(y\right) \,d\!y
+   .
 \end{align}
+In the last step the three-dimensional field of transform coefficients
+$\hat{u}_{l m n}$ is treated as a two-dimensional collection of length $N_y$
+vectors indexed by $m$ and $n$.  For a B-spline basis with piecewise polynomial
+order $k - 1$ giving rise to a matrix $M$ with bandwidth $2k-1$, the
+computational cost to find $\left|\left| u \right|\right|^{2}_{L^{2}_{xyz}}$
+scales as $\OO{\left(2k-1\right) N_x N_y^2 N_z}$.
+
+The $y$-varying norm over the $x$ and $z$ directions can be computed via
+\begin{align}
+  \left|\left|
+    u
+  \right|\right|^{2}_{L^{2}_{xz}}
+  \!(y)
+&=
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  u
+  u^{\ast}
+  \,d\!z \,d\!x
+\\ &\approx
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  \left(
+    \sum_{l}\sum_{m}\sum_{n}
+    \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+  \right)
+  \left(
+    \sum_{l^\prime}\sum_{m^\prime}\sum_{n^\prime}
+    \hat{u}_{l^\prime m^\prime n^\prime}
+    B_{l^\prime}\!\left(y\right)e^{-\ii k_{m^\prime} x}e^{-\ii k_{n^\prime} z}
+  \right)
+  \,d\!z \,d\!x
+\\ &=
+  \sum_{l}
+  B_l\!\left(y\right)
+  \sum_{l^\prime}
+  B_{l^\prime}\!\left(y\right)
+  \sum_{m}
+  \sum_{m^\prime}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \left(
+    e^{\ii k_m x}
+    e^{-\ii k_{m^\prime} x}
+    \sum_{n}
+    \sum_{n^\prime}
+    \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+    \left(
+      e^{\ii k_n z}
+      e^{-\ii k_{n^\prime} z}
+      \hat{u}_{l m n}
+      \hat{u}_{l^\prime m^\prime n^\prime}
+    \right)
+    \,d\!z
+  \right)
+  \,d\!x
+\\ &=
+  \sum_{l}
+  B_l\!\left(y\right)
+  \sum_{l^\prime}
+  B_{l^\prime}\!\left(y\right)
+  \sum_{m}
+  \sum_{m^\prime}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \left(
+    e^{\ii k_m x}
+    e^{-\ii k_{m^\prime} x}
+    L_z \sum_{n} \hat{u}_{l m n} \hat{u}_{l^\prime m^\prime n}
+  \right)
+  \,d\!x
+\\ &=
+  L_x L_z
+  \sum_{l}
+  B_l\!\left(y\right)
+  \sum_{l^\prime}
+  B_{l^\prime}\!\left(y\right)
+  \sum_{m} \sum_{n} \hat{u}_{l m n} \hat{u}_{l^\prime m n}
+  .
+\end{align}
+Using the limited support of the products $B_l\left(y\right)
+B_{l^\prime}\left(y\right)$ to reduce the required operations, one can compute
+this fully functional representation of $\left|\left| u
+\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ at a cost proportional to
+$\OO{\left(2k-1\right) N_x N_y^2 N_z}$.
+
+Much more simply, if $\left|\left|u\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ is
+only of interest at discrete points $y_j$ then the final step above can be
+further reduced per
+\begin{align}
+  \left|\left|
+    u
+  \right|\right|^{2}_{L^{2}_{xz}}
+  \!(y_j)
+&\approx
+  L_x L_z
+  \sum_{m} \sum_{n}
+  \left(
+    \sum_{l}
+    B_l\!\left(y_j\right)
+    \hat{u}_{l m n}
+  \right)
+  \left(
+    \sum_{l^\prime}
+    B_{l^\prime}\!\left(y_j\right)
+    \hat{u}_{l^\prime m n}
+  \right)
+\\ &=
+  L_x L_z
+  \sum_{m} \sum_{n}
+  \left(
+    \sum_{l}
+    B_l\!\left(y_j\right)
+    \hat{u}_{l m n}
+  \right)^{2}
+\\ &=
+  L_x L_z
+  \sum_{m} \sum_{n}
+  \left(
+    M \hat{u}_{m n}
+  \right)^{2}
+   \quad\text{where}\quad
+   M = B_l\!\left(y_j\right)
+\end{align}
+where again the three-dimensional field is treated as as a two-dimensional
+field of vectors and the squaring operation is performed \emph{pointwise}.  The
+computational cost for this operation is much lower than the others at
+$\OO{\left(k-1\right)N_x N_y N_z}$.
 
 \end{document}
