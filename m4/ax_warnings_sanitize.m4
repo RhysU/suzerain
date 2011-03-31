@@ -62,8 +62,6 @@ case $ax_cv_c_compiler_vendor in #(
          AX_CHECK_COMPILER_FLAGS([-Wpointer-arith], [CFLAGS="$CFLAGS -Wpointer-arith"])
          # Disable remark #424: extra ";" ignored
          AX_CHECK_COMPILER_FLAGS([-wd424], [CFLAGS="$CFLAGS -wd424"])
-         # Enable information about vectorization
-         AX_CHECK_COMPILER_FLAGS([-vec-report1], [CFLAGS="$CFLAGS -vec-report1"])
          ;;#(
   gnu)   AX_CHECK_COMPILER_FLAGS([-Wextra], [CFLAGS="$CFLAGS -Wextra"])
          ;;#(
@@ -99,8 +97,6 @@ dnl      # Disable warning #2012: Effective C++ Item 1 prefer const and inline t
 dnl      AX_CHECK_COMPILER_FLAGS([-wd2012], [CXXFLAGS="$CXXFLAGS -wd2012"])
 dnl      # Disable warning #2015: Effective C++ Item 4 prefer C++ style comments
 dnl      AX_CHECK_COMPILER_FLAGS([-wd2015], [CXXFLAGS="$CXXFLAGS -wd2015"])
-         # Enable information about vectorization
-         AX_CHECK_COMPILER_FLAGS([-vec-report1], [CFLAGS="$CFLAGS -vec-report1"])
          ;;#(
   gnu)   AX_CHECK_COMPILER_FLAGS([-Wextra], [CXXFLAGS="$CXXFLAGS -Wextra"])
          ;;#(
