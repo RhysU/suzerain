@@ -183,18 +183,14 @@ suzerain_bspline_alloc(int order,
     w->D           = NULL;
     w->I           = NULL;
     /* Prepare workspace */
-    w->kl = suzerain_blas_malloc((nderivatives+1)*sizeof(w->kl[0]));
+    w->kl = suzerain_blas_malloc(   (nderivatives+1)*sizeof(w->kl[0])
+                                  + (nderivatives+1)*sizeof(w->ku[0]) );
     if (w->kl == NULL) {
         suzerain_bspline_free(w);
-        SUZERAIN_ERROR_NULL("failed to allocate workspace kl",
+        SUZERAIN_ERROR_NULL("failed to allocate workspace kl and ku",
                             SUZERAIN_ENOMEM);
     }
-    w->ku = suzerain_blas_malloc((nderivatives+1)*sizeof(w->ku[0]));
-    if (w->ku == NULL) {
-        suzerain_bspline_free(w);
-        SUZERAIN_ERROR_NULL("failed to allocate workspace ku",
-                            SUZERAIN_ENOMEM);
-    }
+    w->ku = w->kl + (nderivatives + 1);
 
     /* Setup workspaces to use GSL B-spline functionality */
     w->bw = gsl_bspline_alloc(order, nbreakpoints);
@@ -330,11 +326,10 @@ suzerain_bspline_free(suzerain_bspline_workspace * w)
         gsl_bspline_free(w->bw);
         w->bw = NULL;
 
-        suzerain_blas_free(w->ku);
-        w->ku = NULL;
-
+        // kl and ku were allocated together
         suzerain_blas_free(w->kl);
         w->kl = NULL;
+        w->ku = NULL;
 
         suzerain_blas_free(w);
     }
