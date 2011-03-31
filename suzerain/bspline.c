@@ -52,7 +52,27 @@ suzerain_bspline_determine_operator_bandwidths(
 
 static
 int
+suzerain_bspline_determine_collocation_bandwidths(
+        suzerain_bspline_workspace *w);
+
+static
+int
+suzerain_bspline_determine_galerkin_bandwidths(
+        suzerain_bspline_workspace *w);
+
+static
+int
 suzerain_bspline_create_operators(
+        suzerain_bspline_workspace *w);
+
+static
+int
+suzerain_bspline_create_collocation_operators(
+        suzerain_bspline_workspace *w);
+
+static
+int
+suzerain_bspline_create_galerkin_operators(
         suzerain_bspline_workspace *w);
 
 static
@@ -160,8 +180,7 @@ suzerain_bspline_alloc(int order,
 
     switch (method) {
     case SUZERAIN_BSPLINE_COLLOCATION_GREVILLE:
-        /* Logic will need to change here once multiple methods available
-         * For now, continue since only one method is implemented */
+    case SUZERAIN_BSPLINE_GALERKIN_L2:
         break;
     default:
         SUZERAIN_ERROR_NULL("unknown method", SUZERAIN_ESANITY);
@@ -651,13 +670,18 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
     /* Compute the operator bandwidths based on the supplied method */
     switch (w->method) {
     case SUZERAIN_BSPLINE_COLLOCATION_GREVILLE:
-        /* Logic will need to change here once multiple methods available
-         * For now, continue since only one method is implemented */
-        break;
+        return suzerain_bspline_determine_collocation_bandwidths(w);
+    case SUZERAIN_BSPLINE_GALERKIN_L2:
+        return suzerain_bspline_determine_galerkin_bandwidths(w);
     default:
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
+}
 
+static
+int
+suzerain_bspline_determine_collocation_bandwidths(suzerain_bspline_workspace *w)
+{
     /* Initially set maximum collocation operator band storage parameters */
     for (int k = 0; k <= w->nderivatives; ++k) {
         w->kl[k] = w->order - 1;
@@ -774,7 +798,34 @@ suzerain_bspline_determine_operator_bandwidths(suzerain_bspline_workspace *w)
 
 static
 int
+suzerain_bspline_determine_galerkin_bandwidths(suzerain_bspline_workspace *w)
+{
+    for (int k = 0; k <= w->nderivatives; ++k) {
+        w->kl[k] = w->order - 1;
+        w->ku[k] = w->kl[k];
+    }
+
+    return SUZERAIN_SUCCESS;
+}
+
+static
+int
 suzerain_bspline_create_operators(suzerain_bspline_workspace *w)
+{
+    /* Compute the operator bandwidths based on the supplied method */
+    switch (w->method) {
+    case SUZERAIN_BSPLINE_COLLOCATION_GREVILLE:
+        return suzerain_bspline_create_collocation_operators(w);
+    case SUZERAIN_BSPLINE_GALERKIN_L2:
+        return suzerain_bspline_create_galerkin_operators(w);
+    default:
+        SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
+    }
+}
+
+static
+int
+suzerain_bspline_create_collocation_operators(suzerain_bspline_workspace *w)
 {
     /* Evaluate basis at collocation points: d^k/dx^k B_j(\xi_i) */
     double * const points
@@ -874,6 +925,14 @@ compute_banded_collocation_derivative_submatrix(
 
 static
 int
+suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
+{
+    SUZERAIN_UNUSED(w);
+    SUZERAIN_ERROR("unimplemented method", SUZERAIN_ESANITY); // FIXME
+}
+
+static
+int
 suzerain_bspline_integration_coefficients(
         suzerain_bspline_workspace *w)
 {
@@ -943,6 +1002,8 @@ suzerain_bspline_find_interpolation_problem_rhs(
         }
 
         break;
+    case SUZERAIN_BSPLINE_GALERKIN_L2:
+        SUZERAIN_ERROR("unimplemented method", SUZERAIN_ESANITY); // FIXME
     default:
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
@@ -969,6 +1030,8 @@ suzerain_bspline_zfind_interpolation_problem_rhs(
         }
 
         break;
+    case SUZERAIN_BSPLINE_GALERKIN_L2:
+        SUZERAIN_ERROR("unimplemented method", SUZERAIN_ESANITY); // FIXME
     default:
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
@@ -1036,6 +1099,8 @@ suzerain_bspline_collocation_point(
     case SUZERAIN_BSPLINE_COLLOCATION_GREVILLE:
         *x_j = gsl_bspline_greville_abscissa(j, w->bw);
         break;
+    case SUZERAIN_BSPLINE_GALERKIN_L2:
+        SUZERAIN_ERROR("unimplemented method", SUZERAIN_ESANITY); // FIXME
     default:
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
@@ -1056,6 +1121,8 @@ suzerain_bspline_collocation_points(
             x += incx;
         }
         break;
+    case SUZERAIN_BSPLINE_GALERKIN_L2:
+        SUZERAIN_ERROR("unimplemented method", SUZERAIN_ESANITY); // FIXME
     default:
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
