@@ -269,11 +269,11 @@ suzerain_bspline_alloc(int order,
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix pointers",
                             SUZERAIN_ENOMEM);
     }
-    /* Allocate one aligned block for all derivative operator matrices */
+    /* Allocate and clear one aligned block for all operator matrices */
     const size_t an_operators_storage = w->ld * w->ndof;
     const size_t all_operators_storage
         = an_operators_storage * (w->nderivatives+1);
-    w->D[0] = suzerain_blas_malloc(all_operators_storage*sizeof(w->D[0][0]));
+    w->D[0] = suzerain_blas_calloc(all_operators_storage, sizeof(w->D[0][0]));
     if (w->D[0] == NULL) {
         suzerain_bspline_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
@@ -836,11 +836,6 @@ suzerain_bspline_create_collocation_operators(suzerain_bspline_workspace *w)
     }
     suzerain_bspline_collocation_points(points, 1, w);
 
-    /* Zero the full derivative operator matrices */
-    w->D[0] -= (w->max_ku - w->ku[0]); /* See suzerain_bspline_alloc */
-    memset(w->D[0], 0, w->ld*w->ndof*(w->nderivatives+1)*sizeof(w->D[0][0]));
-    w->D[0] += (w->max_ku - w->ku[0]);
-
     /* Compute the full derivative operator matrices */
     if (compute_banded_collocation_derivative_submatrix(
              0, 0, w->nderivatives, w->kl, w->ku, w->ld,
@@ -927,6 +922,8 @@ static
 int
 suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
 {
+    /* PRECONDITION: D[0]...D[nderivatives] must have been filled with zeros */
+
     SUZERAIN_UNUSED(w);
     SUZERAIN_ERROR("unimplemented method", SUZERAIN_ESANITY); // FIXME
 }
