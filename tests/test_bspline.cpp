@@ -770,6 +770,8 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_constant_memory )
                 5,       5,        0,        0, good_D0,     1,
         w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld,
         1e-12);
+    CHECK_GBMATRIX_SYMMETRIC( // Mass matrix is analytically symmetric
+        w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld);
 
     suzerain_bspline_free(w);
 }
@@ -807,7 +809,13 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_linear_memory )
                 6,       6,        1,        1, good_D0,   3,
         w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld,
         1e-12);
+    CHECK_GBMATRIX_SYMMETRIC( // Mass matrix is analytically symmetric
+        w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld);
 
+    for (int i = 0; i < 5; ++i) {
+        const int offset = (i * w->ld) + (w->ku[0] + 1);
+        BOOST_CHECK_EQUAL(w->D[0][offset], w->D[0][offset + w->kl[0]]);
+    }
 
     /* Check w->D[1], the first derivative matrix, against known good:
      * -1/2  1/2   0    0    0   0
@@ -862,6 +870,8 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic_memory )
                 7,       7,        2,        2, good_D0,   5,
         w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld,
         1e-12);
+    CHECK_GBMATRIX_SYMMETRIC( // Mass matrix is analytically symmetric
+        w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld);
 
     /* Check w->D[1], the first derivative matrix, against known good
      * in general banded matrix column-major order.

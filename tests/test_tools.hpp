@@ -52,6 +52,13 @@
             BOOST_CHECK_MESSAGE(!errormsg.length(), errormsg);       \
         }
 
+#define CHECK_GBMATRIX_SYMMETRIC(m, n, kl, ku, r, ld)                  \
+        {                                                              \
+            ::std::string errormsg(_suzerain_check_gbmatrix_symmetric( \
+                    m, n, kl, ku, r, ld));                             \
+            BOOST_CHECK_MESSAGE(!errormsg.length(), errormsg);         \
+        }
+
 #pragma warning(push,disable:1418)
 
 // TODO Two versions _suzerain_check_gbmatrix_close have mucho copy'n'paste
@@ -345,6 +352,78 @@ _suzerain_check_gbmatrix_close(
                         errors.flags(std::ios::scientific | std::ios::showpos);
                         errors.precision(std::numeric_limits<FPT>::digits10);
                         errors <<'{'<< e_value_re <<','<< e_value_im <<'}';
+                        errors.flags(flags);
+                        errors.precision(prec);
+                    }
+                }
+            }
+        }
+    }
+
+    return errors.str();
+}
+
+template<typename FPT>
+std::string
+_suzerain_check_gbmatrix_symmetric(
+        int m, int n, int kl, int ku, const FPT *r, int ld)
+{
+    bool checkequality = true;
+    std::ostringstream errors;
+
+    // Test sanity checks
+    if (m < 0) {
+        errors << "\nParameter m = " << m << " < 0";
+        checkequality = false;
+    }
+    if (n < 0) {
+        errors << "\nParameter n = " << n << " < 0";
+        checkequality = false;
+    }
+    if (m != n) {
+        errors << "\nParameter m != n";
+        checkequality = false;
+    }
+    if (kl < 0) {
+        errors << "\nParameter kl = " << kl << " < 0";
+        checkequality = false;
+    }
+    if (ku < 0) {
+        errors << "\nParameter ku = " << ku << " < 0";
+        checkequality = false;
+    }
+    if (ld < 0) {
+        errors << "\nParameter ld = " << ld << " < 0";
+        checkequality = false;
+    }
+    if (r == NULL) {
+        errors << "\nParameter r == NULL";
+        checkequality = false;
+    }
+
+    // Any further error messages are useless if the above tests fail
+    // so short circuit the remainder of the test if any did.
+    if (checkequality) {
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (   suzerain_gbmatrix_in_band(ld, kl, ku, i, j)
+                    && suzerain_gbmatrix_in_band(ld, kl, ku, j, i)) {
+                    int o_ij = suzerain_gbmatrix_offset(ld, kl, ku, i, j);
+                    int o_ji = suzerain_gbmatrix_offset(ld, kl, ku, j, i);
+                    double v_ij = r[o_ij];
+                    double v_ji = r[o_ji];
+
+                    if (v_ij != v_ji) {
+                        errors << "\nAsymmetry in matrix at index ("
+                            << std::setw(2) << i << ","
+                            << std::setw(2) << j << "): ";
+                        const std::ios_base::fmtflags flags = errors.flags();
+                        const std::streamsize prec = errors.precision();
+                        errors.flags(std::ios::scientific | std::ios::showpos);
+                        errors.precision(std::numeric_limits<FPT>::digits10);
+                        errors <<'{'<< v_ij <<'}'
+                               << " != "
+                               <<'{'<< v_ji <<'}';
                         errors.flags(flags);
                         errors.precision(prec);
                     }
