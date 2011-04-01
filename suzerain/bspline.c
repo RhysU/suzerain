@@ -918,8 +918,9 @@ compute_banded_collocation_derivative_submatrix(
     return SUZERAIN_SUCCESS;
 }
 
-static inline int int_div_ceil(int x, int y) {
-    return x / y + !!(x % y);
+static inline int int_div_ceil(int dividend, int divisor) {
+    // Modified from http://www.justlinux.com/forum/showthread.php?t=126876
+    return ((dividend + divisor) - 1) / divisor;
 }
 
 static
@@ -982,6 +983,23 @@ suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
 
     /* Free integration rule resources */
     gsl_integration_glfixed_table_free(tbl);
+
+    /* First derivative operators have zeros along the interior of their main
+     * diagonals.  Any floating point noise here is infinitely huge compared to
+     * the magnitude of zero and fundamentally changes the operator.
+     * Explicitly set tiny diagonal values to zero in first derivatives for a
+     * reasonable, order-dependent definition of tiny.
+     */
+    if (w->nderivatives >= 1) {
+        const double tiny = (w->order - 1) * GSL_DBL_EPSILON;
+        for (int i = 0; i < w->ndof; ++i) {
+            const int offset = suzerain_gbmatrix_offset(
+                    w->ld, w->kl[1], w->ku[1], i, i);
+            if (fabs(w->D[1][offset]) < tiny) {
+                w->D[1][offset] = 0.0;
+            }
+        }
+    }
 
     return SUZERAIN_SUCCESS;
 }

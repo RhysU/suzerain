@@ -809,7 +809,7 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_linear_memory )
         1e-12);
 
 
-    /* Check w->D[0], the first derivative matrix, against known good:
+    /* Check w->D[1], the first derivative matrix, against known good:
      * -1/2  1/2   0    0    0   0
      * -1/2   0   1/2   0    0   0
      *   0  -1/2   0   1/2   0   0
@@ -827,6 +827,74 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_linear_memory )
     CHECK_GBMATRIX_CLOSE(
                 6,       6,        1,        1, good_D1,   3,
         w->ndof, w->ndof, w->kl[1], w->ku[1], w->D[1], w->ld,
+        1e-12);
+
+    suzerain_bspline_free(w);
+}
+
+// Check a simple piecewise quadratic case's general banded storage
+// See http://www.scribd.com/doc/52035371/Finding-Galerkin-L-2-based-Operators-for-B-spline-discretizations for the details.
+BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic_memory )
+{
+    const double breakpoints[] = { 0.0, 1.0, 9.0/8.0, 3.0/2.0, 2.0, 3.0 };
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+    const int order  = 3;
+    const int nderiv = 2;
+
+    suzerain_bspline_workspace *w
+        = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
+            SUZERAIN_BSPLINE_GALERKIN_L2);
+    BOOST_CHECK_EQUAL(suzerain_bspline_ndof(w), w->ndof);
+
+    /* Check w->D[0], the mass matrix, against known good
+     * in general banded matrix column-major order.
+     */
+    const double good_D0[] = {
+            0.      , 0.          , 1./5.    ,  14./135.    ,  4./135. ,
+            0.      , 14./135.    , 19./120. ,  65./576.    ,  1./8640.,
+            4./135. , 65./576.    , 107./360.,  851./15120. ,  9./2240.,
+            1./8640., 851./15120. , 5./28.   ,  1919./20160.,  1./315. ,
+            9./2240., 1919./20160., 59./168. ,  16./105.    ,  1./45.  ,
+            1./315. , 16./105.    , 7./30.   ,  1./9.       ,  0.      ,
+            1./45.  , 1./9.       , 1./5.    ,  0.          ,  0.
+    };
+    CHECK_GBMATRIX_CLOSE(
+                7,       7,        2,        2, good_D0,   5,
+        w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld,
+        1e-12);
+
+    /* Check w->D[1], the first derivative matrix, against known good
+     * in general banded matrix column-major order.
+     */
+    const double good_D1[] = {
+            0.     ,  0.       ,  -1./2.,   -19./54.  ,  -4./27. ,
+            0.     ,  19./54.  ,   0.   ,   -25./72.  ,  -1./216.,
+            4./27. ,  25./72.  ,   0.   ,   -167./378.,  -3./56. ,
+            1./216.,  167./378.,   0.   ,   -209./504.,  -2./63. ,
+            3./56. ,  209./504.,   0.   ,   -5./14.   ,  -1./9.  ,
+            2./63. ,  5./14.   ,   0.   ,   -7./18.   ,   0.     ,
+            1./9.  ,  7./18.   ,   1./2.,    0.       ,   0.
+    };
+    CHECK_GBMATRIX_CLOSE(
+                7,       7,        2,        2, good_D1,   5,
+        w->ndof, w->ndof, w->kl[1], w->ku[1], w->D[1], w->ld,
+        1e-12);
+
+    /* Check w->D[2], the second derivative matrix, against known good
+     * in general banded matrix column-major order.
+     */
+    const double good_D2[] = {
+                 0.,         0.,     2./3.,    20./27.,  16./27.,
+                 0.,   -34./27.,    -4./3.,      4./9.,   4./27.,
+            16./27.,      4./9.,   -32./9.,  368./189.,    4./7.,
+             4./27.,  368./189.,  -64./21.,    44./63.,  16./63.,
+              4./7.,    44./63.,  -40./21.,     4./21.,    4./9.,
+            16./63.,     4./21.,    -4./3.,    -10./9.,       0.,
+              4./9.,      8./9.,     2./3.,         0.,       0.
+    };
+    CHECK_GBMATRIX_CLOSE(
+                7,       7,        2,        2, good_D2,   5,
+        w->ndof, w->ndof, w->kl[2], w->ku[2], w->D[2], w->ld,
         1e-12);
 
     suzerain_bspline_free(w);
