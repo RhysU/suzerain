@@ -152,7 +152,7 @@ enum suzerain_bspline_method {
     SUZERAIN_BSPLINE_COLLOCATION_GREVILLE = 1,
 
     /**
-     * Form derivative operators using Galerkin's method with the $L^2$
+     * Form derivative operators using Galerkin's method with the \f$L^2\f$
      * inner product.
      */
     SUZERAIN_BSPLINE_GALERKIN_L2,
@@ -657,7 +657,7 @@ suzerain_bspline_find_interpolation_problem_rhs(
  * @param[in]    nderivative Derivative to evaluate.  May be zero.
  * @param[in]    npoints  Number of points on which to evaluate basis.
  * @param[in]    points   Points \f$x_{i}\f$ at which to evaluate basis.
- * @param[in]    weights  Weights \f$\alpha_{i}$ used to weight \f$x_{i}\f$.
+ * @param[in]    weights  Weights \f$\alpha_{i}\f$ used to weight \f$x_{i}\f$.
  * @param[out]   m Number of rows in resulting banded matrix \f$A\f$.
  * @param[out]   n Number of columns in resulting banded matrix \f$A\f$.
  * @param[inout] kl Number of subdiagonals in the matrix \f$A\f$
@@ -669,6 +669,8 @@ suzerain_bspline_find_interpolation_problem_rhs(
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bspline_workspace
  */
 int
 suzerain_bspline_evaluation_matrix(
