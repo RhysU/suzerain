@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( allocation_okay )
 }
 
 // Check a simple piecewise linear case's general banded storage
-BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
+BOOST_AUTO_TEST_CASE( collocation_piecewise_linear_memory_application_soln )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
@@ -469,7 +469,7 @@ BOOST_AUTO_TEST_CASE( piecewise_linear_memory_application_solution )
 }
 
 // Check a simple piecewise quadratic case's general banded storage
-BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
+BOOST_AUTO_TEST_CASE( collocation_piecewise_quadratic_memory_application_soln )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
@@ -653,9 +653,8 @@ BOOST_AUTO_TEST_CASE( piecewise_quadratic_memory_application_solution )
     suzerain_bspline_free(w);
 }
 
-
 // Check a piecewise cubic case's general banded storage
-BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
+BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic_memory_application_soln )
 {
     const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0 };
     const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
@@ -739,6 +738,39 @@ BOOST_AUTO_TEST_CASE( piecewise_cubic_memory_application_solution )
         suzerain_bspline_zintegrate(zcoeffs, /*incx*/1, &zvalue, w);
         BOOST_CHECK_CLOSE(zvalue[0], 21./2, 1e-12);
         BOOST_CHECK_CLOSE(zvalue[1], 57./2, 1e-12);
+    }
+
+    suzerain_bspline_free(w);
+}
+
+// Check a simple piecewise linear case's general banded storage
+// See http://www.scribd.com/doc/52035371/Finding-Galerkin-L-2-based-Operators-for-B-spline-discretizations for the details.
+BOOST_AUTO_TEST_CASE( galerkin_piecewise_constant_memory )
+{
+    const double breakpoints[] = { 0.0, 1.0, 9.0/8.0, 3.0/2.0, 2.0, 3.0 };
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+    const int order  = 1;
+    const int nderiv = 0;
+
+    suzerain_bspline_workspace *w
+        = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
+            SUZERAIN_BSPLINE_GALERKIN_L2);
+    BOOST_CHECK_EQUAL(suzerain_bspline_ndof(w), w->ndof);
+
+    {
+        /* Check w->D[0], the mass matrix, against known good solution:
+         *   1   0   0   0   0
+         *   0  1/8  0   0   0
+         *   0   0  3/8  0   0
+         *   0   0   0  1/2  0
+         *   0   0   0   0   1
+         * Known good is in general banded matrix column-major order.
+         */
+        const double good_D0[] = { 1., 1./8., 3./8., 1./2., 1. };
+        CHECK_GBMATRIX_CLOSE(
+                  5,       5,        0,        0, good_D0,     1,
+            w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld,
+            1e-12);
     }
 
     suzerain_bspline_free(w);

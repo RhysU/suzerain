@@ -918,6 +918,10 @@ compute_banded_collocation_derivative_submatrix(
     return SUZERAIN_SUCCESS;
 }
 
+static inline int int_div_ceil(int x, int y) {
+    return x / y + !!(x % y);
+}
+
 static
 int
 suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
@@ -928,7 +932,7 @@ suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
     /* Maximum quadratic piecewise polynomial order is (w->order-1)^2   */
     gsl_integration_glfixed_table * const tbl
         = gsl_integration_glfixed_table_alloc(
-                1 - w->order + (w->order*w->order/2));
+                int_div_ceil((w->order-1)*(w->order-1) + 1, 2));
     if (tbl == NULL) {
         SUZERAIN_ERROR_NULL("failed to obtain Gauss-Legendre rule from GSL",
                             SUZERAIN_ESANITY);
@@ -938,7 +942,7 @@ suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
     for (int i = 0; i < w->ndof; ++i) {
 
         /* ...loop over the nontrivial knot intervals in support... */
-        for (int j = i; j < i + w->order - 1; ++j) {
+        for (int j = i; j < i + w->order; ++j) {
             double a, b;
             suzerain_bspline_knot(j  , &a, w);
             suzerain_bspline_knot(j+1, &b, w);
@@ -977,8 +981,6 @@ suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
 
     /* Free integration rule resources */
     gsl_integration_glfixed_table_free(tbl);
-
-    SUZERAIN_ERROR("unimplemented method", SUZERAIN_ESANITY); // FIXME
 
     return SUZERAIN_SUCCESS;
 }
