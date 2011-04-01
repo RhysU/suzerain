@@ -743,7 +743,7 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic_memory_application_soln )
     suzerain_bspline_free(w);
 }
 
-// Check a simple piecewise linear case's general banded storage
+// Check a simple piecewise constant case's general banded storage
 // See http://www.scribd.com/doc/52035371/Finding-Galerkin-L-2-based-Operators-for-B-spline-discretizations for the details.
 BOOST_AUTO_TEST_CASE( galerkin_piecewise_constant_memory )
 {
@@ -757,21 +757,77 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_constant_memory )
             SUZERAIN_BSPLINE_GALERKIN_L2);
     BOOST_CHECK_EQUAL(suzerain_bspline_ndof(w), w->ndof);
 
-    {
-        /* Check w->D[0], the mass matrix, against known good solution:
-         *   1   0   0   0   0
-         *   0  1/8  0   0   0
-         *   0   0  3/8  0   0
-         *   0   0   0  1/2  0
-         *   0   0   0   0   1
-         * Known good is in general banded matrix column-major order.
-         */
-        const double good_D0[] = { 1., 1./8., 3./8., 1./2., 1. };
-        CHECK_GBMATRIX_CLOSE(
-                  5,       5,        0,        0, good_D0,     1,
-            w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld,
-            1e-12);
-    }
+    /* Check w->D[0], the mass matrix, against known good solution:
+        *   1   0   0   0   0
+        *   0  1/8  0   0   0
+        *   0   0  3/8  0   0
+        *   0   0   0  1/2  0
+        *   0   0   0   0   1
+        * Known good is in general banded matrix column-major order.
+        */
+    const double good_D0[] = { 1., 1./8., 3./8., 1./2., 1. };
+    CHECK_GBMATRIX_CLOSE(
+                5,       5,        0,        0, good_D0,     1,
+        w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld,
+        1e-12);
+
+    suzerain_bspline_free(w);
+}
+
+// Check a simple piecewise linear case's general banded storage
+// See http://www.scribd.com/doc/52035371/Finding-Galerkin-L-2-based-Operators-for-B-spline-discretizations for the details.
+BOOST_AUTO_TEST_CASE( galerkin_piecewise_linear_memory )
+{
+    const double breakpoints[] = { 0.0, 1.0, 9.0/8.0, 3.0/2.0, 2.0, 3.0 };
+    const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+    const int order  = 2;
+    const int nderiv = 1;
+
+    suzerain_bspline_workspace *w
+        = suzerain_bspline_alloc(order, nderiv, nbreak, breakpoints,
+            SUZERAIN_BSPLINE_GALERKIN_L2);
+    BOOST_CHECK_EQUAL(suzerain_bspline_ndof(w), w->ndof);
+
+    /* Check w->D[0], the mass matrix, against known good:
+     * 1/3  1/6    0    0    0    0
+     * 1/6  3/8   1/48  0    0    0
+     *  0   1/48  1/6  1/16  0    0
+     *  0    0    1/16 7/24 1/12  0
+     *  0    0    0    1/12 1/2  1/6
+     *  0    0    0    0    1/6  1/3
+     * Known good is in general banded matrix column-major order.
+     */
+    const double good_D0[] = {0.    , 1./3. , 1./6. ,
+                              1./6. , 3./8. , 1./48.,
+                              1./48., 1./6. , 1./16.,
+                              1./16., 7./24., 1./12.,
+                              1./12., 1./2. , 1./6. ,
+                              1./6. , 1./3. , 0.    };
+    CHECK_GBMATRIX_CLOSE(
+                6,       6,        1,        1, good_D0,   3,
+        w->ndof, w->ndof, w->kl[0], w->ku[0], w->D[0], w->ld,
+        1e-12);
+
+
+    /* Check w->D[0], the first derivative matrix, against known good:
+     * -1/2  1/2   0    0    0   0
+     * -1/2   0   1/2   0    0   0
+     *   0  -1/2   0   1/2   0   0
+     *   0    0  -1/2   0   1/2  0
+     *   0    0    0  -1/2   0  1/2
+     *   0    0    0   0   -1/2 1/2
+     * Known good is in general banded matrix column-major order.
+     */
+    const double good_D1[] = { 0.   , -1./2., -1./2.,
+                               1./2.,  0.   , -1./2.,
+                               1./2.,  0.   , -1./2.,
+                               1./2.,  0.   , -1./2.,
+                               1./2.,  0.   , -1./2.,
+                               1./2.,  1./2.,  0.  };
+    CHECK_GBMATRIX_CLOSE(
+                6,       6,        1,        1, good_D1,   3,
+        w->ndof, w->ndof, w->kl[1], w->ku[1], w->D[1], w->ld,
+        1e-12);
 
     suzerain_bspline_free(w);
 }

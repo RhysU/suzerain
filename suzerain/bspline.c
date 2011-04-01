@@ -929,10 +929,9 @@ suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
     /* PRECONDITION: D[0]...D[nderivatives] must have been filled with zeros */
 
     /* Determine the integration order and retrieve Gauss-Legendre rule */
-    /* Maximum quadratic piecewise polynomial order is (w->order-1)^2   */
+    /* Maximum quadratic piecewise polynomial order is 2*(w->order-1)   */
     gsl_integration_glfixed_table * const tbl
-        = gsl_integration_glfixed_table_alloc(
-                int_div_ceil((w->order-1)*(w->order-1) + 1, 2));
+        = gsl_integration_glfixed_table_alloc(int_div_ceil(2*w->order - 1, 2));
     if (tbl == NULL) {
         SUZERAIN_ERROR_NULL("failed to obtain Gauss-Legendre rule from GSL",
                             SUZERAIN_ESANITY);
@@ -963,8 +962,10 @@ suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
                                                w->db, &istart, &iend,
                                                w->bw, w->dbw);
 
-                /* ...scale by the corresponding Gauss weight... */
-                gsl_matrix_scale(w->db, wk);
+                /* ...scale by the corresponding Gauss weight...         */
+                /* ...times the i-th DOF evaluated at the Gauss point... */
+                gsl_matrix_scale(w->db,
+                                 wk * gsl_matrix_get(w->db, i - istart, 0));
 
                 /* ...and accumulate into the banded derivative matrices. */
                 for (size_t l = istart; l <= iend; ++l) {
