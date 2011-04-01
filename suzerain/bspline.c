@@ -984,6 +984,25 @@ suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
     /* Free integration rule resources */
     gsl_integration_glfixed_table_free(tbl);
 
+    /* Mass matrices are analytically guaranteed to be symmetric, positive
+     * definite and so the sub- and super- diagonals are identical.  Any
+     * floating point noise differences spoil the discrete symmetry and will
+     * cause problems if people use BLAS DGMBV vs DSBMV-with-upper-diagonals vs
+     * DSBMV-with-lower-diagonals to compute matrix-vector products or
+     * factorizations.  Explicitly enforce the mass matrix's discrete symmetry
+     * by copying the subdiagonals to the superdiagonals.
+     */
+    if (w->nderivatives >= 0) {
+        assert(w->kl[0] == w->ku[0]);
+        for (int diag = 1; diag <= w->kl[0]; ++diag) {
+            double * const sup = w->D[0] + w->ku[0] - diag;
+            double * const sub = w->D[0] + w->ku[0] + diag;
+            for (int i = 0; i < w->ndof - diag; ++i) {
+                sup[(i+diag)*w->ld] = sub[i*w->ld];
+            }
+        }
+    }
+
     /* First derivative operators have zeros along the interior of their main
      * diagonals.  Any floating point noise here is infinitely huge compared to
      * the magnitude of zero and fundamentally changes the operator.
