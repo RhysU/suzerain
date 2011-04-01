@@ -1003,19 +1003,19 @@ suzerain_bspline_create_galerkin_operators(suzerain_bspline_workspace *w)
         }
     }
 
-    /* First derivative operators have zeros along the interior of their main
+    /* Odd derivative operators have zeros along the interior of their main
      * diagonals.  Any floating point noise here is infinitely huge compared to
      * the magnitude of zero and fundamentally changes the operator.
-     * Explicitly set tiny diagonal values to zero in first derivatives for a
-     * reasonable, order-dependent definition of tiny.
+     * Explicitly set tiny diagonal values to zero in odd derivatives for a
+     * reasonable (order- and derivative-dependent) definition of tiny.
      */
-    if (w->nderivatives >= 1) {
-        const double tiny = (w->order - 1) * GSL_DBL_EPSILON;
+    for (int n = 1; n <= w->nderivatives; n += 2) {
+        const double tiny = (2*w->order - 1) * n * GSL_DBL_EPSILON;
         for (int i = 0; i < w->ndof; ++i) {
             const int offset = suzerain_gbmatrix_offset(
-                    w->ld, w->kl[1], w->ku[1], i, i);
-            if (fabs(w->D[1][offset]) < tiny) {
-                w->D[1][offset] = 0.0;
+                    w->ld, w->kl[n], w->ku[n], i, i);
+            if (fabs(w->D[n][offset]) < tiny) {
+                w->D[n][offset] = 0.0;
             }
         }
     }
