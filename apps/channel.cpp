@@ -221,10 +221,16 @@ void load(const esio_handle h,
         esio_line_read(h, "k", &grid.k, 0);
     }
 
-    if (boost::math::signbit(grid.htdelta)) { // (-0.0 "<=" htdelta)
-        esio_line_read(h, "htdelta", &grid.htdelta, 0);
-    } else {
-        INFO0("Overriding grid using htdelta = " << grid.htdelta);
+    {
+        // Wacky emulation of signbit which can misbehave on GCC at -O3
+        const double a = grid.htdelta;
+        const double b = std::abs(a);
+        const bool htdelta_has_negative_sign = memcmp(&a, &b, sizeof(a));
+        if (htdelta_has_negative_sign) {
+            esio_line_read(h, "htdelta", &grid.htdelta, 0);
+        } else {
+            INFO0("Overriding grid using htdelta = " << grid.htdelta);
+        }
     }
 
     if (grid.N.z()) {
