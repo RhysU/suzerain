@@ -246,10 +246,11 @@ void load(const esio_handle h,
 
 void create(const int ndof,
             const int k,
-            const double a,
-            const double b,
+            const double left,
+            const double right,
             const double htdelta,
-            boost::shared_ptr<const suzerain::bspline>& bspw)
+            boost::shared_ptr<suzerain::bspline>& b,
+            boost::shared_ptr<suzerain::bsplineop>& bop)
 {
     // Compute breakpoint locations
     Eigen::ArrayXd breakpoints(ndof + 2 - k);
@@ -257,17 +258,21 @@ void create(const int ndof,
     for (int i = 0; i < breakpoints.size(); ++i) {
         breakpoints[i] = suzerain_htstretch2(htdelta, 1.0, breakpoints[i]);
     }
-    breakpoints = (b - a) * breakpoints + a;
+    breakpoints = (right - left) * breakpoints + left;
 
     // Generate the B-spline workspace based on order and breakpoints
     // Maximum non-trivial derivative operators included
-    bspw = boost::make_shared<const suzerain::bspline>(
-            k, k - 2, breakpoints.size(), breakpoints.data());
-    assert(bspw->ndof() == ndof);
+    b = boost::make_shared<suzerain::bspline>(
+            k, breakpoints.size(), breakpoints.data());
+    assert(b->n() == ndof);
+    bop.reset(new suzerain::bsplineop(
+                *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
+    assert(bop->n() == ndof);
 }
 
 void store(const esio_handle h,
-           const boost::shared_ptr<const suzerain::bspline>& bspw)
+           const boost::shared_ptr<suzerain::bspline>& b,
+           const boost::shared_ptr<suzerain::bsplineop>& bop)
 {
     // Only root writes data
     int procid;
@@ -275,23 +280,20 @@ void store(const esio_handle h,
 
     DEBUG0("Storing B-spline knot details");
 
-    Eigen::ArrayXr buf(bspw->nknots());
+    Eigen::ArrayXr buf(b->nknot());
 
-    bspw->knots(buf.data(), 1);
-    esio_line_establish(h, bspw->nknots(),
-            0, (procid == 0 ? bspw->nknots() : 0));
+    for (int i = 0; i < b->nknot(); ++i) buf[i] = b->knot(i);
+    esio_line_establish(h, b->nknot(), 0, (procid == 0 ? b->nknot() : 0));
     esio_line_write(h, "knots", buf.data(), 0,
             "Knots used to build B-spline basis");
 
-    bspw->breakpoints(buf.data(), 1);
-    esio_line_establish(h, bspw->nbreakpoints(),
-            0, (procid == 0 ? bspw->nbreakpoints() : 0));
+    for (int i = 0; i < b->nbreak(); ++i) buf[i] = b->breakpoint(i);
+    esio_line_establish(h, b->nbreak(), 0, (procid == 0 ? b->nbreak() : 0));
     esio_line_write(h, "breakpoints", buf.data(), 0,
             "Breakpoint locations used to build B-spline basis");
 
-    bspw->collocation_points(buf.data(), 1);
-    esio_line_establish(h, bspw->ndof(),
-            0, (procid == 0 ? bspw->ndof() : 0));
+    for (int i = 0; i < b->n(); ++i) buf[i] = b->collocation_point(i);
+    esio_line_establish(h, b->n(), 0, (procid == 0 ? b->n() : 0));
     esio_line_write(h, "collocation_points", buf.data(), 0,
             "Collocation points used to build discrete operators");
 
@@ -299,25 +301,26 @@ void store(const esio_handle h,
 
     char name[8];
     char comment[127];
-    for (int k = 0; k <= bspw->nderivatives(); ++k) {
+    for (int k = 0; k <= bop->nderiv(); ++k) {
         snprintf(name, sizeof(name)/sizeof(name[0]), "Dy%d", k);
         snprintf(comment, sizeof(comment)/sizeof(comment[0]),
                 "Wall-normal derivative Dy%d(i,j) = D%d[j,ku+i-j] for"
                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
-        const int lda = bspw->ku(k) + 1 + bspw->kl(k);
+        const int lda = bop->ku(k) + 1 + bop->kl(k);
         esio_plane_establish(h,
-                bspw->ndof(), 0, (procid == 0 ? bspw->ndof() : 0),
-                lda,          0, (procid == 0 ? lda          : 0));
-        esio_plane_write(h, name, bspw->D(k), 0, 0, comment);
-        esio_attribute_write(h, name, "kl", bspw->kl(k));
-        esio_attribute_write(h, name, "ku", bspw->ku(k));
-        esio_attribute_write(h, name, "m",  bspw->ndof());
-        esio_attribute_write(h, name, "n",  bspw->ndof());
+                bop->n(), 0, (procid == 0 ? bop->n() : 0),
+                lda,      0, (procid == 0 ? lda          : 0));
+        esio_plane_write(h, name, bop->D(k), 0, 0, comment);
+        esio_attribute_write(h, name, "kl", bop->kl(k));
+        esio_attribute_write(h, name, "ku", bop->ku(k));
+        esio_attribute_write(h, name, "m",  bop->n());
+        esio_attribute_write(h, name, "n",  bop->n());
     }
 }
 
 void load(const esio_handle h,
-          boost::shared_ptr<const suzerain::bspline>& bspw)
+          boost::shared_ptr<suzerain::bspline>& b,
+          boost::shared_ptr<suzerain::bsplineop>& bop)
 {
     DEBUG0("Loading B-spline workspace based on order and breakpoints");
 
@@ -338,7 +341,9 @@ void load(const esio_handle h,
     // Collocation points are ignored
 
     // Construct B-spline workspace
-    bspw.reset(new suzerain::bspline(k, k - 2, nbreak, buf.data()));
+    b = boost::make_shared<suzerain::bspline>(k, nbreak, buf.data());
+    bop.reset(new suzerain::bsplineop(
+                *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
 }
 
 void store_time(const esio_handle h,
@@ -450,7 +455,8 @@ void load(const esio_handle h,
           suzerain::NoninterleavedState<4,complex_t> &state,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
-          const suzerain::bspline& bspw)
+          const suzerain::bspline& b,
+          const suzerain::bsplineop& bop)
 {
     typedef suzerain::NoninterleavedState<4,complex_t> load_type;
 
@@ -466,21 +472,19 @@ void load(const esio_handle h,
     assert(ncomponents == 2);
 
     // Prepare a file-specific B-spline basis
-    boost::shared_ptr<const suzerain::bspline> Fbspw;
-    load(h, Fbspw);
-    assert(Fy == Fbspw->ndof());
+    boost::shared_ptr<suzerain::bspline> Fb;
+    boost::shared_ptr<suzerain::bsplineop> Fbop;
+    load(h, Fb, Fbop);
+    assert(Fy == Fb->n());
 
     // Check if the B-spline basis in the file differs from ours.  Use strict
     // equality as minor knot differences magnify once collocation points
     // and operators are computed.
-    bool bsplines_same =    bspw.order()  == Fbspw->order()
-                         && bspw.ndof()   == Fbspw->ndof()
-                         && bspw.nknots() == Fbspw->nknots();
-    for (int j = 0; bsplines_same && j < bspw.nknots(); ++j) {
-        double x_j, y_j;
-        bspw.knot(j, &x_j);
-        Fbspw->knot(j, &y_j);
-        bsplines_same = x_j == y_j;
+    bool bsplines_same =    b.k()     == Fb->k()
+                         && b.n()     == Fb->n()
+                         && b.nknot() == Fb->nknot();
+    for (int j = 0; bsplines_same && j < b.nknot(); ++j) {
+        bsplines_same = (b.knot(j) == Fb->knot(j));
     }
 
     // Compute wavenumber translation logistics for X direction.
@@ -509,21 +513,21 @@ void load(const esio_handle h,
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
     // Possibly prepare a temporary buffer into which to read each scalar field
-    // and a factorization of bspw's mass matrix.  Used only when
+    // and a factorization of b's mass matrix.  Used only when
     // !bsplines_same.
     typedef boost::multi_array<
         complex_t, 3, suzerain::blas::allocator<complex_t>::type
     > tmp_type;
     boost::scoped_ptr<tmp_type> tmp;
-    boost::scoped_ptr<suzerain::bspline_luz> mass;
+    boost::scoped_ptr<suzerain::bsplineop_luz> mass;
     if (!bsplines_same) {
         DEBUG0("Differences in B-spline basis require restart projection");
         const boost::array<tmp_type::index,3> extent = {{
             Fy, state.shape()[2], state.shape()[3]
         }};
         tmp.reset(new tmp_type(extent, boost::fortran_storage_order()));
-        mass.reset(new suzerain::bspline_luz(bspw));
-        mass->form_mass(bspw);
+        mass.reset(new suzerain::bsplineop_luz(bop));
+        mass->form_mass(bop);
     }
 
     DEBUG0("Started loading simulation fields");
@@ -548,8 +552,8 @@ void load(const esio_handle h,
 
             // Collectively establish size of read across all ranks
             esio_field_establish(h, Fz, fzb[j], (fze[j] - fzb[j]),
-                                        Fx, fxb[0], (fxe[0] - fxb[0]),
-                                        Fy,      0, (            Fy));
+                                    Fx, fxb[0], (fxe[0] - fxb[0]),
+                                    Fy,      0, (            Fy));
 
 
             // Destination of read is NULL for empty READ operations.
@@ -585,16 +589,15 @@ void load(const esio_handle h,
         if (!bsplines_same) {
 
             // Step 0: Obtain collocation points for new basis
-            Eigen::ArrayXd points(bspw.ndof());
-            bspw.collocation_points(points.data(), 1);
+            Eigen::ArrayXd points(b.n());
+            for (int i = 0; i < b.n(); ++i) points[i] = b.collocation_point(i);
 
             // Step 1: Affine transformation of points into old basis domain
             // Allows stretching of old range onto new range.
-            double oldmin, oldmax, newmin, newmax;
-            bspw.collocation_point(                  0, &newmin);
-            bspw.collocation_point(    bspw.ndof() - 1, &newmax);
-            Fbspw->collocation_point(                0, &oldmin);
-            Fbspw->collocation_point(Fbspw->ndof() - 1, &oldmax);
+            const double newmin = b.collocation_point(0);
+            const double newmax = b.collocation_point(b.n() - 1);
+            const double oldmin = Fb->collocation_point(0);
+            const double oldmax = Fb->collocation_point(Fb->n() - 1);
             // Only pay for floating point loss if strictly necessary
             if (oldmin != newmin || oldmax != newmax) {
                 points = (points - newmin)
@@ -606,8 +609,8 @@ void load(const esio_handle h,
             const int kmax = numeric_cast<int>(field.shape()[2]);
             for (int k = 0; k < kmax; ++k) {
                 for (int j = 0; j < jmax; ++j) {
-                    Fbspw->zevaluate(0, &(*tmp)[0][j][k], bspw.ndof(),
-                                     points.data(), &field[0][j][k], 0);
+                    Fb->linear_combination(0, &(*tmp)[0][j][k], b.n(),
+                                           points.data(), &field[0][j][k], 0);
                 }
             }
 

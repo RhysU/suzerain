@@ -80,9 +80,10 @@ static const GridDefinition grid(
         /* DAFz    */ 1.5);
 static shared_ptr<const suzerain::pencil_grid> dgrid;
 
-// Global B-spline -details initialized in main()
-static shared_ptr<const suzerain::bspline>     bspw;
-static shared_ptr<      suzerain::bspline_luz> bspluzw;
+// Global B-spline related-details initialized in main()
+static shared_ptr<suzerain::bspline>       b;
+static shared_ptr<suzerain::bsplineop>     bop;
+static shared_ptr<suzerain::bsplineop_luz> bopluz;
 
 // Explicit timestepping scheme uses only complex_t 4D NoninterleavedState
 // State indices range over (scalar field, Y, X, Z) in wave space
@@ -214,13 +215,13 @@ int main(int argc, char **argv)
     INFO0("Creating B-spline basis of order " << (grid.k - 1)
           << " on [0, " << scenario.Ly << "] with "
           << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
-    channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
+    channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, b, bop);
 
     INFO0("Creating new restart file " << restart_file);
     esio_file_create(esioh, restart_file.c_str(), clobber);
     channel::store(esioh, scenario);
     channel::store(esioh, grid, scenario.Lx, scenario.Lz);
-    channel::store(esioh, bspw);
+    channel::store(esioh, b, bop);
     esio_file_flush(esioh);
 
     INFO0("Computing derived, dimensional reference parameters");
@@ -292,8 +293,8 @@ int main(int argc, char **argv)
     }
 
     // Initialize B-splines to find coefficients from collocation points
-    bspluzw = make_shared<suzerain::bspline_luz>(*bspw);
-    bspluzw->form_mass(*bspw);
+    bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
+    bopluz->form_mass(*bop);
 
     // Initialize pencil_grid to obtain parallel decomposition details
     dgrid = make_shared<suzerain::pencil_grid>(grid.dN, grid.P);
@@ -334,8 +335,8 @@ int main(int argc, char **argv)
 
         // Find streamwise momentum as a function of wall-normal position
         const suzerain_zfunction zF_rhou = { &zf_msolver, &params };
-        bspw->zfind_interpolation_problem_rhs(&zF_rhou, &mean_rhou[0]);
-        bspluzw->solve(1, &mean_rhou[0], 1, grid.N.y());
+        bop->interpolation_rhs(&zF_rhou, &mean_rhou[0], *b);
+        bopluz->solve(1, &mean_rhou[0], 1, grid.N.y());
 
         // Nondimensional wall-normal momentum is zero
         suzerain::multi_array::fill(mean_rhov, 0);
@@ -345,8 +346,8 @@ int main(int argc, char **argv)
 
         // Find total energy as a function of wall-normal position
         const suzerain_zfunction zF_rhoe = { &zf_esolver, &params };
-        bspw->zfind_interpolation_problem_rhs(&zF_rhoe, &mean_rhoe[0]);
-        bspluzw->solve(1, &mean_rhoe[0], 1, grid.N.y());
+        bop->interpolation_rhs(&zF_rhoe, &mean_rhoe[0], *b);
+        bopluz->solve(1, &mean_rhoe[0], 1, grid.N.y());
     }
 
     INFO0("Writing state fields to restart file");

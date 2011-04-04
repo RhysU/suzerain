@@ -92,10 +92,12 @@ static const TimeDefinition<real_t> timedef(/* advance_dt           */ 0,
                                             /* evmagfactor per Prem */ 0.72);
 
 // Global grid-details initialized in main()
-static shared_ptr<const suzerain::bspline>     bspw;
-static shared_ptr<      suzerain::bspline_luz> bspluzw;
-static shared_ptr<const suzerain::pencil_grid> dgrid;
-static Eigen::ArrayXr                          one_over_delta_y;
+static shared_ptr<      suzerain::bspline>       b;
+static shared_ptr<      suzerain::bsplineop>     bop;
+static shared_ptr<      suzerain::bsplineop_luz> bopluz;
+static shared_ptr<const suzerain::pencil_grid>   dgrid;
+static Eigen::ArrayXr                            one_over_delta_y;
+static Eigen::ArrayXr                            bintcoeff;
 
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
@@ -171,16 +173,16 @@ public:
         // All state enters routine as coefficients in X, Y, and Z directions
 
         // Compute Y derivatives of density at collocation points
-        bspw->accumulate_operator(1, // dy
+        bop->accumulate(1, // dy
             state.shape()[2]*state.shape()[3],
             complex_one, state_rho.origin(), 1, state.shape()[1],
             complex_zero, rho_y.wave.begin(), 1, state.shape()[1]);
-        bspw->accumulate_operator(2, // d2y
+        bop->accumulate(2, // d2y
             state.shape()[2]*state.shape()[3],
             complex_one, state_rho.origin(), 1, state.shape()[1],
             complex_zero, rho_yy.wave.begin(), 1, state.shape()[1]);
         // Compute density at collocation points within state storage
-        bspw->apply_operator(0, // eval
+        bop->apply(0, // eval
             state.shape()[2]*state.shape()[3],
             1.0, state_rho.origin(), 1, state.shape()[1]);
 
@@ -225,16 +227,16 @@ public:
 
 
         // Compute Y derivatives of X momentum at collocation points
-        bspw->accumulate_operator(1, // dy
+        bop->accumulate(1, // dy
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhou.origin(), 1, state.shape()[1],
             complex_zero, mx_y.wave.begin(), 1, state.shape()[1]);
-        bspw->accumulate_operator(2, // d2y
+        bop->accumulate(2, // d2y
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhou.origin(), 1, state.shape()[1],
             complex_zero, mx_yy.wave.begin(), 1, state.shape()[1]);
         // Compute X momentum at collocation points within state storage
-        bspw->apply_operator(0, // eval
+        bop->apply(0, // eval
             state.shape()[2]*state.shape()[3],
             1.0, state_rhou.origin(), 1, state.shape()[1]);
 
@@ -279,16 +281,16 @@ public:
 
 
         // Compute Y derivatives of Y momentum at collocation points
-        bspw->accumulate_operator(1, // dy
+        bop->accumulate(1, // dy
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhov.origin(), 1, state.shape()[1],
             complex_zero, my_y.wave.begin(), 1, state.shape()[1]);
-        bspw->accumulate_operator(2, // d2y
+        bop->accumulate(2, // d2y
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhov.origin(), 1, state.shape()[1],
             complex_zero, my_yy.wave.begin(), 1, state.shape()[1]);
         // Compute Y momentum at collocation points within state storage
-        bspw->apply_operator(0, // eval
+        bop->apply(0, // eval
             state.shape()[2]*state.shape()[3],
             1.0, state_rhov.origin(), 1, state.shape()[1]);
 
@@ -333,16 +335,16 @@ public:
 
 
         // Compute Y derivatives of Z momentum at collocation points
-        bspw->accumulate_operator(1, // dy
+        bop->accumulate(1, // dy
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhow.origin(), 1, state.shape()[1],
             complex_zero, mz_y.wave.begin(), 1, state.shape()[1]);
-        bspw->accumulate_operator(2, // d2y
+        bop->accumulate(2, // d2y
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhow.origin(), 1, state.shape()[1],
             complex_zero, mz_yy.wave.begin(), 1, state.shape()[1]);
         // Compute Y momentum at collocation points within state storage
-        bspw->apply_operator(0, // eval
+        bop->apply(0, // eval
             state.shape()[2]*state.shape()[3],
             1.0, state_rhow.origin(), 1, state.shape()[1]);
 
@@ -387,16 +389,16 @@ public:
 
 
         // Compute Y derivatives of total energy at collocation points
-        bspw->accumulate_operator(1, // dy
+        bop->accumulate(1, // dy
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhoe.origin(), 1, state.shape()[1],
             complex_zero, e_y.wave.begin(), 1, state.shape()[1]);
-        bspw->accumulate_operator(2, // d2y
+        bop->accumulate(2, // d2y
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhoe.origin(), 1, state.shape()[1],
             complex_zero, div_grad_e.wave.begin(), 1, state.shape()[1]);
         // Compute total energy at collocation points within state storage
-        bspw->apply_operator(0, // eval
+        bop->apply(0, // eval
             state.shape()[2]*state.shape()[3],
             1.0, state_rhoe.origin(), 1, state.shape()[1]);
 
@@ -740,15 +742,15 @@ public:
                 reinterpret_cast<real_t *>(state_rhoe.origin()));
 
         // Convert collocation point values to Bspline coefficients
-        bspluzw->solve(state.shape()[2]*state.shape()[3],
+        bopluz->solve(state.shape()[2]*state.shape()[3],
                 state_rho.origin(), 1, state.shape()[1]);
-        bspluzw->solve(state.shape()[2]*state.shape()[3],
+        bopluz->solve(state.shape()[2]*state.shape()[3],
                 state_rhou.origin(), 1, state.shape()[1]);
-        bspluzw->solve(state.shape()[2]*state.shape()[3],
+        bopluz->solve(state.shape()[2]*state.shape()[3],
                 state_rhov.origin(), 1, state.shape()[1]);
-        bspluzw->solve(state.shape()[2]*state.shape()[3],
+        bopluz->solve(state.shape()[2]*state.shape()[3],
                 state_rhow.origin(), 1, state.shape()[1]);
-        bspluzw->solve(state.shape()[2]*state.shape()[3],
+        bopluz->solve(state.shape()[2]*state.shape()[3],
                 state_rhoe.origin(), 1, state.shape()[1]);
 
         // Perform Allreduce on stable time step sizes
@@ -822,10 +824,10 @@ public:
             }
 
             // Compute the bulk density so we can hold it constant in time
-            bspw->integrate(
+            bulk_density = suzerain::blas::dot(
+                    bintcoeff.size(), bintcoeff.data(), 1,
                     reinterpret_cast<real_t *>(&state[ndx::rho][0][0][0]),
-                    sizeof(complex_t)/sizeof(real_t),
-                    &bulk_density);
+                    sizeof(complex_t)/sizeof(real_t));
         }
 
         // Apply an operator that cares nothing about the boundaries
@@ -838,12 +840,10 @@ public:
 
         // Add f_rho to mean density per writeup step (2)
         if (zero_zero_rank) {
-            real_t f_rho;
-            bspw->integrate(
+            const real_t f_rho = suzerain::blas::dot(
+                    bintcoeff.size(), bintcoeff.data(), 1,
                     reinterpret_cast<real_t *>(&state[ndx::rho][0][0][0]),
-                    sizeof(complex_t)/sizeof(real_t),
-                    &f_rho);
-            f_rho /= scenario.Ly;
+                    sizeof(complex_t)/sizeof(real_t)) / scenario.Ly;
             for (std::size_t i = 0; i < state.shape()[1]; ++i) {
                 state[ndx::rho][i][0][0] -= f_rho;
             }
@@ -877,12 +877,10 @@ public:
         if (zero_zero_rank) {
 
             // Compute temporary per writeup implementation step (5)
-            real_t alpha;
-            bspw->integrate(
+            real_t alpha = suzerain::blas::dot(
+                    bintcoeff.size(), bintcoeff.data(), 1,
                     reinterpret_cast<real_t *>(&state[ndx::rhou][0][0][0]),
-                    sizeof(complex_t)/sizeof(real_t),
-                    &alpha);
-            alpha /= scenario.Ly;
+                    sizeof(complex_t)/sizeof(real_t)) / scenario.Ly;
 
             // Apply to non-wall mean x-momentum right hand side per step (6)
             for (std::size_t i = lower_wall + 1; i < upper_wall; ++i) {
@@ -1008,11 +1006,14 @@ int main(int argc, char **argv)
     INFO("Using B-splines of order " << (grid.k - 1)
          << " on [0, " << scenario.Ly << "] with "
          << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
-    channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, bspw);
-    assert(bspw->order() == grid.k);
-    assert(bspw->ndof()  == grid.N.y());
-    bspluzw = make_shared<suzerain::bspline_luz>(*bspw);
-    bspluzw->form_mass(*bspw);
+    channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly,
+                    grid.htdelta, b, bop);
+    assert(b->k() == grid.k);
+    assert(b->n() == grid.N.y());
+    bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
+    bopluz->form_mass(*bop);
+    bintcoeff.resize(b->n(), 1);
+    b->integration_coefficients(0, bintcoeff.data());
 
     INFO0("Saving metadata temporary file: " << restart.metadata());
     {
@@ -1020,7 +1021,7 @@ int main(int argc, char **argv)
         esio_file_create(h, restart.metadata().c_str(), 1 /* overwrite */);
         channel::store(h, scenario);
         channel::store(h, grid, scenario.Lx, scenario.Lz);
-        channel::store(h, bspw);
+        channel::store(h, b, bop);
         esio_file_close(h);
         esio_handle_finalize(h);
         atexit(&atexit_metadata); // Delete lingering metadata file at exit
@@ -1030,20 +1031,20 @@ int main(int argc, char **argv)
     // Initialize array holding \frac{1}{\Delta{}y} grid spacing
     one_over_delta_y.resize(grid.N.y());
     {
+        using std::abs;
         // Determine minimum delta y observable from each collocation point
-        real_t a, b, c;
-        bspw->collocation_point(0, &a);                     // First point
-        bspw->collocation_point(1, &b);
-        one_over_delta_y[0] = std::abs(b - a);
+        one_over_delta_y[0] = abs(                          // First point
+                b->collocation_point(1) - b->collocation_point(0));
         for (int i = 1; i < grid.N.y() - 1; ++i) {          // Intermediates
-            bspw->collocation_point(i-1, &a);
-            bspw->collocation_point(i,   &b);
-            bspw->collocation_point(i+1, &c);
-            one_over_delta_y[i] = std::min(std::abs(b-a), std::abs(c-b));
+            one_over_delta_y[i] = std::min(
+                    abs(b->collocation_point(i)   - b->collocation_point(i-1)),
+                    abs(b->collocation_point(i+1) - b->collocation_point(i))
+                );
         }
-        bspw->collocation_point(grid.N.y() - 2, &a);        // Last point
-        bspw->collocation_point(grid.N.y() - 1, &b);
-        one_over_delta_y[grid.N.y() - 1] = std::abs(b - a);
+        one_over_delta_y[grid.N.y() - 1] = abs(             // Last point
+                    b->collocation_point(grid.N.y()-2)
+                    - b->collocation_point(grid.N.y()-1)
+                );
 
         // Invert to find \frac{1}{\Delta{}y}
         one_over_delta_y = one_over_delta_y.inverse();
@@ -1075,7 +1076,7 @@ int main(int argc, char **argv)
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     real_t initial_t;
     channel::load_time(esioh, initial_t);
-    channel::load(esioh, *state_linear, grid, *dgrid, *bspw);
+    channel::load(esioh, *state_linear, grid, *dgrid, *b, *bop);
     esio_file_close(esioh);
 
     // Create the state storage for nonlinear operator with appropriate padding
@@ -1107,7 +1108,7 @@ int main(int argc, char **argv)
     using suzerain::timestepper::lowstorage::SMR91Method;
     const SMR91Method<complex_t> smr91(timedef.evmagfactor);
     suzerain::BsplineMassOperator<state_type> L(
-            bspw, scenario.Lx * scenario.Lz * grid.N.x() * grid.N.z());
+            bop, scenario.Lx * scenario.Lz * grid.N.x() * grid.N.z());
     NonlinearOperatorWithBoundaryConditions N;
 
     // Establish TimeController for use with operators and state storage

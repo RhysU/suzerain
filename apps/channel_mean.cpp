@@ -141,7 +141,8 @@ Eigen::Array<real_t, Eigen::Dynamic, column::COUNT>
 process(const Eigen::ArrayXXr &s_coeffs,
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
-        const suzerain::bspline &bspw,
+        const suzerain::bspline &b,
+        const suzerain::bsplineop &bop,
         const real_t time);
 
 int main(int argc, char **argv)
@@ -186,12 +187,13 @@ int main(int argc, char **argv)
         real_t time;
         suzerain::problem::ScenarioDefinition<real_t> scenario;
         suzerain::problem::GridDefinition grid;
-        shared_ptr<const suzerain::bspline> bspw;
+        shared_ptr<suzerain::bspline> b;
+        shared_ptr<suzerain::bsplineop> bop;
         channel::load_time(h.get(), time);
         channel::load(h.get(), scenario);
         channel::load(h.get(), grid);
-        channel::load(h.get(), bspw);
-        assert(bspw->ndof() == grid.N.y());
+        channel::load(h.get(), b, bop);
+        assert(b->n() == grid.N.y());
 
         // Load zero-zero mode coefficients for all state variables
         Eigen::ArrayXXr s_coeffs(grid.N.y(), channel::field::count);
@@ -214,7 +216,7 @@ int main(int argc, char **argv)
 
         // Compute the quantities of interest
         Eigen::Array<real_t, Eigen::Dynamic, column::COUNT> s
-            = process(s_coeffs, scenario, grid, *bspw, time);
+            = process(s_coeffs, scenario, grid, *b, *bop, time);
 
         if (use_stdout) {
 
@@ -259,7 +261,8 @@ Eigen::Array<real_t, Eigen::Dynamic, column::COUNT>
 process(const Eigen::ArrayXXr &s_coeffs,
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
-        const suzerain::bspline &bspw,
+        const suzerain::bspline   &b,
+        const suzerain::bsplineop &bop,
         const real_t time)
 {
     SUZERAIN_UNUSED(grid);
@@ -272,16 +275,18 @@ process(const Eigen::ArrayXXr &s_coeffs,
     // Populate point-like information of (t,y \in (0, Ly))
     // We'll compute y^{+} information later
     s.col(column::t).setConstant(time);
-    bspw.collocation_points(&s.col(column::y)[0], 1);
+    for (int i = 0; i < b.n(); ++i) {
+        s.col(column::y)[i] = b.collocation_point(i);
+    }
 
     // Compute derivatives of conserved state at collocation points.
-    bspw.accumulate_operator(0, channel::field::count,
+    bop.accumulate(0, channel::field::count,
             1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
             0.0, &s.col(column::rho)[0], 1, s.stride());
-    bspw.accumulate_operator(1, channel::field::count,
+    bop.accumulate(1, channel::field::count,
             1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
             0.0, &s.col(column::rho_y)[0], 1, s.stride());
-    bspw.accumulate_operator(2, channel::field::count,
+    bop.accumulate(2, channel::field::count,
             1.0, &s_coeffs(0,0), 1, s_coeffs.stride(),
             0.0, &s.col(column::rho_yy)[0], 1, s.stride());
 
@@ -310,8 +315,8 @@ process(const Eigen::ArrayXXr &s_coeffs,
 #undef X
 
     // Form mass matrix and obtain coefficients for primitive state
-    suzerain::bspline_lu mass(bspw);
-    mass.form_mass(bspw);
+    suzerain::bsplineop_lu mass(bop);
+    mass.form_mass(bop);
 #define X(a) mass.solve(1, &s.col(column::a##_y)[0], 1, s.stride());
     FORALL_STATE_PRIM(X)
 #undef X
@@ -322,14 +327,12 @@ process(const Eigen::ArrayXXr &s_coeffs,
 #undef X
 
     // Apply 1st derivative operator to coefficients
-#define X(a) bspw.apply_operator(1, 1, 1.0, &s.col(column::a##_y)[0], \
-                                 1, s.stride());
+#define X(a) bop.apply(1, 1, 1.0, &s.col(column::a##_y)[0], 1, s.stride());
     FORALL_STATE_PRIM(X)
 #undef X
 
     // Apply 2nd derivative operator to coefficients
-#define X(a) bspw.apply_operator(2, 1, 1.0, &s.col(column::a##_yy)[0], \
-                                 1, s.stride());
+#define X(a) bop.apply(2, 1, 1.0, &s.col(column::a##_yy)[0], 1, s.stride());
     FORALL_STATE_PRIM(X)
 #undef X
 

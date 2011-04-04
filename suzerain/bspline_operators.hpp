@@ -61,13 +61,13 @@ public:
     typedef NoninterleavedState<4,complex_t> state_type;
 
     explicit BsplineMassOperator(
-            boost::shared_ptr<const suzerain::bspline> bspw,
-            real_t scaling = 1)
-        : bspw_(bspw), opscaling_(scaling), luzw_(*bspw)
+            boost::shared_ptr<suzerain::bsplineop> &bop,
+            const real_t scaling = 1)
+        : bop_(bop), opscaling_(scaling), bopluz_(*bop)
     {
         complex_t coefficient;
         suzerain::complex::assign_complex(coefficient, scaling);
-        luzw_.form_general(1, &coefficient, *bspw);
+        bopluz_.form(1, &coefficient, *bop);
     }
 
     virtual void applyMassPlusScaledOperator(
@@ -78,9 +78,9 @@ public:
 
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
         assert(1 == state.strides()[1]);
-        assert(static_cast<unsigned>(luzw_.ndof()) == state.shape()[1]);
-        bspw_->apply_operator(0, nrhs, opscaling_,
-                state.memory_begin(), 1, state.strides()[2]);
+        assert(static_cast<unsigned>(bopluz_.n()) == state.shape()[1]);
+        bop_->apply(0, nrhs, opscaling_,
+                    state.memory_begin(), 1, state.strides()[2]);
     }
 
     virtual void accumulateMassPlusScaledOperator(
@@ -102,7 +102,7 @@ public:
                 lx < static_cast<index>(x.index_bases()[3] + x.shape()[3]);
                 ++lx, ++ly) {
 
-                bspw_->accumulate_operator(0, x.shape()[2], opscaling_,
+                bop_->accumulate(0, x.shape()[2], opscaling_,
                         &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
                         x.strides()[1], x.strides()[2],
                         1.0, &y[iy][y.index_bases()[1]][y.index_bases()[2]][ly],
@@ -119,14 +119,14 @@ public:
 
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
         assert(1 == state.strides()[1]);
-        assert(static_cast<unsigned>(luzw_.ndof()) == state.shape()[1]);
-        luzw_.solve(nrhs, state.memory_begin(), 1, state.strides()[2]);
+        assert(static_cast<unsigned>(bopluz_.n()) == state.shape()[1]);
+        bopluz_.solve(nrhs, state.memory_begin(), 1, state.strides()[2]);
     }
 
 private:
-    const boost::shared_ptr<const suzerain::bspline> bspw_;
+    const boost::shared_ptr<suzerain::bsplineop> bop_;
     const real_t opscaling_;
-    suzerain::bspline_luz luzw_;
+    suzerain::bsplineop_luz bopluz_;
 };
 
 } // end namespace suzerain

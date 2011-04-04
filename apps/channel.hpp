@@ -94,21 +94,24 @@ void store(const esio_handle h,
 void load(const esio_handle h,
           suzerain::problem::GridDefinition& grid);
 
-/** Create a B-spline workspace on [a,b] per ndof, k, and htdelta */
+/** Create a B-spline workspace on [left,right] per ndof, k, and htdelta */
 void create(const int ndof,
             const int k,
-            const double a,
-            const double b,
+            const double left,
+            const double right,
             const double htdelta,
-            boost::shared_ptr<const suzerain::bspline>& bspw);
+            boost::shared_ptr<suzerain::bspline>& b,
+            boost::shared_ptr<suzerain::bsplineop>& bop);
 
 /** Store a suzerain::bspline workspace in a restart file */
 void store(const esio_handle h,
-           const boost::shared_ptr<const suzerain::bspline>& bspw);
+           const boost::shared_ptr<suzerain::bspline>& b,
+           const boost::shared_ptr<suzerain::bsplineop>& bop);
 
 /** Load a suzerain::bspline workspace from a restart file */
 void load(const esio_handle h,
-          boost::shared_ptr<const suzerain::bspline>& bspw);
+          boost::shared_ptr<suzerain::bspline>& b,
+          boost::shared_ptr<suzerain::bsplineop>& bop);
 
 /** Store the current simulation time information */
 void store_time(const esio_handle h,
@@ -130,13 +133,14 @@ void store(const esio_handle h,
 /**
  * Load the current simulation state from an open restart file.
  * Handles the very non-trivial task of adjusting the restart
- * to match the provided \c grid, \c dgrid, and \c bspw.
+ * to match the provided \c grid, \c dgrid, \c b, and \c bop
  */
 void load(const esio_handle h,
           suzerain::NoninterleavedState<4,complex_t> &state,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
-          const suzerain::bspline& bspw);
+          const suzerain::bspline& b,
+          const suzerain::bsplineop& bop);
 
 /** Read a complex-valued field via ESIO */
 template< typename I >

@@ -1,0 +1,780 @@
+/*--------------------------------------------------------------------------
+ *--------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010 The PECOS Development Team
+ *
+ * Please see http://pecos.ices.utexas.edu for more information.
+ *
+ * This file is part of Suzerain.
+ *
+ * Suzerain is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Suzerain is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *--------------------------------------------------------------------------
+ *
+ * bsplineop.h: B-spline operator routines
+ *
+ * $Id$
+ *--------------------------------------------------------------------------
+ *-------------------------------------------------------------------------- */
+#ifndef __SUZERAIN_BSPLINEOP_H
+#define __SUZERAIN_BSPLINEOP_H
+
+#include <gsl/gsl_bspline.h>
+#include <suzerain/common.h>
+#include <suzerain/function.h>
+
+/** @file
+ * Provides B-spline-based banded operator construction and application
+ * routines.  Both real- and complex- valued operator application and inversion
+ * are supported.  The derivative operators map a function's spline
+ * coefficients to an approximation of the derivative's spline coefficients.
+ *
+ * For collocation-based operators, the approximation \f$\tilde{\gamma}(x) =
+ * \sum_{i} \beta_{i} B_{i}(x)\f$ to the continuous operator
+ * \f$\mathcal{D}\f$ acting on
+ * \f$\tilde{\phi}(x) = \sum_{i} \alpha_{i} B_{i}(x)\f$ must satisfy
+ * \f$\tilde{\gamma}(x_j) = \left(\mathcal{D}\tilde{\phi}\right)(x_j)\f$
+ * at each collocation point \f$x_j\f$.  This implies
+ * \f[
+ *        \sum_{i} \beta_{i} B_{i}(x_j)
+ *      = \sum_{i} \alpha_{i} \mathcal{D}(B_i)(x_j)
+ *      \quad \forall{} j.
+ * \f]
+ * The \f$k\f$-th collocation derivative operator matrix is given by
+ * \f$D^k_{i,j}=\left(B^{(k)}_j(x_i)\right)\f$.  Conveniently, the
+ * matrix-vector product of a collocation derivative matrix with a B-spline
+ * coefficient vector is equivalent to evaluating the linear combination of the
+ * basis functions at the collocation points.
+ *
+ * For Galerkin-based operators, the relationship \f$ \left( B_j,
+ * \tilde{\gamma}\right) = \left(B_j, \mathcal{D}\tilde{\phi}\right)\f$ must
+ * hold for each spline basis index \f$j\f$ where \f$(f,g)\f$ denotes the
+ * \f$L_2\f$ inner product.  This implies
+ * \f[
+ *          \sum_{i} \beta_{i} \left( B_j, B_i \right)
+ *      =   \sum_{i} \alpha_{j} \left( B_j, \mathcal{D}B_i \right).
+ * \f]
+ * The \f$k\f$-th Galerkin derivative operator matrix is given by
+ * \f$D^k_{i,j}=\left(B_j,B^{(k)}_i\right)\f$.  For either method, applying
+ * the \f$k\f$-th derivative operator requires solving the linear problem
+ * \f$D^{0} \beta = D^{k} \alpha\f$.  The method to use is chosen
+ * through the ::suzerain_bsplineop_method value provided to
+ * suzerain_bsplineop_alloc().
+ *
+ * (FIXME: Stale!)
+ * Assuming you already have a suzerain_function instance \c f, this snippet
+ * interpolates a general function onto a cubic spline basis and then takes a
+ * derivative:
+ * \code
+ *  // Declare the breakpoints used in our basis
+ *  const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
+ *  const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
+ *
+ *  // Create a cubic (k=4) workspace with 1 derivative available
+ *  suzerain_bsplineop_workspace *w
+ *      = suzerain_bsplineop_alloc(4, 1, nbreak, breakpoints,
+ *          SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+ *
+ *  // Factor the mass matrix D[0] to allow solving D[0] x = b
+ *  suzerain_bsplineop_lu_workspace *mass
+ *      = suzerain_bsplineop_lu_alloc(w);
+ *  suzerain_bsplineop_lu_form_mass(w, mass);
+ *
+ *  // Set up and solve for coefficients that interpolate f
+ *  double x[w->n]; // C99
+ *  suzerain_bsplineop_interpolation_rhs(&f, x, w);
+ *  suzerain_bsplineop_lu_solve(1, x, 1, mass);
+ *
+ *  // Solve D[0] x' = D[1] x by forming right hand side and solving
+ *  suzerain_bsplineop_apply(1, 1, 1, x, 1, w->n, w);
+ *  suzerain_bsplineop_lu_solve(1, x, 1, mass);
+ *  // x now contains an approximation to the derivative of f
+ *
+ *  // Deallocate workspaces
+ *  suzerain_bsplineop_lu_free(luw);
+ *  suzerain_bsplineop_free(w);
+ * \endcode
+ *
+ * All matrices are stored in column-major (Fortran) storage.  Multiple threads
+ * may call the routines simultaneously provided that each thread has its own
+ * workspace instances.  The behavior is undefined if two threads
+ * simultaneously share a workspace.  Internally, the code builds upon the <a
+ * href="http://www.gnu.org/software/gsl/">GNU Scientific Library</a> (GSL) <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Basis-Splines.html">
+ * B-spline routines</a> and uses banded matrix BLAS and LAPACK functionality
+ * where possible.
+ *
+ * @see <a href="http://dx.doi.org/10.1006/jcph.2001.6919">A Critical
+ * Evaluation of the Resolution Properties of B-Spline and Compact Finite
+ * Difference Methods</a> by Kwok, Moser, and Jimenez published in the
+ * <em>Journal of Computational Physics</em>, volume 174, number 2, pages
+ * 510-551 (December 2001) for more details on B-spline derivative operators
+ * and their properties.
+ * @see <a href="http://dx.doi.org/10.1016/j.apnum.2004.04.002"> Higher order
+ * B-spline collocation at the Greville abscissae</a> by Johnson published in
+ * <em>Applied Numerical Mathematics</em>, volume 52, number 1, pages 63-75
+ * (January 2005) for information about Greville abscissae.
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Indicates the method chosen to compute derivative operators.  */
+enum suzerain_bsplineop_method {
+
+    /**
+     * Form derivative operators using collocation at the Greville abscissae.
+     **/
+    SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE = 1,
+
+    /**
+     * Form derivative operators using Galerkin's method with the \f$L^2\f$
+     * inner product.
+     */
+    SUZERAIN_BSPLINEOP_GALERKIN_L2,
+};
+
+/**
+ * Encapsulates basis function and derivative operator information.  Callers
+ * obtain a workspace using suzerain_bsplineop_alloc() and release it using
+ * suzerain_bsplineop_free().
+ */
+typedef struct suzerain_bsplineop_workspace {
+
+    /** Method chosen to form derivative operators */
+    enum suzerain_bsplineop_method method;
+
+    /**
+     * Spline order per GSL/PPPACK conventions.  For example, 3 denotes
+     * piecewise quadratics and 4 denotes piecewise cubics.
+     **/
+    int k;
+
+    /** Number of degrees of freedom in the basis */
+    int n;
+
+    /** Maximum derivative operator within this workspace, inclusive. */
+    int nderiv;
+
+    /** @name Banded derivative matrix storage details
+     * Each of the \c 0 through \c nderiv (inclusive) derivative operators is
+     * stored using BLAS banded matrix conventions.
+     * @{
+     */
+
+    /** Number of subdiagonals in each derivative operator */
+    int * kl;
+
+    /** Number of superdiagonals in each derivative operator */
+    int * ku;
+
+    /** Maximum of all values in \c kl */
+    int max_kl;
+
+    /** Maximum of all values in \c ku */
+    int max_ku;
+
+    /** Leading dimension for all derivative operators */
+    int ld;
+
+    /**
+     * Storage for each banded derivative operator matrix.
+     *
+     * This general band storage can be accessed in two different ways:
+     * \li <tt>D[k]</tt> is the band storage for the <tt>k</tt>-th derivative
+     *     using <tt>kl[k]</tt>, <tt>ku[k]</tt>, and <tt>ld</tt>.  This view
+     *     is optimal for BLAS \c gbmv operations.
+     * \li <tt>D[k] - (max_ku - ku[k])</tt> is the same band storage
+     *     for the <tt>k</tt>-th derivative viewed using <tt>max_kl</tt>,
+     *     <tt>max_ku</tt>, and <tt>ld</tt>.  This view is optimal for
+     *     BLAS \c gb_acc and \c gb_add operations.
+     **/
+    double **D;
+
+    /* @} */
+
+} suzerain_bsplineop_workspace;
+
+/** @name Allocation and deallocation */
+/**@{*/
+
+/**
+ * Allocate a B-spline operator workspace.
+ *
+ * @param[in] bw  A \c gsl_bspline_workspace instance which fixes the B-spline
+ *                basis function order and breakpoints.
+ * @param[in] dbw A \c gsl_bspline_deriv_workspace with an order
+ *                at least that of \c bw.
+ * @param[in] nderiv Highest derivative operator requested.  The zeroth
+ *                   through \c nderiv-th operator will be available in
+ *                   banded matrix form.
+ * @param[in] method Specifies the method used to compute derivative operators.
+ *
+ * @return a workspace instance with operators ready for use on success.
+ *      On failure calls suzerain_error() and returns NULL.
+ *
+ * \memberof suzerain_bsplineop_workspace
+ */
+suzerain_bsplineop_workspace *
+suzerain_bsplineop_alloc(
+    gsl_bspline_workspace *bw,
+    gsl_bspline_deriv_workspace *dbw,
+    int nderiv,
+    enum suzerain_bsplineop_method method);
+
+/**
+ * Frees a previously allocated workspace.
+ *
+ * @param[in] w Workspace to free.
+ *
+ * \memberof suzerain_bsplineop_workspace
+ */
+void
+suzerain_bsplineop_free(
+    suzerain_bsplineop_workspace *w);
+
+/**@}*/
+
+/** @name Real-valued operations */
+/**@{*/
+
+/**
+ * Apply the <tt>nderiv</tt>-th derivative operator to real coefficients \c x.
+ * Multiplies the precomputed banded derivative operator scaled by \c alpha
+ * against one or more coefficient vectors stored in \c x.  Results overwrite
+ * \c x.  Each coefficient vector is of length <tt>w->n</tt>.  Increments and
+ * leading dimensions are specified in <tt>double</tt>-sized units.
+ *
+ * @param[in] nderiv Derivative operator to apply.  May be zero.
+ * @param[in] nrhs Number of coefficient vectors stored in \c x.
+ * @param[in] alpha Real scaling factor to apply.
+ * @param[in,out] x Coefficients to be multiplied.
+ * @param[in] incx Stride between elements stored in \c x.
+ * @param[in] ldx Leading dimension of the data stored in \c x.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ * @see suzerain_bsplineop_apply_complex() for a way to apply an operator
+ *      to complex-valued coefficients.
+ * @see suzerain_bsplineop_accumulate() for a way to accumulate the
+ *      effect of an operator against other storage.
+ *
+ * \memberof suzerain_bsplineop_workspace
+ */
+int
+suzerain_bsplineop_apply(
+    int nderiv,
+    int nrhs,
+    double alpha,
+    double *x,
+    int incx,
+    int ldx,
+    const suzerain_bsplineop_workspace *w);
+
+/**
+ * Apply the <tt>nderiv</tt>-th derivative operator to real coefficients \c x
+ * accumulating the results in \c y.  Multiplies \c alpha times the precomputed
+ * banded derivative operator against one or more coefficient vectors stored in
+ * \c x.  Results are added to \c beta times \c y.  Each coefficient vector is
+ * of length <tt>w->n</tt>.  \c x and \c y cannot be aliased.  Increments and
+ * leading dimensions are specified in <tt>double</tt>-sized units.
+ *
+ * @param[in] nderiv Derivative operator to apply.  May be zero.
+ * @param[in] nrhs Number of vectors stored in \c x and \c y.
+ * @param[in] alpha Multiplicative factor to use on \c x.
+ * @param[in] x Coefficients to be multiplied.
+ * @param[in] incx Stride between elements stored in \c x.
+ * @param[in] ldx Leading dimension of the data stored in \c x.
+ * @param[in] beta Multiplicative factor to use on \c y.
+ * @param[in,out] y Locations in which to accumulate the result.
+ * @param[in] incy Stride between elements stored in \c y.
+ * @param[in] ldy Leading dimension of the data stored in \c y.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ * @see suzerain_bsplineop_accumulate_complex() for a way to apply an operator
+ *      to complex-valued coefficients.
+ * @see suzerain_bsplineop_apply() for a way to apply an operator in
+ *      place.
+ *
+ * \memberof suzerain_bsplineop_workspace
+ */
+int
+suzerain_bsplineop_accumulate(
+    int nderiv,
+    int nrhs,
+    double alpha,
+    const double *x,
+    int incx,
+    int ldx,
+    double beta,
+    double *y,
+    int incy,
+    int ldy,
+    const suzerain_bsplineop_workspace *w);
+
+/**
+ * Determine the right hand side of the interpolation problem <tt>D[0] x
+ * = rhs</tt>.  Here <tt>D[0]</tt> is the zeroth derivative operator (i.e. mass
+ * matrix), \c x are the basis function coefficients that will best represent
+ * \c function for the given method, and \c rhs is the vector computed by this
+ * routine.
+ *
+ * @param[in]  function Real-valued function to use when computing \c rhs.
+ * @param[out] rhs Output vector containing computed right hand side
+ * @param[in]  bw Workspace to use which must have been the one used
+ *             to create \c w.
+ * @param[in]  w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see suzerain_bsplineop_method() for details on available methods.
+ *      Different methods will necessarily compute the right hand side
+ *      differently.
+ * @see suzerain_bsplineop_lu_form_mass() and suzerain_bsplineop_lu_solve()
+ *      for how to solve the linear equation for \c x.
+ * @see suzerain_bsplineop_interpolation_rhs_complex() for a way to
+ *      perform this operation for a complex-valued function.
+ *
+ * \memberof suzerain_bsplineop_workspace
+ */
+int
+suzerain_bsplineop_interpolation_rhs(
+    const suzerain_function * function,
+    double * rhs,
+    gsl_bspline_workspace *bw,
+    const suzerain_bsplineop_workspace *w);
+
+/**@}*/
+
+/** @name Complex-valued operations */
+/**@{*/
+
+/**
+ * Apply the <tt>nderiv</tt>-th derivative operator to complex coefficients \c
+ * x.  Multiplies the precomputed banded derivative operator scaled by
+ * real-valued \c alpha against one or more coefficient vectors stored in \c x.
+ * Results overwrite \c x.  Each coefficient vector is of length <tt>w->n</tt>.
+ * Increments and leading dimensions are specified in <tt>double[2]</tt>-sized
+ * units.
+ *
+ * @param[in] nderiv Derivative operator to apply.  May be zero.
+ * @param[in] nrhs Number of coefficient vectors stored in \c x.
+ * @param[in] alpha Real scaling factor to apply.
+ * @param[in,out] x Coefficients to be multiplied.
+ * @param[in] incx Stride between elements stored in \c x.
+ * @param[in] ldx Leading dimension of the data stored in \c x.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ * @see suzerain_bsplineop_apply() for a way to apply an operator
+ *      to real-valued coefficients.
+ * @see suzerain_bsplineop_accumulate() for a way to accumulate the
+ *      effect of an operator against other storage.
+ *
+ * \memberof suzerain_bsplineop_workspace
+ */
+int
+suzerain_bsplineop_apply_complex(
+    int nderiv,
+    int nrhs,
+    double alpha,
+    double (*x)[2],
+    int incx,
+    int ldx,
+    const suzerain_bsplineop_workspace *w);
+
+/**
+ * Apply the <tt>nderiv</tt>-th derivative operator to complex coefficients \c
+ * x accumulating the complex result in \c y.  Multiplies \c alpha times the
+ * precomputed banded derivative operator against one or more coefficient
+ * vectors stored in \c x.  Results are added to \c beta times \c y.  Each
+ * coefficient vector is of length <tt>w->n</tt>.  \c x and \c y cannot be
+ * aliased.  Increments and leading dimensions are specified in
+ * <tt>double[2]</tt>-sized units.
+ *
+ * @param[in] nderiv Derivative operator to apply.  May be zero.
+ * @param[in] nrhs Number of vectors stored in \c x and \c y.
+ * @param[in] alpha Multiplicative factor to use on \c x.
+ * @param[in] x Coefficients to be multiplied.
+ * @param[in] incx Stride between elements stored in \c x.
+ * @param[in] ldx Leading dimension of the data stored in \c x.
+ * @param[in] beta Multiplicative factor to use on \c y.
+ * @param[in,out] y Locations in which to accumulate the result.
+ * @param[in] incy Stride between elements stored in \c y.
+ * @param[in] ldy Leading dimension of the data stored in \c y.
+ * @param[in] w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ * @see suzerain_bsplineop_accumulate() for a way to apply an operator
+ *      to real-valued coefficients.
+ * @see suzerain_bsplineop_apply() for a way to apply an operator in
+ *      place.
+ *
+ * \memberof suzerain_bsplineop_workspace
+ */
+int
+suzerain_bsplineop_accumulate_complex(
+    int nderiv,
+    int nrhs,
+    const double alpha[2],
+    const double (*x)[2],
+    int incx,
+    int ldx,
+    const double beta[2],
+    double (*y)[2],
+    int incy,
+    int ldy,
+    const suzerain_bsplineop_workspace *w);
+
+/**
+ * Determine the right hand side of the interpolation problem <tt>D[0] x
+ * = rhs</tt>.  Here <tt>D[0]</tt> is the zeroth derivative operator (i.e. mass
+ * matrix), \c x are the basis function coefficients that will best represent
+ * \c function for the given method, and \c rhs is the vector computed by this
+ * routine.
+ *
+ * @param[in]  zfunction Complex-valued function to use when computing \c rhs.
+ * @param[out] rhs Output vector containing computed right hand side
+ * @param[in]  bw Workspace to use which must have been the one used
+ *             to create \c w.
+ * @param[in]  w Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see suzerain_bsplineop_method() for details on available methods.
+ *      Different methods will necessarily compute the right hand side
+ *      differently.
+ * @see suzerain_bsplineop_luz_form_mass() and suzerain_bsplineop_luz_solve()
+ *      for how to solve the linear equation for \c x.
+ * @see suzerain_bsplineop_interpolation_rhs() for a way to
+ *      perform this operation for a real-valued function.
+ *
+ * \memberof suzerain_bsplineop_workspace
+ */
+int
+suzerain_bsplineop_interpolation_rhs_complex(
+    const suzerain_zfunction * zfunction,
+    double (*rhs)[2],
+    gsl_bspline_workspace *bw,
+    const suzerain_bsplineop_workspace *w);
+
+/**@}*/
+
+/**
+ * Encapsulates the LU decomposition of a real-valued linear combination of
+ * derivative operators.  Callers obtain a workspace using
+ * suzerain_bsplineop_lu_alloc() and release it using suzerain_bsplineop_lu_free().
+ *
+ * @see suzerain_bsplineop_luz_workspace for manipulating the complex-valued case.
+ */
+typedef struct suzerain_bsplineop_lu_workspace {
+
+    /** Number of degrees of freedom in the basis */
+    int n;
+
+    /** Number of subdiagonals in the factored operator. */
+    int kl;
+
+    /**
+     * Number of superdiagonals in the factored operator.
+     * Note that, for a given B-spline basis, suzerain_bsplineop_lu_workspace::ku
+     * is larger than the corresponding suzerain_bsplineop_workspace::ku
+     * according to the requirements of LAPACK's \c dgbtrf.
+     */
+    int ku;
+
+    /** Leading dimension in the factored operator derivative */
+    int ld;
+
+    /** Pivot matrix \c P from the \c LUP decomposition of the operator. */
+    int *ipiv;
+
+    /**
+     * Raw data storage for the factored operator.  Operator is stored
+     * according to BLAS banded matrix conventions according to \c kl, \c ku,
+     * \c ld, and \c n
+     **/
+    double *A;
+
+} suzerain_bsplineop_lu_workspace;
+
+/** @name Allocation and deallocation */
+/**@{*/
+
+/**
+ * Allocates a B-spline operator LU workspace.
+ *
+ * @param[in] w B-spline workspace on which to base the new workspace's
+ *      dimensions.
+ *
+ * @return a workspace instance ready to be used with
+ *      suzerain_bsplineop_lu_form() or suzerain_bsplineop_lu_form_mass().
+ *      On failure calls suzerain_error() and returns NULL.
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+suzerain_bsplineop_lu_workspace *
+suzerain_bsplineop_lu_alloc(
+    const suzerain_bsplineop_workspace *w);
+
+/**
+ * Frees a previously allocated workspace.
+ *
+ * @param[in] luw Workspace to free.
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+void
+suzerain_bsplineop_lu_free(
+    suzerain_bsplineop_lu_workspace *luw);
+
+/**@}*/
+
+/** @name Operations */
+/**@{*/
+
+/**
+ * Forms the LU decomposition of a linear combination of derivative operators
+ * from the workspace \c w.  That is, \f[
+ *  \mbox{luw} \leftarrow \mbox{LU}\left(
+ *      \sum_{j=0}^{\mbox{ncoefficients}} \mbox{coefficients}_{j} \, D[j]
+ *  \right)
+ * \f]
+ *
+ * @param[in] ncoefficients Number of coefficients stored in \c coefficients.
+ * @param[in] coefficients Coefficients to use in the linear combination of
+ *      derivative operators.
+ * @param[in] w Workspace containing desired derivative operators.
+ * @param[in,out] luw Workspace in which to store the factored operator.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+int
+suzerain_bsplineop_lu_form(
+    int ncoefficients,
+    const double * coefficients,
+    const suzerain_bsplineop_workspace * w,
+    suzerain_bsplineop_lu_workspace *luw);
+
+/**
+ * Forms the LU decomposition of the zeroth derivative operator, also
+ * called the mass matrix, from workspace \c w.
+ *
+ * @param[in] w Workspace containing the desired mass matrix.
+ * @param[in,out] luw  Workspace in which to store the factored operator.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see This is a convenience wrapper function built atop
+ *      suzerain_bsplineop_lu_form().
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+int
+suzerain_bsplineop_lu_form_mass(
+    const suzerain_bsplineop_workspace * w,
+    suzerain_bsplineop_lu_workspace *luw);
+
+/**
+ * Solves the equation <tt>A x = b</tt> using the factored operator
+ * stored in \c luw.
+ *
+ * @param[in] nrhs Number of right hand sides, i.e. columns, stored in
+ *      matrix \c b.
+ * @param[in,out] b Matrix of right hand sides to solve and the resulting
+ *      solutions.  On input, contains data \c b.  On output, contains
+ *      solutions \c x.
+ * @param[in] incb Stride between elements in matrix \c b.
+ * @param[in] ldb Leading dimension of matrix \c b.
+ * @param[in] luw Workspace containing the factored operator to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+int
+suzerain_bsplineop_lu_solve(
+    int nrhs,
+    double *b,
+    int incb,
+    int ldb,
+    const suzerain_bsplineop_lu_workspace *luw);
+
+/**@}*/
+
+/**
+ * Encapsulates the LU decomposition of a complex-valued linear combination of
+ * derivative operators.  Callers obtain a workspace using
+ * suzerain_bsplineop_luz_alloc() and release it using suzerain_bsplineop_luz_free().
+ *
+ * @see suzerain_bsplineop_lu_workspace for manipulating the real-valued case.
+ */
+typedef struct suzerain_bsplineop_luz_workspace {
+
+    /** Number of degrees of freedom in the basis */
+    int n;
+
+    /** Number of subdiagonals in the factored operator. */
+    int kl;
+
+    /**
+     * Number of superdiagonals in the factored operator.
+     * Note that, for a given B-spline basis, suzerain_bsplineop_luz_workspace::ku
+     * is larger than the corresponding suzerain_bsplineop_workspace::ku
+     * according to the requirements of LAPACK's \c zgbtrf.
+     */
+    int ku;
+
+    /** Leading dimension in the factored operator derivative */
+    int ld;
+
+    /** Pivot matrix \c P from the \c LUP decomposition of the operator. */
+    int *ipiv;
+
+    /**
+     * Raw data storage for the factored operator.  Operator is stored
+     * according to BLAS banded matrix conventions according to \c kl, \c ku,
+     * \c ld, and \c n
+     **/
+    double (*A)[2];
+
+} suzerain_bsplineop_luz_workspace;
+
+/** @name Allocation and deallocation */
+/**@{*/
+
+/**
+ * Allocates a B-spline operator LU workspace.
+ *
+ * @param[in] w B-spline workspace on which to base the new workspace's
+ *      dimensions.
+ *
+ * @return a workspace instance ready to be used with
+ *      suzerain_bsplineop_luz_form() or suzerain_bsplineop_luz_form_mass().
+ *      On failure calls suzerain_error() and returns NULL.
+ *
+ * \memberof suzerain_bsplineop_luz_workspace
+ */
+suzerain_bsplineop_luz_workspace *
+suzerain_bsplineop_luz_alloc(
+    const suzerain_bsplineop_workspace *w);
+
+/**
+ * Frees a previously allocated workspace.
+ *
+ * @param[in] luzw Workspace to free.
+ *
+ * \memberof suzerain_bsplineop_luz_workspace
+ */
+void
+suzerain_bsplineop_luz_free(
+    suzerain_bsplineop_luz_workspace *luzw);
+
+/**@}*/
+
+/** @name Operations */
+/**@{*/
+
+/**
+ * Forms the LU decomposition of a linear combination of derivative operators
+ * from the workspace \c w.  That is, \f[
+ *  \mbox{luw} \leftarrow \mbox{LU}\left(
+ *      \sum_{j=0}^{\mbox{ncoefficients}} \mbox{coefficients}_{j} \, D[j]
+ *  \right)
+ * \f]
+ *
+ * @param[in] ncoefficients Number of coefficients stored in \c coefficients.
+ * @param[in] coefficients Coefficients to use in the linear combination of
+ *      derivative operators.
+ * @param[in] w Workspace containing desired derivative operators.
+ * @param[in,out] luzw Workspace in which to store the factored operator.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bsplineop_luz_workspace
+ */
+int
+suzerain_bsplineop_luz_form(
+    int ncoefficients,
+    const double (*coefficients)[2],
+    const suzerain_bsplineop_workspace * w,
+    suzerain_bsplineop_luz_workspace *luzw);
+
+/**
+ * Forms the LU decomposition of the zeroth derivative operator, also
+ * called the mass matrix, from workspace \c w.
+ *
+ * @param[in] w Workspace containing the desired mass matrix.
+ * @param[in,out] luzw Workspace in which to store the factored operator.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see This is a convenience wrapper function built atop
+ *      suzerain_bsplineop_luz_form().
+ *
+ * \memberof suzerain_bsplineop_luz_workspace
+ */
+int
+suzerain_bsplineop_luz_form_mass(
+    const suzerain_bsplineop_workspace * w,
+    suzerain_bsplineop_luz_workspace *luzw);
+
+/**
+ * Solves the equation <tt>A x = b</tt> using the factored operator
+ * stored in \c luzw.
+ *
+ * @param[in] nrhs Number of right hand sides, i.e. columns, stored in
+ *      matrix \c b.
+ * @param[in,out] b Matrix of right hand sides to solve and the resulting
+ *      solutions.  On input, contains data \c b.  On output, contains
+ *      solutions \c x.
+ * @param[in] incb Stride between elements in matrix \c b.
+ * @param[in] ldb  Leading dimension of matrix \c b.
+ * @param[in] luzw Workspace containing the factored operator to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bsplineop_luz_workspace
+ */
+int
+suzerain_bsplineop_luz_solve(
+    int nrhs,
+    double (*b)[2],
+    int incb,
+    int ldb,
+    const suzerain_bsplineop_luz_workspace *luzw);
+
+/**@}*/
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif // __SUZERAIN_BSPLINEOP_H
