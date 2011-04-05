@@ -698,6 +698,130 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
     CHECK_GBMATRIX_SYMMETRIC( // Mass matrix is analytically symmetric
             op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld());
 
+    {
+        /* Check w->D[0] application against multiple real vectors */
+        const int nrhs = 2;
+        double b[] = {  1,  2,  3,  4,  5,  6,  7,
+                       11, 12, 13, 14, 15, 16, 17 };
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+        const int incb = 1;
+        op.apply(0, nrhs, 60480.0, b, incb, ldb);
+        const double b_good[] = {
+             30016,  45927,  84201,  83363, 194661, 178560, 131712,
+            231616, 272727, 386601, 284963, 572661, 480960, 333312
+        };
+        check_close_collections(
+            b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
+            b, b + sizeof(b)/sizeof(b[0]),
+            std::numeric_limits<double>::epsilon()*1000);
+    }
+
+    {
+        /* Check w->D[0] application against multiple complex vectors */
+        const int nrhs = 2;
+        double b[][2] = {
+            {  1, 2}, { 2, 3}, { 3, 4}, { 4, 5}, { 5, 6}, { 6, 7}, {7,  8},
+            { 11,12}, {12,13}, {13,14}, {14,15}, {15,16}, {16,17}, {17,18}
+        };
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+        const int incb = 1;
+        op.apply(0, nrhs, 60480.0, b, incb, ldb);
+        const double b_good[][2] = {
+            {30016,50176},{45927,68607},{84201,114441},{83363,103523},{194661,232461},{178560,208800},{131712,151872},
+            {231616,251776},{272727,295407},{386601,416841},{284963,305123},{572661,610461},{480960,511200},{333312,353472}
+        };
+        check_close_collections(
+            (double *) b_good,
+            (double *)(b_good + sizeof(b_good)/sizeof(b_good[0])),
+            (double *) b,
+            (double *)(b + sizeof(b)/sizeof(b[0])),
+            std::numeric_limits<double>::epsilon()*1000);
+    }
+
+    {
+        /* Check w->D[0] accumulation against multiple real vectors */
+        const int nrhs = 2;
+        double x[] = {  1,  2,  3,  4,  5,  6,  7,
+                       11, 12, 13, 14, 15, 16, 17 };
+        const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+        const int incx = 1;
+        double y[] = {  1,  2,  3,  4,  5,  6,  7,
+                       -1, -2, -3, -4, -5, -6, -7 };
+        const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+        const int incy = 1;
+        op.accumulate(0, nrhs, 60480.0, x, incx, ldx, 1.0, y, incy, ldy);
+        const double y_good[] = {
+                30017,45929,84204,83367,194666,178566,131719,
+                231615,272725,386598,284959,572656,480954,333305
+        };
+        check_close_collections(
+            y_good, y_good + sizeof(y_good)/sizeof(y_good[0]),
+            y, y + sizeof(y)/sizeof(y[0]),
+            std::numeric_limits<double>::epsilon()*1000);
+    }
+
+    {
+        /* Check w->D[0] accumulation against multiple complex vectors */
+        /* using complex-valued coefficients                           */
+        const int nrhs = 2;
+        const double x[][2] = {
+            { 1, 2},{ 2, 3},{ 3, 4},{ 4, 5},{ 5, 6},{ 6, 7},{ 7, 8},
+            {11,12},{12,13},{13,14},{14,15},{15,16},{16,17},{17,18}
+        };
+        const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+        const int incx = 1;
+        double y[][2] = {
+            { 1, 2},{ 2, 3},{ 3, 4},{ 4, 5},{ 5, 6},{ 6, 7},{ 7, 8},
+            {-1,-2},{-2,-3},{-3,-4},{-4,-5},{-5,-6},{-6,-7},{-7,-8},
+        };
+        const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+        const int incy = 1;
+        const double alpha[2] = { 60480, -2*60480 }; /* NB complex-valued */
+        const double beta[2]  = {     6,        7 }; /* NB complex-valued */
+        op.accumulate(0, nrhs, alpha, x, incx, ldx, beta, y, incy, ldy);
+        const double y_good[][2] = {
+            {130360,-9837},{183132,-23215},{313073,-53916},{290398,-63145},{659571,-156790},{596147,-148236},{435442,-111455},
+            {735176,-211475},{863550,-250079},{1220293,-356406},{895220,-264861},{1793595,-534932},{1503373,-450804},{1040270,-313249}
+        };
+        check_close_collections(
+            (double *) y_good,
+            (double *)(y_good + sizeof(y_good)/sizeof(y_good[0])),
+            (double *) y,
+            (double *)(y + sizeof(y)/sizeof(y[0])),
+            std::numeric_limits<double>::epsilon()*1000);
+    }
+
+    {
+        /* Check w->D[0] accumulation against multiple complex vectors */
+        /* using real-valued coefficients                              */
+        const int nrhs = 2;
+        const double x[][2] = {
+            { 1, 2},{ 2, 3},{ 3, 4},{ 4, 5},{ 5, 6},{ 6, 7},{ 7, 8},
+            {11,12},{12,13},{13,14},{14,15},{15,16},{16,17},{17,18}
+        };
+        const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+        const int incx = 1;
+        double y[][2] = {
+            { 1, 2},{ 2, 3},{ 3, 4},{ 4, 5},{ 5, 6},{ 6, 7},{ 7, 8},
+            {-1,-2},{-2,-3},{-3,-4},{-4,-5},{-5,-6},{-6,-7},{-7,-8},
+        };
+        const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+        const int incy = 1;
+        const double alpha = 60480;
+        const double beta  =     6;
+        op.accumulate(0, nrhs, alpha, x, incx, ldx, beta, y, incy, ldy);
+        const double y_good[][2] = {
+            {30022,50188},{45939,68625},{84219,114465},{83387,103553},{194691,232497},{178596,208842},{131754,151920},
+            {231610,251764},{272715,295389},{386583,416817},{284939,305093},{572631,610425},{480924,511158},{333270,353424}
+        };
+        check_close_collections(
+            (double *) y_good,
+            (double *)(y_good + sizeof(y_good)/sizeof(y_good[0])),
+            (double *) y,
+            (double *)(y + sizeof(y)/sizeof(y[0])),
+            std::numeric_limits<double>::epsilon()*1000);
+    }
+
     /* Check w->D[1], the first derivative matrix, against known good
      * in general banded matrix column-major order.
      */
