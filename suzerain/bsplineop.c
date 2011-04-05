@@ -249,7 +249,7 @@ suzerain_bsplineop_free(suzerain_bsplineop_workspace * w)
 
 int
 suzerain_bsplineop_accumulate(
-    int nderivative,
+    int nderiv,
     int nrhs,
     double alpha,
     const double *x,
@@ -262,8 +262,8 @@ suzerain_bsplineop_accumulate(
     const suzerain_bsplineop_workspace *w)
 {
     /* Parameter sanity checks */
-    if (nderivative < 0 || w->nderiv < nderivative) {
-        SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
+    if (nderiv < 0 || w->nderiv < nderiv) {
+        SUZERAIN_ERROR("nderiv out of range", SUZERAIN_EINVAL);
     }
     if (nrhs > 1 && ldx < w->n) {
         SUZERAIN_ERROR("nrhs > 1 && ldx < w->n", SUZERAIN_EINVAL);
@@ -279,9 +279,8 @@ suzerain_bsplineop_accumulate(
     for (int j = 0; j < nrhs; ++j) {
         const double * const  x_j = x + j*ldx;
         double       * const  y_j = y + j*ldy;
-        suzerain_blas_dgbmv('N', w->n, w->n,
-                            w->kl[nderivative], w->ku[nderivative],
-                            alpha, w->D[nderivative], w->ld, x_j, incx,
+        suzerain_blas_dgbmv('N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                            alpha, w->D[nderiv], w->ld, x_j, incx,
                             beta, y_j, incy);
     }
 
@@ -290,7 +289,7 @@ suzerain_bsplineop_accumulate(
 
 int
 suzerain_bsplineop_accumulate_complex(
-    int nderivative,
+    int nderiv,
     int nrhs,
     const double alpha[2],
     const double (*x)[2],
@@ -303,8 +302,8 @@ suzerain_bsplineop_accumulate_complex(
     const suzerain_bsplineop_workspace *w)
 {
     /* Parameter sanity checks */
-    if (nderivative < 0 || w->nderiv < nderivative) {
-        SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
+    if (nderiv < 0 || w->nderiv < nderiv) {
+        SUZERAIN_ERROR("nderiv out of range", SUZERAIN_EINVAL);
     }
     if (nrhs > 1 && ldx < w->n) {
         SUZERAIN_ERROR("nrhs > 1 && ldx < w->n", SUZERAIN_EINVAL);
@@ -320,9 +319,8 @@ suzerain_bsplineop_accumulate_complex(
     for (int j = 0; j < nrhs; ++j) {
         const double (*const x_j)[2] = x + j*ldx;
         double       (*const y_j)[2] = y + j*ldy;
-        suzerain_blasext_dgbmzv('N', w->n, w->n,
-                                w->kl[nderivative], w->ku[nderivative],
-                                alpha, w->D[nderivative], w->ld, x_j, incx,
+        suzerain_blasext_dgbmzv('N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                                alpha, w->D[nderiv], w->ld, x_j, incx,
                                 beta, y_j, incy);
     }
 
@@ -331,7 +329,7 @@ suzerain_bsplineop_accumulate_complex(
 
 int
 suzerain_bsplineop_apply(
-    int nderivative,
+    int nderiv,
     int nrhs,
     double alpha,
     double *x,
@@ -340,8 +338,8 @@ suzerain_bsplineop_apply(
     const suzerain_bsplineop_workspace *w)
 {
     /* Parameter sanity checks */
-    if (nderivative < 0 || w->nderiv < nderivative) {
-        SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
+    if (nderiv < 0 || w->nderiv < nderiv) {
+        SUZERAIN_ERROR("nderiv out of range", SUZERAIN_EINVAL);
     }
     if (nrhs > 1 && ldx < w->n) {
         SUZERAIN_ERROR("nrhs > 1 && ldx < w->n", SUZERAIN_EINVAL);
@@ -359,13 +357,11 @@ suzerain_bsplineop_apply(
 
     for (int j = 0; j < nrhs; ++j) {
         double * const x_j = x + j*ldx;
-        /* Compute x_j := w->D[nderivative]*x_j */
+        /* Compute x_j := w->D[nderiv]*x_j */
         suzerain_blas_dcopy(w->n, x_j, incx, scratch, incscratch);
-        suzerain_blas_dgbmv(
-                'N', w->n, w->n,
-                w->kl[nderivative], w->ku[nderivative],
-                alpha, w->D[nderivative], w->ld, scratch, incscratch,
-                0.0, x_j, incx);
+        suzerain_blas_dgbmv('N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                            alpha, w->D[nderiv], w->ld, scratch, incscratch,
+                            0.0, x_j, incx);
     }
 
     suzerain_blas_free(scratch);
@@ -374,7 +370,7 @@ suzerain_bsplineop_apply(
 
 int
 suzerain_bsplineop_apply_complex(
-    int nderivative,
+    int nderiv,
     int nrhs,
     double alpha,
     double (*x)[2],
@@ -383,8 +379,8 @@ suzerain_bsplineop_apply_complex(
     const suzerain_bsplineop_workspace *w)
 {
     /* Parameter sanity checks */
-    if (nderivative < 0 || w->nderiv < nderivative) {
-        SUZERAIN_ERROR("nderivative out of range", SUZERAIN_EINVAL);
+    if (nderiv < 0 || w->nderiv < nderiv) {
+        SUZERAIN_ERROR("nderiv out of range", SUZERAIN_EINVAL);
     }
     if (nrhs > 1 && ldx < w->n) {
         SUZERAIN_ERROR("nrhs > 1 && ldx < w->n", SUZERAIN_EINVAL);
@@ -402,14 +398,13 @@ suzerain_bsplineop_apply_complex(
 
     for (int j = 0; j < nrhs; ++j) {
         double (*const x_j)[2] = x + j*ldx;
-        /* Compute x_j := w->D[nderivative]*x_j for real/imaginary parts */
+        /* Compute x_j := w->D[nderiv]*x_j for real/imaginary parts */
         for (int i = 0; i < 2; ++i) {
             suzerain_blas_dcopy(
                     w->n, &(x_j[0][i]), 2*incx, scratch, incscratch);
             suzerain_blas_dgbmv(
-                    'N', w->n, w->n,
-                    w->kl[nderivative], w->ku[nderivative],
-                    alpha, w->D[nderivative], w->ld, scratch, incscratch,
+                    'N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                    alpha, w->D[nderiv], w->ld, scratch, incscratch,
                     0.0, &(x_j[0][i]), 2*incx);
         }
     }
