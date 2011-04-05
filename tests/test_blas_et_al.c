@@ -2380,9 +2380,13 @@ main(int argc, char **argv)
     test_daxpzy();
     test_daxpzby();
 
-    /* TODO Add suzerain_blasext_dgbmzv test cases                      */
-    /* suzerain_blasext_dgbmzv exercised somewhat in test_bsplineop via */
-    /* accumulate_complex and apply_complex                             */
+    /* TODO Add suzerain_blas_{d,s}{s,g}bmv test cases                  */
+    /* Exercised fairly well in test_bsplineop via                      */
+    /* accumulate{,_complex} and apply{,_complex}                       */
+
+    /* TODO Add suzerain_blasext_d{s,g}bmzv test cases                  */
+    /* suzerain_blasext_d{s,g}bmzv exercised somewhat in test_bsplineop */
+    /* via accumulate_complex and apply_complex                         */
 
     test_zgb_dacc1();
     test_zgb_dacc2();

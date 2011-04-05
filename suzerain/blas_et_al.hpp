@@ -845,6 +845,80 @@ inline void gbmv(
                                boost::numeric_cast<int>(incy));
 }
 
+/*! @copydoc suzerain_blas_ssbmv */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5 >
+inline void sbmv(
+        const char uplo,
+        const Integer1 n,
+        const Integer2 k,
+        const float alpha,
+        const float *a,
+        const Integer3 lda,
+        const float *x,
+        const Integer4 incx,
+        const float beta,
+        float *y,
+        const Integer5 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    return suzerain_blas_ssbmv(uplo,
+                               boost::numeric_cast<int>(n),
+                               boost::numeric_cast<int>(k),
+                               alpha,
+                               a,
+                               boost::numeric_cast<int>(lda),
+                               x,
+                               boost::numeric_cast<int>(incx),
+                               beta,
+                               y,
+                               boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_ssbmv */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5 >
+inline void sbmv(
+        const char uplo,
+        const Integer1 n,
+        const Integer2 k,
+        const double alpha,
+        const double *a,
+        const Integer3 lda,
+        const double *x,
+        const Integer4 incx,
+        const double beta,
+        double *y,
+        const Integer5 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    return suzerain_blas_dsbmv(uplo,
+                               boost::numeric_cast<int>(n),
+                               boost::numeric_cast<int>(k),
+                               alpha,
+                               a,
+                               boost::numeric_cast<int>(lda),
+                               x,
+                               boost::numeric_cast<int>(incx),
+                               beta,
+                               y,
+                               boost::numeric_cast<int>(incy));
+}
+
 /*! @copydoc suzerain_blas_sgb_acc */
 template< typename Integer1,
           typename Integer2,
