@@ -217,6 +217,38 @@ suzerain_blas_ddot(
         const int incy);
 
 /*!
+ * \brief Compute \f$ x \cdot{} y \f$ using BLAS's dotc.
+ *
+ * \param n Number of elements in \c x and \c y.
+ * \param x First source vector.
+ * \param incx First source vector stride.
+ * \param y Second source vector.
+ * \param incy Second source vector stride.
+ *
+ * \return \f$ x \cdot{} y \f$.
+ *
+ * \see A BLAS reference for more details.
+ */
+void
+suzerain_blas_cdotc(
+        const int n,
+        const float (*x)[2],
+        const int incx,
+        const float (*y)[2],
+        const int incy,
+        float dotc[2]);
+
+/*! \copydoc suzerain_blas_cdotc */
+void
+suzerain_blas_zdotc(
+        const int n,
+        const double (*x)[2],
+        const int incx,
+        const double (*y)[2],
+        const int incy,
+        double dotc[2]);
+
+/*!
  * \brief Compute \f$ \left|\left| x \right|\right|_{2} \f$ using BLAS's nrm2.
  *
  * \param n Number of elements in \c x.

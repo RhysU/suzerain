@@ -1051,6 +1051,50 @@ test_sdot()
 
 static
 void
+test_zdotc()
+{
+    const double x[][2]      = {{1.0, 2.0}, {2.0, 3.0}, {3.0, 4.0}};
+    const int    incx        = 1;
+    const double y[][2]      = { {2.0, 3.0}, {-5,-5},
+                                 {3.0, 4.0}, {-5,-5},
+                                 {4.0, 5.0}, {-5,-5} };
+    const int    incy        = 2;
+    const int    nx          = sizeof(x)/sizeof(x[0]);
+    const int    ny          = sizeof(y)/sizeof(y[0]);
+    const double expected[2] = { 58.0, -3.0 };
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+
+    double result[2] = {555, 555};
+    suzerain_blas_zdotc(nx/incx, x, incx, y, incy, result);
+    gsl_test_rel(result[0], expected[0], GSL_DBL_EPSILON, "zdotc real result");
+    gsl_test_rel(result[1], expected[1], GSL_DBL_EPSILON, "zdotc imag result");
+}
+
+static
+void
+test_cdotc()
+{
+    const float  x[][2]      = {{1.0, 2.0}, {2.0, 3.0}, {3.0, 4.0}};
+    const int    incx        = 1;
+    const float  y[][2]      = { {2.0, 3.0}, {-5,-5},
+                                 {3.0, 4.0}, {-5,-5},
+                                 {4.0, 5.0}, {-5,-5} };
+    const int    incy        = 2;
+    const int    nx          = sizeof(x)/sizeof(x[0]);
+    const int    ny          = sizeof(y)/sizeof(y[0]);
+    const float  expected[2] = { 58.0, -3.0 };
+
+    gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
+
+    float  result[2] = {555, 555};
+    suzerain_blas_cdotc(nx/incx, x, incx, y, incy, result);
+    gsl_test_rel(result[0], expected[0], GSL_FLT_EPSILON, "cdotc real result");
+    gsl_test_rel(result[1], expected[1], GSL_FLT_EPSILON, "cdotc imag result");
+}
+
+static
+void
 test_dgb_acc1()
 {
     int i;
@@ -2360,6 +2404,8 @@ main(int argc, char **argv)
 
     test_ddot();
     test_sdot();
+    test_cdotc();
+    test_zdotc();
 
     test_dgb_acc1();
     test_dgb_acc2();

@@ -27,7 +27,7 @@
 #
 # LAST MODIFICATION
 #
-#   2010-11-29
+#   2010-04-05
 #
 # COPYLEFT
 #
@@ -72,6 +72,7 @@ AC_REQUIRE([AX_COMPILER_VENDOR])
 AC_ARG_VAR(MKLROOT,[root directory of MKL installation])
 
 dnl Note the assumption that lp64 and not ilp64 should be used
+dnl lp64 provides 32-bit integers while ilp64 does 64-bit ones
 dnl Please add entries to the case statement as required
 case $target_cpu in
     x86_64)
@@ -114,7 +115,7 @@ case $ax_cv_c_compiler_vendor in
            fi
            ;;
     gnu)
-           acx_mkl_interfacelayer="-lmkl_gf${acx_mkl_libsuffix}"
+           acx_mkl_interfacelayer="-lmkl_intel${acx_mkl_libsuffix}"
            if test "${acx_mkl_enable_threads}" = "yes"; then
                acx_mkl_threadinglayer="-lmkl_gnu_thread"
                acx_mkl_rtllayer="-liomp5 -lpthread"

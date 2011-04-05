@@ -328,6 +328,62 @@ suzerain_blas_ddot(
 #endif
 }
 
+void
+suzerain_blas_cdotc(
+        const int n,
+        const float (*x)[2],
+        const int incx,
+        const float (*y)[2],
+        const int incy,
+        float dotc[2])
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        return cdotc((      MKL_Complex8 *)dotc, &n,
+                     (const MKL_Complex8 *)x,    &incx,
+                     (const MKL_Complex8 *)y,    &incy);
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _incx = incx;
+        MKL_INT _incy = incy;
+
+        return cdotc((      MKL_Complex8 *)dotc, &_n,
+                     (const MKL_Complex8 *)x,    &_incx,
+                     (const MKL_Complex8 *)y,    &_incy);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_zdotc(
+        const int n,
+        const double (*x)[2],
+        const int incx,
+        const double (*y)[2],
+        const int incy,
+        double dotc[2])
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        return zdotc((      MKL_Complex16 *)dotc, &n,
+                     (const MKL_Complex16 *)x,    &incx,
+                     (const MKL_Complex16 *)y,    &incy);
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _incx = incx;
+        MKL_INT _incy = incy;
+
+        return zdotc((      MKL_Complex16 *)dotc, &_n,
+                     (const MKL_Complex16 *)x,    &_incx,
+                     (const MKL_Complex16 *)y,    &_incy);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
 float
 suzerain_blas_snrm2(
         const int n,
