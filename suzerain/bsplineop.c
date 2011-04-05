@@ -47,6 +47,13 @@
 #include <suzerain/gbmatrix.h>
 #include <suzerain/pre_gsl.h>
 
+// Some operators are symmetric and allow using SBMV instead of GBMV
+static inline
+int is_symmetric(const int nderiv, const suzerain_bsplineop_workspace *w)
+{
+    return nderiv == 0 && w->method == SUZERAIN_BSPLINEOP_GALERKIN_L2;
+}
+
 static
 int
 suzerain_bsplineop_determine_operator_bandwidths(
@@ -276,12 +283,19 @@ suzerain_bsplineop_accumulate(
         SUZERAIN_ERROR("x == y not allowed", SUZERAIN_EINVAL);
     }
 
+    const int use_sbmv = is_symmetric(nderiv, w);
     for (int j = 0; j < nrhs; ++j) {
         const double * const  x_j = x + j*ldx;
         double       * const  y_j = y + j*ldy;
-        suzerain_blas_dgbmv('N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                            alpha, w->D[nderiv], w->ld, x_j, incx,
-                            beta, y_j, incy);
+        if (SUZERAIN_UNLIKELY(use_sbmv)) {
+            suzerain_blas_dsbmv('U', w->n, w->ku[nderiv],
+                                alpha, w->D[nderiv], w->ld, x_j, incx,
+                                beta, y_j, incy);
+        } else {
+            suzerain_blas_dgbmv('N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                                alpha, w->D[nderiv], w->ld, x_j, incx,
+                                beta, y_j, incy);
+        }
     }
 
     return SUZERAIN_SUCCESS;
@@ -316,12 +330,21 @@ suzerain_bsplineop_accumulate_complex(
         SUZERAIN_ERROR("x == y not allowed", SUZERAIN_EINVAL);
     }
 
+    const int use_sbmzv = is_symmetric(nderiv, w);
     for (int j = 0; j < nrhs; ++j) {
         const double (*const x_j)[2] = x + j*ldx;
         double       (*const y_j)[2] = y + j*ldy;
-        suzerain_blasext_dgbmzv('N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                                alpha, w->D[nderiv], w->ld, x_j, incx,
-                                beta, y_j, incy);
+        if (SUZERAIN_UNLIKELY(use_sbmzv)) {
+            suzerain_blasext_dsbmzv(
+                    'U', w->n, w->ku[nderiv],
+                    alpha, w->D[nderiv], w->ld, x_j, incx,
+                    beta, y_j, incy);
+        } else {
+            suzerain_blasext_dgbmzv(
+                    'N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                    alpha, w->D[nderiv], w->ld, x_j, incx,
+                    beta, y_j, incy);
+        }
     }
 
     return SUZERAIN_SUCCESS;
@@ -355,13 +378,22 @@ suzerain_bsplineop_apply(
                        SUZERAIN_ENOMEM);
     }
 
+    const int use_sbmv = is_symmetric(nderiv, w);
     for (int j = 0; j < nrhs; ++j) {
         double * const x_j = x + j*ldx;
         /* Compute x_j := w->D[nderiv]*x_j */
         suzerain_blas_dcopy(w->n, x_j, incx, scratch, incscratch);
-        suzerain_blas_dgbmv('N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                            alpha, w->D[nderiv], w->ld, scratch, incscratch,
-                            0.0, x_j, incx);
+        if (SUZERAIN_UNLIKELY(use_sbmv)) {
+            suzerain_blas_dsbmv(
+                    'U', w->n, w->ku[nderiv],
+                    alpha, w->D[nderiv], w->ld, scratch, incscratch,
+                    0.0, x_j, incx);
+        } else {
+            suzerain_blas_dgbmv(
+                    'N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                    alpha, w->D[nderiv], w->ld, scratch, incscratch,
+                    0.0, x_j, incx);
+        }
     }
 
     suzerain_blas_free(scratch);
@@ -396,16 +428,24 @@ suzerain_bsplineop_apply_complex(
                        SUZERAIN_ENOMEM);
     }
 
+    const int use_sbmv = is_symmetric(nderiv, w);
     for (int j = 0; j < nrhs; ++j) {
         double (*const x_j)[2] = x + j*ldx;
         /* Compute x_j := w->D[nderiv]*x_j for real/imaginary parts */
         for (int i = 0; i < 2; ++i) {
             suzerain_blas_dcopy(
                     w->n, &(x_j[0][i]), 2*incx, scratch, incscratch);
-            suzerain_blas_dgbmv(
-                    'N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                    alpha, w->D[nderiv], w->ld, scratch, incscratch,
-                    0.0, &(x_j[0][i]), 2*incx);
+            if (SUZERAIN_UNLIKELY(use_sbmv)) {
+                suzerain_blas_dsbmv(
+                        'U', w->n, w->ku[nderiv],
+                        alpha, w->D[nderiv], w->ld, scratch, incscratch,
+                        0.0, &(x_j[0][i]), 2*incx);
+            } else {
+                suzerain_blas_dgbmv(
+                        'N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                        alpha, w->D[nderiv], w->ld, scratch, incscratch,
+                        0.0, &(x_j[0][i]), 2*incx);
+            }
         }
     }
 
