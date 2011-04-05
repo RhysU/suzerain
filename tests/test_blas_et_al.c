@@ -2380,9 +2380,9 @@ main(int argc, char **argv)
     test_daxpzy();
     test_daxpzby();
 
-    /* TODO Add suzerain_blasext_dgbmzv test cases                    */
-    /* suzerain_blasext_dgbmzv exercised somewhat in test_bspline via */
-    /* zaccumulate and zapply                                         */
+    /* TODO Add suzerain_blasext_dgbmzv test cases                      */
+    /* suzerain_blasext_dgbmzv exercised somewhat in test_bsplineop via */
+    /* accumulate_complex and apply_complex                             */
 
     test_zgb_dacc1();
     test_zgb_dacc2();
@@ -2391,7 +2391,7 @@ main(int argc, char **argv)
     test_blasext_i2s_zaxpby2();
 
     /* TODO Add test_{c,z}gbtr{f,s} */
-    /* Already exercised to some extent in test_bspline */
+    /* Already exercised to some extent in test_bsplineop */
 
 #ifdef SUZERAIN_HAVE_MKL
     MKL_FreeBuffers();
