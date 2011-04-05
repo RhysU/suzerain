@@ -839,6 +839,130 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
             op.n(), op.n(), op.kl(1), op.ku(1), op.D(1), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
 
+    {
+        /* Check w->D[1] application against multiple real vectors */
+        const int nrhs = 2;
+        double b[] = {  2,  3,  5,  7,  6,  4,  1,
+                        1,  4,  6,  7,  5,  3,  2 };
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+        const int incb = 1;
+        op.apply(1, nrhs, 1512.0, b, incb, ldb);
+        const double b_good[] = {
+            1204,1610,3139,593,-2466,-2988,-2604,
+            2716,2667,2757,-757,-2919,-1860,-1092
+        };
+        check_close_collections(
+            b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
+            b, b + sizeof(b)/sizeof(b[0]),
+            std::numeric_limits<double>::epsilon()*10000); /* tol drops */
+    }
+
+    {
+        /* Check w->D[1] application against multiple complex vectors */
+        const int nrhs = 2;
+        double b[][2] = {
+            { 2, 1},{ 3, 4},{ 5, 6},{ 7, 7},{ 6, 5},{ 4, 3},{ 1, 2},
+            { 1, 2},{ 4, 3},{ 6, 5},{ 7, 7},{ 5, 6},{ 3, 4},{ 2, 1}
+        };
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+        const int incb = 1;
+        op.apply(1, nrhs, 1512.0, b, incb, ldb);
+        const double b_good[][2] = {
+            {1204,+2716},{1610,+2667},{3139,+2757},{593,-757},{-2466,-2919},{-2988,-1860},{-2604,-1092},
+            {2716,+1204},{2667,+1610},{2757,+3139},{-757,+593},{-2919,-2466},{-1860,-2988},{-1092,-2604}
+        };
+        check_close_collections(
+            (double *) b_good,
+            (double *)(b_good + sizeof(b_good)/sizeof(b_good[0])),
+            (double *) b,
+            (double *)(b + sizeof(b)/sizeof(b[0])),
+            std::numeric_limits<double>::epsilon()*10000); // drop tolerance
+    }
+
+    {
+        /* Check w->D[1] accumulation against multiple real vectors */
+        const int nrhs = 2;
+        double x[] = {  2,  3,  5,  7,  6,  4,  1,
+                        1,  4,  6,  7,  5,  3,  2 };
+        const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+        const int incx = 1;
+        double y[] = {  1,  2,  3,  4,  5,  6,  7,
+                       -1, -2, -3, -4, -5, -6, -7 };
+        const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+        const int incy = 1;
+        op.accumulate(1, nrhs, 1512.0, x, incx, ldx, 1.0, y, incy, ldy);
+        const double y_good[] = {
+            1205,1612,3142,597,-2461,-2982,-2597,
+            2715,2665,2754,-761,-2924,-1866,-1099
+        };
+        check_close_collections(
+            y_good, y_good + sizeof(y_good)/sizeof(y_good[0]),
+            y, y + sizeof(y)/sizeof(y[0]),
+            std::numeric_limits<double>::epsilon()*10000); // drop tolerance
+    }
+
+    {
+        /* Check w->D[1] accumulation against multiple complex vectors */
+        /* using complex-valued coefficients                           */
+        const int nrhs = 2;
+        const double x[][2] = {
+            { 2, 1},{ 3, 4},{ 5, 6},{ 7, 7},{ 6, 5},{ 4, 3},{ 1, 2},
+            { 1, 2},{ 4, 3},{ 6, 5},{ 7, 7},{ 5, 6},{ 3, 4},{ 2, 1}
+        };
+        const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+        const int incx = 1;
+        double y[][2] = {
+            { 1, 2},{ 2, 3},{ 3, 4},{ 4, 5},{ 5, 6},{ 6, 7},{ 7, 8},
+            {-1,-2},{-2,-3},{-3,-4},{-4,-5},{-5,-6},{-6,-7},{-7,-8},
+        };
+        const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+        const int incy = 1;
+        const double alpha[2] = { 1512, -2*1512 }; /* NB complex-valued */
+        const double beta[2]  = {    6,       7 }; /* NB complex-valued */
+        op.accumulate(1, nrhs, alpha, x, incx, ldx, beta, y, incy, ldy);
+        const double y_good[][2] = {
+            {6628,+327},{6935,-521},{8643,-3476},{-932,-1885},{-8316,+2084},{-6721,+4200},{-4802,+4213},
+            {5132,-4247},{5896,-3756},{9045,-2420},{440,+2049},{-7839,+3301},{-7823,+648},{-6286,-517}
+        };
+        check_close_collections(
+            (double *) y_good,
+            (double *)(y_good + sizeof(y_good)/sizeof(y_good[0])),
+            (double *) y,
+            (double *)(y + sizeof(y)/sizeof(y[0])),
+            std::numeric_limits<double>::epsilon()*10000);
+    }
+
+    {
+        /* Check w->D[1] accumulation against multiple complex vectors */
+        /* using real-valued coefficients                              */
+        const int nrhs = 2;
+        const double x[][2] = {
+            { 2, 1},{ 3, 4},{ 5, 6},{ 7, 7},{ 6, 5},{ 4, 3},{ 1, 2},
+            { 1, 2},{ 4, 3},{ 6, 5},{ 7, 7},{ 5, 6},{ 3, 4},{ 2, 1}
+        };
+        const int ldx  = sizeof(x)/sizeof(x[0])/nrhs;
+        const int incx = 1;
+        double y[][2] = {
+            { 1, 2},{ 2, 3},{ 3, 4},{ 4, 5},{ 5, 6},{ 6, 7},{ 7, 8},
+            {-1,-2},{-2,-3},{-3,-4},{-4,-5},{-5,-6},{-6,-7},{-7,-8},
+        };
+        const int ldy  = sizeof(y)/sizeof(y[0])/nrhs;
+        const int incy = 1;
+        const double alpha = 1512;
+        const double beta  =    6;
+        op.accumulate(1, nrhs, alpha, x, incx, ldx, beta, y, incy, ldy);
+        const double y_good[][2] = {
+            {1210,+2728},{1622,+2685},{3157,+2781},{617,-727},{-2436,-2883},{-2952,-1818},{-2562,-1044},
+            {2710,+1192},{2655,+1592},{2739,+3115},{-781,+563},{-2949,-2502},{-1896,-3030},{-1134,-2652}
+        };
+        check_close_collections(
+            (double *) y_good,
+            (double *)(y_good + sizeof(y_good)/sizeof(y_good[0])),
+            (double *) y,
+            (double *)(y + sizeof(y)/sizeof(y[0])),
+            std::numeric_limits<double>::epsilon()*10000);
+    }
+
     /* Check w->D[2], the second derivative matrix, against known good
      * in general banded matrix column-major order.
      */
