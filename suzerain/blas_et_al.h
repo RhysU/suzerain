@@ -219,13 +219,12 @@ suzerain_blas_ddot(
 /*!
  * \brief Compute \f$ x \cdot{} y \f$ using BLAS's dotc.
  *
- * \param n Number of elements in \c x and \c y.
- * \param x First source vector.
- * \param incx First source vector stride.
- * \param y Second source vector.
- * \param incy Second source vector stride.
- *
- * \return \f$ x \cdot{} y \f$.
+ * \param[in]  n Number of elements in \c x and \c y.
+ * \param[in]  x First source vector.
+ * \param[in]  incx First source vector stride.
+ * \param[in]  y Second source vector.
+ * \param[in]  incy Second source vector stride.
+ * \param[out] dotc The complex-valued result \f$ x \cdot{} y \f$.
  *
  * \see A BLAS reference for more details.
  */
@@ -272,14 +271,14 @@ suzerain_blas_dnrm2(
         const double *x,
         const int incx);
 
-/*! \copydoc suzerain_blas_scnrm2 */
+/*! \copydoc suzerain_blas_snrm2 */
 float
 suzerain_blas_scnrm2(
         const int n,
         const float (*x)[2],
         const int incx);
 
-/*! \copydoc suzerain_blas_scnrm2 */
+/*! \copydoc suzerain_blas_snrm2 */
 double
 suzerain_blas_dznrm2(
         const int n,

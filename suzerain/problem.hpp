@@ -80,7 +80,16 @@ public:
         return options_;
     }
 
-    /*! @copydoc IDefinition::options() const */
+    /**
+     * Obtain a Boost options_description encompassing all information
+     * in the definition.
+     *
+     * @return A reference suitable for <tt>add</tt>-ing to a
+     *         <tt>boost::program_options::options_description</tt> instance.
+     *
+     * @see <a href="http://www.boost.org/doc/libs/release/libs/program_options">
+     *      Boost.Program_options</a> for more information.
+     */
     boost::program_options::options_description& options() {
         return options_;
     }

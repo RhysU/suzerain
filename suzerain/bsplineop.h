@@ -34,6 +34,8 @@
 #include <suzerain/common.h>
 #include <suzerain/function.h>
 
+/* TODO Add usage example */
+
 /** @file
  * Provides B-spline-based banded operator construction and application
  * routines.  Both real- and complex- valued operator application and inversion
@@ -71,40 +73,6 @@
  * \f$D^{0} \beta = D^{k} \alpha\f$.  The method to use is chosen
  * through the ::suzerain_bsplineop_method value provided to
  * suzerain_bsplineop_alloc().
- *
- * (FIXME: Stale!)
- * Assuming you already have a suzerain_function instance \c f, this snippet
- * interpolates a general function onto a cubic spline basis and then takes a
- * derivative:
- * \code
- *  // Declare the breakpoints used in our basis
- *  const double breakpoints[] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
- *  const int nbreak = sizeof(breakpoints)/sizeof(breakpoints[0]);
- *
- *  // Create a cubic (k=4) workspace with 1 derivative available
- *  suzerain_bsplineop_workspace *w
- *      = suzerain_bsplineop_alloc(4, 1, nbreak, breakpoints,
- *          SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
- *
- *  // Factor the mass matrix D[0] to allow solving D[0] x = b
- *  suzerain_bsplineop_lu_workspace *mass
- *      = suzerain_bsplineop_lu_alloc(w);
- *  suzerain_bsplineop_lu_form_mass(w, mass);
- *
- *  // Set up and solve for coefficients that interpolate f
- *  double x[w->n]; // C99
- *  suzerain_bsplineop_interpolation_rhs(&f, x, w);
- *  suzerain_bsplineop_lu_solve(1, x, 1, mass);
- *
- *  // Solve D[0] x' = D[1] x by forming right hand side and solving
- *  suzerain_bsplineop_apply(1, 1, 1, x, 1, w->n, w);
- *  suzerain_bsplineop_lu_solve(1, x, 1, mass);
- *  // x now contains an approximation to the derivative of f
- *
- *  // Deallocate workspaces
- *  suzerain_bsplineop_lu_free(luw);
- *  suzerain_bsplineop_free(w);
- * \endcode
  *
  * All matrices are stored in column-major (Fortran) storage.  Multiple threads
  * may call the routines simultaneously provided that each thread has its own
@@ -496,9 +464,10 @@ typedef struct suzerain_bsplineop_lu_workspace {
 
     /**
      * Number of superdiagonals in the factored operator.
-     * Note that, for a given B-spline basis, suzerain_bsplineop_lu_workspace::ku
-     * is larger than the corresponding suzerain_bsplineop_workspace::ku
-     * according to the requirements of LAPACK's \c dgbtrf.
+     * Note that, for a given B-spline basis,
+     * suzerain_bsplineop_lu_workspace::ku is larger than the corresponding
+     * suzerain_bsplineop_workspace::ku according to the requirements of
+     * LAPACK's \c dgbtrf.
      */
     int ku;
 

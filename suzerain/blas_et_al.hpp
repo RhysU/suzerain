@@ -287,7 +287,7 @@ inline double dot(
                               boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_sdotc */
+/*! @copydoc suzerain_blas_cdotc */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -313,7 +313,7 @@ inline typename boost::enable_if<boost::mpl::and_<
     return std::complex<float>(result[0],result[1]);
 }
 
-/*! @copydoc suzerain_blas_sdotc */
+/*! @copydoc suzerain_blas_cdotc */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<

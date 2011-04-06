@@ -36,7 +36,10 @@
 #include <suzerain/state.hpp>
 #include <suzerain/timestepper.hpp>
 
-/** @file Provides operators built atop B-splines */
+/** @file
+ * Provides low-storage-ready operators built atop B-splines
+ * @see suzerain::timestepper::lowstorage
+ */
 
 namespace suzerain {
 

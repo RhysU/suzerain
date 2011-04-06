@@ -346,6 +346,14 @@ public:
      * Scale \c state by the factor set at construction time.
      *
      * @param state to scale in place.
+     * @param evmaxmag_real The time advancement schemes maximum purely
+     *                      real eigenvalue magnitude.  This should be
+     *                      used to help compute a convective stability
+     *                      criterion when <tt>delta_t_requested == true</tt>.
+     * @param evmaxmag_imag The time advancement schemes maximum purely
+     *                      imaginary eigenvalue magnitude.  This should be
+     *                      used to help compute a diffusive stability
+     *                      criterion when <tt>delta_t_requested == true</tt>.
      * @param delta_t_requested ignored in this implementation.
      *
      * @return The \c delta_t provided at construction time.

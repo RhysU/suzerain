@@ -48,7 +48,7 @@ public:
     /** Default constructor */
     ProfileDefinition();
 
-    /*! @copydoc IDefinition::options */
+    /*! @copydoc suzerain::problem::IDefinition::options */
     const boost::program_options::options_description& options() {
         return options_;
     }

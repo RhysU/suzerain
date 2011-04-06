@@ -35,16 +35,14 @@
  * transform coefficients stored "in-order".  From <a
  * href="http://www.fftw.org/fftw3.3alpha_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">FFTW's
  * documentation</a>:
- * <blockquote>
- *     ...the <tt>k</tt>-th output corresponds to the frequency
+ *     "...the <tt>k</tt>-th output corresponds to the frequency
  *     <tt>k/n</tt> (or <tt>k/T</tt>, where <tt>T</tt> is your total
  *     sampling period). For those who like to think in terms of
  *     positive and negative frequencies, this means that the positive
  *     frequencies are stored in the first half of the output and the
  *     negative frequencies are stored in backwards order in the second
  *     half of the output. (The frequency <tt>-k/n</tt> is the same as
- *     the frequency <tt>(n-k)/n</tt>.)
- * </blockquote>
+ *     the frequency <tt>(n-k)/n</tt>.)"
  *
  * The following concepts are used throughout these routine descriptions.  They
  * are defined assuming one is working with a one-dimensional discrete Fourier
@@ -59,7 +57,7 @@
  *   <dt>wavenumber</dt>
  *   <dd>
  *      The wavenumbers are the integers <tt>(-N+1)/2</tt>, ..., <tt>-1</tt>,
- *      <tt>0</tt>, <tt>1</tt>, ..., <tt>N/2</tt></tt> such that \f$k_i =
+ *      <tt>0</tt>, <tt>1</tt>, ..., <tt>N/2</tt> such that \f$k_i =
  *      \frac{2\pi{}i}{L}\f$ ranges over the frequencies supported on a domain
  *      of length \f$L\f$.
  *   </dd>
@@ -73,7 +71,7 @@
  * To make these concepts concrete, for <tt>N = 8</tt> the indices run from
  * <tt>0</tt> to <tt>7</tt>, inclusive.  This is index range <tt>[0,8)</tt>.
  * The wavenumbers corresponding to these indices are <tt>0</tt>, <tt>1</tt>,
- * <t>2</t>, <tt>3</tt>, <tt>4</tt>, <tt>-3</tt>, <tt>-2</tt>, <tt>-1</tt>.
+ * <tt>2</tt>, <tt>3</tt>, <tt>4</tt>, <tt>-3</tt>, <tt>-2</tt>, <tt>-1</tt>.
  */
 
 #ifdef __cplusplus

@@ -61,6 +61,7 @@ public:
      * Create an block of memory suitable for \c count Elements.
      *
      * @param count Number of Elements for which to allocate memory.
+     * @param dummy Used to disambiguate some overloads.  Ignore it.
      */
     template< typename I >
     ContiguousMemory(

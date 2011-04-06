@@ -166,15 +166,16 @@ suzerain_bspline_linear_combination_complex(
 
 /**
  * Compute the coefficients \f$ \gamma_{i} \f$ for <code>0 <= i < w->n</code> *
- * such that \f$ \vec{gamma}\cdot\vec{\beta} = \int \sum_{i} \beta_{i} B_{i}(x)
- * \, dx\f$.
+ * such that \f$ \vec{\gamma}\cdot\vec{\beta} = \int \sum_{i} \beta_{i}
+ * B_{i}^{(\mbox{nderiv})}(x) \, dx\f$.
  *
+ * @param[in]  nderiv The derivative to integrate.
  * @param[out] coeffs Real-valued coefficients \f$ \gamma_{i} \f$.
- * @param[in] inc Stride between elements of \c x
- * @param[in] dB Temporary storage to use of size <tt>w->k</tt> by
- *            no less than <tt>nderiv + 1</tt>.
- * @param[in] w Workspace to use (which sets the integration bounds).
- * @param[in] dw Workspace to use.
+ * @param[in]  inc Stride between elements of \c x
+ * @param[in]  dB Temporary storage to use of size <tt>w->k</tt> by
+ *             no less than <tt>nderiv + 1</tt>.
+ * @param[in]  w Workspace to use (which sets the integration bounds).
+ * @param[in]  dw Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
