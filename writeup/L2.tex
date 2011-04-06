@@ -282,7 +282,7 @@ only of interest at points $y_j$, the previous expression yields
 \end{align}
 where again the three-dimensional field is treated as as a two-dimensional
 field of vectors.  The computational cost for this operation is much lower than
-the others at $\OO{k N_x N_y N_z}$.
+the others at $\OO{\left(2k-1\right) N_x N_y N_z}$.
 
 These three results include summations over all coefficients in the homogeneous
 $x$ and $z$ directions, namely $m \in \left\{-N_x/2, \dots, 0, \dots,
@@ -320,15 +320,6 @@ when computing $f\!\left(\hat{u}_{lmn}\right)$.  Then
 \\ &=
   \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
   \left[
-    \sum_{m=0}^{\frac{N_x}{2}-1}
-    f\!\left(\hat{u}_{lmn}\right)
-    +
-    \sum_{m=1}^{\frac{N_x}{2}}
-    f\!\left(\overline{\hat{u}_{lmn}}\right)
-  \right]
-\\ &=
-  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
-  \left[
     \left.f\!\left(\hat{u}_{lmn}\right)\right|_{m=0}
     +
     \sum_{m=1}^{\frac{N_x}{2}-1}
@@ -341,10 +332,13 @@ when computing $f\!\left(\hat{u}_{lmn}\right)$.  Then
     \left.f\!\left(\overline{\hat{u}_{lmn}}\right)\right|_{m=\frac{N_x}{2}}
   \right]
   .
-\end{align}
+\intertext{
 When $f\!\left(\hat{u}_{lmn}\right) = f\!\left(\overline{\hat{u}_{lmn}}\right)$
-holds, these summands simplify further to yield
-\begin{align}
+holds, as it does for $\left|\left| u \right|\right|^{2}_{L^{2}_{xyz}}$,
+$\left|\left| u \right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$, and $\left|\left| u
+\right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$, the summands further simplify to
+yield
+}
   \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
   \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
   f\!\left(\hat{u}_{lmn}\right)
@@ -361,10 +355,5 @@ holds, these summands simplify further to yield
   \right]
   .
 \end{align}
-The computations required to find $\left|\left| u
-\right|\right|^{2}_{L^{2}_{xyz}}$, $\left|\left| u
-\right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$, and $\left|\left| u
-\right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$ all satisfy such a conjugate symmetry
-condition.
 
 \end{document}
