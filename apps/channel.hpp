@@ -191,6 +191,27 @@ void complex_field_write(esio_handle h,
     return complex_field_write<int>(h, name, field);
 }
 
+/** Holds information on the \f$L^2\f$ norm of a scalar field */
+struct L2 {
+    real_t mean2;
+    real_t fluctuating2;
+    real_t total2()        { return mean2 + fluctuating2;    };
+    real_t total()         { return std::sqrt(total2());     };
+    real_t mean()          { return std::sqrt(mean2);        };
+    real_t fluctuating()   { return std::sqrt(fluctuating2); };
+};
+
+/**
+ * Compute information about the \f$L^2\f$ norm of all scalar fields.
+ * See writeup/L2.tex for full details.
+ */
+boost::array<L2,field::count>
+field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
+         const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+         const suzerain::problem::GridDefinition& grid,
+         const suzerain::pencil_grid& dgrid,
+         suzerain::bspline& b);
+
 } // end namespace channel
 
 #endif // CHANNEL_HPP
