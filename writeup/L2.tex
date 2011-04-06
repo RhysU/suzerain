@@ -61,7 +61,7 @@ $u\!\left(x,y,z\right)$ on the spatial domain
 $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
 \left[-\frac{L_z}{2},\frac{L_z}{2}\right]$ which has been discretized as
 \begin{align}
-u^h(x,y,z)
+  u^h(x,y,z)
 &=
   \sum_{l=0}^{N_y - 1}
   \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
@@ -176,9 +176,9 @@ By direct computation we find
 In the above expression the three-dimensional field of transform coefficients
 $\hat{u}_{l m n}$ is treated as a two-dimensional collection of length $N_y$
 vectors indexed by $m$ and $n$.  For a B-spline basis with piecewise polynomial
-order $k - 1$ giving rise to a matrix $M$ with bandwidth $2k-1$, the
-computational cost to find $\left|\left| u \right|\right|^{2}_{L^{2}_{xyz}}$
-scales as $\OO{\left(2k-1\right) N_x N_y^2 N_z}$.
+order $k - 1$ giving rise to a real-valued, symmetric positive definite matrix
+$M$ with bandwidth $2k-1$, the computational cost to find $\left|\left| u
+\right|\right|^{2}_{L^{2}_{xyz}}$ scales as $\OO{k N_x N_y^2 N_z}$.
 
 The $y$-varying norm over the $x$ and $z$ directions can be computed via
 \begin{align}
@@ -237,11 +237,11 @@ The $y$-varying norm over the $x$ and $z$ directions can be computed via
   \sum_{m} \sum_{n} \hat{u}_{l m n} \overline{\hat{u}_{l^\prime m n}}
   .
 \end{align}
-Using the limited support of the products $B_l\left(y\right)
+Using the limited, symmetric support of the products $B_l\left(y\right)
 B_{l^\prime}\left(y\right)$ to reduce the required operations, one can compute
 this fully functional representation of $\left|\left| u
-\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ at a cost proportional to
-$\OO{\left(2k-1\right) N_x N_y^2 N_z}$.
+\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ at a cost proportional to $\OO{k N_x
+N_y^2 N_z}$.
 
 When $\left|\left|u\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ is
 only of interest at points $y_j$, the previous expression yields
@@ -283,5 +283,88 @@ only of interest at points $y_j$, the previous expression yields
 where again the three-dimensional field is treated as as a two-dimensional
 field of vectors.  The computational cost for this operation is much lower than
 the others at $\OO{k N_x N_y N_z}$.
+
+These three results include summations over all coefficients in the homogeneous
+$x$ and $z$ directions, namely $m \in \left\{-N_x/2, \dots, 0, \dots,
+N_x/2-1\right\}$ and $n \in \left\{-N_z/2, \dots, 0, \dots, N_z/2-1\right\}$.
+Because $u\!\left(x,y,z\right)$ is real-valued, its transform coefficients
+$\hat{u}_{lmn}$ exhibit conjugate symmetry in one of the homogeneous
+directions.  Often, not all of these coefficients are stored.  Consequently,
+care must be exercised when evaluating summations like $\sum_m \sum_n$ within
+such norm calculations.
+
+More concretely, say one employs conjugate symmetry in the $x$ direction
+when computing $f\!\left(\hat{u}_{lmn}\right)$.  Then
+\begin{align}
+  \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  f\!\left(\hat{u}_{lmn}\right)
+&=
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \left[
+    \sum_{m=0}^{\frac{N_x}{2}-1}
+    f\!\left(\hat{u}_{lmn}\right)
+    +
+    \sum_{m=-\frac{N_x}{2}}^{-1}
+    f\!\left(\hat{u}_{lmn}\right)
+  \right]
+\\ &=
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \left[
+    \sum_{m=0}^{\frac{N_x}{2}-1}
+    f\!\left(\hat{u}_{lmn}\right)
+    +
+    \sum_{m=1}^{\frac{N_x}{2}}
+    f\!\left(\overline{\hat{u}_{lmn}}\right)
+  \right]
+\\ &=
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \left[
+    \sum_{m=0}^{\frac{N_x}{2}-1}
+    f\!\left(\hat{u}_{lmn}\right)
+    +
+    \sum_{m=1}^{\frac{N_x}{2}}
+    f\!\left(\overline{\hat{u}_{lmn}}\right)
+  \right]
+\\ &=
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \left[
+    \left.f\!\left(\hat{u}_{lmn}\right)\right|_{m=0}
+    +
+    \sum_{m=1}^{\frac{N_x}{2}-1}
+    \left[
+      f\!\left(\hat{u}_{lmn}\right)
+      +
+      f\!\left(\overline{\hat{u}_{lmn}}\right)
+    \right]
+    +
+    \left.f\!\left(\overline{\hat{u}_{lmn}}\right)\right|_{m=\frac{N_x}{2}}
+  \right]
+  .
+\end{align}
+When $f\!\left(\hat{u}_{lmn}\right) = f\!\left(\overline{\hat{u}_{lmn}}\right)$
+holds, these summands simplify further to yield
+\begin{align}
+  \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  f\!\left(\hat{u}_{lmn}\right)
+&=
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \left[
+    \left.f\!\left(\hat{u}_{lmn}\right)\right|_{m=0}
+    +
+    2
+    \sum_{m=1}^{\frac{N_x}{2}-1}
+      f\!\left(\hat{u}_{lmn}\right)
+    +
+    \left.f\!\left(\hat{u}_{lmn}\right)\right|_{m=\frac{N_x}{2}}
+  \right]
+  .
+\end{align}
+The computations required to find $\left|\left| u
+\right|\right|^{2}_{L^{2}_{xyz}}$, $\left|\left| u
+\right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$, and $\left|\left| u
+\right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$ all satisfy such a conjugate symmetry
+condition.
 
 \end{document}
