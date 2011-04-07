@@ -317,13 +317,11 @@ public:
                                 this->stride_list_.begin());
     }
 
-    ref(const base& other)
-        : base(other /* shallow */)
-    {
-        // stride_list_ protected in boost::const_multi_array_ref ancestor
-        std::copy(other.strides(), other.strides() + dimensionality,
-                  this->stride_list_.begin());
-    }
+    explicit ref(const ref&  other) : base(other /* shallow */) {}
+
+    explicit ref(const base& other) : base(other /* shallow */) {}
+
+    // Assignment operator provided by 'using base::operator=' above
 };
 
 } // namespace multi_array
