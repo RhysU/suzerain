@@ -35,21 +35,26 @@
 #include <suzerain/mpl.hpp>
 
 /** @file
- * Provides marker types indicating state element type and element storage
- * configurations.
+ * Provides marker types indicating element storage configurations.
  **/
 
 namespace suzerain
 {
 
 /**
- * Provides marker types indicating state element type and element storage
- * configurations.
+ * Provides marker types indicating element storage configurations.
  **/
 namespace storage
 {
 
-// FIXME Document
+/**
+ * Provides storage and stride computations given a storage ordering.
+ *
+ * @tparam StorageOrderSequence Storage ordering specified using a type
+ * adhering to the Boost MPL's <a
+ * href="http://www.boost.org/doc/libs/release/libs/mpl/doc/refmanual/forward-sequence.html">
+ * Forward Sequence</a> concept.
+ */
 template< typename StorageOrderSequence >
 class general {
 private:
@@ -57,10 +62,28 @@ private:
             sequence_array_type;
 
 public:
+
+
+    /** The Boost MPL Forward Sequence used to specify the storage order */
     typedef StorageOrderSequence storage_order_sequence;
+
+    /** The dimensionality of the storage order */
     static const std::size_t dimensionality = sequence_array_type::static_size;
+
+    /**
+     * A Boost.MultiArray-friendly type for specifying the storage order.
+     * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
+     * Boost.MultiArray</a> for more information on the MultiArray concept.
+     */
     typedef boost::general_storage_order<dimensionality> storage_order_type;
 
+    /**
+     * Retrieve a Boost.MultiArray-friendly instance for specifying the storage
+     * order.
+     * @see <a
+     * href="http://www.boost.org/doc/libs/release/libs/multi_array">
+     * Boost.MultiArray</a> for more information on the MultiArray concept.
+     */
     static storage_order_type storage_order() {
         storage_order_type result(
                 sequence_array_type().begin(),
@@ -68,32 +91,77 @@ public:
         return result;
     }
 
-    template< typename RAIterator1,
-              typename RAIterator2,
+    /**
+     * Compute the dimension-by-dimension \c strides given extents with \c
+     * sizes where \c minstrides must be obeyed.  All arguments must be
+     * iterators with at least #dimensionality slots available.
+     *
+     * @param sizes      The extents to contain in each dimension.
+     * @param minstrides The minimum stride in each dimension.
+     * @param strides    Output strides meeting the constraints set by
+     *                   \c sizes and \c minstrides.
+     *
+     * @return Number of elements of storage necessary to contain
+     *         \c sizes per output \c strides.
+     */
+    template< typename RandomAccessIterator1,
+              typename RandomAccessIterator2,
               typename OutputIterator >
-    static std::size_t compute_strides(RAIterator1 sizes,
-                                       RAIterator2 minstrides,
+    static std::size_t compute_strides(RandomAccessIterator1 sizes,
+                                       RandomAccessIterator2 minstrides,
                                        OutputIterator strides);
 
-    template< typename RAIterator,
+    /**
+     * Compute the dimension-by-dimension \c strides given extents with \c
+     * sizes.  All arguments must be iterators with at least #dimensionality
+     * slots available.
+     *
+     * @param sizes      The extents to contain in each dimension.
+     * @param strides    Output strides matching \c sizes.
+     *
+     * @return Number of elements of storage necessary to contain \c sizes.
+     */
+    template< typename RandomAccessIterator,
               typename OutputIterator >
-    static std::size_t compute_strides(RAIterator sizes,
+    static std::size_t compute_strides(RandomAccessIterator sizes,
                                        OutputIterator strides);
 
-    template< typename RAIterator1,
-              typename RAIterator2 >
-    static std::size_t compute_storage(RAIterator1 sizes,
-                                       RAIterator2 minstrides);
+    /**
+     * Compute the amount of storage necessary to contain \c sizes elements
+     * where \c minstrides must be obeyed.  All arguments must be iterators
+     * with at least #dimensionality slots available.
+     *
+     * @param sizes      The extents to contain in each dimension.
+     * @param minstrides The minimum stride in each dimension.
+     *
+     * @return Number of elements of storage necessary to contain
+     *         \c sizes per output \c strides.
+     */
+    template< typename RandomAccessIterator1,
+              typename RandomAccessIterator2 >
+    static std::size_t compute_storage(RandomAccessIterator1 sizes,
+                                       RandomAccessIterator2 minstrides);
 
-    template< typename RAIterator >
-    static std::size_t compute_storage(RAIterator sizes);
+    /**
+     * Compute the amount of storage necessary to contain \c sizes elements.
+     * All arguments must be iterators with at least #dimensionality slots
+     * available.
+     *
+     * @param sizes      The extents to contain in each dimension.
+     *
+     * @return Number of elements of storage necessary to contain \c sizes.
+     */
+    template< typename RandomAccessIterator >
+    static std::size_t compute_storage(RandomAccessIterator sizes);
 };
 
 template< typename StorageOrderSequence >
-template< typename RAIterator1, typename RAIterator2, typename OutputIterator >
+template< typename RandomAccessIterator1,
+          typename RandomAccessIterator2,
+          typename OutputIterator >
 std::size_t general<StorageOrderSequence>::compute_strides(
-        RAIterator1 sizes,
-        RAIterator2 minstrides,
+        RandomAccessIterator1 sizes,
+        RandomAccessIterator2 minstrides,
         OutputIterator strides)
 {
     typedef typename std::iterator_traits<OutputIterator>::value_type
@@ -117,9 +185,9 @@ std::size_t general<StorageOrderSequence>::compute_strides(
 }
 
 template< typename StorageOrderSequence >
-template< typename RAIterator, typename OutputIterator >
+template< typename RandomAccessIterator, typename OutputIterator >
 std::size_t general<StorageOrderSequence>::compute_strides(
-        RAIterator sizes,
+        RandomAccessIterator sizes,
         OutputIterator strides)
 {
     boost::array<
@@ -131,57 +199,61 @@ std::size_t general<StorageOrderSequence>::compute_strides(
 }
 
 template< typename StorageOrderSequence >
-template< typename RAIterator1, typename RAIterator2 >
+template< typename RandomAccessIterator1, typename RandomAccessIterator2 >
 std::size_t general<StorageOrderSequence>::compute_storage(
-        RAIterator1 sizes,
-        RAIterator2 minstrides)
+        RandomAccessIterator1 sizes,
+        RandomAccessIterator2 minstrides)
 {
     boost::array<std::size_t,dimensionality> scratch;
     return compute_strides(sizes, minstrides, scratch.begin());
 }
 
 template< typename StorageOrderSequence >
-template< typename RAIterator >
+template< typename RandomAccessIterator >
 std::size_t general<StorageOrderSequence>::compute_storage(
-        RAIterator sizes)
+        RandomAccessIterator sizes)
 {
     boost::array<std::size_t,dimensionality> scratch;
     return compute_strides(sizes, scratch.begin());
 }
 
-// FIXME Document
-template< std::size_t NumDims > class interleaved {
-    BOOST_STATIC_ASSERT( NumDims != NumDims ); // Never to be instantiated
-};
+/**
+ * A marker type for specifying interleaved state storage (which happens to be
+ * identical to Fortran's row-major storage ordering).
+ */
+template< std::size_t NumDims > class interleaved
+    : public general<
+            typename boost::mpl::range_c<std::size_t,0,NumDims>::type
+      > {};
 
-template<> class interleaved<1>
-    : public general< boost::mpl::vector_c<std::size_t,0> > {};
-template<> class interleaved<2>
-    : public general< boost::mpl::vector_c<std::size_t,0,1> > {};
-template<> class interleaved<3>
-    : public general< boost::mpl::vector_c<std::size_t,0,1,2> > {};
-template<> class interleaved<4>
-    : public general< boost::mpl::vector_c<std::size_t,0,1,2,3> > {};
-template<> class interleaved<5>
-    : public general< boost::mpl::vector_c<std::size_t,0,1,2,3,4> > {};
-template<> class interleaved<6>
-    : public general< boost::mpl::vector_c<std::size_t,0,1,2,3,4,5> > {};
+/**
+ * A marker type for specifying non-interleaved state storage.  This is storage
+ * for which the first index is slowest and the remaining indices follow
+ * Fortran row-major storage ordering.
+ */
+template< std::size_t NumDims > class noninterleaved;
 
-// FIXME Document
-template< std::size_t NumDims > class noninterleaved {
-    BOOST_STATIC_ASSERT( NumDims != NumDims ); // Never to be instantiated
-};
-
+/** Noninterleaved storage specification for one dimension */
 template<> class noninterleaved<1>
     : public general< boost::mpl::vector_c<std::size_t,0> > {};
+
+/** Noninterleaved storage specification for two dimensions */
 template<> class noninterleaved<2>
     : public general< boost::mpl::vector_c<std::size_t,1,0> > {};
+
+/** Noninterleaved storage specification for three dimensions */
 template<> class noninterleaved<3>
     : public general< boost::mpl::vector_c<std::size_t,1,2,0> > {};
+
+/** Noninterleaved storage specification for four dimensions */
 template<> class noninterleaved<4>
     : public general< boost::mpl::vector_c<std::size_t,1,2,3,0> > {};
+
+/** Noninterleaved storage specification for five dimensions */
 template<> class noninterleaved<5>
     : public general< boost::mpl::vector_c<std::size_t,1,2,3,4,0> > {};
+
+/** Noninterleaved storage specification for six dimensions */
 template<> class noninterleaved<6>
     : public general< boost::mpl::vector_c<std::size_t,1,2,3,4,5,0> > {};
 

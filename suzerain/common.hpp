@@ -75,6 +75,7 @@
 #include <boost/mpl/list_c.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/logical.hpp>
+#include <boost/mpl/range_c.hpp>
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/vector_c.hpp>
 #include <boost/multi_array.hpp>
