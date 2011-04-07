@@ -280,8 +280,13 @@ void create(const int ndof,
 
 void store(const esio_handle h,
            const boost::shared_ptr<suzerain::bspline>& b,
-           const boost::shared_ptr<suzerain::bsplineop>& bop)
+           const boost::shared_ptr<suzerain::bsplineop>& bop,
+           const boost::shared_ptr<suzerain::bsplineop>& gop)
 {
+    // Ensure we were handed the appropriate discrete operators
+    assert(bop->get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    assert(gop->get()->method == SUZERAIN_BSPLINEOP_GALERKIN_L2);
+
     // Only root writes data
     int procid;
     esio_handle_comm_rank(h, &procid);
@@ -305,10 +310,11 @@ void store(const esio_handle h,
     esio_line_write(h, "collocation_points", buf.data(), 0,
             "Collocation points used to build discrete operators");
 
-    DEBUG0("Storing B-spline derivative operators");
+    DEBUG0("Storing B-spline collocation derivative operators");
 
     char name[8];
     char comment[127];
+
     for (int k = 0; k <= bop->nderiv(); ++k) {
         snprintf(name, sizeof(name)/sizeof(name[0]), "Dy%d", k);
         snprintf(comment, sizeof(comment)/sizeof(comment[0]),
@@ -323,6 +329,24 @@ void store(const esio_handle h,
         esio_attribute_write(h, name, "ku", bop->ku(k));
         esio_attribute_write(h, name, "m",  bop->n());
         esio_attribute_write(h, name, "n",  bop->n());
+    }
+
+    DEBUG0("Storing B-spline Galerkin L2 derivative operators");
+
+    for (int k = 0; k <= gop->nderiv(); ++k) {
+        snprintf(name, sizeof(name)/sizeof(name[0]), "Gy%d", k);
+        snprintf(comment, sizeof(comment)/sizeof(comment[0]),
+                "Wall-normal Galerkin L2 Gy%d(i,j) = G%d[j,ku+i-j] for"
+                " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
+        const int lda = gop->ku(k) + 1 + gop->kl(k);
+        esio_plane_establish(h,
+                gop->n(), 0, (procid == 0 ? gop->n() : 0),
+                lda,      0, (procid == 0 ? lda          : 0));
+        esio_plane_write(h, name, gop->D(k), 0, 0, comment);
+        esio_attribute_write(h, name, "kl", gop->kl(k));
+        esio_attribute_write(h, name, "ku", gop->ku(k));
+        esio_attribute_write(h, name, "m",  gop->n());
+        esio_attribute_write(h, name, "n",  gop->n());
     }
 }
 

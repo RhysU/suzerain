@@ -82,7 +82,8 @@ static shared_ptr<const suzerain::pencil_grid> dgrid;
 
 // Global B-spline related-details initialized in main()
 static shared_ptr<suzerain::bspline>       b;
-static shared_ptr<suzerain::bsplineop>     bop;
+static shared_ptr<suzerain::bsplineop>     bop;    // Collocation
+static shared_ptr<suzerain::bsplineop>     gop;    // Galerkin L2
 static shared_ptr<suzerain::bsplineop_luz> bopluz;
 
 // Explicit timestepping scheme uses only complex_t 4D NoninterleavedState
@@ -216,12 +217,13 @@ int main(int argc, char **argv)
           << " on [0, " << scenario.Ly << "] with "
           << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
     channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, b, bop);
+    gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
     INFO0("Creating new restart file " << restart_file);
     esio_file_create(esioh, restart_file.c_str(), clobber);
     channel::store(esioh, scenario);
     channel::store(esioh, grid, scenario.Lx, scenario.Lz);
-    channel::store(esioh, b, bop);
+    channel::store(esioh, b, bop, gop);
     esio_file_flush(esioh);
 
     INFO0("Computing derived, dimensional reference parameters");

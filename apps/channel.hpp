@@ -106,7 +106,8 @@ void create(const int ndof,
 /** Store a suzerain::bspline workspace in a restart file */
 void store(const esio_handle h,
            const boost::shared_ptr<suzerain::bspline>& b,
-           const boost::shared_ptr<suzerain::bsplineop>& bop);
+           const boost::shared_ptr<suzerain::bsplineop>& bop,
+           const boost::shared_ptr<suzerain::bsplineop>& gop);
 
 /** Load a suzerain::bspline workspace from a restart file */
 void load(const esio_handle h,

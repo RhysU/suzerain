@@ -1041,7 +1041,7 @@ int main(int argc, char **argv)
         esio_file_create(h, restart.metadata().c_str(), 1 /* overwrite */);
         channel::store(h, scenario);
         channel::store(h, grid, scenario.Lx, scenario.Lz);
-        channel::store(h, b, bop);
+        channel::store(h, b, bop, gop);
         esio_file_close(h);
         esio_handle_finalize(h);
         atexit(&atexit_metadata); // Delete lingering metadata file at exit
