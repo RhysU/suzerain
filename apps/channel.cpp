@@ -639,13 +639,16 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
          const suzerain::problem::GridDefinition& grid,
          const suzerain::pencil_grid& dgrid,
-         suzerain::bspline& b)
+         const suzerain::bsplineop& gop)
 {
     // Ensure state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field::count);
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+
+    // Ensure we were handed Galerkin L2 operator matrices
+    assert(gop.get()->method == SUZERAIN_BSPLINEOP_GALERKIN_L2);
 
     // Only want non-dealiased X-direction modes to contribute to L2
     // Compute wavenumber translation logistics for X direction
@@ -676,8 +679,6 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
     }
 
-    // Compute L2 inner product matrix for the wall-normal direction
-    const suzerain::bsplineop M(b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2);
 
     // Temporary storage for inner product computations
     Eigen::VectorXc tmp;
@@ -695,7 +696,7 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
         for (int n = mzb[0]; n < mze[0]; ++n) {
             for (int m = mxb[0]; m < mxe[0]; ++m) {
                 const complex_t * u_mn = &state[k][0][m - mxb[0]][n - mzb[0]];
-                M.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
+                gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
                 complex_t dot = suzerain::blas::dot(grid.N.y(), u_mn, 1,
                                                                 tmp.data(), 1);
                 if (m > 0 && m < grid.N.x()/2) dot *= 2;
@@ -705,7 +706,7 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
         for (int n = mzb[1]; n < mze[1]; ++n) {
             for (int m = mxb[0]; m < mxe[0]; ++m) {
                 const complex_t * u_mn = &state[k][0][m - mxb[0]][n - mzb[1]];
-                M.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
+                gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
                 complex_t dot = suzerain::blas::dot(grid.N.y(), u_mn, 1,
                                                                 tmp.data(), 1);
                 if (m > 0 && m < grid.N.x()/2) dot *= 2;
@@ -725,7 +726,7 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
     if (mzb[0] == 0 && mxb[0] == 0) {
         for (size_t k = 0; k < field::count; ++k) {
             const complex_t * u_mn = &state[k][0][0][0];
-            M.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
+            gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
             mean2[k] = suzerain::blas::dot(grid.N.y(), u_mn, 1,
                                                       tmp.data(), 1);
         }

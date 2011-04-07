@@ -93,7 +93,8 @@ static const TimeDefinition<real_t> timedef(/* advance_dt           */ 0,
 
 // Global grid-details initialized in main()
 static shared_ptr<      suzerain::bspline>       b;
-static shared_ptr<      suzerain::bsplineop>     bop;
+static shared_ptr<      suzerain::bsplineop>     bop;    // Collocation
+static shared_ptr<      suzerain::bsplineop>     gop;    // Galerkin L2
 static shared_ptr<      suzerain::bsplineop_luz> bopluz;
 static shared_ptr<const suzerain::pencil_grid>   dgrid;
 static Eigen::ArrayXr                            one_over_delta_y;
@@ -920,23 +921,25 @@ static void atexit_metadata(void) {
 
 /** Routine to output status.  Signature for TimeController use. */
 static bool log_status(real_t t, std::size_t nt) {
-    INFO0("Simulation reached time " << t << " at time step " << nt);
-    if (INFO_ENABLED) {
-        const boost::array<channel::L2,channel::field::count> L2
-            = channel::field_L2(*state_linear, scenario, grid, *dgrid, *b);
-        std::ostringstream oss;
-        for (std::size_t k = 0; k < channel::field::count; ++k) {
-            const double total    = L2[k].total();
-            const double fraction
-                = total > 0 ? L2[k].fluctuating() / total * 100 : 0;
-            oss << channel::field::name[k] << " "
-                << total                   << " ("  << fraction << "%)";
-            if (k < channel::field::count - 1) {
-                oss << ", ";
-            }
-        }
-        INFO0("L_2 norms: " << oss.str());
+
+    // Save resources by returning early when no status necessary
+    if (!INFO_ENABLED) return true;
+
+    // Collective computation of the L_2 norms
+    const boost::array<channel::L2,channel::field::count> L2
+        = channel::field_L2(*state_linear, scenario, grid, *dgrid, *gop);
+
+    // Prepare the status message
+    std::ostringstream oss;
+    oss << "t = " << t << ", nt = " << nt;
+    oss << ", mean|fluct L2 =";
+    for (std::size_t k = 0; k < L2.size(); ++k) {
+        oss << ' ' << L2[k].mean() << ' ' << L2[k].fluctuating();
     }
+
+    // Log the status message
+    INFO0(oss.str());
+
     return true;
 }
 
@@ -1030,6 +1033,7 @@ int main(int argc, char **argv)
     bopluz->form_mass(*bop);
     bintcoeff.resize(b->n(), 1);
     b->integration_coefficients(0, bintcoeff.data());
+    gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
     INFO0("Saving metadata temporary file: " << restart.metadata());
     {

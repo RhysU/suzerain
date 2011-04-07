@@ -210,7 +210,7 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
          const suzerain::problem::GridDefinition& grid,
          const suzerain::pencil_grid& dgrid,
-         suzerain::bspline& b);
+         const suzerain::bsplineop& gop);
 
 } // end namespace channel
 
