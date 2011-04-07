@@ -647,26 +647,28 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
 
+    // Only want non-dealiased X-direction modes to contribute to L2
     // Compute wavenumber translation logistics for X direction
-    int nxb[2], nxe[2], mxb[2], mxe[2];
+    int fxb[2], fxe[2], mxb[2], mxe[2];
     suzerain::inorder::wavenumber_translate(grid.N.x(),
                                             grid.dN.x(),
                                             dgrid.local_wave_start.x(),
                                             dgrid.local_wave_end.x(),
-                                            nxb[0], nxe[0], nxb[1], nxe[1],
+                                            fxb[0], fxe[0], fxb[1], fxe[1],
                                             mxb[0], mxe[0], mxb[1], mxe[1]);
     // X contains only positive wavenumbers => second range must be empty
-    assert(nxb[1] == nxe[1]);
+    assert(fxb[1] == fxe[1]);
     assert(mxb[1] == mxe[1]);
 
+    // Only want non-dealiased Z-direction modes to contribute to L2
     // Compute wavenumber translation logistics for Z direction
     // One or both ranges may be empty
-    int nzb[2], nze[2], mzb[2], mze[2];
+    int fzb[2], fze[2], mzb[2], mze[2];
     suzerain::inorder::wavenumber_translate(grid.N.z(),
                                             grid.dN.z(),
                                             dgrid.local_wave_start.z(),
                                             dgrid.local_wave_end.z(),
-                                            nzb[0], nze[0], nzb[1], nze[1],
+                                            fzb[0], fze[0], fzb[1], fze[1],
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
     // Hosed if MPI_COMM_WORLD rank 0 does not contain the zero-zero mode!
@@ -683,67 +685,65 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
 
     // Temporary storage for accumulating and broadcasting results
     complex_t buf[2*field::count];
-    typedef Eigen::Map<Eigen::Matrix<complex_t,field::count,1> > results_type;
-    results_type fluctuating(buf);
-    results_type mean(buf + field::count);
+    typedef Eigen::Map<Eigen::Array<complex_t,field::count,1> > results_type;
+    results_type total2(buf);
+    results_type mean2(buf + field::count);
 
-    // Compute the fluctuating L2 contribution for each field in turn
-    // Requires summing many weighted inner products on non-zero-zero modes
-    fluctuating.setZero();
+    // Compute the local L2 contribution towards each L^2 norm squared
+    total2.setZero();
     for (size_t k = 0; k < field::count; ++k) {
         for (int n = mzb[0]; n < mze[0]; ++n) {
             for (int m = mxb[0]; m < mxe[0]; ++m) {
-                if (SUZERAIN_UNLIKELY(n == 0 && m == 0)) continue;
                 const complex_t * u_mn = &state[k][0][m - mxb[0]][n - mzb[0]];
                 M.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
                 complex_t dot = suzerain::blas::dot(grid.N.y(), u_mn, 1,
                                                                 tmp.data(), 1);
                 if (m > 0 && m < grid.N.x()/2) dot *= 2;
-                fluctuating[k] += dot;
+                total2[k] += dot;
             }
         }
         for (int n = mzb[1]; n < mze[1]; ++n) {
             for (int m = mxb[0]; m < mxe[0]; ++m) {
-                if (SUZERAIN_UNLIKELY(n == 0 && m == 0)) continue;
                 const complex_t * u_mn = &state[k][0][m - mxb[0]][n - mzb[1]];
                 M.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
                 complex_t dot = suzerain::blas::dot(grid.N.y(), u_mn, 1,
                                                                 tmp.data(), 1);
                 if (m > 0 && m < grid.N.x()/2) dot *= 2;
-                fluctuating[k] += dot;
+                total2[k] += dot;
             }
         }
     }
+    total2 *= scenario.Lx * scenario.Lz;
 
-    // Reduce fluctuating sum onto processor with zero-zero mode
+    // Reduce total2 sum onto processor with housing the zero-zero mode
     SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE,
-                fluctuating.data(),
-                fluctuating.size() * sizeof(complex_t)/sizeof(real_t),
+                total2.data(), total2.size() * sizeof(complex_t)/sizeof(real_t),
                 suzerain::mpi::datatype<real_t>(),
                 MPI_SUM, 0, MPI_COMM_WORLD));
 
-    // Compute the mean L2 on the root processor
+    // Compute the mean-only L^2 squared for each field on the root processor
     if (mzb[0] == 0 && mxb[0] == 0) {
         for (size_t k = 0; k < field::count; ++k) {
             const complex_t * u_mn = &state[k][0][0][0];
             M.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
-            mean[k] = suzerain::blas::dot(grid.N.y(), u_mn, 1,
+            mean2[k] = suzerain::blas::dot(grid.N.y(), u_mn, 1,
                                                       tmp.data(), 1);
         }
+        mean2 *= scenario.Lx * scenario.Lz;
     }
 
-    // Broadcast fluctuating sums AND mean to all processors
+    // Broadcast total2 and mean2 values to all processors
     SUZERAIN_MPICHKR(MPI_Bcast(
                 buf,
                 sizeof(buf)/sizeof(buf[0]) * sizeof(complex_t)/sizeof(real_t),
                 suzerain::mpi::datatype<real_t>(),
                 0, MPI_COMM_WORLD));
 
-    // Pack the result into the return structure
+    // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     boost::array<L2,field::count> retval;
     for (size_t k = 0; k < field::count; ++k) {
-        retval[k].mean2        = std::abs(mean[k]);
-        retval[k].fluctuating2 = std::abs(fluctuating[k]);
+        retval[k].mean2        = std::abs(mean2[k]);
+        retval[k].fluctuating2 = std::abs(total2[k] - mean2[k]);
     }
 
     return retval;
