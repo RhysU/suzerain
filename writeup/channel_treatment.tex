@@ -77,7 +77,7 @@ similar to Coleman et al.~\cite{Coleman1995Numerical}.
 
 We assume a Fourier basis in the streamwise $x$ and spanwise $z$ direction as
 well as an inhomogeneous treatment for wall-normal
-$y\in\left[-\delta,\delta\right]$.  We assume that mean state quantities can be
+$y\in\left[0,2\delta\right]$.  We assume that mean state quantities can be
 obtained as a function of wall-normal position using the constant (``zero
 zero'') Fourier modes.  Under this ergodic assumption, we denote
 $\rho\!\left(\cdot,y,\cdot\right) =
@@ -97,12 +97,12 @@ the anaysis that follows.
 Coleman et al.'s isothermal channel is characterized by
 \begin{enumerate}
   \item A time-invariant bulk density $\bar{\rho} \coloneqq \frac{1}{2\delta}
-        \int_{-\delta}^{\delta} \rho\!\left(\cdot,y,\cdot\right)\,dy $
+        \int_{0}^{2\delta} \rho\!\left(\cdot,y,\cdot\right)\,dy $
   \item The no slip, isothermal boundary condition
-        $\vec{u}=0$, $T = 1$ at $y = \pm\delta$
+        $\vec{u}=0$, $T = 1$ at $y = 0,2\delta$
   \item A time-invariant bulk streamwise momentum
         $\bar{m}_{x} \coloneqq \frac{1}{2\delta}
-        \int_{-\delta}^{\delta} \bar{m}_{x}\!\left(\cdot,y,\cdot\right)\,dy $
+        \int_{0}^{2\delta} \bar{m}_{x}\!\left(\cdot,y,\cdot\right)\,dy $
 \end{enumerate}
 
 \subsection*{Analysis}
@@ -111,17 +111,17 @@ First, we find $f_{\rho}(t)$ such that the bulk density $\bar{\rho}$
 remains constant in time:
 \begin{align}
   \partial_{t} \bar{\rho}
-  &= \frac{1}{2\delta} \int_{-\delta}^{\delta}
+  &= \frac{1}{2\delta} \int_{0}^{2\delta}
      \partial_{t} \rho\!\left(\cdot,y,\cdot\right) \, dy
-   = \frac{1}{2\delta} \int_{-\delta}^{\delta}
+   = \frac{1}{2\delta} \int_{0}^{2\delta}
      \left[ R_{\rho}\!\left(\cdot,y,\cdot\right) + f_{\rho} \right] \, dy
-   = \frac{1}{2\delta} \int_{-\delta}^{\delta}
+   = \frac{1}{2\delta} \int_{0}^{2\delta}
      R_{\rho}\!\left(\cdot,y,\cdot\right) \, dy + f_{\rho}
    = 0
 \end{align}
-Rearranging we find $f_{\rho} = - \frac{1}{2\delta} \int_{-\delta}^{\delta}
+Rearranging we find $f_{\rho} = - \frac{1}{2\delta} \int_{0}^{2\delta}
 R_{\rho}\!\left(\cdot,y,\cdot\right) \, dy$.  Next, the boundary condition
-$\vec{u} = 0$ at $y = \pm\delta$ implies that at the wall
+$\vec{u} = 0$ at $y = 0,2\delta$ implies that at the wall
 \begin{align}
   \partial_{t} \vec{m}
   =   \rho \cancel{\partial_{t} \vec{u}}
@@ -141,19 +141,19 @@ also holds at the wall.  Finally, we find $\vec{f}_{m} =
 $\bar{m}_{x}$ remains constant in time:
 \begin{align}
   \partial_{t} \bar{m}_x
-   = \frac{1}{2\delta} \int_{-\delta}^{\delta}
+   = \frac{1}{2\delta} \int_{0}^{2\delta}
      \partial_{t} m_{x} \!\left(\cdot,y,\cdot\right) \, dy
-  &= \frac{1}{2\delta} \int_{-\delta}^{\delta}
+  &= \frac{1}{2\delta} \int_{0}^{2\delta}
      \left[  R_{m_x}\!\left(\cdot,y,\cdot\right)
            + \rho\!\left(\cdot,y,\cdot\right)  f_{m_x}
      \right] \, dy
   \\
-  &= \frac{1}{2\delta} \int_{-\delta}^{\delta}
+  &= \frac{1}{2\delta} \int_{0}^{2\delta}
      R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy + \bar{\rho} f_{m_x}
    = 0
 \end{align}
 Rearranging we find $\bar{\rho} f_{m_x} = - \frac{1}{2\delta}
-\int_{-\delta}^{\delta} R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy$.
+\int_{0}^{2\delta} R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy$.
 
 \subsection*{Implementation}
 
@@ -175,25 +175,25 @@ problem looks as follows:
   \item Apply $f_{\rho}$ by updating $R_{\rho}\!\left(\cdot,y,\cdot\right)
         -\!= \left(2\delta\right)^{-1} c^{\mathrm{T}}
         R_{\rho}\!\left(\cdot,y,\cdot\right)$.
-  \item Set $\left.R_{\vec{m}}\right|_{y=\pm\delta} = 0$.
-  \item Set $\left.R_{e}\right|_{y=\pm\delta} =
+  \item Set $\left.R_{\vec{m}}\right|_{y=0,2\delta} = 0$.
+  \item Set $\left.R_{e}\right|_{y=0,2\delta} =
         \frac{1}{\gamma\left(\gamma-1\right)}
-        \left.R_{\rho}\right|_{y=\pm\delta}$.
+        \left.R_{\rho}\right|_{y=0,2\delta}$.
   \item Compute temporary value $\alpha =
         \left(2\delta\right)^{-1} c^{\mathrm{T}}
         R_{m_{x}}\!\left(\cdot,y,\cdot\right)$.
   \item Apply $\bar{\rho} f_{m_x}$ by updating
-        $R_{m_x}\!\left(\cdot,y,\cdot\right) -\!= \alpha$ for $y\neq\pm\delta$.
+        $R_{m_x}\!\left(\cdot,y,\cdot\right) -\!= \alpha$ for $y\neq0,2\delta$.
   \item Apply $\vec{f}_{m}\cdot\vec{m} = f_{m_x} m_x$ by updating
         $R_{e}\!\left(\cdot,y,\cdot\right) -\!=
         \bar{\rho}^{-1} \alpha \, m_{x}\!\left(\cdot,y,\cdot\right)$
-        for $y\neq\pm\delta$.
+        for $y\neq0,2\delta$.
 \end{enumerate}
 One then advances $\partial_{t}\rho = R_{\rho}$, $\partial_{t} \vec{m} =
 R_{\vec{m}}$, and $\partial_{t} e = R_{e}$ using regular time integration
 techniques.  The above updates will cause the next state to also satisfy the
 isothermal channel conditions.  Note that $f_{m_x}$ is not applied at
-$y=\pm\delta$ but that these points may be included in the momentum integral
+$y=0,2\delta$ but that these points may be included in the momentum integral
 computation ($\alpha$) as they are identically zero from earlier boundary
 condition enforcement.  Each of these computations may be performed in
 wavespace as they are linear in at most one state variable.
