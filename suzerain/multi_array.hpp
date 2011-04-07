@@ -32,13 +32,14 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/functional.hpp>
+#include <suzerain/storage.hpp>
 
 namespace suzerain
 {
 
 /**
- * Provides utilities atop the Boost.MultiArray concept
- * and its concrete implementations.
+ * Provides utilities atop the Boost.MultiArray concept and its concrete
+ * implementations.
  *
  * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
  *      Boost.MultiArray</a> for more information on the MultiArray concept.
@@ -197,6 +198,133 @@ void fill(MultiArray &x, const V &v) {
     using suzerain::functional::assign;
     for_each(x, assign<typename MultiArray::element,V>(v));
 }
+
+/**
+ * A <tt>boost::multi_array_ref</tt>-like class for strided indexing into a
+ * contiguous region of memory provided to the constructor.
+ *
+ * @internal Nearly all of the implementation is inherited, but we choose to
+ * avoid publicly being a <tt>multi_array_ref</tt> subclass since the
+ * underlying elements are not strictly contiguous.
+ *
+ * @see <a href="http://www.boost.org/doc/libs/release/libs/multi_array">
+ *      Boost.MultiArray</a> for more information on the MultiArray concept.
+ */
+template<typename ValueType, std::size_t NumDims>
+class ref
+    : private boost::multi_array_ref<ValueType, NumDims>
+{
+private:
+    typedef typename boost::multi_array_ref<ValueType, NumDims> base;
+
+public:
+
+    // MultiArray Table 2. Associated Types
+    typedef typename base::value_type             value_type;
+    typedef typename base::reference              reference;
+    typedef typename base::const_reference        const_reference;
+    typedef typename base::size_type              size_type;
+    typedef typename base::difference_type        difference_type;
+    typedef typename base::iterator               iterator;
+    typedef typename base::const_iterator         const_iterator;
+    typedef typename base::reverse_iterator       reverse_iterator;
+    typedef typename base::const_reverse_iterator const_reverse_iterator;
+    typedef typename base::element                element;
+    typedef typename base::index                  index;
+    typedef typename base::index_gen              index_gen;
+    typedef typename base::index_range            index_range;
+    using base::subarray;
+    using base::const_subarray;
+    using base::array_view;
+    using base::const_array_view;
+
+    // Potentially useful miscellany not strictly required by MultiArray
+    typedef typename base::extent_gen   extent_gen;
+    typedef typename base::extent_range extent_range;
+
+    // MultiArray Table 3. Valid Expressions
+    using base::dimensionality;
+    using base::shape;
+    using base::strides;
+    using base::index_bases;
+    using base::origin;
+    using base::num_dimensions;
+    using base::num_elements;
+    using base::size;
+    using base::operator();
+    using base::begin;
+    using base::end;
+    using base::rbegin;
+    using base::rend;
+    using base::operator[];
+    using base::operator==;
+    using base::operator<;
+    using base::operator<=;
+    using base::operator>;
+    using base::operator>=;
+
+    template<typename ExtentList,
+             typename StorageOrderSequence>
+    explicit ref(
+            element* data,
+            const ExtentList& sizes,
+            const suzerain::storage::general<StorageOrderSequence>& storage)
+        : base(data, sizes, storage.storage_order())
+    {
+        // stride_list_ protected in boost::const_multi_array_ref ancestor
+        storage.compute_strides(this->shape(), this->stride_list_.begin());
+    }
+
+    template<typename StorageOrderSequence>
+    explicit ref(
+            element* data,
+            typename base::extent_gen ranges,
+            const suzerain::storage::general<StorageOrderSequence>& storage)
+        : base(data, ranges, storage.storage_order())
+    {
+        // stride_list_ protected in boost::const_multi_array_ref ancestor
+        storage.compute_strides(this->shape(), this->stride_list_.begin());
+    }
+
+    template<typename ExtentList,
+             typename MinStrideList,
+             typename StorageOrderSequence>
+    explicit ref(
+            element* data,
+            const ExtentList& sizes,
+            const MinStrideList& minstrides,
+            const suzerain::storage::general<StorageOrderSequence>& storage)
+        : base(data, sizes, storage.storage_order())
+    {
+        // stride_list_ protected in boost::const_multi_array_ref ancestor
+        storage.compute_strides(this->shape(),
+                                minstrides.begin(),
+                                this->stride_list_.begin());
+    }
+
+    template<typename MinStrideList,
+             typename StorageOrderSequence>
+    explicit ref(
+            element* data,
+            typename base::extent_gen ranges,
+            const MinStrideList& minstrides,
+            const suzerain::storage::general<StorageOrderSequence>& storage)
+        : base(data, ranges, storage.storage_order())
+    {
+        // stride_list_ protected in boost::const_multi_array_ref ancestor
+        storage.compute_strides(this->shape(),
+                                minstrides.begin(),
+                                this->stride_list_.begin());
+    }
+
+    ref(const base& other)
+        : base(other /* shallow */)
+    {
+        // stride_list_ protected in boost::const_multi_array_ref ancestor
+        std::copy(other.strides(), other.strides() + dimensionality,
+                  this->stride_list_.begin());
+    }
+};
 
 } // namespace multi_array
 

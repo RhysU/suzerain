@@ -4,10 +4,11 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
+#include <boost/concept/assert.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
-#include <suzerain/multi_array.hpp>
 #include <suzerain/complex.hpp>
+#include <suzerain/multi_array.hpp>
 
 BOOST_AUTO_TEST_SUITE( shape_and_strides_array )
 
@@ -26,7 +27,7 @@ BOOST_AUTO_TEST_CASE( D1 )
     multi_array<int,1> ma(extents[1]); // C storage
 
     array<size_type,1> a = shape_array(ma);
-    BOOST_CHECK_EQUAL(a.size(), 1);
+    BOOST_CHECK_EQUAL(a.size(), 1U);
     BOOST_CHECK_EQUAL(a[0], 1);
 
     array<index,1> b = strides_array(ma);
@@ -398,6 +399,30 @@ BOOST_AUTO_TEST_CASE(fill_complex_multiarray)
         BOOST_CHECK_EQUAL(foo[i].real(), 0);
         BOOST_CHECK_EQUAL(foo[i].imag(), 0);
     }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+// Explicitly instantiate the multi_array::ref template
+template class ::suzerain::multi_array::ref<double, 3>;
+
+BOOST_AUTO_TEST_SUITE( suzerain_multi_array_ref )
+
+// Types to be tested with suzerain::multi_array::ref
+typedef boost::mpl::list<
+    double
+    ,float
+    ,std::complex<double>
+    ,std::complex<float>
+> test_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
+{
+    using boost::detail::multi_array::MutableMultiArrayConcept;
+    BOOST_CONCEPT_ASSERT(
+            (MutableMultiArrayConcept<suzerain::multi_array::ref<T,1>,1>));
+    BOOST_CONCEPT_ASSERT(
+            (MutableMultiArrayConcept<suzerain::multi_array::ref<T,3>,3>));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
