@@ -195,10 +195,10 @@ void complex_field_write(esio_handle h,
 struct L2 {
     real_t mean2;
     real_t fluctuating2;
-    real_t total2()        { return mean2 + fluctuating2;    };
-    real_t total()         { return std::sqrt(total2());     };
-    real_t mean()          { return std::sqrt(mean2);        };
-    real_t fluctuating()   { return std::sqrt(fluctuating2); };
+    real_t total2()      const { return mean2 + fluctuating2;    };
+    real_t total()       const { return std::sqrt(total2());     };
+    real_t mean()        const { return std::sqrt(mean2);        };
+    real_t fluctuating() const { return std::sqrt(fluctuating2); };
 };
 
 /**

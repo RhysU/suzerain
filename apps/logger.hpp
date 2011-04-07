@@ -42,6 +42,7 @@ extern log4cxx::LoggerPtr logger;
 #define WARN(expr)      LOG4CXX_WARN( logger,expr)
 #define ERROR(expr)     LOG4CXX_ERROR(logger,expr)
 #define FATAL(expr)     LOG4CXX_FATAL(logger,expr)
+#define INFO_ENABLED    (logger->isInfoEnabled())
 #define TRACE_ENABLED   (logger->isTraceEnabled())
 #define DEBUG_ENABLED   (logger->isDebugEnabled())
 
