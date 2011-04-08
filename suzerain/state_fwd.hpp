@@ -231,13 +231,13 @@ template<
 class NoninterleavedState
     : public StateBase<NoninterleavedState<NumDims,Element,Allocator> >,
       public ContiguousMemory<Element,Allocator>,
-      public boost::multi_array_ref<Element, NumDims>
+      public suzerain::multi_array::ref<Element, NumDims>
 {
 public:
 
 /** @name Declarations bringing in information from public base classes */
 /**@{*/
-    typedef typename boost::multi_array_ref<Element, NumDims> multi_array_type;
+    typedef typename suzerain::multi_array::ref<Element,NumDims> multi_array_type;
     typedef typename multi_array_type::const_reference      const_reference;
     typedef typename multi_array_type::difference_type      difference_type;
     typedef typename multi_array_type::element              element;
@@ -291,13 +291,13 @@ template<
 class InterleavedState
     : public StateBase<InterleavedState<NumDims,Element,Allocator> >,
       public ContiguousMemory<Element,Allocator>,
-      public boost::multi_array_ref<Element, NumDims>
+      public suzerain::multi_array::ref<Element, NumDims>
 {
 public:
 
 /** @name Declarations bringing in information from public base classes */
 /**@{*/
-    typedef typename boost::multi_array_ref<Element, NumDims> multi_array_type;
+    typedef typename suzerain::multi_array::ref<Element,NumDims> multi_array_type;
     typedef typename multi_array_type::const_reference      const_reference;
     typedef typename multi_array_type::difference_type      difference_type;
     typedef typename multi_array_type::element              element;

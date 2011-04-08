@@ -53,14 +53,9 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
               storage_type::compute_storage(sizes.begin())),
       multi_array_type(
               ContiguousMemory<Element,Allocator>::memory_begin(),
-              sizes, storage_type::storage_order())
+              sizes, storage_type())
 {
-    assert(NumDims == std::distance(sizes.begin(),sizes.end()));
-
-    // Abuse encapsulation; stride_list_ is protected from our
-    // boost::const_multi_array_ref ancestor.
-    storage_type::compute_strides(
-            sizes.begin(), this->stride_list_.begin());
+    // NOP
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
@@ -72,15 +67,9 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
             storage_type::compute_storage(sizes.begin(), minstrides.begin())),
       multi_array_type(
             ContiguousMemory<Element,Allocator>::memory_begin(),
-            sizes, storage_type::storage_order())
+            sizes, minstrides, storage_type())
 {
-    assert(NumDims == std::distance(sizes.begin(),sizes.end()));
-    assert(NumDims == std::distance(minstrides.begin(),minstrides.end()));
-
-    // Abuse encapsulation; stride_list_ is protected from our
-    // boost::const_multi_array_ref ancestor.
-    storage_type::compute_strides(
-            sizes.begin(), minstrides.begin(), this->stride_list_.begin());
+    // NOP
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
@@ -89,16 +78,11 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
     : ContiguousMemory<Element,Allocator>(other),
       multi_array_type(this->memory_begin(),
                        suzerain::multi_array::shape_array(other),
-                       storage_type::storage_order())
+                       suzerain::multi_array::strides_array(other),
+                       storage_type())
 {
     // Data copied by ContiguousMemory's copy constructor
-
-    // Beware that boost::multi_array_ref has a shallow copy constructor; we
-    // must use non-copy constructor and now explicitly copy strides.  Abuse
-    // encapsulation; stride_list_ is protected from our
-    // boost::const_multi_array_ref ancestor.
-    std::copy(other.stride_list_.begin(), other.stride_list_.end(),
-              this->stride_list_.begin());
+    // Strides copied by chosen multi_array_type constructor
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
@@ -321,9 +305,8 @@ InterleavedState<NumDims,Element,Allocator>::InterleavedState(
                     suzerain::functional::product(sizes.begin(), sizes.end()),
                     min_total_contiguous_count)),
       multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
-                       sizes, storage_type::storage_order())
+                       sizes, storage_type())
 {
-    assert(NumDims == std::distance(sizes.begin(),sizes.end()));
     // NOP
 }
 
@@ -333,7 +316,7 @@ InterleavedState<NumDims,Element,Allocator>::InterleavedState(
     : ContiguousMemory<Element,Allocator>(other),
       multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
                        suzerain::multi_array::shape_array(other),
-                       storage_type::storage_order())
+                       storage_type())
 {
     // Data copied by ContiguousMemory's copy constructor
 }
