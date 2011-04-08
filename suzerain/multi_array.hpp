@@ -219,7 +219,11 @@ private:
 
 public:
 
-    // MultiArray Table 2. Associated Types
+    /**@name MultiArray Associated Types
+     * Following Table 2 in the MultiArray concept specification, the
+     * following types are available:
+     *@{
+     */
     typedef typename base::value_type             value_type;
     typedef typename base::reference              reference;
     typedef typename base::const_reference        const_reference;
@@ -237,8 +241,13 @@ public:
     using base::const_subarray;
     using base::array_view;
     using base::const_array_view;
+    /*@}*/
 
-    // MultiArray Table 3. Valid Expressions
+    /**@name MultiArray Valid Expressions
+     * Following Table 3 in the MultiArray concept specification, the
+     * following expressions are valid:
+     *@{
+     */
     using base::dimensionality;
     using base::shape;
     using base::strides;
@@ -258,13 +267,29 @@ public:
     using base::operator<=;
     using base::operator>;
     using base::operator>=;
+    /*@}*/
 
     // Useful miscellany not strictly required by MultiArray
+    /**@name MultiArray Extensions
+     * Though not strictly required by the MultiArray concept, the following
+     * queries are useful and are also provided by <tt>boost::multi_array</tt>
+     * and <tt>boost::multi_array_ref</tt>:
+     *@{
+     */
     typedef typename base::extent_gen   extent_gen;
     typedef typename base::extent_range extent_range;
     using base::data;
     using base::storage_order;
+    /*@}*/
 
+    /**
+     * Construct an instance wrapping \c data with dimensions \c sizes
+     * stored according to \c storage.
+     *
+     * @param data    Raw elements to wrap
+     * @param sizes   A length #dimensionality collection of the valid extents
+     * @param storage A marker type specifying the storage ordering
+     */
     template<typename ExtentList,
              typename StorageOrderSequence>
     explicit ref(
@@ -277,6 +302,14 @@ public:
         storage.compute_strides(this->shape(), this->stride_list_.begin());
     }
 
+    /**
+     * Construct an instance wrapping \c data with sizes and indexing
+     * requirements based on \c ranges stored according to \c storage.
+     *
+     * @param data    Raw elements to wrap
+     * @param ranges  Index range and size information for \c data
+     * @param storage A marker type specifying the storage ordering
+     */
     template<typename StorageOrderSequence>
     explicit ref(
             element* data,
@@ -288,6 +321,17 @@ public:
         storage.compute_strides(this->shape(), this->stride_list_.begin());
     }
 
+    /**
+     * Construct an instance wrapping \c data with dimensions \c sizes
+     * stored obeying \c minstrides according to \c storage.
+     *
+     * @param data       Raw elements to wrap
+     * @param sizes      A length #dimensionality collection
+     *                   of the valid extents
+     * @param minstrides A length #dimensionality collection
+     *                   of the minimum acceptable strides
+     * @param storage    A marker type specifying the storage ordering
+     */
     template<typename ExtentList,
              typename MinStrideList,
              typename StorageOrderSequence>
@@ -304,6 +348,17 @@ public:
                                 this->stride_list_.begin());
     }
 
+    /**
+     * Construct an instance wrapping \c data with sizes and indexing
+     * requirements based on \c ranges stored obeying \c minstrides according
+     * to \c storage.
+     *
+     * @param data       Raw elements to wrap
+     * @param ranges     Index range and size information for \c data
+     * @param minstrides A length #dimensionality collection
+     *                   of the minimum acceptable strides
+     * @param storage    A marker type specifying the storage ordering
+     */
     template<typename MinStrideList,
              typename StorageOrderSequence>
     explicit ref(
@@ -319,11 +374,34 @@ public:
                                 this->stride_list_.begin());
     }
 
-    explicit ref(const ref&  other) : base(other /* shallow */) {}
+    /**
+     * Construct a shallow copy of \c other.
+     *
+     * @param other Instance to mimic.
+     */
+    explicit ref(const ref& other)
+        : base(other /* shallow */)
+    {
+        // stride_list_ protected in boost::const_multi_array_ref ancestor
+        std::copy(other.strides(), other.strides() + other.dimensionality,
+                  this->stride_list_.begin());
+    }
 
-    explicit ref(const base& other) : base(other /* shallow */) {}
+    /**
+     * Construct a shallow copy of \c other.
+     *
+     * @param other Instance to mimic.
+     */
+    explicit ref(const base& other)
+        : base(other /* shallow */)
+    {
+        // stride_list_ protected in boost::const_multi_array_ref ancestor
+        std::copy(other.strides(), other.strides() + other.dimensionality,
+                  this->stride_list_.begin());
+    }
 
     // Assignment operator provided by 'using base::operator=' above
+    // base::operator= seems to appropriately copy stride information
 };
 
 } // namespace multi_array
