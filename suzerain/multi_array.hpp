@@ -238,10 +238,6 @@ public:
     using base::array_view;
     using base::const_array_view;
 
-    // Potentially useful miscellany not strictly required by MultiArray
-    typedef typename base::extent_gen   extent_gen;
-    typedef typename base::extent_range extent_range;
-
     // MultiArray Table 3. Valid Expressions
     using base::dimensionality;
     using base::shape;
@@ -262,6 +258,12 @@ public:
     using base::operator<=;
     using base::operator>;
     using base::operator>=;
+
+    // Useful miscellany not strictly required by MultiArray
+    typedef typename base::extent_gen   extent_gen;
+    typedef typename base::extent_range extent_range;
+    using base::data;
+    using base::storage_order;
 
     template<typename ExtentList,
              typename StorageOrderSequence>
