@@ -18,8 +18,11 @@ CC  = @MPICC@
 # Test progams and/or performance drivers
 
 bin_PROGRAMS                    += driver_suzerain_p3dfft
+driver_suzerain_p3dfft_CPPFLAGS  = $(AM_CPPFLAGS)
 driver_suzerain_p3dfft_LDFLAGS   = $(MPIP_LDFLAGS)
 driver_suzerain_p3dfft_LDADD     = ../suzerain/libsuzerain.la
+driver_suzerain_p3dfft_SOURCES   = driver_suzerain_p3dfft.cpp
+driver_suzerain_p3dfft_SOURCES  += logger.cpp  logger.hpp
 driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS) $(LOG4CXX_LIBS)
 
 

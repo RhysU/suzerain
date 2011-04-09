@@ -177,11 +177,11 @@ public:
         bop->accumulate(1, // dy
             state.shape()[2]*state.shape()[3],
             complex_one, state_rho.origin(), 1, state.shape()[1],
-            complex_zero, rho_y.wave.begin(), 1, state.shape()[1]);
+            complex_zero, rho_y.wave.data(), 1, state.shape()[1]);
         bop->accumulate(2, // d2y
             state.shape()[2]*state.shape()[3],
             complex_one, state_rho.origin(), 1, state.shape()[1],
-            complex_zero, rho_yy.wave.begin(), 1, state.shape()[1]);
+            complex_zero, rho_yy.wave.data(), 1, state.shape()[1]);
         // Compute density at collocation points within state storage
         bop->apply(0, // eval
             state.shape()[2]*state.shape()[3],
@@ -190,39 +190,39 @@ public:
         // Compute X-related derivatives of density at collocation points
         suzerain::diffwave::accumulate(1, 0, // dx
             complex_one, state_rho.origin(),
-            complex_zero, rho_x.wave.begin(),
+            complex_zero, rho_x.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state_rho.origin(),
-            complex_zero, rho_xx.wave.begin(),
+            complex_zero, rho_xx.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 0, // dx dy
-            complex_one, rho_y.wave.begin(),
-            complex_zero, rho_xy.wave.begin(),
+            complex_one, rho_y.wave.data(),
+            complex_zero, rho_xy.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state_rho.origin(),
-            complex_zero, rho_xz.wave.begin(),
+            complex_zero, rho_xz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of density at collocation points
         suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state_rho.origin(),
-            complex_zero, rho_z.wave.begin(),
+            complex_zero, rho_z.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 1, // dy dz
-            complex_one, rho_y.wave.begin(),
-            complex_zero, rho_yz.wave.begin(),
+            complex_one, rho_y.wave.data(),
+            complex_zero, rho_yz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state_rho.origin(),
-            complex_zero, rho_zz.wave.begin(),
+            complex_zero, rho_zz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
@@ -231,11 +231,11 @@ public:
         bop->accumulate(1, // dy
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhou.origin(), 1, state.shape()[1],
-            complex_zero, mx_y.wave.begin(), 1, state.shape()[1]);
+            complex_zero, mx_y.wave.data(), 1, state.shape()[1]);
         bop->accumulate(2, // d2y
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhou.origin(), 1, state.shape()[1],
-            complex_zero, mx_yy.wave.begin(), 1, state.shape()[1]);
+            complex_zero, mx_yy.wave.data(), 1, state.shape()[1]);
         // Compute X momentum at collocation points within state storage
         bop->apply(0, // eval
             state.shape()[2]*state.shape()[3],
@@ -244,39 +244,39 @@ public:
         // Compute X-related derivatives of X momentum at collocation points
         suzerain::diffwave::accumulate(1, 0, // dx
             complex_one, state_rhou.origin(),
-            complex_zero, mx_x.wave.begin(),
+            complex_zero, mx_x.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state_rhou.origin(),
-            complex_zero, mx_xx.wave.begin(),
+            complex_zero, mx_xx.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 0, // dx dy
-            complex_one, mx_y.wave.begin(),
-            complex_zero, mx_xy.wave.begin(),
+            complex_one, mx_y.wave.data(),
+            complex_zero, mx_xy.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state_rhou.origin(),
-            complex_zero, mx_xz.wave.begin(),
+            complex_zero, mx_xz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of X momentum at collocation points
         suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state_rhou.origin(),
-            complex_zero, mx_z.wave.begin(),
+            complex_zero, mx_z.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 1, // dy dz
-            complex_one, mx_y.wave.begin(),
-            complex_zero, mx_yz.wave.begin(),
+            complex_one, mx_y.wave.data(),
+            complex_zero, mx_yz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state_rhou.origin(),
-            complex_zero, mx_zz.wave.begin(),
+            complex_zero, mx_zz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
@@ -285,11 +285,11 @@ public:
         bop->accumulate(1, // dy
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhov.origin(), 1, state.shape()[1],
-            complex_zero, my_y.wave.begin(), 1, state.shape()[1]);
+            complex_zero, my_y.wave.data(), 1, state.shape()[1]);
         bop->accumulate(2, // d2y
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhov.origin(), 1, state.shape()[1],
-            complex_zero, my_yy.wave.begin(), 1, state.shape()[1]);
+            complex_zero, my_yy.wave.data(), 1, state.shape()[1]);
         // Compute Y momentum at collocation points within state storage
         bop->apply(0, // eval
             state.shape()[2]*state.shape()[3],
@@ -298,39 +298,39 @@ public:
         // Compute X-related derivatives of Y momentum at collocation points
         suzerain::diffwave::accumulate(1, 0, // dx
             complex_one, state_rhov.origin(),
-            complex_zero, my_x.wave.begin(),
+            complex_zero, my_x.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state_rhov.origin(),
-            complex_zero, my_xx.wave.begin(),
+            complex_zero, my_xx.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 0, // dx dy
-            complex_one, my_y.wave.begin(),
-            complex_zero, my_xy.wave.begin(),
+            complex_one, my_y.wave.data(),
+            complex_zero, my_xy.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state_rhov.origin(),
-            complex_zero, my_xz.wave.begin(),
+            complex_zero, my_xz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of Y momentum at collocation points
         suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state_rhov.origin(),
-            complex_zero, my_z.wave.begin(),
+            complex_zero, my_z.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 1, // dy dz
-            complex_one, my_y.wave.begin(),
-            complex_zero, my_yz.wave.begin(),
+            complex_one, my_y.wave.data(),
+            complex_zero, my_yz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state_rhov.origin(),
-            complex_zero, my_zz.wave.begin(),
+            complex_zero, my_zz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
@@ -339,11 +339,11 @@ public:
         bop->accumulate(1, // dy
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhow.origin(), 1, state.shape()[1],
-            complex_zero, mz_y.wave.begin(), 1, state.shape()[1]);
+            complex_zero, mz_y.wave.data(), 1, state.shape()[1]);
         bop->accumulate(2, // d2y
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhow.origin(), 1, state.shape()[1],
-            complex_zero, mz_yy.wave.begin(), 1, state.shape()[1]);
+            complex_zero, mz_yy.wave.data(), 1, state.shape()[1]);
         // Compute Y momentum at collocation points within state storage
         bop->apply(0, // eval
             state.shape()[2]*state.shape()[3],
@@ -352,39 +352,39 @@ public:
         // Compute X-related derivatives of Z momentum at collocation points
         suzerain::diffwave::accumulate(1, 0, // dx
             complex_one, state_rhow.origin(),
-            complex_zero, mz_x.wave.begin(),
+            complex_zero, mz_x.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state_rhow.origin(),
-            complex_zero, mz_xx.wave.begin(),
+            complex_zero, mz_xx.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 0, // dx dy
-            complex_one, mz_y.wave.begin(),
-            complex_zero, mz_xy.wave.begin(),
+            complex_one, mz_y.wave.data(),
+            complex_zero, mz_xy.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(1, 1, // dx dz
             complex_one, state_rhow.origin(),
-            complex_zero, mz_xz.wave.begin(),
+            complex_zero, mz_xz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of Z momentum at collocation points
         suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state_rhow.origin(),
-            complex_zero, mz_z.wave.begin(),
+            complex_zero, mz_z.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 1, // dy dz
-            complex_one, mz_y.wave.begin(),
-            complex_zero, mz_yz.wave.begin(),
+            complex_one, mz_y.wave.data(),
+            complex_zero, mz_yz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state_rhow.origin(),
-            complex_zero, mz_zz.wave.begin(),
+            complex_zero, mz_zz.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
@@ -393,11 +393,11 @@ public:
         bop->accumulate(1, // dy
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhoe.origin(), 1, state.shape()[1],
-            complex_zero, e_y.wave.begin(), 1, state.shape()[1]);
+            complex_zero, e_y.wave.data(), 1, state.shape()[1]);
         bop->accumulate(2, // d2y
             state.shape()[2]*state.shape()[3],
             complex_one, state_rhoe.origin(), 1, state.shape()[1],
-            complex_zero, div_grad_e.wave.begin(), 1, state.shape()[1]);
+            complex_zero, div_grad_e.wave.data(), 1, state.shape()[1]);
         // Compute total energy at collocation points within state storage
         bop->apply(0, // eval
             state.shape()[2]*state.shape()[3],
@@ -406,24 +406,24 @@ public:
         // Compute X-related derivatives of total energy at collocation points
         suzerain::diffwave::accumulate(1, 0, // dx
             complex_one, state_rhoe.origin(),
-            complex_zero, e_x.wave.begin(),
+            complex_zero, e_x.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(2, 0, // d2x
             complex_one, state_rhoe.origin(),
-            complex_one, div_grad_e.wave.begin(), // sum with contents
+            complex_one, div_grad_e.wave.data(), // sum with contents
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
         // Compute Z-related derivatives of total energy at collocation points
         suzerain::diffwave::accumulate(0, 1, // dz
             complex_one, state_rhoe.origin(),
-            complex_zero, e_z.wave.begin(),
+            complex_zero, e_z.wave.data(),
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
         suzerain::diffwave::accumulate(0, 2, // d2z
             complex_one, state_rhoe.origin(),
-            complex_one, div_grad_e.wave.begin(), // sum with contents
+            complex_one, div_grad_e.wave.data(), // sum with contents
             scenario.Lx, scenario.Lz,
             Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
 
@@ -440,46 +440,46 @@ public:
                 reinterpret_cast<real_t *>(state_rhoe.origin()));
 
         // Collectively convert state derivatives to physical space
-        dgrid->transform_wave_to_physical(rho_x.data());   // density
-        dgrid->transform_wave_to_physical(rho_y.data());
-        dgrid->transform_wave_to_physical(rho_z.data());
-        dgrid->transform_wave_to_physical(rho_xx.data());
-        dgrid->transform_wave_to_physical(rho_xy.data());
-        dgrid->transform_wave_to_physical(rho_xz.data());
-        dgrid->transform_wave_to_physical(rho_yy.data());
-        dgrid->transform_wave_to_physical(rho_yz.data());
-        dgrid->transform_wave_to_physical(rho_zz.data());
-        dgrid->transform_wave_to_physical(mx_x.data());   // X momentum
-        dgrid->transform_wave_to_physical(mx_y.data());
-        dgrid->transform_wave_to_physical(mx_z.data());
-        dgrid->transform_wave_to_physical(mx_xx.data());
-        dgrid->transform_wave_to_physical(mx_xy.data());
-        dgrid->transform_wave_to_physical(mx_xz.data());
-        dgrid->transform_wave_to_physical(mx_yy.data());
-        dgrid->transform_wave_to_physical(mx_yz.data());
-        dgrid->transform_wave_to_physical(mx_zz.data());
-        dgrid->transform_wave_to_physical(my_x.data());   // Y momentum
-        dgrid->transform_wave_to_physical(my_y.data());
-        dgrid->transform_wave_to_physical(my_z.data());
-        dgrid->transform_wave_to_physical(my_xx.data());
-        dgrid->transform_wave_to_physical(my_xy.data());
-        dgrid->transform_wave_to_physical(my_xz.data());
-        dgrid->transform_wave_to_physical(my_yy.data());
-        dgrid->transform_wave_to_physical(my_yz.data());
-        dgrid->transform_wave_to_physical(my_zz.data());
-        dgrid->transform_wave_to_physical(mz_x.data());   // Z momentum
-        dgrid->transform_wave_to_physical(mz_y.data());
-        dgrid->transform_wave_to_physical(mz_z.data());
-        dgrid->transform_wave_to_physical(mz_xx.data());
-        dgrid->transform_wave_to_physical(mz_xy.data());
-        dgrid->transform_wave_to_physical(mz_xz.data());
-        dgrid->transform_wave_to_physical(mz_yy.data());
-        dgrid->transform_wave_to_physical(mz_yz.data());
-        dgrid->transform_wave_to_physical(mz_zz.data());
-        dgrid->transform_wave_to_physical(e_x.data());   // Total energy
-        dgrid->transform_wave_to_physical(e_y.data());
-        dgrid->transform_wave_to_physical(e_z.data());
-        dgrid->transform_wave_to_physical(div_grad_e.data());
+        dgrid->transform_wave_to_physical(rho_x.begin());   // density
+        dgrid->transform_wave_to_physical(rho_y.begin());
+        dgrid->transform_wave_to_physical(rho_z.begin());
+        dgrid->transform_wave_to_physical(rho_xx.begin());
+        dgrid->transform_wave_to_physical(rho_xy.begin());
+        dgrid->transform_wave_to_physical(rho_xz.begin());
+        dgrid->transform_wave_to_physical(rho_yy.begin());
+        dgrid->transform_wave_to_physical(rho_yz.begin());
+        dgrid->transform_wave_to_physical(rho_zz.begin());
+        dgrid->transform_wave_to_physical(mx_x.begin());   // X momentum
+        dgrid->transform_wave_to_physical(mx_y.begin());
+        dgrid->transform_wave_to_physical(mx_z.begin());
+        dgrid->transform_wave_to_physical(mx_xx.begin());
+        dgrid->transform_wave_to_physical(mx_xy.begin());
+        dgrid->transform_wave_to_physical(mx_xz.begin());
+        dgrid->transform_wave_to_physical(mx_yy.begin());
+        dgrid->transform_wave_to_physical(mx_yz.begin());
+        dgrid->transform_wave_to_physical(mx_zz.begin());
+        dgrid->transform_wave_to_physical(my_x.begin());   // Y momentum
+        dgrid->transform_wave_to_physical(my_y.begin());
+        dgrid->transform_wave_to_physical(my_z.begin());
+        dgrid->transform_wave_to_physical(my_xx.begin());
+        dgrid->transform_wave_to_physical(my_xy.begin());
+        dgrid->transform_wave_to_physical(my_xz.begin());
+        dgrid->transform_wave_to_physical(my_yy.begin());
+        dgrid->transform_wave_to_physical(my_yz.begin());
+        dgrid->transform_wave_to_physical(my_zz.begin());
+        dgrid->transform_wave_to_physical(mz_x.begin());   // Z momentum
+        dgrid->transform_wave_to_physical(mz_y.begin());
+        dgrid->transform_wave_to_physical(mz_z.begin());
+        dgrid->transform_wave_to_physical(mz_xx.begin());
+        dgrid->transform_wave_to_physical(mz_xy.begin());
+        dgrid->transform_wave_to_physical(mz_xz.begin());
+        dgrid->transform_wave_to_physical(mz_yy.begin());
+        dgrid->transform_wave_to_physical(mz_yz.begin());
+        dgrid->transform_wave_to_physical(mz_zz.begin());
+        dgrid->transform_wave_to_physical(e_x.begin());   // Total energy
+        dgrid->transform_wave_to_physical(e_y.begin());
+        dgrid->transform_wave_to_physical(e_z.begin());
+        dgrid->transform_wave_to_physical(div_grad_e.begin());
 
         // Compute nonlinear operator
 
@@ -509,58 +509,60 @@ public:
         // Used to track local \frac{1}{\Delta{}y} for time criterion.
         // In physical space storage is X Z Y with Y direction slowest
         // Maintain where we are relative to local rank's starting y offset
-        const size_t stride_y = rho_x.physical.size_x * rho_x.physical.size_z;
-        size_t ndx            = stride_y * rho_x.physical.start_y;
+        // FIXME Post #1492 work to simplify
+        const size_t stride_y
+            = rho_x.physical.shape()[0] * rho_x.physical.shape()[2];
+        size_t ndx = stride_y * rho_x.global_physical.index_bases()[1];
 
         // Walk physical space state storage in linear fashion
         for (// Loop initialization
              real_t *p_rho    = reinterpret_cast<real_t *>(state_rho.origin()),
-                    *p_rho_x  = rho_x.physical.begin(),
-                    *p_rho_y  = rho_y.physical.begin(),
-                    *p_rho_z  = rho_z.physical.begin(),
-                    *p_rho_xx = rho_xx.physical.begin(),
-                    *p_rho_xy = rho_xy.physical.begin(),
-                    *p_rho_xz = rho_xz.physical.begin(),
-                    *p_rho_yy = rho_yy.physical.begin(),
-                    *p_rho_yz = rho_yz.physical.begin(),
-                    *p_rho_zz = rho_zz.physical.begin(),
+                    *p_rho_x  = rho_x.begin(),
+                    *p_rho_y  = rho_y.begin(),
+                    *p_rho_z  = rho_z.begin(),
+                    *p_rho_xx = rho_xx.begin(),
+                    *p_rho_xy = rho_xy.begin(),
+                    *p_rho_xz = rho_xz.begin(),
+                    *p_rho_yy = rho_yy.begin(),
+                    *p_rho_yz = rho_yz.begin(),
+                    *p_rho_zz = rho_zz.begin(),
                     *p_mx     = reinterpret_cast<real_t *>(state_rhou.origin()),
-                    *p_mx_x   = mx_x.physical.begin(),
-                    *p_mx_y   = mx_y.physical.begin(),
-                    *p_mx_z   = mx_z.physical.begin(),
-                    *p_mx_xx  = mx_xx.physical.begin(),
-                    *p_mx_xy  = mx_xy.physical.begin(),
-                    *p_mx_xz  = mx_xz.physical.begin(),
-                    *p_mx_yy  = mx_yy.physical.begin(),
-                    *p_mx_yz  = mx_yz.physical.begin(),
-                    *p_mx_zz  = mx_zz.physical.begin(),
+                    *p_mx_x   = mx_x.begin(),
+                    *p_mx_y   = mx_y.begin(),
+                    *p_mx_z   = mx_z.begin(),
+                    *p_mx_xx  = mx_xx.begin(),
+                    *p_mx_xy  = mx_xy.begin(),
+                    *p_mx_xz  = mx_xz.begin(),
+                    *p_mx_yy  = mx_yy.begin(),
+                    *p_mx_yz  = mx_yz.begin(),
+                    *p_mx_zz  = mx_zz.begin(),
                     *p_my     = reinterpret_cast<real_t *>(state_rhov.origin()),
-                    *p_my_x   = my_x.physical.begin(),
-                    *p_my_y   = my_y.physical.begin(),
-                    *p_my_z   = my_z.physical.begin(),
-                    *p_my_xx  = my_xx.physical.begin(),
-                    *p_my_xy  = my_xy.physical.begin(),
-                    *p_my_xz  = my_xz.physical.begin(),
-                    *p_my_yy  = my_yy.physical.begin(),
-                    *p_my_yz  = my_yz.physical.begin(),
-                    *p_my_zz  = my_zz.physical.begin(),
+                    *p_my_x   = my_x.begin(),
+                    *p_my_y   = my_y.begin(),
+                    *p_my_z   = my_z.begin(),
+                    *p_my_xx  = my_xx.begin(),
+                    *p_my_xy  = my_xy.begin(),
+                    *p_my_xz  = my_xz.begin(),
+                    *p_my_yy  = my_yy.begin(),
+                    *p_my_yz  = my_yz.begin(),
+                    *p_my_zz  = my_zz.begin(),
                     *p_mz     = reinterpret_cast<real_t *>(state_rhow.origin()),
-                    *p_mz_x   = mz_x.physical.begin(),
-                    *p_mz_y   = mz_y.physical.begin(),
-                    *p_mz_z   = mz_z.physical.begin(),
-                    *p_mz_xx  = mz_xx.physical.begin(),
-                    *p_mz_xy  = mz_xy.physical.begin(),
-                    *p_mz_xz  = mz_xz.physical.begin(),
-                    *p_mz_yy  = mz_yy.physical.begin(),
-                    *p_mz_yz  = mz_yz.physical.begin(),
-                    *p_mz_zz  = mz_zz.physical.begin(),
+                    *p_mz_x   = mz_x.begin(),
+                    *p_mz_y   = mz_y.begin(),
+                    *p_mz_z   = mz_z.begin(),
+                    *p_mz_xx  = mz_xx.begin(),
+                    *p_mz_xy  = mz_xy.begin(),
+                    *p_mz_xz  = mz_xz.begin(),
+                    *p_mz_yy  = mz_yy.begin(),
+                    *p_mz_yz  = mz_yz.begin(),
+                    *p_mz_zz  = mz_zz.begin(),
                     *p_e      = reinterpret_cast<real_t *>(state_rhoe.origin()),
-                    *p_e_x    = e_x.physical.begin(),
-                    *p_e_y    = e_y.physical.begin(),
-                    *p_e_z    = e_z.physical.begin(),
-                    *p_div_grad_e = div_grad_e.physical.begin();
+                    *p_e_x    = e_x.begin(),
+                    *p_e_y    = e_y.begin(),
+                    *p_e_z    = e_z.begin(),
+                    *p_div_grad_e = div_grad_e.begin();
              // Loop completion test
-             p_rho_x != rho_x.physical.end();
+             p_rho_x != rho_x.end();
              // Loop increment
              ++p_rho,
              ++p_rho_x,

@@ -33,15 +33,13 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <log4cxx/logger.h>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/program_options.hpp>
-
-#define ONLYPROC0(expr) do { if (!procid) { expr ; } } while (0)
+#include "logger.hpp"
 
 static double real_data(const double x, const double y, const double z)
 {
@@ -61,13 +59,10 @@ int main(int argc, char **argv)
     MPI_Init(&argc, &argv);                   // Initialize MPI on startup
     atexit((void (*) ()) MPI_Finalize);       // Finalize down MPI at exit
 
-    const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
-    const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
-    log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(
-            suzerain::mpi::comm_rank_identifier(MPI_COMM_WORLD));
+    // Establish MPI-savvy, rank-dependent logging names
+    name_logger_within_comm_world();
 
     // Program-specific option storage
-
     suzerain::ProgramOptions options;
     suzerain::problem::GridDefinition grid(/* default_Nx    */ 16,
                                            /* default_DAFx  */ 3./2.,
@@ -86,74 +81,66 @@ int main(int argc, char **argv)
     options.process(argc, argv);
 
 #pragma warning(push,disable:383)
-    ONLYPROC0(LOG4CXX_INFO(logger, "Number of processors: " << nproc));
-
-    ONLYPROC0(LOG4CXX_INFO(logger, "Physical grid dimensions: "
-                           << boost::format("(% 4d, % 4d, % 4d)")
-                           % grid.N.x() % grid.N.y() % grid.N.z()));
-
-    ONLYPROC0(LOG4CXX_INFO(logger, "Processor grid dimensions: "
-                           << boost::format("(%d, %d)")
-                           % grid.P[0] % grid.P[1]));
+    const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
+    INFO0("Number of processors: " << nproc);
+    INFO0("Physical grid dimensions: "<< boost::format("(% 4d, % 4d, % 4d)")
+          % grid.N.x() % grid.N.y() % grid.N.z());
+    INFO0("Processor grid dimensions: " << boost::format("(%d, %d)")
+          % grid.P[0] % grid.P[1]);
 #pragma warning(pop)
 
-    // pencil_grid handles P3DFFT setup/clean RAII
-    using suzerain::pencil_grid;
-    pencil_grid pg(grid.N, grid.P);
-    // pencil handles memory allocation and storage layout
+    suzerain::pencil_grid pg(grid.N, grid.P);   // P3DFFT setup/clean RAII
     using suzerain::pencil;
-    pencil<> A(pg);
+    pencil<> A(pg);                             // Storage management
 
     // Create a uniform tensor product grid
-    std::valarray<double> gridx(A.physical.size_x);
-    for (size_t i = 0; i < A.physical.size_x; ++i) {
-        gridx[i] = (i+A.physical.start_x) * 2*M_PI/grid.N.x();
-        LOG4CXX_TRACE(logger, boost::format("gridx[%3d] = % 6g") % i % gridx[i]);
+    std::valarray<double> gridx(A.physical.shape()[0]);
+    for (size_t i = 0; i < A.physical.shape()[0]; ++i) {
+        gridx[i] = (i+A.physical.index_bases()[0]) * 2*M_PI/grid.N.x();
+        TRACE(boost::format("gridx[%3d] = % 6g") % i % gridx[i]);
     }
 
-    std::valarray<double> gridy(A.physical.size_y);
-    for (size_t j = 0; j < A.physical.size_y; ++j) {
-        gridy[j] = (j+A.physical.start_y) * 2*M_PI/grid.N.y();
-        LOG4CXX_TRACE(logger, boost::format("gridy[%3d] = % 6g") % j % gridy[j]);
+    std::valarray<double> gridy(A.physical.shape()[1]);
+    for (size_t j = 0; j < A.physical.shape()[1]; ++j) {
+        gridy[j] = (j+A.physical.index_bases()[1]) * 2*M_PI/grid.N.y();
+        TRACE(boost::format("gridy[%3d] = % 6g") % j % gridy[j]);
     }
 
-    std::valarray<double> gridz(A.physical.size_z);
-    for (size_t k = 0; k < A.physical.size_z; ++k) {
-        gridz[k] = (k+A.physical.start_z) * 2*M_PI/grid.N.z();
-        LOG4CXX_TRACE(logger, boost::format("gridz[%3d] = % 6g") % k % gridz[k]);
+    std::valarray<double> gridz(A.physical.shape()[2]);
+    for (size_t k = 0; k < A.physical.shape()[2]; ++k) {
+        gridz[k] = (k+A.physical.index_bases()[2]) * 2*M_PI/grid.N.z();
+        TRACE(boost::format("gridz[%3d] = % 6g") % k % gridz[k]);
     }
 
 
-    LOG4CXX_INFO(logger,
-                 "Physical space pencil start and end: "
-                 << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
-                 % A.physical.start_x
-                 % A.physical.start_y
-                 % A.physical.start_z
-                 % A.physical.end_x
-                 % A.physical.end_y
-                 % A.physical.end_z);
+    INFO("Physical space pencil start and end: "
+         << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
+         % A.global_physical.index_bases()[0]
+         % A.global_physical.index_bases()[1]
+         % A.global_physical.index_bases()[2]
+         % (A.global_physical.index_bases()[0] + A.global_physical.shape()[0])
+         % (A.global_physical.index_bases()[1] + A.global_physical.shape()[1])
+         % (A.global_physical.index_bases()[2] + A.global_physical.shape()[2]));
 
-    LOG4CXX_INFO(logger,
-                 "Wave space pencil start and end:     "
-                 << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
-                 % A.wave.start_x
-                 % A.wave.start_y
-                 % A.wave.start_z
-                 % A.wave.end_x
-                 % A.wave.end_y
-                 % A.wave.end_z);
+    INFO("Wave space pencil start and end:     "
+         << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
+         % A.global_wave.index_bases()[0]
+         % A.global_wave.index_bases()[1]
+         % A.global_wave.index_bases()[2]
+         % (A.global_wave.index_bases()[0] + A.global_wave.shape()[0])
+         % (A.global_wave.index_bases()[1] + A.global_wave.shape()[1])
+         % (A.global_wave.index_bases()[2] + A.global_wave.shape()[2]));
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
-        for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
-            for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
+    for (pencil<>::size_type j = 0; j < A.physical.shape()[1]; ++j) {
+        for (pencil<>::size_type k = 0; k < A.physical.shape()[2]; ++k) {
+            for (pencil<>::size_type i = 0; i < A.physical.shape()[0]; ++i) {
                 const double value = real_data(gridx[i], gridy[j], gridz[k]);
-                LOG4CXX_TRACE(logger, boost::format(
-                              "Physical space (% 6.4f, % 6.4f, % 6.4f) = % 8.4f")
-                              % gridx[i] % gridy[j] % gridz[k] % value);
-                A.physical(i,j,k) = value;
+                TRACE(boost::format(
+                      "Physical space (% 6.4f, % 6.4f, % 6.4f) = % 8.4f")
+                      % gridx[i] % gridy[j] % gridz[k] % value);
+                A.physical[i][j][k] = value;
             }
         }
     }
@@ -166,35 +153,38 @@ int main(int argc, char **argv)
     for (int m = 0; m < nrep; m++) {
         MPI_Barrier(MPI_COMM_WORLD);
         rtime1 = rtime1 - MPI_Wtime();
-        ONLYPROC0(LOG4CXX_INFO(logger, "Iteration " << m));
+        INFO0("Iteration " << m);
 
-        p3dfft_ftran_r2c(A.data(), A.data()); // Physical to wave
+        p3dfft_ftran_r2c(A.begin(), A.begin()); // Physical to wave
         rtime1 = rtime1 + MPI_Wtime();
 
         std::transform(A.begin(), A.end(), A.begin(),
-                       std::bind1st(std::multiplies<pencil<>::real_type>(),factor));
+                std::bind1st(std::multiplies<pencil<>::real_type>(),factor));
 
-        ONLYPROC0(LOG4CXX_INFO(logger, "Forward transform results "));
+        INFO0("Forward transform results ");
 
-        for (pencil<>::complex_iterator it = A.wave.begin();
-             it != A.wave.end();
-             ++it) {
-            if (abs(*it) > 1e-8) {
-                pencil<>::index i, j, k;
-                A.wave.inverse_global_offset(it - A.wave.begin(), i, j, k);
-#pragma warning(push,disable:383)
-                LOG4CXX_INFO(logger,
-                        boost::format("(%3d, %3d, %3d) = (%12g, %12g) at index %3d")
-                        % i % j % k
-                        % it->real() % it->imag()
-                        % (it-A.wave.begin()) );
-#pragma warning(pop)
+        for (pencil<>::size_type k = A.global_wave.index_bases()[2];
+             k < A.global_wave.index_bases()[2] + A.global_wave.shape()[2];
+             ++k) {
+            for (pencil<>::size_type i = A.global_wave.index_bases()[0];
+                i < A.global_wave.index_bases()[0] + A.global_wave.shape()[0];
+                ++i) {
+                for (pencil<>::size_type j = A.global_wave.index_bases()[1];
+                    j < A.global_wave.index_bases()[1] + A.global_wave.shape()[1];
+                    ++j) {
+                    const pencil<>::complex_type value = A.global_wave[i][j][k];
+                    if (abs(value) > 1e-8) {
+                        INFO(boost::format("(%3d, %3d, %3d) = (%12g, %12g)")
+                             % i % j % k
+                             % value.real() % value.imag());
+                    }
+                }
             }
         }
 
         MPI_Barrier(MPI_COMM_WORLD);
         rtime1 = rtime1 - MPI_Wtime();
-        p3dfft_btran_c2r(A.data(), A.data()); // Wave to physical
+        p3dfft_btran_c2r(A.begin(), A.begin()); // Wave to physical
         rtime1 = rtime1 + MPI_Wtime();
 
     }
@@ -203,11 +193,11 @@ int main(int argc, char **argv)
 
     /* Check results */
     double cdiff = 0.0;
-    for (pencil<>::size_type j = 0; j < A.physical.size_y; ++j) {
-        for (pencil<>::size_type k = 0; k < A.physical.size_z; ++k) {
-            for (pencil<>::size_type i = 0; i < A.physical.size_x; ++i) {
+    for (pencil<>::size_type j = 0; j < A.physical.shape()[1]; ++j) {
+        for (pencil<>::size_type k = 0; k < A.physical.shape()[2]; ++k) {
+            for (pencil<>::size_type i = 0; i < A.physical.shape()[0]; ++i) {
                 const double answer = real_data(gridx[i], gridy[j], gridz[k]);
-                const double abserr = fabs(A.physical(i,j,k) - answer);
+                const double abserr = fabs(A.physical[i][j][k] - answer);
                 cdiff               = std::max(cdiff, abserr);
             }
         }
@@ -216,11 +206,10 @@ int main(int argc, char **argv)
     // Gather error indicator
     double ccdiff = 0.0;
     MPI_Reduce(&cdiff, &ccdiff, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-    ONLYPROC0(LOG4CXX_INFO(logger,
-                           "Maximum difference: " << std::scientific << ccdiff));
+    INFO0("Maximum difference: " << std::scientific << ccdiff);
 
     // Gather timing statistics
     double rtime2 = 0.0;
     MPI_Reduce(&rtime1, &rtime2, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-    ONLYPROC0(LOG4CXX_INFO(logger, "Time per loop: " << rtime2 / ((double)nrep)));
+    INFO0("Time per loop: " << rtime2 / ((double)nrep));
 }
