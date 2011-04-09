@@ -313,7 +313,7 @@ public:
     template<typename StorageOrderSequence>
     explicit ref(
             element* data,
-            typename base::extent_gen ranges,
+            typename extent_gen::template gen_type<NumDims>::type &ranges,
             const suzerain::storage::general<StorageOrderSequence>& storage)
         : base(data, ranges, storage.storage_order())
     {
@@ -363,7 +363,7 @@ public:
              typename StorageOrderSequence>
     explicit ref(
             element* data,
-            typename base::extent_gen ranges,
+            typename extent_gen::template gen_type<NumDims>::type &ranges,
             const MinStrideList& minstrides,
             const suzerain::storage::general<StorageOrderSequence>& storage)
         : base(data, ranges, storage.storage_order())
