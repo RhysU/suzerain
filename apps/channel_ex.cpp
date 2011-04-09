@@ -562,7 +562,7 @@ public:
                     *p_e_z    = e_z.begin(),
                     *p_div_grad_e = div_grad_e.begin();
              // Loop completion test
-             p_rho_x != rho_x.end();
+             p_rho_x != rho_x.begin() + rho_x.physical.num_elements();
              // Loop increment
              ++p_rho,
              ++p_rho_x,
