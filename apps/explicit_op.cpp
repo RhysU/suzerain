@@ -394,22 +394,25 @@ real_t NonlinearOperator::applyOperator(
                         )
                     ;
 
-                // Maintain the minimum observed stable time step
-                convective_delta_t = suzerain::math::minnan(
-                        convective_delta_t,
-                        suzerain::timestepper::convective_stability_criterion(
-                                u.x(), one_over_delta_x,
-                                u.y(), one_over_delta_y(j),
-                                u.z(), one_over_delta_z,
-                                evmaxmag_real,
-                                std::sqrt(T)) /* nondimen a == sqrt(T) */);
-                diffusive_delta_t = suzerain::math::minnan(
-                        diffusive_delta_t,
-                        suzerain::timestepper::diffusive_stability_criterion(
-                                one_over_delta_x,
-                                one_over_delta_y(j),
-                                one_over_delta_z,
-                                Re, Pr, gamma, evmaxmag_imag, mu / rho));
+                // Maintain the minimum observed stable time step, if necessary
+                if (delta_t_requested) {
+                    namespace timestepper = suzerain::timestepper;
+                    convective_delta_t = suzerain::math::minnan(
+                            convective_delta_t,
+                            timestepper::convective_stability_criterion(
+                                    u.x(), one_over_delta_x,
+                                    u.y(), one_over_delta_y(j),
+                                    u.z(), one_over_delta_z,
+                                    evmaxmag_real,
+                                    std::sqrt(T)) /* nondimen a == sqrt(T) */);
+                    diffusive_delta_t = suzerain::math::minnan(
+                            diffusive_delta_t,
+                            timestepper::diffusive_stability_criterion(
+                                    one_over_delta_x,
+                                    one_over_delta_y(j),
+                                    one_over_delta_z,
+                                    Re, Pr, gamma, evmaxmag_imag, mu / rho));
+                }
 
             } // end X
 
