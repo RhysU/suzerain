@@ -39,9 +39,9 @@ bin_PROGRAMS         += channel_init
 channel_init_SOURCES  = channel_init.cpp
 channel_init_LDADD    = libchannel.la
 
-bin_PROGRAMS       += channel_ex
-channel_ex_SOURCES  = channel_ex.cpp
-channel_ex_LDADD    = libchannel.la
+bin_PROGRAMS             += channel_explicit
+channel_explicit_SOURCES  = channel_explicit.cpp
+channel_explicit_LDADD    = libchannel.la
 
 bin_PROGRAMS         += channel_mean
 channel_mean_SOURCES  = channel_mean.cpp
