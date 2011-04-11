@@ -427,16 +427,13 @@ real_t NonlinearOperator::applyOperator(
     }
 
     // Convert collocation point values to Bspline coefficients
-    massluz.solve(swave.shape()[2]*swave.shape()[3],
-                  swave[ndx::rho].origin(), 1, swave.shape()[1]);
-    massluz.solve(swave.shape()[2]*swave.shape()[3],
-                  swave[ndx::rhou].origin(), 1, swave.shape()[1]);
-    massluz.solve(swave.shape()[2]*swave.shape()[3],
-                  swave[ndx::rhov].origin(), 1, swave.shape()[1]);
-    massluz.solve(swave.shape()[2]*swave.shape()[3],
-                  swave[ndx::rhow].origin(), 1, swave.shape()[1]);
-    massluz.solve(swave.shape()[2]*swave.shape()[3],
-                  swave[ndx::rhoe].origin(), 1, swave.shape()[1]);
+    assert(swave.shape()[1] == (unsigned) massluz.n());
+    assert(    (unsigned) swave.strides()[3]
+            == swave.shape()[2] * swave.strides()[2]);
+    for (std::size_t i = 0; i < channel::field::count; ++i) {
+        massluz.solve(swave.shape()[2]*swave.shape()[3], swave[i].origin(),
+                      swave.strides()[1], swave.strides()[2]);
+    }
 
     // Perform Allreduce on stable time step sizes when necessary
     // Note delta_t_candidates aliases {convective,diffusive}_delta_t
