@@ -97,7 +97,8 @@ NonlinearOperator::NonlinearOperator(
         const suzerain::bsplineop_luz &massluz)
     : NonlinearOperatorBase(scenario, grid, dgrid, b, bop),
       massluz(massluz),
-      auxw(suzerain::to_yxz(aux::count, dgrid.local_wave_extent),
+      auxw(suzerain::to_yxz(static_cast<std::size_t>(aux::count),
+                            dgrid.local_wave_extent),
               suzerain::prepend(dgrid.local_wave_storage(),
                   suzerain::strides_cm(
                       suzerain::to_yxz(dgrid.local_wave_extent)))),
