@@ -34,7 +34,6 @@
 #include <suzerain/bspline_operators.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/pencil.hpp>
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/state.hpp>
 
@@ -78,31 +77,120 @@ protected:
 
     Eigen::ArrayXr one_over_delta_y;
 
-    // Details for suzerain::diffwave::* calls
-    const int Ny;
-    const int Nx;
-    const int dNx;
-    const int dkbx;
-    const int dkex;
-    const int Nz;
-    const int dNz;
-    const int dkbz;
-    const int dkez;
+    template<typename MultiArray>
+    static real_t * real_origin(MultiArray &x, int ndx)
+    {
+        return reinterpret_cast<real_t *>(x[ndx].origin());
+    }
+
+    template<typename AlphaType, typename MultiArrayX,
+             typename BetaType,  typename MultiArrayY>
+    int bop_accumulate(
+            int nderiv,
+            const AlphaType& alpha, const MultiArrayX &x, int ndx_x,
+            const BetaType& beta,         MultiArrayY &y, int ndx_y) const
+    {
+        assert(x.shape()[1] == (unsigned) bop.n());
+        assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2] );
+        assert((unsigned) y.strides()[3] == y.shape()[2] * y.strides()[2] );
+        assert(std::equal(x.shape() + 1, x.shape() + 4, y.shape() + 1));
+
+        return bop.accumulate(
+                nderiv, x.shape()[2] * x.shape()[3],
+                alpha,  x[ndx_x].origin(), x.strides()[1], x.strides()[2],
+                beta,   y[ndx_y].origin(), y.strides()[1], y.strides()[2]);
+    }
+
+    template<typename AlphaType, typename MultiArray>
+    int bop_apply(
+            int nderiv, const AlphaType& alpha, MultiArray &x, int ndx) const
+    {
+        assert(x.shape()[1] == (unsigned) bop.n());
+        assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
+
+        return bop.apply(
+                nderiv, x.shape()[2] * x.shape()[3],
+                alpha,  x[ndx].origin(), x.strides()[1], x.strides()[2]);
+    }
+
+    template<typename MultiArrayX, typename MultiArrayY>
+    void diffwave_accumulate(int dxcnt,
+                             int dzcnt,
+                             const typename MultiArrayX::element& alpha,
+                             const MultiArrayX &x,
+                             int ndx_x,
+                             const typename MultiArrayY::element& beta,
+                             MultiArrayY &y,
+                             int ndx_y) const
+    {
+        assert(std::equal(x.shape()   + 1, x.shape()   + 4, y.shape()   + 1));
+        assert(std::equal(x.strides() + 1, x.strides() + 4, y.strides() + 1));
+
+        return suzerain::diffwave::accumulate(
+                dxcnt, dzcnt,
+                alpha, x[ndx_x].origin(),
+                beta,  y[ndx_y].origin(),
+                scenario.Lx, scenario.Lz,
+                dgrid.global_wave_extent.y(),
+                grid.N.x(),
+                dgrid.global_wave_extent.x(),
+                dgrid.local_wave_start.x(),
+                dgrid.local_wave_end.x(),
+                grid.N.z(),
+                dgrid.global_wave_extent.z(),
+                dgrid.local_wave_start.z(),
+                dgrid.local_wave_end.z());
+    }
+
+    template<typename MultiArray>
+    void diffwave_apply(int dxcnt,
+                        int dzcnt,
+                        const typename MultiArray::element& alpha,
+                        const MultiArray &x,
+                        int ndx_x) const
+    {
+        return suzerain::diffwave::accumulate(
+                dxcnt, dzcnt,
+                alpha, x[ndx_x].origin(),
+                scenario.Lx, scenario.Lz,
+                dgrid.global_wave_extent.y(),
+                grid.N.x(),
+                dgrid.global_wave_extent.x(),
+                dgrid.local_wave_start.x(),
+                dgrid.local_wave_end.x(),
+                grid.N.z(),
+                dgrid.global_wave_extent.z(),
+                dgrid.local_wave_start.z(),
+                dgrid.local_wave_end.z());
+    }
 
 private:
-    mutable suzerain::pencil<> rho_x, rho_y, rho_z;
-    mutable suzerain::pencil<> rho_xx, rho_xy, rho_xz, rho_yy, rho_yz, rho_zz;
 
-    mutable suzerain::pencil<> mx_x, mx_y, mx_z;
-    mutable suzerain::pencil<> mx_xx, mx_xy, mx_xz, mx_yy, mx_yz, mx_zz;
+    // Auxiliary scalar-field storage used within applyOperator
+    mutable state_type auxf;
 
-    mutable suzerain::pencil<> my_x, my_y, my_z;
-    mutable suzerain::pencil<> my_xx, my_xy, my_xz, my_yy, my_yz, my_zz;
+    // Inner struct purely for name scoping purposes
+    struct aux {
 
-    mutable suzerain::pencil<> mz_x, mz_y, mz_z;
-    mutable suzerain::pencil<> mz_xx, mz_xy, mz_xz, mz_yy, mz_yz, mz_zz;
+        // Logical indexes into auxiliary scalar-field storage
+        // Seemingly goofy ordering matches usage in applyOperator
+        enum {
+            rho_y, rho_yy,
+            rho_x, rho_xx, rho_xz, rho_z, rho_zz, rho_xy, rho_yz,
+            mx_y, mx_yy,
+            mx_x, mx_xx, mx_xz, mx_z, mx_zz, mx_xy, mx_yz,
+            my_y, my_yy,
+            my_x, my_xx, my_xz, my_z, my_zz, my_xy, my_yz,
+            mz_y, mz_yy,
+            mz_x, mz_xx, mz_xz, mz_z, mz_zz, mz_xy, mz_yz,
+            e_y, div_grad_e, e_x, e_z,
 
-    mutable suzerain::pencil<> e_x, e_y, e_z, div_grad_e;
+            count // Sentry
+        };
+
+        private: aux();
+    };
+
 };
 
 class NonlinearOperatorWithBoundaryConditions : public NonlinearOperator
