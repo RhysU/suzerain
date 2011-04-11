@@ -57,7 +57,7 @@ NonlinearOperator::NonlinearOperator(
         const suzerain::bsplineop_luz &massluz)
     : NonlinearOperatorBase(scenario, grid, dgrid, bop),
       massluz(massluz),
-      auxf(suzerain::to_yxz(aux::count, dgrid.local_wave_extent),
+      auxw(suzerain::to_yxz(aux::count, dgrid.local_wave_extent),
               suzerain::prepend(dgrid.local_wave_storage(),
                   suzerain::strides_cm(
                       suzerain::to_yxz(dgrid.local_wave_extent))))
@@ -84,7 +84,7 @@ NonlinearOperator::NonlinearOperator(
 }
 
 real_t NonlinearOperator::applyOperator(
-    suzerain::NoninterleavedState<4,complex_t> &state,
+    suzerain::NoninterleavedState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,
     const bool delta_t_requested) const
@@ -93,18 +93,18 @@ real_t NonlinearOperator::applyOperator(
 
     // All state enters routine as coefficients in X, Y, and Z directions
 
-    // Sanity check incoming state's and auxf's shape and contiguity
-    assert(state.shape()[0] == channel::field::count);
-    assert(state.shape()[1] == (unsigned) dgrid.local_wave_extent.y());
-    assert(state.shape()[2] == (unsigned) dgrid.local_wave_extent.x());
-    assert(state.shape()[3] == (unsigned) dgrid.local_wave_extent.z());
-    assert((unsigned) state.strides()[1] == 1u);
-    assert((unsigned) state.strides()[2] == state.shape()[1]);
-    assert((unsigned) state.strides()[3] == state.shape()[1]*state.shape()[2]);
-    assert(std::equal(state.shape() + 1, state.shape() + 4,
-                      auxf.shape() + 1));
-    assert(std::equal(state.strides() + 1, state.strides() + 4,
-                      auxf.strides() + 1));
+    // Sanity check incoming swave's and auxw's shape and contiguity
+    assert(swave.shape()[0] == channel::field::count);
+    assert(swave.shape()[1] == (unsigned) dgrid.local_wave_extent.y());
+    assert(swave.shape()[2] == (unsigned) dgrid.local_wave_extent.x());
+    assert(swave.shape()[3] == (unsigned) dgrid.local_wave_extent.z());
+    assert((unsigned) swave.strides()[1] == 1u);
+    assert((unsigned) swave.strides()[2] == swave.shape()[1]);
+    assert((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
+    assert(std::equal(swave.shape() + 1, swave.shape() + 4,
+                      auxw.shape() + 1));
+    assert(std::equal(swave.strides() + 1, swave.strides() + 4,
+                      auxw.strides() + 1));
 
     real_t delta_t_candidates[2] = { std::numeric_limits<real_t>::max(),
                                      std::numeric_limits<real_t>::max()  };
@@ -114,80 +114,80 @@ real_t NonlinearOperator::applyOperator(
     const real_t one_over_delta_z = scenario.Lz / grid.N.z(); // !dNz
 
     // Compute Y derivatives of density at collocation points
-    bop_accumulate(1, 1., state, ndx::rho, 0., auxf, aux::rho_y);
-    bop_accumulate(2, 1., state, ndx::rho, 0., auxf, aux::rho_yy);
-    bop_apply     (0, 1., state, ndx::rho);
+    bop_accumulate(1, 1., swave, ndx::rho, 0., auxw, aux::rho_y);
+    bop_accumulate(2, 1., swave, ndx::rho, 0., auxw, aux::rho_yy);
+    bop_apply     (0, 1., swave, ndx::rho);
 
     // Compute X- and Z- derivatives of density at collocation points
-    diffwave_accumulate(1, 0, 1., state, ndx::rho,   0., auxf, aux::rho_x );
-    diffwave_accumulate(2, 0, 1., state, ndx::rho,   0., auxf, aux::rho_xx);
-    diffwave_accumulate(1, 1, 1., state, ndx::rho,   0., auxf, aux::rho_xz);
-    diffwave_accumulate(0, 1, 1., state, ndx::rho,   0., auxf, aux::rho_z );
-    diffwave_accumulate(0, 2, 1., state, ndx::rho,   0., auxf, aux::rho_zz);
-    diffwave_accumulate(1, 0, 1., auxf,  aux::rho_y, 0., auxf, aux::rho_xy);
-    diffwave_accumulate(0, 1, 1., auxf,  aux::rho_y, 0., auxf, aux::rho_yz);
+    diffwave_accumulate(1, 0, 1., swave, ndx::rho,   0., auxw, aux::rho_x );
+    diffwave_accumulate(2, 0, 1., swave, ndx::rho,   0., auxw, aux::rho_xx);
+    diffwave_accumulate(1, 1, 1., swave, ndx::rho,   0., auxw, aux::rho_xz);
+    diffwave_accumulate(0, 1, 1., swave, ndx::rho,   0., auxw, aux::rho_z );
+    diffwave_accumulate(0, 2, 1., swave, ndx::rho,   0., auxw, aux::rho_zz);
+    diffwave_accumulate(1, 0, 1., auxw,  aux::rho_y, 0., auxw, aux::rho_xy);
+    diffwave_accumulate(0, 1, 1., auxw,  aux::rho_y, 0., auxw, aux::rho_yz);
 
     // Compute Y derivatives of X momentum at collocation points
-    bop_accumulate(1, 1., state, ndx::rhou, 0., auxf, aux::mx_y);
-    bop_accumulate(2, 1., state, ndx::rhou, 0., auxf, aux::mx_yy);
-    bop_apply     (0, 1., state, ndx::rhou);
+    bop_accumulate(1, 1., swave, ndx::rhou, 0., auxw, aux::mx_y);
+    bop_accumulate(2, 1., swave, ndx::rhou, 0., auxw, aux::mx_yy);
+    bop_apply     (0, 1., swave, ndx::rhou);
 
     // Compute X- and Z- derivatives of X momentum at collocation points
-    diffwave_accumulate(1, 0, 1., state, ndx::rhou,  0., auxf, aux::mx_x );
-    diffwave_accumulate(2, 0, 1., state, ndx::rhou,  0., auxf, aux::mx_xx);
-    diffwave_accumulate(1, 1, 1., state, ndx::rhou,  0., auxf, aux::mx_xz);
-    diffwave_accumulate(0, 1, 1., state, ndx::rhou,  0., auxf, aux::mx_z );
-    diffwave_accumulate(0, 2, 1., state, ndx::rhou,  0., auxf, aux::mx_zz);
-    diffwave_accumulate(1, 0, 1., auxf,  aux::mx_y,  0., auxf, aux::mx_xy);
-    diffwave_accumulate(0, 1, 1., auxf,  aux::mx_y,  0., auxf, aux::mx_yz);
+    diffwave_accumulate(1, 0, 1., swave, ndx::rhou,  0., auxw, aux::mx_x );
+    diffwave_accumulate(2, 0, 1., swave, ndx::rhou,  0., auxw, aux::mx_xx);
+    diffwave_accumulate(1, 1, 1., swave, ndx::rhou,  0., auxw, aux::mx_xz);
+    diffwave_accumulate(0, 1, 1., swave, ndx::rhou,  0., auxw, aux::mx_z );
+    diffwave_accumulate(0, 2, 1., swave, ndx::rhou,  0., auxw, aux::mx_zz);
+    diffwave_accumulate(1, 0, 1., auxw,  aux::mx_y,  0., auxw, aux::mx_xy);
+    diffwave_accumulate(0, 1, 1., auxw,  aux::mx_y,  0., auxw, aux::mx_yz);
 
     // Compute Y derivatives of Y momentum at collocation points
-    bop_accumulate(1, 1., state, ndx::rhov, 0., auxf, aux::my_y);
-    bop_accumulate(2, 1., state, ndx::rhov, 0., auxf, aux::my_yy);
-    bop_apply     (0, 1., state, ndx::rhov);
+    bop_accumulate(1, 1., swave, ndx::rhov, 0., auxw, aux::my_y);
+    bop_accumulate(2, 1., swave, ndx::rhov, 0., auxw, aux::my_yy);
+    bop_apply     (0, 1., swave, ndx::rhov);
 
     // Compute X- and Z- derivatives of Y momentum at collocation points
-    diffwave_accumulate(1, 0, 1., state, ndx::rhov,  0., auxf, aux::my_x );
-    diffwave_accumulate(2, 0, 1., state, ndx::rhov,  0., auxf, aux::my_xx);
-    diffwave_accumulate(1, 1, 1., state, ndx::rhov,  0., auxf, aux::my_xz);
-    diffwave_accumulate(0, 1, 1., state, ndx::rhov,  0., auxf, aux::my_z );
-    diffwave_accumulate(0, 2, 1., state, ndx::rhov,  0., auxf, aux::my_zz);
-    diffwave_accumulate(1, 0, 1., auxf,  aux::my_y,  0., auxf, aux::my_xy);
-    diffwave_accumulate(0, 1, 1., auxf,  aux::my_y,  0., auxf, aux::my_yz);
+    diffwave_accumulate(1, 0, 1., swave, ndx::rhov,  0., auxw, aux::my_x );
+    diffwave_accumulate(2, 0, 1., swave, ndx::rhov,  0., auxw, aux::my_xx);
+    diffwave_accumulate(1, 1, 1., swave, ndx::rhov,  0., auxw, aux::my_xz);
+    diffwave_accumulate(0, 1, 1., swave, ndx::rhov,  0., auxw, aux::my_z );
+    diffwave_accumulate(0, 2, 1., swave, ndx::rhov,  0., auxw, aux::my_zz);
+    diffwave_accumulate(1, 0, 1., auxw,  aux::my_y,  0., auxw, aux::my_xy);
+    diffwave_accumulate(0, 1, 1., auxw,  aux::my_y,  0., auxw, aux::my_yz);
 
     // Compute Y derivatives of Z momentum at collocation points
-    bop_accumulate(1, 1., state, ndx::rhow, 0., auxf, aux::mz_y);
-    bop_accumulate(2, 1., state, ndx::rhow, 0., auxf, aux::mz_yy);
-    bop_apply     (0, 1., state, ndx::rhow);
+    bop_accumulate(1, 1., swave, ndx::rhow, 0., auxw, aux::mz_y);
+    bop_accumulate(2, 1., swave, ndx::rhow, 0., auxw, aux::mz_yy);
+    bop_apply     (0, 1., swave, ndx::rhow);
 
     // Compute X- and Z- derivatives of Z momentum at collocation points
-    diffwave_accumulate(1, 0, 1., state, ndx::rhow,  0., auxf, aux::mz_x );
-    diffwave_accumulate(2, 0, 1., state, ndx::rhow,  0., auxf, aux::mz_xx);
-    diffwave_accumulate(1, 1, 1., state, ndx::rhow,  0., auxf, aux::mz_xz);
-    diffwave_accumulate(0, 1, 1., state, ndx::rhow,  0., auxf, aux::mz_z );
-    diffwave_accumulate(0, 2, 1., state, ndx::rhow,  0., auxf, aux::mz_zz);
-    diffwave_accumulate(1, 0, 1., auxf,  aux::mz_y,  0., auxf, aux::mz_xy);
-    diffwave_accumulate(0, 1, 1., auxf,  aux::mz_y,  0., auxf, aux::mz_yz);
+    diffwave_accumulate(1, 0, 1., swave, ndx::rhow,  0., auxw, aux::mz_x );
+    diffwave_accumulate(2, 0, 1., swave, ndx::rhow,  0., auxw, aux::mz_xx);
+    diffwave_accumulate(1, 1, 1., swave, ndx::rhow,  0., auxw, aux::mz_xz);
+    diffwave_accumulate(0, 1, 1., swave, ndx::rhow,  0., auxw, aux::mz_z );
+    diffwave_accumulate(0, 2, 1., swave, ndx::rhow,  0., auxw, aux::mz_zz);
+    diffwave_accumulate(1, 0, 1., auxw,  aux::mz_y,  0., auxw, aux::mz_xy);
+    diffwave_accumulate(0, 1, 1., auxw,  aux::mz_y,  0., auxw, aux::mz_yz);
 
     // Compute Y derivatives of total energy at collocation points
-    bop_accumulate(1, 1., state, ndx::rhoe, 0., auxf, aux::e_y);
-    bop_accumulate(2, 1., state, ndx::rhoe, 0., auxf, aux::div_grad_e);
-    bop_apply     (0, 1., state, ndx::rhoe);
+    bop_accumulate(1, 1., swave, ndx::rhoe, 0., auxw, aux::e_y);
+    bop_accumulate(2, 1., swave, ndx::rhoe, 0., auxw, aux::div_grad_e);
+    bop_apply     (0, 1., swave, ndx::rhoe);
 
     // Compute X- and Z- derivatives of total energy at collocation points
-    diffwave_accumulate(1, 0, 1., state, ndx::rhoe, 0., auxf, aux::e_x       );
-    diffwave_accumulate(2, 0, 1., state, ndx::rhoe, 1., auxf, aux::div_grad_e);
-    diffwave_accumulate(0, 1, 1., state, ndx::rhoe, 0., auxf, aux::e_z       );
-    diffwave_accumulate(0, 2, 1., state, ndx::rhoe, 1., auxf, aux::div_grad_e);
+    diffwave_accumulate(1, 0, 1., swave, ndx::rhoe, 0., auxw, aux::e_x       );
+    diffwave_accumulate(2, 0, 1., swave, ndx::rhoe, 1., auxw, aux::div_grad_e);
+    diffwave_accumulate(0, 1, 1., swave, ndx::rhoe, 0., auxw, aux::e_z       );
+    diffwave_accumulate(0, 2, 1., swave, ndx::rhoe, 1., auxw, aux::div_grad_e);
 
-    // Collectively convert state to physical space using parallel FFTs
+    // Collectively convert swave to physical space using parallel FFTs
     for (std::size_t i = 0; i < channel::field::count; ++i) {
         dgrid.transform_wave_to_physical(
-                reinterpret_cast<real_t *>(state[i].origin()));
+                reinterpret_cast<real_t *>(swave[i].origin()));
     }
     for (std::size_t i = 0; i < aux::count; ++i) {
         dgrid.transform_wave_to_physical(
-                reinterpret_cast<real_t *>(auxf[i].origin()));
+                reinterpret_cast<real_t *>(auxw[i].origin()));
     }
 
     // Compute nonlinear operator
@@ -223,55 +223,55 @@ real_t NonlinearOperator::applyOperator(
                           * dgrid.local_physical_extent.z();
     size_t ndx_y = stride_y * dgrid.local_physical_start.y();
 
-    // Walk physical space state storage linearly
+    // Walk physical space swave storage linearly
     for (// Loop initialization
-         real_t *p_rho        = real_origin(state, ndx::rho),
-                *p_rho_x      = real_origin(auxf,  aux::rho_x),
-                *p_rho_y      = real_origin(auxf,  aux::rho_y),
-                *p_rho_z      = real_origin(auxf,  aux::rho_z),
-                *p_rho_xx     = real_origin(auxf,  aux::rho_xx),
-                *p_rho_xy     = real_origin(auxf,  aux::rho_xy),
-                *p_rho_xz     = real_origin(auxf,  aux::rho_xz),
-                *p_rho_yy     = real_origin(auxf,  aux::rho_yy),
-                *p_rho_yz     = real_origin(auxf,  aux::rho_yz),
-                *p_rho_zz     = real_origin(auxf,  aux::rho_zz),
-                *p_mx         = real_origin(state, ndx::rhou),
-                *p_mx_x       = real_origin(auxf,  aux::mx_x),
-                *p_mx_y       = real_origin(auxf,  aux::mx_y),
-                *p_mx_z       = real_origin(auxf,  aux::mx_z),
-                *p_mx_xx      = real_origin(auxf,  aux::mx_xx),
-                *p_mx_xy      = real_origin(auxf,  aux::mx_xy),
-                *p_mx_xz      = real_origin(auxf,  aux::mx_xz),
-                *p_mx_yy      = real_origin(auxf,  aux::mx_yy),
-                *p_mx_yz      = real_origin(auxf,  aux::mx_yz),
-                *p_mx_zz      = real_origin(auxf,  aux::mx_zz),
-                *p_my         = real_origin(state, ndx::rhov),
-                *p_my_x       = real_origin(auxf,  aux::my_x),
-                *p_my_y       = real_origin(auxf,  aux::my_y),
-                *p_my_z       = real_origin(auxf,  aux::my_z),
-                *p_my_xx      = real_origin(auxf,  aux::my_xx),
-                *p_my_xy      = real_origin(auxf,  aux::my_xy),
-                *p_my_xz      = real_origin(auxf,  aux::my_xz),
-                *p_my_yy      = real_origin(auxf,  aux::my_yy),
-                *p_my_yz      = real_origin(auxf,  aux::my_yz),
-                *p_my_zz      = real_origin(auxf,  aux::my_zz),
-                *p_mz         = real_origin(state, ndx::rhow),
-                *p_mz_x       = real_origin(auxf,  aux::mz_x),
-                *p_mz_y       = real_origin(auxf,  aux::mz_y),
-                *p_mz_z       = real_origin(auxf,  aux::mz_z),
-                *p_mz_xx      = real_origin(auxf,  aux::mz_xx),
-                *p_mz_xy      = real_origin(auxf,  aux::mz_xy),
-                *p_mz_xz      = real_origin(auxf,  aux::mz_xz),
-                *p_mz_yy      = real_origin(auxf,  aux::mz_yy),
-                *p_mz_yz      = real_origin(auxf,  aux::mz_yz),
-                *p_mz_zz      = real_origin(auxf,  aux::mz_zz),
-                *p_e          = real_origin(state, ndx::rhoe),
-                *p_e_x        = real_origin(auxf,  aux::e_x),
-                *p_e_y        = real_origin(auxf,  aux::e_y),
-                *p_e_z        = real_origin(auxf,  aux::e_z),
-                *p_div_grad_e = real_origin(auxf,  aux::div_grad_e);
+         real_t *p_rho        = real_origin(swave, ndx::rho),
+                *p_rho_x      = real_origin(auxw,  aux::rho_x),
+                *p_rho_y      = real_origin(auxw,  aux::rho_y),
+                *p_rho_z      = real_origin(auxw,  aux::rho_z),
+                *p_rho_xx     = real_origin(auxw,  aux::rho_xx),
+                *p_rho_xy     = real_origin(auxw,  aux::rho_xy),
+                *p_rho_xz     = real_origin(auxw,  aux::rho_xz),
+                *p_rho_yy     = real_origin(auxw,  aux::rho_yy),
+                *p_rho_yz     = real_origin(auxw,  aux::rho_yz),
+                *p_rho_zz     = real_origin(auxw,  aux::rho_zz),
+                *p_mx         = real_origin(swave, ndx::rhou),
+                *p_mx_x       = real_origin(auxw,  aux::mx_x),
+                *p_mx_y       = real_origin(auxw,  aux::mx_y),
+                *p_mx_z       = real_origin(auxw,  aux::mx_z),
+                *p_mx_xx      = real_origin(auxw,  aux::mx_xx),
+                *p_mx_xy      = real_origin(auxw,  aux::mx_xy),
+                *p_mx_xz      = real_origin(auxw,  aux::mx_xz),
+                *p_mx_yy      = real_origin(auxw,  aux::mx_yy),
+                *p_mx_yz      = real_origin(auxw,  aux::mx_yz),
+                *p_mx_zz      = real_origin(auxw,  aux::mx_zz),
+                *p_my         = real_origin(swave, ndx::rhov),
+                *p_my_x       = real_origin(auxw,  aux::my_x),
+                *p_my_y       = real_origin(auxw,  aux::my_y),
+                *p_my_z       = real_origin(auxw,  aux::my_z),
+                *p_my_xx      = real_origin(auxw,  aux::my_xx),
+                *p_my_xy      = real_origin(auxw,  aux::my_xy),
+                *p_my_xz      = real_origin(auxw,  aux::my_xz),
+                *p_my_yy      = real_origin(auxw,  aux::my_yy),
+                *p_my_yz      = real_origin(auxw,  aux::my_yz),
+                *p_my_zz      = real_origin(auxw,  aux::my_zz),
+                *p_mz         = real_origin(swave, ndx::rhow),
+                *p_mz_x       = real_origin(auxw,  aux::mz_x),
+                *p_mz_y       = real_origin(auxw,  aux::mz_y),
+                *p_mz_z       = real_origin(auxw,  aux::mz_z),
+                *p_mz_xx      = real_origin(auxw,  aux::mz_xx),
+                *p_mz_xy      = real_origin(auxw,  aux::mz_xy),
+                *p_mz_xz      = real_origin(auxw,  aux::mz_xz),
+                *p_mz_yy      = real_origin(auxw,  aux::mz_yy),
+                *p_mz_yz      = real_origin(auxw,  aux::mz_yz),
+                *p_mz_zz      = real_origin(auxw,  aux::mz_zz),
+                *p_e          = real_origin(swave, ndx::rhoe),
+                *p_e_x        = real_origin(auxw,  aux::e_x),
+                *p_e_y        = real_origin(auxw,  aux::e_y),
+                *p_e_z        = real_origin(auxw,  aux::e_z),
+                *p_div_grad_e = real_origin(auxw,  aux::div_grad_e);
          // Loop completion test
-         p_rho != real_origin(state, ndx::rho) + dgrid.local_physical_extent.prod();
+         p_rho != real_origin(swave, ndx::rho) + dgrid.local_physical_extent.prod();
          // Loop increment
          ++p_rho,
          ++p_rho_x,
@@ -444,20 +444,20 @@ real_t NonlinearOperator::applyOperator(
     // Collectively convert state to wave space using parallel FFTs
     for (std::size_t i = 0; i < channel::field::count; ++i) {
         dgrid.transform_physical_to_wave(
-                reinterpret_cast<real_t *>(state[i].origin()));
+                reinterpret_cast<real_t *>(swave[i].origin()));
     }
 
     // Convert collocation point values to Bspline coefficients
-    massluz.solve(state.shape()[2]*state.shape()[3],
-                  state[ndx::rho].origin(), 1, state.shape()[1]);
-    massluz.solve(state.shape()[2]*state.shape()[3],
-                  state[ndx::rhou].origin(), 1, state.shape()[1]);
-    massluz.solve(state.shape()[2]*state.shape()[3],
-                  state[ndx::rhov].origin(), 1, state.shape()[1]);
-    massluz.solve(state.shape()[2]*state.shape()[3],
-                  state[ndx::rhow].origin(), 1, state.shape()[1]);
-    massluz.solve(state.shape()[2]*state.shape()[3],
-                  state[ndx::rhoe].origin(), 1, state.shape()[1]);
+    massluz.solve(swave.shape()[2]*swave.shape()[3],
+                  swave[ndx::rho].origin(), 1, swave.shape()[1]);
+    massluz.solve(swave.shape()[2]*swave.shape()[3],
+                  swave[ndx::rhou].origin(), 1, swave.shape()[1]);
+    massluz.solve(swave.shape()[2]*swave.shape()[3],
+                  swave[ndx::rhov].origin(), 1, swave.shape()[1]);
+    massluz.solve(swave.shape()[2]*swave.shape()[3],
+                  swave[ndx::rhow].origin(), 1, swave.shape()[1]);
+    massluz.solve(swave.shape()[2]*swave.shape()[3],
+                  swave[ndx::rhoe].origin(), 1, swave.shape()[1]);
 
     // Perform Allreduce on stable time step sizes when necessary
     // Note delta_t_candidates aliases {convective,diffusive}_delta_t
@@ -489,7 +489,7 @@ NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions
 }
 
 real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
-    suzerain::NoninterleavedState<4,complex_t> &state,
+    suzerain::NoninterleavedState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,
     const bool delta_t_requested) const
@@ -505,35 +505,35 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     real_t bulk_density = std::numeric_limits<real_t>::quiet_NaN();
     if (zero_zero_rank) {
         // Save a copy of the constant x-momentum modes
-        original_state_mx.resize(state.shape()[1]);
-        for (std::size_t i = 0; i < state.shape()[1]; ++i) {
+        original_state_mx.resize(swave.shape()[1]);
+        for (std::size_t i = 0; i < swave.shape()[1]; ++i) {
             original_state_mx[i]
-                = suzerain::complex::real(state[ndx::rhou][i][0][0]);
+                = suzerain::complex::real(swave[ndx::rhou][i][0][0]);
         }
 
         // Compute the bulk density so we can hold it constant in time
         bulk_density = suzerain::blas::dot(
                 bintcoeff.size(), bintcoeff.data(), 1,
-                reinterpret_cast<real_t *>(&state[ndx::rho][0][0][0]),
+                reinterpret_cast<real_t *>(&swave[ndx::rho][0][0][0]),
                 sizeof(complex_t)/sizeof(real_t));
     }
 
     // Apply an operator that cares nothing about the boundaries
     const real_t delta_t = base::applyOperator(
-            state, evmaxmag_real, evmaxmag_imag, delta_t_requested);
+            swave, evmaxmag_real, evmaxmag_imag, delta_t_requested);
 
     // Indices that will be useful as shorthand
     const std::size_t lower_wall = 0;                    // index of wall
-    const std::size_t upper_wall = state.shape()[1] - 1; // index of wall
+    const std::size_t upper_wall = swave.shape()[1] - 1; // index of wall
 
     // Add f_rho to mean density per writeup step (2)
     if (zero_zero_rank) {
         const real_t f_rho = suzerain::blas::dot(
                 bintcoeff.size(), bintcoeff.data(), 1,
-                reinterpret_cast<real_t *>(&state[ndx::rho][0][0][0]),
+                reinterpret_cast<real_t *>(&swave[ndx::rho][0][0][0]),
                 sizeof(complex_t)/sizeof(real_t)) / scenario.Ly;
-        for (std::size_t i = 0; i < state.shape()[1]; ++i) {
-            state[ndx::rho][i][0][0] -= f_rho;
+        for (std::size_t i = 0; i < swave.shape()[1]; ++i) {
+            swave[ndx::rho][i][0][0] -= f_rho;
         }
     }
 
@@ -541,10 +541,10 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
     assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
     for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
-        for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-            for (std::size_t j = 0; j < state.shape()[2]; ++j) {
-                state[i][lower_wall][j][k] = 0;
-                state[i][upper_wall][j][k] = 0;
+        for (std::size_t k = 0; k < swave.shape()[3]; ++k) {
+            for (std::size_t j = 0; j < swave.shape()[2]; ++j) {
+                swave[i][lower_wall][j][k] = 0;
+                swave[i][upper_wall][j][k] = 0;
             }
         }
     }
@@ -552,12 +552,12 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     // Set isothermal condition on walls per writeup step (4)
     const real_t inv_gamma_gamma1
         = 1 / (scenario.gamma * (scenario.gamma - 1));
-    for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-        for (std::size_t j = 0; j < state.shape()[2]; ++j) {
-            state[ndx::rhoe][lower_wall][j][k]
-                = inv_gamma_gamma1 * state[ndx::rho][lower_wall][j][k];
-            state[ndx::rhoe][upper_wall][j][k]
-                = inv_gamma_gamma1 * state[ndx::rho][upper_wall][j][k];
+    for (std::size_t k = 0; k < swave.shape()[3]; ++k) {
+        for (std::size_t j = 0; j < swave.shape()[2]; ++j) {
+            swave[ndx::rhoe][lower_wall][j][k]
+                = inv_gamma_gamma1 * swave[ndx::rho][lower_wall][j][k];
+            swave[ndx::rhoe][upper_wall][j][k]
+                = inv_gamma_gamma1 * swave[ndx::rho][upper_wall][j][k];
         }
     }
 
@@ -567,18 +567,18 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
         // Compute temporary per writeup implementation step (5)
         real_t alpha = suzerain::blas::dot(
                 bintcoeff.size(), bintcoeff.data(), 1,
-                reinterpret_cast<real_t *>(&state[ndx::rhou][0][0][0]),
+                reinterpret_cast<real_t *>(&swave[ndx::rhou][0][0][0]),
                 sizeof(complex_t)/sizeof(real_t)) / scenario.Ly;
 
         // Apply to non-wall mean x-momentum right hand side per step (6)
         for (std::size_t i = lower_wall + 1; i < upper_wall; ++i) {
-            state[ndx::rhou][i][0][0] -= alpha;
+            swave[ndx::rhou][i][0][0] -= alpha;
         }
 
         // Apply to non-wall mean energy right hand side per step (7)
         alpha /= bulk_density;
         for (std::size_t i = lower_wall + 1; i < upper_wall; ++i) {
-            state[ndx::rhoe][i][0][0] -= alpha * original_state_mx[i];
+            swave[ndx::rhoe][i][0][0] -= alpha * original_state_mx[i];
         }
     }
 

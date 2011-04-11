@@ -28,8 +28,8 @@
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 
-#ifndef EXPLICIT_N_HPP
-#define EXPLICIT_N_HPP
+#ifndef EXPLICIT_OP_HPP
+#define EXPLICIT_OP_HPP
 
 #include <suzerain/bspline_operators.hpp>
 #include <suzerain/grid_definition.hpp>
@@ -179,7 +179,7 @@ public:
             const suzerain::bsplineop_luz &massluz);
 
     virtual real_t applyOperator(
-            suzerain::NoninterleavedState<4,complex_t> &state,
+            suzerain::NoninterleavedState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             const bool delta_t_requested = false) const;
@@ -190,9 +190,9 @@ protected:
     Eigen::ArrayXr one_over_delta_y;
 
     // Auxiliary scalar-field storage used within applyOperator
-    mutable state_type auxf;
+    mutable state_type auxw;
 
-    // Inner struct purely for name scoping purposes
+    // Inner struct purely for name-scoping purposes
     struct aux {
 
         // Logical indexes into auxiliary scalar-field storage
@@ -236,7 +236,7 @@ public:
             const suzerain::bsplineop_luz &massluz);
 
     virtual real_t applyOperator(
-            suzerain::NoninterleavedState<4,complex_t> &state,
+            suzerain::NoninterleavedState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             const bool delta_t_requested = false) const;
@@ -248,4 +248,4 @@ protected:
 
 } // namespace channel
 
-#endif  /* EXPLICIT_N_HPP */
+#endif  /* EXPLICIT_OP_HPP */
