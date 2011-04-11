@@ -251,9 +251,9 @@ real_t NonlinearOperator::applyOperator(
     Eigen::Vector3r div_tau;
     Eigen::Vector3r momentum_rhs;
 
-    // Physical space is traversed linearly using a single offset 'off'.  The
-    // three loop structure is present to provide the global absolute positions
-    // x(i), y(j), and z(k) where necessary.
+    // Physical space is traversed linearly using a single offset 'offset'.
+    // The three loop structure is present to provide the global absolute
+    // positions x(i), y(j), and z(k) where necessary.
     size_t offset = 0;
     for (int j = dgrid.local_physical_start.y();
          j < dgrid.local_physical_end.y();
