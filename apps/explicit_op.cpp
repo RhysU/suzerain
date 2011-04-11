@@ -46,6 +46,14 @@
 
 #pragma warning(disable:383 1572)
 
+// Helper function to turn two values into a full Collection
+template<typename T>
+static boost::array<T,2> make_collection_of_two(const T& x, const T& y)
+{
+    boost::array<T,2> retval = {{ x, y }};
+    return retval;
+}
+
 namespace channel {
 
 NonlinearOperator::NonlinearOperator(
@@ -60,7 +68,13 @@ NonlinearOperator::NonlinearOperator(
       auxw(suzerain::to_yxz(aux::count, dgrid.local_wave_extent),
               suzerain::prepend(dgrid.local_wave_storage(),
                   suzerain::strides_cm(
-                      suzerain::to_yxz(dgrid.local_wave_extent))))
+                      suzerain::to_yxz(dgrid.local_wave_extent)))),
+      auxp(reinterpret_cast<real_t *>(auxw.origin()),
+           make_collection_of_two<std::size_t>(
+               aux::count, dgrid.local_physical_extent.prod()),
+           make_collection_of_two<std::size_t>(
+               auxw.strides()[0] * sizeof(complex_t)/sizeof(real_t), 0),
+           suzerain::storage::noninterleaved<2>())
 {
     // Allocate array holding \frac{1}{\Delta{}y} grid spacing
     one_over_delta_y.resize(grid.N.y());
@@ -180,17 +194,25 @@ real_t NonlinearOperator::applyOperator(
     diffwave_accumulate(0, 1, 1., swave, ndx::rhoe, 0., auxw, aux::e_z       );
     diffwave_accumulate(0, 2, 1., swave, ndx::rhoe, 1., auxw, aux::div_grad_e);
 
+
     // Collectively convert swave to physical space using parallel FFTs
+    // In physical space, we'll employ a view to reshape the four-dimensional
+    // data stored (F, X, Z, Y) a 2D (F, X*Z*Y) layout.  Reducing the
+    // dimensionality encourages linear access and eases indexing overhead.
+    suzerain::multi_array::ref<real_t,2> sphys(
+            reinterpret_cast<real_t *>(swave.origin()),
+            make_collection_of_two<std::size_t>(
+                swave.shape()[0],
+                dgrid.local_physical_extent.prod()),
+            make_collection_of_two<std::size_t>(
+                swave.strides()[0] * sizeof(complex_t)/sizeof(real_t), 0),
+            suzerain::storage::noninterleaved<2>());
     for (std::size_t i = 0; i < channel::field::count; ++i) {
-        dgrid.transform_wave_to_physical(
-                reinterpret_cast<real_t *>(swave[i].origin()));
+        dgrid.transform_wave_to_physical(sphys[i].origin());
     }
     for (std::size_t i = 0; i < aux::count; ++i) {
-        dgrid.transform_wave_to_physical(
-                reinterpret_cast<real_t *>(auxw[i].origin()));
+        dgrid.transform_wave_to_physical(auxp[i].origin());
     }
-
-    // Compute nonlinear operator
 
     // Retrieve constants and compute derived constants
     const real_t beta             = scenario.beta;
@@ -443,8 +465,7 @@ real_t NonlinearOperator::applyOperator(
 
     // Collectively convert state to wave space using parallel FFTs
     for (std::size_t i = 0; i < channel::field::count; ++i) {
-        dgrid.transform_physical_to_wave(
-                reinterpret_cast<real_t *>(swave[i].origin()));
+        dgrid.transform_physical_to_wave(sphys[i].origin());
     }
 
     // Convert collocation point values to Bspline coefficients
