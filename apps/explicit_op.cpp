@@ -22,7 +22,7 @@
 //
 //--------------------------------------------------------------------------
 //
-// explicit_n.hpp: Nonlinear operators for channel_explicit
+// explicit_op.hpp: Nonlinear operators for channel_explicit
 //
 // $Id$
 //--------------------------------------------------------------------------
@@ -42,7 +42,7 @@
 #include <suzerain/orthonormal.hpp>
 #include <suzerain/utility.hpp>
 
-#include "explicit_n.hpp"
+#include "explicit_op.hpp"
 
 #pragma warning(disable:383 1572)
 

@@ -41,7 +41,7 @@ channel_init_LDADD    = libchannel.la
 
 bin_PROGRAMS             += channel_explicit
 channel_explicit_SOURCES  = channel_explicit.cpp
-channel_explicit_SOURCES += explicit_n.cpp explicit_n.hpp
+channel_explicit_SOURCES += explicit_op.cpp explicit_op.hpp
 channel_explicit_LDADD    = libchannel.la
 
 bin_PROGRAMS         += channel_mean

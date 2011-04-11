@@ -22,7 +22,7 @@
 //
 //--------------------------------------------------------------------------
 //
-// explicit_n.hpp: Nonlinear operators for channel_explicit
+// explicit_op.hpp: Nonlinear operators for channel_explicit
 //
 // $Id$
 //--------------------------------------------------------------------------

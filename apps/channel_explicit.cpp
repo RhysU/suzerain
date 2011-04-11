@@ -55,7 +55,7 @@
 #include "logger.hpp"
 #include "precision.hpp"
 #include "channel.hpp"
-#include "explicit_n.hpp"
+#include "explicit_op.hpp"
 
 #pragma warning(disable:383 1572)
 
