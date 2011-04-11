@@ -44,28 +44,17 @@
 
 namespace channel {
 
-class NonlinearOperator
-    : public suzerain::timestepper::INonlinearOperator<
-            suzerain::NoninterleavedState<4,complex_t>
-      >
+/** Helper infrastructure for nonlinear operator implementations. */
+class NonlinearOperatorBase
 {
-
 public:
-    typedef suzerain::NoninterleavedState<4,complex_t> state_type;
 
-    NonlinearOperator(
+    NonlinearOperatorBase(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
-            suzerain::bspline &b,
-            const suzerain::bsplineop &bop,
-            const suzerain::bsplineop_luz &bopluz);
-
-    virtual real_t applyOperator(
-            suzerain::NoninterleavedState<4,complex_t> &state,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
-            const bool delta_t_requested = false) const;
+            const suzerain::bsplineop &bop)
+        : scenario(scenario), grid(grid), dgrid(dgrid), bop(bop) {}
 
 protected:
 
@@ -73,16 +62,15 @@ protected:
     const suzerain::problem::GridDefinition &grid;
     const suzerain::pencil_grid &dgrid;
     const suzerain::bsplineop &bop;
-    const suzerain::bsplineop_luz &bopluz;
 
-    Eigen::ArrayXr one_over_delta_y;
-
+    /** Obtain a real-valued pointer to the scalar field's origin. */
     template<typename MultiArray>
     static real_t * real_origin(MultiArray &x, int ndx)
     {
         return reinterpret_cast<real_t *>(x[ndx].origin());
     }
 
+    /** Shorthand for scaled operator accumulation */
     template<typename AlphaType, typename MultiArrayX,
              typename BetaType,  typename MultiArrayY>
     int bop_accumulate(
@@ -101,6 +89,7 @@ protected:
                 beta,   y[ndx_y].origin(), y.strides()[1], y.strides()[2]);
     }
 
+    /** Shorthand for scaled operator application */
     template<typename AlphaType, typename MultiArray>
     int bop_apply(
             int nderiv, const AlphaType& alpha, MultiArray &x, int ndx) const
@@ -113,6 +102,7 @@ protected:
                 alpha,  x[ndx].origin(), x.strides()[1], x.strides()[2]);
     }
 
+    /** Shorthand for wave space-based differentiation accumulation */
     template<typename MultiArrayX, typename MultiArrayY>
     void diffwave_accumulate(int dxcnt,
                              int dzcnt,
@@ -142,6 +132,7 @@ protected:
                 dgrid.local_wave_end.z());
     }
 
+    /** Shorthand for wave space-based differentiation application */
     template<typename MultiArray>
     void diffwave_apply(int dxcnt,
                         int dzcnt,
@@ -164,7 +155,39 @@ protected:
                 dgrid.local_wave_end.z());
     }
 
-private:
+};
+
+/**
+ * A boundary-condition agnostic, fully explicit Navier&ndash;Stokes operator.
+ */
+class NonlinearOperator
+    : public NonlinearOperatorBase,
+      public suzerain::timestepper::INonlinearOperator<
+            suzerain::NoninterleavedState<4,complex_t>
+      >
+{
+
+public:
+    typedef suzerain::NoninterleavedState<4,complex_t> state_type;
+
+    NonlinearOperator(
+            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::GridDefinition &grid,
+            const suzerain::pencil_grid &dgrid,
+            suzerain::bspline &b,
+            const suzerain::bsplineop &bop,
+            const suzerain::bsplineop_luz &massluz);
+
+    virtual real_t applyOperator(
+            suzerain::NoninterleavedState<4,complex_t> &state,
+            const real_t evmaxmag_real,
+            const real_t evmaxmag_imag,
+            const bool delta_t_requested = false) const;
+
+protected:
+
+    const suzerain::bsplineop_luz &massluz;
+    Eigen::ArrayXr one_over_delta_y;
 
     // Auxiliary scalar-field storage used within applyOperator
     mutable state_type auxf;
@@ -193,7 +216,11 @@ private:
 
 };
 
-class NonlinearOperatorWithBoundaryConditions : public NonlinearOperator
+/**
+ * A fully explicit Navier&ndash;Stokes operator for isothermal boundaries.
+ */
+class NonlinearOperatorWithBoundaryConditions
+    : public NonlinearOperator
 {
 
 public:
@@ -206,7 +233,7 @@ public:
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
-            const suzerain::bsplineop_luz &bopluz);
+            const suzerain::bsplineop_luz &massluz);
 
     virtual real_t applyOperator(
             suzerain::NoninterleavedState<4,complex_t> &state,

@@ -54,12 +54,9 @@ NonlinearOperator::NonlinearOperator(
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
-        const suzerain::bsplineop_luz &bopluz)
-    : scenario(scenario),
-      grid(grid),
-      dgrid(dgrid),
-      bop(bop),
-      bopluz(bopluz),
+        const suzerain::bsplineop_luz &massluz)
+    : NonlinearOperatorBase(scenario, grid, dgrid, bop),
+      massluz(massluz),
       auxf(suzerain::to_yxz(aux::count, dgrid.local_wave_extent),
               suzerain::prepend(dgrid.local_wave_storage(),
                   suzerain::strides_cm(
@@ -451,16 +448,16 @@ real_t NonlinearOperator::applyOperator(
     }
 
     // Convert collocation point values to Bspline coefficients
-    bopluz.solve(state.shape()[2]*state.shape()[3],
-                 state[ndx::rho].origin(), 1, state.shape()[1]);
-    bopluz.solve(state.shape()[2]*state.shape()[3],
-                 state[ndx::rhou].origin(), 1, state.shape()[1]);
-    bopluz.solve(state.shape()[2]*state.shape()[3],
-                 state[ndx::rhov].origin(), 1, state.shape()[1]);
-    bopluz.solve(state.shape()[2]*state.shape()[3],
-                 state[ndx::rhow].origin(), 1, state.shape()[1]);
-    bopluz.solve(state.shape()[2]*state.shape()[3],
-                 state[ndx::rhoe].origin(), 1, state.shape()[1]);
+    massluz.solve(state.shape()[2]*state.shape()[3],
+                  state[ndx::rho].origin(), 1, state.shape()[1]);
+    massluz.solve(state.shape()[2]*state.shape()[3],
+                  state[ndx::rhou].origin(), 1, state.shape()[1]);
+    massluz.solve(state.shape()[2]*state.shape()[3],
+                  state[ndx::rhov].origin(), 1, state.shape()[1]);
+    massluz.solve(state.shape()[2]*state.shape()[3],
+                  state[ndx::rhow].origin(), 1, state.shape()[1]);
+    massluz.solve(state.shape()[2]*state.shape()[3],
+                  state[ndx::rhoe].origin(), 1, state.shape()[1]);
 
     // Perform Allreduce on stable time step sizes when necessary
     // Note delta_t_candidates aliases {convective,diffusive}_delta_t
@@ -483,8 +480,8 @@ NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
-        const suzerain::bsplineop_luz &bopluz)
-    : NonlinearOperator(scenario, grid, dgrid, b, bop, bopluz)
+        const suzerain::bsplineop_luz &massluz)
+    : NonlinearOperator(scenario, grid, dgrid, b, bop, massluz)
 {
     // Obtain integration coefficients
     bintcoeff.resize(b.n(), 1);
