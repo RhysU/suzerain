@@ -56,6 +56,38 @@ static boost::array<T,2> make_collection_of_two(const T& x, const T& y)
 
 namespace channel {
 
+NonlinearOperatorBase::NonlinearOperatorBase(
+            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::GridDefinition &grid,
+            const suzerain::pencil_grid &dgrid,
+            suzerain::bspline &b,
+            const suzerain::bsplineop &bop)
+    : scenario(scenario),
+      grid(grid),
+      dgrid(dgrid),
+      bop(bop),
+      one_over_delta_x(scenario.Lx / grid.N.x() /* !dN.x() */),
+      one_over_delta_z(scenario.Lz / grid.N.z() /* !dN.z() */),
+      y_(boost::extents[boost::multi_array_types::extent_range(
+              dgrid.local_physical_start.y(), dgrid.local_physical_end.y())]),
+      one_over_delta_y_(boost::extents[boost::multi_array_types::extent_range(
+              dgrid.local_physical_start.y(), dgrid.local_physical_end.y())])
+{
+    // Compute y collocation point locations and spacing local to this rank
+    for (int j = dgrid.local_physical_start.y();
+         j < dgrid.local_physical_end.y();
+         ++j) {
+
+        y_[j] = b.collocation_point(j);
+        const int jm = (j == 0        ) ? 1         : j - 1;
+        const int jp = (j == b.n() - 1) ? b.n() - 2 : j + 1;
+        const real_t delta_y = std::min(
+                std::abs(b.collocation_point(jm) - y_[j]),
+                std::abs(b.collocation_point(jp) - y_[j]));
+        one_over_delta_y_[j] = 1.0 / delta_y;
+    }
+}
+
 NonlinearOperator::NonlinearOperator(
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
@@ -63,7 +95,7 @@ NonlinearOperator::NonlinearOperator(
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
         const suzerain::bsplineop_luz &massluz)
-    : NonlinearOperatorBase(scenario, grid, dgrid, bop),
+    : NonlinearOperatorBase(scenario, grid, dgrid, b, bop),
       massluz(massluz),
       auxw(suzerain::to_yxz(aux::count, dgrid.local_wave_extent),
               suzerain::prepend(dgrid.local_wave_storage(),
@@ -76,25 +108,7 @@ NonlinearOperator::NonlinearOperator(
                auxw.strides()[0] * sizeof(complex_t)/sizeof(real_t), 0),
            suzerain::storage::noninterleaved<2>())
 {
-    // Allocate array holding \frac{1}{\Delta{}y} grid spacing
-    one_over_delta_y.resize(grid.N.y());
-
-    // Determine minimum delta y observable from each collocation point
-    one_over_delta_y[0] = std::abs(                          // First point
-            b.collocation_point(1) - b.collocation_point(0));
-    for (int i = 1; i < grid.N.y() - 1; ++i) {               // Intermediates
-        one_over_delta_y[i] = std::min(
-                std::abs(b.collocation_point(i)   - b.collocation_point(i-1)),
-                std::abs(b.collocation_point(i+1) - b.collocation_point(i))
-            );
-    }
-    one_over_delta_y[grid.N.y() - 1] = std::abs(             // Last point
-                b.collocation_point(grid.N.y()-2)
-                - b.collocation_point(grid.N.y()-1)
-            );
-
-    // Invert to find \frac{1}{\Delta{}y}
-    one_over_delta_y = one_over_delta_y.inverse();
+    // NOP
 }
 
 real_t NonlinearOperator::applyOperator(
@@ -124,8 +138,6 @@ real_t NonlinearOperator::applyOperator(
                                      std::numeric_limits<real_t>::max()  };
     real_t &convective_delta_t = delta_t_candidates[0];
     real_t &diffusive_delta_t  = delta_t_candidates[1];
-    const real_t one_over_delta_x = scenario.Lx / grid.N.x(); // !dNx
-    const real_t one_over_delta_z = scenario.Lz / grid.N.z(); // !dNz
 
     // Compute Y derivatives of density at collocation points
     bop_accumulate(1, 1., swave, ndx::rho, 0., auxw, aux::rho_y);
@@ -245,55 +257,78 @@ real_t NonlinearOperator::applyOperator(
                           * dgrid.local_physical_extent.z();
     size_t ndx_y = stride_y * dgrid.local_physical_start.y();
 
+//  for (std::size_t j = dgrid.local_physical_start.y();
+//       j < dgrid.local_physical.end.y(); ++j) {
+//      const real_t yj = STARTHERE
+//      SUZERAIN_UNUSED(yj);
+
+//      for (std::size_t k = dgrid.local_physical_start.z();
+//          k < dgrid.local_physical.end.z(); ++k) {
+//          const real_t zk = k * scenario.Lz / grid.dN.z
+//                          - scenario.Lz / 2;
+//          SUZERAIN_UNUSED(zk);
+
+//          for (std::size_t i = dgrid.local_physical_start.x();
+//              i < dgrid.local_physical.end.x(); ++i) {
+//              const real_t xi = i * scenario.Lx / grid.dN.x
+//                              - scenario.Lx / 2;
+//              SUZERAIN_UNUSED(xi);
+
+//          } // end X
+
+//      } // end Z
+
+//  } // end Y
+
     // Walk physical space swave storage linearly
     for (// Loop initialization
-         real_t *p_rho        = real_origin(swave, ndx::rho),
-                *p_rho_x      = real_origin(auxw,  aux::rho_x),
-                *p_rho_y      = real_origin(auxw,  aux::rho_y),
-                *p_rho_z      = real_origin(auxw,  aux::rho_z),
-                *p_rho_xx     = real_origin(auxw,  aux::rho_xx),
-                *p_rho_xy     = real_origin(auxw,  aux::rho_xy),
-                *p_rho_xz     = real_origin(auxw,  aux::rho_xz),
-                *p_rho_yy     = real_origin(auxw,  aux::rho_yy),
-                *p_rho_yz     = real_origin(auxw,  aux::rho_yz),
-                *p_rho_zz     = real_origin(auxw,  aux::rho_zz),
-                *p_mx         = real_origin(swave, ndx::rhou),
-                *p_mx_x       = real_origin(auxw,  aux::mx_x),
-                *p_mx_y       = real_origin(auxw,  aux::mx_y),
-                *p_mx_z       = real_origin(auxw,  aux::mx_z),
-                *p_mx_xx      = real_origin(auxw,  aux::mx_xx),
-                *p_mx_xy      = real_origin(auxw,  aux::mx_xy),
-                *p_mx_xz      = real_origin(auxw,  aux::mx_xz),
-                *p_mx_yy      = real_origin(auxw,  aux::mx_yy),
-                *p_mx_yz      = real_origin(auxw,  aux::mx_yz),
-                *p_mx_zz      = real_origin(auxw,  aux::mx_zz),
-                *p_my         = real_origin(swave, ndx::rhov),
-                *p_my_x       = real_origin(auxw,  aux::my_x),
-                *p_my_y       = real_origin(auxw,  aux::my_y),
-                *p_my_z       = real_origin(auxw,  aux::my_z),
-                *p_my_xx      = real_origin(auxw,  aux::my_xx),
-                *p_my_xy      = real_origin(auxw,  aux::my_xy),
-                *p_my_xz      = real_origin(auxw,  aux::my_xz),
-                *p_my_yy      = real_origin(auxw,  aux::my_yy),
-                *p_my_yz      = real_origin(auxw,  aux::my_yz),
-                *p_my_zz      = real_origin(auxw,  aux::my_zz),
-                *p_mz         = real_origin(swave, ndx::rhow),
-                *p_mz_x       = real_origin(auxw,  aux::mz_x),
-                *p_mz_y       = real_origin(auxw,  aux::mz_y),
-                *p_mz_z       = real_origin(auxw,  aux::mz_z),
-                *p_mz_xx      = real_origin(auxw,  aux::mz_xx),
-                *p_mz_xy      = real_origin(auxw,  aux::mz_xy),
-                *p_mz_xz      = real_origin(auxw,  aux::mz_xz),
-                *p_mz_yy      = real_origin(auxw,  aux::mz_yy),
-                *p_mz_yz      = real_origin(auxw,  aux::mz_yz),
-                *p_mz_zz      = real_origin(auxw,  aux::mz_zz),
-                *p_e          = real_origin(swave, ndx::rhoe),
-                *p_e_x        = real_origin(auxw,  aux::e_x),
-                *p_e_y        = real_origin(auxw,  aux::e_y),
-                *p_e_z        = real_origin(auxw,  aux::e_z),
-                *p_div_grad_e = real_origin(auxw,  aux::div_grad_e);
+         real_t *p_rho        = sphys[ndx::rho].origin(),
+                *p_rho_x      = auxp[aux::rho_x].origin(),
+                *p_rho_y      = auxp[aux::rho_y].origin(),
+                *p_rho_z      = auxp[aux::rho_z].origin(),
+                *p_rho_xx     = auxp[aux::rho_xx].origin(),
+                *p_rho_xy     = auxp[aux::rho_xy].origin(),
+                *p_rho_xz     = auxp[aux::rho_xz].origin(),
+                *p_rho_yy     = auxp[aux::rho_yy].origin(),
+                *p_rho_yz     = auxp[aux::rho_yz].origin(),
+                *p_rho_zz     = auxp[aux::rho_zz].origin(),
+                *p_mx         = sphys[ndx::rhou].origin(),
+                *p_mx_x       = auxp[aux::mx_x].origin(),
+                *p_mx_y       = auxp[aux::mx_y].origin(),
+                *p_mx_z       = auxp[aux::mx_z].origin(),
+                *p_mx_xx      = auxp[aux::mx_xx].origin(),
+                *p_mx_xy      = auxp[aux::mx_xy].origin(),
+                *p_mx_xz      = auxp[aux::mx_xz].origin(),
+                *p_mx_yy      = auxp[aux::mx_yy].origin(),
+                *p_mx_yz      = auxp[aux::mx_yz].origin(),
+                *p_mx_zz      = auxp[aux::mx_zz].origin(),
+                *p_my         = sphys[ndx::rhov].origin(),
+                *p_my_x       = auxp[aux::my_x].origin(),
+                *p_my_y       = auxp[aux::my_y].origin(),
+                *p_my_z       = auxp[aux::my_z].origin(),
+                *p_my_xx      = auxp[aux::my_xx].origin(),
+                *p_my_xy      = auxp[aux::my_xy].origin(),
+                *p_my_xz      = auxp[aux::my_xz].origin(),
+                *p_my_yy      = auxp[aux::my_yy].origin(),
+                *p_my_yz      = auxp[aux::my_yz].origin(),
+                *p_my_zz      = auxp[aux::my_zz].origin(),
+                *p_mz         = sphys[ndx::rhow].origin(),
+                *p_mz_x       = auxp[aux::mz_x].origin(),
+                *p_mz_y       = auxp[aux::mz_y].origin(),
+                *p_mz_z       = auxp[aux::mz_z].origin(),
+                *p_mz_xx      = auxp[aux::mz_xx].origin(),
+                *p_mz_xy      = auxp[aux::mz_xy].origin(),
+                *p_mz_xz      = auxp[aux::mz_xz].origin(),
+                *p_mz_yy      = auxp[aux::mz_yy].origin(),
+                *p_mz_yz      = auxp[aux::mz_yz].origin(),
+                *p_mz_zz      = auxp[aux::mz_zz].origin(),
+                *p_e          = sphys[ndx::rhoe].origin(),
+                *p_e_x        = auxp[aux::e_x].origin(),
+                *p_e_y        = auxp[aux::e_y].origin(),
+                *p_e_z        = auxp[aux::e_z].origin(),
+                *p_div_grad_e = auxp[aux::div_grad_e].origin();
          // Loop completion test
-         p_rho != real_origin(swave, ndx::rho) + dgrid.local_physical_extent.prod();
+         p_rho != sphys[ndx::rho].origin() + dgrid.local_physical_extent.prod();
          // Loop increment
          ++p_rho,
          ++p_rho_x,
@@ -450,7 +485,7 @@ real_t NonlinearOperator::applyOperator(
                 convective_delta_t,
                 suzerain::timestepper::convective_stability_criterion(
                         u.x(), one_over_delta_x,
-                        u.y(), one_over_delta_y[ndx_y / stride_y],
+                        u.y(), one_over_delta_y(ndx_y / stride_y),
                         u.z(), one_over_delta_z,
                         evmaxmag_real,
                         std::sqrt(T)) /* nondimensional a = sqrt(T) */);
@@ -458,7 +493,7 @@ real_t NonlinearOperator::applyOperator(
                 diffusive_delta_t,
                 suzerain::timestepper::diffusive_stability_criterion(
                         one_over_delta_x,
-                        one_over_delta_y[ndx_y / stride_y],
+                        one_over_delta_y(ndx_y / stride_y),
                         one_over_delta_z,
                         Re, Pr, gamma, evmaxmag_imag, mu / rho));
     }

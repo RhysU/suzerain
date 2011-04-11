@@ -53,8 +53,8 @@ public:
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
-            const suzerain::bsplineop &bop)
-        : scenario(scenario), grid(grid), dgrid(dgrid), bop(bop) {}
+            suzerain::bspline &b,
+            const suzerain::bsplineop &bop);
 
 protected:
 
@@ -62,13 +62,6 @@ protected:
     const suzerain::problem::GridDefinition &grid;
     const suzerain::pencil_grid &dgrid;
     const suzerain::bsplineop &bop;
-
-    /** Obtain a real-valued pointer to the scalar field's origin. */
-    template<typename MultiArray>
-    static real_t * real_origin(MultiArray &x, int ndx)
-    {
-        return reinterpret_cast<real_t *>(x[ndx].origin());
-    }
 
     /** Shorthand for scaled operator accumulation */
     template<typename AlphaType, typename MultiArrayX,
@@ -155,6 +148,30 @@ protected:
                 dgrid.local_wave_end.z());
     }
 
+    // Only valid for j \in dgrid.local_physical_{start,end}.y()
+    real_t x(std::size_t i) const {
+        return i * scenario.Lx / grid.dN.x() - scenario.Lx / 2;
+    }
+
+    real_t y(std::size_t j) const {
+        return y_[j];
+    }
+
+    real_t z(std::size_t k) const {
+        return k * scenario.Lz / grid.dN.z() - scenario.Lz / 2;
+    }
+
+    // Only valid for j \in dgrid.local_physical_{start,end}.y()
+    real_t one_over_delta_y(std::size_t j) const {
+        return one_over_delta_y_[j];
+    }
+
+    const real_t one_over_delta_x;
+    const real_t one_over_delta_z;
+
+private:
+    boost::multi_array<real_t,1> y_;
+    boost::multi_array<real_t,1> one_over_delta_y_;
 };
 
 /**
@@ -186,8 +203,8 @@ public:
 
 protected:
 
+    /** Pre-factored B-spline collocation mass matrix */
     const suzerain::bsplineop_luz &massluz;
-    Eigen::ArrayXr one_over_delta_y;
 
     /** Auxiliary scalar-field storage used within applyOperator */
     mutable state_type auxw;
