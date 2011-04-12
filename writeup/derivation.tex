@@ -628,14 +628,14 @@ u^h(x,y,z,t)
   \sum_{l=0}^{N_y - 1}
   \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
   \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
-  \hat{u}_{l,m,n}(t)
+  \hat{u}_{l m n}(t)
   B_l\!\left(y\right)
   e^{\ii\frac{2\pi{}m}{L_x}x}
   e^{\ii\frac{2\pi{}n}{L_z}z}
   \\
 &=
   \sum_{l}\sum_{m}\sum_{n}
-  \hat{u}_{l,m,n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+  \hat{u}_{l m n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
   \label{eq:u_h_expansion}
 \end{align}
 where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
@@ -682,7 +682,7 @@ term separately we obtain the following:
  &\frac{\partial}{\partial{}t}
   \left(
     \sum_{l}\sum_{m}\sum_{n}
-    \hat{u}_{l,m,n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+    \hat{u}_{l m n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
   \right)
   \left(
     \delta(y-y_{l'}) e^{-\ii k_{m'} x}e^{-\ii k_{n'} z}
@@ -691,7 +691,7 @@ term separately we obtain the following:
 \\
   &=
   L_x L_z \sum_{l} B_l\!\left(y_{l'}\right)
-  \frac{\partial}{\partial{}t} \hat{u}_{l,m,n}(t)
+  \frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
 \\
  \int_0^{L_y}
  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
@@ -700,7 +700,7 @@ term separately we obtain the following:
  &\mathscr{L}
   \left(
     \sum_{l}\sum_{m}\sum_{n}
-    \hat{u}_{l,m,n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+    \hat{u}_{l m n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
   \right)
   \left(
     \delta(y-y_{l'}) e^{-\ii k_{m'} x}e^{-\ii k_{n'} z}
@@ -712,7 +712,7 @@ term separately we obtain the following:
   \mathscr{L}\left(
      \sum_{l}
       B_l\!\left(y_{l'}\right)
-     \hat{u}_{l,m,n}(t)
+     \hat{u}_{l m n}(t)
    \right)
 \\
   \int_0^{L_y}
@@ -720,7 +720,7 @@ term separately we obtain the following:
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
   &\mathscr{N}\left(
      \sum_{l}\sum_{m}\sum_{n}
-     \hat{u}_{l,m,n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+     \hat{u}_{l m n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
    \right)
    \left(
      \delta(y-y_{l'}) e^{-\ii k_{m'} x}e^{-\ii k_{n'} z}
@@ -734,7 +734,7 @@ term separately we obtain the following:
     \sum_{m}\sum_{n}
     \left(
       \sum_{l} B_l\!\left(y_{l'}\right)
-      \hat{u}_{l,m,n}(t)
+      \hat{u}_{l m n}(t)
     \right)
     e^{\ii k_m x}e^{\ii k_n z}
   \right)
@@ -747,13 +747,13 @@ term separately we obtain the following:
 }
   L_x L_z
   \sum_{l} B_l\!\left(y_{l'}\right)
-  \frac{\partial}{\partial{}t} \hat{u}_{l,m,n}(t)
+  \frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
   &=
   L_x L_z
   \mathscr{L}\left(
     \sum_{l}
      B_l\!\left(y_{l'}\right)
-    \hat{u}_{l,m,n}(t)
+    \hat{u}_{l m n}(t)
   \right)
 \\
   &{}+
@@ -763,7 +763,7 @@ term separately we obtain the following:
     \sum_{m}\sum_{n}
     \left(
       \sum_{l} B_l\!\left(y_{l'}\right)
-      \hat{u}_{l,m,n}(t)
+      \hat{u}_{l m n}(t)
     \right)
     e^{\ii k_m x}e^{\ii k_n z}
   \right)
@@ -779,14 +779,14 @@ by $N_x$ and $N_z$ leaves us with
 \begin{align}
   L_x L_z N_x N_z
   &\sum_{l} B_l\!\left(y_{l'}\right)
-  \frac{\partial}{\partial{}t} \hat{u}_{l,m,n}(t)
+  \frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
 \\
   &\approx
   L_x L_z N_x N_z
   \mathscr{L}\left(
     \sum_{l}
      B_l\!\left(y_{l'}\right)
-    \hat{u}_{l,m,n}(t)
+    \hat{u}_{l m n}(t)
   \right)
 \\
   &{}+
@@ -796,7 +796,7 @@ by $N_x$ and $N_z$ leaves us with
     \sum_{n}
     \left(
       \sum_{l} B_l\!\left(y_{l'}\right)
-      \hat{u}_{l,m,n}(t)
+      \hat{u}_{l m n}(t)
     \right)
     e^{\ii k_m x_{m'}}e^{\ii k_n z_{n'}}
   \right)
@@ -816,12 +816,12 @@ containing $N_y$ equations coupled in the $x$ and $z$ directions only through
 discrete Fourier transforms and the requirements of the $\mathscr{L}$ and
 $\mathscr{N}$ operators.
 
-Calling $\hat{u}_{l,m,n}(t)$ the wave space coefficients of the solution at
+Calling $\hat{u}_{l m n}(t)$ the wave space coefficients of the solution at
 some time $t$, the nonlinear portion of \eqref{eq:spatial_discretization} may
 be efficiently computed by
 \begin{enumerate}
  \item performing $\mathcal{O}\!\left(m\times{}n\right)$ matrix-vector products
-       like $\sum_{l} B_l\!\left(y_{l'}\right) \hat{u}_{l,m,n}(t)$,
+       like $\sum_{l} B_l\!\left(y_{l'}\right) \hat{u}_{l m n}(t)$,
  \item using an inverse fast Fourier transform across
        the $x$ and $z$ directions to convert state information from wave space
        to physical space,
@@ -836,21 +836,21 @@ into the mass matrix allows us to hide the cost of normalizing the forward fast
 Fourier transform.  We retain the mass matrix on the same side as the time
 derivative in anticipation of the time discretization scheme.
 
-Rather than time advancing the B-spline coefficients $\hat{u}_{l,m,n}(t)$ as
+Rather than time advancing the B-spline coefficients $\hat{u}_{l m n}(t)$ as
 state, one could instead instead advance the wavenumber-dependent collocation
-point values $\hat{u}_{y_{l'},m,n}(t) = \sum_{l} B_l\!\left(y_{l'}\right)
-\hat{u}_{l,m,n}(t)$.  Then \eqref{eq:spatial_discretization} would become
+point values $\hat{u}_{y_{l'} m n}(t) = \sum_{l} B_l\!\left(y_{l'}\right)
+\hat{u}_{l m n}(t)$.  Then \eqref{eq:spatial_discretization} would become
 \begin{align}
-  \frac{\partial}{\partial{}t} \hat{u}_{y_{l'},m,n}(t)
+  \frac{\partial}{\partial{}t} \hat{u}_{y_{l'} m n}(t)
   &\approx
-  \mathscr{L}\left(\hat{u}_{y_{l'},m,n}(t)\right)
+  \mathscr{L}\left(\hat{u}_{y_{l'} m n}(t)\right)
   +
   \frac{1}{L_x L_z N_x N_z}
   \sum_{m'} \sum_{n'}
   \mathscr{N}\left(
     \sum_{m}
     \sum_{n}
-    \hat{u}_{y_{l'},m,n}(t)
+    \hat{u}_{y_{l'} m n}(t)
     e^{\ii k_m x_{m'}}e^{\ii k_n z_{n'}}
   \right)
   \left(
@@ -861,13 +861,7 @@ point values $\hat{u}_{y_{l'},m,n}(t) = \sum_{l} B_l\!\left(y_{l'}\right)
 \end{align}
 Equation \eqref{eq:spatial_discretization_gridpoints} is obviously simpler than
 equation \eqref{eq:spatial_discretization}.  In particular, it lacks a mass
-matrix in the time derivative term.  We choose to work with
-\eqref{eq:spatial_discretization} because there are computational advantages to
-having operators $\mathscr{L}$ and $\mathscr{N}$ operate on B-spline
-coefficients rather than collocation point values.  For a discussion on moving
-operators between these two representations, see \textsection{}5.5
-in~\cite{Boyd2001}.
-
+matrix in the time derivative term.
 
 \subsection{Time discretization}
 
@@ -879,9 +873,10 @@ advances the system
 \end{align}
 from $u(t)$ to $u\left( t+\Delta{}t \right)$.  Here $L$ and $N$ are a linear
 and nonlinear operator, respectively, distinct from but related to the
-preceeding sections' $\mathscr{L}$ and $\mathscr{N}$.  Both operators must be
-time-independent.  The SMR scheme advances according to the following
-equations:
+preceeding section's $\mathscr{L}$ and $\mathscr{N}$ (see
+\textsection\ref{sec:combineddiscretization} for the exact relationships).
+Both operators must be time-independent.  The SMR scheme advances according to
+the following equations:
 \begin{subequations}
 \begin{align}
   u'
@@ -1063,6 +1058,76 @@ computation follows algorithm \vref{alg:step}.
 \end{algorithmic}
 \end{algorithm}
 
+\subsection{Combined space and time discretization}
+\label{sec:combineddiscretization}
+
+Using \eqref{eq:generaloperatormasssubstep} to advance state
+$\hat{u}_{l m n}(t)$ following \eqref{eq:spatial_discretization} gives
+the time-independent discrete operators
+\begin{subequations}
+\begin{align}
+   M u\bigr|_{m n}
+&= L_x L_z N_x N_z
+   \sum_{l} B_l\!\left(y_{l'}\right)
+   \hat{u}_{l m n}
+\\
+   \left.\tilde{L} u\right|_{m n}
+&= L_x L_z N_x N_z
+   \mathscr{L}\left(
+     \sum_{l}
+     B_l\!\left(y_{l'}\right)
+     \hat{u}_{l m n}
+   \right)
+\\
+   \left.\tilde{N}\!\left(u\right)\right|_{m n}
+&= \sum_{m'} \sum_{n'}
+   \mathscr{N}\left(
+     \sum_{m}
+     \sum_{n}
+     \left(
+       \sum_{l} B_l\!\left(y_{l'}\right)
+       \hat{u}_{l m n}
+     \right)
+     e^{\ii k_m x_{m'}}e^{\ii k_n z_{n'}}
+   \right)
+   \left(
+     e^{-\ii k_{m'} x_m}e^{-\ii k_{n'} z_n}
+   \right)
+\end{align}
+\end{subequations}
+while advancing state $\hat{u}_{y_{l'} m n}(t)$ following
+\eqref{eq:spatial_discretization_gridpoints} fixes them instead as
+\begin{subequations}
+\begin{align}
+   M u\bigr|_{m n}
+&= \hat{u}_{y_{l'} m n}
+\\
+   \left.\tilde{L} u\right|_{m n}
+&= \mathscr{L}\left(\hat{u}_{y_{l'} m n}\right)
+\\
+   \left.\tilde{N}\!\left(u\right)\right|_{m n}
+&= \frac{1}{L_x L_z N_x N_z}
+   \sum_{m'} \sum_{n'}
+   \mathscr{N}\left(
+     \sum_{m}
+     \sum_{n}
+     \hat{u}_{y_{l'} m n}
+     e^{\ii k_m x_{m'}}e^{\ii k_n z_{n'}}
+   \right)
+   \left(
+     e^{-\ii k_{m'} x_m}e^{-\ii k_{n'} z_n}
+   \right)
+\end{align}
+\end{subequations}
+Notice that the scaling factors on both $\tilde{L}$ and $\tilde{N}$ differ
+between \eqref{eq:spatial_discretization} and
+\eqref{eq:spatial_discretization_gridpoints}.
+
+We choose to work with \eqref{eq:spatial_discretization} because there are
+computational advantages to having $\mathscr{L}$ and $\mathscr{N}$ operate on
+B-spline coefficients rather than collocation point values.  For a discussion
+on moving operators between these two representations, see \textsection{}5.5
+in~\cite{Boyd2001}.
 
 \section{Numerical considerations}
 
