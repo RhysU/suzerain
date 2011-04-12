@@ -703,7 +703,6 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
     }
 
-
     // Temporary storage for inner product computations
     Eigen::VectorXc tmp;
     tmp.setZero(grid.N.y());
@@ -717,30 +716,24 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
     // Compute the local L2 contribution towards each L^2 norm squared
     total2.setZero();
     for (size_t k = 0; k < field::count; ++k) {
-        for (int n = mzb[0]; n < mze[0]; ++n) {
-            for (int m = mxb[0]; m < mxe[0]; ++m) {
-                const complex_t * u_mn = &state[k][0][m - mxb[0]][n - mzb[0]];
-                gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
-                complex_t dot = suzerain::blas::dot(grid.N.y(), u_mn, 1,
-                                                                tmp.data(), 1);
-                if (m > 0 && m < grid.N.x()/2) dot *= 2;
-                total2[k] += dot;
-            }
-        }
-        for (int n = mzb[1]; n < mze[1]; ++n) {
-            for (int m = mxb[0]; m < mxe[0]; ++m) {
-                const complex_t * u_mn = &state[k][0][m - mxb[0]][n - mzb[1]];
-                gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
-                complex_t dot = suzerain::blas::dot(grid.N.y(), u_mn, 1,
-                                                                tmp.data(), 1);
-                if (m > 0 && m < grid.N.x()/2) dot *= 2;
-                total2[k] += dot;
+        for (int j = 0; j < 2; ++j) {
+            for (int n = mzb[j]; n < mze[j]; ++n) {
+                for (int m = mxb[0]; m < mxe[0]; ++m) {
+                    const complex_t * u_mn = &state[k][0][m][n];
+                    gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
+                    complex_t dot = suzerain::blas::dot(
+                            grid.N.y(), u_mn, 1, tmp.data(), 1);
+                    if (m > 0 && m < grid.dN.x()/2) {
+                        dot *= 2;
+                    }
+                    total2[k] += dot;
+                }
             }
         }
     }
     total2 *= scenario.Lx * scenario.Lz;
 
-    // Reduce total2 sum onto processor with housing the zero-zero mode
+    // Reduce total2 sum onto processor housing the zero-zero mode
     SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE,
                 total2.data(), total2.size() * sizeof(complex_t)/sizeof(real_t),
                 suzerain::mpi::datatype<real_t>(),
@@ -752,7 +745,7 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
             const complex_t * u_mn = &state[k][0][0][0];
             gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
             mean2[k] = suzerain::blas::dot(grid.N.y(), u_mn, 1,
-                                                      tmp.data(), 1);
+                                                       tmp.data(), 1);
         }
         mean2 *= scenario.Lx * scenario.Lz;
     }
