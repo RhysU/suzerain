@@ -116,11 +116,11 @@ protected:
                 scenario.Lx, scenario.Lz,
                 dgrid.global_wave_extent.y(),
                 grid.N.x(),
-                dgrid.global_wave_extent.x(),
+                grid.dN.x(),
                 dgrid.local_wave_start.x(),
                 dgrid.local_wave_end.x(),
                 grid.N.z(),
-                dgrid.global_wave_extent.z(),
+                grid.dN.z(),
                 dgrid.local_wave_start.z(),
                 dgrid.local_wave_end.z());
     }
@@ -139,11 +139,11 @@ protected:
                 scenario.Lx, scenario.Lz,
                 dgrid.global_wave_extent.y(),
                 grid.N.x(),
-                dgrid.global_wave_extent.x(),
+                grid.dN.x(),
                 dgrid.local_wave_start.x(),
                 dgrid.local_wave_end.x(),
                 grid.N.z(),
-                dgrid.global_wave_extent.z(),
+                grid.dN.z(),
                 dgrid.local_wave_start.z(),
                 dgrid.local_wave_end.z());
     }
