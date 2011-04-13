@@ -452,11 +452,21 @@ NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
         const suzerain::bsplineop_luz &massluz)
-    : NonlinearOperator(scenario, grid, dgrid, b, bop, massluz)
+    : NonlinearOperator(scenario, grid, dgrid, b, bop, massluz),
+      has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
+                          && dgrid.local_wave_start.z() == 0)
 {
-    // Obtain integration coefficients
-    bintcoeff.resize(b.n(), 1);
-    b.integration_coefficients(0, bintcoeff.data());
+    // Additional details needed on constant-in-X, constant-in-Z mode
+    if (has_zero_zero_mode) {
+
+        // Obtain integration coefficients for obtaining bulk quantities
+        bintcoeff.resize(b.n(), 1);
+        b.integration_coefficients(0, bintcoeff.data());
+
+        // Allocate additional working storage
+        mean_rho.resizeLike(bintcoeff);
+        mean_rhou.resizeLike(bintcoeff);
+    }
 }
 
 real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
@@ -467,26 +477,24 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
 {
     namespace ndx = channel::field::ndx;
 
-    // Special handling occurs only on rank holding the "zero-zero" mode
-    const bool zero_zero_rank =    (dgrid.local_wave_start.x() == 0)
-                                && (dgrid.local_wave_start.z() == 0);
-
     // Precompute and store quantities necessary for BC implementation
-    Eigen::ArrayXr original_state_mx;
     real_t bulk_density = std::numeric_limits<real_t>::quiet_NaN();
-    if (zero_zero_rank) {
-        // Save a copy of the constant x-momentum modes
-        original_state_mx.resize(swave.shape()[1]);
-        for (std::size_t i = 0; i < swave.shape()[1]; ++i) {
-            original_state_mx[i]
-                = suzerain::complex::real(swave[ndx::rhou][i][0][0]);
+    if (has_zero_zero_mode) {
+
+        // Save mean density for later use
+        assert((unsigned) mean_rho.size() == swave.shape()[1]);
+        for (int i = 0; i < mean_rho.size(); ++i) {
+            mean_rho[i] = suzerain::complex::real(swave[ndx::rho][i][0][0]);
         }
 
-        // Compute the bulk density so we can hold it constant in time
-        bulk_density = suzerain::blas::dot(
-                bintcoeff.size(), bintcoeff.data(), 1,
-                reinterpret_cast<real_t *>(&swave[ndx::rho][0][0][0]),
-                sizeof(complex_t)/sizeof(real_t));
+        // Compute bulk density for later use
+        bulk_density = bintcoeff.matrix().dot(mean_rho.matrix());
+
+        // Save mean X momentum for later use
+        assert((unsigned) mean_rhou.size() == swave.shape()[1]);
+        for (int i = 0; i < mean_rhou.size(); ++i) {
+            mean_rhou[i] = suzerain::complex::real(swave[ndx::rhou][i][0][0]);
+        }
     }
 
     // Apply an operator that cares nothing about the boundaries
@@ -498,7 +506,7 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     const std::size_t upper_wall = swave.shape()[1] - 1; // index of wall
 
     // Add f_rho to mean density per writeup step (2)
-    if (zero_zero_rank) {
+    if (has_zero_zero_mode) {
         const real_t f_rho = suzerain::blas::dot(
                 bintcoeff.size(), bintcoeff.data(), 1,
                 reinterpret_cast<real_t *>(&swave[ndx::rho][0][0][0]),
@@ -533,7 +541,7 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     }
 
     // Apply f_{m_x} to mean x-momentum, mean energy
-    if (zero_zero_rank) {
+    if (has_zero_zero_mode) {
 
         // Compute temporary per writeup implementation step (5)
         real_t alpha = suzerain::blas::dot(
@@ -549,7 +557,7 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
         // Apply to non-wall mean energy right hand side per step (7)
         alpha /= bulk_density;
         for (std::size_t i = lower_wall + 1; i < upper_wall; ++i) {
-            swave[ndx::rhoe][i][0][0] -= alpha * original_state_mx[i];
+            swave[ndx::rhoe][i][0][0] -= alpha * mean_rhou[i];
         }
     }
 

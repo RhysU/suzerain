@@ -259,7 +259,12 @@ public:
             const bool delta_t_requested = false) const;
 
 protected:
+
+    const bool has_zero_zero_mode;
+
     Eigen::ArrayXr bintcoeff;
+    mutable Eigen::ArrayXr mean_rho;
+    mutable Eigen::ArrayXr mean_rhou;
 
 };
 
