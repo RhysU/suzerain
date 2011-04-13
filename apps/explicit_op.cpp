@@ -38,21 +38,12 @@
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/multi_array.hpp>
 #include <suzerain/orthonormal.hpp>
 #include <suzerain/utility.hpp>
 
 #include "explicit_op.hpp"
 
 #pragma warning(disable:383 1572)
-
-// Helper function to turn two values into a full Collection
-template<typename T>
-static boost::array<T,2> make_collection_of_two(const T& x, const T& y)
-{
-    boost::array<T,2> retval = {{ x, y }};
-    return retval;
-}
 
 namespace channel {
 
@@ -101,13 +92,7 @@ NonlinearOperator::NonlinearOperator(
                             dgrid.local_wave_extent),
               suzerain::prepend(dgrid.local_wave_storage(),
                   suzerain::strides_cm(
-                      suzerain::to_yxz(dgrid.local_wave_extent)))),
-      auxp(reinterpret_cast<real_t *>(auxw.origin()),
-           make_collection_of_two<std::size_t>(
-               aux::count, dgrid.local_physical_extent.prod()),
-           make_collection_of_two<std::size_t>(
-               auxw.strides()[0] * sizeof(complex_t)/sizeof(real_t), 0),
-           suzerain::storage::noninterleaved<2>())
+                      suzerain::to_yxz(dgrid.local_wave_extent))))
 {
     // NOP
 }
@@ -207,24 +192,34 @@ real_t NonlinearOperator::applyOperator(
     diffwave_accumulate(0, 1, 1., swave, ndx::rhoe, 0., auxw, aux::e_z       );
     diffwave_accumulate(0, 2, 1., swave, ndx::rhoe, 1., auxw, aux::div_grad_e);
 
-
-    // Collectively convert swave to physical space using parallel FFTs
-    // In physical space, we'll employ a view to reshape the four-dimensional
-    // data stored (F, X, Z, Y) a 2D (F, X*Z*Y) layout.  Reducing the
-    // dimensionality encourages linear access and eases indexing overhead.
-    suzerain::multi_array::ref<real_t,2> sphys(
-            reinterpret_cast<real_t *>(swave.origin()),
-            make_collection_of_two<std::size_t>(
-                swave.shape()[0],
-                dgrid.local_physical_extent.prod()),
-            make_collection_of_two<std::size_t>(
-                swave.strides()[0] * sizeof(complex_t)/sizeof(real_t), 0),
-            suzerain::storage::noninterleaved<2>());
+    // Collectively convert swave and auxw to physical space using parallel
+    // FFTs. In physical space, we'll employ views to reshape the 4D row-major
+    // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
+    // we know F a priori.  Reducing the dimensionality encourages linear
+    // access and eases indexing overhead.
+    Eigen::Map<
+            Eigen::Array<real_t, aux::count,
+                         Eigen::Dynamic, Eigen::RowMajor>,
+            Eigen::Unaligned, // Defensive
+            Eigen::OuterStride<Eigen::Dynamic>
+        > auxp(reinterpret_cast<real_t *>(auxw.origin()),
+               aux::count, dgrid.local_physical_extent.prod(),
+               Eigen::OuterStride<>(
+                   auxw.strides()[0] * sizeof(complex_t)/sizeof(real_t)));
+    Eigen::Map<
+            Eigen::Array<real_t, channel::field::count,
+                         Eigen::Dynamic, Eigen::RowMajor>,
+            Eigen::Unaligned, // Defensive
+            Eigen::OuterStride<Eigen::Dynamic>
+        > sphys(reinterpret_cast<real_t *>(swave.origin()),
+               channel::field::count, dgrid.local_physical_extent.prod(),
+               Eigen::OuterStride<>(
+                   swave.strides()[0] * sizeof(complex_t)/sizeof(real_t)));
     for (std::size_t i = 0; i < channel::field::count; ++i) {
-        dgrid.transform_wave_to_physical(sphys[i].origin());
+        dgrid.transform_wave_to_physical(&sphys(i,0));
     }
     for (std::size_t i = 0; i < aux::count; ++i) {
-        dgrid.transform_wave_to_physical(auxp[i].origin());
+        dgrid.transform_wave_to_physical(&auxp(i,0));
     }
 
     // Retrieve constants and compute derived constants
@@ -268,64 +263,64 @@ real_t NonlinearOperator::applyOperator(
                 ++i, /* NB */ ++offset) {
 
                 // Unpack density-related quantities
-                const real_t rho          = sphys[ndx::rho][offset];
-                grad_rho.x()              = auxp[aux::rho_x][offset];
-                grad_rho.y()              = auxp[aux::rho_y][offset];
-                grad_rho.z()              = auxp[aux::rho_z][offset];
-                const real_t div_grad_rho = auxp[aux::rho_xx][offset]
-                                          + auxp[aux::rho_yy][offset]
-                                          + auxp[aux::rho_zz][offset];
-                grad_grad_rho(0,0)        = auxp[aux::rho_xx][offset];
-                grad_grad_rho(0,1)        = auxp[aux::rho_xy][offset];
-                grad_grad_rho(0,2)        = auxp[aux::rho_xz][offset];
+                const real_t rho          = sphys(ndx::rho, offset);
+                grad_rho.x()              = auxp(aux::rho_x, offset);
+                grad_rho.y()              = auxp(aux::rho_y, offset);
+                grad_rho.z()              = auxp(aux::rho_z, offset);
+                const real_t div_grad_rho = auxp(aux::rho_xx, offset)
+                                          + auxp(aux::rho_yy, offset)
+                                          + auxp(aux::rho_zz, offset);
+                grad_grad_rho(0,0)        = auxp(aux::rho_xx, offset);
+                grad_grad_rho(0,1)        = auxp(aux::rho_xy, offset);
+                grad_grad_rho(0,2)        = auxp(aux::rho_xz, offset);
                 grad_grad_rho(1,0)        = grad_grad_rho(0,1);
-                grad_grad_rho(1,1)        = auxp[aux::rho_yy][offset];
-                grad_grad_rho(1,2)        = auxp[aux::rho_yz][offset];
+                grad_grad_rho(1,1)        = auxp(aux::rho_yy, offset);
+                grad_grad_rho(1,2)        = auxp(aux::rho_yz, offset);
                 grad_grad_rho(2,0)        = grad_grad_rho(0,2);
                 grad_grad_rho(2,1)        = grad_grad_rho(1,2);
-                grad_grad_rho(2,2)        = auxp[aux::rho_zz][offset];
+                grad_grad_rho(2,2)        = auxp(aux::rho_zz, offset);
 
                 // Unpack momentum-related quantities
-                m.x()              = sphys[ndx::rhou][offset];
-                m.y()              = sphys[ndx::rhov][offset];
-                m.z()              = sphys[ndx::rhow][offset];
-                const real_t div_m = auxp[aux::mx_x][offset]
-                                   + auxp[aux::my_y][offset]
-                                   + auxp[aux::my_z][offset];
-                grad_m(0,0)        = auxp[aux::mx_x][offset];
-                grad_m(0,1)        = auxp[aux::mx_y][offset];
-                grad_m(0,2)        = auxp[aux::mx_z][offset];
-                grad_m(1,0)        = auxp[aux::my_x][offset];
-                grad_m(1,1)        = auxp[aux::my_y][offset];
-                grad_m(1,2)        = auxp[aux::my_z][offset];
-                grad_m(2,0)        = auxp[aux::mz_x][offset];
-                grad_m(2,1)        = auxp[aux::mz_y][offset];
-                grad_m(2,2)        = auxp[aux::mz_z][offset];
-                div_grad_m.x()     = auxp[aux::mx_xx][offset]
-                                   + auxp[aux::mx_yy][offset]
-                                   + auxp[aux::mx_zz][offset];
-                div_grad_m.y()     = auxp[aux::my_xx][offset]
-                                   + auxp[aux::my_yy][offset]
-                                   + auxp[aux::my_zz][offset];
-                div_grad_m.z()     = auxp[aux::mz_xx][offset]
-                                   + auxp[aux::mz_yy][offset]
-                                   + auxp[aux::mz_zz][offset];
-                grad_div_m.x()     = auxp[aux::mx_xx][offset]
-                                   + auxp[aux::my_xy][offset]
-                                   + auxp[aux::mz_xz][offset];
-                grad_div_m.y()     = auxp[aux::mx_xy][offset]
-                                   + auxp[aux::my_yy][offset]
-                                   + auxp[aux::mz_yz][offset];
-                grad_div_m.z()     = auxp[aux::mx_xz][offset]
-                                   + auxp[aux::my_yz][offset]
-                                   + auxp[aux::mz_zz][offset];
+                m.x()              = sphys(ndx::rhou, offset);
+                m.y()              = sphys(ndx::rhov, offset);
+                m.z()              = sphys(ndx::rhow, offset);
+                const real_t div_m = auxp(aux::mx_x, offset)
+                                   + auxp(aux::my_y, offset)
+                                   + auxp(aux::my_z, offset);
+                grad_m(0,0)        = auxp(aux::mx_x, offset);
+                grad_m(0,1)        = auxp(aux::mx_y, offset);
+                grad_m(0,2)        = auxp(aux::mx_z, offset);
+                grad_m(1,0)        = auxp(aux::my_x, offset);
+                grad_m(1,1)        = auxp(aux::my_y, offset);
+                grad_m(1,2)        = auxp(aux::my_z, offset);
+                grad_m(2,0)        = auxp(aux::mz_x, offset);
+                grad_m(2,1)        = auxp(aux::mz_y, offset);
+                grad_m(2,2)        = auxp(aux::mz_z, offset);
+                div_grad_m.x()     = auxp(aux::mx_xx, offset)
+                                   + auxp(aux::mx_yy, offset)
+                                   + auxp(aux::mx_zz, offset);
+                div_grad_m.y()     = auxp(aux::my_xx, offset)
+                                   + auxp(aux::my_yy, offset)
+                                   + auxp(aux::my_zz, offset);
+                div_grad_m.z()     = auxp(aux::mz_xx, offset)
+                                   + auxp(aux::mz_yy, offset)
+                                   + auxp(aux::mz_zz, offset);
+                grad_div_m.x()     = auxp(aux::mx_xx, offset)
+                                   + auxp(aux::my_xy, offset)
+                                   + auxp(aux::mz_xz, offset);
+                grad_div_m.y()     = auxp(aux::mx_xy, offset)
+                                   + auxp(aux::my_yy, offset)
+                                   + auxp(aux::mz_yz, offset);
+                grad_div_m.z()     = auxp(aux::mx_xz, offset)
+                                   + auxp(aux::my_yz, offset)
+                                   + auxp(aux::mz_zz, offset);
 
                 // Unpack total energy-related quantities
-                const real_t e          = sphys[ndx::rhoe][offset];
-                grad_e.x()              = auxp[aux::e_x][offset];
-                grad_e.y()              = auxp[aux::e_y][offset];
-                grad_e.z()              = auxp[aux::e_z][offset];
-                const real_t div_grad_e = auxp[aux::div_grad_e][offset];
+                const real_t e          = sphys(ndx::rhoe, offset);
+                grad_e.x()              = auxp(aux::e_x, offset);
+                grad_e.y()              = auxp(aux::e_y, offset);
+                grad_e.z()              = auxp(aux::e_z, offset);
+                const real_t div_grad_e = auxp(aux::div_grad_e, offset);
 
                 // Shorten computational kernel names
                 namespace orthonormal = suzerain::orthonormal;
@@ -365,7 +360,7 @@ real_t NonlinearOperator::applyOperator(
                             div_u, grad_u, div_grad_u, grad_div_u);
 
                 // Form continuity equation right hand side
-                sphys[ndx::rho][offset] = - div_m
+                sphys(ndx::rho, offset) = - div_m
                     ;
 
                 // Form momentum equation right hand side
@@ -374,12 +369,12 @@ real_t NonlinearOperator::applyOperator(
                     - grad_p
                     + inv_Re * div_tau
                     ;
-                sphys[ndx::rhou][offset] = momentum_rhs.x();
-                sphys[ndx::rhov][offset] = momentum_rhs.y();
-                sphys[ndx::rhow][offset] = momentum_rhs.z();
+                sphys(ndx::rhou, offset) = momentum_rhs.x();
+                sphys(ndx::rhov, offset) = momentum_rhs.y();
+                sphys(ndx::rhow, offset) = momentum_rhs.z();
 
                 // Form energy equation right hand side
-                sphys[ndx::rhoe][offset] =
+                sphys(ndx::rhoe, offset) =
                     - orthonormal::div_e_u(
                             e, grad_e, u, div_u
                         )
@@ -423,7 +418,7 @@ real_t NonlinearOperator::applyOperator(
 
     // Collectively convert state to wave space using parallel FFTs
     for (std::size_t i = 0; i < channel::field::count; ++i) {
-        dgrid.transform_physical_to_wave(sphys[i].origin());
+        dgrid.transform_physical_to_wave(&sphys(i,0));
     }
 
     // Convert collocation point values to Bspline coefficients

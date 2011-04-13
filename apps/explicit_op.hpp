@@ -209,9 +209,6 @@ protected:
     /** Auxiliary scalar-field storage used within applyOperator */
     mutable state_type auxw;
 
-    /** Physical space view of \c auxw folding (F,X,Z,Y) into (F,X*Z*Y). */
-    mutable suzerain::multi_array::ref<real_t,2> auxp;
-
     // Inner struct purely for name-scoping purposes
     struct aux {
 
