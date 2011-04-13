@@ -460,7 +460,7 @@ NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions
     if (has_zero_zero_mode) {
 
         // Obtain integration coefficients for obtaining bulk quantities
-        bintcoeff.resize(b.n(), 1);
+        bintcoeff.resize(b.n());
         b.integration_coefficients(0, bintcoeff.data());
 
         // Allocate additional working storage
@@ -488,7 +488,7 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
         }
 
         // Compute bulk density for later use
-        bulk_density = bintcoeff.matrix().dot(mean_rho.matrix());
+        bulk_density = bintcoeff.dot(mean_rho);
 
         // Save mean X momentum for later use
         assert((unsigned) mean_rhou.size() == swave.shape()[1]);
