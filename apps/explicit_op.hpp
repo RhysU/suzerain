@@ -264,7 +264,6 @@ protected:
 
     Eigen::VectorXr bintcoeff;
     mutable Eigen::VectorXr mean_rhou;
-    mutable Eigen::VectorXr mean_rhoe;
 
 };
 

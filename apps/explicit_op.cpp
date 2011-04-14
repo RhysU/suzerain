@@ -456,8 +456,7 @@ NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions
       has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
                           && dgrid.local_wave_start.z() == 0),
       bintcoeff(has_zero_zero_mode ? b.n() : 0),
-      mean_rhou(has_zero_zero_mode ? b.n() : 0),
-      mean_rhoe(has_zero_zero_mode ? b.n() : 0) // FIXME Unused
+      mean_rhou(has_zero_zero_mode ? b.n() : 0)
 {
     // Obtain integration coefficients for obtaining bulk quantities
     if (has_zero_zero_mode) {
@@ -487,12 +486,6 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
         assert((unsigned) mean_rhou.size() == swave.shape()[1]);
         for (int i = 0; i < mean_rhou.size(); ++i) {
             mean_rhou[i] = suzerain::complex::real(swave[ndx::rhou][i][0][0]);
-        }
-
-        // Save mean density for later use
-        assert((unsigned) mean_rhoe.size() == swave.shape()[1]);
-        for (int i = 0; i < mean_rhoe.size(); ++i) {
-            mean_rhoe[i] = suzerain::complex::real(swave[ndx::rhoe][i][0][0]);
         }
     }
 
