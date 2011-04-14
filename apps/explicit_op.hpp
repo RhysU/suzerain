@@ -263,8 +263,8 @@ protected:
     const bool has_zero_zero_mode;
 
     Eigen::VectorXr bintcoeff;
-    mutable Eigen::VectorXr mean_rho;
     mutable Eigen::VectorXr mean_rhou;
+    mutable Eigen::VectorXr mean_rhoe;
 
 };
 

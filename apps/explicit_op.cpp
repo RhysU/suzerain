@@ -454,18 +454,14 @@ NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions
         const suzerain::bsplineop_luz &massluz)
     : NonlinearOperator(scenario, grid, dgrid, b, bop, massluz),
       has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
-                          && dgrid.local_wave_start.z() == 0)
+                          && dgrid.local_wave_start.z() == 0),
+      bintcoeff(has_zero_zero_mode ? b.n() : 0),
+      mean_rhou(has_zero_zero_mode ? b.n() : 0),
+      mean_rhoe(has_zero_zero_mode ? b.n() : 0) // FIXME Unused
 {
-    // Additional details needed on constant-in-X, constant-in-Z mode
+    // Obtain integration coefficients for obtaining bulk quantities
     if (has_zero_zero_mode) {
-
-        // Obtain integration coefficients for obtaining bulk quantities
-        bintcoeff.resize(b.n());
         b.integration_coefficients(0, bintcoeff.data());
-
-        // Allocate additional working storage
-        mean_rho.resizeLike(bintcoeff);
-        mean_rhou.resizeLike(bintcoeff);
     }
 }
 
@@ -477,23 +473,26 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
 {
     namespace ndx = channel::field::ndx;
 
-    // Precompute and store quantities necessary for BC implementation
+    // Compute and store quantities necessary for channel forcing
     real_t bulk_density = std::numeric_limits<real_t>::quiet_NaN();
     if (has_zero_zero_mode) {
 
-        // Save mean density for later use
-        assert((unsigned) mean_rho.size() == swave.shape()[1]);
-        for (int i = 0; i < mean_rho.size(); ++i) {
-            mean_rho[i] = suzerain::complex::real(swave[ndx::rho][i][0][0]);
-        }
-
-        // Compute bulk density for later use
-        bulk_density = bintcoeff.dot(mean_rho);
+        // Save bulk density for later use
+        bulk_density = suzerain::blas::dot(
+                bintcoeff.size(), bintcoeff.data(), 1,
+                reinterpret_cast<real_t *>(&swave[ndx::rho][0][0][0]),
+                sizeof(complex_t)/sizeof(real_t));
 
         // Save mean X momentum for later use
         assert((unsigned) mean_rhou.size() == swave.shape()[1]);
         for (int i = 0; i < mean_rhou.size(); ++i) {
             mean_rhou[i] = suzerain::complex::real(swave[ndx::rhou][i][0][0]);
+        }
+
+        // Save mean density for later use
+        assert((unsigned) mean_rhoe.size() == swave.shape()[1]);
+        for (int i = 0; i < mean_rhoe.size(); ++i) {
+            mean_rhoe[i] = suzerain::complex::real(swave[ndx::rhoe][i][0][0]);
         }
     }
 
