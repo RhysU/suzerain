@@ -458,9 +458,16 @@ NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions
       bintcoeff(has_zero_zero_mode ? b.n() : 0),
       mean_rhou(has_zero_zero_mode ? b.n() : 0)
 {
-    // Obtain integration coefficients for obtaining bulk quantities
     if (has_zero_zero_mode) {
+
+        // Precompute integration coefficients for obtaining bulk quantities
         b.integration_coefficients(0, bintcoeff.data());
+
+        // Precompute M^{-1} e_{0} and M^{-1} e_{n-1} for isothermal BC.
+        massinv_elower = Eigen::VectorXc::Unit(b.n(), 0        );
+        massinv_eupper = Eigen::VectorXc::Unit(b.n(), b.n() - 1);
+        massluz.solve(1, massinv_elower.data(), 1, b.n());
+        massluz.solve(1, massinv_eupper.data(), 1, b.n());
     }
 }
 
@@ -520,15 +527,30 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
         }
     }
 
-    // Set isothermal condition on walls per writeup step (4)
+    // Set isothermal condition on walls per writeup step (4).
+    // Require some slightly tricky processing as the isothermal condition
+    // holds at the wall collocation points but we are in coefficient space.
+    // Uses that the wall collocation point and coefficient are equivalent!
+    // TODO Figure out a cleaner /and/ faster way to implement this BC.
     const real_t inv_gamma_gamma1
         = 1 / (scenario.gamma * (scenario.gamma - 1));
     for (std::size_t k = 0; k < swave.shape()[3]; ++k) {
         for (std::size_t j = 0; j < swave.shape()[2]; ++j) {
-            swave[ndx::rhoe][lower_wall][j][k]
-                = inv_gamma_gamma1 * swave[ndx::rho][lower_wall][j][k];
-            swave[ndx::rhoe][upper_wall][j][k]
-                = inv_gamma_gamma1 * swave[ndx::rho][upper_wall][j][k];
+
+            // Want Eigen and Eigen-friendly types here...
+            Eigen::Map<Eigen::VectorXc> rhoe_jk(
+                    &swave[ndx::rhoe][0][j][k], swave.shape()[1]);
+            const complex_t &rho_lower = swave[ndx::rho][lower_wall][j][k];
+            const complex_t &rho_upper = swave[ndx::rho][upper_wall][j][k];
+
+            // ...to hopefully get a good expression template result here
+            rhoe_jk += massinv_elower*(
+                            inv_gamma_gamma1*rho_lower - rhoe_jk[lower_wall]
+                       )
+                     + massinv_eupper*(
+                            inv_gamma_gamma1*rho_upper - rhoe_jk[upper_wall]
+                       )
+                     ;
         }
     }
 

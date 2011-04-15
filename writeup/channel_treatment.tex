@@ -189,14 +189,16 @@ problem looks as follows:
         \bar{\rho}^{-1} \alpha \, m_{x}\!\left(\cdot,y,\cdot\right)$
         for $y\neq0,2\delta$.
 \end{enumerate}
-One then advances $\partial_{t}\rho = R_{\rho}$, $\partial_{t} \vec{m} =
-R_{\vec{m}}$, and $\partial_{t} e = R_{e}$ using regular time integration
-techniques.  The above updates will cause the next state to also satisfy the
-isothermal channel conditions.  Note that $f_{m_x}$ is not applied at
-$y=0,2\delta$ but that these points may be included in the momentum integral
-computation ($\alpha$) as they are identically zero from earlier boundary
-condition enforcement.  Each of these computations may be performed in
-wavespace as they are linear in at most one state variable.
+Care should be taken when advancing coefficient (rather than collocation point)
+state to ensure only the relevant collocation points are impacted.  One then
+advances $\partial_{t}\rho = R_{\rho}$, $\partial_{t} \vec{m} = R_{\vec{m}}$,
+and $\partial_{t} e = R_{e}$ using regular time integration techniques.  The
+above updates will cause the next state to also satisfy the isothermal channel
+conditions.  Note that $f_{m_x}$ is not applied at $y=0,2\delta$ but that these
+points may be included in the momentum integral computation ($\alpha$) as they
+are identically zero from earlier boundary condition enforcement.  Each of
+these computations may be performed in wavespace as they are linear in at most
+one state variable.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
