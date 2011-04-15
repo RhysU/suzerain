@@ -516,21 +516,30 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     }
 
     // Set no-slip condition for momentum on walls per writeup step (3)
+    // Require some slightly tricky processing as the isothermal condition
+    // holds at the wall collocation points but we are in coefficient space.
+    // Uses that the wall collocation point and coefficient are equivalent!
+    // TODO Figure out a cleaner /and/ faster way to implement this BC.
     assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
     assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
     for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
         for (std::size_t k = 0; k < swave.shape()[3]; ++k) {
             for (std::size_t j = 0; j < swave.shape()[2]; ++j) {
-                swave[i][lower_wall][j][k] = 0;
-                swave[i][upper_wall][j][k] = 0;
+
+                // Want Eigen and Eigen-friendly types here...
+                Eigen::Map<Eigen::VectorXc> m_jk(
+                        &swave[i][0][j][k], swave.shape()[1]);
+                const complex_t &m_lower = swave[i][lower_wall][j][k];
+                const complex_t &m_upper = swave[i][upper_wall][j][k];
+
+                // ...to hopefully get a good expression template here
+                m_jk -= (massinv_elower*m_lower + massinv_eupper*m_upper);
             }
         }
     }
 
     // Set isothermal condition on walls per writeup step (4).
-    // Require some slightly tricky processing as the isothermal condition
-    // holds at the wall collocation points but we are in coefficient space.
-    // Uses that the wall collocation point and coefficient are equivalent!
+    // Similar comments as no-slip condition enforcement apply
     // TODO Figure out a cleaner /and/ faster way to implement this BC.
     const real_t inv_gamma_gamma1
         = 1 / (scenario.gamma * (scenario.gamma - 1));
@@ -543,7 +552,7 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
             const complex_t &rho_lower = swave[ndx::rho][lower_wall][j][k];
             const complex_t &rho_upper = swave[ndx::rho][upper_wall][j][k];
 
-            // ...to hopefully get a good expression template result here
+            // ...to hopefully get a good expression template here
             rhoe_jk += massinv_elower*(
                             inv_gamma_gamma1*rho_lower - rhoe_jk[lower_wall]
                        )
