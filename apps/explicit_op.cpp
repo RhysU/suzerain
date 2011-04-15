@@ -455,19 +455,20 @@ NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions
     : NonlinearOperator(scenario, grid, dgrid, b, bop, massluz),
       has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
                           && dgrid.local_wave_start.z() == 0),
-      bintcoeff(has_zero_zero_mode ? b.n() : 0),
-      mean_rhou(has_zero_zero_mode ? b.n() : 0)
+      bulkcoeff(has_zero_zero_mode ? b.n() : 0),
+      fm_dot_m( has_zero_zero_mode ? b.n() : 0)
 {
     if (has_zero_zero_mode) {
 
-        // Precompute integration coefficients for obtaining bulk quantities
-        b.integration_coefficients(0, bintcoeff.data());
+        // Precompute operator for finding bulk quantities from coefficients
+        b.integration_coefficients(0, bulkcoeff.data());
+        bulkcoeff /= scenario.Ly;
 
-        // Precompute M^{-1} e_{0} and M^{-1} e_{n-1} for isothermal BC.
-        massinv_elower = Eigen::VectorXc::Unit(b.n(), 0        );
-        massinv_eupper = Eigen::VectorXc::Unit(b.n(), b.n() - 1);
-        massluz.solve(1, massinv_elower.data(), 1, b.n());
-        massluz.solve(1, massinv_eupper.data(), 1, b.n());
+        // Precompute M^{-1} e_{0} and M^{-1} e_{n-1} for use in BCs
+        minve_lower = Eigen::VectorXc::Unit(b.n(), 0        );
+        minve_upper = Eigen::VectorXc::Unit(b.n(), b.n() - 1);
+        massluz.solve(1, minve_lower.data(), 1, b.n());
+        massluz.solve(1, minve_upper.data(), 1, b.n());
     }
 }
 
@@ -477,111 +478,99 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     const real_t evmaxmag_imag,
     const bool delta_t_requested) const
 {
+    using Eigen::Map;
+    using Eigen::VectorXc;
     namespace ndx = channel::field::ndx;
 
-    // Compute and store quantities necessary for channel forcing
+    // Note that many operations must be done to either just at the wall
+    // collocation points or just at the non-wall collocation points.  This
+    // routine deals with B-spline coefficients /not/ collocation point values.
+    // We use minve_lower and minve_upper to obtain the coefficient-based
+    // impact of changing a collocation point value.
+    // TODO Find a cleaner-and-faster solution.
+
+    // Shorthand for the wall-normal size and wall indices
+    const std::size_t Ny         = swave.shape()[1];
+    const std::size_t wall_lower = 0;
+    const std::size_t wall_upper = Ny - 1;
+
+    // Compute and store quantities used later to implement forcing
     real_t bulk_density = std::numeric_limits<real_t>::quiet_NaN();
     if (has_zero_zero_mode) {
 
-        // Save bulk density for later use
-        bulk_density = suzerain::blas::dot(
-                bintcoeff.size(), bintcoeff.data(), 1,
-                reinterpret_cast<real_t *>(&swave[ndx::rho][0][0][0]),
-                sizeof(complex_t)/sizeof(real_t));
+        // Save bulk density
+        bulk_density = bulkcoeff.dot(
+                Map<VectorXc>(swave[ndx::rho].origin(), Ny).real());
 
-        // Save mean X momentum for later use
-        assert((unsigned) mean_rhou.size() == swave.shape()[1]);
-        for (int i = 0; i < mean_rhou.size(); ++i) {
-            mean_rhou[i] = suzerain::complex::real(swave[ndx::rhou][i][0][0]);
-        }
+        // Save mean X momentum coefficients
+        fm_dot_m = Map<VectorXc>(swave[ndx::rhou].origin(), Ny);
     }
 
     // Apply an operator that cares nothing about the boundaries
     const real_t delta_t = base::applyOperator(
             swave, evmaxmag_real, evmaxmag_imag, delta_t_requested);
 
-    // Indices that will be useful as shorthand
-    const std::size_t lower_wall = 0;                    // index of wall
-    const std::size_t upper_wall = swave.shape()[1] - 1; // index of wall
-
     // Add f_rho to mean density per writeup step (2)
     if (has_zero_zero_mode) {
-        const real_t f_rho = suzerain::blas::dot(
-                bintcoeff.size(), bintcoeff.data(), 1,
-                reinterpret_cast<real_t *>(&swave[ndx::rho][0][0][0]),
-                sizeof(complex_t)/sizeof(real_t)) / scenario.Ly;
-        for (std::size_t i = 0; i < swave.shape()[1]; ++i) {
-            swave[ndx::rho][i][0][0] -= f_rho;
-        }
+        Map<VectorXc> mean_rho(swave[ndx::rho].origin(), Ny);
+        const real_t f_rho = bulkcoeff.dot(mean_rho.real());
+        mean_rho.array() -= f_rho;
     }
 
     // Set no-slip condition for momentum on walls per writeup step (3)
-    // Require some slightly tricky processing as the isothermal condition
-    // holds at the wall collocation points but we are in coefficient space.
-    // Uses that the wall collocation point and coefficient are equivalent!
-    // TODO Figure out a cleaner /and/ faster way to implement this BC.
     assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
     assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
     for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
         for (std::size_t k = 0; k < swave.shape()[3]; ++k) {
             for (std::size_t j = 0; j < swave.shape()[2]; ++j) {
 
-                // Want Eigen and Eigen-friendly types here...
-                Eigen::Map<Eigen::VectorXc> m_jk(
-                        &swave[i][0][j][k], swave.shape()[1]);
-                const complex_t &m_lower = swave[i][lower_wall][j][k];
-                const complex_t &m_upper = swave[i][upper_wall][j][k];
+                const complex_t m_lower = swave[i][wall_lower][j][k];
+                const complex_t m_upper = swave[i][wall_upper][j][k];
 
-                // ...to hopefully get a good expression template here
-                m_jk -= (massinv_elower*m_lower + massinv_eupper*m_upper);
+                Map<VectorXc> m_jk(&swave[i][0][j][k], Ny);
+                m_jk -= (minve_lower*m_lower + minve_upper*m_upper);
             }
         }
     }
 
     // Set isothermal condition on walls per writeup step (4).
-    // Similar comments as no-slip condition enforcement apply
-    // TODO Figure out a cleaner /and/ faster way to implement this BC.
     const real_t inv_gamma_gamma1
         = 1 / (scenario.gamma * (scenario.gamma - 1));
     for (std::size_t k = 0; k < swave.shape()[3]; ++k) {
         for (std::size_t j = 0; j < swave.shape()[2]; ++j) {
 
-            // Want Eigen and Eigen-friendly types here...
-            Eigen::Map<Eigen::VectorXc> rhoe_jk(
-                    &swave[ndx::rhoe][0][j][k], swave.shape()[1]);
-            const complex_t &rho_lower = swave[ndx::rho][lower_wall][j][k];
-            const complex_t &rho_upper = swave[ndx::rho][upper_wall][j][k];
+            Map<VectorXc> rhoe_jk(&swave[ndx::rhoe][0][j][k], Ny);
 
-            // ...to hopefully get a good expression template here
-            rhoe_jk += massinv_elower*(
-                            inv_gamma_gamma1*rho_lower - rhoe_jk[lower_wall]
-                       )
-                     + massinv_eupper*(
-                            inv_gamma_gamma1*rho_upper - rhoe_jk[upper_wall]
-                       )
-                     ;
+            const complex_t factor_lower
+                = inv_gamma_gamma1*swave[ndx::rho ][wall_lower][j][k]
+                -                  rhoe_jk[wall_lower];
+            const complex_t factor_upper
+                = inv_gamma_gamma1*swave[ndx::rho ][wall_upper][j][k]
+                -                  rhoe_jk[wall_upper];
+
+            rhoe_jk += minve_lower*factor_lower + minve_upper*factor_upper;
         }
     }
 
-    // Apply f_{m_x} to mean x-momentum, mean energy
+    // Apply f_{m_x} to mean x-momentum, mean energy at non-wall locations
     if (has_zero_zero_mode) {
 
         // Compute temporary per writeup implementation step (5)
-        real_t alpha = suzerain::blas::dot(
-                bintcoeff.size(), bintcoeff.data(), 1,
-                reinterpret_cast<real_t *>(&swave[ndx::rhou][0][0][0]),
-                sizeof(complex_t)/sizeof(real_t)) / scenario.Ly;
+        Map<VectorXc> mean_rhou(swave[ndx::rhou].origin(), Ny);
+        const real_t alpha = bulkcoeff.dot(mean_rhou.real());
 
         // Apply to non-wall mean x-momentum right hand side per step (6)
-        for (std::size_t i = lower_wall + 1; i < upper_wall; ++i) {
-            swave[ndx::rhou][i][0][0] -= alpha;
-        }
+        mean_rhou.array()
+            -= alpha - alpha*(minve_lower.array() + minve_upper.array());
 
         // Apply to non-wall mean energy right hand side per step (7)
-        alpha /= bulk_density;
-        for (std::size_t i = lower_wall + 1; i < upper_wall; ++i) {
-            swave[ndx::rhoe][i][0][0] -= alpha * mean_rhou[i];
-        }
+        // Build modification in fm_dot_m storage and apply it
+        fm_dot_m *= alpha / bulk_density;
+        fm_dot_m -= (   minve_lower*fm_dot_m[wall_lower]
+                      + minve_upper*fm_dot_m[wall_upper]);
+
+        Eigen::Map<Eigen::VectorXc> mean_rhoe(swave[ndx::rhoe].origin(), Ny);
+        mean_rhoe -= fm_dot_m;
     }
 
     // Return the time step found by the BC-agnostic operator
