@@ -263,8 +263,10 @@ protected:
     const bool has_zero_zero_mode;
 
     Eigen::VectorXr bulkcoeff;
-    Eigen::VectorXc minve_lower;
-    Eigen::VectorXc minve_upper;
+    Eigen::VectorXr massinv_elower;
+    Eigen::VectorXr massinv_einterior;
+    Eigen::VectorXr massinv_eupper;
+    mutable Eigen::VectorXc rho_fm;
     mutable Eigen::VectorXc fm_dot_m;
 
 };
