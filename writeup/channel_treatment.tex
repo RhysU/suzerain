@@ -152,7 +152,7 @@ $\bar{m}_{x}$ remains constant in time:
      R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy + \bar{\rho} f_{m_x}
    = 0
 \end{align}
-Rearranging we find $\bar{\rho} f_{m_x} = - \frac{1}{2\delta}
+Rearranging we find $f_{m_x} = - \frac{1}{\bar{\rho}2\delta}
 \int_{0}^{2\delta} R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy$.
 
 \subsection*{Implementation}
@@ -160,9 +160,9 @@ Rearranging we find $\bar{\rho} f_{m_x} = - \frac{1}{2\delta}
 We use that for
 $\phi\in\left\{\rho,m_{x}\right\}$
 \begin{align}
-  \int_{-\delta}^{\delta} \phi\!\left(\cdot,y,\cdot\right)\,dy
+  \frac{1}{2\delta} \int_{0}^{2\delta} \phi\!\left(\cdot,y,\cdot\right)\,dy
   &=
-  c^{\mathrm{T}}\phi\!\left(\cdot,y,\cdot\right)
+  c \cdot \phi\!\left(\cdot,y,\cdot\right)
 \end{align}
 where $c$ is a precomputable coefficient vector depending on the chosen
 wall-normal basis.
@@ -173,20 +173,19 @@ problem looks as follows:
 \begin{enumerate}
   \item Compute $R_{\rho}$, $R_{\vec{m}}$, and $R_{e}$ in wavespace.
   \item Apply $f_{\rho}$ by updating $R_{\rho}\!\left(\cdot,y,\cdot\right)
-        -\!= \left(2\delta\right)^{-1} c^{\mathrm{T}}
-        R_{\rho}\!\left(\cdot,y,\cdot\right)$.
+        -{}\!\!\!{}= c \cdot R_{\rho}\!\left(\cdot,y,\cdot\right)$.
   \item Set $\left.R_{\vec{m}}\right|_{y=0,2\delta} = 0$.
   \item Set $\left.R_{e}\right|_{y=0,2\delta} =
         \frac{1}{\gamma\left(\gamma-1\right)}
         \left.R_{\rho}\right|_{y=0,2\delta}$.
   \item Compute temporary value $\alpha =
-        \left(2\delta\right)^{-1} c^{\mathrm{T}}
-        R_{m_{x}}\!\left(\cdot,y,\cdot\right)$.
-  \item Apply $\bar{\rho} f_{m_x}$ by updating
-        $R_{m_x}\!\left(\cdot,y,\cdot\right) -\!= \alpha$ for $y\neq0,2\delta$.
+        \bar{\rho}^{-1} c \cdot R_{m_{x}}\!\left(\cdot,y,\cdot\right)$.
+  \item Apply $\rho f_{m_x}$ by updating
+        $R_{m_x}\!\left(\cdot,y,\cdot\right) -{}\!\!\!{}=
+        \alpha \, \rho\!\left(\cdot,y,\cdot\right)$ for $y\neq0,2\delta$.
   \item Apply $\vec{f}_{m}\cdot\vec{m} = f_{m_x} m_x$ by updating
-        $R_{e}\!\left(\cdot,y,\cdot\right) -\!=
-        \bar{\rho}^{-1} \alpha \, m_{x}\!\left(\cdot,y,\cdot\right)$
+        $R_{e}\!\left(\cdot,y,\cdot\right) -{}\!\!\!{}=
+        \alpha \, m_{x}\!\left(\cdot,y,\cdot\right)$
         for $y\neq0,2\delta$.
 \end{enumerate}
 Care should be taken when advancing coefficient (rather than collocation point)
