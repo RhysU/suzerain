@@ -517,13 +517,6 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     const real_t delta_t = base::applyOperator(
             swave, evmaxmag_real, evmaxmag_imag, delta_t_requested);
 
-    // Add f_rho to mean density per writeup step (2)
-    if (has_zero_zero_mode) {
-        Map<VectorXc> mean_rho(swave[ndx::rho].origin(), Ny);
-        const real_t f_rho = bulkcoeff.dot(mean_rho.real());
-        mean_rho.array() -= f_rho;
-    }
-
     // Set no-slip condition for momentum on walls per writeup step (3)
     // Condition achieved by removing time evolution at walls
     assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);

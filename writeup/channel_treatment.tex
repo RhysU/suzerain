@@ -60,7 +60,6 @@ total energy $e = \rho{}\tilde{e}$ according to
 \begin{subequations}
 \begin{align}
   \partial_{t} \rho{} &= R_{\rho}\!\left(\rho,\vec{m},e\right)
-                       + f_{\rho}(t)
   \\
   \partial_{t} m      &= \vec{R}_{m}\!\left(\rho,\vec{m},e\right)
                        + \rho \vec{f}_{m}(t)
@@ -107,21 +106,9 @@ Coleman et al.'s isothermal channel is characterized by
 
 \subsection*{Analysis}
 
-First, we find $f_{\rho}(t)$ such that the bulk density $\bar{\rho}$
-remains constant in time:
-\begin{align}
-  \partial_{t} \bar{\rho}
-  &= \frac{1}{2\delta} \int_{0}^{2\delta}
-     \partial_{t} \rho\!\left(\cdot,y,\cdot\right) \, dy
-   = \frac{1}{2\delta} \int_{0}^{2\delta}
-     \left[ R_{\rho}\!\left(\cdot,y,\cdot\right) + f_{\rho} \right] \, dy
-   = \frac{1}{2\delta} \int_{0}^{2\delta}
-     R_{\rho}\!\left(\cdot,y,\cdot\right) \, dy + f_{\rho}
-   = 0
-\end{align}
-Rearranging we find $f_{\rho} = - \frac{1}{2\delta} \int_{0}^{2\delta}
-R_{\rho}\!\left(\cdot,y,\cdot\right) \, dy$.  Next, the boundary condition
-$\vec{u} = 0$ at $y = 0,2\delta$ implies that at the wall
+The problem as presented should provide a stationary bulk density $\bar{\rho}$.
+The boundary condition $\vec{u} = 0$ at $y = 0,2\delta$ implies that at the
+wall
 \begin{align}
   \partial_{t} \vec{m}
   =   \rho \cancel{\partial_{t} \vec{u}}
@@ -171,9 +158,8 @@ Assuming that the prior state satisfies the isothermal channel conditions with
 bulk density $\bar{\rho}$, one (admittedly suboptimal) way to treat the
 problem looks as follows:
 \begin{enumerate}
+  \item Compute $\bar{\rho} = c \cdot \rho\!\left(\cdot,y,\cdot\right)$.
   \item Compute $R_{\rho}$, $R_{\vec{m}}$, and $R_{e}$ in wavespace.
-  \item Apply $f_{\rho}$ by updating $R_{\rho}\!\left(\cdot,y,\cdot\right)
-        -{}\!\!\!{}= c \cdot R_{\rho}\!\left(\cdot,y,\cdot\right)$.
   \item Set $\left.R_{\vec{m}}\right|_{y=0,2\delta} = 0$.
   \item Set $\left.R_{e}\right|_{y=0,2\delta} =
         \frac{1}{\gamma\left(\gamma-1\right)}
