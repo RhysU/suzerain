@@ -122,26 +122,91 @@ static void atexit_metadata(void) {
     }
 }
 
-/** Routine to output status.  Signature for TimeController use. */
-static bool log_status(real_t t, std::size_t nt) {
-
-    // Save resources by returning early when no status necessary
-    if (!INFO_ENABLED) return true;
+/** Build a message containing mean and fluctuating L2 information */
+static std::string information_L2() {
 
     // Collective computation of the L_2 norms
     const boost::array<channel::L2,channel::field::count> L2
         = channel::field_L2(*state_linear, scenario, grid, *dgrid, *gop);
 
     // Prepare the status message
-    std::ostringstream oss;
-    oss << "t = " << t << ", nt = " << nt;
-    oss << ", mean|fluct L2 =";
+    std::ostringstream msg;
+    msg << "mean|fluct L2 =";
+    msg.precision(std::numeric_limits<real_t>::digits10 / 2);
     for (std::size_t k = 0; k < L2.size(); ++k) {
-        oss << ' ' << L2[k].mean() << ' ' << L2[k].fluctuating();
+        msg << ' ' << L2[k].mean() << ' ' << L2[k].fluctuating();
     }
 
-    // Log the status message
-    INFO0(oss.str());
+    return msg.str();
+}
+
+/** Build a message containing bulk quantities (intended for root rank only) */
+static std::string information_bulk() {
+
+    // Compute operator for finding bulk quantities from coefficients
+    Eigen::VectorXr bulkcoeff(b->n());
+    b->integration_coefficients(0, bulkcoeff.data());
+    bulkcoeff /= scenario.Ly;
+
+    // Prepare the status message
+    std::ostringstream msg;
+    msg << "bulk state =";
+    msg.precision(std::numeric_limits<real_t>::digits10 / 2);
+    for (std::size_t k = 0; k < state_linear->shape()[0]; ++k) {
+        Eigen::Map<Eigen::VectorXc> mean(
+                (*state_linear)[k].origin(), state_linear->shape()[1]);
+        msg << ' ' << bulkcoeff.dot(mean.real());
+    }
+
+    return msg.str();
+}
+
+/** Build a message containing specific state quantities at the wall */
+static std::string information_specific_wall_state() {
+    namespace ndx = channel::field::ndx;
+
+    // Indices at the lower and upper walls.  Use that wall collocation point
+    // values are nothing but the first and last B-spline coefficient values.
+    std::size_t wall[2] = { 0, state_linear->shape()[1] - 1 };
+    real_t      rho[2]  = {
+        ((*state_linear)[ndx::rho][wall[0]][0][0]).real(),
+        ((*state_linear)[ndx::rho][wall[1]][0][0]).real()
+    };
+
+    // Prepare the status message:
+    // Message lists lower then upper u, v, w, and internal energy at walls
+    std::ostringstream msg;
+    msg << "specific wall state = ";
+    msg.precision(std::numeric_limits<real_t>::digits10 / 2);
+    assert(ndx::rho == 0);
+    for (std::size_t k = ndx::rho; k < channel::field::count; ++k) {
+        for (std::size_t l = 0; l < sizeof(wall)/sizeof(wall[0]); ++l) {
+            msg << ' ' << ((*state_linear)[k][wall[l]][0][0]).real() / rho[l];
+        }
+    }
+
+    return msg.str();
+}
+
+/** Routine to output status.  Signature for TimeController use. */
+static bool log_status(real_t t, std::size_t nt) {
+
+    // Save resources by returning early when no status necessary
+    if (!INFO_ENABLED) return true;
+
+    // Build repeated time details
+    std::ostringstream timeprefix;
+    timeprefix << "t = " << t << ", nt = " << nt << ", ";
+
+    // Collectively compute and log L2 mean and fluctuating information
+    const std::string msg_l2 = information_L2() /* collective! expensive! */;
+    INFO0(timeprefix.str() << msg_l2);
+
+    // On root only, compute and show bulk state quantities
+    INFO0(timeprefix.str() << information_bulk());
+
+    // On root only, compute and show specific state at the walls
+    INFO0(timeprefix.str() << information_specific_wall_state());
 
     return true;
 }
