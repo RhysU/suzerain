@@ -155,7 +155,8 @@ static std::string information_bulk() {
     for (std::size_t k = 0; k < state_linear->shape()[0]; ++k) {
         Eigen::Map<Eigen::VectorXc> mean(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
-        msg << ' ' << bulkcoeff.dot(mean.real());
+        const real_t bulk = bulkcoeff.dot(mean.real());
+        msg << ' ' << bulk;
     }
 
     return msg.str();
