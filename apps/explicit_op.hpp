@@ -175,9 +175,9 @@ private:
 };
 
 /**
- * A fully explicit Navier&ndash;Stokes operator for isothermal, no-slip walls.
+ * A boundary-condition agnostic, fully explicit Navier&ndash;Stokes operator.
  */
-class IsothermalNonlinearOperator
+class NonlinearOperator
     : public NonlinearOperatorBase,
       public suzerain::timestepper::INonlinearOperator<
             suzerain::NoninterleavedState<4,complex_t>
@@ -187,7 +187,7 @@ class IsothermalNonlinearOperator
 public:
     typedef suzerain::NoninterleavedState<4,complex_t> state_type;
 
-    IsothermalNonlinearOperator(
+    NonlinearOperator(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
@@ -236,15 +236,15 @@ protected:
 /**
  * A fully explicit Navier&ndash;Stokes operator for isothermal boundaries.
  */
-class IsothermalChannelNonlinearOperator
-    : public IsothermalNonlinearOperator
+class NonlinearOperatorWithBoundaryConditions
+    : public NonlinearOperator
 {
 
 public:
 
-    typedef IsothermalNonlinearOperator base;
+    typedef NonlinearOperator base;
 
-    IsothermalChannelNonlinearOperator(
+    NonlinearOperatorWithBoundaryConditions(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
@@ -263,7 +263,9 @@ protected:
     const bool has_zero_zero_mode;
 
     Eigen::VectorXr bulkcoeff;
+    Eigen::VectorXr massinv_elower;
     Eigen::VectorXr massinv_einterior;
+    Eigen::VectorXr massinv_eupper;
     mutable Eigen::VectorXc rho_fm;
     mutable Eigen::VectorXc fm_dot_m;
 

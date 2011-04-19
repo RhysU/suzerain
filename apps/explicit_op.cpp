@@ -79,7 +79,7 @@ NonlinearOperatorBase::NonlinearOperatorBase(
     }
 }
 
-IsothermalNonlinearOperator::IsothermalNonlinearOperator(
+NonlinearOperator::NonlinearOperator(
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
@@ -97,7 +97,7 @@ IsothermalNonlinearOperator::IsothermalNonlinearOperator(
     // NOP
 }
 
-real_t IsothermalNonlinearOperator::applyOperator(
+real_t NonlinearOperator::applyOperator(
     suzerain::NoninterleavedState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,
@@ -229,10 +229,8 @@ real_t IsothermalNonlinearOperator::applyOperator(
     const real_t Re               = scenario.Re;
     const real_t inv_Re           = 1 / Re;
     const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
-    const real_t inv_gamma_gamma1 = 1 / (gamma * (gamma - 1));
 
     // Working non-scalar storage used within following loop
-    // TODO Assess performance hit by moving into loops below
     Eigen::Vector3r grad_rho;
     Eigen::Matrix3r grad_grad_rho;
     Eigen::Vector3r m;
@@ -256,235 +254,164 @@ real_t IsothermalNonlinearOperator::applyOperator(
          j < dgrid.local_physical_end.y();
          ++j) {
 
-        if (j == 0 || j == dgrid.global_physical_extent.y() - 1) { // Wall
+        for (int k = dgrid.local_physical_start.z();
+            k < dgrid.local_physical_end.z();
+            ++k) {
 
-            for (int k = dgrid.local_physical_start.z();
-                k < dgrid.local_physical_end.z();
-                ++k) {
+            for (int i = dgrid.local_physical_start.x();
+                i < dgrid.local_physical_end.x();
+                ++i, /* NB */ ++offset) {
 
-                for (int i = dgrid.local_physical_start.x();
-                    i < dgrid.local_physical_end.x();
-                    ++i, /* NB */ ++offset) {
+                // Unpack density-related quantities
+                const real_t rho          = sphys(ndx::rho, offset);
+                grad_rho.x()              = auxp(aux::rho_x, offset);
+                grad_rho.y()              = auxp(aux::rho_y, offset);
+                grad_rho.z()              = auxp(aux::rho_z, offset);
+                const real_t div_grad_rho = auxp(aux::rho_xx, offset)
+                                          + auxp(aux::rho_yy, offset)
+                                          + auxp(aux::rho_zz, offset);
+                grad_grad_rho(0,0)        = auxp(aux::rho_xx, offset);
+                grad_grad_rho(0,1)        = auxp(aux::rho_xy, offset);
+                grad_grad_rho(0,2)        = auxp(aux::rho_xz, offset);
+                grad_grad_rho(1,0)        = grad_grad_rho(0,1);
+                grad_grad_rho(1,1)        = auxp(aux::rho_yy, offset);
+                grad_grad_rho(1,2)        = auxp(aux::rho_yz, offset);
+                grad_grad_rho(2,0)        = grad_grad_rho(0,2);
+                grad_grad_rho(2,1)        = grad_grad_rho(1,2);
+                grad_grad_rho(2,2)        = auxp(aux::rho_zz, offset);
 
-                    // Unpack just enough for thermodynamic state computation
-                    const real_t rho = sphys(ndx::rho, offset);
-                    m.setZero();
-                    const real_t e   = inv_gamma_gamma1 * rho;
+                // Unpack momentum-related quantities
+                m.x()              = sphys(ndx::rhou, offset);
+                m.y()              = sphys(ndx::rhov, offset);
+                m.z()              = sphys(ndx::rhow, offset);
+                const real_t div_m = auxp(aux::mx_x, offset)
+                                   + auxp(aux::my_y, offset)
+                                   + auxp(aux::my_z, offset);
+                grad_m(0,0)        = auxp(aux::mx_x, offset);
+                grad_m(0,1)        = auxp(aux::mx_y, offset);
+                grad_m(0,2)        = auxp(aux::mx_z, offset);
+                grad_m(1,0)        = auxp(aux::my_x, offset);
+                grad_m(1,1)        = auxp(aux::my_y, offset);
+                grad_m(1,2)        = auxp(aux::my_z, offset);
+                grad_m(2,0)        = auxp(aux::mz_x, offset);
+                grad_m(2,1)        = auxp(aux::mz_y, offset);
+                grad_m(2,2)        = auxp(aux::mz_z, offset);
+                div_grad_m.x()     = auxp(aux::mx_xx, offset)
+                                   + auxp(aux::mx_yy, offset)
+                                   + auxp(aux::mx_zz, offset);
+                div_grad_m.y()     = auxp(aux::my_xx, offset)
+                                   + auxp(aux::my_yy, offset)
+                                   + auxp(aux::my_zz, offset);
+                div_grad_m.z()     = auxp(aux::mz_xx, offset)
+                                   + auxp(aux::mz_yy, offset)
+                                   + auxp(aux::mz_zz, offset);
+                grad_div_m.x()     = auxp(aux::mx_xx, offset)
+                                   + auxp(aux::my_xy, offset)
+                                   + auxp(aux::mz_xz, offset);
+                grad_div_m.y()     = auxp(aux::mx_xy, offset)
+                                   + auxp(aux::my_yy, offset)
+                                   + auxp(aux::mz_yz, offset);
+                grad_div_m.z()     = auxp(aux::mx_xz, offset)
+                                   + auxp(aux::my_yz, offset)
+                                   + auxp(aux::mz_zz, offset);
 
-                    // Form continuity equation right hand side
-                    sphys(ndx::rho, offset) = - auxp(aux::my_y, offset);
-                        ;
+                // Unpack total energy-related quantities
+                const real_t e          = sphys(ndx::rhoe, offset);
+                grad_e.x()              = auxp(aux::e_x, offset);
+                grad_e.y()              = auxp(aux::e_y, offset);
+                grad_e.z()              = auxp(aux::e_z, offset);
+                const real_t div_grad_e = auxp(aux::div_grad_e, offset);
 
-                    // Form momentum equation right hand side
-                    // For no-slip wall, our boundary does not evolve
-                    sphys(ndx::rhou, offset) = 0;
-                    sphys(ndx::rhov, offset) = 0;
-                    sphys(ndx::rhow, offset) = 0;
+                // Shorten computational kernel names
+                namespace orthonormal = suzerain::orthonormal;
 
-                    // Form energy equation right hand side
-                    // In isothermal case, energy tracks wall density.
-                    sphys(ndx::rhoe, offset) =
-                        inv_gamma_gamma1 * sphys(ndx::rho, offset)
-                        ;
-
-                    // Maintain the minimum observed stable time step, if necessary
-                    if (delta_t_requested) {
-
-                        // Compute thermodynamic state for stable time step
-                        // criteria.  Real-valued scalars are declared inline.
-                        // Vector- and tensor-valued expressions declared
-                        // outside loop.  Gradient information computed is
-                        // *wrong* but *not used*.
-                        real_t p, T, mu, lambda;
-                        suzerain::orthonormal::rhome::p_T_mu_lambda(
-                            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
-                            p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
-
-                        namespace timestepper = suzerain::timestepper;
-                        convective_delta_t = suzerain::math::minnan(
-                                convective_delta_t,
-                                timestepper::convective_stability_criterion(
-                                        real_t(0), one_over_delta_x,
-                                        real_t(0), one_over_delta_y(j),
-                                        real_t(0), one_over_delta_z,
-                                        evmaxmag_real,
-                                        std::sqrt(T)) /* nondimen a == sqrt(T) */);
-                        diffusive_delta_t = suzerain::math::minnan(
-                                diffusive_delta_t,
-                                timestepper::diffusive_stability_criterion(
-                                        one_over_delta_x,
-                                        one_over_delta_y(j),
-                                        one_over_delta_z,
-                                        Re, Pr, gamma, evmaxmag_imag, mu / rho));
-                    }
-
-                } // end X
-
-            } // end Z
-
-        } else {  // Interior of domain
-
-            for (int k = dgrid.local_physical_start.z();
-                k < dgrid.local_physical_end.z();
-                ++k) {
-
-                for (int i = dgrid.local_physical_start.x();
-                    i < dgrid.local_physical_end.x();
-                    ++i, /* NB */ ++offset) {
-
-                    // Unpack density-related quantities
-                    const real_t rho          = sphys(ndx::rho, offset);
-                    grad_rho.x()              = auxp(aux::rho_x, offset);
-                    grad_rho.y()              = auxp(aux::rho_y, offset);
-                    grad_rho.z()              = auxp(aux::rho_z, offset);
-                    const real_t div_grad_rho = auxp(aux::rho_xx, offset)
-                                            + auxp(aux::rho_yy, offset)
-                                            + auxp(aux::rho_zz, offset);
-                    grad_grad_rho(0,0)        = auxp(aux::rho_xx, offset);
-                    grad_grad_rho(0,1)        = auxp(aux::rho_xy, offset);
-                    grad_grad_rho(0,2)        = auxp(aux::rho_xz, offset);
-                    grad_grad_rho(1,0)        = grad_grad_rho(0,1);
-                    grad_grad_rho(1,1)        = auxp(aux::rho_yy, offset);
-                    grad_grad_rho(1,2)        = auxp(aux::rho_yz, offset);
-                    grad_grad_rho(2,0)        = grad_grad_rho(0,2);
-                    grad_grad_rho(2,1)        = grad_grad_rho(1,2);
-                    grad_grad_rho(2,2)        = auxp(aux::rho_zz, offset);
-
-                    // Unpack momentum-related quantities
-                    m.x()              = sphys(ndx::rhou, offset);
-                    m.y()              = sphys(ndx::rhov, offset);
-                    m.z()              = sphys(ndx::rhow, offset);
-                    const real_t div_m = auxp(aux::mx_x, offset)
-                                    + auxp(aux::my_y, offset)
-                                    + auxp(aux::my_z, offset);
-                    grad_m(0,0)        = auxp(aux::mx_x, offset);
-                    grad_m(0,1)        = auxp(aux::mx_y, offset);
-                    grad_m(0,2)        = auxp(aux::mx_z, offset);
-                    grad_m(1,0)        = auxp(aux::my_x, offset);
-                    grad_m(1,1)        = auxp(aux::my_y, offset);
-                    grad_m(1,2)        = auxp(aux::my_z, offset);
-                    grad_m(2,0)        = auxp(aux::mz_x, offset);
-                    grad_m(2,1)        = auxp(aux::mz_y, offset);
-                    grad_m(2,2)        = auxp(aux::mz_z, offset);
-                    div_grad_m.x()     = auxp(aux::mx_xx, offset)
-                                    + auxp(aux::mx_yy, offset)
-                                    + auxp(aux::mx_zz, offset);
-                    div_grad_m.y()     = auxp(aux::my_xx, offset)
-                                    + auxp(aux::my_yy, offset)
-                                    + auxp(aux::my_zz, offset);
-                    div_grad_m.z()     = auxp(aux::mz_xx, offset)
-                                    + auxp(aux::mz_yy, offset)
-                                    + auxp(aux::mz_zz, offset);
-                    grad_div_m.x()     = auxp(aux::mx_xx, offset)
-                                    + auxp(aux::my_xy, offset)
-                                    + auxp(aux::mz_xz, offset);
-                    grad_div_m.y()     = auxp(aux::mx_xy, offset)
-                                    + auxp(aux::my_yy, offset)
-                                    + auxp(aux::mz_yz, offset);
-                    grad_div_m.z()     = auxp(aux::mx_xz, offset)
-                                    + auxp(aux::my_yz, offset)
-                                    + auxp(aux::mz_zz, offset);
-
-                    // Unpack total energy-related quantities
-                    const real_t e          = sphys(ndx::rhoe, offset);
-                    grad_e.x()              = auxp(aux::e_x, offset);
-                    grad_e.y()              = auxp(aux::e_y, offset);
-                    grad_e.z()              = auxp(aux::e_z, offset);
-                    const real_t div_grad_e = auxp(aux::div_grad_e, offset);
-
-                    // Shorten computational kernel names
-                    namespace orthonormal = suzerain::orthonormal;
-
-                    // Compute quantities based upon state.  Real-valued scalars
-                    // are declared inline.  Vector- and tensor-valued expressions
-                    // declared outside loop.
-                    u                  = orthonormal::rhome::u(
-                                            rho, m);
-                    const real_t div_u = orthonormal::rhome::div_u(
-                                            rho, grad_rho, m, div_m);
-                    grad_u             = orthonormal::rhome::grad_u(
-                                            rho, grad_rho, m, grad_m);
-                    grad_div_u         = orthonormal::rhome::grad_div_u(
-                                            rho, grad_rho, grad_grad_rho,
-                                            m, div_m, grad_m, grad_div_m);
-                    div_grad_u         = orthonormal::rhome::div_grad_u(
+                // Compute quantities based upon state.  Real-valued scalars
+                // are declared inline.  Vector- and tensor-valued expressions
+                // declared outside loop.
+                u                  = orthonormal::rhome::u(
+                                        rho, m);
+                const real_t div_u = orthonormal::rhome::div_u(
+                                        rho, grad_rho, m, div_m);
+                grad_u             = orthonormal::rhome::grad_u(
+                                        rho, grad_rho, m, grad_m);
+                grad_div_u         = orthonormal::rhome::grad_div_u(
+                                        rho, grad_rho, grad_grad_rho,
+                                        m, div_m, grad_m, grad_div_m);
+                div_grad_u         = orthonormal::rhome::div_grad_u(
+                                        rho, grad_rho, div_grad_rho,
+                                        m, grad_m, div_grad_m);
+                real_t p, T, mu, lambda;
+                orthonormal::rhome::p_T_mu_lambda(
+                    beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+                    p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+                const real_t div_grad_p = orthonormal::rhome::div_grad_p(
+                                            gamma,
                                             rho, grad_rho, div_grad_rho,
-                                            m, grad_m, div_grad_m);
-                    real_t p, T, mu, lambda;
-                    orthonormal::rhome::p_T_mu_lambda(
-                        beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
-                        p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
-                    const real_t div_grad_p = orthonormal::rhome::div_grad_p(
-                                                gamma,
-                                                rho, grad_rho, div_grad_rho,
-                                                m, grad_m, div_grad_m,
-                                                e, grad_e, div_grad_e);
-                    const real_t div_grad_T = orthonormal::rhome::div_grad_T(
-                                                gamma,
-                                                rho, grad_rho, div_grad_rho,
-                                                p, grad_p, div_grad_p);
-                    tau     = orthonormal::tau(
-                                mu, lambda, div_u, grad_u);
-                    div_tau = orthonormal::div_tau(
-                                mu, grad_mu, lambda, grad_lambda,
-                                div_u, grad_u, div_grad_u, grad_div_u);
+                                            m, grad_m, div_grad_m,
+                                            e, grad_e, div_grad_e);
+                const real_t div_grad_T = orthonormal::rhome::div_grad_T(
+                                            gamma,
+                                            rho, grad_rho, div_grad_rho,
+                                            p, grad_p, div_grad_p);
+                tau     = orthonormal::tau(
+                            mu, lambda, div_u, grad_u);
+                div_tau = orthonormal::div_tau(
+                            mu, grad_mu, lambda, grad_lambda,
+                            div_u, grad_u, div_grad_u, grad_div_u);
 
-                    // Form continuity equation right hand side
-                    sphys(ndx::rho, offset) = - div_m
-                        ;
+                // Form continuity equation right hand side
+                sphys(ndx::rho, offset) = - div_m
+                    ;
 
-                    // Form momentum equation right hand side
-                    momentum_rhs =
-                        - orthonormal::div_u_outer_m(m, grad_m, u, div_u)
-                        - grad_p
-                        + inv_Re * div_tau
-                        ;
-                    sphys(ndx::rhou, offset) = momentum_rhs.x();
-                    sphys(ndx::rhov, offset) = momentum_rhs.y();
-                    sphys(ndx::rhow, offset) = momentum_rhs.z();
+                // Form momentum equation right hand side
+                momentum_rhs =
+                    - orthonormal::div_u_outer_m(m, grad_m, u, div_u)
+                    - grad_p
+                    + inv_Re * div_tau
+                    ;
+                sphys(ndx::rhou, offset) = momentum_rhs.x();
+                sphys(ndx::rhov, offset) = momentum_rhs.y();
+                sphys(ndx::rhow, offset) = momentum_rhs.z();
 
-                    // Form energy equation right hand side
-                    sphys(ndx::rhoe, offset) =
-                        - orthonormal::div_e_u(
-                                e, grad_e, u, div_u
-                            )
-                        - orthonormal::div_p_u(
-                                p, grad_p, u, div_u
-                            )
-                        + inv_Re_Pr_gamma1 * orthonormal::div_mu_grad_T(
-                                grad_T, div_grad_T, mu, grad_mu
-                            )
-                        + inv_Re * orthonormal::div_tau_u<real_t>(
-                                u, grad_u, tau, div_tau
-                            )
-                        ;
+                // Form energy equation right hand side
+                sphys(ndx::rhoe, offset) =
+                    - orthonormal::div_e_u(
+                            e, grad_e, u, div_u
+                        )
+                    - orthonormal::div_p_u(
+                            p, grad_p, u, div_u
+                        )
+                    + inv_Re_Pr_gamma1 * orthonormal::div_mu_grad_T(
+                            grad_T, div_grad_T, mu, grad_mu
+                        )
+                    + inv_Re * orthonormal::div_tau_u<real_t>(
+                            u, grad_u, tau, div_tau
+                        )
+                    ;
 
-                    // Maintain the minimum observed stable time step, if necessary
-                    if (delta_t_requested) {
-                        namespace timestepper = suzerain::timestepper;
-                        convective_delta_t = suzerain::math::minnan(
-                                convective_delta_t,
-                                timestepper::convective_stability_criterion(
-                                        u.x(), one_over_delta_x,
-                                        u.y(), one_over_delta_y(j),
-                                        u.z(), one_over_delta_z,
-                                        evmaxmag_real,
-                                        std::sqrt(T)) /* nondimen a == sqrt(T) */);
-                        diffusive_delta_t = suzerain::math::minnan(
-                                diffusive_delta_t,
-                                timestepper::diffusive_stability_criterion(
-                                        one_over_delta_x,
-                                        one_over_delta_y(j),
-                                        one_over_delta_z,
-                                        Re, Pr, gamma, evmaxmag_imag, mu / rho));
-                    }
+                // Maintain the minimum observed stable time step, if necessary
+                if (delta_t_requested) {
+                    namespace timestepper = suzerain::timestepper;
+                    convective_delta_t = suzerain::math::minnan(
+                            convective_delta_t,
+                            timestepper::convective_stability_criterion(
+                                    u.x(), one_over_delta_x,
+                                    u.y(), one_over_delta_y(j),
+                                    u.z(), one_over_delta_z,
+                                    evmaxmag_real,
+                                    std::sqrt(T)) /* nondimen a == sqrt(T) */);
+                    diffusive_delta_t = suzerain::math::minnan(
+                            diffusive_delta_t,
+                            timestepper::diffusive_stability_criterion(
+                                    one_over_delta_x,
+                                    one_over_delta_y(j),
+                                    one_over_delta_z,
+                                    Re, Pr, gamma, evmaxmag_imag, mu / rho));
+                }
 
-                } // end X
+            } // end X
 
-            } // end Z
-
-        }
-
+        } // end Z
 
     } // end Y
 
@@ -518,14 +445,14 @@ real_t IsothermalNonlinearOperator::applyOperator(
     // All state leaves routine as coefficients in X, Y, and Z directions
 }
 
-IsothermalChannelNonlinearOperator::IsothermalChannelNonlinearOperator(
+NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions(
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
         const suzerain::bsplineop_luz &massluz)
-    : IsothermalNonlinearOperator(scenario, grid, dgrid, b, bop, massluz),
+    : NonlinearOperator(scenario, grid, dgrid, b, bop, massluz),
       has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
                           && dgrid.local_wave_start.z() == 0)
 {
@@ -539,16 +466,20 @@ IsothermalChannelNonlinearOperator::IsothermalChannelNonlinearOperator(
         // Precompute M^{-1}*(e_{lower wall}, e_{upper_wall}, e_{interior})
         // to help apply collocation point conditions in coefficient space
         // where e_{interior} = domain - e_{lower_wall} - e_{upper_wall}.
+        massinv_elower = Eigen::VectorXr::Unit(b.n(), 0);
+        massinv_eupper = Eigen::VectorXr::Unit(b.n(), b.n() - 1);
         massinv_einterior.setConstant(b.n(), 1);
         massinv_einterior[0] = 0;
         massinv_einterior[b.n() - 1] = 0;
         suzerain::bsplineop_lu masslu(bop);
         masslu.form_mass(bop);
+        masslu.solve(1, massinv_elower.data(),    1, b.n());
+        masslu.solve(1, massinv_eupper.data(),    1, b.n());
         masslu.solve(1, massinv_einterior.data(), 1, b.n());
     }
 }
 
-real_t IsothermalChannelNonlinearOperator::applyOperator(
+real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     suzerain::NoninterleavedState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,
@@ -561,40 +492,83 @@ real_t IsothermalChannelNonlinearOperator::applyOperator(
     // Note that many operations must be done to either just at the wall
     // collocation points or just at the non-wall collocation points.  This
     // routine deals with B-spline coefficients /not/ collocation point values.
+    // TODO Cleaner-and-faster solution for the isothermal, no slip conditions
 
-    // Shorthand
-    const std::size_t Ny = swave.shape()[1];
+    // Shorthand for the wall-normal size and wall indices
+    const std::size_t Ny         = swave.shape()[1];
+    const std::size_t wall_lower = 0;
+    const std::size_t wall_upper = Ny - 1;
 
     // Compute and store quantities used later to implement forcing
     real_t bulk_density = std::numeric_limits<real_t>::quiet_NaN();
     if (has_zero_zero_mode) {
 
-        // Save mean density coefficients for use in step (4)
+        // Save mean density coefficients
         rho_fm = Map<VectorXc>(swave[ndx::rho].origin(), Ny);
 
-        // Save bulk density per step (1)
+        // Save bulk density
         bulk_density = bulkcoeff.dot(rho_fm.real());
 
-        // Save mean X momentum coefficients for use in step (5)
+        // Save mean X momentum coefficients
         fm_dot_m = Map<VectorXc>(swave[ndx::rhou].origin(), Ny);
     }
 
-    // Apply an operator that enforces isothermal, no-slip walls
+    // Apply an operator that cares nothing about the boundaries
     const real_t delta_t = base::applyOperator(
             swave, evmaxmag_real, evmaxmag_imag, delta_t_requested);
+
+    // Set no-slip condition for momentum on walls per writeup step (3)
+    // Condition achieved by removing time evolution at walls
+    assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
+    assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
+    for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
+        for (std::size_t k = 0; k < swave.shape()[3]; ++k) {
+            for (std::size_t j = 0; j < swave.shape()[2]; ++j) {
+
+                const complex_t m_lower = swave[i][wall_lower][j][k];
+                const complex_t m_upper = swave[i][wall_upper][j][k];
+
+                Map<VectorXc> m_jk(&swave[i][0][j][k], Ny);
+                m_jk -= (   massinv_elower*m_lower
+                          + massinv_eupper*m_upper).cast<complex_t>();
+            }
+        }
+    }
+
+    // Set isothermal condition on walls per writeup step (4)
+    // Condition achieved by removing time evolution at walls
+    // independent of changes due to local density evolution
+    const real_t inv_gamma_gamma1
+        = 1 / (scenario.gamma * (scenario.gamma - 1));
+    for (std::size_t k = 0; k < swave.shape()[3]; ++k) {
+        for (std::size_t j = 0; j < swave.shape()[2]; ++j) {
+
+            Map<VectorXc> rhoe_jk(&swave[ndx::rhoe][0][j][k], Ny);
+
+            const complex_t factor_lower
+                = inv_gamma_gamma1*swave[ndx::rho ][wall_lower][j][k]
+                -                  rhoe_jk[wall_lower];
+            const complex_t factor_upper
+                = inv_gamma_gamma1*swave[ndx::rho ][wall_upper][j][k]
+                -                  rhoe_jk[wall_upper];
+
+            rhoe_jk += (   massinv_elower*factor_lower
+                         + massinv_eupper*factor_upper).cast<complex_t>();
+        }
+    }
 
     // Apply f_{m_x} to mean x-momentum, mean energy at non-wall locations
     if (has_zero_zero_mode) {
 
-        // Compute temporary per writeup implementation step (3)
+        // Compute temporary per writeup implementation step (5)
         Map<VectorXc> mean_rhou(swave[ndx::rhou].origin(), Ny);
         const real_t alpha = bulkcoeff.dot(mean_rhou.real()) / bulk_density;
 
-        // Apply to non-wall mean x-momentum right hand side per step (4)
+        // Apply to non-wall mean x-momentum right hand side per step (6)
         rho_fm.array() *= alpha * massinv_einterior.array();
         mean_rhou -= rho_fm.cast<complex_t>();
 
-        // Apply to non-wall mean energy right hand side per step (5)
+        // Apply to non-wall mean energy right hand side per step (7)
         // Build modification in fm_dot_m storage and apply it
         fm_dot_m.array() *= alpha * massinv_einterior.array();
         Eigen::Map<Eigen::VectorXc> mean_rhoe(swave[ndx::rhoe].origin(), Ny);

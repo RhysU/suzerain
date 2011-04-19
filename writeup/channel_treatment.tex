@@ -70,20 +70,28 @@ total energy $e = \rho{}\tilde{e}$ according to
 \end{subequations}
 where $R_{\rho}$, $\vec{R}_{m}$, and $R_{e}$ are the spatial portion of the
 compressible Navier--Stokes operator appropriate for the nondimensionalization.
-The operator is assumed to enforce isothermal, no slip wall conditions.  We
-will determine the space-invariant form of the acceleration $\vec{f}_{m}$
-necessary to drive the isothermal channel problem similar to Coleman et
-al.~\cite{Coleman1995Numerical}.
+We will determine the space-invariant form of continuity forcing $f_{\rho}$ and
+body forcing $\vec{f}_{m}$ necessary to drive the isothermal channel problem
+similar to Coleman et al.~\cite{Coleman1995Numerical}.
 
 We assume a Fourier basis in the streamwise $x$ and spanwise $z$ direction as
 well as an inhomogeneous treatment for wall-normal
 $y\in\left[0,2\delta\right]$.  We assume that mean state quantities can be
 obtained as a function of wall-normal position using the constant (``zero
 zero'') Fourier modes.  Under this ergodic assumption, we denote
-$\rho\!\left(\cdot,y,\cdot\right) = \left<\rho\left(x,y,z\right)\right>_{x,z}$
-and likewise $\vec{m}\!\left(\cdot,y,\cdot\right) \coloneqq
-\left<\vec{m}\left(x,y,z\right)\right>_{x,z}$.  We assume that temperature $T$
-has been nondimensionalized so that $T_\text{wall}=1$.
+$\rho\!\left(\cdot,y,\cdot\right) =
+\left<\rho\left(x,y,z\right)\right>_{x,z}$ and likewise
+$\vec{m}\!\left(\cdot,y,\cdot\right) \coloneqq
+\left<\vec{m}\left(x,y,z\right)\right>_{x,z}$.  We will work with the
+nondimensional equation of state
+\begin{align}
+  p  = \frac{\rho{}T}{\gamma}
+    &= \left(\gamma-1\right)
+       \left( \rho\tilde{e} - \frac{\vec{m}\cdot\vec{m}}{2\rho} \right)
+\end{align}
+and assume that temperature $T$ has been nondimensionalized so that
+$T_\text{wall}=1$ though other choices should have a minimal impact on
+the anaysis that follows.
 
 Coleman et al.'s isothermal channel is characterized by
 \begin{enumerate}
@@ -98,8 +106,24 @@ Coleman et al.'s isothermal channel is characterized by
 
 \subsection*{Analysis}
 
-The problem as presented should provide a stationary bulk density $\bar{\rho}$
-and enforce isothermal, no slip walls conditions.  We find $\vec{f}_{m} =
+The problem as presented should provide a stationary bulk density $\bar{\rho}$.
+The boundary condition $\vec{u} = 0$ at $y = 0,2\delta$ implies that at the
+wall
+\begin{align}
+  \partial_{t} \vec{m}
+  =   \rho \cancel{\partial_{t} \vec{u}}
+    + \cancel{\vec{u}} \partial_{t} \rho
+  = 0.
+\end{align}
+The condition $T=1$ combined with the no-slip condition is equivalent to fixing
+$\tilde{e}=\frac{1}{\gamma\left(\gamma-1\right)}$.  This demands that
+\begin{align}
+  \partial_{t} e
+  &=  \rho \cancel{\partial_{t} \tilde{e}}
+    + \tilde{e} \partial_{t} \rho
+  = \frac{1}{\gamma\left(\gamma-1\right)} \partial_{t} \rho
+\end{align}
+also holds at the wall.  Finally, we find $\vec{f}_{m} =
 \left(f_{m_x},0,0\right)^{\textrm{T}}$ such that the bulk streamwise momentum
 $\bar{m}_{x}$ remains constant in time:
 \begin{align}
@@ -136,6 +160,10 @@ problem looks as follows:
 \begin{enumerate}
   \item Compute $\bar{\rho} = c \cdot \rho\!\left(\cdot,y,\cdot\right)$.
   \item Compute $R_{\rho}$, $R_{\vec{m}}$, and $R_{e}$ in wavespace.
+  \item Set $\left.R_{\vec{m}}\right|_{y=0,2\delta} = 0$.
+  \item Set $\left.R_{e}\right|_{y=0,2\delta} =
+        \frac{1}{\gamma\left(\gamma-1\right)}
+        \left.R_{\rho}\right|_{y=0,2\delta}$.
   \item Compute temporary value $\alpha =
         \bar{\rho}^{-1} c \cdot R_{m_{x}}\!\left(\cdot,y,\cdot\right)$.
   \item Apply $\rho f_{m_x}$ by updating
@@ -149,12 +177,13 @@ problem looks as follows:
 Care should be taken when advancing coefficient (rather than collocation point)
 state to ensure only the relevant collocation points are impacted.  One then
 advances $\partial_{t}\rho = R_{\rho}$, $\partial_{t} \vec{m} = R_{\vec{m}}$,
-and $\partial_{t} e = R_{e}$ using regular time integration techniques.  Note
-that $f_{m_x}$ is not applied at $y=0,2\delta$ but that these points may be
-included in the momentum integral computation ($\alpha$) as they are
-identically zero from earlier boundary condition enforcement.  Each of these
-computations may be performed in wavespace as they are linear in at most one
-state variable.
+and $\partial_{t} e = R_{e}$ using regular time integration techniques.  The
+above updates will cause the next state to also satisfy the isothermal channel
+conditions.  Note that $f_{m_x}$ is not applied at $y=0,2\delta$ but that these
+points may be included in the momentum integral computation ($\alpha$) as they
+are identically zero from earlier boundary condition enforcement.  Each of
+these computations may be performed in wavespace as they are linear in at most
+one state variable.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
