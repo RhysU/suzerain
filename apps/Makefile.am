@@ -25,7 +25,6 @@ driver_suzerain_p3dfft_SOURCES   = driver_suzerain_p3dfft.cpp
 driver_suzerain_p3dfft_SOURCES  += logger.cpp  logger.hpp
 driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS) $(LOG4CXX_LIBS)
 
-
 # Channel-based Applications
 
 noinst_LTLIBRARIES     = libchannel.la
@@ -47,6 +46,10 @@ channel_explicit_LDADD    = libchannel.la
 bin_PROGRAMS         += channel_mean
 channel_mean_SOURCES  = channel_mean.cpp
 channel_mean_LDADD    = libchannel.la
+
+bin_PROGRAMS         += conservation
+conservation_SOURCES  = conservation.cpp
+conservation_LDADD    = libchannel.la
 
 # Clean up from Intel Compiler's -prof-gen output and precomiled headers
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
