@@ -373,7 +373,7 @@ int main(int argc, char **argv)
     const SMR91Method<complex_t> smr91(timedef.evmagfactor);
     suzerain::BsplineMassOperator<state_type> L(
             bop, scenario.Lx * scenario.Lz * grid.N.x() * grid.N.z());
-    channel::NonlinearOperatorWithBoundaryConditions N(
+    channel::IsothermalChannelNonlinearOperator N(
             scenario, grid, *dgrid, *b, *bop, *bopluz);
 
     // Establish TimeController for use with operators and state storage
