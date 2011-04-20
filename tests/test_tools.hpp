@@ -68,8 +68,11 @@ std::string
 _suzerain_check_gbmatrix_close(
     int e_m, int e_n, int e_kl, int e_ku, const FPT * const e, int e_ld,
     int r_m, int r_n, int r_kl, int r_ku, const FPT * const r, int r_ld,
-    FPT percent_tolerance)
+    FPT percent_tolerance,
+    FPT small_tolerance = -1)
 {
+    if (small_tolerance == -1) small_tolerance = percent_tolerance;
+
     bool checkequality = true;
     std::ostringstream errors;
 
@@ -141,6 +144,7 @@ _suzerain_check_gbmatrix_close(
         const boost::test_tools::close_at_tolerance<FPT> is_close
             = boost::test_tools::close_at_tolerance<FPT>(
                 boost::test_tools::percent_tolerance(percent_tolerance));
+        using boost::test_tools::check_is_small;
 
         for (int j = 0; j < e_n; ++j) {
             for (int i = 0; i < e_m; ++i) {
@@ -157,7 +161,21 @@ _suzerain_check_gbmatrix_close(
                  if (e_in_band && r_in_band) {
                     const FPT r_value = r[r_offset];
                     const FPT e_value = e[e_offset];
-                    if (!is_close(e_value, r_value)) {
+                    if (e_value == FPT(0)) {
+                        if (!check_is_small(r_value, small_tolerance)) {
+                            errors << "\nMismatch of expected zero to "
+                                << small_tolerance << " at index ("
+                                << std::setw(2) << i << ","
+                                << std::setw(2) << j << "): ";
+                            const std::ios_base::fmtflags flags = errors.flags();
+                            const std::streamsize prec = errors.precision();
+                            errors.flags(std::ios::scientific | std::ios::showpos);
+                            errors.precision(std::numeric_limits<FPT>::digits10);
+                            errors << r_value;
+                            errors.flags(flags);
+                            errors.precision(prec);
+                        }
+                    } else if (!is_close(e_value, r_value)) {
                         errors << "\nMismatch to "
                             << percent_tolerance << "% at index ("
                             << std::setw(2) << i << ","
