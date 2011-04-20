@@ -589,6 +589,40 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic )
     }
 }
 
+/* FIXME STARTHERE */
+/* Check correctness when band storage is inferior to dense storage. */
+BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic_almost_dense )
+{
+    const double breakpts[] = { 0.0, 1.0 };
+    suzerain::bspline b(4, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
+    suzerain::bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    BOOST_REQUIRE_EQUAL(op.n(), b.n());
+
+    /* Check w->D[0], the mass matrix, against known good solution */
+    const double good_D0[] = {
+        0., 0.,     0.,     1.,    8./27., 1./27., 0.,
+        0., 0.,     0.,     4./9., 2./9.,  0.,     0.,
+        0., 0.,     2./9.,  4./9., 0.,     0.,     0.,
+        0., 1./27., 8./27., 1.,    0.,     0.,     0.
+    };
+    CHECK_GBMATRIX_CLOSE(
+                4,      4,        3,       3,  good_D0,       7,
+        op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+
+    /* Check w->D[1], the derivative matrix, against known good solution */
+    const double good_D1[] = {
+        0., 0.,    0.,    -3., -4./3., -1./3., 0.,
+        0., 0.,    3.,    0.,  -1.,    0.,     0.,
+        0., 0.,    1.,    0.,  -3.,    0.,     0.,
+        0., 1./3., 4./3., 3.,  0.,     0.,     0.
+    };
+    CHECK_GBMATRIX_CLOSE(
+                4,      4,        3,       3,  good_D1,       7,
+        op.n(), op.n(), op.kl(1), op.ku(1), op.D(1), op.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
 // See http://www.scribd.com/doc/52035371/Finding-Galerkin-L-2-based-Operators-for-B-spline-discretizations for the details.
 BOOST_AUTO_TEST_CASE( galerkin_piecewise_constant )
 {
