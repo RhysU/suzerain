@@ -589,7 +589,6 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic )
     }
 }
 
-/* FIXME STARTHERE */
 /* Check correctness when band storage is inferior to dense storage. */
 BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic_almost_dense )
 {
@@ -621,6 +620,53 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic_almost_dense )
                 4,      4,        3,       3,  good_D1,       7,
         op.n(), op.n(), op.kl(1), op.ku(1), op.D(1), op.ld(),
         std::numeric_limits<double>::epsilon()*1000);
+}
+
+/* Check correctness when band storage is inferior to dense storage. */
+BOOST_AUTO_TEST_CASE( collocation_piecewise_septic_dense_and_then_some )
+{
+    const double breakpts[] = { 0.0, 1.0 };
+    suzerain::bspline b(8, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
+    suzerain::bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    BOOST_REQUIRE_EQUAL(op.n(), b.n());
+
+    /* Matrices are a mess to input so we check only their actions */
+
+    {
+        /* Check w->D[0] application against multiple real vectors */
+        const int nrhs = 2;
+        double b[] = { 2, 3, 5, 7, 11, 13, 17, 19,
+                       3, 4, 6, 8, 12, 14, 18, 20 };
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+        const int incb = 1;
+        op.apply(0, nrhs, 823543, b, incb, ldb);
+        const double b_good[] = {
+            1647086,2767369,4378912,6397757,8694586,11121601,13549484,15647317,
+            2470629,3590912,5202455,7221300,9518129,11945144,14373027,16470860
+        };
+        check_close_collections(
+            b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
+            b, b + sizeof(b)/sizeof(b[0]),
+            std::numeric_limits<double>::epsilon()*1000);
+    }
+
+    {
+        /* Check w->D[1] application against multiple real vectors */
+        const int nrhs = 2;
+        double b[] = { 2, 3, 5, 7, 11, 13, 17, 19,
+                       19, 17, 13, 11, 7, 5, 3, 2 };
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+        const int incb = 1;
+        op.apply(1, nrhs, 16807, b, incb, ldb);
+        const double b_good[] = {
+            117649,197354,261593,311986,340553,350234,337249,235298,
+           -235298,-337249,-350234,-340553,-311986,-261593,-197354,-117649
+        };
+        check_close_collections(
+            b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
+            b, b + sizeof(b)/sizeof(b[0]),
+            std::numeric_limits<double>::epsilon()*1000);
+    }
 }
 
 // See http://www.scribd.com/doc/52035371/Finding-Galerkin-L-2-based-Operators-for-B-spline-discretizations for the details.
