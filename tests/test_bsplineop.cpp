@@ -1487,4 +1487,21 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
                     SUZERAIN_BSPLINEOP_GALERKIN_L2, 2 * tol * k * k);
         }
     }
+
+// TODO Add a maximum derivative order to these tests...
+//  { // Spectral-like case on a single interval with high polynomial order
+//      const double breakpts[] = { 2.0, 3.0 };
+
+//      for (int k = 11; k < 17; ++k) {
+//          real_polynomial_interpolation(
+//                  k, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+//                  SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE, tol * k);
+//      }
+
+//      for (int k = 11; k < 17; ++k) {
+//          real_polynomial_interpolation(
+//                  k, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+//                  SUZERAIN_BSPLINEOP_GALERKIN_L2, 2 * tol * k * k);
+//      }
+//  }
 }
