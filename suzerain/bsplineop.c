@@ -878,7 +878,10 @@ static int integrate_function_against_basis_functions(
         &multiply_function_against_basis_function, &params
     };
 
-    // Prepare integration scheme using at most limit subintervals
+    // Prepare integration scheme using at most limit subintervals.
+    // Limit chosen as no one should be expecting good B-spline interpolation
+    // performance on functions requiring so many small subintervals.
+    // Failure due to this choice will manifest as GSL_MAXITERs.
     const size_t limit = 2 * bw->knots->size;
     gsl_integration_workspace *iw = gsl_integration_workspace_alloc(limit);
     if (!iw) {
@@ -887,23 +890,42 @@ static int integrate_function_against_basis_functions(
                        SUZERAIN_ENOMEM);
     }
 
-    // Integrate the function against each basis function separately
-    const double a      = gsl_bspline_breakpoint(0,         bw);
-    const double b      = gsl_bspline_breakpoint(bw->n - 1, bw);
-    const double epsabs = sqrt(GSL_DBL_EPSILON) * sqrt(sqrt(GSL_DBL_EPSILON));
-    for (params.i = 0; params.i < bw->n; ++(params.i)) {
+    // Defensively fill the results with NaNs until values are computed
+    for (size_t i = 0; i < bw->n; ++i) results[i] = GSL_NAN;
+
+    // Integrate the function against each basis function separately.
+    // Precision is aggressive but GSL quite when it discovers roundoff error.
+    // GSL_INTEG_GAUSS21 chosen empirically from a small sample of tests.
+    // Bail as soon as we run into any trouble whatsoever...
+    const double a   = gsl_bspline_breakpoint(0,         bw);
+    const double b   = gsl_bspline_breakpoint(bw->n - 1, bw);
+    int stat = GSL_SUCCESS;
+    gsl_error_handler_t * old_handler = gsl_set_error_handler_off();
+    for (params.i = 0; params.i < bw->n && stat == GSL_SUCCESS; ++(params.i)) {
         double abserr;
-        const int status = gsl_integration_qag(&product_f, a, b, epsabs, 0.0,
-                                               limit, GSL_INTEG_GAUSS21, iw,
-                                               &results[params.i], &abserr);
-        assert(status);
+        stat = gsl_integration_qag(&product_f, a, b,
+                                   GSL_DBL_EPSILON, GSL_DBL_EPSILON,
+                                   limit, GSL_INTEG_GAUSS21, iw,
+                                   &results[params.i], &abserr);
+
+        if (stat == GSL_EROUND) {  // ...except for roundoff/extrapolation error
+            stat = GSL_SUCCESS;    // ...as we're asking for a strict tolerance
+        }
     }
+    gsl_set_error_handler(old_handler);
 
     // Free resources
     gsl_integration_workspace_free(iw);
     gsl_vector_free(params.Bk);
 
-    return SUZERAIN_SUCCESS;
+    if (stat != GSL_SUCCESS) {
+        char buffer[256];
+        snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+                "Error(s) integrating function against basis: %s",
+                gsl_strerror(stat));
+        SUZERAIN_ERROR(buffer, stat);
+    }
+    return stat;
 }
 
 int
