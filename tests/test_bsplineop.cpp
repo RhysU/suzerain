@@ -1379,11 +1379,21 @@ void real_polynomial_interpolation(const int k,
                                    suzerain_bsplineop_method method,
                                    const double tol)
 {
+    // Prepare a descriptive header to bracket results
+    std::ostringstream msg;
+    msg << __FUNCTION__ << "(k=" << k << ",b=[";
+    std::copy(breakpts, breakpts + nbreak,
+                std::ostream_iterator<double>(msg, " "));
+    msg << "],m=" << method << ",tol=" << tol << ")";
+
+    BOOST_TEST_MESSAGE("Entering parameters " << msg.str());
+
     // Initialize B-spline basis, operators, and factored mass matrix
     suzerain::bspline b(k, nbreak, breakpts);
     suzerain::bsplineop op(b, k, method);
     suzerain::bsplineop_lu mass(op);
     mass.form_mass(op);
+    const int ndof = b.n();
 
     // Initialize polynomial test function which we should recapture exactly
     boost::shared_ptr<poly_params> p(
@@ -1398,40 +1408,72 @@ void real_polynomial_interpolation(const int k,
 
     // Compute expected coefficients for derivatives [0...nderiv] inclusive
     // by directly differentiating the polynomial test function.
-    const std::size_t nstorage = (op.nderiv() + 1) * b.n();
+    const std::size_t nstorage = (op.nderiv() + 1) * ndof;
     boost::scoped_array<double> expected(new double[nstorage]);
     for (int i = 0; i <= op.nderiv(); ++i) {
-        op.interpolation_rhs(&f, &expected[i*b.n()], b);
-        poly_params_differentiate(p.get());  // --(polynomial order)
+        op.interpolation_rhs(&f, &expected[i*ndof], b);
+        poly_params_differentiate(p.get());
     }
     mass.solve(op.nderiv()+1, expected.get(), 1, mass.n());
 
-    // Make multiple copies of the zeroth derivative coefficients
-    boost::scoped_array<double> actual(new double[nstorage]);
-    for (int i = 0; i <= op.nderiv(); ++i) {
-        std::copy(&expected[0], &expected[b.n()], &actual[i*b.n()]);
+    // Test in-place application and solution
+    {
+        boost::scoped_array<double> result(new double[nstorage]);
+
+        // Make multiple copies of the zeroth derivative coefficients
+        for (int i = 0; i <= op.nderiv(); ++i) {
+            std::copy(&expected[0], &expected[ndof], &result[i*ndof]);
+        }
+
+        // Solve M*x' = D*x ...
+        // ...starting by applying the derivative operators
+        for (int i = 0; i <= op.nderiv(); ++i) {
+            op.apply(i, 1, 1.0, &result[i*ndof], 1, ndof);
+        }
+        // ...finishing by solving with the mass matrix
+        mass.solve(op.nderiv()+1, result.get(), 1, ndof);
+
+        // See if we got anywhere close
+        for (int i = 0; i <= op.nderiv(); ++i) {
+            BOOST_TEST_MESSAGE("\tApply-and-solve nderiv=" << i);
+            check_close_collections(
+                    &expected[i*ndof], &expected[(i+1)*ndof],
+                    &result[i*ndof],   &result[(i+1)*ndof], tol);
+        }
     }
 
-    // Solve M*x' = D*x ...
-    // ...starting by applying the derivative operators
-    for (int i = 0; i <= op.nderiv(); ++i) {
-        op.apply(i, 1, 1.0, &actual[i*b.n()], 1, b.n());
-    }
-    // ...finishing by solving with the mass matrix
-    mass.solve(op.nderiv()+1, actual.get(), 1, b.n());
+    // Test out-of-place application and solution
+    {
+        boost::scoped_array<double> result(new double[nstorage]);
 
-    // See if we got anywhere close
-    for (int i = 0; i <= op.nderiv(); ++i) {
-        check_close_collections(&expected[i*b.n()], &expected[(i+1)*b.n()],
-                                &actual[i*b.n()], &actual[(i+1)*b.n()], tol);
+        // Solve M*x' = D*x ...
+        // ...starting by accumulating the derivative operators
+        for (int i = 0; i <= op.nderiv(); ++i) {
+            op.accumulate(i, 1, 1.0, &expected[0],    1, ndof,
+                                0.0, &result[i*ndof], 1, ndof);
+        }
+        // ...finishing by solving with the mass matrix
+        mass.solve(op.nderiv()+1, result.get(), 1, ndof);
+
+        // See if we got anywhere close
+        for (int i = 0; i <= op.nderiv(); ++i) {
+            BOOST_TEST_MESSAGE("\tAccumulate-and-solve nderiv=" << i);
+            check_close_collections(
+                    &expected[i*ndof], &expected[(i+1)*ndof],
+                    &result[i*ndof],   &result[(i+1)*ndof], tol);
+        }
     }
+
+    BOOST_TEST_MESSAGE("Leaving parameters " << msg.str());
 }
 
 BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
 {
+    // Comparatively loose tolerance required for higher derivatives
+    const double tol = std::sqrt(std::numeric_limits<double>::epsilon())/10;
 
     const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
     real_polynomial_interpolation(
             7, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
-            SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE, 1e-9);
+            SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE, tol);
 }
