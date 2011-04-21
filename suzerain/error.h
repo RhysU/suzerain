@@ -58,7 +58,10 @@ enum suzerain_error_status {
     SUZERAIN_EBADFUNC =  9, /**< Problem with user-supplied function */
     SUZERAIN_EMAXITER = 11, /**< Exceeded max number of iterations */
     SUZERAIN_EZERODIV = 12, /**< Tried to divide by zero */
-    SUZERAIN_EBADLEN  = 19  /**< matrix or vector lengths are not conformant */
+    SUZERAIN_EROUND   = 18, /**< failed because of roundoff error */
+    SUZERAIN_EBADLEN  = 19, /**< matrix or vector lengths are not conformant */
+    SUZERAIN_ESING    = 21, /**< apparent singularity detected */
+    SUZERAIN_EDIVERGE = 22, /**< integral or series is divergent */
 };
 
 /**

@@ -154,8 +154,14 @@ suzerain_strerror(const int suzerain_errno)
         return "exceeded max number of iterations";
     case SUZERAIN_EZERODIV:
         return "tried to divide by zero" ;
+    case SUZERAIN_EROUND:
+        return "failed because of roundoff error";
     case SUZERAIN_EBADLEN:
         return "matrix or vector lengths are not conformant";
+    case SUZERAIN_ESING:
+        return "apparent singularity detected";
+    case SUZERAIN_EDIVERGE:
+        return "integral or series is divergent";
     default:
         return "unknown error code" ;
     }
