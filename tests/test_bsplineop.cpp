@@ -1474,17 +1474,17 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
 
     { // Uniform breakpoints
         const double breakpts[] = { 0.0, 1.0, 2.0, 3.0, 4.0 };
-        for (int k = 6; k < 9; ++k) {
+
+        for (int k = 4; k < 9; ++k) {
             real_polynomial_interpolation(
                     k, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
                     SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE, tol * k);
         }
 
-// FIXME Enable
-//      for (int k = 6; k < 9; ++k) {
-//          real_polynomial_interpolation(
-//                  k, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
-//                  SUZERAIN_BSPLINEOP_GALERKIN_L2, tol * k);
-//      }
+        for (int k = 4; k < 9; ++k) {
+            real_polynomial_interpolation(
+                    k, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+                    SUZERAIN_BSPLINEOP_GALERKIN_L2, 2 * tol * k * k);
+        }
     }
 }
