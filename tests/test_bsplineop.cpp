@@ -17,8 +17,6 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 #pragma warning(disable:1572 2014 2015)
 
-// TODO compute_derivatives_of_a_general_polynomial for more orders
-
 BOOST_AUTO_TEST_CASE( allocation_okay )
 {
     const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
@@ -1206,64 +1204,6 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
     free(p);
 }
 
-BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
-{
-    // Test parameters; comparatively high order compared to other tests
-    const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
-    suzerain::bspline b(7, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 7, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
-
-    // Initialize mass matrix in factored form
-    suzerain::bsplineop_lu mass(op);
-    mass.form_mass(op);
-
-    // Initialize test function
-    poly_params *p = (poly_params *)
-                      malloc(sizeof(poly_params) + b.k()*sizeof(double));
-    p->n = b.k();
-    p->c[0] = 1.9;
-    for (int i = 1; i < b.k(); ++i) {
-        p->c[i] = p->c[i-1] + 0.9;
-    }
-    suzerain_function f = {poly_f, p};
-
-    // Compute expected coefficients for derivatives [0...nderiv]
-    // by directly differentiating the polynomial test function.
-    double * const expected
-        = (double *) malloc((op.nderiv()+1) * b.n() * sizeof(double));
-    for (int i = 0; i <= op.nderiv(); ++i) {
-        op.interpolation_rhs(&f, expected + i*b.n(), b);
-        poly_params_differentiate(p);  // Drop the polynomial order by one
-    }
-    mass.solve(op.nderiv()+1, expected, 1, mass.n());
-
-    // Make copies of the zeroth derivative coefficients
-    double * const actual
-        = (double *) malloc((op.nderiv()+1) * b.n() * sizeof(double));
-    for (int i = 0; i <= op.nderiv(); ++i) {
-        memcpy(actual + i*b.n(), expected, b.n() * sizeof(actual[0]));
-    }
-
-    // Solve M*x' = D*x ...
-    // ...starting by applying the derivative operators
-    for (int i = 0; i <= op.nderiv(); ++i) {
-        op.apply(i, 1, 1.0, actual + i*b.n(), 1, b.n());
-    }
-    // ...finish by solving with the mass matrix
-    mass.solve(op.nderiv()+1, actual, 1, b.n());
-
-    // See if we got anywhere close
-    for (int i = 0; i <= op.nderiv(); ++i) {
-        check_close_collections(
-                expected + i*b.n(), expected + (i+1)*b.n(),
-                actual + i*b.n(), actual + (i+1)*b.n(), 1.0e-09);
-    }
-
-    free(actual);
-    free(expected);
-    free(p);
-}
-
 BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
 {
     const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
@@ -1430,4 +1370,68 @@ BOOST_AUTO_TEST_CASE( collocation_point_evaluation_is_operator_application )
                                 values_apply, values_apply + ndof,
                                 1.0e-12 * pow(10.0, k));
     }
+}
+
+static
+void real_polynomial_interpolation(const int k,
+                                   const int nbreak,
+                                   const double *breakpts,
+                                   suzerain_bsplineop_method method,
+                                   const double tol)
+{
+    // Initialize B-spline basis, operators, and factored mass matrix
+    suzerain::bspline b(k, nbreak, breakpts);
+    suzerain::bsplineop op(b, k, method);
+    suzerain::bsplineop_lu mass(op);
+    mass.form_mass(op);
+
+    // Initialize polynomial test function which we should recapture exactly
+    boost::shared_ptr<poly_params> p(
+        (poly_params *) malloc(sizeof(poly_params) + b.k()*sizeof(double)),
+        free);
+    p->n = b.k();
+    p->c[0] = 1.9;
+    for (int i = 1; i < b.k(); ++i) {
+        p->c[i] = p->c[i-1] + 0.9;
+    }
+    suzerain_function f = {poly_f, p.get()};
+
+    // Compute expected coefficients for derivatives [0...nderiv] inclusive
+    // by directly differentiating the polynomial test function.
+    const std::size_t nstorage = (op.nderiv() + 1) * b.n();
+    boost::scoped_array<double> expected(new double[nstorage]);
+    for (int i = 0; i <= op.nderiv(); ++i) {
+        op.interpolation_rhs(&f, &expected[i*b.n()], b);
+        poly_params_differentiate(p.get());  // --(polynomial order)
+    }
+    mass.solve(op.nderiv()+1, expected.get(), 1, mass.n());
+
+    // Make multiple copies of the zeroth derivative coefficients
+    boost::scoped_array<double> actual(new double[nstorage]);
+    for (int i = 0; i <= op.nderiv(); ++i) {
+        std::copy(&expected[0], &expected[b.n()], &actual[i*b.n()]);
+    }
+
+    // Solve M*x' = D*x ...
+    // ...starting by applying the derivative operators
+    for (int i = 0; i <= op.nderiv(); ++i) {
+        op.apply(i, 1, 1.0, &actual[i*b.n()], 1, b.n());
+    }
+    // ...finishing by solving with the mass matrix
+    mass.solve(op.nderiv()+1, actual.get(), 1, b.n());
+
+    // See if we got anywhere close
+    for (int i = 0; i <= op.nderiv(); ++i) {
+        check_close_collections(&expected[i*b.n()], &expected[(i+1)*b.n()],
+                                &actual[i*b.n()], &actual[(i+1)*b.n()], tol);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
+{
+
+    const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
+    real_polynomial_interpolation(
+            7, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+            SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE, 1e-9);
 }
