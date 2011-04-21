@@ -832,6 +832,80 @@ suzerain_bsplineop_create_galerkin_operators(
     return SUZERAIN_SUCCESS;
 }
 
+/** Helper for  multiply_function_against_basis_function() */
+struct multiply_function_against_basis_function_params {
+    const suzerain_function * function;
+    gsl_bspline_workspace *bw;
+    size_t i;
+    gsl_vector *Bk;
+};
+
+static double multiply_function_against_basis_function(double x, void *params)
+{
+    struct multiply_function_against_basis_function_params *p
+        = (struct multiply_function_against_basis_function_params *) params;
+
+    // Evaluate nonzero basis functions at x
+    size_t istart, iend;
+    const int error = gsl_bspline_eval_nonzero(x, p->Bk, &istart, &iend, p->bw);
+    assert(!error);
+
+    // If x is in the support of basis function i...
+    if (istart <= p->i && p->i <= iend) {
+        // ...return the product of the basis function and p->function...
+        return   gsl_vector_get(p->Bk, p->i - istart)
+               * SUZERAIN_FN_EVAL(p->function, x);
+    } else {
+        // ...otherwise return zero
+        return 0.0;
+    }
+}
+
+static int integrate_function_against_basis_functions(
+        const suzerain_function * function,
+        double * results,
+        gsl_bspline_workspace *bw)
+{
+    // Prepare suzerain_function instance for use with integration scheme
+    struct multiply_function_against_basis_function_params params = {
+        function, bw, -1, gsl_vector_alloc(bw->k)
+    };
+    if (!params.Bk) {
+        SUZERAIN_ERROR("failed to allocate scratch space Bk",
+                       SUZERAIN_ENOMEM);
+    }
+    gsl_function product_f = {
+        &multiply_function_against_basis_function, &params
+    };
+
+    // Prepare integration scheme using at most limit subintervals
+    const size_t limit = 2 * bw->knots->size;
+    gsl_integration_workspace *iw = gsl_integration_workspace_alloc(limit);
+    if (!iw) {
+        gsl_vector_free(params.Bk);
+        SUZERAIN_ERROR("failed to allocate integration workspace",
+                       SUZERAIN_ENOMEM);
+    }
+
+    // Integrate the function against each basis function separately
+    const double a      = gsl_bspline_breakpoint(0,         bw);
+    const double b      = gsl_bspline_breakpoint(bw->n - 1, bw);
+    const double epsabs = sqrt(GSL_DBL_EPSILON) * sqrt(sqrt(GSL_DBL_EPSILON));
+    for (params.i = 0; params.i < bw->n; ++(params.i)) {
+        double abserr;
+        const int status = gsl_integration_qag(&product_f, a, b, epsabs, 0.0,
+                                               limit, GSL_INTEG_GAUSS21, iw,
+                                               &results[params.i], &abserr);
+        assert(status);
+    }
+
+    // Free resources
+    gsl_integration_workspace_free(iw);
+    gsl_vector_free(params.Bk);
+
+    return SUZERAIN_SUCCESS;
+}
+
 int
 suzerain_bsplineop_interpolation_rhs(
     const suzerain_function * function,
@@ -849,14 +923,14 @@ suzerain_bsplineop_interpolation_rhs(
             }
         }
 
-        break;
+        return SUZERAIN_SUCCESS;
+
     case SUZERAIN_BSPLINEOP_GALERKIN_L2:
-        SUZERAIN_ERROR("unimplemented method", SUZERAIN_ESANITY); // FIXME
-    default:
-        SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
+        return integrate_function_against_basis_functions(function, rhs, bw);
     }
 
-    return SUZERAIN_SUCCESS;
+    SUZERAIN_ERROR("unknown method in suzerain_bsplineop_interpolation_rhs",
+                   SUZERAIN_ESANITY);
 }
 
 int
@@ -876,14 +950,14 @@ suzerain_bsplineop_interpolation_rhs_complex(
             }
         }
 
+        return SUZERAIN_SUCCESS;
+
+    case SUZERAIN_BSPLINEOP_GALERKIN_L2: // FIXME Unimplemented
         break;
-    case SUZERAIN_BSPLINEOP_GALERKIN_L2:
-        SUZERAIN_ERROR("unimplemented method", SUZERAIN_ESANITY); // FIXME
-    default:
-        SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
 
-    return SUZERAIN_SUCCESS;
+    SUZERAIN_ERROR("unknown method in suzerain_bsplineop_interpolation_rhs_complex",
+                   SUZERAIN_ESANITY);
 }
 
 /********************************/
