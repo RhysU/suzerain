@@ -1374,6 +1374,7 @@ BOOST_AUTO_TEST_CASE( collocation_point_evaluation_is_operator_application )
 
 static
 void real_polynomial_interpolation(const int k,
+                                   const int nderiv,
                                    const int nbreak,
                                    const double *breakpts,
                                    suzerain_bsplineop_method method,
@@ -1408,33 +1409,33 @@ void real_polynomial_interpolation(const int k,
 
     // Compute expected coefficients for derivatives [0...nderiv] inclusive
     // by directly differentiating the polynomial test function.
-    const std::size_t nstorage = (op.nderiv() + 1) * ndof;
+    const std::size_t nstorage = (nderiv + 1) * ndof;
     boost::scoped_array<double> expected(new double[nstorage]);
-    for (int i = 0; i <= op.nderiv(); ++i) {
+    for (int i = 0; i <= nderiv; ++i) {
         op.interpolation_rhs(&f, &expected[i*ndof], b);
         poly_params_differentiate(p.get());
     }
-    mass.solve(op.nderiv()+1, expected.get(), 1, mass.n());
+    mass.solve(nderiv+1, expected.get(), 1, mass.n());
 
     // Test in-place application and solution
     {
         boost::scoped_array<double> result(new double[nstorage]);
 
         // Make multiple copies of the zeroth derivative coefficients
-        for (int i = 0; i <= op.nderiv(); ++i) {
+        for (int i = 0; i <= nderiv; ++i) {
             std::copy(&expected[0], &expected[ndof], &result[i*ndof]);
         }
 
         // Solve M*x' = D*x ...
         // ...starting by applying the derivative operators
-        for (int i = 0; i <= op.nderiv(); ++i) {
+        for (int i = 0; i <= nderiv; ++i) {
             op.apply(i, 1, 1.0, &result[i*ndof], 1, ndof);
         }
         // ...finishing by solving with the mass matrix
-        mass.solve(op.nderiv()+1, result.get(), 1, ndof);
+        mass.solve(nderiv+1, result.get(), 1, ndof);
 
         // See if we got anywhere close
-        for (int i = 0; i <= op.nderiv(); ++i) {
+        for (int i = 0; i <= nderiv; ++i) {
             BOOST_TEST_MESSAGE("\tApply-and-solve nderiv=" << i);
             check_close_collections(
                     &expected[i*ndof], &expected[(i+1)*ndof],
@@ -1448,15 +1449,15 @@ void real_polynomial_interpolation(const int k,
 
         // Solve M*x' = D*x ...
         // ...starting by accumulating the derivative operators
-        for (int i = 0; i <= op.nderiv(); ++i) {
+        for (int i = 0; i <= nderiv; ++i) {
             op.accumulate(i, 1, 1.0, &expected[0],    1, ndof,
                                 0.0, &result[i*ndof], 1, ndof);
         }
         // ...finishing by solving with the mass matrix
-        mass.solve(op.nderiv()+1, result.get(), 1, ndof);
+        mass.solve(nderiv+1, result.get(), 1, ndof);
 
         // See if we got anywhere close
-        for (int i = 0; i <= op.nderiv(); ++i) {
+        for (int i = 0; i <= nderiv; ++i) {
             BOOST_TEST_MESSAGE("\tAccumulate-and-solve nderiv=" << i);
             check_close_collections(
                     &expected[i*ndof], &expected[(i+1)*ndof],
@@ -1469,39 +1470,43 @@ void real_polynomial_interpolation(const int k,
 
 BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
 {
-    // Comparatively loose tolerance required for higher derivatives
+    // Comparatively loose tolerance required on these tests
+    // Indicative of a less-than-optimal implementation
     const double tol = std::sqrt(std::numeric_limits<double>::epsilon());
 
-    { // Uniform breakpoints
+    BOOST_TEST_MESSAGE("Uniform breakpoints");
+    {
         const double breakpts[] = { 0.0, 1.0, 2.0, 3.0, 4.0 };
+        const int maxnderiv = 3;
 
-        for (int k = 4; k < 9; ++k) {
-            real_polynomial_interpolation(
-                    k, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+        for (int k = 5; k < 9; ++k) {
+            real_polynomial_interpolation(k, std::min(k-1, maxnderiv),
+                    sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
                     SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE, tol * k);
         }
 
-        for (int k = 4; k < 9; ++k) {
-            real_polynomial_interpolation(
-                    k, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+        for (int k = 5; k < 9; ++k) {
+            real_polynomial_interpolation(k, std::min(k-1, maxnderiv),
+                    sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
                     SUZERAIN_BSPLINEOP_GALERKIN_L2, 3 * tol * k * k);
         }
     }
 
-// TODO Add a maximum derivative order to these tests...
-//  { // Spectral-like case on a single interval with high polynomial order
-//      const double breakpts[] = { 2.0, 3.0 };
+    BOOST_TEST_MESSAGE("Spectral-like single interval with high order");
+    {
+        const double breakpts[] = { 2.0, 3.0 };
+        const int maxnderiv = 2;
 
-//      for (int k = 11; k < 17; ++k) {
-//          real_polynomial_interpolation(
-//                  k, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
-//                  SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE, tol * k);
-//      }
+        for (int k = 11; k < 13; ++k) {
+            real_polynomial_interpolation(k, std::min(k-1, maxnderiv),
+                    sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+                    SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE, tol * k);
+        }
 
-//      for (int k = 11; k < 17; ++k) {
-//          real_polynomial_interpolation(
-//                  k, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
-//                  SUZERAIN_BSPLINEOP_GALERKIN_L2, 2 * tol * k * k);
-//      }
-//  }
+        for (int k = 11; k < 13; ++k) {
+            real_polynomial_interpolation(k, std::min(k-1, maxnderiv),
+                    sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+                    SUZERAIN_BSPLINEOP_GALERKIN_L2, 7 * tol * k * k);
+        }
+    }
 }

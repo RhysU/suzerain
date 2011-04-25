@@ -904,7 +904,7 @@ static int integrate_function_against_basis_functions(
         const double a = gsl_vector_get(bw->knots, params.i);
         const double b = gsl_vector_get(bw->knots, params.i + bw->k);
         stat = gsl_integration_qag(&product_f, a, b,
-                                   GSL_DBL_EPSILON, GSL_DBL_EPSILON,
+                                   GSL_DBL_EPSILON, 0.0,
                                    limit, GSL_INTEG_GAUSS21, iw,
                                    &results[params.i], &abserr);
 
