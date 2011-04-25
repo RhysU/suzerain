@@ -1484,7 +1484,7 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
         for (int k = 4; k < 9; ++k) {
             real_polynomial_interpolation(
                     k, sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
-                    SUZERAIN_BSPLINEOP_GALERKIN_L2, 2 * tol * k * k);
+                    SUZERAIN_BSPLINEOP_GALERKIN_L2, 3 * tol * k * k);
         }
     }
 
