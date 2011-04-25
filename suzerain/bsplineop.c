@@ -172,9 +172,9 @@ suzerain_bsplineop_alloc(
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
     }
-    w->kl = ((void *) w    ) + sizeof(suzerain_bsplineop_workspace);
-    w->ku = ((void *) w->kl) + (nderiv+1)*sizeof(w->kl[0]);
-    w->D  = ((void *) w->ku) + (nderiv+1)*sizeof(w->ku[0]);
+    w->kl = (void *)(((char *) w) + sizeof(suzerain_bsplineop_workspace));
+    w->ku = w->kl + (nderiv+1);
+    w->D  = (void *)(w->ku + (nderiv+1));
 
     /* Save bspline operator parameters in workspace */
     w->method = method;
