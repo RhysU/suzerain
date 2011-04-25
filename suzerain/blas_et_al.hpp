@@ -1346,6 +1346,156 @@ inline int gbtrs(
                                   boost::numeric_cast<int>(ldb));
 }
 
+/*! @copydoc suzerain_lapack_sgbcon */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4 >
+inline int gbcon(
+        const char norm,
+        const Integer1 n,
+        const Integer2 kl,
+        const Integer3 ku,
+        const float *ab,
+        const Integer4 ldab,
+        const int *ipiv,
+        float *anorm,
+        float *rcond,
+        float *work,
+        int *iwork)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    return suzerain_lapack_sgbcon(norm,
+                                  boost::numeric_cast<int>(n),
+                                  boost::numeric_cast<int>(kl),
+                                  boost::numeric_cast<int>(ku),
+                                  ab,
+                                  boost::numeric_cast<int>(ldab),
+                                  ipiv,
+                                  anorm,
+                                  rcond,
+                                  work,
+                                  iwork);
+}
+
+/*! @copydoc suzerain_lapack_dgbcon */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4 >
+inline int gbcon(
+        const char norm,
+        const Integer1 n,
+        const Integer2 kl,
+        const Integer3 ku,
+        const double *ab,
+        const Integer4 ldab,
+        const int *ipiv,
+        double *anorm,
+        double *rcond,
+        double *work,
+        int *iwork)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    return suzerain_lapack_dgbcon(norm,
+                                  boost::numeric_cast<int>(n),
+                                  boost::numeric_cast<int>(kl),
+                                  boost::numeric_cast<int>(ku),
+                                  ab,
+                                  boost::numeric_cast<int>(ldab),
+                                  ipiv,
+                                  anorm,
+                                  rcond,
+                                  work,
+                                  iwork);
+}
+
+/*! @copydoc suzerain_blas_cgbcon */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Complex1,
+          typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>
+> >::type gbcon(
+        const char norm,
+        const Integer1 n,
+        const Integer2 kl,
+        const Integer3 ku,
+        const Complex1 *ab,
+        const Integer4 ldab,
+        const int *ipiv,
+        float *anorm,
+        float *rcond,
+        Complex2 *work,
+        float *rwork)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    return suzerain_lapack_cgbcon(norm,
+                                  boost::numeric_cast<int>(n),
+                                  boost::numeric_cast<int>(kl),
+                                  boost::numeric_cast<int>(ku),
+                                  reinterpret_cast<const float (*)[2]>(ab),
+                                  boost::numeric_cast<int>(ldab),
+                                  ipiv,
+                                  anorm,
+                                  rcond,
+                                  reinterpret_cast<float (*)[2]>(work),
+                                  rwork);
+}
+
+/*! @copydoc suzerain_blas_zgbcon */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Complex1,
+          typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>
+> >::type gbcon(
+        const char norm,
+        const Integer1 n,
+        const Integer2 kl,
+        const Integer3 ku,
+        const Complex1 *ab,
+        const Integer4 ldab,
+        const int *ipiv,
+        double *anorm,
+        double *rcond,
+        Complex2 *work,
+        double *rwork)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    return suzerain_lapack_zgbcon(norm,
+                                  boost::numeric_cast<int>(n),
+                                  boost::numeric_cast<int>(kl),
+                                  boost::numeric_cast<int>(ku),
+                                  reinterpret_cast<const double (*)[2]>(ab),
+                                  boost::numeric_cast<int>(ldab),
+                                  ipiv,
+                                  anorm,
+                                  rcond,
+                                  reinterpret_cast<double (*)[2]>(work),
+                                  rwork);
+}
+
 } // namespace lapack
 
 } // namespace suzerain

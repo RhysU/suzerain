@@ -1504,6 +1504,173 @@ suzerain_lapack_zgbtrs(
 #endif
 }
 
+int
+suzerain_lapack_sgbcon(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const float *ab,
+        const int ldab,
+        const int *ipiv,
+        float *anorm,
+        float *rcond,
+        float *work,
+        int *iwork)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        int info = 0;
+        sgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                (float*)ab, (int*)&ldab, (int*) ipiv,
+                anorm, rcond, work, iwork, &info);
+        return info;
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _kl   = kl;
+        MKL_INT _ku   = ku;
+        MKL_INT _ldab = ldab;
+
+        MKL_INT _info = 0;
+        // FIXME: ipiv's contents are incompatible with LAPACK here
+        // FIXME: iwork's contents are incompatible with LAPACK here
+        sgbcon((char*)&norm, &_n, &_kl, &_ku,
+                (float*)ab, &_ldab, (int*) ipiv,
+                anorm, rcond, work, iwork, &_info);
+        return _info;
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+int
+suzerain_lapack_dgbcon(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const double *ab,
+        const int ldab,
+        const int *ipiv,
+        double *anorm,
+        double *rcond,
+        double *work,
+        int *iwork)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        int info = 0;
+        dgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                (double*)ab, (int*)&ldab, (int*) ipiv,
+                anorm, rcond, work, iwork, &info);
+        return info;
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _kl   = kl;
+        MKL_INT _ku   = ku;
+        MKL_INT _ldab = ldab;
+
+        MKL_INT _info = 0;
+        // FIXME: ipiv's contents are incompatible with LAPACK here
+        // FIXME: iwork's contents are incompatible with LAPACK here
+        dgbcon((char*)&norm, &_n, &_kl, &_ku,
+                (double*)ab, &_ldab, (int*) ipiv,
+                anorm, rcond, work, iwork, &_info);
+        return _info;
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+int
+suzerain_lapack_cgbcon(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const float (*ab)[2],
+        const int ldab,
+        const int *ipiv,
+        float *anorm,
+        float *rcond,
+        float (*work)[2],
+        float  *rwork)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        int info = 0;
+        cgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                (MKL_Complex8*)ab, (int*)&ldab, (int*) ipiv,
+                anorm, rcond, (MKL_Complex8*)work, rwork, &info);
+        return info;
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _kl   = kl;
+        MKL_INT _ku   = ku;
+        MKL_INT _ldab = ldab;
+
+        MKL_INT _info = 0;
+        // FIXME: ipiv's contents are incompatible with LAPACK here
+        cgbcon((char*)&norm, &_n, &_kl, &_ku,
+                (MKL_Complex8*)ab, &_ldab, (int*) ipiv,
+                anorm, rcond, (MKL_Complex8*)work, rwork, &_info);
+        return _info;
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+int
+suzerain_lapack_zgbcon(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const double (*ab)[2],
+        const int ldab,
+        const int *ipiv,
+        double *anorm,
+        double *rcond,
+        double (*work)[2],
+        double  *rwork)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        int info = 0;
+        zgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                (MKL_Complex16*)ab, (int*)&ldab, (int*) ipiv,
+                anorm, rcond, (MKL_Complex16*)work, rwork, &info);
+        return info;
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _kl   = kl;
+        MKL_INT _ku   = ku;
+        MKL_INT _ldab = ldab;
+
+        MKL_INT _info = 0;
+        // FIXME: ipiv's contents are incompatible with LAPACK here
+        // FIXME: iwork's contents are incompatible with LAPACK here
+        zgbcon((char*)&norm, &_n, &_kl, &_ku,
+                (MKL_Complex16*)ab, &_ldab, (int*) ipiv,
+                anorm, rcond, (MKL_Complex16*)work, rwork, &_info);
+        return _info;
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
 void
 suzerain_blasext_daxpzy(
         const int n,

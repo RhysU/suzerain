@@ -854,6 +854,118 @@ suzerain_lapack_zgbtrs(
         double (*b)[2],
         const int ldb);
 
+/*!
+ * \brief Estimate the reciprocal of the condition number of a
+ * real-valued general band matrix \f$ A \f$ using LAPACK's gbcon.
+ *
+ * \param norm One of '0', '1', or 'I' for the 1-norm, the 1-norm,
+ *      or the infinity-norm, respectively.
+ * \param n Number of rows and columns in matrix \c ab.
+ * \param kl Number of subdiagonals in band storage of \c ab.
+ * \param ku Number of superdiagonals in nonfactored matrix \c ab.
+ *      Note this is \e not the number of superdiagonals in the storage
+ *      format of \c ab, but rather the number of superdiagonals required
+ *      to store the non-factored matrix \c ab.  This is odd.
+ * \param ab General band storage of the matrix to factor.
+ * \param ldab Leading dimension of \c ab.
+ * \param ipiv Pivot matrix already computed in the decomposition.
+ * \param anorm The norm of the matrix according to the norm choice
+ *      made in \c norm.
+ * \param rcond The reciprocal of the condition number of the matrix
+ *      \f$ A \f$ computed as <tt>1/(norm(A)*norm(inv(A)))</tt>.
+ * \param work Work array of dimension <tt>3*n</tt>.
+ * \param iwork Work array of dimension <tt>n</tt>.
+ *
+ * \return Zero on successful execution.  Nonzero otherwise.
+ *
+ * \see gbtrf for how to decompose the matrix \f$ A \f$.
+ * \see A LAPACK reference for more details.
+ */
+int
+suzerain_lapack_sgbcon(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const float *ab,
+        const int ldab,
+        const int *ipiv,
+        float *anorm,
+        float *rcond,
+        float *work,
+        int *iwork);
+
+/*! \copydoc suzerain_lapack_sgbcon */
+int
+suzerain_lapack_dgbcon(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const double *ab,
+        const int ldab,
+        const int *ipiv,
+        double *anorm,
+        double *rcond,
+        double *work,
+        int *iwork);
+
+/*!
+ * \brief Estimate the reciprocal of the condition number of a
+ * complex-valued general band matrix \f$ A \f$ using LAPACK's gbcon.
+ *
+ * \param norm One of '0', '1', or 'I' for the 1-norm, the 1-norm,
+ *      or the infinity-norm, respectively.
+ * \param n Number of rows and columns in matrix \c ab.
+ * \param kl Number of subdiagonals in band storage of \c ab.
+ * \param ku Number of superdiagonals in nonfactored matrix \c ab.
+ *      Note this is \e not the number of superdiagonals in the storage
+ *      format of \c ab, but rather the number of superdiagonals required
+ *      to store the non-factored matrix \c ab.  This is odd.
+ * \param ab General band storage of the matrix to factor.
+ * \param ldab Leading dimension of \c ab.
+ * \param ipiv Pivot matrix already computed in the decomposition.
+ * \param anorm The norm of the matrix according to the norm choice
+ *      made in \c norm.
+ * \param rcond The reciprocal of the condition number of the matrix
+ *      \f$ A \f$ computed as <tt>1/(norm(A)*norm(inv(A)))</tt>.
+ * \param work Work array of dimension <tt>2*n</tt>.
+ * \param rwork Work array of dimension <tt>n</tt>.
+ *
+ * \return Zero on successful execution.  Nonzero otherwise.
+ *
+ * \see gbtrf for how to decompose the matrix \f$ A \f$.
+ * \see A LAPACK reference for more details.
+ */
+int
+suzerain_lapack_cgbcon(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const float (*ab)[2],
+        const int ldab,
+        const int *ipiv,
+        float *anorm,
+        float *rcond,
+        float (*work)[2],
+        float  *rwork);
+
+/*! \copydoc suzerain_lapack_cgbcon */
+int
+suzerain_lapack_zgbcon(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const double (*ab)[2],
+        const int ldab,
+        const int *ipiv,
+        double *anorm,
+        double *rcond,
+        double (*work)[2],
+        double  *rwork);
+
 /*! @} */
 
 /*! \name BLAS-like extensions
@@ -1134,17 +1246,17 @@ suzerain_blasext_zgb_dacc(
  *             specified in terms of complex elements like <tt>double[2]</tt>.
  * \param beta Scale factor \f$ \beta \f$ to apply to matrix \f$ Y \f$
  * \param y_re Beginning of the storage for \f$\operatorname{real} Y \f$.
- * \param incy_re Increment between values in a column of 
+ * \param incy_re Increment between values in a column of
  *                \f$ \operatorname{real} Y \f$, specified in terms of
  *                <tt>sizeof(double)</tt>.
- * \param ldy_re Leading distance between values in a row of 
+ * \param ldy_re Leading distance between values in a row of
  *                \f$ \operatorname{real} Y \f$, specified in terms of
  *                <tt>sizeof(double)</tt>.
  * \param y_im Beginning of the storage for \f$\operatorname{imag} Y \f$.
- * \param incy_im Increment between values in a column of 
+ * \param incy_im Increment between values in a column of
  *                \f$ \operatorname{imag} Y \f$, specified in terms of
  *                <tt>sizeof(double)</tt>.
- * \param ldy_im Leading distance between values in a row of 
+ * \param ldy_im Leading distance between values in a row of
  *                \f$ \operatorname{imag} Y \f$, specified in terms of
  *                <tt>sizeof(double)</tt>.
  */
