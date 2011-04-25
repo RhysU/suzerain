@@ -882,7 +882,7 @@ static int integrate_function_against_basis_functions(
     // Limit chosen as no one should be expecting good B-spline interpolation
     // performance on functions requiring so many small subintervals.
     // Failure due to this choice will manifest as GSL_MAXITERs.
-    const size_t limit = 2 * bw->knots->size;
+    const size_t limit = 3 * bw->knots->size;
     gsl_integration_workspace *iw = gsl_integration_workspace_alloc(limit);
     if (!iw) {
         gsl_vector_free(params.Bk);
@@ -894,15 +894,15 @@ static int integrate_function_against_basis_functions(
     for (size_t i = 0; i < bw->n; ++i) results[i] = GSL_NAN;
 
     // Integrate the function against each basis function separately.
-    // Precision is aggressive but GSL quite when it discovers roundoff error.
+    // Precision is aggressive but GSL quits when it discovers roundoff error.
     // GSL_INTEG_GAUSS21 chosen empirically from a small sample of tests.
     // Bail as soon as we run into any trouble whatsoever...
-    const double a   = gsl_bspline_breakpoint(0,         bw);
-    const double b   = gsl_bspline_breakpoint(bw->n - 1, bw);
     int stat = GSL_SUCCESS;
     gsl_error_handler_t * old_handler = gsl_set_error_handler_off();
     for (params.i = 0; params.i < bw->n && stat == GSL_SUCCESS; ++(params.i)) {
         double abserr;
+        const double a = gsl_vector_get(bw->knots, params.i);
+        const double b = gsl_vector_get(bw->knots, params.i + bw->k);
         stat = gsl_integration_qag(&product_f, a, b,
                                    GSL_DBL_EPSILON, GSL_DBL_EPSILON,
                                    limit, GSL_INTEG_GAUSS21, iw,
