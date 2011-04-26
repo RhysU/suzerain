@@ -474,6 +474,9 @@ typedef struct suzerain_bsplineop_lu_workspace {
     /** Leading dimension in the factored operator derivative */
     int ld;
 
+    /** The \f$p = 1\f$ norm of the factored operator */
+    double norm1;
+
     /** Pivot matrix \c P from the \c LUP decomposition of the operator. */
     int *ipiv;
 
@@ -593,6 +596,24 @@ suzerain_bsplineop_lu_solve(
     int ldb,
     const suzerain_bsplineop_lu_workspace *luw);
 
+/**
+ * Estimate the reciprocal condition number of the factored operator stored in
+ * \c luw.  That is, \f$ \left( \left|\left|A\right|\right|_{1}
+ * \left|\left|A^{-1}\right|\right|_{1} \right)^{-1} \f$.
+ *
+ * \param rcond[out] The reciprocal of the condition number of the operator.
+ * @param[in] luw Workspace containing the factored operator to investigate.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+int
+suzerain_bsplineop_lu_rcond(
+    double *rcond,
+    const suzerain_bsplineop_lu_workspace *luw);
+
 /**@}*/
 
 /**
@@ -620,6 +641,9 @@ typedef struct suzerain_bsplineop_luz_workspace {
 
     /** Leading dimension in the factored operator derivative */
     int ld;
+
+    /** The \f$p = 1\f$ norm of the factored operator */
+    double norm1;
 
     /** Pivot matrix \c P from the \c LUP decomposition of the operator. */
     int *ipiv;
@@ -738,6 +762,24 @@ suzerain_bsplineop_luz_solve(
     double (*b)[2],
     int incb,
     int ldb,
+    const suzerain_bsplineop_luz_workspace *luzw);
+
+/**
+ * Estimate the reciprocal condition number of the factored operator stored in
+ * \c luzw.  That is, \f$ \left( \left|\left|A\right|\right|_{1}
+ * \left|\left|A^{-1}\right|\right|_{1} \right)^{-1} \f$.
+ *
+ * \param rcond[out] The reciprocal of the condition number of the operator.
+ * @param[in] luzw Workspace containing the factored operator to investigate.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bsplineop_luz_workspace
+ */
+int
+suzerain_bsplineop_luz_rcond(
+    double *rcond,
     const suzerain_bsplineop_luz_workspace *luzw);
 
 /**@}*/

@@ -2352,6 +2352,118 @@ test_zgb_dacc_nop()
     free(expected_data);
 }
 
+static
+void
+test_blasext_sgbnorm1()
+{
+    const int m = 4, n = 5, kl = 3, ku = 4, lda = ku + 1 + kl;
+    const float a[] = { 555, 555, 555, 555, 6,   -1,  -2,  -4,
+                        555, 555, 555, -4,  10,  1,   -5,  555,
+                        555, 555, 10,  10,  -7,  5,   555, 555,
+                        555, -10, -1,  -9,  -2,  555, 555, 555,
+                        -7,  3,   -5,  3,   555, 555, 555, 555 };
+
+    float norm1;
+    const int status = suzerain_blasext_sgbnorm1(m, n, kl, ku, a, lda, &norm1);
+    gsl_test_int(0, status, "%s call success", __func__);
+    gsl_test_abs(norm1, 32.0, GSL_FLT_EPSILON, "%s norm result %d", norm1);
+}
+
+static
+void
+test_blasext_dgbnorm1()
+{
+    const int m = 4, n = 5, kl = 3, ku = 4, lda = ku + 1 + kl;
+    const double a[] = { 555, 555, 555, 555, 6,   -1,  -2,  -4,
+                         555, 555, 555, -4,  10,  1,   -5,  555,
+                         555, 555, 10,  10,  -7,  5,   555, 555,
+                         555, -10, -1,  -9,  -2,  555, 555, 555,
+                         -7,  3,   -5,  3,   555, 555, 555, 555 };
+
+    double norm1;
+    const int status = suzerain_blasext_dgbnorm1(m, n, kl, ku, a, lda, &norm1);
+    gsl_test_int(0, status, "%s call success", __func__);
+    gsl_test_abs(norm1, 32.0, GSL_DBL_EPSILON, "%s norm result %d", norm1);
+}
+
+static
+void
+test_blasext_cgbnorm1()
+{
+    const int m = 4, n = 5, kl = 3, ku = 4, lda = ku + 1 + kl;
+    const float a[][2] = {
+        {555,0},{555,0}, {555,0},{555,0}, {6,3}, {-1,5},  {-2,5},  {-4,-5},
+        {555,0},{555,0}, {555,0},{-4,-4},{10,-7},{1,-2},  {-5,-7}, {555,0},
+        {555,0},{555,0}, {10,-2},{10,-4},{-7,7}, {5,6},   {555,0}, {555,0},
+        {555,0},{-10,-4},{-1,2}, {-9,0}, {-2,-7},{555,0}, {555,0}, {555,0},
+        {-7,7}, {3,6},   {-5,-7},{3,-3}, {555,0},{555,0}, {555,0}, {555,0}
+    };
+    const float expected = 7.*sqrt(2.)+2.*sqrt(26.)+2.*sqrt(29.)+sqrt(61.);
+
+    float norm1;
+    const int status = suzerain_blasext_cgbnorm1(m, n, kl, ku, a, lda, &norm1);
+    gsl_test_int(0, status, "%s call success", __func__);
+    gsl_test_abs(norm1, expected, GSL_FLT_EPSILON, "%s norm result %d", norm1);
+}
+
+static
+void
+test_blasext_zgbnorm1()
+{
+    const int m = 4, n = 5, kl = 3, ku = 4, lda = ku + 1 + kl;
+    const double a[][2] = {
+        {555,0},{555,0}, {555,0},{555,0}, {6,3}, {-1,5},  {-2,5},  {-4,-5},
+        {555,0},{555,0}, {555,0},{-4,-4},{10,-7},{1,-2},  {-5,-7}, {555,0},
+        {555,0},{555,0}, {10,-2},{10,-4},{-7,7}, {5,6},   {555,0}, {555,0},
+        {555,0},{-10,-4},{-1,2}, {-9,0}, {-2,-7},{555,0}, {555,0}, {555,0},
+        {-7,7}, {3,6},   {-5,-7},{3,-3}, {555,0},{555,0}, {555,0}, {555,0}
+    };
+    const double expected = 7.*sqrt(2.)+2.*sqrt(26.)+2.*sqrt(29.)+sqrt(61.);
+
+    double norm1;
+    const int status = suzerain_blasext_zgbnorm1(m, n, kl, ku, a, lda, &norm1);
+    gsl_test_int(0, status, "%s call success", __func__);
+    gsl_test_abs(norm1, expected, GSL_DBL_EPSILON, "%s norm result %d", norm1);
+}
+
+static
+void
+test_lapack_dgbcon()
+{
+    /* Test matrix is
+     *      5  -3   0  0
+     *      0   5  -3  0
+     *      0   0   5 -3
+     *      0   0   3 -1
+     * which has a 1-norm of 11.  Extra padding present to allow factorization. */
+
+    const int kl = 1;
+    const int ku = 1;
+    const int n  = 4;
+    double ab[] = { 0,  0,  5, 0,
+                    0, -3,  5, 0,
+                    0, -3,  5, 3,
+                    0, -3, -1, 0 };
+    int ipiv[n];
+    const double norm1 = 11;
+
+    // Prepare factorization
+    const int f = suzerain_lapack_dgbtrf(n, n, kl, ku, ab, 2*ku + kl + 1, ipiv);
+    gsl_test_int(0, f, "%s factorization success", __func__);
+
+    // Compute reciprocal of condition number
+    double rcond = -555;
+    double work[3*n];
+    int    iwork[n];
+    const int g = suzerain_lapack_dgbcon('1', n, kl, ku, ab, 2*ku + kl + 1, ipiv,
+                                         norm1, &rcond, work, iwork);
+    gsl_test_int(0, g, "%s condition number estimation success", __func__);
+
+    // Check result against expected
+    gsl_test_abs(rcond, 25.0/748.0, GSL_DBL_EPSILON,
+                 "%s condition number estimation result %d", rcond);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -2439,9 +2551,18 @@ main(int argc, char **argv)
     test_zgb_dacc_nop();
 
     test_blasext_i2s_zaxpby2();
+    test_blasext_sgbnorm1();
+    test_blasext_dgbnorm1();
+    test_blasext_cgbnorm1();
+    test_blasext_zgbnorm1();
 
-    /* TODO Add test_{c,z}gbtr{f,s} */
+    /* TODO Add test_lapack_{c,z}gbtr{f,s} */
     /* Already exercised to some extent in test_bsplineop */
+
+    test_lapack_dgbcon();
+
+    /* TODO Add test_lapack_{s,c,z}gbcon */
+    /* zgbcon already exercised to some extent in test_bsplineop */
 
 #ifdef SUZERAIN_HAVE_MKL
     MKL_FreeBuffers();

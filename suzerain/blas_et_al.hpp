@@ -1359,7 +1359,7 @@ inline int gbcon(
         const float *ab,
         const Integer4 ldab,
         const int *ipiv,
-        float *anorm,
+        const float anorm,
         float *rcond,
         float *work,
         int *iwork)
@@ -1394,7 +1394,7 @@ inline int gbcon(
         const double *ab,
         const Integer4 ldab,
         const int *ipiv,
-        double *anorm,
+        const double anorm,
         double *rcond,
         double *work,
         int *iwork)
@@ -1434,7 +1434,7 @@ inline typename boost::enable_if<boost::mpl::and_<
         const Complex1 *ab,
         const Integer4 ldab,
         const int *ipiv,
-        float *anorm,
+        const float anorm,
         float *rcond,
         Complex2 *work,
         float *rwork)
@@ -1474,7 +1474,7 @@ inline typename boost::enable_if<boost::mpl::and_<
         const Complex1 *ab,
         const Integer4 ldab,
         const int *ipiv,
-        double *anorm,
+        const double anorm,
         double *rcond,
         Complex2 *work,
         double *rwork)
@@ -1497,6 +1497,133 @@ inline typename boost::enable_if<boost::mpl::and_<
 }
 
 } // namespace lapack
+
+/**
+ * Provides function templates for BLAS-like extensions
+ */
+namespace blasext {
+
+/*! @copydoc suzerain_blasext_sgbnorm1 */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5 >
+inline int gbnorm1(
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
+        const float *a,
+        const Integer5 lda,
+        float *norm1)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    return suzerain_blasext_sgbnorm1(boost::numeric_cast<int>(m),
+                                     boost::numeric_cast<int>(n),
+                                     boost::numeric_cast<int>(kl),
+                                     boost::numeric_cast<int>(ku),
+                                     a,
+                                     boost::numeric_cast<int>(lda),
+                                     norm1);
+}
+
+/*! @copydoc suzerain_blasext_dgbnorm1 */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5 >
+inline int gbnorm1(
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
+        const double *a,
+        const Integer5 lda,
+        double *norm1)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    return suzerain_blasext_dgbnorm1(boost::numeric_cast<int>(m),
+                                     boost::numeric_cast<int>(n),
+                                     boost::numeric_cast<int>(kl),
+                                     boost::numeric_cast<int>(ku),
+                                     a,
+                                     boost::numeric_cast<int>(lda),
+                                     norm1);
+}
+
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Complex1 >
+inline typename boost::enable_if<
+    suzerain::complex::traits::is_complex_float<Complex1>, int
+>::type gbnorm1(
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
+        const Complex1 *a,
+        const Integer5 lda,
+        float *norm1)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    return suzerain_blasext_cgbnorm1(boost::numeric_cast<int>(m),
+                                     boost::numeric_cast<int>(n),
+                                     boost::numeric_cast<int>(kl),
+                                     boost::numeric_cast<int>(ku),
+                                     reinterpret_cast<const float (*)[2]>(a),
+                                     boost::numeric_cast<int>(lda),
+                                     norm1);
+}
+
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Complex1 >
+inline typename boost::enable_if<
+    suzerain::complex::traits::is_complex_double<Complex1>, int
+>::type gbnorm1(
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
+        const Complex1 *a,
+        const Integer5 lda,
+        double *norm1)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    return suzerain_blasext_zgbnorm1(boost::numeric_cast<int>(m),
+                                     boost::numeric_cast<int>(n),
+                                     boost::numeric_cast<int>(kl),
+                                     boost::numeric_cast<int>(ku),
+                                     reinterpret_cast<const double (*)[2]>(a),
+                                     boost::numeric_cast<int>(lda),
+                                     norm1);
+}
+
+} // namespace blasext
 
 } // namespace suzerain
 

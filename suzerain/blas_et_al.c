@@ -44,6 +44,9 @@
 
 #include <suzerain/blas_et_al.h>
 
+static inline int imin(int a, int b) { return a < b ? a : b; }
+static inline int imax(int a, int b) { return a > b ? a : b; }
+
 void *
 suzerain_blas_malloc(size_t size)
 {
@@ -1513,7 +1516,7 @@ suzerain_lapack_sgbcon(
         const float *ab,
         const int ldab,
         const int *ipiv,
-        float *anorm,
+        const float anorm,
         float *rcond,
         float *work,
         int *iwork)
@@ -1524,8 +1527,8 @@ suzerain_lapack_sgbcon(
     if (sizeof(MKL_INT) == sizeof(int)) {
         int info = 0;
         sgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-                (float*)ab, (int*)&ldab, (int*) ipiv,
-                anorm, rcond, work, iwork, &info);
+                (float*)ab, (int*)&ldab, (int*) ipiv, (float*)&anorm,
+                rcond, work, iwork, &info);
         return info;
     } else {
         MKL_INT _n    = n;
@@ -1537,8 +1540,8 @@ suzerain_lapack_sgbcon(
         // FIXME: ipiv's contents are incompatible with LAPACK here
         // FIXME: iwork's contents are incompatible with LAPACK here
         sgbcon((char*)&norm, &_n, &_kl, &_ku,
-                (float*)ab, &_ldab, (int*) ipiv,
-                anorm, rcond, work, iwork, &_info);
+                (float*)ab, &_ldab, (int*) ipiv, (float*)&anorm,
+                rcond, work, iwork, &_info);
         return _info;
     }
 #else
@@ -1555,7 +1558,7 @@ suzerain_lapack_dgbcon(
         const double *ab,
         const int ldab,
         const int *ipiv,
-        double *anorm,
+        const double anorm,
         double *rcond,
         double *work,
         int *iwork)
@@ -1566,8 +1569,8 @@ suzerain_lapack_dgbcon(
     if (sizeof(MKL_INT) == sizeof(int)) {
         int info = 0;
         dgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-                (double*)ab, (int*)&ldab, (int*) ipiv,
-                anorm, rcond, work, iwork, &info);
+                (double*)ab, (int*)&ldab, (int*) ipiv, (double*)&anorm,
+                rcond, work, iwork, &info);
         return info;
     } else {
         MKL_INT _n    = n;
@@ -1579,8 +1582,8 @@ suzerain_lapack_dgbcon(
         // FIXME: ipiv's contents are incompatible with LAPACK here
         // FIXME: iwork's contents are incompatible with LAPACK here
         dgbcon((char*)&norm, &_n, &_kl, &_ku,
-                (double*)ab, &_ldab, (int*) ipiv,
-                anorm, rcond, work, iwork, &_info);
+                (double*)ab, &_ldab, (int*) ipiv, (double*)&anorm,
+                rcond, work, iwork, &_info);
         return _info;
     }
 #else
@@ -1597,7 +1600,7 @@ suzerain_lapack_cgbcon(
         const float (*ab)[2],
         const int ldab,
         const int *ipiv,
-        float *anorm,
+        const float anorm,
         float *rcond,
         float (*work)[2],
         float  *rwork)
@@ -1608,8 +1611,8 @@ suzerain_lapack_cgbcon(
     if (sizeof(MKL_INT) == sizeof(int)) {
         int info = 0;
         cgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-                (MKL_Complex8*)ab, (int*)&ldab, (int*) ipiv,
-                anorm, rcond, (MKL_Complex8*)work, rwork, &info);
+                (MKL_Complex8*)ab, (int*)&ldab, (int*)ipiv, (float*)&anorm,
+                rcond, (MKL_Complex8*)work, rwork, &info);
         return info;
     } else {
         MKL_INT _n    = n;
@@ -1620,8 +1623,8 @@ suzerain_lapack_cgbcon(
         MKL_INT _info = 0;
         // FIXME: ipiv's contents are incompatible with LAPACK here
         cgbcon((char*)&norm, &_n, &_kl, &_ku,
-                (MKL_Complex8*)ab, &_ldab, (int*) ipiv,
-                anorm, rcond, (MKL_Complex8*)work, rwork, &_info);
+                (MKL_Complex8*)ab, &_ldab, (int*) ipiv, (float*)&anorm,
+                rcond, (MKL_Complex8*)work, rwork, &_info);
         return _info;
     }
 #else
@@ -1638,7 +1641,7 @@ suzerain_lapack_zgbcon(
         const double (*ab)[2],
         const int ldab,
         const int *ipiv,
-        double *anorm,
+        const double anorm,
         double *rcond,
         double (*work)[2],
         double  *rwork)
@@ -1649,8 +1652,8 @@ suzerain_lapack_zgbcon(
     if (sizeof(MKL_INT) == sizeof(int)) {
         int info = 0;
         zgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-                (MKL_Complex16*)ab, (int*)&ldab, (int*) ipiv,
-                anorm, rcond, (MKL_Complex16*)work, rwork, &info);
+                (MKL_Complex16*)ab, (int*)&ldab, (int*) ipiv, (double*)&anorm,
+                rcond, (MKL_Complex16*)work, rwork, &info);
         return info;
     } else {
         MKL_INT _n    = n;
@@ -1662,8 +1665,8 @@ suzerain_lapack_zgbcon(
         // FIXME: ipiv's contents are incompatible with LAPACK here
         // FIXME: iwork's contents are incompatible with LAPACK here
         zgbcon((char*)&norm, &_n, &_kl, &_ku,
-                (MKL_Complex16*)ab, &_ldab, (int*) ipiv,
-                anorm, rcond, (MKL_Complex16*)work, rwork, &_info);
+                (MKL_Complex16*)ab, &_ldab, (int*) ipiv, (double*)&anorm,
+                rcond, (MKL_Complex16*)work, rwork, &_info);
         return _info;
     }
 #else
@@ -2079,4 +2082,140 @@ suzerain_blasext_i2s_zaxpby2(
         }
 
     }
+}
+
+int
+suzerain_blasext_sgbnorm1(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float *a,
+        const int lda,
+        float *norm1)
+{
+    if (m  < 0)        return -1;
+    if (n  < 0)        return -2;
+    if (kl < 0)        return -3;
+    if (ku < 0)        return -4;
+    if (!a)            return -5;
+    if (lda < kl+ku+1) return -6;
+    if (!norm1)        return -7;
+
+    *norm1 = 0;
+    for (int j = 0; j < n; ++j) {
+        const float *a_j  = a + j *lda;
+
+        float     s    = 0;
+        const int ibgn = imax(0, ku - j);
+        const int iend = ku + imin(kl + 1, m - j);
+        for (int i = ibgn; i < iend; ++i) {
+            s += fabsf(a_j[i]);
+        }
+        *norm1 = fmaxf(s, *norm1);
+    }
+
+    return 0;
+}
+
+int
+suzerain_blasext_dgbnorm1(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double *a,
+        const int lda,
+        double *norm1)
+{
+    if (m  < 0)        return -1;
+    if (n  < 0)        return -2;
+    if (kl < 0)        return -3;
+    if (ku < 0)        return -4;
+    if (!a)            return -5;
+    if (lda < kl+ku+1) return -6;
+    if (!norm1)        return -7;
+
+    *norm1 = 0;
+    for (int j = 0; j < n; ++j) {
+        const double *a_j  = a + j *lda;
+
+        double    s    = 0;
+        const int ibgn = imax(0, ku - j);
+        const int iend = ku + imin(kl + 1, m - j);
+        for (int i = ibgn; i < iend; ++i) {
+            s += fabs(a_j[i]);
+        }
+        *norm1 = fmax(s, *norm1);
+    }
+
+    return 0;
+}
+
+int
+suzerain_blasext_cgbnorm1(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float (*a)[2],
+        const int lda,
+        float *norm1)
+{
+    if (m  < 0)        return -1;
+    if (n  < 0)        return -2;
+    if (kl < 0)        return -3;
+    if (ku < 0)        return -4;
+    if (!a)            return -5;
+    if (lda < kl+ku+1) return -6;
+    if (!norm1)        return -7;
+
+    *norm1 = 0;
+    for (int j = 0; j < n; ++j) {
+        const float (*a_j)[2]  = a + j *lda;
+
+        float     s    = 0;
+        const int ibgn = imax(0, ku - j);
+        const int iend = ku + imin(kl + 1, m - j);
+        for (int i = ibgn; i < iend; ++i) {
+            s += sqrtf(a_j[i][0]*a_j[i][0] + a_j[i][1]*a_j[i][1]);
+        }
+        *norm1 = fmaxf(s, *norm1);
+    }
+
+    return 0;
+}
+
+int
+suzerain_blasext_zgbnorm1(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double (*a)[2],
+        const int lda,
+        double *norm1)
+{
+    if (m  < 0)        return -1;
+    if (n  < 0)        return -2;
+    if (kl < 0)        return -3;
+    if (ku < 0)        return -4;
+    if (!a)            return -5;
+    if (lda < kl+ku+1) return -6;
+    if (!norm1)        return -7;
+
+    *norm1 = 0;
+    for (int j = 0; j < n; ++j) {
+        const double (*a_j)[2]  = a + j *lda;
+
+        double    s    = 0;
+        const int ibgn = imax(0, ku - j);
+        const int iend = ku + imin(kl + 1, m - j);
+        for (int i = ibgn; i < iend; ++i) {
+            s += sqrt(a_j[i][0]*a_j[i][0] + a_j[i][1]*a_j[i][1]);
+        }
+        *norm1 = fmax(s, *norm1);
+    }
+
+    return 0;
 }

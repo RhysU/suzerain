@@ -612,6 +612,15 @@ public:
         return suzerain_bsplineop_lu_solve(nrhs, b, incb, ldb, luw_);
     }
 
+    /**
+     * @copybrief suzerain_bsplineop_lu_rcond
+     * @see       suzerain_bsplineop_lu_rcond
+     */
+    int rcond(double *rcond) const
+    {
+        return suzerain_bsplineop_lu_rcond(rcond, luw_);
+    }
+
 private:
     suzerain_bsplineop_lu_workspace *luw_; /**< The wrapped instance */
 };
@@ -719,6 +728,15 @@ public:
     {
         return suzerain_bsplineop_luz_solve(
                 nrhs, reinterpret_cast<double (*)[2]>(b), incb, ldb, luzw_);
+    }
+
+    /**
+     * @copybrief suzerain_bsplineop_luz_rcond
+     * @see       suzerain_bsplineop_luz_rcond
+     */
+    int rcond(double *rcond) const
+    {
+        return suzerain_bsplineop_luz_rcond(rcond, luzw_);
     }
 
 private:

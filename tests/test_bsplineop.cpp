@@ -279,6 +279,13 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
             std::numeric_limits<double>::epsilon()*1000);
     }
 
+    /* Provide the most minor of sanity checks on condition number computation */
+    {
+        double rcond = -555;
+//      lu.rcond(&rcond); // FIXME
+        BOOST_CHECK_GT(rcond, 0.0);
+    }
+
     /***********************************/
     /* Complex-valued LU functionality */
     /***********************************/
@@ -388,6 +395,13 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
             b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
             b, b + sizeof(b)/sizeof(b[0]),
             1.0e-5);
+    }
+
+    /* Provide the most minor of sanity checks on condition number computation */
+    {
+        double rcond = -555;
+//      luz.rcond(&rcond); // FIXME
+        BOOST_CHECK_GT(rcond, 0.0);
     }
 }
 

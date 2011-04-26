@@ -890,7 +890,7 @@ suzerain_lapack_sgbcon(
         const float *ab,
         const int ldab,
         const int *ipiv,
-        float *anorm,
+        const float anorm,
         float *rcond,
         float *work,
         int *iwork);
@@ -905,7 +905,7 @@ suzerain_lapack_dgbcon(
         const double *ab,
         const int ldab,
         const int *ipiv,
-        double *anorm,
+        const double anorm,
         double *rcond,
         double *work,
         int *iwork);
@@ -946,7 +946,7 @@ suzerain_lapack_cgbcon(
         const float (*ab)[2],
         const int ldab,
         const int *ipiv,
-        float *anorm,
+        const float anorm,
         float *rcond,
         float (*work)[2],
         float  *rwork);
@@ -961,7 +961,7 @@ suzerain_lapack_zgbcon(
         const double (*ab)[2],
         const int ldab,
         const int *ipiv,
-        double *anorm,
+        const double anorm,
         double *rcond,
         double (*work)[2],
         double  *rwork);
@@ -1275,6 +1275,66 @@ suzerain_blasext_i2s_zaxpby2(
         double * const y_im,
         const int incy_im,
         const int ldy_im);
+
+/*!
+ * \brief Compute \f$ \left|\left|A\right|\right| \f$ for a general
+ *        banded matrix.
+ *
+ * \param m Number of rows in matrix \c a.
+ * \param n Number of columns in matrix \c a.
+ * \param kl Number of subdiagonals in band storage of \c a.
+ * \param ku Number of superdiagonals in band storage of \c a.
+ * \param a General band storage for matrix \f$ A \f$.
+ * \param lda Leading dimension of \c a.
+ * \param norm1 The one norm of the matrix.
+ *
+ * \see A BLAS reference for more details, especially for general
+ *      band storage matrix requirements.
+ *
+ * \return Zero on successful execution.  Nonzero otherwise.
+ */
+int
+suzerain_blasext_sgbnorm1(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float *a,
+        const int lda,
+        float *norm1);
+
+/*! \copydoc suzerain_blasext_sgbnorm1 */
+int
+suzerain_blasext_dgbnorm1(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double *a,
+        const int lda,
+        double *norm1);
+
+/*! \copydoc suzerain_blasext_cgbnorm1 */
+int
+suzerain_blasext_cgbnorm1(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float (*a)[2],
+        const int lda,
+        float *norm1);
+
+/*! \copydoc suzerain_blasext_zgbnorm1 */
+int
+suzerain_blasext_zgbnorm1(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double (*a)[2],
+        const int lda,
+        double *norm1);
 
 /*! @} */
 

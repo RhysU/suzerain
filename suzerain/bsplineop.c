@@ -997,15 +997,16 @@ suzerain_bsplineop_lu_alloc(
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
     }
-    /* Make workspace pointers NULL */
-    luw->A    = NULL;
-    luw->ipiv = NULL;
+    /* Make workspace pointers NULL (or values NULL-like) */
+    luw->A     = NULL;
+    luw->ipiv  = NULL;
+    luw->norm1 = -1;
 
     /* Determine general banded matrix shape parameters */
-    luw->n   = w->n;
-    luw->kl  = w->max_kl;
-    luw->ku  = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS */
-    luw->ld  = luw->kl + luw->ku + 1;
+    luw->n  = w->n;
+    luw->kl = w->max_kl;
+    luw->ku = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS */
+    luw->ld = luw->kl + luw->ku + 1;
 
     /* Allocate memory for LU factorization pivot storage */
     luw->ipiv = suzerain_blas_malloc(w->n * sizeof(luw->ipiv[0]));
@@ -1078,6 +1079,9 @@ suzerain_bsplineop_lu_form(
             coefficients[k], w->D[k] - (w->max_ku - w->ku[k]), w->ld,
             1.0, luw->A + w->max_kl, luw->ld);
     }
+
+    /* Compute and store the one norm of the accumulated operator */
+    // FIXME suzerain_blasext_dgbnorm1 storing result in luw->norm1
 
     /* Compute LU factorization of the just-formed operator */
     const int info = suzerain_lapack_dgbtrf(luw->n,
@@ -1207,6 +1211,46 @@ suzerain_bsplineop_lu_solve(
     }
 }
 
+int
+suzerain_bsplineop_lu_rcond(
+    double *rcond,
+    const suzerain_bsplineop_lu_workspace *luw)
+{
+    if (luw->ipiv[0] == -1) {
+        SUZERAIN_ERROR(
+                "One of suzerain_bsplineop_lu_form_* not called before solve",
+                SUZERAIN_EINVAL);
+    }
+
+    // Allocate one chunk of memory for both work and iwork usage
+    double *work = suzerain_blas_malloc(   (3*luw->n)*sizeof(luw->A[0])
+                                         + (  luw->n)*sizeof(int)       );
+    if (work == NULL) {
+        SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
+    }
+
+    const int info = suzerain_lapack_dgbcon('1',
+                                            luw->n,
+                                            luw->kl,
+                                            luw->ku - luw->kl, /* NB */
+                                            luw->A,
+                                            luw->ld,
+                                            luw->ipiv,
+                                            luw->norm1,
+                                            rcond,
+                                            work,
+                                            (void *)(work + 3*luw->n));
+    suzerain_blas_free(work);
+
+
+    if (info) {
+        SUZERAIN_ERROR("suzerain_lapack_dgbcon reported an error",
+                       SUZERAIN_ESANITY);
+    }
+
+    return SUZERAIN_SUCCESS;
+}
+
 /***********************************/
 /* Complex-valued LU functionality */
 /***********************************/
@@ -1222,15 +1266,16 @@ suzerain_bsplineop_luz_alloc(
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
     }
-    /* Make workspace pointers NULL */
-    luzw->A    = NULL;
-    luzw->ipiv = NULL;
+    /* Make workspace pointers NULL (or values NULL-like) */
+    luzw->A     = NULL;
+    luzw->ipiv  = NULL;
+    luzw->norm1 = -1;
 
     /* Determine general banded matrix shape parameters */
     luzw->n  = w->n;
-    luzw->kl    = w->max_kl;
-    luzw->ku    = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS */
-    luzw->ld    = luzw->kl + luzw->ku + 1;
+    luzw->kl = w->max_kl;
+    luzw->ku = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS */
+    luzw->ld = luzw->kl + luzw->ku + 1;
 
     /* Allocate memory for LU factorization pivot storage */
     luzw->ipiv = suzerain_blas_malloc(w->n * sizeof(luzw->ipiv[0]));
@@ -1304,6 +1349,9 @@ suzerain_bsplineop_luz_form(
             coefficients[k], w->D[k] - (w->max_ku - w->ku[k]), w->ld,
             z_one, luzw->A + w->max_kl, luzw->ld);
     }
+
+    /* Compute and store the one norm of the accumulated operator */
+    // FIXME suzerain_blasext_dgbnorm1 storing result in luzw->norm1
 
     /* Compute LU factorization of the just-formed operator */
     const int info = suzerain_lapack_zgbtrf(luzw->n,
@@ -1433,4 +1481,44 @@ suzerain_bsplineop_luz_solve(
         return suzerain_bsplineop_luz_solve_noncontiguous(
                 nrhs, b, incb, ldb, luzw);
     }
+}
+
+int
+suzerain_bsplineop_luz_rcond(
+    double *rcond,
+    const suzerain_bsplineop_luz_workspace *luzw)
+{
+    if (luzw->ipiv[0] == -1) {
+        SUZERAIN_ERROR(
+                "One of suzerain_bsplineop_luz_form_* not called before solve",
+                SUZERAIN_EINVAL);
+    }
+
+    // Allocate one chunk of memory for both work and rwork usage
+    double *work = suzerain_blas_malloc(   (2*(2*luzw->n))*sizeof(luzw->A[0])
+                                         + (     luzw->n )*sizeof(luzw->A[0]));
+    if (work == NULL) {
+        SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
+    }
+
+    const int info = suzerain_lapack_zgbcon('1',
+                                            luzw->n,
+                                            luzw->kl,
+                                            luzw->ku - luzw->kl, /* NB */
+                                            (const double (*)[2]) luzw->A,
+                                            luzw->ld,
+                                            luzw->ipiv,
+                                            luzw->norm1,
+                                            rcond,
+                                            (double (*)[2]) work,
+                                            (void *)(work + 2*(2*luzw->n)));
+    suzerain_blas_free(work);
+
+
+    if (info) {
+        SUZERAIN_ERROR("suzerain_lapack_zgbcon reported an error",
+                       SUZERAIN_ESANITY);
+    }
+
+    return SUZERAIN_SUCCESS;
 }
