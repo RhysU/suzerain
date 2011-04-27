@@ -290,15 +290,20 @@ int main(int argc, char **argv)
     channel::load(esioh, const_cast<GridDefinition&>(grid));
     esio_file_close(esioh);
 
-    INFO("Using B-splines of order " << (grid.k - 1)
-         << " on [0, " << scenario.Ly << "] with "
-         << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
+    INFO0("Using B-splines of order " << (grid.k - 1)
+          << " on [0, " << scenario.Ly << "] with "
+          << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
     channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly,
                     grid.htdelta, b, bop);
     assert(b->k() == grid.k);
     assert(b->n() == grid.N.y());
     bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
     bopluz->form_mass(*bop);
+    {
+        double rcond;
+        bopluz->rcond(&rcond);
+        INFO0("B-spline mass matrix has condition number near " << (1 / rcond));
+    }
     gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
     INFO0("Saving metadata temporary file: " << restart.metadata());
