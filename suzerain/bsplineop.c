@@ -1005,7 +1005,7 @@ suzerain_bsplineop_lu_alloc(
     /* Determine general banded matrix shape parameters */
     luw->n  = w->n;
     luw->kl = w->max_kl;
-    luw->ku = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS */
+    luw->ku = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS (#1724?) */
     luw->ld = luw->kl + luw->ku + 1;
 
     /* Allocate memory for LU factorization pivot storage */
@@ -1050,6 +1050,8 @@ suzerain_bsplineop_lu_form(
     const suzerain_bsplineop_workspace * w,
     suzerain_bsplineop_lu_workspace *luw)
 {
+    int info;
+
     /* Parameter sanity checks */
     if (ncoefficients < 0) {
         SUZERAIN_ERROR("Number of coefficients cannot be negative",
@@ -1081,16 +1083,31 @@ suzerain_bsplineop_lu_form(
     }
 
     /* Compute and store the one norm of the accumulated operator */
-    // FIXME suzerain_blasext_dgbnorm1 storing result in luw->norm1
+    /*
+     * It is very convenient to compute the norm here as it is the only place
+     * where the non-factored operator is available.  However, it has some
+     * runtime overhead and is unnecessary for the solve() use case.
+     */
+    info = suzerain_blasext_dgbnorm1(luw->n,
+                                     luw->n,
+                                     luw->kl,
+                                     luw->ku - luw->kl, /* NB (#1724?) */
+                                     luw->A + w->max_kl,
+                                     luw->ld,
+                                     &luw->norm1);
+    if (info) {
+        SUZERAIN_ERROR("suzerain_blasext_dgbnorm1 reported an error",
+                       SUZERAIN_ESANITY);
+    }
 
     /* Compute LU factorization of the just-formed operator */
-    const int info = suzerain_lapack_dgbtrf(luw->n,
-                                            luw->n,
-                                            luw->kl,
-                                            luw->ku - luw->kl, /* NB */
-                                            luw->A,
-                                            luw->ld,
-                                            luw->ipiv);
+    info = suzerain_lapack_dgbtrf(luw->n,
+                                  luw->n,
+                                  luw->kl,
+                                  luw->ku - luw->kl, /* NB (#1724?) */
+                                  luw->A,
+                                  luw->ld,
+                                  luw->ipiv);
     if (info) {
         SUZERAIN_ERROR("suzerain_lapack_dgbtrf reported an error",
                        SUZERAIN_ESANITY);
@@ -1274,7 +1291,7 @@ suzerain_bsplineop_luz_alloc(
     /* Determine general banded matrix shape parameters */
     luzw->n  = w->n;
     luzw->kl = w->max_kl;
-    luzw->ku = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS */
+    luzw->ku = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS (#1724?) */
     luzw->ld = luzw->kl + luzw->ku + 1;
 
     /* Allocate memory for LU factorization pivot storage */
@@ -1319,6 +1336,8 @@ suzerain_bsplineop_luz_form(
     const suzerain_bsplineop_workspace * w,
     suzerain_bsplineop_luz_workspace *luzw)
 {
+    int info;
+
     /* Parameter sanity checks */
     if (ncoefficients < 0) {
         SUZERAIN_ERROR("Number of coefficients cannot be negative",
@@ -1351,16 +1370,31 @@ suzerain_bsplineop_luz_form(
     }
 
     /* Compute and store the one norm of the accumulated operator */
-    // FIXME suzerain_blasext_dgbnorm1 storing result in luzw->norm1
+    /*
+     * It is very convenient to compute the norm here as it is the only place
+     * where the non-factored operator is available.  However, it has some
+     * runtime overhead and is unnecessary for the solve() use case.
+     */
+    info = suzerain_blasext_zgbnorm1(luzw->n,
+                                     luzw->n,
+                                     luzw->kl,
+                                     luzw->ku - luzw->kl, /* NB (#1724?) */
+                                     (const double (*)[2]) luzw->A + w->max_kl,
+                                     luzw->ld,
+                                     &luzw->norm1);
+    if (info) {
+        SUZERAIN_ERROR("suzerain_blasext_zgbnorm1 reported an error",
+                       SUZERAIN_ESANITY);
+    }
 
     /* Compute LU factorization of the just-formed operator */
-    const int info = suzerain_lapack_zgbtrf(luzw->n,
-                                            luzw->n,
-                                            luzw->kl,
-                                            luzw->ku - luzw->kl, /* NB */
-                                            luzw->A,
-                                            luzw->ld,
-                                            luzw->ipiv);
+    info = suzerain_lapack_zgbtrf(luzw->n,
+                                  luzw->n,
+                                  luzw->kl,
+                                  luzw->ku - luzw->kl, /* NB (#1724?) */
+                                  luzw->A,
+                                  luzw->ld,
+                                  luzw->ipiv);
     if (info) {
         SUZERAIN_ERROR("suzerain_lapack_zgbtrf reported an error",
                        SUZERAIN_ESANITY);

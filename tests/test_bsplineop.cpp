@@ -280,10 +280,12 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
     }
 
     /* Provide the most minor of sanity checks on condition number computation */
+    // TODO Check the approximate value
     {
         double rcond = -555;
-//      lu.rcond(&rcond); // FIXME
+        lu.rcond(&rcond);
         BOOST_CHECK_GT(rcond, 0.0);
+        BOOST_CHECK_LE(rcond, 1.0);
     }
 
     /***********************************/
@@ -398,10 +400,12 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
     }
 
     /* Provide the most minor of sanity checks on condition number computation */
+    // TODO Check the approximate value
     {
         double rcond = -555;
-//      luz.rcond(&rcond); // FIXME
+        luz.rcond(&rcond);
         BOOST_CHECK_GT(rcond, 0.0);
+        BOOST_CHECK_LE(rcond, 1.0);
     }
 }
 
