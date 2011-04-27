@@ -1674,6 +1674,126 @@ suzerain_lapack_zgbcon(
 #endif
 }
 
+float
+suzerain_lapack_slangb(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const float *ab,
+        const int ldab,
+        float *work)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        return slangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                      (float*)ab, (int*)&ldab, work);
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _kl   = kl;
+        MKL_INT _ku   = ku;
+        MKL_INT _ldab = ldab;
+
+        return slangb((char*)&norm, (int*)&_n, (int*)&_kl, (int*)&_ku,
+                      (float*)ab, (int*)&_ldab, work);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+double
+suzerain_lapack_dlangb(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const double *ab,
+        const int ldab,
+        double *work)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        return dlangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                      (double*)ab, (int*)&ldab, work);
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _kl   = kl;
+        MKL_INT _ku   = ku;
+        MKL_INT _ldab = ldab;
+
+        return dlangb((char*)&norm, (int*)&_n, (int*)&_kl, (int*)&_ku,
+                      (double*)ab, (int*)&_ldab, work);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+float
+suzerain_lapack_clangb(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const float (*ab)[2],
+        const int ldab,
+        float *work)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        return clangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                      (MKL_Complex8*)ab, (int*)&ldab, work);
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _kl   = kl;
+        MKL_INT _ku   = ku;
+        MKL_INT _ldab = ldab;
+
+        return clangb((char*)&norm, (int*)&_n, (int*)&_kl, (int*)&_ku,
+                      (MKL_Complex8*)ab, (int*)&_ldab, work);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+double
+suzerain_lapack_zlangb(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const double (*ab)[2],
+        const int ldab,
+        double *work)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    if (sizeof(MKL_INT) == sizeof(int)) {
+        return zlangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                      (MKL_Complex16*)ab, (int*)&ldab, work);
+    } else {
+        MKL_INT _n    = n;
+        MKL_INT _kl   = kl;
+        MKL_INT _ku   = ku;
+        MKL_INT _ldab = ldab;
+
+        return zlangb((char*)&norm, (int*)&_n, (int*)&_kl, (int*)&_ku,
+                      (MKL_Complex16*)ab, (int*)&_ldab, work);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
 void
 suzerain_blasext_daxpzy(
         const int n,
@@ -2094,6 +2214,12 @@ suzerain_blasext_sgbnorm1(
         const int lda,
         float *norm1)
 {
+    // Defer to LAPACK for the square case
+    if (m == n) {
+        *norm1 = suzerain_lapack_slangb('1', n, kl, ku, a, lda, NULL);
+        return 0;
+    }
+
     if (m  < 0)        return -1;
     if (n  < 0)        return -2;
     if (kl < 0)        return -3;
@@ -2128,6 +2254,12 @@ suzerain_blasext_dgbnorm1(
         const int lda,
         double *norm1)
 {
+    // Defer to LAPACK for the square case
+    if (m == n) {
+        *norm1 = suzerain_lapack_dlangb('1', n, kl, ku, a, lda, NULL);
+        return 0;
+    }
+
     if (m  < 0)        return -1;
     if (n  < 0)        return -2;
     if (kl < 0)        return -3;
@@ -2162,6 +2294,12 @@ suzerain_blasext_cgbnorm1(
         const int lda,
         float *norm1)
 {
+    // Defer to LAPACK for the square case
+    if (m == n) {
+        *norm1 = suzerain_lapack_clangb('1', n, kl, ku, a, lda, NULL);
+        return 0;
+    }
+
     if (m  < 0)        return -1;
     if (n  < 0)        return -2;
     if (kl < 0)        return -3;
@@ -2196,6 +2334,12 @@ suzerain_blasext_zgbnorm1(
         const int lda,
         double *norm1)
 {
+    // Defer to LAPACK for the square case
+    if (m == n) {
+        *norm1 = suzerain_lapack_zlangb('1', n, kl, ku, a, lda, NULL);
+        return 0;
+    }
+
     if (m  < 0)        return -1;
     if (n  < 0)        return -2;
     if (kl < 0)        return -3;

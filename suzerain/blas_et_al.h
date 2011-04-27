@@ -966,6 +966,55 @@ suzerain_lapack_zgbcon(
         double (*work)[2],
         double  *rwork);
 
+/*!
+ * \brief Compute the the one norm, or the Frobenius norm, or the infinity
+ * norm, or the element of largest absolute value of square band matrix.
+ *
+ * \see A LAPACK reference for more details.
+ */
+float
+suzerain_lapack_slangb(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const float *ab,
+        const int ldab,
+        float *work);
+
+/*! \copydoc suzerain_lapack_slangb */
+double
+suzerain_lapack_dlangb(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const double *ab,
+        const int ldab,
+        double *work);
+
+/*! \copydoc suzerain_lapack_slangb */
+float
+suzerain_lapack_clangb(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const float (*ab)[2],
+        const int ldab,
+        float *work);
+
+/*! \copydoc suzerain_lapack_slangb */
+double
+suzerain_lapack_zlangb(
+        const char norm,
+        const int n,
+        const int kl,
+        const int ku,
+        const double (*ab)[2],
+        const int ldab,
+        double *work);
+
 /*! @} */
 
 /*! \name BLAS-like extensions
