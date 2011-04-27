@@ -299,12 +299,34 @@ int main(int argc, char **argv)
     assert(b->n() == grid.N.y());
     bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
     bopluz->form_mass(*bop);
-    {
-        double rcond;
-        bopluz->rcond(&rcond);
-        INFO0("B-spline mass matrix has condition number near " << (1 / rcond));
-    }
     gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
+
+    // Compute and display a couple of discretization quality metrics.
+    {
+        // Temporarily work in real-valued quantities as it is a bit simpler.
+        suzerain::bsplineop_lu boplu(*bop);
+        boplu.form_mass(*bop);
+
+        // Compute and display discrete conservation error magnitude
+        Eigen::MatrixXXr mat = Eigen::MatrixXXr::Identity(b->n(),b->n());
+        boplu.solve(b->n(), mat.data(), 1, b->n());         // M^-1
+        bop->apply(1, b->n(), 1.0, mat.data(), 1, b->n());  // D*M^-1
+        boplu.solve(b->n(), mat.data(), 1, b->n());         // M^-1*D*M^-1
+        Eigen::VectorXr vec(b->n());
+        b->integration_coefficients(0, vec.data());
+        vec = vec.transpose() * mat;                        // w^{T}*M^-1*D*M^-1
+        vec.head<1>()[0] -= -1;                             // Exact head
+        vec.tail<1>()[0] -=  1;                             // Exact tail
+        double relerr = vec.norm() / std::sqrt(2);          // Exact 2-norm
+        INFO0("B-spline discrete conservation relative error near "
+              << relerr * 100 << "%");
+
+        // Compute and display condition number
+        double rcond;
+        boplu.rcond(&rcond);
+        INFO0("B-spline mass matrix has condition number near "
+              << (1 / rcond));
+    }
 
     INFO0("Saving metadata temporary file: " << restart.metadata());
     {
