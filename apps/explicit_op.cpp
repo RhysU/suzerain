@@ -84,10 +84,8 @@ NonlinearOperator::NonlinearOperator(
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
-        const suzerain::bsplineop &bop,
-        const suzerain::bsplineop_luz &massluz)
+        const suzerain::bsplineop &bop)
     : NonlinearOperatorBase(scenario, grid, dgrid, b, bop),
-      massluz(massluz),
       auxw(suzerain::to_yxz(static_cast<std::size_t>(aux::count),
                             dgrid.local_wave_extent),
               suzerain::prepend(dgrid.local_wave_storage(),
@@ -421,15 +419,6 @@ real_t NonlinearOperator::applyOperator(
         dgrid.transform_physical_to_wave(&sphys(i,0));
     }
 
-    // Convert collocation point values to Bspline coefficients
-    assert(swave.shape()[1] == (unsigned) massluz.n());
-    assert(    (unsigned) swave.strides()[3]
-            == swave.shape()[2] * swave.strides()[2]);
-    for (std::size_t i = 0; i < channel::field::count; ++i) {
-        massluz.solve(swave.shape()[2]*swave.shape()[3], swave[i].origin(),
-                      swave.strides()[1], swave.strides()[2]);
-    }
-
     // Perform Allreduce on stable time step sizes when necessary
     // Note delta_t_candidates aliases {convective,diffusive}_delta_t
     if (delta_t_requested) {
@@ -442,7 +431,8 @@ real_t NonlinearOperator::applyOperator(
     // Return minimum of either time step criterion, accounting for NaNs
     return suzerain::math::minnan(convective_delta_t, diffusive_delta_t);
 
-    // All state leaves routine as coefficients in X, Y, and Z directions
+    // All state leaves routine as coefficients in X and Z directions
+    // All state leaves routine as collocation point values in Y direction
 }
 
 NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions(
@@ -450,32 +440,16 @@ NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
-        const suzerain::bsplineop &bop,
-        const suzerain::bsplineop_luz &massluz)
-    : NonlinearOperator(scenario, grid, dgrid, b, bop, massluz),
+        const suzerain::bsplineop &bop)
+    : NonlinearOperator(scenario, grid, dgrid, b, bop),
       has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
                           && dgrid.local_wave_start.z() == 0)
 {
+    // Precompute operator for finding bulk quantities from coefficients
     if (has_zero_zero_mode) {
-
-        // Precompute operator for finding bulk quantities from coefficients
         bulkcoeff.resize(b.n());
         b.integration_coefficients(0, bulkcoeff.data());
         bulkcoeff /= scenario.Ly;
-
-        // Precompute M^{-1}*(e_{lower wall}, e_{upper_wall}, e_{interior})
-        // to help apply collocation point conditions in coefficient space
-        // where e_{interior} = domain - e_{lower_wall} - e_{upper_wall}.
-        massinv_elower = Eigen::VectorXr::Unit(b.n(), 0);
-        massinv_eupper = Eigen::VectorXr::Unit(b.n(), b.n() - 1);
-        massinv_einterior.setConstant(b.n(), 1);
-        massinv_einterior[0] = 0;
-        massinv_einterior[b.n() - 1] = 0;
-        suzerain::bsplineop_lu masslu(bop);
-        masslu.form_mass(bop);
-        masslu.solve(1, massinv_elower.data(),    1, b.n());
-        masslu.solve(1, massinv_eupper.data(),    1, b.n());
-        masslu.solve(1, massinv_einterior.data(), 1, b.n());
     }
 }
 
@@ -489,11 +463,6 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     using Eigen::VectorXc;
     namespace ndx = channel::field::ndx;
 
-    // Note that many operations must be done to either just at the wall
-    // collocation points or just at the non-wall collocation points.  This
-    // routine deals with B-spline coefficients /not/ collocation point values.
-    // TODO Cleaner-and-faster solution for the isothermal, no slip conditions
-
     // Shorthand for the wall-normal size and wall indices
     const std::size_t Ny         = swave.shape()[1];
     const std::size_t wall_lower = 0;
@@ -503,17 +472,21 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     real_t bulk_density = std::numeric_limits<real_t>::quiet_NaN();
     if (has_zero_zero_mode) {
 
-        // Save mean density coefficients
-        rho_fm = Map<VectorXc>(swave[ndx::rho].origin(), Ny);
+        // Save mean density values at collocation points
+        rho_fm = Map<VectorXc>(swave[ndx::rho].origin(), Ny).real();
+        bop.apply(0, 1, 1.0, rho_fm.data(), 1, Ny);
 
         // Save bulk density
         bulk_density = bulkcoeff.dot(rho_fm.real());
 
-        // Save mean X momentum coefficients
-        fm_dot_m = Map<VectorXc>(swave[ndx::rhou].origin(), Ny);
+        // Save mean X momentum values at collocation points
+        fm_dot_m = Map<VectorXc>(swave[ndx::rhou].origin(), Ny).real();
+        bop.apply(0, 1, 1.0, fm_dot_m.data(), 1, Ny);
     }
 
-    // Apply an operator that cares nothing about the boundaries
+    // Apply an operator that cares nothing about the boundaries.
+    // Operator application turns coefficients in X, Y, and Z into
+    // coefficients in X and Z but COLLOCATION POINT VALUES IN Y.
     const real_t delta_t = base::applyOperator(
             swave, evmaxmag_real, evmaxmag_imag, delta_t_requested);
 
@@ -524,13 +497,8 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
     for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
         for (std::size_t k = 0; k < swave.shape()[3]; ++k) {
             for (std::size_t j = 0; j < swave.shape()[2]; ++j) {
-
-                const complex_t m_lower = swave[i][wall_lower][j][k];
-                const complex_t m_upper = swave[i][wall_upper][j][k];
-
-                Map<VectorXc> m_jk(&swave[i][0][j][k], Ny);
-                m_jk -= (   massinv_elower*m_lower
-                          + massinv_eupper*m_upper).cast<complex_t>();
+                swave[i][wall_lower][j][k] = 0;
+                swave[i][wall_upper][j][k] = 0;
             }
         }
     }
@@ -542,18 +510,10 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
         = 1 / (scenario.gamma * (scenario.gamma - 1));
     for (std::size_t k = 0; k < swave.shape()[3]; ++k) {
         for (std::size_t j = 0; j < swave.shape()[2]; ++j) {
-
-            Map<VectorXc> rhoe_jk(&swave[ndx::rhoe][0][j][k], Ny);
-
-            const complex_t factor_lower
-                = inv_gamma_gamma1*swave[ndx::rho ][wall_lower][j][k]
-                -                  rhoe_jk[wall_lower];
-            const complex_t factor_upper
-                = inv_gamma_gamma1*swave[ndx::rho ][wall_upper][j][k]
-                -                  rhoe_jk[wall_upper];
-
-            rhoe_jk += (   massinv_elower*factor_lower
-                         + massinv_eupper*factor_upper).cast<complex_t>();
+            swave[ndx::rhoe][wall_lower][j][k]
+                = inv_gamma_gamma1 * swave[ndx::rho][wall_lower][j][k];
+            swave[ndx::rhoe][wall_upper][j][k]
+                = inv_gamma_gamma1 * swave[ndx::rho][wall_upper][j][k];
         }
     }
 
@@ -565,14 +525,15 @@ real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
         const real_t alpha = bulkcoeff.dot(mean_rhou.real()) / bulk_density;
 
         // Apply to non-wall mean x-momentum right hand side per step (6)
-        rho_fm.array() *= alpha * massinv_einterior.array();
-        mean_rhou -= rho_fm.cast<complex_t>();
+        rho_fm.head<1>()[0] = 0;
+        rho_fm.tail<1>()[0] = 0;
+        mean_rhou.real() -= alpha * rho_fm;
 
         // Apply to non-wall mean energy right hand side per step (7)
-        // Build modification in fm_dot_m storage and apply it
-        fm_dot_m.array() *= alpha * massinv_einterior.array();
+        fm_dot_m.head<1>()[0] = 0;
+        fm_dot_m.tail<1>()[0] = 0;
         Eigen::Map<Eigen::VectorXc> mean_rhoe(swave[ndx::rhoe].origin(), Ny);
-        mean_rhoe -= fm_dot_m;
+        mean_rhoe.real() -= alpha * fm_dot_m;
     }
 
     // Return the time step found by the BC-agnostic operator

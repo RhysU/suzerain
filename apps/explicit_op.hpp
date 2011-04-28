@@ -192,8 +192,7 @@ public:
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
-            const suzerain::bsplineop &bop,
-            const suzerain::bsplineop_luz &massluz);
+            const suzerain::bsplineop &bop);
 
     virtual real_t applyOperator(
             suzerain::NoninterleavedState<4,complex_t> &swave,
@@ -202,9 +201,6 @@ public:
             const bool delta_t_requested = false) const;
 
 protected:
-
-    /** Pre-factored B-spline collocation mass matrix */
-    const suzerain::bsplineop_luz &massluz;
 
     /** Auxiliary scalar-field storage used within applyOperator */
     mutable state_type auxw;
@@ -249,8 +245,7 @@ public:
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
-            const suzerain::bsplineop &bop,
-            const suzerain::bsplineop_luz &massluz);
+            const suzerain::bsplineop &bop);
 
     virtual real_t applyOperator(
             suzerain::NoninterleavedState<4,complex_t> &swave,
@@ -263,11 +258,8 @@ protected:
     const bool has_zero_zero_mode;
 
     Eigen::VectorXr bulkcoeff;
-    Eigen::VectorXr massinv_elower;
-    Eigen::VectorXr massinv_einterior;
-    Eigen::VectorXr massinv_eupper;
-    mutable Eigen::VectorXc rho_fm;
-    mutable Eigen::VectorXc fm_dot_m;
+    mutable Eigen::VectorXr rho_fm;
+    mutable Eigen::VectorXr fm_dot_m;
 
 };
 

@@ -400,7 +400,7 @@ int main(int argc, char **argv)
     suzerain::BsplineMassOperator<state_type> L(
             bop, scenario.Lx * scenario.Lz * grid.N.x() * grid.N.z());
     channel::NonlinearOperatorWithBoundaryConditions N(
-            scenario, grid, *dgrid, *b, *bop, *bopluz);
+            scenario, grid, *dgrid, *b, *bop);
 
     // Establish TimeController for use with operators and state storage
     using suzerain::timestepper::TimeController;
