@@ -2366,7 +2366,8 @@ test_blasext_sgbnorm1()
     float norm1;
     const int status = suzerain_blasext_sgbnorm1(m, n, kl, ku, a, lda, &norm1);
     gsl_test_int(0, status, "%s call success", __func__);
-    gsl_test_abs(norm1, 32.0, GSL_FLT_EPSILON, "%s norm result %d", norm1);
+    gsl_test_abs(norm1, 32.0, GSL_FLT_EPSILON, "%s norm result %d",
+                 __func__, norm1);
 }
 
 static
@@ -2383,7 +2384,8 @@ test_blasext_dgbnorm1()
     double norm1;
     const int status = suzerain_blasext_dgbnorm1(m, n, kl, ku, a, lda, &norm1);
     gsl_test_int(0, status, "%s call success", __func__);
-    gsl_test_abs(norm1, 32.0, GSL_DBL_EPSILON, "%s norm result %d", norm1);
+    gsl_test_abs(norm1, 32.0, GSL_DBL_EPSILON, "%s norm result %d",
+                 __func__, norm1);
 }
 
 static
@@ -2403,7 +2405,8 @@ test_blasext_cgbnorm1()
     float norm1;
     const int status = suzerain_blasext_cgbnorm1(m, n, kl, ku, a, lda, &norm1);
     gsl_test_int(0, status, "%s call success", __func__);
-    gsl_test_abs(norm1, expected, GSL_FLT_EPSILON, "%s norm result %d", norm1);
+    gsl_test_abs(norm1, expected, GSL_FLT_EPSILON, "%s norm result %d",
+                 __func__, norm1);
 }
 
 static
@@ -2423,7 +2426,8 @@ test_blasext_zgbnorm1()
     double norm1;
     const int status = suzerain_blasext_zgbnorm1(m, n, kl, ku, a, lda, &norm1);
     gsl_test_int(0, status, "%s call success", __func__);
-    gsl_test_abs(norm1, expected, GSL_DBL_EPSILON, "%s norm result %d", norm1);
+    gsl_test_abs(norm1, expected, GSL_DBL_EPSILON*10, "%s norm result %d",
+                 __func__, norm1);
 }
 
 static
@@ -2461,7 +2465,7 @@ test_lapack_dgbcon()
 
     // Check result against expected
     gsl_test_abs(rcond, 25.0/748.0, GSL_DBL_EPSILON,
-                 "%s condition number estimation result %d", rcond);
+                 "%s condition number estimation result %d", __func__, rcond);
 }
 
 int
