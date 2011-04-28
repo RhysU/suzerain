@@ -27,7 +27,7 @@
 #
 # LAST MODIFICATION
 #
-#   2010-04-05
+#   2011-04-27
 #
 # COPYLEFT
 #
@@ -209,14 +209,14 @@ if test "${with_mkl}" != no ; then
     fi
 
     if test "$acx_mkl_succeeded" = no; then
-        ifelse([$2],,AC_MSG_ERROR([Intel MKL not found.  Try either --with-mkl or setting MKLROOT.]),
-            [$2])
+        ifelse([$3],,AC_MSG_ERROR([Intel MKL not found.  Try either --with-mkl or setting MKLROOT.]),
+            [$3])
     else
         AC_DEFINE(HAVE_MKL,1,[Define if MKL is available])
         AC_SUBST(MKL_CFLAGS)
         AC_SUBST(MKL_LDFLAGS)
         AC_SUBST(MKL_LIBS)
-        ifelse([$1],,,[$1])
+        ifelse([$2],,,[$2])
     fi
 
 fi
