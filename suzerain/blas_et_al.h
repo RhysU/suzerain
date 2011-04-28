@@ -967,6 +967,176 @@ suzerain_lapack_zgbcon(
         double  *rwork);
 
 /*!
+ * \brief Use the LU factorization to compute the solution to a real system
+ * of linear equations \f$ AX=B \f$.
+ *
+ * @param[in]     fact
+ * @param[in]     trans
+ * @param[in]     n
+ * @param[in]     kl
+ * @param[in]     ku
+ * @param[in]     nrhs
+ * @param[in,out] ab    Dimension (ldab,n)
+ * @param[in]     ldab  Minimum kl + ku + 1
+ * @param[in,out] afb   Dimension (ldfab,n)
+ * @param[in]     ldafb Minimum 2*kl + ku + 1
+ * @param[in,out] ipiv  Dimension n
+ * @param[in,out] equed
+ * @param[in,out] r     Dimension n when fact == 'R' or 'B'
+ * @param[in,out] c     Dimension n when fact == 'C' or 'B'
+ * @param[in,out] b     Dimension (ldb,nrhs)
+ * @param[in]     ldb   Minimum n
+ * @param[in,out] x     Dimension (ldx,nrhs)
+ * @param[in]     ldx   Minimum n
+ * @param[out]    rcond
+ * @param[out]    ferr  Dimension nrhs
+ * @param[out]    berr  Dimension nrhs
+ * @param[out]    work  Dimension 3*n
+ * @param[out]    iwork Dimension n
+ *
+ * \return Zero on successful execution.  Nonzero otherwise.
+ *
+ * \see A LAPACK reference for the details.
+ */
+int
+suzerain_lapack_sgbsvx(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        float *ab,
+        const int ldab,
+        float *afb,
+        const int ldafb,
+        int *ipiv,
+        char *equed,
+        float *r,
+        float *c,
+        float *b,
+        const int ldb,
+        float *x,
+        const int ldx,
+        float *rcond,
+        float *ferr,
+        float *berr,
+        float *work,
+        int *iwork);
+
+/*! \copydoc suzerain_lapack_sgbsvx */
+int
+suzerain_lapack_dgbsvx(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        double *ab,
+        const int ldab,
+        double *afb,
+        const int ldafb,
+        int *ipiv,
+        char *equed,
+        double *r,
+        double *c,
+        double *b,
+        const int ldb,
+        double *x,
+        const int ldx,
+        double *rcond,
+        double *ferr,
+        double *berr,
+        double *work,
+        int *iwork);
+
+/*!
+ * \brief Use the LU factorization to compute the solution to a real system
+ * of linear equations \f$ AX=B \f$.
+ *
+ * @param[in]     fact
+ * @param[in]     trans
+ * @param[in]     n
+ * @param[in]     kl
+ * @param[in]     ku
+ * @param[in]     nrhs
+ * @param[in,out] ab    Dimension (ldab,n)
+ * @param[in]     ldab  Minimum kl + ku + 1
+ * @param[in,out] afb   Dimension (ldfab,n)
+ * @param[in]     ldafb Minimum 2*kl + ku + 1
+ * @param[in,out] ipiv  Dimension n
+ * @param[in,out] equed
+ * @param[in,out] r     Dimension n when fact == 'R' or 'B'
+ * @param[in,out] c     Dimension n when fact == 'C' or 'B'
+ * @param[in,out] b     Dimension (ldb,nrhs)
+ * @param[in]     ldb   Minimum n
+ * @param[in,out] x     Dimension (ldx,nrhs)
+ * @param[in]     ldx   Minimum n
+ * @param[out]    rcond
+ * @param[out]    ferr  Dimension nrhs
+ * @param[out]    berr  Dimension nrhs
+ * @param[out]    work  Dimension 2*n
+ * @param[out]    rwork Dimension n
+ *
+ * \return Zero on successful execution.  Nonzero otherwise.
+ *
+ * \see A LAPACK reference for the details.
+ */
+int
+suzerain_lapack_cgbsvx(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        float (*ab)[2],
+        const int ldab,
+        float (*afb)[2],
+        const int ldafb,
+        int *ipiv,
+        char *equed,
+        float *r,
+        float *c,
+        float (*b)[2],
+        const int ldb,
+        float (*x)[2],
+        const int ldx,
+        float *rcond,
+        float *ferr,
+        float *berr,
+        float (*work)[2],
+        float *rwork);
+
+/*! \copydoc suzerain_lapack_cgbsvx */
+int
+suzerain_lapack_zgbsvx(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        double (*ab)[2],
+        const int ldab,
+        double (*afb)[2],
+        const int ldafb,
+        int *ipiv,
+        char *equed,
+        double *r,
+        double *c,
+        double (*b)[2],
+        const int ldb,
+        double (*x)[2],
+        const int ldx,
+        double *rcond,
+        double *ferr,
+        double *berr,
+        double (*work)[2],
+        double *rwork);
+
+/*!
  * \brief Compute the the one norm, or the Frobenius norm, or the infinity
  * norm, or the element of largest absolute value of square band matrix.
  *

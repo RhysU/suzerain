@@ -1237,6 +1237,172 @@ suzerain_lapack_zgbcon(
 #endif
 }
 
+int
+suzerain_lapack_sgbsvx(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        float *ab,
+        const int ldab,
+        float *afb,
+        const int ldafb,
+        int *ipiv,
+        char *equed,
+        float *r,
+        float *c,
+        float *b,
+        const int ldb,
+        float *x,
+        const int ldx,
+        float *rcond,
+        float *ferr,
+        float *berr,
+        float *work,
+        int *iwork)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    assert(sizeof(MKL_INT) == sizeof(int));
+    int info;
+    sgbsvx((char*)&fact, (char*)&trans,
+           (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, ab, (int*)&ldab,
+           afb, (int*)&ldafb, ipiv, equed, r, c, b, (int*)&ldb, x,
+           (int*)&ldx, rcond, ferr, berr, work, iwork, &info);
+    return info;
+#else
+#error "Sanity failure"
+#endif
+}
+
+int
+suzerain_lapack_dgbsvx(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        double *ab,
+        const int ldab,
+        double *afb,
+        const int ldafb,
+        int *ipiv,
+        char *equed,
+        double *r,
+        double *c,
+        double *b,
+        const int ldb,
+        double *x,
+        const int ldx,
+        double *rcond,
+        double *ferr,
+        double *berr,
+        double *work,
+        int *iwork)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    assert(sizeof(MKL_INT) == sizeof(int));
+    int info;
+    dgbsvx((char*)&fact, (char*)&trans,
+           (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, ab, (int*)&ldab,
+           afb, (int*)&ldafb, ipiv, equed, r, c, b, (int*)&ldb, x,
+           (int*)&ldx, rcond, ferr, berr, work, iwork, &info);
+    return info;
+#else
+#error "Sanity failure"
+#endif
+}
+
+int
+suzerain_lapack_cgbsvx(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        float (*ab)[2],
+        const int ldab,
+        float (*afb)[2],
+        const int ldafb,
+        int *ipiv,
+        char *equed,
+        float *r,
+        float *c,
+        float (*b)[2],
+        const int ldb,
+        float (*x)[2],
+        const int ldx,
+        float *rcond,
+        float *ferr,
+        float *berr,
+        float (*work)[2],
+        float *rwork)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    assert(sizeof(MKL_INT) == sizeof(int));
+    int info;
+    cgbsvx((char*)&fact, (char*)&trans,
+           (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, (MKL_Complex8*)ab,
+           (int*)&ldab, (MKL_Complex8*)afb, (int*)&ldafb, ipiv, equed, r,
+           c, (MKL_Complex8*)b, (int*)&ldb, (MKL_Complex8*)x, (int*)&ldx,
+           rcond, ferr, berr, (MKL_Complex8*)work, rwork, &info);
+    return info;
+#else
+#error "Sanity failure"
+#endif
+}
+
+int
+suzerain_lapack_zgbsvx(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        double (*ab)[2],
+        const int ldab,
+        double (*afb)[2],
+        const int ldafb,
+        int *ipiv,
+        char *equed,
+        double *r,
+        double *c,
+        double (*b)[2],
+        const int ldb,
+        double (*x)[2],
+        const int ldx,
+        double *rcond,
+        double *ferr,
+        double *berr,
+        double (*work)[2],
+        double *rwork)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
+    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
+    assert(sizeof(MKL_INT) == sizeof(int));
+    int info;
+    zgbsvx((char*)&fact, (char*)&trans,
+           (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, (MKL_Complex16*)ab,
+           (int*)&ldab, (MKL_Complex16*)afb, (int*)&ldafb, ipiv, equed, r,
+           c, (MKL_Complex16*)b, (int*)&ldb, (MKL_Complex16*)x, (int*)&ldx,
+           rcond, ferr, berr, (MKL_Complex16*)work, rwork, &info);
+    return info;
+#else
+#error "Sanity failure"
+#endif
+}
+
 float
 suzerain_lapack_slangb(
         const char norm,
