@@ -2426,7 +2426,7 @@ test_blasext_zgbnorm1()
     double norm1;
     const int status = suzerain_blasext_zgbnorm1(m, n, kl, ku, a, lda, &norm1);
     gsl_test_int(0, status, "%s call success", __func__);
-    gsl_test_abs(norm1, expected, GSL_DBL_EPSILON*10, "%s norm result %d",
+    gsl_test_abs(norm1, expected, GSL_DBL_EPSILON*100, "%s norm result %d",
                  __func__, norm1);
 }
 
