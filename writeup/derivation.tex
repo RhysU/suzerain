@@ -959,9 +959,11 @@ We rewrite the general substep equation as
   .
 \end{align}
 
-We wish to advance problems like $Mu_{t}=\tilde{L}u+\tilde{N}(u)$ where $M$ is
-a linear ``mass matrix'' operator.  Then by $L=M^{-1}\tilde{L}$ and
-$N=M^{-1}\tilde{N}$ the general substep equation gives
+We wish to advance problems like $Mu_{t}=\tilde{L}u+\tilde{N}(u)$ where
+$\tilde{L}$ and $\tilde{N}$ take state values to some non-state representation
+which can be converted back to state by the linear ``mass matrix'' operator
+$M$.  Then by $L=M^{-1}\tilde{L}$ and $N=M^{-1}\tilde{N}$ the general substep
+equation gives
 \begin{align}
   \left(I - \Delta{}t\beta_{i}M^{-1}\tilde{L}\right) u^{i+1}
   &=
@@ -980,9 +982,9 @@ We multiply through by $M$ to obtain
   \label{eq:generaloperatormasssubstep}
 \end{align}
 which is just \eqref{eq:generaloperatorsubstep} with $M$ replacing $I$,
-$\tilde{L}$ replacing $L$, and $\tilde{N}$ replacing $N$.  We now drop
-the tildes on $L$ and $N$ with the understanding that they are implied
-whenever $M\neq{}I$.
+$\tilde{L}$ replacing $L$, and $\tilde{N}$ replacing $N$.  We now drop the
+tildes on $L$ and $N$ with the understanding that they are implied whenever
+$M\neq{}I$.
 
 The time advancement scheme in \eqref{eq:generaloperatormasssubstep} requires
 implementations of $u\mapsto{}{N}\left(u\right)$,
@@ -1117,17 +1119,16 @@ while advancing state $\hat{u}_{y_{l'} m n}(t)$ following
    \left(
      e^{-\ii k_{m'} x_m}e^{-\ii k_{n'} z_n}
    \right)
+   .
 \end{align}
 \end{subequations}
-Notice that the scaling factors on both $\tilde{L}$ and $\tilde{N}$ differ
-between \eqref{eq:spatial_discretization} and
-\eqref{eq:spatial_discretization_gridpoints}.
-
-We choose to work with \eqref{eq:spatial_discretization} because there are
-computational advantages to having $\mathscr{L}$ and $\mathscr{N}$ operate on
-B-spline coefficients rather than collocation point values.  For a discussion
-on moving operators between these two representations, see \textsection{}5.5
-in~\cite{Boyd2001}.
+In \eqref{eq:spatial_discretization} the operators $\tilde{L}$ and $\tilde{N}$
+take B-spline coefficients as input and return collocation point values.  In
+\eqref{eq:spatial_discretization_gridpoints} these operators both take and
+return collocation point values.  We choose to work with
+\eqref{eq:spatial_discretization} because it provides computational advantages.
+For a discussion on moving operators between these two representations, see
+\textsection{}5.5 in~\cite{Boyd2001}.
 
 \section{Numerical considerations}
 
