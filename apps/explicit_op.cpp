@@ -500,7 +500,7 @@ real_t NonlinearOperator::applyOperator(
     // All state leaves routine as collocation point values in Y direction
 }
 
-NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions(
+NonlinearOperatorIsothermal::NonlinearOperatorIsothermal(
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
@@ -518,7 +518,7 @@ NonlinearOperatorWithBoundaryConditions::NonlinearOperatorWithBoundaryConditions
     }
 }
 
-real_t NonlinearOperatorWithBoundaryConditions::applyOperator(
+real_t NonlinearOperatorIsothermal::applyOperator(
     suzerain::NoninterleavedState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,

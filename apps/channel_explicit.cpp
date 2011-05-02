@@ -411,7 +411,7 @@ int main(int argc, char **argv)
     m.reset(new suzerain::timestepper::lowstorage::SMR91Method<complex_t>(
                 timedef.evmagfactor));
     L.reset(new channel::BsplineMassOperator(bop));
-    N.reset(new channel::NonlinearOperatorWithBoundaryConditions(
+    N.reset(new channel::NonlinearOperatorIsothermal(
                 scenario, grid, *dgrid, *b, *bop));
     tc.reset(make_LowStorageTimeController(
                 *m, *L,

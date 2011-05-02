@@ -264,7 +264,7 @@ protected:
 /**
  * A fully explicit Navier&ndash;Stokes operator for isothermal boundaries.
  */
-class NonlinearOperatorWithBoundaryConditions
+class NonlinearOperatorIsothermal
     : public NonlinearOperator
 {
 
@@ -272,7 +272,7 @@ public:
 
     typedef NonlinearOperator base;
 
-    NonlinearOperatorWithBoundaryConditions(
+    NonlinearOperatorIsothermal(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
