@@ -17,7 +17,7 @@ all-local: dvi-local pdf-local
 dvi-local: $(TEXSOURCES:.tex=.dvi)
 pdf-local: $(TEXSOURCES:.tex=.pdf)
 
-CLEANFILES = *.aux *.bbl *.blg *.dvi *.log *.pdf
+CLEANFILES = *.aux *.bbl *.blg *.dvi *.log *.pdf *.ps
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
