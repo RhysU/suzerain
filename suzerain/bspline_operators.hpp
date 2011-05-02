@@ -63,14 +63,10 @@ public:
     typedef typename std::complex<real_t> complex_t;
     typedef NoninterleavedState<4,complex_t> state_type;
 
-    explicit BsplineMassOperator(
-            boost::shared_ptr<suzerain::bsplineop> &bop,
-            const real_t scaling = 1)
-        : bop_(bop), opscaling_(scaling), bopluz_(*bop)
+    explicit BsplineMassOperator(boost::shared_ptr<suzerain::bsplineop> &bop)
+            : bop_(bop), bopluz_(*bop)
     {
-        complex_t coefficient;
-        suzerain::complex::assign_complex(coefficient, scaling);
-        bopluz_.form(1, &coefficient, *bop);
+        bopluz_.form_mass(*bop);
     }
 
     virtual void applyMassPlusScaledOperator(
@@ -82,8 +78,7 @@ public:
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
         assert(1 == state.strides()[1]);
         assert(static_cast<unsigned>(bopluz_.n()) == state.shape()[1]);
-        bop_->apply(0, nrhs, opscaling_,
-                    state.memory_begin(), 1, state.strides()[2]);
+        bop_->apply(0, nrhs, 1, state.memory_begin(), 1, state.strides()[2]);
     }
 
     virtual void accumulateMassPlusScaledOperator(
@@ -93,8 +88,9 @@ public:
             state_type &output) const
     {
         SUZERAIN_UNUSED(phi);
-        const state_type &x = input;  // Shorthand
-        state_type &y       = output; // Shorthand
+        const state_type &x   = input;  // Shorthand
+        state_type &y         = output; // Shorthand
+        const complex_t c_one = 1;
         assert(x.isIsomorphic(y));
 
         typedef typename state_type::index index;
@@ -106,21 +102,13 @@ public:
                 lx < static_cast<index>(x.index_bases()[3] + x.shape()[3]);
                 ++lx, ++ly) {
 
-                if (beta.imag() == 0) {
-                    bop_->accumulate(0, x.shape()[2], opscaling_,
-                            &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
-                            x.strides()[1], x.strides()[2],
-                            beta.real(),
-                            &y[iy][y.index_bases()[1]][y.index_bases()[2]][ly],
-                            y.strides()[1], y.strides()[2]);
-                } else {
-                    bop_->accumulate(0, x.shape()[2], complex_t(opscaling_),
-                            &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
-                            x.strides()[1], x.strides()[2],
-                            beta,
-                            &y[iy][y.index_bases()[1]][y.index_bases()[2]][ly],
-                            y.strides()[1], y.strides()[2]);
-                }
+                bop_->accumulate(0, x.shape()[2],
+                        c_one,
+                        &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
+                        x.strides()[1], x.strides()[2],
+                        beta,
+                        &y[iy][y.index_bases()[1]][y.index_bases()[2]][ly],
+                        y.strides()[1], y.strides()[2]);
             }
         }
     }
@@ -139,7 +127,6 @@ public:
 
 private:
     const boost::shared_ptr<suzerain::bsplineop> bop_;
-    const real_t opscaling_;
     suzerain::bsplineop_luz bopluz_;
 };
 

@@ -397,15 +397,17 @@ int main(int argc, char **argv)
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
     using suzerain::timestepper::lowstorage::SMR91Method;
     const SMR91Method<complex_t> smr91(timedef.evmagfactor);
-    suzerain::BsplineMassOperator<state_type> L(
-            bop, scenario.Lx * scenario.Lz * grid.N.x() * grid.N.z());
+    suzerain::BsplineMassOperator<state_type> L(bop);
     channel::NonlinearOperatorWithBoundaryConditions N(
             scenario, grid, *dgrid, *b, *bop);
 
     // Establish TimeController for use with operators and state storage
+    // Nonlinear scaling factor (L_x L_z N_x N_z)^(-1) included here
     using suzerain::timestepper::TimeController;
     scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
-                smr91, L, 1.0, N, *state_linear, *state_nonlinear,
+                smr91, L,
+                1.0 / (scenario.Lx * scenario.Lz * grid.N.x() * grid.N.z()), N,
+                *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 
     // Register status callbacks status_{dt,nt} as requested
