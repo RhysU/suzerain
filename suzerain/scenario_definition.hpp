@@ -58,6 +58,7 @@ public:
      *
      * @param default_Re    Default Reynolds number.
      * @param default_Pr    Default Prandtl number.
+     * @param default_Pr    Default Mach number.
      * @param default_gamma Default ratio of specific heats.
      * @param default_beta  Default temperature power law exponent.
      * @param default_Lx    Default domain length in the X direction.
@@ -66,6 +67,7 @@ public:
      */
     explicit ScenarioDefinition(FPT default_Re    = 0,
                                 FPT default_Pr    = 0,
+                                FPT default_Ma    = 0,
                                 FPT default_gamma = 0,
                                 FPT default_beta  = 0,
                                 FPT default_Lx    = 0,
@@ -83,6 +85,11 @@ public:
      * C_{p}}{\kappa_{0}}\f$.
      */
     FPT Pr;
+
+    /**
+     * The Mach number \f$\mbox{Ma}=\frac{u_{0}}{a_{0}}\f$.
+     */
+    FPT Ma;
 
     /**
      * The ratio of specific heats \f$\gamma=C_p/C_v\f$.
@@ -115,6 +122,7 @@ template< typename FPT >
 ScenarioDefinition<FPT>::ScenarioDefinition(
         FPT default_Re,
         FPT default_Pr,
+        FPT default_Ma,
         FPT default_gamma,
         FPT default_beta,
         FPT default_Lx,
@@ -123,6 +131,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
     : IDefinition("Nondimensional scenario parameters"),
       Re(default_Re),
       Pr(default_Pr),
+      Ma(default_Ma),
       gamma(default_gamma),
       beta(default_beta),
       Lx(default_Lx),
@@ -167,6 +176,17 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         }
         v->default_value(default_Pr);
         this->add_options()("Pr", v.release(), "Prandtl number");
+    }
+
+    { // Ma
+        auto_ptr<typed_value<FPT> > v(value(&this->Ma));
+        if (default_Ma) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Ma"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Ma"));
+        }
+        v->default_value(default_Ma);
+        this->add_options()("Ma", v.release(), "Mach number");
     }
 
     { // gamma

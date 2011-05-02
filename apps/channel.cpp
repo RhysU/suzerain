@@ -65,6 +65,9 @@ void store(const esio_handle h,
     esio_line_write(h, "Pr", &scenario.Pr, 0,
             scenario.options().find("Pr",false).description().c_str());
 
+    esio_line_write(h, "Ma", &scenario.Ma, 0,
+            scenario.options().find("Ma",false).description().c_str());
+
     esio_line_write(h, "gamma", &scenario.gamma, 0,
             scenario.options().find("gamma",false).description().c_str());
 
@@ -98,6 +101,12 @@ void load(const esio_handle h,
         INFO0("Overriding scenario using Pr = " << scenario.Pr);
     } else {
         esio_line_read(h, "Pr", &scenario.Pr, 0);
+    }
+
+    if (scenario.Ma) {
+        INFO0("Overriding scenario using Ma = " << scenario.Ma);
+    } else {
+        esio_line_read(h, "Ma", &scenario.Ma, 0);
     }
 
     if (scenario.gamma) {

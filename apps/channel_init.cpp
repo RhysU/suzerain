@@ -65,6 +65,7 @@ using suzerain::problem::GridDefinition;
 static const ScenarioDefinition<real_t> scenario(
         /* Re    */ 100,
         /* Pr    */ real_t(7)/real_t(10),
+        /* Ma    */ real_t(115)/real_t(100),
         /* gamma */ real_t(14)/real_t(10),
         /* beta  */ real_t(2)/real_t(3),
         /* Lx    */ 4*pi<real_t>(),
@@ -159,7 +160,6 @@ int main(int argc, char **argv)
     // Process incoming program arguments from command line, input files
     std::string restart_file;
     bool clobber  = false;
-    real_t Ma     = 1.15;
     real_t M      = SUZERAIN_SVEHLA_AIR_M;
     real_t p_wall = GSL_CONST_MKSA_STD_ATMOSPHERE / 100000;
     {
@@ -183,10 +183,6 @@ int main(int argc, char **argv)
 
         options.add_options()
             ("clobber", "Overwrite an existing restart file?")
-            ("Ma", po::value<real_t>(&Ma)
-                ->notifier(std::bind2nd(ptr_fun_ensure_positive,"Ma"))
-                ->default_value(Ma),
-             "Mach number based on bulk velocity and wall sound speed")
             ("M", po::value<real_t>(&M)
                 ->notifier(std::bind2nd(ptr_fun_ensure_positive,"M"))
                 ->default_value(M),
@@ -238,7 +234,7 @@ int main(int argc, char **argv)
         p.L      = scenario.Ly;
         p.gamma  = scenario.gamma;
         p.R      = R;
-        p.Ma     = Ma;
+        p.Ma     = scenario.Ma;
         p.p_wall = p_wall;
         p.s = suzerain_svehla_air_mu_vs_T();
         assert(p.s);
@@ -326,7 +322,7 @@ int main(int argc, char **argv)
 
         // Prepare parameter struct for evaluation routines
         mesolver params;
-        params.Ma     = Ma;
+        params.Ma     = scenario.Ma;
         params.L      = scenario.Ly;
         params.gamma  = scenario.gamma;
         params.R      = R;
