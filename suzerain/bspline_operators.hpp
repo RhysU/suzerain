@@ -74,10 +74,10 @@ public:
     }
 
     virtual void applyMassPlusScaledOperator(
-            const complex_t &scale,
+            const complex_t &phi,
             state_type &state) const
     {
-        SUZERAIN_UNUSED(scale);
+        SUZERAIN_UNUSED(phi);
 
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
         assert(1 == state.strides()[1]);
@@ -87,11 +87,12 @@ public:
     }
 
     virtual void accumulateMassPlusScaledOperator(
-            const complex_t &scale,
+            const complex_t &phi,
             const state_type &input,
+            const complex_t &beta,
             state_type &output) const
     {
-        SUZERAIN_UNUSED(scale);
+        SUZERAIN_UNUSED(phi);
         const state_type &x = input;  // Shorthand
         state_type &y       = output; // Shorthand
         assert(x.isIsomorphic(y));
@@ -105,20 +106,30 @@ public:
                 lx < static_cast<index>(x.index_bases()[3] + x.shape()[3]);
                 ++lx, ++ly) {
 
-                bop_->accumulate(0, x.shape()[2], opscaling_,
-                        &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
-                        x.strides()[1], x.strides()[2],
-                        1.0, &y[iy][y.index_bases()[1]][y.index_bases()[2]][ly],
-                        y.strides()[1], y.strides()[2]);
+                if (beta.imag() == 0) {
+                    bop_->accumulate(0, x.shape()[2], opscaling_,
+                            &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
+                            x.strides()[1], x.strides()[2],
+                            beta.real(),
+                            &y[iy][y.index_bases()[1]][y.index_bases()[2]][ly],
+                            y.strides()[1], y.strides()[2]);
+                } else {
+                    bop_->accumulate(0, x.shape()[2], complex_t(opscaling_),
+                            &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
+                            x.strides()[1], x.strides()[2],
+                            beta,
+                            &y[iy][y.index_bases()[1]][y.index_bases()[2]][ly],
+                            y.strides()[1], y.strides()[2]);
+                }
             }
         }
     }
 
     virtual void invertMassPlusScaledOperator(
-            const complex_t &scale,
+            const complex_t &phi,
             state_type &state) const
     {
-        SUZERAIN_UNUSED(scale);
+        SUZERAIN_UNUSED(phi);
 
         const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
         assert(1 == state.strides()[1]);

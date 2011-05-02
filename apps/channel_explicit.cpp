@@ -405,7 +405,7 @@ int main(int argc, char **argv)
     // Establish TimeController for use with operators and state storage
     using suzerain::timestepper::TimeController;
     scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
-                smr91, L, N, *state_linear, *state_nonlinear,
+                smr91, L, 1.0, N, *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 
     // Register status callbacks status_{dt,nt} as requested

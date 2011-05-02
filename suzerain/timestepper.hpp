@@ -261,23 +261,25 @@ public:
      * That is,
      * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)\mbox{state}\f$.
      *
-     * @param scale Scale factor \f$\phi\f$ to use.
+     * @param phi Scale factor \f$\phi\f$ to use.
      * @param state State vector on which to apply the operator.
      */
-    virtual void applyMassPlusScaledOperator(const element& scale,
+    virtual void applyMassPlusScaledOperator(const element& phi,
                                              StateA& state) const = 0;
 
     /**
      * Accumulate \f$M+\phi{}L\f$ out-of-place for scalar \f$\phi\f$.
-     * That is, \f$\mbox{output}\leftarrow{}\mbox{output} +
-     * \left(M+\phi{}L\right)\mbox{input}\f$.
+     * That is, \f$\mbox{output}\leftarrow{}
+     * \left(M+\phi{}L\right)\mbox{input}+\beta\mbox{output}\f$.
      *
-     * @param scale Scale factor \f$\phi\f$ to use.
+     * @param phi Scale factor \f$\phi\f$ to use.
      * @param input State vector on which to apply the operator.
+     * @param beta  Scale factor for output vector during accumulation.
      * @param output State vector into which to accumulate the result.
      */
-    virtual void accumulateMassPlusScaledOperator(const element& scale,
+    virtual void accumulateMassPlusScaledOperator(const element& phi,
                                                   const StateA& input,
+                                                  const element& beta,
                                                   StateB& output) const = 0;
 
     /**
@@ -285,10 +287,10 @@ public:
      * That is,
      * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)^{-1}\mbox{state}\f$.
      *
-     * @param scale Scale factor \f$\phi\f$ to use.
+     * @param phi Scale factor \f$\phi\f$ to use.
      * @param state State vector on which to apply the operator.
      */
-    virtual void invertMassPlusScaledOperator(const element& scale,
+    virtual void invertMassPlusScaledOperator(const element& phi,
                                               StateA& state) const = 0;
 
     /** Virtual destructor for peace of mind. */
@@ -375,13 +377,13 @@ public:
      * \left(I+\phi\times\mbox{factor}\right) \mbox{state}\f$ where \c factor
      * is the scaling factor set at construction time.
      *
-     * @param scale Additional scaling \f$\phi\f$ to apply.
+     * @param phi Additional scaling \f$\phi\f$ to apply.
      * @param state to modify in place.
      */
-    virtual void applyMassPlusScaledOperator(const element& scale,
+    virtual void applyMassPlusScaledOperator(const element& phi,
                                              StateA& state) const
     {
-        state.scale(scale*factor + element(1));
+        state.scale(phi*factor + element(1));
     }
 
     /**
@@ -389,15 +391,18 @@ public:
      * \left(I+\phi\times\mbox{factor}\right) \mbox{input}\f$ where \c factor
      * is the scaling factor set at construction time.
      *
-     * @param scale Additional scaling \f$\phi\f$ to apply.
+     * @param phi Additional scaling \f$\phi\f$ to apply.
      * @param input on which to apply the operator.
+     * @param beta  Scale factor for output vector during accumulation.
      * @param output on which to accumulate the result.
      */
-    virtual void accumulateMassPlusScaledOperator(const element& scale,
+    virtual void accumulateMassPlusScaledOperator(const element& phi,
                                                   const StateA& input,
+                                                  const element& beta,
                                                   StateB& output) const
     {
-        output.addScaled(scale*factor + element(1), input);
+        output.scale(beta);
+        output.addScaled(phi*factor + element(1), input);
     }
 
     /**
@@ -405,13 +410,13 @@ public:
      * \left(I+\phi\times\mbox{factor}\right)^{-1} \mbox{state}\f$ where \c
      * factor is the scaling factor set at construction time.
      *
-     * @param scale Additional scaling \f$\phi\f$ to apply.
+     * @param phi Additional scaling \f$\phi\f$ to apply.
      * @param state to modify in place.
      */
-    virtual void invertMassPlusScaledOperator(const element& scale,
+    virtual void invertMassPlusScaledOperator(const element& phi,
                                               StateA& state) const
     {
-        state.scale((element(1))/(scale*factor + element(1)));
+        state.scale((element(1))/(phi*factor + element(1)));
     }
 
 private:
@@ -663,11 +668,12 @@ Element SMR91Method<Element>::zeta(const std::size_t substep) const
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
  * a hybrid implicit/explicit scheme to advance the system \f$ M u_t = Lu +
- * N(u) \f$.  Note that the roles of state locations \c a and \c b are flipped
- * after each substep.
+ * \chi N(u) \f$.  Note that the roles of state locations \c a and \c b are
+ * flipped after each substep.
  *
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
+ * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N The nonlinear operator to be treated explicitly.
  * @param a On entry contains \f$u^{i}\f$ and on exit contains
  *          \f$N\left(u^{i}\right)\f$.
@@ -687,6 +693,7 @@ template< typename Element, typename A, typename B >
 const typename suzerain::traits::component<Element>::type substep(
     const ILowStorageMethod<Element>& m,
     const ILinearOperator<A,B>& L,
+    const typename suzerain::traits::component<Element>::type chi,
     const INonlinearOperator<B>& N,
     A& a,  // FIXME: Would love a StateBase subclass restriction here
     B& b,  // FIXME: Would love a StateBase subclass restriction here
@@ -699,11 +706,11 @@ const typename suzerain::traits::component<Element>::type substep(
     if (SUZERAIN_UNLIKELY(substep_index >= m.substeps()))
         throw std::invalid_argument("Requested substep too large");
 
-    b.scale(delta_t * m.zeta(substep_index));
     L.accumulateMassPlusScaledOperator(
-            delta_t * m.alpha(substep_index), a, b);
+                  delta_t * m.alpha(substep_index), a,
+            chi * delta_t * m.zeta(substep_index),  b);
     N.applyOperator(a, m.evmaxmag_real(), m.evmaxmag_imag());
-    b.addScaled(delta_t * m.gamma(substep_index), a);
+    b.addScaled(chi * delta_t * m.gamma(substep_index), a);
     L.invertMassPlusScaledOperator( -delta_t * m.beta(substep_index), b);
 
     return delta_t;
@@ -719,6 +726,7 @@ const typename suzerain::traits::component<Element>::type substep(
  *
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
+ * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N The nonlinear operator to be treated explicitly.
  * @param a On entry contains \f$u(t)\f$ and on exit contains
  *          \f$u(t+\Delta{}t)\f$.  The linear operator is applied
@@ -735,6 +743,7 @@ template< typename Element, typename A, typename B >
 const typename suzerain::traits::component<Element>::type step(
     const ILowStorageMethod<Element>& m,
     const ILinearOperator<A,B>& L,
+    const typename suzerain::traits::component<Element>::type chi,
     const INonlinearOperator<B>& N,
     A& a,  // FIXME: Would love a StateBase subclass restriction here
     B& b,  // FIXME: Would love a StateBase subclass restriction here
@@ -752,17 +761,18 @@ const typename suzerain::traits::component<Element>::type step(
         delta_t = suzerain::math::minnan(delta_t, max_delta_t);
     }
     L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a);
-    a.addScaled(delta_t * m.gamma(0), b);
+    a.addScaled(chi * delta_t * m.gamma(0), b);
     L.invertMassPlusScaledOperator( -delta_t * m.beta(0), a);
 
     // Second and subsequent substeps are identical
     for (std::size_t i = 1; i < m.substeps(); ++i) {
-        b.scale(delta_t * m.zeta(i));
-        L.accumulateMassPlusScaledOperator(delta_t * m.alpha(i), a, b);
+        L.accumulateMassPlusScaledOperator(
+                delta_t * m.alpha(i),      a,
+                chi * delta_t * m.zeta(i), b);
         b.exchange(a); // Note nonlinear storage controls exchange operation
         N.applyOperator(b, m.evmaxmag_real(), m.evmaxmag_imag(),
                         false /* delta_t not needed */);
-        a.addScaled(delta_t * m.gamma(i), b);
+        a.addScaled(chi * delta_t * m.gamma(i), b);
         L.invertMassPlusScaledOperator( -delta_t * m.beta(i), a);
     }
 
@@ -803,6 +813,7 @@ public:
      *
      * @param m The low storage scheme to use.  For example, SMR91Method.
      * @param L The linear operator to be treated implicitly.
+     * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
      * @param N The nonlinear operator to be treated explicitly.
      * @param a On entry contains \f$u(t)\f$ and on exit contains
      *          \f$u(t+\Delta{}t)\f$.  The linear operator is applied
@@ -825,6 +836,7 @@ public:
     LowStorageTimeController(
             const ILowStorageMethod<element>& m,
             const ILinearOperator<A,B>& L,
+            const typename suzerain::traits::component<element>::type chi,
             const INonlinearOperator<B>& N,
             A& a,  // FIXME: Would love a StateBase subclass restriction here
             B& b,  // FIXME: Would love a StateBase subclass restriction here
@@ -835,19 +847,21 @@ public:
                 initial_t,
                 min_dt,
                 max_dt),
-          m(m), L(L), N(N), a(a), b(b) {}
+          m(m), L(L), chi(chi), N(N), a(a), b(b) {}
 
 private:
 
     const ILowStorageMethod<element>& m;
     const ILinearOperator<A,B>& L;
+    const typename suzerain::traits::component<element>::type chi;
     const INonlinearOperator<B>& N;
     A& a;
     B& b;
 
     typename super::time_type stepper(typename super::time_type max_dt)
     {
-        return suzerain::timestepper::lowstorage::step(m, L, N, a, b, max_dt);
+        return suzerain::timestepper::lowstorage::step(
+                m, L, chi, N, a, b, max_dt);
     }
 
 };
@@ -858,11 +872,12 @@ private:
  *
  * \copydoc #LowStorageTimeController
  */
-template< typename A, typename B >
+template< typename A, typename B, typename ChiType >
 LowStorageTimeController<A,B>*
 make_LowStorageTimeController(
         const ILowStorageMethod<typename StateBase<A>::element>& m,
         const ILinearOperator<A,B>& L,
+        const ChiType chi,
         const INonlinearOperator<B>& N,
         A& a,  // FIXME: Would love a StateBase subclass restriction here
         B& b,  // FIXME: Would love a StateBase subclass restriction here
@@ -871,7 +886,7 @@ make_LowStorageTimeController(
         typename LowStorageTimeController<A,B>::time_type max_dt = 0)
 {
     return new LowStorageTimeController<A,B>(
-            m, L, N, a, b, initial_t, min_dt, max_dt);
+            m, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }
 
 

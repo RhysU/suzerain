@@ -774,15 +774,13 @@ term separately we obtain the following:
   .
  \end{align}
 
-Finally, approximating the two integrals by discrete sums and multiplying
-by $N_x$ and $N_z$ leaves us with
+Finally, approximating the two integrals by discrete sums and dividing
+by $L_x$ and $L_z$ leaves us with
 \begin{align}
-  L_x L_z N_x N_z
-  &\sum_{l} B_l\!\left(y_{l'}\right)
-  \frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
+  \sum_{l} B_l\!\left(y_{l'}\right)
+  &\frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
 \\
   &\approx
-  L_x L_z N_x N_z
   \mathscr{L}\left(
     \sum_{l}
      B_l\!\left(y_{l'}\right)
@@ -790,6 +788,7 @@ by $N_x$ and $N_z$ leaves us with
   \right)
 \\
   &{}+
+  \frac{1}{L_x L_z N_x N_z}
   \sum_{m'} \sum_{n'}
   \mathscr{N}\left(
     \sum_{m}
@@ -830,11 +829,11 @@ be efficiently computed by
        directions to convert information from physical space to wave space.
 \end{enumerate}
 Note that the left hand side of \eqref{eq:spatial_discretization} contains a
-time-independent mass matrix arising from the B-spline basis, collocation point
-choices, and constants $L_x$, $L_z$, $N_x$, and $N_z$.  Rolling $N_x$ and $N_z$
-into the mass matrix allows us to hide the cost of normalizing the forward fast
-Fourier transform.  We retain the mass matrix on the same side as the time
-derivative in anticipation of the time discretization scheme.
+time-independent mass matrix arising from the B-spline basis and collocation
+point choices.  We retain the mass matrix on the same side as the time
+derivative in anticipation of the time discretization scheme.  The
+computational cost of the scaling factor $\left(L_x L_z N_x N_z\right)^{-1}$
+can be hidden within the time advancement scheme.
 
 Rather than time advancing the B-spline coefficients $\hat{u}_{l m n}(t)$ as
 state, one could instead instead advance the wavenumber-dependent collocation
@@ -959,17 +958,17 @@ We rewrite the general substep equation as
   .
 \end{align}
 
-We wish to advance problems like $Mu_{t}=\tilde{L}u+\tilde{N}(u)$ where
-$\tilde{L}$ and $\tilde{N}$ take state values to some non-state representation
-which can be converted back to state by the linear ``mass matrix'' operator
-$M$.  Then by $L=M^{-1}\tilde{L}$ and $N=M^{-1}\tilde{N}$ the general substep
-equation gives
+We wish to advance problems like $Mu_{t}=\tilde{L}u+\chi\tilde{N}(u)$ where
+$\chi$ is a time-independent scalar and both $\tilde{L}$ and $\tilde{N}$ take
+state values to some non-state representation which can be converted back to
+state by the linear ``mass matrix'' operator $M$.  Then by $L=M^{-1}\tilde{L}$
+and $N=\chi{}M^{-1}\tilde{N}$ the general substep equation gives
 \begin{align}
   \left(I - \Delta{}t\beta_{i}M^{-1}\tilde{L}\right) u^{i+1}
   &=
   \left(I + \Delta{}t\alpha_{i}M^{-1}\tilde{L}\right) u^{i}
-  + \Delta{}t\gamma_{i}M^{-1}\tilde{N}\left(u^{i}\right)
-  + \Delta{}t\zeta_{i-1}M^{-1}\tilde{N}\left(u^{i-1}\right)
+  + \Delta{}t\gamma_{i}\chi{}M^{-1}\tilde{N}\left(u^{i}\right)
+  + \Delta{}t\zeta_{i-1}\chi{}M^{-1}\tilde{N}\left(u^{i-1}\right)
   .
 \end{align}
 We multiply through by $M$ to obtain
@@ -977,13 +976,13 @@ We multiply through by $M$ to obtain
   \left(M - \Delta{}t\beta_{i}\tilde{L}\right) u^{i+1}
   &=
   \left(M + \Delta{}t\alpha_{i}\tilde{L}\right) u^{i}
-  + \Delta{}t\gamma_{i}\tilde{N}\left(u^{i}\right)
-  + \Delta{}t\zeta_{i-1}\tilde{N}\left(u^{i-1}\right)
+  + \Delta{}t\gamma_{i}\chi{}\tilde{N}\left(u^{i}\right)
+  + \Delta{}t\zeta_{i-1}\chi{}\tilde{N}\left(u^{i-1}\right)
   \label{eq:generaloperatormasssubstep}
 \end{align}
 which is just \eqref{eq:generaloperatorsubstep} with $M$ replacing $I$,
-$\tilde{L}$ replacing $L$, and $\tilde{N}$ replacing $N$.  We now drop the
-tildes on $L$ and $N$ with the understanding that they are implied whenever
+$\tilde{L}$ replacing $L$, and $\chi{}\tilde{N}$ replacing $N$.  We now drop
+the tildes on $L$ and $N$ with the understanding that they are implied whenever
 $M\neq{}I$.
 
 The time advancement scheme in \eqref{eq:generaloperatormasssubstep} requires
@@ -1004,10 +1003,10 @@ algorithm \vref{alg:substep}.
 \begin{algorithmic}
   \REQUIRE Storage $a = u^i$;
            storage $b = N\left(u^{i-1}\right)$
-  \STATE $b\leftarrow{}\Delta{}t\zeta_{i-1}b$
-  \STATE $b\leftarrow{}b + \left(M+\Delta{}t\alpha_{i}L\right)a$
+  \STATE $b\leftarrow{}   \left(M+\Delta{}t\alpha_{i}L\right)a
+                        + \Delta{}t\zeta_{i-1}\chi{}b$
   \STATE $a\leftarrow{}N\left(a\right)$
-  \STATE $b\leftarrow{}b + \Delta{}t\gamma_{i}a$
+  \STATE $b\leftarrow{}\Delta{}t\gamma_{i}\chi{}a + b$
   \STATE $b\leftarrow{}\left(M-\Delta{}t\beta_{i}L\right)^{-1}b$
   \ENSURE Storage $a = N\left(u^{i}\right)$;
           storage $b = u^{i+1}$
@@ -1019,10 +1018,13 @@ during the first substep the timestep may need to be computed dynamically based
 on a stability criterion available only during the nonlinear operator
 computation.  Second, it may be important to always apply each operator against
 a particular storage location.  This requirement implies that the
-implementation of $\left(M+\varphi{}L\right)$ must also support in place
-application.  The underlying state storage must support a swap operation,
-denoted $a\leftrightarrow{}b$.  Under these considerations, time step
-computation follows algorithm \vref{alg:step}.
+implementation of $\left(M+\varphi{}L\right)$ must also support in-place
+application.  For the second and subsequent substeps, either
+$\left(M+\varphi{}L\right)$ must support a decidedly non-BLAS-like, complicated
+out-of-place-apply-and-swap operation or the underlying state storage must
+support a swap operation.  We choose the latter and denote the swap operation
+as $a\leftrightarrow{}b$.  Under these considerations, time step computation
+follows algorithm \vref{alg:step}.
 
 \begin{algorithm}
 \caption{Compute all substeps in the SMR scheme following
@@ -1037,23 +1039,23 @@ computation follows algorithm \vref{alg:step}.
   \STATE $b\leftarrow{}N\left(b\right)$
   \STATE Compute $\Delta{}t$ from $a=u^0$ and $b=N\left(u^0\right)$
   \STATE $a\leftarrow{}\left(M+\Delta{}t\alpha_{1}L\right)a$
-  \STATE $a\leftarrow{}a + \Delta{}t \gamma_{1} b$
+  \STATE $a\leftarrow{}\Delta{}t \gamma_{1} \chi{} b + a$
   \STATE $a\leftarrow{}\left(M-\Delta{}t\beta_{1}L\right)^{-1}a$
   \ENSURE Storage $a = u^1$;
           storage $b = N\left(u^{0}\right)$
-  \STATE $b\leftarrow{}\Delta{}t\zeta_{1}b$
-  \STATE $b\leftarrow{}b+\left(M+\Delta{}t\alpha_{2}L\right)a$
+  \STATE $b\leftarrow{}   \left(M+\Delta{}t\alpha_{2}L\right)a
+                        + \Delta{}t\zeta_{1}\chi{}b$
   \STATE $a\leftrightarrow{}b$
   \STATE $b\leftarrow{}N\left(b\right)$
-  \STATE $a\leftarrow{}a + \Delta{}t \gamma_{2} b$
+  \STATE $a\leftarrow{}\Delta{}t \gamma_{2} \chi{} b + a$
   \STATE $a\leftarrow{}\left(M-\Delta{}t\beta_{2}L\right)^{-1}a$
   \ENSURE Storage $a = u^{2}$;
           storage $b = N\left(u^{1}\right)$
-  \STATE $b\leftarrow{}\Delta{}t\zeta_{2}b$
-  \STATE $b\leftarrow{}b+\left(M+\Delta{}t\alpha_{3}L\right)a$
+  \STATE $b\leftarrow{}   \left(M+\Delta{}t\alpha_{3}L\right)a
+                        + \Delta{}t\zeta_{2}\chi{}b$
   \STATE $a\leftrightarrow{}b$
   \STATE $b\leftarrow{}N\left(b\right)$
-  \STATE $a\leftarrow{}a + \Delta{}t \gamma_{3} b$
+  \STATE $a\leftarrow{}\Delta{}t \gamma_{3} \chi{}b + a$
   \STATE $a\leftarrow{}\left(M-\Delta{}t\beta_{3}L\right)^{-1}a$
   \ENSURE Storage $a = u\left(t+\Delta{}t\right)= u^{3}$;
           storage $b = N\left(u^{2}\right)$
@@ -1069,20 +1071,19 @@ the time-independent discrete operators
 \begin{subequations}
 \begin{align}
    M u\bigr|_{m n}
-&= L_x L_z N_x N_z
-   \sum_{l} B_l\!\left(y_{l'}\right)
+&= \sum_{l} B_l\!\left(y_{l'}\right)
    \hat{u}_{l m n}
 \\
    \left.\tilde{L} u\right|_{m n}
-&= L_x L_z N_x N_z
-   \mathscr{L}\left(
+&= \mathscr{L}\left(
      \sum_{l}
      B_l\!\left(y_{l'}\right)
      \hat{u}_{l m n}
    \right)
 \\
    \left.\tilde{N}\!\left(u\right)\right|_{m n}
-&= \sum_{m'} \sum_{n'}
+&= \underbrace{\frac{1}{L_x L_z N_x N_z}}_{\chi}
+   \sum_{m'} \sum_{n'}
    \mathscr{N}\left(
      \sum_{m}
      \sum_{n}
@@ -1098,7 +1099,7 @@ the time-independent discrete operators
 \end{align}
 \end{subequations}
 while advancing state $\hat{u}_{y_{l'} m n}(t)$ following
-\eqref{eq:spatial_discretization_gridpoints} fixes them instead as
+\eqref{eq:spatial_discretization_gridpoints} instead fixes the operators as
 \begin{subequations}
 \begin{align}
    M u\bigr|_{m n}
@@ -1108,7 +1109,7 @@ while advancing state $\hat{u}_{y_{l'} m n}(t)$ following
 &= \mathscr{L}\left(\hat{u}_{y_{l'} m n}\right)
 \\
    \left.\tilde{N}\!\left(u\right)\right|_{m n}
-&= \frac{1}{L_x L_z N_x N_z}
+&= \underbrace{\frac{1}{L_x L_z N_x N_z}}_{\chi}
    \sum_{m'} \sum_{n'}
    \mathscr{N}\left(
      \sum_{m}
@@ -1122,13 +1123,13 @@ while advancing state $\hat{u}_{y_{l'} m n}(t)$ following
    .
 \end{align}
 \end{subequations}
-In \eqref{eq:spatial_discretization} the operators $\tilde{L}$ and $\tilde{N}$
-take B-spline coefficients as input and return collocation point values.  In
-\eqref{eq:spatial_discretization_gridpoints} these operators both take and
-return collocation point values.  We choose to work with
-\eqref{eq:spatial_discretization} because it provides computational advantages.
-For a discussion on moving operators between these two representations, see
-\textsection{}5.5 in~\cite{Boyd2001}.
+When following \eqref{eq:spatial_discretization} the operators $\tilde{L}$ and
+$\tilde{N}$ take B-spline coefficients as input and return collocation point
+values.  When following \eqref{eq:spatial_discretization_gridpoints} the
+operators both take and return collocation point values.  We choose to work
+with \eqref{eq:spatial_discretization} because it provides computational
+advantages.  For a discussion on moving operators between these two
+representations, see \textsection{}5.5 in~\cite{Boyd2001}.
 
 \section{Numerical considerations}
 
