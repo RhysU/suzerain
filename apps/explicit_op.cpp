@@ -22,7 +22,7 @@
 //
 //--------------------------------------------------------------------------
 //
-// explicit_op.hpp: Nonlinear operators for channel_explicit
+// explicit_op.hpp: Operators for channel_explicit
 //
 // $Id$
 //--------------------------------------------------------------------------
@@ -40,12 +40,77 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/orthonormal.hpp>
 #include <suzerain/utility.hpp>
+#include <suzerain/state.hpp>
 
 #include "explicit_op.hpp"
 
 #pragma warning(disable:383 1572)
 
 namespace channel {
+
+BsplineMassOperator::BsplineMassOperator(
+        boost::shared_ptr<suzerain::bsplineop> &bop)
+    : bop_(bop), bopluz_(*bop)
+{
+    bopluz_.form_mass(*bop);
+}
+
+void BsplineMassOperator::applyMassPlusScaledOperator(
+        const complex_t &phi,
+        suzerain::NoninterleavedState<4,complex_t> &state) const
+{
+    SUZERAIN_UNUSED(phi);
+
+    const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
+    assert(1 == state.strides()[1]);
+    assert(static_cast<unsigned>(bopluz_.n()) == state.shape()[1]);
+    bop_->apply(0, nrhs, 1, state.memory_begin(), 1, state.strides()[2]);
+}
+
+
+void BsplineMassOperator::accumulateMassPlusScaledOperator(
+        const complex_t &phi,
+        const suzerain::NoninterleavedState<4,complex_t> &input,
+        const complex_t &beta,
+        suzerain::NoninterleavedState<4,complex_t> &output) const
+{
+    SUZERAIN_UNUSED(phi);
+    const state_type &x   = input;  // Shorthand
+    state_type &y         = output; // Shorthand
+    const complex_t c_one = 1;
+    assert(x.isIsomorphic(y));
+
+    typedef typename state_type::index index;
+    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+        ix < static_cast<index>(x.index_bases()[0] + x.shape()[0]);
+        ++ix, ++iy) {
+
+        for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
+            lx < static_cast<index>(x.index_bases()[3] + x.shape()[3]);
+            ++lx, ++ly) {
+
+            bop_->accumulate(0, x.shape()[2],
+                    c_one,
+                    &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
+                    x.strides()[1], x.strides()[2],
+                    beta,
+                    &y[iy][y.index_bases()[1]][y.index_bases()[2]][ly],
+                    y.strides()[1], y.strides()[2]);
+        }
+    }
+}
+
+void BsplineMassOperator::invertMassPlusScaledOperator(
+        const complex_t &phi,
+        suzerain::NoninterleavedState<4,complex_t> &state) const
+{
+    SUZERAIN_UNUSED(phi);
+
+    const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
+    assert(1 == state.strides()[1]);
+    assert(static_cast<unsigned>(bopluz_.n()) == state.shape()[1]);
+    bopluz_.solve(nrhs, state.memory_begin(), 1, state.strides()[2]);
+}
 
 NonlinearOperatorBase::NonlinearOperatorBase(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,

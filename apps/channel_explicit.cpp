@@ -38,7 +38,6 @@
 #include <suzerain/common.hpp>
 #include <esio/esio.h>
 #include <suzerain/blas_et_al.hpp>
-#include <suzerain/bspline_operators.hpp>
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
@@ -397,7 +396,7 @@ int main(int argc, char **argv)
     // See write up section 2.1 (Spatial Discretization) for coefficient origin
     using suzerain::timestepper::lowstorage::SMR91Method;
     const SMR91Method<complex_t> smr91(timedef.evmagfactor);
-    suzerain::BsplineMassOperator<state_type> L(bop);
+    channel::BsplineMassOperator L(bop);
     channel::NonlinearOperatorWithBoundaryConditions N(
             scenario, grid, *dgrid, *b, *bop);
 

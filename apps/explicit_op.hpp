@@ -22,7 +22,7 @@
 //
 //--------------------------------------------------------------------------
 //
-// explicit_op.hpp: Nonlinear operators for channel_explicit
+// explicit_op.hpp: Operators for channel_explicit
 //
 // $Id$
 //--------------------------------------------------------------------------
@@ -31,11 +31,10 @@
 #ifndef EXPLICIT_OP_HPP
 #define EXPLICIT_OP_HPP
 
-#include <suzerain/bspline_operators.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/scenario_definition.hpp>
-#include <suzerain/state.hpp>
+#include <suzerain/state_fwd.hpp>
 
 #include "precision.hpp"
 #include "channel.hpp"
@@ -43,6 +42,39 @@
 #pragma warning(disable:383 1572)
 
 namespace channel {
+
+/** An operator which merely applies or inverts a B-spline mass matrix */
+class BsplineMassOperator
+  : public suzerain::timestepper::lowstorage::ILinearOperator<
+        suzerain::NoninterleavedState<4,complex_t>
+    >
+{
+public:
+
+    typedef suzerain::NoninterleavedState<4,complex_t> state_type;
+
+    explicit BsplineMassOperator(boost::shared_ptr<suzerain::bsplineop> &bop);
+
+    virtual void applyMassPlusScaledOperator(
+             const complex_t &phi,
+             state_type &state) const;
+
+     virtual void accumulateMassPlusScaledOperator(
+             const complex_t &phi,
+             const state_type &input,
+             const complex_t &beta,
+             state_type &output) const;
+
+     virtual void invertMassPlusScaledOperator(
+             const complex_t &phi,
+             state_type &state) const;
+
+private:
+
+    const boost::shared_ptr<suzerain::bsplineop> bop_;
+    suzerain::bsplineop_luz bopluz_;
+};
+
 
 /** Helper infrastructure for nonlinear operator implementations. */
 class NonlinearOperatorBase
