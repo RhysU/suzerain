@@ -848,7 +848,7 @@ static double multiply_function_against_basis_function(double x, void *params)
     // Evaluate nonzero basis functions at x
     size_t istart, iend;
     const int error = gsl_bspline_eval_nonzero(x, p->Bk, &istart, &iend, p->bw);
-    assert(!error);
+    assert(!error); SUZERAIN_UNUSED(error);
 
     // If x is in the support of basis function i...
     if (istart <= p->i && p->i <= iend) {

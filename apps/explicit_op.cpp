@@ -80,7 +80,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
     const complex_t c_one = 1;
     assert(x.isIsomorphic(y));
 
-    typedef typename state_type::index index;
+    typedef state_type::index index;
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
         ix < static_cast<index>(x.index_bases()[0] + x.shape()[0]);
         ++ix, ++iy) {
