@@ -180,16 +180,14 @@ problem looks as follows:
         \alpha \, m_{x}\!\left(\cdot,y,\cdot\right)$
         for $y\neq0,2\delta$.
 \end{enumerate}
-Care should be taken when advancing coefficient (rather than collocation point)
-state to ensure only the relevant collocation points are impacted.  One then
-advances $\partial_{t}\rho = R_{\rho}$, $\partial_{t} \vec{m} = R_{\vec{m}}$,
-and $\partial_{t} e = R_{e}$ using regular time integration techniques.  The
-above updates will cause the next state to also satisfy the isothermal channel
-conditions.  Note that $f_{m_x}$ is not applied at $y=0,2\delta$ but that these
-points may be included in the momentum integral computation ($\alpha$) as they
-are identically zero from earlier boundary condition enforcement.  Each of
-these computations may be performed in wavespace as they are linear in at most
-one state variable.
+One then advances $\partial_{t}\rho = R_{\rho}$, $\partial_{t} \vec{m} =
+R_{\vec{m}}$, and $\partial_{t} e = R_{e}$ using regular time integration
+techniques.  The above updates will cause the next state to also satisfy the
+isothermal channel conditions.  Note that $f_{m_x}$ is not applied at
+$y=0,2\delta$ but that these points may be included in the momentum integral
+computation ($\alpha$) as they are identically zero from earlier boundary
+condition enforcement.  Each of these computations may be performed in
+wavespace as they are linear in at most one state variable.
 
 
 \section{Enforcing a target bulk momentum via the linear operator}
@@ -197,26 +195,24 @@ one state variable.
 \subsection{Analysis}
 
 Suzerain's low-storage time advancement scheme may be modified to include an
-affine streamwise momentum acceleration
-$f_{m_x}=\phi\rho\!\left(\cdot,y,\cdot\right)$ where $\phi$ is an unknown leading
-coefficient:
+streamwise momentum acceleration with unknown leading coefficient $\phi$:
 \begin{align}
   \left(M - \Delta{}t\beta_{i}L\right) {m_x}^{i+1}
   &=
   \left(M + \Delta{}t\alpha_{i}L\right) {m_x}^{i}
   + \Delta{}t\gamma_{i}\chi{}N\left({m_x}^{i}\right)
   + \Delta{}t\zeta_{i-1}\chi{}N\left({m_x}^{i-1}\right)
-  + \phi{} \rho\!\left(\cdot,y,\cdot\right)
+  + \phi{} f
   .
 \end{align}
-At each substep $\phi$ can be chosen such that $\bar{m}_x$ obtains a target
-value $\Gamma$.  Note that $\phi$ is implicitly a function of $\Delta{}t$.
-This approach differs from the prior nonevolution one in that $\bar{m}_x$
-cannot drift.  Moreover, the target bulk momentum can be changed easily between
-simulations.
+At each substep $\phi{} f = \phi\rho\!\left(\cdot,y,\cdot\right)$ can be chosen
+such that $\bar{m}_x$ obtains a target value $\Gamma$.  Note that $\phi$ is
+implicitly a function of $\Delta{}t$.  This approach differs from the prior
+nonevolution one in that $\bar{m}_x$ cannot drift.  Moreover, the target bulk
+momentum can be changed easily between simulations.
 
-The final implicit solve in each low storage substep resembles ${m_x}^{i+1} =
-A^{-1}\left(\vec{n} + \phi\vec{f}\right)$ where $A^{-1} = \left(M -
+Specifically, the final implicit solve in each low storage substep resembles
+${m_x}^{i+1} = A^{-1}\left(\vec{n} + \phi\vec{f}\right)$ where $A = \left(M -
 \Delta{}t\beta_{i}L\right)$, $\vec{n}$ is an intermediate result, and $\vec{f}
 = \rho\!\left(\cdot,y,\cdot\right)$.  Then $\Gamma = \bar{m}_x^{i+1} = c \cdot
 m_x^{i+1} = c \cdot{} A^{-1}\vec{n} + \phi{}A^{-1}\vec{f}$ requires selecting
@@ -224,14 +220,14 @@ m_x^{i+1} = c \cdot{} A^{-1}\vec{n} + \phi{}A^{-1}\vec{f}$ requires selecting
   \phi &= \frac{\Gamma - c \cdot{} A^{-1} \vec{n}}{c \cdot{} A^{-1} \vec{f}}
   \label{eq:phitarget}
 \end{align}
-will obtain the desired bulk streamwise momentum.  With $\phi$ known, the
+to obtain the desired bulk streamwise momentum.  With $\phi$ known, the
 associated substep energy contribution $f_{m_x} m_{x}$ can be determined.
 
-Prior to solve, the wall collocation point state is modified to enforce a
-no-slip, isothermal condition by setting the momentum to zero and the total
-energy $e = \rho \tilde{e} = \frac{\rho}{\gamma\left(\gamma-1\right)}$.  As in
-the nonevolution approach, the bulk density should be stationary without any
-special treatment.
+Prior to this implicit forcing application, the wall collocation point state
+must be modified to enforce a no-slip, isothermal condition by setting the
+momentum to zero and the total energy $e = \rho \tilde{e} =
+\frac{\rho}{\gamma\left(\gamma-1\right)}$.  As in the nonevolution approach,
+the bulk density should be stationary without any special treatment.
 
 \subsection{Implementation}
 
