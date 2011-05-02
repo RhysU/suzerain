@@ -392,20 +392,30 @@ int main(int argc, char **argv)
     DEBUG("Nonlinear state strides (FYXZ): "
           << suzerain::multi_array::strides_array(*state_nonlinear));
 
-    // Instantiate the operators and time stepping details
-    // See write up section 2.1 (Spatial Discretization) for coefficient origin
-    using suzerain::timestepper::lowstorage::SMR91Method;
-    const SMR91Method<complex_t> smr91(timedef.evmagfactor);
-    channel::BsplineMassOperator L(bop);
-    channel::NonlinearOperatorWithBoundaryConditions N(
-            scenario, grid, *dgrid, *b, *bop);
+    // Prepare generic timestepping handles
+    using suzerain::timestepper::lowstorage::ILowStorageMethod;
+    scoped_ptr<ILowStorageMethod<complex_t> > m;
 
-    // Establish TimeController for use with operators and state storage
-    // Nonlinear scaling factor (L_x L_z N_x N_z)^(-1) included here
+    using suzerain::timestepper::lowstorage::ILinearOperator;
+    scoped_ptr<ILinearOperator<state_type,state_type> > L;
+
+    using suzerain::timestepper::INonlinearOperator;
+    scoped_ptr<INonlinearOperator<state_type> > N;
+
     using suzerain::timestepper::TimeController;
-    scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
-                smr91, L,
-                1.0 / (scenario.Lx * scenario.Lz * grid.N.x() * grid.N.z()), N,
+    scoped_ptr<TimeController<real_t> > tc;
+
+    // Prepare timestepping details specific to the chosen operators
+    // Nonlinear scaling factor (L_x L_z N_x N_z)^(-1) included here
+    // See write up section 2.1 (Spatial Discretization) for scaling details
+    m.reset(new suzerain::timestepper::lowstorage::SMR91Method<complex_t>(
+                timedef.evmagfactor));
+    L.reset(new channel::BsplineMassOperator(bop));
+    N.reset(new channel::NonlinearOperatorWithBoundaryConditions(
+                scenario, grid, *dgrid, *b, *bop));
+    tc.reset(make_LowStorageTimeController(
+                *m, *L,
+                1.0/(scenario.Lx*scenario.Lz)/(grid.N.x()*grid.N.z()), *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 
