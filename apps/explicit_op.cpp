@@ -179,17 +179,6 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
         masslu.form_mass(bop);
         masslu.solve(1, massinv_elower.data(), 1, b.n());
         masslu.solve(1, massinv_eupper.data(), 1, b.n());
-
-        // TODO Trim trailing zero entries from massinv_elower
-        // assert(massinv_elower.tail(b.n() - b.k()).squaredNorm() == 0);
-        // massinv_elower.conservativeResize(b.k());
-
-        // TODO Trim leading zero entries from massinv_eupper
-        // assert(massinv_eupper.head(b.n() - b.k()).squaredNorm() == 0);
-        // massinv_eupper.reverseInPlace();
-        // massinv_eupper.conservativeResize(b.k());
-        // massinv_eupper.reverseInPlace();
-
     }
 }
 

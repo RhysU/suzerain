@@ -254,7 +254,6 @@ int main(int argc, char **argv)
     std::string restart_file;
     bool default_advance_dt;
     bool default_advance_nt;
-    bool use_nonevolution = false; //#1670
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation",
@@ -267,10 +266,6 @@ int main(int argc, char **argv)
                 const_cast<RestartDefinition<>&>(restart));
         options.add_definition(
                 const_cast<TimeDefinition<real_t>&>(timedef));
-        // FIXME Remove after ticket #1670 is closed satisfactorily
-        options.add_options()
-            ("nonevolution", "Use pre-#1670 nonevolution constraints?")
-            ;
         std::vector<std::string> positional = options.process(argc, argv);
 
         if (positional.size() != 1) {
@@ -281,7 +276,6 @@ int main(int argc, char **argv)
 
         default_advance_dt = options.variables()["advance_dt"].defaulted();
         default_advance_nt = options.variables()["advance_nt"].defaulted();
-        use_nonevolution   = options.variables().count("nonevolution"); //#1670
     }
 
     if (default_advance_dt && default_advance_nt) {
@@ -416,20 +410,10 @@ int main(int argc, char **argv)
     // See write up section 2.1 (Spatial Discretization) for scaling details
     m.reset(new suzerain::timestepper::lowstorage::SMR91Method<complex_t>(
                 timedef.evmagfactor));
-
-    if (use_nonevolution) {
-        // FIXME Remove after ticket #1670 is closed satisfactorily
-        L.reset(new channel::BsplineMassOperator(
-                    scenario, grid, *dgrid, *b, *bop));
-        N.reset(new channel::NonlinearOperatorIsothermal(
-                    scenario, grid, *dgrid, *b, *bop));
-    } else {
-        L.reset(new channel::BsplineMassOperatorIsothermal(
-                    scenario, grid, *dgrid, *b, *bop));
-        N.reset(new channel::NonlinearOperator(
-                    scenario, grid, *dgrid, *b, *bop));
-    }
-
+    L.reset(new channel::BsplineMassOperatorIsothermal(
+                scenario, grid, *dgrid, *b, *bop));
+    N.reset(new channel::NonlinearOperator(
+                scenario, grid, *dgrid, *b, *bop));
     tc.reset(make_LowStorageTimeController(
                 *m, *L,
                 1.0/(scenario.Lx*scenario.Lz)/(grid.N.x()*grid.N.z()), *N,
