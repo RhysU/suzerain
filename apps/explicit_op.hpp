@@ -252,8 +252,8 @@ protected:
 private:
 
     void save_mean_state_at_collocation_points(const state_type &state) const;
-    mutable Eigen::VectorXr mean_rho;
-    mutable Eigen::VectorXr mean_rhou;
+    mutable Eigen::VectorXr saved_mean_rho;
+    mutable Eigen::VectorXr saved_mean_rhou;
 
 };
 

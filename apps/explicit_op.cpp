@@ -229,14 +229,14 @@ void BsplineMassOperatorIsothermal::save_mean_state_at_collocation_points(
     if (!has_zero_zero_mode) return;
 
     // Copy mean coefficients
-    mean_rho = Eigen::Map<const Eigen::VectorXc>(
+    saved_mean_rho = Eigen::Map<const Eigen::VectorXc>(
         state[channel::field::ndx::rho].origin(), state.shape()[1]).real();
-    mean_rhou = Eigen::Map<const Eigen::VectorXc>(
+    saved_mean_rhou = Eigen::Map<const Eigen::VectorXc>(
         state[channel::field::ndx::rhou].origin(), state.shape()[1]).real();
 
     // Convert mean coefficients to mean collocation point values
-    bop.apply(0, 1, 1.0, mean_rho.data(),  1, state.shape()[1]);
-    bop.apply(0, 1, 1.0, mean_rhou.data(), 1, state.shape()[1]);
+    bop.apply(0, 1, 1.0, saved_mean_rho.data(),  1, state.shape()[1]);
+    bop.apply(0, 1, 1.0, saved_mean_rhou.data(), 1, state.shape()[1]);
 }
 
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
@@ -246,7 +246,97 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
 
-    return base::invertMassPlusScaledOperator(phi, state);
+    // Shorthand
+    using Eigen::Map;
+    using Eigen::VectorXc;
+    using Eigen::VectorXr;
+    namespace ndx = channel::field::ndx;
+    const std::size_t Ny         = state.shape()[1];
+    const std::size_t wall_lower = 0;
+    const std::size_t wall_upper = Ny - 1;
+
+    // See channel_treatment document for information on the steps below
+
+    // Channel treatment step (1) done during operator apply/accumulate
+    // within save_mean_state_at_collocation_points();
+
+    // Channel treatment step (2) loads mean state at collocation points
+    // into the imaginary part of the constant mode coefficients
+    if (has_zero_zero_mode) {
+        saved_mean_rho[wall_lower] = 0;  // No forcing at lower wall
+        saved_mean_rho[wall_upper] = 0;  // No forcing at upper wall
+        Map<VectorXc> mean_rhou(state[ndx::rhou].origin(), Ny);
+        mean_rhou.imag() = saved_mean_rho;
+
+        saved_mean_rhou[wall_lower] = 0;  // No forcing at lower wall
+        saved_mean_rhou[wall_upper] = 0;  // No forcing at upper wall
+        Map<VectorXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
+        mean_rhoe.imag() = saved_mean_rhou;
+    }
+
+    // Channel treatment step (3) performs the usual operator solve
+    base::invertMassPlusScaledOperator(phi, state);
+
+    if (has_zero_zero_mode) {
+
+        // Channel treatment steps (4), (5), and (6) determine and
+        // apply the appropriate bulk momentum forcing using the
+        // Mach number as the target value
+        Map<VectorXc> mean_rhou(state[ndx::rhou].origin(), Ny);
+        const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rhou);
+        const real_t phi = (scenario.Ma - bulk.real()) / bulk.imag();
+        mean_rhou.real() += phi * mean_rhou.imag();
+        mean_rhou.imag() = VectorXr::Zero(Ny);
+
+        // Channel treatment step (7) accounts for the momentum forcing
+        // within the total energy equation
+        Map<VectorXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
+        mean_rhoe.real() += phi * mean_rhoe.imag();
+        mean_rhoe.imag() = VectorXr::Zero(Ny);
+
+        // Channel treatment step (8) enforces no-slip at the walls
+        // which is complicated by being in coefficient space.
+        // Zero the collocation point value at both walls.
+        assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
+        assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
+        for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
+            for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+                for (std::size_t j = 0; j < state.shape()[2]; ++j) {
+
+                    const complex_t m_lower = state[i][wall_lower][j][k];
+                    const complex_t m_upper = state[i][wall_upper][j][k];
+
+                    Map<VectorXc> m_jk(&state[i][0][j][k], Ny);
+                    m_jk -= (   massinv_elower*m_lower
+                              + massinv_eupper*m_upper).cast<complex_t>();
+                }
+            }
+        }
+
+        // Channel treatment step (9) enforces isothermal wall by
+        // setting e_wall = rho_wall / (gamma * (gamma - 1)) again
+        // dealing with imposing collocation point restrictions in
+        // coefficient space.  Uses that only the wall coefficients
+        // contribute to rho_wall's collocation point value.
+        const real_t inv_gamma_gamma1
+            = 1 / (scenario.gamma * (scenario.gamma - 1));
+        for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+            for (std::size_t j = 0; j < state.shape()[2]; ++j) {
+
+                    Map<VectorXc> rhoe_jk(&state[ndx::rhoe][0][j][k], Ny);
+
+                    const complex_t factor_lower
+                        = inv_gamma_gamma1*state[ndx::rho][wall_lower][j][k]
+                        -                  rhoe_jk[wall_lower];
+                    const complex_t factor_upper
+                        = inv_gamma_gamma1*state[ndx::rho][wall_upper][j][k]
+                        -                  rhoe_jk[wall_upper];
+                    rhoe_jk += (   massinv_elower*factor_lower
+                                 + massinv_eupper*factor_upper).cast<complex_t>();
+            }
+        }
+
+    }
 
     // State leaves method as coefficients in X, Y, and Z directions
 }
