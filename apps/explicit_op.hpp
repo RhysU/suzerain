@@ -43,45 +43,12 @@
 
 namespace channel {
 
-/** An operator which merely applies or inverts a B-spline mass matrix */
-class BsplineMassOperator
-  : public suzerain::timestepper::lowstorage::ILinearOperator<
-        suzerain::NoninterleavedState<4,complex_t>
-    >
+/** Helper infrastructure for operator implementations. */
+class OperatorBase
 {
 public:
 
-    typedef suzerain::NoninterleavedState<4,complex_t> state_type;
-
-    explicit BsplineMassOperator(boost::shared_ptr<suzerain::bsplineop> &bop);
-
-    virtual void applyMassPlusScaledOperator(
-             const complex_t &phi,
-             state_type &state) const;
-
-     virtual void accumulateMassPlusScaledOperator(
-             const complex_t &phi,
-             const state_type &input,
-             const complex_t &beta,
-             state_type &output) const;
-
-     virtual void invertMassPlusScaledOperator(
-             const complex_t &phi,
-             state_type &state) const;
-
-private:
-
-    const boost::shared_ptr<suzerain::bsplineop> bop_;
-    suzerain::bsplineop_luz bopluz_;
-};
-
-
-/** Helper infrastructure for nonlinear operator implementations. */
-class NonlinearOperatorBase
-{
-public:
-
-    NonlinearOperatorBase(
+    OperatorBase(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
@@ -198,6 +165,7 @@ protected:
         return one_over_delta_y_[j];
     }
 
+    const bool has_zero_zero_mode;
     const real_t one_over_delta_x;
     const real_t one_over_delta_z;
 
@@ -206,11 +174,89 @@ private:
     boost::multi_array<real_t,1> one_over_delta_y_;
 };
 
+/** An operator which merely applies or inverts a B-spline mass matrix */
+class BsplineMassOperator
+  : public OperatorBase,
+    public suzerain::timestepper::lowstorage::ILinearOperator<
+        suzerain::NoninterleavedState<4,complex_t>
+    >
+{
+public:
+
+    typedef suzerain::NoninterleavedState<4,complex_t> state_type;
+
+    BsplineMassOperator(
+            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::GridDefinition &grid,
+            const suzerain::pencil_grid &dgrid,
+            suzerain::bspline &b,
+            const suzerain::bsplineop &bop);
+
+    virtual void applyMassPlusScaledOperator(
+             const complex_t &phi,
+             state_type &state) const;
+
+     virtual void accumulateMassPlusScaledOperator(
+             const complex_t &phi,
+             const state_type &input,
+             const complex_t &beta,
+             state_type &output) const;
+
+     virtual void invertMassPlusScaledOperator(
+             const complex_t &phi,
+             state_type &state) const;
+
+private:
+
+    suzerain::bsplineop_luz massluz;
+};
+
+/**
+ * An mass operator that forces bulk momentum and provides no slip, isothermal
+ * walls.
+ */
+class BsplineMassOperatorIsothermal
+  : public BsplineMassOperator
+{
+public:
+
+    typedef BsplineMassOperator base;
+
+    BsplineMassOperatorIsothermal(
+            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::GridDefinition &grid,
+            const suzerain::pencil_grid &dgrid,
+            suzerain::bspline &b,
+            const suzerain::bsplineop &bop);
+
+    virtual void applyMassPlusScaledOperator(
+             const complex_t &phi,
+             state_type &state) const;
+
+     virtual void accumulateMassPlusScaledOperator(
+             const complex_t &phi,
+             const state_type &input,
+             const complex_t &beta,
+             state_type &output) const;
+
+     virtual void invertMassPlusScaledOperator(
+             const complex_t &phi,
+             state_type &state) const;
+
+protected:
+
+    Eigen::VectorXr bulkcoeff;
+    Eigen::VectorXr massinv_elower;
+    Eigen::VectorXr massinv_eupper;
+
+};
+
+
 /**
  * A boundary-condition agnostic, fully explicit Navier&ndash;Stokes operator.
  */
 class NonlinearOperator
-    : public NonlinearOperatorBase,
+    : public OperatorBase,
       public suzerain::timestepper::INonlinearOperator<
             suzerain::NoninterleavedState<4,complex_t>
       >
@@ -287,13 +333,12 @@ public:
 
 protected:
 
-    const bool has_zero_zero_mode;
-
     Eigen::VectorXr bulkcoeff;
     mutable Eigen::VectorXr rho_fm;
     mutable Eigen::VectorXr fm_dot_m;
 
 };
+
 
 } // namespace channel
 

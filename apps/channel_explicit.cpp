@@ -410,7 +410,8 @@ int main(int argc, char **argv)
     // See write up section 2.1 (Spatial Discretization) for scaling details
     m.reset(new suzerain::timestepper::lowstorage::SMR91Method<complex_t>(
                 timedef.evmagfactor));
-    L.reset(new channel::BsplineMassOperator(bop));
+    L.reset(new channel::BsplineMassOperator(
+                scenario, grid, *dgrid, *b, *bop));
     N.reset(new channel::NonlinearOperatorIsothermal(
                 scenario, grid, *dgrid, *b, *bop));
     tc.reset(make_LowStorageTimeController(

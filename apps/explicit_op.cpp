@@ -48,11 +48,55 @@
 
 namespace channel {
 
-BsplineMassOperator::BsplineMassOperator(
-        boost::shared_ptr<suzerain::bsplineop> &bop)
-    : bop_(bop), bopluz_(*bop)
+OperatorBase::OperatorBase(
+            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::GridDefinition &grid,
+            const suzerain::pencil_grid &dgrid,
+            suzerain::bspline &b,
+            const suzerain::bsplineop &bop)
+    : scenario(scenario),
+      grid(grid),
+      dgrid(dgrid),
+      bop(bop),
+      has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
+                          && dgrid.local_wave_start.z() == 0),
+      one_over_delta_x(scenario.Lx / grid.N.x() /* !dN.x() */),
+      one_over_delta_z(scenario.Lz / grid.N.z() /* !dN.z() */),
+      y_(boost::extents[boost::multi_array_types::extent_range(
+              dgrid.local_physical_start.y(), dgrid.local_physical_end.y())]),
+      one_over_delta_y_(boost::extents[boost::multi_array_types::extent_range(
+              dgrid.local_physical_start.y(), dgrid.local_physical_end.y())])
 {
-    bopluz_.form_mass(*bop);
+    // Compute y collocation point locations and spacing local to this rank
+    for (int j = dgrid.local_physical_start.y();
+         j < dgrid.local_physical_end.y();
+         ++j) {
+
+        y_[j] = b.collocation_point(j);
+        const int jm = (j == 0        ) ? 1         : j - 1;
+        const int jp = (j == b.n() - 1) ? b.n() - 2 : j + 1;
+        const real_t delta_y = std::min(
+                std::abs(b.collocation_point(jm) - y_[j]),
+                std::abs(b.collocation_point(jp) - y_[j]));
+        one_over_delta_y_[j] = 1.0 / delta_y;
+    }
+}
+
+BsplineMassOperator::BsplineMassOperator(
+        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::GridDefinition &grid,
+        const suzerain::pencil_grid &dgrid,
+        suzerain::bspline &b,
+        const suzerain::bsplineop &bop)
+    : OperatorBase(scenario, grid, dgrid, b, bop),
+      massluz(bop)
+{
+    SUZERAIN_UNUSED(scenario);
+    SUZERAIN_UNUSED(grid);
+    SUZERAIN_UNUSED(dgrid);
+    SUZERAIN_UNUSED(b);
+
+    massluz.form_mass(bop);
 }
 
 void BsplineMassOperator::applyMassPlusScaledOperator(
@@ -63,8 +107,8 @@ void BsplineMassOperator::applyMassPlusScaledOperator(
 
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
     assert(1 == state.strides()[1]);
-    assert(static_cast<unsigned>(bopluz_.n()) == state.shape()[1]);
-    bop_->apply(0, nrhs, 1, state.memory_begin(), 1, state.strides()[2]);
+    assert(static_cast<unsigned>(massluz.n()) == state.shape()[1]);
+    bop.apply(0, nrhs, 1, state.memory_begin(), 1, state.strides()[2]);
 }
 
 
@@ -89,7 +133,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
             lx < static_cast<index>(x.index_bases()[3] + x.shape()[3]);
             ++lx, ++ly) {
 
-            bop_->accumulate(0, x.shape()[2],
+            bop.accumulate(0, x.shape()[2],
                     c_one,
                     &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
                     x.strides()[1], x.strides()[2],
@@ -108,40 +152,42 @@ void BsplineMassOperator::invertMassPlusScaledOperator(
 
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
     assert(1 == state.strides()[1]);
-    assert(static_cast<unsigned>(bopluz_.n()) == state.shape()[1]);
-    bopluz_.solve(nrhs, state.memory_begin(), 1, state.strides()[2]);
+    assert(static_cast<unsigned>(massluz.n()) == state.shape()[1]);
+    massluz.solve(nrhs, state.memory_begin(), 1, state.strides()[2]);
 }
 
-NonlinearOperatorBase::NonlinearOperatorBase(
+BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop)
-    : scenario(scenario),
-      grid(grid),
-      dgrid(dgrid),
-      bop(bop),
-      one_over_delta_x(scenario.Lx / grid.N.x() /* !dN.x() */),
-      one_over_delta_z(scenario.Lz / grid.N.z() /* !dN.z() */),
-      y_(boost::extents[boost::multi_array_types::extent_range(
-              dgrid.local_physical_start.y(), dgrid.local_physical_end.y())]),
-      one_over_delta_y_(boost::extents[boost::multi_array_types::extent_range(
-              dgrid.local_physical_start.y(), dgrid.local_physical_end.y())])
+    : BsplineMassOperator(scenario, grid, dgrid, b, bop)
 {
-    // Compute y collocation point locations and spacing local to this rank
-    for (int j = dgrid.local_physical_start.y();
-         j < dgrid.local_physical_end.y();
-         ++j) {
+    // NOP
+}
 
-        y_[j] = b.collocation_point(j);
-        const int jm = (j == 0        ) ? 1         : j - 1;
-        const int jp = (j == b.n() - 1) ? b.n() - 2 : j + 1;
-        const real_t delta_y = std::min(
-                std::abs(b.collocation_point(jm) - y_[j]),
-                std::abs(b.collocation_point(jp) - y_[j]));
-        one_over_delta_y_[j] = 1.0 / delta_y;
-    }
+void BsplineMassOperatorIsothermal::applyMassPlusScaledOperator(
+        const complex_t &phi,
+        suzerain::NoninterleavedState<4,complex_t> &state) const
+{
+    return base::applyMassPlusScaledOperator(phi, state);
+}
+
+void BsplineMassOperatorIsothermal::accumulateMassPlusScaledOperator(
+        const complex_t &phi,
+        const suzerain::NoninterleavedState<4,complex_t> &input,
+        const complex_t &beta,
+        suzerain::NoninterleavedState<4,complex_t> &output) const
+{
+    return base::accumulateMassPlusScaledOperator(phi, input, beta, output);
+}
+
+void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
+        const complex_t &phi,
+        suzerain::NoninterleavedState<4,complex_t> &state) const
+{
+    return base::invertMassPlusScaledOperator(phi, state);
 }
 
 NonlinearOperator::NonlinearOperator(
@@ -150,7 +196,7 @@ NonlinearOperator::NonlinearOperator(
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop)
-    : NonlinearOperatorBase(scenario, grid, dgrid, b, bop),
+    : OperatorBase(scenario, grid, dgrid, b, bop),
       auxw(suzerain::to_yxz(static_cast<std::size_t>(aux::count),
                             dgrid.local_wave_extent),
               suzerain::prepend(dgrid.local_wave_storage(),
@@ -506,9 +552,7 @@ NonlinearOperatorIsothermal::NonlinearOperatorIsothermal(
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop)
-    : NonlinearOperator(scenario, grid, dgrid, b, bop),
-      has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
-                          && dgrid.local_wave_start.z() == 0)
+    : NonlinearOperator(scenario, grid, dgrid, b, bop)
 {
     // Precompute operator for finding bulk quantities from coefficients
     if (has_zero_zero_mode) {
