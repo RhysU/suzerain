@@ -230,24 +230,30 @@ public:
             const suzerain::bsplineop &bop);
 
     virtual void applyMassPlusScaledOperator(
-             const complex_t &phi,
-             state_type &state) const;
+            const complex_t &phi,
+            state_type &state) const;
 
-     virtual void accumulateMassPlusScaledOperator(
-             const complex_t &phi,
-             const state_type &input,
-             const complex_t &beta,
-             state_type &output) const;
+    virtual void accumulateMassPlusScaledOperator(
+            const complex_t &phi,
+            const state_type &input,
+            const complex_t &beta,
+            state_type &output) const;
 
-     virtual void invertMassPlusScaledOperator(
-             const complex_t &phi,
-             state_type &state) const;
+    virtual void invertMassPlusScaledOperator(
+            const complex_t &phi,
+            state_type &state) const;
 
 protected:
 
     Eigen::VectorXr bulkcoeff;
     Eigen::VectorXr massinv_elower;
     Eigen::VectorXr massinv_eupper;
+
+private:
+
+    void save_mean_state_at_collocation_points(const state_type &state) const;
+    mutable Eigen::VectorXr mean_rho;
+    mutable Eigen::VectorXr mean_rhou;
 
 };
 

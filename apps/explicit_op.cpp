@@ -164,14 +164,47 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
             const suzerain::bsplineop &bop)
     : BsplineMassOperator(scenario, grid, dgrid, b, bop)
 {
-    // NOP
+    if (has_zero_zero_mode) {
+
+        // Precompute operator for finding bulk quantities from coefficients
+        bulkcoeff.resize(b.n());
+        b.integration_coefficients(0, bulkcoeff.data());
+        bulkcoeff /= scenario.Ly;
+
+        // Precompute M^{-1}*(e_{lower wall}, e_{upper_wall} for applying
+        // collocation point conditions in coefficient space
+        massinv_elower = Eigen::VectorXr::Unit(b.n(), 0);
+        massinv_eupper = Eigen::VectorXr::Unit(b.n(), b.n() - 1);
+        suzerain::bsplineop_lu masslu(bop);
+        masslu.form_mass(bop);
+        masslu.solve(1, massinv_elower.data(), 1, b.n());
+        masslu.solve(1, massinv_eupper.data(), 1, b.n());
+
+        // TODO Trim trailing zero entries from massinv_elower
+        // assert(massinv_elower.tail(b.n() - b.k()).squaredNorm() == 0);
+        // massinv_elower.conservativeResize(b.k());
+
+        // TODO Trim leading zero entries from massinv_eupper
+        // assert(massinv_eupper.head(b.n() - b.k()).squaredNorm() == 0);
+        // massinv_eupper.reverseInPlace();
+        // massinv_eupper.conservativeResize(b.k());
+        // massinv_eupper.reverseInPlace();
+
+    }
 }
 
 void BsplineMassOperatorIsothermal::applyMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::NoninterleavedState<4,complex_t> &state) const
 {
+    // State enters method as coefficients in X, Y, and Z directions
+
+    save_mean_state_at_collocation_points(state);
+
     return base::applyMassPlusScaledOperator(phi, state);
+
+    // State leaves method as coefficients in X and Z directions
+    // State leaves method as collocation point values in Y direction
 }
 
 void BsplineMassOperatorIsothermal::accumulateMassPlusScaledOperator(
@@ -180,14 +213,42 @@ void BsplineMassOperatorIsothermal::accumulateMassPlusScaledOperator(
         const complex_t &beta,
         suzerain::NoninterleavedState<4,complex_t> &output) const
 {
+    // State enters method as coefficients in X, Y, and Z directions
+
+    save_mean_state_at_collocation_points(input);
+
     return base::accumulateMassPlusScaledOperator(phi, input, beta, output);
+
+    // State leaves method as coefficients in X and Z directions
+    // State leaves method as collocation point values in Y direction
+}
+
+void BsplineMassOperatorIsothermal::save_mean_state_at_collocation_points(
+        const state_type &state) const
+{
+    if (!has_zero_zero_mode) return;
+
+    // Copy mean coefficients
+    mean_rho = Eigen::Map<const Eigen::VectorXc>(
+        state[channel::field::ndx::rho].origin(), state.shape()[1]).real();
+    mean_rhou = Eigen::Map<const Eigen::VectorXc>(
+        state[channel::field::ndx::rhou].origin(), state.shape()[1]).real();
+
+    // Convert mean coefficients to mean collocation point values
+    bop.apply(0, 1, 1.0, mean_rho.data(),  1, state.shape()[1]);
+    bop.apply(0, 1, 1.0, mean_rhou.data(), 1, state.shape()[1]);
 }
 
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::NoninterleavedState<4,complex_t> &state) const
 {
+    // State enters method as coefficients in X and Z directions
+    // State enters method as collocation point values in Y direction
+
     return base::invertMassPlusScaledOperator(phi, state);
+
+    // State leaves method as coefficients in X, Y, and Z directions
 }
 
 NonlinearOperator::NonlinearOperator(
@@ -214,7 +275,7 @@ real_t NonlinearOperator::applyOperator(
 {
     namespace ndx = channel::field::ndx;
 
-    // All state enters routine as coefficients in X, Y, and Z directions
+    // State enters method as coefficients in X, Y, and Z directions
 
     // Sanity check incoming swave's and auxw's shape and contiguity
     assert(swave.shape()[0] == channel::field::count);
@@ -542,8 +603,8 @@ real_t NonlinearOperator::applyOperator(
     // Return minimum of either time step criterion, accounting for NaNs
     return suzerain::math::minnan(convective_delta_t, diffusive_delta_t);
 
-    // All state leaves routine as coefficients in X and Z directions
-    // All state leaves routine as collocation point values in Y direction
+    // State leaves method as coefficients in X and Z directions
+    // State leaves method as collocation point values in Y direction
 }
 
 NonlinearOperatorIsothermal::NonlinearOperatorIsothermal(

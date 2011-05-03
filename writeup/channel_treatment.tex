@@ -240,8 +240,6 @@ Following advice from Moser, this approach may be implemented as follows:
     coefficients in the otherwise unused imaginary components of the
     $m_x$ and $e$ ``zero zero'' modes.  The wall collocation point values
     should be set to zero as we do not wish to force at the walls.
-  \item Set $m_x$, $m_y$ and $m_z$ to be zero for $y=0,2\delta$.
-  \item Set $e = \frac{\rho}{\gamma\left(\gamma-1\right)}$ for $y = 0,\delta$.
   \item Compute $A^{-1}$ as usual.  The necessary implicit solves for the
     momentum and energy forcing are performed for free during the usual
     ``zero zero'' mode work.
@@ -254,6 +252,12 @@ Following advice from Moser, this approach may be implemented as follows:
   \item Add $\phi$ times the imaginary part of $A^{-1}e\!\left(\cdot,y,\cdot\right)$
         to the real part of $A^{-1}e\!\left(\cdot,y,\cdot\right)$
         and then clear the imaginary part.
+  \item Set $m_x$, $m_y$ and $m_z$ to be zero for $y=0,2\delta$
+        taking care to account for working in coefficient versus collocation
+        point space.
+  \item Set $e = \frac{\rho}{\gamma\left(\gamma-1\right)}$ for $y = 0,\delta$
+        taking care to account for working in coefficient versus collocation
+        point space.
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
