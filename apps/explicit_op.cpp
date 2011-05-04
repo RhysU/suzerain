@@ -48,47 +48,13 @@
 
 namespace channel {
 
-OperatorBase::OperatorBase(
-            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
-            const suzerain::problem::GridDefinition &grid,
-            const suzerain::pencil_grid &dgrid,
-            suzerain::bspline &b,
-            const suzerain::bsplineop &bop)
-    : scenario(scenario),
-      grid(grid),
-      dgrid(dgrid),
-      bop(bop),
-      has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
-                          && dgrid.local_wave_start.z() == 0),
-      one_over_delta_x(scenario.Lx / grid.N.x() /* !dN.x() */),
-      one_over_delta_z(scenario.Lz / grid.N.z() /* !dN.z() */),
-      y_(boost::extents[boost::multi_array_types::extent_range(
-              dgrid.local_physical_start.y(), dgrid.local_physical_end.y())]),
-      one_over_delta_y_(boost::extents[boost::multi_array_types::extent_range(
-              dgrid.local_physical_start.y(), dgrid.local_physical_end.y())])
-{
-    // Compute y collocation point locations and spacing local to this rank
-    for (int j = dgrid.local_physical_start.y();
-         j < dgrid.local_physical_end.y();
-         ++j) {
-
-        y_[j] = b.collocation_point(j);
-        const int jm = (j == 0        ) ? 1         : j - 1;
-        const int jp = (j == b.n() - 1) ? b.n() - 2 : j + 1;
-        const real_t delta_y = std::min(
-                std::abs(b.collocation_point(jm) - y_[j]),
-                std::abs(b.collocation_point(jp) - y_[j]));
-        one_over_delta_y_[j] = 1.0 / delta_y;
-    }
-}
-
 BsplineMassOperator::BsplineMassOperator(
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop)
-    : OperatorBase(scenario, grid, dgrid, b, bop),
+    : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
       massluz(bop)
 {
     SUZERAIN_UNUSED(scenario);
@@ -336,7 +302,7 @@ NonlinearOperator::NonlinearOperator(
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop)
-    : OperatorBase(scenario, grid, dgrid, b, bop),
+    : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
       auxw(suzerain::to_yxz(static_cast<std::size_t>(aux::count),
                             dgrid.local_wave_extent),
               suzerain::prepend(dgrid.local_wave_storage(),
