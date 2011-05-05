@@ -137,14 +137,14 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
         b.integration_coefficients(0, bulkcoeff.data());
         bulkcoeff /= scenario.Ly;
 
-        // Precompute M^{-1}*(e_{lower wall}, e_{upper_wall} for applying
-        // collocation point conditions in coefficient space
-        massinv_elower = Eigen::VectorXr::Unit(b.n(), 0);
-        massinv_eupper = Eigen::VectorXr::Unit(b.n(), b.n() - 1);
-        suzerain::bsplineop_lu masslu(bop);
-        masslu.form_mass(bop);
-        masslu.solve(1, massinv_elower.data(), 1, b.n());
-        masslu.solve(1, massinv_eupper.data(), 1, b.n());
+//      // Precompute M^{-1}*(e_{lower wall}, e_{upper_wall} for applying
+//      // collocation point conditions in coefficient space
+//      massinv_elower = Eigen::VectorXr::Unit(b.n(), 0);
+//      massinv_eupper = Eigen::VectorXr::Unit(b.n(), b.n() - 1);
+//      suzerain::bsplineop_lu masslu(bop);
+//      masslu.form_mass(bop);
+//      masslu.solve(1, massinv_elower.data(), 1, b.n());
+//      masslu.solve(1, massinv_eupper.data(), 1, b.n());
     }
 }
 
@@ -229,6 +229,34 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         mean_rhoe.imag() = saved_mean_rhou;
     }
 
+    // Channel treatment step (8) enforces no-slip at the walls
+    // by modifying wall collocation points prior to solve
+    // FIXME: Works only when L is NOP
+    assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
+    assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
+    for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
+        for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+            for (std::size_t j = 0; j < state.shape()[2]; ++j) {
+                state[i][wall_lower][j][k] = 0;
+                state[i][wall_upper][j][k] = 0;
+            }
+        }
+    }
+
+    // Channel treatment step (9) enforces isothermal walls
+    // by modifying wall collocation points prior to solve
+    // FIXME: Works only when L is NOP
+    const real_t inv_gamma_gamma1
+        = 1 / (scenario.gamma * (scenario.gamma - 1));
+    for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+        for (std::size_t j = 0; j < state.shape()[2]; ++j) {
+            state[ndx::rhoe][wall_lower][j][k]
+                = inv_gamma_gamma1 * state[ndx::rho][wall_lower][j][k];
+            state[ndx::rhoe][wall_upper][j][k]
+                = inv_gamma_gamma1 * state[ndx::rho][wall_upper][j][k];
+        }
+    }
+
     // Channel treatment step (3) performs the usual operator solve
     base::invertMassPlusScaledOperator(phi, state);
 
@@ -249,47 +277,47 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         mean_rhoe.real() += phi * mean_rhoe.imag();
         mean_rhoe.imag() = VectorXr::Zero(Ny);
 
-        // Channel treatment step (8) enforces no-slip at the walls
-        // which is complicated by being in coefficient space.
-        // Zero the collocation point value at both walls.
-        assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
-        assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
-        for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
-            for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-                for (std::size_t j = 0; j < state.shape()[2]; ++j) {
+//      // Channel treatment step (8) enforces no-slip at the walls
+//      // which is complicated by being in coefficient space.
+//      // Zero the collocation point value at both walls.
+//      assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
+//      assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
+//      for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
+//          for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+//              for (std::size_t j = 0; j < state.shape()[2]; ++j) {
 
-                    const complex_t m_lower = state[i][wall_lower][j][k];
-                    const complex_t m_upper = state[i][wall_upper][j][k];
+//                  const complex_t m_lower = state[i][wall_lower][j][k];
+//                  const complex_t m_upper = state[i][wall_upper][j][k];
 
-                    Map<VectorXc> m_jk(&state[i][0][j][k], Ny);
-                    m_jk -= (   massinv_elower*m_lower
-                              + massinv_eupper*m_upper).cast<complex_t>();
-                }
-            }
-        }
+//                  Map<VectorXc> m_jk(&state[i][0][j][k], Ny);
+//                  m_jk -= (   massinv_elower*m_lower
+//                            + massinv_eupper*m_upper).cast<complex_t>();
+//              }
+//          }
+//      }
 
-        // Channel treatment step (9) enforces isothermal wall by
-        // setting e_wall = rho_wall / (gamma * (gamma - 1)) again
-        // dealing with imposing collocation point restrictions in
-        // coefficient space.  Uses that only the wall coefficients
-        // contribute to rho_wall's collocation point value.
-        const real_t inv_gamma_gamma1
-            = 1 / (scenario.gamma * (scenario.gamma - 1));
-        for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-            for (std::size_t j = 0; j < state.shape()[2]; ++j) {
+//      // Channel treatment step (9) enforces isothermal wall by
+//      // setting e_wall = rho_wall / (gamma * (gamma - 1)) again
+//      // dealing with imposing collocation point restrictions in
+//      // coefficient space.  Uses that only the wall coefficients
+//      // contribute to rho_wall's collocation point value.
+//      const real_t inv_gamma_gamma1
+//          = 1 / (scenario.gamma * (scenario.gamma - 1));
+//      for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+//          for (std::size_t j = 0; j < state.shape()[2]; ++j) {
 
-                    Map<VectorXc> rhoe_jk(&state[ndx::rhoe][0][j][k], Ny);
+//                  Map<VectorXc> rhoe_jk(&state[ndx::rhoe][0][j][k], Ny);
 
-                    const complex_t factor_lower
-                        = inv_gamma_gamma1*state[ndx::rho][wall_lower][j][k]
-                        -                  rhoe_jk[wall_lower];
-                    const complex_t factor_upper
-                        = inv_gamma_gamma1*state[ndx::rho][wall_upper][j][k]
-                        -                  rhoe_jk[wall_upper];
-                    rhoe_jk += (   massinv_elower*factor_lower
-                                 + massinv_eupper*factor_upper).cast<complex_t>();
-            }
-        }
+//                  const complex_t factor_lower
+//                      = inv_gamma_gamma1*state[ndx::rho][wall_lower][j][k]
+//                      -                  rhoe_jk[wall_lower];
+//                  const complex_t factor_upper
+//                      = inv_gamma_gamma1*state[ndx::rho][wall_upper][j][k]
+//                      -                  rhoe_jk[wall_upper];
+//                  rhoe_jk += (   massinv_elower*factor_lower
+//                               + massinv_eupper*factor_upper).cast<complex_t>();
+//          }
+//      }
 
     }
 
