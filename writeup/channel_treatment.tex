@@ -254,10 +254,12 @@ Following advice from Moser, this approach may be implemented as follows:
         and then clear the imaginary part.
   \item Set $m_x$, $m_y$ and $m_z$ to be zero for $y=0,2\delta$
         taking care to account for working in coefficient versus collocation
-        point space.
+        point space.  When $L = 0$ this can be done most simply prior
+        to the solve.
   \item Set $e = \frac{\rho}{\gamma\left(\gamma-1\right)}$ for $y = 0,\delta$
         taking care to account for working in coefficient versus collocation
-        point space.
+        point space.  Again, when $L = 0$ this can be done prior to the
+        solve.
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -130,22 +130,10 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
             const suzerain::bsplineop &bop)
     : BsplineMassOperator(scenario, grid, dgrid, b, bop)
 {
-    if (has_zero_zero_mode) {
-
-        // Precompute operator for finding bulk quantities from coefficients
-        bulkcoeff.resize(b.n());
-        b.integration_coefficients(0, bulkcoeff.data());
-        bulkcoeff /= scenario.Ly;
-
-        // Precompute M^{-1}*(e_{lower wall}, e_{upper_wall} for applying
-        // collocation point conditions in coefficient space
-        massinv_elower = Eigen::VectorXr::Unit(b.n(), 0);
-        massinv_eupper = Eigen::VectorXr::Unit(b.n(), b.n() - 1);
-        suzerain::bsplineop_lu masslu(bop);
-        masslu.form_mass(bop);
-        masslu.solve(1, massinv_elower.data(), 1, b.n());
-        masslu.solve(1, massinv_eupper.data(), 1, b.n());
-    }
+    // Precompute operator for finding bulk quantities from coefficients
+    bulkcoeff.resize(b.n());
+    b.integration_coefficients(0, bulkcoeff.data());
+    bulkcoeff /= scenario.Ly;
 }
 
 void BsplineMassOperatorIsothermal::applyMassPlusScaledOperator(
@@ -210,12 +198,40 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     const std::size_t wall_lower = 0;
     const std::size_t wall_upper = Ny - 1;
 
-    // See channel_treatment document for information on the steps below
+    // See channel_treatment writeup for information on the steps below.
+    // Steps appear out of order relative to the writeup (TODO fix writeup).
 
-    // Channel treatment step (1) done during operator apply/accumulate
+    // channel_treatment step (1) done during operator apply/accumulate
     // within save_mean_state_at_collocation_points();
 
-    // Channel treatment step (2) loads mean state at collocation points
+    // channel_treatment step (8) sets no-slip conditions
+    // on wall collocation points.  Possible pre-solve since L = 0.
+    assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
+    assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
+    for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
+        for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+            for (std::size_t j = 0; j < state.shape()[2]; ++j) {
+                state[i][wall_lower][j][k] = 0;
+                state[i][wall_upper][j][k] = 0;
+            }
+        }
+    }
+
+    // channel_treatment step (9) sets isothermal conditions on wall
+    // collocation points using e_wall = rho_wall / (gamma * (gamma - 1)).
+    // Possible pre-solve since L = 0.
+    const real_t inv_gamma_gamma1
+        = 1 / (scenario.gamma * (scenario.gamma - 1));
+    for (std::size_t k = 0; k < state.shape()[3]; ++k) {
+        for (std::size_t j = 0; j < state.shape()[2]; ++j) {
+            state[ndx::rhoe][wall_lower][j][k]
+                    = inv_gamma_gamma1 * state[ndx::rho][wall_lower][j][k];
+            state[ndx::rhoe][wall_upper][j][k]
+                    = inv_gamma_gamma1 * state[ndx::rho][wall_upper][j][k];
+        }
+    }
+
+    // channel_treatment step (2) loads mean state at collocation points
     // into the imaginary part of the constant mode coefficients
     if (has_zero_zero_mode) {
         saved_mean_rho[wall_lower] = 0;  // No forcing at lower wall
@@ -229,12 +245,12 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         mean_rhoe.imag() = saved_mean_rhou;
     }
 
-    // Channel treatment step (3) performs the usual operator solve
+    // channel_treatment step (3) performs the usual operator solve
     base::invertMassPlusScaledOperator(phi, state);
 
     if (has_zero_zero_mode) {
 
-        // Channel treatment steps (4), (5), and (6) determine and
+        // channel_treatment steps (4), (5), and (6) determine and
         // apply the appropriate bulk momentum forcing using the
         // Mach number as the target value
         Map<VectorXc> mean_rhou(state[ndx::rhou].origin(), Ny);
@@ -243,54 +259,13 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         mean_rhou.real() += phi * mean_rhou.imag();
         mean_rhou.imag() = VectorXr::Zero(Ny);
 
-        // Channel treatment step (7) accounts for the momentum forcing
+        // channel_treatment step (7) accounts for the momentum forcing
         // within the total energy equation
         Map<VectorXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
         mean_rhoe.real() += phi * mean_rhoe.imag();
         mean_rhoe.imag() = VectorXr::Zero(Ny);
 
-        // Channel treatment step (8) enforces no-slip at the walls
-        // which is complicated by being in coefficient space.
-        // Zero the collocation point value at both walls.
-        assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
-        assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
-        for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
-            for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-                for (std::size_t j = 0; j < state.shape()[2]; ++j) {
-
-                    const complex_t m_lower = state[i][wall_lower][j][k];
-                    const complex_t m_upper = state[i][wall_upper][j][k];
-
-                    Map<VectorXc> m_jk(&state[i][0][j][k], Ny);
-                    m_jk -= (   massinv_elower*m_lower
-                              + massinv_eupper*m_upper).cast<complex_t>();
-                }
-            }
-        }
-
-        // Channel treatment step (9) enforces isothermal wall by
-        // setting e_wall = rho_wall / (gamma * (gamma - 1)) again
-        // dealing with imposing collocation point restrictions in
-        // coefficient space.  Uses that only the wall coefficients
-        // contribute to rho_wall's collocation point value.
-        const real_t inv_gamma_gamma1
-            = 1 / (scenario.gamma * (scenario.gamma - 1));
-        for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-            for (std::size_t j = 0; j < state.shape()[2]; ++j) {
-
-                    Map<VectorXc> rhoe_jk(&state[ndx::rhoe][0][j][k], Ny);
-
-                    const complex_t factor_lower
-                        = inv_gamma_gamma1*state[ndx::rho][wall_lower][j][k]
-                        -                  rhoe_jk[wall_lower];
-                    const complex_t factor_upper
-                        = inv_gamma_gamma1*state[ndx::rho][wall_upper][j][k]
-                        -                  rhoe_jk[wall_upper];
-                    rhoe_jk += (   massinv_elower*factor_lower
-                                 + massinv_eupper*factor_upper).cast<complex_t>();
-            }
-        }
-
+        // channel_treatment steps (8) and (9) already performed above
     }
 
     // State leaves method as coefficients in X, Y, and Z directions
@@ -661,11 +636,9 @@ NonlinearOperatorIsothermal::NonlinearOperatorIsothermal(
     : NonlinearOperator(scenario, grid, dgrid, b, bop)
 {
     // Precompute operator for finding bulk quantities from coefficients
-    if (has_zero_zero_mode) {
-        bulkcoeff.resize(b.n());
-        b.integration_coefficients(0, bulkcoeff.data());
-        bulkcoeff /= scenario.Ly;
-    }
+    bulkcoeff.resize(b.n());
+    b.integration_coefficients(0, bulkcoeff.data());
+    bulkcoeff /= scenario.Ly;
 }
 
 real_t NonlinearOperatorIsothermal::applyOperator(
