@@ -131,7 +131,7 @@ static std::string information_L2() {
     // Prepare the status message
     std::ostringstream msg;
     msg << "mean|fluct L2 =";
-    msg.precision(std::numeric_limits<real_t>::digits10 / 2);
+    msg.precision(static_cast<int>(numeric_limits<real_t>::digits10 * 0.75));
     for (std::size_t k = 0; k < L2.size(); ++k) {
         msg << ' ' << L2[k].mean() << ' ' << L2[k].fluctuating();
     }
@@ -150,7 +150,7 @@ static std::string information_bulk() {
     // Prepare the status message
     std::ostringstream msg;
     msg << "bulk state =";
-    msg.precision(std::numeric_limits<real_t>::digits10 / 2);
+    msg.precision(static_cast<int>(numeric_limits<real_t>::digits10 * 0.75));
     for (std::size_t k = 0; k < state_linear->shape()[0]; ++k) {
         Eigen::Map<Eigen::VectorXc> mean(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
@@ -197,15 +197,15 @@ static bool log_status(real_t t, std::size_t nt) {
     std::ostringstream timeprefix;
     timeprefix << "t = " << t << ", nt = " << nt << ", ";
 
+    // On root only, compute and show bulk state quantities
+    INFO0(timeprefix.str() << information_bulk());
+
     // Collectively compute and log L2 mean and fluctuating information
     const std::string msg_l2 = information_L2() /* collective! expensive! */;
     INFO0(timeprefix.str() << msg_l2);
 
-    // On root only, compute and show bulk state quantities
-    INFO0(timeprefix.str() << information_bulk());
-
     // On root only, compute and show specific state at the walls
-    INFO0(timeprefix.str() << information_specific_wall_state());
+    DEBUG0(timeprefix.str() << information_specific_wall_state());
 
     return true;
 }
