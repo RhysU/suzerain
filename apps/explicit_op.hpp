@@ -116,8 +116,8 @@ public:
 protected:
 
     Eigen::VectorXr bulkcoeff;
-//  Eigen::VectorXr massinv_elower;
-//  Eigen::VectorXr massinv_eupper;
+    Eigen::VectorXr massinv_elower;
+    Eigen::VectorXr massinv_eupper;
 
 private:
 
