@@ -62,16 +62,18 @@ using std::numeric_limits;
 // Global parameters initialized in main()
 using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
-static const ScenarioDefinition<real_t> scenario(
-        /* Re    */ 100,
-        /* Pr    */ real_t(7)/real_t(10),
-        /* Ma    */ real_t(115)/real_t(100),
-        /* gamma */ real_t(14)/real_t(10),
-        /* beta  */ real_t(2)/real_t(3),
-        /* Lx    */ 4*pi<real_t>(),
-        /* Ly    */ 2,
-        /* Lz    */ 4*pi<real_t>()/3);
-static const GridDefinition grid(
+static ScenarioDefinition<real_t> scenario(
+        /* Re        */ 100,
+        /* Pr        */ real_t(7)/real_t(10),
+        /* Ma        */ real_t(115)/real_t(100),
+        /* bulk_rho  */ 1,
+        /* bulk_rhou */ real_t(115)/real_t(100),
+        /* gamma     */ real_t(14)/real_t(10),
+        /* beta      */ real_t(2)/real_t(3),
+        /* Lx        */ 4*pi<real_t>(),
+        /* Ly        */ 2,
+        /* Lz        */ 4*pi<real_t>()/3);
+static GridDefinition grid(
         /* Nx      */ 1,
         /* DAFx    */ 1.5,
         /* Ny      */ 16,
@@ -169,10 +171,8 @@ int main(int argc, char **argv)
         namespace po = ::boost::program_options;
 
         // Cast away const so options processing can modify settings
-        options.add_definition(
-                const_cast<ScenarioDefinition<real_t>& >(scenario));
-        options.add_definition(
-                const_cast<GridDefinition& >(grid));
+        options.add_definition(scenario);
+        options.add_definition(grid);
 
         using ::suzerain::validation::ensure_positive;
         ::std::pointer_to_binary_function<real_t,const char*,void>
@@ -207,6 +207,16 @@ int main(int argc, char **argv)
     if (grid.k < 4 /* cubics */) {
         FATAL("k >= 4 required for two non-trivial spatial derivatives");
         return EXIT_FAILURE;
+    }
+
+    // Initialization done under assumptions bulk_rho == 1 && Ma == bulk_rhou
+    if (scenario.bulk_rhou != scenario.Ma) {
+        WARN0("Forcing bulk streamwise momentum to match the Mach number");
+        scenario.bulk_rhou = scenario.Ma;
+    }
+    if (scenario.bulk_rho != 1) {
+        WARN0("Forcing bulk density to be one");
+        scenario.bulk_rho = 1;
     }
 
     INFO0("Creating B-spline basis of order " << (grid.k - 1)

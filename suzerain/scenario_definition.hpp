@@ -56,23 +56,27 @@ public:
     /**
      * Construct an instance with the given parameters.
      *
-     * @param default_Re    Default Reynolds number.
-     * @param default_Pr    Default Prandtl number.
-     * @param default_Pr    Default Mach number.
-     * @param default_gamma Default ratio of specific heats.
-     * @param default_beta  Default temperature power law exponent.
-     * @param default_Lx    Default domain length in the X direction.
-     * @param default_Ly    Default domain length in the Y direction.
-     * @param default_Lz    Default domain length in the Z direction.
+     * @param default_Re        Default Reynolds number.
+     * @param default_Pr        Default Prandtl number.
+     * @param default_Ma        Default Mach number.
+     * @param default_bulk_rho  Default bulk density target.
+     * @param default_bulk_rhou Default bulk streamwise momentum target.
+     * @param default_gamma     Default ratio of specific heats.
+     * @param default_beta      Default temperature power law exponent.
+     * @param default_Lx        Default domain length in the X direction.
+     * @param default_Ly        Default domain length in the Y direction.
+     * @param default_Lz        Default domain length in the Z direction.
      */
-    explicit ScenarioDefinition(FPT default_Re    = 0,
-                                FPT default_Pr    = 0,
-                                FPT default_Ma    = 0,
-                                FPT default_gamma = 0,
-                                FPT default_beta  = 0,
-                                FPT default_Lx    = 0,
-                                FPT default_Ly    = 0,
-                                FPT default_Lz    = 0);
+    explicit ScenarioDefinition(FPT default_Re        = 0,
+                                FPT default_Pr        = 0,
+                                FPT default_Ma        = 0,
+                                FPT default_bulk_rho  = 0,
+                                FPT default_bulk_rhou = 0,
+                                FPT default_gamma     = 0,
+                                FPT default_beta      = 0,
+                                FPT default_Lx        = 0,
+                                FPT default_Ly        = 0,
+                                FPT default_Lz        = 0);
 
     /**
      * The Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
@@ -90,6 +94,16 @@ public:
      * The Mach number \f$\mbox{Ma}=\frac{u_{0}}{a_{0}}\f$.
      */
     FPT Ma;
+
+    /**
+     * The bulk density used as a target for integral constraints.
+     */
+    FPT bulk_rho;
+
+    /**
+     * The bulk streamwise momentum used as a target for integral constraints.
+     */
+    FPT bulk_rhou;
 
     /**
      * The ratio of specific heats \f$\gamma=C_p/C_v\f$.
@@ -123,6 +137,8 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         FPT default_Re,
         FPT default_Pr,
         FPT default_Ma,
+        FPT default_bulk_rho,
+        FPT default_bulk_rhou,
         FPT default_gamma,
         FPT default_beta,
         FPT default_Lx,
@@ -132,6 +148,8 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
       Re(default_Re),
       Pr(default_Pr),
       Ma(default_Ma),
+      bulk_rho(default_bulk_rho),
+      bulk_rhou(default_bulk_rhou),
       gamma(default_gamma),
       beta(default_beta),
       Lx(default_Lx),
@@ -187,6 +205,30 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         }
         v->default_value(default_Ma);
         this->add_options()("Ma", v.release(), "Mach number");
+    }
+
+    { // bulk_rho
+        auto_ptr<typed_value<FPT> > v(value(&this->bulk_rho));
+        if (default_bulk_rho) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "bulk_rho"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "bulk_rho"));
+        }
+        v->default_value(default_bulk_rho);
+        this->add_options()("bulk_rho", v.release(),
+                "bulk density target");
+    }
+
+    { // bulk_rhou
+        auto_ptr<typed_value<FPT> > v(value(&this->bulk_rhou));
+        if (default_bulk_rhou) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "bulk_rhou"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "bulk_rhou"));
+        }
+        v->default_value(default_bulk_rhou);
+        this->add_options()("bulk_rhou", v.release(),
+                "bulk streamwise momentum target");
     }
 
     { // gamma

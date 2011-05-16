@@ -245,17 +245,26 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         mean_rhoe.imag() = saved_mean_rhou;
     }
 
+    // B-spline numerics are not conservative when the mean density field has
+    // any asymmetry.  Combat the bulk density's very, very small tendency to
+    // drift by adding an integral constraint that the bulk density stay fixed
+    // at a target value.  Approach follows that of the bulk momentum forcing.
+    if (has_zero_zero_mode) {
+        Map<VectorXc> mean_rho(state[ndx::rho].origin(), Ny);
+        mean_rho.imag().setConstant(1);
+    }
+
     // channel_treatment step (3) performs the usual operator solve
     base::invertMassPlusScaledOperator(phi, state);
 
     if (has_zero_zero_mode) {
 
         // channel_treatment steps (4), (5), and (6) determine and
-        // apply the appropriate bulk momentum forcing using the
-        // Mach number as the target value
+        // apply the appropriate bulk momentum forcing to achieve
+        // a target value.
         Map<VectorXc> mean_rhou(state[ndx::rhou].origin(), Ny);
         const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rhou);
-        const real_t phi = (scenario.Ma - bulk.real()) / bulk.imag();
+        const real_t phi = (scenario.bulk_rhou - bulk.real()) / bulk.imag();
         mean_rhou.real() += phi * mean_rhou.imag();
         mean_rhou.imag() = VectorXr::Zero(Ny);
 
@@ -266,6 +275,19 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         mean_rhoe.imag() = VectorXr::Zero(Ny);
 
         // channel_treatment steps (8) and (9) already performed above
+    }
+
+    // Complete the bulk density target forcing.  Note that only the
+    // continuity equation is forced which neglects contributions
+    // to the momentum and energy equations.  Neglecting these terms is
+    // acceptable as the forcing is very small and vanishes when the
+    // mean field is symmetric in the wall-normal direction.
+    if (has_zero_zero_mode) {
+        Map<VectorXc> mean_rho(state[ndx::rho].origin(), Ny);
+        const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rho);
+        const real_t phi = (scenario.bulk_rho - bulk.real()) / bulk.imag();
+        mean_rho.real() += phi * mean_rho.imag();
+        mean_rho.imag() = VectorXr::Zero(Ny);
     }
 
     // State leaves method as coefficients in X, Y, and Z directions

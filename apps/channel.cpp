@@ -68,6 +68,12 @@ void store(const esio_handle h,
     esio_line_write(h, "Ma", &scenario.Ma, 0,
             scenario.options().find("Ma",false).description().c_str());
 
+    esio_line_write(h, "bulk_rho", &scenario.bulk_rho, 0,
+            scenario.options().find("bulk_rho",false).description().c_str());
+
+    esio_line_write(h, "bulk_rhou", &scenario.bulk_rhou, 0,
+            scenario.options().find("bulk_rhou",false).description().c_str());
+
     esio_line_write(h, "gamma", &scenario.gamma, 0,
             scenario.options().find("gamma",false).description().c_str());
 
@@ -107,6 +113,18 @@ void load(const esio_handle h,
         INFO0("Overriding scenario using Ma = " << scenario.Ma);
     } else {
         esio_line_read(h, "Ma", &scenario.Ma, 0);
+    }
+
+    if (scenario.bulk_rho) {
+        INFO0("Overriding scenario using bulk_rho = " << scenario.bulk_rho);
+    } else {
+        esio_line_read(h, "bulk_rho", &scenario.bulk_rho, 0);
+    }
+
+    if (scenario.bulk_rhou) {
+        INFO0("Overriding scenario using bulk_rhou = " << scenario.bulk_rhou);
+    } else {
+        esio_line_read(h, "bulk_rhou", &scenario.bulk_rhou, 0);
     }
 
     if (scenario.gamma) {
