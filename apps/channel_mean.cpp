@@ -73,7 +73,9 @@
     apply(p)                     \
     apply(T)                     \
     apply(mu)                    \
-    apply(nu)
+    apply(nu)                    \
+    apply(S)                     \
+    apply(isenkappa)
 
 namespace column {
     enum {
@@ -293,17 +295,29 @@ process(const Eigen::ArrayXXr &s_coeffs,
     // Compute specific and primitive state at collocation points
     {
         using namespace column;
+        const real_t gamma = scenario.gamma;
+
         s.col(u)  = s.col(rhou) / s.col(rho);
         s.col(v)  = s.col(rhov) / s.col(rho);
         s.col(w)  = s.col(rhow) / s.col(rho);
         s.col(e)  = s.col(rhoe) / s.col(rho);
-        s.col(p)  = (scenario.gamma - 1) * (s.col(rhoe)
+        s.col(p)  = (gamma - 1) * (s.col(rhoe)
                             - s.col(rhou) * s.col(u) / 2
                             - s.col(rhov) * s.col(v) / 2
                             - s.col(rhow) * s.col(w) / 2);
         s.col(T)  = scenario.gamma * s.col(p) / s.col(rho);
         s.col(mu) = s.col(T).pow(scenario.beta);
         s.col(nu) = s.col(mu) / s.col(rho);
+
+        // Nondimensional entropy uses the gas constant R as reference S_0
+        // and is derived from Elements of Gasdynamics equation (1.43c).
+        // It is well-defined only up to an arbitrary constant.
+        s.col(S)  = (gamma / (gamma - 1)) * s.col(T).log() - s.col(p).log();
+
+        // "isenkappa" is horrible shorthand for "isentropic \hat{kappa}"
+        // and is defined by the relation \hat{kappa} = p^{-1} \rho^{\gamma}
+        // which is constant along particle paths in isentropic flow.
+        s.col(isenkappa) = s.col(rho).pow(gamma) / s.col(p);
     }
 
     // Compute derivatives of specific and primitive state. Better would be
