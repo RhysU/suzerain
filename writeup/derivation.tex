@@ -277,8 +277,10 @@ we can express it as
 \notag \\
 &= 2 \mu \varepsilon_{ij} + \lambda\delta_{ij}\nabla\cdot{}u
 \end{align}
-where $\mu=\frac{1}{2}\left( B + C \right)$ is the viscosity
-and $\lambda=A$ is the second viscosity.
+where $\mu=\frac{1}{2}\left( B + C \right)$ is the dynamic coefficient of
+viscosity (shear) and $\lambda=A$ is the second coefficient of
+viscosity (dilatational).  The quantity $\lambda + \frac{2}{3}\mu$
+is the coefficient of bulk viscosity.
 Reverting to direct notation we have
 \begin{align}
 \tau
@@ -291,10 +293,11 @@ Reverting to direct notation we have
 
 \subsubsection{Stokes' hypothesis}
 
-We assume the second viscosity $\lambda=-\frac{2}{3}\mu$.  The assumption is
-valid for most circumstances~\cite{GadelHak1995}.  However, because we
-anticipate separately maintaining $\lambda$ being useful, we will not combine
-$\mu$ and $\lambda$ terms in the model.
+We assume the second coefficient of viscosity $\lambda=-\frac{2}{3}\mu$ which
+is equivalent to setting the bulk viscosity $\lambda + \frac{2}{3}\mu$ to be
+zero.  The assumption is valid for most circumstances~\cite{GadelHak1995}.
+However, because we anticipate separately maintaining $\lambda$ being useful,
+we will not combine $\mu$ and $\lambda$ terms in the model.
 
 \subsubsection{Power law viscosity}
 
