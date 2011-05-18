@@ -76,8 +76,8 @@
     apply(nu)                    \
     apply(S)
 
-#define FORALL_MISC(apply)       \
-    apply(isenkappa)
+// Empty placeholder
+#define FORALL_MISC(apply)
 
 namespace column {
     enum {
@@ -317,11 +317,6 @@ process(const Eigen::ArrayXXr &s_coeffs,
         // and is derived from Elements of Gasdynamics equation (1.43c).
         // It is well-defined only up to an arbitrary constant.
         s.col(S)  = (gamma / (gamma - 1)) * s.col(T).log() - s.col(p).log();
-
-        // "isenkappa" is horrible shorthand for "isentropic \hat{kappa}"
-        // and is defined by the relation \hat{kappa} = p^{-1} \rho^{\gamma}
-        // which is constant along particle paths in isentropic flow.
-        s.col(isenkappa) = s.col(rho).pow(gamma) / s.col(p);
     }
 
     // Compute derivatives of specific and primitive state. Better would be
