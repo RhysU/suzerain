@@ -74,7 +74,9 @@
     apply(T)                     \
     apply(mu)                    \
     apply(nu)                    \
-    apply(S)                     \
+    apply(S)
+
+#define FORALL_MISC(apply)       \
     apply(isenkappa)
 
 namespace column {
@@ -84,6 +86,7 @@ namespace column {
     FORALL_STATE_PLUS(X)
     FORALL_STATE_CONS(X)
     FORALL_STATE_PRIM(X)
+    FORALL_MISC(X)
 #undef X
 #define X(a) a##_y,
     FORALL_STATE_CONS(X)
@@ -103,6 +106,7 @@ namespace column {
     FORALL_STATE_PLUS(X)
     FORALL_STATE_CONS(X)
     FORALL_STATE_PRIM(X)
+    FORALL_MISC(X)
 #undef X
 #define X(a) STRINGIFY(a##_y),
     FORALL_STATE_CONS(X)
