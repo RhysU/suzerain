@@ -108,9 +108,11 @@ public:
     FPT bulk_rhou;
 
     /**
-     * The ratio of specific heats \f$\gamma=C_p/C_v\f$.
+     * The ratio of bulk viscosity to dynamic viscosity according to \f$
+     * \mu_{B} = \alpha \mu \f$ or equivalently \f$ \lambda = \left( \alpha -
+     * \frac{2}{3}\mu \right)\f$.
      */
-    FPT gamma;
+    FPT alpha;
 
     /**
      * The temperature power law exponent \f$\beta\f$ where
@@ -119,11 +121,9 @@ public:
     FPT beta;
 
     /**
-     * The ratio of bulk viscosity to dynamic viscosity according to \f$
-     * \mu_{B} = \alpha \mu \f$ or equivalently \f$ \lambda = \left( \alpha -
-     * \frac{2}{3}\mu \right)\f$.
+     * The ratio of specific heats \f$\gamma=C_p/C_v\f$.
      */
-    FPT alpha;
+    FPT gamma;
 
     /**
      * The domain length in the X direction.
@@ -148,9 +148,9 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         FPT default_Ma,
         FPT default_bulk_rho,
         FPT default_bulk_rhou,
-        FPT default_gamma,
-        FPT default_beta,
         FPT default_alpha,
+        FPT default_beta,
+        FPT default_gamma,
         FPT default_Lx,
         FPT default_Ly,
         FPT default_Lz)
@@ -160,9 +160,9 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
       Ma(default_Ma),
       bulk_rho(default_bulk_rho),
       bulk_rhou(default_bulk_rhou),
-      gamma(default_gamma),
-      beta(default_beta),
       alpha(default_alpha),
+      beta(default_beta),
+      gamma(default_gamma),
       Lx(default_Lx),
       Ly(default_Ly),
       Lz(default_Lz)
@@ -242,15 +242,16 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
                 "bulk streamwise momentum target");
     }
 
-    { // gamma
-        auto_ptr<typed_value<FPT> > v(value(&this->gamma));
-        if (default_gamma) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "gamma"));
+    { // alpha
+        auto_ptr<typed_value<FPT> > v(value(&this->alpha));
+        if (default_alpha) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "alpha"));
         } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "gamma"));
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "alpha"));
         }
-        v->default_value(default_gamma);
-        this->add_options()("gamma", v.release(), "Ratio of specific heats");
+        v->default_value(default_alpha);
+        this->add_options()("alpha", v.release(),
+                "Ratio of bulk to dynamic viscosity");
     }
 
     { // beta
@@ -265,16 +266,15 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
                 "Temperature power law exponent");
     }
 
-    { // alpha
-        auto_ptr<typed_value<FPT> > v(value(&this->alpha));
-        if (default_alpha) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "alpha"));
+    { // gamma
+        auto_ptr<typed_value<FPT> > v(value(&this->gamma));
+        if (default_gamma) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "gamma"));
         } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "alpha"));
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "gamma"));
         }
-        v->default_value(default_alpha);
-        this->add_options()("alpha", v.release(),
-                "Constant ratio of bulk to dynamic viscosity");
+        v->default_value(default_gamma);
+        this->add_options()("gamma", v.release(), "Ratio of specific heats");
     }
 
     { // Lx
