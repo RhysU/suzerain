@@ -134,7 +134,7 @@ Vector div_rho_inverse_m_outer_m(
         const Scalar &div_m,
         const Tensor &grad_m)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
 
     return rho_inverse*(
                   grad_m*m
@@ -403,7 +403,7 @@ Vector explicit_div_p_u_refcoeff_grad_rho(
         const Vector &m,
         const Scalar &p)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
     return rho_inverse*rho_inverse*p*m;
 }
 
@@ -499,7 +499,7 @@ Scalar explicit_div_e_plus_p_u_refcoeff_div_m(
         const Vector &m,
         const Scalar &e)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
     return rho_inverse*(gamma*e - (gamma-1)/2*rho_inverse*m.squaredNorm());
 }
 
@@ -529,7 +529,7 @@ Vector explicit_div_e_plus_p_u_refcoeff_grad_rho(
         const Vector &m,
         const Scalar &e)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
     return rho_inverse*rho_inverse*(
               (gamma-1)*rho_inverse*m.squaredNorm()
             - gamma*e
@@ -649,7 +649,7 @@ Scalar explicit_div_e_plus_p_u(
         const VectorCoefficient1 &refcoeff_grad_rho,
         const VectorCoefficient2 &refcoeff_grad_e)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
     const Scalar coeff_div_m(
             explicit_div_e_plus_p_u_refcoeff_div_m(gamma, rho, m, e)
           - refcoeff_div_m);
@@ -711,7 +711,7 @@ Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
         const Scalar &rho,
         const Vector &m)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
     return mu*rho_inverse*rho_inverse*m;
 }
 
@@ -779,7 +779,7 @@ Vector explicit_mu_div_grad_u(
         const ScalarCoefficient &refcoeff_div_grad_m,
         const VectorCoefficient &refcoeff_div_grad_rho)
 {
-    const Scalar rho_inverse  = 1.0/rho;
+    const Scalar rho_inverse  = 1/rho;
     const Scalar rho_inverse2 = rho_inverse*rho_inverse;
     const Scalar coeff_div_grad_m(
             explicit_mu_div_grad_u_refcoeff_div_grad_m(mu, rho)
@@ -846,7 +846,7 @@ Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
         const Scalar &rho,
         const Vector &m)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
     return (mu+lambda)*rho_inverse*rho_inverse*m;
 }
 
@@ -929,7 +929,7 @@ Vector explicit_mu_plus_lambda_grad_div_u(
         const ScalarCoefficient &refcoeff_grad_div_m,
         const VectorCoefficient &refcoeff_grad_grad_rho)
 {
-    const Scalar rho_inverse  = 1.0/rho;
+    const Scalar rho_inverse  = 1/rho;
     const Scalar rho_inverse2 = rho_inverse*rho_inverse;
     const Scalar coeff_grad_div_m(
             explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
@@ -992,7 +992,7 @@ Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
         const Scalar &rho,
         const Vector &m)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
     return mu*rho_inverse*rho_inverse*m;
 }
 
@@ -1024,9 +1024,9 @@ Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
         const Vector &m,
         const Scalar &p)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
     return mu*rho_inverse*rho_inverse*(
-             0.5*(gamma-1.0)*rho_inverse*m.squaredNorm() - p
+             (gamma-1)*rho_inverse*m.squaredNorm()/2 - p
            );
 }
 
@@ -1142,7 +1142,7 @@ Scalar explicit_mu_div_grad_T(
         const VectorCoefficient  &refcoeff_div_grad_m,
         const ScalarCoefficient2 &refcoeff_div_grad_rho)
 {
-    const Scalar rho_inverse  = 1.0/rho;
+    const Scalar rho_inverse  = 1/rho;
     const Scalar rho_inverse2 = rho_inverse*rho_inverse;
     const Scalar coeff_div_grad_e(
             explicit_mu_div_grad_T_refcoeff_div_grad_e(mu, rho)
@@ -1156,14 +1156,14 @@ Scalar explicit_mu_div_grad_T(
 
     return gamma*(
                 coeff_div_grad_rho*div_grad_rho
-              - 2.0*mu*rho_inverse2*grad_rho.dot(
+              - 2*mu*rho_inverse2*grad_rho.dot(
                     grad_p - rho_inverse*p*grad_rho
                 )
-              + (gamma-1.0)*(
+              + (gamma-1)*(
                   - mu*rho_inverse2*(
                         (grad_m.transpose()*grad_m).trace()
                       - rho_inverse*(
-                            2.0*grad_rho.dot(grad_m.transpose()*m)
+                            2*grad_rho.dot(grad_m.transpose()*m)
                           - rho_inverse*m.squaredNorm()*grad_rho.squaredNorm()
                         )
                     )
@@ -1272,23 +1272,24 @@ void p_T_mu_lambda(
         Scalar &lambda,
         Vector &grad_lambda)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    using std::pow;
+    const Scalar rho_inverse = 1/rho;
 
     // Compute scalar quantities
-    p      = (gamma-1.0)*(e - (1.0/2.0)*rho_inverse*m.squaredNorm());
+    p      = (gamma-1)*(e - rho_inverse*m.squaredNorm()/2);
     T      = gamma * p * rho_inverse;
     mu     = pow(T, beta);
     lambda = (alpha - Scalar(2)/3)*mu;
 
     // Compute vector quantities
-    grad_p = (gamma-1.0)*(
+    grad_p = (gamma-1)*(
                 grad_e + rho_inverse*(
-                      0.5*rho_inverse*m.squaredNorm()*grad_rho
+                      rho_inverse*m.squaredNorm()*grad_rho/2
                     - grad_m.transpose()*m
                 )
              );
     grad_T      = gamma*rho_inverse*(grad_p - rho_inverse*p*grad_rho);
-    grad_mu     = beta*pow(T,beta-1.0)*grad_T;
+    grad_mu     = beta*pow(T,beta-1)*grad_T;
     grad_lambda = (alpha - Scalar(2)/3)*grad_mu;
 }
 
@@ -1347,17 +1348,17 @@ Scalar div_grad_p(
     SUZERAIN_UNUSED(e);
     SUZERAIN_UNUSED(grad_e);
 
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
     const Scalar m_dot_m     = m.squaredNorm();
 
-    return (gamma - 1.0)*(
+    return (gamma - 1)*(
                   div_grad_e
                 - rho_inverse*(
                           (grad_m.transpose()*grad_m).trace()
                         + div_grad_m.dot(m)
                         - rho_inverse*(
-                                2.0*grad_rho.dot(grad_m.transpose()*m)
-                              + 0.5*m_dot_m*div_grad_rho
+                                2*grad_rho.dot(grad_m.transpose()*m)
+                              + m_dot_m*div_grad_rho/2
                               - rho_inverse*m_dot_m*grad_rho.squaredNorm()
                             )
                     )
@@ -1404,13 +1405,13 @@ Scalar div_grad_T(
         const Vector &grad_p,
         const Scalar &div_grad_p)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
 
     return gamma*rho_inverse*(
                   div_grad_p
                 - rho_inverse*(
                           p*div_grad_rho
-                        + 2.0*grad_rho.dot(grad_p - rho_inverse*p*grad_rho)
+                        + 2*grad_rho.dot(grad_p - rho_inverse*p*grad_rho)
                     )
             );
 }
@@ -1428,7 +1429,7 @@ template<typename Scalar,
 Vector u(const Scalar &rho,
          const Vector &m)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
 
     return rho_inverse*m;
 }
@@ -1461,7 +1462,7 @@ Tensor grad_u(
         const Tensor &grad_m)
 {
     // Expression mangled to avoid GCC 4.3 per Redmine issue #1562
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
     Tensor retval(-rho_inverse*m*grad_rho.transpose());
     retval += grad_m;
     retval *= rho_inverse;
@@ -1493,7 +1494,7 @@ Scalar div_u(
         const Vector &m,
         const Scalar &div_m)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
 
     return rho_inverse*(div_m - rho_inverse*grad_rho.dot(m));
 }
@@ -1538,7 +1539,7 @@ Vector grad_div_u(
         const Tensor &grad_m,
         const Vector &grad_div_m)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
 
     return rho_inverse * (
                 grad_div_m + rho_inverse*(
@@ -1586,12 +1587,12 @@ Vector div_grad_u(
         const Tensor &grad_m,
         const Vector &div_grad_m)
 {
-    const Scalar rho_inverse = 1.0/rho;
+    const Scalar rho_inverse = 1/rho;
 
     return rho_inverse*(
                 div_grad_m + rho_inverse*(
-                    (2.0*rho_inverse*grad_rho.squaredNorm() - div_grad_rho)*m
-                   - 2.0*grad_m*grad_rho
+                    (2*rho_inverse*grad_rho.squaredNorm() - div_grad_rho)*m
+                   - 2*grad_m*grad_rho
                 )
             );
 }
