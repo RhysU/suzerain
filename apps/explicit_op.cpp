@@ -435,6 +435,7 @@ real_t NonlinearOperator::applyOperator(
     }
 
     // Retrieve constants and compute derived constants
+    const real_t alpha            = scenario.alpha;
     const real_t beta             = scenario.beta;
     const real_t gamma            = scenario.gamma;
     const real_t Pr               = scenario.Pr;
@@ -554,7 +555,7 @@ real_t NonlinearOperator::applyOperator(
                                         m, grad_m, div_grad_m);
                 real_t p, T, mu, lambda;
                 orthonormal::rhome::p_T_mu_lambda(
-                    beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+                    alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
                     p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
                 const real_t div_grad_p = orthonormal::rhome::div_grad_p(
                                             gamma,

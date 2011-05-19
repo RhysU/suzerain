@@ -144,6 +144,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
+    const double alpha = 0.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -151,7 +152,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
     suzerain::orthonormal::rhome::p_T_mu_lambda(
-            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
     /* Expected results found using test_orthonormal.sage */
@@ -225,6 +226,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
+    const double alpha = 0.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -232,7 +234,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
     suzerain::orthonormal::rhome::p_T_mu_lambda(
-            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
 
@@ -692,6 +694,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
+    const double alpha = 0.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -699,7 +702,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
     using namespace suzerain::orthonormal;
-    rhome::p_T_mu_lambda(beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+    rhome::p_T_mu_lambda(
+            alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
     const double          div_u  = rhome::div_u(rho, grad_rho, m, div_m);
     const Eigen::Matrix3d grad_u = rhome::grad_u(rho, grad_rho, m, grad_m);
@@ -818,6 +822,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
+    const double alpha = 0.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -826,7 +831,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
 
     using namespace suzerain;
     orthonormal::rhome::p_T_mu_lambda(
-            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
     /* Expected results found using test_orthonormal.sage */
@@ -911,6 +916,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
+    const double alpha = 0.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -919,7 +925,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
 
     using namespace suzerain;
     orthonormal::rhome::p_T_mu_lambda(
-            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
     /* Should recover the full operator when no refcoeffs used */
@@ -1028,6 +1034,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
 
     using namespace suzerain;
 
+    const double alpha = 0.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -1035,7 +1042,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
     suzerain::orthonormal::rhome::p_T_mu_lambda(
-            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
     const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
@@ -1084,6 +1091,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_mu_grad_T )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
+    const double alpha = 0.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -1091,7 +1099,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_mu_grad_T )
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
     suzerain::orthonormal::rhome::p_T_mu_lambda(
-            beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
     const double div_grad_p = suzerain::orthonormal::rhome::div_grad_p(

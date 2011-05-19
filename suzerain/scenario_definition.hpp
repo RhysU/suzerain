@@ -61,8 +61,9 @@ public:
      * @param default_Ma        Default Mach number.
      * @param default_bulk_rho  Default bulk density target.
      * @param default_bulk_rhou Default bulk streamwise momentum target.
-     * @param default_gamma     Default ratio of specific heats.
+     * @param default_alpha     Default ratio of bulk to dynamic viscosity.
      * @param default_beta      Default temperature power law exponent.
+     * @param default_gamma     Default ratio of specific heats.
      * @param default_Lx        Default domain length in the X direction.
      * @param default_Ly        Default domain length in the Y direction.
      * @param default_Lz        Default domain length in the Z direction.
@@ -72,8 +73,9 @@ public:
                                 FPT default_Ma        = 0,
                                 FPT default_bulk_rho  = 0,
                                 FPT default_bulk_rhou = 0,
-                                FPT default_gamma     = 0,
+                                FPT default_alpha     = 0,
                                 FPT default_beta      = 0,
+                                FPT default_gamma     = 0,
                                 FPT default_Lx        = 0,
                                 FPT default_Ly        = 0,
                                 FPT default_Lz        = 0);
@@ -117,6 +119,13 @@ public:
     FPT beta;
 
     /**
+     * The ratio of bulk viscosity to dynamic viscosity according to \f$
+     * \mu_{B} = \alpha \mu \f$ or equivalently \f$ \lambda = \left( \alpha -
+     * \frac{2}{3}\mu \right)\f$.
+     */
+    FPT alpha;
+
+    /**
      * The domain length in the X direction.
      */
     FPT Lx;
@@ -141,6 +150,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         FPT default_bulk_rhou,
         FPT default_gamma,
         FPT default_beta,
+        FPT default_alpha,
         FPT default_Lx,
         FPT default_Ly,
         FPT default_Lz)
@@ -152,6 +162,7 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
       bulk_rhou(default_bulk_rhou),
       gamma(default_gamma),
       beta(default_beta),
+      alpha(default_alpha),
       Lx(default_Lx),
       Ly(default_Ly),
       Lz(default_Lz)
@@ -252,6 +263,18 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         v->default_value(default_beta);
         this->add_options()("beta", v.release(),
                 "Temperature power law exponent");
+    }
+
+    { // alpha
+        auto_ptr<typed_value<FPT> > v(value(&this->alpha));
+        if (default_alpha) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "alpha"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "alpha"));
+        }
+        v->default_value(default_alpha);
+        this->add_options()("alpha", v.release(),
+                "Constant ratio of bulk to dynamic viscosity");
     }
 
     { // Lx

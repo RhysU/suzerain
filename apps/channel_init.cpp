@@ -68,8 +68,9 @@ static ScenarioDefinition<real_t> scenario(
         /* Ma        */ real_t(115)/real_t(100),
         /* bulk_rho  */ 1,
         /* bulk_rhou */ real_t(115)/real_t(100),
-        /* gamma     */ real_t(14)/real_t(10),
+        /* alpha     */ real_t(0),
         /* beta      */ real_t(2)/real_t(3),
+        /* gamma     */ real_t(14)/real_t(10),
         /* Lx        */ 4*pi<real_t>(),
         /* Ly        */ 2,
         /* Lz        */ 4*pi<real_t>()/3);

@@ -278,10 +278,10 @@ we can express it as
 &= 2 \mu \varepsilon_{ij} + \lambda\delta_{ij}\nabla\cdot{}u
 \end{align}
 where $\mu=\frac{1}{2}\left( B + C \right)$ is the dynamic coefficient of
-viscosity (shear) and $\lambda=A$ is the second coefficient of
-viscosity (dilatational).  The quantity $\lambda + \frac{2}{3}\mu$
-is the coefficient of bulk viscosity.
-Reverting to direct notation we have
+viscosity (shear) and $\lambda=A$ is the second coefficient of viscosity
+(dilatational).  The viscosity coefficients $\mu$ and $\lambda$ may be combined
+to form the bulk viscosity $\mu_{B}$ according to $\mu_{B}=\lambda +
+\frac{2}{3}\mu$.  Reverting to direct notation we have
 \begin{align}
 \tau
 &= 2 \mu \varepsilon + \lambda \left( \nabla\cdot{}u \right) I
@@ -293,11 +293,21 @@ Reverting to direct notation we have
 
 \subsubsection{Stokes' hypothesis}
 
-We assume the second coefficient of viscosity $\lambda=-\frac{2}{3}\mu$ which
-is equivalent to setting the bulk viscosity $\lambda + \frac{2}{3}\mu$ to be
-zero.  The assumption is valid for most circumstances~\cite{GadelHak1995}.
-However, because we anticipate separately maintaining $\lambda$ being useful,
-we will not combine $\mu$ and $\lambda$ terms in the model.
+We allow the bulk viscosity $\mu_{B}$ to be some multiple of the dynamic
+viscosity $\mu$.  One may write this relationship as either
+\begin{align}
+\label{eq:secondviscosityclaw}
+\mu_{B} &= \alpha \mu
+&
+&\text{or}
+&
+\lambda &= \left( \alpha - \frac{2}{3} \right) \mu
+\end{align}
+where we have introduced a dimensionless proportionality constant $\alpha$.
+Stokes' hypothesis that the bulk viscosity is negligible may be recovered by
+selecting $\alpha = 0$.  Though Stokes' hypothesis is valid for most
+circumstances~\cite{GadelHak1995}, we choose to separately track $\mu$ and
+$\lambda$ terms in the model.
 
 \subsubsection{Power law viscosity}
 
@@ -395,7 +405,7 @@ and assumptions, we arrive at the dimensional equations
   \mu &= \mu_{0} \left( \frac{T}{T_{0}} \right)^{\beta}
   \\
   \label{eq:dim_secondviscosity}
-  \lambda &= - \frac{2}{3} \mu
+  \lambda &= \left(\alpha- \frac{2}{3}\right) \mu
   \\
   \label{eq:dim_viscousstress}
   \tau &=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right)
@@ -489,7 +499,7 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   \mu^{*} &= \left( T^{*} \right)^{\beta}
   \\
   \label{eq:dimwithref_secondviscosity}
-  \lambda^{*} &= - \frac{2}{3} \mu^{*}
+  \lambda^{*} &= \left(\alpha - \frac{2}{3}\right) \mu^{*}
   \\
   \label{eq:dimwithref_viscousstress}
   \tau^{*} &= \frac{\mu_{0}u_{0}}{l_{0} \tau_{0}} \left[
@@ -585,7 +595,7 @@ dimensionless.  We arrive at the following nondimensional equations:
   \mu &= T^{\beta}
   \\
   \label{eq:nondim_secondviscosity}
-  \lambda &= -\frac{2}{3}\mu
+  \lambda &= \left(\alpha-\frac{2}{3}\right)\mu
   \\
   \label{eq:nondim_viscousstress}
   \tau &=  \mu\left(\nabla{}u+\trans{\nabla{}u}\right)
@@ -1205,7 +1215,7 @@ the equations in section~\ref{nondim_equations} become
   \mu &= T^{\beta}
   \\
   \label{eq:state_secondviscosity}
-  \lambda &= - \frac{2}{3} \mu
+  \lambda &= \left(\alpha- \frac{2}{3}\right) \mu
   \\
   \label{eq:state_viscousstress}
   \tau &= 2 \mu \symmetricpart{\nabla{}\frac{m}{\rho}}
@@ -1339,7 +1349,7 @@ expand:
 \\
   \nabla\mu &= \beta{}T^{\beta-1}\nabla{}T
 \\
-  \nabla\lambda &= -\frac{2}{3}\nabla\mu
+  \nabla\lambda &= \left(\alpha-\frac{2}{3}\right)\nabla\mu
 \\
   \Delta{}p
   &=

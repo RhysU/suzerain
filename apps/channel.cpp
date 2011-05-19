@@ -74,11 +74,14 @@ void store(const esio_handle h,
     esio_line_write(h, "bulk_rhou", &scenario.bulk_rhou, 0,
             scenario.options().find("bulk_rhou",false).description().c_str());
 
-    esio_line_write(h, "gamma", &scenario.gamma, 0,
-            scenario.options().find("gamma",false).description().c_str());
+    esio_line_write(h, "alpha", &scenario.alpha, 0,
+            scenario.options().find("alpha",false).description().c_str());
 
     esio_line_write(h, "beta", &scenario.beta, 0,
             scenario.options().find("beta",false).description().c_str());
+
+    esio_line_write(h, "gamma", &scenario.gamma, 0,
+            scenario.options().find("gamma",false).description().c_str());
 
     esio_line_write(h, "Lx", &scenario.Lx, 0,
             scenario.options().find("Lx",false).description().c_str());
@@ -127,16 +130,22 @@ void load(const esio_handle h,
         esio_line_read(h, "bulk_rhou", &scenario.bulk_rhou, 0);
     }
 
-    if (scenario.gamma) {
-        INFO0("Overriding scenario using gamma = " << scenario.gamma);
+    if (scenario.alpha) {
+        INFO0("Overriding scenario using alpha = " << scenario.alpha);
     } else {
-        esio_line_read(h, "gamma", &scenario.gamma, 0);
+        esio_line_read(h, "alpha", &scenario.alpha, 0);
     }
 
     if (scenario.beta) {
         INFO0("Overriding scenario using beta = " << scenario.beta);
     } else {
         esio_line_read(h, "beta", &scenario.beta, 0);
+    }
+
+    if (scenario.gamma) {
+        INFO0("Overriding scenario using gamma = " << scenario.gamma);
+    } else {
+        esio_line_read(h, "gamma", &scenario.gamma, 0);
     }
 
     if (scenario.Lx) {

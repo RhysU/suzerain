@@ -1188,7 +1188,7 @@ Scalar explicit_mu_div_grad_T(
  *     \\
  *     \mu &= T^{\beta}
  *     \\
- *     \lambda &= - \frac{2}{3} \mu
+ *     \lambda &= \left(\alpha - \frac{2}{3}\right) \mu
  * \f}
  *
  * The following nondimensional variable definitions are used:
@@ -1202,6 +1202,8 @@ Scalar explicit_mu_div_grad_T(
  *         energy densities.
  *   - \f$\mu\f$ or \c mu is the first viscosity.
  *   - \f$\lambda\f$ or \c lambda is the second viscosity.
+ *   - \f$\alpha\f$ or \c alpha is the scaling factor relating \f$\lambda\f$
+ *          and \f$ \mu \f$.
  *   - \f$\beta\f$ or \c beta is the constant coefficient in the power
  *          viscosity law.
  *   - \f$\gamma\f$ or \c gamma is the constant ratio of specific heats
@@ -1227,9 +1229,10 @@ namespace rhome
  *      \\
  *      \vec{\nabla}\mu &= \beta{}T^{\beta-1}\vec{\nabla}T
  *      \\
- *      \vec{\nabla}\lambda &= -\frac{2}{3}\vec{\nabla}\mu
+ *      \vec{\nabla}\lambda &= \left(\alpha-\frac{2}{3}\right)\vec{\nabla}\mu
  * \f}
  *
+ * @param[in]  alpha \f$\alpha\f$
  * @param[in]  beta \f$\beta\f$
  * @param[in]  gamma \f$\gamma\f$
  * @param[in]  rho \f$\rho\f$
@@ -1251,6 +1254,7 @@ template<typename Scalar,
          typename Vector,
          typename Tensor >
 void p_T_mu_lambda(
+        const Scalar &alpha,
         const Scalar &beta,
         const Scalar &gamma,
         const Scalar &rho,
@@ -1274,7 +1278,7 @@ void p_T_mu_lambda(
     p      = (gamma-1.0)*(e - (1.0/2.0)*rho_inverse*m.squaredNorm());
     T      = gamma * p * rho_inverse;
     mu     = pow(T, beta);
-    lambda = -2.0/3.0*mu;
+    lambda = (alpha - Scalar(2)/3)*mu;
 
     // Compute vector quantities
     grad_p = (gamma-1.0)*(
@@ -1285,7 +1289,7 @@ void p_T_mu_lambda(
              );
     grad_T      = gamma*rho_inverse*(grad_p - rho_inverse*p*grad_rho);
     grad_mu     = beta*pow(T,beta-1.0)*grad_T;
-    grad_lambda = -2.0/3.0*grad_mu;
+    grad_lambda = (alpha - Scalar(2)/3)*grad_mu;
 }
 
 /**
