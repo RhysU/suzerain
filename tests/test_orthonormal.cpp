@@ -10,6 +10,8 @@
 
 #pragma warning(disable:1599)
 
+// TODO High precision constants are moot without 'L' suffix
+
 // Provides data for the test field
 //      rho = 2*(x^2)*y*z + 3*x*(y^2)*z + 5*x*y*(z^2)
 //      m   = {
@@ -144,7 +146,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    const double alpha = 0.0;
+    const double alpha = 5.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -167,7 +169,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
             12.818531787494714755711740676149526369900526768964830775976,
             close_enough);
     BOOST_CHECK_CLOSE(lambda,
-            -8.5456878583298098371411604507663509132670178459765538506509,
+            55.546971079143763941417542929981280936235615998847600029231,
             close_enough);
 
     const Eigen::Vector3d grad_p_ans(
@@ -195,9 +197,9 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(grad_mu(2), grad_mu_ans(2), close_enough);
 
     const Eigen::Vector3d grad_lambda_ans(
-            -0.67537751269207395882032779000952122016898297886931122458391,
-            -0.29591628659998570346527327657356707569869450810847119374402,
-             0.61899267988858839412417154057108983119933885746796701022562);
+            4.3899538324984807323321306350618879310983893626505229597954,
+            1.9234558628999070725242762977281859920415143027050627593362,
+            -4.0234524192758245618071150137120839027957025735417855664666);
     BOOST_CHECK_CLOSE(grad_lambda(0), grad_lambda_ans(0), close_enough);
     BOOST_CHECK_CLOSE(grad_lambda(1), grad_lambda_ans(1), close_enough);
     BOOST_CHECK_CLOSE(grad_lambda(2), grad_lambda_ans(2), close_enough);
@@ -226,7 +228,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    const double alpha = 0.0;
+    const double alpha = 5.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -694,7 +696,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    const double alpha = 0.0;
+    const double alpha = 5.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -712,22 +714,22 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
     const Eigen::Vector3d div_grad_u = rhome::div_grad_u(
                 rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
 
-    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e4;
     {
         using namespace suzerain;
         const Eigen::Matrix3d tau = orthonormal::tau(mu, lambda, div_u, grad_u);
 
         /* Expected results found using test_orthonormal.sage */
         Eigen::Matrix3d ans;
-        ans(0,0) =   70.531543279759231389408345113198923408553579956805627651633;
-        ans(0,1) = - 18.274805458259731295309074758455374124262335886995620262487;
-        ans(0,2) =   91.817913251736077743933865033061417711733974379411774042718;
+        ans(0,0) = -432.77702868587701572931303205296522463376744126783255181324;
+        ans(0,1) = -18.274805458259731295309074758455374124262335886995620262487;
+        ans(0,2) = 91.817913251736077743933865033061417711733974379411774042718;
         ans(1,0) = ans(0,1);
-        ans(1,1) =  132.72376679658254412168387767749817009654029724008914502171;
-        ans(1,2) =   75.304386307037240507158364283048615894309818988016971749851;
+        ans(1,1) = -370.58480516905370299703749948866597794578072398454903444316;
+        ans(1,2) = 75.304386307037240507158364283048615894309818988016971749851;
         ans(2,0) = ans(0,2);
         ans(2,1) = ans(1,2);
-        ans(2,2) = -203.25531007634177551109222279069709350509387719689477267335;
+        ans(2,2) = -706.56388204197802262981359995686124154741489842153295213821;
 
         // Check for acceptability of entries
         BOOST_CHECK_CLOSE(tau(0,0), ans(0,0), close_enough);
@@ -754,9 +756,9 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
 
         /* Expected results found using test_orthonormal.sage */
         Eigen::Vector3d ans;
-        ans(0) = - 195.58731950891911935327871659569254694467509625810898354185;
-        ans(1) =   246.52589132115431226459081257854313932950474889459145467105;
-        ans(2) =  9662.1147275452378450481114526062453379951497410467223391699;
+        ans(0) = -5.8572189782846240727678259765123413043664342815994539555325;
+        ans(1) = -500.16654308872810027481518191178470854090357788902597100115;
+        ans(2) = 24897.262970203388363153941644146159218248689630111325247307;
 
         BOOST_CHECK_CLOSE(div_tau(0), ans(0), close_enough);
         BOOST_CHECK_CLOSE(div_tau(1), ans(1), close_enough);
@@ -822,7 +824,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    const double alpha = 0.0;
+    const double alpha = 5.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -916,7 +918,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    const double alpha = 0.0;
+    const double alpha = 5.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -1034,7 +1036,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
 
     using namespace suzerain;
 
-    const double alpha = 0.0;
+    const double alpha = 5.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 
@@ -1064,7 +1066,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
 
     /* Expected results found using test_orthonormal.sage */
     const double ans
-        = -1178.5183176047041859331013266287927977178206769790673702902;
+        = -4619.0441415000015916988672295614662059743675820473242574398;
 
     const double close_enough = std::numeric_limits<double>::epsilon()*1.0e3;
     BOOST_CHECK_CLOSE(div_tau_u, ans, close_enough);
@@ -1091,7 +1093,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_mu_grad_T )
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    const double alpha = 0.0;
+    const double alpha = 5.0;
     const double beta  = 2.0/3.0;
     const double gamma = 1.4;
 

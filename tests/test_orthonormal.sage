@@ -13,10 +13,10 @@ x = var('x');
 y = var('y');
 z = var('z');
 
-# Constants
+# Constants, including non-zero bulk viscosity
 gamma = 14/10;
 beta  = 2/3;
-alpha = 0;
+alpha = 5;
 
 # Conservative state variables
 rho = 2*(x^2)*y*z + 3*x*(y^2)*z + 5*x*y*(z^2);
