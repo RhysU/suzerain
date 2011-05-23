@@ -36,7 +36,9 @@
         Eigen::IOFormat(Eigen::StreamPrecision, 0, ", ", ";", "", "", "[", "]")
 
 #include <suzerain/common.hpp>
+#include <gsl/gsl_errno.h>
 #include <esio/esio.h>
+#include <esio/error.h>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
@@ -264,6 +266,14 @@ int main(int argc, char **argv)
 
     // Establish MPI-savvy, rank-dependent logging names
     name_logger_within_comm_world();
+
+    // Hook error handling into logging infrastructure
+    gsl_set_error_handler(
+            &channel::mpi_abort_on_error_handler_gsl);
+    suzerain_set_error_handler(
+            &channel::mpi_abort_on_error_handler_suzerain);
+    esio_set_error_handler(
+            &channel::mpi_abort_on_error_handler_esio);
 
     DEBUG0("Processing command line arguments and response files");
     std::string restart_file;

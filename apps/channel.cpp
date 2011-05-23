@@ -33,6 +33,8 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
+#include <esio/error.h>
+#include <gsl/gsl_errno.h>
 #include <suzerain/error.h>
 #include <suzerain/htstretch.h>
 #include <suzerain/mpi_datatype.hpp>
@@ -41,12 +43,59 @@
 
 using boost::numeric_cast;
 
-
 namespace channel {
 
 const boost::array<const char *,field::count> field::name = {{
     "rho", "rhou", "rhov", "rhow", "rhoe"
 }};
+
+void mpi_abort_on_error_handler_gsl(const char * reason,
+                                    const char * file,
+                                    int line,
+                                    int error_code)
+{
+    return mpi_abort_on_error_handler(reason, file, line,
+            error_code, "GSL", gsl_strerror(error_code));
+}
+
+void mpi_abort_on_error_handler_suzerain(const char * reason,
+                                         const char * file,
+                                         int line,
+                                         int error_code)
+{
+    return mpi_abort_on_error_handler(reason, file, line,
+            error_code, "Suzerain", suzerain_strerror(error_code));
+}
+
+void mpi_abort_on_error_handler_esio(const char * reason,
+                                     const char * file,
+                                     int line,
+                                     int error_code)
+{
+    return mpi_abort_on_error_handler(reason, file, line,
+            error_code, "ESIO", esio_strerror(error_code));
+}
+
+void mpi_abort_on_error_handler(const char * reason,
+                                const char * file,
+                                int line,
+                                int error_code,
+                                const char * origin,
+                                const char * strerror)
+{
+    FATAL((origin ? origin : "NULLORIGIN")
+          << " reports '"
+          << (reason ? reason : "NULLREASON")
+          << "' as code #"
+          << error_code
+          << " ('"
+          << (strerror ? strerror : "NULLSTRERROR")
+          << "') from "
+          << (file ? file : "NULLFILE")
+          << ':'
+          << line);
+    MPI_Abort(MPI_COMM_WORLD, errno ? errno : EXIT_FAILURE);
+}
 
 void store(const esio_handle h,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario)

@@ -75,6 +75,31 @@ extern const boost::array<const char *, count> name;
 
 } // end namespace field
 
+/** Log-and-abort handler for errors originating in the GSL */
+void mpi_abort_on_error_handler_gsl(const char * reason,
+                                    const char * file,
+                                    int line,
+                                    int error_code);
+
+/** Log-and-abort handler for errors originating in Suzerain */
+void mpi_abort_on_error_handler_suzerain(const char * reason,
+                                         const char * file,
+                                         int line,
+                                         int error_code);
+
+/** Log-and-abort handler for errors originating in ESIO */
+void mpi_abort_on_error_handler_esio(const char * reason,
+                                     const char * file,
+                                     int line,
+                                     int error_code);
+
+/** Common logic for all error handlers */
+void mpi_abort_on_error_handler(const char * reason,
+                                const char * file,
+                                int line,
+                                int error_code,
+                                const char * origin,
+                                const char * strerror);
 
 /** Store a ScenarioDefinition in a restart file */
 void store(const esio_handle h,

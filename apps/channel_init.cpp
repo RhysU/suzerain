@@ -34,10 +34,12 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #include <esio/esio.h>
+#include <esio/error.h>
 #include <gsl/gsl_const_mksa.h>
 #include <gsl/gsl_const_num.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_roots.h>
+#include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/orthonormal.hpp>
@@ -159,6 +161,14 @@ int main(int argc, char **argv)
 
     // Establish MPI-savvy, rank-dependent logging names
     name_logger_within_comm_world();
+
+    // Hook error handling into logging infrastructure
+    gsl_set_error_handler(
+            &channel::mpi_abort_on_error_handler_gsl);
+    suzerain_set_error_handler(
+            &channel::mpi_abort_on_error_handler_suzerain);
+    esio_set_error_handler(
+            &channel::mpi_abort_on_error_handler_esio);
 
     // Process incoming program arguments from command line, input files
     std::string restart_file;
