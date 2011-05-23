@@ -193,9 +193,23 @@ static bool log_status(real_t t, std::size_t nt) {
     // Save resources by returning early when no status necessary
     if (!INFO_ENABLED) return true;
 
-    // Build repeated time details
+    // Build time- and timestep-specific status prefix.
+    // Precision computations ensure multiple status lines minimally distinct
     std::ostringstream timeprefix;
-    timeprefix << "t = " << t << ", nt = " << nt << ", ";
+    timeprefix << "t = ";
+    const real_t nplaces = (timedef.status_dt > 0)
+                         ? -std::floor(std::log10(timedef.status_dt))
+                         : 0;
+    if (nplaces > 0) {
+        timeprefix.setf(std::ios::fixed,std::ios::floatfield);
+        const std::streamsize oldprec = timeprefix.precision(nplaces);
+        timeprefix << t;
+        timeprefix.precision(oldprec);
+        timeprefix.unsetf(std::ios::fixed);
+    } else {
+        timeprefix << t;
+    }
+    timeprefix << ", nt = " << nt << ", ";
 
     // On root only, compute and show bulk state quantities
     INFO0(timeprefix.str() << information_bulk());
