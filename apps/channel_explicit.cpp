@@ -254,11 +254,12 @@ static bool save_restart(real_t t, std::size_t nt)
 int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
+    const double wtime_mpi_init = MPI_Wtime();      // Record MPI_Init time
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
     esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
     atexit(&atexit_esio);                           // Finalize ESIO at exit
 
-    // Obtain some basic MPI environment details.
+    // Obtain some basic MPI environment details
     const int nranks = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
     // Establish MPI-savvy, rank-dependent logging names
@@ -485,6 +486,7 @@ int main(int argc, char **argv)
     }
 
     // Advance time according to advance_dt, advance_nt criteria
+    const double wtime_advance_start = MPI_Wtime();
     bool advance_success = true;
     switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
         case 3:
@@ -520,11 +522,18 @@ int main(int argc, char **argv)
             FATAL0("Sanity error in time control");
             return EXIT_FAILURE;
     }
-
-    // Output statistics on time advancement
     if (!advance_success) {
         WARN0("TimeController stopped advancing time unexpectedly");
     }
+    const double wtime_advance_end = MPI_Wtime();
+
+    // Save a final restart if one was not just saved during time advancement
+    if (advance_success && last_restart_saved_nt != tc->current_nt()) {
+        INFO0("Saving final restart file");
+        save_restart(tc->current_t(), tc->current_nt());
+    }
+
+    // Output statistics on time advancement
     INFO0("Advanced simulation from t_initial = " << initial_t
           << " to t_final = " << tc->current_t()
           << " in " << tc->current_nt() << " steps");
@@ -534,10 +543,19 @@ int main(int argc, char **argv)
           << tc->taken_max()  << ", "
           << tc->taken_stddev());
 
-    // Save a final restart before exit if one was not just saved
-    if (advance_success && last_restart_saved_nt != tc->current_nt()) {
-        INFO0("Saving final restart file prior to quitting");
-        save_restart(tc->current_t(), tc->current_nt());
+    // Output simulation advancement rate using flow through time language
+    const real_t flowthroughs = (tc->current_t() - initial_t)
+                              * (scenario.Ly / scenario.Lx);
+    if (flowthroughs > 0) {
+        INFO0("Simulation advance corresponds to "
+              << flowthroughs << " flow throughs");
+        INFO0("Simulation advancing at wall time per flow through of "
+              << (wtime_advance_end - wtime_advance_start) / flowthroughs
+              << " seconds");
+        INFO0("Advancement rate calculation ignores "
+              << (MPI_Wtime() - wtime_mpi_init
+                  - (wtime_advance_end - wtime_advance_start))
+              << " seconds of fixed overhead");
     }
 
     return advance_success ? EXIT_SUCCESS : EXIT_FAILURE;
