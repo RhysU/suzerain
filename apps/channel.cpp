@@ -395,7 +395,10 @@ void store(const esio_handle h,
     esio_line_write(h, "collocation_points", buf.data(), 0,
             "Collocation points used to build discrete operators");
 
-    DEBUG0("Storing B-spline collocation derivative operators");
+    b->integration_coefficients(0, buf.data());
+    esio_line_establish(h, b->n(), 0, (procid == 0 ? b->n() : 0));
+    esio_line_write(h, "integration_weights", buf.data(), 0,
+            "Integrate by dotting B-spline coefficients against weights");
 
     char name[8];
     char comment[127];
