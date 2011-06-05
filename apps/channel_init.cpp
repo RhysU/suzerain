@@ -42,9 +42,9 @@
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/orthonormal.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
+#include <suzerain/rholt.hpp>
 #include <suzerain/svehla.h>
 #include <suzerain/utility.hpp>
 

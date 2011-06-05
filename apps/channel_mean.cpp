@@ -37,8 +37,8 @@
 #include <esio/esio.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/orthonormal.hpp>
 #include <suzerain/program_options.hpp>
+#include <suzerain/rholt.hpp>
 
 #include "logger.hpp"
 #include "precision.hpp"

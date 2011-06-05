@@ -45,11 +45,11 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/multi_array.hpp>
-#include <suzerain/orthonormal.hpp>
 #include <suzerain/pencil.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
+#include <suzerain/rholt.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/utility.hpp>
 

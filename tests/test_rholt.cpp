@@ -4,7 +4,7 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
-#include <suzerain/orthonormal.hpp>
+#include <suzerain/rholt.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/included/unit_test.hpp>
 
@@ -22,10 +22,10 @@
 //      e   = 311*(x^2)*y*z + 313*x*(y^2)*z + 317*x*y*(z^2)
 // symbolically evaluated at (x,y,z) = (1, 2, 3)
 //
-// Floating point values evaluated using test_orthonormal.sage
+// Floating point values evaluated using test_rholt.sage
 // to 200 bits of precision.
 static
-void orthonormal_rhome_test_data(
+void rholt_test_data(
         double          &rho,
         Eigen::Vector3d &grad_rho,
         double          &div_grad_rho,
@@ -90,8 +90,8 @@ void orthonormal_rhome_test_data(
     div_grad_e = 6878.;
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_rhome_u )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -106,14 +106,14 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_u )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    const Eigen::Vector3d u = suzerain::orthonormal::rhome::u(rho, m);
+    const Eigen::Vector3d u = suzerain::rholt::u(rho, m);
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     const Eigen::Vector3d ans(
              0.12341218703282769413064525687781462380236231103335735506961,
             -0.096759457126720663880658289039861350486647579313251121603828,
@@ -125,8 +125,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_u )
     BOOST_CHECK_CLOSE(u(2), ans(2), close_enough);
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_p_T_mu_lambda )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
@@ -153,11 +153,11 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
     double p, T, mu, lambda;
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
-    suzerain::orthonormal::rhome::p_T_mu_lambda(
+    suzerain::rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e4;
     BOOST_CHECK_CLOSE(p,
             4523.8529315224394491652244924378285975908038303556842666509,
@@ -205,8 +205,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(grad_lambda(2), grad_lambda_ans(2), close_enough);
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_div_grad_p_and_div_grad_T )
 {
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
 
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
@@ -235,14 +235,14 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
     double p, T, mu, lambda;
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
-    suzerain::orthonormal::rhome::p_T_mu_lambda(
+    suzerain::rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     {
-        const double div_grad_p = suzerain::orthonormal::rhome
+        const double div_grad_p = suzerain::rholt
             ::div_grad_p(
                 gamma,
                 rho, grad_rho, div_grad_rho,
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
                 11191.566068848019028203711722987453542724808010087855921969,
                 close_enough);
 
-        const double div_grad_T = suzerain::orthonormal::rhome
+        const double div_grad_T = suzerain::rholt
             ::div_grad_T(
                 gamma,
                 rho, grad_rho, div_grad_rho,
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
     {
         const double mu = 4184.0;
         const double refcoeff_div_grad_e = 34;
-        const double mu_div_grad_T = suzerain::orthonormal
+        const double mu_div_grad_T = suzerain::rholt
             ::explicit_mu_div_grad_T(
                 gamma, mu,
                 rho, grad_rho, div_grad_rho,
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
     {
         const double mu = 4184.0;
         const Eigen::Vector3d refcoeff_div_grad_m(8, 13, 21);
-        const double mu_div_grad_T = suzerain::orthonormal
+        const double mu_div_grad_T = suzerain::rholt
             ::explicit_mu_div_grad_T(
                 gamma, mu,
                 rho, grad_rho, div_grad_rho,
@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
     {
         const double mu = 4184.0;
         const double refcoeff_div_grad_rho = 987;
-        const double mu_div_grad_T = suzerain::orthonormal
+        const double mu_div_grad_T = suzerain::rholt
             ::explicit_mu_div_grad_T(
                 gamma, mu,
                 rho, grad_rho, div_grad_rho,
@@ -327,21 +327,21 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
         const double p      = 55.0;
 
         BOOST_CHECK_CLOSE(
-            suzerain::orthonormal
+            suzerain::rholt
                 ::explicit_mu_div_grad_T_refcoeff_div_grad_e(
                     mu, rho),
                 mu/rho,
                 close_enough);
         for (int i = 0; i < 3; ++i) {
             BOOST_CHECK_CLOSE(
-                suzerain::orthonormal
+                suzerain::rholt
                     ::explicit_mu_div_grad_T_refcoeff_div_grad_m(
                         mu, rho, m)[i],
                     mu/rho/rho*m[i],
                     close_enough);
         }
         BOOST_CHECK_CLOSE(
-            suzerain::orthonormal
+            suzerain::rholt
                 ::explicit_mu_div_grad_T_refcoeff_div_grad_rho(
                     gamma, mu, rho, m, p),
                 mu/rho/rho*((gamma-1)/2*m.squaredNorm()/rho - p),
@@ -349,8 +349,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_p_and_div_grad_T )
     }
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_u )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_grad_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -365,16 +365,16 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_u )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
     const Eigen::Matrix3d grad_u
-        = suzerain::orthonormal::rhome::grad_u(
+        = suzerain::rholt::grad_u(
                 rho, grad_rho, m, grad_m);
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     Eigen::Matrix3d ans;
     ans(0,0) =   0.13354624933259255905305717414904148571263050381552617302315;
     ans(0,1) = - 0.95458058163483407021971942603699868798014583786167988660320;
@@ -398,8 +398,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_u )
     BOOST_CHECK_CLOSE(grad_u(2,2), ans(2,2), close_enough);
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_u )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_div_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -414,12 +414,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_u )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    const double div_u = suzerain::orthonormal::rhome::div_u(
+    const double div_u = suzerain::rholt::div_u(
             rho, grad_rho, m, div_m);
 
     const double ans = -7.8528271460331434259092626891655172292938028930092832721830;
@@ -427,8 +427,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_u )
     BOOST_CHECK_CLOSE(div_u, ans, close_enough);
 }
 
-// Checks derived formula and computed result against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
+// Checks derived formula and computed result against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_grad_div_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
 
@@ -445,15 +445,15 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     {
         const Eigen::Vector3d grad_div_u
-            = suzerain::orthonormal::rhome::grad_div_u(
+            = suzerain::rholt::grad_div_u(
                 rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
 
         const Eigen::Vector3d ans(
@@ -472,7 +472,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
         const double lambda = 6765.0;
 
         const Eigen::Vector3d mu_plus_lambda_grad_div_u
-            = suzerain::orthonormal
+            = suzerain::rholt
                 ::explicit_mu_plus_lambda_grad_div_u(
                     mu, lambda, rho, grad_rho, grad_grad_rho, m,
                     div_m, grad_m, grad_div_m, 0, Eigen::Vector3d::Zero());
@@ -497,7 +497,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
         const double refcoeff_grad_div_m = 89.0;
 
         const Eigen::Vector3d mu_plus_lambda_grad_div_u
-            = suzerain::orthonormal
+            = suzerain::rholt
                 ::explicit_mu_plus_lambda_grad_div_u(
                     mu, lambda, rho, grad_rho, grad_grad_rho, m,
                     div_m, grad_m, grad_div_m,
@@ -520,7 +520,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
         const Eigen::Vector3d refcoeff_grad_grad_rho(144.0, 233.0, 377.0);
 
         const Eigen::Vector3d mu_plus_lambda_grad_div_u
-            = suzerain::orthonormal
+            = suzerain::rholt
                 ::explicit_mu_plus_lambda_grad_div_u(
                     mu, lambda, rho, grad_rho, grad_grad_rho, m,
                     div_m, grad_m, grad_div_m,
@@ -544,14 +544,14 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
         const Eigen::Vector3d m(144.0, 233.0, 377.0);
 
         BOOST_CHECK_CLOSE(
-            suzerain::orthonormal
+            suzerain::rholt
                 ::explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
                     mu, lambda, rho),
                 (mu+lambda)/rho,
                 close_enough);
         for (int i = 0; i < 3; ++i) {
             BOOST_CHECK_CLOSE(
-                suzerain::orthonormal
+                suzerain::rholt
                     ::explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
                         mu, lambda, rho, m)[i],
                     (mu+lambda)/rho/rho*m[i],
@@ -560,8 +560,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_grad_div_u )
     }
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_div_grad_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
 
@@ -578,15 +578,15 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     {
       const Eigen::Vector3d div_grad_u
-          = suzerain::orthonormal::rhome::div_grad_u(
+          = suzerain::rholt::div_grad_u(
                   rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
       const Eigen::Vector3d ans(
         - 16.318446092843163297609832709693050751558008045050013765743,
@@ -608,7 +608,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
             mu *  672.79795991861399600487930607996269111701083307478613865859);
 
         const Eigen::Vector3d mu_div_grad_u
-            = suzerain::orthonormal::explicit_mu_div_grad_u(
+            = suzerain::rholt::explicit_mu_div_grad_u(
                 mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
                 0, Eigen::Vector3d::Zero());
 
@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
             -2.3913808232284881074922576572858143105464556248213880447440e8);
 
         const Eigen::Vector3d mu_div_grad_u
-            = suzerain::orthonormal::explicit_mu_div_grad_u(
+            = suzerain::rholt::explicit_mu_div_grad_u(
                 mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
                 refcoeff_div_grad_m, Eigen::Vector3d::Zero());
 
@@ -647,7 +647,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
                 2.9119822704197251172964003787203240115602222930856808457316e6);
 
         const Eigen::Vector3d mu_div_grad_u
-            = suzerain::orthonormal::explicit_mu_div_grad_u(
+            = suzerain::rholt::explicit_mu_div_grad_u(
                 mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
                 0, refcoeff_div_grad_rho);
 
@@ -662,12 +662,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
         const double rho = 5678.0;
         const Eigen::Vector3d m(3.0, 5.0, 7.0);
 
-        BOOST_CHECK_CLOSE(suzerain::orthonormal
+        BOOST_CHECK_CLOSE(suzerain::rholt
             ::explicit_mu_div_grad_u_refcoeff_div_grad_m(
                 mu, rho),
             mu/rho, close_enough);
         for (int i = 0; i < 3; ++i) {
-            BOOST_CHECK_CLOSE(suzerain::orthonormal
+            BOOST_CHECK_CLOSE(suzerain::rholt
                 ::explicit_mu_div_grad_u_refcoeff_div_grad_rho(
                     mu, rho, m)[i],
                 (mu/rho)/rho * m[i], close_enough);
@@ -675,8 +675,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_grad_u )
     }
 }
 
-// Checks computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
+// Checks computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_tau_and_div_tau )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -691,7 +691,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
@@ -703,23 +703,22 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
     double p, T, mu, lambda;
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
-    using namespace suzerain::orthonormal;
-    rhome::p_T_mu_lambda(
+    suzerain::rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
-    const double          div_u  = rhome::div_u(rho, grad_rho, m, div_m);
-    const Eigen::Matrix3d grad_u = rhome::grad_u(rho, grad_rho, m, grad_m);
-    const Eigen::Vector3d grad_div_u = rhome::grad_div_u(
+    const double          div_u  = suzerain::rholt::div_u(rho, grad_rho, m, div_m);
+    const Eigen::Matrix3d grad_u = suzerain::rholt::grad_u(rho, grad_rho, m, grad_m);
+    const Eigen::Vector3d grad_div_u = suzerain::rholt::grad_div_u(
                 rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
-    const Eigen::Vector3d div_grad_u = rhome::div_grad_u(
+    const Eigen::Vector3d div_grad_u = suzerain::rholt::div_grad_u(
                 rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
 
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e4;
     {
         using namespace suzerain;
-        const Eigen::Matrix3d tau = orthonormal::tau(mu, lambda, div_u, grad_u);
+        const Eigen::Matrix3d tau = rholt::tau(mu, lambda, div_u, grad_u);
 
-        /* Expected results found using test_orthonormal.sage */
+        /* Expected results found using test_rholt.sage */
         Eigen::Matrix3d ans;
         ans(0,0) = -432.77702868587701572931303205296522463376744126783255181324;
         ans(0,1) = -18.274805458259731295309074758455374124262335886995620262487;
@@ -750,11 +749,11 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
 
     {
         using namespace suzerain;
-        const Eigen::Vector3d div_tau = orthonormal::div_tau(
+        const Eigen::Vector3d div_tau = rholt::div_tau(
                 mu, grad_mu, lambda, grad_lambda,
                 div_u, grad_u, div_grad_u, grad_div_u);
 
-        /* Expected results found using test_orthonormal.sage */
+        /* Expected results found using test_rholt.sage */
         Eigen::Vector3d ans;
         ans(0) = -5.8572189782846240727678259765123413043664342815994539555325;
         ans(1) = -500.16654308872810027481518191178470854090357788902597100115;
@@ -766,8 +765,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_tau_and_div_tau )
     }
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_div_e_u )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_div_e_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -782,18 +781,18 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_u )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
     using namespace suzerain;
-    const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
-    const double div_u = orthonormal::rhome::div_u(
+    const Eigen::Vector3d u = rholt::u(rho, m);
+    const double div_u = rholt::div_u(
             rho, grad_rho, m, div_m);
-    const double div_e_u = orthonormal::div_e_u(e, grad_e, u, div_u);
+    const double div_e_u = rholt::div_e_u(e, grad_e, u, div_u);
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     const double ans
         = -90849.212502207575911979472073826868082163956391101506206117;
 
@@ -801,8 +800,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_u )
     BOOST_CHECK_CLOSE(div_e_u, ans, close_enough);
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_div_p_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
 
@@ -819,7 +818,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
@@ -832,16 +831,16 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
     using namespace suzerain;
-    orthonormal::rhome::p_T_mu_lambda(
+    rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     {
-        const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
-        const double div_u = orthonormal::rhome::div_u(
+        const Eigen::Vector3d u = rholt::u(rho, m);
+        const double div_u = rholt::div_u(
                 rho, grad_rho, m, div_m);
-        const double div_p_u = orthonormal::div_p_u(p, grad_p, u, div_u);
+        const double div_p_u = rholt::div_p_u(p, grad_p, u, div_u);
         const double ans
             = -36133.705926299567425548649114294679973238338337791365684538;
 
@@ -850,7 +849,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
 
     /* Explicit operator should coincide when refcoeffs are zero */
     {
-        const double explicit_div_p_u = orthonormal::explicit_div_p_u(
+        const double explicit_div_p_u = rholt::explicit_div_p_u(
                 rho, grad_rho, m, div_m, p, grad_p,
                 0, Eigen::Vector3d::Zero());
         const double ans
@@ -861,7 +860,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
     /* Explicit operator differs for nonzero refcoeff */
     {
         const double refcoeff_div_m = 77.0;
-        const double explicit_div_p_u = orthonormal::explicit_div_p_u(
+        const double explicit_div_p_u = rholt::explicit_div_p_u(
                 rho, grad_rho, m, div_m, p, grad_p,
                 refcoeff_div_m, Eigen::Vector3d::Zero());
         const double ans
@@ -872,7 +871,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
     /* Explicit operator differs for nonzero refcoeff */
     {
         const Eigen::Vector3d refcoeff_grad_rho(77.0, 88.0, 99.0);
-        const double explicit_div_p_u = orthonormal::explicit_div_p_u(
+        const double explicit_div_p_u = rholt::explicit_div_p_u(
                 rho, grad_rho, m, div_m, p, grad_p,
                 0, refcoeff_grad_rho);
         const double ans
@@ -886,17 +885,17 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_p_u )
         const Eigen::Vector3d m(144.0, 233.0, 377.0);
         const double p      = 55.0;
 
-        BOOST_CHECK_CLOSE(orthonormal::explicit_div_p_u_refcoeff_div_m(
+        BOOST_CHECK_CLOSE(rholt::explicit_div_p_u_refcoeff_div_m(
             rho, p), p/rho, close_enough);
         for (int i = 0; i < 3; ++i) {
-            BOOST_CHECK_CLOSE(orthonormal::explicit_div_p_u_refcoeff_grad_rho(
+            BOOST_CHECK_CLOSE(rholt::explicit_div_p_u_refcoeff_grad_rho(
                 rho, m, p)[i], p/rho/rho*m[i], close_enough);
         }
     }
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
 
@@ -913,7 +912,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
@@ -926,7 +925,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
     using namespace suzerain;
-    orthonormal::rhome::p_T_mu_lambda(
+    rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
@@ -935,7 +934,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
         const double ans
             = -126982.91842850714333752812118812154805540229472889287189066;
 
-        const double div_e_plus_p_u = orthonormal::explicit_div_e_plus_p_u(
+        const double div_e_plus_p_u = rholt::explicit_div_e_plus_p_u(
                 gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
                 0, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
         BOOST_CHECK_CLOSE(div_e_plus_p_u, ans, close_enough);
@@ -944,7 +943,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
     /* Explicit operator differs when refcoeffs in use */
     {
         const double refcoeff_div_m = 55.0;
-        const double div_e_plus_p_u = orthonormal::explicit_div_e_plus_p_u(
+        const double div_e_plus_p_u = rholt::explicit_div_e_plus_p_u(
                 gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
                 refcoeff_div_m, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
         const double ans
@@ -955,7 +954,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
     /* Explicit operator differs when refcoeffs in use */
     {
         const Eigen::Vector3d refcoeff_grad_rho(55.0, 66.0, 77.0);
-        const double div_e_plus_p_u = orthonormal::explicit_div_e_plus_p_u(
+        const double div_e_plus_p_u = rholt::explicit_div_e_plus_p_u(
                 gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
                 0, refcoeff_grad_rho, Eigen::Vector3d::Zero());
         const double ans
@@ -966,7 +965,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
     /* Explicit operator differs when refcoeffs in use */
     {
         const Eigen::Vector3d refcoeff_grad_e(55.0, 66.0, 77.0);
-        const double div_e_plus_p_u = orthonormal::explicit_div_e_plus_p_u(
+        const double div_e_plus_p_u = rholt::explicit_div_e_plus_p_u(
                 gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
                 0, Eigen::Vector3d::Zero(), refcoeff_grad_e);
         const double ans
@@ -981,31 +980,31 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
         const Eigen::Vector3d m(144.0, 233.0, 377.0);
         const double e      = 55.0;
 
-        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_div_m(
+        BOOST_CHECK_CLOSE(rholt::explicit_div_e_plus_p_u_refcoeff_div_m(
             gamma, rho, m, e),
             -8.5256850077968367119625751837825796391178436177322343506349,
             close_enough);
-        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_rho(
+        BOOST_CHECK_CLOSE(rholt::explicit_div_e_plus_p_u_refcoeff_grad_rho(
             gamma, rho, m, e)[0],
             39.117758500879429983076375751006606530723526497607750953408,
             close_enough);
-        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_rho(
+        BOOST_CHECK_CLOSE(rholt::explicit_div_e_plus_p_u_refcoeff_grad_rho(
             gamma, rho, m, e)[1],
             63.294706463228522125394413541559300844851261624601430362112,
             close_enough);
-        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_rho(
+        BOOST_CHECK_CLOSE(rholt::explicit_div_e_plus_p_u_refcoeff_grad_rho(
             gamma, rho, m, e)[2],
             102.41246496410795210847078929256590737557478812220918131552,
             close_enough);
-        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_e(
+        BOOST_CHECK_CLOSE(rholt::explicit_div_e_plus_p_u_refcoeff_grad_e(
             gamma, rho, m)[0],
             3.0089552238805970149253731343283582089552238805970149253731,
             close_enough);
-        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_e(
+        BOOST_CHECK_CLOSE(rholt::explicit_div_e_plus_p_u_refcoeff_grad_e(
             gamma, rho, m)[1],
             4.8686567164179104477611940298507462686567164179104477611940,
             close_enough);
-        BOOST_CHECK_CLOSE(orthonormal::explicit_div_e_plus_p_u_refcoeff_grad_e(
+        BOOST_CHECK_CLOSE(rholt::explicit_div_e_plus_p_u_refcoeff_grad_e(
             gamma, rho, m)[2],
             7.8776119402985074626865671641791044776119402985074626865672,
             close_enough);
@@ -1013,8 +1012,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_e_plus_p_u )
 }
 
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_div_tau_u )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -1029,7 +1028,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
@@ -1043,28 +1042,28 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
     double p, T, mu, lambda;
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
-    suzerain::orthonormal::rhome::p_T_mu_lambda(
+    suzerain::rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
-    const Eigen::Vector3d u = orthonormal::rhome::u(rho, m);
-    const double div_u = orthonormal::rhome::div_u(
+    const Eigen::Vector3d u = rholt::u(rho, m);
+    const double div_u = rholt::div_u(
             rho, grad_rho, m, div_m);
-    const Eigen::Matrix3d grad_u = orthonormal::rhome::grad_u(
+    const Eigen::Matrix3d grad_u = rholt::grad_u(
             rho, grad_rho, m, grad_m);
-    const Eigen::Vector3d div_grad_u = orthonormal::rhome::div_grad_u(
+    const Eigen::Vector3d div_grad_u = rholt::div_grad_u(
             rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
-    const Eigen::Vector3d grad_div_u = orthonormal::rhome::grad_div_u(
+    const Eigen::Vector3d grad_div_u = rholt::grad_div_u(
             rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
-    const Eigen::Matrix3d tau = orthonormal::tau(mu, lambda, div_u, grad_u);
-    const Eigen::Vector3d div_tau = orthonormal::div_tau(
+    const Eigen::Matrix3d tau = rholt::tau(mu, lambda, div_u, grad_u);
+    const Eigen::Vector3d div_tau = rholt::div_tau(
             mu, grad_mu, lambda, grad_lambda,
             div_u, grad_u, div_grad_u, grad_div_u);
 
-    const double div_tau_u = orthonormal::div_tau_u<double>(
+    const double div_tau_u = rholt::div_tau_u<double>(
             u, grad_u, tau, div_tau);
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     const double ans
         = -4619.0441415000015916988672295614662059743675820473242574398;
 
@@ -1072,8 +1071,8 @@ BOOST_AUTO_TEST_CASE( orthonormal_div_tau_u )
     BOOST_CHECK_CLOSE(div_tau_u, ans, close_enough);
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_mu_grad_T )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_div_mu_grad_T )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -1088,7 +1087,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_mu_grad_T )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
@@ -1100,32 +1099,32 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_mu_grad_T )
     double p, T, mu, lambda;
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
-    suzerain::orthonormal::rhome::p_T_mu_lambda(
+    suzerain::rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
-    const double div_grad_p = suzerain::orthonormal::rhome::div_grad_p(
+    const double div_grad_p = suzerain::rholt::div_grad_p(
         gamma,
         rho, grad_rho, div_grad_rho,
         m, grad_m, div_grad_m,
         e, grad_e, div_grad_e);
-    const double div_grad_T = suzerain::orthonormal::rhome::div_grad_T(
+    const double div_grad_T = suzerain::rholt::div_grad_T(
         gamma,
         rho, grad_rho, div_grad_rho,
         p, grad_p, div_grad_p);
 
-    const double div_mu_grad_T = suzerain::orthonormal::div_mu_grad_T(
+    const double div_mu_grad_T = suzerain::rholt::div_mu_grad_T(
             grad_T, div_grad_T, mu, grad_mu);
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     const double close_enough = std::numeric_limits<double>::epsilon()*1.0e3;
     BOOST_CHECK_CLOSE(div_mu_grad_T,
             1082.5428069809810057587904051307120521551327361396488157143,
             close_enough);
 }
 
-// Checks derived formula and computation against orthonormal_rhome_test_data()
-BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_rho_inverse_m_outer_m )
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_div_rho_inverse_m_outer_m )
 {
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -1140,12 +1139,12 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_rho_inverse_m_outer_m )
     Eigen::Vector3d grad_e;
     double          div_grad_e;
 
-    orthonormal_rhome_test_data(
+    rholt_test_data(
         rho, grad_rho, div_grad_rho, grad_grad_rho,
         m, div_m, grad_m, div_grad_m, grad_div_m,
         e, grad_e, div_grad_e);
 
-    /* Expected results found using test_orthonormal.sage */
+    /* Expected results found using test_rholt.sage */
     const double close_enough = std::numeric_limits<double>::epsilon()*1.0e3;
     const Eigen::Vector3d ans(
             - 139.62394416218589511382305374934119093270491143228219517924,
@@ -1155,7 +1154,7 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_rho_inverse_m_outer_m )
     /* Compute using div_rho_inverse_m_outer_m */
     {
         const Eigen::Vector3d div_rho_inverse_m_outer_m
-            = suzerain::orthonormal::div_rho_inverse_m_outer_m(
+            = suzerain::rholt::div_rho_inverse_m_outer_m(
                     rho, grad_rho, m, div_m, grad_m);
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(0), ans(0), close_enough);
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(1), ans(1), close_enough);
@@ -1164,13 +1163,13 @@ BOOST_AUTO_TEST_CASE( orthonormal_rhome_div_rho_inverse_m_outer_m )
 
     /* Compute using div_u_outer_m */
     {
-        const Eigen::Vector3d u = suzerain::orthonormal::rhome::u(
+        const Eigen::Vector3d u = suzerain::rholt::u(
                 rho, m);
-        const double div_u = suzerain::orthonormal::rhome::div_u(
+        const double div_u = suzerain::rholt::div_u(
                 rho, grad_rho, m, div_m);
 
         const Eigen::Vector3d div_u_outer_m
-            = suzerain::orthonormal::div_u_outer_m(
+            = suzerain::rholt::div_u_outer_m(
                     m, grad_m, u, div_u);
 
         BOOST_CHECK_CLOSE(div_u_outer_m(0), ans(0), close_enough);

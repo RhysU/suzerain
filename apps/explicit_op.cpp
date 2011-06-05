@@ -38,9 +38,9 @@
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/orthonormal.hpp>
-#include <suzerain/utility.hpp>
+#include <suzerain/rholt.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/utility.hpp>
 
 #include "explicit_op.hpp"
 
@@ -535,40 +535,37 @@ real_t NonlinearOperator::applyOperator(
                 grad_e.z()              = auxp(aux::e_z, offset);
                 const real_t div_grad_e = auxp(aux::div_grad_e, offset);
 
-                // Shorten computational kernel names
-                namespace orthonormal = suzerain::orthonormal;
-
                 // Compute quantities based upon state.  Real-valued scalars
                 // are declared inline.  Vector- and tensor-valued expressions
                 // declared outside loop.
-                u                  = orthonormal::rhome::u(
+                u                  = suzerain::rholt::u(
                                         rho, m);
-                const real_t div_u = orthonormal::rhome::div_u(
+                const real_t div_u = suzerain::rholt::div_u(
                                         rho, grad_rho, m, div_m);
-                grad_u             = orthonormal::rhome::grad_u(
+                grad_u             = suzerain::rholt::grad_u(
                                         rho, grad_rho, m, grad_m);
-                grad_div_u         = orthonormal::rhome::grad_div_u(
+                grad_div_u         = suzerain::rholt::grad_div_u(
                                         rho, grad_rho, grad_grad_rho,
                                         m, div_m, grad_m, grad_div_m);
-                div_grad_u         = orthonormal::rhome::div_grad_u(
+                div_grad_u         = suzerain::rholt::div_grad_u(
                                         rho, grad_rho, div_grad_rho,
                                         m, grad_m, div_grad_m);
                 real_t p, T, mu, lambda;
-                orthonormal::rhome::p_T_mu_lambda(
+                suzerain::rholt::p_T_mu_lambda(
                     alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
                     p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
-                const real_t div_grad_p = orthonormal::rhome::div_grad_p(
+                const real_t div_grad_p = suzerain::rholt::div_grad_p(
                                             gamma,
                                             rho, grad_rho, div_grad_rho,
                                             m, grad_m, div_grad_m,
                                             e, grad_e, div_grad_e);
-                const real_t div_grad_T = orthonormal::rhome::div_grad_T(
+                const real_t div_grad_T = suzerain::rholt::div_grad_T(
                                             gamma,
                                             rho, grad_rho, div_grad_rho,
                                             p, grad_p, div_grad_p);
-                tau     = orthonormal::tau(
+                tau     = suzerain::rholt::tau(
                             mu, lambda, div_u, grad_u);
-                div_tau = orthonormal::div_tau(
+                div_tau = suzerain::rholt::div_tau(
                             mu, grad_mu, lambda, grad_lambda,
                             div_u, grad_u, div_grad_u, grad_div_u);
 
@@ -578,7 +575,7 @@ real_t NonlinearOperator::applyOperator(
 
                 // Form momentum equation right hand side
                 momentum_rhs =
-                    - orthonormal::div_u_outer_m(m, grad_m, u, div_u)
+                    - suzerain::rholt::div_u_outer_m(m, grad_m, u, div_u)
                     - grad_p
                     + inv_Re * div_tau
                     ;
@@ -588,16 +585,16 @@ real_t NonlinearOperator::applyOperator(
 
                 // Form energy equation right hand side
                 sphys(ndx::rhoe, offset) =
-                    - orthonormal::div_e_u(
+                    - suzerain::rholt::div_e_u(
                             e, grad_e, u, div_u
                         )
-                    - orthonormal::div_p_u(
+                    - suzerain::rholt::div_p_u(
                             p, grad_p, u, div_u
                         )
-                    + inv_Re_Pr_gamma1 * orthonormal::div_mu_grad_T(
+                    + inv_Re_Pr_gamma1 * suzerain::rholt::div_mu_grad_T(
                             grad_T, div_grad_T, mu, grad_mu
                         )
-                    + inv_Re * orthonormal::div_tau_u<real_t>(
+                    + inv_Re * suzerain::rholt::div_tau_u<real_t>(
                             u, grad_u, tau, div_tau
                         )
                     ;
