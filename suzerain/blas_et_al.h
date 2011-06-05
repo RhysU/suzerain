@@ -1533,7 +1533,7 @@ suzerain_blasext_dgbnorm1(
         const int lda,
         double *norm1);
 
-/*! \copydoc suzerain_blasext_cgbnorm1 */
+/*! \copydoc suzerain_blasext_sgbnorm1 */
 int
 suzerain_blasext_cgbnorm1(
         const int m,
@@ -1544,7 +1544,7 @@ suzerain_blasext_cgbnorm1(
         const int lda,
         float *norm1);
 
-/*! \copydoc suzerain_blasext_zgbnorm1 */
+/*! \copydoc suzerain_blasext_sgbnorm1 */
 int
 suzerain_blasext_zgbnorm1(
         const int m,
