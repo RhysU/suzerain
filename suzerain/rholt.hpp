@@ -884,10 +884,10 @@ Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
  *              \left(\mu+\lambda\right)\rho^{-1}
  *            - \left\{\left(\mu+\lambda\right)\rho^{-1}\right\}_0
  *        \right) \vec{\nabla}\vec{\nabla}\cdot\vec{m}
- *      - \vec{\nabla}\vec{\nabla}\rho \left(
+ *      - \left(
  *              \left(\mu+\lambda\right)\rho^{-2}\vec{m}
  *            - \left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0
- *        \right)
+ *        \right) \vec{\nabla}\vec{\nabla}\rho
  * \\
  * \f}
  * where \f$\left\{\left(\mu+\lambda\right)\rho^{-1}\right\}_0\f$
@@ -899,8 +899,8 @@ Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
  * \f[
  *        \left\{\left(\mu+\lambda\right)\rho^{-1}\right\}_0
  *        \vec{\nabla}\vec{\nabla}\cdot\vec{m}
- *      - \vec{\nabla}\vec{\nabla}\rho
- *        \left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0
+ *      - \left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0
+ *        \vec{\nabla}\vec{\nabla}\rho
  * \f]
  *
  * @param mu \f$\mu\f$
