@@ -601,10 +601,10 @@ suzerain_bsplineop_lu_solve(
  * \c luw.  That is, \f$ \left( \left|\left|A\right|\right|_{1}
  * \left|\left|A^{-1}\right|\right|_{1} \right)^{-1} \f$.
  *
- * \param rcond[out] The reciprocal of the condition number of the operator.
- * @param[in] luw Workspace containing the factored operator to investigate.
+ * \param[out] rcond The reciprocal of the condition number of the operator.
+ * \param[in]  luw Workspace containing the factored operator to investigate.
  *
- * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
  *
  * \memberof suzerain_bsplineop_lu_workspace
@@ -769,10 +769,10 @@ suzerain_bsplineop_luz_solve(
  * \c luzw.  That is, \f$ \left( \left|\left|A\right|\right|_{1}
  * \left|\left|A^{-1}\right|\right|_{1} \right)^{-1} \f$.
  *
- * \param rcond[out] The reciprocal of the condition number of the operator.
- * @param[in] luzw Workspace containing the factored operator to investigate.
+ * \param[out] rcond The reciprocal of the condition number of the operator.
+ * \param[in]  luzw Workspace containing the factored operator to investigate.
  *
- * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
  *
  * \memberof suzerain_bsplineop_luz_workspace
