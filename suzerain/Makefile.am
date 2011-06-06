@@ -59,6 +59,7 @@ pkginclude_HEADERS += profile.hpp
 pkginclude_HEADERS += program_options.hpp
 pkginclude_HEADERS += restart_definition.hpp
 pkginclude_HEADERS += rholt.hpp
+pkginclude_HEADERS += rholut.hpp
 pkginclude_HEADERS += richardson.h
 pkginclude_HEADERS += scenario_definition.hpp
 pkginclude_HEADERS += state_fwd.hpp

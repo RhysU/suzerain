@@ -33,22 +33,17 @@
 #include <suzerain/common.hpp>
 
 /** @file
- * Provides routines that compute classical state quantities (based on
- * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$) from other state quantities
- * using a nondimensionalization based on a reference density, length, and
- * temperature.
+ * Provides compute kernels for formulations using a reference density
+ * \f$\rho_0\f$, length \f$l_0\f$, and temperature \f$T_0\f$.
  */
 
 namespace suzerain
 {
 
 /**
- * Provides routines that compute quantities (based on nondimensional \f$p\f$,
- * \f$T\f$, \f$\vec{u}\f$, \f$\mu\f$, \f$\lambda\f$) from other conserved and
- * classical quantities under the assumption of an orthonormal coordinate
- * system with an identity metric tensor.  The ideal gas equation of state is
- * employed. Nondimensionalization has been performed using a reference
- * density, length, and temperature:
+ * Provides compute kernels for formulations using a reference density
+ * \f$\rho_0\f$, length \f$l_0\f$, and temperature \f$T_0\f$.  The ideal gas
+ * equation of state is employed:
  * \f{align*}
  *     p &= \left(\gamma-1\right) \left(
  *       e - \frac{m\cdot{}m}{2\rho}
@@ -83,8 +78,8 @@ namespace suzerain
  * are used.  These functions are intended to be used with <a
  * href="http://eigen.tuxfamily.org/">Eigen</a>'s vector and matrix
  * types.  For example, when <tt>Scalar == double</tt> \c Vector
- * and \c Tensor may be <tt>Eigen::Matrix<<Scalar,3,1>/tt> and
- * <tt>Eigen::Matrix<<Scalar,3,3>/tt>, respectively.
+ * and \c Tensor may be <tt>Eigen::Matrix<Scalar,3,1></tt> and
+ * <tt>Eigen::Matrix<Scalar,3,3></tt>, respectively.
  */
 namespace rholt
 {
@@ -680,7 +675,6 @@ Scalar explicit_div_e_plus_p_u(
     const Vector coeff_grad_e(
             explicit_div_e_plus_p_u_refcoeff_grad_e(gamma, rho, m)
           - refcoeff_grad_e);
-    // FIXME What about linearizing the grad_m term?
 
     return -(gamma-1)*rho_inverse*rho_inverse*m.dot(grad_m.transpose()*m)
            + coeff_div_m*div_m
