@@ -1,8 +1,8 @@
 #!/usr/bin/env sage
-# Symbolic computations for the test cases in test_rholt.cpp
+# Symbolic computations for the test cases in test_rholut.cpp
 #
 # Examining particular results can be done by starting sage
-# from this directory, typing 'attach test_rholt.sage',
+# from this directory, typing 'attach test_rholut.sage',
 # and then examining high precision results using, e.g.
 #   e.subs(x=1,y=2,z=3).n(200);
 #   u[0].subs(x=1,y=2,z=3).n(200);
@@ -17,6 +17,7 @@ z = var('z');
 gamma = 14/10;
 beta  = 2/3;
 alpha = 5;
+Ma    = 3.5;
 
 # Conservative state variables
 rho = 2*(x^2)*y*z + 3*x*(y^2)*z + 5*x*y*(z^2);
@@ -62,7 +63,7 @@ grad_e = [ e.diff(x), e.diff(y), e.diff(z) ];
 div_grad_e = grad_e[0].diff(x) + grad_e[1].diff(y) + grad_e[2].diff(z);
 
 # Classical state variables
-p = (gamma - 1)*(e - (m[0]*m[0]+m[1]*m[1]+m[2]*m[2])/(2*rho));
+p = (gamma - 1)*(e - Ma*Ma*(m[0]*m[0]+m[1]*m[1]+m[2]*m[2])/(2*rho));
 T = gamma*p/rho;
 mu = T^beta;
 l = (alpha-2/3)*mu;

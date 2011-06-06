@@ -159,6 +159,14 @@ test_rholt_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholt_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 EXTRA_DIST         += test_rholt.sage
 
+TESTS               += test_rholut
+check_PROGRAMS      += test_rholut
+test_rholut_SOURCES  = test_rholut.cpp
+test_rholut_LDADD    = ../suzerain/libsuzerain.la
+test_rholut_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_rholut_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+EXTRA_DIST          += test_rholut.sage
+
 TESTS                   += test_richardson
 check_PROGRAMS          += test_richardson
 test_richardson_SOURCES  = test_richardson.c
