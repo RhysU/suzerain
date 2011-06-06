@@ -649,9 +649,9 @@ BOOST_AUTO_TEST_CASE( rholut_div_grad_u )
     {
         const Eigen::Vector3d refcoeff_div_grad_rho(610.0, 987.0, 1597.0);
         const Eigen::Vector3d ans(
-            233984.37721172489629023752436878355116734588018471803471289L,
-            145057.81224440069430722715479229137439391998698236497510955L,
-            132686.91103069880818943212987829060142234568666851968218225L);
+            37613.377211724896290237524368783551167345880184718034712893L,
+            61487.812244400694307227154792291374393919986982364975109552L,
+            107532.91103069880818943212987829060142234568666851968218225L);
 
         const Eigen::Vector3d mu_div_grad_u
             = suzerain::rholut::explicit_mu_div_grad_u(
@@ -809,7 +809,7 @@ BOOST_AUTO_TEST_CASE( rholut_div_e_u )
 // Checks derived formula and computation against rholut_test_data()
 BOOST_AUTO_TEST_CASE( rholut_div_p_u )
 {
-    const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
+    const double close_enough = std::numeric_limits<double>::epsilon()*1e3;
 
     double          rho;
     Eigen::Vector3d grad_rho;
@@ -983,27 +983,21 @@ BOOST_AUTO_TEST_CASE( rholut_div_e_plus_p_u )
 
     /* Ensure the coefficient calculations are correct */
     {
-        const double gamma  = 1.4;
-        const double Ma     = 3.5;
-        const double rho    = 67.0;
-        const Eigen::Vector3d m(144.0, 233.0, 377.0);
-        const double e      = 55.0;
-
         BOOST_CHECK_CLOSE(rholut::explicit_div_e_plus_p_u_refcoeff_div_m(
             gamma, Ma, rho, m, e),
             114.26955370398466560143539493966043062887674127089522487304L,
             close_enough);
         BOOST_CHECK_CLOSE(rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
             gamma, Ma, rho, m, e)[0],
-            0.16097525965829373623513177365518249269482036263725948939383L,
+            -14.021767904044756739151691226277061209937266437049794157090L,
             close_enough);
         BOOST_CHECK_CLOSE(rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
             gamma, Ma, rho, m, e)[1],
-            -0.12621021561854510270030723787815466872886174739932569058581L,
+            10.993554874700935706806005403121127980699831032811586707400L,
             close_enough);
         BOOST_CHECK_CLOSE(rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
             gamma, Ma, rho, m, e)[2],
-            -0.64114195890940563302194456291821738970281145812922535036690L,
+            55.846741669840866302567971498244085862638828473481931303727L,
             close_enough);
         BOOST_CHECK_CLOSE(rholut::explicit_div_e_plus_p_u_refcoeff_grad_e(
             gamma, rho, m)[0],
