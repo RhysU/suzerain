@@ -215,7 +215,7 @@ protected:
 
     /**
      * Return the <tt>j</tt>th \c globally-indexed y grid point.
-     * Only valid for j \in dgrid.local_physical_{start,end}.y()
+     * Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y()
      */
     FPT y(std::size_t j) const {
         return y_[j];
@@ -230,7 +230,7 @@ protected:
 
     /**
      * Return the <tt>j</tt>th \c globally-indexed y grid spacing.
-     * Only valid for j \in dgrid.local_physical_{start,end}.y()
+     * Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y()
      */
     FPT one_over_delta_y(std::size_t j) const {
         return one_over_delta_y_[j];
