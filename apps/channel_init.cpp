@@ -66,8 +66,8 @@ using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
 static ScenarioDefinition<real_t> scenario(
         /* Re        */ 100,
-        /* Pr        */ real_t(7)/real_t(10),
         /* Ma        */ real_t(115)/real_t(100),
+        /* Pr        */ real_t(7)/real_t(10),
         /* bulk_rho  */ 1,
         /* bulk_rhou */ real_t(115)/real_t(100),
         /* alpha     */ real_t(0),

@@ -111,11 +111,11 @@ void store(const esio_handle h,
     esio_line_write(h, "Re", &scenario.Re, 0,
             scenario.options().find("Re",false).description().c_str());
 
-    esio_line_write(h, "Pr", &scenario.Pr, 0,
-            scenario.options().find("Pr",false).description().c_str());
-
     esio_line_write(h, "Ma", &scenario.Ma, 0,
             scenario.options().find("Ma",false).description().c_str());
+
+    esio_line_write(h, "Pr", &scenario.Pr, 0,
+            scenario.options().find("Pr",false).description().c_str());
 
     esio_line_write(h, "bulk_rho", &scenario.bulk_rho, 0,
             scenario.options().find("bulk_rho",false).description().c_str());
@@ -155,16 +155,16 @@ void load(const esio_handle h,
         esio_line_read(h, "Re", &scenario.Re, 0);
     }
 
-    if (scenario.Pr) {
-        INFO0("Overriding scenario using Pr = " << scenario.Pr);
-    } else {
-        esio_line_read(h, "Pr", &scenario.Pr, 0);
-    }
-
     if (scenario.Ma) {
         INFO0("Overriding scenario using Ma = " << scenario.Ma);
     } else {
         esio_line_read(h, "Ma", &scenario.Ma, 0);
+    }
+
+    if (scenario.Pr) {
+        INFO0("Overriding scenario using Pr = " << scenario.Pr);
+    } else {
+        esio_line_read(h, "Pr", &scenario.Pr, 0);
     }
 
     if (scenario.bulk_rho) {

@@ -57,8 +57,8 @@ public:
      * Construct an instance with the given parameters.
      *
      * @param default_Re        Default Reynolds number.
-     * @param default_Pr        Default Prandtl number.
      * @param default_Ma        Default Mach number.
+     * @param default_Pr        Default Prandtl number.
      * @param default_bulk_rho  Default bulk density target.
      * @param default_bulk_rhou Default bulk streamwise momentum target.
      * @param default_alpha     Default ratio of bulk to dynamic viscosity.
@@ -69,8 +69,8 @@ public:
      * @param default_Lz        Default domain length in the Z direction.
      */
     explicit ScenarioDefinition(FPT default_Re        = 0,
-                                FPT default_Pr        = 0,
                                 FPT default_Ma        = 0,
+                                FPT default_Pr        = 0,
                                 FPT default_bulk_rho  = 0,
                                 FPT default_bulk_rhou = 0,
                                 FPT default_alpha     = 0,
@@ -87,15 +87,15 @@ public:
     FPT Re;
 
     /**
+     * The Mach number \f$\mbox{Ma}=\frac{u_{0}}{a_{0}}\f$.
+     */
+    FPT Ma;
+
+    /**
      * The Prandtl number \f$\mbox{Pr}=\frac{\mu_{0}
      * C_{p}}{\kappa_{0}}\f$.
      */
     FPT Pr;
-
-    /**
-     * The Mach number \f$\mbox{Ma}=\frac{u_{0}}{a_{0}}\f$.
-     */
-    FPT Ma;
 
     /**
      * The bulk density used as a target for integral constraints.
@@ -144,8 +144,8 @@ public:
 template< typename FPT >
 ScenarioDefinition<FPT>::ScenarioDefinition(
         FPT default_Re,
-        FPT default_Pr,
         FPT default_Ma,
+        FPT default_Pr,
         FPT default_bulk_rho,
         FPT default_bulk_rhou,
         FPT default_alpha,
@@ -156,8 +156,8 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         FPT default_Lz)
     : IDefinition("Nondimensional scenario parameters"),
       Re(default_Re),
-      Pr(default_Pr),
       Ma(default_Ma),
+      Pr(default_Pr),
       bulk_rho(default_bulk_rho),
       bulk_rhou(default_bulk_rhou),
       alpha(default_alpha),
@@ -196,17 +196,6 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         this->add_options()("Re", v.release(), "Reynolds number");
     }
 
-    { // Pr
-        auto_ptr<typed_value<FPT> > v(value(&this->Pr));
-        if (default_Pr) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Pr"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Pr"));
-        }
-        v->default_value(default_Pr);
-        this->add_options()("Pr", v.release(), "Prandtl number");
-    }
-
     { // Ma
         auto_ptr<typed_value<FPT> > v(value(&this->Ma));
         if (default_Ma) {
@@ -216,6 +205,17 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
         }
         v->default_value(default_Ma);
         this->add_options()("Ma", v.release(), "Mach number");
+    }
+
+    { // Pr
+        auto_ptr<typed_value<FPT> > v(value(&this->Pr));
+        if (default_Pr) {
+            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Pr"));
+        } else {
+            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Pr"));
+        }
+        v->default_value(default_Pr);
+        this->add_options()("Pr", v.release(), "Prandtl number");
     }
 
     { // bulk_rho
