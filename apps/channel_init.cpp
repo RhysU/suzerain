@@ -116,15 +116,14 @@ static void zf_msolver(double y, void *params, double z[2]) {
 
 /**
  * Function for evaluating the total energy profile given <tt>rho*</tt>, the
- * momentum profile in zf_msolver(), and <tt>T* = y*(L-y)/L^2 + 1</tt>.
- * Complex-valued result to play nicely with
- * suzerain::bspline::zfind_interpolation_rhs().
+ * momentum profile in zf_msolver(), and <tt>T* = 1</tt>.  Complex-valued
+ * result to play nicely with suzerain::bspline::zfind_interpolation_rhs().
  */
 static void zf_esolver(double y, void *params, double z[2]) {
     mesolver *p = (mesolver *) params;
     double m[2];
     zf_msolver(y, p, m);
-    const double T = y * (p->L - y) / (p->L * p->L)  + 1;
+    const double T = 1; // Parabolic was y * (p->L - y) / (p->L * p->L)  + 1;
     z[0] = T / (p->gamma * (p->gamma - 1)) + p->Ma * p->Ma / 2 * m[0] * m[0];
     z[1] = 0;
 }
