@@ -45,7 +45,6 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/multi_array.hpp>
-#include <suzerain/orthonormal.hpp>
 #include <suzerain/pencil.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>

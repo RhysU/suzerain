@@ -151,13 +151,21 @@ test_pencil_LDADD    = ../suzerain/libsuzerain.la
 test_pencil_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_pencil_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-TESTS                    += test_orthonormal
-check_PROGRAMS           += test_orthonormal
-test_orthonormal_SOURCES  = test_orthonormal.cpp
-test_orthonormal_LDADD    = ../suzerain/libsuzerain.la
-test_orthonormal_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_orthonormal_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-EXTRA_DIST               += test_orthonormal.sage
+TESTS              += test_rholt
+check_PROGRAMS     += test_rholt
+test_rholt_SOURCES  = test_rholt.cpp
+test_rholt_LDADD    = ../suzerain/libsuzerain.la
+test_rholt_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_rholt_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+EXTRA_DIST         += test_rholt.sage
+
+TESTS               += test_rholut
+check_PROGRAMS      += test_rholut
+test_rholut_SOURCES  = test_rholut.cpp
+test_rholut_LDADD    = ../suzerain/libsuzerain.la
+test_rholut_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_rholut_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+EXTRA_DIST          += test_rholut.sage
 
 TESTS                   += test_richardson
 check_PROGRAMS          += test_richardson

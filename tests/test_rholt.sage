@@ -1,8 +1,8 @@
 #!/usr/bin/env sage
-# Symbolic computations for the test cases in test_orthonormal.cpp
+# Symbolic computations for the test cases in test_rholt.cpp
 #
 # Examining particular results can be done by starting sage
-# from this directory, typing 'attach test_orthonormal.sage',
+# from this directory, typing 'attach test_rholt.sage',
 # and then examining high precision results using, e.g.
 #   e.subs(x=1,y=2,z=3).n(200);
 #   u[0].subs(x=1,y=2,z=3).n(200);

@@ -68,14 +68,14 @@ total energy $e = \rho{}\tilde{e}$ according to
                        + \rho \vec{f}_{m}(t)
   \\
   \partial_{t} e      &= R_{e}\!\left(\rho,\vec{m},e\right)
-                       + \vec{f}_{m}(t) \cdot \vec{m}
+                       + \mbox{Ma}^{2} \vec{f}_{m}(t) \cdot \vec{m}
 \end{align}
 \end{subequations}
 where $R_{\rho}$, $\vec{R}_{m}$, and $R_{e}$ are the spatial portion of the
-compressible Navier--Stokes operator appropriate for the nondimensionalization.
-We will determine the space-invariant form of the body acceleration
-$\vec{f}_{m}$ necessary to drive an isothermal channel problem similar to
-Coleman et al.~\cite{Coleman1995Numerical}.
+compressible Navier--Stokes operator appropriate for a nondimensionalization
+where $\mbox{Ma}=u_{0}/a_\text{wall}$.  We will determine the space-invariant
+form of the body acceleration $\vec{f}_{m}$ necessary to drive an isothermal
+channel problem similar to Coleman et al.~\cite{Coleman1995Numerical}.
 
 We assume a Fourier basis in the streamwise $x$ and spanwise $z$ direction as
 well as an inhomogeneous treatment for wall-normal
@@ -89,12 +89,12 @@ $\vec{m}\!\left(\cdot,y,\cdot\right) \coloneqq
 nondimensional equation of state
 \begin{align}
   p  = \frac{\rho{}T}{\gamma}
-    &= \left(\gamma-1\right)
-       \left( \rho\tilde{e} - \frac{\vec{m}\cdot\vec{m}}{2\rho} \right)
+    &= \left(\gamma-1\right) \left(
+          \rho\tilde{e} - \mbox{Ma}^2\frac{\vec{m}\cdot\vec{m}}{2\rho}
+        \right)
 \end{align}
-and assume that temperature $T$ has been nondimensionalized so that
-$T_\text{wall}=1$ though other choices should have a minimal impact on
-the anaysis that follows.
+where temperature $T$ has been nondimensionalized so that $T_\text{wall}=1$
+though other choices should have a minimal impact on the analysis that follows.
 
 Coleman et al.'s isothermal channel is characterized by
 \begin{enumerate}
@@ -112,9 +112,9 @@ Coleman et al.'s isothermal channel is characterized by
 
 \subsection{Analysis}
 
-The problem as presented should provide a stationary bulk density $\bar{\rho}$.
-The boundary condition $\vec{u} = 0$ at $y = 0,2\delta$ implies that at the
-wall
+The problem as presented should provide a stationary bulk density $\bar{\rho}$
+when solved using conservative numerics.  The boundary condition $\vec{u} = 0$
+at $y = 0,2\delta$ implies that at the wall
 \begin{align}
   \partial_{t} \vec{m}
   =   \rho \cancel{\partial_{t} \vec{u}}
@@ -175,10 +175,10 @@ problem looks as follows:
   \item Apply $\rho f_{m_x}$ by updating
         $R_{m_x}\!\left(\cdot,y,\cdot\right) -{}\!\!\!{}=
         \alpha \, \rho\!\left(\cdot,y,\cdot\right)$ for $y\neq0,2\delta$.
-  \item Apply $\vec{f}_{m}\cdot\vec{m} = f_{m_x} m_x$ by updating
-        $R_{e}\!\left(\cdot,y,\cdot\right) -{}\!\!\!{}=
-        \alpha \, m_{x}\!\left(\cdot,y,\cdot\right)$
-        for $y\neq0,2\delta$.
+  \item Apply $\mbox{Ma}^{2}\vec{f}_{m}\cdot\vec{m} = \mbox{Ma}^{2} f_{m_x}
+        m_x$ by updating $R_{e}\!\left(\cdot,y,\cdot\right) -{}\!\!\!{}=
+        \mbox{Ma}^{2} \alpha \, m_{x}\!\left(\cdot,y,\cdot\right)$ for
+        $y\neq0,2\delta$.
 \end{enumerate}
 One then advances $\partial_{t}\rho = R_{\rho}$, $\partial_{t} \vec{m} =
 R_{\vec{m}}$, and $\partial_{t} e = R_{e}$ using regular time integration
@@ -249,9 +249,10 @@ Following advice from Moser, this approach may be implemented as follows:
   \item Compute $\phi$ per \eqref{eq:phitarget}.
   \item Add $\phi{}c\cdot{}A^{-1}\vec{f}$ to $m_x\!\left(\cdot,y,\cdot\right)$
         and then clear the imaginary part.
-  \item Add $\phi$ times the imaginary part of $A^{-1}e\!\left(\cdot,y,\cdot\right)$
-        to the real part of $A^{-1}e\!\left(\cdot,y,\cdot\right)$
-        and then clear the imaginary part.
+  \item Add $\phi \, \mbox{Ma}^{2}$ times the imaginary part of
+        $A^{-1}e\!\left(\cdot,y,\cdot\right)$ to the real part of
+        $A^{-1}e\!\left(\cdot,y,\cdot\right)$ and then clear the imaginary
+        part.
   \item Set $m_x$, $m_y$ and $m_z$ to be zero for $y=0,2\delta$
         taking care to account for working in coefficient versus collocation
         point space.  When $L = 0$ this can be done most simply prior

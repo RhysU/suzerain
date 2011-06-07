@@ -22,50 +22,66 @@
  *
  *--------------------------------------------------------------------------
  *
- * orthonormal.hpp: Computes classical quantities in an orthonormal frame
+ * rholt.hpp: Kernels using reference density, length, and temperature
  *
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef __SUZERAIN_ORTHONORMAL_H
-#define __SUZERAIN_ORTHONORMAL_H
+#ifndef __SUZERAIN_RHOLT_H
+#define __SUZERAIN_RHOLT_H
 
 #include <suzerain/common.hpp>
 
 /** @file
- * Provides routines that compute classical state quantities (based on
- * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$) from other state quantities.
+ * Provides compute kernels for formulations using a reference density
+ * \f$\rho_0\f$, length \f$l_0\f$, and temperature \f$T_0\f$.
  */
 
 namespace suzerain
 {
 
 /**
- * Provides routines that compute classical quantities (based on
- * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$, \f$\mu\f$, \f$\lambda\f$)
- * from other conserved and classical quantities under the assumption of
- * an orthonormal coordinate system with an identity metric tensor.
+ * Provides compute kernels for formulations using a reference density
+ * \f$\rho_0\f$, length \f$l_0\f$, and temperature \f$T_0\f$.  The ideal gas
+ * equation of state is employed:
+ * \f{align*}
+ *     p &= \left(\gamma-1\right) \left(
+ *       e - \frac{m\cdot{}m}{2\rho}
+ *     \right)
+ *     \\
+ *     T &= \gamma{} \frac{p}{\rho}
+ *     \\
+ *     \mu &= T^{\beta}
+ *     \\
+ *     \lambda &= \left(\alpha - \frac{2}{3}\right) \mu
+ * \f}
  *
  * The following nondimensional variable definitions are used:
  *   - \f$p\f$ or \c p is pressure.
  *   - \f$T\f$ or \c T is temperature.
  *   - \f$\vec{u}\f$ or \c u is the velocity vector.
+ *   - \f$\rho\f$ or \c rho is density.
+ *   - \f$\vec{m}\f$ or \c m is the momentum vector \f$\rho\vec{u}\f$.
  *   - \f$e\f$ or \c e is the total energy \f$\rho\tilde{e}\f$ where
  *         \f$\tilde{e}\f$ is the sum of the internal and kinetic
  *         energy densities.
  *   - \f$\mu\f$ or \c mu is the first viscosity.
  *   - \f$\lambda\f$ or \c lambda is the second viscosity.
- *   - \f$\accentset{\leftrightarrow}{\tau}\f$ or \c tau is the
- *          viscous stress tensor.
+ *   - \f$\alpha\f$ or \c alpha is the scaling factor relating \f$\lambda\f$
+ *          and \f$ \mu \f$.
+ *   - \f$\beta\f$ or \c beta is the constant coefficient in the power
+ *          viscosity law.
+ *   - \f$\gamma\f$ or \c gamma is the constant ratio of specific heats
+ *         \f$C_p/C_v\f$.
  *
  * Templated \c Scalar, \c Vector, \c and Tensor types
  * are used.  These functions are intended to be used with <a
  * href="http://eigen.tuxfamily.org/">Eigen</a>'s vector and matrix
  * types.  For example, when <tt>Scalar == double</tt> \c Vector
- * and \c Tensor may be <tt>Eigen::Matrix<<Scalar,3,1>/tt> and
- * <tt>Eigen::Matrix<<Scalar,3,3>/tt>, respectively.
+ * and \c Tensor may be <tt>Eigen::Matrix<Scalar,3,1></tt> and
+ * <tt>Eigen::Matrix<Scalar,3,3></tt>, respectively.
  */
-namespace orthonormal
+namespace rholt
 {
 
 /**
@@ -78,13 +94,13 @@ namespace orthonormal
  *            \accentset{\leftrightarrow}{I}\f$.
  *
  * @param[in] mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] lambda \f$\lambda\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
- *            computed from, for example, rhome::div_u()
+ *            computed from, for example, div_u()
  * @param[in] grad_u \f$\vec{\nabla}\vec{u}\f$
- *            computed from, for example, rhome::grad_u()
+ *            computed from, for example, grad_u()
  *
  * @return The viscous stress tensor based on the provided fields.
  */
@@ -155,9 +171,9 @@ Vector div_rho_inverse_m_outer_m(
  * @param[in] m \f$\vec{m}\f$
  * @param[in] grad_m \f$\vec{\nabla}\vec{m}\f$
  * @param[in] u \f$\vec{u}\f$
- *            computed from, for example, rhome::u()
+ *            computed from, for example, u()
  * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
- *            computed from, for example, rhome::div_u()
+ *            computed from, for example, div_u()
  *
  * @return The convective derivative computed from the divergence form.
  */
@@ -188,21 +204,21 @@ Vector div_u_outer_m(
  * \f]
  *
  * @param[in] mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] grad_mu \f$\vec{\nabla}\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] lambda \f$\lambda\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] grad_lambda \f$\vec{\nabla}\lambda\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
- *            computed from, for example, rhome::div_u()
+ *            computed from, for example, div_u()
  * @param[in] grad_u \f$\vec{\nabla}\vec{u}\f$
- *            computed from, for example, rhome::grad_u()
+ *            computed from, for example, grad_u()
  * @param[in] div_grad_u \f$\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$
- *            computed from, for example, rhome::div_grad_u()
+ *            computed from, for example, div_grad_u()
  * @param[in] grad_div_u \f$\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$
- *            computed from, for example, rhome::grad_div_u()
+ *            computed from, for example, grad_div_u()
  *
  * @return The divergence of the viscous stress tensor based on the provided
  *         fields.
@@ -238,9 +254,9 @@ Vector div_tau(
  * @param[in] e \f$e\f$
  * @param[in] grad_e \f$\vec{\nabla}e\f$
  * @param[in] u \f$\vec{u}\f$
- *            computed from, for example, rhome::u()
+ *            computed from, for example, u()
  * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
- *            computed from, for example, rhome::div_u()
+ *            computed from, for example, div_u()
  *
  * @return The divergence of the product of total energy and velocity.
  */
@@ -265,13 +281,13 @@ Scalar div_e_u(
  * \f]
  *
  * @param[in] grad_T \f$\vec{\nabla}T\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] div_grad_T \f$\vec{\nabla}\cdot\vec{\nabla}T\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] grad_mu \f$\vec{\nabla}\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  *
  * @return The divergence of the product of viscosity and
  *      the temperature gradient.
@@ -297,13 +313,13 @@ Scalar div_mu_grad_T(
  * \f]
  *
  * @param[in] p \f$p\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] grad_p \f$\vec{\nabla}p\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] u \f$\vec{u}\f$
- *            computed from, for example, rhome::u()
+ *            computed from, for example, u()
  * @param[in] div_u \f$\vec{\nabla}\cdot\vec{u}\f$
- *            computed from, for example, rhome::div_u()
+ *            computed from, for example, div_u()
  *
  * @return The divergence of the product of pressure and velocity.
  */
@@ -333,9 +349,9 @@ Scalar div_p_u(
  * \f]
  *
  * @param[in] u \f$\vec{u}\f$
- *            computed from, for example, rhome::u()
+ *            computed from, for example, u()
  * @param[in] grad_u \f$\vec{\nabla}\vec{u}\f$
- *            computed from, for example, rhome::grad_u()
+ *            computed from, for example, grad_u()
  * @param[in] tau \f$\accentset{\leftrightarrow}{\tau}\f$
  *            computed from, for example, tau()
  * @param[in] div_tau \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$
@@ -438,9 +454,9 @@ Vector explicit_div_p_u_refcoeff_grad_rho(
  * @param m \f$\vec{m}\f$
  * @param div_m \f$\vec{\nabla}\cdot\vec{m}\f$
  * @param p \f$p\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param grad_p \f$\vec{\nabla}p\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param refcoeff_div_m the reference coefficient
  *        on \f$\vec{\nabla}\cdot\vec{m}\f$ which may
  *        be computed using explicit_div_p_u_refcoeff_div_m()
@@ -659,7 +675,6 @@ Scalar explicit_div_e_plus_p_u(
     const Vector coeff_grad_e(
             explicit_div_e_plus_p_u_refcoeff_grad_e(gamma, rho, m)
           - refcoeff_grad_e);
-    // FIXME What about linearizing the grad_m term?
 
     return -(gamma-1)*rho_inverse*rho_inverse*m.dot(grad_m.transpose()*m)
            + coeff_div_m*div_m
@@ -673,7 +688,7 @@ Scalar explicit_div_e_plus_p_u(
  * of \f$\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$.
  *
  * @param[in] mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] rho \f$\rho\f$
  *
  * @return \f$\mu\rho^{-1}\f$
@@ -695,7 +710,7 @@ Scalar explicit_mu_div_grad_u_refcoeff_div_grad_m(
  * of \f$\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$.
  *
  * @param[in] mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] rho \f$\rho\f$
  * @param[in] m \f$\vec{m}\f$
  *
@@ -746,7 +761,7 @@ Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
  * \f]
  *
  * @param mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param rho \f$\rho\f$
  * @param grad_rho \f$\vec{\nabla}\rho\f$
  * @param div_grad_rho \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$
@@ -802,9 +817,9 @@ Vector explicit_mu_div_grad_u(
  * of \f$\left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$.
  *
  * @param[in] mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] lambda \f$\lambda\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] rho \f$\rho\f$
  *
  * @return \f$\left(\mu+\lambda\right)\rho^{-1}\f$
@@ -827,9 +842,9 @@ Scalar explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
  * of \f$\left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$.
  *
  * @param[in] mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] lambda \f$\lambda\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] rho \f$\rho\f$
  * @param[in] m \f$\vec{m}\f$
  *
@@ -869,10 +884,10 @@ Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
  *              \left(\mu+\lambda\right)\rho^{-1}
  *            - \left\{\left(\mu+\lambda\right)\rho^{-1}\right\}_0
  *        \right) \vec{\nabla}\vec{\nabla}\cdot\vec{m}
- *      - \vec{\nabla}\vec{\nabla}\rho \left(
+ *      - \left(
  *              \left(\mu+\lambda\right)\rho^{-2}\vec{m}
  *            - \left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0
- *        \right)
+ *        \right) \vec{\nabla}\vec{\nabla}\rho
  * \\
  * \f}
  * where \f$\left\{\left(\mu+\lambda\right)\rho^{-1}\right\}_0\f$
@@ -884,14 +899,14 @@ Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
  * \f[
  *        \left\{\left(\mu+\lambda\right)\rho^{-1}\right\}_0
  *        \vec{\nabla}\vec{\nabla}\cdot\vec{m}
- *      - \vec{\nabla}\vec{\nabla}\rho
- *        \left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0
+ *      - \left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0
+ *        \vec{\nabla}\vec{\nabla}\rho
  * \f]
  *
  * @param mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param lambda \f$\lambda\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param rho \f$\rho\f$
  * @param grad_rho \f$\vec{\nabla}\rho\f$
  * @param grad_grad_rho \f$\vec{\nabla}\vec{\nabla}\rho\f$
@@ -954,7 +969,7 @@ Vector explicit_mu_plus_lambda_grad_div_u(
  * of \f$\mu\vec{\nabla}\cdot\vec{\nabla}T\f$.
  *
  * @param[in] mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] rho \f$\rho\f$
  *
  * @return \f$\mu\rho^{-1}\f$
@@ -976,7 +991,7 @@ Scalar explicit_mu_div_grad_T_refcoeff_div_grad_e(
  * of \f$\mu\vec{\nabla}\cdot\vec{\nabla}T\f$.
  *
  * @param[in] mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] rho \f$\rho\f$
  * @param[in] m \f$\vec{m}\f$
  *
@@ -1003,11 +1018,11 @@ Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
  *
  * @param[in] gamma \f$\gamma\f$
  * @param[in] mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param[in] rho \f$\rho\f$
  * @param[in] m \f$\vec{m}\f$
  * @param[in] p \f$p\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  *
  * @return \f$\mu\rho^{-2}\left(
  *            \frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)\f$
@@ -1092,7 +1107,7 @@ Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
  *
  * @param gamma \f$\gamma\f$
  * @param mu \f$\mu\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param rho \f$\rho\f$
  * @param grad_rho \f$\vec{\nabla}\rho\f$
  * @param div_grad_rho \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$
@@ -1101,9 +1116,9 @@ Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
  * @param div_grad_m \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$
  * @param div_grad_e \f$\vec{\nabla}\cdot\vec{\nabla}e\f$
  * @param p \f$p\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param grad_p \f$\vec{\nabla}p\f$
- *            computed from, for example, rhome::p_T_mu_lambda()
+ *            computed from, for example, p_T_mu_lambda()
  * @param refcoeff_div_grad_e the reference coefficient
  *        on \f$\vec{\nabla}\cdot\vec{\nabla}e\f$ which may
  *        be computed using
@@ -1172,45 +1187,6 @@ Scalar explicit_mu_div_grad_T(
                 )
            );
 }
-
-/**
- * Provides routines that compute classical state quantities (based on
- * nondimensional \f$p\f$, \f$T\f$, \f$\vec{u}\f$, \f$\mu\f$, \f$\lambda\f$)
- * from conservative state quantities (based on nondimensional \f$\rho\f$,
- * \f$\vec{m}\f$, \f$e\f$) using the ideal gas equations of state
- * nondimensionalized by a reference length, temperature, and density:
- * \f{align*}
- *     p &= \left(\gamma-1\right) \left(
- *       e - \frac{m\cdot{}m}{2\rho}
- *     \right)
- *     \\
- *     T &= \gamma{} \frac{p}{\rho}
- *     \\
- *     \mu &= T^{\beta}
- *     \\
- *     \lambda &= \left(\alpha - \frac{2}{3}\right) \mu
- * \f}
- *
- * The following nondimensional variable definitions are used:
- *   - \f$p\f$ or \c p is pressure.
- *   - \f$T\f$ or \c T is temperature.
- *   - \f$\vec{u}\f$ or \c u is the velocity vector.
- *   - \f$\rho\f$ or \c rho is density.
- *   - \f$\vec{m}\f$ or \c m is the momentum vector \f$\rho\vec{u}\f$.
- *   - \f$e\f$ or \c e is the total energy \f$\rho\tilde{e}\f$ where
- *         \f$\tilde{e}\f$ is the sum of the internal and kinetic
- *         energy densities.
- *   - \f$\mu\f$ or \c mu is the first viscosity.
- *   - \f$\lambda\f$ or \c lambda is the second viscosity.
- *   - \f$\alpha\f$ or \c alpha is the scaling factor relating \f$\lambda\f$
- *          and \f$ \mu \f$.
- *   - \f$\beta\f$ or \c beta is the constant coefficient in the power
- *          viscosity law.
- *   - \f$\gamma\f$ or \c gamma is the constant ratio of specific heats
- *         \f$C_p/C_v\f$.
- */
-namespace rhome
-{
 
 /**
  * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$ and their gradients
@@ -1597,10 +1573,8 @@ Vector div_grad_u(
             );
 }
 
-} // namespace rhome
-
-} // namespace orthonormal
+} // namespace rholt
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_ORTHONORMAL_H
+#endif // __SUZERAIN_RHOLT_H

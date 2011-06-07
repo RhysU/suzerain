@@ -1,3 +1,4 @@
 /Makefile.in
-/test_orthonormal.py
+/test_rholt.py
+/test_rholut.py
 /test_timestepper.py

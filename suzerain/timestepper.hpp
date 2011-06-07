@@ -118,6 +118,13 @@ public:
  * chosen timestepping method.  For example, it is \f$\sqrt{3}\f$ for the SMR91
  * scheme.
  *
+ * @note For formulations in which an explicit Mach number
+ * \f$\mbox{Ma}=\frac{u_0}{a_0}\f$ appears, one \em must provide the velocities
+ * and the sound speed \em both nondimensionalized using \f$u_0\f$.  That
+ * expressions like \f$\left|u\right| + \frac{a}{\mbox{Ma}}\f$ are appropriate
+ * in that context can be seen by finding the eigenvalues of the Euler
+ * equations in such a nondimensionalization.
+ *
  * @note Using a hybrid implicit/explicit %timestepper with acoustic terms
  * computed implicitly effectively sets the sound speed to be zero for this CFL
  * calculation.
@@ -132,7 +139,7 @@ public:
  *        for some Runge-Kutta scheme, denoted
  *        \f$\left|\lambda_{I}\Delta_{}t\right|_{\mbox{max}}\f$
  *        in Guarini's thesis.
- * @param a                The local sound speed \f$a\f$
+ * @param a                The local sound speed \f$a\f$.
  *
  * @return The maximum stable time step \f$\Delta{}t\f$ according to
  *         the convective CFL criterion.

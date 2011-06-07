@@ -37,7 +37,6 @@
 #include <esio/esio.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/orthonormal.hpp>
 #include <suzerain/program_options.hpp>
 
 #include "logger.hpp"
@@ -300,15 +299,16 @@ process(const Eigen::ArrayXXr &s_coeffs,
     {
         using namespace column;
         const real_t gamma = scenario.gamma;
+        const real_t Ma_squared = scenario.Ma * scenario.Ma;
 
         s.col(u)  = s.col(rhou) / s.col(rho);
         s.col(v)  = s.col(rhov) / s.col(rho);
         s.col(w)  = s.col(rhow) / s.col(rho);
         s.col(e)  = s.col(rhoe) / s.col(rho);
         s.col(p)  = (gamma - 1) * (s.col(rhoe)
-                            - s.col(rhou) * s.col(u) / 2
-                            - s.col(rhov) * s.col(v) / 2
-                            - s.col(rhow) * s.col(w) / 2);
+                            - s.col(rhou) * s.col(u) * (Ma_squared / 2)
+                            - s.col(rhov) * s.col(v) * (Ma_squared / 2)
+                            - s.col(rhow) * s.col(w) * (Ma_squared / 2));
         s.col(T)  = scenario.gamma * s.col(p) / s.col(rho);
         s.col(mu) = s.col(T).pow(scenario.beta);
         s.col(nu) = s.col(mu) / s.col(rho);

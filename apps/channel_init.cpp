@@ -35,17 +35,11 @@
 #pragma hdrstop
 #include <esio/esio.h>
 #include <esio/error.h>
-#include <gsl/gsl_const_mksa.h>
-#include <gsl/gsl_const_num.h>
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_roots.h>
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/orthonormal.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
-#include <suzerain/svehla.h>
 #include <suzerain/utility.hpp>
 
 #include "logger.hpp"
@@ -66,10 +60,10 @@ using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
 static ScenarioDefinition<real_t> scenario(
         /* Re        */ 100,
-        /* Pr        */ real_t(7)/real_t(10),
         /* Ma        */ real_t(115)/real_t(100),
+        /* Pr        */ real_t(7)/real_t(10),
         /* bulk_rho  */ 1,
-        /* bulk_rhou */ real_t(115)/real_t(100),
+        /* bulk_rhou */ 1,
         /* alpha     */ real_t(0),
         /* beta      */ real_t(2)/real_t(3),
         /* gamma     */ real_t(14)/real_t(10),
@@ -104,51 +98,33 @@ static void atexit_esio(void) {
     if (esioh) esio_handle_finalize(esioh);
 }
 
-/** Description of equation to find wall temperature */
-static const char tsolver_desc[]
-    = "mu(T) Re / (p / R / T) / L - Ma ( gamma R T )**(1/2) == 0";
-
-/** Struct used for iterative solver to find wall temperature */
-struct tsolver {
-    double Re, L, gamma, R, Ma, p_wall;
-    gsl_spline *s;
-};
-
-/** Function for iterative solver to find wall temperature */
-static double f_tsolver(double T_wall, void *params) {
-    tsolver *p            = (tsolver *) params;
-    const double rho_wall = p->p_wall / (p->R * T_wall);
-    const double mu       = gsl_spline_eval(p->s, T_wall, NULL);
-    const double lhs      = mu * p->Re / (rho_wall * p->L);
-    const double rhs      = p->Ma * sqrt(p->gamma * p->R * T_wall);
-    return lhs - rhs;
-}
-
 /** Struct used for evaluating momentum and total energy profiles */
 struct mesolver {
-    double Ma, L, gamma, R, T_wall;
+    double Ma, L, gamma;
 };
 
 /**
- * Function for evaluating the momentum profile given rho* = 1.  Complex-valued
- * result to play nicely with suzerain::bspline::zfind_interpolation_rhs().
+ * Function for evaluating the parabolic momentum profile given <tt>rho* =
+ * 1</tt> and <tt>u* = 6*y*(L-y)/L^2</tt>.  Complex-valued result to play
+ * nicely with suzerain::bspline::zfind_interpolation_rhs().
  */
 static void zf_msolver(double y, void *params, double z[2]) {
     mesolver *p = (mesolver *) params;
-    z[0] = p->Ma * 6 * y * (p->L - y) / (p->L * p->L);
+    z[0] = 6 * y * (p->L - y) / (p->L * p->L);
     z[1] = 0;
 }
 
 /**
- * Function for evaluating the total energy profile given rho*, T* = 1.
- * Complex-valued result to play nicely with
- * suzerain::bspline::zfind_interpolation_rhs().
+ * Function for evaluating the total energy profile given <tt>rho*</tt>, the
+ * momentum profile in zf_msolver(), and <tt>T* = 1</tt>.  Complex-valued
+ * result to play nicely with suzerain::bspline::zfind_interpolation_rhs().
  */
 static void zf_esolver(double y, void *params, double z[2]) {
     mesolver *p = (mesolver *) params;
     double m[2];
     zf_msolver(y, p, m);
-    z[0] = 1 / (p->gamma * (p->gamma - 1)) + 0.5 * m[0] * m[0];
+    const double T = 1; // Parabolic was y * (p->L - y) / (p->L * p->L)  + 1;
+    z[0] = T / (p->gamma * (p->gamma - 1)) + p->Ma * p->Ma / 2 * m[0] * m[0];
     z[1] = 0;
 }
 
@@ -172,16 +148,13 @@ int main(int argc, char **argv)
 
     // Process incoming program arguments from command line, input files
     std::string restart_file;
-    bool clobber  = false;
-    real_t M      = SUZERAIN_SVEHLA_AIR_M;
-    real_t p_wall = GSL_CONST_MKSA_STD_ATMOSPHERE / 100000;
+    bool clobber = false;
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based compressible channel initialization",
                 "[RESTART-FILE]");
         namespace po = ::boost::program_options;
 
-        // Cast away const so options processing can modify settings
         options.add_definition(scenario);
         options.add_definition(grid);
 
@@ -194,14 +167,6 @@ int main(int argc, char **argv)
 
         options.add_options()
             ("clobber", "Overwrite an existing restart file?")
-            ("M", po::value<real_t>(&M)
-                ->notifier(std::bind2nd(ptr_fun_ensure_positive,"M"))
-                ->default_value(M),
-             "Molar mass of species in grams per mole")
-            ("p_wall", po::value<real_t>(&p_wall)
-                ->notifier(std::bind2nd(ptr_fun_ensure_positive,"p_wall"))
-                ->default_value(p_wall),
-             "Pressure in N/m^2 used to obtain reference wall density")
         ;
         std::vector<std::string> positional = options.process(argc, argv);
 
@@ -213,17 +178,16 @@ int main(int argc, char **argv)
 
         clobber = options.variables().count("clobber");
     }
-    const real_t R = GSL_CONST_MKSA_MOLAR_GAS * GSL_CONST_NUM_KILO / M;
 
     if (grid.k < 4 /* cubics */) {
         FATAL("k >= 4 required for two non-trivial spatial derivatives");
         return EXIT_FAILURE;
     }
 
-    // Initialization done under assumptions bulk_rho == 1 && Ma == bulk_rhou
-    if (scenario.bulk_rhou != scenario.Ma) {
-        WARN0("Forcing bulk streamwise momentum to match the Mach number");
-        scenario.bulk_rhou = scenario.Ma;
+    // Initialization done under assumptions bulk_rho == 1 && bulk_rhou == 1
+    if (scenario.bulk_rhou != 1) {
+        WARN0("Forcing bulk streamwise momentum to be one");
+        scenario.bulk_rhou = 1;
     }
     if (scenario.bulk_rho != 1) {
         WARN0("Forcing bulk density to be one");
@@ -242,74 +206,6 @@ int main(int argc, char **argv)
     channel::store(esioh, grid, scenario.Lx, scenario.Lz);
     channel::store(esioh, b, bop, gop);
     esio_file_flush(esioh);
-
-    INFO0("Computing derived, dimensional reference parameters");
-    real_t T_wall, rho_wall;
-    {
-        if (scenario.gamma != 1.4) {
-            WARN0("Using air viscosity values for non-air!");
-        }
-
-        tsolver p;
-        p.Re     = scenario.Re;
-        p.L      = scenario.Ly;
-        p.gamma  = scenario.gamma;
-        p.R      = R;
-        p.Ma     = scenario.Ma;
-        p.p_wall = p_wall;
-        p.s = suzerain_svehla_air_mu_vs_T();
-        assert(p.s);
-
-        INFO0("Solving " << tsolver_desc << " for T_wall");
-        INFO0("Using Re = " << p.Re
-              << ", L = " << p.L
-              << ", gamma = " << p.gamma
-              << ", R = " << p.R
-              << ", Ma = " << p.Ma
-              << ", p_wall = " << p.p_wall
-              << ", and mu(T) from Svehla 1962");
-
-        gsl_function F;
-        F.function = &f_tsolver;
-        F.params   = &p;
-
-        gsl_root_fsolver * solver
-            = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
-        assert(solver);
-        real_t low  = 100;  // (degrees K) Low side of Svehla's data
-        real_t high = 5000; // (degrees K) High side of Svehla's data
-        {
-            const real_t low_residual = GSL_FN_EVAL(&F,low);
-            const real_t high_residual = GSL_FN_EVAL(&F,high);
-            if ((low_residual >= 0) == (high_residual >= 0)) {
-                FATAL0("Likely no solution in interval ["
-                       << low <<"," << high << "]!");
-            }
-        }
-        gsl_root_fsolver_set(solver, &F, low, high);
-
-        const real_t tol = numeric_limits<real_t>::epsilon() * 1e4;
-        int status = GSL_CONTINUE;
-        for (int iter = 0; iter < 100 && status == GSL_CONTINUE; ++iter) {
-            gsl_root_fsolver_iterate(solver);
-            T_wall = gsl_root_fsolver_root(solver);
-            low  = gsl_root_fsolver_x_lower(solver);
-            high = gsl_root_fsolver_x_upper(solver);
-            status = gsl_root_test_interval(low, high, tol, 0);
-        }
-        INFO0(std::setprecision(numeric_limits<real_t>::digits10)
-              << "Wall temperature "
-              << T_wall
-              << " K gives residual "
-              << std::scientific
-              << GSL_FN_EVAL(&F,T_wall));
-
-        rho_wall = p_wall / R / T_wall;
-        INFO0("Wall density is " << rho_wall << " kg/m^3");
-
-        gsl_root_fsolver_free(solver);
-        gsl_spline_free(p.s);
-    }
 
     // Initialize B-splines to find coefficients from collocation points
     bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
@@ -346,8 +242,6 @@ int main(int argc, char **argv)
         params.Ma     = scenario.Ma;
         params.L      = scenario.Ly;
         params.gamma  = scenario.gamma;
-        params.R      = R;
-        params.T_wall = T_wall;
 
         // Nondimensional density is the constant one
         suzerain::multi_array::fill(mean_rho, 1);

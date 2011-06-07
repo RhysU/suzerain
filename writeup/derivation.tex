@@ -516,42 +516,44 @@ dimensions warrant.
 \subsubsection{Reference quantity selections}
 \label{sec:nondimrefq}
 
-We choose a reference length $l_{0}$, temperature $T_{0}$, and density
-$\rho_{0}$.  These selections fix all other dimensional reference
+We choose a reference density $\rho_{0}$, length $l_{0}$, velocity $u_{0}$, and
+temperature $T_{0}$.  These selections fix all other dimensional reference
 quantities:
 \begin{align}
   a_{0} &= \sqrt{\gamma{}RT_{0}}
   &
-  u_{0} &= a_{0}
-  &
   \tilde{e}_{0} &= a_{0}^{2}
-  &
-  t_{0} &= \frac{l_{0}}{a_{0}}
   &
   p_{0} &= \rho_{0} a_{0}^{2}
   &
-  \tau_{0} &= \frac{\mu_{0}a_{0}}{l_{0}}
+  t_{0} &= \frac{l_{0}}{u_{0}}
+  &
+  \tau_{0} &= \frac{\mu_{0}u_{0}}{l_{0}}
   &
   c_{0} &= \frac{\rho_{0}}{t_{0}}
   &
-  f_{0} &= \frac{a_{0}^{2}}{l_{0}}
+  f_{0} &= \frac{u_{0}}{t_{0}}
   &
-  q_{0} &= \frac{a_{0}^{3}}{l_{0}}
+  q_{0} &= \frac{a_{0}^{2}}{t_{0}}
 \end{align}
 Because we assume viscosity varies only with temperature, $\mu_{0}=\mu\!\left(
 T_{0} \right)$ is fixed by $T_{0}$.  Because we assume a constant Prandtl
 number, $\kappa_{0}=\kappa\!\left( \mu\!\left( T_{0} \right) \right)$ is also
-fixed by $T_{0}$.  Note that these reference choices imply $a^{*}=\sqrt{T^{*}}$.
+fixed by $T_{0}$.  Choosing this form for $p_{0}$ in lieu of employing
+equation~\eqref{eq:perfectgaseos} is customary and removes many instances of
+$\gamma$ from the resulting equations.  Note that these reference choices imply
+\begin{align}
+a^{*}&=\sqrt{T^{*}}.
+\end{align}
 
 \subsubsection{Nondimensional equations}
 \label{nondim_equations}
 
-We employ the reference quantity relationships after
-multiplying the continuity, momentum, and energy equations by
-$\frac{t_{0}}{\rho_{0}}$, $\frac{l_{0}}{\rho_{0}a_{0}^{2}}$, and
-$\frac{t_{0}}{\rho_{0}\tilde{e}_{0}}$ respectively.  Henceforth
-we suppress the superscript star notation because all terms are
-dimensionless.  We arrive at the following nondimensional equations:
+We employ the reference quantity relationships after multiplying the
+continuity, momentum, and energy equations by $\frac{t_{0}}{\rho_{0}}$,
+$\frac{t_{0}}{\rho_{0}u_{0}}$, and $\frac{t_{0}}{\rho_{0}\tilde{e}_{0}}$
+respectively.  Henceforth we suppress the superscript star notation because all
+terms are dimensionless.  We arrive at the following nondimensional equations
 \begin{subequations}
 \begin{align}
   \label{eq:nondim_continuity}
@@ -564,7 +566,7 @@ dimensionless.  We arrive at the following nondimensional equations:
   \frac{\partial}{\partial{}t}\rho{}u
 &=
   - \nabla\cdot(u\otimes\rho{}u)
-  - \nabla{} p
+  - \frac{1}{\Mach^{2}} \nabla{} p
   + \frac{1}{\Reynolds} \nabla\cdot\tau
   + \rho{}f_{b}
   \\
@@ -575,17 +577,15 @@ dimensionless.  We arrive at the following nondimensional equations:
   + \frac{1}{\Reynolds\,\Prandtl\,\left( \gamma - 1 \right)}
     \nabla\cdot\mu\nabla{} T
   - \nabla\cdot{} p u
-  + \frac{1}{\Reynolds} \nabla\cdot\tau{} u
-  + \rho{} f_{b} \cdot{} u
+  + \frac{\Mach^{2}}{\Reynolds} \nabla\cdot\tau{} u
+  + \Mach^{2} \rho{} f_{b} \cdot{} u
   + \rho{} q_{b}
 \intertext{
-  where $\Reynolds=\frac{\rho_{0}u_{0}l_{0}}{\mu_{0}}$ and
-  $\Prandtl=\frac{\mu_{0}C_{p}}{\kappa_{0}}$.  The nondimensional quantities
-  appearing above are given by:
+along with the relationships
 }
   \label{eq:nondim_pressure}
   p &= \left(\gamma-1\right) \left(
-    \rho{}\tilde{e} - \rho{}\frac{u\cdot{}u}{2}
+    \rho{}\tilde{e} - \Mach^{2} \rho{}\frac{u\cdot{}u}{2}
   \right)
   \\
   \label{eq:nondim_temperature}
@@ -602,8 +602,21 @@ dimensionless.  We arrive at the following nondimensional equations:
          + \lambda\left(\nabla\cdot{}u\right) I
 \end{align}
 \end{subequations}
+where the nondimensional quantities
+\begin{align}
+  \Reynolds &= \frac{\rho_{0}u_{0}l_{0}}{\mu_{0}}
+  &
+  \Mach &= \frac{u_{0}}{a_{0}}
+  &
+  \Prandtl &= \frac{\mu_{0}C_{p}}{\kappa_{0}}
+\end{align}
+are the Reynolds, Mach, and Prandtl numbers, respectively.
 
-
+Introducing a velocity reference $u_{0}$ separate from the sound speed $a_{0}$
+was not necessary from a dimensional standpoint.  Doing so is the origin of the
+$\Mach$ factors appearing above.  These add some minor complexity to the
+equations but greatly simplify investigating the physics in the various
+$\Mach\to{}0$ limits.
 
 \section{Discretization}
 \label{sec:discretization}
@@ -1187,7 +1200,7 @@ the equations in section~\ref{nondim_equations} become
   \frac{\partial}{\partial{}t}m
 &=
   - \nabla\cdot\left(\frac{m}{\rho}\otimes{}m\right)
-  - \nabla{} p
+  - \frac{1}{\Mach^{2}} \nabla{} p
   + \frac{1}{\Reynolds} \nabla\cdot\tau
   + \rho{}f_{b}
   \\
@@ -1197,16 +1210,14 @@ the equations in section~\ref{nondim_equations} become
   - \nabla\cdot{}\left(e + p\right)\frac{m}{\rho}
   + \frac{1}{\Reynolds\,\Prandtl\,\left( \gamma - 1 \right)}
     \nabla\cdot\mu\nabla{} T
-  + \frac{1}{\Reynolds} \nabla\cdot\tau{}\frac{m}{\rho}
-  + f_{b} \cdot{} m
+  + \frac{\Mach^{2}}{\Reynolds} \nabla\cdot\tau{}\frac{m}{\rho}
+  + \Mach^{2} f_{b} \cdot{} m
   + \rho{} q_{b}
 \intertext{
   where the non-state quantities are fixed by
 }
   \label{eq:state_pressure}
-  p &= \left(\gamma-1\right) \left(
-    e - \frac{m^2}{2\rho}
-  \right)
+  p &= \left(\gamma-1\right) \left( e - \Mach^{2}\frac{m^2}{2\rho} \right)
   \\
   \label{eq:state_temperature}
   T &= \gamma{} \frac{p}{\rho}
@@ -1222,7 +1233,7 @@ the equations in section~\ref{nondim_equations} become
         + \lambda\left(\nabla\cdot{}\frac{m}{\rho}\right) I
 \end{align}
 \end{subequations}
-where we have employed the notation $m^2=m\cdot{}m$ and
+and we have employed the notation $m^2=m\cdot{}m$ and
 $\symmetricpart{A}=\frac{1}{2}\left(A+\trans{A}\right)$.
 
 \subsection{Communications overhead}
@@ -1310,7 +1321,7 @@ Second differentiation enters equations~\eqref{eq:state_continuity},
 $\nabla\cdot\tau$, $\nabla\cdot\tau\frac{m}{\rho}$, and
 $\nabla\cdot\mu\nabla{}T$.  We wish to compute these terms in a way that keeps
 first and second derivative applications wholly separate.  Doing so will help
-ensure that these three terms have the appropriate diffusive effects on high
+ensure that these three terms have the appropriate diffusive impact on high
 frequency content.
 
 We expand the three mixed order, nonlinear terms:
@@ -1339,13 +1350,15 @@ expand:
 \begin{subequations}
 \begin{align}
   \nabla{}p &= (\gamma-1)\left[
-        \nabla{}e
-      + \frac{1}{2}\rho^{-2} m^{2} \nabla\rho
-      - \rho^{-1} \trans{\nabla{}m}m
+        \nabla{}e + \frac{\Mach^{2}}{\rho} \left[
+            \frac{m^{2}}{2\rho} \nabla\rho
+          - \trans{\nabla{}m}m
+        \right]
   \right]
 \\
-  \nabla{}T &= \gamma\rho^{-1}\nabla{}p
-             - \gamma\rho^{-2} p \nabla\rho
+  \nabla{}T &= \frac{\gamma}{\rho}
+               \left[ \nabla{}p - \frac{p}{\rho}\nabla\rho \right]
+             = \rho^{-1}\left( \gamma\nabla{}p - T\nabla\rho \right)
 \\
   \nabla\mu &= \beta{}T^{\beta-1}\nabla{}T
 \\
@@ -1355,7 +1368,7 @@ expand:
   &=
   \left(\gamma-1\right)\left[
       \Delta{}e
-      - \rho^{-1}\left[
+      - \frac{\Mach^{2}}{\rho}\left[
             \trace\left( \trans{\nabla{}m}\nabla{}m \right)
           + m\cdot\Delta{}m
 \right.\right. \notag\\ &\qquad\qquad\qquad\qquad \left.\left. % LINE BREAK
@@ -1576,7 +1589,7 @@ implicit operator needs:
      - \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-2}m}
 \\
 \Delta{}p =
-  &{}- \left(\gamma-1\right)\rho^{-1}\left[
+  &{}- \left(\gamma-1\right)\Mach^{2}\rho^{-1}\left[
              \trace\left(\trans{\nabla{}m}\nabla{}m\right)
            - \rho^{-1}\left[
                2\trans{\nabla{}m}m\cdot\nabla{}\rho
@@ -1585,8 +1598,8 @@ implicit operator needs:
        \right]
 \\
   &{}+ \left(\gamma-1\right)\Delta{}e
-     - \left(\gamma-1\right)\rho^{-1}m\cdot\Delta{}m
-     + \frac{\gamma-1}{2}\rho^{-2}m^2 \Delta\rho
+     - \left(\gamma-1\right)\Mach^{2}\rho^{-1}m\cdot\Delta{}m
+     + \frac{\gamma-1}{2}\Mach^{2}\rho^{-2}m^2 \Delta\rho
 \\
 \mu\Delta{}T =
   &{}- 2\gamma\mu\rho^{-2}\nabla\rho\cdot
@@ -1598,7 +1611,7 @@ implicit operator needs:
   &{}- 2\gamma\mu\rho^{-2}\nabla{}\rho\cdot
        \left(\nabla{}p-\rho^{-1}p\nabla\rho\right)
 \\
-  &{}- \gamma\left(\gamma-1\right)\mu\rho^{-2}\left[
+  &{}- \gamma\left(\gamma-1\right)\Mach^{2}\mu\rho^{-2}\left[
              \trace\left(\trans{\nabla{}m}\nabla{}m\right)
            - \rho^{-1}\left[
                2\trans{\nabla{}m}m\cdot\nabla{}\rho
@@ -1607,22 +1620,26 @@ implicit operator needs:
        \right]
 \\
   &{}+ \gamma\left(\gamma-1\right)\lessreference{\mu\rho^{-1}}\Delta{}e
-     - \gamma\left(\gamma-1\right)\lessreference{\mu\rho^{-2}m}\cdot\Delta{}m
+     - \gamma\left(\gamma-1\right)\Mach^{2}
+       \lessreference{\mu\rho^{-2}m}\cdot\Delta{}m
 \\
-  &{}+ \gamma\lessreference{
-          \mu\rho^{-2}\left( \frac{\gamma-1}{2}\rho^{-1}m^2 - p \right)
-       }\Delta\rho
+  &{}+ \gamma\lessreference{ \mu\rho^{-2}\left(
+           \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
+       \right) } \Delta\rho
 \\
   &{}+ \gamma\left(\gamma-1\right)\reference{\mu\rho^{-1}}\Delta{}e
-     - \gamma\left(\gamma-1\right)\reference{\mu\rho^{-2}m}\cdot\Delta{}m
-   {}+ \gamma\reference{
-          \mu\rho^{-2}\left( \frac{\gamma-1}{2}\rho^{-1}m^2 - p \right)
-       }\Delta\rho
+     - \gamma\left(\gamma-1\right)\Mach^{2}
+       \reference{\mu\rho^{-2}m}\cdot\Delta{}m
+   {}+ \gamma\reference{ \mu\rho^{-2}\left(
+           \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
+       \right) } \Delta\rho
 \end{align}
 \end{subequations}
-The last line of each quantity is the implicit portion.  Note that we will
-recover an explicit-only operator if we choose identically zero reference
-values.
+The last line of each quantity is the linearized, implicit-ready portion.
+Evaluating reference values from mean quantities taken as a function of
+wall-normal position should provide a reasonable time/storage tradeoff.  Note
+that we will recover an explicit-only operator if we choose identically zero
+reference values.
 
 
 
