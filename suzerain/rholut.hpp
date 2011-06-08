@@ -646,25 +646,31 @@ void p_T_mu_lambda(
         Vector &grad_lambda)
 {
     using std::pow;
-    const Scalar rho_inverse = 1/rho;
-    const Scalar squared_Ma  = Ma*Ma;
+    const Scalar rho_inverse      = 1/rho;
+    const Scalar half_rho_inverse = rho_inverse/2;
+    const Scalar gamma1           = gamma - 1;
+    const Scalar alpha23          = alpha - Scalar(2)/3;
+    const Scalar squared_Ma       = Ma * Ma;
 
     // Compute scalar quantities
-    p      = (gamma-1)*(e - squared_Ma*rho_inverse*m.squaredNorm()/2);
+    p      = gamma1*(e - squared_Ma*half_rho_inverse*m.squaredNorm());
     T      = gamma * p * rho_inverse;
-    mu     = pow(T, beta);
-    lambda = (alpha - Scalar(2)/3)*mu;
+
+    const Scalar T_to_beta1 = pow(T, beta - 1); // Avoid div for grad_mu
+
+    mu     = T_to_beta1 * T;
+    lambda = alpha23*mu;
 
     // Compute vector quantities
-    grad_p = (gamma-1)*(
+    grad_p = gamma1*(
                 grad_e + squared_Ma*rho_inverse*(
-                      rho_inverse*m.squaredNorm()/2*grad_rho
+                      (half_rho_inverse*m.squaredNorm())*grad_rho
                     - grad_m.transpose()*m
                 )
              );
     grad_T      = rho_inverse*(gamma*grad_p - T*grad_rho);
-    grad_mu     = beta*pow(T,beta-1)*grad_T;
-    grad_lambda = (alpha - Scalar(2)/3)*grad_mu;
+    grad_mu     = (beta * T_to_beta1)*grad_T;
+    grad_lambda = alpha23*grad_mu;
 }
 
 /**
