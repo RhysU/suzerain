@@ -579,6 +579,47 @@ Scalar explicit_mu_div_grad_T(
 }
 
 /**
+ * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$
+ * using the equation of state.
+ *
+ * @param[in]  alpha \f$\alpha\f$
+ * @param[in]  beta \f$\beta\f$
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  Ma \f$\mbox{Ma}\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  e \f$e\f$
+ * @param[out] p \f$p\f$
+ * @param[out] T \f$T\f$
+ * @param[out] mu \f$\mu\f$
+ * @param[out] lambda \f$\lambda\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+void p_T_mu_lambda(
+        const Scalar &alpha,
+        const Scalar &beta,
+        const Scalar &gamma,
+        const Scalar &Ma,
+        const Scalar &rho,
+        const Vector &m,
+        const Scalar &e,
+        Scalar &p,
+        Scalar &T,
+        Scalar &mu,
+        Scalar &lambda)
+{
+    using std::pow;
+    const Scalar rho_inverse = 1/rho;
+
+    // Compute scalar quantities
+    p      = (gamma - 1)*(e - Ma*Ma*rho_inverse*m.squaredNorm()/2);
+    T      = gamma * p * rho_inverse;
+    mu     = pow(T, beta);
+    lambda = (alpha - Scalar(2)/3)*mu;
+}
+
+/**
  * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$ and their gradients
  * using the equation of state.  The gradients are computed using these
  * expansions:

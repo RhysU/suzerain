@@ -1276,6 +1276,45 @@ void p_T_mu_lambda(
 }
 
 /**
+ * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$
+ * using the equation of state.
+ *
+ * @param[in]  alpha \f$\alpha\f$
+ * @param[in]  beta \f$\beta\f$
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  e \f$e\f$
+ * @param[out] p \f$p\f$
+ * @param[out] T \f$T\f$
+ * @param[out] mu \f$\mu\f$
+ * @param[out] lambda \f$\lambda\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+void p_T_mu_lambda(
+        const Scalar &alpha,
+        const Scalar &beta,
+        const Scalar &gamma,
+        const Scalar &rho,
+        const Vector &m,
+        const Scalar &e,
+        Scalar &p,
+        Scalar &T,
+        Scalar &mu,
+        Scalar &lambda)
+{
+    using std::pow;
+    const Scalar rho_inverse = 1/rho;
+
+    // Compute scalar quantities
+    p      = (gamma - 1)*(e - rho_inverse*m.squaredNorm()/2);
+    T      = gamma * p * rho_inverse;
+    mu     = pow(T, beta);
+    lambda = (alpha - Scalar(2)/3)*mu;
+}
+
+/**
  * Compute \f$\vec{\nabla}\cdot\vec\nabla{}p\f$
  * using the equation of state.  Uses the expansion
  * \f{align*}

@@ -152,6 +152,7 @@ BOOST_AUTO_TEST_CASE( rholut_p_T_mu_lambda )
     double p, T, mu, lambda;
     Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
 
+    /* Variant that provides derivatives */
     suzerain::rholut::p_T_mu_lambda(
             alpha, beta, gamma, Ma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
@@ -202,6 +203,25 @@ BOOST_AUTO_TEST_CASE( rholut_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(grad_lambda(0), grad_lambda_ans(0), close_enough);
     BOOST_CHECK_CLOSE(grad_lambda(1), grad_lambda_ans(1), close_enough);
     BOOST_CHECK_CLOSE(grad_lambda(2), grad_lambda_ans(2), close_enough);
+
+
+    /* Variant that does not provide derivatives */
+    p = T = mu = lambda = 555;
+    suzerain::rholut::p_T_mu_lambda(
+            alpha, beta, gamma, Ma, rho, m, e, p, T, mu, lambda);
+
+    BOOST_CHECK_CLOSE(p,
+            4441.1984111498830681828969449447964342868418205971441637701L,
+            close_enough);
+    BOOST_CHECK_CLOSE(T,
+            45.055636055143743363613040114696980466792183873003314822257L,
+            close_enough);
+    BOOST_CHECK_CLOSE(mu,
+            12.661915668902014668188456691480749088816699629988322914800L,
+            close_enough);
+    BOOST_CHECK_CLOSE(lambda,
+            54.868301231908730228816645663083246051539031729949399297467L,
+            close_enough);
 }
 
 // Checks derived formula and computation against rholut_test_data()
