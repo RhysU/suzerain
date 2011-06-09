@@ -72,14 +72,14 @@ public:
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop)
-        : scenario(scenario),
-          grid(grid),
-          dgrid(dgrid),
-          bop(bop),
-          has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
+        : has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
                               && dgrid.local_wave_start.z() == 0),
           one_over_delta_x(scenario.Lx / grid.N.x() /* !dN.x() */),
           one_over_delta_z(scenario.Lz / grid.N.z() /* !dN.z() */),
+          scenario(scenario),
+          grid(grid),
+          dgrid(dgrid),
+          bop(bop),
           y_(boost::extents[boost::multi_array_types::extent_range(
                   dgrid.local_physical_start.y(),
                   dgrid.local_physical_end.y())]),
@@ -102,21 +102,6 @@ public:
             one_over_delta_y_[j] = 1.0 / delta_y;
         }
     }
-
-protected:
-
-
-    /** The scenario in which the operator is used */
-    const typename suzerain::problem::ScenarioDefinition<FPT> &scenario;
-
-    /** The grid in which the operator is used */
-    const suzerain::problem::GridDefinition &grid;
-
-    /** The parallel decomposition grid in which the operator is used */
-    const suzerain::pencil_grid &dgrid;
-
-    /** The B-spline operators with which the operator is used */
-    const suzerain::bsplineop &bop;
 
     /** Does the current rank contain the "zero-zero" constant modes? */
     const bool has_zero_zero_mode;
@@ -241,6 +226,20 @@ protected:
 
     /** Uniform grid spacing in z */
     const FPT one_over_delta_z;
+
+protected:
+
+    /** The scenario in which the operator is used */
+    const typename suzerain::problem::ScenarioDefinition<FPT> &scenario;
+
+    /** The grid in which the operator is used */
+    const suzerain::problem::GridDefinition &grid;
+
+    /** The parallel decomposition grid in which the operator is used */
+    const suzerain::pencil_grid &dgrid;
+
+    /** The B-spline operators with which the operator is used */
+    const suzerain::bsplineop &bop;
 
 private:
 
