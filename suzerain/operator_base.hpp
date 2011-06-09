@@ -138,6 +138,30 @@ public:
                 alpha,  x[ndx].origin(), x.strides()[1], x.strides()[2]);
     }
 
+    /** Shorthand for real-valued operator inversion */
+    template<typename MultiArray>
+    int bop_solve(
+            const suzerain::bsplineop_lu &lu, MultiArray &x, int ndx) const
+    {
+        assert(x.shape()[1] == (unsigned) lu.n());
+        assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
+
+        return lu.solve(x.shape()[2]*x.shape()[3], x[ndx].origin(),
+                        x.strides()[1], x.strides()[2]);
+    }
+
+    /** Shorthand for complex-valued operator inversion */
+    template<typename MultiArray>
+    int bop_solve(
+            const suzerain::bsplineop_luz &luz, MultiArray &x, int ndx) const
+    {
+        assert(x.shape()[1] == (unsigned) luz.n());
+        assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
+
+        return luz.solve(x.shape()[2]*x.shape()[3], x[ndx].origin(),
+                         x.strides()[1], x.strides()[2]);
+    }
+
     /** Shorthand for wave space-based differentiation accumulation */
     template<typename MultiArrayX, typename MultiArrayY>
     void diffwave_accumulate(int dxcnt,
