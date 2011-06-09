@@ -412,24 +412,10 @@ real_t NonlinearOperator::applyOperator(
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
-    Eigen::Map<
-            Eigen::Array<real_t, aux::count,
-                         Eigen::Dynamic, Eigen::RowMajor>,
-            Eigen::Unaligned, // Defensive
-            Eigen::OuterStride<Eigen::Dynamic>
-        > auxp(reinterpret_cast<real_t *>(auxw.origin()),
-               aux::count, dgrid.local_physical_extent.prod(),
-               Eigen::OuterStride<>(
-                   auxw.strides()[0] * sizeof(complex_t)/sizeof(real_t)));
-    Eigen::Map<
-            Eigen::Array<real_t, channel::field::count,
-                         Eigen::Dynamic, Eigen::RowMajor>,
-            Eigen::Unaligned, // Defensive
-            Eigen::OuterStride<Eigen::Dynamic>
-        > sphys(reinterpret_cast<real_t *>(swave.origin()),
-               channel::field::count, dgrid.local_physical_extent.prod(),
-               Eigen::OuterStride<>(
-                   swave.strides()[0] * sizeof(complex_t)/sizeof(real_t)));
+    channel::physical_view<aux::count>::type auxp
+        = channel::physical_view<aux::count>::create(dgrid, auxw);
+    channel::physical_view<channel::field::count>::type sphys
+        = channel::physical_view<channel::field::count>::create(dgrid, swave);
     for (std::size_t i = 0; i < channel::field::count; ++i) {
         dgrid.transform_wave_to_physical(&sphys(i,0));
     }

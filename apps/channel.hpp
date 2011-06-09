@@ -218,6 +218,46 @@ void complex_field_write(esio_handle h,
     return complex_field_write<int>(h, name, field);
 }
 
+/**
+ * A template typedef for how to view multiple state fields in physical space,
+ * Including a convenient method for constructing such an instance.
+ */
+template <int NFields>
+struct physical_view {
+
+    /**
+     * In physical space, we'll employ a view to reshape the 4D row-major (F,
+     * Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where we
+     * know F a priori.  Reducing the dimensionality encourages linear access
+     * and eases indexing overhead.
+     */
+    typedef Eigen::Map<
+                    Eigen::Array<real_t, NFields,
+                                 Eigen::Dynamic, Eigen::RowMajor>,
+                    Eigen::Unaligned, // FIXME Defensive but likely unnecessary
+                    Eigen::OuterStride<Eigen::Dynamic>
+                > type;
+
+    /**
+     * Create a view instance given state storage and sufficient information
+     * about the parallel decomposition.
+     * */
+    static inline type create(
+            const suzerain::pencil_grid &dgrid,
+            suzerain::NoninterleavedState<4,complex_t> &state)
+    {
+        type retval(reinterpret_cast<real_t *>(state.origin()),
+                    NFields,                            // F
+                    dgrid.local_physical_extent.prod(), // Y*Z*X
+                    Eigen::OuterStride<>(  state.strides()[0]
+                                         * sizeof(complex_t)/sizeof(real_t)));
+
+        return retval;
+    }
+
+};
+
+
 /** Holds information on the \f$L^2\f$ norm of a scalar field */
 struct L2 {
     real_t mean2;
