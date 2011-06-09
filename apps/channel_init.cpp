@@ -38,6 +38,7 @@
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/operator_base.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/utility.hpp>
@@ -97,36 +98,6 @@ static esio_handle esioh = NULL;
 /** <tt>atexit</tt> callback to ensure we finalize esioh. */
 static void atexit_esio(void) {
     if (esioh) esio_handle_finalize(esioh);
-}
-
-/** Struct used for evaluating momentum and total energy profiles */
-struct mesolver {
-    double Ma, L, gamma;
-};
-
-/**
- * Function for evaluating the parabolic momentum profile given <tt>rho* =
- * 1</tt> and <tt>u* = 6*y*(L-y)/L^2</tt>.  Complex-valued result to play
- * nicely with suzerain::bspline::zfind_interpolation_rhs().
- */
-static void zf_msolver(double y, void *params, double z[2]) {
-    mesolver *p = (mesolver *) params;
-    z[0] = 6 * y * (p->L - y) / (p->L * p->L);
-    z[1] = 0;
-}
-
-/**
- * Function for evaluating the total energy profile given <tt>rho*</tt>, the
- * momentum profile in zf_msolver(), and <tt>T* = 1</tt>.  Complex-valued
- * result to play nicely with suzerain::bspline::zfind_interpolation_rhs().
- */
-static void zf_esolver(double y, void *params, double z[2]) {
-    mesolver *p = (mesolver *) params;
-    double m[2];
-    zf_msolver(y, p, m);
-    const double T = 1; // Parabolic was y * (p->L - y) / (p->L * p->L)  + 1;
-    z[0] = T / (p->gamma * (p->gamma - 1)) + p->Ma * p->Ma / 2 * m[0] * m[0];
-    z[1] = 0;
 }
 
 int main(int argc, char **argv)
@@ -208,67 +179,94 @@ int main(int argc, char **argv)
     channel::store(esioh, b, bop, gop);
     esio_file_flush(esioh);
 
-    // Initialize B-splines to find coefficients from collocation points
+    INFO0("Initializing B-spline workspaces");
     bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
     bopluz->form_mass(*bop);
 
-    // Initialize pencil_grid to obtain parallel decomposition details
+    INFO0("Initializing pencil_grid to obtain parallel decomposition details");
     dgrid = make_shared<suzerain::pencil_grid>(grid.dN, grid.P);
     assert((grid.dN == dgrid->global_physical_extent).all());
 
-    // Allocate and clear storage for the distributed state
-    state_type state(suzerain::to_yxz(
+    INFO0("Initializing OperatorBase to access decomposition-ready utilities");
+    suzerain::OperatorBase<real_t> obase(scenario, grid, *dgrid, *b, *bop);
+
+    INFO0("Allocating and clearing storage for the distributed state fields");
+    state_type swave(suzerain::to_yxz(
                 channel::field::count, dgrid->local_wave_extent));
-    suzerain::multi_array::fill(state, 0);
+    suzerain::multi_array::fill(swave, 0);
 
-    INFO0("Computing mean, nondimensional profiles");
-    if (dgrid->local_wave_start.x() == 0 && dgrid->local_wave_start.z() == 0) {
-        namespace ndx = channel::field::ndx;
+    INFO0("Initializing data on collocation points values in physical space");
 
-        // Create 1D mean views from 4D state storage
-        const boost::multi_array_types::index_range all;
-        boost::array_view_gen<state_type,1>::type mean_rho
-                = state[boost::indices[ndx::rho][all][0][0]];
-        boost::array_view_gen<state_type,1>::type mean_rhou
-                = state[boost::indices[ndx::rhou][all][0][0]];
-        boost::array_view_gen<state_type,1>::type mean_rhov
-                = state[boost::indices[ndx::rhov][all][0][0]];
-        boost::array_view_gen<state_type,1>::type mean_rhow
-                = state[boost::indices[ndx::rhow][all][0][0]];
-        boost::array_view_gen<state_type,1>::type mean_rhoe
-                = state[boost::indices[ndx::rhoe][all][0][0]];
+    // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
+    channel::physical_view<channel::field::count>::type sphys
+        = channel::physical_view<channel::field::count>::create(*dgrid, swave);
 
-        // Prepare parameter struct for evaluation routines
-        mesolver params;
-        params.Ma     = scenario.Ma;
-        params.L      = scenario.Ly;
-        params.gamma  = scenario.gamma;
+    // Physical space is traversed linearly using a single offset 'offset'.
+    // The three loop structure is present to provide the global absolute
+    // positions x(i), y(j), and z(k) where necessary.
+    size_t offset = 0;
+    for (int j = dgrid->local_physical_start.y();
+         j < dgrid->local_physical_end.y();
+         ++j) {
 
-        // Nondimensional density is the constant one
-        suzerain::multi_array::fill(mean_rho, 1);
+        const real_t y = obase.y(j);
 
-        // Find streamwise momentum as a function of wall-normal position
-        const suzerain_zfunction zF_rhou = { &zf_msolver, &params };
-        bop->interpolation_rhs(&zF_rhou, &mean_rhou[0], *b);
-        bopluz->solve(1, &mean_rhou[0], 1, grid.N.y());
+        for (int k = dgrid->local_physical_start.z();
+            k < dgrid->local_physical_end.z();
+            ++k) {
 
-        // Nondimensional wall-normal momentum is zero
-        suzerain::multi_array::fill(mean_rhov, 0);
+            const real_t z = obase.z(j);
+            SUZERAIN_UNUSED(z);
 
-        // Nondimensional spanwise momentum is zero
-        suzerain::multi_array::fill(mean_rhow, 0);
+            for (int i = dgrid->local_physical_start.x();
+                i < dgrid->local_physical_end.x();
+                ++i, /* NB */ ++offset) {
 
-        // Find total energy as a function of wall-normal position
-        const suzerain_zfunction zF_rhoe = { &zf_esolver, &params };
-        bop->interpolation_rhs(&zF_rhoe, &mean_rhoe[0], *b);
-        bopluz->solve(1, &mean_rhoe[0], 1, grid.N.y());
+                const real_t x = obase.z(i);
+                SUZERAIN_UNUSED(x);
+
+                // Primitive state for a simple parabolic velocity profile
+                const real_t rho = 1;
+                const real_t u   = 6 * y * (scenario.Ly - y)
+                                 / (scenario.Ly * scenario.Ly);
+                const real_t v   = 0;
+                const real_t w   = 0;
+                const real_t T   = 1;
+
+                // Compute and store the conserved state from primitives
+                const real_t e = T / (scenario.gamma*(scenario.gamma - 1))
+                               + (scenario.Ma*scenario.Ma/2)*(u*u + v*v + w*w);
+                namespace ndx = channel::field::ndx;
+                sphys(channel::field::ndx::rho,  offset) = rho;
+                sphys(channel::field::ndx::rhou, offset) = rho * u;
+                sphys(channel::field::ndx::rhov, offset) = rho * v;
+                sphys(channel::field::ndx::rhow, offset) = rho * w;
+                sphys(channel::field::ndx::rhoe, offset) = rho * e;
+
+            } // end X
+
+        } // end Z
+
+    } // end Y
+
+    INFO0("Converting state to wave space coefficients");
+    {
+        // Build FFT normalization constant into Y direction's mass matrix
+        suzerain::bsplineop_luz massluz(*bop);
+        const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+        massluz.form(1, &scale_factor, *bop);
+
+        for (std::size_t i = 0; i < channel::field::count; ++i) {
+            dgrid->transform_physical_to_wave(&sphys(i,0));      // X, Z
+            obase.bop_solve(massluz, swave, i);                  // Y
+        }
     }
 
     INFO0("Writing state fields to restart file");
-    channel::store(esioh, state, grid, *dgrid);
+    channel::store(esioh, swave, grid, *dgrid);
     esio_file_flush(esioh);
 
-    // Store new simulation time of zero
+    INFO0("Storing simulation time of zero");
     channel::store_time(esioh, 0);
     esio_file_flush(esioh);
 
