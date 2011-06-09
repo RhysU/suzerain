@@ -43,6 +43,7 @@
 #include <suzerain/timestepper.hpp>
 
 #include "precision.hpp"
+#include "nsctpl_rholut_fwd.hpp"
 
 /**
  * Contains cross-cutting functionality used within the channel binaries.

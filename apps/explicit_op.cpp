@@ -43,6 +43,7 @@
 #include <suzerain/utility.hpp>
 
 #include "explicit_op.hpp"
+#include "nsctpl_rholut.hpp"
 
 #pragma warning(disable:383 1572)
 

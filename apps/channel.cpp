@@ -38,8 +38,10 @@
 #include <suzerain/error.h>
 #include <suzerain/htstretch.h>
 #include <suzerain/mpi_datatype.hpp>
+
 #include "logger.hpp"
 #include "channel.hpp"
+#include "nsctpl_rholut.hpp"
 
 using boost::numeric_cast;
 

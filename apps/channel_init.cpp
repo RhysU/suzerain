@@ -45,6 +45,7 @@
 #include "logger.hpp"
 #include "precision.hpp"
 #include "channel.hpp"
+#include "nsctpl_rholut.hpp"
 
 #pragma warning(disable:383 1572)
 
