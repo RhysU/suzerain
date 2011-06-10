@@ -162,7 +162,7 @@ int main(int argc, char **argv)
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based channel mean quantity computations",
-                "[RESTART-FILE]...");
+                "RESTART-FILE...");
         options.add_options()
             ("stdout,s", "Write results to standard output?")
             ;

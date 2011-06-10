@@ -281,7 +281,7 @@ int main(int argc, char **argv)
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation",
-                "[RESTART-FILE]");
+                "RESTART-FILE");
         options.add_definition(
                 const_cast<ScenarioDefinition<real_t>&>(scenario));
         options.add_definition(
