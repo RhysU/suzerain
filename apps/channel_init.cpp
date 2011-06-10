@@ -81,6 +81,7 @@ static GridDefinition grid(
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
 static shared_ptr<const suzerain::pencil_grid> dgrid;
+static nsctpl_rholut::manufactured_solution<real_t> ms;
 
 // Global B-spline related-details initialized in main()
 static shared_ptr<suzerain::bspline>       b;
@@ -120,25 +121,30 @@ int main(int argc, char **argv)
 
     // Process incoming program arguments from command line, input files
     std::string restart_file;
-    bool clobber = false;
+    bool   clobber = false;
+    real_t mstime  = -1;
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based compressible channel initialization",
-                "[RESTART-FILE]");
+                "RESTART-FILE");
+
         namespace po = ::boost::program_options;
-
-        options.add_definition(scenario);
-        options.add_definition(grid);
-
-        using ::suzerain::validation::ensure_positive;
-        ::std::pointer_to_binary_function<real_t,const char*,void>
-            ptr_fun_ensure_positive(ensure_positive<real_t>);
         using ::suzerain::validation::ensure_nonnegative;
         ::std::pointer_to_binary_function<real_t,const char*,void>
             ptr_fun_ensure_nonnegative(ensure_nonnegative<real_t>);
 
+        nsctpl_rholut::isothermal_channel(ms);
+//         channel::MSDefinition ms_def(ms); // FIXME
+
+        options.add_definition(scenario);
+        options.add_definition(grid);
+//         options.add_definition(ms_def); // FIXME
         options.add_options()
             ("clobber", "Overwrite an existing restart file?")
+            ("mstime",
+             boost::program_options::value<real_t>(&mstime)
+                ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative, "mstime")),
+             "If supplied, prepare a manufactured solution at the given time.")
         ;
         std::vector<std::string> positional = options.process(argc, argv);
 
@@ -164,6 +170,21 @@ int main(int argc, char **argv)
     if (scenario.bulk_rho != 1) {
         WARN0("Forcing bulk density to be one");
         scenario.bulk_rho = 1;
+    }
+
+    if (mstime >= 0) {
+        INFO0("Manufactured solution will be initialized at t = " << mstime);
+        ms.alpha = scenario.alpha;
+        ms.beta  = scenario.beta;
+        ms.gamma = scenario.gamma;
+        ms.Ma    = scenario.Ma;
+        ms.Re    = scenario.Re;
+        ms.Pr    = scenario.Pr;
+        ms.Lx    = scenario.Lx;
+        ms.Ly    = scenario.Ly;
+        ms.Lz    = scenario.Lz;
+    } else {
+        ms.Lx = ms.Ly = ms.Lz = numeric_limits<real_t>::quiet_NaN(); // Poison
     }
 
     INFO0("Creating B-spline basis of order " << (grid.k - 1)
@@ -216,22 +237,30 @@ int main(int argc, char **argv)
             ++k) {
 
             const real_t z = obase.z(j);
-            SUZERAIN_UNUSED(z);
 
             for (int i = dgrid->local_physical_start.x();
                 i < dgrid->local_physical_end.x();
                 ++i, /* NB */ ++offset) {
 
                 const real_t x = obase.z(i);
-                SUZERAIN_UNUSED(x);
 
-                // Primitive state for a simple parabolic velocity profile
-                const real_t rho = 1;
-                const real_t u   = 6 * y * (scenario.Ly - y)
-                                 / (scenario.Ly * scenario.Ly);
-                const real_t v   = 0;
-                const real_t w   = 0;
-                const real_t T   = 1;
+                // Initialize primitive state for...
+                real_t rho, u, v, w, T;
+                if (mstime < 0) {
+                    // ...a very simple parabolic velocity profile.
+                    rho = 1;
+                    u   = 6*y*(scenario.Ly - y)/(scenario.Ly*scenario.Ly);
+                    v   = 0;
+                    w   = 0;
+                    T   = 1;
+                } else {
+                    // ...the manufactured solution at t = mstime.
+                    rho = ms.rho(x, y, z, mstime);
+                    u   = ms.u  (x, y, z, mstime);
+                    v   = ms.v  (x, y, z, mstime);
+                    w   = ms.w  (x, y, z, mstime);
+                    T   = ms.T  (x, y, z, mstime);
+                }
 
                 // Compute and store the conserved state from primitives
                 const real_t e = T / (scenario.gamma*(scenario.gamma - 1))
@@ -257,7 +286,7 @@ int main(int argc, char **argv)
         massluz.form(1, &scale_factor, *bop);
 
         for (std::size_t i = 0; i < channel::field::count; ++i) {
-            dgrid->transform_physical_to_wave(&sphys(i,0));      // X, Z
+            dgrid->transform_physical_to_wave(&sphys(i, 0));     // X, Z
             obase.bop_solve(massluz, swave, i);                  // Y
         }
     }
@@ -266,8 +295,13 @@ int main(int argc, char **argv)
     channel::store(esioh, swave, grid, *dgrid);
     esio_file_flush(esioh);
 
-    INFO0("Storing simulation time of zero");
-    channel::store_time(esioh, 0);
+    if (mstime < 0) {
+        INFO0("Storing new simulation time of zero");
+        channel::store_time(esioh, 0);
+    } else {
+        INFO0("Storing simulation time to match manufactured solution");
+        channel::store_time(esioh, mstime);
+    }
     esio_file_flush(esioh);
 
     INFO0("Closing newly initialized restart file");
