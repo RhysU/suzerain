@@ -633,9 +633,9 @@ We start with the continuous system
 \end{align}
 on the spatial domain $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{}
 [0,L_y] \times{} \left[-\frac{L_z}{2},\frac{L_z}{2}\right]$.  The operators
-$\mathscr{L}$ and $\mathscr{N}$ are linear and nonlinear, respectively.  To
-begin spatially discretizing the system, we introduce its finite dimensional
-analog
+$\mathscr{L}$ and $\mathscr{N}$ are linear and nonlinear, respectively.  For
+brevity, the section suppresses any time dependence in the operators.  To begin
+spatially discretizing the system, we introduce its finite dimensional analog
 \begin{align}
   \frac{\partial}{\partial{}t} u^h
   &=
@@ -891,17 +891,20 @@ matrix in the time derivative term.
 \subsection{Time discretization}
 
 We use Spalart, Moser, and Rogers'  low storage hybrid implicit/explicit
-timestepper from appendix A of~\cite{spalart_lowstoragerk}.  This timestepper
+time stepper from appendix A of~\cite{spalart_lowstoragerk}.  This time stepper
 advances the system
 \begin{align}
- u_t &= Lu+N(u)
+ u_t &= Lu + N(u,t)
 \end{align}
 from $u(t)$ to $u\left( t+\Delta{}t \right)$.  Here $L$ and $N$ are a linear
 and nonlinear operator, respectively, distinct from but related to the
-preceeding section's $\mathscr{L}$ and $\mathscr{N}$ (see
-\textsection\ref{sec:combineddiscretization} for the exact relationships).
-Both operators must be time-independent.  The SMR scheme advances according to
-the following equations:
+preceding section's $\mathscr{L}$ and $\mathscr{N}$ (see
+\textsection\ref{sec:combineddiscretization} for the exact relationships).  The
+operator $L$ must be time-independent throughout each interval $\left[t,
+t+\Delta{}t\right)$.  In contrast to the discussion
+in~\cite{spalart_lowstoragerk} and following S. Yang (personal communication),
+we allow $N$ to vary in time.  The SMR scheme advances according to the
+following equations:
 \begin{subequations}
 \begin{align}
   u'
@@ -909,7 +912,7 @@ the following equations:
   u_{n}
   + \Delta{}t\left[
       L\left( \alpha_{1}u_{n} + \beta_{1}u' \right)
-    + \gamma_{1} N(u_{n})
+    + \gamma_{1} N\left(u_{n},t_{n}\right)
   \right]
   \tag{SMR A4a}
   \label{eq:SMR_A4a}
@@ -919,7 +922,9 @@ the following equations:
   u'
   + \Delta{}t\left[
     L\left( \alpha_{2}u' + \beta_{2}u'' \right)
-    + \gamma_{2} N(u') + \zeta_{1} N(u_{n})
+    + \gamma_{2}
+      N\left(u',t_{n}+\left(\alpha_{1}+\beta_{1}\right)\Delta{}t\right)
+    + \zeta_{1} N\left(u_{n},t_{n}\right)
   \right]
   \tag{SMR A4b}
   \label{eq:SMR_A4b}
@@ -929,7 +934,10 @@ the following equations:
   u''
   + \Delta{}t\left[
       L\left( \alpha_{3}u'' + \beta_{3}u_{n+1} \right)
-    + \gamma_{3} N(u'') + \zeta_{2} N(u')
+    + \gamma_{3}
+      N\left(u'',t_{n}+\left(\alpha_{2}+\beta_{2}\right)\Delta{}t\right)
+    + \zeta_{2}
+      N\left(u',t_{n}+\left(\alpha_{1}+\beta_{1}\right)\Delta{}t\right)
   \right]
   \tag{SMR A4c}
   \label{eq:SMR_A4c}
@@ -952,23 +960,28 @@ The authors determined suitable values for the above coefficients to be
   \beta_1, \beta_2, \beta_3 &= \left\{
     \frac{37}{160}, \frac{5}{24}, \frac{1}{6}
   \right\}
-  \\
+  &
   \gamma_1, \gamma_2, \gamma_3 &= \left\{
     \frac{8}{15}, \frac{5}{12}, \frac{3}{4}
   \right\}
-  &
+\end{align*}
+\begin{align*}
   \zeta_0, \zeta_1, \zeta_2 &= \left\{
     0, -\frac{17}{60}, -\frac{5}{12}
   \right\}
+  &
+  \eta_0, \eta_1, \eta_2, \eta_3 &= \Biggl\{
+    0, 0, \alpha_{1}+\beta_{1}, \alpha_{2}+\beta_{2}
+  \Biggr\}
 \end{align*}
-We have added $\zeta_0=0$.  Each substep \eqref{eq:SMR_A4a}--\eqref{eq:SMR_A4c}
-has the general form
+We have added $\zeta_0$ as well as $\eta_{0}$--$\eta_{3}$.  Each substep
+\eqref{eq:SMR_A4a}--\eqref{eq:SMR_A4c} has the general form
 \begin{align}
   u^{i+1} &= u^i + \Delta{}t \left[
         \alpha_{i} L u^i
       + \beta_{i}  L u^{i+1}
-      + \gamma_{i} N\left( u^{i} \right)
-      + \zeta_{i-1} N\left( u^{i-1} \right)
+      + \gamma_{i} N\left( u^{i}, t_{n}+\eta_{i}\Delta{}t \right)
+      + \zeta_{i-1} N\left( u^{i-1}, t_{n}+\eta_{i-1}\Delta{}t \right)
   \right]
   \label{eq:generalsubstep}
 \end{align}
@@ -978,23 +991,31 @@ We rewrite the general substep equation as
   \left(I - \Delta{}t\beta_{i}L\right) u^{i+1}
   &=
   \left(I + \Delta{}t\alpha_{i}L\right) u^{i}
-  + \Delta{}t\gamma_{i}N\left(u^{i}\right)
-  + \Delta{}t\zeta_{i-1}N\left(u^{i-1}\right)
+  + \Delta{}t\gamma_{i}N\left(u^{i}, t_{n}+\eta_{i}\Delta{}t\right)
+  + \Delta{}t\zeta_{i-1}N\left(u^{i-1}, t_{n}+\eta_{i-1}\Delta{}t\right)
   \label{eq:generaloperatorsubstep}
   .
 \end{align}
+The scheme treats a time-independent $N$ with third-order accuracy and a
+time-dependent $N$ with second-order accuracy.  Treatment of $L$ is
+second-order accurate in either case (see the top of page 323
+in~\cite{spalart_lowstoragerk} for a more thorough discussion).
 
-We wish to advance problems like $Mu_{t}=\tilde{L}u+\chi\tilde{N}(u)$ where
-$\chi$ is a time-independent scalar and both $\tilde{L}$ and $\tilde{N}$ take
-state values to some non-state representation which can be converted back to
-state by the linear ``mass matrix'' operator $M$.  Then by $L=M^{-1}\tilde{L}$
-and $N=\chi{}M^{-1}\tilde{N}$ the general substep equation gives
+We wish to advance problems like $Mu_{t}=\tilde{L}u+\chi\tilde{N}\left( u,t
+\right)$ where $\chi$ is a time-independent scalar and both $\tilde{L}$ and
+$\tilde{N}$ take state values to some non-state representation which can be
+converted back to state by the linear ``mass matrix'' operator $M$.  Then by
+$L=M^{-1}\tilde{L}$ and $N=\chi{}M^{-1}\tilde{N}$ the general substep equation
+gives
 \begin{align}
   \left(I - \Delta{}t\beta_{i}M^{-1}\tilde{L}\right) u^{i+1}
   &=
   \left(I + \Delta{}t\alpha_{i}M^{-1}\tilde{L}\right) u^{i}
-  + \Delta{}t\gamma_{i}\chi{}M^{-1}\tilde{N}\left(u^{i}\right)
-  + \Delta{}t\zeta_{i-1}\chi{}M^{-1}\tilde{N}\left(u^{i-1}\right)
+\\
+  &+ \Delta{}t\gamma_{i}\chi{}M^{-1}
+    \tilde{N}\left(u^{i}, t_{n}+\eta_{i}\Delta{}t\right)
+  + \Delta{}t\zeta_{i-1}\chi{}M^{-1}
+    \tilde{N}\left(u^{i-1}, t_{n}+\eta_{i-1}\Delta{}t\right)
   .
 \end{align}
 We multiply through by $M$ to obtain
@@ -1002,8 +1023,10 @@ We multiply through by $M$ to obtain
   \left(M - \Delta{}t\beta_{i}\tilde{L}\right) u^{i+1}
   &=
   \left(M + \Delta{}t\alpha_{i}\tilde{L}\right) u^{i}
-  + \Delta{}t\gamma_{i}\chi{}\tilde{N}\left(u^{i}\right)
-  + \Delta{}t\zeta_{i-1}\chi{}\tilde{N}\left(u^{i-1}\right)
+  + \Delta{}t\gamma_{i}\chi{}
+    \tilde{N}\left(u^{i}, t_{n}+\eta_{i}\Delta{}t\right)
+  + \Delta{}t\zeta_{i-1}\chi{}
+    \tilde{N}\left(u^{i-1}, t_{n}+\eta_{i-1}\Delta{}t\right)
   \label{eq:generaloperatormasssubstep}
 \end{align}
 which is just \eqref{eq:generaloperatorsubstep} with $M$ replacing $I$,
@@ -1028,13 +1051,13 @@ algorithm \vref{alg:substep}.
          }
 \begin{algorithmic}
   \REQUIRE Storage $a = u^i$;
-           storage $b = N\left(u^{i-1}\right)$
+           storage $b = N\left(u^{i-1},t_{n}+\eta_{i-1}\Delta{}t\right)$
   \STATE $b\leftarrow{}   \left(M+\Delta{}t\alpha_{i}L\right)a
                         + \Delta{}t\zeta_{i-1}\chi{}b$
-  \STATE $a\leftarrow{}N\left(a\right)$
+  \STATE $a\leftarrow{}N\left(a,t_{n}+\eta_{i}\Delta{}t\right)$
   \STATE $b\leftarrow{}\Delta{}t\gamma_{i}\chi{}a + b$
   \STATE $b\leftarrow{}\left(M-\Delta{}t\beta_{i}L\right)^{-1}b$
-  \ENSURE Storage $a = N\left(u^{i}\right)$;
+  \ENSURE Storage $a = N\left(u^{i},t_{n}+\eta_{i}\Delta{}t\right)$;
           storage $b = u^{i+1}$
 \end{algorithmic}
 \end{algorithm}
@@ -1059,32 +1082,32 @@ follows algorithm \vref{alg:step}.
 \label{alg:step}
 \begin{algorithmic}
   \renewcommand{\algorithmiccomment}[1]{\hfill{}// #1}
-  \REQUIRE Storage $a = u\left(t\right) = u^{0} $;
-           storage $b$'s contents undefined
+  \REQUIRE Storage $a = u\left(t_{n}\right) = u^{0} $;
+           storage $b$ content undefined
   \STATE $b\leftarrow{}a$
-  \STATE $b\leftarrow{}N\left(b\right)$
-  \STATE Compute $\Delta{}t$ from $a=u^0$ and $b=N\left(u^0\right)$
+  \STATE $b\leftarrow{}N\left(b,t_{n}\right)$
+  \STATE Compute $\Delta{}t$ from $a=u^0$ and $b=N\left(u^0,t_{n}\right)$
   \STATE $a\leftarrow{}\left(M+\Delta{}t\alpha_{1}L\right)a$
   \STATE $a\leftarrow{}\Delta{}t \gamma_{1} \chi{} b + a$
   \STATE $a\leftarrow{}\left(M-\Delta{}t\beta_{1}L\right)^{-1}a$
   \ENSURE Storage $a = u^1$;
-          storage $b = N\left(u^{0}\right)$
+          storage $b = N\left(u^{0},t_{n}\right)$
   \STATE $b\leftarrow{}   \left(M+\Delta{}t\alpha_{2}L\right)a
                         + \Delta{}t\zeta_{1}\chi{}b$
   \STATE $a\leftrightarrow{}b$
-  \STATE $b\leftarrow{}N\left(b\right)$
+  \STATE $b\leftarrow{}N\left(b,t_{n}+\eta_{2}\Delta{}t\right)$
   \STATE $a\leftarrow{}\Delta{}t \gamma_{2} \chi{} b + a$
   \STATE $a\leftarrow{}\left(M-\Delta{}t\beta_{2}L\right)^{-1}a$
   \ENSURE Storage $a = u^{2}$;
-          storage $b = N\left(u^{1}\right)$
+          storage $b = N\left(u^{1},t_{n}+\eta_{2}\Delta{}t\right)$
   \STATE $b\leftarrow{}   \left(M+\Delta{}t\alpha_{3}L\right)a
                         + \Delta{}t\zeta_{2}\chi{}b$
   \STATE $a\leftrightarrow{}b$
-  \STATE $b\leftarrow{}N\left(b\right)$
+  \STATE $b\leftarrow{}N\left(b,t_{n}+\eta_{3}\Delta{}t\right)$
   \STATE $a\leftarrow{}\Delta{}t \gamma_{3} \chi{}b + a$
   \STATE $a\leftarrow{}\left(M-\Delta{}t\beta_{3}L\right)^{-1}a$
   \ENSURE Storage $a = u\left(t+\Delta{}t\right)= u^{3}$;
-          storage $b = N\left(u^{2}\right)$
+          storage $b = N\left(u^{2},t_{n}+\eta_{3}\Delta{}t\right)$
 \end{algorithmic}
 \end{algorithm}
 
@@ -1544,9 +1567,9 @@ $\nabla\cdot\mu\nabla{}T$
 
 \subsection{Linearization of second order viscous terms}
 
-Suzerain uses a hybrid implicit/explicit timestepper to alleviate the very
+Suzerain uses a hybrid implicit/explicit time stepper to alleviate the very
 restrictive timestep requirements that arise if we advance time in a purely
-explicit fashion.  The hybrid timestepper requires the implicit operator to be
+explicit fashion.  The hybrid time stepper requires the implicit operator to be
 linear in the state variables and time-independent.  Precious little of the
 full operator as written in
 equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} meets these
@@ -1560,7 +1583,7 @@ second order terms about reference states.  For example, $\rho^{-1}\Delta{}m =
 \lessreference{\rho^{-1}}\Delta{}m + \reference{\rho^{-1}}\Delta{}m$ where
 $\reference{\rho^{-1}}$ indicates the term $\rho^{-1}$ evaluated at some given,
 fixed state.  This approach separates each quantity into an explicitly-treated
-nonlinear portion plus a linear contribution that satisfies our timestepper's
+nonlinear portion plus a linear contribution that satisfies our time stepper's
 implicit operator needs:
 \begin{subequations}
 \begin{align}
