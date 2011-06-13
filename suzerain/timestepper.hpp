@@ -457,21 +457,27 @@ make_multiplicator_operator(
     return retval;
 }
 
+// TODO ILowStorageMethod could employ the CRTP to avoid virtual overhead
+
 /**
  * Encapsulates a hybrid implicit/explicit low storage Runge-Kutta method to
- * advance \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$.
- * The method consists of one or more substeps governed by coefficients
- * \f$\alpha_i\f$, \f$\beta_i\f$, \f$\gamma_i\f$, and \f$\zeta_i\f$ where
- * \f$i\f$ is less than the number of substeps.  Each substep obeys
+ * advance \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$.  The method consists of one or
+ * more substeps governed by coefficients \f$\alpha_i\f$, \f$\beta_i\f$,
+ * \f$\gamma_i\f$, \f$\zeta_i\f$, and \f$\eta_i\f$ where \f$i\f$ is less than
+ * the number of substeps.  Each substep obeys
  * \f[
  *   \left(M - \Delta{}t\beta_{i}L\right) u^{i+1}
  *   =
  *   \left(M + \Delta{}t\alpha_{i}L\right) u^{i}
- *   + \Delta{}t\gamma_{i}N\left(u^{i}\right)
- *   + \Delta{}t\zeta_{i}N\left(u^{i-1}\right)
+ *   + \Delta{}t\gamma_{i}
+ *     N\left(u^{i},t + \eta_{i}\Delta{}t\right)
+ *   + \Delta{}t\zeta_{i}
+ *     N\left(u^{i-1}, t + \eta_{i}\Delta{}t\right)
  * \f]
- * where \f$\alpha_i+\beta_i=\gamma_i+\zeta_i\f$.  Note that the indexing
- * on the \f$\zeta_i\f$ coefficients differs slightly from other sources.
+ * where \f$\alpha_i+\beta_i=\gamma_i+\zeta_i=\eta_{i}\f$.  Note that the
+ * indexing on the \f$\zeta_i\f$ coefficients differs slightly from other
+ * sources.  Note also that not all sources include the possibility of a
+ * time-dependent \f$N\f$ operator.
  *
  * @see ILinearOperator for the interface that \f$L\f$ must implement.
  * @see INonlinearOperator for the interface that \f$N\f$ must implement.
@@ -509,7 +515,8 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual Element alpha(std::size_t substep) const = 0;
+    virtual typename suzerain::traits::component<Element>::type
+        alpha(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\beta_i\f$ coefficient.
@@ -518,7 +525,8 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual Element beta(std::size_t substep) const = 0;
+    virtual typename suzerain::traits::component<Element>::type
+        beta(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\gamma_i\f$ coefficient.
@@ -527,7 +535,8 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual Element gamma(std::size_t substep) const = 0;
+    virtual typename suzerain::traits::component<Element>::type
+        gamma(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\zeta_i\f$ coefficient.
@@ -536,7 +545,22 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual Element zeta(std::size_t substep) const = 0;
+    virtual typename suzerain::traits::component<Element>::type
+        zeta(std::size_t substep) const = 0;
+
+    /**
+     * Obtain the scheme's \f$\eta_i\f$ coefficient, which is
+     * derived from other scheme coefficients.
+     *
+     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual typename suzerain::traits::component<Element>::type
+        eta(std::size_t substep) const
+    {
+        return (substep < 2) ? 0 : alpha(substep) + beta(substep);
+    }
 
     /**
      * Obtain the scheme's maximum pure real eigenvalue magnitude.
@@ -610,16 +634,20 @@ public:
     virtual std::size_t substeps() const { return 3; }
 
     /*! @copydoc ILowStorageMethod::alpha */
-    virtual Element alpha(const std::size_t substep) const;
+    virtual typename suzerain::traits::component<Element>::type
+        alpha(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::beta */
-    virtual Element beta(const std::size_t substep) const;
+    virtual typename suzerain::traits::component<Element>::type
+        beta(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::gamma */
-    virtual Element gamma(const std::size_t substep) const;
+    virtual typename suzerain::traits::component<Element>::type
+        gamma(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::zeta */
-    virtual Element zeta(const std::size_t substep) const;
+    virtual typename suzerain::traits::component<Element>::type
+        zeta(const std::size_t substep) const;
 
     /*! @copydoc ILowStorageMethod::evmaxmag_real */
     virtual typename suzerain::traits::component<Element>::type
@@ -636,38 +664,46 @@ private:
 };
 
 template< typename Element >
-Element SMR91Method<Element>::alpha(const std::size_t substep) const
+typename suzerain::traits::component<Element>::type
+SMR91Method<Element>::alpha(const std::size_t substep) const
 {
-    static const Element coeff[3] = { Element( 29)/Element(96),
-                                      Element(- 3)/Element(40),
-                                      Element(  1)/Element( 6)  };
+    typedef typename suzerain::traits::component<Element>::type component;
+    static const component coeff[3] = { component( 29)/component(96),
+                                        component(- 3)/component(40),
+                                        component(  1)/component( 6)  };
     return coeff[substep];
 }
 
 template< typename Element >
-Element SMR91Method<Element>::beta(const std::size_t substep) const
+typename suzerain::traits::component<Element>::type
+SMR91Method<Element>::beta(const std::size_t substep) const
 {
-    static const Element coeff[3] = { Element(37)/Element(160),
-                                      Element( 5)/Element( 24),
-                                      Element( 1)/Element(  6)  };
+    typedef typename suzerain::traits::component<Element>::type component;
+    static const component coeff[3] = { component(37)/component(160),
+                                        component( 5)/component( 24),
+                                        component( 1)/component(  6)  };
     return coeff[substep];
 }
 
 template< typename Element >
-Element SMR91Method<Element>::gamma(const std::size_t substep) const
+typename suzerain::traits::component<Element>::type
+SMR91Method<Element>::gamma(const std::size_t substep) const
 {
-    static const Element coeff[3] = { Element(8)/Element(15),
-                                      Element(5)/Element(12),
-                                      Element(3)/Element( 4)  };
+    typedef typename suzerain::traits::component<Element>::type component;
+    static const component coeff[3] = { component(8)/component(15),
+                                        component(5)/component(12),
+                                        component(3)/component( 4)  };
     return coeff[substep];
 }
 
 template< typename Element >
-Element SMR91Method<Element>::zeta(const std::size_t substep) const
+typename suzerain::traits::component<Element>::type
+SMR91Method<Element>::zeta(const std::size_t substep) const
 {
-    static const Element coeff[3] = { Element(  0),
-                                      Element(-17)/Element(60),
-                                      Element(- 5)/Element(12)  };
+    typedef typename suzerain::traits::component<Element>::type component;
+    static const component coeff[3] = { component(  0),
+                                        component(-17)/component(60),
+                                        component(- 5)/component(12)  };
     return coeff[substep];
 }
 
