@@ -313,11 +313,14 @@ NonlinearOperator::NonlinearOperator(
 }
 
 real_t NonlinearOperator::applyOperator(
+    const real_t time,
     suzerain::NoninterleavedState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,
     const bool delta_t_requested) const
 {
+    SUZERAIN_UNUSED(time); // FIXME Will be used as part of #1838
+
     namespace ndx = channel::field::ndx;
 
     // State enters method as coefficients in X, Y, and Z directions
@@ -655,6 +658,7 @@ NonlinearOperatorIsothermal::NonlinearOperatorIsothermal(
 }
 
 real_t NonlinearOperatorIsothermal::applyOperator(
+    const real_t time,
     suzerain::NoninterleavedState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,
@@ -689,7 +693,7 @@ real_t NonlinearOperatorIsothermal::applyOperator(
     // Operator application turns coefficients in X, Y, and Z into
     // coefficients in X and Z but COLLOCATION POINT VALUES IN Y.
     const real_t delta_t = base::applyOperator(
-            swave, evmaxmag_real, evmaxmag_imag, delta_t_requested);
+            time, swave, evmaxmag_real, evmaxmag_imag, delta_t_requested);
 
     // Set no-slip condition for momentum on walls per writeup step (3)
     // Condition achieved by removing time evolution at walls

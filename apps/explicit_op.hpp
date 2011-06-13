@@ -147,6 +147,7 @@ public:
             const suzerain::bsplineop &bop);
 
     virtual real_t applyOperator(
+            const real_t time,
             suzerain::NoninterleavedState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
@@ -200,6 +201,7 @@ public:
             const suzerain::bsplineop &bop);
 
     virtual real_t applyOperator(
+            const real_t time,
             suzerain::NoninterleavedState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,

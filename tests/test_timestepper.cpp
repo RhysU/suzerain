@@ -61,11 +61,13 @@ public:
         : a(a), b(b), delta_t(delta_t) {};
 
     virtual double applyOperator(
+            const double time,
             NoninterleavedState<3,double>& state,
             const double evmaxmag_real,
             const double evmaxmag_imag,
             const bool delta_t_requested = false) const
     {
+        SUZERAIN_UNUSED(time);
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(delta_t_requested);
@@ -270,11 +272,11 @@ BOOST_AUTO_TEST_CASE( applyOperator )
     a[0][0][0] = 1.0;
 
     MultiplicativeOperatorD3 op(2.0);
-    op.applyOperator(a, double_NaN, double_NaN);
+    op.applyOperator(double_NaN, a, double_NaN, double_NaN);
     BOOST_CHECK_CLOSE(a[0][0][0], 2.0, close_enough);
-    op.applyOperator(a, double_NaN, double_NaN);
+    op.applyOperator(double_NaN, a, double_NaN, double_NaN);
     BOOST_CHECK_CLOSE(a[0][0][0], 4.0, close_enough);
-    op.applyOperator(a, double_NaN, double_NaN);
+    op.applyOperator(double_NaN, a, double_NaN, double_NaN);
     BOOST_CHECK_CLOSE(a[0][0][0], 8.0, close_enough);
 
     // Ensure we can instantiate
@@ -334,11 +336,13 @@ public:
         : a(a), b(b), delta_t(delta_t) { };
 
     virtual double applyOperator(
+            const double time,
             NoninterleavedState<3,double> & state,
             const double evmaxmag_real,
             const double evmaxmag_imag,
             const bool delta_t_requested = false) const
     {
+        SUZERAIN_UNUSED(time);
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(delta_t_requested);
@@ -374,8 +378,8 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used
-            = substep(m, trivial_linear_op, 1.0, riccati_op, a, b, delta_t, 0);
+        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+                riccati_op, double_NaN, a, b, delta_t, 0);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],  30.0, close_enough);
@@ -390,8 +394,8 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used
-            = substep(m, trivial_linear_op, 1.0, riccati_op, a, b, delta_t, 1);
+        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+                riccati_op, double_NaN, a, b, delta_t, 1);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],    30.0,      close_enough);
@@ -406,8 +410,8 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used
-            = substep(m, trivial_linear_op, 1.0, riccati_op, a, b, delta_t, 2);
+        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+                riccati_op, double_NaN, a, b, delta_t, 2);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],  30.0,       close_enough);
@@ -417,8 +421,8 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
     }
 
     // Requesting an out-of-bounds substep_index should balk
-    BOOST_CHECK_THROW(
-            substep(m, trivial_linear_op, 1.0, riccati_op, a, b, delta_t, 3),
+    BOOST_CHECK_THROW(substep(m, trivial_linear_op, 1.0, riccati_op,
+                              double_NaN, a, b, delta_t, 3),
             std::invalid_argument);
 }
 
@@ -440,8 +444,8 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used
-            = substep(m, linear_op, 1.0, nonlinear_op, a, b, delta_t, 0);
+        const double delta_t_used = substep(m, linear_op, 1.0,
+                nonlinear_op, double_NaN, a, b, delta_t, 0);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE( a[0][0][0],            15.0, close_enough);
@@ -456,8 +460,8 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used
-            = substep(m, linear_op, 1.0, nonlinear_op, a, b, delta_t, 1);
+        const double delta_t_used = substep(m, linear_op, 1.0,
+                nonlinear_op, double_NaN, a, b, delta_t, 1);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],            15.0, close_enough);
@@ -472,8 +476,8 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used
-            = substep(m, linear_op, 1.0, nonlinear_op, a, b, delta_t, 2);
+        const double delta_t_used = substep(m, linear_op, 1.0,
+                nonlinear_op, double_NaN, a, b, delta_t, 2);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],       15.0, close_enough);
@@ -483,8 +487,8 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
     }
 
     // Requesting an out-of-bounds substep_index should balk
-    BOOST_CHECK_THROW(
-            substep(m, linear_op, 1.0, nonlinear_op, a, b, delta_t, 3),
+    BOOST_CHECK_THROW(substep(m, linear_op, 1.0, nonlinear_op,
+                              double_NaN, a, b, delta_t, 3),
             std::invalid_argument);
 }
 
@@ -515,7 +519,7 @@ BOOST_AUTO_TEST_CASE( step_explicit )
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
             const double delta_t_used = suzerain::timestepper::lowstorage::step(
                     m, trivial_linear_op, 1.0, nonlinear_op,
-                    a, b, delta_t_coarse);
+                    double_NaN, a, b, delta_t_coarse);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
         }
     }
@@ -531,7 +535,7 @@ BOOST_AUTO_TEST_CASE( step_explicit )
         const MultiplicativeOperatorD3 nonlinear_op(soln.a, delta_t_finer);
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
             const double delta_t_used = suzerain::timestepper::lowstorage::step(
-                    m, trivial_linear_op, 1.0, nonlinear_op, a, b);
+                    m, trivial_linear_op, 1.0, nonlinear_op, double_NaN, a, b);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
         }
     }
@@ -601,7 +605,7 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
     a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < coarse_nsteps; ++i) {
         suzerain::timestepper::lowstorage::step(
-                m, linear_op, 1.0, nonlinear_op, a, b,
+                m, linear_op, 1.0, nonlinear_op, double_NaN, a, b,
                 (t_final - t_initial)/coarse_nsteps);
     }
     const double coarse_final = a[0][0][0];
@@ -613,7 +617,7 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
     a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < finer_nsteps; ++i) {
         suzerain::timestepper::lowstorage::step(
-                m, linear_op, 1.0, nonlinear_op, a, b,
+                m, linear_op, 1.0, nonlinear_op, double_NaN, a, b,
                 (t_final - t_initial)/finer_nsteps);
     }
     const double finer_final = a[0][0][0];

@@ -72,6 +72,7 @@ public:
      * Apply the operator in place on a given state location.  That is, compute
      * \f$\mbox{state}\leftarrow{}\mbox{operator}\left(\mbox{state}\right)\f$.
      *
+     * @param time The time at which to apply the operator.
      * @param state The state location to use.  It is expected that certain
      *        implementations will require more specific state types.
      * @param evmaxmag_real The timestepping scheme's maximum pure real
@@ -89,6 +90,7 @@ public:
      *        the return value is meaningless.
      */
     virtual component applyOperator(
+            const component time,
             State& state,
             const component evmaxmag_real,
             const component evmaxmag_imag,
@@ -354,6 +356,7 @@ public:
     /**
      * Scale \c state by the factor set at construction time.
      *
+     * @param time The time at which to apply the operator (ignored).
      * @param state to scale in place.
      * @param evmaxmag_real The time advancement schemes maximum purely
      *                      real eigenvalue magnitude.  This should be
@@ -367,11 +370,13 @@ public:
      *
      * @return The \c delta_t provided at construction time.
      */
-    virtual component applyOperator(StateB& state,
+    virtual component applyOperator(const component time,
+                                    StateB& state,
                                     const component evmaxmag_real,
                                     const component evmaxmag_imag,
                                     const bool delta_t_requested = false) const
     {
+        SUZERAIN_UNUSED(time);
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(delta_t_requested);
@@ -711,13 +716,14 @@ SMR91Method<Element>::zeta(const std::size_t substep) const
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
  * a hybrid implicit/explicit scheme to advance the system \f$ M u_t = Lu +
- * \chi N(u) \f$.  Note that the roles of state locations \c a and \c b are
+ * \chi N(u,t) \f$.  Note that the roles of state locations \c a and \c b are
  * flipped after each substep.
  *
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
  * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N The nonlinear operator to be treated explicitly.
+ * @param time The simulation time \f$t\f$ during which the substep occurs.
  * @param a On entry contains \f$u^{i}\f$ and on exit contains
  *          \f$N\left(u^{i}\right)\f$.
  * @param b On entry contains \f$N\left(u^{i-1}\right)\f$ and on exit contains
@@ -738,6 +744,7 @@ const typename suzerain::traits::component<Element>::type substep(
     const ILinearOperator<A,B>& L,
     const typename suzerain::traits::component<Element>::type chi,
     const INonlinearOperator<B>& N,
+    const typename suzerain::traits::component<Element>::type time,
     A& a,  // FIXME: Would love a StateBase subclass restriction here
     B& b,  // FIXME: Would love a StateBase subclass restriction here
     const typename suzerain::traits::component<Element>::type delta_t,
@@ -752,7 +759,8 @@ const typename suzerain::traits::component<Element>::type substep(
     L.accumulateMassPlusScaledOperator(
                   delta_t * m.alpha(substep_index), a,
             chi * delta_t * m.zeta(substep_index),  b);
-    N.applyOperator(a, m.evmaxmag_real(), m.evmaxmag_imag());
+    N.applyOperator(time + delta_t * m.eta(substep_index), a,
+                    m.evmaxmag_real(), m.evmaxmag_imag());
     b.addScaled(chi * delta_t * m.gamma(substep_index), a);
     L.invertMassPlusScaledOperator( -delta_t * m.beta(substep_index), b);
 
@@ -762,15 +770,16 @@ const typename suzerain::traits::component<Element>::type substep(
 /**
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
- * a hybrid implicit/explicit scheme using the system \f$ M u_t = Lu + N(u)\f$.
- * The time step taken, \f$\Delta{}t\f$ will be based on a stable value
- * computed during the first nonlinear operator application as well as an
+ * a hybrid implicit/explicit scheme using the system \f$ M u_t = Lu +
+ * N(u,t)\f$.  The time step taken, \f$\Delta{}t\f$ will be based on a stable
+ * value computed during the first nonlinear operator application as well as an
  * optional fixed maximum step size.
  *
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
  * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N The nonlinear operator to be treated explicitly.
+ * @param time The simulation time \f$t\f$ at which to take the step.
  * @param a On entry contains \f$u(t)\f$ and on exit contains
  *          \f$u(t+\Delta{}t)\f$.  The linear operator is applied
  *          only to this state storage.
@@ -788,6 +797,7 @@ const typename suzerain::traits::component<Element>::type step(
     const ILinearOperator<A,B>& L,
     const typename suzerain::traits::component<Element>::type chi,
     const INonlinearOperator<B>& N,
+    const typename suzerain::traits::component<Element>::type time,
     A& a,  // FIXME: Would love a StateBase subclass restriction here
     B& b,  // FIXME: Would love a StateBase subclass restriction here
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
@@ -798,7 +808,7 @@ const typename suzerain::traits::component<Element>::type step(
     // First substep handling is special since we need to determine delta_t
     b.assign(a);
     typename suzerain::traits::component<Element>::type delta_t
-        = N.applyOperator(b, m.evmaxmag_real(), m.evmaxmag_imag(),
+        = N.applyOperator(time, b, m.evmaxmag_real(), m.evmaxmag_imag(),
                           true /* need delta_t during first substep */);
     if (max_delta_t > 0) {
         delta_t = suzerain::math::minnan(delta_t, max_delta_t);
@@ -813,7 +823,8 @@ const typename suzerain::traits::component<Element>::type step(
                 delta_t * m.alpha(i),      a,
                 chi * delta_t * m.zeta(i), b);
         b.exchange(a); // Note nonlinear storage controls exchange operation
-        N.applyOperator(b, m.evmaxmag_real(), m.evmaxmag_imag(),
+        N.applyOperator(time + delta_t * m.eta(i), b,
+                        m.evmaxmag_real(), m.evmaxmag_imag(),
                         false /* delta_t not needed */);
         a.addScaled(chi * delta_t * m.gamma(i), b);
         L.invertMassPlusScaledOperator( -delta_t * m.beta(i), a);
@@ -904,7 +915,7 @@ private:
     typename super::time_type stepper(typename super::time_type max_dt)
     {
         return suzerain::timestepper::lowstorage::step(
-                m, L, chi, N, a, b, max_dt);
+                m, L, chi, N, super::current_t(), a, b, max_dt);
     }
 
 };
