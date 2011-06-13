@@ -246,6 +246,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
             const T res = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
             BOOST_CHECK_SMALL(res, close_enough);
         }
+        BOOST_CHECK_EQUAL(m.eta(0), 0);
+        for (std::size_t i = 1; i < m.substeps(); ++i) {
+            const T res = m.eta(i) - m.alpha(i) - m.beta(i);
+            BOOST_CHECK_SMALL(res, close_enough);
+        }
     }
 
     { // Complex-valued constants
@@ -256,6 +261,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
             const complex res
                 = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
             BOOST_CHECK_SMALL(std::abs(res), close_enough);
+        }
+        BOOST_CHECK_EQUAL(m.eta(0), 0);
+        for (std::size_t i = 1; i < m.substeps(); ++i) {
+            const T res = m.eta(i) - m.alpha(i) - m.beta(i);
+            BOOST_CHECK_SMALL(res, close_enough);
         }
     }
 }

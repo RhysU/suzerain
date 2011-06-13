@@ -564,7 +564,8 @@ public:
     virtual typename suzerain::traits::component<Element>::type
         eta(std::size_t substep) const
     {
-        return (substep < 2) ? 0 : alpha(substep) + beta(substep);
+        assert(substep < m.substeps());
+        return (substep == 0) ? 0 : alpha(substep) + beta(substep);
     }
 
     /**
