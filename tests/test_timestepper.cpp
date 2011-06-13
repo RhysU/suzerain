@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
         }
         BOOST_CHECK_EQUAL(m.eta(0), 0);
         for (std::size_t i = 1; i < m.substeps(); ++i) {
-            const T res = m.eta(i) - m.alpha(i) - m.beta(i);
+            const T res = m.eta(i) - m.alpha(i-1) - m.beta(i-1);
             BOOST_CHECK_SMALL(res, close_enough);
         }
     }
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
         }
         BOOST_CHECK_EQUAL(m.eta(0), 0);
         for (std::size_t i = 1; i < m.substeps(); ++i) {
-            const T res = m.eta(i) - m.alpha(i) - m.beta(i);
+            const T res = m.eta(i) - m.alpha(i-1) - m.beta(i-1);
             BOOST_CHECK_SMALL(res, close_enough);
         }
     }
@@ -370,7 +370,7 @@ public:
     }
 };
 
-BOOST_AUTO_TEST_CASE( substep_explicit )
+BOOST_AUTO_TEST_CASE( substep_explicit_time_independent )
 {
     using suzerain::timestepper::lowstorage::substep;
     // See test_timestepper.sage for manufactured answers
@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit )
             std::invalid_argument);
 }
 
-BOOST_AUTO_TEST_CASE( substep_hybrid )
+BOOST_AUTO_TEST_CASE( substep_hybrid_time_independent )
 {
     using suzerain::timestepper::lowstorage::substep;
     // See test_timestepper.sage for manufactured answers
@@ -500,6 +500,121 @@ BOOST_AUTO_TEST_CASE( substep_hybrid )
     BOOST_CHECK_THROW(substep(m, linear_op, 1.0, nonlinear_op,
                               double_NaN, a, b, delta_t, 3),
             std::invalid_argument);
+}
+
+// Purely explicit, time-dependent operator for (d/dt) y = cos(t);
+class CosineExplicitOperator
+    : public INonlinearOperator<NoninterleavedState<3,double> >
+{
+private:
+    const double delta_t;
+
+public:
+    CosineExplicitOperator(
+            const double delta_t = std::numeric_limits<double>::quiet_NaN())
+        : delta_t(delta_t) { };
+
+    virtual double applyOperator(
+            const double time,
+            NoninterleavedState<3,double> & state,
+            const double evmaxmag_real,
+            const double evmaxmag_imag,
+            const bool delta_t_requested = false) const
+    {
+        SUZERAIN_UNUSED(evmaxmag_real);
+        SUZERAIN_UNUSED(evmaxmag_imag);
+        SUZERAIN_UNUSED(delta_t_requested);
+
+        for (std::size_t i = 0; i < state.shape()[0]; ++i) {
+            for (std::size_t k = 0; k < state.shape()[2]; ++k) {
+                for (std::size_t j = 0; j < state.shape()[1]; ++j) {
+                    state[i][j][k] = std::cos(time);
+                }
+            }
+        }
+
+        return delta_t;
+    }
+};
+
+BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
+{
+    using suzerain::timestepper::lowstorage::substep;
+    // See test_timestepper.sage for manufactured answers
+
+    const double delta_t = 17.0;
+    const double close_enough = std::numeric_limits<double>::epsilon()*100;
+    const double pi = boost::math::constants::pi<double>();
+    const double time = pi / 3.0;
+    const SMR91Method<double> m;
+    const MultiplicativeOperatorD3 trivial_linear_op(0);
+    const CosineExplicitOperator cosine_op;
+    NoninterleavedState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
+
+    {
+        a[0][0][0] =  5.0;
+        a[1][0][0] =  7.0;
+        b[0][0][0] = 11.0;
+        b[1][0][0] = 13.0;
+
+        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+                cosine_op, time, a, b, delta_t, 0);
+        BOOST_CHECK_EQUAL(delta_t, delta_t_used);
+
+        BOOST_CHECK_CLOSE(a[0][0][0],   1.0/ 2.0, close_enough);
+        BOOST_CHECK_CLOSE(a[1][0][0],   1.0/ 2.0, close_enough);
+        BOOST_CHECK_CLOSE(b[0][0][0], 143.0/15.0, close_enough);
+        BOOST_CHECK_CLOSE(b[1][0][0], 173.0/15.0, close_enough);
+    }
+
+    {
+        a[0][0][0] =  5.0;
+        a[1][0][0] =  7.0;
+        b[0][0][0] = 11.0;
+        b[1][0][0] = 13.0;
+
+        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+                cosine_op, time, a, b, delta_t, 1);
+        BOOST_CHECK_EQUAL(delta_t, delta_t_used);
+
+        BOOST_CHECK_CLOSE(a[0][0][0],
+                std::cos(1.0/3.0*pi + 136.0/15.0), close_enough);
+
+        BOOST_CHECK_CLOSE(a[1][0][0],
+                std::cos(1.0/3.0*pi + 136.0/15.0), close_enough);
+
+        BOOST_CHECK_CLOSE(b[0][0][0],
+                85.0/12.0*std::cos(1.0/3.0*pi + 136.0/15.0) - 2879.0/60.0,
+                close_enough);
+
+        BOOST_CHECK_CLOSE(b[1][0][0],
+                85.0/12.0*std::cos(1.0/3.0*pi + 136.0/15.0) - 3337.0/60.0,
+                close_enough);
+    }
+
+    {
+        a[0][0][0] =  5.0;
+        a[1][0][0] =  7.0;
+        b[0][0][0] = 11.0;
+        b[1][0][0] = 13.0;
+
+        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+                cosine_op, time, a, b, delta_t, 2);
+        BOOST_CHECK_EQUAL(delta_t, delta_t_used);
+
+        BOOST_CHECK_CLOSE(a[0][0][0],
+                std::cos(1.0/3.0*pi + 34.0/15.0),
+                close_enough);
+        BOOST_CHECK_CLOSE(a[1][0][0],
+                std::cos(1.0/3.0*pi + 34.0/15.0),
+                close_enough);
+        BOOST_CHECK_CLOSE(b[0][0][0],
+                51.0/4.0*std::cos(1.0/3.0*pi + 34.0/15.0) - 875.0/12.0,
+                close_enough);
+        BOOST_CHECK_CLOSE(b[1][0][0],
+                51.0/4.0*std::cos(1.0/3.0*pi + 34.0/15.0) - 1021.0/12.0,
+                close_enough);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

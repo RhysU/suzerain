@@ -565,7 +565,7 @@ public:
         eta(std::size_t substep) const
     {
         assert(substep < m.substeps());
-        return (substep == 0) ? 0 : alpha(substep) + beta(substep);
+        return (substep == 0) ? 0 : alpha(substep - 1) + beta(substep - 1);
     }
 
     /**
