@@ -24,6 +24,7 @@ using suzerain::timestepper::INonlinearOperator;
 using suzerain::timestepper::lowstorage::ILinearOperator;
 using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91Method;
+using suzerain::timestepper::lowstorage::Yang11Method;
 using suzerain::timestepper::lowstorage::LowStorageTimeController;
 typedef MultiplicativeOperator<NoninterleavedState<3,double> >
     MultiplicativeOperatorD3;
@@ -282,7 +283,7 @@ BOOST_AUTO_TEST_CASE( name )
 
 typedef boost::mpl::list< float ,double ,long double > constants_test_types;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SMR91_constants, T, constants_test_types )
 {
     { // Real-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
@@ -309,6 +310,53 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
         const T close_enough = std::numeric_limits<T>::epsilon();
         typedef typename std::complex<T> complex;
         const SMR91Method<complex> m;
+
+        // Step size consistency
+        for (std::size_t i = 0; i < m.substeps(); ++i) {
+            const complex res
+                = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
+            BOOST_CHECK_SMALL(std::abs(res), close_enough);
+        }
+
+        // Time offset consistency
+        for (std::size_t i = 0; i < m.substeps(); ++i) {
+            T res = m.eta(i);
+            for (std::size_t j = i; j-- > 0 ;) {
+                res -= m.alpha(j);
+                res -= m.beta(j);
+            }
+            BOOST_CHECK_SMALL(res, close_enough);
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( Yang11_constants, T, constants_test_types )
+{
+    { // Real-valued constants
+        const T close_enough = std::numeric_limits<T>::epsilon();
+        const Yang11Method<T> m;
+
+        // Step size consistency
+        for (std::size_t i = 0; i < m.substeps(); ++i) {
+            const T res = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
+            BOOST_CHECK_SMALL(res, close_enough);
+        }
+
+        // Time offset consistency
+        for (std::size_t i = 0; i < m.substeps(); ++i) {
+            T res = m.eta(i);
+            for (std::size_t j = i; j-- > 0 ;) {
+                res -= m.alpha(j);
+                res -= m.beta(j);
+            }
+            BOOST_CHECK_SMALL(res, close_enough);
+        }
+    }
+
+    { // Complex-valued constants
+        const T close_enough = std::numeric_limits<T>::epsilon();
+        typedef typename std::complex<T> complex;
+        const Yang11Method<complex> m;
 
         // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {

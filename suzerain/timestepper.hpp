@@ -704,6 +704,111 @@ private:
     component evmaxmag_imag_;
 };
 
+/**
+ * Encapsulates the three stage, second-order, adjoint-consistent scheme from
+ * Shan Yang's 2011 thesis ``A shape Hessian based analysis of roughness
+ * effects on fluid flows''.
+ */
+template< typename Element >
+class Yang11Method : public ILowStorageMethod<Element>
+{
+public:
+
+    /** The real-valued scalar corresponding to \c Element */
+    typedef typename ILowStorageMethod<Element>::component component;
+
+    /**
+     * Explicit constructor.
+     *
+     * @param evmagfactor The multiplicative factor to use when reporting
+     *                    maximum pure real and pure imaginary eigenvalue
+     *                    magnitudes in evmaxmag_real() and evmaxmag_imag(),
+     *                    respectively.
+     */
+    explicit Yang11Method(component evmagfactor = 1)
+        : evmaxmag_real_(evmagfactor * component(2.51274532661832862402373L)),
+          evmaxmag_imag_(evmagfactor * std::sqrt(component(3)))
+    {
+        assert(evmagfactor > 0);
+    }
+
+    /*! @copydoc ILowStorageMethod::name */
+    virtual const char * name() const
+    {
+        return "Yang11";
+    }
+
+    /*! @copydoc ILowStorageMethod::substeps */
+    virtual std::size_t substeps() const
+    {
+        return 3;
+    }
+
+    /*! @copydoc ILowStorageMethod::alpha */
+    virtual component alpha(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component( 1)/component(3),
+                                            component(-1)/component(2),
+                                            component( 1)/component(3)  };
+        return coeff[substep];
+    }
+
+    /*! @copydoc ILowStorageMethod::beta */
+    virtual component beta(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component(1)/component(6),
+                                            component(2)/component(3),
+                                            component(0)               };
+        return coeff[substep];
+    }
+
+    /*! @copydoc ILowStorageMethod::gamma */
+    virtual component gamma(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component(1)/component(2),
+                                            component(1)/component(3),
+                                            component(1)               };
+        return coeff[substep];
+    }
+
+    /*! @copydoc ILowStorageMethod::zeta */
+    virtual component zeta(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component( 0),
+                                            component(-1)/component(6),
+                                            component(-2)/component(3)  };
+        return coeff[substep];
+    }
+
+    /*! @copydoc ILowStorageMethod::eta */
+    virtual component eta(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component(0),
+                                            component(1)/component(2),
+                                            component(2)/component(3)   };
+        return coeff[substep];
+    }
+
+    /*! @copydoc ILowStorageMethod::evmaxmag_real */
+    virtual component evmaxmag_real() const
+    {
+        return evmaxmag_real_;
+    }
+
+    /*! @copydoc ILowStorageMethod::evmaxmag_imag */
+    virtual component evmaxmag_imag() const {
+        return evmaxmag_imag_;
+    }
+
+private:
+
+    /**< Value to report from evmaxmag_real(). */
+    component evmaxmag_real_;
+
+    /**< Value to report from evmaxmag_imag(). */
+    component evmaxmag_imag_;
+};
+
 
 /**
  * Using the given method and a linear and nonlinear operator, take substep \c
