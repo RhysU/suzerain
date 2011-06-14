@@ -479,10 +479,11 @@ make_multiplicator_operator(
  *   + \Delta{}t\zeta_{i}
  *     N\left(u^{i-1}, t + \eta_{i}\Delta{}t\right)
  * \f]
- * where \f$\alpha_i+\beta_i=\gamma_i+\zeta_i=\eta_{i}\f$.  Note that the
- * indexing on the \f$\zeta_i\f$ coefficients differs slightly from other
- * sources.  Note also that not all sources include the possibility of a
- * time-dependent \f$N\f$ operator.
+ * where \f$\alpha_i+\beta_i=\gamma_i+\zeta_i\f$ and \f$\eta_{i} =
+ * \sum_{i=0}^{i-1} \alpha_{i} + \beta{i} \f$. Note that the indexing on the
+ * \f$\zeta_i\f$ coefficients differs slightly from other sources.  Note also
+ * that not all literature sources include the possibility of a time-dependent
+ * \f$N\f$ operator.
  *
  * @see ILinearOperator for the interface that \f$L\f$ must implement.
  * @see INonlinearOperator for the interface that \f$N\f$ must implement.
@@ -562,11 +563,7 @@ public:
      * @return The coefficient associated with the requested substep.
      */
     virtual typename suzerain::traits::component<Element>::type
-        eta(std::size_t substep) const
-    {
-        assert(substep < m.substeps());
-        return (substep == 0) ? 0 : alpha(substep - 1) + beta(substep - 1);
-    }
+        eta(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's maximum pure real eigenvalue magnitude.
@@ -655,6 +652,10 @@ public:
     virtual typename suzerain::traits::component<Element>::type
         zeta(const std::size_t substep) const;
 
+    /*! @copydoc ILowStorageMethod::eta */
+    virtual typename suzerain::traits::component<Element>::type
+        eta(const std::size_t substep) const;
+
     /*! @copydoc ILowStorageMethod::evmaxmag_real */
     virtual typename suzerain::traits::component<Element>::type
         evmaxmag_real() const { return evmagfactor * 2.512; }
@@ -710,6 +711,17 @@ SMR91Method<Element>::zeta(const std::size_t substep) const
     static const component coeff[3] = { component(  0),
                                         component(-17)/component(60),
                                         component(- 5)/component(12)  };
+    return coeff[substep];
+}
+
+template< typename Element >
+typename suzerain::traits::component<Element>::type
+SMR91Method<Element>::eta(const std::size_t substep) const
+{
+    typedef typename suzerain::traits::component<Element>::type component;
+    static const component coeff[3] = { component(0),
+                                        component(8)/component(15),
+                                        component(2)/component( 3)  };
     return coeff[substep];
 }
 

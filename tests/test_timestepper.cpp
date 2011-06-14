@@ -287,13 +287,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
     { // Real-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
         const SMR91Method<T> m;
+
+        // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {
             const T res = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
             BOOST_CHECK_SMALL(res, close_enough);
         }
-        BOOST_CHECK_EQUAL(m.eta(0), 0);
-        for (std::size_t i = 1; i < m.substeps(); ++i) {
-            const T res = m.eta(i) - m.alpha(i-1) - m.beta(i-1);
+
+        // Time offset consistency
+        for (std::size_t i = 0; i < m.substeps(); ++i) {
+            T res = m.eta(i);
+            for (std::size_t j = i; j-- > 0 ;) {
+                res -= m.alpha(j);
+                res -= m.beta(j);
+            }
             BOOST_CHECK_SMALL(res, close_enough);
         }
     }
@@ -302,14 +309,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constants, T, constants_test_types )
         const T close_enough = std::numeric_limits<T>::epsilon();
         typedef typename std::complex<T> complex;
         const SMR91Method<complex> m;
+
+        // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {
             const complex res
                 = m.alpha(i) + m.beta(i) - m.gamma(i) - m.zeta(i);
             BOOST_CHECK_SMALL(std::abs(res), close_enough);
         }
-        BOOST_CHECK_EQUAL(m.eta(0), 0);
-        for (std::size_t i = 1; i < m.substeps(); ++i) {
-            const T res = m.eta(i) - m.alpha(i-1) - m.beta(i-1);
+
+        // Time offset consistency
+        for (std::size_t i = 0; i < m.substeps(); ++i) {
+            T res = m.eta(i);
+            for (std::size_t j = i; j-- > 0 ;) {
+                res -= m.alpha(j);
+                res -= m.beta(j);
+            }
             BOOST_CHECK_SMALL(res, close_enough);
         }
     }
@@ -553,7 +567,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
     // See test_timestepper.sage for manufactured answers
 
     const double delta_t = 17.0;
-    const double close_enough = std::numeric_limits<double>::epsilon()*100;
+    const double close_enough = std::numeric_limits<double>::epsilon()*500;
     const double pi = boost::math::constants::pi<double>();
     const double time = pi / 3.0;
     const SMR91Method<double> m;
@@ -613,16 +627,16 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
         BOOST_CHECK_CLOSE(a[0][0][0],
-                std::cos(1.0/3.0*pi + 34.0/15.0),
+                std::cos(1.0/3.0*pi + 34.0/3.0),
                 close_enough);
         BOOST_CHECK_CLOSE(a[1][0][0],
-                std::cos(1.0/3.0*pi + 34.0/15.0),
+                std::cos(1.0/3.0*pi + 34.0/3.0),
                 close_enough);
         BOOST_CHECK_CLOSE(b[0][0][0],
-                51.0/4.0*std::cos(1.0/3.0*pi + 34.0/15.0) - 875.0/12.0,
+                51.0/4.0*std::cos(1.0/3.0*pi + 34.0/3.0) - 875.0/12.0,
                 close_enough);
         BOOST_CHECK_CLOSE(b[1][0][0],
-                51.0/4.0*std::cos(1.0/3.0*pi + 34.0/15.0) - 1021.0/12.0,
+                51.0/4.0*std::cos(1.0/3.0*pi + 34.0/3.0) - 1021.0/12.0,
                 close_enough);
     }
 }
@@ -722,12 +736,12 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_independent )
 }
 
 // Run the explicit timestepper against (d/dt) y = cos(t)
-// where it is expected to be second order.
+// where it is expected to be third order.
 BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
 {
     // Fix test problem parameters
     const CosineSolution soln(0.0);
-    const double t_initial = 0.000, t_final = 0.000125; // Asymptotic regime
+    const double t_initial = 0.000, t_final = 0.0125; // Asymptotic regime
 
     // Fix method, operators, and storage space
     const SMR91Method<double> m;
@@ -774,17 +788,15 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
     const double finer_error = fabs(finer_final - soln(t_final));
     BOOST_CHECK_SMALL(finer_error, 1.0e-13);
 
-    // SMR91 is second order against the cosine problem
-    // Relative to the exponential problem, the reduction in order
-    // comes from the operator being time dependent.
-    const double expected_order = 1.95; // allows for floating point losses
+    // SMR91 is third order against the cosine problem
+    const double expected_order = 2.95; // allows for floating point losses
     const double observed_order
         = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
     BOOST_CHECK(!boost::math::isnan(observed_order));
     BOOST_CHECK_GE(observed_order, expected_order);
 
-    // Richardson extrapolation should show h^2 term elimination gives a better
-    // result than h^1, h^3, h^4, etc...
+    // Richardson extrapolation should show h^3 term elimination gives a better
+    // result than h^1, h^2, h^4, etc...
     {
         gsl_matrix * data = gsl_matrix_alloc(1,2);
         gsl_vector * k = gsl_vector_alloc(1);
@@ -813,9 +825,9 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
         gsl_vector_free(k);
         gsl_matrix_free(data);
 
-        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[0]);
-        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[2]);
-        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[3]);
+        BOOST_CHECK_LT(richardson_h_error[2], richardson_h_error[0]);
+        BOOST_CHECK_LT(richardson_h_error[2], richardson_h_error[1]);
+        BOOST_CHECK_LT(richardson_h_error[2], richardson_h_error[3]);
     }
 }
 

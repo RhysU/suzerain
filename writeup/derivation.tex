@@ -922,9 +922,8 @@ following equations:
   u'
   + \Delta{}t\left[
     L\left( \alpha_{2}u' + \beta_{2}u'' \right)
-    + \gamma_{2}
-      N\left(u',t_{n}+\left(\alpha_{1}+\beta_{1}\right)\Delta{}t\right)
-    + \zeta_{1} N\left(u_{n},t_{n}\right)
+    + \gamma_{2} N\left(u',t_{n}+\eta_{2}\Delta{}t\right)
+    + \zeta_{1}  N\left(u_{n},t_{n}\right)
   \right]
   \tag{SMR A4b}
   \label{eq:SMR_A4b}
@@ -934,20 +933,20 @@ following equations:
   u''
   + \Delta{}t\left[
       L\left( \alpha_{3}u'' + \beta_{3}u_{n+1} \right)
-    + \gamma_{3}
-      N\left(u'',t_{n}+\left(\alpha_{2}+\beta_{2}\right)\Delta{}t\right)
-    + \zeta_{2}
-      N\left(u',t_{n}+\left(\alpha_{1}+\beta_{1}\right)\Delta{}t\right)
+    + \gamma_{3} N\left(u'',t_{n}+\eta_{3}\Delta{}t\right)
+    + \zeta_{2}  N\left(u',t_{n}+\eta_{2}\Delta{}t\right)
   \right]
   \tag{SMR A4c}
   \label{eq:SMR_A4c}
 \end{align}
 \begin{align}
-  \alpha_1 + \beta_1 &= \gamma_1
+  \alpha_1 + \beta_1 &= \gamma_1 = \eta_2
   &
   \alpha_2 + \beta_2 &= \gamma_2 + \zeta_1
   &
   \alpha_3 + \beta_3 &= \gamma_3 + \zeta_2
+  &
+  \eta_{3} &= \eta_2 + \alpha_2 + \beta_2
   \tag{SMR A5}
 \end{align}
 \end{subequations}
@@ -971,11 +970,13 @@ The authors determined suitable values for the above coefficients to be
   \right\}
   &
   \eta_0, \eta_1, \eta_2, \eta_3 &= \Biggl\{
-    0, 0, \alpha_{1}+\beta_{1}, \alpha_{2}+\beta_{2}
+    0, 0, \frac{8}{15}, \frac{2}{3}
   \Biggr\}
 \end{align*}
-We have added $\zeta_0$ as well as $\eta_{0}$--$\eta_{3}$.  Each substep
-\eqref{eq:SMR_A4a}--\eqref{eq:SMR_A4c} has the general form
+We have added $\zeta_0$ and $\eta_0$ for notational convenience.  The
+$\eta_{1}$--$\eta_{3}$ coefficients used to extend the SMR scheme for
+time-dependent $N$ are discussed by Yang~\cite{ShanYang2011}.  Coefficients
+Each substep \eqref{eq:SMR_A4a}--\eqref{eq:SMR_A4c} has the general form
 \begin{align}
   u^{i+1} &= u^i + \Delta{}t \left[
         \alpha_{i} L u^i
