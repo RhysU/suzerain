@@ -487,7 +487,7 @@ make_multiplicator_operator(
  *
  * @see ILinearOperator for the interface that \f$L\f$ must implement.
  * @see INonlinearOperator for the interface that \f$N\f$ must implement.
- * @see SMR91Method for an example of a concrete scheme.
+ * @see SMR91Method and Yang11Method for examples of concrete schemes.
  * @see step() or substep() for methods that can advance state variables
  *      according to a timestepping method.
  */
@@ -496,7 +496,8 @@ class ILowStorageMethod
 {
 public:
 
-/**@}*/
+    /** The real-valued scalar corresponding to \c Element */
+    typedef typename suzerain::traits::component<Element>::type component;
 
     /**
      * A human-readable name for the timestepping method.
@@ -521,8 +522,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual typename suzerain::traits::component<Element>::type
-        alpha(std::size_t substep) const = 0;
+    virtual component alpha(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\beta_i\f$ coefficient.
@@ -531,8 +531,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual typename suzerain::traits::component<Element>::type
-        beta(std::size_t substep) const = 0;
+    virtual component beta(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\gamma_i\f$ coefficient.
@@ -541,8 +540,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual typename suzerain::traits::component<Element>::type
-        gamma(std::size_t substep) const = 0;
+    virtual component gamma(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\zeta_i\f$ coefficient.
@@ -551,8 +549,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual typename suzerain::traits::component<Element>::type
-        zeta(std::size_t substep) const = 0;
+    virtual component zeta(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's \f$\eta_i\f$ coefficient, which is
@@ -562,8 +559,7 @@ public:
      *
      * @return The coefficient associated with the requested substep.
      */
-    virtual typename suzerain::traits::component<Element>::type
-        eta(std::size_t substep) const = 0;
+    virtual component eta(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's maximum pure real eigenvalue magnitude.
@@ -571,8 +567,7 @@ public:
      * @return The scheme's maximum pure real eigenvalue magnitude.
      * @see diffusive_stability_criterion() for one use of this magnitude.
      */
-    virtual typename suzerain::traits::component<Element>::type
-        evmaxmag_real() const = 0;
+    virtual component evmaxmag_real() const = 0;
 
     /**
      * Obtain the scheme's maximum pure imaginary eigenvalue magnitude.
@@ -580,8 +575,7 @@ public:
      * @return The scheme's maximum pure imaginary eigenvalue magnitude.
      * @see convective_stability_criterion() for one use of this magnitude.
      */
-    virtual typename suzerain::traits::component<Element>::type
-        evmaxmag_imag() const = 0;
+    virtual component evmaxmag_imag() const = 0;
 
     /** Virtual destructor to support interface-like behavior. */
     virtual ~ILowStorageMethod() {}
@@ -615,6 +609,9 @@ class SMR91Method : public ILowStorageMethod<Element>
 {
 public:
 
+    /** The real-valued scalar corresponding to \c Element */
+    typedef typename ILowStorageMethod<Element>::component component;
+
     /**
      * Explicit constructor.
      *
@@ -622,108 +619,91 @@ public:
      *                    maximum pure real and pure imaginary eigenvalue
      *                    magnitudes in evmaxmag_real() and evmaxmag_imag(),
      *                    respectively.
-     **/
-    explicit SMR91Method(
-            typename suzerain::traits::component<Element>::type evmagfactor = 1)
-        : evmagfactor(evmagfactor)
+     */
+    explicit SMR91Method(component evmagfactor = 1)
+        : evmaxmag_real_(evmagfactor * component(2.51274532661832862402373L)),
+          evmaxmag_imag_(evmagfactor * std::sqrt(component(3)))
     {
         assert(evmagfactor > 0);
     }
 
     /*! @copydoc ILowStorageMethod::name */
-    virtual const char * name() const { return "SMR91"; }
+    virtual const char * name() const
+    {
+        return "SMR91";
+    }
 
     /*! @copydoc ILowStorageMethod::substeps */
-    virtual std::size_t substeps() const { return 3; }
+    virtual std::size_t substeps() const
+    {
+        return 3;
+    }
 
     /*! @copydoc ILowStorageMethod::alpha */
-    virtual typename suzerain::traits::component<Element>::type
-        alpha(const std::size_t substep) const;
+    virtual component alpha(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component( 29)/component(96),
+                                            component(- 3)/component(40),
+                                            component(  1)/component( 6)  };
+        return coeff[substep];
+    }
 
     /*! @copydoc ILowStorageMethod::beta */
-    virtual typename suzerain::traits::component<Element>::type
-        beta(const std::size_t substep) const;
+    virtual component beta(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component(37)/component(160),
+                                            component( 5)/component( 24),
+                                            component( 1)/component(  6)  };
+        return coeff[substep];
+    }
 
     /*! @copydoc ILowStorageMethod::gamma */
-    virtual typename suzerain::traits::component<Element>::type
-        gamma(const std::size_t substep) const;
+    virtual component gamma(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component(8)/component(15),
+                                            component(5)/component(12),
+                                            component(3)/component( 4)  };
+        return coeff[substep];
+    }
 
     /*! @copydoc ILowStorageMethod::zeta */
-    virtual typename suzerain::traits::component<Element>::type
-        zeta(const std::size_t substep) const;
+    virtual component zeta(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component(  0),
+                                            component(-17)/component(60),
+                                            component(- 5)/component(12)  };
+        return coeff[substep];
+    }
 
     /*! @copydoc ILowStorageMethod::eta */
-    virtual typename suzerain::traits::component<Element>::type
-        eta(const std::size_t substep) const;
+    virtual component eta(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component(0),
+                                            component(8)/component(15),
+                                            component(2)/component( 3)  };
+        return coeff[substep];
+    }
 
     /*! @copydoc ILowStorageMethod::evmaxmag_real */
-    virtual typename suzerain::traits::component<Element>::type
-        evmaxmag_real() const { return evmagfactor * 2.512; }
+    virtual component evmaxmag_real() const
+    {
+        return evmaxmag_real_;
+    }
 
     /*! @copydoc ILowStorageMethod::evmaxmag_imag */
-    virtual typename suzerain::traits::component<Element>::type
-        evmaxmag_imag() const { return evmagfactor * std::sqrt(3.0); }
+    virtual component evmaxmag_imag() const {
+        return evmaxmag_imag_;
+    }
 
 private:
 
-    /** Multiplicative factor to use when reporting eigenvalue magnitudes */
-    typename suzerain::traits::component<Element>::type evmagfactor;
+    /**< Value to report from evmaxmag_real(). */
+    component evmaxmag_real_;
+
+    /**< Value to report from evmaxmag_imag(). */
+    component evmaxmag_imag_;
 };
 
-template< typename Element >
-typename suzerain::traits::component<Element>::type
-SMR91Method<Element>::alpha(const std::size_t substep) const
-{
-    typedef typename suzerain::traits::component<Element>::type component;
-    static const component coeff[3] = { component( 29)/component(96),
-                                        component(- 3)/component(40),
-                                        component(  1)/component( 6)  };
-    return coeff[substep];
-}
-
-template< typename Element >
-typename suzerain::traits::component<Element>::type
-SMR91Method<Element>::beta(const std::size_t substep) const
-{
-    typedef typename suzerain::traits::component<Element>::type component;
-    static const component coeff[3] = { component(37)/component(160),
-                                        component( 5)/component( 24),
-                                        component( 1)/component(  6)  };
-    return coeff[substep];
-}
-
-template< typename Element >
-typename suzerain::traits::component<Element>::type
-SMR91Method<Element>::gamma(const std::size_t substep) const
-{
-    typedef typename suzerain::traits::component<Element>::type component;
-    static const component coeff[3] = { component(8)/component(15),
-                                        component(5)/component(12),
-                                        component(3)/component( 4)  };
-    return coeff[substep];
-}
-
-template< typename Element >
-typename suzerain::traits::component<Element>::type
-SMR91Method<Element>::zeta(const std::size_t substep) const
-{
-    typedef typename suzerain::traits::component<Element>::type component;
-    static const component coeff[3] = { component(  0),
-                                        component(-17)/component(60),
-                                        component(- 5)/component(12)  };
-    return coeff[substep];
-}
-
-template< typename Element >
-typename suzerain::traits::component<Element>::type
-SMR91Method<Element>::eta(const std::size_t substep) const
-{
-    typedef typename suzerain::traits::component<Element>::type component;
-    static const component coeff[3] = { component(0),
-                                        component(8)/component(15),
-                                        component(2)/component( 3)  };
-    return coeff[substep];
-}
 
 /**
  * Using the given method and a linear and nonlinear operator, take substep \c
