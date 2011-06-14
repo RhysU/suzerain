@@ -114,7 +114,7 @@ struct RiccatiSolution
 
     double operator()(double t) const
     {
-        return a + double(1)/(double(-1)/(2*a+b) + c*exp(-(2*a+b)*t));
+        return a + double(1)/(double(-1)/(2*a+b) + c*std::exp(-(2*a+b)*t));
     }
 };
 
@@ -125,7 +125,52 @@ struct ExponentialSolution
 
     ExponentialSolution(double a, double y0) : a(a), y0(y0) {}
 
-    double operator()(double t) const { return y0*exp(a*t); }
+    double operator()(double t) const { return y0*std::exp(a*t); }
+};
+
+// Purely explicit, time-dependent operator for (d/dt) y = cos(t);
+class CosineExplicitOperator
+    : public INonlinearOperator<NoninterleavedState<3,double> >
+{
+private:
+    const double delta_t;
+
+public:
+    CosineExplicitOperator(
+            const double delta_t = std::numeric_limits<double>::quiet_NaN())
+        : delta_t(delta_t) { };
+
+    virtual double applyOperator(
+            const double time,
+            NoninterleavedState<3,double> & state,
+            const double evmaxmag_real,
+            const double evmaxmag_imag,
+            const bool delta_t_requested = false) const
+    {
+        SUZERAIN_UNUSED(evmaxmag_real);
+        SUZERAIN_UNUSED(evmaxmag_imag);
+        SUZERAIN_UNUSED(delta_t_requested);
+
+        for (std::size_t i = 0; i < state.shape()[0]; ++i) {
+            for (std::size_t k = 0; k < state.shape()[2]; ++k) {
+                for (std::size_t j = 0; j < state.shape()[1]; ++j) {
+                    state[i][j][k] = std::cos(time);
+                }
+            }
+        }
+
+        return delta_t;
+    }
+};
+
+// Functor returning the solution (d/dt) y = cos(t) where y(t) = y0 + sin(t)
+struct CosineSolution
+{
+    const double y0;
+
+    CosineSolution(double y0) : y0(y0) {}
+
+    double operator()(double t) const { return y0 + std::sin(t); }
 };
 
 
@@ -502,41 +547,6 @@ BOOST_AUTO_TEST_CASE( substep_hybrid_time_independent )
             std::invalid_argument);
 }
 
-// Purely explicit, time-dependent operator for (d/dt) y = cos(t);
-class CosineExplicitOperator
-    : public INonlinearOperator<NoninterleavedState<3,double> >
-{
-private:
-    const double delta_t;
-
-public:
-    CosineExplicitOperator(
-            const double delta_t = std::numeric_limits<double>::quiet_NaN())
-        : delta_t(delta_t) { };
-
-    virtual double applyOperator(
-            const double time,
-            NoninterleavedState<3,double> & state,
-            const double evmaxmag_real,
-            const double evmaxmag_imag,
-            const bool delta_t_requested = false) const
-    {
-        SUZERAIN_UNUSED(evmaxmag_real);
-        SUZERAIN_UNUSED(evmaxmag_imag);
-        SUZERAIN_UNUSED(delta_t_requested);
-
-        for (std::size_t i = 0; i < state.shape()[0]; ++i) {
-            for (std::size_t k = 0; k < state.shape()[2]; ++k) {
-                for (std::size_t j = 0; j < state.shape()[1]; ++j) {
-                    state[i][j][k] = std::cos(time);
-                }
-            }
-        }
-
-        return delta_t;
-    }
-};
-
 BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
 {
     using suzerain::timestepper::lowstorage::substep;
@@ -624,7 +634,7 @@ BOOST_AUTO_TEST_SUITE( noninterleaved_storage )
 
 // Run the explicit timestepper against (d/dt) y = a*y
 // where it is expected to be third order.
-BOOST_AUTO_TEST_CASE( step_explicit )
+BOOST_AUTO_TEST_CASE( step_explicit_time_independent )
 {
     // Fix test problem parameters
     const ExponentialSolution soln(2.0, 1.0);
@@ -708,6 +718,104 @@ BOOST_AUTO_TEST_CASE( step_explicit )
         BOOST_CHECK_LT(richardson_h_error[2], richardson_h_error[0]);
         BOOST_CHECK_LT(richardson_h_error[2], richardson_h_error[1]);
         BOOST_CHECK_LT(richardson_h_error[2], richardson_h_error[3]);
+    }
+}
+
+// Run the explicit timestepper against (d/dt) y = cos(t)
+// where it is expected to be second order.
+BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
+{
+    // Fix test problem parameters
+    const CosineSolution soln(0.0);
+    const double t_initial = 0.000, t_final = 0.000125; // Asymptotic regime
+
+    // Fix method, operators, and storage space
+    const SMR91Method<double> m;
+    const MultiplicativeOperatorD3 trivial_linear_op(0);
+    NoninterleavedState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
+
+    // Coarse grid calculation using explicitly provided time step
+    const std::size_t coarse_nsteps = 16;
+    const double delta_t_coarse = (t_final - t_initial)/coarse_nsteps;
+    a[0][0][0] = soln(t_initial);
+    {
+        const CosineExplicitOperator nonlinear_op(t_final - t_initial);
+        double t = t_initial;
+        for (std::size_t i = 0; i < coarse_nsteps; ++i) {
+            const double delta_t_used = suzerain::timestepper::lowstorage::step(
+                    m, trivial_linear_op, 1.0, nonlinear_op,
+                    t, a, b, delta_t_coarse);
+            BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
+            t += delta_t_used;
+        }
+        BOOST_CHECK_GE(t, t_final); // Some slop allowed
+    }
+    const double coarse_final = a[0][0][0];
+    const double coarse_error = fabs(coarse_final - soln(t_final));
+    BOOST_CHECK_SMALL(coarse_error, 1.0e-12);
+
+    // Finer grid calculation using explicitly provided time step
+    const std::size_t finer_nsteps = 2*coarse_nsteps;
+    const double delta_t_finer = (t_final - t_initial)/finer_nsteps;
+    a[0][0][0] = soln(t_initial);
+    {
+        const CosineExplicitOperator nonlinear_op(t_final - t_initial);
+        double t = t_initial;
+        for (std::size_t i = 0; i < finer_nsteps; ++i) {
+            const double delta_t_used = suzerain::timestepper::lowstorage::step(
+                    m, trivial_linear_op, 1.0, nonlinear_op,
+                    t, a, b, delta_t_finer);
+            BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
+            t += delta_t_used;
+        }
+        BOOST_CHECK_GE(t, t_final); // Some slop allowed
+    }
+    const double finer_final = a[0][0][0];
+    const double finer_error = fabs(finer_final - soln(t_final));
+    BOOST_CHECK_SMALL(finer_error, 1.0e-13);
+
+    // SMR91 is second order against the cosine problem
+    // Relative to the exponential problem, the reduction in order
+    // comes from the operator being time dependent.
+    const double expected_order = 1.95; // allows for floating point losses
+    const double observed_order
+        = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
+    BOOST_CHECK(!boost::math::isnan(observed_order));
+    BOOST_CHECK_GE(observed_order, expected_order);
+
+    // Richardson extrapolation should show h^2 term elimination gives a better
+    // result than h^1, h^3, h^4, etc...
+    {
+        gsl_matrix * data = gsl_matrix_alloc(1,2);
+        gsl_vector * k = gsl_vector_alloc(1);
+        gsl_matrix * normtable = gsl_matrix_alloc(data->size2, data->size2);
+        gsl_vector * exact = gsl_vector_alloc(1);
+        gsl_vector_set(exact, 0, soln(t_final));
+
+        double richardson_h_error[4];
+        for (std::size_t i = 0;
+             i < sizeof(richardson_h_error)/sizeof(richardson_h_error[0]);
+             ++i) {
+            gsl_matrix_set(data, 0, 0, coarse_final);
+            gsl_matrix_set(data, 0, 1, finer_final);
+#pragma warning(push,disable:810 2259)
+            gsl_vector_set(k,0,i+1);
+#pragma warning(pop)
+            suzerain_richardson_extrapolation(
+                    data, finer_nsteps/coarse_nsteps,
+                    k, normtable, exact);
+            richardson_h_error[i] = gsl_matrix_get(
+                    normtable, normtable->size2-1, normtable->size2-1);
+        }
+
+        gsl_matrix_free(normtable);
+        gsl_vector_free(exact);
+        gsl_vector_free(k);
+        gsl_matrix_free(data);
+
+        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[0]);
+        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[2]);
+        BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[3]);
     }
 }
 
