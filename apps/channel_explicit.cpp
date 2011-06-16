@@ -443,7 +443,7 @@ int main(int argc, char **argv)
     L.reset(new channel::BsplineMassOperatorIsothermal(
                 scenario, grid, *dgrid, *b, *bop));
     N.reset(new channel::NonlinearOperator(
-                scenario, grid, *dgrid, *b, *bop));
+                scenario, grid, *dgrid, *b, *bop, msoln));
     tc.reset(make_LowStorageTimeController(
                 *m, *L,
                 1.0/(scenario.Lx*scenario.Lz)/(grid.N.x()*grid.N.z()), *N,

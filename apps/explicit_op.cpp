@@ -301,8 +301,11 @@ NonlinearOperator::NonlinearOperator(
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
-        const suzerain::bsplineop &bop)
+        const suzerain::bsplineop &bop,
+        const boost::shared_ptr<
+            const nsctpl_rholut::manufactured_solution<real_t> >& msoln)
     : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
+      msoln(msoln),
       auxw(suzerain::to_yxz(static_cast<std::size_t>(aux::count),
                             dgrid.local_wave_extent),
               suzerain::prepend(dgrid.local_wave_storage(),
@@ -648,8 +651,10 @@ NonlinearOperatorIsothermal::NonlinearOperatorIsothermal(
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
-        const suzerain::bsplineop &bop)
-    : NonlinearOperator(scenario, grid, dgrid, b, bop)
+        const suzerain::bsplineop &bop,
+        const boost::shared_ptr<
+            const nsctpl_rholut::manufactured_solution<real_t> >& msoln)
+    : NonlinearOperator(scenario, grid, dgrid, b, bop, msoln)
 {
     // Precompute operator for finding bulk quantities from coefficients
     bulkcoeff.resize(b.n());
