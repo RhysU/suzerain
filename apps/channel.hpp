@@ -120,17 +120,25 @@ void store(const esio_handle h,
 void load(const esio_handle h,
           suzerain::problem::GridDefinition& grid);
 
-/** Store manufactured solution parameters in a restart file */
+/**
+ * Store manufactured solution parameters in a restart file.
+ * Parameters are only stored when \c ms evaluates as true.
+ */
 void store(const esio_handle h,
-           const nsctpl_rholut::manufactured_solution<real_t>& ms);
+           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+           const boost::shared_ptr<
+                 nsctpl_rholut::manufactured_solution<real_t> >& ms);
 
 /**
  * Load manufactured solution parameters from a restart file.
- *
- * @return True if the file contained manufactured solution parameters.
+ * If the restart file contains active manufactured solution parameters, \c ms
+ * will be modified to contain an appropriate instance.  If it does not, \c ms
+ * will be reset.
  */
-bool load(const esio_handle h,
-          nsctpl_rholut::manufactured_solution<real_t>& ms);
+void load(const esio_handle h,
+          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          boost::shared_ptr<
+                 nsctpl_rholut::manufactured_solution<real_t> >& ms);
 
 /** Create a B-spline workspace on [left,right] per ndof, k, and htdelta */
 void create(const int ndof,

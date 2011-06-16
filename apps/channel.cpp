@@ -348,28 +348,53 @@ static void attribute_storer(const esio_handle &h,
 }
 
 void store(const esio_handle h,
-           const nsctpl_rholut::manufactured_solution<real_t>& ms)
+           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+           const boost::shared_ptr<
+                 nsctpl_rholut::manufactured_solution<real_t> >& ms)
 {
-    static const real_t one = 1;
-    static const char location[] = "manufactured_solution";
+    static const char location[] = "nsctpl_rholut::manufactured_solution";
 
-    DEBUG0("Storing nsctpl_rholut::manufactured_solution parameters");
-
-    // Only root writes the dummy line data
+    // Always write a flag to indicate whether or not a MS is in use
+    const int in_use = ms ? 1 : 0;
     int procid;
     esio_handle_comm_rank(h, &procid);
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
-    esio_line_write(h, location, &one, 0,
-            "Contains parameters used for a manufactured_solution");
+    esio_line_write(h, location, &in_use, 0,
+            "Is a nsctpl_rholut::manufactured_solution in use?");
+
+    // Only proceed if an MS is in use
+    if (!in_use) return;
+
+    DEBUG0("Storing nsctpl_rholut::manufactured_solution parameters");
+
+    // Check parameters stored with the scenario not the manufactured solution
+    if (ms->alpha != scenario.alpha)
+        WARN0("Manufactured solution alpha mismatches with scenario!");
+    if (ms->beta  != scenario.beta)
+        WARN0("Manufactured solution beta mismatches with scenario!");
+    if (ms->gamma != scenario.gamma)
+        WARN0("Manufactured solution gamma mismatches with scenario!");
+    if (ms->Ma    != scenario.Ma)
+        WARN0("Manufactured solution Ma mismatches with scenario!");
+    if (ms->Re    != scenario.Re)
+        WARN0("Manufactured solution Re mismatches with scenario!");
+    if (ms->Pr    != scenario.Pr)
+        WARN0("Manufactured solution Pr mismatches with scenario!");
+    if (ms->Lx    != scenario.Lx)
+        WARN0("Manufactured solution Lx mismatches with scenario!");
+    if (ms->Ly    != scenario.Ly)
+        WARN0("Manufactured solution Ly mismatches with scenario!");
+    if (ms->Lz    != scenario.Lz)
+        WARN0("Manufactured solution Lz mismatches with scenario!");
 
     // Non-scenario solution parameters are stored as attributes under location
     // Scenario parameters should be taken from ScenarioDefinition
     using boost::bind;
-    ms.rho.foreach_parameter(bind(attribute_storer, h, location, _1, _2));
-    ms.u.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
-    ms.v.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
-    ms.w.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
-    ms.T.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
+    ms->rho.foreach_parameter(bind(attribute_storer, h, location, _1, _2));
+    ms->u.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
+    ms->v.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
+    ms->w.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
+    ms->T.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
 }
 
 static void attribute_loader(const esio_handle &h,
@@ -380,30 +405,57 @@ static void attribute_loader(const esio_handle &h,
     esio_attribute_read(h, location, name.c_str(), &value);
 }
 
-bool load(const esio_handle h,
-          nsctpl_rholut::manufactured_solution<real_t>& ms)
+/** Helper for NaNing values within a manufactured solution instance */
+static void NaNer(const std::string&, real_t& value)
 {
-    static const char location[] = "manufactured_solution";
+    value = std::numeric_limits<real_t>::quiet_NaN();
+}
 
-    // Existence of a line at location is our boolean flag
-    int aglobal;
-    if (!esio_line_size(h, location, &aglobal)) {
-        DEBUG0("No nsctpl_rholut::manufactured_solution parameters to load");
-        return false;
+void load(const esio_handle h,
+          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          boost::shared_ptr<
+                 nsctpl_rholut::manufactured_solution<real_t> >& ms)
+{
+    static const char location[] = "nsctpl_rholut::manufactured_solution";
+
+
+    // Determine if a manufactured solution should be loaded
+    int in_use;
+    esio_line_establish(h, 1, 0, 1); // All ranks load
+    esio_line_read(h, location, &in_use, 0);
+
+    // Only proceed if an MS is in use
+    if (!in_use) {
+        ms.reset();
+        return;
     }
 
     DEBUG0("Loading nsctpl_rholut::manufactured_solution parameters");
 
-    // Non-scenario solution parameters are stored as attributes under location
-    // Scenario parameters should be taken from ScenarioDefinition
-    using boost::bind;
-    ms.rho.foreach_parameter(bind(attribute_loader, h, location, _1, _2));
-    ms.u.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
-    ms.v.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
-    ms.w.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
-    ms.T.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
+    // Allocate storage and defensively NaN every parameter not explicitly
+    // loaded below.  Protects us against accidentally missing new solution
+    // parameters.
+    ms.reset(new nsctpl_rholut::manufactured_solution<real_t>());
+    ms->foreach_parameter(&NaNer);
 
-    return true;
+    // Scenario parameters taken from ScenarioDefinition
+    ms->alpha = scenario.alpha;
+    ms->beta  = scenario.beta;
+    ms->gamma = scenario.gamma;
+    ms->Ma    = scenario.Ma;
+    ms->Re    = scenario.Re;
+    ms->Pr    = scenario.Pr;
+    ms->Lx    = scenario.Lx;
+    ms->Ly    = scenario.Ly;
+    ms->Lz    = scenario.Lz;
+
+    // Non-scenario solution parameters are stored as attributes under location
+    using boost::bind;
+    ms->rho.foreach_parameter(bind(attribute_loader, h, location, _1, _2));
+    ms->u.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
+    ms->v.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
+    ms->w.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
+    ms->T.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
 }
 
 void create(const int ndof,

@@ -92,12 +92,13 @@ static const TimeDefinition<real_t> timedef(/* advance_dt           */ 0,
                                             /* max_dt               */ 0,
                                             /* evmagfactor per Prem */ 0.72);
 
-// Global grid-details initialized in main()
+// Global details initialized in main()
 static shared_ptr<      suzerain::bspline>       b;
 static shared_ptr<      suzerain::bsplineop>     bop;    // Collocation
 static shared_ptr<      suzerain::bsplineop>     gop;    // Galerkin L2
 static shared_ptr<      suzerain::bsplineop_luz> bopluz;
 static shared_ptr<const suzerain::pencil_grid>   dgrid;
+static shared_ptr<nsctpl_rholut::manufactured_solution<real_t> > ms;
 
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
@@ -311,6 +312,10 @@ int main(int argc, char **argv)
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     channel::load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
     channel::load(esioh, const_cast<GridDefinition&>(grid));
+    channel::load(esioh, scenario, ms);
+    if (ms) {
+        INFO0("Loaded manufactured solution parameters to apply forcing");
+    }
     esio_file_close(esioh);
 
     INFO0("Using B-splines of order " << (grid.k - 1)
@@ -358,6 +363,7 @@ int main(int argc, char **argv)
         channel::store(h, scenario);
         channel::store(h, grid, scenario.Lx, scenario.Lz);
         channel::store(h, b, bop, gop);
+        channel::store(h, scenario, ms);
         esio_file_close(h);
         esio_handle_finalize(h);
         atexit(&atexit_metadata); // Delete lingering metadata file at exit

@@ -81,7 +81,8 @@ static GridDefinition grid(
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
 static shared_ptr<const suzerain::pencil_grid> dgrid;
-static nsctpl_rholut::manufactured_solution<real_t> ms;
+static shared_ptr<nsctpl_rholut::manufactured_solution<real_t> > ms(
+            new nsctpl_rholut::manufactured_solution<real_t>);
 
 // Global B-spline related-details initialized in main()
 static shared_ptr<suzerain::bspline>       b;
@@ -168,8 +169,8 @@ int main(int argc, char **argv)
         ::std::pointer_to_binary_function<real_t,const char*,void>
             ptr_fun_ensure_nonnegative(ensure_nonnegative<real_t>);
 
-        nsctpl_rholut::isothermal_channel(ms);
-        MSDefinition msdef(ms);
+        nsctpl_rholut::isothermal_channel(*ms);
+        MSDefinition msdef(*ms);
 
         options.add_definition(scenario);
         options.add_definition(grid);
@@ -209,17 +210,17 @@ int main(int argc, char **argv)
 
     if (mms >= 0) {
         INFO0("Manufactured solution will be initialized at t = " << mms);
-        ms.alpha = scenario.alpha;
-        ms.beta  = scenario.beta;
-        ms.gamma = scenario.gamma;
-        ms.Ma    = scenario.Ma;
-        ms.Re    = scenario.Re;
-        ms.Pr    = scenario.Pr;
-        ms.Lx    = scenario.Lx;
-        ms.Ly    = scenario.Ly;
-        ms.Lz    = scenario.Lz;
+        ms->alpha = scenario.alpha;
+        ms->beta  = scenario.beta;
+        ms->gamma = scenario.gamma;
+        ms->Ma    = scenario.Ma;
+        ms->Re    = scenario.Re;
+        ms->Pr    = scenario.Pr;
+        ms->Lx    = scenario.Lx;
+        ms->Ly    = scenario.Ly;
+        ms->Lz    = scenario.Lz;
     } else {
-        ms.Lx = ms.Ly = ms.Lz = numeric_limits<real_t>::quiet_NaN(); // Poison
+        ms.reset();
     }
 
     INFO0("Creating B-spline basis of order " << (grid.k - 1)
@@ -233,7 +234,7 @@ int main(int argc, char **argv)
     channel::store(esioh, scenario);
     channel::store(esioh, grid, scenario.Lx, scenario.Lz);
     channel::store(esioh, b, bop, gop);
-    if (mms >= 0) channel::store(esioh, ms);
+    channel::store(esioh, scenario, ms);
     esio_file_flush(esioh);
 
     INFO0("Initializing B-spline workspaces");
@@ -291,11 +292,11 @@ int main(int argc, char **argv)
                     T   = 1;
                 } else {
                     // ...the manufactured solution at t = mms.
-                    rho = ms.rho(x, y, z, mms);
-                    u   = ms.u  (x, y, z, mms);
-                    v   = ms.v  (x, y, z, mms);
-                    w   = ms.w  (x, y, z, mms);
-                    T   = ms.T  (x, y, z, mms);
+                    rho = ms->rho(x, y, z, mms);
+                    u   = ms->u  (x, y, z, mms);
+                    v   = ms->v  (x, y, z, mms);
+                    w   = ms->w  (x, y, z, mms);
+                    T   = ms->T  (x, y, z, mms);
                 }
 
                 // Compute and store the conserved state from primitives
