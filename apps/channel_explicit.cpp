@@ -98,7 +98,7 @@ static shared_ptr<      suzerain::bsplineop>     bop;    // Collocation
 static shared_ptr<      suzerain::bsplineop>     gop;    // Galerkin L2
 static shared_ptr<      suzerain::bsplineop_luz> bopluz;
 static shared_ptr<const suzerain::pencil_grid>   dgrid;
-static shared_ptr<nsctpl_rholut::manufactured_solution<real_t> > ms;
+static shared_ptr<nsctpl_rholut::manufactured_solution<real_t> > msoln;
 
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
@@ -312,8 +312,8 @@ int main(int argc, char **argv)
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     channel::load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
     channel::load(esioh, const_cast<GridDefinition&>(grid));
-    channel::load(esioh, scenario, ms);
-    if (ms) {
+    channel::load(esioh, scenario, msoln);
+    if (msoln) {
         INFO0("Loaded manufactured solution parameters to apply forcing");
     }
     esio_file_close(esioh);
@@ -363,7 +363,7 @@ int main(int argc, char **argv)
         channel::store(h, scenario);
         channel::store(h, grid, scenario.Lx, scenario.Lz);
         channel::store(h, b, bop, gop);
-        channel::store(h, scenario, ms);
+        channel::store(h, scenario, msoln);
         esio_file_close(h);
         esio_handle_finalize(h);
         atexit(&atexit_metadata); // Delete lingering metadata file at exit

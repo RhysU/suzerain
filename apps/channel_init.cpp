@@ -81,7 +81,7 @@ static GridDefinition grid(
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
 static shared_ptr<const suzerain::pencil_grid> dgrid;
-static shared_ptr<nsctpl_rholut::manufactured_solution<real_t> > ms(
+static shared_ptr<nsctpl_rholut::manufactured_solution<real_t> > msoln(
             new nsctpl_rholut::manufactured_solution<real_t>);
 
 // Global B-spline related-details initialized in main()
@@ -107,19 +107,19 @@ class MSDefinition : public suzerain::problem::IDefinition {
 
 public:
 
-    MSDefinition(nsctpl_rholut::manufactured_solution<real_t> &msoln)
+    MSDefinition(nsctpl_rholut::manufactured_solution<real_t> &ms)
         : IDefinition("Manufactured solution parameters"
                       " (active only when --mms supplied)")
     {
-        msoln.rho.foreach_parameter(boost::bind(option_adder,
+        ms.rho.foreach_parameter(boost::bind(option_adder,
                     this->add_options(), "Affects density field",     _1, _2));
-        msoln.u.foreach_parameter(boost::bind(option_adder,
+        ms.u.foreach_parameter(boost::bind(option_adder,
                     this->add_options(), "Affects X velocity field",  _1, _2));
-        msoln.v.foreach_parameter(boost::bind(option_adder,
+        ms.v.foreach_parameter(boost::bind(option_adder,
                     this->add_options(), "Affects Y velocity field",  _1, _2));
-        msoln.w.foreach_parameter(boost::bind(option_adder,
+        ms.w.foreach_parameter(boost::bind(option_adder,
                     this->add_options(), "Affects Z velocity field",  _1, _2));
-        msoln.T.foreach_parameter(boost::bind(option_adder,
+        ms.T.foreach_parameter(boost::bind(option_adder,
                     this->add_options(), "Affects temperature field", _1, _2));
     }
 
@@ -169,8 +169,8 @@ int main(int argc, char **argv)
         ::std::pointer_to_binary_function<real_t,const char*,void>
             ptr_fun_ensure_nonnegative(ensure_nonnegative<real_t>);
 
-        nsctpl_rholut::isothermal_channel(*ms);
-        MSDefinition msdef(*ms);
+        nsctpl_rholut::isothermal_channel(*msoln);
+        MSDefinition msdef(*msoln);
 
         options.add_definition(scenario);
         options.add_definition(grid);
@@ -210,17 +210,17 @@ int main(int argc, char **argv)
 
     if (mms >= 0) {
         INFO0("Manufactured solution will be initialized at t = " << mms);
-        ms->alpha = scenario.alpha;
-        ms->beta  = scenario.beta;
-        ms->gamma = scenario.gamma;
-        ms->Ma    = scenario.Ma;
-        ms->Re    = scenario.Re;
-        ms->Pr    = scenario.Pr;
-        ms->Lx    = scenario.Lx;
-        ms->Ly    = scenario.Ly;
-        ms->Lz    = scenario.Lz;
+        msoln->alpha = scenario.alpha;
+        msoln->beta  = scenario.beta;
+        msoln->gamma = scenario.gamma;
+        msoln->Ma    = scenario.Ma;
+        msoln->Re    = scenario.Re;
+        msoln->Pr    = scenario.Pr;
+        msoln->Lx    = scenario.Lx;
+        msoln->Ly    = scenario.Ly;
+        msoln->Lz    = scenario.Lz;
     } else {
-        ms.reset();
+        msoln.reset();
     }
 
     INFO0("Creating B-spline basis of order " << (grid.k - 1)
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
     channel::store(esioh, scenario);
     channel::store(esioh, grid, scenario.Lx, scenario.Lz);
     channel::store(esioh, b, bop, gop);
-    channel::store(esioh, scenario, ms);
+    channel::store(esioh, scenario, msoln);
     esio_file_flush(esioh);
 
     INFO0("Initializing B-spline workspaces");
@@ -292,11 +292,11 @@ int main(int argc, char **argv)
                     T   = 1;
                 } else {
                     // ...the manufactured solution at t = mms.
-                    rho = ms->rho(x, y, z, mms);
-                    u   = ms->u  (x, y, z, mms);
-                    v   = ms->v  (x, y, z, mms);
-                    w   = ms->w  (x, y, z, mms);
-                    T   = ms->T  (x, y, z, mms);
+                    rho = msoln->rho(x, y, z, mms);
+                    u   = msoln->u  (x, y, z, mms);
+                    v   = msoln->v  (x, y, z, mms);
+                    w   = msoln->w  (x, y, z, mms);
+                    T   = msoln->T  (x, y, z, mms);
                 }
 
                 // Compute and store the conserved state from primitives
