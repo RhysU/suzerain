@@ -89,7 +89,7 @@ Scalar primitive<Scalar>::_xx(T1 x, T2 y, T3 z, T4 t) const
 
 template <typename Scalar>
 template <typename T1, typename T2, typename T3, typename T4>
-Scalar primitive<Scalar>::_xy(T1 x, T2 y, T3 z, T4 t) const
+Scalar primitive<Scalar>::_xy(T1 x, T2 y, T3, T4 t) const
 {
     using ::std::cos;
     using ::std::sin;
@@ -101,7 +101,7 @@ Scalar primitive<Scalar>::_xy(T1 x, T2 y, T3 z, T4 t) const
 
 template <typename Scalar>
 template <typename T1, typename T2, typename T3, typename T4>
-Scalar primitive<Scalar>::_xz(T1 x, T2 y, T3 z, T4 t) const
+Scalar primitive<Scalar>::_xz(T1 x, T2, T3 z, T4 t) const
 {
     using ::std::cos;
     using ::std::sin;
@@ -139,7 +139,7 @@ Scalar primitive<Scalar>::_yy(T1 x, T2 y, T3 z, T4 t) const
 
 template <typename Scalar>
 template <typename T1, typename T2, typename T3, typename T4>
-Scalar primitive<Scalar>::_yz(T1 x, T2 y, T3 z, T4 t) const
+Scalar primitive<Scalar>::_yz(T1, T2 y, T3 z, T4 t) const
 {
     using ::std::cos;
     using ::std::sin;
