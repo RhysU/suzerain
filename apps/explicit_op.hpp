@@ -130,7 +130,8 @@ private:
  * A boundary-condition agnostic, fully explicit Navier&ndash;Stokes operator.
  */
 class NonlinearOperator
-    : public suzerain::OperatorBase<real_t>,
+    : public boost::noncopyable,                        // Nontrivial storage
+      public suzerain::OperatorBase<real_t>,
       public suzerain::timestepper::INonlinearOperator<
             suzerain::NoninterleavedState<4,complex_t>
       >
