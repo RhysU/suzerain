@@ -185,14 +185,14 @@ public:
 
     //! Invoke the binary function f on each parameter name and its value.
     template <typename BinaryFunction>
-    void foreach_parameter(BinaryFunction& f) const {
+    void foreach_parameter(BinaryFunction f) const {
         ::std::ostringstream os;
         NSCTPL_RHOLUT_FOR_EACH_PRIMITIVE_PARAMETER(NSCTPL_RHOLUT_APPLY)
     }
 
     //! Invoke the binary function f on each parameter name and its value.
     template <typename BinaryFunction>
-    void foreach_parameter(BinaryFunction& f) {
+    void foreach_parameter(BinaryFunction f) {
         ::std::ostringstream os;
         NSCTPL_RHOLUT_FOR_EACH_PRIMITIVE_PARAMETER(NSCTPL_RHOLUT_APPLY)
     }
@@ -324,7 +324,7 @@ public:
     /*! Invoke the binary function f on each parameter name
      *  and its constant value. */
     template <typename BinaryFunction>
-    void foreach_parameter(BinaryFunction& f) const {
+    void foreach_parameter(BinaryFunction f) const {
         f(::std::string("alpha"), alpha);
         f(::std::string("beta"),  beta );
         f(::std::string("gamma"), gamma);
@@ -344,7 +344,7 @@ public:
     /*! Invoke the binary function f on each parameter name
      * and its mutable value. */
     template <typename BinaryFunction>
-    void foreach_parameter(BinaryFunction& f) {
+    void foreach_parameter(BinaryFunction f) {
         f(::std::string("alpha"), alpha);
         f(::std::string("beta"),  beta );
         f(::std::string("gamma"), gamma);
