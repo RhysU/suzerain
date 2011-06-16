@@ -101,6 +101,40 @@ static void atexit_esio(void) {
     if (esioh) esio_handle_finalize(esioh);
 }
 
+class MSDefinition : public suzerain::problem::IDefinition {
+
+public:
+
+    MSDefinition(nsctpl_rholut::manufactured_solution<real_t> &msoln)
+        : IDefinition("Manufactured solution parameters"
+                      " (active only when --mms supplied)")
+    {
+        msoln.rho.foreach_parameter(boost::bind(option_adder,
+                    this->add_options(), "Affects density field",     _1, _2));
+        msoln.u.foreach_parameter(boost::bind(option_adder,
+                    this->add_options(), "Affects X velocity field",  _1, _2));
+        msoln.v.foreach_parameter(boost::bind(option_adder,
+                    this->add_options(), "Affects Y velocity field",  _1, _2));
+        msoln.w.foreach_parameter(boost::bind(option_adder,
+                    this->add_options(), "Affects Z velocity field",  _1, _2));
+        msoln.T.foreach_parameter(boost::bind(option_adder,
+                    this->add_options(), "Affects temperature field", _1, _2));
+    }
+
+private:
+
+    static void option_adder(
+            boost::program_options::options_description_easy_init ei,
+            const char *desc,
+            const std::string &name,
+            real_t &v)
+    {
+        ei(name.c_str(),
+           boost::program_options::value(&v)->default_value(v),
+           desc);
+    }
+};
+
 int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
@@ -122,7 +156,7 @@ int main(int argc, char **argv)
     // Process incoming program arguments from command line, input files
     std::string restart_file;
     bool   clobber = false;
-    real_t mstime  = -1;
+    real_t mms  = -1;
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based compressible channel initialization",
@@ -134,17 +168,17 @@ int main(int argc, char **argv)
             ptr_fun_ensure_nonnegative(ensure_nonnegative<real_t>);
 
         nsctpl_rholut::isothermal_channel(ms);
-//         channel::MSDefinition ms_def(ms); // FIXME
+        MSDefinition msdef(ms);
 
         options.add_definition(scenario);
         options.add_definition(grid);
-//         options.add_definition(ms_def); // FIXME
+        options.add_definition(msdef);
         options.add_options()
             ("clobber", "Overwrite an existing restart file?")
-            ("mstime",
-             boost::program_options::value<real_t>(&mstime)
-                ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative, "mstime")),
-             "If supplied, prepare a manufactured solution at the given time.")
+            ("mms",
+             boost::program_options::value<real_t>(&mms)
+                ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative, "mms")),
+             "If given, prepare a manufactured solution at the specified time.")
         ;
         std::vector<std::string> positional = options.process(argc, argv);
 
@@ -172,8 +206,8 @@ int main(int argc, char **argv)
         scenario.bulk_rho = 1;
     }
 
-    if (mstime >= 0) {
-        INFO0("Manufactured solution will be initialized at t = " << mstime);
+    if (mms >= 0) {
+        INFO0("Manufactured solution will be initialized at t = " << mms);
         ms.alpha = scenario.alpha;
         ms.beta  = scenario.beta;
         ms.gamma = scenario.gamma;
@@ -246,7 +280,7 @@ int main(int argc, char **argv)
 
                 // Initialize primitive state for...
                 real_t rho, u, v, w, T;
-                if (mstime < 0) {
+                if (mms < 0) {
                     // ...a very simple parabolic velocity profile.
                     rho = 1;
                     u   = 6*y*(scenario.Ly - y)/(scenario.Ly*scenario.Ly);
@@ -254,12 +288,12 @@ int main(int argc, char **argv)
                     w   = 0;
                     T   = 1;
                 } else {
-                    // ...the manufactured solution at t = mstime.
-                    rho = ms.rho(x, y, z, mstime);
-                    u   = ms.u  (x, y, z, mstime);
-                    v   = ms.v  (x, y, z, mstime);
-                    w   = ms.w  (x, y, z, mstime);
-                    T   = ms.T  (x, y, z, mstime);
+                    // ...the manufactured solution at t = mms.
+                    rho = ms.rho(x, y, z, mms);
+                    u   = ms.u  (x, y, z, mms);
+                    v   = ms.v  (x, y, z, mms);
+                    w   = ms.w  (x, y, z, mms);
+                    T   = ms.T  (x, y, z, mms);
                 }
 
                 // Compute and store the conserved state from primitives
@@ -295,12 +329,12 @@ int main(int argc, char **argv)
     channel::store(esioh, swave, grid, *dgrid);
     esio_file_flush(esioh);
 
-    if (mstime < 0) {
+    if (mms < 0) {
         INFO0("Storing new simulation time of zero");
         channel::store_time(esioh, 0);
     } else {
         INFO0("Storing simulation time to match manufactured solution");
-        channel::store_time(esioh, mstime);
+        channel::store_time(esioh, mms);
     }
     esio_file_flush(esioh);
 
