@@ -339,6 +339,73 @@ void load(const esio_handle h,
     }
 }
 
+static void attribute_storer(const esio_handle &h,
+                             const char *location,
+                             const std::string &name,
+                             const real_t &value)
+{
+    esio_attribute_write(h, location, name.c_str(), &value);
+}
+
+void store(const esio_handle h,
+           const nsctpl_rholut::manufactured_solution<real_t>& ms)
+{
+    static const real_t one = 1;
+    static const char location[] = "manufactured_solution";
+
+    DEBUG0("Storing nsctpl_rholut::manufactured_solution parameters");
+
+    // Only root writes the dummy line data
+    int procid;
+    esio_handle_comm_rank(h, &procid);
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
+    esio_line_write(h, location, &one, 0,
+            "Contains parameters used for a manufactured_solution");
+
+    // Non-scenario solution parameters are stored as attributes under location
+    // Scenario parameters should be taken from ScenarioDefinition
+    using boost::bind;
+    ms.rho.foreach_parameter(bind(attribute_storer, h, location, _1, _2));
+    ms.u.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
+    ms.v.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
+    ms.w.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
+    ms.T.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
+}
+
+static void attribute_loader(const esio_handle &h,
+                             const char *location,
+                             const std::string &name,
+                             real_t &value)
+{
+    esio_attribute_read(h, location, name.c_str(), &value);
+}
+
+bool load(const esio_handle h,
+          nsctpl_rholut::manufactured_solution<real_t>& ms)
+{
+    static const char location[] = "manufactured_solution";
+
+    // Existence of a line at location is our boolean flag
+    int aglobal;
+    if (!esio_line_size(h, location, &aglobal)) {
+        DEBUG0("No nsctpl_rholut::manufactured_solution parameters to load");
+        return false;
+    }
+
+    DEBUG0("Loading nsctpl_rholut::manufactured_solution parameters");
+
+    // Non-scenario solution parameters are stored as attributes under location
+    // Scenario parameters should be taken from ScenarioDefinition
+    using boost::bind;
+    ms.rho.foreach_parameter(bind(attribute_loader, h, location, _1, _2));
+    ms.u.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
+    ms.v.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
+    ms.w.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
+    ms.T.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
+
+    return true;
+}
+
 void create(const int ndof,
             const int k,
             const double left,

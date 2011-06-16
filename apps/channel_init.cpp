@@ -101,6 +101,7 @@ static void atexit_esio(void) {
     if (esioh) esio_handle_finalize(esioh);
 }
 
+/** Options definitions for tweaking the manufactured solution */
 class MSDefinition : public suzerain::problem::IDefinition {
 
 public:
@@ -232,6 +233,7 @@ int main(int argc, char **argv)
     channel::store(esioh, scenario);
     channel::store(esioh, grid, scenario.Lx, scenario.Lz);
     channel::store(esioh, b, bop, gop);
+    if (mms >= 0) channel::store(esioh, ms);
     esio_file_flush(esioh);
 
     INFO0("Initializing B-spline workspaces");

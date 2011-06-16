@@ -120,6 +120,18 @@ void store(const esio_handle h,
 void load(const esio_handle h,
           suzerain::problem::GridDefinition& grid);
 
+/** Store manufactured solution parameters in a restart file */
+void store(const esio_handle h,
+           const nsctpl_rholut::manufactured_solution<real_t>& ms);
+
+/**
+ * Load manufactured solution parameters from a restart file.
+ *
+ * @return True if the file contained manufactured solution parameters.
+ */
+bool load(const esio_handle h,
+          nsctpl_rholut::manufactured_solution<real_t>& ms);
+
 /** Create a B-spline workspace on [left,right] per ndof, k, and htdelta */
 void create(const int ndof,
             const int k,
