@@ -322,8 +322,6 @@ real_t NonlinearOperator::applyOperator(
     const real_t evmaxmag_imag,
     const bool delta_t_requested) const
 {
-    SUZERAIN_UNUSED(time); // FIXME Will be used as part of #1838
-
     namespace ndx = channel::field::ndx;
 
     // State enters method as coefficients in X, Y, and Z directions
@@ -624,6 +622,51 @@ real_t NonlinearOperator::applyOperator(
 
     } // end Y
 
+
+    // If active, add manufactured solution forcing in a second pass.
+    // Isolating this pass allows us to quickly skip the associated work when
+    // not using a manufactured solution.  Same traversal idiom as above.
+    if (msoln) {
+
+        // Dereference the msoln smart pointer outside the compute loop
+        const nsctpl_rholut::manufactured_solution<real_t> &ms = *msoln;
+
+        offset = 0;
+        for (int j = dgrid.local_physical_start.y();
+             j < dgrid.local_physical_end.y();
+             ++j) {
+
+            const real_t y = this->y(j);
+
+            for (int k = dgrid.local_physical_start.z();
+                k < dgrid.local_physical_end.z();
+                ++k) {
+
+                const real_t z = this->z(k);
+
+                for (int i = dgrid.local_physical_start.x();
+                    i < dgrid.local_physical_end.x();
+                    ++i, /* NB */ ++offset) {
+
+                    const real_t x = this->x(i);
+
+                    real_t Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe;
+                    ms.Q_conservative(x, y, z, time,
+                                      Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe);
+
+                    sphys(ndx::rho,  offset) += Q_rho;
+                    sphys(ndx::rhou, offset) += Q_rhou;
+                    sphys(ndx::rhov, offset) += Q_rhov;
+                    sphys(ndx::rhow, offset) += Q_rhow;
+                    sphys(ndx::rhoe, offset) += Q_rhoe;
+
+                } // end X
+
+            } // end Z
+
+        } // end Y
+
+    } // end msoln
 
     // Collectively convert state to wave space using parallel FFTs
     for (std::size_t i = 0; i < channel::field::count; ++i) {
