@@ -313,10 +313,19 @@ int main(int argc, char **argv)
     channel::load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
     channel::load(esioh, const_cast<GridDefinition&>(grid));
     channel::load(esioh, scenario, msoln);
-    if (msoln) {
-        INFO0("Loaded manufactured solution parameters to apply forcing");
-    }
     esio_file_close(esioh);
+
+    if (msoln) {
+        INFO0("Restart file prescribes a manufactured solution");
+        if (boost::math::isnormal(scenario.bulk_rho)) {
+            WARN0("Manufactured solution incompatible with bulk_rho = "
+                  << scenario.bulk_rho);
+        }
+        if (boost::math::isnormal(scenario.bulk_rhou)) {
+            WARN0("Manufactured solution incompatible with bulk_rhou = "
+                  << scenario.bulk_rhou);
+        }
+    }
 
     INFO0("Using B-splines of order " << (grid.k - 1)
           << " on [0, " << scenario.Ly << "] with "

@@ -258,7 +258,8 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // channel_treatment step (3) performs the usual operator solve
     base::invertMassPlusScaledOperator(phi, state);
 
-    if (has_zero_zero_mode) {
+    // Constraint enabled only if bulk_rhou is non-infinite, non-NaN.
+    if (has_zero_zero_mode && (boost::math::isnormal)(scenario.bulk_rhou)) {
 
         // channel_treatment steps (4), (5), and (6) determine and
         // apply the appropriate bulk momentum forcing to achieve
@@ -285,7 +286,8 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // to the momentum and energy equations.  Neglecting these terms is
     // acceptable as the forcing is very small and vanishes when the
     // mean field is symmetric in the wall-normal direction.
-    if (has_zero_zero_mode) {
+    // Constraint enabled only if bulk_rho is non-infinite, non-NaN.
+    if (has_zero_zero_mode && (boost::math::isnormal)(scenario.bulk_rho)) {
         Map<VectorXc> mean_rho(state[ndx::rho].origin(), Ny);
         const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rho);
         const real_t phi = (scenario.bulk_rho - bulk.real()) / bulk.imag();

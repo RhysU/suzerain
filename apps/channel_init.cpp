@@ -219,6 +219,11 @@ int main(int argc, char **argv)
         msoln->Lx    = scenario.Lx;
         msoln->Ly    = scenario.Ly;
         msoln->Lz    = scenario.Lz;
+
+        INFO0("Disabling bulk_rho and bulk_rhou constraints"
+              " due to manufactured solution use");
+        scenario.bulk_rho  = numeric_limits<real_t>::quiet_NaN();
+        scenario.bulk_rhou = numeric_limits<real_t>::quiet_NaN();
     } else {
         msoln.reset();
     }
