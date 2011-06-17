@@ -234,20 +234,20 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
 
     // Integral constraints enabled only when parameters are non-inf, non-NaN.
     // Allow disabling these to meet manufactured solution verification needs.
-    const bool constrain_bulk_rho
-            = (boost::math::isnormal)(scenario.bulk_rho);
     const bool constrain_bulk_rhou
             = (boost::math::isnormal)(scenario.bulk_rhou);
+    const bool constrain_bulk_rho
+            = (boost::math::isnormal)(scenario.bulk_rho);
 
     // channel_treatment step (2) loads mean state at collocation points
     // into the imaginary part of the constant (zero zero) mode coefficients
-    if (constrain_bulk_rho && has_zero_zero_mode) {
+    if (constrain_bulk_rhou && has_zero_zero_mode) {
+
         saved_mean_rho[wall_lower] = 0;  // No forcing at lower wall
         saved_mean_rho[wall_upper] = 0;  // No forcing at upper wall
         Map<VectorXc> mean_rhou(state[ndx::rhou].origin(), Ny);
         mean_rhou.imag() = saved_mean_rho;
-    }
-    if (constrain_bulk_rhou && has_zero_zero_mode) {
+
         saved_mean_rhou[wall_lower] = 0;  // No forcing at lower wall
         saved_mean_rhou[wall_upper] = 0;  // No forcing at upper wall
         Map<VectorXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
