@@ -444,9 +444,9 @@ int main(int argc, char **argv)
     using suzerain::timestepper::TimeController;
     scoped_ptr<TimeController<real_t> > tc;
 
-    // Prepare timestepping details specific to the chosen operators
-    // Nonlinear scaling factor (L_x L_z N_x N_z)^(-1) included here
-    // See write up section 2.1 (Spatial Discretization) for scaling details
+    // Prepare timestepping details specific to the chosen operators.
+    // Nonlinear scaling factor (N_x N_z)^(-1) from write up section 2.1
+    // (Spatial discretization) is modified for dealiasing and included here.
     m.reset(new suzerain::timestepper::lowstorage::SMR91Method<complex_t>(
                 timedef.evmagfactor));
     L.reset(new channel::BsplineMassOperatorIsothermal(
@@ -454,8 +454,7 @@ int main(int argc, char **argv)
     N.reset(new channel::NonlinearOperator(
                 scenario, grid, *dgrid, *b, *bop, msoln));
     tc.reset(make_LowStorageTimeController(
-                *m, *L,
-                1.0/(scenario.Lx*scenario.Lz)/(grid.dN.x()*grid.dN.z()), *N,
+                *m, *L, real_t(1)/(grid.dN.x()*grid.dN.z()), *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 

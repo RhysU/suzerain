@@ -804,8 +804,7 @@ Finally, approximating the two integrals by discrete sums and dividing
 by $L_x$ and $L_z$ leaves us with
 \begin{align}
   \sum_{l} B_l\!\left(y_{l'}\right)
-  &\frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
-\\
+  \frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
   &\approx
   \mathscr{L}\left(
     \sum_{l}
@@ -814,7 +813,7 @@ by $L_x$ and $L_z$ leaves us with
   \right)
 \\
   &{}+
-  \frac{1}{L_x L_z N_x N_z}
+  \frac{1}{N_x N_z}
   \sum_{m'} \sum_{n'}
   \mathscr{N}\left(
     \sum_{m}
@@ -858,7 +857,7 @@ Note that the left hand side of \eqref{eq:spatial_discretization} contains a
 time-independent mass matrix arising from the B-spline basis and collocation
 point choices.  We retain the mass matrix on the same side as the time
 derivative in anticipation of the time discretization scheme.  The
-computational cost of the scaling factor $\left(L_x L_z N_x N_z\right)^{-1}$
+computational cost of the scaling factor $\left(N_x N_z\right)^{-1}$
 can be hidden within the time advancement scheme.
 
 Rather than time advancing the B-spline coefficients $\hat{u}_{l m n}(t)$ as
@@ -870,7 +869,7 @@ point values $\hat{u}_{y_{l'} m n}(t) = \sum_{l} B_l\!\left(y_{l'}\right)
   &\approx
   \mathscr{L}\left(\hat{u}_{y_{l'} m n}(t)\right)
   +
-  \frac{1}{L_x L_z N_x N_z}
+  \frac{1}{N_x N_z}
   \sum_{m'} \sum_{n'}
   \mathscr{N}\left(
     \sum_{m}
@@ -1131,7 +1130,7 @@ the time-independent discrete operators
    \right)
 \\
    \left.\tilde{N}\!\left(u\right)\right|_{m n}
-&= \underbrace{\frac{1}{L_x L_z N_x N_z}}_{\chi}
+&= \underbrace{\frac{1}{N_x N_z}}_{\chi}
    \sum_{m'} \sum_{n'}
    \mathscr{N}\left(
      \sum_{m}
@@ -1158,7 +1157,7 @@ while advancing state $\hat{u}_{y_{l'} m n}(t)$ following
 &= \mathscr{L}\left(\hat{u}_{y_{l'} m n}\right)
 \\
    \left.\tilde{N}\!\left(u\right)\right|_{m n}
-&= \underbrace{\frac{1}{L_x L_z N_x N_z}}_{\chi}
+&= \underbrace{\frac{1}{N_x N_z}}_{\chi}
    \sum_{m'} \sum_{n'}
    \mathscr{N}\left(
      \sum_{m}
