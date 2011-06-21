@@ -455,7 +455,7 @@ int main(int argc, char **argv)
                 scenario, grid, *dgrid, *b, *bop, msoln));
     tc.reset(make_LowStorageTimeController(
                 *m, *L,
-                1.0/(scenario.Lx*scenario.Lz)/(grid.N.x()*grid.N.z()), *N,
+                1.0/(scenario.Lx*scenario.Lz)/(grid.dN.x()*grid.dN.z()), *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 
