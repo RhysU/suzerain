@@ -77,7 +77,7 @@ static GridDefinition grid(
         /* DAFx    */ 1.5,
         /* Ny      */ 16,
         /* k       */ 6,
-        /* htdelta */ 3,
+        /* htdelta */ 1,
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
 static shared_ptr<const suzerain::pencil_grid> dgrid;
