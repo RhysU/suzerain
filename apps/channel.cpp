@@ -43,6 +43,8 @@
 #include "channel.hpp"
 #include "nsctpl_rholut.hpp"
 
+// TODO Refactor -0.0 handling for scenario.{alpha,beta}, grid.htdelta
+
 using boost::numeric_cast;
 
 namespace channel {
@@ -181,16 +183,28 @@ void load(const esio_handle h,
         esio_line_read(h, "bulk_rhou", &scenario.bulk_rhou, 0);
     }
 
-    if (scenario.alpha) {
-        INFO0("Overriding scenario using alpha = " << scenario.alpha);
-    } else {
-        esio_line_read(h, "alpha", &scenario.alpha, 0);
+    {
+        // Wacky emulation of signbit which can misbehave on GCC at -O3
+        const double a = scenario.alpha;
+        const double b = std::abs(a);
+        const bool alpha_has_negative_sign = memcmp(&a, &b, sizeof(a));
+        if (alpha_has_negative_sign) {
+            esio_line_read(h, "alpha", &scenario.alpha, 0);
+        } else {
+            INFO0("Overriding scenario using alpha = " << scenario.alpha);
+        }
     }
 
-    if (scenario.beta) {
-        INFO0("Overriding scenario using beta = " << scenario.beta);
-    } else {
-        esio_line_read(h, "beta", &scenario.beta, 0);
+    {
+        // Wacky emulation of signbit which can misbehave on GCC at -O3
+        const double a = scenario.beta;
+        const double b = std::abs(a);
+        const bool beta_has_negative_sign = memcmp(&a, &b, sizeof(a));
+        if (beta_has_negative_sign) {
+            esio_line_read(h, "beta", &scenario.beta, 0);
+        } else {
+            INFO0("Overriding scenario using beta = " << scenario.beta);
+        }
     }
 
     if (scenario.gamma) {

@@ -68,17 +68,17 @@ public:
      * @param default_Ly        Default domain length in the Y direction.
      * @param default_Lz        Default domain length in the Z direction.
      */
-    explicit ScenarioDefinition(FPT default_Re        = 0,
-                                FPT default_Ma        = 0,
-                                FPT default_Pr        = 0,
-                                FPT default_bulk_rho  = 0,
-                                FPT default_bulk_rhou = 0,
-                                FPT default_alpha     = 0,
-                                FPT default_beta      = 0,
-                                FPT default_gamma     = 0,
-                                FPT default_Lx        = 0,
-                                FPT default_Ly        = 0,
-                                FPT default_Lz        = 0);
+    explicit ScenarioDefinition(FPT default_Re        =  0.0,
+                                FPT default_Ma        =  0.0,
+                                FPT default_Pr        =  0.0,
+                                FPT default_bulk_rho  =  0.0,
+                                FPT default_bulk_rhou =  0.0,
+                                FPT default_alpha     = -0.0,
+                                FPT default_beta      = -0.0,
+                                FPT default_gamma     =  0.0,
+                                FPT default_Lx        =  0.0,
+                                FPT default_Ly        =  0.0,
+                                FPT default_Lz        =  0.0);
 
     /**
      * The Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
@@ -242,25 +242,17 @@ ScenarioDefinition<FPT>::ScenarioDefinition(
                 "bulk streamwise momentum target");
     }
 
-    { // alpha
+    { // alpha (which may be zero)
         auto_ptr<typed_value<FPT> > v(value(&this->alpha));
-        if (default_alpha) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "alpha"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "alpha"));
-        }
+        v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "alpha"));
         v->default_value(default_alpha);
         this->add_options()("alpha", v.release(),
                 "Ratio of bulk to dynamic viscosity");
     }
 
-    { // beta
+    { // beta (which may be zero)
         auto_ptr<typed_value<FPT> > v(value(&this->beta));
-        if (default_beta) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "beta"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "beta"));
-        }
+        v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "beta"));
         v->default_value(default_beta);
         this->add_options()("beta", v.release(),
                 "Temperature power law exponent");
