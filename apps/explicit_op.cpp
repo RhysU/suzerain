@@ -474,13 +474,22 @@ real_t NonlinearOperator::applyOperator(
          j < dgrid.local_physical_end.y();
          ++j) {
 
+        const real_t y = this->y(j);
+        SUZERAIN_UNUSED(y);
+
         for (int k = dgrid.local_physical_start.z();
             k < dgrid.local_physical_end.z();
             ++k) {
 
+            const real_t z = this->z(k);
+            SUZERAIN_UNUSED(z);
+
             for (int i = dgrid.local_physical_start.x();
                 i < dgrid.local_physical_end.x();
                 ++i, /* NB */ ++offset) {
+
+                const real_t x = this->x(i);
+                SUZERAIN_UNUSED(x);
 
                 // Unpack density-related quantities
                 const real_t rho          = sphys(ndx::rho, offset);
