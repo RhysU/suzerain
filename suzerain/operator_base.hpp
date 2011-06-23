@@ -200,7 +200,7 @@ public:
                         const MultiArray &x,
                         int ndx_x) const
     {
-        return suzerain::diffwave::accumulate(
+        return suzerain::diffwave::apply(
                 dxcnt, dzcnt,
                 alpha, x[ndx_x].origin(),
                 scenario.Lx, scenario.Lz,
