@@ -78,19 +78,21 @@ using suzerain::problem::RestartDefinition;
 using suzerain::problem::TimeDefinition;
 static const ScenarioDefinition<real_t> scenario;
 static const GridDefinition grid;
-static const RestartDefinition<> restart(/* metadata     */ "metadata.h5",
-                                         /* uncommitted  */ "uncommitted.h5",
-                                         /* desttemplate */ "restart#.h5",
-                                         /* retain       */ 1,
-                                         /* every_dt     */ 0,
-                                         /* every_nt     */ 0);
-static const TimeDefinition<real_t> timedef(/* advance_dt           */ 0,
-                                            /* advance_nt           */ 0,
-                                            /* status_dt            */ 0,
-                                            /* status_nt            */ 0,
-                                            /* min_dt               */ 0,
-                                            /* max_dt               */ 0,
-                                            /* evmagfactor per Prem */ 0.72);
+static const RestartDefinition<> restart(
+        /* metadata     */ "metadata.h5",
+        /* uncommitted  */ "uncommitted.h5",
+        /* desttemplate */ "restart#.h5",
+        /* retain       */ 1,
+        /* restart_dt   */ 0,
+        /* restart_nt   */ 0);
+static const TimeDefinition<real_t> timedef(
+        /* advance_dt                */ 0,
+        /* advance_nt                */ 0,
+        /* status_dt                 */ 0,
+        /* status_nt                 */ 0,
+        /* min_dt                    */ 0,
+        /* max_dt                    */ 0,
+        /* evmagfactor per Venugopal */ 0.72);
 
 // Global details initialized in main()
 static shared_ptr<      suzerain::bspline>       b;
@@ -483,12 +485,12 @@ int main(int argc, char **argv)
         tc->add_periodic_callback(dt, nt, &log_status);
     }
 
-    // Register restart-writing callbacks every_{dt,nt} as requested
+    // Register restart-writing callbacks restart_{dt,nt} as requested
     // When either is not provided, default to a reasonable behavior
     {
         TimeController<real_t>::time_type dt;
-        if (restart.every_dt()) {
-            dt = restart.every_dt();
+        if (restart.restart_dt()) {
+            dt = restart.restart_dt();
         } else if (timedef.advance_dt) {
             dt = timedef.advance_dt / restart.retain();
         } else {
@@ -496,8 +498,8 @@ int main(int argc, char **argv)
         }
 
         TimeController<real_t>::step_type nt;
-        if (restart.every_nt()) {
-            nt = restart.every_nt();
+        if (restart.restart_nt()) {
+            nt = restart.restart_nt();
         } else if (timedef.advance_nt) {
             nt = timedef.advance_nt / restart.retain();
             nt = std::max<TimeController<real_t>::step_type>(1, nt);

@@ -63,9 +63,9 @@ public:
      *                             committing restart files.
      * @param default_retain       Maximum number of committed restart files
      *                             to retain.
-     * @param default_every_nt     Number of simulation steps between restart
+     * @param default_restart_nt   Number of simulation steps between restart
      *                             writes.
-     * @param default_every_dt     Amount of simulation time between restart
+     * @param default_restart_dt   Amount of simulation time between restart
      *                             writes.
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
@@ -76,8 +76,8 @@ public:
             const String& default_uncommitted  = "",
             const String& default_desttemplate = "",
             int default_retain                 = 1,
-            double default_every_dt            = 0,
-            int default_every_nt               = 0);
+            double default_restart_dt          = 0,
+            int default_restart_nt             = 0);
 
     /**
      * Retrieve the restart file path to use when saving common restart file
@@ -121,7 +121,7 @@ public:
      * @return the maximum amount of simulation time between writing restart
      * files.
      */
-    double every_dt() const { return every_dt_; }
+    double restart_dt() const { return restart_dt_; }
 
     /**
      * Retrieve the maximum number of simulation steps to take between
@@ -130,12 +130,12 @@ public:
      * @return the maximum number of simulation steps to take between
      * writing restart files.
      */
-    int every_nt() const { return every_nt_; }
+    int restart_nt() const { return restart_nt_; }
 
 private:
 
     /** Stores the metadata write path */
-    String metadata_;     
+    String metadata_;
 
     /** Stores the uncommitted restart path */
     String uncommitted_;
@@ -147,10 +147,10 @@ private:
     int retain_;
 
     /** Stores restart writing frequency in simulation time */
-    double every_dt_;
+    double restart_dt_;
 
     /** Stores restart writing frequency in time steps */
-    int every_nt_;
+    int restart_nt_;
 };
 
 template< class String >
@@ -159,15 +159,15 @@ RestartDefinition<String>::RestartDefinition(
         const String& default_uncommitted,
         const String& default_desttemplate,
         int default_retain,
-        double default_every_dt,
-        int default_every_nt)
+        double default_restart_dt,
+        int default_restart_nt)
     : IDefinition("Restart-related parameters"),
       metadata_(default_metadata),
       uncommitted_(default_uncommitted),
       desttemplate_(default_desttemplate),
       retain_(default_retain),
-      every_dt_(default_every_dt),
-      every_nt_(default_every_nt)
+      restart_dt_(default_restart_dt),
+      restart_nt_(default_restart_nt)
 {
     namespace po = ::boost::program_options;
 
@@ -197,13 +197,13 @@ RestartDefinition<String>::RestartDefinition(
             ->notifier(bind2nd(ptr_fun_ensure_positive_int, "retain"))
             ->default_value(retain_),
          "Maximum number of committed restart files to retain")
-        ("every_dt", po::value(&every_dt_)
-            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_double, "every_dt"))
-            ->default_value(every_dt_),
+        ("restart_dt", po::value(&restart_dt_)
+            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_double, "restart_dt"))
+            ->default_value(restart_dt_),
          "Maximum amount of simulation time between restart files")
-        ("every_nt", po::value(&every_nt_)
-            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_int, "every_nt"))
-            ->default_value(every_nt_),
+        ("restart_nt", po::value(&restart_nt_)
+            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_int, "restart_nt"))
+            ->default_value(restart_nt_),
          "Maximum number of time steps between restart files")
     ;
 }
