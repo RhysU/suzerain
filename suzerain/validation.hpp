@@ -42,7 +42,8 @@ namespace suzerain {
 namespace validation {
 
 /**
- * Throws an \c invalid_argument exception if a value is not positive.
+ * Throws an \c invalid_argument exception if a value is neither positive
+ * nor NaN.
  *
  * @param t    Value to check.
  * @param name Optional name to use in the exception message
@@ -54,7 +55,7 @@ throw(std::invalid_argument)
     // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
 
     BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
-    if (!(t > T(0))) {
+    if (!(t > T(0) || (boost::math::isnan)(t))) {
         std::ostringstream msg;
         if (name) {
             msg << "Value of '" << name << "' (" << t << ") must be positive";
@@ -66,7 +67,8 @@ throw(std::invalid_argument)
 }
 
 /**
- * Throws an \c invalid_argument exception if a value is not nonnegative.
+ * Throws an \c invalid_argument exception if a value is neither nonnegative
+ * nor NaN.
  *
  * @param t    Value to check.
  * @param name Optional name to use in the exception message
@@ -79,7 +81,7 @@ throw(std::invalid_argument)
     // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
 
     BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
-    if (!(t >= T(0))) {
+    if (!(t >= T(0) || (boost::math::isnan)(t))) {
         std::ostringstream msg;
         if (name) {
             msg << "Value of '" << name << "' (" << t << ") must be nonnegative";
