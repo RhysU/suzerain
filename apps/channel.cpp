@@ -157,79 +157,67 @@ void load(const esio_handle h,
 
     esio_line_establish(h, 1, 0, 1); // All ranks load
 
-    if (scenario.Re) {
+    if (!(boost::math::isnan)(scenario.Re)) {
         INFO0("Overriding scenario using Re = " << scenario.Re);
     } else {
         esio_line_read(h, "Re", &scenario.Re, 0);
     }
 
-    if (scenario.Ma) {
+    if (!(boost::math::isnan)(scenario.Ma)) {
         INFO0("Overriding scenario using Ma = " << scenario.Ma);
     } else {
         esio_line_read(h, "Ma", &scenario.Ma, 0);
     }
 
-    if (scenario.Pr) {
+    if (!(boost::math::isnan)(scenario.Pr)) {
         INFO0("Overriding scenario using Pr = " << scenario.Pr);
     } else {
         esio_line_read(h, "Pr", &scenario.Pr, 0);
     }
 
-    if (scenario.bulk_rho) {
+    if (!(boost::math::isnan)(scenario.bulk_rho)) {
         INFO0("Overriding scenario using bulk_rho = " << scenario.bulk_rho);
     } else {
         esio_line_read(h, "bulk_rho", &scenario.bulk_rho, 0);
     }
 
-    if (scenario.bulk_rhou) {
+    if (!(boost::math::isnan)(scenario.bulk_rhou)) {
         INFO0("Overriding scenario using bulk_rhou = " << scenario.bulk_rhou);
     } else {
         esio_line_read(h, "bulk_rhou", &scenario.bulk_rhou, 0);
     }
 
-    {
-        // Wacky emulation of signbit which can misbehave on GCC at -O3
-        const double a = scenario.alpha;
-        const double b = std::abs(a);
-        const bool alpha_has_negative_sign = memcmp(&a, &b, sizeof(a));
-        if (alpha_has_negative_sign) {
-            esio_line_read(h, "alpha", &scenario.alpha, 0);
-        } else {
-            INFO0("Overriding scenario using alpha = " << scenario.alpha);
-        }
+    if (!(boost::math::isnan)(scenario.alpha)) {
+        INFO0("Overriding scenario using alpha = " << scenario.alpha);
+    } else {
+        esio_line_read(h, "alpha", &scenario.alpha, 0);
     }
 
-    {
-        // Wacky emulation of signbit which can misbehave on GCC at -O3
-        const double a = scenario.beta;
-        const double b = std::abs(a);
-        const bool beta_has_negative_sign = memcmp(&a, &b, sizeof(a));
-        if (beta_has_negative_sign) {
-            esio_line_read(h, "beta", &scenario.beta, 0);
-        } else {
-            INFO0("Overriding scenario using beta = " << scenario.beta);
-        }
+    if (!(boost::math::isnan)(scenario.beta)) {
+        INFO0("Overriding scenario using beta = " << scenario.beta);
+    } else {
+        esio_line_read(h, "beta", &scenario.beta, 0);
     }
 
-    if (scenario.gamma) {
+    if (!(boost::math::isnan)(scenario.gamma)) {
         INFO0("Overriding scenario using gamma = " << scenario.gamma);
     } else {
         esio_line_read(h, "gamma", &scenario.gamma, 0);
     }
 
-    if (scenario.Lx) {
+    if (!(boost::math::isnan)(scenario.Lx)) {
         INFO0("Overriding scenario using Lx = " << scenario.Lx);
     } else {
         esio_line_read(h, "Lx", &scenario.Lx, 0);
     }
 
-    if (scenario.Ly) {
+    if (!(boost::math::isnan)(scenario.Ly)) {
         INFO0("Overriding scenario using Ly = " << scenario.Ly);
     } else {
         esio_line_read(h, "Ly", &scenario.Ly, 0);
     }
 
-    if (scenario.Lz) {
+    if (!(boost::math::isnan)(scenario.Lz)) {
         INFO0("Overriding scenario using Lz = " << scenario.Lz);
     } else {
         esio_line_read(h, "Lz", &scenario.Lz, 0);

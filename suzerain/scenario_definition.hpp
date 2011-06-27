@@ -53,32 +53,69 @@ template< typename FPT = double >
 class ScenarioDefinition : public IDefinition
 {
 public:
+
     /**
-     * Construct an instance with the given parameters.
-     *
-     * @param default_Re        Default Reynolds number.
-     * @param default_Ma        Default Mach number.
-     * @param default_Pr        Default Prandtl number.
-     * @param default_bulk_rho  Default bulk density target.
-     * @param default_bulk_rhou Default bulk streamwise momentum target.
-     * @param default_alpha     Default ratio of bulk to dynamic viscosity.
-     * @param default_beta      Default temperature power law exponent.
-     * @param default_gamma     Default ratio of specific heats.
-     * @param default_Lx        Default domain length in the X direction.
-     * @param default_Ly        Default domain length in the Y direction.
-     * @param default_Lz        Default domain length in the Z direction.
+     * Construct an instance with all parameters set to NaN.
+     * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
-    explicit ScenarioDefinition(FPT default_Re        =  0.0,
-                                FPT default_Ma        =  0.0,
-                                FPT default_Pr        =  0.0,
-                                FPT default_bulk_rho  =  0.0,
-                                FPT default_bulk_rhou =  0.0,
-                                FPT default_alpha     = -0.0,
-                                FPT default_beta      = -0.0,
-                                FPT default_gamma     =  0.0,
-                                FPT default_Lx        =  0.0,
-                                FPT default_Ly        =  0.0,
-                                FPT default_Lz        =  0.0);
+    ScenarioDefinition()
+        : IDefinition("Nondimensional scenario parameters"),
+          Re(std::numeric_limits<FPT>::quiet_NaN()),
+          Ma(std::numeric_limits<FPT>::quiet_NaN()),
+          Pr(std::numeric_limits<FPT>::quiet_NaN()),
+          bulk_rho(std::numeric_limits<FPT>::quiet_NaN()),
+          bulk_rhou(std::numeric_limits<FPT>::quiet_NaN()),
+          alpha(std::numeric_limits<FPT>::quiet_NaN()),
+          beta(std::numeric_limits<FPT>::quiet_NaN()),
+          gamma(std::numeric_limits<FPT>::quiet_NaN()),
+          Lx(std::numeric_limits<FPT>::quiet_NaN()),
+          Ly(std::numeric_limits<FPT>::quiet_NaN()),
+          Lz(std::numeric_limits<FPT>::quiet_NaN())
+    {
+        initialize_options();
+    }
+
+    /**
+     * Construct an instance with the given parameter values.
+     *
+     * @param Re        Reynolds number.
+     * @param Ma        Mach number.
+     * @param Pr        Prandtl number.
+     * @param bulk_rho  Bulk density target.
+     * @param bulk_rhou Bulk streamwise momentum target.
+     * @param alpha     Ratio of bulk to dynamic viscosity.
+     * @param beta      Temperature power law exponent.
+     * @param gamma     Ratio of specific heats.
+     * @param Lx        Domain length in the X direction.
+     * @param Ly        Domain length in the Y direction.
+     * @param Lz        Domain length in the Z direction.
+     */
+    ScenarioDefinition(FPT Re,
+                       FPT Ma,
+                       FPT Pr,
+                       FPT bulk_rho,
+                       FPT bulk_rhou,
+                       FPT alpha,
+                       FPT beta,
+                       FPT gamma,
+                       FPT Lx,
+                       FPT Ly,
+                       FPT Lz)
+        : IDefinition("Nondimensional scenario parameters"),
+          Re(Re),
+          Ma(Ma),
+          Pr(Pr),
+          bulk_rho(bulk_rho),
+          bulk_rhou(bulk_rhou),
+          alpha(alpha),
+          beta(beta),
+          gamma(gamma),
+          Lx(Lx),
+          Ly(Ly),
+          Lz(Lz)
+    {
+        initialize_options();
+    }
 
     /**
      * The Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
@@ -139,168 +176,110 @@ public:
      * The domain length in the Z direction.
      */
     FPT Lz;
+
+private:
+    /** Options initialization common to all constructors */
+    void initialize_options();
 };
 
 template< typename FPT >
-ScenarioDefinition<FPT>::ScenarioDefinition(
-        FPT default_Re,
-        FPT default_Ma,
-        FPT default_Pr,
-        FPT default_bulk_rho,
-        FPT default_bulk_rhou,
-        FPT default_alpha,
-        FPT default_beta,
-        FPT default_gamma,
-        FPT default_Lx,
-        FPT default_Ly,
-        FPT default_Lz)
-    : IDefinition("Nondimensional scenario parameters"),
-      Re(default_Re),
-      Ma(default_Ma),
-      Pr(default_Pr),
-      bulk_rho(default_bulk_rho),
-      bulk_rhou(default_bulk_rhou),
-      alpha(default_alpha),
-      beta(default_beta),
-      gamma(default_gamma),
-      Lx(default_Lx),
-      Ly(default_Ly),
-      Lz(default_Lz)
+void ScenarioDefinition<FPT>::initialize_options()
 {
-    using ::std::auto_ptr;
-    using ::std::bind2nd;
-    using ::std::ptr_fun;
-    using ::suzerain::validation::ensure_nonnegative;
-    using ::suzerain::validation::ensure_positive;
-    using ::boost::program_options::typed_value;
-    using ::boost::program_options::value;
 
     // Created to solve ambiguous type issues below
     ::std::pointer_to_binary_function<FPT,const char*,void>
-        ptr_fun_ensure_positive_FPT(ensure_positive<FPT>);
+        ensure_positive(::suzerain::validation::ensure_positive<FPT>);
     ::std::pointer_to_binary_function<FPT,const char*,void>
-        ptr_fun_ensure_nonnegative_FPT(ensure_nonnegative<FPT>);
+        ensure_nonnegative(::suzerain::validation::ensure_nonnegative<FPT>);
 
-    // Complicated add_options() calls done to allow changing the validation
-    // routine in use when the default provided value is zero.  Zero is
-    // generally used a NOP value by some client code.
+    // Complicated add_options() calls done to allow changing the default value
+    // displayed when the default is NaN.  NaN is used as a NOP value by client
+    // code.  Validation routines used below all silently allow NaNs.
+
+    using ::boost::math::isnan;
+    using ::boost::program_options::typed_value;
+    using ::boost::program_options::value;
+    using ::std::auto_ptr;
+    using ::std::bind2nd;
 
     { // Re
         auto_ptr<typed_value<FPT> > v(value(&this->Re));
-        if (default_Re) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Re"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Re"));
-        }
-        v->default_value(default_Re);
+        v->notifier(bind2nd(ensure_positive, "Re"));
+        if (!(isnan)(Re)) v->default_value(Re);
         this->add_options()("Re", v.release(), "Reynolds number");
     }
 
     { // Ma
         auto_ptr<typed_value<FPT> > v(value(&this->Ma));
-        if (default_Ma) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Ma"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Ma"));
-        }
-        v->default_value(default_Ma);
+        v->notifier(bind2nd(ensure_positive, "Ma"));
+        if (!(isnan)(Ma)) v->default_value(Ma);
         this->add_options()("Ma", v.release(), "Mach number");
     }
 
     { // Pr
         auto_ptr<typed_value<FPT> > v(value(&this->Pr));
-        if (default_Pr) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Pr"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Pr"));
-        }
-        v->default_value(default_Pr);
+        v->notifier(bind2nd(ensure_positive, "Pr"));
+        if (!(isnan)(Pr)) v->default_value(Pr);
         this->add_options()("Pr", v.release(), "Prandtl number");
     }
 
     { // bulk_rho
         auto_ptr<typed_value<FPT> > v(value(&this->bulk_rho));
-        if (default_bulk_rho) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "bulk_rho"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "bulk_rho"));
-        }
-        v->default_value(default_bulk_rho);
-        this->add_options()("bulk_rho", v.release(),
-                "bulk density target");
+        v->notifier(bind2nd(ensure_nonnegative, "bulk_rho"));
+        if (!(isnan)(bulk_rho)) v->default_value(bulk_rho);
+        this->add_options()("bulk_rho", v.release(), "bulk density target");
     }
 
     { // bulk_rhou
         auto_ptr<typed_value<FPT> > v(value(&this->bulk_rhou));
-        if (default_bulk_rhou) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "bulk_rhou"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "bulk_rhou"));
-        }
-        v->default_value(default_bulk_rhou);
-        this->add_options()("bulk_rhou", v.release(),
-                "bulk streamwise momentum target");
+        v->notifier(bind2nd(ensure_nonnegative, "bulk_rhou"));
+        if (!(isnan)(bulk_rhou)) v->default_value(bulk_rhou);
+        this->add_options()("bulk_rhou", v.release(), "bulk momentum target");
     }
 
-    { // alpha (which may be zero)
+    { // alpha
         auto_ptr<typed_value<FPT> > v(value(&this->alpha));
-        v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "alpha"));
-        v->default_value(default_alpha);
+        v->notifier(bind2nd(ensure_nonnegative, "alpha"));
+        if (!(isnan)(alpha)) v->default_value(alpha);
         this->add_options()("alpha", v.release(),
                 "Ratio of bulk to dynamic viscosity");
     }
 
-    { // beta (which may be zero)
+    { // beta
         auto_ptr<typed_value<FPT> > v(value(&this->beta));
-        v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "beta"));
-        v->default_value(default_beta);
+        v->notifier(bind2nd(ensure_nonnegative, "beta"));
+        if (!(isnan)(beta)) v->default_value(beta);
         this->add_options()("beta", v.release(),
                 "Temperature power law exponent");
     }
 
     { // gamma
         auto_ptr<typed_value<FPT> > v(value(&this->gamma));
-        if (default_gamma) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "gamma"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "gamma"));
-        }
-        v->default_value(default_gamma);
+        v->notifier(bind2nd(ensure_positive, "gamma"));
+        if (!(isnan)(gamma)) v->default_value(gamma);
         this->add_options()("gamma", v.release(), "Ratio of specific heats");
     }
 
     { // Lx
         auto_ptr<typed_value<FPT> > v(value(&this->Lx));
-        if (default_Lx) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Lx"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Lx"));
-        }
-        v->default_value(default_Lx);
+        v->notifier(bind2nd(ensure_positive, "Lx"));
+        if (!(isnan)(Lx)) v->default_value(Lx);
         this->add_options()("Lx", v.release(),
                 "Nondimensional grid length in streamwise X direction");
     }
 
     { // Ly
         auto_ptr<typed_value<FPT> > v(value(&this->Ly));
-        if (default_Ly) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Ly"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Ly"));
-        }
-        v->default_value(default_Ly);
+        v->notifier(bind2nd(ensure_positive, "Ly"));
+        if (!(isnan)(Ly)) v->default_value(Ly);
         this->add_options()("Ly", v.release(),
                 "Nondimensional grid length in wall normal Y direction");
     }
 
     { // Lz
         auto_ptr<typed_value<FPT> > v(value(&this->Lz));
-        if (default_Lz) {
-            v->notifier(bind2nd(ptr_fun_ensure_positive_FPT,    "Lz"));
-        } else {
-            v->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "Lz"));
-        }
-        v->default_value(default_Lz);
+        v->notifier(bind2nd(ensure_positive, "Lz"));
+        if (!(isnan)(Lz)) v->default_value(Lz);
         this->add_options()("Lz", v.release(),
                 "Nondimensional grid length in spanwise Z direction");
     }
