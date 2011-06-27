@@ -55,35 +55,58 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     /**
-     * Construct an instance with the given default values.  Setting default
-     * values of zero changes option semantics so the parameters become
-     * optional.
-     *
-     * @param default_Nx      Default logical grid size in the X direction.
-     * @param default_DAFx    Default dealiasing factor in the X direction.
-     * @param default_Ny      Default logical grid size in the Y direction.
-     *                        This is the number of B-spline basis functions
-     *                        (equivalently, wall-normal degrees of freedom)
-     *                        to use.
-     * @param default_k       Default uniform B-spline basis order plus one.
-     *                        Piecewise cubics correspond to
-     *                        <tt>default_k == 4</tt>.
-     * @param default htdelta Default hyperbolic tangent stretching parameter
-     *                        to use when computing breakpoint locations.
-     * @param default_Nz      Default logical grid size in the Z direction.
-     * @param default_DAFz    Default dealiasing factor in the Z direction.
-     *
-     * @note Since <tt>htdelta == 0</tt> is a potentially useful value,
-     *       <tt>default_htdelta == -0.0</tt> allows detecting when
-     *       <tt>+0.0</tt> is explicitly provided.
+     * Construct an instance containing default values intended to be
+     * overwritten.  Integer values will be zeros and floating point
+     * values will be NaNs.
      */
-    explicit GridDefinition(int    default_Nx      =  0,
-                            double default_DAFx    =  0.0,
-                            int    default_Ny      =  0,
-                            int    default_k       =  0,
-                            double default_htdelta = -0.0,
-                            int    default_Nz      =  0  ,
-                            double default_DAFz    =  0.0);
+    GridDefinition()
+        : IDefinition("Mixed Fourier/B-spline computational grid definition"),
+          N(0, 0, 0),
+          DAF(std::numeric_limits<double>::quiet_NaN(),
+              1 /* Never dealiased */,
+              std::numeric_limits<double>::quiet_NaN()),
+          dN(0, 0, 0),
+          P(0, 0),
+          k(0),
+          htdelta(std::numeric_limits<double>::quiet_NaN())
+    {
+        initialize_options();
+    }
+
+    /**
+     * Construct an instance with the given default values.
+     *
+     * @param Nx      Logical grid size in the X direction.
+     * @param DAFx    Dealiasing factor in the X direction.
+     * @param Ny      Logical grid size in the Y direction.
+     *                This is the number of B-spline basis functions
+     *                (equivalently, wall-normal degrees of freedom)
+     *                to use.
+     * @param k       Uniform B-spline basis order plus one.
+     *                Piecewise cubics correspond to
+     *                <tt>default_k == 4</tt>.
+     * @param htdelta Hyperbolic tangent stretching parameter
+     *                to use when computing breakpoint locations.
+     * @param Nz      Logical grid size in the Z direction.
+     * @param DAFz    Dealiasing factor in the Z direction.
+     */
+    GridDefinition(int    Nx,
+                   double DAFx,
+                   int    Ny,
+                   int    k,
+                   double htdelta,
+                   int    Nz,
+                   double DAFz)
+        : IDefinition("Mixed Fourier/B-spline computational grid definition"),
+          N(Nx, Ny, Nz),
+          DAF(DAFx, 1 /* Never dealiased */, DAFz),
+          dN(Nx * DAFx, Ny, Nz * DAFz),
+          P(0, 0),
+          k(k),
+          htdelta(htdelta)
+    {
+        initialize_options();
+    }
 
     /**@{*/
 
@@ -166,6 +189,10 @@ public:
      *      of how this parameter is used.
      */
     double htdelta;
+
+private:
+    /** Options initialization common to all constructors */
+    void initialize_options();
 };
 
 } // namespace problem

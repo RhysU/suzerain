@@ -64,12 +64,13 @@ int main(int argc, char **argv)
 
     // Program-specific option storage
     suzerain::ProgramOptions options;
-    suzerain::problem::GridDefinition grid(/* default_Nx    */ 16,
-                                           /* default_DAFx  */ 3./2.,
-                                           /* default_Ny    */ 16,
-                                           /* default_k     */ 6,
-                                           /* default_Nz    */ 16,
-                                           /* default_DAFz  */ 3./2.);
+    suzerain::problem::GridDefinition grid(/* Nx      */ 16,
+                                           /* DAFx    */ 3./2.,
+                                           /* Ny      */ 16,
+                                           /* k       */ 6,
+                                           /* htdelta */ 0,
+                                           /* Nz      */ 16,
+                                           /* DAFz    */ 3./2.);
     options.add_definition(grid);
 
     int nrep = 1;  // Number of times to repeat the test

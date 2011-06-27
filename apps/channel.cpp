@@ -294,7 +294,7 @@ void load(const esio_handle h,
         grid.Nx(value);
     }
 
-    if (grid.DAF.x()) {
+    if (!((boost::math::isnan)(grid.DAF.x()))) {
         INFO0("Overriding grid using DAFx = " << grid.DAF.x());
     } else {
         double factor;
@@ -316,16 +316,10 @@ void load(const esio_handle h,
         esio_line_read(h, "k", &grid.k, 0);
     }
 
-    {
-        // Wacky emulation of signbit which can misbehave on GCC at -O3
-        const double a = grid.htdelta;
-        const double b = std::abs(a);
-        const bool htdelta_has_negative_sign = memcmp(&a, &b, sizeof(a));
-        if (htdelta_has_negative_sign) {
-            esio_line_read(h, "htdelta", &grid.htdelta, 0);
-        } else {
-            INFO0("Overriding grid using htdelta = " << grid.htdelta);
-        }
+    if (!((boost::math::isnan)(grid.htdelta))) {
+        INFO0("Overriding grid using htdelta = " << grid.htdelta);
+    } else {
+        esio_line_read(h, "htdelta", &grid.htdelta, 0);
     }
 
     if (grid.N.z()) {
@@ -336,7 +330,7 @@ void load(const esio_handle h,
         grid.Nz(value);
     }
 
-    if (grid.DAF.z()) {
+    if (!((boost::math::isnan)(grid.DAF.z()))) {
         INFO0("Overriding grid using DAFz = " << grid.DAF.z());
     } else {
         double factor;

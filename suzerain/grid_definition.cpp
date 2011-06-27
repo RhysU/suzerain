@@ -37,23 +37,13 @@ namespace suzerain {
 
 namespace problem {
 
-GridDefinition::GridDefinition(int     default_Nx,
-                               double  default_DAFx,
-                               int     default_Ny,
-                               int     default_k,
-                               double  default_htdelta,
-                               int     default_Nz,
-                               double  default_DAFz)
-    : IDefinition("Mixed Fourier/B-spline computational grid definition"),
-      N(default_Nx, default_Ny, default_Nz),
-      DAF(default_DAFx, 1, default_DAFz),
-      dN(default_Nx * default_DAFx, default_Ny, default_Nz * default_DAFz),
-      P(0, 0),
-      k(default_k),
-      htdelta(default_htdelta)
+
+void GridDefinition::initialize_options()
 {
+    using ::boost::math::isnan;
     using ::boost::program_options::typed_value;
     using ::boost::program_options::value;
+    using ::std::auto_ptr;
     using ::std::bind1st;
     using ::std::bind2nd;
     using ::std::mem_fun;
@@ -61,52 +51,81 @@ GridDefinition::GridDefinition(int     default_Nx,
     using ::suzerain::validation::ensure_nonnegative;
     using ::suzerain::validation::ensure_positive;
 
-    this->add_options()
-        ("Nx", value<int>()->default_value(N.x())
-            ->notifier(bind1st(mem_fun(&GridDefinition::Nx),this)),
-         "Global logical extents in streamwise X direction")
-        ("DAFx", value<double>()->default_value(DAF.x())
-            ->notifier(bind1st(mem_fun(&GridDefinition::DAFx),this)),
-         "Dealiasing factor in streamwise X direction")
-        ("Ny", value<int>()->default_value(N.y())
-            ->notifier(bind1st(mem_fun(&GridDefinition::Ny),this)),
-         "Global logical extents in wall-normal Y direction")
-        ;
+    { // Nx
+        auto_ptr<typed_value<int> > v(value<int>(NULL));
+        v->notifier(bind1st(mem_fun(&GridDefinition::Nx),this));
+        if (N.x()) v->default_value(N.x());
+        this->add_options()("Nx", v.release(),
+                "Global logical extents in streamwise X direction");
+    }
 
-    { // k requires handling to change notifier per default_k
-        std::auto_ptr<typed_value<int> > v(value(&this->k));
-        if (default_k) {
+    { // DAFx
+        auto_ptr<typed_value<double> > v(value<double>(NULL));
+        v->notifier(bind1st(mem_fun(&GridDefinition::DAFx),this));
+        if (!(isnan)(DAF.x())) v->default_value(DAF.x());
+        this->add_options()("DAFx", v.release(),
+                "Dealiasing factor in streamwise X direction");
+    }
+
+    { // Ny
+        auto_ptr<typed_value<int> > v(value<int>(NULL));
+        v->notifier(bind1st(mem_fun(&GridDefinition::Ny),this));
+        if (N.y()) v->default_value(N.y());
+        this->add_options()("Ny", v.release(),
+                "Global logical extents in wall-normal Y direction");
+    }
+
+    { // k
+        auto_ptr<typed_value<int> > v(value(&this->k));
+        if (k) {
             v->notifier(bind2nd(ptr_fun(ensure_positive<int>),   "k"));
+            v->default_value(k);
         } else {
             v->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"k"));
         }
-        v->default_value(default_k);
         this->add_options()("k", v.release(),
                 "Wall-normal B-spline order (4 indicates piecewise cubics)");
     }
 
-    { // htdelta requires handling to change notifier per default_htdelta
+    { // htdelta
         std::auto_ptr<typed_value<double> > v(value(&this->htdelta));
         v->notifier(bind2nd(ptr_fun(ensure_nonnegative<double>),"htdelta"));
-        v->default_value(default_htdelta);
+        if (!(isnan)(htdelta)) v->default_value(htdelta);
         this->add_options()("htdelta", v.release(),
                 "Wall-normal breakpoint hyperbolic tangent stretching");
     }
 
-    this->add_options()
-        ("Nz", value<int>()->default_value(N.z())
-            ->notifier(bind1st(mem_fun(&GridDefinition::Nz),this)),
-         "Global logical extents in spanwise Z direction")
-        ("DAFz", value<double>()->default_value(DAF.z())
-            ->notifier(bind1st(mem_fun(&GridDefinition::DAFz),this)),
-         "Dealiasing factor in spanwise Z direction")
-        ("Pa", value<int>(&P[0])->default_value(P[0])
-            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pa")),
-            "Processor count in the Pa decomposition direction")
-        ("Pb", value<int>(&P[1])->default_value(P[1])
-            ->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pb")),
-            "Processor count in the Pb decomposition direction")
-        ;
+    { // Nz
+        auto_ptr<typed_value<int> > v(value<int>(NULL));
+        v->notifier(bind1st(mem_fun(&GridDefinition::Nz),this));
+        if (N.z()) v->default_value(N.z());
+        this->add_options()("Nz", v.release(),
+                "Global logical extents in spanwise Z direction");
+    }
+
+    { // DAFz
+        auto_ptr<typed_value<double> > v(value<double>(NULL));
+        v->notifier(bind1st(mem_fun(&GridDefinition::DAFz),this));
+        if (!(isnan)(DAF.z())) v->default_value(DAF.z());
+        this->add_options()("DAFz", v.release(),
+                "Dealiasing factor in spanwise Z direction");
+    }
+
+    { // Pa
+        auto_ptr<typed_value<int> > v(value(&P[0]));
+        v->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pa"));
+        if (P[0]) v->default_value(P[0]);
+        this->add_options()("Pa", v.release(),
+                "Processor count in the Pa decomposition direction");
+    }
+
+    { // Pb
+        auto_ptr<typed_value<int> > v(value(&P[1]));
+        v->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pb"));
+        if (P[1]) v->default_value(P[1]);
+        this->add_options()("Pb", v.release(),
+                "Processor count in the Pb decomposition direction");
+    }
 }
 
 GridDefinition& GridDefinition::Nx(int value) {
