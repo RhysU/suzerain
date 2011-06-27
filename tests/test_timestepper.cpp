@@ -744,7 +744,7 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_independent )
     const double expected_order = 2.95; // allows for floating point losses
     const double observed_order
         = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
-    BOOST_CHECK(!boost::math::isnan(observed_order));
+    BOOST_CHECK(!(boost::math::isnan)(observed_order));
     BOOST_CHECK_GE(observed_order, expected_order);
 
     // Richardson extrapolation should show h^3 term elimination gives a better
@@ -840,7 +840,7 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
     const double expected_order = 2.95; // allows for floating point losses
     const double observed_order
         = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
-    BOOST_CHECK(!boost::math::isnan(observed_order));
+    BOOST_CHECK(!(boost::math::isnan)(observed_order));
     BOOST_CHECK_GE(observed_order, expected_order);
 
     // Richardson extrapolation should show h^3 term elimination gives a better
@@ -921,7 +921,7 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
     const double expected_order = 1.98; // allows for floating point losses
     const double observed_order
         = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
-    BOOST_CHECK(!boost::math::isnan(observed_order));
+    BOOST_CHECK(!(boost::math::isnan)(observed_order));
     BOOST_CHECK_GE(observed_order, expected_order);
 
     // Richardson extrapolation should show h^2 term elimination gives a better

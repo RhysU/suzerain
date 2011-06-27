@@ -23,10 +23,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minnan, T, test_types )
 
     BOOST_CHECK_EQUAL(a, minnan(a,b));
     BOOST_CHECK_EQUAL(a, minnan(b,a));
-    BOOST_CHECK(isnan(minnan(nan,a)));
-    BOOST_CHECK(isnan(minnan(nan,b)));
-    BOOST_CHECK(isnan(minnan(a,nan)));
-    BOOST_CHECK(isnan(minnan(b,nan)));
+    BOOST_CHECK((isnan)(minnan(nan,a)));
+    BOOST_CHECK((isnan)(minnan(nan,b)));
+    BOOST_CHECK((isnan)(minnan(a,nan)));
+    BOOST_CHECK((isnan)(minnan(b,nan)));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( maxnan, T, test_types )
@@ -41,10 +41,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxnan, T, test_types )
 
     BOOST_CHECK_EQUAL(a, maxnan(a,b));
     BOOST_CHECK_EQUAL(a, maxnan(b,a));
-    BOOST_CHECK(isnan(maxnan(nan,a)));
-    BOOST_CHECK(isnan(maxnan(nan,b)));
-    BOOST_CHECK(isnan(maxnan(a,nan)));
-    BOOST_CHECK(isnan(maxnan(b,nan)));
+    BOOST_CHECK((isnan)(maxnan(nan,a)));
+    BOOST_CHECK((isnan)(maxnan(nan,b)));
+    BOOST_CHECK((isnan)(maxnan(a,nan)));
+    BOOST_CHECK((isnan)(maxnan(b,nan)));
 }
 
 BOOST_AUTO_TEST_CASE( integer_power )
