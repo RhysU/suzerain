@@ -250,78 +250,77 @@ int main(int argc, char **argv)
     dgrid = make_shared<suzerain::pencil_grid>(grid.dN, grid.P);
     assert((grid.dN == dgrid->global_physical_extent).all());
 
-    INFO0("Initializing OperatorBase to access decomposition-ready utilities");
-    suzerain::OperatorBase<real_t> obase(scenario, grid, *dgrid, *b, *bop);
 
-    INFO0("Allocating and clearing storage for the distributed state fields");
+    INFO0("Allocating storage for the distributed state fields");
     state_type swave(suzerain::to_yxz(
                 channel::field::count, dgrid->local_wave_extent));
-    suzerain::multi_array::fill(swave, 0);
 
     INFO0("Initializing data on collocation points values in physical space");
+    if (mms >= 0) {
 
-    // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
-    channel::physical_view<channel::field::count>::type sphys
-        = channel::physical_view<channel::field::count>::create(*dgrid, swave);
+        // Use a canned manufactured solution routine for initialization
+        channel::accumulate_manufactured_solution(
+                1, *msoln, 0, swave, scenario, grid, *dgrid, *b, *bop, mms);
 
-    // Physical space is traversed linearly using a single offset 'offset'.
-    // The three loop structure is present to provide the global absolute
-    // positions x(i), y(j), and z(k) where necessary.
-    size_t offset = 0;
-    for (int j = dgrid->local_physical_start.y();
-         j < dgrid->local_physical_end.y();
-         ++j) {
+    } else {
 
-        const real_t y = obase.y(j);
+        // Use a simple parabolic velocity profile
 
-        for (int k = dgrid->local_physical_start.z();
-            k < dgrid->local_physical_end.z();
-            ++k) {
+        // Initializing OperatorBase to access decomposition-ready utilities
+        suzerain::OperatorBase<real_t> obase(scenario, grid, *dgrid, *b, *bop);
 
-            const real_t z = obase.z(k);
+        // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
+        channel::physical_view<channel::field::count>::type sphys
+            = channel::physical_view<channel::field::count>::create(*dgrid, swave);
 
-            for (int i = dgrid->local_physical_start.x();
-                i < dgrid->local_physical_end.x();
-                ++i, /* NB */ ++offset) {
+        // Physical space is traversed linearly using a single offset 'offset'.
+        // The three loop structure is present to provide the global absolute
+        // positions x(i), y(j), and z(k) where necessary.
+        size_t offset = 0;
+        for (int j = dgrid->local_physical_start.y();
+             j < dgrid->local_physical_end.y();
+             ++j) {
 
-                const real_t x = obase.x(i);
+            const real_t y = obase.y(j);
 
-                // Initialize primitive state for...
-                real_t rho, u, v, w, T;
-                if (mms < 0) {
-                    // ...a very simple parabolic velocity profile.
-                    rho = 1;
-                    u   = 6*y*(scenario.Ly - y)/(scenario.Ly*scenario.Ly);
-                    v   = 0;
-                    w   = 0;
-                    T   = 1;
-                } else {
-                    // ...the manufactured solution at t = mms.
-                    rho = msoln->rho(x, y, z, mms);
-                    u   = msoln->u  (x, y, z, mms);
-                    v   = msoln->v  (x, y, z, mms);
-                    w   = msoln->w  (x, y, z, mms);
-                    T   = msoln->T  (x, y, z, mms);
-                }
+            for (int k = dgrid->local_physical_start.z();
+                k < dgrid->local_physical_end.z();
+                ++k) {
 
-                // Compute and store the conserved state from primitives
-                const real_t e = T / (scenario.gamma*(scenario.gamma - 1))
-                               + (scenario.Ma*scenario.Ma/2)*(u*u + v*v + w*w);
-                namespace ndx = channel::field::ndx;
-                sphys(channel::field::ndx::rho,  offset) = rho;
-                sphys(channel::field::ndx::rhou, offset) = rho * u;
-                sphys(channel::field::ndx::rhov, offset) = rho * v;
-                sphys(channel::field::ndx::rhow, offset) = rho * w;
-                sphys(channel::field::ndx::rhoe, offset) = rho * e;
+                const real_t z = obase.z(k);
+                SUZERAIN_UNUSED(z);
 
-            } // end X
+                for (int i = dgrid->local_physical_start.x();
+                    i < dgrid->local_physical_end.x();
+                    ++i, /* NB */ ++offset) {
 
-        } // end Z
+                    const real_t x = obase.x(i);
+                    SUZERAIN_UNUSED(x);
 
-    } // end Y
+                    // Initialize primitive state
+                    const real_t rho = 1;
+                    const real_t u   = 6*y*(scenario.Ly - y)
+                                     / (scenario.Ly*scenario.Ly);
+                    const real_t v   = 0;
+                    const real_t w   = 0;
+                    const real_t T   = 1;
 
-    INFO0("Converting state to wave space coefficients");
-    {
+                    // Compute and store the conserved state from primitives
+                    const real_t e = T / (scenario.gamma*(scenario.gamma - 1))
+                                   + (scenario.Ma*scenario.Ma/2)*(u*u + v*v + w*w);
+                    namespace ndx = channel::field::ndx;
+                    sphys(channel::field::ndx::rho,  offset) = rho;
+                    sphys(channel::field::ndx::rhou, offset) = rho * u;
+                    sphys(channel::field::ndx::rhov, offset) = rho * v;
+                    sphys(channel::field::ndx::rhow, offset) = rho * w;
+                    sphys(channel::field::ndx::rhoe, offset) = rho * e;
+
+                } // end X
+
+            } // end Z
+
+        } // end Y
+
         // Build FFT normalization constant into Y direction's mass matrix
         suzerain::bsplineop_luz massluz(*bop);
         const complex_t scale_factor = grid.dN.x() * grid.dN.z();
@@ -331,6 +330,7 @@ int main(int argc, char **argv)
             dgrid->transform_physical_to_wave(&sphys(i, 0));     // X, Z
             obase.bop_solve(massluz, swave, i);                  // Y
         }
+
     }
 
     INFO0("Writing state fields to restart file");

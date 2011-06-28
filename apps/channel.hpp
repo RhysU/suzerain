@@ -310,7 +310,7 @@ void accumulate_manufactured_solution(
         const real_t alpha,
         const nsctpl_rholut::manufactured_solution<real_t> &msoln,
         const real_t beta,
-        const suzerain::NoninterleavedState<4,complex_t> &swave,
+        suzerain::NoninterleavedState<4,complex_t> &swave,
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,

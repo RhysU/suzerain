@@ -991,8 +991,8 @@ void accumulate_manufactured_solution(
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
 
     // Prepare physical-space view of the wave-space storage
-    channel::physical_view<channel::field::count>::type sphys
-        = channel::physical_view<channel::field::count>::create(dgrid, swave);
+    physical_view<field::count>::type sphys
+        = physical_view<field::count>::create(dgrid, swave);
 
     // Depending on whether or not we need swave's data...
     if (beta == 0) {
@@ -1000,7 +1000,7 @@ void accumulate_manufactured_solution(
         suzerain::multi_array::fill(swave, 0);
     } else {
         // ...or scale data by beta and transform it to physical space.
-        for (std::size_t i = 0; i < channel::field::count; ++i) {
+        for (std::size_t i = 0; i < field::count; ++i) {
             obase.bop_apply(0, beta, swave, i);
             dgrid.transform_wave_to_physical(&sphys(i,0));
         }
@@ -1036,11 +1036,11 @@ void accumulate_manufactured_solution(
                 const real_t rhoe = msoln.rhoe(x, y, z, simulation_time);
 
                 // ...and accumulate it into the desired storage
-                sphys(channel::field::ndx::rho,  offset) += alpha * rho;
-                sphys(channel::field::ndx::rhou, offset) += alpha * rhou;
-                sphys(channel::field::ndx::rhov, offset) += alpha * rhov;
-                sphys(channel::field::ndx::rhow, offset) += alpha * rhow;
-                sphys(channel::field::ndx::rhoe, offset) += alpha * rhoe;
+                sphys(field::ndx::rho,  offset) += alpha * rho;
+                sphys(field::ndx::rhou, offset) += alpha * rhou;
+                sphys(field::ndx::rhov, offset) += alpha * rhov;
+                sphys(field::ndx::rhow, offset) += alpha * rhow;
+                sphys(field::ndx::rhoe, offset) += alpha * rhoe;
 
             } // end X
 
@@ -1053,7 +1053,7 @@ void accumulate_manufactured_solution(
     suzerain::bsplineop_luz massluz(bop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.form(1, &scale_factor, bop);
-    for (std::size_t i = 0; i < channel::field::count; ++i) {
+    for (std::size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys(i, 0));      // X, Z
         obase.bop_solve(massluz, swave, i);                  // Y
     }
