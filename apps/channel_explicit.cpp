@@ -191,6 +191,45 @@ static std::string information_specific_wall_state() {
     return msg.str();
 }
 
+/**
+ * Build a message for the relative error versus a manufactured solution.
+ * Uses state_nonlinear as a scratch space and is seriously collective
+ * and not cheap.
+ */
+static std::string information_manufactured_solution_relative_error(
+        const real_t simulation_time)
+{
+    assert(msoln);
+
+    // First, compute L2 of error of state against manufactured solution
+    state_nonlinear->assign(*state_linear);
+    channel::accumulate_manufactured_solution(
+            1, *msoln, -1, *state_nonlinear,
+            scenario, grid, *dgrid, *b, *bop, simulation_time);
+    const boost::array<channel::L2,channel::field::count> L2_error
+        = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
+
+    // Next, compute L2 of manufactured solution
+    channel::accumulate_manufactured_solution(
+            1, *msoln, 0, *state_nonlinear,
+            scenario, grid, *dgrid, *b, *bop, simulation_time);
+    const boost::array<channel::L2,channel::field::count> L2_msoln
+        = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
+
+    // Last, compute and output relative global errors for each field
+    std::ostringstream msg;
+    msg << "relative MMS error = ";
+    msg.precision(static_cast<int>(numeric_limits<real_t>::digits10));
+    for (std::size_t k = 0; k < channel::field::count; ++k) {
+        msg << ' ' << L2_error[k].total() / L2_msoln[k].total();
+    }
+
+    return msg.str();
+}
+
+/** Tracks last time we output a status line */
+static std::size_t last_status_nt = numeric_limits<std::size_t>::max();
+
 /** Routine to output status.  Signature for TimeController use. */
 static bool log_status(real_t t, std::size_t nt) {
 
@@ -224,6 +263,15 @@ static bool log_status(real_t t, std::size_t nt) {
 
     // On root only, compute and show specific state at the walls
     DEBUG0(timeprefix.str() << information_specific_wall_state());
+
+    // If using manufactured solution, compute and log relative error
+    if (msoln) {
+        const std::string msg_relerr /* collective! expensive! */
+              = information_manufactured_solution_relative_error(t);
+        INFO0(timeprefix.str() << msg_relerr);
+    }
+
+    last_status_nt = nt; // Maintain last status time step
 
     return true;
 }
@@ -551,6 +599,11 @@ int main(int argc, char **argv)
         WARN0("TimeController stopped advancing time unexpectedly");
     }
     const double wtime_advance_end = MPI_Wtime();
+
+    // Output status if it was not just output during time advancement
+    if (last_status_nt != tc->current_nt()) {
+        log_status(tc->current_t(), tc->current_nt());
+    }
 
     // Save a final restart if one was not just saved during time advancement
     if (advance_success && last_restart_saved_nt != tc->current_nt()) {
