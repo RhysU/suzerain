@@ -299,6 +299,25 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
          const suzerain::pencil_grid& dgrid,
          const suzerain::bsplineop& gop);
 
+/**
+ * Accumulate the result of adding \c alpha times the manufactured solution \c
+ * msoln times \c beta times the given wave-space state \c swave.  Setting
+ * <tt>alpha=1</tt> and <tt>beta=0</tt> may be used to initialize a
+ * manufactured solution field.  Setting <tt>alpha=-1</tt> and <tt>beta=1</tt>
+ * may be used to compute error against the manufactured solution.
+ */
+void accumulate_manufactured_solution(
+        const real_t alpha,
+        const nsctpl_rholut::manufactured_solution<real_t> &msoln,
+        const real_t beta,
+        const suzerain::NoninterleavedState<4,complex_t> &swave,
+        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::GridDefinition &grid,
+        const suzerain::pencil_grid &dgrid,
+        suzerain::bspline &b,
+        const suzerain::bsplineop &bop,
+        const real_t simulation_time);
+
 } // end namespace channel
 
 #endif // CHANNEL_HPP

@@ -38,6 +38,7 @@
 #include <suzerain/error.h>
 #include <suzerain/htstretch.h>
 #include <suzerain/mpi_datatype.hpp>
+#include <suzerain/operator_base.hpp>
 
 #include "logger.hpp"
 #include "channel.hpp"
@@ -46,8 +47,6 @@
 // Manufactured solution classes explicitly instantiated for debugging
 template class nsctpl_rholut::manufactured_solution<real_t>;
 template class nsctpl_rholut::primitive<real_t>;
-
-// TODO Refactor -0.0 handling for scenario.{alpha,beta}, grid.htdelta
 
 using boost::numeric_cast;
 
@@ -974,6 +973,90 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
     }
 
     return retval;
+}
+
+void accumulate_manufactured_solution(
+        const real_t alpha,
+        const nsctpl_rholut::manufactured_solution<real_t> &msoln,
+        const real_t beta,
+        suzerain::NoninterleavedState<4,complex_t> &swave,
+        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::GridDefinition &grid,
+        const suzerain::pencil_grid &dgrid,
+        suzerain::bspline &b,
+        const suzerain::bsplineop &bop,
+        const real_t simulation_time)
+{
+    // Initializing OperatorBase to access decomposition-ready utilities
+    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+
+    // Prepare physical-space view of the wave-space storage
+    channel::physical_view<channel::field::count>::type sphys
+        = channel::physical_view<channel::field::count>::create(dgrid, swave);
+
+    // Depending on whether or not we need swave's data...
+    if (beta == 0) {
+        // ...either clear out any lingering NaNs or Infs from storage...
+        suzerain::multi_array::fill(swave, 0);
+    } else {
+        // ...or scale data by beta and transform it to physical space.
+        for (std::size_t i = 0; i < channel::field::count; ++i) {
+            obase.bop_apply(0, beta, swave, i);
+            dgrid.transform_wave_to_physical(&sphys(i,0));
+        }
+    }
+
+    // Physical space is traversed linearly using a single offset 'offset'.
+    // The three loop structure is present to provide the global absolute
+    // positions x(i), y(j), and z(k) where necessary.
+    size_t offset = 0;
+    for (int j = dgrid.local_physical_start.y();
+         j < dgrid.local_physical_end.y();
+         ++j) {
+
+        const real_t y = obase.y(j);
+
+        for (int k = dgrid.local_physical_start.z();
+            k < dgrid.local_physical_end.z();
+            ++k) {
+
+            const real_t z = obase.z(k);
+
+            for (int i = dgrid.local_physical_start.x();
+                i < dgrid.local_physical_end.x();
+                ++i, /* NB */ ++offset) {
+
+                const real_t x = obase.x(i);
+
+                // Initialize manufactured solution's conserved state...
+                const real_t rho  = msoln.rho (x, y, z, simulation_time);
+                const real_t rhou = msoln.rhou(x, y, z, simulation_time);
+                const real_t rhov = msoln.rhov(x, y, z, simulation_time);
+                const real_t rhow = msoln.rhow(x, y, z, simulation_time);
+                const real_t rhoe = msoln.rhoe(x, y, z, simulation_time);
+
+                // ...and accumulate it into the desired storage
+                sphys(channel::field::ndx::rho,  offset) += alpha * rho;
+                sphys(channel::field::ndx::rhou, offset) += alpha * rhou;
+                sphys(channel::field::ndx::rhov, offset) += alpha * rhov;
+                sphys(channel::field::ndx::rhow, offset) += alpha * rhow;
+                sphys(channel::field::ndx::rhoe, offset) += alpha * rhoe;
+
+            } // end X
+
+        } // end Z
+
+    } // end Y
+
+    // Now convert physical state back to wave space coefficients,
+    // building FFT normalization constant into Y direction's mass matrix.
+    suzerain::bsplineop_luz massluz(bop);
+    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+    massluz.form(1, &scale_factor, bop);
+    for (std::size_t i = 0; i < channel::field::count; ++i) {
+        dgrid.transform_physical_to_wave(&sphys(i, 0));      // X, Z
+        obase.bop_solve(massluz, swave, i);                  // Y
+    }
 }
 
 } // end namespace channel
