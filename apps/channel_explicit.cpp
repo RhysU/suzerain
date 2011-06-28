@@ -192,36 +192,28 @@ static std::string information_specific_wall_state() {
 }
 
 /**
- * Build a message for the relative error versus a manufactured solution.
- * Uses state_nonlinear as a scratch space and is seriously collective
- * and not cheap.
+ * Build a message for the absolute error versus a manufactured solution.
+ * Uses state_nonlinear as a scratch space and is not cheap.
  */
-static std::string information_manufactured_solution_relative_error(
+static std::string information_manufactured_solution_absolute_error(
         const real_t simulation_time)
 {
     assert(msoln);
 
-    // First, compute L2 of error of state against manufactured solution
+    // Compute L2 of error of state against manufactured solution
     state_nonlinear->assign(*state_linear);
     channel::accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
             scenario, grid, *dgrid, *b, *bop, simulation_time);
-    const boost::array<channel::L2,channel::field::count> L2_error
+    const boost::array<channel::L2,channel::field::count> L2
         = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
 
-    // Next, compute L2 of manufactured solution
-    channel::accumulate_manufactured_solution(
-            1, *msoln, 0, *state_nonlinear,
-            scenario, grid, *dgrid, *b, *bop, simulation_time);
-    const boost::array<channel::L2,channel::field::count> L2_msoln
-        = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
-
-    // Last, compute and output relative global errors for each field
+    // Output absolute global errors for each field
     std::ostringstream msg;
-    msg << "relative MMS error = ";
+    msg << " MMS abserr = ";
     msg.precision(static_cast<int>(numeric_limits<real_t>::digits10));
     for (std::size_t k = 0; k < channel::field::count; ++k) {
-        msg << ' ' << L2_error[k].total() / L2_msoln[k].total();
+        msg << ' ' << L2[k].total();
     }
 
     return msg.str();
@@ -258,16 +250,16 @@ static bool log_status(real_t t, std::size_t nt) {
     INFO0(timeprefix.str() << information_bulk());
 
     // Collectively compute and log L2 mean and fluctuating information
-    const std::string msg_l2 = information_L2() /* collective! expensive! */;
+    const std::string msg_l2 = information_L2();
     INFO0(timeprefix.str() << msg_l2);
 
     // On root only, compute and show specific state at the walls
     DEBUG0(timeprefix.str() << information_specific_wall_state());
 
-    // If using manufactured solution, compute and log relative error
+    // If using manufactured solution, collectively compute and log error
     if (msoln) {
-        const std::string msg_relerr /* collective! expensive! */
-              = information_manufactured_solution_relative_error(t);
+        const std::string msg_relerr
+            = information_manufactured_solution_absolute_error(t);
         INFO0(timeprefix.str() << msg_relerr);
     }
 
