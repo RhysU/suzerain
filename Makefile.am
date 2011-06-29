@@ -4,11 +4,14 @@ AUTOMAKE_OPTIONS = foreign
 CLEANFILES       = # Append below
 
 # Build in these directories:
-SUBDIRS = lib suzerain apps tests writeup
+if BUILD_WRITEUP
+    MAYBE_SUBDIRS = writeup
+endif
+SUBDIRS = lib suzerain apps tests $(MAYBE_SUBDIRS)
 
 # Distribute these items:
 DIST_SUBDIRS = lib suzerain apps tests writeup
-EXTRA_DIST= bootstrap $(DX_CONFIG)
+EXTRA_DIST = bootstrap $(DX_CONFIG)
 
 # Build toplevel directory in serial
 # http://www.gnu.org/software/automake/manual/make/Special-Targets.html
