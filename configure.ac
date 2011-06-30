@@ -86,7 +86,6 @@ fi
 AC_PROG_SED
 AX_AM_JOBSERVER([no])
 AC_LANG_POP([C++])
-AX_APPEND_LINK_FLAGS([-Wl,--as-needed],[LDFLAGS])
 AC_CACHE_SAVE
 
 dnl ----------------------------------------------
