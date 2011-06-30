@@ -117,12 +117,21 @@ dnl AX_CHECK_COMPILER_FLAGS([-pch],[CXXFLAGS="${CXXFLAGS} -pch"])
 dnl AC_LANG_POP([C++])
 
 dnl ------------------------------------------------
-dnl Enable GNU libtool
+dnl Enable GNU libtool for all of configure/build
 dnl Current version checks also in Makefile.am
 dnl ------------------------------------------------
 LT_INIT
+LT_OUTPUT
 LT_PREREQ([2.2.6])
 AC_SUBST(LIBTOOL_DEPS)
+m4_append([AC_LANG(C)],[
+    ac_compile="./libtool --mode=compile --tag=CC $ac_compile"
+    ac_link="./libtool --mode=link --tag=CC $ac_link"
+])[]dnl
+m4_append([AC_LANG(C++)],[
+    ac_compile="./libtool --mode=compile --tag=CXX $ac_compile"
+    ac_link="./libtool --mode=link --tag=CXX $ac_link"
+])[]dnl
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
