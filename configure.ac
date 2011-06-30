@@ -23,29 +23,17 @@ dnl ------------------------------------------------
 dnl LaTeX capabilities (not required but suggested)
 dnl ------------------------------------------------
 build_writeup=true
-if [ test x$build_writeup = xtrue ]; then
-    ACLTX_PROG_TEX([build_writeup=false])
-fi
-if [ test x$build_writeup = xtrue ]; then
-    ACLTX_PROG_PDFTEX([build_writeup=false])
-fi
-if [ test x$build_writeup = xtrue ]; then
-    ACLTX_PROG_LATEX([build_writeup=false])
-fi
-if [ test x$build_writeup = xtrue ]; then
-    ACLTX_PROG_PDFLATEX([build_writeup=false])
-fi
-if [ test x$build_writeup = xtrue ]; then
-    ACLTX_PROG_BIBTEX([build_writeup=false])
-fi
-if [ test x$build_writeup = xtrue ]; then
-    ACLTX_PROG_MAKEINDEX([build_writeup=false])
-fi
+ACLTX_PROG_TEX(      [build_writeup=false])
+ACLTX_PROG_PDFTEX(   [build_writeup=false])
+ACLTX_PROG_LATEX(    [build_writeup=false])
+ACLTX_PROG_PDFLATEX( [build_writeup=false])
+ACLTX_PROG_BIBTEX(   [build_writeup=false])
+ACLTX_PROG_MAKEINDEX([build_writeup=false])
 if [ test x$build_writeup = xtrue ]; then
     AX_ADD_AM_LATEX
     ACLTX_CLASSES([amsart],AMSART_CLASS,,[build_writeup=false])
 else
-    AC_MSG_WARN([Writeup prerequisites not satisfied so it will not be built.])
+    AC_MSG_WARN([LaTeX prerequisites not satisfied so writeups will not be built.])
 fi
 AM_CONDITIONAL([BUILD_WRITEUP], [test x$build_writeup = xtrue])
 AC_CACHE_SAVE
