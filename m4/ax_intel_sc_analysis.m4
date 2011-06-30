@@ -12,7 +12,7 @@
 #   given, the analysis level used is 2.  When enabled, CFLAGS, CXXFLAGS, and
 #   LDFLAGS are modified appropriately.
 #
-#   Requires macros: AX_COMPILER_VENDOR, AX_CHECK_COMPILER_FLAGS
+#   Requires macros: AX_COMPILER_VENDOR, AX_CHECK_COMPILE_FLAG
 #
 # LAST MODIFICATION
 #
@@ -95,7 +95,7 @@ case $ax_intel_sc_analysis in #(
      AC_MSG_RESULT([yes at level $ax_intel_sc_analysis])
      AC_LANG_PUSH([C])
      case $ax_cv_c_compiler_vendor in #(
-      intel) AX_CHECK_COMPILER_FLAGS([$ax_intel_sc_analysis_flag], [
+      intel) AX_CHECK_COMPILE_FLAG([$ax_intel_sc_analysis_flag], [
                # Assume working for C implies it works for C++
                CFLAGS="$CFLAGS $ax_intel_sc_analysis_flag"
                CXXFLAGS="$CXXFLAGS $ax_intel_sc_analysis_flag"

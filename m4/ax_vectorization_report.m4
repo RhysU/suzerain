@@ -7,7 +7,7 @@
 #   Add options to CFLAGS and CXXFLAGS to cause the compiler to
 #   display vectorization information during compilation.
 #
-#   Requires macros: AX_COMPILER_VENDOR, AX_CHECK_COMPILER_FLAGS
+#   Requires macros: AX_COMPILER_VENDOR, AX_APPEND_COMPILE_FLAGS
 #
 # LAST MODIFICATION
 #
@@ -53,12 +53,10 @@ case $ax_cv_c_compiler_vendor in #(
   sun)   ;;#(
   hp)    ;;#(
   ibm)   ;;#(
-  intel) AX_CHECK_COMPILER_FLAGS([-vec-report1],
-                                 [CFLAGS="$CFLAGS -vec-report1"])
+  intel) AX_APPEND_COMPILE_FLAGS([-vec-report1])
          ;;#(
   gnu)   ### Disabled, as it is verbose and not terribly helpful on gcc 4.3
-         ### AX_CHECK_COMPILER_FLAGS([-ftree-vectorizer-verbose=1],
-         ###                         [CFLAGS="$CFLAGS -ftree-vectorizer-verbose=1"])
+         ### AX_APPEND_COMPILE_FLAGS([-ftree-vectorizer-verbose=1])
          ;;#(
   *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
          AC_MSG_WARN([AX_VECTORIZATION[]_REPORT: ax_cv_c_compiler_vendor = $ax_cv_c_compiler_vendor unknown])
@@ -71,12 +69,10 @@ case $ax_cv_cxx_compiler_vendor in #(
   sun)   ;;#(
   hp)    ;;#(
   ibm)   ;;#(
-  intel) AX_CHECK_COMPILER_FLAGS([-vec-report1],
-                                 [CXXFLAGS="$CXXFLAGS -vec-report1"])
+  intel) AX_APPEND_COMPILE_FLAGS([-vec-report1])
          ;;#(
   gnu)   ### Disabled, as it is verbose and not terribly helpful on gcc 4.3
-         ### AX_CHECK_COMPILER_FLAGS([-ftree-vectorizer-verbose=1],
-         ###                         [CFLAGS="$CFLAGS -ftree-vectorizer-verbose=1"])
+         ### AX_APPEND_COMPILE_FLAGS([-ftree-vectorizer-verbose=1])
          ;;#(
   *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
          AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_cxx_compiler_vendor = $ax_cv_cxx_compiler_vendor unknown])

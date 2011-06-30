@@ -65,7 +65,7 @@ dnl dnl Enable IPO if the (Intel) compiler supports it, assumes that
 dnl dnl C/C++/Fortran dnl all support IPO if the compiler supports it.
 dnl dnl Assumption required because we must replace linker ar with xiar.
 dnl AC_LANG_PUSH([C])
-dnl AX_CHECK_COMPILER_FLAGS([-ipo], [
+dnl AX_CHECK_COMPILE_FLAG([-ipo], [
 dnl     AR="xiar"
 dnl     CFLAGS="$CFLAGS -ipo"
 dnl     CXXFLAGS="$CXXFLAGS -ipo"
@@ -86,6 +86,7 @@ fi
 AC_PROG_SED
 AX_AM_JOBSERVER([no])
 AC_LANG_POP([C++])
+AX_APPEND_LINK_FLAGS([-Wl,--as-needed],[LDFLAGS])
 AC_CACHE_SAVE
 
 dnl ----------------------------------------------
@@ -98,10 +99,10 @@ dnl Enable rudimentary precompiled header support
 dnl Currently very, very Intel-specific
 dnl ----------------------------------------------
 dnl AC_LANG_PUSH([C])
-dnl AX_CHECK_COMPILER_FLAGS([-pch],[CFLAGS="${CFLAGS} -pch"])
+dnl AX_APPEND_COMPILE_FLAGS([-pch],[CFLAGS])
 dnl AC_LANG_POP([C])
 dnl AC_LANG_PUSH([C++])
-dnl AX_CHECK_COMPILER_FLAGS([-pch],[CXXFLAGS="${CXXFLAGS} -pch"])
+dnl AX_APPEND_COMPILE_FLAGS([-pch],[CXXFLAGS])
 dnl AC_LANG_POP([C++])
 
 dnl ------------------------------------------------
