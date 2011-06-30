@@ -32,8 +32,8 @@ libchannel_la_SOURCES  = precision.hpp
 libchannel_la_SOURCES += logger.cpp  logger.hpp
 libchannel_la_SOURCES += channel.cpp channel.hpp
 libchannel_la_SOURCES += nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp
-libchannel_la_LDFLAGS  = $(ESIO_LIBS) $(LOG4CXX_LIBS)
-libchannel_la_LIBADD   = ../suzerain/libsuzerain.la
+libchannel_la_LIBADD   = $(ESIO_LIBS) $(LOG4CXX_LIBS)
+libchannel_la_LIBADD  += ../suzerain/libsuzerain.la
 
 bin_PROGRAMS         += channel_init
 channel_init_SOURCES  = channel_init.cpp
