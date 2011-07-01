@@ -37,7 +37,7 @@
     \renewcommand{\headrulewidth}{1.0pt}
     \renewcommand{\footrulewidth}{0pt}
     \lhead{
-        $L^2$ norm within Suzerain's discretization
+        $L^2$ computations using Suzerain's discretization
     }
     \rhead{
         Page \thepage{} of \pageref{LastPage}
@@ -56,10 +56,11 @@
 
 \begin{document}
 
-We wish to compute the $L^2$ norm of an instantaneous, real-valued field
-$u\!\left(x,y,z\right)$ on the spatial domain
+In this document we detail how to compute $L^2$ norm-related quantities using
+Suzerain's discretization.  In this discretization, any instantaneous,
+real-valued field $u\!\left(x,y,z\right)$ on the spatial domain
 $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
-\left[-\frac{L_z}{2},\frac{L_z}{2}\right]$ which has been discretized as
+\left[-\frac{L_z}{2},\frac{L_z}{2}\right]$ is discretized as
 \begin{align}
   u^h(x,y,z)
 &=
@@ -75,18 +76,21 @@ $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
   \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
 \end{align}
 where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
-B-spline basis for some order and knot selection.
+B-spline basis for some order and some knot selection.
 
-By direct computation we find
+\section{$L^2$ norm of a discrete field}
+
+We wish to compute the $L^2$ norm of a discrete field $u^h$.  By direct
+computation we find
 \begin{align}
   \left|\left|
-    u
+    u^h
   \right|\right|^{2}_{L^{2}_{xyz}}
 &=
   \int_0^{L_y}
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  u \overline{u}
+  u^h \overline{u^h}
   \,d\!z \,d\!x \,d\!y
 \\ &\approx
   \int_0^{L_y}
@@ -171,26 +175,27 @@ By direct computation we find
    L_x L_z \sum_{m} \sum_{n} \htrans{\hat{u}_{m n}} M \hat{u}_{m n}
    \quad\text{where}\quad
    M = \int_0^{L_y} B_l\!\left(y\right) B_{l^\prime}\!\left(y\right) \,d\!y
+   \label{eq:L2uh}
    .
 \end{align}
 In the above expression the three-dimensional field of transform coefficients
 $\hat{u}_{l m n}$ is treated as a two-dimensional collection of length $N_y$
 vectors indexed by $m$ and $n$.  For a B-spline basis with piecewise polynomial
 order $k - 1$ giving rise to a real-valued, symmetric positive definite matrix
-$M$ with bandwidth $2k-1$, the computational cost to find $\left|\left| u
+$M$ with bandwidth $2k-1$, the computational cost to find $\left|\left| u^h
 \right|\right|^{2}_{L^{2}_{xyz}}$ scales as $\OO{k N_x N_y^2 N_z}$.
 
 The $y$-varying norm over the $x$ and $z$ directions can be computed via
 \begin{align}
   \left|\left|
-    u
+    u^h
   \right|\right|^{2}_{L^{2}_{xz}}
   \!(y)
 &=
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  u
-  \overline{u}
+  u^h
+  \overline{u^h}
   \,d\!z \,d\!x
 \\ &\approx
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
@@ -239,15 +244,15 @@ The $y$-varying norm over the $x$ and $z$ directions can be computed via
 \end{align}
 Using the limited, symmetric support of the products $B_l\left(y\right)
 B_{l^\prime}\left(y\right)$ to reduce the required operations, one can compute
-this fully functional representation of $\left|\left| u
+this fully functional representation of $\left|\left| u^h
 \right|\right|^{2}_{L^{2}_{xz}} \!(y)$ at a cost proportional to $\OO{k N_x
 N_y^2 N_z}$.
 
-When $\left|\left|u\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ is
+When $\left|\left|u^h\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ is
 only of interest at points $y_j$, the previous expression yields
 \begin{align}
   \left|\left|
-    u
+    u^h
   \right|\right|^{2}_{L^{2}_{xz}}
   \!(y_j)
 &\approx
@@ -334,9 +339,9 @@ when computing $f\!\left(\hat{u}_{lmn}\right)$.  Then
   .
 \intertext{
 When $f\!\left(\hat{u}_{lmn}\right) = f\!\left(\overline{\hat{u}_{lmn}}\right)$
-holds, as it does for $\left|\left| u \right|\right|^{2}_{L^{2}_{xyz}}$,
-$\left|\left| u \right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$, and $\left|\left| u
-\right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$, the summands further simplify to
+holds, as it does for $\left|\left| u^h \right|\right|^{2}_{L^{2}_{xyz}}$,
+$\left|\left| u^h \right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$, and $\left|\left|
+u^h \right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$, the summands further simplify to
 yield
 }
   \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
@@ -355,5 +360,65 @@ yield
   \right]
   .
 \end{align}
+
+\section{$L^2$ approximation error of a discrete field}
+
+To measure the $L^2$ approximation error of a discrete field $u^h$ against a
+known, analytic field $u$, we wish to compute $\left|\left| u - u^h
+\right|\right|^{2}_{L^{2}_{xyz}}$.  Employing inner product notation we find
+\begin{align}
+  \left|\left| u - u^h \right|\right|^{2}_{L^{2}_{xyz}}
+&=
+  \left( u-u^h, u-u^h \right)
+\\ &=
+    \left( u, u \right)
+  - \left( u, u^h \right)
+  - \left( u^h, u \right)
+  + \left(u^h, u^h\right)
+\\ &=
+    \left|\left| u   \right|\right|^{2}_{L^{2}_{xyz}}
+  - 2 \left( u, u^h \right)_{L^{2}_{xyz}}
+  + \left|\left| u^h \right|\right|^{2}_{L^{2}_{xyz}}
+\end{align}
+using that both $u$ and $u^h$ are real-valued.  The first term can be evaluated
+analytically.  The third term can be computed following \eqref{eq:L2uh}.
+
+The second term may be treated as
+\begin{align}
+  \left( u^h, u \right)_{L^{2}_{xyz}}
+&=
+  \int_0^{L_y}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  u\!\left(x,y,z\right)
+  \left(
+    \sum_{l}\sum_{m}\sum_{n}
+    \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+  \right)
+  \,d\!z \,d\!x \,d\!y
+% \\ &=
+%   \sum_{n}
+%   \left(
+%     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+%     \sum_{m}
+%     \left(
+%       \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+%       \sum_{l}
+%       \hat{u}_{l m n}
+%       \left(
+%         \int_0^{L_y}
+%         u\!\left(x,y,z\right)
+%         B_l\!\left(y\right)
+%         \,d\!y
+%       \right)
+%       e^{\ii k_m x}
+%       \,d\!x
+%     \right)
+%     e^{\ii k_n z}
+%     \,d\!z
+%   \right)
+\end{align}
+where some flash of insight as to a convenient computational technique would be
+quite helpful.
 
 \end{document}
