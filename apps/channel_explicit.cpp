@@ -210,7 +210,7 @@ static std::string information_manufactured_solution_absolute_error(
 
     // Output absolute global errors for each field
     std::ostringstream msg;
-    msg << " MMS abserr = ";
+    msg << "MMS abserr = ";
     msg.precision(static_cast<int>(numeric_limits<real_t>::digits10));
     for (std::size_t k = 0; k < channel::field::count; ++k) {
         msg << ' ' << L2[k].total();
