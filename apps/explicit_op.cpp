@@ -515,7 +515,7 @@ real_t NonlinearOperator::applyOperator(
                 m.z()              = sphys(ndx::rhow, offset);
                 const real_t div_m = auxp(aux::mx_x, offset)
                                    + auxp(aux::my_y, offset)
-                                   + auxp(aux::my_z, offset);
+                                   + auxp(aux::mz_z, offset);
                 grad_m(0,0)        = auxp(aux::mx_x, offset);
                 grad_m(0,1)        = auxp(aux::mx_y, offset);
                 grad_m(0,2)        = auxp(aux::mx_z, offset);
