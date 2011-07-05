@@ -421,10 +421,12 @@ int main(int argc, char **argv)
     }
 
     // Display global degree of freedom information
-    INFO0("Global degrees of freedom  (DOF): " << grid.N.prod());
-    INFO0("DOF by direction           (XYZ): " << grid.N);
-    INFO0("Dealiased DOF by direction (XYZ): " << grid.dN);
-    INFO0("Number of MPI ranks:              " << nranks);
+    INFO0("Global number of unknowns:         " << (  grid.N.prod()
+                                                    * channel::field::count));
+    INFO0("Grid degrees of freedom    (GDOF): " << grid.N.prod());
+    INFO0("GDOF by direction           (XYZ): " << grid.N);
+    INFO0("Dealiased GDOF by direction (XYZ): " << grid.dN);
+    INFO0("Number of MPI ranks:               " << nranks);
 
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
     dgrid = make_shared<suzerain::pencil_grid>(grid.dN, grid.P);
