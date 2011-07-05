@@ -509,6 +509,25 @@ real_t NonlinearOperator::applyOperator(
                 grad_grad_rho(2,1)        = grad_grad_rho(1,2);
                 grad_grad_rho(2,2)        = auxp(aux::rho_zz, offset);
 
+//              // FIXME Compute derivative-related errors for debug
+//              boost::array<real_t,14> rho_derivative_errors = {{
+//                  time,                                                      //  1
+//                  x,                                                         //  2
+//                  y,                                                         //  3
+//                  z,                                                         //  4
+//                  std::abs(rho                - msoln->rho    (x,y,z,time)), //  5
+//                  std::abs(grad_rho.x()       - msoln->rho._x (x,y,z,time)), //  6
+//                  std::abs(grad_rho.y()       - msoln->rho._y (x,y,z,time)), //  7
+//                  std::abs(grad_rho.z()       - msoln->rho._z (x,y,z,time)), //  8
+//                  std::abs(grad_grad_rho(0,0) - msoln->rho._xx(x,y,z,time)), //  9
+//                  std::abs(grad_grad_rho(0,1) - msoln->rho._xy(x,y,z,time)), // 10
+//                  std::abs(grad_grad_rho(0,2) - msoln->rho._xz(x,y,z,time)), // 11
+//                  std::abs(grad_grad_rho(1,1) - msoln->rho._yy(x,y,z,time)), // 12
+//                  std::abs(grad_grad_rho(1,2) - msoln->rho._yz(x,y,z,time)), // 13
+//                  std::abs(grad_grad_rho(2,2) - msoln->rho._zz(x,y,z,time)), // 14
+//              }};
+//              std::cerr << rho_derivative_errors << std::endl;
+
                 // Unpack momentum-related quantities
                 m.x()              = sphys(ndx::rhou, offset);
                 m.y()              = sphys(ndx::rhov, offset);
@@ -543,6 +562,26 @@ real_t NonlinearOperator::applyOperator(
                 grad_div_m.z()     = auxp(aux::mx_xz, offset)
                                    + auxp(aux::my_yz, offset)
                                    + auxp(aux::mz_zz, offset);
+
+                // FIXME Compute derivative-related errors for debug
+//#define EXACT(quantity) msoln->quantity(x,y,z,time)
+//                boost::array<real_t,10> rho_derivative_errors = {{
+//                    time,                                                      //  1
+//                    x,                                                         //  2
+//                    y,                                                         //  3
+//                    z,                                                         //  4
+//                    std::abs(m.x() - EXACT(rhou)),                             //  5
+//                    std::abs(m.y() - EXACT(rhov)),                             //  6
+//                    std::abs(m.z() - EXACT(rhow)),                             //  7
+//                    std::abs(grad_m(0,0) - EXACT(rho)    * EXACT(u._x)
+//                                         - EXACT(rho._x) * EXACT(u)),          //  8
+//                    std::abs(grad_m(1,1) - EXACT(rho)    * EXACT(v._y)
+//                                         - EXACT(rho._y) * EXACT(v)),          //  9
+//                    std::abs(grad_m(2,2) - EXACT(rho)    * EXACT(w._z)
+//                                         - EXACT(rho._z) * EXACT(w))           // 10
+//                }};
+//                std::cerr << rho_derivative_errors << std::endl;
+//#undef EXACT
 
                 // Unpack total energy-related quantities
                 const real_t e          = sphys(ndx::rhoe, offset);
@@ -592,9 +631,10 @@ real_t NonlinearOperator::applyOperator(
 
                 // Form momentum equation right hand side
                 momentum_rhs =
-                    - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
-                    - inv_Ma2 * grad_p
-                    + inv_Re * div_tau
+                    Eigen::Vector3r::Zero() // FIXME
+//                  - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
+//                  - inv_Ma2 * grad_p
+//                  + inv_Re * div_tau
                     ;
                 sphys(ndx::rhou, offset) = momentum_rhs.x();
                 sphys(ndx::rhov, offset) = momentum_rhs.y();
@@ -602,18 +642,19 @@ real_t NonlinearOperator::applyOperator(
 
                 // Form energy equation right hand side
                 sphys(ndx::rhoe, offset) =
-                    - suzerain::rholut::div_e_u(
-                            e, grad_e, u, div_u
-                        )
-                    - suzerain::rholut::div_p_u(
-                            p, grad_p, u, div_u
-                        )
-                    + inv_Re_Pr_gamma1 * suzerain::rholut::div_mu_grad_T(
-                            grad_T, div_grad_T, mu, grad_mu
-                        )
-                    + Ma2_over_Re * suzerain::rholut::div_tau_u<real_t>(
-                            u, grad_u, tau, div_tau
-                        )
+                    0 // FIXME
+//                  - suzerain::rholut::div_e_u(
+//                          e, grad_e, u, div_u
+//                      )
+//                  - suzerain::rholut::div_p_u(
+//                          p, grad_p, u, div_u
+//                      )
+//                  + inv_Re_Pr_gamma1 * suzerain::rholut::div_mu_grad_T(
+//                          grad_T, div_grad_T, mu, grad_mu
+//                      )
+//                  + Ma2_over_Re * suzerain::rholut::div_tau_u<real_t>(
+//                          u, grad_u, tau, div_tau
+//                      )
                     ;
 
                 // Maintain the minimum observed stable time step, if necessary

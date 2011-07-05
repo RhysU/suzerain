@@ -945,21 +945,29 @@ void manufactured_solution<NSCTPL_RHOLUT_MANUFACTURED_SOLUTION_TPNAMES>::Q_conse
     const Scalar wtauzz_z = w_z * tauzz + w * tauzz_z;
 
     Q_rho  = rho_t  + rhou_x + rhov_y + rhow_z;
-    Q_rhou = rhou_t + rhouu_x + rhouv_y + rhouw_z
-           + p_x / Ma2
-           - inv_Re * (tauxx_x + tauxy_y + tauxz_z);
-    Q_rhov = rhov_t + rhouv_x + rhovv_y + rhovw_z
-           + p_y / Ma2
-           - inv_Re * (tauxy_x + tauyy_y + tauyz_z);
-    Q_rhow = rhow_t + rhouw_x + rhovw_y + rhoww_z
-           + p_z / Ma2
-           - inv_Re * (tauxz_x + tauyz_y + tauzz_z);
-    Q_rhoe = rhoe_t + rhoue_x + rhove_y + rhowe_z
-           + pu_x + pv_y + pw_z
-           + qx_x + qy_y + qz_z
-           - Ma2 * inv_Re * (  utauxx_x + vtauxy_x + wtauxz_x
-                             + utauxy_y + vtauyy_y + wtauyz_y
-                             + utauxz_z + vtauyz_z + wtauzz_z);
+    Q_rhou = rhou_t
+//         + rhouu_x + rhouv_y + rhouw_z
+//         + p_x / Ma2
+//         - inv_Re * (tauxx_x + tauxy_y + tauxz_z)
+           ;
+    Q_rhov = rhov_t
+//         + rhouv_x + rhovv_y + rhovw_z
+//         + p_y / Ma2
+//         - inv_Re * (tauxy_x + tauyy_y + tauyz_z)
+           ;
+    Q_rhow = rhow_t
+//         + rhouw_x + rhovw_y + rhoww_z
+//         + p_z / Ma2
+//         - inv_Re * (tauxz_x + tauyz_y + tauzz_z)
+           ;
+    Q_rhoe = rhoe_t
+//         + rhoue_x + rhove_y + rhowe_z
+//         + pu_x + pv_y + pw_z
+//         + qx_x + qy_y + qz_z
+//         - Ma2 * inv_Re * (  utauxx_x + vtauxy_x + wtauxz_x
+//                           + utauxy_y + vtauyy_y + wtauyz_y
+//                           + utauxz_z + vtauyz_z + wtauzz_z)
+           ;
 }
 
 #undef NSCTPL_RHOLUT_MANUFACTURED_SOLUTION_TPDECLARATION
