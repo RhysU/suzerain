@@ -159,6 +159,15 @@ AC_LANG_PUSH([C++])
 PKG_CHECK_MODULES([LOG4CXX],
     [liblog4cxx >= 0.10 apr-1 >= 1.3.3 apr-util-1 >= 1.3.4],
     AC_DEFINE([HAVE_LOG4CXX],1,[Define if log4cxx is available]))
+AC_CACHE_CHECK([if we can link APR using LOG4CXX_LIBS], [my_cv_apr_linkable],[
+    LIBS=$LOG4CXX_LIBS
+    AC_TRY_LINK_FUNC([apr_initialize],
+                     [my_cv_apr_linkable=yes], [my_cv_apr_linkable=no])
+    LIBS=$saved_LIBS
+])
+if [ test x$my_cv_apr_linkable = xno ]; then
+    AC_MSG_ERROR([Unable to link APR using LOG4CXX_LIBS=$LOG4CXX_LIBS])
+fi
 PKG_CHECK_MODULES([EIGEN],
     [eigen3 >= 3.0.0],
     AC_DEFINE([HAVE_EIGEN],1,[Define if Eigen is available]))
