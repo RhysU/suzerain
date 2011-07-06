@@ -47,7 +47,9 @@ suzerain_htstretch1(const double delta,
 {
     assert(L > 0);
     assert(0 <= x && x <= L);
+#pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY(delta == 0.0)) {
+#pragma warning(pop)
         return x / L;
     } else {
         return 1 + tanh(delta*(x/L - 1))/tanh(delta);
@@ -61,7 +63,9 @@ suzerain_htstretch1_ddelta(const double delta,
 {
     assert(L > 0);
     assert(0 <= x && x <= L);
+#pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY(delta == 0.0)) {
+#pragma warning(pop)
         return 0.0;
     } else {
         const double xoverLlessone = x/L-1;
@@ -80,7 +84,9 @@ suzerain_htstretch1_dL(const double delta,
 {
     assert(L > 0);
     assert(0 <= x && x <= L);
+#pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY(delta == 0.0)) {
+#pragma warning(pop)
         return -x / (L * L);
     } else {
         const double xoverLlessone = x/L-1;
@@ -96,7 +102,9 @@ suzerain_htstretch1_dx(const double delta,
 {
     assert(L > 0);
     assert(0 <= x && x <= L);
+#pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY(delta == 0.0)) {
+#pragma warning(pop)
         return 1.0 / L;
     } else {
         const double cosh_expr = cosh(delta*(x/L-1));
@@ -112,7 +120,9 @@ suzerain_htstretch2(const double delta,
 {
     assert(L > 0);
     assert(0 <= x && x <= L);
+#pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY(delta == 0.0)) {
+#pragma warning(pop)
         return x / L;
     } else {
         return 0.5*(1 + tanh(delta*(x/L - 0.5))/tanh(delta/2.));
@@ -129,7 +139,9 @@ suzerain_htstretch2_ddelta(const double delta,
     const double xoverLlesshalf = x/L - 0.5;
     const double sinh_halfdelta = sinh(delta/2);
     const double cosh_term      = cosh(delta*xoverLlesshalf);
+#pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY(delta == 0.0)) {
+#pragma warning(pop)
         return 0.0;
     } else {
         return -  ((L-2*x)*sinh(delta)+L*sinh((2*x/L-1)*delta))
@@ -146,7 +158,9 @@ suzerain_htstretch2_dL(const double delta,
     assert(0 <= x && x <= L);
     const double xoverLlesshalf = x/L - 0.5;
     const double cosh_term      = cosh(delta*xoverLlesshalf);
+#pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY(delta == 0.0)) {
+#pragma warning(pop)
         return -x / (L * L);
     } else {
         return -x*delta/(tanh(delta/2)*2*L*L*cosh_term*cosh_term);
@@ -160,7 +174,9 @@ suzerain_htstretch2_dx(const double delta,
 {
     assert(L > 0);
     assert(0 <= x && x <= L);
+#pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY(delta == 0.0)) {
+#pragma warning(pop)
         return 1.0 / L;
     } else {
         const double xoverLlesshalf = x/L - 0.5;

@@ -135,7 +135,9 @@ GridDefinition& GridDefinition::Nx(int value) {
         suzerain::validation::ensure_nonnegative(value,"Nx");
     }
     const_cast<int&>(N.x())  = value;
+#pragma warning(push,disable:2259)
     const_cast<int&>(dN.x()) = N.x() * DAF.x();
+#pragma warning(pop)
     return *this;
 }
 
@@ -146,7 +148,9 @@ GridDefinition& GridDefinition::Ny(int value) {
         suzerain::validation::ensure_nonnegative(value,"Ny");
     }
     const_cast<int&>(N.y())  = value;
+#pragma warning(push,disable:2259)
     const_cast<int&>(dN.y()) = N.y() * DAF.y();
+#pragma warning(pop)
     return *this;
 }
 
@@ -157,29 +161,39 @@ GridDefinition& GridDefinition::Nz(int value) {
         suzerain::validation::ensure_nonnegative(value,"Nz");
     }
     const_cast<int&>(N.z())  = value;
+#pragma warning(push,disable:2259)
     const_cast<int&>(dN.z()) = N.z() * DAF.z();
+#pragma warning(pop)
     return *this;
 }
 
 GridDefinition& GridDefinition::DAFx(double factor) {
-    if (DAF.x()) {
+#pragma warning(push,disable:1572)
+    if (DAF.x() != 0) {
+#pragma warning(pop)
         suzerain::validation::ensure_positive(factor,"DAFx");
     } else {
         suzerain::validation::ensure_nonnegative(factor,"DAFx");
     }
     const_cast<double&>(DAF.x()) = factor;
+#pragma warning(push,disable:2259)
     const_cast<int&   >(dN.x())  = N.x() * DAF.x();
+#pragma warning(pop)
     return *this;
 }
 
 GridDefinition& GridDefinition::DAFz(double factor) {
-    if (DAF.z()) {
+#pragma warning(push,disable:1572)
+    if (DAF.z() != 0) {
+#pragma warning(pop)
         suzerain::validation::ensure_positive(factor,"DAFz");
     } else {
         suzerain::validation::ensure_nonnegative(factor,"DAFz");
     }
     const_cast<double&>(DAF.z()) = factor;
+#pragma warning(push,disable:2259)
     const_cast<int&   >(dN.z())  = N.z() * DAF.z();
+#pragma warning(pop)
     return *this;
 }
 

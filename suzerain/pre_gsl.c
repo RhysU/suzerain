@@ -36,6 +36,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
+#include <suzerain/pre_gsl.h>
 
 // gsl_integration_glfixed in GSL 1.14 but
 // gsl_integration_glfixed_point is 1.14+ so build it atop 1.14's public API

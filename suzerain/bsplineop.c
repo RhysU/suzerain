@@ -756,7 +756,9 @@ suzerain_bsplineop_create_galerkin_operators(
         for (int j = i; j < i + w->k; ++j) {
             const double a = gsl_vector_get(bw->knots, j);
             const double b = gsl_vector_get(bw->knots, j + 1);
+#pragma warning(push,disable:1572)
             if (SUZERAIN_UNLIKELY(a == b)) continue;
+#pragma warning(pop)
 
             /* ...evaluate all derivatives at each Gauss point... */
             /* scale by the Gauss weight, and accumulate into   */
@@ -853,8 +855,10 @@ static double multiply_function_against_basis_function(double x, void *params)
     // If x is in the support of basis function i...
     if (istart <= p->i && p->i <= iend) {
         // ...return the product of the basis function and p->function...
+#pragma warning(push,disable:981)
         return   gsl_vector_get(p->Bk, p->i - istart)
                * SUZERAIN_FN_EVAL(p->function, x);
+#pragma warning(pop)
     } else {
         // ...otherwise return zero
         return 0.0;
