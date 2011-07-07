@@ -5,9 +5,9 @@ CLEANFILES       = # Append below
 
 # Build in these directories:
 if BUILD_WRITEUP
-    MAYBE_SUBDIRS = writeup
+    MAYBE_WRITEUP_SUBDIR = writeup
 endif
-SUBDIRS = lib suzerain apps tests $(MAYBE_SUBDIRS)
+SUBDIRS = lib suzerain tests apps $(MAYBE_WRITEUP_SUBDIR)
 
 # Distribute these items:
 DIST_SUBDIRS = lib suzerain apps tests writeup

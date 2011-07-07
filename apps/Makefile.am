@@ -10,10 +10,16 @@ bin_PROGRAMS   = # Append below
 bin_SCRIPTS    = # Append below
 check_PROGRAMS = # Append below
 CLEANFILES     = # Append below
+EXTRA_DIST     = # Append below
+TESTS          = # Append below
 
 # MPI-based compilation and linking
 CXX = @MPICXX@
 CC  = @MPICC@
+
+# Specify test environment for 'make check'
+TESTS_ENVIRONMENT  = TMPDIR=$(builddir)
+TESTS_ENVIRONMENT += LOG4CXX_CONFIGURATION=$(top_srcdir)/log4cxx.properties
 
 # Test progams and/or performance drivers
 
@@ -52,6 +58,11 @@ channel_mean_LDADD    = libchannel.la
 bin_PROGRAMS         += conservation
 conservation_SOURCES  = conservation.cpp
 conservation_LDADD    = libchannel.la
+
+# Tests for channel applications
+
+TESTS      += test_channel_restart.sh
+EXTRA_DIST += test_channel_restart.sh
 
 # Clean up from Intel Compiler's -prof-gen output and precomiled headers
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
