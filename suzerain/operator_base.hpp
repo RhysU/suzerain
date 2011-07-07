@@ -103,6 +103,9 @@ public:
         }
     }
 
+    /** Virtual destructor for peace of mind */
+    virtual ~OperatorBase() {}
+
     /** Does the current rank contain the "zero-zero" constant modes? */
     const bool has_zero_zero_mode;
 

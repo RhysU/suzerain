@@ -287,15 +287,9 @@ int main(int argc, char **argv)
                 k < dgrid->local_physical_end.z();
                 ++k) {
 
-                const real_t z = obase.z(k);
-                SUZERAIN_UNUSED(z);
-
                 for (int i = dgrid->local_physical_start.x();
                     i < dgrid->local_physical_end.x();
                     ++i, /* NB */ ++offset) {
-
-                    const real_t x = obase.x(i);
-                    SUZERAIN_UNUSED(x);
 
                     // Initialize primitive state
                     const real_t rho = 1;

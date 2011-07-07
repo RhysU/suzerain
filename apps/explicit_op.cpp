@@ -273,16 +273,15 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         // a target value.
         Map<VectorXc> mean_rhou(state[ndx::rhou].origin(), Ny);
         const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rhou);
-        const real_t phi = (scenario.bulk_rhou - bulk.real()) / bulk.imag();
-        mean_rhou.real() += phi * mean_rhou.imag();
+        const real_t varphi = (scenario.bulk_rhou - bulk.real()) / bulk.imag();
+        mean_rhou.real() += varphi * mean_rhou.imag();
         mean_rhou.imag() = VectorXr::Zero(Ny);
 
         // channel_treatment step (7) accounts for the momentum forcing
         // within the total energy equation including the Mach squared
         // factor arising from the nondimensionalization choices.
         Map<VectorXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
-        const real_t phi_times_Ma_squared = phi * scenario.Ma * scenario.Ma;
-        mean_rhoe.real() += phi_times_Ma_squared * mean_rhoe.imag();
+        mean_rhoe.real() += (varphi*scenario.Ma*scenario.Ma)*mean_rhoe.imag();
         mean_rhoe.imag() = VectorXr::Zero(Ny);
 
         // channel_treatment steps (8) and (9) already performed above
@@ -293,8 +292,8 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
 
         Map<VectorXc> mean_rho(state[ndx::rho].origin(), Ny);
         const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rho);
-        const real_t phi = (scenario.bulk_rho - bulk.real()) / bulk.imag();
-        mean_rho.real() += phi * mean_rho.imag();
+        const real_t varphi = (scenario.bulk_rho - bulk.real()) / bulk.imag();
+        mean_rho.real() += varphi * mean_rho.imag();
         mean_rho.imag() = VectorXr::Zero(Ny);
 
         // Note that only the continuity equation is forced which neglects
@@ -474,22 +473,13 @@ real_t NonlinearOperator::applyOperator(
          j < dgrid.local_physical_end.y();
          ++j) {
 
-        const real_t y = this->y(j);
-        SUZERAIN_UNUSED(y);
-
         for (int k = dgrid.local_physical_start.z();
             k < dgrid.local_physical_end.z();
             ++k) {
 
-            const real_t z = this->z(k);
-            SUZERAIN_UNUSED(z);
-
             for (int i = dgrid.local_physical_start.x();
                 i < dgrid.local_physical_end.x();
                 ++i, /* NB */ ++offset) {
-
-                const real_t x = this->x(i);
-                SUZERAIN_UNUSED(x);
 
                 // Unpack density-related quantities
                 const real_t rho          = sphys(ndx::rho, offset);

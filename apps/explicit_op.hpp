@@ -130,8 +130,7 @@ private:
  * A boundary-condition agnostic, fully explicit Navier&ndash;Stokes operator.
  */
 class NonlinearOperator
-    : public boost::noncopyable,                        // Nontrivial storage
-      public suzerain::OperatorBase<real_t>,
+    : public suzerain::OperatorBase<real_t>,
       public suzerain::timestepper::INonlinearOperator<
             suzerain::NoninterleavedState<4,complex_t>
       >
@@ -187,6 +186,13 @@ protected:
 
         private: aux();
     };
+
+private:
+
+    // Instances noncopyable as they have nontrivial member storage.  Using
+    // boost::noncopyable trips Intel non-virtual base destructor warnings.
+    NonlinearOperator(const NonlinearOperator&);
+    NonlinearOperator& operator=(const NonlinearOperator&);
 
 };
 

@@ -367,6 +367,7 @@ void store(const esio_handle h,
     DEBUG0("Storing nsctpl_rholut::manufactured_solution parameters");
 
     // Check parameters stored with the scenario not the manufactured solution
+#pragma warning(push,disable:1572)
     if (msoln->alpha != scenario.alpha)
         WARN0("Manufactured solution alpha mismatches with scenario!");
     if (msoln->beta  != scenario.beta)
@@ -385,6 +386,7 @@ void store(const esio_handle h,
         WARN0("Manufactured solution Ly mismatches with scenario!");
     if (msoln->Lz    != scenario.Lz)
         WARN0("Manufactured solution Lz mismatches with scenario!");
+#pragma warning(pop)
 
     // Non-scenario solution parameters are stored as attributes under location
     // Scenario parameters should be taken from ScenarioDefinition
@@ -724,7 +726,9 @@ void load(const esio_handle h,
                          && b.n()     == Fb->n()
                          && b.nknot() == Fb->nknot();
     for (int j = 0; bsplines_same && j < b.nknot(); ++j) {
+#pragma warning(push,disable:1572)
         bsplines_same = (b.knot(j) == Fb->knot(j));
+#pragma warning(pop)
     }
 
     // Compute wavenumber translation logistics for X direction.
@@ -830,7 +834,7 @@ void load(const esio_handle h,
 
             // Step 0: Obtain collocation points for new basis
             Eigen::ArrayXd points(b.n());
-            for (int i = 0; i < b.n(); ++i) points[i] = b.collocation_point(i);
+            for (int k = 0; k < b.n(); ++k) points[k] = b.collocation_point(k);
 
             // Step 1: Affine transformation of points into old basis domain
             // Allows stretching of old range onto new range.
@@ -839,7 +843,9 @@ void load(const esio_handle h,
             const double oldmin = Fb->collocation_point(0);
             const double oldmax = Fb->collocation_point(Fb->n() - 1);
             // Only pay for floating point loss if strictly necessary
+#pragma warning(push,disable:1572)
             if (oldmin != newmin || oldmax != newmax) {
+#pragma warning(pop)
                 points = (points - newmin)
                     * ((oldmax - oldmin) / (newmax - newmin)) + oldmin;
             }
@@ -998,7 +1004,9 @@ void accumulate_manufactured_solution(
         = physical_view<field::count>::create(dgrid, swave);
 
     // Depending on whether or not we need swave's data...
+#pragma warning(push,disable:1572)
     if (beta == 0) {
+#pragma warning(pop)
         // ...either clear out any lingering NaNs or Infs from storage...
         suzerain::multi_array::fill(swave, 0);
     } else {
