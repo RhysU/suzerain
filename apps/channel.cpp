@@ -704,7 +704,7 @@ void load(const esio_handle h,
     assert(                  state.shape()[0]  == field::count);
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.global_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3]) == dgrid.global_wave_extent.z());
+    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
 
     // Obtain details on the restart field's global sizes
     int Fz, Fx, Fy, ncomponents;
@@ -742,7 +742,7 @@ void load(const esio_handle h,
     assert(fxb[1] == fxe[1]);
     assert(mxb[1] == mxe[1]);
 
-    // Compute wavenumber translation logistics for Y direction
+    // Compute wavenumber translation logistics for Z direction
     // One or both ranges may be empty
     int fzb[2], fze[2], mzb[2], mze[2];
     suzerain::inorder::wavenumber_translate(Fz,
