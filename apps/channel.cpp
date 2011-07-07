@@ -927,7 +927,9 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
         for (int j = 0; j < 2; ++j) {
             for (int n = mzb[j]; n < mze[j]; ++n) {
                 for (int m = mxb[0]; m < mxe[0]; ++m) {
-                    const complex_t * u_mn = &state[k][0][m][n];
+                    const complex_t * u_mn
+                        = &state[k][0][m - dgrid.local_wave_start.x()]
+                                      [n - dgrid.local_wave_start.z()];
                     gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
                     complex_t dot = suzerain::blas::dot(
                             grid.N.y(), u_mn, 1, tmp.data(), 1);
