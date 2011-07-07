@@ -943,19 +943,20 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
     }
     total2 *= scenario.Lx * scenario.Lz;
 
-    // Reduce total2 sum onto processor housing the zero-zero mode
-    SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE,
-                total2.data(), total2.size() * sizeof(complex_t)/sizeof(real_t),
+    // Reduce total2 sum onto processor housing the zero-zero mode using
+    // mean2 as a scratch buffer to simulate (the disallowed) MPI_IN_PLACE
+    SUZERAIN_MPICHKR(MPI_Reduce(total2.data(),
+                mean2.data(), field::count * sizeof(complex_t)/sizeof(real_t),
                 suzerain::mpi::datatype<real_t>(),
                 MPI_SUM, 0, MPI_COMM_WORLD));
+    total2 = mean2;
 
     // Compute the mean-only L^2 squared for each field on the root processor
     if (mzb[0] == 0 && mxb[0] == 0) {
         for (size_t k = 0; k < field::count; ++k) {
             const complex_t * u_mn = &state[k][0][0][0];
             gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
-            mean2[k] = suzerain::blas::dot(grid.N.y(), u_mn, 1,
-                                                       tmp.data(), 1);
+            mean2[k] = suzerain::blas::dot(grid.N.y(), u_mn, 1, tmp.data(), 1);
         }
         mean2 *= scenario.Lx * scenario.Lz;
     }
