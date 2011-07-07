@@ -19,8 +19,9 @@ noinst_HEADERS += test_tools.hpp
 CXX = @MPICXX@
 CC  = @MPICC@
 
-# Provide a test-ready logging configuration
-TESTS_ENVIRONMENT = LOG4CXX_CONFIGURATION=$(srcdir)/log4cxx.properties
+# Specify test environment for 'make check'
+TESTS_ENVIRONMENT  = TMPDIR=$(builddir)
+TESTS_ENVIRONMENT += LOG4CXX_CONFIGURATION=$(top_srcdir)/log4cxx.properties
 
 # Demand that all tests build for 'make all' target to be successful.
 # Much of the C++ functionality is header-only; this ensures it builds.
