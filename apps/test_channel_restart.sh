@@ -39,14 +39,14 @@ trap "rm -rf $tmpdir" EXIT
 
 # Minimalistic command execution infrastructure
 banner_prefix=`basename $0`
-banner()     { echo $banner_prefix: $*  ; }
-run()        { echo $* ; $*             ; }
-run_silent() { echo $* ; $* > /dev/null ; }
+banner() { echo $banner_prefix: $*  ; }
+run()    { echo $* ; $*             ; }
+runq()   { echo $* ; $* > /dev/null ; }
 
 banner "Creating initial field to use for all tests"
-run_silent ./channel_init --mms=0 --clobber "$tmpdir/initial.h5" \
-                          --Nx=8 --Ny=16 --k=6 --htdelta=1 --Nz=6 \
-                          $* # Incoming script arguments override
+runq ./channel_init "$tmpdir/initial.h5"                           \
+                    --mms=0 --Nx=1 --Ny=8 --k=6 --htdelta=1 --Nz=2 \
+                    $* # Incoming script arguments override
 
 # Slurp grid details from the restart into integer variables
 # This account for any overrides present on the channel_init line just above
@@ -60,14 +60,21 @@ declare -ir k=$(read_restart k)
 declare -ir htdelta=$(read_restart htdelta)
 declare -ir Nz=$(read_restart Nz)
 
+banner "Idempotence of restarting without time advancement"
+(
+    cd $tmpdir
+    runq ../channel_explicit initial.h5 --desttemplate "a#.h5" --advance_nt=0
+    run  h5diff initial.h5 a0.h5
+)
 
-banner "Equivalence of a field both with and without a restart"
-
-# 1. Create an MMS field using channel_init at some Nx, Ny, k, Nz
-# 2. Use channel_explicit --advance_nt=1 twice to advance to time steps passing through a restart file on disk.
-# 3. Use channel_explicit --advance_nt=2 to advance two time steps.
-# 4. Use h5diff to ensure /rho{,u,v,w,e} contents are identical between steps 2 and 3.
-
+#banner "Equivalence of a field both with and without a restart"
+#(
+#    cd $tmpdir
+#    runq ../channel_explicit initial.h5 --desttemplate "a#.h5" --advance_nt=1
+#    runq ../channel_explicit a0.h5      --desttemplate "b#.h5" --advance_nt=1
+#    runq ../channel_explicit initial.h5 --desttemplate "c#.h5" --advance_nt=2
+#    run  h5diff --use-system-epsilon b0.h5 c0.h5
+#)
 
 banner "Upsample/downsample both homogeneous directions"
 

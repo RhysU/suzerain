@@ -18,8 +18,8 @@ CXX = @MPICXX@
 CC  = @MPICC@
 
 # Specify test environment for 'make check'
-TESTS_ENVIRONMENT  = TMPDIR=$(builddir)
-TESTS_ENVIRONMENT += LOG4CXX_CONFIGURATION=$(top_srcdir)/log4cxx.properties
+TESTS_ENVIRONMENT  = TMPDIR=$(abs_builddir)
+TESTS_ENVIRONMENT += LOG4CXX_CONFIGURATION=$(abs_top_srcdir)/log4cxx.properties
 
 # Test progams and/or performance drivers
 
