@@ -522,8 +522,8 @@ void store(const esio_handle h,
     esio_line_write(h, "integration_weights", buf.data(), 0,
             "Integrate by dotting B-spline coefficients against weights");
 
-    char name[8];
-    char comment[127];
+    char name[8]      = {};
+    char comment[127] = {};
 
     for (int k = 0; k <= bop->nderiv(); ++k) {
         snprintf(name, sizeof(name)/sizeof(name[0]), "Dy%d", k);
