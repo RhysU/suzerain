@@ -338,7 +338,7 @@ NonlinearOperator::NonlinearOperator(
                   suzerain::strides_cm(
                       suzerain::to_yxz(dgrid.local_wave_extent))))
 {
-    // NOP
+    suzerain::multi_array::fill(auxw, 0);
 }
 
 real_t NonlinearOperator::applyOperator(
