@@ -784,7 +784,7 @@ void load(const esio_handle h,
         boost::array_view_gen<load_type, 3>::type field
                 = state[boost::indices[i][all][all][all]];
 
-        // Clear storage prior to load to zero not-loaded coefficents
+        // Clear storage prior to load to zero not-loaded coefficients
         if (bsplines_same) {
             suzerain::multi_array::fill(field, 0);
         } else {
