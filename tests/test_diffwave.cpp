@@ -191,11 +191,12 @@ BOOST_AUTO_TEST_SUITE( apply )
 // expect.  Functional correctness in terms of representing known functions is
 // handled in test_diffwave_p3dfft.
 static void test_apply_helper(const int dxcnt, const int dzcnt,
-                                   const double Lx, const double Lz,
-                                   const int Ny,
-                                   const int Nx, const int dNx,
-                                   const int Nz, const int dNz,
-                                   const double small_enough)
+                              const double alpha_re, const double alpha_im,
+                              const double Lx, const double Lz,
+                              const int Ny,
+                              const int Nx, const int dNx,
+                              const int Nz, const int dNz,
+                              const double small_enough)
 {
     // Allocate test array
     const int nelem = Ny*(dNx/2+1)*dNz;
@@ -216,7 +217,7 @@ static void test_apply_helper(const int dxcnt, const int dzcnt,
     }
 
     // Call the function under test
-    const gsl_complex alpha = gsl_complex_rect(2, 0);
+    const gsl_complex alpha = gsl_complex_rect(alpha_re, alpha_im);
     suzerain::diffwave::apply(dxcnt, dzcnt, alpha.dat, x,
             Lx, Lz, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
 
@@ -311,13 +312,28 @@ BOOST_AUTO_TEST_CASE( apply )
             for (int k = 0; k < (int) (sizeof(c)/sizeof(c[0])); ++k) {
 
                 // Empirical tolerance choice: maybe too small, maybe not.
-                const double small = 7*std::pow(10, -10 + (dxcnt+dzcnt)/2.5);
+                double small = 7*std::pow(10, -10 + (dxcnt+dzcnt)/2.5);
+
+                // Tickles the general logic using "arbitrary" alpha
                 BOOST_TEST_MESSAGE("Testing dxcnt = " << dxcnt
                                                     << ", dzcnt = " << dzcnt
+                                                    << ", alpha = 2+1i"
                                                     << " for params " << c[k]
                                                     << " using tol " << small);
+                test_apply_helper(dxcnt, dzcnt, 2, 1, c[k][0], c[k][1],
+                        c[k][2], c[k][3], c[k][4], c[k][5], c[k][6], small);
 
-                test_apply_helper(dxcnt, dzcnt, c[k][0], c[k][1],
+                // Tickles possibly specialized logic for alpha = 1
+                if (dxcnt == 0 && dzcnt == 0) {
+                    // No derivatives, scaling => no precision loss allowed
+                    small = std::numeric_limits<double>::epsilon();
+                }
+                BOOST_TEST_MESSAGE("Testing dxcnt = " << dxcnt
+                                                    << ", dzcnt = " << dzcnt
+                                                    << ", alpha = 1+0i"
+                                                    << " for params " << c[k]
+                                                    << " using tol " << small);
+                test_apply_helper(dxcnt, dzcnt, 1, 0, c[k][0], c[k][1],
                         c[k][2], c[k][3], c[k][4], c[k][5], c[k][6], small);
             }
         }
