@@ -371,11 +371,14 @@ real_t NonlinearOperator::applyOperator(
     real_t &diffusive_delta_t  = delta_t_candidates[1];
 
     // Compute Y derivatives of density at collocation points
-    bop_accumulate(1, 1., swave, ndx::rho, 0., auxw, aux::rho_y);
-    bop_accumulate(2, 1., swave, ndx::rho, 0., auxw, aux::rho_yy);
-    bop_apply     (0, 1., swave, ndx::rho);
+    // Zero wavenumbers present only for dealiasing along the way
+    diffwave_apply(0, 0, 1., swave, ndx::rho);
+    bop_accumulate(1,    1., swave, ndx::rho, 0., auxw, aux::rho_y);
+    bop_accumulate(2,    1., swave, ndx::rho, 0., auxw, aux::rho_yy);
+    bop_apply     (0,    1., swave, ndx::rho);
 
     // Compute X- and Z- derivatives of density at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
     diffwave_accumulate(1, 0, 1., swave, ndx::rho,   0., auxw, aux::rho_x );
     diffwave_accumulate(2, 0, 1., swave, ndx::rho,   0., auxw, aux::rho_xx);
     diffwave_accumulate(1, 1, 1., swave, ndx::rho,   0., auxw, aux::rho_xz);
@@ -385,11 +388,14 @@ real_t NonlinearOperator::applyOperator(
     diffwave_accumulate(0, 1, 1., auxw,  aux::rho_y, 0., auxw, aux::rho_yz);
 
     // Compute Y derivatives of X momentum at collocation points
-    bop_accumulate(1, 1., swave, ndx::rhou, 0., auxw, aux::mx_y);
-    bop_accumulate(2, 1., swave, ndx::rhou, 0., auxw, aux::mx_yy);
-    bop_apply     (0, 1., swave, ndx::rhou);
+    // Zero wavenumbers present only for dealiasing along the way
+    diffwave_apply(0, 0, 1., swave, ndx::rhou);
+    bop_accumulate(1,    1., swave, ndx::rhou, 0., auxw, aux::mx_y);
+    bop_accumulate(2,    1., swave, ndx::rhou, 0., auxw, aux::mx_yy);
+    bop_apply     (0,    1., swave, ndx::rhou);
 
     // Compute X- and Z- derivatives of X momentum at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
     diffwave_accumulate(1, 0, 1., swave, ndx::rhou,  0., auxw, aux::mx_x );
     diffwave_accumulate(2, 0, 1., swave, ndx::rhou,  0., auxw, aux::mx_xx);
     diffwave_accumulate(1, 1, 1., swave, ndx::rhou,  0., auxw, aux::mx_xz);
@@ -399,11 +405,14 @@ real_t NonlinearOperator::applyOperator(
     diffwave_accumulate(0, 1, 1., auxw,  aux::mx_y,  0., auxw, aux::mx_yz);
 
     // Compute Y derivatives of Y momentum at collocation points
-    bop_accumulate(1, 1., swave, ndx::rhov, 0., auxw, aux::my_y);
-    bop_accumulate(2, 1., swave, ndx::rhov, 0., auxw, aux::my_yy);
-    bop_apply     (0, 1., swave, ndx::rhov);
+    // Zero wavenumbers present only for dealiasing along the way
+    diffwave_apply(0, 0, 1., swave, ndx::rhov);
+    bop_accumulate(1,    1., swave, ndx::rhov, 0., auxw, aux::my_y);
+    bop_accumulate(2,    1., swave, ndx::rhov, 0., auxw, aux::my_yy);
+    bop_apply     (0,    1., swave, ndx::rhov);
 
     // Compute X- and Z- derivatives of Y momentum at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
     diffwave_accumulate(1, 0, 1., swave, ndx::rhov,  0., auxw, aux::my_x );
     diffwave_accumulate(2, 0, 1., swave, ndx::rhov,  0., auxw, aux::my_xx);
     diffwave_accumulate(1, 1, 1., swave, ndx::rhov,  0., auxw, aux::my_xz);
@@ -413,11 +422,14 @@ real_t NonlinearOperator::applyOperator(
     diffwave_accumulate(0, 1, 1., auxw,  aux::my_y,  0., auxw, aux::my_yz);
 
     // Compute Y derivatives of Z momentum at collocation points
-    bop_accumulate(1, 1., swave, ndx::rhow, 0., auxw, aux::mz_y);
-    bop_accumulate(2, 1., swave, ndx::rhow, 0., auxw, aux::mz_yy);
-    bop_apply     (0, 1., swave, ndx::rhow);
+    // Zero wavenumbers present only for dealiasing along the way
+    diffwave_apply(0, 0, 1., swave, ndx::rhow);
+    bop_accumulate(1,    1., swave, ndx::rhow, 0., auxw, aux::mz_y);
+    bop_accumulate(2,    1., swave, ndx::rhow, 0., auxw, aux::mz_yy);
+    bop_apply     (0,    1., swave, ndx::rhow);
 
     // Compute X- and Z- derivatives of Z momentum at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
     diffwave_accumulate(1, 0, 1., swave, ndx::rhow,  0., auxw, aux::mz_x );
     diffwave_accumulate(2, 0, 1., swave, ndx::rhow,  0., auxw, aux::mz_xx);
     diffwave_accumulate(1, 1, 1., swave, ndx::rhow,  0., auxw, aux::mz_xz);
@@ -427,11 +439,14 @@ real_t NonlinearOperator::applyOperator(
     diffwave_accumulate(0, 1, 1., auxw,  aux::mz_y,  0., auxw, aux::mz_yz);
 
     // Compute Y derivatives of total energy at collocation points
-    bop_accumulate(1, 1., swave, ndx::rhoe, 0., auxw, aux::e_y);
-    bop_accumulate(2, 1., swave, ndx::rhoe, 0., auxw, aux::div_grad_e);
-    bop_apply     (0, 1., swave, ndx::rhoe);
+    // Zero wavenumbers present only for dealiasing along the way
+    diffwave_apply(0, 0, 1., swave, ndx::rhoe);
+    bop_accumulate(1,    1., swave, ndx::rhoe, 0., auxw, aux::e_y);
+    bop_accumulate(2,    1., swave, ndx::rhoe, 0., auxw, aux::div_grad_e);
+    bop_apply     (0,    1., swave, ndx::rhoe);
 
     // Compute X- and Z- derivatives of total energy at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
     diffwave_accumulate(1, 0, 1., swave, ndx::rhoe, 0., auxw, aux::e_x       );
     diffwave_accumulate(2, 0, 1., swave, ndx::rhoe, 1., auxw, aux::div_grad_e);
     diffwave_accumulate(0, 1, 1., swave, ndx::rhoe, 0., auxw, aux::e_z       );
