@@ -47,7 +47,9 @@ extern "C" {
  * \alpha \partial{}x^{\mbox{dxcnt}} \partial{}z^{\mbox{dzcnt}} x\f$.  The
  * implementation accounts for the field potentially being dealiased,
  * distributed across multiple machines, and representing a domain of arbitrary
- * length in the X and Z directions.
+ * length in the X and Z directions.  This routine may also be used to
+ * efficiently zero higher wavenumbers used only for dealiasing when <tt>dxcnt
+ * == 0</tt>, <tt>dzcnt == 0</tt>, and \f$\alpha = 1\f$.
  *
  * The input and output data \c x is stored column-major over the Y direction
  * (index range <tt>0</tt> to <tt>Ny-1</tt>), X direction (index range
