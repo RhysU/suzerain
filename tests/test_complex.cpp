@@ -76,6 +76,14 @@ BOOST_AUTO_TEST_CASE( is_complex )
     BOOST_CHECK(is_complex<std::complex<float> >::value == true);
     BOOST_CHECK(is_complex<std::complex<int> >::value == true);
 
+    BOOST_CHECK(is_complex<const std::complex<double> >::value == true);
+    BOOST_CHECK(is_complex<const std::complex<float> >::value == true);
+    BOOST_CHECK(is_complex<const std::complex<int> >::value == true);
+
+    BOOST_CHECK(is_complex<std::complex<const double> >::value == true);
+    BOOST_CHECK(is_complex<std::complex<const float> >::value == true);
+    BOOST_CHECK(is_complex<std::complex<const int> >::value == true);
+
     BOOST_CHECK(is_complex<double>::value == false);
     BOOST_CHECK(is_complex<float>::value == false);
     BOOST_CHECK(is_complex<int>::value == false);
@@ -97,6 +105,23 @@ BOOST_AUTO_TEST_CASE( real_type )
     BOOST_CHECK((is_same<real<fftwf_complex>::type,float>::value));
     BOOST_CHECK((is_same<real<fftw_complex>::type,double>::value));
     BOOST_CHECK((is_same<real<fftwl_complex>::type,long double>::value));
+}
+
+BOOST_AUTO_TEST_CASE( real_type_from_const )
+{
+    using boost::is_same;
+    using suzerain::complex::traits::real;
+
+    BOOST_CHECK((is_same<real<
+                const std::complex<float> >::type,float>::value));
+    BOOST_CHECK((is_same<real<
+                const std::complex<double> >::type,double>::value));
+    BOOST_CHECK((is_same<real<
+                const std::complex<int> >::type,int>::value));
+
+    BOOST_CHECK((is_same<real<const fftwf_complex>::type,float>::value));
+    BOOST_CHECK((is_same<real<const fftw_complex>::type,double>::value));
+    BOOST_CHECK((is_same<real<const fftwl_complex>::type,long double>::value));
 }
 
 BOOST_AUTO_TEST_CASE( is_complex_float )

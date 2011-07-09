@@ -76,7 +76,7 @@ struct is_complex<T[2],
 
 /**
  * A type trait that, given a valid complex-value type, returns the type of the
- * real scalar component as <tt>type</tt>.
+ * real scalar component as <tt>type</tt>.  Const-ness is not preserved.
  */
 template<class T> struct real {};
 
@@ -85,8 +85,21 @@ template<class T> struct real<std::complex<T> > {
     typedef typename std::complex<T>::value_type type;
 };
 
+/** A specialization to handle <tt>const std::complex<T></tt>. */
+template<class T> struct real<const std::complex<T> > {
+private:
+    typedef const std::complex<T> _detail;
+public:
+    typedef typename _detail::value_type type;
+};
+
 /** A specialization to handle FFTW-like types. */
 template<class T> struct real<T[2]> {
+    typedef T type;
+};
+
+/** A specialization to handle constant FFTW-like types. */
+template<class T> struct real<const T[2]> {
     typedef T type;
 };
 
