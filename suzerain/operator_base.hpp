@@ -200,7 +200,7 @@ public:
     void diffwave_apply(int dxcnt,
                         int dzcnt,
                         const typename MultiArray::element& alpha,
-                        const MultiArray &x,
+                        MultiArray &x,
                         int ndx_x) const
     {
         return suzerain::diffwave::apply(
