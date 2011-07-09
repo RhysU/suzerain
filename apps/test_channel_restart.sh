@@ -39,13 +39,14 @@ trap "rm -rf $tmpdir" EXIT
 
 # Minimalistic command execution infrastructure
 banner_prefix=`basename $0`
-banner() { echo $banner_prefix: $*  ; }
-run()    { echo $* ; $*             ; }
-runq()   { echo $* ; $* > /dev/null ; }
+banner() { echo $banner_prefix: "$@"    ; }
+run()    { echo "$@" ; "$@"             ; }
+runq()   { echo "$@" ; "$@" > /dev/null ; }
+differ() { echo h5diff "$@" ; h5diff "$@" || h5diff -r "$@" ;}
 
 banner "Creating initial field to use for all tests"
 runq ./channel_init "$tmpdir/initial.h5"                           \
-                    --mms=0 --Nx=1 --Ny=8 --k=6 --htdelta=1 --Nz=2 \
+                    --mms=0 --Nx=4 --Ny=7 --k=5 --htdelta=1 --Nz=6 \
                     $* # Incoming script arguments override
 
 # Slurp grid details from the restart into integer variables
@@ -64,17 +65,17 @@ banner "Idempotence of restarting without time advancement"
 (
     cd $tmpdir
     runq ../channel_explicit initial.h5 --desttemplate "a#.h5" --advance_nt=0
-    run  h5diff initial.h5 a0.h5
+    differ initial.h5 a0.h5
 )
 
-#banner "Equivalence of a field both with and without a restart"
-#(
-#    cd $tmpdir
-#    runq ../channel_explicit initial.h5 --desttemplate "a#.h5" --advance_nt=1
-#    runq ../channel_explicit a0.h5      --desttemplate "b#.h5" --advance_nt=1
-#    runq ../channel_explicit initial.h5 --desttemplate "c#.h5" --advance_nt=2
-#    run  h5diff --use-system-epsilon b0.h5 c0.h5
-#)
+banner "Equivalence of a field both with and without a restart"
+(
+    cd $tmpdir
+    runq ../channel_explicit initial.h5 --desttemplate "a#.h5" --advance_nt=1
+    runq ../channel_explicit a0.h5      --desttemplate "b#.h5" --advance_nt=1
+    runq ../channel_explicit initial.h5 --desttemplate "c#.h5" --advance_nt=2
+    differ b0.h5 c0.h5
+)
 
 banner "Upsample/downsample both homogeneous directions"
 
