@@ -79,7 +79,7 @@ lcov-report:
 	$(top_srcdir)/lcov/lcov --list-full-path -l $(lcov_dir)/lcov.info \
 	    | egrep -v "`cd -P $(top_srcdir) && pwd`/(suzerain|apps)" \
 	    | cut -d\| -f1 > $(lcov_dir)/remove
-	$(top_srcdir)/lcov/lcov -q -r $(lcov_dir)/lcov.info `cat $(lcov_dir)/remove` > $(lcov_dir)/lcov.cleaned.info
+	$(top_srcdir)/lcov/lcov -r $(lcov_dir)/lcov.info `cat $(lcov_dir)/remove` -o $(lcov_dir)/lcov.cleaned.info
 	@rm $(lcov_dir)/remove
 	@mv $(lcov_dir)/lcov.cleaned.info $(lcov_dir)/lcov.info
 	$(top_srcdir)/lcov/genhtml -t "suzerain" -o $(lcov_dir) $(lcov_dir)/lcov.info
