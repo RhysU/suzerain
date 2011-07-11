@@ -94,6 +94,18 @@ dnl ----------------------------------------------
 AX_CODE_COVERAGE
 
 dnl ----------------------------------------------
+dnl Allow user to disable the tests/ subdirectory
+dnl ----------------------------------------------
+AC_ARG_ENABLE([unittests],
+    [AS_HELP_STRING([--disable-unittests],
+                    [Do not build tests/ subdirectory])],
+    [enable_unittests=no], [enable_unittests=yes])
+if test x$enable_unittests = xno ; then
+    AC_MSG_WARN([Unit tests under tests/ subdirectory will not be built])
+fi
+AM_CONDITIONAL(BUILD_TESTS, test x$enable_unittests = xyes)
+
+dnl ----------------------------------------------
 dnl Enable rudimentary precompiled header support
 dnl Currently very, very Intel-specific
 dnl ----------------------------------------------
