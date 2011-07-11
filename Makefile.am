@@ -70,15 +70,15 @@ include doxygen.am
 # -------------------------------------------
 # Optional support for code coverage analysis
 # -------------------------------------------
-# DISABLED: Pattern to remove some lines from the report
-# $(top_srcdir)/lcov/lcov --list-full-path -l $(lcov_dir)/lcov.info | grep "grvy_hpct_compat.cpp" | cut -d\| -f1 >> $(lcov_dir)/remove
 if CODE_COVERAGE_ENABLED
 lcov_dir=$(top_builddir)/docs/html/lcov
 
 lcov-report:
 	@mkdir -p $(lcov_dir)
 	$(top_srcdir)/lcov/lcov --compat-libtool --directory . --capture --output-file $(lcov_dir)/lcov.info
-	$(top_srcdir)/lcov/lcov --list-full-path -l $(lcov_dir)/lcov.info | grep -v "`cd -P $(top_srcdir)/suzerain && pwd`" | cut -d\| -f1 > $(lcov_dir)/remove
+	$(top_srcdir)/lcov/lcov --list-full-path -l $(lcov_dir)/lcov.info \
+	    | egrep -v "`cd -P $(top_srcdir) && pwd`/(suzerain|apps)" \
+	    | cut -d\| -f1 > $(lcov_dir)/remove
 	$(top_srcdir)/lcov/lcov -q -r $(lcov_dir)/lcov.info `cat $(lcov_dir)/remove` > $(lcov_dir)/lcov.cleaned.info
 	@rm $(lcov_dir)/remove
 	@mv $(lcov_dir)/lcov.cleaned.info $(lcov_dir)/lcov.info
