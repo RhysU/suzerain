@@ -90,11 +90,6 @@ class BsplineMassOperatorIsothermal
 {
 public:
 
-    // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
-#pragma warning(push,disable:111)
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-#pragma warning(pop)
-
     typedef BsplineMassOperator base;
 
     BsplineMassOperatorIsothermal(
@@ -208,11 +203,6 @@ class NonlinearOperatorIsothermal
     : public NonlinearOperator
 {
 public:
-
-    // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
-#pragma warning(push,disable:111)
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-#pragma warning(pop)
 
     typedef NonlinearOperator base;
 

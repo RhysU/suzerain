@@ -188,11 +188,18 @@ void BsplineMassOperatorIsothermal::save_mean_state_at_collocation_points(
 {
     if (!has_zero_zero_mode) return;
 
-    // Copy mean coefficients
-    saved_mean_rho = Eigen::Map<const Eigen::VectorXc>(
-        state[channel::field::ndx::rho].origin(), state.shape()[1]).real();
-    saved_mean_rhou = Eigen::Map<const Eigen::VectorXc>(
-        state[channel::field::ndx::rhou].origin(), state.shape()[1]).real();
+    using Eigen::InnerStride;
+    using Eigen::Map;
+    using Eigen::VectorXr;
+
+    // Copy mean coefficients.  Ugly syntax works around an Intel 11.1 20100806
+    // (l_cproc_p_11.1.073) O3 segfault which is likely an optimizer bug.
+    saved_mean_rho = Map<const VectorXr,0,InnerStride<2> >(
+            reinterpret_cast<const real_t *>(
+                state[channel::field::ndx::rho].origin()), state.shape()[1]);
+    saved_mean_rhou = Map<const VectorXr,0,InnerStride<2> >(
+            reinterpret_cast<const real_t *>(
+                state[channel::field::ndx::rhou].origin()), state.shape()[1]);
 
     // Convert mean coefficients to mean collocation point values
     bop.apply(0, 1, 1.0, saved_mean_rho.data(),  1, state.shape()[1]);
