@@ -39,14 +39,14 @@ trap "rm -rf $tmpdir" EXIT
 
 # Minimalistic command execution infrastructure
 banner_prefix=`basename $0`
-banner() { echo $banner_prefix: "$@"    ; }
-run()    { echo "$@" ; "$@"             ; }
-runq()   { echo "$@" ; "$@" > /dev/null ; }
+banner() { echo; echo $banner_prefix: "$@" ; }
+run()    { echo "$@" ; "$@"                ; }
+runq()   { echo "$@" ; "$@" > /dev/null    ; }
 differ() { echo h5diff "$@" ; h5diff "$@" || h5diff -r "$@" ;}
 
 banner "Creating initial field to use for all tests"
-runq ./channel_init "$tmpdir/initial.h5"                           \
-                    --mms=0 --Nx=4 --Ny=7 --k=5 --htdelta=1 --Nz=6 \
+runq ./channel_init "$tmpdir/initial.h5"                            \
+                    --mms=0 --Nx=4 --Ny=12 --k=6 --htdelta=1 --Nz=6 \
                     $* # Incoming script arguments override
 
 # Slurp grid details from the restart into integer variables
@@ -74,23 +74,33 @@ banner "Equivalence of a field both with and without a restart"
     runq ../channel_explicit initial.h5 --desttemplate "a#.h5" --advance_nt=1
     runq ../channel_explicit a0.h5      --desttemplate "b#.h5" --advance_nt=1
     runq ../channel_explicit initial.h5 --desttemplate "c#.h5" --advance_nt=2
-    differ b0.h5 c0.h5
+    differ --use-system-epsilon b0.h5 c0.h5
 )
 
 banner "Upsample/downsample both homogeneous directions"
-
-# 1. Create an MMS field using channel_init at some Nx, Ny, k, Nz
-# 2. Use channel_explicit --advance_nt=0 to upsample the field to 2*Nx, 3*Nz
-# 3. Use channel_explicit --advance_nt=0 to downsample the field to Nx, Nz
-# 4. Use h5diff to ensure /rho{,u,v,w,e} contents are identical between steps 1 and 3
+(
+    cd $tmpdir
+    runq ../channel_explicit initial.h5 --desttemplate "a#.h5" --advance_nt=0 \
+                                        --Nx=$((2*$Nx)) --Nz=$((3*$Nz))
+    runq ../channel_explicit a0.h5      --desttemplate "b#.h5" --advance_nt=0 \
+                                        --Nx=$((  $Nx)) --Nz=$((  $Nz))
+    differ initial.h5 b0.h5
+)
 
 banner "Upsample/downsample inhomogeneous direction order"
-
-# 1. Create an MMS field using channel_init at some Nx, Ny, k, Nz
-# 2. Use channel_explicit --advance_nt=0 to upsample the field to 2*k
-# 3. Use channel_explicit --advance_nt=0 to downsample the field to k
-# 4. Use h5diff to ensure /rho{,u,v,w,e} contents are equivalent between steps 1 and 3 to some tolerance
-
+(
+    cd $tmpdir
+    runq ../channel_explicit initial.h5 --desttemplate "a#.h5" --advance_nt=0 \
+                                        --k=$(($k+1))
+    runq ../channel_explicit a0.h5      --desttemplate "b#.h5" --advance_nt=0 \
+                                        --k=$(($k  ))
+    # Chosen tolerances are wholly empirical and represent nothing deep
+    differ --delta=5e-5 initial.h5 b0.h5 /rho
+    differ --delta=3e-4 initial.h5 b0.h5 /rhou
+    differ --delta=5e-5 initial.h5 b0.h5 /rhov
+    differ --delta=6e-5 initial.h5 b0.h5 /rhow
+    differ --delta=7e-4 initial.h5 b0.h5 /rhoe
+)
 
 banner "Upsample/downsample inhomogeneous direction NDOF and htdelta"
 
