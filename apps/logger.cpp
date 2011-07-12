@@ -51,9 +51,9 @@ void name_logger_within_comm_world()
     logger = Logger::getLogger(comm_rank_identifier(MPI_COMM_WORLD));
 
     // If debugging is disabled, ensure level is at least INFO on ranks 1+
-    LevelPtr level = logger->getEffectiveLevel();
+    LevelPtr level = logger->getLevel();
     if (comm_rank(MPI_COMM_WORLD) > 0 && !logger->isDebugEnabled()) {
-        if (!level->isGreaterOrEqual(Level::getInfo())) {
+        if (!level || !level->isGreaterOrEqual(Level::getInfo())) {
             level = Level::getInfo();
         }
     }
