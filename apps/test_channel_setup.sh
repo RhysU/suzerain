@@ -32,13 +32,12 @@ tmpdir=`mktemp -d`
 trap "rm -rf $tmpdir" EXIT
 
 # Minimalistic command execution infrastructure
-TESTNP=${TESTNP=2}
 banner_prefix=`basename $0`
-banner() { echo; echo $banner_prefix: "$@" ; }
-run()    { echo mpiexec -np 1       "$@" ; mpiexec -np 1       "$@"             ; }
-runq()   { echo mpiexec -np 1       "$@" ; mpiexec -np 1       "$@" > /dev/null ; }
-prun()   { echo mpiexec -np $TESTNP "$@" ; mpiexec -np $TESTNP "$@"             ; }
-prunq()  { echo mpiexec -np $TESTNP "$@" ; mpiexec -np $TESTNP "$@" > /dev/null ; }
+banner() { echo; echo $banner_prefix${METACASE+ (}${METACASE-}${METACASE+)}: "$@" ; }
+run()    { echo mpiexec -np 1        "$@" ; mpiexec -np 1        "$@"            ; }
+runq()   { echo mpiexec -np 1        "$@" ; mpiexec -np 1        "$@" >/dev/null ; }
+prun()   { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@"            ; }
+prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" >/dev/null ; }
 differ() { echo h5diff "$@" ; h5diff "$@" || h5diff -rv "$@" ;}
 
 banner "Creating initial field to use for tests"
@@ -47,5 +46,5 @@ declare -ir Ny=12
 declare -ir k=6
 declare -ir htdelta=1
 declare -ir Nz=6
-runq ./channel_init "$tmpdir/initial.h5" --mms=0                         \
+runq ./channel_init "$tmpdir/mms0.h5" --mms=0                            \
                     --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz
