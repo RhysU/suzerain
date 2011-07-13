@@ -42,7 +42,7 @@ banner_prefix=`basename $0`
 banner() { echo; echo $banner_prefix: "$@" ; }
 run()    { echo "$@" ; "$@"                ; }
 runq()   { echo "$@" ; "$@" > /dev/null    ; }
-differ() { echo h5diff "$@" ; h5diff "$@" || h5diff -r "$@" ;}
+differ() { echo h5diff "$@" ; h5diff "$@" || h5diff -rv "$@" ;}
 
 banner "Creating initial field to use for all tests"
 runq ./channel_init "$tmpdir/initial.h5"                            \
@@ -103,8 +103,16 @@ banner "Upsample/downsample inhomogeneous direction order"
 )
 
 banner "Upsample/downsample inhomogeneous direction NDOF and htdelta"
-
-# 1. Create an MMS field using channel_init at some Nx, Ny, k, htdelta, Nz
-# 2. Use channel_explicit --advance_nt=0 to upsample the field to 2*Ny and 2*htdelta
-# 3. Use channel_explicit --advance_nt=0 to downsample the field to Ny and htdelta
-# 4. Use h5diff to ensure /rho{,u,v,w,e} contents are equivalent between steps 1 and 3 to some tolerance
+(
+    cd $tmpdir
+    runq ../channel_explicit initial.h5 --desttemplate "a#.h5" --advance_nt=0 \
+                                        --Ny=$((2*$Ny)) --htdelta=$(($htdelta + 1))
+    runq ../channel_explicit a0.h5      --desttemplate "b#.h5" --advance_nt=0 \
+                                        --Ny=$((  $Ny)) --htdelta=$(($htdelta    ))
+    # Chosen tolerances are wholly empirical and represent nothing deep
+    differ --delta=6e-6 initial.h5 b0.h5 /rho
+    differ --delta=1e-4 initial.h5 b0.h5 /rhou
+    differ --delta=7e-6 initial.h5 b0.h5 /rhov
+    differ --delta=3e-5 initial.h5 b0.h5 /rhow
+    differ --delta=2e-4 initial.h5 b0.h5 /rhoe
+)
