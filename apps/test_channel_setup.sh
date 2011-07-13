@@ -27,35 +27,25 @@ if test x$prereq_status != x ; then
     exit $prereq_status
 fi
 
-# Process command line options
-# TODO Allow -np to specify a number of MPI ranks to use
-# TODO Accept -v as a verbosity flag
-# TODO Pass all other arguments through verbatim
-
 # Create temporary directory and clean it up on exit
 tmpdir=`mktemp -d`
 trap "rm -rf $tmpdir" EXIT
 
 # Minimalistic command execution infrastructure
+TESTNP=${TESTNP=2}
 banner_prefix=`basename $0`
 banner() { echo; echo $banner_prefix: "$@" ; }
-run()    { echo "$@" ; "$@"                ; }
-runq()   { echo "$@" ; "$@" > /dev/null    ; }
+run()    { echo mpiexec -np 1       "$@" ; mpiexec -np 1       "$@"             ; }
+runq()   { echo mpiexec -np 1       "$@" ; mpiexec -np 1       "$@" > /dev/null ; }
+prun()   { echo mpiexec -np $TESTNP "$@" ; mpiexec -np $TESTNP "$@"             ; }
+prunq()  { echo mpiexec -np $TESTNP "$@" ; mpiexec -np $TESTNP "$@" > /dev/null ; }
 differ() { echo h5diff "$@" ; h5diff "$@" || h5diff -rv "$@" ;}
 
 banner "Creating initial field to use for tests"
-runq ./channel_init "$tmpdir/initial.h5"                            \
-                    --mms=0 --Nx=4 --Ny=12 --k=6 --htdelta=1 --Nz=6 \
-                    $* # Incoming script arguments override
-
-# Slurp grid details from the restart into integer variables
-# This account for any overrides present on the channel_init line just above
-function read_restart() {
-    h5dump -y -d $1 -o "$tmpdir/read_restart" "$tmpdir/initial.h5" >/dev/null
-    cat "$tmpdir/read_restart"
-}
-declare -ir Nx=$(read_restart Nx)
-declare -ir Ny=$(read_restart Ny)
-declare -ir k=$(read_restart k)
-declare -ir htdelta=$(read_restart htdelta)
-declare -ir Nz=$(read_restart Nz)
+declare -ir Nx=4
+declare -ir Ny=12
+declare -ir k=6
+declare -ir htdelta=1
+declare -ir Nz=6
+runq ./channel_init "$tmpdir/initial.h5" --mms=0                         \
+                    --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz

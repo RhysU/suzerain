@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-source "${SRCDIR:-.}/test_channel_setup.sh"  # Test infrastructure
+source "`dirname $0`/test_channel_setup.sh"  # Test infrastructure
 
 banner "Idempotence of restarting without time advancement"
 (
