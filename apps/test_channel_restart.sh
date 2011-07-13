@@ -10,14 +10,14 @@ eval "$METACASE"
 
 banner "Idempotence of restarting without time advancement"
 (
-    cd $tmpdir
+    cd $testdir
     prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 $P
     differ mms0.h5 a0.h5
 )
 
 banner "Equivalence of a field both with and without a restart"
 (
-    cd $tmpdir
+    cd $testdir
     prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=1 $P
     prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=1 $P
     prunq ../channel_explicit mms0.h5 --desttemplate "c#.h5" --advance_nt=2 $P
@@ -26,7 +26,7 @@ banner "Equivalence of a field both with and without a restart"
 
 banner "Upsample/downsample both homogeneous directions"
 (
-    cd $tmpdir
+    cd $testdir
     prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 $P \
                                       --Nx=$((2*$Nx)) --Nz=$((3*$Nz))
     prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=0 $P \
@@ -36,7 +36,7 @@ banner "Upsample/downsample both homogeneous directions"
 
 banner "Upsample/downsample inhomogeneous direction order"
 (
-    cd $tmpdir
+    cd $testdir
     prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 $P \
                                       --k=$(($k+1))
     prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=0 $P \
@@ -51,7 +51,7 @@ banner "Upsample/downsample inhomogeneous direction order"
 
 banner "Upsample/downsample inhomogeneous direction NDOF and htdelta"
 (
-    cd $tmpdir
+    cd $testdir
     prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 $P \
                                      --Ny=$((2*$Ny)) --htdelta=$(($htdelta+1))
     prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=0 $P \

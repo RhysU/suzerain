@@ -27,10 +27,6 @@ if test x$prereq_status != x ; then
     exit $prereq_status
 fi
 
-# Create temporary directory and remove it on exit (unless TEST_CHANNEL_DEBUG is set)
-tmpdir=`mktemp -d`
-test -z "${TEST_CHANNEL_DEBUG-}" && trap "rm -rf $tmpdir" EXIT
-
 # Minimalistic command execution infrastructure
 banner_prefix=`basename $0`
 banner() { echo; echo $banner_prefix${METACASE+ (}${METACASE-}${METACASE+)}: "$@" ; }
@@ -40,12 +36,25 @@ prun()   { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@"           
 prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" > /dev/null ; }
 differ() { echo h5diff "$@" ; h5diff "$@" || h5diff -rv "$@" ;}
 
+# Create directory for scratch use
+testdir=`mktemp -d`
+
+yes >/dev/null &
+# Install teardown() function at exit unless TEST_CHANNEL_DEBUG is non-empty
+teardown() {
+    METACASE=
+    banner "Tearing down"
+    rm -rvf "$testdir"                     # Remove scratch directory
+    test -z "`jobs -p`" || kill `jobs -p`  # Kill any lingering jobs
+}
+test -z "${TEST_CHANNEL_DEBUG-}" && trap "teardown" EXIT
+
 banner "Creating initial field to use for tests"
 declare -ir Nx=4
 declare -ir Ny=12
 declare -ir k=6
 declare -ir htdelta=1
 declare -ir Nz=6
-runq ./channel_init "$tmpdir/mms0.h5" --mms=0                            \
+runq ./channel_init "$testdir/mms0.h5" --mms=0                           \
                     --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz
-chmod +r "$tmpdir/mms0.h5"
+chmod +r "$testdir/mms0.h5"
