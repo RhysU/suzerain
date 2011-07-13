@@ -5,7 +5,10 @@ set -eu
 source "`dirname $0`/test_channel_setup.sh"
 
 # Run each test case in this file under the following circumstances
-for METACASE in 'NP=1;P=' 'NP=2;P=--Pa=2' 'NP=2;P=--Pb=2'; do
+# (which can be overridden by providing the environment variable METACASES).
+for METACASE in ${METACASES:= 'NP=1' 'NP=2;P=--Pa=2' 'NP=2;P=--Pb=2'}; do
+NP=
+P=
 eval "$METACASE"
 
 banner "Idempotence of restarting without time advancement"

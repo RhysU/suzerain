@@ -37,9 +37,9 @@ prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" > /dev/nul
 differ() { echo h5diff "$@" ; h5diff "$@" || h5diff -rv "$@" ;}
 
 # Create directory for scratch use
+test -z "${TMPDIR-}" && export TMPDIR=.
 testdir=`mktemp -d`
 
-yes >/dev/null &
 # Install teardown() function at exit unless TEST_CHANNEL_DEBUG is non-empty
 teardown() {
     METACASE=
