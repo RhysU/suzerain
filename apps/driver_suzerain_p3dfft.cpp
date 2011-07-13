@@ -76,6 +76,7 @@ int main(int argc, char **argv)
     int  repeat  = 1;
     int  nfields = 1;
     bool inplace = false;
+    bool check   = false;
     namespace po = boost::program_options;
     options.add_options()
         ("repeat,r",
@@ -87,25 +88,27 @@ int main(int argc, char **argv)
         ("in-place,i",
          po::value(&inplace)->default_value(inplace)->zero_tokens(),
          "Perform in-place transposes")
+        ("check",
+         po::value(&check)->default_value(check)->zero_tokens(),
+         "Check results against expected values")
     ;
     options.process(argc, argv);
     if (repeat  < 1) throw std::invalid_argument("repeat  < 1");
     if (nfields < 1) throw std::invalid_argument("nfields < 1");
 
+    // P3DFFT setup/clean RAII
+    suzerain::pencil_grid pg(grid.N, grid.P);
+
 #pragma warning(push,disable:383)
     const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
-    INFO0("Number of processors: " << nproc);
-    INFO0("Physical grid dimensions: "<< boost::format("(% 4d, % 4d, % 4d)")
-          % grid.N.x() % grid.N.y() % grid.N.z());
-    INFO0("Processor grid dimensions: " << boost::format("(%d, %d)")
-          % grid.P[0] % grid.P[1]);
-    INFO0("Number of fields: " << nfields);
+    INFO0("Global physical extents:   " << pg.global_physical_extent.transpose());
+    INFO0("Global wave extents:       " << pg.global_wave_extent.transpose());
+    INFO0("Processor grid dimensions: " << pg.processor_grid.transpose());
+    INFO0("Number of processors:      " << nproc);
+    INFO0("Number of fields:          " << nfields);
     INFO0("Performing operations " << (inplace ? "in-place" : "out-of-place"));
 #pragma warning(pop)
-
-    // P3DFFT setup/clean RAII
-    suzerain::pencil_grid pg(grid.N, grid.P);
 
     // Allocate necessary storage
     using suzerain::pencil;
@@ -138,7 +141,7 @@ int main(int argc, char **argv)
         TRACE(boost::format("gridz[%3d] = % 6g") % k % gridz[k]);
     }
 
-    INFO("Physical space pencil start and end: "
+    DEBUG("Physical space pencil start and end: "
          << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
          % A.global_physical.index_bases()[0]
          % A.global_physical.index_bases()[1]
@@ -147,7 +150,7 @@ int main(int argc, char **argv)
          % (A.global_physical.index_bases()[1] + A.global_physical.shape()[1])
          % (A.global_physical.index_bases()[2] + A.global_physical.shape()[2]));
 
-    INFO("Wave space pencil start and end:     "
+    DEBUG("Wave space pencil start and end:     "
          << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
          % A.global_wave.index_bases()[0]
          % A.global_wave.index_bases()[1]
@@ -197,7 +200,7 @@ int main(int argc, char **argv)
                     std::bind1st(std::multiplies<pencil<>::real_type>(),factor));
         }
 
-        if (m == repeat - 1 && DEBUG_ENABLED) {
+        if (m == repeat - 1 && DEBUG_ENABLED && check) {
             DEBUG0("Forward transform results ");
             for (pencil<>::size_type k = B.global_wave.index_bases()[2];
                 k < B.global_wave.index_bases()[2] + B.global_wave.shape()[2];
@@ -231,23 +234,25 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    /* Check results */
-    INFO("Checking results against expected values");
-    double cdiff = 0.0;
-    for (pencil<>::size_type j = 0; j < A.physical.shape()[1]; ++j) {
-        for (pencil<>::size_type k = 0; k < A.physical.shape()[2]; ++k) {
-            for (pencil<>::size_type i = 0; i < A.physical.shape()[0]; ++i) {
-                const double answer = real_data(gridx[i], gridy[j], gridz[k]);
-                const double abserr = std::abs(A.physical[i][j][k] - answer);
-                cdiff               = std::max(cdiff, abserr);
+    if (check) {
+        /* Check results */
+        INFO0("Checking results against expected values");
+        double cdiff = 0.0;
+        for (pencil<>::size_type j = 0; j < A.physical.shape()[1]; ++j) {
+            for (pencil<>::size_type k = 0; k < A.physical.shape()[2]; ++k) {
+                for (pencil<>::size_type i = 0; i < A.physical.shape()[0]; ++i) {
+                    const double answer = real_data(gridx[i], gridy[j], gridz[k]);
+                    const double abserr = std::abs(A.physical[i][j][k] - answer);
+                    cdiff               = std::max(cdiff, abserr);
+                }
             }
         }
-    }
 
-    // Gather error indicator
-    double ccdiff = 0.0;
-    MPI_Reduce(&cdiff, &ccdiff, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-    INFO0("Maximum difference: " << std::scientific << ccdiff);
+        // Gather error indicator
+        double ccdiff = 0.0;
+        MPI_Reduce(&cdiff, &ccdiff, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+        INFO0("Maximum difference: " << std::scientific << ccdiff);
+    }
 
     // Gather timing statistics
     double rtime2 = 0.0;
