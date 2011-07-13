@@ -1,32 +1,35 @@
 #!/bin/bash
 set -eu
-source "`dirname $0`/test_channel_setup.sh"  # Test infrastructure
 
-for METACASE in NP=1 NP=2; do
+# Initialize test infrastructure
+source "`dirname $0`/test_channel_setup.sh"
+
+# Run each test case in this file under the following circumstances
+for METACASE in 'NP=1;P=' 'NP=2;P=--Pa=2' 'NP=2;P=--Pb=2'; do
 eval "$METACASE"
 
 banner "Idempotence of restarting without time advancement"
 (
     cd $tmpdir
-    prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0
+    prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 $P
     differ mms0.h5 a0.h5
 )
 
 banner "Equivalence of a field both with and without a restart"
 (
     cd $tmpdir
-    prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=1
-    prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=1
-    prunq ../channel_explicit mms0.h5 --desttemplate "c#.h5" --advance_nt=2
+    prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=1 $P
+    prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=1 $P
+    prunq ../channel_explicit mms0.h5 --desttemplate "c#.h5" --advance_nt=2 $P
     differ --use-system-epsilon b0.h5 c0.h5
 )
 
 banner "Upsample/downsample both homogeneous directions"
 (
     cd $tmpdir
-    prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 \
+    prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 $P \
                                       --Nx=$((2*$Nx)) --Nz=$((3*$Nz))
-    prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=0 \
+    prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=0 $P \
                                       --Nx=$((  $Nx)) --Nz=$((  $Nz))
     differ mms0.h5 b0.h5
 )
@@ -34,9 +37,9 @@ banner "Upsample/downsample both homogeneous directions"
 banner "Upsample/downsample inhomogeneous direction order"
 (
     cd $tmpdir
-    prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 \
+    prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 $P \
                                       --k=$(($k+1))
-    prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=0 \
+    prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=0 $P \
                                       --k=$(($k  ))
     # Chosen tolerances are wholly empirical and represent nothing deep
     differ --delta=5e-5 mms0.h5 b0.h5 /rho
@@ -49,9 +52,9 @@ banner "Upsample/downsample inhomogeneous direction order"
 banner "Upsample/downsample inhomogeneous direction NDOF and htdelta"
 (
     cd $tmpdir
-    runq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0     \
+    prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 $P \
                                      --Ny=$((2*$Ny)) --htdelta=$(($htdelta+1))
-    runq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=0     \
+    prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=0 $P \
                                      --Ny=$((  $Ny)) --htdelta=$(($htdelta  ))
     # Chosen tolerances are wholly empirical and represent nothing deep
     differ --delta=6e-6 mms0.h5 b0.h5 /rho
