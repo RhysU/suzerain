@@ -95,12 +95,12 @@ static const TimeDefinition<real_t> timedef(
         /* evmagfactor per Venugopal */ 0.72);
 
 // Global details initialized in main()
-static shared_ptr<      suzerain::bspline>       b;
-static shared_ptr<      suzerain::bsplineop>     bop;    // Collocation
-static shared_ptr<      suzerain::bsplineop>     gop;    // Galerkin L2
-static shared_ptr<      suzerain::bsplineop_luz> bopluz;
-static shared_ptr<const suzerain::pencil_grid>   dgrid;
-static shared_ptr<nsctpl_rholut::manufactured_solution<real_t> > msoln;
+static shared_ptr<      suzerain::bspline>              b;
+static shared_ptr<      suzerain::bsplineop>            bop;    // Collocation
+static shared_ptr<      suzerain::bsplineop>            gop;    // Galerkin L2
+static shared_ptr<      suzerain::bsplineop_luz>        bopluz;
+static shared_ptr<const suzerain::pencil_grid>          dgrid;
+static shared_ptr<      channel::manufactured_solution> msoln;
 
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;

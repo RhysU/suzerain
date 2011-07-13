@@ -336,7 +336,7 @@ NonlinearOperator::NonlinearOperator(
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
         const boost::shared_ptr<
-            const nsctpl_rholut::manufactured_solution<real_t> >& msoln)
+            const channel::manufactured_solution>& msoln)
     : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
       msoln(msoln),
       auxw(suzerain::to_yxz(static_cast<std::size_t>(aux::count),
@@ -677,7 +677,7 @@ real_t NonlinearOperator::applyOperator(
     if (msoln) {
 
         // Dereference the msoln smart pointer outside the compute loop
-        const nsctpl_rholut::manufactured_solution<real_t> &ms = *msoln;
+        const channel::manufactured_solution &ms = *msoln;
 
         offset = 0;
         for (int j = dgrid.local_physical_start.y();
@@ -744,7 +744,7 @@ NonlinearOperatorIsothermal::NonlinearOperatorIsothermal(
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
         const boost::shared_ptr<
-            const nsctpl_rholut::manufactured_solution<real_t> >& msoln)
+            const channel::manufactured_solution>& msoln)
     : NonlinearOperator(scenario, grid, dgrid, b, bop, msoln)
 {
     // Precompute operator for finding bulk quantities from coefficients

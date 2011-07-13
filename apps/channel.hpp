@@ -76,6 +76,9 @@ extern const boost::array<const char *, count> name;
 
 } // end namespace field
 
+/** Manufactured solution employed throughout the channel code */
+typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
+
 /** Log-and-abort handler for errors originating in the GSL */
 void mpi_abort_on_error_handler_gsl(const char * reason,
                                     const char * file,
@@ -126,8 +129,7 @@ void load(const esio_handle h,
  */
 void store(const esio_handle h,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario,
-           const boost::shared_ptr<
-                 nsctpl_rholut::manufactured_solution<real_t> >& msoln);
+           const boost::shared_ptr<manufactured_solution> & msoln);
 
 /**
  * Load manufactured solution parameters from a restart file.
@@ -137,8 +139,7 @@ void store(const esio_handle h,
  */
 void load(const esio_handle h,
           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
-          boost::shared_ptr<
-                 nsctpl_rholut::manufactured_solution<real_t> >& msoln);
+          boost::shared_ptr<manufactured_solution>& msoln);
 
 /** Create a B-spline workspace on [left,right] per ndof, k, and htdelta */
 void create(const int ndof,
@@ -308,7 +309,7 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
  */
 void accumulate_manufactured_solution(
         const real_t alpha,
-        const nsctpl_rholut::manufactured_solution<real_t> &msoln,
+        const manufactured_solution &msoln,
         const real_t beta,
         suzerain::NoninterleavedState<4,complex_t> &swave,
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,

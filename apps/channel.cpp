@@ -46,7 +46,6 @@
 
 // Manufactured solution classes explicitly instantiated for debugging
 template class nsctpl_rholut::manufactured_solution<real_t>;
-template class nsctpl_rholut::primitive<real_t>;
 
 using boost::numeric_cast;
 
@@ -348,10 +347,9 @@ static void attribute_storer(const esio_handle &h,
 
 void store(const esio_handle h,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario,
-           const boost::shared_ptr<
-                 nsctpl_rholut::manufactured_solution<real_t> >& msoln)
+           const boost::shared_ptr<manufactured_solution>& msoln)
 {
-    static const char location[] = "nsctpl_rholut::manufactured_solution";
+    static const char location[] = "channel::manufactured_solution";
 
     // Always write a flag to indicate whether or not a MS is in use
     const int in_use = msoln ? 1 : 0;
@@ -359,12 +357,12 @@ void store(const esio_handle h,
     esio_handle_comm_rank(h, &procid);
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
     esio_line_write(h, location, &in_use, 0,
-            "Is a nsctpl_rholut::manufactured_solution in use?");
+            "Is a channel::manufactured_solution in use?");
 
     // Only proceed if an MS is in use
     if (!in_use) return;
 
-    DEBUG0("Storing nsctpl_rholut::manufactured_solution parameters");
+    DEBUG0("Storing channel::manufactured_solution parameters");
 
     // Check parameters stored with the scenario not the manufactured solution
 #pragma warning(push,disable:1572)
@@ -414,10 +412,9 @@ static void NaNer(const std::string&, real_t& value)
 
 void load(const esio_handle h,
           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
-          boost::shared_ptr<
-                 nsctpl_rholut::manufactured_solution<real_t> >& msoln)
+          boost::shared_ptr<manufactured_solution>& msoln)
 {
-    static const char location[] = "nsctpl_rholut::manufactured_solution";
+    static const char location[] = "channel::manufactured_solution";
 
 
     // Determine if a manufactured solution should be loaded
@@ -431,12 +428,12 @@ void load(const esio_handle h,
         return;
     }
 
-    DEBUG0("Loading nsctpl_rholut::manufactured_solution parameters");
+    DEBUG0("Loading channel::manufactured_solution parameters");
 
     // Allocate storage and defensively NaN every parameter not explicitly
     // loaded below.  Protects us against accidentally missing new solution
     // parameters.
-    msoln.reset(new nsctpl_rholut::manufactured_solution<real_t>());
+    msoln.reset(new manufactured_solution());
     msoln->foreach_parameter(&NaNer);
 
     // Scenario parameters taken from ScenarioDefinition
@@ -986,7 +983,7 @@ field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
 
 void accumulate_manufactured_solution(
         const real_t alpha,
-        const nsctpl_rholut::manufactured_solution<real_t> &msoln,
+        const manufactured_solution &msoln,
         const real_t beta,
         suzerain::NoninterleavedState<4,complex_t> &swave,
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,

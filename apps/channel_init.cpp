@@ -81,8 +81,8 @@ static GridDefinition grid(
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
 static shared_ptr<const suzerain::pencil_grid> dgrid;
-static shared_ptr<nsctpl_rholut::manufactured_solution<real_t> > msoln(
-            new nsctpl_rholut::manufactured_solution<real_t>);
+static shared_ptr<channel::manufactured_solution> msoln(
+            new channel::manufactured_solution);
 
 // Global B-spline related-details initialized in main()
 static shared_ptr<suzerain::bspline>       b;
@@ -107,7 +107,7 @@ class MSDefinition : public suzerain::problem::IDefinition {
 
 public:
 
-    MSDefinition(nsctpl_rholut::manufactured_solution<real_t> &ms)
+    MSDefinition(channel::manufactured_solution &ms)
         : IDefinition("Manufactured solution parameters"
                       " (active only when --mms supplied)")
     {
@@ -169,7 +169,7 @@ int main(int argc, char **argv)
         ::std::pointer_to_binary_function<real_t,const char*,void>
             ptr_fun_ensure_nonnegative(ensure_nonnegative<real_t>);
 
-        nsctpl_rholut::isothermal_channel(*msoln);
+        isothermal_channel(*msoln);
         MSDefinition msdef(*msoln);
 
         options.add_definition(scenario);

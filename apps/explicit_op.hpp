@@ -146,7 +146,7 @@ public:
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
             const boost::shared_ptr<
-                const nsctpl_rholut::manufactured_solution<real_t> >& msoln);
+                  const channel::manufactured_solution>& msoln);
 
     virtual real_t applyOperator(
             const real_t time,
@@ -158,9 +158,7 @@ public:
 protected:
 
     /** Holds optional manufactured solution forcing details */
-    const boost::shared_ptr<
-                const nsctpl_rholut::manufactured_solution<real_t>
-          > msoln;
+    const boost::shared_ptr<const channel::manufactured_solution> msoln;
 
     /** Auxiliary scalar-field storage used within applyOperator */
     mutable state_type auxw;
@@ -213,7 +211,7 @@ public:
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
             const boost::shared_ptr<
-                const nsctpl_rholut::manufactured_solution<real_t> >& msoln);
+                      const channel::manufactured_solution>& msoln);
 
     virtual real_t applyOperator(
             const real_t time,
