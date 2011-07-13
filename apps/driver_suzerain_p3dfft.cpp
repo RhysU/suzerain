@@ -62,37 +62,62 @@ int main(int argc, char **argv)
     // Establish MPI-savvy, rank-dependent logging names
     name_logger_within_comm_world();
 
-    // Program-specific option storage
+    // Process command line options
     suzerain::ProgramOptions options;
     suzerain::problem::GridDefinition grid(/* Nx      */ 16,
-                                           /* DAFx    */ 3./2.,
+                                           /* DAFx    */ 1.,
                                            /* Ny      */ 16,
                                            /* k       */ 6,
                                            /* htdelta */ 0,
                                            /* Nz      */ 16,
-                                           /* DAFz    */ 3./2.);
+                                           /* DAFz    */ 1.);
     options.add_definition(grid);
 
-    int nrep = 1;  // Number of times to repeat the test
+    int  repeat  = 1;
+    int  nfields = 1;
+    bool inplace = false;
     namespace po = boost::program_options;
     options.add_options()
-        ("nrep", po::value<int>(&nrep)->default_value(nrep),
-        "Number of repetitions to perform for timing purposes")
+        ("repeat,r",
+         po::value(&repeat)->default_value(repeat),
+         "Number of repetitions to perform")
+        ("nfields,n",
+         po::value(&nfields)->default_value(nfields),
+         "Number of independent fields")
+        ("in-place,i",
+         po::value(&inplace)->default_value(inplace)->zero_tokens(),
+         "Perform in-place transposes")
     ;
     options.process(argc, argv);
+    if (repeat  < 1) throw std::invalid_argument("repeat  < 1");
+    if (nfields < 1) throw std::invalid_argument("nfields < 1");
 
 #pragma warning(push,disable:383)
     const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
+
     INFO0("Number of processors: " << nproc);
     INFO0("Physical grid dimensions: "<< boost::format("(% 4d, % 4d, % 4d)")
           % grid.N.x() % grid.N.y() % grid.N.z());
     INFO0("Processor grid dimensions: " << boost::format("(%d, %d)")
           % grid.P[0] % grid.P[1]);
+    INFO0("Number of fields: " << nfields);
+    INFO0("Performing operations " << (inplace ? "in-place" : "out-of-place"));
 #pragma warning(pop)
 
-    suzerain::pencil_grid pg(grid.N, grid.P);   // P3DFFT setup/clean RAII
+    // P3DFFT setup/clean RAII
+    suzerain::pencil_grid pg(grid.N, grid.P);
+
+    // Allocate necessary storage
     using suzerain::pencil;
-    pencil<> A(pg);                             // Storage management
+    const int ploff = inplace ? 0 : 1;
+    boost::ptr_vector<pencil<> > pencils(nfields + ploff);
+    for (int l = 0; l < nfields + ploff; ++l) {
+        pencils.push_back(new pencil<>(pg));
+    }
+
+    // Get decomposition and track correctness using first pencil only
+    pencil<>& A = pencils[0        ]; // Physical space
+    pencil<>& B = pencils[0 + ploff]; // Wave space
 
     // Create a uniform tensor product grid
     std::valarray<double> gridx(A.physical.shape()[0]);
@@ -112,7 +137,6 @@ int main(int argc, char **argv)
         gridz[k] = (k+A.physical.index_bases()[2]) * 2*M_PI/grid.N.z();
         TRACE(boost::format("gridz[%3d] = % 6g") % k % gridz[k]);
     }
-
 
     INFO("Physical space pencil start and end: "
          << boost::format("[(%3d, %3d, %3d) ... (%3d, %3d, %3d))")
@@ -134,6 +158,7 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
+    // Initialize data in first pencil
     for (pencil<>::size_type j = 0; j < A.physical.shape()[1]; ++j) {
         for (pencil<>::size_type k = 0; k < A.physical.shape()[2]; ++k) {
             for (pencil<>::size_type i = 0; i < A.physical.shape()[0]; ++i) {
@@ -145,37 +170,47 @@ int main(int argc, char **argv)
             }
         }
     }
+    // ...and copy detail to all other pencils
+    for (int l = 1; l < nfields; ++l) pencils[l].physical = A.physical;
 
     // Scale factor in X and Z directions only
     const double factor = 1.0 / (grid.N.x()*grid.N.z());
 
     double rtime1 = 0.0;
 
-    for (int m = 0; m < nrep; m++) {
+    for (int m = 0; m < repeat; m++) {
         INFO0("Iteration " << m);
 
+        // Physical to wave
         MPI_Barrier(MPI_COMM_WORLD);
         rtime1 -= MPI_Wtime();
-        p3dfft_ftran_r2c(A.begin(), A.begin()); // Physical to wave
+        for (int l = nfields; l --> 0 ;) {
+            p3dfft_ftran_r2c(pencils[l].begin(), pencils[l + ploff].begin());
+        }
         rtime1 += MPI_Wtime();
 
-        std::transform(A.begin(), A.end(), A.begin(),
-                std::bind1st(std::multiplies<pencil<>::real_type>(),factor));
+        // Normalization
+        for (int l = nfields; l --> 0 ;) {
+            std::transform(
+                    pencils[l + ploff].begin(), pencils[l + ploff].end(),
+                    pencils[l + ploff].begin(),
+                    std::bind1st(std::multiplies<pencil<>::real_type>(),factor));
+        }
 
-        if (m == nrep - 1) {
-            INFO0("Forward transform results ");
-            for (pencil<>::size_type k = A.global_wave.index_bases()[2];
-                k < A.global_wave.index_bases()[2] + A.global_wave.shape()[2];
+        if (m == repeat - 1 && DEBUG_ENABLED) {
+            DEBUG0("Forward transform results ");
+            for (pencil<>::size_type k = B.global_wave.index_bases()[2];
+                k < B.global_wave.index_bases()[2] + B.global_wave.shape()[2];
                 ++k) {
-                for (pencil<>::size_type i = A.global_wave.index_bases()[0];
-                    i < A.global_wave.index_bases()[0] + A.global_wave.shape()[0];
+                for (pencil<>::size_type i = B.global_wave.index_bases()[0];
+                    i < B.global_wave.index_bases()[0] + B.global_wave.shape()[0];
                     ++i) {
-                    for (pencil<>::size_type j = A.global_wave.index_bases()[1];
-                        j < A.global_wave.index_bases()[1] + A.global_wave.shape()[1];
+                    for (pencil<>::size_type j = B.global_wave.index_bases()[1];
+                        j < B.global_wave.index_bases()[1] + B.global_wave.shape()[1];
                         ++j) {
-                        const pencil<>::complex_type value = A.global_wave[i][j][k];
+                        const pencil<>::complex_type value = B.global_wave[i][j][k];
                         if (abs(value) > 1e-8) {
-                            INFO(boost::format("(%3d, %3d, %3d) = (%12g, %12g)")
+                            DEBUG(boost::format("(%3d, %3d, %3d) = (%12g, %12g)")
                                 % i % j % k
                                 % value.real() % value.imag());
                         }
@@ -184,9 +219,12 @@ int main(int argc, char **argv)
             }
         }
 
+        // Wave to physical
         MPI_Barrier(MPI_COMM_WORLD);
         rtime1 -= MPI_Wtime();
-        p3dfft_btran_c2r(A.begin(), A.begin()); // Wave to physical
+        for (int l = 0; l < nfields; ++l) {
+            p3dfft_btran_c2r(pencils[l + ploff].begin(), pencils[l].begin());
+        }
         rtime1 += MPI_Wtime();
 
     }
@@ -194,12 +232,13 @@ int main(int argc, char **argv)
     MPI_Barrier(MPI_COMM_WORLD);
 
     /* Check results */
+    INFO("Checking results against expected values");
     double cdiff = 0.0;
     for (pencil<>::size_type j = 0; j < A.physical.shape()[1]; ++j) {
         for (pencil<>::size_type k = 0; k < A.physical.shape()[2]; ++k) {
             for (pencil<>::size_type i = 0; i < A.physical.shape()[0]; ++i) {
                 const double answer = real_data(gridx[i], gridy[j], gridz[k]);
-                const double abserr = fabs(A.physical[i][j][k] - answer);
+                const double abserr = std::abs(A.physical[i][j][k] - answer);
                 cdiff               = std::max(cdiff, abserr);
             }
         }
@@ -213,5 +252,5 @@ int main(int argc, char **argv)
     // Gather timing statistics
     double rtime2 = 0.0;
     MPI_Reduce(&rtime1, &rtime2, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-    INFO0("Time per loop: " << rtime2 / ((double)nrep));
+    INFO0("Seconds per iteration: " << rtime2 / ((double) repeat));
 }
