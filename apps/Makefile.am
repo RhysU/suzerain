@@ -43,7 +43,6 @@ libchannel_la_LIBADD  += ../suzerain/libsuzerain.la
 
 bin_PROGRAMS         += channel_init
 channel_init_SOURCES  = channel_init.cpp
-channel_init_SOURCES += nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp
 channel_init_LDADD    = libchannel.la
 
 bin_PROGRAMS             += channel_explicit

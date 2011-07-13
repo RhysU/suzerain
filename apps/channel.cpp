@@ -42,7 +42,6 @@
 
 #include "logger.hpp"
 #include "channel.hpp"
-#include "nsctpl_rholut.hpp"
 
 // Manufactured solution classes explicitly instantiated for debugging
 template class nsctpl_rholut::manufactured_solution<real_t>;
