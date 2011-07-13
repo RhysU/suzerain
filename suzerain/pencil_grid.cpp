@@ -67,13 +67,16 @@ void pencil_grid::construct_(int Nx, int Ny, int Nz, int Pa, int Pb)
     // Find the global number of processors
     const int nproc = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
-    // If processor grid was not fully fixed by the arguments,
-    // find a 2D Cartesian decomposition where P_1 <= P_2
+    // Find a suitable 2D Cartesian decomposition if necessary
     if (processor_grid[0] == 0 || processor_grid[1] == 0) {
         suzerain::mpi::dims_create(
                 nproc,
                 processor_grid.data(),
                 processor_grid.data() + processor_grid.size());
+    }
+
+    // If neither Pa nor Pb was specified, enforce P_2 >= P_1
+    if (Pa == 0 && Pb == 0) {
         std::sort(processor_grid.data(),
                   processor_grid.data() + processor_grid.size());
     }
