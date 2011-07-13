@@ -152,41 +152,42 @@ int main(int argc, char **argv)
     double rtime1 = 0.0;
 
     for (int m = 0; m < nrep; m++) {
-        MPI_Barrier(MPI_COMM_WORLD);
-        rtime1 = rtime1 - MPI_Wtime();
         INFO0("Iteration " << m);
 
+        MPI_Barrier(MPI_COMM_WORLD);
+        rtime1 -= MPI_Wtime();
         p3dfft_ftran_r2c(A.begin(), A.begin()); // Physical to wave
-        rtime1 = rtime1 + MPI_Wtime();
+        rtime1 += MPI_Wtime();
 
         std::transform(A.begin(), A.end(), A.begin(),
                 std::bind1st(std::multiplies<pencil<>::real_type>(),factor));
 
-        INFO0("Forward transform results ");
-
-        for (pencil<>::size_type k = A.global_wave.index_bases()[2];
-             k < A.global_wave.index_bases()[2] + A.global_wave.shape()[2];
-             ++k) {
-            for (pencil<>::size_type i = A.global_wave.index_bases()[0];
-                i < A.global_wave.index_bases()[0] + A.global_wave.shape()[0];
-                ++i) {
-                for (pencil<>::size_type j = A.global_wave.index_bases()[1];
-                    j < A.global_wave.index_bases()[1] + A.global_wave.shape()[1];
-                    ++j) {
-                    const pencil<>::complex_type value = A.global_wave[i][j][k];
-                    if (abs(value) > 1e-8) {
-                        INFO(boost::format("(%3d, %3d, %3d) = (%12g, %12g)")
-                             % i % j % k
-                             % value.real() % value.imag());
+        if (m == nrep - 1) {
+            INFO0("Forward transform results ");
+            for (pencil<>::size_type k = A.global_wave.index_bases()[2];
+                k < A.global_wave.index_bases()[2] + A.global_wave.shape()[2];
+                ++k) {
+                for (pencil<>::size_type i = A.global_wave.index_bases()[0];
+                    i < A.global_wave.index_bases()[0] + A.global_wave.shape()[0];
+                    ++i) {
+                    for (pencil<>::size_type j = A.global_wave.index_bases()[1];
+                        j < A.global_wave.index_bases()[1] + A.global_wave.shape()[1];
+                        ++j) {
+                        const pencil<>::complex_type value = A.global_wave[i][j][k];
+                        if (abs(value) > 1e-8) {
+                            INFO(boost::format("(%3d, %3d, %3d) = (%12g, %12g)")
+                                % i % j % k
+                                % value.real() % value.imag());
+                        }
                     }
                 }
             }
         }
 
         MPI_Barrier(MPI_COMM_WORLD);
-        rtime1 = rtime1 - MPI_Wtime();
+        rtime1 -= MPI_Wtime();
         p3dfft_btran_c2r(A.begin(), A.begin()); // Wave to physical
-        rtime1 = rtime1 + MPI_Wtime();
+        rtime1 += MPI_Wtime();
 
     }
 
