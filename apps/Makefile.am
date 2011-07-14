@@ -62,8 +62,11 @@ conservation_LDADD    = libchannel.la
 
 EXTRA_DIST += test_channel_setup.sh     # Common initialization
 
-TESTS      += test_channel_restart.sh
+TESTS      += test_channel_restart.sh   # Restart handling
 EXTRA_DIST += test_channel_restart.sh
+
+TESTS      += test_channel_parallel.sh  # Serial/parallel equivalence tests
+EXTRA_DIST += test_channel_parallel.sh
 
 # Clean up from Intel Compiler's -prof-gen output and precomiled headers
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi

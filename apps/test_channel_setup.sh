@@ -29,11 +29,11 @@ fi
 
 # Minimalistic command execution infrastructure
 banner_prefix=`basename $0`
-banner() { echo; echo $banner_prefix${METACASE+ (}${METACASE-}${METACASE+)}: "$@" ; }
-run()    { echo mpiexec -np 1        "$@" ; mpiexec -np 1        "$@"             ; }
-runq()   { echo mpiexec -np 1        "$@" ; mpiexec -np 1        "$@" > /dev/null ; }
-prun()   { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@"             ; }
-prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" > /dev/null ; }
+banner() { echo; echo $banner_prefix${METACASE:+ (}${METACASE:-}${METACASE:+)}: "$@" ; }
+run()    { echo mpiexec -np 1        "$@" ; mpiexec -np 1        "$@"                ; }
+runq()   { echo mpiexec -np 1        "$@" ; mpiexec -np 1        "$@" > /dev/null    ; }
+prun()   { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@"                ; }
+prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" > /dev/null    ; }
 differ() { echo h5diff "$@" ; h5diff "$@" || h5diff -rv "$@" ;}
 
 # Create directory for scratch use
@@ -41,11 +41,15 @@ test -z "${TMPDIR-}" && export TMPDIR=.
 testdir=`mktemp -d`
 
 # Install teardown() function at exit unless TEST_CHANNEL_DEBUG is non-empty
+declare -ir starttime=`date +%s`
 teardown() {
     METACASE=
     banner "Tearing down"
     rm -rvf "$testdir"                     # Remove scratch directory
     test -z "`jobs -p`" || kill `jobs -p`  # Kill any lingering jobs
+
+    declare -ir endtime=`date +%s`
+    echo "execution took roughly $(expr $endtime - $starttime) seconds"
 }
 test -z "${TEST_CHANNEL_DEBUG-}" && trap "teardown" EXIT
 
