@@ -367,15 +367,28 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
         // ...processing any we did observe
         const int originrank = (rankplusone[sig] - 1);
         switch (sig) {
+
 #ifdef SIGHUP
+            // This usage of SIGHUP matches un*x daemon conventions
             case SIGHUP:
-                INFO0("Outputting simulation status because SIGHUP received"
+                INFO0("Saving restart because SIGHUP received"
+                      << " on (at least) rank " << originrank);
+                keep_advancing = keep_advancing && save_restart(t, nt);
+                break;
+#endif
+
+#ifdef SIGUSR1
+            // Provides a way to probe a running simulation (though limited)
+            case SIGUSR1:
+                INFO0("Outputting simulation status because SIGUSR1 received"
                       << " on (at least) rank " << originrank);
                 keep_advancing = keep_advancing && log_status(t, nt);
                 break;
 #endif
 
 #ifdef SIGUSR2
+            // Some batch systems allow scheduling SIGUSR2 a configuable
+            // time before a SIGTERM is sent to allow graceful teardown.
             case SIGUSR2:
                 INFO0("Initiating teardown because SIGUSR2 received"
                       << " on (at least) rank " << originrank);
@@ -384,11 +397,12 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
                 break;
 #endif
 
+            // Attempt a checkpoint before we lose progress to termination
             case SIGTERM:
                 INFO0("Initiating teardown because SIGTERM received"
                       << " on (at least) rank " << originrank);
-                signal(SIGTERM, SIG_DFL);
                 INFO0("Receipt of another SIGTERM will terminate the program");
+                signal(SIGTERM, SIG_DFL);
                 soft_teardown = true;
                 keep_advancing = false;
                 break;
@@ -662,14 +676,18 @@ int main(int argc, char **argv)
     }
 
     // Register our signal-handling logic and periodic signal processing
+    // Each invocation of process_any_signals_received incurs an Allreduce
 #ifdef SIGHUP
-    signal(SIGHUP, process_signal);
+    signal(SIGHUP,  process_signal);
+#endif
+#ifdef SIGUSR1
+    signal(SIGUSR1, process_signal);
 #endif
 #ifdef SIGUSR2
     signal(SIGUSR2, process_signal);
 #endif
     signal(SIGTERM, process_signal);
-    tc->add_periodic_callback(tc->forever_t(), 3 /* Why 3? Eh. */,
+    tc->add_periodic_callback(tc->forever_t(), 3 /* tradeoff */,
                               process_any_signals_received);
 
     // Advance time according to advance_dt, advance_nt criteria
