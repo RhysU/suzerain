@@ -182,7 +182,7 @@ int main(int argc, char **argv)
     double rtime1 = 0.0;
 
     for (int m = 0; m < repeat; m++) {
-        INFO0("Iteration " << m);
+        INFO0("Iteration " << (m + 1));
 
         // Physical to wave
         MPI_Barrier(MPI_COMM_WORLD);
