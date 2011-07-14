@@ -387,8 +387,8 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
 #endif
 
 #ifdef SIGUSR2
-            // Some batch systems allow scheduling SIGUSR2 a configuable
-            // time before a SIGTERM is sent to allow graceful teardown.
+            // Some batch systems allow scheduling SIGUSR2 a configurable
+            // time before a SIGTERM is sent to allow graceful teardown
             case SIGUSR2:
                 INFO0("Initiating teardown because SIGUSR2 received"
                       << " on (at least) rank " << originrank);
@@ -397,7 +397,20 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
                 break;
 #endif
 
-            // Attempt a checkpoint before we lose progress to termination
+#ifdef SIGINT
+            // Attempt a checkpoint before we are forcefully terminated
+            // Note mpiexec tends to be awful at propagating SIGINTs
+            case SIGINT:
+                INFO0("Initiating teardown because SIGINT received"
+                      << " on (at least) rank " << originrank);
+                INFO0("Receipt of another SIGINT will terminate the program");
+                signal(SIGINT, SIG_DFL);
+                soft_teardown = true;
+                keep_advancing = false;
+                break;
+#endif
+
+            // Attempt a checkpoint before we are forcefully terminated
             case SIGTERM:
                 INFO0("Initiating teardown because SIGTERM received"
                       << " on (at least) rank " << originrank);
@@ -685,6 +698,9 @@ int main(int argc, char **argv)
 #endif
 #ifdef SIGUSR2
     signal(SIGUSR2, process_signal);
+#endif
+#ifdef SIGINT
+    signal(SIGINT,  process_signal);
 #endif
     signal(SIGTERM, process_signal);
     tc->add_periodic_callback(tc->forever_t(), 3 /* tradeoff */,
