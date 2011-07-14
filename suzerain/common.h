@@ -126,6 +126,7 @@ Provides hint to the compiler to optimize for the expression being false.
 #include <ctime>
 #endif
 #include <fcntl.h>
+#include <signal.h>
 #include <unistd.h>
 
 #endif // __SUZERAIN_COMMON_H

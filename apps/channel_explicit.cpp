@@ -228,6 +228,12 @@ static bool log_status(real_t t, std::size_t nt) {
     // Save resources by returning early when no status necessary
     if (!INFO_ENABLED) return true;
 
+    // Defensively avoid multiple invocations with no intervening changes
+    if (last_status_nt == nt) {
+        DEBUG0("Cowardly refusing to repeatedly show status at nt = " << nt);
+        return true;
+    }
+
     // Build time- and timestep-specific status prefix.
     // Precision computations ensure multiple status lines minimally distinct
     std::ostringstream timeprefix;
@@ -274,6 +280,12 @@ static std::size_t last_restart_saved_nt = numeric_limits<std::size_t>::max();
 /** Routine to store a restart file.  Signature for TimeController use. */
 static bool save_restart(real_t t, std::size_t nt)
 {
+    // Defensively avoid multiple invocations with no intervening changes
+    if (last_restart_saved_nt == nt) {
+        DEBUG0("Cowardly refusing to save multiple restarts at nt = " << nt);
+        return true;
+    }
+
     esio_file_clone(esioh, restart.metadata().c_str(),
                     restart.uncommitted().c_str(), 1 /*overwrite*/);
 
@@ -295,6 +307,103 @@ static bool save_restart(real_t t, std::size_t nt)
     return true; // Continue time advancement
 }
 
+// Ensure we have a biggest signal number plus one value available
+#ifndef NSIG
+#define NSIG 33
+#endif
+
+/** Atomic flags used to check for signal-based shutdown conditions */
+static boost::array<sig_atomic_t,NSIG> signal_was_received = {{ /*0*/ }};
+
+/** Signal handler merely setting <tt>signal_was_received[sig] = 1</tt>. */
+static void process_signal(int sig) {
+    assert(signal_was_received.static_size == NSIG);
+    if (sig <  0)    throw std::out_of_range("process_signal: sig < 0");
+    if (sig >= NSIG) throw std::out_of_range("process_signal: sig >= NSIG");
+    signal_was_received[sig] = 1;
+}
+
+/** Flag used to indicate early time advancement stopping is legit. */
+static bool soft_teardown = false;
+
+/**
+ * Routine to check for incoming signals on any rank.
+ * Signature for TimeController use.
+ */
+static bool process_any_signals_received(real_t t, std::size_t nt)
+{
+
+    // Take (nearly) atomic snapshot of any signals received on this rank
+    // Reset the signal_was_received status as the snapshot proceeds
+    boost::array<int,NSIG> rankplusone;
+    for (std::size_t sig = 0; sig < NSIG; ++sig) {
+        rankplusone[sig] = signal_was_received[sig];
+        signal_was_received[sig] = 0;
+    }
+
+    // Replace any observed signal with current rank plus one.
+    // Allows tracking at least one rank that received the signal.
+    const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+    for (std::size_t sig = 0; sig < NSIG; ++sig) {
+        if (rankplusone[sig]) {
+            DEBUG("Received signal number " << sig << " on rank " << rank);
+            rankplusone[sig] += rank;
+        }
+    }
+
+    // Allreduce to get global snapshot from all ranks.
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, rankplusone.c_array(), NSIG,
+                suzerain::mpi::datatype<int>::value, MPI_MAX, MPI_COMM_WORLD));
+
+    // Keep advancing time unless keep_advancing is set false
+    bool keep_advancing = true;
+
+    // Loop over all possible signals...
+    for (std::size_t sig = 0; sig < NSIG; ++sig) {
+
+        // ...skipping any we did not observe
+        if (!rankplusone[sig]) continue;
+
+        // ...processing any we did observe
+        const int originrank = (rankplusone[sig] - 1);
+        switch (sig) {
+#ifdef SIGHUP
+            case SIGHUP:
+                INFO0("Outputting simulation status because SIGHUP received"
+                      << " on (at least) rank " << originrank);
+                keep_advancing = keep_advancing && log_status(t, nt);
+                break;
+#endif
+
+#ifdef SIGUSR2
+            case SIGUSR2:
+                INFO0("Initiating teardown because SIGUSR2 received"
+                      << " on (at least) rank " << originrank);
+                soft_teardown = true;
+                keep_advancing = false;
+                break;
+#endif
+
+            case SIGTERM:
+                INFO0("Initiating teardown because SIGTERM received"
+                      << " on (at least) rank " << originrank);
+                signal(SIGTERM, SIG_DFL);
+                INFO0("Receipt of another SIGTERM will terminate the program");
+                soft_teardown = true;
+                keep_advancing = false;
+                break;
+
+            default:
+                WARN0("Unknown signal number " << sig
+                    << " received on (at least) rank " << originrank);
+                break;
+        }
+    }
+
+    return keep_advancing;
+}
+
+/** Main driver logic */
 int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
@@ -552,6 +661,17 @@ int main(int argc, char **argv)
         tc->add_periodic_callback(dt, nt, &save_restart);
     }
 
+    // Register our signal-handling logic and periodic signal processing
+#ifdef SIGHUP
+    signal(SIGHUP, process_signal);
+#endif
+#ifdef SIGUSR2
+    signal(SIGUSR2, process_signal);
+#endif
+    signal(SIGTERM, process_signal);
+    tc->add_periodic_callback(tc->forever_t(), 3 /* Why 3? Eh. */,
+                              process_any_signals_received);
+
     // Advance time according to advance_dt, advance_nt criteria
     const double wtime_advance_start = MPI_Wtime();
     bool advance_success = true;
@@ -576,7 +696,7 @@ int main(int argc, char **argv)
             break;
         case 0:
             if (!default_advance_dt) {
-                INFO0("Advancing simulation until forcibly terminated");
+                INFO0("Advancing simulation until terminated by a signal");
                 advance_success = tc->advance();
             } else if (!default_advance_nt) {
                 WARN0("Simulation will not be advanced");
@@ -589,7 +709,10 @@ int main(int argc, char **argv)
             FATAL0("Sanity error in time control");
             return EXIT_FAILURE;
     }
-    if (!advance_success) {
+    if (soft_teardown) {
+        INFO0("TimeController stopped advancing due to teardown signal");
+        advance_success = true; // ...treat like successful advance
+    } else if (!advance_success) {
         WARN0("TimeController stopped advancing time unexpectedly");
     }
     const double wtime_advance_end = MPI_Wtime();
