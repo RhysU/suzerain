@@ -59,6 +59,7 @@
 
 // Include Boost functionality used throughout Suzerain
 #ifdef SUZERAIN_HAVE_BOOST
+#include <boost/algorithm/string.hpp>
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
 #include <boost/concept/assert.hpp>
