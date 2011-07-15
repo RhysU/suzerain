@@ -64,7 +64,10 @@ enum rigor {
     patient     = FFTW_PATIENT,
 
     /** Corresponds to \c FFTW_EXHAUSTIVE */
-    exhaustive  = FFTW_EXHAUSTIVE
+    exhaustive  = FFTW_EXHAUSTIVE,
+
+    /** Corresponds to \c FFTW_WISDOM_ONLY */
+    wisdom_only  = FFTW_WISDOM_ONLY
 };
 
 /**

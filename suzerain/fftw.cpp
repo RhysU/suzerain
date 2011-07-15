@@ -50,6 +50,7 @@ rigor rigor_from(const char *name)
                     case 's': return estimate;
                     case 'x': return exhaustive;
                 }
+            case 'w': return wisdom_only;
         }
     }
 
@@ -58,7 +59,9 @@ rigor rigor_from(const char *name)
 
 rigor rigor_from(unsigned flags)
 {
-    if (flags & FFTW_EXHAUSTIVE) {
+    if (flags & FFTW_WISDOM_ONLY) {
+        return wisdom_only;
+    } else if (flags & FFTW_EXHAUSTIVE) {
         return exhaustive;
     } else if (flags & FFTW_PATIENT) {
         return patient;
@@ -72,9 +75,10 @@ rigor rigor_from(unsigned flags)
 const char * c_str(rigor r)
 {
     switch (r) {
-        case estimate:   return "estimate";
-        case patient:    return "patient";
-        case exhaustive: return "exhaustive";
+        case estimate:    return "estimate";
+        case patient:     return "patient";
+        case exhaustive:  return "exhaustive";
+        case wisdom_only: return "wisdom_only";
         default:
         case measure:    return "measure";    // Default
     }
@@ -122,6 +126,8 @@ FFTWDefinition::FFTWDefinition()
     rigor_description += c_str(patient);
     rigor_description += ", ";
     rigor_description += c_str(exhaustive);
+    rigor_description += ", ";
+    rigor_description += c_str(wisdom_only);
     rigor_description += "}";
 
     std::string nthreads_description("Number of FFTW threads to use");
