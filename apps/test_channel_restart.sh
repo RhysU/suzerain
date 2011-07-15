@@ -24,7 +24,7 @@ banner "Equivalence of a field both with and without a restart"
     prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=1 $P
     prunq ../channel_explicit a0.h5   --desttemplate "b#.h5" --advance_nt=1 $P
     prunq ../channel_explicit mms0.h5 --desttemplate "c#.h5" --advance_nt=2 $P
-    differ --use-system-epsilon b0.h5 c0.h5
+    differ --delta=7e-16 --nan b0.h5 c0.h5
 )
 
 banner "Upsample/downsample both homogeneous directions"
