@@ -78,7 +78,7 @@ using suzerain::problem::RestartDefinition;
 using suzerain::problem::TimeDefinition;
 static const ScenarioDefinition<real_t> scenario;
 static const GridDefinition grid;
-static const RestartDefinition<> restart(
+static const RestartDefinition restart(
         /* metadata     */ "metadata.h5.XXXXXX",
         /* uncommitted  */ "uncommitted.h5.XXXXXX",
         /* desttemplate */ "restart#.h5",
@@ -116,14 +116,14 @@ static void atexit_esio(void) {
 
 /**
  * <tt>atexit</tt> callback to remove the metadata file.  Do \i NOT remove
- * restart.uncommitted() as it may help post mortem debugging.
+ * restart.uncommitted as it may help post mortem debugging.
  */
 static void atexit_metadata(void) {
     if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-        if (0 == unlink(restart.metadata().c_str())) {
-            DEBUG("Cleaned up temporary file " << restart.metadata());
+        if (0 == unlink(restart.metadata.c_str())) {
+            DEBUG("Cleaned up temporary file " << restart.metadata);
         } else {
-            WARN("Error cleaning up temporary file " << restart.metadata());
+            WARN("Error cleaning up temporary file " << restart.metadata);
         }
     }
 }
@@ -289,9 +289,9 @@ static bool save_restart(real_t t, std::size_t nt)
         return true;
     }
 
-    DEBUG0("Cloning " << restart.metadata() << " to " << restart.uncommitted());
-    esio_file_clone(esioh, restart.metadata().c_str(),
-                    restart.uncommitted().c_str(), 1 /*overwrite*/);
+    DEBUG0("Cloning " << restart.metadata << " to " << restart.uncommitted);
+    esio_file_clone(esioh, restart.metadata.c_str(),
+                    restart.uncommitted.c_str(), 1 /*overwrite*/);
 
     DEBUG0("Started to store restart at t = " << t << " and nt = " << nt);
     channel::store_time(esioh, t);
@@ -300,9 +300,8 @@ static bool save_restart(real_t t, std::size_t nt)
     channel::store(esioh, *state_linear, grid, *dgrid);
 
     DEBUG0("Started to commit restart file");
-    esio_file_close_restart(esioh,
-                            restart.desttemplate().c_str(),
-                            restart.retain());
+    esio_file_close_restart(
+            esioh, restart.desttemplate.c_str(), restart.retain);
 
     INFO0("Successfully wrote restart at t = " << t << " for nt = " << nt);
 
@@ -469,7 +468,7 @@ int main(int argc, char **argv)
         options.add_definition(
                 const_cast<GridDefinition&>(grid));
         options.add_definition(
-                const_cast<RestartDefinition<>&>(restart));
+                const_cast<RestartDefinition&>(restart));
         options.add_definition(
                 const_cast<TimeDefinition<real_t>&>(timedef));
         std::vector<std::string> positional = options.process(argc, argv);
@@ -545,29 +544,29 @@ int main(int argc, char **argv)
         // Pack a temporary buffer with the three file name templates
         boost::array<std::size_t,4> pos = {{
                 0,
-                restart.metadata().length()     + 1,
-                restart.uncommitted().length()  + 1,
-                restart.desttemplate().length() + 1
+                restart.metadata.length()     + 1,
+                restart.uncommitted.length()  + 1,
+                restart.desttemplate.length() + 1
         }};
         std::partial_sum(pos.begin(), pos.end(), pos.begin());
         boost::scoped_array<char> buf(new char[pos[3]]);
-        strcpy(&buf[pos[0]], restart.metadata().c_str());
-        strcpy(&buf[pos[1]], restart.uncommitted().c_str());
-        strcpy(&buf[pos[2]], restart.desttemplate().c_str());
+        strcpy(&buf[pos[0]], restart.metadata.c_str());
+        strcpy(&buf[pos[1]], restart.uncommitted.c_str());
+        strcpy(&buf[pos[2]], restart.desttemplate.c_str());
 
         // Generate unique files to be overwritten and/or just file names.
         // File generation relies on template semantics of mkstemp(3).
         // Error checking kept minimal as failures here should not be fatal.
         // This is not particularly robust but it should serve our needs.
         if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-            if (boost::ends_with(restart.metadata(), "XXXXXX")) {
+            if (boost::ends_with(restart.metadata, "XXXXXX")) {
                 close(mkstemp(&buf[pos[0]]));  // Clobbered later...
             }
-            if (boost::ends_with(restart.uncommitted(), "XXXXXX")) {
+            if (boost::ends_with(restart.uncommitted, "XXXXXX")) {
                 close(mkstemp(&buf[pos[1]]));  // Possibly clobbered later...
                 unlink(&buf[pos[1]]);          // ...so remove any evidence
             }
-            if (boost::ends_with(restart.desttemplate(), "XXXXXX")) {
+            if (boost::ends_with(restart.desttemplate, "XXXXXX")) {
                 close(mkstemp(&buf[pos[2]]));  // Not clobbered later...
                 unlink(&buf[pos[2]]);          // ...so remove any evidence
             }
@@ -577,16 +576,16 @@ int main(int argc, char **argv)
         SUZERAIN_MPICHKQ(MPI_Bcast(buf.get(), pos[3],
                          suzerain::mpi::datatype<char>(), 0,
                          MPI_COMM_WORLD));
-        const_cast<RestartDefinition<>&>(restart).metadata()     = &buf[pos[0]];
-        const_cast<RestartDefinition<>&>(restart).uncommitted()  = &buf[pos[1]];
-        const_cast<RestartDefinition<>&>(restart).desttemplate() = &buf[pos[2]];
+        const_cast<RestartDefinition&>(restart).metadata     = &buf[pos[0]];
+        const_cast<RestartDefinition&>(restart).uncommitted  = &buf[pos[1]];
+        const_cast<RestartDefinition&>(restart).desttemplate = &buf[pos[2]];
     }
 
-    DEBUG0("Saving metadata temporary file: " << restart.metadata());
+    DEBUG0("Saving metadata temporary file: " << restart.metadata);
     {
         atexit(&atexit_metadata); // Delete any lingering metadata file at exit
         esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
-        esio_file_create(h, restart.metadata().c_str(), 1 /* overwrite */);
+        esio_file_create(h, restart.metadata.c_str(), 1 /* overwrite */);
         channel::store(h, scenario);
         channel::store(h, grid, scenario.Lx, scenario.Lz);
         channel::store(h, b, bop, gop);
@@ -684,7 +683,7 @@ int main(int argc, char **argv)
         if (timedef.status_dt) {
             dt = timedef.status_dt;
         } else if (timedef.advance_dt) {
-            dt = timedef.advance_dt / restart.retain() / 5;
+            dt = timedef.advance_dt / restart.retain / 5;
         } else {
             dt = tc->forever_t();
         }
@@ -693,7 +692,7 @@ int main(int argc, char **argv)
         if (timedef.status_nt) {
             nt = timedef.status_nt;
         } else if (timedef.advance_nt) {
-            nt = timedef.advance_nt / restart.retain() / 5;
+            nt = timedef.advance_nt / restart.retain / 5;
             nt = std::max<TimeController<real_t>::step_type>(1, nt);
         } else {
             nt = tc->forever_nt();
@@ -706,19 +705,19 @@ int main(int argc, char **argv)
     // When either is not provided, default to a reasonable behavior
     {
         TimeController<real_t>::time_type dt;
-        if (restart.restart_dt()) {
-            dt = restart.restart_dt();
+        if (restart.restart_dt) {
+            dt = restart.restart_dt;
         } else if (timedef.advance_dt) {
-            dt = timedef.advance_dt / restart.retain();
+            dt = timedef.advance_dt / restart.retain;
         } else {
             dt = tc->forever_t();
         }
 
         TimeController<real_t>::step_type nt;
-        if (restart.restart_nt()) {
-            nt = restart.restart_nt();
+        if (restart.restart_nt) {
+            nt = restart.restart_nt;
         } else if (timedef.advance_nt) {
-            nt = timedef.advance_nt / restart.retain();
+            nt = timedef.advance_nt / restart.retain;
             nt = std::max<TimeController<real_t>::step_type>(1, nt);
         } else {
             nt = tc->forever_nt();

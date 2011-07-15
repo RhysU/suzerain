@@ -89,6 +89,7 @@ libsuzerain_la_SOURCES += pencil_grid.cpp
 libsuzerain_la_SOURCES += pre_gsl.c
 libsuzerain_la_SOURCES += profile.cpp
 libsuzerain_la_SOURCES += program_options.cpp
+libsuzerain_la_SOURCES += restart_definition.cpp
 libsuzerain_la_SOURCES += richardson.c
 libsuzerain_la_SOURCES += svehla.c
 libsuzerain_la_LDFLAGS  = -release $(PACKAGE_VERSION)
