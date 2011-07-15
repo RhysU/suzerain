@@ -455,7 +455,6 @@ int main(int argc, char **argv)
 
     DEBUG0("Processing command line arguments and response files");
     std::string restart_file;
-    bool default_advance_dt;
     bool default_advance_nt;
     {
         suzerain::ProgramOptions options(
@@ -477,13 +476,7 @@ int main(int argc, char **argv)
         }
         restart_file = positional[0];
 
-        default_advance_dt = options.variables()["advance_dt"].defaulted();
         default_advance_nt = options.variables()["advance_nt"].defaulted();
-    }
-
-    if (default_advance_dt && default_advance_nt) {
-        FATAL0("Either --advance_dt or --advance_nt is required");
-        return EXIT_FAILURE;
     }
 
     INFO0("Loading details from restart file: " << restart_file);
@@ -729,14 +722,11 @@ int main(int argc, char **argv)
             advance_success = tc->step(timedef.advance_nt);
             break;
         case 0:
-            if (!default_advance_dt) {
+            if (!default_advance_nt) {
+                INFO0("Simulation will not be advanced");
+            } else {
                 INFO0("Advancing simulation until terminated by a signal");
                 advance_success = tc->advance();
-            } else if (!default_advance_nt) {
-                WARN0("Simulation will not be advanced");
-            } else {
-                FATAL0("Sanity error in time control");
-                return EXIT_FAILURE;
             }
             break;
         default:
