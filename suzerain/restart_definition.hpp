@@ -204,13 +204,18 @@ RestartDefinition<String>::RestartDefinition(
     this->add_options()
         ("metadata", po::value<String>(&metadata_)
             ->default_value(metadata_),
-         "Path to use when saving common restart metadata")
+         "Path to use when saving common restart metadata.  "
+         "Any trailing \"XXXXXX\" will be used to generate a unique name."
+         )
         ("uncommitted", po::value<String>(&uncommitted_)
             ->default_value(uncommitted_),
-         "Path to use when saving uncommitted restart data")
+         "Path to use when saving uncommitted restart data.  "
+         "Any trailing \"XXXXXX\" will be used to generate a unique name.")
         ("desttemplate", po::value<String>(&desttemplate_)
             ->default_value(desttemplate_),
-         "Restart archiving pattern to use when committing restart files")
+         "Restart archiving pattern to use when committing restart files.  "
+         "One or more #'s must be present and will be replaced by a sequence number.  "
+         "Any trailing \"XXXXXX\" will be used to generate a unique template.")
         ("retain", po::value(&retain_)
             ->notifier(bind2nd(ptr_fun_ensure_positive_int, "retain"))
             ->default_value(retain_),
