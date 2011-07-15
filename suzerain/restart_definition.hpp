@@ -80,57 +80,75 @@ public:
             int default_restart_nt             = 0);
 
     /**
-     * Retrieve the restart file path to use when saving common restart file
+     * The restart file path to use when saving common restart file
      * metadata.
      *
      * @return the metadata file path to use.
      */
+    String& metadata() { return metadata_; }
+
+    /** @copydoc RestartDefinition::metadata() */
     const String& metadata() const { return metadata_; }
 
     /**
-     * Retrieve the file path to use when saving uncommitted restart data.
+     * The file path to use when saving uncommitted restart data.
      *
      * @return the file path to use when saving uncommitted restart data.
      */
+    String& uncommitted() { return uncommitted_; }
+
+    /** @copydoc RestartDefinition::uncommitted() */
     const String& uncommitted() const { return uncommitted_; }
 
     /**
-     * Retrieve the archiving pattern to use when committing restart files.
+     * The archiving pattern to use when committing restart files.
      *
      * @return the archiving pattern to use when committing restart files.
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      desttemplate.
      */
+    String& desttemplate() { return desttemplate_; }
+
+    /** @copydoc RestartDefinition::desttemplate() */
     const String& desttemplate() const { return desttemplate_; }
 
     /**
-     * Retrieve the maximum number of committed restart files to retain.
+     * The maximum number of committed restart files to retain.
      *
      * @return the maximum number of committed restart files to retain.
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      retain.
      */
-    int retain() const { return retain_; }
+    int& retain() { return retain_; }
+
+    /** @copydoc RestartDefinition::retain() */
+    const int& retain() const { return retain_; }
 
     /**
-     * Retrieve the maximum amount of simulation time between writing restart
+     * The maximum amount of simulation time between writing restart
      * files.
      *
      * @return the maximum amount of simulation time between writing restart
      * files.
      */
-    double restart_dt() const { return restart_dt_; }
+    double& restart_dt() { return restart_dt_; }
+
+    /** @copydoc RestartDefinition::restart_dt() */
+    const double& restart_dt() const { return restart_dt_; }
 
     /**
-     * Retrieve the maximum number of simulation steps to take between
+     * The maximum number of simulation steps to take between
      * writing restart files.
      *
      * @return the maximum number of simulation steps to take between
      * writing restart files.
      */
-    int restart_nt() const { return restart_nt_; }
+    int& restart_nt() { return restart_nt_; }
+
+    /** @copydoc RestartDefinition::restart_nt() */
+    const int& restart_nt() const { return restart_nt_; }
 
 private:
 
