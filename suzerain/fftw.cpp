@@ -32,6 +32,7 @@
 #include <suzerain/config.h>
 #endif
 #include <suzerain/fftw.hpp>
+#include <suzerain/validation.hpp>
 
 namespace suzerain {
 
@@ -116,6 +117,9 @@ FFTWDefinition::FFTWDefinition()
       nthreads_(default_nthreads())              // Default obtained
 {
     namespace po = ::boost::program_options;
+    using ::std::bind2nd;
+    using ::std::ptr_fun;
+    using ::suzerain::validation::ensure_nonnegative;
 
     std::string rigor_description;
     rigor_description += "Planning rigor; one of {";
@@ -144,7 +148,7 @@ FFTWDefinition::FFTWDefinition()
 #endif // HAVE_FFTW3_THREADS
 
     this->add_options()
-        ("rigor", po::value<std::string>(&rigor_string_)
+        ("rigor", po::value(&rigor_string_)
             ->notifier(
                 std::bind1st(
                     std::mem_fun(&FFTWDefinition::normalize_rigor_string),
@@ -152,9 +156,14 @@ FFTWDefinition::FFTWDefinition()
                 )
             ->default_value(rigor_string_),
          rigor_description.c_str())
-        ("nthreads", po::value<int>(&nthreads_)
+        ("nthreads", po::value(&nthreads_)
                 ->default_value(nthreads_),
          nthreads_description.c_str())
+        ("timelimit", po::value(&timelimit_)
+                ->default_value(FFTW_NO_TIMELIMIT, "unlimited")
+                ->notifier(bind2nd(ptr_fun(ensure_nonnegative<double>),
+                                           "timelimit")),
+         "Maximum time allowed for preparing any plan")
     ;
 }
 

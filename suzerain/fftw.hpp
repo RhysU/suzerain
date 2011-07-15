@@ -154,6 +154,13 @@ public:
      */
     int nthreads() const { return nthreads_; }
 
+    /**
+     * Retrieve a planning time limit for use with <tt>fftw_set_timelimit</tt>.
+     *
+     * @return A time limit if one was specified.  Otherwise FFTW_NO_TIMELIMIT.
+     */
+    double timelimit() const { return timelimit_; }
+
 private:
 
     /** Stores the user-specified FFTW rigor string */
@@ -161,6 +168,9 @@ private:
 
     /** Stores the number of threads to use in a threaded environment */
     int nthreads_;
+
+    /** Stores the planning time limit in use */
+    double timelimit_;
 
     /** Normalizes <tt>this->rigor_string_</tt> to a canonical value. */
     void normalize_rigor_string(std::string input);
