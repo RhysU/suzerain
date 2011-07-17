@@ -46,6 +46,7 @@
 #include <iterator>
 #include <limits>
 #include <list>
+#include <locale>
 #include <memory>
 #include <new>
 #include <numeric>
