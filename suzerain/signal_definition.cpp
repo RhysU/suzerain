@@ -96,10 +96,10 @@ static std::vector<int> parse_spec(const std::string& name,
             errno = 0;
             char *end;
             const long l = strtol(token.c_str(), &end, 0);
-            if (errno != 0 || *end != '\0' || l < 0 || l > INT_MAX) {
+            if (errno != 0 || *end != '\0' || l <= 0 || l > INT_MAX) {
                 throw std::invalid_argument("Signal specification '" + token
-                    + "' provided for " + name
-                    + " is neither a known signal nor a positive integer");
+                    + "' provided for " + name + " is neither a known"
+                      " signal nor a strictly positive integer");
             }
             signum = l;
         }

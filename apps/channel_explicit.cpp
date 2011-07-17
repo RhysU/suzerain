@@ -45,10 +45,12 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/multi_array.hpp>
+#include <suzerain/os.h>
 #include <suzerain/pencil.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
+#include <suzerain/signal_definition.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/utility.hpp>
 
@@ -76,6 +78,7 @@ using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::RestartDefinition;
 using suzerain::problem::TimeDefinition;
+using suzerain::problem::SignalDefinition;
 static const ScenarioDefinition<real_t> scenario;
 static const GridDefinition grid;
 static const RestartDefinition restart(
@@ -93,6 +96,7 @@ static const TimeDefinition<real_t> timedef(
         /* min_dt                    */ 0,
         /* max_dt                    */ 0,
         /* evmagfactor per Venugopal */ 0.72);
+static const SignalDefinition sigdef;
 
 // Global details initialized in main()
 static shared_ptr<      suzerain::bspline>              b;
@@ -310,20 +314,43 @@ static bool save_restart(real_t t, std::size_t nt)
     return true; // Continue time advancement
 }
 
-// Ensure we have a biggest signal number plus one value available
-#ifndef NSIG
-#define NSIG 33
-#endif
+/**
+ * Type of atomic locations used to track the following signal-based actions:
+ * \li \c 0 Output a status message
+ * \li \c 1 Write a restart file
+ * \li \c 2 Tear down the simulation
+ */
+typedef boost::array<sig_atomic_t,3> atomic_signal_received_t;
 
-/** Atomic flags used to check for signal-based shutdown conditions */
-static boost::array<sig_atomic_t,NSIG> signal_was_received = {{ /*0*/ }};
+/** Atomic locations used to track signal-based actions */
+static atomic_signal_received_t atomic_signal_received = {{ /*0*/ }};
 
-/** Signal handler merely setting <tt>signal_was_received[sig] = 1</tt>. */
+/** Signal handler which mutates \c atomic_signal_received. */
 static void process_signal(int sig) {
-    assert(signal_was_received.static_size == NSIG);
-    if (sig <  0)    throw std::out_of_range("process_signal: sig < 0");
-    if (sig >= NSIG) throw std::out_of_range("process_signal: sig >= NSIG");
-    signal_was_received[sig] = 1;
+
+    // Strictly speaking this handler performs somewhat too much work.  The
+    // design choice was to have this extra work done on the (rare) signal
+    // receipt rather than on the (frequent) polling of flags.
+
+    std::vector<int>::const_iterator end;
+
+    // Determine if we should output status due to the signal
+    end = sigdef.status.end();
+    if (std::find(sigdef.status.begin(), end, sig) != end) {
+        atomic_signal_received[0] = sig;
+    }
+
+    // Determine if we should write a restart due to the signal
+    end = sigdef.restart.end();
+    if (std::find(sigdef.restart.begin(), end, sig) != end) {
+        atomic_signal_received[1] = sig;
+    }
+
+    // Determine if we should tear down the simulation due to the signal
+    end = sigdef.teardown.end();
+    if (std::find(sigdef.teardown.begin(), end, sig) != end) {
+        atomic_signal_received[2] = sig;
+    }
 }
 
 /** Flag used to indicate early time advancement stopping is legit. */
@@ -335,99 +362,51 @@ static bool soft_teardown = false;
  */
 static bool process_any_signals_received(real_t t, std::size_t nt)
 {
+    static const int N = atomic_signal_received_t::static_size;
 
-    // Take (nearly) atomic snapshot of any signals received on this rank
-    // Reset the signal_was_received status as the snapshot proceeds
-    boost::array<int,NSIG> rankplusone;
-    for (std::size_t sig = 0; sig < NSIG; ++sig) {
-        rankplusone[sig] = signal_was_received[sig];
-        signal_was_received[sig] = 0;
-    }
+    // Take snapshot of and then clear atomic_signal_received
+    boost::array<int,N> signal_received = atomic_signal_received;
+    std::fill_n(atomic_signal_received.begin(), N, 0);
 
-    // Replace any observed signal with current rank plus one.
-    // Allows tracking at least one rank that received the signal.
-    const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
-    for (std::size_t sig = 0; sig < NSIG; ++sig) {
-        if (rankplusone[sig]) {
-            DEBUG("Received signal number " << sig << " on rank " << rank);
-            rankplusone[sig] += rank;
+    if (DEBUG_ENABLED) {
+        const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+        for (int i = 0; i < N; ++i) {
+            if (signal_received[i]) {
+                DEBUG("Received signal number " << signal_received[i]
+                      << " on rank " << rank);
+            }
         }
     }
 
-    // Allreduce to get global snapshot from all ranks.
-    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, rankplusone.c_array(), NSIG,
-                suzerain::mpi::datatype<int>::value, MPI_MAX, MPI_COMM_WORLD));
+    // Allreduce to roll up information from all ranks
+    // FIXME Hide this communication cost within our time step Allreduce
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, signal_received.c_array(), N,
+                                   MPI_INT, MPI_MAX, MPI_COMM_WORLD));
 
     // Keep advancing time unless keep_advancing is set false
     bool keep_advancing = true;
 
-    // Loop over all possible signals...
-    for (std::size_t sig = 0; sig < NSIG; ++sig) {
+    if (signal_received[0]) {
+        INFO0("Outputting simulation status due to receipt of "
+              << suzerain_signal_name(signal_received[0]));
+        keep_advancing = keep_advancing && log_status(t, nt);
+    }
 
-        // ...skipping any we did not observe
-        if (!rankplusone[sig]) continue;
+    if (signal_received[1]) {
+        INFO0("Writing restart file due to receipt of "
+              << suzerain_signal_name(signal_received[1]));
+        keep_advancing = keep_advancing && save_restart(t, nt);
+    }
 
-        // ...processing any we did observe
-        const int originrank = (rankplusone[sig] - 1);
-        switch (sig) {
-
-#ifdef SIGHUP
-            // This usage of SIGHUP matches un*x daemon conventions
-            case SIGHUP:
-                INFO0("Saving restart because SIGHUP received"
-                      << " on (at least) rank " << originrank);
-                keep_advancing = keep_advancing && save_restart(t, nt);
-                break;
-#endif
-
-#ifdef SIGUSR1
-            // Provides a way to probe a running simulation (though limited)
-            case SIGUSR1:
-                INFO0("Outputting simulation status because SIGUSR1 received"
-                      << " on (at least) rank " << originrank);
-                keep_advancing = keep_advancing && log_status(t, nt);
-                break;
-#endif
-
-#ifdef SIGUSR2
-            // Some batch systems allow scheduling SIGUSR2 a configurable
-            // time before a SIGTERM is sent to allow graceful teardown
-            case SIGUSR2:
-                INFO0("Initiating teardown because SIGUSR2 received"
-                      << " on (at least) rank " << originrank);
-                soft_teardown = true;
-                keep_advancing = false;
-                break;
-#endif
-
-#ifdef SIGINT
-            // Attempt a checkpoint before we are forcefully terminated
-            // Note mpiexec tends to be awful at propagating SIGINTs
-            case SIGINT:
-                INFO0("Initiating teardown because SIGINT received"
-                      << " on (at least) rank " << originrank);
-                INFO0("Receipt of another SIGINT will terminate the program");
-                signal(SIGINT, SIG_DFL);
-                soft_teardown = true;
-                keep_advancing = false;
-                break;
-#endif
-
-            // Attempt a checkpoint before we are forcefully terminated
-            case SIGTERM:
-                INFO0("Initiating teardown because SIGTERM received"
-                      << " on (at least) rank " << originrank);
-                INFO0("Receipt of another SIGTERM will terminate the program");
-                signal(SIGTERM, SIG_DFL);
-                soft_teardown = true;
-                keep_advancing = false;
-                break;
-
-            default:
-                WARN0("Unknown signal number " << sig
-                    << " received on (at least) rank " << originrank);
-                break;
+    if (signal_received[2]) {
+        INFO0("Initiating teardown due to receipt of "
+              << suzerain_signal_name(signal_received[2]));
+        soft_teardown  = true;
+        if (signal_received[2] == SIGTERM) {
+            INFO0("Receipt of another SIGTERM will forcibly terminate program");
+            signal(SIGTERM, SIG_DFL);
         }
+        keep_advancing = false;
     }
 
     return keep_advancing;
@@ -471,6 +450,8 @@ int main(int argc, char **argv)
                 const_cast<RestartDefinition&>(restart));
         options.add_definition(
                 const_cast<TimeDefinition<real_t>&>(timedef));
+        options.add_definition(
+                const_cast<SignalDefinition&>(sigdef));
         std::vector<std::string> positional = options.process(argc, argv);
 
         if (positional.size() != 1) {
@@ -726,23 +707,41 @@ int main(int argc, char **argv)
         tc->add_periodic_callback(dt, nt, &save_restart);
     }
 
-    // Register our signal-handling logic and periodic signal processing
-    // Each invocation of process_any_signals_received incurs an Allreduce
-#ifdef SIGHUP
-    signal(SIGHUP,  process_signal);
-#endif
-#ifdef SIGUSR1
-    signal(SIGUSR1, process_signal);
-#endif
-#ifdef SIGUSR2
-    signal(SIGUSR2, process_signal);
-#endif
-#ifdef SIGINT
-    signal(SIGINT,  process_signal);
-#endif
-    signal(SIGTERM, process_signal);
-    tc->add_periodic_callback(tc->forever_t(), 3 /* tradeoff */,
-                              process_any_signals_received);
+    // Register any necessary signal handling logic once per unique signal
+    {
+        // Obtain a set of signal numbers which we need to register
+        std::vector<int> s;
+        s.insert(s.end(), sigdef.status.begin(),   sigdef.status.end());
+        s.insert(s.end(), sigdef.restart.begin(),  sigdef.restart.end());
+        s.insert(s.end(), sigdef.teardown.begin(), sigdef.teardown.end());
+        std::sort(s.begin(), s.end());
+        s.erase(std::unique(s.begin(), s.end()), s.end());
+
+        // Register the signal handler for each of these signals
+        typedef std::vector<int>::const_iterator const_iterator;
+        for (const_iterator i = s.begin(); i != s.end(); ++i) {
+            const char * name = suzerain_signal_name(*i);
+            if (SIG_ERR != signal(*i, process_signal)) {
+                if (name) {
+                    DEBUG0("Registered signal handler for " << name);
+                } else {
+                    DEBUG0("Registered signal handler for " << *i);
+                }
+            } else {
+                if (name) {
+                    WARN0("Unable to register signal handler for " << name);
+                } else {
+                    WARN0("Unable to register signal handler for " << *i);
+                }
+            }
+        }
+
+        // Iff we registered a handler, process signals actions in time stepper
+        if (s.size() > 0) {
+            tc->add_periodic_callback(
+                    tc->forever_t(), 1, process_any_signals_received);
+        }
+    }
 
     // Advance time according to advance_dt, advance_nt criteria
     const double wtime_advance_start = MPI_Wtime();
