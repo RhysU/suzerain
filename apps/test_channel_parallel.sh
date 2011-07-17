@@ -23,7 +23,7 @@ banner "Equivalence of serial and parallel execution"
 (
     cd $testdir
     prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" $ADVANCE $P
-    differ --delta=7e-15 --nan serial0.h5 a0.h5
+    differ --delta=2e-14 --nan serial0.h5 a0.h5
 )
 
 done
