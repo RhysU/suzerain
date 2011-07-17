@@ -74,6 +74,73 @@ test_suzerain_fpipe( void )
     return EXIT_SUCCESS;
 }
 
+static
+int
+test_suzerain_signal_number( void )
+{
+    int success = 1;
+
+    // The ISO C standard only requires the signal names SIGABRT, SIGFPE,
+    // SIGILL, SIGINT, SIGSEGV, and SIGTERM to be defined.
+
+    success |= (suzerain_signal_number("SIGABRT") == SIGABRT);
+    success |= (suzerain_signal_number("sigabrt") == SIGABRT);
+    success |= (suzerain_signal_number("ABRT") == SIGABRT);
+    success |= (suzerain_signal_number("Abrt") == SIGABRT);
+    success |= (suzerain_signal_number("abrt") == SIGABRT);
+
+    success |= (suzerain_signal_number("SIGFPE") == SIGFPE);
+    success |= (suzerain_signal_number("sigfpe") == SIGFPE);
+    success |= (suzerain_signal_number("FPE") == SIGFPE);
+    success |= (suzerain_signal_number("Fpe") == SIGFPE);
+    success |= (suzerain_signal_number("fpe") == SIGFPE);
+
+    success |= (suzerain_signal_number("SIGILL") == SIGILL);
+    success |= (suzerain_signal_number("sigill") == SIGILL);
+    success |= (suzerain_signal_number("ILL") == SIGILL);
+    success |= (suzerain_signal_number("Ill") == SIGILL);
+    success |= (suzerain_signal_number("ill") == SIGILL);
+
+    success |= (suzerain_signal_number("SIGINT") == SIGINT);
+    success |= (suzerain_signal_number("sigINT") == SIGINT);
+    success |= (suzerain_signal_number("INT") == SIGINT);
+    success |= (suzerain_signal_number("Int") == SIGINT);
+    success |= (suzerain_signal_number("INT") == SIGINT);
+
+    success |= (suzerain_signal_number("SIGSEGV") == SIGSEGV);
+    success |= (suzerain_signal_number("sigsegv") == SIGSEGV);
+    success |= (suzerain_signal_number("SEGV") == SIGSEGV);
+    success |= (suzerain_signal_number("Segv") == SIGSEGV);
+    success |= (suzerain_signal_number("segv") == SIGSEGV);
+
+    success |= (suzerain_signal_number("SIGTERM") == SIGTERM);
+    success |= (suzerain_signal_number("sigterm") == SIGTERM);
+    success |= (suzerain_signal_number("TERM") == SIGTERM);
+    success |= (suzerain_signal_number("Term") == SIGTERM);
+    success |= (suzerain_signal_number("term") == SIGTERM);
+
+    return success == 1 ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static
+int
+test_suzerain_signal_name( void )
+{
+    int success = 1;
+
+    // The ISO C standard only requires the signal names SIGABRT, SIGFPE,
+    // SIGILL, SIGINT, SIGSEGV, and SIGTERM to be defined.
+
+    success |= !strcmp(suzerain_signal_name(SIGABRT), "SIGABRT");
+    success |= !strcmp(suzerain_signal_name(SIGFPE),  "SIGFPE");
+    success |= !strcmp(suzerain_signal_name(SIGILL),  "SIGILL");
+    success |= !strcmp(suzerain_signal_name(SIGINT),  "SIGINT");
+    success |= !strcmp(suzerain_signal_name(SIGSEGV), "SIGSEGV");
+    success |= !strcmp(suzerain_signal_name(SIGTERM), "SIGTERM");
+
+    return success == 1 ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 int main(int argc, char *argv[])
 {
     SUZERAIN_UNUSED(argc);
@@ -81,6 +148,8 @@ int main(int argc, char *argv[])
     int status = 0;
 
     status |= test_suzerain_fpipe();
+    status |= test_suzerain_signal_number();
+    status |= test_suzerain_signal_name();
 
     if (status) {
         return EXIT_FAILURE;

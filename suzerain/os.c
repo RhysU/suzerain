@@ -78,3 +78,245 @@ int suzerain_fpipe(int *rfd, int rflags, FILE **w, int wflags)
 
     return SUZERAIN_SUCCESS;
 }
+
+int suzerain_signal_number(const char * name)
+{
+    // Avoid issues with NULLs and zero-length values
+    if (!name || !*name) return SUZERAIN_FAILURE;
+
+    // Skip past any leading "SIG" prefix
+    if (strncasecmp(name, "SIG", 3) == 0) name += 3;
+
+    // Use string length to reduce the number of comparisons necessary
+    switch (strlen(name)) {
+    case 2:
+#ifdef SIGIO
+        if (strcasecmp(name, "IO") == 0) return SIGIO;
+#endif
+        return SUZERAIN_FAILURE;
+
+    case 3:
+#ifdef SIGBUS
+        if (strcasecmp(name, "BUS") == 0) return SIGBUS;
+#endif
+#ifdef SIGCLD
+        if (strcasecmp(name, "CLD") == 0) return SIGCLD;
+#endif
+#ifdef SIGFPE
+        if (strcasecmp(name, "FPE") == 0) return SIGFPE;
+#endif
+#ifdef SIGHUP
+        if (strcasecmp(name, "HUP") == 0) return SIGHUP;
+#endif
+#ifdef SIGILL
+        if (strcasecmp(name, "ILL") == 0) return SIGILL;
+#endif
+#ifdef SIGINT
+        if (strcasecmp(name, "INT") == 0) return SIGINT;
+#endif
+#ifdef SIGIOT
+        if (strcasecmp(name, "IOT") == 0) return SIGIOT;
+#endif
+#ifdef SIGPWR
+        if (strcasecmp(name, "PWR") == 0) return SIGPWR;
+#endif
+#ifdef SIGSYS
+        if (strcasecmp(name, "SYS") == 0) return SIGSYS;
+#endif
+#ifdef SIGURG
+        if (strcasecmp(name, "URG") == 0) return SIGURG;
+#endif
+        return SUZERAIN_FAILURE;
+
+    case 4:
+#ifdef SIGABRT
+        if (strcasecmp(name, "ABRT") == 0) return SIGABRT;
+#endif
+#ifdef SIGALRM
+        if (strcasecmp(name, "ALRM") == 0) return SIGALRM;
+#endif
+#ifdef SIGCHLD
+        if (strcasecmp(name, "CHLD") == 0) return SIGCHLD;
+#endif
+#ifdef SIGCONT
+        if (strcasecmp(name, "CONT") == 0) return SIGCONT;
+#endif
+#ifdef SIGKILL
+        if (strcasecmp(name, "KILL") == 0) return SIGKILL;
+#endif
+#ifdef SIGPIPE
+        if (strcasecmp(name, "PIPE") == 0) return SIGPIPE;
+#endif
+#ifdef SIGPOLL
+        if (strcasecmp(name, "POLL") == 0) return SIGPOLL;
+#endif
+#ifdef SIGPROF
+        if (strcasecmp(name, "PROF") == 0) return SIGPROF;
+#endif
+#ifdef SIGQUIT
+        if (strcasecmp(name, "QUIT") == 0) return SIGQUIT;
+#endif
+#ifdef SIGSEGV
+        if (strcasecmp(name, "SEGV") == 0) return SIGSEGV;
+#endif
+#ifdef SIGSTOP
+        if (strcasecmp(name, "STOP") == 0) return SIGSTOP;
+#endif
+#ifdef SIGTERM
+        if (strcasecmp(name, "TERM") == 0) return SIGTERM;
+#endif
+#ifdef SIGTRAP
+        if (strcasecmp(name, "TRAP") == 0) return SIGTRAP;
+#endif
+#ifdef SIGTSTP
+        if (strcasecmp(name, "TSTP") == 0) return SIGTSTP;
+#endif
+#ifdef SIGTTIN
+        if (strcasecmp(name, "TTIN") == 0) return SIGTTIN;
+#endif
+#ifdef SIGTTOU
+        if (strcasecmp(name, "TTOU") == 0) return SIGTTOU;
+#endif
+#ifdef SIGUSR1
+        if (strcasecmp(name, "USR1") == 0) return SIGUSR1;
+#endif
+#ifdef SIGUSR2
+        if (strcasecmp(name, "USR2") == 0) return SIGUSR2;
+#endif
+#ifdef SIGXCPU
+        if (strcasecmp(name, "XCPU") == 0) return SIGXCPU;
+#endif
+#ifdef SIGXFSZ
+        if (strcasecmp(name, "XFSZ") == 0) return SIGXFSZ;
+#endif
+        return SUZERAIN_FAILURE;
+
+    case 5:
+#ifdef SIGWINCH
+        if (strcasecmp(name, "WINCH") == 0) return SIGWINCH;
+#endif
+        return SUZERAIN_FAILURE;
+
+    case 6:
+#ifdef SIGSTKFLT
+        if (strcasecmp(name, "STKFLT") == 0) return SIGSTKFLT;
+#endif
+#ifdef SIGVTALRM
+        if (strcasecmp(name, "VTALRM") == 0) return SIGVTALRM;
+#endif
+        return SUZERAIN_FAILURE;
+
+    default:
+        return SUZERAIN_FAILURE;
+    }
+}
+
+const char * suzerain_signal_name(int signum)
+{
+    switch (signum) {
+#ifdef SIGHUP
+    case SIGHUP: return "SIGHUP";
+#endif
+#ifdef SIGINT
+    case SIGINT: return "SIGINT";
+#endif
+#ifdef SIGQUIT
+    case SIGQUIT: return "SIGQUIT";
+#endif
+#ifdef SIGILL
+    case SIGILL: return "SIGILL";
+#endif
+#ifdef SIGTRAP
+    case SIGTRAP: return "SIGTRAP";
+#endif
+#ifdef SIGABRT
+    case SIGABRT: return "SIGABRT";
+#endif
+#if defined SIGIOT && defined SIGABRT && SIGIOT != SIGABRT
+    case SIGIOT:
+        return "SIGIOT";
+#endif
+#ifdef SIGBUS
+    case SIGBUS: return "SIGBUS";
+#endif
+#ifdef SIGFPE
+    case SIGFPE: return "SIGFPE";
+#endif
+#ifdef SIGKILL
+    case SIGKILL: return "SIGKILL";
+#endif
+#ifdef SIGUSR1
+    case SIGUSR1: return "SIGUSR1";
+#endif
+#ifdef SIGSEGV
+    case SIGSEGV: return "SIGSEGV";
+#endif
+#ifdef SIGUSR2
+    case SIGUSR2: return "SIGUSR2";
+#endif
+#ifdef SIGPIPE
+    case SIGPIPE: return "SIGPIPE";
+#endif
+#ifdef SIGALRM
+    case SIGALRM: return "SIGALRM";
+#endif
+#ifdef SIGTERM
+    case SIGTERM: return "SIGTERM";
+#endif
+#ifdef SIGSTKFLT
+    case SIGSTKFLT: return "SIGSTKFLT";
+#endif
+#if defined SIGCLD && defined SIGCHLD && SIGCLD != SIGCHLD
+    case SIGCLD: return "SIGCLD";
+#endif
+#ifdef SIGCHLD
+    case SIGCHLD: return "SIGCHLD";
+#endif
+#ifdef SIGCONT
+    case SIGCONT: return "SIGCONT";
+#endif
+#ifdef SIGSTOP
+    case SIGSTOP: return "SIGSTOP";
+#endif
+#ifdef SIGTSTP
+    case SIGTSTP: return "SIGTSTP";
+#endif
+#ifdef SIGTTIN
+    case SIGTTIN: return "SIGTTIN";
+#endif
+#ifdef SIGTTOU
+    case SIGTTOU: return "SIGTTOU";
+#endif
+#ifdef SIGURG
+    case SIGURG: return "SIGURG";
+#endif
+#ifdef SIGXCPU
+    case SIGXCPU: return "SIGXCPU";
+#endif
+#ifdef SIGXFSZ
+    case SIGXFSZ: return "SIGXFSZ";
+#endif
+#ifdef SIGVTALRM
+    case SIGVTALRM: return "SIGVTALRM";
+#endif
+#ifdef SIGPROF
+    case SIGPROF: return "SIGPROF";
+#endif
+#ifdef SIGWINCH
+    case SIGWINCH: return "SIGWINCH";
+#endif
+#if defined SIGPOLL && defined SIGIO && SIGPOLL != SIGIO
+    case SIGPOLL: return "SIGPOLL";
+#endif
+#ifdef SIGIO
+    case SIGIO: return "SIGIO";
+#endif
+#ifdef SIGPWR
+    case SIGPWR: return "SIGPWR";
+#endif
+#ifdef SIGSYS
+    case SIGSYS: return "SIGSYS";
+#endif
+    default: return NULL;
+    }
+}

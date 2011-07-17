@@ -64,6 +64,26 @@ extern "C" {
  */
 int suzerain_fpipe(int *rfd, int rflags, FILE **w, int wflags);
 
+/**
+ * Given a signal name, e.g. "SIGTERM" or "TERM", return the signal's number
+ * defined in \c signal.h.
+ *
+ * @param name Name of the signal to look up.
+ *
+ * @return The signal number on success or ::SUZERAIN_FAILURE on error.
+ */
+int suzerain_signal_number(const char * name);
+
+/**
+ * Given a signal number return a human-readable name following \c signal.h.
+ * For example, 1 will return "SIGHUP" on many systems.
+ *
+ * @param signum Number of the signal to look up.
+ *
+ * @return The signal name on success or NULL on failure.
+ */
+const char * suzerain_signal_name(int signum);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
