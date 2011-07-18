@@ -1,0 +1,107 @@
+#!/bin/bash
+#$ -V                    # Inherit submission environment
+#$ -cwd                  # Start in submission directory
+#$ -N suzerain           # Job name
+#$ -j y                  # Combine stderr and stdout
+#$ -pe 12way 12          # Requests TpN tasks/node, (NoN x 12) cores total
+#$ -q normal             # Queue name
+#$ -l s_rt=00:30:00      # Run time (hh:mm:ss) with SIGUSR1 teardown
+#$ -M $LOGNAME           # Use email notification address
+#$ -m bes                # Email on begin, end, and suspension
+#$ -notify               # Notify job of impending doom
+set -m                   # Employ job control
+set -u                   # Abort on undefined shell variables
+
+# Set binary, input, and other options (environment overrides these details)
+: ${BINARY:=$HOME/bin/channel_explicit}
+: ${INPUT:=$HOME/misc/laminar_k07.h5}
+: ${OPTIONS:=--Nx=192 --Ny=128 --Nz=128}
+: ${ADVANCE:=}
+: ${STATUS:=--status_dt=0.01 --status_nt=50}
+: ${JOBDIR:=$SCRATCH/$JOB_ID}
+: ${TEARDOWN:=120}
+
+# Prepare working directory, canonicalize file names, and change directories
+mkdir -p "$JOBDIR"
+BINARY=$(readlink -f $BINARY)
+INPUT=$(readlink -f $INPUT)
+JOBDIR=$(readlink -f $JOBDIR)
+cd -P "$JOBDIR"
+
+# Compute threading settings based on job size and way-ness
+export OMP_NUM_THREADS=$(expr 12 / \( $NSLOTS / $NHOSTS \) )
+
+# Record execution details into working directory
+exec 1> >(tee ./output) 2>&1
+readlink -f "$BINARY" > ./binary
+"$BINARY" --version > ./version
+ldd "$BINARY" > ./dependencies
+env > ./environment
+test -f /proc/version && cp /proc/version ./kernel  && chmod +w ./kernel
+test -f /proc/meminfo && cp /proc/meminfo ./meminfo && chmod +w ./meminfo
+test -f /proc/cpuinfo && cp /proc/cpuinfo ./cpuinfo && chmod +w ./cpuinfo
+
+# At job completion email a detailed package to user
+# FIXME Not at all working correctly as EXIT is never run due to exec below
+function at_exit()
+{
+    echo | cat "$SGE_STDOUT_PATH"                             \
+               -                                              \
+               "$JOBDIR/binary"                               \
+               -                                              \
+               "$JOBDIR/version"                              \
+               -                                              \
+               "$JOBDIR/dependencies"                         \
+               -                                              \
+               "$JOBDIR/environment"                          \
+               -                                              \
+               "$JOBDIR/kernel"                               \
+               -                                              \
+               "$JOBDIR/meminfo"                              \
+               -                                              \
+               "$JOBDIR/cpuinfo"                              \
+         | sed '/^TACC: Dumping job script/,/^TACC: Done/d'   \
+         | mail -s "Job $JOB_ID ($JOB_NAME) details" $LOGNAME
+}
+trap at_exit EXIT
+
+# Schedule signal-based teardown instead of SGE KILLing when wall time exhausted
+# Care taken to ensure alarm-like process does not hang batch completion
+function schedule_signal_after ()
+{
+    RECEPIENT=$1 ; SIGNAL=$2 ; AFTER=$3 ; SLEEPTIME=${4-3}
+    while true ; do
+        test $(date +%s) -gt $AFTER && kill -$SIGNAL $RECEPIENT && exit
+        ps --pid $RECEPIENT > /dev/null || exit
+        sleep $SLEEPTIME
+    done
+}
+##FIXME!
+##RUNTIME=$(qstat -j $JOB_ID | egrep -o 'h_rt=[0-9]+*' | egrep -o '[0-9]+') # Ugly
+##if test "$RUNTIME" -gt "$TEARDOWN" ; then
+##    TEARDOWN=$(expr $(date +%s) + $RUNTIME - $TEARDOWN)
+    schedule_signal_after $$ USR2 $TEARDOWN &
+##fi
+
+# Display a job header
+cat <<HEADER
+=${JOB_NAME}===================================================================
+CLUSTER:  $SGE_CLUSTER_NAME ${PE-} ${NSLOTS}
+JOB_ID:   $JOB_ID
+JOBDIR:   $JOBDIR
+STDOUT:   $SGE_STDOUT_PATH
+
+BINARY:   $BINARY
+INPUT:    $INPUT
+ADVANCE:  $ADVANCE
+STATUS:   $STATUS
+OPTIONS:  $OPTIONS
+
+\"$BINARY\" \"$INPUT\" $ADVANCE $STATUS $OPTIONS
+=${JOB_NAME}===================================================================
+
+HEADER
+
+# Exec the binary so it directly receives any process signals
+cache_binary "$PWD" "$BINARY"
+exec /usr/bin/time -v ibrun tacc_affinity "$BINARY" "$INPUT" $ADVANCE $STATUS $OPTIONS
