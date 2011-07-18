@@ -12,12 +12,12 @@ TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 EXTRA_DIST  = references.bib
 
-# Build and install documentation PDFs
-PDFS     = $(TEXSOURCES:.tex=.pdf)
-doc_DATA = $(PDFS)
-all-local:         pdf-local
-pdf-local:         $(PDFS)
-install-pdf-local: pdf-local
+# Build and install writeups
+all-local:      pdf-local
+pdf-local:      $(PDFS)
+PDFS          = $(TEXSOURCES:.tex=.pdf)
+writeupsdir   = $(pkgdatadir)/writeups
+writeups_DATA = $(PDFS)
 
 # Files to clean up based on common TeX-based tools
 CLEANFILES = *.aux *.bbl *.blg *.dvi *.log *.pdf *.ps
