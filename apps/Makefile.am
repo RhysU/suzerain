@@ -9,8 +9,8 @@ AM_CPPFLAGS   += $(EIGEN_CFLAGS) $(GRVY_CFLAGS) $(ESIO_CFLAGS)
 bin_PROGRAMS   = # Append below
 bin_SCRIPTS    = # Append below
 check_PROGRAMS = # Append below
+check_SCRIPTS  = # Append below
 CLEANFILES     = # Append below
-EXTRA_DIST     = # Append below
 TESTS          = # Append below
 
 # MPI-based compilation and linking
@@ -60,13 +60,13 @@ conservation_LDADD    = libchannel.la
 
 # Tests for channel applications
 
-EXTRA_DIST += test_channel_setup.sh     # Common initialization
+check_SCRIPTS += test_channel_setup.sh     # Common initialization
 
-TESTS      += test_channel_restart.sh   # Restart handling
-EXTRA_DIST += test_channel_restart.sh
+TESTS         += test_channel_restart.sh   # Restart handling
+check_SCRIPTS += test_channel_restart.sh
 
-TESTS      += test_channel_parallel.sh  # Serial/parallel equivalence tests
-EXTRA_DIST += test_channel_parallel.sh
+TESTS         += test_channel_parallel.sh  # Serial/parallel equivalence tests
+check_SCRIPTS += test_channel_parallel.sh
 
 # Clean up from Intel Compiler's -prof-gen output and precomiled headers
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
