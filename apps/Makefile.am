@@ -1,17 +1,17 @@
 ## Process this file with automake to produce Makefile.in
 
-AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
-AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
-AM_CPPFLAGS   += $(P3DFFT_CFLAGS) $(FFTW3_THREADS_CFLAGS)
-AM_CPPFLAGS   += $(MKL_CFLAGS) $(GSL_CFLAGS)
-AM_CPPFLAGS   += $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
-AM_CPPFLAGS   += $(EIGEN_CFLAGS) $(GRVY_CFLAGS) $(ESIO_CFLAGS)
-bin_PROGRAMS   = # Append below
-bin_SCRIPTS    = # Append below
-check_PROGRAMS = # Append below
-check_SCRIPTS  = # Append below
-CLEANFILES     = # Append below
-TESTS          = # Append below
+AM_CPPFLAGS         = -I$(top_srcdir) -I$(top_builddir)
+AM_CPPFLAGS        += -I$(top_builddir)/lib -I$(top_srcdir)/lib
+AM_CPPFLAGS        += $(P3DFFT_CFLAGS) $(FFTW3_THREADS_CFLAGS)
+AM_CPPFLAGS        += $(MKL_CFLAGS) $(GSL_CFLAGS)
+AM_CPPFLAGS        += $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
+AM_CPPFLAGS        += $(EIGEN_CFLAGS) $(GRVY_CFLAGS) $(ESIO_CFLAGS)
+bin_PROGRAMS        = # Append below
+bin_SCRIPTS         = # Append below
+check_PROGRAMS      = # Append below
+dist_check_SCRIPTS  = # Append below
+CLEANFILES          = # Append below
+TESTS               = # Append below
 
 # MPI-based compilation and linking
 CXX = @MPICXX@
@@ -60,13 +60,13 @@ conservation_LDADD    = libchannel.la
 
 # Tests for channel applications
 
-check_SCRIPTS += test_channel_setup.sh     # Common initialization
+dist_check_SCRIPTS += test_channel_setup.sh     # Common initialization
 
-TESTS         += test_channel_restart.sh   # Restart handling
-check_SCRIPTS += test_channel_restart.sh
+TESTS              += test_channel_restart.sh   # Restart handling
+dist_check_SCRIPTS += test_channel_restart.sh
 
-TESTS         += test_channel_parallel.sh  # Serial/parallel equivalence tests
-check_SCRIPTS += test_channel_parallel.sh
+TESTS              += test_channel_parallel.sh  # Serial/parallel equivalence
+dist_check_SCRIPTS += test_channel_parallel.sh
 
 # Clean up from Intel Compiler's -prof-gen output and precomiled headers
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi

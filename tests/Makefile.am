@@ -1,17 +1,17 @@
 ## Process this file with automake to produce Makefile.in
 
-AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
-AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
-AM_CPPFLAGS   += $(P3DFFT_CFLAGS) $(FFTW3_THREADS_CFLAGS)
-AM_CPPFLAGS   += $(GSL_CFLAGS) $(MKL_CFLAGS)
-AM_CPPFLAGS   += $(BOOST_CPPFLAGS) $(LOG4CXX_CFLAGS) $(EIGEN_CFLAGS)
-AM_LDFLAGS     = # Append below
-bin_PROGRAMS   = # Append below
-check_PROGRAMS = # Append below
-check_SCRIPTS  = # Append below
-noinst_HEADERS = # Append below
-CLEANFILES     = # Append below
-TESTS          = # Append below
+AM_CPPFLAGS         = -I$(top_srcdir) -I$(top_builddir)
+AM_CPPFLAGS        += -I$(top_builddir)/lib -I$(top_srcdir)/lib
+AM_CPPFLAGS        += $(P3DFFT_CFLAGS) $(FFTW3_THREADS_CFLAGS)
+AM_CPPFLAGS        += $(GSL_CFLAGS) $(MKL_CFLAGS)
+AM_CPPFLAGS        += $(BOOST_CPPFLAGS) $(LOG4CXX_CFLAGS) $(EIGEN_CFLAGS)
+AM_LDFLAGS          = # Append below
+bin_PROGRAMS        = # Append below
+check_PROGRAMS      = # Append below
+dist_check_SCRIPTS  = # Append below
+noinst_HEADERS      = # Append below
+CLEANFILES          = # Append below
+TESTS               = # Append below
 
 noinst_HEADERS += test_tools.hpp
 
@@ -158,7 +158,7 @@ test_rholt_SOURCES  = test_rholt.cpp
 test_rholt_LDADD    = ../suzerain/libsuzerain.la
 test_rholt_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholt_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-check_SCRIPTS      += test_rholt.sage
+dist_check_SCRIPTS += test_rholt.sage
 
 TESTS               += test_rholut
 check_PROGRAMS      += test_rholut
@@ -166,7 +166,7 @@ test_rholut_SOURCES  = test_rholut.cpp
 test_rholut_LDADD    = ../suzerain/libsuzerain.la
 test_rholut_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholut_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-check_SCRIPTS       += test_rholut.sage
+dist_check_SCRIPTS  += test_rholut.sage
 
 TESTS                   += test_richardson
 check_PROGRAMS          += test_richardson
@@ -251,7 +251,7 @@ test_diffwave_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_diffwave_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                         += test_diffwave_p3dfft.sh
-check_SCRIPTS                 += test_diffwave_p3dfft.sh
+dist_check_SCRIPTS            += test_diffwave_p3dfft.sh
 check_PROGRAMS                += test_diffwave_p3dfft
 test_diffwave_p3dfft_SOURCES   = test_diffwave_p3dfft.cpp
 test_diffwave_p3dfft_LDADD     = ../suzerain/libsuzerain.la
