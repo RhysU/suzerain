@@ -251,6 +251,7 @@ AC_CONFIG_FILES([
     Makefile
     apps/Makefile
     fields/Makefile
+    jobscripts/Makefile
     lib/Makefile
     suzerain/Makefile
     tests/Makefile

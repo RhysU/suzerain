@@ -11,10 +11,10 @@ if BUILD_TESTS
     MAYBE_TESTS_SUBDIR = tests
 endif
 SUBDIRS = lib suzerain $(MAYBE_TESTS_SUBDIR) apps \
-          $(MAYBE_WRITEUPS_SUBDIR) fields
+          $(MAYBE_WRITEUPS_SUBDIR) fields jobscripts
 
 # Distribute these items:
-DIST_SUBDIRS = lib suzerain tests apps writeups fields
+DIST_SUBDIRS = lib suzerain tests apps writeups fields jobscripts
 EXTRA_DIST = bootstrap $(DX_CONFIG)
 
 # Build toplevel directory in serial

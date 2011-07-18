@@ -12,24 +12,26 @@
 set -m                   # Employ job control
 set -u                   # Abort on undefined shell variables
 
-# Set binary, input, and other options (environment overrides these details)
-: ${BINARY:=$HOME/bin/channel_explicit}
-: ${INPUT:=$HOME/misc/laminar_k07.h5}
+# Provide defaults for environment variables used to build CMD (see below).
+# Rather than editing this job submission script, modify your environment!
+: ${BINARY:=@bindir@/channel_explicit}
+: ${INPUT:=@pkgdatadir@/fields/laminar_k07.h5}
 : ${ADVANCE:=}
 : ${STATUS:=--status_dt=0.01 --status_nt=25}
-: ${DECOMP:=--Pa=$(expr $NSLOTS / $NHOSTS )}
+: ${DECOMP:=--Pa=$(expr $NSLOTS / $NHOSTS)}
 : ${OPTIONS:=--Nx=192 --Ny=128 --Nz=128}
 : ${JOBDIR:=$SCRATCH/$JOB_ID}
 
-# Compute threading based on job size and way-ness
-export OMP_NUM_THREADS=$(expr 12 / \( $NSLOTS / $NHOSTS \) )
-
-# Prepare working directory, canonicalize file names, and change directories
-mkdir -p "$JOBDIR"
+# Canonicalize names, change to job directory, and build command
 BINARY=$(readlink -f $BINARY)
 INPUT=$(readlink -f $INPUT)
 JOBDIR=$(readlink -f $JOBDIR)
+mkdir -p "$JOBDIR"
 cd -P "$JOBDIR"
+CMD="\"$BINARY\" \"$INPUT\" $ADVANCE $STATUS $DECOMP $OPTIONS"
+
+# Compute threading based on job size and way-ness
+export OMP_NUM_THREADS=$(expr 12 / \( $NSLOTS / $NHOSTS \) )
 
 # Record execution details into working directory
 exec 1> >(tee ./output) 2>&1
@@ -44,7 +46,7 @@ test -f /proc/cpuinfo && cp /proc/cpuinfo ./cpuinfo && chmod +w ./cpuinfo
 # Display a job header
 cat <<HEADER
 =${JOB_NAME}===================================================================
-CLUSTER:  $SGE_CLUSTER_NAME ${PE-} ${NSLOTS}
+CLUSTER:  $SGE_CLUSTER_NAME ${PE-} $NSLOTS
 JOB_ID:   $JOB_ID
 JOBDIR:   $JOBDIR
 STDOUT:   $SGE_STDOUT_PATH
@@ -56,12 +58,11 @@ STATUS:   $STATUS
 OPTIONS:  $DECOMP
 OPTIONS:  $OPTIONS
 
-\"$BINARY\" \"$INPUT\" $ADVANCE $STATUS $DECOMP $OPTIONS
+$CMD
 =${JOB_NAME}===================================================================
 
 HEADER
 
-# Exec the binary so it directly receives any process signals
+# Exec the command so it may directly receives any incoming signals
 cache_binary "$PWD" "$BINARY"
-exec /usr/bin/time -v ibrun tacc_affinity "$BINARY" "$INPUT" \
-                                          $ADVANCE $STATUS $DECOMP $OPTIONS
+exec /usr/bin/time -v ibrun tacc_affinity $CMD
