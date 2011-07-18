@@ -4,7 +4,7 @@
 #$ -N suzerain           # Job name
 #$ -o $JOB_NAME.o$JOB_ID # File containing job output
 #$ -j y                  # Combine stderr and stdout
-#$ -pe 12way 12          # Requests TpN tasks/node, (NoN x 12) cores total
+#$ -pe @corespernode@way @corespernode@          # Requests TpN tasks/node, (NoN x @corespernode@) cores total
 #$ -q normal             # Queue name
 #$ -l h_rt=00:30:00      # Run time (hh:mm:ss)
 #$ -m bes                # Email on begin, end, and suspension
@@ -31,7 +31,7 @@ cd -P "$JOBDIR"
 CMD="\"$BINARY\" \"$INPUT\" $ADVANCE $STATUS $DECOMP $OPTIONS"
 
 # Compute threading based on job size and way-ness
-export OMP_NUM_THREADS=$(expr 12 / \( $NSLOTS / $NHOSTS \) )
+export OMP_NUM_THREADS=$(expr @corespernode@ / \( $NSLOTS / $NHOSTS \) )
 
 # Record execution details into working directory
 exec 1> >(tee ./output) 2>&1
