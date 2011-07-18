@@ -37,6 +37,8 @@ clean-local:
 
 MOSTLYCLEANFILES = $(DX_CLEANFILES)
 
+DISTCLEANFILES = _configs.sed
+
 # Files to be deleted by 'make maintainer-clean'
 MAINTAINERCLEANFILES = aclocal.m4             \
                        aminclude.am           \
