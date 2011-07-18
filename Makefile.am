@@ -4,17 +4,17 @@ AUTOMAKE_OPTIONS = foreign
 CLEANFILES       = # Append below
 
 # Build in these directories:
-if BUILD_WRITEUP
-    MAYBE_WRITEUP_SUBDIR = writeup
+if BUILD_WRITEUPS
+    MAYBE_WRITEUPS_SUBDIR = writeups
 endif
 if BUILD_TESTS
     MAYBE_TESTS_SUBDIR = tests
 endif
 SUBDIRS = lib suzerain $(MAYBE_TESTS_SUBDIR) apps \
-          $(MAYBE_WRITEUP_SUBDIR) fields
+          $(MAYBE_WRITEUPS_SUBDIR) fields
 
 # Distribute these items:
-DIST_SUBDIRS = lib suzerain tests apps writeup fields
+DIST_SUBDIRS = lib suzerain tests apps writeups fields
 EXTRA_DIST = bootstrap $(DX_CONFIG)
 
 # Build toplevel directory in serial
@@ -37,11 +37,11 @@ clean-local:
 
 MOSTLYCLEANFILES = $(DX_CLEANFILES)
 
-DISTCLEANFILES = _configs.sed
+DISTCLEANFILES = _configs.sed               \
+                 aminclude.am               \
+                 suzerain/suzerain-config.h
 
-# Files to be deleted by 'make maintainer-clean'
 MAINTAINERCLEANFILES = aclocal.m4             \
-                       aminclude.am           \
                        autom4te.cache/*       \
                        $(AUX_DIST)            \
                        config.log             \

@@ -22,20 +22,20 @@ AX_ADD_AM_CTAGSFLAGS
 dnl ------------------------------------------------
 dnl LaTeX capabilities (not required but suggested)
 dnl ------------------------------------------------
-build_writeup=true
-ACLTX_PROG_TEX(      [build_writeup=false])
-ACLTX_PROG_PDFTEX(   [build_writeup=false])
-ACLTX_PROG_LATEX(    [build_writeup=false])
-ACLTX_PROG_PDFLATEX( [build_writeup=false])
-ACLTX_PROG_BIBTEX(   [build_writeup=false])
-ACLTX_PROG_MAKEINDEX([build_writeup=false])
-if [ test x$build_writeup = xtrue ]; then
+build_writeups=true
+ACLTX_PROG_TEX(      [build_writeups=false])
+ACLTX_PROG_PDFTEX(   [build_writeups=false])
+ACLTX_PROG_LATEX(    [build_writeups=false])
+ACLTX_PROG_PDFLATEX( [build_writeups=false])
+ACLTX_PROG_BIBTEX(   [build_writeups=false])
+ACLTX_PROG_MAKEINDEX([build_writeups=false])
+if [ test x$build_writeups = xtrue ]; then
     AX_ADD_AM_LATEX
-    ACLTX_CLASSES([amsart],AMSART_CLASS,,[build_writeup=false])
+    ACLTX_CLASSES([amsart],AMSART_CLASS,,[build_writeups=false])
 else
     AC_MSG_WARN([LaTeX prerequisites not satisfied so writeups will not be built.])
 fi
-AM_CONDITIONAL([BUILD_WRITEUP], [test x$build_writeup = xtrue])
+AM_CONDITIONAL([BUILD_WRITEUPS], [test x$build_writeups = xtrue])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------------
@@ -254,7 +254,7 @@ AC_CONFIG_FILES([
     lib/Makefile
     suzerain/Makefile
     tests/Makefile
-    writeup/Makefile
+    writeups/Makefile
 ])
 
 AC_OUTPUT()
