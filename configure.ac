@@ -250,10 +250,11 @@ dnl ------------------------------------------------
 AC_CONFIG_FILES([
     Makefile
     apps/Makefile
-    writeup/Makefile
+    fields/Makefile
     lib/Makefile
     suzerain/Makefile
     tests/Makefile
+    writeup/Makefile
 ])
 
 AC_OUTPUT()

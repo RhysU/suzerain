@@ -10,10 +10,11 @@ endif
 if BUILD_TESTS
     MAYBE_TESTS_SUBDIR = tests
 endif
-SUBDIRS = lib suzerain $(MAYBE_TESTS_SUBDIR) apps $(MAYBE_WRITEUP_SUBDIR)
+SUBDIRS = lib suzerain $(MAYBE_TESTS_SUBDIR) apps \
+          $(MAYBE_WRITEUP_SUBDIR) fields
 
 # Distribute these items:
-DIST_SUBDIRS = lib suzerain apps tests writeup
+DIST_SUBDIRS = lib suzerain tests apps writeup fields
 EXTRA_DIST = bootstrap $(DX_CONFIG)
 
 # Build toplevel directory in serial
@@ -37,19 +38,18 @@ clean-local:
 MOSTLYCLEANFILES = $(DX_CLEANFILES)
 
 # Files to be deleted by 'make maintainer-clean'
-MAINTAINERCLEANFILES =     \
-	aclocal.m4             \
-	aminclude.am           \
-	autom4te.cache/*       \
-	$(AUX_DIST)            \
-	config.log             \
-	config.status          \
-	config.sub             \
-	configure              \
-	Makefile.in            \
-	suzerain/config.h.in   \
-	suzerain/Makefile.in   \
-	suzerain/stamp.h.in
+MAINTAINERCLEANFILES = aclocal.m4             \
+                       aminclude.am           \
+                       autom4te.cache/*       \
+                       $(AUX_DIST)            \
+                       config.log             \
+                       config.status          \
+                       config.sub             \
+                       configure              \
+                       Makefile.in            \
+                       suzerain/config.h.in   \
+                       suzerain/Makefile.in   \
+                       suzerain/stamp.h.in
 
 # Additional tasks run with the 'all' target
 all-local:  libtool
@@ -94,4 +94,3 @@ endif
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
-
