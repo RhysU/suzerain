@@ -425,7 +425,7 @@ int main(int argc, char **argv)
     const int nranks = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
     // Establish MPI-savvy, rank-dependent logging names
-    name_logger_within_comm_world();
+    logger::log_using_world_rank();
 
     // Hook error handling into logging infrastructure
     gsl_set_error_handler(

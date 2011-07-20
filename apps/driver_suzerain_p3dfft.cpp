@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     atexit((void (*) ()) MPI_Finalize);       // Finalize down MPI at exit
 
     // Establish MPI-savvy, rank-dependent logging names
-    name_logger_within_comm_world();
+    logger::log_using_world_rank();
 
     // Process command line options
     suzerain::ProgramOptions options;

@@ -32,35 +32,55 @@
 
 #include <log4cxx/logger.h>
 
-// Global logging instance usable by anyone
-extern log4cxx::LoggerPtr logger;
+/**
+ * Namespace to house logging abstraction details.
+ */
+namespace logger {
+
+namespace detail {
+
+// Global logging instance
+extern ::log4cxx::LoggerPtr loggerptr;
+
+// World rank determined within initialize method
+extern int worldrank;
+
+} // end namespace detail
+
+/**
+ * Initialize the logging infrastructure.
+ * Must be called after \c MPI_Init and before any logging statements.
+ */
+void initialize();
+
+// Provide nice, rank-specific output names
+void log_using_world_rank();
+
+} // end namespace logger
 
 // Logging macros to hide log4cxx specifics
-#define TRACE(expr)     LOG4CXX_TRACE(logger,expr)
-#define DEBUG(expr)     LOG4CXX_DEBUG(logger,expr)
-#define INFO(expr)      LOG4CXX_INFO( logger,expr)
-#define WARN(expr)      LOG4CXX_WARN( logger,expr)
-#define ERROR(expr)     LOG4CXX_ERROR(logger,expr)
-#define FATAL(expr)     LOG4CXX_FATAL(logger,expr)
-#define INFO_ENABLED    (logger->isInfoEnabled())
-#define TRACE_ENABLED   (logger->isTraceEnabled())
-#define DEBUG_ENABLED   (logger->isDebugEnabled())
+#define TRACE(expr)     LOG4CXX_TRACE(::logger::detail::loggerptr,expr)
+#define DEBUG(expr)     LOG4CXX_DEBUG(::logger::detail::loggerptr,expr)
+#define INFO(expr)      LOG4CXX_INFO( ::logger::detail::loggerptr,expr)
+#define WARN(expr)      LOG4CXX_WARN( ::logger::detail::loggerptr,expr)
+#define ERROR(expr)     LOG4CXX_ERROR(::logger::detail::loggerptr,expr)
+#define FATAL(expr)     LOG4CXX_FATAL(::logger::detail::loggerptr,expr)
+#define INFO_ENABLED    (::logger::detail::loggerptr->isInfoEnabled())
+#define TRACE_ENABLED   (::logger::detail::loggerptr->isTraceEnabled())
+#define DEBUG_ENABLED   (::logger::detail::loggerptr->isDebugEnabled())
 
 // Logging macros to log only from MPI rank 0
-// Not intended for use within inner loops
 #define TRACE0(expr) \
-    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) TRACE(expr); }while(0)
+    do{ if (!::logger::detail::worldrank) TRACE(expr); }while(0)
 #define DEBUG0(expr) \
-    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) DEBUG(expr); }while(0)
+    do{ if (!::logger::detail::worldrank) DEBUG(expr); }while(0)
 #define INFO0(expr)  \
-    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) INFO( expr); }while(0)
+    do{ if (!::logger::detail::worldrank) INFO( expr); }while(0)
 #define WARN0(expr)  \
-    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) WARN( expr); }while(0)
+    do{ if (!::logger::detail::worldrank) WARN( expr); }while(0)
 #define ERROR0(expr) \
-    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) ERROR(expr); }while(0)
+    do{ if (!::logger::detail::worldrank) ERROR(expr); }while(0)
 #define FATAL0(expr) \
-    do{ if (!::suzerain::mpi::comm_rank(MPI_COMM_WORLD)) FATAL(expr); }while(0)
-
-void name_logger_within_comm_world();
+    do{ if (!::logger::detail::worldrank) FATAL(expr); }while(0)
 
 #endif // LOGGER_HPP
