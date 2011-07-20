@@ -59,6 +59,14 @@ std::string error_string(const int errorcode)
     return retval.str();
 }
 
+void ensure_mpi_initialized() throw (std::logic_error)
+{
+    int flag;
+    MPI_Initialized(&flag);
+    assert(flag);
+    if (!flag) throw std::logic_error("MPI_Init has not been invoked");
+}
+
 int comm_size(MPI_Comm comm)
 {
     int size;

@@ -54,6 +54,16 @@ namespace mpi {
 std::string error_string(const int errorcode);
 
 /**
+ * Ensure that MPI_Init has already been called.
+ * In debug mode, entering this method when <tt>!MPI_Initialized</tt>
+ * results in a failed assertion.  Otherwise, entering this
+ * method when <tt>!MPI_Initialized</tt> causes a std::logic_error.
+ *
+ * @throw std::logic_error if MPI_Init has not been called.
+ */
+void ensure_mpi_initialized() throw (std::logic_error);
+
+/**
  * Determine the size of the group associated with a communicator.
  * On error, throws an appropriate exception.
  *
