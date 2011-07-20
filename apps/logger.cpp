@@ -41,6 +41,16 @@
 #include <log4cxx/helpers/pool.h>
 #include <log4cxx/file.h>
 
+// Beware http://old.nabble.com/Static-destruction-fiasco--td31026705.html
+#define LOG4CXX
+#include <log4cxx/helpers/aprinitializer.h>
+#undef LOG4CXX
+static struct APRInitializerWorkaroundType {
+    APRInitializerWorkaroundType() {
+        ::log4cxx::helpers::APRInitializer::initialize();
+    }
+} APRInitializerWorkaround;
+
 namespace logger {
 
 namespace detail {
