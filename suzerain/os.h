@@ -84,6 +84,20 @@ int suzerain_signal_number(const char * name);
  */
 const char * suzerain_signal_name(int signum);
 
+/**
+ * Obtain a "good" temporary directory name which is likely to be
+ * on non-networked disk.  Uses the first of the following environment
+ * variables found which has non-zero length:
+ * \li \c TMPDIR
+ * \li \c TMP
+ * \li \c TEMPDIR
+ * \li \c TEMP
+ * after which it returns the string "/tmp".
+ *
+ * @return The name of a temporary directory.
+ */
+const char * suzerain_temporary_directory();
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

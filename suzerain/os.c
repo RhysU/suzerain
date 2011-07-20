@@ -320,3 +320,15 @@ const char * suzerain_signal_name(int signum)
     default: return NULL;
     }
 }
+
+const char * suzerain_temporary_directory() {
+
+    const char *var[] = { "TMPDIR", "TMP", "TEMPDIR", "TEMP" };
+
+    for (size_t i = 0; i < sizeof(var)/sizeof(var[0]); ++i) {
+        const char *s = getenv(var[i]);
+        if (s && *s) return s;
+    }
+
+    return "/tmp";
+}
