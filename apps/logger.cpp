@@ -63,6 +63,30 @@ int worldrank = 0;
 
 } // end namespace detail
 
+// Provides nice, rank-specific logger names
+static void initialize_logger_using_world_rank()
+{
+    using detail::loggerptr;
+    using detail::worldrank;
+    using log4cxx::Level;
+    using log4cxx::LevelPtr;
+    using log4cxx::Logger;
+    using suzerain::mpi::comm_rank;
+    using suzerain::mpi::comm_rank_identifier;
+
+    loggerptr = Logger::getLogger(comm_rank_identifier(MPI_COMM_WORLD));
+
+    // If debugging is disabled, ensure level is at least INFO on ranks 1+
+    LevelPtr level = loggerptr->getLevel();
+    if (comm_rank(MPI_COMM_WORLD) > 0 && !loggerptr->isDebugEnabled()) {
+        if (!level || !level->isGreaterOrEqual(Level::getInfo())) {
+            level = Level::getInfo();
+        }
+    }
+    loggerptr->setLevel(level);
+}
+
+
 // Generate and return a temporary filename template for mkstemp
 static char * new_mkstemp_config_template()
 {
@@ -77,13 +101,14 @@ static char * new_mkstemp_config_template()
 }
 
 // Default log4cxx configuration to use when none can be found
-// See http://logging.apache.org/log4cxx/
 static const char default_log4cxx_configuration[] =
-    "log4j.rootLogger=INFO, CONS\n"
-    "log4j.appender.CONS.layout=org.apache.log4j.PatternLayout\n"
-    "log4j.appender.CONS.layout.ConversionPattern=%-4r [%t] %-5p %c %x - %m%n\n";
+    "# See Configuration section at http://logging.apache.org/log4cxx/index.html\n"
+    "log4j.rootLogger=DEBUG, CONSOLE\n"
+    "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"
+    "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"
+    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %c  %m%n\n";
 
-void initialize()
+void initialize(MPI_Comm)
 {
     // TODO Programmatically enforce execution before log4cxx::Logger init
 
@@ -141,14 +166,14 @@ void initialize()
 
             // Configuration file was found, use it to initialize logging
             setenv(log4cxx_config_envvar, configpath.c_str(), 1);
-            loggerptr = ::log4cxx::Logger::getRootLogger();
+            initialize_logger_using_world_rank();
 
             // Open the configuration file in read-only mode for broadcast
             buflen = boost::numeric_cast<int>(file.length(pool));
             fd = open(configpath.c_str(), O_RDONLY);
 
-            DEBUG0("Logging initialized on rank zero using configuration "
-                   << configpath << " (" << buflen << "bytes)");
+            DEBUG("Logging initialized on rank zero using file "
+                  << configpath);
         } else {
 
             // Configuration file was not found, create one.
@@ -169,9 +194,9 @@ void initialize()
 
             // Initialize logging using the temporary file contents
             setenv(log4cxx_config_envvar, tmpl.get(), 1);
-            loggerptr = ::log4cxx::Logger::getRootLogger();
-            DEBUG0("Logging initialized on rank zero using configuration "
-                   << tmpl.get() << " (" << buflen << "bytes)");
+            initialize_logger_using_world_rank();
+            WARN("Logging system found no configuration file.  Using default:\n"
+                 << default_log4cxx_configuration);
 
             // Re-open the configuration file in read-only mode for broadcast
             fd = open(tmpl.get(), O_RDONLY);
@@ -184,8 +209,8 @@ void initialize()
             errno = 0;
             buf = (char *) mmap(NULL, buflen, PROT_READ, MAP_PRIVATE, fd, 0);
             if (buf == MAP_FAILED) {
-                WARN0("Logging configuration file not broadcast (mmap failed: "
-                      << strerror(errno) << ")");
+                WARN("Logging configuration file not broadcast (mmap failed: "
+                     << strerror(errno) << ")");
                 buflen = 0;
             }
             close(fd);
@@ -197,13 +222,12 @@ void initialize()
 
     // Abort remaining fancy initialization steps if buflen is zero
     if (buflen == 0) {
-        WARN0("Scalable logging initialization procedure aborted");
-
-        // Initialize logging on non-zero ranks
-        if (worldrank > 0) loggerptr = ::log4cxx::Logger::getRootLogger();
-
-        // Run away!
-        return;
+        if (worldrank == 0) {
+            WARN("Scalable logging initialization procedure aborted");
+        } else {
+            initialize_logger_using_world_rank();
+        }
+        return;  // Run away!
     }
 
     // Broadcast configuration file to non-zero ranks
@@ -226,36 +250,11 @@ void initialize()
         }
 
         setenv(log4cxx_config_envvar, tmpl.get(), 1);
-        loggerptr = ::log4cxx::Logger::getRootLogger();
-        DEBUG0("Logging initialized on rank " << worldrank
-               << " using configuration " << tmpl.get());
+        initialize_logger_using_world_rank();
 
         unlink(tmpl.get());
-
         delete[] buf;
     }
-}
-
-void log_using_world_rank()
-{
-    using detail::loggerptr;
-    using detail::worldrank;
-    using log4cxx::Level;
-    using log4cxx::LevelPtr;
-    using log4cxx::Logger;
-    using suzerain::mpi::comm_rank;
-    using suzerain::mpi::comm_rank_identifier;
-
-    loggerptr = Logger::getLogger(comm_rank_identifier(MPI_COMM_WORLD));
-
-    // If debugging is disabled, ensure level is at least INFO on ranks 1+
-    LevelPtr level = loggerptr->getLevel();
-    if (comm_rank(MPI_COMM_WORLD) > 0 && !loggerptr->isDebugEnabled()) {
-        if (!level || !level->isGreaterOrEqual(Level::getInfo())) {
-            level = Level::getInfo();
-        }
-    }
-    loggerptr->setLevel(level);
 }
 
 } // end namespace logger

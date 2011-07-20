@@ -50,11 +50,12 @@ extern int worldrank;
 /**
  * Initialize the logging infrastructure.
  * Must be called after \c MPI_Init and before any logging statements.
+ *
+ * @param comm Must be MPI_COMM_WORLD.  Present as a placeholder
+ *             to communicate initialization order requirements
+ *             relative to \c MPI_Init.
  */
-void initialize();
-
-// Provide nice, rank-specific output names
-void log_using_world_rank();
+void initialize(MPI_Comm comm);
 
 } // end namespace logger
 

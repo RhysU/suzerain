@@ -154,10 +154,10 @@ int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
+    logger::initialize(MPI_COMM_WORLD);             // Initialize logging
 
     // Process incoming arguments
     std::vector<std::string> restart_files;
-
     bool use_stdout = false;
     {
         suzerain::ProgramOptions options(

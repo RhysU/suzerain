@@ -293,21 +293,25 @@ static bool save_restart(real_t t, std::size_t nt)
         return true;
     }
 
+    const double starttime = MPI_Wtime();
+    DEBUG0("Started to store restart at t = " << t << " and nt = " << nt);
+
     DEBUG0("Cloning " << restart.metadata << " to " << restart.uncommitted);
     esio_file_clone(esioh, restart.metadata.c_str(),
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
-
-    DEBUG0("Started to store restart at t = " << t << " and nt = " << nt);
     channel::store_time(esioh, t);
 
-    DEBUG0("Started to store simulation fields");
+    DEBUG0("Storing simulation fields into " << restart.uncommitted);
     channel::store(esioh, *state_linear, grid, *dgrid);
 
-    DEBUG0("Started to commit restart file");
+    DEBUG0("Committing " << restart.uncommitted
+           << " as a restart file using template " << restart.desttemplate);
     esio_file_close_restart(
             esioh, restart.desttemplate.c_str(), restart.retain);
 
-    INFO0("Successfully wrote restart at t = " << t << " for nt = " << nt);
+    const double elapsed = MPI_Wtime() - starttime;
+    INFO0("Successfully wrote restart at t = " << t << " for nt = " << nt
+          << " in " << elapsed << " seconds");
 
     last_restart_saved_nt = nt; // Maintain last successful restart time step
 
@@ -418,14 +422,10 @@ int main(int argc, char **argv)
     MPI_Init(&argc, &argv);                         // Initialize MPI
     const double wtime_mpi_init = MPI_Wtime();      // Record MPI_Init time
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
+    logger::initialize(MPI_COMM_WORLD);             // Initialize logging
     esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
     atexit(&atexit_esio);                           // Finalize ESIO at exit
 
-    // Obtain some basic MPI environment details
-    const int nranks = suzerain::mpi::comm_size(MPI_COMM_WORLD);
-
-    // Establish MPI-savvy, rank-dependent logging names
-    logger::log_using_world_rank();
 
     // Hook error handling into logging infrastructure
     gsl_set_error_handler(
@@ -520,7 +520,7 @@ int main(int argc, char **argv)
               << (1 / rcond));
     }
 
-    DEBUG0("Generating unique file names as needed using mkstemp(3)");
+    // Generating unique file names as needed using mkstemp(3)
     {
         // Pack a temporary buffer with the three file name templates
         boost::array<std::size_t,4> pos = {{
@@ -581,7 +581,8 @@ int main(int argc, char **argv)
     INFO0("Grid degrees of freedom    (GDOF): " << grid.N.prod());
     INFO0("GDOF by direction           (XYZ): " << grid.N);
     INFO0("Dealiased GDOF by direction (XYZ): " << grid.dN);
-    INFO0("Number of MPI ranks:               " << nranks);
+    INFO0("Number of MPI ranks:               "
+          << suzerain::mpi::comm_size(MPI_COMM_WORLD));
 
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
     dgrid = make_shared<suzerain::pencil_grid>(grid.dN, grid.P);

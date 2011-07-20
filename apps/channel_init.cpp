@@ -140,11 +140,9 @@ int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
+    logger::initialize(MPI_COMM_WORLD);             // Initialize logging
     esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
     atexit(&atexit_esio);                           // Finalize ESIO at exit
-
-    // Establish MPI-savvy, rank-dependent logging names
-    logger::log_using_world_rank();
 
     // Hook error handling into logging infrastructure
     gsl_set_error_handler(

@@ -58,9 +58,7 @@ int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                   // Initialize MPI on startup
     atexit((void (*) ()) MPI_Finalize);       // Finalize down MPI at exit
-
-    // Establish MPI-savvy, rank-dependent logging names
-    logger::log_using_world_rank();
+    logger::initialize(MPI_COMM_WORLD);       // Initialize logging
 
     // Process command line options
     suzerain::ProgramOptions options;
