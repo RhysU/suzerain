@@ -175,7 +175,7 @@ int main(int argc, char **argv)
         options.add_options()
             ("clobber", "Overwrite an existing restart file?")
             ("mms",
-             boost::program_options::value<real_t>(&mms)
+             boost::program_options::value(&mms)
                 ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative, "mms")),
              "If given, prepare a manufactured solution at the specified time.")
         ;
