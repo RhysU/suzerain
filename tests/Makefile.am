@@ -49,6 +49,13 @@ check_PROGRAMS         += test_htstretch
 test_htstretch_SOURCES  = test_htstretch.c
 test_htstretch_LDADD    = ../suzerain/libsuzerain.la
 
+TESTS                  += test_RngStream
+check_PROGRAMS         += test_RngStream
+test_RngStream_SOURCES  = test_RngStream.cpp
+test_RngStream_LDADD    = ../suzerain/libsuzerain.la
+test_RngStream_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_RngStream_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS            += test_mpl
 check_PROGRAMS   += test_mpl
 test_mpl_SOURCES  = test_mpl.cpp
