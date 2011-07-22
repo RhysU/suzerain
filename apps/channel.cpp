@@ -871,10 +871,10 @@ void load(const esio_handle h,
 }
 
 NoiseDefinition::NoiseDefinition(real_t fluctpercent,
-                                 unsigned long rngseed)
+                                 unsigned long fluctseed)
     : IDefinition("Additive random momentum field perturbations on startup"),
       fluctpercent(fluctpercent),
-      rngseed(rngseed)
+      fluctseed(fluctseed)
 {
     using ::suzerain::validation::ensure_positive;
     using ::suzerain::validation::ensure_nonnegative;
@@ -890,11 +890,11 @@ NoiseDefinition::NoiseDefinition(real_t fluctpercent,
                                    "fluctpercent")),
          "Maximum fluctuation magnitude to add as a percentage of"
          " centerline streamwise momentum")
-        ("rngseed",
-         boost::program_options::value(&this->rngseed)
-            ->default_value(this->rngseed)
+        ("fluctseed",
+         boost::program_options::value(&this->fluctseed)
+            ->default_value(this->fluctseed)
             ->notifier(std::bind2nd(ptr_fun_ensure_positive_ulint,
-                                    "rngseed")),
+                                    "fluctseed")),
          "Seed for RngStream generator (see L'Ecuyer et al, 2002)");
 }
 

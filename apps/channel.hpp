@@ -196,11 +196,11 @@ class NoiseDefinition : public suzerain::problem::IDefinition {
 public:
 
     explicit NoiseDefinition(real_t fluctpercent = 0,
-                             unsigned long rngseed = 12345);
+                             unsigned long fluctseed = 12345);
 
     real_t fluctpercent;
 
-    unsigned long rngseed;
+    unsigned long fluctseed;
 
 };
 
