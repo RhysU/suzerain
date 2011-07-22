@@ -39,6 +39,8 @@
 #include <suzerain/htstretch.h>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/operator_base.hpp>
+#include <suzerain/problem.hpp>
+#include <suzerain/RngStream.hpp>
 
 #include "logger.hpp"
 #include "channel.hpp"
@@ -866,6 +868,34 @@ void load(const esio_handle h,
     }
 
     DEBUG0("Finished loading simulation fields");
+}
+
+NoiseDefinition::NoiseDefinition(real_t fluctpercent,
+                                 unsigned long rngseed)
+    : IDefinition("Additive random momentum field perturbations on startup"),
+      fluctpercent(fluctpercent),
+      rngseed(rngseed)
+{
+    using ::suzerain::validation::ensure_positive;
+    using ::suzerain::validation::ensure_nonnegative;
+    ::std::pointer_to_binary_function<unsigned long,const char*,void>
+        ptr_fun_ensure_positive_ulint(ensure_positive<unsigned long>);
+    ::std::pointer_to_binary_function<real_t,const char*,void>
+        ptr_fun_ensure_nonnegative_real(ensure_nonnegative<real_t>);
+    this->add_options()
+        ("fluctpercent",
+         boost::program_options::value(&this->fluctpercent)
+            ->default_value(this->fluctpercent)
+            ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative_real,
+                                   "fluctpercent")),
+         "Maximum fluctuation magnitude to add as a percentage of"
+         " centerline streamwise momentum")
+        ("rngseed",
+         boost::program_options::value(&this->rngseed)
+            ->default_value(this->rngseed)
+            ->notifier(std::bind2nd(ptr_fun_ensure_positive_ulint,
+                                    "rngseed")),
+         "Seed for RngStream generator (see L'Ecuyer et al, 2002)");
 }
 
 boost::array<L2,field::count>

@@ -190,6 +190,20 @@ void load(const esio_handle h,
           const suzerain::bspline& b,
           const suzerain::bsplineop& bop);
 
+/** Options definitions for adding random noise to momentum fields */
+class NoiseDefinition : public suzerain::problem::IDefinition {
+
+public:
+
+    explicit NoiseDefinition(real_t fluctpercent = 0,
+                             unsigned long rngseed = 12345);
+
+    real_t fluctpercent;
+
+    unsigned long rngseed;
+
+};
+
 /** Read a complex-valued field via ESIO */
 template< typename I >
 inline

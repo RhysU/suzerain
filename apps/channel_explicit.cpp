@@ -50,7 +50,6 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
-#include <suzerain/RngStream.hpp>
 #include <suzerain/signal_definition.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/utility.hpp>
@@ -79,6 +78,7 @@ using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::RestartDefinition;
 using suzerain::problem::TimeDefinition;
+using channel::NoiseDefinition;
 using suzerain::problem::SignalDefinition;
 static const ScenarioDefinition<real_t> scenario;
 static const GridDefinition grid;
@@ -97,6 +97,7 @@ static const TimeDefinition<real_t> timedef(
         /* min_dt                    */ 0,
         /* max_dt                    */ 0,
         /* evmagfactor per Venugopal */ 0.72);
+static const NoiseDefinition  noisedef;
 static const SignalDefinition sigdef;
 
 // Global details initialized in main()
@@ -452,17 +453,9 @@ int main(int argc, char **argv)
         options.add_definition(
                 const_cast<TimeDefinition<real_t>&>(timedef));
         options.add_definition(
+                const_cast<NoiseDefinition&>(noisedef));
+        options.add_definition(
                 const_cast<SignalDefinition&>(sigdef));
-
-        unsigned long rngstream;
-        using ::suzerain::validation::ensure_positive;
-        ::std::pointer_to_binary_function<unsigned long,const char*,void>
-            ptr_fun_ensure_positive(ensure_positive<unsigned long>);
-        options.add_options()
-            ("rngstream",
-             boost::program_options::value(&rngstream)
-                ->notifier(std::bind2nd(ptr_fun_ensure_positive, "rngstream")),
-             "Seed for RngStream::SetPackageSeed by L'Ecuyer et al (2002)");
 
         std::vector<std::string> positional = options.process(argc, argv);
 
@@ -473,18 +466,6 @@ int main(int argc, char **argv)
         restart_file = positional[0];
 
         default_advance_nt = options.variables()["advance_nt"].defaulted();
-
-        // Seed RngStream.  Default taken from Figure 2 in L'Ecuyer et al 2000.
-        boost::array<unsigned long,6> seed = {{
-            327612383, 317095578, 14704821, 884064067, 1017894425, 16401881
-        }};
-        if (options.variables().count("rngstream")) {
-            std::fill(seed.begin(), seed.end(), rngstream);
-        }
-        DEBUG0("Initializing RngStream::SetPackageSeed(" << seed << ")");
-        if (!suzerain::RngStream::SetPackageSeed(seed.data())) {
-            throw std::out_of_range("Invalid RngStream::SetPackageSeed");
-        }
     }
 
     INFO0("Loading details from restart file: " << restart_file);
