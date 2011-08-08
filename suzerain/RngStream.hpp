@@ -27,7 +27,7 @@ namespace suzerain {
 /**
  * <tt>RngStream</tt> by L'Ecuyer, Simard, Chen, and Kelton  as presented in
  * "An object-oriented random-number package with many long streams and
- * substreams", Operations Research (2002), pp. 1073-1075.  An <a
+ * substreams", Operations Research (2002), pages 1073-1075.  An <a
  * href="http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c++/streams4.pdf">
  * extended version of the paper</a> can be found online.
  *
