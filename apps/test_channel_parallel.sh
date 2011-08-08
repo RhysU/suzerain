@@ -4,7 +4,7 @@ set -eu
 # Initialize test infrastructure
 source "`dirname $0`/test_channel_setup.sh"
 
-: ${ADVANCE:=--advance_nt=10}
+: ${ADVANCE:=--advance_nt=10 --fluctpercent=1}
 
 banner "Generating serial result for comparison purposes"
 (
