@@ -636,6 +636,10 @@ int main(int argc, char **argv)
     DEBUG("Nonlinear state strides (FYXZ): "
           << suzerain::multi_array::strides_array(*state_nonlinear));
 
+    // If requested, add noise to the momentum fields
+    channel::add_noise(*state_linear, noisedef,
+                       scenario, grid, *dgrid, *b, *bop);
+
     // Prepare generic timestepping handles
     using suzerain::timestepper::lowstorage::ILowStorageMethod;
     scoped_ptr<ILowStorageMethod<complex_t> > m;

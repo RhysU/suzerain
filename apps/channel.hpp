@@ -195,14 +195,33 @@ class NoiseDefinition : public suzerain::problem::IDefinition {
 
 public:
 
+    /** Construct an instance with the given default values */
     explicit NoiseDefinition(real_t fluctpercent = 0,
                              unsigned long fluctseed = 12345);
 
+    /**
+     * Maximum fluctuation magnitude to add as a percentage
+     * of centerline streamwise momentum.
+     */
     real_t fluctpercent;
 
+    /** RngStream generator seed (see L'Ecuyer et al. 2002) */
     unsigned long fluctseed;
 
 };
+
+/**
+ * Add random momentum field perturbations ("noise") according to
+ * the provided NoiseDefinition.
+ */
+void
+add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
+          const NoiseDefinition& noisedef,
+          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          const suzerain::problem::GridDefinition& grid,
+          const suzerain::pencil_grid& dgrid,
+          suzerain::bspline &b,
+          const suzerain::bsplineop& bop);
 
 /** Read a complex-valued field via ESIO */
 template< typename I >

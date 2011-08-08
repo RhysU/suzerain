@@ -889,13 +889,130 @@ NoiseDefinition::NoiseDefinition(real_t fluctpercent,
             ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative_real,
                                    "fluctpercent")),
          "Maximum fluctuation magnitude to add as a percentage of"
-         " centerline streamwise momentum")
+         " centerline mean streamwise momentum")
         ("fluctseed",
          boost::program_options::value(&this->fluctseed)
             ->default_value(this->fluctseed)
             ->notifier(std::bind2nd(ptr_fun_ensure_positive_ulint,
                                     "fluctseed")),
          "RngStream generator seed (L'Ecuyer et al. 2002)");
+}
+
+void
+add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
+          const NoiseDefinition& noisedef,
+          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          const suzerain::problem::GridDefinition& grid,
+          const suzerain::pencil_grid& dgrid,
+          suzerain::bspline &b,
+          const suzerain::bsplineop& bop)
+{
+
+#pragma warning(push,disable:1572)
+    if (noisedef.fluctpercent == 0) {
+#pragma warning(pop)
+        DEBUG0("Zero noise added to momentum fields");
+        return;
+    }
+
+    using suzerain::inorder::wavenumber_translatable;
+    namespace ndx = channel::field::ndx;
+    const real_t twopi = 2 * boost::math::constants::pi<real_t>();
+    Eigen::VectorXc scratch;
+
+    // Ensure state storage meets this routine's assumptions
+    assert(                  state.shape()[0]  == field::count);
+    assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+    assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
+    assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
+
+    // Ensure we were handed collocation-based operator matrices
+    assert(bop.get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+
+    // Evaluate maximum fluctuation magnitude based on percentage of
+    // centerline mean streamwise momentum and broadcast result
+    real_t maxfluct;
+    if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
+        assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
+        scratch.setConstant(1, 0);
+        const real_t centerline = scenario.Ly / 2;
+        b.linear_combination(
+                0, &state[ndx::rhou][0][0][0], 1, &centerline, scratch.data());
+        INFO0("Centerline mean streamwise momentum at y = "
+              << centerline << " is " << scratch[0]);
+        maxfluct = noisedef.fluctpercent / 100 * abs(scratch[0]);
+    }
+    SUZERAIN_MPICHKR(MPI_Bcast(&maxfluct, 1,
+                suzerain::mpi::datatype_of(maxfluct), 0, MPI_COMM_WORLD));
+    INFO0("Adding momentum perturbations with maximum magnitude " << maxfluct);
+
+    // Form mass matrix to convert (wave, collocation point values, wave)
+    // perturbations to (wave, coefficients, wave)
+    boost::scoped_ptr<suzerain::bsplineop_luz> massluz;
+    massluz->form_mass(bop);
+
+    // Set L'Ecuyer et al.'s RngStream seed.  Use a distinct Substream for each
+    // wall-normal pencil to ensure process is a) repeatable despite changes in
+    // processor count, b) easy to code, and c) embarrassingly parallel.
+    suzerain::RngStream rng;
+    {
+        boost::array<unsigned long,6> seed;
+        std::fill(seed.begin(), seed.end(), noisedef.fluctseed);
+        rng.SetSeed(seed.data());
+    }
+    rng.IncreasedPrecis(true);  // Use more bits of resolution
+
+    // All ranks loop over the global, nondealiased grid...
+    scratch.resize(grid.N.y());
+    for (int k = 0; k < grid.dN.z(); ++k) {
+        if (!wavenumber_translatable(grid.N.z(), grid.dN.z(), k)) continue;
+
+        for (int i = 0; i < grid.dN.x(); ++i) {
+            if (!wavenumber_translatable(grid.N.x(), grid.dN.x(), i)) continue;
+
+            // ...and advance RngStream to the (i, ., k) substream...
+            // ...(necessary for processor topology independence)...
+            rng.ResetNextSubstream();
+
+            // ...but only the rank holding the (i, ., k) pencil adds noise...
+            if (   k <  dgrid.local_wave_start.z()
+                || k >= dgrid.local_wave_end.z()
+                || i <  dgrid.local_wave_start.x()
+                || i >= dgrid.local_wave_end.x()) continue;
+
+            // ...and we want zero-mean so do not modify the zero-zero modes.
+            if (k == 0 && i == 0) continue;
+
+            // For each of rhou, rhov, and rhow fields...
+            for (std::size_t l = ndx::rhou; l <= ndx::rhow; ++l) {
+
+                // Generate fluctuations at non-wall locations,
+                // noting that pseudorandom order is well-defined...
+                scratch[0] = 0;
+                for (int j = 1; j < grid.N.y() - 1; ++j) {
+                    const real_t magnitude = rng.RandU01() * maxfluct;
+                    const real_t phase     = rng.RandU01() * twopi;
+                    scratch[j] = std::polar(magnitude, phase);
+                }
+                scratch[grid.N.y() - 1] = 0;
+
+                // ...convert pointwise fluctuations to coefficients
+                massluz->solve(1, scratch.data(), 1, grid.N.y());
+
+                // ...and add generated noise coefficients to the momentum.
+                const int local_i = i - dgrid.local_wave_start.x();
+                const int local_k = k - dgrid.local_wave_start.z();
+                Eigen::Map<Eigen::VectorXc> momentum(
+                        &state[l][0][local_i][local_k], grid.N.y());
+                momentum += scratch;
+
+            } // End rhou, rhov, rhow
+
+        } // End X
+
+    } // End Z
 }
 
 boost::array<L2,field::count>
