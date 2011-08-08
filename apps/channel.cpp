@@ -895,7 +895,7 @@ NoiseDefinition::NoiseDefinition(real_t fluctpercent,
             ->default_value(this->fluctseed)
             ->notifier(std::bind2nd(ptr_fun_ensure_positive_ulint,
                                     "fluctseed")),
-         "Seed for RngStream generator (see L'Ecuyer et al, 2002)");
+         "RngStream generator seed (L'Ecuyer et al. 2002)");
 }
 
 boost::array<L2,field::count>
