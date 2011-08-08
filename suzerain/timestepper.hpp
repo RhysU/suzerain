@@ -138,9 +138,9 @@ public:
  * @param u_z              Velocity in the Z direction \f$u_{z}\f$
  * @param one_over_delta_z Inverse local Z grid spacing \f$1/\Delta{}z\f$
  * @param evmaxmag_imag    The maximum pure imaginary eigenvalue magnitude
- *        for some Runge-Kutta scheme, denoted
- *        \f$\left|\lambda_{I}\Delta_{}t\right|_{\mbox{max}}\f$
- *        in Guarini's thesis.
+ *                         for some Runge-Kutta scheme, denoted \f$\left|
+ *                         \lambda_{I}\Delta_{}t \right|_{\mbox{max}}\f$
+ *                         in Guarini's thesis.
  * @param a                The local sound speed \f$a\f$.
  *
  * @return The maximum stable time step \f$\Delta{}t\f$ according to
@@ -158,7 +158,9 @@ FPT convective_stability_criterion(
         const FPT a = 0)
 {
     // Precision for a 128-bit IEEE quad found via Sage's N(1/pi,digits=34)
-    const FPT one_over_pi = (FPT) 0.3183098861837906715377675267450287L;
+    static const FPT one_over_pi
+        = (FPT) 0.3183098861837906715377675267450287L;
+
     return (evmaxmag_imag * one_over_pi)
         /  (   (std::abs(u_x) + a)*one_over_delta_x
              + (std::abs(u_y) + a)*one_over_delta_y
@@ -171,11 +173,12 @@ FPT convective_stability_criterion(
  * equation.  This surrogate is a model for the diffusive part of the
  * Navier-Stokes operator.  This criterion appears as equation 2.40 in Wai Y.
  * Kwok's thesis (2002) and equations 4.29 and 4.30 in Stephen Guarini's thesis
- * (1998):
+ * (1998)
  * \f[
  *   \mbox{max}\!\left(
  *     \left|\frac{\gamma\left(\nu-\nu_{0}\right)}{\mbox{Re}\mbox{Pr}}\right|,
- *     \left|\frac{\nu-\nu_{0}}{\mbox{Re}}\right|
+ *     \left|\frac{\nu-\nu_{0}}{\mbox{Re}}\right|,
+ *     \left|\frac{\nu_{B}-\nu_{B0}}{\mbox{Re}}\right|
  *   \right)
  *   \pi^{2}
  *   \left(
@@ -185,11 +188,12 @@ FPT convective_stability_criterion(
  *   \right)
  *   \Delta{}t \leq \left|\lambda_{R}\Delta_{}t\right|_{\mbox{max}}
  * \f]
- * The maximum pure real eigenvalue magnitude,
- * \f$\left|\lambda_{R}\Delta{}t\right|_{\mbox{max}}\f$, is a feature of the
- * chosen timestepping method.  For example, it is 2.512 for the SMR91 scheme.
- * The absolute values within the maximum operation account for the possibility
- * that \f$\nu<\nu_{0}\f$.
+ * where a bulk kinematic viscosity \f$\nu_{B}\f$ has
+ * been added.  The maximum pure real eigenvalue magnitude,
+ * \f$\left|\lambda_{R}\Delta{}t\right|_{\mbox{max}}\f$, is a feature
+ * of the chosen timestepping method.  For example, it is 2.512 for
+ * the SMR91 scheme.  The absolute values within the maximum operation
+ * account for the possibility that \f$\nu<\nu_{0}\f$.
  *
  * @note Using a hybrid implicit/explicit %timestepper with viscous terms
  * computed implicitly sets \f$\nu_0\f$ to be the reference kinematic viscosity
@@ -202,11 +206,15 @@ FPT convective_stability_criterion(
  * @param Pr               The Prandtl number \f$\mbox{Pr}\f$
  * @param gamma            The ratio of specific heats \f$\gamma\f$
  * @param evmaxmag_real    The maximum pure real eigenvalue magnitude
- *        for some Runge-Kutta scheme, denoted
- *        \f$\left|\lambda_{R}\Delta_{}t\right|_{\mbox{max}}\f$
- *        in Guarini's thesis.
- * @param nu                The local kinematic viscosity \f$\nu\f$
- * @param nu0               The kinematic viscosity reference value \f$\nu_{0}\f$
+ *                         for some Runge-Kutta scheme, denoted \f$\left|
+ *                         \lambda_{R}\Delta_{}t \right|_{\mbox{max}}\f$
+ *                         in Guarini's thesis.
+ * @param nu               The local kinematic viscosity \f$\nu\f$
+ * @param nu0              The kinematic viscosity reference value
+ *                         \f$\nu_{0}\f$
+ * @param nuB              The local bulk kinematic viscosity \f$\nu\f$
+ * @param nuB0             The bulk kinematic viscosity reference value
+ *                         \f$\nu_{0}\f$
  *
  * @return The maximum stable time step \f$\Delta{}t\f$ according to
  *         the diffusive criterion.
@@ -221,11 +229,17 @@ FPT diffusive_stability_criterion(
         const FPT gamma,
         const FPT evmaxmag_real,
         const FPT nu,
-        const FPT nu0 = 0)
+        const FPT nu0 = 0,
+        const FPT nuB = 0,
+        const FPT nuB0 = 0)
 {
     // Precision for a 128-bit quad found via Sage's N(1/(pi*pi),digits=34)
-    const FPT one_over_pi_squared = (FPT)0.1013211836423377714438794632097276L;
-    const FPT nu_less_nu0 = std::abs(nu - nu0);
+    static const FPT one_over_pi_squared
+        = (FPT) 0.1013211836423377714438794632097276L;
+
+    // Kinematic viscosity and bulk kinematic viscosity enter identically
+    const FPT nu_less_nu0 = std::max(std::abs(nu - nu0), std::abs(nuB - nuB0));
+
     const FPT maxcoeff = std::max((gamma*nu_less_nu0)/(Re*Pr), nu_less_nu0/Re);
     return (evmaxmag_real * one_over_pi_squared)
         /  (maxcoeff * (   one_over_delta_x*one_over_delta_x

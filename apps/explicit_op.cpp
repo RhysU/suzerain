@@ -654,13 +654,15 @@ real_t NonlinearOperator::applyOperator(
                                     u.z(), one_over_delta_z,
                                     evmaxmag_real,
                                     std::sqrt(T) / Ma)); // a/u_0=sqrt(T*)/Ma
+                    const real_t nu = mu / rho;
                     diffusive_delta_t = suzerain::math::minnan(
                             diffusive_delta_t,
                             timestepper::diffusive_stability_criterion(
                                     one_over_delta_x,
                                     one_over_delta_y(j),
                                     one_over_delta_z,
-                                    Re, Pr, gamma, evmaxmag_imag, mu / rho));
+                                    Re, Pr, gamma, evmaxmag_imag,
+                                    nu, 0.0, alpha * nu, 0.0));
                 }
 
             } // end X
