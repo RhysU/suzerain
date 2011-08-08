@@ -950,8 +950,8 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
 
     // Form mass matrix to convert (wave, collocation point values, wave)
     // perturbations to (wave, coefficients, wave)
-    boost::scoped_ptr<suzerain::bsplineop_luz> massluz;
-    massluz->form_mass(bop);
+    suzerain::bsplineop_luz massluz(bop);
+    massluz.form_mass(bop);
 
     // Set L'Ecuyer et al.'s RngStream seed.  Use a distinct Substream for each
     // wall-normal pencil to ensure process is a) repeatable despite changes in
@@ -973,7 +973,7 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
             if (!wavenumber_translatable(grid.N.x(), grid.dN.x(), i)) continue;
 
             // ...and advance RngStream to the (i, ., k) substream...
-            // ...(necessary for processor topology independence)...
+            // ...(necessary for processor-topology independence)...
             rng.ResetNextSubstream();
 
             // ...but only the rank holding the (i, ., k) pencil adds noise...
@@ -982,8 +982,11 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
                 || i <  dgrid.local_wave_start.x()
                 || i >= dgrid.local_wave_end.x()) continue;
 
-            // ...and we want zero-mean so do not modify the zero-zero modes.
+            // ...and we want zero-mean so do not modify the zero-zero modes...
             if (k == 0 && i == 0) continue;
+
+            // ...nor the final X modes since that direction is half-complex.
+            if (i == dgrid.global_wave_extent.x() - 1) continue;
 
             // For each of rhou, rhov, and rhow fields...
             for (std::size_t l = ndx::rhou; l <= ndx::rhow; ++l) {
@@ -999,7 +1002,7 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
                 scratch[grid.N.y() - 1] = 0;
 
                 // ...convert pointwise fluctuations to coefficients
-                massluz->solve(1, scratch.data(), 1, grid.N.y());
+                massluz.solve(1, scratch.data(), 1, grid.N.y());
 
                 // ...and add generated noise coefficients to the momentum.
                 const int local_i = i - dgrid.local_wave_start.x();
