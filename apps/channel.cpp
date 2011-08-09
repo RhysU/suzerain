@@ -40,6 +40,7 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/problem.hpp>
+#include <suzerain/rholut.hpp>
 #include <suzerain/RngStream.hpp>
 
 #include "logger.hpp"
@@ -891,7 +892,7 @@ void load(const esio_handle h,
 
 NoiseDefinition::NoiseDefinition(real_t fluctpercent,
                                  unsigned long fluctseed)
-    : IDefinition("Additive random momentum field perturbations on startup"),
+    : IDefinition("Additive random velocity perturbations on startup"),
       fluctpercent(fluctpercent),
       fluctseed(fluctseed)
 {
@@ -908,7 +909,7 @@ NoiseDefinition::NoiseDefinition(real_t fluctpercent,
             ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative_real,
                                    "fluctpercent")),
          "Maximum fluctuation magnitude to add as a percentage of"
-         " centerline mean streamwise momentum")
+         " centerline mean streamwise velocity")
         ("fluctseed",
          boost::program_options::value(&this->fluctseed)
             ->default_value(this->fluctseed)
@@ -930,11 +931,12 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
 #pragma warning(push,disable:1572)
     if (noisedef.fluctpercent == 0) {
 #pragma warning(pop)
-        DEBUG0("Zero noise added to momentum fields");
+        DEBUG0("Zero noise added to velocity fields");
         return;
     }
 
     using suzerain::inorder::wavenumber_translatable;
+    using suzerain::NoninterleavedState;
     namespace ndx = channel::field::ndx;
     const real_t twopi = 2 * boost::math::constants::pi<real_t>();
     Eigen::VectorXc scratch;
@@ -944,33 +946,42 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
-    assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
-    assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
 
     // Ensure we were handed collocation-based operator matrices
     assert(bop.get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
 
     // Evaluate maximum fluctuation magnitude based on percentage of
-    // centerline mean streamwise momentum and broadcast result
+    // centerline mean streamwise velocity and broadcast result.
+    // Alright, alright... actually an approximate mean velocity.
     real_t maxfluct;
     if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
-        scratch.setConstant(1, 0);
+        scratch.setConstant(2, 0);
         const real_t centerline = scenario.Ly / 2;
         b.linear_combination(
                 0, &state[ndx::rhou][0][0][0], 1, &centerline, scratch.data());
         INFO0("Centerline mean streamwise momentum at y = "
               << centerline << " is " << scratch[0]);
-        maxfluct = noisedef.fluctpercent / 100 * abs(scratch[0]);
+        b.linear_combination(
+                0, &state[ndx::rho][0][0][0], 1, &centerline, scratch.data()+1);
+        INFO0("Centerline mean density at y = "
+              << centerline << " is " << scratch[1]);
+        maxfluct = noisedef.fluctpercent / 100
+                 * (abs(scratch[0]) / abs(scratch[1]));
     }
     SUZERAIN_MPICHKR(MPI_Bcast(&maxfluct, 1,
                 suzerain::mpi::datatype_of(maxfluct), 0, MPI_COMM_WORLD));
-    INFO0("Adding momentum perturbations with maximum magnitude " << maxfluct);
+    INFO0("Adding velocity perturbations with maximum magnitude " << maxfluct);
 
     // Form mass matrix to convert (wave, collocation point values, wave)
     // perturbations to (wave, coefficients, wave)
     suzerain::bsplineop_luz massluz(bop);
     massluz.form_mass(bop);
+
+    // Obtain integration coefficients for computing mean quantities across Y
+    Eigen::VectorXr meancoeff(grid.N.y());
+    b.integration_coefficients(0, meancoeff.data());
+    meancoeff /= scenario.Ly;
 
     // Set L'Ecuyer et al.'s RngStream seed.  Use a distinct Substream for each
     // wall-normal pencil to ensure process is a) repeatable despite changes in
@@ -983,8 +994,34 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
     }
     rng.IncreasedPrecis(true);  // Use more bits of resolution
 
-    // All ranks loop over the global, nondealiased grid...
-    scratch.resize(grid.N.y());
+    // Approach is the following:
+    //  0) Allocate storage for state and three additional scalar fields.
+    //  1) Generate a random vector-valued field \tilde{A}.
+    //     \tilde{A}'s x- and z-derivatives have zero mean by periodicity;
+    //  2) Zero first two B-spline coefficients near walls so partial_y
+    //     \tilde{A} vanishes at the wall
+    //  3) Compute mean of \partial_y \tilde{A}(i, ., k) and subtract
+    //     y * mean from \tilde{A}.  Again zero first two B-spline
+    //     coefficients near walls.  Mean of \partial_y A is now approx zero.
+    //  4) Compute curl A in physical space and rescale so maximum
+    //     pointwise norm of A is maxfluct.  curl A is solenoidal
+    //     and now has the velocity perturbation properties we desire.
+    //  5) Store curl A in physical space in the three scalar fields.
+    //  6) Copy state into auxiliary state storage and bring to
+    //     physical space.
+    //  7) At each point compute velocity and internal energy.  Perturb
+    //     velocity and compute new total energy using perturbed
+    //     velocities.
+    //  8) Bring perturbed state information back to wavespace.
+    //  9) Overwrite state storage with the new perturbed state.
+
+    //  0) Allocate storage for state and three additional scalar fields.
+    boost::scoped_ptr<NoninterleavedState<4,complex_t> > _s_ptr( // RAII
+            allocate_padded_state<NoninterleavedState<4,complex_t> >(
+                field::count + 3, dgrid));
+    NoninterleavedState<4,complex_t> &s = *_s_ptr;               // Shorthand
+
+    //  1) Generate a random vector-valued field \tilde{A}.
     for (int k = 0; k < grid.dN.z(); ++k) {
         if (!wavenumber_translatable(grid.N.z(), grid.dN.z(), k)) continue;
 
@@ -995,46 +1032,219 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
             // ...(necessary for processor-topology independence)...
             rng.ResetNextSubstream();
 
-            // ...but only the rank holding the (i, ., k) pencil adds noise...
+            // ...but only the rank holding the (i, ., k) pencil continues.
             if (   k <  dgrid.local_wave_start.z()
                 || k >= dgrid.local_wave_end.z()
                 || i <  dgrid.local_wave_start.x()
                 || i >= dgrid.local_wave_end.x()) continue;
 
-            // ...and we want zero-mean so do not modify the zero-zero modes...
-            if (k == 0 && i == 0) continue;
+            // Compute local indices for global (i, ., k).
+            const int local_i = i - dgrid.local_wave_start.x();
+            const int local_k = k - dgrid.local_wave_start.z();
 
-            // ...nor the final X modes since that direction is half-complex.
-            if (i == dgrid.global_wave_extent.x() - 1) continue;
+            // For each scalar component of \tilde{A}...
+            for (std::size_t l = 0; l <  3; ++l) {
 
-            // For each of rhou, rhov, and rhow fields...
-            for (std::size_t l = ndx::rhou; l <= ndx::rhow; ++l) {
-
-                // Generate fluctuations at non-wall locations,
-                // noting that pseudorandom order is well-defined...
-                scratch[0] = 0;
-                for (int j = 1; j < grid.N.y() - 1; ++j) {
-                    const real_t magnitude = rng.RandU01() * maxfluct;
+                // ...generate coeffs with well-defined pseudorandom order.
+                //  2) Zero first two B-spline coefficients near walls
+                //     so partial_y \tilde{A} vanishes at the wall
+                scratch.setConstant(grid.N.y(), 0);
+                for (int j = 2; j < grid.N.y() - 2; ++j) {
+                    const real_t magnitude = rng.RandU01();
                     const real_t phase     = rng.RandU01() * twopi;
                     scratch[j] = std::polar(magnitude, phase);
                 }
-                scratch[grid.N.y() - 1] = 0;
 
-                // ...convert pointwise fluctuations to coefficients
-                massluz.solve(1, scratch.data(), 1, grid.N.y());
+                //  3) Compute mean of \partial_y \tilde{A}(i, ., k) and
+                //  subtract y * mean from \tilde{A}.  Again zero first two
+                //  B-spline coefficients near walls.  Mean of \partial_y A is
+                //  now approximately complex zero.
+                bop.accumulate(1, 1,
+                               1.0, scratch.data(), 1, grid.N.y(),
+                               0.0, &s[2*l][0][local_i][local_k], 1, grid.N.y());
+                massluz.solve(1, &s[2*l][0][local_i][local_k], 1, grid.N.y());
+                std::complex<real_t> mean = 0;
+                for (int m = 0; m < grid.N.y(); ++m) {
+                    mean += meancoeff[m] * state[2*l][m][local_i][local_k];
+                }
+                bop.accumulate(1, 0,
+                               1.0, scratch.data(), 1, grid.N.y(),
+                               0.0, &s[2*l][0][local_i][local_k], 1, grid.N.y());
+                for (int m = 0; m < grid.N.y(); ++m) {
+                    s[2*l][m][local_i][local_k] -= b.collocation_point(m) * mean;
+                }
+                massluz.solve(1, &s[2*l][0][local_i][local_k], 1, grid.N.y());
+                s[2*l][0           ][local_i][local_k] = 0;
+                s[2*l][1           ][local_i][local_k] = 0;
+                s[2*l][grid.N.y()-2][local_i][local_k] = 0;
+                s[2*l][grid.N.y()-1][local_i][local_k] = 0;
 
-                // ...and add generated noise coefficients to the momentum.
-                const int local_i = i - dgrid.local_wave_start.x();
-                const int local_k = k - dgrid.local_wave_start.z();
-                Eigen::Map<Eigen::VectorXc> momentum(
-                        &state[l][0][local_i][local_k], grid.N.y());
-                momentum += scratch;
+                // Copy so coefficients are stored in s[2l] and s[2l+1]
+                // as we need two copies to compute components of curl A.
+                for (int m = 0; m < grid.N.y(); ++m) {
+                    s[2*l+1][m][local_i][local_k] = s[2*l][m][local_i][local_k];
+                }
 
-            } // End rhou, rhov, rhow
+            } // end scalar components of A
 
-        } // End X
+        } // end X
 
-    } // End Z
+    } // end Z
+
+    //  4) Compute curl A in physical space and rescale so maximum
+    //     pointwise norm of A is maxfluct.  curl A is solenoidal
+    //     and now has the velocity perturbation properties we desire.
+
+    // Prepare physical-space view of the wave-space storage
+    physical_view<field::count+3>::type p
+        = physical_view<field::count+3>::create(dgrid, s);
+
+    // Initializing OperatorBase to access decomposition-ready utilities
+    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+
+    // From Ax in s[0] compute \partial_y Ax
+    obase.bop_apply(1, 1.0, s, 0);
+    dgrid.transform_wave_to_physical(&p(0,0));
+
+    // From Ax in s[1]  compute \partial_z Ax
+    obase.bop_apply(0, 1.0, s, 1);
+    obase.diffwave_apply(0, 1, 1.0, s, 1);
+    dgrid.transform_wave_to_physical(&p(1,0));
+
+    // From Ay in s[2] compute \partial_x Ay
+    obase.bop_apply(0, 1.0, s, 2);
+    obase.diffwave_apply(1, 0, 1.0, s, 2);
+    dgrid.transform_wave_to_physical(&p(2,0));
+
+    // From Ay in s[3] compute \partial_z Ay
+    obase.bop_apply(0, 1.0, s, 3);
+    obase.diffwave_apply(0, 1, 1.0, s, 3);
+    dgrid.transform_wave_to_physical(&p(3,0));
+
+    // From Az in s[4] compute \partial_x Az
+    obase.bop_apply(0, 1.0, s, 4);
+    obase.diffwave_apply(1, 0, 1.0, s, 4);
+    dgrid.transform_wave_to_physical(&p(4,0));
+
+    // From Az in s[5] compute \partial_y Az
+    obase.bop_apply(1, 1.0, s, 5);
+    dgrid.transform_wave_to_physical(&p(5,0));
+
+    // Store Curl A in s[{5,6,7}] and find global maximum magnitude of curl A
+    real_t maxmagsquared = 0;
+    size_t offset = 0;
+    for (int j = dgrid.local_physical_start.y();
+         j < dgrid.local_physical_end.y();
+         ++j) {
+
+        for (int k = dgrid.local_physical_start.z();
+            k < dgrid.local_physical_end.z();
+            ++k) {
+
+            for (int i = dgrid.local_physical_start.x();
+                i < dgrid.local_physical_end.x();
+                ++i, /* NB */ ++offset) {
+
+                const real_t curlA_x        = p(5, offset) - p(3, offset);
+                const real_t curlA_y        = p(1, offset) - p(4, offset);
+                const real_t curlA_z        = p(2, offset) - p(0, offset);
+                const real_t magsquared     = curlA_x * curlA_x
+                                            + curlA_y * curlA_y
+                                            + curlA_z * curlA_z;
+
+                //  5) Store curl A in physical space in the 3 scalar fields.
+                p(field::count + 0, offset) = curlA_x;
+                p(field::count + 1, offset) = curlA_y;
+                p(field::count + 2, offset) = curlA_z;
+
+                maxmagsquared = suzerain::math::maxnan(
+                        maxmagsquared,magsquared);
+
+            } // end X
+
+        } // end Z
+
+    } // end Y
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, &maxmagsquared, 1,
+                suzerain::mpi::datatype<real_t>::value,
+                MPI_MAX, MPI_COMM_WORLD));
+
+    // Rescale curl A components so max ||curl A|| == maxfluct
+    p.row(field::count + 0) *= (maxfluct / std::sqrt(maxmagsquared));
+    p.row(field::count + 1) *= (maxfluct / std::sqrt(maxmagsquared));
+    p.row(field::count + 2) *= (maxfluct / std::sqrt(maxmagsquared));
+
+    //  6) Copy state into auxiliary state storage and bring to
+    //     physical space.
+    for (std::size_t i = 0; i < channel::field::count; ++i) {
+        s[i] = state[i];
+        obase.bop_apply(0, 1.0, s, i);
+        dgrid.transform_wave_to_physical(&p(i,0));
+    }
+
+    //  7) At each point compute velocity and internal energy.  Perturb
+    //     velocity and compute new total energy using perturbed
+    //     velocities.
+    const real_t Ma = scenario.Ma;
+    offset = 0;
+    for (int j = dgrid.local_physical_start.y();
+         j < dgrid.local_physical_end.y();
+         ++j) {
+
+        for (int k = dgrid.local_physical_start.z();
+            k < dgrid.local_physical_end.z();
+            ++k) {
+
+            for (int i = dgrid.local_physical_start.x();
+                i < dgrid.local_physical_end.x();
+                ++i, /* NB */ ++offset) {
+
+                namespace rholut = suzerain::rholut;
+
+                // Retrieve internal energy
+                const real_t rho( p(ndx::rho,  offset));
+                Eigen::Vector3r m(p(ndx::rhou, offset),
+                                  p(ndx::rhov, offset),
+                                  p(ndx::rhow, offset));
+                real_t       e  ( p(ndx::rhoe, offset));
+                const real_t e_int = rholut::energy_internal(Ma, rho, m, e);
+
+                // Perturb momentum and compute updated total energy
+                m.x() += rho * p(field::count + 0, offset);
+                m.y() += rho * p(field::count + 1, offset);
+                m.z() += rho * p(field::count + 2, offset);
+                const real_t e_kin = rholut::energy_kinetic(Ma, rho, m);
+                e = e_int + e_kin;
+
+                // Store results back to state fields
+                p(ndx::rhou, offset) = m.x();
+                p(ndx::rhov, offset) = m.y();
+                p(ndx::rhow, offset) = m.z();
+                p(ndx::rhoe, offset) = e;
+
+            } // end X
+
+        } // end Z
+
+    } // end Y
+
+    //  8) Bring perturbed state information back to wavespace.
+    // Build FFT normalization constant into Y direction's mass matrix.
+    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+    massluz.form(1, &scale_factor, bop);
+    assert(field::ndx::rho == 0);
+    assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::rhou);
+    for (std::size_t i = field::ndx::rhou; i < field::count; ++i) {
+        dgrid.transform_physical_to_wave(&p(i, 0));      // X, Z
+        obase.bop_solve(massluz, s, i);                  // Y
+    }
+
+    //  9) Overwrite state storage with the new perturbed state.
+    assert(field::ndx::rho == 0);
+    assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::rhou);
+    for (std::size_t i = field::ndx::rhou; i < channel::field::count; ++i) {
+        state[i] = s[i];
+    }
 }
 
 boost::array<L2,field::count>
