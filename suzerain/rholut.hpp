@@ -620,6 +620,57 @@ void p_T_mu_lambda(
 }
 
 /**
+ * Compute the internal energy by subtracting the kinetic
+ * energy from the total energy.
+ *
+ * @param[in] Ma \f$\mbox{Ma}\f$
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ * @param[in] e \f$e\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+Scalar energy_internal(
+        const Scalar &Ma,
+        const Scalar &rho,
+        const Vector &m,
+        const Scalar &e)
+{
+    return e - Ma*Ma*m.squaredNorm()/rho/2;
+}
+
+/**
+ * Compute the internal energy using the pressure.
+ *
+ * @param[in] gamma \f$\gamma\f$
+ * @param[in] p     \f$p\f$
+ */
+template<typename Scalar>
+Scalar energy_internal(
+        const Scalar &gamma,
+        const Scalar &p)
+{
+    return p / (gamma - 1);
+}
+
+/**
+ * Compute the kinetic energy.
+ *
+ * @param[in] Ma \f$\mbox{Ma}\f$
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+Scalar energy_kinetic(
+        const Scalar &Ma,
+        const Scalar &rho,
+        const Vector &m)
+{
+    return Ma*Ma*m.squaredNorm()/rho/2;
+}
+
+/**
  * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$ and their gradients
  * using the equation of state.  The gradients are computed using these
  * expansions:

@@ -1315,6 +1315,53 @@ void p_T_mu_lambda(
 }
 
 /**
+ * Compute the internal energy by subtracting the kinetic
+ * energy from the total energy.
+ *
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m   \f$\vec{m}\f$
+ * @param[in] e   \f$e\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+Scalar energy_internal(
+        const Scalar &rho,
+        const Vector &m,
+        const Scalar &e)
+{
+    return e - m.squaredNorm()/rho/2;
+}
+
+/**
+ * Compute the internal energy using the pressure.
+ *
+ * @param[in] gamma \f$\gamma\f$
+ * @param[in] p     \f$p\f$
+ */
+template<typename Scalar>
+Scalar energy_internal(
+        const Scalar &gamma,
+        const Scalar &p)
+{
+    return p / (gamma - 1);
+}
+
+/**
+ * Compute the kinetic energy.
+ *
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m   \f$\vec{m}\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+Scalar energy_kinetic(
+        const Scalar &rho,
+        const Vector &m)
+{
+    return m.squaredNorm()/rho/2;
+}
+
+/**
  * Compute \f$\vec{\nabla}\cdot\vec\nabla{}p\f$
  * using the equation of state.  Uses the expansion
  * \f{align*}

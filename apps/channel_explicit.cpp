@@ -612,7 +612,7 @@ int main(int argc, char **argv)
     channel::load(esioh, *state_linear, grid, *dgrid, *b, *bop);
     esio_file_close(esioh);
 
-    // If requested, add noise to the momentum fields
+    // If requested, add noise to the momentum fields at startup (expensive).
     channel::add_noise(*state_linear, noisedef,
                        scenario, grid, *dgrid, *b, *bop);
 
