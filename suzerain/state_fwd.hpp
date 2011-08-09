@@ -252,6 +252,9 @@ public:
     /** The storage ordering in use */
     typedef typename storage::noninterleaved<NumDims> storage_type;
 
+    /** The allocator in use */
+    typedef Allocator allocator_type;
+
     template<typename ExtentList>
     explicit NoninterleavedState(const ExtentList& sizes);
 
@@ -311,6 +314,9 @@ public:
 
     /** The storage ordering in use */
     typedef typename storage::interleaved<NumDims> storage_type;
+
+    /** The allocator in use */
+    typedef Allocator allocator_type;
 
     template<typename ExtentList>
     explicit InterleavedState(
