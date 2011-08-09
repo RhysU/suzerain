@@ -170,6 +170,21 @@ void load_time(const esio_handle h,
                real_t &time);
 
 /**
+ * Forward declaration to allocate state padded for transformation to/from
+ * physical space.  Accounts for parallel decomposition details.
+ */
+template<class StateType>
+StateType* allocate_padded_state(
+           const std::size_t howmany_fields,
+           const suzerain::pencil_grid& dgrid);
+
+/** Specialization of allocate_padded_state for NoninterleavedState. */
+template<>
+suzerain::NoninterleavedState<4,complex_t>* allocate_padded_state(
+           const std::size_t howmany_fields,
+           const suzerain::pencil_grid& dgrid);
+
+/**
  * Store the current simulation state into an open restart file
  * Only non-dealiased state content is saved.
  */

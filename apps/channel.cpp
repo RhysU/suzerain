@@ -610,6 +610,25 @@ void load_time(const esio_handle h,
     DEBUG0("Loaded simulation time " << time);
 }
 
+template<>
+suzerain::NoninterleavedState<4,complex_t>* allocate_padded_state(
+           const std::size_t howmany_fields,
+           const suzerain::pencil_grid& dgrid)
+{
+    // Create instance with appropriate padding to allow P3DFFTification
+    suzerain::NoninterleavedState<4,complex_t> * const retval =
+        new suzerain::NoninterleavedState<4,complex_t>(
+            suzerain::to_yxz(howmany_fields, dgrid.local_wave_extent),
+            suzerain::prepend(dgrid.local_wave_storage(), suzerain::strides_cm(
+                              suzerain::to_yxz(dgrid.local_wave_extent)))
+        );
+
+    // Clear to avoid lingering NaN issues
+    suzerain::multi_array::fill(*retval, 0);
+
+    return retval;
+}
+
 /** State descriptions used within ESIO-based restart files */
 static const boost::array<const char *,5> field_descriptions = {{
     "Nondimensional density coefficients stored row-major ZXY",

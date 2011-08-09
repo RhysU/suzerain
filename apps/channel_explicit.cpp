@@ -612,19 +612,13 @@ int main(int argc, char **argv)
     channel::load(esioh, *state_linear, grid, *dgrid, *b, *bop);
     esio_file_close(esioh);
 
+    // If requested, add noise to the momentum fields
+    channel::add_noise(*state_linear, noisedef,
+                       scenario, grid, *dgrid, *b, *bop);
+
     // Create the state storage for nonlinear operator with appropriate padding
-    // to allow P3DFFTification.  Must clear to avoid lingering NaN issues.
-    {
-        using suzerain::to_yxz;
-        using suzerain::prepend;
-        using suzerain::strides_cm;
-        state_nonlinear = make_shared<state_type>(
-                to_yxz(channel::field::count, dgrid->local_wave_extent),
-                prepend(dgrid->local_wave_storage(), strides_cm(
-                        to_yxz(dgrid->local_wave_extent)))
-                );
-    }
-    suzerain::multi_array::fill(*state_nonlinear, 0);
+    state_nonlinear.reset(channel::allocate_padded_state<state_type>(
+                channel::field::count, *dgrid));
 
     // Dump some state shape and stride information for debugging purposes
     DEBUG("Linear state shape      (FYXZ): "
@@ -635,10 +629,6 @@ int main(int argc, char **argv)
           << suzerain::multi_array::strides_array(*state_linear));
     DEBUG("Nonlinear state strides (FYXZ): "
           << suzerain::multi_array::strides_array(*state_nonlinear));
-
-    // If requested, add noise to the momentum fields
-    channel::add_noise(*state_linear, noisedef,
-                       scenario, grid, *dgrid, *b, *bop);
 
     // Prepare generic timestepping handles
     using suzerain::timestepper::lowstorage::ILowStorageMethod;
