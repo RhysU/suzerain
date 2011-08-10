@@ -1145,6 +1145,18 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
                 i < dgrid.local_physical_end.x();
                 ++i, /* NB */ ++offset) {
 
+                // Assert curl A is identically zero at the walls
+                if (j == 0 || j == grid.N.y() - 1) {
+#pragma warning(push,disable:1572)
+                    assert(p(0, offset) == 0.0);
+                    assert(p(1, offset) == 0.0);
+                    assert(p(2, offset) == 0.0);
+                    assert(p(3, offset) == 0.0);
+                    assert(p(4, offset) == 0.0);
+                    assert(p(5, offset) == 0.0);
+#pragma warning(pop,disable:1572)
+                }
+
                 const real_t curlA_x        = p(5, offset) - p(3, offset);
                 const real_t curlA_y        = p(1, offset) - p(4, offset);
                 const real_t curlA_z        = p(2, offset) - p(0, offset);
