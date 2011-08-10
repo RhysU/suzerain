@@ -90,13 +90,13 @@ static const RestartDefinition restart(
         /* restart_dt   */ 0,
         /* restart_nt   */ 0);
 static const TimeDefinition<real_t> timedef(
-        /* advance_dt                */ 0,
-        /* advance_nt                */ 0,
-        /* status_dt                 */ 0,
-        /* status_nt                 */ 0,
-        /* min_dt                    */ 1e-8,
-        /* max_dt                    */ 0,
-        /* evmagfactor per Venugopal */ 0.72);
+        /* advance_dt                 */ 0,
+        /* advance_nt                 */ 0,
+        /* status_dt                  */ 0,
+        /* status_nt                  */ 0,
+        /* min_dt                     */ 1e-8,
+        /* max_dt                     */ 0,
+        /* evmagfactor near Venugopal */ 0.75);
 static const NoiseDefinition  noisedef;
 static const SignalDefinition sigdef;
 
@@ -247,13 +247,15 @@ static bool log_status(real_t t, std::size_t nt) {
     // Precision computations ensure multiple status lines minimally distinct
     std::ostringstream timeprefix;
     timeprefix << "t = ";
-    const boost::array<real_t,3> nplaces_candidates = {{
-            0,
-            -std::floor(std::log10(timedef.status_dt)),
-            -std::floor(std::log10(timedef.min_dt * timedef.status_nt))
-        }};
-    const real_t nplaces = *std::max_element(nplaces_candidates.begin(),
-                                             nplaces_candidates.end());
+    real_t nplaces = 0;
+    if (timedef.status_dt > 0) {
+        nplaces = std::max(nplaces,
+                -std::floor(std::log10(timedef.status_dt)));
+    }
+    if (timedef.status_nt > 0) {
+        nplaces = std::max(nplaces,
+                -std::floor(std::log10(timedef.min_dt * timedef.status_nt)));
+    }
     if (nplaces > 0) {
         timeprefix.setf(std::ios::fixed,std::ios::floatfield);
         const std::streamsize oldprec = timeprefix.precision(nplaces);
