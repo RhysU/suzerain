@@ -559,9 +559,11 @@ StopType TimeController<TimeType,StepType,StopType>::advance(
         }
 
         // Abort if the step size was too small, but only if driven by physics
-        if (SUZERAIN_UNLIKELY(   possible_dt >= min_dt_
-                              && current_dt_ <  min_dt_)) {
-            return false; // By design current_dt_ < min_dt_
+        if (SUZERAIN_UNLIKELY(   current_dt_ < min_dt_
+#pragma warning(push,disable:1572)
+                              && current_dt_ != possible_dt)) {
+#pragma warning(pop)
+            return false; // On return current_dt() < min_dt()
         }
     }
 
