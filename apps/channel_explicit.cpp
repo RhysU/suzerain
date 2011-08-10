@@ -234,6 +234,10 @@ static std::size_t last_status_nt = numeric_limits<std::size_t>::max();
 /** Routine to output status.  Signature for TimeController use. */
 static bool log_status(real_t t, std::size_t nt) {
 
+    using std::max;
+    using std::floor;
+    using std::log10;
+
     // Save resources by returning early when no status necessary
     if (!INFO_ENABLED) return true;
 
@@ -247,18 +251,16 @@ static bool log_status(real_t t, std::size_t nt) {
     // Precision computations ensure multiple status lines minimally distinct
     std::ostringstream timeprefix;
     timeprefix << "t = ";
-    real_t nplaces = 0;
+    real_t np = 0;
     if (timedef.status_dt > 0) {
-        nplaces = std::max(nplaces,
-                -std::floor(std::log10(timedef.status_dt)));
+        np = max(np, -floor(log10(timedef.status_dt)));
     }
     if (timedef.status_nt > 0) {
-        nplaces = std::max(nplaces,
-                -std::floor(std::log10(timedef.min_dt * timedef.status_nt)));
+        np = max(np, -floor(log10(timedef.min_dt * timedef.status_nt)) + 1);
     }
-    if (nplaces > 0) {
+    if (np > 0) {
         timeprefix.setf(std::ios::fixed,std::ios::floatfield);
-        const std::streamsize oldprec = timeprefix.precision(nplaces);
+        const std::streamsize oldprec = timeprefix.precision(np);
         timeprefix << t;
         timeprefix.precision(oldprec);
         timeprefix.unsetf(std::ios::fixed);
