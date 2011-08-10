@@ -94,7 +94,7 @@ static const TimeDefinition<real_t> timedef(
         /* advance_nt                */ 0,
         /* status_dt                 */ 0,
         /* status_nt                 */ 0,
-        /* min_dt                    */ 0,
+        /* min_dt                    */ 1e-8,
         /* max_dt                    */ 0,
         /* evmagfactor per Venugopal */ 0.72);
 static const NoiseDefinition  noisedef;
@@ -247,9 +247,13 @@ static bool log_status(real_t t, std::size_t nt) {
     // Precision computations ensure multiple status lines minimally distinct
     std::ostringstream timeprefix;
     timeprefix << "t = ";
-    const real_t nplaces = (timedef.status_dt > 0)
-                         ? -std::floor(std::log10(timedef.status_dt))
-                         : 0;
+    const boost::array<real_t,3> nplaces_candidates = {{
+            0,
+            -std::floor(std::log10(timedef.status_dt)),
+            -std::floor(std::log10(timedef.min_dt * timedef.status_nt))
+        }};
+    const real_t nplaces = *std::max_element(nplaces_candidates.begin(),
+                                             nplaces_candidates.end());
     if (nplaces > 0) {
         timeprefix.setf(std::ios::fixed,std::ios::floatfield);
         const std::streamsize oldprec = timeprefix.precision(nplaces);
