@@ -546,6 +546,7 @@ BOOST_AUTO_TEST_CASE( physics_initiated_abort )
 
     // Unsuccessful advance because physics dt < dt_min
     BOOST_REQUIRE(!tc.advance(tc.forever_t(), tc.forever_nt()));
+    BOOST_REQUIRE_LT(tc.current_dt(), tc.min_dt());
     BOOST_REQUIRE_EQUAL(1.0, tc.current_t());
 }
 

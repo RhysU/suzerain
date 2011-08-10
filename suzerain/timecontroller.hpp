@@ -254,8 +254,9 @@ public:
      * current_nt() reaches \c final_nt, whichever comes first.  If any
      * physically-determined time step is smaller than min_dt() or any
      * registered callback returns \c false, the controller will immediately
-     * stop.  The controller will also stop if it encounters a step size for
-     * which <tt>isfinite</tt> is \c false.
+     * stop.  The former condition can be diagnosed by comparing current_dt()
+     * to min_dt().  The controller will also stop if it encounters a step size
+     * for which <tt>isfinite</tt> is \c false.
      *
      * @param final_t  Maximum simulation time.
      *                 If you want to advance some relative amount \c dt,
@@ -281,8 +282,9 @@ public:
      * simulation will advance until \c count_nt time steps have been
      * completed.  If any physically-determined time step is smaller than
      * min_dt() or any registered callback returns \c false, the controller
-     * will immediately stop.  The controller will also stop if it encounters a
-     * step size for which <tt>isfinite</tt> is \c false.
+     * will immediately stop.  The former condition can be diagnosed by
+     * comparing current_dt() to min_dt(). The controller will also stop if it
+     * encounters a step size for which <tt>isfinite</tt> is \c false.
      *
      * @param count_nt Number of time steps to take.  For unlimited
      *                 time step counts, use forever_nt().
@@ -306,6 +308,15 @@ public:
      * @return The current simulation time.
      */
     TimeType current_t() const { return current_t_; }
+
+    /**
+     * Retrieve the current simulation time step.  This is the size of the most
+     * recent time step taken and is undefined prior to any time advancement
+     * occurring via advance() or step().
+     *
+     * @return The current simulation time step.
+     */
+    TimeType current_dt() const { return current_dt_; }
 
     /**
      * Retrieve the current simulation time step.
@@ -376,7 +387,7 @@ private:
     typedef boost::ptr_vector<Entry> EntryList;
 
     typename boost::function<TimeType (TimeType)> stepper_;
-    TimeType min_dt_, max_dt_, current_t_;
+    TimeType min_dt_, max_dt_, current_t_, current_dt_;
     EntryList entries_;
 
     // Maintain running statistics on the actual time step sizes taken
@@ -495,16 +506,16 @@ StopType TimeController<TimeType,StepType,StopType>::advance(
             = min(max_dt_, min(final_t, next_event_t) - current_t_);
         assert(possible_dt > 0);
 
-        // Take a single step, record new simulation time, and update statistics
-        const TimeType actual_dt = stepper_(possible_dt);
-        current_t_ += actual_dt;
-        dt_stats(actual_dt);
+        // Take a single step, record new step and time, and update statistics
+        current_dt_ = stepper_(possible_dt);
+        current_t_ += current_dt_;
+        dt_stats(current_dt_);
 
         // Sanity check the time step we just took
-        if (SUZERAIN_UNLIKELY(!(boost::math::isfinite)(actual_dt))) {
+        if (SUZERAIN_UNLIKELY(!(boost::math::isfinite)(current_dt_))) {
             return false; // By design !isfinite(current_t_)
         }
-        assert(actual_dt <= possible_dt);
+        assert(current_dt_ <= possible_dt);
 
         // Check callbacks and determine next callback simulation time
         next_event_t = std::numeric_limits<TimeType>::max();
@@ -548,8 +559,9 @@ StopType TimeController<TimeType,StepType,StopType>::advance(
         }
 
         // Abort if the step size was too small, but only if driven by physics
-        if (SUZERAIN_UNLIKELY(possible_dt >= min_dt_ && actual_dt < min_dt_)) {
-            return false;
+        if (SUZERAIN_UNLIKELY(   possible_dt >= min_dt_
+                              && current_dt_ <  min_dt_)) {
+            return false; // By design current_dt_ < min_dt_
         }
     }
 
