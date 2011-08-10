@@ -94,7 +94,7 @@ static const TimeDefinition<real_t> timedef(
         /* advance_nt                 */ 0,
         /* status_dt                  */ 0,
         /* status_nt                  */ 0,
-        /* min_dt                     */ 1e-8,
+        /* min_dt                     */ 1e-10,
         /* max_dt                     */ 0,
         /* evmagfactor near Venugopal */ 0.75);
 static const NoiseDefinition  noisedef;
@@ -788,6 +788,9 @@ int main(int argc, char **argv)
     if (soft_teardown) {
         INFO0("TimeController stopped advancing due to teardown signal");
         advance_success = true; // ...treat like successful advance
+    } else if (!advance_success && tc->current_dt() < tc->min_dt()) {
+        WARN0("TimeController halted because step " << tc->current_dt()
+              << " was smaller than min_dt " << tc->min_dt() );
     } else if (!advance_success) {
         WARN0("TimeController stopped advancing time unexpectedly");
     }
