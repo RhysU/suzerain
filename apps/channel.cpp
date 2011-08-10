@@ -1154,7 +1154,7 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
                     assert(p(3, offset) == 0.0);
                     assert(p(4, offset) == 0.0);
                     assert(p(5, offset) == 0.0);
-#pragma warning(pop,disable:1572)
+#pragma warning(pop)
                 }
 
                 const real_t curlA_x        = p(5, offset) - p(3, offset);
