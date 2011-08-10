@@ -367,7 +367,9 @@ bool RngStream::SetPackageSeed (const unsigned long seed[6])
    if (CheckSeed (seed))
       return false;                   // FAILURE
    for (int i = 0; i < 6; ++i)
+#pragma warning(push,disable:2259)
       nextSeed[i] = seed[i];
+#pragma warning(pop)
    return true;                       // SUCCESS
 }
 
@@ -378,7 +380,9 @@ bool RngStream::SetSeed (const unsigned long seed[6])
    if (CheckSeed (seed))
       return false;                   // FAILURE
    for (int i = 0; i < 6; ++i)
+#pragma warning(push,disable:2259)
       Cg[i] = Bg[i] = Ig[i] = seed[i];
+#pragma warning(pop)
    return true;                       // SUCCESS
 }
 
@@ -504,7 +508,9 @@ double RngStream::RandU01 ()
 //
 int RngStream::RandInt (int low, int high)
 {
+#pragma warning(push,disable:2259)
     return low + static_cast<int> ((high - low + 1.0) * RandU01 ());
+#pragma warning(pop)
 }
 
 
