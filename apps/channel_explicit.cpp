@@ -807,10 +807,16 @@ int main(int argc, char **argv)
         save_restart(tc->current_t(), tc->current_nt());
     }
 
-    // Output statistics on time advancement
-    INFO0("Advanced simulation from t_initial = " << initial_t
-          << " to t_final = " << tc->current_t()
-          << " in " << tc->current_nt() << " steps");
+    // Output details on time advancement
+    {
+        std::ostringstream msg;
+        msg.precision(static_cast<int>(
+                    numeric_limits<real_t>::digits10 * 0.75));
+        msg << "Advanced simulation from t_initial = " << initial_t
+            << " to t_final = " << tc->current_t()
+            << " in " << tc->current_nt() << " steps";
+        INFO0(msg.str());
+    }
     INFO0("Min/mean/max/stddev of delta_t: "
           << tc->taken_min()  << ", "
           << tc->taken_mean() << ", "
