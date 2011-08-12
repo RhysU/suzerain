@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * exprparse.hpp: constant arithmetic expression evaluation
+ * exprparse_impl.hpp: constant arithmetic expression evaluation (private)
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -44,7 +44,6 @@
 #include <suzerain/exprparse.hpp>
 
 namespace suzerain {
-
 
 namespace detail {
 
@@ -69,7 +68,7 @@ FPT exprparse_impl(const StringType& s)
 #else  // BOOST_VERSION >= 104100 so use suzerain::exprgrammar
 
 template<typename FPT>
-FPT exprparse_impl(const char *s)
+FPT exprparse_impl(const char *s, const char *name = NULL)
 {
     using namespace std;
     const char *       iter = s;
@@ -78,7 +77,7 @@ FPT exprparse_impl(const char *s)
 
     if (!exprgrammar::parse(iter, end, result)) {
         ostringstream m;
-        m << "exprparse error on input '";
+        m << "exprparse error in " << (name ? name : "input") << " '";
         copy(iter, end, ostream_iterator<const char>(m));
         m << '\'';
         throw invalid_argument(m.str());
@@ -88,7 +87,7 @@ FPT exprparse_impl(const char *s)
         ostringstream m;
         m << "exprparse halted at position ";
         m << distance(s, iter);
-        m << " on input '";
+        m << " in " << (name ? name : "input") << " '";
         copy(iter, end, ostream_iterator<const char>(m));
         m << '\'';
         throw invalid_argument(m.str());
@@ -98,7 +97,7 @@ FPT exprparse_impl(const char *s)
 }
 
 template<typename FPT>
-FPT exprparse_impl(const std::string &s)
+FPT exprparse_impl(const std::string &s, const char *name = NULL)
 {
     using namespace std;
     string::const_iterator       iter = s.begin();
@@ -107,7 +106,7 @@ FPT exprparse_impl(const std::string &s)
 
     if (!exprgrammar::parse(iter, end, result)) {
         ostringstream m;
-        m << "exprparse error on input '";
+        m << "exprparse error in " << (name ? name : "input") << " '";
         copy(iter, end, ostream_iterator<string::value_type>(m));
         m << '\'';
         throw invalid_argument(m.str());
@@ -117,7 +116,7 @@ FPT exprparse_impl(const std::string &s)
         ostringstream m;
         m << "exprparse halted at position ";
         m << distance(s.begin(), iter);
-        m << " on input '";
+        m << " in " << (name ? name : "input") << " '";
         copy(iter, end, ostream_iterator<string::value_type>(m));
         m << '\'';
         throw invalid_argument(m.str());
@@ -129,39 +128,5 @@ FPT exprparse_impl(const std::string &s)
 #endif // BOOST_VERSION
 
 } // end namespace detail
-
-// To mitigate long compilation times associated with Boost Spirit.Qi parsers,
-// only a small number of template instantiations are provided.  These are
-// compiled once and may be linked quickly.
-
-void exprparse(const char *s, float& v)
-{
-    v = detail::exprparse_impl<float>(s);
-}
-
-void exprparse(const char *s, double& v)
-{
-    v = detail::exprparse_impl<double>(s);
-}
-
-void exprparse(const char *s, long double& v)
-{
-    v = detail::exprparse_impl<long double>(s);
-}
-
-void exprparse(const std::string& s, float& v)
-{
-    v = detail::exprparse_impl<float>(s);
-}
-
-void exprparse(const std::string& s, double& v)
-{
-    v = detail::exprparse_impl<double>(s);
-}
-
-void exprparse(const std::string& s, long double& v)
-{
-    v = detail::exprparse_impl<long double>(s);
-}
 
 } // end namespace suzerain

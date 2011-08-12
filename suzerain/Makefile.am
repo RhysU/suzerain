@@ -19,6 +19,8 @@ CC  = @MPICC@
 
 BUILT_SOURCES = suzerain-config.h
 
+noinst_HEADERS += exprparse_impl.hpp
+
 pkginclude_HEADERS += allocator.hpp
 pkginclude_HEADERS += blas_et_al.h
 pkginclude_HEADERS += blas_et_al.hpp
@@ -82,7 +84,12 @@ libsuzerain_la_SOURCES += bspline.c
 libsuzerain_la_SOURCES += bsplineop.c
 libsuzerain_la_SOURCES += diffwave.c
 libsuzerain_la_SOURCES += error.c
-libsuzerain_la_SOURCES += exprparse.cpp
+libsuzerain_la_SOURCES += exprparse_dchar.cpp
+libsuzerain_la_SOURCES += exprparse_dstr.cpp
+libsuzerain_la_SOURCES += exprparse_fchar.cpp
+libsuzerain_la_SOURCES += exprparse_fstr.cpp
+libsuzerain_la_SOURCES += exprparse_ldchar.cpp
+libsuzerain_la_SOURCES += exprparse_ldstr.cpp
 libsuzerain_la_SOURCES += fftw.cpp
 libsuzerain_la_SOURCES += gbmatrix.c
 libsuzerain_la_SOURCES += grid_definition.cpp

@@ -50,28 +50,29 @@ namespace suzerain {
  * back onto boost::lexical_cast and only floating point literals may be
  * parsed.
  *
- * @param[in]  s Constant arithmetic expression to be parsed.
- * @param[out] v Floating point value found from evaluating \c s.
+ * @param[in]  s    Constant arithmetic expression to be parsed.
+ * @param[out] v    Floating point value found from evaluating \c s.
+ * @param[in]  name Optional name of what is being parsed for error reporting.
  *
  * @throws std::invalid_argument if the given input cannot be \i completely
  *         consumed by the underlying parser.  \c v is not modified.
  */
-void exprparse(const char *s, float& v);
+void exprparse(const char *s, float& v, const char *name = NULL);
 
 /** @copydoc exprparse(const char *, float&) */
-void exprparse(const char *s, double& v);
+void exprparse(const char *s, double& v, const char *name = NULL);
 
 /** @copydoc exprparse(const char *, float&) */
-void exprparse(const char *s, long double& v);
+void exprparse(const char *s, long double& v, const char *name = NULL);
 
 /** @copydoc exprparse(const char *, float&) */
-void exprparse(const std::string& s, float& v);
+void exprparse(const std::string& s, float& v, const char *name = NULL);
 
 /** @copydoc exprparse(const char *, float&) */
-void exprparse(const std::string& s, double& v);
+void exprparse(const std::string& s, double& v, const char *name = NULL);
 
 /** @copydoc exprparse(const char *, float&) */
-void exprparse(const std::string& s, long double& v);
+void exprparse(const std::string& s, long double& v, const char *name = NULL);
 
 } // end namespace suzerain
 
