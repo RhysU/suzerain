@@ -128,40 +128,40 @@ FPT exprparse_impl(const std::string &s)
 
 #endif // BOOST_VERSION
 
-} //end namespace detail
+} // end namespace detail
 
 // To mitigate long compilation times associated with Boost Spirit.Qi parsers,
-// only a small number of explicit template instantiations are provided.  These
-// are compiled once and may be linked quickly.
+// only a small number of template instantiations are provided.  These are
+// compiled once and may be linked quickly.
 
-template<> float exprparse(const char *s)
+void exprparse(const char *s, float& v)
 {
-    return detail::exprparse_impl<float>(s);
+    v = detail::exprparse_impl<float>(s);
 }
 
-template<> double exprparse(const char *s)
+void exprparse(const char *s, double& v)
 {
-    return detail::exprparse_impl<double>(s);
+    v = detail::exprparse_impl<double>(s);
 }
 
-template<> long double exprparse(const char *s)
+void exprparse(const char *s, long double& v)
 {
-    return detail::exprparse_impl<long double>(s);
+    v = detail::exprparse_impl<long double>(s);
 }
 
-template<> float exprparse(const std::string &s)
+void exprparse(const std::string& s, float& v)
 {
-    return detail::exprparse_impl<float>(s);
+    v = detail::exprparse_impl<float>(s);
 }
 
-template<> double exprparse(const std::string &s)
+void exprparse(const std::string& s, double& v)
 {
-    return detail::exprparse_impl<double>(s);
+    v = detail::exprparse_impl<double>(s);
 }
 
-template<> long double exprparse(const std::string &s)
+void exprparse(const std::string& s, long double& v)
 {
-    return detail::exprparse_impl<long double>(s);
+    v = detail::exprparse_impl<long double>(s);
 }
 
 } // end namespace suzerain

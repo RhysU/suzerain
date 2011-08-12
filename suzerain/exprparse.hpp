@@ -50,30 +50,28 @@ namespace suzerain {
  * back onto boost::lexical_cast and only floating point literals may be
  * parsed.
  *
- * @internal To mitigate long compilation times associated with Boost Spirit.Qi
- * parsers, only a small number of explicit template instantiations are
- * provided.  These are compiled once and may be linked quickly.
- *
- * @tparam FPT        Floating point precision to return.  Must be one of
- *                    <tt>float</tt>, <tt>double</tt>, or <tt>long double</tt>.
- * @tparam StringType String-like type to parse.  Must be either
- *                    <tt>char *</tt>, or <tt>std::string&</tt>.
- * @param s           Constant arithmetic expression to be parsed.
- *
- * @return The floating point result found from parsing and evaluating the
- *         input \c s.
+ * @param[in]  s Constant arithmetic expression to be parsed.
+ * @param[out] v Floating point value found from evaluating \c s.
  *
  * @throws std::invalid_argument if the given input cannot be \i completely
- *         consumed by the underlying parser.
+ *         consumed by the underlying parser.  \c v is not modified.
  */
-template<typename FPT, typename StringType> FPT exprparse(const StringType s);
+void exprparse(const char *s, float& v);
 
-template<> float       exprparse(const char *s);
-template<> double      exprparse(const char *s);
-template<> long double exprparse(const char *s);
-template<> float       exprparse(const std::string& s);
-template<> double      exprparse(const std::string& s);
-template<> long double exprparse(const std::string& s);
+/** @copydoc exprparse(const char *, float&) */
+void exprparse(const char *s, double& v);
+
+/** @copydoc exprparse(const char *, float&) */
+void exprparse(const char *s, long double& v);
+
+/** @copydoc exprparse(const char *, float&) */
+void exprparse(const std::string& s, float& v);
+
+/** @copydoc exprparse(const char *, float&) */
+void exprparse(const std::string& s, double& v);
+
+/** @copydoc exprparse(const char *, float&) */
+void exprparse(const std::string& s, long double& v);
 
 } // end namespace suzerain
 

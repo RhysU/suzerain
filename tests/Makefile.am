@@ -70,6 +70,13 @@ test_allocator_LDADD    = ../suzerain/libsuzerain.la
 test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                  += test_exprparse
+check_PROGRAMS         += test_exprparse
+test_exprparse_SOURCES  = test_exprparse.cpp
+test_exprparse_LDADD    = ../suzerain/libsuzerain.la
+test_exprparse_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_exprparse_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                += test_bspline
 check_PROGRAMS       += test_bspline
 test_bspline_SOURCES  = test_bspline.c
