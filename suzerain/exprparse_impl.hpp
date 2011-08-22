@@ -49,17 +49,24 @@ namespace detail {
 
 #if BOOST_VERSION < 104100 // Spirit.Qi 2.1+ unavailable so use lexical_cast
 
+// Forward declaration silences Intel remark #1418
 template<typename FPT, typename StringType>
-FPT exprparse_impl(const StringType& s)
+FPT exprparse_impl(const StringType& s, const char *name = NULL);
+
+template<typename FPT, typename StringType>
+FPT exprparse_impl(const StringType& s, const char *name)
 {
     FPT result;
     try {
         result = boost::lexical_cast<FPT>(s);
     } catch (boost::bad_lexical_cast &) {
         ostringstream m;
-        m << "exprparse lexical_cast error on input '";
-        copy(iter, end, ostream_iterator<const char>(m));
-        m << '\'';
+        if (name) {
+            m << "exprparse lexical_cast error in " << name << " '"
+        } else {
+            m << "exprparse lexical_cast error in '";
+        }
+        m << s << '\'';
         throw invalid_argument(m.str());
     }
     return result;
@@ -67,8 +74,12 @@ FPT exprparse_impl(const StringType& s)
 
 #else  // BOOST_VERSION >= 104100 so use suzerain::exprgrammar
 
+// Forward declaration to silence Intel remark #1418
 template<typename FPT>
-FPT exprparse_impl(const char *s, const char *name = NULL)
+FPT exprparse_impl(const char *s, const char *name = NULL);
+
+template<typename FPT>
+FPT exprparse_impl(const char *s, const char *name)
 {
     using namespace std;
     const char *       iter = s;
@@ -77,7 +88,11 @@ FPT exprparse_impl(const char *s, const char *name = NULL)
 
     if (!exprgrammar::parse(iter, end, result)) {
         ostringstream m;
-        m << "exprparse error in " << (name ? name : "input") << " '";
+        if (name) {
+            m << "exprparse error in " << name << " at '";
+        } else {
+            m << "exprparse error at '";
+        }
         copy(iter, end, ostream_iterator<const char>(m));
         m << '\'';
         throw invalid_argument(m.str());
@@ -85,19 +100,23 @@ FPT exprparse_impl(const char *s, const char *name = NULL)
 
     if (iter != end) {
         ostringstream m;
-        m << "exprparse halted at position ";
-        m << distance(s, iter);
-        m << " in " << (name ? name : "input") << " '";
-        copy(iter, end, ostream_iterator<const char>(m));
-        m << '\'';
+        m << "exprparse halted at position " << distance(s, iter) << " in ";
+        if (name) {
+            m << name << ' ';
+        }
+        m << '\'' << s << '\'';
         throw invalid_argument(m.str());
     }
 
     return result;
 }
 
+// Forward declaration to silence Intel remark #1418
 template<typename FPT>
-FPT exprparse_impl(const std::string &s, const char *name = NULL)
+FPT exprparse_impl(const std::string &s, const char *name = NULL);
+
+template<typename FPT>
+FPT exprparse_impl(const std::string &s, const char *name)
 {
     using namespace std;
     string::const_iterator       iter = s.begin();
@@ -106,7 +125,11 @@ FPT exprparse_impl(const std::string &s, const char *name = NULL)
 
     if (!exprgrammar::parse(iter, end, result)) {
         ostringstream m;
-        m << "exprparse error in " << (name ? name : "input") << " '";
+        if (name) {
+            m << "exprparse error in " << name << " at '";
+        } else {
+            m << "exprparse error at '";
+        }
         copy(iter, end, ostream_iterator<string::value_type>(m));
         m << '\'';
         throw invalid_argument(m.str());
@@ -114,11 +137,12 @@ FPT exprparse_impl(const std::string &s, const char *name = NULL)
 
     if (iter != end) {
         ostringstream m;
-        m << "exprparse halted at position ";
-        m << distance(s.begin(), iter);
-        m << " in " << (name ? name : "input") << " '";
-        copy(iter, end, ostream_iterator<string::value_type>(m));
-        m << '\'';
+        m << "exprparse halted at position "
+          << distance(s.begin(), iter) << " in ";
+        if (name) {
+            m << name << ' ';
+        }
+        m << '\'' << s << '\'';
         throw invalid_argument(m.str());
     }
 
