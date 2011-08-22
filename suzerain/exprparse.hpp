@@ -63,16 +63,10 @@ void exprparse(const char *s, float& v, const char *name = NULL);
 void exprparse(const char *s, double& v, const char *name = NULL);
 
 /** @copydoc exprparse(const char *, float&) */
-void exprparse(const char *s, long double& v, const char *name = NULL);
-
-/** @copydoc exprparse(const char *, float&) */
 void exprparse(const std::string& s, float& v, const char *name = NULL);
 
 /** @copydoc exprparse(const char *, float&) */
 void exprparse(const std::string& s, double& v, const char *name = NULL);
-
-/** @copydoc exprparse(const char *, float&) */
-void exprparse(const std::string& s, long double& v, const char *name = NULL);
 
 } // end namespace suzerain
 

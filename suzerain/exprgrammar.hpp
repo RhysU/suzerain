@@ -28,15 +28,16 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-//////////////////////////////////////////////////////////////////////////
-// Ensure Boost Spirit is new enough beyond usual double inclusion guards.
-// Compilation errors are absolutely astounding otherwise.
-//////////////////////////////////////////////////////////////////////////
+#ifndef __SUZERAIN_EXPRGRAMMAR_HPP
+#define __SUZERAIN_EXPRGRAMMAR_HPP
+
+//////////////////////////////////////////////////////////////////////
+// Is Spirit new enough?  Compilation errors are astounding otherwise.
+//////////////////////////////////////////////////////////////////////
 #include <boost/version.hpp>
 #if BOOST_VERSION < 104100
-# warning "Boost 1.41 or newer is required for exprgrammar.hpp functionality"
-#elif !defined(__SUZERAIN_EXPRGRAMMAR_HPP)
-#define __SUZERAIN_EXPRGRAMMAR_HPP
+# error "Boost 1.41 or newer is required for exprgrammar.hpp functionality"
+#endif
 
 //////////////////////////////////////////////////////////////////
 // Implementation uses X macros to reduce boilerplate.

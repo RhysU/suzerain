@@ -28,9 +28,9 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
+#ifndef __SUZERAIN_EXPRPARSE_IMPL_HPP
+#define __SUZERAIN_EXPRPARSE_IMPL_HPP
+
 #include <algorithm>
 #include <cstring>
 #include <iterator>
@@ -38,41 +38,11 @@
 #include <stdexcept>
 #include <string>
 
-#include <boost/lexical_cast.hpp>
-#include <boost/version.hpp>
 #include <suzerain/exprgrammar.hpp>
-#include <suzerain/exprparse.hpp>
 
 namespace suzerain {
 
 namespace detail {
-
-#if BOOST_VERSION < 104100 // Spirit.Qi 2.1+ unavailable so use lexical_cast
-
-// Forward declaration silences Intel remark #1418
-template<typename FPT, typename StringType>
-FPT exprparse_impl(const StringType& s, const char *name = NULL);
-
-template<typename FPT, typename StringType>
-FPT exprparse_impl(const StringType& s, const char *name)
-{
-    FPT result;
-    try {
-        result = boost::lexical_cast<FPT>(s);
-    } catch (boost::bad_lexical_cast &) {
-        ostringstream m;
-        if (name) {
-            m << "exprparse lexical_cast error in " << name << " '"
-        } else {
-            m << "exprparse lexical_cast error in '";
-        }
-        m << s << '\'';
-        throw invalid_argument(m.str());
-    }
-    return result;
-}
-
-#else  // BOOST_VERSION >= 104100 so use suzerain::exprgrammar
 
 // Forward declaration to silence Intel remark #1418
 template<typename FPT>
@@ -149,8 +119,8 @@ FPT exprparse_impl(const std::string &s, const char *name)
     return result;
 }
 
-#endif // BOOST_VERSION
-
 } // end namespace detail
 
 } // end namespace suzerain
+
+#endif

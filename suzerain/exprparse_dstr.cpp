@@ -28,6 +28,10 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
+#endif
+#include <suzerain/exprparse.hpp>
 #include "exprparse_impl.hpp"
 
 // To mitigate long compilation times associated with Boost Spirit.Qi parsers,
