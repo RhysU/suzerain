@@ -31,6 +31,7 @@
 #define __SUZERAIN_SCENARIO_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
+#include <suzerain/exprparse.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/validation.hpp>
 
@@ -72,11 +73,15 @@ public:
           Ly(std::numeric_limits<FPT>::quiet_NaN()),
           Lz(std::numeric_limits<FPT>::quiet_NaN())
     {
-        initialize_options();
+        initialize_options(NULL, NULL, NULL,
+                           NULL, NULL,
+                           NULL, NULL, NULL,
+                           NULL, NULL, NULL);
     }
 
     /**
      * Construct an instance with the given parameter values.
+     * Parameter values are evaluated via suzerain::exprparse().
      *
      * @param Re        Reynolds number.
      * @param Ma        Mach number.
@@ -90,31 +95,34 @@ public:
      * @param Ly        Domain length in the Y direction.
      * @param Lz        Domain length in the Z direction.
      */
-    ScenarioDefinition(FPT Re,
-                       FPT Ma,
-                       FPT Pr,
-                       FPT bulk_rho,
-                       FPT bulk_rhou,
-                       FPT alpha,
-                       FPT beta,
-                       FPT gamma,
-                       FPT Lx,
-                       FPT Ly,
-                       FPT Lz)
+    ScenarioDefinition(const char * Re,
+                       const char * Ma,
+                       const char * Pr,
+                       const char * bulk_rho,
+                       const char * bulk_rhou,
+                       const char * alpha,
+                       const char * beta,
+                       const char * gamma,
+                       const char * Lx,
+                       const char * Ly,
+                       const char * Lz)
         : IDefinition("Nondimensional scenario parameters"),
-          Re(Re),
-          Ma(Ma),
-          Pr(Pr),
-          bulk_rho(bulk_rho),
-          bulk_rhou(bulk_rhou),
-          alpha(alpha),
-          beta(beta),
-          gamma(gamma),
-          Lx(Lx),
-          Ly(Ly),
-          Lz(Lz)
+          Re(std::numeric_limits<FPT>::quiet_NaN()),
+          Ma(std::numeric_limits<FPT>::quiet_NaN()),
+          Pr(std::numeric_limits<FPT>::quiet_NaN()),
+          bulk_rho(std::numeric_limits<FPT>::quiet_NaN()),
+          bulk_rhou(std::numeric_limits<FPT>::quiet_NaN()),
+          alpha(std::numeric_limits<FPT>::quiet_NaN()),
+          beta(std::numeric_limits<FPT>::quiet_NaN()),
+          gamma(std::numeric_limits<FPT>::quiet_NaN()),
+          Lx(std::numeric_limits<FPT>::quiet_NaN()),
+          Ly(std::numeric_limits<FPT>::quiet_NaN()),
+          Lz(std::numeric_limits<FPT>::quiet_NaN())
     {
-        initialize_options();
+        initialize_options(Re, Ma, Pr,
+                           bulk_rho, bulk_rhou,
+                           alpha, beta, gamma,
+                           Lx, Ly, Lz);
     }
 
     /**
@@ -179,110 +187,123 @@ public:
 
 private:
     /** Options initialization common to all constructors */
-    void initialize_options();
+    void initialize_options(const char * default_Re,
+                            const char * default_Ma,
+                            const char * default_Pr,
+                            const char * default_bulk_rho,
+                            const char * default_bulk_rhou,
+                            const char * default_alpha,
+                            const char * default_beta,
+                            const char * default_gamma,
+                            const char * default_Lx,
+                            const char * default_Ly,
+                            const char * default_Lz);
+
+    static void parse_positive(const std::string& s, FPT *t, const char *n) {
+        FPT v;
+        suzerain::exprparse(s, v, n);
+        suzerain::validation::ensure_positive(v, n);
+        *t = v;
+    }
+
+    static void parse_nonnegative(const std::string& s, FPT *t, const char *n) {
+        FPT v;
+        suzerain::exprparse(s, v, n);
+        suzerain::validation::ensure_nonnegative(v, n);
+        *t = v;
+    }
 };
 
 template< typename FPT >
-void ScenarioDefinition<FPT>::initialize_options()
+void ScenarioDefinition<FPT>::initialize_options(
+        const char * default_Re,
+        const char * default_Ma,
+        const char * default_Pr,
+        const char * default_bulk_rho,
+        const char * default_bulk_rhou,
+        const char * default_alpha,
+        const char * default_beta,
+        const char * default_gamma,
+        const char * default_Lx,
+        const char * default_Ly,
+        const char * default_Lz)
 {
-
-    // Created to solve ambiguous type issues below
-    ::std::pointer_to_binary_function<FPT,const char*,void>
-        ensure_positive(::suzerain::validation::ensure_positive<FPT>);
-    ::std::pointer_to_binary_function<FPT,const char*,void>
-        ensure_nonnegative(::suzerain::validation::ensure_nonnegative<FPT>);
-
     // Complicated add_options() calls done to allow changing the default value
     // displayed when the default is NaN.  NaN is used as a NOP value by client
     // code.  Validation routines used below all silently allow NaNs.
 
-    using ::boost::math::isnan;
-    using ::boost::program_options::typed_value;
-    using ::boost::program_options::value;
-    using ::std::auto_ptr;
-    using ::std::bind2nd;
+    std::auto_ptr<boost::program_options::typed_value<std::string> > p;
+    std::string *nullstr = NULL;
 
-    { // Re
-        auto_ptr<typed_value<FPT> > v(value(&this->Re));
-        v->notifier(bind2nd(ensure_positive, "Re"));
-        if (!(isnan)(Re)) v->default_value(Re);
-        this->add_options()("Re", v.release(), "Reynolds number");
-    }
+    // Re
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_positive, _1, &Re, "Re"));
+    if (default_Re) p->default_value(default_Re);
+    this->add_options()("Re", p.release(), "Reynolds number");
 
-    { // Ma
-        auto_ptr<typed_value<FPT> > v(value(&this->Ma));
-        v->notifier(bind2nd(ensure_positive, "Ma"));
-        if (!(isnan)(Ma)) v->default_value(Ma);
-        this->add_options()("Ma", v.release(), "Mach number");
-    }
+    // Ma
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_positive, _1, &Ma, "Ma"));
+    if (default_Ma) p->default_value(default_Ma);
+    this->add_options()("Ma", p.release(), "Mach number");
 
-    { // Pr
-        auto_ptr<typed_value<FPT> > v(value(&this->Pr));
-        v->notifier(bind2nd(ensure_positive, "Pr"));
-        if (!(isnan)(Pr)) v->default_value(Pr);
-        this->add_options()("Pr", v.release(), "Prandtl number");
-    }
+    // Pr
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_positive, _1, &Pr, "Pr"));
+    if (default_Pr) p->default_value(default_Pr);
+    this->add_options()("Pr", p.release(), "Prandtl number");
 
-    { // bulk_rho
-        auto_ptr<typed_value<FPT> > v(value(&this->bulk_rho));
-        v->notifier(bind2nd(ensure_nonnegative, "bulk_rho"));
-        if (!(isnan)(bulk_rho)) v->default_value(bulk_rho);
-        this->add_options()("bulk_rho", v.release(), "bulk density target");
-    }
+    // bulk_rho
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_nonnegative, _1, &bulk_rho, "bulk_rho"));
+    if (default_bulk_rho) p->default_value(default_bulk_rho);
+    this->add_options()("bulk_rho", p.release(), "bulk density target");
 
-    { // bulk_rhou
-        auto_ptr<typed_value<FPT> > v(value(&this->bulk_rhou));
-        v->notifier(bind2nd(ensure_nonnegative, "bulk_rhou"));
-        if (!(isnan)(bulk_rhou)) v->default_value(bulk_rhou);
-        this->add_options()("bulk_rhou", v.release(), "bulk momentum target");
-    }
+    // bulk_rhou
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_nonnegative, _1, &bulk_rhou, "bulk_rhou"));
+    if (default_bulk_rhou) p->default_value(default_bulk_rhou);
+    this->add_options()("bulk_rhou", p.release(), "bulk momentum target");
 
-    { // alpha
-        auto_ptr<typed_value<FPT> > v(value(&this->alpha));
-        v->notifier(bind2nd(ensure_nonnegative, "alpha"));
-        if (!(isnan)(alpha)) v->default_value(alpha);
-        this->add_options()("alpha", v.release(),
-                "Ratio of bulk to dynamic viscosity");
-    }
+    // alpha
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_nonnegative, _1, &alpha, "alpha"));
+    if (default_alpha) p->default_value(default_alpha);
+    this->add_options()("alpha", p.release(),
+                        "Ratio of bulk to dynamic viscosity");
 
-    { // beta
-        auto_ptr<typed_value<FPT> > v(value(&this->beta));
-        v->notifier(bind2nd(ensure_nonnegative, "beta"));
-        if (!(isnan)(beta)) v->default_value(beta);
-        this->add_options()("beta", v.release(),
-                "Temperature power law exponent");
-    }
+    // beta
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_nonnegative, _1, &beta, "beta"));
+    if (default_beta) p->default_value(default_beta);
+    this->add_options()("beta", p.release(), "Temperature power law exponent");
 
-    { // gamma
-        auto_ptr<typed_value<FPT> > v(value(&this->gamma));
-        v->notifier(bind2nd(ensure_positive, "gamma"));
-        if (!(isnan)(gamma)) v->default_value(gamma);
-        this->add_options()("gamma", v.release(), "Ratio of specific heats");
-    }
+    // gamma
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_positive, _1, &gamma, "gamma"));
+    if (default_gamma) p->default_value(default_gamma);
+    this->add_options()("gamma", p.release(), "Ratio of specific heats");
 
-    { // Lx
-        auto_ptr<typed_value<FPT> > v(value(&this->Lx));
-        v->notifier(bind2nd(ensure_positive, "Lx"));
-        if (!(isnan)(Lx)) v->default_value(Lx);
-        this->add_options()("Lx", v.release(),
-                "Nondimensional grid length in streamwise X direction");
-    }
+    // Lx
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_positive, _1, &Lx, "Lx"));
+    if (default_Lx) p->default_value(default_Lx);
+    this->add_options()("Lx", p.release(),
+            "Nondimensional grid length in streamwise X direction");
 
-    { // Ly
-        auto_ptr<typed_value<FPT> > v(value(&this->Ly));
-        v->notifier(bind2nd(ensure_positive, "Ly"));
-        if (!(isnan)(Ly)) v->default_value(Ly);
-        this->add_options()("Ly", v.release(),
-                "Nondimensional grid length in wall normal Y direction");
-    }
+    // Ly
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_positive, _1, &Ly, "Ly"));
+    if (default_Ly) p->default_value(default_Ly);
+    this->add_options()("Ly", p.release(),
+            "Nondimensional grid length in wall normal Y direction");
 
-    { // Lz
-        auto_ptr<typed_value<FPT> > v(value(&this->Lz));
-        v->notifier(bind2nd(ensure_positive, "Lz"));
-        if (!(isnan)(Lz)) v->default_value(Lz);
-        this->add_options()("Lz", v.release(),
-                "Nondimensional grid length in spanwise Z direction");
-    }
+    // Lz
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(boost::bind(&parse_positive, _1, &Lz, "Lz"));
+    if (default_Lz) p->default_value(default_Lz);
+    this->add_options()("Lz", p.release(),
+            "Nondimensional grid length in spanwise Z direction");
 }
 
 } // namespace problem
