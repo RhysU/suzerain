@@ -11,6 +11,7 @@
 #$ -notify               # Notify job of impending doom
 set -m                   # Employ job control
 set -u                   # Abort on undefined shell variables
+H_RT=$(expr qstat -j $JOB_ID | grep h_rt | awk -F 'h_rt=' '{print $2}')
 
 # Provide defaults for environment variables used to build CMD (see below).
 # Rather than editing this job submission script, modify your environment!
@@ -51,6 +52,7 @@ CLUSTER:  $SGE_CLUSTER_NAME ${PE-} $NSLOTS
 JOB_ID:   $JOB_ID
 JOBDIR:   $JOBDIR
 STDOUT:   $SGE_STDOUT_PATH
+H_RT:     $H_RT
 
 BINARY:   $BINARY
 INPUT:    $INPUT
