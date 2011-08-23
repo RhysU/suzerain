@@ -28,13 +28,30 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
+#endif
 #include <suzerain/common.hpp>
+#include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
+#include <suzerain/exprparse.hpp>
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/validation.hpp>
 
 namespace suzerain {
 
 namespace problem {
+
+template<typename T>
+static void parse_option(const std::string &s,
+                         T *value, void (*validator)(T, const char *),
+                         const char *name)
+{
+    double d;
+    suzerain::exprparse(s, d, name);
+    validator(d, name);
+    *value = static_cast<T>(d);
+}
 
 RestartDefinition::RestartDefinition(
         const std::string& metadata,
@@ -51,46 +68,42 @@ RestartDefinition::RestartDefinition(
       restart_dt(restart_dt),
       restart_nt(restart_nt)
 {
-    namespace po = ::boost::program_options;
-
-    using ::std::bind2nd;
-    using ::std::ptr_fun;
-    using ::suzerain::validation::ensure_positive;
-    using ::suzerain::validation::ensure_nonnegative;
-
-    ::std::pointer_to_binary_function<int,const char*,void>
-        ptr_fun_ensure_positive_int(ensure_positive<int>);
-    ::std::pointer_to_binary_function<int,const char*,void>
-        ptr_fun_ensure_nonnegative_int(ensure_nonnegative<int>);
-    ::std::pointer_to_binary_function<double,const char*,void>
-        ptr_fun_ensure_nonnegative_double(ensure_nonnegative<double>);
+    using boost::bind;
+    using boost::lexical_cast;
+    using boost::program_options::value;
+    using std::string;
+    using suzerain::validation::ensure_nonnegative;
+    using suzerain::validation::ensure_positive;
 
     this->add_options()
-        ("metadata", po::value<std::string>(&this->metadata)
+        ("metadata", value(&this->metadata)
             ->default_value(this->metadata),
          "Path to use when saving common restart metadata.  "
          "Any trailing \"XXXXXX\" will be used to generate a unique name."
          )
-        ("uncommitted", po::value(&this->uncommitted)
+        ("uncommitted", value(&this->uncommitted)
             ->default_value(this->uncommitted),
          "Path to use when saving uncommitted restart data.  "
          "Any trailing \"XXXXXX\" will be used to generate a unique name.")
-        ("desttemplate", po::value(&this->desttemplate)
+        ("desttemplate", value(&this->desttemplate)
             ->default_value(this->desttemplate),
          "Restart archiving pattern to use when committing restart files.  "
          "One or more #'s must be present and will be replaced by a sequence number.  "
          "Any trailing \"XXXXXX\" will be used to generate a unique template.")
-        ("retain", po::value(&this->retain)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_int, "retain"))
-            ->default_value(this->retain),
+        ("retain", value<string>(NULL)
+            ->notifier(bind(&parse_option<int>, _1, &this->retain,
+                            &ensure_nonnegative<int>, "retain"))
+            ->default_value(lexical_cast<string>(this->retain)),
          "Maximum number of committed restart files to retain")
-        ("restart_dt", po::value(&this->restart_dt)
-            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_double, "restart_dt"))
-            ->default_value(this->restart_dt),
+        ("restart_dt", value<string>(NULL)
+            ->notifier(bind(&parse_option<double>, _1, &this->restart_dt,
+                            &ensure_nonnegative<double>, "restart_dt"))
+            ->default_value(lexical_cast<string>(this->restart_dt)),
          "Maximum amount of simulation time between restart files")
-        ("restart_nt", po::value(&this->restart_nt)
-            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_int, "restart_nt"))
-            ->default_value(this->restart_nt),
+        ("restart_nt", value<string>(NULL)
+            ->notifier(bind(&parse_option<int>, _1, &this->restart_nt,
+                            &ensure_nonnegative<int>, "restart_nt"))
+            ->default_value(lexical_cast<string>(this->restart_nt)),
          "Maximum number of time steps between restart files")
     ;
 }
