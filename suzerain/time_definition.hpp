@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * advance_definition.hpp: classes handling advance definitions
+ * time_definition.hpp: classes handling advance definitions
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -33,6 +33,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/validation.hpp>
+#include <suzerain/exprparse.hpp>
 
 /** @file
  * Provides classes handling time advancement settings.
@@ -103,6 +104,21 @@ public:
      * @see suzerain::timestepper::lowstorage::SMR91Method for more details.
      */
     FPT evmagfactor;
+
+private:
+
+    /** Helper used to parse string-based options */
+    template<typename T>
+    static void parse_option(const std::string &s,
+                             T *value, void (*validator)(T, const char *),
+                             const char *name)
+    {
+        FPT d;
+        suzerain::exprparse(s, d, name);
+        validator(d, name);
+        *value = static_cast<T>(d);
+    }
+
 };
 
 template< typename FPT >
@@ -122,48 +138,48 @@ TimeDefinition<FPT>::TimeDefinition(FPT default_advance_dt,
       max_dt(default_max_dt),
       evmagfactor(default_evmagfactor)
 {
-    namespace po = ::boost::program_options;
-
-    using ::std::bind2nd;
-    using ::std::ptr_fun;
-    using ::suzerain::validation::ensure_nonnegative;
-    using ::suzerain::validation::ensure_positive;
-
-    ::std::pointer_to_binary_function<int,const char*,void>
-        ptr_fun_ensure_nonnegative_int(ensure_nonnegative<int>);
-    ::std::pointer_to_binary_function<FPT,const char*,void>
-        ptr_fun_ensure_nonnegative_FPT(ensure_nonnegative<FPT>);
-    ::std::pointer_to_binary_function<FPT,const char*,void>
-        ptr_fun_ensure_positive_FPT(ensure_positive<FPT>);
+    using boost::bind;
+    using boost::lexical_cast;
+    using boost::program_options::value;
+    using std::string;
+    using suzerain::validation::ensure_nonnegative;
+    using suzerain::validation::ensure_positive;
 
     this->add_options()
-        ("advance_dt", po::value(&advance_dt)
-            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "advance_dt"))
-            ->default_value(advance_dt),
+        ("advance_dt", value<string>(NULL)
+            ->notifier(bind(&parse_option<FPT>, _1, &advance_dt,
+                            &ensure_nonnegative<FPT>, "advance_dt"))
+            ->default_value(lexical_cast<string>(advance_dt)),
          "Maximum amount of physical time to advance the simulation")
-        ("advance_nt", po::value(&advance_nt)
-            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_int, "advance_nt"))
-            ->default_value(advance_nt),
+        ("advance_nt", value<string>(NULL)
+            ->notifier(bind(&parse_option<int>, _1, &advance_nt,
+                            &ensure_nonnegative<int>, "advance_nt"))
+            ->default_value(lexical_cast<string>(advance_nt)),
          "Maximum number of discrete time steps to advance the simulation")
-        ("status_dt", po::value(&status_dt)
-            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "status_dt"))
-            ->default_value(status_dt),
+        ("status_dt", value<string>(NULL)
+            ->notifier(bind(&parse_option<FPT>, _1, &status_dt,
+                            &ensure_nonnegative<FPT>, "status_dt"))
+            ->default_value(lexical_cast<string>(status_dt)),
          "Maximum physical time between status updates")
-        ("status_nt", po::value(&status_nt)
-            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_int, "status_nt"))
-            ->default_value(status_nt),
+        ("status_nt", value<string>(NULL)
+            ->notifier(bind(&parse_option<int>, _1, &status_nt,
+                            &ensure_nonnegative<int>, "status_nt"))
+            ->default_value(lexical_cast<string>(status_nt)),
          "Maximum number of discrete time steps between status updates")
-        ("min_dt", po::value(&min_dt)
-            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "min_dt"))
-            ->default_value(min_dt),
+        ("min_dt", value<string>(NULL)
+            ->notifier(bind(&parse_option<FPT>, _1, &min_dt,
+                            &ensure_nonnegative<FPT>, "min_dt"))
+            ->default_value(lexical_cast<string>(min_dt)),
          "Minimum allowable physically-driven time step")
-        ("max_dt", po::value(&max_dt)
-            ->notifier(bind2nd(ptr_fun_ensure_nonnegative_FPT, "max_dt"))
-            ->default_value(max_dt),
+        ("max_dt", value<string>(NULL)
+            ->notifier(bind(&parse_option<FPT>, _1, &max_dt,
+                            &ensure_nonnegative<FPT>, "max_dt"))
+            ->default_value(lexical_cast<string>(max_dt)),
          "Maximum allowable physically-driven time step")
-        ("evmagfactor", po::value(&evmagfactor)
-            ->notifier(bind2nd(ptr_fun_ensure_positive_FPT, "evmagfactor"))
-            ->default_value(evmagfactor),
+        ("evmagfactor", value<string>(NULL)
+            ->notifier(bind(&parse_option<FPT>, _1, &evmagfactor,
+                            &ensure_positive<FPT>, "evmagfactor"))
+            ->default_value(lexical_cast<string>(evmagfactor)),
          "Factor in (0,1] used to adjust time step aggressiveness")
     ;
 }
