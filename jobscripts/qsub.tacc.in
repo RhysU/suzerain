@@ -15,11 +15,12 @@ set -u                   # Abort on undefined shell variables
 # Provide defaults for environment variables used to build CMD (see below).
 # Rather than editing this job submission script, modify your environment!
 : ${BINARY:=@bindir@/channel_explicit}
-: ${INPUT:=@pkgdatadir@/fields/laminar_k07.h5}
+: ${INPUT:=@pkgdatadir@/fields/laminar_k08.h5}
 : ${ADVANCE:=}
 : ${STATUS:=--status_dt=0.01 --status_nt=25}
 : ${DECOMP:=--Pa=$(expr $NSLOTS / $NHOSTS)}
 : ${OPTIONS:=--Nx=192 --Ny=128 --Nz=128}
+: ${TMPFILES:=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
 : ${JOBDIR:=$SCRATCH/$JOB_ID}
 
 # Canonicalize names, change to job directory, and build command
@@ -28,7 +29,7 @@ INPUT=$(readlink -f $INPUT)
 JOBDIR=$(readlink -f $JOBDIR)
 mkdir -p "$JOBDIR"
 cd -P "$JOBDIR"
-CMD="\"$BINARY\" \"$INPUT\" $ADVANCE $STATUS $DECOMP $OPTIONS"
+CMD="\"$BINARY\" \"$INPUT\" $ADVANCE $STATUS $DECOMP $OPTIONS $TMPFILES"
 
 # Compute threading based on job size and way-ness
 export OMP_NUM_THREADS=$(expr @corespernode@ / \( $NSLOTS / $NHOSTS \) )
@@ -55,14 +56,15 @@ BINARY:   $BINARY
 INPUT:    $INPUT
 ADVANCE:  $ADVANCE
 STATUS:   $STATUS
-OPTIONS:  $DECOMP
+DECOMP:   $DECOMP
 OPTIONS:  $OPTIONS
+TMPFILES: $TMPFILES
 
 $CMD
 =${JOB_NAME}===================================================================
 
 HEADER
 
-# Exec the command so it may directly receives any incoming signals
+# Exec the command so it may directly receive any incoming signals
 cache_binary "$PWD" "$BINARY"
 exec /usr/bin/time -v ibrun tacc_affinity $CMD
