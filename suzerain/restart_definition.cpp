@@ -45,9 +45,11 @@ static void parse_option(const std::string &s,
                          T *value, void (*validator)(T, const char *),
                          const char *name)
 {
-    const double d = suzerain::exprparse<double>(s, name);
-    validator(d, name);
-    *value = static_cast<T>(d);
+#pragma warning(push,disable:2259)
+    const T t = suzerain::exprparse<double>(s, name);
+#pragma warning(pop)
+    validator(t, name);
+    *value = t;
 }
 
 RestartDefinition::RestartDefinition(

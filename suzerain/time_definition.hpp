@@ -113,9 +113,11 @@ private:
                              T *value, void (*validator)(T, const char *),
                              const char *name)
     {
-        const FPT d = suzerain::exprparse<FPT>(s, name);
-        validator(d, name);
-        *value = static_cast<T>(d);
+#pragma warning(push,disable:2259)
+        const T t = suzerain::exprparse<FPT>(s, name);
+#pragma warning(pop)
+        validator(t, name);
+        *value = t;
     }
 
 };

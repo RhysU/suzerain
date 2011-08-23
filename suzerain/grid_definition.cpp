@@ -44,9 +44,11 @@ static void parse_option(const std::string &s,
                          T *value, void (*validator)(T, const char *),
                          const char *name)
 {
-    const double d = suzerain::exprparse<double>(s, name);
-    validator(d, name);
-    *value = static_cast<T>(d);
+#pragma warning(push,disable:2259)
+    const T t = suzerain::exprparse<double>(s, name);
+#pragma warning(pop)
+    validator(t, name);
+    *value = t;
 }
 
 void GridDefinition::initialize_options()
@@ -223,17 +225,23 @@ GridDefinition& GridDefinition::DAFz(double factor)
 
 GridDefinition& GridDefinition::Nx(const std::string& value)
 {
+#pragma warning(push,disable:2259)
     return Nx(static_cast<int>(suzerain::exprparse<double>(value, "Nx")));
+#pragma warning(pop)
 }
 
 GridDefinition& GridDefinition::Ny(const std::string& value)
 {
+#pragma warning(push,disable:2259)
     return Ny(static_cast<int>(suzerain::exprparse<double>(value, "Ny")));
+#pragma warning(pop)
 }
 
 GridDefinition& GridDefinition::Nz(const std::string& value)
 {
+#pragma warning(push,disable:2259)
     return Nz(static_cast<int>(suzerain::exprparse<double>(value, "Nz")));
+#pragma warning(pop)
 }
 
 GridDefinition& GridDefinition::DAFx(const std::string& value)
