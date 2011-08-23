@@ -193,6 +193,21 @@ public:
 private:
     /** Options initialization common to all constructors */
     void initialize_options();
+
+    /** @copydoc Nx(int) */
+    GridDefinition& Nx(const std::string& value);
+
+    /** @copydoc Ny(int) */
+    GridDefinition& Ny(const std::string& value);
+
+    /** @copydoc Nz(int) */
+    GridDefinition& Nz(const std::string& value);
+
+    /** @copydoc DAFx(double) */
+    GridDefinition& DAFx(const std::string& value);
+
+    /** @copydoc DAFz(double) */
+    GridDefinition& DAFz(const std::string& value);
 };
 
 } // namespace problem
