@@ -30,8 +30,7 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
+#include <suzerain/common.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/validation.hpp>
 #include <suzerain/exprparse.hpp>

@@ -32,8 +32,6 @@
 #include <suzerain/config.h>
 #endif
 #include <suzerain/common.hpp>
-#include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/validation.hpp>

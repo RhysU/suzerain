@@ -69,6 +69,7 @@
 #include <boost/function.hpp>
 #include <boost/integer_traits.hpp>
 #include <boost/iterator/counting_iterator.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
