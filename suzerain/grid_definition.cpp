@@ -44,8 +44,7 @@ static void parse_option(const std::string &s,
                          T *value, void (*validator)(T, const char *),
                          const char *name)
 {
-    double d;
-    suzerain::exprparse(s, d, name);
+    const double d = suzerain::exprparse<double>(s, name);
     validator(d, name);
     *value = static_cast<T>(d);
 }
@@ -224,37 +223,27 @@ GridDefinition& GridDefinition::DAFz(double factor)
 
 GridDefinition& GridDefinition::Nx(const std::string& value)
 {
-    double d;
-    suzerain::exprparse(value, d, "Nx");
-    return Nx(static_cast<int>(d));
+    return Nx(static_cast<int>(suzerain::exprparse<double>(value, "Nx")));
 }
 
 GridDefinition& GridDefinition::Ny(const std::string& value)
 {
-    double d;
-    suzerain::exprparse(value, d, "Ny");
-    return Ny(static_cast<int>(d));
+    return Ny(static_cast<int>(suzerain::exprparse<double>(value, "Ny")));
 }
 
 GridDefinition& GridDefinition::Nz(const std::string& value)
 {
-    double d;
-    suzerain::exprparse(value, d, "Nz");
-    return Nz(static_cast<int>(d));
+    return Nz(static_cast<int>(suzerain::exprparse<double>(value, "Nz")));
 }
 
 GridDefinition& GridDefinition::DAFx(const std::string& value)
 {
-    double d;
-    suzerain::exprparse(value, d, "DAFx");
-    return DAFx(d);
+    return DAFx(suzerain::exprparse<double>(value, "DAFx"));
 }
 
 GridDefinition& GridDefinition::DAFz(const std::string& value)
 {
-    double d;
-    suzerain::exprparse(value, d, "DAFz");
-    return DAFz(d);
+    return DAFz(suzerain::exprparse<double>(value, "DAFz"));
 }
 
 } // namespace problem

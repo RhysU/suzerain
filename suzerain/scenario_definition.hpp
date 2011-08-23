@@ -200,15 +200,13 @@ private:
                             const char * default_Lz);
 
     static void parse_positive(const std::string& s, FPT *t, const char *n) {
-        FPT v;
-        suzerain::exprparse(s, v, n);
+        const FPT v = suzerain::exprparse<FPT>(s, n);
         suzerain::validation::ensure_positive(v, n);
         *t = v;
     }
 
     static void parse_nonnegative(const std::string& s, FPT *t, const char *n) {
-        FPT v;
-        suzerain::exprparse(s, v, n);
+        const FPT v = suzerain::exprparse<FPT>(s, n);
         suzerain::validation::ensure_nonnegative(v, n);
         *t = v;
     }
@@ -233,73 +231,72 @@ void ScenarioDefinition<FPT>::initialize_options(
     // code.  Validation routines used below all silently allow NaNs.
 
     std::auto_ptr<boost::program_options::typed_value<std::string> > p;
-    std::string *nullstr = NULL;
 
     // Re
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_positive, _1, &Re, "Re"));
     if (default_Re) p->default_value(default_Re);
     this->add_options()("Re", p.release(), "Reynolds number");
 
     // Ma
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_positive, _1, &Ma, "Ma"));
     if (default_Ma) p->default_value(default_Ma);
     this->add_options()("Ma", p.release(), "Mach number");
 
     // Pr
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_positive, _1, &Pr, "Pr"));
     if (default_Pr) p->default_value(default_Pr);
     this->add_options()("Pr", p.release(), "Prandtl number");
 
     // bulk_rho
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_nonnegative, _1, &bulk_rho, "bulk_rho"));
     if (default_bulk_rho) p->default_value(default_bulk_rho);
     this->add_options()("bulk_rho", p.release(), "bulk density target");
 
     // bulk_rhou
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_nonnegative, _1, &bulk_rhou, "bulk_rhou"));
     if (default_bulk_rhou) p->default_value(default_bulk_rhou);
     this->add_options()("bulk_rhou", p.release(), "bulk momentum target");
 
     // alpha
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_nonnegative, _1, &alpha, "alpha"));
     if (default_alpha) p->default_value(default_alpha);
     this->add_options()("alpha", p.release(),
                         "Ratio of bulk to dynamic viscosity");
 
     // beta
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_nonnegative, _1, &beta, "beta"));
     if (default_beta) p->default_value(default_beta);
     this->add_options()("beta", p.release(), "Temperature power law exponent");
 
     // gamma
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_positive, _1, &gamma, "gamma"));
     if (default_gamma) p->default_value(default_gamma);
     this->add_options()("gamma", p.release(), "Ratio of specific heats");
 
     // Lx
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_positive, _1, &Lx, "Lx"));
     if (default_Lx) p->default_value(default_Lx);
     this->add_options()("Lx", p.release(),
             "Nondimensional grid length in streamwise X direction");
 
     // Ly
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_positive, _1, &Ly, "Ly"));
     if (default_Ly) p->default_value(default_Ly);
     this->add_options()("Ly", p.release(),
             "Nondimensional grid length in wall normal Y direction");
 
     // Lz
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_positive, _1, &Lz, "Lz"));
     if (default_Lz) p->default_value(default_Lz);
     this->add_options()("Lz", p.release(),

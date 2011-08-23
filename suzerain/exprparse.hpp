@@ -46,10 +46,6 @@ namespace suzerain {
  * <tt>tan</tt> <tt>tanh</tt>), binary functions (<tt>pow</tt> <tt>atan2</tt>),
  * and constants (<tt>pi</tt> <tt>inf</tt> <tt>nan</tt>).
  *
- * @warning If a Boost Spirit 2.1 or later is not available, the logic falls
- * back onto boost::lexical_cast and only floating point literals may be
- * parsed.
- *
  * @param[in]  s    Constant arithmetic expression to be parsed.
  * @param[out] v    Floating point value found from evaluating \c s.
  * @param[in]  name Optional name of what is being parsed for error reporting.
@@ -67,6 +63,84 @@ void exprparse(const std::string& s, float& v, const char *name = NULL);
 
 /** @copydoc exprparse(const char *, float&) */
 void exprparse(const std::string& s, double& v, const char *name = NULL);
+
+/**
+ * Parse an evaluate a constant-valued arithmetic expression.  Identical to
+ * calling <tt>exprparse(const std::string&, FPT&, const char*)</tt> where the
+ * result is returned by value rather than being a mutable argument.
+ *
+ * @tparam FPT  Type of floating point to evaluate and return.
+ *              An exprparse() overload must exist.
+ * @param  s    Constant arithmetic expression to be parsed.
+ * @param  name Optional name of what is being parsed for error reporting.
+ *
+ * @return Floating point value found from evaluating \c s.
+ */
+template<typename FPT>
+FPT exprparse(const std::string& s, const char *name)
+{
+    FPT t;
+    exprparse(s, t, name);
+    return t;
+}
+
+/**
+ * Parse an evaluate a constant-valued arithmetic expression.  Identical to
+ * calling <tt>exprparse(const char*, FPT&, const char*)</tt> where the result
+ * is returned by value rather than being a mutable argument.
+ *
+ * @tparam FPT  Type of floating point to evaluate and return.
+ *              An exprparse() overload must exist.
+ * @param  s    Constant arithmetic expression to be parsed.
+ * @param  name Optional name of what is being parsed for error reporting.
+ *
+ * @return Floating point value found from evaluating \c s.
+ */
+template<typename FPT>
+FPT exprparse(const char *s, const char *name)
+{
+    FPT t;
+    exprparse(s, t, name);
+    return t;
+}
+
+/**
+ * Parse an evaluate a constant-valued arithmetic expression.  Identical to
+ * calling <tt>exprparse(const std::string&, FPT&)</tt> where the result is
+ * returned by value rather than being a mutable argument.
+ *
+ * @tparam FPT  Type of floating point to evaluate and return.
+ *              An exprparse() overload must exist.
+ * @param  s    Constant arithmetic expression to be parsed.
+ *
+ * @return Floating point value found from evaluating \c s.
+ */
+template<typename FPT>
+FPT exprparse(const std::string& s)
+{
+    FPT t;
+    exprparse(s, t);
+    return t;
+}
+
+/**
+ * Parse an evaluate a constant-valued arithmetic expression.  Identical to
+ * calling <tt>exprparse(const char*, FPT&)</tt> where the result is returned
+ * by value rather than being a mutable argument.
+ *
+ * @tparam FPT  Type of floating point to evaluate and return.
+ *              An exprparse() overload must exist.
+ * @param  s    Constant arithmetic expression to be parsed.
+ *
+ * @return Floating point value found from evaluating \c s.
+ */
+template<typename FPT>
+FPT exprparse(const char *s)
+{
+    FPT t;
+    exprparse(s, t);
+    return t;
+}
 
 } // end namespace suzerain
 
