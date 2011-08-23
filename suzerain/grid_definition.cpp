@@ -40,105 +40,113 @@ namespace suzerain {
 
 namespace problem {
 
+template<typename T>
+static void parse_option(const std::string &s,
+                         T *value, void (*validator)(T, const char *),
+                         const char *name)
+{
+    double d;
+    suzerain::exprparse(s, d, name);
+    validator(d, name);
+    *value = static_cast<T>(d);
+}
+
 void GridDefinition::initialize_options()
 {
-    using ::boost::bind;
-    using ::boost::lexical_cast;
-    using ::boost::math::isnan;
-    using ::boost::program_options::typed_value;
-    using ::boost::program_options::value;
-    using ::std::auto_ptr;
-    using ::std::bind1st;
-    using ::std::bind2nd;
-    using ::std::mem_fun;
-    using ::std::ptr_fun;
-    using ::std::string;
-    using ::suzerain::validation::ensure_nonnegative;
-    using ::suzerain::validation::ensure_positive;
+    using boost::bind;
+    using boost::lexical_cast;
+    using boost::math::isnan;
+    using std::auto_ptr;
+    using std::bind1st;
+    using std::bind2nd;
+    using std::mem_fun;
+    using std::ptr_fun;
+    using std::string;
+    using suzerain::validation::ensure_nonnegative;
+    using suzerain::validation::ensure_positive;
 
-    // Used to resolve pointers to members taking strings
+    // Used to help resolve pointers-to-members taking strings
     GridDefinition& (GridDefinition::*f)(const std::string&) = NULL;
 
-    { // Nx
-        auto_ptr<typed_value<string> > p(value<string>(NULL));
-        f = &GridDefinition::Nx;
-        p->notifier(bind(f, this, _1));
-        if (N.x()) p->default_value(lexical_cast<string>(N.x()));
-        this->add_options()("Nx", p.release(),
-                "Global logical extents in streamwise X direction");
-    }
+    std::auto_ptr<boost::program_options::typed_value<std::string> > p;
+    std::string *nullstr = NULL;
 
-    { // DAFx
-        auto_ptr<typed_value<string> > p(value<string>(NULL));
-        f = &GridDefinition::DAFx;
-        p->notifier(bind(f, this, _1));
-        if (!(isnan)(DAF.x())) p->default_value(lexical_cast<string>(DAF.x()));
-        this->add_options()("DAFx", p.release(),
-                "Dealiasing factor in streamwise X direction");
-    }
+    // Nx
+    p.reset(boost::program_options::value(nullstr));
+    f = &GridDefinition::Nx;
+    p->notifier(bind(f, this, _1));
+    if (N.x()) p->default_value(lexical_cast<string>(N.x()));
+    this->add_options()("Nx", p.release(),
+            "Global logical extents in streamwise X direction");
 
-    { // Ny
-        auto_ptr<typed_value<string> > p(value<string>(NULL));
-        f = &GridDefinition::Ny;
-        p->notifier(bind(f, this, _1));
-        if (N.y()) p->default_value(lexical_cast<string>(N.y()));
-        this->add_options()("Ny", p.release(),
-                "Global logical extents in wall-normal Y direction");
-    }
+    // DAFx
+    p.reset(boost::program_options::value(nullstr));
+    f = &GridDefinition::DAFx;
+    p->notifier(bind(f, this, _1));
+    if (!(isnan)(DAF.x())) p->default_value(lexical_cast<string>(DAF.x()));
+    this->add_options()("DAFx", p.release(),
+            "Dealiasing factor in streamwise X direction");
 
-    { // k
-        auto_ptr<typed_value<int> > p(value(&this->k));
-        if (k) {
-            p->notifier(bind2nd(ptr_fun(ensure_positive<int>),   "k"));
-            p->default_value(k);
-        } else {
-            p->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"k"));
-        }
-        this->add_options()("k", p.release(),
-                "Wall-normal B-spline order (4 indicates piecewise cubics)");
-    }
+    // Ny
+    p.reset(boost::program_options::value(nullstr));
+    f = &GridDefinition::Ny;
+    p->notifier(bind(f, this, _1));
+    if (N.y()) p->default_value(lexical_cast<string>(N.y()));
+    this->add_options()("Ny", p.release(),
+            "Global logical extents in wall-normal Y direction");
 
-    { // htdelta
-        std::auto_ptr<typed_value<double> > p(value(&this->htdelta));
-        p->notifier(bind2nd(ptr_fun(ensure_nonnegative<double>),"htdelta"));
-        if (!(isnan)(htdelta)) p->default_value(htdelta);
-        this->add_options()("htdelta", p.release(),
-                "Wall-normal breakpoint hyperbolic tangent stretching");
+    // k
+    p.reset(boost::program_options::value(nullstr));
+    if (k) {
+        p->notifier(bind(&parse_option<int>, _1, &k,
+                         &ensure_positive<int>, "k"));
+        p->default_value(lexical_cast<string>(k));
+    } else {
+        p->notifier(bind(&parse_option<int>, _1, &k,
+                         &ensure_nonnegative<int>, "k"));
     }
+    this->add_options()("k", p.release(),
+            "Wall-normal B-spline order (4 indicates piecewise cubics)");
 
-    { // Nz
-        auto_ptr<typed_value<string> > p(value<string>(NULL));
-        f = &GridDefinition::Nz;
-        p->notifier(bind(f, this, _1));
-        if (N.z()) p->default_value(lexical_cast<string>(N.z()));
-        this->add_options()("Nz", p.release(),
-                "Global logical extents in spanwise Z direction");
-    }
+    // htdelta
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(bind(&parse_option<double>, _1, &htdelta,
+                        &ensure_nonnegative<double>, "htdelta"));
+    if (!(isnan)(htdelta)) p->default_value(lexical_cast<string>(htdelta));
+    this->add_options()("htdelta", p.release(),
+            "Wall-normal breakpoint hyperbolic tangent stretching");
 
-    { // DAFz
-        auto_ptr<typed_value<string> > p(value<string>(NULL));
-        f = &GridDefinition::DAFz;
-        p->notifier(bind(f, this, _1));
-        if (!(isnan)(DAF.z())) p->default_value(lexical_cast<string>(DAF.z()));
-        this->add_options()("DAFz", p.release(),
-                "Dealiasing factor in spanwise Z direction");
-    }
+    // Nz
+    p.reset(boost::program_options::value(nullstr));
+    f = &GridDefinition::Nz;
+    p->notifier(bind(f, this, _1));
+    if (N.z()) p->default_value(lexical_cast<string>(N.z()));
+    this->add_options()("Nz", p.release(),
+            "Global logical extents in spanwise Z direction");
 
-    { // Pa
-        auto_ptr<typed_value<int> > p(value(&P[0]));
-        p->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pa"));
-        if (P[0]) p->default_value(P[0]);
-        this->add_options()("Pa", p.release(),
-                "Processor count in the Pa decomposition direction");
-    }
+    // DAFz
+    p.reset(boost::program_options::value(nullstr));
+    f = &GridDefinition::DAFz;
+    p->notifier(bind(f, this, _1));
+    if (!(isnan)(DAF.z())) p->default_value(lexical_cast<string>(DAF.z()));
+    this->add_options()("DAFz", p.release(),
+            "Dealiasing factor in spanwise Z direction");
 
-    { // Pb
-        auto_ptr<typed_value<int> > p(value(&P[1]));
-        p->notifier(bind2nd(ptr_fun(ensure_nonnegative<int>),"Pb"));
-        if (P[1]) p->default_value(P[1]);
-        this->add_options()("Pb", p.release(),
-                "Processor count in the Pb decomposition direction");
-    }
+    // Pa
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(bind(&parse_option<int>, _1, &P[0],
+                     &ensure_nonnegative<int>, "Pa"));
+    if (P[0]) p->default_value(lexical_cast<string>(P[0]));
+    this->add_options()("Pa", p.release(),
+            "Processor count in the Pa decomposition direction");
+
+    // Pb
+    p.reset(boost::program_options::value(nullstr));
+    p->notifier(bind(&parse_option<int>, _1, &P[1],
+                     &ensure_nonnegative<int>, "Pb"));
+    if (P[1]) p->default_value(lexical_cast<string>(P[1]));
+    this->add_options()("Pb", p.release(),
+            "Processor count in the Pb decomposition direction");
 }
 
 GridDefinition& GridDefinition::Nx(int value)
