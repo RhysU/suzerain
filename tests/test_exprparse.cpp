@@ -3,7 +3,6 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <boost/version.hpp>
 #include <suzerain/exprparse.hpp>
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
@@ -31,9 +30,6 @@ EXPRTEST(literal1, "1.234", 1.234)
 EXPRTEST(literal2, "4.2e2", 420)
 EXPRTEST(literal3, "5e-01", 0.5)
 EXPRTEST(literal4, "-3",    -3)
-
-#if BOOST_VERSION >= 104100 // Spirit.Qi 2.1+ available
-
 EXPRTEST(literal5, "pi", boost::math::constants::pi<double>())
 
 EXPRTEST(basicop1, " 2 +\t3\n",   5)       // Whitespace ignored
@@ -44,7 +40,7 @@ EXPRTEST(basicop5, " 2 ** 3\n",  8)
 
 EXPRTEST(pemdas1,  "2*3+4*5",   2*3+4*5)
 EXPRTEST(pemdas2,  "2*(3+4)*5", 2*(3+4)*5)
-EXPRTEST(pemdas3,  "2**3+4",    std::pow(2,3)+4)
+EXPRTEST(pemdas3,  "2**3+4",    std::pow(2.,3)+4)
 EXPRTEST(pemdas4,  "2**2**-3",  std::pow(2.,std::pow(2.,-3.)))
 
 EXPRTEST(unary1,   "-(2)",      -2)
@@ -104,5 +100,3 @@ BOOST_AUTO_TEST_CASE( parse_nan )
     exprparse(std::string("nan"), result2);
     BOOST_CHECK((boost::math::isnan)(result2));
 }
-
-#endif // BOOST_VERSION
