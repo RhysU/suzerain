@@ -416,9 +416,17 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
         INFO0("Initiating teardown due to receipt of "
               << suzerain_signal_name(signal_received[2]));
         soft_teardown  = true;
-        if (signal_received[2] == SIGTERM) {
-            INFO0("Receiving another SIGTERM will forcibly terminate program");
-            signal(SIGTERM, SIG_DFL);
+        switch (signal_received[2]) {
+            case SIGTERM:
+                INFO0("Receipt of another SIGTERM"
+                      " will forcibly terminate program");
+                signal(SIGTERM, SIG_DFL);
+                break;
+            case SIGINT:
+                INFO0("Receipt of another SIGINT"
+                      " will forcibly terminate program");
+                signal(SIGINT, SIG_DFL);
+                break;
         }
         keep_advancing = false;
     }
