@@ -417,7 +417,7 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
               << suzerain_signal_name(signal_received[2]));
         soft_teardown  = true;
         if (signal_received[2] == SIGTERM) {
-            INFO0("Receipt of another SIGTERM will forcibly terminate program");
+            INFO0("Receiving another SIGTERM will forcibly terminate program");
             signal(SIGTERM, SIG_DFL);
         }
         keep_advancing = false;
@@ -426,16 +426,18 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
     return keep_advancing;
 }
 
+/** Wall time at which MPI_Init completed */
+static double wtime_mpi_init;
+
 /** Main driver logic */
 int main(int argc, char **argv)
 {
-    MPI_Init(&argc, &argv);                         // Initialize MPI
-    const double wtime_mpi_init = MPI_Wtime();      // Record MPI_Init time
-    atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
-    logger::initialize(MPI_COMM_WORLD);             // Initialize logging
-    esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
-    atexit(&atexit_esio);                           // Finalize ESIO at exit
-
+    MPI_Init(&argc, &argv);                          // Initialize MPI
+    wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
+    atexit((void (*) ()) MPI_Finalize);              // Finalize MPI at exit
+    logger::initialize(MPI_COMM_WORLD);              // Initialize logging
+    esioh = esio_handle_initialize(MPI_COMM_WORLD);  // Initialize ESIO
+    atexit(&atexit_esio);                            // Finalize ESIO
 
     // Hook error handling into logging infrastructure
     gsl_set_error_handler(
