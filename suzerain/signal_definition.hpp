@@ -62,7 +62,7 @@ public:
     explicit SignalDefinition(
             const std::string& specstatus   = "HUP",
             const std::string& specrestart  = "HUP",
-            const std::string& specteardown = "USR1,USR2,TERM");
+            const std::string& specteardown = "INT,USR1,USR2,TERM");
 
     /** Signal numbers indicating a status message should be displayed. */
     std::vector<int> status;
