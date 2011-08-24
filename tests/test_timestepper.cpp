@@ -980,8 +980,16 @@ template class LowStorageTimeController<
         suzerain::timestepper::DeltaTReducer
     >;
 template class LowStorageTimeController<
+        InterleavedState<3,double>, InterleavedState<3,double>,
+        void // Default Reducer behavior
+    >;
+template class LowStorageTimeController<
         NoninterleavedState<3,double>, NoninterleavedState<3,double>,
         suzerain::timestepper::DeltaTReducer
+    >;
+template class LowStorageTimeController<
+        NoninterleavedState<3,double>, NoninterleavedState<3,double>,
+        void // Default reducer behavior
     >;
 
 BOOST_AUTO_TEST_SUITE( low_storage_controller_suite )
@@ -994,9 +1002,8 @@ BOOST_AUTO_TEST_CASE ( make_controller )
     NoninterleavedState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
 
     // Compilation and instantiation is half the battle.  Go Joe!
-    suzerain::timestepper::DeltaTReducer reducer;
     boost::scoped_ptr<suzerain::timestepper::TimeController<double> > p(
-        make_LowStorageTimeController(m, reducer, trivial_linear_op,
+        make_LowStorageTimeController(m, trivial_linear_op,
                                       1.0, riccati_op, a, b));
 
     BOOST_REQUIRE(p);

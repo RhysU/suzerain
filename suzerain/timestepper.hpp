@@ -1033,13 +1033,13 @@ const typename suzerain::traits::component<Element>::type step(
  * @see make_LowStorageTimeController for an easy way to create
  *      an instance with the appropriate type signature.
  */
-template<typename A, typename B, typename Reducer >
+template< typename A, typename B, typename Reducer >
 class LowStorageTimeController
     : public TimeController< typename suzerain::traits::component<
             typename A::element
       >::type >
 {
-private:
+protected:
 
     /** Shorthand for the superclass */
     typedef TimeController< typename suzerain::traits::component<
@@ -1122,6 +1122,72 @@ private:
 };
 
 /**
+ * A partial specialization of the LowStorageTimeController template for the
+ * case when default DeltaTReducer behavior is desired.
+ */
+template< typename A, typename B >
+class LowStorageTimeController<A, B, void>
+    : private DeltaTReducer,
+      public LowStorageTimeController<A,B,DeltaTReducer>
+{
+
+protected:
+
+    typedef typename LowStorageTimeController<A,B,DeltaTReducer>::super super;
+
+public:
+
+    typedef typename LowStorageTimeController<A,B,DeltaTReducer>::element element;
+
+    /**
+     * Construct an instance that will advance a simulation built atop the
+     * given operators and storage.
+     *
+     * @param m         The low storage scheme to use.
+     *                  For example, SMR91Method.
+     * @param L         The linear operator to be treated implicitly.
+     * @param chi       The factor \f$\chi\f$ used to scale the nonlinear
+     *                  operator.
+     * @param N         The nonlinear operator to be treated explicitly.
+     * @param a         On entry contains \f$u(t)\f$ and on exit contains
+     *                  \f$u(t+\Delta{}t)\f$.  The linear operator is applied
+     *                  only to this state storage.
+     * @param b         Used as a temporary storage location during substeps.
+     *                  The nonlinear operator is applied only to this state
+     *                  storage.
+     * @param initial_t Initial simulation time.
+     * @param min_dt    Initial minimum acceptable time step.  Specifying
+     *                  zero, the default, is equivalent to providing
+     *                  <tt>std::numeric_limits<time_type>::epsilon()</tt>.
+     *                  See min_dt() for the associated semantics.
+     * @param max_dt    Initial maximum acceptable time step.  Specifying
+     *                  zero, the default, is equivalent to providing
+     *                  <tt>std::numeric_limits<time_type>::max()</tt>.
+     *                  See max_dt() for the associated semantics.
+     *
+     * @see The method step() for more details on
+     *      \c m, \c reducer, \c L, \c N, \c a, and \c b.
+     */
+    LowStorageTimeController(
+            const ILowStorageMethod<element>& m,
+            const ILinearOperator<A,B>& L,
+            const typename suzerain::traits::component<element>::type chi,
+            const INonlinearOperator<B>& N,
+            A& a,  // FIXME: Would love a StateBase subclass restriction here
+            B& b,  // FIXME: Would love a StateBase subclass restriction here
+            typename super::time_type initial_t = 0,
+            typename super::time_type min_dt = 0,
+            typename super::time_type max_dt = 0)
+        : DeltaTReducer(),
+          LowStorageTimeController<A,B,DeltaTReducer>(
+                  m,
+                  *reinterpret_cast<DeltaTReducer*>(this),
+                  L, chi, N, a, b, initial_t, min_dt, max_dt)
+    {}
+
+};
+
+/**
  * A helper method so the compiler can deduce the appropriate template
  * types for a LowStorageTimeController.
  *
@@ -1143,6 +1209,29 @@ make_LowStorageTimeController(
 {
     return new LowStorageTimeController<A,B,Reducer>(
             m, reducer, L, chi, N, a, b, initial_t, min_dt, max_dt);
+}
+
+/**
+ * A helper method so the compiler can deduce the appropriate template
+ * types for a LowStorageTimeController.
+ *
+ * \copydoc #LowStorageTimeController
+ */
+template< typename A, typename B, typename ChiType >
+LowStorageTimeController<A,B,void>*
+make_LowStorageTimeController(
+        const ILowStorageMethod<typename StateBase<A>::element>& m,
+        const ILinearOperator<A,B>& L,
+        const ChiType chi,
+        const INonlinearOperator<B>& N,
+        A& a,  // FIXME: Would love a StateBase subclass restriction here
+        B& b,  // FIXME: Would love a StateBase subclass restriction here
+        typename LowStorageTimeController<A,B,void>::time_type initial_t = 0,
+        typename LowStorageTimeController<A,B,void>::time_type min_dt = 0,
+        typename LowStorageTimeController<A,B,void>::time_type max_dt = 0)
+{
+    return new LowStorageTimeController<A,B,void>(
+            m, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }
 
 
