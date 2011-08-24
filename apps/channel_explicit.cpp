@@ -90,13 +90,13 @@ static const RestartDefinition restart(
         /* restart_dt   */ 0,
         /* restart_nt   */ 0);
 static const TimeDefinition<real_t> timedef(
-        /* advance_dt                 */ 0,
-        /* advance_nt                 */ 0,
-        /* status_dt                  */ 0,
-        /* status_nt                  */ 0,
-        /* min_dt                     */ 1e-10,
-        /* max_dt                     */ 0,
-        /* evmagfactor near Venugopal */ 0.75);
+        /* advance_dt                */ 0,
+        /* advance_nt                */ 0,
+        /* status_dt                 */ 0,
+        /* status_nt                 */ 0,
+        /* min_dt                    */ 1e-10,
+        /* max_dt                    */ 0,
+        /* evmagfactor per Venugopal */ 0.72);
 static const NoiseDefinition  noisedef;
 static const SignalDefinition sigdef;
 
