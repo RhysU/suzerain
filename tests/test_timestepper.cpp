@@ -61,7 +61,7 @@ public:
             const double delta_t = std::numeric_limits<double>::infinity())
         : a(a), b(b), delta_t(delta_t) {};
 
-    virtual double applyOperator(
+    virtual std::vector<double> applyOperator(
             const double time,
             NoninterleavedState<3,double>& state,
             const double evmaxmag_real,
@@ -86,7 +86,7 @@ public:
             }
         }
 
-        return delta_t;
+        return std::vector<double>(1, delta_t);
     };
 
 };
@@ -141,7 +141,7 @@ public:
             const double delta_t = std::numeric_limits<double>::quiet_NaN())
         : delta_t(delta_t) { };
 
-    virtual double applyOperator(
+    virtual std::vector<double> applyOperator(
             const double time,
             NoninterleavedState<3,double> & state,
             const double evmaxmag_real,
@@ -160,7 +160,7 @@ public:
             }
         }
 
-        return delta_t;
+        return std::vector<double>(1, delta_t);
     }
 };
 
@@ -452,7 +452,7 @@ public:
             const double delta_t = std::numeric_limits<double>::quiet_NaN())
         : a(a), b(b), delta_t(delta_t) { };
 
-    virtual double applyOperator(
+    virtual std::vector<double> applyOperator(
             const double time,
             NoninterleavedState<3,double> & state,
             const double evmaxmag_real,
@@ -473,7 +473,7 @@ public:
             }
         }
 
-        return delta_t;
+        return std::vector<double>(1, delta_t);
     }
 };
 

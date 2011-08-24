@@ -347,7 +347,7 @@ NonlinearOperator::NonlinearOperator(
     suzerain::multi_array::fill(auxw, 0);
 }
 
-real_t NonlinearOperator::applyOperator(
+std::vector<real_t> NonlinearOperator::applyOperator(
     const real_t time,
     suzerain::NoninterleavedState<4,complex_t> &swave,
     const real_t evmaxmag_real,
@@ -371,8 +371,10 @@ real_t NonlinearOperator::applyOperator(
     assert(std::equal(swave.strides() + 1, swave.strides() + 4,
                       auxw.strides() + 1));
 
-    real_t delta_t_candidates[2] = { std::numeric_limits<real_t>::max(),
-                                     std::numeric_limits<real_t>::max()  };
+    boost::array<real_t, 2> delta_t_candidates = {{
+            std::numeric_limits<real_t>::max(),
+            std::numeric_limits<real_t>::max()
+    }};
     real_t &convective_delta_t = delta_t_candidates[0];
     real_t &diffusive_delta_t  = delta_t_candidates[1];
 
@@ -725,14 +727,17 @@ real_t NonlinearOperator::applyOperator(
     // Perform Allreduce on stable time step sizes when necessary
     // Note delta_t_candidates aliases {convective,diffusive}_delta_t
     if (delta_t_requested) {
-        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, delta_t_candidates,
-                    sizeof(delta_t_candidates)/sizeof(delta_t_candidates[0]),
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE,
+                    delta_t_candidates.c_array(), delta_t_candidates.size(),
                     suzerain::mpi::datatype<real_t>::value,
                     MPI_MIN, MPI_COMM_WORLD));
     }
 
-    // Return minimum of either time step criterion, accounting for NaNs
-    return suzerain::math::minnan(convective_delta_t, diffusive_delta_t);
+    // Return the stable time step criteria separately on each rank.  The time
+    // stepping logic must perform the Allreduce.  Delegating the Allreduce
+    // responsiblity allows reducing additional info with minimal overhead.
+    return std::vector<real_t>(delta_t_candidates.begin(),
+                               delta_t_candidates.end());
 
     // State leaves method as coefficients in X and Z directions
     // State leaves method as collocation point values in Y direction
@@ -754,7 +759,7 @@ NonlinearOperatorIsothermal::NonlinearOperatorIsothermal(
     bulkcoeff /= scenario.Ly;
 }
 
-real_t NonlinearOperatorIsothermal::applyOperator(
+std::vector<real_t> NonlinearOperatorIsothermal::applyOperator(
     const real_t time,
     suzerain::NoninterleavedState<4,complex_t> &swave,
     const real_t evmaxmag_real,
@@ -789,7 +794,7 @@ real_t NonlinearOperatorIsothermal::applyOperator(
     // Apply an operator that cares nothing about the boundaries.
     // Operator application turns coefficients in X, Y, and Z into
     // coefficients in X and Z but COLLOCATION POINT VALUES IN Y.
-    const real_t delta_t = base::applyOperator(
+    const std::vector<real_t> delta_t_candidates = base::applyOperator(
             time, swave, evmaxmag_real, evmaxmag_imag, delta_t_requested);
 
     // Set no-slip condition for momentum on walls per writeup step (3)
@@ -839,7 +844,7 @@ real_t NonlinearOperatorIsothermal::applyOperator(
     }
 
     // Return the time step found by the BC-agnostic operator
-    return delta_t;
+    return delta_t_candidates;
 }
 
 } // end namespace channel

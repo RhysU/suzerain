@@ -86,10 +86,12 @@ public:
      * @param delta_t_requested If true, the operator must compute
      *        and return a stable time step.
      *
-     * @return a stable time step if \c delta_t_requested is true.  Otherwise
-     *        the return value is meaningless.
+     * @return stable time step sizes according to one or more criteria
+     *         if \c delta_t_requested is true.  The overall stable time
+     *         step is the minimum of all elements in the returned vector.
+     *         If \c delta_t_request is fale the return value is meaningless.
      */
-    virtual component applyOperator(
+    virtual std::vector<component> applyOperator(
             const component time,
             State& state,
             const component evmaxmag_real,
@@ -384,18 +386,19 @@ public:
      *
      * @return The \c delta_t provided at construction time.
      */
-    virtual component applyOperator(const component time,
-                                    StateB& state,
-                                    const component evmaxmag_real,
-                                    const component evmaxmag_imag,
-                                    const bool delta_t_requested = false) const
+    virtual std::vector<component> applyOperator(
+            const component time,
+            StateB& state,
+            const component evmaxmag_real,
+            const component evmaxmag_imag,
+            const bool delta_t_requested = false) const
     {
         SUZERAIN_UNUSED(time);
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(delta_t_requested);
         state.scale(factor);
-        return delta_t;
+        return std::vector<component>(1, delta_t);
     }
 
     /**
@@ -879,33 +882,65 @@ const typename suzerain::traits::component<Element>::type substep(
     return delta_t;
 }
 
+namespace { // anonymous
+
+/** A comparator which considers NaNs to be less than all other values */
+struct NanIsMinimumComparator {
+    template< typename T >
+    bool operator()(const T &x, const T &y) const {
+        return SUZERAIN_UNLIKELY((boost::math::isnan)(x)) || x < y;
+    }
+};
+
+} // end namespace anonymous
+
+/**
+ * A functor that finds the minimum stable time step given a set of candidates.
+ * Any NaN appearing in the candidates causes a NaN to be returned.  The
+ * candidates may not be empty.
+ */
+struct DeltaTReducer {
+    template< typename T>
+    T operator()(const std::vector<T> & candidates) {
+        assert(candidates.size() > 0);
+        return *std::min_element(candidates.begin(), candidates.end(),
+                                 NanIsMinimumComparator());
+    }
+};
+
 /**
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
  * a hybrid implicit/explicit scheme using the system \f$ M u_t = Lu +
- * N(u,t)\f$.  The time step taken, \f$\Delta{}t\f$ will be based on a stable
+ * N(u,t)\f$.  The time step taken, \f$\Delta{}t\f$, will be based on a stable
  * value computed during the first nonlinear operator application as well as an
  * optional fixed maximum step size.
  *
- * @param m The low storage scheme to use.  For example, SMR91Method.
- * @param L The linear operator to be treated implicitly.
- * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
- * @param N The nonlinear operator to be treated explicitly.
- * @param time The simulation time \f$t\f$ at which to take the step.
- * @param a On entry contains \f$u(t)\f$ and on exit contains
- *          \f$u(t+\Delta{}t)\f$.  The linear operator is applied
- *          only to this state storage.
- * @param b Used as a temporary storage location during substeps.
- *          The nonlinear operator is applied only to this state storage.
+ * @param m       The low storage scheme to use.  For example, SMR91Method.
+ * @param reducer A stateful functor taking a vector of stable time step
+ *                candidates down to a single stable time step.  Users may
+ *                employ a custom functor compatible with DeltaTReducer to add
+ *                logic for monitoring or manipulating stable step criteria.
+ * @param L       The linear operator to be treated implicitly.
+ * @param chi     The factor \f$\chi\f$ used to scale the nonlinear operator.
+ * @param N       The nonlinear operator to be treated explicitly.
+ * @param time    The simulation time \f$t\f$ at which to take the step.
+ * @param a       On entry contains \f$u(t)\f$ and on exit contains
+ *                \f$u(t+\Delta{}t)\f$.  The linear operator is applied
+ *                only to this state storage.
+ * @param b       Used as a temporary storage location during substeps.
+ *                The nonlinear operator is applied only to this state storage.
  * @param max_delta_t An optional maximum time step size.
+ *
  * @return The time step \f$\Delta{}t\f$ taken.
  *         It may be less than \c max_delta_t.
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
-template< typename Element, typename A, typename B >
+template< typename Element, typename Reducer, typename A, typename B >
 const typename suzerain::traits::component<Element>::type step(
     const ILowStorageMethod<Element>& m,
+    Reducer& delta_t_reducer,
     const ILinearOperator<A,B>& L,
     const typename suzerain::traits::component<Element>::type chi,
     const INonlinearOperator<B>& N,
@@ -916,12 +951,15 @@ const typename suzerain::traits::component<Element>::type step(
 {
     BOOST_STATIC_ASSERT((boost::is_same<Element,typename A::element>::value));
     BOOST_STATIC_ASSERT((boost::is_same<Element,typename B::element>::value));
+    typedef typename suzerain::traits::component<Element>::type component_type;
 
     // First substep handling is special since we need to determine delta_t
     b.assign(a);
-    typename suzerain::traits::component<Element>::type delta_t
+    const std::vector<component_type> delta_t_candidates
         = N.applyOperator(time, b, m.evmaxmag_real(), m.evmaxmag_imag(),
                           true /* need delta_t during first substep */);
+    component_type delta_t = delta_t_reducer(delta_t_candidates);
+
     if (max_delta_t > 0) {
         delta_t = suzerain::math::minnan(delta_t, max_delta_t);
     }
@@ -943,6 +981,47 @@ const typename suzerain::traits::component<Element>::type step(
     }
 
     return delta_t;
+}
+
+/**
+ * Using the given method and a linear and nonlinear operator, take substep \c
+ * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
+ * a hybrid implicit/explicit scheme using the system \f$ M u_t = Lu +
+ * N(u,t)\f$.  The time step taken, \f$\Delta{}t\f$, will be based on a stable
+ * value computed during the first nonlinear operator application as well as an
+ * optional fixed maximum step size.
+ *
+ * @param m       The low storage scheme to use.  For example, SMR91Method.
+ * @param L       The linear operator to be treated implicitly.
+ * @param chi     The factor \f$\chi\f$ used to scale the nonlinear operator.
+ * @param N       The nonlinear operator to be treated explicitly.
+ * @param time    The simulation time \f$t\f$ at which to take the step.
+ * @param a       On entry contains \f$u(t)\f$ and on exit contains
+ *                \f$u(t+\Delta{}t)\f$.  The linear operator is applied
+ *                only to this state storage.
+ * @param b       Used as a temporary storage location during substeps.
+ *                The nonlinear operator is applied only to this state storage.
+ * @param max_delta_t An optional maximum time step size.
+ *
+ * @return The time step \f$\Delta{}t\f$ taken.
+ *         It may be less than \c max_delta_t.
+ *
+ * @see ILowStorageMethod for the equation governing time advancement.
+ */
+template< typename Element, typename A, typename B >
+const typename suzerain::traits::component<Element>::type step(
+    const ILowStorageMethod<Element>& m,
+    const ILinearOperator<A,B>& L,
+    const typename suzerain::traits::component<Element>::type chi,
+    const INonlinearOperator<B>& N,
+    const typename suzerain::traits::component<Element>::type time,
+    A& a,  // FIXME: Would love a StateBase subclass restriction here
+    B& b,  // FIXME: Would love a StateBase subclass restriction here
+    const typename suzerain::traits::component<Element>::type max_delta_t = 0)
+{
+    DeltaTReducer reducer;
+    return step<Element, DeltaTReducer, A, B>(m, reducer, L, chi, N,
+                                              time, a, b, max_delta_t);
 }
 
 /**

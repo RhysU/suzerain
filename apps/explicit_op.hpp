@@ -148,7 +148,7 @@ public:
             const boost::shared_ptr<
                   const channel::manufactured_solution>& msoln);
 
-    virtual real_t applyOperator(
+    virtual std::vector<real_t> applyOperator(
             const real_t time,
             suzerain::NoninterleavedState<4,complex_t> &swave,
             const real_t evmaxmag_real,
@@ -213,7 +213,7 @@ public:
             const boost::shared_ptr<
                       const channel::manufactured_solution>& msoln);
 
-    virtual real_t applyOperator(
+    virtual std::vector<real_t> applyOperator(
             const real_t time,
             suzerain::NoninterleavedState<4,complex_t> &swave,
             const real_t evmaxmag_real,
