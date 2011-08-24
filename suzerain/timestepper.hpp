@@ -249,6 +249,32 @@ FPT diffusive_stability_criterion(
                          + one_over_delta_z*one_over_delta_z));
 }
 
+namespace { // anonymous
+
+/** A comparator which considers NaNs to be less than all other values */
+struct NanIsMinimumComparator {
+    template< typename T >
+    bool operator()(const T &x, const T &y) const {
+        return SUZERAIN_UNLIKELY((boost::math::isnan)(x)) || x < y;
+    }
+};
+
+} // end namespace anonymous
+
+/**
+ * A functor that finds the minimum stable time step given a set of candidates.
+ * Any NaN appearing in the candidates causes a NaN to be returned.  The
+ * candidates may not be empty.
+ */
+struct DeltaTReducer {
+    template< typename T>
+    T operator()(const std::vector<T> & candidates) {
+        assert(candidates.size() > 0);
+        return *std::min_element(candidates.begin(), candidates.end(),
+                                 NanIsMinimumComparator());
+    }
+};
+
 /**
  * Provides low-storage Runge-Kutta time integration schemes and the associated
  * operator interfaces.  A hybrid implicit/explicit scheme is available.  The
@@ -882,32 +908,6 @@ const typename suzerain::traits::component<Element>::type substep(
     return delta_t;
 }
 
-namespace { // anonymous
-
-/** A comparator which considers NaNs to be less than all other values */
-struct NanIsMinimumComparator {
-    template< typename T >
-    bool operator()(const T &x, const T &y) const {
-        return SUZERAIN_UNLIKELY((boost::math::isnan)(x)) || x < y;
-    }
-};
-
-} // end namespace anonymous
-
-/**
- * A functor that finds the minimum stable time step given a set of candidates.
- * Any NaN appearing in the candidates causes a NaN to be returned.  The
- * candidates may not be empty.
- */
-struct DeltaTReducer {
-    template< typename T>
-    T operator()(const std::vector<T> & candidates) {
-        assert(candidates.size() > 0);
-        return *std::min_element(candidates.begin(), candidates.end(),
-                                 NanIsMinimumComparator());
-    }
-};
-
 /**
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
@@ -937,10 +937,10 @@ struct DeltaTReducer {
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
-template< typename Element, typename Reducer, typename A, typename B >
+template< typename Element, typename A, typename B, typename Reducer >
 const typename suzerain::traits::component<Element>::type step(
     const ILowStorageMethod<Element>& m,
-    Reducer& delta_t_reducer,
+    Reducer& reducer,
     const ILinearOperator<A,B>& L,
     const typename suzerain::traits::component<Element>::type chi,
     const INonlinearOperator<B>& N,
@@ -958,7 +958,7 @@ const typename suzerain::traits::component<Element>::type step(
     const std::vector<component_type> delta_t_candidates
         = N.applyOperator(time, b, m.evmaxmag_real(), m.evmaxmag_imag(),
                           true /* need delta_t during first substep */);
-    component_type delta_t = delta_t_reducer(delta_t_candidates);
+    component_type delta_t = reducer(delta_t_candidates);
 
     if (max_delta_t > 0) {
         delta_t = suzerain::math::minnan(delta_t, max_delta_t);
@@ -1020,7 +1020,7 @@ const typename suzerain::traits::component<Element>::type step(
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
 {
     DeltaTReducer reducer;
-    return step<Element, DeltaTReducer, A, B>(m, reducer, L, chi, N,
+    return step<Element, A, B, DeltaTReducer>(m, reducer, L, chi, N,
                                               time, a, b, max_delta_t);
 }
 
@@ -1033,7 +1033,7 @@ const typename suzerain::traits::component<Element>::type step(
  * @see make_LowStorageTimeController for an easy way to create
  *      an instance with the appropriate type signature.
  */
-template<typename A, typename B>
+template<typename A, typename B, typename Reducer >
 class LowStorageTimeController
     : public TimeController< typename suzerain::traits::component<
             typename A::element
@@ -1056,15 +1056,23 @@ public:
      * Construct an instance that will advance a simulation built atop the
      * given operators and storage.
      *
-     * @param m The low storage scheme to use.  For example, SMR91Method.
-     * @param L The linear operator to be treated implicitly.
-     * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
-     * @param N The nonlinear operator to be treated explicitly.
-     * @param a On entry contains \f$u(t)\f$ and on exit contains
-     *          \f$u(t+\Delta{}t)\f$.  The linear operator is applied
-     *          only to this state storage.
-     * @param b Used as a temporary storage location during substeps.
-     *          The nonlinear operator is applied only to this state storage.
+     * @param m         The low storage scheme to use.
+     *                  For example, SMR91Method.
+     * @param reducer   A stateful functor taking a vector of stable time step
+     *                  candidates down to a single stable time step.  Users
+     *                  may employ a custom functor compatible with
+     *                  DeltaTReducer to add logic for monitoring or
+     *                  manipulating stable step criteria.
+     * @param L         The linear operator to be treated implicitly.
+     * @param chi       The factor \f$\chi\f$ used to scale the nonlinear
+     *                  operator.
+     * @param N         The nonlinear operator to be treated explicitly.
+     * @param a         On entry contains \f$u(t)\f$ and on exit contains
+     *                  \f$u(t+\Delta{}t)\f$.  The linear operator is applied
+     *                  only to this state storage.
+     * @param b         Used as a temporary storage location during substeps.
+     *                  The nonlinear operator is applied only to this state
+     *                  storage.
      * @param initial_t Initial simulation time.
      * @param min_dt    Initial minimum acceptable time step.  Specifying
      *                  zero, the default, is equivalent to providing
@@ -1075,11 +1083,12 @@ public:
      *                  <tt>std::numeric_limits<time_type>::max()</tt>.
      *                  See max_dt() for the associated semantics.
      *
-     * @see The method step() for more details on \c m, \c L, \c N, \c a,
-     *      and \c b.
+     * @see The method step() for more details on
+     *      \c m, \c reducer, \c L, \c N, \c a, and \c b.
      */
     LowStorageTimeController(
             const ILowStorageMethod<element>& m,
+            Reducer& reducer,
             const ILinearOperator<A,B>& L,
             const typename suzerain::traits::component<element>::type chi,
             const INonlinearOperator<B>& N,
@@ -1092,11 +1101,12 @@ public:
                 initial_t,
                 min_dt,
                 max_dt),
-          m(m), L(L), chi(chi), N(N), a(a), b(b) {}
+          m(m), reducer(reducer), L(L), chi(chi), N(N), a(a), b(b) {}
 
 private:
 
     const ILowStorageMethod<element>& m;
+    Reducer &reducer;
     const ILinearOperator<A,B>& L;
     const typename suzerain::traits::component<element>::type chi;
     const INonlinearOperator<B>& N;
@@ -1106,7 +1116,7 @@ private:
     typename super::time_type stepper(typename super::time_type max_dt)
     {
         return suzerain::timestepper::lowstorage::step(
-                m, L, chi, N, super::current_t(), a, b, max_dt);
+                m, reducer, L, chi, N, super::current_t(), a, b, max_dt);
     }
 
 };
@@ -1117,21 +1127,22 @@ private:
  *
  * \copydoc #LowStorageTimeController
  */
-template< typename A, typename B, typename ChiType >
-LowStorageTimeController<A,B>*
+template< typename A, typename B, typename ChiType, typename Reducer >
+LowStorageTimeController<A,B,Reducer>*
 make_LowStorageTimeController(
         const ILowStorageMethod<typename StateBase<A>::element>& m,
+        Reducer &reducer,
         const ILinearOperator<A,B>& L,
         const ChiType chi,
         const INonlinearOperator<B>& N,
         A& a,  // FIXME: Would love a StateBase subclass restriction here
         B& b,  // FIXME: Would love a StateBase subclass restriction here
-        typename LowStorageTimeController<A,B>::time_type initial_t = 0,
-        typename LowStorageTimeController<A,B>::time_type min_dt = 0,
-        typename LowStorageTimeController<A,B>::time_type max_dt = 0)
+        typename LowStorageTimeController<A,B,Reducer>::time_type initial_t = 0,
+        typename LowStorageTimeController<A,B,Reducer>::time_type min_dt = 0,
+        typename LowStorageTimeController<A,B,Reducer>::time_type max_dt = 0)
 {
-    return new LowStorageTimeController<A,B>(
-            m, L, chi, N, a, b, initial_t, min_dt, max_dt);
+    return new LowStorageTimeController<A,B,Reducer>(
+            m, reducer, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }
 
 
