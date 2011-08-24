@@ -724,18 +724,9 @@ std::vector<real_t> NonlinearOperator::applyOperator(
         dgrid.transform_physical_to_wave(&sphys(i,0));
     }
 
-    // Perform Allreduce on stable time step sizes when necessary
-    // Note delta_t_candidates aliases {convective,diffusive}_delta_t
-    if (delta_t_requested) {
-        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE,
-                    delta_t_candidates.c_array(), delta_t_candidates.size(),
-                    suzerain::mpi::datatype<real_t>::value,
-                    MPI_MIN, MPI_COMM_WORLD));
-    }
-
     // Return the stable time step criteria separately on each rank.  The time
     // stepping logic must perform the Allreduce.  Delegating the Allreduce
-    // responsiblity allows reducing additional info with minimal overhead.
+    // responsibility allows reducing additional info with minimal overhead.
     return std::vector<real_t>(delta_t_candidates.begin(),
                                delta_t_candidates.end());
 

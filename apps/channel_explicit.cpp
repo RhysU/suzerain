@@ -435,6 +435,31 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
     return keep_advancing;
 }
 
+/**
+ * A functor that performs an MPI Allreduce to determine the minimum
+ * stable time step size across all ranks.
+ */
+static struct DeltaTAllreducer {
+
+    template< typename T>
+    T operator()(const std::vector<T>& delta_t_candidates) {
+
+        // Copy incoming candidates so we may mutate them
+        std::vector<T> candidates(delta_t_candidates);
+
+        // Allreduce so each rank knows the minimum of each criterion
+        assert(candidates.size() > 0);
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE,
+                    &candidates.front(), candidates.size(),
+                    suzerain::mpi::datatype<T>::value,
+                    MPI_MIN, MPI_COMM_WORLD));
+
+        // Delegate remaining work on each rank to DeltaTReducer
+        return suzerain::timestepper::DeltaTReducer()(candidates);
+    }
+
+} delta_t_allreducer;
+
 /** Wall time at which MPI_Init completed */
 static double wtime_mpi_init;
 
@@ -672,7 +697,8 @@ int main(int argc, char **argv)
     N.reset(new channel::NonlinearOperator(
                 scenario, grid, *dgrid, *b, *bop, msoln));
     tc.reset(make_LowStorageTimeController(
-                *m, *L, real_t(1)/(grid.dN.x()*grid.dN.z()), *N,
+                *m, delta_t_allreducer,
+                *L, real_t(1)/(grid.dN.x()*grid.dN.z()), *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 
