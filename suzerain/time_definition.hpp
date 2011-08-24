@@ -60,6 +60,9 @@ public:
      *                            the simulation.
      * @param default_advance_nt  Maximum number of discrete time steps to
      *                            advance the simulation.
+     * @param default_advance_wt  Maximum amount of wall time to advance
+     *                            the simulation.
+     *                            advance the simulation.
      * @param default_status_dt   Maximum physical time between status updates.
      * @param default_status_dt   Maximum number of discrete time steps between
      *                            status updates.
@@ -71,19 +74,23 @@ public:
      *                            <tt>(0,1]</tt>, this increases the 
      *                            conservativeness of the time stepping.
      */
-    explicit TimeDefinition(FPT default_advance_dt  = 0,
-                            int default_advance_nt  = 0,
-                            FPT default_status_dt   = 0,
-                            int default_status_nt   = 0,
-                            FPT default_min_dt      = 0,
-                            FPT default_max_dt      = 0,
-                            FPT default_evmagfactor = 1);
+    TimeDefinition(FPT default_advance_dt,
+                   int default_advance_nt,
+                   FPT default_advance_wt,
+                   FPT default_status_dt,
+                   int default_status_nt,
+                   FPT default_min_dt,
+                   FPT default_max_dt,
+                   FPT default_evmagfactor);
 
     /** Maximum amount of physical time to advance the simulation. */
     FPT advance_dt;
 
     /** Maximum number of discrete time steps to advance the simulation. */
     int advance_nt;
+
+    /** Maximum amount of wall time to advance the simulation. */
+    FPT advance_wt;
 
     /** Maximum physical time between status updates. */
     FPT status_dt;
@@ -120,11 +127,62 @@ private:
         *value = t;
     }
 
+    /** Helper used to parse <tt>dd:hh:mm:ss.ss</tt>-like options */
+    static void parse_walltime(const std::string &s,
+                               FPT *value,
+                               const char *name)
+    {
+        // Parses dd:hh:mm:ss.ss, ..., mm:ss.ss, or ss.ss into seconds.
+        // Additionally allows any of dd, hh, mm, or ss.ss to be expressions.
+
+        using boost::algorithm::is_any_of;
+        using boost::algorithm::split;
+        using boost::algorithm::trim;
+        using boost::bind;
+        using std::back_inserter;
+        using std::for_each;
+        using std::invalid_argument;
+        using std::locale;
+        using std::remove;
+        using std::string;
+        using std::transform;
+        using std::vector;
+
+        // Split colon-separated spec into whitespace-trimmed, non-empty tokens
+        vector<string> tokens;
+        split(tokens, s, is_any_of(":"));
+        for_each(tokens.begin(), tokens.end(), bind(trim<string>, _1, locale()));
+        tokens.erase(remove(tokens.begin(), tokens.end(), ""), tokens.end());
+
+        // Check incoming string lengths
+        if (tokens.size() < 1) throw invalid_argument(
+                string(name) + " did not specify a wall time");
+        if (tokens.size() > 4) throw invalid_argument(
+                string(name) + " not of format [dd:[hh:[mm:]]]ss.ss");
+
+        // Parse dd, hh, mm, and ss into components[0], [1], [2], and [3]
+        vector<FPT> components(4 - tokens.size(), 0);  // Zero missing values
+        components.reserve(4);                         // Preallocate storage
+        transform(tokens.begin(), tokens.end(),back_inserter(components),
+                  bind(&suzerain::exprparse<FPT>, _1, name));
+
+        // Convert components to floating seconds
+        FPT t =      components[0];  // days
+        t = 24 * t + components[1];  // hours
+        t = 60 * t + components[2];  // minutes
+        t = 60 * t + components[3];  // seconds
+
+        // Validate and store result
+        suzerain::validation::ensure_nonnegative(t, name);
+        *value = t;
+    }
+
 };
 
 template< typename FPT >
 TimeDefinition<FPT>::TimeDefinition(FPT default_advance_dt,
                                     int default_advance_nt,
+                                    FPT default_advance_wt,
                                     FPT default_status_dt,
                                     int default_status_nt,
                                     FPT default_min_dt,
@@ -133,6 +191,7 @@ TimeDefinition<FPT>::TimeDefinition(FPT default_advance_dt,
     : IDefinition("Time advancement parameters"),
       advance_dt(default_advance_dt),
       advance_nt(default_advance_nt),
+      advance_wt(default_advance_wt),
       status_dt(default_status_dt),
       status_nt(default_status_nt),
       min_dt(default_min_dt),
@@ -157,6 +216,11 @@ TimeDefinition<FPT>::TimeDefinition(FPT default_advance_dt,
                             &ensure_nonnegative<int>, "advance_nt"))
             ->default_value(lexical_cast<string>(advance_nt)),
          "Maximum number of discrete time steps to advance the simulation")
+        ("advance_wt", value<string>(NULL)
+            ->notifier(bind(&parse_walltime, _1, &advance_wt, "advance_wt"))
+            ->default_value(lexical_cast<string>(advance_wt)),
+            "Maximum amount of wall time to advance the simulation"
+            " as [dd:[hh:[mm:]]]ss.ss")
         ("status_dt", value<string>(NULL)
             ->notifier(bind(&parse_option<FPT>, _1, &status_dt,
                             &ensure_nonnegative<FPT>, "status_dt"))

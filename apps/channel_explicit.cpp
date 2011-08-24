@@ -92,6 +92,7 @@ static const RestartDefinition restart(
 static const TimeDefinition<real_t> timedef(
         /* advance_dt                */ 0,
         /* advance_nt                */ 0,
+        /* advance_wt                */ 0,
         /* status_dt                 */ 0,
         /* status_nt                 */ 0,
         /* min_dt                    */ 1e-10,
