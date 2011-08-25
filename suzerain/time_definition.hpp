@@ -163,8 +163,9 @@ private:
         // Parse dd, hh, mm, and ss into components[0], [1], [2], and [3]
         vector<FPT> components(4 - tokens.size(), 0);  // Zero missing values
         components.reserve(4);                         // Preallocate storage
-        transform(tokens.begin(), tokens.end(),back_inserter(components),
-                  bind(&suzerain::exprparse<FPT>, _1, name));
+        FPT (*f)(const std::string&, const char *) = &suzerain::exprparse<FPT>;
+        transform(tokens.begin(), tokens.end(), back_inserter(components),
+                  bind(f, _1, name));
 
         // Convert components to floating seconds
         FPT t =      components[0];  // days
