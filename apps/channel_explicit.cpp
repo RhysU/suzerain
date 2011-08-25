@@ -61,6 +61,7 @@
 
 #pragma warning(disable:383 1572)
 
+using boost::array;
 using boost::make_shared;
 using boost::numeric_cast;
 using boost::scoped_ptr;
@@ -139,7 +140,7 @@ static void atexit_metadata(void) {
 static std::string information_L2() {
 
     // Collective computation of the L_2 norms
-    const boost::array<channel::L2,channel::field::count> L2
+    const array<channel::L2,channel::field::count> L2
         = channel::field_L2(*state_linear, scenario, grid, *dgrid, *gop);
 
     // Prepare the status message
@@ -215,7 +216,7 @@ static std::string information_manufactured_solution_absolute_error(
     channel::accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
             scenario, grid, *dgrid, *b, *bop, simulation_time);
-    const boost::array<channel::L2,channel::field::count> L2
+    const array<channel::L2,channel::field::count> L2
         = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
 
     // Output absolute global errors for each field
@@ -330,22 +331,25 @@ static bool save_restart(real_t t, std::size_t nt)
 }
 
 /**
- * Type of atomic locations used to track the following signal-based actions:
+ * Type of atomic locations used to track local receipt of the following
+ * signal-based actions:
+ *
  * \li \c 0 Output a status message
  * \li \c 1 Write a restart file
  * \li \c 2 Tear down the simulation
  */
-typedef boost::array<sig_atomic_t,3> atomic_signal_received_t;
+typedef array<sig_atomic_t,3> atomic_signal_received_t;
 
-/** Atomic locations used to track signal-based actions */
+/** Atomic locations used to track local signal receipt. */
 static atomic_signal_received_t atomic_signal_received = {{ /*0*/ }};
 
 /** Signal handler which mutates \c atomic_signal_received. */
-static void process_signal(int sig) {
+static void process_signal(int sig)
+{
 
-    // Strictly speaking this handler performs somewhat too much work.  The
-    // design choice was to have this extra work done on the (rare) signal
-    // receipt rather than on the (frequent) polling of flags.
+    // Strictly speaking this handler performs too much work.  The design
+    // choice was to have this extra work done on the (rare) signal receipt
+    // rather than on the (frequent) polling of signal receipt status.
 
     std::vector<int>::const_iterator end;
 
@@ -368,6 +372,15 @@ static void process_signal(int sig) {
     }
 }
 
+/**
+ * Type of non-atomic locations used to track global receipt of the
+ * same actions as atomic_signal_received;
+ */
+typedef array<int,atomic_signal_received_t::static_size> signal_received_t;
+
+/** Non-atomic locations used to track global signal receipt. */
+static signal_received_t signal_received = {{ /*0*/ }};
+
 /** Flag used to indicate early time advancement stopping is legit. */
 static bool soft_teardown = false;
 
@@ -377,26 +390,8 @@ static bool soft_teardown = false;
  */
 static bool process_any_signals_received(real_t t, std::size_t nt)
 {
-    static const int N = atomic_signal_received_t::static_size;
-
-    // Take snapshot of and then clear atomic_signal_received
-    boost::array<int,N> signal_received = atomic_signal_received;
-    std::fill_n(atomic_signal_received.begin(), N, 0);
-
-    if (DEBUG_ENABLED) {
-        const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
-        for (int i = 0; i < N; ++i) {
-            if (signal_received[i]) {
-                DEBUG("Received signal number " << signal_received[i]
-                      << " on rank " << rank);
-            }
-        }
-    }
-
-    // Allreduce to roll up information from all ranks
-    // FIXME Hide this communication cost within our time step Allreduce
-    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, signal_received.c_array(), N,
-                                   MPI_INT, MPI_MAX, MPI_COMM_WORLD));
+    // DeltaTAllreducer performs the Allreduce necessary to get local status
+    // from atomic_signal_received into global status in signal_received.
 
     // Keep advancing time unless keep_advancing is set false
     bool keep_advancing = true;
@@ -432,12 +427,18 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
         keep_advancing = false;
     }
 
+    // Clear signal_received to defensively avoid stale data bugs.
+    // These would only be problematic if process_any_signals_received
+    // was run multiple times in between DeltaTAllreducer invocations.
+    signal_received.assign(0);
+
     return keep_advancing;
 }
 
 /**
- * A functor that performs an MPI Allreduce to determine the minimum
- * stable time step size across all ranks.
+ * A functor that performs an MPI Allreduce to determine the minimum stable
+ * time step size across all ranks.  The same MPI Allreduce is used to hide the
+ * cost of querying atomic_signal_received across all ranks.
  */
 static struct DeltaTAllreducer {
 
@@ -447,14 +448,45 @@ static struct DeltaTAllreducer {
         // Copy incoming candidates so we may mutate them
         std::vector<T> candidates(delta_t_candidates);
 
-        // Allreduce so each rank knows the minimum of each criterion
+        // Take atomic snapshop of and then clear atomic_signal_received
+        signal_received = atomic_signal_received;
+        atomic_signal_received.assign(0);
+
+        if (DEBUG_ENABLED) {
+            const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+            for (int i = 0; i < signal_received_t::static_size; ++i) {
+                if (signal_received[i]) {
+                    DEBUG("Received signal number " << signal_received[i]
+                        << " on rank " << rank);
+                }
+            }
+        }
+
+        // Push a negated version of signal_received onto end of candidates
+        candidates.reserve(candidates.size() + signal_received_t::static_size);
+        std::transform(signal_received.begin(), signal_received.end(),
+                       std::back_inserter(candidates),
+                       std::negate<signal_received_t::value_type>());
+
+        // Allreduce so each rank knows the minimum of all candidates
         assert(candidates.size() > 0);
         SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE,
                     &candidates.front(), candidates.size(),
                     suzerain::mpi::datatype<T>::value,
                     MPI_MIN, MPI_COMM_WORLD));
 
-        // Delegate remaining work on each rank to DeltaTReducer
+        // Negate the signal_received details once again to get a logical MAX
+        // stored within signal_received.  Erase temporaries from candidates.
+        std::transform(candidates.begin() + delta_t_candidates.size(),
+                       candidates.begin() + delta_t_candidates.size()
+                                          + signal_received_t::static_size,
+                       signal_received.begin(),
+                       std::negate<signal_received_t::value_type>());
+        candidates.erase(candidates.begin() + delta_t_candidates.size(),
+                         candidates.begin() + delta_t_candidates.size()
+                                            + signal_received_t::static_size);
+
+        // Delegate remaining work on each rank to the usual DeltaTReducer
         return suzerain::timestepper::DeltaTReducer()(candidates);
     }
 
@@ -572,7 +604,7 @@ int main(int argc, char **argv)
     // Generating unique file names as needed using mkstemp(3)
     {
         // Pack a temporary buffer with the three file name templates
-        boost::array<std::size_t,4> pos = {{
+        array<std::size_t,4> pos = {{
                 0,
                 restart.metadata.length()     + 1,
                 restart.uncommitted.length()  + 1,
@@ -781,7 +813,8 @@ int main(int argc, char **argv)
             }
         }
 
-        // Iff we registered a handler, process signals actions in time stepper
+        // Iff we registered any handlers, process signal receipt in stepper.
+        // We can afford this every time step because of DeltaTAllreducer.
         if (s.size() > 0) {
             tc->add_periodic_callback(
                     tc->forever_t(), 1, process_any_signals_received);
