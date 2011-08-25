@@ -444,6 +444,9 @@ static double wtime_mpi_init;
 /** Wall time elapsed during loading of state from the restart file */
 static double wtime_load_state;
 
+/** Wall time at which we began time stepping */
+static double wtime_advance_start;
+
 /**
  * A stateful functor that performs an MPI Allreduce to determine the minimum
  * stable time step size across all ranks.  The same MPI Allreduce is used to
@@ -459,10 +462,8 @@ private:
     // restart processing).
     boost::accumulators::accumulator_set<
             real_t,
-            boost::accumulators::stats<boost::accumulators::tag::mean,
-                                       boost::accumulators::tag::max,
-                                       boost::accumulators::tag::variance>
-        > period_stats;
+            boost::accumulators::stats<boost::accumulators::tag::max>
+        > period;
 
 public:
 
@@ -494,19 +495,20 @@ public:
 
             // Accumulate time step period statistics
             const double wtime = MPI_Wtime();
-            period_stats(wtime - wtime_last);
+            period(wtime - wtime_last);
 
-            // Find a reasonable time for the next time step completion...
-            // (that is, finish current plus finish another one)
+            // Find a pessimistic time for the next time step completion...
+            // (that is, finish current step *and* finish another one)
             namespace acc = boost::accumulators;
-            double wtime_projected = wtime + 2*acc::mean(period_stats)
-                                   + 2*std::sqrt(acc::variance(period_stats));
+            double wtime_projected = wtime + 2*(acc::max)(period);
             // ...to which we add a pessimistic estimate for dumping a restart
             if (last_restart_saved_nt == numeric_limits<std::size_t>::max()) {
-                wtime_projected += wtime_load_state;  // Use load as surrogate
+                wtime_projected += 2*wtime_load_state;   // Load is surrogate
             } else {
-                wtime_projected += (acc::max)(period_stats); // Includes dumps
+                wtime_projected += 2*(acc::max)(period); // Includes dumps
             }
+            // ...to which we add an estimate of other finalization costs
+            wtime_projected += 2*(wtime_advance_start - wtime_mpi_init);
 
             // Raise a "signal" if we suspect we cannot teardown quickly enough
             signal_received[3] = (wtime_projected >=   wtime_mpi_init
@@ -882,7 +884,7 @@ int main(int argc, char **argv)
     }
 
     // Advance time according to advance_dt, advance_nt criteria
-    const double wtime_advance_start = MPI_Wtime();
+    wtime_advance_start = MPI_Wtime();
     bool advance_success = true;
     switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
         case 3:
