@@ -462,7 +462,9 @@ private:
     // restart processing).
     boost::accumulators::accumulator_set<
             real_t,
-            boost::accumulators::stats<boost::accumulators::tag::max>
+            boost::accumulators::stats<boost::accumulators::tag::max,
+                                       boost::accumulators::tag::mean,
+                                       boost::accumulators::tag::variance>
         > period;
 
 public:
@@ -500,12 +502,13 @@ public:
             // Find a pessimistic time for the next time step completion...
             // (that is, finish current step *and* finish another one)
             namespace acc = boost::accumulators;
-            double wtime_projected = wtime + 2*(acc::max)(period);
+            double wtime_projected = wtime
+                + 2*(acc::mean(period) + 3*std::sqrt(acc::variance(period)));
             // ...to which we add a pessimistic estimate for dumping a restart
             if (last_restart_saved_nt == numeric_limits<std::size_t>::max()) {
-                wtime_projected += 2*wtime_load_state;   // Load is surrogate
+                wtime_projected += 2*wtime_load_state;  // Load as surrogate
             } else {
-                wtime_projected += 2*(acc::max)(period); // Includes dumps
+                wtime_projected += (acc::max)(period);  // Includes dumps
             }
             // ...to which we add an estimate of other finalization costs
             wtime_projected += 2*(wtime_advance_start - wtime_mpi_init);
