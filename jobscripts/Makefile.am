@@ -15,12 +15,12 @@ do_subst = $(SED) -e 's,[@]bindir[@],$(bindir),g'         \
 
 $(JOBSCRIPTS) : Makefile
 
-qsub.lonestar : $(srcdir)/qsub.tacc.in
-	$(do_subst) "$(srcdir)/$<" | $(SED) -e 's,[@]corespernode[@],12,g' > "$@"
+qsub.lonestar : qsub.tacc.in
+	$(do_subst) "$<" | $(SED) -e 's,[@]corespernode[@],12,g' > "$@"
 	chmod +x "$@"
 
-qsub.ranger : $(srcdir)/qsub.tacc.in
-	$(do_subst) "$(srcdir)/$<" | $(SED) -e 's,[@]corespernode[@],16,g' > "$@"
+qsub.ranger : qsub.tacc.in
+	$(do_subst) "$<" | $(SED) -e 's,[@]corespernode[@],16,g' > "$@"
 	chmod +x "$@"
 
 # Required for AX_AM_MACROS
