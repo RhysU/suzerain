@@ -60,6 +60,8 @@
 
 // Include Boost functionality used throughout Suzerain
 #ifdef SUZERAIN_HAVE_BOOST
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/array.hpp>
 #include <boost/bind.hpp>

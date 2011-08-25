@@ -336,9 +336,10 @@ static bool save_restart(real_t t, std::size_t nt)
  *
  * \li \c 0 Output a status message
  * \li \c 1 Write a restart file
- * \li \c 2 Tear down the simulation
+ * \li \c 2 Tear down the simulation (reactively  due to an incoming signal)
+ * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
  */
-typedef array<sig_atomic_t,3> atomic_signal_received_t;
+typedef array<sig_atomic_t,4> atomic_signal_received_t;
 
 /** Atomic locations used to track local signal receipt. */
 static atomic_signal_received_t atomic_signal_received = {{ /*0*/ }};
@@ -409,21 +410,23 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
     }
 
     if (signal_received[2]) {
-        INFO0("Initiating teardown due to receipt of "
-              << suzerain_signal_name(signal_received[2]));
+        const char * const name = suzerain_signal_name(signal_received[2]);
+        INFO0("Initiating teardown due to receipt of " << name);
         soft_teardown  = true;
+        keep_advancing = false;
         switch (signal_received[2]) {
-            case SIGTERM:
-                INFO0("Receipt of another SIGTERM"
-                      " will forcibly terminate program");
-                signal(SIGTERM, SIG_DFL);
-                break;
             case SIGINT:
-                INFO0("Receipt of another SIGINT"
+            case SIGTERM:
+                INFO0("Receipt of another " << name <<
                       " will forcibly terminate program");
-                signal(SIGINT, SIG_DFL);
+                signal(signal_received[2], SIG_DFL);
                 break;
         }
+    }
+
+    if (signal_received[3]) {
+        INFO0("Initiating proactive teardown because of wall time constraint");
+        soft_teardown  = true;
         keep_advancing = false;
     }
 
@@ -435,18 +438,38 @@ static bool process_any_signals_received(real_t t, std::size_t nt)
     return keep_advancing;
 }
 
-/**
- * A functor that performs an MPI Allreduce to determine the minimum stable
- * time step size across all ranks.  The same MPI Allreduce is used to hide the
- * cost of querying atomic_signal_received across all ranks.
- */
-static struct DeltaTAllreducer {
+/** Wall time at which MPI_Init completed */
+static double wtime_mpi_init;
 
-    template< typename T>
-    T operator()(const std::vector<T>& delta_t_candidates) {
+/** Wall time elapsed during loading of state from the restart file */
+static double wtime_load_state;
+
+/**
+ * A stateful functor that performs an MPI Allreduce to determine the minimum
+ * stable time step size across all ranks.  The same MPI Allreduce is used to
+ * hide the cost of querying atomic_signal_received across all ranks.
+ */
+static class DeltaTAllreducer {
+
+private:
+
+    // Maintains coarse statistics on the wall time duration between calls.
+    // This provides a rank-specific measure of the variability per time step
+    // which includes all registered periodic callbacks (e.g. status and
+    // restart processing).
+    boost::accumulators::accumulator_set<
+            real_t,
+            boost::accumulators::stats<boost::accumulators::tag::mean,
+                                       boost::accumulators::tag::max,
+                                       boost::accumulators::tag::variance>
+        > period_stats;
+
+public:
+
+    real_t operator()(const std::vector<real_t>& delta_t_candidates) {
 
         // Copy incoming candidates so we may mutate them
-        std::vector<T> candidates(delta_t_candidates);
+        std::vector<real_t> candidates(delta_t_candidates);
 
         // Take atomic snapshop of and then clear atomic_signal_received
         signal_received = atomic_signal_received;
@@ -462,6 +485,41 @@ static struct DeltaTAllreducer {
             }
         }
 
+        // When possible, obtain time step period statistics and a projected
+        // wall time for when we could complete the next time step and dump a
+        // restart file.  If the projection is after --advance_wt, register
+        // teardown.  Logic here is key to proactive soft_teardown success.
+        static double wtime_last = std::numeric_limits<double>::quiet_NaN();
+        if (timedef.advance_wt > 0 && (boost::math::isfinite)(wtime_last)) {
+
+            // Accumulate time step period statistics
+            const double wtime = MPI_Wtime();
+            period_stats(wtime - wtime_last);
+
+            // Find a reasonable time for the next time step completion...
+            // (that is, finish current plus finish another one)
+            namespace acc = boost::accumulators;
+            double wtime_projected = wtime + 2*acc::mean(period_stats)
+                                   + 2*std::sqrt(acc::variance(period_stats));
+            // ...to which we add a pessimistic estimate for dumping a restart
+            if (last_restart_saved_nt == numeric_limits<std::size_t>::max()) {
+                wtime_projected += wtime_load_state;  // Use load as surrogate
+            } else {
+                wtime_projected += (acc::max)(period_stats); // Includes dumps
+            }
+
+            // Raise a "signal" if we suspect we cannot teardown quickly enough
+            signal_received[3] = (wtime_projected >=   wtime_mpi_init
+                                                     + timedef.advance_wt);
+            if (DEBUG_ENABLED && signal_received[3]) {
+                const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+                DEBUG("Rank " << rank << " projects delaying teardown until "
+                      << wtime_projected - wtime_mpi_init
+                      << " elapsed seconds is dangerous.");
+            }
+        }
+        wtime_last = MPI_Wtime();
+
         // Push a negated version of signal_received onto end of candidates
         candidates.reserve(candidates.size() + signal_received_t::static_size);
         std::transform(signal_received.begin(), signal_received.end(),
@@ -472,7 +530,7 @@ static struct DeltaTAllreducer {
         assert(candidates.size() > 0);
         SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE,
                     &candidates.front(), candidates.size(),
-                    suzerain::mpi::datatype<T>::value,
+                    suzerain::mpi::datatype<real_t>::value,
                     MPI_MIN, MPI_COMM_WORLD));
 
         // Negate the signal_received details once again to get a logical MAX
@@ -491,9 +549,6 @@ static struct DeltaTAllreducer {
     }
 
 } delta_t_allreducer;
-
-/** Wall time at which MPI_Init completed */
-static double wtime_mpi_init;
 
 /** Main driver logic */
 int main(int argc, char **argv)
@@ -685,7 +740,11 @@ int main(int argc, char **argv)
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     real_t initial_t;
     channel::load_time(esioh, initial_t);
-    channel::load(esioh, *state_linear, grid, *dgrid, *b, *bop);
+    {
+        const double begin = MPI_Wtime();
+        channel::load(esioh, *state_linear, grid, *dgrid, *b, *bop);
+        wtime_load_state = MPI_Wtime() - begin;
+    }
     esio_file_close(esioh);
 
     // If requested, add noise to the momentum fields at startup (expensive).
@@ -814,10 +873,11 @@ int main(int argc, char **argv)
         }
 
         // Iff we registered any handlers, process signal receipt in stepper.
+        // Notice signal receipt include --advance_wt calling us a pumpkin.
         // We can afford this every time step because of DeltaTAllreducer.
-        if (s.size() > 0) {
-            tc->add_periodic_callback(
-                    tc->forever_t(), 1, process_any_signals_received);
+        if (s.size() > 0 || timedef.advance_wt > 0) {
+            tc->add_periodic_callback(tc->forever_t(), 1,
+                                      process_any_signals_received);
         }
     }
 
