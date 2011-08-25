@@ -11,7 +11,12 @@
 #$ -notify               # Notify job of impending doom
 set -m                   # Employ job control
 set -u                   # Abort on undefined shell variables
-H_RT=$(expr qstat -j $JOB_ID | grep h_rt | awk -F 'h_rt=' '{print $2}')
+
+# Either obtain the soft run time or compute it from the hard run time
+H_RT=$(qstat -j $JOB_ID | egrep -o 'h_rt=[0-9]+*' | egrep -o '[0-9]+')
+S_RT=$(qstat -j $JOB_ID | egrep -o 's_rt=[0-9]+*' | egrep -o '[0-9]+')
+S_RT=${S_RT:=$(expr $H_RT - 60)}
+test S_RT -gt 0 || S_RT=0
 
 # Provide defaults for environment variables used to build CMD (see below).
 # Rather than editing this job submission script, modify your environment!
@@ -30,7 +35,7 @@ INPUT=$(readlink -f $INPUT)
 JOBDIR=$(readlink -f $JOBDIR)
 mkdir -p "$JOBDIR"
 cd -P "$JOBDIR"
-CMD="\"$BINARY\" \"$INPUT\" $ADVANCE $STATUS $DECOMP $OPTIONS $TMPFILES"
+CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $OPTIONS $TMPFILES"
 
 # Compute threading based on job size and way-ness
 export OMP_NUM_THREADS=$(expr @corespernode@ / \( $NSLOTS / $NHOSTS \) )
@@ -52,11 +57,11 @@ CLUSTER:  $SGE_CLUSTER_NAME ${PE-} $NSLOTS
 JOB_ID:   $JOB_ID
 JOBDIR:   $JOBDIR
 STDOUT:   $SGE_STDOUT_PATH
-H_RT:     $H_RT
 
 BINARY:   $BINARY
 INPUT:    $INPUT
 ADVANCE:  $ADVANCE
+S_RT:     $S_RT
 STATUS:   $STATUS
 DECOMP:   $DECOMP
 OPTIONS:  $OPTIONS
