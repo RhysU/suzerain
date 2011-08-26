@@ -38,8 +38,9 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/os.h>
 #include "logger.hpp"
-#include <log4cxx/helpers/pool.h>
 #include <log4cxx/file.h>
+#include <log4cxx/helpers/pool.h>
+#include <log4cxx/logmanager.h>
 
 // Beware http://old.nabble.com/Static-destruction-fiasco--td31026705.html
 #define LOG4CXX
@@ -110,7 +111,12 @@ static const char default_log4cxx_configuration[] =
 
 void initialize(MPI_Comm)
 {
-    // TODO Programmatically enforce execution before log4cxx::Logger init
+    // Programmatically enforce execution before log4cxx auto-configuration
+    if (log4cxx::LogManager::getLoggerRepository()->isConfigured()) {
+        throw std::logic_error(
+            "Apache log4cxx subsystem initialized before logger::initialize()."
+            "\nThis is a CODING ERROR and will drastically hurt scalability.");
+    }
 
     static const char log4j_config_envvar[]   = "log4j.configuration";
     static const char log4cxx_config_envvar[] = "LOG4CXX_CONFIGURATION";
@@ -255,6 +261,9 @@ void initialize(MPI_Comm)
         unlink(tmpl.get());
         delete[] buf;
     }
+
+    // Assert that all ranks indeed have initialized logging subsystems
+    assert(log4cxx::LogManager::getLoggerRepository()->isConfigured());
 }
 
 } // end namespace logger
