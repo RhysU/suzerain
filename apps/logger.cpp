@@ -43,9 +43,10 @@
 #include <log4cxx/logmanager.h>
 
 // Beware http://old.nabble.com/Static-destruction-fiasco--td31026705.html
-#define LOG4CXX
+#if !defined(LOG4CXX)
+#define LOG4CXX 1
+#endif
 #include <log4cxx/helpers/aprinitializer.h>
-#undef LOG4CXX
 static struct APRInitializerWorkaroundType {
     APRInitializerWorkaroundType() {
         ::log4cxx::helpers::APRInitializer::initialize();
@@ -242,24 +243,51 @@ void initialize(MPI_Comm)
     if (worldrank == 0) munmap(buf, buflen);
 
     // Non-zero ranks write file, initialize logging from it, and remove it
+    // High paranoia as either bugs and/or race conditions have arisen herein
     if (worldrank > 0) {
 
-        boost::scoped_array<char> tmpl(new_mkstemp_config_template());
-        int fd = mkstemp(tmpl.get());
-        if (fd != -1) {
-            FILE *f = fdopen(fd, "w+");
+        // Always delete[] previously allocated buf on scope exit
+        boost::scoped_array<char> guard_buf(buf);
+
+        // RAII helper to create, close, and unlink a temporary file
+        struct guard_tmpfd {
+            const char * t;
+            int const i;
+#ifdef _GNU_SOURCE
+            guard_tmpfd(char *t) : t(t), i(mkostemp(t, O_SYNC)) {}
+#else
+            guard_tmpfd(char *t) : t(t), i(mkstemp(t)) {}
+#endif
+            operator int()          const { return i; }
+            operator const char *() const { return t; }
+            operator bool()         const { return i != -1; }
+            ~guard_tmpfd() { if (*this) { close(i); unlink(t); } delete[] t; }
+        };
+
+        // RAII helper to close a FILE*
+        struct guard_pFILE {
+            FILE * const p;
+            guard_pFILE(FILE *p) : p(p) {}
+            operator FILE*() const { return p; }
+            operator bool()  const { return p != NULL; }
+            ~guard_pFILE() { if (*this) { fclose(p); } }
+        };
+
+        // Write the received configuration to a temporary file with known name
+        const guard_tmpfd fd(new_mkstemp_config_template());
+        if (fd) {
+            const guard_pFILE f(fdopen(fd, "w+"));
             if (f) {
                 fwrite(buf, 1, buflen, f);
-                fclose(f);
+                fflush(f);
             }
-            close(fd);
         }
 
-        setenv(log4cxx_config_envvar, tmpl.get(), 1);
+        // Initialize log4cxx using the named temporary file
+        setenv(log4cxx_config_envvar, fd, 1);
         initialize_logger_using_world_rank();
 
-        unlink(tmpl.get());
-        delete[] buf;
+        // Resources cleaned up by RAII helper class destructors
     }
 
     // Assert that all ranks indeed have initialized logging subsystems
