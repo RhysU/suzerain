@@ -42,20 +42,28 @@
 #include <log4cxx/helpers/pool.h>
 #include <log4cxx/logmanager.h>
 
-// Beware http://old.nabble.com/Static-destruction-fiasco--td31026705.html
 #if !defined(LOG4CXX)
 #define LOG4CXX 1
 #endif
 #include <log4cxx/helpers/aprinitializer.h>
-static struct APRInitializerWorkaroundType {
-    APRInitializerWorkaroundType() {
-        ::log4cxx::helpers::APRInitializer::initialize();
-    }
-} APRInitializerWorkaround;
 
 namespace logger {
 
 namespace detail {
+
+// Workaround http://old.nabble.com/Static-destruction-fiasco--td31026705.html
+// and the related https://issues.apache.org/jira/browse/LOGCXX-338
+static struct Log4cxxSingletonBugWorkaroundsType {
+    Log4cxxSingletonBugWorkaroundsType() {
+        ::log4cxx::helpers::APRInitializer::initialize();
+    }
+// FIXME Does not correct crashes on exit
+//  ~Log4cxxSingletonBugWorkaroundsType() {
+//      if (!::log4cxx::helpers::APRInitializer::isDestructed) {
+//          ::log4cxx::LogManager::shutdown();
+//      }
+//  }
+} workarounds;
 
 // Global logging instance
 ::log4cxx::LoggerPtr loggerptr;
@@ -87,7 +95,6 @@ static void initialize_logger_using_world_rank()
     }
     loggerptr->setLevel(level);
 }
-
 
 // Generate and return a temporary filename template for mkstemp
 static char * new_mkstemp_config_template()
