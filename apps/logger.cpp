@@ -269,7 +269,7 @@ void initialize(MPI_Comm)
                 errcod = errno;
                 errsrc = "fdopen(3)";
             } else {
-                if (fwrite(buf, 1, buflen, f) != buflen) {
+                if (fwrite(buf, 1, buflen, f) != (unsigned) buflen) {
                     errcod = errno;
                     errsrc = "fwrite(3)";
                 } else {
