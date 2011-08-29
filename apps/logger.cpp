@@ -33,19 +33,26 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <sys/mman.h>
 #include <suzerain/error.h>
 #include <suzerain/mpi.hpp>
-#include <suzerain/os.h>
-#include "logger.hpp"
+
+#include <log4cxx/basicconfigurator.h>
 #include <log4cxx/file.h>
+#include <log4cxx/helpers/bytearrayinputstream.h>
+#include <log4cxx/helpers/bytebuffer.h>
+#include <log4cxx/helpers/exception.h>
+#include <log4cxx/helpers/fileinputstream.h>
 #include <log4cxx/helpers/pool.h>
+#include <log4cxx/helpers/properties.h>
 #include <log4cxx/logmanager.h>
+#include <log4cxx/propertyconfigurator.h>
 
 #if !defined(LOG4CXX)
 #define LOG4CXX 1
 #endif
 #include <log4cxx/helpers/aprinitializer.h>
+
+#include "logger.hpp"
 
 namespace logger {
 
@@ -54,12 +61,12 @@ namespace detail {
 // Workaround http://old.nabble.com/Static-destruction-fiasco--td31026705.html
 static struct Log4cxxWorkaroundsType {
     Log4cxxWorkaroundsType() {
-        ::log4cxx::helpers::APRInitializer::initialize();
+        log4cxx::helpers::APRInitializer::initialize();
     }
 } workarounds;
 
 // Global logging instance
-::log4cxx::LoggerPtr loggerptr;
+log4cxx::LoggerPtr loggerptr;
 
 // World rank determined within initialize method
 int worldrank = 0;
@@ -89,22 +96,9 @@ static void initialize_logger_using_world_rank()
     loggerptr->setLevel(level);
 }
 
-// Generate and return a temporary filename template for mkstemp
-static char * new_mkstemp_config_template()
-{
-    static const char affix[] = "/log4cxx.properties.XXXXXX";
-    const char *tmpdir = suzerain_temporary_directory();
-
-    char * retval = new char[strlen(tmpdir) + sizeof(affix) + 1];
-    strcpy(retval, tmpdir);
-    strcat(retval, affix);
-
-    return retval;
-}
-
 // Default log4cxx configuration to use when none can be found
-static const char default_log4cxx_configuration[] =
-    "# See Configuration section at http://logging.apache.org/log4cxx/index.html\n"
+static const char default_log4cxx_config[] =
+    "# See \"Configuration\" at http://logging.apache.org/log4cxx/index.html\n"
     "log4j.rootLogger=DEBUG, CONSOLE\n"
     "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"
     "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"
@@ -130,25 +124,23 @@ void initialize(MPI_Comm)
     // Store our rank within MPI_COMM_WORLD for INFO0-like macro usage
     worldrank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
 
-    // Buffer length and data storing the to-be-broadcast configuration
-    char *buf    = NULL;  // mmap on rank 0, char[] otherwise
-    int   buflen = 0;
-
-    // Initialize rank zero prior to all other ranks so that
-    // only rank zero hits the filesystem searching for configuration files.
+    // Separate logic for rank zero and higher ranks.  Broadcasting of
+    // buflen serves to enforce rank zero logic running first.  Only rank
+    // zero hits the filesystem searching for configuration files.
     if (worldrank == 0) {
 
         std::string configpath;
-        ::log4cxx::helpers::Pool pool;
-        ::log4cxx::File file;
-        int fd;
+        log4cxx::helpers::Pool pool;
+        log4cxx::File file;
 
         // Lookup logic for configpath based on log4cxx source:
         //   1) Check environment variable LOG4CXX_CONFIGURATION
         //   2) Check environment variable log4j.configuration
-        //   3) Check existence of log4cxx.{xml,properties}
-        //   4) Check existence of log4j.{xml,properties}
-        // See log4cxx/trunk/src/main/cpp/defaultconfigurator.cpp
+        //   3) Check existence of log4cxx.properties
+        //   4) Check existence of log4j.properties
+        // See log4cxx/trunk/src/main/cpp/defaultconfigurator.cpp.  Notice that
+        // XML-based files are skipped as log4cxx seems to have no in-memory
+        // DOMConfigurator::doConfigure(...) functionality.
         if (getenv(log4cxx_config_envvar)) {
             configpath = getenv(log4cxx_config_envvar);
         }
@@ -156,147 +148,82 @@ void initialize(MPI_Comm)
             configpath = getenv(log4j_config_envvar);
         }
         if (configpath.empty()) {
-            if (file.setPath("log4cxx.xml").exists(pool)) {
-                configpath = "log4cxx.xml";
-            } else if (file.setPath("log4cxx.properties").exists(pool)) {
+            if (file.setPath("log4cxx.properties").exists(pool)) {
                 configpath = "log4cxx.properties";
-            } else if (file.setPath("log4j.xml").exists(pool)) {
-                configpath = "log4j.xml";
             } else if (file.setPath("log4j.properties").exists(pool)) {
                 configpath = "log4j.properties";
             }
         }
 
-        // Initialize the logger on rank zero and open a file descriptor
-        // containing the configuration data to be broadcast
+        // Overwrite default configuration using file contents, if possible.
+        std::vector<unsigned char> buf;
+        buf.assign(default_log4cxx_config,
+                   default_log4cxx_config + sizeof(default_log4cxx_config));
         if (!configpath.empty() && file.setPath(configpath).exists(pool)) {
-
-            // Configuration file was found, use it to initialize logging
-            setenv(log4cxx_config_envvar, configpath.c_str(), 1);
-            initialize_logger_using_world_rank();
-
-            // Open the configuration file in read-only mode for broadcast
-            buflen = boost::numeric_cast<int>(file.length(pool));
-            fd = open(configpath.c_str(), O_RDONLY);
-
-            DEBUG("Logging initialized on rank zero using file "
-                  << configpath);
-        } else {
-
-            // Configuration file was not found, create one.
-
-            // Create a unique temporary configuration file (best effort)
-            boost::scoped_array<char> tmpl(new_mkstemp_config_template());
-            fd = mkstemp(tmpl.get());
-            if (fd != -1) {
-                FILE *f = fdopen(fd, "w+");
-                if (f) {
-                    fwrite(default_log4cxx_configuration, 1,
-                           sizeof(default_log4cxx_configuration), f);
-                    buflen = boost::numeric_cast<int>(ftell(f));
-                    fclose(f);
-                }
-                close(fd);
-            }
-
-            // Initialize logging using the temporary file contents
-            setenv(log4cxx_config_envvar, tmpl.get(), 1);
-            initialize_logger_using_world_rank();
-            WARN("Logging system found no configuration file.  Using default:\n"
-                 << default_log4cxx_configuration);
-
-            // Re-open the configuration file in read-only mode for broadcast
-            fd = open(tmpl.get(), O_RDONLY);
-            unlink(tmpl.get());  // preemptive unlink for automatic cleanup
-
+            // Hideous ifdef to workaround log4cxx's inconsistent char usage.
+            buf.resize(file.length(pool));
+#if CHAR_MIN == 0  /* "char" denotes "unsigned char" */
+            log4cxx::helpers::ByteBuffer bb(
+                    reinterpret_cast<char *>(&buf.front()), buf.size());
+            log4cxx::helpers::FileInputStream fis(file);
+            fis.read(bb);
+#else              /* "char" denotes "signed char" */
+            std::vector<char> tmp(buf.size());
+            log4cxx::helpers::ByteBuffer bb(&tmp.front(), tmp.size());
+            log4cxx::helpers::FileInputStream fis(file);
+            fis.read(bb);
+            // Not the least bit ASCII 128+ safe but throws if issue arises.
+            std::transform(tmp.begin(), tmp.end(), buf.begin(),
+                           boost::numeric::converter<unsigned char,char>());
+#endif
         }
 
-        // mmap configuration file so we can use it as a broadcast buffer
-        if (buflen > 0) {
-            errno = 0;
-            buf = (char *) mmap(NULL, buflen, PROT_READ, MAP_PRIVATE, fd, 0);
-            if (buf == MAP_FAILED) {
-                WARN("Logging configuration file not broadcast (mmap failed: "
-                     << strerror(errno) << ")");
-                buflen = 0;
-            }
-            close(fd);
+        // Configure logging subsystem using the buffer contents
+        log4cxx::helpers::InputStreamPtr bais(
+                new log4cxx::helpers::ByteArrayInputStream(buf));
+        log4cxx::helpers::Properties props;
+        log4cxx::PropertyConfigurator pc;
+        try {
+            props.load(bais);
+            pc.doConfigure(props, log4cxx::LogManager::getLoggerRepository());
+        } catch (log4cxx::helpers::Exception &e) {
+            log4cxx::BasicConfigurator::configure(); // Fallback
+            buf.push_back('\0');
+            WARN("Logging configuration from " << configpath << "invalid: "
+                 << e.what() << "\n" <<  &buf.front());
+            buf.pop_back();
         }
-    }
-
-    // Broadcast buffer length to higher ranks
-    SUZERAIN_MPICHKR(MPI_Bcast(&buflen, 1, MPI_INT, 0, MPI_COMM_WORLD));
-
-    // Abort remaining fancy initialization steps if buflen is zero
-    if (buflen == 0) {
-        if (worldrank == 0) {
-            WARN("Scalable logging initialization procedure aborted");
-        } else {
-            initialize_logger_using_world_rank();
-        }
-        return;  // Run away!
-    }
-
-    // Broadcast configuration file to non-zero ranks
-    if (worldrank > 0) buf = new char[buflen];
-    SUZERAIN_MPICHKR(MPI_Bcast(buf, buflen, MPI_CHAR, 0, MPI_COMM_WORLD));
-    if (worldrank == 0) munmap(buf, buflen);
-
-    // Non-zero ranks write file, initialize logging from it, and remove it
-    // High paranoia as either bugs and/or race conditions have arisen herein
-    if (worldrank > 0) {
-
-        // Always delete[] previously allocated buf on scope exit
-        boost::scoped_array<char> guard_buf(buf);
-
-        // Write buffer to a unique temporary configuration file and store the
-        // temporary filename into the environment for log4cxx.  Delay any
-        // verbose error reporting until logging is initialized.  This error
-        // handling is atrocious.  Attempts at using RAII to simplify it
-        // inexplicably ran afoul of
-        // https://issues.apache.org/jira/browse/LOGCXX-338.
-        boost::scoped_array<char> tmpl(new_mkstemp_config_template());
-        errno = 0;
-        int errcod;
-        const char * errsrc = NULL;
-        const int fd = mkstemp(tmpl.get());
-        if (fd == -1) {
-            errcod = errno;
-            errsrc = "mkstemp(3)";
-        } else {
-            FILE * const f = fdopen(fd, "w+");
-            if (f == NULL) {
-                errcod = errno;
-                errsrc = "fdopen(3)";
-            } else {
-                if (fwrite(buf, 1, buflen, f) != (unsigned) buflen) {
-                    errcod = errno;
-                    errsrc = "fwrite(3)";
-                } else {
-                    if (setenv(log4cxx_config_envvar, tmpl.get(), 1)) {
-                        errcod = errno;
-                        errsrc = "setenv(3)";
-                    }
-                }
-                fclose(f);
-            }
-            fsync(fd); // Hit disk
-            close(fd);
-        }
-
-        // Initialize log4cxx (using broadcast config due to environment)
         initialize_logger_using_world_rank();
-        if (errsrc) {
-            WARN("Scalable logging initialization failed as "
-                 << errsrc           << " reported " << errcod << ": "
-                 << strerror(errcod) << " for path " << tmpl.get());
-        }
 
-        // Remove any lingering temporary file
-        if (fd != -1) unlink(tmpl.get());
+        // Broadcast configuration buffer length and contents to other ranks
+        int buflen = buf.size();
+        SUZERAIN_MPICHKR(MPI_Bcast(&buflen, 1, MPI_INT, 0, MPI_COMM_WORLD));
+        SUZERAIN_MPICHKR(MPI_Bcast(&buf.front(), buflen,
+                                   MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD));
+
+    } else {
+
+        // Higher ranks receive buffer length, buffer, and initialize logging
+        int buflen;
+        SUZERAIN_MPICHKR(MPI_Bcast(&buflen, 1, MPI_INT, 0, MPI_COMM_WORLD));
+        std::vector<unsigned char> buf(buflen);
+        SUZERAIN_MPICHKR(MPI_Bcast(&buf.front(), buflen,
+                                   MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD));
+        log4cxx::helpers::InputStreamPtr bais(
+                new log4cxx::helpers::ByteArrayInputStream(buf));
+        log4cxx::helpers::Properties props;
+        log4cxx::PropertyConfigurator pc;
+        try {
+            props.load(bais);
+            pc.doConfigure(props, log4cxx::LogManager::getLoggerRepository());
+        } catch (log4cxx::helpers::IOException &ioe) {
+            log4cxx::BasicConfigurator::configure(); // Fallback
+        }
+        initialize_logger_using_world_rank();
+
     }
 
-    // Assert that all ranks indeed have initialized logging subsystems
+    // Assert that all ranks indeed have initialized logging
     assert(log4cxx::LogManager::getLoggerRepository()->isConfigured());
 }
 
