@@ -215,7 +215,7 @@ void initialize(MPI_Comm)
         try {
             props.load(bais);
             pc.doConfigure(props, log4cxx::LogManager::getLoggerRepository());
-        } catch (log4cxx::helpers::IOException &ioe) {
+        } catch (log4cxx::helpers::Exception & /* ignored */) {
             log4cxx::BasicConfigurator::configure(); // Fallback
         }
         initialize_logger_using_world_rank();
