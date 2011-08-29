@@ -52,7 +52,6 @@ namespace logger {
 namespace detail {
 
 // Workaround http://old.nabble.com/Static-destruction-fiasco--td31026705.html
-// and the related https://issues.apache.org/jira/browse/LOGCXX-338
 static struct Log4cxxWorkaroundsType {
     Log4cxxWorkaroundsType() {
         ::log4cxx::helpers::APRInitializer::initialize();
@@ -192,8 +191,8 @@ void initialize(MPI_Comm)
             if (fd != -1) {
                 FILE *f = fdopen(fd, "w+");
                 if (f) {
-                    fwrite(default_log4cxx_configuration,
-                           1, sizeof(default_log4cxx_configuration), f);
+                    fwrite(default_log4cxx_configuration, 1,
+                           sizeof(default_log4cxx_configuration), f);
                     buflen = boost::numeric_cast<int>(ftell(f));
                     fclose(f);
                 }
@@ -250,45 +249,51 @@ void initialize(MPI_Comm)
         // Always delete[] previously allocated buf on scope exit
         boost::scoped_array<char> guard_buf(buf);
 
-        // RAII helper to create, close, and unlink a temporary file
-        struct guard_tmpfd {
-            const char * t;
-            int const i;
-#ifdef _GNU_SOURCE
-            guard_tmpfd(char *t) : t(t), i(mkostemp(t, O_SYNC)) {}
-#else
-            guard_tmpfd(char *t) : t(t), i(mkstemp(t)) {}
-#endif
-            operator int()          const { return i; }
-            operator const char *() const { return t; }
-            operator bool()         const { return i != -1; }
-            ~guard_tmpfd() { if (*this) { close(i); unlink(t); } delete[] t; }
-        };
-
-        // RAII helper to close a FILE*
-        struct guard_pFILE {
-            FILE * const p;
-            guard_pFILE(FILE *p) : p(p) {}
-            operator FILE*() const { return p; }
-            operator bool()  const { return p != NULL; }
-            ~guard_pFILE() { if (*this) { fclose(p); } }
-        };
-
-        // Write the received configuration to a temporary file with known name
-        const guard_tmpfd fd(new_mkstemp_config_template());
-        if (fd) {
-            const guard_pFILE f(fdopen(fd, "w+"));
-            if (f) {
-                fwrite(buf, 1, buflen, f);
-                fflush(f);
+        // Write buffer to a unique temporary configuration file and store the
+        // temporary filename into the environment for log4cxx.  Delay any
+        // verbose error reporting until logging is initialized.  This error
+        // handling is atrocious.  Attempts at using RAII to simplify it
+        // inexplicably ran afoul of
+        // https://issues.apache.org/jira/browse/LOGCXX-338.
+        boost::scoped_array<char> tmpl(new_mkstemp_config_template());
+        errno = 0;
+        int errcod;
+        const char * errsrc = NULL;
+        const int fd = mkstemp(tmpl.get());
+        if (fd == -1) {
+            errcod = errno;
+            errsrc = "mkstemp(3)";
+        } else {
+            FILE * const f = fdopen(fd, "w+");
+            if (f == NULL) {
+                errcod = errno;
+                errsrc = "fdopen(3)";
+            } else {
+                if (fwrite(buf, 1, buflen, f) != buflen) {
+                    errcod = errno;
+                    errsrc = "fwrite(3)";
+                } else {
+                    if (setenv(log4cxx_config_envvar, tmpl.get(), 1)) {
+                        errcod = errno;
+                        errsrc = "setenv(3)";
+                    }
+                }
+                fclose(f);
             }
+            fsync(fd); // Hit disk
+            close(fd);
         }
 
-        // Initialize log4cxx using the named temporary file
-        setenv(log4cxx_config_envvar, fd, 1);
+        // Initialize log4cxx (using broadcast config due to environment)
         initialize_logger_using_world_rank();
+        if (errsrc) {
+            WARN("Scalable logging initialization failed as "
+                 << errsrc           << " reported " << errcod << ": "
+                 << strerror(errcod) << " for path " << tmpl.get());
+        }
 
-        // Resources cleaned up by RAII helper class destructors
+        // Remove any lingering temporary file
+        if (fd != -1) unlink(tmpl.get());
     }
 
     // Assert that all ranks indeed have initialized logging subsystems
