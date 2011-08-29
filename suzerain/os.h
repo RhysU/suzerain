@@ -85,14 +85,18 @@ int suzerain_signal_number(const char * name);
 const char * suzerain_signal_name(int signum);
 
 /**
- * Obtain a "good" temporary directory name which is likely to be
- * on non-networked disk.  Uses the first of the following environment
- * variables found which has non-zero length:
+ * Obtain a "good" temporary directory name which is likely to be on
+ * non-networked disk.  Uses the first of the following environment variables
+ * found which, after leading spaces are removed, has non-zero length:
  * \li \c TMPDIR
  * \li \c TMP
  * \li \c TEMPDIR
  * \li \c TEMP
- * after which it returns the string "/tmp".
+ * If none of these possibilities pan out, returns the string "/tmp".
+ *
+ * To alleviate problems where a temporary directory is specified in the
+ * environment but does not exist, <tt>mkdir(3)</tt> is called once
+ * to improve the odds that the returned directory exists.
  *
  * @return The name of a temporary directory.
  */

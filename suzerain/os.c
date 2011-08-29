@@ -325,10 +325,25 @@ const char * suzerain_temporary_directory() {
 
     const char *var[] = { "TMPDIR", "TMP", "TEMPDIR", "TEMP" };
 
-    for (size_t i = 0; i < sizeof(var)/sizeof(var[0]); ++i) {
-        const char *s = getenv(var[i]);
-        if (s && *s) return s;
+    const char * s = NULL;
+    size_t i;
+    for (i = 0; i < sizeof(var)/sizeof(var[0]); ++i) {
+        s = getenv(var[i]);               // Retrieve from environment
+        if (s) {
+            while (isspace(s[0])) ++s;    // Skip any leading whitespace
+            if (!s[0]) s = NULL;          // Skip zero-length answers
+        }
+        if (s) break;                     // Stop on something good
+    }
+    if (!s) s = "/tmp";                   // Default if nothing good
+
+    // mkdir(3) is called once to improve odds that the directory exists.
+    // static-related race conditions are okay as mkdir(2) is idempotent.
+    static unsigned int mkdir_attempted = 0;
+    if (!(mkdir_attempted & (1 << i))) {
+        mkdir_attempted |= (1 << i);
+        mkdir(s, 0777);
     }
 
-    return "/tmp";
+    return s;
 }
