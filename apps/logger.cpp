@@ -162,15 +162,14 @@ void initialize(MPI_Comm)
         if (!configpath.empty() && file.setPath(configpath).exists(pool)) {
             // Hideous ifdef to workaround log4cxx's inconsistent char usage.
             buf.resize(file.length(pool));
+            log4cxx::helpers::FileInputStream fis(file);
 #if CHAR_MIN == 0  /* "char" denotes "unsigned char" */
             log4cxx::helpers::ByteBuffer bb(
                     reinterpret_cast<char *>(&buf.front()), buf.size());
-            log4cxx::helpers::FileInputStream fis(file);
             fis.read(bb);
 #else              /* "char" denotes "signed char" */
             std::vector<char> tmp(buf.size());
             log4cxx::helpers::ByteBuffer bb(&tmp.front(), tmp.size());
-            log4cxx::helpers::FileInputStream fis(file);
             fis.read(bb);
             // Not the least bit ASCII 128+ safe but throws if issue arises.
             std::transform(tmp.begin(), tmp.end(), buf.begin(),
