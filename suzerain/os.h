@@ -92,11 +92,8 @@ const char * suzerain_signal_name(int signum);
  * \li \c TMP
  * \li \c TEMPDIR
  * \li \c TEMP
- * If none of these possibilities pan out, returns the string "/tmp".
- *
- * To alleviate problems where a temporary directory is specified in the
- * environment but does not exist, <tt>mkdir(3)</tt> is called once
- * to improve the odds that the returned directory exists.
+ * If none of these possibilities give a non-empty result, the method returns
+ * the string "/tmp".
  *
  * @return The name of a temporary directory.
  */

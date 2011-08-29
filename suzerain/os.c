@@ -337,13 +337,5 @@ const char * suzerain_temporary_directory() {
     }
     if (!s) s = "/tmp";                   // Default if nothing good
 
-    // mkdir(3) is called once to improve odds that the directory exists.
-    // static-related race conditions are okay as mkdir(2) is idempotent.
-    static unsigned int mkdir_attempted = 0;
-    if (!(mkdir_attempted & (1 << i))) {
-        mkdir_attempted |= (1 << i);
-        mkdir(s, 0777);
-    }
-
     return s;
 }
