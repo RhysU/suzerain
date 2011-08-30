@@ -7,7 +7,8 @@
 #$ -pe @corespernode@way @corespernode@          # Requests TpN tasks/node, (NoN x @corespernode@) cores total
 #$ -q normal             # Queue name
 #$ -l h_rt=00:30:00      # Run time (hh:mm:ss)
-#$ -m bes                # Email on begin, end, and suspension
+#$ -m bes                # Email on job begin, end, and suspension
+#$ -M $USER              # Email to user that submitted the job
 #$ -notify               # Notify job of impending doom
 set -m                   # Employ job control
 set -u                   # Abort on undefined shell variables
@@ -28,14 +29,25 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 : ${DECOMP:=--Pa=$(expr $NSLOTS / $NHOSTS)}
 : ${OPTIONS:=--Nx=192 --Ny=128 --Nz=128}
 : ${TMPFILES:=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
-: ${JOBDIR:=$SCRATCH/$JOB_ID}
+: ${JOBDIR:=$SCRATCH/jobs/$JOB_NAME/$JOB_ID}
 
 # Canonicalize names, change to job directory, and build command
-BINARY=$(readlink -f $BINARY)
-INPUT=$(readlink -f $INPUT)
-JOBDIR=$(readlink -f $JOBDIR)
+BINARY=$(readlink -f "$BINARY")
+INPUT=$(readlink -f "$INPUT")
+JOBDIR=$(readlink -f "$JOBDIR")
 mkdir -p "$JOBDIR"
 cd -P "$JOBDIR"
+# Copy any non-{SCRATCH,WORK} INPUT to JOBDIR to employ parallel filesystem
+# Expensive for large fields but users should not be keeping those in $HOME
+case "$INPUT" in                                                         #(
+    "${SCRATCH}*") :
+                   ;;                                                    #(
+    "${WORK}*")    :
+                   ;;                                                    #(
+    *)             MSGS="${MSGS-}$(cp -v "$INPUT" "$JOBDIR/input.h5")\n"
+                   INPUT=$(readlink -f "$JOBDIR/input.h5")
+                   ;;
+esac
 CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $OPTIONS $TMPFILES"
 
 # Compute threading based on job size and way-ness
@@ -56,6 +68,7 @@ cat <<HEADER
 =${JOB_NAME}===================================================================
 CLUSTER:  $SGE_CLUSTER_NAME ${PE-} $NSLOTS
 JOB_ID:   $JOB_ID
+DATE:     $(date)
 JOBDIR:   $JOBDIR
 STDOUT:   $SGE_STDOUT_PATH
 H_RT:     $H_RT
@@ -69,7 +82,8 @@ DECOMP:   $DECOMP
 OPTIONS:  $OPTIONS
 TMPFILES: $TMPFILES
 
-$CMD
+${MSGS:-}${MSGS:+\n}
+${CMD}
 =${JOB_NAME}===================================================================
 
 HEADER
