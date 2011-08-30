@@ -106,6 +106,7 @@ Provides hint to the compiler to optimize for the expression being false.
 // C++-specific functionality is included in common.hpp
 #ifndef __cplusplus
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <math.h>
@@ -116,6 +117,7 @@ Provides hint to the compiler to optimize for the expression being false.
 #include <time.h>
 #else
 #include <cassert>
+#include <cctype>
 #include <cerrno>
 #include <climits>
 #include <cmath>
