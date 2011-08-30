@@ -934,7 +934,7 @@ int main(int argc, char **argv)
         WARN0("TimeController halted because step " << tc->current_dt()
               << " was smaller than min_dt " << tc->min_dt() );
     } else if (!advance_success) {
-        WARN0("TimeController stopped advancing time unexpectedly");
+        WARN0("TimeController halted unexpectedly");
     }
     const double wtime_advance_end = MPI_Wtime();
 
