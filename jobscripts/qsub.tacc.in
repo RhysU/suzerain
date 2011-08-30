@@ -44,7 +44,7 @@ case "$INPUT" in                                                         #(
                    ;;                                                    #(
     "${WORK}*")    :
                    ;;                                                    #(
-    *)             MSGS="${MSGS-}$(cp -v "$INPUT" "$JOBDIR/input.h5")\n"
+    *)             MSGS="${MSGS-}$(cp -v "$INPUT" "$JOBDIR/input.h5")$(echo)"
                    INPUT=$(readlink -f "$JOBDIR/input.h5")
                    ;;
 esac
@@ -82,8 +82,8 @@ DECOMP:   $DECOMP
 OPTIONS:  $OPTIONS
 TMPFILES: $TMPFILES
 
-${MSGS:-}${MSGS:+\n}
-${CMD}
+${MSGS:-}${MSGS:+
+}${CMD}
 =${JOB_NAME}===================================================================
 
 HEADER
