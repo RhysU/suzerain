@@ -7,8 +7,6 @@
 #$ -pe @corespernode@way @corespernode@          # Requests TpN tasks/node, (NoN x @corespernode@) cores total
 #$ -q normal             # Queue name
 #$ -l h_rt=00:30:00      # Run time (hh:mm:ss)
-#$ -m bes                # Email on job begin, end, and suspension
-#$ -M $USER              # Email to user that submitted the job
 #$ -notify               # Notify job of impending doom
 set -m                   # Employ job control
 set -u                   # Abort on undefined shell variables
