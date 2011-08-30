@@ -31,11 +31,11 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 : ${TMPFILES:=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
 : ${JOBDIR:=$SCRATCH/jobs/$JOB_NAME/$JOB_ID}
 
-# Canonicalize names, change to job directory, and build command
+# Make job directory, canonicalize paths, and build command
+mkdir -p "$JOBDIR"
 BINARY=$(readlink -f "$BINARY")
 INPUT=$(readlink -f "$INPUT")
 JOBDIR=$(readlink -f "$JOBDIR")
-mkdir -p "$JOBDIR"
 cd -P "$JOBDIR"
 # Copy any non-{SCRATCH,WORK} INPUT to JOBDIR to employ parallel filesystem
 # Expensive for large fields but users should not be keeping those in $HOME
