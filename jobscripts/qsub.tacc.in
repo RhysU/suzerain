@@ -86,6 +86,15 @@ ${MSGS:-}${MSGS:+
 
 HEADER
 
-# Exec the command so it may directly receive any incoming signals
+# Execute the command, passing along any signals, and wait for completion
 cache_binary "$PWD" "$BINARY"
-exec /usr/bin/time -v ibrun tacc_affinity $CMD
+/usr/bin/time -v ibrun tacc_affinity $CMD &
+CMDPID=$!
+for signal in ${SIGNALS:=HUP INT TERM USR1 USR2}; do
+    trap "kill -s $signal $CMDPID" $signal
+done
+fg
+trap - $SIGNALS
+
+# Mail output to the job submitter.  Sleep required for message receipt.
+mail -s "Job $JOB_ID ($JOB_NAME) Output" $USER < ./output && sleep 15
