@@ -96,7 +96,7 @@ static const TimeDefinition<real_t> timedef(
         /* advance_wt                */ 0,
         /* status_dt                 */ 0,
         /* status_nt                 */ 0,
-        /* min_dt                    */ 1e-7,
+        /* min_dt                    */ 1e-8,
         /* max_dt                    */ 0,
         /* evmagfactor per Venugopal */ 0.72);
 static const NoiseDefinition  noisedef;
