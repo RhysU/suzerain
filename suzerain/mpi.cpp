@@ -107,10 +107,19 @@ std::string comm_rank_identifier(MPI_Comm comm)
     } else {
         // Brevity, trim any leading MPI_COMM_ business by modifying p_buffer
         static const char prefix[]   = "MPI_COMM_";
-        static const int  prefix_len = sizeof(prefix)/sizeof(prefix[0]) - 1;
-        if (0 == strncmp(buffer, prefix, prefix_len)) {
+        static const int  prefix_len = sizeof(prefix) - 1;
+        if (0 == strncasecmp(buffer, prefix, prefix_len)) {
             p_buffer += prefix_len;
             resultlen -= prefix_len;
+
+            // Further terseness, abbreviate "WORLD" as "W".
+            static const char world[] = "WORLD";
+            static const int  world_len = sizeof(world) - 1;
+            if (0 == strncasecmp(p_buffer, world, world_len)) {
+                p_buffer += world_len - 1;
+                *p_buffer = 'W';
+                resultlen -= world_len - 1;
+            }
         }
     }
 
