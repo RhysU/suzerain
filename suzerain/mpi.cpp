@@ -111,15 +111,6 @@ std::string comm_rank_identifier(MPI_Comm comm)
         if (0 == strncasecmp(buffer, prefix, prefix_len)) {
             p_buffer += prefix_len;
             resultlen -= prefix_len;
-
-            // Further terseness, abbreviate "WORLD" as "W".
-            static const char world[] = "WORLD";
-            static const int  world_len = sizeof(world) - 1;
-            if (0 == strncasecmp(p_buffer, world, world_len)) {
-                p_buffer += world_len - 1;
-                *p_buffer = 'W';
-                resultlen -= world_len - 1;
-            }
         }
     }
 
