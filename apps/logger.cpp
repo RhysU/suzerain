@@ -56,8 +56,6 @@
 
 namespace logger {
 
-namespace detail {
-
 // Workaround http://old.nabble.com/Static-destruction-fiasco--td31026705.html
 static struct Log4cxxWorkaroundsType {
     Log4cxxWorkaroundsType() {
@@ -65,35 +63,23 @@ static struct Log4cxxWorkaroundsType {
     }
 } workarounds;
 
-// Global logging instance
-log4cxx::LoggerPtr loggerptr;
+log4cxx::LoggerPtr rankzero;
 
-// World rank determined within initialize method
-int worldrank = 0;
+log4cxx::LoggerPtr all;
 
-} // end namespace detail
-
-// Provides nice, rank-specific logger names
-static void initialize_logger_using_world_rank()
+static void initialize_loggers_within_comm_world(int worldrank)
 {
-    using detail::loggerptr;
-    using detail::worldrank;
-    using log4cxx::Level;
-    using log4cxx::LevelPtr;
-    using log4cxx::Logger;
-    using suzerain::mpi::comm_rank;
-    using suzerain::mpi::comm_rank_identifier;
+    // "rankzero" is a disguise for the log4cxx root logger.
+    rankzero = log4cxx::Logger::getRootLogger();
+    log4cxx::LevelPtr defaultlevel = rankzero->getLevel();
+    if (worldrank > 0) rankzero->setLevel(log4cxx::Level::getOff());
 
-    loggerptr = Logger::getLogger(comm_rank_identifier(MPI_COMM_WORLD));
-
-    // If debugging is disabled, ensure level is at least INFO on ranks 1+
-    LevelPtr level = loggerptr->getLevel();
-    if (comm_rank(MPI_COMM_WORLD) > 0 && !loggerptr->isDebugEnabled()) {
-        if (!level || !level->isGreaterOrEqual(Level::getInfo())) {
-            level = Level::getInfo();
-        }
-    }
-    loggerptr->setLevel(level);
+    // "all" is a descendent of "rankzero" active on all ranks
+    // If not configured, "all" takes rankzero's level from rank 0.
+    std::ostringstream oss;
+    oss << 'r' << worldrank;
+    all = log4cxx::Logger::getLogger(oss.str());
+    if (!all->getLevel()) all->setLevel(defaultlevel);
 }
 
 // Default log4cxx configuration to use when none can be found
@@ -102,7 +88,7 @@ static const char default_log4cxx_config[] =
     "log4j.rootLogger=DEBUG, CONSOLE\n"
     "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"
     "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"
-    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %c  %m%n\n";
+    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-4c  %m%n\n";
 
 void initialize(MPI_Comm)
 {
@@ -115,14 +101,12 @@ void initialize(MPI_Comm)
 
     static const char log4j_config_envvar[]   = "log4j.configuration";
     static const char log4cxx_config_envvar[] = "LOG4CXX_CONFIGURATION";
-    using detail::worldrank;
-    using detail::loggerptr;
 
     // Ensure MPI is ready to go
     suzerain::mpi::ensure_mpi_initialized();
 
-    // Store our rank within MPI_COMM_WORLD for INFO0-like macro usage
-    worldrank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+    // Obtain our rank within MPI_COMM_WORLD
+    const int worldrank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
 
     // Separate logic for rank zero and higher ranks.  Broadcasting of
     // buflen serves to enforce rank zero logic running first.  Only rank
@@ -192,7 +176,7 @@ void initialize(MPI_Comm)
                  << e.what() << "\n" <<  &buf.front());
             buf.pop_back();
         }
-        initialize_logger_using_world_rank();
+        initialize_loggers_within_comm_world(worldrank);
 
         // Broadcast configuration buffer length and contents to other ranks
         int buflen = buf.size();
@@ -218,7 +202,7 @@ void initialize(MPI_Comm)
         } catch (log4cxx::helpers::Exception & /* ignored */) {
             log4cxx::BasicConfigurator::configure(); // Fallback
         }
-        initialize_logger_using_world_rank();
+        initialize_loggers_within_comm_world(worldrank);
 
     }
 

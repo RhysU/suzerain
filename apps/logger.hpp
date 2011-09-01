@@ -37,15 +37,11 @@
  */
 namespace logger {
 
-namespace detail {
+/** Logger enabled only on rank zero */
+extern ::log4cxx::LoggerPtr rankzero;
 
-// Global logging instance
-extern ::log4cxx::LoggerPtr loggerptr;
-
-// World rank determined within initialize method
-extern int worldrank;
-
-} // end namespace detail
+/** Logger enabled on all ranks */
+extern ::log4cxx::LoggerPtr all;
 
 /**
  * Initialize the logging infrastructure.
@@ -59,29 +55,38 @@ void initialize(MPI_Comm comm);
 
 } // end namespace logger
 
-// Logging macros to hide log4cxx specifics
-#define TRACE(expr)     LOG4CXX_TRACE(::logger::detail::loggerptr,expr)
-#define DEBUG(expr)     LOG4CXX_DEBUG(::logger::detail::loggerptr,expr)
-#define INFO(expr)      LOG4CXX_INFO( ::logger::detail::loggerptr,expr)
-#define WARN(expr)      LOG4CXX_WARN( ::logger::detail::loggerptr,expr)
-#define ERROR(expr)     LOG4CXX_ERROR(::logger::detail::loggerptr,expr)
-#define FATAL(expr)     LOG4CXX_FATAL(::logger::detail::loggerptr,expr)
-#define INFO_ENABLED    (::logger::detail::loggerptr->isInfoEnabled())
-#define TRACE_ENABLED   (::logger::detail::loggerptr->isTraceEnabled())
-#define DEBUG_ENABLED   (::logger::detail::loggerptr->isDebugEnabled())
+// Logging macros that log only from MPI rank 0
+#define TRACE0(msg)     do{LOG4CXX_TRACE(::logger::rankzero,msg)}while(0)
+#define DEBUG0(msg)     do{LOG4CXX_DEBUG(::logger::rankzero,msg)}while(0)
+#define INFO0(msg)      do{LOG4CXX_INFO( ::logger::rankzero,msg)}while(0)
+#define WARN0(msg)      do{LOG4CXX_WARN( ::logger::rankzero,msg)}while(0)
+#define ERROR0(msg)     do{LOG4CXX_ERROR(::logger::rankzero,msg)}while(0)
+#define FATAL0(msg)     do{LOG4CXX_FATAL(::logger::rankzero,msg)}while(0)
+#define INFO0_ENABLED    (::logger::rankzero->isInfoEnabled())
+#define TRACE0_ENABLED   (::logger::rankzero->isTraceEnabled())
+#define DEBUG0_ENABLED   (::logger::rankzero->isDebugEnabled())
 
-// Logging macros to log only from MPI rank 0
-#define TRACE0(expr) \
-    do{ if (!::logger::detail::worldrank) TRACE(expr); }while(0)
-#define DEBUG0(expr) \
-    do{ if (!::logger::detail::worldrank) DEBUG(expr); }while(0)
-#define INFO0(expr)  \
-    do{ if (!::logger::detail::worldrank) INFO( expr); }while(0)
-#define WARN0(expr)  \
-    do{ if (!::logger::detail::worldrank) WARN( expr); }while(0)
-#define ERROR0(expr) \
-    do{ if (!::logger::detail::worldrank) ERROR(expr); }while(0)
-#define FATAL0(expr) \
-    do{ if (!::logger::detail::worldrank) FATAL(expr); }while(0)
+// Logging macros that log from all ranks
+#define TRACE(msg)     do{LOG4CXX_TRACE(::logger::all,msg)}while(0)
+#define DEBUG(msg)     do{LOG4CXX_DEBUG(::logger::all,msg)}while(0)
+#define INFO(msg)      do{LOG4CXX_INFO( ::logger::all,msg)}while(0)
+#define WARN(msg)      do{LOG4CXX_WARN( ::logger::all,msg)}while(0)
+#define ERROR(msg)     do{LOG4CXX_ERROR(::logger::all,msg)}while(0)
+#define FATAL(msg)     do{LOG4CXX_FATAL(::logger::all,msg)}while(0)
+#define INFO_ENABLED    (::logger::all->isInfoEnabled())
+#define TRACE_ENABLED   (::logger::all->isTraceEnabled())
+#define DEBUG_ENABLED   (::logger::all->isDebugEnabled())
+
+// Logging macros taking one-off logger names for infrequent use
+// Provided so that configuration can pull off particular outputs, e.g. L2
+#define TRACEDUB(nick,msg)     do{LOG4CXX_TRACE(::log4cxx::Logger::getLogger(nick),msg)}while(0)
+#define DEBUGDUB(nick,msg)     do{LOG4CXX_DEBUG(::log4cxx::Logger::getLogger(nick),msg)}while(0)
+#define INFODUB(nick,msg)      do{LOG4CXX_INFO( ::log4cxx::Logger::getLogger(nick),msg)}while(0)
+#define WARNDUB(nick,msg)      do{LOG4CXX_WARN( ::log4cxx::Logger::getLogger(nick),msg)}while(0)
+#define ERRORDUB(nick,msg)     do{LOG4CXX_ERROR(::log4cxx::Logger::getLogger(nick),msg)}while(0)
+#define FATALDUB(nick,msg)     do{LOG4CXX_FATAL(::log4cxx::Logger::getLogger(nick),msg)}while(0)
+#define INFODUB_ENABLED(nick)  (::log4cxx::Logger::getLogger(nick)->isInfoEnabled())
+#define TRACEDUB_ENABLED(nick) (::log4cxx::Logger::getLogger(nick)->isTraceEnabled())
+#define DEBUGDUB_ENABLED(nick) (::log4cxx::Logger::getLogger(nick)->isDebugEnabled())
 
 #endif // LOGGER_HPP

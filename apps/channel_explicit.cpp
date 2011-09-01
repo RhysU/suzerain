@@ -145,7 +145,7 @@ static std::string information_L2() {
 
     // Prepare the status message
     std::ostringstream msg;
-    msg << "mean|fluct L2 =";
+    msg << "mean|fluct ";
     msg.precision(static_cast<int>(numeric_limits<real_t>::digits10 * 0.75));
     for (std::size_t k = 0; k < L2.size(); ++k) {
         msg << ' ' << L2[k].mean() << ' ' << L2[k].fluctuating();
@@ -164,7 +164,7 @@ static std::string information_bulk() {
 
     // Prepare the status message
     std::ostringstream msg;
-    msg << "bulk state =";
+    msg << "state      ";
     msg.precision(static_cast<int>(numeric_limits<real_t>::digits10 * 0.75));
     for (std::size_t k = 0; k < state_linear->shape()[0]; ++k) {
         Eigen::Map<Eigen::VectorXc> mean(
@@ -190,7 +190,7 @@ static std::string information_specific_wall_state() {
     // Prepare the status message:
     // Message lists lower then upper u, v, w, and internal energy at walls
     std::ostringstream msg;
-    msg << "specific wall state = ";
+    msg << "lower|upper";
     msg.precision(std::numeric_limits<real_t>::digits10 / 2);
     assert(ndx::rho == 0);
     for (std::size_t k = ndx::rho; k < channel::field::count; ++k) {
@@ -221,7 +221,7 @@ static std::string information_manufactured_solution_absolute_error(
 
     // Output absolute global errors for each field
     std::ostringstream msg;
-    msg << "MMS abserr = ";
+    msg << "abserr     ";
     msg.precision(static_cast<int>(numeric_limits<real_t>::digits10));
     for (std::size_t k = 0; k < channel::field::count; ++k) {
         msg << ' ' << L2[k].total();
@@ -236,12 +236,11 @@ static std::size_t last_status_nt = numeric_limits<std::size_t>::max();
 /** Routine to output status.  Signature for TimeController use. */
 static bool log_status(real_t t, std::size_t nt) {
 
+    // Notice collective operations are never inside logging macros!
+
     using std::max;
     using std::floor;
     using std::log10;
-
-    // Save resources by returning early when no status necessary
-    if (!INFO_ENABLED) return true;
 
     // Defensively avoid multiple invocations with no intervening changes
     if (last_status_nt == nt) {
@@ -252,7 +251,6 @@ static bool log_status(real_t t, std::size_t nt) {
     // Build time- and timestep-specific status prefix.
     // Precision computations ensure multiple status lines minimally distinct
     std::ostringstream timeprefix;
-    timeprefix << "t = ";
     real_t np = 0;
     if (timedef.status_dt > 0) {
         np = max(np, -floor(log10(timedef.status_dt)));
@@ -269,23 +267,23 @@ static bool log_status(real_t t, std::size_t nt) {
     } else {
         timeprefix << t;
     }
-    timeprefix << ", nt = " << nt << ", ";
+    timeprefix << ' ' << std::setw(7) << nt << ' ';
 
     // On root only, compute and show bulk state quantities
-    INFO0(timeprefix.str() << information_bulk());
+    INFODUB("bulk", timeprefix.str() << information_bulk());
 
     // Collectively compute and log L2 mean and fluctuating information
     const std::string msg_l2 = information_L2();
-    INFO0(timeprefix.str() << msg_l2);
+    INFODUB("L2", timeprefix.str() << msg_l2);
 
     // On root only, compute and show specific state at the walls
-    DEBUG0(timeprefix.str() << information_specific_wall_state());
+    DEBUGDUB("wall", timeprefix.str() << information_specific_wall_state());
 
     // If using manufactured solution, collectively compute and log error
     if (msoln) {
         const std::string msg_relerr
             = information_manufactured_solution_absolute_error(t);
-        INFO0(timeprefix.str() << msg_relerr);
+        INFODUB("MMS", timeprefix.str() << msg_relerr);
     }
 
     last_status_nt = nt; // Maintain last status time step
