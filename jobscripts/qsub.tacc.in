@@ -10,6 +10,7 @@
 #$ -notify               # Notify job of impending doom
 set -m                   # Employ job control
 set -u                   # Abort on undefined shell variables
+unset DISPLAY            # Avoid "Error in locking authority file" from xauth
 
 # Either obtain the soft run time or compute default from hard run time
 RESOURCE_LIST=$(qstat -j $JOB_ID | grep resource_list)
@@ -97,4 +98,4 @@ fg
 trap - $SIGNALS
 
 # Mail output to the job submitter.  Sleep required for message receipt.
-mail -s "Job $JOB_ID ($JOB_NAME) Output" $USER < ./output && sleep 15
+mail -s "Job $JOB_ID ($JOB_NAME) Output" $USER < ./output && sleep 10
