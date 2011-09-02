@@ -117,14 +117,9 @@ static shared_ptr<state_type> state_nonlinear;
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
 
-/** The floating point precision to use during status logging */
-static const std::streamsize infoprec = numeric_limits<real_t>::digits10 * 0.85;
-
-/** The floating point field width to use during status logging */
-static const std::streamsize infowidth = infoprec + 6;
-
 /** <tt>atexit</tt> callback to ensure we finalize esioh. */
-static void atexit_esio(void) {
+static void atexit_esio(void)
+{
     if (esioh) esio_handle_finalize(esioh);
 }
 
@@ -142,23 +137,57 @@ static void atexit_metadata(void) {
     }
 }
 
-/** Log messages containing mean and fluctuating L2 information */
-static void information_L2(const std::string& timeprefix) {
+// Formatting parameters used within append_real()
+static const int append_real_prec  = numeric_limits<real_t>::digits10 * 0.75;
+static const int append_real_width = append_real_prec + 5;
 
+/** Provides nice formatting of real-valued quantities for status lines */
+
+template<class CharT, class Traits, class Number>
+std::basic_ostream<CharT,Traits>& append_real(
+        std::basic_ostream<CharT,Traits>& os,
+        Number value)
+{
+    // Magic "2" is the width of a sign and a decimal point
+    static const real_t fixedmax
+        = std::pow<real_t>(10, append_real_width - append_real_prec - 2);
+
+    // Magic 3 is the width of a sign, leading zero, and decimal point
+    static const real_t fixedmin
+        = std::pow<real_t>(10, -(append_real_width - append_real_prec - 3));
+
+    // Format in fixed or scientific form as appropriate in given width
+    // Care taken to not perturb observable ostream state after function call
+    std::ios::fmtflags savedflags;
+    std::streamsize savedprec;
+    if (value >= fixedmin && value <= fixedmax) {
+        savedflags = os.setf(std::ios::fixed      | std::ios::right,
+                             std::ios::floatfield | std::ios::adjustfield);
+        savedprec = os.precision(append_real_prec);
+    } else {
+        savedflags = os.setf(std::ios::scientific | std::ios::right,
+                             std::ios::floatfield | std::ios::adjustfield);
+        savedprec = os.precision(append_real_width - 9);
+    }
+    os << std::setw(append_real_width) << static_cast<real_t>(value);
+    os.precision(savedprec);
+    os.setf(savedflags);
+
+    return os;
+}
+
+/** Log messages containing mean and fluctuating L2 information */
+static void information_L2(const std::string& timeprefix)
+{
     // Collective computation of the L_2 norms
     const array<channel::L2,channel::field::count> L2
         = channel::field_L2(*state_linear, scenario, grid, *dgrid, *gop);
 
-    // Prepare for desired output precision
-    std::ostringstream msg;
-    msg.setf(std::ios::fixed, std::ios::floatfield);
-    msg.precision(infoprec);
-
     // Build and log L2 of mean conserved state
-    msg.str("");
+    std::ostringstream msg;
     msg << timeprefix;
     for (std::size_t k = 0; k < L2.size(); ++k) {
-        msg << ' ' << std::setw(infowidth) << std::right << L2[k].mean();
+        append_real(msg << ' ', L2[k].mean());
     }
     INFODUB("L2.mean", msg.str());
 
@@ -166,13 +195,14 @@ static void information_L2(const std::string& timeprefix) {
     msg.str("");
     msg << timeprefix;
     for (std::size_t k = 0; k < L2.size(); ++k) {
-        msg << ' ' << std::setw(infowidth) << std::right << L2[k].fluctuating();
+        append_real(msg << ' ', L2[k].fluctuating());
     }
     INFODUB("L2.fluct", msg.str());
 }
 
 /** Build a message containing bulk quantities (intended for root rank only) */
-static void information_bulk(const std::string& timeprefix) {
+static void information_bulk(const std::string& timeprefix)
+{
 
     // Compute operator for finding bulk quantities from coefficients
     Eigen::VectorXr bulkcoeff(b->n());
@@ -181,20 +211,18 @@ static void information_bulk(const std::string& timeprefix) {
 
     // Prepare the status message and log it
     std::ostringstream msg;
-    msg.setf(std::ios::fixed, std::ios::floatfield);
-    msg.precision(infoprec);
     msg << timeprefix;
     for (std::size_t k = 0; k < state_linear->shape()[0]; ++k) {
         Eigen::Map<Eigen::VectorXc> mean(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
-        msg << ' ' << std::setw(infowidth) << std::right
-            << bulkcoeff.dot(mean.real());
+        append_real(msg << ' ', bulkcoeff.dot(mean.real()));
     }
     INFODUB("bulk.state", msg.str());
 }
 
 /** Build a message containing specific state quantities at the wall */
-static void information_specific_wall_state(const std::string& timeprefix) {
+static void information_specific_wall_state(const std::string& timeprefix)
+{
     namespace ndx = channel::field::ndx;
 
     // Indices at the lower and upper walls.  Use that wall collocation point
@@ -206,19 +234,14 @@ static void information_specific_wall_state(const std::string& timeprefix) {
         ((*state_linear)[ndx::rho][wall[1]][0][0]).real()
     };
 
-    // Prepare for desired output precision
-    std::ostringstream msg;
-    msg.setf(std::ios::fixed, std::ios::floatfield);
-    msg.precision(static_cast<int>(numeric_limits<real_t>::digits10 * 0.75));
-
     // Message lists rho, u, v, w, and total energy at walls
-    assert(ndx::rho == 0);
+    std::ostringstream msg;
     for (std::size_t l = 0; l < sizeof(wall)/sizeof(wall[0]); ++l) {
         msg.str("");
         msg << timeprefix;
-        for (std::size_t k = ndx::rho; k < channel::field::count; ++k) {
-            msg << ' ' << std::setw(infowidth) << std::right
-                << ((*state_linear)[k][wall[l]][0][0]).real() / rho[l];
+        for (std::size_t k = 0; k < channel::field::count; ++k) {
+            append_real(msg << ' ' ,
+                        ((*state_linear)[k][wall[l]][0][0]).real() / rho[l]);
         }
         DEBUGDUB(nick[l], msg.str());
     }
@@ -242,15 +265,11 @@ static void information_manufactured_solution_absolute_error(
     const array<channel::L2,channel::field::count> L2
         = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
 
-    // Prepare for desired output precision
-    std::ostringstream msg;
-    msg.setf(std::ios::fixed, std::ios::floatfield);
-    msg.precision(static_cast<int>(numeric_limits<real_t>::digits10 * 0.75));
-
     // Output absolute global errors for each field
+    std::ostringstream msg;
     msg << timeprefix;
     for (std::size_t k = 0; k < channel::field::count; ++k) {
-        msg << ' ' << std::setw(infowidth) << std::right << L2[k].total();
+        append_real(msg << ' ', L2[k].total());
     }
     INFODUB("mms.abserr", msg.str());
 }
@@ -259,8 +278,8 @@ static void information_manufactured_solution_absolute_error(
 static std::size_t last_status_nt = numeric_limits<std::size_t>::max();
 
 /** Routine to output status.  Signature for TimeController use. */
-static bool log_status(real_t t, std::size_t nt) {
-
+static bool log_status(real_t t, std::size_t nt)
+{
     // Notice collective operations are never inside logging macros!
 
     using std::max;
