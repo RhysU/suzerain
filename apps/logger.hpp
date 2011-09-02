@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * logger.hpp: logging tools build atop log4cxx
+ * logger.hpp: MPI-aware logging tools built atop log4cxx
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -30,6 +30,7 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
+#include <mpi.h>
 #include <log4cxx/logger.h>
 
 /**
@@ -55,41 +56,40 @@ void initialize(MPI_Comm comm);
 
 } // end namespace logger
 
-// Logging macros that log only from MPI rank 0
-#define TRACE0(msg)     do{LOG4CXX_TRACE(::logger::rankzero,msg)}while(0)
-#define DEBUG0(msg)     do{LOG4CXX_DEBUG(::logger::rankzero,msg)}while(0)
-#define INFO0(msg)      do{LOG4CXX_INFO( ::logger::rankzero,msg)}while(0)
-#define WARN0(msg)      do{LOG4CXX_WARN( ::logger::rankzero,msg)}while(0)
-#define ERROR0(msg)     do{LOG4CXX_ERROR(::logger::rankzero,msg)}while(0)
-#define FATAL0(msg)     do{LOG4CXX_FATAL(::logger::rankzero,msg)}while(0)
+// Logging macros that log from all ranks using "r12345"
+#define TRACE(m)       do{LOG4CXX_TRACE(::logger::all,m)}while(0)
+#define DEBUG(m)       do{LOG4CXX_DEBUG(::logger::all,m)}while(0)
+#define INFO(m)        do{LOG4CXX_INFO( ::logger::all,m)}while(0)
+#define WARN(m)        do{LOG4CXX_WARN( ::logger::all,m)}while(0)
+#define ERROR(m)       do{LOG4CXX_ERROR(::logger::all,m)}while(0)
+#define FATAL(m)       do{LOG4CXX_FATAL(::logger::all,m)}while(0)
 
-// Logging macros that log from all ranks
-#define TRACE(msg)     do{LOG4CXX_TRACE(::logger::all,msg)}while(0)
-#define DEBUG(msg)     do{LOG4CXX_DEBUG(::logger::all,msg)}while(0)
-#define INFO(msg)      do{LOG4CXX_INFO( ::logger::all,msg)}while(0)
-#define WARN(msg)      do{LOG4CXX_WARN( ::logger::all,msg)}while(0)
-#define ERROR(msg)     do{LOG4CXX_ERROR(::logger::all,msg)}while(0)
-#define FATAL(msg)     do{LOG4CXX_FATAL(::logger::all,msg)}while(0)
+// Macros useful for checking if particular levels are enabled
+#define INFO_ENABLED   (::logger::rankzero->isInfoEnabled())
+#define TRACE_ENABLED  (::logger::rankzero->isTraceEnabled())
+#define DEBUG_ENABLED  (::logger::rankzero->isDebugEnabled())
+
+// Logging macros that log only from MPI rank 0 using "root"
+#define TRACE0(m)     do{LOG4CXX_TRACE(::logger::rankzero,m)}while(0)
+#define DEBUG0(m)     do{LOG4CXX_DEBUG(::logger::rankzero,m)}while(0)
+#define INFO0(m)      do{LOG4CXX_INFO( ::logger::rankzero,m)}while(0)
+#define WARN0(m)      do{LOG4CXX_WARN( ::logger::rankzero,m)}while(0)
+#define ERROR0(m)     do{LOG4CXX_ERROR(::logger::rankzero,m)}while(0)
+#define FATAL0(m)     do{LOG4CXX_FATAL(::logger::rankzero,m)}while(0)
 
 // Logging macros taking one-off logger names for infrequent use
 // Provided so that configuration can pull off particular outputs, e.g. L2
-#define TRACEDUB(nick,msg)     do{LOG4CXX_TRACE(::log4cxx::Logger::getLogger(nick),msg)}while(0)
-#define DEBUGDUB(nick,msg)     do{LOG4CXX_DEBUG(::log4cxx::Logger::getLogger(nick),msg)}while(0)
-#define INFODUB(nick,msg)      do{LOG4CXX_INFO( ::log4cxx::Logger::getLogger(nick),msg)}while(0)
-#define WARNDUB(nick,msg)      do{LOG4CXX_WARN( ::log4cxx::Logger::getLogger(nick),msg)}while(0)
-#define ERRORDUB(nick,msg)     do{LOG4CXX_ERROR(::log4cxx::Logger::getLogger(nick),msg)}while(0)
-#define FATALDUB(nick,msg)     do{LOG4CXX_FATAL(::log4cxx::Logger::getLogger(nick),msg)}while(0)
+#define TRACEDUB(n,m) do{LOG4CXX_TRACE(::log4cxx::Logger::getLogger(n),m)}while(0)
+#define DEBUGDUB(n,m) do{LOG4CXX_DEBUG(::log4cxx::Logger::getLogger(n),m)}while(0)
+#define INFODUB(n,m)  do{LOG4CXX_INFO( ::log4cxx::Logger::getLogger(n),m)}while(0)
+#define WARNDUB(n,m)  do{LOG4CXX_WARN( ::log4cxx::Logger::getLogger(n),m)}while(0)
+#define ERRORDUB(n,m) do{LOG4CXX_ERROR(::log4cxx::Logger::getLogger(n),m)}while(0)
+#define FATALDUB(n,m) do{LOG4CXX_FATAL(::log4cxx::Logger::getLogger(n),m)}while(0)
 
-// Be very cautious about relying on "_ENABLED" macros across multiple ranks
-// Correct design is to add a rank-specific Filter possibly to AppenderSkeleton
-#define INFO0_ENABLED          (::logger::rankzero->isInfoEnabled())
-#define TRACE0_ENABLED         (::logger::rankzero->isTraceEnabled())
-#define DEBUG0_ENABLED         (::logger::rankzero->isDebugEnabled())
-#define INFO_ENABLED           (::logger::all->isInfoEnabled())
-#define TRACE_ENABLED          (::logger::all->isTraceEnabled())
-#define DEBUG_ENABLED          (::logger::all->isDebugEnabled())
-#define INFODUB_ENABLED(nick)  (::log4cxx::Logger::getLogger(nick)->isInfoEnabled())
-#define TRACEDUB_ENABLED(nick) (::log4cxx::Logger::getLogger(nick)->isTraceEnabled())
-#define DEBUGDUB_ENABLED(nick) (::log4cxx::Logger::getLogger(nick)->isDebugEnabled())
+// Macros for checking if particular levels are enabled for named loggers
+#define INFODUB_ENABLED(n)  (::logger::Logger::getLogger(n)->isInfoEnabled())
+#define TRACEDUB_ENABLED(n) (::logger::Logger::getLogger(n)->isTraceEnabled())
+#define DEBUGDUB_ENABLED(n) (::logger::Logger::getLogger(n)->isDebugEnabled())
+
 
 #endif // LOGGER_HPP
