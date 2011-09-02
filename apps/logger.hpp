@@ -62,9 +62,6 @@ void initialize(MPI_Comm comm);
 #define WARN0(msg)      do{LOG4CXX_WARN( ::logger::rankzero,msg)}while(0)
 #define ERROR0(msg)     do{LOG4CXX_ERROR(::logger::rankzero,msg)}while(0)
 #define FATAL0(msg)     do{LOG4CXX_FATAL(::logger::rankzero,msg)}while(0)
-#define INFO0_ENABLED    (::logger::rankzero->isInfoEnabled())
-#define TRACE0_ENABLED   (::logger::rankzero->isTraceEnabled())
-#define DEBUG0_ENABLED   (::logger::rankzero->isDebugEnabled())
 
 // Logging macros that log from all ranks
 #define TRACE(msg)     do{LOG4CXX_TRACE(::logger::all,msg)}while(0)
@@ -73,9 +70,6 @@ void initialize(MPI_Comm comm);
 #define WARN(msg)      do{LOG4CXX_WARN( ::logger::all,msg)}while(0)
 #define ERROR(msg)     do{LOG4CXX_ERROR(::logger::all,msg)}while(0)
 #define FATAL(msg)     do{LOG4CXX_FATAL(::logger::all,msg)}while(0)
-#define INFO_ENABLED    (::logger::all->isInfoEnabled())
-#define TRACE_ENABLED   (::logger::all->isTraceEnabled())
-#define DEBUG_ENABLED   (::logger::all->isDebugEnabled())
 
 // Logging macros taking one-off logger names for infrequent use
 // Provided so that configuration can pull off particular outputs, e.g. L2
@@ -85,6 +79,15 @@ void initialize(MPI_Comm comm);
 #define WARNDUB(nick,msg)      do{LOG4CXX_WARN( ::log4cxx::Logger::getLogger(nick),msg)}while(0)
 #define ERRORDUB(nick,msg)     do{LOG4CXX_ERROR(::log4cxx::Logger::getLogger(nick),msg)}while(0)
 #define FATALDUB(nick,msg)     do{LOG4CXX_FATAL(::log4cxx::Logger::getLogger(nick),msg)}while(0)
+
+// Be very cautious about relying on "_ENABLED" macros across multiple ranks
+// Correct design is to add a rank-specific Filter possibly to AppenderSkeleton
+#define INFO0_ENABLED          (::logger::rankzero->isInfoEnabled())
+#define TRACE0_ENABLED         (::logger::rankzero->isTraceEnabled())
+#define DEBUG0_ENABLED         (::logger::rankzero->isDebugEnabled())
+#define INFO_ENABLED           (::logger::all->isInfoEnabled())
+#define TRACE_ENABLED          (::logger::all->isTraceEnabled())
+#define DEBUG_ENABLED          (::logger::all->isDebugEnabled())
 #define INFODUB_ENABLED(nick)  (::log4cxx::Logger::getLogger(nick)->isInfoEnabled())
 #define TRACEDUB_ENABLED(nick) (::log4cxx::Logger::getLogger(nick)->isTraceEnabled())
 #define DEBUGDUB_ENABLED(nick) (::log4cxx::Logger::getLogger(nick)->isDebugEnabled())

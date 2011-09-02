@@ -88,7 +88,7 @@ static const char default_log4cxx_config[] =
     "log4j.rootLogger=DEBUG, CONSOLE\n"
     "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"
     "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"
-    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-4c  %m%n\n";
+    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-10c %m%n\n";
 
 void initialize(MPI_Comm)
 {

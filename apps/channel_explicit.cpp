@@ -117,6 +117,12 @@ static shared_ptr<state_type> state_nonlinear;
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
 
+/** The floating point precision to use during status logging */
+static const std::streamsize infoprec = numeric_limits<real_t>::digits10 * 0.85;
+
+/** The floating point field width to use during status logging */
+static const std::streamsize infowidth = infoprec + 6;
+
 /** <tt>atexit</tt> callback to ensure we finalize esioh. */
 static void atexit_esio(void) {
     if (esioh) esio_handle_finalize(esioh);
@@ -136,77 +142,94 @@ static void atexit_metadata(void) {
     }
 }
 
-/** Build a message containing mean and fluctuating L2 information */
-static std::string information_L2() {
+/** Log messages containing mean and fluctuating L2 information */
+static void information_L2(const std::string& timeprefix) {
 
     // Collective computation of the L_2 norms
     const array<channel::L2,channel::field::count> L2
         = channel::field_L2(*state_linear, scenario, grid, *dgrid, *gop);
 
-    // Prepare the status message
+    // Prepare for desired output precision
     std::ostringstream msg;
-    msg << "mean|fluct ";
-    msg.precision(static_cast<int>(numeric_limits<real_t>::digits10 * 0.75));
-    for (std::size_t k = 0; k < L2.size(); ++k) {
-        msg << ' ' << L2[k].mean() << ' ' << L2[k].fluctuating();
-    }
+    msg.setf(std::ios::fixed, std::ios::floatfield);
+    msg.precision(infoprec);
 
-    return msg.str();
+    // Build and log L2 of mean conserved state
+    msg.str("");
+    msg << timeprefix;
+    for (std::size_t k = 0; k < L2.size(); ++k) {
+        msg << ' ' << std::setw(infowidth) << std::right << L2[k].mean();
+    }
+    INFODUB("L2.mean", msg.str());
+
+    // Build and log L2 of fluctuating conserved state
+    msg.str("");
+    msg << timeprefix;
+    for (std::size_t k = 0; k < L2.size(); ++k) {
+        msg << ' ' << std::setw(infowidth) << std::right << L2[k].fluctuating();
+    }
+    INFODUB("L2.fluct", msg.str());
 }
 
 /** Build a message containing bulk quantities (intended for root rank only) */
-static std::string information_bulk() {
+static void information_bulk(const std::string& timeprefix) {
 
     // Compute operator for finding bulk quantities from coefficients
     Eigen::VectorXr bulkcoeff(b->n());
     b->integration_coefficients(0, bulkcoeff.data());
     bulkcoeff /= scenario.Ly;
 
-    // Prepare the status message
+    // Prepare the status message and log it
     std::ostringstream msg;
-    msg << "state      ";
-    msg.precision(static_cast<int>(numeric_limits<real_t>::digits10 * 0.75));
+    msg.setf(std::ios::fixed, std::ios::floatfield);
+    msg.precision(infoprec);
+    msg << timeprefix;
     for (std::size_t k = 0; k < state_linear->shape()[0]; ++k) {
         Eigen::Map<Eigen::VectorXc> mean(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
-        msg << ' ' << bulkcoeff.dot(mean.real());
+        msg << ' ' << std::setw(infowidth) << std::right
+            << bulkcoeff.dot(mean.real());
     }
-
-    return msg.str();
+    INFODUB("bulk.state", msg.str());
 }
 
 /** Build a message containing specific state quantities at the wall */
-static std::string information_specific_wall_state() {
+static void information_specific_wall_state(const std::string& timeprefix) {
     namespace ndx = channel::field::ndx;
 
     // Indices at the lower and upper walls.  Use that wall collocation point
     // values are nothing but the first and last B-spline coefficient values.
+    const char *nick[2] = { "wall.lower", "wall.upper" };
     std::size_t wall[2] = { 0, state_linear->shape()[1] - 1 };
     real_t      rho[2]  = {
         ((*state_linear)[ndx::rho][wall[0]][0][0]).real(),
         ((*state_linear)[ndx::rho][wall[1]][0][0]).real()
     };
 
-    // Prepare the status message:
-    // Message lists lower then upper u, v, w, and internal energy at walls
+    // Prepare for desired output precision
     std::ostringstream msg;
-    msg << "lower|upper";
-    msg.precision(std::numeric_limits<real_t>::digits10 / 2);
-    assert(ndx::rho == 0);
-    for (std::size_t k = ndx::rho; k < channel::field::count; ++k) {
-        for (std::size_t l = 0; l < sizeof(wall)/sizeof(wall[0]); ++l) {
-            msg << ' ' << ((*state_linear)[k][wall[l]][0][0]).real() / rho[l];
-        }
-    }
+    msg.setf(std::ios::fixed, std::ios::floatfield);
+    msg.precision(static_cast<int>(numeric_limits<real_t>::digits10 * 0.75));
 
-    return msg.str();
+    // Message lists rho, u, v, w, and total energy at walls
+    assert(ndx::rho == 0);
+    for (std::size_t l = 0; l < sizeof(wall)/sizeof(wall[0]); ++l) {
+        msg.str("");
+        msg << timeprefix;
+        for (std::size_t k = ndx::rho; k < channel::field::count; ++k) {
+            msg << ' ' << std::setw(infowidth) << std::right
+                << ((*state_linear)[k][wall[l]][0][0]).real() / rho[l];
+        }
+        DEBUGDUB(nick[l], msg.str());
+    }
 }
 
 /**
  * Build a message for the absolute error versus a manufactured solution.
  * Uses state_nonlinear as a scratch space and is not cheap.
  */
-static std::string information_manufactured_solution_absolute_error(
+static void information_manufactured_solution_absolute_error(
+        const std::string& timeprefix,
         const real_t simulation_time)
 {
     assert(msoln);
@@ -219,15 +242,17 @@ static std::string information_manufactured_solution_absolute_error(
     const array<channel::L2,channel::field::count> L2
         = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
 
-    // Output absolute global errors for each field
+    // Prepare for desired output precision
     std::ostringstream msg;
-    msg << "abserr     ";
-    msg.precision(static_cast<int>(numeric_limits<real_t>::digits10));
-    for (std::size_t k = 0; k < channel::field::count; ++k) {
-        msg << ' ' << L2[k].total();
-    }
+    msg.setf(std::ios::fixed, std::ios::floatfield);
+    msg.precision(static_cast<int>(numeric_limits<real_t>::digits10 * 0.75));
 
-    return msg.str();
+    // Output absolute global errors for each field
+    msg << timeprefix;
+    for (std::size_t k = 0; k < channel::field::count; ++k) {
+        msg << ' ' << std::setw(infowidth) << std::right << L2[k].total();
+    }
+    INFODUB("mms.abserr", msg.str());
 }
 
 /** Tracks last time we output a status line */
@@ -250,7 +275,7 @@ static bool log_status(real_t t, std::size_t nt) {
 
     // Build time- and timestep-specific status prefix.
     // Precision computations ensure multiple status lines minimally distinct
-    std::ostringstream timeprefix;
+    std::ostringstream oss;
     real_t np = 0;
     if (timedef.status_dt > 0) {
         np = max(np, -floor(log10(timedef.status_dt)));
@@ -259,31 +284,25 @@ static bool log_status(real_t t, std::size_t nt) {
         np = max(np, -floor(log10(timedef.min_dt * timedef.status_nt)) + 1);
     }
     if (np > 0) {
-        timeprefix.setf(std::ios::fixed,std::ios::floatfield);
-        const std::streamsize oldprec = timeprefix.precision(np);
-        timeprefix << t;
-        timeprefix.precision(oldprec);
-        timeprefix.unsetf(std::ios::fixed);
+        oss.setf(std::ios::fixed, std::ios::floatfield);
+        const std::streamsize oldprec = oss.precision(np);
+        oss << t;
+        oss.precision(oldprec);
+        oss.unsetf(std::ios::fixed);
     } else {
-        timeprefix << t;
+        oss << t;
     }
-    timeprefix << ' ' << std::setw(7) << nt << ' ';
+    oss << ' ' << std::setw(7) << nt;
+    const std::string timeprefix = oss.str();
 
-    // On root only, compute and show bulk state quantities
-    INFODUB("bulk", timeprefix.str() << information_bulk());
+    // Log information about the various quantities of interest
+    information_bulk(timeprefix);
+    information_L2(timeprefix);
+    information_specific_wall_state(timeprefix);
 
-    // Collectively compute and log L2 mean and fluctuating information
-    const std::string msg_l2 = information_L2();
-    INFODUB("L2", timeprefix.str() << msg_l2);
-
-    // On root only, compute and show specific state at the walls
-    DEBUGDUB("wall", timeprefix.str() << information_specific_wall_state());
-
-    // If using manufactured solution, collectively compute and log error
+    // Log errors versus any manufactured solution in use
     if (msoln) {
-        const std::string msg_relerr
-            = information_manufactured_solution_absolute_error(t);
-        INFODUB("MMS", timeprefix.str() << msg_relerr);
+        information_manufactured_solution_absolute_error(timeprefix, t);
     }
 
     last_status_nt = nt; // Maintain last status time step
