@@ -36,6 +36,8 @@
 #include <suzerain/error.h>
 #include <suzerain/mpi.hpp>
 
+#include "logger.hpp"
+
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/file.h>
 #include <log4cxx/helpers/bytearrayinputstream.h>
@@ -45,6 +47,9 @@
 #include <log4cxx/helpers/pool.h>
 #include <log4cxx/helpers/properties.h>
 #include <log4cxx/logmanager.h>
+#include <log4cxx/appender.h>
+#include <log4cxx/spi/filter.h>
+#include <log4cxx/spi/loggerrepository.h>
 #include <log4cxx/propertyconfigurator.h>
 
 #if !defined(LOG4CXX)
@@ -52,33 +57,60 @@
 #endif
 #include <log4cxx/helpers/aprinitializer.h>
 
-#include "logger.hpp"
+using namespace log4cxx;
+using namespace log4cxx::helpers;
+
+// A custom HierarchyEventListener implementation for debugging
+class HEL : public virtual spi::HierarchyEventListener,
+            public virtual ObjectImpl
+{
+public:
+    DECLARE_LOG4CXX_OBJECT(HEL)
+    BEGIN_LOG4CXX_CAST_MAP()
+            LOG4CXX_CAST_ENTRY(HEL)
+            LOG4CXX_CAST_ENTRY(HierarchyEventListener)
+    END_LOG4CXX_CAST_MAP()
+
+    virtual void addAppenderEvent(
+        const LoggerPtr &logger, const AppenderPtr &appender)
+    {
+//      std::cerr << logger->getName() << ' '
+//                << appender->getName() << std::endl;
+    }
+
+    virtual void removeAppenderEvent(
+        const LoggerPtr &logger, const AppenderPtr &appender) { /* NOP */ }
+};
+
+IMPLEMENT_LOG4CXX_OBJECT(HEL)
 
 namespace logger {
 
 // Workaround http://old.nabble.com/Static-destruction-fiasco--td31026705.html
 static struct Log4cxxWorkaroundsType {
     Log4cxxWorkaroundsType() {
-        log4cxx::helpers::APRInitializer::initialize();
+        APRInitializer::initialize();
     }
 } workarounds;
 
-log4cxx::LoggerPtr rankzero;
+LoggerPtr rankzero;
 
-log4cxx::LoggerPtr all;
+LoggerPtr all;
+
+static spi::HierarchyEventListenerPtr help(new HEL());
 
 static void initialize_loggers_within_comm_world(int worldrank)
 {
     // "rankzero" is a disguise for the log4cxx root logger.
-    rankzero = log4cxx::Logger::getRootLogger();
-    log4cxx::LevelPtr defaultlevel = rankzero->getLevel();
-    if (worldrank > 0) rankzero->setLevel(log4cxx::Level::getOff());
+    rankzero = Logger::getRootLogger();
+    LevelPtr defaultlevel = rankzero->getLevel();
+    if (worldrank > 0) rankzero->setLevel(Level::getOff());
 
     // "all" is a descendent of "rankzero" active on all ranks
     // If not configured, "all" takes rankzero's level from rank 0.
     std::ostringstream oss;
     oss << 'r' << worldrank;
-    all = log4cxx::Logger::getLogger(oss.str());
+    all = Logger::getLogger(oss.str());
     if (!all->getLevel()) all->setLevel(defaultlevel);
 }
 
@@ -96,16 +128,10 @@ void initialize(MPI_Comm)
     static const char log4cxx_config_envvar[] = "LOG4CXX_CONFIGURATION";
 
     // Programmatically enforce execution before log4cxx auto-configuration.
-    // Then check isConfigured() call did not itself trigger configuration.
-    // Paranoia due to "When the LogManager class is loaded into memory the
-    // default initialization procedure is inititated" in LogManager doxygen.
-    if (log4cxx::LogManager::getLoggerRepository()->isConfigured()) {
+    if (LogManager::getLoggerRepository()->isConfigured()) {
         throw std::logic_error(
             "Apache log4cxx subsystem initialized before logger::initialize()."
             "\nThis is a CODING ERROR and will drastically hurt scalability.");
-    }
-    if (log4cxx::LogManager::getLoggerRepository()->isConfigured()) {
-        throw std::logic_error("log4cxx heisen-configuration detected");
     }
 
     // Ensure MPI is ready to go
@@ -114,14 +140,24 @@ void initialize(MPI_Comm)
     // Obtain our rank within MPI_COMM_WORLD
     const int worldrank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
 
+    // Add our rank-aware HierarchyEventListener to the repository
+    LogManager::getLoggerRepository()->addHierarchyEventListener(help);
+
+    // Check that we have not accidentally triggered configuration.
+    // Paranoia due to "When the LogManager class is loaded into memory the
+    // default initialization procedure is initiated" in LogManager Doxygen.
+    if (LogManager::getLoggerRepository()->isConfigured()) {
+        throw std::logic_error("log4cxx heisen-configuration detected");
+    }
+
     // Separate logic for rank zero and higher ranks.  Broadcasting of
     // buflen serves to enforce rank zero logic running first.  Only rank
     // zero hits the filesystem searching for configuration files.
     if (worldrank == 0) {
 
         std::string configpath;
-        log4cxx::helpers::Pool pool;
-        log4cxx::File file;
+        Pool pool;
+        File file;
 
         // Lookup logic for configpath based on log4cxx source:
         //   1) Check environment variable LOG4CXX_CONFIGURATION
@@ -152,14 +188,13 @@ void initialize(MPI_Comm)
         if (!configpath.empty() && file.setPath(configpath).exists(pool)) {
             // Hideous ifdef to workaround log4cxx's inconsistent char usage.
             buf.resize(file.length(pool));
-            log4cxx::helpers::FileInputStream fis(file);
+            FileInputStream fis(file);
 #if CHAR_MIN == 0  /* "char" denotes "unsigned char" */
-            log4cxx::helpers::ByteBuffer bb(
-                    reinterpret_cast<char *>(&buf.front()), buf.size());
+            ByteBuffer bb(reinterpret_cast<char *>(&buf.front()), buf.size());
             fis.read(bb);
 #else              /* "char" denotes "signed char" */
             std::vector<char> tmp(buf.size());
-            log4cxx::helpers::ByteBuffer bb(&tmp.front(), tmp.size());
+            ByteBuffer bb(&tmp.front(), tmp.size());
             fis.read(bb);
             // Not the least bit ASCII 128+ safe but throws if issue arises.
             std::transform(tmp.begin(), tmp.end(), buf.begin(),
@@ -168,15 +203,14 @@ void initialize(MPI_Comm)
         }
 
         // Configure logging subsystem using the buffer contents
-        log4cxx::helpers::InputStreamPtr bais(
-                new log4cxx::helpers::ByteArrayInputStream(buf));
-        log4cxx::helpers::Properties props;
-        log4cxx::PropertyConfigurator pc;
+        InputStreamPtr bais(new ByteArrayInputStream(buf));
+        Properties props;
+        PropertyConfigurator pc;
         try {
             props.load(bais);
-            pc.doConfigure(props, log4cxx::LogManager::getLoggerRepository());
-        } catch (log4cxx::helpers::Exception &e) {
-            log4cxx::BasicConfigurator::configure(); // Fallback
+            pc.doConfigure(props, LogManager::getLoggerRepository());
+        } catch (Exception &e) {
+            BasicConfigurator::configure(); // Fallback
             buf.push_back('\0');
             WARN("Logging configuration from " << configpath << "invalid: "
                  << e.what() << "\n" <<  &buf.front());
@@ -198,22 +232,21 @@ void initialize(MPI_Comm)
         std::vector<unsigned char> buf(buflen);
         SUZERAIN_MPICHKR(MPI_Bcast(&buf.front(), buflen,
                                    MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD));
-        log4cxx::helpers::InputStreamPtr bais(
-                new log4cxx::helpers::ByteArrayInputStream(buf));
-        log4cxx::helpers::Properties props;
-        log4cxx::PropertyConfigurator pc;
+        InputStreamPtr bais(new ByteArrayInputStream(buf));
+        Properties props;
+        PropertyConfigurator pc;
         try {
             props.load(bais);
-            pc.doConfigure(props, log4cxx::LogManager::getLoggerRepository());
-        } catch (log4cxx::helpers::Exception & /* ignored */) {
-            log4cxx::BasicConfigurator::configure(); // Fallback
+            pc.doConfigure(props, LogManager::getLoggerRepository());
+        } catch (Exception & /* ignored */) {
+            BasicConfigurator::configure(); // Fallback
         }
         initialize_loggers_within_comm_world(worldrank);
 
     }
 
     // Assert that all ranks indeed have initialized logging
-    assert(log4cxx::LogManager::getLoggerRepository()->isConfigured());
+    assert(LogManager::getLoggerRepository()->isConfigured());
 }
 
 } // end namespace logger
