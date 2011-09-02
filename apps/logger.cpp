@@ -92,15 +92,21 @@ static const char default_log4cxx_config[] =
 
 void initialize(MPI_Comm)
 {
-    // Programmatically enforce execution before log4cxx auto-configuration
+    static const char log4j_config_envvar[]   = "log4j.configuration";
+    static const char log4cxx_config_envvar[] = "LOG4CXX_CONFIGURATION";
+
+    // Programmatically enforce execution before log4cxx auto-configuration.
+    // Then check isConfigured() call did not itself trigger configuration.
+    // Paranoia due to "When the LogManager class is loaded into memory the
+    // default initialization procedure is inititated" in LogManager doxygen.
     if (log4cxx::LogManager::getLoggerRepository()->isConfigured()) {
         throw std::logic_error(
             "Apache log4cxx subsystem initialized before logger::initialize()."
             "\nThis is a CODING ERROR and will drastically hurt scalability.");
     }
-
-    static const char log4j_config_envvar[]   = "log4j.configuration";
-    static const char log4cxx_config_envvar[] = "LOG4CXX_CONFIGURATION";
+    if (log4cxx::LogManager::getLoggerRepository()->isConfigured()) {
+        throw std::logic_error("log4cxx heisen-configuration detected");
+    }
 
     // Ensure MPI is ready to go
     suzerain::mpi::ensure_mpi_initialized();
