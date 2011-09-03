@@ -150,11 +150,11 @@ std::basic_ostream<CharT,Traits>& append_real(
 {
     // Magic "2" is the width of a sign and a decimal point
     static const real_t fixedmax
-        = std::pow<real_t>(10, append_real_width - append_real_prec - 2);
+        = std::pow(real_t(10), append_real_width - append_real_prec - 2);
 
     // Magic 3 is the width of a sign, leading zero, and decimal point
     static const real_t fixedmin
-        = std::pow<real_t>(10, -(append_real_width - append_real_prec - 3));
+        = std::pow(real_t(10), -(append_real_width - append_real_prec - 3));
 
     // Format in fixed or scientific form as appropriate in given width
     // Care taken to not perturb observable ostream state after function call
