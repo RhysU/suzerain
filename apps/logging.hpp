@@ -34,15 +34,17 @@
 #include <log4cxx/logger.h>
 
 /**
- * Namespace to house logging abstraction details.
+ * Namespace to house MPI-aware logging abstraction built atop log4cxx.
  */
 namespace logging {
 
-/** Logger enabled only on rank zero */
-extern ::log4cxx::LoggerPtr rankzero;
+/** Smart pointer to a particular logger instance */
+typedef ::log4cxx::LoggerPtr logger_type;
+
+extern logger_type rankzero;
 
 /** Logger enabled on all ranks */
-extern ::log4cxx::LoggerPtr all;
+extern logger_type all;
 
 /**
  * Initialize the logging infrastructure.

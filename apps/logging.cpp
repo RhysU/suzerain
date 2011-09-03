@@ -142,9 +142,9 @@ static const char default_log4cxx_config[] =
 
 namespace logging {
 
-LoggerPtr rankzero;
+logger_type rankzero;
 
-LoggerPtr all;
+logger_type all;
 
 void initialize(MPI_Comm)
 {
@@ -305,12 +305,11 @@ void initialize(MPI_Comm)
 
     // On non-zero ranks the RootLogger may have no appenders (which is fine).
     // However, it causes a worrisome one-time message like to following
-    //   log4cxx: No appender could be found for logger (root).
-    //   log4cxx: Please initialize the log4cxx system properly.
+    //     log4cxx: No appender could be found for logger (root).
+    //     log4cxx: Please initialize the log4cxx system properly.
     // to appear once from each rank.  Temporarily disable log4cxx's LogLog,
-    // turn off the RootLogger, emit a message off into the ether, and
-    // turn both back on again.
-    if (rankzero->getAllAppenders().empty()) {
+    // emit a message into the ether, and turn LogLog back on again.
+    if (worldrank > 0 && rankzero->getAllAppenders().empty()) {
         LogLog::setQuietMode(true);
         rankzero->fatal("Sorry, baby, but I had to crash that Honda.");
         LogLog::setQuietMode(false);
