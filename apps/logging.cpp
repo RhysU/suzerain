@@ -144,7 +144,7 @@ namespace logging {
 
 logger_type rankzero;
 
-logger_type all;
+logger_type allranks;
 
 void initialize(MPI_Comm)
 {
@@ -170,7 +170,7 @@ void initialize(MPI_Comm)
     int worldrank;
     MPI_Comm_rank(MPI_COMM_WORLD, &worldrank);
 
-    // Build a rank-specific name for the "all" LoggerPtr instance
+    // Build a rank-specific name for the "allranks" LoggerPtr instance
     LogString worldrankname;
     {
         std::ostringstream oss;
@@ -299,9 +299,9 @@ void initialize(MPI_Comm)
     // on non-root ranks while still leaving isLevelEnabledFor() intact.
     rankzero = Logger::getRootLogger();
 
-    // "all" emits events on all ranks by having SubversiveASHEL co-opt
+    // "allranks" emits events on all ranks by having SubversiveASHEL co-opt
     // appenders from RootLogger on non-root ranks.
-    all = Logger::getLogger(worldrankname);
+    allranks = Logger::getLogger(worldrankname);
 
     // On non-zero ranks the RootLogger may have no appenders (which is fine).
     // However, it causes a worrisome one-time message like to following

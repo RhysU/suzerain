@@ -189,7 +189,7 @@ static void information_L2(const std::string& timeprefix)
     for (std::size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].mean());
     }
-    INFODUB("L2.mean", msg.str());
+    LINFO("L2.mean", msg.str());
 
     // Build and log L2 of fluctuating conserved state
     msg.str("");
@@ -197,7 +197,7 @@ static void information_L2(const std::string& timeprefix)
     for (std::size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].fluctuating());
     }
-    INFODUB("L2.fluct", msg.str());
+    LINFO("L2.fluct", msg.str());
 }
 
 /** Build a message containing bulk quantities (intended for root rank only) */
@@ -217,7 +217,7 @@ static void information_bulk(const std::string& timeprefix)
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
         append_real(msg << ' ', bulkcoeff.dot(mean.real()));
     }
-    INFODUB("bulk.state", msg.str());
+    LINFO("bulk.state", msg.str());
 }
 
 /** Build a message containing specific state quantities at the wall */
@@ -243,7 +243,7 @@ static void information_specific_wall_state(const std::string& timeprefix)
             append_real(msg << ' ' ,
                         ((*state_linear)[k][wall[l]][0][0]).real() / rho[l]);
         }
-        DEBUGDUB(nick[l], msg.str());
+        LDEBUG(nick[l], msg.str());
     }
 }
 
@@ -271,7 +271,7 @@ static void information_manufactured_solution_absolute_error(
     for (std::size_t k = 0; k < channel::field::count; ++k) {
         append_real(msg << ' ', L2[k].total());
     }
-    INFODUB("mms.abserr", msg.str());
+    LINFO("mms.abserr", msg.str());
 }
 
 /** Tracks last time we output a status line */

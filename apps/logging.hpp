@@ -27,8 +27,8 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#ifndef LOGGING_HPP
+#define LOGGING_HPP
 
 #include <mpi.h>
 #include <log4cxx/logger.h>
@@ -38,60 +38,145 @@
  */
 namespace logging {
 
-/** Smart pointer to a particular logger instance */
-typedef ::log4cxx::LoggerPtr logger_type;
-
-extern logger_type rankzero;
-
-/** Logger enabled on all ranks */
-extern logger_type all;
-
 /**
  * Initialize the logging infrastructure.
  * Must be called after \c MPI_Init and before any logging statements.
  *
  * @param comm Must be MPI_COMM_WORLD.  Present as a placeholder
- *             to communicate initialization order requirements
+ *             to clearly communicate initialization order requirements
  *             relative to \c MPI_Init.
  */
 void initialize(MPI_Comm comm);
 
+/** Smart pointer to some particular logger instance */
+typedef ::log4cxx::LoggerPtr logger_type;
+
+/** Retrieve a particular logger by name */
+inline logger_type get_logger(const std::string& name)
+{
+    return ::log4cxx::Logger::getLogger(name);
+}
+
+/** Retrieve a particular logger by name */
+inline logger_type get_logger(const char *name)
+{
+    return ::log4cxx::Logger::getLogger(name);
+}
+
+/** Idempotent overload of get_logger() to aid macro definitions */
+inline logger_type& get_logger(logger_type& logger) { return logger; }
+
+/**
+ * Logger that emits messages only on rank zero.  Use the TRACE0, DEBUG0,
+ * INFO0, WARN0, ERROR0, and FATAL0 macros to employ this logger.
+ */
+extern logger_type rankzero;
+
+/**
+ * Logger that emits messages on all ranks with a rank-dependent name.  Use the
+ * TRACE, DEBUG, INFO, WARN, ERROR, and FATAL macros to employ this logger.
+ */
+extern logger_type allranks;
+
 } // end namespace logging
 
-// Logging macros that log from all ranks using "r12345"
-#define TRACE(m)       do{LOG4CXX_TRACE(::logging::all,m)}while(0)
-#define DEBUG(m)       do{LOG4CXX_DEBUG(::logging::all,m)}while(0)
-#define INFO(m)        do{LOG4CXX_INFO( ::logging::all,m)}while(0)
-#define WARN(m)        do{LOG4CXX_WARN( ::logging::all,m)}while(0)
-#define ERROR(m)       do{LOG4CXX_ERROR(::logging::all,m)}while(0)
-#define FATAL(m)       do{LOG4CXX_FATAL(::logging::all,m)}while(0)
 
-// Macros useful for checking if particular levels are enabled
-#define INFO_ENABLED   (::logging::rankzero->isInfoEnabled())
+/** @name Logging macros emitting messages as "root" only from rank zero.
+ *  @{
+ */
+
+/** Log message \c m at trace level on rank zero. */
+#define TRACE0(m) do{LOG4CXX_TRACE(::logging::rankzero,m)}while(0)
+/** Log message \c m at debug level on rank zero. */
+#define DEBUG0(m) do{LOG4CXX_DEBUG(::logging::rankzero,m)}while(0)
+/** Log message \c m at info level on rank zero. */
+#define INFO0(m)  do{LOG4CXX_INFO( ::logging::rankzero,m)}while(0)
+/** Log message \c m at warn level on rank zero. */
+#define WARN0(m)  do{LOG4CXX_WARN( ::logging::rankzero,m)}while(0)
+/** Log message \c m at error level on rank zero. */
+#define ERROR0(m) do{LOG4CXX_ERROR(::logging::rankzero,m)}while(0)
+/** Log message \c m at fatal level on rank zero. */
+#define FATAL0(m) do{LOG4CXX_FATAL(::logging::rankzero,m)}while(0)
+
+/* @} */
+
+
+/** @name Logging macros emitting messages from all ranks.
+ *  @{
+ */
+
+/** Log message \c m at trace level from all ranks. */
+#define TRACE(m)  do{LOG4CXX_TRACE(::logging::allranks,m)}while(0)
+/** Log message \c m at debug level from all ranks. */
+#define DEBUG(m)  do{LOG4CXX_DEBUG(::logging::allranks,m)}while(0)
+/** Log message \c m at info level from all ranks. */
+#define INFO(m)   do{LOG4CXX_INFO( ::logging::allranks,m)}while(0)
+/** Log message \c m at warn level from all ranks. */
+#define WARN(m)   do{LOG4CXX_WARN( ::logging::allranks,m)}while(0)
+/** Log message \c m at error level from all ranks. */
+#define ERROR(m)  do{LOG4CXX_ERROR(::logging::allranks,m)}while(0)
+/** Log message \c m at fatal level from all ranks. */
+#define FATAL(m)  do{LOG4CXX_FATAL(::logging::allranks,m)}while(0)
+
+/* @} */
+
+
+/** @name Macros to check if particular logging levels are enabled.
+ *  @{
+ */
+
+/** Return true if trace level logging is enabled. */
 #define TRACE_ENABLED  (::logging::rankzero->isTraceEnabled())
+/** Return true if debug level logging is enabled. */
 #define DEBUG_ENABLED  (::logging::rankzero->isDebugEnabled())
+/** Return true if info level logging is enabled. */
+#define INFO_ENABLED   (::logging::rankzero->isInfoEnabled())
+/** Return true if warn level logging is enabled. */
+#define WARN_ENABLED   (::logging::rankzero->isWarnEnabled())
+/** Return true if error level logging is enabled. */
+#define ERROR_ENABLED  (::logging::rankzero->isErrorEnabled())
+/** Return true if fatal level logging is enabled. */
+#define FATAL_ENABLED  (::logging::rankzero->isFatalEnabled())
 
-// Logging macros that log only from MPI rank 0 using "root"
-#define TRACE0(m)     do{LOG4CXX_TRACE(::logging::rankzero,m)}while(0)
-#define DEBUG0(m)     do{LOG4CXX_DEBUG(::logging::rankzero,m)}while(0)
-#define INFO0(m)      do{LOG4CXX_INFO( ::logging::rankzero,m)}while(0)
-#define WARN0(m)      do{LOG4CXX_WARN( ::logging::rankzero,m)}while(0)
-#define ERROR0(m)     do{LOG4CXX_ERROR(::logging::rankzero,m)}while(0)
-#define FATAL0(m)     do{LOG4CXX_FATAL(::logging::rankzero,m)}while(0)
+/* @} */
 
-// Logging macros taking one-off logger names for infrequent use
-// Provided so that configuration can pull off particular outputs, e.g. L2
-#define TRACEDUB(n,m) do{LOG4CXX_TRACE(::log4cxx::Logger::getLogger(n),m)}while(0)
-#define DEBUGDUB(n,m) do{LOG4CXX_DEBUG(::log4cxx::Logger::getLogger(n),m)}while(0)
-#define INFODUB(n,m)  do{LOG4CXX_INFO( ::log4cxx::Logger::getLogger(n),m)}while(0)
-#define WARNDUB(n,m)  do{LOG4CXX_WARN( ::log4cxx::Logger::getLogger(n),m)}while(0)
-#define ERRORDUB(n,m) do{LOG4CXX_ERROR(::log4cxx::Logger::getLogger(n),m)}while(0)
-#define FATALDUB(n,m) do{LOG4CXX_FATAL(::log4cxx::Logger::getLogger(n),m)}while(0)
+/** @name Logging macros emitting messages from named loggers on rank zero.
+ *  @{
+ */
 
-// Macros for checking if particular levels are enabled for named loggers
-#define INFODUB_ENABLED(n)  (::log4cxx::Logger::getLogger(n)->isInfoEnabled())
-#define TRACEDUB_ENABLED(n) (::log4cxx::Logger::getLogger(n)->isTraceEnabled())
-#define DEBUGDUB_ENABLED(n) (::log4cxx::Logger::getLogger(n)->isDebugEnabled())
+/** Log message \c m at trace level on rank zero using logger \c l. */
+#define LTRACE(l,m) do{LOG4CXX_TRACE(::logging::get_logger(l),m)}while(0)
+/** Log message \c m at debug level on rank zero using logger \c l. */
+#define LDEBUG(l,m) do{LOG4CXX_DEBUG(::logging::get_logger(l),m)}while(0)
+/** Log message \c m at info level on rank zero using logger \c l. */
+#define LINFO(l,m)  do{LOG4CXX_INFO( ::logging::get_logger(l),m)}while(0)
+/** Log message \c m at warn level on rank zero using logger \c l. */
+#define LWARN(l,m)  do{LOG4CXX_WARN( ::logging::get_logger(l),m)}while(0)
+/** Log message \c m at error level on rank zero using logger \c l. */
+#define LERROR(l,m) do{LOG4CXX_ERROR(::logging::get_logger(l),m)}while(0)
+/** Log message \c m at fatal level on rank zero using logger \c l. */
+#define LFATAL(l,m) do{LOG4CXX_FATAL(::logging::get_logger(l),m)}while(0)
+
+/* @} */
 
 
-#endif // LOGGER_HPP
+/** @name Macros to check if particular named logging levels are enabled.
+ *  @{
+ */
+
+/** Return true if trace level logging is enabled for logger \c l. */
+#define LTRACE_ENABLED(l) (::logging::get_logger(l)->isTraceEnabled())
+/** Return true if debug level logging is enabled for logger \c l. */
+#define LDEBUG_ENABLED(l) (::logging::get_logger(l)->isDebugEnabled())
+/** Return true if info level logging is enabled for logger \c l. */
+#define LINFO_ENABLED(l)  (::logging::get_logger(l)->isInfoEnabled())
+/** Return true if warn level logging is enabled for logger \c l. */
+#define LWARN_ENABLED(l)  (::logging::get_logger(l)->isWarnEnabled())
+/** Return true if error level logging is enabled for logger \c l. */
+#define LERROR_ENABLED(l) (::logging::get_logger(l)->isErrorEnabled())
+/** Return true if fatal level logging is enabled for logger \c l. */
+#define LFATAL_ENABLED(l) (::logging::get_logger(l)->isFatalEnabled())
+
+/* @} */
+
+#endif // LOGGING_HPP
