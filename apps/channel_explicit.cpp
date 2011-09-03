@@ -179,6 +179,11 @@ std::basic_ostream<CharT,Traits>& append_real(
 /** Log messages containing mean and fluctuating L2 information */
 static void information_L2(const std::string& timeprefix)
 {
+    // Avoid computational cost when logging is disabled
+    logging::logger_type L2_mean  = logging::get_logger("L2.mean");
+    logging::logger_type L2_fluct = logging::get_logger("L2.fluct");
+    if (!LINFO_ENABLED(L2_mean) && !LINFO_ENABLED(L2_fluct)) return;
+
     // Collective computation of the L_2 norms
     const array<channel::L2,channel::field::count> L2
         = channel::field_L2(*state_linear, scenario, grid, *dgrid, *gop);
@@ -189,7 +194,7 @@ static void information_L2(const std::string& timeprefix)
     for (std::size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].mean());
     }
-    LINFO("L2.mean", msg.str());
+    LINFO(L2_mean, msg.str());
 
     // Build and log L2 of fluctuating conserved state
     msg.str("");
@@ -197,12 +202,15 @@ static void information_L2(const std::string& timeprefix)
     for (std::size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].fluctuating());
     }
-    LINFO("L2.fluct", msg.str());
+    LINFO(L2_fluct, msg.str());
 }
 
 /** Build a message containing bulk quantities (intended for root rank only) */
 static void information_bulk(const std::string& timeprefix)
 {
+    // Avoid computational cost when logging is disabled
+    logging::logger_type bulk_state = logging::get_logger("bulk.state");
+    if (!LINFO_ENABLED(bulk_state)) return;
 
     // Compute operator for finding bulk quantities from coefficients
     Eigen::VectorXr bulkcoeff(b->n());
@@ -217,7 +225,7 @@ static void information_bulk(const std::string& timeprefix)
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
         append_real(msg << ' ', bulkcoeff.dot(mean.real()));
     }
-    LINFO("bulk.state", msg.str());
+    LINFO(bulk_state, msg.str());
 }
 
 /** Build a message containing specific state quantities at the wall */
@@ -225,23 +233,28 @@ static void information_specific_wall_state(const std::string& timeprefix)
 {
     namespace ndx = channel::field::ndx;
 
+    logging::logger_type nick[2] = { logging::get_logger("wall.lower"),
+                                     logging::get_logger("wall.upper")  };
+
     // Indices at the lower and upper walls.  Use that wall collocation point
     // values are nothing but the first and last B-spline coefficient values.
-    const char *nick[2] = { "wall.lower", "wall.upper" };
     std::size_t wall[2] = { 0, state_linear->shape()[1] - 1 };
-    real_t      rho[2]  = {
-        ((*state_linear)[ndx::rho][wall[0]][0][0]).real(),
-        ((*state_linear)[ndx::rho][wall[1]][0][0]).real()
-    };
 
     // Message lists rho, u, v, w, and total energy at walls
-    std::ostringstream msg;
     for (std::size_t l = 0; l < sizeof(wall)/sizeof(wall[0]); ++l) {
-        msg.str("");
+
+        // Avoid computational cost when logging is disabled
+        if (!LDEBUG_ENABLED(nick[l])) continue;
+
+        std::ostringstream msg;
         msg << timeprefix;
-        for (std::size_t k = 0; k < channel::field::count; ++k) {
+
+        const real_t rho = ((*state_linear)[ndx::rho][wall[l]][0][0]).real();
+        append_real(msg << ' ', rho);
+        assert(ndx::rho == 0);
+        for (std::size_t k = 1; k < channel::field::count; ++k) {
             append_real(msg << ' ' ,
-                        ((*state_linear)[k][wall[l]][0][0]).real() / rho[l]);
+                        ((*state_linear)[k][wall[l]][0][0]).real() / rho);
         }
         LDEBUG(nick[l], msg.str());
     }
@@ -255,9 +268,12 @@ static void information_manufactured_solution_absolute_error(
         const std::string& timeprefix,
         const real_t simulation_time)
 {
-    assert(msoln);
+    // Avoid computational cost when logging is disabled
+    logging::logger_type mms_abserr = logging::get_logger("mms.abserr");
+    if (!LINFO_ENABLED(mms_abserr)) return;
 
     // Compute L2 of error of state against manufactured solution
+    assert(msoln);
     state_nonlinear->assign(*state_linear);
     channel::accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
@@ -271,7 +287,7 @@ static void information_manufactured_solution_absolute_error(
     for (std::size_t k = 0; k < channel::field::count; ++k) {
         append_real(msg << ' ', L2[k].total());
     }
-    LINFO("mms.abserr", msg.str());
+    LINFO(mms_abserr, msg.str());
 }
 
 /** Tracks last time we output a status line */
