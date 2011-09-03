@@ -142,7 +142,6 @@ static const int append_real_prec  = numeric_limits<real_t>::digits10 * 0.75;
 static const int append_real_width = append_real_prec + 5;
 
 /** Provides nice formatting of real-valued quantities for status lines */
-
 template<class CharT, class Traits, class Number>
 std::basic_ostream<CharT,Traits>& append_real(
         std::basic_ostream<CharT,Traits>& os,
