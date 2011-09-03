@@ -26,9 +26,9 @@ TESTS_ENVIRONMENT += LOG4CXX_CONFIGURATION=$(abs_top_srcdir)/log4cxx.properties
 ## MPI-aware logging built atop log4cxx
 ##
 
-noinst_LTLIBRARIES   += liblogger.la
-liblogger_la_SOURCES  = logger.cpp logger.hpp
-liblogger_la_LIBADD   = $(LOG4CXX_LIBS)
+noinst_LTLIBRARIES   += liblogging.la
+liblogging_la_SOURCES  = logging.cpp logging.hpp
+liblogging_la_LIBADD   = $(LOG4CXX_LIBS)
 
 ##
 ## Test progams and/or performance drivers
@@ -39,7 +39,7 @@ driver_suzerain_p3dfft_CPPFLAGS  = $(AM_CPPFLAGS)
 driver_suzerain_p3dfft_LDFLAGS   = $(MPIP_LDFLAGS)
 driver_suzerain_p3dfft_SOURCES   = driver_suzerain_p3dfft.cpp
 driver_suzerain_p3dfft_LDADD     = ../suzerain/libsuzerain.la
-driver_suzerain_p3dfft_LDADD    += ./liblogger.la
+driver_suzerain_p3dfft_LDADD    += ./liblogging.la
 driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS)
 
 ##
@@ -52,7 +52,7 @@ libchannel_la_SOURCES += channel.cpp channel.hpp
 libchannel_la_SOURCES += nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp
 libchannel_la_LIBADD   = $(ESIO_LIBS)
 libchannel_la_LIBADD  += ../suzerain/libsuzerain.la
-libchannel_la_LIBADD  += ./liblogger.la
+libchannel_la_LIBADD  += ./liblogging.la
 
 bin_PROGRAMS         += channel_init
 channel_init_SOURCES  = channel_init.cpp

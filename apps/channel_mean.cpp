@@ -39,7 +39,7 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/program_options.hpp>
 
-#include "logger.hpp"
+#include "logging.hpp"
 #include "precision.hpp"
 #include "channel.hpp"
 
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
-    logger::initialize(MPI_COMM_WORLD);             // Initialize logging
+    logging::initialize(MPI_COMM_WORLD);            // Initialize logging
 
     // Process incoming arguments
     std::vector<std::string> restart_files;

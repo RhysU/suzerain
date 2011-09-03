@@ -43,7 +43,7 @@
 #include <suzerain/program_options.hpp>
 #include <suzerain/utility.hpp>
 
-#include "logger.hpp"
+#include "logging.hpp"
 #include "precision.hpp"
 #include "channel.hpp"
 
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
-    logger::initialize(MPI_COMM_WORLD);             // Initialize logging
+    logging::initialize(MPI_COMM_WORLD);            // Initialize logging
     esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
     atexit(&atexit_esio);                           // Finalize ESIO at exit
 

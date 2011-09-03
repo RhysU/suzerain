@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * logger.hpp: MPI-aware logging tools built atop log4cxx
+ * logging.hpp: MPI-aware logging tools built atop log4cxx
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -36,7 +36,7 @@
 /**
  * Namespace to house logging abstraction details.
  */
-namespace logger {
+namespace logging {
 
 /** Logger enabled only on rank zero */
 extern ::log4cxx::LoggerPtr rankzero;
@@ -54,28 +54,28 @@ extern ::log4cxx::LoggerPtr all;
  */
 void initialize(MPI_Comm comm);
 
-} // end namespace logger
+} // end namespace logging
 
 // Logging macros that log from all ranks using "r12345"
-#define TRACE(m)       do{LOG4CXX_TRACE(::logger::all,m)}while(0)
-#define DEBUG(m)       do{LOG4CXX_DEBUG(::logger::all,m)}while(0)
-#define INFO(m)        do{LOG4CXX_INFO( ::logger::all,m)}while(0)
-#define WARN(m)        do{LOG4CXX_WARN( ::logger::all,m)}while(0)
-#define ERROR(m)       do{LOG4CXX_ERROR(::logger::all,m)}while(0)
-#define FATAL(m)       do{LOG4CXX_FATAL(::logger::all,m)}while(0)
+#define TRACE(m)       do{LOG4CXX_TRACE(::logging::all,m)}while(0)
+#define DEBUG(m)       do{LOG4CXX_DEBUG(::logging::all,m)}while(0)
+#define INFO(m)        do{LOG4CXX_INFO( ::logging::all,m)}while(0)
+#define WARN(m)        do{LOG4CXX_WARN( ::logging::all,m)}while(0)
+#define ERROR(m)       do{LOG4CXX_ERROR(::logging::all,m)}while(0)
+#define FATAL(m)       do{LOG4CXX_FATAL(::logging::all,m)}while(0)
 
 // Macros useful for checking if particular levels are enabled
-#define INFO_ENABLED   (::logger::rankzero->isInfoEnabled())
-#define TRACE_ENABLED  (::logger::rankzero->isTraceEnabled())
-#define DEBUG_ENABLED  (::logger::rankzero->isDebugEnabled())
+#define INFO_ENABLED   (::logging::rankzero->isInfoEnabled())
+#define TRACE_ENABLED  (::logging::rankzero->isTraceEnabled())
+#define DEBUG_ENABLED  (::logging::rankzero->isDebugEnabled())
 
 // Logging macros that log only from MPI rank 0 using "root"
-#define TRACE0(m)     do{LOG4CXX_TRACE(::logger::rankzero,m)}while(0)
-#define DEBUG0(m)     do{LOG4CXX_DEBUG(::logger::rankzero,m)}while(0)
-#define INFO0(m)      do{LOG4CXX_INFO( ::logger::rankzero,m)}while(0)
-#define WARN0(m)      do{LOG4CXX_WARN( ::logger::rankzero,m)}while(0)
-#define ERROR0(m)     do{LOG4CXX_ERROR(::logger::rankzero,m)}while(0)
-#define FATAL0(m)     do{LOG4CXX_FATAL(::logger::rankzero,m)}while(0)
+#define TRACE0(m)     do{LOG4CXX_TRACE(::logging::rankzero,m)}while(0)
+#define DEBUG0(m)     do{LOG4CXX_DEBUG(::logging::rankzero,m)}while(0)
+#define INFO0(m)      do{LOG4CXX_INFO( ::logging::rankzero,m)}while(0)
+#define WARN0(m)      do{LOG4CXX_WARN( ::logging::rankzero,m)}while(0)
+#define ERROR0(m)     do{LOG4CXX_ERROR(::logging::rankzero,m)}while(0)
+#define FATAL0(m)     do{LOG4CXX_FATAL(::logging::rankzero,m)}while(0)
 
 // Logging macros taking one-off logger names for infrequent use
 // Provided so that configuration can pull off particular outputs, e.g. L2
@@ -87,9 +87,9 @@ void initialize(MPI_Comm comm);
 #define FATALDUB(n,m) do{LOG4CXX_FATAL(::log4cxx::Logger::getLogger(n),m)}while(0)
 
 // Macros for checking if particular levels are enabled for named loggers
-#define INFODUB_ENABLED(n)  (::logger::Logger::getLogger(n)->isInfoEnabled())
-#define TRACEDUB_ENABLED(n) (::logger::Logger::getLogger(n)->isTraceEnabled())
-#define DEBUGDUB_ENABLED(n) (::logger::Logger::getLogger(n)->isDebugEnabled())
+#define INFODUB_ENABLED(n)  (::log4cxx::Logger::getLogger(n)->isInfoEnabled())
+#define TRACEDUB_ENABLED(n) (::log4cxx::Logger::getLogger(n)->isTraceEnabled())
+#define DEBUGDUB_ENABLED(n) (::log4cxx::Logger::getLogger(n)->isDebugEnabled())
 
 
 #endif // LOGGER_HPP

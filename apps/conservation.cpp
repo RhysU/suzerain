@@ -39,7 +39,7 @@
 #include <suzerain/program_options.hpp>
 #include <suzerain/utility.hpp>
 
-#include "logger.hpp"
+#include "logging.hpp"
 #include "precision.hpp"
 #include "channel.hpp"
 

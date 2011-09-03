@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * logger.cpp: logging tools built atop log4cxx
+ * logging.cpp: MPI-aware logging tools built atop log4cxx
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -31,7 +31,7 @@
 // HAVE_CONFIG_H, suzerain/config.h, and suzerain/common.hpp not present
 // as this code should be useful in a broader, non-Suzerain context.
 
-#include "logger.hpp"
+#include "logging.hpp"
 
 #include <cassert>
 #include <climits>
@@ -140,7 +140,7 @@ static const char default_log4cxx_config[] =
     "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-10c %m%n\n";
 
 
-namespace logger {
+namespace logging {
 
 LoggerPtr rankzero;
 

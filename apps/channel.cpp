@@ -43,7 +43,7 @@
 #include <suzerain/rholut.hpp>
 #include <suzerain/RngStream.hpp>
 
-#include "logger.hpp"
+#include "logging.hpp"
 #include "channel.hpp"
 
 // Manufactured solution classes explicitly instantiated for debugging
