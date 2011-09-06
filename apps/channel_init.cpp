@@ -33,6 +33,7 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
+#include <boost/math/special_functions/gamma.hpp>
 #include <esio/esio.h>
 #include <esio/error.h>
 #include <suzerain/error.h>
@@ -162,7 +163,8 @@ int main(int argc, char **argv)
     // Process incoming program arguments from command line, input files
     std::string restart_file;
     bool   clobber = false;
-    real_t mms  = -1;
+    real_t mms     = -1;
+    real_t npower  = 1;
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based compressible channel initialization",
@@ -181,6 +183,10 @@ int main(int argc, char **argv)
         options.add_definition(msdef);
         options.add_options()
             ("clobber", "Overwrite an existing restart file?")
+            ("npower",
+             boost::program_options::value(&npower)->default_value(npower),
+             "Power n in (0, 1] used to control the flatness of the"
+             " \"parabolic\" streamwise velocity profile (y*(L-y))^n.")
             ("mms",
              boost::program_options::value(&mms)
                 ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative, "mms")),
@@ -196,6 +202,11 @@ int main(int argc, char **argv)
         restart_file = positional[0];
 
         clobber = options.variables().count("clobber");
+    }
+
+    if (npower <= 0 || npower > 1) {
+        FATAL("npower in (0,1] required");
+        return EXIT_FAILURE;
     }
 
     if (grid.k < 4 /* cubics */) {
@@ -278,6 +289,26 @@ int main(int argc, char **argv)
         channel::physical_view<channel::field::count>::type sphys
             = channel::physical_view<channel::field::count>::create(*dgrid, swave);
 
+        // Find normalization required to have (y*(L-y))^npower integrate to one
+        real_t factor;
+        if (npower == 1) {
+            // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
+            factor = 6 / std::pow(scenario.Ly, 2);
+        } else {
+            // Mathematica: (Integrate[(x (L - x))^n, {x, 0, L}]/L)^(-1)
+            //      -  (Gamma[-n] Gamma[3/2+n])
+            //       / (2^(-1-2 n) L^(1+2 n) \[Pi]^(3/2) Csc[n \[Pi]])
+            using boost::math::constants::pi;
+            const real_t num1   = std::sin(npower * pi<real_t>());
+            const real_t num2   = boost::math::tgamma(-npower);
+            const real_t num3   = boost::math::tgamma(real_t(3)/2 + npower);
+            const real_t denom1 = std::pow(           2, -1-2*npower);
+            const real_t denom2 = std::pow( scenario.Ly,  1+2*npower);
+            const real_t denom3 = std::pow(pi<real_t>(),  real_t(3)/2);
+            factor = - (num1 * num2 * num3 * scenario.Ly)
+                   /   (denom1 * denom2 * denom3);
+        }
+
         // Physical space is traversed linearly using a single offset 'offset'.
         // The three loop structure is present to provide the global absolute
         // positions x(i), y(j), and z(k) where necessary.
@@ -298,8 +329,8 @@ int main(int argc, char **argv)
 
                     // Initialize primitive state
                     const real_t rho = 1;
-                    const real_t u   = 6*y*(scenario.Ly - y)
-                                     / (scenario.Ly*scenario.Ly);
+                    const real_t u   = factor
+                                     * std::pow(y * (scenario.Ly - y), npower);
                     const real_t v   = 0;
                     const real_t w   = 0;
                     const real_t T   = 1;
