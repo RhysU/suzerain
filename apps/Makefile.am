@@ -81,6 +81,9 @@ dist_check_SCRIPTS += test_channel_restart.sh
 TESTS              += test_channel_parallel.sh  # Serial/parallel equivalence
 dist_check_SCRIPTS += test_channel_parallel.sh
 
+TESTS              += test_channel_fluct.sh     # Adding fluctuations
+dist_check_SCRIPTS += test_channel_fluct.sh
+
 # Clean up from Intel Compiler's -prof-gen output and precomiled headers
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
 CLEANFILES += *.pchi
