@@ -978,11 +978,6 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     suzerain::bsplineop_luz massluz(bop);
     massluz.form_mass(bop);
 
-    // Obtain integration coefficients for computing mean quantities across Y
-    Eigen::VectorXr meancoeff(grid.N.y());
-    b.integration_coefficients(0, meancoeff.data());
-    meancoeff /= scenario.Ly;
-
     // Set L'Ecuyer et al.'s RngStream seed.  Use a distinct Substream for each
     // wall-normal pencil to ensure process is a) repeatable despite changes in
     // processor count, b) easy to code, and c) embarrassingly parallel.
@@ -1021,69 +1016,84 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 field::count + 3, dgrid));
     ContiguousState<4,complex_t> &s = *_s_ptr;               // Shorthand
 
-    //  1) Generate a random vector-valued field \tilde{A}.
-    for (int k = 0; k < grid.dN.z(); ++k) {
-        if (!wavenumber_translatable(grid.N.z(), grid.dN.z(), k)) continue;
+    // 1) Generate a random vector-valued field \tilde{A}.
+    // For each scalar component of \tilde{A}...
+    for (std::size_t l = 0; l < 3; ++l) {
 
-        for (int i = 0; i < grid.dN.x(); ++i) {
-            if (!wavenumber_translatable(grid.N.x(), grid.dN.x(), i)) continue;
+        for (int k = 0; k < grid.dN.z(); ++k) {
+            if (!wavenumber_translatable(grid.N.z(), grid.dN.z(), k)) continue;
 
-            // ...and advance RngStream to the (i, ., k) substream...
-            // ...(necessary for processor-topology independence)...
-            rng.ResetNextSubstream();
+            for (int i = 0; i < grid.dN.x(); ++i) {
+                if (!wavenumber_translatable(grid.N.x(), grid.dN.x(), i)) continue;
 
-            // ...but only the rank holding the (i, ., k) pencil continues.
-            if (   k <  dgrid.local_wave_start.z()
-                || k >= dgrid.local_wave_end.z()
-                || i <  dgrid.local_wave_start.x()
-                || i >= dgrid.local_wave_end.x()) continue;
+                // ...and advance RngStream to the (i, ., k) substream...
+                // ...(necessary for processor-topology independence)...
+                rng.ResetNextSubstream();
 
-            // Compute local indices for global (i, ., k).
-            const int local_i = i - dgrid.local_wave_start.x();
-            const int local_k = k - dgrid.local_wave_start.z();
+                // ...but only the rank holding the (i, ., k) pencil continues.
+                if (   k <  dgrid.local_wave_start.z()
+                    || k >= dgrid.local_wave_end.z()
+                    || i <  dgrid.local_wave_start.x()
+                    || i >= dgrid.local_wave_end.x()) continue;
 
-            // For each scalar component of \tilde{A}...
-            for (std::size_t l = 0; l <  3; ++l) {
+                // Compute local indices for global (i, ., k).
+                const int local_i = i - dgrid.local_wave_start.x();
+                const int local_k = k - dgrid.local_wave_start.z();
 
                 // ...generate coeffs with well-defined pseudorandom order.
                 //  2) Zero first two B-spline coefficients near walls
                 //     so partial_y \tilde{A} vanishes at the wall
-                scratch.setConstant(grid.N.y(), 0);
+                s[2*l][0][local_i][local_k] = 0;
+                s[2*l][1][local_i][local_k] = 0;
                 for (int j = 2; j < grid.N.y() - 2; ++j) {
                     const real_t magnitude = rng.RandU01();
                     const real_t phase     = rng.RandU01() * twopi;
-                    scratch[j] = std::polar(magnitude, phase);
+                    s[2*l][j][local_i][local_k] = std::polar(magnitude, phase);
                 }
+                s[2*l][grid.N.y() - 2][local_i][local_k] = 0;
+                s[2*l][grid.N.y() - 1][local_i][local_k] = 0;
 
-                //  3) Compute mean of \partial_y \tilde{A}(i, ., k) and
-                //  subtract y * mean from \tilde{A}.  Again zero first two
-                //  B-spline coefficients near walls.  Mean of \partial_y A is
-                //  now approximately complex zero.
-                bop.accumulate(1, 1,
-                               1.0, scratch.data(), 1, grid.N.y(),
-                               0.0, &s[2*l][0][local_i][local_k], 1, grid.N.y());
-                massluz.solve(1, &s[2*l][0][local_i][local_k], 1, grid.N.y());
-                std::complex<real_t> mean = 0;
-                for (int m = 0; m < grid.N.y(); ++m) {
-                    mean += meancoeff[m] * state[2*l][m][local_i][local_k];
-                }
-                bop.accumulate(1, 0,
-                               1.0, scratch.data(), 1, grid.N.y(),
-                               0.0, &s[2*l][0][local_i][local_k], 1, grid.N.y());
-                for (int m = 0; m < grid.N.y(); ++m) {
-                    s[2*l][m][local_i][local_k] -= b.collocation_point(m) * mean;
-                }
-                massluz.solve(1, &s[2*l][0][local_i][local_k], 1, grid.N.y());
-                s[2*l][0           ][local_i][local_k] = 0;
-                s[2*l][1           ][local_i][local_k] = 0;
-                s[2*l][grid.N.y()-2][local_i][local_k] = 0;
-                s[2*l][grid.N.y()-1][local_i][local_k] = 0;
+            } // end X
 
-            } // end scalar components of A
+        } // end Z
 
-        } // end X
+    } // end scalar components of A
 
-    } // end Z
+
+    if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
+
+        // Obtain coefficients for computing mean quantities across Y
+        Eigen::VectorXr meancoeff(grid.N.y());
+        b.integration_coefficients(0, meancoeff.data());
+        meancoeff /= scenario.Ly;
+
+        // 3) Compute mean of \partial_y \tilde{A}(i, ., k) and subtract y *
+        //    mean from \tilde{A}.  Again zero first two B-spline coefficients
+        //    near walls.  Mean of \partial_y A is now approximately zero.
+        for (std::size_t l = 0; l < 3; ++l) {
+
+            scratch = Eigen::Map<Eigen::VectorXc>(s[2*l].origin(), grid.N.y());
+            bop.accumulate(1, 1, 1.0, scratch.data(),  1, grid.N.y(),
+                                 0.0, s[2*l].origin(), 1, grid.N.y());
+            massluz.solve(1, s[2*l].origin(), 1, grid.N.y());
+            std::complex<real_t> mean = 0;
+            for (int m = 0; m < grid.N.y(); ++m) {
+                mean += meancoeff[m] * state[2*l][m][0][0];
+            }
+            bop.accumulate(0, 0, 1.0, scratch.data(),   1, grid.N.y(),
+                                 0.0, s[2*l].origin(), 1, grid.N.y());
+            for (int m = 0; m < grid.N.y(); ++m) {
+                s[2*l][m][0][0] -= b.collocation_point(m) * mean;
+            }
+            massluz.solve(1, s[2*l].origin(), 1, grid.N.y());
+            s[2*l][0           ][0][0] = 0;
+            s[2*l][1           ][0][0] = 0;
+            s[2*l][grid.N.y()-2][0][0] = 0;
+            s[2*l][grid.N.y()-1][0][0] = 0;
+
+        }
+
+    }
 
     //  4) Compute curl A in physical space and rescale so maximum
     //     pointwise norm of A is maxfluct.  curl A is solenoidal
