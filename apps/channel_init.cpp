@@ -90,9 +90,9 @@ static shared_ptr<suzerain::bsplineop>     bop;    // Collocation
 static shared_ptr<suzerain::bsplineop>     gop;    // Galerkin L2
 static shared_ptr<suzerain::bsplineop_luz> bopluz;
 
-// Explicit timestepping scheme uses only complex_t 4D NoninterleavedState
+// Explicit timestepping scheme uses only complex_t 4D ContiguousState
 // State indices range over (scalar field, Y, X, Z) in wave space
-typedef suzerain::NoninterleavedState<4,complex_t> state_type;
+typedef suzerain::ContiguousState<4,complex_t> state_type;
 
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;

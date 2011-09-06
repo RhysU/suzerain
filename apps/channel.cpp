@@ -612,13 +612,13 @@ void load_time(const esio_handle h,
 }
 
 template<>
-suzerain::NoninterleavedState<4,complex_t>* allocate_padded_state(
+suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
            const std::size_t howmany_fields,
            const suzerain::pencil_grid& dgrid)
 {
     // Create instance with appropriate padding to allow P3DFFTification
-    suzerain::NoninterleavedState<4,complex_t> * const retval =
-        new suzerain::NoninterleavedState<4,complex_t>(
+    suzerain::ContiguousState<4,complex_t> * const retval =
+        new suzerain::ContiguousState<4,complex_t>(
             suzerain::to_yxz(howmany_fields, dgrid.local_wave_extent),
             suzerain::prepend(dgrid.local_wave_storage(), suzerain::strides_cm(
                               suzerain::to_yxz(dgrid.local_wave_extent)))
@@ -640,11 +640,11 @@ static const boost::array<const char *,5> field_descriptions = {{
 }};
 
 void store(const esio_handle h,
-           const suzerain::NoninterleavedState<4,complex_t> &state,
+           const suzerain::ContiguousState<4,complex_t> &state,
            const suzerain::problem::GridDefinition& grid,
            const suzerain::pencil_grid& dgrid)
 {
-    typedef suzerain::NoninterleavedState<4,complex_t> store_type;
+    typedef suzerain::ContiguousState<4,complex_t> store_type;
 
     // Ensure state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field::count);
@@ -712,13 +712,13 @@ void store(const esio_handle h,
 }
 
 void load(const esio_handle h,
-          suzerain::NoninterleavedState<4,complex_t> &state,
+          suzerain::ContiguousState<4,complex_t> &state,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
           const suzerain::bspline& b,
           const suzerain::bsplineop& bop)
 {
-    typedef suzerain::NoninterleavedState<4,complex_t> load_type;
+    typedef suzerain::ContiguousState<4,complex_t> load_type;
 
     // Ensure local state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field::count);
@@ -919,7 +919,7 @@ NoiseDefinition::NoiseDefinition(real_t fluctpercent,
 }
 
 void
-add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
+add_noise(suzerain::ContiguousState<4,complex_t> &state,
           const NoiseDefinition& noisedef,
           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
           const suzerain::problem::GridDefinition& grid,
@@ -936,7 +936,7 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
     }
 
     using suzerain::inorder::wavenumber_translatable;
-    using suzerain::NoninterleavedState;
+    using suzerain::ContiguousState;
     namespace ndx = channel::field::ndx;
     const real_t twopi = 2 * boost::math::constants::pi<real_t>();
     Eigen::VectorXc scratch;
@@ -1016,10 +1016,10 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
     //  9) Overwrite state storage with the new perturbed state.
 
     //  0) Allocate storage for state and three additional scalar fields.
-    boost::scoped_ptr<NoninterleavedState<4,complex_t> > _s_ptr( // RAII
-            allocate_padded_state<NoninterleavedState<4,complex_t> >(
+    boost::scoped_ptr<ContiguousState<4,complex_t> > _s_ptr( // RAII
+            allocate_padded_state<ContiguousState<4,complex_t> >(
                 field::count + 3, dgrid));
-    NoninterleavedState<4,complex_t> &s = *_s_ptr;               // Shorthand
+    ContiguousState<4,complex_t> &s = *_s_ptr;               // Shorthand
 
     //  1) Generate a random vector-valued field \tilde{A}.
     for (int k = 0; k < grid.dN.z(); ++k) {
@@ -1260,7 +1260,7 @@ add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
 }
 
 boost::array<L2,field::count>
-field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
+field_L2(const suzerain::ContiguousState<4,complex_t> &state,
          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
          const suzerain::problem::GridDefinition& grid,
          const suzerain::pencil_grid& dgrid,
@@ -1375,7 +1375,7 @@ void accumulate_manufactured_solution(
         const real_t alpha,
         const manufactured_solution &msoln,
         const real_t beta,
-        suzerain::NoninterleavedState<4,complex_t> &swave,
+        suzerain::ContiguousState<4,complex_t> &swave,
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,

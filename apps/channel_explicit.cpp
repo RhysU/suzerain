@@ -68,9 +68,9 @@ using boost::scoped_ptr;
 using boost::shared_ptr;
 using std::numeric_limits;
 
-// Explicit timestepping scheme uses only complex_t 4D NoninterleavedState
+// Explicit timestepping scheme uses only complex_t 4D ContiguousState
 // State indices range over (scalar field, Y, X, Z) in wave space
-typedef suzerain::NoninterleavedState<4,complex_t> state_type;
+typedef suzerain::ContiguousState<4,complex_t> state_type;
 
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away

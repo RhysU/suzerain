@@ -47,7 +47,7 @@ namespace suzerain
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 template< typename ExtentList >
-NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
+ContiguousState<NumDims,Element,Allocator>::ContiguousState(
         const ExtentList& sizes)
     : ContiguousMemory<Element,Allocator>(
               storage_type::compute_storage(sizes.begin())),
@@ -60,7 +60,7 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
 
 template< std::size_t NumDims, typename Element, typename Allocator >
 template< typename ExtentList, typename MinStrideList >
-NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
+ContiguousState<NumDims,Element,Allocator>::ContiguousState(
         const ExtentList& sizes,
         const MinStrideList& minstrides)
     : ContiguousMemory<Element,Allocator>(
@@ -73,8 +73,8 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
-NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
-        const NoninterleavedState &other)
+ContiguousState<NumDims,Element,Allocator>::ContiguousState(
+        const ContiguousState &other)
     : ContiguousMemory<Element,Allocator>(other),
       multi_array_type(this->memory_begin(),
                        suzerain::multi_array::shape_array(other),
@@ -86,7 +86,7 @@ NoninterleavedState<NumDims,Element,Allocator>::NoninterleavedState(
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
-void NoninterleavedState<NumDims,Element,Allocator>::scale(
+void ContiguousState<NumDims,Element,Allocator>::scale(
         const Element& factor)
 {
     suzerain::blas::scal(
@@ -98,8 +98,8 @@ namespace detail {
 
 template< typename BLASFunctor, typename Element, typename Allocator >
 void apply(BLASFunctor functor,
-           NoninterleavedState<1,Element,Allocator>& x,
-           NoninterleavedState<1,Element,Allocator>& y)
+           ContiguousState<1,Element,Allocator>& x,
+           ContiguousState<1,Element,Allocator>& y)
 {
     assert(std::equal(x.shape(), x.shape() + 1, y.shape()));
 
@@ -110,10 +110,10 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element, typename Allocator >
 void apply(BLASFunctor functor,
-           NoninterleavedState<2,Element,Allocator>& x,
-           NoninterleavedState<2,Element,Allocator>& y)
+           ContiguousState<2,Element,Allocator>& x,
+           ContiguousState<2,Element,Allocator>& y)
 {
-    typedef typename NoninterleavedState<2,Element,Allocator>::index index;
+    typedef typename ContiguousState<2,Element,Allocator>::index index;
     assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
@@ -130,10 +130,10 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element, typename Allocator >
 void apply(BLASFunctor functor,
-           NoninterleavedState<3,Element,Allocator>& x,
-           NoninterleavedState<3,Element,Allocator>& y)
+           ContiguousState<3,Element,Allocator>& x,
+           ContiguousState<3,Element,Allocator>& y)
 {
-    typedef typename NoninterleavedState<3,Element,Allocator>::index index;
+    typedef typename ContiguousState<3,Element,Allocator>::index index;
     assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
@@ -156,10 +156,10 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element, typename Allocator >
 void apply(BLASFunctor functor,
-           NoninterleavedState<4,Element,Allocator>& x,
-           NoninterleavedState<4,Element,Allocator>& y)
+           ContiguousState<4,Element,Allocator>& x,
+           ContiguousState<4,Element,Allocator>& y)
 {
-    typedef typename NoninterleavedState<4,Element,Allocator>::index index;
+    typedef typename ContiguousState<4,Element,Allocator>::index index;
     assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
@@ -188,10 +188,10 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element, typename Allocator >
 void apply(BLASFunctor functor,
-           NoninterleavedState<5,Element,Allocator>& x,
-           NoninterleavedState<5,Element,Allocator>& y)
+           ContiguousState<5,Element,Allocator>& x,
+           ContiguousState<5,Element,Allocator>& y)
 {
-    typedef typename NoninterleavedState<5,Element,Allocator>::index index;
+    typedef typename ContiguousState<5,Element,Allocator>::index index;
     assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
@@ -229,9 +229,9 @@ void apply(BLASFunctor functor,
 } // namespace detail
 
 template< std::size_t NumDims, typename Element, typename Allocator >
-void NoninterleavedState<NumDims,Element,Allocator>::addScaled(
+void ContiguousState<NumDims,Element,Allocator>::addScaled(
             const Element& factor,
-            const NoninterleavedState& other)
+            const ContiguousState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
         throw std::logic_error("Unable to handle this->addScaled(...,this)");
@@ -248,13 +248,13 @@ void NoninterleavedState<NumDims,Element,Allocator>::addScaled(
     } else {
         // Different strides between elements: loop over BLAS calls
         detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
-                      const_cast<NoninterleavedState&>(other), *this);
+                      const_cast<ContiguousState&>(other), *this);
     }
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
-void NoninterleavedState<NumDims,Element,Allocator>::assign(
-            const NoninterleavedState& other)
+void ContiguousState<NumDims,Element,Allocator>::assign(
+            const ContiguousState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
@@ -270,13 +270,13 @@ void NoninterleavedState<NumDims,Element,Allocator>::assign(
     } else {
         // Different strides between elements: loop over BLAS calls
         detail::apply(::suzerain::blas::functor::copy(),
-                      const_cast<NoninterleavedState&>(other), *this);
+                      const_cast<ContiguousState&>(other), *this);
     }
 }
 
 template< std::size_t NumDims, typename Element, typename Allocator >
-void NoninterleavedState<NumDims,Element,Allocator>::exchange(
-            NoninterleavedState& other)
+void ContiguousState<NumDims,Element,Allocator>::exchange(
+            ContiguousState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 

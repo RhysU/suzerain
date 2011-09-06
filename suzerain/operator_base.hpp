@@ -38,7 +38,7 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/scenario_definition.hpp>
 
-// TODO OperatorBase should be templated on, e.g. NoninterleavedState
+// TODO OperatorBase should be templated on, e.g. ContiguousState
 
 namespace suzerain {
 

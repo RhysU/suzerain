@@ -38,7 +38,7 @@
 #include <suzerain/storage.hpp>
 
 // TODO Document better
-// TODO Allow InterleavedState/NoninterleavedState to interoperate
+// TODO Allow InterleavedState/ContiguousState to interoperate
 
 /** @file
  * Provide interfaces for describing and manipulating mutable state vectors.
@@ -56,7 +56,7 @@ namespace suzerain
 // Mandatory forward declarations
 template<typename Derived> struct StateBase;
 template<std::size_t NumDims, typename Element, typename Allocator>
-    class NoninterleavedState;
+    class ContiguousState;
 template<std::size_t NumDims, typename Element, typename Allocator>
     class InterleavedState;
 
@@ -67,9 +67,9 @@ namespace detail
 // Forward declaration for StateTraits
 template<typename T> struct StateTraits;
 
-/** Traits providing basic type details for NoninterleavedState */
+/** Traits providing basic type details for ContiguousState */
 template<std::size_t NumDims, typename Element, typename Allocator>
-struct StateTraits<NoninterleavedState<NumDims,Element,Allocator> >
+struct StateTraits<ContiguousState<NumDims,Element,Allocator> >
 {
     typedef Element element;
     typedef boost::multi_array_types::index index;
@@ -228,8 +228,8 @@ template<
     typename Element,
     typename Allocator = typename suzerain::blas::allocator<Element>::type
 >
-class NoninterleavedState
-    : public StateBase<NoninterleavedState<NumDims,Element,Allocator> >,
+class ContiguousState
+    : public StateBase<ContiguousState<NumDims,Element,Allocator> >,
       public ContiguousMemory<Element,Allocator>,
       public suzerain::multi_array::ref<Element, NumDims>
 {
@@ -256,31 +256,31 @@ public:
     typedef Allocator allocator_type;
 
     template<typename ExtentList>
-    explicit NoninterleavedState(const ExtentList& sizes);
+    explicit ContiguousState(const ExtentList& sizes);
 
     template<typename ExtentList, typename MinStrideList>
-    explicit NoninterleavedState(const ExtentList& sizes,
+    explicit ContiguousState(const ExtentList& sizes,
                                  const MinStrideList& minstrides);
 
-    NoninterleavedState(const NoninterleavedState& other);
+    ContiguousState(const ContiguousState& other);
 
     void scale(const Element& factor);
 
     void addScaled(const Element& factor,
-                   const NoninterleavedState& other);
-    void assign(const NoninterleavedState &other);
+                   const ContiguousState& other);
+    void assign(const ContiguousState &other);
 
-    void exchange(NoninterleavedState &other);
+    void exchange(ContiguousState &other);
 
 private:
     // Disable assignment operators
     const multi_array_type& operator=( const multi_array_type& );
-    const NoninterleavedState& operator=( const NoninterleavedState& );
+    const ContiguousState& operator=( const ContiguousState& );
 };
 
 /**
  * A state class storing elements in Fortran order.  The class is named
- * InterleavedState to contrast it with NoninterleavedState's storage ordering.
+ * InterleavedState to contrast it with ContiguousState's storage ordering.
  *
  * @tparam NumDims    Number of dimensions
  * @tparam Element    Type of elements to store

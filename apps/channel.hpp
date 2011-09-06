@@ -178,9 +178,9 @@ StateType* allocate_padded_state(
            const std::size_t howmany_fields,
            const suzerain::pencil_grid& dgrid);
 
-/** Specialization of allocate_padded_state for NoninterleavedState. */
+/** Specialization of allocate_padded_state for ContiguousState. */
 template<>
-suzerain::NoninterleavedState<4,complex_t>* allocate_padded_state(
+suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
            const std::size_t howmany_fields,
            const suzerain::pencil_grid& dgrid);
 
@@ -189,7 +189,7 @@ suzerain::NoninterleavedState<4,complex_t>* allocate_padded_state(
  * Only non-dealiased state content is saved.
  */
 void store(const esio_handle h,
-           const suzerain::NoninterleavedState<4,complex_t> &state,
+           const suzerain::ContiguousState<4,complex_t> &state,
            const suzerain::problem::GridDefinition& grid,
            const suzerain::pencil_grid& dgrid);
 
@@ -199,7 +199,7 @@ void store(const esio_handle h,
  * to match the provided \c grid, \c dgrid, \c b, and \c bop
  */
 void load(const esio_handle h,
-          suzerain::NoninterleavedState<4,complex_t> &state,
+          suzerain::ContiguousState<4,complex_t> &state,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
           const suzerain::bspline& b,
@@ -230,7 +230,7 @@ public:
  * the provided NoiseDefinition.
  */
 void
-add_noise(suzerain::NoninterleavedState<4,complex_t> &state,
+add_noise(suzerain::ContiguousState<4,complex_t> &state,
           const NoiseDefinition& noisedef,
           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
           const suzerain::problem::GridDefinition& grid,
@@ -313,7 +313,7 @@ struct physical_view {
      * */
     static inline type create(
             const suzerain::pencil_grid &dgrid,
-            suzerain::NoninterleavedState<4,complex_t> &state)
+            suzerain::ContiguousState<4,complex_t> &state)
     {
         type retval(reinterpret_cast<real_t *>(state.origin()),
                     NFields,                            // F
@@ -342,7 +342,7 @@ struct L2 {
  * See writeup/L2.tex for full details.
  */
 boost::array<L2,field::count>
-field_L2(const suzerain::NoninterleavedState<4,complex_t> &state,
+field_L2(const suzerain::ContiguousState<4,complex_t> &state,
          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
          const suzerain::problem::GridDefinition& grid,
          const suzerain::pencil_grid& dgrid,
@@ -359,7 +359,7 @@ void accumulate_manufactured_solution(
         const real_t alpha,
         const manufactured_solution &msoln,
         const real_t beta,
-        suzerain::NoninterleavedState<4,complex_t> &swave,
+        suzerain::ContiguousState<4,complex_t> &swave,
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,

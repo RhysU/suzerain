@@ -67,7 +67,7 @@ BsplineMassOperator::BsplineMassOperator(
 
 void BsplineMassOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::NoninterleavedState<4,complex_t> &state) const
+        suzerain::ContiguousState<4,complex_t> &state) const
 {
     SUZERAIN_UNUSED(phi);
 
@@ -88,9 +88,9 @@ void BsplineMassOperator::applyMassPlusScaledOperator(
 
 void BsplineMassOperator::accumulateMassPlusScaledOperator(
         const complex_t &phi,
-        const suzerain::NoninterleavedState<4,complex_t> &input,
+        const suzerain::ContiguousState<4,complex_t> &input,
         const complex_t &beta,
-        suzerain::NoninterleavedState<4,complex_t> &output) const
+        suzerain::ContiguousState<4,complex_t> &output) const
 {
     SUZERAIN_UNUSED(phi);
     const state_type &x   = input;  // Shorthand
@@ -120,7 +120,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
 
 void BsplineMassOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::NoninterleavedState<4,complex_t> &state) const
+        suzerain::ContiguousState<4,complex_t> &state) const
 {
     SUZERAIN_UNUSED(phi);
 
@@ -154,7 +154,7 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
 
 void BsplineMassOperatorIsothermal::applyMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::NoninterleavedState<4,complex_t> &state) const
+        suzerain::ContiguousState<4,complex_t> &state) const
 {
     // State enters method as coefficients in X, Y, and Z directions
 
@@ -168,9 +168,9 @@ void BsplineMassOperatorIsothermal::applyMassPlusScaledOperator(
 
 void BsplineMassOperatorIsothermal::accumulateMassPlusScaledOperator(
         const complex_t &phi,
-        const suzerain::NoninterleavedState<4,complex_t> &input,
+        const suzerain::ContiguousState<4,complex_t> &input,
         const complex_t &beta,
-        suzerain::NoninterleavedState<4,complex_t> &output) const
+        suzerain::ContiguousState<4,complex_t> &output) const
 {
     // State enters method as coefficients in X, Y, and Z directions
 
@@ -207,7 +207,7 @@ void BsplineMassOperatorIsothermal::save_mean_state_at_collocation_points(
 
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::NoninterleavedState<4,complex_t> &state) const
+        suzerain::ContiguousState<4,complex_t> &state) const
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
@@ -349,7 +349,7 @@ NonlinearOperator::NonlinearOperator(
 
 std::vector<real_t> NonlinearOperator::applyOperator(
     const real_t time,
-    suzerain::NoninterleavedState<4,complex_t> &swave,
+    suzerain::ContiguousState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,
     const bool delta_t_requested) const
@@ -752,7 +752,7 @@ NonlinearOperatorIsothermal::NonlinearOperatorIsothermal(
 
 std::vector<real_t> NonlinearOperatorIsothermal::applyOperator(
     const real_t time,
-    suzerain::NoninterleavedState<4,complex_t> &swave,
+    suzerain::ContiguousState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,
     const bool delta_t_requested) const

@@ -48,12 +48,12 @@ namespace channel {
 class BsplineMassOperator
   : public suzerain::OperatorBase<real_t>,
     public suzerain::timestepper::lowstorage::ILinearOperator<
-        suzerain::NoninterleavedState<4,complex_t>
+        suzerain::ContiguousState<4,complex_t>
     >
 {
 public:
 
-    typedef suzerain::NoninterleavedState<4,complex_t> state_type;
+    typedef suzerain::ContiguousState<4,complex_t> state_type;
 
     BsplineMassOperator(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
@@ -132,12 +132,12 @@ private:
 class NonlinearOperator
     : public suzerain::OperatorBase<real_t>,
       public suzerain::timestepper::INonlinearOperator<
-            suzerain::NoninterleavedState<4,complex_t>
+            suzerain::ContiguousState<4,complex_t>
       >
 {
 public:
 
-    typedef suzerain::NoninterleavedState<4,complex_t> state_type;
+    typedef suzerain::ContiguousState<4,complex_t> state_type;
 
     NonlinearOperator(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
@@ -150,7 +150,7 @@ public:
 
     virtual std::vector<real_t> applyOperator(
             const real_t time,
-            suzerain::NoninterleavedState<4,complex_t> &swave,
+            suzerain::ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             const bool delta_t_requested = false) const;
@@ -215,7 +215,7 @@ public:
 
     virtual std::vector<real_t> applyOperator(
             const real_t time,
-            suzerain::NoninterleavedState<4,complex_t> &swave,
+            suzerain::ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             const bool delta_t_requested = false) const;
