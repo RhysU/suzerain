@@ -1079,12 +1079,6 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 s[2*l][grid.N.y()-2][local_i][local_k] = 0;
                 s[2*l][grid.N.y()-1][local_i][local_k] = 0;
 
-                // Copy so coefficients are stored in s[2l] and s[2l+1]
-                // as we need two copies to compute components of curl A.
-                for (int m = 0; m < grid.N.y(); ++m) {
-                    s[2*l+1][m][local_i][local_k] = s[2*l][m][local_i][local_k];
-                }
-
             } // end scalar components of A
 
         } // end X
@@ -1094,6 +1088,9 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     //  4) Compute curl A in physical space and rescale so maximum
     //     pointwise norm of A is maxfluct.  curl A is solenoidal
     //     and now has the velocity perturbation properties we desire.
+
+    // Copy s[2l] into s[2l+1] as we need two copies to compute curl A
+    for (std::size_t l = 0; l < 3; ++l) s[2*l+1] = s[2*l];
 
     // Prepare physical-space view of the wave-space storage
     physical_view<field::count+3>::type p
