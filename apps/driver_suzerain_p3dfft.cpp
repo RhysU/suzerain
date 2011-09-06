@@ -198,7 +198,7 @@ int main(int argc, char **argv)
                     std::bind1st(std::multiplies<pencil<>::real_type>(),factor));
         }
 
-        if (m == repeat - 1 && DEBUG_ENABLED && check) {
+        if (m == repeat - 1 && DEBUG_ENABLED() && check) {
             DEBUG0("Forward transform results ");
             for (pencil<>::size_type k = B.global_wave.index_bases()[2];
                 k < B.global_wave.index_bases()[2] + B.global_wave.shape()[2];

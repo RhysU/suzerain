@@ -181,7 +181,7 @@ static void information_L2(const std::string& timeprefix)
     // Avoid computational cost when logging is disabled
     logging::logger_type L2_mean  = logging::get_logger("L2.mean");
     logging::logger_type L2_fluct = logging::get_logger("L2.fluct");
-    if (!LINFO_ENABLED(L2_mean) && !LINFO_ENABLED(L2_fluct)) return;
+    if (!INFO0_ENABLED(L2_mean) && !INFO0_ENABLED(L2_fluct)) return;
 
     // Collective computation of the L_2 norms
     const array<channel::L2,channel::field::count> L2
@@ -193,7 +193,7 @@ static void information_L2(const std::string& timeprefix)
     for (std::size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].mean());
     }
-    LINFO(L2_mean, msg.str());
+    INFO0(L2_mean, msg.str());
 
     // Build and log L2 of fluctuating conserved state
     msg.str("");
@@ -201,7 +201,7 @@ static void information_L2(const std::string& timeprefix)
     for (std::size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].fluctuating());
     }
-    LINFO(L2_fluct, msg.str());
+    INFO0(L2_fluct, msg.str());
 }
 
 /** Build a message containing bulk quantities (intended for root rank only) */
@@ -209,7 +209,7 @@ static void information_bulk(const std::string& timeprefix)
 {
     // Avoid computational cost when logging is disabled
     logging::logger_type bulk_state = logging::get_logger("bulk.state");
-    if (!LINFO_ENABLED(bulk_state)) return;
+    if (!INFO0_ENABLED(bulk_state)) return;
 
     // Compute operator for finding bulk quantities from coefficients
     Eigen::VectorXr bulkcoeff(b->n());
@@ -224,7 +224,7 @@ static void information_bulk(const std::string& timeprefix)
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
         append_real(msg << ' ', bulkcoeff.dot(mean.real()));
     }
-    LINFO(bulk_state, msg.str());
+    INFO0(bulk_state, msg.str());
 }
 
 /** Build a message containing specific state quantities at the wall */
@@ -243,7 +243,7 @@ static void information_specific_wall_state(const std::string& timeprefix)
     for (std::size_t l = 0; l < sizeof(wall)/sizeof(wall[0]); ++l) {
 
         // Avoid computational cost when logging is disabled
-        if (!LDEBUG_ENABLED(nick[l])) continue;
+        if (!DEBUG0_ENABLED(nick[l])) continue;
 
         std::ostringstream msg;
         msg << timeprefix;
@@ -255,7 +255,7 @@ static void information_specific_wall_state(const std::string& timeprefix)
             append_real(msg << ' ' ,
                         ((*state_linear)[k][wall[l]][0][0]).real() / rho);
         }
-        LDEBUG(nick[l], msg.str());
+        DEBUG0(nick[l], msg.str());
     }
 }
 
@@ -269,7 +269,7 @@ static void information_manufactured_solution_absolute_error(
 {
     // Avoid computational cost when logging is disabled
     logging::logger_type mms_abserr = logging::get_logger("mms.abserr");
-    if (!LINFO_ENABLED(mms_abserr)) return;
+    if (!INFO0_ENABLED(mms_abserr)) return;
 
     // Compute L2 of error of state against manufactured solution
     assert(msoln);
@@ -286,7 +286,7 @@ static void information_manufactured_solution_absolute_error(
     for (std::size_t k = 0; k < channel::field::count; ++k) {
         append_real(msg << ' ', L2[k].total());
     }
-    LINFO(mms_abserr, msg.str());
+    INFO0(mms_abserr, msg.str());
 }
 
 /** Tracks last time we output a status line */
@@ -529,7 +529,7 @@ public:
         signal_received = atomic_signal_received;
         atomic_signal_received.assign(0);
 
-        if (DEBUG_ENABLED) {
+        if (DEBUG_ENABLED()) {
             const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
             for (int i = 0; i < signal_received_t::static_size; ++i) {
                 if (signal_received[i]) {
@@ -567,7 +567,7 @@ public:
             // Raise a "signal" if we suspect we cannot teardown quickly enough
             signal_received[3] = (wtime_projected >=   wtime_mpi_init
                                                      + timedef.advance_wt);
-            if (DEBUG_ENABLED && signal_received[3]) {
+            if (DEBUG_ENABLED() && signal_received[3]) {
                 const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
                 DEBUG("Rank " << rank << " projects delaying teardown until "
                       << wtime_projected - wtime_mpi_init
