@@ -927,6 +927,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
           suzerain::bspline &b,
           const suzerain::bsplineop& bop)
 {
+    const int Ny = grid.N.y();
 
 #pragma warning(push,disable:1572)
     if (noisedef.fluctpercent == 0) {
@@ -1045,13 +1046,13 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 //     so partial_y \tilde{A} vanishes at the wall
                 s[2*l][0][local_i][local_k] = 0;
                 s[2*l][1][local_i][local_k] = 0;
-                for (int j = 2; j < grid.N.y() - 2; ++j) {
+                for (int j = 2; j < Ny - 2; ++j) {
                     const real_t magnitude = rng.RandU01();
                     const real_t phase     = rng.RandU01() * twopi;
                     s[2*l][j][local_i][local_k] = std::polar(magnitude, phase);
                 }
-                s[2*l][grid.N.y() - 2][local_i][local_k] = 0;
-                s[2*l][grid.N.y() - 1][local_i][local_k] = 0;
+                s[2*l][Ny - 2][local_i][local_k] = 0;
+                s[2*l][Ny - 1][local_i][local_k] = 0;
 
             } // end X
 
@@ -1063,36 +1064,35 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
 
         // Obtain coefficients for computing mean quantities across Y
-        Eigen::VectorXr meancoeff(grid.N.y());
+        Eigen::VectorXr meancoeff(Ny);
         b.integration_coefficients(0, meancoeff.data());
         meancoeff /= scenario.Ly;
 
-        // 3) Compute mean of \partial_y \tilde{A}(i, ., k) and subtract y *
-        //    mean from \tilde{A}.  Again zero first two B-spline coefficients
+        // 3) Compute mean of \partial_y \tilde{A}(i, ., k) and subtract (y *
+        //    mean) from \tilde{A}.  Again zero first two B-spline coefficients
         //    near walls.  Mean of \partial_y A is now approximately zero.
         for (std::size_t l = 0; l < 3; ++l) {
+            using Eigen::Map;
+            using Eigen::VectorXc;
 
-            scratch = Eigen::Map<Eigen::VectorXc>(s[2*l].origin(), grid.N.y());
+            scratch = Map<VectorXc>(s[2*l].origin(), Ny);
             scratch.imag().setZero(); // symmetry for real-valued field
 
-            bop.accumulate(1, 1, 1.0, scratch.data(),  1, grid.N.y(),
-                                 0.0, s[2*l].origin(), 1, grid.N.y());
-            massluz.solve(1, s[2*l].origin(), 1, grid.N.y());
-            real_t mean = 0;
-            for (int m = 0; m < grid.N.y(); ++m) {
-                mean += meancoeff[m] * state[2*l][m][0][0].real();
-            }
-            bop.accumulate(0, 0, 1.0, scratch.data(),  1, grid.N.y(),
-                                 0.0, s[2*l].origin(), 1, grid.N.y());
-            for (int m = 0; m < grid.N.y(); ++m) {
+            bop.accumulate(1, 1, 1.0, scratch.data(),  1, Ny,
+                                 0.0, s[2*l].origin(), 1, Ny);
+            massluz.solve(1, s[2*l].origin(), 1, Ny);
+            const real_t mean = meancoeff.dot(
+                    Map<VectorXc>(s[2*l].origin(), Ny).real());
+            bop.accumulate(0, 0, 1.0, scratch.data(),  1, Ny,
+                                 0.0, s[2*l].origin(), 1, Ny);
+            for (int m = 0; m < Ny; ++m) {
                 s[2*l][m][0][0] -= b.collocation_point(m) * mean;
             }
             massluz.solve(1, s[2*l].origin(), 1, grid.N.y());
-            s[2*l][0           ][0][0] = 0;
-            s[2*l][1           ][0][0] = 0;
-            s[2*l][grid.N.y()-2][0][0] = 0;
-            s[2*l][grid.N.y()-1][0][0] = 0;
-
+            s[2*l][0     ][0][0] = 0;
+            s[2*l][1     ][0][0] = 0;
+            s[2*l][Ny - 2][0][0] = 0;
+            s[2*l][Ny - 1][0][0] = 0;
         }
 
     }
@@ -1155,7 +1155,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 ++i, /* NB */ ++offset) {
 
                 // Assert curl A is identically zero at the walls
-                if (j == 0 || j == grid.N.y() - 1) {
+                if (j == 0 || j == Ny - 1) {
 #pragma warning(push,disable:1572)
                     assert(p(0, offset) == 0.0);
                     assert(p(1, offset) == 0.0);
