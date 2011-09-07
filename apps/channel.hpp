@@ -211,17 +211,41 @@ class NoiseDefinition : public suzerain::problem::IDefinition {
 public:
 
     /** Construct an instance with the given default values */
-    explicit NoiseDefinition(real_t fluctpercent = 0,
-                             unsigned long fluctseed = 12345);
+    explicit NoiseDefinition(real_t fluct_percent = 0,
+                             unsigned long fluct_seed = 12345);
 
     /**
      * Maximum fluctuation magnitude to add as a percentage
      * of centerline streamwise momentum.
      */
-    real_t fluctpercent;
+    real_t percent;
+
+    /**
+     * Fraction of the X direction wavenumbers in [0,1] below
+     * which fluctuations will not be added.
+     */
+    real_t kxfrac_min;
+
+    /**
+     * Fraction of the X direction wavenumbers in [0,1] above
+     * which fluctuations will not be added.
+     */
+    real_t kxfrac_max;
+
+    /**
+     * Fraction of the Z direction wavenumbers in [0,1] below
+     * which fluctuations will not be added.
+     */
+    real_t kzfrac_min;
+
+    /**
+     * Fraction of the Z direction wavenumbers in [0,1] above
+     * which fluctuations will not be added.
+     */
+    real_t kzfrac_max;
 
     /** RngStream generator seed (see L'Ecuyer et al. 2002) */
-    unsigned long fluctseed;
+    unsigned long seed;
 
 };
 

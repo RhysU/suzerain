@@ -890,11 +890,15 @@ void load(const esio_handle h,
     DEBUG0("Finished loading simulation fields");
 }
 
-NoiseDefinition::NoiseDefinition(real_t fluctpercent,
-                                 unsigned long fluctseed)
+NoiseDefinition::NoiseDefinition(real_t percent,
+                                 unsigned long seed)
     : IDefinition("Additive random velocity perturbations on startup"),
-      fluctpercent(fluctpercent),
-      fluctseed(fluctseed)
+      percent(percent),
+      seed(seed),
+      kxfrac_min(0),
+      kxfrac_max(1),
+      kzfrac_min(0),
+      kzfrac_max(1)
 {
     using ::suzerain::validation::ensure_positive;
     using ::suzerain::validation::ensure_nonnegative;
@@ -903,18 +907,18 @@ NoiseDefinition::NoiseDefinition(real_t fluctpercent,
     ::std::pointer_to_binary_function<real_t,const char*,void>
         ptr_fun_ensure_nonnegative_real(ensure_nonnegative<real_t>);
     this->add_options()
-        ("fluctpercent",
-         boost::program_options::value(&this->fluctpercent)
-            ->default_value(this->fluctpercent)
+        ("fluct_percent",
+         boost::program_options::value(&this->percent)
+            ->default_value(this->percent)
             ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative_real,
-                                   "fluctpercent")),
+                                   "fluct_percent")),
          "Maximum fluctuation magnitude to add as a percentage of"
          " centerline mean streamwise velocity")
-        ("fluctseed",
-         boost::program_options::value(&this->fluctseed)
-            ->default_value(this->fluctseed)
+        ("fluct_seed",
+         boost::program_options::value(&this->seed)
+            ->default_value(this->seed)
             ->notifier(std::bind2nd(ptr_fun_ensure_positive_ulint,
-                                    "fluctseed")),
+                                    "fluct_seed")),
          "RngStream generator seed (L'Ecuyer et al. 2002)");
 }
 
@@ -930,12 +934,14 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     const int Ny = grid.N.y();
 
 #pragma warning(push,disable:1572)
-    if (noisedef.fluctpercent == 0) {
+    if (noisedef.percent == 0) {
 #pragma warning(pop)
         DEBUG0("Zero noise added to velocity fields");
         return;
     }
 
+    using suzerain::inorder::wavenumber_abs;
+    using suzerain::inorder::wavenumber_max;
     using suzerain::inorder::wavenumber_translatable;
     using suzerain::ContiguousState;
     namespace ndx = channel::field::ndx;
@@ -966,7 +972,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 0, &state[ndx::rho][0][0][0], 1, &centerline, &density);
         INFO0("Centerline mean density at y = "
               << centerline << " is " << density);
-        maxfluct = noisedef.fluctpercent / 100 * (abs(momentum) / abs(density));
+        maxfluct = noisedef.percent / 100 * (abs(momentum) / abs(density));
     }
     SUZERAIN_MPICHKR(MPI_Bcast(&maxfluct, 1,
                 suzerain::mpi::datatype_of(maxfluct), 0, MPI_COMM_WORLD));
@@ -983,7 +989,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     suzerain::RngStream rng;
     {
         boost::array<unsigned long,6> seed;
-        std::fill(seed.begin(), seed.end(), noisedef.fluctseed);
+        std::fill(seed.begin(), seed.end(), noisedef.seed);
         rng.SetSeed(seed.data());
     }
     rng.IncreasedPrecis(true);  // Use more bits of resolution
@@ -1015,10 +1021,15 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
     // 1) Generate a random vector-valued field \tilde{A}.
     // For each scalar component of \tilde{A}...
+    const int dkz_max = noisedef.kzfrac_max * wavenumber_max(grid.dN.z());
+    const int dkz_min = noisedef.kzfrac_min * wavenumber_max(grid.dN.z());
+    const int dkx_max = noisedef.kxfrac_max * wavenumber_max(grid.dN.x());
+    const int dkx_min = noisedef.kxfrac_min * wavenumber_max(grid.dN.x());
     for (std::size_t l = 0; l < 3; ++l) {
 
         for (int k = 0; k < grid.dN.z(); ++k) {
             if (!wavenumber_translatable(grid.N.z(), grid.dN.z(), k)) continue;
+
 
             for (int i = 0; i < grid.dN.x(); ++i) {
                 if (!wavenumber_translatable(grid.N.x(), grid.dN.x(), i)) continue;
@@ -1032,6 +1043,14 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                     || k >= dgrid.local_wave_end.z()
                     || i <  dgrid.local_wave_start.x()
                     || i >= dgrid.local_wave_end.x()) continue;
+
+                // Satisfy fluct_kzfrac_min, fluct_kzfrac_max constraints
+                if (wavenumber_abs(grid.dN.z(), k) < dkz_min) continue;
+                if (wavenumber_abs(grid.dN.z(), k) > dkz_max) continue;
+
+                // Satisfy fluct_kxfrac_min, fluct_kxfrac_max constraints
+                if (wavenumber_abs(grid.dN.x(), i) < dkx_min) continue;
+                if (wavenumber_abs(grid.dN.x(), i) > dkx_max) continue;
 
                 // Compute local indices for global (i, ., k).
                 const int local_i = i - dgrid.local_wave_start.x();
