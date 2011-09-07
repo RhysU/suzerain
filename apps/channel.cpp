@@ -1072,9 +1072,9 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
         //    mean) from \tilde{A}.  Again zero first two B-spline coefficients
         //    near walls.  Mean of \partial_y A is now approximately zero.
         for (std::size_t l = 0; l < 3; ++l) {
+
             using Eigen::Map;
             using Eigen::VectorXc;
-
             scratch = Map<VectorXc>(s[2*l].origin(), Ny);
             scratch.imag().setZero(); // symmetry for real-valued field
 
