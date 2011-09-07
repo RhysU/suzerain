@@ -1073,14 +1073,16 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
         for (std::size_t l = 0; l < 3; ++l) {
 
             scratch = Eigen::Map<Eigen::VectorXc>(s[2*l].origin(), grid.N.y());
+            scratch.imag().setZero(); // symmetry for real-valued field
+
             bop.accumulate(1, 1, 1.0, scratch.data(),  1, grid.N.y(),
                                  0.0, s[2*l].origin(), 1, grid.N.y());
             massluz.solve(1, s[2*l].origin(), 1, grid.N.y());
-            std::complex<real_t> mean = 0;
+            real_t mean = 0;
             for (int m = 0; m < grid.N.y(); ++m) {
-                mean += meancoeff[m] * state[2*l][m][0][0];
+                mean += meancoeff[m] * state[2*l][m][0][0].real();
             }
-            bop.accumulate(0, 0, 1.0, scratch.data(),   1, grid.N.y(),
+            bop.accumulate(0, 0, 1.0, scratch.data(),  1, grid.N.y(),
                                  0.0, s[2*l].origin(), 1, grid.N.y());
             for (int m = 0; m < grid.N.y(); ++m) {
                 s[2*l][m][0][0] -= b.collocation_point(m) * mean;
