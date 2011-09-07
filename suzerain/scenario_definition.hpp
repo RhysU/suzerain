@@ -254,13 +254,13 @@ void ScenarioDefinition<FPT>::initialize_options(
     p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_nonnegative, _1, &bulk_rho, "bulk_rho"));
     if (default_bulk_rho) p->default_value(default_bulk_rho);
-    this->add_options()("bulk_rho", p.release(), "bulk density target");
+    this->add_options()("bulk_rho", p.release(), "Bulk density target");
 
     // bulk_rhou
     p.reset(boost::program_options::value<std::string>(NULL));
     p->notifier(boost::bind(&parse_nonnegative, _1, &bulk_rhou, "bulk_rhou"));
     if (default_bulk_rhou) p->default_value(default_bulk_rhou);
-    this->add_options()("bulk_rhou", p.release(), "bulk momentum target");
+    this->add_options()("bulk_rhou", p.release(), "Bulk momentum target");
 
     // alpha
     p.reset(boost::program_options::value<std::string>(NULL));
