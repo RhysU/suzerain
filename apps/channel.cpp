@@ -36,6 +36,7 @@
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>
 #include <suzerain/error.h>
+#include <suzerain/exprparse.hpp>
 #include <suzerain/htstretch.h>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/operator_base.hpp>
@@ -890,16 +891,71 @@ void load(const esio_handle h,
     DEBUG0("Finished loading simulation fields");
 }
 
+/**
+ * Parses "min:max", "min:[defaultmax]", or "[defaultmin]:max" into valmin, \c
+ * valmax where \c absmin <= \c valmin <= \c valmax <= \c absmax is enforced
+ * with the outer two inequalities being considered a validation failure.
+ */
+template<typename T>
+static void parse_range(const std::string& s,
+                        T *valmin, T *valmax,
+                        const T defaultmin, const T defaultmax,
+                        const T absmin, const T absmax,
+                        const char *name)
+{
+    assert(absmin <= defaultmin);
+    assert(defaultmin <= defaultmax);
+    assert(defaultmax <= absmax);
+
+    // Split s on a mandatory colon into whitespace-trimmed s_{min,max}
+    const std::size_t colonpos = s.find_first_of(':');
+    if (colonpos == std::string::npos) {
+        throw std::invalid_argument(std::string(name)
+            + " not in format \"low:high\", \"[low]:high\", or low:[high].");
+    }
+    std::string s_min(s, 0, colonpos);
+    std::string s_max(s, colonpos + 1);
+    boost::algorithm::trim(s_min);
+    boost::algorithm::trim(s_max);
+
+    // Parse recognized formats into valmin and valmax
+    if (s_min.length() == 0 && s_max.length() == 0) {
+        throw std::invalid_argument(std::string(name)
+            + " not in format \"low:high\", \"[low]:high\", or low:[high].");
+    } else if (s_min.length() == 0) {
+        *valmin = defaultmin;
+        *valmax = suzerain::exprparse<T>(s_max, name);
+    } else if (s_max.length() == 0) {
+        *valmin = suzerain::exprparse<T>(s_min, name);
+        *valmax = defaultmax;
+    } else {
+        *valmin = suzerain::exprparse<T>(s_min, name);
+        *valmax = suzerain::exprparse<T>(s_max, name);
+    }
+
+    // Ensure valmin <= valmax
+    if (*valmin > *valmax) std::swap(*valmin, *valmax);
+
+    // Validate range is within [absmin, absmax]
+    if (*valmin < absmin || absmax < *valmax) {
+        std::ostringstream oss;
+        oss << name << " value [" << *valmin << ":" << *valmax
+            << "] is outside valid range [" << absmin << ":" << absmax <<  "]";
+        throw std::invalid_argument(oss.str());
+    }
+}
+
 NoiseDefinition::NoiseDefinition(real_t percent,
                                  unsigned long seed)
     : IDefinition("Additive random velocity perturbations on startup"),
       percent(percent),
-      seed(seed),
       kxfrac_min(0),
       kxfrac_max(1),
       kzfrac_min(0),
-      kzfrac_max(1)
+      kzfrac_max(1),
+      seed(seed)
 {
+    using ::boost::bind;
     using ::suzerain::validation::ensure_positive;
     using ::suzerain::validation::ensure_nonnegative;
     ::std::pointer_to_binary_function<unsigned long,const char*,void>
@@ -914,6 +970,20 @@ NoiseDefinition::NoiseDefinition(real_t percent,
                                    "fluct_percent")),
          "Maximum fluctuation magnitude to add as a percentage of"
          " centerline mean streamwise velocity")
+        ("fluct_kxfrac",
+         boost::program_options::value<std::string>(0)
+            ->default_value("0:1")
+            ->notifier(bind(&parse_range<real_t>, _1,
+                            &this->kxfrac_min, &this->kxfrac_max,
+                            0, 1, 0, 1, "fluct_kxfrac")),
+         "Range of X wavenumbers in which to generate fluctuations")
+        ("fluct_kzfrac",
+         boost::program_options::value<std::string>(0)
+            ->default_value("0:1")
+            ->notifier(bind(&parse_range<real_t>, _1,
+                            &this->kzfrac_min, &this->kzfrac_max,
+                            0, 1, 0, 1, "fluct_kzfrac")),
+         "Range of Z wavenumbers in which to generate fluctuations")
         ("fluct_seed",
          boost::program_options::value(&this->seed)
             ->default_value(this->seed)
@@ -978,6 +1048,22 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 suzerain::mpi::datatype_of(maxfluct), 0, MPI_COMM_WORLD));
     INFO0("Adding velocity perturbations with maximum magnitude " << maxfluct);
 
+    // Compute and display kxfrac_min, kxfrac_max constraints
+    const int dkx_max = noisedef.kxfrac_max * wavenumber_max(grid.N.x());
+    const int dkx_min = noisedef.kxfrac_min * wavenumber_max(grid.N.x());
+    if (noisedef.kxfrac_max != 1 || noisedef.kxfrac_min != 0) {
+        INFO0("Perturbations added only to absolute X wavenumbers in range ["
+                << dkx_min << ":" << dkx_max << "]");
+    }
+
+    // Compute and display kzfrac_min, kzfrac_max constraints
+    const int dkz_max = noisedef.kzfrac_max * wavenumber_max(grid.N.z());
+    const int dkz_min = noisedef.kzfrac_min * wavenumber_max(grid.N.z());
+    if (noisedef.kzfrac_max != 1 || noisedef.kzfrac_min != 0) {
+    INFO0("Perturbations added only to absolute Z wavenumbers in range ["
+            << dkz_min << ":" << dkz_max << "]");
+    }
+
     // Form mass matrix to convert (wave, collocation point values, wave)
     // perturbations to (wave, coefficients, wave)
     suzerain::bsplineop_luz massluz(bop);
@@ -1021,10 +1107,6 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
     // 1) Generate a random vector-valued field \tilde{A}.
     // For each scalar component of \tilde{A}...
-    const int dkz_max = noisedef.kzfrac_max * wavenumber_max(grid.dN.z());
-    const int dkz_min = noisedef.kzfrac_min * wavenumber_max(grid.dN.z());
-    const int dkx_max = noisedef.kxfrac_max * wavenumber_max(grid.dN.x());
-    const int dkx_min = noisedef.kxfrac_min * wavenumber_max(grid.dN.x());
     for (std::size_t l = 0; l < 3; ++l) {
 
         for (int k = 0; k < grid.dN.z(); ++k) {
