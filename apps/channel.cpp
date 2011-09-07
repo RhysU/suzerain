@@ -940,7 +940,6 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     using suzerain::ContiguousState;
     namespace ndx = channel::field::ndx;
     const real_t twopi = 2 * boost::math::constants::pi<real_t>();
-    Eigen::VectorXc scratch;
 
     // Ensure state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field::count);
@@ -957,18 +956,17 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     real_t maxfluct;
     if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
-        scratch.setConstant(2, 0);
+        complex_t momentum, density;
         const real_t centerline = scenario.Ly / 2;
         b.linear_combination(
-                0, &state[ndx::rhou][0][0][0], 1, &centerline, scratch.data());
+                0, &state[ndx::rhou][0][0][0], 1, &centerline, &momentum);
         INFO0("Centerline mean streamwise momentum at y = "
-              << centerline << " is " << scratch[0]);
+              << centerline << " is " << momentum);
         b.linear_combination(
-                0, &state[ndx::rho][0][0][0], 1, &centerline, scratch.data()+1);
+                0, &state[ndx::rho][0][0][0], 1, &centerline, &density);
         INFO0("Centerline mean density at y = "
-              << centerline << " is " << scratch[1]);
-        maxfluct = noisedef.fluctpercent / 100
-                 * (abs(scratch[0]) / abs(scratch[1]));
+              << centerline << " is " << density);
+        maxfluct = noisedef.fluctpercent / 100 * (abs(momentum) / abs(density));
     }
     SUZERAIN_MPICHKR(MPI_Bcast(&maxfluct, 1,
                 suzerain::mpi::datatype_of(maxfluct), 0, MPI_COMM_WORLD));
@@ -996,9 +994,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     //     \tilde{A}'s x- and z-derivatives have zero mean by periodicity;
     //  2) Zero first two B-spline coefficients near walls so partial_y
     //     \tilde{A} vanishes at the wall
-    //  3) Compute mean of \partial_y \tilde{A}(i, ., k) and subtract
-    //     y * mean from \tilde{A}.  Again zero first two B-spline
-    //     coefficients near walls.  Mean of \partial_y A is now approx zero.
+    //  3) This step intentionally left blank.
     //  4) Compute curl A in physical space and rescale so maximum
     //     pointwise norm of A is maxfluct.  curl A is solenoidal
     //     and now has the velocity perturbation properties we desire.
@@ -1060,43 +1056,6 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
     } // end scalar components of A
 
-
-    if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
-
-        // Obtain coefficients for computing mean quantities across Y
-        Eigen::VectorXr meancoeff(Ny);
-        b.integration_coefficients(0, meancoeff.data());
-        meancoeff /= scenario.Ly;
-
-        // 3) Compute mean of \partial_y \tilde{A}(i, ., k) and subtract (y *
-        //    mean) from \tilde{A}.  Again zero first two B-spline coefficients
-        //    near walls.  Mean of \partial_y A is now approximately zero.
-        for (std::size_t l = 0; l < 3; ++l) {
-
-            using Eigen::Map;
-            using Eigen::VectorXc;
-            scratch = Map<VectorXc>(s[2*l].origin(), Ny);
-            scratch.imag().setZero(); // symmetry for real-valued field
-
-            bop.accumulate(1, 1, 1.0, scratch.data(),  1, Ny,
-                                 0.0, s[2*l].origin(), 1, Ny);
-            massluz.solve(1, s[2*l].origin(), 1, Ny);
-            const real_t mean = meancoeff.dot(
-                    Map<VectorXc>(s[2*l].origin(), Ny).real());
-            bop.accumulate(0, 0, 1.0, scratch.data(),  1, Ny,
-                                 0.0, s[2*l].origin(), 1, Ny);
-            for (int m = 0; m < Ny; ++m) {
-                s[2*l][m][0][0] -= b.collocation_point(m) * mean;
-            }
-            massluz.solve(1, s[2*l].origin(), 1, grid.N.y());
-            s[2*l][0     ][0][0] = 0;
-            s[2*l][1     ][0][0] = 0;
-            s[2*l][Ny - 2][0][0] = 0;
-            s[2*l][Ny - 1][0][0] = 0;
-        }
-
-    }
-
     //  4) Compute curl A in physical space and rescale so maximum
     //     pointwise norm of A is maxfluct.  curl A is solenoidal
     //     and now has the velocity perturbation properties we desire.
@@ -1139,7 +1098,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     obase.bop_apply(1, 1.0, s, 5);
     dgrid.transform_wave_to_physical(&p(5,0));
 
-    // Store Curl A in s[{5,6,7}] and find global maximum magnitude of curl A
+    // Store curl A in s[{5,6,7}] and find global maximum magnitude of curl A
     real_t maxmagsquared = 0;
     size_t offset = 0;
     for (int j = dgrid.local_physical_start.y();
