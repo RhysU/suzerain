@@ -1125,20 +1125,31 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 #pragma warning(pop)
                 }
 
-                const real_t curlA_x        = p(5, offset) - p(3, offset);
-                const real_t curlA_y        = p(1, offset) - p(4, offset);
-                const real_t curlA_z        = p(2, offset) - p(0, offset);
-                const real_t magsquared     = curlA_x * curlA_x
-                                            + curlA_y * curlA_y
-                                            + curlA_z * curlA_z;
+                // The definition of curl gives the following components
+                //   1) \partial_y A_z - \partial_z A_y
+                //   2) \partial_z A_x - \partial_x A_z
+                //   3) \partial_x A_y - \partial_y A_x
+                // where the mean of \partial_x and \partial_z terms must be
+                // zero by periodicity.  Components 1 and 3 may have nonzero
+                // mean because they wall-normal derivatives contributions.
+                Eigen::Vector3r curlA(p(5, offset) - p(3, offset),
+                                      p(1, offset) - p(4, offset),
+                                      p(2, offset) - p(0, offset));
 
                 //  5) Store curl A in physical space in the 3 scalar fields.
-                p(field::count + 0, offset) = curlA_x;
-                p(field::count + 1, offset) = curlA_y;
-                p(field::count + 2, offset) = curlA_z;
+                //
+                // A nonzero mean in the x, y, and z directions is,
+                // respectively, "corrected" by bulk forcing, the wall, and
+                // viscous effects.  The spanwise viscous effects presumably
+                // have the slowest timescale so rotate the components from 123
+                // to 312 to reduce the simulation time before stationarity.
+                // This rotation may introduce acoustic noise.
+                p(field::count + 0, offset) = curlA.z();
+                p(field::count + 1, offset) = curlA.x();
+                p(field::count + 2, offset) = curlA.y();
 
                 maxmagsquared = suzerain::math::maxnan(
-                        maxmagsquared,magsquared);
+                        maxmagsquared, curlA.squaredNorm());
 
             } // end X
 
