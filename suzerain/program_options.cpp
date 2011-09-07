@@ -69,22 +69,22 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
     namespace po = boost::program_options;
     const int rank = suzerain::mpi::comm_rank(comm);
 
-    // Prepare a response-file option iff non-trivial options available
-    if (options_.options().size() > 0) {
-        options_.add_options()
-            ("response-file", po::value< vector<string> >()->composing(),
-             "File to additionally read for options")
-        ;
-    }
-
     // Prepare options allowed only on command line
     po::options_description desc_clionly("Program information");
     desc_clionly.add_options()
         ("help,h",
-         "show usage information")
+         "Show usage information")
         ("version,v",
-         "print version string")
+         "Print version string")
     ;
+
+    // Prepare a response-file option iff non-trivial options available
+    if (options_.options().size() > 0) {
+        desc_clionly.add_options()
+            ("response-file,r", po::value< vector<string> >()->composing(),
+             "File to additionally read for options")
+        ;
+    }
 
     // Prepare options allowed on command line and in configuration file
     // These are never shown to the user.
