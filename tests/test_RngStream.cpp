@@ -12,10 +12,6 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <suzerain/RngStream.hpp>
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/variance.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/included/unit_test.hpp>
 
@@ -114,26 +110,45 @@ BOOST_AUTO_TEST_CASE( main_test )
    BOOST_REQUIRE_SMALL(std::abs(sum - 39.697547445251), 1e-13);
 }
 
-BOOST_AUTO_TEST_CASE( RandN01_test )
+static void test_helper_RandN01(bool increasedPrecis)
 {
    RngStream s;
-   s.IncreasedPrecis(false);
+   s.IncreasedPrecis(increasedPrecis);
 
-   using namespace boost::accumulators;
-   accumulator_set<double, stats<tag::mean, tag::lazy_variance> > acc;
+   // Check Berry--Esseen theorem holds for bound on CLT estimate of mean.
+   // Constants are C = 0.4784 and rho = E[|N(0,1)|^3] = 2*sqrt(2/pi) for
+   // | F_n(x) - phi(x) | <= C rho sigma^-3 n^(-1/2).  The left hand side
+   // is the absolute error between the observed CDF at some point x
+   // and the standard normal CDF.  Choose x = 1/2 so phi(1/2) = 1/2.
+   // See http://en.wikipedia.org/wiki/Berry%E2%80%93Ess%C3%A9en_theorem
 
-   for (int i = 0; i < 100; ++i) acc(s.RandN01());
-   const double m2 = mean(acc), v2 = variance(acc);
+   const unsigned incrsamp[] = { 10, 90, 900, 9000, 90000, 900000 };
+   unsigned nneg = 0;
+   for (unsigned i = 0; i < sizeof(incrsamp)/sizeof(incrsamp[0]); ++i) {
+      for (unsigned j = 0; j < incrsamp[i]; ++j) {
+         nneg += (s.RandN01() < 0);
+      }
 
-   for (int i = 0; i < 900; ++i) acc(s.RandN01());
-   const double m3 = mean(acc), v3 = variance(acc);
+      double n = 0;
+      for (unsigned j = 0; j <= i; ++j) n += incrsamp[j];
 
-   BOOST_CHECK_GE(std::abs(m2 - 0), std::abs(m3 - 0));
-   BOOST_CHECK_GE(std::abs(v2 - 1), std::abs(v3 - 1));
+      const double absdiff = abs(nneg / n - 0.5);
+      const double bound = 0.4784 * 2 * sqrt(M_2_PI) * 1 / sqrt(n);
+      BOOST_TEST_MESSAGE("n = " << n << " gives |Fn(0.5) - 0.5| = " << absdiff
+                         << " < " << bound << " ?");
+      BOOST_CHECK_LE(absdiff, bound);
+   }
 
-   for (int i = 0; i < 9000; ++i) acc(s.RandN01());
-   const double m4 = mean(acc), v4 = variance(acc);
+   // TODO Test convergence rate of sample variance
+   // See J. Austral. Math. Soc. 25 (Series A) (1978), 250-256 by P. Hall
+}
 
-   BOOST_CHECK_GE(std::abs(m3 - 0), std::abs(m4 - 0));
-   BOOST_CHECK_GE(std::abs(v3 - 1), std::abs(v4 - 1));
+BOOST_AUTO_TEST_CASE( RandN01_low_precision )
+{
+   test_helper_RandN01(false);
+}
+
+BOOST_AUTO_TEST_CASE( RandN01_high_precision )
+{
+   test_helper_RandN01(true);
 }
