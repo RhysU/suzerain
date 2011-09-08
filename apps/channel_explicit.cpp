@@ -905,14 +905,15 @@ int main(int argc, char **argv)
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 
-    // Register status callbacks status_{dt,nt} as requested
-    // When either is not provided, default to a reasonable behavior
+    // Register status callbacks status_{dt,nt} as requested.
+    // When neither is provided, default and update timedef with new value.
     {
         TimeController<real_t>::time_type dt;
         if (timedef.status_dt) {
             dt = timedef.status_dt;
         } else if (timedef.advance_dt) {
             dt = timedef.advance_dt / restart.retain / 5;
+            const_cast<real_t &>(timedef.status_dt) = dt;
         } else {
             dt = tc->forever_t();
         }
@@ -923,6 +924,7 @@ int main(int argc, char **argv)
         } else if (timedef.advance_nt) {
             nt = timedef.advance_nt / restart.retain / 5;
             nt = std::max<TimeController<real_t>::step_type>(1, nt);
+            const_cast<int &>(timedef.status_nt) = nt;
         } else {
             nt = tc->forever_nt();
         }
@@ -930,14 +932,15 @@ int main(int argc, char **argv)
         tc->add_periodic_callback(dt, nt, &log_status);
     }
 
-    // Register restart-writing callbacks restart_{dt,nt} as requested
-    // When either is not provided, default to a reasonable behavior
+    // Register restart-writing callbacks restart_{dt,nt} as requested.
+    // When neither is provided, default and update restart with new value.
     {
         TimeController<real_t>::time_type dt;
         if (restart.restart_dt) {
             dt = restart.restart_dt;
         } else if (timedef.advance_dt) {
             dt = timedef.advance_dt / restart.retain;
+            const_cast<real_t &>(restart.restart_dt) = dt;
         } else {
             dt = tc->forever_t();
         }
@@ -948,6 +951,7 @@ int main(int argc, char **argv)
         } else if (timedef.advance_nt) {
             nt = timedef.advance_nt / restart.retain;
             nt = std::max<TimeController<real_t>::step_type>(1, nt);
+            const_cast<int &>(restart.restart_nt) = nt;
         } else {
             nt = tc->forever_nt();
         }
