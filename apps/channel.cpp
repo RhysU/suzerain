@@ -1062,17 +1062,25 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     INFO0("Adding velocity perturbations with maximum magnitude " << maxfluct);
 
     // Compute and display kxfrac_min, kxfrac_max constraints
+#pragma warning(push,disable:2259)
     const int dkx_max = noisedef.kxfrac_max * wavenumber_max(grid.N.x());
     const int dkx_min = noisedef.kxfrac_min * wavenumber_max(grid.N.x());
+#pragma warning(pop)
+#pragma warning(push,disable:1572)
     if (noisedef.kxfrac_max != 1 || noisedef.kxfrac_min != 0) {
+#pragma warning(pop)
         INFO0("Perturbations added only to absolute X wavenumbers in range ["
                 << dkx_min << ":" << dkx_max << "]");
     }
 
     // Compute and display kzfrac_min, kzfrac_max constraints
+#pragma warning(push,disable:2259)
     const int dkz_max = noisedef.kzfrac_max * wavenumber_max(grid.N.z());
     const int dkz_min = noisedef.kzfrac_min * wavenumber_max(grid.N.z());
+#pragma warning(pop)
+#pragma warning(push,disable:1572)
     if (noisedef.kzfrac_max != 1 || noisedef.kzfrac_min != 0) {
+#pragma warning(pop)
     INFO0("Perturbations added only to absolute Z wavenumbers in range ["
             << dkz_min << ":" << dkz_max << "]");
     }
