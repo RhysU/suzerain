@@ -38,6 +38,7 @@ namespace suzerain {
  * \li Doxygen per section 3 of the extended paper has been added.
  * \li The WriteState() and WriteStateFull() methods have been modified
  *     to take a <tt>std::ostream</tt> on which to output information.
+ * \li A RandN01() method has been added for drawing from the standard normal.
  *
  * The original authors retain all ownership and copyrights, of course.
  */
@@ -169,6 +170,17 @@ public:
      * Makes one call to RandU01().
      */
     int RandInt (int i, int j);
+
+    /**
+     * Returns a (pseudo)random number from the normal distribution with mean 0
+     * and standard deviation 1 after advancing the state identically to a
+     * single call to RandU01().  The value is using an inverse CDF technique.
+     * The inverse CDF of the standard normal is approximated following <a
+     * href="http://home.online.no/~pjacklam/notes/invnorm/"> Peter John
+     * Acklam</a> and refined using a single step of Halley's rational method
+     * as Acklam describes.
+     */
+    double RandN01 ();
 
 private:
 
