@@ -12,8 +12,12 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <suzerain/RngStream.hpp>
-#include <boost/test/included/unit_test.hpp>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
 #include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 using namespace std;
 using suzerain::RngStream;
@@ -28,7 +32,7 @@ BOOST_AUTO_TEST_CASE( main_test )
 
    sum = g2.RandU01 () + g3.RandU01 ();
 
-   g1.AdvanceState (5, 3);   
+   g1.AdvanceState (5, 3);
    sum += g1.RandU01 ();
 
    g1.ResetStartStream ();
@@ -108,4 +112,28 @@ BOOST_AUTO_TEST_CASE( main_test )
    // cout << "Actual test result =       " << sum << "\n\n";
    // Boost.Testified with precision requirement from cout.precision above.
    BOOST_REQUIRE_SMALL(std::abs(sum - 39.697547445251), 1e-13);
+}
+
+BOOST_AUTO_TEST_CASE( RandN01_test )
+{
+   RngStream s;
+   s.IncreasedPrecis(false);
+
+   using namespace boost::accumulators;
+   accumulator_set<double, stats<tag::mean, tag::lazy_variance> > acc;
+
+   for (int i = 0; i < 100; ++i) acc(s.RandN01());
+   const double m2 = mean(acc), v2 = variance(acc);
+
+   for (int i = 0; i < 900; ++i) acc(s.RandN01());
+   const double m3 = mean(acc), v3 = variance(acc);
+
+   BOOST_CHECK_GE(std::abs(m2 - 0), std::abs(m3 - 0));
+   BOOST_CHECK_GE(std::abs(v2 - 1), std::abs(v3 - 1));
+
+   for (int i = 0; i < 9000; ++i) acc(s.RandN01());
+   const double m4 = mean(acc), v4 = variance(acc);
+
+   BOOST_CHECK_GE(std::abs(m3 - 0), std::abs(m4 - 0));
+   BOOST_CHECK_GE(std::abs(v3 - 1), std::abs(v4 - 1));
 }
