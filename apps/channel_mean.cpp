@@ -154,7 +154,8 @@ int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
-    logging::initialize(MPI_COMM_WORLD);            // Initialize logging
+    logging::initialize(MPI_COMM_WORLD,             // Initialize logging
+                        channel::log4cxx_config);
 
     // Process incoming arguments
     std::vector<std::string> restart_files;

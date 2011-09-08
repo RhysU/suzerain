@@ -218,8 +218,12 @@ namespace logging {
  * @param comm Must be MPI_COMM_WORLD.  Present as a placeholder
  *             to clearly communicate initialization order requirements
  *             relative to \c MPI_Init.
+ * @param default_conf (Optional) Default configuration to use when neither
+ *             \c log4j.configuration nor \c LOG4CXX_CONFIGURATION
+ *             is found in the environment.  If \c NULL or zero-length,
+ *             log4cxx::BasicConfigurator is used.
  */
-void initialize(MPI_Comm comm);
+void initialize(MPI_Comm comm, const char *default_conf = NULL);
 
 /** Smart pointer to some particular logger instance */
 typedef ::log4cxx::LoggerPtr logger_type;

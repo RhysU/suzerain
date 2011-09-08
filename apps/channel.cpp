@@ -54,6 +54,19 @@ using boost::numeric_cast;
 
 namespace channel {
 
+// See "Configuration" at http://logging.apache.org/log4cxx/index.html
+const char log4cxx_config[] =
+    "log4j.rootLogger=INFO, CONSOLE, LOG\n"
+    "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"
+    "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"
+    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-10c %m%n\n"
+    "log4j.appender.LOG=org.apache.log4j.FileAppender\n"
+    "log4j.appender.LOG.append=true\n"
+    "log4j.appender.LOG.filename=log.dat\n"
+    "log4j.appender.LOG.layout=${log4j.appender.CONSOLE.layout}\n"
+    "log4j.appender.LOG.layout.ConversionPattern=${log4j.appender.CONSOLE.layout.ConversionPattern}\n"
+;
+
 const boost::array<const char *,field::count> field::name = {{
     "rho", "rhou", "rhov", "rhow", "rhoe"
 }};

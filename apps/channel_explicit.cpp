@@ -606,13 +606,62 @@ public:
 
 } delta_t_allreducer;
 
+/**
+ * Default log4cxx configuration (differs from channel::log4cxx_config).
+ * <tt>${FOO}</tt> syntax may be used to pick up environment variables in addition to properties
+ * See http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html
+ * and https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PropertyConfigurator.html
+ */
+static const char log4cxx_config[] =
+    "## Set root logger level (e.g. TRACE, DEBUG, INFO) and one or more root appenders\n"
+    "# Output INFO or higher messages on CONSOLE and in LOG\n"
+    "log4j.rootLogger=INFO, CONSOLE, LOG\n"
+    "\n"
+    "## Configure output to CONSOLE\n"
+    "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"
+    "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"
+    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-10c %m%n\n"
+    "\n"
+    "## Configure output to LOG file with formatting mimicking CONSOLE\n"
+    "log4j.appender.LOG=org.apache.log4j.FileAppender\n"
+    "log4j.appender.LOG.append=true\n"
+    "log4j.appender.LOG.filename=log.dat\n"
+    "log4j.appender.LOG.layout=${log4j.appender.CONSOLE.layout}\n"
+    "log4j.appender.LOG.layout.ConversionPattern=${log4j.appender.CONSOLE.layout.ConversionPattern}\n"
+    "\n"
+    "## Collect \"bulk\" messages into bulk.dat mimicking LOG file behavior\n"
+    "log4j.logger.bulk=INHERITED, BULK\n"
+    "log4j.appender.BULK=${log4j.appender.LOG}\n"
+    "log4j.appender.BULK.filename=bulk.dat\n"
+    "log4j.appender.BULK.append=${log4j.appender.LOG.append}\n"
+    "log4j.appender.BULK.layout=${log4j.appender.LOG.layout}\n"
+    "log4j.appender.BULK.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+    "\n"
+    "## Collect \"L2.mean\" messages into L2.mean.dat mimicking LOG file behavior\n"
+    "log4j.logger.L2.mean=INHERITED, L2MEAN\n"
+    "log4j.appender.L2MEAN=${log4j.appender.LOG}\n"
+    "log4j.appender.L2MEAN.filename=L2.mean.dat\n"
+    "log4j.appender.L2MEAN.append=${log4j.appender.LOG.append}\n"
+    "log4j.appender.L2MEAN.layout=${log4j.appender.LOG.layout}\n"
+    "log4j.appender.L2MEAN.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+    "\n"
+    "## Collect \"L2.fluct\" messages into L2.fluct.dat mimicking LOG file behavior\n"
+    "log4j.logger.L2.fluct=INHERITED, L2FLUCT\n"
+    "log4j.appender.L2FLUCT=${log4j.appender.LOG}\n"
+    "log4j.appender.L2FLUCT.filename=L2.fluct.dat\n"
+    "log4j.appender.L2FLUCT.append=${log4j.appender.LOG.append}\n"
+    "log4j.appender.L2FLUCT.layout=${log4j.appender.LOG.layout}\n"
+    "log4j.appender.L2FLUCT.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+;
+
 /** Main driver logic */
 int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                          // Initialize MPI
     wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
     atexit((void (*) ()) MPI_Finalize);              // Finalize MPI at exit
-    logging::initialize(MPI_COMM_WORLD);             // Initialize logging
+    logging::initialize(MPI_COMM_WORLD,              // Initialize logging
+                        log4cxx_config);
     esioh = esio_handle_initialize(MPI_COMM_WORLD);  // Initialize ESIO
     atexit(&atexit_esio);                            // Finalize ESIO
 

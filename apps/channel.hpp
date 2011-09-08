@@ -50,6 +50,9 @@
  */
 namespace channel {
 
+/** Default log4cxx configuration to use when none found in environment */
+extern const char log4cxx_config[];
+
 /** Contains basic details about the scalar state fields employed */
 namespace field {
 

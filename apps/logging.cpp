@@ -36,6 +36,7 @@
 #include <cassert>
 #include <climits>
 #include <cstdlib>
+#include <cstring>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -131,14 +132,6 @@ static struct Log4cxxWorkaroundsType {
     }
 } workarounds;
 
-/** Default log4cxx configuration to use when none can be found */
-static const char default_log4cxx_config[] =
-    "# See \"Configuration\" at http://logging.apache.org/log4cxx/index.html\n"
-    "log4j.rootLogger=DEBUG, CONSOLE\n"
-    "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"
-    "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"
-    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-10c %m%n\n";
-
 
 namespace logging {
 
@@ -146,7 +139,7 @@ logger_type rankzero;
 
 logger_type allranks;
 
-void initialize(MPI_Comm)
+void initialize(MPI_Comm, const char * const default_conf)
 {
     static const char log4j_config_envvar[]   = "log4j.configuration";
     static const char log4cxx_config_envvar[] = "LOG4CXX_CONFIGURATION";
@@ -226,8 +219,9 @@ void initialize(MPI_Comm)
 
         // Overwrite default configuration using file contents, if possible.
         std::vector<unsigned char> buf;
-        buf.assign(default_log4cxx_config,
-                   default_log4cxx_config + sizeof(default_log4cxx_config));
+        if (default_conf) {
+            buf.assign(default_conf, default_conf + strlen(default_conf));
+        }
         if (!configpath.empty() && file.setPath(configpath).exists(pool)) {
             // Hideous ifdef to workaround log4cxx's inconsistent char usage.
             buf.resize(file.length(pool));
@@ -251,42 +245,59 @@ void initialize(MPI_Comm)
 #endif
         }
 
-        // Configure logging subsystem using the buffer contents
-        InputStreamPtr bais(new ByteArrayInputStream(buf));
-        Properties props;
-        PropertyConfigurator pc;
-        try {
-            props.load(bais);
-            pc.doConfigure(props, LogManager::getLoggerRepository());
-        } catch (Exception &e) {
-            BasicConfigurator::configure(); // Fallback
-            buf.push_back('\0');
-            LOG4CXX_WARN(Logger::getRootLogger(),
-                "Logging configuration from " << configpath << "invalid: "
-                 << e.what() << "\n" <<  &buf.front());
-            buf.pop_back();
-        }
-
-        // Broadcast configuration buffer length and contents to other ranks
+        // Broadcast configuration buffer length
         int buflen = buf.size();
         MPI_Bcast(&buflen, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        MPI_Bcast(&buf.front(), buflen, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+        if (buflen) {
+
+            // Configure logging subsystem using the nontrivial buffer contents
+            InputStreamPtr bais(new ByteArrayInputStream(buf));
+            Properties props;
+            PropertyConfigurator pc;
+            try {
+                props.load(bais);
+                pc.doConfigure(props, LogManager::getLoggerRepository());
+            } catch (Exception &e) {
+                BasicConfigurator::configure(); // Fallback
+                buf.push_back('\0');
+                LOG4CXX_WARN(Logger::getRootLogger(),
+                    "Logging configuration from "
+                    << (configpath.size() ? configpath : "default_conf")
+                    << "invalid: " << e.what() << "\n" <<  &buf.front());
+                buf.pop_back();
+            }
+
+            // Broadcast configuration buffer now that rank zero has finished
+            MPI_Bcast(&buf.front(), buflen, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+
+        } else {
+            // No buffer contents so use a vanilla log4cxx configuration
+            BasicConfigurator::configure();
+        }
 
     } else {
 
-        // Higher ranks receive buffer length, buffer, and initialize logging
+        // Higher ranks receive buffer length
         int buflen;
         MPI_Bcast(&buflen, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        std::vector<unsigned char> buf(buflen);
-        MPI_Bcast(&buf.front(), buflen, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
-        InputStreamPtr bais(new ByteArrayInputStream(buf));
-        Properties props;
-        PropertyConfigurator pc;
-        try {
-            props.load(bais);
-            pc.doConfigure(props, LogManager::getLoggerRepository());
-        } catch (Exception & /* ignored */) {
-            BasicConfigurator::configure(); // Fallback
+        if (buflen) {
+
+            // Configure logging subsystem using incoming buffer contents
+            std::vector<unsigned char> buf(buflen);
+            MPI_Bcast(&buf.front(), buflen, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+            InputStreamPtr bais(new ByteArrayInputStream(buf));
+            Properties props;
+            PropertyConfigurator pc;
+            try {
+                props.load(bais);
+                pc.doConfigure(props, LogManager::getLoggerRepository());
+            } catch (Exception & /* ignored */) {
+                BasicConfigurator::configure(); // Fallback
+            }
+
+        } else {
+            // No buffer contents so use a vanilla log4cxx configuration
+            BasicConfigurator::configure();
         }
 
     }
@@ -304,7 +315,7 @@ void initialize(MPI_Comm)
     allranks = Logger::getLogger(worldrankname);
 
     // On non-zero ranks the RootLogger may have no appenders (which is fine).
-    // However, it causes a worrisome one-time message like to following
+    // However, it causes a worrisome one-time message like the following
     //     log4cxx: No appender could be found for logger (root).
     //     log4cxx: Please initialize the log4cxx system properly.
     // to appear once from each rank.  Temporarily disable log4cxx's LogLog,

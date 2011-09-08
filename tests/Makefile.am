@@ -21,7 +21,7 @@ CC  = @MPICC@
 
 # Specify test environment for 'make check'
 TESTS_ENVIRONMENT  = TMPDIR=$(abs_builddir)
-TESTS_ENVIRONMENT += LOG4CXX_CONFIGURATION=$(abs_top_srcdir)/log4cxx.properties
+TESTS_ENVIRONMENT += LOG4CXX_CONFIGURATION=$(abs_srcdir)/log4cxx.properties
 
 # Demand that all tests build for 'make all' target to be successful.
 # Much of the C++ functionality is header-only; this ensures it builds.
