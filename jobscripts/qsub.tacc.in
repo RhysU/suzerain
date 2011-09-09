@@ -24,10 +24,10 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 : ${BINARY:=@bindir@/channel_explicit}
 : ${INPUT:=@pkgdatadir@/fields/laminar_k08.h5}  # Use SCRATCH or WORK
 : ${ADVANCE:=}
-: ${STATUS:=--status_nt=25}
-: ${DECOMP:=--Pa=$(expr $NSLOTS / $NHOSTS)}
-: ${OPTIONS:=--Nx=192 --Ny=128 --Nz=128}
-: ${TMPFILES:=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
+: ${STATUS=--status_nt=25}
+: ${DECOMP=--Pa=$(expr $NSLOTS / $NHOSTS)}
+: ${OPTIONS=--Nx=192 --Ny=128 --Nz=128}
+: ${TMPFILES=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
 : ${JOBDIR:=$SCRATCH/jobs/$JOB_NAME/$JOB_ID}
 
 # Make job directory, canonicalize paths, and build command
@@ -91,7 +91,7 @@ HEADER
 cache_binary "$PWD" "$BINARY"
 /usr/bin/time -v ibrun tacc_affinity $CMD &
 CMDPID=$!
-for signal in ${SIGNALS:=HUP INT TERM USR1 USR2}; do
+for signal in ${SIGNALS=HUP INT TERM USR1 USR2}; do
     trap "kill -s $signal $CMDPID" $signal
 done
 fg
