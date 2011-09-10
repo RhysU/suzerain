@@ -26,7 +26,7 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 : ${ADVANCE:=}
 : ${STATUS=--status_nt=25}
 : ${DECOMP=--Pa=$(expr $NSLOTS / $NHOSTS)}
-: ${OPTIONS=--Nx=192 --Ny=128 --Nz=128}
+: ${OPTIONS=}
 : ${TMPFILES=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
 : ${JOBDIR:=$SCRATCH/jobs/$JOB_NAME/$JOB_ID}
 
@@ -39,13 +39,13 @@ cd -P "$JOBDIR"
 # Copy any non-{SCRATCH,WORK} INPUT to JOBDIR to employ parallel filesystem
 # Expensive for large fields but users should not be keeping those in $HOME
 case "$INPUT" in                                                         #(
-    "${SCRATCH}*") :
-                   ;;                                                    #(
-    "${WORK}*")    :
-                   ;;                                                    #(
-    *)             MSGS="${MSGS-}$(cp -v "$INPUT" "$JOBDIR/input.h5")$(echo)"
-                   INPUT=$(readlink -f "$JOBDIR/input.h5")
-                   ;;
+    ${SCRATCH}*) :
+                 ;;                                                      #(
+    ${WORK}*)    :
+                 ;;                                                      #(
+    *)           MSGS="${MSGS-}$(cp -v "$INPUT" "$JOBDIR/input.h5")$(echo)"
+                 INPUT=$(readlink -f "$JOBDIR/input.h5")
+                 ;;
 esac
 CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $OPTIONS $TMPFILES"
 
