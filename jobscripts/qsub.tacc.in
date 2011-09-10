@@ -36,17 +36,18 @@ BINARY=$(readlink -f "$BINARY")
 INPUT=$(readlink -f "$INPUT")
 JOBDIR=$(readlink -f "$JOBDIR")
 cd -P "$JOBDIR"
-# Copy any non-{SCRATCH,WORK} INPUT to JOBDIR to employ parallel filesystem
-# Expensive for large fields but users should not be keeping those in $HOME
-case "$INPUT" in                                                         #(
-    ${SCRATCH}*) :
-                 ;;                                                      #(
-    ${WORK}*)    :
-                 ;;                                                      #(
-    *)           MSGS="${MSGS-}$(cp -v "$INPUT" "$JOBDIR/input.h5")$(echo)"
-                 INPUT=$(readlink -f "$JOBDIR/input.h5")
-                 ;;
-esac
+### FIXME
+### Copy any non-{SCRATCH,WORK} INPUT to JOBDIR to employ parallel filesystem
+### Expensive for large fields but users should not be keeping those in $HOME
+##case "$INPUT" in                                                         #(
+##    ${SCRATCH}*) :
+##                 ;;                                                      #(
+##    ${WORK}*)    :
+##                 ;;                                                      #(
+##    *)           MSGS="${MSGS-}$(cp -v "$INPUT" "$JOBDIR/input.h5")$(echo)"
+##                 INPUT=$(readlink -f "$JOBDIR/input.h5")
+##                 ;;
+##esac
 CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $OPTIONS $TMPFILES"
 
 # Compute threading based on job size and way-ness
