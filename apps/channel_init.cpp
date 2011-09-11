@@ -75,9 +75,9 @@ static ScenarioDefinition<real_t> scenario(
 static GridDefinition grid(
         /* Nx      */ 1,
         /* DAFx    */ 1.5,
-        /* Ny      */ 16,
-        /* k       */ 6,
-        /* htdelta */ 1,
+        /* Ny      */ 32,
+        /* k       */ 8,
+        /* htdelta */ 3,
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
 static shared_ptr<const suzerain::pencil_grid> dgrid;
