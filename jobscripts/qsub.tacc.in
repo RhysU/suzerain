@@ -10,7 +10,6 @@
 #$ -notify               # Notify job of impending doom
 set -m                   # Employ job control
 set -u                   # Abort on undefined shell variables
-set -e                   # Enable fail-on-first-error
 unset DISPLAY            # Avoid "Error in locking authority file" from xauth
 
 # Either obtain the soft run time or compute default from hard run time
@@ -96,9 +95,7 @@ CMDPID=$!
 for signal in ${SIGNALS=HUP INT TERM USR1 USR2}; do
     trap "kill -s $signal $CMDPID" $signal
 done
-set +e
 fg
-set -e
 for signal in ${SIGNALS}; do
     trap - $signal
 done
