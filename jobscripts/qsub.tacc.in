@@ -25,7 +25,7 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 : ${BINARY:=@bindir@/channel_explicit}
 : ${INPUT:=@pkgdatadir@/fields/laminar_k08.h5}  # Use SCRATCH or WORK
 : ${ADVANCE:=}
-: ${STATUS=--status_nt=25}
+: ${STATUS=--status_nt=100}
 : ${DECOMP=--Pa=$(expr $NSLOTS / $NHOSTS)}
 : ${OPTIONS=}
 : ${TMPFILES=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
