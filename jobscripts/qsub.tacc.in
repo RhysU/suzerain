@@ -10,6 +10,7 @@
 #$ -notify               # Notify job of impending doom
 set -m                   # Employ job control
 set -u                   # Abort on undefined shell variables
+set -e                   # Enable fail-on-first-error
 unset DISPLAY            # Avoid "Error in locking authority file" from xauth
 
 # Either obtain the soft run time or compute default from hard run time
@@ -32,9 +33,9 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 
 # Make job directory, canonicalize paths, and build command
 mkdir -p "$JOBDIR"
-BINARY=$(readlink -f "$BINARY")
-INPUT=$(readlink -f "$INPUT")
-JOBDIR=$(readlink -f "$JOBDIR")
+BINARY=$(readlink -e "$BINARY")
+INPUT=$(readlink -e "$INPUT")
+JOBDIR=$(readlink -e "$JOBDIR")
 cd -P "$JOBDIR"
 ### FIXME
 ### Copy any non-{SCRATCH,WORK} INPUT to JOBDIR to employ parallel filesystem
@@ -45,7 +46,7 @@ cd -P "$JOBDIR"
 ##    ${WORK}*)    :
 ##                 ;;                                                      #(
 ##    *)           MSGS="${MSGS-}$(cp -v "$INPUT" "$JOBDIR/input.h5")$(echo)"
-##                 INPUT=$(readlink -f "$JOBDIR/input.h5")
+##                 INPUT=$(readlink -e "$JOBDIR/input.h5")
 ##                 ;;
 ##esac
 CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $OPTIONS $TMPFILES"
@@ -55,7 +56,7 @@ export OMP_NUM_THREADS=$(expr @corespernode@ / \( $NSLOTS / $NHOSTS \) )
 
 # Record execution details into working directory
 exec 1> >(tee ./output) 2>&1
-readlink -f "$BINARY" > ./binary
+echo "$BINARY" > ./binary
 "$BINARY" --version > ./version
 ldd "$BINARY" > ./dependencies
 env > ./environment
@@ -95,8 +96,12 @@ CMDPID=$!
 for signal in ${SIGNALS=HUP INT TERM USR1 USR2}; do
     trap "kill -s $signal $CMDPID" $signal
 done
+set +e
 fg
-trap - $SIGNALS
+set -e
+for signal in ${SIGNALS}; do
+    trap - $signal
+done
 
 # Mail output to the job submitter.  Sleep required for message receipt.
 mail -s "Job $JOB_ID ($JOB_NAME) Output" $USER < ./output && sleep 10
