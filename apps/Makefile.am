@@ -7,8 +7,7 @@ AM_CPPFLAGS        += $(MKL_CFLAGS) $(GSL_CFLAGS)
 AM_CPPFLAGS        += $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
 AM_CPPFLAGS        += $(EIGEN_CFLAGS) $(GRVY_CFLAGS) $(ESIO_CFLAGS)
 bin_PROGRAMS        = # Append below
-bin_SCRIPTS         = # Append below
-check_PROGRAMS      = # Append below
+noinst_PROGRAMS     = # Append below
 dist_check_SCRIPTS  = # Append below
 CLEANFILES          = # Append below
 TESTS               = # Append below
@@ -66,7 +65,7 @@ bin_PROGRAMS         += channel_mean
 channel_mean_SOURCES  = channel_mean.cpp
 channel_mean_LDADD    = libchannel.la
 
-bin_PROGRAMS         += conservation
+noinst_PROGRAMS      += conservation
 conservation_SOURCES  = conservation.cpp
 conservation_LDADD    = libchannel.la
 
