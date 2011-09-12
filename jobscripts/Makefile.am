@@ -1,4 +1,6 @@
 ## Process this file with automake to produce Makefile.in
+dist_check_SCRIPTS  = # Append below
+TESTS               = # Append below
 
 JOBSCRIPTS = qsub.lonestar qsub.ranger
 
@@ -22,6 +24,10 @@ qsub.lonestar : qsub.tacc.in
 qsub.ranger : qsub.tacc.in
 	$(do_subst) "$<" | $(SED) -e 's,[@]corespernode[@],16,g' > "$@"
 	chmod +x "$@"
+
+# Ensure bash-based job scripts have valid syntax
+TESTS              += test_bash_syntax.sh
+dist_check_SCRIPTS += test_bash_syntax.sh
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
