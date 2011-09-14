@@ -646,11 +646,26 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
 
 /** State descriptions used within ESIO-based restart files */
 static const boost::array<const char *,5> field_descriptions = {{
-    "Nondimensional density coefficients stored row-major ZXY",
-    "Nondimensional X momentum coefficients stored row-major ZXY",
-    "Nondimensional Y momentum coefficients stored row-major ZXY",
-    "Nondimensional Z momentum coefficients stored row-major ZXY",
-    "Nondimensional total energy coefficients stored row-major ZXY"
+    "Nondimensional density coefficients stored row-major ZXY using"
+    " a Fourier basis in Z stored in-order per /kz;"
+    " a Fourier basis in X stored using Hermitian symmetry per /kx; and"
+    " a B-spline basis in Y defined by /k, /breakpoints, and /knots",
+    "Nondimensional X momentum coefficients stored row-major ZXY using"
+    " a Fourier basis in Z stored in-order per /kz;"
+    " a Fourier basis in X stored using Hermitian symmetry per /kx; and"
+    " a B-spline basis in Y defined by /k, /breakpoints, and /knots",
+    "Nondimensional Y momentum coefficients stored row-major ZXY using"
+    " a Fourier basis in Z stored in-order per /kz;"
+    " a Fourier basis in X stored using Hermitian symmetry per /kx; and"
+    " a B-spline basis in Y defined by /k, /breakpoints, and /knots",
+    "Nondimensional Z momentum coefficients stored row-major ZXY using"
+    " a Fourier basis in Z stored in-order per /kz;"
+    " a Fourier basis in X stored using Hermitian symmetry per /kx; and"
+    " a B-spline basis in Y defined by /k, /breakpoints, and /knots",
+    "Nondimensional total energy coefficients stored row-major ZXY using"
+    " a Fourier basis in Z stored in-order per /kz;"
+    " a Fourier basis in X stored using Hermitian symmetry per /kx; and"
+    " a B-spline basis in Y defined by /k, /breakpoints, and /knots"
 }};
 
 void store(const esio_handle h,
