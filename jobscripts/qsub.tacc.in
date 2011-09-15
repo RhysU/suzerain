@@ -48,6 +48,11 @@ case "$INPUT" in                                                         #(
                  INPUT=$(canonpath "$JOBDIR/input.h5")
                  ;;
 esac
+# If JOBDIR ends with JOB_ID, add or update '../last' for postprocessing
+case "$JOBDIR" in                                                     #(
+    */${JOB_ID}) ln -f -s "$JOB_ID" ../last
+                 ;;
+esac
 CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $OPTIONS $TMPFILES"
 
 # Compute threading based on job size and way-ness
@@ -96,9 +101,13 @@ for signal in ${SIGNALS=HUP INT TERM USR1 USR2}; do
     trap "kill -s $signal $CMDPID" $signal
 done
 fg
+CMDEXIT=$?
 for signal in ${SIGNALS}; do
     trap - $signal
 done
 
 # Mail output to the job submitter.  Sleep required for message receipt.
-mail -s "Job $JOB_ID ($JOB_NAME) Output" $USER < ./output && sleep 10
+mail -s "Job $JOB_ID ($JOB_NAME) Output [$CMDEXIT]" $USER < ./output && sleep 10
+
+# Command exit status is returned to the batch system
+exit $CMDEXIT
