@@ -65,7 +65,7 @@ test -f /proc/cpuinfo && cp /proc/cpuinfo ./cpuinfo && chmod +w ./cpuinfo
 
 # Display a job header
 cat <<HEADER
-=${JOB_NAME}===================================================================
+=${JOB_NAME}=${JOB_ID}=========================================================
 CLUSTER:  $SGE_CLUSTER_NAME ${PE-} $NSLOTS
 JOB_ID:   $JOB_ID
 DATE:     $(date)
@@ -84,7 +84,7 @@ TMPFILES: $TMPFILES
 
 ${MSGS:-}${MSGS:+
 }${CMD}
-=${JOB_NAME}===================================================================
+=${JOB_NAME}=${JOB_ID}=========================================================
 
 HEADER
 
