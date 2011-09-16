@@ -160,7 +160,7 @@ PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
     ], [
         AC_MSG_WARN([Could not find GRVY pkg-config file; Continuing...])
     ])
-PKG_CHECK_MODULES([ESIO],[esio-hdf5 >= 0.1.4])
+PKG_CHECK_MODULES([ESIO],[esio-hdf5 >= 0.1.6])
 AC_LANG_POP([C])
 AC_CACHE_SAVE
 
