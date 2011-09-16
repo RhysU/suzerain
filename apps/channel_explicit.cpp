@@ -854,7 +854,7 @@ int main(int argc, char **argv)
     channel::load_time(esioh, initial_t);
     {
         const double begin = MPI_Wtime();
-        channel::load(esioh, *state_linear, grid, *dgrid, *b, *bop);
+        channel::load(esioh, *state_linear, scenario, grid, *dgrid, *b, *bop);
         wtime_load_state = MPI_Wtime() - begin;
     }
     esio_file_close(esioh);

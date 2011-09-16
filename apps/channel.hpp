@@ -215,15 +215,41 @@ void store_collocation_values(
         const suzerain::bsplineop& bop);
 
 /**
- * Load the current simulation state from an open restart file.
- * Handles the very non-trivial task of adjusting the restart
- * to match the provided \c grid, \c dgrid, \c b, and \c bop
+ * Load the current simulation state from an open coefficient-based restart
+ * file.  Handles the very non-trivial task of adjusting the restart to match
+ * the provided \c grid, \c dgrid, \c b, and \c bop.
+ */
+void load_coefficients(const esio_handle h,
+                       suzerain::ContiguousState<4,complex_t> &state,
+                       const suzerain::problem::GridDefinition& grid,
+                       const suzerain::pencil_grid& dgrid,
+                       const suzerain::bspline& b,
+                       const suzerain::bsplineop& bop);
+
+
+/**
+ * Load the current simulation state from an open collocation point value
+ * restart file.  Cannot handle interpolating onto a different grid.
+ */
+void load_collocation_values(
+        const esio_handle h,
+        suzerain::ContiguousState<4,complex_t>& state,
+        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::GridDefinition& grid,
+        const suzerain::pencil_grid& dgrid,
+        suzerain::bspline& b,
+        const suzerain::bsplineop& bop);
+
+/**
+ * Interrogate an open restart file and invoke either load_coefficients()
+ * or load_collocation_values() as necessary.
  */
 void load(const esio_handle h,
-          suzerain::ContiguousState<4,complex_t> &state,
+          suzerain::ContiguousState<4,complex_t>& state,
+          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
-          const suzerain::bspline& b,
+          suzerain::bspline& b,
           const suzerain::bsplineop& bop);
 
 /** Options definitions for adding random noise to momentum fields */

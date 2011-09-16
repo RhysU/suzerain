@@ -811,12 +811,12 @@ static bool bspline_bases_identical(const suzerain::bspline& a,
     return retval;
 }
 
-void load(const esio_handle h,
-          suzerain::ContiguousState<4,complex_t> &state,
-          const suzerain::problem::GridDefinition& grid,
-          const suzerain::pencil_grid& dgrid,
-          const suzerain::bspline& b,
-          const suzerain::bsplineop& bop)
+void load_coefficients(const esio_handle h,
+                       suzerain::ContiguousState<4,complex_t> &state,
+                       const suzerain::problem::GridDefinition& grid,
+                       const suzerain::pencil_grid& dgrid,
+                       const suzerain::bspline& b,
+                       const suzerain::bsplineop& bop)
 {
     typedef suzerain::ContiguousState<4,complex_t> load_type;
 
@@ -882,8 +882,6 @@ void load(const esio_handle h,
         mass.reset(new suzerain::bsplineop_luz(bop));
         mass->form_mass(bop);
     }
-
-    DEBUG0("Started loading simulation fields");
 
     // Load each scalar field in turn
     for (size_t i = 0; i < field::count; ++i) {
@@ -977,8 +975,6 @@ void load(const esio_handle h,
             }
         }
     }
-
-    DEBUG0("Finished loading simulation fields");
 }
 
 void store_collocation_values(
@@ -1211,6 +1207,45 @@ void load_collocation_values(
         obase.bop_solve(massluz, state, i);             // Y
         obase.diffwave_apply(0, 0, 1., state, i);       // Dealiasing
     }
+}
+
+void load(const esio_handle h,
+          suzerain::ContiguousState<4,complex_t>& state,
+          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          const suzerain::problem::GridDefinition& grid,
+          const suzerain::pencil_grid& dgrid,
+          suzerain::bspline& b,
+          const suzerain::bsplineop& bop)
+{
+    // Check whether load_coefficients(...) should work
+    bool trycoeffs = true;
+    for (std::size_t i = 0; i < field::count; ++i) {
+        int ncomponents = 0;
+        switch (esio_field_sizev(h, field::name[i], 0, 0, 0, &ncomponents)) {
+            case ESIO_SUCCESS:
+                if (ncomponents != 2) {
+                    DEBUG0("Field /" << field::name[i] << " looks fishy...");
+                }
+                break;
+            case ESIO_NOTFOUND:
+                DEBUG0("Field /" << field::name[i] << " not found in restart");
+                trycoeffs = false;
+                break;
+            default:
+                DEBUG0("Field /" << field::name[i] << " looks fishy...");
+                break;
+        }
+    }
+
+    // Dispatch to the appropriate restart loading logic
+    DEBUG0("Started loading simulation fields");
+    if (trycoeffs) {
+        load_coefficients(h, state, grid, dgrid, b, bop);
+    } else {
+        INFO0("Loading collocation-based, physical-space restart data");
+        load_collocation_values(h, state, scenario, grid, dgrid, b, bop);
+    }
+    DEBUG0("Finished loading simulation fields");
 }
 
 /**
