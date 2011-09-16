@@ -522,13 +522,13 @@ void store(const esio_handle h,
 
     for (int i = 0; i < b->nbreak(); ++i) buf[i] = b->breakpoint(i);
     esio_line_establish(h, b->nbreak(), 0, (procid == 0 ? b->nbreak() : 0));
-    esio_line_write(h, "breakpoints", buf.data(), 0,
-            "Breakpoint locations used to build B-spline basis");
+    esio_line_write(h, "breakpoints_y", buf.data(), 0,
+            "Breakpoint locations used to build wall-normal B-spline basis");
 
     for (int i = 0; i < b->n(); ++i) buf[i] = b->collocation_point(i);
     esio_line_establish(h, b->n(), 0, (procid == 0 ? b->n() : 0));
-    esio_line_write(h, "collocation_points", buf.data(), 0,
-            "Collocation points used to build discrete operators");
+    esio_line_write(h, "collocation_points_y", buf.data(), 0,
+            "Collocation points used to build wall-normal discrete operators");
 
     b->integration_coefficients(0, buf.data());
     esio_line_establish(h, b->n(), 0, (procid == 0 ? b->n() : 0));
@@ -586,17 +586,31 @@ void load(const esio_handle h,
 
     // htdelta is ignored
 
-    // All ranks load B-spline breakpoints
-    int nbreak;
-    esio_line_size(h, "breakpoints", &nbreak);
-    esio_line_establish(h, nbreak, 0, nbreak);
-    Eigen::ArrayXr buf(nbreak);
-    esio_line_read(h, "breakpoints", buf.data(), 0);
+    // All ranks load B-spline breakpoints_y (with backward compatibility)
+    Eigen::ArrayXr breakpoints;
+    const char *names[] = { "breakpoints_y", "breakpoints" };
+    for (std::size_t i = 0; i < sizeof(names)/sizeof(names[0]); ++i) {
+        int nbreak;
+        if (ESIO_NOTFOUND == esio_line_size(h, names[i], &nbreak)) {
+            DEBUG0("Wall-normal breakpoints not found at /" << names[i]);
+            continue;
+        }
+        esio_line_establish(h, nbreak, 0, nbreak);
+        breakpoints.resize(nbreak);
+        esio_line_read(h, names[i], breakpoints.data(), 0);
+        break;
+    }
+    if (!breakpoints.size()) {
+        SUZERAIN_ERROR_VOID(
+                "Restart did not contain wall-normal breakpoint locations",
+                SUZERAIN_EFAILED);
+    }
 
     // Collocation points are ignored
 
     // Construct B-spline workspace
-    b = boost::make_shared<suzerain::bspline>(k, nbreak, buf.data());
+    b = boost::make_shared<suzerain::bspline>(
+                k, breakpoints.size(), breakpoints.data());
     bop.reset(new suzerain::bsplineop(
                 *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
 }
