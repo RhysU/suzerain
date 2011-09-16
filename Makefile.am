@@ -10,8 +10,8 @@ endif
 if BUILD_TESTS
     MAYBE_TESTS_SUBDIR = tests
 endif
-SUBDIRS = lib suzerain $(MAYBE_TESTS_SUBDIR) apps \
-          $(MAYBE_WRITEUPS_SUBDIR) fields jobscripts
+SUBDIRS = lib suzerain $(MAYBE_TESTS_SUBDIR) fields apps \
+          $(MAYBE_WRITEUPS_SUBDIR) jobscripts
 
 # Distribute these items:
 DIST_SUBDIRS = lib suzerain tests apps writeups fields jobscripts
