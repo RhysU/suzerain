@@ -208,9 +208,10 @@ void store_collocation_values(
         const esio_handle h,
         const suzerain::ContiguousState<4,complex_t>& state,
         suzerain::ContiguousState<4,complex_t>& scratch,
+        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
-        const suzerain::bspline& b,
+        suzerain::bspline& b,
         const suzerain::bsplineop& bop);
 
 /**

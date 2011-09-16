@@ -645,6 +645,8 @@ void p_T(
         Scalar &p,
         Scalar &T)
 {
+    SUZERAIN_UNUSED(alpha);  // Present for API consistency
+    SUZERAIN_UNUSED(beta);   // Present for API consistency
     const Scalar rho_inverse = 1/rho;
 
     // Compute scalar quantities
