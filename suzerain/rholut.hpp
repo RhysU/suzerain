@@ -620,6 +620,39 @@ void p_T_mu_lambda(
 }
 
 /**
+ * Compute \f$p\f$ and \f$T\f$ using the equation of state.
+ *
+ * @param[in]  alpha \f$\alpha\f$
+ * @param[in]  beta \f$\beta\f$
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  Ma \f$\mbox{Ma}\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  e \f$e\f$
+ * @param[out] p \f$p\f$
+ * @param[out] T \f$T\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+void p_T(
+        const Scalar &alpha,
+        const Scalar &beta,
+        const Scalar &gamma,
+        const Scalar &Ma,
+        const Scalar &rho,
+        const Vector &m,
+        const Scalar &e,
+        Scalar &p,
+        Scalar &T)
+{
+    const Scalar rho_inverse = 1/rho;
+
+    // Compute scalar quantities
+    p = (gamma - 1)*(e - Ma*Ma*rho_inverse*m.squaredNorm()/2);
+    T = gamma * p * rho_inverse;
+}
+
+/**
  * Compute the internal energy by subtracting the kinetic
  * energy from the total energy.
  *
