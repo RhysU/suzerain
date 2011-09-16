@@ -794,6 +794,23 @@ void store_coefficients(const esio_handle h,
     }
 }
 
+// Check if two B-spline bases are identical.  Use strict equality as minor
+// knot differences magnify once collocation points and operators are computed.
+static bool bspline_bases_identical(const suzerain::bspline& a,
+                                    const suzerain::bspline& b)
+{
+    bool retval =    a.k()     == b.k()
+                  && a.n()     == b.n()
+                  && a.nknot() == b.nknot();
+    for (int j = 0; retval && j < b.nknot(); ++j) {
+#pragma warning(push,disable:1572)
+        retval = (a.knot(j) == b.knot(j));
+#pragma warning(pop)
+    }
+
+    return retval;
+}
+
 void load(const esio_handle h,
           suzerain::ContiguousState<4,complex_t> &state,
           const suzerain::problem::GridDefinition& grid,
@@ -820,17 +837,8 @@ void load(const esio_handle h,
     load(h, Fb, Fbop);
     assert(Fy == Fb->n());
 
-    // Check if the B-spline basis in the file differs from ours.  Use strict
-    // equality as minor knot differences magnify once collocation points
-    // and operators are computed.
-    bool bsplines_same =    b.k()     == Fb->k()
-                         && b.n()     == Fb->n()
-                         && b.nknot() == Fb->nknot();
-    for (int j = 0; bsplines_same && j < b.nknot(); ++j) {
-#pragma warning(push,disable:1572)
-        bsplines_same = (b.knot(j) == Fb->knot(j));
-#pragma warning(pop)
-    }
+    // Check if the B-spline basis in the file differs from ours.
+    const bool bsplines_same = bspline_bases_identical(b, *Fb);
 
     // Compute wavenumber translation logistics for X direction.
     // Requires turning a C2R FFT complex-valued coefficient count into a
