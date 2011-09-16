@@ -794,120 +794,6 @@ void store_coefficients(const esio_handle h,
     }
 }
 
-void store_collocation_values(
-        const esio_handle h,
-        const suzerain::ContiguousState<4,complex_t>& state,
-        suzerain::ContiguousState<4,complex_t>& scratch,
-        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid,
-        suzerain::bspline& b,
-        const suzerain::bsplineop& bop)
-{
-    // Ensure state and scratch storage meets this routine's assumptions
-    assert(                  state.shape()[0]    == field::count);
-    assert(numeric_cast<int>(state.shape()[1])   == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(state.shape()[2])   == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3])   == dgrid.local_wave_extent.z());
-    assert(                  scratch.shape()[0]  == field::count);
-    assert(numeric_cast<int>(scratch.shape()[1]) == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(scratch.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(scratch.shape()[3]) == dgrid.local_wave_extent.z());
-
-    // Initialize OperatorBase to access decomposition-ready utilities
-    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
-
-    // Copy-and-convert coefficients into collocation point values
-    // Transforms from full-wave in state to full-physical in scratch
-    for (std::size_t i = 0; i < channel::field::count; ++i) {
-        obase.diffwave_accumulate(0, 0, 1, state, i, 0, scratch, i);
-        obase.bop_apply(0, 1, scratch, i);
-        dgrid.transform_wave_to_physical(
-                reinterpret_cast<real_t *>(scratch[i].origin()));
-    }
-
-    // Convert conserved rho, rhou, rhov, rhow, rhoe into u, v, w, p, T
-    physical_view<field::count>::type sphys
-        = physical_view<field::count>::create(dgrid, scratch);
-
-    const real_t alpha = scenario.alpha;
-    const real_t beta  = scenario.beta;
-    const real_t gamma = scenario.gamma;
-    const real_t Ma    = scenario.Ma;
-
-    Eigen::Vector3r m;
-    size_t offset = 0;
-    for (int j = dgrid.local_physical_start.y();
-         j < dgrid.local_physical_end.y();
-         ++j) {
-
-        for (int k = dgrid.local_physical_start.z();
-            k < dgrid.local_physical_end.z();
-            ++k) {
-
-            for (int i = dgrid.local_physical_start.x();
-                i < dgrid.local_physical_end.x();
-                ++i, /* NB */ ++offset) {
-
-                // Unpack conserved quantities from fields
-                real_t rho = sphys(field::ndx::rho,  offset);
-                m.x()      = sphys(field::ndx::rhou, offset);
-                m.y()      = sphys(field::ndx::rhov, offset);
-                m.z()      = sphys(field::ndx::rhow, offset);
-                real_t e   = sphys(field::ndx::rhoe, offset);
-
-                // Compute primitive quantities to be stored
-                real_t p, T;
-                suzerain::rholut::p_T(alpha, beta, gamma, Ma, rho, m, e, p, T);
-                m /= rho;
-
-                // Pack primitive quantities back into fields (by position)
-                sphys(0, offset) = m.x(); // Now just X velocity
-                sphys(1, offset) = m.y(); // Now just Y velocity
-                sphys(2, offset) = m.z(); // Now just Z velocity
-                sphys(3, offset) = p;
-                sphys(4, offset) = T;
-
-            } // end X
-
-        } // end Z
-
-    } // end Y
-
-    // HDF5 file storage locations and corresponding descriptions
-    const boost::array<const char *,5> prim_names = {{
-        "u", "v", "w", "p", "T"
-    }};
-    const boost::array<const char *,5> prim_descriptions = {{
-        "X velocity", "Y velocity", "Z velocity", "pressure", "temperature",
-    }};
-
-    // Establish size of collective writes across all ranks and write data
-    esio_field_establish(h, grid.dN.y(), dgrid.local_physical_start.y(),
-                                         dgrid.local_physical_extent.y(),
-                            grid.dN.z(), dgrid.local_physical_start.z(),
-                                         dgrid.local_physical_extent.z(),
-                            grid.dN.x(), dgrid.local_physical_start.x(),
-                                         dgrid.local_physical_extent.x());
-
-    for (size_t i = 0; i < field::count; ++i) {
-
-        std::string comment = "Nondimensional ";
-        comment += prim_descriptions[i];
-        comment += " stored row-major YZX on the 3D rectilinear grid defined"
-                   " by taking the outer product of arrays"
-                   " /collocation_points_y, /collocation_points_z, and"
-                   " /collocation_points_z";
-
-        esio_field_write(h, prim_names[i],
-                reinterpret_cast<real_t *>(scratch[i].origin()),
-                dgrid.local_physical_extent.x()*dgrid.local_physical_extent.z(),
-                dgrid.local_physical_extent.x(),
-                1,
-                comment.c_str());
-    }
-}
-
 void load(const esio_handle h,
           suzerain::ContiguousState<4,complex_t> &state,
           const suzerain::problem::GridDefinition& grid,
@@ -1085,6 +971,206 @@ void load(const esio_handle h,
     }
 
     DEBUG0("Finished loading simulation fields");
+}
+
+void store_collocation_values(
+        const esio_handle h,
+        const suzerain::ContiguousState<4,complex_t>& state,
+        suzerain::ContiguousState<4,complex_t>& scratch,
+        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::GridDefinition& grid,
+        const suzerain::pencil_grid& dgrid,
+        suzerain::bspline& b,
+        const suzerain::bsplineop& bop)
+{
+    // Ensure state and scratch storage meets this routine's assumptions
+    assert(                  state.shape()[0]    == field::count);
+    assert(numeric_cast<int>(state.shape()[1])   == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(state.shape()[2])   == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(state.shape()[3])   == dgrid.local_wave_extent.z());
+    assert(                  scratch.shape()[0]  == field::count);
+    assert(numeric_cast<int>(scratch.shape()[1]) == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(scratch.shape()[2]) == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(scratch.shape()[3]) == dgrid.local_wave_extent.z());
+
+    // Initialize OperatorBase to access decomposition-ready utilities
+    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+
+    // Copy-and-convert coefficients into collocation point values
+    // Transforms from full-wave in state to full-physical in scratch
+    for (std::size_t i = 0; i < channel::field::count; ++i) {
+        obase.diffwave_accumulate(0, 0, 1, state, i, 0, scratch, i);
+        obase.bop_apply(0, 1, scratch, i);
+        dgrid.transform_wave_to_physical(
+                reinterpret_cast<real_t *>(scratch[i].origin()));
+    }
+
+    // Convert conserved rho, rhou, rhov, rhow, rhoe into u, v, w, p, T
+    physical_view<field::count>::type sphys
+        = physical_view<field::count>::create(dgrid, scratch);
+
+    const real_t alpha = scenario.alpha;
+    const real_t beta  = scenario.beta;
+    const real_t gamma = scenario.gamma;
+    const real_t Ma    = scenario.Ma;
+
+    Eigen::Vector3r m;
+    size_t offset = 0;
+    for (int j = dgrid.local_physical_start.y();
+         j < dgrid.local_physical_end.y();
+         ++j) {
+
+        for (int k = dgrid.local_physical_start.z();
+            k < dgrid.local_physical_end.z();
+            ++k) {
+
+            for (int i = dgrid.local_physical_start.x();
+                i < dgrid.local_physical_end.x();
+                ++i, /* NB */ ++offset) {
+
+                // Unpack conserved quantities from fields
+                real_t rho = sphys(field::ndx::rho,  offset);
+                m.x()      = sphys(field::ndx::rhou, offset);
+                m.y()      = sphys(field::ndx::rhov, offset);
+                m.z()      = sphys(field::ndx::rhow, offset);
+                real_t e   = sphys(field::ndx::rhoe, offset);
+
+                // Compute primitive quantities to be stored
+                real_t p, T;
+                suzerain::rholut::p_T(alpha, beta, gamma, Ma, rho, m, e, p, T);
+                m /= rho;
+
+                // Pack primitive quantities back into fields (by position)
+                sphys(0, offset) = m.x(); // Now just X velocity
+                sphys(1, offset) = m.y(); // Now just Y velocity
+                sphys(2, offset) = m.z(); // Now just Z velocity
+                sphys(3, offset) = p;
+                sphys(4, offset) = T;
+
+            } // end X
+
+        } // end Z
+
+    } // end Y
+
+    // HDF5 file storage locations and corresponding descriptions
+    const boost::array<const char *,5> prim_names = {{
+        "u", "v", "w", "p", "T"
+    }};
+    const boost::array<const char *,5> prim_descriptions = {{
+        "X velocity", "Y velocity", "Z velocity", "pressure", "temperature",
+    }};
+
+    // Establish size of collective writes across all ranks and write data
+    esio_field_establish(h, grid.dN.y(), dgrid.local_physical_start.y(),
+                                         dgrid.local_physical_extent.y(),
+                            grid.dN.z(), dgrid.local_physical_start.z(),
+                                         dgrid.local_physical_extent.z(),
+                            grid.dN.x(), dgrid.local_physical_start.x(),
+                                         dgrid.local_physical_extent.x());
+
+    for (size_t i = 0; i < field::count; ++i) {
+
+        std::string comment = "Nondimensional ";
+        comment += prim_descriptions[i];
+        comment += " stored row-major YZX on the 3D rectilinear grid defined"
+                   " by taking the outer product of arrays"
+                   " /collocation_points_y, /collocation_points_z, and"
+                   " /collocation_points_z";
+
+        esio_field_write(h, prim_names[i],
+                reinterpret_cast<real_t *>(scratch[i].origin()),
+                0, 0, 0, comment.c_str());
+    }
+}
+
+void load_collocation_values(
+        const esio_handle h,
+        suzerain::ContiguousState<4,complex_t>& state,
+        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::GridDefinition& grid,
+        const suzerain::pencil_grid& dgrid,
+        suzerain::bspline& b,
+        const suzerain::bsplineop& bop)
+{
+    // Ensure state storage meets this routine's assumptions
+    assert(                  state.shape()[0]    == field::count);
+    assert(numeric_cast<int>(state.shape()[1])   == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(state.shape()[2])   == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(state.shape()[3])   == dgrid.local_wave_extent.z());
+
+    // Establish size of collective reads across all ranks and read data
+    physical_view<field::count>::type sphys
+        = physical_view<field::count>::create(dgrid, state);
+    esio_field_establish(h, grid.dN.y(), dgrid.local_physical_start.y(),
+                                         dgrid.local_physical_extent.y(),
+                            grid.dN.z(), dgrid.local_physical_start.z(),
+                                         dgrid.local_physical_extent.z(),
+                            grid.dN.x(), dgrid.local_physical_start.x(),
+                                         dgrid.local_physical_extent.x());
+    esio_field_read(h, "u", &sphys(0,0), 0, 0, 0);
+    esio_field_read(h, "v", &sphys(1,0), 0, 0, 0);
+    esio_field_read(h, "w", &sphys(2,0), 0, 0, 0);
+    esio_field_read(h, "p", &sphys(3,0), 0, 0, 0);
+    esio_field_read(h, "T", &sphys(4,0), 0, 0, 0);
+
+    // Convert primitive u, v, w, p, and T into rho, rhou, rhov, rhow, rhoe
+    const real_t gamma = scenario.gamma;
+    const real_t Ma    = scenario.Ma;
+
+    Eigen::Vector3r m;
+    size_t offset = 0;
+    for (int j = dgrid.local_physical_start.y();
+         j < dgrid.local_physical_end.y();
+         ++j) {
+
+        for (int k = dgrid.local_physical_start.z();
+            k < dgrid.local_physical_end.z();
+            ++k) {
+
+            for (int i = dgrid.local_physical_start.x();
+                i < dgrid.local_physical_end.x();
+                ++i, /* NB */ ++offset) {
+
+                // Unpack primitive quantities from fields (by position)
+                m.x()          = sphys(0, offset);  // Now just X velocity
+                m.y()          = sphys(1, offset);  // Now just Y velocity
+                m.z()          = sphys(2, offset);  // Now just Z velocity
+                const real_t p = sphys(3, offset);
+                const real_t T = sphys(4, offset);
+
+                // Compute conserved quantities from primitive ones
+                const real_t rho = gamma * p / T;   // Assumes EOS
+                m               *= rho;             // Not m contains momentum
+                const real_t e   = suzerain::rholut::energy_kinetic(Ma, rho, m)
+                                 + suzerain::rholut::energy_internal(gamma, p);
+
+                // Pack conserved quantities into fields (by name)
+                sphys(field::ndx::rho,  offset) = rho;
+                sphys(field::ndx::rhou, offset) = m.x();
+                sphys(field::ndx::rhov, offset) = m.y();
+                sphys(field::ndx::rhow, offset) = m.z();
+                sphys(field::ndx::rhoe, offset) = e;
+
+            } // end X
+
+        } // end Z
+
+    } // end Y
+
+    // Initialize OperatorBase to access decomposition-ready utilities
+    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+
+    // Collectively convert physical state to wave space coefficients
+    // Build FFT normalization constant into Y direction's mass matrix
+    suzerain::bsplineop_luz massluz(bop);
+    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+    massluz.form(1, &scale_factor, bop);
+
+    for (std::size_t i = 0; i < field::count; ++i) {
+        dgrid.transform_physical_to_wave(&sphys(i, 0));     // X, Z
+        obase.bop_solve(massluz, state, i);                 // Y
+    }
 }
 
 /**
