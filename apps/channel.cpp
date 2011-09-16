@@ -766,7 +766,7 @@ void store(const esio_handle h,
                             [mzb[j] - dgrid.local_wave_start.z()];
             }
 
-            // Collectively establish size of read across all ranks
+            // Collectively establish size of write across all ranks
             esio_field_establish(h,
                                  grid.N.z(),     fzb[j], (fze[j] - fzb[j]),
                                  grid.N.x()/2+1, fxb[0], (fxe[0] - fxb[0]),
