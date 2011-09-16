@@ -18,7 +18,8 @@ CXX = @MPICXX@
 CC  = @MPICC@
 
 # Specify test environment for 'make check'
-TESTS_ENVIRONMENT = TMPDIR=$(abs_builddir)
+TESTS_ENVIRONMENT  = TMPDIR=$(abs_builddir)
+TESTS_ENVIRONMENT += FIELDSDIR=$(abs_top_srcdir)/fields
 
 ##
 ## MPI-aware logging built atop log4cxx
@@ -75,6 +76,9 @@ dist_check_SCRIPTS += test_channel_setup.sh     # Common initialization
 
 TESTS              += test_channel_restart.sh   # Restart handling
 dist_check_SCRIPTS += test_channel_restart.sh
+
+TESTS              += test_channel_fields.sh    # Read canned, legacy fields
+dist_check_SCRIPTS += test_channel_fields.sh
 
 TESTS              += test_channel_parallel.sh  # Serial/parallel equivalence
 dist_check_SCRIPTS += test_channel_parallel.sh
