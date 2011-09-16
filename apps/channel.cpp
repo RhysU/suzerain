@@ -717,6 +717,11 @@ void store_coefficients(const esio_handle h,
 {
     typedef suzerain::ContiguousState<4,complex_t> store_type;
 
+    // Used to build human-readable comment strings
+    const boost::array<const char *,5> field_descriptions = {{
+        "density", "X momentum", "Y momentum", "Z momentum", "total energy",
+    }};
+
     // Ensure state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field::count);
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
@@ -748,6 +753,13 @@ void store_coefficients(const esio_handle h,
     // Save each scalar field in turn...
     for (size_t i = 0; i < field::count; ++i) {
 
+        std::string comment = "Nondimensional ";
+        comment += field_descriptions[i];
+        comment += " stored row-major ZXY using a Fourier basis in Z stored"
+                   " in-order per /kz; a Fourier basis in X stored using"
+                   " Hermitian symmetry per /kx; and a B-spline basis in Y"
+                   " defined by /k, /breakpoints_y, and /knots";
+
         // Create a view of the state for just the i-th scalar
         // Not strictly necessary, but aids greatly in debugging
         boost::multi_array_types::index_range all;
@@ -777,7 +789,7 @@ void store_coefficients(const esio_handle h,
                                 field.strides()[2],
                                 field.strides()[1],
                                 field.strides()[0],
-                                field_descriptions[i]);
+                                comment.c_str());
         }
     }
 }
