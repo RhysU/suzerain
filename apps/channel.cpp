@@ -273,24 +273,52 @@ void store(const esio_handle h,
             grid.options().find("DAFz",false).description().c_str());
 
     DEBUG0("Storing wavenumber vectors for Fourier bases");
-
-    Eigen::ArrayXc buf(std::max(grid.N.x(), grid.N.z()));
+    Eigen::ArrayXc cbuf(std::max(grid.N.x(), grid.N.z()));
 
     // Obtain wavenumbers via computing 1*(i*kx)/i
-    buf.fill(complex_t(1,0));
-    suzerain::diffwave::apply(1, 0, complex_t(0,-1), buf.data(),
+    cbuf.fill(complex_t(1,0));
+    suzerain::diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
             Lx, Lz, 1, grid.N.x(), grid.N.x(), 0, grid.N.x(), 1, 1, 0, 1);
     esio_line_establish(h, grid.N.x(), 0, (procid == 0 ? grid.N.x() : 0));
-    esio_line_write(h, "kx", reinterpret_cast<real_t *>(buf.data()),
-            2, "Wavenumbers in streamwise X direction"); // Re(buf)
+    esio_line_write(h, "kx", reinterpret_cast<real_t *>(cbuf.data()),
+            2, "Wavenumbers in streamwise X direction"); // Re(cbuf)
 
     // Obtain wavenumbers via computing 1*(i*kz)/i
-    buf.fill(complex_t(1,0));
-    suzerain::diffwave::apply(1, 0, complex_t(0,-1), buf.data(),
+    cbuf.fill(complex_t(1,0));
+    suzerain::diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
             Lx, Lz, 1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
     esio_line_establish(h, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
-    esio_line_write(h, "kz", reinterpret_cast<real_t *>(buf.data()),
-            2, "Wavenumbers in spanwise Z direction"); // Re(buf)
+    esio_line_write(h, "kz", reinterpret_cast<real_t *>(cbuf.data()),
+            2, "Wavenumbers in spanwise Z direction"); // Re(cbuf)
+
+    DEBUG0("Storing collocation point vectors for Fourier bases");
+    Eigen::ArrayXr rbuf;
+
+    // Obtain collocation points in x using [-Lx/2, Lx/2]) and dN.x()
+    if (grid.dN.x() > 1) {
+        rbuf = Eigen::ArrayXr::LinSpaced(
+                Eigen::Sequential, grid.dN.x(), 0, grid.dN.x() - 1);
+        rbuf *= Lx / grid.dN.x();
+        rbuf -= Lx/2;
+    } else {
+        rbuf = Eigen::ArrayXr::Constant(grid.dN.x(), 0);
+    }
+    esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
+    esio_line_write(h, "collocation_points_x", rbuf.data(), 0,
+            "Collocation points for the dealiased, streamwise X direction");
+
+    // Obtain collocation points in z using [-Lz/2, Lz/2]) and dN.z()
+    if (grid.dN.z() > 1) {
+        rbuf = Eigen::ArrayXr::LinSpaced(
+                Eigen::Sequential, grid.dN.z(), 0, grid.dN.z() - 1);
+        rbuf *= Lz / grid.dN.z();
+        rbuf -= Lz/2;
+    } else {
+        rbuf = Eigen::ArrayXr::Constant(grid.dN.z(), 0);
+    }
+    esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
+    esio_line_write(h, "collocation_points_z", rbuf.data(), 0,
+            "Collocation points for the dealiased, spanwise Z direction");
 }
 
 void load(const esio_handle h,
