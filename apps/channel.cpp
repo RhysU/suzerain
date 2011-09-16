@@ -1187,8 +1187,9 @@ void load_collocation_values(
     massluz.form(1, &scale_factor, bop);
 
     for (std::size_t i = 0; i < field::count; ++i) {
-        dgrid.transform_physical_to_wave(&sphys(i, 0));     // X, Z
-        obase.bop_solve(massluz, state, i);                 // Y
+        dgrid.transform_physical_to_wave(&sphys(i, 0)); // X, Z
+        obase.bop_solve(massluz, state, i);             // Y
+        obase.diffwave_apply(0, 0, 1., state, i);       // Dealiasing
     }
 }
 
