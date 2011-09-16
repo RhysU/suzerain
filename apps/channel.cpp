@@ -1094,10 +1094,29 @@ void load_collocation_values(
         const suzerain::bsplineop& bop)
 {
     // Ensure state storage meets this routine's assumptions
-    assert(                  state.shape()[0]    == field::count);
-    assert(numeric_cast<int>(state.shape()[1])   == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(state.shape()[2])   == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3])   == dgrid.local_wave_extent.z());
+    assert(                  state.shape()[0]  == field::count);
+    assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+
+    // This routine /does not/ do any grid rescaling in physical space
+    {
+        // Ensure size of dealiased grid matches the size stored in restart
+        int c, b, a;
+        if (ESIO_SUCCESS != esio_field_size(h, "u", &c, &b, &a)) {
+            SUZERAIN_ERROR_VOID("Unable to find /u field size from restart",
+                                SUZERAIN_EFAILED);
+        }
+        if (c != grid.dN.y() || b != grid.dN.z() || a != grid.dN.x()) {
+            ERROR0("Physical-space restart fields have row-major YZX extents "
+                   << "(" << c << "," << b << "," << a << ")" << " but "
+                   << "(" << grid.dN.y() << "," << grid.dN.z() << ","
+                   << grid.dN.x() << ") are required");
+            SUZERAIN_ERROR_VOID(
+                    "Cannot interpolate during physical space restart",
+                    SUZERAIN_EFAILED);
+        }
+    }
 
     // Establish size of collective reads across all ranks and read data
     physical_view<field::count>::type sphys
