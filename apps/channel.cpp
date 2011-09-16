@@ -1107,19 +1107,31 @@ void load_collocation_values(
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
 
-    // This routine /does not/ do any grid rescaling in physical space
+    // This routine does no grid interpolation.  Yell loudly if necessary
     {
-        // Ensure size of dealiased grid matches the size stored in restart
-        int c, b, a;
-        if (ESIO_SUCCESS != esio_field_size(h, "u", &c, &b, &a)) {
+        // Check that restart file size matches runtime dealiased extents
+        int cg, bg, ag;
+        if (ESIO_SUCCESS != esio_field_size(h, "u", &cg, &bg, &ag)) {
             SUZERAIN_ERROR_VOID("Unable to find /u field size from restart",
                                 SUZERAIN_EFAILED);
         }
-        if (c != grid.dN.y() || b != grid.dN.z() || a != grid.dN.x()) {
-            ERROR0("Physical-space restart fields have row-major YZX extents "
-                   << "(" << c << "," << b << "," << a << ")" << " but "
+        if (cg != grid.dN.y() || bg != grid.dN.z() || ag != grid.dN.x()) {
+            ERROR0("Physical space restart fields have row-major YZX extents "
+                   << "(" << cg << "," << bg << "," << ag << ")" << " but "
                    << "(" << grid.dN.y() << "," << grid.dN.z() << ","
                    << grid.dN.x() << ") are required");
+            SUZERAIN_ERROR_VOID(
+                    "Cannot interpolate during physical space restart",
+                    SUZERAIN_EFAILED);
+        }
+
+        // Check that restart file specifies the same B-spline basis
+        // TODO Too restrictive-- identical collocation points would be okay
+        boost::shared_ptr<suzerain::bspline> Fb;
+        boost::shared_ptr<suzerain::bsplineop> Fbop;
+        load(h, Fb, Fbop);
+        if (!bspline_bases_identical(b, *Fb)) {
+            ERROR0("Physical restart fields have different wall-normal basis");
             SUZERAIN_ERROR_VOID(
                     "Cannot interpolate during physical space restart",
                     SUZERAIN_EFAILED);
