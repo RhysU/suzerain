@@ -710,10 +710,10 @@ static const boost::array<const char *,5> field_descriptions = {{
     " a B-spline basis in Y defined by /k, /breakpoints, and /knots"
 }};
 
-void store(const esio_handle h,
-           const suzerain::ContiguousState<4,complex_t> &state,
-           const suzerain::problem::GridDefinition& grid,
-           const suzerain::pencil_grid& dgrid)
+void store_coefficients(const esio_handle h,
+                        const suzerain::ContiguousState<4,complex_t> &state,
+                        const suzerain::problem::GridDefinition& grid,
+                        const suzerain::pencil_grid& dgrid)
 {
     typedef suzerain::ContiguousState<4,complex_t> store_type;
 
@@ -780,6 +780,25 @@ void store(const esio_handle h,
                                 field_descriptions[i]);
         }
     }
+}
+
+void store_collocation_values(
+        const esio_handle h,
+        const suzerain::ContiguousState<4,complex_t>& state,
+        suzerain::ContiguousState<4,complex_t>& scratch,
+        const suzerain::problem::GridDefinition& grid,
+        const suzerain::pencil_grid& dgrid,
+        const suzerain::bspline& b,
+        const suzerain::bsplineop& bop)
+{
+    SUZERAIN_UNUSED(h);
+    SUZERAIN_UNUSED(state);
+    SUZERAIN_UNUSED(scratch);
+    SUZERAIN_UNUSED(grid);
+    SUZERAIN_UNUSED(dgrid);
+    SUZERAIN_UNUSED(b);
+    SUZERAIN_UNUSED(bop);
+    SUZERAIN_ERROR_VOID("unimplemented", SUZERAIN_ESANITY);
 }
 
 void load(const esio_handle h,

@@ -365,7 +365,7 @@ int main(int argc, char **argv)
     }
 
     INFO0("Writing state fields to restart file");
-    channel::store(esioh, swave, grid, *dgrid);
+    channel::store_coefficients(esioh, swave, grid, *dgrid);
     esio_file_flush(esioh);
 
     if (mms < 0) {

@@ -365,7 +365,7 @@ static bool save_restart(real_t t, std::size_t nt)
     channel::store_time(esioh, t);
 
     DEBUG0("Storing simulation fields into " << restart.uncommitted);
-    channel::store(esioh, *state_linear, grid, *dgrid);
+    channel::store_coefficients(esioh, *state_linear, grid, *dgrid);
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a restart file using template " << restart.desttemplate);

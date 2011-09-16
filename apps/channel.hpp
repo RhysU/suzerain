@@ -188,13 +188,30 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
            const suzerain::pencil_grid& dgrid);
 
 /**
- * Store the current simulation state into an open restart file
- * Only non-dealiased state content is saved.
+ * Store the current simulation conserved state as expansion coefficients into
+ * an open restart file.   Only non-dealiased, conserved state is saved as
+ * "wave space" coefficients.  This is the most efficient and flexible wa to
+ * save state to disk.
  */
-void store(const esio_handle h,
-           const suzerain::ContiguousState<4,complex_t> &state,
-           const suzerain::problem::GridDefinition& grid,
-           const suzerain::pencil_grid& dgrid);
+void store_coefficients(const esio_handle h,
+                        const suzerain::ContiguousState<4,complex_t> &state,
+                        const suzerain::problem::GridDefinition& grid,
+                        const suzerain::pencil_grid& dgrid);
+
+/**
+ * Store the current simulation primitive state as collocation point values
+ * into an open restart file.  Collocation point values required only for
+ * dealiasing purposes <i>are</i> stored.  This method less efficient and the
+ * restart data less flexible than that produced by store_coefficients().
+ */
+void store_collocation_values(
+        const esio_handle h,
+        const suzerain::ContiguousState<4,complex_t>& state,
+        suzerain::ContiguousState<4,complex_t>& scratch,
+        const suzerain::problem::GridDefinition& grid,
+        const suzerain::pencil_grid& dgrid,
+        const suzerain::bspline& b,
+        const suzerain::bsplineop& bop);
 
 /**
  * Load the current simulation state from an open restart file.
