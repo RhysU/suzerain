@@ -21,12 +21,12 @@ banner "Idempotence of restarting without time advance"
     differ mms0.h5 a0.h5
 )
 
-banner "Equivalence of a field both with and without a restart"
+banner "Equivalence of a field advanced both with and without a restart"
 (
     cd $testdir
-    $explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=1 $P
-    $explicit a0.h5   --desttemplate "b#.h5" --advance_nt=1 $P
-    $explicit mms0.h5 --desttemplate "c#.h5" --advance_nt=2 $P
+    $explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=2 $P
+    $explicit a0.h5   --desttemplate "b#.h5" --advance_nt=2 $P
+    $explicit mms0.h5 --desttemplate "c#.h5" --advance_nt=4 $P
     differ --delta=7e-16 --nan b0.h5 c0.h5
 )
 
