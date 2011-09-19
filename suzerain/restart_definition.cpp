@@ -57,15 +57,15 @@ RestartDefinition::RestartDefinition(
         const std::string& uncommitted,
         const std::string& desttemplate,
         int retain,
-        double restart_dt,
-        int restart_nt)
+        double dt,
+        int nt)
     : IDefinition("Restart-related parameters"),
       metadata(metadata),
       uncommitted(uncommitted),
       desttemplate(desttemplate),
       retain(retain),
-      restart_dt(restart_dt),
-      restart_nt(restart_nt)
+      dt(dt),
+      nt(nt)
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -95,14 +95,14 @@ RestartDefinition::RestartDefinition(
             ->default_value(lexical_cast<string>(this->retain)),
          "Maximum number of committed restart files to retain")
         ("restart_dt", value<string>(NULL)
-            ->notifier(bind(&parse_option<double>, _1, &this->restart_dt,
+            ->notifier(bind(&parse_option<double>, _1, &this->dt,
                             &ensure_nonnegative<double>, "restart_dt"))
-            ->default_value(lexical_cast<string>(this->restart_dt)),
+            ->default_value(lexical_cast<string>(this->dt)),
          "Maximum amount of simulation time between restart files")
         ("restart_nt", value<string>(NULL)
-            ->notifier(bind(&parse_option<int>, _1, &this->restart_nt,
+            ->notifier(bind(&parse_option<int>, _1, &this->nt,
                             &ensure_nonnegative<int>, "restart_nt"))
-            ->default_value(lexical_cast<string>(this->restart_nt)),
+            ->default_value(lexical_cast<string>(this->nt)),
          "Maximum number of time steps between restart files")
     ;
 }

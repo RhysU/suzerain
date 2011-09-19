@@ -936,22 +936,22 @@ int main(int argc, char **argv)
     // When neither is provided, default and update restart with new value.
     {
         TimeController<real_t>::time_type dt;
-        if (restart.restart_dt) {
-            dt = restart.restart_dt;
+        if (restart.dt) {
+            dt = restart.dt;
         } else if (timedef.advance_dt) {
             dt = timedef.advance_dt / restart.retain;
-            const_cast<real_t &>(restart.restart_dt) = dt;
+            const_cast<real_t &>(restart.dt) = dt;
         } else {
             dt = tc->forever_t();
         }
 
         TimeController<real_t>::step_type nt;
-        if (restart.restart_nt) {
-            nt = restart.restart_nt;
+        if (restart.nt) {
+            nt = restart.nt;
         } else if (timedef.advance_nt) {
             nt = timedef.advance_nt / restart.retain;
             nt = std::max<TimeController<real_t>::step_type>(1, nt);
-            const_cast<int &>(restart.restart_nt) = nt;
+            const_cast<int &>(restart.nt) = nt;
         } else {
             nt = tc->forever_nt();
         }

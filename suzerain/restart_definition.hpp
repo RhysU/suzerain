@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * restart_definition.hpp: classes handling restart definitions
+ * definition.hpp: classes handling restart definitions
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -61,8 +61,8 @@ public:
      *                     committing restart files.
      * @param retain       Maximum number of committed restart files
      *                     to retain.
-     * @param restart_nt   Number of simulation steps between restart writes.
-     * @param restart_dt   Amount of simulation time between restart writes.
+     * @param nt           Number of simulation steps between restart writes.
+     * @param dt           Amount of simulation time between restart writes.
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c desttemplate and \c retain.
@@ -72,8 +72,8 @@ public:
             const std::string& uncommitted  = "",
             const std::string& desttemplate = "",
             int retain                      = 1,
-            double restart_dt               = 0,
-            int restart_nt                  = 0);
+            double dt                       = 0,
+            int nt                          = 0);
 
     /**
      * The restart file path to use when saving common restart file
@@ -100,16 +100,15 @@ public:
     int retain;
 
     /**
-     * The maximum amount of simulation time between writing restart
-     * files.
+     * The maximum amount of simulation time between writing restart files.
      */
-    double restart_dt;
+    double dt;
 
     /**
-     * The maximum number of simulation steps to take between
-     * writing restart files.
+     * The maximum number of simulation steps to take between writing restart
+     * files.
      */
-    int restart_nt;
+    int nt;
 };
 
 } // namespace problem
