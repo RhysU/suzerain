@@ -1018,44 +1018,26 @@ void store_collocation_values(
     const real_t gamma = scenario.gamma;
     const real_t Ma    = scenario.Ma;
 
-    Eigen::Vector3r m;
-    size_t offset = 0;
-    for (int j = dgrid.local_physical_start.y();
-         j < dgrid.local_physical_end.y();
-         ++j) {
+    for (int o = 0; o < dgrid.local_physical_extent.prod(); ++o) {
+        // Unpack conserved quantities from fields
+        real_t rho =      sphys(field::ndx::rho,  o);
+        Eigen::Vector3r m(sphys(field::ndx::rhou, o),
+                          sphys(field::ndx::rhov, o),
+                          sphys(field::ndx::rhow, o));
+        real_t e =        sphys(field::ndx::rhoe, o);
 
-        for (int k = dgrid.local_physical_start.z();
-            k < dgrid.local_physical_end.z();
-            ++k) {
+        // Compute primitive quantities to be stored
+        real_t p, T;
+        suzerain::rholut::p_T(alpha, beta, gamma, Ma, rho, m, e, p, T);
+        m /= rho;
 
-            for (int i = dgrid.local_physical_start.x();
-                i < dgrid.local_physical_end.x();
-                ++i, /* NB */ ++offset) {
-
-                // Unpack conserved quantities from fields
-                real_t rho = sphys(field::ndx::rho,  offset);
-                m.x()      = sphys(field::ndx::rhou, offset);
-                m.y()      = sphys(field::ndx::rhov, offset);
-                m.z()      = sphys(field::ndx::rhow, offset);
-                real_t e   = sphys(field::ndx::rhoe, offset);
-
-                // Compute primitive quantities to be stored
-                real_t p, T;
-                suzerain::rholut::p_T(alpha, beta, gamma, Ma, rho, m, e, p, T);
-                m /= rho;
-
-                // Pack primitive quantities back into fields (by position)
-                sphys(0, offset) = m.x(); // Now just X velocity
-                sphys(1, offset) = m.y(); // Now just Y velocity
-                sphys(2, offset) = m.z(); // Now just Z velocity
-                sphys(3, offset) = p;
-                sphys(4, offset) = T;
-
-            } // end X
-
-        } // end Z
-
-    } // end Y
+        // Pack primitive quantities back into fields (by position)
+        sphys(0, o) = m.x(); // Now just X velocity
+        sphys(1, o) = m.y(); // Now just Y velocity
+        sphys(2, o) = m.z(); // Now just Z velocity
+        sphys(3, o) = p;
+        sphys(4, o) = T;
+    }
 
     // HDF5 file storage locations and corresponding descriptions
     const boost::array<const char *,5> prim_names = {{
@@ -1153,45 +1135,27 @@ void load_collocation_values(
     const real_t gamma = scenario.gamma;
     const real_t Ma    = scenario.Ma;
 
-    Eigen::Vector3r m;
-    size_t offset = 0;
-    for (int j = dgrid.local_physical_start.y();
-         j < dgrid.local_physical_end.y();
-         ++j) {
+    for (int o = 0; o < dgrid.local_physical_extent.prod(); ++o) {
+        // Unpack primitive quantities from fields (by position)
+        Eigen::Vector3r m(sphys(0, o),  // Now just X velocity
+                          sphys(1, o),  // Now just Y velocity
+                          sphys(2, o)); // Now just Z velocity
+        const real_t p =  sphys(3, o);
+        const real_t T =  sphys(4, o);
 
-        for (int k = dgrid.local_physical_start.z();
-            k < dgrid.local_physical_end.z();
-            ++k) {
+        // Compute conserved quantities from primitive ones
+        const real_t rho = gamma * p / T;   // Assumes EOS
+        m               *= rho;             // Not m contains momentum
+        const real_t e   = suzerain::rholut::energy_kinetic(Ma, rho, m)
+                            + suzerain::rholut::energy_internal(gamma, p);
 
-            for (int i = dgrid.local_physical_start.x();
-                i < dgrid.local_physical_end.x();
-                ++i, /* NB */ ++offset) {
-
-                // Unpack primitive quantities from fields (by position)
-                m.x()          = sphys(0, offset);  // Now just X velocity
-                m.y()          = sphys(1, offset);  // Now just Y velocity
-                m.z()          = sphys(2, offset);  // Now just Z velocity
-                const real_t p = sphys(3, offset);
-                const real_t T = sphys(4, offset);
-
-                // Compute conserved quantities from primitive ones
-                const real_t rho = gamma * p / T;   // Assumes EOS
-                m               *= rho;             // Not m contains momentum
-                const real_t e   = suzerain::rholut::energy_kinetic(Ma, rho, m)
-                                 + suzerain::rholut::energy_internal(gamma, p);
-
-                // Pack conserved quantities into fields (by name)
-                sphys(field::ndx::rho,  offset) = rho;
-                sphys(field::ndx::rhou, offset) = m.x();
-                sphys(field::ndx::rhov, offset) = m.y();
-                sphys(field::ndx::rhow, offset) = m.z();
-                sphys(field::ndx::rhoe, offset) = e;
-
-            } // end X
-
-        } // end Z
-
-    } // end Y
+        // Pack conserved quantities into fields (by name)
+        sphys(field::ndx::rho,  o) = rho;
+        sphys(field::ndx::rhou, o) = m.x();
+        sphys(field::ndx::rhov, o) = m.y();
+        sphys(field::ndx::rhow, o) = m.z();
+        sphys(field::ndx::rhoe, o) = e;
+    }
 
     // Initialize OperatorBase to access decomposition-ready utilities
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
