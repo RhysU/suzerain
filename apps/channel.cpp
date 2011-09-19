@@ -721,6 +721,7 @@ void store_coefficients(const esio_handle h,
     const boost::array<const char *,5> field_descriptions = {{
         "density", "X momentum", "Y momentum", "Z momentum", "total energy",
     }};
+    assert(field::name.static_size == field_descriptions.static_size);
 
     // Ensure state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field::count);
@@ -1046,8 +1047,9 @@ void store_collocation_values(
     const boost::array<const char *,5> prim_descriptions = {{
         "X velocity", "Y velocity", "Z velocity", "pressure", "temperature",
     }};
+    assert(prim_names.static_size == prim_descriptions.static_size);
 
-    // Establish size of collective writes across all ranks and write data
+    // Establish size of collective writes across all ranks and write fields
     esio_field_establish(h, grid.dN.y(), dgrid.local_physical_start.y(),
                                          dgrid.local_physical_extent.y(),
                             grid.dN.z(), dgrid.local_physical_start.z(),
@@ -1055,7 +1057,7 @@ void store_collocation_values(
                             grid.dN.x(), dgrid.local_physical_start.x(),
                                          dgrid.local_physical_extent.x());
 
-    for (size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < prim_names.static_size; ++i) {
 
         std::string comment = "Nondimensional ";
         comment += prim_descriptions[i];
@@ -1068,6 +1070,8 @@ void store_collocation_values(
                 reinterpret_cast<real_t *>(scratch[i].origin()),
                 0, 0, 0, comment.c_str());
     }
+
+    // TODO Save mean primitive state at wall-normal collocation points
 }
 
 void load_collocation_values(
