@@ -39,23 +39,13 @@ banner "Conversion from physical- to wave-based restart without time advance"
     differ --delta=3e-15 --nan mms0.h5 a0.h5
 )
 
-# BORKED?
-# banner "Equivalence of a field both with and without a physical space restart"
-# (
-#     cd $testdir
-#     $explicit pmms0.h5 --desttemplate "a#.h5" --advance_nt=1 $P --restart_physical
-#     $explicit a0.h5    --desttemplate "b#.h5" --advance_nt=1 $P --restart_physical
-#     $explicit pmms0.h5 --desttemplate "c#.h5" --advance_nt=2 $P --restart_physical
-#     differ --delta=7e-16 --nan b0.h5 c0.h5
-# )
-
-# BORKED?
-# banner "Idempotence of restarting without time advance via physical space"
-# (
-#     cd $testdir
-#     $explicit mms0.h5 --desttemplate "a#.h5" --advance_nt=0 $P --restart_physical
-#     $explicit a0.h5   --desttemplate "b#.h5" --advance_nt=0 $P
-#     differ --delta=3e-15 mms0.h5 b0.h5
-# )
+banner "Equivalence of a field advanced both with and without a physical space restart"
+(
+    cd $testdir
+    $explicit pmms0.h5 --desttemplate "a#.h5" --advance_nt=2 $P --restart_physical
+    $explicit a0.h5    --desttemplate "b#.h5" --advance_nt=2 $P --restart_physical
+    $explicit pmms0.h5 --desttemplate "c#.h5" --advance_nt=4 $P --restart_physical
+    differ --delta=2e-15 --nan b0.h5 c0.h5
+)
 
 done
