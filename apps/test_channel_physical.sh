@@ -32,13 +32,12 @@ banner "Idempotence of restarting from physical space without time advance"
     differ --delta=1e-15 --nan pmms0.h5 a0.h5
 )
 
-# BORKED?
-# banner "Conversion from physical- to wave-based restart without time advance"
-# (
-#     cd $testdir
-#     $explicit pmms0.h5 --desttemplate "a#.h5" --advance_nt=0
-#     differ --delta=3e-15 --nan mms0.h5 a0.h5
-# )
+banner "Conversion from physical- to wave-based restart without time advance"
+(
+    cd $testdir
+    $explicit pmms0.h5 --desttemplate "a#.h5" --advance_nt=0
+    differ --delta=3e-15 --nan mms0.h5 a0.h5
+)
 
 # BORKED?
 # banner "Equivalence of a field both with and without a physical space restart"

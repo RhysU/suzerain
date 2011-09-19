@@ -36,6 +36,7 @@
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>
 #include <suzerain/error.h>
+#include <suzerain/diffwave.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/htstretch.h>
 #include <suzerain/mpi_datatype.hpp>
@@ -69,6 +70,12 @@ const char log4cxx_config[] =
 
 const boost::array<const char *,field::count> field::name = {{
     "rho", "rhou", "rhov", "rhow", "rhoe"
+}};
+
+const boost::array<const char *,field::count> field::description = {{
+    "density",
+    "streamwise momentum", "wall-normal momentum", "spanwise momentum",
+    "total energy",
 }};
 
 void mpi_abort_on_error_handler_gsl(const char * reason,
@@ -686,48 +693,23 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
     return retval;
 }
 
-/** State descriptions used within ESIO-based restart files */
-static const boost::array<const char *,5> field_descriptions = {{
-    "Nondimensional density coefficients stored row-major ZXY using"
-    " a Fourier basis in Z stored in-order per /kz;"
-    " a Fourier basis in X stored using Hermitian symmetry per /kx; and"
-    " a B-spline basis in Y defined by /k, /breakpoints, and /knots",
-    "Nondimensional X momentum coefficients stored row-major ZXY using"
-    " a Fourier basis in Z stored in-order per /kz;"
-    " a Fourier basis in X stored using Hermitian symmetry per /kx; and"
-    " a B-spline basis in Y defined by /k, /breakpoints, and /knots",
-    "Nondimensional Y momentum coefficients stored row-major ZXY using"
-    " a Fourier basis in Z stored in-order per /kz;"
-    " a Fourier basis in X stored using Hermitian symmetry per /kx; and"
-    " a B-spline basis in Y defined by /k, /breakpoints, and /knots",
-    "Nondimensional Z momentum coefficients stored row-major ZXY using"
-    " a Fourier basis in Z stored in-order per /kz;"
-    " a Fourier basis in X stored using Hermitian symmetry per /kx; and"
-    " a B-spline basis in Y defined by /k, /breakpoints, and /knots",
-    "Nondimensional total energy coefficients stored row-major ZXY using"
-    " a Fourier basis in Z stored in-order per /kz;"
-    " a Fourier basis in X stored using Hermitian symmetry per /kx; and"
-    " a B-spline basis in Y defined by /k, /breakpoints, and /knots"
-}};
-
-void store_coefficients(const esio_handle h,
-                        const suzerain::ContiguousState<4,complex_t> &state,
-                        const suzerain::problem::GridDefinition& grid,
-                        const suzerain::pencil_grid& dgrid)
+void store_coefficients(
+        const esio_handle h,
+        const suzerain::ContiguousState<4,complex_t> &state,
+        suzerain::ContiguousState<4,complex_t> &scratch,
+        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::GridDefinition& grid,
+        const suzerain::pencil_grid& dgrid)
 {
-    typedef suzerain::ContiguousState<4,complex_t> store_type;
-
-    // Used to build human-readable comment strings
-    const boost::array<const char *,5> field_descriptions = {{
-        "density", "X momentum", "Y momentum", "Z momentum", "total energy",
-    }};
-    assert(field::name.static_size == field_descriptions.static_size);
-
-    // Ensure state storage meets this routine's assumptions
+    // Ensure state and scratch storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field::count);
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+    assert(scratch.shape()[0]  >= 1);
+    assert(scratch.strides()[1] == state.strides()[1]);
+    assert(scratch.strides()[2] == state.strides()[2]);
+    assert(scratch.strides()[3] == state.strides()[3]);
 
     // Compute wavenumber translation logistics for X direction
     int fxb[2], fxe[2], mxb[2], mxe[2];
@@ -754,29 +736,34 @@ void store_coefficients(const esio_handle h,
     // Save each scalar field in turn...
     for (size_t i = 0; i < field::count; ++i) {
 
+        // ...first generating a metadata comment...
         std::string comment = "Nondimensional ";
-        comment += field_descriptions[i];
+        comment += field::description[i];
         comment += " stored row-major ZXY using a Fourier basis in Z stored"
                    " in-order per /kz; a Fourier basis in X stored using"
                    " Hermitian symmetry per /kx; and a B-spline basis in Y"
                    " defined by /k, /breakpoints_y, and /knots";
 
-        // Create a view of the state for just the i-th scalar
-        // Not strictly necessary, but aids greatly in debugging
-        boost::multi_array_types::index_range all;
-        boost::const_array_view_gen<store_type,3>::type field
-            = state[boost::indices[i][all][all][all]];
+        // ...next eliminating dealiased content via a copy into scratch[0]...
+        suzerain::diffwave::accumulate(
+                0, 0,
+                complex_t(1), state[i].origin(),
+                complex_t(0), scratch[0].origin(),
+                scenario.Lx, scenario.Lz, dgrid.global_wave_extent.y(),
+                grid.N.x(), grid.dN.x(),
+                dgrid.local_wave_start.x(), dgrid.local_wave_end.x(),
+                grid.N.z(), grid.dN.z(),
+                dgrid.local_wave_start.z(), dgrid.local_wave_end.z());
 
-        // ...which requires two writes per field, once per Z range
+        // ...followed by two collective writes per field (once per Z range)
         for (int j = 0; j < 2; ++j) {
 
             // Source of write is NULL for empty WRITE operations
             // Required since MultiArray triggers asserts on invalid indices
             const complex_t * src = NULL;
             if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
-                src = &field[0]
-                            [mxb[0] - dgrid.local_wave_start.x()]
-                            [mzb[j] - dgrid.local_wave_start.z()];
+                src = &scratch[0][0][mxb[0] - dgrid.local_wave_start.x()]
+                                    [mzb[j] - dgrid.local_wave_start.z()];
             }
 
             // Collectively establish size of write across all ranks
@@ -787,9 +774,9 @@ void store_coefficients(const esio_handle h,
 
             // Perform collective write operation from state_linear
             complex_field_write(h, field::name[i], src,
-                                field.strides()[2],
-                                field.strides()[1],
-                                field.strides()[0],
+                                scratch.strides()[3],
+                                scratch.strides()[2],
+                                scratch.strides()[1],
                                 comment.c_str());
         }
     }
@@ -980,7 +967,8 @@ void load_coefficients(const esio_handle h,
 
 void store_collocation_values(
         const esio_handle h,
-        suzerain::ContiguousState<4,complex_t>& state,
+        const suzerain::ContiguousState<4,complex_t>& state,
+        suzerain::ContiguousState<4,complex_t>& scratch,
         const suzerain::problem::ScenarioDefinition<real_t>& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
@@ -988,25 +976,28 @@ void store_collocation_values(
         const suzerain::bsplineop& bop)
 {
     // Ensure state storage meets this routine's assumptions
-    assert(                  state.shape()[0]    == field::count);
-    assert(numeric_cast<int>(state.shape()[1])   == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(state.shape()[2])   == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3])   == dgrid.local_wave_extent.z());
-
-    // Initialize OperatorBase to access decomposition-ready utilities
-    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+    assert(                  state.shape()[0]  == field::count);
+    assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+    assert(                  scratch.shape()[0]  >= field::count);
+    assert(numeric_cast<int>(scratch.shape()[1]) == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(scratch.shape()[2]) == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(scratch.shape()[3]) == dgrid.local_wave_extent.z());
 
     // Copy-and-convert coefficients into collocation point values
-    // Transforms from full-wave in state to full-physical in state
+    // Transforms from full-wave in state to full-physical in scratch
+    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
     for (std::size_t i = 0; i < channel::field::count; ++i) {
-        obase.bop_apply(0, 1, state, i);
+        obase.diffwave_accumulate(0, 0, 1., state, i, 0., scratch, i);
+        obase.bop_apply(0, 1, scratch, i);
         dgrid.transform_wave_to_physical(
-                reinterpret_cast<real_t *>(state[i].origin()));
+                reinterpret_cast<real_t *>(scratch[i].origin()));
     }
 
     // Convert conserved rho, rhou, rhov, rhow, rhoe into u, v, w, p, T
     physical_view<field::count>::type sphys
-        = physical_view<field::count>::create(dgrid, state);
+        = physical_view<field::count>::create(dgrid, scratch);
 
     const real_t alpha = scenario.alpha;
     const real_t beta  = scenario.beta;
@@ -1061,7 +1052,7 @@ void store_collocation_values(
                    " /collocation_points_z";
 
         esio_field_write(h, prim_names[i],
-                reinterpret_cast<real_t *>(state[i].origin()),
+                reinterpret_cast<real_t *>(scratch[i].origin()),
                 0, 0, 0, comment.c_str());
     }
 

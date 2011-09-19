@@ -77,6 +77,9 @@ const std::size_t count = static_cast<std::size_t>(ndx::rhoe) + 1;
 /** Field names as stored in restart files */
 extern const boost::array<const char *, count> name;
 
+/** Field descriptions as stored in restart files */
+extern const boost::array<const char *, count> description;
+
 } // end namespace field
 
 /** Manufactured solution employed throughout the channel code */
@@ -190,13 +193,16 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
 /**
  * Store the current simulation conserved state as expansion coefficients into
  * an open restart file.   Only non-dealiased, conserved state is saved as
- * "wave space" coefficients.  This is the most efficient and flexible wa to
+ * "wave space" coefficients.  This is the most efficient and flexible way to
  * save state to disk.
  */
-void store_coefficients(const esio_handle h,
-                        const suzerain::ContiguousState<4,complex_t> &state,
-                        const suzerain::problem::GridDefinition& grid,
-                        const suzerain::pencil_grid& dgrid);
+void store_coefficients(
+        const esio_handle h,
+        const suzerain::ContiguousState<4,complex_t> &state,
+        suzerain::ContiguousState<4,complex_t> &scratch,
+        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::GridDefinition& grid,
+        const suzerain::pencil_grid& dgrid);
 
 /**
  * Store the current simulation primitive state as collocation point values
@@ -207,7 +213,8 @@ void store_coefficients(const esio_handle h,
  */
 void store_collocation_values(
         const esio_handle h,
-        suzerain::ContiguousState<4,complex_t>& state,
+        const suzerain::ContiguousState<4,complex_t> &state,
+        suzerain::ContiguousState<4,complex_t>& scratch,
         const suzerain::problem::ScenarioDefinition<real_t>& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,

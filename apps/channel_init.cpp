@@ -271,6 +271,7 @@ int main(int argc, char **argv)
     INFO0("Allocating storage for the distributed state fields");
     state_type swave(suzerain::to_yxz(
                 channel::field::count, dgrid->local_wave_extent));
+    state_type stemp(suzerain::to_yxz(1, dgrid->local_wave_extent));
 
     INFO0("Initializing data on collocation points values in physical space");
     if (mms >= 0) {
@@ -365,7 +366,7 @@ int main(int argc, char **argv)
     }
 
     INFO0("Writing state fields to restart file");
-    channel::store_coefficients(esioh, swave, grid, *dgrid);
+    channel::store_coefficients(esioh, swave, stemp, scenario, grid, *dgrid);
     esio_file_flush(esioh);
 
     if (mms < 0) {
