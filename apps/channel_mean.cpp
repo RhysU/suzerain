@@ -189,6 +189,20 @@ int main(int argc, char **argv)
         DEBUG("Loading file " << filename);
         esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
 
+        // Check that conserved, coefficient state is present in the file.
+        // Primitive, collocation point state not supported by channel_mean
+        bool skip = false;
+        for (std::size_t k = 0; k < channel::field::count; ++k) {
+            skip |= esio_field_sizev(h.get(), channel::field::name[k],
+                                     NULL, NULL, NULL, NULL);
+        }
+        if (skip) {
+            WARN("Skipping " << filename
+                    << " because file lacks one or more of "
+                    << channel::field::name);
+            continue;
+        }
+
         // Load time, scenario, grid, and B-spline details from file
         real_t time;
         suzerain::problem::ScenarioDefinition<real_t> scenario;
