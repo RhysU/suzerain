@@ -65,11 +65,13 @@ RestartDefinition::RestartDefinition(
       desttemplate(desttemplate),
       retain(retain),
       dt(dt),
-      nt(nt)
+      nt(nt),
+      physical(false)
 {
     using boost::bind;
     using boost::lexical_cast;
     using boost::program_options::value;
+    using boost::program_options::bool_switch;
     using std::string;
     using suzerain::validation::ensure_nonnegative;
     using suzerain::validation::ensure_positive;
@@ -78,8 +80,7 @@ RestartDefinition::RestartDefinition(
         ("metadata", value(&this->metadata)
             ->default_value(this->metadata),
          "Path to use when saving common restart metadata.  "
-         "Any trailing \"XXXXXX\" will be used to generate a unique name."
-         )
+         "Any trailing \"XXXXXX\" will be used to generate a unique name.")
         ("uncommitted", value(&this->uncommitted)
             ->default_value(this->uncommitted),
          "Path to use when saving uncommitted restart data.  "
@@ -104,6 +105,9 @@ RestartDefinition::RestartDefinition(
                             &ensure_nonnegative<int>, "restart_nt"))
             ->default_value(lexical_cast<string>(this->nt)),
          "Maximum number of time steps between restart files")
+        ("restart_physical", bool_switch(&this->physical),
+         "Specify flag to save restart fields as primitive variables "
+         "stored at collocation points in physical space")
     ;
 }
 

@@ -109,6 +109,11 @@ public:
      * files.
      */
     int nt;
+
+    /**
+     * Save restart fields as collocation point values in physical space?
+     */
+    bool physical;
 };
 
 } // namespace problem

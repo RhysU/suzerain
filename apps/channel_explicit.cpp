@@ -88,8 +88,8 @@ static const RestartDefinition restart(
         /* uncommitted  */ "uncommitted.h5.XXXXXX",
         /* desttemplate */ "restart#.h5",
         /* retain       */ 1,
-        /* restart_dt   */ 0,
-        /* restart_nt   */ 0);
+        /* dt           */ 0,
+        /* nt           */ 0);
 static const TimeDefinition<real_t> timedef(
         /* advance_dt                */ 0,
         /* advance_nt                */ 0,
