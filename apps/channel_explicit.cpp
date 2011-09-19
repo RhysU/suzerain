@@ -367,9 +367,9 @@ static bool save_restart(real_t t, std::size_t nt)
     if (restart.physical) {
         DEBUG0("Storing primitive collocation point values into "
                << restart.uncommitted);
+        state_nonlinear->assign(*state_linear);
         channel::store_collocation_values(
-                esioh, *state_linear, *state_nonlinear,
-                scenario, grid, *dgrid, *b, *bop);
+                esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
     } else {
         DEBUG0("Storing conserved coefficients into " << restart.uncommitted);
         channel::store_coefficients(esioh, *state_linear, grid, *dgrid);

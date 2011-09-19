@@ -980,39 +980,33 @@ void load_coefficients(const esio_handle h,
 
 void store_collocation_values(
         const esio_handle h,
-        const suzerain::ContiguousState<4,complex_t>& state,
-        suzerain::ContiguousState<4,complex_t>& scratch,
+        suzerain::ContiguousState<4,complex_t>& state,
         const suzerain::problem::ScenarioDefinition<real_t>& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
         suzerain::bspline& b,
         const suzerain::bsplineop& bop)
 {
-    // Ensure state and scratch storage meets this routine's assumptions
+    // Ensure state storage meets this routine's assumptions
     assert(                  state.shape()[0]    == field::count);
     assert(numeric_cast<int>(state.shape()[1])   == dgrid.local_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2])   == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3])   == dgrid.local_wave_extent.z());
-    assert(                  scratch.shape()[0]  == field::count);
-    assert(numeric_cast<int>(scratch.shape()[1]) == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(scratch.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(scratch.shape()[3]) == dgrid.local_wave_extent.z());
 
     // Initialize OperatorBase to access decomposition-ready utilities
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
 
     // Copy-and-convert coefficients into collocation point values
-    // Transforms from full-wave in state to full-physical in scratch
+    // Transforms from full-wave in state to full-physical in state
     for (std::size_t i = 0; i < channel::field::count; ++i) {
-        obase.diffwave_accumulate(0, 0, 1, state, i, 0, scratch, i);
-        obase.bop_apply(0, 1, scratch, i);
+        obase.bop_apply(0, 1, state, i);
         dgrid.transform_wave_to_physical(
-                reinterpret_cast<real_t *>(scratch[i].origin()));
+                reinterpret_cast<real_t *>(state[i].origin()));
     }
 
     // Convert conserved rho, rhou, rhov, rhow, rhoe into u, v, w, p, T
     physical_view<field::count>::type sphys
-        = physical_view<field::count>::create(dgrid, scratch);
+        = physical_view<field::count>::create(dgrid, state);
 
     const real_t alpha = scenario.alpha;
     const real_t beta  = scenario.beta;
@@ -1067,7 +1061,7 @@ void store_collocation_values(
                    " /collocation_points_z";
 
         esio_field_write(h, prim_names[i],
-                reinterpret_cast<real_t *>(scratch[i].origin()),
+                reinterpret_cast<real_t *>(state[i].origin()),
                 0, 0, 0, comment.c_str());
     }
 
@@ -1173,7 +1167,6 @@ void load_collocation_values(
     for (std::size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys(i, 0)); // X, Z
         obase.bop_solve(massluz, state, i);             // Y
-        obase.diffwave_apply(0, 0, 1., state, i);       // Dealiasing
     }
 }
 
