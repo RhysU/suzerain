@@ -74,8 +74,8 @@ conservation_LDADD    = libchannel.la
 
 dist_check_SCRIPTS += test_channel_setup.sh     # Common initialization
 
-TESTS              += test_channel_restart.sh   # Restart handling
-dist_check_SCRIPTS += test_channel_restart.sh
+TESTS              += test_channel_restart.sh   # Restart handling...
+dist_check_SCRIPTS += test_channel_restart.sh   # ...using coefficients
 
 TESTS              += test_channel_fields.sh    # Read canned, legacy fields
 dist_check_SCRIPTS += test_channel_fields.sh
@@ -85,6 +85,9 @@ dist_check_SCRIPTS += test_channel_parallel.sh
 
 TESTS              += test_channel_fluct.sh     # Adding fluctuations
 dist_check_SCRIPTS += test_channel_fluct.sh
+
+TESTS              += test_channel_physical.sh  # Restart handling...
+dist_check_SCRIPTS += test_channel_physical.sh  # ...using collocation values
 
 # Clean up from Intel Compiler's -prof-gen output and precomiled headers
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
