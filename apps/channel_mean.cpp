@@ -297,6 +297,7 @@ process(const Eigen::ArrayXXr &s_coeffs,
             0.0, &s.col(column::rho_yy)[0], 1, s.stride());
 
     // Compute specific and primitive state at collocation points
+    // Very incorrectly assumes the mean commutes with nonlinear operations.
     {
         using namespace column;
         const real_t gamma = scenario.gamma;
