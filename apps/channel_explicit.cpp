@@ -364,8 +364,16 @@ static bool save_restart(real_t t, std::size_t nt)
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
     channel::store_time(esioh, t);
 
-    DEBUG0("Storing simulation fields into " << restart.uncommitted);
-    channel::store_coefficients(esioh, *state_linear, grid, *dgrid);
+    if (restart.physical) {
+        DEBUG0("Storing primitive collocation point values into "
+               << restart.uncommitted);
+        channel::store_collocation_values(
+                esioh, *state_linear, *state_nonlinear,
+                scenario, grid, *dgrid, *b, *bop);
+    } else {
+        DEBUG0("Storing conserved coefficients into " << restart.uncommitted);
+        channel::store_coefficients(esioh, *state_linear, grid, *dgrid);
+    }
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a restart file using template " << restart.desttemplate);
