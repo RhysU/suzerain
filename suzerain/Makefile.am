@@ -31,6 +31,7 @@ pkginclude_HEADERS += common.h
 pkginclude_HEADERS += common.hpp
 pkginclude_HEADERS += complex.hpp
 pkginclude_HEADERS += contiguous_memory.hpp
+pkginclude_HEADERS += countof.h
 pkginclude_HEADERS += diffwave.h
 pkginclude_HEADERS += diffwave.hpp
 pkginclude_HEADERS += error.h
