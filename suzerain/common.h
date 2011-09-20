@@ -31,7 +31,6 @@
 #define __SUZERAIN_COMMON_H
 
 #include <suzerain/suzerain-config.h>
-#include <suzerain/countof.h>
 
 // Release-mode specific #defines whenever NDEBUG in effect.  We do not use
 // SUZERAIN_NDEBUG to determine this behavior as it would impact all source
