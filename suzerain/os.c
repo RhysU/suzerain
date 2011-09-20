@@ -32,6 +32,7 @@
 #include <suzerain/config.h>
 #endif
 #include <suzerain/common.h>
+#include <suzerain/countof.h>
 #include <suzerain/error.h>
 #pragma hdrstop
 #include <suzerain/os.h>
