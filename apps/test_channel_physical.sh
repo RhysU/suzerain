@@ -44,7 +44,7 @@ banner "Equivalence of a field advanced both with and without a physical space r
     cd $testdir
     $explicit pmms0.h5 --desttemplate "a#.h5" --advance_nt=2 $P --restart_physical
     $explicit a0.h5    --desttemplate "b#.h5" --advance_nt=2 $P --restart_physical
-    $explicit mms0.h5  --desttemplate "c#.h5" --advance_nt=4 $P --restart_physical
+    $explicit pmms0.h5 --desttemplate "c#.h5" --advance_nt=4 $P --restart_physical
     differ --delta=2e-15 --nan b0.h5 c0.h5
 )
 
