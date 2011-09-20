@@ -702,7 +702,7 @@ compute_banded_collocation_derivative_submatrix(
                     /* NOT COOL: nonzero value outside bandwidth */
                     const int order = bw->k;
                     char buffer[384];
-                    snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+                    snprintf(buffer, sizeof(buffer),
                              "non-zero outside band"
                              " of basis spline order %d"
                              " (piecewise degree %d);"
@@ -924,7 +924,7 @@ static int integrate_function_against_basis_functions(
 
     if (stat != GSL_SUCCESS) {
         char buffer[256];
-        snprintf(buffer, sizeof(buffer)/sizeof(buffer[0]),
+        snprintf(buffer, sizeof(buffer),
                 "Error(s) integrating function against basis: %s",
                 gsl_strerror(stat));
         SUZERAIN_ERROR(buffer, stat);

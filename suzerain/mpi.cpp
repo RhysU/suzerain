@@ -100,9 +100,7 @@ std::string comm_rank_identifier(MPI_Comm comm)
     if (error) throw std::runtime_error(error_string(error));
     if (resultlen == 0) {
         // Providing a default value if MPI had none.
-        resultlen = snprintf(buffer,
-                             sizeof(buffer)/sizeof(buffer[0]),
-                             "c0x%X", comm);
+        resultlen = snprintf(buffer, sizeof(buffer), "c0x%X", comm);
         assert(resultlen >= 0);
     } else {
         // Brevity, trim any leading MPI_COMM_ business by modifying p_buffer

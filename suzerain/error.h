@@ -263,7 +263,7 @@ FILE * suzerain_set_stream(FILE * new_stream);
             int _chk_len; \
             const int _chk_string_stat \
                 = MPI_Error_string(_chk_stat,_chk_mpistring,&_chk_len); \
-            snprintf(_chk_reason, sizeof(_chk_reason)/sizeof(_chk_reason[0]), \
+            snprintf(_chk_reason, sizeof(_chk_reason), \
                     "Encountered MPI error code %d: %s", _chk_stat, \
                     (_chk_string_stat == MPI_SUCCESS) \
                     ? _chk_mpistring : "UNKNOWN"); \

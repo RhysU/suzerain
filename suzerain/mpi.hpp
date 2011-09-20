@@ -168,10 +168,9 @@ std::basic_ostream<charT,traits>& sleep_barrier(
     {
         const std::string id = comm_rank_identifier(comm);
         // Ensure null termination in event of truncation
-        hostname[sizeof(hostname)/sizeof(hostname[0]) - 1] = 0;
+        hostname[sizeof(hostname)-1] = 0;
         errno = 0;
-        int local_gethostname_err
-            = gethostname(hostname, sizeof(hostname)/sizeof(hostname[0]) - 1);
+        int local_gethostname_err = gethostname(hostname, sizeof(hostname)-1);
         if (local_gethostname_err) {
             os << "Error from gethostname on " << id
                << ":" << strerror(errno)

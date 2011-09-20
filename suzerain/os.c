@@ -327,7 +327,7 @@ const char * suzerain_temporary_directory() {
 
     const char * s = NULL;
     size_t i;
-    for (i = 0; i < sizeof(var)/sizeof(var[0]); ++i) {
+    for (i = 0; i < SUZERAIN_COUNTOF(var); ++i) {
         s = getenv(var[i]);               // Retrieve from environment
         if (s) {
             while (isspace(s[0])) ++s;    // Skip any leading whitespace
