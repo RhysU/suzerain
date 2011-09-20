@@ -35,6 +35,7 @@
 #pragma hdrstop
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>
+#include <suzerain/countof.h>
 #include <suzerain/error.h>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/exprparse.hpp>
@@ -574,8 +575,8 @@ void store(const esio_handle h,
     char comment[127] = {};
 
     for (int k = 0; k <= bop->nderiv(); ++k) {
-        snprintf(name, sizeof(name)/sizeof(name[0]), "Dy%d", k);
-        snprintf(comment, sizeof(comment)/sizeof(comment[0]),
+        snprintf(name, sizeof(name), "Dy%d", k);
+        snprintf(comment, sizeof(comment),
                 "Wall-normal derivative Dy%d(i,j) = D%d[j,ku+i-j] for"
                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
         const int lda = bop->ku(k) + 1 + bop->kl(k);
@@ -592,8 +593,8 @@ void store(const esio_handle h,
     DEBUG0("Storing B-spline Galerkin L2 derivative operators");
 
     for (int k = 0; k <= gop->nderiv(); ++k) {
-        snprintf(name, sizeof(name)/sizeof(name[0]), "Gy%d", k);
-        snprintf(comment, sizeof(comment)/sizeof(comment[0]),
+        snprintf(name, sizeof(name), "Gy%d", k);
+        snprintf(comment, sizeof(comment),
                 "Wall-normal Galerkin L2 Gy%d(i,j) = G%d[j,ku+i-j] for"
                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
         const int lda = gop->ku(k) + 1 + gop->kl(k);
@@ -624,7 +625,7 @@ void load(const esio_handle h,
     // All ranks load B-spline breakpoints_y (with backward compatibility)
     Eigen::ArrayXr breakpoints;
     const char *names[] = { "breakpoints_y", "breakpoints" };
-    for (std::size_t i = 0; i < sizeof(names)/sizeof(names[0]); ++i) {
+    for (std::size_t i = 0; i < SUZERAIN_COUNTOF(names); ++i) {
         int nbreak;
         if (ESIO_NOTFOUND == esio_line_size(h, names[i], &nbreak)) {
             DEBUG0("Wall-normal breakpoints not found at /" << names[i]);
@@ -1753,10 +1754,8 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
 
     // Broadcast total2 and mean2 values to all processors
     SUZERAIN_MPICHKR(MPI_Bcast(
-                buf,
-                sizeof(buf)/sizeof(buf[0]) * sizeof(complex_t)/sizeof(real_t),
-                suzerain::mpi::datatype<real_t>(),
-                0, MPI_COMM_WORLD));
+                buf, SUZERAIN_COUNTOF(buf) * sizeof(complex_t)/sizeof(real_t),
+                suzerain::mpi::datatype<real_t>(), 0, MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     boost::array<L2,field::count> retval;

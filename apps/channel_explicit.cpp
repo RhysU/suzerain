@@ -40,6 +40,7 @@
 #include <esio/esio.h>
 #include <esio/error.h>
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/countof.h>
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
@@ -240,7 +241,7 @@ static void information_specific_wall_state(const std::string& timeprefix)
     std::size_t wall[2] = { 0, state_linear->shape()[1] - 1 };
 
     // Message lists rho, u, v, w, and total energy at walls
-    for (std::size_t l = 0; l < sizeof(wall)/sizeof(wall[0]); ++l) {
+    for (std::size_t l = 0; l < SUZERAIN_COUNTOF(wall); ++l) {
 
         // Avoid computational cost when logging is disabled
         if (!DEBUG0_ENABLED(nick[l])) continue;
