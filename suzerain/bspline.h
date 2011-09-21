@@ -32,6 +32,7 @@
 
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_complex.h>
+#include <suzerain/pre_gsl.h>
 
 /** @file
  * Provides higher-level logic built atop the <a

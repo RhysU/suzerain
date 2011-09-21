@@ -31,7 +31,6 @@
 #ifndef __SUZERAIN_BSPLINE_HPP
 #define __SUZERAIN_BSPLINE_HPP
 
-#include <gsl/gsl_bspline.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 #include <suzerain/bspline.h>
