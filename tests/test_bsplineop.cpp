@@ -8,10 +8,18 @@
 #include <boost/test/included/unit_test.hpp>
 #include <gsl/gsl_poly.h>
 #include <suzerain/bspline.hpp>
+#include <suzerain/countof.h>
 #include <suzerain/function.h>
 #include <suzerain/math.hpp>
 
 #include "test_tools.hpp"
+
+using suzerain::bspline;
+using suzerain::bsplineop;
+using suzerain::bsplineop_lu;
+using suzerain::bsplineop_luz;
+
+#define COUNTOF(x) SUZERAIN_COUNTOF(x)
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
@@ -20,26 +28,26 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 BOOST_AUTO_TEST_CASE( allocation_okay )
 {
     const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
-    suzerain::bspline b(4, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
+    bspline b(4, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
 
     {
-        suzerain::bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
-        suzerain::bsplineop_lu lu(op);
-        suzerain::bsplineop_luz luz(op);
+        bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+        bsplineop_lu lu(op);
+        bsplineop_luz luz(op);
     }
 
     {
-        suzerain::bsplineop op(b, 2, SUZERAIN_BSPLINEOP_GALERKIN_L2);
-        suzerain::bsplineop_lu lu(op);
-        suzerain::bsplineop_luz luz(op);
+        bsplineop op(b, 2, SUZERAIN_BSPLINEOP_GALERKIN_L2);
+        bsplineop_lu lu(op);
+        bsplineop_luz luz(op);
     }
 }
 
 BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
 {
     const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
-    suzerain::bspline b(2, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    bspline b(2, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
+    bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     {
@@ -226,7 +234,7 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
     /* Real-valued LU functionality */
     /********************************/
 
-    suzerain::bsplineop_lu lu(op);
+    bsplineop_lu lu(op);
     BOOST_REQUIRE_EQUAL(lu.n(), op.n());
 
     /* Form 2*D[0] - 3*D[1] operator in LU-ready banded storage.  Answer is
@@ -292,7 +300,7 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
     /* Complex-valued LU functionality */
     /***********************************/
 
-    suzerain::bsplineop_luz luz(op);
+    bsplineop_luz luz(op);
     BOOST_REQUIRE_EQUAL(luz.n(), op.n());
 
     /* Form (2-3*i)*D[0] + (7-5*i)*D[1] operator in LU-ready banded storage.
@@ -412,8 +420,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
 BOOST_AUTO_TEST_CASE( collocation_piecewise_quadratic)
 {
     const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
-    suzerain::bspline b(3, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 1, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    bspline b(3, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
+    bsplineop op(b, 1, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     {
@@ -557,8 +565,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_quadratic)
 BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic )
 {
     const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
-    suzerain::bspline b(4, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    bspline b(4, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
+    bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     {
@@ -609,8 +617,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic )
 BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic_almost_dense )
 {
     const double breakpts[] = { 0.0, 1.0 };
-    suzerain::bspline b(4, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    bspline b(4, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
+    bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     /* Check w->D[0], the mass matrix, against known good solution */
@@ -642,8 +650,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic_almost_dense )
 BOOST_AUTO_TEST_CASE( collocation_piecewise_septic_dense_and_then_some )
 {
     const double breakpts[] = { 0.0, 1.0 };
-    suzerain::bspline b(8, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    bspline b(8, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
+    bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     /* Matrices are a mess to input so we check only their actions */
@@ -689,8 +697,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_septic_dense_and_then_some )
 BOOST_AUTO_TEST_CASE( galerkin_piecewise_constant )
 {
     const double breakpts[] = { 0.0, 1.0, 9.0/8.0, 3.0/2.0, 2.0, 3.0 };
-    suzerain::bspline b(1, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2);
+    bspline b(1, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
+    bsplineop op(b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     /* Check w->D[0], the mass matrix, against known good solution:
@@ -714,8 +722,8 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_constant )
 BOOST_AUTO_TEST_CASE( galerkin_piecewise_linear )
 {
     const double breakpts[] = { 0.0, 1.0, 9.0/8.0, 3.0/2.0, 2.0, 3.0 };
-    suzerain::bspline b(2, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 1, SUZERAIN_BSPLINEOP_GALERKIN_L2);
+    bspline b(2, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
+    bsplineop op(b, 1, SUZERAIN_BSPLINEOP_GALERKIN_L2);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     /* Check w->D[0], the mass matrix, against known good:
@@ -771,8 +779,8 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_linear )
 BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
 {
     const double breakpts[] = { 0.0, 1.0, 9.0/8.0, 3.0/2.0, 2.0, 3.0 };
-    suzerain::bspline b(3, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 2, SUZERAIN_BSPLINEOP_GALERKIN_L2);
+    bspline b(3, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
+    bsplineop op(b, 2, SUZERAIN_BSPLINEOP_GALERKIN_L2);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     /* Check w->D[0], the mass matrix, against known good
@@ -1081,8 +1089,8 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
 BOOST_AUTO_TEST_CASE( galerkin_piecewise_cubic )
 {
     const double breakpts[] = { 0.0, 1.0, 9.0/8.0, 3.0/2.0, 2.0, 3.0 };
-    suzerain::bspline b(4, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 3, SUZERAIN_BSPLINEOP_GALERKIN_L2);
+    bspline b(4, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
+    bsplineop op(b, 3, SUZERAIN_BSPLINEOP_GALERKIN_L2);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     /* Check w->D[0], the mass matrix, against known good
@@ -1225,8 +1233,8 @@ BOOST_AUTO_TEST_CASE( gsl_poly_eval_and_deriv )
 BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
 {
     const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
-    suzerain::bspline b(4, sizeof(breakpts)/sizeof(breakpts[0]), breakpts);
-    suzerain::bsplineop op(b, 3, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    bspline b(4, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts);
+    bsplineop op(b, 3, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
 
     poly_params *p = (poly_params *)
                       malloc(sizeof(poly_params) + 4*sizeof(double));
@@ -1234,7 +1242,7 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
     suzerain_function f = {poly_f, p};
 
     // Form the mass matrix M
-    suzerain::bsplineop_lu mass(op);
+    bsplineop_lu mass(op);
     mass.form_mass(op);
 
     {
@@ -1326,20 +1334,18 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
 BOOST_AUTO_TEST_CASE( ensure_creation_succeeds_at_high_order )
 {
     const double breakpts[] = { 0.0, 1.0, 2.0, 3.0 };
-    const int nbreak = sizeof(breakpts)/sizeof(breakpts[0]);
+    const int nbreak = COUNTOF(breakpts);
 
     const int maxk = 21;
     for (int k = 1; k <= maxk; ++k) {
-        suzerain::bspline b(k, nbreak, breakpts);
+        bspline b(k, bspline::from_breakpoints(), nbreak, breakpts);
         BOOST_TEST_MESSAGE("b: k = " << k);
         const int maxnderiv = maxk;
         for (int nderiv = 0; nderiv <= maxnderiv; ++nderiv) {
-            suzerain::bsplineop op1(
-                    b, nderiv, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+            bsplineop op1(b, nderiv, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
             BOOST_TEST_MESSAGE(
                     "\tcollocation: k = " << k << ", nderiv = " << nderiv);
-            suzerain::bsplineop op2(
-                    b, nderiv, SUZERAIN_BSPLINEOP_GALERKIN_L2);
+            bsplineop op2(b, nderiv, SUZERAIN_BSPLINEOP_GALERKIN_L2);
             BOOST_TEST_MESSAGE(
                     "\tgalerkin:    k = " << k << ", nderiv = " << nderiv);
         }
@@ -1360,8 +1366,8 @@ BOOST_AUTO_TEST_CASE( collocation_point_evaluation_is_operator_application )
 
     // Establish workspace and get collocation point information
     suzerain::math::logspace(0.1, 3.0, nbreak, breakpts);
-    suzerain::bspline b(order, nbreak, breakpts);
-    suzerain::bsplineop op(b, nderiv, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    bspline b(order, bspline::from_breakpoints(), nbreak, breakpts);
+    bsplineop op(b, nderiv, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
     BOOST_REQUIRE_EQUAL(ndof, b.n());
     for (int i = 0; i < ndof; ++i) points[i] = b.collocation_point(i);
 
@@ -1408,9 +1414,9 @@ void real_polynomial_interpolation(const int k,
     BOOST_TEST_MESSAGE("Entering parameters " << msg.str());
 
     // Initialize B-spline basis, operators, and factored mass matrix
-    suzerain::bspline b(k, nbreak, breakpts);
-    suzerain::bsplineop op(b, k, method);
-    suzerain::bsplineop_lu mass(op);
+    bspline b(k, bspline::from_breakpoints(), nbreak, breakpts);
+    bsplineop op(b, k, method);
+    bsplineop_lu mass(op);
     mass.form_mass(op);
     const int ndof = b.n();
 
@@ -1499,13 +1505,13 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
 
         for (int k = 5; k < 9; ++k) {
             real_polynomial_interpolation(k, std::min(k-1, maxnderiv),
-                    sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+                    COUNTOF(breakpts), breakpts,
                     SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE, tol * k);
         }
 
         for (int k = 5; k < 9; ++k) {
             real_polynomial_interpolation(k, std::min(k-1, maxnderiv),
-                    sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+                    COUNTOF(breakpts), breakpts,
                     SUZERAIN_BSPLINEOP_GALERKIN_L2, 3 * tol * k * k);
         }
     }
@@ -1517,13 +1523,13 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
 
         for (int k = 11; k < 13; ++k) {
             real_polynomial_interpolation(k, std::min(k-1, maxnderiv),
-                    sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+                    COUNTOF(breakpts), breakpts,
                     SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE, tol * k);
         }
 
         for (int k = 11; k < 13; ++k) {
             real_polynomial_interpolation(k, std::min(k-1, maxnderiv),
-                    sizeof(breakpts)/sizeof(breakpts[0]), breakpts,
+                    COUNTOF(breakpts), breakpts,
                     SUZERAIN_BSPLINEOP_GALERKIN_L2, 7 * tol * k * k);
         }
     }

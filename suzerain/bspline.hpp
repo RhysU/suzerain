@@ -51,33 +51,80 @@ namespace suzerain {
  * Provides a thin RAII wrapper for a combined
  * <code>gsl_bspline_workspace</code> and
  * <code>gsl_bspline_deriv_workspace</code>.  The wrapper includes convenience
- * methods to simplify working with the GSL API.  Non-constant methods are not
+ * methods to simplify working with the GSL API.
+ * Non-constant methods are not
  * thread-safe.
  */
 class bspline : public boost::noncopyable {
 public:
 
     /**
-     * Create B-spline workspaces capable of evaluating piecewise polynomials
+     * Constructor selection tags.  Constructors are selected by tag dispatch
+     * because the usual named constructor idioms do not translate well to
+     * noncopyable classes.
+     * @{
+     */
+
+    struct from_breakpoints {};
+    struct from_abscissae   {};
+
+    /** @} */
+
+    /**
+     * Create a B-spline workspace capable of evaluating piecewise polynomials
      * of degree \c k - 1 on \c nbreak breakpoints located at \c breakpoints.
      * The resulting basis will have <tt>nbreak + k - 2</tt> degrees of
      * freedom.
      *
-     * @param k B-spline order per GSL/PPPACK conventions.
-     *          For example, 4 denotes piecewise cubics.
+     * @param k        B-spline order per GSL/PPPACK conventions.
+     *                 For example, 4 denotes piecewise cubics.
+     * @param tag      Dispatch tag to identify this constructor.
      * @param nbreak   Number of breakpoints.
      * @param breakpts Strictly increasing breakpoint locations.
      *
-     * @see gsl_bspline_alloc(), gsl_bspline_deriv_alloc(), gsl_bspline_knots()
+     * @see gsl_bspline_alloc(), gsl_bspline_deriv_alloc(), and
+     *      gsl_bspline_knots()
      */
-    bspline(int k, int nbreak, const double * breakpts)
+    bspline(int k, const from_breakpoints &tag,
+            int nbreak, const double * breakpts)
         : bw(gsl_bspline_alloc(k, nbreak)),
           dbw(gsl_bspline_deriv_alloc(k)),
           db_(gsl_matrix_alloc(k, k))
     {
+        SUZERAIN_UNUSED(tag);
         gsl_vector_const_view view
             = gsl_vector_const_view_array(breakpts, nbreak);
         gsl_bspline_knots(&view.vector, bw);
+    }
+
+    /**
+     * Create B-spline workspace capable of evaluating piecewise polynomials of
+     * degree \c k - 1 on a knot vector created to best approximate the \c
+     * nabscissae provided Greville \c abscissae.  The resulting basis will
+     * have \c nabscissae degrees of freedom.
+     *
+     * @param[in]  k          B-spline order per GSL/PPPACK conventions.
+     *       [in]             For example, 4 denotes piecewise cubics.
+     * @param[in]  tag        Dispatch tag to identify this constructor.
+     * @param[in]  nabscissae Number of abscissae.
+     * @param[in]  abscissae  Strictly increasing Greville abscissae locations.
+     * @param[out] abserr     Absolute error over all approximated \c abscissae
+     *                        when not NULL.
+     *
+     * @see gsl_bspline_alloc(), gsl_bspline_deriv_alloc(), and
+     *      gsl_bspline_knots_greville() with the latter detailing the best
+     *      approximation requirements.
+     */
+    bspline(int k, const from_abscissae &tag,
+            int nabscissae, const double * abscissae, double * abserr = NULL)
+        : bw(gsl_bspline_alloc(k, /* nbreak == */ nabscissae - k + 2)),
+          dbw(gsl_bspline_deriv_alloc(k)),
+          db_(gsl_matrix_alloc(k, k))
+    {
+        SUZERAIN_UNUSED(tag);
+        gsl_vector_const_view view
+            = gsl_vector_const_view_array(abscissae, nabscissae);
+        gsl_bspline_knots_greville(&view.vector, bw, abserr);
     }
 
     /** @see gsl_bspline_free */

@@ -527,7 +527,8 @@ void create(const int ndof,
     // Generate the B-spline workspace based on order and breakpoints
     // Maximum non-trivial derivative operators included
     b = boost::make_shared<suzerain::bspline>(
-            k, breakpoints.size(), breakpoints.data());
+            k, suzerain::bspline::from_breakpoints(),
+            breakpoints.size(), breakpoints.data());
     assert(b->n() == ndof);
     bop.reset(new suzerain::bsplineop(
                 *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
@@ -646,7 +647,8 @@ void load(const esio_handle h,
 
     // Construct B-spline workspace
     b = boost::make_shared<suzerain::bspline>(
-                k, breakpoints.size(), breakpoints.data());
+                k, suzerain::bspline::from_breakpoints(),
+                breakpoints.size(), breakpoints.data());
     bop.reset(new suzerain::bsplineop(
                 *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
 }
