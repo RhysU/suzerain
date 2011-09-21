@@ -33,9 +33,6 @@
 #endif
 #include <suzerain/common.h>
 #pragma hdrstop
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_math.h>
 #include <suzerain/pre_gsl.h>
 
 // gsl_integration_glfixed in GSL 1.14 but
@@ -44,6 +41,9 @@
 // FIXME: Remove this logic once GSL 1.15 becomes widespread
 #if    (!defined GSL_MAJOR_VERSION                     ) \
     || (GSL_MAJOR_VERSION < 2 && GSL_MINOR_VERSION < 15)
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_math.h>
+
 int
 gsl_integration_glfixed_point (
         double a,
@@ -80,4 +80,129 @@ gsl_integration_glfixed_point (
 
     return GSL_SUCCESS;
 }
+
+// gsl_bspline_knots_greville is 1.15+ so build it atop 1.15's public API
+// FIXME: Remove this logic once GSL 1.16 becomes widespread
+#if    (!defined GSL_MAJOR_VERSION                     ) \
+    || (GSL_MAJOR_VERSION < 2 && GSL_MINOR_VERSION < 16)
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_statistics.h>
+#include <gsl/gsl_vector.h>
+
+int
+gsl_bspline_knots_greville (const gsl_vector *abscissae,
+                            gsl_bspline_workspace *w,
+                            double *abserr)
+{
+  int s;
+
+  /* Check incoming arguments satisfy mandatory algorithmic assumptions */
+  if (w->k < 2)
+    GSL_ERROR ("w->k must be at least 2", GSL_EINVAL);
+  else if (abscissae->size < 2)
+    GSL_ERROR ("abscissae->size must be at least 2", GSL_EINVAL);
+  else if (w->nbreak != abscissae->size - w->k + 2)
+    GSL_ERROR ("w->nbreak must equal abscissae->size - w->k + 2", GSL_EINVAL);
+
+  if (w->nbreak == 2)
+    {
+      /* No flexibility in abscissae values possible in this degenerate case */
+      s = gsl_bspline_knots_uniform (
+              gsl_vector_get (abscissae, 0),
+              gsl_vector_get (abscissae, abscissae->size - 1), w);
+    }
+  else
+    {
+      double * storage;
+      gsl_matrix_view A;
+      gsl_vector_view tau, b, x, r;
+      size_t i, j;
+
+      /* Constants derived from the B-spline workspace and abscissae details */
+      const size_t km2    = w->k - 2;
+      const size_t M      = abscissae->size - 2;
+      const size_t N      = w->nbreak - 2;
+      const double invkm1 = 1.0 / w->km1;
+
+      /* Allocate working storage and prepare multiple, zero-filled views */
+      storage = (double *) calloc (M*N + 2*N + 2*M, sizeof (double));
+      if (storage == 0)
+        GSL_ERROR ("failed to allocate working storage", GSL_ENOMEM);
+      A   = gsl_matrix_view_array (storage, M, N);
+      tau = gsl_vector_view_array (storage + M*N,             N);
+      b   = gsl_vector_view_array (storage + M*N + N,         M);
+      x   = gsl_vector_view_array (storage + M*N + N + M,     N);
+      r   = gsl_vector_view_array (storage + M*N + N + M + N, M);
+
+      /* Build matrix from interior breakpoints to interior Greville abscissae.
+       * For example, when w->k = 4 and w->nbreak = 7 the matrix is
+       *   [   1,      0,      0,      0,      0;
+       *     2/3,    1/3,      0,      0,      0;
+       *     1/3,    1/3,    1/3,      0,      0;
+       *       0,    1/3,    1/3,    1/3,      0;
+       *       0,      0,    1/3,    1/3,    1/3;
+       *       0,      0,      0,    1/3,    2/3;
+       *       0,      0,      0,      0,      1  ]
+       * but only center formed as first/last breakpoint is known.
+       */
+      for (j = 0; j < N; ++j)
+        for (i = 0; i <= km2; ++i)
+          gsl_matrix_set (&A.matrix, i+j, j, invkm1);
+
+      /* Copy interior collocation points from abscissae into b */
+      for (i = 0; i < M; ++i)
+        gsl_vector_set (&b.vector, i, gsl_vector_get (abscissae, i+1));
+
+      /* Adjust b to account for constraint columns not stored in A */
+      for (i = 0; i < km2; ++i)
+        {
+          double * const v = gsl_vector_ptr (&b.vector, i);
+          *v -= (1 - (i+1)*invkm1) * gsl_vector_get (abscissae, 0);
+        }
+      for (i = 0; i < km2; ++i)
+        {
+          double * const v = gsl_vector_ptr (&b.vector, M - km2 + i);
+          *v -= (i+1)*invkm1 * gsl_vector_get (abscissae, abscissae->size - 1);
+        }
+
+      /* Perform linear least squares to determine interior breakpoints */
+      s =  gsl_linalg_QR_decomp (&A.matrix, &tau.vector)
+        || gsl_linalg_QR_lssolve (&A.matrix, &tau.vector,
+                                  &b.vector, &x.vector, &r.vector);
+      if (s)
+        {
+          free (storage);
+          return s;
+        }
+
+      /* "Expand" solution x by adding known first and last breakpoints. */
+      x = gsl_vector_view_array_with_stride (
+          gsl_vector_ptr (&x.vector, 0) - x.vector.stride,
+          x.vector.stride, x.vector.size + 2);
+      gsl_vector_set (&x.vector, 0, gsl_vector_get (abscissae, 0));
+      gsl_vector_set (&x.vector, x.vector.size - 1,
+                      gsl_vector_get (abscissae, abscissae->size - 1));
+
+      /* Finally, initialize workspace knots using the now-known breakpoints */
+      s = gsl_bspline_knots (&x.vector, w);
+      free (storage);
+    }
+
+  /* Sum absolute errors in the resulting vs requested interior abscissae */
+  /* Provided as a fit quality metric which may be monitored by callers */
+  if (!s && abserr)
+    {
+      size_t i;
+      *abserr = 0;
+      for (i = 1; i < abscissae->size - 1; ++i)
+        *abserr += fabs (   gsl_bspline_greville_abscissa (i, w)
+                          - gsl_vector_get (abscissae, i) );
+    }
+
+  return s;
+}
+#endif
+
 #endif
