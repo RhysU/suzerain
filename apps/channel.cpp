@@ -640,6 +640,9 @@ void store(const esio_handle h,
     }
 }
 
+// Read an ESIO linev of data into line from the first possible named location.
+// Argument "first" is mutated to return the successful location name.
+// No suitable location may be detected by checking if first == last on return.
 template<typename ForwardIterator>
 static void load_linev(const esio_handle h, Eigen::ArrayXr &line,
                        ForwardIterator& first, const ForwardIterator& last)
@@ -656,6 +659,9 @@ static void load_linev(const esio_handle h, Eigen::ArrayXr &line,
     }
 }
 
+// Read an ESIO line of data into line from the first possible named location.
+// Argument "first" is mutated to return the successful location name.
+// No suitable location may be detected by checking if first == last on return.
 template<typename ForwardIterator>
 static void load_line(const esio_handle h, Eigen::ArrayXr &line,
                       ForwardIterator& first, const ForwardIterator& last)
