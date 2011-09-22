@@ -521,6 +521,7 @@ real_t create(const int ndof,
           << ndof << " DOF stretched per htdelta " << htdelta);
 
 ////FIXME: Knot vectors are non-increasing for moderate htdelta
+/// FIXME: See https://savannah.gnu.org/bugs/index.php?34361
 ////// Compute collocation point locations using ndof and htdelta
 ////Eigen::ArrayXd abscissae(ndof);
 ////suzerain::math::linspace(0.0, 1.0, abscissae.size(), abscissae.data());
