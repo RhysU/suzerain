@@ -147,14 +147,17 @@ void load(const esio_handle h,
           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
           boost::shared_ptr<manufactured_solution>& msoln);
 
-/** Create a B-spline workspace on [left,right] per ndof, k, and htdelta */
-void create(const int ndof,
-            const int k,
-            const double left,
-            const double right,
-            const double htdelta,
-            boost::shared_ptr<suzerain::bspline>& b,
-            boost::shared_ptr<suzerain::bsplineop>& bop);
+/**
+ * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.
+ * @return the absolute error in reproducing prescribed abscissae.
+ */
+real_t create(const int ndof,
+              const int k,
+              const double left,
+              const double right,
+              const double htdelta,
+              boost::shared_ptr<suzerain::bspline>& b,
+              boost::shared_ptr<suzerain::bsplineop>& bop);
 
 /** Store a suzerain::bspline workspace in a restart file */
 void store(const esio_handle h,
@@ -162,10 +165,13 @@ void store(const esio_handle h,
            const boost::shared_ptr<suzerain::bsplineop>& bop,
            const boost::shared_ptr<suzerain::bsplineop>& gop);
 
-/** Load a suzerain::bspline workspace from a restart file */
-void load(const esio_handle h,
-          boost::shared_ptr<suzerain::bspline>& b,
-          boost::shared_ptr<suzerain::bsplineop>& bop);
+/**
+ * Load a suzerain::bspline workspace from a restart file.
+ * @return the absolute error in reproducing prescribed abscissae.
+ */
+real_t load(const esio_handle h,
+            boost::shared_ptr<suzerain::bspline>& b,
+            boost::shared_ptr<suzerain::bsplineop>& bop);
 
 /** Store the current simulation time information */
 void store_time(const esio_handle h,

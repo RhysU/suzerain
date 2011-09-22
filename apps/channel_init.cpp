@@ -245,9 +245,6 @@ int main(int argc, char **argv)
         msoln.reset();
     }
 
-    INFO0("Creating B-spline basis of order " << (grid.k - 1)
-          << " on [0, " << scenario.Ly << "] with "
-          << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
     channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, b, bop);
     gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 

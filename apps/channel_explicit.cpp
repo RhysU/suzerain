@@ -740,11 +740,7 @@ int main(int argc, char **argv)
         }
     }
 
-    INFO0("Using B-splines of order " << (grid.k - 1)
-          << " on [0, " << scenario.Ly << "] with "
-          << grid.N.y() << " DOF stretched per htdelta " << grid.htdelta);
-    channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly,
-                    grid.htdelta, b, bop);
+    channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, b, bop);
     assert(b->k() == grid.k);
     assert(b->n() == grid.N.y());
     bopluz = make_shared<suzerain::bsplineop_luz>(*bop);

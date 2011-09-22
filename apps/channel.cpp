@@ -508,16 +508,44 @@ void load(const esio_handle h,
     msoln->T.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
 }
 
-void create(const int ndof,
-            const int k,
-            const double left,
-            const double right,
-            const double htdelta,
-            boost::shared_ptr<suzerain::bspline>& b,
-            boost::shared_ptr<suzerain::bsplineop>& bop)
+real_t create(const int ndof,
+              const int k,
+              const double left,
+              const double right,
+              const double htdelta,
+              boost::shared_ptr<suzerain::bspline>& b,
+              boost::shared_ptr<suzerain::bsplineop>& bop)
 {
-    // Compute breakpoint locations
-    Eigen::ArrayXd breakpoints(ndof + 2 - k);
+    INFO0("Creating B-spline basis of order " << k
+          << " on [" << left << ", " << right << "] with "
+          << ndof << " DOF stretched per htdelta " << htdelta);
+
+////FIXME: Knot vectors are non-increasing for moderate htdelta
+////// Compute collocation point locations using ndof and htdelta
+////Eigen::ArrayXd abscissae(ndof);
+////suzerain::math::linspace(0.0, 1.0, abscissae.size(), abscissae.data());
+////for (int i = 0; i < abscissae.size(); ++i) {
+////    abscissae[i] = suzerain_htstretch2(htdelta, 1.0, abscissae[i]);
+////}
+////abscissae = (right - left) * abscissae + left;
+////
+////// Generate the B-spline workspace based on order and abscissae
+////// Maximum non-trivial derivative operators included
+////double abserr;
+////b = boost::make_shared<suzerain::bspline>(
+////        k, suzerain::bspline::from_abscissae(),
+////        abscissae.size(), abscissae.data(), &abserr);
+////assert(b->n() == ndof);
+////bop.reset(new suzerain::bsplineop(
+////            *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
+////assert(bop->n() == ndof);
+////
+////INFO0("Created B-spline basis has Greville abscissae abserr of " << abserr);
+////
+////return abserr;
+
+    // Compute breakpoint point locations using ndof and htdelta
+    Eigen::ArrayXd breakpoints(ndof - k + 2);
     suzerain::math::linspace(0.0, 1.0, breakpoints.size(), breakpoints.data());
     for (int i = 0; i < breakpoints.size(); ++i) {
         breakpoints[i] = suzerain_htstretch2(htdelta, 1.0, breakpoints[i]);
@@ -533,6 +561,8 @@ void create(const int ndof,
     bop.reset(new suzerain::bsplineop(
                 *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
     assert(bop->n() == ndof);
+
+    return 0;
 }
 
 void store(const esio_handle h,
@@ -610,9 +640,9 @@ void store(const esio_handle h,
     }
 }
 
-void load(const esio_handle h,
-          boost::shared_ptr<suzerain::bspline>& b,
-          boost::shared_ptr<suzerain::bsplineop>& bop)
+real_t load(const esio_handle h,
+            boost::shared_ptr<suzerain::bspline>& b,
+            boost::shared_ptr<suzerain::bsplineop>& bop)
 {
     DEBUG0("Loading B-spline workspace based on order and breakpoints");
 
@@ -623,34 +653,46 @@ void load(const esio_handle h,
 
     // htdelta is ignored
 
-    // All ranks load B-spline breakpoints_y (with backward compatibility)
-    Eigen::ArrayXr breakpoints;
-    const char *names[] = { "breakpoints_y", "breakpoints" };
+    // Breakpoints are ignored
+
+    // All ranks load B-spline collocation_points_y (backwards compatible)
+    Eigen::ArrayXr colpoints;
+    const char *names[] = { "collocation_points_y", "collocation_points" };
     for (std::size_t i = 0; i < SUZERAIN_COUNTOF(names); ++i) {
-        int nbreak;
-        if (ESIO_NOTFOUND == esio_line_size(h, names[i], &nbreak)) {
-            DEBUG0("Wall-normal breakpoints not found at /" << names[i]);
+        int ncolpoints;
+        if (ESIO_NOTFOUND == esio_line_size(h, names[i], &ncolpoints)) {
+            DEBUG0("Wall-normal collocation points not at /" << names[i]);
             continue;
         }
-        esio_line_establish(h, nbreak, 0, nbreak);
-        breakpoints.resize(nbreak);
-        esio_line_read(h, names[i], breakpoints.data(), 0);
+        esio_line_establish(h, ncolpoints, 0, ncolpoints);
+        colpoints.resize(ncolpoints);
+        esio_line_read(h, names[i], colpoints.data(), 0);
         break;
     }
-    if (!breakpoints.size()) {
-        SUZERAIN_ERROR_VOID(
-                "Restart did not contain wall-normal breakpoint locations",
-                SUZERAIN_EFAILED);
+    if (!colpoints.size()) {
+        SUZERAIN_ERROR_VAL(
+                "Restart did not contain wall-normal collocation points",
+                SUZERAIN_EFAILED,
+                std::numeric_limits<real_t>::quiet_NaN());
     }
 
-    // Collocation points are ignored
-
-    // Construct B-spline workspace
+    // Construct B-spline workspaces
+    double abserr;
     b = boost::make_shared<suzerain::bspline>(
-                k, suzerain::bspline::from_breakpoints(),
-                breakpoints.size(), breakpoints.data());
+            k, suzerain::bspline::from_abscissae(),
+            colpoints.size(), colpoints.data(), &abserr);
     bop.reset(new suzerain::bsplineop(
                 *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
+
+    if (abserr < std::numeric_limits<double>::epsilon() * colpoints.size()) {
+        DEBUG0("Loaded B-spline basis has Greville abscissae abserr of "
+               << abserr);
+    } else {
+        INFO0("Loaded B-spline basis has Greville abscissae abserr of "
+              << abserr);
+    }
+
+    return abserr;
 }
 
 void store_time(const esio_handle h,
