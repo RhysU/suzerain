@@ -640,11 +640,47 @@ void store(const esio_handle h,
     }
 }
 
+template<typename ForwardIterator>
+static void load_linev(const esio_handle h, Eigen::ArrayXr &line,
+                       ForwardIterator& first, const ForwardIterator& last)
+{
+    for ( ; first != last; ++first ) {
+        int length;
+        int ncomponents;
+        if (ESIO_SUCCESS == esio_line_sizev(h, *first, &length, &ncomponents)) {
+            line.resize(length, ncomponents);
+            esio_line_establish(h, length, 0, length);
+            esio_line_readv(h, *first, line.data(), 0);
+            return;
+        }
+    }
+}
+
+template<typename ForwardIterator>
+static void load_line(const esio_handle h, Eigen::ArrayXr &line,
+                      ForwardIterator& first, const ForwardIterator& last)
+{
+    for ( ; first != last; ++first ) {
+        int length;
+        if (ESIO_SUCCESS == esio_line_size(h, *first, &length)) {
+            line.resize(length);
+            esio_line_establish(h, length, 0, length);
+            esio_line_read(h, *first, line.data(), 0);
+            return;
+        }
+    }
+}
+
 real_t load(const esio_handle h,
             boost::shared_ptr<suzerain::bspline>& b,
             boost::shared_ptr<suzerain::bsplineop>& bop)
 {
-    DEBUG0("Loading B-spline workspace based on order and breakpoints");
+    using std::abs;
+    using std::max;
+
+    real_t abserr = std::numeric_limits<real_t>::quiet_NaN();
+
+    DEBUG0("Loading B-spline workspaces based on restart contents");
 
     // All ranks load B-spline order
     int k;
@@ -653,44 +689,68 @@ real_t load(const esio_handle h,
 
     // htdelta is ignored
 
-    // Breakpoints are ignored
+    // knots are ignored
 
-    // All ranks load B-spline collocation_points_y (backwards compatible)
+    // All ranks load B-spline breakpoints (as best effort attempt)
+    Eigen::ArrayXr breakpoints;
+    boost::array<const char *,2> breakpoints_locs = {{
+        "breakpoints_y", "breakpoints"
+    }};
+    const char **breakpoints_loc = breakpoints_locs.begin();
+    load_line(h, breakpoints, breakpoints_loc, breakpoints_locs.end());
+    const bool breakpoints_found = (breakpoints_loc != breakpoints_locs.end());
+
+    // All ranks load B-spline collocation points (as best effort attempt)
     Eigen::ArrayXr colpoints;
-    const char *names[] = { "collocation_points_y", "collocation_points" };
-    for (std::size_t i = 0; i < SUZERAIN_COUNTOF(names); ++i) {
-        int ncolpoints;
-        if (ESIO_NOTFOUND == esio_line_size(h, names[i], &ncolpoints)) {
-            DEBUG0("Wall-normal collocation points not at /" << names[i]);
-            continue;
+    boost::array<const char *,2> colpoints_locs = {{
+        "collocation_points_y", "collocation_points"
+    }};
+    const char **colpoints_loc = colpoints_locs.begin();
+    load_line(h, colpoints, colpoints_loc, colpoints_locs.end());
+    const bool colpoints_found = (colpoints_loc != colpoints_locs.end());
+
+    // Generally, prefer basis to be formed using collocation points...
+    bool abscissae_veto_breakpoints = true;
+
+    // ...unless loaded breakpoints reproduce collocation points very closely.
+    // Required because repeated basis calculations at restart not idempotent.
+    if (breakpoints_found) {
+
+        b = boost::make_shared<suzerain::bspline>(
+                k, suzerain::bspline::from_breakpoints(),
+                breakpoints.size(), breakpoints.data());
+
+        if (colpoints_found && b->n() == colpoints.size()) {
+            double e = 0;
+            for (int i = 0; i < colpoints.size(); ++i)
+                e = max(e, abs(b->collocation_point(i) - colpoints[i]));
+
+            DEBUG0("Max difference between breakpoint-computed and loaded"
+                   " collocation points is " << e);
+
+            if (e < 5*std::numeric_limits<double>::epsilon())
+                abscissae_veto_breakpoints = false;
         }
-        esio_line_establish(h, ncolpoints, 0, ncolpoints);
-        colpoints.resize(ncolpoints);
-        esio_line_read(h, names[i], colpoints.data(), 0);
-        break;
-    }
-    if (!colpoints.size()) {
-        SUZERAIN_ERROR_VAL(
-                "Restart did not contain wall-normal collocation points",
-                SUZERAIN_EFAILED,
-                std::numeric_limits<real_t>::quiet_NaN());
     }
 
-    // Construct B-spline workspaces
-    double abserr;
-    b = boost::make_shared<suzerain::bspline>(
-            k, suzerain::bspline::from_abscissae(),
-            colpoints.size(), colpoints.data(), &abserr);
+    if (colpoints_found && abscissae_veto_breakpoints) {
+        DEBUG0("Collocation points from restart used to build B-spline basis");
+        b = boost::make_shared<suzerain::bspline>(
+                k, suzerain::bspline::from_abscissae(),
+                colpoints.size(), colpoints.data(), &abserr);
+        DEBUG0("Computed B-spline basis has Greville abscissae abserr of "
+               << abserr);
+    }
+
+    // Ensure we did get B-spline workspace from the above logic
+    if (!b) {
+        SUZERAIN_ERROR_VAL("Could not load B-spline workspace from restart",
+                SUZERAIN_EFAILED, abserr);
+    }
+
+    // Construct B-spline operator workspace from the B-spline workspace
     bop.reset(new suzerain::bsplineop(
                 *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
-
-    if (abserr < std::numeric_limits<double>::epsilon() * colpoints.size()) {
-        DEBUG0("Loaded B-spline basis has Greville abscissae abserr of "
-               << abserr);
-    } else {
-        INFO0("Loaded B-spline basis has Greville abscissae abserr of "
-              << abserr);
-    }
 
     return abserr;
 }
