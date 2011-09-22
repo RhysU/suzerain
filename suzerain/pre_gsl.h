@@ -30,6 +30,10 @@
 #ifndef __SUZERAIN_PRE_GSL_H
 #define __SUZERAIN_PRE_GSL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // gsl_integration_glfixed in GSL 1.14 but
 // gsl_integration_glfixed_point is 1.14+ so build it atop 1.14's public API
 // FIXME: Remove this logic once GSL 1.15 becomes widespread
@@ -57,6 +61,10 @@ int
 gsl_bspline_knots_greville(const gsl_vector *abscissae,
                            gsl_bspline_workspace *w,
                            double *abserr);
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
 #endif // __SUZERAIN_PRE_GSL_H
