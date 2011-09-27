@@ -91,6 +91,16 @@ int main(int argc, char **argv)
          "Check results against expected values")
     ;
     options.process(argc, argv);
+    switch (options.verbose()) {
+        case 0:                   break;
+        case 1:  DEBUG0_ENABLE(); break;
+        default: TRACE0_ENABLE(); break;
+    }
+    switch (options.verbose_all()) {
+        case 0:                   break;
+        case 1:  DEBUG_ENABLE();  break;
+        default: TRACE_ENABLE();  break;
+    }
     if (repeat  < 1) throw std::invalid_argument("repeat  < 1");
     if (nfields < 1) throw std::invalid_argument("nfields < 1");
 

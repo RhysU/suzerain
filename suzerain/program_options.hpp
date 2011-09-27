@@ -193,6 +193,12 @@ public:
      */
     boost::program_options::variables_map& variables() { return variables_; }
 
+    /** @return the "--verbose" flag count from the command line.  */
+    int verbose() { return verbose_; }
+
+    /** @return the "--verbose-all" flag count from the command line.  */
+    int verbose_all() { return verbose_all_; }
+
 protected:
 
     /**
@@ -243,6 +249,12 @@ protected:
 
     /** The application description used for user-oriented messages. */
     std::string application_description_;
+
+    /** Maintain the "--verbose" flag count from the command line */
+    int verbose_;
+
+    /** Maintain the "--verbose-all" flag count from the command line */
+    int verbose_all_;
 };
 
 } // namespace suzerain

@@ -36,6 +36,38 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 
+// Parse Unix-like verbosity flags (http://stackoverflow.com/questions/5486753)
+static std::pair<std::string, std::string> verbosity(const std::string& s)
+{
+    std::pair<std::string, std::string> retval;
+
+    if (s.find("-v") == 0) {
+
+        size_t value = 1;
+        try {
+            value = boost::lexical_cast<size_t>(s.substr(2));
+        } catch(...) {
+            while (s[1+value] == 'v') ++value;
+        }
+        retval.first = "verbose";
+        retval.second = boost::lexical_cast<std::string>(value);
+
+    } else if (s.find("-V") == 0) {
+
+        size_t value = 1;
+        try {
+            value = boost::lexical_cast<size_t>(s.substr(2));
+        } catch(...) {
+            while (s[1+value] == 'V') ++value;
+        }
+        retval.first = "verbose-all";
+        retval.second = boost::lexical_cast<std::string>(value);
+
+    }
+
+    return retval;
+}
+
 std::vector<std::string> suzerain::ProgramOptions::process(
         int argc, char **argv, MPI_Comm comm,
         std::ostream &debug, std::ostream &info,
@@ -76,6 +108,10 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
          "Show usage information")
         ("version",
          "Print version string")
+        ("verbose,v", po::value<std::vector<std::string> >(),
+         "Increase verbosity of messages from rank zero")
+        ("verbose-all,V", po::value<std::vector<std::string> >(),
+         "Increase verbosity of rank-specific messages from all ranks")
     ;
 
     // Prepare a response-file option iff non-trivial options available
@@ -109,6 +145,7 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
                                         .options(opts_cli)
                                         .positional(opts_positional)
                                         .allow_unregistered()
+                                        .extra_parser(verbosity)
                                         .run();
     po::store(parsed_cli, variables_);
 
@@ -247,6 +284,25 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
             }
 
             // TODO Display appropriate debug message on shadowed options
+        }
+    }
+
+    // Compute --verbose and --verbose-all levels by summation
+    // following http://stackoverflow.com/questions/5486753
+    verbose_ = 0;
+    if (variables_.count("verbose")) {
+        const std::vector<std::string> &values
+            = variables_["verbose"].as<std::vector<std::string> >();
+        for (std::size_t i = 0; i < values.size(); ++i) {
+            verbose_ += boost::lexical_cast<int>(values[i]);
+        }
+    }
+    verbose_all_ = 0;
+    if (variables_.count("verbose-all")) {
+        const std::vector<std::string> &values
+            = variables_["verbose-all"].as<std::vector<std::string> >();
+        for (std::size_t i = 0; i < values.size(); ++i) {
+            verbose_all_ += boost::lexical_cast<int>(values[i]);
         }
     }
 

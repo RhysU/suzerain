@@ -711,6 +711,16 @@ int main(int argc, char **argv)
                 const_cast<SignalDefinition&>(sigdef));
 
         std::vector<std::string> positional = options.process(argc, argv);
+        switch (options.verbose()) {
+            case 0:                   break;
+            case 1:  DEBUG0_ENABLE(); break;
+            default: TRACE0_ENABLE(); break;
+        }
+        switch (options.verbose_all()) {
+            case 0:                   break;
+            case 1:  DEBUG_ENABLE();  break;
+            default: TRACE_ENABLE();  break;
+        }
 
         if (positional.size() != 1) {
             FATAL0("Exactly one restart file name must be specified");

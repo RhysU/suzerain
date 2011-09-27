@@ -168,6 +168,16 @@ int main(int argc, char **argv)
             ("stdout,s", "Write results to standard output?")
             ;
         restart_files = options.process(argc, argv);
+        switch (options.verbose()) {
+            case 0:                   break;
+            case 1:  DEBUG0_ENABLE(); break;
+            default: TRACE0_ENABLE(); break;
+        }
+        switch (options.verbose_all()) {
+            case 0:                   break;
+            case 1:  DEBUG_ENABLE();  break;
+            default: TRACE_ENABLE();  break;
+        }
 
         use_stdout = options.variables().count("stdout");
     }
