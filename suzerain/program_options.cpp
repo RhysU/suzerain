@@ -74,7 +74,7 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
     desc_clionly.add_options()
         ("help,h",
          "Show usage information")
-        ("version,v",
+        ("version",
          "Print version string")
     ;
 
