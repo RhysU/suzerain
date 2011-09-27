@@ -522,6 +522,24 @@ inline logger_type& get_logger(logger_type&, logger_type& child)
 #define ERROR0_ENABLE_ARITY2(l) do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getError());}while(0)
 #define FATAL0_ENABLE_ARITY2(l) do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getFatal());}while(0)
 
+// Logging macros to enable logging at and above at particular log levels.
+// Arity is off-by-one to handle limitation of LOGGING_PP_NARG
+#define TRACE_ENABLE_ARITY1() do{::logging::allranks->setLevel(::log4cxx::Level::getTrace());}while(0)
+#define DEBUG_ENABLE_ARITY1() do{::logging::allranks->setLevel(::log4cxx::Level::getDebug());}while(0)
+#define INFO_ENABLE_ARITY1()  do{::logging::allranks->setLevel(::log4cxx::Level::getInfo());}while(0)
+#define WARN_ENABLE_ARITY1()  do{::logging::allranks->setLevel(::log4cxx::Level::getWarn());}while(0)
+#define ERROR_ENABLE_ARITY1() do{::logging::allranks->setLevel(::log4cxx::Level::getError());}while(0)
+#define FATAL_ENABLE_ARITY1() do{::logging::allranks->setLevel(::log4cxx::Level::getFatal());}while(0)
+
+// Logging macros to enable logging at and above particular log levels.
+// Arity is off-by-one to handle limitation of LOGGING_PP_NARG
+#define TRACE_ENABLE_ARITY2(l) do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getTrace());}while(0)
+#define DEBUG_ENABLE_ARITY2(l) do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getDebug());}while(0)
+#define INFO_ENABLE_ARITY2(l)  do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getInfo());}while(0)
+#define WARN_ENABLE_ARITY2(l)  do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getWarn());}while(0)
+#define ERROR_ENABLE_ARITY2(l) do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getError());}while(0)
+#define FATAL_ENABLE_ARITY2(l) do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getFatal());}while(0)
+
 // Logging macros emitting messages from all ranks with rank-specific names.
 #define TRACE_ARITY1(m) do{LOG4CXX_TRACE(::logging::allranks,m)}while(0)
 #define DEBUG_ARITY1(m) do{LOG4CXX_DEBUG(::logging::allranks,m)}while(0)
