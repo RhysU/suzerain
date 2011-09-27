@@ -79,6 +79,11 @@ const boost::array<const char *,field::count> field::description = {{
     "total energy",
 }};
 
+// Common constant used to define distinct B-spline bases per
+// bspline_bases_distance() in the presence of floating point error.
+static const double bsplines_distinct_distance
+    = 3*std::numeric_limits<double>::epsilon();
+
 void mpi_abort_on_error_handler_gsl(const char * reason,
                                     const char * file,
                                     int line,
@@ -735,7 +740,7 @@ real_t load(const esio_handle h,
             DEBUG0("Max difference between breakpoint-computed and loaded"
                    " collocation points is " << e);
 
-            if (e < 5*std::numeric_limits<double>::epsilon())
+            if (e < bsplines_distinct_distance)
                 abscissae_veto_breakpoints = false;
         }
     }
@@ -898,12 +903,12 @@ void store_coefficients(
 // any of the order, number of degrees of freedom, or number of knots differ.
 // When all those criteria match the distance becomes the maximum absolute
 // difference between the knot vectors.
-static real_t bspline_bases_distance(const suzerain::bspline& a,
+static double bspline_bases_distance(const suzerain::bspline& a,
                                      const suzerain::bspline& b)
 {
     double retval = 0;
     if (a.k() != b.k() || a.n() != b.n() || a.nknot() != b.nknot()) {
-        retval = std::numeric_limits<real_t>::max();
+        retval = std::numeric_limits<double>::max();
     } else {
         for (int j = 0; j < b.nknot(); ++j) {
             retval = std::max(retval, std::abs(a.knot(j) - b.knot(j)));
@@ -939,10 +944,8 @@ void load_coefficients(const esio_handle h,
     assert(Fy == Fb->n());
 
     // Check if the B-spline basis in the file differs from ours.
-    const real_t bsplines_dist = bspline_bases_distance(b, *Fb);
-#pragma warning(push,disable:1572)
-    const bool   bsplines_same = bsplines_dist == 0;
-#pragma warning(pop)
+    const double bsplines_dist = bspline_bases_distance(b, *Fb);
+    const bool bsplines_same = bsplines_dist < bsplines_distinct_distance;
 
     // Compute wavenumber translation logistics for X direction.
     // Requires turning a C2R FFT complex-valued coefficient count into a
@@ -1215,10 +1218,8 @@ void load_collocation_values(
         boost::shared_ptr<suzerain::bspline> Fb;
         boost::shared_ptr<suzerain::bsplineop> Fbop;
         load(h, Fb, Fbop);
-        const real_t bsplines_dist = bspline_bases_distance(b, *Fb);
-#pragma warning(push,disable:1572)
-        const bool   bsplines_same = bsplines_dist == 0;
-#pragma warning(pop)
+        const double bsplines_dist = bspline_bases_distance(b, *Fb);
+        const bool bsplines_same = bsplines_dist < bsplines_distinct_distance;
         if (!bsplines_same) {
             ERROR0("Physical restart has different wall-normal bases ("
                    << bsplines_dist << ")");
