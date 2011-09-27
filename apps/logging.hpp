@@ -40,37 +40,37 @@
 /** \def TRACE0
  * Log a message at trace level on rank zero.
  * With one argument,  log the provided message using name "root".
- * With two arguments, the arguments are the name and message respectively.
+ * With two arguments, the arguments are the name and message.
  */
 
 /** \def DEBUG0
  * Log a message at debug level on rank zero.
  * With one argument,  log the provided message using name "root".
- * With two arguments, the arguments are the name and message respectively.
+ * With two arguments, the arguments are the name and message.
  */
 
 /** \def INFO0
  * Log a message at info level on rank zero.
  * With one argument,  log the provided message using name "root".
- * With two arguments, the arguments are the name and message respectively.
+ * With two arguments, the arguments are the name and message.
  */
 
 /** \def WARN0
  * Log a message at warn level on rank zero.
  * With one argument,  log the provided message using name "root".
- * With two arguments, the arguments are the name and message respectively.
+ * With two arguments, the arguments are the name and message.
  */
 
 /** \def ERROR0
  * Log a message at error level on rank zero.
  * With one argument,  log the provided message using name "root".
- * With two arguments, the arguments are the name and message respectively.
+ * With two arguments, the arguments are the name and message.
  */
 
 /** \def FATAL0
  * Log a message at fatal level on rank zero.
  * With one argument,  log the provided message using name "root".
- * With two arguments, the arguments are the name and message respectively.
+ * With two arguments, the arguments are the name and message.
  */
 
 /* @} */
@@ -83,43 +83,43 @@
 /** \def TRACE
  * Log a message at trace level from all ranks with a rank-specific name.
  * With one argument,  log the provided message.
- * With two arguments, the arguments are the name suffix and message respectively.
+ * With two arguments, the arguments are the name suffix and message.
  */
 
 /** \def DEBUG
  * Log a message at debug level from all ranks with a rank-specific name.
  * With one argument,  log the provided message.
- * With two arguments, the arguments are the name suffix and message respectively.
+ * With two arguments, the arguments are the name suffix and message.
  */
 
 /** \def INFO
  * Log a message at info level from all ranks with a rank-specific name.
  * With one argument,  log the provided message.
- * With two arguments, the arguments are the name suffix and message respectively.
+ * With two arguments, the arguments are the name suffix and message.
  */
 
 /** \def WARN
  * Log a message at warn level from all ranks with a rank-specific name.
  * With one argument,  log the provided message.
- * With two arguments, the arguments are the name suffix and message respectively.
+ * With two arguments, the arguments are the name suffix and message.
  */
 
 /** \def ERROR
  * Log a message at error level from all ranks with a rank-specific name.
  * With one argument,  log the provided message.
- * With two arguments, the arguments are the name suffix and message respectively.
+ * With two arguments, the arguments are the name suffix and message.
  */
 
 /** \def FATAL
  * Log a message at fatal level from all ranks with a rank-specific name.
  * With one argument,  log the provided message.
- * With two arguments, the arguments are the name suffix and message respectively.
+ * With two arguments, the arguments are the name suffix and message.
  */
 
 /* @} */
 
 
-/** @name Macros to check if particular logging levels are enabled on rank zero.
+/** @name Macros checking if particular log levels are enabled on rank zero.
  *  @{
  */
 
@@ -162,7 +162,7 @@
 /* @} */
 
 
-/** @name Macros to check if particular logging levels are enabled on all ranks.
+/** @name Macros checking if particular log levels are enabled on all ranks.
  *  @{
  */
 
