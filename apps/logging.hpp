@@ -126,37 +126,37 @@
 /** \def TRACE0_ENABLED
  * Is logging enabled at trace level on rank zero?
  * With no arguments, check enabled status using name "root".
- * With no arguments, check enabled status using provided name.
+ * With one argument, check enabled status using provided name.
  */
 
 /** \def DEBUG0_ENABLED
  * Is logging enabled at debug level on rank zero?
  * With no arguments, check enabled status using name "root".
- * With no arguments, check enabled status using provided name.
+ * With one argument, check enabled status using provided name.
  */
 
 /** \def INFO0_ENABLED
  * Is logging enabled at info level on rank zero?
  * With no arguments, check enabled status using name "root".
- * With no arguments, check enabled status using provided name.
+ * With one argument, check enabled status using provided name.
  */
 
 /** \def WARN0_ENABLED
  * Is logging enabled at warn level on rank zero?
  * With no arguments, check enabled status using name "root".
- * With no arguments, check enabled status using provided name.
+ * With one argument, check enabled status using provided name.
  */
 
 /** \def ERROR0_ENABLED
  * Is logging enabled at error level on rank zero?
  * With no arguments, check enabled status using name "root".
- * With no arguments, check enabled status using provided name.
+ * With one argument, check enabled status using provided name.
  */
 
 /** \def FATAL0_ENABLED
  * Is logging enabled at fatal level on rank zero?
  * With no arguments, check enabled status using name "root".
- * With no arguments, check enabled status using provided name.
+ * With one argument, check enabled status using provided name.
  */
 
 /* @} */
@@ -169,37 +169,123 @@
 /** \def TRACE_ENABLED
  * Is logging enabled at trace level on all ranks?
  * With no arguments, check enabled status using rank-specific name.
- * With no arguments, check enabled status using provided name suffix.
+ * With one argument, check enabled status using provided name suffix.
  */
 
 /** \def DEBUG_ENABLED
  * Is logging enabled at debug level on all ranks?
  * With no arguments, check enabled status using rank-specific name.
- * With no arguments, check enabled status using provided name suffix.
+ * With one argument, check enabled status using provided name suffix.
  */
 
 /** \def INFO_ENABLED
  * Is logging enabled at info level on all ranks?
  * With no arguments, check enabled status using rank-specific name.
- * With no arguments, check enabled status using provided name suffix.
+ * With one argument, check enabled status using provided name suffix.
  */
 
 /** \def WARN_ENABLED
  * Is logging enabled at warn level on all ranks?
  * With no arguments, check enabled status using rank-specific name.
- * With no arguments, check enabled status using provided name suffix.
+ * With one argument, check enabled status using provided name suffix.
  */
 
 /** \def ERROR_ENABLED
  * Is logging enabled at error level on all ranks?
  * With no arguments, check enabled status using rank-specific name.
- * With no arguments, check enabled status using provided name suffix.
+ * With one argument, check enabled status using provided name suffix.
  */
 
 /** \def FATAL_ENABLED
  * Is logging enabled at fatal level on all ranks?
  * With no arguments, check enabled status using rank-specific name.
- * With no arguments, check enabled status using provided name suffix.
+ * With one argument, check enabled status using provided name suffix.
+ */
+
+/* @} */
+
+
+/** @name Macros enabling logging at particular log levels on rank zero.
+ *  @{
+ */
+
+/** \def TRACE0_ENABLE
+ * Enable logging at trace level on rank zero.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/** \def DEBUG0_ENABLE
+ * Enable logging at debug level on rank zero.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/** \def INFO0_ENABLE
+ * Enable logging at info level on rank zero.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/** \def WARN0_ENABLE
+ * Enable logging at warn level on rank zero.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/** \def ERROR0_ENABLE
+ * Enable logging at error level on rank zero.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/** \def FATAL0_ENABLE
+ * Enable logging at fatal level on rank zero.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/* @} */
+
+
+/** @name Macros enabling logging at particular log levels on all ranks.
+ *  @{
+ */
+
+/** \def TRACE_ENABLE
+ * Enable logging at trace level on all ranks.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/** \def DEBUG_ENABLE
+ * Enable logging at trace level on all ranks.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/** \def INFO_ENABLE
+ * Enable logging at trace level on all ranks.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/** \def WARN_ENABLE
+ * Enable logging at trace level on all ranks.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/** \def ERROR_ENABLE
+ * Enable logging at trace level on all ranks.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
+ */
+
+/** \def FATAL_ENABLE
+ * Enable logging at trace level on all ranks.
+ * With no arguments, enable for name "root".
+ * With one argument, enable for provided name.
  */
 
 /* @} */
@@ -354,6 +440,36 @@ inline logger_type& get_logger(logger_type&, logger_type& child)
 #define FATAL_ENABLED(...) \
         LOGGING_DISPATCH(FATAL_ENABLED,LOGGING_PP_NARG("dummy",##__VA_ARGS__),##__VA_ARGS__)
 
+// Dispatch to macro level_ENABLE_ARITY# for # in {1,2}
+// Auxiliary dummy argument added since arity zero breaks LOGGING_PP_NARG
+#define TRACE0_ENABLE(...) \
+        LOGGING_DISPATCH(TRACE0_ENABLE,LOGGING_PP_NARG("dummy",##__VA_ARGS__),__VA_ARGS__)
+#define DEBUG0_ENABLE(...) \
+        LOGGING_DISPATCH(DEBUG0_ENABLE,LOGGING_PP_NARG("dummy",##__VA_ARGS__),__VA_ARGS__)
+#define INFO0_ENABLE(...) \
+        LOGGING_DISPATCH(INFO0_ENABLE, LOGGING_PP_NARG("dummy",##__VA_ARGS__),__VA_ARGS__)
+#define WARN0_ENABLE(...) \
+        LOGGING_DISPATCH(WARN0_ENABLE, LOGGING_PP_NARG("dummy",##__VA_ARGS__),__VA_ARGS__)
+#define ERROR0_ENABLE(...) \
+        LOGGING_DISPATCH(ERROR0_ENABLE,LOGGING_PP_NARG("dummy",##__VA_ARGS__),__VA_ARGS__)
+#define FATAL0_ENABLE(...) \
+        LOGGING_DISPATCH(FATAL0_ENABLE,LOGGING_PP_NARG("dummy",##__VA_ARGS__),__VA_ARGS__)
+
+// Dispatch to macro level_ENABLE_ARITY# for # in {1,2}
+// Auxiliary dummy argument added since arity zero breaks LOGGING_PP_NARG
+#define TRACE_ENABLE(...) \
+        LOGGING_DISPATCH(TRACE_ENABLE,LOGGING_PP_NARG("dummy",##__VA_ARGS__),##__VA_ARGS__)
+#define DEBUG_ENABLE(...) \
+        LOGGING_DISPATCH(DEBUG_ENABLE,LOGGING_PP_NARG("dummy",##__VA_ARGS__),##__VA_ARGS__)
+#define INFO_ENABLE(...) \
+        LOGGING_DISPATCH(INFO_ENABLE, LOGGING_PP_NARG("dummy",##__VA_ARGS__),##__VA_ARGS__)
+#define WARN_ENABLE(...) \
+        LOGGING_DISPATCH(WARN_ENABLE, LOGGING_PP_NARG("dummy",##__VA_ARGS__),##__VA_ARGS__)
+#define ERROR_ENABLE(...) \
+        LOGGING_DISPATCH(ERROR_ENABLE,LOGGING_PP_NARG("dummy",##__VA_ARGS__),##__VA_ARGS__)
+#define FATAL_ENABLE(...) \
+        LOGGING_DISPATCH(FATAL_ENABLE,LOGGING_PP_NARG("dummy",##__VA_ARGS__),##__VA_ARGS__)
+
 // Logging macros emitting messages as "root" only from rank zero.
 #define TRACE0_ARITY1(m) do{LOG4CXX_TRACE(::logging::rankzero,m)}while(0)
 #define DEBUG0_ARITY1(m) do{LOG4CXX_DEBUG(::logging::rankzero,m)}while(0)
@@ -387,6 +503,24 @@ inline logger_type& get_logger(logger_type&, logger_type& child)
 #define WARN0_ENABLED_ARITY2(l)  (::logging::get_logger(l)->isWarnEnabled())
 #define ERROR0_ENABLED_ARITY2(l) (::logging::get_logger(l)->isErrorEnabled())
 #define FATAL0_ENABLED_ARITY2(l) (::logging::get_logger(l)->isFatalEnabled())
+
+// Logging macros to enable logging at and above at particular log levels.
+// Arity is off-by-one to handle limitation of LOGGING_PP_NARG
+#define TRACE0_ENABLE_ARITY1() do{::logging::rankzero->setLevel(::log4cxx::Level::getTrace());}while(0)
+#define DEBUG0_ENABLE_ARITY1() do{::logging::rankzero->setLevel(::log4cxx::Level::getDebug());}while(0)
+#define INFO0_ENABLE_ARITY1()  do{::logging::rankzero->setLevel(::log4cxx::Level::getInfo());}while(0)
+#define WARN0_ENABLE_ARITY1()  do{::logging::rankzero->setLevel(::log4cxx::Level::getWarn());}while(0)
+#define ERROR0_ENABLE_ARITY1() do{::logging::rankzero->setLevel(::log4cxx::Level::getError());}while(0)
+#define FATAL0_ENABLE_ARITY1() do{::logging::rankzero->setLevel(::log4cxx::Level::getFatal());}while(0)
+
+// Logging macros to enable logging at and above particular log levels.
+// Arity is off-by-one to handle limitation of LOGGING_PP_NARG
+#define TRACE0_ENABLE_ARITY2(l) do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getTrace());}while(0)
+#define DEBUG0_ENABLE_ARITY2(l) do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getDebug());}while(0)
+#define INFO0_ENABLE_ARITY2(l)  do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getInfo());}while(0)
+#define WARN0_ENABLE_ARITY2(l)  do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getWarn());}while(0)
+#define ERROR0_ENABLE_ARITY2(l) do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getError());}while(0)
+#define FATAL0_ENABLE_ARITY2(l) do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getFatal());}while(0)
 
 // Logging macros emitting messages from all ranks with rank-specific names.
 #define TRACE_ARITY1(m) do{LOG4CXX_TRACE(::logging::allranks,m)}while(0)
