@@ -894,20 +894,21 @@ void store_coefficients(
     }
 }
 
-// Check if two B-spline bases are identical.  Use strict equality as minor
-// knot differences magnify once collocation points and operators are computed.
-static bool bspline_bases_identical(const suzerain::bspline& a,
-                                    const suzerain::bspline& b)
+// Compute the "distance" between two B-spline bases.  Distance is "huge" if
+// any of the order, number of degrees of freedom, or number of knots differ.
+// When all those criteria match the distance becomes that sum of the absolute
+// differences between the knot vectors.
+static real_t bspline_bases_distance(const suzerain::bspline& a,
+                                     const suzerain::bspline& b)
 {
-    bool retval =    a.k()     == b.k()
-                  && a.n()     == b.n()
-                  && a.nknot() == b.nknot();
-    for (int j = 0; retval && j < b.nknot(); ++j) {
-#pragma warning(push,disable:1572)
-        retval = (a.knot(j) == b.knot(j));
-#pragma warning(pop)
+    double retval = 0;
+    if (a.k() != b.k() || a.n() != b.n() || a.nknot() != b.nknot()) {
+        retval = std::numeric_limits<real_t>::max();
+    } else {
+        for (int j = 0; j < b.nknot(); ++j) {
+            retval += std::abs(a.knot(j) - b.knot(j));
+        }
     }
-
     return retval;
 }
 
@@ -938,7 +939,10 @@ void load_coefficients(const esio_handle h,
     assert(Fy == Fb->n());
 
     // Check if the B-spline basis in the file differs from ours.
-    const bool bsplines_same = bspline_bases_identical(b, *Fb);
+    const real_t bsplines_dist = bspline_bases_distance(b, *Fb);
+#pragma warning(push,disable:1572)
+    const bool   bsplines_same = bsplines_dist == 0;
+#pragma warning(pop)
 
     // Compute wavenumber translation logistics for X direction.
     // Requires turning a C2R FFT complex-valued coefficient count into a
@@ -965,16 +969,16 @@ void load_coefficients(const esio_handle h,
                                             fzb[0], fze[0], fzb[1], fze[1],
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
-    // Possibly prepare a temporary buffer into which to read each scalar field
-    // and a factorization of b's mass matrix.  Used only when
-    // !bsplines_same.
+    // Possibly prepare a tmp buffer into which to read each scalar field and a
+    // factorization of b's mass matrix.  Used only when !bsplines_same.
     typedef boost::multi_array<
         complex_t, 3, suzerain::blas::allocator<complex_t>::type
     > tmp_type;
     boost::scoped_ptr<tmp_type> tmp;
     boost::scoped_ptr<suzerain::bsplineop_luz> mass;
     if (!bsplines_same) {
-        DEBUG0("Differences in B-spline basis require restart projection");
+        INFO0("Differences in B-spline basis require restart projection ("
+              << ")");
         const boost::array<tmp_type::index,3> extent = {{
             Fy, state.shape()[2], state.shape()[3]
         }};
@@ -1204,13 +1208,20 @@ void load_collocation_values(
                     SUZERAIN_EFAILED);
         }
 
-        // Check that restart file specifies the same B-spline basis
-        // TODO Too restrictive-- identical collocation points would be okay
+
+        // Check that restart file specifies the same B-spline basis.
+        // TODO Too restrictive!  Identical collocation points would be okay.
+        // TODO Too restrictive?  Any floating point differences kill us.
         boost::shared_ptr<suzerain::bspline> Fb;
         boost::shared_ptr<suzerain::bsplineop> Fbop;
         load(h, Fb, Fbop);
-        if (!bspline_bases_identical(b, *Fb)) {
-            ERROR0("Physical restart fields have different wall-normal basis");
+        const real_t bsplines_dist = bspline_bases_distance(b, *Fb);
+#pragma warning(push,disable:1572)
+        const bool   bsplines_same = bsplines_dist == 0;
+#pragma warning(pop)
+        if (!bsplines_same) {
+            ERROR0("Physical restart has different wall-normal bases ("
+                   << bsplines_dist << ")");
             SUZERAIN_ERROR_VOID(
                     "Cannot interpolate during physical space restart",
                     SUZERAIN_EFAILED);
