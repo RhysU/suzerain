@@ -896,8 +896,8 @@ void store_coefficients(
 
 // Compute the "distance" between two B-spline bases.  Distance is "huge" if
 // any of the order, number of degrees of freedom, or number of knots differ.
-// When all those criteria match the distance becomes that sum of the absolute
-// differences between the knot vectors.
+// When all those criteria match the distance becomes the maximum absolute
+// difference between the knot vectors.
 static real_t bspline_bases_distance(const suzerain::bspline& a,
                                      const suzerain::bspline& b)
 {
@@ -906,7 +906,7 @@ static real_t bspline_bases_distance(const suzerain::bspline& a,
         retval = std::numeric_limits<real_t>::max();
     } else {
         for (int j = 0; j < b.nknot(); ++j) {
-            retval += std::abs(a.knot(j) - b.knot(j));
+            retval = std::max(retval, std::abs(a.knot(j) - b.knot(j)));
         }
     }
     return retval;
