@@ -40,6 +40,7 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
 
 #include "precision.hpp"
@@ -128,6 +129,14 @@ void store(const esio_handle h,
 /** Load a GridDefinition from a restart file */
 void load(const esio_handle h,
           suzerain::problem::GridDefinition& grid);
+
+/** Store a TimeDefinition in a restart file */
+void store(const esio_handle h,
+           const suzerain::problem::TimeDefinition<real_t>& timedef);
+
+/** Load a TimeDefinition from a restart file */
+void load(const esio_handle h,
+          suzerain::problem::TimeDefinition<real_t>& timedef);
 
 /**
  * Store manufactured solution parameters in a restart file.

@@ -394,6 +394,39 @@ void load(const esio_handle h,
     }
 }
 
+void store(const esio_handle h,
+           const suzerain::problem::TimeDefinition<real_t>& timedef)
+{
+    DEBUG0("Storing TimeDefinition parameters");
+
+    // Only root writes data
+    int procid;
+    esio_handle_comm_rank(h, &procid);
+
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
+
+    esio_line_write(h, "evmagfactor", &timedef.evmagfactor, 0,
+            timedef.options().find("evmagfactor",false).description().c_str());
+}
+
+void load(const esio_handle h,
+          suzerain::problem::TimeDefinition<real_t>& timedef)
+{
+    DEBUG0("Loading TimeDefinition parameters");
+
+    esio_line_establish(h, 1, 0, 1); // All ranks load
+
+    // evmagfactor not present in pre-revision 24043 restart files
+    if (!(boost::math::isnan)(timedef.evmagfactor)) {
+        INFO0("Overriding timedef using evmagfactor = " << timedef.evmagfactor);
+    } else if (ESIO_NOTFOUND == esio_line_size(h, "evmagfactor", NULL)) {
+        timedef.evmagfactor = 0.72;
+        INFO0("Employing default evmagfactor = " << timedef.evmagfactor);
+    } else {
+        esio_line_read(h, "evmagfactor", &timedef.evmagfactor, 0);
+    }
+}
+
 static void attribute_storer(const esio_handle &h,
                              const char *location,
                              const std::string &name,

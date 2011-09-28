@@ -60,6 +60,7 @@ using std::numeric_limits;
 // Global parameters initialized in main()
 using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
+using suzerain::problem::TimeDefinition;
 static ScenarioDefinition<real_t> scenario(
         /* Re        */ "100",
         /* Ma        */ "1.15",
@@ -80,6 +81,8 @@ static GridDefinition grid(
         /* htdelta */ 3,
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
+static TimeDefinition<real_t> timedef(
+        /* evmagfactor per Venugopal */ "0.72");
 static shared_ptr<const suzerain::pencil_grid> dgrid;
 static shared_ptr<channel::manufactured_solution> msoln(
             new channel::manufactured_solution);
@@ -181,6 +184,7 @@ int main(int argc, char **argv)
 
         options.add_definition(scenario);
         options.add_definition(grid);
+        options.add_definition(timedef);
         options.add_definition(msdef);
         options.add_options()
             ("clobber", "Overwrite an existing restart file?")
@@ -263,6 +267,7 @@ int main(int argc, char **argv)
     channel::store(esioh, scenario);
     channel::store(esioh, grid, scenario.Lx, scenario.Lz);
     channel::store(esioh, b, bop, gop);
+    channel::store(esioh, timedef);
     channel::store(esioh, scenario, msoln);
     esio_file_flush(esioh);
 

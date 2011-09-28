@@ -98,8 +98,7 @@ static const TimeDefinition<real_t> timedef(
         /* status_dt                 */ 0,
         /* status_nt                 */ 0,
         /* min_dt                    */ 1e-8,
-        /* max_dt                    */ 0,
-        /* evmagfactor per Venugopal */ 0.72);
+        /* max_dt                    */ 0);
 static const NoiseDefinition  noisedef;
 static const SignalDefinition sigdef;
 
@@ -735,6 +734,7 @@ int main(int argc, char **argv)
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     channel::load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
     channel::load(esioh, const_cast<GridDefinition&>(grid));
+    channel::load(esioh, const_cast<TimeDefinition<real_t>&>(timedef));
     channel::load(esioh, scenario, msoln);
     esio_file_close(esioh);
 
@@ -834,6 +834,7 @@ int main(int argc, char **argv)
         channel::store(h, scenario);
         channel::store(h, grid, scenario.Lx, scenario.Lz);
         channel::store(h, b, bop, gop);
+        channel::store(h, timedef);
         channel::store(h, scenario, msoln);
         esio_file_close(h);
         esio_handle_finalize(h);
