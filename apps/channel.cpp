@@ -439,18 +439,16 @@ void store(const esio_handle h,
            const suzerain::problem::ScenarioDefinition<real_t>& scenario,
            const boost::shared_ptr<manufactured_solution>& msoln)
 {
-    static const char location[] = "channel::manufactured_solution";
+    // Only proceed if a manufactured solution is being provided
+    if (!msoln) return;
 
-    // Always write a flag to indicate whether or not a MS is in use
-    const int in_use = msoln ? 1 : 0;
+    static const char location[] = "channel::manufactured_solution";
+    const int one = 1;
     int procid;
     esio_handle_comm_rank(h, &procid);
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
-    esio_line_write(h, location, &in_use, 0,
+    esio_line_write(h, location, &one, 0,
             "Is a channel::manufactured_solution in use?");
-
-    // Only proceed if an MS is in use
-    if (!in_use) return;
 
     DEBUG0("Storing channel::manufactured_solution parameters");
 
@@ -506,13 +504,12 @@ void load(const esio_handle h,
 {
     static const char location[] = "channel::manufactured_solution";
 
-
-    // Determine if a manufactured solution should be loaded
-    int in_use;
-    esio_line_establish(h, 1, 0, 1); // All ranks load
-    esio_line_read(h, location, &in_use, 0);
-
-    // Only proceed if an MS is in use
+    // Only proceed if a manufactured solution is active in the restart
+    int in_use = 0;
+    esio_line_establish(h, 1, 0, 1); // All ranks load any data
+    if (ESIO_NOTFOUND != esio_line_size(h, location, NULL)) {
+        esio_line_read(h, location, &in_use, 0);
+    }
     if (!in_use) {
         msoln.reset();
         return;
