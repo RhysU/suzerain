@@ -648,11 +648,13 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                 // Maintain the minimum observed stable time step, if necessary
                 if (delta_t_requested) {
                     namespace timestepper = suzerain::timestepper;
+                    // See convective_stability_criterion documentation for
+                    // why the magic number 4 modifies one_over_delta_y
                     convective_delta_t = suzerain::math::minnan(
                             convective_delta_t,
                             timestepper::convective_stability_criterion(
                                     u.x(), one_over_delta_x,
-                                    u.y(), one_over_delta_y(j),
+                                    u.y(), one_over_delta_y(j) / 4,
                                     u.z(), one_over_delta_z,
                                     evmaxmag_real,
                                     std::sqrt(T) / Ma)); // a/u_0=sqrt(T*)/Ma
