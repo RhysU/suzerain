@@ -68,6 +68,7 @@ using boost::numeric_cast;
 using boost::scoped_ptr;
 using boost::shared_ptr;
 using std::numeric_limits;
+using std::size_t;
 
 // Explicit timestepping scheme uses only complex_t 4D ContiguousState
 // State indices range over (scalar field, Y, X, Z) in wave space
@@ -190,7 +191,7 @@ static void information_L2(const std::string& timeprefix)
     // Build and log L2 of mean conserved state
     std::ostringstream msg;
     msg << timeprefix;
-    for (std::size_t k = 0; k < L2.size(); ++k) {
+    for (size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].mean());
     }
     INFO0(L2_mean, msg.str());
@@ -198,7 +199,7 @@ static void information_L2(const std::string& timeprefix)
     // Build and log L2 of fluctuating conserved state
     msg.str("");
     msg << timeprefix;
-    for (std::size_t k = 0; k < L2.size(); ++k) {
+    for (size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].fluctuating());
     }
     INFO0(L2_fluct, msg.str());
@@ -219,7 +220,7 @@ static void information_bulk(const std::string& timeprefix)
     // Prepare the status message and log it
     std::ostringstream msg;
     msg << timeprefix;
-    for (std::size_t k = 0; k < state_linear->shape()[0]; ++k) {
+    for (size_t k = 0; k < state_linear->shape()[0]; ++k) {
         Eigen::Map<Eigen::VectorXc> mean(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
         append_real(msg << ' ', bulkcoeff.dot(mean.real()));
@@ -237,10 +238,10 @@ static void information_specific_wall_state(const std::string& timeprefix)
 
     // Indices at the lower and upper walls.  Use that wall collocation point
     // values are nothing but the first and last B-spline coefficient values.
-    std::size_t wall[2] = { 0, state_linear->shape()[1] - 1 };
+    size_t wall[2] = { 0, state_linear->shape()[1] - 1 };
 
     // Message lists rho, u, v, w, and total energy at walls
-    for (std::size_t l = 0; l < SUZERAIN_COUNTOF(wall); ++l) {
+    for (size_t l = 0; l < SUZERAIN_COUNTOF(wall); ++l) {
 
         // Avoid computational cost when logging is disabled
         if (!DEBUG0_ENABLED(nick[l])) continue;
@@ -251,7 +252,7 @@ static void information_specific_wall_state(const std::string& timeprefix)
         const real_t rho = ((*state_linear)[ndx::rho][wall[l]][0][0]).real();
         append_real(msg << ' ', rho);
         assert(ndx::rho == 0);
-        for (std::size_t k = 1; k < channel::field::count; ++k) {
+        for (size_t k = 1; k < channel::field::count; ++k) {
             append_real(msg << ' ' ,
                         ((*state_linear)[k][wall[l]][0][0]).real() / rho);
         }
@@ -283,17 +284,17 @@ static void information_manufactured_solution_absolute_error(
     // Output absolute global errors for each field
     std::ostringstream msg;
     msg << timeprefix;
-    for (std::size_t k = 0; k < channel::field::count; ++k) {
+    for (size_t k = 0; k < channel::field::count; ++k) {
         append_real(msg << ' ', L2[k].total());
     }
     INFO0(mms_abserr, msg.str());
 }
 
 /** Tracks last time we output a status line */
-static std::size_t last_status_nt = numeric_limits<std::size_t>::max();
+static size_t last_status_nt = numeric_limits<size_t>::max();
 
 /** Routine to output status.  Signature for TimeController use. */
-static bool log_status(real_t t, std::size_t nt)
+static bool log_status(real_t t, size_t nt)
 {
     // Notice collective operations are never inside logging macros!
 
@@ -345,10 +346,10 @@ static bool log_status(real_t t, std::size_t nt)
 }
 
 /** Tracks last time a restart file was written successfully */
-static std::size_t last_restart_saved_nt = numeric_limits<std::size_t>::max();
+static size_t last_restart_saved_nt = numeric_limits<size_t>::max();
 
 /** Routine to store a restart file.  Signature for TimeController use. */
-static bool save_restart(real_t t, std::size_t nt)
+static bool save_restart(real_t t, size_t nt)
 {
     // Defensively avoid multiple invocations with no intervening changes
     if (last_restart_saved_nt == nt) {
@@ -449,7 +450,7 @@ static bool soft_teardown = false;
  * Routine to check for incoming signals on any rank.
  * Signature for TimeController use.
  */
-static bool process_any_signals_received(real_t t, std::size_t nt)
+static bool process_any_signals_received(real_t t, size_t nt)
 {
     // DeltaTAllreducer performs the Allreduce necessary to get local status
     // from atomic_signal_received into global status in signal_received.
@@ -529,6 +530,17 @@ private:
 
 public:
 
+    // Maintains the mean ratio of each delta_t_candidate to the minimum
+    // delta_t_candidate selected on each operator() invocation.  Useful
+    // for determining the relative restrictiveness of each criterion.
+    std::vector<boost::accumulators::accumulator_set<
+                real_t,
+                boost::accumulators::stats<boost::accumulators::tag::mean>
+        > > normalized_ratios;
+
+    // Provides small default capacity for normalized_ratios
+    DeltaTAllreducer() : normalized_ratios(2) {}
+
     real_t operator()(const std::vector<real_t>& delta_t_candidates) {
 
         // Copy incoming candidates so we may mutate them
@@ -565,7 +577,7 @@ public:
             double wtime_projected = wtime
                 + 2*(acc::mean(period) + 3*std::sqrt(acc::variance(period)));
             // ...to which we add a pessimistic estimate for dumping a restart
-            if (last_restart_saved_nt == numeric_limits<std::size_t>::max()) {
+            if (last_restart_saved_nt == numeric_limits<size_t>::max()) {
                 wtime_projected += 2*wtime_load_state;  // Load as surrogate
             } else {
                 wtime_projected += (acc::max)(period);  // Includes dumps
@@ -609,8 +621,24 @@ public:
                          candidates.begin() + delta_t_candidates.size()
                                             + signal_received_t::static_size);
 
-        // Delegate remaining work on each rank to the usual DeltaTReducer
-        return suzerain::timestepper::DeltaTReducer()(candidates);
+        // Delegate finding-the-minimum work on each rank to DeltaTReducer
+        // DeltaTReducer logic enforced requirement that min(NaN,x) == NaN
+        const real_t delta_t
+                = suzerain::timestepper::DeltaTReducer()(candidates);
+
+        // Update normalized_ratios using the just chosen delta_t
+        // isnan used to avoid a NaN from destroying all accumulator data
+        if (!(boost::math::isnan)(delta_t)) {
+            const size_t n = candidates.size();
+            if (SUZERAIN_UNLIKELY(normalized_ratios.size() < n)) {
+                normalized_ratios.resize(n);
+            }
+            for (size_t i = 0; i < n; ++i) {
+                normalized_ratios[i](candidates[i] / delta_t);
+            }
+        }
+
+        return delta_t;
     }
 
 } delta_t_allreducer;
@@ -787,12 +815,10 @@ int main(int argc, char **argv)
     // Generating unique file names as needed using mkstemp(3)
     {
         // Pack a temporary buffer with the three file name templates
-        array<std::size_t,4> pos = {{
-                0,
-                restart.metadata.length()     + 1,
-                restart.uncommitted.length()  + 1,
-                restart.desttemplate.length() + 1
-        }};
+        array<size_t,4> pos = {{ 0,
+                                 restart.metadata.length()     + 1,
+                                 restart.uncommitted.length()  + 1,
+                                 restart.desttemplate.length() + 1 }};
         std::partial_sum(pos.begin(), pos.end(), pos.begin());
         boost::scoped_array<char> buf(new char[pos[3]]);
         strcpy(&buf[pos[0]], restart.metadata.c_str());
@@ -1070,21 +1096,32 @@ int main(int argc, char **argv)
         save_restart(tc->current_t(), tc->current_nt());
     }
 
-    // Output details on time advancement
-    {
+    // Output details on time advancement (if advancement occurred)
+    if (tc->current_nt()) {
         std::ostringstream msg;
-        msg.precision(static_cast<int>(
-                    numeric_limits<real_t>::digits10 * 0.75));
+        msg.precision(static_cast<int>(numeric_limits<real_t>::digits10*0.75));
         msg << "Advanced simulation from t_initial = " << initial_t
             << " to t_final = " << tc->current_t()
             << " in " << tc->current_nt() << " steps";
         INFO0(msg.str());
+        msg.str("");
+        msg.precision(static_cast<int>(numeric_limits<real_t>::digits10*0.50));
+        msg << "Min/mean/max/stddev of delta_t: "
+            << tc->taken_min()  << ", "
+            << tc->taken_mean() << ", "
+            << tc->taken_max()  << ", "
+            << tc->taken_stddev();
+        INFO0(msg.str());
+        msg.str("");
+        msg << "Mean delta_t criteria versus minimum criterion: ";
+        const size_t n = delta_t_allreducer.normalized_ratios.size();
+        for (size_t i = 0; i < n; ++i) {
+            namespace acc = boost::accumulators;
+            msg << acc::mean(delta_t_allreducer.normalized_ratios[i]);
+            if (i < n-1) msg << ", ";
+        }
+        INFO0(msg.str());
     }
-    INFO0("Min/mean/max/stddev of delta_t: "
-          << tc->taken_min()  << ", "
-          << tc->taken_mean() << ", "
-          << tc->taken_max()  << ", "
-          << tc->taken_stddev());
 
     // Output simulation advancement rate using flow through time language
     const real_t flowthroughs = (tc->current_t() - initial_t)
@@ -1092,9 +1129,12 @@ int main(int argc, char **argv)
     if (flowthroughs > 0) {
         INFO0("Simulation advance corresponds to "
               << flowthroughs << " flow throughs");
-        INFO0("Simulation advancing at wall time per flow through of "
-              << (wtime_advance_end - wtime_advance_start) / flowthroughs
-              << " seconds");
+        const real_t wt_per_ft = (wtime_advance_end - wtime_advance_start)
+                               / flowthroughs;
+        INFO0("Advancing at wall time per flow through of "
+              << wt_per_ft << " seconds ("
+              << wt_per_ft / suzerain::mpi::comm_size(MPI_COMM_WORLD)
+              << " per rank)");
         INFO0("Advancement rate calculation ignores "
               << (MPI_Wtime() - wtime_mpi_init
                   - (wtime_advance_end - wtime_advance_start))
