@@ -122,16 +122,28 @@ public:
  * chosen timestepping method.  For example, it is \f$\sqrt{3}\f$ for the SMR91
  * scheme.
  *
- * @note For formulations in which an explicit Mach number
+ * For formulations in which an explicit Mach number
  * \f$\mbox{Ma}=\frac{u_0}{a_0}\f$ appears, one \em must provide the velocities
  * and the sound speed \em both nondimensionalized using \f$u_0\f$.  That
  * expressions like \f$\left|u\right| + \frac{a}{\mbox{Ma}}\f$ are appropriate
  * in that context can be seen by finding the eigenvalues of the Euler
  * equations in such a nondimensionalization.
  *
- * @note Using a hybrid implicit/explicit %timestepper with acoustic terms
- * computed implicitly effectively sets the sound speed to be zero for this CFL
+ * Using a hybrid implicit/explicit %timestepper with acoustic terms computed
+ * implicitly effectively sets the sound speed to be zero for this CFL
  * calculation.
+ *
+ * @note Prem Venugopal's 2003 thesis used a nearly identical conservative
+ * stability criterion (equation 3.10).  Venugopal found the constraint to be
+ * overly conservative in the wall-normal direction because the derivation
+ * assumed periodicity.  In section 3.2 he presents a linearized analysis
+ * taking into account the inhomogeneous nature of the wall-normal direction.
+ * He determined that the wall-normal imaginary eigenvalue magnitude dropped by
+ * nearly an order of magnitude after taking into account the inhomogeneity.
+ * He concluded that using an effective \f$1/\Delta{}y\f$ <i>four<i> times
+ * smaller than the nominal value was feasible (equation 3.29).  His approach
+ * can be accomplished by specifying <tt>one_over_delta_y / 4</tt> when
+ * invoking this method.
  *
  * @param u_x              Velocity in the X direction \f$u_{x}\f$
  * @param one_over_delta_x Inverse local X grid spacing \f$1/\Delta{}x\f$
@@ -197,9 +209,9 @@ FPT convective_stability_criterion(
  * the SMR91 scheme.  The absolute values within the maximum operation
  * account for the possibility that \f$\nu<\nu_{0}\f$.
  *
- * @note Using a hybrid implicit/explicit %timestepper with viscous terms
- * computed implicitly sets \f$\nu_0\f$ to be the reference kinematic viscosity
- * about which the viscous terms were linearized.
+ * Using a hybrid implicit/explicit %timestepper with viscous terms computed
+ * implicitly sets \f$\nu_0\f$ to be the reference kinematic viscosity about
+ * which the viscous terms were linearized.
  *
  * @param one_over_delta_x Inverse local X grid spacing \f$1/\Delta{}x\f$
  * @param one_over_delta_y Inverse local Y grid spacing \f$1/\Delta{}y\f$
