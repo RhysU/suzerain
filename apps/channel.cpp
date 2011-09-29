@@ -53,6 +53,7 @@
 template class nsctpl_rholut::manufactured_solution<real_t>;
 
 using boost::numeric_cast;
+using std::size_t;
 
 namespace channel {
 
@@ -823,7 +824,7 @@ void load_time(const esio_handle h,
 
 template<>
 suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
-           const std::size_t howmany_fields,
+           const size_t howmany_fields,
            const suzerain::pencil_grid& dgrid)
 {
     // Create instance with appropriate padding to allow P3DFFTification
@@ -1137,7 +1138,7 @@ void store_collocation_values(
     // Copy-and-convert coefficients into collocation point values
     // Transforms from full-wave in state to full-physical in scratch
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
-    for (std::size_t i = 0; i < channel::field::count; ++i) {
+    for (size_t i = 0; i < channel::field::count; ++i) {
         obase.diffwave_accumulate(0, 0, 1., state, i, 0., scratch, i);
         obase.bop_apply(0, 1, scratch, i);
         dgrid.transform_wave_to_physical(
@@ -1309,7 +1310,7 @@ void load_collocation_values(
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.form(1, &scale_factor, bop);
 
-    for (std::size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys(i, 0)); // X, Z
         obase.bop_solve(massluz, state, i);             // Y
     }
@@ -1325,7 +1326,7 @@ void load(const esio_handle h,
 {
     // Check whether load_coefficients(...) should work
     bool trycoeffs = true;
-    for (std::size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < field::count; ++i) {
         int ncomponents = 0;
         switch (esio_field_sizev(h, field::name[i], 0, 0, 0, &ncomponents)) {
             case ESIO_SUCCESS:
@@ -1371,7 +1372,7 @@ static void parse_range(const std::string& s,
     assert(defaultmax <= absmax);
 
     // Split s on a mandatory colon into whitespace-trimmed s_{min,max}
-    const std::size_t colonpos = s.find_first_of(':');
+    const size_t colonpos = s.find_first_of(':');
     if (colonpos == std::string::npos) {
         throw std::invalid_argument(std::string(name)
             + " not in format \"low:high\", \"[low]:high\", or low:[high].");
@@ -1578,7 +1579,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
     // 1) Generate a random vector-valued field \tilde{A}.
     // For each scalar component of \tilde{A}...
-    for (std::size_t l = 0; l < 3; ++l) {
+    for (size_t l = 0; l < 3; ++l) {
 
         for (int k = 0; k < grid.dN.z(); ++k) {
             if (!wavenumber_translatable(grid.N.z(), grid.dN.z(), k)) continue;
@@ -1633,7 +1634,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     //     and now has the velocity perturbation properties we desire.
 
     // Copy s[2l] into s[2l+1] as we need two copies to compute curl A
-    for (std::size_t l = 0; l < 3; ++l) s[2*l+1] = s[2*l];
+    for (size_t l = 0; l < 3; ++l) s[2*l+1] = s[2*l];
 
     // Prepare physical-space view of the wave-space storage
     physical_view<field::count+3>::type p
@@ -1739,7 +1740,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
     //  6) Copy state into auxiliary state storage and bring to
     //     physical space.
-    for (std::size_t i = 0; i < channel::field::count; ++i) {
+    for (size_t i = 0; i < channel::field::count; ++i) {
         s[i] = state[i];
         obase.bop_apply(0, 1.0, s, i);
         dgrid.transform_wave_to_physical(&p(i,0));
@@ -1797,7 +1798,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     massluz.form(1, &scale_factor, bop);
     assert(field::ndx::rho == 0);
     assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::rhou);
-    for (std::size_t i = field::ndx::rhou; i < field::count; ++i) {
+    for (size_t i = field::ndx::rhou; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&p(i, 0));      // X, Z
         obase.bop_solve(massluz, s, i);                  // Y
     }
@@ -1805,7 +1806,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     //  9) Overwrite state storage with the new perturbed state.
     assert(field::ndx::rho == 0);
     assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::rhou);
-    for (std::size_t i = field::ndx::rhou; i < channel::field::count; ++i) {
+    for (size_t i = field::ndx::rhou; i < channel::field::count; ++i) {
         state[i] = s[i];
     }
 }
@@ -1947,7 +1948,7 @@ void accumulate_manufactured_solution(
         suzerain::multi_array::fill(swave, 0);
     } else {
         // ...or scale data by beta and transform it to physical space.
-        for (std::size_t i = 0; i < field::count; ++i) {
+        for (size_t i = 0; i < field::count; ++i) {
             obase.bop_apply(0, beta, swave, i);
             dgrid.transform_wave_to_physical(&sphys(i,0));
         }
@@ -2000,7 +2001,7 @@ void accumulate_manufactured_solution(
     suzerain::bsplineop_luz massluz(bop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.form(1, &scale_factor, bop);
-    for (std::size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys(i, 0));      // X, Z
         obase.bop_solve(massluz, swave, i);                  // Y
     }
