@@ -48,9 +48,9 @@ case "$INPUT" in                                                         #(
                  INPUT=$(canonpath "$JOBDIR/input.h5")
                  ;;
 esac
-# If JOBDIR ends with JOB_ID, add or update '../last' for postprocessing
-case "$JOBDIR" in                                                     #(
-    */${JOB_ID}) ln -f -s "$JOB_ID" ../last
+# If JOBDIR ends with JOB_ID, add or overwrite '../last' for postprocessing
+case "$JOBDIR" in                                                        #(
+    */${JOB_ID}) ln -f -n -s "$JOB_ID" ../last
                  ;;
 esac
 CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $OPTIONS $TMPFILES"
