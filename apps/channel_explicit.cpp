@@ -1129,12 +1129,9 @@ int main(int argc, char **argv)
     if (flowthroughs > 0) {
         INFO0("Simulation advance corresponds to "
               << flowthroughs << " flow throughs");
-        const real_t wt_per_ft = (wtime_advance_end - wtime_advance_start)
-                               / flowthroughs;
         INFO0("Advancing at wall time per flow through of "
-              << wt_per_ft << " seconds ("
-              << wt_per_ft / suzerain::mpi::comm_size(MPI_COMM_WORLD)
-              << " per rank)");
+              << (wtime_advance_end - wtime_advance_start) / flowthroughs
+              << " seconds");
         INFO0("Advancement rate calculation ignores "
               << (MPI_Wtime() - wtime_mpi_init
                   - (wtime_advance_end - wtime_advance_start))
