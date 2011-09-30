@@ -109,5 +109,10 @@ done
 # Mail output to the job submitter.  Sleep required for message receipt.
 mail -s "Job $JOB_ID ($JOB_NAME) Output [$CMDEXIT]" $USER < ./output && sleep 10
 
-# Command exit status is returned to the batch system
-exit $CMDEXIT
+# Sun Grid Engine blocks any dependent (-hold_jid) jobs on exit 100,
+# so coerce CMDEXIT to be either 0 if we succeeded or 100 if we failed.
+if [ "$CMDEXIT" = 0 ]; then
+    exit 0
+else
+    exit 100
+fi
