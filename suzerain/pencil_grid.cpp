@@ -99,6 +99,12 @@ void pencil_grid_p3dfft::construct_(int Nx, int Ny, int Nz, int Pa, int Pb)
         p3dfft_setup_called_ = true;
     }
 
+    // Ensure design assumptions hold for linked P3DFFT library
+    if (!p3dfft_using_stride1())
+        throw std::runtime_error("!p3dfft_using_stride1()");
+    if (p3dfft_get_precision() != 2)
+        throw std::runtime_error("p3dfft_get_precision() != 2");
+
     // Retrieve information for local input and output pencils
     // P3DFFT uses int types; defensively ensure we do too
     get_dims(local_physical_start.data(),

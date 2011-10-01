@@ -5,7 +5,6 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
-#include <p3dfft_d.h>
 #include <suzerain/diffwave.h>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
@@ -293,12 +292,6 @@ static void test_accumulateAndApply(const int Ny,
                                << worstrelerror);
         }
     }
-}
-
-BOOST_AUTO_TEST_CASE( p3dfft_sanity_check )
-{
-    BOOST_REQUIRE(p3dfft_using_stride1());
-    BOOST_REQUIRE_EQUAL(p3dfft_get_precision(), 2);
 }
 
 BOOST_AUTO_TEST_CASE( accumulate_quasi_1D_not_dealiased )
