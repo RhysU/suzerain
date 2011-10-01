@@ -2,8 +2,8 @@
 
 AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
 AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
-AM_CPPFLAGS   += $(MKL_CFLAGS) $(GSL_CFLAGS) $(LOG4CXX_CFLAGS)
-AM_CPPFLAGS   += $(BOOST_CPPFLAGS) $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS)
+AM_CPPFLAGS   += $(MKL_CFLAGS) $(GSL_CFLAGS) $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
+AM_CPPFLAGS   += $(UNDERLING_CFLAGS) $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS)
 AM_CPPFLAGS   += $(EIGEN_CFLAGS)
 AM_LDFLAGS     =
 bin_PROGRAMS       = # Append below
@@ -107,6 +107,7 @@ libsuzerain_la_SOURCES += signal_definition.cpp
 libsuzerain_la_SOURCES += svehla.c
 libsuzerain_la_LDFLAGS  = -release $(PACKAGE_VERSION)
 libsuzerain_la_LIBADD   = $(GRVY_LIBS)
+libsuzerain_la_LIBADD  += $(UNDERLING_LIBS)
 libsuzerain_la_LIBADD  += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
 libsuzerain_la_LIBADD  += $(GSL_LIBS)
 libsuzerain_la_LIBADD  += $(BOOST_IOSTREAMS_LDFLAGS)

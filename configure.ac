@@ -154,13 +154,25 @@ ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LDFLAGS} ${MKL_LIBS} ${FLIBS}"
 AX_PATH_GSL(1.14,,AC_MSG_ERROR([Could not find required GSL version.]))
 AX_FFTW3()
-PKG_CHECK_MODULES([P3DFFT],[suzerain-p3dfft])
+PKG_CHECK_MODULES([ESIO],[esio-hdf5 >= 0.1.6])
 PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
         AC_DEFINE([HAVE_GRVY],[1],[Defined if GRVY Toolkit found])
     ], [
         AC_MSG_WARN([Could not find GRVY pkg-config file; Continuing...])
     ])
-PKG_CHECK_MODULES([ESIO],[esio-hdf5 >= 0.1.6])
+PKG_CHECK_MODULES([P3DFFT],[suzerain-p3dfft],[
+        AC_DEFINE([HAVE_SUZERAIN_P3DFFT],[1],
+                  [Defined if Suzerain-specific version of P3DFFT found])
+        found_pencil_library=yes
+    ], [:])
+PKG_CHECK_MODULES([UNDERLING],[underling-fftw >= 0.2.0],[
+        AC_DEFINE([HAVE_UNDERLING],[1],
+                  [Defined if underling library found])
+        found_pencil_library=yes
+    ], [:])
+if [ test "$found_pencil_library" != "yes" ]; then
+    AC_MSG_ERROR([Found neither suzerain-p3dfft nor underling libraries])
+fi
 AC_LANG_POP([C])
 AC_CACHE_SAVE
 
