@@ -117,7 +117,7 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
     // Prepare a response-file option iff non-trivial options available
     if (options_.options().size() > 0) {
         desc_clionly.add_options()
-            ("response-file,r", po::value< vector<string> >()->composing(),
+            ("response-file,R", po::value< vector<string> >()->composing(),
              "File to additionally read for options")
         ;
     }
