@@ -33,6 +33,7 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
+#include <p3dfft_d.h>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>

@@ -5,6 +5,7 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
+#include <p3dfft_d.h>
 #include <suzerain/diffwave.h>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>

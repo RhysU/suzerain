@@ -145,4 +145,14 @@ std::size_t pencil_grid_p3dfft::local_wave_storage() const
     return std::max(prodwave, prodphys/2 + (prodphys % 2));
 }
 
+void pencil_grid_p3dfft::transform_wave_to_physical(double * inout) const
+{
+    p3dfft_btran_c2r(inout, inout);
+}
+
+void pencil_grid_p3dfft::transform_physical_to_wave(double * inout) const
+{
+    p3dfft_ftran_r2c(inout, inout);
+}
+
 } // namespace suzerain
