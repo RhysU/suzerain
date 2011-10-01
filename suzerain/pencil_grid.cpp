@@ -39,7 +39,7 @@
 namespace suzerain {
 
 #pragma warning(push, disable:2022)
-void pencil_grid::construct_(int Nx, int Ny, int Nz, int Pa, int Pb)
+void pencil_grid_p3dfft::construct_(int Nx, int Ny, int Nz, int Pa, int Pb)
 #pragma warning(pop)
 {
     global_physical_extent[0] = Nx;
@@ -125,19 +125,19 @@ void pencil_grid::construct_(int Nx, int Ny, int Nz, int Pa, int Pb)
 }
 
 #pragma warning(push,disable:2017)
-pencil_grid::~pencil_grid()
+pencil_grid_p3dfft::~pencil_grid_p3dfft()
 {
     if (p3dfft_setup_called_) p3dfft_clean();
 }
 #pragma warning(pop)
 
-std::size_t pencil_grid::local_physical_storage() const
+std::size_t pencil_grid_p3dfft::local_physical_storage() const
 {
     // Wave space scalars are twice as big as physical space scalars
     return std::max(2*local_wave_extent.prod(), local_physical_extent.prod());
 }
 
-std::size_t pencil_grid::local_wave_storage() const
+std::size_t pencil_grid_p3dfft::local_wave_storage() const
 {
     // Physical space scalars are half as big, but we must round up
     const std::size_t prodphys = local_physical_extent.prod();

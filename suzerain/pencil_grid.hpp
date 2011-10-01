@@ -37,6 +37,12 @@
 namespace suzerain
 {
 
+// Forward declarations
+class pencil_grid_p3dfft;
+
+/** Default to P3DFFT-based \c pencil_grid implementation */
+typedef pencil_grid_p3dfft pencil_grid;
+
 /**
  * Encapsulates P3DFFT %pencil grid details, including the global grid extent
  * and the processor grid decomposition parameters.  Appropriately handles
@@ -44,7 +50,7 @@ namespace suzerain
  * in Y in wave space.  Unless otherwise noted, all indices start from
  * zero with X, Y, and Z having indices 0, 1, and 2, respectively.
  */
-class pencil_grid
+class pencil_grid_p3dfft
 {
 public:
     // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
@@ -60,12 +66,12 @@ public:
      *        directions.
      * @param processor_grid The processor grid decomposition to use in the
      *        \f$ P_0 \f$ and \f$ P_1 \f$ directions.  Providing a zero
-     *        for either value causes that value to be determined automatically.
+     *        for either value causes the value to be determined automatically.
      */
     template < typename RandomAccessContainer1,
                typename RandomAccessContainer2 >
-    pencil_grid(const RandomAccessContainer1 &global_physical_extent,
-                const RandomAccessContainer2 &processor_grid)
+    pencil_grid_p3dfft(const RandomAccessContainer1 &global_physical_extent,
+                       const RandomAccessContainer2 &processor_grid)
     {
         using boost::numeric_cast;
         this->construct_(numeric_cast<int>(global_physical_extent[0]),
@@ -79,7 +85,7 @@ public:
      * Tears down an instance.
      * Under the covers, P3DFFT's <tt>p3dfft_clean</tt> is invoked.
      */
-    ~pencil_grid();
+    ~pencil_grid_p3dfft();
 
     /** Global grid extents using physical space sizes. */
     Eigen::Array3i global_physical_extent;
