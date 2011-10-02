@@ -165,7 +165,7 @@ PKG_CHECK_MODULES([P3DFFT],[suzerain-p3dfft],[
                   [Defined if Suzerain-specific version of P3DFFT found])
         found_pencil_library=yes
     ], [:])
-PKG_CHECK_MODULES([UNDERLING],[underling-fftw >= 0.2.0],[
+PKG_CHECK_MODULES([UNDERLING],[underling-fftw >= 0.2.1],[
         AC_DEFINE([HAVE_UNDERLING],[1],
                   [Defined if underling library found])
         found_pencil_library=yes
