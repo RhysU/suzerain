@@ -1338,6 +1338,9 @@ void p_T(
         Scalar &p,
         Scalar &T)
 {
+    SUZERAIN_UNUSED(alpha);
+    SUZERAIN_UNUSED(beta);
+
     const Scalar rho_inverse = 1/rho;
 
     // Compute scalar quantities
