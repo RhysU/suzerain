@@ -36,6 +36,7 @@
 #include <suzerain/pencil_grid.hpp>
 
 #ifdef HAVE_UNDERLING
+#include <underling/visibility.h>
 #include <underling/underling.hpp>
 #include <underling/underling_fftw.hpp>
 #endif
