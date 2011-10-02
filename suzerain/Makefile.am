@@ -71,6 +71,7 @@ pkginclude_HEADERS += signal_definition.hpp
 pkginclude_HEADERS += state_fwd.hpp
 pkginclude_HEADERS += state.hpp
 pkginclude_HEADERS += storage.hpp
+pkginclude_HEADERS += suzerain-config.h
 pkginclude_HEADERS += svehla.h
 pkginclude_HEADERS += timecontroller.hpp
 pkginclude_HEADERS += time_definition.hpp
