@@ -53,48 +53,22 @@ typedef pencil_grid_underling pencil_grid;
 #endif
 
 /**
- * Encapsulates P3DFFT %pencil grid details, including the global grid extent
- * and the processor grid decomposition parameters.  Appropriately handles
- * munging this information to obtain P3DFFT calls which are stride one
- * in Y in wave space.  Unless otherwise noted, all indices start from
- * zero with X, Y, and Z having indices 0, 1, and 2, respectively.
+ * An abstract base class for %pencil grid implementations atop various
+ * communications libraries.
  */
-class pencil_grid_p3dfft
+class pencil_grid_base
 {
 public:
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+#endif
 
-    /**
-     * Constructs an instance for the given global physical grid extents.
-     * Under the covers, P3DFFT's <tt>p3dfft_setup</tt> is invoked to determine
-     * pencil decomposition parameters for the local process.
-     *
-     * @param global_physical_extent Global physical grid extents in the
-     *        streamwise (X), wall-normal (Y), and spanwise (Z)
-     *        directions.
-     * @param processor_grid The processor grid decomposition to use in the
-     *        \f$ P_0 \f$ and \f$ P_1 \f$ directions.  Providing a zero
-     *        for either value causes the value to be determined automatically.
-     */
-    template < typename RandomAccessContainer1,
-               typename RandomAccessContainer2 >
-    pencil_grid_p3dfft(const RandomAccessContainer1 &global_physical_extent,
-                       const RandomAccessContainer2 &processor_grid)
-    {
-        using boost::numeric_cast;
-        this->construct_(numeric_cast<int>(global_physical_extent[0]),
-                         numeric_cast<int>(global_physical_extent[1]),
-                         numeric_cast<int>(global_physical_extent[2]),
-                         numeric_cast<int>(processor_grid[0]),
-                         numeric_cast<int>(processor_grid[1]));
-    }
+    /** Default constructor for abstract base class */
+    pencil_grid_base() {}
 
-    /**
-     * Tears down an instance.
-     * Under the covers, P3DFFT's <tt>p3dfft_clean</tt> is invoked.
-     */
-    ~pencil_grid_p3dfft();
+    /** Virtual destructor for an abstract base class */
+    virtual ~pencil_grid_base() {};
 
     /** Global grid extents using physical space sizes. */
     Eigen::Array3i global_physical_extent;
@@ -133,15 +107,16 @@ public:
     Eigen::Array3i local_physical_extent;
 
     /**
-     * Retrieve the number of contiguous real scalars required to store
-     * a pencil's worth of data.  This accounts for any padding required
-     * due to differences in the local physical and wave space extents
-     * and the fact that wave storage requires complex scalars.
+     * Retrieve the number of contiguous real scalars required to store a
+     * pencil's worth of data.  This accounts for any padding required due to
+     * differences in the local physical and wave space extents, any padding
+     * required by the transformation routines, and the fact that wave storage
+     * requires complex scalars.
      *
      * @return Number of real-valued scalars (i.e. <tt>double</tt>s)
      *         required to store one pencil's contiguous data.
      */
-    std::size_t local_physical_storage() const;
+    virtual std::size_t local_physical_storage() const = 0;
 
     /**
      * Local pencil wave space starting indices (inclusive) within
@@ -161,15 +136,16 @@ public:
     Eigen::Array3i local_wave_extent;
 
     /**
-     * Retrieve the number of contiguous complex scalars required to store
-     * a pencil's worth of data.  This accounts for any padding required
-     * due to differences in the local physical and wave space extents
-     * and the fact that physical space storage requires real-valued scalars.
+     * Retrieve the number of contiguous complex scalars required to store a
+     * pencil's worth of data.  This accounts for any padding required due to
+     * differences in the local physical and wave space extents, any padding
+     * required by the transformation routines, and the fact that physical
+     * space storage requires real-valued scalars.
      *
      * @return Number of complex-valued scalars (i.e. <tt>double[2]</tt>s)
      *         required to store one pencil's contiguous data.
      */
-    std::size_t local_wave_storage() const;
+    virtual std::size_t local_wave_storage() const = 0;
 
     /**
      * Collectively transform a field from wave space to physical space.  The
@@ -179,7 +155,7 @@ public:
      *
      * @param inout Field to transform in place.
      */
-    void transform_wave_to_physical(double * inout) const;
+    virtual void transform_wave_to_physical(double * inout) const = 0;
 
     /**
      * Collectively transform a field from physical space to wave space.  The
@@ -190,16 +166,63 @@ public:
      *
      * @param inout Field to transform in place.
      */
-    void transform_physical_to_wave(double * inout) const;
+    virtual void transform_physical_to_wave(double * inout) const = 0;
+
+};
+
+/**
+ * Encapsulates P3DFFT %pencil grid details, including the global grid extent
+ * and the processor grid decomposition parameters.  Appropriately handles
+ * munging this information to obtain P3DFFT calls which are stride one in Y in
+ * wave space.  Unless otherwise noted, all indices start from zero with X, Y,
+ * and Z having indices 0, 1, and 2, respectively.  Under the covers, P3DFFT's
+ * <tt>p3dfft_setup</tt> and <tt>p3dfft_clean</tt> are invoked on construction
+ * and destruction of an instance.
+ */
+class pencil_grid_p3dfft : public pencil_grid_base
+{
+public:
+
+    /**
+     * Constructs an instance for the given global physical grid extents.
+     *
+     * @param global_physical_extent Global physical grid extents in the
+     *        streamwise (X), wall-normal (Y), and spanwise (Z)
+     *        directions.
+     * @param processor_grid The processor grid decomposition to use in the
+     *        \f$ P_0 \f$ and \f$ P_1 \f$ directions.  Providing a zero
+     *        for either value causes the value to be determined automatically.
+     */
+    template < typename RandomAccessContainer1,
+               typename RandomAccessContainer2 >
+    pencil_grid_p3dfft(const RandomAccessContainer1 &global_physical_extent,
+                       const RandomAccessContainer2 &processor_grid)
+        : pencil_grid_base()
+    {
+        using boost::numeric_cast;
+        this->construct_(numeric_cast<int>(global_physical_extent[0]),
+                         numeric_cast<int>(global_physical_extent[1]),
+                         numeric_cast<int>(global_physical_extent[2]),
+                         numeric_cast<int>(processor_grid[0]),
+                         numeric_cast<int>(processor_grid[1]));
+    }
+
+    virtual ~pencil_grid_p3dfft();
+
+    virtual std::size_t local_physical_storage() const;
+
+    virtual std::size_t local_wave_storage() const;
+
+    virtual void transform_wave_to_physical(double * inout) const;
+
+    virtual void transform_physical_to_wave(double * inout) const;
 
 private:
 
     /** Was p3dfft_setup successfully called during construction? */
     bool p3dfft_setup_called_;
 
-    /**
-     * Internal routine performing construction-like tasks
-     */
+    /** Internal routine performing construction-like tasks */
     void construct_(int Nx, int Ny, int Nz, int Pa, int Pb);
 };
 
