@@ -161,7 +161,7 @@ PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
         AC_MSG_WARN([Could not find GRVY pkg-config file; Continuing...])
     ])
 PKG_CHECK_MODULES([P3DFFT],[suzerain-p3dfft],[
-        AC_DEFINE([HAVE_SUZERAIN_P3DFFT],[1],
+        AC_DEFINE([HAVE_P3DFFT],[1],
                   [Defined if Suzerain-specific version of P3DFFT found])
         found_pencil_library=yes
     ], [:])

@@ -36,11 +36,21 @@
 namespace suzerain
 {
 
-// Forward declarations
+// Forward declarations for different implementations
 class pencil_grid_p3dfft;
+class pencil_grid_underling;
 
-/** Default to P3DFFT-based \c pencil_grid implementation */
+// Choose pencil grid implementation based on compile-time availability
+// Uses public #defines present from suzerain/suzerain-config.h
+#if defined(SUZERAIN_HAVE_P3DFFT)
+/** Use P3DFFT-based \c pencil_grid implementation */
 typedef pencil_grid_p3dfft pencil_grid;
+#elif defined(SUZERAIN_HAVE_UNDERLING)
+/** Use underling-based \c pencil_grid implementation */
+typedef pencil_grid_underling pencil_grid;
+#else
+# error "Found neither suzerain-p3dfft nor underling libraries"
+#endif
 
 /**
  * Encapsulates P3DFFT %pencil grid details, including the global grid extent
