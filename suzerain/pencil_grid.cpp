@@ -31,8 +31,10 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/mpi.hpp>
+#include <new>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/functional.hpp>
+#include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 
 namespace suzerain {
@@ -166,7 +168,140 @@ void pencil_grid_p3dfft::transform_physical_to_wave(double * inout) const
 
 
 #ifdef HAVE_UNDERLING ////////////////////////////////////////////////////////
-// TODO Implement pencil_grid_underling methods
+
+pencil_grid_underling::~pencil_grid_underling()
+{
+    // Finalize underling
+    underling_cleanup();
+}
+
+std::size_t pencil_grid_underling::local_wave_storage() const
+{
+    // Convert from real to complex sizes, rounding up odd sizes
+    const std::size_t n = problem->local_memory();
+    return (n / 2) + (n % 2);
+}
+
+std::size_t pencil_grid_underling::local_physical_storage() const
+{
+    // Return twice the computed wave storage (for consistency)
+    return 2 * local_wave_storage();
+}
+
+void
+pencil_grid_underling::transform_wave_to_physical(double * inout) const
+{
+    transpose->execute_long_n0_to_long_n1(inout, buf.get());
+    n1_c2c_backward->execute(buf.get(), inout);
+    transpose->execute_long_n1_to_long_n2(inout, buf.get());
+    n2_c2r_backward->execute(buf.get(), inout);
+}
+
+void
+pencil_grid_underling::transform_physical_to_wave(double * inout) const
+{
+    n2_r2c_forward->execute(inout, buf.get());
+    transpose->execute_long_n2_to_long_n1(buf.get(), inout);
+    n1_c2c_forward->execute(inout, buf.get());
+    transpose->execute_long_n1_to_long_n0(buf.get(), inout);
+}
+
+// Helper for shared_ptr destructor usage just below
+static void blas_free_double_helper(double *p) { suzerain::blas::free(p); }
+
+void
+pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb)
+{
+    using std::bad_alloc;
+    using std::runtime_error;
+
+    // Placeholder for future planning functionality
+    const unsigned rigor_flags = 0;
+
+    // Initialize underling (and all dependencies)
+    underling_init(NULL, NULL, 0);
+
+    // Construct grid and problem
+    // Map from pencil_grid to underling's directional expectations
+    // long_n0 will be wave space and long_n2 will be physical space
+    grid.reset(new underling::grid(MPI_COMM_WORLD, Ny, Nz, Nx, Pa, Pb));
+    if (!grid)
+        throw std::runtime_error("underling::grid creation error");
+
+    problem.reset(new underling::problem(*grid, 2));
+    if (!problem)
+        throw std::runtime_error("underling::problem creation error");
+
+    // Compute local storage required and allocate buf (which is tied to the
+    // instance) and tmp (which is used only for planning purposes).
+    const std::size_t nbytes = problem->local_memory()*sizeof(underling::real);
+    buf.reset((underling_real *) suzerain::blas::malloc(nbytes),
+            blas_free_double_helper);
+    if (!buf) throw bad_alloc();
+    boost::shared_ptr<underling::real> tmp(
+            (underling::real *) suzerain::blas::malloc(nbytes),
+            blas_free_double_helper);
+    if (!tmp) throw bad_alloc();
+
+    // Prepare execution plans
+    transpose.reset(new underling::plan(
+            *problem, buf.get(), tmp.get(), 0, rigor_flags));
+    if (!transpose)
+        throw runtime_error("underling::plan creation failed");
+
+    n1_c2c_backward.reset(new underling::fftw::plan(
+            underling::fftw::plan::c2c_backward(),
+            *problem, 1, buf.get(), tmp.get(), rigor_flags));
+    if (!n1_c2c_backward)
+        throw runtime_error("n1_c2c_backward creation failed");
+
+    n2_c2r_backward.reset(new underling::fftw::plan(
+            underling::fftw::plan::c2r_backward(),
+            *problem, 2, buf.get(), tmp.get(), rigor_flags));
+    if (!n2_c2r_backward)
+        throw runtime_error("n2_c2r_backward creation failed");
+
+    n2_r2c_forward.reset(new underling::fftw::plan(
+            *n2_c2r_backward, buf.get(), tmp.get(), rigor_flags));
+    if (!n2_r2c_forward)
+        throw runtime_error("n2_r2c_forward creation failed");
+
+    n1_c2c_forward.reset(new underling::fftw::plan(
+            *n1_c2c_backward, buf.get(), tmp.get(), rigor_flags));
+    if (!n1_c2c_forward)
+        throw runtime_error("n1_c2c_forward creation failed");
+
+    // Copy underling information into format pencil_grid expects
+    global_physical_extent << Nx,           Ny, Nz;
+    global_wave_extent     << (Nx / 2 + 1), Ny, Nz;
+    processor_grid         << grid->pA_size(), grid->pB_size();
+
+    // Prepare information on wave space storage
+    {
+        const underling::extents e = problem->local_extents(0);
+        local_wave_start[0] = e.start[2];
+        local_wave_start[1] = e.start[0];
+        local_wave_start[2] = e.start[1];
+        local_wave_end[0]   = e.start[2] + e.size[2];
+        local_wave_end[1]   = e.start[0] + e.size[0];
+        local_wave_end[2]   = e.start[1] + e.size[1];
+        local_wave_extent   = local_wave_end - local_wave_start;
+    }
+
+    // Prepare information on physical space storage
+    {
+        const underling::fftw::extents e
+                = n2_c2r_backward->local_extents_output();
+        local_physical_start[0] = e.start[2];
+        local_physical_start[1] = e.start[0];
+        local_physical_start[2] = e.start[1];
+        local_physical_end[0]   = e.start[2] + e.size[2];
+        local_physical_end[1]   = e.start[0] + e.size[0];
+        local_physical_end[2]   = e.start[1] + e.size[1];
+        local_physical_extent   = local_physical_end - local_physical_start;
+    }
+}
+
 #endif // HAVE_UNDERLING /////////////////////////////////////////////////////
 
 

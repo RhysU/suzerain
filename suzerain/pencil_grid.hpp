@@ -285,14 +285,14 @@ private:
 
 /** @{ */
 
-    boost::scoped_ptr<underling::grid>       grid_;
-    boost::scoped_ptr<underling::problem>    problem_;
-    boost::scoped_ptr<underling::plan>       transpose_;
-    boost::scoped_ptr<underling::fftw::plan> n1_c2c_backward_;
-    boost::scoped_ptr<underling::fftw::plan> n0_c2r_backward_;
-    boost::scoped_ptr<underling::fftw::plan> n0_r2c_forward_;
-    boost::scoped_ptr<underling::fftw::plan> n1_c2c_forward_;
-    boost::shared_ptr<underling::real>       buf_;
+    boost::scoped_ptr<underling::grid>       grid;
+    boost::scoped_ptr<underling::problem>    problem;
+    boost::scoped_ptr<underling::plan>       transpose;
+    boost::scoped_ptr<underling::fftw::plan> n1_c2c_backward;
+    boost::scoped_ptr<underling::fftw::plan> n2_c2r_backward;
+    boost::scoped_ptr<underling::fftw::plan> n2_r2c_forward;
+    boost::scoped_ptr<underling::fftw::plan> n1_c2c_forward;
+    boost::shared_ptr<underling::real>       buf;
 
 /** @} */
 
