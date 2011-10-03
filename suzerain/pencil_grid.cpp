@@ -35,21 +35,7 @@
 #include <suzerain/functional.hpp>
 #include <suzerain/pencil_grid.hpp>
 
-#ifdef HAVE_UNDERLING
-#include <underling/visibility.h>
-#include <underling/underling.hpp>
-#include <underling/underling_fftw.hpp>
-#endif
-
-#ifdef HAVE_P3DFFT
-#include <p3dfft_d.h>
-#endif
-
 namespace suzerain {
-
-#ifdef HAVE_UNDERLING ////////////////////////////////////////////////////////
-// TODO Implement pencil_grid_underling methods
-#endif // HAVE_UNDERLING /////////////////////////////////////////////////////
 
 #ifdef HAVE_P3DFFT ///////////////////////////////////////////////////////////
 
@@ -177,5 +163,11 @@ void pencil_grid_p3dfft::transform_physical_to_wave(double * inout) const
 }
 
 #endif // HAVE_P3DFFT ////////////////////////////////////////////////////////
+
+
+#ifdef HAVE_UNDERLING ////////////////////////////////////////////////////////
+// TODO Implement pencil_grid_underling methods
+#endif // HAVE_UNDERLING /////////////////////////////////////////////////////
+
 
 } // namespace suzerain

@@ -33,6 +33,15 @@
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.hpp>
 
+#ifdef SUZERAIN_HAVE_P3DFFT
+#include <p3dfft_d.h>
+#endif
+
+#ifdef SUZERAIN_HAVE_UNDERLING
+#include <underling/underling.hpp>
+#include <underling/underling_fftw.hpp>
+#endif
+
 namespace suzerain
 {
 
@@ -40,8 +49,7 @@ namespace suzerain
 class pencil_grid_p3dfft;
 class pencil_grid_underling;
 
-// Choose pencil grid implementation based on compile-time availability
-// Uses public #defines present from suzerain/suzerain-config.h
+// Choose default pencil grid implementation based on built-time availablity
 #if defined(SUZERAIN_HAVE_P3DFFT)
 /** Use P3DFFT-based \c pencil_grid implementation */
 typedef pencil_grid_p3dfft pencil_grid;
@@ -170,6 +178,7 @@ public:
 
 };
 
+#ifdef SUZERAIN_HAVE_P3DFFT
 /**
  * Encapsulates P3DFFT %pencil grid details, including the global grid extent
  * and the processor grid decomposition parameters.  Appropriately handles
@@ -179,7 +188,7 @@ public:
  * <tt>p3dfft_setup</tt> and <tt>p3dfft_clean</tt> are invoked on construction
  * and destruction of an instance.
  */
-class pencil_grid_p3dfft : public pencil_grid_base
+class pencil_grid_p3dfft : public pencil_grid_base, boost::noncopyable
 {
 public:
 
@@ -197,14 +206,12 @@ public:
                typename RandomAccessContainer2 >
     pencil_grid_p3dfft(const RandomAccessContainer1 &global_physical_extent,
                        const RandomAccessContainer2 &processor_grid)
-        : pencil_grid_base()
     {
-        using boost::numeric_cast;
-        this->construct_(numeric_cast<int>(global_physical_extent[0]),
-                         numeric_cast<int>(global_physical_extent[1]),
-                         numeric_cast<int>(global_physical_extent[2]),
-                         numeric_cast<int>(processor_grid[0]),
-                         numeric_cast<int>(processor_grid[1]));
+        construct_(boost::numeric_cast<int>(global_physical_extent[0]),
+                   boost::numeric_cast<int>(global_physical_extent[1]),
+                   boost::numeric_cast<int>(global_physical_extent[2]),
+                   boost::numeric_cast<int>(processor_grid[0]),
+                   boost::numeric_cast<int>(processor_grid[1]));
     }
 
     virtual ~pencil_grid_p3dfft();
@@ -225,6 +232,72 @@ private:
     /** Internal routine performing construction-like tasks */
     void construct_(int Nx, int Ny, int Nz, int Pa, int Pb);
 };
+#endif /* SUZERAIN_HAVE_P3DFFT */
+
+#ifdef SUZERAIN_HAVE_UNDERLING
+/**
+ * Encapsulates underling %pencil grid details, including the global grid
+ * extent and the processor grid decomposition parameters.  Appropriately
+ * handles munging this information to obtain underling calls which are stride
+ * one in Y in wave space.  Unless otherwise noted, all indices start from zero
+ * with X, Y, and Z having indices 0, 1, and 2, respectively.
+ */
+class pencil_grid_underling : public pencil_grid_base, boost::noncopyable
+{
+public:
+
+    /**
+     * Constructs an instance for the given global physical grid extents.
+     *
+     * @param global_physical_extent Global physical grid extents in the
+     *        streamwise (X), wall-normal (Y), and spanwise (Z)
+     *        directions.
+     * @param processor_grid The processor grid decomposition to use in the
+     *        \f$ P_0 \f$ and \f$ P_1 \f$ directions.  Providing a zero
+     *        for either value causes the value to be determined automatically.
+     */
+    template < typename RandomAccessContainer1,
+               typename RandomAccessContainer2 >
+    pencil_grid_underling(const RandomAccessContainer1 &global_physical_extent,
+                          const RandomAccessContainer2 &processor_grid)
+    {
+        construct_(boost::numeric_cast<int>(global_physical_extent[0]),
+                   boost::numeric_cast<int>(global_physical_extent[1]),
+                   boost::numeric_cast<int>(global_physical_extent[2]),
+                   boost::numeric_cast<int>(processor_grid[0]),
+                   boost::numeric_cast<int>(processor_grid[1]));
+    }
+
+    virtual ~pencil_grid_underling();
+
+    virtual std::size_t local_physical_storage() const;
+
+    virtual std::size_t local_wave_storage() const;
+
+    virtual void transform_wave_to_physical(double * inout) const;
+
+    virtual void transform_physical_to_wave(double * inout) const;
+
+private:
+
+    /** Internal routine performing construction-like tasks */
+    void construct_(int Nx, int Ny, int Nz, int Pa, int Pb);
+
+/** @{ */
+
+    boost::scoped_ptr<underling::grid>       grid_;
+    boost::scoped_ptr<underling::problem>    problem_;
+    boost::scoped_ptr<underling::plan>       transpose_;
+    boost::scoped_ptr<underling::fftw::plan> n1_c2c_backward_;
+    boost::scoped_ptr<underling::fftw::plan> n0_c2r_backward_;
+    boost::scoped_ptr<underling::fftw::plan> n0_r2c_forward_;
+    boost::scoped_ptr<underling::fftw::plan> n1_c2c_forward_;
+    boost::shared_ptr<underling::real>       buf_;
+
+/** @} */
+
+};
+#endif /* SUZERAIN_HAVE_UNDERLING */
 
 } // namespace suzerain
 
