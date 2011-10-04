@@ -85,26 +85,6 @@ const char * c_str(const rigor r)
     }
 }
 
-int default_nthreads()
-{
-    int retval = 1;
-
-#ifdef HAVE_FFTW3_THREADS
-#if defined HAVE_OPENMP || defined HAVE_PTHREAD
-    // Use OMP_NUM_THREADS for both OpenMP and pthreads
-    const char * const envstr = getenv("OMP_NUM_THREADS");
-    if (envstr) {
-        const int envnum = atoi(envstr);
-        if (envnum > 0) retval = envnum;
-    }
-#else
-# error "Sanity check failed; unknown FFTW threading model in use."
-#endif
-#endif
-
-    return retval;
-}
-
 void FFTWDefinition::normalize_rigor_fft(std::string input)
 {
     this->rigor_fft_ = c_str(rigor_from(input.c_str()));
@@ -120,8 +100,7 @@ FFTWDefinition::FFTWDefinition(
         const rigor rigor_mpi)
     : IDefinition("FFTW definition"),
       rigor_fft_(c_str(rigor_fft)),
-      rigor_mpi_(c_str(rigor_mpi)),
-      nthreads_(default_nthreads())
+      rigor_mpi_(c_str(rigor_mpi))
 {
     namespace po = ::boost::program_options;
     using ::std::bind2nd;
@@ -149,19 +128,6 @@ FFTWDefinition::FFTWDefinition(
     rigor_mpi_description += "FFTW MPI planning rigor ";
     rigor_mpi_description += rigor_options;
 
-    std::string nthreads_description("Number of FFTW threads to use");
-#ifdef HAVE_FFTW3_THREADS
-#if defined HAVE_OPENMP
-    nthreads_description += " (OpenMP per OMP_NUM_THREADS)";
-#elif defined HAVE_PTHREAD
-    nthreads_description += " (pthread per OMP_NUM_THREADS)";
-#else
-#error "Sanity check failed; unknown FFTW threading model in use."
-#endif
-#else  // HAVE_FFTW3_THREADS not defined
-    nthreads_description += " (Disabled)";
-#endif // HAVE_FFTW3_THREADS
-
     this->add_options()
         ("rigor_fft", po::value(&rigor_fft_)
             ->notifier(
@@ -179,16 +145,13 @@ FFTWDefinition::FFTWDefinition(
                 )
             ->default_value(rigor_mpi_),
          rigor_mpi_description.c_str())
-        ("nthreads", po::value(&nthreads_)
-                ->default_value(nthreads_),
-         nthreads_description.c_str())
-        ("wisdom", po::value(&wisdom_),
-         "File used for accumulating FFTW wisdom")
-        ("timelimit", po::value(&timelimit_)
+        ("plan_wisdom",    po::value(&plan_wisdom_),
+         "File used for accumulating FFTW planning wisdom")
+        ("plan_timelimit", po::value(&plan_timelimit_)
                 ->default_value(FFTW_NO_TIMELIMIT, "unlimited")
                 ->notifier(bind2nd(ptr_fun(ensure_nonnegative<double>),
-                                           "timelimit")),
-         "Maximum time allowed for preparing any plan")
+                                           "plan_timelimit")),
+         "Maximum number of seconds allowed for creating any single FFTW plan")
     ;
 }
 

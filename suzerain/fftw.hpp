@@ -160,22 +160,14 @@ public:
      *
      * @return path to a wisdom file.
      */
-    const std::string& wisdom() const { return wisdom_; };
-
-    /**
-     * Retrieve the number of threads to use in an FFTW multi-threaded
-     * environment.
-     *
-     * @return Number of threads to use.
-     */
-    int nthreads() const { return nthreads_; }
+    const std::string& plan_wisdom() const { return plan_wisdom_; };
 
     /**
      * Retrieve a planning time limit for use with <tt>fftw_set_timelimit</tt>.
      *
      * @return A time limit if one was specified.  Otherwise FFTW_NO_TIMELIMIT.
      */
-    double timelimit() const { return timelimit_; }
+    double plan_timelimit() const { return plan_timelimit_; }
 
 private:
 
@@ -186,13 +178,10 @@ private:
     std::string rigor_mpi_;
 
     /** Stores the user-specified wisdom file location */
-    std::string wisdom_;
-
-    /** Stores the number of threads to use in a threaded environment */
-    int nthreads_;
+    std::string plan_wisdom_;
 
     /** Stores the planning time limit in use */
-    double timelimit_;
+    double plan_timelimit_;
 
     /** Normalizes and stores a value in <tt>this->rigor_fft_</tt>. */
     void normalize_rigor_fft(std::string input);
