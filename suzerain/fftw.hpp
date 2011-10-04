@@ -140,48 +140,29 @@ public:
                             const rigor rigor_mpi = estimate);
 
     /**
-     * Retrieve FFTW rigor flag intended for FFT planning.
-     *
-     * @return rigor flag intended for FFT planning.
+     * The FFTW rigor flag intended for FFT planning.
      * @see rigor() for more details.
      */
-    rigor rigor_fft() const { return rigor_from(rigor_fft_.c_str()); }
+    rigor rigor_fft;
 
     /**
-     * Retrieve FFTW rigor flag intended for FFTW MPI communication planning.
-     *
-     * @return rigor flag intended for FFTW MPI communication planning.
+     * The FFTW rigor flag intended for FFTW MPI communication planning.
      * @see rigor() for more details.
      */
-    rigor rigor_mpi() const { return rigor_from(rigor_mpi_.c_str()); }
+    rigor rigor_mpi;
 
     /**
-     * Retrieve wisdom file location.
-     *
-     * @return path to a wisdom file.
+     * The file location used to accumulate FFTW wisdom.
      */
-    const std::string& plan_wisdom() const { return plan_wisdom_; };
+    std::string plan_wisdom;
 
     /**
-     * Retrieve a planning time limit for use with <tt>fftw_set_timelimit</tt>.
-     *
-     * @return A time limit if one was specified.  Otherwise FFTW_NO_TIMELIMIT.
+     * The planning time limit for use with <tt>fftw_set_timelimit</tt>.
+     * Will be a concrete time limit if one was specified or FFTW_NO_TIMELIMIT.
      */
-    double plan_timelimit() const { return plan_timelimit_; }
+    double plan_timelimit;
 
 private:
-
-    /** Stores the user-specified FFTW FFT rigor string */
-    std::string rigor_fft_;
-
-    /** Stores the user-specified FFTW MPI rigor string */
-    std::string rigor_mpi_;
-
-    /** Stores the user-specified wisdom file location */
-    std::string plan_wisdom_;
-
-    /** Stores the planning time limit in use */
-    double plan_timelimit_;
 
     /** Normalizes and stores a value in <tt>this->rigor_fft_</tt>. */
     void normalize_rigor_fft(std::string input);

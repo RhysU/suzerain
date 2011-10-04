@@ -87,23 +87,25 @@ const char * c_str(const rigor r)
 
 void FFTWDefinition::normalize_rigor_fft(std::string input)
 {
-    this->rigor_fft_ = c_str(rigor_from(input.c_str()));
+    this->rigor_fft = rigor_from(input.c_str());
 }
 
 void FFTWDefinition::normalize_rigor_mpi(std::string input)
 {
-    this->rigor_mpi_ = c_str(rigor_from(input.c_str()));
+    this->rigor_mpi = rigor_from(input.c_str());
 }
 
 FFTWDefinition::FFTWDefinition(
         const rigor rigor_fft,
         const rigor rigor_mpi)
     : IDefinition("FFTW definition"),
-      rigor_fft_(c_str(rigor_fft)),
-      rigor_mpi_(c_str(rigor_mpi))
+      rigor_fft(rigor_fft),
+      rigor_mpi(rigor_mpi)
 {
     namespace po = ::boost::program_options;
+    using ::std::bind1st;
     using ::std::bind2nd;
+    using ::std::mem_fun;
     using ::std::ptr_fun;
     using ::suzerain::validation::ensure_nonnegative;
 
@@ -129,28 +131,26 @@ FFTWDefinition::FFTWDefinition(
     rigor_mpi_description += rigor_options;
 
     this->add_options()
-        ("rigor_fft", po::value(&rigor_fft_)
-            ->notifier(
-                std::bind1st(
-                    std::mem_fun(&FFTWDefinition::normalize_rigor_fft),
-                    this)
-                )
-            ->default_value(rigor_fft_),
+        ("rigor_fft",
+         po::value<std::string>(NULL)
+                ->notifier(bind1st(
+                        mem_fun(&FFTWDefinition::normalize_rigor_fft), this))
+                ->default_value(c_str(rigor_fft)),
          rigor_fft_description.c_str())
-        ("rigor_mpi", po::value(&rigor_mpi_)
-            ->notifier(
-                std::bind1st(
-                    std::mem_fun(&FFTWDefinition::normalize_rigor_mpi),
-                    this)
-                )
-            ->default_value(rigor_mpi_),
+        ("rigor_mpi",
+          po::value<std::string>(NULL)
+                ->notifier(bind1st(
+                        mem_fun(&FFTWDefinition::normalize_rigor_mpi), this))
+                ->default_value(c_str(rigor_mpi)),
          rigor_mpi_description.c_str())
-        ("plan_wisdom",    po::value(&plan_wisdom_),
+        ("plan_wisdom",
+          po::value(&plan_wisdom),
          "File used for accumulating FFTW planning wisdom")
-        ("plan_timelimit", po::value(&plan_timelimit_)
+        ("plan_timelimit",
+          po::value(&plan_timelimit)
                 ->default_value(FFTW_NO_TIMELIMIT, "unlimited")
-                ->notifier(bind2nd(ptr_fun(ensure_nonnegative<double>),
-                                           "plan_timelimit")),
+                ->notifier(bind2nd(
+                        ptr_fun(ensure_nonnegative<double>), "plan_timelimit")),
          "Maximum number of seconds allowed for creating any single FFTW plan")
     ;
 }
