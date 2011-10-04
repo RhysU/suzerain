@@ -58,7 +58,7 @@ rigor rigor_from(const char *name)
     return measure;
 }
 
-rigor rigor_from(unsigned flags)
+rigor rigor_from(const unsigned flags)
 {
     if (flags & FFTW_WISDOM_ONLY) {
         return wisdom_only;
@@ -73,7 +73,7 @@ rigor rigor_from(unsigned flags)
     }
 }
 
-const char * c_str(rigor r)
+const char * c_str(const rigor r)
 {
     switch (r) {
         case estimate:    return "estimate";
@@ -81,7 +81,7 @@ const char * c_str(rigor r)
         case exhaustive:  return "exhaustive";
         case wisdom_only: return "wisdom_only";
         default:
-        case measure:    return "measure";    // Default
+        case measure:     return "measure";    // Default
     }
 }
 
@@ -90,56 +90,71 @@ int default_nthreads()
     int retval = 1;
 
 #ifdef HAVE_FFTW3_THREADS
-#if defined HAVE_OPENMP
+#if defined HAVE_OPENMP || defined HAVE_PTHREAD
+    // Use OMP_NUM_THREADS for both OpenMP and pthreads
     const char * const envstr = getenv("OMP_NUM_THREADS");
     if (envstr) {
         const int envnum = atoi(envstr);
         if (envnum > 0) retval = envnum;
     }
-#elif defined HAVE_PTHREAD
-    // TODO Provide sane nthreads default for FFTW pthread environment
 #else
-#error "Sanity check failed; unknown FFTW threading model in use."
+# error "Sanity check failed; unknown FFTW threading model in use."
 #endif
 #endif
 
     return retval;
 }
 
-void FFTWDefinition::normalize_rigor_string(std::string input)
+void FFTWDefinition::normalize_rigor_fft(std::string input)
 {
-    this->rigor_string_ = c_str(rigor_from(input.c_str()));
+    this->rigor_fft_ = c_str(rigor_from(input.c_str()));
 }
 
-FFTWDefinition::FFTWDefinition()
+void FFTWDefinition::normalize_rigor_mpi(std::string input)
+{
+    this->rigor_mpi_ = c_str(rigor_from(input.c_str()));
+}
+
+FFTWDefinition::FFTWDefinition(
+        const rigor rigor_fft,
+        const rigor rigor_mpi)
     : IDefinition("FFTW definition"),
-      rigor_string_(c_str(measure)),             // Default obtained
-      nthreads_(default_nthreads())              // Default obtained
+      rigor_fft_(c_str(rigor_fft)),
+      rigor_mpi_(c_str(rigor_mpi)),
+      nthreads_(default_nthreads())
 {
     namespace po = ::boost::program_options;
     using ::std::bind2nd;
     using ::std::ptr_fun;
     using ::suzerain::validation::ensure_nonnegative;
 
-    std::string rigor_description;
-    rigor_description += "Planning rigor; one of {";
-    rigor_description += c_str(estimate);
-    rigor_description += ", ";
-    rigor_description += c_str(measure);
-    rigor_description += ", ";
-    rigor_description += c_str(patient);
-    rigor_description += ", ";
-    rigor_description += c_str(exhaustive);
-    rigor_description += ", ";
-    rigor_description += c_str(wisdom_only);
-    rigor_description += "}";
+    std::string rigor_options;
+    rigor_options += " {";
+    rigor_options += c_str(estimate);
+    rigor_options += ", ";
+    rigor_options += c_str(measure);
+    rigor_options += ", ";
+    rigor_options += c_str(patient);
+    rigor_options += ", ";
+    rigor_options += c_str(exhaustive);
+    rigor_options += ", or ";
+    rigor_options += c_str(wisdom_only);
+    rigor_options += "}";
+
+    std::string rigor_fft_description;
+    rigor_fft_description += "FFTW FFT planning rigor ";
+    rigor_fft_description += rigor_options;
+
+    std::string rigor_mpi_description;
+    rigor_mpi_description += "FFTW MPI planning rigor ";
+    rigor_mpi_description += rigor_options;
 
     std::string nthreads_description("Number of FFTW threads to use");
 #ifdef HAVE_FFTW3_THREADS
 #if defined HAVE_OPENMP
     nthreads_description += " (OpenMP per OMP_NUM_THREADS)";
 #elif defined HAVE_PTHREAD
-    nthreads_description += " (pthread)";
+    nthreads_description += " (pthread per OMP_NUM_THREADS)";
 #else
 #error "Sanity check failed; unknown FFTW threading model in use."
 #endif
@@ -148,17 +163,27 @@ FFTWDefinition::FFTWDefinition()
 #endif // HAVE_FFTW3_THREADS
 
     this->add_options()
-        ("rigor", po::value(&rigor_string_)
+        ("rigor_fft", po::value(&rigor_fft_)
             ->notifier(
                 std::bind1st(
-                    std::mem_fun(&FFTWDefinition::normalize_rigor_string),
+                    std::mem_fun(&FFTWDefinition::normalize_rigor_fft),
                     this)
                 )
-            ->default_value(rigor_string_),
-         rigor_description.c_str())
+            ->default_value(rigor_fft_),
+         rigor_fft_description.c_str())
+        ("rigor_mpi", po::value(&rigor_mpi_)
+            ->notifier(
+                std::bind1st(
+                    std::mem_fun(&FFTWDefinition::normalize_rigor_mpi),
+                    this)
+                )
+            ->default_value(rigor_mpi_),
+         rigor_mpi_description.c_str())
         ("nthreads", po::value(&nthreads_)
                 ->default_value(nthreads_),
          nthreads_description.c_str())
+        ("wisdom", po::value(&wisdom_),
+         "File used for accumulating FFTW wisdom")
         ("timelimit", po::value(&timelimit_)
                 ->default_value(FFTW_NO_TIMELIMIT, "unlimited")
                 ->notifier(bind2nd(ptr_fun(ensure_nonnegative<double>),

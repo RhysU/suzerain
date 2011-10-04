@@ -91,7 +91,7 @@ rigor rigor_from(const char *name);
  *
  * @return The corresponding rigor value.
  */
-rigor rigor_from(unsigned flags);
+rigor rigor_from(const unsigned flags);
 
 /**
  * Return a human-readable string representing the given rigor.  Returned
@@ -102,7 +102,7 @@ rigor rigor_from(unsigned flags);
  *
  * @return a human-readable string.
  */
-const char * c_str(rigor r);
+const char * c_str(const rigor r);
 
 /**
  * Retrieve a sensible default number of threads for threaded FFTW planning.
@@ -136,15 +136,31 @@ class FFTWDefinition : public ::suzerain::problem::IDefinition
 public:
 
     /** Default constructor */
-    FFTWDefinition();
+    explicit FFTWDefinition(const rigor rigor_fft = estimate,
+                            const rigor rigor_mpi = estimate);
 
     /**
-     * Retrieve FFTW plan rigor flags.
+     * Retrieve FFTW rigor flag intended for FFT planning.
      *
-     * @return FFTW plan rigor flags.
-     * @see rigor for more details.
+     * @return rigor flag intended for FFT planning.
+     * @see rigor() for more details.
      */
-    rigor plan_rigor() const { return rigor_from(rigor_string_.c_str()); }
+    rigor rigor_fft() const { return rigor_from(rigor_fft_.c_str()); }
+
+    /**
+     * Retrieve FFTW rigor flag intended for FFTW MPI communication planning.
+     *
+     * @return rigor flag intended for FFTW MPI communication planning.
+     * @see rigor() for more details.
+     */
+    rigor rigor_mpi() const { return rigor_from(rigor_mpi_.c_str()); }
+
+    /**
+     * Retrieve wisdom file location.
+     *
+     * @return path to a wisdom file.
+     */
+    const std::string& wisdom() const { return wisdom_; };
 
     /**
      * Retrieve the number of threads to use in an FFTW multi-threaded
@@ -163,8 +179,14 @@ public:
 
 private:
 
-    /** Stores the user-specified FFTW rigor string */
-    std::string rigor_string_;
+    /** Stores the user-specified FFTW FFT rigor string */
+    std::string rigor_fft_;
+
+    /** Stores the user-specified FFTW MPI rigor string */
+    std::string rigor_mpi_;
+
+    /** Stores the user-specified wisdom file location */
+    std::string wisdom_;
 
     /** Stores the number of threads to use in a threaded environment */
     int nthreads_;
@@ -172,8 +194,11 @@ private:
     /** Stores the planning time limit in use */
     double timelimit_;
 
-    /** Normalizes <tt>this->rigor_string_</tt> to a canonical value. */
-    void normalize_rigor_string(std::string input);
+    /** Normalizes and stores a value in <tt>this->rigor_fft_</tt>. */
+    void normalize_rigor_fft(std::string input);
+
+    /** Normalizes and stores a value in <tt>this->rigor_mpi_</tt>. */
+    void normalize_rigor_mpi(std::string input);
 };
 
 } // namespace fftw
