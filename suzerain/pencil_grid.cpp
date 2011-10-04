@@ -42,9 +42,13 @@ namespace suzerain {
 #ifdef HAVE_P3DFFT ///////////////////////////////////////////////////////////
 
 #pragma warning(push, disable:2022)
-void pencil_grid_p3dfft::construct_(int Nx, int Ny, int Nz, int Pa, int Pb)
+void pencil_grid_p3dfft::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
+                                    unsigned rigor_fft, unsigned rigor_mpi)
 #pragma warning(pop)
 {
+    SUZERAIN_UNUSED(rigor_mpi);
+    p3dfft_fftw_rigor(rigor_fft);
+
     global_physical_extent[0] = Nx;
     global_physical_extent[1] = Ny;
     global_physical_extent[2] = Nz;
@@ -210,13 +214,11 @@ pencil_grid_underling::transform_physical_to_wave(double * inout) const
 static void blas_free_double_helper(double *p) { suzerain::blas::free(p); }
 
 void
-pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb)
+pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
+                                  unsigned rigor_fft, unsigned rigor_mpi)
 {
     using std::bad_alloc;
     using std::runtime_error;
-
-    // Placeholder for future planning functionality
-    const unsigned rigor_flags = 0;
 
     // Initialize underling (and all dependencies)
     underling_init(NULL, NULL, 0);
@@ -245,29 +247,29 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb)
 
     // Prepare execution plans
     transpose.reset(new underling::plan(
-            *problem, buf.get(), tmp.get(), 0, rigor_flags));
+            *problem, buf.get(), tmp.get(), 0, rigor_mpi));
     if (!transpose)
         throw runtime_error("underling::plan creation failed");
 
     n1_c2c_backward.reset(new underling::fftw::plan(
             underling::fftw::plan::c2c_backward(),
-            *problem, 1, buf.get(), tmp.get(), rigor_flags));
+            *problem, 1, buf.get(), tmp.get(), rigor_fft));
     if (!n1_c2c_backward)
         throw runtime_error("n1_c2c_backward creation failed");
 
     n2_c2r_backward.reset(new underling::fftw::plan(
             underling::fftw::plan::c2r_backward(),
-            *problem, 2, buf.get(), tmp.get(), rigor_flags));
+            *problem, 2, buf.get(), tmp.get(), rigor_fft));
     if (!n2_c2r_backward)
         throw runtime_error("n2_c2r_backward creation failed");
 
     n2_r2c_forward.reset(new underling::fftw::plan(
-            *n2_c2r_backward, buf.get(), tmp.get(), rigor_flags));
+            *n2_c2r_backward, buf.get(), tmp.get(), rigor_fft));
     if (!n2_r2c_forward)
         throw runtime_error("n2_r2c_forward creation failed");
 
     n1_c2c_forward.reset(new underling::fftw::plan(
-            *n1_c2c_backward, buf.get(), tmp.get(), rigor_flags));
+            *n1_c2c_backward, buf.get(), tmp.get(), rigor_fft));
     if (!n1_c2c_forward)
         throw runtime_error("n1_c2c_forward creation failed");
 

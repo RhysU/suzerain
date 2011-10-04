@@ -205,13 +205,16 @@ public:
     template < typename RandomAccessContainer1,
                typename RandomAccessContainer2 >
     pencil_grid_p3dfft(const RandomAccessContainer1 &global_physical_extent,
-                       const RandomAccessContainer2 &processor_grid)
+                       const RandomAccessContainer2 &processor_grid,
+                       unsigned rigor_fft = 0,
+                       unsigned rigor_mpi = 0)
     {
         construct_(boost::numeric_cast<int>(global_physical_extent[0]),
                    boost::numeric_cast<int>(global_physical_extent[1]),
                    boost::numeric_cast<int>(global_physical_extent[2]),
                    boost::numeric_cast<int>(processor_grid[0]),
-                   boost::numeric_cast<int>(processor_grid[1]));
+                   boost::numeric_cast<int>(processor_grid[1]),
+                   rigor_fft, rigor_mpi);
     }
 
     virtual ~pencil_grid_p3dfft();
@@ -230,7 +233,8 @@ private:
     bool p3dfft_setup_called_;
 
     /** Internal routine performing construction-like tasks */
-    void construct_(int Nx, int Ny, int Nz, int Pa, int Pb);
+    void construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
+                    unsigned rigor_fft, unsigned rigor_mpi);
 };
 #endif /* SUZERAIN_HAVE_P3DFFT */
 
@@ -259,13 +263,16 @@ public:
     template < typename RandomAccessContainer1,
                typename RandomAccessContainer2 >
     pencil_grid_underling(const RandomAccessContainer1 &global_physical_extent,
-                          const RandomAccessContainer2 &processor_grid)
+                          const RandomAccessContainer2 &processor_grid,
+                          unsigned rigor_fft = 0,
+                          unsigned rigor_mpi = 0)
     {
         construct_(boost::numeric_cast<int>(global_physical_extent[0]),
                    boost::numeric_cast<int>(global_physical_extent[1]),
                    boost::numeric_cast<int>(global_physical_extent[2]),
                    boost::numeric_cast<int>(processor_grid[0]),
-                   boost::numeric_cast<int>(processor_grid[1]));
+                   boost::numeric_cast<int>(processor_grid[1]),
+                   rigor_fft, rigor_mpi);
     }
 
     virtual ~pencil_grid_underling();
@@ -281,7 +288,8 @@ public:
 private:
 
     /** Internal routine performing construction-like tasks */
-    void construct_(int Nx, int Ny, int Nz, int Pa, int Pb);
+    void construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
+                    unsigned rigor_fft, unsigned rigor_mpi);
 
 /** @{ */
 
