@@ -94,7 +94,8 @@ using suzerain::problem::SignalDefinition;
 using suzerain::problem::TimeDefinition;
 static const ScenarioDefinition<real_t> scenario;
 static const GridDefinition grid;
-static const FFTWDefinition fftwdef;
+static const FFTWDefinition fftwdef(
+        suzerain::fftw::measure, suzerain::fftw::estimate);
 static const RestartDefinition restart(
         /* metadata     */ "metadata.h5.XXXXXX",
         /* uncommitted  */ "uncommitted.h5.XXXXXX",

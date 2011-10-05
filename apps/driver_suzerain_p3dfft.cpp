@@ -73,7 +73,8 @@ int main(int argc, char **argv)
                                            /* Nz      */ 16,
                                            /* DAFz    */ 1.);
     options.add_definition(grid);
-    suzerain::fftw::FFTWDefinition fftwdef;
+    suzerain::fftw::FFTWDefinition fftwdef(
+            suzerain::fftw::measure, suzerain::fftw::estimate);
     options.add_definition(fftwdef);
 
     int  repeat  = 1;
