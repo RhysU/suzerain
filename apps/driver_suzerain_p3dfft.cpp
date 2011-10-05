@@ -116,8 +116,8 @@ int main(int argc, char **argv)
     suzerain::pencil_grid pg(
         grid.N, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
     const double wtime_fftw_planning = MPI_Wtime() - wtime_fftw_planning_start;
-    INFO("MPI transpose and Fourier transform planning took "
-        << wtime_fftw_planning << " seconds");
+    INFO0("MPI transpose and Fourier transform planning took "
+          << wtime_fftw_planning << " seconds");
 
 #pragma warning(push,disable:383)
     const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);

@@ -907,8 +907,8 @@ int main(int argc, char **argv)
         channel::wisdom_gather(fftwdef.plan_wisdom);
         wtime_fftw_planning = MPI_Wtime() - begin;
     }
-    INFO("MPI transpose and Fourier transform planning took "
-         << wtime_fftw_planning << " seconds");
+    INFO0("MPI transpose and Fourier transform planning took "
+          << wtime_fftw_planning << " seconds");
     assert((grid.dN == dgrid->global_physical_extent).all());
     INFO0("Rank grid used for decomposition: " << dgrid->processor_grid);
     DEBUG("Local wave start      (XYZ): " << dgrid->local_wave_start);
