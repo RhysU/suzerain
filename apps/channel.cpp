@@ -1,4 +1,4 @@
-/*--------------------------------------------------------------------------
+
  *--------------------------------------------------------------------------
  *
  * Copyright (C) 2008 The PECOS Development Team
@@ -46,13 +46,6 @@
 #include <suzerain/rholut.hpp>
 #include <suzerain/RngStream.hpp>
 #include <sys/file.h>
-
-#ifdef HAVE_UNDERLING
-#include <fftw3.h>
-#include <fftw3-mpi.h>
-#include <underling/underling.h>
-#include <underling/error.h>
-#endif
 
 #include "logging.hpp"
 #include "channel.hpp"
