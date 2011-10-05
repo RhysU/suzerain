@@ -27,6 +27,7 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 : ${STATUS=--status_nt=100}
 : ${DECOMP=--Pa=$(expr $NSLOTS / $NHOSTS)}
 : ${OPTIONS=}
+: ${PLANNING=--plan_wisdom=$HOME/.wisdom}
 : ${TMPFILES=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
 : ${JOBDIR:=$SCRATCH/jobs/$JOB_NAME/$JOB_ID}
 
@@ -53,7 +54,7 @@ case "$JOBDIR" in                                                        #(
     */${JOB_ID}) ln -f -n -s "$JOB_ID" ../last
                  ;;
 esac
-CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $OPTIONS $TMPFILES"
+CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $OPTIONS $PLANNING $TMPFILES"
 
 # Compute threading based on job size and way-ness
 export OMP_NUM_THREADS=$(expr @corespernode@ / \( $NSLOTS / $NHOSTS \) )
@@ -85,6 +86,7 @@ S_RT:     $S_RT
 STATUS:   $STATUS
 DECOMP:   $DECOMP
 OPTIONS:  $OPTIONS
+PLANNING: $PLANNING
 TMPFILES: $TMPFILES
 
 ${MSGS:-}${MSGS:+
