@@ -42,6 +42,7 @@
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/countof.h>
 #include <suzerain/error.h>
+#include <suzerain/fftw.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
@@ -54,6 +55,13 @@
 #include <suzerain/signal_definition.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/utility.hpp>
+
+#ifdef HAVE_UNDERLING
+#include <fftw3.h>
+#include <fftw3-mpi.h>
+#include <underling/underling.h>
+#include <underling/error.h>
+#endif
 
 #include "logging.hpp"
 #include "precision.hpp"
@@ -77,14 +85,16 @@ typedef suzerain::ContiguousState<4,complex_t> state_type;
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
 // where necessary to load settings.
-using suzerain::problem::ScenarioDefinition;
+using channel::NoiseDefinition;
+using suzerain::fftw::FFTWDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::RestartDefinition;
-using suzerain::problem::TimeDefinition;
-using channel::NoiseDefinition;
+using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::SignalDefinition;
+using suzerain::problem::TimeDefinition;
 static const ScenarioDefinition<real_t> scenario;
 static const GridDefinition grid;
+static const FFTWDefinition fftwdef;
 static const RestartDefinition restart(
         /* metadata     */ "metadata.h5.XXXXXX",
         /* uncommitted  */ "uncommitted.h5.XXXXXX",
@@ -502,6 +512,9 @@ static bool process_any_signals_received(real_t t, size_t nt)
 /** Wall time at which MPI_Init completed */
 static double wtime_mpi_init;
 
+/** Wall time elapsed during FFTW planning */
+static double wtime_fftw_planning;
+
 /** Wall time elapsed during loading of state from the restart file */
 static double wtime_load_state;
 
@@ -583,7 +596,8 @@ public:
                 wtime_projected += (acc::max)(period);  // Includes dumps
             }
             // ...to which we add an estimate of other finalization costs
-            wtime_projected += 2*(wtime_advance_start - wtime_mpi_init);
+            wtime_projected += 2*(wtime_advance_start - wtime_mpi_init
+                                                      - wtime_fftw_planning);
 
             // Raise a "signal" if we suspect we cannot teardown quickly enough
             signal_received[3] = (wtime_projected >=   wtime_mpi_init
@@ -716,6 +730,10 @@ int main(int argc, char **argv)
             &channel::mpi_abort_on_error_handler_suzerain);
     esio_set_error_handler(
             &channel::mpi_abort_on_error_handler_esio);
+#ifdef HAVE_UNDERLING
+    underling_set_error_handler(
+            &channel::mpi_abort_on_error_handler_underling);
+#endif
 
     DEBUG0("Processing command line arguments and response files");
     std::string restart_file;
@@ -728,6 +746,8 @@ int main(int argc, char **argv)
                 const_cast<ScenarioDefinition<real_t>&>(scenario));
         options.add_definition(
                 const_cast<GridDefinition&>(grid));
+        options.add_definition(
+                const_cast<FFTWDefinition&>(fftwdef));
         options.add_definition(
                 const_cast<RestartDefinition&>(restart));
         options.add_definition(
@@ -876,7 +896,18 @@ int main(int argc, char **argv)
           << suzerain::mpi::comm_size(MPI_COMM_WORLD));
 
     // Initialize pencil_grid which handles P3DFFT setup/teardown RAII
-    dgrid = make_shared<suzerain::pencil_grid>(grid.dN, grid.P);
+    INFO0("Preparing MPI transpose and Fourier transform execution plans...");
+    {
+        const double begin = MPI_Wtime();
+        fftw_set_timelimit(fftwdef.plan_timelimit);
+        channel::wisdom_broadcast(fftwdef.plan_wisdom);
+        dgrid = make_shared<suzerain::pencil_grid>(
+                grid.dN, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
+        channel::wisdom_gather(fftwdef.plan_wisdom);
+        wtime_fftw_planning = MPI_Wtime() - begin;
+    }
+    INFO("MPI transpose and Fourier transform planning took "
+         << wtime_fftw_planning << " seconds");
     assert((grid.dN == dgrid->global_physical_extent).all());
     INFO0("Rank grid used for decomposition: " << dgrid->processor_grid);
     DEBUG("Local wave start      (XYZ): " << dgrid->local_wave_start);

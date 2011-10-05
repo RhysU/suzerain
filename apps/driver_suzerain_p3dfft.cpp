@@ -33,7 +33,9 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
+#include <fftw3.h>
 #include <p3dfft_d.h>
+#include <suzerain/fftw.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
@@ -71,6 +73,8 @@ int main(int argc, char **argv)
                                            /* Nz      */ 16,
                                            /* DAFz    */ 1.);
     options.add_definition(grid);
+    suzerain::fftw::FFTWDefinition fftwdef;
+    options.add_definition(fftwdef);
 
     int  repeat  = 1;
     int  nfields = 1;
@@ -105,8 +109,14 @@ int main(int argc, char **argv)
     if (repeat  < 1) throw std::invalid_argument("repeat  < 1");
     if (nfields < 1) throw std::invalid_argument("nfields < 1");
 
-    // P3DFFT setup/clean RAII
-    suzerain::pencil_grid pg(grid.N, grid.P);
+    INFO0("Preparing MPI transpose and Fourier transform execution plans...");
+    const double wtime_fftw_planning_start = MPI_Wtime();
+    fftw_set_timelimit(fftwdef.plan_timelimit);
+    suzerain::pencil_grid pg(
+        grid.N, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
+    const double wtime_fftw_planning = MPI_Wtime() - wtime_fftw_planning_start;
+    INFO("MPI transpose and Fourier transform planning took "
+        << wtime_fftw_planning << " seconds");
 
 #pragma warning(push,disable:383)
     const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
