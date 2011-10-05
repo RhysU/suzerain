@@ -32,7 +32,6 @@
 #include <suzerain/config.h>
 #endif
 #include <suzerain/fftw.hpp>
-#include <suzerain/validation.hpp>
 
 namespace suzerain {
 
@@ -107,7 +106,6 @@ FFTWDefinition::FFTWDefinition(
     using ::std::bind2nd;
     using ::std::mem_fun;
     using ::std::ptr_fun;
-    using ::suzerain::validation::ensure_nonnegative;
 
     std::string rigor_options;
     rigor_options += " {";
@@ -148,9 +146,7 @@ FFTWDefinition::FFTWDefinition(
          "File used for accumulating FFTW planning wisdom")
         ("plan_timelimit",
           po::value(&plan_timelimit)
-                ->default_value(FFTW_NO_TIMELIMIT, "unlimited")
-                ->notifier(bind2nd(
-                        ptr_fun(ensure_nonnegative<double>), "plan_timelimit")),
+                ->default_value(FFTW_NO_TIMELIMIT, "unlimited"),
          "Maximum number of seconds allowed for creating any single FFTW plan")
     ;
 }
