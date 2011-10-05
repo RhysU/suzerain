@@ -45,6 +45,14 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/RngStream.hpp>
+#include <sys/file.h>
+
+#ifdef HAVE_UNDERLING
+#include <fftw3.h>
+#include <fftw3-mpi.h>
+#include <underling/underling.h>
+#include <underling/error.h>
+#endif
 
 #include "logging.hpp"
 #include "channel.hpp"
@@ -112,6 +120,17 @@ void mpi_abort_on_error_handler_esio(const char * reason,
             error_code, "ESIO", esio_strerror(error_code));
 }
 
+#ifdef HAVE_UNDERLING
+void mpi_abort_on_error_handler_underling(const char * reason,
+                                          const char * file,
+                                          int line,
+                                          int error_code)
+{
+    return mpi_abort_on_error_handler(reason, file, line,
+            error_code, "underling", underling_strerror(error_code));
+}
+#endif
+
 void mpi_abort_on_error_handler(const char * reason,
                                 const char * file,
                                 int line,
@@ -131,6 +150,78 @@ void mpi_abort_on_error_handler(const char * reason,
           << ':'
           << line);
     MPI_Abort(MPI_COMM_WORLD, errno ? errno : EXIT_FAILURE);
+}
+
+void wisdom_broadcast(const std::string& wisdom_file)
+{
+    if (wisdom_file.empty()) return; // Short circuit if no path provided
+
+    // Only load wisdom from disk if FFTW MPI is available via underling.
+    // Otherwise every rank hits the filesystem which is an O(N) bottleneck
+    // versus a fixed O(1) planning cost on each rank.
+#ifdef HAVE_UNDERLING
+
+    // If available, load wisdom from disk on rank 0 and broadcast it
+    // Attempt advisory locking to reduce processes stepping on each other
+    if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+
+        // Import any system-wide wisdom available
+        fftw_import_system_wisdom();
+
+        FILE *w = fopen(wisdom_file.c_str(), "r");
+        if (w) {
+            INFO0("Loading wisdom from file " << wisdom_file);
+            if (flock(fileno(w), LOCK_SH)) {
+                WARN0("LOCK_SH failed on wisdom file "
+                      << wisdom_file << ": " << strerror(errno));
+            }
+            fftw_import_wisdom_from_file(w);
+            if (flock(fileno(w), LOCK_UN)) {
+                WARN0("LOCK_UN failed on wisdom file "
+                      << wisdom_file << ": " << strerror(errno));
+            }
+            fclose(w);
+        } else {
+            WARN0("Unable to open wisdom file "
+                  << wisdom_file << ": " << strerror(errno));
+        }
+    }
+    fftw_mpi_broadcast_wisdom(MPI_COMM_WORLD);
+
+#endif /* HAVE_UNDERLING */
+}
+
+void wisdom_gather(const std::string& wisdom_file)
+{
+    if (wisdom_file.empty()) return; // Short circuit if no path provided
+
+    // Only save wisdom to disk if FFTW MPI is available via underling.
+#ifdef HAVE_UNDERLING
+
+    // If available, gather wisdom and then write to disk on rank 0
+    // Attempt advisory locking to reduce processes stepping on each other
+    fftw_mpi_gather_wisdom(MPI_COMM_WORLD);
+    if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+        FILE *w = fopen(wisdom_file.c_str(), "w+");
+        if (w) {
+            INFO0("Saving wisdom to file " << wisdom_file);
+            if (flock(fileno(w), LOCK_EX)) {
+                WARN0("LOCK_EX failed on wisdom file "
+                      << wisdom_file << ": " << strerror(errno));
+            }
+            fftw_export_wisdom_to_file(w);
+            if (flock(fileno(w), LOCK_UN)) {
+                WARN0("LOCK_UN failed on wisdom file "
+                      << wisdom_file << ": " << strerror(errno));
+            }
+            fclose(w);
+        } else {
+            WARN0("Unable to open wisdom file "
+                  << wisdom_file << ": " << strerror(errno));
+        }
+    }
+
+#endif /* HAVE_UNDERLING */
 }
 
 void store(const esio_handle h,

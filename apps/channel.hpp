@@ -104,6 +104,12 @@ void mpi_abort_on_error_handler_esio(const char * reason,
                                      int line,
                                      int error_code);
 
+/** Log-and-abort handler for errors originating in underling */
+void mpi_abort_on_error_handler_underling(const char * reason,
+                                          const char * file,
+                                          int line,
+                                          int error_code);
+
 /** Common logic for all error handlers */
 void mpi_abort_on_error_handler(const char * reason,
                                 const char * file,
@@ -111,6 +117,12 @@ void mpi_abort_on_error_handler(const char * reason,
                                 int error_code,
                                 const char * origin,
                                 const char * strerror);
+
+/** If wisdom_file is not empty, read wisdom on rank zero and broadcast */
+void wisdom_broadcast(const std::string& wisdom_file);
+
+/** If wisdom_file is not empty, gather wisdom to rank zero and write it */
+void wisdom_gather(const std::string& wisdom_file);
 
 /** Store a ScenarioDefinition in a restart file */
 void store(const esio_handle h,
