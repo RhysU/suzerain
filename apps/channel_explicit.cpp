@@ -1155,19 +1155,31 @@ int main(int argc, char **argv)
         INFO0(msg.str());
     }
 
-    // Output simulation advancement rate using flow through time language
-    const real_t flowthroughs = (tc->current_t() - initial_t)
-                              * (scenario.Ly / scenario.Lx);
-    if (flowthroughs > 0) {
-        INFO0("Simulation advance corresponds to "
-              << flowthroughs << " flow throughs");
-        INFO0("Advancing at wall time per flow through of "
+    // Output simulation advance rates when we advanced the simulation
+    if (tc->current_nt()) {
+
+        // Advance rate measured in flow through based on bulk velocity
+        // (where bulk velocity is estimated from bulk momentum and density)
+        const real_t flowthrough_time
+                = scenario.Lx / (scenario.bulk_rhou / scenario.bulk_rho);
+        const real_t flowthroughs
+                = (tc->current_t() - initial_t) / flowthrough_time;
+        INFO0("Advancing at "
               << (wtime_advance_end - wtime_advance_start) / flowthroughs
-              << " seconds");
-        INFO0("Advancement rate calculation ignores "
-              << (MPI_Wtime() - wtime_mpi_init
-                  - (wtime_advance_end - wtime_advance_start))
-              << " seconds of fixed overhead");
+              << "  wall seconds per flow through");
+
+        // Advance rate measured in a (mostly) problem-size-agnostic metric
+        const real_t seconds_per_step_point
+                = (wtime_advance_end - wtime_advance_start)
+                / (tc->current_nt() * grid.N.prod());
+        INFO0("Advancing at " << seconds_per_step_point
+              << " wall seconds per time step per grid point");
+
+        // Admit what overhead we've neglected in those calculations
+        const real_t overhead_time = (MPI_Wtime() - wtime_mpi_init
+                                   - (wtime_advance_end - wtime_advance_start));
+        INFO0("Advancement rate calculations ignore "
+                << overhead_time << " seconds of fixed overhead");
     }
 
     return advance_success ? EXIT_SUCCESS : EXIT_FAILURE;
