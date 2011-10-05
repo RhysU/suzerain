@@ -46,7 +46,7 @@ rigor rigor_from(const char *name)
             case 'p': return patient;
             case 'e':
                 switch (tolower(name[1])) {
-                    default:  // Assume exhaustive
+                    default:  // Assume estimate
                     case 's': return estimate;
                     case 'x': return exhaustive;
                 }
