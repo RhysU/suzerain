@@ -43,6 +43,14 @@
 #include <suzerain/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
 
+#ifdef HAVE_UNDERLING
+#include <fftw3.h>
+#include <fftw3-mpi.h>
+#include <underling/error.h>
+#include <underling/underling.hpp>
+#include <underling/underling_fftw.hpp>
+#endif
+
 #include "precision.hpp"
 #include "nsctpl_rholut.hpp"
 
