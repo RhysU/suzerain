@@ -7,6 +7,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/diffwave.h>
+#include <suzerain/fftw.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/utility.hpp>
@@ -270,7 +271,8 @@ static void test_accumulateAndApply(const int Ny,
 
     boost::array<int,3> global_physical_extents = {{ dNx, Ny, dNz }};
     boost::array<int,2> processor_grid = {{ 0, 0 }};
-    pencil_grid pg(global_physical_extents, processor_grid);
+    pencil_grid pg(global_physical_extents, processor_grid,
+                   suzerain::fftw::estimate, suzerain::fftw::estimate);
 
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
         for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {
