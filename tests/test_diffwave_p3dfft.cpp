@@ -271,6 +271,58 @@ static void test_accumulateAndApply(const int Ny,
 
     boost::array<int,3> global_physical_extents = {{ dNx, Ny, dNz }};
     boost::array<int,2> processor_grid = {{ 0, 0 }};
+
+    if (!procid) {
+        BOOST_TEST_MESSAGE("Establishing pencil_grid for extents "
+                           << global_physical_extents);
+    }
+#if defined SUZERAIN_HAVE_P3DFFT && defined SUZERAIN_HAVE_UNDERLING
+    {
+        // Perform an implementation-to-implementation shootout
+        suzerain::pencil_grid_p3dfft p3(
+                global_physical_extents, processor_grid,
+                suzerain::fftw::estimate, suzerain::fftw::estimate);
+        suzerain::pencil_grid_underling un(
+                global_physical_extents, processor_grid,
+                suzerain::fftw::estimate, suzerain::fftw::estimate);
+
+#define EIGEN_CHECK_EQUAL(a,b) \
+        BOOST_CHECK_EQUAL_COLLECTIONS(a.data(), a.data() + a.size(), \
+                                      b.data(), b.data() + b.size())
+
+        // Global extents should always match
+        EIGEN_CHECK_EQUAL(p3.global_physical_extent,
+                          un.global_physical_extent);
+        EIGEN_CHECK_EQUAL(p3.global_wave_extent,
+                          un.global_wave_extent);
+
+        if (np == 1) {
+            // On a single processor all details should match
+            EIGEN_CHECK_EQUAL(p3.local_physical_start,
+                              un.local_physical_start);
+            EIGEN_CHECK_EQUAL(p3.local_physical_end,
+                              un.local_physical_end);
+            EIGEN_CHECK_EQUAL(p3.local_physical_extent,
+                              un.local_physical_extent);
+            EIGEN_CHECK_EQUAL(p3.local_wave_start,
+                              un.local_wave_start);
+            EIGEN_CHECK_EQUAL(p3.local_wave_end,
+                              un.local_wave_end);
+            EIGEN_CHECK_EQUAL(p3.local_wave_extent,
+                              un.local_wave_extent);
+
+            // Underling should require slightly bigger buffers
+            BOOST_CHECK_LE(p3.local_physical_storage(),
+                           un.local_physical_storage());
+            BOOST_CHECK_LE(p3.local_wave_storage(),
+                           un.local_wave_storage());
+        }
+
+#undef EIGEN_CHECK_EQUAL
+
+    }
+#endif
+
     pencil_grid pg(global_physical_extents, processor_grid,
                    suzerain::fftw::estimate, suzerain::fftw::estimate);
 
