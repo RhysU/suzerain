@@ -27,7 +27,7 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 : ${STATUS=--status_nt=100}
 : ${DECOMP=--Pa=$(expr $NSLOTS / $NHOSTS)}
 : ${OPTIONS=}
-: ${PLANNING=--plan_wisdom=$HOME/.wisdom}
+: ${PLANNING=--plan_wisdom=$HOME/.wisdom --rigor_fft=patient}
 : ${TMPFILES=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
 : ${JOBDIR:=$SCRATCH/jobs/$JOB_NAME/$JOB_ID}
 
