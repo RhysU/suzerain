@@ -69,6 +69,13 @@ inline void * calloc(size_t nmemb, size_t size)
     return suzerain_blas_calloc(nmemb, size);
 }
 
+/*! calloc \c nmemb elements of size <tt>sizeof(T)</tt>. */
+template<typename T>
+inline T * calloc_as(size_t nmemb)
+{
+    return reinterpret_cast<T *>(calloc(nmemb, sizeof(T)));
+}
+
 /*! @copydoc suzerain_blas_free(void*) */
 inline void free(void *ptr)
 {
