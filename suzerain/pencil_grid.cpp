@@ -175,8 +175,7 @@ void pencil_grid_p3dfft::transform_physical_to_wave(double * inout) const
 
 pencil_grid_underling::~pencil_grid_underling()
 {
-    // Finalize underling
-    underling_cleanup();
+    underling_only_cleanup();
 }
 
 std::size_t pencil_grid_underling::local_wave_storage() const
@@ -217,7 +216,7 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     using std::bad_alloc;
     using std::runtime_error;
 
-    // Initialize underling (and all dependencies)
+    // Initialize underling (and all dependencies) as necessary
     underling_init(NULL, NULL, 0);
 
     // Construct grid and problem
