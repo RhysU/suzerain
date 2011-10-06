@@ -5,6 +5,7 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/diffwave.h>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
@@ -75,7 +76,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
 
     // Retrieve storage size, strides, and allocate working arrays
     const int nelem = pg.local_physical_storage();
-    boost::shared_array<double> A(new double[nelem]), B(new double[nelem]);
+    boost::shared_array<double>
+        A(suzerain::blas::calloc_as<double>(nelem), suzerain::blas::free),
+        B(suzerain::blas::calloc_as<double>(nelem), suzerain::blas::free);
 
     // Create composable test functions in the X and Z directions
     // Note that maximum wavenumber (inclusive) is (N-1)/2.
@@ -95,15 +98,17 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     // P3DFFT does not normalize after transformations;
     // we need the rescaling factor handy.
     const double scale = pg.global_physical_extent[0]
-                      * pg.global_physical_extent[2];
+                       * pg.global_physical_extent[2];
 
     // ---------------------------------
     // Test suzerain_diffwave_accumulate
     // ---------------------------------
 
     // Populate the synthetic fields
-    std::fill(A.get(),A.get()+nelem,std::numeric_limits<double>::quiet_NaN());
-    std::fill(B.get(),B.get()+nelem,std::numeric_limits<double>::quiet_NaN());
+    std::fill(A.get(), A.get() + pg.local_physical_extent.prod(),
+              std::numeric_limits<double>::quiet_NaN());
+    std::fill(B.get(), B.get() + pg.local_physical_extent.prod(),
+              std::numeric_limits<double>::quiet_NaN());
     {
         double *pA = A.get(), *pB = B.get();
         for (int j = 0; j < (int) gridy.size(); ++j) {
@@ -183,7 +188,8 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     // ---------------------------------
 
     // Populate the synthetic fields
-    std::fill(A.get(),A.get()+nelem,std::numeric_limits<double>::quiet_NaN());
+    std::fill(A.get(), A.get() + pg.local_physical_extent.prod(),
+              std::numeric_limits<double>::quiet_NaN());
     {
         double *pA = A.get();
         for (int j = 0; j < (int) gridy.size(); ++j) {
