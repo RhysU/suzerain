@@ -210,9 +210,6 @@ pencil_grid_underling::transform_physical_to_wave(double * inout) const
     transpose->execute_long_n1_to_long_n0(buf.get(), inout);
 }
 
-// Helper for shared_ptr destructor usage just below
-static void blas_free_double_helper(double *p) { suzerain::blas::free(p); }
-
 void
 pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
                                   unsigned rigor_fft, unsigned rigor_mpi)
@@ -234,15 +231,15 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     if (!problem)
         throw std::runtime_error("underling::problem creation error");
 
-    // Compute local storage required and allocate buf (which is tied to the
-    // instance) and tmp (which is used only for planning purposes).
-    const std::size_t nbytes = problem->local_memory()*sizeof(underling::real);
-    buf.reset((underling_real *) suzerain::blas::malloc(nbytes),
-            blas_free_double_helper);
+    // Allocate zeroed buffers buf and tmp.  Clearing necessary to avoid NaNs.
+    // buf is maintained for execution while tmp is used for planning only.
+    namespace blas = suzerain::blas;
+    buf.reset(blas::calloc_as<underling::real>(problem->local_memory()),
+              blas::free);
     if (!buf) throw bad_alloc();
-    boost::shared_ptr<underling::real> tmp(
-            (underling::real *) suzerain::blas::malloc(nbytes),
-            blas_free_double_helper);
+    boost::shared_array<underling::real> tmp(
+            blas::calloc_as<underling::real>(problem->local_memory()),
+            blas::free);
     if (!tmp) throw bad_alloc();
 
     // Prepare execution plans

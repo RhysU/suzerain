@@ -49,7 +49,7 @@ namespace suzerain
 class pencil_grid_p3dfft;
 class pencil_grid_underling;
 
-// Choose default pencil grid implementation based on built-time availablity
+// Choose default pencil grid implementation based on build-time availability
 #if defined(SUZERAIN_HAVE_P3DFFT)
 /** Use P3DFFT-based \c pencil_grid implementation */
 typedef pencil_grid_p3dfft pencil_grid;
@@ -300,7 +300,7 @@ private:
     boost::scoped_ptr<underling::fftw::plan> n2_c2r_backward;
     boost::scoped_ptr<underling::fftw::plan> n2_r2c_forward;
     boost::scoped_ptr<underling::fftw::plan> n1_c2c_forward;
-    boost::shared_ptr<underling::real>       buf;
+    boost::shared_array<underling::real>     buf;
 
 /** @} */
 
