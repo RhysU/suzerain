@@ -101,9 +101,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     const double scale = pg.global_physical_extent[0]
                        * pg.global_physical_extent[2];
 
-    // ---------------------------------
-    // Test suzerain_diffwave_accumulate
-    // ---------------------------------
+    // -----------------------------------------------------
+    BOOST_TEST_MESSAGE("Test suzerain_diffwave_accumulate");
+    // -----------------------------------------------------
 
     // Populate the synthetic fields
     std::fill(A.get(), A.get() + pg.local_physical_extent.prod(),
@@ -184,9 +184,9 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
         }
     }
 
-    // ---------------------------------
-    // Test suzerain_diffwave_apply
-    // ---------------------------------
+    // -----------------------------------------------------
+    BOOST_TEST_MESSAGE("Test suzerain_diffwave_apply");
+    // -----------------------------------------------------
 
     // Populate the synthetic fields
     std::fill(A.get(), A.get() + pg.local_physical_extent.prod(),
@@ -204,8 +204,24 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
         }
     }
 
+    // Dump physical space contents when working on a single processor
+    if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
+        for (int i = 0; i < pg.local_physical_extent.prod(); ++i) {
+            BOOST_TEST_MESSAGE("DEBUG: Physical space data linear index " << i
+                               << ": " << A[i]);
+        }
+    }
+
     // Transform to wave space
     pg.transform_physical_to_wave(A.get());
+
+    // Dump wave space contents when working on a single processor
+    if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
+        for (int i = 0; i < pg.local_wave_extent.prod(); ++i) {
+            BOOST_TEST_MESSAGE("DEBUG: Wave space data at linear index " << i
+                               << ": " << A[2*i] << "+" << A[2*i+1] << "i");
+        }
+    }
 
     // Differentiate-and-accumulate
     // Build FFT forward-and-inverse normalization factor into accumulation
@@ -399,6 +415,7 @@ BOOST_AUTO_TEST_CASE( accumulate_quasi_2D_not_dealiased )
     // P3DFFT cannot distribute them on non-1x1 Cartesian processor grids.
     if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
         /*                       Ny,  Nx, dNx,  Nz, dNz */
+        test_accumulateAndApply(  1,   4,   4,   4,   4);
         test_accumulateAndApply(  1,   8,   8,   8,   8);
         test_accumulateAndApply(  1,   7,   7,   7,   7);
         test_accumulateAndApply(  1,   7,   7,   8,   8);
