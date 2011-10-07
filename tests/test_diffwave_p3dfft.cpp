@@ -35,14 +35,17 @@ BOOST_AUTO_TEST_SUITE(accumulateAndApply)
 
 using suzerain::pencil_grid;
 
-static bool smallrelerror(const double expected,
-                          const double actual,
-                          const double relerror,
-                          const double maxrelerror)
+// Succeed on small relative error small absolute error
+static bool smallerr(const double expected,
+                     const double actual,
+                     const double relerr,
+                     const double maxrelerr,
+                     const double maxabserr)
 {
     SUZERAIN_UNUSED(expected); // Included for predicate logging
     SUZERAIN_UNUSED(actual);   // Included for predicate logging
-    return relerror <= maxrelerror;
+
+    return (relerr <= maxrelerr) || (std::abs(expected - actual) < maxabserr);
 }
 
 // Return value is worst observed relative error
@@ -54,7 +57,8 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
                                              const double Lz,
                                              const int Nx,
                                              const int Nz,
-                                             const double maxrelerror)
+                                             const double maxrelerr,
+                                             const double maxabserr)
 {
     // Note: Incoming pencil_grid describes dealiased extents
 
@@ -94,7 +98,7 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
 
     // Track worst point-wise error magnitude for either test Gives an idea of
     // any lost precision and how loose any test tolerances may be in practice.
-    double worstrelerror = 0;
+    double worstrelerr = 0;
 
     // P3DFFT does not normalize after transformations;
     // we need the rescaling factor handy.
@@ -172,10 +176,10 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
                         const double expected_B
                             = 2*cfx1*cfz1*(j+1) + 3*cfx2*cfz2*(j+1);
 
-                        double relerror = relative_error(*pB, expected_B);
-                        BOOST_CHECK_PREDICATE(smallrelerror,
-                                (expected_B)(*pB)(relerror)(maxrelerror));
-                        worstrelerror = std::max(worstrelerror, relerror);
+                        double relerr = relative_error(*pB, expected_B);
+                        BOOST_CHECK_PREDICATE(smallerr,
+                                (expected_B)(*pB)(relerr)(maxrelerr)(maxabserr));
+                        worstrelerr = std::max(worstrelerr, relerr);
 
                         ++pB;
                     }
@@ -258,10 +262,10 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
                         const double expected_A
                             = 2*cfx1*cfz1*(j+1);
 
-                        double relerror = relative_error(*pA, expected_A);
-                        BOOST_CHECK_PREDICATE(smallrelerror,
-                                (expected_A)(*pA)(relerror)(maxrelerror));
-                        worstrelerror = std::max(worstrelerror, relerror);
+                        double relerr = relative_error(*pA, expected_A);
+                        BOOST_CHECK_PREDICATE(smallerr,
+                                (expected_A)(*pA)(relerr)(maxrelerr)(maxabserr));
+                        worstrelerr = std::max(worstrelerr, relerr);
 
                         ++pA;
                     }
@@ -270,7 +274,7 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
         }
     }
 
-    return worstrelerror;
+    return worstrelerr;
 }
 
 static void test_accumulateAndApply(const int Ny,
@@ -344,8 +348,8 @@ static void test_accumulateAndApply(const int Ny,
 
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
         for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {
-            const double maxrelerror
-                = 3.0*std::pow(10, -11 + (dxcnt+dzcnt)/3.0);
+            const double maxrelerr = 3.0*std::pow(10, -11 + (dxcnt+dzcnt)/3.0);
+            const double maxabserr = 1e-12;
             if (!procid) {
                 BOOST_TEST_MESSAGE("Testing"
                                     << " Ny=" << Ny
@@ -356,16 +360,17 @@ static void test_accumulateAndApply(const int Ny,
                                     << " for dx=" << dxcnt
                                     << ", dz=" << dzcnt
                                     << ", np=" << np
-                                    << ", maxrelerror=" << maxrelerror);
+                                    << ", maxrelerr=" << maxrelerr);
             }
             MPIBarrierRAII barrier(MPI_COMM_WORLD);
-            const double worstrelerror = test_accumulateAndApply_helper(
-                pg, dxcnt, dzcnt, 4*M_PI, 2, 4*M_PI/3, Nx, Nz, maxrelerror);
+            const double worstrelerr = test_accumulateAndApply_helper(
+                pg, dxcnt, dzcnt, 4*M_PI, 2, 4*M_PI/3, Nx, Nz,
+                maxrelerr, maxabserr);
             BOOST_TEST_MESSAGE("Rank " << procid
                                << " observed local maximum relative error = "
                                << std::scientific
                                << std::setw(16)
-                               << worstrelerror);
+                               << worstrelerr);
         }
     }
 }
