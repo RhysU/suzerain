@@ -633,22 +633,23 @@ public:
      * Produce a periodic real signal with known frequency content on domain of
      * supplied length.
      *
-     * @param N Number of points in the physical domain
+     * @param N Number of points in the physical domain.
      * @param max_mode_exclusive Exclusive upper bound on the signal's
-     *        frequency content.
+     *        frequency content.  Providing a value less than one is
+     *        shorthand for the maximum mode supportable given \c N.
      * @param shift Phase shift in the signal
      * @param length Domain size over which the signal is periodic
      * @param constant The constant content of the signal and an amplitude
      *                 factor used to scale all modes.
      */
      explicit periodic_function(const Integer N,
-                                const Integer max_mode_exclusive = -1,
+                                const Integer max_mode_exclusive = 0,
                                 const FPT shift = M_PI/3,
                                 const FPT length = 2*M_PI,
                                 const FPT constant = 17)
         : N(N),
           max_mode_exclusive(
-                    max_mode_exclusive >= 0 ? max_mode_exclusive : N/2+1),
+                    max_mode_exclusive > 0 ? max_mode_exclusive : N/2+1),
           shift(shift),
           length(length),
           constant(constant)
