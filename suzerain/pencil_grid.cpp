@@ -222,7 +222,7 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     // Construct grid and problem
     // Map from pencil_grid to underling's directional expectations
     // long_n0 will be wave space and long_n2 will be physical space
-    grid.reset(new underling::grid(MPI_COMM_WORLD, Ny, Nz, Nx, Pa, Pb));
+    grid.reset(new underling::grid(MPI_COMM_WORLD, Ny, Nz, Nx/2+1, Pa, Pb));
     if (!grid)
         throw std::runtime_error("underling::grid creation error");
 
