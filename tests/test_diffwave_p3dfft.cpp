@@ -61,6 +61,7 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
                                              const double maxabserr)
 {
     // Note: Incoming pencil_grid describes dealiased extents
+    const int nproc = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
 
     // Create a uniform grid on [0, Lx) x [0, Ly) x [0, Lz)
     std::valarray<double> gridx(pg.local_physical_extent[0]);
@@ -208,8 +209,8 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
         }
     }
 
-    // Dump physical space contents when working on a single processor
-    if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
+    // Dump physical space contents on one processor for dxcnt == dzcnt == 0
+    if (nproc == 1 && dxcnt == 0 && dzcnt == 0) {
         for (int i = 0; i < pg.local_physical_extent.prod(); ++i) {
             BOOST_TEST_MESSAGE("DEBUG: Physical space data linear index " << i
                                << ": " << A[i]);
@@ -219,8 +220,8 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     // Transform to wave space
     pg.transform_physical_to_wave(A.get());
 
-    // Dump wave space contents when working on a single processor
-    if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
+    // Dump wave space contents on one processor for dxcnt == dzcnt == 0
+    if (nproc == 1 && dxcnt == 0 && dzcnt == 0) {
         for (int i = 0; i < pg.local_wave_extent.prod(); ++i) {
             BOOST_TEST_MESSAGE("DEBUG: Wave space data at linear index " << i
                                << ": " << A[2*i] << "+" << A[2*i+1] << "i");
