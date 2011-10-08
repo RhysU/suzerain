@@ -61,7 +61,7 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
                                              const double maxabserr)
 {
     // Note: Incoming pencil_grid describes dealiased extents
-    const int nproc = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+    const int nproc = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
     // Create a uniform grid on [0, Lx) x [0, Ly) x [0, Lz)
     std::valarray<double> gridx(pg.local_physical_extent[0]);
