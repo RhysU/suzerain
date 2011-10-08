@@ -1166,7 +1166,7 @@ int main(int argc, char **argv)
                 = (tc->current_t() - initial_t) / flowthrough_time;
         INFO0("Advancing at "
               << (wtime_advance_end - wtime_advance_start) / flowthroughs
-              << "  wall seconds per flow through");
+              << " wall seconds per flow through");
 
         // Advance rate measured in a (mostly) problem-size-agnostic metric
         const real_t seconds_per_step_point
