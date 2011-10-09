@@ -298,6 +298,9 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
         local_physical_end[2]   = e.start[1] + e.size[1];
         local_physical_extent   = local_physical_end - local_physical_start;
     }
+
+    // TODO Ensure wave space storage is column-major, contiguous Y X/2 Z
+    // TODO Ensure wave space storage is column-major, contiguous X Z Y
 }
 
 #endif // HAVE_UNDERLING /////////////////////////////////////////////////////
