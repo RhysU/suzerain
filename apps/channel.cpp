@@ -58,18 +58,28 @@ using std::size_t;
 
 namespace channel {
 
+// Common configuration snippet used in multiple places just below.
 // See "Configuration" at http://logging.apache.org/log4cxx/index.html
+#define COMMON_CONSOLE_CONFIG                                               \
+    "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"             \
+    "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"        \
+    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-10c %m%n\n"
+
+const char log4cxx_config_console[] =
+    "log4j.rootLogger=INFO, CONSOLE\n"
+    COMMON_CONSOLE_CONFIG;
+
 const char log4cxx_config[] =
     "log4j.rootLogger=INFO, CONSOLE, LOG\n"
-    "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"
-    "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"
-    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-10c %m%n\n"
+    COMMON_CONSOLE_CONFIG
     "log4j.appender.LOG=org.apache.log4j.FileAppender\n"
     "log4j.appender.LOG.append=true\n"
     "log4j.appender.LOG.filename=log.dat\n"
     "log4j.appender.LOG.layout=${log4j.appender.CONSOLE.layout}\n"
     "log4j.appender.LOG.layout.ConversionPattern=${log4j.appender.CONSOLE.layout.ConversionPattern}\n"
 ;
+
+#undef COMMON_CONSOLE_CONFIG
 
 const boost::array<const char *,field::count> field::name = {{
     "rho", "rhou", "rhov", "rhow", "rhoe"

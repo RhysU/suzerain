@@ -59,8 +59,17 @@
  */
 namespace channel {
 
-/** Default log4cxx configuration to use when none found in environment */
+/**
+ * Default log4cxx configuration to use when none found in environment.
+ * Appends output to the console and to a file.
+ */
 extern const char log4cxx_config[];
+
+/**
+ * A log4cxx configuration similar to channel::log4cxx_config for use by
+ * console-only applications where file logging is unnecessary.
+ */
+extern const char log4cxx_config_console[];
 
 /** Contains basic details about the scalar state fields employed */
 namespace field {
