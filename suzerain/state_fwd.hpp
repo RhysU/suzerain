@@ -260,7 +260,7 @@ public:
 
     template<typename ExtentList, typename MinStrideList>
     explicit ContiguousState(const ExtentList& sizes,
-                                 const MinStrideList& minstrides);
+                             const MinStrideList& minstrides);
 
     ContiguousState(const ContiguousState& other);
 
