@@ -27,6 +27,7 @@ pkginclude_HEADERS += blas_et_al.hpp
 pkginclude_HEADERS += bspline.h
 pkginclude_HEADERS += bspline.hpp
 pkginclude_HEADERS += bsplineop.h
+pkginclude_HEADERS += coalescing_pool.hpp
 pkginclude_HEADERS += common.h
 pkginclude_HEADERS += common.hpp
 pkginclude_HEADERS += complex.hpp
