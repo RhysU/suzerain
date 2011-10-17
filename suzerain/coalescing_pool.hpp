@@ -303,6 +303,11 @@ public:
          */
         operator void *() { return b_; }
 
+        /**
+         * Causes a valid instance to evaluate to \c true in a \c bool context.
+         */
+        operator const void *() const { return b_; }
+
         /** @{ */
         iterator               begin()        { return b_; }
         const_iterator         begin()  const { return b_; }
