@@ -68,6 +68,7 @@ pkginclude_HEADERS += rholut.hpp
 pkginclude_HEADERS += richardson.h
 pkginclude_HEADERS += RngStream.hpp
 pkginclude_HEADERS += scenario_definition.hpp
+pkginclude_HEADERS += shared_range.hpp
 pkginclude_HEADERS += signal_definition.hpp
 pkginclude_HEADERS += state_fwd.hpp
 pkginclude_HEADERS += state.hpp

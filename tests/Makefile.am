@@ -70,6 +70,13 @@ test_allocator_LDADD    = ../suzerain/libsuzerain.la
 test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                     += test_shared_range
+check_PROGRAMS            += test_shared_range
+test_shared_range_SOURCES  = test_shared_range.cpp
+test_shared_range_LDADD    = ../suzerain/libsuzerain.la
+test_shared_range_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_shared_range_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                        += test_coalescing_pool
 check_PROGRAMS               += test_coalescing_pool
 test_coalescing_pool_SOURCES  = test_coalescing_pool.cpp
