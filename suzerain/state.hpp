@@ -59,6 +59,25 @@ ContiguousState<NumDims,Element>::ContiguousState(
 }
 
 template< std::size_t NumDims, typename Element >
+template< typename ExtentList >
+ContiguousState<NumDims,Element>::ContiguousState(
+        const shared_range_type& storage,
+        const ExtentList& sizes)
+    : shared_range_type(storage),
+      multi_array_type(shared_range_type::begin(), sizes, storage_order_type())
+{
+    const std::size_t minimum_size
+            = storage_order_type::compute_storage(sizes.begin());
+    if (shared_range_type::size() < minimum_size) {
+        std::ostringstream oss;
+        oss << __PRETTY_FUNCTION__ << " requires storage.size() >= "
+            << minimum_size << " but only " << shared_range_type::size()
+            << " was provided.";
+        throw std::invalid_argument(oss.str());
+    }
+}
+
+template< std::size_t NumDims, typename Element >
 template< typename ExtentList, typename MinStrideList >
 ContiguousState<NumDims,Element>::ContiguousState(
         const ExtentList& sizes,
@@ -74,6 +93,27 @@ ContiguousState<NumDims,Element>::ContiguousState(
 }
 
 template< std::size_t NumDims, typename Element >
+template< typename ExtentList, typename MinStrideList >
+ContiguousState<NumDims,Element>::ContiguousState(
+        const shared_range_type& storage,
+        const ExtentList& sizes,
+        const MinStrideList& minstrides)
+    : shared_range_type(storage),
+      multi_array_type(shared_range_type::begin(),
+                       sizes, minstrides, storage_order_type())
+{
+    const std::size_t minimum_size = storage_order_type::compute_storage(
+            sizes.begin(), minstrides.begin());
+    if (shared_range_type::size() < minimum_size) {
+        std::ostringstream oss;
+        oss << __PRETTY_FUNCTION__ << " requires storage.size() >= "
+            << minimum_size << " but only " << shared_range_type::size()
+            << " was provided.";
+        throw std::invalid_argument(oss.str());
+    }
+}
+
+template< std::size_t NumDims, typename Element >
 ContiguousState<NumDims,Element>::ContiguousState(
         const ContiguousState &other)
     : shared_range_type(suzerain::clone_shared_range(
@@ -84,7 +124,7 @@ ContiguousState<NumDims,Element>::ContiguousState(
                        suzerain::multi_array::strides_array(other),
                        storage_order_type())
 {
-    // Data copied by ContiguousMemory's copy constructor
+    // Data copied by suzerain::clone_shared_range
     // Strides copied by chosen multi_array_type constructor
 }
 
@@ -323,7 +363,7 @@ InterleavedState<NumDims,Element>::InterleavedState(
                        suzerain::multi_array::shape_array(other),
                        storage_order_type())
 {
-    // Data copied by ContiguousMemory's copy constructor
+    // Data copied by suzerain::clone_shared_range
 }
 
 template< std::size_t NumDims, typename Element >

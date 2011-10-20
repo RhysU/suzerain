@@ -252,7 +252,7 @@ public:
     explicit ContiguousState(const ExtentList& sizes);
 
     template<typename ExtentList>
-    ContiguousState(shared_range_type storage,
+    ContiguousState(const shared_range_type& storage,
                     const ExtentList& sizes);
 
     template<typename ExtentList, typename MinStrideList>
@@ -260,7 +260,7 @@ public:
                     const MinStrideList& minstrides);
 
     template<typename ExtentList, typename MinStrideList>
-    ContiguousState(shared_range_type storage,
+    ContiguousState(const shared_range_type& storage,
                     const ExtentList& sizes,
                     const MinStrideList& minstrides);
 
