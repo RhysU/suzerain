@@ -35,6 +35,7 @@
 #include <suzerain/functional.hpp>
 #include <suzerain/mpl.hpp>
 #include <suzerain/multi_array.hpp>
+#include <suzerain/shared_range.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/storage.hpp>
 
@@ -45,75 +46,76 @@
 namespace suzerain
 {
 
-template< std::size_t NumDims, typename Element, typename Allocator >
+template< std::size_t NumDims, typename Element >
 template< typename ExtentList >
-ContiguousState<NumDims,Element,Allocator>::ContiguousState(
+ContiguousState<NumDims,Element>::ContiguousState(
         const ExtentList& sizes)
-    : ContiguousMemory<Element,Allocator>(
-              storage_type::compute_storage(sizes.begin())),
-      multi_array_type(
-              ContiguousMemory<Element,Allocator>::memory_begin(),
-              sizes, storage_type())
+    : shared_range_type(suzerain::allocate_shared_range(
+                typename suzerain::blas::allocator<Element>::type(),
+                storage_order_type::compute_storage(sizes.begin()))),
+      multi_array_type(shared_range_type::begin(), sizes, storage_order_type())
 {
     // NOP
 }
 
-template< std::size_t NumDims, typename Element, typename Allocator >
+template< std::size_t NumDims, typename Element >
 template< typename ExtentList, typename MinStrideList >
-ContiguousState<NumDims,Element,Allocator>::ContiguousState(
+ContiguousState<NumDims,Element>::ContiguousState(
         const ExtentList& sizes,
         const MinStrideList& minstrides)
-    : ContiguousMemory<Element,Allocator>(
-            storage_type::compute_storage(sizes.begin(), minstrides.begin())),
-      multi_array_type(
-            ContiguousMemory<Element,Allocator>::memory_begin(),
-            sizes, minstrides, storage_type())
+    : shared_range_type(suzerain::allocate_shared_range(
+                typename suzerain::blas::allocator<Element>::type(),
+                storage_order_type::compute_storage(
+                        sizes.begin(), minstrides.begin()))),
+      multi_array_type(shared_range_type::begin(),
+                       sizes, minstrides, storage_order_type())
 {
     // NOP
 }
 
-template< std::size_t NumDims, typename Element, typename Allocator >
-ContiguousState<NumDims,Element,Allocator>::ContiguousState(
+template< std::size_t NumDims, typename Element >
+ContiguousState<NumDims,Element>::ContiguousState(
         const ContiguousState &other)
-    : ContiguousMemory<Element,Allocator>(other),
-      multi_array_type(this->memory_begin(),
+    : shared_range_type(suzerain::clone_shared_range(
+                typename suzerain::blas::allocator<Element>::type(),
+                other.range())),
+      multi_array_type(shared_range_type::begin(),
                        suzerain::multi_array::shape_array(other),
                        suzerain::multi_array::strides_array(other),
-                       storage_type())
+                       storage_order_type())
 {
     // Data copied by ContiguousMemory's copy constructor
     // Strides copied by chosen multi_array_type constructor
 }
 
-template< std::size_t NumDims, typename Element, typename Allocator >
-void ContiguousState<NumDims,Element,Allocator>::scale(
+template< std::size_t NumDims, typename Element >
+void ContiguousState<NumDims,Element>::scale(
         const Element& factor)
 {
     suzerain::blas::scal(
-            std::distance(this->memory_begin(),this->memory_end()),
-            factor, this->memory_begin(), 1);
+            shared_range_type::size(), factor, shared_range_type::begin(), 1);
 }
 
 namespace detail {
 
-template< typename BLASFunctor, typename Element, typename Allocator >
+template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           ContiguousState<1,Element,Allocator>& x,
-           ContiguousState<1,Element,Allocator>& y)
+           ContiguousState<1,Element>& x,
+           ContiguousState<1,Element>& y)
 {
     assert(std::equal(x.shape(), x.shape() + 1, y.shape()));
 
     functor(x.shape()[0],
-            x.memory_begin(), x.strides()[0],
-            y.memory_begin(), y.strides()[0]);
+            x.range().begin(), x.strides()[0],
+            y.range().begin(), y.strides()[0]);
 }
 
-template< typename BLASFunctor, typename Element, typename Allocator >
+template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           ContiguousState<2,Element,Allocator>& x,
-           ContiguousState<2,Element,Allocator>& y)
+           ContiguousState<2,Element>& x,
+           ContiguousState<2,Element>& y)
 {
-    typedef typename ContiguousState<2,Element,Allocator>::index index;
+    typedef typename ContiguousState<2,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
@@ -128,12 +130,12 @@ void apply(BLASFunctor functor,
     }
 }
 
-template< typename BLASFunctor, typename Element, typename Allocator >
+template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           ContiguousState<3,Element,Allocator>& x,
-           ContiguousState<3,Element,Allocator>& y)
+           ContiguousState<3,Element>& x,
+           ContiguousState<3,Element>& y)
 {
-    typedef typename ContiguousState<3,Element,Allocator>::index index;
+    typedef typename ContiguousState<3,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
@@ -154,12 +156,12 @@ void apply(BLASFunctor functor,
     }
 }
 
-template< typename BLASFunctor, typename Element, typename Allocator >
+template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           ContiguousState<4,Element,Allocator>& x,
-           ContiguousState<4,Element,Allocator>& y)
+           ContiguousState<4,Element>& x,
+           ContiguousState<4,Element>& y)
 {
-    typedef typename ContiguousState<4,Element,Allocator>::index index;
+    typedef typename ContiguousState<4,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
@@ -186,12 +188,12 @@ void apply(BLASFunctor functor,
     }
 }
 
-template< typename BLASFunctor, typename Element, typename Allocator >
+template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           ContiguousState<5,Element,Allocator>& x,
-           ContiguousState<5,Element,Allocator>& y)
+           ContiguousState<5,Element>& x,
+           ContiguousState<5,Element>& y)
 {
-    typedef typename ContiguousState<5,Element,Allocator>::index index;
+    typedef typename ContiguousState<5,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
@@ -228,8 +230,8 @@ void apply(BLASFunctor functor,
 
 } // namespace detail
 
-template< std::size_t NumDims, typename Element, typename Allocator >
-void ContiguousState<NumDims,Element,Allocator>::addScaled(
+template< std::size_t NumDims, typename Element >
+void ContiguousState<NumDims,Element>::addScaled(
             const Element& factor,
             const ContiguousState& other)
 {
@@ -242,9 +244,9 @@ void ContiguousState<NumDims,Element,Allocator>::addScaled(
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
                     other.strides() + NumDims, this->strides()))) {
         // Identical strides between elements: use a single BLAS call
-        suzerain::blas::axpy(
-                std::distance(this->memory_begin(),this->memory_end()),
-                factor, other.memory_begin(), 1, this->memory_begin(), 1);
+        suzerain::blas::axpy(shared_range_type::size(), factor,
+                             other.shared_range_type::begin(), 1,
+                             shared_range_type::begin(), 1);
     } else {
         // Different strides between elements: loop over BLAS calls
         detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
@@ -252,8 +254,8 @@ void ContiguousState<NumDims,Element,Allocator>::addScaled(
     }
 }
 
-template< std::size_t NumDims, typename Element, typename Allocator >
-void ContiguousState<NumDims,Element,Allocator>::assign(
+template< std::size_t NumDims, typename Element >
+void ContiguousState<NumDims,Element>::assign(
             const ContiguousState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -264,9 +266,9 @@ void ContiguousState<NumDims,Element,Allocator>::assign(
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
                     other.strides() + NumDims, this->strides()))) {
         // Identical strides between elements: use a single BLAS call
-        suzerain::blas::copy(
-                std::distance(this->memory_begin(),this->memory_end()),
-                other.memory_begin(), 1, this->memory_begin(), 1);
+        suzerain::blas::copy(shared_range_type::size(),
+                other.shared_range_type::begin(), 1,
+                shared_range_type::begin(), 1);
     } else {
         // Different strides between elements: loop over BLAS calls
         detail::apply(::suzerain::blas::functor::copy(),
@@ -274,8 +276,8 @@ void ContiguousState<NumDims,Element,Allocator>::assign(
     }
 }
 
-template< std::size_t NumDims, typename Element, typename Allocator >
-void ContiguousState<NumDims,Element,Allocator>::exchange(
+template< std::size_t NumDims, typename Element >
+void ContiguousState<NumDims,Element>::exchange(
             ContiguousState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -286,9 +288,9 @@ void ContiguousState<NumDims,Element,Allocator>::exchange(
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
                     other.strides() + NumDims, this->strides()))) {
         // Identical strides between elements: use a single BLAS call
-        suzerain::blas::swap(
-                std::distance(this->memory_begin(),this->memory_end()),
-                other.memory_begin(), 1, this->memory_begin(), 1);
+        suzerain::blas::swap(shared_range_type::size(),
+                other.shared_range_type::begin(), 1,
+                shared_range_type::begin(), 1);
     } else {
         // Different strides between elements: loop over BLAS calls
         detail::apply(::suzerain::blas::functor::swap(), other, *this);
@@ -296,40 +298,43 @@ void ContiguousState<NumDims,Element,Allocator>::exchange(
 }
 
 
-template< std::size_t NumDims, typename Element, typename Allocator >
+template< std::size_t NumDims, typename Element >
 template< typename ExtentList >
-InterleavedState<NumDims,Element,Allocator>::InterleavedState(
+InterleavedState<NumDims,Element>::InterleavedState(
         const ExtentList& sizes,
         size_type min_total_contiguous_count)
-    : ContiguousMemory<Element,Allocator>(std::max<size_type>(
+    : shared_range_type(suzerain::allocate_shared_range(
+                typename suzerain::blas::allocator<Element>::type(),
+                std::max<size_type>(
                     suzerain::functional::product(sizes.begin(), sizes.end()),
-                    min_total_contiguous_count)),
-      multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
-                       sizes, storage_type())
+                    min_total_contiguous_count))),
+      multi_array_type(shared_range_type::begin(), sizes, storage_order_type())
 {
     // NOP
 }
 
-template< std::size_t NumDims, typename Element, typename Allocator >
-InterleavedState<NumDims,Element,Allocator>::InterleavedState(
+template< std::size_t NumDims, typename Element >
+InterleavedState<NumDims,Element>::InterleavedState(
         const InterleavedState &other)
-    : ContiguousMemory<Element,Allocator>(other),
-      multi_array_type(ContiguousMemory<Element,Allocator>::memory_begin(),
+    : shared_range_type(suzerain::clone_shared_range(
+                typename suzerain::blas::allocator<Element>::type(),
+                other.range())),
+      multi_array_type(shared_range_type::begin(),
                        suzerain::multi_array::shape_array(other),
-                       storage_type())
+                       storage_order_type())
 {
     // Data copied by ContiguousMemory's copy constructor
 }
 
-template< std::size_t NumDims, typename Element, typename Allocator >
-void InterleavedState<NumDims,Element,Allocator>::scale(
+template< std::size_t NumDims, typename Element >
+void InterleavedState<NumDims,Element>::scale(
         const Element& factor)
 {
     suzerain::blas::scal(this->num_elements(), factor, this->data(), 1);
 }
 
-template< std::size_t NumDims, typename Element, typename Allocator >
-void InterleavedState<NumDims,Element,Allocator>::addScaled(
+template< std::size_t NumDims, typename Element >
+void InterleavedState<NumDims,Element>::addScaled(
             const Element& factor,
             const InterleavedState& other)
 {
@@ -344,8 +349,8 @@ void InterleavedState<NumDims,Element,Allocator>::addScaled(
             this->num_elements(), factor, other.data(), 1, this->data(), 1);
 }
 
-template< std::size_t NumDims, typename Element, typename Allocator >
-void InterleavedState<NumDims,Element,Allocator>::assign(
+template< std::size_t NumDims, typename Element >
+void InterleavedState<NumDims,Element>::assign(
             const InterleavedState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -358,8 +363,8 @@ void InterleavedState<NumDims,Element,Allocator>::assign(
             this->num_elements(), other.data(), 1, this->data(), 1);
 }
 
-template< std::size_t NumDims, typename Element, typename Allocator >
-void InterleavedState<NumDims,Element,Allocator>::exchange(
+template< std::size_t NumDims, typename Element >
+void InterleavedState<NumDims,Element>::exchange(
             InterleavedState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?

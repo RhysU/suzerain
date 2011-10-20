@@ -32,9 +32,9 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
-#include <suzerain/contiguous_memory.hpp>
 #include <suzerain/mpl.hpp>
 #include <suzerain/multi_array.hpp>
+#include <suzerain/shared_range.hpp>
 #include <suzerain/storage.hpp>
 
 // TODO Document better
@@ -55,10 +55,8 @@ namespace suzerain
 
 // Mandatory forward declarations
 template<typename Derived> struct StateBase;
-template<std::size_t NumDims, typename Element, typename Allocator>
-    class ContiguousState;
-template<std::size_t NumDims, typename Element, typename Allocator>
-    class InterleavedState;
+template<std::size_t NumDims, typename Element> class ContiguousState;
+template<std::size_t NumDims, typename Element> class InterleavedState;
 
 /** Implementation details for StateBase */
 namespace detail
@@ -68,8 +66,8 @@ namespace detail
 template<typename T> struct StateTraits;
 
 /** Traits providing basic type details for ContiguousState */
-template<std::size_t NumDims, typename Element, typename Allocator>
-struct StateTraits<ContiguousState<NumDims,Element,Allocator> >
+template<std::size_t NumDims, typename Element>
+struct StateTraits<ContiguousState<NumDims,Element> >
 {
     typedef Element element;
     typedef boost::multi_array_types::index index;
@@ -81,8 +79,8 @@ private:
 };
 
 /** Traits providing basic type details for InterleavedState */
-template<std::size_t NumDims, typename Element, typename Allocator>
-struct StateTraits<InterleavedState<NumDims,Element,Allocator> >
+template<std::size_t NumDims, typename Element>
+struct StateTraits<InterleavedState<NumDims,Element> >
 {
     typedef Element element;
     typedef boost::multi_array_types::index index;
@@ -221,46 +219,50 @@ public:
  *
  * @tparam NumDims    Number of dimensions
  * @tparam Element    Type of elements to store
- * @tparam Allocator  Allocator for element storage
  */
-template<
-    std::size_t NumDims,
-    typename Element,
-    typename Allocator = typename suzerain::blas::allocator<Element>::type
->
+template< std::size_t NumDims, typename Element >
 class ContiguousState
-    : public StateBase<ContiguousState<NumDims,Element,Allocator> >,
-      public ContiguousMemory<Element,Allocator>,
-      public suzerain::multi_array::ref<Element, NumDims>
+    : public  StateBase<ContiguousState<NumDims,Element> >,
+      private suzerain::shared_range<Element>,
+      public  suzerain::multi_array::ref<Element, NumDims>
 {
 public:
 
 /** @name Declarations bringing in information from public base classes */
 /**@{*/
     typedef typename suzerain::multi_array::ref<Element,NumDims> multi_array_type;
+    typedef typename multi_array_type::const_iterator       const_iterator;
     typedef typename multi_array_type::const_reference      const_reference;
     typedef typename multi_array_type::difference_type      difference_type;
     typedef typename multi_array_type::element              element;
     typedef typename multi_array_type::index                index;
+    typedef typename multi_array_type::iterator             iterator;
     typedef typename multi_array_type::reference            reference;
     typedef typename multi_array_type::size_type            size_type;
     typedef typename multi_array_type::value_type           value_type;
+    typedef typename suzerain::shared_range<Element>        shared_range_type;
     static const size_type dimensionality = multi_array_type::dimensionality;
     using multi_array_type::shape;
 /**@}*/
 
     /** The storage ordering in use */
-    typedef typename storage::noninterleaved<NumDims> storage_type;
-
-    /** The allocator in use */
-    typedef Allocator allocator_type;
+    typedef typename storage::noninterleaved<NumDims> storage_order_type;
 
     template<typename ExtentList>
     explicit ContiguousState(const ExtentList& sizes);
 
+    template<typename ExtentList>
+    ContiguousState(shared_range_type storage,
+                    const ExtentList& sizes);
+
     template<typename ExtentList, typename MinStrideList>
-    explicit ContiguousState(const ExtentList& sizes,
-                             const MinStrideList& minstrides);
+    ContiguousState(const ExtentList& sizes,
+                    const MinStrideList& minstrides);
+
+    template<typename ExtentList, typename MinStrideList>
+    ContiguousState(shared_range_type storage,
+                    const ExtentList& sizes,
+                    const MinStrideList& minstrides);
 
     ContiguousState(const ContiguousState& other);
 
@@ -271,6 +273,16 @@ public:
     void assign(const ContiguousState &other);
 
     void exchange(ContiguousState &other);
+
+    const shared_range_type& range() const {
+        return reinterpret_cast<const shared_range_type&>(*this);
+    }
+
+    // Clarify ambiguities due to private inheritance from shared_range_type
+    using multi_array_type::operator[];
+    using multi_array_type::begin;
+    using multi_array_type::end;
+    using multi_array_type::size;
 
 private:
     // Disable assignment operators
@@ -284,44 +296,43 @@ private:
  *
  * @tparam NumDims    Number of dimensions
  * @tparam Element    Type of elements to store
- * @tparam Allocator  Allocator for element storage
  */
-template<
-    std::size_t NumDims,
-    typename Element,
-    typename Allocator = typename suzerain::blas::allocator<Element>::type
->
+template< std::size_t NumDims, typename Element >
 class InterleavedState
-    : public StateBase<InterleavedState<NumDims,Element,Allocator> >,
-      public ContiguousMemory<Element,Allocator>,
-      public suzerain::multi_array::ref<Element, NumDims>
+    : public  StateBase<InterleavedState<NumDims,Element> >,
+      private suzerain::shared_range<Element>,
+      public  suzerain::multi_array::ref<Element, NumDims>
 {
 public:
 
 /** @name Declarations bringing in information from public base classes */
 /**@{*/
     typedef typename suzerain::multi_array::ref<Element,NumDims> multi_array_type;
+    typedef typename multi_array_type::const_iterator       const_iterator;
     typedef typename multi_array_type::const_reference      const_reference;
     typedef typename multi_array_type::difference_type      difference_type;
     typedef typename multi_array_type::element              element;
     typedef typename multi_array_type::index                index;
+    typedef typename multi_array_type::iterator             iterator;
     typedef typename multi_array_type::reference            reference;
     typedef typename multi_array_type::size_type            size_type;
     typedef typename multi_array_type::value_type           value_type;
+    typedef typename suzerain::shared_range<Element>        shared_range_type;
     static const size_type dimensionality = multi_array_type::dimensionality;
     using multi_array_type::shape;
 /**@}*/
 
     /** The storage ordering in use */
-    typedef typename storage::interleaved<NumDims> storage_type;
-
-    /** The allocator in use */
-    typedef Allocator allocator_type;
+    typedef typename storage::interleaved<NumDims> storage_order_type;
 
     template<typename ExtentList>
-    explicit InterleavedState(
-            const ExtentList& sizes,
-            size_type min_total_contiguous_count = 0);
+    explicit InterleavedState(const ExtentList& sizes,
+                              size_type min_total_contiguous_count = 0);
+
+    template<typename ExtentList>
+    InterleavedState(shared_range_type storage,
+                     const ExtentList& sizes,
+                     size_type min_total_contiguous_count = 0);
 
     InterleavedState(const InterleavedState& other);
 
@@ -333,6 +344,16 @@ public:
     void assign(const InterleavedState &other);
 
     void exchange(InterleavedState &other);
+
+    const shared_range_type& range() const {
+        return reinterpret_cast<const shared_range_type&>(*this);
+    }
+
+    // Clarify ambiguities due to private inheritance from shared_range_type
+    using multi_array_type::operator[];
+    using multi_array_type::begin;
+    using multi_array_type::end;
+    using multi_array_type::size;
 
 private:
     // Disable assignment operators

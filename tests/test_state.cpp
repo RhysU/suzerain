@@ -10,6 +10,10 @@
 #include <boost/test/test_case_template.hpp>
 #include "test_tools.hpp"
 
+// Explicit template instantiation to flush out compilation errors
+template class suzerain::ContiguousState<4,double>;
+template class suzerain::InterleavedState<4,double>;
+
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 /** Helper for specifying 3D extents information */
@@ -38,13 +42,12 @@ static boost::array<int,4> size2234() {
 
 /** Load a 3D instance with real test data */
 template<
-    template <std::size_t,typename,typename> class State,
-    typename Allocator,
+    template <std::size_t,typename> class State,
     typename FPT,
     typename Scale
 >
 static void load(
-    State<3,FPT,Allocator> &state,
+    State<3,FPT> &state,
     const Scale scale,
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -69,13 +72,12 @@ static void load(
 
 /** Load a 4D instance with real test data */
 template<
-    template <std::size_t,typename,typename> class State,
-    typename Allocator,
+    template <std::size_t,typename> class State,
     typename FPT,
     typename Scale
 >
 static void load(
-    State<4,FPT,Allocator> &state,
+    State<4,FPT> &state,
     const Scale scale,
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -144,13 +146,12 @@ static void load(
 
 /** Verify a 3D instance against real test data */
 template<
-    template <std::size_t,typename,typename> class State,
-    typename Allocator,
+    template <std::size_t,typename> class State,
     typename FPT,
     typename Scale
 >
 static void verify(
-    const State<3,FPT,Allocator> &state,
+    const State<3,FPT> &state,
     const Scale scale,
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -175,13 +176,12 @@ static void verify(
 
 /** Verify a 4D instance against real test data */
 template<
-    template <std::size_t,typename,typename> class State,
-    typename Allocator,
+    template <std::size_t,typename> class State,
     typename FPT,
     typename Scale
 >
 static void verify(
-    const State<4,FPT,Allocator> &state,
+    const State<4,FPT> &state,
     const Scale scale,
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -250,13 +250,12 @@ static void verify(
 
 /** Load a 3D instance with complex test data */
 template<
-    template <std::size_t,typename,typename> class State,
-    typename Allocator,
+    template <std::size_t,typename> class State,
     typename FPT,
     typename Scale
 >
 static void load(
-    State<3,std::complex<FPT>,Allocator> &state,
+    State<3,std::complex<FPT> > &state,
     const Scale scale,
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -283,13 +282,12 @@ static void load(
 
 /** Load a 4D instance with complex test data */
 template<
-    template <std::size_t,typename,typename> class State,
-    typename Allocator,
+    template <std::size_t,typename> class State,
     typename FPT,
     typename Scale
 >
 static void load(
-    State<4,std::complex<FPT>,Allocator> &state,
+    State<4,std::complex<FPT> > &state,
     const Scale scale,
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -360,13 +358,12 @@ static void load(
 
 /** Verify a 3D instance against complex test data */
 template<
-    template <std::size_t,typename,typename> class State,
-    typename Allocator,
+    template <std::size_t,typename> class State,
     typename FPT,
     typename Scale
 >
 static void verify(
-    const State<3,std::complex<FPT>,Allocator> &state,
+    const State<3,std::complex<FPT> > &state,
     const Scale scale,
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -393,13 +390,12 @@ static void verify(
 
 /** Verify a 4D instance against complex test data */
 template<
-    template <std::size_t,typename,typename> class State,
-    typename Allocator,
+    template <std::size_t,typename> class State,
     typename FPT,
     typename Scale
 >
 static void verify(
-    const State<4,std::complex<FPT>,Allocator> &state,
+    const State<4,std::complex<FPT> > &state,
     const Scale scale,
     typename boost::enable_if<boost::is_floating_point<FPT> >::type *dummy = 0)
 {
@@ -469,15 +465,13 @@ static void verify(
 
 template<
     std::size_t NumDims,
-    template <std::size_t,typename,typename> class State1,
-    template <std::size_t,typename,typename> class State2,
-    typename Allocator1,
-    typename Allocator2,
+    template <std::size_t,typename> class State1,
+    template <std::size_t,typename> class State2,
     typename Element
 >
 static void test_assignment_helper(
-    State1<NumDims,Element,Allocator1> &foo,
-    State2<NumDims,Element,Allocator2> &bar)
+    State1<NumDims,Element> &foo,
+    State2<NumDims,Element> &bar)
 {
     load(foo, 1);
 
@@ -490,11 +484,10 @@ static void test_assignment_helper(
 
 template<
     std::size_t NumDims,
-    template <std::size_t,typename,typename> class State,
-    typename Allocator,
+    template <std::size_t,typename> class State,
     typename Element
 >
-static void test_scale_helper(State<NumDims,Element,Allocator> &foo)
+static void test_scale_helper(State<NumDims,Element> &foo)
 {
     BOOST_TEST_PASSPOINT();
     load(foo, 1);
@@ -520,15 +513,13 @@ static void test_scale_helper(State<NumDims,Element,Allocator> &foo)
 
 template<
     std::size_t NumDims,
-    template <std::size_t,typename,typename> class State1,
-    template <std::size_t,typename,typename> class State2,
-    typename Allocator1,
-    typename Allocator2,
+    template <std::size_t,typename> class State1,
+    template <std::size_t,typename> class State2,
     typename Element
 >
 static void test_addScaled_helper(
-    State1<NumDims,Element,Allocator1> &foo,
-    State2<NumDims,Element,Allocator2> &bar)
+    State1<NumDims,Element> &foo,
+    State2<NumDims,Element> &bar)
 {
     load(foo, 1);
     load(bar, 2);
@@ -538,15 +529,13 @@ static void test_addScaled_helper(
 
 template<
     std::size_t NumDims,
-    template <std::size_t,typename,typename> class State1,
-    template <std::size_t,typename,typename> class State2,
-    typename Allocator1,
-    typename Allocator2,
+    template <std::size_t,typename> class State1,
+    template <std::size_t,typename> class State2,
     typename Element
 >
 static void test_exchange_helper(
-    State1<NumDims,Element,Allocator1> &foo,
-    State2<NumDims,Element,Allocator2> &bar)
+    State1<NumDims,Element> &foo,
+    State2<NumDims,Element> &bar)
 {
     load(foo, 1);
     load(bar, 2);
@@ -576,15 +565,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 
     // Regular constructor
     InterleavedState<3,T> foo(size223());
-    BOOST_CHECK_EQUAL(
-          std::distance(foo.memory_begin(),foo.memory_end()), 2*2*3);
+    BOOST_CHECK_EQUAL(foo.range().size(), 2*2*3);
     load(foo, 1);
     verify(foo, 1);
 
     // Copy construct a second instance from the first
     InterleavedState<3,T> bar(foo);
-    BOOST_CHECK_EQUAL(
-          std::distance(bar.memory_begin(),bar.memory_end()), 2*2*3);
+    BOOST_CHECK_EQUAL(bar.range().size(), 2*2*3);
     verify(bar, 1);
 
     // Modify first instance's data
@@ -598,15 +585,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 
     // Create padded instance and ensure content lies within padding
     InterleavedState<3,T> baz(size223(), 2*2*3*7);
-    BOOST_CHECK_EQUAL(
-          std::distance(baz.memory_begin(),baz.memory_end()), 2*2*3*7);
-    BOOST_CHECK_GE(baz.memory_begin(), &(baz[0][0][0]));
-    BOOST_CHECK_LT(&(baz[1][1][2]), baz.memory_end());
+    BOOST_CHECK_EQUAL(baz.range().size(), 2*2*3*7);
+    BOOST_CHECK_GE(baz.range().begin(), &(baz[0][0][0]));
+    BOOST_CHECK_LT(&(baz[1][1][2]), baz.range().end());
 
     // Ensure padded information present propagated in copy operations
     InterleavedState<3,T> qux(baz);
-    BOOST_CHECK_EQUAL(
-          std::distance(qux.memory_begin(),qux.memory_end()), 2*2*3*7);
+    BOOST_CHECK_EQUAL(qux.range().size(), 2*2*3*7);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
@@ -700,15 +685,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors3, T, test_types )
 
     // Regular constructor
     ContiguousState<3,T> foo(size223());
-    BOOST_CHECK_EQUAL(
-          std::distance(foo.memory_begin(),foo.memory_end()), 2*2*3);
+    BOOST_CHECK_EQUAL(foo.range().size(), 2*2*3);
     load(foo, 1);
     verify(foo, 1);
 
     // Copy construct a second instance from the first
     ContiguousState<3,T> bar(foo);
-    BOOST_CHECK_EQUAL(
-          std::distance(bar.memory_begin(),bar.memory_end()), 2*2*3);
+    BOOST_CHECK_EQUAL(bar.range().size(), 2*2*3);
     verify(bar, 1);
 
     // Modify first instance's data
@@ -722,18 +705,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors3, T, test_types )
 
     // Create padded instance and ensure content lies within padding
     ContiguousState<3,T> baz(size223(), size(7,1,1));
-    BOOST_CHECK_EQUAL(
-          std::distance(baz.memory_begin(),baz.memory_end()), 2*7);
+    BOOST_CHECK_EQUAL(baz.range().size(), 2*7);
     BOOST_CHECK_EQUAL(baz.strides()[0], 7);
-    BOOST_CHECK_GE(baz.memory_begin(), &(baz[0][0][0]));
-    BOOST_CHECK_LT(&(baz[1][1][2]), baz.memory_end());
+    BOOST_CHECK_GE(baz.range().begin(), &(baz[0][0][0]));
+    BOOST_CHECK_LT(&(baz[1][1][2]), baz.range().end());
     load(baz, 1);
     verify(baz, 1);
 
     // Ensure padded information present propagated in copy operations
     ContiguousState<3,T> qux(baz);
-    BOOST_CHECK_EQUAL(
-          std::distance(qux.memory_begin(),qux.memory_end()), 2*7);
+    BOOST_CHECK_EQUAL(qux.range().size(), 2*7);
     BOOST_CHECK_EQUAL(baz.strides()[0], qux.strides()[0]);
     BOOST_CHECK_EQUAL(baz.strides()[1], qux.strides()[1]);
     BOOST_CHECK_EQUAL(baz.strides()[2], qux.strides()[2]);
@@ -755,15 +736,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors4, T, test_types )
 
     // Regular constructor
     ContiguousState<4,T> foo(size2234());
-    BOOST_CHECK_EQUAL(
-          std::distance(foo.memory_begin(),foo.memory_end()), 2*2*3*4);
+    BOOST_CHECK_EQUAL(foo.range().size(), 2*2*3*4);
     load(foo, 1);
     verify(foo, 1);
 
     // Copy construct a second instance from the first
     ContiguousState<4,T> bar(foo);
-    BOOST_CHECK_EQUAL(
-          std::distance(bar.memory_begin(),bar.memory_end()), 2*2*3*4);
+    BOOST_CHECK_EQUAL(bar.range().size(), 2*2*3*4);
     verify(bar, 1);
 
     // Modify first instance's data
@@ -778,18 +757,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors4, T, test_types )
 
     // Create padded instance and ensure content lies within padding
     ContiguousState<4,T> baz(size2234(), size(27,1,1,1));
-    BOOST_CHECK_EQUAL(
-          std::distance(baz.memory_begin(),baz.memory_end()), 2*27);
+    BOOST_CHECK_EQUAL(baz.range().size(), 2*27);
     BOOST_CHECK_EQUAL(baz.strides()[0], 27);
-    BOOST_CHECK_GE(baz.memory_begin(), &(baz[0][0][0][0]));
-    BOOST_CHECK_LT(&(baz[1][1][2][3]), baz.memory_end());
+    BOOST_CHECK_GE(baz.range().begin(), &(baz[0][0][0][0]));
+    BOOST_CHECK_LT(&(baz[1][1][2][3]), baz.range().end());
     load(baz, 1);
     verify(baz, 1);
 
     // Ensure padded information present propagated in copy operations
     ContiguousState<4,T> qux(baz);
-    BOOST_CHECK_EQUAL(
-          std::distance(qux.memory_begin(),qux.memory_end()), 2*27);
+    BOOST_CHECK_EQUAL(qux.range().size(), 2*27);
     BOOST_CHECK_EQUAL(baz.strides()[0], qux.strides()[0]);
     BOOST_CHECK_EQUAL(baz.strides()[1], qux.strides()[1]);
     BOOST_CHECK_EQUAL(baz.strides()[2], qux.strides()[2]);

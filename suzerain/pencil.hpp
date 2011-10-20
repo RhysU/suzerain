@@ -69,9 +69,9 @@ public:
 
     // Types specifying storage ordering
     typedef typename suzerain::storage::general<
-        boost::mpl::vector_c<std::size_t,0,2,1> > physical_storage_type;
+        boost::mpl::vector_c<std::size_t,0,2,1> > physical_storage_order_type;
     typedef typename suzerain::storage::general<
-        boost::mpl::vector_c<std::size_t,1,0,2> > wave_storage_type;
+        boost::mpl::vector_c<std::size_t,1,0,2> > wave_storage_order_type;
 
     // Types for contained data
     typedef FPT real_type;
@@ -210,7 +210,7 @@ pencil<FPT,Allocator>::pencil(const RandomAccessContainer1& pstart,
       physical(
               this->memory_begin(),
               psize,
-              physical_storage_type()),
+              physical_storage_order_type()),
       global_physical(
               this->memory_begin(),
               typename physical_type::extent_gen()
@@ -220,12 +220,12 @@ pencil<FPT,Allocator>::pencil(const RandomAccessContainer1& pstart,
                         pstart[1], pstart[1] + psize[1])]
                     [typename physical_type::extent_range(
                         pstart[2], pstart[2] + psize[2])],
-              physical_storage_type()),
+              physical_storage_order_type()),
       wave(
               reinterpret_cast<typename wave_type::element *>(
                   this->memory_begin()),
               wsize,
-              wave_storage_type()),
+              wave_storage_order_type()),
       global_wave(
               reinterpret_cast<typename wave_type::element *>(
                   this->memory_begin()),
@@ -236,7 +236,7 @@ pencil<FPT,Allocator>::pencil(const RandomAccessContainer1& pstart,
                         wstart[1], wstart[1] + wsize[1])]
                     [typename wave_type::extent_range(
                         wstart[2], wstart[2] + wsize[2])],
-              wave_storage_type())
+              wave_storage_order_type())
 {
     std::fill(this->memory_begin(), this->memory_end(), 0);  // Fill with zeros
 }
@@ -251,7 +251,7 @@ pencil<FPT,Allocator>::pencil(const pencil_grid& pg)
       physical(
               this->memory_begin(),
               make_collection(pg.local_physical_extent.data()),
-              physical_storage_type()),
+              physical_storage_order_type()),
       global_physical(
               this->memory_begin(),
               typename physical_type::extent_gen()
@@ -264,12 +264,12 @@ pencil<FPT,Allocator>::pencil(const pencil_grid& pg)
                     [typename physical_type::extent_range(
                             pg.local_physical_start[2],
                             pg.local_physical_end  [2])],
-              physical_storage_type()),
+              physical_storage_order_type()),
       wave(
               reinterpret_cast<typename wave_type::element *>(
                   this->memory_begin()),
               make_collection(pg.local_wave_extent.data()),
-              wave_storage_type()),
+              wave_storage_order_type()),
       global_wave(
               reinterpret_cast<typename wave_type::element *>(
                   this->memory_begin()),
@@ -283,7 +283,7 @@ pencil<FPT,Allocator>::pencil(const pencil_grid& pg)
                     [typename wave_type::extent_range(
                             pg.local_wave_start[2],
                             pg.local_wave_end  [2])],
-              wave_storage_type())
+              wave_storage_order_type())
 {
     std::fill(this->memory_begin(), this->memory_end(), 0);  // Fill with zeros
 }
