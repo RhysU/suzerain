@@ -16,7 +16,7 @@ using suzerain::mpl::sequence_array;
 BOOST_AUTO_TEST_CASE( integer )
 {
     sequence_array< boost::mpl::vector_c<int,2,4,6> > a;
-    BOOST_CHECK_EQUAL(a.size(), 3);
+    BOOST_CHECK_EQUAL(a.size(), 3U);
 
     BOOST_CHECK_EQUAL(a[0], 2);
     BOOST_CHECK_EQUAL(a[1], 4);
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE( integer )
 BOOST_AUTO_TEST_CASE( boolean )
 {
     sequence_array< boost::mpl::vector_c<bool,true,false> > a;
-    BOOST_CHECK_EQUAL(a.size(), 2);
+    BOOST_CHECK_EQUAL(a.size(), 2U);
 
     BOOST_CHECK_EQUAL(a[0], true);
     BOOST_CHECK_EQUAL(a[1], false);
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE( boolean )
 BOOST_AUTO_TEST_CASE( empty )
 {
     sequence_array< boost::mpl::vector_c<double> > a;
-    BOOST_CHECK_EQUAL(a.size(), 0);
+    BOOST_CHECK_EQUAL(a.size(), 0U);
 
     boost::array<double, 0> b;
 

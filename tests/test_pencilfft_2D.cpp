@@ -190,8 +190,8 @@ void r2c_2d_forward_4_by_3(RealArray &in, ComplexArray &out)
     const int M = 4, N = 3;
     BOOST_REQUIRE_EQUAL(in.shape()[0], M);
     BOOST_REQUIRE_EQUAL(in.shape()[1], N);
-    BOOST_REQUIRE_GE(out.shape()[0], std::max(M,M/2+1));
-    BOOST_REQUIRE_GE(out.shape()[1], std::max(N,N/2+1));
+    BOOST_REQUIRE_GE(out.shape()[0], std::max<std::size_t>(M,M/2+1));
+    BOOST_REQUIRE_GE(out.shape()[1], std::max<std::size_t>(N,N/2+1));
 
     const double data[M][N] = {{1,2,3}, {4,5,6}, {7,8,9}, {10,11,12}};
     const double close = std::numeric_limits<double>::epsilon()*10*M*M*N*N;
@@ -396,8 +396,8 @@ void c2r_2d_backward_4_by_3(ComplexArray &in, RealArray &out)
     BOOST_STATIC_ASSERT(ComplexArray::dimensionality == 2);
     BOOST_STATIC_ASSERT(RealArray::dimensionality == 2);
     const int M = 4, N = 3;
-    BOOST_REQUIRE_GE(in.shape()[0], std::max(M,M/2+1));
-    BOOST_REQUIRE_GE(in.shape()[1], std::max(N,N/2+1));
+    BOOST_REQUIRE_GE(in.shape()[0], std::max<std::size_t>(M,M/2+1));
+    BOOST_REQUIRE_GE(in.shape()[1], std::max<std::size_t>(N,N/2+1));
     BOOST_REQUIRE_EQUAL(out.shape()[0], M);
     BOOST_REQUIRE_EQUAL(out.shape()[1], N);
 

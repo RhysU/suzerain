@@ -35,12 +35,12 @@ void c2c_3d_forward_4_by_3_by_2(ComplexMultiArray1 &in, ComplexMultiArray2 &out)
         { { 7, 19}, { 8, 20}, { 9, 21}, },
         { {10, 22}, {11, 23}, {12, 24}, }
     };
-    BOOST_REQUIRE_EQUAL(in.shape()[0], L);
-    BOOST_REQUIRE_EQUAL(in.shape()[1], M);
-    BOOST_REQUIRE_EQUAL(in.shape()[2], N);
-    BOOST_REQUIRE_EQUAL(out.shape()[0], L);
-    BOOST_REQUIRE_EQUAL(out.shape()[1], M);
-    BOOST_REQUIRE_EQUAL(out.shape()[2], N);
+    BOOST_REQUIRE_EQUAL(in.shape()[0],  static_cast<std::size_t>(L));
+    BOOST_REQUIRE_EQUAL(in.shape()[1],  static_cast<std::size_t>(M));
+    BOOST_REQUIRE_EQUAL(in.shape()[2],  static_cast<std::size_t>(N));
+    BOOST_REQUIRE_EQUAL(out.shape()[0], static_cast<std::size_t>(L));
+    BOOST_REQUIRE_EQUAL(out.shape()[1], static_cast<std::size_t>(M));
+    BOOST_REQUIRE_EQUAL(out.shape()[2], static_cast<std::size_t>(N));
     const double close = std::numeric_limits<double>::epsilon()*10*L*L*M*M*N*N;
 
     BOOST_TEST_MESSAGE("Testing zeroth dimension transform");
@@ -306,12 +306,12 @@ void r2c_3d_forward_4_by_3_by_2(RealArray &in, ComplexArray &out)
         { { 7, 19}, { 8, 20}, { 9, 21}, },
         { {10, 22}, {11, 23}, {12, 24}, }
     };
-    BOOST_REQUIRE_EQUAL(in.shape()[0], L);
-    BOOST_REQUIRE_EQUAL(in.shape()[1], M);
-    BOOST_REQUIRE_EQUAL(in.shape()[2], N);
-    BOOST_REQUIRE_GE(out.shape()[0], std::max(L,L/2+1));
-    BOOST_REQUIRE_GE(out.shape()[1], std::max(M,M/2+1));
-    BOOST_REQUIRE_GE(out.shape()[2], std::max(N,N/2+1));
+    BOOST_REQUIRE_EQUAL(in.shape()[0], static_cast<std::size_t>(L));
+    BOOST_REQUIRE_EQUAL(in.shape()[1], static_cast<std::size_t>(M));
+    BOOST_REQUIRE_EQUAL(in.shape()[2], static_cast<std::size_t>(N));
+    BOOST_REQUIRE_GE(out.shape()[0], std::max<std::size_t>(L,L/2+1));
+    BOOST_REQUIRE_GE(out.shape()[1], std::max<std::size_t>(M,M/2+1));
+    BOOST_REQUIRE_GE(out.shape()[2], std::max<std::size_t>(N,N/2+1));
     const double close = std::numeric_limits<double>::epsilon()*10*L*L*M*M*N*N;
 
     // Need to create views of out to match expected dimensions
@@ -611,8 +611,8 @@ BOOST_AUTO_TEST_SUITE_END()
 ////     BOOST_STATIC_ASSERT(ComplexArray::dimensionality == 2);
 ////     BOOST_STATIC_ASSERT(RealArray::dimensionality == 2);
 ////     const int M = 4, N = 3;
-////     BOOST_REQUIRE_GE(in.shape()[0], std::max(M,M/2+1));
-////     BOOST_REQUIRE_GE(in.shape()[1], std::max(N,N/2+1));
+////     BOOST_REQUIRE_GE(in.shape()[0], std::max<std::size_t>(M,M/2+1));
+////     BOOST_REQUIRE_GE(in.shape()[1], std::max<std::size_t>(N,N/2+1));
 ////     BOOST_REQUIRE_EQUAL(out.shape()[0], M);
 ////     BOOST_REQUIRE_EQUAL(out.shape()[1], N);
 ////
@@ -727,8 +727,8 @@ BOOST_AUTO_TEST_SUITE_END()
 ////     // Logical two dimensional array size in real space
 ////     const std::size_t M = 4, N = 3;
 ////     // Find maximum required complex extents for transforms in each direction
-////     const std::size_t complexM = std::max(M, M/2+1);
-////     const std::size_t complexN = std::max(N, N/2+1);
+////     const std::size_t complexM = std::max<std::size_t>(M, M/2+1);
+////     const std::size_t complexN = std::max<std::size_t>(N, N/2+1);
 ////     // Convert to maximum required real extents sizes
 ////     const std::size_t realM = complexM * size_ratio;
 ////     const std::size_t realN = complexN * size_ratio;
