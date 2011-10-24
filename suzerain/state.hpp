@@ -66,7 +66,7 @@ ContiguousState<NumDims,Element>::ContiguousState(
     : shared_range_type(storage),
       multi_array_type(shared_range_type::begin(), sizes, storage_order_type())
 {
-    const std::size_t minimum_size
+    const std::ptrdiff_t minimum_size
             = storage_order_type::compute_storage(sizes.begin());
     if (shared_range_type::size() < minimum_size) {
         std::ostringstream oss;
@@ -102,7 +102,7 @@ ContiguousState<NumDims,Element>::ContiguousState(
       multi_array_type(shared_range_type::begin(),
                        sizes, minstrides, storage_order_type())
 {
-    const std::size_t minimum_size = storage_order_type::compute_storage(
+    const std::ptrdiff_t minimum_size = storage_order_type::compute_storage(
             sizes.begin(), minstrides.begin());
     if (shared_range_type::size() < minimum_size) {
         std::ostringstream oss;
