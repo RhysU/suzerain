@@ -221,14 +221,20 @@ void load_time(const esio_handle h,
 
 /**
  * Forward declaration to allocate state padded for transformation to/from
- * physical space.  Accounts for parallel decomposition details.
+ * physical space.  Accounts for parallel decomposition details.  Emphatically
+ * \em NOT thread safe.  The caller is responsible for <tt>delete</tt>-ing the
+ * returned pointer.  No guarantees are made about the memory contents.
  */
 template<class StateType>
 StateType* allocate_padded_state(
            const std::size_t howmany_fields,
            const suzerain::pencil_grid& dgrid);
 
-/** Specialization of allocate_padded_state for ContiguousState. */
+/**
+ * Specialization of allocate_padded_state for ContiguousState.  Emphatically
+ * \em NOT thread safe.  The caller is responsible for <tt>delete</tt>-ing the
+ * returned pointer.  No guarantees are made about the memory contents.
+ */
 template<>
 suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
            const std::size_t howmany_fields,

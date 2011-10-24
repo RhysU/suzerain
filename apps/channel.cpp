@@ -33,11 +33,13 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
+#include <boost/ptr_container/ptr_map.hpp>
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>
+#include <suzerain/coalescing_pool.hpp>
 #include <suzerain/countof.h>
-#include <suzerain/error.h>
 #include <suzerain/diffwave.hpp>
+#include <suzerain/error.h>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/htstretch.h>
 #include <suzerain/mpi_datatype.hpp>
@@ -45,6 +47,7 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/RngStream.hpp>
+#include <suzerain/shared_range.hpp>
 #include <sys/file.h>
 
 #include "logging.hpp"
@@ -916,21 +919,45 @@ void load_time(const esio_handle h,
     DEBUG0("Loaded simulation time " << time);
 }
 
+// Pooling employed in allocate_padded_state implementations
+typedef boost::ptr_map<
+        size_t, suzerain::coalescing_pool<complex_t>
+    > padded_state_pools_type;
+static padded_state_pools_type padded_state_pools;
+
 template<>
 suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
            const size_t howmany_fields,
            const suzerain::pencil_grid& dgrid)
 {
-    // Create instance with appropriate padding to allow P3DFFTification
+    typedef suzerain::coalescing_pool<complex_t> pool_type;
+
+    // Contiguous number of complex_t values necessary to store one field
+    // This is sufficient field-to-field padding to allow P3DFFTification
+    const size_t blocksize = dgrid.local_wave_storage();
+
+    // Find or create the coalescing_pool matching blocksize
+    padded_state_pools.find(blocksize);
+    padded_state_pools_type::iterator it = padded_state_pools.find(blocksize);
+    if (it == padded_state_pools.end()) {
+        std::auto_ptr<pool_type> tmp(new pool_type(blocksize));
+        it = padded_state_pools.insert(blocksize, tmp).first;
+    }
+
+    // Construct a shared_range for howmany_fields from the pool instance
+    // shared_range given boost::bind-based Deleter to invoke release()
+    pool_type::blocks blocks = it->second->acquire(howmany_fields);
+    suzerain::shared_range<complex_t> storage(blocks.begin(), blocks.end(),
+            boost::bind(&pool_type::release, boost::ref(*(it->second)), blocks));
+
+    // Create instance using provided storage
     suzerain::ContiguousState<4,complex_t> * const retval =
         new suzerain::ContiguousState<4,complex_t>(
+            storage,
             suzerain::to_yxz(howmany_fields, dgrid.local_wave_extent),
             suzerain::prepend(dgrid.local_wave_storage(), suzerain::strides_cm(
                               suzerain::to_yxz(dgrid.local_wave_extent)))
         );
-
-    // Clear to avoid lingering NaN issues
-    suzerain::multi_array::fill(*retval, 0);
 
     return retval;
 }
@@ -1670,6 +1697,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
             allocate_padded_state<ContiguousState<4,complex_t> >(
                 field::count + 3, dgrid));
     ContiguousState<4,complex_t> &s = *_s_ptr;               // Shorthand
+    suzerain::multi_array::fill(s, 0);                       // Zero memory
 
     // 1) Generate a random vector-valued field \tilde{A}.
     // For each scalar component of \tilde{A}...
