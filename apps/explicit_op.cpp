@@ -337,14 +337,9 @@ NonlinearOperator::NonlinearOperator(
         const boost::shared_ptr<
             const channel::manufactured_solution>& msoln)
     : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
-      msoln(msoln),
-      auxw(suzerain::to_yxz(static_cast<std::size_t>(aux::count),
-                            dgrid.local_wave_extent),
-              suzerain::prepend(dgrid.local_wave_storage(),
-                  suzerain::strides_cm(
-                      suzerain::to_yxz(dgrid.local_wave_extent))))
+      msoln(msoln)
 {
-    suzerain::multi_array::fill(auxw, 0);
+    // NOP
 }
 
 std::vector<real_t> NonlinearOperator::applyOperator(
@@ -357,6 +352,31 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     namespace ndx = channel::field::ndx;
 
     // State enters method as coefficients in X, Y, and Z directions
+
+    // We need auxiliary scalar-field storage.  Prepare logical indices using a
+    // struct for scoping (e.g. aux::rho_y).  Ordering will match usage below.
+    struct aux {
+
+        enum {
+            rho_y, rho_yy,
+            rho_x, rho_xx, rho_xz, rho_z, rho_zz, rho_xy, rho_yz,
+            mx_y, mx_yy,
+            mx_x, mx_xx, mx_xz, mx_z, mx_zz, mx_xy, mx_yz,
+            my_y, my_yy,
+            my_x, my_xx, my_xz, my_z, my_zz, my_xy, my_yz,
+            mz_y, mz_yy,
+            mz_x, mz_xx, mz_xz, mz_z, mz_zz, mz_xy, mz_yz,
+            e_y, div_grad_e, e_x, e_z,
+
+            count // Sentry
+        };
+    };
+
+    // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
+    // We assume no garbage values in the memory will impact us (for speed).
+    boost::scoped_ptr<state_type> _auxw_ptr(
+            allocate_padded_state<state_type>(aux::count, dgrid)); // RAII
+    state_type &auxw = *_auxw_ptr;                                 // Shorthand
 
     // Sanity check incoming swave's and auxw's shape and contiguity
     assert(swave.shape()[0] == channel::field::count);

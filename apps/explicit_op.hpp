@@ -160,35 +160,10 @@ protected:
     /** Holds optional manufactured solution forcing details */
     const boost::shared_ptr<const channel::manufactured_solution> msoln;
 
-    /** Auxiliary scalar-field storage used within applyOperator */
-    mutable state_type auxw;
-
-    // Inner struct purely for name-scoping purposes
-    struct aux {
-
-        // Logical indexes into auxiliary scalar-field storage
-        // Seemingly goofy ordering matches usage in applyOperator
-        enum {
-            rho_y, rho_yy,
-            rho_x, rho_xx, rho_xz, rho_z, rho_zz, rho_xy, rho_yz,
-            mx_y, mx_yy,
-            mx_x, mx_xx, mx_xz, mx_z, mx_zz, mx_xy, mx_yz,
-            my_y, my_yy,
-            my_x, my_xx, my_xz, my_z, my_zz, my_xy, my_yz,
-            mz_y, mz_yy,
-            mz_x, mz_xx, mz_xz, mz_z, mz_zz, mz_xy, mz_yz,
-            e_y, div_grad_e, e_x, e_z,
-
-            count // Sentry
-        };
-
-        private: aux();
-    };
-
 private:
 
-    // Instances noncopyable as they have nontrivial member storage.  Using
-    // boost::noncopyable trips Intel non-virtual base destructor warnings.
+    // Instances noncopyable but using boost::noncopyable trips Intel
+    // non-virtual base destructor warnings.
     NonlinearOperator(const NonlinearOperator&);
     NonlinearOperator& operator=(const NonlinearOperator&);
 
