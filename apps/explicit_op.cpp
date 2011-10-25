@@ -813,22 +813,6 @@ std::vector<real_t> NonlinearOperatorIsothermal::applyOperator(
     const std::size_t wall_lower = 0;
     const std::size_t wall_upper = Ny - 1;
 
-    // Compute and store quantities used later to implement forcing
-    real_t bulk_density = std::numeric_limits<real_t>::quiet_NaN();
-    if (has_zero_zero_mode) {
-
-        // Save mean density values at collocation points
-        rho_fm = Map<VectorXc>(swave[ndx::rho].origin(), Ny).real();
-        bop.apply(0, 1, 1.0, rho_fm.data(), 1, Ny);
-
-        // Save bulk density
-        bulk_density = bulkcoeff.dot(rho_fm.real());
-
-        // Save mean X momentum values at collocation points
-        fm_dot_m = Map<VectorXc>(swave[ndx::rhou].origin(), Ny).real();
-        bop.apply(0, 1, 1.0, fm_dot_m.data(), 1, Ny);
-    }
-
     // Apply an operator that cares nothing about the boundaries.
     // Operator application turns coefficients in X, Y, and Z into
     // coefficients in X and Z but COLLOCATION POINT VALUES IN Y.
@@ -863,22 +847,21 @@ std::vector<real_t> NonlinearOperatorIsothermal::applyOperator(
     }
 
     // Apply f_{m_x} to mean x-momentum, mean energy at non-wall locations
+    // Requires that base::common.data was updated during base::applyOperator
     if (has_zero_zero_mode) {
 
-        // Compute temporary per writeup implementation step (5)
+        // Compute temporary per writeup implementation step (4)
         Map<VectorXc> mean_rhou(swave[ndx::rhou].origin(), Ny);
-        const real_t alpha = bulkcoeff.dot(mean_rhou.real()) / bulk_density;
+        const real_t alpha = bulkcoeff.dot(mean_rhou.real());
 
-        // Apply to non-wall mean x-momentum right hand side per step (6)
-        rho_fm.head<1>()[0] = 0;
-        rho_fm.tail<1>()[0] = 0;
-        mean_rhou.real() -= alpha * rho_fm;
+        // Apply to non-wall mean x-momentum right hand side per step (5)
+        mean_rhou.real().segment(1, Ny-2).array() -= alpha;
 
-        // Apply to non-wall mean energy right hand side per step (7)
-        fm_dot_m.head<1>()[0] = 0;
-        fm_dot_m.tail<1>()[0] = 0;
+        // Apply to non-wall mean energy right hand side per step (6)
         Eigen::Map<Eigen::VectorXc> mean_rhoe(swave[ndx::rhoe].origin(), Ny);
-        mean_rhoe.real() -= alpha * fm_dot_m;
+        mean_rhoe.real().segment(1, Ny-2).array()
+            -=   (alpha * scenario.Ma * scenario.Ma)
+               * common.data.row(OperatorCommonBlock::mean::u).segment(1, Ny-2);
     }
 
     // Return the time step found by the BC-agnostic operator

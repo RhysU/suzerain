@@ -229,8 +229,6 @@ public:
 protected:
 
     Eigen::VectorXr bulkcoeff;
-    mutable Eigen::VectorXr rho_fm;
-    mutable Eigen::VectorXr fm_dot_m;
 
 };
 
