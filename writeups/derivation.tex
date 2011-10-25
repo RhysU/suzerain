@@ -356,11 +356,11 @@ so we assume
 
 \subsubsection{Forcing terms}
 
-We add arbitrary space- and time-varying forcing to the continuity,
-momentum, and energy equations using a continuity source term $c_{s}$,
-a body force density $f_{b}$, and a body heating density $q_{b}$,
-respectively.  These terms are provided to facilitate using the method
-of manufactured solutions for implementation verification.
+We add arbitrary space- and time-varying forcing to the continuity, momentum,
+and energy equations using a continuity source term $c_{s}$, a force $f$, and a
+body heating density $q_{b}$, respectively.  These terms are provided to
+facilitate problem-specific forcing as well as using the method of manufactured
+solutions for implementation verification.
 
 \subsection{Dimensional equations}
 
@@ -380,7 +380,7 @@ and assumptions, we arrive at the dimensional equations
   - \nabla\cdot(u\otimes{}\rho{}u)
   -\nabla{} p
   + \nabla\cdot{} \tau
-  + \rho{}f_{b}
+  + f
   \\
   \label{eq:dim_energy}
   \frac{\partial}{\partial{}t} \rho{}\tilde{e}
@@ -389,7 +389,7 @@ and assumptions, we arrive at the dimensional equations
   + \nabla\cdot{} \frac{\kappa_{0}}{\mu_{0}} \mu \nabla{} T
   - \nabla\cdot{} p u
   + \nabla\cdot{}\tau{} u
-  + \rho{}f_{b} \cdot{} u
+  + f \cdot{} u
   + \rho{}q_{b}
 \intertext{
   where terms in the right hand side make use of
@@ -469,7 +469,7 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
     \nabla^{*}\cdot(u^{*}\otimes{}\rho^{*}u^{*})
   - \frac{p_{0}}{l_{0}} \nabla^{*} p^{*}
   + \frac{\tau_{0}}{l_{0}} \nabla^{*}\cdot{} \tau^{*}
-  + \rho_{0} f_{0} \rho^{*}f_{b}^{*}
+  + f_{0} f^{*}
   \\
   \label{eq:dimwithref_energy}
   \frac{\rho_{0}\tilde{e}_{0}}{t_{0}}
@@ -481,7 +481,7 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   - \frac{p_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{} p^{*} u^{*}
 \notag\\
 &\quad{}+ \frac{\tau_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
-  + \rho_{0}f_{0}u_{0} \rho^{*} f_{b}^{*} \cdot{} u^{*}
+  + f_{0}u_{0} f^{*} \cdot{} u^{*}
   + \rho_{0}q_{0} \rho^{*} q_{b}^{*}
 \intertext{
   where terms in the right hand side are computed using
@@ -532,7 +532,7 @@ quantities:
   &
   c_{0} &= \frac{\rho_{0}}{t_{0}}
   &
-  f_{0} &= \frac{u_{0}}{t_{0}}
+  f_{0} &= \frac{\rho_{0}u_{0}}{t_{0}}
   &
   q_{0} &= \frac{a_{0}^{2}}{t_{0}}
 \end{align}
@@ -568,7 +568,7 @@ terms are dimensionless.  We arrive at the following nondimensional equations
   - \nabla\cdot(u\otimes\rho{}u)
   - \frac{1}{\Mach^{2}} \nabla{} p
   + \frac{1}{\Reynolds} \nabla\cdot\tau
-  + \rho{}f_{b}
+  + f
   \\
   \label{eq:nondim_energy}
   \frac{\partial}{\partial{}t} \rho{}\tilde{e}
@@ -578,7 +578,7 @@ terms are dimensionless.  We arrive at the following nondimensional equations
     \nabla\cdot\mu\nabla{} T
   - \nabla\cdot{} p u
   + \frac{\Mach^{2}}{\Reynolds} \nabla\cdot\tau{} u
-  + \Mach^{2} \rho{} f_{b} \cdot{} u
+  + \Mach^{2} f \cdot{} u
   + \rho{} q_{b}
 \intertext{
 along with the relationships
@@ -1224,7 +1224,7 @@ the equations in section~\ref{nondim_equations} become
   - \nabla\cdot\left(\frac{m}{\rho}\otimes{}m\right)
   - \frac{1}{\Mach^{2}} \nabla{} p
   + \frac{1}{\Reynolds} \nabla\cdot\tau
-  + \rho{}f_{b}
+  + f
   \\
   \label{eq:state_energy}
   \frac{\partial}{\partial{}t} e
@@ -1233,7 +1233,7 @@ the equations in section~\ref{nondim_equations} become
   + \frac{1}{\Reynolds\,\Prandtl\,\left( \gamma - 1 \right)}
     \nabla\cdot\mu\nabla{} T
   + \frac{\Mach^{2}}{\Reynolds} \nabla\cdot\tau{}\frac{m}{\rho}
-  + \Mach^{2} f_{b} \cdot{} m
+  + \Mach^{2} f \cdot{} \frac{m}{\rho}
   + \rho{} q_{b}
 \intertext{
   where the non-state quantities are fixed by
@@ -1672,34 +1672,14 @@ reference values.
 \bibliography{references}
 
 
-
-
-\appendix
-
-\section{Miscellaneous}
-
-\subsection{The Variable Density Equations}
-
-The limits of the compressible Navier--Stokes equations as the Mach number
-$\Mach = u_{0} / a_{0} \to 0$ while allowing finite temperature and density
-fluctuations are called the variable density equations.  We cannot directly
-obtain this limit from section~\ref{nondim_equations}'s nondimensional
-equations because their reference velocity $u_{0}$ is also their reference
-sound speed $a_{0}$.
-
-We will obtain the variable density equations following
-section~\ref{sec:nondim}'s nondimensionalization by
-\begin{enumerate}
- \item obtaining different nondimensional equations in which \Mach appears,
- \item taking the classical variable density limit of these equations,
- \item reexpressing these equations to match the choices made in
-       section~\ref{sec:nondimrefq}.
-\end{enumerate}
-
-\subsubsection{Nondimensionalization including the Mach number}
-
-Departing slightly from section~\ref{sec:nondimrefq}, we choose a reference
-length $l_{0}$ and velocity $u_{0}$.  We select a reference thermodynamic state
-using temperature $T_{0}$ and density $\rho_{0}$.
+%%%\appendix
+%%%
+%%%\section{Miscellaneous}
+%%%
+%%%\subsection{The Variable Density Equations}
+%%%
+%%%The limits of the compressible Navier--Stokes equations as the Mach number
+%%%$\Mach = u_{0} / a_{0} \to 0$ while allowing finite temperature and density
+%%%fluctuations are called the variable density equations.
 
 \end{document}
