@@ -55,13 +55,16 @@ public:
     // See http://eigen.tuxfamily.org/dox-devel/TopicStructHavingEigenMembers.html
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    Eigen::MatrixXXr data;
+    Eigen::ArrayXXr data;
 
     // Prepare logical indices using a struct for scoping (e.g. mean::u).
     struct mean { enum {
           u,
           count // Sentry
     }; };
+
+    /** Zero storage within common block and reset its size as specified. */
+    void reset(const std::size_t Ny) { data.setZero(mean::count, Ny); }
 };
 
 /** An operator which merely applies or inverts a B-spline mass matrix */

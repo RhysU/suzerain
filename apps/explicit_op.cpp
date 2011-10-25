@@ -387,6 +387,10 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     assert(std::equal(swave.strides() + 1, swave.strides() + 4,
                       auxw.strides() + 1));
 
+    // Prepare common-block-like storage used to pass details from N to L
+    common.reset(dgrid.global_wave_extent.y());
+
+    // Maintain stable time step values to return to the caller
     boost::array<real_t, 2> delta_t_candidates = {{
             std::numeric_limits<real_t>::max(),
             std::numeric_limits<real_t>::max()
@@ -528,6 +532,16 @@ std::vector<real_t> NonlinearOperator::applyOperator(
          j < dgrid.local_physical_end.y();
          ++j) {
 
+        // Used to accumulate mean quantities versus wall-normal position
+        boost::accumulators::accumulator_set<
+                real_t,
+#if BOOST_VERSION >= 104700
+                boost::accumulators::stats<boost::accumulators::tag::sum_kahan>
+#else
+                boost::accumulators::stats<boost::accumulators::tag::sum>
+#endif
+            > u_sum;
+
         for (int k = dgrid.local_physical_start.z();
             k < dgrid.local_physical_end.z();
             ++k) {
@@ -601,6 +615,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                 // declared outside loop.
                 u                  = suzerain::rholut::u(
                                         rho, m);
+                u_sum(u.x());
                 const real_t div_u = suzerain::rholut::div_u(
                                         rho, grad_rho, m, div_m);
                 grad_u             = suzerain::rholut::grad_u(
@@ -689,8 +704,21 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 
         } // end Z
 
+        // Store sum(s) into common block in preparation for MPI reduction
+        common.data(OperatorCommonBlock::mean::u, j)
+                = boost::accumulators::sum(u_sum);
+
     } // end Y
 
+    // Reduce common block sums to obtain mean quantities on rank zero
+    {
+        Eigen::ArrayXXr tmp(common.data); // Copy
+        SUZERAIN_MPICHKR(MPI_Reduce(tmp.data(), common.data.data(),
+                    common.data.size(), suzerain::mpi::datatype<real_t>::value,
+                    MPI_SUM, 0, MPI_COMM_WORLD));
+        common.data /= (   dgrid.global_physical_extent.x()
+                         * dgrid.global_physical_extent.z());
+    }
 
     // If active, add manufactured solution forcing in a second pass.
     // Isolating this pass allows us to quickly skip the associated work when
