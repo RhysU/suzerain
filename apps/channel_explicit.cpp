@@ -970,10 +970,11 @@ int main(int argc, char **argv)
     // (Spatial discretization) is modified for dealiasing and included here.
     m.reset(new suzerain::timestepper::lowstorage::SMR91Method<complex_t>(
                 timedef.evmagfactor));
+    channel::OperatorCommonBlock common_block;  // Storage shared between L, N
     L.reset(new channel::BsplineMassOperatorIsothermal(
-                scenario, grid, *dgrid, *b, *bop));
+                scenario, grid, *dgrid, *b, *bop, common_block));
     N.reset(new channel::NonlinearOperator(
-                scenario, grid, *dgrid, *b, *bop, msoln));
+                scenario, grid, *dgrid, *b, *bop, common_block, msoln));
     tc.reset(make_LowStorageTimeController(
                 *m, delta_t_allreducer,
                 *L, real_t(1)/(grid.dN.x()*grid.dN.z()), *N,

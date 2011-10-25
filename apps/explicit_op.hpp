@@ -44,6 +44,26 @@
 
 namespace channel {
 
+/**
+ * Storage for holding quantities computed during nonlinear operator
+ * application which are required for linear operator application.
+ */
+class OperatorCommonBlock
+  : public boost::noncopyable
+{
+public:
+    // See http://eigen.tuxfamily.org/dox-devel/TopicStructHavingEigenMembers.html
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    Eigen::MatrixXXr data;
+
+    // Prepare logical indices using a struct for scoping (e.g. mean::u).
+    struct mean { enum {
+          u,
+          count // Sentry
+    }; };
+};
+
 /** An operator which merely applies or inverts a B-spline mass matrix */
 class BsplineMassOperator
   : public suzerain::OperatorBase<real_t>,
@@ -97,7 +117,8 @@ public:
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
-            const suzerain::bsplineop &bop);
+            const suzerain::bsplineop &bop,
+            OperatorCommonBlock &common);
 
     virtual void applyMassPlusScaledOperator(
             const complex_t &phi,
@@ -116,6 +137,8 @@ public:
 protected:
 
     Eigen::VectorXr bulkcoeff;
+
+    OperatorCommonBlock &common;
 
 private:
 
@@ -145,6 +168,7 @@ public:
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
+            OperatorCommonBlock &common,
             const boost::shared_ptr<
                   const channel::manufactured_solution>& msoln);
 
@@ -156,6 +180,9 @@ public:
             const bool delta_t_requested = false) const;
 
 protected:
+
+    /** Houses data additionally required for some linear operators */
+    OperatorCommonBlock &common;
 
     /** Holds optional manufactured solution forcing details */
     const boost::shared_ptr<const channel::manufactured_solution> msoln;
@@ -185,6 +212,7 @@ public:
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
+            OperatorCommonBlock &common,
             const boost::shared_ptr<
                       const channel::manufactured_solution>& msoln);
 

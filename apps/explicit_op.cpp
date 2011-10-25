@@ -143,8 +143,10 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
-            const suzerain::bsplineop &bop)
-    : BsplineMassOperator(scenario, grid, dgrid, b, bop)
+            const suzerain::bsplineop &bop,
+            OperatorCommonBlock &common)
+    : BsplineMassOperator(scenario, grid, dgrid, b, bop),
+      common(common)
 {
     // Precompute operator for finding bulk quantities from coefficients
     bulkcoeff.resize(b.n());
@@ -334,9 +336,11 @@ NonlinearOperator::NonlinearOperator(
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
+        OperatorCommonBlock &common,
         const boost::shared_ptr<
             const channel::manufactured_solution>& msoln)
     : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
+      common(common),
       msoln(msoln)
 {
     // NOP
@@ -355,22 +359,14 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 
     // We need auxiliary scalar-field storage.  Prepare logical indices using a
     // struct for scoping (e.g. aux::rho_y).  Ordering will match usage below.
-    struct aux {
-
-        enum {
-            rho_y, rho_yy,
-            rho_x, rho_xx, rho_xz, rho_z, rho_zz, rho_xy, rho_yz,
-            mx_y, mx_yy,
-            mx_x, mx_xx, mx_xz, mx_z, mx_zz, mx_xy, mx_yz,
-            my_y, my_yy,
-            my_x, my_xx, my_xz, my_z, my_zz, my_xy, my_yz,
-            mz_y, mz_yy,
-            mz_x, mz_xx, mz_xz, mz_z, mz_zz, mz_xy, mz_yz,
-            e_y, div_grad_e, e_x, e_z,
-
-            count // Sentry
-        };
-    };
+    struct aux { enum {
+        rho_y, rho_yy, rho_x, rho_xx, rho_xz, rho_z, rho_zz, rho_xy, rho_yz,
+        mx_y,  mx_yy,  mx_x,  mx_xx,  mx_xz,  mx_z,  mx_zz,  mx_xy,  mx_yz,
+        my_y,  my_yy,  my_x,  my_xx,  my_xz,  my_z,  my_zz,  my_xy,  my_yz,
+        mz_y,  mz_yy,  mz_x,  mz_xx,  mz_xz,  mz_z,  mz_zz,  mz_xy,  mz_yz,
+        e_y, div_grad_e, e_x, e_z,
+        count // Sentry
+    }; };
 
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
@@ -762,9 +758,10 @@ NonlinearOperatorIsothermal::NonlinearOperatorIsothermal(
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
+        OperatorCommonBlock &common,
         const boost::shared_ptr<
             const channel::manufactured_solution>& msoln)
-    : NonlinearOperator(scenario, grid, dgrid, b, bop, msoln)
+    : NonlinearOperator(scenario, grid, dgrid, b, bop, common, msoln)
 {
     // Precompute operator for finding bulk quantities from coefficients
     bulkcoeff.resize(b.n());
