@@ -65,17 +65,18 @@ total energy $e = \rho{}\tilde{e}$ according to
   \partial_{t} \rho{} &= R_{\rho}\!\left(\rho,\vec{m},e\right)
   \\
   \partial_{t} m      &= \vec{R}_{m}\!\left(\rho,\vec{m},e\right)
-                       + \rho \vec{f}_{m}(t)
+                       + \rho \vec{a}_{m}(t)
   \\
   \partial_{t} e      &= R_{e}\!\left(\rho,\vec{m},e\right)
-                       + \mbox{Ma}^{2} \vec{f}_{m}(t) \cdot \vec{m}
+                       + \mbox{Ma}^{2} \vec{a}_{m}(t) \cdot \vec{m}
 \end{align}
 \end{subequations}
 where $R_{\rho}$, $\vec{R}_{m}$, and $R_{e}$ are the spatial portion of the
 compressible Navier--Stokes operator appropriate for a nondimensionalization
 where $\mbox{Ma}=u_{0}/a_\text{wall}$.  We will determine the space-invariant
-form of the body acceleration $\vec{f}_{m}$ necessary to drive an isothermal
-channel problem similar to Coleman et al.~\cite{Coleman1995Numerical}.
+form of the uniform body acceleration $\vec{a}_{m}$ necessary to drive an
+isothermal channel problem similar to Coleman et
+al.~\cite{Coleman1995Numerical}.
 
 We assume a Fourier basis in the streamwise $x$ and spanwise $z$ direction as
 well as an inhomogeneous treatment for wall-normal
@@ -129,8 +130,8 @@ $\tilde{e}=\frac{1}{\gamma\left(\gamma-1\right)}$.  This demands that
     + \tilde{e} \partial_{t} \rho
   = \frac{1}{\gamma\left(\gamma-1\right)} \partial_{t} \rho
 \end{align}
-also holds at the wall.  Finally, we find $\vec{f}_{m} =
-\left(f_{m_x},0,0\right)^{\textrm{T}}$ such that the bulk streamwise momentum
+also holds at the wall.  Finally, we find $\vec{a}_{m} =
+\left(a_{m_x},0,0\right)^{\textrm{T}}$ such that the bulk streamwise momentum
 $\bar{m}_{x}$ remains constant in time:
 \begin{align}
   \partial_{t} \bar{m}_x
@@ -138,14 +139,14 @@ $\bar{m}_{x}$ remains constant in time:
      \partial_{t} m_{x} \!\left(\cdot,y,\cdot\right) \, dy
   &= \frac{1}{2\delta} \int_{0}^{2\delta}
      \left[  R_{m_x}\!\left(\cdot,y,\cdot\right)
-           + \rho\!\left(\cdot,y,\cdot\right)  f_{m_x}
+           + \rho\!\left(\cdot,y,\cdot\right)  a_{m_x}
      \right] \, dy
   \\
   &= \frac{1}{2\delta} \int_{0}^{2\delta}
-     R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy + \bar{\rho} f_{m_x}
+     R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy + \bar{\rho} a_{m_x}
    = 0
 \end{align}
-Rearranging we find $f_{m_x} = - \frac{1}{\bar{\rho}2\delta}
+Rearranging we find $a_{m_x} = - \frac{1}{\bar{\rho}2\delta}
 \int_{0}^{2\delta} R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy$.
 
 \subsection{Implementation}
@@ -172,10 +173,10 @@ problem looks as follows:
         \left.R_{\rho}\right|_{y=0,2\delta}$.
   \item Compute temporary value $\alpha =
         \bar{\rho}^{-1} c \cdot R_{m_{x}}\!\left(\cdot,y,\cdot\right)$.
-  \item Apply $\rho f_{m_x}$ by updating
+  \item Apply $\rho a_{m_x}$ by updating
         $R_{m_x}\!\left(\cdot,y,\cdot\right) -{}\!\!\!{}=
         \alpha \, \rho\!\left(\cdot,y,\cdot\right)$ for $y\neq0,2\delta$.
-  \item Apply $\mbox{Ma}^{2}\vec{f}_{m}\cdot\vec{m} = \mbox{Ma}^{2} f_{m_x}
+  \item Apply $\mbox{Ma}^{2}\vec{a}_{m}\cdot\vec{m} = \mbox{Ma}^{2} a_{m_x}
         m_x$ by updating $R_{e}\!\left(\cdot,y,\cdot\right) -{}\!\!\!{}=
         \mbox{Ma}^{2} \alpha \, m_{x}\!\left(\cdot,y,\cdot\right)$ for
         $y\neq0,2\delta$.
@@ -183,7 +184,7 @@ problem looks as follows:
 One then advances $\partial_{t}\rho = R_{\rho}$, $\partial_{t} \vec{m} =
 R_{\vec{m}}$, and $\partial_{t} e = R_{e}$ using regular time integration
 techniques.  The above updates will cause the next state to also satisfy the
-isothermal channel conditions.  Note that $f_{m_x}$ is not applied at
+isothermal channel conditions.  Note that $a_{m_x}$ is not applied at
 $y=0,2\delta$ but that these points may be included in the momentum integral
 computation ($\alpha$) as they are identically zero from earlier boundary
 condition enforcement.  Each of these computations may be performed in
@@ -221,7 +222,7 @@ m_x^{i+1} = c \cdot{} A^{-1}\vec{n} + \phi{}A^{-1}\vec{f}$ requires selecting
   \label{eq:phitarget}
 \end{align}
 to obtain the desired bulk streamwise momentum.  With $\phi$ known, the
-associated substep energy contribution $f_{m_x} m_{x}$ can be determined.
+associated substep energy contribution $a_{m_x} m_{x}$ can be determined.
 
 Prior to this implicit forcing application, the wall collocation point state
 must be modified to enforce a no-slip, isothermal condition by setting the
