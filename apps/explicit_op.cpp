@@ -154,59 +154,6 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
     bulkcoeff /= scenario.Ly;
 }
 
-void BsplineMassOperatorIsothermal::applyMassPlusScaledOperator(
-        const complex_t &phi,
-        suzerain::ContiguousState<4,complex_t> &state) const
-{
-    // State enters method as coefficients in X, Y, and Z directions
-
-    save_mean_state_at_collocation_points(state);
-
-    return base::applyMassPlusScaledOperator(phi, state);
-
-    // State leaves method as coefficients in X and Z directions
-    // State leaves method as collocation point values in Y direction
-}
-
-void BsplineMassOperatorIsothermal::accumulateMassPlusScaledOperator(
-        const complex_t &phi,
-        const suzerain::ContiguousState<4,complex_t> &input,
-        const complex_t &beta,
-        suzerain::ContiguousState<4,complex_t> &output) const
-{
-    // State enters method as coefficients in X, Y, and Z directions
-
-    save_mean_state_at_collocation_points(input);
-
-    return base::accumulateMassPlusScaledOperator(phi, input, beta, output);
-
-    // State leaves method as coefficients in X and Z directions
-    // State leaves method as collocation point values in Y direction
-}
-
-void BsplineMassOperatorIsothermal::save_mean_state_at_collocation_points(
-        const state_type &state) const
-{
-    if (!has_zero_zero_mode) return;
-
-    using Eigen::InnerStride;
-    using Eigen::Map;
-    using Eigen::VectorXr;
-
-    // Copy mean coefficients.  Ugly syntax works around an Intel 11.1 20100806
-    // (l_cproc_p_11.1.073) O3 segfault which is likely an optimizer bug.
-    saved_mean_rho = Map<const VectorXr,0,InnerStride<2> >(
-            reinterpret_cast<const real_t *>(
-                state[channel::field::ndx::rho].origin()), state.shape()[1]);
-    saved_mean_rhou = Map<const VectorXr,0,InnerStride<2> >(
-            reinterpret_cast<const real_t *>(
-                state[channel::field::ndx::rhou].origin()), state.shape()[1]);
-
-    // Convert mean coefficients to mean collocation point values
-    bop.apply(0, 1, 1.0, saved_mean_rho.data(),  1, state.shape()[1]);
-    bop.apply(0, 1, 1.0, saved_mean_rhou.data(), 1, state.shape()[1]);
-}
-
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::ContiguousState<4,complex_t> &state) const
@@ -226,8 +173,8 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // See channel_treatment writeup for information on the steps below.
     // Steps appear out of order relative to the writeup (TODO fix writeup).
 
-    // channel_treatment step (1) done during operator apply/accumulate
-    // within save_mean_state_at_collocation_points();
+    // channel_treatment step (1) done during nonlinear operator application
+    // via shared OperatorCommonBlock storage space
 
     // channel_treatment step (8) sets no-slip conditions
     // on wall collocation points.  Possible pre-solve since L = 0.
@@ -263,19 +210,21 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     const bool constrain_bulk_rho
             = (boost::math::isnormal)(scenario.bulk_rho);
 
-    // channel_treatment step (2) loads mean state at collocation points
-    // into the imaginary part of the constant (zero zero) mode coefficients
+    // channel_treatment step (2) loads ones and mean streamwise velocity at
+    // collocation points into the imaginary part of the constant (zero zero)
+    // mode coefficients.  No forcing occurs at the lower or upper walls.
     if (constrain_bulk_rhou && has_zero_zero_mode) {
 
-        saved_mean_rho[wall_lower] = 0;  // No forcing at lower wall
-        saved_mean_rho[wall_upper] = 0;  // No forcing at upper wall
         Map<VectorXc> mean_rhou(state[ndx::rhou].origin(), Ny);
-        mean_rhou.imag() = saved_mean_rho;
+        mean_rhou.imag()[wall_lower] = 0;
+        mean_rhou.imag().segment(1, Ny-2).setOnes();
+        mean_rhou.imag()[wall_upper] = 0;
 
-        saved_mean_rhou[wall_lower] = 0;  // No forcing at lower wall
-        saved_mean_rhou[wall_upper] = 0;  // No forcing at upper wall
         Map<VectorXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
-        mean_rhoe.imag() = saved_mean_rhou;
+        mean_rhoe.imag()[wall_lower] = 0;
+        mean_rhoe.imag().segment(1, Ny-2)
+            = common.data.row(OperatorCommonBlock::mean::u).segment(1, Ny-2);
+        mean_rhoe.imag()[wall_upper] = 0;
     }
 
     // B-spline numerics are not conservative when the mean density field has
