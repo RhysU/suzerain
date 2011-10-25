@@ -49,11 +49,12 @@ namespace channel {
  * application which are required for linear operator application.
  */
 class OperatorCommonBlock
-  : public boost::noncopyable
 {
 public:
     // See http://eigen.tuxfamily.org/dox-devel/TopicStructHavingEigenMembers.html
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    OperatorCommonBlock() {}
 
     Eigen::ArrayXXr data;
 
@@ -65,6 +66,12 @@ public:
 
     /** Zero storage within common block and reset its size as specified. */
     void reset(const std::size_t Ny) { data.setZero(mean::count, Ny); }
+
+private:
+
+    // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
+    OperatorCommonBlock(const OperatorCommonBlock&);
+    OperatorCommonBlock& operator=(const OperatorCommonBlock&);
 };
 
 /** An operator which merely applies or inverts a B-spline mass matrix */
@@ -176,8 +183,7 @@ protected:
 
 private:
 
-    // Instances noncopyable but using boost::noncopyable trips Intel
-    // non-virtual base destructor warnings.
+    // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
     NonlinearOperator(const NonlinearOperator&);
     NonlinearOperator& operator=(const NonlinearOperator&);
 
