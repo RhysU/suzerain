@@ -65,28 +65,28 @@ total energy $e = \rho{}\tilde{e}$ according to
   \partial_{t} \rho{} &= R_{\rho}\!\left(\rho,\vec{m},e\right)
   \\
   \partial_{t} m      &= \vec{R}_{m}\!\left(\rho,\vec{m},e\right)
-                       + \rho \vec{a}_{m}(t)
+                       + \vec{f}_{m}(t)
   \\
   \partial_{t} e      &= R_{e}\!\left(\rho,\vec{m},e\right)
-                       + \mbox{Ma}^{2} \vec{a}_{m}(t) \cdot \vec{m}
+                       + \mbox{Ma}^{2} \vec{f}_{m}(t) \cdot \vec{u}
 \end{align}
 \end{subequations}
 where $R_{\rho}$, $\vec{R}_{m}$, and $R_{e}$ are the spatial portion of the
 compressible Navier--Stokes operator appropriate for a nondimensionalization
 where $\mbox{Ma}=u_{0}/a_\text{wall}$.  We will determine the space-invariant
-form of the uniform body acceleration $\vec{a}_{m}$ necessary to drive an
-isothermal channel problem similar to Coleman et
-al.~\cite{Coleman1995Numerical}.
+form of the uniform force $\vec{f}_{m}$ necessary to drive an isothermal
+channel problem similar to Coleman et al.~\cite{Coleman1995Numerical}.
 
 We assume a Fourier basis in the streamwise $x$ and spanwise $z$ direction as
 well as an inhomogeneous treatment for wall-normal
-$y\in\left[0,2\delta\right]$.  We assume that mean state quantities can be
-obtained as a function of wall-normal position using the constant (``zero
-zero'') Fourier modes.  Under this ergodic assumption, we denote
-$\rho\!\left(\cdot,y,\cdot\right) =
-\left<\rho\left(x,y,z\right)\right>_{x,z}$ and likewise
-$\vec{m}\!\left(\cdot,y,\cdot\right) \coloneqq
-\left<\vec{m}\left(x,y,z\right)\right>_{x,z}$.  We will work with the
+$y\in\left[0,2\delta\right]$.  We assume that mean quantities can be obtained
+as a function of wall-normal position using the constant (``zero zero'')
+Fourier modes.  Under this ergodic assumption, we denote
+$\rho\!\left(\cdot,y,\cdot\right) = \left<\rho\left(x,y,z\right)\right>_{x,z}$,
+and likewise $\vec{m}\!\left(\cdot,y,\cdot\right) \coloneqq
+\left<\vec{m}\left(x,y,z\right)\right>_{x,z}$.
+
+We will work with the
 nondimensional equation of state
 \begin{align}
   p  = \frac{\rho{}T}{\gamma}
@@ -130,23 +130,20 @@ $\tilde{e}=\frac{1}{\gamma\left(\gamma-1\right)}$.  This demands that
     + \tilde{e} \partial_{t} \rho
   = \frac{1}{\gamma\left(\gamma-1\right)} \partial_{t} \rho
 \end{align}
-also holds at the wall.  Finally, we find $\vec{a}_{m} =
-\left(a_{m_x},0,0\right)^{\textrm{T}}$ such that the bulk streamwise momentum
+also holds at the wall.  Finally, we find $\vec{f}_{m} =
+\left(f_{m_x},0,0\right)^{\textrm{T}}$ such that the bulk streamwise momentum
 $\bar{m}_{x}$ remains constant in time:
-\begin{align}
+\begin{equation}
   \partial_{t} \bar{m}_x
    = \frac{1}{2\delta} \int_{0}^{2\delta}
      \partial_{t} m_{x} \!\left(\cdot,y,\cdot\right) \, dy
-  &= \frac{1}{2\delta} \int_{0}^{2\delta}
-     \left[  R_{m_x}\!\left(\cdot,y,\cdot\right)
-           + \rho\!\left(\cdot,y,\cdot\right)  a_{m_x}
-     \right] \, dy
-  \\
-  &= \frac{1}{2\delta} \int_{0}^{2\delta}
-     R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy + \bar{\rho} a_{m_x}
+   = \frac{1}{2\delta} \int_{0}^{2\delta}
+     \left[  R_{m_x}\!\left(\cdot,y,\cdot\right) + f_{m_x} \right] \, dy
+   = \frac{1}{2\delta} \int_{0}^{2\delta}
+     R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy + f_{m_x}
    = 0
-\end{align}
-Rearranging we find $a_{m_x} = - \frac{1}{\bar{\rho}2\delta}
+\end{equation}
+Rearranging we find $f_{m_x} = - \frac{1}{2\delta}
 \int_{0}^{2\delta} R_{m_x}\!\left(\cdot,y,\cdot\right) \, dy$.
 
 \subsection{Implementation}
@@ -165,26 +162,26 @@ Assuming that the prior state satisfies the isothermal channel conditions with
 bulk density $\bar{\rho}$, one (admittedly suboptimal) way to treat the
 problem looks as follows:
 \begin{enumerate}
-  \item Compute $\bar{\rho} = c \cdot \rho\!\left(\cdot,y,\cdot\right)$.
-  \item Compute $R_{\rho}$, $R_{\vec{m}}$, and $R_{e}$ in wavespace.
+  \item Compute $R_{\rho}$, $R_{\vec{m}}$, $R_{e}$,
+        and $u_{x}\!\left(\cdot,y,\cdot\right)$ in wavespace.
   \item Set $\left.R_{\vec{m}}\right|_{y=0,2\delta} = 0$.
   \item Set $\left.R_{e}\right|_{y=0,2\delta} =
         \frac{1}{\gamma\left(\gamma-1\right)}
         \left.R_{\rho}\right|_{y=0,2\delta}$.
   \item Compute temporary value $\alpha =
-        \bar{\rho}^{-1} c \cdot R_{m_{x}}\!\left(\cdot,y,\cdot\right)$.
-  \item Apply $\rho a_{m_x}$ by updating
-        $R_{m_x}\!\left(\cdot,y,\cdot\right) -{}\!\!\!{}=
-        \alpha \, \rho\!\left(\cdot,y,\cdot\right)$ for $y\neq0,2\delta$.
-  \item Apply $\mbox{Ma}^{2}\vec{a}_{m}\cdot\vec{m} = \mbox{Ma}^{2} a_{m_x}
-        m_x$ by updating $R_{e}\!\left(\cdot,y,\cdot\right) -{}\!\!\!{}=
-        \mbox{Ma}^{2} \alpha \, m_{x}\!\left(\cdot,y,\cdot\right)$ for
+        c \cdot R_{m_{x}}\!\left(\cdot,y,\cdot\right)$.
+  \item Apply $f_{m_x}$ by updating
+        $R_{m_x}\!\left(\cdot,y,\cdot\right) \verb!-=!\, \alpha$
+        for $y\neq0,2\delta$.
+  \item Apply $\mbox{Ma}^{2}\vec{f}_{m}\cdot\vec{u} = \mbox{Ma}^{2} f_{m_x}
+        u_x$ by updating $R_{e}\!\left(\cdot,y,\cdot\right) \verb!-=!\,
+        \mbox{Ma}^{2} \alpha \, u_{x}\!\left(\cdot,y,\cdot\right)$ for
         $y\neq0,2\delta$.
 \end{enumerate}
 One then advances $\partial_{t}\rho = R_{\rho}$, $\partial_{t} \vec{m} =
 R_{\vec{m}}$, and $\partial_{t} e = R_{e}$ using regular time integration
 techniques.  The above updates will cause the next state to also satisfy the
-isothermal channel conditions.  Note that $a_{m_x}$ is not applied at
+isothermal channel conditions.  Note that $f_{m_x}$ is not applied at
 $y=0,2\delta$ but that these points may be included in the momentum integral
 computation ($\alpha$) as they are identically zero from earlier boundary
 condition enforcement.  Each of these computations may be performed in
@@ -195,8 +192,8 @@ wavespace as they are linear in at most one state variable.
 
 \subsection{Analysis}
 
-Suzerain's low-storage time advancement scheme may be modified to include an
-streamwise momentum acceleration with unknown leading coefficient $\phi$:
+Suzerain's low-storage time advancement scheme may be modified to include a
+streamwise momentum forcing with unknown leading coefficient $\phi$:
 \begin{align}
   \left(M - \Delta{}t\beta_{i}L\right) {m_x}^{i+1}
   &=
@@ -214,15 +211,16 @@ momentum can be changed easily between simulations.
 
 Specifically, the final implicit solve in each low storage substep resembles
 ${m_x}^{i+1} = A^{-1}\left(\vec{n} + \phi\vec{f}\right)$ where $A = \left(M -
-\Delta{}t\beta_{i}L\right)$, $\vec{n}$ is an intermediate result, and $\vec{f}
-= \rho\!\left(\cdot,y,\cdot\right)$.  Then $\Gamma = \bar{m}_x^{i+1} = c \cdot
-m_x^{i+1} = c \cdot{} A^{-1}\vec{n} + \phi{}A^{-1}\vec{f}$ requires selecting
+\Delta{}t\beta_{i}L\right)$, $\vec{n}$ is an intermediate result, and $\vec{f}$
+contains the value $1$ for $y\neq{}0,2\delta$.  Then $\Gamma = \bar{m}_x^{i+1}
+= c \cdot m_x^{i+1} = c \cdot{} A^{-1}\vec{n} + \phi{}A^{-1}\vec{f}$ requires
+selecting
 \begin{align}
   \phi &= \frac{\Gamma - c \cdot{} A^{-1} \vec{n}}{c \cdot{} A^{-1} \vec{f}}
   \label{eq:phitarget}
 \end{align}
 to obtain the desired bulk streamwise momentum.  With $\phi$ known, the
-associated substep energy contribution $a_{m_x} m_{x}$ can be determined.
+associated substep energy contribution $f_{m_x} u_{x}$ can be determined.
 
 Prior to this implicit forcing application, the wall collocation point state
 must be modified to enforce a no-slip, isothermal condition by setting the
@@ -234,19 +232,19 @@ the bulk density should be stationary without any special treatment.
 
 Following advice from Moser, this approach may be implemented as follows:
 \begin{enumerate}
-  \item At the beginning of each substep compute and save the values of
-    $\rho\!\left(\cdot,y,\cdot\right)$ and $m_x\!\left(\cdot,y,\cdot\right)$
-    at all non-wall collocation points.
-  \item Prior to computing $A^{-1}$, place the non-wall collocation point
-    coefficients in the otherwise unused imaginary components of the
-    $m_x$ and $e$ ``zero zero'' modes.  The wall collocation point values
-    should be set to zero as we do not wish to force at the walls.
+  \item During the nonlinear portion of each substep, compute and save
+        $u_x\!\left(\cdot,y,\cdot\right)$ at all non-wall collocation points.
+  \item Prior to computing $A^{-1}$, place the values $1$ and
+        $u_x\!\left(\cdot,y,\cdot\right)$ into the otherwise unused imaginary
+        components of the non-wall $m_x$ and $e$ ``zero zero'' collocation
+        points, respectively. The wall values should be set to zero as we do
+        not wish to apply forcing there.
   \item Compute $A^{-1}$ as usual.  The necessary implicit solves for the
-    momentum and energy forcing are performed for free during the usual
-    ``zero zero'' mode work.
+        momentum and energy forcing are performed for free during the usual
+        ``zero zero'' mode work.
   \item Compute $c\cdot{}A^{-1}m_x\!\left(\cdot,y,\cdot\right)$.
-    The real portion of the result is $c\cdot{}A^{-1}\vec{n}$
-    and the imaginary portion is $c\cdot{}A^{-1}\vec{f}$.
+        The real and imaginary portions of the result are
+        $c\cdot{}A^{-1}\vec{n}$ and $c\cdot{}A^{-1}\vec{f}$.
   \item Compute $\phi$ per \eqref{eq:phitarget}.
   \item Add $\phi{}c\cdot{}A^{-1}\vec{f}$ to $m_x\!\left(\cdot,y,\cdot\right)$
         and then clear the imaginary part.
