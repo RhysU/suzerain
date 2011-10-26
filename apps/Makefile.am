@@ -25,12 +25,12 @@ TESTS_ENVIRONMENT += FIELDSDIR=$(abs_top_srcdir)/fields
 ## MPI-aware logging built atop log4cxx
 ##
 
-noinst_LTLIBRARIES   += liblogging.la
+noinst_LTLIBRARIES    += liblogging.la
 liblogging_la_SOURCES  = logging.cpp logging.hpp
 liblogging_la_LIBADD   = $(LOG4CXX_LIBS)
 
 ##
-## Test progams and/or performance drivers
+## Test programs and/or performance drivers
 ##
 
 bin_PROGRAMS                    += driver_suzerain_p3dfft
