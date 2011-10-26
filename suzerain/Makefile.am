@@ -17,7 +17,11 @@ CLEANFILES         = # Append below
 CXX = @MPICXX@
 CC  = @MPICC@
 
-BUILT_SOURCES = suzerain-config.h
+BUILT_SOURCES  = suzerain-config.h
+BUILT_SOURCES += suzerain-revision.h
+
+suzerain-revision.h : $(srcdir)/*
+	../lib/svnrev -n -osuzerain-revision.h -mSUZERAIN_ "-f$(PACKAGE_VERSION).#" -i $?
 
 noinst_HEADERS += exprparse_impl.hpp
 
@@ -74,6 +78,7 @@ pkginclude_HEADERS += state_fwd.hpp
 pkginclude_HEADERS += state.hpp
 pkginclude_HEADERS += storage.hpp
 pkginclude_HEADERS += suzerain-config.h
+pkginclude_HEADERS += suzerain-revision.h
 pkginclude_HEADERS += svehla.h
 pkginclude_HEADERS += timecontroller.hpp
 pkginclude_HEADERS += time_definition.hpp
