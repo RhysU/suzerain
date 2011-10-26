@@ -11,6 +11,7 @@ AC_CONFIG_SRCDIR([suzerain/pencil_grid.hpp])
 AM_CONFIG_HEADER([suzerain/config.h])
 AX_PREFIX_CONFIG_H([suzerain/suzerain-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
+AC_SUBST(ac_aux_dir)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
@@ -262,6 +263,7 @@ dnl ------------------------------------------------
 AC_CONFIG_FILES([
     Makefile
     apps/Makefile
+    build-aux/Makefile
     fields/Makefile
     jobscripts/Makefile
     lib/Makefile

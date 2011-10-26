@@ -3,6 +3,10 @@ ACLOCAL_AMFLAGS  = -I m4
 AUTOMAKE_OPTIONS = foreign
 CLEANFILES       = # Append below
 
+# Build toplevel directory in serial
+# http://www.gnu.org/software/automake/manual/make/Special-Targets.html
+.NOTPARALLEL:
+
 # Build in these directories:
 if BUILD_WRITEUPS
     MAYBE_WRITEUPS_SUBDIR = writeups
@@ -10,25 +14,17 @@ endif
 if BUILD_TESTS
     MAYBE_TESTS_SUBDIR = tests
 endif
-SUBDIRS = lib suzerain $(MAYBE_TESTS_SUBDIR) fields apps \
+SUBDIRS = lib $(ac_aux_dir) suzerain $(MAYBE_TESTS_SUBDIR) fields apps \
           $(MAYBE_WRITEUPS_SUBDIR) jobscripts
 
 # Distribute these items:
-DIST_SUBDIRS = lib suzerain tests apps writeups fields jobscripts
-EXTRA_DIST = bootstrap $(DX_CONFIG)
+DIST_SUBDIRS = lib $(ac_aux_dir) suzerain tests apps writeups fields jobscripts
+EXTRA_DIST   = bootstrap $(DX_CONFIG)
 
-# Build toplevel directory in serial
-# http://www.gnu.org/software/automake/manual/make/Special-Targets.html
-.NOTPARALLEL:
-
-# Eliminate .svn directories in dist tarball
+# Eliminate .svn and/or .git directories in dist tarball
 dist-hook:
 	find $(distdir)/ -name '.svn' -type d -exec rm {} \;
-
-# Tools in the auxillary directory
-AUX_DIST = build-aux/install-sh    \
-           build-aux/mkinstalldirs \
-           build-aux/missing
+	find $(distdir)/ -name '.git' -type d -exec rm {} \;
 
 # Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
@@ -43,7 +39,6 @@ DISTCLEANFILES = _configs.sed               \
 
 MAINTAINERCLEANFILES = aclocal.m4             \
                        autom4te.cache/*       \
-                       $(AUX_DIST)            \
                        config.log             \
                        config.status          \
                        config.sub             \
