@@ -1,0 +1,3 @@
+# Disable ident processing for svnrev sources
+svnrev.c -ident
+svnrev.h -ident
