@@ -21,7 +21,7 @@ CC  = @MPICC@
 BUILT_SOURCES  = suzerain-config.h
 BUILT_SOURCES += suzerain-revision.h
 
-suzerain-revision.h : $(srcdir)/*
+suzerain-revision.h: $(srcdir)/*
 	../build-aux/svnrev -n -osuzerain-revision.h -mSUZERAIN_REVISION_ "-f$(PACKAGE_VERSION).#" -i $?
 
 # Implementation-only headers

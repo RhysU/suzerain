@@ -189,7 +189,7 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
 
     // Process --version
     if (variables_.count("version")) {
-        suzerain::print_version(info, argv[0]);
+        suzerain::print_version(info, argv[0], application_version_);
         exit(0);
     }
 

@@ -80,12 +80,15 @@ public:
      */
     ProgramOptions(const std::string &application_synopsis,
                    const std::string &argument_synopsis = "",
-                   const std::string &description = "")
+                   const std::string &description = "",
+                   const std::string &version = "")
         : variables_(),
           options_(),
           application_synopsis_(application_synopsis),
           argument_synopsis_(argument_synopsis),
-          application_description_(description) {}
+          application_description_(description),
+          application_version_(version)
+    {}
 
     /**
      * Adds all the options stored within the given IDefinition to the
@@ -240,6 +243,9 @@ protected:
 
     /** The application description used for user-oriented messages. */
     std::string application_description_;
+
+    /** The application version used for user-oriented messages. */
+    std::string application_version_;
 
     /** Maintain the "--verbose" flag count from the command line */
     int verbose_;
