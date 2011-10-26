@@ -21,7 +21,7 @@ BUILT_SOURCES  = suzerain-config.h
 BUILT_SOURCES += suzerain-revision.h
 
 suzerain-revision.h : $(srcdir)/*
-	$(top_builddir)/$(ac_aux_dir)/svnrev -n -osuzerain-revision.h -mSUZERAIN_REVISION_ "-f$(PACKAGE_VERSION).#" -i $?
+	../build-aux/svnrev -n -osuzerain-revision.h -mSUZERAIN_REVISION_ "-f$(PACKAGE_VERSION).#" -i $?
 
 noinst_HEADERS += exprparse_impl.hpp
 
