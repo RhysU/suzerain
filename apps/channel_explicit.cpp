@@ -68,6 +68,9 @@
 #include "channel.hpp"
 #include "explicit_op.hpp"
 
+// Provided by channel_explicit_svnrev.{c,h} to speed recompilation
+extern "C" const char revstr[];
+
 #pragma warning(disable:383 1572)
 
 using boost::array;
@@ -742,7 +745,7 @@ int main(int argc, char **argv)
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation",
-                "RESTART-FILE");
+                "RESTART-FILE", /* TODO description */ "", revstr);
         options.add_definition(
                 const_cast<ScenarioDefinition<real_t>&>(scenario));
         options.add_definition(

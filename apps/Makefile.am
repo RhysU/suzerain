@@ -28,7 +28,7 @@ liblogging_la_SOURCES  = logging.cpp logging.hpp
 liblogging_la_LIBADD   = $(LOG4CXX_LIBS)
 
 ##
-## Channel-based Applications
+## Channel-based applications
 ##
 
 lib_LTLIBRARIES       += libchannel.la
@@ -41,20 +41,29 @@ libchannel_la_LIBADD  += ../suzerain/libsuzerain.la
 libchannel_la_LIBADD  += ./liblogging.la
 
 bin_PROGRAMS         += channel_init
-channel_init_SOURCES  = channel_init_svnrev.c channel_init.cpp
 channel_init_LDADD    = libchannel.la
+channel_init_SOURCES  = channel_init.cpp
+channel_init_SOURCES += channel_init_svnrev.c
 BUILT_SOURCES        += channel_init_svnrev.h
 channel_init_svnrev.h: $(channel_init_SOURCES) $(libchannel_la_SOURCES)
 	../build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS             += channel_explicit
+channel_explicit_LDADD    = libchannel.la
 channel_explicit_SOURCES  = channel_explicit.cpp
 channel_explicit_SOURCES += explicit_op.cpp explicit_op.hpp
-channel_explicit_LDADD    = libchannel.la
+channel_explicit_SOURCES += channel_explicit_svnrev.c
+BUILT_SOURCES            += channel_explicit_svnrev.h
+channel_explicit_svnrev.h: $(channel_explicit_SOURCES) $(libchannel_la_SOURCES)
+	../build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS         += channel_mean
-channel_mean_SOURCES  = channel_mean.cpp
 channel_mean_LDADD    = libchannel.la
+channel_mean_SOURCES  = channel_mean.cpp
+channel_mean_SOURCES += channel_mean_svnrev.c
+BUILT_SOURCES        += channel_mean_svnrev.h
+channel_mean_svnrev.h: $(channel_mean_SOURCES) $(libchannel_la_SOURCES)
+	../build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
 ## Miscellaneous programs and/or performance drivers

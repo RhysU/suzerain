@@ -43,6 +43,9 @@
 #include "precision.hpp"
 #include "channel.hpp"
 
+// Provided by channel_mean_svnrev.{c,h} to speed recompilation
+extern "C" const char revstr[];
+
 #pragma warning(disable:383 1572)
 
 // X-macros employed per http://drdobbs.com/blogs/cpp/228700289
@@ -163,7 +166,7 @@ int main(int argc, char **argv)
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based channel mean quantity computations",
-                "RESTART-FILE...");
+                "RESTART-FILE...", /* TODO description */ "", revstr);
         options.add_options()
             ("stdout,s", "Write results to standard output?")
             ;

@@ -48,7 +48,7 @@
 #include "precision.hpp"
 #include "channel.hpp"
 
-// Provided by channel_init_svnrev.{c,h} to speed compilation
+// Provided by channel_init_svnrev.{c,h} to speed recompilation
 extern "C" const char revstr[];
 
 #pragma warning(disable:383 1572)
