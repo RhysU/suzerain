@@ -1,1 +1,9 @@
+/channel_explicit
+/channel_init
+/channel_mean
+/conservation
+/*.dat
+/.deps
+/driver_suzerain_p3dfft
+/Makefile
 /Makefile.in
