@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 AM_CPPFLAGS         = -I$(top_srcdir) -I$(top_builddir)
-AM_CPPFLAGS        += -I$(top_builddir)/lib -I$(top_srcdir)/lib
+AM_CPPFLAGS        += -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(builddir)
 AM_CPPFLAGS        += $(UNDERLING_CFLAGS) $(P3DFFT_CFLAGS)
 AM_CPPFLAGS        += $(FFTW3_THREADS_CFLAGS) $(MKL_CFLAGS) $(GSL_CFLAGS)
 AM_CPPFLAGS        += $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
@@ -13,6 +13,7 @@ CLEANFILES          = # Append below
 TESTS               = # Append below
 lib_LTLIBRARIES     = # Append below
 noinst_LTLIBRARIES  = # Append below
+BUILT_SOURCES       = # Append below
 
 # MPI-based compilation and linking
 CXX = @MPICXX@
@@ -40,8 +41,11 @@ libchannel_la_LIBADD  += ../suzerain/libsuzerain.la
 libchannel_la_LIBADD  += ./liblogging.la
 
 bin_PROGRAMS         += channel_init
-channel_init_SOURCES  = channel_init.cpp
+channel_init_SOURCES  = channel_init_svnrev.c channel_init.cpp
 channel_init_LDADD    = libchannel.la
+BUILT_SOURCES        += channel_init_svnrev.h
+channel_init_svnrev.h: $(channel_init_SOURCES) $(libchannel_la_SOURCES)
+	../build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS             += channel_explicit
 channel_explicit_SOURCES  = channel_explicit.cpp

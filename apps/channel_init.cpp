@@ -48,6 +48,9 @@
 #include "precision.hpp"
 #include "channel.hpp"
 
+// Provided by channel_init_svnrev.{c,h} to speed compilation
+extern "C" const char revstr[];
+
 #pragma warning(disable:383 1572)
 
 // Introduce shorthand for common names
@@ -172,7 +175,7 @@ int main(int argc, char **argv)
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based compressible channel initialization",
-                "RESTART-FILE");
+                "RESTART-FILE", /* TODO description */ "", revstr);
 
         namespace po = ::boost::program_options;
         using ::suzerain::validation::ensure_nonnegative;
