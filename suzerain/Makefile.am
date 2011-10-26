@@ -10,6 +10,7 @@ bin_PROGRAMS       = # Append below
 check_PROGRAMS     = # Append below
 noinst_HEADERS     = # Append below
 noinst_LTLIBRARIES = # Append below
+lib_LTLIBRARIES    = # Append below
 pkginclude_HEADERS = # Append below
 CLEANFILES         = # Append below
 
@@ -87,7 +88,7 @@ pkginclude_HEADERS += traits.hpp
 pkginclude_HEADERS += utility.hpp
 pkginclude_HEADERS += validation.hpp
 
-noinst_LTLIBRARIES     += libsuzerain.la
+lib_LTLIBRARIES        += libsuzerain.la
 libsuzerain_la_SOURCES  = blas_et_al.c
 libsuzerain_la_SOURCES += bspline.c
 libsuzerain_la_SOURCES += bsplineop.c

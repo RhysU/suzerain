@@ -11,15 +11,12 @@ noinst_PROGRAMS     = # Append below
 dist_check_SCRIPTS  = # Append below
 CLEANFILES          = # Append below
 TESTS               = # Append below
+lib_LTLIBRARIES     = # Append below
 noinst_LTLIBRARIES  = # Append below
 
 # MPI-based compilation and linking
 CXX = @MPICXX@
 CC  = @MPICC@
-
-# Specify test environment for 'make check'
-TESTS_ENVIRONMENT  = TMPDIR=$(abs_builddir)
-TESTS_ENVIRONMENT += FIELDSDIR=$(abs_top_srcdir)/fields
 
 ##
 ## MPI-aware logging built atop log4cxx
@@ -30,25 +27,14 @@ liblogging_la_SOURCES  = logging.cpp logging.hpp
 liblogging_la_LIBADD   = $(LOG4CXX_LIBS)
 
 ##
-## Test programs and/or performance drivers
-##
-
-bin_PROGRAMS                    += driver_suzerain_p3dfft
-driver_suzerain_p3dfft_CPPFLAGS  = $(AM_CPPFLAGS)
-driver_suzerain_p3dfft_LDFLAGS   = $(MPIP_LDFLAGS)
-driver_suzerain_p3dfft_SOURCES   = driver_suzerain_p3dfft.cpp
-driver_suzerain_p3dfft_LDADD     = ../suzerain/libsuzerain.la
-driver_suzerain_p3dfft_LDADD    += ./liblogging.la
-driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS)
-
-##
 ## Channel-based Applications
 ##
 
-noinst_LTLIBRARIES    += libchannel.la
+lib_LTLIBRARIES       += libchannel.la
 libchannel_la_SOURCES  = precision.hpp
 libchannel_la_SOURCES += channel.cpp channel.hpp
 libchannel_la_SOURCES += nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp
+libchannel_la_LDFLAGS  = -release $(PACKAGE_VERSION)
 libchannel_la_LIBADD   = $(ESIO_LIBS)
 libchannel_la_LIBADD  += ../suzerain/libsuzerain.la
 libchannel_la_LIBADD  += ./liblogging.la
@@ -66,11 +52,29 @@ bin_PROGRAMS         += channel_mean
 channel_mean_SOURCES  = channel_mean.cpp
 channel_mean_LDADD    = libchannel.la
 
+##
+## Miscellaneous programs and/or performance drivers
+##
+
 noinst_PROGRAMS      += conservation
 conservation_SOURCES  = conservation.cpp
 conservation_LDADD    = libchannel.la
 
-# Tests for channel applications
+bin_PROGRAMS                    += driver_suzerain_p3dfft
+driver_suzerain_p3dfft_CPPFLAGS  = $(AM_CPPFLAGS)
+driver_suzerain_p3dfft_LDFLAGS   = $(MPIP_LDFLAGS)
+driver_suzerain_p3dfft_SOURCES   = driver_suzerain_p3dfft.cpp
+driver_suzerain_p3dfft_LDADD     = ../suzerain/libsuzerain.la
+driver_suzerain_p3dfft_LDADD    += ./liblogging.la
+driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS)
+
+##
+## Tests for channel applications
+##
+
+# Specify test environment for 'make check'
+TESTS_ENVIRONMENT  = TMPDIR=$(abs_builddir)
+TESTS_ENVIRONMENT += FIELDSDIR=$(abs_top_srcdir)/fields
 
 dist_check_SCRIPTS += test_channel_setup.sh     # Common initialization
 
