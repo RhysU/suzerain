@@ -222,8 +222,11 @@ protected:
      *
      * @param out Stream on which to write the information.
      * @param application_name Application name to be written.
+     * @param application_version Application version string to output.
      */
-    void print_version(std::ostream &out, const std::string &application_name);
+    void print_version(std::ostream &out,
+                       const std::string &application_name,
+                       const std::string &application_version = "");
 
     /**
      * The Boost.Program_options variables_map used internally.
