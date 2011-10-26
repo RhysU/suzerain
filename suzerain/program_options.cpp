@@ -36,6 +36,7 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/suzerain-revision.h>
+#include "print_version.hpp"
 
 // Parse Unix-like verbosity flags (http://stackoverflow.com/questions/5486753)
 static std::pair<std::string, std::string> verbosity(const std::string& s)
@@ -188,7 +189,7 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
 
     // Process --version
     if (variables_.count("version")) {
-        print_version(info, argv[0]);
+        suzerain::print_version(info, argv[0]);
         exit(0);
     }
 
@@ -318,29 +319,4 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
     } else {
         return vector<string>();
     }
-}
-
-void suzerain::ProgramOptions::print_version(
-        std::ostream &out,
-        const std::string &application_name,
-        const std::string &application_version)
-{
-    out << application_name;
-    if (!application_version.empty()) {
-        out << ' ' << application_version;
-    }
-    out << " written using "
-        << PACKAGE_NAME << ' ' << SUZERAIN_REVISION_STR
-        << " ("
-#if defined(__INTEL_COMPILER)
-        << "Intel "
-        << __INTEL_COMPILER << " " << __INTEL_COMPILER_BUILD_DATE
-#elif defined(__GNUC__)
-        << "GNU "
-        << __GNUC__ << "." << __GNUC_MINOR__ << "." << __GNUC_PATCHLEVEL__
-#else
-        << "unknown compiler"
-#endif
-        << ')'
-        << std::endl;
 }

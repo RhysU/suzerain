@@ -217,18 +217,6 @@ protected:
                                               std::ostream &error);
 
     /**
-     * Print version information on the given stream.  Includes
-     * the application name, the build date, time and compiler information.
-     *
-     * @param out Stream on which to write the information.
-     * @param application_name Application name to be written.
-     * @param application_version Application version string to output.
-     */
-    void print_version(std::ostream &out,
-                       const std::string &application_name,
-                       const std::string &application_version = "");
-
-    /**
      * The Boost.Program_options variables_map used internally.
      * It is populated during #process invocation.
      */

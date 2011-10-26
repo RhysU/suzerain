@@ -24,8 +24,11 @@ BUILT_SOURCES += suzerain-revision.h
 suzerain-revision.h : $(srcdir)/*
 	../build-aux/svnrev -n -osuzerain-revision.h -mSUZERAIN_REVISION_ "-f$(PACKAGE_VERSION).#" -i $?
 
+# Implementation-only headers
 noinst_HEADERS += exprparse_impl.hpp
+noinst_HEADERS += print_version.hpp
 
+# Public API headers
 pkginclude_HEADERS += allocator.hpp
 pkginclude_HEADERS += blas_et_al.h
 pkginclude_HEADERS += blas_et_al.hpp
@@ -107,6 +110,7 @@ libsuzerain_la_SOURCES += mpi.cpp
 libsuzerain_la_SOURCES += os.c
 libsuzerain_la_SOURCES += pencil_grid.cpp
 libsuzerain_la_SOURCES += pre_gsl.c
+libsuzerain_la_SOURCES += print_version.cpp
 libsuzerain_la_SOURCES += profile.cpp
 libsuzerain_la_SOURCES += program_options.cpp
 libsuzerain_la_SOURCES += restart_definition.cpp
