@@ -44,6 +44,9 @@
 #include <suzerain/program_options.hpp>
 #include "logging.hpp"
 
+// Provided by driver_pencil_grid_svnrev.{c,h} to speed recompilation
+extern "C" const char revstr[];
+
 static double real_data(const double x, const double y, const double z)
 {
     return   1.0* 1.0
@@ -64,7 +67,9 @@ int main(int argc, char **argv)
     logging::initialize(MPI_COMM_WORLD);      // Initialize logging
 
     // Process command line options
-    suzerain::ProgramOptions options;
+    suzerain::ProgramOptions options(
+            "suzerain::pencil_grid performance benchmark",
+            "", /* TODO description */ "", revstr);
     suzerain::problem::GridDefinition grid(/* Nx      */ 16,
                                            /* DAFx    */ 1.,
                                            /* Ny      */ 16,
