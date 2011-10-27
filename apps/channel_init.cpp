@@ -196,9 +196,10 @@ int main(int argc, char **argv)
 
         std::vector<std::string> positional = options.process(argc, argv);
 
-        // Record invocation for posterity and to aid in debugging
+        // Record build and invocation for posterity and to aid in debugging
         std::ostringstream os;
         std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
+        INFO0("Build:      " << revstr);
         INFO0("Invocation: " << os.str());
 
         switch (options.verbose()) {
@@ -266,6 +267,8 @@ int main(int argc, char **argv)
 
     INFO0("Creating new restart file " << restart_file);
     esio_file_create(esioh, restart_file.c_str(), clobber);
+    esio_string_set(esioh, "/", "generated_by",
+                    (std::string("channel_init ") + revstr).c_str());
     channel::store(esioh, scenario);
     channel::store(esioh, grid, scenario.Lx, scenario.Lz);
     channel::store(esioh, b, bop, gop);

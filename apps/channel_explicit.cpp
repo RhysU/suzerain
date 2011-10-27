@@ -756,9 +756,10 @@ int main(int argc, char **argv)
 
         std::vector<std::string> positional = options.process(argc, argv);
 
-        // Record invocation for posterity and to aid in debugging
+        // Record build and invocation for posterity and to aid in debugging
         std::ostringstream os;
         std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
+        INFO0("Build:      " << revstr);
         INFO0("Invocation: " << os.str());
 
         switch (options.verbose()) {
@@ -880,6 +881,8 @@ int main(int argc, char **argv)
         atexit(&atexit_metadata); // Delete any lingering metadata file at exit
         esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
         esio_file_create(h, restart.metadata.c_str(), 1 /* overwrite */);
+        esio_string_set(h, "/", "generated_by",
+                        (std::string("channel_explicit ") + revstr).c_str());
         channel::store(h, scenario);
         channel::store(h, grid, scenario.Lx, scenario.Lz);
         channel::store(h, b, bop, gop);
