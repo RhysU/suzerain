@@ -36,6 +36,7 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/suzerain-revision.h>
+#include <libgen.h>
 #include "print_version.hpp"
 
 // Parse Unix-like verbosity flags (http://stackoverflow.com/questions/5486753)
@@ -103,6 +104,13 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
     namespace po = boost::program_options;
     const int rank = suzerain::mpi::comm_rank(comm);
 
+    // Obtain the program name using basename(argv[0])
+    std::string program_name;
+    {
+        boost::shared_ptr<char> name_copy(strdup(argv[0]), &free);
+        program_name = basename(name_copy.get());
+    }
+
     // Prepare options allowed only on command line
     po::options_description desc_clionly("Program information");
     desc_clionly.add_options()
@@ -165,7 +173,7 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
 
     // Process --help
     if (variables_.count("help")) {
-        info << "\nUsage: " << argv[0]
+        info << "\nUsage: " << program_name
              << " [OPTION]... " << argument_synopsis_
              << '\n';
 
@@ -189,7 +197,9 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
 
     // Process --version
     if (variables_.count("version")) {
-        suzerain::print_version(info, argv[0], application_version_);
+        
+
+        suzerain::print_version(info, program_name, application_version_);
         exit(0);
     }
 
