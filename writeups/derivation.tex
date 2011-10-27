@@ -1680,6 +1680,27 @@ wall-normal position should provide a reasonable time/storage tradeoff.  Note
 that we will recover an explicit-only operator if we choose identically zero
 reference values.
 
+\section{In support of Favre-averaged Navier--Stokes modeling}
+\label{sec:supportFANS}
+
+The Favre-averaged Navier--Stokes (FANS) equations are often used to estimate
+the mean effects of turbulence.  The unclosed FANS equations require modeling
+approximations to be solvable.  Statistics gathered from Suzerain's solution of
+the Navier--Stokes equations may be used to inform the development and
+application of FANS closures.
+
+The material in this section borrows liberally from work by Todd A. Oliver
+in~\cite{OliverFANSModels2011}.  It departs from that document in that it
+employs Suzerain's constitutive relationships while avoiding any additional
+assumptions about the relative importance of unclosed terms.
+
+\subsection{Reynolds- and Favre-averages}
+
+\subsection{Equations for a single-species in local thermodynamic equilibrium}
+
+\subsection{Dimensional equations using Suzerain's constitutive assumptions}
+
+\subsection{Nondimensional equations}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
