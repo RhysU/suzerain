@@ -152,13 +152,6 @@ int main(int argc, char **argv)
     esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
     atexit(&atexit_esio);                           // Finalize ESIO at exit
 
-    // Record invocation for posterity and to aid in debugging
-    {
-        std::ostringstream os;
-        std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
-        INFO0("Invocation: " << os.str());
-    }
-
     // Hook error handling into logging infrastructure
     gsl_set_error_handler(
             &channel::mpi_abort_on_error_handler_gsl);
@@ -202,6 +195,12 @@ int main(int argc, char **argv)
         ;
 
         std::vector<std::string> positional = options.process(argc, argv);
+
+        // Record invocation for posterity and to aid in debugging
+        std::ostringstream os;
+        std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
+        INFO0("Invocation: " << os.str());
+
         switch (options.verbose()) {
             case 0:                   break;
             case 1:  DEBUG0_ENABLE(); break;
