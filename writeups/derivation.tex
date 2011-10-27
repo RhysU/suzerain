@@ -243,12 +243,17 @@ The total (internal and kinetic) energy density is
      = \frac{RT}{\gamma-1} + \frac{u\cdot{}u}{2}
   .
 \end{align}
-The total (internal and kinetic) enthalpy density is
+The total enthalpy density $H$ and (internal) enthalpy density $h$ are
 \begin{align}
-  \label{eq:perfectgastotalenergy}
+  \label{eq:perfectgasenthalpy}
   H &= E + \frac{p}{\rho}
      = C_{p} T + \frac{u\cdot{}u}{2}
      = \frac{\gamma{}RT}{\gamma-1} + \frac{u\cdot{}u}{2}
+  &
+  h &= H - \frac{u\cdot{}u}{2}
+     = C_{p} T
+     = \frac{\gamma{}RT}{\gamma-1}
+  .
 \end{align}
 See a gas dynamics reference, e.g.~\cite{LiepmannRoshko2002}, for more details.
 
@@ -529,7 +534,7 @@ quantities:
 \begin{align}
   a_{0} &= \sqrt{\gamma{}RT_{0}}
   &
-  E_{0} &= a_{0}^{2}
+  E_{0}, H_{0}, h_{0} &= a_{0}^{2}
   &
   p_{0} &= \rho_{0} a_{0}^{2}
   &
@@ -550,7 +555,12 @@ fixed by $T_{0}$.  Choosing this form for $p_{0}$ in lieu of employing
 equation~\eqref{eq:perfectgaseos} is customary and removes many instances of
 $\gamma$ from the resulting equations.  Note that these reference choices imply
 \begin{align}
-a^{*}&=\sqrt{T^{*}}.
+a^{*}&=\sqrt{T^{*}}
+&
+&\text{and}
+&
+h^{*}&=\frac{T^{*}}{\gamma-1}
+.
 \end{align}
 
 \subsubsection{Nondimensional equations}
