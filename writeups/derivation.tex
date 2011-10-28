@@ -51,6 +51,7 @@
 
 % Document-specific commands
 \newcommand{\ii}{\ensuremath{\mathrm{i}}}
+\newcommand{\pp}[2]{\frac{\partial #1}{\partial #2}}
 \newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
 \newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
 \newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
@@ -643,6 +644,7 @@ the continuous model equations.  In this section $u$ denotes an arbitrary state
 vector and not fluid velocity.
 
 \subsection{Spatial discretization}
+\label{sec:spatialdiscretization}
 
 We start with the continuous system
 \begin{align}
@@ -1687,20 +1689,119 @@ The Favre-averaged Navier--Stokes (FANS) equations are often used to estimate
 the mean effects of turbulence.  The unclosed FANS equations require modeling
 approximations to be solvable.  Statistics gathered from Suzerain's solution of
 the Navier--Stokes equations may be used to inform the development and
-application of FANS closures.
+application of FANS closures.  Extensive background may be found in
+books by Chassaing et.~al.~\cite{Chassaing2010} or Smits and
+Dussauge~\cite{SmitsDussauge2005}.
 
-The material in this section borrows liberally from work by Todd A. Oliver
-in~\cite{OliverFANSModels2011}.  It departs from that document in that it
-employs Suzerain's constitutive relationships while avoiding any additional
-assumptions about the relative importance of unclosed terms.
+The material in this section borrows liberally (and often literally) from work
+by Todd Oliver~\cite{OliverFANSModels2011}.  It departs from that particular
+document in that it employs Suzerain's constitutive relationships, avoids
+introducing customary assumptions about the relative importance of unclosed
+terms, and nondimensionalizes the results.
+
 
 \subsection{Reynolds- and Favre-averages}
+The Reynolds average is simply the usual mean of a random variable.  Consider a
+generic flow variable $q$.  The value, $q(x, y, z, t)$, of this variable at
+a particular point in space, $(x, y, z)$, and time, $t$, is a random variable.
+Assuming that the pdf for $q(x, y, z, t)$ is given by $\pi_q(V; x, y, z,
+t)$, the Reynolds average is defined by
+%
+\begin{equation}
+\label{eqn:reynoldsAvg}
+\bar{q}(x, y, z, t) \equiv \int V \pi_q(V; x, y, z, t) \,\mathrm{d} V.
+\end{equation}
+%
+The Favre average is defined as the density-weighted average.  Thus,
+denoting the fluid density by $\rho(x,y,z, t)$, the Favre average of
+$q(x,y,z, t)$ is
+%
+\begin{equation*}
+\tilde{q}(x,y,z, t) \equiv \frac{ \overline{\rho q}(x,y,z, t) }{ \bar{\rho}(x,y,z, t) }.
+\end{equation*}
+%
+For the remainder of this section to make sense mathematically, it is
+assumed that both the Reynolds and Favre averages are well-defined for
+any required flow variable, $q$.  That is, the integral on the
+right-hand side of (\ref{eqn:reynoldsAvg}) exists whenever required,
+and the Reynolds-averaged density, $\bar{\rho}$, is positive
+everywhere.
+
+In the following, the flow variables will be decomposed into mean and
+fluctuating parts.  Specifically, the fluctuations about the
+mean---denoted by $(\cdot)'$ and $(\cdot)''$ for the Reynolds and
+Favre averages, respectively---are defined by the following
+relationships:
+%
+\begin{align*}
+q' &\equiv q - \bar{q}, \\
+q'' &\equiv q - \tilde{q}.
+\end{align*}
+%
+Using the linearity of the Reynolds average and the fact that
+$\bar{q}$ and $\tilde{q}$ are deterministic, not random, variables, it
+is straightforward to see that
+%
+\begin{gather*}
+\overline{q'} = \overline{q - \bar{q}} = \bar{q} - \bar{q} =  0, \\
+\widetilde{q''} = \widetilde{q - \tilde{q}} = \tilde{q} - \tilde{q} = 0.
+\end{gather*}
+%
+Furthermore,
+%
+\begin{equation*}
+\overline{\rho q''} = \bar{\rho} \widetilde{q''} = 0.
+\end{equation*}
+%
+However, in general,
+%
+\begin{equation*}
+\overline{q''} = \overline{q - \tilde{q}} = \bar{q} - \tilde{q} \neq 0.
+\end{equation*}
+%
+
+Finally, wherever necessary, realizations of random fields of flow quantities---e.g.,
+$u_i$, $p$, $\tau_{ij}$, etc.---are assumed to be differentiable in
+both time and space.  Thus, the average and differentiation operators
+commute.  For example,
+%
+\begin{equation*}
+\widetilde{ \pp{u_i}{x_j} } = \pp{\tilde{u}_i}{x_j}.
+\end{equation*}
+%
+This operation is used extensively in the development of the FANS equations.
 
 \subsection{Equations for a single-species in local thermodynamic equilibrium}
 
+In the absence of body forces and heat sources,
+equations~\eqref{eq:cons_mass},\eqref{eq:cons_momentum},
+and~\eqref{eq:cons_energy} may be written
+\begin{align}
+  \frac{\partial}{\partial{}t}\rho+\nabla\cdot\rho{}u &= 0
+\\
+  \frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u)
+  &= -\nabla{}p + \nabla\cdot{}\tau
+\\
+  \frac{\partial}{\partial{}t} \rho{}E
+  +
+  \nabla\cdot{}\rho{}uH
+&=
+    \nabla\cdot{}\tau{}u
+  - \nabla\cdot{}q
+\end{align}
+where we have abbreviated the surface heat flux $q_s$ to $q$ and employed total
+enthalpy $H$ to reduce the number of terms in the energy equation.
+
 \subsection{Dimensional equations using Suzerain's constitutive assumptions}
 
-\subsection{Nondimensional equations}
+\subsection{Nondimensional equations using Suzerain's constitutive assumptions}
+
+\subsection{Sampling statistical quantities from a simulation}
+
+% TODO Ergodicity and homogeneity allowing us to pick zero-zero modes
+%      Use channel_treatment.tex for some of the necessary language
+
+\subsection{Quantifying statistical quantity convergence}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
