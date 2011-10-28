@@ -1876,6 +1876,23 @@ Note that many FANS closure approximations neglect correlations between the
 kinematic viscosity and velocity derivatives and also assume $\alpha=0$.  Those
 approximations will eliminate the second through fourth terms in $\bar{\tau}$.
 
+To find $\bar{q}$ we combine~\eqref{eq:fourierlaw} and our assumption of a
+constant Prandtl number
+\begin{align}
+  q &= - \kappa \nabla{} T
+     = - \frac{\kappa}{C_p} \nabla{}h
+     = - \frac{\mu}{\Prandtl} \nabla{}h
+\end{align}
+and again employ $\nu$ when averaging to obtain
+\begin{align}
+  \bar{q}
+&= - \frac{1}{\Prandtl}\left(
+                \bar{\mu}\nabla\tilde{h}
+              + \overline{\rho\nu''\nabla{}h''}
+            \right)
+.
+\end{align}
+
 
 
 \subsubsection{Contributions to the mean viscous stress tensor}
