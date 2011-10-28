@@ -240,18 +240,18 @@ We assume $\gamma$ and therefore $C_{v}$ and $C_{p}$ are constant.
 The total (internal and kinetic) energy density is
 \begin{align}
   \label{eq:perfectgastotalenergy}
-  E &= C_{v} T + \frac{u\cdot{}u}{2}
-     = \frac{RT}{\gamma-1} + \frac{u\cdot{}u}{2}
-  .
+  E &= C_{v} T + \frac{1}{2}u^{2}
+     = \frac{RT}{\gamma-1} + \frac{1}{2}u^{2}
 \end{align}
+where the notation $u^2 = u\cdot{}u$ is employed.
 The total enthalpy density $H$ and (internal) enthalpy density $h$ are
 \begin{align}
   \label{eq:perfectgasenthalpy}
   H &= E + \frac{p}{\rho}
-     = C_{p} T + \frac{u\cdot{}u}{2}
-     = \frac{\gamma{}RT}{\gamma-1} + \frac{u\cdot{}u}{2}
+     = C_{p} T + \frac{1}{2}u^{2}
+     = \frac{\gamma{}RT}{\gamma-1} + \frac{1}{2}u^{2}
   &
-  h &= H - \frac{u\cdot{}u}{2}
+  h &= H - \frac{1}{2}u^{2}
      = C_{p} T
      = \frac{\gamma{}RT}{\gamma-1}
   .
@@ -409,7 +409,7 @@ and assumptions, we arrive at the dimensional equations
 }
   \label{eq:dim_pressure}
   p &=   \left(\gamma-1\right)\left(\rho{}E
-       - \rho\frac{u\cdot{}u}{2} \right)
+       - \frac{1}{2}\rho{}u^{2} \right)
   \\
   \label{eq:dim_temperature}
   T &= \frac{p}{\rho{}R}
@@ -603,7 +603,7 @@ along with the relationships
 }
   \label{eq:nondim_pressure}
   p &= \left(\gamma-1\right) \left(
-    \rho{}E - \Mach^{2} \rho{}\frac{u\cdot{}u}{2}
+    \rho{}E - \frac{\Mach^{2}}{2}\rho{}u^{2}
   \right)
   \\
   \label{eq:nondim_temperature}
@@ -1274,7 +1274,7 @@ the equations in section~\ref{nondim_equations} become
         + \lambda\left(\nabla\cdot{}\frac{m}{\rho}\right) I
 \end{align}
 \end{subequations}
-and we have employed the notation $m^2=m\cdot{}m$ and
+and we have employed the notation
 $\symmetricpart{A}=\frac{1}{2}\left(A+\trans{A}\right)$.
 
 \subsection{Communications overhead}
@@ -1775,7 +1775,7 @@ This operation is used extensively in the development of the FANS equations.
 
 In the absence of body forces and heat sources,
 equations~\eqref{eq:cons_mass},\eqref{eq:cons_momentum},
-and~\eqref{eq:cons_energy} may be written
+and~\eqref{eq:cons_energy} may be written as
 \begin{align}
   \frac{\partial}{\partial{}t}\rho+\nabla\cdot\rho{}u &= 0
 \\
@@ -1784,7 +1784,7 @@ and~\eqref{eq:cons_energy} may be written
 \\
   \frac{\partial}{\partial{}t} \rho{}E
   +
-  \nabla\cdot{}\rho{}uH
+  \nabla\cdot{}(u\otimes{}\rho{}H)
 &=
     \nabla\cdot{}\tau{}u
   - \nabla\cdot{}q
