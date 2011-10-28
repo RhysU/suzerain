@@ -213,6 +213,7 @@ After splitting $\sigma$'s pressure and viscous stress contributions we have
 \end{align}
 
 \subsection{Constitutive relations and other assumptions}
+\label{sec:constitutive}
 
 \subsubsection{Perfect gas}
 
@@ -259,6 +260,7 @@ The total enthalpy density $H$ and (internal) enthalpy density $h$ are
 See a gas dynamics reference, e.g.~\cite{LiepmannRoshko2002}, for more details.
 
 \subsubsection{Newtonian fluid}
+\label{sec:newtonianfluid}
 
 If we seek a constitutive law for the viscous stress tensor $\tau$
 using only velocity information, the principle of material frame
@@ -305,6 +307,7 @@ to form the bulk viscosity $\mu_{B}$ according to $\mu_{B}=\lambda +
 \end{align}
 
 \subsubsection{Stokes' hypothesis}
+\label{sec:stokeshypothesis}
 
 We allow the bulk viscosity $\mu_{B}$ to be some multiple of the dynamic
 viscosity $\mu$.  One may write this relationship as either
@@ -1771,7 +1774,7 @@ example,
 %
 This operation is used extensively in the development of the FANS equations.
 
-\subsection{The unclosed Favre-averaged Navier--Stokes equations}
+\subsection{The Favre-averaged Navier--Stokes equations}
 
 In the absence of body forces and heat sources,
 equations~\eqref{eq:cons_mass},\eqref{eq:cons_momentum},
@@ -1796,6 +1799,7 @@ A straightforward-but-lengthy sequence of algebra (detailed in section~2
 of~\cite{OliverFANSModels2011}) produces exact equations governing the
 evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
 \bar{\rho}\tilde{u}$, and $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
+\begin{subequations}\label{eq:unclosedfansequations}
 \begin{align}
   \frac{\partial}{\partial{}t}\bar{\rho}+\nabla\cdot\bar{\rho}\tilde{u} &= 0
 \\
@@ -1825,18 +1829,60 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
       + \overline{\tau{}u''}
     \right)
 \end{align}
+\end{subequations}
 Several unclosed correlations impact the evolution of mean quantities: the
 Reynolds stress $-\overline{u''\otimes\rho{}u''}$, the Reynolds heat flux
 $\overline{u''\otimes\rho{}h''}$, turbulent transport
 $-\frac{1}{2}\overline{\left(u''\otimes\rho{}u''\right)u''}$, and turbulent
 work $\overline{\tau{}u''}$.  The Reynolds stress and heat flux augment the
-viscous stress and heat flux, respectively.  The turbulent transport term
-represents transport of the turbulent kinetic energy
-$k=\frac{1}{2}\widetilde{{u''}^2}$ by turbulent velocity fluctuations.  The
-turbulent work term represents the work done by the viscous stress due to
-turbulent velocity fluctuations.
+viscous stress and heat flux, respectively.  The turbulent transport and work
+terms represent transport of the turbulent kinetic energy
+$k=\frac{1}{2}\widetilde{{u''}^2}$ and viscous stress work due to turbulent
+velocity fluctuations, respectively.
 
-\subsection{Dimensional equations using Suzerain's constitutive assumptions}
+We need to average the constitutive relations chosen in
+section~\ref{sec:constitutive}.  Taking the Reynolds average
+of~\eqref{eq:perfectgaseos} gives
+\begin{align}
+  \bar{p} &= R\overline{\rho{}T} = \bar{\rho}R\tilde{T}
+\end{align}
+while the Favre average of~\eqref{eq:perfectgasenthalpy} is
+\begin{align}
+ \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}.
+\end{align}
+
+Using the strain rate tensor $s=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u}
+\right)$ and its deviatoric component $S=s-\frac{1}{3}\trace{s}\,I$ we
+re-express~\eqref{eq:taunewt} and~\eqref{eq:secondviscosityclaw} as
+\begin{align}
+  \tau
+&= \mu \left( \nabla{}u+\trans{\nabla{}u} \right)
+ + \left( \alpha - \frac{2}{3} \right) \mu \left(\nabla\cdot{}u\right) I
+\\
+&= 2 \mu \left( s - \frac{1}{3} \trace{s} \, I \right)
+ + \alpha \mu \left( \nabla \cdot{} u \right) I
+\\
+&= 2 \mu{} S + \alpha \mu \left( \nabla\cdot{}u \right) I.
+\end{align}
+Using the kinematic viscosity $\nu = \mu / \rho$ and averaging we find
+\begin{align}
+   \bar{\tau}
+&= 2 \bar{\mu}\tilde{S} + 2 \overline{\rho\nu''S''}
+  + \alpha \bar{\mu} \left(\nabla\cdot\tilde{u}\right) I
+  + \alpha \overline{\rho\nu''\nabla\cdot{}u''} I
+.
+\end{align}
+Note that many FANS closure approximations neglect correlations between the
+kinematic viscosity and velocity derivatives and also assume $\alpha=0$.  Those
+approximations will eliminate the second through fourth terms in $\bar{\tau}$.
+
+
+
+\subsubsection{Contributions to the mean viscous stress tensor}
+
+\subsubsection{Contributions to the mean heat flux tensor}
+
+
 
 \subsection{Nondimensional equations using Suzerain's constitutive assumptions}
 
