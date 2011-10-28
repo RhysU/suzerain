@@ -1760,10 +1760,10 @@ However, in general,
 \end{equation*}
 %
 
-Finally, wherever necessary, realizations of random fields of flow quantities---e.g.,
-$u_i$, $p$, $\tau_{ij}$, etc.---are assumed to be differentiable in
-both time and space.  Thus, the average and differentiation operators
-commute.  For example,
+Finally, wherever necessary, realizations of random fields of flow
+quantities---e.g., $u$, $p$, $\tau$, etc.---are assumed to be differentiable in
+both time and space so that averaging and differentiation commute.  For
+example,
 %
 \begin{equation*}
 \widetilde{ \pp{u_i}{x_j} } = \pp{\tilde{u}_i}{x_j}.
@@ -1771,7 +1771,7 @@ commute.  For example,
 %
 This operation is used extensively in the development of the FANS equations.
 
-\subsection{Equations for a single-species in local thermodynamic equilibrium}
+\subsection{The unclosed Favre-averaged Navier--Stokes equations}
 
 In the absence of body forces and heat sources,
 equations~\eqref{eq:cons_mass},\eqref{eq:cons_momentum},
@@ -1791,6 +1791,50 @@ and~\eqref{eq:cons_energy} may be written as
 \end{align}
 where we have abbreviated the surface heat flux $q_s$ to $q$ and employed total
 enthalpy $H$ to reduce the number of terms in the energy equation.
+
+A straightforward-but-lengthy sequence of algebra (detailed in section~2
+of~\cite{OliverFANSModels2011}) produces exact equations governing the
+evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
+\bar{\rho}\tilde{u}$, and $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
+\begin{align}
+  \frac{\partial}{\partial{}t}\bar{\rho}+\nabla\cdot\bar{\rho}\tilde{u} &= 0
+\\
+    \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
+  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
+&=
+  - \nabla{}\bar{p}
+  + \nabla\cdot\left(
+        \bar{\tau}
+      - \overline{u''\otimes\rho{}u''}
+    \right)
+\\
+  \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
+  +
+  \nabla\cdot{}(\tilde{u}\otimes\bar{\rho}\tilde{H})
+&=
+    \nabla\cdot\left(
+        \left(\bar{\tau}
+      - \overline{u''\otimes\rho{}u''}\right)
+    \tilde{u}\right)
+  - \nabla\cdot\left(
+        \bar{q}
+      + \overline{u''\otimes\rho{}h''}
+    \right)
+  + \nabla\cdot\left(
+        -\frac{1}{2}\overline{\left(u''\otimes\rho{}u''\right)u''}
+      + \overline{\tau{}u''}
+    \right)
+\end{align}
+Several unclosed correlations impact the evolution of mean quantities: the
+Reynolds stress $-\overline{u''\otimes\rho{}u''}$, the Reynolds heat flux
+$\overline{u''\otimes\rho{}h''}$, turbulent transport
+$-\frac{1}{2}\overline{\left(u''\otimes\rho{}u''\right)u''}$, and turbulent
+work $\overline{\tau{}u''}$.  The Reynolds stress and heat flux augment the
+viscous stress and heat flux, respectively.  The turbulent transport term
+represents transport of the turbulent kinetic energy
+$k=\frac{1}{2}\widetilde{{u''}^2}$ by turbulent velocity fluctuations.  The
+turbulent work term represents the work done by the viscous stress due to
+turbulent velocity fluctuations.
 
 \subsection{Dimensional equations using Suzerain's constitutive assumptions}
 
