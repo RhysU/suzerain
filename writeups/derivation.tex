@@ -1825,7 +1825,7 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
       + \overline{u''\otimes\rho{}h''}
     \right)
   + \nabla\cdot\left(
-        -\frac{1}{2}\overline{\left(u''\otimes\rho{}u''\right)u''}
+        -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
       + \overline{\tau{}u''}
     \right)
 \end{align}
@@ -1833,12 +1833,60 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
 Several unclosed correlations impact the evolution of mean quantities: the
 Reynolds stress $-\overline{u''\otimes\rho{}u''}$, the Reynolds heat flux
 $\overline{u''\otimes\rho{}h''}$, turbulent transport
-$-\frac{1}{2}\overline{\left(u''\otimes\rho{}u''\right)u''}$, and turbulent
-work $\overline{\tau{}u''}$.  The Reynolds stress and heat flux augment the
-viscous stress and heat flux, respectively.  The turbulent transport and work
-terms represent transport of the turbulent kinetic energy
+$-\frac{1}{2}\overline{\rho{}{u''}^{2}u''}$, and turbulent work
+$\overline{\tau{}u''}$.  The Reynolds stress and heat flux augment the viscous
+stress and heat flux, respectively.  The turbulent transport and work terms
+represent transport of the turbulent kinetic energy density
 $k=\frac{1}{2}\widetilde{{u''}^2}$ and viscous stress work due to turbulent
 velocity fluctuations, respectively.
+
+The turbulent kinetic energy density $k$ arises from averaging the total energy
+given by \eqref{eq:perfectgastotalenergy}:
+\begin{align}
+  \rho{} E
+&=
+  \frac{R}{\gamma-1} \rho{}T + \frac{1}{2}\rho{} u^{2}
+\\
+&=
+  \frac{R}{\gamma-1} \rho{}\left( \tilde{T} + T'' \right)
++ \frac{1}{2}\rho{} \left( \tilde{u} + u'' \right)^2
+\\
+  \overline{\rho{}E}
+&=
+  \frac{R}{\gamma-1} \bar{\rho} \tilde{T}
++ \frac{1}{2}\bar{\rho} \tilde{u}^2
++ \frac{1}{2}\overline{\rho{}{u''}^2}
+\\
+  \tilde{E}
+&=
+  \frac{R}{\gamma-1} \tilde{T}
++ \frac{1}{2} \tilde{u}^2
++ k
+\end{align}
+An exact equation may be derived for the evolution of $k$ (details in section~5
+of~\cite{OliverFANSModels2011})
+\begin{align}
+    \frac{\partial{}}{\partial{}t}\bar{\rho}k
+  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
+ =
+ &- \overline{u''\otimes\rho{}u''} : \nabla\tilde{u}
+  - \overline{\tau : \nabla\tilde{u}}
+  + \nabla\cdot\left(
+        -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
+      + \overline{\tau{}u''}
+    \right)
+\\
+ &- \overline{u''}\cdot\nabla\bar{p}
+  - \nabla\cdot\overline{u'' p'}
+  + \overline{p' \nabla\cdot{}u''}
+\end{align}
+where $A:B$ denotes $\trace \left(\trans{A} B\right)$.  The dissipation rate
+per unit mass
+\begin{align}
+  \epsilon &= \frac{\overline{\tau : \nabla\tilde{u}}}{\bar{\rho}}
+\end{align}
+is the rate at which $k$ is converted to mean internal energy.
+
 
 We need to average the constitutive relations chosen in
 section~\ref{sec:constitutive}.  Taking the Reynolds average
@@ -1853,7 +1901,7 @@ while the Favre average of~\eqref{eq:perfectgasenthalpy} is
 
 Using the strain rate tensor $s=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u}
 \right)$ and its deviatoric component $S=s-\frac{1}{3}\trace{s}\,I$ we
-re-express~\eqref{eq:taunewt} and~\eqref{eq:secondviscosityclaw} as
+reexpress~\eqref{eq:taunewt} and~\eqref{eq:secondviscosityclaw} as
 \begin{align}
   \tau
 &= \mu \left( \nabla{}u+\trans{\nabla{}u} \right)
@@ -1872,9 +1920,9 @@ Using the kinematic viscosity $\nu = \mu / \rho$ and averaging we find
   + \alpha \overline{\rho\nu''\nabla\cdot{}u''} I
 .
 \end{align}
-Note that many FANS closure approximations neglect correlations between the
-kinematic viscosity and velocity derivatives and also assume $\alpha=0$.  Those
-approximations will eliminate the second through fourth terms in $\bar{\tau}$.
+Some FANS closure approximations neglect correlations between the kinematic
+viscosity and velocity derivatives.  Many assume $\alpha=0$.  Those
+approximations eliminate the second through fourth terms in $\bar{\tau}$.
 
 To find $\bar{q}$ we combine~\eqref{eq:fourierlaw} and our assumption of a
 constant Prandtl number
