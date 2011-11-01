@@ -1836,12 +1836,25 @@ $\overline{u''\otimes\rho{}h''}$, turbulent transport
 $-\frac{1}{2}\overline{\rho{}{u''}^{2}u''}$, and turbulent work
 $\overline{\tau{}u''}$.  The Reynolds stress and heat flux augment the viscous
 stress and heat flux, respectively.  The turbulent transport and work terms
-represent transport of the turbulent kinetic energy density
-$k=\frac{1}{2}\widetilde{{u''}^2}$ and viscous stress work due to turbulent
-velocity fluctuations, respectively.
+represent transport of the turbulent kinetic energy density $k$, defined below,
+and viscous stress work due to turbulent velocity fluctuations, respectively.
 
-The turbulent kinetic energy density $k$ arises from averaging the total energy
-given by \eqref{eq:perfectgastotalenergy}:
+We now average the perfect gas relations from section~\ref{sec:constitutive}.
+The Reynolds average of~\eqref{eq:perfectgaseos} gives
+\begin{align}
+  \bar{p} &= R\overline{\rho{}T} = \bar{\rho}R\tilde{T}
+\end{align}
+while the Favre average of~\eqref{eq:perfectgasenthalpy} is
+\begin{align}
+ \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}.
+\end{align}
+
+The turbulent kinetic energy density
+\begin{align}
+  k &= \frac{1}{2}\widetilde{{u''}^2}
+ \end{align}
+arises from averaging the total energy given by
+\eqref{eq:perfectgastotalenergy}:
 \begin{align}
   \rho{} E
 &=
@@ -1883,17 +1896,10 @@ of~\cite{OliverFANSModels2011})
 \end{align}
 where $A:B$ denotes $\trace \left(\trans{A} B\right)$. The dissipation rate
 density $\epsilon$, which governs the conversion rate from $k$ to mean internal
-energy, is defined by $\bar{\rho} \epsilon = \overline{\tau : \nabla{}u''}$.
-
-We now need to average the constitutive relations chosen in
-section~\ref{sec:constitutive}.  Taking the Reynolds average
-of~\eqref{eq:perfectgaseos} gives
+energy, is defined by
 \begin{align}
-  \bar{p} &= R\overline{\rho{}T} = \bar{\rho}R\tilde{T}
-\end{align}
-while the Favre average of~\eqref{eq:perfectgasenthalpy} is
-\begin{align}
- \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}.
+  \bar{\rho} \epsilon &= \overline{\tau : \nabla{}u''}
+.
 \end{align}
 Following page~216 of Lele~\cite{Lele1994Compressibility}, expanding $h$,
 averaging, removing the mean state from both sides, and applying perfect gas
@@ -1919,7 +1925,7 @@ Substituting $h''$ everywhere for $T''$, noting $\bar{p}/\tilde{h} =
 - \overline{u''}\cdot\nabla{}\bar{p}
 .
 \end{align}
-Rearranging this result to mimic the pressure terms in the $k$ equation
+Rearranging this result to mimic some terms within~\eqref{eq:fanstke1}
 \begin{align}
   - \overline{u''}\cdot\nabla\bar{p}
   - \nabla\cdot\overline{p'u''}
@@ -1927,7 +1933,8 @@ Rearranging this result to mimic the pressure terms in the $k$ equation
   \bar{p}\nabla\cdot\overline{u''}
 - \frac{\gamma-1}{\gamma} \nabla\cdot \bar{\rho} \widetilde{h''u''}
 \end{align}
-we may trade an ocurrance of $\overline{p'u''}$ for the Reynolds heat flux:
+allows us to trade an occurrence of $\overline{p'u''}$ for the Reynolds heat
+flux in the exact $k$ equation:
 \begin{align}
 \label{eq:fanstke}
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
@@ -1946,11 +1953,13 @@ we may trade an ocurrance of $\overline{p'u''}$ for the Reynolds heat flux:
 \end{align}
 The trade reduces by one the number of correlations appearing in the $k$
 equation which do not appear in the mean continuity, momentum, or energy
-equations.
+equations.  It also, as Lele suggests, encourages thermodynamic consistency
+when working with pressure correlation closures.
 
-Using the strain rate tensor $s=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u}
-\right)$ and its deviatoric component $S=s-\frac{1}{3}\trace{s}\,I$ we
-reexpress~\eqref{eq:taunewt} and~\eqref{eq:secondviscosityclaw} as
+We now turn back to constitutive relations.  Using the strain rate tensor
+$s=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u} \right)$ and its deviatoric
+component $S=s-\frac{1}{3}\trace{s}\,I$ we reexpress~\eqref{eq:taunewt}
+and~\eqref{eq:secondviscosityclaw} as
 \begin{align}
   \tau
 &= \mu \left( \nabla{}u+\trans{\nabla{}u} \right)
@@ -1970,8 +1979,8 @@ Using the kinematic viscosity $\nu = \mu / \rho$ and averaging we find
 .
 \end{align}
 Some FANS closure approximations neglect correlations between the kinematic
-viscosity and velocity derivatives.  Many assume $\alpha=0$.  Those
-approximations eliminate the second through fourth terms in $\bar{\tau}$.
+viscosity and velocity derivatives.  Many assume $\alpha=0$.  Accepting those
+approximations would eliminate the second through fourth terms in $\bar{\tau}$.
 
 To find $\bar{q}$ we combine~\eqref{eq:fourierlaw} and our assumption of a
 constant Prandtl number
