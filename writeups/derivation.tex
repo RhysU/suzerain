@@ -1884,10 +1884,8 @@ of~\cite{OliverFANSModels2011})
 where $A:B$ denotes $\trace \left(\trans{A} B\right)$. The dissipation rate
 density $\epsilon$, which governs the conversion rate from $k$ to mean internal
 energy, is defined by $\bar{\rho} \epsilon = \overline{\tau : \nabla{}u''}$.
-Some of the  pressure terms will soon be reinterpreted in light of our
-constitutive relations.
 
-We need to average the constitutive relations chosen in
+We now need to average the constitutive relations chosen in
 section~\ref{sec:constitutive}.  Taking the Reynolds average
 of~\eqref{eq:perfectgaseos} gives
 \begin{align}
@@ -1899,36 +1897,37 @@ while the Favre average of~\eqref{eq:perfectgasenthalpy} is
 \end{align}
 Following page~216 of Lele~\cite{Lele1994Compressibility}, expanding $h$,
 averaging, removing the mean state from both sides, and applying perfect gas
-assumptions shows the exact relationship
+assumptions demonstrates the exact relationship
 \begin{align}
   \overline{u''}
 &=
   \frac{\widetilde{T''u''}}{\tilde{T}} - \frac{\overline{p'u''}}{\bar{p}}
 .
 \end{align}
-Employing $h''$ in place of $T''$ and differentiating one obtains
+Substituting $h''$ everywhere for $T''$, noting $\bar{p}/\tilde{h} =
+\frac{\gamma-1}{\gamma}\bar{\rho}$, and differentiating one obtains
 \begin{align}
   \overline{p'u''}
 &=
-  \bar{p} \frac{\widetilde{h''u''}}{\tilde{h}}
+  \frac{\gamma-1}{\gamma} \bar{\rho} \widetilde{h''u''}
 - \bar{p} \overline{u''}
 \\
   \nabla\cdot \overline{p'u''}
 &=
-  \nabla\cdot \bar{p} \frac{\widetilde{h''u''}}{\tilde{h}}
+  \frac{\gamma-1}{\gamma} \nabla\cdot \bar{\rho} \widetilde{h''u''}
 - \bar{p}\nabla\cdot\overline{u''}
 - \overline{u''}\cdot\nabla{}\bar{p}
+.
 \end{align}
-which can be rearranged into
+Rearranging this result to mimic the pressure terms in the $k$ equation
 \begin{align}
   - \overline{u''}\cdot\nabla\bar{p}
   - \nabla\cdot\overline{p'u''}
 &=
   \bar{p}\nabla\cdot\overline{u''}
-- \nabla\cdot\bar{p} \frac{\widetilde{h''u''}}{\tilde{h}}
+- \frac{\gamma-1}{\gamma} \nabla\cdot \bar{\rho} \widetilde{h''u''}
 \end{align}
-allowing us exactly exchange the pressure velocity correlation
-$\overline{p'u''}$ for the Reynolds heat flux within the $k$ equation:
+we may trade an ocurrance of $\overline{p'u''}$ for the Reynolds heat flux:
 \begin{align}
 \label{eq:fanstke}
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
@@ -1942,10 +1941,10 @@ $\overline{p'u''}$ for the Reynolds heat flux within the $k$ equation:
     \right)
 \\
  &+ \bar{p}\nabla\cdot\overline{u''}
-  - \nabla\cdot\bar{p} \frac{\widetilde{h''u''}}{\tilde{h}}
+  - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
   + \overline{p' \nabla\cdot{}u''}
 \end{align}
-That exchange reduces by one the number of correlations appearing in the $k$
+The trade reduces by one the number of correlations appearing in the $k$
 equation which do not appear in the mean continuity, momentum, or energy
 equations.
 
