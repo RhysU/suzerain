@@ -1866,27 +1866,26 @@ given by \eqref{eq:perfectgastotalenergy}:
 An exact equation may be derived for the evolution of $k$ (details in section~5
 of~\cite{OliverFANSModels2011})
 \begin{align}
+\label{eq:fanstke1}
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
   + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
  =
  &- \overline{u''\otimes\rho{}u''} : \nabla\tilde{u}
-  - \overline{\tau : \nabla\tilde{u}}
+  - \bar{\rho} \epsilon
   + \nabla\cdot\left(
         -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
       + \overline{\tau{}u''}
     \right)
 \\
  &- \overline{u''}\cdot\nabla\bar{p}
-  - \nabla\cdot\overline{u'' p'}
+  - \nabla\cdot\overline{p' u''}
   + \overline{p' \nabla\cdot{}u''}
 \end{align}
-where $A:B$ denotes $\trace \left(\trans{A} B\right)$.  The dissipation rate
-per unit mass
-\begin{align}
-  \epsilon &= \frac{\overline{\tau : \nabla\tilde{u}}}{\bar{\rho}}
-\end{align}
-is the rate at which $k$ is converted to mean internal energy.
-
+where $A:B$ denotes $\trace \left(\trans{A} B\right)$. The dissipation rate
+density $\epsilon$, which governs the conversion rate from $k$ to mean internal
+energy, is defined by $\bar{\rho} \epsilon = \overline{\tau : \nabla{}u''}$.
+Some of the  pressure terms will soon be reinterpreted in light of our
+constitutive relations.
 
 We need to average the constitutive relations chosen in
 section~\ref{sec:constitutive}.  Taking the Reynolds average
@@ -1898,6 +1897,57 @@ while the Favre average of~\eqref{eq:perfectgasenthalpy} is
 \begin{align}
  \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}.
 \end{align}
+Following page~216 of Lele~\cite{Lele1994Compressibility}, expanding $h$,
+averaging, removing the mean state from both sides, and applying perfect gas
+assumptions shows the exact relationship
+\begin{align}
+  \overline{u''}
+&=
+  \frac{\widetilde{T''u''}}{\tilde{T}} - \frac{\overline{p'u''}}{\bar{p}}
+.
+\end{align}
+Employing $h''$ in place of $T''$ and differentiating one obtains
+\begin{align}
+  \overline{p'u''}
+&=
+  \bar{p} \frac{\widetilde{h''u''}}{\tilde{h}}
+- \bar{p} \overline{u''}
+\\
+  \nabla\cdot \overline{p'u''}
+&=
+  \nabla\cdot \bar{p} \frac{\widetilde{h''u''}}{\tilde{h}}
+- \bar{p}\nabla\cdot\overline{u''}
+- \overline{u''}\cdot\nabla{}\bar{p}
+\end{align}
+which can be rearranged into
+\begin{align}
+  - \overline{u''}\cdot\nabla\bar{p}
+  - \nabla\cdot\overline{p'u''}
+&=
+  \bar{p}\nabla\cdot\overline{u''}
+- \nabla\cdot\bar{p} \frac{\widetilde{h''u''}}{\tilde{h}}
+\end{align}
+allowing us exactly exchange the pressure velocity correlation
+$\overline{p'u''}$ for the Reynolds heat flux within the $k$ equation:
+\begin{align}
+\label{eq:fanstke}
+    \frac{\partial{}}{\partial{}t}\bar{\rho}k
+  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
+ =
+ &- \overline{u''\otimes\rho{}u''} : \nabla\tilde{u}
+  - \bar{\rho} \epsilon
+  + \nabla\cdot\left(
+        -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
+      + \overline{\tau{}u''}
+    \right)
+\\
+ &+ \bar{p}\nabla\cdot\overline{u''}
+  - \nabla\cdot\bar{p} \frac{\widetilde{h''u''}}{\tilde{h}}
+  + \overline{p' \nabla\cdot{}u''}
+\end{align}
+That exchange reduces by one the number of correlations appearing in the $k$
+equation which do not appear in the mean continuity, momentum, or energy
+equations.
 
 Using the strain rate tensor $s=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u}
 \right)$ and its deviatoric component $S=s-\frac{1}{3}\trace{s}\,I$ we
