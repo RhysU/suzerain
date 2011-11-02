@@ -1791,10 +1791,10 @@ and~\eqref{eq:cons_energy} may be written as
   \nabla\cdot{}(u\otimes{}\rho{}H)
 &=
     \nabla\cdot{}\tau{}u
-  - \nabla\cdot{}q
+  - \nabla\cdot{}q_{s}
 \end{align}
-where we have abbreviated the surface heat flux $q_s$ to $q$ and employed total
-enthalpy $H$ to reduce the number of terms in the energy equation.
+where we have employed total enthalpy $H$ to reduce the number of terms in the
+energy equation.
 
 A lengthy algebraic procedure (detailed in section~2
 of~\cite{OliverFANSModels2011}) produces exact equations governing the
@@ -1822,7 +1822,7 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
       - \bar{\rho} \widetilde{u''\otimes{}u''}\right)
     \tilde{u}\right)
   - \nabla\cdot\left(
-        \bar{q}
+        \bar{q}_s
       + \bar{\rho} \widetilde{h''u''}
     \right)
   + \nabla\cdot\left(
@@ -1984,16 +1984,16 @@ Using the kinematic viscosity $\nu = \mu / \rho$ and averaging we find
 Some FANS closure approximations neglect correlations between the kinematic
 viscosity and velocity derivatives.  Many assume $\alpha=0$.  Accepting those
 approximations would eliminate the second through fourth terms in $\bar{\tau}$.
-To find $\bar{q}$ we combine~\eqref{eq:fourierlaw} and our assumption of a
+To find $\bar{q}_s$ we combine~\eqref{eq:fourierlaw} and our assumption of a
 constant Prandtl number
 \begin{align}
-  q &= - \kappa \nabla{} T
+  q_{s} &= - \kappa \nabla{} T
      = - \frac{\kappa}{C_p} \nabla{}h
      = - \frac{\mu}{\Prandtl} \nabla{}h
 \end{align}
 and again employ $\nu$ when averaging to obtain
 \begin{align}
-  \bar{q}
+  \bar{q}_s
 &= - \frac{1}{\Prandtl}\left(
                 \bar{\mu}\nabla\tilde{h}
               + \bar{\rho} \widetilde{\nu''\nabla{}h''}
@@ -2033,7 +2033,7 @@ In summary, the unclosed Favre-averaged equations of interest are:
       - \bar{\rho} \widetilde{u''\otimes{}u''}\right)
     \tilde{u}\right)
   - \nabla\cdot\left(
-        \bar{q}
+        \bar{q}_s
       + \bar{\rho} \widetilde{h''u''}
     \right)
   + \nabla\cdot\left(
@@ -2081,7 +2081,7 @@ The equations are augmented by the following relationships:
 &
   \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}
 &
-  \bar{q}
+  \bar{q}_s
 &= - \frac{1}{\Prandtl}\left(
                 \bar{\mu}\nabla\tilde{h}
               + \bar{\rho} \widetilde{\nu''\nabla{}h''}
