@@ -1822,7 +1822,7 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
     \tilde{u}\right)
   - \nabla\cdot\left(
         \bar{q}
-      + \overline{u''\otimes\rho{}h''}
+      + \bar{\rho} \widetilde{h''u''}
     \right)
   + \nabla\cdot\left(
         -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
@@ -1832,7 +1832,7 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
 \end{subequations}
 Several unclosed correlations impact the evolution of mean quantities: the
 Reynolds stress $-\overline{u''\otimes\rho{}u''}$, the Reynolds heat flux
-$\overline{u''\otimes\rho{}h''}$, turbulent transport
+density $\widetilde{h''u''}$, turbulent transport
 $-\frac{1}{2}\overline{\rho{}{u''}^{2}u''}$, and turbulent work
 $\overline{\tau{}u''}$.  The Reynolds stress and heat flux augment the viscous
 stress and heat flux, respectively.  The turbulent transport and work terms
@@ -1934,7 +1934,7 @@ Rearranging the above result to mimic terms within~\eqref{eq:fanstke1}
 - \frac{\gamma-1}{\gamma} \nabla\cdot \bar{\rho} \widetilde{h''u''}
 \end{align}
 allows us to trade an occurrence of $\overline{p'u''}$ for the Reynolds heat
-flux in the exact $k$ equation:
+flux density in the exact $k$ equation:
 \begin{align}
 \label{eq:fanstke}
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
@@ -2007,7 +2007,94 @@ which is not computable given only Favre-averaged state.  A commonly accepted
 simplification is taking $\overline{\mu\left(T\right)} \approx
 \mu\left(\tilde{T}\right)$.
 
-In summary,
+In summary, the unclosed Favre-averaged equations of interest are:
+\begin{subequations}
+\begin{align}
+  \frac{\partial}{\partial{}t}\bar{\rho}+\nabla\cdot\bar{\rho}\tilde{u} &= 0
+\\
+    \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
+  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
+&=
+  - \nabla{}\bar{p}
+  + \nabla\cdot\left(
+        \bar{\tau}
+      - \overline{u''\otimes\rho{}u''}
+    \right)
+\\
+  \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
+  +
+  \nabla\cdot{}(\tilde{u}\otimes\bar{\rho}\tilde{H})
+&=
+    \nabla\cdot\left(
+        \left(\bar{\tau}
+      - \overline{u''\otimes\rho{}u''}\right)
+    \tilde{u}\right)
+  - \nabla\cdot\left(
+        \bar{q}
+      + \bar{\rho} \widetilde{h''u''}
+    \right)
+  + \nabla\cdot\left(
+        -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
+      + \overline{\tau{}u''}
+    \right)
+\\
+    \frac{\partial{}}{\partial{}t}\bar{\rho}k
+  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
+&=
+  - \overline{u''\otimes\rho{}u''} : \nabla\tilde{u}
+  - \bar{\rho} \epsilon
+  + \nabla\cdot\left(
+        -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
+      + \overline{\tau{}u''}
+    \right)
+\\
+ &+ \bar{p}\nabla\cdot\overline{u''}
+  - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
+  + \overline{p' \nabla\cdot{}u''}
+\end{align}
+The equations are augmented by the following relationships:
+\begin{align}
+  \bar{p} &= \bar{\rho}R\tilde{T}
+&
+  \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}
+&
+   \bar{\rho}\tilde{\nu} =
+   \bar{\mu}
+&= \mu_0 \overline{\left(\frac{T}{T_0}\right)^\beta}
+&
+  k &= \frac{1}{2}\widetilde{{u''}^2}
+&
+  \bar{\rho} \epsilon &= \overline{\tau : \nabla{}u''}
+\end{align}
+\begin{align}
+   \tilde{s}
+&=
+   \frac{1}{2}\left( \nabla{}\tilde{u}+\trans{\nabla{}\tilde{u}} \right)
+&
+   \tilde{S}
+&=
+   \tilde{s}-\frac{1}{3}\trace{\tilde{s}}\,I
+&
+   \bar{\tau}
+&= 2 \bar{\mu}\tilde{S} + 2 \overline{\rho\nu''S''}
+  + \alpha \bar{\mu} \left(\nabla\cdot\tilde{u}\right) I
+  + \alpha \overline{\rho\nu''\nabla\cdot{}u''} I
+\end{align}
+\begin{align}
+  \tilde{E}
+&=
+  \frac{R}{\gamma-1} \tilde{T}
++ \frac{1}{2} \tilde{u}^2
++ k
+&
+  \bar{q}
+&= - \frac{1}{\Prandtl}\left(
+                \bar{\mu}\nabla\tilde{h}
+              + \overline{\rho\nu''\nabla{}h''}
+            \right)
+\end{align}
+\end{subequations}
+
 
 \subsection{Nondimensional equations using Suzerain's constitutive assumptions}
 
