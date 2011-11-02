@@ -22,6 +22,7 @@
 \usepackage{units}
 \usepackage{varioref}
 \usepackage{wrapfig}
+\usepackage{yhmath}
 
 \mathtoolsset{showonlyrefs,showmanualtags}
 \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
@@ -1795,7 +1796,7 @@ and~\eqref{eq:cons_energy} may be written as
 where we have abbreviated the surface heat flux $q_s$ to $q$ and employed total
 enthalpy $H$ to reduce the number of terms in the energy equation.
 
-A straightforward-but-lengthy sequence of algebra (detailed in section~2
+A lengthy algebraic procedure (detailed in section~2
 of~\cite{OliverFANSModels2011}) produces exact equations governing the
 evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
 \bar{\rho}\tilde{u}$, and $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
@@ -1809,7 +1810,7 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
   - \nabla{}\bar{p}
   + \nabla\cdot\left(
         \bar{\tau}
-      - \overline{u''\otimes\rho{}u''}
+      - \bar{\rho}\widetilde{u''\otimes{}u''}
     \right)
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
@@ -1818,22 +1819,22 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
 &=
     \nabla\cdot\left(
         \left(\bar{\tau}
-      - \overline{u''\otimes\rho{}u''}\right)
+      - \bar{\rho} \widetilde{u''\otimes{}u''}\right)
     \tilde{u}\right)
   - \nabla\cdot\left(
         \bar{q}
       + \bar{\rho} \widetilde{h''u''}
     \right)
   + \nabla\cdot\left(
-        -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
+        -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
       + \overline{\tau{}u''}
     \right)
 \end{align}
 \end{subequations}
 Several unclosed correlations impact the evolution of mean quantities: the
-Reynolds stress $-\overline{u''\otimes\rho{}u''}$, the Reynolds heat flux
-density $\widetilde{h''u''}$, turbulent transport
-$-\frac{1}{2}\overline{\rho{}{u''}^{2}u''}$, and turbulent work
+Reynolds stress $-\bar{\rho}\widetilde{u''\otimes{}u''}$, the Reynolds heat
+flux $\bar{\rho} \widetilde{h''u''}$, turbulent transport
+$-\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}$, and turbulent work
 $\overline{\tau{}u''}$.  The Reynolds stress and heat flux augment the viscous
 stress and heat flux, respectively.  The turbulent transport and work terms
 represent transport of the turbulent kinetic energy density $k$, defined below,
@@ -1883,10 +1884,10 @@ of~\cite{OliverFANSModels2011})
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
   + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
  =
- &- \overline{u''\otimes\rho{}u''} : \nabla\tilde{u}
+ &- \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
   - \bar{\rho} \epsilon
   + \nabla\cdot\left(
-        -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
+        -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
       + \overline{\tau{}u''}
     \right)
 \\
@@ -1901,7 +1902,7 @@ energy, is defined by
   \bar{\rho} \epsilon &= \overline{\tau : \nabla{}u''}
 .
 \end{align}
-Following page~216 of Lele~\cite{Lele1994Compressibility}, expanding $h$,
+As page~216 of Lele~\cite{Lele1994Compressibility} suggests, expanding $h$,
 averaging, removing the mean state from both sides, and applying perfect gas
 assumptions demonstrates the exact relationship
 \begin{align}
@@ -1934,16 +1935,16 @@ Rearranging the above result to mimic terms within~\eqref{eq:fanstke1}
 - \frac{\gamma-1}{\gamma} \nabla\cdot \bar{\rho} \widetilde{h''u''}
 \end{align}
 allows us to trade an occurrence of $\overline{p'u''}$ for the Reynolds heat
-flux density in the exact $k$ equation:
+flux in the exact $k$ equation:
 \begin{align}
 \label{eq:fanstke}
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
   + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
  =
- &- \overline{u''\otimes\rho{}u''} : \nabla\tilde{u}
+ &- \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
   - \bar{\rho} \epsilon
   + \nabla\cdot\left(
-        -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
+        -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
       + \overline{\tau{}u''}
     \right)
 \\
@@ -1973,9 +1974,9 @@ and~\eqref{eq:secondviscosityclaw} as
 Using the kinematic viscosity $\nu = \mu / \rho$ and averaging we find
 \begin{align}
    \bar{\tau}
-&= 2 \bar{\mu}\tilde{S} + 2 \overline{\rho\nu''S''}
+&= 2 \bar{\mu}\tilde{S} + 2 \bar{\rho} \widetilde{\nu''S''}
   + \alpha \bar{\mu} \left(\nabla\cdot\tilde{u}\right) I
-  + \alpha \overline{\rho\nu''\nabla\cdot{}u''} I
+  + \alpha \bar{\rho} \widetilde{\nu''\nabla\cdot{}u''} I
 .
 \end{align}
 Some FANS closure approximations neglect correlations between the kinematic
@@ -1993,7 +1994,7 @@ and again employ $\nu$ when averaging to obtain
   \bar{q}
 &= - \frac{1}{\Prandtl}\left(
                 \bar{\mu}\nabla\tilde{h}
-              + \overline{\rho\nu''\nabla{}h''}
+              + \bar{\rho} \widetilde{\nu''\nabla{}h''}
             \right)
 .
 \end{align}
@@ -2004,7 +2005,7 @@ Straightforward averaging applied to~\eqref{eq:powerlawviscosity} produces
 &= \mu_0 \overline{\left(\frac{T}{T_0}\right)^\beta}
 \end{align}
 which is not computable given only Favre-averaged state.  A commonly accepted
-simplification is taking $\overline{\mu\left(T\right)} \approx
+simplifying assumption is taking $\overline{\mu\left(T\right)} \approx
 \mu\left(\tilde{T}\right)$.
 
 In summary, the unclosed Favre-averaged equations of interest are:
@@ -2018,7 +2019,7 @@ In summary, the unclosed Favre-averaged equations of interest are:
   - \nabla{}\bar{p}
   + \nabla\cdot\left(
         \bar{\tau}
-      - \overline{u''\otimes\rho{}u''}
+      - \bar{\rho} \widetilde{u''\otimes{}u''}
     \right)
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
@@ -2027,24 +2028,24 @@ In summary, the unclosed Favre-averaged equations of interest are:
 &=
     \nabla\cdot\left(
         \left(\bar{\tau}
-      - \overline{u''\otimes\rho{}u''}\right)
+      - \bar{\rho} \widetilde{u''\otimes{}u''}\right)
     \tilde{u}\right)
   - \nabla\cdot\left(
         \bar{q}
       + \bar{\rho} \widetilde{h''u''}
     \right)
   + \nabla\cdot\left(
-        -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
+        -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
       + \overline{\tau{}u''}
     \right)
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
   + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
 &=
-  - \overline{u''\otimes\rho{}u''} : \nabla\tilde{u}
+  - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
   - \bar{\rho} \epsilon
   + \nabla\cdot\left(
-        -\frac{1}{2}\overline{\rho{}{u''}^{2}u''}
+        -\frac{1}{2}\bar{\rho} \widetilde{{u''}^{2}u''}
       + \overline{\tau{}u''}
     \right)
 \\
@@ -2076,9 +2077,9 @@ The equations are augmented by the following relationships:
    \tilde{s}-\frac{1}{3}\trace{\tilde{s}}\,I
 &
    \bar{\tau}
-&= 2 \bar{\mu}\tilde{S} + 2 \overline{\rho\nu''S''}
+&= 2 \bar{\mu}\tilde{S} + 2 \bar{\rho} \widetilde{\nu''S''}
   + \alpha \bar{\mu} \left(\nabla\cdot\tilde{u}\right) I
-  + \alpha \overline{\rho\nu''\nabla\cdot{}u''} I
+  + \alpha \bar{\rho} \widetilde{\nu''\nabla\cdot{}u''} I
 \end{align}
 \begin{align}
   \tilde{E}
@@ -2090,7 +2091,7 @@ The equations are augmented by the following relationships:
   \bar{q}
 &= - \frac{1}{\Prandtl}\left(
                 \bar{\mu}\nabla\tilde{h}
-              + \overline{\rho\nu''\nabla{}h''}
+              + \bar{\rho} \widetilde{\nu''\nabla{}h''}
             \right)
 \end{align}
 \end{subequations}
