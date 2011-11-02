@@ -1925,7 +1925,7 @@ Substituting $h''$ everywhere for $T''$, noting $\bar{p}/\tilde{h} =
 - \overline{u''}\cdot\nabla{}\bar{p}
 .
 \end{align}
-Rearranging this result to mimic some terms within~\eqref{eq:fanstke1}
+Rearranging the above result to mimic terms within~\eqref{eq:fanstke1}
 \begin{align}
   - \overline{u''}\cdot\nabla\bar{p}
   - \nabla\cdot\overline{p'u''}
@@ -1981,7 +1981,6 @@ Using the kinematic viscosity $\nu = \mu / \rho$ and averaging we find
 Some FANS closure approximations neglect correlations between the kinematic
 viscosity and velocity derivatives.  Many assume $\alpha=0$.  Accepting those
 approximations would eliminate the second through fourth terms in $\bar{\tau}$.
-
 To find $\bar{q}$ we combine~\eqref{eq:fourierlaw} and our assumption of a
 constant Prandtl number
 \begin{align}
@@ -1998,14 +1997,17 @@ and again employ $\nu$ when averaging to obtain
             \right)
 .
 \end{align}
+Straightforward averaging applied to~\eqref{eq:powerlawviscosity} produces
+\begin{align}
+   \bar{\rho}\tilde{\nu}
+ = \bar{\mu}
+&= \mu_0 \overline{\left(\frac{T}{T_0}\right)^\beta}
+\end{align}
+which is not computable given only Favre-averaged state.  A commonly accepted
+simplification is taking $\overline{\mu\left(T\right)} \approx
+\mu\left(\tilde{T}\right)$.
 
-
-
-\subsubsection{Contributions to the mean viscous stress tensor}
-
-\subsubsection{Contributions to the mean heat flux tensor}
-
-
+In summary,
 
 \subsection{Nondimensional equations using Suzerain's constitutive assumptions}
 
