@@ -1957,7 +1957,7 @@ flux in the exact $k$ equation:
 The trade reduces by one the number of correlations appearing in the $k$
 equation which do not appear in the mean continuity, momentum, or energy
 equations.  It also, as Lele suggests, encourages thermodynamic consistency
-when working with pressure correlation closures.
+when working with pressure correlation information.
 
 We now turn back to constitutive relations.  Using the strain rate tensor
 $s=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u} \right)$ and its deviatoric
@@ -2059,8 +2059,6 @@ The equations are augmented by the following relationships:
 \begin{align}
   \bar{p} &= \bar{\rho}R\tilde{T}
 &
-  \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}
-&
    \bar{\rho}\tilde{\nu} =
    \bar{\mu}
 &= \mu_0 \overline{\left(\frac{T}{T_0}\right)^\beta}
@@ -2080,6 +2078,8 @@ The equations are augmented by the following relationships:
 &=
   \tilde{E}
 + R \tilde{T}
+&
+  \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}
 &
   \bar{q}
 &= - \frac{1}{\Prandtl}\left(
@@ -2202,8 +2202,6 @@ The equations are augmented by the following nondimensional relationships:
 \begin{align}
   \bar{p} &= \frac{\bar{\rho} \tilde{T}}{\gamma}
 &
-  \tilde{h} &= \frac{\tilde{T}}{\gamma-1}
-&
    \bar{\rho}\tilde{\nu} =
    \bar{\mu}
 &= \overline{\left(T\right)^\beta}
@@ -2222,6 +2220,8 @@ The equations are augmented by the following nondimensional relationships:
   \tilde{H}
 &=
   \tilde{E} + \frac{\tilde{T}}{\gamma}
+&
+  \tilde{h} &= \frac{\tilde{T}}{\gamma-1}
 \end{align}
 \begin{align}
    \tilde{s}
@@ -2239,10 +2239,45 @@ The equations are augmented by the following nondimensional relationships:
 \end{align}
 \end{subequations}
 where $\Reynolds$, $\Mach$, and $\Prandtl$ are defined as in
-section~\ref{sec:nondimrefq}.  Where possible, nondimensional coefficients have
+section~\ref{sec:nondimrefq}.  Enthalpy-based correlations have been replaced
+by temperature-based ones.  Where possible, nondimensional coefficients have
 been pulled out of the relationships and pushed into the equations (for
 example, the factor $1/\Reynolds$ arising from the dimensional definition of
 $\bar{\rho}\epsilon$).
+One may exactly compute the nondimensional mean state evolution given the
+following information:
+\begin{align}
+&\bar{\rho}
+&
+&\tilde{u}
+&
+&\tilde{E}
+&
+&\bar{\mu}
+&
+&k
+&
+&\epsilon
+&
+&\overline{u''}
+\end{align}
+\begin{align}
+&\overline{\tau{}u''}
+&
+&\overline{p'\nabla\cdot{}u''}
+&
+&-\widetilde{u''\otimes{}u''}
+&
+&-\widetilde{{u''}^{2}u''}
+&
+&\widetilde{T''u''}
+&
+&\widetilde{\nu''S''}
+&
+&\widetilde{\nu''\nabla\cdot{}u''}
+&
+&\widetilde{\nu''\nabla{}T''}
+\end{align}
 
 \subsection{Sampling statistical quantities from a simulation}
 
