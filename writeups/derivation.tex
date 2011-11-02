@@ -1775,7 +1775,7 @@ example,
 %
 This operation is used extensively in the development of the FANS equations.
 
-\subsection{The Favre-averaged Navier--Stokes equations}
+\subsection{The dimensional Favre-averaged Navier--Stokes equations}
 
 In the absence of body forces and heat sources,
 equations~\eqref{eq:cons_mass},\eqref{eq:cons_momentum},
@@ -1845,8 +1845,10 @@ The Reynolds average of~\eqref{eq:perfectgaseos} gives
 \begin{align}
   \bar{p} &= R\overline{\rho{}T} = \bar{\rho}R\tilde{T}
 \end{align}
-while the Favre average of~\eqref{eq:perfectgasenthalpy} is
+while the Favre average of~\eqref{eq:perfectgasenthalpy} gives both
 \begin{align}
+ \tilde{H} &= \tilde{E} + R \tilde{T}
+&
  \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}.
 \end{align}
 
@@ -2004,8 +2006,8 @@ Straightforward averaging applied to~\eqref{eq:powerlawviscosity} produces
  = \bar{\mu}
 &= \mu_0 \overline{\left(\frac{T}{T_0}\right)^\beta}
 \end{align}
-which is not computable given only Favre-averaged state.  A commonly accepted
-simplifying assumption is taking $\overline{\mu\left(T\right)} \approx
+which is not computable given only Favre-averaged state.  One commonly accepted
+simplification is taking $\overline{\mu\left(T\right)} \approx
 \mu\left(\tilde{T}\right)$.
 
 In summary, the unclosed Favre-averaged equations of interest are:
@@ -2068,6 +2070,24 @@ The equations are augmented by the following relationships:
   \bar{\rho} \epsilon &= \overline{\tau : \nabla{}u''}
 \end{align}
 \begin{align}
+  \tilde{E}
+&=
+  \frac{R}{\gamma-1} \tilde{T}
++ \frac{1}{2} \tilde{u}^2
++ k
+&
+  \tilde{H}
+&=
+  \tilde{E}
++ R \tilde{T}
+&
+  \bar{q}
+&= - \frac{1}{\Prandtl}\left(
+                \bar{\mu}\nabla\tilde{h}
+              + \bar{\rho} \widetilde{\nu''\nabla{}h''}
+            \right)
+\end{align}
+\begin{align}
    \tilde{s}
 &=
    \frac{1}{2}\left( \nabla{}\tilde{u}+\trans{\nabla{}\tilde{u}} \right)
@@ -2080,19 +2100,6 @@ The equations are augmented by the following relationships:
 &= 2 \bar{\mu}\tilde{S} + 2 \bar{\rho} \widetilde{\nu''S''}
   + \alpha \bar{\mu} \left(\nabla\cdot\tilde{u}\right) I
   + \alpha \bar{\rho} \widetilde{\nu''\nabla\cdot{}u''} I
-\end{align}
-\begin{align}
-  \tilde{E}
-&=
-  \frac{R}{\gamma-1} \tilde{T}
-+ \frac{1}{2} \tilde{u}^2
-+ k
-&
-  \bar{q}
-&= - \frac{1}{\Prandtl}\left(
-                \bar{\mu}\nabla\tilde{h}
-              + \bar{\rho} \widetilde{\nu''\nabla{}h''}
-            \right)
 \end{align}
 \end{subequations}
 One may exactly compute the mean state evolution given the following information:
@@ -2116,9 +2123,9 @@ One may exactly compute the mean state evolution given the following information
 &
 &\overline{p'\nabla\cdot{}u''}
 &
-&\widetilde{u''\otimes{}u''}
+&-\widetilde{u''\otimes{}u''}
 &
-&\widetilde{{u''}^{2}u''}
+&-\widetilde{{u''}^{2}u''}
 &
 &\widetilde{h''u''}
 &
@@ -2129,8 +2136,113 @@ One may exactly compute the mean state evolution given the following information
 &\widetilde{\nu''\nabla{}h''}
 \end{align}
 
+\subsection{The nondimensional Favre-averaged Navier--Stokes equations}
 
-\subsection{Nondimensional equations using Suzerain's constitutive assumptions}
+The dimensional FANS equations from the last section need to be
+nondimensionalized.   The reference quantity selections made in
+section~\ref{sec:nondimrefq} are used and are augmented by
+\begin{align}
+  k_0 &= u_{0}^2
+&
+  \epsilon_0 &= \frac{u_{0}^2}{t_0}
+\end{align}
+Superscript star notation is suppressed as all terms are dimensionless.  The
+results are:
+\begin{subequations}
+\begin{align}
+  \frac{\partial}{\partial{}t}\bar{\rho}+\nabla\cdot\bar{\rho}\tilde{u} &= 0
+\\
+    \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
+  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
+&=
+  - \frac{1}{\Mach^2}\nabla{}\bar{p}
+  + \nabla\cdot\left(
+        \frac{\bar{\tau}}{\Reynolds}
+      - \bar{\rho} \widetilde{u''\otimes{}u''}
+    \right)
+\\
+  \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
+  +
+  \nabla\cdot{}(\tilde{u}\otimes\bar{\rho}\tilde{H})
+&=
+    \Mach^{2} \nabla\cdot\left( \left(
+       \frac{\bar{\tau}}{\Reynolds}
+      - \bar{\rho} \widetilde{u''\otimes{}u''}
+    \right) \tilde{u} \right)
+  + \frac{1}{\gamma-1} \nabla\cdot\left(
+      \frac{
+         \bar{\mu} \nabla \tilde{T}
+       + \bar{\rho} \widetilde{\nu'' \nabla{}T''}
+      }{\Reynolds\Prandtl}
+      - \bar{\rho} \widetilde{T''u''}
+    \right)
+\\
+ &+ \Mach^{2} \nabla\cdot\left(
+        -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
+      + \frac{\overline{\tau{}u''}}{\Reynolds}
+    \right)
+\intertext{} % Suggests page break
+    \frac{\partial{}}{\partial{}t}\bar{\rho}k
+  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
+&=
+  - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
+  - \frac{\bar{\rho} \epsilon}{\Reynolds}
+  + \nabla\cdot\left(
+        -\frac{1}{2}\bar{\rho} \widetilde{{u''}^{2}u''}
+      + \frac{\overline{\tau{}u''}}{\Reynolds}
+    \right)
+\\
+ &+ \frac{1}{\Mach^2} \left(
+        \bar{p}\nabla\cdot\overline{u''}
+      + \overline{p' \nabla\cdot{}u''}
+      - \frac{1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{T''u''}
+    \right)
+\end{align}
+The equations are augmented by the following nondimensional relationships:
+\begin{align}
+  \bar{p} &= \frac{\bar{\rho} \tilde{T}}{\gamma}
+&
+  \tilde{h} &= \frac{\tilde{T}}{\gamma-1}
+&
+   \bar{\rho}\tilde{\nu} =
+   \bar{\mu}
+&= \overline{\left(T\right)^\beta}
+&
+  k &= \frac{1}{2}\widetilde{{u''}^2}
+&
+  \bar{\rho} \epsilon &= \overline{\tau : \nabla{}u''}
+\end{align}
+\begin{align}
+  \tilde{E}
+&=
+  \frac{\tilde{T}}{\gamma\left(\gamma-1\right)}
+  + \Mach^2 \left( \frac{1}{2}\tilde{u}^2 + k
+  \right)
+&
+  \tilde{H}
+&=
+  \tilde{E} + \frac{\tilde{T}}{\gamma}
+\end{align}
+\begin{align}
+   \tilde{s}
+&=
+   \frac{1}{2}\left( \nabla{}\tilde{u}+\trans{\nabla{}\tilde{u}} \right)
+&
+   \tilde{S}
+&=
+   \tilde{s}-\frac{1}{3}\trace{\tilde{s}}\,I
+&
+   \bar{\tau}
+&= 2 \bar{\mu}\tilde{S} + 2 \bar{\rho} \widetilde{\nu''S''}
+  + \alpha \bar{\mu} \left(\nabla\cdot\tilde{u}\right) I
+  + \alpha \bar{\rho} \widetilde{\nu''\nabla\cdot{}u''} I
+\end{align}
+\end{subequations}
+where $\Reynolds$, $\Mach$, and $\Prandtl$ are defined as in
+section~\ref{sec:nondimrefq}.  Where possible, nondimensional coefficients have
+been pulled out of the relationships and pushed into the equations (for
+example, the factor $1/\Reynolds$ arising from the dimensional definition of
+$\bar{\rho}\epsilon$).
 
 \subsection{Sampling statistical quantities from a simulation}
 
