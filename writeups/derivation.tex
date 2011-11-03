@@ -529,8 +529,8 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   .
 \end{align}
 \end{subequations}
-Notice that $\lambda$ has been nondimensionalized using $\mu_{0}$.
-At this stage, we have many more reference quantities than the underlying
+Notice that $\lambda$ has been nondimensionalized using $\mu_{0}$.  At this
+stage, we have many more reference quantities than the underlying quantity
 dimensions warrant.
 
 \subsubsection{Reference quantity selections}
@@ -691,11 +691,12 @@ where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
 B-spline basis for some order and knot selection.
 
 Now, within the method of weighted residuals framework, we choose a mixed
-Galerkin/collocation approach employing the $L_{2}$ inner product and test
-``functions'' like $\delta(y-y_{l'}) e^{\ii k_{m'} x}e^{\ii k_{n'} z}$ where
-$l'$, $m'$, and $n'$ range over the same values as $l$, $m$, and $n$,
-respectively.  The fixed collocation points $y_{l'}$ depend on the B-spline
-basis details.  We catalog three relevant results
+Galerkin/collocation approach (often called a ``pseudospectral'' technique)
+employing the $L_{2}$ inner product and test ``functions'' like
+$\delta(y-y_{l'}) e^{\ii k_{m'} x}e^{\ii k_{n'} z}$ where $l'$, $m'$, and $n'$
+range over the same values as $l$, $m$, and $n$, respectively.  The fixed
+collocation points $y_{l'}$ depend on the B-spline basis details.  We catalog
+three relevant results
 \begin{align}
    \int_0^{L_y} \varphi(y) \, \delta(y-y_{l'}) \,d\!y
 &= \varphi(y_{l'}),
@@ -925,7 +926,7 @@ preceding section's $\mathscr{L}$ and $\mathscr{N}$ (see
 operator $L$ must be time-independent throughout each interval $\left[t,
 t+\Delta{}t\right)$.  In contrast to the discussion
 in~\cite{spalart_lowstoragerk} and following S. Yang (personal communication),
-we allow $N$ to vary in time.  The SMR scheme advances according to the
+we allow $N$ to vary in time.  The ``SMR'' scheme advances according to the
 following equations:
 \begin{subequations}
 \begin{align}
@@ -1362,8 +1363,8 @@ Second differentiation enters equations~\eqref{eq:state_continuity},
 $\nabla\cdot\tau$, $\nabla\cdot\tau\frac{m}{\rho}$, and
 $\nabla\cdot\mu\nabla{}T$.  We wish to compute these terms in a way that keeps
 first and second derivative applications wholly separate.  Doing so will help
-ensure that these three terms have the appropriate diffusive impact on high
-frequency content.
+ensure that these three terms have the most physically correct diffusive impact
+on high frequency content at a given spatial resolution.
 
 We expand the three mixed order, nonlinear terms:
 \begin{subequations}
@@ -2303,10 +2304,12 @@ state evolution given the following information:
 
 Notice that the heat flux $\bar{q}_s$ has been merged into the mean energy
 equation to better mimic \eqref{eq:nondim_energy}.  Enthalpy-based correlations
-have been replaced by temperature-based correlations.  Where possible,
-nondimensional coefficients have been pulled out of the constitutive
-relationships and pushed into the equations (for example, the factor
-$1/\Reynolds$ arising from the dimensional definition of $\bar{\rho}\epsilon$).
+have been replaced by temperature-based correlations.  Notice also that the
+choice of $p_0$ implies nondimensional $p$ includes a factor of $\gamma$
+relative to the dimensional quantity.  Where possible, nondimensional
+coefficients have been pulled out of the constitutive relationships and pushed
+into the equations (for example, the factor $1/\Reynolds$ arising from the
+dimensional definition of $\bar{\rho}\epsilon$).
 
 \subsection{Sampling statistical quantities from a simulation}
 
