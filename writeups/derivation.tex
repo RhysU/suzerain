@@ -1778,19 +1778,18 @@ Recall that equations~\eqref{eq:cons_mass}, \eqref{eq:cons_momentum},
 and~\eqref{eq:cons_energy} may be written as
 \begin{align}
     \frac{\partial}{\partial{}t}\rho
-  + \nabla\cdot\rho{}u
 &=
-  0
+  - \nabla\cdot\rho{}u
 \\
     \frac{\partial{}}{\partial{}t}\rho{}u
-  + \nabla\cdot(u\otimes{}\rho{}u)
 &=
+  - \nabla\cdot(u\otimes{}\rho{}u)
   - \nabla{}p + \nabla\cdot{}\tau + f
 \\
     \frac{\partial}{\partial{}t} \rho{}E
-  + \nabla\cdot{}(u\otimes{}\rho{}H)
 &=
-    \nabla\cdot{}\tau{}u
+  - \nabla\cdot{}\rho{}Hu
+  + \nabla\cdot{}\tau{}u
   - \nabla\cdot{}q_{s}
   + f\cdot{}u
   + \rho{}q_b
@@ -1804,11 +1803,13 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
 \bar{\rho}\tilde{u}$, and $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
 \begin{subequations}\label{eq:unclosedfansequations}
 \begin{align}
-  \frac{\partial}{\partial{}t}\bar{\rho}+\nabla\cdot\bar{\rho}\tilde{u} &= 0
+    \frac{\partial}{\partial{}t}\bar{\rho}
+ =
+ &- \nabla\cdot\bar{\rho}\tilde{u}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
-  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
-&=
+ =
+ &- \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
   - \nabla{}\bar{p}
   + \nabla\cdot\left(
         \bar{\tau}
@@ -1817,10 +1818,9 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
   + \bar{f}
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
-  +
-  \nabla\cdot{}(\tilde{u}\otimes\bar{\rho}\tilde{H})
-&=
-    \nabla\cdot\left(
+ =
+ &- \nabla\cdot{}\bar{\rho}\tilde{H}\tilde{u}
+  + \nabla\cdot\left(
         \left(
             \bar{\tau}
           - \bar{\rho} \widetilde{u''\otimes{}u''}
@@ -1892,9 +1892,9 @@ of~\cite{OliverFANSModels2011})
 \begin{align}
 \label{eq:fanstke1}
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
-  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
  =
- &- \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
+ &- \nabla\cdot\bar{\rho}k\tilde{u}
+  - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
   - \bar{\rho} \epsilon
   + \nabla\cdot\left(
         -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
@@ -1950,9 +1950,9 @@ flux in the exact $k$ equation:
 \begin{align}
 \label{eq:fanstke}
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
-  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
  =
- &- \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
+ &- \nabla\cdot\bar{\rho}k\tilde{u}
+  - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
   - \bar{\rho} \epsilon
   + \nabla\cdot\left(
         -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
@@ -2015,11 +2015,13 @@ simplification is taking $\overline{\mu\left(T\right)} \approx
 In summary, the unclosed Favre-averaged equations of interest are:
 \begin{subequations}
 \begin{align}
-  \frac{\partial}{\partial{}t}\bar{\rho}+\nabla\cdot\bar{\rho}\tilde{u} &= 0
+    \frac{\partial}{\partial{}t}\bar{\rho}
+=
+ &- \nabla\cdot\bar{\rho}\tilde{u}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
-  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
-&=
+ =
+ &- \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
   - \nabla{}\bar{p}
   + \nabla\cdot\left(
         \bar{\tau}
@@ -2027,11 +2029,10 @@ In summary, the unclosed Favre-averaged equations of interest are:
     \right)
   + \bar{f}
 \\
-  \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
-  +
-  \nabla\cdot{}(\tilde{u}\otimes\bar{\rho}\tilde{H})
-&=
-    \nabla\cdot\left(
+    \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
+ =
+ &- \nabla\cdot{}\bar{\rho}\tilde{H}\tilde{u}
+  + \nabla\cdot\left(
         \left(
             \bar{\tau}
           - \bar{\rho} \widetilde{u''\otimes{}u''}
@@ -2049,8 +2050,8 @@ In summary, the unclosed Favre-averaged equations of interest are:
   + \bar{\rho}\tilde{q}_b
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
-  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
-&=
+=
+ &- \nabla\cdot\bar{\rho}k\tilde{u}
   - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
   - \bar{\rho} \epsilon
   + \nabla\cdot\left(
@@ -2165,11 +2166,13 @@ Superscript star notation is suppressed as all terms
 are dimensionless.  The results are:
 \begin{subequations}
 \begin{align}
-  \frac{\partial}{\partial{}t}\bar{\rho}+\nabla\cdot\bar{\rho}\tilde{u} &= 0
+    \frac{\partial}{\partial{}t}\bar{\rho}
+=
+ &- \nabla\cdot\bar{\rho}\tilde{u}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
-  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
-&=
+=
+ &- \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
   - \frac{1}{\Mach^2}\nabla{}\bar{p}
   + \nabla\cdot\left(
         \frac{\bar{\tau}}{\Reynolds}
@@ -2178,10 +2181,9 @@ are dimensionless.  The results are:
   + \bar{f}
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
-  +
-  \nabla\cdot{}(\tilde{u}\otimes\bar{\rho}\tilde{H})
-&=
-    \Mach^{2} \nabla\cdot\left(
+=
+ &- \nabla\cdot\bar{\rho}\tilde{H}\tilde{u}
+  + \Mach^{2} \nabla\cdot\left(
         \left(
             \frac{\bar{\tau}}{\Reynolds}
           - \bar{\rho} \widetilde{u''\otimes{}u''}
@@ -2204,8 +2206,8 @@ are dimensionless.  The results are:
   + \bar{\rho}\tilde{q}_b
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
-  + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
-&=
+=
+ &- \nabla\cdot\bar{\rho}k\tilde{u}
   - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
   - \frac{\bar{\rho} \epsilon}{\Reynolds}
   + \nabla\cdot\left(
