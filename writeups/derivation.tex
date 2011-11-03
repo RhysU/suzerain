@@ -25,7 +25,7 @@
 \usepackage{yhmath}
 
 \mathtoolsset{showonlyrefs,showmanualtags}
-\allowdisplaybreaks[1] % Allow grouped equations to be split across pages
+%%% \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
 
 % Line Spacing
 \singlespacing
@@ -1701,7 +1701,7 @@ The material in this section borrows liberally (and often literally) from work
 by Todd Oliver~\cite{OliverFANSModels2011}.  It departs from that particular
 document in that it employs Suzerain's constitutive relationships, avoids
 introducing customary assumptions about the relative importance of unclosed
-terms, and nondimensionalizes the results.
+terms, accounts for forcing, and nondimensionalizes the results.
 
 
 \subsection{Reynolds- and Favre-averages}
@@ -1777,14 +1777,13 @@ This operation is used extensively in the development of the FANS equations.
 
 \subsection{The dimensional Favre-averaged Navier--Stokes equations}
 
-In the absence of body forces and heat sources,
-equations~\eqref{eq:cons_mass},\eqref{eq:cons_momentum},
+Recall that equations~\eqref{eq:cons_mass}, \eqref{eq:cons_momentum},
 and~\eqref{eq:cons_energy} may be written as
 \begin{align}
   \frac{\partial}{\partial{}t}\rho+\nabla\cdot\rho{}u &= 0
 \\
   \frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u)
-  &= -\nabla{}p + \nabla\cdot{}\tau
+  &= -\nabla{}p + \nabla\cdot{}\tau + f
 \\
   \frac{\partial}{\partial{}t} \rho{}E
   +
@@ -1792,6 +1791,8 @@ and~\eqref{eq:cons_energy} may be written as
 &=
     \nabla\cdot{}\tau{}u
   - \nabla\cdot{}q_{s}
+  + f\cdot{}u
+  + \rho{}q_b
 \end{align}
 where we have employed total enthalpy $H$ to reduce the number of terms in the
 energy equation.
@@ -1812,6 +1813,7 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
         \bar{\tau}
       - \bar{\rho}\widetilde{u''\otimes{}u''}
     \right)
+  + \bar{f}
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
   +
@@ -1825,20 +1827,25 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
         \bar{q}_s
       + \bar{\rho} \widetilde{h''u''}
     \right)
-  + \nabla\cdot\left(
+\\
+ &+ \nabla\cdot\left(
         -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
       + \overline{\tau{}u''}
     \right)
+  + \bar{f}\cdot\tilde{u}
+  + \overline{fu''}
+  + \bar{\rho}\tilde{q}_b
 \end{align}
 \end{subequations}
-Several unclosed correlations impact the evolution of mean quantities: the
-Reynolds stress $-\bar{\rho}\widetilde{u''\otimes{}u''}$, the Reynolds heat
-flux $\bar{\rho} \widetilde{h''u''}$, turbulent transport
-$-\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}$, and turbulent work
-$\overline{\tau{}u''}$.  The Reynolds stress and heat flux augment the viscous
-stress and heat flux, respectively.  The turbulent transport and work terms
-represent transport of the turbulent kinetic energy density $k$, defined below,
-and viscous stress work due to turbulent velocity fluctuations, respectively.
+Several correlations impact the evolution of mean quantities: the Reynolds
+stress $-\bar{\rho}\widetilde{u''\otimes{}u''}$, the Reynolds heat flux
+$\bar{\rho} \widetilde{h''u''}$, turbulent transport
+$-\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}$, turbulent work
+$\overline{\tau{}u''}$, and the forcing-velocity correlation $\overline{fu''}$.
+The Reynolds stress and heat flux augment the viscous stress and heat flux,
+respectively.  The turbulent transport and work terms represent transport of
+the turbulent kinetic energy density $k$, defined below, and viscous stress
+work due to turbulent velocity fluctuations, respectively.
 
 We now average the perfect gas relations from section~\ref{sec:constitutive}.
 The Reynolds average of~\eqref{eq:perfectgaseos} gives
@@ -1896,6 +1903,7 @@ of~\cite{OliverFANSModels2011})
  &- \overline{u''}\cdot\nabla\bar{p}
   - \nabla\cdot\overline{p' u''}
   + \overline{p' \nabla\cdot{}u''}
+  + \overline{fu''}
 \end{align}
 where $A:B$ denotes $\trace \left(\trans{A} B\right)$. The dissipation rate
 density $\epsilon$, which governs the conversion rate from $k$ to mean internal
@@ -1953,6 +1961,7 @@ flux in the exact $k$ equation:
  &+ \bar{p}\nabla\cdot\overline{u''}
   - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
   + \overline{p' \nabla\cdot{}u''}
+  + \overline{fu''}
 \end{align}
 The trade reduces by one the number of correlations appearing in the $k$
 equation which do not appear in the mean continuity, momentum, or energy
@@ -2023,6 +2032,7 @@ In summary, the unclosed Favre-averaged equations of interest are:
         \bar{\tau}
       - \bar{\rho} \widetilde{u''\otimes{}u''}
     \right)
+  + \bar{f}
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
   +
@@ -2036,10 +2046,14 @@ In summary, the unclosed Favre-averaged equations of interest are:
         \bar{q}_s
       + \bar{\rho} \widetilde{h''u''}
     \right)
-  + \nabla\cdot\left(
+\\
+ &+ \nabla\cdot\left(
         -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
       + \overline{\tau{}u''}
     \right)
+  + \bar{f}\cdot\tilde{u}
+  + \overline{fu''}
+  + \bar{\rho}\tilde{q}_b
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
   + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
@@ -2054,6 +2068,7 @@ In summary, the unclosed Favre-averaged equations of interest are:
  &+ \bar{p}\nabla\cdot\overline{u''}
   - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
   + \overline{p' \nabla\cdot{}u''}
+  + \overline{fu''}
 \end{align}
 The equations are augmented by the following relationships:
 \begin{align}
@@ -2112,11 +2127,17 @@ One may exactly compute the mean state evolution given the following information
 &
 &\bar{\mu}
 &
+&\bar{f}
+&
+&\tilde{q}_b
+&
 &k
 &
 &\epsilon
 &
 &\overline{u''}
+&
+&\overline{fu''}
 \end{align}
 \begin{align}
 &\overline{\tau{}u''}
@@ -2160,6 +2181,7 @@ results are:
         \frac{\bar{\tau}}{\Reynolds}
       - \bar{\rho} \widetilde{u''\otimes{}u''}
     \right)
+  + \bar{f}
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
   +
@@ -2181,7 +2203,12 @@ results are:
         -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
       + \frac{\overline{\tau{}u''}}{\Reynolds}
     \right)
-\intertext{} % Suggests page break
+  + \Mach^{2} \left(
+        \bar{f}\cdot\tilde{u}
+      + \overline{fu''}
+    \right)
+  + \bar{\rho}\tilde{q}_b
+\\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
   + \nabla\cdot(\tilde{u}\otimes\bar{\rho}k)
 &=
@@ -2197,6 +2224,7 @@ results are:
       + \overline{p' \nabla\cdot{}u''}
       - \frac{1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{T''u''}
     \right)
+  + \overline{fu''}
 \end{align}
 The equations are augmented by the following nondimensional relationships:
 \begin{align}
@@ -2255,11 +2283,17 @@ following information:
 &
 &\bar{\mu}
 &
+&\bar{f}
+&
+&\tilde{q}_b
+&
 &k
 &
 &\epsilon
 &
 &\overline{u''}
+&
+&\overline{fu''}
 \end{align}
 \begin{align}
 &\overline{\tau{}u''}
