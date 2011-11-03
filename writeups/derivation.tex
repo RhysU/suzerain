@@ -52,7 +52,6 @@
 
 % Document-specific commands
 \newcommand{\ii}{\ensuremath{\mathrm{i}}}
-\newcommand{\pp}[2]{\frac{\partial #1}{\partial #2}}
 \newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
 \newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
 \newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
@@ -1770,7 +1769,7 @@ both time and space so that averaging and differentiation commute.  For
 example,
 %
 \begin{equation*}
-\widetilde{ \pp{u_i}{x_j} } = \pp{\tilde{u}_i}{x_j}.
+\widetilde{ \nabla{}u } = \nabla\tilde{u}.
 \end{equation*}
 %
 This operation is used extensively in the development of the FANS equations.
@@ -1780,14 +1779,18 @@ This operation is used extensively in the development of the FANS equations.
 Recall that equations~\eqref{eq:cons_mass}, \eqref{eq:cons_momentum},
 and~\eqref{eq:cons_energy} may be written as
 \begin{align}
-  \frac{\partial}{\partial{}t}\rho+\nabla\cdot\rho{}u &= 0
+    \frac{\partial}{\partial{}t}\rho
+  + \nabla\cdot\rho{}u
+&=
+  0
 \\
-  \frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u)
-  &= -\nabla{}p + \nabla\cdot{}\tau + f
+    \frac{\partial{}}{\partial{}t}\rho{}u
+  + \nabla\cdot(u\otimes{}\rho{}u)
+&=
+  - \nabla{}p + \nabla\cdot{}\tau + f
 \\
-  \frac{\partial}{\partial{}t} \rho{}E
-  +
-  \nabla\cdot{}(u\otimes{}\rho{}H)
+    \frac{\partial}{\partial{}t} \rho{}E
+  + \nabla\cdot{}(u\otimes{}\rho{}H)
 &=
     \nabla\cdot{}\tau{}u
   - \nabla\cdot{}q_{s}
@@ -1820,17 +1823,17 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
   \nabla\cdot{}(\tilde{u}\otimes\bar{\rho}\tilde{H})
 &=
     \nabla\cdot\left(
-        \left(\bar{\tau}
-      - \bar{\rho} \widetilde{u''\otimes{}u''}\right)
-    \tilde{u}\right)
-  - \nabla\cdot\left(
-        \bar{q}_s
-      + \bar{\rho} \widetilde{h''u''}
+        \left(
+            \bar{\tau}
+          - \bar{\rho} \widetilde{u''\otimes{}u''}
+        \right) \tilde{u}
+      - \frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
+      + \overline{\tau{}u''}
     \right)
 \\
- &+ \nabla\cdot\left(
-        -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
-      + \overline{\tau{}u''}
+ &- \nabla\cdot\left(
+        \bar{q}_s
+      + \bar{\rho} \widetilde{h''u''}
     \right)
   + \bar{f}\cdot\tilde{u}
   + \overline{fu''}
@@ -2031,17 +2034,17 @@ In summary, the unclosed Favre-averaged equations of interest are:
   \nabla\cdot{}(\tilde{u}\otimes\bar{\rho}\tilde{H})
 &=
     \nabla\cdot\left(
-        \left(\bar{\tau}
-      - \bar{\rho} \widetilde{u''\otimes{}u''}\right)
-    \tilde{u}\right)
-  - \nabla\cdot\left(
-        \bar{q}_s
-      + \bar{\rho} \widetilde{h''u''}
+        \left(
+            \bar{\tau}
+          - \bar{\rho} \widetilde{u''\otimes{}u''}
+        \right) \tilde{u}
+      - \frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
+      + \overline{\tau{}u''}
     \right)
 \\
- &+ \nabla\cdot\left(
-        -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
-      + \overline{\tau{}u''}
+ &- \nabla\cdot\left(
+        \bar{q}_s
+      + \bar{\rho} \widetilde{h''u''}
     \right)
   + \bar{f}\cdot\tilde{u}
   + \overline{fu''}
@@ -2109,7 +2112,8 @@ The equations are augmented by the following relationships:
   + \alpha \bar{\rho} \widetilde{\nu''\nabla\cdot{}u''} I
 \end{align}
 \end{subequations}
-One may exactly compute the mean state evolution given the following information:
+One may exactly compute the mean state evolution given the following
+information:
 \begin{align}
 &\bar{\rho}
 &
@@ -2159,8 +2163,8 @@ section~\ref{sec:nondimrefq} are used and are augmented by
 &
   \epsilon_0 &= \frac{u_{0}^2}{t_0}
 \end{align}
-Superscript star notation is suppressed as all terms are dimensionless.  The
-results are:
+Superscript star notation is suppressed as all terms
+are dimensionless.  The results are:
 \begin{subequations}
 \begin{align}
   \frac{\partial}{\partial{}t}\bar{\rho}+\nabla\cdot\bar{\rho}\tilde{u} &= 0
@@ -2179,21 +2183,21 @@ results are:
   +
   \nabla\cdot{}(\tilde{u}\otimes\bar{\rho}\tilde{H})
 &=
-    \Mach^{2} \nabla\cdot\left( \left(
-       \frac{\bar{\tau}}{\Reynolds}
-      - \bar{\rho} \widetilde{u''\otimes{}u''}
-    \right) \tilde{u} \right)
-  + \frac{1}{\gamma-1} \nabla\cdot\left(
+    \Mach^{2} \nabla\cdot\left(
+        \left(
+            \frac{\bar{\tau}}{\Reynolds}
+          - \bar{\rho} \widetilde{u''\otimes{}u''}
+        \right) \tilde{u}
+      - \frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
+      + \frac{\overline{\tau{}u''}}{\Reynolds}
+    \right)
+\\
+ &+ \frac{1}{\gamma-1} \nabla\cdot\left(
       \frac{
          \bar{\mu} \nabla \tilde{T}
        + \bar{\rho} \widetilde{\nu'' \nabla{}T''}
       }{\Reynolds\Prandtl}
       - \bar{\rho} \widetilde{T''u''}
-    \right)
-\\
- &+ \Mach^{2} \nabla\cdot\left(
-        -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
-      + \frac{\overline{\tau{}u''}}{\Reynolds}
     \right)
   + \Mach^{2} \left(
         \bar{f}\cdot\tilde{u}
@@ -2259,13 +2263,8 @@ The equations are augmented by the following nondimensional relationships:
 \end{align}
 \end{subequations}
 where $\Reynolds$, $\Mach$, and $\Prandtl$ are defined as in
-section~\ref{sec:nondimrefq}.  Enthalpy-based correlations have been replaced
-by temperature-based ones.  Where possible, nondimensional coefficients have
-been pulled out of the relationships and pushed into the equations (for
-example, the factor $1/\Reynolds$ arising from the dimensional definition of
-$\bar{\rho}\epsilon$).
-One may exactly compute the nondimensional mean state evolution given the
-following information:
+section~\ref{sec:nondimrefq}.  One may exactly compute the nondimensional mean
+state evolution given the following information:
 \begin{align}
 &\bar{\rho}
 &
@@ -2304,6 +2303,13 @@ following information:
 &
 &\widetilde{\nu''\nabla{}T''}
 \end{align}
+
+Notice that the heat flux $\bar{q}_s$ has been merged into the mean energy
+equation to better mimic \eqref{eq:nondim_energy}.  Enthalpy-based correlations
+have been replaced by temperature-based correlations.  Where possible,
+nondimensional coefficients have been pulled out of the constitutive
+relationships and pushed into the equations (for example, the factor
+$1/\Reynolds$ arising from the dimensional definition of $\bar{\rho}\epsilon$).
 
 \subsection{Sampling statistical quantities from a simulation}
 
