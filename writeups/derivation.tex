@@ -270,7 +270,7 @@ and solid-body rotation (given by the skew-symmetric rotation tensor
 $\omega=\frac{1}{2}\left( \nabla{}u-\trans{\nabla{}u} \right)$)
 may not influence $\tau$.  Considering contributions only up to the
 gradient of velocity, extensional strain (dilatation) and shear strain
-effects may depend on only the symmetric rate-of-deformation tensor
+effects may depend on only the symmetric strain rate tensor
 $\varepsilon=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u}\right)$
 and its principal invariants.
 
@@ -295,9 +295,7 @@ we can express it as
 \end{align}
 where $\mu=\frac{1}{2}\left( B + C \right)$ is the dynamic coefficient of
 viscosity (shear) and $\lambda=A$ is the second coefficient of viscosity
-(dilatational).  The viscosity coefficients $\mu$ and $\lambda$ may be combined
-to form the bulk viscosity $\mu_{B}$ according to $\mu_{B}=\lambda +
-\frac{2}{3}\mu$.  Reverting to direct notation we have
+(dilatational).  Reverting to direct notation we have
 \begin{align}
 \tau
 &= 2 \mu \varepsilon + \lambda \left( \nabla\cdot{}u \right) I
@@ -305,6 +303,22 @@ to form the bulk viscosity $\mu_{B}$ according to $\mu_{B}=\lambda +
 \label{eq:taunewt}
 &=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right)
   + \lambda \left( \nabla\cdot{}u \right) I
+\end{align}
+
+The bulk viscosity $\mu_{B}=\lambda + \frac{2}{3}\mu$ and the deviatoric
+component of the strain rate tensor $S = \varepsilon - \frac{1}{3} \trace
+\varepsilon \, I$ may be used to write $\tau$ as
+\begin{align}
+  \tau
+&=
+  2 \mu \varepsilon + \lambda \left( \nabla\cdot{}u \right) I
+\notag \\
+  &= 2 \mu \varepsilon - \frac{2}{3}\mu \left(\nabla\cdot{}u\right) I
+   + \left(\lambda + \frac{2}{3}\mu\right) \left(\nabla\cdot{}u\right) I
+\\
+\label{eq:tauSmub}
+  &= 2 \mu S + \mu_b  \left( \nabla\cdot{}u \right) I
+.
 \end{align}
 
 \subsubsection{Stokes' hypothesis}
@@ -371,14 +385,6 @@ so we assume
   \label{eq:mukappa}
 \end{align}
 
-\subsubsection{Forcing terms}
-
-We add arbitrary space- and time-varying forcing to the continuity, momentum,
-and energy equations using a continuity source term $c_{s}$, a force $f$, and a
-body heating density $q_{b}$, respectively.  These terms are provided to
-facilitate problem-specific forcing as well as using the method of manufactured
-solutions for implementation verification.
-
 \subsection{Dimensional equations}
 
 By combining the conservation laws with our constitutive relations
@@ -389,7 +395,6 @@ and assumptions, we arrive at the dimensional equations
   \frac{\partial}{\partial{}t}\rho
 &=
   - \nabla\cdot\rho{}u
-  + c_{s}
   \\
   \label{eq:dim_momentum}
   \frac{\partial{}}{\partial{}t}\rho{}u
@@ -477,7 +482,6 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
   \frac{\rho_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}}\rho^{*}
 &=
   - \frac{\rho_{0}u_{0}}{l_{0}} \nabla^{*}\cdot\rho^{*}u^{*}
-  + c_{0} c_{s}^{*}
   \\
   \label{eq:dimwithref_momentum}
   \frac{\rho_{0}u_{0}}{t_{0}} \frac{\partial{}}{\partial{}t^{*}}\rho^{*}u^{*}
@@ -547,8 +551,6 @@ quantities:
   &
   \tau_{0} &= \frac{\mu_{0}u_{0}}{l_{0}}
   &
-  c_{0} &= \frac{\rho_{0}}{t_{0}}
-  &
   f_{0} &= \frac{\rho_{0}u_{0}}{t_{0}}
   &
   q_{0} &= \frac{a_{0}^{2}}{t_{0}}
@@ -582,7 +584,6 @@ terms are dimensionless.  We arrive at the following nondimensional equations
   \frac{\partial}{\partial{}t}\rho{}
 &=
   - \nabla\cdot\rho{}u
-  + c_s
   \\
   \label{eq:nondim_momentum}
   \frac{\partial}{\partial{}t}\rho{}u
@@ -1085,11 +1086,11 @@ algorithm \vref{alg:substep}.
 \end{algorithm}
 
 Two possible issues arise when repeatedly using the substep algorithm: First,
-during the first substep the timestep may need to be computed dynamically based
-on a stability criterion available only during the nonlinear operator
-computation.  Second, it may be important to always apply each operator against
-a particular storage location.  This requirement implies that the
-implementation of $\left(M+\varphi{}L\right)$ must also support in-place
+during the first substep the step size $\Delta{}t$ may need to be computed
+dynamically based on a stability criterion available only during the nonlinear
+operator computation.  Second, it may be important to always apply each
+operator against a particular storage location.  This requirement implies that
+the implementation of $\left(M+\varphi{}L\right)$ must also support in-place
 application.  For the second and subsequent substeps, either
 $\left(M+\varphi{}L\right)$ must support a decidedly non-BLAS-like, complicated
 out-of-place-apply-and-swap operation or the underlying state storage must
@@ -1239,7 +1240,6 @@ the equations in section~\ref{nondim_equations} become
   \frac{\partial}{\partial{}t}\rho{}
 &=
   - \nabla\cdot{}m
-  + c_s
   \\
   \label{eq:state_momentum}
   \frac{\partial}{\partial{}t}m
@@ -1590,7 +1590,7 @@ $\nabla\cdot\mu\nabla{}T$
 \subsection{Linearization of second order viscous terms}
 
 Suzerain uses a hybrid implicit/explicit time stepper to alleviate the very
-restrictive timestep requirements that arise if we advance time in a purely
+restrictive time step requirements that arise if we advance time in a purely
 explicit fashion.  The hybrid time stepper requires the implicit operator to be
 linear in the state variables and time-independent.  Precious little of the
 full operator as written in
@@ -1968,18 +1968,10 @@ equation which do not appear in the mean continuity, momentum, or energy
 equations.  It also, as Lele suggests, encourages thermodynamic consistency
 when working with pressure correlation information.
 
-We now turn back to constitutive relations.  Using the strain rate tensor
-$s=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u} \right)$ and its deviatoric
-component $S=s-\frac{1}{3}\trace{s}\,I$ we reexpress~\eqref{eq:taunewt}
-and~\eqref{eq:secondviscosityclaw} as
+We now turn back to constitutive relations.  Combining~\eqref{eq:tauSmub}
+and~\eqref{eq:secondviscosityclaw} we obtain
 \begin{align}
   \tau
-&= \mu \left( \nabla{}u+\trans{\nabla{}u} \right)
- + \left( \alpha - \frac{2}{3} \right) \mu \left(\nabla\cdot{}u\right) I
-\\
-&= 2 \mu \left( s - \frac{1}{3} \trace{s} \, I \right)
- + \alpha \mu \left( \nabla \cdot{} u \right) I
-\\
 &= 2 \mu{} S + \alpha \mu \left( \nabla\cdot{}u \right) I.
 \end{align}
 Using the kinematic viscosity $\nu = \mu / \rho$ and averaging we find
@@ -2103,13 +2095,13 @@ The equations are augmented by the following relationships:
             \right)
 \end{align}
 \begin{align}
-   \tilde{s}
+   \tilde{\varepsilon}
 &=
    \frac{1}{2}\left( \nabla{}\tilde{u}+\trans{\nabla{}\tilde{u}} \right)
 &
    \tilde{S}
 &=
-   \tilde{s}-\frac{1}{3}\trace{\tilde{s}}\,I
+   \tilde{\varepsilon}-\frac{1}{3}\trace{\tilde{\varepsilon}}\,I
 &
    \bar{\tau}
 &= 2 \bar{\mu}\tilde{S} + 2 \bar{\rho} \widetilde{\nu''S''}
@@ -2136,10 +2128,10 @@ One may exactly compute the mean state evolution given the following information
 &\epsilon
 &
 &\overline{u''}
-&
-&\overline{fu''}
 \end{align}
 \begin{align}
+&\overline{fu''}
+&
 &\overline{\tau{}u''}
 &
 &\overline{p'\nabla\cdot{}u''}
@@ -2252,13 +2244,13 @@ The equations are augmented by the following nondimensional relationships:
   \tilde{h} &= \frac{\tilde{T}}{\gamma-1}
 \end{align}
 \begin{align}
-   \tilde{s}
+   \tilde{\varepsilon}
 &=
    \frac{1}{2}\left( \nabla{}\tilde{u}+\trans{\nabla{}\tilde{u}} \right)
 &
    \tilde{S}
 &=
-   \tilde{s}-\frac{1}{3}\trace{\tilde{s}}\,I
+   \tilde{\varepsilon}-\frac{1}{3}\trace{\tilde{\varepsilon}}\,I
 &
    \bar{\tau}
 &= 2 \bar{\mu}\tilde{S} + 2 \bar{\rho} \widetilde{\nu''S''}
@@ -2292,10 +2284,10 @@ following information:
 &\epsilon
 &
 &\overline{u''}
-&
-&\overline{fu''}
 \end{align}
 \begin{align}
+&\overline{fu''}
+&
 &\overline{\tau{}u''}
 &
 &\overline{p'\nabla\cdot{}u''}
