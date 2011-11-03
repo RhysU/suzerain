@@ -302,6 +302,7 @@ viscosity (shear) and $\lambda=A$ is the second coefficient of viscosity
 \label{eq:taunewt}
 &=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right)
   + \lambda \left( \nabla\cdot{}u \right) I
+.
 \end{align}
 
 The bulk viscosity $\mu_{B}=\lambda + \frac{2}{3}\mu$ and the deviatoric
@@ -309,10 +310,7 @@ component of the strain rate tensor $S = \varepsilon - \frac{1}{3} \trace
 \varepsilon \, I$ may be used to write $\tau$ as
 \begin{align}
   \tau
-&=
-  2 \mu \varepsilon + \lambda \left( \nabla\cdot{}u \right) I
-\notag \\
-  &= 2 \mu \varepsilon - \frac{2}{3}\mu \left(\nabla\cdot{}u\right) I
+&= 2 \mu \varepsilon - \frac{2}{3}\mu \left(\nabla\cdot{}u\right) I
    + \left(\lambda + \frac{2}{3}\mu\right) \left(\nabla\cdot{}u\right) I
 \\
 \label{eq:tauSmub}
@@ -323,7 +321,7 @@ component of the strain rate tensor $S = \varepsilon - \frac{1}{3} \trace
 \subsubsection{Stokes' hypothesis}
 \label{sec:stokeshypothesis}
 
-We allow the bulk viscosity $\mu_{B}$ to be some multiple of the dynamic
+We allow the bulk viscosity $\mu_{B}$ to be a fixed multiple of the dynamic
 viscosity $\mu$.  One may write this relationship as either
 \begin{align}
 \label{eq:secondviscosityclaw}
@@ -352,8 +350,10 @@ degrees Kelvin~\cite{NASA-TR-R-132}.
 
 \subsubsection{Fourier's equation}
 
-We neglect the transport of energy by molecular diffusion and radiative
-heat transfer.  We seek a relation between the surface heat flux $q_{s}$
+% TODO Radiative heat transfer negligible due to low temperature
+% TODO Is heat transfer by molecular diffusion neglected due to time scale?
+Neglecting the transport of energy by molecular diffusion and radiative
+heat transfer, we seek a relation between the surface heat flux $q_{s}$
 and the temperature $T$.  The principle of frame indifference implies
 we may only use the temperature gradient so that
 \begin{align}
@@ -1208,10 +1208,7 @@ Here we take the complete mathematical model from section \ref{sec:derivation}
 and put it into the form which we will compute per section
 \ref{sec:discretization}.  Though less clean in appearance, this section's
 equations will better reflect the spectral implementation details used in
-Suzerain than those given in the previous section.  We continue to use
-$\nabla$-notation instead of switching to Cartesian index notation in
-anticipation of $\nabla$ being decomposed into slow- and fast-growth
-contributions and/or needing to account for curvature in the domain.
+Suzerain than those given in earlier sections.
 
 \subsection{Convective derivative operator form}
 
@@ -1705,10 +1702,10 @@ terms, accounts for forcing, and nondimensionalizes the results.
 
 \subsection{Reynolds- and Favre-averages}
 The Reynolds average is simply the usual mean of a random variable.  Consider a
-generic flow variable $q$.  The value, $q(x, y, z, t)$, of this variable at
-a particular point in space, $(x, y, z)$, and time, $t$, is a random variable.
-Assuming that the pdf for $q(x, y, z, t)$ is given by $\pi_q(V; x, y, z,
-t)$, the Reynolds average is defined by
+generic flow variable $q$.  The value, $q(x, y, z, t)$, of this variable at a
+particular point in space, $(x, y, z)$, and time, $t$, is a random variable.
+Assuming that the probability density function for $q(x, y, z, t)$ is given by
+$\pi_q(V; x, y, z, t)$, the Reynolds average is defined by
 %
 \begin{equation}
 \label{eqn:reynoldsAvg}
@@ -1861,7 +1858,6 @@ while the Favre average of~\eqref{eq:perfectgasenthalpy} gives both
 &
  \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}.
 \end{align}
-
 The turbulent kinetic energy density
 \begin{align}
   k &= \frac{1}{2}\widetilde{{u''}^2}
@@ -1889,6 +1885,7 @@ arises from averaging the total energy given by
 + \frac{1}{2} \tilde{u}^2
 + k
 \end{align}
+
 An exact equation may be derived for the evolution of $k$ (details in section~5
 of~\cite{OliverFANSModels2011})
 \begin{align}
@@ -1971,7 +1968,7 @@ equation which do not appear in the mean continuity, momentum, or energy
 equations.  It also, as Lele suggests, encourages thermodynamic consistency
 when working with pressure correlation information.
 
-We now turn back to constitutive relations.  Combining~\eqref{eq:tauSmub}
+Returning to the constitutive relations, combining~\eqref{eq:tauSmub}
 and~\eqref{eq:secondviscosityclaw} we obtain
 \begin{align}
   \tau
