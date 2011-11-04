@@ -1702,6 +1702,8 @@ terms, accounts for forcing, and nondimensionalizes the results.
 
 
 \subsection{Reynolds- and Favre-averages}
+\label{sec:averaging}
+
 The Reynolds average is simply the usual mean of a random variable.  Consider a
 generic flow variable $q$.  The value, $q(x, y, z, t)$, of this variable at a
 particular point in space, $(x, y, z)$, and time, $t$, is a random variable.
@@ -1773,6 +1775,8 @@ example,
 This operation is used extensively in the development of the FANS equations.
 
 \subsection{The dimensional Favre-averaged Navier--Stokes equations}
+
+\subsubsection{Derivation}
 
 Recall that equations~\eqref{eq:cons_mass}, \eqref{eq:cons_momentum},
 and~\eqref{eq:cons_energy} may be written as
@@ -2013,7 +2017,9 @@ which is not computable given only Favre-averaged state.  One commonly accepted
 simplification is taking $\overline{\mu\left(T\right)} \approx
 \mu\left(\tilde{T}\right)$.
 
-In summary, the Favre-averaged equations of interest are:
+\subsubsection{Summary}
+
+The Favre-averaged equations of interest are:
 \begin{subequations}
 \begin{align}
     \frac{\partial}{\partial{}t}\bar{\rho}
@@ -2154,6 +2160,7 @@ information:
 \end{align}
 
 \subsection{The nondimensional Favre-averaged Navier--Stokes equations}
+\label{sec:nondimfans}
 
 The dimensional FANS equations from the last section need to be
 nondimensionalized.   The reference quantity selections made in
@@ -2265,7 +2272,7 @@ The equations are augmented by the following nondimensional relationships:
 \end{subequations}
 where $\Reynolds$, $\Mach$, and $\Prandtl$ are defined as in
 section~\ref{sec:nondimrefq}.  One may exactly compute the nondimensional mean
-state evolution given the following information:
+state evolution given the following statistical quantities:
 \begin{align}
 &\bar{\rho}
 &
@@ -2314,10 +2321,54 @@ coefficients have been pulled out of the constitutive relationships and pushed
 into the equations (for example, the factor $1/\Reynolds$ arising from the
 dimensional definition of $\bar{\rho}\epsilon$).
 
-\subsection{Sampling statistical quantities from a simulation}
+\subsection{Sampling logistics}
 
-% TODO Ergodicity and homogeneity allowing us to pick zero-zero modes
-%      Use channel_treatment.tex for some of the necessary language
+Statistical quantities are obtained by sampling from a well-resolved,
+stationary simulation.  Mean quantities may be computed on-the-fly.
+Fluctuating quantity samples, because they must be taken relative to an unknown
+true mean, are computed by combining mean quantity samples following the rules
+in section~\ref{sec:averaging}.
+
+Sampling the following mean quantities is sufficient to compute
+the statistical quantities listed in section \vref{sec:nondimfans}:
+\begin{align}
+&\bar{\rho}
+&
+&\overline{\rho{}u}
+&
+&\overline{\rho{}E}
+&
+&\bar{\mu}
+&
+&\bar{f}
+&
+&\overline{\rho{}q_b}
+&
+&\bar{u}
+&
+&\overline{\tau:\nabla{}u}
+&
+&\overline{f\cdot{}u}
+\end{align}
+\begin{align}
+&\bar{\tau}
+&
+&\overline{\tau{}u}
+&
+&\overline{p\nabla\cdot{}u}
+&
+&-\overline{\rho{}u\otimes{}u}
+&
+&-\overline{\rho{}u\otimes{}u\otimes{}u}
+&
+&\overline{\rho{}Tu}
+&
+&\overline{\rho\nu{}S}
+&
+&\overline{\rho\nu\nabla\cdot{}u}
+&
+&\overline{\rho\nu\nabla{}T}
+\end{align}
 
 \subsection{Quantifying statistical quantity convergence}
 
