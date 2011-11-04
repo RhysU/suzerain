@@ -1834,7 +1834,7 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
       + \bar{\rho} \widetilde{h''u''}
     \right)
   + \bar{f}\cdot\tilde{u}
-  + \overline{fu''}
+  + \overline{f\cdot{}u''}
   + \bar{\rho}\tilde{q}_b
 \end{align}
 \end{subequations}
@@ -1842,11 +1842,12 @@ Several correlations impact the evolution of mean quantities: the Reynolds
 stress $-\bar{\rho}\widetilde{u''\otimes{}u''}$, the Reynolds heat flux
 $\bar{\rho} \widetilde{h''u''}$, turbulent transport
 $-\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}$, turbulent work
-$\overline{\tau{}u''}$, and the forcing-velocity correlation $\overline{fu''}$.
-The Reynolds stress and heat flux augment the viscous stress and heat flux,
-respectively.  The turbulent transport and work terms represent transport of
-the turbulent kinetic energy density $k$, defined below, and viscous stress
-work due to turbulent velocity fluctuations, respectively.
+$\overline{\tau{}u''}$, and the forcing-velocity correlation
+$\overline{f\cdot{}u''}$.  The Reynolds stress and heat flux augment the
+viscous stress and heat flux, respectively.  The turbulent transport and work
+terms represent transport of the turbulent kinetic energy density $k$, defined
+below, and viscous stress work due to turbulent velocity fluctuations,
+respectively.
 
 We now average the perfect gas relations from section~\ref{sec:constitutive}.
 The Reynolds average of~\eqref{eq:perfectgaseos} gives
@@ -1904,7 +1905,7 @@ of~\cite{OliverFANSModels2011})
  &- \overline{u''}\cdot\nabla\bar{p}
   - \nabla\cdot\overline{p' u''}
   + \overline{p' \nabla\cdot{}u''}
-  + \overline{fu''}
+  + \overline{f\cdot{}u''}
 \end{align}
 where $A:B$ denotes $\trace \left(\trans{A} B\right)$. The dissipation rate
 density $\epsilon$, which governs the conversion rate from $k$ to mean internal
@@ -1962,7 +1963,7 @@ flux in the exact $k$ equation:
  &+ \bar{p}\nabla\cdot\overline{u''}
   - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
   + \overline{p' \nabla\cdot{}u''}
-  + \overline{fu''}
+  + \overline{f\cdot{}u''}
 \end{align}
 The trade reduces by one the number of correlations appearing in the $k$
 equation which do not appear in the mean continuity, momentum, or energy
@@ -2046,7 +2047,7 @@ In summary, the Favre-averaged equations of interest are:
       + \bar{\rho} \widetilde{h''u''}
     \right)
   + \bar{f}\cdot\tilde{u}
-  + \overline{fu''}
+  + \overline{f\cdot{}u''}
   + \bar{\rho}\tilde{q}_b
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
@@ -2062,7 +2063,7 @@ In summary, the Favre-averaged equations of interest are:
  &+ \bar{p}\nabla\cdot\overline{u''}
   - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
   + \overline{p' \nabla\cdot{}u''}
-  + \overline{fu''}
+  + \overline{f\cdot{}u''}
 \end{align}
 The equations are augmented by the following relationships:
 \begin{align}
@@ -2133,7 +2134,7 @@ information:
 &\overline{u''}
 \end{align}
 \begin{align}
-&\overline{fu''}
+&\overline{f\cdot{}u''}
 &
 &\overline{\tau{}u''}
 &
@@ -2201,7 +2202,7 @@ are dimensionless.  The results are:
     \right)
   + \Mach^{2} \left(
         \bar{f}\cdot\tilde{u}
-      + \overline{fu''}
+      + \overline{f\cdot{}u''}
     \right)
   + \bar{\rho}\tilde{q}_b
 \\
@@ -2220,7 +2221,7 @@ are dimensionless.  The results are:
       + \overline{p' \nabla\cdot{}u''}
       - \frac{1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{T''u''}
     \right)
-  + \overline{fu''}
+  + \overline{f\cdot{}u''}
 \end{align}
 The equations are augmented by the following nondimensional relationships:
 \begin{align}
@@ -2285,7 +2286,7 @@ state evolution given the following information:
 &\overline{u''}
 \end{align}
 \begin{align}
-&\overline{fu''}
+&\overline{f\cdot{}u''}
 &
 &\overline{\tau{}u''}
 &
