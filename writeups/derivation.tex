@@ -2369,8 +2369,56 @@ the statistical quantities listed in section \vref{sec:nondimfans}:
 &
 &\overline{\rho\nu\nabla{}T}
 \end{align}
+After averaging across the homogeneous streamwise $x$ and spanwise $z$
+directions, each sample (ignoring tensor order) is a one-dimensional,
+instantaneous profile varying only along the wall-normal B-spline direction.
+
+The instantaneous samples are combined according to the following ordered
+sequence of computations to obtain the desired quantities:
+{ \allowdisplaybreaks[1]
+\begin{align}
+  \tilde{u} &= \frac{\overline{\rho{}u}}{\bar{\rho}}
+\\
+  \tilde{E} &= \frac{\overline{\rho{}E}}{\bar{\rho}}
+\\
+  \tilde{q} &= \frac{\overline{\rho{}q_{b}}}{\bar{\rho}}
+\\
+  \overline{\rho{}u''\otimes{}u''} &=
+  \overline{\rho{}u\otimes{}u} - \bar{\rho}\tilde{u}\otimes\tilde{u}
+\\
+  - \widetilde{u''\otimes{}u''} &=
+  - \frac{\overline{\rho{}u''\otimes{}u''}}{\bar{\rho}}
+\\
+  k &= \frac{1}{2} \trace \widetilde{u''\otimes{}u''}
+\\
+  \tilde{T} &=
+  \gamma\left(\gamma-1\right)\tilde{E}
+  - \Mach^2\left(\frac{1}{2}\tilde{u}^2 + k\right)
+\\
+  \tilde{H} &= \tilde{E} + \frac{\tilde{T}}{\gamma}
+\\
+  \bar{p} &= \frac{\bar{\rho}\tilde{T}}{\gamma}
+\\
+  \overline{\tau:\nabla{}u''} &=
+  \overline{\tau:\nabla{}u} - \bar{\tau}:\nabla\tilde{u}
+\\
+  \epsilon &= \frac{\overline{\tau:\nabla{}u''}}{\bar{\rho}}
+\\
+  \overline{u''} &= \bar{u} - \tilde{u}
+\\
+  \overline{f\cdot{}u''} &= \overline{f\cdot{}u} - \bar{f}\cdot{}\tilde{u}
+\\
+  \overline{\tau{}u''} &= \overline{\tau{}u} - \bar{\tau}\tilde{u}
+\\
+  \overline{p'\nabla\cdot{}u''}
+  &= \overline{p\nabla\cdot{}u}
+   - \bar{p}\nabla\cdot\tilde{u}
+   - \bar{p}\nabla\cdot\overline{u''}
+\end{align}
+}
 
 \subsection{Quantifying statistical quantity convergence}
+\label{sec:quantconvergence}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
