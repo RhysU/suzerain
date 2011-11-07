@@ -2148,7 +2148,7 @@ information:
 &
 &-\widetilde{u''\otimes{}u''}
 &
-&-\widetilde{{u''}^{2}u''}
+&-\frac{1}{2}\widetilde{{u''}^{2}u''}
 &
 &\widetilde{h''u''}
 &
@@ -2158,6 +2158,12 @@ information:
 &
 &\widetilde{\nu''\nabla{}h''}
 \end{align}
+Other ways to minimally capture the mean thermodynamic state, e.g. $\bar{\rho}$
+and $\tilde{T}$, could have been chosen.  The information above are natural
+choices following section~\ref{state_variable_selection}.  Favre-fluctuating
+correlation densities (e.g.  $\widetilde{h''u''}$ are adopted for notational
+brevity instead of their informationally equivalent Reynolds-averaged
+correlations (e.g.  $\overline{\rho{}h''u''}$).
 
 \subsection{The nondimensional Favre-averaged Navier--Stokes equations}
 \label{sec:nondimfans}
@@ -2301,7 +2307,7 @@ state evolution given the following statistical quantities:
 &
 &-\widetilde{u''\otimes{}u''}
 &
-&-\widetilde{{u''}^{2}u''}
+&-\frac{1}{2}\widetilde{{u''}^{2}u''}
 &
 &\widetilde{T''u''}
 &
@@ -2416,6 +2422,65 @@ sequence of computations to obtain the desired quantities:
    - \bar{p}\nabla\cdot\overline{u''}
 \end{align}
 }
+
+Computing $\overline{\rho{}u''\otimes{}u''\otimes{}u''}$, a superset of the
+information required to obtain $-\frac{1}{2}\widetilde{{u''}^{2}u''}$, is more
+involved.  Employing the summation convention and ignoring any symmetry-related
+simplifications, it holds that
+\begin{align}
+  \bar{\rho}\widetilde{u_{i}u_{j}''}
+  &= \bar{\rho}\widetilde{u_{i}u_{j}} - \bar{\rho}\tilde{u}_{i}\tilde{u}_{j}
+\\
+  \bar{\rho}\widetilde{u_{i}u_{j}u_{k}''}
+  &= \bar{\rho}\widetilde{u_{i}u_{j}u_{k}}
+   - \bar{\rho}\widetilde{u_{i}u_{j}}\tilde{u}_{k}
+\\
+  \bar{\rho}\widetilde{u_{i}''u_{j}''u_{k}''}
+  &= \overline{\left(u_{i}-\tilde{u}_{i}\right)
+               \left(u_{j}-\tilde{u}_{j}\right)
+               \rho{}u_{k}''}
+\\
+  &= \bar{\rho}\widetilde{u_{i}u_{j}u_{k}''}
+   - \tilde{u}_i \bar{\rho} \widetilde{u_{j}u_{k}''}
+   - \tilde{u}_j \bar{\rho} \widetilde{u_{i}u_{k}''}
+%%\\
+%%  &= \bar{\rho}\widetilde{u_{i}u_{j}u_{k}}
+%%   - \bar{\rho}\widetilde{u_{i}u_{j}}\tilde{u}_{k}
+%%   - \bar{\rho} \tilde{u}_{i} \widetilde{u_{j} u_{k}}
+%%   + \bar{\rho} \tilde{u}_{i}\tilde{u}_{j}\tilde{u}_{k}
+%%   - \bar{\rho}\tilde{u}_{j} \widetilde{u_{i}u_{k}}
+%%   + \bar{\rho}\tilde{u}_{j} \tilde{u}_{i}\tilde{u}_{k}
+\\
+  &= \bar{\rho} \widetilde{u_{i}u_{j}u_{k}}
+   - \bar{\rho} \widetilde{u_{i}u_{j}}\tilde{u}_{k}
+   - \bar{\rho} \tilde{u}_{i} \widetilde{u_{j} u_{k}}
+   - \bar{\rho} \tilde{u}_{j} \widetilde{u_{i}u_{k}}
+   + 2 \bar{\rho} \tilde{u}_{i} \tilde{u}_{j}\tilde{u}_{k}
+.
+\end{align}
+We find $\widetilde{{u''}^{2}u''}$ by contracting the on the first two indices,
+relabelling the third index, and dividing by $\bar{\rho}$,
+\begin{align}
+  \widetilde{u_{i}''u_{i}''u_{j}''}
+  &= \widetilde{u_{i}u_{i}u_{j}}
+   - \widetilde{u_{i}u_{i}}\tilde{u}_{j}
+   - 2 \tilde{u}_{i} \widetilde{u_{i} u_{j}}
+   + 2 \tilde{u}_{i} \tilde{u}_{i}\tilde{u}_{j}
+   .
+\end{align}
+Finally, reverting to direct notation, employing symmetry, and multiplying by
+negative one half,
+\begin{align}
+  -\frac{1}{2}\widetilde{{u''}^{2}u''}
+&=
+  - \frac{1}{2}\widetilde{u^{2}u}
+  + \frac{1}{2}\widetilde{u^{2}}\tilde{u}
+  + \widetilde{u\otimes{}u}\tilde{u}
+  - \tilde{u}^2 \tilde{u}
+\end{align}
+where $\widetilde{u^{2}u}$ and $\widetilde{u^2}$ may be computed from
+$\overline{\rho{}u\otimes{}u\otimes{}u}$ and $\overline{\rho{}u\otimes{}u}$,
+respectively.
 
 \subsection{Quantifying statistical quantity convergence}
 \label{sec:quantconvergence}
