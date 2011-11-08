@@ -2336,7 +2336,7 @@ true mean, are computed by combining mean quantity samples following the rules
 in section~\ref{sec:averaging}.
 
 Sampling the following mean quantities is sufficient to compute
-the statistical quantities listed in section \vref{sec:nondimfans}:
+the statistical quantities listed in section~\ref{sec:nondimfans}:
 \begin{align}
 &\bar{\rho}
 &
@@ -2363,9 +2363,9 @@ the statistical quantities listed in section \vref{sec:nondimfans}:
 &
 &\overline{p\nabla\cdot{}u}
 &
-&-\overline{\rho{}u\otimes{}u}
+&\overline{\rho{}u\otimes{}u}
 &
-&-\overline{\rho{}u\otimes{}u\otimes{}u}
+&\overline{\rho{}u\otimes{}u\otimes{}u}
 &
 &\overline{\rho{}Tu}
 &
@@ -2383,17 +2383,16 @@ The instantaneous samples are combined according to the following ordered
 sequence of computations to obtain the desired quantities:
 { \allowdisplaybreaks[1]
 \begin{align}
-  \tilde{u} &= \frac{\overline{\rho{}u}}{\bar{\rho}}
+  \tilde{u} &= \bar{\rho}^{-1} \overline{\rho{}u}
 \\
-  \tilde{E} &= \frac{\overline{\rho{}E}}{\bar{\rho}}
+  \tilde{E} &= \bar{\rho}^{-1} {\overline{\rho{}E}}
 \\
-  \tilde{q} &= \frac{\overline{\rho{}q_{b}}}{\bar{\rho}}
+  \tilde{q}_{b} &= \bar{\rho}^{-1} \overline{\rho{}q_{b}}
 \\
-  \overline{\rho{}u''\otimes{}u''} &=
-  \overline{\rho{}u\otimes{}u} - \bar{\rho}\tilde{u}\otimes\tilde{u}
+  \widetilde{u\otimes{}u} &= \bar{\rho}^{-1} \overline{\rho{}u\otimes{}u}
 \\
-  - \widetilde{u''\otimes{}u''} &=
-  - \frac{\overline{\rho{}u''\otimes{}u''}}{\bar{\rho}}
+  \widetilde{u''\otimes{}u''} &=
+  \widetilde{u\otimes{}u} - \tilde{u}\otimes\tilde{u}
 \\
   k &= \frac{1}{2} \trace \widetilde{u''\otimes{}u''}
 \\
@@ -2408,7 +2407,7 @@ sequence of computations to obtain the desired quantities:
   \overline{\tau:\nabla{}u''} &=
   \overline{\tau:\nabla{}u} - \bar{\tau}:\nabla\tilde{u}
 \\
-  \epsilon &= \frac{\overline{\tau:\nabla{}u''}}{\bar{\rho}}
+  \epsilon &= \bar{\rho}^{-1} \overline{\tau:\nabla{}u''}
 \\
   \overline{u''} &= \bar{u} - \tilde{u}
 \\
@@ -2420,66 +2419,70 @@ sequence of computations to obtain the desired quantities:
   &= \overline{p\nabla\cdot{}u}
    - \bar{p}\nabla\cdot\tilde{u}
    - \bar{p}\nabla\cdot\overline{u''}
+\\
+  \widetilde{u\otimes{}u\otimes{}u}
+  &= \bar{\rho}^{-1} \overline{\rho{}u\otimes{}u\otimes{}u}
 \end{align}
 }
 
-Computing $\overline{\rho{}u''\otimes{}u''\otimes{}u''}$, a superset of the
-information required to obtain $-\frac{1}{2}\widetilde{{u''}^{2}u''}$, is more
-involved.  Employing the summation convention and ignoring any symmetry-related
-simplifications, it holds that
+Expressions for computing $\widetilde{u''\otimes{}u''\otimes{}u''}$ and
+$-\frac{1}{2}\widetilde{{u''}^{2}u''}$ are derived in stages using index
+notation and the summation convention.  Using the identities
 \begin{align}
-  \bar{\rho}\widetilde{u_{i}u_{j}''}
-  &= \bar{\rho}\widetilde{u_{i}u_{j}} - \bar{\rho}\tilde{u}_{i}\tilde{u}_{j}
+  \widetilde{u_{i}u_{j}''}
+&=
+  \widetilde{u_{i}u_{j}} - \tilde{u}_{i}\tilde{u}_{j}
 \\
-  \bar{\rho}\widetilde{u_{i}u_{j}u_{k}''}
-  &= \bar{\rho}\widetilde{u_{i}u_{j}u_{k}}
-   - \bar{\rho}\widetilde{u_{i}u_{j}}\tilde{u}_{k}
+  \widetilde{u_{i}u_{j}u_{k}''}
+&=
+  \widetilde{u_{i}u_{j}u_{k}} - \widetilde{u_{i}u_{j}}\tilde{u}_{k}
+\shortintertext{
+and ignoring any symmetry-related simplifications, we obtain
+}
+  \widetilde{u_{i}''u_{j}''u_{k}''}
+  &= \bar{\rho}^{-1} \overline{\rho{}\left(u_{i}-\tilde{u}_{i}\right)
+                                     \left(u_{j}-\tilde{u}_{j}\right)
+                                     u_{k}''}
 \\
-  \bar{\rho}\widetilde{u_{i}''u_{j}''u_{k}''}
-  &= \overline{\left(u_{i}-\tilde{u}_{i}\right)
-               \left(u_{j}-\tilde{u}_{j}\right)
-               \rho{}u_{k}''}
-\\
-  &= \bar{\rho}\widetilde{u_{i}u_{j}u_{k}''}
-   - \tilde{u}_i \bar{\rho} \widetilde{u_{j}u_{k}''}
-   - \tilde{u}_j \bar{\rho} \widetilde{u_{i}u_{k}''}
+  &= \widetilde{u_{i}u_{j}u_{k}''}
+   - \tilde{u}_i \widetilde{u_{j}u_{k}''}
+   - \tilde{u}_j \widetilde{u_{i}u_{k}''}
 %%\\
-%%  &= \bar{\rho}\widetilde{u_{i}u_{j}u_{k}}
-%%   - \bar{\rho}\widetilde{u_{i}u_{j}}\tilde{u}_{k}
-%%   - \bar{\rho} \tilde{u}_{i} \widetilde{u_{j} u_{k}}
-%%   + \bar{\rho} \tilde{u}_{i}\tilde{u}_{j}\tilde{u}_{k}
-%%   - \bar{\rho}\tilde{u}_{j} \widetilde{u_{i}u_{k}}
-%%   + \bar{\rho}\tilde{u}_{j} \tilde{u}_{i}\tilde{u}_{k}
+%%  &= \widetilde{u_{i}u_{j}u_{k}}
+%%   - \widetilde{u_{i}u_{j}}\tilde{u}_{k}
+%%   - \tilde{u}_{i} \widetilde{u_{j} u_{k}}
+%%   + \tilde{u}_{i} \tilde{u}_{j}\tilde{u}_{k}
+%%   - \tilde{u}_{j} \widetilde{u_{i}u_{k}}
+%%   + \tilde{u}_{j} \tilde{u}_{i}\tilde{u}_{k}
 \\
-  &= \bar{\rho} \widetilde{u_{i}u_{j}u_{k}}
-   - \bar{\rho} \widetilde{u_{i}u_{j}}\tilde{u}_{k}
-   - \bar{\rho} \tilde{u}_{i} \widetilde{u_{j} u_{k}}
-   - \bar{\rho} \tilde{u}_{j} \widetilde{u_{i}u_{k}}
-   + 2 \bar{\rho} \tilde{u}_{i} \tilde{u}_{j}\tilde{u}_{k}
+  &=   \widetilde{u_{i}u_{j}u_{k}}
+   -   \widetilde{u_{i}u_{j}}\tilde{u}_{k}
+   -   \tilde{u}_{i} \widetilde{u_{j} u_{k}}
+   -   \tilde{u}_{j} \widetilde{u_{i}u_{k}}
+   + 2 \tilde{u}_{i} \tilde{u}_{j}\tilde{u}_{k}
 .
-\end{align}
-We find $\widetilde{{u''}^{2}u''}$ by contracting the on the first two indices,
-relabelling the third index, and dividing by $\bar{\rho}$,
-\begin{align}
+\shortintertext{
+Contracting the first two indices and relabelling the third index,
+}
   \widetilde{u_{i}''u_{i}''u_{j}''}
   &= \widetilde{u_{i}u_{i}u_{j}}
    - \widetilde{u_{i}u_{i}}\tilde{u}_{j}
    - 2 \tilde{u}_{i} \widetilde{u_{i} u_{j}}
    + 2 \tilde{u}_{i} \tilde{u}_{i}\tilde{u}_{j}
    .
-\end{align}
-Finally, reverting to direct notation, employing symmetry, and multiplying by
-negative one half,
-\begin{align}
-  -\frac{1}{2}\widetilde{{u''}^{2}u''}
+\shortintertext{
+Reverting to direct notation and employing the symmetry of
+$\widetilde{u\otimes{}u}$, we obtain
+}
+  \widetilde{{u''}^{2}u''}
 &=
-  - \frac{1}{2}\widetilde{u^{2}u}
-  + \frac{1}{2}\widetilde{u^{2}}\tilde{u}
-  + \widetilde{u\otimes{}u}\tilde{u}
-  - \tilde{u}^2 \tilde{u}
+      \widetilde{u^{2}u}
+  -   \widetilde{u^{2}}\tilde{u}
+  - 2 \widetilde{u\otimes{}u}\tilde{u}
+  + 2 \tilde{u}^2 \tilde{u}
 \end{align}
-where $\widetilde{u^{2}u}$ and $\widetilde{u^2}$ may be computed from
-$\overline{\rho{}u\otimes{}u\otimes{}u}$ and $\overline{\rho{}u\otimes{}u}$,
+where $\widetilde{u^{2}u}$ and $\widetilde{u^2}$ may be computed by contracting
+$\widetilde{u\otimes{}u\otimes{}u}$ and $\widetilde{u\otimes{}u}$,
 respectively.
 
 \subsection{Quantifying statistical quantity convergence}
