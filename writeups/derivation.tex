@@ -2355,10 +2355,10 @@ the statistical quantities listed in section~\ref{sec:nondimfans}:
 &\overline{\tau:\nabla{}u}
 &
 &\overline{f\cdot{}u}
+&
+&\bar{\tau}
 \end{align}
 \begin{align}
-&\bar{\tau}
-&
 &\overline{\tau{}u}
 &
 &\overline{p\nabla\cdot{}u}
@@ -2369,11 +2369,13 @@ the statistical quantities listed in section~\ref{sec:nondimfans}:
 &
 &\overline{\rho{}Tu}
 &
-&\overline{\rho\nu{}S}
+&\overline{\rho{}S}
 &
-&\overline{\rho\nu\nabla\cdot{}u}
+&\overline{\mu{}S}
 &
-&\overline{\rho\nu\nabla{}T}
+&\overline{\mu\nabla\cdot{}u}
+&
+&\overline{\mu\nabla{}T}
 \end{align}
 After averaging across the homogeneous streamwise $x$ and spanwise $z$
 directions, each sample (ignoring tensor order) is a one-dimensional,
@@ -2484,6 +2486,28 @@ $\widetilde{u\otimes{}u}$, we obtain
 where $\widetilde{u^{2}u}$ and $\widetilde{u^2}$ may be computed by contracting
 $\widetilde{u\otimes{}u\otimes{}u}$ and $\widetilde{u\otimes{}u}$,
 respectively.
+
+Continuing the ordered sequence of computations:
+\begin{align}
+  \widetilde{Tu} &= \bar{\rho}^{-1} \overline{\rho{}Tu}
+\\
+  \widetilde{T''u''} &= \widetilde{Tu} - \tilde{T}\tilde{u}
+\\
+  \tilde{S} &= \bar{\rho}^{-1} \overline{\rho{}S}
+\\
+  \tilde{\nu} &= \bar{\rho}^{-1} \overline{\mu}
+\\
+  \widetilde{\nu''S''}
+  &= \bar{\rho}^{-1} \overline{\mu{}S} - \tilde{\nu}\tilde{S}
+\\
+  \widetilde{\nu''\nabla\cdot{}u''}
+  &= \bar{\rho}^{-1} \overline{\mu\nabla\cdot{}u}
+   - \tilde{\nu}\nabla\cdot{}\tilde{u}
+\\
+  \widetilde{\nu''\nabla{}T''}
+  &= \bar{\rho}^{-1} \overline{\mu\nabla{}T}
+   - \tilde{\nu}\nabla\tilde{T}
+\end{align}
 
 \subsection{Quantifying statistical quantity convergence}
 \label{sec:quantconvergence}
