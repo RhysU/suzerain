@@ -7,7 +7,6 @@
 \usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{cancel}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
 \usepackage{fullpage}
@@ -1763,16 +1762,48 @@ However, in general,
 \end{equation*}
 %
 
-Finally, wherever necessary, realizations of random fields of flow
-quantities---e.g., $u$, $p$, $\tau$, etc.---are assumed to be differentiable in
-both time and space so that averaging and differentiation commute.  For
-example,
+Wherever necessary, realizations of random fields of flow quantities
+are assumed to be differentiable in both time and space so that Reynolds
+averaging and differentiation commute.  For example,
 %
 \begin{equation*}
-\widetilde{ \nabla{}u } = \nabla\tilde{u}.
+\overline{ \nabla{}u } = \nabla\bar{u}.
 \end{equation*}
 %
-This operation is used extensively in the development of the FANS equations.
+This commutativity is used to develop the FANS equations.  In contrast, Favre
+averaging and differentiation do not, in general, commute:
+\begin{align}
+  \rho \nabla q &= \rho \nabla q
+\\
+   \rho \widetilde{\nabla{}q} + \rho \left(\nabla{}q\right)''
+&=
+   \rho \nabla \tilde{q} + \rho \nabla{}q''
+\\
+     \bar{\rho} \widetilde{\nabla{}q}
+&=
+     \bar{\rho} \nabla{\tilde{q}}
+   + \overline{\rho \nabla{}q''}
+\\
+&=
+     \bar{\rho} \nabla{\tilde{q}}
+   - \overline{q''\nabla\rho}
+\end{align}
+More succinctly,
+\begin{align}
+  \widetilde{\nabla{}q}
+  -
+  \nabla{\tilde{q}}
+&=
+  \widetilde{\nabla{}q''}
+  =
+  - \frac{{\overline{q''\nabla\rho}}}{\bar{\rho}}.
+\end{align}
+We have adopted the common convention that taking Favre fluctuations
+$\left(\cdot\right)''$ has higher precedence than $\nabla\left(\cdot\right)$ so
+that $\nabla{}u''$ is read as the gradient of the Favre fluctuating velocity.
+This lack of commutativity not problematic as it is not required to derive the
+FANS equations.  It does, however, slightly complicate evaluating the residual
+of the FANS equations given a data ensemble.
 
 \subsection{The dimensional Favre-averaged Navier--Stokes equations}
 
