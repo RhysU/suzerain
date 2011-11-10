@@ -1789,10 +1789,12 @@ averaging and differentiation do not, in general, commute:
      \bar{\rho} \nabla{\tilde{q}}
    - \overline{q''\nabla\rho}
 \end{align}
+We have adopted the common convention that taking Favre fluctuations
+$\left(\cdot\right)''$ has higher precedence than $\nabla\left(\cdot\right)$.
 Rearranging to better examine the difference between $\widetilde{\nabla{}q}$
 and $\nabla\tilde{q}$ in terms of mean quantities,
 \begin{align}
-  \label{eq:favrediffcommute}
+  \label{eq:favremeancommute}
   \widetilde{\nabla{}q}
   -
   \nabla{\tilde{q}}
@@ -1803,12 +1805,33 @@ and $\nabla\tilde{q}$ in terms of mean quantities,
   - \frac{\overline{q\nabla\rho}}{\bar{\rho}}
 .
 \end{align}
-We have adopted the common convention that taking Favre fluctuations
-$\left(\cdot\right)''$ has higher precedence than $\nabla\left(\cdot\right)$ so
-that $\nabla{}u''$ is read as the gradient of the Favre fluctuating velocity.
 This lack of commutativity not problematic as it is not required to derive the
-FANS equations.  It does, however, slightly complicate evaluating the residual
-of the FANS equations given a data ensemble.
+FANS equations.  It does, however, slightly complicate the mean constitutive
+relationshops and evaluating the residual of the FANS equations given a data
+ensemble.  The fluctuating gradient and the gradient of the fluctuations differ
+according to
+\begin{align}
+  \label{eq:favrefluctcommute}
+  \left(\nabla{}q\right)'' - \nabla{}q'' &= - \widetilde{\nabla{}q''}
+.
+\end{align}
+In some circumstances, the difference between quantities written using a
+fluctuating gradient and the gradient of the fluctuations can vanish.
+One useful example is
+\begin{align}
+  \label{eq:favrefluctexample}
+\widetilde{f''\left(\nabla{}g\right)''}
+&=
+\overline{\rho{}f''\left(\nabla{}g\right)''}
+=
+\overline{\rho{}f''\left(\nabla{}g'' - \widetilde{\nabla{}g''}\right)}
+=
+\overline{\rho{}f''\nabla{}g''}
+- \overline{\rho{}f''}\widetilde{\nabla{}g''}
+=
+\widetilde{f''\nabla{}g''}
+.
+\end{align}
 
 \subsection{The dimensional Favre-averaged Navier--Stokes equations}
 
@@ -2033,14 +2056,19 @@ Using the kinematic viscosity $\nu = \mu / \rho$ and averaging we find
   + \alpha \bar{\rho} \widetilde{\nu''\left(\nabla\cdot{}u\right)''} I
 .
 \end{align}
-Many FANS closure approximations neglect correlations between the kinematic
-viscosity and velocity derivatives.  Many assume $\alpha=0$.  Accepting those
-approximations would eliminate the second through fourth terms in $\bar{\tau}$.
-Making the ubiquitous closure approximations
-$\widetilde{\nabla{}u}\approx\nabla\tilde{u}$ and
+By~\eqref{eq:favrefluctexample},
+$\widetilde{\nu''\left(\nabla\cdot{}u\right)''}$ may also be written
+$\widetilde{\nu''\nabla\cdot{}u''}$ while $\widetilde{\nu''S''}$ is equivalent
+to a version using the deviatoric part of the strain rate of the fluctuating
+velocity field.  Many FANS closure approximations neglect correlations between
+the kinematic viscosity and velocity derivatives.  Many assume $\alpha=0$.
+Accepting those approximations would eliminate the second through fourth terms
+in $\bar{\tau}$.  Making the ubiquitous closure approximations
+$\widetilde{\nabla{}u} + \trans{\widetilde{\nabla{}u}} \approx \nabla\tilde{u}
++ \trans{\nabla\tilde{u}}$ and
 $\widetilde{\nabla{}\cdot{}u}\approx\nabla\cdot\tilde{u}$ are equivalent to
-neglecting $\widetilde{\nabla{}u''}$ and $\widetilde{\nabla{}\cdot{}u''}$
-per~\eqref{eq:favrediffcommute}.
+neglecting $\widetilde{\nabla{}u''} + \trans{\widetilde{\nabla{}u''}}$ and
+$\widetilde{\nabla{}\cdot{}u''}$ per~\eqref{eq:favremeancommute}.
 
 To find $\bar{q}_s$ we combine~\eqref{eq:fourierlaw} and our assumption of a
 constant Prandtl number
@@ -2058,10 +2086,12 @@ and again employ $\nu$ when averaging to obtain
             \right)
 .
 \end{align}
-Again, making the ubiquitous closure assumption
-$\widetilde{\nabla{}h}\approx\nabla\tilde{h}$ is equivalent to neglecting
-$\widetilde{\nabla{}h''}$ per~\eqref{eq:favrediffcommute}.  Straightforward
-averaging applied to~\eqref{eq:powerlawviscosity} produces
+Again, by~\eqref{eq:favrefluctexample},
+$\widetilde{\nu''\left(\nabla{}h\right)''}$ may also be written
+$\widetilde{\nu''\nabla{}h''}$.  Again, making the ubiquitous closure
+assumption $\widetilde{\nabla{}h}\approx\nabla\tilde{h}$ is equivalent to
+neglecting $\widetilde{\nabla{}h''}$ per~\eqref{eq:favremeancommute}.
+Straightforward averaging applied to~\eqref{eq:powerlawviscosity} produces
 \begin{align}
    \bar{\rho}\tilde{\nu}
  = \bar{\mu}
