@@ -59,7 +59,7 @@
 \newcommand{\lessreference}[1]
   {\ensuremath{\left({#1}-\reference{#1}\right)}}
 \newcommand{\symmetricpart}[1]
-  {\ensuremath{\operatorname{Sym}\left(#1\right)}}
+  {\ensuremath{\operatorname{sym}\left(#1\right)}}
 \DeclareMathOperator{\trace}{tr}
 
 \begin{document}
@@ -1807,9 +1807,8 @@ and $\nabla\tilde{q}$ in terms of mean quantities,
 \end{align}
 This lack of commutativity not problematic as it is not required to derive the
 FANS equations.  It does, however, slightly complicate the mean constitutive
-relationshops and evaluating the residual of the FANS equations given a data
-ensemble.  The fluctuating gradient and the gradient of the fluctuations differ
-according to
+relationships.  The fluctuating gradient and the gradient of the fluctuations
+differ according to
 \begin{align}
   \label{eq:favrefluctcommute}
   \left(\nabla{}q\right)'' - \nabla{}q'' &= - \widetilde{\nabla{}q''}
@@ -2204,6 +2203,7 @@ The equations are augmented by the following relationships:
 \end{subequations}
 One may exactly compute the mean state evolution given the following
 information:
+\begin{samepage}
 \begin{align}
 &\bar{\rho}
 &
@@ -2223,7 +2223,7 @@ information:
 &
 &\overline{u''}
 &
-&\widetilde{\nabla{}u}
+&\symmetricpart{\widetilde{\nabla{}u}}
 \end{align}
 \begin{align}
 &\overline{f\cdot{}u''}
@@ -2244,6 +2244,7 @@ information:
 &
 &\widetilde{\nu''\left(\nabla{}h\right)''}
 \end{align}
+\end{samepage}
 Other ways to minimally capture the mean thermodynamic state, e.g. $\bar{\rho}$
 and $\tilde{T}$, could have been chosen.  The information above are natural
 choices following section~\ref{state_variable_selection}.  Favre-fluctuating
@@ -2365,6 +2366,7 @@ The equations are augmented by the following nondimensional relationships:
 where $\Reynolds$, $\Mach$, and $\Prandtl$ are defined as in
 section~\ref{sec:nondimrefq}.  One may exactly compute the nondimensional mean
 state evolution given the following statistical quantities:
+\begin{samepage}
 \begin{align}
 &\bar{\rho}
 &
@@ -2384,7 +2386,7 @@ state evolution given the following statistical quantities:
 &
 &\overline{u''}
 &
-&\widetilde{\nabla{}u}
+&\symmetricpart{\widetilde{\nabla{}u}}
 \end{align}
 \begin{align}
 &\overline{f\cdot{}u''}
@@ -2405,6 +2407,7 @@ state evolution given the following statistical quantities:
 &
 &\widetilde{\nu''\left(\nabla{}T\right)''}
 \end{align}
+\end{samepage}
 
 Notice that the heat flux $\bar{q}_s$ has been merged into the mean energy
 equation to better mimic \eqref{eq:nondim_energy}.  Enthalpy-based correlations
@@ -2441,7 +2444,7 @@ the statistical quantities listed in section~\ref{sec:nondimfans}:
 &
 &\bar{u}
 &
-&\overline{\rho\nabla{}u}
+&\symmetricpart{\overline{\rho\nabla{}u}}
 &
 &\overline{\rho\nabla{}T}
 &
@@ -2472,6 +2475,9 @@ the statistical quantities listed in section~\ref{sec:nondimfans}:
 After averaging across the homogeneous streamwise $x$ and spanwise $z$
 directions, each sample (ignoring tensor order) is a one-dimensional,
 instantaneous profile varying only along the wall-normal B-spline direction.
+The amount of data gathered may be reduced by exploiting symmetries in
+$\overline{\rho{}u\otimes{}u}$, $\overline{\rho{}u\otimes{}u\otimes{}u}$, and
+$\overline{\mu{}S}$.
 
 The instantaneous samples are combined according to the following ordered
 sequence of computations to obtain the desired quantities:
@@ -2565,7 +2571,7 @@ Contracting the first two indices and relabelling the third index,
    .
 \shortintertext{
 Reverting to direct notation and employing the symmetry of
-$\widetilde{u\otimes{}u}$, we obtain
+$\widetilde{u\otimes{}u}$, we arrive at
 }
   \widetilde{{u''}^{2}u''}
 &=
@@ -2586,19 +2592,18 @@ Continuing the ordered sequence of computations:
 \\
   \tilde{\nu} &= \bar{\rho}^{-1} \overline{\mu}
 \\
-  \widetilde{\nabla{}u} &= \bar{\rho}^{-1} \overline{\rho\nabla{}u}
+  \symmetricpart{\widetilde{\nabla{}u}}
+  &= \bar{\rho}^{-1} \symmetricpart{\overline{\rho\nabla{}u}}
 \\
-  \tilde{S} &= \frac{1}{2}\left(
-       \widetilde{\nabla{}u} + \trans{\widetilde{\nabla{}u}}
-     \right)
-   - \frac{1}{3}\left(\widetilde{\nabla\cdot{}u}\right) I
+  \tilde{S} &= \symmetricpart{\widetilde{\nabla{}u}}
+   - \frac{1}{3} \trace\symmetricpart{\widetilde{\nabla{}u}} I
 \\
   \widetilde{\nu''S''}
   &= \bar{\rho}^{-1} \overline{\mu{}S} - \tilde{\nu}\tilde{S}
 \\
   \widetilde{\nu''\left(\nabla\cdot{}u\right)''}
   &= \bar{\rho}^{-1} \overline{\mu\nabla\cdot{}u}
-   - \tilde{\nu}\trace\widetilde{\nabla{}u}
+   - \tilde{\nu}\trace\symmetricpart{\widetilde{\nabla{}u}}
 \\
   \widetilde{\nu''\left(\nabla{}T\right)''}
   &= \bar{\rho}^{-1} \overline{\mu\nabla{}T}
@@ -2607,6 +2612,8 @@ Continuing the ordered sequence of computations:
 
 \subsection{Quantifying statistical quantity convergence}
 \label{sec:quantconvergence}
+
+TODO
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
