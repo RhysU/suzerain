@@ -52,6 +52,7 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
+#include <suzerain/statistics_definition.hpp>
 #include <suzerain/signal_definition.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/utility.hpp>
@@ -92,6 +93,7 @@ using channel::NoiseDefinition;
 using suzerain::fftw::FFTWDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::RestartDefinition;
+using suzerain::problem::StatisticsDefinition;
 using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::SignalDefinition;
 using suzerain::problem::TimeDefinition;
@@ -106,6 +108,8 @@ static const RestartDefinition restart(
         /* retain      */ 1,
         /* dt          */ 0,
         /* nt          */ 0);
+static const StatisticsDefinition statsdef(
+        /* destination */ "stats#.h5");
 static const TimeDefinition<real_t> timedef(
         /* advance_dt                */ 0,
         /* advance_nt                */ 0,
@@ -405,6 +409,33 @@ static bool save_restart(real_t t, size_t nt)
     return true; // Continue time advancement
 }
 
+/** Routine to write a statistics file.  Signature for TimeController use. */
+static bool save_statistics(real_t t, size_t nt)
+{
+    const double starttime = MPI_Wtime();
+    DEBUG0("Started to compute statistics at t = " << t << " and nt = " << nt);
+
+    // We use restart.{metadata,uncommitted} for statistics too.
+    DEBUG0("Cloning " << restart.metadata << " to " << restart.uncommitted);
+    esio_file_clone(esioh, restart.metadata.c_str(),
+                    restart.uncommitted.c_str(), 1 /*overwrite*/);
+    channel::store_time(esioh, t);
+
+    // FIXME Compute statistics
+    // FIXME Save statistics to file
+
+    DEBUG0("Committing " << restart.uncommitted
+           << " as a statistics file using template " << statsdef.destination);
+    esio_file_close_restart(
+            esioh, statsdef.destination.c_str(), statsdef.retain);
+
+    const double elapsed = MPI_Wtime() - starttime;
+    INFO0("Successfully wrote statistics at t = " << t << " for nt = " << nt
+          << " in " << elapsed << " seconds");
+
+    return true; // Continue time advancement
+}
+
 /**
  * Type of atomic locations used to track local receipt of the following
  * signal-based actions:
@@ -413,8 +444,9 @@ static bool save_restart(real_t t, size_t nt)
  * \li \c 1 Write a restart file
  * \li \c 2 Tear down the simulation (reactively  due to an incoming signal)
  * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
+ * \li \c 4 Compute and write a statistics file
  */
-typedef array<sig_atomic_t,4> atomic_signal_received_t;
+typedef array<sig_atomic_t,5> atomic_signal_received_t;
 
 /** Atomic locations used to track local signal receipt. */
 static atomic_signal_received_t atomic_signal_received = {{ /*0*/ }};
@@ -445,6 +477,14 @@ static void process_signal(int sig)
     end = sigdef.teardown.end();
     if (std::find(sigdef.teardown.begin(), end, sig) != end) {
         atomic_signal_received[2] = sig;
+    }
+
+    // atomic_signal_received[3] handled outside this routine
+
+    // Determine if we should compute and write statistics due to the signal
+    end = sigdef.statistics.end();
+    if (std::find(sigdef.statistics.begin(), end, sig) != end) {
+        atomic_signal_received[4] = sig;
     }
 }
 
@@ -503,6 +543,12 @@ static bool process_any_signals_received(real_t t, size_t nt)
         INFO0("Initiating proactive teardown because of wall time constraint");
         soft_teardown  = true;
         keep_advancing = false;
+    }
+
+    if (signal_received[4]) {
+        INFO0("Computing and writing statistics due to receipt of "
+              << suzerain_signal_name(signal_received[4]));
+        keep_advancing = keep_advancing && save_statistics(t, nt);
     }
 
     // Clear signal_received to defensively avoid stale data bugs.
@@ -747,6 +793,8 @@ int main(int argc, char **argv)
                 const_cast<FFTWDefinition&>(fftwdef));
         options.add_definition(
                 const_cast<RestartDefinition&>(restart));
+        options.add_definition(
+                const_cast<StatisticsDefinition&>(statsdef));
         options.add_definition(
                 const_cast<TimeDefinition<real_t>&>(timedef));
         options.add_definition(
@@ -1040,13 +1088,20 @@ int main(int argc, char **argv)
         tc->add_periodic_callback(dt, nt, &save_restart);
     }
 
+    // Register statistics-related callbacks per statistics_{dt,nt}.
+    tc->add_periodic_callback(
+            (statsdef.dt ? statsdef.dt : tc->forever_t()),
+            (statsdef.nt ? statsdef.nt : tc->forever_nt()),
+            &save_statistics);
+
     // Register any necessary signal handling logic once per unique signal
     {
         // Obtain a set of signal numbers which we need to register
         std::vector<int> s;
-        s.insert(s.end(), sigdef.status.begin(),   sigdef.status.end());
-        s.insert(s.end(), sigdef.restart.begin(),  sigdef.restart.end());
-        s.insert(s.end(), sigdef.teardown.begin(), sigdef.teardown.end());
+        s.insert(s.end(), sigdef.status.begin(),     sigdef.status.end());
+        s.insert(s.end(), sigdef.restart.begin(),    sigdef.restart.end());
+        s.insert(s.end(), sigdef.statistics.begin(), sigdef.statistics.end());
+        s.insert(s.end(), sigdef.teardown.begin(),   sigdef.teardown.end());
         std::sort(s.begin(), s.end());
         s.erase(std::unique(s.begin(), s.end()), s.end());
 
