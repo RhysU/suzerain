@@ -40,6 +40,7 @@ namespace problem {
 
 SignalDefinition::SignalDefinition(const std::string& specstatus,
                                    const std::string& specrestart,
+                                   const std::string& specstatistics,
                                    const std::string& specteardown)
     : IDefinition("Actions to take on receipt of various signals")
 {
@@ -53,6 +54,11 @@ SignalDefinition::SignalDefinition(const std::string& specstatus,
         ("signal_restart", value<std::string>()->default_value(specrestart)
         ->notifier(boost::bind(&SignalDefinition::parse_restart,this,_1)),
         "Write restart file on any signal in this comma-separated list")
+
+        ("signal_statistics",
+         value<std::string>()->default_value(specstatistics)
+        ->notifier(boost::bind(&SignalDefinition::parse_statistics,this,_1)),
+        "Write statistics file on any signal in this comma-separated list")
 
         ("signal_teardown", value<std::string>()->default_value(specteardown)
         ->notifier(boost::bind(&SignalDefinition::parse_teardown,this,_1)),
@@ -119,6 +125,12 @@ void SignalDefinition::parse_restart(const std::string &spec)
 {
     std::vector<int> tmp = parse_spec("--signal_restart", spec);
     this->restart.swap(tmp);
+}
+
+void SignalDefinition::parse_statistics(const std::string &spec)
+{
+    std::vector<int> tmp = parse_spec("--signal_statistics", spec);
+    this->statistics.swap(tmp);
 }
 
 void SignalDefinition::parse_teardown(const std::string &spec)
