@@ -199,8 +199,8 @@ int main(int argc, char **argv)
         // Record build and invocation for posterity and to aid in debugging
         std::ostringstream os;
         std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
-        INFO0("Build:      " << revstr);
         INFO0("Invocation: " << os.str());
+        INFO0("Build:      " << revstr);
 
         switch (options.verbose()) {
             case 0:                   break;
