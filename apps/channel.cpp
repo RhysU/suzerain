@@ -2213,7 +2213,7 @@ void sample_mean_quantities(
 #undef STRINGIFY
 
     // Obtain samples available in wave-space from mean conserved state.
-    // These mean values are already averaged across the X-Z plane.
+    // These mean coefficients are already averaged across the X-Z plane.
     bar_rho         = Map<VectorXc>(swave[ndx::rho].origin(),  Ny).real();
     bar_rhou.col(0) = Map<VectorXc>(swave[ndx::rhou].origin(), Ny).real();
     bar_rhou.col(1) = Map<VectorXc>(swave[ndx::rhov].origin(), Ny).real();
@@ -2514,6 +2514,32 @@ void sample_mean_quantities(
     ALLREDUCE_MEAN(mu_grad_T);
 
 #undef ALLREDUCE_MEAN
+
+    // Convert collocation point values to B-spline coefficients
+    {
+        suzerain::bsplineop_lu mass(bop);
+        mass.form_mass(bop);
+
+#define MEAN_COEFFICIENTS(q) \
+        mass.solve(bar_##q.cols(), bar_##q.data(), 1, bar_##q.rows())
+
+        MEAN_COEFFICIENTS(mu);
+        MEAN_COEFFICIENTS(u);
+        MEAN_COEFFICIENTS(sym_rho_grad_u);
+        MEAN_COEFFICIENTS(rho_grad_T);
+        MEAN_COEFFICIENTS(tau_colon_grad_u);
+        MEAN_COEFFICIENTS(tau);
+        MEAN_COEFFICIENTS(tau_u);
+        MEAN_COEFFICIENTS(p_div_u);
+        MEAN_COEFFICIENTS(rho_u_otimes_u);
+        MEAN_COEFFICIENTS(rho_u_otimes_u_otimes_u);
+        MEAN_COEFFICIENTS(rho_T_u);
+        MEAN_COEFFICIENTS(mu_S);
+        MEAN_COEFFICIENTS(mu_div_u);
+        MEAN_COEFFICIENTS(mu_grad_T);
+
+#undef MEAN_COEFFICIENTS
+    }
 
     // Finally, for consistency, have all ranks know bar_{rho,rhou,rhoe} too.
     // Not strictly necessary, but nice from a consistency perspective.

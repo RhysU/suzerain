@@ -439,12 +439,14 @@ static bool save_statistics(real_t t, size_t nt)
 
         esio_field_establish(esioh,
                              1,          0, (procid == 0 ? 1          : 0),
-                             dat.rows(), 0, (procid == 0 ? dat.rows() : 0),
-                             dat.cols(), 0, (procid == 0 ? dat.cols() : 0));
+                             dat.cols(), 0, (procid == 0 ? dat.cols() : 0),
+                             dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
 
         esio_field_write(esioh, key.c_str(), dat.data(), 0, 0, 0,
                 "Mean quantity samples stored with row-major indices "
-                " (tensor component index, collocation_point_y, sample number)");
+                " (B-spline coefficients, tensor component, sample number) "
+                " with the B-spline basis in Y defined by "
+                " /y, /breakpoints_y, and /knots");
     }
 
     DEBUG0("Committing " << restart.uncommitted
