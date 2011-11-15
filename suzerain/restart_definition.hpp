@@ -22,7 +22,7 @@
  *
  *--------------------------------------------------------------------------
  *
- * definition.hpp: classes handling restart definitions
+ * restart_definition.hpp: classes handling restart definitions
  *
  * $Id$
  *--------------------------------------------------------------------------
@@ -67,13 +67,12 @@ public:
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c destination and \c retain.
      */
-    explicit RestartDefinition(
-            const std::string& metadata    = "",
-            const std::string& uncommitted = "",
-            const std::string& destination = "",
-            int retain                     = 1,
-            double dt                      = 0,
-            int nt                         = 0);
+    RestartDefinition(const std::string& metadata,
+                      const std::string& uncommitted,
+                      const std::string& destination,
+                      int retain = 1,
+                      double dt  = 0,
+                      int nt     = 0);
 
     /**
      * The restart file path to use when saving common restart file

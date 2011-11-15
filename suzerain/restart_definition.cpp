@@ -92,7 +92,7 @@ RestartDefinition::RestartDefinition(
          "Any trailing \"XXXXXX\" will be used to generate a unique template.")
         ("restart_retain", value<string>(NULL)
             ->notifier(bind(&parse_option<int>, _1, &this->retain,
-                            &ensure_nonnegative<int>, "retain"))
+                            &ensure_nonnegative<int>, "restart_retain"))
             ->default_value(lexical_cast<string>(this->retain)),
          "Maximum number of committed restart files to retain")
         ("restart_dt", value<string>(NULL)
