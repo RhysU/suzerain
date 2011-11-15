@@ -421,8 +421,6 @@ static bool save_statistics(real_t t, size_t nt)
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
     channel::store_time(esioh, t);
 
-    // FIXME Compute statistics
-    // FIXME Save statistics to file
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a statistics file using template " << statsdef.destination);
@@ -887,15 +885,17 @@ int main(int argc, char **argv)
     // Generating unique file names as needed using mkstemp(3)
     {
         // Pack a temporary buffer with the three file name templates
-        array<size_t,4> pos = {{ 0,
-                                 restart.metadata.length()    + 1,
-                                 restart.uncommitted.length() + 1,
-                                 restart.destination.length() + 1 }};
+        array<size_t,5> pos = {{ 0,
+                                 restart.metadata.length()     + 1,
+                                 restart.uncommitted.length()  + 1,
+                                 restart.destination.length()  + 1,
+                                 statsdef.destination.length() + 1 }};
         std::partial_sum(pos.begin(), pos.end(), pos.begin());
-        boost::scoped_array<char> buf(new char[pos[3]]);
+        boost::scoped_array<char> buf(new char[pos[4]]);
         strcpy(&buf[pos[0]], restart.metadata.c_str());
         strcpy(&buf[pos[1]], restart.uncommitted.c_str());
         strcpy(&buf[pos[2]], restart.destination.c_str());
+        strcpy(&buf[pos[3]], statsdef.destination.c_str());
 
         // Generate unique files to be overwritten and/or just file names.
         // File generation relies on template semantics of mkstemp(3).
@@ -913,15 +913,20 @@ int main(int argc, char **argv)
                 close(mkstemp(&buf[pos[2]]));  // Not clobbered later...
                 unlink(&buf[pos[2]]);          // ...so remove any evidence
             }
+            if (boost::ends_with(statsdef.destination, "XXXXXX")) {
+                close(mkstemp(&buf[pos[3]]));  // Not clobbered later...
+                unlink(&buf[pos[3]]);          // ...so remove any evidence
+            }
         }
 
         // Broadcast any generated names to all ranks and unpack values
-        SUZERAIN_MPICHKQ(MPI_Bcast(buf.get(), pos[3],
+        SUZERAIN_MPICHKQ(MPI_Bcast(buf.get(), pos[4],
                          suzerain::mpi::datatype<char>(), 0,
                          MPI_COMM_WORLD));
-        const_cast<RestartDefinition&>(restart).metadata    = &buf[pos[0]];
-        const_cast<RestartDefinition&>(restart).uncommitted = &buf[pos[1]];
-        const_cast<RestartDefinition&>(restart).destination = &buf[pos[2]];
+        const_cast<RestartDefinition&>(restart).metadata        = &buf[pos[0]];
+        const_cast<RestartDefinition&>(restart).uncommitted     = &buf[pos[1]];
+        const_cast<RestartDefinition&>(restart).destination     = &buf[pos[2]];
+        const_cast<StatisticsDefinition&>(statsdef).destination = &buf[pos[3]];
     }
 
     DEBUG0("Saving metadata temporary file: " << restart.metadata);
