@@ -17,8 +17,8 @@ eval "$METACASE"
 banner "Reproducibility of adding fluctuations to an existing field"
 (
     cd $testdir
-    prunq ../channel_explicit mms0.h5 --desttemplate "a#.h5" $ADVANCE $P
-    prunq ../channel_explicit mms0.h5 --desttemplate "b#.h5" $ADVANCE $P
+    prunq ../channel_explicit mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
+    prunq ../channel_explicit mms0.h5 --restart_destination "b#.h5" $ADVANCE $P
     differ --delta=2e-14 --nan a0.h5 b0.h5
 )
 

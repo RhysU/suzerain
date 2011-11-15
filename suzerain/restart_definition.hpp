@@ -57,7 +57,7 @@ public:
      *                     common restart file metadata.
      * @param uncommitted  Restart file path to use when saving
      *                     uncommitted restart data.
-     * @param desttemplate Restart archiving pattern to use when
+     * @param destination  Restart archiving pattern to use when
      *                     committing restart files.
      * @param retain       Maximum number of committed restart files
      *                     to retain.
@@ -65,15 +65,15 @@ public:
      * @param dt           Amount of simulation time between restart writes.
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
-     *      \c desttemplate and \c retain.
+     *      \c destination and \c retain.
      */
     explicit RestartDefinition(
-            const std::string& metadata     = "",
-            const std::string& uncommitted  = "",
-            const std::string& desttemplate = "",
-            int retain                      = 1,
-            double dt                       = 0,
-            int nt                          = 0);
+            const std::string& metadata    = "",
+            const std::string& uncommitted = "",
+            const std::string& destination = "",
+            int retain                     = 1,
+            double dt                      = 0,
+            int nt                         = 0);
 
     /**
      * The restart file path to use when saving common restart file
@@ -90,9 +90,9 @@ public:
      * The archiving pattern to use when committing restart files.
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
-     *      desttemplate.
+     *      destination.
      */
-    std::string desttemplate;
+    std::string destination;
 
     /**
      * The maximum number of committed restart files to retain.

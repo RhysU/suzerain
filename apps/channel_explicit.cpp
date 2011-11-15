@@ -100,12 +100,12 @@ static const GridDefinition grid;
 static const FFTWDefinition fftwdef(
         suzerain::fftw::measure, suzerain::fftw::estimate);
 static const RestartDefinition restart(
-        /* metadata     */ "metadata.h5.XXXXXX",
-        /* uncommitted  */ "uncommitted.h5.XXXXXX",
-        /* desttemplate */ "restart#.h5",
-        /* retain       */ 1,
-        /* dt           */ 0,
-        /* nt           */ 0);
+        /* metadata    */ "metadata.h5.XXXXXX",
+        /* uncommitted */ "uncommitted.h5.XXXXXX",
+        /* destination */ "restart#.h5",
+        /* retain      */ 1,
+        /* dt          */ 0,
+        /* nt          */ 0);
 static const TimeDefinition<real_t> timedef(
         /* advance_dt                */ 0,
         /* advance_nt                */ 0,
@@ -392,9 +392,9 @@ static bool save_restart(real_t t, size_t nt)
     }
 
     DEBUG0("Committing " << restart.uncommitted
-           << " as a restart file using template " << restart.desttemplate);
+           << " as a restart file using template " << restart.destination);
     esio_file_close_restart(
-            esioh, restart.desttemplate.c_str(), restart.retain);
+            esioh, restart.destination.c_str(), restart.retain);
 
     const double elapsed = MPI_Wtime() - starttime;
     INFO0("Successfully wrote restart at t = " << t << " for nt = " << nt
@@ -840,14 +840,14 @@ int main(int argc, char **argv)
     {
         // Pack a temporary buffer with the three file name templates
         array<size_t,4> pos = {{ 0,
-                                 restart.metadata.length()     + 1,
-                                 restart.uncommitted.length()  + 1,
-                                 restart.desttemplate.length() + 1 }};
+                                 restart.metadata.length()    + 1,
+                                 restart.uncommitted.length() + 1,
+                                 restart.destination.length() + 1 }};
         std::partial_sum(pos.begin(), pos.end(), pos.begin());
         boost::scoped_array<char> buf(new char[pos[3]]);
         strcpy(&buf[pos[0]], restart.metadata.c_str());
         strcpy(&buf[pos[1]], restart.uncommitted.c_str());
-        strcpy(&buf[pos[2]], restart.desttemplate.c_str());
+        strcpy(&buf[pos[2]], restart.destination.c_str());
 
         // Generate unique files to be overwritten and/or just file names.
         // File generation relies on template semantics of mkstemp(3).
@@ -861,7 +861,7 @@ int main(int argc, char **argv)
                 close(mkstemp(&buf[pos[1]]));  // Possibly clobbered later...
                 unlink(&buf[pos[1]]);          // ...so remove any evidence
             }
-            if (boost::ends_with(restart.desttemplate, "XXXXXX")) {
+            if (boost::ends_with(restart.destination, "XXXXXX")) {
                 close(mkstemp(&buf[pos[2]]));  // Not clobbered later...
                 unlink(&buf[pos[2]]);          // ...so remove any evidence
             }
@@ -871,9 +871,9 @@ int main(int argc, char **argv)
         SUZERAIN_MPICHKQ(MPI_Bcast(buf.get(), pos[3],
                          suzerain::mpi::datatype<char>(), 0,
                          MPI_COMM_WORLD));
-        const_cast<RestartDefinition&>(restart).metadata     = &buf[pos[0]];
-        const_cast<RestartDefinition&>(restart).uncommitted  = &buf[pos[1]];
-        const_cast<RestartDefinition&>(restart).desttemplate = &buf[pos[2]];
+        const_cast<RestartDefinition&>(restart).metadata    = &buf[pos[0]];
+        const_cast<RestartDefinition&>(restart).uncommitted = &buf[pos[1]];
+        const_cast<RestartDefinition&>(restart).destination = &buf[pos[2]];
     }
 
     DEBUG0("Saving metadata temporary file: " << restart.metadata);

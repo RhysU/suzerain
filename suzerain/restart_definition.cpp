@@ -55,14 +55,14 @@ static void parse_option(const std::string &s,
 RestartDefinition::RestartDefinition(
         const std::string& metadata,
         const std::string& uncommitted,
-        const std::string& desttemplate,
+        const std::string& destination,
         int retain,
         double dt,
         int nt)
     : IDefinition("Restart-related parameters"),
       metadata(metadata),
       uncommitted(uncommitted),
-      desttemplate(desttemplate),
+      destination(destination),
       retain(retain),
       dt(dt),
       nt(nt),
@@ -79,18 +79,18 @@ RestartDefinition::RestartDefinition(
     this->add_options()
         ("metadata", value(&this->metadata)
             ->default_value(this->metadata),
-         "Path to use when saving common restart metadata.  "
+         "Path to use when saving common metadata for output files.  "
          "Any trailing \"XXXXXX\" will be used to generate a unique name.")
         ("uncommitted", value(&this->uncommitted)
             ->default_value(this->uncommitted),
-         "Path to use when saving uncommitted restart data.  "
+         "Path to use when saving uncommitted output files.  "
          "Any trailing \"XXXXXX\" will be used to generate a unique name.")
-        ("desttemplate", value(&this->desttemplate)
-            ->default_value(this->desttemplate),
-         "Restart archiving pattern to use when committing restart files.  "
+        ("restart_destination", value(&this->destination)
+            ->default_value(this->destination),
+         "Archiving destination to use when committing restart files.  "
          "One or more #'s must be present and will be replaced by a sequence number.  "
          "Any trailing \"XXXXXX\" will be used to generate a unique template.")
-        ("retain", value<string>(NULL)
+        ("restart_retain", value<string>(NULL)
             ->notifier(bind(&parse_option<int>, _1, &this->retain,
                             &ensure_nonnegative<int>, "retain"))
             ->default_value(lexical_cast<string>(this->retain)),
