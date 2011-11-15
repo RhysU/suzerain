@@ -2147,9 +2147,9 @@ void sample_mean_quantities(
     namespace acc = boost::accumulators;
     typedef suzerain::ContiguousState<4,complex_t> state_type;
     using Eigen::ArrayXXr;
-    using Eigen::Lower;
     using Eigen::Map;
     using Eigen::Matrix3r;
+    using Eigen::Upper;
     using Eigen::Vector3r;
     using Eigen::VectorXc;
 
@@ -2189,8 +2189,8 @@ void sample_mean_quantities(
     // Local reference values like bar_XXX for brevity and compile-time safety.
     samples.clear();
 #define STRINGIFY(s) #s
-#define DECLARE_SAMPLE(q,n)                    \
-    ArrayXXr &bar_##q = samples[STRINGIFY(q)]; \
+#define DECLARE_SAMPLE(q,n)                           \
+    ArrayXXr &bar_##q = samples["bar_" STRINGIFY(q)]; \
     bar_##q.setZero(Ny, n)
     DECLARE_SAMPLE(rho,                      1);
     DECLARE_SAMPLE(rhou,                     3);
@@ -2396,12 +2396,12 @@ void sample_mean_quantities(
                 sum_u[1](u.y());
                 sum_u[2](u.z());
 
-                sum_sym_rho_grad_u[0](rho*grad_u.selfadjointView<Lower>()(0,0));
-                sum_sym_rho_grad_u[1](rho*grad_u.selfadjointView<Lower>()(0,1));
-                sum_sym_rho_grad_u[2](rho*grad_u.selfadjointView<Lower>()(0,2));
-                sum_sym_rho_grad_u[3](rho*grad_u.selfadjointView<Lower>()(1,1));
-                sum_sym_rho_grad_u[4](rho*grad_u.selfadjointView<Lower>()(1,2));
-                sum_sym_rho_grad_u[5](rho*grad_u.selfadjointView<Lower>()(2,2));
+                sum_sym_rho_grad_u[0](rho*grad_u.selfadjointView<Upper>()(0,0));
+                sum_sym_rho_grad_u[1](rho*grad_u.selfadjointView<Upper>()(0,1));
+                sum_sym_rho_grad_u[2](rho*grad_u.selfadjointView<Upper>()(0,2));
+                sum_sym_rho_grad_u[3](rho*grad_u.selfadjointView<Upper>()(1,1));
+                sum_sym_rho_grad_u[4](rho*grad_u.selfadjointView<Upper>()(1,2));
+                sum_sym_rho_grad_u[5](rho*grad_u.selfadjointView<Upper>()(2,2));
 
                 sum_rho_grad_T[0](rho * grad_T.x());
                 sum_rho_grad_T[1](rho * grad_T.y());
