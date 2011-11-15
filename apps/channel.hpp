@@ -503,10 +503,10 @@ void accumulate_manufactured_solution(
  * while $\bar{f}$ is not.
  *
  * The argument \c samples is <tt>clear</tt>ed and then populated with keys
- * denoting the quantity name and two-dimensional, row-major arrays.  The row
- * index iterates over tensor indices and the column index iterates over
- * wall-normal collocation_point locations.  Scalars have only a single tensor
- * index.  Vectors have three indices corresponding to the streamwise x,
+ * denoting the quantity name and two-dimensional, column-major arrays.  The
+ * row index iterates over wall-normal collocation point locations and the
+ * column index iterates over tensor indices.  Scalars have only a single
+ * tensor index.  Vectors have three indices corresponding to the streamwise x,
  * wall-normal y, and spanwise z directions.  Symmetric tensors (for example,
  * \f$\overline{\mu{}S}\f$}) have six rows corresponding to the <tt>xx</tt>,
  * <tt>xy</tt>, <tt>xz</tt>, <tt>yy</tt>, <tt>yz</tt>, and <tt>zz</tt> indices.
@@ -523,7 +523,7 @@ void accumulate_manufactured_solution(
  * @param[in]     scenario
  * @param[in]     grid
  * @param[in]     dgrid
- * @param[in,out] b        M
+ * @param[in,out] b
  * @param[in]     bop
  * @param[in,out] swave    Destroyed in the computation
  * @param[out]    samples  Overwritten with the results
