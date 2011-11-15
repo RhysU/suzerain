@@ -33,7 +33,6 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <boost/ptr_container/ptr_map.hpp>
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>
 #include <suzerain/coalescing_pool.hpp>

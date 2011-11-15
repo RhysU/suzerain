@@ -142,7 +142,6 @@ protected:
 
 };
 
-
 /**
  * A boundary-condition agnostic, fully explicit Navier&ndash;Stokes operator.
  */
