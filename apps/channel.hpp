@@ -514,10 +514,11 @@ void accumulate_manufactured_solution(
  * <tt>xzz</tt>, <tt>yyy</tt>, <tt>yyz</tt>, <tt>yzz</tt>, and <tt>zzz</tt>
  * indices.
  *
- * \internal Many implementation consistency issues have been traded for the
- * headache of reading Boost.Preprocessor-based logic.  So it goes.
+ * \internal Many memory overhead and implementation consistency issues have
+ * been traded for the headache of reading Boost.Preprocessor-based logic.  So
+ * it goes.
  */
-class samples
+class mean
 {
 public:
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -525,14 +526,16 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 #endif
 
-/** A Boost.Preprocessor SEQ of tuples of wave-space sampled quantities. */
-#define CHANNEL_SAMPLES_WAVE                               \
+/** A Boost.Preprocessor sequence of tuples of quantities computed in wave
+ * space. */
+#define CHANNEL_MEAN_WAVE                                  \
     ((rho,                      1)) /* scalar           */ \
     ((rhou,                     3)) /* vector           */ \
     ((rhoe,                     1)) /* scalar           */
 
-/** A Boost.Preprocessor SEQ of tuples of physical-space sampled quantities. */
-#define CHANNEL_SAMPLES_PHYSICAL                            \
+/** A Boost.Preprocessor sequence of tuples of quantities computed in physical
+ * space. */
+#define CHANNEL_MEAN_PHYSICAL                               \
     ((mu,                       1))  /* scalar           */ \
     ((u,                        3))  /* vector           */ \
     ((sym_rho_grad_u,           6))  /* symmetric tensor */ \
@@ -548,8 +551,8 @@ public:
     ((mu_div_u,                 1))  /* scalar           */ \
     ((mu_grad_T,                3))  /* vector           */
 
-/** A Boost.Preprocessor SEQ of tuples of all sampled quantities. */
-#define CHANNEL_SAMPLES CHANNEL_SAMPLES_WAVE CHANNEL_SAMPLES_PHYSICAL
+/** A Boost.Preprocessor sequence of tuples of all sampled quantities. */
+#define CHANNEL_MEAN CHANNEL_MEAN_WAVE CHANNEL_MEAN_PHYSICAL
 
     /* Compile-time totals of the number of scalars sampled at each point */
     struct nscalars { enum {
@@ -557,13 +560,13 @@ public:
 #define SUM(s, state, x) BOOST_PP_ADD(state, x)
 
         wave = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_SAMPLES_WAVE)),
+                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN_WAVE)),
 
         physical = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_SAMPLES_PHYSICAL)),
+                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN_PHYSICAL)),
 
         total = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_SAMPLES))
+                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN))
 
 #undef EXTRACT
 #undef SUM
@@ -572,7 +575,7 @@ public:
     /** Type of the contiguous storage used to house all scalars */
     typedef Eigen::Array<real_t, Eigen::Dynamic, nscalars::total> storage_type;
 
-    /** Contiguous storage used to house all samples */
+    /** Contiguous storage used to house all means */
     storage_type storage;
 
 // SHIFTED_SUM taken from http://lists.boost.org/boost-users/2009/10/53245.php
@@ -596,19 +599,19 @@ public:
     /** Compile-time offsets for each quantity within \c storage */
     struct start { enum {
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
-                OP,,SHIFTED_SUM(CHANNEL_SAMPLES)))
+                OP,,SHIFTED_SUM(CHANNEL_MEAN)))
     }; };
 
     /** Compile-time sizes for each quantity within \c storage */
     struct size { enum {
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP,,CHANNEL_SAMPLES))
+        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP,,CHANNEL_MEAN))
     }; };
 
 #undef OP
 #undef SHIFTED_SUM
 #undef SHIFTED_SUM_OP
 
-    // Declare a named, mutable "view" into storage for each quantity gathered
+    // Declare a named, mutable "view" into storage for each quantity
 #define DECLARE(r, data, tuple)                                               \
     storage_type::NColsBlockXpr<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>::Type \
     BOOST_PP_TUPLE_ELEM(2, 0, tuple)()                                        \
@@ -616,10 +619,10 @@ public:
         return storage.middleCols<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>(    \
                 start::BOOST_PP_TUPLE_ELEM(2, 0, tuple));                     \
     }
-    BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_SAMPLES)
+    BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_MEAN)
 #undef DECLARE
 
-    // Declare a named, immutable "view" into storage for each quantity gathered
+    // Declare a named, immutable "view" into storage for each quantity
 #define DECLARE(r, data, tuple)                                                    \
     storage_type::ConstNColsBlockXpr<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>::Type \
     BOOST_PP_TUPLE_ELEM(2, 0, tuple)() const                                       \
@@ -627,49 +630,42 @@ public:
         return storage.middleCols<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>(         \
                 start::BOOST_PP_TUPLE_ELEM(2, 0, tuple));                          \
     }
-    BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_SAMPLES)
+    BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_MEAN)
 #undef DECLARE
-
-    // Declare a foreach function iterating over all mutable regions in the storage
-    // and invoking \c f
 
     /**
      * A foreach operation iterating over all mutable quantities in \c storage.
      * The functor is invoked as <tt>f(::std::string("foo",
      * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
-     * "foo".
+     * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
+     * for suggestions on how to write a functor.  See <tt>boost::ref</tt>
+     * for how to use a stateful functor.
      */
     template <typename BinaryFunction>
     void foreach(BinaryFunction f) {
 #define INVOKE(r, data, tuple) \
         f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
           this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
-        BOOST_PP_SEQ_FOR_EACH(INVOKE,,CHANNEL_SAMPLES)
+        BOOST_PP_SEQ_FOR_EACH(INVOKE,,CHANNEL_MEAN)
     }
 #undef INVOKE
 
     /**
-     * A foreach operation iterating over all immutable quantities in \c storage.
-     * The functor is invoked as <tt>f(::std::string("foo",
+     * A foreach operation iterating over all immutable quantities in \c
+     * storage.  The functor is invoked as <tt>f(::std::string("foo",
      * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
-     * "foo".
+     * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
+     * for suggestions on how to write a functor.  See <tt>boost::ref</tt> for
+     * how to use a stateful functor.
      */
     template <typename BinaryFunction>
     void foreach(BinaryFunction f) const {
 #define INVOKE(r, data, tuple) \
         f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
           this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
-        BOOST_PP_SEQ_FOR_EACH(INVOKE,,CHANNEL_SAMPLES)
+        BOOST_PP_SEQ_FOR_EACH(INVOKE,,CHANNEL_MEAN)
     }
 #undef INVOKE
-
-    /**
-     * Construct an instance housing quantities with \c Ny points in the
-     * wall-normal direction.
-     */
-    explicit samples(storage_type::Index Ny) {
-        storage.setZero(Ny, storage_type::ColsAtCompileTime);
-    }
 };
 
 /**
