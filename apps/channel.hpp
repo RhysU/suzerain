@@ -496,6 +496,183 @@ void accumulate_manufactured_solution(
         const real_t simulation_time);
 
 /**
+ * Encapsulate the mean quantities detailed in the "Sampling logistics" section
+ * of <tt>writeups/derivation.tex</tt> except for those computed implicitly per
+ * <tt>writeups/channel_treatment.tex</tt>.  For example, \f$\bar{\rho}\f$ and
+ * \f$\overline{p\nabla\cdot{}u}\f$ are computed while $\bar{f}$ is not.
+ *
+ * Samples of each quantity are made available through a two-dimensional,
+ * column-major arrays.  The row index iterates over wall-normal collocation
+ * point locations and the column index iterates over tensor indices.  Scalars
+ * have only a single tensor index.  Vector quantities have three indices
+ * corresponding to the streamwise x, wall-normal y, and spanwise z directions.
+ * Symmetric tensors (for example, \f$\overline{\mu{}S}\f$}) have six entries
+ * corresponding to the <tt>xx</tt>, <tt>xy</tt>, <tt>xz</tt>, <tt>yy</tt>,
+ * <tt>yz</tt>, and <tt>zz</tt> indices.  Rank one triple products (for example
+ * \f$\overline{\rho{}u\otimes{}u\otimes{}u}\f$) have ten entries corresponding
+ * to the <tt>xxx</tt>, <tt>xxy</tt>, <tt>xxz</tt>, <tt>xyy</tt>, <tt>xyz</tt>,
+ * <tt>xzz</tt>, <tt>yyy</tt>, <tt>yyz</tt>, <tt>yzz</tt>, and <tt>zzz</tt>
+ * indices.
+ *
+ * \internal Many implementation consistency issues have been traded for the
+ * headache of reading Boost.Preprocessor-based logic.  So it goes.
+ */
+class samples
+{
+public:
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+    // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+#endif
+
+/** A Boost.Preprocessor SEQ of tuples of wave-space sampled quantities. */
+#define CHANNEL_SAMPLES_WAVE                               \
+    ((rho,                      1)) /* scalar           */ \
+    ((rhou,                     3)) /* vector           */ \
+    ((rhoe,                     1)) /* scalar           */
+
+/** A Boost.Preprocessor SEQ of tuples of physical-space sampled quantities. */
+#define CHANNEL_SAMPLES_PHYSICAL                            \
+    ((mu,                       1))  /* scalar           */ \
+    ((u,                        3))  /* vector           */ \
+    ((sym_rho_grad_u,           6))  /* symmetric tensor */ \
+    ((rho_grad_T,               3))  /* vector           */ \
+    ((tau_colon_grad_u,         1))  /* scalar           */ \
+    ((tau,                      6))  /* symmetric tensor */ \
+    ((tau_u,                    3))  /* vector           */ \
+    ((p_div_u,                  1))  /* scalar           */ \
+    ((rho_u_otimes_u,           6))  /* symmetric tensor */ \
+    ((rho_u_otimes_u_otimes_u, 10))  /* symmetric tensor */ \
+    ((rho_T_u,                  3))  /* vector           */ \
+    ((mu_S,                     6))  /* symmetric tensor */ \
+    ((mu_div_u,                 1))  /* scalar           */ \
+    ((mu_grad_T,                3))  /* vector           */
+
+/** A Boost.Preprocessor SEQ of tuples of all sampled quantities. */
+#define CHANNEL_SAMPLES CHANNEL_SAMPLES_WAVE CHANNEL_SAMPLES_PHYSICAL
+
+    /* Compile-time totals of the number of scalars sampled at each point */
+    struct nscalars { enum {
+#define EXTRACT(r, data, tuple) BOOST_PP_TUPLE_ELEM(2, 1, tuple)
+#define SUM(s, state, x) BOOST_PP_ADD(state, x)
+
+        wave = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
+                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_SAMPLES_WAVE)),
+
+        physical = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
+                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_SAMPLES_PHYSICAL)),
+
+        total = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
+                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_SAMPLES))
+
+#undef EXTRACT
+#undef SUM
+    }; };
+
+    /** Type of the contiguous storage used to house all scalars */
+    typedef Eigen::Array<real_t, Eigen::Dynamic, nscalars::total> storage_type;
+
+    /** Contiguous storage used to house all samples */
+    storage_type storage;
+
+// SHIFTED_SUM taken from http://lists.boost.org/boost-users/2009/10/53245.php
+#define SHIFTED_SUM_OP(s, state, seq)        \
+    (BOOST_PP_SEQ_PUSH_BACK(                 \
+        BOOST_PP_TUPLE_ELEM(2, 0, state),    \
+        (BOOST_PP_TUPLE_ELEM(2, 0, seq),     \
+         BOOST_PP_TUPLE_ELEM(2, 1, state))), \
+     BOOST_PP_ADD(                           \
+        BOOST_PP_TUPLE_ELEM(2, 1, state),    \
+        BOOST_PP_TUPLE_ELEM(2, 1, seq)))
+#define SHIFTED_SUM(seq)           \
+    BOOST_PP_TUPLE_ELEM(2, 0,      \
+        BOOST_PP_SEQ_FOLD_LEFT(    \
+            SHIFTED_SUM_OP,        \
+            (BOOST_PP_SEQ_NIL, 0), \
+            seq))
+#define OP(r, data, tuple)                                              \
+    BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
+
+    /** Compile-time offsets for each quantity within \c storage */
+    struct start { enum {
+        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
+                OP,,SHIFTED_SUM(CHANNEL_SAMPLES)))
+    }; };
+
+    /** Compile-time sizes for each quantity within \c storage */
+    struct size { enum {
+        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP,,CHANNEL_SAMPLES))
+    }; };
+
+#undef OP
+#undef SHIFTED_SUM
+#undef SHIFTED_SUM_OP
+
+    // Declare a named, mutable "view" into storage for each quantity gathered
+#define DECLARE(r, data, tuple)                                               \
+    storage_type::NColsBlockXpr<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>::Type \
+    BOOST_PP_TUPLE_ELEM(2, 0, tuple)()                                        \
+    {                                                                         \
+        return storage.middleCols<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>(    \
+                start::BOOST_PP_TUPLE_ELEM(2, 0, tuple));                     \
+    }
+    BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_SAMPLES)
+#undef DECLARE
+
+    // Declare a named, immutable "view" into storage for each quantity gathered
+#define DECLARE(r, data, tuple)                                                    \
+    storage_type::ConstNColsBlockXpr<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>::Type \
+    BOOST_PP_TUPLE_ELEM(2, 0, tuple)() const                                       \
+    {                                                                              \
+        return storage.middleCols<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>(         \
+                start::BOOST_PP_TUPLE_ELEM(2, 0, tuple));                          \
+    }
+    BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_SAMPLES)
+#undef DECLARE
+
+    // Declare a foreach function iterating over all mutable regions in the storage
+    // and invoking \c f
+
+    /**
+     * A foreach operation iterating over all mutable quantities in \c storage.
+     * The functor is invoked as <tt>f(::std::string("foo",
+     * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
+     * "foo".
+     */
+    template <typename BinaryFunction>
+    void foreach(BinaryFunction f) {
+#define INVOKE(r, data, tuple) \
+        f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
+          this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
+        BOOST_PP_SEQ_FOR_EACH(INVOKE,,CHANNEL_SAMPLES)
+    }
+#undef INVOKE
+
+    /**
+     * A foreach operation iterating over all immutable quantities in \c storage.
+     * The functor is invoked as <tt>f(::std::string("foo",
+     * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
+     * "foo".
+     */
+    template <typename BinaryFunction>
+    void foreach(BinaryFunction f) const {
+#define INVOKE(r, data, tuple) \
+        f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
+          this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
+        BOOST_PP_SEQ_FOR_EACH(INVOKE,,CHANNEL_SAMPLES)
+    }
+#undef INVOKE
+
+    /**
+     * Construct an instance housing quantities with \c Ny points in the
+     * wall-normal direction.
+     */
+    explicit samples(storage_type::Index Ny) {
+        storage.setZero(Ny, storage_type::ColsAtCompileTime);
+    }
+};
+
+/**
  * Using the provided state, sample the mean quantities detailed in the
  * "Sampling logistics" section of <tt>writeups/derivation.tex</tt> except for
  * those computed implicitly per <tt>writeups/channel_treatment.tex</tt>.  For
