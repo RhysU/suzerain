@@ -109,7 +109,7 @@ static const RestartDefinition restart(
         /* dt          */ 0,
         /* nt          */ 0);
 static const StatisticsDefinition statsdef(
-        /* destination */ "stats#.h5");
+        /* destination */ "sample#.h5");
 static const TimeDefinition<real_t> timedef(
         /* advance_dt                */ 0,
         /* advance_nt                */ 0,
