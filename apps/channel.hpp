@@ -731,6 +731,9 @@ mean sample_mean_quantities(
         const suzerain::bsplineop &bop,
         suzerain::ContiguousState<4,complex_t> &swave);
 
+/** Store a \ref mean instance in a restart file */
+void store(const esio_handle h, const mean& m);
+
 } // end namespace channel
 
 #endif // CHANNEL_HPP

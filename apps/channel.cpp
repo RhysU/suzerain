@@ -2902,4 +2902,40 @@ mean sample_mean_quantities(
     return retval;
 }
 
+// Helper for the store(...) implementation just below
+class mean_storer
+{
+public:
+
+    const esio_handle& esioh;
+    const std::string& prefix;
+
+    mean_storer(const esio_handle esioh, const std::string& prefix)
+        : esioh(esioh), prefix(prefix) {}
+
+    template< typename EigenArray >
+    void operator()(const std::string& name, const EigenArray& dat) {
+
+        int procid;
+        esio_handle_comm_rank(esioh, &procid);
+        esio_field_establish(esioh,
+                             1,          0, (procid == 0 ? 1          : 0),
+                             dat.cols(), 0, (procid == 0 ? dat.cols() : 0),
+                             dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
+
+        const std::string key = prefix + name;
+        static const char description[] =
+                "Mean quantity sample stored using row-major indices (B-spline"
+                " coefficient, tensor component, sample number) where the"
+                " B-spline basis is defined by /Ny, /breakpoints_y, and /knots";
+        esio_field_write(esioh, key.c_str(), dat.data(), 0, 0, 0, description);
+    }
+};
+
+void store(const esio_handle h, const mean& m)
+{
+    mean_storer f(h, "bar_");
+    m.foreach(f);
+}
+
 } // end namespace channel
