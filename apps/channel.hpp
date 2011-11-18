@@ -710,6 +710,27 @@ void sample_mean_quantities(
         suzerain::ContiguousState<4,complex_t> &swave,
         boost::ptr_map<std::string,Eigen::ArrayXXr> &samples);
 
+/**
+ * Using the provided state, sample the mean quantities declared in \ref mean.
+ * Note this is a collective, expensive method.
+ *
+ * @param[in]     scenario Scenario parameters.
+ * @param[in]     grid     Grid parameters.
+ * @param[in]     dgrid    Pencil decomposition parameters.
+ * @param[in,out] b        B-spline basis workspace.
+ * @param[in]     bop      B-spline operator workspace.
+ * @param[in,out] swave    Destroyed in the computation
+ *
+ * @return Mean quantities as B-spline coefficients.
+ */
+mean sample_mean_quantities(
+        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::GridDefinition &grid,
+        const suzerain::pencil_grid &dgrid,
+        suzerain::bspline &b,
+        const suzerain::bsplineop &bop,
+        suzerain::ContiguousState<4,complex_t> &swave);
+
 } // end namespace channel
 
 #endif // CHANNEL_HPP
