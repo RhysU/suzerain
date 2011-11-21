@@ -421,33 +421,12 @@ static bool save_statistics(real_t t, size_t nt)
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
     channel::store_time(esioh, t);
 
-    // Compute statistical samples from instantaneous fields
-    typedef boost::ptr_map<std::string,Eigen::ArrayXXr> samples_map;
-    samples_map s;
-    state_nonlinear->assign(*state_linear);
-    channel::sample_mean_quantities(
-            scenario, grid, *dgrid, *b, *bop, *state_nonlinear, s);
-
+    // Obtain mean samples from instantaneous fields and write to file
     // FIXME Obtain \bar{f}, \overline{\rho q_b}, and \overline{f \cdot u}
-
-    // Save statistics to file with only rank zero writing data
-    int procid;
-    esio_handle_comm_rank(esioh, &procid);
-    for (samples_map::const_iterator i = s.begin(), e = s.end(); i != e; ++i) {
-        const std::string     &key = i->first;
-        const Eigen::ArrayXXr &dat = *i->second;
-
-        esio_field_establish(esioh,
-                             1,          0, (procid == 0 ? 1          : 0),
-                             dat.cols(), 0, (procid == 0 ? dat.cols() : 0),
-                             dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
-
-        esio_field_write(esioh, key.c_str(), dat.data(), 0, 0, 0,
-                "Mean quantity samples stored with row-major indices "
-                " (B-spline coefficients, tensor component, sample number) "
-                " with the B-spline basis in Y defined by "
-                " /y, /breakpoints_y, and /knots");
-    }
+    state_nonlinear->assign(*state_linear);
+    channel::mean samples = channel::sample_mean_quantities(
+            scenario, grid, *dgrid, *b, *bop, *state_nonlinear);
+    channel::store(esioh, samples);
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a statistics file using template " << statsdef.destination);

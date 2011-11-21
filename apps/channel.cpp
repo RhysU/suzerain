@@ -2552,9 +2552,10 @@ void sample_mean_quantities(
 }
 
 // This looks like logic from explicit_op.cpp but does not belong there.
-// Reading through that file is recommended before reviewing this logic.  This
-// routine is definitely suboptimal but is expected to be invoked very
-// infrequently and therefore to not be a prime target for optimization.
+// Reading through that file, especially the NonlinearOperator::applyOperator
+// implementation, is recommended before reviewing this logic.  This routine is
+// definitely suboptimal but is expected to be invoked very infrequently and
+// therefore to not be a prime target for optimization.
 mean sample_mean_quantities(
         const suzerain::problem::ScenarioDefinition<real_t> &scenario,
         const suzerain::problem::GridDefinition &grid,
@@ -2607,20 +2608,20 @@ mean sample_mean_quantities(
     assert(std::equal(swave.strides() + 1, swave.strides() + 4,
                       auxw.strides() + 1));
 
-    // Rank-specific details accumulated in tmp to be MPI_Reduce-d later
-    mean tmp;
-    tmp.storage.setZero(mean::storage_type::Index(Ny),
+    // Rank-specific details accumulated in ret to be MPI_Reduce-d later
+    mean ret;
+    ret.storage.setZero(mean::storage_type::Index(Ny),
                         mean::storage_type::ColsAtCompileTime);
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
     if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.x() == 0) {
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
-        tmp.rho()         = Map<VectorXc>(swave[ndx::rho].origin(),  Ny).real();
-        tmp.rhou().col(0) = Map<VectorXc>(swave[ndx::rhou].origin(), Ny).real();
-        tmp.rhou().col(1) = Map<VectorXc>(swave[ndx::rhov].origin(), Ny).real();
-        tmp.rhou().col(2) = Map<VectorXc>(swave[ndx::rhow].origin(), Ny).real();
-        tmp.rhoe()        = Map<VectorXc>(swave[ndx::rhoe].origin(), Ny).real();
+        ret.rho()         = Map<VectorXc>(swave[ndx::rho].origin(),  Ny).real();
+        ret.rhou().col(0) = Map<VectorXc>(swave[ndx::rhou].origin(), Ny).real();
+        ret.rhou().col(1) = Map<VectorXc>(swave[ndx::rhov].origin(), Ny).real();
+        ret.rhou().col(2) = Map<VectorXc>(swave[ndx::rhow].origin(), Ny).real();
+        ret.rhoe()        = Map<VectorXc>(swave[ndx::rhoe].origin(), Ny).real();
     }
 
     // Obtain access to helper routines for differentiation
@@ -2860,7 +2861,7 @@ mean sample_mean_quantities(
         // Eigen comma initialization syntax.  Yes, this is not stride 1.
 #define EXTRACT_SUM(z, n, q) acc::sum(sum_##q[n])
 #define MOVE_SUM_INTO_TMP(r, data, tuple)                                 \
-        tmp.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().row(j) <<                  \
+        ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().row(j) <<                  \
             BOOST_PP_ENUM(BOOST_PP_TUPLE_ELEM(2, 1, tuple),               \
                           EXTRACT_SUM, BOOST_PP_TUPLE_ELEM(2, 0, tuple));
         BOOST_PP_SEQ_FOR_EACH(MOVE_SUM_INTO_TMP,,CHANNEL_MEAN_PHYSICAL)
@@ -2869,17 +2870,39 @@ mean sample_mean_quantities(
 
     } // end Y
 
-    // Reduce sums onto rank zero in the storage to be returned to the caller.
     // Notice rank zero already contains wave-samples quantities while the
     // other ranks contain zeros in those locations.
 
-    mean retval;                            // To be returned to the caller...
-    retval.storage.resizeLike(tmp.storage); // ...overwritten so not zeroed.
+    // Reduce sums onto rank zero and then return garbage from non-zero ranks
+    if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
 
-    SUZERAIN_MPICHKR(MPI_Reduce(
-            tmp.storage.data(), retval.storage.data(), tmp.storage.size(),
-            suzerain::mpi::datatype<mean::storage_type::Scalar>::value,
-            MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
+        // Reduce operation requires no additional storage on rank-zero
+        SUZERAIN_MPICHKR(MPI_Reduce(
+                MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
+                suzerain::mpi::datatype<mean::storage_type::Scalar>::value,
+                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
+
+    } else {
+
+        // Reduce operation requires temporary storage on non-zero ranks
+        mean tmp;
+        tmp.storage.resizeLike(ret.storage);
+        SUZERAIN_MPICHKR(MPI_Reduce(
+                ret.storage.data(), tmp.storage.data(), tmp.storage.size(),
+                suzerain::mpi::datatype<mean::storage_type::Scalar>::value,
+                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
+
+        // Force non-zero ranks contain all NaNs to help detect usage errors
+        ret.storage.fill(
+                std::numeric_limits<mean::storage_type::Scalar>::quiet_NaN());
+
+        // Return from all non-zero ranks
+        return ret;
+
+    }
+
+    // Only rank zero reaches this logic because of return statement just above
+    assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
 
     // Physical space sums, which are at collocation points, need to be
     // scaled by the dealiased extents and converted to coefficients.
@@ -2888,33 +2911,31 @@ mean sample_mean_quantities(
     suzerain::bsplineop_lu scaled_mass(bop);
     scaled_mass.form(1, &scale, bop);
     scaled_mass.solve(mean::nscalars::physical,
-            retval.storage.rightCols<mean::nscalars::physical>().data(),
-            retval.storage.innerStride(), retval.storage.outerStride());
+            ret.storage.middleCols<mean::nscalars::physical>(
+                mean::nscalars::wave).data(),
+            ret.storage.innerStride(), ret.storage.outerStride());
 
-    // Cause non-zero ranks contain all NaN retval to help detect usage errors
-#ifndef NDEBUG
-    if (dgrid.local_wave_start.x() != 0 && dgrid.local_wave_start.x() != 0) {
-        retval.storage.fill(
-                std::numeric_limits<mean::storage_type::Scalar>::quiet_NaN());
-    }
-#endif
+    // Fill with NaNs those samples which were not computed by this method
+#define FILL(r, data, tuple)                                               \
+    ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().fill(                           \
+            std::numeric_limits<mean::storage_type::Scalar>::quiet_NaN());
+    BOOST_PP_SEQ_FOR_EACH(FILL,,CHANNEL_MEAN_IMPLICIT)
+#undef FILL
 
-    return retval;
+    return ret;
 }
 
 // Helper for the store(...) implementation just below
 class mean_storer
 {
-public:
 
-    const esio_handle& esioh;
-    const std::string& prefix;
+public:
 
     mean_storer(const esio_handle esioh, const std::string& prefix)
         : esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
-    void operator()(const std::string& name, const EigenArray& dat) {
+    void operator()(const std::string& name, const EigenArray& dat) const {
 
         int procid;
         esio_handle_comm_rank(esioh, &procid);
@@ -2923,13 +2944,19 @@ public:
                              dat.cols(), 0, (procid == 0 ? dat.cols() : 0),
                              dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
 
-        const std::string key = prefix + name;
-        static const char description[] =
-                "Mean quantity sample stored using row-major indices (B-spline"
-                " coefficient, tensor component, sample number) where the"
-                " B-spline basis is defined by /Ny, /breakpoints_y, and /knots";
-        esio_field_write(esioh, key.c_str(), dat.data(), 0, 0, 0, description);
+        std::string key(prefix);
+        key.append(name);
+        esio_field_write(esioh, key.c_str(), dat.data(), 0, 0, 0,
+            "Mean quantity sample stored using row-major indices (B-spline"
+            " coefficient, tensor component, sample number) where the"
+            " B-spline basis is defined by /Ny, /breakpoints_y, and /knots");
     }
+
+private:
+
+    esio_handle esioh;
+    std::string prefix;
+
 };
 
 void store(const esio_handle h, const mean& m)

@@ -497,9 +497,7 @@ void accumulate_manufactured_solution(
 
 /**
  * Encapsulate the mean quantities detailed in the "Sampling logistics" section
- * of <tt>writeups/derivation.tex</tt> except for those computed implicitly per
- * <tt>writeups/channel_treatment.tex</tt>.  For example, \f$\bar{\rho}\f$ and
- * \f$\overline{p\nabla\cdot{}u}\f$ are computed while $\bar{f}$ is not.
+ * of <tt>writeups/derivation.tex</tt>.
  *
  * Samples of each quantity are made available through a two-dimensional,
  * column-major arrays.  The row index iterates over wall-normal collocation
@@ -526,15 +524,19 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 #endif
 
-/** A Boost.Preprocessor sequence of tuples of quantities computed in wave
- * space. */
+/**
+ * A Boost.Preprocessor sequence of tuples of quantities computed in wave
+ * space.
+ */
 #define CHANNEL_MEAN_WAVE                                  \
     ((rho,                      1)) /* scalar           */ \
     ((rhou,                     3)) /* vector           */ \
     ((rhoe,                     1)) /* scalar           */
 
-/** A Boost.Preprocessor sequence of tuples of quantities computed in physical
- * space. */
+/**
+ * A Boost.Preprocessor sequence of tuples of quantities computed in physical
+ * space.
+ */
 #define CHANNEL_MEAN_PHYSICAL                               \
     ((mu,                       1))  /* scalar           */ \
     ((u,                        3))  /* vector           */ \
@@ -551,8 +553,18 @@ public:
     ((mu_div_u,                 1))  /* scalar           */ \
     ((mu_grad_T,                3))  /* vector           */
 
+/**
+ * A Boost.Preprocessor sequence of tuples of quantities computed
+ * through implicit forcing.
+ */
+#define CHANNEL_MEAN_IMPLICIT                               \
+    ((f,                        3))  /* vector           */ \
+    ((rho_qb,                   1))  /* scalar           */ \
+    ((f_dot_u,                  1))  /* scalar           */
+
 /** A Boost.Preprocessor sequence of tuples of all sampled quantities. */
-#define CHANNEL_MEAN CHANNEL_MEAN_WAVE CHANNEL_MEAN_PHYSICAL
+#define CHANNEL_MEAN \
+    CHANNEL_MEAN_WAVE CHANNEL_MEAN_PHYSICAL CHANNEL_MEAN_IMPLICIT
 
     /* Compile-time totals of the number of scalars sampled at each point */
     struct nscalars { enum {
@@ -564,6 +576,9 @@ public:
 
         physical = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
                 BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN_PHYSICAL)),
+
+        implicit = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
+                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN_IMPLICIT)),
 
         total = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
                 BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN))
@@ -711,8 +726,10 @@ void sample_mean_quantities(
         boost::ptr_map<std::string,Eigen::ArrayXXr> &samples);
 
 /**
- * Using the provided state, sample the mean quantities declared in \ref mean.
- * Note this is a collective, expensive method.
+ * Using the provided state, sample the mean quantities declared in \ref mean
+ * with the notable exceptions of \f$\bar{f}\f$, \f$\overline{\rho{}q_b}\f$,
+ * and \f$\overline{f\cdot{}u}\f$.  This is an expensive, collective method
+ * producing valid results on only rank zero.
  *
  * @param[in]     scenario Scenario parameters.
  * @param[in]     grid     Grid parameters.
