@@ -300,7 +300,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     suzerain::ContiguousState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,
-    const bool delta_t_requested) const
+    const std::size_t substep_index) const
 {
     namespace ndx = channel::field::ndx;
 
@@ -626,7 +626,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                     ;
 
                 // Maintain the minimum observed stable time step, if necessary
-                if (delta_t_requested) {
+                if (substep_index == 0) {
                     namespace timestepper = suzerain::timestepper;
                     // See convective_stability_criterion documentation for
                     // why the magic number 4 modifies one_over_delta_y
@@ -751,7 +751,7 @@ std::vector<real_t> NonlinearOperatorIsothermal::applyOperator(
     suzerain::ContiguousState<4,complex_t> &swave,
     const real_t evmaxmag_real,
     const real_t evmaxmag_imag,
-    const bool delta_t_requested) const
+    const std::size_t substep_index) const
 {
     using Eigen::Map;
     using Eigen::VectorXc;
@@ -766,7 +766,7 @@ std::vector<real_t> NonlinearOperatorIsothermal::applyOperator(
     // Operator application turns coefficients in X, Y, and Z into
     // coefficients in X and Z but COLLOCATION POINT VALUES IN Y.
     const std::vector<real_t> delta_t_candidates = base::applyOperator(
-            time, swave, evmaxmag_real, evmaxmag_imag, delta_t_requested);
+            time, swave, evmaxmag_real, evmaxmag_imag, substep_index);
 
     // Set no-slip condition for momentum on walls per writeup step (3)
     // Condition achieved by removing time evolution at walls

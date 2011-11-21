@@ -76,27 +76,28 @@ public:
      * @param state The state location to use.  It is expected that certain
      *        implementations will require more specific state types.
      * @param evmaxmag_real The timestepping scheme's maximum pure real
-     *        eigenvalue magnitude.  When <tt>delta_t_requested == true</tt>
+     *        eigenvalue magnitude.  When <tt>substep_index == 0</tt>
      *        the operator should use this information to compute a
      *        stable time step per its convective criteria.
      * @param evmaxmag_imag The timestepping scheme's maximum pure imaginary
-     *        eigenvalue magnitude.  When <tt>delta_t_requested == true</tt>
+     *        eigenvalue magnitude.  When <tt>substep_index == 0</tt>
      *        the operator should use this information to compute a
      *        stable time step per its diffusive criteria.
-     * @param delta_t_requested If true, the operator must compute
-     *        and return a stable time step.
+     * @param substep_index If zero, the operator should compute
+     *        and return stable time steps according to one or more criteria.
      *
      * @return stable time step sizes according to one or more criteria
-     *         if \c delta_t_requested is true.  The overall stable time
+     *         if <tt>substep_index == 0</tt>.  The overall stable time
      *         step is the minimum of all elements in the returned vector.
-     *         If \c delta_t_request is fale the return value is meaningless.
+     *         Returning results from multiple criteria allows monitoring
+     *         the relative restrictness of each criterion.
      */
     virtual std::vector<component> applyOperator(
             const component time,
             State& state,
             const component evmaxmag_real,
             const component evmaxmag_imag,
-            const bool delta_t_requested = false) const = 0;
+            const std::size_t substep_index) const = 0;
 
     /** Virtual destructor for peace of mind. */
     virtual ~INonlinearOperator() {}
@@ -274,9 +275,9 @@ struct NanIsMinimumComparator {
 } // end namespace anonymous
 
 /**
- * A functor that finds the minimum stable time step given a set of candidates.
- * Any NaN appearing in the candidates causes a NaN to be returned.  The
- * candidates may not be empty.
+ * A functor that finds the minimum stable time step given a vector of
+ * candidates.  Any NaN appearing in the candidates causes a NaN to be
+ * returned.  The candidates may not be empty.
  */
 struct DeltaTReducer {
     template< typename T>
@@ -412,15 +413,9 @@ public:
      *
      * @param time The time at which to apply the operator (ignored).
      * @param state to scale in place.
-     * @param evmaxmag_real The time advancement schemes maximum purely
-     *                      real eigenvalue magnitude.  This should be
-     *                      used to help compute a convective stability
-     *                      criterion when <tt>delta_t_requested == true</tt>.
-     * @param evmaxmag_imag The time advancement schemes maximum purely
-     *                      imaginary eigenvalue magnitude.  This should be
-     *                      used to help compute a diffusive stability
-     *                      criterion when <tt>delta_t_requested == true</tt>.
-     * @param delta_t_requested ignored in this implementation.
+     * @param evmaxmag_real Ignored in this implementation.
+     * @param evmaxmag_imag Ignored in this implementation.
+     * @param substep_index Ignored in this implementation.
      *
      * @return The \c delta_t provided at construction time.
      */
@@ -429,12 +424,12 @@ public:
             StateB& state,
             const component evmaxmag_real,
             const component evmaxmag_imag,
-            const bool delta_t_requested = false) const
+            const std::size_t substep_index = 0) const
     {
         SUZERAIN_UNUSED(time);
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
-        SUZERAIN_UNUSED(delta_t_requested);
+        SUZERAIN_UNUSED(substep_index);
         state.scale(factor);
         return std::vector<component>(1, delta_t);
     }
@@ -913,7 +908,7 @@ const typename suzerain::traits::component<Element>::type substep(
                   delta_t * m.alpha(substep_index), a,
             chi * delta_t * m.zeta(substep_index),  b);
     N.applyOperator(time + delta_t * m.eta(substep_index), a,
-                    m.evmaxmag_real(), m.evmaxmag_imag());
+                    m.evmaxmag_real(), m.evmaxmag_imag(), substep_index);
     b.addScaled(chi * delta_t * m.gamma(substep_index), a);
     L.invertMassPlusScaledOperator( -delta_t * m.beta(substep_index), b);
 
@@ -968,8 +963,7 @@ const typename suzerain::traits::component<Element>::type step(
     // First substep handling is special since we need to determine delta_t
     b.assign(a);
     const std::vector<component_type> delta_t_candidates
-        = N.applyOperator(time, b, m.evmaxmag_real(), m.evmaxmag_imag(),
-                          true /* need delta_t during first substep */);
+        = N.applyOperator(time, b, m.evmaxmag_real(), m.evmaxmag_imag(), 0);
     component_type delta_t = reducer(delta_t_candidates);
 
     if (max_delta_t > 0) {
@@ -986,8 +980,7 @@ const typename suzerain::traits::component<Element>::type step(
                 chi * delta_t * m.zeta(i), b);
         b.exchange(a); // Note nonlinear storage controls exchange operation
         N.applyOperator(time + delta_t * m.eta(i), b,
-                        m.evmaxmag_real(), m.evmaxmag_imag(),
-                        false /* delta_t not needed */);
+                        m.evmaxmag_real(), m.evmaxmag_imag(), i);
         a.addScaled(chi * delta_t * m.gamma(i), b);
         L.invertMassPlusScaledOperator( -delta_t * m.beta(i), a);
     }

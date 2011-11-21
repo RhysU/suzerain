@@ -170,7 +170,7 @@ public:
             suzerain::ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
-            const bool delta_t_requested = false) const;
+            const std::size_t substep_index) const;
 
 protected:
 
@@ -213,7 +213,7 @@ public:
             suzerain::ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
-            const bool delta_t_requested = false) const;
+            const std::size_t substep_index) const;
 
 protected:
 

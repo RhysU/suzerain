@@ -66,12 +66,12 @@ public:
             ContiguousState<3,double>& state,
             const double evmaxmag_real,
             const double evmaxmag_imag,
-            const bool delta_t_requested = false) const
+            const std::size_t substep_index = 0) const
     {
         SUZERAIN_UNUSED(time);
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
-        SUZERAIN_UNUSED(delta_t_requested);
+        SUZERAIN_UNUSED(substep_index);
 
         ContiguousState<3,double>& s
             = dynamic_cast<ContiguousState<3,double>&>(state);
@@ -146,11 +146,11 @@ public:
             ContiguousState<3,double> & state,
             const double evmaxmag_real,
             const double evmaxmag_imag,
-            const bool delta_t_requested = false) const
+            const std::size_t substep_index = 0) const
     {
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
-        SUZERAIN_UNUSED(delta_t_requested);
+        SUZERAIN_UNUSED(substep_index);
 
         for (std::size_t i = 0; i < state.shape()[0]; ++i) {
             for (std::size_t k = 0; k < state.shape()[2]; ++k) {
@@ -457,12 +457,12 @@ public:
             ContiguousState<3,double> & state,
             const double evmaxmag_real,
             const double evmaxmag_imag,
-            const bool delta_t_requested = false) const
+            const std::size_t substep_index = 0) const
     {
         SUZERAIN_UNUSED(time);
         SUZERAIN_UNUSED(evmaxmag_real);
         SUZERAIN_UNUSED(evmaxmag_imag);
-        SUZERAIN_UNUSED(delta_t_requested);
+        SUZERAIN_UNUSED(substep_index);
 
         for (std::size_t i = 0; i < state.shape()[0]; ++i) {
             for (std::size_t k = 0; k < state.shape()[2]; ++k) {
