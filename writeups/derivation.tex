@@ -153,14 +153,14 @@ the energy $\mathscr{E}$ is
 \end{align}
 Treating heat input $Q$ as both a surface phenomenon described by an outward
 heat flux $q_{s}$ and as a volumetric phenomenon governed by a
-body heating density $q_{b}$,
+body heating $q_{b}$,
 \begin{align}
   Q
   &=
    \int_{\Omega}\rho{}q_{b}\,dV
   -\int_{\partial\Omega}\hat{n}\cdot{}q_{s}\,dA
   =
-    \int_{\Omega}\rho{}q_{b} - \nabla\cdot{}q_{s}\,dV
+    \int_{\Omega}q_{b} - \nabla\cdot{}q_{s}\,dV
   .
 \end{align}
 Power input $P=F\cdot{}v$ accounts for surface stress work and body
@@ -180,7 +180,7 @@ Demanding energy conservation $\frac{d}{dt}\mathscr{E}=Q+P$,
   \nabla\cdot{}u\rho{}E
   \,dV
 &=
-    \int_{\Omega}\rho{}q_{b} - \nabla\cdot{}q_{s}\,dV
+    \int_{\Omega} q_{b} - \nabla\cdot{}q_{s}\,dV
   + \int_{\Omega} \nabla\cdot\sigma{}u + f \cdot{} u \, dV
   .
 \end{align}
@@ -193,7 +193,7 @@ Again, since the control volume was arbitrary,
   - \nabla\cdot{}q_{s}
   + \nabla\cdot\sigma{}u
   + f \cdot{} u
-  + \rho{}q_{b}
+  + q_{b}
   .
 \end{align}
 After splitting $\sigma$'s pressure and viscous stress contributions we have
@@ -207,7 +207,7 @@ After splitting $\sigma$'s pressure and viscous stress contributions we have
   - \nabla\cdot{}pu
   + \nabla\cdot{}\tau{}u
   + f \cdot{} u
-  + \rho{}q_{b}
+  + q_{b}
   .
 \end{align}
 
@@ -411,7 +411,7 @@ and assumptions, we arrive at the dimensional equations
   - \nabla\cdot{} p u
   + \nabla\cdot{}\tau{} u
   + f \cdot{} u
-  + \rho{}q_{b}
+  + q_{b}
 \intertext{
   where terms in the right hand side make use of
 }
@@ -502,7 +502,7 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
 \notag\\
 &\quad{}+ \frac{\tau_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
   + f_{0}u_{0} f^{*} \cdot{} u^{*}
-  + \rho_{0}q_{0} \rho^{*} q_{b}^{*}
+  + q_{0} q_{b}^{*}
 \intertext{
   where terms in the right hand side are computed using
 }
@@ -552,7 +552,7 @@ quantities:
   &
   f_{0} &= \frac{\rho_{0}u_{0}}{t_{0}}
   &
-  q_{0} &= \frac{a_{0}^{2}}{t_{0}}
+  q_{0} &= \frac{\rho_{0}a_{0}^{2}}{t_{0}}
 \end{align}
 Because we assume viscosity varies only with temperature, $\mu_{0}=\mu\!\left(
 T_{0} \right)$ is fixed by $T_{0}$.  Because we assume a constant Prandtl
@@ -601,7 +601,7 @@ terms are dimensionless.  We arrive at the following nondimensional equations
   - \nabla\cdot{} p u
   + \frac{\Mach^{2}}{\Reynolds} \nabla\cdot\tau{} u
   + \Mach^{2} f \cdot{} u
-  + \rho{} q_{b}
+  + q_{b}
 \intertext{
 along with the relationships
 }
@@ -1254,7 +1254,7 @@ the equations in section~\ref{nondim_equations} become
     \nabla\cdot\mu\nabla{} T
   + \frac{\Mach^{2}}{\Reynolds} \nabla\cdot\tau{}\frac{m}{\rho}
   + \Mach^{2} f \cdot{} \frac{m}{\rho}
-  + \rho{} q_{b}
+  + q_{b}
 \intertext{
   where the non-state quantities are fixed by
 }
@@ -1854,7 +1854,7 @@ and~\eqref{eq:cons_energy} may be written as
   + \nabla\cdot{}\tau{}u
   - \nabla\cdot{}q_{s}
   + f\cdot{}u
-  + \rho{}q_b
+  + q_b
 \end{align}
 where we have employed total enthalpy $H$ to reduce the number of terms in the
 energy equation.
@@ -1897,7 +1897,7 @@ evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
     \right)
   + \bar{f}\cdot\tilde{u}
   + \overline{f\cdot{}u''}
-  + \bar{\rho}\tilde{q}_b
+  + \bar{q}_{b}
 \end{align}
 \end{subequations}
 Several correlations impact the evolution of mean quantities: the Reynolds
@@ -2137,7 +2137,7 @@ The Favre-averaged equations of interest are:
     \right)
   + \bar{f}\cdot\tilde{u}
   + \overline{f\cdot{}u''}
-  + \bar{\rho}\tilde{q}_b
+  + \bar{q}_b
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
 =
@@ -2215,7 +2215,7 @@ information:
 &
 &\bar{f}
 &
-&\tilde{q}_b
+&\bar{q}_b
 &
 &k
 &
@@ -2304,7 +2304,7 @@ are dimensionless.  The results are:
         \bar{f}\cdot\tilde{u}
       + \overline{f\cdot{}u''}
     \right)
-  + \bar{\rho}\tilde{q}_b
+  + \bar{q}_b
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
 =
@@ -2378,7 +2378,7 @@ state evolution given the following statistical quantities:
 &
 &\bar{f}
 &
-&\tilde{q}_b
+&\bar{q}_b
 &
 &k
 &
@@ -2440,7 +2440,7 @@ the statistical quantities listed in section~\ref{sec:nondimfans}:
 &
 &\bar{f}
 &
-&\overline{\rho{}q_b}
+&\bar{q}_b
 &
 &\bar{u}
 &
@@ -2486,8 +2486,6 @@ sequence of computations to obtain the desired quantities:
   \tilde{u} &= \bar{\rho}^{-1} \overline{\rho{}u}
 \\
   \tilde{E} &= \bar{\rho}^{-1} {\overline{\rho{}E}}
-\\
-  \tilde{q}_{b} &= \bar{\rho}^{-1} \overline{\rho{}q_{b}}
 \\
   \widetilde{u\otimes{}u} &= \bar{\rho}^{-1} \overline{\rho{}u\otimes{}u}
 \\

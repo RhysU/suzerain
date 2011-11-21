@@ -10,7 +10,7 @@ explicit="prunq ../channel_explicit"
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.
 exclude_datasets="--exclude-path /bar_f        \
-                  --exclude-path /bar_rho_qb   \
+                  --exclude-path /bar_qb       \
                   --exclude-path /bar_f_dot_u"
 exclude_datasets=$(echo $exclude_datasets | tr -d '\n' | tr -s ' ')
 

@@ -559,7 +559,7 @@ public:
  */
 #define CHANNEL_MEAN_IMPLICIT                               \
     ((f,                        3))  /* vector           */ \
-    ((rho_qb,                   1))  /* scalar           */ \
+    ((qb,                       1))  /* scalar           */ \
     ((f_dot_u,                  1))  /* scalar           */
 
 /** A Boost.Preprocessor sequence of tuples of all sampled quantities. */
