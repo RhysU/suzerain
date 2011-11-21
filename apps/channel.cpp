@@ -2146,7 +2146,6 @@ mean sample_mean_quantities(
     namespace ndx = channel::field::ndx;
     namespace acc = boost::accumulators;
     typedef suzerain::ContiguousState<4,complex_t> state_type;
-    using Eigen::ArrayXXr;
     using Eigen::Map;
     using Eigen::Matrix3r;
     using Eigen::Upper;
