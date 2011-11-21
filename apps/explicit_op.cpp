@@ -67,9 +67,11 @@ BsplineMassOperator::BsplineMassOperator(
 
 void BsplineMassOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::ContiguousState<4,complex_t> &state) const
+        suzerain::ContiguousState<4,complex_t> &state,
+        const std::size_t substep_index) const
 {
     SUZERAIN_UNUSED(phi);
+    SUZERAIN_UNUSED(substep_index);
 
     assert(static_cast<unsigned>(
                 state.strides()[1]) == 1);
@@ -90,7 +92,8 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
         const complex_t &phi,
         const suzerain::ContiguousState<4,complex_t> &input,
         const complex_t &beta,
-        suzerain::ContiguousState<4,complex_t> &output) const
+        suzerain::ContiguousState<4,complex_t> &output,
+        const std::size_t substep_index) const
 {
     SUZERAIN_UNUSED(phi);
     const state_type &x   = input;  // Shorthand
@@ -120,9 +123,11 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
 
 void BsplineMassOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::ContiguousState<4,complex_t> &state) const
+        suzerain::ContiguousState<4,complex_t> &state,
+        const std::size_t substep_index) const
 {
     SUZERAIN_UNUSED(phi);
+    SUZERAIN_UNUSED(substep_index);
 
     assert(static_cast<unsigned>(
                 state.strides()[1]) == 1);
@@ -156,7 +161,8 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
 
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::ContiguousState<4,complex_t> &state) const
+        suzerain::ContiguousState<4,complex_t> &state,
+        const std::size_t substep_index) const
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
@@ -237,7 +243,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     }
 
     // channel_treatment step (3) performs the usual operator solve
-    base::invertMassPlusScaledOperator(phi, state);
+    base::invertMassPlusScaledOperator(phi, state, substep_index);
 
     if (constrain_bulk_rhou && has_zero_zero_mode) {
 

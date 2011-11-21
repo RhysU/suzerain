@@ -83,8 +83,9 @@ public:
      *        eigenvalue magnitude.  When <tt>substep_index == 0</tt>
      *        the operator should use this information to compute a
      *        stable time step per its diffusive criteria.
-     * @param substep_index If zero, the operator should compute
-     *        and return stable time steps according to one or more criteria.
+     * @param substep_index The (zero-indexed) current time step substep.
+     *        If zero the operator should compute and return stable time
+     *        steps according to one or more criteria.
      *
      * @return stable time step sizes according to one or more criteria
      *         if <tt>substep_index == 0</tt>.  The overall stable time
@@ -327,9 +328,12 @@ public:
      *
      * @param phi Scale factor \f$\phi\f$ to use.
      * @param state State vector on which to apply the operator.
+     * @param substep_index The (zero-indexed) time stepper substep index.
      */
-    virtual void applyMassPlusScaledOperator(const element& phi,
-                                             StateA& state) const = 0;
+    virtual void applyMassPlusScaledOperator(
+            const element& phi,
+            StateA& state,
+            const std::size_t substep_index) const = 0;
 
     /**
      * Accumulate \f$M+\phi{}L\f$ out-of-place for scalar \f$\phi\f$.
@@ -340,11 +344,14 @@ public:
      * @param input State vector on which to apply the operator.
      * @param beta  Scale factor for output vector during accumulation.
      * @param output State vector into which to accumulate the result.
+     * @param substep_index The (zero-indexed) time stepper substep index.
      */
-    virtual void accumulateMassPlusScaledOperator(const element& phi,
-                                                  const StateA& input,
-                                                  const element& beta,
-                                                  StateB& output) const = 0;
+    virtual void accumulateMassPlusScaledOperator(
+            const element& phi,
+            const StateA& input,
+            const element& beta,
+            StateB& output,
+            const std::size_t substep_index) const = 0;
 
     /**
      * Invert \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.
@@ -353,9 +360,12 @@ public:
      *
      * @param phi Scale factor \f$\phi\f$ to use.
      * @param state State vector on which to apply the operator.
+     * @param substep_index The (zero-indexed) time stepper substep index.
      */
-    virtual void invertMassPlusScaledOperator(const element& phi,
-                                              StateA& state) const = 0;
+    virtual void invertMassPlusScaledOperator(
+            const element& phi,
+            StateA& state,
+            const std::size_t substep_index) const = 0;
 
     /** Virtual destructor for peace of mind. */
     virtual ~ILinearOperator() {}
@@ -441,10 +451,14 @@ public:
      *
      * @param phi Additional scaling \f$\phi\f$ to apply.
      * @param state to modify in place.
+     * @param substep_index Ignored.
      */
-    virtual void applyMassPlusScaledOperator(const element& phi,
-                                             StateA& state) const
+    virtual void applyMassPlusScaledOperator(
+            const element& phi,
+            StateA& state,
+            const std::size_t substep_index = 0) const
     {
+        SUZERAIN_UNUSED(substep_index);
         state.scale(phi*factor + element(1));
     }
 
@@ -457,12 +471,16 @@ public:
      * @param input on which to apply the operator.
      * @param beta  Scale factor for output vector during accumulation.
      * @param output on which to accumulate the result.
+     * @param substep_index Ignored.
      */
-    virtual void accumulateMassPlusScaledOperator(const element& phi,
-                                                  const StateA& input,
-                                                  const element& beta,
-                                                  StateB& output) const
+    virtual void accumulateMassPlusScaledOperator(
+            const element& phi,
+            const StateA& input,
+            const element& beta,
+            StateB& output,
+            const std::size_t substep_index = 0) const
     {
+        SUZERAIN_UNUSED(substep_index);
         output.scale(beta);
         output.addScaled(phi*factor + element(1), input);
     }
@@ -474,10 +492,14 @@ public:
      *
      * @param phi Additional scaling \f$\phi\f$ to apply.
      * @param state to modify in place.
+     * @param substep_index Ignored.
      */
-    virtual void invertMassPlusScaledOperator(const element& phi,
-                                              StateA& state) const
+    virtual void invertMassPlusScaledOperator(
+            const element& phi,
+            StateA& state,
+            const std::size_t substep_index = 0) const
     {
+        SUZERAIN_UNUSED(substep_index);
         state.scale((element(1))/(phi*factor + element(1)));
     }
 
@@ -906,11 +928,13 @@ const typename suzerain::traits::component<Element>::type substep(
 
     L.accumulateMassPlusScaledOperator(
                   delta_t * m.alpha(substep_index), a,
-            chi * delta_t * m.zeta(substep_index),  b);
+            chi * delta_t * m.zeta(substep_index),  b,
+            substep_index);
     N.applyOperator(time + delta_t * m.eta(substep_index), a,
                     m.evmaxmag_real(), m.evmaxmag_imag(), substep_index);
     b.addScaled(chi * delta_t * m.gamma(substep_index), a);
-    L.invertMassPlusScaledOperator( -delta_t * m.beta(substep_index), b);
+    L.invertMassPlusScaledOperator(
+            -delta_t * m.beta(substep_index), b, substep_index);
 
     return delta_t;
 }
@@ -969,20 +993,21 @@ const typename suzerain::traits::component<Element>::type step(
     if (max_delta_t > 0) {
         delta_t = suzerain::math::minnan(delta_t, max_delta_t);
     }
-    L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a);
+    L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a, 0);
     a.addScaled(chi * delta_t * m.gamma(0), b);
-    L.invertMassPlusScaledOperator( -delta_t * m.beta(0), a);
+    L.invertMassPlusScaledOperator( -delta_t * m.beta(0), a, 0);
 
     // Second and subsequent substeps are identical
     for (std::size_t i = 1; i < m.substeps(); ++i) {
         L.accumulateMassPlusScaledOperator(
                 delta_t * m.alpha(i),      a,
-                chi * delta_t * m.zeta(i), b);
+                chi * delta_t * m.zeta(i), b,
+                i);
         b.exchange(a); // Note nonlinear storage controls exchange operation
         N.applyOperator(time + delta_t * m.eta(i), b,
                         m.evmaxmag_real(), m.evmaxmag_imag(), i);
         a.addScaled(chi * delta_t * m.gamma(i), b);
-        L.invertMassPlusScaledOperator( -delta_t * m.beta(i), a);
+        L.invertMassPlusScaledOperator( -delta_t * m.beta(i), a, i);
     }
 
     return delta_t;
