@@ -30,8 +30,8 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-#include <Eigen/Core>
 #include <esio/esio.h>
+#include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/grid_definition.hpp>
@@ -593,28 +593,13 @@ public:
     /** Contiguous storage used to house all means */
     storage_type storage;
 
-// SHIFTED_SUM taken from http://lists.boost.org/boost-users/2009/10/53245.php
-#define SHIFTED_SUM_OP(s, state, seq)        \
-    (BOOST_PP_SEQ_PUSH_BACK(                 \
-        BOOST_PP_TUPLE_ELEM(2, 0, state),    \
-        (BOOST_PP_TUPLE_ELEM(2, 0, seq),     \
-         BOOST_PP_TUPLE_ELEM(2, 1, state))), \
-     BOOST_PP_ADD(                           \
-        BOOST_PP_TUPLE_ELEM(2, 1, state),    \
-        BOOST_PP_TUPLE_ELEM(2, 1, seq)))
-#define SHIFTED_SUM(seq)           \
-    BOOST_PP_TUPLE_ELEM(2, 0,      \
-        BOOST_PP_SEQ_FOLD_LEFT(    \
-            SHIFTED_SUM_OP,        \
-            (BOOST_PP_SEQ_NIL, 0), \
-            seq))
 #define OP(r, data, tuple)                                              \
     BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
 
     /** Compile-time offsets for each quantity within \c storage */
     struct start { enum {
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
-                OP,,SHIFTED_SUM(CHANNEL_MEAN)))
+                OP,,SUZERAIN_SHIFTED_SUM(CHANNEL_MEAN)))
     }; };
 
     /** Compile-time sizes for each quantity within \c storage */
@@ -623,8 +608,6 @@ public:
     }; };
 
 #undef OP
-#undef SHIFTED_SUM
-#undef SHIFTED_SUM_OP
 
     // Declare a named, mutable "view" into storage for each quantity
 #define DECLARE(r, data, tuple)                                               \

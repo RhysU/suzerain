@@ -120,6 +120,37 @@ template< typename charT, typename traits, typename T, ::std::size_t N >
 }
 } // namespace boost
 
+// SHIFTED_SUM taken from http://lists.boost.org/boost-users/2009/10/53245.php
+
+/**
+ * Helper macro used within SUZERAIN_SHIFTED_SUM.
+ * @see SUZERAIN_SHIFTED_SUM for more details.
+ */
+#define SUZERAIN_SHIFTED_SUM_OP(s, state, seq) \
+    (BOOST_PP_SEQ_PUSH_BACK(                   \
+        BOOST_PP_TUPLE_ELEM(2, 0, state),      \
+        (BOOST_PP_TUPLE_ELEM(2, 0, seq),       \
+         BOOST_PP_TUPLE_ELEM(2, 1, state))),   \
+     BOOST_PP_ADD(                             \
+        BOOST_PP_TUPLE_ELEM(2, 1, state),      \
+        BOOST_PP_TUPLE_ELEM(2, 1, seq)))
+
+/**
+ * A Boost.Preprocessor shifted sum operation written by Steven Watanabe which
+ * operates on the second element of each tuple in a sequence
+ * (http://lists.boost.org/boost-users/2009/10/53245.php).  It, for example,
+ * takes the sequence of tuples <tt> ((A, 1)) ((B, 1)) ((C, 1)) ((D, 2)) ((E,
+ * 4)) </tt> to the sequence of tuples <tt> ((A, 0)) ((B, 1)) ((C, 2)) ((D, 3))
+ * ((E, 5)) </tt> and is handy for computing absolute offsets given a sequence
+ * containing names and sizes.
+ */
+#define SUZERAIN_SHIFTED_SUM(seq)    \
+    BOOST_PP_TUPLE_ELEM(2, 0,        \
+        BOOST_PP_SEQ_FOLD_LEFT(      \
+            SUZERAIN_SHIFTED_SUM_OP, \
+            (BOOST_PP_SEQ_NIL, 0),   \
+            seq))
+
 #endif // SUZERAIN_HAVE_BOOST
 
 // Include other functionality used throughout Suzerain
