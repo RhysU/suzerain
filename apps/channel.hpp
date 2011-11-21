@@ -684,48 +684,6 @@ public:
 };
 
 /**
- * Using the provided state, sample the mean quantities detailed in the
- * "Sampling logistics" section of <tt>writeups/derivation.tex</tt> except for
- * those computed implicitly per <tt>writeups/channel_treatment.tex</tt>.  For
- * example, \f$\bar{\rho}\f$ and \f$\overline{p\nabla\cdot{}u}\f$ are computed
- * while $\bar{f}$ is not.
- *
- * The argument \c samples is <tt>clear</tt>ed and then populated with keys
- * denoting the quantity name and two-dimensional, column-major arrays.  The
- * row index iterates over wall-normal collocation point locations and the
- * column index iterates over tensor indices.  Scalars have only a single
- * tensor index.  Vectors have three indices corresponding to the streamwise x,
- * wall-normal y, and spanwise z directions.  Symmetric tensors (for example,
- * \f$\overline{\mu{}S}\f$}) have six rows corresponding to the <tt>xx</tt>,
- * <tt>xy</tt>, <tt>xz</tt>, <tt>yy</tt>, <tt>yz</tt>, and <tt>zz</tt> indices.
- * Rank one triple products (for example
- * \f$\overline{\rho{}u\otimes{}u\otimes{}u}\f$) have ten rows corresponding to
- * the <tt>xxx</tt>, <tt>xxy</tt>, <tt>xxz</tt>, <tt>xyy</tt>, <tt>xyz</tt>,
- * <tt>xzz</tt>, <tt>yyy</tt>, <tt>yyz</tt>, <tt>yzz</tt>, and <tt>zzz</tt>
- * indices.
- *
- * This interface is deliberately vague about the full list of quantities
- * samples.  Callers should plan to iterate across \c samples and make few, if
- * any, assumptions about its contents.
- *
- * @param[in]     scenario
- * @param[in]     grid
- * @param[in]     dgrid
- * @param[in,out] b
- * @param[in]     bop
- * @param[in,out] swave    Destroyed in the computation
- * @param[out]    samples  Overwritten with the results
- */
-void sample_mean_quantities(
-        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
-        const suzerain::problem::GridDefinition &grid,
-        const suzerain::pencil_grid &dgrid,
-        suzerain::bspline &b,
-        const suzerain::bsplineop &bop,
-        suzerain::ContiguousState<4,complex_t> &swave,
-        boost::ptr_map<std::string,Eigen::ArrayXXr> &samples);
-
-/**
  * Using the provided state, sample the mean quantities declared in \ref mean
  * with the notable exceptions of \f$\bar{f}\f$, \f$\overline{\rho{}q_b}\f$,
  * and \f$\overline{f\cdot{}u}\f$.  This is an expensive, collective method
