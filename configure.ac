@@ -218,8 +218,8 @@ dnl C/C++ compilation strictness and compatibility
 dnl ------------------------------------------------
 dnl Strictness must come after libraries to avoid breaking AC_CHECK_LIB
 AC_LANG_PUSH([C])
-AX_CFLAGS_WARN_ALL(CFLAGS)
-AX_CFLAGS_WARN_ALL(CXXFLAGS)
+AX_CFLAGS_WARN_ALL
+AX_CXXFLAGS_WARN_ALL
 AX_WARNINGS_SANITIZE
 AX_INTEL_SC_ANALYSIS
 AC_LANG_POP([C])
@@ -246,14 +246,15 @@ dnl ------------------------------------------------
 dnl Documentation generation
 dnl ------------------------------------------------
 DX_DOXYGEN_FEATURE([ON])
-DX_HTML_FEATURE([ON])
-DX_CHM_FEATURE([OFF])
 DX_CHI_FEATURE([OFF])
+DX_CHM_FEATURE([OFF])
+DX_DOT_FEATURE([ON])
+DX_HTML_FEATURE([ON])
 DX_MAN_FEATURE([OFF])
-DX_RTF_FEATURE([OFF])
-DX_XML_FEATURE([OFF])
 DX_PDF_FEATURE([OFF])
 DX_PS_FEATURE([OFF])
+DX_RTF_FEATURE([OFF])
+DX_XML_FEATURE([OFF])
 DX_INIT_DOXYGEN([suzerain],[doxygen.cfg],[docs])
 
 dnl ------------------------------------------------
