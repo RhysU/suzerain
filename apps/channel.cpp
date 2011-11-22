@@ -2191,7 +2191,7 @@ mean sample_mean_quantities(
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
-    if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.x() == 0) {
+    if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
         ret.rho()         = Map<VectorXc>(swave[ndx::rho].origin(),  Ny).real();
         ret.rhou().col(0) = Map<VectorXc>(swave[ndx::rhou].origin(), Ny).real();
