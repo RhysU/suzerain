@@ -46,7 +46,25 @@ namespace channel {
 
 /**
  * Storage for holding quantities computed during nonlinear operator
- * application which are required for linear operator application.
+ * application which either are required for linear operator application or for
+ * statistics sampling purposes.
+ *
+ * The quantities, stored as collocation point values, are as follows:
+ * \li \c u  The nonlinear operator computes the instantaneous spatial (x, z)
+ *     mean streamwise velocity profile which the linear operator uses to compute
+ *     the implicit \f$f\cdot{}u\f$ term in the total energy equation.
+ * \li \c f The linear operator accumulates the time-step-specific
+ *     temporal mean streamwise (x) component of the implicit \f$f\f$
+ *     term in the momentum equation.
+ * \li \c f_dot_u The linear operator accumulates the time-step-specific
+ *     temporal mean the implicit \f$f\cdot{}u\f$ term in the energy equation.
+ * \li \c qb The linear operator accumulates the time-step-specific
+ *     temporal mean the implicit \f$q_b\f$ term in the energy equation.
+ *
+ * "Time-step-specific temporal means" are time averages taken across a single
+ * time step of quantities which vary on each substep.  As the substeps are all
+ * of equal length, a simple running mean reset on substep zero and then
+ * accumulated.
  */
 class OperatorCommonBlock
 {
@@ -56,16 +74,23 @@ public:
 
     OperatorCommonBlock() {}
 
-    Eigen::ArrayXXr data;
+    /** Type of the contiguous storage used to house all scalars */
+    typedef Eigen::Array<real_t, Eigen::Dynamic, 4> storage_type;
 
-    // Prepare logical indices using a struct for scoping (e.g. mean::u).
-    struct mean { enum {
-          u,
-          count // Sentry
-    }; };
+    /** Contiguous storage used to house all scalars */
+    storage_type storage;
 
-    /** Zero storage within common block and reset its size as specified. */
-    void reset(const std::size_t Ny) { data.setZero(mean::count, Ny); }
+    // Declare a named, mutable "view" into \c storage for each quantity
+    storage_type::ColXpr u()       { return storage.col(0); }
+    storage_type::ColXpr f()       { return storage.col(1); }
+    storage_type::ColXpr f_dot_u() { return storage.col(2); }
+    storage_type::ColXpr qb()      { return storage.col(3); }
+
+    // Declare a named, mutable "view" into \c storage for each quantity
+    storage_type::ConstColXpr u()       const { return storage.col(0); }
+    storage_type::ConstColXpr f()       const { return storage.col(1); }
+    storage_type::ConstColXpr f_dot_u() const { return storage.col(2); }
+    storage_type::ConstColXpr qb()      const { return storage.col(3); }
 
 private:
 

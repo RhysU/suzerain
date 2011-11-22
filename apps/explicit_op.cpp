@@ -96,6 +96,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
         const std::size_t substep_index) const
 {
     SUZERAIN_UNUSED(phi);
+    SUZERAIN_UNUSED(substep_index);
     const state_type &x   = input;  // Shorthand
     state_type &y         = output; // Shorthand
     const complex_t c_one = 1;
@@ -227,10 +228,9 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         mean_rhou.imag()[wall_upper] = 0;
 
         Map<VectorXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
-        mean_rhoe.imag()[wall_lower] = 0;
-        mean_rhoe.imag().segment(1, Ny-2)
-            = common.data.row(OperatorCommonBlock::mean::u).segment(1, Ny-2);
-        mean_rhoe.imag()[wall_upper] = 0;
+        mean_rhoe.imag()[wall_lower]      = 0;
+        mean_rhoe.imag().segment(1, Ny-2) = common.u().segment(1, Ny-2);
+        mean_rhoe.imag()[wall_upper]      = 0;
     }
 
     // B-spline numerics are not conservative when the mean density field has
@@ -343,7 +343,9 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                       auxw.strides() + 1));
 
     // Prepare common-block-like storage used to pass details from N to L
-    common.reset(dgrid.global_wave_extent.y());
+    common.storage.resize(/* Ny */ swave.shape()[1],
+                          OperatorCommonBlock::storage_type::ColsAtCompileTime);
+    common.u().setZero();
 
     // Maintain stable time step values to return to the caller
     boost::array<real_t, 2> delta_t_candidates = {{
@@ -495,7 +497,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 #else
                 boost::accumulators::stats<boost::accumulators::tag::sum>
 #endif
-            > u_sum;
+            > sum_u;
 
         for (int k = dgrid.local_physical_start.z();
             k < dgrid.local_physical_end.z();
@@ -570,7 +572,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                 // declared outside loop.
                 u                  = suzerain::rholut::u(
                                         rho, m);
-                u_sum(u.x());
+                sum_u(u.x());
                 const real_t div_u = suzerain::rholut::div_u(
                                         rho, grad_rho, m, div_m);
                 grad_u             = suzerain::rholut::grad_u(
@@ -660,19 +662,24 @@ std::vector<real_t> NonlinearOperator::applyOperator(
         } // end Z
 
         // Store sum(s) into common block in preparation for MPI reduction
-        common.data(OperatorCommonBlock::mean::u, j)
-                = boost::accumulators::sum(u_sum);
+        common.u()[j] = boost::accumulators::sum(sum_u);
 
     } // end Y
 
-    // Reduce common block sums to obtain mean quantities on rank zero
-    {
-        Eigen::ArrayXXr tmp(common.data); // Copy
-        SUZERAIN_MPICHKR(MPI_Reduce(tmp.data(), common.data.data(),
-                    common.data.size(), suzerain::mpi::datatype<real_t>::value,
+    // Reduce and scale common.u() sums to obtain mean quantities on rank zero
+    if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
+        assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
+        SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
+                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
                     MPI_SUM, 0, MPI_COMM_WORLD));
-        common.data /= (   dgrid.global_physical_extent.x()
-                         * dgrid.global_physical_extent.z());
+        common.u() /= (   dgrid.global_physical_extent.x()
+                        * dgrid.global_physical_extent.z());
+    } else {
+        Eigen::ArrayXr tmp;
+        tmp.resizeLike(common.u());
+        SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),
+                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
+                    MPI_SUM, 0, MPI_COMM_WORLD));
     }
 
     // If active, add manufactured solution forcing in a second pass.
@@ -802,7 +809,7 @@ std::vector<real_t> NonlinearOperatorIsothermal::applyOperator(
     }
 
     // Apply f_{m_x} to mean x-momentum, mean energy at non-wall locations
-    // Requires that base::common.data was updated during base::applyOperator
+    // Requires that base::common.u() was updated during base::applyOperator
     if (has_zero_zero_mode) {
 
         // Compute temporary per writeup implementation step (4)
@@ -815,8 +822,7 @@ std::vector<real_t> NonlinearOperatorIsothermal::applyOperator(
         // Apply to non-wall mean energy right hand side per step (6)
         Eigen::Map<Eigen::VectorXc> mean_rhoe(swave[ndx::rhoe].origin(), Ny);
         mean_rhoe.real().segment(1, Ny-2).array()
-            -=   (alpha * scenario.Ma * scenario.Ma)
-               * common.data.row(OperatorCommonBlock::mean::u).segment(1, Ny-2);
+            -= (alpha*scenario.Ma*scenario.Ma) * common.u().segment(1, Ny-2);
     }
 
     // Return the time step found by the BC-agnostic operator
