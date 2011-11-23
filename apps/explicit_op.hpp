@@ -106,80 +106,12 @@ private:
     OperatorCommonBlock& operator=(const OperatorCommonBlock&);
 };
 
-/** An operator which merely applies or inverts a B-spline mass matrix */
-class BsplineMassOperator
-  : public suzerain::OperatorBase<real_t>,
-    public suzerain::timestepper::lowstorage::ILinearOperator<
-        suzerain::ContiguousState<4,complex_t>
-    >
-{
-public:
-
-    typedef suzerain::ContiguousState<4,complex_t> state_type;
-
-    BsplineMassOperator(
-            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
-            const suzerain::problem::GridDefinition &grid,
-            const suzerain::pencil_grid &dgrid,
-            suzerain::bspline &b,
-            const suzerain::bsplineop &bop);
-
-    virtual void applyMassPlusScaledOperator(
-             const complex_t &phi,
-             state_type &state,
-             const std::size_t substep_index) const;
-
-     virtual void accumulateMassPlusScaledOperator(
-             const complex_t &phi,
-             const state_type &input,
-             const complex_t &beta,
-             state_type &output,
-             const std::size_t substep_index) const;
-
-     virtual void invertMassPlusScaledOperator(
-             const complex_t &phi,
-             state_type &state,
-             const std::size_t substep_index) const;
-
-private:
-
-    suzerain::bsplineop_luz massluz;
-};
-
-/**
- * An mass operator that forces bulk momentum and provides no slip, isothermal
- * walls.
- */
-class BsplineMassOperatorIsothermal
-  : public BsplineMassOperator
-{
-public:
-
-    typedef BsplineMassOperator base;
-
-    BsplineMassOperatorIsothermal(
-            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
-            const suzerain::problem::GridDefinition &grid,
-            const suzerain::pencil_grid &dgrid,
-            suzerain::bspline &b,
-            const suzerain::bsplineop &bop,
-            OperatorCommonBlock &common);
-
-    virtual void invertMassPlusScaledOperator(
-            const complex_t &phi,
-            state_type &state,
-            const std::size_t substep_index) const;
-
-protected:
-
-    Eigen::VectorXr bulkcoeff;
-
-    OperatorCommonBlock &common;
-
-};
-
 /**
  * A boundary-condition agnostic, fully explicit Navier&ndash;Stokes operator.
+ *
+ * During \ref applyOperator the instantaneous wall-normal velocity is averaged
+ * across the streamwise and spanwise directions and stored into
+ * OperatorCommonBlock::u() using an instance provided at construction time.
  */
 class NonlinearOperator
     : public suzerain::OperatorBase<real_t>,
@@ -224,39 +156,91 @@ private:
 
 };
 
-/**
- * A fully explicit Navier&ndash;Stokes operator for isothermal boundaries.
- */
-class NonlinearOperatorIsothermal
-    : public NonlinearOperator
+/** An operator which applies or inverts a B-spline mass matrix */
+class BsplineMassOperator
+  : public suzerain::OperatorBase<real_t>,
+    public suzerain::timestepper::lowstorage::ILinearOperator<
+        suzerain::ContiguousState<4,complex_t>
+    >
 {
 public:
 
-    typedef NonlinearOperator base;
+    typedef suzerain::ContiguousState<4,complex_t> state_type;
 
-    NonlinearOperatorIsothermal(
+    BsplineMassOperator(
+            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::GridDefinition &grid,
+            const suzerain::pencil_grid &dgrid,
+            suzerain::bspline &b,
+            const suzerain::bsplineop &bop);
+
+    virtual void applyMassPlusScaledOperator(
+             const complex_t &phi,
+             state_type &state,
+             const std::size_t substep_index) const;
+
+     virtual void accumulateMassPlusScaledOperator(
+             const complex_t &phi,
+             const state_type &input,
+             const complex_t &beta,
+             state_type &output,
+             const std::size_t substep_index) const;
+
+     virtual void invertMassPlusScaledOperator(
+             const complex_t &phi,
+             state_type &state,
+             const std::size_t substep_index) const;
+
+private:
+
+     /** Precomputed mass matrix factorization */
+    suzerain::bsplineop_luz massluz;
+
+};
+
+/**
+ * A mass operator that forces bulk momentum and provides no slip, isothermal
+ * walls.  It requires interoperation with NonlinearOperator via
+ * OperatorCommonBlock.
+ *
+ * During \ref invertMassPlusScaledOperator implicit momentum forcing is
+ * applied following the section of <tt>writeups/channel_treatment.tex</tt>
+ * titled "Enforcing a target bulk momentum via the linear operator" and using
+ * information from OperatorCommonBlock::u().
+ *
+ * Also during \ref invertMassPlusScaledOperator, OperatorCommonBlock::f(),
+ * OperatorCommonBlock::f_dot_u(), and OperatorCommonBlock::qb() are
+ * accumulated.
+ */
+class BsplineMassOperatorIsothermal
+  : public BsplineMassOperator
+{
+public:
+
+    typedef BsplineMassOperator base;
+
+    BsplineMassOperatorIsothermal(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
-            OperatorCommonBlock &common,
-            const boost::shared_ptr<
-                      const channel::manufactured_solution>& msoln);
+            OperatorCommonBlock &common);
 
-    virtual std::vector<real_t> applyOperator(
-            const real_t time,
-            suzerain::ContiguousState<4,complex_t> &swave,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
+    virtual void invertMassPlusScaledOperator(
+            const complex_t &phi,
+            state_type &state,
             const std::size_t substep_index) const;
 
 protected:
 
+    /** Precomputed integration coefficients */
     Eigen::VectorXr bulkcoeff;
 
-};
+    /** Houses data required for \ref invertMassPlusScaledOperator */
+    OperatorCommonBlock &common;
 
+};
 
 } // namespace channel
 
