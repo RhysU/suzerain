@@ -343,8 +343,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                       auxw.strides() + 1));
 
     // Prepare common-block-like storage used to pass details from N to L
-    common.storage.resize(/* Ny */ swave.shape()[1],
-                          OperatorCommonBlock::storage_type::ColsAtCompileTime);
+    common.storage.resize(/* Ny */ swave.shape()[1], Eigen::NoChange);
     common.u().setZero();
 
     // Maintain stable time step values to return to the caller
