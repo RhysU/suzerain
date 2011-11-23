@@ -153,8 +153,8 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
 
     // Shorthand
     using Eigen::Map;
-    using Eigen::VectorXc;
-    using Eigen::VectorXr;
+    using Eigen::ArrayXc;
+    using Eigen::ArrayXr;
     namespace ndx = channel::field::ndx;
     const std::size_t Ny         = state.shape()[1];
     const std::size_t wall_lower = 0;
@@ -162,6 +162,17 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
 
     // See channel_treatment writeup for information on the steps below.
     // Steps appear out of order relative to the writeup (TODO fix writeup).
+
+    // Means of the implicit momentum and energy forcing coefficients(!) are
+    // maintained across each individual time step for sampling the statistics
+    // /bar_f, /bar_f_dot_u, and /bar_qb using OperatorCommonBlock.
+    //
+    // The accumulated means are updated in-place using expressions like
+    //    mean = i/(i+1) * last + 1 / (i+1) * update
+    // where is is the current substep index.  Values are reset on i = 0.
+    const real_t prev_mean_coeff = real_t(substep_index) / (substep_index + 1);
+    const real_t curr_mean_coeff = real_t(1)             / (substep_index + 1);
+    common.storage.resize(Ny, Eigen::NoChange);        // Nondestructive on NOP
 
     // channel_treatment step (1) done during nonlinear operator application
     // via shared OperatorCommonBlock storage space
@@ -205,12 +216,12 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // mode coefficients.  No forcing occurs at the lower or upper walls.
     if (constrain_bulk_rhou && has_zero_zero_mode) {
 
-        Map<VectorXc> mean_rhou(state[ndx::rhou].origin(), Ny);
+        Map<ArrayXc> mean_rhou(state[ndx::rhou].origin(), Ny);
         mean_rhou.imag()[wall_lower] = 0;
         mean_rhou.imag().segment(1, Ny-2).setOnes();
         mean_rhou.imag()[wall_upper] = 0;
 
-        Map<VectorXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
+        Map<ArrayXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
         mean_rhoe.imag()[wall_lower]      = 0;
         mean_rhoe.imag().segment(1, Ny-2) = common.u().segment(1, Ny-2);
         mean_rhoe.imag()[wall_upper]      = 0;
@@ -221,7 +232,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // drift by adding an integral constraint that the bulk density stay fixed
     // at a target value.  Approach follows that of the bulk momentum forcing.
     if (constrain_bulk_rho && has_zero_zero_mode) {
-        Map<VectorXc> mean_rho(state[ndx::rho].origin(), Ny);
+        Map<ArrayXc> mean_rho(state[ndx::rho].origin(), Ny);
         mean_rho.imag().setConstant(1);
     }
 
@@ -233,18 +244,23 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         // channel_treatment steps (4), (5), and (6) determine and
         // apply the appropriate bulk momentum forcing to achieve
         // a target value.
-        Map<VectorXc> mean_rhou(state[ndx::rhou].origin(), Ny);
-        const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rhou);
+        Map<ArrayXc> mean_rhou(state[ndx::rhou].origin(), Ny);
+        const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rhou.matrix());
         const real_t varphi = (scenario.bulk_rhou - bulk.real()) / bulk.imag();
         mean_rhou.real() += varphi * mean_rhou.imag();
-        mean_rhou.imag() = VectorXr::Zero(Ny);
+        common.f()        = prev_mean_coeff * common.f()
+                          + (curr_mean_coeff * varphi) * mean_rhou.imag();
+        mean_rhou.imag().setZero();
 
         // channel_treatment step (7) accounts for the momentum forcing
         // within the total energy equation including the Mach squared
         // factor arising from the nondimensionalization choices.
-        Map<VectorXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
-        mean_rhoe.real() += (varphi*scenario.Ma*scenario.Ma)*mean_rhoe.imag();
-        mean_rhoe.imag() = VectorXr::Zero(Ny);
+        Map<ArrayXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
+        const real_t varphi_Ma_Ma = varphi * scenario.Ma * scenario.Ma;
+        mean_rhoe.real() += varphi_Ma_Ma * mean_rhoe.imag();
+        common.f_dot_u()  = prev_mean_coeff * common.f_dot_u()
+                          + (curr_mean_coeff * varphi_Ma_Ma) * mean_rhoe.imag();
+        mean_rhoe.imag().setZero();
 
         // channel_treatment steps (8) and (9) already performed above
     }
@@ -252,18 +268,23 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // Complete the bulk density target forcing
     if (constrain_bulk_rho && has_zero_zero_mode) {
 
-        Map<VectorXc> mean_rho(state[ndx::rho].origin(), Ny);
-        const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rho);
+        Map<ArrayXc> mean_rho(state[ndx::rho].origin(), Ny);
+        const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rho.matrix());
         const real_t varphi = (scenario.bulk_rho - bulk.real()) / bulk.imag();
         mean_rho.real() += varphi * mean_rho.imag();
-        mean_rho.imag() = VectorXr::Zero(Ny);
+        mean_rho.imag().setZero();
 
         // Note that only the continuity equation is forced which neglects
         // contributions to the momentum and energy equations.  Neglecting
         // these terms is acceptable as the forcing is very small and vanishes
         // when the mean field is symmetric in the wall-normal direction.
 
+        // Statistics for this quantity are not tracked.
+
     }
+
+    // No volumetric energy forcing in performed current substep
+    common.qb() *= prev_mean_coeff;
 
     // State leaves method as coefficients in X, Y, and Z directions
 }
@@ -649,7 +670,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     } // end Y
 
     // Reduce and scale common.u() sums to obtain mean quantities on rank zero
-    if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
+    if (has_zero_zero_mode) {
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
         SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
                     common.u().size(), suzerain::mpi::datatype<real_t>::value,
