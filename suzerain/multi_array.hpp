@@ -91,6 +91,64 @@ boost::array<typename MultiArray::index,MultiArray::dimensionality>
 
 namespace { // anonymous
 
+// Comparator based on stride lengths
+template<typename Index>
+struct is_contiguous_compare {
+
+    const Index* strides;
+
+    is_contiguous_compare(const Index* strides) : strides(strides) {}
+
+    template<typename SizeType>
+    bool operator() (SizeType i, SizeType j) const {
+        return strides[i] < strides[j];
+    }
+};
+
+// Dimension-dependent version dispatched to from suzerain::is_contiguous
+template<std::size_t D, typename SizeType, typename Index>
+bool is_contiguous(const SizeType* shape, const Index* strides) {
+
+    // Back out the storage ordering based on the stride information
+    SizeType order[D];
+    for (SizeType i = 0; i < D; ++i) {
+        order[i] = i;
+    }
+    is_contiguous_compare<Index> c(strides);
+    std::sort(order, order + D, c);
+
+    // Check contiguity conditions based on storage ordering
+    if (strides[order[0]] != 1) {
+        return false;
+    }
+
+    for (std::size_t i = 1; i < D; ++i) {
+        const SizeType oi  = order[i];
+        const SizeType oi1 = order[i-1];
+        if (static_cast<SizeType>(strides[oi]) != shape[oi1] * strides[oi1]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+}
+
+/**
+ * Determine if a MultiArray's elements cover a contiguous region of memory.
+ *
+ * @param m MultiArray to be checked.
+ *
+ * @return True if MultiArray's elements are contiguous.  False otherwise.
+ */
+template<class MultiArray>
+bool is_contiguous(const MultiArray&m) {
+    return is_contiguous<MultiArray::dimensionality>(m.shape(), m.strides());
+}
+
+namespace { // anonymous
+
 template<std::size_t D>
 struct for_each_functor {
 
