@@ -36,6 +36,7 @@
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
+#include <suzerain/multi_array.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/rholut.hpp>
@@ -73,15 +74,7 @@ void BsplineMassOperator::applyMassPlusScaledOperator(
     SUZERAIN_UNUSED(phi);
     SUZERAIN_UNUSED(substep_index);
 
-    assert(static_cast<unsigned>(
-                state.strides()[1]) == 1);
-    assert(static_cast<unsigned>(
-                state.strides()[2]) == state.shape()[1] * state.strides()[1]);
-    assert(static_cast<unsigned>(
-                state.strides()[3]) == state.shape()[2] * state.strides()[2]);
-    assert(static_cast<unsigned>(
-                state.strides()[0]) == state.shape()[3] * state.strides()[3]);
-
+    assert(suzerain::multi_array::is_contiguous(state));
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
     assert(static_cast<unsigned>(massluz.n()) == state.shape()[1]);
     bop.apply(0, nrhs, 1, state.range().begin(), 1, state.shape()[1]);
@@ -130,15 +123,7 @@ void BsplineMassOperator::invertMassPlusScaledOperator(
     SUZERAIN_UNUSED(phi);
     SUZERAIN_UNUSED(substep_index);
 
-    assert(static_cast<unsigned>(
-                state.strides()[1]) == 1);
-    assert(static_cast<unsigned>(
-                state.strides()[2]) == state.shape()[1] * state.strides()[1]);
-    assert(static_cast<unsigned>(
-                state.strides()[3]) == state.shape()[2] * state.strides()[2]);
-    assert(static_cast<unsigned>(
-                state.strides()[0]) == state.shape()[3] * state.strides()[3]);
-
+    assert(suzerain::multi_array::is_contiguous(state));
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
     assert(static_cast<unsigned>(massluz.n()) == state.shape()[1]);
     massluz.solve(nrhs, state.range().begin(), 1, state.shape()[1]);
