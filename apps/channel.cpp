@@ -2461,10 +2461,10 @@ mean sample_mean_quantities(
     } else {
 
         // Reduce operation requires temporary storage on non-zero ranks
-        mean tmp;
-        tmp.storage.resizeLike(ret.storage);
-        SUZERAIN_MPICHKR(MPI_Reduce(
-                ret.storage.data(), tmp.storage.data(), tmp.storage.size(),
+        Eigen::ArrayXXr tmp;
+        tmp.resizeLike(ret.storage);
+        tmp.setZero();
+        SUZERAIN_MPICHKR(MPI_Reduce(ret.storage.data(), tmp.data(), tmp.size(),
                 suzerain::mpi::datatype<mean::storage_type::Scalar>::value,
                 MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
 

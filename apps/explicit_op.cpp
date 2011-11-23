@@ -172,7 +172,6 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // where is is the current substep index.  Values are reset on i = 0.
     const real_t prev_mean_coeff = real_t(substep_index) / (substep_index + 1);
     const real_t curr_mean_coeff = real_t(1)             / (substep_index + 1);
-    common.storage.resize(Ny, Eigen::NoChange);        // Nondestructive on NOP
 
     // channel_treatment step (1) done during nonlinear operator application
     // via shared OperatorCommonBlock storage space
@@ -346,9 +345,15 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     assert(std::equal(swave.strides() + 1, swave.strides() + 4,
                       auxw.strides() + 1));
 
-    // Prepare common-block-like storage used to pass details from N to L
-    common.storage.resize(/* Ny */ swave.shape()[1], Eigen::NoChange);
-    common.u().setZero();
+    // Prepare common-block-like storage used to pass details from N to L.
+    // Resizing/zeroing is done carefully as accumulated means must survive
+    // from substep to substep while instantaneous profiles do not.
+    if (substep_index == 0) {
+        common.storage.resize(/* Ny */ swave.shape()[1], Eigen::NoChange);
+        common.storage.setZero();
+    } else {
+        common.u().setZero();
+    }
 
     // Maintain stable time step values to return to the caller
     boost::array<real_t, 2> delta_t_candidates = {{
@@ -680,6 +685,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     } else {
         Eigen::ArrayXr tmp;
         tmp.resizeLike(common.u());
+        tmp.setZero();
         SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),
                     common.u().size(), suzerain::mpi::datatype<real_t>::value,
                     MPI_SUM, 0, MPI_COMM_WORLD));
