@@ -133,6 +133,10 @@ static shared_ptr<      channel::manufactured_solution> msoln;
 static shared_ptr<state_type> state_linear;
 static shared_ptr<state_type> state_nonlinear;
 
+// Common storage shared between the linear and nonlinear operators
+// which also includes instantaneous mean quantity statistics
+static channel::OperatorCommonBlock common_block;
+
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
 
@@ -421,11 +425,18 @@ static bool save_statistics(real_t t, size_t nt)
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
     channel::store_time(esioh, t);
 
-    // Obtain mean samples from instantaneous fields and write to file
-    // FIXME Obtain \bar{f}, \overline{\rho q_b}, and \overline{f \cdot u}
+    // Obtain mean samples from instantaneous fields
     state_nonlinear->assign(*state_linear);
     channel::mean samples = channel::sample_mean_quantities(
             scenario, grid, *dgrid, *b, *bop, *state_nonlinear);
+
+    // Obtain mean samples based on implicit forcing
+    samples.f().col(0) = common_block.f();      // Only streamwise momentum...
+    samples.f().rightCols<2>().setZero();       // ...not wall-normal, spanwise
+    samples.f_dot_u() = common_block.f_dot_u();
+    samples.qb()      = common_block.qb();
+
+    // Write the samples to file
     channel::store(esioh, samples);
 
     DEBUG0("Committing " << restart.uncommitted
@@ -1034,7 +1045,6 @@ int main(int argc, char **argv)
     // (Spatial discretization) is modified for dealiasing and included here.
     m.reset(new suzerain::timestepper::lowstorage::SMR91Method<complex_t>(
                 timedef.evmagfactor));
-    channel::OperatorCommonBlock common_block;  // Storage shared between L, N
     L.reset(new channel::BsplineMassOperatorIsothermal(
                 scenario, grid, *dgrid, *b, *bop, common_block));
     N.reset(new channel::NonlinearOperator(
