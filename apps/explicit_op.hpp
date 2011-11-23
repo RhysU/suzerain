@@ -49,17 +49,20 @@ namespace channel {
  * application which either are required for linear operator application or for
  * statistics sampling purposes.
  *
- * The quantities, stored as collocation point values, are as follows:
+ * The quantities are as follows:
  * \li \c u  The nonlinear operator computes the instantaneous spatial (x, z)
- *     mean streamwise velocity profile which the linear operator uses to compute
+ *     mean streamwise velocity profile as collocation point values.
+ *     The linear operator then uses the information to compute
  *     the implicit \f$f\cdot{}u\f$ term in the total energy equation.
  * \li \c f The linear operator accumulates the time-step-specific
  *     temporal mean streamwise (x) component of the implicit \f$f\f$
- *     term in the momentum equation.
+ *     term in the momentum equation stored as coefficients.
  * \li \c f_dot_u The linear operator accumulates the time-step-specific
- *     temporal mean the implicit \f$f\cdot{}u\f$ term in the energy equation.
+ *     temporal mean the implicit \f$f\cdot{}u\f$ term in the energy equation
+ *     stored as coefficients.
  * \li \c qb The linear operator accumulates the time-step-specific
- *     temporal mean the implicit \f$q_b\f$ term in the energy equation.
+ *     temporal mean the implicit \f$q_b\f$ term in the energy equation
+ *     stored as coefficients.
  *
  * "Time-step-specific temporal means" are time averages taken across a single
  * time step of quantities which vary on each substep.  As the substeps are all
@@ -74,8 +77,12 @@ public:
 
     OperatorCommonBlock() {}
 
+private:
+
     /** Type of the contiguous storage used to house all scalars */
     typedef Eigen::Array<real_t, Eigen::Dynamic, 4> storage_type;
+
+public:
 
     /** Contiguous storage used to house all scalars */
     storage_type storage;
