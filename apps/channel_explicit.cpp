@@ -137,6 +137,9 @@ static shared_ptr<state_type> state_nonlinear;
 // which also includes instantaneous mean quantity statistics
 static channel::OperatorCommonBlock common_block;
 
+// The last collection of mean quantity samples obtained
+static channel::mean samples;
+
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
 
@@ -367,6 +370,34 @@ static bool log_status(real_t t, size_t nt)
     return true;
 }
 
+static void sample_statistics(real_t t)
+{
+    // Defensively avoid multiple invocations with no intervening changes
+#pragma warning(push,disable:1572)
+    if (samples.t == t) {
+#pragma warning(pop)
+        DEBUG0("Cowardly refusing to re-sample statistics at t = " << t);
+        return;
+    }
+
+    const double starttime = MPI_Wtime();
+
+    // Obtain mean samples from instantaneous fields
+    state_nonlinear->assign(*state_linear);
+    samples = channel::sample_mean_quantities(
+            scenario, grid, *dgrid, *b, *bop, *state_nonlinear, t);
+
+    // Obtain mean samples based on implicit forcing
+    samples.f().col(0) = common_block.f();      // Only streamwise momentum...
+    samples.f().rightCols<2>().setZero();       // ...not wall-normal, spanwise
+    samples.f_dot_u() = common_block.f_dot_u();
+    samples.qb()      = common_block.qb();
+
+    const double elapsed = MPI_Wtime() - starttime;
+    INFO0("Computed statistics at t = " << t
+          << " in " << elapsed << " seconds");
+}
+
 /** Tracks last time a restart file was written successfully */
 static size_t last_restart_saved_nt = numeric_limits<size_t>::max();
 
@@ -417,7 +448,7 @@ static bool save_restart(real_t t, size_t nt)
 static bool save_statistics(real_t t, size_t nt)
 {
     const double starttime = MPI_Wtime();
-    DEBUG0("Started to compute statistics at t = " << t << " and nt = " << nt);
+    DEBUG0("Started to save statistics at t = " << t << " and nt = " << nt);
 
     // We use restart.{metadata,uncommitted} for statistics too.
     DEBUG0("Cloning " << restart.metadata << " to " << restart.uncommitted);
@@ -425,18 +456,8 @@ static bool save_statistics(real_t t, size_t nt)
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
     channel::store_time(esioh, t);
 
-    // Obtain mean samples from instantaneous fields
-    state_nonlinear->assign(*state_linear);
-    channel::mean samples = channel::sample_mean_quantities(
-            scenario, grid, *dgrid, *b, *bop, *state_nonlinear);
-
-    // Obtain mean samples based on implicit forcing
-    samples.f().col(0) = common_block.f();      // Only streamwise momentum...
-    samples.f().rightCols<2>().setZero();       // ...not wall-normal, spanwise
-    samples.f_dot_u() = common_block.f_dot_u();
-    samples.qb()      = common_block.qb();
-
-    // Write the samples to file
+    // Sample statistics and then write the samples to file
+    sample_statistics(t);
     channel::store(esioh, samples);
 
     DEBUG0("Committing " << restart.uncommitted

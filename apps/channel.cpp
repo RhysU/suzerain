@@ -2139,7 +2139,8 @@ mean sample_mean_quantities(
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
-        suzerain::ContiguousState<4,complex_t> &swave)
+        suzerain::ContiguousState<4,complex_t> &swave,
+        const real_t t)
 {
     // Shorthand
     const size_t Ny = swave.shape()[1];
@@ -2186,6 +2187,7 @@ mean sample_mean_quantities(
 
     // Rank-specific details accumulated in ret to be MPI_Reduce-d later
     mean ret;
+    ret.t = t;
     ret.storage.setZero(mean::storage_type::Index(Ny),
                         mean::storage_type::ColsAtCompileTime);
 

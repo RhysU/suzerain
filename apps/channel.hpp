@@ -587,6 +587,9 @@ public:
 #undef SUM
     }; };
 
+    /** Simulation time when mean quantities were obtained */
+    real_t t;
+
     /** Type of the contiguous storage used to house all scalars */
     typedef Eigen::Array<real_t, Eigen::Dynamic, nscalars::total> storage_type;
 
@@ -678,6 +681,7 @@ public:
  * @param[in,out] b        B-spline basis workspace.
  * @param[in]     bop      B-spline operator workspace.
  * @param[in,out] swave    Destroyed in the computation
+ * @param[in]     t        Current simulation time
  *
  * @return Mean quantities as B-spline coefficients.
  */
@@ -687,7 +691,8 @@ mean sample_mean_quantities(
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop,
-        suzerain::ContiguousState<4,complex_t> &swave);
+        suzerain::ContiguousState<4,complex_t> &swave,
+        const real_t t);
 
 /** Store a \ref mean instance in a restart file */
 void store(const esio_handle h, const mean& m);
