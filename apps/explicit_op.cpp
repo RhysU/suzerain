@@ -348,8 +348,8 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     // Prepare common-block-like storage used to pass details from N to L.
     // Resizing/zeroing is done carefully as accumulated means must survive
     // from substep to substep while instantaneous profiles do not.
+    common.storage.resize(/* Ny */ swave.shape()[1], Eigen::NoChange);
     if (substep_index == 0) {
-        common.storage.resize(/* Ny */ swave.shape()[1], Eigen::NoChange);
         common.storage.setZero();
     } else {
         common.u().setZero();
