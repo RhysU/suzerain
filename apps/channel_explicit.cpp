@@ -456,7 +456,7 @@ static bool save_statistics(real_t t, size_t nt)
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
     channel::store_time(esioh, t);
 
-    // Sample statistics and then write the samples to file
+    // Compute statistics and write to file
     sample_statistics(t);
     channel::store(esioh, samples);
 

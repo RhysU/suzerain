@@ -8,7 +8,7 @@
 
 # Check prerequisites and either warn and pass or die loudly
 prereq_status=
-for tool in mpiexec h5diff h5dump
+for tool in egrep cut mpiexec h5diff h5dump h5ls
 do
     if ! which $tool >/dev/null ; then
         echo "WARNING: Unable to find utility $tool" 1>&2
@@ -71,3 +71,12 @@ declare -ir Nz=6
 runq ./channel_init "$testdir/mms0.h5" --mms=0                           \
                     --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz
 chmod +r "$testdir/mms0.h5"
+
+banner "Building --exclude-paths for filtering samples"
+datasets_bar=$(h5ls -f "$testdir/mms0.h5" | egrep '^/bar_' | cut "-d " -f 1)
+exclude_datasets_bar=""
+for dset in $datasets_bar
+do
+    exclude_datasets_bar="$exclude_datasets_bar --exclude-path=$dset"
+done
+exclude_datasets_bar=$(echo $exclude_datasets_bar | tr -d '\n' | tr -s ' ')
