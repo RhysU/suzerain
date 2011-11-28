@@ -2543,4 +2543,56 @@ void store(const esio_handle h, const mean& m)
     m.foreach(f);
 }
 
+// Helper for the load(...) implementation just below
+class mean_loader
+{
+
+public:
+
+    mean_loader(const esio_handle esioh, const std::string& prefix)
+        : esioh(esioh), prefix(prefix) {}
+
+    template< typename EigenArray >
+    void operator()(const std::string& name, const EigenArray& dat_) const {
+
+        // http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+        EigenArray& dat = const_cast<EigenArray&>(dat_);
+
+        int procid;
+        esio_handle_comm_rank(esioh, &procid);
+
+        std::string key(prefix);
+        key.append(name);
+
+        int cglobal, bglobal, aglobal;
+        if (ESIO_SUCCESS == esio_field_size(esioh, key.c_str(),
+                                            &cglobal, &bglobal, &aglobal)
+            && (   EigenArray::ColsAtCompileTime == Eigen::Dynamic
+                || dat.cols() == bglobal)) {
+            dat.resize(aglobal, bglobal);
+            esio_field_establish(esioh,
+                                 1,          0, (procid == 0 ? 1          : 0),
+                                 dat.cols(), 0, (procid == 0 ? dat.cols() : 0),
+                                 dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
+            esio_field_read(esioh, key.c_str(), dat.data(), 0, 0, 0);
+        } else {
+            WARN0("Unable to load " << key << " for nscalar = " << dat.cols());
+            dat.fill(std::numeric_limits<
+                    typename EigenArray::Scalar>::quiet_NaN());
+        }
+    }
+
+private:
+
+    esio_handle esioh;
+    std::string prefix;
+
+};
+
+void load(const esio_handle h, mean& m)
+{
+    mean_loader f(h, "bar_");
+    m.foreach(f);
+}
+
 } // end namespace channel

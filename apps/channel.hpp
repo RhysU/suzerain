@@ -639,8 +639,9 @@ public:
      * The functor is invoked as <tt>f(::std::string("foo",
      * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
      * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
-     * for suggestions on how to write a functor.  See <tt>boost::ref</tt>
-     * for how to use a stateful functor.
+     * for suggestions on how to write a functor, especially the \c const_cast
+     * hack details therein.  See <tt>boost::ref</tt> for how to use a stateful
+     * functor.
      */
     template <typename BinaryFunction>
     void foreach(BinaryFunction f) {
@@ -696,6 +697,12 @@ mean sample_mean_quantities(
 
 /** Store a \ref mean instance in a restart file */
 void store(const esio_handle h, const mean& m);
+
+/**
+ * Load a \ref mean instance from a restart file.  Statistics not present in
+ * the restart file are considered to be all NaNs.
+ */
+void load(const esio_handle h, mean& m);
 
 } // end namespace channel
 
