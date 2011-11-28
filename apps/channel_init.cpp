@@ -386,13 +386,23 @@ int main(int argc, char **argv)
     channel::store_coefficients(esioh, swave, stemp, scenario, grid, *dgrid);
     esio_file_flush(esioh);
 
+    real_t t;
     if (mms < 0) {
         INFO0("Storing new simulation time of zero");
-        channel::store_time(esioh, 0);
+        t = 0;
     } else {
         INFO0("Storing simulation time to match manufactured solution");
-        channel::store_time(esioh, mms);
+        t = mms;
     }
+    channel::store_time(esioh, t);
+    esio_file_flush(esioh);
+
+    INFO0("Computing mean quantities from state fields");
+    channel::mean samples = channel::sample_mean_quantities(
+            scenario, grid, *dgrid, *b, *bop, swave, t);
+
+    INFO("Writing mean quantities to restart file");
+    channel::store(esioh, samples);
     esio_file_flush(esioh);
 
     INFO0("Closing newly initialized restart file");

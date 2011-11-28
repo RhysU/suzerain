@@ -430,6 +430,10 @@ static bool save_restart(real_t t, size_t nt)
                 esioh, *state_linear, *state_nonlinear, scenario, grid, *dgrid);
     }
 
+    // Include statistics in the restart file
+    sample_statistics(t);
+    channel::store(esioh, samples);
+
     DEBUG0("Committing " << restart.uncommitted
            << " as a restart file using template " << restart.destination);
     esio_file_close_restart(
@@ -1025,6 +1029,8 @@ int main(int argc, char **argv)
     channel::load_time(esioh, initial_t);
     {
         const double begin = MPI_Wtime();
+        samples.t = initial_t;         // For idempotent --advance_nt=0...
+        channel::load(esioh, samples); // ...when no grid rescaling employed
         channel::load(esioh, *state_linear, scenario, grid, *dgrid, *b, *bop);
         wtime_load_state = MPI_Wtime() - begin;
     }

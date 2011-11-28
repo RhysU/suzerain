@@ -23,7 +23,11 @@ banner "Equivalence of serial and parallel execution"
 (
     cd $testdir
     prunq ../channel_explicit mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
-    differ --delta=2e-14 --nan serial0.h5 a0.h5
+    # Stricter tolerance performed first for non-/bar_foo quantities
+    differ_exclude $exclude_datasets_bar --delta=2e-14 --nan serial0.h5 a0.h5
+    for dset in $datasets_bar; do
+        differ --delta=1e-13 --relative=1e-13 serial0.h5 a0.h5 $dset
+    done
 )
 
 done
