@@ -346,14 +346,10 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                       auxw.strides() + 1));
 
     // Prepare common-block-like storage used to pass details from N to L.
-    // Resizing/zeroing is done carefully as accumulated means must survive
-    // from substep to substep while instantaneous profiles do not.
+    // Zeroing is done carefully as accumulated means must survive
+    // from substep to substep while instantaneous profiles must not.
     common.storage.resize(/* Ny */ swave.shape()[1], Eigen::NoChange);
-    if (substep_index == 0) {
-        common.storage.setZero();
-    } else {
-        common.u().setZero();
-    }
+    common.u().setZero();
 
     // Maintain stable time step values to return to the caller
     boost::array<real_t, 2> delta_t_candidates = {{

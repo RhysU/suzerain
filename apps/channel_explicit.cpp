@@ -1064,6 +1064,8 @@ int main(int argc, char **argv)
     // Prepare timestepping details specific to the chosen operators.
     // Nonlinear scaling factor (N_x N_z)^(-1) from write up section 2.1
     // (Spatial discretization) is modified for dealiasing and included here.
+    common_block.storage.setZero(
+            grid.dN.y(), channel::mean::storage_type::ColsAtCompileTime);
     m.reset(new suzerain::timestepper::lowstorage::SMR91Method<complex_t>(
                 timedef.evmagfactor));
     L.reset(new channel::BsplineMassOperatorIsothermal(
