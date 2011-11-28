@@ -700,7 +700,8 @@ void store(const esio_handle h, const mean& m);
 
 /**
  * Load a \ref mean instance from a restart file.  Statistics not present in
- * the restart file are considered to be all NaNs.
+ * the restart file are considered to be all NaNs.  On utter failure,
+ * <tt>m.t</tt> will be NaN as well.
  */
 void load(const esio_handle h, mean& m);
 

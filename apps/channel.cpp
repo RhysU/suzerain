@@ -2591,8 +2591,18 @@ private:
 
 void load(const esio_handle h, mean& m)
 {
-    mean_loader f(h, "bar_");
-    m.foreach(f);
+    int cglobal, bglobal, aglobal;
+    if (ESIO_SUCCESS == esio_field_size(h, "bar_rho",
+                                        &cglobal, &bglobal, &aglobal)) {
+        m.storage.resize(aglobal, Eigen::NoChange);
+        mean_loader f(h, "bar_");
+        m.foreach(f);
+        // m.t presumably set externally using channel::load_time
+    } else {
+        WARN0("No mean samples loaded-- unable to anticipate storage needs");
+        m.storage.fill(std::numeric_limits<real_t>::quiet_NaN());
+        m.t = std::numeric_limits<real_t>::quiet_NaN();
+    }
 }
 
 } // end namespace channel
