@@ -201,7 +201,25 @@ extern "C" const char revstr[];
     ((tilde_nupp_gradyTpp,    "Favre-averaged y-component of the kinematic viscosity times the fluctuating temperature gradient"))                                  \
     ((tilde_nupp_gradzTpp,    "Favre-averaged z-component of the kinematic viscosity times the fluctuating temperature gradient"))
 
-// TODO Residuals of the mass, momentum, energy, and turbulent kinetic energy equations
+/**
+ * A Boost.Preprocessor sequence of tuples of stationary, time-invariant
+ * equation residuals.  In the unsteady case, these are nothing but the time
+ * derivative of the state variables.
+ */
+#define SEQ_RESIDUAL                                                                              \
+    ((bar_rho__t,   "Residual of Favre-averaged density equation"))                               \
+    ((bar_rho_u__t, "Residual of Favre-averaged streamwise momentum equation"))                   \
+    ((bar_rho_v__t, "Residual of Favre-averaged wall-normal momentum equation"))                  \
+    ((bar_rho_w__t, "Residual of Favre-averaged spanwise momentum equation"))                     \
+    ((bar_rho_E__t, "Residual of Favre-averaged total (intrinsic plus kinetic) energy equation")) \
+    ((bar_rho_k__t, "Residual of Favre-averaged turbulent kinetic energy equation"))
+
+/** A Boost.Preprocessor sequence of tuples of locally computed quantities */
+#define SEQ_LOCALS                                                                     \
+    ((local_a,    "Local speed of sound formed via sqrt(tilde_T)"))                    \
+    ((local_Ma,   "Local Mach number formed via bar_u / local_a"))                     \
+    ((local_Mat,  "Local turbulent Mach number formed via sqrt(2*tilde_k) / local_a")) \
+    ((local_Re,   "Local Reynolds number formed via bar_u L / tilde_nu"))
 
 // X-macros employed per http://drdobbs.com/blogs/cpp/228700289
 #define FORALL_COORDS(apply)     \
