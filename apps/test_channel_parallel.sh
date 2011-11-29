@@ -26,7 +26,7 @@ banner "Equivalence of serial and parallel execution"
     # Stricter tolerance performed first for non-/bar_foo quantities
     differ_exclude $exclude_datasets_bar --delta=2e-14 --nan serial0.h5 a0.h5
     for dset in $datasets_bar; do
-        differ --delta=1e-13 --relative=1e-13 serial0.h5 a0.h5 $dset
+        differ --delta=5e-12 --relative=5e-12 serial0.h5 a0.h5 $dset
     done
 )
 
