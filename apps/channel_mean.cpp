@@ -443,13 +443,12 @@ int main(int argc, char **argv)
             DEBUG("Saving nondimensional quantities to " << outname);
 
             // Write header followed by data values separated by blanks
-            std::ofstream outfile(outname.c_str());
-            quantity::write_names(outfile);
+            std::ofstream ofs(outname.c_str());
+            quantity::write_names(ofs);
             BOOST_FOREACH(quantity::storage_map_type::value_type i, data) {
-                outfile << i->second->format(iofmt) << std::endl
-                        << std::endl;
+                ofs << i->second->format(iofmt) << std::endl << std::endl;
             }
-            outfile.close();
+            ofs.close();
         }
 
     } else {
