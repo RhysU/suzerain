@@ -324,19 +324,20 @@ namespace quantity {
     /** Output names in a manner suitable for \ref iofmt-ed column header */
     static void write_names(std::ostream &out)
     {
-        for (size_t i = 0; i < quantity::count; ++i) {  // Headings (see iofmt)
-            out << std::setw(numeric_limits<real_t>::digits10 + 7)
+        for (size_t i = 0; i < quantity::count; ++i) {  // Headings
+            out << std::setw(numeric_limits<real_t>::digits10 + 11)
                 << quantity::name[i];
             if (i < quantity::count - 1) out << ", ";
         }
         out << std::endl;
     }
 
+    /** Used for formatting output data to match \ref quantity::write_names. */
+    static const Eigen::IOFormat iofmt(
+            Eigen::FullPrecision, 0, ",     ", "\n", "    ");
+
 } // namespace quantity
 
-
-/** Used for formatting output data to match \ref quantity::write_names. */
-static const Eigen::IOFormat iofmt(Eigen::FullPrecision, 0, ", ", "\n");
 
 /**
  * Compute all quantities from namespace \ref quantity using the sample
@@ -443,7 +444,8 @@ int main(int argc, char **argv)
             std::ofstream ofs(outname.c_str());
             quantity::write_names(ofs);
             BOOST_FOREACH(quantity::storage_map_type::value_type i, data) {
-                ofs << i->second->format(iofmt) << std::endl << std::endl;
+                ofs << i->second->format(quantity::iofmt) << std::endl
+                    << std::endl;
             }
             ofs.close();
         }
@@ -481,7 +483,7 @@ int main(int argc, char **argv)
             // Write header followed by data values separated by blanks
             quantity::write_names(std::cout);
             BOOST_FOREACH(quantity::storage_map_type::value_type i, pool) {
-                std::cout << i->second->format(iofmt) << std::endl
+                std::cout << i->second->format(quantity::iofmt) << std::endl
                           << std::endl;
             }
         }
