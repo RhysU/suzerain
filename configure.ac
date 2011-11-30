@@ -220,9 +220,12 @@ dnl ------------------------------------------------
 dnl Strictness must come after libraries to avoid breaking AC_CHECK_LIB
 AC_LANG_PUSH([C])
 AX_CFLAGS_WARN_ALL
-AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=pure    ],[CFLAGS])
-AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=const   ],[CFLAGS])
-AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=noreturn],[CFLAGS])
+case $ax_cv_c_compiler_vendor in #(
+    gnu) AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=pure    ],[CFLAGS])
+         AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=const   ],[CFLAGS])
+         AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=noreturn],[CFLAGS])
+         ;;
+esac
 AC_LANG_POP([C])
 AC_LANG_PUSH([C++])
 AX_CXXFLAGS_WARN_ALL
@@ -234,9 +237,12 @@ AC_CXX_CPPFLAGS_STD_LANG(AM_CPPFLAGS)
 AC_CXX_CXXFLAGS_STD_LANG(AM_CXXFLAGS)
 AC_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
 AX_CXX_EXTERN_TEMPLATE
-AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=pure    ],[CXXFLAGS])
-AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=const   ],[CXXFLAGS])
-AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=noreturn],[CXXFLAGS])
+case $ax_cv_cxx_compiler_vendor in #(
+    gnu) AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=pure    ],[CXXFLAGS])
+         AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=const   ],[CXXFLAGS])
+         AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=noreturn],[CXXFLAGS])
+         ;;
+esac
 AC_LANG_POP([C++])
 AX_WARNINGS_SANITIZE
 AX_INTEL_SC_ANALYSIS
