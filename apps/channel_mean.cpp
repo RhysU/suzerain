@@ -544,8 +544,8 @@ static quantity::storage_map_type process(
     }
 
     // Convert samples into collocation point values in s
-    auto_ptr<storage_type> s(
-            new storage_type(b->n(), storage_type::ColsAtCompileTime));
+    auto_ptr<storage_type> s(new storage_type(
+                b->n(), (int) storage_type::ColsAtCompileTime));
 #ifndef NDEBUG
     s->fill(numeric_limits<real_t>::quiet_NaN());  // ++paranoia
 #endif
@@ -836,7 +836,7 @@ static quantity::storage_map_type process(
 
         // Evaluate coefficients onto the target collocation points
         auto_ptr<storage_type> r(new storage_type(
-                    i_b->n(), storage_type::ColsAtCompileTime));
+                    i_b->n(), (int) storage_type::ColsAtCompileTime));
         for (std::size_t i = 0; i < quantity::count; ++i) {
             b->linear_combination(0, s->col(i).data(),
                                   buf.size(), buf.data(), r->col(i).data());
