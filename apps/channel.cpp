@@ -93,10 +93,8 @@ const boost::array<const char *,field::count> field::description = {{
     "total energy",
 }};
 
-// Common constant used to define distinct B-spline bases per
-// bspline_bases_distance() in the presence of floating point error.
-static const double bsplines_distinct_distance
-    = 3*std::numeric_limits<double>::epsilon();
+const real_t bsplines_distinct_distance
+    = 3*std::numeric_limits<real_t>::epsilon();
 
 void mpi_abort_on_error_handler_gsl(const char * reason,
                                     const char * file,
@@ -1050,16 +1048,12 @@ void store_coefficients(
     }
 }
 
-// Compute the "distance" between two B-spline bases.  Distance is "huge" if
-// any of the order, number of degrees of freedom, or number of knots differ.
-// When all those criteria match the distance becomes the maximum absolute
-// difference between the knot vectors.
-static double bspline_bases_distance(const suzerain::bspline& a,
-                                     const suzerain::bspline& b)
+real_t distance(const suzerain::bspline& a,
+                const suzerain::bspline& b)
 {
-    double retval = 0;
+    real_t retval = 0;
     if (a.k() != b.k() || a.n() != b.n() || a.nknot() != b.nknot()) {
-        retval = std::numeric_limits<double>::max();
+        retval = std::numeric_limits<real_t>::max();
     } else {
         for (int j = 0; j < b.nknot(); ++j) {
             retval = std::max(retval, std::abs(a.knot(j) - b.knot(j)));
@@ -1095,7 +1089,7 @@ void load_coefficients(const esio_handle h,
     assert(Fy == Fb->n());
 
     // Check if the B-spline basis in the file differs from ours.
-    const double bsplines_dist = bspline_bases_distance(b, *Fb);
+    const double bsplines_dist = distance(b, *Fb);
     const bool bsplines_same = bsplines_dist < bsplines_distinct_distance;
 
     // Compute wavenumber translation logistics for X direction.
@@ -1369,7 +1363,7 @@ void load_collocation_values(
         boost::shared_ptr<suzerain::bspline> Fb;
         boost::shared_ptr<suzerain::bsplineop> Fbop;
         load(h, Fb, Fbop);
-        const double bsplines_dist = bspline_bases_distance(b, *Fb);
+        const double bsplines_dist = distance(b, *Fb);
         const bool bsplines_same = bsplines_dist < bsplines_distinct_distance;
         if (!bsplines_same) {
             ERROR0("Physical restart has different wall-normal bases ("

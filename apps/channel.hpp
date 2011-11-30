@@ -197,6 +197,21 @@ real_t create(const int ndof,
               boost::shared_ptr<suzerain::bspline>& b,
               boost::shared_ptr<suzerain::bsplineop>& bop);
 
+/**
+ * Compute the "distance" between two B-spline bases.  Distance is "huge" if
+ * any of the order, number of degrees of freedom, or number of knots differ.
+ * When all those criteria match the distance becomes the maximum absolute
+ * difference between the knot vectors.
+ */
+real_t distance(const suzerain::bspline& a,
+                const suzerain::bspline& b);
+
+/**
+ * Common constant used to define distinct B-spline bases per
+ * bspline_bases_distance() in the presence of floating point error.
+ */
+extern const real_t bsplines_distinct_distance;
+
 /** Store a suzerain::bspline workspace in a restart file */
 void store(const esio_handle h,
            const boost::shared_ptr<suzerain::bspline>& b,
