@@ -55,9 +55,6 @@ using boost::shared_ptr;
 using std::auto_ptr;
 using std::numeric_limits;
 
-// Used for formatting output data
-static const Eigen::IOFormat iofmt(Eigen::FullPrecision, 0, ", ", "\n");
-
 // Provided by channel_mean_svnrev.{c,h} to speed recompilation
 extern "C" const char revstr[];
 
@@ -327,7 +324,7 @@ namespace quantity {
     /** Output names in a manner suitable for \ref iofmt-ed column header */
     static void write_names(std::ostream &out)
     {
-        for (size_t i = 0; i < quantity::count; ++i) {  // Headings
+        for (size_t i = 0; i < quantity::count; ++i) {  // Headings (see iofmt)
             out << std::setw(numeric_limits<real_t>::digits10 + 7)
                 << quantity::name[i];
             if (i < quantity::count - 1) out << ", ";
@@ -338,8 +335,8 @@ namespace quantity {
 } // namespace quantity
 
 
-// Compute quantities based on real-valued mean state coefficients
-
+/** Used for formatting output data to match \ref quantity::write_names. */
+static const Eigen::IOFormat iofmt(Eigen::FullPrecision, 0, ", ", "\n");
 
 /**
  * Compute all quantities from namespace \ref quantity using the sample
