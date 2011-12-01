@@ -64,9 +64,10 @@ extern "C" const char revstr[];
 namespace quantity {
 
 /** A Boost.Preprocessor sequence of tuples of grid-related details */
-#define SEQ_GRID                                     \
-    ((t, "Simulation time"))                         \
-    ((y, "Wall-normal collocation point locations"))
+#define SEQ_GRID                                                                                      \
+    ((t,            "Simulation time"))                                                               \
+    ((y,            "Wall-normal collocation point locations"))                                       \
+    ((bulk_weights, "Take dot product of these weights against any quantity to find the bulk value"))
 
 /** A Boost.Preprocessor sequence of tuples of directly sampled quantities.  */
 #define SEQ_SAMPLED                                                                                                       \
@@ -338,7 +339,6 @@ namespace quantity {
 
 } // namespace quantity
 
-
 /**
  * Compute all quantities from namespace \ref quantity using the sample
  * collections present in \c filename using the wall-normal discretization from
@@ -495,6 +495,33 @@ int main(int argc, char **argv)
     }
 
     return EXIT_SUCCESS;
+}
+
+/**
+ * Compute the integration weights necessary to compute a bulk quantity from
+ * the quantity's value at collocation points using a dot product.
+ */
+static Eigen::VectorXr compute_bulk_weights(
+        real_t Ly,
+        suzerain::bspline& b,
+        suzerain::bsplineop_lu& boplu)
+{
+    // Obtain coefficient -> bulk quantity weights
+    Eigen::VectorXr bulkcoeff(b.n());
+    b.integration_coefficients(0, bulkcoeff.data());
+    bulkcoeff /= Ly;
+
+    // Form M^-1 to map from collocation point values to coefficients
+    Eigen::MatrixXXr mat = Eigen::MatrixXXr::Identity(b.n(),b.n());
+    boplu.solve(b.n(), mat.data(), 1, b.n());
+
+    // Dot the coefficients with each column of M^-1
+    Eigen::VectorXr retval(b.n());
+    for (int i = 0; i < b.n(); ++i) {
+        retval[i] = bulkcoeff.dot(mat.col(i));
+    }
+
+    return retval;
 }
 
 static quantity::storage_map_type process(
@@ -830,6 +857,10 @@ static quantity::storage_map_type process(
     const real_t bsplines_dist = channel::distance(*b, *i_b);
     if (bsplines_dist <= channel::bsplines_distinct_distance) {
 
+        // Compute bulk integration weights
+        s->col(quantity::bulk_weights)
+                = compute_bulk_weights(scenario.Ly, *b, *boplu);
+
         // Results match target numerics to within acceptable tolerance.
         retval.insert(time, s);
 
@@ -856,6 +887,10 @@ static quantity::storage_map_type process(
         // Notice that quantity::t, being a constant, and quantity::y, being a
         // linear, should have been converted to the target collocation points
         // without more than epsilon-like floating point loss.
+
+        // Compute bulk integration weights (which will not translate directly)
+        r->col(quantity::bulk_weights)
+                = compute_bulk_weights(scenario.Ly, *b, *boplu);
 
         retval.insert(time, r);
 
