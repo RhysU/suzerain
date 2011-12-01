@@ -2348,8 +2348,6 @@ mean sample_mean_quantities(
                 const Matrix3r tau = suzerain::rholut::tau(
                                         mu, lambda, div_u, grad_u);
                 const Vector3r tau_u = tau * u;
-                const Matrix3r S     = (grad_u + grad_u.transpose()) / 2
-                                     - (div_u / 3) * Matrix3r::Identity();
 
                 // Accumulate quantities into sum_XXX using function syntax.
 
@@ -2359,12 +2357,12 @@ mean sample_mean_quantities(
                 sum_u[1](u.y());
                 sum_u[2](u.z());
 
-                sum_sym_rho_grad_u[0](rho*grad_u.selfadjointView<Upper>()(0,0));
-                sum_sym_rho_grad_u[1](rho*grad_u.selfadjointView<Upper>()(0,1));
-                sum_sym_rho_grad_u[2](rho*grad_u.selfadjointView<Upper>()(0,2));
-                sum_sym_rho_grad_u[3](rho*grad_u.selfadjointView<Upper>()(1,1));
-                sum_sym_rho_grad_u[4](rho*grad_u.selfadjointView<Upper>()(1,2));
-                sum_sym_rho_grad_u[5](rho*grad_u.selfadjointView<Upper>()(2,2));
+                sum_sym_rho_grad_u[0](rho *  grad_u(0,0)                   );
+                sum_sym_rho_grad_u[1](rho * (grad_u(0,1) + grad_u(1,0)) / 2);
+                sum_sym_rho_grad_u[2](rho * (grad_u(0,2) + grad_u(2,0)) / 2);
+                sum_sym_rho_grad_u[3](rho *  grad_u(1,1)                   );
+                sum_sym_rho_grad_u[4](rho * (grad_u(1,2) + grad_u(2,1)) / 2);
+                sum_sym_rho_grad_u[5](rho *  grad_u(2,2)                   );
 
                 sum_rho_grad_T[0](rho * grad_T.x());
                 sum_rho_grad_T[1](rho * grad_T.y());
@@ -2407,12 +2405,12 @@ mean sample_mean_quantities(
                 sum_rho_T_u[1](rho * T * u.y());
                 sum_rho_T_u[2](rho * T * u.z());
 
-                sum_mu_S[0](mu * S(0,0));
-                sum_mu_S[1](mu * S(0,1));
-                sum_mu_S[2](mu * S(0,2));
-                sum_mu_S[3](mu * S(1,1));
-                sum_mu_S[4](mu * S(1,2));
-                sum_mu_S[5](mu * S(2,2));
+                sum_mu_S[0](mu * ( grad_u(0,0)                    - div_u / 3));
+                sum_mu_S[1](mu * ((grad_u(0,1) + grad_u(1,0)) / 2            ));
+                sum_mu_S[2](mu * ((grad_u(0,2) + grad_u(2,0)) / 2            ));
+                sum_mu_S[3](mu * ( grad_u(1,1)                    - div_u / 3));
+                sum_mu_S[4](mu * ((grad_u(1,2) + grad_u(2,1)) / 2            ));
+                sum_mu_S[5](mu * ( grad_u(2,2)                    - div_u / 3));
 
                 sum_mu_div_u[0](mu * div_u);
 
