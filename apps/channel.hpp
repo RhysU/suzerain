@@ -607,6 +607,31 @@ public:
     /** Contiguous storage used to house all means */
     storage_type storage;
 
+    /**
+     * Constructor setting <tt>this->t = NaN</tt>.
+     * Caller will need to resize <tt>this->storage</tt> prior to use.
+     */
+    mean()
+        : t(std::numeric_limits<real_t>::quiet_NaN())
+    {}
+
+    /**
+     * Constructor setting <tt>this->t = t</tt>.
+     * Caller will need to resize <tt>this->storage</tt> prior to use.
+     */
+    explicit mean(real_t t)
+        : t(t)
+    {}
+
+    /**
+     * Constructor setting <tt>this->t = t</tt> and preparing a zero-filled \c
+     * storage containing \c Ny rows.
+     */
+    mean(real_t t, storage_type::Index Ny)
+        : t(t),
+          storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
+    {}
+
 #define OP(r, data, tuple)                                              \
     BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
 

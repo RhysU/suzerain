@@ -533,7 +533,7 @@ static quantity::storage_map_type process(
     boplu->form_mass(*bop.get());
 
     // Load samples as coefficients
-    auto_ptr<channel::mean> m(new channel::mean());
+    auto_ptr<channel::mean> m(new channel::mean(time, b->n()));
     channel::load(h.get(), *m.get());
     if (m->t >= 0) {
         DEBUG0("Successfully loaded sample collection from " << filename);
@@ -543,8 +543,8 @@ static quantity::storage_map_type process(
     }
 
     // Convert samples into collocation point values in s
-    auto_ptr<storage_type> s(new storage_type(
-                b->n(), (int) storage_type::ColsAtCompileTime));
+    auto_ptr<storage_type> s(new storage_type(b->n(),
+                (storage_type::Index) storage_type::ColsAtCompileTime));
 #ifndef NDEBUG
     s->fill(numeric_limits<real_t>::quiet_NaN());  // ++paranoia
 #endif
@@ -834,8 +834,8 @@ static quantity::storage_map_type process(
         for (int i = 0; i < i_b->n(); ++i) buf[i] = i_b->collocation_point(i);
 
         // Evaluate coefficients onto the target collocation points
-        auto_ptr<storage_type> r(new storage_type(
-                    i_b->n(), (int) storage_type::ColsAtCompileTime));
+        auto_ptr<storage_type> r(new storage_type(i_b->n(),
+                    (storage_type::Index) storage_type::ColsAtCompileTime));
         for (std::size_t i = 0; i < quantity::count; ++i) {
             b->linear_combination(0, s->col(i).data(),
                                   buf.size(), buf.data(), r->col(i).data());

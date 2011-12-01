@@ -2178,10 +2178,7 @@ mean sample_mean_quantities(
                       auxw.strides() + 1));
 
     // Rank-specific details accumulated in ret to be MPI_Reduce-d later
-    mean ret;
-    ret.t = t;
-    ret.storage.setZero(mean::storage_type::Index(Ny),
-                        mean::storage_type::ColsAtCompileTime);
+    mean ret(t, Ny);
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
