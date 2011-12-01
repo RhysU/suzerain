@@ -217,7 +217,7 @@ namespace quantity {
     ((local_a,    "Local speed of sound formed via sqrt(tilde_T)"))                    \
     ((local_Ma,   "Local Mach number formed via bar_u / local_a"))                     \
     ((local_Mat,  "Local turbulent Mach number formed via sqrt(2*tilde_k) / local_a")) \
-    ((local_Re,   "Local Reynolds number formed via bar_u L / tilde_nu"))
+    ((local_Re,   "Local Reynolds number formed from scenario.Re * bar_rho_u L / bar_mu for L = 1"))
 
 /**
  * A Boost.Preprocessor sequence of tuples of stationary, time-invariant
@@ -629,7 +629,7 @@ static quantity::storage_map_type process(
 
     // Introduce shorthand for constants
     const real_t Ma    = scenario.Ma;
-    const real_t Re    = scenario.Re;    SUZERAIN_UNUSED(Re); // FIXME
+    const real_t Re    = scenario.Re;
     const real_t Pr    = scenario.Pr;    SUZERAIN_UNUSED(Pr); // FIXME
     const real_t gamma = scenario.gamma;
 
@@ -760,14 +760,21 @@ static quantity::storage_map_type process(
 
     // Computations of local quantities (see descriptions for definitions).
     // Note the following:
-    //  1)  In local_Mat computation, ".abs()" is present to avoid taking
-    //      the square root of very small, negative tilde_k arising 
-    //      from negative tilde_{upp_upp,vpp_vpp_vpp} in laminar situations
-    //      due to round off errors (i.e. tilde_u_u - tilde_u**2 ~= -eps).
+    //
+    // 1)  In local_Mat computation, ".abs()" is present to avoid taking the
+    // square root of very small, negative tilde_k arising from negative
+    // tilde_{upp_upp,vpp_vpp_vpp} in laminar situations due to round off
+    // errors (i.e. tilde_u_u - tilde_u**2 ~= -eps).
+    //
+    // 2)  In local_Re computation, the coefficient scenario.Re arises because
+    // (bar_rho_u * L / bar_mu) are already nondimensional.  Multiplying by Re
+    // re-incorporates the reference quantities rho_0, u_0, L_0, and mu_0 to
+    // cause the nondimensional local_Re to be correctly formed from
+    // dimensional quantities.
     C(local_a)   = C(tilde_T).sqrt();
     C(local_Ma)  = C(bar_u) / C(local_a);
     C(local_Mat) = (std::sqrt(real_t(2))*C(tilde_k).abs().sqrt()) / C(local_a);
-    C(local_Re)  = C(bar_u) /* L = 1 */ / C(tilde_nu);
+    C(local_Re)  = Re * C(bar_rho_u) /* L = 1 */ / C(bar_mu);
 
     // Differentiate SAMPLED
     // Uses that bar_rho{,__y,__yy} is the first entry in SAMPLED{,_Y,_YY}
