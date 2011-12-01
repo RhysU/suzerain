@@ -70,6 +70,7 @@
 #include <boost/format.hpp>
 #include <boost/function.hpp>
 #include <boost/integer_traits.hpp>
+#include <boost/io/ios_state.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
