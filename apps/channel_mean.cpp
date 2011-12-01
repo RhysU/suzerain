@@ -372,6 +372,7 @@ int main(int argc, char **argv)
     std::string outfile;
     bool use_stdout = false;
     bool use_hdf5   = false;
+    bool describe   = false;
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based channel mean quantity computations",
@@ -389,9 +390,10 @@ int main(int argc, char **argv)
 "a single HDF5 file called OUTFILE.h5 containing all sample collections. "
                 , revstr);
         options.add_options()
-            ("stdout,s", "Write results to standard output?")
-            ("outfile,o", boost::program_options::value(&outfile),
-                         "Write results to an HDF5 output file")
+            ("stdout,s",   "Write results to standard output?")
+            ("outfile,o",   boost::program_options::value(&outfile),
+                           "Write results to an HDF5 output file")
+            ("describe,d", "Dump all quantity details to standard output")
             ;
         restart_files = options.process(argc, argv);
         switch (options.verbose()) {
@@ -406,12 +408,37 @@ int main(int argc, char **argv)
         }
         use_stdout = options.variables().count("stdout");
         use_hdf5   = options.variables().count("outfile");
+        describe   = options.variables().count("describe");
     }
 
     // Ensure that we're running in a single processor environment
     if (suzerain::mpi::comm_size(MPI_COMM_WORLD) > 1) {
         FATAL(argv[0] << " only intended to run on single rank");
         return EXIT_FAILURE;
+    }
+
+    // Dump a banner containing one-indexed columns, names, and descriptions
+    if (describe) {
+        boost::io::ios_all_saver ias(std::cout);
+
+        const std::size_t ndxwidth = 1 + static_cast<std::size_t>(
+                std::floor(std::log10(static_cast<real_t>(quantity::count))));
+
+        std::size_t namewidth = 0;
+        for (std::size_t i = 0; i < quantity::count; ++i) {
+            namewidth = std::max(namewidth, strlen(quantity::name[i]));
+        }
+
+        for (size_t i = 0; i < quantity::count; ++i) {
+            std::cout << "# "
+                      << std::setw(ndxwidth) << std::right << i
+                      << "  "
+                      << std::setw(namewidth) << std::left << quantity::name[i]
+                      << "  "
+                      << std::left << quantity::desc[i]
+                      << '\n';
+        }
+        std::cout << std::flush;
     }
 
     // Processing differs slightly when done file-by-file versus
