@@ -534,10 +534,6 @@ void accumulate_manufactured_solution(
 class mean
 {
 public:
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-    // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-#endif
 
 /**
  * A Boost.Preprocessor sequence of tuples of quantities computed in wave
