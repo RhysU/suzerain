@@ -1319,8 +1319,6 @@ void store_collocation_values(
                 reinterpret_cast<real_t *>(scratch[i].origin()),
                 0, 0, 0, comment.c_str());
     }
-
-    // TODO Save mean primitive state at wall-normal collocation points
 }
 
 void load_collocation_values(
