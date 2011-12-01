@@ -748,8 +748,8 @@ static quantity::storage_map_type process(
                    - C(bar_tauyz)*C(tilde_w);
     C(bar_tauuppz) = C(bar_tauuz)
                    - C(bar_tauxz)*C(tilde_u)
-                   - C(bar_tauxy)*C(tilde_v)
-                   - C(bar_tauxz)*C(tilde_w);
+                   - C(bar_tauyz)*C(tilde_v)
+                   - C(bar_tauzz)*C(tilde_w);
     D(bar_v);  // Form derivatives
     C(bar_pp_div_upp) = C(bar_p_div_u) - C(bar_p)*C(bar_v__y);
     C(tilde_u_u_u) = C(bar_rho_u_u_u)/C(bar_rho);
