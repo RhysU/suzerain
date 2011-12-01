@@ -758,10 +758,15 @@ static quantity::storage_map_type process(
     C(tilde_nupp_gradyTpp) = (C(bar_mu_grady_T) - C(tilde_nu)*C(bar_rho_grady_T))/C(bar_rho);
     C(tilde_nupp_gradzTpp) = (C(bar_mu_gradz_T) - C(tilde_nu)*C(bar_rho_gradz_T))/C(bar_rho);
 
-    // Computations of local quantities (see descriptions for definitions)
+    // Computations of local quantities (see descriptions for definitions).
+    // Note the following:
+    //  1)  In local_Mat computation, ".abs()" is present to avoid taking
+    //      the square root of very small, negative tilde_k arising 
+    //      from negative tilde_{upp_upp,vpp_vpp_vpp} in laminar situations
+    //      due to round off errors (i.e. tilde_u_u - tilde_u**2 ~= -eps).
     C(local_a)   = C(tilde_T).sqrt();
     C(local_Ma)  = C(bar_u) / C(local_a);
-    C(local_Mat) = (std::sqrt(real_t(2))*C(tilde_k).sqrt()) / C(local_a);
+    C(local_Mat) = (std::sqrt(real_t(2))*C(tilde_k).abs().sqrt()) / C(local_a);
     C(local_Re)  = C(bar_u) /* L = 1 */ / C(tilde_nu);
 
     // Differentiate SAMPLED
