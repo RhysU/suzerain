@@ -328,14 +328,14 @@ namespace quantity {
         for (size_t i = 0; i < quantity::count; ++i) {  // Headings
             out << std::setw(numeric_limits<real_t>::digits10 + 11)
                 << quantity::name[i];
-            if (i < quantity::count - 1) out << ", ";
+            if (i < quantity::count - 1) out << " ";
         }
         out << std::endl;
     }
 
     /** Used for formatting output data to match \ref quantity::write_names. */
     static const Eigen::IOFormat iofmt(
-            Eigen::FullPrecision, 0, ",     ", "\n", "    ");
+            Eigen::FullPrecision, 0, "     ", "\n", "    ");
 
 } // namespace quantity
 
