@@ -29,7 +29,6 @@
 //--------------------------------------------------------------------------
 
 // FIXME Support multiple sample collections per file
-// FIXME Add help-like option listing names and descriptions
 // FIXME Allow excluding particular time ranges in the output
 
 #ifdef HAVE_CONFIG_H
