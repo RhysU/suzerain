@@ -560,6 +560,36 @@ make_multiplicator_operator(
  * that not all literature sources include the possibility of a time-dependent
  * \f$N\f$ operator.
  *
+ * The <tt>i</tt>th substep has a "duration" \f$d_i = \left(\eta_{i+1} -
+ * \eta_i\right)\Delta{}t\f$ where \f$i+1\f$ greater than the number of
+ * substeps is treated as 1.  A running mean quantity across \f$N\f$ substeps,
+ * denoted \f$\bar{q}_{N-1}\f$, may be accumulated via
+ * \f[
+ *   \bar{q}_{N-1} = \frac{\sum_{i=0}^{N-1} d_{i} q_{i}}
+ *                        {\sum_{i=0}^{N-1} d_{i}      }.
+ * \f]
+ * Rearranging the result in terms of means from earlier substeps,
+ * \f[
+ *   \bar{q}_{N-1} = \frac{\sum_{i=0}^{N-2}}
+ *                        {d_{N-1} + \sum_{i=0}^{N-2} d_i} \bar{q}_{N-2}
+ *                 + \frac{d_{N-1}}
+ *                        {d_{N-1} + \sum_{i=0}^{N-2} d_i} q_{N-1}
+ * \f]
+ * motivates defining
+ * \f[
+ *   \iota_{N-1} = \frac{d_i}{\sum_{i=0}^{N-1} d_i}
+ *               = \frac{\eta_{i+1} - \eta_i}{\eta_{i+1} - \eta_{0}}
+ * \f]
+ * since the factor \f$\Delta{}t\f$ may be omitted without changing
+ * \f$\bar{q}_{N-1}\f$.  Then maintaining the running mean
+ * \f[
+ *   \bar{q}_{N-1} = \left(1 - \iota_{N-1}\right) \bar{q}_{N-2}
+ *                 + \iota_{N-1} q_{N-1}
+ * \f]
+ * may be done via a simple update operation <tt>mean += iota_i * (sample -
+ * mean)</tt>.  One use case for \f$\iota_i\f$ is obtaining running means of
+ * implicitly computed quantities using minimal space and time overhead.
+ *
  * @see ILinearOperator for the interface that \f$L\f$ must implement.
  * @see INonlinearOperator for the interface that \f$N\f$ must implement.
  * @see SMR91Method and Yang11Method for examples of concrete schemes.
@@ -635,6 +665,16 @@ public:
      * @return The coefficient associated with the requested substep.
      */
     virtual component eta(std::size_t substep) const = 0;
+
+    /**
+     * Compute the scheme's derived \f$\iota_i\f$ coefficient, which is used to
+     * accumulate a running time-averaged value across substeps.
+     *
+     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component iota(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's maximum pure real eigenvalue magnitude.
@@ -759,6 +799,15 @@ public:
         return coeff[substep];
     }
 
+    /** @copydoc ILowStorageMethod::iota */
+    virtual component iota(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component(1),
+                                            component(1)/component(5),
+                                            component(1)/component(3)  };
+        return coeff[substep];
+    }
+
     /** @copydoc ILowStorageMethod::evmaxmag_real */
     virtual component evmaxmag_real() const
     {
@@ -861,6 +910,15 @@ public:
         static const component coeff[3] = { component(0),
                                             component(1)/component(2),
                                             component(2)/component(3)   };
+        return coeff[substep];
+    }
+
+    /** @copydoc ILowStorageMethod::iota */
+    virtual component iota(const std::size_t substep) const
+    {
+        static const component coeff[3] = { component(1),
+                                            component(1)/component(4),
+                                            component(1)/component(3)  };
         return coeff[substep];
     }
 

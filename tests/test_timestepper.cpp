@@ -304,6 +304,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMR91_constants, T, constants_test_types )
             }
             BOOST_CHECK_SMALL(res, close_enough);
         }
+
+        // Consistency of iota with eta
+        BOOST_CHECK_EQUAL(m.iota(0), T(1));
+        for (std::size_t i = 0; i < m.substeps()-1; ++i) {
+            BOOST_CHECK_CLOSE(  (m.eta(i+1) - m.eta(i))
+                               /(m.eta(i+1) - m.eta(0)),
+                                 m.iota(i), /* Noisy */ 135*close_enough );
+        }
+        BOOST_CHECK_CLOSE(m.iota(m.substeps()-1),
+                          1-m.eta(m.substeps()-1),
+                          /* Noisy */ 135*close_enough);
     }
 
     { // Complex-valued constants
@@ -327,6 +338,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMR91_constants, T, constants_test_types )
             }
             BOOST_CHECK_SMALL(res, close_enough);
         }
+
+        // Consistency of iota with eta
+        BOOST_CHECK_EQUAL(m.iota(0), T(1));
+        for (std::size_t i = 0; i < m.substeps()-1; ++i) {
+            BOOST_CHECK_CLOSE(  (m.eta(i+1) - m.eta(i))
+                               /(m.eta(i+1) - m.eta(0)),
+                                 m.iota(i),
+                                 /* Noisy */ 135*close_enough );
+        }
+        BOOST_CHECK_CLOSE(m.iota(m.substeps()-1),
+                          1-m.eta(m.substeps()-1),
+                          /* Noisy */ 100*close_enough);
     }
 }
 
@@ -351,6 +374,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Yang11_constants, T, constants_test_types )
             }
             BOOST_CHECK_SMALL(res, close_enough);
         }
+
+        // Consistency of iota with eta
+        BOOST_CHECK_EQUAL(m.iota(0), T(1));
+        for (std::size_t i = 0; i < m.substeps()-1; ++i) {
+            BOOST_CHECK_CLOSE(  (m.eta(i+1) - m.eta(i))
+                               /(m.eta(i+1) - m.eta(0)),
+                                 m.iota(i),
+                                 /* Noisy */ 135*close_enough );
+        }
+        BOOST_CHECK_CLOSE(m.iota(m.substeps()-1),
+                          1-m.eta(m.substeps()-1),
+                          /* Noisy */ 135*close_enough);
     }
 
     { // Complex-valued constants
@@ -374,6 +409,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Yang11_constants, T, constants_test_types )
             }
             BOOST_CHECK_SMALL(res, close_enough);
         }
+
+        // Consistency of iota with eta
+        BOOST_CHECK_EQUAL(m.iota(0), T(1));
+        for (std::size_t i = 0; i < m.substeps()-1; ++i) {
+            BOOST_CHECK_CLOSE(  (m.eta(i+1) - m.eta(i))
+                               /(m.eta(i+1) - m.eta(0)),
+                                 m.iota(i),
+                                 /* Noisy */ 135*close_enough );
+        }
+        BOOST_CHECK_CLOSE(m.iota(m.substeps()-1),
+                          1-m.eta(m.substeps()-1),
+                          /* Noisy */ 135*close_enough);
     }
 }
 
