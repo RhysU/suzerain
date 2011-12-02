@@ -255,10 +255,9 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         // within the total energy equation including the Mach squared
         // factor arising from the nondimensionalization choices.
         Map<ArrayXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
-        const real_t varphi_Ma_Ma = varphi * scenario.Ma * scenario.Ma;
-        mean_rhoe.real() += varphi_Ma_Ma * mean_rhoe.imag();
+        mean_rhoe.real() += (varphi*scenario.Ma*scenario.Ma) * mean_rhoe.imag();
         common.f_dot_u()  = prev_mean_coeff * common.f_dot_u()
-                          + (curr_mean_coeff * varphi_Ma_Ma) * mean_rhoe.imag();
+                          + (curr_mean_coeff*varphi) * mean_rhoe.imag();
         mean_rhoe.imag().setZero();
 
         // channel_treatment steps (8) and (9) already performed above
