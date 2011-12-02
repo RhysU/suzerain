@@ -203,11 +203,11 @@ streamwise momentum forcing with unknown leading coefficient $\phi$:
   + \phi{} f
   .
 \end{align}
-At each substep $\phi{} f = \phi\rho\!\left(\cdot,y,\cdot\right)$ can be chosen
-such that $\bar{m}_x$ obtains a target value $\Gamma$.  Note that $\phi$ is
-implicitly a function of $\Delta{}t$.  This approach differs from the prior
-nonevolution one in that $\bar{m}_x$ cannot drift.  Moreover, the target bulk
-momentum can be changed easily between simulations.
+At each substep $\phi{} f$ can be chosen such that $\bar{m}_x$ obtains a target
+value $\Gamma$.  Note that $\phi$ is implicitly a function of $\Delta{}t$.
+This approach differs from the prior nonevolution one in that $\bar{m}_x$
+cannot drift.  Moreover, the target bulk momentum can be changed easily between
+simulations.
 
 Specifically, the final implicit solve in each low storage substep resembles
 ${m_x}^{i+1} = A^{-1}\left(\vec{n} + \phi\vec{f}\right)$ where $A = \left(M -
