@@ -170,6 +170,13 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // The accumulated means are updated in-place using expressions like
     //    mean = i/(i+1) * last + 1 / (i+1) * update
     // where is is the current substep index.  Values are reset on i = 0.
+    //
+    // Notice this averaging process gives equal weight to the implicit forcing
+    // on each individual substep.  While a reasonable approximation, that
+    // treatment is strictly incorrect as substeps vary in length.  E.g. SMR91
+    // has three substeps like 8/15, 2/15, and 5/15 time delta_t.  Those ratios
+    // come from the difference between \eta_{i} in derivation.tex.
+    // FIXME Computed weighted mean of implicit forcing using substep lengths
     const real_t prev_mean_coeff = real_t(substep_index) / (substep_index + 1);
     const real_t curr_mean_coeff = real_t(1)             / (substep_index + 1);
 
