@@ -1013,6 +1013,36 @@ int main(int argc, char **argv)
           << wtime_fftw_planning << " seconds");
     assert((grid.dN == dgrid->global_physical_extent).all());
     INFO0("Rank grid used for decomposition: " << dgrid->processor_grid);
+    { // Display normalized workloads metrics relative to zero rank workload
+        real_t sendbuf[4];
+        if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+            sendbuf[0] = (real_t) dgrid->local_wave_extent.prod();
+            sendbuf[1] = (real_t) dgrid->local_physical_extent.prod();
+        }
+        SUZERAIN_MPICHKQ(MPI_Bcast(sendbuf, 2,
+                         suzerain::mpi::datatype<real_t>(), 0,
+                         MPI_COMM_WORLD));
+        sendbuf[0] = dgrid->local_wave_extent.prod()     / sendbuf[0];
+        sendbuf[1] = dgrid->local_physical_extent.prod() / sendbuf[1];
+        sendbuf[2] = -sendbuf[0];
+        sendbuf[3] = -sendbuf[1];
+
+        real_t recvbuf[4];
+        SUZERAIN_MPICHKQ(MPI_Reduce(sendbuf, recvbuf, 2,
+                         suzerain::mpi::datatype<real_t>(),
+                         MPI_SUM, 0, MPI_COMM_WORLD));
+
+        const std::size_t nranks = suzerain::mpi::comm_size(MPI_COMM_WORLD);
+        const real_t mean_w = recvbuf[0] / nranks;
+        const real_t mean_p = recvbuf[1] / nranks;
+        SUZERAIN_MPICHKQ(MPI_Reduce(sendbuf, recvbuf, 4,
+                         suzerain::mpi::datatype<real_t>(),
+                         MPI_MIN, 0, MPI_COMM_WORLD));
+        INFO0("Wave space workload balance     (min/mean/max): "
+              << recvbuf[0] << ", " << mean_w << ", " << -recvbuf[2]);
+        INFO0("Physical space workload balance (min/mean/max): "
+              << recvbuf[1] << ", " << mean_p << ", " << -recvbuf[3]);
+    }
     DEBUG("Local wave start      (XYZ): " << dgrid->local_wave_start);
     DEBUG("Local wave end        (XYZ): " << dgrid->local_wave_end);
     DEBUG("Local wave extent     (XYZ): " << dgrid->local_wave_extent);
