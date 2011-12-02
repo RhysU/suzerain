@@ -321,6 +321,9 @@ public:
     BOOST_STATIC_ASSERT(
             (boost::is_same<element,typename StateB::element>::value));
 
+    /** The real-valued scalar corresponding to \c element */
+    typedef typename suzerain::traits::component<element>::type component;
+
     /**
      * Apply \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.
      * That is,
