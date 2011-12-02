@@ -117,10 +117,12 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
 void BsplineMassOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::ContiguousState<4,complex_t> &state,
-        const std::size_t substep_index) const
+        const std::size_t substep_index,
+        const real_t iota) const
 {
     SUZERAIN_UNUSED(phi);
     SUZERAIN_UNUSED(substep_index);
+    SUZERAIN_UNUSED(iota);
 
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
     assert(static_cast<unsigned>(massluz.n()) == state.shape()[1]);
@@ -146,7 +148,8 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::ContiguousState<4,complex_t> &state,
-        const std::size_t substep_index) const
+        const std::size_t substep_index,
+        const real_t iota) const
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
@@ -165,20 +168,8 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
 
     // Means of the implicit momentum and energy forcing coefficients(!) are
     // maintained across each individual time step for sampling the statistics
-    // /bar_f, /bar_f_dot_u, and /bar_qb using OperatorCommonBlock.
-    //
-    // The accumulated means are updated in-place using expressions like
-    //    mean = i/(i+1) * last + 1 / (i+1) * update
-    // where is is the current substep index.  Values are reset on i = 0.
-    //
-    // Notice this averaging process gives equal weight to the implicit forcing
-    // on each individual substep.  While a reasonable approximation, that
-    // treatment is strictly incorrect as substeps vary in length.  E.g. SMR91
-    // has three substeps like 8/15, 2/15, and 5/15 time delta_t.  Those ratios
-    // come from the difference between \eta_{i} in derivation.tex.
-    // FIXME Computed weighted mean of implicit forcing using substep lengths
-    const real_t prev_mean_coeff = real_t(substep_index) / (substep_index + 1);
-    const real_t curr_mean_coeff = real_t(1)             / (substep_index + 1);
+    // /bar_f, /bar_f_dot_u, and /bar_qb using OperatorCommonBlock via
+    // ILowStorageMethod::iota a la mean += iota*(sample - mean).
 
     // channel_treatment step (1) done during nonlinear operator application
     // via shared OperatorCommonBlock storage space
@@ -243,7 +234,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     }
 
     // channel_treatment step (3) performs the usual operator solve
-    base::invertMassPlusScaledOperator(phi, state, substep_index);
+    base::invertMassPlusScaledOperator(phi, state, substep_index, iota);
 
     if (constrain_bulk_rhou && has_zero_zero_mode) {
 
@@ -254,8 +245,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rhou.matrix());
         const real_t varphi = (scenario.bulk_rhou - bulk.real()) / bulk.imag();
         mean_rhou.real() += varphi * mean_rhou.imag();
-        common.f()        = prev_mean_coeff * common.f()
-                          + (curr_mean_coeff * varphi) * mean_rhou.imag();
+        common.f() += iota*(varphi*mean_rhou.imag() - common.f());
         mean_rhou.imag().setZero();
 
         // channel_treatment step (7) accounts for the momentum forcing
@@ -263,8 +253,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         // factor arising from the nondimensionalization choices.
         Map<ArrayXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
         mean_rhoe.real() += (varphi*scenario.Ma*scenario.Ma) * mean_rhoe.imag();
-        common.f_dot_u()  = prev_mean_coeff * common.f_dot_u()
-                          + (curr_mean_coeff*varphi) * mean_rhoe.imag();
+        common.f_dot_u() += iota*(varphi*mean_rhoe.imag() - common.f_dot_u());
         mean_rhoe.imag().setZero();
 
         // channel_treatment steps (8) and (9) already performed above
@@ -289,7 +278,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     }
 
     // No volumetric energy forcing in performed current substep
-    common.qb() *= prev_mean_coeff;
+    common.qb() += iota*(/* Zero */ - common.qb());
 
     // State leaves method as coefficients in X, Y, and Z directions
 }

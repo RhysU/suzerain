@@ -189,7 +189,8 @@ public:
      virtual void invertMassPlusScaledOperator(
              const complex_t &phi,
              state_type &state,
-             const std::size_t substep_index) const;
+             const std::size_t substep_index,
+             const real_t iota) const;
 
 private:
 
@@ -210,7 +211,7 @@ private:
  *
  * Also during \ref invertMassPlusScaledOperator, OperatorCommonBlock::f(),
  * OperatorCommonBlock::f_dot_u(), and OperatorCommonBlock::qb() are
- * accumulated.
+ * accumulated using ILowStorageMethod::iota().
  */
 class BsplineMassOperatorIsothermal
   : public BsplineMassOperator
@@ -230,7 +231,8 @@ public:
     virtual void invertMassPlusScaledOperator(
             const complex_t &phi,
             state_type &state,
-            const std::size_t substep_index) const;
+            const std::size_t substep_index,
+            const real_t iota) const;
 
 protected:
 
