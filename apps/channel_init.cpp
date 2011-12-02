@@ -401,7 +401,7 @@ int main(int argc, char **argv)
     channel::mean samples = channel::sample_mean_quantities(
             scenario, grid, *dgrid, *b, *bop, swave, t);
 
-    INFO("Writing mean quantities to restart file");
+    INFO0("Writing mean quantities to restart file");
     channel::store(esioh, samples);
     esio_file_flush(esioh);
 
