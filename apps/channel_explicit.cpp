@@ -201,13 +201,13 @@ static std::basic_ostream<CharT,Traits>& append_real(
     return os;
 }
 
-/** Log messages containing mean and fluctuating L2 information */
+/** Log messages containing mean L2 and RMS fluctuation information */
 static void information_L2(const std::string& timeprefix)
 {
     // Avoid computational cost when logging is disabled
     logging::logger_type L2_mean  = logging::get_logger("L2.mean");
-    logging::logger_type L2_fluct = logging::get_logger("L2.fluct");
-    if (!INFO0_ENABLED(L2_mean) && !INFO0_ENABLED(L2_fluct)) return;
+    logging::logger_type rms_fluct = logging::get_logger("rms.fluct");
+    if (!INFO0_ENABLED(L2_mean) && !INFO0_ENABLED(rms_fluct)) return;
 
     // Collective computation of the L_2 norms
     const array<channel::L2,channel::field::count> L2
@@ -221,13 +221,15 @@ static void information_L2(const std::string& timeprefix)
     }
     INFO0(L2_mean, msg.str());
 
-    // Build and log L2 of fluctuating conserved state
+    // Build and log root-mean-squared-fluctuations of conserved state
+    // RMS fluctuations are a scaling factor away from L2 fluctuations
+    const real_t rms_coeff = 1/std::sqrt(scenario.Lx*scenario.Ly*scenario.Lz);
     msg.str("");
     msg << timeprefix;
     for (size_t k = 0; k < L2.size(); ++k) {
-        append_real(msg << ' ', L2[k].fluctuating());
+        append_real(msg << ' ', rms_coeff*L2[k].fluctuating());
     }
-    INFO0(L2_fluct, msg.str());
+    INFO0(rms_fluct, msg.str());
 }
 
 /** Build a message containing bulk quantities (intended for root rank only) */
@@ -786,13 +788,13 @@ static const char log4cxx_config[] =
     "log4j.appender.L2MEAN.layout=${log4j.appender.LOG.layout}\n"
     "log4j.appender.L2MEAN.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
     "\n"
-    "## Collect \"L2.fluct\" messages into L2.fluct.dat mimicking LOG file behavior\n"
-    "log4j.logger.L2.fluct=INHERITED, L2FLUCT\n"
-    "log4j.appender.L2FLUCT=${log4j.appender.LOG}\n"
-    "log4j.appender.L2FLUCT.filename=L2.fluct.dat\n"
-    "log4j.appender.L2FLUCT.append=${log4j.appender.LOG.append}\n"
-    "log4j.appender.L2FLUCT.layout=${log4j.appender.LOG.layout}\n"
-    "log4j.appender.L2FLUCT.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+    "## Collect \"rms.fluct\" messages into rms.fluct.dat mimicking LOG file behavior\n"
+    "log4j.logger.rms.fluct=INHERITED, RMSFLUCT\n"
+    "log4j.appender.RMSFLUCT=${log4j.appender.LOG}\n"
+    "log4j.appender.RMSFLUCT.filename=rms.fluct.dat\n"
+    "log4j.appender.RMSFLUCT.append=${log4j.appender.LOG.append}\n"
+    "log4j.appender.RMSFLUCT.layout=${log4j.appender.LOG.layout}\n"
+    "log4j.appender.RMSFLUCT.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
 ;
 
 /** Main driver logic */
