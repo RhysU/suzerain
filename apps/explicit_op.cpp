@@ -69,9 +69,11 @@ BsplineMassOperator::BsplineMassOperator(
 void BsplineMassOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::ContiguousState<4,complex_t> &state,
+        const component delta_t,
         const std::size_t substep_index) const
 {
     SUZERAIN_UNUSED(phi);
+    SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
@@ -85,9 +87,11 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
         const suzerain::ContiguousState<4,complex_t> &input,
         const complex_t &beta,
         suzerain::ContiguousState<4,complex_t> &output,
+        const component delta_t,
         const std::size_t substep_index) const
 {
     SUZERAIN_UNUSED(phi);
+    SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
     const state_type &x   = input;  // Shorthand
     state_type &y         = output; // Shorthand
@@ -117,10 +121,12 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
 void BsplineMassOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::ContiguousState<4,complex_t> &state,
+        const component delta_t,
         const std::size_t substep_index,
         const real_t iota) const
 {
     SUZERAIN_UNUSED(phi);
+    SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
     SUZERAIN_UNUSED(iota);
 
@@ -148,6 +154,7 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::ContiguousState<4,complex_t> &state,
+        const component delta_t,
         const std::size_t substep_index,
         const real_t iota) const
 {
@@ -169,7 +176,8 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // Means of the implicit momentum and energy forcing coefficients(!) are
     // maintained across each individual time step for sampling the statistics
     // /bar_f, /bar_f_dot_u, and /bar_qb using OperatorCommonBlock via
-    // ILowStorageMethod::iota a la mean += iota*(sample - mean).
+    // ILowStorageMethod::iota a la mean += iota*(sample - mean).  Note that
+    // the sample must be divided by delta_t to account for step sizes.
 
     // channel_treatment step (1) done during nonlinear operator application
     // via shared OperatorCommonBlock storage space
@@ -234,7 +242,8 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     }
 
     // channel_treatment step (3) performs the usual operator solve
-    base::invertMassPlusScaledOperator(phi, state, substep_index, iota);
+    base::invertMassPlusScaledOperator(
+            phi, state, delta_t, substep_index, iota);
 
     if (constrain_bulk_rhou && has_zero_zero_mode) {
 
@@ -245,7 +254,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rhou.matrix());
         const real_t varphi = (scenario.bulk_rhou - bulk.real()) / bulk.imag();
         mean_rhou.real() += varphi * mean_rhou.imag();
-        common.f() += iota*(varphi*mean_rhou.imag() - common.f());
+        common.f() += iota*((varphi/delta_t)*mean_rhou.imag() - common.f());
         mean_rhou.imag().setZero();
 
         // channel_treatment step (7) accounts for the momentum forcing
@@ -253,7 +262,8 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         // factor arising from the nondimensionalization choices.
         Map<ArrayXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
         mean_rhoe.real() += (varphi*scenario.Ma*scenario.Ma) * mean_rhoe.imag();
-        common.f_dot_u() += iota*(varphi*mean_rhoe.imag() - common.f_dot_u());
+        common.f_dot_u() += iota*(   (varphi/delta_t)*mean_rhoe.imag()
+                                   - common.f_dot_u());
         mean_rhoe.imag().setZero();
 
         // channel_treatment steps (8) and (9) already performed above
@@ -278,7 +288,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     }
 
     // No volumetric energy forcing in performed current substep
-    common.qb() += iota*(/* Zero */ - common.qb());
+    common.qb() += iota*(/* (Zero/delta_t) */ - common.qb());
 
     // State leaves method as coefficients in X, Y, and Z directions
 }

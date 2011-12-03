@@ -177,6 +177,7 @@ public:
     virtual void applyMassPlusScaledOperator(
              const complex_t &phi,
              state_type &state,
+             const component delta_t,
              const std::size_t substep_index) const;
 
      virtual void accumulateMassPlusScaledOperator(
@@ -184,11 +185,13 @@ public:
              const state_type &input,
              const complex_t &beta,
              state_type &output,
+             const component delta_t,
              const std::size_t substep_index) const;
 
      virtual void invertMassPlusScaledOperator(
              const complex_t &phi,
              state_type &state,
+             const component delta_t,
              const std::size_t substep_index,
              const real_t iota) const;
 
@@ -231,6 +234,7 @@ public:
     virtual void invertMassPlusScaledOperator(
             const complex_t &phi,
             state_type &state,
+            const component delta_t,
             const std::size_t substep_index,
             const real_t iota) const;
 
