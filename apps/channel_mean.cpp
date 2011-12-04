@@ -715,12 +715,12 @@ static quantity::storage_map_type process(
     C(tilde_vpp_wpp) = C(tilde_v_w) - C(tilde_v)*C(tilde_w);
     C(tilde_wpp_wpp) = C(tilde_w_w) - C(tilde_w).square();
     C(tilde_k) = (C(tilde_upp_upp) + C(tilde_vpp_vpp) + C(tilde_wpp_wpp)) / 2;
-    C(tilde_T) = (gamma*(gamma-1))*C(tilde_E) - Ma*Ma*(
+    C(tilde_T) = (gamma*(gamma-1))*(C(tilde_E) - Ma*Ma*(
                   (  C(tilde_u).square()
                    + C(tilde_v).square()
                    + C(tilde_w).square() ) / 2
                +  C(tilde_k)
-               );
+               ));
     C(tilde_H) = C(tilde_E) + C(tilde_T)/gamma;
     C(bar_p)   = C(bar_rho) * C(tilde_T)/gamma;
     D(tilde_u);  // Form derivatives
