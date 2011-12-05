@@ -213,11 +213,11 @@ namespace quantity {
     ((tilde_nupp_gradzTpp,    "Favre-averaged z-component of the kinematic viscosity times the fluctuating temperature gradient"))
 
 /** A Boost.Preprocessor sequence of tuples of locally computed quantities */
-#define SEQ_LOCALS                                                                     \
-    ((local_a,    "Local speed of sound formed via sqrt(tilde_T)"))                    \
-    ((local_Ma,   "Local Mach number formed via bar_u / local_a"))                     \
-    ((local_Mat,  "Local turbulent Mach number formed via sqrt(2*tilde_k) / local_a")) \
-    ((local_Re,   "Local Reynolds number formed from scenario.Re * bar_rho_u L / bar_mu for L = 1"))
+#define SEQ_LOCALS                                                                          \
+    ((local_a,    "Local speed of sound formed via sqrt(tilde_T)"))                         \
+    ((local_Ma,   "Local Mach number formed via Ma * bar_u / local_a"))                     \
+    ((local_Mat,  "Local turbulent Mach number formed via Ma * sqrt(2*tilde_k) / local_a")) \
+    ((local_Re,   "Local Reynolds number formed from Re * bar_rho_u L / bar_mu for L = 1"))
 
 /**
  * A Boost.Preprocessor sequence of tuples of stationary, time-invariant
@@ -823,10 +823,10 @@ static quantity::storage_map_type process(
     // (bar_rho_u * L / bar_mu) are already nondimensional.  Multiplying by Re
     // re-incorporates the reference quantities rho_0, u_0, L_0, and mu_0 to
     // cause the nondimensional local_Re to be correctly formed from
-    // dimensional quantities.
+    // dimensional quantities.  Ditto for Ma in local_Ma and local_Mat.
     C(local_a)   = C(tilde_T).sqrt();
-    C(local_Ma)  = C(bar_u) / C(local_a);
-    C(local_Mat) = (std::sqrt(real_t(2))*C(tilde_k).abs().sqrt()) / C(local_a);
+    C(local_Ma)  = Ma * C(bar_u) / C(local_a);
+    C(local_Mat) = Ma * (std::sqrt(real_t(2))*C(tilde_k).abs().sqrt()) / C(local_a);
     C(local_Re)  = Re * C(bar_rho_u) /* L = 1 */ / C(bar_mu);
 
     // Differentiate SAMPLED
