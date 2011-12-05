@@ -549,20 +549,20 @@ public:
  * space.
  */
 #define CHANNEL_MEAN_PHYSICAL                               \
-    ((mu,                       1))  /* scalar           */ \
-    ((u,                        3))  /* vector           */ \
-    ((sym_rho_grad_u,           6))  /* symmetric tensor */ \
-    ((rho_grad_T,               3))  /* vector           */ \
-    ((tau_colon_grad_u,         1))  /* scalar           */ \
-    ((tau,                      6))  /* symmetric tensor */ \
-    ((tau_u,                    3))  /* vector           */ \
-    ((p_div_u,                  1))  /* scalar           */ \
-    ((rho_u_otimes_u,           6))  /* symmetric tensor */ \
-    ((rho_u_otimes_u_otimes_u, 10))  /* symmetric tensor */ \
-    ((rho_T_u,                  3))  /* vector           */ \
-    ((mu_S,                     6))  /* symmetric tensor */ \
-    ((mu_div_u,                 1))  /* scalar           */ \
-    ((mu_grad_T,                3))  /* vector           */
+    ((mu,                1))  /* scalar           */ \
+    ((u,                 3))  /* vector           */ \
+    ((sym_rho_grad_u,    6))  /* symmetric tensor */ \
+    ((rho_grad_T,        3))  /* vector           */ \
+    ((tau_colon_grad_u,  1))  /* scalar           */ \
+    ((tau,               6))  /* symmetric tensor */ \
+    ((tau_u,             3))  /* vector           */ \
+    ((p_div_u,           1))  /* scalar           */ \
+    ((rho_u_u,           6))  /* symmetric tensor */ \
+    ((rho_u_u_u,        10))  /* symmetric tensor */ \
+    ((rho_T_u,           3))  /* vector           */ \
+    ((mu_S,              6))  /* symmetric tensor */ \
+    ((mu_div_u,          1))  /* scalar           */ \
+    ((mu_grad_T,         3))  /* vector           */
 
 /**
  * A Boost.Preprocessor sequence of tuples of quantities computed

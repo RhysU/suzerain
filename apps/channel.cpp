@@ -2383,23 +2383,23 @@ mean sample_mean_quantities(
 
                 sum_p_div_u[0](p*div_u);
 
-                sum_rho_u_otimes_u[0](rho * u.x() * u.x());
-                sum_rho_u_otimes_u[1](rho * u.x() * u.y());
-                sum_rho_u_otimes_u[2](rho * u.x() * u.z());
-                sum_rho_u_otimes_u[3](rho * u.y() * u.y());
-                sum_rho_u_otimes_u[4](rho * u.y() * u.z());
-                sum_rho_u_otimes_u[5](rho * u.z() * u.z());
+                sum_rho_u_u[0](rho * u.x() * u.x());
+                sum_rho_u_u[1](rho * u.x() * u.y());
+                sum_rho_u_u[2](rho * u.x() * u.z());
+                sum_rho_u_u[3](rho * u.y() * u.y());
+                sum_rho_u_u[4](rho * u.y() * u.z());
+                sum_rho_u_u[5](rho * u.z() * u.z());
 
-                sum_rho_u_otimes_u_otimes_u[0](rho * u.x() * u.x() * u.x());
-                sum_rho_u_otimes_u_otimes_u[1](rho * u.x() * u.x() * u.y());
-                sum_rho_u_otimes_u_otimes_u[2](rho * u.x() * u.x() * u.z());
-                sum_rho_u_otimes_u_otimes_u[3](rho * u.x() * u.y() * u.y());
-                sum_rho_u_otimes_u_otimes_u[4](rho * u.x() * u.y() * u.z());
-                sum_rho_u_otimes_u_otimes_u[5](rho * u.x() * u.z() * u.z());
-                sum_rho_u_otimes_u_otimes_u[6](rho * u.y() * u.y() * u.y());
-                sum_rho_u_otimes_u_otimes_u[7](rho * u.y() * u.y() * u.z());
-                sum_rho_u_otimes_u_otimes_u[8](rho * u.y() * u.z() * u.z());
-                sum_rho_u_otimes_u_otimes_u[9](rho * u.z() * u.z() * u.z());
+                sum_rho_u_u_u[0](rho * u.x() * u.x() * u.x());
+                sum_rho_u_u_u[1](rho * u.x() * u.x() * u.y());
+                sum_rho_u_u_u[2](rho * u.x() * u.x() * u.z());
+                sum_rho_u_u_u[3](rho * u.x() * u.y() * u.y());
+                sum_rho_u_u_u[4](rho * u.x() * u.y() * u.z());
+                sum_rho_u_u_u[5](rho * u.x() * u.z() * u.z());
+                sum_rho_u_u_u[6](rho * u.y() * u.y() * u.y());
+                sum_rho_u_u_u[7](rho * u.y() * u.y() * u.z());
+                sum_rho_u_u_u[8](rho * u.y() * u.z() * u.z());
+                sum_rho_u_u_u[9](rho * u.z() * u.z() * u.z());
 
                 sum_rho_T_u[0](rho * T * u.x());
                 sum_rho_T_u[1](rho * T * u.y());
