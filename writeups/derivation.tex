@@ -1206,6 +1206,24 @@ with \eqref{eq:spatial_discretization} because it provides computational
 advantages.  For a discussion on moving operators between these two
 representations, see \textsection{}5.5 in~\cite{Boyd2001}.
 
+\subsection{Forming discrete operators}
+\label{sec:combineddiscretization}
+
+Consistent with employing \eqref{eq:spatial_discretization}, discrete operators
+for differentiation in the wall-normal direction map B-spline coefficients to
+derivatives at collocation points.  That is,
+\begin{align}
+  D^{(k)} u\bigr|_{m n}
+&= \sum_{l} B^{(k)}_l\!\left(y_{l'}\right)
+   \hat{u}_{l m n}
+\end{align}
+where the banded matrix $D^{(k)}$ is wavenumber independent.  $D^{(0)}$ is
+nothing but the mass matrix $M$.  Differentiation in the Fourier
+directions\dots{}STARTHERE
+
+
+
+
 \section{Numerical considerations}
 
 Here we take the complete mathematical model from section \ref{sec:derivation}
