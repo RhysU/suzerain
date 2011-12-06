@@ -910,6 +910,12 @@ using suzerain::rholt::grad_div_u;
  */
 using suzerain::rholt::div_grad_u;
 
+/**
+ * \namespace suzerain::rholut
+ * \see suzerain::rholt::curl_curl_u
+ */
+using suzerain::rholt::curl_curl_u;
+
 } // namespace rholut
 
 } // namespace suzerain

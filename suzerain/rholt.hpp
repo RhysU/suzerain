@@ -1699,6 +1699,72 @@ Vector div_grad_u(
             );
 }
 
+/**
+ * Compute \f$\vec{\nabla}\times\vec{\nabla}\times\vec{u}\f$.  Uses the
+ * expansion
+ * \f[
+ * \vec{\nabla}\times\vec{\nabla}\times\vec{u} =
+ *      \rho^{-1}\left[
+ *            \vec{\nabla}\times\vec{\nabla}\times\vec{m}
+ *          + \rho^{-1} \left[
+ *                \left(
+ *                      2\vec{\nabla}\vec{m}
+ *                    - \vec{\nabla}{\vec{m}}^{\mathsf{T}}
+ *                \right) \vec{\nabla}\rho
+ *              + \left(
+ *                      \vec{\nabla}\cdot\vec{\nabla}\rho
+ *                    - 2 \rho^{-1} \left(\vec{\nabla}\rho\right)^2
+ *                \right) \vec{m}
+ *              - \left( \vec{\nabla}\vec{\nabla}\rho \right) \vec{m}
+ *              + \left(
+ *                      2 \rho^{-1} \vec{\nabla}\rho \cdot \vec{m}
+ *                    - \vec{\nabla}\cdot\vec{m}
+ *                \right) \vec{\nabla}\rho
+ *          \right]
+ *      \right]
+ * \f]
+ *
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$.
+ * @param[in]  grad_grad_rho \f$\vec{\nabla}\vec{\nabla}\rho\f$.
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  div_m \f$\vec{\nabla}\cdot\vec{m}\f$
+ * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param[in]  curl_curl_m \f$\vec{\nabla}\times\vec{\nabla}\times\vec{m}\f$
+ *
+ * @return The curl of the curl of the velocity based on the provided fields.
+ */
+  template<typename Scalar,
+           typename Vector,
+           typename Tensor >
+  Vector curl_curl_u(
+          const Scalar &rho,
+          const Vector &grad_rho,
+          const Tensor &grad_grad_rho,
+          const Vector &m,
+          const Scalar &div_m,
+          const Tensor &grad_m,
+          const Vector &curl_curl_m)
+  {
+      const Scalar rho_inverse = 1/rho;
+
+      return rho_inverse*(
+                   curl_curl_m
+                 + rho_inverse*(
+                       (   2*grad_m
+                         - grad_m.transpose()
+                       ) * grad_rho
+                     + (   grad_grad_rho.trace()
+                         - 2*rho_inverse*grad_rho.squaredNorm()
+                       ) * m
+                     - grad_grad_rho * m
+                     + (   2*rho_inverse*grad_rho.dot(m)
+                         - div_m
+                       ) * grad_rho
+                 )
+             );
+  }
+
 } // namespace rholt
 
 } // namespace suzerain

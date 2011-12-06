@@ -1290,7 +1290,7 @@ derivatives using state quantity derivatives.
 \subsection{Velocity derivative expansions}
 \label{velocity_derivative_expansions}
 
-We expand the necessary velocity derivatives into a combination of terms each
+We expand several velocity derivatives into a combination of terms each
 containing derivative operators applied only to state quantities:
 \begin{subequations}
 \begin{align}
@@ -1332,12 +1332,30 @@ containing derivative operators applied only to state quantities:
           - \trans{\nabla{}m}\nabla\rho
         \right]
   \right]
+\\
+  \nabla\times\nabla\times\frac{m}{\rho}
+  &=
+  \rho^{-1}\left[
+        \nabla\times\nabla\times{}{m}
+      + \rho^{-1} \left[
+            \left(2\nabla{}m - \trans{\nabla{}m} \right) \nabla\rho
+          + \left(\Delta\rho - 2 \rho^{-1} \left(\nabla\rho\right)^2 \right) m
+        \right.
+  \right.
+\\ % continued...
+  &\qquad\qquad\qquad\qquad\qquad
+  \left.
+      \left.
+          - \left(\nabla\nabla\rho \right) m
+          + \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
+      \right]
+  \right]
 \end{align}
 \end{subequations}
 
 We note some relationships amongst the information appearing in such
 derivatives:
-\begin{align}
+\begin{align}\label{eq:relationships}
   \Delta\rho
   &=
   \trace\left( \nabla\nabla\rho \right)
@@ -1347,7 +1365,16 @@ derivatives:
   \trace\left(\nabla{}m\right)
   =
   \trace\symmetricpart{\nabla\frac{m}{\rho}}
+&
+  \nabla\times\nabla\times\frac{m}{\rho}
+  &=
+  \nabla\nabla\cdot\frac{m}{\rho}
+  -
+  \Delta\frac{m}{\rho}
 \end{align}
+By employing the Helmholtz decomposition and smoothness assumptions, one may
+show $\nabla\times\nabla\times\frac{m}{\rho}$ acts in an antidiffusive manner
+on the solenoidal portion of the velocity field.
 
 \subsection{Separation of first and second derivative operators}
 \label{separate_first_section_deriv}
@@ -1367,9 +1394,8 @@ ensure that these three terms have the most physically correct diffusive impact
 on high frequency content at a given spatial resolution.
 
 We expand the three mixed order, nonlinear terms:
-\begin{subequations}
 \begin{align}
-  \nabla\cdot\tau
+  \nabla\cdot\tau \label{eq:nabla_cdot_tau_expansion}
   &=
     2 \symmetricpart{\nabla\frac{m}{\rho}}\nabla\mu
   + \mu \Delta\frac{m}{\rho}
@@ -1381,15 +1407,23 @@ We expand the three mixed order, nonlinear terms:
     \frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)
   + \trace\left( \tau\,\nabla\frac{m}{\rho} \right)
 \\
-  \nabla\cdot\mu\nabla{}T
+  \nabla\cdot\mu\nabla{}T \label{eq:mu_delta_T}
   &=
     \nabla\mu\cdot\nabla{}T
   + \mu \Delta{}T
 \end{align}
-\end{subequations}
-Many of these term contains non-state quantity derivatives which we also
-expand:
-\begin{subequations}
+Using \eqref{eq:relationships}, one may also write
+\begin{align}\label{eq:nabla_cdot_tau_expansion_alt}
+  \nabla\cdot\tau
+  &=
+    2 \symmetricpart{\nabla\frac{m}{\rho}}\nabla\mu
+  + \left(2\mu+\lambda\right) \Delta\frac{m}{\rho}
+  + \left(\mu+\lambda\right)\nabla\times\nabla\times\frac{m}{\rho}
+  + \left(\nabla\cdot\frac{m}{\rho}\right)\nabla\lambda
+\end{align}
+which highlights the isotropic diffusion of velocity within the viscous terms.
+
+Many of the above term contains non-state derivatives which we now expand:
 \begin{align}
   \nabla{}p &= (\gamma-1)\left[
         \nabla{}e + \frac{\Mach^{2}}{\rho} \left[
@@ -1432,7 +1466,6 @@ expand:
       \right]
   \right]
 \end{align}
-\end{subequations}
 
 Though we could have found these expressions for only the wall-normal
 direction, writing them for the complete $\nabla$ operator allows us to reuse
@@ -1603,8 +1636,8 @@ second order terms about reference states.  For example, $\rho^{-1}\Delta{}m =
 $\reference{\rho^{-1}}$ indicates the term $\rho^{-1}$ evaluated at some given,
 fixed state.  This approach separates each quantity into an explicitly-treated
 nonlinear portion plus a linear contribution that satisfies our time stepper's
-implicit operator needs:
-\begin{subequations}
+implicit operator needs.  Beginning with the nonlinear linearization candidates
+from \eqref{eq:nabla_cdot_tau_expansion}:
 \begin{align}
 \mu\Delta\frac{m}{\rho} = &\phantom{{}+}
     \mu\rho^{-2}\left[
@@ -1629,7 +1662,41 @@ implicit operator needs:
 \\
   &{}+ \reference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m
      - \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-2}m}
+\end{align}
+Moving on to the candidates from \eqref{eq:nabla_cdot_tau_expansion_alt}:
+\begin{align}
+\left(2\mu+\lambda\right)\Delta\frac{m}{\rho} = &\phantom{{}+}
+    \left(2\mu+\lambda\right)\rho^{-2}\left[
+          2\rho^{-1}m\left(\nabla\rho\right)^{2}
+        - 2 \left(\nabla{}m\right)\nabla\rho
+    \right]
 \\
+  &{}+ \lessreference{\left(2\mu+\lambda\right)\rho^{-1}} \Delta{}m
+     - \lessreference{\left(2\mu+\lambda\right)\rho^{-2}m} \Delta\rho
+\\
+  &{}+ \reference{\left(2\mu+\lambda\right)\rho^{-1}} \Delta{}m
+     - \reference{\left(2\mu+\lambda\right)\rho^{-2}m} \Delta\rho
+\\
+  \left(\mu+\lambda\right)\nabla\times\nabla\times\frac{m}{\rho}
+  = &\phantom{{}+}
+        \left(\mu+\lambda\right) \rho^{-2} \left[
+                  \left(2\nabla{}m - \trans{\nabla{}m} \right) \nabla\rho
+                - 2 \rho^{-1} \left(\nabla\rho\right)^2 m
+                + \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
+            \right]
+\\
+  &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-1}  } \nabla\times\nabla\times{}m
+\\
+  &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-2} m} \Delta\rho
+     - \lessreference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
+\\
+  &{}+ \reference{\left(\mu+\lambda\right)\rho^{-1}  } \nabla\times\nabla\times{}m
+     + \reference{\left(\mu+\lambda\right)\rho^{-2} m} \Delta\rho
+     - \reference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
+\end{align}
+Finishing with lone temperature term from \eqref{eq:mu_delta_T} and its
+dependencies:
+\begin{align}
 \Delta{}p =
   &{}- \left(\gamma-1\right)\Mach^{2}\rho^{-1}\left[
              \trace\left(\trans{\nabla{}m}\nabla{}m\right)
@@ -1676,8 +1743,7 @@ implicit operator needs:
            \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
        \right) } \Delta\rho
 \end{align}
-\end{subequations}
-The last line of each quantity is the linearized, implicit-ready portion.
+The final line of each expansion contains linearized, implicit-ready portion.
 Evaluating reference values from mean quantities taken as a function of
 wall-normal position should provide a reasonable time/storage tradeoff.  Note
 that we will recover an explicit-only operator if we choose identically zero
