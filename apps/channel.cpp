@@ -2470,11 +2470,11 @@ mean sample_mean_quantities(
     assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
 
     // Physical space sums, which are at collocation points, need to be
-    // scaled by the dealiased extents and converted to coefficients.
-    const real_t scale = real_t(1) / (   dgrid.global_physical_extent.x()
-                                       * dgrid.global_physical_extent.z());
+    // divided by the dealiased extents and converted to coefficients.
+    const real_t scale_factor = dgrid.global_physical_extent.x()
+                              * dgrid.global_physical_extent.z();
     suzerain::bsplineop_lu scaled_mass(bop);
-    scaled_mass.form(1, &scale, bop);
+    scaled_mass.form(1, &scale_factor, bop);
     scaled_mass.solve(mean::nscalars::physical,
             ret.storage.middleCols<mean::nscalars::physical>(
                 mean::nscalars::wave).data(),
