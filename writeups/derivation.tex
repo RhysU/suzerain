@@ -1206,21 +1206,90 @@ with \eqref{eq:spatial_discretization} because it provides computational
 advantages.  For a discussion on moving operators between these two
 representations, see \textsection{}5.5 in~\cite{Boyd2001}.
 
-\subsection{Forming discrete operators}
-\label{sec:combineddiscretization}
+\subsection{Forming discrete differentiation operators}
+\label{sec:formingoperators}
 
 Consistent with employing \eqref{eq:spatial_discretization}, discrete operators
 for differentiation in the wall-normal direction map B-spline coefficients to
-derivatives at collocation points.  That is,
+derivatives at wall-normal collocation points.  That is,
 \begin{align}
   D^{(k)} u\bigr|_{m n}
 &= \sum_{l} B^{(k)}_l\!\left(y_{l'}\right)
    \hat{u}_{l m n}
 \end{align}
 where the banded matrix $D^{(k)}$ is wavenumber independent.  $D^{(0)}$ is
-nothing but the mass matrix $M$.  Differentiation in the Fourier
-directions\dots{}STARTHERE
+nothing but the ``mass matrix'' $M$.  Boundary conditions may be enforced for
+B-spline derivatives by using that the $k$th derivative of the function at the
+first (last) collocation point depends only on the first (last) $k+1$ B-spline
+coefficients.
 
+Computing the streamwise (or spanwise) first derivative of a quantity only
+requires multiplying each Fourier expansion coefficient $\hat{u}_{l m n}$ by
+$\ii k_{m}$ (or~$\ii k_{n}$).  Second derivatives are found by multiplying each
+$\hat{u}_{l m n}$ by $-k_{m}^2$ (or~$-k_{n}^2$).
+
+Combining the B-spline and Fourier details, for scalar-valued $u$ one finds
+\begin{align}
+  \left.\left(\nabla{} u\right)\right|_{m n}
+&=
+  \begin{pmatrix}
+    \ii k_m M \\
+    D^{(1)}   \\
+    \ii k_n M
+  \end{pmatrix} u\bigr|_{m n}
+\\
+   \left.\left(\Delta{} u\right)\right|_{m n}
+&= \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) u\bigr|_{m n}
+\\
+  \left.\left(\nabla\nabla{} u\right)\right|_{m n}
+&=
+  \begin{pmatrix}
+    -k_m^2               M       & \ii k_m D^{(1)} & \ii \left(k_m + k_n\right) M \\
+    \ii k_m              D^{(1)} &         D^{(2)} & \ii k_n D^{(1)}        \\
+    \ii \left(k_m + k_n\right) M       & \ii k_n D^{(1)} & -k_n^2 M
+  \end{pmatrix} u\bigr|_{m n}
+\end{align}
+where all operators map coefficients in all three directions to wall-normal
+collocation point values but streamwise and spanwise coefficients.
+Similarly, for a vector with components $u$, $v$, and $w$ one finds
+\begin{align}
+  \left.\nabla\cdot\begin{pmatrix}u \\ v \\ w\end{pmatrix}\right|_{m n}
+&=
+  \left.\left(\ii k_m M u + D^{(1)} v + \ii k_n M w\right)\right|_{m n}
+\\
+  \left.\nabla\begin{pmatrix}u \\ v \\ w\end{pmatrix}\right|_{m n}
+&=
+  \left.\begin{pmatrix}
+    \ii k_m M u & D^{(1)} u & \ii k_n M u \\
+    \ii k_m M v & D^{(1)} v & \ii k_n M v \\
+    \ii k_m M w & D^{(1)} w & \ii k_n M w
+  \end{pmatrix}\right|_{m n}
+\\
+  \left.\Delta\begin{pmatrix}u \\ v \\ w\end{pmatrix}\right|_{m n}
+&=
+  \left.\begin{pmatrix}
+    \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) u \\
+    \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) v \\
+    \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) w
+  \end{pmatrix}\right|_{m n}
+\\
+  \left.\nabla\nabla\cdot\begin{pmatrix}u \\ v \\ w\end{pmatrix}\right|_{m n}
+&=
+  \left.\begin{pmatrix}
+    - k_m^2 M u       + \ii k_m D^{(1)} v + \ii \left(k_m + k_n\right) M w \\
+    \ii k_m D^{(1)} u + D^{(2)} v + \ii k_n D^{(1)} w \\
+    \ii \left(k_m + k_n\right) M u + \ii k_n D^{(1)} v - k_n^2 M W
+  \end{pmatrix}\right|_{m n}
+\\
+  \left.\nabla\times\nabla\times\begin{pmatrix}u \\ v \\ w\end{pmatrix}\right|_{m n}
+&=
+STARTHERE!
+  \left.\begin{pmatrix}
+    - k_m^2 M u       + \ii k_m D^{(1)} v + \ii \left(k_m + k_n\right) M w \\
+    \ii k_m D^{(1)} u + D^{(2)} v + \ii k_n D^{(1)} w \\
+    \ii \left(k_m + k_n\right) M u + \ii k_n D^{(1)} v - k_n^2 M W
+  \end{pmatrix}\right|_{m n}
+\end{align}
 
 
 
