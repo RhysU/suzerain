@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Simplistic processing looking for -h, -help, or --help
+options=($@)
+for arg in $options; do
+    case $arg in
+      -h|-help|--help) cat <<HELP
+Usage: qlast [JOBNAME]...
+
+Output the highest GridEngine job_id of all jobs named JOBNAME submitted by the
+current user.  Multiple JOBNAMEs cause multiple job_ids to be output on a
+single line.  If JOBNAME is not specified, the highest job_id submitted by the
+user is output.  If no job_id matches JOBNAME, exit with nonzero status.
+HELP
+      exit 0
+      ;;
+    esac
+done
+
+# Fail on first error
+set -e
+
+# Obtain details on all currently queued jobs using qstat
+# Long form qstat -r -u $(whoami) required for non-truncated jobname
+tmpfile=`mktemp`
+trap "rm -f $tmpfile" EXIT
+qstat -r -u $(whoami) | tail -n +3 | awk "
+    \$1 ~ /^[0-9]+/ && \$4 ~ /$(whoami)/              { jobid = \$1 }
+    tolower(\$1) ~ /full/ && tolower(\$2) ~ /jobname/ { print jobid \" \" \$3 }
+"# | sort > $tmpfile
+
+# Use qstat output to obtain the highest job number submitted...
+# (being careful to exit with an error code if necessary)
+if [[ $# == 0 ]]; then
+    # ...among all queued jobs
+    awk '
+        {jobnum = $1};
+        END{ if (jobnum > 0) {print jobnum} else { exit 1 } }
+    ' $tmpfile
+else
+    # ...among all queued jobs with the given names
+    while (($#)); do
+        awk "
+            \$2 ~ /^$1\$/ {jobnum = \$1};
+            END{ if (jobnum > 0) {printf \"%d \", jobnum} else { exit 1 } }
+        " $tmpfile
+        shift
+    done
+    echo
+fi

@@ -3,10 +3,11 @@ dist_check_SCRIPTS  = # Append below
 TESTS               = # Append below
 
 JOBSCRIPTS = qsub.lonestar qsub.ranger
+UTILITIES  = qlast
 
 # Installation, distribution, and clean up details
 jobscriptsdir      = $(pkgdatadir)/jobscripts
-jobscripts_SCRIPTS = $(JOBSCRIPTS)
+jobscripts_SCRIPTS = $(JOBSCRIPTS) $(UTILITIES)
 EXTRA_DIST         = qsub.tacc.in
 CLEANFILES         = $(JOBSCRIPTS)
 
