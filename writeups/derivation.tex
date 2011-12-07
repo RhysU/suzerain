@@ -1839,14 +1839,14 @@ of~\eqref{eq:state_momentum}.  In contrast, an ``on diagonal'' example is the
 divergence of total energy appearing within~\eqref{eq:state_energy}.  Handling
 off-diagonal terms implicitly is better from the perspective of taking the
 largest possible time step while maintaining stability but the gains may not be
-warranted by the associated programming and runtime overhead.  We will catalog
-both on- and off-diagonal linearized terms and later detail which specific ones
-are treated implicitly.
+warranted by the associated programming and runtime overhead.
 
 \subsection{Implicit treatment of viscous terms}
 
 Because second derivatives give rise to the most restrictive eigenvalues for
 timestepping, we first focus on how second order terms enter the full operator.
+We will catalog both on- and off-diagonal linearized terms and later detail
+which specific ones are treated implicitly.
 
 \subsubsection{Possible linearizations of viscous terms}
 
@@ -1972,20 +1972,67 @@ reference values.
 
 \subsubsection{Viscous linearizations chosen for implicit treatment}
 
-FIXME
+TODO
+
+\begin{enumerate}
+\item Write out the specific terms to be treated implicitly and their linearization coefficients (a function of wall-normal position)
+\item Note the specific derivative boundary conditions needed on the operators for each equation (e.g. no-slip for momentum equations, fixed temperature for the energy equations).
+\item Note that the linearization coefficients should be computed no more frequently than at the beginning of each RK step due to time discretization operator requirements
+\item Note the wave-number dependent nature of the operators in the streamwise and spanwise Fourier directions.
+\item Comment that treating only B-spline direction implicitly allows reusing the $(I - \phi\Delta{}t L)$ factorization across all wavenumbers. Guarini apparently got away with just this (thesis page 45).
+\end{enumerate}
 
 \subsection{Implicit treatment of acoustic terms}
 
-We now to focus on the first order acoustic terms within the
-momentum and energy equations.
+We now focus on the first order acoustic terms within the momentum and
+energy equations.  Following Guarini~\cite{Guarini1998} (page~45), we treat the
+pressure gradient term in the wall-normal momentum equation and the linearized
+pressure work term implicitly.
 
-\subsubsection{Possible linearizations of viscous terms}
+TODO
 
-FIXME
+\begin{enumerate}
+\item Following Guarini (thesis page 45) treat the pressure gradient term in the wall-normal momentum equation and the linearized pressure work term implicitly.
+\item Write out the specific terms to be treated implicitly and their linearization coefficients (a function of wall-normal position)
+\item Check if the first derivative operators for accomplishing this require any specific boundary treatment (feels like no, could be wrong)
+\end{enumerate}
 
-\subsubsection{Acoustic linearizations chosen for implicit treatment}
+\subsection{Boundary conditions}
 
-FIXME
+\subsubsection{Isothermal, no slip boundary condition}
+
+An isothermal wall is characterized by a fixed temperature and zero velocity.
+One thermodynamic quantity must be allowed to vary for this boundary condition
+to be well-posed.  Allowing $\rho$ to vary is simplest given our state choices.
+Then~\eqref{eq:state_pressure} and~\eqref{eq:state_temperature} combined with
+$m=0$ forces $e=\frac{T}{\gamma\left(\gamma-1\right)}$ for some fixed
+temperature $T$.  These conditions may be built into linear operators for
+implicit treatment using how B-spline basis support limits the number of
+nonzero coefficients at the wall as discussed in
+section~\ref{sec:formingoperators}.
+
+TODO Can one have a ``thermally rough'' wall by enforcing isothermal conditions
+on only the zero-zero modes and doing something else on other modes?
+
+\subsubsection{Isothermal, transpiring wall boundary condition}
+
+TODO
+
+\subsubsection{Nonreflecting freestream boundary conditions}
+
+TODO
+
+\begin{enumerate}
+\item Reference Giles 1998 and Guarini's thesis (section 4.3.2)
+\item Work through Guarini's transformation of Giles' result for our particular state variables (we use density and total energy unlike Guarini's specific volume and pressure).
+\item Get to Guarini's equation (4.90) post haste.
+\item Note the Poinsot and Lele 1992 reference discussing viscous conditions
+\item Comment on implementation considerations
+\end{enumerate}
+
+\subsection{Imposing a favorable streamwise pressure gradient}
+
+TODO
 
 \section{In support of Favre-averaged Navier--Stokes modeling}
 \label{sec:supportFANS}
