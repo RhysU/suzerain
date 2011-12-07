@@ -10,7 +10,7 @@
 \usepackage{enumerate}
 \usepackage{fancyhdr}
 \usepackage{fullpage}
-\usepackage{hyperref}
+\usepackage[final,hypertexnames]{hyperref}
 \usepackage{ifthen}
 \usepackage{lastpage}
 \usepackage{latexsym}
@@ -1211,7 +1211,7 @@ with \eqref{eq:spatial_discretization} because it provides computational
 advantages.  For a discussion on moving operators between these two
 representations, see \textsection{}5.5 in~\cite{Boyd2001}.
 
-\subsection{Forming discrete differentiation operators}
+\subsection{Forming discrete operators}
 \label{sec:formingoperators}
 
 Consistent with employing \eqref{eq:spatial_discretization}, discrete operators
@@ -1305,6 +1305,11 @@ By employing the Helmholtz decomposition and modest smoothness assumptions, one
 may show $\nabla\times\nabla\times\vec{\phi}$ is nothing but a negated
 Laplacian acting on only the solenoidal portion of $\vec{\phi}$.
 
+We comment that while the Fourier bases are discretely conservative, the
+B-spline basis is not in general.  However, the relative discrete conservation
+error in the wall normal direction is small enough that using a conservative
+continuous formulation remains worthwhile.
+
 \subsection{Time step stability criteria}
 \label{sec:stabilitycriteria}
 
@@ -1316,12 +1321,13 @@ by a value less than one as a way to introduce a safety factor.  Values like
 $0.70-0.72$ are often used.
 
 \subsubsection{Convective stability criterion}
+\label{sec:convectivestability}
 
 The convective criterion uses the maximum imaginary eigenvalue magnitude from
 the Euler equations as a surrogate for the more complicated Navier--Stokes
 case.  Both Kwok~\cite{Kwok2002} (equation~2.39) and Guarini~\cite{Guarini1998}
 (equations~4.20 and~4.21) derive the dimensional stability result that
-\begin{align}
+\begin{align}\label{eq:convectivestability}
   \pi\left(
       \frac{\left|u_{x}\right| + a}{\Delta{}x}
     + \frac{\left|u_{y}\right| + a}{\Delta{}y}
@@ -1337,7 +1343,7 @@ timestepping method.  For the SMR91 scheme,
   \left|\lambda_{I}\Delta{}t\right|_{\mbox{max}} &= \sqrt{3}.
 \end{align}
 
-For formulations like Suzerains in which an explicit Mach number
+For nondimensional formulations like ours in which an explicit Mach number
 $\mbox{Ma}=\frac{u_0}{a_0}$ appears, one must provide the velocities and the
 sound speed both nondimensionalized using $u_0$.  That expressions like
 $\left|u\right| + \frac{a}{\mbox{Ma}}$ are appropriate in that context can be
@@ -1364,7 +1370,7 @@ The diffusive criterion uses the maximum real eigenvalue magnitude from a model
 diffusion equation as a surrogate for the more complicated Navier--Stokes case.
 Both Kwok~\cite{Kwok2002} (equations~2.40) and Guarini~\cite{Guarini1998}
 (equations~4.29 and~4.30) derive the dimensional stability result that
-\begin{align}
+\begin{align}\label{eq:diffusivestability}
     \mbox{max}\!\left(
       \left|\frac{\gamma\left(\nu-\nu_{0}\right)}{\mbox{Re}\mbox{Pr}}\right|,
       \left|\frac{\nu-\nu_{0}}{\mbox{Re}}\right|,
@@ -1472,12 +1478,13 @@ $\symmetricpart{A}=\frac{1}{2}\left(A+\trans{A}\right)$.
 
 \subsection{Communications overhead}
 
-Suzerain performs time advancement in wave space but must compute nonlinear
-terms in physical space.  The communications and computation cost required to
-convert state data from wave space to physical space or vice versa is very
-high.  Consequently, we transform back and forth only once per time integration
-substep.  This implies that we must be able to compute derived quantity
-derivatives using state quantity derivatives.
+As detailed in section~\ref{sec:combineddiscretization}, we perform time
+advancement in wave space but must compute nonlinear terms in physical space.
+The communications and computation cost required to convert state data from
+wave space to physical space or vice versa is very high.  Consequently, we
+transform back and forth only once per time integration substep.  This implies
+that we must be able to compute derived quantity derivatives using only state
+derivatives.
 
 \subsection{Velocity derivative expansions}
 \label{velocity_derivative_expansions}
@@ -1562,11 +1569,11 @@ derivatives:
 \subsection{Separation of first and second derivative operators}
 \label{separate_first_section_deriv}
 
-Suzerain uses a B-spline basis in the wall normal direction.  Unlike a Fourier
-basis, for B-splines the repeated application of a discrete first derivative
-operator gives a result that differs significantly from applying a discrete
-second derivative operator.  In particular, repeated first differentiation
-severely abates high frequency modes (see figures 2 and 3 in ~\cite{Kwok2001}).
+Unlike a Fourier basis, for B-splines the repeated application of a discrete
+first derivative operator gives a result that differs significantly from
+applying a discrete second derivative operator.  In particular, repeated first
+differentiation severely abates high frequency modes (see figures 2 and 3 in
+~\cite{Kwok2001}).
 
 Second differentiation enters equations~\eqref{eq:state_continuity},
 \eqref{eq:state_momentum}, and~\eqref{eq:state_energy} through the terms
@@ -1574,7 +1581,8 @@ $\nabla\cdot\tau$, $\nabla\cdot\tau\frac{m}{\rho}$, and
 $\nabla\cdot\mu\nabla{}T$.  We wish to compute these terms in a way that keeps
 first and second derivative applications wholly separate.  Doing so will help
 ensure that these three terms have the most physically correct diffusive impact
-on high frequency content at a given spatial resolution.
+on high frequency content at a given spatial resolution.  These results will
+also be used in the course of developing our implicit diffusive treatment.
 
 We expand the three mixed order, nonlinear terms:
 \begin{align}
@@ -1654,12 +1662,15 @@ Though we could have found these expressions for only the wall-normal
 direction, writing them for the complete $\nabla$ operator allows us to reuse
 them later.
 
-\subsection{Fully explicit scheme cost tabulation}
+\subsection{A fully explicit treatment}
 
-Though Suzerain uses a hybrid implicit/explicit time stepping scheme and a
-Fourier basis in the streamwise and spanwise directions where repeated first
-differentiation is acceptable, it is useful to examine the communication costs
-for purely a explicit time stepper when we do not mix derivative orders.
+Though our time advance allows an implicit linear term and our Fourier basis
+permits repeated first differentiation, it is useful to examine the
+communication costs for a purely explicit implementation.  In this context, all
+terms within equations~\eqref{eq:state_continuity}, \eqref{eq:state_momentum},
+and~\eqref{eq:state_energy} are formed by $\tilde{N}$ in physical space.
+Further, we do not mix derivatives of different orders.  The only linear solve
+required uses a wavenumber-independent factorization of the mass matrix $M$.
 
 Using the information in sections~\ref{velocity_derivative_expansions}
 and~\ref{separate_first_section_deriv} we tabulate in
@@ -1671,6 +1682,12 @@ could compute a single substep at the cost of converting 33 scalar fields from
 wave space to physical space, forming 5 scalars representing the right hand
 sides of equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy}, and
 converting 5 scalar fields back to wave space.
+
+While not nearly as efficient as a hybrid implicit/explicit treatment due
+to~\eqref{eq:convectivestability} and~\eqref{eq:diffusivestability}, in
+conjunction with Venugopal's wall-normal modification to the convective
+stability, a fully explicit treatment does allow slow progress to be made on
+small problems.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
