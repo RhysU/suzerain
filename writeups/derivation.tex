@@ -1586,7 +1586,8 @@ also be used in the course of developing our implicit diffusive treatment.
 
 We expand the three mixed order, nonlinear terms:
 \begin{align}
-  \nabla\cdot\tau \label{eq:nabla_cdot_tau_expansion}
+\label{eq:nabla_cdot_tau_expansion}
+  \nabla\cdot\tau
   &=
     2 \symmetricpart{\nabla\frac{m}{\rho}}\nabla\mu
   + \mu \Delta\frac{m}{\rho}
@@ -1860,6 +1861,7 @@ nonlinear portion plus a linear contribution that satisfies our time stepper's
 implicit operator needs.  Beginning with the nonlinear linearization candidates
 from \eqref{eq:nabla_cdot_tau_expansion}:
 \begin{align}
+\label{eq:linearready_delta_u}
 \mu\Delta\frac{m}{\rho} = &\phantom{{}+}
     \mu\rho^{-2}\left[
           2\rho^{-1}m\left(\nabla\rho\right)^{2}
@@ -1872,6 +1874,7 @@ from \eqref{eq:nabla_cdot_tau_expansion}:
   &{}+ \reference{\mu\rho^{-1}} \Delta{}m
      - \reference{\mu\rho^{-2}m} \Delta\rho
 \\
+\label{eq:linearready_grad_div_u}
 \left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho} = &\phantom{{}+}
    \left(\mu+\lambda\right)\rho^{-2}\left[
        \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
@@ -1886,6 +1889,7 @@ from \eqref{eq:nabla_cdot_tau_expansion}:
 \end{align}
 Moving on to the candidates from \eqref{eq:nabla_cdot_tau_expansion_alt}:
 \begin{align}
+\label{eq:linearready_alt_delta_u}
 \left(2\mu+\lambda\right)\Delta\frac{m}{\rho} = &\phantom{{}+}
     \left(2\mu+\lambda\right)\rho^{-2}\left[
           2\rho^{-1}m\left(\nabla\rho\right)^{2}
@@ -1898,6 +1902,7 @@ Moving on to the candidates from \eqref{eq:nabla_cdot_tau_expansion_alt}:
   &{}+ \reference{\left(2\mu+\lambda\right)\rho^{-1}} \Delta{}m
      - \reference{\left(2\mu+\lambda\right)\rho^{-2}m} \Delta\rho
 \\
+\label{eq:linearready_alt_curl_curl_u}
   \left(\mu+\lambda\right)\nabla\times\nabla\times\frac{m}{\rho}
   = &\phantom{{}+}
         \left(\mu+\lambda\right) \rho^{-2} \left[
@@ -1931,6 +1936,7 @@ dependencies:
      - \left(\gamma-1\right)\Mach^{2}\rho^{-1}m\cdot\Delta{}m
      + \frac{\gamma-1}{2}\Mach^{2}\rho^{-2}m^2 \Delta\rho
 \\
+\label{eq:linear_ready_delta_T}
 \mu\Delta{}T =
   &{}- 2\gamma\mu\rho^{-2}\nabla\rho\cdot
        \left(\nabla{}p-\rho^{-1}p\nabla\rho\right)
@@ -1972,7 +1978,36 @@ reference values.
 
 \subsubsection{Viscous linearizations chosen for implicit treatment}
 
-TODO
+All first and second order, on-diagonal, linearized viscous terms are treated
+implicitly.
+
+Combining~\eqref{eq:nabla_cdot_tau_expansion} with~\eqref{eq:linearready_delta_u}
+and~\eqref{eq:linearready_grad_div_u}, the linearized terms in the momentum
+equation~\eqref{eq:state_momentum} are the on-diagonal subset of
+\begin{align}
+  &\frac{1}{\Reynolds}
+  \left(
+  \reference{\mu\rho^{-1}} \Delta{}m
+  +
+  \reference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m.
+  \right).
+\end{align}
+Written using results from section~\eqref{sec:formingoperators}, this is
+exactly the discrete operator
+\begin{align}
+TODO.
+\end{align}
+
+Combining~\eqref{eq:mu_delta_T} with~\eqref{eq:linear_ready_delta_T}, the linearized
+term in the total energy equation~\eqref{eq:state_energy} is
+\begin{align}
+  &\frac{\gamma}{\Reynolds\Prandtl}
+  \reference{\mu\rho^{-1}}\Delta{}e
+\end{align}
+Written discretely this is
+\begin{align}
+TODO.
+\end{align}
 
 \begin{enumerate}
 \item Write out the specific terms to be treated implicitly and their linearization coefficients (a function of wall-normal position)
@@ -1996,6 +2031,10 @@ TODO
 \item Write out the specific terms to be treated implicitly and their linearization coefficients (a function of wall-normal position)
 \item Check if the first derivative operators for accomplishing this require any specific boundary treatment (feels like no, could be wrong)
 \end{enumerate}
+
+\subsection{Complete implicit operator used for time advance}
+
+TODO Write out full $M + \Delta{}tL$
 
 \subsection{Boundary conditions}
 
