@@ -915,6 +915,7 @@ equation \eqref{eq:spatial_discretization}.  In particular, it lacks a mass
 matrix in the time derivative term.
 
 \subsection{Time discretization}
+\label{sec:timediscretization}
 
 We use Spalart, Moser, and Rogers'  low storage hybrid implicit/explicit
 time stepper from appendix A of~\cite{spalart_lowstoragerk}.  This time stepper
@@ -929,7 +930,7 @@ preceding section's $\mathscr{L}$ and $\mathscr{N}$ (see
 operator $L$ must be time-independent throughout each interval $\left[t,
 t+\Delta{}t\right)$.  In contrast to the discussion
 in~\cite{spalart_lowstoragerk} and following S. Yang (personal communication),
-we allow $N$ to vary in time.  The ``SMR'' scheme advances according to the
+we allow $N$ to vary in time.  The ``SMR91'' scheme advances according to the
 following equations:
 \begin{subequations}
 \begin{align}
@@ -940,8 +941,8 @@ following equations:
       L\left( \alpha_{1}u_{n} + \beta_{1}u' \right)
     + \gamma_{1} N\left(u_{n},t_{n}\right)
   \right]
-  \tag{SMR A4a}
-  \label{eq:SMR_A4a}
+  \tag{SMR91 A4a}
+  \label{eq:SMR91_A4a}
 \\
   u''
   &=
@@ -951,8 +952,8 @@ following equations:
     + \gamma_{2} N\left(u',t_{n}+\eta_{2}\Delta{}t\right)
     + \zeta_{1}  N\left(u_{n},t_{n}\right)
   \right]
-  \tag{SMR A4b}
-  \label{eq:SMR_A4b}
+  \tag{SMR91 A4b}
+  \label{eq:SMR91_A4b}
 \\
   u_{n+1}
   &=
@@ -962,8 +963,8 @@ following equations:
     + \gamma_{3} N\left(u'',t_{n}+\eta_{3}\Delta{}t\right)
     + \zeta_{2}  N\left(u',t_{n}+\eta_{2}\Delta{}t\right)
   \right]
-  \tag{SMR A4c}
-  \label{eq:SMR_A4c}
+  \tag{SMR91 A4c}
+  \label{eq:SMR91_A4c}
 \end{align}
 \begin{align}
   \alpha_1 + \beta_1 &= \gamma_1 = \eta_2
@@ -973,7 +974,7 @@ following equations:
   \alpha_3 + \beta_3 &= \gamma_3 + \zeta_2
   &
   \eta_{3} &= \eta_2 + \alpha_2 + \beta_2
-  \tag{SMR A5}
+  \tag{SMR91 A5}
 \end{align}
 \end{subequations}
 The authors determined suitable values for the above coefficients to be
@@ -1000,9 +1001,9 @@ The authors determined suitable values for the above coefficients to be
   \Biggr\}
 \end{align*}
 We have added $\zeta_0$ and $\eta_0$ for notational convenience.  The
-$\eta_{1}$--$\eta_{3}$ coefficients used to extend the SMR scheme for
+$\eta_{1}$--$\eta_{3}$ coefficients used to extend the SMR91 scheme for
 time-dependent $N$ are discussed by Yang~\cite{ShanYang2011}.  Each substep
-\eqref{eq:SMR_A4a}--\eqref{eq:SMR_A4c} has the general form
+\eqref{eq:SMR91_A4a}--\eqref{eq:SMR91_A4c} has the general form
 \begin{align}
   u^{i+1} &= u^i + \Delta{}t \left[
         \alpha_{i} L u^i
@@ -1072,7 +1073,7 @@ algorithm \vref{alg:substep}.
 
 \begin{algorithm}
 \label{alg:substep}
-\caption{Compute one substep in the SMR scheme following
+\caption{Compute one substep in the SMR91 scheme following
          equation (\ref{eq:generaloperatormasssubstep}) %FIXME \eqref?
          }
 \begin{algorithmic}
@@ -1102,7 +1103,7 @@ as $a\leftrightarrow{}b$.  Under these considerations, time step computation
 follows algorithm \vref{alg:step}.
 
 \begin{algorithm}
-\caption{Compute all substeps in the SMR scheme following
+\caption{Compute all substeps in the SMR91 scheme following
          equation (\ref{eq:generaloperatormasssubstep}) % FIXME \eqref?
          }
 \label{alg:step}
@@ -1299,6 +1300,66 @@ strictly second order terms have signs opposite those found in the Laplacian.
 By employing the Helmholtz decomposition and modest smoothness assumptions, one
 may show $\nabla\times\nabla\times\vec{\phi}$ is nothing but a negated
 Laplacian acting on only the solenoidal portion of $\vec{\phi}$.
+
+\subsection{Time step stability criteria}
+\label{sec:stabilitycriteria}
+
+The step size $\Delta{}t$ used within the SMR91 scheme is limited by both a
+convective and a diffusive stability criteria.  The time step used is taken to
+be the minimum stable time step possible according to either restriction.  As
+both criteria are approximate, the resulting $\Delta{}t$ is further multiplied
+by a value less than one as a way to introduce a safety factor.  Values like
+$0.72$ are often used.
+
+\subsubsection{Convective stability criterion}
+
+The convective criterion uses the maximum eigenvalue of the Euler equations as
+a surrogate for the more complicated Navier--Stokes case.  Both
+Kwok~\cite{Kwok2002} (equation~2.39) and Guarini~\cite{Guarini1998}
+(equations~4.20 and~4.21) derive the dimensional stability result that
+\begin{align}
+  \pi\left(
+      \frac{\left|u_{x}\right| + a}{\Delta{}x}
+    + \frac{\left|u_{y}\right| + a}{\Delta{}y}
+    + \frac{\left|u_{z}\right| + a}{\Delta{}z}
+  \right) \Delta{}t \leq \left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}
+\end{align}
+where $a$ is the local acoustic velocity, $u_{x}$ denotes the velocity in the X
+direction, $\Delta{}x$ represents the local grid size in the X direction, etc.
+The maximum pure imaginary eigenvalue magnitude,
+$\left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}$, is a feature of the chosen
+timestepping method.  For the SMR91 scheme,
+\begin{align}
+\left|\lambda_{I}\Delta{}t\right|_{\mbox{max}} &= \sqrt{3}.
+\end{align}
+
+For formulations like Suzerains in which an explicit Mach number
+$\mbox{Ma}=\frac{u_0}{a_0}$ appears, one must provide the velocities and the
+sound speed both nondimensionalized using $u_0$.  That expressions like
+$\left|u\right| + \frac{a}{\mbox{Ma}}$ are appropriate in that context can be
+seen by finding the eigenvalues of the Euler equations in such a
+nondimensionalization.  Using a hybrid implicit/explicit time scheme with
+acoustic terms computed implicitly effectively sets the sound speed to be zero
+when computing the convective criterion.
+
+When Venugopal~\cite{Venugopal2003} used a nearly identical convective
+criterion (equation~3.10), he found the constraint to be overly conservative in
+the wall-normal direction because its derivation (incorrectly) assumes a
+periodic wall-normal basis.  In section~3.2 of his thesis, Venugopal presents a
+linearized analysis taking into account the inhomogeneous nature of the
+wall-normal direction.  He determined that the wall-normal imaginary eigenvalue
+magnitude dropped by nearly an order of magnitude after taking into account the
+inhomogeneity (i.e., using discrete operators like those in
+section~\ref{sec:formingoperators}.  He concluded that using an effective
+$1/\Delta{}y$ \emph{four} times smaller than the nominal value was feasible
+(equation~3.29).
+
+\subsubsection{Diffusive stability criterion}
+
+STARTHERE
+%\label{sec:timediscretization}
+%\cite{Kwow2002}
+%\cite{Guarini1998}
 
 \section{Numerical considerations}
 
