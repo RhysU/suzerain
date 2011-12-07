@@ -880,7 +880,7 @@ BOOST_AUTO_TEST_CASE( rholt_tau_and_div_tau )
     const Eigen::Vector3d div_grad_u = suzerain::rholt::div_grad_u(
                 rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
 
-    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e4;
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.02e4;
     {
         using namespace suzerain;
         const Eigen::Matrix3d tau = rholt::tau(mu, lambda, div_u, grad_u);
