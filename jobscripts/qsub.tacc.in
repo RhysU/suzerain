@@ -21,6 +21,7 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 
 # Provide defaults for environment variables used to build CMD (see below).
 # Rather than editing this job submission script, modify your environment!
+# Even after job submission, 'qalter -v' can modify a job's environment.
 : ${BINARY:=@bindir@/channel_explicit}
 : ${INPUT:=@pkgdatadir@/fields/laminar_k08.h5}  # Use SCRATCH or WORK
 : ${ADVANCE:=}
