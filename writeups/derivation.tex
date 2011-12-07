@@ -1073,7 +1073,7 @@ scalar $\varphi$.  To achieve a low storage implementation, the
 $N\left(u\right)$ and $\left(M+\varphi{}L\right)^{-1}$ implementations must
 operate in-place while $\left(M+\varphi{}L\right)$ must operate out-of-place.
 Given only two storage locations $a$ and $b$, each substep computation follows
-algorithm \vref{alg:substep}.
+algorithm~\vref{alg:substep}.
 
 \begin{algorithm}
 \label{alg:substep}
@@ -1104,7 +1104,7 @@ $\left(M+\varphi{}L\right)$ must support a decidedly non-BLAS-like, complicated
 out-of-place-apply-and-swap operation or the underlying state storage must
 support a swap operation.  We choose the latter and denote the swap operation
 as $a\leftrightarrow{}b$.  Under these considerations, time step computation
-follows algorithm \vref{alg:step}.
+follows algorithm~\vref{alg:step}.
 
 \begin{algorithm}
 \caption{Compute all substeps in the SMR91 scheme following
@@ -1662,7 +1662,7 @@ Though we could have found these expressions for only the wall-normal
 direction, writing them for the complete $\nabla$ operator allows us to reuse
 them later.
 
-\subsection{A fully explicit treatment}
+\subsection{Implications of a fully explicit treatment}
 
 Though our time advance allows an implicit linear term and our Fourier basis
 permits repeated first differentiation, it is useful to examine the
@@ -1674,7 +1674,7 @@ required uses a wavenumber-independent factorization of the mass matrix $M$.
 
 Using the information in sections~\ref{velocity_derivative_expansions}
 and~\ref{separate_first_section_deriv} we tabulate in
-table~\ref{tab:nofirstderivnonlinearcost} the specific state variable
+table~\vref{tab:nofirstderivnonlinearcost} the specific state variable
 derivatives necessary to compute each mixed-derivative nonlinear term and all
 of its contributions.  From this table and the equations appearing in
 section~\ref{state_variable_selection}, a fully explicit timestepping approach
@@ -1817,19 +1817,40 @@ $\nabla\cdot\mu\nabla{}T$
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Linearization of second order viscous terms}
+\subsection{Considerations in choosing the implicit treatment}
 
-Suzerain uses a hybrid implicit/explicit time stepper to alleviate the very
-restrictive time step requirements that arise if we advance time in a purely
-explicit fashion.  The hybrid time stepper requires the implicit operator to be
-linear in the state variables and time-independent.  Precious little of the
-full operator as written in
-equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} meets these
-criteria.  We must carve it up.
+The SMR91 time scheme requires the implicit operator $\tilde{L}$ be linear in
+the state variables and time-independent.  Precious little of the full operator
+as written in equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy}
+meets these criteria.  We must carve it up by linearizing about some reference
+values.  The portion treated explicitly becomes the regular nonlinear operator
+less the implicit portion, i.e $\tilde{N}\left(u\right) - \tilde{L}u$.
+
+As the grid spacing is smallest near the walls, reference values may be taken
+from at or near the wall.  A better but slightly more complicated choice is to
+take a one-dimensional profile across the wall-normal direction.
+
+The implementation details becomes more complicated when ``off diagonal'' state
+derivatives are treated implicitly.  By ``off diagonal'' we mean derivatives of
+conserved state appearing on equations other than their own.  For example.  the
+term $\nabla\cdot{}m$ in~\eqref{eq:state_continuity} or derivatives of the
+wall-normal momentum appearing in the streamwise portion
+of~\eqref{eq:state_momentum}.  In contrast, an ``on diagonal'' example is the
+divergence of total energy appearing within~\eqref{eq:state_energy}.  Handling
+off-diagonal terms implicitly is better from the perspective of taking the
+largest possible time step while maintaining stability but the gains may not be
+warranted by the associated programming and runtime overhead.  We will catalog
+both on- and off-diagonal linearized terms and later detail which specific ones
+are treated implicitly.
+
+\subsection{Implicit treatment of viscous terms}
 
 Because second derivatives give rise to the most restrictive eigenvalues for
-timestepping, we focus on how second order terms enter the full operator.  We
-take the quantities from sections~\ref{velocity_derivative_expansions}
+timestepping, we first focus on how second order terms enter the full operator.
+
+\subsubsection{Possible linearizations of viscous terms}
+
+We take the quantities from sections~\ref{velocity_derivative_expansions}
 and~\ref{separate_first_section_deriv} and expand the nonlinear coefficients on
 second order terms about reference states.  For example, $\rho^{-1}\Delta{}m =
 \lessreference{\rho^{-1}}\Delta{}m + \reference{\rho^{-1}}\Delta{}m$ where
@@ -1948,6 +1969,23 @@ Evaluating reference values from mean quantities taken as a function of
 wall-normal position should provide a reasonable time/storage tradeoff.  Note
 that we will recover an explicit-only operator if we choose identically zero
 reference values.
+
+\subsubsection{Viscous linearizations chosen for implicit treatment}
+
+FIXME
+
+\subsection{Implicit treatment of acoustic terms}
+
+We now to focus on the first order acoustic terms within the
+momentum and energy equations.
+
+\subsubsection{Possible linearizations of viscous terms}
+
+FIXME
+
+\subsubsection{Acoustic linearizations chosen for implicit treatment}
+
+FIXME
 
 \section{In support of Favre-averaged Navier--Stokes modeling}
 \label{sec:supportFANS}
