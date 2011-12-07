@@ -1310,13 +1310,13 @@ convective and a diffusive stability criteria.  The time step used is taken to
 be the minimum stable time step possible according to either restriction.  As
 both criteria are approximate, the resulting $\Delta{}t$ is further multiplied
 by a value less than one as a way to introduce a safety factor.  Values like
-$0.72$ are often used.
+$0.70-0.72$ are often used.
 
 \subsubsection{Convective stability criterion}
 
-The convective criterion uses the maximum eigenvalue of the Euler equations as
-a surrogate for the more complicated Navier--Stokes case.  Both
-Kwok~\cite{Kwok2002} (equation~2.39) and Guarini~\cite{Guarini1998}
+The convective criterion uses the maximum imaginary eigenvalue magnitude from
+the Euler equations as a surrogate for the more complicated Navier--Stokes
+case.  Both Kwok~\cite{Kwok2002} (equation~2.39) and Guarini~\cite{Guarini1998}
 (equations~4.20 and~4.21) derive the dimensional stability result that
 \begin{align}
   \pi\left(
@@ -1331,7 +1331,7 @@ The maximum pure imaginary eigenvalue magnitude,
 $\left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}$, is a feature of the chosen
 timestepping method.  For the SMR91 scheme,
 \begin{align}
-\left|\lambda_{I}\Delta{}t\right|_{\mbox{max}} &= \sqrt{3}.
+  \left|\lambda_{I}\Delta{}t\right|_{\mbox{max}} &= \sqrt{3}.
 \end{align}
 
 For formulations like Suzerains in which an explicit Mach number
@@ -1339,28 +1339,58 @@ $\mbox{Ma}=\frac{u_0}{a_0}$ appears, one must provide the velocities and the
 sound speed both nondimensionalized using $u_0$.  That expressions like
 $\left|u\right| + \frac{a}{\mbox{Ma}}$ are appropriate in that context can be
 seen by finding the eigenvalues of the Euler equations in such a
-nondimensionalization.  Using a hybrid implicit/explicit time scheme with
-acoustic terms computed implicitly effectively sets the sound speed to be zero
-when computing the convective criterion.
+nondimensionalization.  Using a hybrid implicit/explicit time scheme, like
+SMR91, where acoustic terms treated implicitly effectively sets the sound speed
+to be zero when computing this convective criterion.
 
 When Venugopal~\cite{Venugopal2003} used a nearly identical convective
 criterion (equation~3.10), he found the constraint to be overly conservative in
 the wall-normal direction because its derivation (incorrectly) assumes a
-periodic wall-normal basis.  In section~3.2 of his thesis, Venugopal presents a
-linearized analysis taking into account the inhomogeneous nature of the
-wall-normal direction.  He determined that the wall-normal imaginary eigenvalue
-magnitude dropped by nearly an order of magnitude after taking into account the
+periodic wall-normal basis.  Venugopal (section~3.2) presents a linearized
+analysis taking into account the inhomogeneous nature of the wall-normal
+direction.  He determined that the wall-normal imaginary eigenvalue magnitude
+dropped by nearly an order of magnitude after taking into account the
 inhomogeneity (i.e., using discrete operators like those in
-section~\ref{sec:formingoperators}.  He concluded that using an effective
-$1/\Delta{}y$ \emph{four} times smaller than the nominal value was feasible
+section~\ref{sec:formingoperators}).  He concluded that using an effective
+$1/\Delta{}y$ four times smaller than the nominal value was feasible
 (equation~3.29).
 
 \subsubsection{Diffusive stability criterion}
 
-STARTHERE
-%\label{sec:timediscretization}
-%\cite{Kwow2002}
-%\cite{Guarini1998}
+The diffusive criterion uses the maximum real eigenvalue magnitude from a model
+diffusion equation as a surrogate for the more complicated Navier--Stokes case.
+Both Kwok~\cite{Kwok2002} (equations~2.40) and Guarini~\cite{Guarini1998}
+(equations~4.29 and~4.30) derive the dimensional stability result that
+\begin{align}
+    \mbox{max}\!\left(
+      \left|\frac{\gamma\left(\nu-\nu_{0}\right)}{\mbox{Re}\mbox{Pr}}\right|,
+      \left|\frac{\nu-\nu_{0}}{\mbox{Re}}\right|,
+      \left|\frac{\nu_{B}-\nu_{B0}}{\mbox{Re}}\right|
+    \right)
+    \pi^{2}
+    \left(
+        \frac{1}{\Delta{}x^{2}}
+      + \frac{1}{\Delta{}y^{2}}
+      + \frac{1}{\Delta{}z^{2}}
+    \right)
+    \Delta{}t \leq \left|\lambda_{R}\Delta_{}t\right|_{\mbox{max}}
+\end{align}
+where a bulk kinematic viscosity $\nu_{B}$ has been added to their results.
+The maximum pure real eigenvalue magnitude,
+$\left|\lambda_{R}\Delta{}t\right|_{\mbox{max}}$, is a feature of the chosen
+timestepping method.  For the SMR91 scheme,
+\begin{align}
+\left|\lambda_{R}\Delta{}t\right|_{\mbox{max}} &\approx 2.512.
+\end{align}
+Using a hybrid implicit/explicit time scheme, like SMR91, with viscous terms
+treated implicitly sets $\nu_0$ to be the reference kinematic viscosity
+about which the viscous terms were linearized.  The absolute values within the
+maximum operation account for the possibility that $\nu<\nu_{0}$.
+
+Venugopal~\cite{Venugopal2003} used a nearly identical diffusive criterion
+(equation~3.15).  His analysis determined that the diffusive stability
+criterion was not overly conservative for a non-periodic B-spline
+discretization.
 
 \section{Numerical considerations}
 
