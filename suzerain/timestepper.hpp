@@ -135,7 +135,7 @@ public:
  * implicitly effectively sets the sound speed to be zero for this CFL
  * calculation.
  *
- * @note Prem Venugopal's 2003 thesis used a nearly identical conservative
+ * @note Prem Venugopal's 2003 thesis used a nearly identical convective
  * stability criterion (equation 3.10).  Venugopal found the constraint to be
  * overly conservative in the wall-normal direction because the derivation
  * assumed periodicity.  In section 3.2 he presents a linearized analysis
