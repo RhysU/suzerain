@@ -2027,6 +2027,22 @@ Guarini~\cite{Guarini1998} (page~45) treated the pressure gradient term in the
 wall-normal momentum equation and the linearized pressure work term implicitly.
 A superset of our corresponding terms may be linearized as follows:
 \begin{align}
+  \nabla{}p &= \left(\gamma-1\right)\left[
+       \nabla{}e
+     + \frac{\Mach^{2}}{\rho} \left[
+          \frac{m^2}{2\rho} \nabla{\rho}
+        - \trans{\nabla{}m}m
+       \right]
+  \right]
+\\
+  \nabla{}p &=
+\\
+  &+ \left(\gamma-1\right) \nabla{}e
+\\
+  &+ \left(\gamma-1\right) \frac{\Mach^{2}m^2}{2\rho^2}\nabla\rho
+\\
+  &- \left(\gamma-1\right) \frac{\Mach^{2}}{\rho} \trans{\nabla{}m}m
+\\
 \nabla\cdot\left(e+p\right)\frac{m}{\rho} =
    &- \left(\gamma-1\right)\mbox{Ma}^{2}\rho^{-2}m\cdot \trans{\nabla{}m}m
     + \lessreference{ \gamma\rho^{-1}m }\cdot\nabla{}e
