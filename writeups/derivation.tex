@@ -1821,21 +1821,29 @@ $\nabla\cdot\mu\nabla{}T$
 \subsection{Considerations in choosing the implicit treatment}
 
 The SMR91 time scheme requires the implicit operator $\tilde{L}$ be linear in
-the state variables and time-independent.  Precious little of the full operator
-as written in equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy}
-meets these criteria.  We must carve it up by linearizing about some reference
-values.  The portion treated explicitly becomes the regular nonlinear operator
-less the implicit portion, i.e $\tilde{N}\left(u\right) - \tilde{L}u$.
+the state variables and time-independent.  Precious little of the
+Navier--Stokes operator as written in
+equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} meets these
+criteria.  We must carve it up by linearizing about some reference state.  This
+approach separates each quantity into an explicitly-treated nonlinear portion
+plus a linear contribution that satisfies our implicit operator restrictions.
 
-As the grid spacing is smallest near the walls, reference values may be taken
-from at or near the wall.  A better but slightly more complicated choice is to
-take a one-dimensional profile across the wall-normal direction.
+One example is $\rho^{-1}\Delta{}m = \lessreference{\rho^{-1}}\Delta{}m +
+\reference{\rho^{-1}}\Delta{}m$ where $\reference{\rho^{-1}}$ indicates the
+term $\rho^{-1}$ evaluated at some reference state.  At one extreme, treating a
+three-dimensional reference field is prohibitively expensive but would provide
+the longest possible time steps according to~\ref{sec:stabilitycriteria}.  At
+the other extreme, a uniform reference value, which should be chosen from the
+wall as grid spacing is smallest there, would have the smallest runtime
+overhead but would provide the smallest time step gains.  A good compromise
+between these extremes is to employ a one-dimensional reference state profile
+across the wall-normal direction.
 
-The implementation details becomes more complicated when ``off diagonal'' state
-derivatives are treated implicitly.  By ``off diagonal'' we mean derivatives of
-conserved state appearing on equations other than their own.  For example.  the
-term $\nabla\cdot{}m$ in~\eqref{eq:state_continuity} or derivatives of the
-wall-normal momentum appearing in the streamwise portion
+Implicit operator implementation details becomes more complicated when ``off
+diagonal'' state derivatives are treated implicitly.  By ``off diagonal'' we
+mean derivatives of conserved state appearing on equations other than their
+own.  For example, the term $\nabla\cdot{}m$ in~\eqref{eq:state_continuity} or
+derivatives of the wall-normal momentum appearing in the streamwise portion
 of~\eqref{eq:state_momentum}.  In contrast, an ``on diagonal'' example is the
 divergence of total energy appearing within~\eqref{eq:state_energy}.  Handling
 off-diagonal terms implicitly is better from the perspective of taking the
@@ -1853,13 +1861,8 @@ which specific ones are treated implicitly.
 
 We take the quantities from sections~\ref{velocity_derivative_expansions}
 and~\ref{separate_first_section_deriv} and expand the nonlinear coefficients on
-second order terms about reference states.  For example, $\rho^{-1}\Delta{}m =
-\lessreference{\rho^{-1}}\Delta{}m + \reference{\rho^{-1}}\Delta{}m$ where
-$\reference{\rho^{-1}}$ indicates the term $\rho^{-1}$ evaluated at some given,
-fixed state.  This approach separates each quantity into an explicitly-treated
-nonlinear portion plus a linear contribution that satisfies our time stepper's
-implicit operator needs.  Beginning with the nonlinear linearization candidates
-from \eqref{eq:nabla_cdot_tau_expansion}:
+second order terms about reference states.  Beginning with the nonlinear
+linearization candidates from \eqref{eq:nabla_cdot_tau_expansion}:
 \begin{align}
 \label{eq:linearready_delta_u}
 \mu\Delta\frac{m}{\rho} = &\phantom{{}+}
@@ -1887,7 +1890,8 @@ from \eqref{eq:nabla_cdot_tau_expansion}:
   &{}+ \reference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m
      - \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-2}m}
 \end{align}
-Moving on to the candidates from \eqref{eq:nabla_cdot_tau_expansion_alt}:
+Moving on to the candidates from the alternative $\nabla\cdot\tau$
+expansion~\eqref{eq:nabla_cdot_tau_expansion_alt}:
 \begin{align}
 \label{eq:linearready_alt_delta_u}
 \left(2\mu+\lambda\right)\Delta\frac{m}{\rho} = &\phantom{{}+}
@@ -1920,8 +1924,8 @@ Moving on to the candidates from \eqref{eq:nabla_cdot_tau_expansion_alt}:
      + \reference{\left(\mu+\lambda\right)\rho^{-2} m} \Delta\rho
      - \reference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
 \end{align}
-Finishing with lone temperature term from \eqref{eq:mu_delta_T} and its
-dependencies:
+Finishing with the second order temperature term from \eqref{eq:mu_delta_T} and
+its dependencies:
 \begin{align}
 \Delta{}p =
   &{}- \left(\gamma-1\right)\Mach^{2}\rho^{-1}\left[
@@ -1971,10 +1975,8 @@ dependencies:
        \right) } \Delta\rho
 \end{align}
 The final line of each expansion contains linearized, implicit-ready portion.
-Evaluating reference values from mean quantities taken as a function of
-wall-normal position should provide a reasonable time/storage tradeoff.  Note
-that we will recover an explicit-only operator if we choose identically zero
-reference values.
+Note that we will recover an explicit-only operator if we choose identically
+zero reference values.
 
 \subsubsection{Viscous linearizations chosen for implicit treatment}
 
