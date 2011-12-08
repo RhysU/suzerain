@@ -1865,7 +1865,7 @@ second order terms about reference states.  Beginning with the nonlinear
 linearization candidates from \eqref{eq:nabla_cdot_tau_expansion}:
 \begin{align}
 \label{eq:linearready_delta_u}
-\mu\Delta\frac{m}{\rho} = &\phantom{{}+}
+\mu\Delta\frac{m}{\rho} &=
     \mu\rho^{-2}\left[
           2\rho^{-1}m\left(\nabla\rho\right)^{2}
         - 2 \left(\nabla{}m\right)\nabla\rho
@@ -1878,7 +1878,7 @@ linearization candidates from \eqref{eq:nabla_cdot_tau_expansion}:
      - \reference{\mu\rho^{-2}m} \Delta\rho
 \\
 \label{eq:linearready_grad_div_u}
-\left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho} = &\phantom{{}+}
+\left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho} &=
    \left(\mu+\lambda\right)\rho^{-2}\left[
        \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
      - \trans{\nabla{}m}\nabla\rho
@@ -1894,7 +1894,7 @@ Moving on to the candidates from the alternative $\nabla\cdot\tau$
 expansion~\eqref{eq:nabla_cdot_tau_expansion_alt}:
 \begin{align}
 \label{eq:linearready_alt_delta_u}
-\left(2\mu+\lambda\right)\Delta\frac{m}{\rho} = &\phantom{{}+}
+\left(2\mu+\lambda\right)\Delta\frac{m}{\rho} &=
     \left(2\mu+\lambda\right)\rho^{-2}\left[
           2\rho^{-1}m\left(\nabla\rho\right)^{2}
         - 2 \left(\nabla{}m\right)\nabla\rho
@@ -1907,8 +1907,7 @@ expansion~\eqref{eq:nabla_cdot_tau_expansion_alt}:
      - \reference{\left(2\mu+\lambda\right)\rho^{-2}m} \Delta\rho
 \\
 \label{eq:linearready_alt_curl_curl_u}
-  \left(\mu+\lambda\right)\nabla\times\nabla\times\frac{m}{\rho}
-  = &\phantom{{}+}
+  \left(\mu+\lambda\right)\nabla\times\nabla\times\frac{m}{\rho} &=
         \left(\mu+\lambda\right) \rho^{-2} \left[
                   \left(2\nabla{}m - \trans{\nabla{}m} \right) \nabla\rho
                 - 2 \rho^{-1} \left(\nabla\rho\right)^2 m
@@ -2021,10 +2020,34 @@ TODO.
 
 \subsection{Implicit treatment of acoustic terms}
 
-We now focus on the first order acoustic terms within the momentum and
-energy equations.  Following Guarini~\cite{Guarini1998} (page~45), we treat the
-pressure gradient term in the wall-normal momentum equation and the linearized
-pressure work term implicitly.
+We now focus on the first order acoustic terms within the momentum and energy
+equations.
+
+Guarini~\cite{Guarini1998} (page~45) treated the pressure gradient term in the
+wall-normal momentum equation and the linearized pressure work term implicitly.
+A superset of our corresponding terms may be linearized as follows:
+\begin{align}
+\nabla\cdot\left(e+p\right)\frac{m}{\rho} =
+   &- \left(\gamma-1\right)\mbox{Ma}^{2}\rho^{-2}m\cdot \trans{\nabla{}m}m
+    + \lessreference{ \gamma\rho^{-1}m }\cdot\nabla{}e
+  \\
+   &+ \lessreference{\rho^{-1}\left(
+        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
+      \right)} \nabla\cdot{}m
+  \\
+   &+ \lessreference{ \rho^{-2}\left(
+        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
+      \right)m}\cdot\vec{\nabla}\rho
+  \\
+   &+ \reference{ \gamma\rho^{-1}m }\cdot\nabla{}e
+    + \reference{\rho^{-1}\left(
+        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
+      \right)} \nabla\cdot{}m
+  \\
+   &+ \reference{ \rho^{-2}\left(
+        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
+      \right)m}\cdot\vec{\nabla}\rho
+\end{align}
 
 TODO
 
