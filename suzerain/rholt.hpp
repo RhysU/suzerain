@@ -570,6 +570,9 @@ Vector explicit_grad_p_refcoeff_grad_m(
  *     \left(\vec{\nabla}\vec{m}\right)^{\mathsf{T}}
  *     \left\{\frac{m}{\rho}\right}_{0}
  * \f]
+ * Unlike many other methods beginning with <tt>explicit_</tt>, when zero
+ * reference coefficients are used the full \f$\vec{\nabla}p\f$ term is
+ * <i>not</i> recovered.
  *
  * @param gamma \f$\gamma\f$
  * @param rho \f$\rho\f$
