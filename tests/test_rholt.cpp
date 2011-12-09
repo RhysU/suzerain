@@ -94,27 +94,31 @@ void rholt_test_data(
     div_grad_e = 6878.;
 }
 
+// Helper macro for loading test data via rholt_test_data
+#define ADD_TEST_DATA_TO_ENCLOSING_SCOPE                       \
+    double          rho;                                       \
+    Eigen::Vector3d grad_rho;                                  \
+    double          div_grad_rho;                              \
+    Eigen::Matrix3d grad_grad_rho;                             \
+    Eigen::Vector3d m;                                         \
+    double          div_m;                                     \
+    Eigen::Matrix3d grad_m;                                    \
+    Eigen::Vector3d div_grad_m;                                \
+    Eigen::Vector3d grad_div_m;                                \
+    Eigen::Vector3d curl_curl_m;                               \
+    double          e;                                         \
+    Eigen::Vector3d grad_e;                                    \
+    double          div_grad_e;                                \
+                                                               \
+    rholt_test_data(                                           \
+        rho, grad_rho, div_grad_rho, grad_grad_rho,            \
+        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m, \
+        e, grad_e, div_grad_e)
+
 // Checks derived formula and computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_u )
 {
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     const Eigen::Vector3d u = suzerain::rholt::u(rho, m);
 
@@ -133,24 +137,7 @@ BOOST_AUTO_TEST_CASE( rholt_u )
 // Checks derived formula and computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_p_T_mu_lambda )
 {
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     const double alpha = 5.0;
     const double beta  = 2.0/3.0;
@@ -247,24 +234,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_p_and_div_grad_T )
 {
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
 
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     const double alpha = 5.0;
     const double beta  = 2.0/3.0;
@@ -382,24 +352,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_p_and_div_grad_T )
 // Checks derived formula and computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_grad_u )
 {
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     const Eigen::Matrix3d grad_u
         = suzerain::rholt::grad_u(
@@ -432,24 +385,7 @@ BOOST_AUTO_TEST_CASE( rholt_grad_u )
 // Checks derived formula and computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_div_u )
 {
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     const double div_u = suzerain::rholt::div_u(
             rho, grad_rho, m, div_m);
@@ -464,24 +400,7 @@ BOOST_AUTO_TEST_CASE( rholt_grad_div_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
 
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     /* Expected results found using test_rholt.sage */
     {
@@ -595,24 +514,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
 
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     /* Expected results found using test_rholt.sage */
     {
@@ -711,24 +613,7 @@ BOOST_AUTO_TEST_CASE( rholt_curl_curl_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
 
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     /* Expected results found using curl_curl_u = grad_div_u - div_grad_u */
     {
@@ -749,7 +634,7 @@ BOOST_AUTO_TEST_CASE( rholt_curl_curl_u )
         BOOST_CHECK_CLOSE(curl_curl_u(2), ans(2), close_enough);
     }
 
-// TODO Implement mu_plus_lambda_curl_curl_u kernels
+// TODO Implement mu_plus_lambda_curl_curl_u kernels (Ticket #2183)
 //  /* With zero refcoeffs, explicit operator matches the full one */
 //  {
 //      const double mu     = 4181.0;
@@ -844,24 +729,7 @@ BOOST_AUTO_TEST_CASE( rholt_curl_curl_u )
 // Checks computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_tau_and_div_tau )
 {
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     const double alpha = 5.0;
     const double beta  = 2.0/3.0;
@@ -935,24 +803,7 @@ BOOST_AUTO_TEST_CASE( rholt_tau_and_div_tau )
 // Checks derived formula and computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_div_e_u )
 {
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     using namespace suzerain;
     const Eigen::Vector3d u = rholt::u(rho, m);
@@ -973,24 +824,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_p_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
 
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     const double alpha = 5.0;
     const double beta  = 2.0/3.0;
@@ -1068,24 +902,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
 
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     const double alpha = 5.0;
     const double beta  = 2.0/3.0;
@@ -1185,24 +1002,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
 // Checks derived formula and computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_div_tau_u )
 {
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     using namespace suzerain;
 
@@ -1245,24 +1045,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_tau_u )
 // Checks derived formula and computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_div_mu_grad_T )
 {
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     const double alpha = 5.0;
     const double beta  = 2.0/3.0;
@@ -1298,24 +1081,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_mu_grad_T )
 // Checks derived formula and computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_div_rho_inverse_m_outer_m )
 {
-    double          rho;
-    Eigen::Vector3d grad_rho;
-    double          div_grad_rho;
-    Eigen::Matrix3d grad_grad_rho;
-    Eigen::Vector3d m;
-    double          div_m;
-    Eigen::Matrix3d grad_m;
-    Eigen::Vector3d div_grad_m;
-    Eigen::Vector3d grad_div_m;
-    Eigen::Vector3d curl_curl_m;
-    double          e;
-    Eigen::Vector3d grad_e;
-    double          div_grad_e;
-
-    rholt_test_data(
-        rho, grad_rho, div_grad_rho, grad_grad_rho,
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,
-        e, grad_e, div_grad_e);
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     /* Expected results found using test_rholt.sage */
     const double close_enough = std::numeric_limits<double>::epsilon()*1.0e3;
