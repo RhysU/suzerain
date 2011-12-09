@@ -906,6 +906,88 @@ BOOST_AUTO_TEST_CASE( rholt_div_p_u )
 }
 
 // Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_grad_p )
+{
+    const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
+
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
+
+    const double gamma = 1.4;
+
+    using namespace suzerain;
+
+    /* Should recover the full operator when no refcoeffs are used */
+    /* and the result is appropriately augmented by a grad_e term. */
+    {
+        const Eigen::Vector3d ans = (gamma - 1)*grad_e
+            + rholt::explicit_grad_p(gamma, rho, grad_rho, m, grad_m,
+                                     0, Eigen::Vector3d::Zero());
+
+        const Eigen::Vector3d grad_p_ans(
+                5453.5209639604035869584122627487425816813409506343630929293L,
+                3086.9691968926047335425739267829758568639555587282859345292L,
+                1999.8806276135462562543621611330864774644251338499615213427L);
+        BOOST_CHECK_CLOSE(ans(0), grad_p_ans(0), close_enough);
+        BOOST_CHECK_CLOSE(ans(1), grad_p_ans(1), close_enough);
+        BOOST_CHECK_CLOSE(ans(2), grad_p_ans(2), close_enough);
+    }
+
+    /* Explicit operator differs when refcoeffs in use */
+    {
+        const double refcoeff_grad_rho = 7;
+        const Eigen::Vector3d ans = (gamma - 1)*grad_e
+            + (gamma - 1)/2 * refcoeff_grad_rho * grad_rho
+            + rholt::explicit_grad_p(gamma, rho, grad_rho, m, grad_m,
+                                     refcoeff_grad_rho,
+                                     Eigen::Vector3d::Zero());
+
+        const Eigen::Vector3d grad_p_ans(
+                5453.5209639604035869584122627487425816813409506343630929293L,
+                3086.9691968926047335425739267829758568639555587282859345292L,
+                1999.8806276135462562543621611330864774644251338499615213427L);
+        BOOST_CHECK_CLOSE(ans(0), grad_p_ans(0), close_enough);
+        BOOST_CHECK_CLOSE(ans(1), grad_p_ans(1), close_enough);
+        BOOST_CHECK_CLOSE(ans(2), grad_p_ans(2), close_enough);
+    }
+
+    /* Explicit operator differs when refcoeffs in use */
+    {
+        const Eigen::Vector3d refcoeff_grad_m(2, 3, 5);
+        const Eigen::Vector3d ans = (gamma - 1)*grad_e
+            - (gamma - 1)*grad_m.transpose()*refcoeff_grad_m
+            + rholt::explicit_grad_p(gamma, rho, grad_rho, m, grad_m,
+                                     0, refcoeff_grad_m);
+
+        const Eigen::Vector3d grad_p_ans(
+                5453.5209639604035869584122627487425816813409506343630929293L,
+                3086.9691968926047335425739267829758568639555587282859345292L,
+                1999.8806276135462562543621611330864774644251338499615213427L);
+        BOOST_CHECK_CLOSE(ans(0), grad_p_ans(0), close_enough);
+        BOOST_CHECK_CLOSE(ans(1), grad_p_ans(1), close_enough);
+        BOOST_CHECK_CLOSE(ans(2), grad_p_ans(2), close_enough);
+    }
+
+    /* Ensure the coefficient calculations are correct */
+    {
+        const double rho    = 67.0;
+        const Eigen::Vector3d m(144.0, 233.0, 377.0);
+
+        BOOST_CHECK_CLOSE(rholt::explicit_grad_p_refcoeff_grad_rho(rho, m),
+            217154.0L/4489.0L,
+            close_enough);
+        BOOST_CHECK_CLOSE(rholt::explicit_grad_p_refcoeff_grad_m(rho, m)[0],
+            144.0L/67.0L,
+            close_enough);
+        BOOST_CHECK_CLOSE(rholt::explicit_grad_p_refcoeff_grad_m(rho, m)[1],
+            233.0L/67.0L,
+            close_enough);
+        BOOST_CHECK_CLOSE(rholt::explicit_grad_p_refcoeff_grad_m(rho, m)[2],
+            377.0L/67.0L,
+            close_enough);
+    }
+}
+
+// Checks derived formula and computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;

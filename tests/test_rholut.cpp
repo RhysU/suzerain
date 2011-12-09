@@ -801,6 +801,89 @@ BOOST_AUTO_TEST_CASE( rholut_div_p_u )
 }
 
 // Checks derived formula and computation against rholut_test_data()
+BOOST_AUTO_TEST_CASE( rholut_grad_p )
+{
+    const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
+
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
+
+    const double gamma = 1.4;
+    const double Ma    = 3.5;
+
+    using namespace suzerain;
+
+    /* Should recover the full operator when no refcoeffs are used */
+    /* and the result is appropriately augmented by a grad_e term. */
+    {
+        const Eigen::Vector3d ans = (gamma - 1)*grad_e
+            + rholut::explicit_grad_p(gamma, Ma, rho, grad_rho, m, grad_m,
+                                     0, Eigen::Vector3d::Zero());
+
+        const Eigen::Vector3d grad_p_ans(
+                7432.6318085149443001747520526182772856422787520432873299439L,
+                3876.3726619344082666965507166633629625480052934837862921105L,
+                -1052.4623117340587311081836624513934718452258172103981784331L);
+        BOOST_CHECK_CLOSE(ans(0), grad_p_ans(0), close_enough);
+        BOOST_CHECK_CLOSE(ans(1), grad_p_ans(1), close_enough);
+        BOOST_CHECK_CLOSE(ans(2), grad_p_ans(2), close_enough);
+    }
+
+    /* Explicit operator differs when refcoeffs in use */
+    {
+        const double refcoeff_grad_rho = 7;
+        const Eigen::Vector3d ans = (gamma - 1)*grad_e
+            + (gamma - 1)/2 * Ma * Ma * refcoeff_grad_rho * grad_rho
+            + rholut::explicit_grad_p(gamma, Ma, rho, grad_rho, m, grad_m,
+                                     refcoeff_grad_rho,
+                                     Eigen::Vector3d::Zero());
+
+        const Eigen::Vector3d grad_p_ans(
+                7432.6318085149443001747520526182772856422787520432873299439L,
+                3876.3726619344082666965507166633629625480052934837862921105L,
+                -1052.4623117340587311081836624513934718452258172103981784331L);
+        BOOST_CHECK_CLOSE(ans(0), grad_p_ans(0), close_enough);
+        BOOST_CHECK_CLOSE(ans(1), grad_p_ans(1), close_enough);
+        BOOST_CHECK_CLOSE(ans(2), grad_p_ans(2), close_enough);
+    }
+
+    /* Explicit operator differs when refcoeffs in use */
+    {
+        const Eigen::Vector3d refcoeff_grad_m(2, 3, 5);
+        const Eigen::Vector3d ans = (gamma - 1)*grad_e
+            - (gamma - 1) * Ma * Ma *grad_m.transpose()*refcoeff_grad_m
+            + rholut::explicit_grad_p(gamma, Ma, rho, grad_rho, m, grad_m,
+                                     0, refcoeff_grad_m);
+
+        const Eigen::Vector3d grad_p_ans(
+                7432.6318085149443001747520526182772856422787520432873299439L,
+                3876.3726619344082666965507166633629625480052934837862921105L,
+                -1052.4623117340587311081836624513934718452258172103981784331L);
+        BOOST_CHECK_CLOSE(ans(0), grad_p_ans(0), close_enough);
+        BOOST_CHECK_CLOSE(ans(1), grad_p_ans(1), close_enough);
+        BOOST_CHECK_CLOSE(ans(2), grad_p_ans(2), close_enough);
+    }
+
+    /* Ensure the coefficient calculations are correct */
+    {
+        const double rho    = 67.0;
+        const Eigen::Vector3d m(144.0, 233.0, 377.0);
+
+        BOOST_CHECK_CLOSE(rholut::explicit_grad_p_refcoeff_grad_rho(rho, m),
+            217154.0L/4489.0L,
+            close_enough);
+        BOOST_CHECK_CLOSE(rholut::explicit_grad_p_refcoeff_grad_m(rho, m)[0],
+            144.0L/67.0L,
+            close_enough);
+        BOOST_CHECK_CLOSE(rholut::explicit_grad_p_refcoeff_grad_m(rho, m)[1],
+            233.0L/67.0L,
+            close_enough);
+        BOOST_CHECK_CLOSE(rholut::explicit_grad_p_refcoeff_grad_m(rho, m)[2],
+            377.0L/67.0L,
+            close_enough);
+    }
+}
+
+// Checks derived formula and computation against rholut_test_data()
 BOOST_AUTO_TEST_CASE( rholut_div_e_plus_p_u )
 {
     const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
