@@ -323,6 +323,11 @@ may be used to write $\tau$ as
   \tau &= 2 \mu S + \mu_b  \left( \nabla\cdot{}u \right) I
 .
 \end{align}
+The kinematic viscosity and bulk kinematic viscosity
+\begin{align}
+ \nu &= \frac{\mu}{\rho} & \nu_{B} &= \frac{\mu_{B}}{\rho}
+\end{align}
+are often used to simplify notation.
 
 \subsubsection{Stokes' hypothesis}
 \label{sec:stokeshypothesis}
@@ -1384,8 +1389,8 @@ Both Kwok~\cite{Kwok2002} (equations~2.40) and Guarini~\cite{Guarini1998}
     \right)
     \Delta{}t \leq \left|\lambda_{R}\Delta_{}t\right|_{\mbox{max}}
 \end{align}
-where a bulk kinematic viscosity $\nu_{B}$ has been added to their results.
-The maximum pure real eigenvalue magnitude,
+where a bulk kinematic viscosity has been added to their results.  The maximum
+pure real eigenvalue magnitude,
 $\left|\lambda_{R}\Delta{}t\right|_{\mbox{max}}$, is a feature of the chosen
 timestepping method.  For the SMR91 scheme,
 \begin{align}
@@ -1482,13 +1487,13 @@ As detailed in section~\ref{sec:combineddiscretization}, we perform time
 advancement in wave space but must compute nonlinear terms in physical space.
 The communications and computation cost required to convert state data from
 wave space to physical space or vice versa is very high.  Consequently, we
-transform back and forth only once per time integration substep.  This implies
-that we must be able to compute derived quantity derivatives using only state
-derivatives.
+transform back and forth only once per time integration substep.
 
 \subsection{Velocity derivative expansions}
 \label{velocity_derivative_expansions}
 
+Because we transform to and from physical space only once per substep, we must
+be able to compute derived quantity derivatives using only state derivatives.
 We expand several velocity derivatives into a combination of terms each
 containing derivative operators applied only to state quantities:
 \begin{subequations}
@@ -1818,7 +1823,9 @@ $\nabla\cdot\mu\nabla{}T$
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Considerations in choosing the implicit treatment}
+\subsection{Hybrid implicit/explicit treatment}
+
+\subsubsection{Considerations in choosing the implicit terms}
 
 The SMR91 time scheme requires the implicit operator $\tilde{L}$ be linear in
 the state variables and time-independent.  Precious little of the
@@ -1832,12 +1839,12 @@ One example is $\rho^{-1}\Delta{}m = \lessreference{\rho^{-1}}\Delta{}m +
 \reference{\rho^{-1}}\Delta{}m$ where $\reference{\rho^{-1}}$ indicates the
 term $\rho^{-1}$ evaluated at some reference state.  At one extreme, treating a
 three-dimensional reference field is prohibitively expensive but would provide
-the longest possible time steps according to~\ref{sec:stabilitycriteria}.  At
-the other extreme, a uniform reference value, which should be chosen from the
-wall as grid spacing is smallest there, would have the smallest runtime
-overhead but would provide the smallest time step gains.  A good compromise
-between these extremes is to employ a one-dimensional reference state profile
-across the wall-normal direction.
+the longest possible time steps according to~\eqref{eq:convectivestability}
+and~\eqref{eq:diffusivestability}.  At the other extreme, a uniform reference
+value, which should be chosen from the wall as grid spacing is smallest there,
+would have the smallest runtime overhead but would provide the smallest time
+step gains.  A good compromise between these extremes is to employ a
+one-dimensional reference state profile across the wall-normal direction.
 
 Implicit operator implementation details becomes more complicated when ``off
 diagonal'' state derivatives are treated implicitly.  By ``off diagonal'' we
@@ -1850,16 +1857,11 @@ off-diagonal terms implicitly is better from the perspective of taking the
 largest possible time step while maintaining stability but the gains may not be
 warranted by the associated programming and runtime overhead.
 
-\subsection{Implicit treatment of viscous terms}
+\subsubsection{Linearization of viscous terms}
 
 Because second derivatives give rise to the most restrictive eigenvalues for
-timestepping, we first focus on how second order terms enter the full operator.
-We will catalog both on- and off-diagonal linearized terms and later detail
-which specific ones are treated implicitly.
-
-\subsubsection{Possible linearizations of viscous terms}
-
-We take the quantities from sections~\ref{velocity_derivative_expansions}
+timestepping, we focus on how second order terms enter the full operator.  We
+take the quantities from sections~\ref{velocity_derivative_expansions}
 and~\ref{separate_first_section_deriv} and expand the nonlinear coefficients on
 second order terms about reference states.  Beginning with the nonlinear
 linearization candidates from \eqref{eq:nabla_cdot_tau_expansion}:
@@ -1890,7 +1892,10 @@ linearization candidates from \eqref{eq:nabla_cdot_tau_expansion}:
   &{}+ \reference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m
      - \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-2}m}
 \end{align}
-Moving on to the candidates from the alternative $\nabla\cdot\tau$
+Though not shown, one portion of the viscous work term in the energy equation,
+namely $\frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)$, also possesses
+linearizable off-diagonal terms similar to those above.  Moving on to the
+candidates from the alternative $\nabla\cdot\tau$
 expansion~\eqref{eq:nabla_cdot_tau_expansion_alt}:
 \begin{align}
 \label{eq:linearready_alt_delta_u}
@@ -1977,6 +1982,72 @@ The final line of each expansion contains linearized, implicit-ready portion.
 Note that we will recover an explicit-only operator if we choose identically
 zero reference values.
 
+\subsubsection{Linearization of acoustic terms}
+
+We now focus on the first order acoustic terms within the momentum and energy
+equations.  In the inviscid limit of the hyperbolic Euler equations, the
+pressure gives rise to the acoustic characteristics traveling at speeds
+$u\pm{}a$.  Pressure is fundamentally an off-diagonal phenomenon requiring
+off-diagonal implicit treatment.
+
+Guarini~\cite{Guarini1998} (page~45) treated the pressure gradient term in the
+wall-normal momentum equation and the linearized pressure work term implicitly.
+The pressure gradient may be linearized as
+\begin{align}
+  \nabla{}p &= \left(\gamma-1\right)\Mach^{2}\left(
+      \frac{1}{2} \lessreference{m^{2}\rho^{-2}}\nabla\rho
+    - \trans{\nabla{}m}\lessreference{\rho^{-1}m}
+  \right)
+\\
+&+ \left(\gamma-1\right) \nabla{}e
+ + \frac{\gamma-1}{2}\Mach^{2} \reference{m^{2}\rho^{-2}}\nabla\rho
+ - \left(\gamma-1\right)\Mach^{2} \trans{\nabla{}m}\reference{\rho^{-1}m}
+ .
+\end{align}
+The total energy convection and pressure work terms may be linearized as
+\begin{align}
+\nabla\cdot\left(e+p\right)\frac{m}{\rho} =
+   &- \left(\gamma-1\right)\mbox{Ma}^{2}\rho^{-2}m\cdot \trans{\nabla{}m}m
+    + \lessreference{ \gamma\rho^{-1}m }\cdot\nabla{}e
+  \\
+   &+ \lessreference{\rho^{-1}\left(
+        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
+      \right)} \nabla\cdot{}m
+  \\
+   &+ \lessreference{ \rho^{-2}\left(
+        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
+      \right)m}\cdot\vec{\nabla}\rho
+  \\
+   &+ \reference{ \gamma\rho^{-1}m }\cdot\nabla{}e
+    + \reference{\rho^{-1}\left(
+        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
+      \right)} \nabla\cdot{}m
+  \\
+   &+ \reference{ \rho^{-2}\left(
+        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
+      \right)m}\cdot\vec{\nabla}\rho
+.
+\end{align}
+We have linearized the two terms together as doing so is algebraically simple
+and introduces no additional state derivatives.
+
+\subsubsection{Convective term in the continuity equation}
+
+If off-diagonal density and momentum derivatives are computed implicitly,
+implicitly treating the convective term $-\nabla\cdot{}m$ in
+equation\eqref{eq:state_continuity} is simple.  Doing so reduces by one the
+number of scalar fields needing conversion from physical space to wave space.
+
+\subsubsection{Terms chosen for implicit treatment}
+
+TODO
+
+\begin{enumerate}
+\item Following Guarini (thesis page 45) treat the pressure gradient term in the wall-normal momentum equation and the linearized pressure work term implicitly.
+\item Write out the specific terms to be treated implicitly and their linearization coefficients (a function of wall-normal position)
+\item Check if the first derivative operators for accomplishing this require any specific boundary treatment (feels like no, could be wrong)
+\end{enumerate}
+
 \subsubsection{Viscous linearizations chosen for implicit treatment}
 
 All first and second order, on-diagonal, linearized viscous terms are treated
@@ -2018,60 +2089,6 @@ TODO.
 \item Comment that treating only B-spline direction implicitly allows reusing the $(I - \phi\Delta{}t L)$ factorization across all wavenumbers. Guarini apparently got away with just this (thesis page 45).
 \end{enumerate}
 
-\subsection{Implicit treatment of acoustic terms}
-
-We now focus on the first order acoustic terms within the momentum and energy
-equations.
-
-Guarini~\cite{Guarini1998} (page~45) treated the pressure gradient term in the
-wall-normal momentum equation and the linearized pressure work term implicitly.
-A superset of our corresponding terms may be linearized as follows:
-\begin{align}
-  \nabla{}p &= \left(\gamma-1\right)\left[
-       \nabla{}e
-     + \frac{\Mach^{2}}{\rho} \left[
-          \frac{m^2}{2\rho} \nabla{\rho}
-        - \trans{\nabla{}m}m
-       \right]
-  \right]
-\\
-  \nabla{}p &=
-\\
-  &+ \left(\gamma-1\right) \nabla{}e
-\\
-  &+ \left(\gamma-1\right) \frac{\Mach^{2}m^2}{2\rho^2}\nabla\rho
-\\
-  &- \left(\gamma-1\right) \frac{\Mach^{2}}{\rho} \trans{\nabla{}m}m
-\\
-\nabla\cdot\left(e+p\right)\frac{m}{\rho} =
-   &- \left(\gamma-1\right)\mbox{Ma}^{2}\rho^{-2}m\cdot \trans{\nabla{}m}m
-    + \lessreference{ \gamma\rho^{-1}m }\cdot\nabla{}e
-  \\
-   &+ \lessreference{\rho^{-1}\left(
-        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
-      \right)} \nabla\cdot{}m
-  \\
-   &+ \lessreference{ \rho^{-2}\left(
-        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
-      \right)m}\cdot\vec{\nabla}\rho
-  \\
-   &+ \reference{ \gamma\rho^{-1}m }\cdot\nabla{}e
-    + \reference{\rho^{-1}\left(
-        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
-      \right)} \nabla\cdot{}m
-  \\
-   &+ \reference{ \rho^{-2}\left(
-        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
-      \right)m}\cdot\vec{\nabla}\rho
-\end{align}
-
-TODO
-
-\begin{enumerate}
-\item Following Guarini (thesis page 45) treat the pressure gradient term in the wall-normal momentum equation and the linearized pressure work term implicitly.
-\item Write out the specific terms to be treated implicitly and their linearization coefficients (a function of wall-normal position)
-\item Check if the first derivative operators for accomplishing this require any specific boundary treatment (feels like no, could be wrong)
-\end{enumerate}
 
 \subsection{Complete implicit operator used for time advance}
 
