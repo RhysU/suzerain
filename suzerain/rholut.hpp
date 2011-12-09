@@ -161,24 +161,24 @@ using suzerain::rholt::explicit_grad_p_refcoeff_grad_m;
  *           \frac{\vec{m}\cdot\vec{m}}{\rho^{2}}
  *         - \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right\}_0
  *       \right)\vec{\nabla}\rho
- *     - \trans{\vec{\nabla}\vec{m}}\left(
+ *     - \left(\vec{\nabla}\vec{m}\right)^{\mathsf{T}}\left(
  *           \frac{\vec{m}}{\rho}
  *         - \left\{\frac{\vec{m}}{\rho}\right\}_0
  *       \right)
  *   \right)
  * \f}
  * where \f$
- * \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right}_{0} \f$ and \f$
- * \left\{\frac{m}{\rho}\right}_{0} \f$ are fixed by \c refcoeff_grad_rho and
+ * \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right\}_{0} \f$ and \f$
+ * \left\{\frac{m}{\rho}\right\}_{0} \f$ are fixed by \c refcoeff_grad_rho and
  * \c refcoeff_grad_m, respectively.
  * The remaining linear portion of \f$\vec{\nabla}p\f$ is
  * \f[
  *     \left(\gamma-1\right)\vec{\nabla}e
  *   + \frac{\gamma-1}{2}\mbox{Ma}^{2}
- *     \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right}_{0} \vec{\nabla}\rho
+ *     \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right\}_{0} \vec{\nabla}\rho
  *   - \left(\gamma-1\right)\mbox{Ma}^{2}
  *     \left(\vec{\nabla}\vec{m}\right)^{\mathsf{T}}
- *     \left\{\frac{m}{\rho}\right}_{0}
+ *     \left\{\frac{m}{\rho}\right\}_{0}
  * \f]
  * Unlike many other methods beginning with <tt>explicit_</tt>, when zero
  * reference coefficients are used the full \f$\vec{\nabla}p\f$ term is
