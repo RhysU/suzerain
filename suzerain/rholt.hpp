@@ -106,6 +106,7 @@ namespace rholt
  */
 template<typename Scalar,
          typename Tensor >
+static inline
 Tensor tau(
         const Scalar &mu,
         const Scalar &lambda,
@@ -143,6 +144,7 @@ Tensor tau(
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 Vector div_rho_inverse_m_outer_m(
         const Scalar &rho,
         const Vector &grad_rho,
@@ -180,6 +182,7 @@ Vector div_rho_inverse_m_outer_m(
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 Vector div_u_outer_m(
         const Vector &m,
         const Tensor &grad_m,
@@ -226,6 +229,7 @@ Vector div_u_outer_m(
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 Vector div_tau(
         const Scalar &mu,
         const Vector &grad_mu,
@@ -262,6 +266,7 @@ Vector div_tau(
  */
 template<typename Scalar,
          typename Vector >
+static inline
 Scalar div_e_u(
         const Scalar &e,
         const Vector &grad_e,
@@ -294,6 +299,7 @@ Scalar div_e_u(
  */
 template<typename Scalar,
          typename Vector >
+static inline
 Scalar div_mu_grad_T(
         const Vector &grad_T,
         const Scalar &div_grad_T,
@@ -325,6 +331,7 @@ Scalar div_mu_grad_T(
  */
 template<typename Scalar,
          typename Vector >
+static inline
 Scalar div_p_u(
         const Scalar &p,
         const Vector &grad_p,
@@ -368,6 +375,7 @@ Scalar div_p_u(
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 Scalar div_tau_u(
         const Vector &u,
         const Tensor &grad_u,
@@ -390,7 +398,7 @@ Scalar div_tau_u(
  *      operator.
  */
 template<typename Scalar>
-inline
+static inline
 Scalar explicit_div_p_u_refcoeff_div_m(
         const Scalar &rho,
         const Scalar &p)
@@ -413,7 +421,7 @@ Scalar explicit_div_p_u_refcoeff_div_m(
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Vector explicit_div_p_u_refcoeff_grad_rho(
         const Scalar &rho,
         const Vector &m,
@@ -471,6 +479,7 @@ template<typename Scalar,
          typename Vector,
          typename ScalarCoefficient,
          typename VectorCoefficient >
+static inline
 Scalar explicit_div_p_u(
         const Scalar            &rho,
         const Vector            &grad_rho,
@@ -508,7 +517,7 @@ Scalar explicit_div_p_u(
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Scalar explicit_div_e_plus_p_u_refcoeff_div_m(
         const Scalar &gamma,
         const Scalar &rho,
@@ -538,7 +547,7 @@ Scalar explicit_div_e_plus_p_u_refcoeff_div_m(
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Vector explicit_div_e_plus_p_u_refcoeff_grad_rho(
         const Scalar &gamma,
         const Scalar &rho,
@@ -567,7 +576,7 @@ Vector explicit_div_e_plus_p_u_refcoeff_grad_rho(
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Vector explicit_div_e_plus_p_u_refcoeff_grad_e(
         const Scalar &gamma,
         const Scalar &rho,
@@ -652,6 +661,7 @@ template<typename Scalar,
          typename ScalarCoefficient,
          typename VectorCoefficient1,
          typename VectorCoefficient2 >
+static inline
 Scalar explicit_div_e_plus_p_u(
         const Scalar             &gamma,
         const Scalar             &rho,
@@ -696,7 +706,7 @@ Scalar explicit_div_e_plus_p_u(
  *      operator.
  */
 template<typename Scalar>
-inline
+static inline
 Scalar explicit_mu_div_grad_u_refcoeff_div_grad_m(
         const Scalar &mu,
         const Scalar &rho)
@@ -720,7 +730,7 @@ Scalar explicit_mu_div_grad_u_refcoeff_div_grad_m(
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
         const Scalar &mu,
         const Scalar &rho,
@@ -783,6 +793,7 @@ template<typename Scalar,
          typename Tensor,
          typename ScalarCoefficient,
          typename VectorCoefficient >
+static inline
 Vector explicit_mu_div_grad_u(
         const Scalar            &mu,
         const Scalar            &rho,
@@ -827,7 +838,7 @@ Vector explicit_mu_div_grad_u(
  *      operator.
  */
 template<typename Scalar>
-inline
+static inline
 Scalar explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
         const Scalar &mu,
         const Scalar &lambda,
@@ -854,7 +865,7 @@ Scalar explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Vector explicit_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
         const Scalar &mu,
         const Scalar &lambda,
@@ -931,6 +942,7 @@ template<typename Scalar,
          typename Tensor,
          typename ScalarCoefficient,
          typename VectorCoefficient >
+static inline
 Vector explicit_mu_plus_lambda_grad_div_u(
         const Scalar            &mu,
         const Scalar            &lambda,
@@ -977,7 +989,7 @@ Vector explicit_mu_plus_lambda_grad_div_u(
  *      operator.
  */
 template<typename Scalar>
-inline
+static inline
 Scalar explicit_mu_div_grad_T_refcoeff_div_grad_e(
         const Scalar &mu,
         const Scalar &rho)
@@ -1001,7 +1013,7 @@ Scalar explicit_mu_div_grad_T_refcoeff_div_grad_e(
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
         const Scalar &mu,
         const Scalar &rho,
@@ -1031,7 +1043,7 @@ Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
         const Scalar &gamma,
         const Scalar &mu,
@@ -1141,6 +1153,7 @@ template<typename Scalar,
          typename ScalarCoefficient1,
          typename ScalarCoefficient2,
          typename VectorCoefficient >
+static inline
 Scalar explicit_mu_div_grad_T(
         const Scalar             &gamma,
         const Scalar             &mu,
@@ -1229,6 +1242,7 @@ Scalar explicit_mu_div_grad_T(
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 void p_T_mu_lambda(
         const Scalar &alpha,
         const Scalar &beta,
@@ -1292,6 +1306,7 @@ void p_T_mu_lambda(
  */
 template<typename Scalar,
          typename Vector  >
+static inline
 void p_T_mu_lambda(
         const Scalar &alpha,
         const Scalar &beta,
@@ -1328,6 +1343,7 @@ void p_T_mu_lambda(
  */
 template<typename Scalar,
          typename Vector  >
+static inline
 void p_T(
         const Scalar &alpha,
         const Scalar &beta,
@@ -1358,6 +1374,7 @@ void p_T(
  */
 template<typename Scalar,
          typename Vector  >
+static inline
 Scalar energy_internal(
         const Scalar &rho,
         const Vector &m,
@@ -1373,6 +1390,7 @@ Scalar energy_internal(
  * @param[in] p     \f$p\f$
  */
 template<typename Scalar>
+static inline
 Scalar energy_internal(
         const Scalar &gamma,
         const Scalar &p)
@@ -1388,6 +1406,7 @@ Scalar energy_internal(
  */
 template<typename Scalar,
          typename Vector  >
+static inline
 Scalar energy_kinetic(
         const Scalar &rho,
         const Vector &m)
@@ -1435,6 +1454,7 @@ Scalar energy_kinetic(
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 Scalar div_grad_p(
         const Scalar &gamma,
         const Scalar &rho,
@@ -1498,6 +1518,7 @@ Scalar div_grad_p(
  */
 template<typename Scalar,
          typename Vector >
+static inline
 Scalar div_grad_T(
         const Scalar &gamma,
         const Scalar &rho,
@@ -1528,6 +1549,7 @@ Scalar div_grad_T(
  */
 template<typename Scalar,
          typename Vector >
+static inline
 Vector u(const Scalar &rho,
          const Vector &m)
 {
@@ -1557,6 +1579,7 @@ Vector u(const Scalar &rho,
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 Tensor grad_u(
         const Scalar &rho,
         const Vector &grad_rho,
@@ -1590,6 +1613,7 @@ Tensor grad_u(
  */
 template<typename Scalar,
          typename Vector >
+static inline
 Scalar div_u(
         const Scalar &rho,
         const Vector &grad_rho,
@@ -1632,6 +1656,7 @@ Scalar div_u(
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 Vector grad_div_u(
         const Scalar &rho,
         const Vector &grad_rho,
@@ -1681,6 +1706,7 @@ Vector grad_div_u(
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 Vector div_grad_u(
         const Scalar &rho,
         const Vector &grad_rho,
@@ -1734,36 +1760,37 @@ Vector div_grad_u(
  *
  * @return The curl of the curl of the velocity based on the provided fields.
  */
-  template<typename Scalar,
-           typename Vector,
-           typename Tensor >
-  Vector curl_curl_u(
-          const Scalar &rho,
-          const Vector &grad_rho,
-          const Tensor &grad_grad_rho,
-          const Vector &m,
-          const Scalar &div_m,
-          const Tensor &grad_m,
-          const Vector &curl_curl_m)
-  {
-      const Scalar rho_inverse = 1/rho;
+template<typename Scalar,
+         typename Vector,
+         typename Tensor >
+static inline
+Vector curl_curl_u(
+        const Scalar &rho,
+        const Vector &grad_rho,
+        const Tensor &grad_grad_rho,
+        const Vector &m,
+        const Scalar &div_m,
+        const Tensor &grad_m,
+        const Vector &curl_curl_m)
+{
+    const Scalar rho_inverse = 1/rho;
 
-      return rho_inverse*(
-                   curl_curl_m
-                 + rho_inverse*(
-                       (   2*grad_m
-                         - grad_m.transpose()
-                       ) * grad_rho
-                     + (   grad_grad_rho.trace()
-                         - 2*rho_inverse*grad_rho.squaredNorm()
-                       ) * m
-                     - grad_grad_rho * m
-                     + (   2*rho_inverse*grad_rho.dot(m)
-                         - div_m
-                       ) * grad_rho
-                 )
-             );
-  }
+    return rho_inverse*(
+                 curl_curl_m
+               + rho_inverse*(
+                     (   2*grad_m
+                       - grad_m.transpose()
+                     ) * grad_rho
+                   + (   grad_grad_rho.trace()
+                       - 2*rho_inverse*grad_rho.squaredNorm()
+                     ) * m
+                   - grad_grad_rho * m
+                   + (   2*rho_inverse*grad_rho.dot(m)
+                       - div_m
+                     ) * grad_rho
+               )
+           );
+}
 
 } // namespace rholt
 

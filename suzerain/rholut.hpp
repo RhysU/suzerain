@@ -176,7 +176,7 @@ using suzerain::rholt::explicit_div_p_u;
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Scalar explicit_div_e_plus_p_u_refcoeff_div_m(
         const Scalar &gamma,
         const Scalar &Ma,
@@ -210,7 +210,7 @@ Scalar explicit_div_e_plus_p_u_refcoeff_div_m(
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Vector explicit_div_e_plus_p_u_refcoeff_grad_rho(
         const Scalar &gamma,
         const Scalar &Ma,
@@ -312,6 +312,7 @@ template<typename Scalar,
          typename ScalarCoefficient,
          typename VectorCoefficient1,
          typename VectorCoefficient2 >
+static inline
 Scalar explicit_div_e_plus_p_u(
         const Scalar             &gamma,
         const Scalar             &Ma,
@@ -412,7 +413,7 @@ using suzerain::rholt::explicit_mu_div_grad_T_refcoeff_div_grad_m;
  */
 template<typename Scalar,
          typename Vector >
-inline
+static inline
 Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
         const Scalar &gamma,
         const Scalar &Ma,
@@ -528,6 +529,7 @@ template<typename Scalar,
          typename ScalarCoefficient1,
          typename ScalarCoefficient2,
          typename VectorCoefficient >
+static inline
 Scalar explicit_mu_div_grad_T(
         const Scalar             &gamma,
         const Scalar             &Ma,
@@ -596,6 +598,7 @@ Scalar explicit_mu_div_grad_T(
  */
 template<typename Scalar,
          typename Vector  >
+static inline
 void p_T_mu_lambda(
         const Scalar &alpha,
         const Scalar &beta,
@@ -634,6 +637,7 @@ void p_T_mu_lambda(
  */
 template<typename Scalar,
          typename Vector  >
+static inline
 void p_T(
         const Scalar &alpha,
         const Scalar &beta,
@@ -665,6 +669,7 @@ void p_T(
  */
 template<typename Scalar,
          typename Vector  >
+static inline
 Scalar energy_internal(
         const Scalar &Ma,
         const Scalar &rho,
@@ -681,6 +686,7 @@ Scalar energy_internal(
  * @param[in] p     \f$p\f$
  */
 template<typename Scalar>
+static inline
 Scalar energy_internal(
         const Scalar &gamma,
         const Scalar &p)
@@ -697,6 +703,7 @@ Scalar energy_internal(
  */
 template<typename Scalar,
          typename Vector  >
+static inline
 Scalar energy_kinetic(
         const Scalar &Ma,
         const Scalar &rho,
@@ -752,6 +759,7 @@ Scalar energy_kinetic(
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 void p_T_mu_lambda(
         const Scalar &alpha,
         const Scalar &beta,
@@ -841,6 +849,7 @@ void p_T_mu_lambda(
 template<typename Scalar,
          typename Vector,
          typename Tensor >
+static inline
 Scalar div_grad_p(
         const Scalar &gamma,
         const Scalar &Ma,
