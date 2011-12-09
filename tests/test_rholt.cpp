@@ -227,6 +227,14 @@ BOOST_AUTO_TEST_CASE( rholt_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(T,
             45.894160174865327745154451372557681424834241757231579516748L,
             close_enough);
+
+    /* Variant providing only pressure */
+    p = 555;
+    suzerain::rholt::p(alpha, beta, gamma, rho, m, e, p);
+
+    BOOST_CHECK_CLOSE(p,
+            4523.8529315224394491652244924378285975908038303556842666509L,
+            close_enough);
 }
 
 // Checks derived formula and computation against rholt_test_data()

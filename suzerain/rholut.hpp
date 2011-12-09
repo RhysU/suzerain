@@ -740,6 +740,36 @@ void p_T(
 }
 
 /**
+ * Compute \f$p\f$ using the equation of state.
+ *
+ * @param[in]  alpha \f$\alpha\f$
+ * @param[in]  beta \f$\beta\f$
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  Ma \f$\mbox{Ma}\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  e \f$e\f$
+ * @param[out] p \f$p\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+static inline
+void p(const Scalar &alpha,
+       const Scalar &beta,
+       const Scalar &gamma,
+       const Scalar &Ma,
+       const Scalar &rho,
+       const Vector &m,
+       const Scalar &e,
+       Scalar &p)
+{
+    SUZERAIN_UNUSED(alpha);  // Present for API consistency
+    SUZERAIN_UNUSED(beta);   // Present for API consistency
+
+    p = (gamma - 1)*(e - Ma*Ma*m.squaredNorm()/2/rho);
+}
+
+/**
  * Compute the internal energy by subtracting the kinetic
  * energy from the total energy.
  *
