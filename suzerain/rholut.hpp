@@ -142,6 +142,87 @@ using suzerain::rholt::div_tau_u;
 
 /**
  * \namespace suzerain::rholut
+ * \see suzerain::rholt::explicit_grad_p_refcoeff_grad_rho
+ */
+using suzerain::rholt::explicit_grad_p_refcoeff_grad_rho;
+
+/**
+ * \namespace suzerain::rholut
+ * \see suzerain::rholt::explicit_grad_p_refcoeff_grad_m
+ */
+using suzerain::rholt::explicit_grad_p_refcoeff_grad_m;
+
+/**
+ * Compute the explicit portion of \f$\vec{\nabla}p\f$.
+ * Uses the expansion
+ * \f{align*}
+ *   \nabla{}p &= \left(\gamma-1\right)\mbox{Ma}^{2}\left(
+ *       \frac{1}{2}\left(
+ *           \frac{\vec{m}\cdot\vec{m}}{\rho^{2}}
+ *         - \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right\}_0
+ *       \right)\vec{\nabla}\rho
+ *     - \trans{\vec{\nabla}\vec{m}}\left(
+ *           \frac{\vec{m}}{\rho}
+ *         - \left\{\frac{\vec{m}}{\rho}\right\}_0
+ *       \right)
+ *   \right)
+ * \f}
+ * where \f$
+ * \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right}_{0} \f$ and \f$
+ * \left\{\frac{m}{\rho}\right}_{0} \f$ are fixed by \c refcoeff_grad_rho and
+ * \c refcoeff_grad_m, respectively.
+ * The remaining linear portion of \f$\vec{\nabla}p\f$ is
+ * \f[
+ *     \left(\gamma-1\right)\vec{\nabla}e
+ *   + \frac{\gamma-1}{2}\mbox{Ma}^{2}
+ *     \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right}_{0} \vec{\nabla}\rho
+ *   - \left(\gamma-1\right)\mbox{Ma}^{2}
+ *     \left(\vec{\nabla}\vec{m}\right)^{\mathsf{T}}
+ *     \left\{\frac{m}{\rho}\right}_{0}
+ * \f]
+ *
+ * @param gamma \f$\gamma\f$
+ * @param Ma \f$\mbox{Ma}\f$
+ * @param rho \f$\rho\f$
+ * @param grad_rho \f$\vec{\nabla}\rho\f$
+ * @param m \f$\vec{m}\f$
+ * @param grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param refcoeff_grad_rho the reference coefficient on \f$\vec{\nabla}\rho\f$
+ *        which may be computed using explicit_grad_p_refcoeff_grad_rho.
+ * @param refcoeff_grad_m the reference coefficient on \f$\vec{\nabla}\vec{m}\f$
+ *        which may be computed using explicit_grad_p_refcoeff_grad_m.
+ *
+ * @return The explicit portion of the gradient of the pressure.
+ */
+template<typename Scalar,
+         typename Vector,
+         typename Tensor,
+         typename ScalarCoefficient,
+         typename VectorCoefficient >
+static inline
+Vector explicit_grad_p(
+        const Scalar            &gamma,
+        const Scalar            &Ma,
+        const Scalar            &rho,
+        const Vector            &grad_rho,
+        const Vector            &m,
+        const Tensor            &grad_m,
+        const ScalarCoefficient &refcoeff_grad_rho,
+        const VectorCoefficient &refcoeff_grad_m)
+{
+    const Scalar coeff_grad_rho(
+            explicit_grad_p_refcoeff_grad_rho(rho, m) - refcoeff_grad_rho);
+    const Vector coeff_grad_m(
+            explicit_grad_p_refcoeff_grad_m(rho, m) - refcoeff_grad_m);
+
+    return (gamma-1)*Ma*Ma*(
+                  (coeff_grad_rho/2)*grad_rho
+                - grad_m.transpose()*coeff_grad_m
+            );
+}
+
+/**
+ * \namespace suzerain::rholut
  * \see suzerain::rholt::explicit_div_p_u_refcoeff_div_m
  */
 using suzerain::rholt::explicit_div_p_u_refcoeff_div_m;

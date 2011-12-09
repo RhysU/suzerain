@@ -502,6 +502,115 @@ Scalar explicit_div_p_u(
 
 /**
  * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\rho\f$ in the explicit portion of \f$\vec{\nabla}p\f$.
+ *
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ *
+ * @return \f$\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\f$
+ * @see explicit_grad_p for more details on the explicit operator.
+ */
+template<typename Scalar,
+         typename Vector >
+static inline
+Scalar explicit_grad_p_refcoeff_grad_rho(
+        const Scalar &rho,
+        const Vector &m)
+{
+    const Scalar rho_inverse = 1/rho;
+
+    return m.squaredNorm()*rho_inverse*rho_inverse;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\vec{m}\f$ in the explicit portion of \f$\vec{\nabla}p\f$.
+ *
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ *
+ * @return \f$\frac{\vec{m}}{\rho}\f$
+ * @see explicit_grad_p for more details on the explicit operator.
+ */
+template<typename Scalar,
+         typename Vector >
+static inline
+Vector explicit_grad_p_refcoeff_grad_m(
+        const Scalar &rho,
+        const Vector &m)
+{
+    return m / rho;
+}
+
+/**
+ * Compute the explicit portion of \f$\vec{\nabla}p\f$.
+ * Uses the expansion
+ * \f{align*}
+ *   \nabla{}p &= \left(\gamma-1\right)\left(
+ *       \frac{1}{2}\left(
+ *           \frac{\vec{m}\cdot\vec{m}}{\rho^{2}}
+ *         - \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right\}_0
+ *       \right)\vec{\nabla}\rho
+ *     - \trans{\vec{\nabla}\vec{m}}\left(
+ *           \frac{\vec{m}}{\rho}
+ *         - \left\{\frac{\vec{m}}{\rho}\right\}_0
+ *       \right)
+ *   \right)
+ * \f}
+ * where \f$
+ * \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right}_{0} \f$ and \f$
+ * \left\{\frac{m}{\rho}\right}_{0} \f$ are fixed by \c refcoeff_grad_rho and
+ * \c refcoeff_grad_m, respectively.
+ * The remaining linear portion of \f$\vec{\nabla}p\f$ is
+ * \f[
+ *     \left(\gamma-1\right)\vec{\nabla}e
+ *   + \frac{\gamma-1}{2}
+ *     \left\{\frac{\vec{m}\cdot\vec{m}}{\rho^{2}}\right}_{0} \vec{\nabla}\rho
+ *   - \left(\gamma-1\right)
+ *     \left(\vec{\nabla}\vec{m}\right)^{\mathsf{T}}
+ *     \left\{\frac{m}{\rho}\right}_{0}
+ * \f]
+ *
+ * @param gamma \f$\gamma\f$
+ * @param rho \f$\rho\f$
+ * @param grad_rho \f$\vec{\nabla}\rho\f$
+ * @param m \f$\vec{m}\f$
+ * @param grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param refcoeff_grad_rho the reference coefficient on \f$\vec{\nabla}\rho\f$
+ *        which may be computed using explicit_grad_p_refcoeff_grad_rho.
+ * @param refcoeff_grad_m the reference coefficient on \f$\vec{\nabla}\vec{m}\f$
+ *        which may be computed using explicit_grad_p_refcoeff_grad_m.
+ *
+ * @return The explicit portion of the gradient of the pressure.
+ */
+template<typename Scalar,
+         typename Vector,
+         typename Tensor,
+         typename ScalarCoefficient,
+         typename VectorCoefficient >
+static inline
+Vector explicit_grad_p(
+        const Scalar            &gamma,
+        const Scalar            &rho,
+        const Vector            &grad_rho,
+        const Vector            &m,
+        const Tensor            &grad_m,
+        const ScalarCoefficient &refcoeff_grad_rho,
+        const VectorCoefficient &refcoeff_grad_m)
+{
+    const Scalar coeff_grad_rho(
+            explicit_grad_p_refcoeff_grad_rho(rho, m) - refcoeff_grad_rho);
+    const Vector coeff_grad_m(
+            explicit_grad_p_refcoeff_grad_m(rho, m) - refcoeff_grad_m);
+
+    return (gamma-1)*(
+                  (coeff_grad_rho/2)*grad_rho
+                - grad_m.transpose()*coeff_grad_m
+            );
+}
+
+/**
+ * Compute the reference coefficient for the term containing
  * \f$\vec{\nabla}\cdot\vec{m}\f$ in the explicit portion
  * of \f$\vec{\nabla}\cdot\left(e+p\right)\vec{u}\f$.
  *
