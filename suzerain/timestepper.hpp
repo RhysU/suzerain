@@ -142,7 +142,7 @@ public:
  * taking into account the inhomogeneous nature of the wall-normal direction.
  * He determined that the wall-normal imaginary eigenvalue magnitude dropped by
  * nearly an order of magnitude after taking into account the inhomogeneity.
- * He concluded that using an effective \f$1/\Delta{}y\f$ <i>four<i> times
+ * He concluded that using an effective \f$1/\Delta{}y\f$ <em>four</em> times
  * smaller than the nominal value was feasible (equation 3.29).  His approach
  * can be accomplished by specifying <tt>one_over_delta_y / 4</tt> when
  * invoking this method.
@@ -370,7 +370,8 @@ public:
      * @param delta_t The size of the currently active time step.
      * @param substep_index The (zero-indexed) time stepper substep index.
      * @param iota The \f$iota_i\f$ value appropriate for \c substep_index.
-     *             See \ref ILowStorageMethod for details on how to use \c iota.
+     *
+     * @see ILowStorageMethod for details on how to use \c iota.
      */
     virtual void invertMassPlusScaledOperator(
             const element& phi,
@@ -512,6 +513,7 @@ public:
      * @param state to modify in place.
      * @param delta_t Ignored.
      * @param substep_index Ignored.
+     * @param iota Ignored.
      */
     virtual void invertMassPlusScaledOperator(
             const element& phi,
@@ -643,7 +645,7 @@ public:
     /**
      * Obtain the scheme's \f$\alpha_i\f$ coefficient.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -652,7 +654,7 @@ public:
     /**
      * Obtain the scheme's \f$\beta_i\f$ coefficient.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -661,7 +663,7 @@ public:
     /**
      * Obtain the scheme's \f$\gamma_i\f$ coefficient.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -670,7 +672,7 @@ public:
     /**
      * Obtain the scheme's \f$\zeta_i\f$ coefficient.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -680,7 +682,7 @@ public:
      * Obtain the scheme's \f$\eta_i\f$ coefficient, which is
      * derived from other scheme coefficients.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -690,7 +692,7 @@ public:
      * Compute the scheme's derived \f$\iota_i\f$ coefficient, which is used to
      * accumulate a running time-averaged value across substeps.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,::substeps).
+     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -1305,7 +1307,7 @@ public:
  * A helper method so the compiler can deduce the appropriate template
  * types for a LowStorageTimeController.
  *
- * \copydoc #LowStorageTimeController
+ * \copydoc LowStorageTimeController
  */
 template< typename A, typename B, typename ChiType, typename Reducer >
 LowStorageTimeController<A,B,Reducer>*
@@ -1329,7 +1331,7 @@ make_LowStorageTimeController(
  * A helper method so the compiler can deduce the appropriate template
  * types for a LowStorageTimeController.
  *
- * \copydoc #LowStorageTimeController
+ * \copydoc LowStorageTimeController
  */
 template< typename A, typename B, typename ChiType >
 LowStorageTimeController<A,B,void>*

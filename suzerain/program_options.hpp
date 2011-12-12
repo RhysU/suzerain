@@ -77,6 +77,8 @@ public:
      * @param description          Extent description of the application to
      *                             be displayed at the bottom of
      *                             <tt>--help</tt>.
+     * @param version              Version information to be displayed
+     *                             when <tt>--version</tt> is used.
      */
     ProgramOptions(const std::string &application_synopsis,
                    const std::string &argument_synopsis = "",

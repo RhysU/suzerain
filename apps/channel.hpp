@@ -672,7 +672,7 @@ public:
 
     /**
      * A foreach operation iterating over all mutable quantities in \c storage.
-     * The functor is invoked as <tt>f(::std::string("foo",
+     * The functor is invoked as <tt>f(std::string("foo",
      * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
      * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
      * for suggestions on how to write a functor, especially the \c const_cast
@@ -690,7 +690,7 @@ public:
 
     /**
      * A foreach operation iterating over all immutable quantities in \c
-     * storage.  The functor is invoked as <tt>f(::std::string("foo",
+     * storage.  The functor is invoked as <tt>f(std::string("foo",
      * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
      * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
      * for suggestions on how to write a functor.  See <tt>boost::ref</tt> for

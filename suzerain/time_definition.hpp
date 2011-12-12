@@ -66,7 +66,7 @@ public:
      *                    the simulation.
      *                    advance the simulation.
      * @param status_dt   Maximum physical time between status updates.
-     * @param status_dt   Maximum number of discrete time steps between
+     * @param status_nt   Maximum number of discrete time steps between
      *                    status updates.
      * @param min_dt      Minimum allowable physically-driven time step.
      * @param max_dt      Maximum allowable physically-driven time step.

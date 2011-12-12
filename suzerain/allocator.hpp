@@ -81,8 +81,9 @@ public:
 };
 
 /**
- * A free-store based allocation policy.  Uses <tt>::operator new</tt> and
- * <tt>::operator delete</tt> to handle allocate and deallocate invocations.
+ * A free-store based allocation policy.  Uses global <tt>operator new</tt> and
+ * global <tt>operator delete</tt> to handle allocate and deallocate
+ * invocations.
  *
  * @see Lai Shiaw San Kent's article <a
  * href="http://www.codeproject.com/KB/cpp/allocator.aspx">C++ Standard

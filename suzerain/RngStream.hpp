@@ -135,7 +135,7 @@ public:
     void AdvanceState (long e, long c);
 
     /**
-     * Returns in <tt>seed[0..5]<tt> the current state \f$C_g\f$ of this
+     * Returns in <tt>seed[0..5]</tt> the current state \f$C_g\f$ of this
      * stream. This is convenient if we want to save the state for
      * subsequent use.
      */

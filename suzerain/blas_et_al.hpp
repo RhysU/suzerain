@@ -294,7 +294,17 @@ inline double dot(
                               boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_cdotc */
+/*!
+ * \brief Compute \f$ x \cdot{} y \f$ using BLAS's dotc.
+ *
+ * \param n Number of elements in \c x and \c y.
+ * \param x First source vector.
+ * \param incx First source vector stride.
+ * \param y Second source vector.
+ * \param incy Second source vector stride.
+ *
+ * \see A BLAS reference for more details.
+ */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -320,7 +330,17 @@ inline typename boost::enable_if<boost::mpl::and_<
     return std::complex<float>(result[0],result[1]);
 }
 
-/*! @copydoc suzerain_blas_cdotc */
+/*!
+ * \brief Compute \f$ x \cdot{} y \f$ using BLAS's dotc.
+ *
+ * \param n Number of elements in \c x and \c y.
+ * \param x First source vector.
+ * \param incx First source vector stride.
+ * \param y Second source vector.
+ * \param incy Second source vector stride.
+ *
+ * \see A BLAS reference for more details.
+ */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -1423,7 +1443,7 @@ inline int gbcon(
                                   iwork);
 }
 
-/*! @copydoc suzerain_blas_cgbcon */
+/*! @copydoc suzerain_lapack_cgbcon */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1463,7 +1483,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                   rwork);
 }
 
-/*! @copydoc suzerain_blas_zgbcon */
+/*! @copydoc suzerain_lapack_zgbcon */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,

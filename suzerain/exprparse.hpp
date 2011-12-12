@@ -50,18 +50,18 @@ namespace suzerain {
  * @param[out] v    Floating point value found from evaluating \c s.
  * @param[in]  name Optional name of what is being parsed for error reporting.
  *
- * @throws std::invalid_argument if the given input cannot be \i completely
+ * @throws std::invalid_argument if the given input cannot be \em completely
  *         consumed by the underlying parser.  \c v is not modified.
  */
 void exprparse(const char *s, float& v, const char *name = NULL);
 
-/** @copydoc exprparse(const char *, float&) */
+/** @copydoc exprparse(const char *, float&, const char *) */
 void exprparse(const char *s, double& v, const char *name = NULL);
 
-/** @copydoc exprparse(const char *, float&) */
+/** @copydoc exprparse(const char *, float&, const char *) */
 void exprparse(const std::string& s, float& v, const char *name = NULL);
 
-/** @copydoc exprparse(const char *, float&) */
+/** @copydoc exprparse(const char *, float&, const char *) */
 void exprparse(const std::string& s, double& v, const char *name = NULL);
 
 /**

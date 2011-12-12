@@ -127,7 +127,10 @@ public:
 /** @name Queries supported by subclasses */
 /**@{*/
 
-    /** @returns each dimension's extents as a length #dimensionality list */
+    /**
+     * @returns each dimension's extents as a list of length
+     * StateBase::dimensionality.
+     */
     const size_type* shape() const {
         return derived().shape();
     }

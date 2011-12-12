@@ -94,7 +94,7 @@ public:
     /**
      * Compute the dimension-by-dimension \c strides given extents with \c
      * sizes where \c minstrides must be obeyed.  All arguments must be
-     * iterators with at least #dimensionality slots available.
+     * iterators with at least general::dimensionality slots available.
      *
      * @param sizes      The extents to contain in each dimension.
      * @param minstrides The minimum stride in each dimension.
@@ -113,8 +113,8 @@ public:
 
     /**
      * Compute the dimension-by-dimension \c strides given extents with \c
-     * sizes.  All arguments must be iterators with at least #dimensionality
-     * slots available.
+     * sizes.  All arguments must be iterators with at least
+     * general::dimensionality slots available.
      *
      * @param sizes      The extents to contain in each dimension.
      * @param strides    Output strides matching \c sizes.
@@ -129,7 +129,7 @@ public:
     /**
      * Compute the amount of storage necessary to contain \c sizes elements
      * where \c minstrides must be obeyed.  All arguments must be iterators
-     * with at least #dimensionality slots available.
+     * with at least general::dimensionality slots available.
      *
      * @param sizes      The extents to contain in each dimension.
      * @param minstrides The minimum stride in each dimension.
@@ -144,8 +144,8 @@ public:
 
     /**
      * Compute the amount of storage necessary to contain \c sizes elements.
-     * All arguments must be iterators with at least #dimensionality slots
-     * available.
+     * All arguments must be iterators with at least general::dimensionality
+     * slots available.
      *
      * @param sizes      The extents to contain in each dimension.
      *

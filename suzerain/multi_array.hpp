@@ -287,7 +287,8 @@ public:
      * stored according to \c storage.
      *
      * @param data    Raw elements to wrap
-     * @param sizes   A length #dimensionality collection of the valid extents
+     * @param sizes   A length ref::dimensionality collection of the
+     *                valid extents
      * @param storage A marker type specifying the storage ordering
      */
     template<typename ExtentList,
@@ -326,9 +327,9 @@ public:
      * stored obeying \c minstrides according to \c storage.
      *
      * @param data       Raw elements to wrap
-     * @param sizes      A length #dimensionality collection
+     * @param sizes      A length ref::dimensionality collection
      *                   of the valid extents
-     * @param minstrides A length #dimensionality collection
+     * @param minstrides A length ref::dimensionality collection
      *                   of the minimum acceptable strides
      * @param storage    A marker type specifying the storage ordering
      */
@@ -355,7 +356,7 @@ public:
      *
      * @param data       Raw elements to wrap
      * @param ranges     Index range and size information for \c data
-     * @param minstrides A length #dimensionality collection
+     * @param minstrides A length ref::dimensionality collection
      *                   of the minimum acceptable strides
      * @param storage    A marker type specifying the storage ordering
      */
