@@ -803,7 +803,7 @@ BOOST_AUTO_TEST_CASE( rholut_div_p_u )
 // Checks derived formula and computation against rholut_test_data()
 BOOST_AUTO_TEST_CASE( rholut_grad_p )
 {
-    const double close_enough = std::numeric_limits<double>::epsilon()*5.0e2;
+    const double close_enough = std::numeric_limits<double>::epsilon()*1.1e3;
 
     ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
