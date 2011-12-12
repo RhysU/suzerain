@@ -1610,7 +1610,7 @@ We expand the three mixed order, nonlinear terms:
     \nabla\mu\cdot\nabla{}T
   + \mu \Delta{}T
 \end{align}
-Using \eqref{eq:relationships}, one may also write
+One may also write
 \begin{align}\label{eq:nabla_cdot_tau_expansion_alt}
   \nabla\cdot\tau
   &=
@@ -1855,8 +1855,8 @@ derivatives of the wall-normal momentum appearing in the streamwise portion
 of~\eqref{eq:state_momentum}.  In contrast, an ``on diagonal'' example is the
 divergence of total energy appearing within~\eqref{eq:state_energy}.  Handling
 off-diagonal terms implicitly is better from the perspective of taking the
-largest possible time step while maintaining stability but the gains may not be
-warranted by the associated programming and runtime overhead.
+largest possible time step while maintaining stability but it incurs both an
+associated programming and runtime overhead.
 
 \subsubsection{Linearization of viscous terms}
 
@@ -1895,40 +1895,40 @@ linearization candidates from \eqref{eq:nabla_cdot_tau_expansion}:
 \end{align}
 Though not shown, one portion of the viscous work term in the energy equation,
 namely $\frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)$, also possesses
-linearizable off-diagonal terms similar to those above.  Moving on to the
-candidates from the alternative $\nabla\cdot\tau$
-expansion~\eqref{eq:nabla_cdot_tau_expansion_alt}:
-\begin{align}
-\label{eq:linearready_alt_delta_u}
-\left(2\mu+\lambda\right)\Delta\frac{m}{\rho} &=
-    \left(2\mu+\lambda\right)\rho^{-2}\left[
-          2\rho^{-1}m\left(\nabla\rho\right)^{2}
-        - 2 \left(\nabla{}m\right)\nabla\rho
-    \right]
-\\
-  &{}+ \lessreference{\left(2\mu+\lambda\right)\rho^{-1}} \Delta{}m
-     - \lessreference{\left(2\mu+\lambda\right)\rho^{-2}m} \Delta\rho
-\\
-  &{}+ \reference{\left(2\mu+\lambda\right)\rho^{-1}} \Delta{}m
-     - \reference{\left(2\mu+\lambda\right)\rho^{-2}m} \Delta\rho
-\\
-\label{eq:linearready_alt_curl_curl_u}
-  \left(\mu+\lambda\right)\nabla\times\nabla\times\frac{m}{\rho} &=
-        \left(\mu+\lambda\right) \rho^{-2} \left[
-                  \left(2\nabla{}m - \trans{\nabla{}m} \right) \nabla\rho
-                - 2 \rho^{-1} \left(\nabla\rho\right)^2 m
-                + \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
-            \right]
-\\
-  &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-1}  } \nabla\times\nabla\times{}m
-\\
-  &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-2} m} \Delta\rho
-     - \lessreference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
-\\
-  &{}+ \reference{\left(\mu+\lambda\right)\rho^{-1}  } \nabla\times\nabla\times{}m
-     + \reference{\left(\mu+\lambda\right)\rho^{-2} m} \Delta\rho
-     - \reference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
-\end{align}
+linearizable off-diagonal terms similar to those above.
+%%%Moving on to the candidates from the alternative $\nabla\cdot\tau$
+%%%expansion~\eqref{eq:nabla_cdot_tau_expansion_alt}:
+%%%\begin{align}
+%%%\label{eq:linearready_alt_delta_u}
+%%%\left(2\mu+\lambda\right)\Delta\frac{m}{\rho} &=
+%%%    \left(2\mu+\lambda\right)\rho^{-2}\left[
+%%%          2\rho^{-1}m\left(\nabla\rho\right)^{2}
+%%%        - 2 \left(\nabla{}m\right)\nabla\rho
+%%%    \right]
+%%%\\
+%%%  &{}+ \lessreference{\left(2\mu+\lambda\right)\rho^{-1}} \Delta{}m
+%%%     - \lessreference{\left(2\mu+\lambda\right)\rho^{-2}m} \Delta\rho
+%%%\\
+%%%  &{}+ \reference{\left(2\mu+\lambda\right)\rho^{-1}} \Delta{}m
+%%%     - \reference{\left(2\mu+\lambda\right)\rho^{-2}m} \Delta\rho
+%%%\\
+%%%\label{eq:linearready_alt_curl_curl_u}
+%%%  \left(\mu+\lambda\right)\nabla\times\nabla\times\frac{m}{\rho} &=
+%%%        \left(\mu+\lambda\right) \rho^{-2} \left[
+%%%                  \left(2\nabla{}m - \trans{\nabla{}m} \right) \nabla\rho
+%%%                - 2 \rho^{-1} \left(\nabla\rho\right)^2 m
+%%%                + \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
+%%%            \right]
+%%%\\
+%%%  &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-1}  } \nabla\times\nabla\times{}m
+%%%\\
+%%%  &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-2} m} \Delta\rho
+%%%     - \lessreference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
+%%%\\
+%%%  &{}+ \reference{\left(\mu+\lambda\right)\rho^{-1}  } \nabla\times\nabla\times{}m
+%%%     + \reference{\left(\mu+\lambda\right)\rho^{-2} m} \Delta\rho
+%%%     - \reference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
+%%%\end{align}
 Finishing with the second order temperature term from \eqref{eq:mu_delta_T} and
 its dependencies:
 \begin{align}
