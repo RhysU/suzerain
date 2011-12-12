@@ -1482,6 +1482,7 @@ and we have employed the notation
 $\symmetricpart{A}=\frac{1}{2}\left(A+\trans{A}\right)$.
 
 \subsection{Communications overhead}
+\label{sec:commoverhead}
 
 As detailed in section~\ref{sec:combineddiscretization}, we perform time
 advancement in wave space but must compute nonlinear terms in physical space.
@@ -1572,7 +1573,7 @@ derivatives:
 \end{align}
 
 \subsection{Separation of first and second derivative operators}
-\label{separate_first_section_deriv}
+\label{sec:separate_first_second_deriv}
 
 Unlike a Fourier basis, for B-splines the repeated application of a discrete
 first derivative operator gives a result that differs significantly from
@@ -1679,7 +1680,7 @@ Further, we do not mix derivatives of different orders.  The only linear solve
 required uses a wavenumber-independent factorization of the mass matrix $M$.
 
 Using the information in sections~\ref{velocity_derivative_expansions}
-and~\ref{separate_first_section_deriv} we tabulate in
+and~\ref{sec:separate_first_second_deriv} we tabulate in
 table~\vref{tab:nofirstderivnonlinearcost} the specific state variable
 derivatives necessary to compute each mixed-derivative nonlinear term and all
 of its contributions.  From this table and the equations appearing in
@@ -1862,7 +1863,7 @@ warranted by the associated programming and runtime overhead.
 Because second derivatives give rise to the most restrictive eigenvalues for
 timestepping, we focus on how second order terms enter the full operator.  We
 take the quantities from sections~\ref{velocity_derivative_expansions}
-and~\ref{separate_first_section_deriv} and expand the nonlinear coefficients on
+and~\ref{sec:separate_first_second_deriv} and expand the nonlinear coefficients on
 second order terms about reference states.  Beginning with the nonlinear
 linearization candidates from \eqref{eq:nabla_cdot_tau_expansion}:
 \begin{align}
@@ -2032,6 +2033,7 @@ We have linearized the two terms together as doing so is algebraically simple
 and introduces no additional state derivatives.
 
 \subsubsection{Convective term in the continuity equation}
+\label{sec:contconv}
 
 If off-diagonal density and momentum derivatives are computed implicitly,
 implicitly treating the convective term $-\nabla\cdot{}m$ in
@@ -2040,13 +2042,23 @@ number of scalar fields needing conversion from physical space to wave space.
 
 \subsubsection{Terms chosen for implicit treatment}
 
-TODO
+Treating wall-normal acoustics implicitly requires an off-diagonal coupling
+between the wall-normal momentum and total energy equations.  The incremental
+programming cost to further couple the streamwise and spanwise momentum
+equations to the total energy equation is comparatively small.  The ability to
+treat all directions implicitly for both acoustic and diffusive terms has a
+higher runtime cost which should be offset by the larger time stability that
+results.  Coupling the density equation reduces the communications overhead at
+the expense of on-node work (see section~\ref{sec:contconv}) and further
+unifies the programmatic details.  Moreover, so long as the fully coupled
+implicit operations can fit in cache, increasing the on-node work to take
+larger time steps helps to balance the high communication overhead stemming
+from sections~\ref{sec:commoverhead} and~\ref{sec:separate_first_second_deriv}.
+Improving the communication to communication ratio should bolster scalability.
 
-\begin{enumerate}
-\item Following Guarini (thesis page 45) treat the pressure gradient term in the wall-normal momentum equation and the linearized pressure work term implicitly.
-\item Write out the specific terms to be treated implicitly and their linearization coefficients (a function of wall-normal position)
-\item Check if the first derivative operators for accomplishing this require any specific boundary treatment (feels like no, could be wrong)
-\end{enumerate}
+Accordingly, we choose to implicitly treat all terms identified as candidates
+in the preceding sections' discussions.
+
 
 \subsubsection{Viscous linearizations chosen for implicit treatment}
 
