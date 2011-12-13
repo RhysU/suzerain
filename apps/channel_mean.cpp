@@ -321,7 +321,7 @@ namespace quantity {
      */
     typedef boost::ptr_map<real_t, storage_type> storage_map_type;
 
-    /** Output names in a manner suitable for \ref iofmt-ed column header */
+    /** Output names in a manner suitable for columns output by \ref iofmt */
     static void write_names(std::ostream &out)
     {
         for (size_t i = 0; i < quantity::count; ++i) {  // Headings
