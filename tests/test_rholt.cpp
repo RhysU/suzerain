@@ -1040,8 +1040,9 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
     }
 
     /* Explicit operator differs when refcoeffs in use */
+    /* Odd looking 1/gamma factors due to removing gamma from refcoeff */
     {
-        const Eigen::Vector3d refcoeff_grad_e(55.0, 66.0, 77.0);
+        const Eigen::Vector3d refcoeff_grad_e(55/gamma, 66/gamma, 77/gamma);
         const double div_e_plus_p_u = rholt::explicit_div_e_plus_p_u(
                 gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
                 0, Eigen::Vector3d::Zero(), refcoeff_grad_e);
@@ -1051,8 +1052,8 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
     }
 
     /* Ensure the coefficient calculations are correct */
+    /* Odd looking 1/gamma factors due to removing gamma from refcoeff */
     {
-        const double gamma  = 1.4;
         const double rho    = 67.0;
         const Eigen::Vector3d m(144.0, 233.0, 377.0);
         const double e      = 55.0;
@@ -1074,15 +1075,15 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
             102.41246496410795210847078929256590737557478812220918131552L,
             close_enough);
         BOOST_CHECK_CLOSE(rholt::explicit_div_e_plus_p_u_refcoeff_grad_e(
-            gamma, rho, m)[0],
+            rho, m)[0], (1 / gamma) *
             3.0089552238805970149253731343283582089552238805970149253731L,
             close_enough);
         BOOST_CHECK_CLOSE(rholt::explicit_div_e_plus_p_u_refcoeff_grad_e(
-            gamma, rho, m)[1],
+            rho, m)[1], (1 / gamma) *
             4.8686567164179104477611940298507462686567164179104477611940L,
             close_enough);
         BOOST_CHECK_CLOSE(rholt::explicit_div_e_plus_p_u_refcoeff_grad_e(
-            gamma, rho, m)[2],
+            rho, m)[2], (1 / gamma) *
             7.8776119402985074626865671641791044776119402985074626865672L,
             close_enough);
     }

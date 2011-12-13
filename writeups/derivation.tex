@@ -2021,7 +2021,7 @@ The total energy convection and pressure work terms may be linearized as
 \begin{align}
 \nabla\cdot\left(e+p\right)\frac{m}{\rho} =
    &- \left(\gamma-1\right)\mbox{Ma}^{2}\rho^{-2}m\cdot \trans{\nabla{}m}m
-    + \lessreference{ \gamma\rho^{-1}m }\cdot\nabla{}e
+    + \gamma\lessreference{ \rho^{-1}m }\cdot\nabla{}e
   \\
    &+ \lessreference{\rho^{-1}\left(
         \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
@@ -2031,7 +2031,7 @@ The total energy convection and pressure work terms may be linearized as
         \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
       \right)m}\cdot\vec{\nabla}\rho
   \\
-   &+ \reference{ \gamma\rho^{-1}m }\cdot\nabla{}e
+   &+ \gamma\reference{ \rho^{-1}m }\cdot\nabla{}e
     + \reference{\rho^{-1}\left(
         \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
       \right)} \nabla\cdot{}m
@@ -2097,7 +2097,7 @@ equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
     - \reference{\rho^{-1}\left(
         \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
       \right)} \nabla\cdot{}m
-    - \reference{ \gamma\rho^{-1}m }\cdot\nabla{}e
+    - \gamma\reference{ \rho^{-1}m }\cdot\nabla{}e
 \\
   &+ \frac{\gamma}{\Reynolds\Prandtl\left(\gamma-1\right)}
      \reference{ \mu\rho^{-2}\left(

@@ -690,11 +690,10 @@ template<typename Scalar,
          typename Vector >
 static inline
 Vector explicit_div_e_plus_p_u_refcoeff_grad_e(
-        const Scalar &gamma,
         const Scalar &rho,
         const Vector &m)
 {
-    return gamma/rho*m;
+    return m/rho;
 }
 
 /**
@@ -720,9 +719,9 @@ Vector explicit_div_e_plus_p_u_refcoeff_grad_e(
  *                  -\gamma{}e\right)\vec{m}\right\}_0
  *     \right)\cdot\vec{\nabla}\rho
  * \\
- *  &+ \left(
- *          \gamma\rho^{-1}\vec{m}
- *        - \left\{\gamma\rho^{-1}\vec{m}\right\}_0
+ *  &+ \gamma\left(
+ *          \rho^{-1}\vec{m}
+ *        - \left\{\rho^{-1}\vec{m}\right\}_0
  *     \right)\cdot\vec{\nabla}e
  * \f}
  * where
@@ -730,7 +729,7 @@ Vector explicit_div_e_plus_p_u_refcoeff_grad_e(
  * -\frac{\gamma-1}{2}\rho^{-1}\vec{m}^2\right)\right\}_0\f$
  *  \f$\left\{\rho^{-2}\left(\left(\gamma-1\right)\rho^{-1}\vec{m}^2
  *  -\gamma{}e\right)\vec{m}\right\}_0\f$, and
- *  \f$\left\{\gamma\rho^{-1}\vec{m}\right\}_0\f$ are fixed by \c
+ *  \f$\left\{\rho^{-1}\vec{m}\right\}_0\f$ are fixed by \c
  *  refcoeff_div_m, \c refcoeff_grad_rho, and
  * \c refcoeff_grad_e, respectively.
  * The remaining linear portion of
@@ -742,7 +741,7 @@ Vector explicit_div_e_plus_p_u_refcoeff_grad_e(
  *    + \left\{\rho^{-2}\left(\left(\gamma-1\right)\rho^{-1}\vec{m}^2
  *        -\gamma{}e\right)\vec{m}\right\}_0
  *        \cdot\vec{\nabla}\rho
- *    + \left\{\gamma\rho^{-1}\vec{m}\right\}_0
+ *    + \gamma\left\{\rho^{-1}\vec{m}\right\}_0
  *        \cdot\vec{\nabla}e
  * \f]
  *
@@ -795,13 +794,13 @@ Scalar explicit_div_e_plus_p_u(
             explicit_div_e_plus_p_u_refcoeff_grad_rho(gamma, rho, m, e)
           - refcoeff_grad_rho);
     const Vector coeff_grad_e(
-            explicit_div_e_plus_p_u_refcoeff_grad_e(gamma, rho, m)
+            explicit_div_e_plus_p_u_refcoeff_grad_e(rho, m)
           - refcoeff_grad_e);
 
     return -(gamma-1)*rho_inverse*rho_inverse*m.dot(grad_m.transpose()*m)
            + coeff_div_m*div_m
            + coeff_grad_rho.dot(grad_rho)
-           + coeff_grad_e.dot(grad_e);
+           + gamma*coeff_grad_e.dot(grad_e);
 }
 
 /**
