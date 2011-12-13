@@ -1987,7 +1987,7 @@ its dependencies:
   &{}+ \gamma\left(\gamma-1\right)\reference{\mu\rho^{-1}}\Delta{}e
      - \gamma\left(\gamma-1\right)\Mach^{2}
        \reference{\mu\rho^{-2}m}\cdot\Delta{}m
-   {}+ \gamma\reference{ \mu\rho^{-2}\left(
+     + \gamma\reference{ \mu\rho^{-2}\left(
            \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
        \right) } \Delta\rho
 \end{align}
@@ -2054,7 +2054,7 @@ number of scalar fields needing conversion from physical space to wave space.
 
 \subsubsection{Terms chosen for implicit treatment}
 
-Treating wall-normal acoustics implicitly requires an off-diagonal coupling
+Treating wall-normal acoustics implicitly requires off-diagonal coupling
 between the wall-normal momentum and total energy equations.  The incremental
 programming cost to further couple the streamwise and spanwise momentum
 equations to the total energy equation is comparatively small.  The ability to
@@ -2066,57 +2066,128 @@ unifies the programmatic details.  Moreover, so long as the fully coupled
 implicit operations can fit in cache, increasing the on-node work to take
 larger time steps helps to balance the high communication overhead stemming
 from sections~\ref{sec:commoverhead} and~\ref{sec:separate_first_second_deriv}.
-Improving the communication to communication ratio should bolster scalability.
+Improving the computation to communication ratio should bolster scalability.
 
 Accordingly, we choose to implicitly treat all terms identified as candidates
 in the preceding discussion.  In the context of
 equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
-exactly:
 \begin{align}
-  \frac{\partial}{\partial{}t} \rho{} &= \dots
+  \frac{\partial}{\partial{}t} \rho{} &= -\nabla\cdot{}m
 \\
   \frac{\partial}{\partial{}t} m &= \dots
 \\
+% \underbrace{
+   &- \frac{\gamma-1}{2} \reference{m^{2}\rho^{-2}}\nabla\rho
+    + \left(\gamma-1\right)\trans{\nabla{}m}\reference{\rho^{-1}m}
+    - \frac{\gamma-1}{\Mach^2}\nabla{}e
+% }_{-\Mach^{-1}\nabla{}p}
+\\
+% \underbrace{
+   &- \Reynolds^{-1} \reference{\mu\rho^{-2}m} \Delta\rho
+    - \Reynolds^{-1} \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-2}m}
+    + \Reynolds^{-1} \reference{\mu\rho^{-1}} \Delta{}m
+    + \Reynolds^{-1} \reference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m
+% }_{\Reynolds^{-1}\nabla\cdot\tau}
+\\
   \frac{\partial}{\partial{}t} e &= \dots
+\\
+   &- \reference{ \rho^{-2}\left(
+        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
+      \right)m}\cdot\vec{\nabla}\rho
+    - \reference{\rho^{-1}\left(
+        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
+      \right)} \nabla\cdot{}m
+    - \reference{ \gamma\rho^{-1}m }\cdot\nabla{}e
+\\
+  &+ \frac{\gamma}{\Reynolds\Prandtl\left(\gamma-1\right)}
+     \reference{ \mu\rho^{-2}\left(
+         \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
+     \right) } \Delta\rho
+   - \frac{\gamma\Mach^{2}}{\Reynolds\Prandtl}
+     \reference{\mu\rho^{-2}m}\cdot\Delta{}m
+   + \frac{\gamma}{\Reynolds\Prandtl}\reference{\mu\rho^{-1}}\Delta{}e
+\end{align}
+where the pointwise reference values are abbreviated as
+\begin{align}
+  c^{m}_{\nabla\rho} &= \reference{m^{2}\rho^{-2}}
+&
+  \overrightarrow{c^{m}_{\nabla{}m}}
+  &= \reference{\rho^{-1}m}
+&
+  \overrightarrow{c^{m}_{\Delta\rho}}
+  &= \reference{\mu\rho^{-2}m}
+\\
+  \overrightarrow{c^{m}_{\nabla\nabla\rho}}
+  &= \reference{\left(\mu+\lambda\right)\rho^{-2}m}
+&
+  c^{m}_{\Delta{}m} &= \reference{\mu\rho^{-1}}
+&
+  c^{m}_{\nabla\nabla\cdot{}m}
+  &= \reference{\left(\mu+\lambda\right)\rho^{-1}}
+\\
+  \overrightarrow{c^{e}_{\nabla\rho}}
+  &=
+&
+  c^{e}_{\nabla\cdot{}m} &=
+&
+  \overrightarrow{c^{e}_{\nabla{}e}}
+  &=
+\\
+  c^{e}_{\Delta\rho} &=
+&
+  \overrightarrow{c^{e}_{\Delta{}m}}
+  &=
+&
+  c^{e}_{\Delta{}e} &=
+\end{align}
+Vector references values are built from three scalar components.  For
+example,
+\begin{align}
+  \overrightarrow{c^{m}_{\nabla{}m}} &= \trans{\left(
+      c^{m_{x}}_{\nabla{}m},
+      c^{m_{y}}_{\nabla{}m},
+      c^{m_{z}}_{\nabla{}m}
+  \right)}
+  .
 \end{align}
 
 Following~\eqref{eq:generaloperatormasssubstep} and using results
 from~\eqref{sec:formingoperators}, we need a discrete implementation of
 $M+\varphi{}L$ for arbitrary $\varphi$, $k_m$, and $k_n$.  Switching to a
-blocked matrix representation employing five scalar conserved state fields the
+blocked matrix representation employing five scalar conserved state fields, the
 discrete operator is:
 \begin{align}
 \begin{bmatrix}
 %
-  \boldmath{\rho{}\rho } &
-  \boldmath{\rho{}m_{x}} &
-  \boldmath{\rho{}m_{y}} &
-  \boldmath{\rho{}m_{z}} &
-  \boldmath{\rho{}e    } \\
+  \rho{}\rho  &
+  \rho{}m_{x} &
+  \rho{}m_{y} &
+  \rho{}m_{z} &
+  \rho{}e     \\
 %
-  \boldmath{m_{x}\rho } &
-  \boldmath{m_{x}m_{x}} &
-  \boldmath{m_{x}m_{y}} &
-  \boldmath{m_{x}m_{z}} &
-  \boldmath{m_{x}e    } \\
+  m_{x}\rho  &
+  m_{x}m_{x} &
+  m_{x}m_{y} &
+  m_{x}m_{z} &
+  m_{x}e     \\
 %
-  \boldmath{{m_{y}\rho }} &
-  \boldmath{{m_{y}m_{x}}} &
-  \boldmath{{m_{y}m_{y}}} &
-  \boldmath{{m_{y}m_{z}}} &
-  \boldmath{{m_{y}e    }} \\
+  {m_{y}\rho } &
+  {m_{y}m_{x}} &
+  {m_{y}m_{y}} &
+  {m_{y}m_{z}} &
+  {m_{y}e    } \\
 %
-  \boldmath{m_{z}\rho } &
-  \boldmath{m_{z}m_{x}} &
-  \boldmath{m_{z}m_{y}} &
-  \boldmath{m_{z}m_{z}} &
-  \boldmath{m_{z}e    } \\
+  m_{z}\rho  &
+  m_{z}m_{x} &
+  m_{z}m_{y} &
+  m_{z}m_{z} &
+  m_{z}e     \\
 %
-  \boldmath{e \rho } &
-  \boldmath{e m_{x}} &
-  \boldmath{e m_{y}} &
-  \boldmath{e m_{z}} &
-  \boldmath{e e}
+  e \rho  &
+  e m_{x} &
+  e m_{y} &
+  e m_{z} &
+  e e
 \end{bmatrix}
 \begin{bmatrix}
   \rho \left(k_m, y_l, k_n\right)\\
