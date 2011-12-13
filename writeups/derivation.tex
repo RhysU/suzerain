@@ -2069,93 +2069,88 @@ from sections~\ref{sec:commoverhead} and~\ref{sec:separate_first_second_deriv}.
 Improving the computation to communication ratio should bolster scalability.
 
 Accordingly, we choose to implicitly treat all terms identified as candidates
-in the preceding discussion.  In the context of
+in the preceding discussion.  In the full context of
 equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
 \begin{align}
-  \frac{\partial}{\partial{}t} \rho{} &= -\nabla\cdot{}m
+  \frac{\partial}{\partial{}t} \rho{} = &-\nabla\cdot{}m
 \\
-  \frac{\partial}{\partial{}t} m &= \dots
-\\
+  \frac{\partial}{\partial{}t} m = \dots
 % \underbrace{
-   &- \frac{\gamma-1}{2} \reference{m^{2}\rho^{-2}}\nabla\rho
-    + \left(\gamma-1\right)\trans{\nabla{}m}\reference{\rho^{-1}m}
+   &- \frac{\gamma-1}{2} c^{m}_{\nabla\rho} \nabla\rho
+    + \left(\gamma-1\right)\trans{\nabla{}m} \overrightarrow{c^u}
     - \frac{\gamma-1}{\Mach^2}\nabla{}e
 % }_{-\Mach^{-1}\nabla{}p}
 \\
 % \underbrace{
-   &- \Reynolds^{-1} \reference{\mu\rho^{-2}m} \Delta\rho
-    - \Reynolds^{-1} \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-2}m}
-    + \Reynolds^{-1} \reference{\mu\rho^{-1}} \Delta{}m
-    + \Reynolds^{-1} \reference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m
+   &- \Reynolds^{-1} \overrightarrow{c^{\nu{}u}} \Delta\rho
+    - \Reynolds^{-1} \left(\alpha+\frac{1}{3}\right) \left(\nabla\nabla\rho\right) \overrightarrow{c^{\nu{}u}}
+    + \Reynolds^{-1} c^{\nu} \Delta{}m
+    + \Reynolds^{-1} \left(\alpha+\frac{1}{3}\right)c^{\nu} \nabla\nabla\cdot{}m
 % }_{\Reynolds^{-1}\nabla\cdot\tau}
+    + \dots
 \\
-  \frac{\partial}{\partial{}t} e &= \dots
-\\
-   &- \reference{ \rho^{-2}\left(
-        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
-      \right)m}\cdot\vec{\nabla}\rho
-    - \reference{\rho^{-1}\left(
-        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
-      \right)} \nabla\cdot{}m
-    - \gamma\reference{ \rho^{-1}m }\cdot\nabla{}e
-\\
-  &+ \frac{\gamma}{\Reynolds\Prandtl\left(\gamma-1\right)}
-     \reference{ \mu\rho^{-2}\left(
-         \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
-     \right) } \Delta\rho
-   - \frac{\gamma\Mach^{2}}{\Reynolds\Prandtl}
-     \reference{\mu\rho^{-2}m}\cdot\Delta{}m
-   + \frac{\gamma}{\Reynolds\Prandtl}\reference{\mu\rho^{-1}}\Delta{}e
+  \frac{\partial}{\partial{}t} e = \dots
+   &- \overrightarrow{c^{e}_{\nabla\rho}} \cdot\vec{\nabla}\rho
+    - c^{e}_{\nabla\cdot{}m} \nabla\cdot{}m
+    - \gamma \overrightarrow{c^u}\cdot\nabla{}e
+    + \frac{\gamma}{\Reynolds\Prandtl\left(\gamma-1\right)}
+      c^{e}_{\Delta\rho} \Delta\rho
+    - \frac{\gamma\Mach^{2}}{\Reynolds\Prandtl}
+      \overrightarrow{c^{\nu{}u}}\cdot\Delta{}m
+    + \frac{\gamma}{\Reynolds\Prandtl}c^{\nu}\Delta{}e
+    + \dots
 \end{align}
-where the pointwise reference values are abbreviated as
+where the repeated reference values are
+\begin{align}
+  c^{\nu} &= \reference{\rho^{-1}\mu}
+&
+  \overrightarrow{c^{u}} &= \reference{\rho^{-1}m}
+  = \trans{\left(c^{u}, c^{v}, c^{w}\right)}
+&
+  \overrightarrow{c^{\nu{}u}} &= \reference{\rho^{-2}\mu{}m}
+  = \trans{\left(c^{\nu{}u}, c^{\nu{}v}, c^{\nu{}w}\right)}
+\end{align}
+and the single-use reference values are
 \begin{align}
   c^{m}_{\nabla\rho} &= \reference{m^{2}\rho^{-2}}
-&
-  \overrightarrow{c^{m}_{\nabla{}m}}
-  &= \reference{\rho^{-1}m}
-&
-  \overrightarrow{c^{m}_{\Delta\rho}}
-  &= \reference{\mu\rho^{-2}m}
 \\
-  \overrightarrow{c^{m}_{\nabla\nabla\rho}}
-  &= \reference{\left(\mu+\lambda\right)\rho^{-2}m}
-&
-  c^{m}_{\Delta{}m} &= \reference{\mu\rho^{-1}}
-&
-  c^{m}_{\nabla\nabla\cdot{}m}
-  &= \reference{\left(\mu+\lambda\right)\rho^{-1}}
-\\
-  \overrightarrow{c^{e}_{\nabla\rho}}
-  &=
-&
-  c^{e}_{\nabla\cdot{}m} &=
-&
-  \overrightarrow{c^{e}_{\nabla{}e}}
-  &=
-\\
-  c^{e}_{\Delta\rho} &=
-&
-  \overrightarrow{c^{e}_{\Delta{}m}}
-  &=
-&
-  c^{e}_{\Delta{}e} &=
-\end{align}
-Vector references values are built from three scalar components.  For
-example,
-\begin{align}
-  \overrightarrow{c^{m}_{\nabla{}m}} &= \trans{\left(
-      c^{m_{x}}_{\nabla{}m},
-      c^{m_{y}}_{\nabla{}m},
-      c^{m_{z}}_{\nabla{}m}
+  \overrightarrow{c^{e}_{\nabla\rho}} &= \reference{ \rho^{-2}\left(
+        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
+  \right)m}
+  = \trans{\left(
+      c^{e_{x}}_{\nabla\rho},
+      c^{e_{y}}_{\nabla\rho},
+      c^{e_{z}}_{\nabla\rho}
   \right)}
-  .
+\\
+  c^{e}_{\nabla\cdot{}m} &= \reference{\rho^{-1}\left(
+        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
+  \right)}
+\\
+  c^{e}_{\Delta\rho} &= \reference{ \mu\rho^{-2}\left(
+         \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
+  \right) }
 \end{align}
+with superscripts indicate the relevant equation and
+subscripts indicating the related term.
 
 Following~\eqref{eq:generaloperatormasssubstep} and using results
 from~\eqref{sec:formingoperators}, we need a discrete implementation of
-$M+\varphi{}L$ for arbitrary $\varphi$, $k_m$, and $k_n$.  Switching to a
-blocked matrix representation employing five scalar conserved state fields, the
-discrete operator is:
+$M+\varphi{}L$ for arbitrary $\varphi$, $k_m$, and $k_n$.  To accommodate
+wall-normal variation in reference quantities, notice diagonal matrices defined
+like
+\begin{align}
+  C^{\nu} &= \begin{bmatrix}
+   \left.c^{\nu}\right|_{y=0} & 0     & 0 \\
+   0                         & \ddots & 0  \\
+   0                         & 0      & \left.c^{\nu}\right|_{y=L}
+   \end{bmatrix}
+\end{align}
+will scale the application of operators like $C^{\nu}D^{(2)}$ by
+$\left.c^{\nu}\right|_{y=y_l}$ at collocation point $y=y_l$.
+
+Switching to a blocked matrix representation employing five scalar conserved
+state fields, the complete, SMR91-ready implicit operator is:
 \begin{align}
 \begin{bmatrix}
 %
