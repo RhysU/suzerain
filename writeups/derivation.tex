@@ -926,7 +926,7 @@ matrix in the time derivative term.
 \subsection{Time discretization}
 \label{sec:timediscretization}
 
-We use Spalart, Moser, and Rogers'  low storage hybrid implicit/explicit
+We use Spalart, Moser, and Rogers' low storage hybrid implicit/explicit
 time stepper from appendix A of~\cite{spalart_lowstoragerk}.  This time stepper
 advances the system
 \begin{align}
@@ -1600,6 +1600,7 @@ We expand the three mixed order, nonlinear terms:
   + \left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho}
   + \left(\nabla\cdot\frac{m}{\rho}\right)\nabla\lambda
 \\
+\label{eq:nabla_cdot_tau_u_expansion}
   \nabla\cdot\tau{}\frac{m}{\rho}
   &=
     \frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)
@@ -1864,8 +1865,10 @@ Because second derivatives give rise to the most restrictive eigenvalues for
 timestepping, we focus on how second order terms enter the full operator.  We
 take the quantities from sections~\ref{velocity_derivative_expansions}
 and~\ref{sec:separate_first_second_deriv} and expand the nonlinear coefficients on
-second order terms about reference states.  Beginning with the nonlinear
-linearization candidates from \eqref{eq:nabla_cdot_tau_expansion}:
+second order terms about reference states.
+
+Beginning with the nonlinear linearization candidates from
+\eqref{eq:nabla_cdot_tau_expansion}:
 \begin{align}
 \label{eq:linearready_delta_u}
 \mu\Delta\frac{m}{\rho} &=
@@ -1893,9 +1896,17 @@ linearization candidates from \eqref{eq:nabla_cdot_tau_expansion}:
   &{}+ \reference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m
      - \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-2}m}
 \end{align}
-Though not shown, one portion of the viscous work term in the energy equation,
-namely $\frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)$, also possesses
-linearizable off-diagonal terms similar to those above.
+
+The term~$\frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)$ from
+expansion~\eqref{eq:nabla_cdot_tau_u_expansion} contains the linearizable
+contributions $\frac{m}{\rho} \cdot \mu\Delta\frac{m}{\rho}$ and
+$\frac{m}{\rho} \cdot \left(\mu+\lambda\right)\nabla\nabla \cdot
+\frac{m}{\rho}$.  We choose to not linearize these possibilities due to the
+associated implementation complexity and runtime cost.  Not linearizing these
+terms while linearizing their analogues in the momentum equation may require
+introducing new terms into the stability criteria set forth
+in~\ref{sec:stabilitycriteria}.  This choice may need to be revisited.
+
 %%%Moving on to the candidates from the alternative $\nabla\cdot\tau$
 %%%expansion~\eqref{eq:nabla_cdot_tau_expansion_alt}:
 %%%\begin{align}
@@ -1929,6 +1940,7 @@ linearizable off-diagonal terms similar to those above.
 %%%     + \reference{\left(\mu+\lambda\right)\rho^{-2} m} \Delta\rho
 %%%     - \reference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
 %%%\end{align}
+
 Finishing with the second order temperature term from \eqref{eq:mu_delta_T} and
 its dependencies:
 \begin{align}
@@ -2057,8 +2069,66 @@ from sections~\ref{sec:commoverhead} and~\ref{sec:separate_first_second_deriv}.
 Improving the communication to communication ratio should bolster scalability.
 
 Accordingly, we choose to implicitly treat all terms identified as candidates
-in the preceding sections' discussions.
+in the preceding discussion.  In the context of
+equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
+exactly:
+\begin{align}
+  \frac{\partial}{\partial{}t} \rho{} &= \dots
+\\
+  \frac{\partial}{\partial{}t} m &= \dots
+\\
+  \frac{\partial}{\partial{}t} e &= \dots
+\end{align}
 
+Following~\eqref{eq:generaloperatormasssubstep} and using results
+from~\eqref{sec:formingoperators}, we need a discrete implementation of
+$M+\varphi{}L$ for arbitrary $\varphi$, $k_m$, and $k_n$.  Switching to a
+blocked matrix representation employing five scalar conserved state fields the
+discrete operator is:
+\begin{align}
+\begin{bmatrix}
+%
+  \boldmath{\rho{}\rho } &
+  \boldmath{\rho{}m_{x}} &
+  \boldmath{\rho{}m_{y}} &
+  \boldmath{\rho{}m_{z}} &
+  \boldmath{\rho{}e    } \\
+%
+  \boldmath{m_{x}\rho } &
+  \boldmath{m_{x}m_{x}} &
+  \boldmath{m_{x}m_{y}} &
+  \boldmath{m_{x}m_{z}} &
+  \boldmath{m_{x}e    } \\
+%
+  \boldmath{{m_{y}\rho }} &
+  \boldmath{{m_{y}m_{x}}} &
+  \boldmath{{m_{y}m_{y}}} &
+  \boldmath{{m_{y}m_{z}}} &
+  \boldmath{{m_{y}e    }} \\
+%
+  \boldmath{m_{z}\rho } &
+  \boldmath{m_{z}m_{x}} &
+  \boldmath{m_{z}m_{y}} &
+  \boldmath{m_{z}m_{z}} &
+  \boldmath{m_{z}e    } \\
+%
+  \boldmath{e \rho } &
+  \boldmath{e m_{x}} &
+  \boldmath{e m_{y}} &
+  \boldmath{e m_{z}} &
+  \boldmath{e e}
+\end{bmatrix}
+\begin{bmatrix}
+  \rho \left(k_m, y_l, k_n\right)\\
+  m_{x}\left(k_m, y_l, k_n\right)\\
+  m_{y}\left(k_m, y_l, k_n\right)\\
+  m_{z}\left(k_m, y_l, k_n\right)\\
+  e    \left(k_m, y_l, k_n\right)\\
+\end{bmatrix}
+\end{align}
+While written above using blocked submatrices, in the implementation the state
+may be interleaved such that the overall discrete operator bandwidth is five
+times the bandwidth of the B-spline mass matrix $M$.
 
 \subsubsection{Viscous linearizations chosen for implicit treatment}
 
