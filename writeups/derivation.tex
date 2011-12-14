@@ -2158,47 +2158,79 @@ overall operator bandwidth is five times that of the B-spline mass matrix $M$.
 
 \begin{sidewaystable}
 \centering
-\vspace{2in}                        % Move table inside margins
-\renewcommand{\arraystretch}{2.0}   % Adds whitespace between rows
+\vspace{2in}                      % Move table inside page margins
+\renewcommand{\arraystretch}{2.0} % Adds whitespace between rows
+\newcommand{\entry}[1]{}          % Provides comments for subblocks
+\newcommand{\C}[2]{C^{#1}_{#2}}   % For brevity below
+\newcommand{\D}[1]{D^{(#1)}}      % For brevity below
+\newcommand{\M}{M}                % For brevity below
+\newcommand{\g}{\gamma}           % For brevity below
+\newcommand{\km}{k_{m}}           % For brevity below
+\newcommand{\kn}{k_{n}}           % For brevity below
+\newcommand{\Ma}{\Mach}           % For brevity below
+\newcommand{\mx}{m_{x}}           % For brevity below
+\newcommand{\my}{m_{y}}           % For brevity below
+\newcommand{\mz}{m_{z}}           % For brevity below
+\newcommand{\vp}{\varphi}         % For brevity below
 \begin{align*}
 \begin{bmatrix}
-%
-  \rho{}\rho  &
-  \rho{}m_{x} &
-  \rho{}m_{y} &
-  \rho{}m_{z} &
-  \rho{}e     \\
-%
-  m_{x}\rho  &
-  m_{x}m_{x} &
-  m_{x}m_{y} &
-  m_{x}m_{z} &
-  m_{x}e     \\
-%
-  {m_{y}\rho } &
-  {m_{y}m_{x}} &
-  {m_{y}m_{y}} &
-  {m_{y}m_{z}} &
-  {m_{y}e    } \\
-%
-  m_{z}\rho  &
-  m_{z}m_{x} &
-  m_{z}m_{y} &
-  m_{z}m_{z} &
-  m_{z}e     \\
-%
-  e \rho  &
-  e m_{x} &
-  e m_{y} &
-  e m_{z} &
-  e e
+% Density row
+  \entry{\rho\rho}
+% M
+& \entry{\rho\mx }
+  -\ii\km\M
+& \entry{\rho\my }
+  -\D{1}
+& \entry{\rho\mz }
+  -\ii\kn\M
+& \entry{\rho{}e }
+% Streamwise momentum row
+\\\entry{\mx\rho }
+  -\frac{\g-1}{2}\ii\km\C{\mx}{\nabla\rho}\M
+& \entry{\mx\mx  }
+% M
+  -\left(\g-1\right)\ii\km\C{u}{}\M
+& \entry{\mx\my  }
+  -\left(\g-1\right)\ii\km\C{v}{}\M
+& \entry{\mx\mz  }
+  -\left(\g-1\right)\ii\km\C{w}{}\M
+& \entry{\mx{}e  }
+% Wall-normal momentum row
+\\\entry{\my\rho }
+  -\frac{\g-1}{2}\C{\my}{\nabla\rho}\D{1}
+& \entry{\my\mx  }
+  \left(\g-1\right)\C{u}{}\D{1}
+& \entry{\my\my  }
+% M
+  \left(\g-1\right)\C{v}{}\D{1}
+& \entry{\my\mz  }
+  \left(\g-1\right)\C{w}{}\D{1}
+& \entry{\my{}e  }
+% Spanwise momentum row
+\\\entry{\mz\rho}
+  -\frac{\g-1}{2}\ii\kn\C{\mz}{\nabla\rho}\M
+& \entry{\mz\mx }
+  -\left(\g-1\right)\ii\kn\C{u}{}\M
+& \entry{\mz\my }
+  -\left(\g-1\right)\ii\kn\C{v}{}\M
+& \entry{\mz\mz }
+% M
+  -\left(\g-1\right)\ii\kn\C{w}{}\M
+& \entry{\mz{}e }
+% Total energy row
+\\\entry{e\rho  }
+& \entry{e\mx   }
+& \entry{e\my   }
+& \entry{e\mz   }
+& \entry{ee     }
+% M
 \end{bmatrix}
 \begin{bmatrix}
-  \rho \left(k_m, y_l, k_n\right)\\
-  m_{x}\left(k_m, y_l, k_n\right)\\
-  m_{y}\left(k_m, y_l, k_n\right)\\
-  m_{z}\left(k_m, y_l, k_n\right)\\
-  e    \left(k_m, y_l, k_n\right)\\
+  \rho \left(\km, y_l, \kn\right)\\
+  \mx  \left(\km, y_l, \kn\right)\\
+  \my  \left(\km, y_l, \kn\right)\\
+  \mz  \left(\km, y_l, \kn\right)\\
+  e    \left(\km, y_l, \kn\right)\\
 \end{bmatrix}
 \end{align*}
 \caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
