@@ -1236,58 +1236,58 @@ requires multiplying each Fourier expansion coefficient $\hat{u}_{l m n}$ by
 $\ii k_{m}$ (or~$\ii k_{n}$).  Second derivatives are found by multiplying each
 $\hat{u}_{l m n}$ by $-k_{m}^2$ (or~$-k_{n}^2$).
 
-Combining the B-spline and Fourier details for a scalar-valued $u$ one finds
+Combining the B-spline and Fourier details for a scalar-valued $\phi$ one finds
 \begin{align}
-  \left.\left(\nabla{} u\right)\right|_{m n}
+  \left.\left(\nabla{} \phi\right)\right|_{m n}
 &=
   \begin{pmatrix}
     \ii k_m M \\
     D^{(1)}   \\
     \ii k_n M
-  \end{pmatrix} u\bigr|_{m n}
+  \end{pmatrix} \phi\bigr|_{m n}
 \\
-   \left.\left(\Delta{} u\right)\right|_{m n}
-&= \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) u\bigr|_{m n}
+   \left.\left(\Delta{} \phi\right)\right|_{m n}
+&= \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) \phi\bigr|_{m n}
 \\
-  \left.\left(\nabla\nabla{} u\right)\right|_{m n}
+  \left.\left(\nabla\nabla{} \phi\right)\right|_{m n}
 &=
   \begin{pmatrix}
     -k_m^2               M       & \ii k_m D^{(1)} & \ii \left(k_m + k_n\right) M \\
     \ii k_m              D^{(1)} &         D^{(2)} & \ii k_n D^{(1)}        \\
     \ii \left(k_m + k_n\right) M       & \ii k_n D^{(1)} & -k_n^2 M
-  \end{pmatrix} u\bigr|_{m n}
+  \end{pmatrix} \phi\bigr|_{m n}
 \end{align}
 where all operators map coefficients in all three directions to wall-normal
 collocation point values but streamwise and spanwise coefficients.  For a
-vector field $\vec{\phi}=\trans{\begin{pmatrix}u & v & w\end{pmatrix}}$ one
- obtains the following:
+vector field $\vec{\phi}=\trans{\begin{pmatrix}\phi_{x} & \phi_{y} &
+ \phi_{z}\end{pmatrix}}$ one obtains the following:
 \begin{align}
   \left.\nabla\cdot\vec{\phi}\right|_{m n}
 &=
-  \left.\left(\ii k_m M u + D^{(1)} v + \ii k_n M w\right)\right|_{m n}
+  \left.\left(\ii k_m M \phi_{x} + D^{(1)} \phi_{y} + \ii k_n M \phi_{z}\right)\right|_{m n}
 \\
   \left.\nabla\vec{\phi}\right|_{m n}
 &=
   \left.\begin{pmatrix}
-    \ii k_m M u & D^{(1)} u & \ii k_n M u \\
-    \ii k_m M v & D^{(1)} v & \ii k_n M v \\
-    \ii k_m M w & D^{(1)} w & \ii k_n M w
+    \ii k_m M \phi_{x} & D^{(1)} \phi_{x} & \ii k_n M \phi_{x} \\
+    \ii k_m M \phi_{y} & D^{(1)} \phi_{y} & \ii k_n M \phi_{y} \\
+    \ii k_m M \phi_{z} & D^{(1)} \phi_{z} & \ii k_n M \phi_{z}
   \end{pmatrix}\right|_{m n}
 \\
   \left.\Delta\vec{\phi}\right|_{m n}
 &=
   \left.\begin{pmatrix}
-    \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) u \\
-    \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) v \\
-    \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) w
+    \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) \phi_{x} \\
+    \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) \phi_{y} \\
+    \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) \phi_{z}
   \end{pmatrix}\right|_{m n}
 \\
   \left.\nabla\nabla\cdot\vec{\phi}\right|_{m n}
 &=
   \left.\begin{pmatrix}
-    - k_m^2 M u       + \ii k_m D^{(1)} v + \ii \left(k_m + k_n\right) M w \\
-    \ii k_m D^{(1)} u + D^{(2)} v + \ii k_n D^{(1)} w \\
-    \ii \left(k_m + k_n\right) M u + \ii k_n D^{(1)} v - k_n^2 M w
+    - k_m^2 M \phi_{x}       + \ii k_m D^{(1)} \phi_{y} + \ii \left(k_m + k_n\right) M \phi_{z} \\
+    \ii k_m D^{(1)} \phi_{x} + D^{(2)} \phi_{y} + \ii k_n D^{(1)} \phi_{z} \\
+    \ii \left(k_m + k_n\right) M \phi_{x} + \ii k_n D^{(1)} \phi_{y} - k_n^2 M \phi_{z}
   \end{pmatrix}\right|_{m n}
 \end{align}
 The operator $\nabla\times\nabla\times\vec{\phi} = \nabla\nabla\cdot\vec{\phi}
@@ -1296,9 +1296,9 @@ The operator $\nabla\times\nabla\times\vec{\phi} = \nabla\nabla\cdot\vec{\phi}
   \left.\nabla\times\nabla\times\vec{\phi}\right|_{m n}
 &=
   \left.\begin{pmatrix}
-    \left(k_n^2 M - D^{(2)}\right) u + \ii k_m D^{(1)} v + \ii \left(k_m+k_n\right) w \\
-    \ii k_m D^{(1)} u + \left(k_n^2 + k_m^2\right)Mv + \ii k_n D^{(1)} w \\
-    \ii \left(k_m + k_n\right) u + \ii k_n D^{(1)} v + \left(k_m^2 M - D^{(2)}\right) w
+    \left(k_n^2 M - D^{(2)}\right) \phi_{x} + \ii k_m D^{(1)} \phi_{y} + \ii \left(k_m+k_n\right) M \phi_{z} \\
+    \ii k_m D^{(1)} \phi_{x} + \left(k_n^2 + k_m^2\right)M \phi_{y} + \ii k_n D^{(1)} \phi_{z} \\
+    \ii \left(k_m + k_n\right) M \phi_{x} + \ii k_n D^{(1)} \phi_{y} + \left(k_m^2 M - D^{(2)}\right) \phi_{z}
   \end{pmatrix}\right|_{m n}
   ,
 \end{align}
@@ -2103,10 +2103,10 @@ where the repeated reference values have physically-motivated superscripts
   c^{\nu} &= \reference{\rho^{-1}\mu}
 &
   \overrightarrow{c^{u}} &= \reference{\rho^{-1}m}
-  = \trans{\left(c^{u}, c^{v}, c^{w}\right)}
+  = \trans{\left(c^{u_x}, c^{u_y}, c^{u_z}\right)}
 &
   \overrightarrow{c^{\nu{}u}} &= \reference{\rho^{-2}\mu{}m}
-  = \trans{\left(c^{\nu{}u}, c^{\nu{}v}, c^{\nu{}w}\right)}
+  = \trans{\left(c^{\nu{}u_x}, c^{\nu{}u_y}, c^{\nu{}u_z}\right)}
 \end{align}
 while the single-use reference values
 \begin{align}
@@ -2135,19 +2135,21 @@ subscripts indicating the associated term.
 \subsubsection{Discretization of the implicitly-treated terms}
 
 Following~\eqref{eq:generaloperatormasssubstep} and using results
-from~\eqref{sec:formingoperators}, we must implement $M+\varphi{}L$ for
-arbitrary $\varphi$, $k_m$, and $k_n$. $L$ is nothing but the discrete form of
-the linear terms from the previous section.  To accommodate wall-normal
-variation in reference quantities, notice diagonal matrices defined like
+from~\ref{sec:formingoperators}, we must implement $M+\varphi{}L$ for arbitrary
+$\varphi$, $k_m$, and $k_n$. $L$ is nothing but the discrete form of the linear
+terms from the previous section.  Notice for any reference values
+$c^{\bullet}$ left-multiplying by the diagonal matrix
 \begin{align}
-  C^{\nu} &= \begin{bmatrix}
-   \left.c^{\nu}\right|_{y=0} & 0     & 0 \\
-   0                         & \ddots & 0  \\
-   0                         & 0      & \left.c^{\nu}\right|_{y=L}
+  C^{\bullet} &= \begin{bmatrix}
+   \left.c^{\bullet}\right|_{y=0} &        & 0 \\
+                                  & \ddots &    \\
+   0                              &        & \left.c^{\bullet}\right|_{y=L}
    \end{bmatrix}
 \end{align}
-will scale the application of operators like $C^{\nu}D^{(2)}$ by
-$\left.c^{\nu}\right|_{y=y_l}$ at collocation point $y=y_l$.
+scales linear operators in a way that accommodates wall-normal variations in
+reference quantities.  For example, applying $C^{\nu}D^{(2)}$ rather than
+$D^{(2)}$ scales the result at collocation point $y=y_l$ by
+$\left.c^{\nu}\right|_{y=y_l}$.
 
 Switching to a blocked matrix representation employing five scalar conserved
 state fields, the complete, SMR91-ready discrete operator is shown in
