@@ -1830,7 +1830,7 @@ $\nabla\cdot\mu\nabla{}T$
 
 \subsection{Hybrid implicit/explicit treatment}
 
-\subsubsection{Considerations in choosing the implicit terms}
+\subsubsection{The need for linearization}
 
 The SMR91 time scheme requires the implicit operator $\tilde{L}$ be linear in
 the state variables and time-independent.  Precious little of the
@@ -1944,8 +1944,8 @@ in~\ref{sec:stabilitycriteria}.  This choice may need to be revisited.
 %%%     - \reference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
 %%%\end{align}
 
-Finishing with the second order temperature term from \eqref{eq:mu_delta_T} and
-its dependencies:
+Finishing with the second order temperature term from
+equation~\eqref{eq:mu_delta_T} and its dependencies:
 \begin{align}
 \Delta{}p =
   &{}- \left(\gamma-1\right)\Mach^{2}\rho^{-1}\left[
@@ -2047,7 +2047,7 @@ The total energy convection and pressure work terms may be linearized as
 We have linearized the two terms together as doing so is algebraically simple
 and introduces no additional state derivatives.
 
-\subsubsection{Convective term in the continuity equation}
+\subsubsection{Linearity of the continuity equation}
 \label{sec:contconv}
 
 If off-diagonal density and momentum derivatives are computed implicitly,
@@ -2055,7 +2055,7 @@ implicitly treating the convective term $-\nabla\cdot{}m$ in
 equation~\eqref{eq:state_continuity} is simple.  Doing so reduces by one the
 number of scalar fields needing conversion from physical space to wave space.
 
-\subsubsection{Terms chosen for implicit treatment}
+\subsubsection{The implicitly-treated terms}
 
 Treating wall-normal acoustics implicitly requires off-diagonal coupling
 between the wall-normal momentum and total energy equations.  The incremental
@@ -2103,7 +2103,7 @@ equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
     + \frac{\gamma}{\Reynolds\Prandtl}c^{\nu}\Delta{}e
     + \dots
 \end{align}
-where the repeated reference values are
+where the repeated reference values have physically-motivated superscripts
 \begin{align}
   c^{\nu} &= \reference{\rho^{-1}\mu}
 &
@@ -2135,13 +2135,15 @@ and the single-use reference values are
   \right) }
 \end{align}
 with superscripts indicate the relevant equation and
-subscripts indicating the related term.
+subscripts indicating the associated term.
+
+\subsubsection{Discretization of the implicitly-treated terms}
 
 Following~\eqref{eq:generaloperatormasssubstep} and using results
-from~\eqref{sec:formingoperators}, we need a discrete implementation of
-$M+\varphi{}L$ for arbitrary $\varphi$, $k_m$, and $k_n$.  To accommodate
-wall-normal variation in reference quantities, notice diagonal matrices defined
-like
+from~\eqref{sec:formingoperators}, we must implement $M+\varphi{}L$ for
+arbitrary $\varphi$, $k_m$, and $k_n$. $L$ is nothing but the discrete form of
+the linear terms from the previous section.  To accommodate wall-normal
+variation in reference quantities, notice diagonal matrices defined like
 \begin{align}
   C^{\nu} &= \begin{bmatrix}
    \left.c^{\nu}\right|_{y=0} & 0     & 0 \\
