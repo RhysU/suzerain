@@ -10,7 +10,6 @@
 \usepackage{enumerate}
 \usepackage{fancyhdr}
 \usepackage{fullpage}
-\usepackage[final,hypertexnames=false]{hyperref}
 \usepackage{ifthen}
 \usepackage{lastpage}
 \usepackage{latexsym}
@@ -23,6 +22,10 @@
 \usepackage{varioref}
 \usepackage{wrapfig}
 \usepackage{yhmath}
+
+% Hyperref package must be last otherwise the contents are jumbled
+% hypertexnames disabled to fix links pointing to incorrect locations
+\usepackage[hypertexnames=false,final]{hyperref}
 
 \mathtoolsset{showonlyrefs,showmanualtags}
 %%% \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
