@@ -35,22 +35,6 @@
 % Line Spacing
 \singlespacing
 
-% Set appropriate header/footer information on each page
-\fancypagestyle{plain}{
-    \fancyhf{}
-    \renewcommand{\headheight}{2.0em}
-    \renewcommand{\headsep}{0.75em}
-    \renewcommand{\headrulewidth}{1.0pt}
-    \renewcommand{\footrulewidth}{0pt}
-    \lhead{
-        Suzerain model derivation, discretization, and numerical considerations
-    }
-    \rhead{
-        Page \thepage{} of \pageref{LastPage}
-    }
-}
-\pagestyle{plain}
-
 % Increase table of contents depth
 \setcounter{tocdepth}{4}
 
@@ -69,7 +53,20 @@
 
 \begin{document}
 
+\title{Suzerain model derivation,\\discretization, and numerical considerations}
+\author{Rhys Ulerich}
+\date{\today}
+\thanks{Institute for Computational
+    Engineering and Sciences, The University of Texas at Austin
+    (rhys@ices.utexas.edu)}
+
+\begin{abstract}
+\end{abstract}
+
+\maketitle
+\renewcommand{\contentsname}{} % No idea why "Contents" appears in wrong location
 \tableofcontents
+\newpage
 
 \section{Model derivation}
 \label{sec:derivation}
