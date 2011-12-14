@@ -2178,7 +2178,7 @@ overall operator bandwidth is five times that of the B-spline mass matrix $M$.
 \newcommand{\vp}{\varphi}         % ditto
 \newcommand{\subcoeff}[3]{{       % ditto
    \renewcommand{\arraystretch}{1.4}
-   \trans{\begin{bmatrix}{#1}\\{#2}\\{#3}\end{bmatrix}}\!D
+   \begin{Bmatrix}{#1}\\{#2}\\{#3}\end{Bmatrix}
 }}
 \begin{align*}
 \renewcommand{\arraystretch}{5.0} % Adds whitespace between rows
@@ -2331,12 +2331,9 @@ overall operator bandwidth is five times that of the B-spline mass matrix $M$.
   e    \left(\km, \cdot, \kn\right)\\
 \end{bmatrix}
 \end{align*}
-where $D$ is shorthand for the blocked vector of submatrices
-$
-  D = \trans{\begin{bmatrix}
-     \M & \D{1} & \D{2}
-  \end{bmatrix}}
-$
+where blocked vectors written using curly braces are dotted against the blocked
+vector of submatrices $\trans{\begin{bmatrix} \M & \D{1} & \D{2}
+\end{bmatrix}}$
 \caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
  The discrete operator $M+\varphi{}L$ used for implicit time advance.  The
  time-and-substep dependent operator is a function of $\varphi$, $k_m$, $k_n$,
