@@ -29,6 +29,10 @@
 % hypertexnames disabled to fix links pointing to incorrect locations
 \usepackage[hypertexnames=false,final]{hyperref}
 
+% Environment sidewaystable from rotating plays poorly with amsart class
+% Fix per http://www.latex-community.org/forum/viewtopic.php?f=4&t=1742
+\setlength\rotFPtop{0pt plus 1fil}
+
 \mathtoolsset{showonlyrefs,showmanualtags}
 %%% \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
 
@@ -2160,21 +2164,24 @@ overall operator bandwidth is five times that of the B-spline mass matrix $M$.
 
 \begin{sidewaystable}
 \centering
-\vspace{2in}                      % Move table inside page margins
-\renewcommand{\arraystretch}{2.0} % Adds whitespace between rows
 \newcommand{\entry}[1]{}          % Provides comments for subblocks
 \newcommand{\C}[2]{C^{#1}_{#2}}   % For brevity below
-\newcommand{\D}[1]{D^{(#1)}}      % For brevity below
-\newcommand{\M}{M}                % For brevity below
-\newcommand{\g}{\gamma}           % For brevity below
-\newcommand{\km}{k_{m}}           % For brevity below
-\newcommand{\kn}{k_{n}}           % For brevity below
-\newcommand{\Ma}{\Mach}           % For brevity below
-\newcommand{\mx}{m_{x}}           % For brevity below
-\newcommand{\my}{m_{y}}           % For brevity below
-\newcommand{\mz}{m_{z}}           % For brevity below
-\newcommand{\vp}{\varphi}         % For brevity below
+\newcommand{\D}[1]{D^{(#1)}}      % ditto
+\newcommand{\M}{M}                % ditto
+\newcommand{\g}{\gamma}           % ditto
+\newcommand{\km}{k_{m}}           % ditto
+\newcommand{\kn}{k_{n}}           % ditto
+\newcommand{\Ma}{\Mach}           % ditto
+\newcommand{\mx}{m_{x}}           % ditto
+\newcommand{\my}{m_{y}}           % ditto
+\newcommand{\mz}{m_{z}}           % ditto
+\newcommand{\vp}{\varphi}         % ditto
+\newcommand{\subcoeff}[3]{{       % ditto
+   \renewcommand{\arraystretch}{1.4}
+   \trans{\begin{bmatrix}{#1}\\{#2}\\{#3}\end{bmatrix}}\!D
+}}
 \begin{align*}
+\renewcommand{\arraystretch}{5.0} % Adds whitespace between rows
 \begin{bmatrix}
 % Density row
   \entry{\rho\rho}
@@ -2188,57 +2195,152 @@ overall operator bandwidth is five times that of the B-spline mass matrix $M$.
 & \entry{\rho{}e }
 % Streamwise momentum row
 \\\entry{\mx\rho }
-  -\frac{\g-1}{2}\ii\km\C{\mx}{\nabla\rho}\M
+  \subcoeff{
+      \frac{1-\g}{2}\ii\km\C{\mx}{\nabla\rho}
+    + \frac{\km^2+\kn^2}{\Reynolds}\C{\nu{}u_x}{}
+  }{
+  }{
+    - \frac{1}{\Reynolds}\C{\nu{}u_x}{}
+  }
 & \entry{\mx\mx  }
 % M
-  -\left(\g-1\right)\ii\km\C{u}{}\M
+  \subcoeff{
+      \left(1-\g\right)\ii\km\C{u_x}{}
+  }{
+  }{
+  }
 & \entry{\mx\my  }
-  -\left(\g-1\right)\ii\km\C{v}{}\M
+  \subcoeff{
+      \left(1-\g\right)\ii\km\C{u_y}{}
+  }{
+  }{
+  }
 & \entry{\mx\mz  }
-  -\left(\g-1\right)\ii\km\C{w}{}\M
+  \subcoeff{
+      \left(1-\g\right)\ii\km\C{u_z}{}
+  }{
+  }{
+  }
 & \entry{\mx{}e  }
+  \subcoeff{
+      \frac{1-\g}{\Ma^2}\ii\km
+  }{
+  }{
+  }
 % Wall-normal momentum row
 \\\entry{\my\rho }
-  -\frac{\g-1}{2}\C{\my}{\nabla\rho}\D{1}
+  \subcoeff{
+      \frac{\km^2+\kn^2}{\Reynolds}\C{\nu{}u_y}{}
+  }{
+      \frac{1-\g}{2}\C{\my}{\nabla\rho}
+  }{
+    - \frac{1}{\Reynolds}\C{\nu{}u_y}{}
+  }
 & \entry{\my\mx  }
-  \left(\g-1\right)\C{u}{}\D{1}
+  \subcoeff{
+  }{
+      \left(\g-1\right)\C{u_x}{}
+  }{
+  }
 & \entry{\my\my  }
 % M
-  \left(\g-1\right)\C{v}{}\D{1}
+  \subcoeff{
+  }{
+      \left(\g-1\right)\C{u_y}{}
+  }{
+  }
 & \entry{\my\mz  }
-  \left(\g-1\right)\C{w}{}\D{1}
+  \subcoeff{
+  }{
+      \left(\g-1\right)\C{u_z}{}
+  }{
+  }
 & \entry{\my{}e  }
+  \subcoeff{
+  }{
+      \frac{1-\g}{\Ma^2}
+  }{
+  }
 % Spanwise momentum row
 \\\entry{\mz\rho}
-  -\frac{\g-1}{2}\ii\kn\C{\mz}{\nabla\rho}\M
+  \subcoeff{
+      \frac{1-\g}{2}\ii\kn\C{\mz}{\nabla\rho}
+    + \frac{\km^2+\kn^2}{\Reynolds}\C{\nu{}u_z}{}
+  }{
+  }{
+    - \frac{1}{\Reynolds}\C{\nu{}u_z}{}
+  }
 & \entry{\mz\mx }
-  -\left(\g-1\right)\ii\kn\C{u}{}\M
+  \subcoeff{
+      \left(1-\g\right)\ii\kn\C{u_x}{}
+  }{
+  }{
+  }
 & \entry{\mz\my }
-  -\left(\g-1\right)\ii\kn\C{v}{}\M
+  \subcoeff{
+      \left(1-\g\right)\ii\kn\C{u_y}{}
+  }{
+  }{
+  }
 & \entry{\mz\mz }
 % M
-  -\left(\g-1\right)\ii\kn\C{w}{}\M
+  \subcoeff{
+      \left(1-\g\right)\ii\kn\C{u_z}{}
+  }{
+  }{
+  }
 & \entry{\mz{}e }
+  \subcoeff{
+      \frac{1-\g}{\Ma^2}\ii\kn
+  }{
+  }{
+  }
 % Total energy row
 \\\entry{e\rho  }
+  \subcoeff{
+  }{
+  }{
+  }
 & \entry{e\mx   }
+  \subcoeff{
+  }{
+  }{
+  }
 & \entry{e\my   }
+  \subcoeff{
+  }{
+  }{
+  }
 & \entry{e\mz   }
+  \subcoeff{
+  }{
+  }{
+  }
 & \entry{ee     }
 % M
+  \subcoeff{
+  }{
+  }{
+  }
 \end{bmatrix}
 \begin{bmatrix}
-  \rho \left(\km, y_l, \kn\right)\\
-  \mx  \left(\km, y_l, \kn\right)\\
-  \my  \left(\km, y_l, \kn\right)\\
-  \mz  \left(\km, y_l, \kn\right)\\
-  e    \left(\km, y_l, \kn\right)\\
+  \rho \left(\km, \cdot, \kn\right)\\
+  \mx  \left(\km, \cdot, \kn\right)\\
+  \my  \left(\km, \cdot, \kn\right)\\
+  \mz  \left(\km, \cdot, \kn\right)\\
+  e    \left(\km, \cdot, \kn\right)\\
 \end{bmatrix}
 \end{align*}
+where $D$ is shorthand for the blocked vector of submatrices
+$
+  D = \trans{\begin{bmatrix}
+     \M & \D{1} & \D{2}
+  \end{bmatrix}}
+$
 \caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
  The discrete operator $M+\varphi{}L$ used for implicit time advance.  The
- operator is a function of $\varphi$, $k_m$, $k_n$, and diagonal reference
- quantity matrices, e.g. $C^\nu$.
+ time-and-substep dependent operator is a function of $\varphi$, $k_m$, $k_n$,
+ and diagonal reference quantity matrices, e.g. $C^\nu$.
 }
 \label{tbl:discreteimplicitop}
 \end{sidewaystable}
