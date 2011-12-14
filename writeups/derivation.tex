@@ -16,6 +16,7 @@
 \usepackage{mathrsfs}
 \usepackage{mathtools}
 \usepackage{pstricks}
+\usepackage{rotating}
 \usepackage{setspace}
 \usepackage{txfonts}
 \usepackage{units}
@@ -2113,7 +2114,7 @@ where the repeated reference values have physically-motivated superscripts
   \overrightarrow{c^{\nu{}u}} &= \reference{\rho^{-2}\mu{}m}
   = \trans{\left(c^{\nu{}u}, c^{\nu{}v}, c^{\nu{}w}\right)}
 \end{align}
-and the single-use reference values are
+while the single-use reference values
 \begin{align}
   c^{m}_{\nabla\rho} &= \reference{m^{2}\rho^{-2}}
 \\
@@ -2134,7 +2135,7 @@ and the single-use reference values are
          \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
   \right) }
 \end{align}
-with superscripts indicate the relevant equation and
+have superscripts indicating the relevant equation and
 subscripts indicating the associated term.
 
 \subsubsection{Discretization of the implicitly-treated terms}
@@ -2155,8 +2156,17 @@ will scale the application of operators like $C^{\nu}D^{(2)}$ by
 $\left.c^{\nu}\right|_{y=y_l}$ at collocation point $y=y_l$.
 
 Switching to a blocked matrix representation employing five scalar conserved
-state fields, the complete, SMR91-ready implicit operator is:
-\begin{align}
+state fields, the complete, SMR91-ready discrete operator is shown in
+table~\vref{tbl:discreteimplicitop}.  Though written using submatrices
+blocked assuming each conserved scalar is stored contiguously, in the
+implementation the five conserved scalars may be interleaved such that the
+overall operator bandwidth is five times that of the B-spline mass matrix $M$.
+
+\begin{sidewaystable}
+\centering
+\vspace{2in}                        % Move table inside margins
+\renewcommand{\arraystretch}{2.0}   % Adds whitespace between rows
+\begin{align*}
 \begin{bmatrix}
 %
   \rho{}\rho  &
@@ -2196,10 +2206,14 @@ state fields, the complete, SMR91-ready implicit operator is:
   m_{z}\left(k_m, y_l, k_n\right)\\
   e    \left(k_m, y_l, k_n\right)\\
 \end{bmatrix}
-\end{align}
-While written above using blocked submatrices, in the implementation the state
-may be interleaved such that the overall discrete operator bandwidth is five
-times the bandwidth of the B-spline mass matrix $M$.
+\end{align*}
+\caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
+ The discrete operator $M+\varphi{}L$ used for implicit time advance.  The
+ operator is a function of $\varphi$, $k_m$, $k_n$, and diagonal reference
+ quantity matrices, e.g. $C^\nu$.
+}
+\label{tbl:discreteimplicitop}
+\end{sidewaystable}
 
 \subsubsection{Viscous linearizations chosen for implicit treatment}
 
