@@ -11,9 +11,14 @@
 \usepackage{lastpage}
 \usepackage{latexsym}
 \usepackage{mathtools}
+\usepackage{parskip}
 \usepackage{pstricks}
 \usepackage{setspace}
 \usepackage{txfonts}
+
+% Hyperref package must be last otherwise the contents are jumbled
+% hypertexnames disabled to fix links pointing to incorrect locations
+\usepackage[hypertexnames=false,final]{hyperref}
 
 \mathtoolsset{showmanualtags,showonlyrefs}
 \allowdisplaybreaks[1]
@@ -36,10 +41,6 @@
     }
 }
 \pagestyle{plain}
-
-% Paragraph spacing
-\setlength{\parindent}{0em}
-\setlength{\parskip}{2.0ex plus 0.75ex minus 0.75ex}
 
 % Document-specific commands
 \newcommand{\vecnabla}{\ensuremath{\vec{\nabla}}}

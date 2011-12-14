@@ -5,15 +5,20 @@
 \usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{mathtools}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
 \usepackage{fullpage}
 \usepackage{lastpage}
 \usepackage{latexsym}
+\usepackage{mathtools}
+\usepackage{parskip}
 \usepackage{pstricks}
 \usepackage{setspace}
 \usepackage{txfonts}
+
+% Hyperref package must be last otherwise the contents are jumbled
+% hypertexnames disabled to fix links pointing to incorrect locations
+\usepackage[hypertexnames=false,final]{hyperref}
 
 \mathtoolsset{showonlyrefs,showmanualtags}
 \allowdisplaybreaks[1]
@@ -37,10 +42,6 @@
     }
 }
 \pagestyle{plain}
-
-% Paragraph spacing
-\setlength{\parindent}{0em}
-\setlength{\parskip}{2.0ex plus 0.75ex minus 0.75ex}
 
 % Document-specific commands
 \newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}

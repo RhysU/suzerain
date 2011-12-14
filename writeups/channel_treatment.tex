@@ -16,12 +16,17 @@
 \usepackage{latexsym}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
+\usepackage{parskip}
 \usepackage{pstricks}
 \usepackage{setspace}
 \usepackage{txfonts}
 \usepackage{units}
 \usepackage{varioref}
 \usepackage{wrapfig}
+
+% Hyperref package must be last otherwise the contents are jumbled
+% hypertexnames disabled to fix links pointing to incorrect locations
+\usepackage[hypertexnames=false,final]{hyperref}
 
 \mathtoolsset{showonlyrefs,showmanualtags}
 \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
@@ -44,10 +49,6 @@
     }
 }
 \pagestyle{plain}
-
-% Paragraph spacing
-\setlength{\parindent}{0em}
-\setlength{\parskip}{2.0ex plus 0.75ex minus 0.75ex}
 
 % Document-specific commands
 
