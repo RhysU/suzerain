@@ -2171,15 +2171,17 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 \newcommand{\g}{\gamma}           % ditto
 \newcommand{\km}{k_{m}}           % ditto
 \newcommand{\kn}{k_{n}}           % ditto
-\newcommand{\Ma}{\Mach}           % ditto
 \newcommand{\mx}{m_{x}}           % ditto
 \newcommand{\my}{m_{y}}           % ditto
 \newcommand{\mz}{m_{z}}           % ditto
 \newcommand{\vp}{\varphi}         % ditto
 \newcommand{\subcoeff}[3]{{       % ditto
-   \renewcommand{\arraystretch}{1.4}
+   \renewcommand{\arraystretch}{1.6}
    \begin{Bmatrix}{#1}\\{#2}\\{#3}\end{Bmatrix}
 }}
+\newcommand{\Ma}{\ensuremath{\mbox{\small{}Ma}}}
+\renewcommand{\Pr}{\ensuremath{\mbox{\small{}Pr}}}
+\renewcommand{\Re}{\ensuremath{\mbox{\small{}Re}}}
 \begin{align*}
 \renewcommand{\arraystretch}{5.0} % Adds whitespace between rows
 \begin{bmatrix}
@@ -2197,10 +2199,12 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 \\\entry{\mx\rho }
   \subcoeff{
       \frac{1-\g}{2}\ii\km\C{\mx}{\nabla\rho}
-    + \frac{\km^2+\kn^2}{\Reynolds}\C{\nu{}u_x}{}
+    + \frac{\left(\alpha+\frac{4}{3}\right)\km^2+\kn^2}{\Re}\C{\nu{}u_x}{}
+    - \frac{\alpha+\frac{1}{3}}{\Re}\ii\left(\km+\kn\right)\C{\nu{}u_z}{}
   }{
+    - \frac{\alpha+\frac{1}{3}}{\Re}\ii\km\C{\nu{}u_y}{}
   }{
-    - \frac{1}{\Reynolds}\C{\nu{}u_x}{}
+    - \frac{1}{\Re}\C{\nu{}u_x}{}
   }
 & \entry{\mx\mx  }
 % M
@@ -2230,11 +2234,14 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 % Wall-normal momentum row
 \\\entry{\my\rho }
   \subcoeff{
-      \frac{\km^2+\kn^2}{\Reynolds}\C{\nu{}u_y}{}
+      \frac{\km^2+\kn^2}{\Re}\C{\nu{}u_y}{}
   }{
       \frac{1-\g}{2}\C{\my}{\nabla\rho}
+    - \frac{\alpha+\frac{1}{3}}{\Re}\ii\left(
+         \km\C{\nu{}u_x}{} + \kn\C{\nu{}u_z}{}
+      \right)
   }{
-    - \frac{1}{\Reynolds}\C{\nu{}u_y}{}
+    - \frac{\alpha+\frac{4}{3}}{\Re}\C{\nu{}u_y}{}
   }
 & \entry{\my\mx  }
   \subcoeff{
@@ -2265,10 +2272,12 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 \\\entry{\mz\rho}
   \subcoeff{
       \frac{1-\g}{2}\ii\kn\C{\mz}{\nabla\rho}
-    + \frac{\km^2+\kn^2}{\Reynolds}\C{\nu{}u_z}{}
+    + \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu{}u_z}{}
+    - \frac{\alpha+\frac{1}{3}}{\Re}\ii\left(\km+\kn\right)\C{\nu{}u_x}{}
   }{
+    - \frac{\alpha+\frac{1}{3}}{\Re}\ii\kn\C{\nu{}u_y}{}
   }{
-    - \frac{1}{\Reynolds}\C{\nu{}u_z}{}
+    - \frac{1}{\Re}\C{\nu{}u_z}{}
   }
 & \entry{\mz\mx }
   \subcoeff{
