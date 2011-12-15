@@ -7,6 +7,7 @@
 \usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{bm}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
 \usepackage{fullpage}
@@ -2055,6 +2056,7 @@ equation~\eqref{eq:state_continuity} is simple.  Doing so reduces by one the
 number of scalar fields needing conversion from physical space to wave space.
 
 \subsubsection{The implicitly-treated terms}
+\label{sec:implicitlytreatedterms}
 
 Treating wall-normal acoustics implicitly requires off-diagonal coupling
 between the wall-normal momentum and total energy equations.  The incremental
@@ -2163,7 +2165,6 @@ the five conserved scalars may be interleaved such that the overall operator
 bandwidth is only five times that of the B-spline mass matrix $M$.
 
 \begin{sidewaysfigure}
-\centering
 \newcommand{\entry}[1]{}          % Provides comments for subblocks
 \newcommand{\C}[2]{C^{#1}_{#2}}   % For brevity below
 \newcommand{\D}[1]{D^{(#1)}}      % ditto
@@ -2182,13 +2183,19 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 \newcommand{\Ma}{\ensuremath{\mbox{\small{}Ma}}}
 \renewcommand{\Pr}{\ensuremath{\mbox{\small{}Pr}}}
 \renewcommand{\Re}{\ensuremath{\mbox{\small{}Re}}}
-\resizebox{\textwidth}{!}{\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
+{\resizebox{\textwidth}{!}{\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
 \begin{align*}
+\bm{\vp}
 \renewcommand{\arraystretch}{6.0} % Adds whitespace between rows
+\addtolength{\arraycolsep}{-.1em}
 \begin{bmatrix}
 % Density row
   \entry{\rho\rho}
-% M
+  \subcoeff{
+      \bm{\frac{1}{\vp}} % M
+  }{
+  }{
+  }
 & \entry{\rho\mx }
   \subcoeff{
     - \ii\km
@@ -2208,6 +2215,7 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
   }{
   }
 & \entry{\rho{}e }
+  0
 % Streamwise momentum row
 \\\entry{\mx\rho }
   \subcoeff{
@@ -2220,9 +2228,9 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
     - \frac{1}{\Re}\C{\nu{}u_x}{}
   }
 & \entry{\mx\mx  }
-% M
   \subcoeff{
-      \left(1-\g\right)\ii\km\C{u_x}{}
+      \bm{\frac{1}{\vp}} % M
+    + \left(1-\g\right)\ii\km\C{u_x}{}
     - \frac{\left(\alpha+\frac{4}{3}\right)\km^2+\kn^2}{\Re}\C{\nu}{}
   }{
   }{
@@ -2268,8 +2276,8 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
   }{
   }
 & \entry{\my\my  }
-% M
   \subcoeff{
+      \bm{\frac{1}{\vp}} % M
     - \frac{\km^2+\kn^2}{\Re}\C{\nu}{}
   }{
       \left(\g-1\right)\C{u_y}{}
@@ -2315,9 +2323,9 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
   }{
   }
 & \entry{\mz\mz }
-% M
   \subcoeff{
-      \left(1-\g\right)\ii\kn\C{u_z}{}
+      \bm{\frac{1}{\vp}} % M
+    + \left(1-\g\right)\ii\kn\C{u_z}{}
     - \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu}{}
   }{
   }{
@@ -2332,29 +2340,46 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 % Total energy row
 \\\entry{e\rho  }
   \subcoeff{
+    - \ii\left(\km\C{e_x}{\nabla\rho} + \kn\C{e_z}{\nabla\rho}\right)
+    - \g\frac{\km^2+\kn^2}{\Re\Pr\left(\g-1\right)}\C{e}{\Delta\rho}
   }{
+    - \C{e_y}{\nabla\rho}
   }{
+    \frac{\g}{\Re\Pr\left(\g-1\right)}\C{e}{\Delta\rho}
   }
 & \entry{e\mx   }
   \subcoeff{
+    - \ii\km\C{e}{\nabla\cdot{}m}
+    + \frac{\g\Ma^2}{\Re\Pr}\left(\km^2+\kn^2\right)\C{\nu{}u_x}{}
   }{
   }{
+    - \frac{\g\Ma^2}{\Re\Pr}\C{\nu{}u_x}{}
   }
 & \entry{e\my   }
   \subcoeff{
+      \frac{\g\Ma^2}{\Re\Pr}\left(\km^2+\kn^2\right)\C{\nu{}u_y}{}
   }{
+    - \C{e}{\nabla\cdot{}m}
   }{
+    - \frac{\g\Ma^2}{\Re\Pr}\C{\nu{}u_y}{}
   }
 & \entry{e\mz   }
   \subcoeff{
+    - \ii\kn\C{e}{\nabla\cdot{}m}
+    + \frac{\g\Ma^2}{\Re\Pr}\left(\km^2+\kn^2\right)\C{\nu{}u_z}{}
   }{
   }{
+    - \frac{\g\Ma^2}{\Re\Pr}\C{\nu{}u_z}{}
   }
 & \entry{ee     }
-% M
   \subcoeff{
+      \bm{\frac{1}{\vp}} % M
+    - \g\ii\left(\km\C{u_x}{} + \kn\C{u_z}{}\right)
+    - \frac{\g}{\Re\Pr}\left(\km^2+\kn^2\right)\C{\nu}{}
   }{
+    - \g\C{u_y}{}
   }{
+      \frac{\g}{\Re\Pr}\C{\nu}{}
   }
 \end{bmatrix}
 \renewcommand{\arraystretch}{1.0}
@@ -2363,17 +2388,21 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
   \vdots \\
   \hat{\rho}_{\left(N_y-1,\,m,\,n\right)} \\
 \\%
+\\%
   \hat{\mx}_{\left(0,\,m,\,n\right)} \\
   \vdots \\
   \hat{\mx}_{\left(N_y-1,\,m,\,n\right)} \\
+\\%
 \\%
   \hat{\my}_{\left(0,\,m,\,n\right)} \\
   \vdots \\
   \hat{\my}_{\left(N_y-1,\,m,\,n\right)} \\
 \\%
+\\%
   \hat{\mz}_{\left(0,\,m,\,n\right)} \\
   \vdots \\
   \hat{\mz}_{\left(N_y-1,\,m,\,n\right)} \\
+\\%
 \\%
   \hat{e}_{\left(0,\,m,\,n\right)} \\
   \vdots \\
@@ -2381,17 +2410,21 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 %
 \end{bmatrix}
 \end{align*}
-\end{minipage}}
-\\ \vspace{2em}
+\end{minipage}}}  % END SCALE-TO-FIT!
+\vspace{2em}
+\\
+\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
 The complete discrete operator $M+\varphi{}L$ used for implicit time advance is
-depicted.  The $3 N_y \times N_y$ blocked vectors written using curly braces
-are to be dotted against the blocked vector $
+depicted.  Notice the leftmost scalar factor $\bm{\vp}$!  The $3 N_y \times N_y$
+blocked vectors written using curly braces are to be dotted against the blocked
+vector $
   \trans{\begin{bmatrix} \M & \D{1} & \D{2} \end{bmatrix}}
-   $.
-Each of $M$, $\D{1}$, and $\D{2}$ are $N_y \times N_y$ banded matrices.
-Reference quantities like $C^\nu$ are $N_y \times N_y$ diagonal matrices.
-The operator, a function of $k_m$ and $k_n$, takes wall-normal B-spline
-coefficients to B-spline collocation point values.
+$.
+Each of $M$, $\D{1}$, and $\D{2}$ is a $N_y \times N_y$ banded matrix.
+Reference quantities like $C^\nu$ are $N_y \times N_y$ diagonal matrices.  The
+wavenumber-dependent operator takes wall-normal B-spline coefficients to
+B-spline collocation point values.
+\end{minipage}
  \caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
   The complete discrete operator $M+\varphi{}L$ used for implicit time advance.
  }
