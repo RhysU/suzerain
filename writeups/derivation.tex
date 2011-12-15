@@ -29,7 +29,7 @@
 % hypertexnames disabled to fix links pointing to incorrect locations
 \usepackage[hypertexnames=false,final]{hyperref}
 
-% Environment sidewaystable from rotating plays poorly with amsart class
+% Environment sidewaysfigure from rotating plays poorly with amsart class
 % Fix per http://www.latex-community.org/forum/viewtopic.php?f=4&t=1742
 \setlength\rotFPtop{0pt plus 1fil}
 
@@ -2157,12 +2157,12 @@ $\left.c^{\nu}\right|_{y=y_l}$.
 
 Switching to a blocked matrix representation employing five scalar conserved
 state fields, the complete, SMR91-ready discrete operator is shown in
-table~\vref{tbl:discreteimplicitop}.  Though written using submatrices
-blocked assuming each conserved scalar is stored contiguously, in the
-implementation the five conserved scalars may be interleaved such that the
-overall operator bandwidth is five times that of the B-spline mass matrix $M$.
+table~\vref{fig:discreteimplicitop}.  Though written using submatrices blocked
+assuming each conserved scalar is stored contiguously, in the implementation
+the five conserved scalars may be interleaved such that the overall operator
+bandwidth is only five times that of the B-spline mass matrix $M$.
 
-\begin{sidewaystable}
+\begin{sidewaysfigure}
 \centering
 \newcommand{\entry}[1]{}          % Provides comments for subblocks
 \newcommand{\C}[2]{C^{#1}_{#2}}   % For brevity below
@@ -2323,24 +2323,45 @@ overall operator bandwidth is five times that of the B-spline mass matrix $M$.
   }{
   }
 \end{bmatrix}
+\renewcommand{\arraystretch}{1.0}
 \begin{bmatrix}
-  \rho \left(\km, \cdot, \kn\right)\\
-  \mx  \left(\km, \cdot, \kn\right)\\
-  \my  \left(\km, \cdot, \kn\right)\\
-  \mz  \left(\km, \cdot, \kn\right)\\
-  e    \left(\km, \cdot, \kn\right)\\
+  \hat{\rho}_{\left(0,\,m,\,n\right)} \\
+  \vdots \\
+  \hat{\rho}_{\left(N_y-1,\,m,\,n\right)} \\
+\\%
+  \hat{\mx}_{\left(0,\,m,\,n\right)} \\
+  \vdots \\
+  \hat{\mx}_{\left(N_y-1,\,m,\,n\right)} \\
+\\%
+  \hat{\my}_{\left(0,\,m,\,n\right)} \\
+  \vdots \\
+  \hat{\my}_{\left(N_y-1,\,m,\,n\right)} \\
+\\%
+  \hat{\mz}_{\left(0,\,m,\,n\right)} \\
+  \vdots \\
+  \hat{\mz}_{\left(N_y-1,\,m,\,n\right)} \\
+\\%
+  \hat{e}_{\left(0,\,m,\,n\right)} \\
+  \vdots \\
+  \hat{e}_{\left(N_y-1,\,m,\,n\right)} \\
+%
 \end{bmatrix}
 \end{align*}
-where blocked vectors written using curly braces are dotted against the blocked
-vector of submatrices $\trans{\begin{bmatrix} \M & \D{1} & \D{2}
-\end{bmatrix}}$
-\caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
- The discrete operator $M+\varphi{}L$ used for implicit time advance.  The
- time-and-substep dependent operator is a function of $\varphi$, $k_m$, $k_n$,
- and diagonal reference quantity matrices, e.g. $C^\nu$.
-}
-\label{tbl:discreteimplicitop}
-\end{sidewaystable}
+\\ \vspace{1em}
+The complete discrete operator $M+\varphi{}L$ used for implicit time advance is
+depicted.  The $3 N_y \times N_y$ blocked vectors written using curly braces
+are dotted against the blocked vector $
+  \trans{\begin{bmatrix} \M & \D{1} & \D{2} \end{bmatrix}}
+   $.
+Each of $M$, $\D{1}$, and $\D{2}$ are $N_y \times N_y$ banded matrices.
+Reference quantities like $C^\nu$ are $N_y \times N_y$ diagonal matrices.
+The operator, a function of $k_m$ and $k_n$, takes wall-normal B-spline
+coefficients to B-spline collocation point values.
+ \caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
+  The complete discrete operator $M+\varphi{}L$ used for implicit time advance.
+ }
+\label{fig:discreteimplicitop}
+\end{sidewaysfigure}
 
 \subsubsection{Viscous linearizations chosen for implicit treatment}
 
