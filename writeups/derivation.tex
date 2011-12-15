@@ -2176,24 +2176,37 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 \newcommand{\mz}{m_{z}}           % ditto
 \newcommand{\vp}{\varphi}         % ditto
 \newcommand{\subcoeff}[3]{{       % ditto
-   \renewcommand{\arraystretch}{1.6}
+   \renewcommand{\arraystretch}{2.0}
    \begin{Bmatrix}{#1}\\{#2}\\{#3}\end{Bmatrix}
 }}
 \newcommand{\Ma}{\ensuremath{\mbox{\small{}Ma}}}
 \renewcommand{\Pr}{\ensuremath{\mbox{\small{}Pr}}}
 \renewcommand{\Re}{\ensuremath{\mbox{\small{}Re}}}
+\resizebox{\textwidth}{!}{\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
 \begin{align*}
-\renewcommand{\arraystretch}{5.0} % Adds whitespace between rows
+\renewcommand{\arraystretch}{6.0} % Adds whitespace between rows
 \begin{bmatrix}
 % Density row
   \entry{\rho\rho}
 % M
 & \entry{\rho\mx }
-  -\ii\km\M
+  \subcoeff{
+    - \ii\km
+  }{
+  }{
+  }
 & \entry{\rho\my }
-  -\D{1}
+  \subcoeff{
+  }{
+    - 1
+  }{
+  }
 & \entry{\rho\mz }
-  -\ii\kn\M
+  \subcoeff{
+    - \ii\kn
+  }{
+  }{
+  }
 & \entry{\rho{}e }
 % Streamwise momentum row
 \\\entry{\mx\rho }
@@ -2210,18 +2223,22 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 % M
   \subcoeff{
       \left(1-\g\right)\ii\km\C{u_x}{}
+    - \frac{\left(\alpha+\frac{4}{3}\right)\km^2+\kn^2}{\Re}\C{\nu}{}
   }{
   }{
+      \frac{1}{\Re}\C{\nu}{}
   }
 & \entry{\mx\my  }
   \subcoeff{
       \left(1-\g\right)\ii\km\C{u_y}{}
   }{
+      \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\km\C{\nu}{}
   }{
   }
 & \entry{\mx\mz  }
   \subcoeff{
       \left(1-\g\right)\ii\km\C{u_z}{}
+    + \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\left(\km+\kn\right)\C{\nu}{}
   }{
   }{
   }
@@ -2247,19 +2264,23 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
   \subcoeff{
   }{
       \left(\g-1\right)\C{u_x}{}
+    + \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\km\C{\nu}{}
   }{
   }
 & \entry{\my\my  }
 % M
   \subcoeff{
+    - \frac{\km^2+\kn^2}{\Re}\C{\nu}{}
   }{
       \left(\g-1\right)\C{u_y}{}
   }{
+      \frac{\alpha+\frac{4}{3}}{\Re}\C{\nu}{}
   }
 & \entry{\my\mz  }
   \subcoeff{
   }{
       \left(\g-1\right)\C{u_z}{}
+    + \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\kn\C{\nu}{}
   }{
   }
 & \entry{\my{}e  }
@@ -2282,6 +2303,7 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 & \entry{\mz\mx }
   \subcoeff{
       \left(1-\g\right)\ii\kn\C{u_x}{}
+    + \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\left(\km+\kn\right)\C{\nu}{}
   }{
   }{
   }
@@ -2289,14 +2311,17 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
   \subcoeff{
       \left(1-\g\right)\ii\kn\C{u_y}{}
   }{
+      \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\kn\C{\nu}{}
   }{
   }
 & \entry{\mz\mz }
 % M
   \subcoeff{
       \left(1-\g\right)\ii\kn\C{u_z}{}
+    - \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu}{}
   }{
   }{
+      \frac{1}{\Re}\C{\nu}{}
   }
 & \entry{\mz{}e }
   \subcoeff{
@@ -2356,10 +2381,11 @@ bandwidth is only five times that of the B-spline mass matrix $M$.
 %
 \end{bmatrix}
 \end{align*}
-\\ \vspace{1em}
+\end{minipage}}
+\\ \vspace{2em}
 The complete discrete operator $M+\varphi{}L$ used for implicit time advance is
 depicted.  The $3 N_y \times N_y$ blocked vectors written using curly braces
-are dotted against the blocked vector $
+are to be dotted against the blocked vector $
   \trans{\begin{bmatrix} \M & \D{1} & \D{2} \end{bmatrix}}
    $.
 Each of $M$, $\D{1}$, and $\D{2}$ are $N_y \times N_y$ banded matrices.
