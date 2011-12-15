@@ -2158,11 +2158,27 @@ $D^{(2)}$ scales the result at collocation point $y=y_l$ by
 $\left.c^{\nu}\right|_{y=y_l}$.
 
 Switching to a blocked matrix representation employing five scalar conserved
-state fields, the complete, SMR91-ready discrete operator is shown in
-table~\vref{fig:discreteimplicitop}.  Though written using submatrices blocked
-assuming each conserved scalar is stored contiguously, in the implementation
-the five conserved scalars may be interleaved such that the overall operator
-bandwidth is only five times that of the B-spline mass matrix $M$.
+state fields, the complete, SMR91-ready discrete operator $M+\varphi{}L$ is
+shown in figure~\vref{fig:discreteimplicitop}.  The representation chosen
+highlights how the full operator is built from discrete operators applied to
+individual state fields.  Applying the operator should not require fully
+forming it within a contiguous region.  Inverting the operator likely will.
+Though written using submatrices blocked assuming each conserved scalar is
+stored contiguously, in the implementation the five conserved scalars may be
+interleaved such that the overall operator bandwidth is only five times that of
+the B-spline mass matrix $M$.
+
+Strong Dirichlet boundary conditions may be enforced in the usual way.  Neumann
+boundary condition implementations are less straightforward.  For simulations
+with no mean bulk velocity in the spanwise direction, the reference coefficient
+matrices $C^{u_z}$ and $C^{\nu{}u_z}$ may be treated as effectively zero.  This
+reduces the required linear algebra.  If desired, the density equation and
+density terms in the other equations may removed from the result in
+figure~\ref{fig:discreteimplicitop}.  Previous work by did not treat density
+implicitly Guarini~\cite{Guarini1998}.  Finally, implicitly handling only the
+wall-normal directions may be accomplished by setting $k_{m}$ and $k_{n}$ to
+zero.  Doing so results in a wavenumber independent operator requiring
+factorization only once per substep.
 
 \begin{sidewaysfigure}
 \newcommand{\entry}[1]{}          % Provides comments for subblocks
@@ -2430,52 +2446,6 @@ B-spline collocation point values.
  }
 \label{fig:discreteimplicitop}
 \end{sidewaysfigure}
-
-\subsubsection{Viscous linearizations chosen for implicit treatment}
-
-All first and second order, on-diagonal, linearized viscous terms are treated
-implicitly.
-
-Combining~\eqref{eq:nabla_cdot_tau_expansion} with~\eqref{eq:linearready_delta_u}
-and~\eqref{eq:linearready_grad_div_u}, the linearized terms in the momentum
-equation~\eqref{eq:state_momentum} are the on-diagonal subset of
-\begin{align}
-  &\frac{1}{\Reynolds}
-  \left(
-  \reference{\mu\rho^{-1}} \Delta{}m
-  +
-  \reference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m.
-  \right).
-\end{align}
-Written using results from section~\eqref{sec:formingoperators}, this is
-exactly the discrete operator
-\begin{align}
-TODO.
-\end{align}
-
-Combining~\eqref{eq:mu_delta_T} with~\eqref{eq:linear_ready_delta_T}, the linearized
-term in the total energy equation~\eqref{eq:state_energy} is
-\begin{align}
-  &\frac{\gamma}{\Reynolds\Prandtl}
-  \reference{\mu\rho^{-1}}\Delta{}e
-\end{align}
-Written discretely this is
-\begin{align}
-TODO.
-\end{align}
-
-\begin{enumerate}
-\item Write out the specific terms to be treated implicitly and their linearization coefficients (a function of wall-normal position)
-\item Note the specific derivative boundary conditions needed on the operators for each equation (e.g. no-slip for momentum equations, fixed temperature for the energy equations).
-\item Note that the linearization coefficients should be computed no more frequently than at the beginning of each RK step due to time discretization operator requirements
-\item Note the wave-number dependent nature of the operators in the streamwise and spanwise Fourier directions.
-\item Comment that treating only B-spline direction implicitly allows reusing the $(I - \phi\Delta{}t L)$ factorization across all wavenumbers. Guarini apparently got away with just this (thesis page 45).
-\end{enumerate}
-
-
-\subsection{Complete implicit operator used for time advance}
-
-TODO Write out full $M + \Delta{}tL$
 
 \subsection{Boundary conditions}
 
