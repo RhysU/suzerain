@@ -1112,8 +1112,7 @@ Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
         const Scalar &rho,
         const Vector &m)
 {
-    const Scalar rho_inverse = 1/rho;
-    return mu*rho_inverse*rho_inverse*m;
+    return (mu/(rho*rho))*m;
 }
 
 /**
@@ -1125,29 +1124,24 @@ Vector explicit_mu_div_grad_T_refcoeff_div_grad_m(
  * @param[in] mu \f$\mu\f$
  *            computed from, for example, p_T_mu_lambda()
  * @param[in] rho \f$\rho\f$
- * @param[in] m \f$\vec{m}\f$
+ * @param[in] e \f$e\f$
  * @param[in] p \f$p\f$
  *            computed from, for example, p_T_mu_lambda()
  *
- * @return \f$\mu\rho^{-2}\left(
- *            \frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)\f$
+ * @return \f$\mu\rho^{-2}\left((\gamma-1)e-2p\right)\f$
  * @see explicit_mu_div_grad_T() for more details on the explicit
  *      operator.
  */
-template<typename Scalar,
-         typename Vector >
+template<typename Scalar>
 static inline
 Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
         const Scalar &gamma,
         const Scalar &mu,
         const Scalar &rho,
-        const Vector &m,
+        const Scalar &e,
         const Scalar &p)
 {
-    const Scalar rho_inverse = 1/rho;
-    return mu*rho_inverse*rho_inverse*(
-             (gamma-1)*rho_inverse*m.squaredNorm()/2 - p
-           );
+    return mu/(rho*rho)*((gamma-1)*e-2*p);
 }
 
 /**
@@ -1179,22 +1173,15 @@ Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
  *        \right)\cdot\vec{\nabla}\cdot\vec{\nabla}\vec{m}
  * \\
  *   &{}+ \gamma\left(
- *            \mu\rho^{-2}\left(\frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)
- *          - \left\{
- *              \mu\rho^{-2}\left(\frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)
- *            \right\}_0
+ *                   \mu\rho^{-2}\left((\gamma-1)e-2p\right)
+ *          - \left\{\mu\rho^{-2}\left((\gamma-1)e-2p\right)\right\}_0
  *        \right)\vec{\nabla}\cdot\vec{\nabla}\rho
  * \f}
  * where \f$\left\{\mu\rho^{-1}\right\}_0\f$,
- *  \f$\left\{\mu\rho^{-2}\vec{m}\right\}_0\f$,
- * and \f$
- *   \left\{
- *     \mu\rho^{-2}\left(\frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)
- *   \right\}_0
- * \f$
- * are fixed by \c refcoeff_div_grad_e, \c refcoeff_div_grad_m,
- * and \c refcoeff_div_grad_rho, respectively.
- * The remaining linear portion of
+ * \f$\left\{\mu\rho^{-2}\vec{m}\right\}_0\f$, and
+ * \f$\left\{\mu\rho^{-2}\left((\gamma-1)e-2p\right)\right\}_0\f$ are fixed by
+ * \c refcoeff_div_grad_e, \c refcoeff_div_grad_m, and \c
+ * refcoeff_div_grad_rho, respectively.  The remaining linear portion of
  * \f$\mu\vec{\nabla}\cdot\vec{\nabla}T\f$ is
  * \f[
  *      \gamma\left(\gamma-1\right)
@@ -1204,9 +1191,7 @@ Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
  *      \left\{\mu\rho^{-2}\vec{m}\right\}_0
  *      \cdot\vec{\nabla}\cdot\vec{\nabla}\vec{m}
  *    + \gamma
- *      \left\{
- *        \mu\rho^{-2}\left(\frac{\gamma-1}{2}\rho^{-1}\vec{m}^2-p\right)
- *      \right\}_0
+ *      \left\{\mu\rho^{-2}\left((\gamma-1)e-2p\right)\right\}_0
  *      \vec{\nabla}\cdot\vec{\nabla}\rho
  * \f]
  *
@@ -1219,6 +1204,7 @@ Scalar explicit_mu_div_grad_T_refcoeff_div_grad_rho(
  * @param m \f$\vec{m}\f$
  * @param grad_m \f$\vec{\nabla}\vec{m}\f$
  * @param div_grad_m \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$
+ * @param e \f$e\f$
  * @param div_grad_e \f$\vec{\nabla}\cdot\vec{\nabla}e\f$
  * @param p \f$p\f$
  *            computed from, for example, p_T_mu_lambda()
@@ -1256,6 +1242,7 @@ Scalar explicit_mu_div_grad_T(
         const Vector             &m,
         const Tensor             &grad_m,
         const Vector             &div_grad_m,
+        const Scalar             &e,
         const Scalar             &div_grad_e,
         const Scalar             &p,
         const Vector             &grad_p,
@@ -1272,7 +1259,7 @@ Scalar explicit_mu_div_grad_T(
             explicit_mu_div_grad_T_refcoeff_div_grad_m(mu, rho, m)
           - refcoeff_div_grad_m);
     const Scalar coeff_div_grad_rho(
-            explicit_mu_div_grad_T_refcoeff_div_grad_rho(gamma, mu, rho, m, p)
+            explicit_mu_div_grad_T_refcoeff_div_grad_rho(gamma, mu, rho, e, p)
           - refcoeff_div_grad_rho);
 
     return gamma*(

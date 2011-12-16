@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE( rholut_div_grad_p_and_div_grad_T )
                 gamma, Ma, mu,
                 rho, grad_rho, div_grad_rho,
                 m, grad_m, div_grad_m,
-                div_grad_e,
+                e, div_grad_e,
                 p, grad_p,
                 0, Eigen::Vector3d::Zero(), 0);
 
@@ -295,7 +295,7 @@ BOOST_AUTO_TEST_CASE( rholut_div_grad_p_and_div_grad_T )
                 gamma, Ma, mu,
                 rho, grad_rho, div_grad_rho,
                 m, grad_m, div_grad_m,
-                div_grad_e,
+                e, div_grad_e,
                 p, grad_p,
                 refcoeff_div_grad_e, Eigen::Vector3d::Zero(), 0);
 
@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE( rholut_div_grad_p_and_div_grad_T )
                 gamma, Ma, mu,
                 rho, grad_rho, div_grad_rho,
                 m, grad_m, div_grad_m,
-                div_grad_e,
+                e, div_grad_e,
                 p, grad_p,
                 0, refcoeff_div_grad_m, 0);
 
@@ -327,7 +327,7 @@ BOOST_AUTO_TEST_CASE( rholut_div_grad_p_and_div_grad_T )
                 gamma, Ma, mu,
                 rho, grad_rho, div_grad_rho,
                 m, grad_m, div_grad_m,
-                div_grad_e,
+                e, div_grad_e,
                 p, grad_p,
                 0, Eigen::Vector3d::Zero(), refcoeff_div_grad_rho);
 
@@ -338,12 +338,11 @@ BOOST_AUTO_TEST_CASE( rholut_div_grad_p_and_div_grad_T )
 
     /* Ensure the coefficient calculations are correct */
     {
-        const double gamma  = 1.4;
-        const double Ma     = 3.5;
         const double mu     = 4181.0;
         const double rho    = 67.0;
         const Eigen::Vector3d m(144.0, 233.0, 377.0);
         const double p      = 55.0;
+        const double e      = p/(gamma-1)+Ma*Ma*m.squaredNorm()/(2*rho);
 
         BOOST_CHECK_CLOSE(
             suzerain::rholut::explicit_mu_div_grad_T_refcoeff_div_grad_e(
@@ -359,8 +358,8 @@ BOOST_AUTO_TEST_CASE( rholut_div_grad_p_and_div_grad_T )
         }
         BOOST_CHECK_CLOSE(
             suzerain::rholut::explicit_mu_div_grad_T_refcoeff_div_grad_rho(
-                    gamma, Ma, mu, rho, m, p),
-                mu/rho/rho*((gamma-1)/2*Ma*Ma*m.squaredNorm()/rho - p),
+                    gamma, mu, rho, e, p),
+                mu/rho/rho*((gamma-1)*e-2*p),
                 close_enough);
     }
 }
