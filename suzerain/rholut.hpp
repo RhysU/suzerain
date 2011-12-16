@@ -243,71 +243,16 @@ using suzerain::rholt::explicit_div_p_u_refcoeff_grad_rho;
 using suzerain::rholt::explicit_div_p_u;
 
 /**
- * Compute the reference coefficient for the term containing
- * \f$\vec{\nabla}\cdot\vec{m}\f$ in the explicit portion
- * of \f$\vec{\nabla}\cdot\left(e+p\right)\vec{u}\f$.
- *
- * @param[in] gamma \f$\gamma\f$
- * @param[in] Ma \f$\mbox{Ma}\f$
- * @param[in] rho \f$\rho\f$
- * @param[in] m \f$\vec{m}\f$
- * @param[in] e \f$e\f$
- *
- * @return \f$\rho^{-1}\left( \gamma{}e
- *              - \frac{\gamma-1}{2}\mbox{Ma}^2\rho^{-1}\vec{m}^2\right)\f$
- * @see explicit_div_e_plus_p_u for more details on the explicit
- *      operator.
+ * \namespace suzerain::rholut
+ * \see suzerain::rholt::explicit_div_e_plus_p_u_refcoeff_div_m
  */
-template<typename Scalar,
-         typename Vector >
-static inline
-Scalar explicit_div_e_plus_p_u_refcoeff_div_m(
-        const Scalar &gamma,
-        const Scalar &Ma,
-        const Scalar &rho,
-        const Vector &m,
-        const Scalar &e)
-{
-    const Scalar rho_inverse = 1/rho;
-    return rho_inverse*(
-                 gamma*e - (gamma-1)/2*Ma*Ma*rho_inverse*m.squaredNorm()
-           );
-}
+using suzerain::rholt::explicit_div_e_plus_p_u_refcoeff_div_m;
 
 /**
- * Compute the reference coefficient for the term containing
- * \f$\vec{\nabla}\rho\f$ in the explicit portion
- * of \f$\vec{\nabla}\cdot\left(e+p\right)\vec{u}\f$.
- *
- * @param[in] gamma \f$\gamma\f$
- * @param[in] Ma \f$\mbox{Ma}\f$
- * @param[in] rho \f$\rho\f$
- * @param[in] m \f$\vec{m}\f$
- * @param[in] e \f$e\f$
- *
- * @return \f$\rho^{-2}\left(
- *              \left(\gamma-1\right) \mbox{Ma}^2 \rho^{-1}\vec{m}^2
- *            - \gamma{}e
- *         \right)\vec{m}\f$
- * @see explicit_div_e_plus_p_u for more details on the explicit
- *      operator.
+ * \namespace suzerain::rholut
+ * \see suzerain::rholt::explicit_div_e_plus_p_u_refcoeff_grad_rho
  */
-template<typename Scalar,
-         typename Vector >
-static inline
-Vector explicit_div_e_plus_p_u_refcoeff_grad_rho(
-        const Scalar &gamma,
-        const Scalar &Ma,
-        const Scalar &rho,
-        const Vector &m,
-        const Scalar &e)
-{
-    const Scalar rho_inverse = 1/rho;
-    return rho_inverse*rho_inverse*(
-              (gamma-1)*Ma*Ma*rho_inverse*m.squaredNorm()
-            - gamma*e
-           )*m;
-}
+using suzerain::rholt::explicit_div_e_plus_p_u_refcoeff_grad_rho;
 
 /**
  * \namespace suzerain::rholut
@@ -325,21 +270,13 @@ using suzerain::rholt::explicit_div_e_plus_p_u_refcoeff_grad_e;
  *     \left(\vec{\nabla}\vec{m}\right)^{\mathsf{T}}\vec{m}
  * \\
  *  &+ \left(
- *          \rho^{-1}\left(\gamma{}e
- *             - \frac{\gamma-1}{2}\mbox{Ma}^{2}
- *               \rho^{-1}\vec{m}^2\right)
- *        - \left\{\rho^{-1}\left(\gamma{}e
- *             - \frac{\gamma-1}{2}\mbox{Ma}^{2}
- *               \rho^{-1}\vec{m}^2\right)\right\}_0
+ *                 \rho^{-1}\left(e+p\right)
+ *        - \left\{\rho^{-1}\left(e+p\right)\right\}_0
  *     \right)\vec{\nabla}\cdot\vec{m}
  * \\
  *  &+ \left(
- *          \rho^{-2}\left(\left(\gamma-1\right)
- *                         \mbox{Ma}^{2}\rho^{-1}\vec{m}^2
- *                  - \gamma{}e\right)\vec{m}
- *        - \left\{\rho^{-2}\left(\left(\gamma-1\right)
- *                          \mbox{Ma}^{2}\rho^{-1}\vec{m}^2
- *                  - \gamma{}e\right)\vec{m}\right\}_0
+ *                 \rho^{-2}\vec{m}\left((\gamma-2)e-2p\right)
+ *        - \left\{\rho^{-2}\vec{m}\left((\gamma-2)e-2p\right)\right\}_0
  *     \right)\cdot\vec{\nabla}\rho
  * \\
  *  &+ \gamma\left(
@@ -347,22 +284,16 @@ using suzerain::rholt::explicit_div_e_plus_p_u_refcoeff_grad_e;
  *        - \left\{\rho^{-1}\vec{m}\right\}_0
  *     \right)\cdot\vec{\nabla}e
  * \f}
- * where
- * \f$\left\{\rho^{-1}\left(\gamma{}e
- * -\frac{\gamma-1}{2}\mbox{Ma}^{2}\rho^{-1}\vec{m}^2\right)\right\}_0\f$,
- *  \f$\left\{\rho^{-2}\left(\left(\gamma-1\right)
- *  \mbox{Ma}^{2}\rho^{-1}\vec{m}^2 -\gamma{}e\right)\vec{m}\right\}_0\f$, and
- *  \f$\left\{\rho^{-1}\vec{m}\right\}_0\f$ are fixed by \c
- *  refcoeff_div_m, \c refcoeff_grad_rho, and \c refcoeff_grad_e, respectively.
- * The remaining linear portion of
+ * where \f$\rho^{-1}\left(e+p\right)\f$,
+ * \f$\rho^{-2}\vec{m}\left((\gamma-2)e-2p\right)\f$, and
+ * \f$\left\{\rho^{-1}\vec{m}\right\}_0\f$ are fixed by \c refcoeff_div_m, \c
+ * refcoeff_grad_rho, and \c refcoeff_grad_e, respectively.  The remaining
+ * linear portion of
  * \f$\vec{\nabla}\cdot\left(e+p\right)\vec{u}\f$ is
  * \f[
- *      \left\{\rho^{-1}\left(\gamma{}e
- *        -\frac{\gamma-1}{2}\mbox{Ma}^{2}\rho^{-1}\vec{m}^2\right)\right\}_0
+ *      \left\{\rho^{-1}\left(e+p\right)\right\}_0
  *        \vec{\nabla}\cdot\vec{m}
- *    + \left\{\rho^{-2}\left(\left(\gamma-1\right)
- *                      \mbox{Ma}^{2}\rho^{-1}\vec{m}^2
- *        -\gamma{}e\right)\vec{m}\right\}_0
+ *    + \left\{\rho^{-2}\vec{m}\left((\gamma-2)e-2p\right)\right\}_0
  *        \cdot\vec{\nabla}\rho
  *    + \gamma\left\{\rho^{-1}\vec{m}\right\}_0
  *        \cdot\vec{\nabla}e
@@ -377,6 +308,7 @@ using suzerain::rholt::explicit_div_e_plus_p_u_refcoeff_grad_e;
  * @param grad_m \f$\vec{\nabla}\vec{m}\f$
  * @param e \f$e\f$
  * @param grad_e \f$\vec{\nabla}e\f$
+ * @param e \f$p\f$
  * @param refcoeff_div_m the reference coefficient
  *        on \f$\vec{\nabla}\cdot\vec{m}\f$ which may
  *        be computed using explicit_div_e_plus_p_u_refcoeff_div_m()
@@ -407,22 +339,22 @@ Scalar explicit_div_e_plus_p_u(
         const Tensor             &grad_m,
         const Scalar             &e,
         const Vector             &grad_e,
+        const Scalar             &p,
         const ScalarCoefficient  &refcoeff_div_m,
         const VectorCoefficient1 &refcoeff_grad_rho,
         const VectorCoefficient2 &refcoeff_grad_e)
 {
-    const Scalar rho_inverse = 1/rho;
     const Scalar coeff_div_m(
-            explicit_div_e_plus_p_u_refcoeff_div_m(gamma, Ma, rho, m, e)
+            explicit_div_e_plus_p_u_refcoeff_div_m(rho, e, p)
           - refcoeff_div_m);
     const Vector coeff_grad_rho(
-            explicit_div_e_plus_p_u_refcoeff_grad_rho(gamma, Ma, rho, m, e)
+            explicit_div_e_plus_p_u_refcoeff_grad_rho(gamma, rho, m, e, p)
           - refcoeff_grad_rho);
     const Vector coeff_grad_e(
             explicit_div_e_plus_p_u_refcoeff_grad_e(rho, m)
           - refcoeff_grad_e);
 
-    return -(gamma-1)*Ma*Ma*rho_inverse*rho_inverse*m.dot(grad_m.transpose()*m)
+    return   ((1-gamma)*Ma*Ma)/(rho*rho)*m.dot(grad_m.transpose()*m)
            + coeff_div_m*div_m
            + coeff_grad_rho.dot(grad_rho)
            + gamma*coeff_grad_e.dot(grad_e);

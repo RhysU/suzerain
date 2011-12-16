@@ -909,7 +909,7 @@ BOOST_AUTO_TEST_CASE( rholut_div_e_plus_p_u )
             = -124665.65383944318528812691660421396811848819392731090068144L;
 
         const double div_e_plus_p_u = rholut::explicit_div_e_plus_p_u(
-                gamma, Ma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
+                gamma, Ma, rho, grad_rho, m, div_m, grad_m, e, grad_e, p,
                 0, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
         BOOST_CHECK_CLOSE(div_e_plus_p_u, ans, close_enough);
     }
@@ -918,7 +918,7 @@ BOOST_AUTO_TEST_CASE( rholut_div_e_plus_p_u )
     {
         const double refcoeff_div_m = 55.0;
         const double div_e_plus_p_u = rholut::explicit_div_e_plus_p_u(
-                gamma, Ma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
+                gamma, Ma, rho, grad_rho, m, div_m, grad_m, e, grad_e, p,
                 refcoeff_div_m, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
         const double ans
             = -63563.242349261936999107307721413312072775206292628446695383L;
@@ -929,7 +929,7 @@ BOOST_AUTO_TEST_CASE( rholut_div_e_plus_p_u )
     {
         const Eigen::Vector3d refcoeff_grad_rho(55.0, 66.0, 77.0);
         const double div_e_plus_p_u = rholut::explicit_div_e_plus_p_u(
-                gamma, Ma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
+                gamma, Ma, rho, grad_rho, m, div_m, grad_m, e, grad_e, p,
                 0, refcoeff_grad_rho, Eigen::Vector3d::Zero());
         const double ans
             = -144509.65383944318528812691660421396811848819392731090068144L;
@@ -941,7 +941,7 @@ BOOST_AUTO_TEST_CASE( rholut_div_e_plus_p_u )
     {
         const Eigen::Vector3d refcoeff_grad_e(55/gamma, 66/gamma, 77/gamma);
         const double div_e_plus_p_u = rholut::explicit_div_e_plus_p_u(
-                gamma, Ma, rho, grad_rho, m, div_m, grad_m, e, grad_e,
+                gamma, Ma, rho, grad_rho, m, div_m, grad_m, e, grad_e, p,
                 0, Eigen::Vector3d::Zero(), refcoeff_grad_e);
         const double ans
             = -1.7853136538394431852881269166042139681184881939273109006814e6L;
@@ -952,19 +952,19 @@ BOOST_AUTO_TEST_CASE( rholut_div_e_plus_p_u )
     /* Odd looking 1/gamma factors due to removing gamma from refcoeff */
     {
         BOOST_CHECK_CLOSE(rholut::explicit_div_e_plus_p_u_refcoeff_div_m(
-            gamma, Ma, rho, m, e),
+            rho, e, p),
             114.26955370398466560143539493966043062887674127089522487304L,
             close_enough);
         BOOST_CHECK_CLOSE(rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
-            gamma, Ma, rho, m, e)[0],
+            gamma, rho, m, e, p)[0],
             -14.021767904044756739151691226277061209937266437049794157090L,
             close_enough);
         BOOST_CHECK_CLOSE(rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
-            gamma, Ma, rho, m, e)[1],
+            gamma, rho, m, e, p)[1],
             10.993554874700935706806005403121127980699831032811586707400L,
             close_enough);
         BOOST_CHECK_CLOSE(rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
-            gamma, Ma, rho, m, e)[2],
+            gamma, rho, m, e, p)[2],
             55.846741669840866302567971498244085862638828473481931303727L,
             close_enough);
         BOOST_CHECK_CLOSE(rholut::explicit_div_e_plus_p_u_refcoeff_grad_e(
