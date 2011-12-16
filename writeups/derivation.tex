@@ -1983,16 +1983,16 @@ equation~\eqref{eq:mu_delta_T} and its dependencies:
      - \gamma\left(\gamma-1\right)\Mach^{2}
        \lessreference{\mu\rho^{-2}m}\cdot\Delta{}m
 \\
-  &{}+ \gamma\lessreference{ \mu\rho^{-2}\left(
-           \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
-       \right) } \Delta\rho
+  &{}+ \gamma\lessreference{
+           \mu\rho^{-2}\left(\left(\gamma-1\right)e-2p\right)
+       } \Delta\rho
 \\
   &{}+ \gamma\left(\gamma-1\right)\reference{\mu\rho^{-1}}\Delta{}e
      - \gamma\left(\gamma-1\right)\Mach^{2}
        \reference{\mu\rho^{-2}m}\cdot\Delta{}m
-     + \gamma\reference{ \mu\rho^{-2}\left(
-           \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
-       \right) } \Delta\rho
+     + \gamma\reference{
+           \mu\rho^{-2}\left(\left(\gamma-1\right)e-2p\right)
+       } \Delta\rho
 \end{align}
 The final line of each expansion contains linearized, implicit-ready portion.
 Note that we will recover an explicit-only operator if we choose identically
@@ -2026,22 +2026,23 @@ The total energy convection and pressure work terms may be linearized as
    &- \left(\gamma-1\right)\mbox{Ma}^{2}\rho^{-2}m\cdot \trans{\nabla{}m}m
     + \gamma\lessreference{ \rho^{-1}m }\cdot\nabla{}e
   \\
-   &+ \lessreference{\rho^{-1}\left(
-        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
-      \right)} \nabla\cdot{}m
+   &+ \lessreference{
+        \rho^{-1}\left(e+p\right)
+      } \nabla\cdot{}m
   \\
-   &+ \lessreference{ \rho^{-2}\left(
-        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
-      \right)m}\cdot\vec{\nabla}\rho
+   &+ \lessreference{
+        \rho^{-2}m\left(\left(\gamma-1\right)e-2p\right)
+      }\cdot\vec{\nabla}\rho
   \\
-   &+ \gamma\reference{ \rho^{-1}m }\cdot\nabla{}e
-    + \reference{\rho^{-1}\left(
-        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
-      \right)} \nabla\cdot{}m
-  \\
-   &+ \reference{ \rho^{-2}\left(
-        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
-      \right)m}\cdot\vec{\nabla}\rho
+   &+ \gamma\reference{
+        \rho^{-1}m
+      }\cdot\nabla{}e
+    + \reference{
+        \rho^{-1}\left(e+p\right)
+      }\nabla\cdot{}m
+    + \reference{
+        \rho^{-2}m\left(\left(\gamma-2\right)e-2p\right)
+      }\cdot\vec{\nabla}\rho
 .
 \end{align}
 We have linearized the two terms together as doing so is algebraically simple
@@ -2118,22 +2119,22 @@ while the single-use reference values
 \begin{align}
   c^{m}_{\nabla\rho} &= \reference{m^{2}\rho^{-2}}
 \\
-  \overrightarrow{c^{e}_{\nabla\rho}} &= \reference{ \rho^{-2}\left(
-        \left(\gamma-1\right) \mbox{Ma}^{2}\rho^{-1}m^2 - \gamma{}e
-  \right)m}
+  \overrightarrow{c^{e}_{\nabla\rho}} &= \reference{
+        m\rho^{-2}\left(\left(\gamma-2\right)e-2p\right)
+  }
   = \trans{\left(
       c^{e_{x}}_{\nabla\rho},
       c^{e_{y}}_{\nabla\rho},
       c^{e_{z}}_{\nabla\rho}
   \right)}
 \\
-  c^{e}_{\nabla\cdot{}m} &= \reference{\rho^{-1}\left(
-        \gamma{}e - \frac{\gamma-1}{2}\mbox{Ma}^{2} \rho^{-1}m^2
-  \right)}
+  c^{e}_{\nabla\cdot{}m} &= \reference{
+        \rho^{-1}\left(e + p\right)
+  }
 \\
-  c^{e}_{\Delta\rho} &= \reference{ \mu\rho^{-2}\left(
-         \left(\gamma-1\right)\Mach^{2} \frac{m^2}{2\rho} - p
-  \right) }
+  c^{e}_{\Delta\rho} &= \reference{
+        \mu\rho^{-2}\left(\left(\gamma-1\right)e-2p\right)
+  }
 \end{align}
 have superscripts indicating the relevant equation and
 subscripts indicating the associated term.
