@@ -244,8 +244,7 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
 
     // Prepare execution plans
     transpose.reset(new underling::plan(
-            *problem, buf.get(), tmp.get(), 0, rigor_mpi,
-            underling::fftw::packed::all));
+            *problem, buf.get(), tmp.get(), 0, rigor_mpi));
     if (!transpose)
         throw runtime_error("underling::plan creation failed");
 
