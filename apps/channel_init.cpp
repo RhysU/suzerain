@@ -90,6 +90,12 @@ static shared_ptr<const suzerain::pencil_grid> dgrid;
 static shared_ptr<channel::manufactured_solution> msoln(
             new channel::manufactured_solution);
 
+/** <tt>atexit</tt> callback to ensure we finalize underling. */
+static void atexit_underling(void) {
+    dgrid.reset();        // Runs pencil_grid destructors
+    underling_cleanup();  // Cleans up the library
+}
+
 // Global B-spline related-details initialized in main()
 static shared_ptr<suzerain::bspline>       b;
 static shared_ptr<suzerain::bsplineop>     bop;    // Collocation
@@ -145,12 +151,16 @@ private:
 
 int main(int argc, char **argv)
 {
-    MPI_Init(&argc, &argv);                         // Initialize MPI
-    atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
+    MPI_Init(&argc, &argv);                         // Initialize MPI...
+    atexit((void (*) ()) MPI_Finalize);             // ...finalize at exit
     logging::initialize(MPI_COMM_WORLD,             // Initialize logging
                         channel::log4cxx_config);
+#ifdef HAVE_UNDERLING
+    underling_init(&argc, &argv, 0);                // Initialize underling...
+    atexit(atexit_underling);                       // ...finalize at exit
+#endif
     esioh = esio_handle_initialize(MPI_COMM_WORLD); // Initialize ESIO
-    atexit(&atexit_esio);                           // Finalize ESIO at exit
+    atexit(&atexit_esio);                           // ...finalize at exit
 
     // Hook error handling into logging infrastructure
     gsl_set_error_handler(
@@ -159,6 +169,10 @@ int main(int argc, char **argv)
             &channel::mpi_abort_on_error_handler_suzerain);
     esio_set_error_handler(
             &channel::mpi_abort_on_error_handler_esio);
+#ifdef HAVE_UNDERLING
+    underling_set_error_handler(
+            &channel::mpi_abort_on_error_handler_underling);
+#endif
 
     // Process incoming program arguments from command line, input files
     std::string restart_file;

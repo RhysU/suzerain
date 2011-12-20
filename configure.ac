@@ -164,13 +164,20 @@ PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
 PKG_CHECK_MODULES([P3DFFT],[suzerain-p3dfft],[
         AC_DEFINE([HAVE_P3DFFT],[1],
                   [Defined if Suzerain-specific version of P3DFFT found])
+        found_suzerain_p3dfft=yes
         found_pencil_library=yes
-    ], [:])
+        AM_CONDITIONAL([HAVE_P3DFFT], [true])
+    ], [
+        AM_CONDITIONAL([HAVE_P3DFFT], [false])
+    ])
 PKG_CHECK_MODULES([UNDERLING],[underling-fftw >= 0.3.0],[
         AC_DEFINE([HAVE_UNDERLING],[1],
                   [Defined if underling library found])
         found_pencil_library=yes
-    ], [:])
+        AM_CONDITIONAL([HAVE_UNDERLING], [true])
+    ], [
+        AM_CONDITIONAL([HAVE_UNDERLING], [false])
+    ])
 if [ test "$found_pencil_library" != "yes" ]; then
     AC_MSG_ERROR([Found neither suzerain-p3dfft nor underling libraries])
 fi

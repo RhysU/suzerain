@@ -175,7 +175,7 @@ void pencil_grid_p3dfft::transform_physical_to_wave(double * inout) const
 
 pencil_grid_underling::~pencil_grid_underling()
 {
-    underling_only_cleanup();
+    // NOP
 }
 
 std::size_t pencil_grid_underling::local_wave_storage() const
@@ -217,11 +217,10 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     using std::runtime_error;
     using std::invalid_argument;
 
-    if (Nx % 2)
+    if (Nx > 1 && Nx % 2)
         throw invalid_argument("pencil_grid_underling requires even X extent");
 
-    // Initialize underling (and all dependencies) as necessary
-    underling_init(NULL, NULL, 0);
+    // Assumes underling (and all dependencies) have been initialized
 
     // Construct grid and problem
     // Map from pencil_grid to underling's directional expectations

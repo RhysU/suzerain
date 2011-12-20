@@ -73,17 +73,19 @@ noinst_PROGRAMS      += conservation
 conservation_SOURCES  = conservation.cpp
 conservation_LDADD    = libchannel.la
 
-bin_PROGRAMS                += driver_pencil_grid
-driver_pencil_grid_LDADD     = ../suzerain/libsuzerain.la
-driver_pencil_grid_LDADD    += ./liblogging.la
-driver_pencil_grid_LDADD    += $(MPIP_LIBS)
-driver_pencil_grid_CPPFLAGS  = $(AM_CPPFLAGS)
-driver_pencil_grid_LDFLAGS   = $(MPIP_LDFLAGS)
-driver_pencil_grid_SOURCES   = driver_pencil_grid.cpp
-driver_pencil_grid_SOURCES  += driver_pencil_grid_svnrev.c
-BUILT_SOURCES               += driver_pencil_grid_svnrev.h
-driver_pencil_grid_svnrev.h: $(driver_pencil_grid_SOURCES) $(liblogging_la_SOURCES)
+if HAVE_P3DFFT
+bin_PROGRAMS                += driver_suzerain_p3dfft
+driver_suzerain_p3dfft_LDADD     = ../suzerain/libsuzerain.la
+driver_suzerain_p3dfft_LDADD    += ./liblogging.la
+driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS)
+driver_suzerain_p3dfft_CPPFLAGS  = $(AM_CPPFLAGS)
+driver_suzerain_p3dfft_LDFLAGS   = $(MPIP_LDFLAGS)
+driver_suzerain_p3dfft_SOURCES   = driver_suzerain_p3dfft.cpp
+driver_suzerain_p3dfft_SOURCES  += driver_suzerain_p3dfft_svnrev.c
+BUILT_SOURCES                   += driver_suzerain_p3dfft_svnrev.h
+driver_suzerain_p3dfft_svnrev.h: $(driver_suzerain_p3dfft_SOURCES) $(liblogging_la_SOURCES)
 	../build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
+endif
 
 ##
 ## Tests for channel applications
@@ -98,11 +100,11 @@ dist_check_SCRIPTS += test_channel_setup.sh     # Common initialization
 TESTS              += test_channel_restart.sh   # Restart handling...
 dist_check_SCRIPTS += test_channel_restart.sh   # ...using coefficients
 
-TESTS              += test_channel_fields.sh    # Read canned, legacy fields
-dist_check_SCRIPTS += test_channel_fields.sh
-
 TESTS              += test_channel_parallel.sh  # Serial/parallel equivalence
 dist_check_SCRIPTS += test_channel_parallel.sh
+
+TESTS              += test_channel_fields.sh    # Read canned, legacy fields
+dist_check_SCRIPTS += test_channel_fields.sh
 
 TESTS              += test_channel_fluct.sh     # Adding fluctuations
 dist_check_SCRIPTS += test_channel_fluct.sh

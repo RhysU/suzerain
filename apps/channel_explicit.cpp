@@ -129,6 +129,12 @@ static shared_ptr<      suzerain::bsplineop_luz>        bopluz;
 static shared_ptr<const suzerain::pencil_grid>          dgrid;
 static shared_ptr<      channel::manufactured_solution> msoln;
 
+/** <tt>atexit</tt> callback to ensure we finalize underling. */
+static void atexit_underling(void) {
+    dgrid.reset();        // Runs pencil_grid destructors
+    underling_cleanup();  // Cleans up the library
+}
+
 // State details specific to this rank initialized in main()
 static shared_ptr<state_type> state_linear;
 static shared_ptr<state_type> state_nonlinear;
@@ -800,13 +806,17 @@ static const char log4cxx_config[] =
 /** Main driver logic */
 int main(int argc, char **argv)
 {
-    MPI_Init(&argc, &argv);                          // Initialize MPI
+    MPI_Init(&argc, &argv);                          // Initialize MPI...
     wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
-    atexit((void (*) ()) MPI_Finalize);              // Finalize MPI at exit
+    atexit((void (*) ()) MPI_Finalize);              // ...finalize at exit
     logging::initialize(MPI_COMM_WORLD,              // Initialize logging
                         log4cxx_config);
+#ifdef HAVE_UNDERLING
+    underling_init(&argc, &argv, 0);                 // Initialize underling...
+    atexit(atexit_underling);                        // ...finalize at exit
+#endif
     esioh = esio_handle_initialize(MPI_COMM_WORLD);  // Initialize ESIO
-    atexit(&atexit_esio);                            // Finalize ESIO
+    atexit(&atexit_esio);                            // ...finalize at exit
 
     // Hook error handling into logging infrastructure
     gsl_set_error_handler(

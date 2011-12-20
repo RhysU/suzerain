@@ -44,7 +44,7 @@
 #include <suzerain/program_options.hpp>
 #include "logging.hpp"
 
-// Provided by driver_pencil_grid_svnrev.{c,h} to speed recompilation
+// Provided by driver_suzerain_p3dfft_svnrev.{c,h} to speed recompilation
 extern "C" const char revstr[];
 
 static double real_data(const double x, const double y, const double z)
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 
     // Process command line options
     suzerain::ProgramOptions options(
-            "suzerain::pencil_grid performance benchmark",
+            "suzerain::pencil_grid_p3dfft performance benchmark",
             "", /* TODO description */ "", revstr);
     suzerain::problem::GridDefinition grid(/* Nx      */ 16,
                                            /* DAFx    */ 1.,
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
     INFO0("Preparing MPI transpose and Fourier transform execution plans...");
     const double wtime_fftw_planning_start = MPI_Wtime();
     fftw_set_timelimit(fftwdef.plan_timelimit);
-    suzerain::pencil_grid pg(
+    suzerain::pencil_grid_p3dfft pg(
         grid.N, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
     const double wtime_fftw_planning = MPI_Wtime() - wtime_fftw_planning_start;
     INFO0("MPI transpose and Fourier transform planning took "
