@@ -215,6 +215,10 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
 {
     using std::bad_alloc;
     using std::runtime_error;
+    using std::invalid_argument;
+
+    if (Nx % 2)
+        throw invalid_argument("pencil_grid_underling requires even X extent");
 
     // Initialize underling (and all dependencies) as necessary
     underling_init(NULL, NULL, 0);
@@ -224,12 +228,12 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     // long_n0 will be wave space and long_n2 will be physical space
     grid.reset(new underling::grid(MPI_COMM_WORLD, Ny, Nz, Nx/2+1, Pa, Pb));
     if (!grid)
-        throw std::runtime_error("underling::grid creation error");
+        throw runtime_error("underling::grid creation error");
 
     problem.reset(new underling::problem(*grid, 2,
         underling::transposed::long_n2 & underling::transposed::long_n0));
     if (!problem)
-        throw std::runtime_error("underling::problem creation error");
+        throw runtime_error("underling::problem creation error");
 
     // Allocate zeroed buffers buf and tmp.  Clearing necessary to avoid NaNs.
     // buf is maintained for execution while tmp is used for planning only.

@@ -297,53 +297,52 @@ static void test_accumulateAndApply(const int Ny,
         BOOST_TEST_MESSAGE("Establishing pencil_grid for extents "
                            << global_physical_extents);
     }
-// FIXME as part of Redmine ticket #2067
-//#if defined SUZERAIN_HAVE_P3DFFT && defined SUZERAIN_HAVE_UNDERLING
-//    {
-//        // Perform an implementation-to-implementation shootout
-//        suzerain::pencil_grid_p3dfft p3(
-//                global_physical_extents, processor_grid,
-//                suzerain::fftw::estimate, suzerain::fftw::estimate);
-//        suzerain::pencil_grid_underling un(
-//                global_physical_extents, processor_grid,
-//                suzerain::fftw::estimate, suzerain::fftw::estimate);
-//
-//#define EIGEN_CHECK_EQUAL(a,b) \
-//        BOOST_CHECK_EQUAL_COLLECTIONS(a.data(), a.data() + a.size(), \
-//                                      b.data(), b.data() + b.size())
-//
-//        // Global extents should always match
-//        EIGEN_CHECK_EQUAL(p3.global_physical_extent,
-//                          un.global_physical_extent);
-//        EIGEN_CHECK_EQUAL(p3.global_wave_extent,
-//                          un.global_wave_extent);
-//
-//        if (np == 1) {
-//            // On a single processor all details should match
-//            EIGEN_CHECK_EQUAL(p3.local_physical_start,
-//                              un.local_physical_start);
-//            EIGEN_CHECK_EQUAL(p3.local_physical_end,
-//                              un.local_physical_end);
-//            EIGEN_CHECK_EQUAL(p3.local_physical_extent,
-//                              un.local_physical_extent);
-//            EIGEN_CHECK_EQUAL(p3.local_wave_start,
-//                              un.local_wave_start);
-//            EIGEN_CHECK_EQUAL(p3.local_wave_end,
-//                              un.local_wave_end);
-//            EIGEN_CHECK_EQUAL(p3.local_wave_extent,
-//                              un.local_wave_extent);
-//
-//            // Underling should require slightly bigger buffers
-//            BOOST_CHECK_LE(p3.local_physical_storage(),
-//                           un.local_physical_storage());
-//            BOOST_CHECK_LE(p3.local_wave_storage(),
-//                           un.local_wave_storage());
-//        }
-//
-//#undef EIGEN_CHECK_EQUAL
-//
-//    }
-//#endif
+#if defined SUZERAIN_HAVE_P3DFFT && defined SUZERAIN_HAVE_UNDERLING
+    {
+        // Perform an implementation-to-implementation shootout
+        suzerain::pencil_grid_p3dfft p3(
+                global_physical_extents, processor_grid,
+                suzerain::fftw::estimate, suzerain::fftw::estimate);
+        suzerain::pencil_grid_underling un(
+                global_physical_extents, processor_grid,
+                suzerain::fftw::estimate, suzerain::fftw::estimate);
+
+#define EIGEN_CHECK_EQUAL(a,b) \
+        BOOST_CHECK_EQUAL_COLLECTIONS(a.data(), a.data() + a.size(), \
+                                      b.data(), b.data() + b.size())
+
+        // Global extents should always match
+        EIGEN_CHECK_EQUAL(p3.global_physical_extent,
+                          un.global_physical_extent);
+        EIGEN_CHECK_EQUAL(p3.global_wave_extent,
+                          un.global_wave_extent);
+
+        if (np == 1) {
+            // On a single processor all details should match
+            EIGEN_CHECK_EQUAL(p3.local_physical_start,
+                              un.local_physical_start);
+            EIGEN_CHECK_EQUAL(p3.local_physical_end,
+                              un.local_physical_end);
+            EIGEN_CHECK_EQUAL(p3.local_physical_extent,
+                              un.local_physical_extent);
+            EIGEN_CHECK_EQUAL(p3.local_wave_start,
+                              un.local_wave_start);
+            EIGEN_CHECK_EQUAL(p3.local_wave_end,
+                              un.local_wave_end);
+            EIGEN_CHECK_EQUAL(p3.local_wave_extent,
+                              un.local_wave_extent);
+
+            // Underling should require slightly bigger buffers
+            BOOST_CHECK_LE(p3.local_physical_storage(),
+                           un.local_physical_storage());
+            BOOST_CHECK_LE(p3.local_wave_storage(),
+                           un.local_wave_storage());
+        }
+
+#undef EIGEN_CHECK_EQUAL
+
+    }
+#endif
 
     pencil_grid pg(global_physical_extents, processor_grid,
                    suzerain::fftw::estimate, suzerain::fftw::estimate);
@@ -386,7 +385,7 @@ BOOST_AUTO_TEST_CASE( accumulate_quasi_1D_not_dealiased )
         test_accumulateAndApply(  1,   1,   1,   8,   8);
         test_accumulateAndApply(  1,   1,   1,   7,   7);
         test_accumulateAndApply(  1,   8,   8,   1,   1);
-        test_accumulateAndApply(  1,   7,   7,   1,   1);
+        test_accumulateAndApply(  1,   7,  12,   1,   1);
     }
 }
 
@@ -410,9 +409,9 @@ BOOST_AUTO_TEST_CASE( accumulate_quasi_1D_dealiased_x )
     if (suzerain::mpi::comm_size(MPI_COMM_WORLD) == 1) {
         /*                       Ny,  Nx, dNx,  Nz, dNz */
         test_accumulateAndApply(  1,   6,   8,   1,   1);
-        test_accumulateAndApply(  1,   6,   9,   1,   1);
+        test_accumulateAndApply(  1,   6,  10,   1,   1);
         test_accumulateAndApply(  1,   5,   8,   1,   1);
-        test_accumulateAndApply(  1,   5,   9,   1,   1);
+        test_accumulateAndApply(  1,   5,  10,   1,   1);
     }
 }
 
@@ -424,9 +423,8 @@ BOOST_AUTO_TEST_CASE( accumulate_quasi_2D_not_dealiased )
         /*                       Ny,  Nx, dNx,  Nz, dNz */
         test_accumulateAndApply(  1,   4,   4,   4,   4);
         test_accumulateAndApply(  1,   8,   8,   8,   8);
-        test_accumulateAndApply(  1,   7,   7,   7,   7);
-        test_accumulateAndApply(  1,   7,   7,   8,   8);
         test_accumulateAndApply(  1,   8,   8,   7,   7);
+        test_accumulateAndApply(  1,   8,   8,   8,   8);
     }
 }
 
