@@ -226,7 +226,8 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     if (!grid)
         throw std::runtime_error("underling::grid creation error");
 
-    problem.reset(new underling::problem(*grid, 2));
+    problem.reset(new underling::problem(*grid, 2,
+        underling::transposed::long_n2 & underling::transposed::long_n0));
     if (!problem)
         throw std::runtime_error("underling::problem creation error");
 
@@ -243,19 +244,22 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
 
     // Prepare execution plans
     transpose.reset(new underling::plan(
-            *problem, buf.get(), tmp.get(), 0, rigor_mpi));
+            *problem, buf.get(), tmp.get(), 0, rigor_mpi,
+            underling::fftw::packed::all));
     if (!transpose)
         throw runtime_error("underling::plan creation failed");
 
     n1_c2c_backward.reset(new underling::fftw::plan(
             underling::fftw::plan::c2c_backward(),
-            *problem, 1, buf.get(), tmp.get(), rigor_fft));
+            *problem, 1, buf.get(), tmp.get(), rigor_fft,
+            underling::fftw::packed::all));
     if (!n1_c2c_backward)
         throw runtime_error("n1_c2c_backward creation failed");
 
     n2_c2r_backward.reset(new underling::fftw::plan(
             underling::fftw::plan::c2r_backward(),
-            *problem, 2, buf.get(), tmp.get(), rigor_fft));
+            *problem, 2, buf.get(), tmp.get(), rigor_fft,
+            underling::fftw::packed::all));
     if (!n2_c2r_backward)
         throw runtime_error("n2_c2r_backward creation failed");
 
