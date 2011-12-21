@@ -1606,7 +1606,9 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     // centerline mean streamwise velocity and broadcast result.
     // Alright, alright... actually an approximate mean velocity.
     real_t maxfluct;
-    if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
+    if (   dgrid.local_wave_start.x() == 0
+        && dgrid.local_wave_start.z() == 0
+        && dgrid.local_wave_extent.prod() > 0) {
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
         complex_t momentum, density;
         const real_t centerline = scenario.Ly / 2;
@@ -2182,7 +2184,9 @@ mean sample_mean_quantities(
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
-    if (dgrid.local_wave_start.x() == 0 && dgrid.local_wave_start.z() == 0) {
+    if (   dgrid.local_wave_start.x() == 0
+        && dgrid.local_wave_start.z() == 0
+        && dgrid.local_wave_extent.prod() > 0) {
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
         ret.rho()         = Map<VectorXc>(swave[ndx::rho].origin(),  Ny).real();
         ret.rhou().col(0) = Map<VectorXc>(swave[ndx::rhou].origin(), Ny).real();
