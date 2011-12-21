@@ -114,6 +114,7 @@ Provides hint to the compiler to optimize for the expression being false.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <tgmath.h>
 #include <time.h>
 #else
 #include <cassert>
@@ -130,5 +131,10 @@ Provides hint to the compiler to optimize for the expression being false.
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
+
+// Boost.Preprocessor is useful in either C or C++ mode
+#ifdef SUZERAIN_HAVE_BOOST
+#include <boost/preprocessor.hpp>
+#endif /* SUZERAIN_HAVE_BOOST */
 
 #endif // __SUZERAIN_COMMON_H

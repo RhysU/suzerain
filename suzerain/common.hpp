@@ -59,6 +59,7 @@
 #include <vector>
 
 // Include Boost functionality used throughout Suzerain
+// Boost.Preprocessor was included in common.h
 #ifdef SUZERAIN_HAVE_BOOST
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
@@ -88,7 +89,6 @@
 #include <boost/noncopyable.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/numeric/conversion/converter.hpp>
-#include <boost/preprocessor.hpp>
 #include <boost/program_options.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
