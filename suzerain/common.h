@@ -108,9 +108,11 @@ Provides hint to the compiler to optimize for the expression being false.
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <math.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -120,9 +122,11 @@ Provides hint to the compiler to optimize for the expression being false.
 #include <cassert>
 #include <cctype>
 #include <cerrno>
+// cinttypes not commonly available pre-C++0x
 #include <climits>
 #include <cmath>
 #include <cstddef>
+// cstdint not commonly available pre-C++0x
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
