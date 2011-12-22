@@ -38,6 +38,14 @@ struct gbmzv_tc_type
     int lda, incx;
     double beta[2];
     int incy;
+
+    gbmzv_tc_type(const gbmv_tc_type& o)
+        : trans(o.trans), m(o.m), n(o.n), kl(o.kl), ku(o.ku),
+          lda(o.lda), incx(o.incx), incy(o.incy)
+    {
+        alpha[0] = o.alpha; alpha[1] = 0;
+        beta[0]  = o.beta;  beta[1]  = 0;
+    }
 };
 
 template< typename charT, typename traits >
@@ -104,10 +112,10 @@ static void test_gbmv_s(const gbmv_tc_type& t)
                                    beta,                  e.get(), t.incy);
 
     // Compute observed result using our implementation
-    BOOST_REQUIRE_EQUAL(0,
-    suzerain_gbmv_s(t.trans, t.m, t.n, t.kl, t.ku,
-                      alpha, a.get(), t.lda, x.get(), t.incx,
-                      beta,                  y.get(), t.incy));
+    BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_s(
+                t.trans, t.m, t.n, t.kl, t.ku,
+                  alpha, a.get(), t.lda, x.get(), t.incx,
+                  beta,                  y.get(), t.incy));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
@@ -138,13 +146,88 @@ static void test_gbmv_d(const gbmv_tc_type& t)
                                  t.beta,                  e.get(), t.incy);
 
     // Compute observed result using our implementation
-    suzerain_gbmv_d(t.trans, t.m, t.n, t.kl, t.ku,
-                    t.alpha, a.get(), t.lda, x.get(), t.incx,
-                    t.beta,                  y.get(), t.incy);
+    BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_d(
+                t.trans, t.m, t.n, t.kl, t.ku,
+                t.alpha, a.get(), t.lda, x.get(), t.incx,
+                t.beta,                  y.get(), t.incy));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
                             close_enough);
+}
+
+static void test_gbmv_sc(const gbmzv_tc_type& t)
+{
+    BOOST_TEST_MESSAGE("\tscenario " << t);
+
+    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*10;
+    const float inv_rand_max = float(1) / RAND_MAX;
+    const int lena = t.lda * t.n;
+    const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
+    const int leny = 2 * abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
+
+    // Allocate random data for testing purposes
+    boost::scoped_array<float> a(new float[lena]);
+    boost::scoped_array<float> x(new float[lenx]);
+    boost::scoped_array<float> y(new float[leny]), e(new float[leny]);
+    for (int i = 0; i < lena; ++i) a[i] = random() * inv_rand_max;
+    for (int i = 0; i < lenx; ++i) x[i] = random() * inv_rand_max;
+    for (int i = 0; i < leny; ++i) e[i] = y[i] = random() * inv_rand_max;
+
+    // Get appropriately typed alpha and beta constants
+    const float alpha[2] = { t.alpha[0], t.alpha[1] };
+    const float beta[2]  = { t.beta[0],  t.beta[1]  };
+
+//  // Compute expected result using external BLAS
+//  suzerain_blasext_sgbmzv_external(
+//          t.trans, t.m, t.n, t.kl, t.ku,
+//          alpha, a.get(), t.lda, (const float(*)[2]) x.get(), t.incx,
+//          beta,                  (      float(*)[2]) e.get(), t.incy);
+
+//  // Compute observed result using our implementation
+//  BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_sc(
+//          t.trans, t.m, t.n, t.kl, t.ku,
+//          alpha, a.get(), t.lda, (const float(*)[2]) x.get(), t.incx,
+//          beta,                  (      float(*)[2]) y.get(), t.incy));
+
+//  check_close_collections(e.get(), e.get() + leny,
+//                          y.get(), y.get() + leny,
+//                          close_enough);
+}
+
+static void test_gbmv_dz(const gbmzv_tc_type& t)
+{
+    BOOST_TEST_MESSAGE("\tscenario " << t);
+
+    const double close_enough = numeric_limits<double>::epsilon()*t.m*t.n;
+    const double inv_rand_max = double(1) / RAND_MAX;
+    const int lena = t.lda * t.n;
+    const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
+    const int leny = 2 * abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
+
+    // Allocate random data for testing purposes
+    boost::scoped_array<double> a(new double[lena]);
+    boost::scoped_array<double> x(new double[lenx]);
+    boost::scoped_array<double> y(new double[leny]), e(new double[leny]);
+    for (int i = 0; i < lena; ++i) a[i] = random() * inv_rand_max;
+    for (int i = 0; i < lenx; ++i) x[i] = random() * inv_rand_max;
+    for (int i = 0; i < leny; ++i) e[i] = y[i] = random() * inv_rand_max;
+
+//  // Compute expected result using external BLAS
+//  suzerain_blasext_dgbmzv_external(
+//          t.trans, t.m, t.n, t.kl, t.ku,
+//          t.alpha, a.get(), t.lda, (const double(*)[2]) x.get(), t.incx,
+//          t.beta,                  (      double(*)[2]) e.get(), t.incy);
+
+//  // Compute observed result using our implementation
+//  BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_dz(
+//          t.trans, t.m, t.n, t.kl, t.ku,
+//          t.alpha, a.get(), t.lda, (const double(*)[2]) x.get(), t.incx,
+//          t.beta,                  (      double(*)[2]) y.get(), t.incy));
+
+//  check_close_collections(e.get(), e.get() + leny,
+//                          y.get(), y.get() + leny,
+//                          close_enough);
 }
 
 boost::unit_test::test_suite*
@@ -284,20 +367,58 @@ init_unit_test_suite( int argc, char* argv[] )
         ,{   'T',  4,  5,  3,  4,   5.0,   8,   -3, 11.0,    2}
         ,{   'T',  4,  5,  3,  4,  -5.0,   9,    3,  0.0,    2}
         ,{   'T',  4,  5,  3,  4,   5.0,   9,    3, 11.0,   -2}
+        ,{   'T', 19, 17,  3,  4,   0.0,   9,    3,  1.0,    1} // Quick
     };
+    const std::size_t ncases = sizeof(gbmv_tc)/sizeof(gbmv_tc[0]);
 
-    {
-        const std::size_t ncases = sizeof(gbmv_tc)/sizeof(gbmv_tc[0]);
+    // Register test_gbmv_s cases
+    boost::unit_test::framework::master_test_suite().add(
+            BOOST_PARAM_TEST_CASE(&test_gbmv_s, gbmv_tc, gbmv_tc + ncases));
 
-        // Register test_gbmv_s cases
+    // Register test_gbmv_d cases
+    boost::unit_test::framework::master_test_suite().add(
+            BOOST_PARAM_TEST_CASE(&test_gbmv_d, gbmv_tc, gbmv_tc + ncases));
+
+    // Register test_gbmv_sc
+    for (std::size_t i = 0; i < ncases; ++i) {
+        gbmzv_tc_type t(gbmv_tc[i]);
+
+        // Real-valued alpha, beta
         boost::unit_test::framework::master_test_suite().add(
-                BOOST_PARAM_TEST_CASE(&test_gbmv_s, gbmv_tc, gbmv_tc + ncases),
-                /* timeout in seconds */ 10);
+                BOOST_PARAM_TEST_CASE(&test_gbmv_sc, &t, &t + 1));
 
-        // Register test_gbmv_d cases
+        // Imaginary-valued alpha, beta
+        std::swap(t.alpha[0], t.alpha[1]);
+        std::swap(t.beta[0],  t.beta[1]);
         boost::unit_test::framework::master_test_suite().add(
-                BOOST_PARAM_TEST_CASE(&test_gbmv_d, gbmv_tc, gbmv_tc + ncases),
-                /* timeout in seconds */ 10);
+                BOOST_PARAM_TEST_CASE(&test_gbmv_sc, &t, &t + 1));
+
+        // Truly complex alpha, beta
+        t.alpha[0] += 1;
+        t.beta[0]  -= 1;
+        boost::unit_test::framework::master_test_suite().add(
+                BOOST_PARAM_TEST_CASE(&test_gbmv_sc, &t, &t + 1));
+    }
+
+    // Register test_gbmv_dz
+    for (std::size_t i = 0; i < ncases; ++i) {
+        gbmzv_tc_type t(gbmv_tc[i]);
+
+        // Real-valued alpha, beta
+        boost::unit_test::framework::master_test_suite().add(
+                BOOST_PARAM_TEST_CASE(&test_gbmv_dz, &t, &t + 1));
+
+        // Imaginary-valued alpha, beta
+        std::swap(t.alpha[0], t.alpha[1]);
+        std::swap(t.beta[0],  t.beta[1]);
+        boost::unit_test::framework::master_test_suite().add(
+                BOOST_PARAM_TEST_CASE(&test_gbmv_dz, &t, &t + 1));
+
+        // Truly complex alpha, beta
+        t.alpha[0] += 1;
+        t.beta[0]  -= 1;
+        boost::unit_test::framework::master_test_suite().add(
+                BOOST_PARAM_TEST_CASE(&test_gbmv_dz, &t, &t + 1));
     }
 
     return 0;
