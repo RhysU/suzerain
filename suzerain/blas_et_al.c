@@ -678,7 +678,7 @@ suzerain_blas_zscal(
 }
 
 void
-suzerain_blas_sgbmv(
+suzerain_blas_sgbmv_external(
         const char trans,
         const int m,
         const int n,
@@ -703,7 +703,7 @@ suzerain_blas_sgbmv(
 }
 
 void
-suzerain_blas_dgbmv(
+suzerain_blas_dgbmv_external(
         const char trans,
         const int m,
         const int n,
@@ -725,6 +725,50 @@ suzerain_blas_dgbmv(
 #else
 #error "Sanity failure"
 #endif
+}
+
+void
+suzerain_blas_sgbmv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy)
+{
+    // TODO Dispatch to fixed bandwidth versions where useful
+    return suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                        alpha, a, lda, x, incx,
+                                        beta,          y, incy);
+}
+
+void
+suzerain_blas_dgbmv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy)
+{
+    // TODO Dispatch to fixed bandwidth versions where useful
+    return suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                        alpha, a, lda, x, incx,
+                                        beta,          y, incy);
 }
 
 void
