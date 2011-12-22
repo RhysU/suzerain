@@ -550,7 +550,7 @@ suzerain_blas_sgbmv_external(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blas_sgbmv */
+/*! \copydoc suzerain_blas_sgbmv_external */
 void
 suzerain_blas_dgbmv_external(
         const char trans,
@@ -627,7 +627,57 @@ suzerain_blas_dgbmv(
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$
- * for symmetric \f$ A \f$ using BLAS's sbmv.
+ * for symmetric \f$ A \f$ using an external BLAS's sbmv.
+ *
+ * \param uplo One of 'U', 'u', 'L', or 'l' specifying if either the
+ *             upper- or lower-triangular part of A is being supplied.
+ * \param n Number of rows and columns in matrix \c a.
+ * \param k Number of superdiagonals in band storage of \c a.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$.
+ * \param a Symmetric band storage for matrix \f$ A \f$.
+ * \param lda Leading dimension of \c a.
+ * \param x Vector to be multiplied.
+ * \param incx Stride of vector \c x.
+ * \param beta Multiplicative scalar \f$ \beta \f$.
+ * \param y Vector to be added to product and to contain result.
+ * \param incy Stride of vector \c y.
+ *
+ * \see A BLAS reference for more details, especially for general
+ *      band storage matrix requirements.
+ */
+void
+suzerain_blas_ssbmv_external(
+        const char uplo,
+        const int n,
+        const int k,
+        const float alpha,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_ssbmv_external */
+void
+suzerain_blas_dsbmv_external(
+        const char uplo,
+        const int n,
+        const int k,
+        const double alpha,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for symmetric
+ * \f$ A \f$.  The computation may use internal, optimized kernels for some
+ * fixed bandwidth cases while deferring to the BLAS for general use.
  *
  * \param uplo One of 'U', 'u', 'L', or 'l' specifying if either the
  *             upper- or lower-triangular part of A is being supplied.
@@ -1311,6 +1361,90 @@ suzerain_blasext_daxpzby(
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
+ * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$
+ * using an external BLAS' gbmv.  Real-valued strides are in units of
+ * <tt>float</tt> while complex-valued strides are in units of
+ * <tt>float[2]</tt>.
+ *
+ * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
+ *
+ * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
+ *      or a conjugate transpose, respectively.
+ * \param m Number of rows in matrix \c a.
+ * \param n Number of columns in matrix \c a.
+ * \param kl Number of subdiagonals in band storage of \c a.
+ * \param ku Number of superdiagonals in band storage of \c a.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$.
+ * \param a General band storage for matrix \f$ A \f$.
+ * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param x Vector to be multiplied.
+ * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param beta Multiplicative scalar \f$ \beta \f$.
+ * \param y Vector to be added to product and to contain result.
+ * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ *
+ * \see A BLAS reference for for general band storage matrix requirements.
+ */
+void
+suzerain_blasext_sgbmzv_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha[2],
+        const float *a,
+        const int lda,
+        const float (*x)[2],
+        const int incx,
+        const float beta[2],
+        float (*y)[2],
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
+ * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$
+ * using an external BLAS' gbmv.  Real-valued strides are in units of
+ * <tt>double</tt> while complex-valued strides are in units of
+ * <tt>double[2]</tt>.
+ *
+ * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
+ *
+ * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
+ *      or a conjugate transpose, respectively.
+ * \param m Number of rows in matrix \c a.
+ * \param n Number of columns in matrix \c a.
+ * \param kl Number of subdiagonals in band storage of \c a.
+ * \param ku Number of superdiagonals in band storage of \c a.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$.
+ * \param a General band storage for matrix \f$ A \f$.
+ * \param lda Leading dimension of \c a in units of <tt>double</tt>.
+ * \param x Vector to be multiplied.
+ * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
+ * \param beta Multiplicative scalar \f$ \beta \f$.
+ * \param y Vector to be added to product and to contain result.
+ * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
+ *
+ * \see A BLAS reference for for general band storage matrix requirements.
+ */
+void
+suzerain_blasext_dgbmzv_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double *a,
+        const int lda,
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$.
  * Real-valued strides are in units of <tt>float</tt> while complex-valued
  * strides are in units of <tt>float[2]</tt>.
@@ -1334,7 +1468,6 @@ suzerain_blasext_daxpzby(
  *
  * \see A BLAS reference for for general band storage matrix requirements.
  */
-
 void
 suzerain_blasext_sgbmzv(
         const char trans,
@@ -1376,7 +1509,6 @@ suzerain_blasext_sgbmzv(
  *
  * \see A BLAS reference for for general band storage matrix requirements.
  */
-
 void
 suzerain_blasext_dgbmzv(
         const char trans,

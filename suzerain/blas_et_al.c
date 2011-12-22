@@ -772,7 +772,7 @@ suzerain_blas_dgbmv(
 }
 
 void
-suzerain_blas_ssbmv(
+suzerain_blas_ssbmv_external(
         const char uplo,
         const int n,
         const int k,
@@ -795,7 +795,7 @@ suzerain_blas_ssbmv(
 }
 
 void
-suzerain_blas_dsbmv(
+suzerain_blas_dsbmv_external(
         const char uplo,
         const int n,
         const int k,
@@ -815,6 +815,46 @@ suzerain_blas_dsbmv(
 #else
 #error "Sanity failure"
 #endif
+}
+
+void
+suzerain_blas_ssbmv(
+        const char uplo,
+        const int n,
+        const int k,
+        const float alpha,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy)
+{
+    // TODO Dispatch to suzerain_sbmv_sc and fixed bandwidth brethren
+    return suzerain_blas_ssbmv_external(uplo, n, k,
+                                        alpha, a, lda, x, incx,
+                                        beta,          y, incy);
+}
+
+void
+suzerain_blas_dsbmv(
+        const char uplo,
+        const int n,
+        const int k,
+        const double alpha,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy)
+{
+    // TODO Dispatch to suzerain_sbmv_dz and fixed bandwidth brethren
+    return suzerain_blas_dsbmv_external(uplo, n, k,
+                                        alpha, a, lda, x, incx,
+                                        beta,          y, incy);
 }
 
 void
@@ -1615,7 +1655,7 @@ suzerain_blasext_daxpzby(
 }
 
 void
-suzerain_blasext_sgbmzv(
+suzerain_blasext_sgbmzv_external(
         const char trans,
         const int m,
         const int n,
@@ -1634,34 +1674,106 @@ suzerain_blasext_sgbmzv(
     if (alpha[1] == 0.0 && beta[1] == 0.0) {
 #pragma warning(pop)
         /* Real-valued alpha and beta: scale y as we go */
-        suzerain_blas_sgbmv(trans, m, n, kl, ku,
-                            alpha[0], a, lda, &(x[0][0]), 2*incx,
-                            beta[0], &(y[0][0]), 2*incy);
-        suzerain_blas_sgbmv(trans, m, n, kl, ku,
-                            -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
-        suzerain_blas_sgbmv(trans, m, n, kl, ku,
-                            alpha[0], a, lda, &(x[0][1]), 2*incx,
-                            beta[0], &(y[0][1]), 2*incy);
-        suzerain_blas_sgbmv(trans, m, n, kl, ku,
-                            alpha[1], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
+                                     beta[0], &(y[0][0]), 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
+                                     beta[0], &(y[0][1]), 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
     } else {
         /* Complex-valued alpha and/or beta: scale y and then accumulate */
         suzerain_blas_cscal(n, beta, y, incy); /* NB cscal */
-        suzerain_blas_sgbmv(trans, m, n, kl, ku,
-                            alpha[0], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
-        suzerain_blas_sgbmv(trans, m, n, kl, ku,
-                            alpha[1], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
-        suzerain_blas_sgbmv(trans, m, n, kl, ku,
-                            alpha[0], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
-        suzerain_blas_sgbmv(trans, m, n, kl, ku,
-                            -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
     }
+}
+
+void
+suzerain_blasext_dgbmzv_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double *a,
+        const int lda,
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy)
+{
+#pragma warning(push,disable:1572)
+    if (alpha[1] == 0.0 && beta[1] == 0.0) {
+#pragma warning(pop)
+        /* Real-valued alpha and beta: scale y as we go */
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
+                                     beta[0], &(y[0][0]), 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
+                                     beta[0], &(y[0][1]), 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
+    } else {
+        /* Complex-valued alpha and/or beta: scale y and then accumulate */
+        suzerain_blas_zscal(n, beta, y, incy); /* NB zscal */
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
+    }
+}
+
+void
+suzerain_blasext_sgbmzv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha[2],
+        const float *a,
+        const int lda,
+        const float (*x)[2],
+        const int incx,
+        const float beta[2],
+        float (*y)[2],
+        const int incy)
+{
+    // TODO Dispatch to suzerain_gbmv_sc and fixed bandwidth brethren
+    return suzerain_blasext_sgbmzv_external(trans, m, n, kl, ku,
+                                            alpha, a, lda, x, incx,
+                                            beta,          y, incy);
 }
 
 void
@@ -1680,37 +1792,105 @@ suzerain_blasext_dgbmzv(
         double (*y)[2],
         const int incy)
 {
+    // TODO Dispatch to suzerain_gbmv_dz and fixed bandwidth brethren
+    return suzerain_blasext_dgbmzv_external(trans, m, n, kl, ku,
+                                            alpha, a, lda, x, incx,
+                                            beta,          y, incy);
+}
+
+void
+suzerain_blasext_ssbmzv_external(
+        const char uplo,
+        const int n,
+        const int k,
+        const float alpha[2],
+        const float *a,
+        const int lda,
+        const float (*x)[2],
+        const int incx,
+        const float beta[2],
+        float (*y)[2],
+        const int incy)
+{
 #pragma warning(push,disable:1572)
     if (alpha[1] == 0.0 && beta[1] == 0.0) {
 #pragma warning(pop)
         /* Real-valued alpha and beta: scale y as we go */
-        suzerain_blas_dgbmv(trans, m, n, kl, ku,
-                            alpha[0], a, lda, &(x[0][0]), 2*incx,
-                            beta[0], &(y[0][0]), 2*incy);
-        suzerain_blas_dgbmv(trans, m, n, kl, ku,
-                            -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
-        suzerain_blas_dgbmv(trans, m, n, kl, ku,
-                            alpha[0], a, lda, &(x[0][1]), 2*incx,
-                            beta[0], &(y[0][1]), 2*incy);
-        suzerain_blas_dgbmv(trans, m, n, kl, ku,
-                            alpha[1], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_ssbmv_external(uplo, n, k,
+                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
+                                     beta[0], &(y[0][0]), 2*incy);
+        suzerain_blas_ssbmv_external(uplo, n, k,
+                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_ssbmv_external(uplo, n, k,
+                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
+                                     beta[0], &(y[0][1]), 2*incy);
+        suzerain_blas_ssbmv_external(uplo, n, k,
+                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
+    } else {
+        /* Complex-valued alpha and/or beta: scale y and then accumulate */
+        suzerain_blas_cscal(n, beta, y, incy); /* NB cscal */
+        suzerain_blas_ssbmv_external(uplo, n, k,
+                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_ssbmv_external(uplo, n, k,
+                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_ssbmv_external(uplo, n, k,
+                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_ssbmv_external(uplo, n, k,
+                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
+    }
+}
+
+void
+suzerain_blasext_dsbmzv_external(
+        const char uplo,
+        const int n,
+        const int k,
+        const double alpha[2],
+        const double *a,
+        const int lda,
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy)
+{
+#pragma warning(push,disable:1572)
+    if (alpha[1] == 0.0 && beta[1] == 0.0) {
+#pragma warning(pop)
+        /* Real-valued alpha and beta: scale y as we go */
+        suzerain_blas_dsbmv_external(uplo, n, k,
+                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
+                                     beta[0], &(y[0][0]), 2*incy);
+        suzerain_blas_dsbmv_external(uplo, n, k,
+                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_dsbmv_external(uplo, n, k,
+                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
+                                     beta[0], &(y[0][1]), 2*incy);
+        suzerain_blas_dsbmv_external(uplo, n, k,
+                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
     } else {
         /* Complex-valued alpha and/or beta: scale y and then accumulate */
         suzerain_blas_zscal(n, beta, y, incy); /* NB zscal */
-        suzerain_blas_dgbmv(trans, m, n, kl, ku,
-                            alpha[0], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
-        suzerain_blas_dgbmv(trans, m, n, kl, ku,
-                            alpha[1], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
-        suzerain_blas_dgbmv(trans, m, n, kl, ku,
-                            alpha[0], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
-        suzerain_blas_dgbmv(trans, m, n, kl, ku,
-                            -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_dsbmv_external(uplo, n, k,
+                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
+        suzerain_blas_dsbmv_external(uplo, n, k,
+                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_dsbmv_external(uplo, n, k,
+                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][1]), 2*incy);
+        suzerain_blas_dsbmv_external(uplo, n, k,
+                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
+                                     1.0, &(y[0][0]), 2*incy);
     }
 }
 
@@ -1728,38 +1908,10 @@ suzerain_blasext_ssbmzv(
         float (*y)[2],
         const int incy)
 {
-#pragma warning(push,disable:1572)
-    if (alpha[1] == 0.0 && beta[1] == 0.0) {
-#pragma warning(pop)
-        /* Real-valued alpha and beta: scale y as we go */
-        suzerain_blas_ssbmv(uplo, n, k,
-                            alpha[0], a, lda, &(x[0][0]), 2*incx,
-                            beta[0], &(y[0][0]), 2*incy);
-        suzerain_blas_ssbmv(uplo, n, k,
-                            -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
-        suzerain_blas_ssbmv(uplo, n, k,
-                            alpha[0], a, lda, &(x[0][1]), 2*incx,
-                            beta[0], &(y[0][1]), 2*incy);
-        suzerain_blas_ssbmv(uplo, n, k,
-                            alpha[1], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
-    } else {
-        /* Complex-valued alpha and/or beta: scale y and then accumulate */
-        suzerain_blas_cscal(n, beta, y, incy); /* NB cscal */
-        suzerain_blas_ssbmv(uplo, n, k,
-                            alpha[0], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
-        suzerain_blas_ssbmv(uplo, n, k,
-                            alpha[1], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
-        suzerain_blas_ssbmv(uplo, n, k,
-                            alpha[0], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
-        suzerain_blas_ssbmv(uplo, n, k,
-                            -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
-    }
+    // TODO Dispatch to suzerain_sbmv_sc and fixed bandwidth brethren
+    return suzerain_blasext_ssbmzv_external(uplo, n, k,
+                                            alpha, a, lda, x, incx,
+                                            beta,          y, incy);
 }
 
 void
@@ -1776,38 +1928,10 @@ suzerain_blasext_dsbmzv(
         double (*y)[2],
         const int incy)
 {
-#pragma warning(push,disable:1572)
-    if (alpha[1] == 0.0 && beta[1] == 0.0) {
-#pragma warning(pop)
-        /* Real-valued alpha and beta: scale y as we go */
-        suzerain_blas_dsbmv(uplo, n, k,
-                            alpha[0], a, lda, &(x[0][0]), 2*incx,
-                            beta[0], &(y[0][0]), 2*incy);
-        suzerain_blas_dsbmv(uplo, n, k,
-                            -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
-        suzerain_blas_dsbmv(uplo, n, k,
-                            alpha[0], a, lda, &(x[0][1]), 2*incx,
-                            beta[0], &(y[0][1]), 2*incy);
-        suzerain_blas_dsbmv(uplo, n, k,
-                            alpha[1], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
-    } else {
-        /* Complex-valued alpha and/or beta: scale y and then accumulate */
-        suzerain_blas_zscal(n, beta, y, incy); /* NB zscal */
-        suzerain_blas_dsbmv(uplo, n, k,
-                            alpha[0], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
-        suzerain_blas_dsbmv(uplo, n, k,
-                            alpha[1], a, lda, &(x[0][0]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
-        suzerain_blas_dsbmv(uplo, n, k,
-                            alpha[0], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][1]), 2*incy);
-        suzerain_blas_dsbmv(uplo, n, k,
-                            -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                            1.0, &(y[0][0]), 2*incy);
-    }
+    // TODO Dispatch to suzerain_sbmv_dz and fixed bandwidth brethren
+    return suzerain_blasext_dsbmzv_external(uplo, n, k,
+                                            alpha, a, lda, x, incx,
+                                            beta,          y, incy);
 }
 
 void
