@@ -160,7 +160,7 @@ static void test_gbmv_sc(const gbmzv_tc_type& t)
 {
     BOOST_TEST_MESSAGE("\tscenario " << t);
 
-    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*10;
+    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*15;
     const float inv_rand_max = float(1) / RAND_MAX;
     const int lena = t.lda * t.n;
     const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
@@ -178,28 +178,28 @@ static void test_gbmv_sc(const gbmzv_tc_type& t)
     const float alpha[2] = { t.alpha[0], t.alpha[1] };
     const float beta[2]  = { t.beta[0],  t.beta[1]  };
 
-//  // Compute expected result using external BLAS
-//  suzerain_blasext_sgbmzv_external(
-//          t.trans, t.m, t.n, t.kl, t.ku,
-//          alpha, a.get(), t.lda, (const float(*)[2]) x.get(), t.incx,
-//          beta,                  (      float(*)[2]) e.get(), t.incy);
+    // Compute expected result using external BLAS
+    suzerain_blasext_sgbmzv_external(
+            t.trans, t.m, t.n, t.kl, t.ku,
+            alpha, a.get(), t.lda, (const float(*)[2]) x.get(), t.incx,
+            beta,                  (      float(*)[2]) e.get(), t.incy);
 
-//  // Compute observed result using our implementation
-//  BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_sc(
-//          t.trans, t.m, t.n, t.kl, t.ku,
-//          alpha, a.get(), t.lda, (const float(*)[2]) x.get(), t.incx,
-//          beta,                  (      float(*)[2]) y.get(), t.incy));
+    // Compute observed result using our implementation
+    BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_sc(
+            t.trans, t.m, t.n, t.kl, t.ku,
+            alpha, a.get(), t.lda, (const float(*)[2]) x.get(), t.incx,
+            beta,                  (      float(*)[2]) y.get(), t.incy));
 
-//  check_close_collections(e.get(), e.get() + leny,
-//                          y.get(), y.get() + leny,
-//                          close_enough);
+    check_close_collections(e.get(), e.get() + leny,
+                            y.get(), y.get() + leny,
+                            close_enough);
 }
 
 static void test_gbmv_dz(const gbmzv_tc_type& t)
 {
     BOOST_TEST_MESSAGE("\tscenario " << t);
 
-    const double close_enough = numeric_limits<double>::epsilon()*t.m*t.n;
+    const double close_enough = numeric_limits<double>::epsilon()*t.m*t.n*15;
     const double inv_rand_max = double(1) / RAND_MAX;
     const int lena = t.lda * t.n;
     const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
@@ -213,21 +213,21 @@ static void test_gbmv_dz(const gbmzv_tc_type& t)
     for (int i = 0; i < lenx; ++i) x[i] = random() * inv_rand_max;
     for (int i = 0; i < leny; ++i) e[i] = y[i] = random() * inv_rand_max;
 
-//  // Compute expected result using external BLAS
-//  suzerain_blasext_dgbmzv_external(
-//          t.trans, t.m, t.n, t.kl, t.ku,
-//          t.alpha, a.get(), t.lda, (const double(*)[2]) x.get(), t.incx,
-//          t.beta,                  (      double(*)[2]) e.get(), t.incy);
+    // Compute expected result using external BLAS
+    suzerain_blasext_dgbmzv_external(
+            t.trans, t.m, t.n, t.kl, t.ku,
+            t.alpha, a.get(), t.lda, (const double(*)[2]) x.get(), t.incx,
+            t.beta,                  (      double(*)[2]) e.get(), t.incy);
 
-//  // Compute observed result using our implementation
-//  BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_dz(
-//          t.trans, t.m, t.n, t.kl, t.ku,
-//          t.alpha, a.get(), t.lda, (const double(*)[2]) x.get(), t.incx,
-//          t.beta,                  (      double(*)[2]) y.get(), t.incy));
+    // Compute observed result using our implementation
+    BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_dz(
+            t.trans, t.m, t.n, t.kl, t.ku,
+            t.alpha, a.get(), t.lda, (const double(*)[2]) x.get(), t.incx,
+            t.beta,                  (      double(*)[2]) y.get(), t.incy));
 
-//  check_close_collections(e.get(), e.get() + leny,
-//                          y.get(), y.get() + leny,
-//                          close_enough);
+    check_close_collections(e.get(), e.get() + leny,
+                            y.get(), y.get() + leny,
+                            close_enough);
 }
 
 boost::unit_test::test_suite*
