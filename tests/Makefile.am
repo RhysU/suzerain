@@ -44,6 +44,11 @@ check_PROGRAMS          += test_blas_et_al
 test_blas_et_al_SOURCES  = test_blas_et_al.c
 test_blas_et_al_LDADD    = ../suzerain/libsuzerain.la
 
+TESTS             += test_gbmv
+check_PROGRAMS    += test_gbmv
+test_gbmv_SOURCES  = test_gbmv.c
+test_gbmv_LDADD    = ../suzerain/libsuzerain.la
+
 TESTS                  += test_htstretch
 check_PROGRAMS         += test_htstretch
 test_htstretch_SOURCES  = test_htstretch.c

@@ -62,10 +62,11 @@ extern "C" {
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y.
  *
+ * \return Zero on success and a BLAS-like error code otherwise.
  * \see A BLAS reference for more details, especially for general
  *      band storage matrix requirements.
  */
-void
+int
 suzerain_gbmv_s(
         const char trans,
         const int m,
@@ -82,7 +83,7 @@ suzerain_gbmv_s(
         const int incy);
 
 /*! \copydoc suzerain_gbmv_s */
-void
+int
 suzerain_gbmv_d(
         const char trans,
         const int m,
@@ -121,9 +122,10 @@ suzerain_gbmv_d(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
+ * \return Zero on success and a BLAS-like error code otherwise.
  * \see A BLAS reference for for general band storage matrix requirements.
  */
-void
+int
 suzerain_gbmv_sz(
         const char trans,
         const int m,
@@ -162,9 +164,10 @@ suzerain_gbmv_sz(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
+ * \return Zero on success and a BLAS-like error code otherwise.
  * \see A BLAS reference for for general band storage matrix requirements.
  */
-void
+int
 suzerain_gbmv_dz(
         const char trans,
         const int m,
