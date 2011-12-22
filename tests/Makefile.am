@@ -27,6 +27,13 @@ TESTS_ENVIRONMENT += LOG4CXX_CONFIGURATION=$(abs_srcdir)/log4cxx.properties
 # Much of the C++ functionality is header-only; this ensures it builds.
 all-local: $(check_PROGRAMS)
 
+TESTS              += test_empty
+check_PROGRAMS     += test_empty
+test_empty_SOURCES  = test_empty.cpp
+test_empty_LDADD    = ../suzerain/libsuzerain.la
+test_empty_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_empty_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS              += test_error
 check_PROGRAMS     += test_error
 test_error_SOURCES  = test_error.cpp
