@@ -1688,7 +1688,7 @@ suzerain_blasext_sgbmzv_external(
                                      1.0, &(y[0][1]), 2*incy);
     } else {
         /* Complex-valued alpha and/or beta: scale y and then accumulate */
-        suzerain_blas_cscal(n, beta, y, incy); /* NB cscal */
+        suzerain_blas_cscal((toupper(trans) == 'N' ? m : n), beta, y, incy);
         suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
                                      alpha[0], a, lda, &(x[0][0]), 2*incx,
                                      1.0, &(y[0][0]), 2*incy);
@@ -1738,7 +1738,7 @@ suzerain_blasext_dgbmzv_external(
                                      1.0, &(y[0][1]), 2*incy);
     } else {
         /* Complex-valued alpha and/or beta: scale y and then accumulate */
-        suzerain_blas_zscal(n, beta, y, incy); /* NB zscal */
+        suzerain_blas_zscal((toupper(trans) == 'N' ? m : n), beta, y, incy);
         suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
                                      alpha[0], a, lda, &(x[0][0]), 2*incx,
                                      1.0, &(y[0][0]), 2*incy);
