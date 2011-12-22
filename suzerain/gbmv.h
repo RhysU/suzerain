@@ -126,7 +126,7 @@ suzerain_gbmv_d(
  * \see A BLAS reference for for general band storage matrix requirements.
  */
 int
-suzerain_gbmv_sz(
+suzerain_gbmv_sc(
         const char trans,
         const int m,
         const int n,

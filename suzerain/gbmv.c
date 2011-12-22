@@ -66,7 +66,7 @@
 #include "gbmv.def"
 
 void
-suzerain_gbmv_sz(
+suzerain_gbmv_sc(
         const char trans,
         const int m,
         const int n,
