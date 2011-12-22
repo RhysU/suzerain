@@ -1,0 +1,185 @@
+// #include-time parameters available followed by a sample usage.
+// Each of these are #undef-ed at the end of this template file
+//
+// #define GBMV_STATIC    /*empty*/         /* Use for static function          */
+// #define GBMV_FUNCTION  dgbmv             /* Function name                    */
+// #define GBMV_COMPONENT double            /* Type of matrix A                 */
+// #define GBMV_SCALAR    double            /* Type of coefficients and vectors */
+// #define GBMV_KL        const int kl,     /* Matrix lower bandwidth           */
+// #define GBMV_KU        const int ku,     /* Matrix upper bandwidth           */
+// #define GBMV_LDA       const int lda,    /* Matrix leading dimension         */
+
+#ifndef __GBMV_INTERNAL_ONCE
+#define __GBMV_INTERNAL_ONCE
+static inline int ndxmin(int a, int b) { return a < b ? a : b; }
+static inline int ndxmax(int a, int b) { return a > b ? a : b; }
+#endif /* __GBMV_INTERNAL_ONCE */
+
+GBMV_STATIC int GBMV_FUNCTION(
+    char trans, const int m, const int n, GBMV_KL GBMV_KU
+    const GBMV_SCALAR alpha, const GBMV_COMPONENT * restrict a, GBMV_LDA
+                             const    GBMV_SCALAR * restrict x, const int incx,
+    const GBMV_SCALAR beta,           GBMV_SCALAR * restrict y, const int incy)
+{
+    // Logic adopted directly from http://www.netlib.org/blas/dgbmv.f
+
+    // Parameter tweaks due to Fortran legacy
+    trans = toupper(trans);  // Simplify case-insensitive checks
+    a -= (1 + lda);          // One-indexed adjustment
+    --x;                     // One-indexed adjustment
+    --y;                     // One-indexed adjustment
+
+    // Test the input parameters
+    if (trans != 'N' && trans != 'T' && trans != 'C') {
+        return 1;
+    } else if (m < 0) {
+        return 2;
+    } else if (n < 2) {
+        return 3;
+    } else if (kl < 0) {
+        return 4;
+    } else if (ku < 0) {
+        return 5;
+    } else if (lda < kl + ku + 1) {
+        return 8;
+    } else if (incx == 0) {
+        return 10;
+    } else if (incy == 0) {
+        return 13;
+    }
+
+    // Quick return if possible
+    if (m == 0 || n == 0 || (alpha == 0 && beta == 1)) {
+        return 0;
+    }
+
+    // Set the lengths of the vectors x and y.
+    const int lenx = trans == 'N' ? n : m;
+    const int leny = trans == 'N' ? m : n;
+
+    // Set up the start points in x and y.
+    int kx = incx > 0 ? 1 : 1 - (lenx - 1) * incx;
+    int ky = incy > 0 ? 1 : 1 - (leny - 1) * incy;
+
+    // Start the operations. In this version the elements of A are accessed
+    // sequentially with one pass through the band part of A.
+
+    // First form y := beta*y...
+    if (beta != 1) {
+        if (incy == 1) {  // ...for contiguous y
+            if (beta == 0) {
+                memset(y + 1, 0, leny * sizeof(y[0]));
+            } else {
+                for (int i = 1; i <= leny; ++i) {
+                    y[i] *= beta;
+                }
+            }
+        } else {          // ...for strided y
+            int iy = ky;
+            if (beta == 0) {
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
+                for (int i = 1; i <= leny; ++i) {
+                    y[iy] = 0;
+                    iy += incy;
+                }
+            } else {
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
+                for (int i = 1; i <= leny; ++i) {
+                    y[iy] *= beta;
+                    iy += incy;
+                }
+            }
+        }
+    }
+
+    // Quick return when possible
+    if (alpha == 0) {
+        return 0;
+    }
+
+    const int kup1 = ku + 1;
+    if (trans == 'N') {   // Form y := alpha*A*x + y...
+
+        int jx = kx;
+        if (incy == 1) {  // ...for contiguous y
+            for (int j = 1; j <= n; ++j) {
+                const GBMV_SCALAR temp = alpha * x[jx];
+                const int k = kup1 - j;
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
+                for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
+                    y[i] += temp*a[k + i + j*lda];
+                }
+                jx += incx;
+            }
+        } else {          // ...for strided y
+            for (int j = 1; j <= n; ++j) {
+                const GBMV_SCALAR temp = alpha*x[jx];
+                int iy = ky;
+                const int k = kup1 - j;
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
+                for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
+                    y[iy] += temp*a[k + i + j*lda];
+                    iy += incy;
+                }
+                jx += incx;
+                if (j > ku) {
+                    ky += incy;
+                }
+            }
+        }
+
+    } else {              // Form y := alpha*A**T*x + y...
+
+        int jy = ky;
+        if (incx == 1) {  // ...for contiguous x
+            for (int j = 1; j <= n; ++j) {
+                GBMV_SCALAR temp = 0;
+                const int k = kup1 - j;
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
+                for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
+                    temp += a[k + i + j*lda]*x[i];
+                }
+                y[jy] += alpha * temp;
+                jy += incy;
+            }
+        } else {          // ...for strided x
+            for (int j = 1; j <= n; ++j) {
+                GBMV_SCALAR temp = 0;
+                int ix = kx;
+                const int k = kup1 - j;
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
+                for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
+                    temp += a[k + i + j*lda]*x[ix];
+                    ix += incx;
+                }
+                y[jy] += alpha*temp;
+                jy += incy;
+                if (j > ku) {
+                    kx += incx;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+#undef GBMV_STATIC
+#undef GBMV_FUNCTION
+#undef GBMV_COMPONENT
+#undef GBMV_SCALAR
+#undef GBMV_KL
+#undef GBMV_KU
+#undef GBMV_LDA
