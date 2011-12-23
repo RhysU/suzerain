@@ -132,7 +132,9 @@ static shared_ptr<      channel::manufactured_solution> msoln;
 /** <tt>atexit</tt> callback to ensure we finalize underling. */
 static void atexit_underling(void) {
     dgrid.reset();        // Runs pencil_grid destructors
+#ifdef HAVE_UNDERLING
     underling_cleanup();  // Cleans up the library
+#endif
 }
 
 // State details specific to this rank initialized in main()
@@ -813,8 +815,8 @@ int main(int argc, char **argv)
                         log4cxx_config);
 #ifdef HAVE_UNDERLING
     underling_init(&argc, &argv, 0);                 // Initialize underling...
-    atexit(atexit_underling);                        // ...finalize at exit
 #endif
+    atexit(atexit_underling);                        // ...finalize at exit
     esioh = esio_handle_initialize(MPI_COMM_WORLD);  // Initialize ESIO
     atexit(&atexit_esio);                            // ...finalize at exit
 
