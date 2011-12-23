@@ -52,16 +52,13 @@ GBMV_STATIC int GBMV_FUNCTION(
     const int lenx = trans == 'N' ? n : m;
     const int leny = trans == 'N' ? m : n;
 
-    // Set up the start points in x and y.
-    int kx = incx > 0 ? 0 : incx*(1 - lenx) ;
-    int ky = incy > 0 ? 0 : incy*(1 - leny) ;
-
     // Start the operations. In this version the elements of A are accessed
     // sequentially with one pass through the band part of A.
 
-    // First form y := beta*y...
+    // First form y := beta*y (ignoring the irrelevant incy sign)...
     if (beta != 1) {
-        if (incy == 1) {  // ...for contiguous y
+        const int abs_incy = abs(incy);
+        if (abs_incy == 1) {  // ...for contiguous y
             if (beta == 0) {
                 memset(y, 0, leny * sizeof(y[0]));
             } else {
@@ -69,24 +66,27 @@ GBMV_STATIC int GBMV_FUNCTION(
                     y[i] *= beta;
                 }
             }
-        } else {          // ...for strided y
-            const int iyend = ky + incy*leny;
+        } else {              // ...for strided y
             if (beta == 0) {
-                for (int iy = ky; iy != iyend; iy += incy) {
-                    y[iy] = 0;
+                for (int i = 0; i < leny; ++i) {
+                    y[i*abs_incy] = 0;
                 }
             } else {
-                for (int iy = ky; iy != iyend; iy += incy) {
-                    y[iy] *= beta;
+                for (int i = 0; i < leny; ++i) {
+                    y[i*abs_incy] *= beta;
                 }
             }
         }
     }
 
-    // Quick return when possible
+    // Quick return when the matrix used is irrelevant
     if (alpha == 0) {
         return 0;
     }
+
+    // Set up the start points in x and y.
+    int kx = incx > 0 ? 0 : incx*(1 - lenx) ;
+    int ky = incy > 0 ? 0 : incy*(1 - leny) ;
 
     // Banded matrix dereference is always of form a[ku - j + i + j*lda]
     // so incorporate the contant ku offset once and for all.  Below
