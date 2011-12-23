@@ -99,9 +99,6 @@ GBMV_STATIC int GBMV_FUNCTION(
             for (int j = 1; j <= n; ++j) {
                 const GBMV_SCALAR temp = alpha * x[jx];
                 const int k = kup1 - j;
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
                     y[i-1] += temp*a[k + i + j*lda];
                 }
@@ -112,9 +109,6 @@ GBMV_STATIC int GBMV_FUNCTION(
                 const GBMV_SCALAR temp = alpha*x[jx];
                 int iy = ky;
                 const int k = kup1 - j;
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
                     y[iy] += temp*a[k + i + j*lda];
                     iy += incy;
@@ -133,9 +127,6 @@ GBMV_STATIC int GBMV_FUNCTION(
             for (int j = 1; j <= n; ++j) {
                 GBMV_SCALAR temp = 0;
                 const int k = kup1 - j;
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
                     temp += a[k + i + j*lda]*x[i-1];
                 }
@@ -147,9 +138,6 @@ GBMV_STATIC int GBMV_FUNCTION(
                 GBMV_SCALAR temp = 0;
                 int ix = kx;
                 const int k = kup1 - j;
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
                     temp += a[k + i + j*lda]*x[ix];
                     ix += incx;
