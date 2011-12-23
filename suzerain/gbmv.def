@@ -95,7 +95,7 @@ GBMV_STATIC int GBMV_FUNCTION(
             for (int j = 1; j <= n; ++j) {
                 const GBMV_SCALAR temp = alpha * x[jx];
                 for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
-                    y[i-1] += temp*a[-lda + ku - j + i + j*lda];
+                    y[i-1] += temp*a[ku - j + i + (j-1)*lda];
                 }
                 jx += incx;
             }
@@ -104,7 +104,7 @@ GBMV_STATIC int GBMV_FUNCTION(
                 const GBMV_SCALAR temp = alpha*x[jx];
                 int iy = ky;
                 for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
-                    y[iy] += temp*a[-lda + ku - j + i + j*lda];
+                    y[iy] += temp*a[ku - j + i + (j-1)*lda];
                     iy += incy;
                 }
                 jx += incx;
@@ -121,7 +121,7 @@ GBMV_STATIC int GBMV_FUNCTION(
             for (int j = 1; j <= n; ++j) {
                 GBMV_SCALAR temp = 0;
                 for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
-                    temp += a[-lda + ku - j + i + j*lda]*x[i-1];
+                    temp += a[ku - j + i + (j-1)*lda]*x[i-1];
                 }
                 y[jy] += alpha * temp;
                 jy += incy;
@@ -131,7 +131,7 @@ GBMV_STATIC int GBMV_FUNCTION(
                 GBMV_SCALAR temp = 0;
                 int ix = kx;
                 for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
-                    temp += a[-lda + ku - j + i + j*lda]*x[ix];
+                    temp += a[ku - j + i + (j-1)*lda]*x[ix];
                     ix += incx;
                 }
                 y[jy] += alpha*temp;
