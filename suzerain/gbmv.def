@@ -88,23 +88,31 @@ GBMV_STATIC int GBMV_FUNCTION(
         return 0;
     }
 
+    // Banded matrix dereference is always of form a[ku - j + i + j*lda]
+    // so incorporate the contant ku offset once and for all.  Below
+    // we also define j-dependent pointers aj to handle -j + j*lda offset.
+    a += ku;
+
+    // Perform the banded matrix-vector accumulation
     if (trans == 'N') {   // Form y := alpha*A*x + y...
 
         int jx = kx;
         if (incy == 1) {  // ...for contiguous y
             for (int j = 0; j < n; ++j) {
+                const GBMV_COMPONENT * const aj = a + j*(lda - 1);
                 const GBMV_SCALAR temp = alpha*x[jx];
                 for (int i = ndxmax(0, j-ku); i < ndxmin(m, j+kl+1); ++i) {
-                    y[i] += temp*a[ku - j + i + j*lda];
+                    y[i] += temp*aj[i];
                 }
                 jx += incx;
             }
         } else {          // ...for strided y
             for (int j = 0; j < n; ++j) {
+                const GBMV_COMPONENT * const aj = a + j*(lda - 1);
                 const GBMV_SCALAR temp = alpha*x[jx];
                 int iy = ky;
                 for (int i = ndxmax(0, j-ku); i < ndxmin(m, j+kl+1); ++i) {
-                    y[iy] += temp*a[ku - j + i + j*lda];
+                    y[iy] += temp*aj[i];
                     iy += incy;
                 }
                 jx += incx;
@@ -119,19 +127,21 @@ GBMV_STATIC int GBMV_FUNCTION(
         int jy = ky;
         if (incx == 1) {  // ...for contiguous x
             for (int j = 0; j < n; ++j) {
+                const GBMV_COMPONENT * const aj = a + j*(lda - 1);
                 GBMV_SCALAR temp = 0;
                 for (int i = ndxmax(0, j-ku); i < ndxmin(m, j+kl+1); ++i) {
-                    temp += a[ku - j + i + j*lda]*x[i];
+                    temp += aj[i]*x[i];
                 }
                 y[jy] += alpha * temp;
                 jy += incy;
             }
         } else {          // ...for strided x
             for (int j = 0; j < n; ++j) {
+                const GBMV_COMPONENT * const aj = a + j*(lda - 1);
                 GBMV_SCALAR temp = 0;
                 int ix = kx;
                 for (int i = ndxmax(0, j-ku); i < ndxmin(m, j+kl+1); ++i) {
-                    temp += a[ku - j + i + j*lda]*x[ix];
+                    temp += aj[i]*x[ix];
                     ix += incx;
                 }
                 y[jy] += alpha*temp;
