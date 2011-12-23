@@ -94,8 +94,8 @@ GBMV_STATIC int GBMV_FUNCTION(
         if (incy == 1) {  // ...for contiguous y
             for (int j = 0; j < n; ++j) {
                 const GBMV_SCALAR temp = alpha*x[jx];
-                for (int i = ndxmax(0, (j+1)-ku-1); i < ndxmin(m, (j+1)+kl); ++i) {
-                    y[i] += temp*a[ku + 1 - (j+1) + i + ((j+1)-1)*lda];
+                for (int i = ndxmax(0, j-ku); i < ndxmin(m, j+kl+1); ++i) {
+                    y[i] += temp*a[ku - j + i + j*lda];
                 }
                 jx += incx;
             }
@@ -103,12 +103,12 @@ GBMV_STATIC int GBMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const GBMV_SCALAR temp = alpha*x[jx];
                 int iy = ky;
-                for (int i = ndxmax(0, (j+1)-ku-1); i < ndxmin(m, (j+1)+kl); ++i) {
-                    y[iy] += temp*a[ku + 1 - (j+1) + i + ((j+1)-1)*lda];
+                for (int i = ndxmax(0, j-ku); i < ndxmin(m, j+kl+1); ++i) {
+                    y[iy] += temp*a[ku - j + i + j*lda];
                     iy += incy;
                 }
                 jx += incx;
-                if ((j+1) > ku) {
+                if (j > ku - 1) {
                     ky += incy;
                 }
             }
@@ -120,8 +120,8 @@ GBMV_STATIC int GBMV_FUNCTION(
         if (incx == 1) {  // ...for contiguous x
             for (int j = 0; j < n; ++j) {
                 GBMV_SCALAR temp = 0;
-                for (int i = ndxmax(0, (j+1)-ku-1); i < ndxmin(m, (j+1)+kl); ++i) {
-                    temp += a[ku + 1 - (j+1) + i + ((j+1)-1)*lda]*x[i];
+                for (int i = ndxmax(0, j-ku); i < ndxmin(m, j+kl+1); ++i) {
+                    temp += a[ku - j + i + j*lda]*x[i];
                 }
                 y[jy] += alpha * temp;
                 jy += incy;
@@ -130,13 +130,13 @@ GBMV_STATIC int GBMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 GBMV_SCALAR temp = 0;
                 int ix = kx;
-                for (int i = ndxmax(0, (j+1)-ku-1); i < ndxmin(m, (j+1)+kl); ++i) {
-                    temp += a[ku + 1 - (j+1) + i + ((j+1)-1)*lda]*x[ix];
+                for (int i = ndxmax(0, j-ku); i < ndxmin(m, j+kl+1); ++i) {
+                    temp += a[ku - j + i + j*lda]*x[ix];
                     ix += incx;
                 }
                 y[jy] += alpha*temp;
                 jy += incy;
-                if ((j+1) > ku) {
+                if (j > ku - 1) {
                     kx += incx;
                 }
             }
