@@ -68,10 +68,16 @@ GBMV_STATIC int GBMV_FUNCTION(
             }
         } else {              // ...for strided y
             if (beta == 0) {
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
                 for (int i = 0; i < leny; ++i) {
                     y[i*abs_incy] = 0;
                 }
             } else {
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
                 for (int i = 0; i < leny; ++i) {
                     y[i*abs_incy] *= beta;
                 }
@@ -117,6 +123,9 @@ GBMV_STATIC int GBMV_FUNCTION(
                 const int iu = ndxmin(m, j + klp1);
                 const GBMV_SCALAR temp = alpha*x[jx];
                 int iy = ky;
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
                 for (int i = il; i < iu; ++i) {
                     y[iy] += temp*aj[i];
                     iy += incy;
@@ -150,6 +159,9 @@ GBMV_STATIC int GBMV_FUNCTION(
                 const int iu = ndxmin(m, j + klp1);
                 GBMV_SCALAR temp = 0;
                 int ix = kx;
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
                 for (int i = il; i < iu; ++i) {
                     temp += aj[i]*x[ix];
                     ix += incx;
