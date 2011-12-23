@@ -65,7 +65,7 @@
 #define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
-void
+int
 suzerain_gbmv_sc(
         const char trans,
         const int m,
@@ -84,10 +84,10 @@ suzerain_gbmv_sc(
     float _Complex alpha_c, beta_c;
     memcpy(&alpha_c, alpha, sizeof(float _Complex));
     memcpy(&beta_c,  beta,  sizeof(float _Complex));
-    suzerain_gbmv_internal_sc(trans, m, n, kl, ku,
-                              alpha_c, (void *) a, lda,
-                                       (void *) x, incx,
-                              beta_c,  (void *) y, incy);
+    return suzerain_gbmv_internal_sc(trans, m, n, kl, ku,
+                                     alpha_c, (void *) a, lda,
+                                              (void *) x, incx,
+                                     beta_c,  (void *) y, incy);
 }
 
 #define GBMV_STATIC    static
@@ -99,7 +99,7 @@ suzerain_gbmv_sc(
 #define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
-void
+int
 suzerain_gbmv_dz(
         const char trans,
         const int m,
@@ -118,8 +118,8 @@ suzerain_gbmv_dz(
     double _Complex alpha_c, beta_c;
     memcpy(&alpha_c, alpha, sizeof(double _Complex));
     memcpy(&beta_c,  beta,  sizeof(double _Complex));
-    suzerain_gbmv_internal_dz(trans, m, n, kl, ku,
-                              alpha_c, (void *) a, lda,
-                                       (void *) x, incx,
-                              beta_c,  (void *) y, incy);
+    return suzerain_gbmv_internal_dz(trans, m, n, kl, ku,
+                                     alpha_c, (void *) a, lda,
+                                              (void *) x, incx,
+                                     beta_c,  (void *) y, incy);
 }
