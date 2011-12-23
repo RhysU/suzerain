@@ -88,7 +88,7 @@ static void test_gbmv_s(const gbmv_tc_type& t)
 {
     BOOST_TEST_MESSAGE("\tscenario " << t);
 
-    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*10;
+    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*15;
     const float inv_rand_max = float(1) / RAND_MAX;
     const int lena = t.lda * t.n;
     const int lenx = abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
@@ -126,7 +126,7 @@ static void test_gbmv_d(const gbmv_tc_type& t)
 {
     BOOST_TEST_MESSAGE("\tscenario " << t);
 
-    const double close_enough = numeric_limits<double>::epsilon()*t.m*t.n;
+    const double close_enough = numeric_limits<double>::epsilon()*t.m*t.n*15;
     const double inv_rand_max = double(1) / RAND_MAX;
     const int lena = t.lda * t.n;
     const int lenx = abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
