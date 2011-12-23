@@ -26,8 +26,6 @@ GBMV_STATIC int GBMV_FUNCTION(
     // Parameter tweaks due to Fortran legacy
     trans = toupper(trans);  // Simplify case-insensitive checks
     a -= (1 + lda);          // One-indexed adjustment
-    --x;                     // One-indexed adjustment
-    --y;                     // One-indexed adjustment
 
     // Test the input parameters
     if (trans != 'N' && trans != 'T' && trans != 'C') {
@@ -58,8 +56,8 @@ GBMV_STATIC int GBMV_FUNCTION(
     const int leny = trans == 'N' ? m : n;
 
     // Set up the start points in x and y.
-    int kx = incx > 0 ? 1 : 1 - (lenx - 1) * incx;
-    int ky = incy > 0 ? 1 : 1 - (leny - 1) * incy;
+    int kx = incx > 0 ? 0 : incx*(1 - lenx) ;
+    int ky = incy > 0 ? 0 : incy*(1 - leny) ;
 
     // Start the operations. In this version the elements of A are accessed
     // sequentially with one pass through the band part of A.
@@ -68,29 +66,21 @@ GBMV_STATIC int GBMV_FUNCTION(
     if (beta != 1) {
         if (incy == 1) {  // ...for contiguous y
             if (beta == 0) {
-                memset(y + 1, 0, leny * sizeof(y[0]));
+                memset(y, 0, leny * sizeof(y[0]));
             } else {
-                for (int i = 1; i <= leny; ++i) {
+                for (int i = 0; i < leny; ++i) {
                     y[i] *= beta;
                 }
             }
         } else {          // ...for strided y
-            int iy = ky;
+            const int iyend = ky + incy*leny;
             if (beta == 0) {
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
-                for (int i = 1; i <= leny; ++i) {
+                for (int iy = ky; iy != iyend; iy += incy) {
                     y[iy] = 0;
-                    iy += incy;
                 }
             } else {
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
-                for (int i = 1; i <= leny; ++i) {
+                for (int iy = ky; iy != iyend; iy += incy) {
                     y[iy] *= beta;
-                    iy += incy;
                 }
             }
         }
@@ -113,7 +103,7 @@ GBMV_STATIC int GBMV_FUNCTION(
 #pragma unroll
 #endif
                 for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
-                    y[i] += temp*a[k + i + j*lda];
+                    y[i-1] += temp*a[k + i + j*lda];
                 }
                 jx += incx;
             }
@@ -147,7 +137,7 @@ GBMV_STATIC int GBMV_FUNCTION(
 #pragma unroll
 #endif
                 for (int i = ndxmax(1, j-ku); i <= ndxmin(m, j+kl); ++i) {
-                    temp += a[k + i + j*lda]*x[i];
+                    temp += a[k + i + j*lda]*x[i-1];
                 }
                 y[jy] += alpha * temp;
                 jy += incy;
