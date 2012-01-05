@@ -28,18 +28,43 @@
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
+// File iteration is used to generate bandwidth-specific routines.  See
+// http://www.boost.org/libs/preprocessor/doc/topics/file_iteration.html for an
+// overview.  We iterate first to generate internal, static routines and then
+// continue on to the non-iterated logic.
+
+// Include the usual preamble which also pulls in Boost.Preprocessor
+#if !defined(BOOST_PP_IS_ITERATING) || !BOOST_PP_IS_ITERATING
+
+# ifdef HAVE_CONFIG_H
+# include <suzerain/config.h>
+# endif
+# include <suzerain/common.h>
+# pragma hdrstop
+# include <suzerain/gbmv.h>
+
+# pragma warning(disable:1418 1572 2259)
+
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
 
-#pragma warning(disable:1418 1572 2259)
+#if defined(BOOST_PP_IS_ITERATING) && BOOST_PP_IS_ITERATING
 
-// Produce general bandwidth versions
+#ifndef NDEBUG
+#define BOOST_PP_CONFIG_EXTENDED_LINE_INFO 1
+#line BOOST_PP_LINE(BOOST_PP_ITERATION(), __FILE__)
+#endif
 
-#define GBMV_STATIC
-#define GBMV_FUNCTION  suzerain_gbmv_s
+// TODO Handle BOOST_PP_ITERATE() case
+
+#else /* BOOST_PP_IS_ITERATING */
+
+// TODO Define iteration parameters
+// TODO Iterate
+
+// Generate general bandwidth routines
+
+#define GBMV_STATIC    static
+#define GBMV_FUNCTION  suzerain_gbmv_internal_s
 #define GBMV_COMPONENT float
 #define GBMV_SCALAR    float
 #define GBMV_KL        const int kl,
@@ -47,8 +72,8 @@
 #define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
-#define GBMV_STATIC
-#define GBMV_FUNCTION  suzerain_gbmv_d
+#define GBMV_STATIC    static
+#define GBMV_FUNCTION  suzerain_gbmv_internal_d
 #define GBMV_COMPONENT double
 #define GBMV_SCALAR    double
 #define GBMV_KL        const int kl,
@@ -64,6 +89,61 @@
 #define GBMV_KU        const int ku,
 #define GBMV_LDA       const int lda,
 #include "gbmv.def"
+
+#define GBMV_STATIC    static
+#define GBMV_FUNCTION  suzerain_gbmv_internal_dz
+#define GBMV_COMPONENT double
+#define GBMV_SCALAR    double _Complex
+#define GBMV_KL        const int kl,
+#define GBMV_KU        const int ku,
+#define GBMV_LDA       const int lda,
+#include "gbmv.def"
+
+// Provide externally callable logic dispatching to internal routines
+
+int
+suzerain_gbmv_s(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy)
+{
+    // TODO Dispatch to fixed bandwidth versions if appropriate
+    return suzerain_gbmv_internal_s(trans, m, n, kl, ku,
+                                    alpha, a, lda, x, incx,
+                                    beta,          y, incy);
+}
+
+int
+suzerain_gbmv_d(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy)
+{
+    // TODO Dispatch to fixed bandwidth versions if appropriate
+    return suzerain_gbmv_internal_d(trans, m, n, kl, ku,
+                                    alpha, a, lda, x, incx,
+                                    beta,          y, incy);
+}
 
 int
 suzerain_gbmv_sc(
@@ -84,20 +164,12 @@ suzerain_gbmv_sc(
     float _Complex alpha_c, beta_c;
     memcpy(&alpha_c, alpha, sizeof(float _Complex));
     memcpy(&beta_c,  beta,  sizeof(float _Complex));
+    // TODO Dispatch to fixed bandwidth versions if appropriate
     return suzerain_gbmv_internal_sc(trans, m, n, kl, ku,
                                      alpha_c, (void *) a, lda,
                                               (void *) x, incx,
                                      beta_c,  (void *) y, incy);
 }
-
-#define GBMV_STATIC    static
-#define GBMV_FUNCTION  suzerain_gbmv_internal_dz
-#define GBMV_COMPONENT double
-#define GBMV_SCALAR    double _Complex
-#define GBMV_KL        const int kl,
-#define GBMV_KU        const int ku,
-#define GBMV_LDA       const int lda,
-#include "gbmv.def"
 
 int
 suzerain_gbmv_dz(
@@ -118,8 +190,11 @@ suzerain_gbmv_dz(
     double _Complex alpha_c, beta_c;
     memcpy(&alpha_c, alpha, sizeof(double _Complex));
     memcpy(&beta_c,  beta,  sizeof(double _Complex));
+    // TODO Dispatch to fixed bandwidth versions if appropriate
     return suzerain_gbmv_internal_dz(trans, m, n, kl, ku,
                                      alpha_c, (void *) a, lda,
                                               (void *) x, incx,
                                      beta_c,  (void *) y, incy);
 }
+
+#endif /* BOOST_PP_IS_ITERATING */
