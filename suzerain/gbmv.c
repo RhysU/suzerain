@@ -47,7 +47,7 @@
 // ---------------------------------------------------------
 // Iterate on this file to generate fixed bandwidth routines
 // ---------------------------------------------------------
-#define BOOST_PP_ITERATION_LIMITS (0, 10)
+#define BOOST_PP_ITERATION_LIMITS (0, 9)
 #define BOOST_PP_FILENAME_1 <suzerain/gbmv.c>
 #include BOOST_PP_ITERATE()
 
@@ -111,7 +111,25 @@ suzerain_gbmv_s(
         float *y,
         const int incy)
 {
-    // TODO Dispatch to fixed bandwidth versions if appropriate
+    // Dispatch to fixed bandwidth specialization for small bandwidth...
+    if (kl == ku) {
+        switch (kl) {
+#define ARGS trans, m, n, alpha, a, lda, x, incx, beta, y, incy
+            case 0: return suzerain_gbmv_internal_s0(ARGS);
+            case 1: return suzerain_gbmv_internal_s1(ARGS);
+            case 2: return suzerain_gbmv_internal_s2(ARGS);
+            case 3: return suzerain_gbmv_internal_s3(ARGS);
+            case 4: return suzerain_gbmv_internal_s4(ARGS);
+            case 5: return suzerain_gbmv_internal_s5(ARGS);
+            case 6: return suzerain_gbmv_internal_s6(ARGS);
+            case 7: return suzerain_gbmv_internal_s7(ARGS);
+            case 8: return suzerain_gbmv_internal_s8(ARGS);
+            case 9: return suzerain_gbmv_internal_s9(ARGS);
+#undef ARGS
+        }
+    }
+
+    // ...otherwise employ a general bandwidth implementation
     return suzerain_gbmv_internal_s(trans, m, n, kl, ku,
                                     alpha, a, lda, x, incx,
                                     beta,          y, incy);
@@ -133,7 +151,25 @@ suzerain_gbmv_d(
         double *y,
         const int incy)
 {
-    // TODO Dispatch to fixed bandwidth versions if appropriate
+    // Dispatch to fixed bandwidth specialization for small bandwidth...
+    if (kl == ku) {
+        switch (kl) {
+#define ARGS trans, m, n, alpha, a, lda, x, incx, beta, y, incy
+            case 0: return suzerain_gbmv_internal_d0(ARGS);
+            case 1: return suzerain_gbmv_internal_d1(ARGS);
+            case 2: return suzerain_gbmv_internal_d2(ARGS);
+            case 3: return suzerain_gbmv_internal_d3(ARGS);
+            case 4: return suzerain_gbmv_internal_d4(ARGS);
+            case 5: return suzerain_gbmv_internal_d5(ARGS);
+            case 6: return suzerain_gbmv_internal_d6(ARGS);
+            case 7: return suzerain_gbmv_internal_d7(ARGS);
+            case 8: return suzerain_gbmv_internal_d8(ARGS);
+            case 9: return suzerain_gbmv_internal_d9(ARGS);
+#undef ARGS
+        }
+    }
+
+    // ...otherwise employ a general bandwidth implementation
     return suzerain_gbmv_internal_d(trans, m, n, kl, ku,
                                     alpha, a, lda, x, incx,
                                     beta,          y, incy);
@@ -158,11 +194,31 @@ suzerain_gbmv_sc(
     float _Complex alpha_c, beta_c;
     memcpy(&alpha_c, alpha, sizeof(float _Complex));
     memcpy(&beta_c,  beta,  sizeof(float _Complex));
-    // TODO Dispatch to fixed bandwidth versions if appropriate
-    return suzerain_gbmv_internal_sc(trans, m, n, kl, ku,
-                                     alpha_c, (void *) a, lda,
-                                              (void *) x, incx,
-                                     beta_c,  (void *) y, incy);
+
+    // Dispatch to fixed bandwidth specialization for small bandwidth...
+    if (kl == ku) {
+        switch (kl) {
+#define ARGS trans, m, n, alpha_c, (void *) a, lda,     \
+             (void *) x, incx, beta_c, (void *) y, incy
+            case 0: return suzerain_gbmv_internal_sc0(ARGS);
+            case 1: return suzerain_gbmv_internal_sc1(ARGS);
+            case 2: return suzerain_gbmv_internal_sc2(ARGS);
+            case 3: return suzerain_gbmv_internal_sc3(ARGS);
+            case 4: return suzerain_gbmv_internal_sc4(ARGS);
+            case 5: return suzerain_gbmv_internal_sc5(ARGS);
+            case 6: return suzerain_gbmv_internal_sc6(ARGS);
+            case 7: return suzerain_gbmv_internal_sc7(ARGS);
+            case 8: return suzerain_gbmv_internal_sc8(ARGS);
+            case 9: return suzerain_gbmv_internal_sc9(ARGS);
+#undef ARGS
+        }
+    }
+
+    // ...otherwise employ a general bandwidth implementation
+    return suzerain_gbmv_internal_sc(
+            trans, m, n, kl, ku,
+            alpha_c, (void *) a, lda, (void *) x, incx,
+            beta_c,                   (void *) y, incy);
 }
 
 int
@@ -184,19 +240,82 @@ suzerain_gbmv_dz(
     double _Complex alpha_c, beta_c;
     memcpy(&alpha_c, alpha, sizeof(double _Complex));
     memcpy(&beta_c,  beta,  sizeof(double _Complex));
-    // TODO Dispatch to fixed bandwidth versions if appropriate
-    return suzerain_gbmv_internal_dz(trans, m, n, kl, ku,
-                                     alpha_c, (void *) a, lda,
-                                              (void *) x, incx,
-                                     beta_c,  (void *) y, incy);
+
+    // Dispatch to fixed bandwidth specialization for small bandwidth...
+    if (kl == ku) {
+        switch (kl) {
+#define ARGS trans, m, n, alpha_c, (void *) a, lda,     \
+             (void *) x, incx, beta_c, (void *) y, incy
+            case 0: return suzerain_gbmv_internal_dz0(ARGS);
+            case 1: return suzerain_gbmv_internal_dz1(ARGS);
+            case 2: return suzerain_gbmv_internal_dz2(ARGS);
+            case 3: return suzerain_gbmv_internal_dz3(ARGS);
+            case 4: return suzerain_gbmv_internal_dz4(ARGS);
+            case 5: return suzerain_gbmv_internal_dz5(ARGS);
+            case 6: return suzerain_gbmv_internal_dz6(ARGS);
+            case 7: return suzerain_gbmv_internal_dz7(ARGS);
+            case 8: return suzerain_gbmv_internal_dz8(ARGS);
+            case 9: return suzerain_gbmv_internal_dz9(ARGS);
+#undef ARGS
+        }
+    }
+
+    // ...otherwise employ a general bandwidth implementation
+    return suzerain_gbmv_internal_dz(
+            trans, m, n, kl, ku,
+            alpha_c, (void *) a, lda, (void *) x, incx,
+            beta_c,                   (void *) y, incy);
 }
 
 #else
 
-// ----------------------------------------------------------
-// Generate fixed bandwidth routines using BOOST_PP_ITERATE()
-// ----------------------------------------------------------
+// ------------------------------------------------------------
+// Generate fixed bandwidth routines using BOOST_PP_ITERATION()
+// ------------------------------------------------------------
+#define kl BOOST_PP_ITERATION()
+#define ku BOOST_PP_ITERATION()
 
-// TODO Add logic here
+#define GBMV_STATIC    static
+#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_s, \
+                                    BOOST_PP_ITERATION())
+#define GBMV_COMPONENT float
+#define GBMV_SCALAR    float
+#define GBMV_KL
+#define GBMV_KU
+#define GBMV_LDA       const int lda,
+#include "gbmv.def"
+
+#define GBMV_STATIC    static
+#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_d, \
+                                    BOOST_PP_ITERATION())
+#define GBMV_COMPONENT double
+#define GBMV_SCALAR    double
+#define GBMV_KL
+#define GBMV_KU
+#define GBMV_LDA       const int lda,
+#include "gbmv.def"
+
+#define GBMV_STATIC    static
+#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_sc, \
+                                    BOOST_PP_ITERATION())
+#define GBMV_COMPONENT float
+#define GBMV_SCALAR    float _Complex
+#define GBMV_KL
+#define GBMV_KU
+#define GBMV_LDA       const int lda,
+#include "gbmv.def"
+
+#define GBMV_STATIC    static
+#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_dz, \
+                                    BOOST_PP_ITERATION())
+#define GBMV_COMPONENT double
+#define GBMV_SCALAR    double _Complex
+#define GBMV_KL
+#define GBMV_KU
+#define GBMV_LDA       const int lda,
+#include "gbmv.def"
+
+#undef kl
+#undef ku
 
 #endif
