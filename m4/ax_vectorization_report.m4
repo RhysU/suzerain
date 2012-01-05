@@ -55,8 +55,7 @@ case $ax_cv_c_compiler_vendor in #(
   ibm)   ;;#(
   intel) AX_APPEND_COMPILE_FLAGS([-vec-report1])
          ;;#(
-  gnu)   ### Disabled, as it is verbose and not terribly helpful on gcc 4.3
-         ### AX_APPEND_COMPILE_FLAGS([-ftree-vectorizer-verbose=1])
+  gnu)   AX_APPEND_COMPILE_FLAGS([-ftree-vectorizer-verbose=1])
          ;;#(
   *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
          AC_MSG_WARN([AX_VECTORIZATION[]_REPORT: ax_cv_c_compiler_vendor = $ax_cv_c_compiler_vendor unknown])
@@ -71,8 +70,7 @@ case $ax_cv_cxx_compiler_vendor in #(
   ibm)   ;;#(
   intel) AX_APPEND_COMPILE_FLAGS([-vec-report1])
          ;;#(
-  gnu)   ### Disabled, as it is verbose and not terribly helpful on gcc 4.3
-         ### AX_APPEND_COMPILE_FLAGS([-ftree-vectorizer-verbose=1])
+  gnu)   AX_APPEND_COMPILE_FLAGS([-ftree-vectorizer-verbose=1])
          ;;#(
   *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
          AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_cxx_compiler_vendor = $ax_cv_cxx_compiler_vendor unknown])
