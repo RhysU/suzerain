@@ -124,18 +124,17 @@ if test "$ac_test_CFLAGS" != "set"; then
         CFLAGS="-O3 -fomit-frame-pointer"
 
         # tune for the host by default
-        AX_CHECK_COMPILE_FLAG(-mtune=native, CFLAGS="$CFLAGS -mtune=native")
+        AX_APPEND_COMPILE_FLAGS([-mtune=native])
 
         # -malign-double for x86 systems
-        AX_CHECK_COMPILE_FLAG(-malign-double, CFLAGS="$CFLAGS -malign-double")
+        AX_APPEND_COMPILE_FLAGS([-malign-double])
 
         #  -fstrict-aliasing for gcc-2.95+
-        AX_CHECK_COMPILE_FLAG(-fstrict-aliasing,
-           CFLAGS="$CFLAGS -fstrict-aliasing")
+        AX_APPEND_COMPILE_FLAGS([-fstrict-aliasing])
 
-        # note that we enable "unsafe" fp optimization with other compilers, too
-        AX_CHECK_COMPILE_FLAG(-ffast-math, CFLAGS="$CFLAGS -ffast-math")
-
+        # We enable "unsafe" fp optimization with other compilers, too
+        # We do rely on some IEEE promises hence no -ffast-math
+        AX_APPEND_COMPILE_FLAGS([-funsafe-math-optimizations])
         ;;
   esac
 
