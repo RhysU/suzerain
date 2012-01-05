@@ -1,93 +1,47 @@
-# SYNOPSIS
-#
-#   AX_CC_MAXOPT
-#   Modified per Suzerain's needs-- this is not the traditional macro
-#
-# DESCRIPTION
-#
-#   Try to turn on "good" C optimization flags for various compilers and
-#   architectures, for some definition of "good". (In our case, good for
-#   FFTW and hopefully for other scientific codes. Modify as needed.)
-#
-#   The user can override the flags by setting the CFLAGS environment
-#   variable. The user can also specify --enable-portable-binary in order to
-#   disable any optimization flags that might result in a binary that only
-#   runs on the host architecture.
-#
-#   Note also that the flags assume that ANSI C aliasing rules are followed
-#   by the code (e.g. for gcc's -fstrict-aliasing), and that floating-point
-#   computations can be re-ordered as needed.
-#
-#   Requires macros: AX_CHECK_COMPILE_FLAG, AX_APPEND_COMPILE_FLAGS,
-#   AX_COMPILER_VENDOR, AX_GCC_ARCHFLAG, AX_GCC_X86_CPUID.
-#
-# LICENSE
-#
-#   Copyright (c) 2011 Rhys Ulerich      <rhys.ulerich@gmail.com>
-#   Copyright (c) 2008 Steven G. Johnson <stevenj@alum.mit.edu>
-#   Copyright (c) 2008 Matteo Frigo
-#
-#   This program is free software: you can redistribute it and/or modify it
-#   under the terms of the GNU General Public License as published by the
-#   Free Software Foundation, either version 3 of the License, or (at your
-#   option) any later version.
-#
-#   This program is distributed in the hope that it will be useful, but
-#   WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-#   Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License along
-#   with this program. If not, see <http://www.gnu.org/licenses/>.
-#
-#   As a special exception, the respective Autoconf Macro's copyright owner
-#   gives unlimited permission to copy, distribute and modify the configure
-#   scripts that are the output of Autoconf when processing the Macro. You
-#   need not follow the terms of the GNU General Public License when using
-#   or distributing such scripts, even though portions of the text of the
-#   Macro appear in them. The GNU General Public License (GPL) does govern
-#   all other use of the material that constitutes the Autoconf Macro.
-#
-#   This special exception to the GPL applies to versions of the Autoconf
-#   Macro released by the Autoconf Archive. When you make and distribute a
-#   modified version of the Autoconf Macro, you may extend this special
-#   exception to the GPL to apply to your modified version as well.
-
-#serial 8
-
+dnl @synopsis AX_CC_MAXOPT
+dnl @summary turn on optimization flags for the C compiler
+dnl @category C
+dnl
+dnl Try to turn on "good" C optimization flags for various compilers
+dnl and architectures, for some definition of "good".  (In our case,
+dnl good for FFTW and hopefully for other scientific codes.  Modify
+dnl as needed.)
+dnl
+dnl The user can override the flags by setting the CFLAGS environment
+dnl variable.
+dnl
+dnl Note also that the flags assume that ANSI C aliasing rules are
+dnl followed by the code (e.g. for gcc's -fstrict-aliasing), and that
+dnl floating-point computations can be re-ordered as needed.
+dnl
+dnl Modified by Rhys Ulerich for Suzerain's requirements.  Specifically,
+dnl Intel workarounds and no requirements to preserve the ABI.
+dnl
+dnl Requires macros: AX_CHECK_COMPILE_FLAG, AX_COMPILER_VENDOR,
+dnl
+dnl @version 2012-01-05
+dnl @license GPLWithACException
+dnl @author Steven G. Johnson <stevenj@alum.mit.edu> and Matteo Frigo.
 AC_DEFUN([AX_CC_MAXOPT],
 [
 AC_REQUIRE([AC_PROG_CC])
 AC_REQUIRE([AX_COMPILER_VENDOR])
 AC_REQUIRE([AC_CANONICAL_HOST])
 
-AC_ARG_ENABLE(portable-binary, [AS_HELP_STRING([--enable-portable-binary], [disable compiler optimizations that would produce unportable binaries])],
-        acx_maxopt_portable=$withval, acx_maxopt_portable=no)
-
 # Try to determine "good" native compiler flags if none specified via CFLAGS
 if test "$ac_test_CFLAGS" != "set"; then
   CFLAGS=""
   case $ax_cv_c_compiler_vendor in
     dec) CFLAGS="-newc -w0 -O5 -ansi_alias -ansi_args -fp_reorder -tune host"
-         if test "x$acx_maxopt_portable" = xno; then
-           CFLAGS="$CFLAGS -arch host"
-         fi;;
+         ;;
 
     sun) CFLAGS="-native -fast -xO5 -dalign"
-         if test "x$acx_maxopt_portable" = xyes; then
-           CFLAGS="$CFLAGS -xarch=generic"
-         fi;;
+         ;;
 
     hp)  CFLAGS="+Oall +Optrs_ansi +DSnative"
-         if test "x$acx_maxopt_portable" = xyes; then
-           CFLAGS="$CFLAGS +DAportable"
-         fi;;
+         ;;
 
-    ibm) if test "x$acx_maxopt_portable" = xno; then
-           xlc_opt="-qarch=auto -qtune=auto"
-         else
-           xlc_opt="-qtune=auto"
-         fi
+    ibm) xlc_opt="-qtune=auto"
          AX_CHECK_COMPILE_FLAG($xlc_opt,
                 CFLAGS="-O3 -qansialias -w $xlc_opt",
                [CFLAGS="-O3 -qansialias -w"
@@ -104,6 +58,7 @@ if test "$ac_test_CFLAGS" != "set"; then
          ;;
 
     intel) CFLAGS="-O3"
+
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
         [[#if __INTEL_COMPILER >= 1110
          ah ha: icc is at least version 11.1
@@ -115,56 +70,73 @@ if test "$ac_test_CFLAGS" != "set"; then
          introducing a version 11.1 workaround from Intel support #602718
         #endif
         ]])], [], [CFLAGS="$CFLAGS -mP2OPT_cndxform_max_new=-1"])
-        if test "x$acx_maxopt_portable" = xno; then
-          icc_archflag=unknown
-          icc_flags=""
-          AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-          [[#if __INTEL_COMPILER >= 1110
-           ah ha: icc is at least version 11.1
-          #endif
-          ]])], [], [icc_flags=-xHost])
-          case $host_cpu in
-            i686*|x86_64*)
-              # icc accepts gcc assembly syntax, so these should work:
-              AX_GCC_X86_CPUID(0)
-              AX_GCC_X86_CPUID(1)
-              case $ax_cv_gcc_x86_cpuid_0 in # TODO see AX_GCC_ARCHFLAG
-                *:756e6547:*:*) # Intel
-                  case $ax_cv_gcc_x86_cpuid_1 in
-                    *6a?:*[[234]]:*:*|*6[[789b]]?:*:*:*) icc_flags="-xK";;
-                    *f3[[347]]:*:*:*|*f4[1347]:*:*:*) icc_flags="-xP -xN -xW -xK";;
-                    *f??:*:*:*) icc_flags="-xN -xW -xK";;
-                  esac ;;
-              esac ;;
-          esac
-          if test "x$icc_flags" != x; then
-            for flag in $icc_flags; do
-              AX_CHECK_COMPILE_FLAG($flag, [icc_archflag=$flag; break])
-            done
-          fi
-          AC_MSG_CHECKING([for icc architecture flag])
-          AC_MSG_RESULT($icc_archflag)
-          if test "x$icc_archflag" != xunknown; then
-            CFLAGS="$CFLAGS $icc_archflag"
-          fi
+
+        # Intel seems to have changed the spelling of this flag recently
+        icc_ansi_alias="unknown"
+        for flag in -ansi-alias -ansi_alias; do
+          AX_CHECK_COMPILE_FLAG($flag, [icc_ansi_alias=$flag; break])
+        done
+        if test "x$icc_ansi_alias" != xunknown; then
+            CFLAGS="$CFLAGS $icc_ansi_alias"
+        fi
+        AX_CHECK_COMPILE_FLAG(-malign-double, CFLAGS="$CFLAGS -malign-double")
+
+        # Check for architecture flags here, e.g. -xHost etc.  Beware of poor
+        # interaction between -mavx and -xHost per FFTW ax_cc_maxopt and issues
+        # with the resulting ABI changing.  Note that just checking for -xHost
+        # is a no-go as pre-11.1 versions ignore it in a not-so-silent fashion.
+        icc_archflag=unknown
+        icc_flags=""
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+        [[#if __INTEL_COMPILER >= 1110
+          ah ha: icc is at least version 11.1
+        #endif
+        ]])], [], [icc_flags=-xHost])
+        case $host_cpu in
+          i686*|x86_64*)
+            # icc accepts gcc assembly syntax, so these should work:
+            AX_GCC_X86_CPUID(0)
+            AX_GCC_X86_CPUID(1)
+            case $ax_cv_gcc_x86_cpuid_0 in # TODO see AX_GCC_ARCHFLAG
+              *:756e6547:*:*) # Intel
+                case $ax_cv_gcc_x86_cpuid_1 in
+                  *6a?:*[[234]]:*:*|*6[[789b]]?:*:*:*) icc_flags="-xK";;
+                  *f3[[347]]:*:*:*|*f4[1347]:*:*:*) icc_flags="-xP -xN -xW -xK";;
+                  *f??:*:*:*) icc_flags="-xN -xW -xK";;
+                esac ;;
+            esac ;;
+        esac
+        if test "x$icc_flags" != x; then
+          for flag in $icc_flags; do
+            AX_CHECK_COMPILE_FLAG($flag, [icc_archflag=$flag; break])
+          done
+        fi
+        AC_MSG_CHECKING([for icc architecture flag])
+        AC_MSG_RESULT($icc_archflag)
+        if test "x$icc_archflag" != xunknown; then
+          CFLAGS="$CFLAGS $icc_archflag"
         fi
         ;;
 
     gnu)
-     # default optimization flags for gcc on all systems
-     CFLAGS="-O3"
+        # Default optimization flags for gcc on all systems.
+        # Somehow -O3 does not imply -fomit-frame-pointer on ia32
+        CFLAGS="-O3 -fomit-frame-pointer"
 
-     # -malign-double for x86 systems
-     AX_APPEND_COMPILE_FLAGS([-malign-double])
+        # tune for the host by default
+        AX_CHECK_COMPILE_FLAG(-mtune=native, CFLAGS="$CFLAGS -mtune=native")
 
-     #  -fstrict-aliasing for gcc-2.95+
-     AX_APPEND_COMPILE_FLAGS([-fstrict-aliasing])
+        # -malign-double for x86 systems
+        AX_CHECK_COMPILE_FLAG(-malign-double, CFLAGS="$CFLAGS -malign-double")
 
-     # note that we enable "unsafe" fp optimization with other compilers, too
-     AX_APPEND_COMPILE_FLAGS([-funsafe-math-optimizations])
+        #  -fstrict-aliasing for gcc-2.95+
+        AX_CHECK_COMPILE_FLAG(-fstrict-aliasing,
+           CFLAGS="$CFLAGS -fstrict-aliasing")
 
-     AX_GCC_ARCHFLAG($acx_maxopt_portable)
-     ;;
+        # note that we enable "unsafe" fp optimization with other compilers, too
+        AX_CHECK_COMPILE_FLAG(-ffast-math, CFLAGS="$CFLAGS -ffast-math")
+
+        ;;
   esac
 
   if test -z "$CFLAGS"; then
