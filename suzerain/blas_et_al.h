@@ -1528,6 +1528,78 @@ suzerain_blasext_dgbmzv(
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
+ * \f$A\f$ using an external BLAS' sbmv.  Real-valued strides are in units of
+ * <tt>float</tt> while complex-valued strides are in units of
+ * <tt>float[2]</tt>.
+ *
+ * \param uplo One of 'U', 'u', 'L', or 'l' specifying if either the
+ *             upper- or lower-triangular part of A is being supplied.
+ * \param n Number of rows and columns in matrix \c a.
+ * \param k Number of superdiagonals in band storage of \c a.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$.
+ * \param a Symmetric band storage for matrix \f$ A \f$.
+ * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param x Vector to be multiplied.
+ * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param beta Multiplicative scalar \f$ \beta \f$.
+ * \param y Vector to be added to product and to contain result.
+ * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ *
+ * \see A BLAS reference for for general band storage matrix requirements.
+ */
+void
+suzerain_blasext_ssbmzv_external(
+        const char uplo,
+        const int n,
+        const int k,
+        const float alpha[2],
+        const float *a,
+        const int lda,
+        const float (*x)[2],
+        const int incx,
+        const float beta[2],
+        float (*y)[2],
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
+ * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
+ * \f$A\f$ using an external BLAS' sbmv.  Real-valued strides are in units of
+ * <tt>double</tt> while complex-valued strides are in units of
+ * <tt>double[2]</tt>.
+ *
+ * \param uplo One of 'U', 'u', 'L', or 'l' specifying if either the
+ *             upper- or lower-triangular part of A is being supplied.
+ * \param n Number of rows and columns in matrix \c a.
+ * \param k Number of superdiagonals in band storage of \c a.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$.
+ * \param a Symmetric band storage for matrix \f$ A \f$.
+ * \param lda Leading dimension of \c a in units of <tt>double</tt>.
+ * \param x Vector to be multiplied.
+ * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
+ * \param beta Multiplicative scalar \f$ \beta \f$.
+ * \param y Vector to be added to product and to contain result.
+ * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
+ *
+ * \see A BLAS reference for for general band storage matrix requirements.
+ */
+void
+suzerain_blasext_dsbmzv_external(
+        const char uplo,
+        const int n,
+        const int k,
+        const double alpha[2],
+        const double *a,
+        const int lda,
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
+ * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
  * \f$A\f$.  Real-valued strides are in units of <tt>float</tt> while
  * complex-valued strides are in units of <tt>float[2]</tt>.
  *
@@ -1546,7 +1618,6 @@ suzerain_blasext_dgbmzv(
  *
  * \see A BLAS reference for for general band storage matrix requirements.
  */
-
 void
 suzerain_blasext_ssbmzv(
         const char uplo,
@@ -1582,7 +1653,6 @@ suzerain_blasext_ssbmzv(
  *
  * \see A BLAS reference for for general band storage matrix requirements.
  */
-
 void
 suzerain_blasext_dsbmzv(
         const char uplo,
