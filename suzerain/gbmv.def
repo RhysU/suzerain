@@ -1,13 +1,13 @@
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define GBMV_STATIC    /*empty*/         /* Use for static function          */
-// #define GBMV_FUNCTION  dgbmv             /* Function name                    */
-// #define GBMV_COMPONENT double            /* Type of matrix A                 */
-// #define GBMV_SCALAR    double            /* Type of coefficients and vectors */
-// #define GBMV_KL        const int kl,     /* Matrix lower bandwidth           */
-// #define GBMV_KU        const int ku,     /* Matrix upper bandwidth           */
-// #define GBMV_LDA       const int lda,    /* Matrix leading dimension         */
+// #define GBMV_STATIC    /*empty*/         /* Use for static function    */
+// #define GBMV_FUNCTION  dgbmv             /* Function name              */
+// #define GBMV_COMPONENT double            /* Type of matrices           */
+// #define GBMV_SCALAR    double            /* Type of coeffs and vectors */
+// #define GBMV_KL        const int kl,     /* Matrix lower bandwidth     */
+// #define GBMV_KU        const int ku,     /* Matrix upper bandwidth     */
+// #define GBMV_LDA       const int lda,    /* Matrix leading dimension   */
 
 #ifndef __GBMV_INTERNAL_ONCE
 #define __GBMV_INTERNAL_ONCE

@@ -41,9 +41,7 @@ extern "C" {
  */
 
 /*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ using an
- * internal, general bandwidth gbmv implementation.  Using an implementation
- * from BLAS is should be preferred to this implementation directly.
+ * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
