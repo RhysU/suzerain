@@ -43,6 +43,7 @@
 #endif
 
 #include <suzerain/blas_et_al.h>
+#include <suzerain/gbmv.h>
 
 static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
@@ -743,10 +744,10 @@ suzerain_blas_sgbmv(
         float *y,
         const int incy)
 {
-    // TODO Dispatch to fixed bandwidth versions where useful
-    return suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                        alpha, a, lda, x, incx,
-                                        beta,          y, incy);
+    const int err = suzerain_gbmv_s(trans, m, n, kl, ku,
+                                    alpha, a, lda, x, incx,
+                                    beta,          y, incy);
+    assert(!err);
 }
 
 void
@@ -765,10 +766,10 @@ suzerain_blas_dgbmv(
         double *y,
         const int incy)
 {
-    // TODO Dispatch to fixed bandwidth versions where useful
-    return suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                        alpha, a, lda, x, incx,
-                                        beta,          y, incy);
+    const int err = suzerain_gbmv_d(trans, m, n, kl, ku,
+                                    alpha, a, lda, x, incx,
+                                    beta,          y, incy);
+    assert(!err);
 }
 
 void
@@ -1770,10 +1771,10 @@ suzerain_blasext_sgbmzv(
         float (*y)[2],
         const int incy)
 {
-    // TODO Dispatch to suzerain_gbmv_sc and fixed bandwidth brethren
-    return suzerain_blasext_sgbmzv_external(trans, m, n, kl, ku,
-                                            alpha, a, lda, x, incx,
-                                            beta,          y, incy);
+    const int err = suzerain_gbmv_sc(trans, m, n, kl, ku,
+                                     alpha, a, lda, x, incx,
+                                     beta,          y, incy);
+    assert(!err);
 }
 
 void
@@ -1792,10 +1793,10 @@ suzerain_blasext_dgbmzv(
         double (*y)[2],
         const int incy)
 {
-    // TODO Dispatch to suzerain_gbmv_dz and fixed bandwidth brethren
-    return suzerain_blasext_dgbmzv_external(trans, m, n, kl, ku,
-                                            alpha, a, lda, x, incx,
-                                            beta,          y, incy);
+    const int err = suzerain_gbmv_dz(trans, m, n, kl, ku,
+                                     alpha, a, lda, x, incx,
+                                     beta,          y, incy);
+    assert(!err);
 }
 
 void
