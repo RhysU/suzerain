@@ -33,35 +33,27 @@
 // overview.  We iterate first to generate internal, static routines and then
 // continue on to the non-iterated logic.
 
-// Include the usual preamble which also pulls in Boost.Preprocessor
 #if !defined(BOOST_PP_IS_ITERATING) || !BOOST_PP_IS_ITERATING
 
-# ifdef HAVE_CONFIG_H
-# include <suzerain/config.h>
-# endif
-# include <suzerain/common.h>
-# pragma hdrstop
-# include <suzerain/gbmv.h>
-
-# pragma warning(disable:1418 1572 2259)
-
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
 #endif
+#include <suzerain/common.h>
+#pragma hdrstop
+#include <suzerain/gbmv.h>
 
-#if defined(BOOST_PP_IS_ITERATING) && BOOST_PP_IS_ITERATING
+#pragma warning(disable:1418 1572 2259)
 
-#ifndef NDEBUG
-#define BOOST_PP_CONFIG_EXTENDED_LINE_INFO 1
-#line BOOST_PP_LINE(BOOST_PP_ITERATION(), __FILE__)
-#endif
+// ---------------------------------------------------------
+// Iterate on this file to generate fixed bandwidth routines
+// ---------------------------------------------------------
+#define BOOST_PP_ITERATION_LIMITS (0, 10)
+#define BOOST_PP_FILENAME_1 <suzerain/gbmv.c>
+#include BOOST_PP_ITERATE()
 
-// TODO Handle BOOST_PP_ITERATE() case
-
-#else /* BOOST_PP_IS_ITERATING */
-
-// TODO Define iteration parameters
-// TODO Iterate
-
+// -----------------------------------
 // Generate general bandwidth routines
+// -----------------------------------
 
 #define GBMV_STATIC    static
 #define GBMV_FUNCTION  suzerain_gbmv_internal_s
@@ -99,7 +91,9 @@
 #define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
+// ------------------------------------------------------------------
 // Provide externally callable logic dispatching to internal routines
+// ------------------------------------------------------------------
 
 int
 suzerain_gbmv_s(
@@ -197,4 +191,12 @@ suzerain_gbmv_dz(
                                      beta_c,  (void *) y, incy);
 }
 
-#endif /* BOOST_PP_IS_ITERATING */
+#else
+
+// ----------------------------------------------------------
+// Generate fixed bandwidth routines using BOOST_PP_ITERATE()
+// ----------------------------------------------------------
+
+// TODO Add logic here
+
+#endif
