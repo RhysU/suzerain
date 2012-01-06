@@ -144,9 +144,9 @@ GBDMV_STATIC int GBDMV_FUNCTION(
                 const int iu = ndxmin(n, j + klp1);
                 GBDMV_SCALAR temp = 0;
                 for (int i = il; i < iu; ++i) {
-                    temp += d[j]*aj[i]*x[i];
+                    temp += aj[i]*x[i];
                 }
-                y[jy] += alpha * temp;
+                y[jy] += alpha*d[j]*temp;
                 jy += incy;
             }
         } else {          // ...for strided x
@@ -160,10 +160,10 @@ GBDMV_STATIC int GBDMV_FUNCTION(
 #pragma unroll
 #endif
                 for (int i = il; i < iu; ++i) {
-                    temp += d[j]*aj[i]*x[ix];
+                    temp += aj[i]*x[ix];
                     ix += incx;
                 }
-                y[jy] += alpha*temp;
+                y[jy] += alpha*d[j]*temp;
                 jy += incy;
                 if (j > ku - 1) {
                     kx += incx;
