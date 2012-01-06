@@ -66,6 +66,11 @@ check_PROGRAMS      += test_gbddmv
 test_gbddmv_SOURCES  = test_gbddmv.cpp
 test_gbddmv_LDADD    = ../suzerain/libsuzerain.la
 
+TESTS                += test_gbdddmv
+check_PROGRAMS       += test_gbdddmv
+test_gbdddmv_SOURCES  = test_gbdddmv.cpp
+test_gbdddmv_LDADD    = ../suzerain/libsuzerain.la
+
 TESTS                  += test_htstretch
 check_PROGRAMS         += test_htstretch
 test_htstretch_SOURCES  = test_htstretch.c
