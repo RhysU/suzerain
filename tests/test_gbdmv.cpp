@@ -207,7 +207,7 @@ static void test_gbdmv_sc(const gbdmzv_tc_type& t)
 
 static void test_gbdmv_dz(const gbdmzv_tc_type& t)
 {
-    const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*250;
+    const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*5000;
     const double inv_rand_max = double(1) / RAND_MAX;
     const int lend = t.n;
     const int lena = t.lda * t.n;

@@ -93,7 +93,7 @@ std::basic_ostream<charT,traits>& operator<<(
 
 static void test_gbdddmv_s(const gbdddmv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*100;
+    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*2000;
     const float inv_rand_max = float(1) / RAND_MAX;
     const int lend = t.n;
     const int lena = t.lda * t.n;
@@ -183,7 +183,7 @@ static void test_gbdddmv_d(const gbdddmv_tc_type& t)
 
 static void test_gbdddmv_sc(const gbdddmzv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*1000;
+    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*2500;
     const float inv_rand_max = float(1) / RAND_MAX;
     const int lend = t.n;
     const int lena = t.lda * t.n;
