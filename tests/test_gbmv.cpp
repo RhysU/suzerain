@@ -18,7 +18,7 @@ using std::numeric_limits;
 using std::size_t;
 
 // Test suzerain_gbmv_?  against suzerain_blas_*gbmv_external
-// Test suzerain_gbmb_?? against suzerain_blasext_?gbmzv_external
+// Test suzerain_gbmv_?? against suzerain_blasext_?gbmzv_external
 // Idea behind testing is that matching the BLAS is goodness
 
 // For unary function-based test case registration
