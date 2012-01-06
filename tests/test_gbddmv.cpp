@@ -33,7 +33,7 @@ struct gbddmv_tc_type
 };
 
 // For unary function-based test case registration
-struct gbmzv_tc_type
+struct gbddmzv_tc_type
 {
     char trans;
     int n, kl, ku;
@@ -42,7 +42,7 @@ struct gbmzv_tc_type
     double beta[2];
     int incy;
 
-    gbmzv_tc_type(const gbddmv_tc_type& o)
+    gbddmzv_tc_type(const gbddmv_tc_type& o)
         : trans(o.trans), n(o.n), kl(o.kl), ku(o.ku),
           lda(o.lda), incx(o.incx), incy(o.incy)
     {
@@ -72,7 +72,7 @@ std::basic_ostream<charT,traits>& operator<<(
 
 template< typename charT, typename traits >
 std::basic_ostream<charT,traits>& operator<<(
-        std::basic_ostream<charT,traits> &os, const gbmzv_tc_type& t)
+        std::basic_ostream<charT,traits> &os, const gbddmzv_tc_type& t)
 {
     os << "{trans="   << t.trans
        << ", n="      << t.n
@@ -173,7 +173,7 @@ static void test_gbddmv_d(const gbddmv_tc_type& t)
                             close_enough);
 }
 
-static void test_gbddmv_sc(const gbmzv_tc_type& t)
+static void test_gbddmv_sc(const gbddmzv_tc_type& t)
 {
     const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*250;
     const float inv_rand_max = float(1) / RAND_MAX;
@@ -218,7 +218,7 @@ static void test_gbddmv_sc(const gbmzv_tc_type& t)
                             close_enough);
 }
 
-static void test_gbddmv_dz(const gbmzv_tc_type& t)
+static void test_gbddmv_dz(const gbddmzv_tc_type& t)
 {
     const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*250;
     const double inv_rand_max = double(1) / RAND_MAX;
@@ -422,7 +422,7 @@ init_unit_test_suite( int argc, char* argv[] )
     // Register test_gbddmv_sc cases
     for (size_t i = 0; i < gcases; ++i) {
 
-        gbmzv_tc_type c(gbddmv_tc[i]);
+        gbddmzv_tc_type c(gbddmv_tc[i]);
 
         { // Real-valued alpha, beta
             std::ostringstream name;
@@ -455,7 +455,7 @@ init_unit_test_suite( int argc, char* argv[] )
     // Register test_gbddmv_dz cases
     for (size_t i = 0; i < gcases; ++i) {
 
-        gbmzv_tc_type c(gbddmv_tc[i]);
+        gbddmzv_tc_type c(gbddmv_tc[i]);
 
         { // Real-valued alpha, beta
             std::ostringstream name;
@@ -554,7 +554,7 @@ init_unit_test_suite( int argc, char* argv[] )
             }
 
             { // Register test_gbddmv_sc cases
-                gbmzv_tc_type c(r);
+                gbddmzv_tc_type c(r);
 
                 { // Real-valued alpha, beta
                     std::ostringstream name;
@@ -585,7 +585,7 @@ init_unit_test_suite( int argc, char* argv[] )
             }
 
             { // Register test_gbddmv_dz cases
-                gbmzv_tc_type c(r);
+                gbddmzv_tc_type c(r);
 
                 { // Real-valued alpha, beta
                     std::ostringstream name;
