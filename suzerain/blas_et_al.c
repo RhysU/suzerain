@@ -1928,7 +1928,13 @@ suzerain_blasext_sgbdmv_external(
         float *y,
         const int incy)
 {
-    // FIXME Implement
+    float * const z = suzerain_blas_malloc(n*sizeof(float));
+    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    suzerain_blas_sgbmv_external(
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
+    suzerain_blas_ssbmv_external(
+            'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
+    suzerain_blas_free(z);
 }
 
 void
@@ -1969,7 +1975,13 @@ suzerain_blasext_dgbdmv_external(
         double *y,
         const int incy)
 {
-    // FIXME Implement
+    double * const z = suzerain_blas_malloc(n*sizeof(double));
+    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    suzerain_blas_dgbmv_external(
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
+    suzerain_blas_dsbmv_external(
+            'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
+    suzerain_blas_free(z);
 }
 
 void
@@ -2010,7 +2022,15 @@ suzerain_blasext_sgbdmzv_external(
         float (*y)[2],
         const int incy)
 {
-    // FIXME Implement
+    static const float one[2]  = { 1, 0 };
+    static const float zero[2] = { 0, 0 };
+    float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
+    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    suzerain_blasext_sgbmzv_external(
+            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+    suzerain_blasext_ssbmzv_external(
+            'U', n, 0, alpha, d, 1, (void *) z, 1, beta, y, incy);
+    suzerain_blas_free(z);
 }
 
 void
@@ -2051,7 +2071,15 @@ suzerain_blasext_dgbdmzv_external(
         double (*y)[2],
         const int incy)
 {
-    // FIXME Implement
+    static const double one[2]  = { 1, 0 };
+    static const double zero[2] = { 0, 0 };
+    double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
+    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    suzerain_blasext_dgbmzv_external(
+            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+    suzerain_blasext_dsbmzv_external(
+            'U', n, 0, alpha, d, 1, (void *) z, 1, beta, y, incy);
+    suzerain_blas_free(z);
 }
 
 void
