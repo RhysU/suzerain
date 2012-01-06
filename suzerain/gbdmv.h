@@ -141,7 +141,7 @@ suzerain_gbdmv_sc(
         const int incy);
 
 /*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
+ * \brief Compute \f$ y \leftarrow{} \alpha{} D A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$
  * and \f$A\f$.  Real-valued strides are in units of <tt>double</tt> while
  * complex-valued strides are in units of <tt>double[2]</tt>.
