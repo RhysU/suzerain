@@ -509,7 +509,7 @@ init_unit_test_suite( int argc, char* argv[] )
     };
 
     // Loop over fixed kl = ku = k bandwidths
-    const size_t max_fixed_bandwidth = 9;
+    const size_t max_fixed_bandwidth = 20;
     for (size_t k = 0; k < max_fixed_bandwidth; ++k) {
 
         // Loop over fixed_tc and register both real and complex tests
