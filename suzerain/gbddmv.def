@@ -1,0 +1,184 @@
+// #include-time parameters available followed by a sample usage.
+// Each of these are #undef-ed at the end of this template file
+//
+// #define GBDDMV_STATIC    /*empty*/         /* Use for static function    */
+// #define GBDDMV_FUNCTION  dgbmv             /* Function name              */
+// #define GBDDMV_COMPONENT double            /* Type of matrices           */
+// #define GBDDMV_SCALAR    double            /* Type of coeffs and vectors */
+// #define GBDDMV_KL        const int kl,     /* Matrix lower bandwidth     */
+// #define GBDDMV_KU        const int ku,     /* Matrix upper bandwidth     */
+// #define GBDDMV_LDA       const int lda,    /* Matrix leading dimension   */
+
+#ifndef __GBDDMV_INTERNAL_ONCE
+#define __GBDDMV_INTERNAL_ONCE
+static inline int ndxmin(int a, int b) { return a < b ? a : b; }
+static inline int ndxmax(int a, int b) { return a > b ? a : b; }
+#endif /* __GBDDMV_INTERNAL_ONCE */
+
+GBDDMV_STATIC int GBDDMV_FUNCTION(
+    char trans, const int n, GBDDMV_KL GBDDMV_KU
+    const GBDDMV_SCALAR alpha0, const GBDDMV_COMPONENT * restrict d0,
+    const GBDDMV_SCALAR alpha1, const GBDDMV_COMPONENT * restrict d1,
+                                const GBDDMV_COMPONENT * restrict a, GBDDMV_LDA
+                                const    GBDDMV_SCALAR * restrict x, const int incx,
+    const GBDDMV_SCALAR beta,            GBDDMV_SCALAR * restrict y, const int incy)
+{
+    // Logic from http://www.netlib.org/blas/dgbmv.f and subsequently revised
+    // for zero-indexed, vectorization-ready code on GCC and Intel.
+    // Additional diagonal matrices logic added relative to gbmv.def.
+
+    trans = toupper(trans);  // Simplifies case-insensitive checks
+
+    // Test the input parameters
+    if (trans != 'N' && trans != 'T' && trans != 'C') {
+        return 1;
+    } else if (n < 0) {
+        return 2;
+    } else if (kl < 0) {
+        return 3;
+    } else if (ku < 0) {
+        return 4;
+    } else if (lda < kl + ku + 1) {
+        return 10;
+    } else if (incx == 0) {
+        return 12;
+    } else if (incy == 0) {
+        return 15;
+    }
+
+    // Quick return if possible
+    if (n == 0 || (alpha0 == 0 && alpha1 == 0 && beta == 1)) {
+        return 0;
+    }
+
+    // Start the operations. In this version the elements of A are accessed
+    // sequentially with one pass through the band part of A.
+
+    // First form y := beta*y (ignoring the irrelevant incy sign)...
+    if (beta != 1) {
+        const int abs_incy = abs(incy);
+        if (abs_incy == 1) {  // ...for contiguous y
+            if (beta == 0) {
+                memset(y, 0, n * sizeof(y[0]));
+            } else {
+                for (int i = 0; i < n; ++i) {
+                    y[i] *= beta;
+                }
+            }
+        } else {              // ...for strided y
+            if (beta == 0) {
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
+                for (int i = 0; i < n; ++i) {
+                    y[i*abs_incy] = 0;
+                }
+            } else {
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
+                for (int i = 0; i < n; ++i) {
+                    y[i*abs_incy] *= beta;
+                }
+            }
+        }
+    }
+
+    // Quick return when the matrices used are irrelevant
+    if (alpha0 == 0 && alpha1 == 0) {
+        return 0;
+    }
+
+    // Set up the start points in x and y.
+    int kx = incx > 0 ? 0 : incx*(1 - n);
+    int ky = incy > 0 ? 0 : incy*(1 - n);
+
+    // Banded matrix dereference is always of form a[ku - j + i + j*lda]
+    // so incorporate the contant ku offset once and for all.  Below
+    // we also define j-dependent pointers aj to handle -j + j*lda offset.
+    a += ku;
+
+    // Perform the banded matrix-vector accumulation
+    const int klp1 = kl + 1;
+
+    if (trans == 'N') {   // Form y := (alpha0*D0+alpha1*D1)*A*x + y...
+
+        int jx = kx;
+        if (incy == 1) {  // ...for contiguous y
+            for (int j = 0; j < n; ++j) {
+                const GBDDMV_COMPONENT * restrict const aj = a + j*(lda - 1);
+                const int il = ndxmax(0, j - ku);
+                const int iu = ndxmin(n, j + klp1);
+                for (int i = il; i < iu; ++i) {
+                    y[i] += (alpha0*d0[i]+alpha1*d1[i])*aj[i]*x[jx];
+                }
+                jx += incx;
+            }
+        } else {          // ...for strided y
+            for (int j = 0; j < n; ++j) {
+                const GBDDMV_COMPONENT * restrict const aj = a + j*(lda - 1);
+                const int il = ndxmax(0, j - ku);
+                const int iu = ndxmin(n, j + klp1);
+                int iy = ky;
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
+                for (int i = il; i < iu; ++i) {
+                    y[iy] += (alpha0*d0[i]+alpha1*d1[i])*aj[i]*x[jx];
+                    iy += incy;
+                }
+                jx += incx;
+                if (j > ku - 1) {
+                    ky += incy;
+                }
+            }
+        }
+
+    } else {              // Form y := (alpha0*D0+alpha1*D1)*A**T*x + y...
+
+        int jy = ky;
+        if (incx == 1) {  // ...for contiguous x
+            for (int j = 0; j < n; ++j) {
+                const GBDDMV_COMPONENT * restrict const aj = a + j*(lda - 1);
+                const int il = ndxmax(0, j - ku);
+                const int iu = ndxmin(n, j + klp1);
+                GBDDMV_SCALAR temp = 0;
+                for (int i = il; i < iu; ++i) {
+                    temp += aj[i]*x[i];
+                }
+                y[jy] += (alpha0*d0[j]+alpha1*d1[j])*temp;
+                jy += incy;
+            }
+        } else {          // ...for strided x
+            for (int j = 0; j < n; ++j) {
+                const GBDDMV_COMPONENT * restrict const aj = a + j*(lda - 1);
+                const int il = ndxmax(0, j - ku);
+                const int iu = ndxmin(n, j + klp1);
+                GBDDMV_SCALAR temp = 0;
+                int ix = kx;
+#ifdef __INTEL_COMPILER
+#pragma unroll
+#endif
+                for (int i = il; i < iu; ++i) {
+                    temp += aj[i]*x[ix];
+                    ix += incx;
+                }
+                y[jy] += (alpha0*d0[j]+alpha1*d1[j])*temp;
+                jy += incy;
+                if (j > ku - 1) {
+                    kx += incx;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+#undef GBDDMV_STATIC
+#undef GBDDMV_FUNCTION
+#undef GBDDMV_COMPONENT
+#undef GBDDMV_SCALAR
+#undef GBDDMV_KL
+#undef GBDDMV_KU
+#undef GBDDMV_LDA
