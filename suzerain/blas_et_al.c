@@ -45,6 +45,7 @@
 #include <suzerain/blas_et_al.h>
 #include <suzerain/gbmv.h>
 #include <suzerain/gbdmv.h>
+#include <suzerain/gbddmv.h>
 
 static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
@@ -2106,6 +2107,226 @@ suzerain_blasext_dgbdmzv(
                                        alpha, d,
                                        a, lda, x, incx,
                                        beta,   y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+}
+
+void
+suzerain_blasext_sgbddmv_external(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha0,
+        const float *d0,
+        const float alpha1,
+        const float *d1,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy)
+{
+    float * const z = suzerain_blas_malloc(n*sizeof(float));
+    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    suzerain_blas_sgbmv_external(
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
+    suzerain_blas_ssbmv_external(
+            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
+    suzerain_blas_ssbmv_external(
+            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
+    suzerain_blas_free(z);
+}
+
+void
+suzerain_blasext_sgbddmv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha0,
+        const float *d0,
+        const float alpha1,
+        const float *d1,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy)
+{
+    const int info = suzerain_gbddmv_s(trans, n, kl, ku,
+                                       alpha0, d0, alpha1, d1,
+                                       a, lda, x, incx,
+                                       beta,   y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+}
+
+void
+suzerain_blasext_dgbddmv_external(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha0,
+        const double *d0,
+        const double alpha1,
+        const double *d1,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy)
+{
+    double * const z = suzerain_blas_malloc(n*sizeof(double));
+    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    suzerain_blas_dgbmv_external(
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
+    suzerain_blas_dsbmv_external(
+            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
+    suzerain_blas_dsbmv_external(
+            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
+    suzerain_blas_free(z);
+}
+
+void
+suzerain_blasext_dgbddmv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha0,
+        const double *d0,
+        const double alpha1,
+        const double *d1,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy)
+{
+    const int info = suzerain_gbddmv_d(trans, n, kl, ku,
+                                       alpha0, d0, alpha1, d1,
+                                       a, lda, x, incx,
+                                       beta,   y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+}
+
+void
+suzerain_blasext_sgbddmzv_external(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha0[2],
+        const float *d0,
+        const float alpha1[2],
+        const float *d1,
+        const float *a,
+        const int lda,
+        const float (*x)[2],
+        const int incx,
+        const float beta[2],
+        float (*y)[2],
+        const int incy)
+{
+    static const float one[2]  = { 1, 0 };
+    static const float zero[2] = { 0, 0 };
+    float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
+    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    suzerain_blasext_sgbmzv_external(
+            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+    suzerain_blasext_ssbmzv_external(
+            'U', n, 0, alpha0, d0, 1, (void *) z, 1, beta, y, incy);
+    suzerain_blasext_ssbmzv_external(
+            'U', n, 0, alpha1, d1, 1, (void *) z, 1, one,  y, incy);
+    suzerain_blas_free(z);
+}
+
+void
+suzerain_blasext_sgbddmzv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha0[2],
+        const float *d0,
+        const float alpha1[2],
+        const float *d1,
+        const float *a,
+        const int lda,
+        const float (*x)[2],
+        const int incx,
+        const float beta[2],
+        float (*y)[2],
+        const int incy)
+{
+    const int info = suzerain_gbddmv_sc(trans, n, kl, ku,
+                                        alpha0, d0, alpha1, d1,
+                                        a, lda, x, incx,
+                                        beta,   y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+}
+
+void
+suzerain_blasext_dgbddmzv_external(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha0[2],
+        const double *d0,
+        const double alpha1[2],
+        const double *d1,
+        const double *a,
+        const int lda,
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy)
+{
+    static const double one[2]  = { 1, 0 };
+    static const double zero[2] = { 0, 0 };
+    double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
+    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    suzerain_blasext_dgbmzv_external(
+            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+    suzerain_blasext_dsbmzv_external(
+            'U', n, 0, alpha0, d0, 1, (void *) z, 1, beta, y, incy);
+    suzerain_blasext_dsbmzv_external(
+            'U', n, 0, alpha1, d1, 1, (void *) z, 1, one,  y, incy);
+    suzerain_blas_free(z);
+}
+
+void
+suzerain_blasext_dgbddmzv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha0[2],
+        const double *d0,
+        const double alpha1[2],
+        const double *d1,
+        const double *a,
+        const int lda,
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy)
+{
+    const int info = suzerain_gbddmv_dz(trans, n, kl, ku,
+                                        alpha0, d0, alpha1, d1,
+                                        a, lda, x, incx,
+                                        beta,   y, incy);
     if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
