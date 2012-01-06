@@ -44,6 +44,7 @@
 
 #include <suzerain/blas_et_al.h>
 #include <suzerain/gbmv.h>
+#include <suzerain/gbdmv.h>
 
 static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
@@ -1953,10 +1954,11 @@ suzerain_blasext_sgbdmv(
         float *y,
         const int incy)
 {
-    // TODO Dispatch to suzerain_gbdmv_s and fixed bandwidth brethren
-    return suzerain_blasext_sgbdmv_external(trans, n, kl, ku,
-                                            alpha, d, a, lda, x, incx,
-                                            beta,             y, incy);
+    const int info = suzerain_gbdmv_s(trans, n, kl, ku,
+                                      alpha, d,
+                                      a, lda, x, incx,
+                                      beta,   y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2000,10 +2002,11 @@ suzerain_blasext_dgbdmv(
         double *y,
         const int incy)
 {
-    // TODO Dispatch to suzerain_gbdmv_d and fixed bandwidth brethren
-    return suzerain_blasext_dgbdmv_external(trans, n, kl, ku,
-                                            alpha, d, a, lda, x, incx,
-                                            beta,             y, incy);
+    const int info = suzerain_gbdmv_d(trans, n, kl, ku,
+                                      alpha, d,
+                                      a, lda, x, incx,
+                                      beta,   y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2049,10 +2052,11 @@ suzerain_blasext_sgbdmzv(
         float (*y)[2],
         const int incy)
 {
-    // TODO Dispatch to suzerain_gbdmv_sc and fixed bandwidth brethren
-    return suzerain_blasext_sgbdmzv_external(trans, n, kl, ku,
-                                             alpha, d, a, lda, x, incx,
-                                             beta,             y, incy);
+    const int info = suzerain_gbdmv_sc(trans, n, kl, ku,
+                                       alpha, d,
+                                       a, lda, x, incx,
+                                       beta,   y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2098,10 +2102,11 @@ suzerain_blasext_dgbdmzv(
         double (*y)[2],
         const int incy)
 {
-    // TODO Dispatch to suzerain_gbdmv_dz and fixed bandwidth brethren
-    return suzerain_blasext_dgbdmzv_external(trans, n, kl, ku,
-                                             alpha, d, a, lda, x, incx,
-                                             beta,             y, incy);
+    const int info = suzerain_gbdmv_dz(trans, n, kl, ku,
+                                       alpha, d,
+                                       a, lda, x, incx,
+                                       beta,   y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
