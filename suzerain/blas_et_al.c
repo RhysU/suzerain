@@ -1902,6 +1902,170 @@ suzerain_blasext_dsbmzv_external(
 }
 
 void
+suzerain_blasext_sgbdmv_external(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha,
+        const float *d,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy)
+{
+    // FIXME Implement
+}
+
+void
+suzerain_blasext_sgbdmv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha,
+        const float *d,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const float beta,
+        float *y,
+        const int incy)
+{
+    // TODO Dispatch to suzerain_gbdmv_s and fixed bandwidth brethren
+    return suzerain_blasext_sgbdmv_external(trans, n, kl, ku,
+                                            alpha, d, a, lda, x, incx,
+                                            beta,             y, incy);
+}
+
+void
+suzerain_blasext_dgbdmv_external(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha,
+        const double *d,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy)
+{
+    // FIXME Implement
+}
+
+void
+suzerain_blasext_dgbdmv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha,
+        const double *d,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const double beta,
+        double *y,
+        const int incy)
+{
+    // TODO Dispatch to suzerain_gbdmv_d and fixed bandwidth brethren
+    return suzerain_blasext_dgbdmv_external(trans, n, kl, ku,
+                                            alpha, d, a, lda, x, incx,
+                                            beta,             y, incy);
+}
+
+void
+suzerain_blasext_sgbdmzv_external(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha[2],
+        const float *d,
+        const float *a,
+        const int lda,
+        const float (*x)[2],
+        const int incx,
+        const float beta[2],
+        float (*y)[2],
+        const int incy)
+{
+    // FIXME Implement
+}
+
+void
+suzerain_blasext_sgbdmzv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha[2],
+        const float *d,
+        const float *a,
+        const int lda,
+        const float (*x)[2],
+        const int incx,
+        const float beta[2],
+        float (*y)[2],
+        const int incy)
+{
+    // TODO Dispatch to suzerain_gbdmv_sc and fixed bandwidth brethren
+    return suzerain_blasext_sgbdmzv_external(trans, n, kl, ku,
+                                             alpha, d, a, lda, x, incx,
+                                             beta,             y, incy);
+}
+
+void
+suzerain_blasext_dgbdmzv_external(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double *d,
+        const double *a,
+        const int lda,
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy)
+{
+    // FIXME Implement
+}
+
+void
+suzerain_blasext_dgbdmzv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double *d,
+        const double *a,
+        const int lda,
+        const double (*x)[2],
+        const int incx,
+        const double beta[2],
+        double (*y)[2],
+        const int incy)
+{
+    // TODO Dispatch to suzerain_gbdmv_dz and fixed bandwidth brethren
+    return suzerain_blasext_dgbdmzv_external(trans, n, kl, ku,
+                                             alpha, d, a, lda, x, incx,
+                                             beta,             y, incy);
+}
+
+void
 suzerain_blasext_ssbmzv(
         const char uplo,
         const int n,
