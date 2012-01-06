@@ -24,6 +24,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f and subsequently revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
+    // Additional diagonal matrix logic added relative to gbmv.def.
 
     trans = toupper(trans);  // Simplifies case-insensitive checks
 
@@ -37,9 +38,9 @@ GBDMV_STATIC int GBDMV_FUNCTION(
     } else if (ku < 0) {
         return 4;
     } else if (lda < kl + ku + 1) {
-        return 7;
+        return 8;
     } else if (incx == 0) {
-        return 9;
+        return 10;
     } else if (incy == 0) {
         return 12;
     }
