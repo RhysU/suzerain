@@ -491,7 +491,7 @@ init_unit_test_suite( int argc, char* argv[] )
 
     const gbddmv_tc_type fixed_tc[] = {
         // kl, ku to be set while lda is a delta
-        // trans,  n, kl, ku, alpha0, alpha0, lda, incx, beta, incy
+        // trans,  n, kl, ku, alpha0, alpha1, lda, incx, beta, incy
          {   'N', 19,  0,  0,   -5.0,   -5.1,   1,    1,  0.0,    1} // Regular
         ,{   'N', 19,  0,  0,    5.0,    5.1,   1,   -1, 11.0,    1}
         ,{   'N', 19,  0,  0,   -5.0,   -5.2,   0,    1,  0.0,    1}
