@@ -1581,6 +1581,9 @@ suzerain_blasext_daxpzy(
         double (* restrict y)[2],
         const int incy)
 {
+    assert(incx >= 0); // TODO Handle negative incx
+    assert(incy >= 0); // TODO Handle negative incy
+
     const double alpha_re = alpha[0];
     const double alpha_im = alpha[1];
 
@@ -1617,6 +1620,9 @@ suzerain_blasext_daxpzby(
         double (* restrict y)[2],
         const int incy)
 {
+    assert(incx >= 0); // TODO Handle negative incx
+    assert(incy >= 0); // TODO Handle negative incy
+
 #pragma warning(push,disable:1572)
     if (SUZERAIN_UNLIKELY((beta[0] == 1.0 && beta[1] == 0.0))) {
 #pragma warning(pop)
@@ -1986,6 +1992,10 @@ suzerain_blasext_i2s_zaxpby2(
         const int incy_im,
         const int ldy_im)
 {
+    assert(incx    >= 0); // TODO Handle negative incx
+    assert(incy_re >= 0); // TODO Handle negative incy_re
+    assert(incy_im >= 0); // TODO Handle negative incy_im
+
     /* alpha == NULL defaults to 1 */
     const double alpha_re = (alpha == NULL) ? 1.0 : alpha[0];
     const double alpha_im = (alpha == NULL) ? 0.0 : alpha[1];
