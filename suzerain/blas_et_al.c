@@ -53,7 +53,7 @@ suzerain_blas_xerbla(const char *srname, const int info)
 {
 #ifdef SUZERAIN_HAVE_MKL
     const int lsrname = srname ? strlen(srname) : 0;
-    xerbla(srname, info, lsrname);
+    xerbla(srname, &info, lsrname);
 #else
 #error "Sanity failure"
 #endif
