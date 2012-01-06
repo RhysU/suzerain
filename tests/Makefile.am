@@ -53,8 +53,13 @@ test_blas_et_al_LDADD    = ../suzerain/libsuzerain.la
 
 TESTS             += test_gbmv
 check_PROGRAMS    += test_gbmv
-test_gbmv_SOURCES  = test_gbmv.c
+test_gbmv_SOURCES  = test_gbmv.cpp
 test_gbmv_LDADD    = ../suzerain/libsuzerain.la
+
+TESTS              += test_gbdmv
+check_PROGRAMS     += test_gbdmv
+test_gbdmv_SOURCES  = test_gbdmv.cpp
+test_gbdmv_LDADD    = ../suzerain/libsuzerain.la
 
 TESTS                  += test_htstretch
 check_PROGRAMS         += test_htstretch
