@@ -48,6 +48,17 @@
 static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
 
+void
+suzerain_blas_xerbla(const char *srname, const int info)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    const int lsrname = srname ? strlen(srname) : 0;
+    xerbla(srname, info, lsrname);
+#else
+#error "Sanity failure"
+#endif
+}
+
 void *
 suzerain_blas_malloc(size_t size)
 {
@@ -744,10 +755,10 @@ suzerain_blas_sgbmv(
         float *y,
         const int incy)
 {
-    const int err = suzerain_gbmv_s(trans, m, n, kl, ku,
-                                    alpha, a, lda, x, incx,
-                                    beta,          y, incy);
-    assert(!err);
+    const int info = suzerain_gbmv_s(trans, m, n, kl, ku,
+                                     alpha, a, lda, x, incx,
+                                     beta,          y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -766,10 +777,10 @@ suzerain_blas_dgbmv(
         double *y,
         const int incy)
 {
-    const int err = suzerain_gbmv_d(trans, m, n, kl, ku,
-                                    alpha, a, lda, x, incx,
-                                    beta,          y, incy);
-    assert(!err);
+    const int info = suzerain_gbmv_d(trans, m, n, kl, ku,
+                                     alpha, a, lda, x, incx,
+                                     beta,          y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -1777,10 +1788,10 @@ suzerain_blasext_sgbmzv(
         float (*y)[2],
         const int incy)
 {
-    const int err = suzerain_gbmv_sc(trans, m, n, kl, ku,
-                                     alpha, a, lda, x, incx,
-                                     beta,          y, incy);
-    assert(!err);
+    const int info = suzerain_gbmv_sc(trans, m, n, kl, ku,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -1799,10 +1810,10 @@ suzerain_blasext_dgbmzv(
         double (*y)[2],
         const int incy)
 {
-    const int err = suzerain_gbmv_dz(trans, m, n, kl, ku,
-                                     alpha, a, lda, x, incx,
-                                     beta,          y, incy);
-    assert(!err);
+    const int info = suzerain_gbmv_dz(trans, m, n, kl, ku,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
+    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void

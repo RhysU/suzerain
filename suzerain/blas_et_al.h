@@ -44,6 +44,22 @@
 extern "C" {
 #endif
 
+/*! \name Miscellaneous utilities
+ * @{
+ */
+
+/*!
+ * \brief Invokes the BLAS implementation's \c XERBLA routine.
+ *
+ * \param srname The name of the calling routine.
+ * \param info   The position of the invalid parameter in the
+ *               parameter list of the calling routine.
+ */
+void
+suzerain_blas_xerbla(const char *srname, const int info);
+
+/*! @} */
+
 /*! \name Aligned memory allocation and deallocation
  * @{
  */
