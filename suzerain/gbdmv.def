@@ -93,7 +93,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
     int ky = incy > 0 ? 0 : incy*(1 - n);
 
     // Banded matrix dereference is always of form a[ku - j + i + j*lda]
-    // so incorporate the contant ku offset once and for all.  Below
+    // so incorporate the constant ku offset once and for all.  Below
     // we also define j-dependent pointers aj to handle -j + j*lda offset.
     a += ku;
 
