@@ -37,7 +37,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
         return 3;
     } else if (ku < 0) {
         return 4;
-    } else if (lda < kl + ku + 1) {
+    } else if (lda <= kl + ku) {
         return 8;
     } else if (incx == 0) {
         return 10;
@@ -129,7 +129,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
                     iy += incy;
                 }
                 jx += incx;
-                if (j > ku - 1) {
+                if (j >= ku) {
                     ky += incy;
                 }
             }
@@ -166,7 +166,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
                 }
                 y[jy] += alpha*d[j]*temp;
                 jy += incy;
-                if (j > ku - 1) {
+                if (j >= ku) {
                     kx += incx;
                 }
             }

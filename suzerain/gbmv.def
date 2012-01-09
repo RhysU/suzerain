@@ -37,7 +37,7 @@ GBMV_STATIC int GBMV_FUNCTION(
         return 4;
     } else if (ku < 0) {
         return 5;
-    } else if (lda < kl + ku + 1) {
+    } else if (lda <= kl + ku) {
         return 8;
     } else if (incx == 0) {
         return 10;
@@ -133,7 +133,7 @@ GBMV_STATIC int GBMV_FUNCTION(
                     iy += incy;
                 }
                 jx += incx;
-                if (j > ku - 1) {
+                if (j >= ku) {
                     ky += incy;
                 }
             }
@@ -170,7 +170,7 @@ GBMV_STATIC int GBMV_FUNCTION(
                 }
                 y[jy] += alpha*temp;
                 jy += incy;
-                if (j > ku - 1) {
+                if (j >= ku) {
                     kx += incx;
                 }
             }
