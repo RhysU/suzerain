@@ -92,7 +92,7 @@ SBMV_STATIC int SBMV_FUNCTION(
     if (uplo == 'U') {  // Form y := alpha*A*x + y for A upper storage...
 
         // Banded matrix dereference is always of form a[ku - j + i + j*lda]
-        // so incorporate the contant k == ku offset once and for all.
+        // so incorporate the constant k == ku offset once and for all.
         a += k;
 
         if (incx == 1 && incy == 1) {  // ...for contiguous x and y
@@ -105,7 +105,7 @@ SBMV_STATIC int SBMV_FUNCTION(
                     y[i]  += temp1*aj[i];
                     temp2 += aj[i]*x[i];
                 }
-                y[j] += temp1*aj[k] + alpha*temp2;
+                y[j] += temp1*aj[j] + alpha*temp2;
             }
         } else {                       // ...for strided x and/or strided y
             int jx = kx;
@@ -126,7 +126,7 @@ SBMV_STATIC int SBMV_FUNCTION(
                     ix += incx;
                     iy += incy;
                 }
-                y[jy] += temp1*aj[k] + alpha*temp2;
+                y[jy] += temp1*aj[j] + alpha*temp2;
                 jx += incx;
                 jy += incy;
                 if (j > k - 1) {
