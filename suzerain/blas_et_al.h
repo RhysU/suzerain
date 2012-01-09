@@ -645,8 +645,8 @@ suzerain_blas_dgbmv(
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$
  * for symmetric \f$ A \f$ using an external BLAS's sbmv.
  *
- * \param uplo One of 'U', 'u', 'L', or 'l' specifying if either the
- *             upper- or lower-triangular part of A is being supplied.
+ * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
+ *      part of \f$A\f$ is supplied in \c a, respectively.
  * \param n Number of rows and columns in matrix \c a.
  * \param k Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
@@ -691,12 +691,13 @@ suzerain_blas_dsbmv_external(
         const int incy);
 
 /*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for symmetric
- * \f$ A \f$.  The computation may use internal, optimized kernels for some
- * fixed bandwidth cases while deferring to the BLAS for general use.
+ * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for
+ * banded, symmetric \f$ A \f$.  The computation may use internal, optimized
+ * kernels for some fixed bandwidth cases while deferring to the BLAS for
+ * general use.
  *
- * \param uplo One of 'U', 'u', 'L', or 'l' specifying if either the
- *             upper- or lower-triangular part of A is being supplied.
+ * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
+ *      part of \f$A\f$ is supplied in \c a, respectively.
  * \param n Number of rows and columns in matrix \c a.
  * \param k Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
@@ -2477,8 +2478,8 @@ suzerain_blasext_dgbdddmzv(
  * <tt>float</tt> while complex-valued strides are in units of
  * <tt>float[2]</tt>.
  *
- * \param uplo One of 'U', 'u', 'L', or 'l' specifying if either the
- *             upper- or lower-triangular part of A is being supplied.
+ * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
+ *      part of \f$A\f$ is supplied in \c a, respectively.
  * \param n Number of rows and columns in matrix \c a.
  * \param k Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
@@ -2513,8 +2514,8 @@ suzerain_blasext_ssbmzv_external(
  * <tt>double</tt> while complex-valued strides are in units of
  * <tt>double[2]</tt>.
  *
- * \param uplo One of 'U', 'u', 'L', or 'l' specifying if either the
- *             upper- or lower-triangular part of A is being supplied.
+ * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
+ *      part of \f$A\f$ is supplied in \c a, respectively.
  * \param n Number of rows and columns in matrix \c a.
  * \param k Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
@@ -2548,8 +2549,8 @@ suzerain_blasext_dsbmzv_external(
  * \f$A\f$.  Real-valued strides are in units of <tt>float</tt> while
  * complex-valued strides are in units of <tt>float[2]</tt>.
  *
- * \param uplo One of 'U', 'u', 'L', or 'l' specifying if either the
- *             upper- or lower-triangular part of A is being supplied.
+ * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
+ *      part of \f$A\f$ is supplied in \c a, respectively.
  * \param n Number of rows and columns in matrix \c a.
  * \param k Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
@@ -2583,8 +2584,8 @@ suzerain_blasext_ssbmzv(
  * \f$A\f$.  Real-valued strides are in units of <tt>double</tt> while
  * complex-valued strides are in units of <tt>double[2]</tt>.
  *
- * \param uplo One of 'U', 'u', 'L', or 'l' specifying if either the
- *             upper- or lower-triangular part of A is being supplied.
+ * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
+ *      part of \f$A\f$ is supplied in \c a, respectively.
  * \param n Number of rows and columns in matrix \c a.
  * \param k Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
