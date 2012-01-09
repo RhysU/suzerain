@@ -163,8 +163,8 @@ SBMV_STATIC int SBMV_FUNCTION(
                 const SBMV_SCALAR temp1 = alpha*x[jx];
                 SBMV_SCALAR temp2       = 0;
                 y[jy] += temp1*aj[j];
-                int ix = kx;
-                int iy = ky;
+                int ix = jx;
+                int iy = jy;
 #ifdef __INTEL_COMPILER
 #pragma unroll
 #endif
@@ -177,10 +177,6 @@ SBMV_STATIC int SBMV_FUNCTION(
                 y[jy] += alpha*temp2;
                 jx += incx;
                 jy += incy;
-                if (j < n - k) {
-                    kx += incx;
-                    ky += incy;
-                }
             }
         }
 
