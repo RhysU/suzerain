@@ -130,7 +130,7 @@ SBMV_STATIC int SBMV_FUNCTION(
                 jx += incx;
                 jy += incy;
                 if (j > k - 1) {
-                    kx += incy;
+                    kx += incx;
                     ky += incy;
                 }
             }
@@ -177,6 +177,10 @@ SBMV_STATIC int SBMV_FUNCTION(
                 y[jy] += alpha*temp2;
                 jx += incx;
                 jy += incy;
+                if (j < n - k) {
+                    kx += incx;
+                    ky += incy;
+                }
             }
         }
 
