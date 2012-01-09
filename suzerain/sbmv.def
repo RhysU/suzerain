@@ -138,6 +138,8 @@ SBMV_STATIC int SBMV_FUNCTION(
 
     } else {            // Form y := alpha*A*x + y for A lower storage...
 
+        // Banded matrix dereference is always of form a[ku - j + i + j*lda]
+        // but here ku == 0 so no constant offset to incorporate into a.
 
         if (incx == 1 && incy == 1) {  // ...for contiguous x and y
             for (int j = 0; j < n; ++j) {
@@ -145,8 +147,8 @@ SBMV_STATIC int SBMV_FUNCTION(
                 const int iu = ndxmin(n, j + k + 1);
                 const SBMV_SCALAR temp1 = alpha*x[j];
                 SBMV_SCALAR       temp2 = 0;
-                y[j] += temp1*aj[0];
-                for (int i = j; i < iu; ++i) {
+                y[j] += temp1*aj[j];
+                for (int i = j + 1; i < iu; ++i) {
                     y[i]  += temp1*aj[i];
                     temp2 += aj[i]*x[i];
                 }
@@ -160,13 +162,13 @@ SBMV_STATIC int SBMV_FUNCTION(
                 const int iu = ndxmin(n, j + k + 1);
                 const SBMV_SCALAR temp1 = alpha*x[jx];
                 SBMV_SCALAR temp2       = 0;
-                y[jy] += temp1*aj[0];
+                y[jy] += temp1*aj[j];
                 int ix = kx;
                 int iy = ky;
 #ifdef __INTEL_COMPILER
 #pragma unroll
 #endif
-                for (int i = j; i < iu; ++i) {
+                for (int i = j + 1; i < iu; ++i) {
                     ix += incx;
                     iy += incy;
                     y[iy] += temp1*aj[i];
