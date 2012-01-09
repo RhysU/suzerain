@@ -22,7 +22,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
                               const    GBDMV_SCALAR * restrict x, const int incx,
     const GBDMV_SCALAR beta,           GBDMV_SCALAR * restrict y, const int incy)
 {
-    // Logic from http://www.netlib.org/blas/dgbmv.f and subsequently revised
+    // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
     // Additional diagonal matrix logic added relative to gbmv.def.
 
@@ -58,7 +58,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
         const int abs_incy = abs(incy);
         if (abs_incy == 1) {  // ...for contiguous y
             if (beta == 0) {
-                memset(y, 0, n * sizeof(y[0]));
+                memset(y, 0, n*sizeof(y[0]));
             } else {
                 for (int i = 0; i < n; ++i) {
                     y[i] *= beta;
