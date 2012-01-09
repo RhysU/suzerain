@@ -96,9 +96,8 @@ GBMV_STATIC int GBMV_FUNCTION(
     int kx = incx > 0 ? 0 : incx*(1 - lenx);
     int ky = incy > 0 ? 0 : incy*(1 - leny);
 
-    // Banded matrix dereference is always of form a[ku - j + i + j*lda]
-    // so incorporate the constant ku offset once and for all.  Below
-    // we also define j-dependent pointers aj to handle -j + j*lda offset.
+    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Incorporate the ku offset.  We will advance a after each j iteration.
     a += ku;
 
     // Perform the banded matrix-vector accumulation
@@ -109,18 +108,17 @@ GBMV_STATIC int GBMV_FUNCTION(
         int jx = kx;
         if (incy == 1) {  // ...for contiguous y
             for (int j = 0; j < n; ++j) {
-                const GBMV_COMPONENT * restrict const aj = a + j*(lda - 1);
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(m, j + klp1);
                 const GBMV_SCALAR temp = alpha*x[jx];
                 for (int i = il; i < iu; ++i) {
-                    y[i] += temp*aj[i];
+                    y[i] += temp*a[i];
                 }
                 jx += incx;
+                a += lda - 1;
             }
         } else {          // ...for strided y
             for (int j = 0; j < n; ++j) {
-                const GBMV_COMPONENT * restrict const aj = a + j*(lda - 1);
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(m, j + klp1);
                 const GBMV_SCALAR temp = alpha*x[jx];
@@ -129,13 +127,14 @@ GBMV_STATIC int GBMV_FUNCTION(
 #pragma unroll
 #endif
                 for (int i = il; i < iu; ++i) {
-                    y[iy] += temp*aj[i];
+                    y[iy] += temp*a[i];
                     iy += incy;
                 }
                 jx += incx;
                 if (j >= ku) {
                     ky += incy;
                 }
+                a += lda - 1;
             }
         }
 
@@ -144,19 +143,18 @@ GBMV_STATIC int GBMV_FUNCTION(
         int jy = ky;
         if (incx == 1) {  // ...for contiguous x
             for (int j = 0; j < n; ++j) {
-                const GBMV_COMPONENT * restrict const aj = a + j*(lda - 1);
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(m, j + klp1);
                 GBMV_SCALAR temp = 0;
                 for (int i = il; i < iu; ++i) {
-                    temp += aj[i]*x[i];
+                    temp += a[i]*x[i];
                 }
                 y[jy] += alpha * temp;
                 jy += incy;
+                a += lda - 1;
             }
         } else {          // ...for strided x
             for (int j = 0; j < n; ++j) {
-                const GBMV_COMPONENT * restrict const aj = a + j*(lda - 1);
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(m, j + klp1);
                 GBMV_SCALAR temp = 0;
@@ -165,7 +163,7 @@ GBMV_STATIC int GBMV_FUNCTION(
 #pragma unroll
 #endif
                 for (int i = il; i < iu; ++i) {
-                    temp += aj[i]*x[ix];
+                    temp += a[i]*x[ix];
                     ix += incx;
                 }
                 y[jy] += alpha*temp;
@@ -173,6 +171,7 @@ GBMV_STATIC int GBMV_FUNCTION(
                 if (j >= ku) {
                     kx += incx;
                 }
+                a += lda - 1;
             }
         }
     }

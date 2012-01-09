@@ -91,27 +91,26 @@ SBMV_STATIC int SBMV_FUNCTION(
 
     if (uplo == 'U') {  // Form y := alpha*A*x + y for A upper storage...
 
-        // Banded matrix dereference is always of form a[ku - j + i + j*lda]
-        // so incorporate the constant k == ku offset once and for all.
+        // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+        // Incorporate the ku offset.  We will advance a after each j iteration.
         a += k;
 
         if (incx == 1 && incy == 1) {  // ...for contiguous x and y
             for (int j = 0; j < n; ++j) {
-                const SBMV_COMPONENT * restrict const aj = a + j*(lda - 1);
                 const int il = ndxmax(0, j - k);
                 const SBMV_SCALAR temp1 = alpha*x[j];
                 SBMV_SCALAR       temp2 = 0;
                 for (int i = il; i < j; ++i) {
-                    y[i]  += temp1*aj[i];
-                    temp2 += aj[i]*x[i];
+                    y[i]  += temp1*a[i];
+                    temp2 += a[i]*x[i];
                 }
-                y[j] += temp1*aj[j] + alpha*temp2;
+                y[j] += temp1*a[j] + alpha*temp2;
+                a += lda - 1;
             }
         } else {                       // ...for strided x and/or strided y
             int jx = kx;
             int jy = ky;
             for (int j = 0; j < n; ++j) {
-                const SBMV_COMPONENT * restrict const aj = a + j*(lda - 1);
                 const int il = ndxmax(0, j - k);
                 const SBMV_SCALAR temp1 = alpha*x[jx];
                 SBMV_SCALAR temp2       = 0;
@@ -121,48 +120,48 @@ SBMV_STATIC int SBMV_FUNCTION(
 #pragma unroll
 #endif
                 for (int i = il; i < j; ++i) {
-                    y[iy] += temp1*aj[i];
-                    temp2 += aj[i]*x[ix];
+                    y[iy] += temp1*a[i];
+                    temp2 += a[i]*x[ix];
                     ix += incx;
                     iy += incy;
                 }
-                y[jy] += temp1*aj[j] + alpha*temp2;
+                y[jy] += temp1*a[j] + alpha*temp2;
                 jx += incx;
                 jy += incy;
                 if (j >= k) {
                     kx += incx;
                     ky += incy;
                 }
+                a += lda - 1;
             }
         }
 
     } else {            // Form y := alpha*A*x + y for A lower storage...
 
-        // Banded matrix dereference is always of form a[ku - j + i + j*lda]
-        // but here ku == 0 so no constant offset to incorporate into a.
+        // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)]
+        // where here ku == 0.  We will advance a after each j iteration.
 
         if (incx == 1 && incy == 1) {  // ...for contiguous x and y
             for (int j = 0; j < n; ++j) {
-                const SBMV_COMPONENT * restrict const aj = a + j*(lda - 1);
                 const int iu = ndxmin(n, j + k + 1);
                 const SBMV_SCALAR temp1 = alpha*x[j];
                 SBMV_SCALAR       temp2 = 0;
-                y[j] += temp1*aj[j];
+                y[j] += temp1*a[j];
                 for (int i = j + 1; i < iu; ++i) {
-                    y[i]  += temp1*aj[i];
-                    temp2 += aj[i]*x[i];
+                    y[i]  += temp1*a[i];
+                    temp2 += a[i]*x[i];
                 }
                 y[j] += alpha*temp2;
+                a += lda - 1;
             }
         } else {                       // ...for strided x and/or strided y
             int jx = kx;
             int jy = ky;
             for (int j = 0; j < n; ++j) {
-                const SBMV_COMPONENT * restrict const aj = a + j*(lda - 1);
                 const int iu = ndxmin(n, j + k + 1);
                 const SBMV_SCALAR temp1 = alpha*x[jx];
                 SBMV_SCALAR temp2       = 0;
-                y[jy] += temp1*aj[j];
+                y[jy] += temp1*a[j];
                 int ix = jx;
                 int iy = jy;
 #ifdef __INTEL_COMPILER
@@ -171,12 +170,13 @@ SBMV_STATIC int SBMV_FUNCTION(
                 for (int i = j + 1; i < iu; ++i) {
                     ix += incx;
                     iy += incy;
-                    y[iy] += temp1*aj[i];
-                    temp2 += aj[i]*x[ix];
+                    y[iy] += temp1*a[i];
+                    temp2 += a[i]*x[ix];
                 }
                 y[jy] += alpha*temp2;
                 jx += incx;
                 jy += incy;
+                a += lda - 1;
             }
         }
 
