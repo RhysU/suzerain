@@ -368,9 +368,9 @@ int main(int argc, char *argv[])
   int output_language = LANG_C_CPP;   /* flag for C/C++, Java or C# output */
   char *namespace_name = NULL;        /* java package or C# namespace to put revision info in */
   char *propname = NULL;
-  char *startComment;
-  char *endComment;
-  char *continueComment;
+  char *startComment = NULL;
+  char *endComment = NULL;
+  char *continueComment = NULL;
 
   if (argc <= 1)
     about();
