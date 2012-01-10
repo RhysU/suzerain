@@ -1,27 +1,28 @@
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define GBIDMV_STATIC    /*empty*/         /* Use for static function    */
-// #define GBIDMV_FUNCTION  dgbidmv           /* Function name              */
-// #define GBIDMV_COMPONENT double            /* Type of matrices           */
-// #define GBIDMV_SCALAR    double            /* Type of coeffs and vectors */
-// #define GBIDMV_KL        const int kl,     /* Matrix lower bandwidth     */
-// #define GBIDMV_KU        const int ku,     /* Matrix upper bandwidth     */
-// #define GBIDMV_LDA       const int lda,    /* Matrix leading dimension   */
+// #define GBIDDMV_STATIC    /*empty*/         /* Use for static function    */
+// #define GBIDDMV_FUNCTION  dgbiddmv          /* Function name              */
+// #define GBIDDMV_COMPONENT double            /* Type of matrices           */
+// #define GBIDDMV_SCALAR    double            /* Type of coeffs and vectors */
+// #define GBIDDMV_KL        const int kl,     /* Matrix lower bandwidth     */
+// #define GBIDDMV_KU        const int ku,     /* Matrix upper bandwidth     */
+// #define GBIDDMV_LDA       const int lda,    /* Matrix leading dimension   */
 
-#ifndef __GBIDMV_INTERNAL_ONCE
-#define __GBIDMV_INTERNAL_ONCE
+#ifndef __GBIDDMV_INTERNAL_ONCE
+#define __GBIDDMV_INTERNAL_ONCE
 static inline int ndxmin(int a, int b) { return a < b ? a : b; }
 static inline int ndxmax(int a, int b) { return a > b ? a : b; }
-#endif /* __GBIDMV_INTERNAL_ONCE */
+#endif /* __GBIDDMV_INTERNAL_ONCE */
 
-GBIDMV_STATIC int GBIDMV_FUNCTION(
-    char trans, const int n, GBIDMV_KL GBIDMV_KU
-    const GBIDMV_SCALAR alpha0,
-    const GBIDMV_SCALAR alpha1, const GBIDMV_COMPONENT * restrict d1,
-                                const GBIDMV_COMPONENT * restrict a, GBIDMV_LDA
-                                const    GBIDMV_SCALAR * restrict x, const int incx,
-    const GBIDMV_SCALAR beta,            GBIDMV_SCALAR * restrict y, const int incy)
+GBIDDMV_STATIC int GBIDDMV_FUNCTION(
+    char trans, const int n, GBIDDMV_KL GBIDDMV_KU
+    const GBIDDMV_SCALAR alpha0,
+    const GBIDDMV_SCALAR alpha1, const GBIDDMV_COMPONENT * restrict d1,
+    const GBIDDMV_SCALAR alpha2, const GBIDDMV_COMPONENT * restrict d2,
+                                 const GBIDDMV_COMPONENT * restrict a, GBIDDMV_LDA
+                                 const    GBIDDMV_SCALAR * restrict x, const int incx,
+    const GBIDDMV_SCALAR beta,            GBIDDMV_SCALAR * restrict y, const int incy)
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
@@ -39,15 +40,15 @@ GBIDMV_STATIC int GBIDMV_FUNCTION(
     } else if (ku < 0) {
         return 4;
     } else if (lda <= kl + ku) {
-        return 10;
-    } else if (incx == 0) {
         return 12;
+    } else if (incx == 0) {
+        return 14;
     } else if (incy == 0) {
-        return 15;
+        return 17;
     }
 
     // Quick return if possible
-    if (n == 0 || (alpha0 == 0 && alpha1 == 0 && beta == 1)) {
+    if (n == 0 || (alpha0 == 0 && alpha1 == 0 && alpha2 == 0 && beta == 1)) {
         return 0;
     }
 
@@ -85,7 +86,7 @@ GBIDMV_STATIC int GBIDMV_FUNCTION(
     }
 
     // Quick return when the matrices used are irrelevant
-    if (alpha0 == 0 && alpha1 == 0) {
+    if (alpha0 == 0 && alpha1 == 0 && alpha2 == 0) {
         return 0;
     }
 
@@ -108,7 +109,7 @@ GBIDMV_STATIC int GBIDMV_FUNCTION(
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
                 for (int i = il; i < iu; ++i) {
-                    y[i] += (alpha0 + alpha1*d1[i])*a[i]*x[jx];
+                    y[i] += (alpha0 + alpha1*d1[i] + alpha2*d2[i])*a[i]*x[jx];
                 }
                 jx += incx;
                 a += lda - 1;
@@ -122,7 +123,7 @@ GBIDMV_STATIC int GBIDMV_FUNCTION(
 #pragma unroll
 #endif
                 for (int i = il; i < iu; ++i) {
-                    y[iy] += (alpha0 + alpha1*d1[i])*a[i]*x[jx];
+                    y[iy] += (alpha0 + alpha1*d1[i] + alpha2*d2[i])*a[i]*x[jx];
                     iy += incy;
                 }
                 jx += incx;
@@ -140,11 +141,11 @@ GBIDMV_STATIC int GBIDMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
-                GBIDMV_SCALAR temp = 0;
+                GBIDDMV_SCALAR temp = 0;
                 for (int i = il; i < iu; ++i) {
                     temp += a[i]*x[i];
                 }
-                y[jy] += (alpha0 + alpha1*d1[j])*temp;
+                y[jy] += (alpha0 + alpha1*d1[j] + alpha2*d2[j])*temp;
                 jy += incy;
                 a += lda - 1;
             }
@@ -152,7 +153,7 @@ GBIDMV_STATIC int GBIDMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
-                GBIDMV_SCALAR temp = 0;
+                GBIDDMV_SCALAR temp = 0;
                 int ix = kx;
 #ifdef __INTEL_COMPILER
 #pragma unroll
@@ -161,7 +162,7 @@ GBIDMV_STATIC int GBIDMV_FUNCTION(
                     temp += a[i]*x[ix];
                     ix += incx;
                 }
-                y[jy] += (alpha0 + alpha1*d1[j])*temp;
+                y[jy] += (alpha0 + alpha1*d1[j] + alpha2*d2[j])*temp;
                 jy += incy;
                 if (j >= ku) {
                     kx += incx;
@@ -174,10 +175,10 @@ GBIDMV_STATIC int GBIDMV_FUNCTION(
     return 0;
 }
 
-#undef GBIDMV_STATIC
-#undef GBIDMV_FUNCTION
-#undef GBIDMV_COMPONENT
-#undef GBIDMV_SCALAR
-#undef GBIDMV_KL
-#undef GBIDMV_KU
-#undef GBIDMV_LDA
+#undef GBIDDMV_STATIC
+#undef GBIDDMV_FUNCTION
+#undef GBIDDMV_COMPONENT
+#undef GBIDDMV_SCALAR
+#undef GBIDDMV_KL
+#undef GBIDDMV_KU
+#undef GBIDDMV_LDA
