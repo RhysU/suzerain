@@ -22,6 +22,9 @@
 #include "StlAllocatorTestOutput.hpp"
 #include <cstring>
 
+// Suppress abounding warnings like "‘v’ may be used uninitialized".
+SUZERAIN_GCC_DIAG_OFF(uninitialized);
+
 namespace StlAllocatorTestbed
 {
 
