@@ -2,6 +2,14 @@
 /Makefile
 /Makefile.in
 /test_allocator
+/test_allocator0
+/test_allocator1
+/test_allocator2
+/test_allocator3
+/test_allocator4
+/test_allocator5
+/test_allocator6
+/test_allocator7
 /test_blas_et_al
 /test_blas_et_al_cpp
 /test_bspline

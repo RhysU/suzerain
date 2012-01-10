@@ -45,8 +45,10 @@ namespace StlAllocatorTestbed
 template< typename Allocator >
 void TestAlloc( const Allocator& a )
 {
-    // Verify functionality with a variety of types
+    // Verify functionality with a variety of types.
+    // Conditional complication can selectively reduce footprint.
 
+#if !defined(STL_ALLOCATOR_TEST_PART) || STL_ALLOCATOR_TEST_PART == 0
     StlAllocatorTestbed::TestMemberFunctionPresence( a );
 
     StlAllocatorTestbed::TestMemberFunctions( a );
@@ -91,41 +93,56 @@ void TestAlloc( const Allocator& a )
     // typename Allocator::template rebind< void >::other x( a );
 
     StlAllocatorTestbed::TestWithContainers( a );
+#endif
 
+#if !defined(STL_ALLOCATOR_TEST_PART) || STL_ALLOCATOR_TEST_PART == 1
     { // tests vector<bool> specialization
         typename Allocator::template rebind< bool >::other b( a );
         StlAllocatorTestbed::TestWithContainers( b );
     }
+#endif
 
+#if !defined(STL_ALLOCATOR_TEST_PART) || STL_ALLOCATOR_TEST_PART == 2
     { // POD types
         typename Allocator::template rebind< C >::other c( a );
         StlAllocatorTestbed::TestWithContainers( c );
     }
+#endif
 
+#if !defined(STL_ALLOCATOR_TEST_PART) || STL_ALLOCATOR_TEST_PART == 3
     { // allocated internal type
         typename Allocator::template rebind< D >::other d( a );
         StlAllocatorTestbed::TestWithContainers( d );
     }
+#endif
 
+#if !defined(STL_ALLOCATOR_TEST_PART) || STL_ALLOCATOR_TEST_PART == 4
     { // complicated type
         typename Allocator::template rebind< E >::other e( a );
         StlAllocatorTestbed::TestWithContainers( e );
     }
+#endif
 
+#if !defined(STL_ALLOCATOR_TEST_PART) || STL_ALLOCATOR_TEST_PART == 5
     { // simple test
         typename Allocator::template rebind< int >::other i( a );
         StlAllocatorTestbed::TestWithContainers( i );
     }
+#endif
 
+#if !defined(STL_ALLOCATOR_TEST_PART) || STL_ALLOCATOR_TEST_PART == 6
     { // void pointers
         typename Allocator::template rebind< void* >::other v( a );
         StlAllocatorTestbed::TestWithContainers( v );
     }
+#endif
 
+#if !defined(STL_ALLOCATOR_TEST_PART) || STL_ALLOCATOR_TEST_PART == 7
     { // regular pointers
         typename Allocator::template rebind< char* >::other p( a );
         StlAllocatorTestbed::TestWithContainers( p );
     }
+#endif
 
 }
 

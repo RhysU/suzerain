@@ -95,12 +95,78 @@ test_mpl_LDADD    = ../suzerain/libsuzerain.la
 test_mpl_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_mpl_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-TESTS                  += test_allocator
-check_PROGRAMS         += test_allocator
-test_allocator_SOURCES  = test_allocator.cpp
-test_allocator_LDADD    = ../suzerain/libsuzerain.la
-test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+### Compilation footprint of test_allocator is large even at -O0
+### so we break it up into test_allocator{0,1,2,3,4,5,6,7} below.
+## TESTS                   += test_allocator
+## check_PROGRAMS          += test_allocator
+## test_allocator_SOURCES  = test_allocator.cpp
+## test_allocator_LDADD    = ../suzerain/libsuzerain.la
+## test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+## test_allocator_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
+TESTS                     += test_allocator0
+check_PROGRAMS            += test_allocator0
+test_allocator0_SOURCES    = test_allocator.cpp
+test_allocator0_LDADD      = ../suzerain/libsuzerain.la
+test_allocator0_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_allocator0_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_allocator0_CPPFLAGS   = $(AM_CPPFLAGS) -DSTL_ALLOCATOR_TEST_PART=0
+
+TESTS                     += test_allocator1
+check_PROGRAMS            += test_allocator1
+test_allocator1_SOURCES    = test_allocator.cpp
+test_allocator1_LDADD      = ../suzerain/libsuzerain.la
+test_allocator1_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_allocator1_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_allocator1_CPPFLAGS   = $(AM_CPPFLAGS) -DSTL_ALLOCATOR_TEST_PART=1
+
+TESTS                     += test_allocator2
+check_PROGRAMS            += test_allocator2
+test_allocator2_SOURCES    = test_allocator.cpp
+test_allocator2_LDADD      = ../suzerain/libsuzerain.la
+test_allocator2_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_allocator2_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_allocator2_CPPFLAGS   = $(AM_CPPFLAGS) -DSTL_ALLOCATOR_TEST_PART=2
+
+TESTS                     += test_allocator3
+check_PROGRAMS            += test_allocator3
+test_allocator3_SOURCES    = test_allocator.cpp
+test_allocator3_LDADD      = ../suzerain/libsuzerain.la
+test_allocator3_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_allocator3_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_allocator3_CPPFLAGS   = $(AM_CPPFLAGS) -DSTL_ALLOCATOR_TEST_PART=3
+
+TESTS                     += test_allocator4
+check_PROGRAMS            += test_allocator4
+test_allocator4_SOURCES    = test_allocator.cpp
+test_allocator4_LDADD      = ../suzerain/libsuzerain.la
+test_allocator4_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_allocator4_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_allocator4_CPPFLAGS   = $(AM_CPPFLAGS) -DSTL_ALLOCATOR_TEST_PART=4
+
+TESTS                     += test_allocator5
+check_PROGRAMS            += test_allocator5
+test_allocator5_SOURCES    = test_allocator.cpp
+test_allocator5_LDADD      = ../suzerain/libsuzerain.la
+test_allocator5_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_allocator5_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_allocator5_CPPFLAGS   = $(AM_CPPFLAGS) -DSTL_ALLOCATOR_TEST_PART=5
+
+TESTS                     += test_allocator6
+check_PROGRAMS            += test_allocator6
+test_allocator6_SOURCES    = test_allocator.cpp
+test_allocator6_LDADD      = ../suzerain/libsuzerain.la
+test_allocator6_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_allocator6_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_allocator6_CPPFLAGS   = $(AM_CPPFLAGS) -DSTL_ALLOCATOR_TEST_PART=6
+
+TESTS                     += test_allocator7
+check_PROGRAMS            += test_allocator7
+test_allocator7_SOURCES    = test_allocator.cpp
+test_allocator7_LDADD      = ../suzerain/libsuzerain.la
+test_allocator7_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_allocator7_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_allocator7_CPPFLAGS   = $(AM_CPPFLAGS) -DSTL_ALLOCATOR_TEST_PART=7
 
 TESTS                     += test_shared_range
 check_PROGRAMS            += test_shared_range
