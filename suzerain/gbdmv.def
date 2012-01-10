@@ -2,7 +2,7 @@
 // Each of these are #undef-ed at the end of this template file
 //
 // #define GBDMV_STATIC    /*empty*/         /* Use for static function    */
-// #define GBDMV_FUNCTION  dgbmv             /* Function name              */
+// #define GBDMV_FUNCTION  dgbdmv            /* Function name              */
 // #define GBDMV_COMPONENT double            /* Type of matrices           */
 // #define GBDMV_SCALAR    double            /* Type of coeffs and vectors */
 // #define GBDMV_KL        const int kl,     /* Matrix lower bandwidth     */
