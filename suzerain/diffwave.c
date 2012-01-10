@@ -34,31 +34,19 @@
 #include <suzerain/common.h>
 #pragma hdrstop
 #include <gsl/gsl_sf_pow_int.h>
-#include <suzerain/blas_et_al.h>
 #include <suzerain/inorder.h>
 #include <suzerain/diffwave.h>
 
 static inline
-void scale_by_imaginary_power(const double in[2], double out[2], int p)
+double _Complex scale_by_imaginary_power(const double in[2], int p)
 {
     // Modulo-four-like operation for 2's complement p
     switch (p & 3) {
-        case 0: // I^0 = 1
-            out[0] = in[0];
-            out[1] = in[1];
-            break;
-        case 1: // I^1 = I = I^-3
-            out[0] = -in[1];
-            out[1] =  in[0];
-            break;
-        case 2: // I^2 = -1 = I^-2
-            out[0] = -in[0];
-            out[1] = -in[1];
-            break;
-        case 3: // I^3 = -I = I^-1
-            out[0] =  in[1];
-            out[1] = -in[0];
-            break;
+        default: // unreachable default silences warnings
+        case 0:  return  in[0] + in[1]*_Complex_I; // I^0 =  1
+        case 1:  return -in[1] + in[0]*_Complex_I; // I^1 =  I = I^-3
+        case 2:  return -in[0] - in[1]*_Complex_I; // I^2 = -1 = I^-2
+        case 3:  return  in[1] - in[0]*_Complex_I; // I^3 = -I = I^-1
     }
 }
 
@@ -75,6 +63,28 @@ double twopiover(const double L)
 #pragma fenv_access(off)
 #pragma float_control(precise, off)
 #pragma fp_contract(on)
+
+// Specialization of BLAS zscal for exactly our needs
+static inline
+void internal_zscal(const int n,
+                    const double _Complex alpha,
+                    double _Complex * const restrict x)
+{
+    for (int i = 0; i < n; ++i)
+        x[i] *= alpha;
+}
+
+// Specialization of BLAS zaxpby for exactly our needs
+static inline
+void internal_zaxpby(const int n,
+                     const double _Complex alpha,
+                     const double _Complex * const restrict x,
+                     const double _Complex beta,
+                     double _Complex * const restrict y)
+{
+    for (int i = 0; i < n; ++i)
+        y[i] = alpha*x[i] + beta*y[i];
+}
 
 // Special case for diffwave_apply when dxcnt = dzcnt = 0 and alpha = 1
 static void zero_wavenumbers_used_only_for_dealiasing(
@@ -116,8 +126,8 @@ void suzerain_diffwave_apply(
     // Compute loop independent constants
     const double twopioverLx = twopiover(Lx);  // Weird looking for FP control
     const double twopioverLz = twopiover(Lz);  // Weird looking for FP control
-    double alpha_ipow[2];
-    scale_by_imaginary_power(alpha, alpha_ipow, dxcnt + dzcnt);
+    const double _Complex alpha_ipow
+            = scale_by_imaginary_power(alpha, dxcnt + dzcnt);
 
     // Compute X, Z strides
     const int sx = Ny, sz = (dkex - dkbx)*sx;
@@ -143,9 +153,7 @@ void suzerain_diffwave_apply(
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
-                    const double malpha[2] = { mscale*alpha_ipow[0],
-                                               mscale*alpha_ipow[1] };
-                    suzerain_blas_zscal(Ny,malpha,x+moff,1);
+                    internal_zscal(Ny, alpha_ipow*mscale, (void*)&x[moff][0]);
                 } else {
                     memset(x+moff, 0, Ny*sizeof(x[0])); // Scale by zero
                 }
@@ -219,8 +227,9 @@ void suzerain_diffwave_accumulate(
     // Compute loop independent constants
     const double twopioverLx = twopiover(Lx);  // Weird looking for FP control
     const double twopioverLz = twopiover(Lz);  // Weird looking for FP control
-    double alpha_ipow[2];
-    scale_by_imaginary_power(alpha, alpha_ipow, dxcnt + dzcnt);
+    const double _Complex alpha_ipow = scale_by_imaginary_power(alpha, dxcnt + dzcnt);
+    double _Complex beta_c;
+    memcpy(&beta_c, beta, sizeof(beta));
 
     // Compute X, Z strides
     const int sx = Ny, sz = (dkex - dkbx)*sx;
@@ -246,15 +255,14 @@ void suzerain_diffwave_accumulate(
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
-                    const double malpha[2] = { mscale*alpha_ipow[0],
-                                               mscale*alpha_ipow[1] };
-                    suzerain_blas_zaxpby(Ny,malpha,x+moff,1,beta,y+moff,1);
+                    internal_zaxpby(Ny, mscale*alpha_ipow, (void*)&x[moff][0],
+                                        beta_c,            (void*)&y[moff][0]);
                 } else {
-                    suzerain_blas_zscal(Ny,beta,y+moff,1);
+                    internal_zscal(Ny, beta_c, (void*)&y[moff][0]);
                 }
             }
         } else {
-            suzerain_blas_zscal(sz,beta,y+noff,1);
+            internal_zscal(sz, beta_c, (void*)&y[noff][0]);
         }
     }
 }
