@@ -105,7 +105,7 @@ suzerain_gbidmv_d(
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} I + \alpha_{1}
  * D_1\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$,
- * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, and \f$A\f$.
+ * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_1\f$ and \f$A\f$.
  * Real-valued strides are in units of <tt>float</tt> while complex-valued
  * strides are in units of <tt>float[2]</tt>.
  *
@@ -150,7 +150,7 @@ suzerain_gbidmv_sc(
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} I + \alpha_{1}
  * D_1\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$,
- * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, and \f$A\f$.
+ * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_1\f$ and \f$A\f$.
  * Real-valued strides are in units of <tt>double</tt> while complex-valued
  * strides are in units of <tt>double[2]</tt>.
  *
