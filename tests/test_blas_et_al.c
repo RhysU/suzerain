@@ -2434,32 +2434,36 @@ static
 void
 test_lapack_dgbcon()
 {
-    /* Test matrix is
+    /*
+     * Test matrix is
      *      5  -3   0  0
      *      0   5  -3  0
      *      0   0   5 -3
      *      0   0   3 -1
-     * which has a 1-norm of 11.  Extra padding present to allow factorization. */
+     * which has a 1-norm of 11.  It has one subdiagonal but we'll use kl = 2
+     * to test storage-padding details.  Extra kl = 2 rows of padding present
+     * to store factorization multipliers.
+     */
 
-    const int kl = 1;
+    const int kl = 2;
     const int ku = 1;
     const int n  = 4;
-    double ab[] = { 0,  0,  5, 0,
-                    0, -3,  5, 0,
-                    0, -3,  5, 3,
-                    0, -3, -1, 0 };
+    double ab[] = { 0, 0,  0,  5, 0, 0,
+                    0, 0, -3,  5, 0, 0,
+                    0, 0, -3,  5, 3, 0,
+                    0, 0, -3, -1, 0, 0 };
     int ipiv[n];
     const double norm1 = 11;
 
     // Prepare factorization
-    const int f = suzerain_lapack_dgbtrf(n, n, kl, ku, ab, 2*ku + kl + 1, ipiv);
+    const int f = suzerain_lapack_dgbtrf(n, n, kl, ku, ab, 2*kl + ku + 1, ipiv);
     gsl_test_int(0, f, "%s factorization success", __func__);
 
     // Compute reciprocal of condition number
     double rcond = -555;
     double work[3*n];
     int    iwork[n];
-    const int g = suzerain_lapack_dgbcon('1', n, kl, ku, ab, 2*ku + kl + 1, ipiv,
+    const int g = suzerain_lapack_dgbcon('1', n, kl, ku, ab, 2*kl + ku + 1, ipiv,
                                          norm1, &rcond, work, iwork);
     gsl_test_int(0, g, "%s condition number estimation success", __func__);
 
