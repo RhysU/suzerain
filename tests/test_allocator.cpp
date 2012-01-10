@@ -39,9 +39,9 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
+#include <boost/test/included/unit_test.hpp>
 #include <suzerain/allocator.hpp>
 #include <suzerain/blas_et_al.hpp>
-#include <boost/test/included/unit_test.hpp>
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);

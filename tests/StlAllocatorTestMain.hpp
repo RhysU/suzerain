@@ -46,35 +46,87 @@ template< typename Allocator >
 void TestAlloc( const Allocator& a )
 {
     // Verify functionality with a variety of types
-    typename Allocator::template rebind< bool >::other   b( a ); // tests vector<bool> specialization
-    typename Allocator::template rebind< C >::other      c( a ); // POD types
-    typename Allocator::template rebind< D >::other      d( a ); // allocated internal type
-    typename Allocator::template rebind< E >::other      e( a ); // complicated type
-    typename Allocator::template rebind< int >::other    i( a ); // simple test
-    typename Allocator::template rebind< void* >::other  v( a ); // void pointers
-    typename Allocator::template rebind< char* >::other  p( a ); // regular pointers
-    // FIXME Disabled!  See http://msdn.microsoft.com/en-us/library/w3b7688x.aspx
-    // typename Allocator::template rebind< void >::other   x( a ); // must provide this specialization
 
-    TestMemberFunctionPresence( a ); // in StlAllocatorTestMembers.hpp
+    StlAllocatorTestbed::TestMemberFunctionPresence( a );
 
-    TestMemberFunctions( a ); // in StlAllocatorTestMembers.hpp
-    TestMemberFunctions( b );
-    TestMemberFunctions( c );
-    TestMemberFunctions( d );
-    TestMemberFunctions( e );
-    TestMemberFunctions( i );
-    TestMemberFunctions( v );
-    TestMemberFunctions( p );
+    StlAllocatorTestbed::TestMemberFunctions( a );
 
-    TestWithContainers( a ); // in StlAllocatorTestContainer.hpp
-    TestWithContainers( b );
-    TestWithContainers( c );
-    TestWithContainers( d );
-    TestWithContainers( e );
-    TestWithContainers( i );
-    TestWithContainers( v );
-    TestWithContainers( p );
+    { // tests vector<bool> specialization
+        typename Allocator::template rebind< bool >::other b( a );
+        StlAllocatorTestbed::TestMemberFunctions( b );
+    }
+
+    { // POD types
+        typename Allocator::template rebind< C >::other c( a );
+        StlAllocatorTestbed::TestMemberFunctions( c );
+    }
+
+    { // allocated internal type
+        typename Allocator::template rebind< D >::other d( a );
+        StlAllocatorTestbed::TestMemberFunctions( d );
+    }
+
+    { // complicated type
+        typename Allocator::template rebind< E >::other e( a );
+        StlAllocatorTestbed::TestMemberFunctions( e );
+    }
+
+    { // simple test
+        typename Allocator::template rebind< int >::other i( a );
+        StlAllocatorTestbed::TestMemberFunctions( i );
+    }
+
+    { // void pointers
+        typename Allocator::template rebind< void* >::other v( a );
+        StlAllocatorTestbed::TestMemberFunctions( v );
+    }
+
+    { // regular pointers
+        typename Allocator::template rebind< char* >::other p( a );
+        StlAllocatorTestbed::TestMemberFunctions( p );
+    }
+
+    // Disabled!  See http://msdn.microsoft.com/en-us/library/w3b7688x.aspx
+    // void specialization
+    // typename Allocator::template rebind< void >::other x( a );
+
+    StlAllocatorTestbed::TestWithContainers( a );
+
+    { // tests vector<bool> specialization
+        typename Allocator::template rebind< bool >::other b( a );
+        StlAllocatorTestbed::TestWithContainers( b );
+    }
+
+    { // POD types
+        typename Allocator::template rebind< C >::other c( a );
+        StlAllocatorTestbed::TestWithContainers( c );
+    }
+
+    { // allocated internal type
+        typename Allocator::template rebind< D >::other d( a );
+        StlAllocatorTestbed::TestWithContainers( d );
+    }
+
+    { // complicated type
+        typename Allocator::template rebind< E >::other e( a );
+        StlAllocatorTestbed::TestWithContainers( e );
+    }
+
+    { // simple test
+        typename Allocator::template rebind< int >::other i( a );
+        StlAllocatorTestbed::TestWithContainers( i );
+    }
+
+    { // void pointers
+        typename Allocator::template rebind< void* >::other v( a );
+        StlAllocatorTestbed::TestWithContainers( v );
+    }
+
+    { // regular pointers
+        typename Allocator::template rebind< char* >::other p( a );
+        StlAllocatorTestbed::TestWithContainers( p );
+    }
+
 }
 
 } // end StlAllocatorTestbed namespace
