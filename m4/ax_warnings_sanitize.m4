@@ -64,6 +64,7 @@ case $ax_cv_c_compiler_vendor in #(
          AX_APPEND_COMPILE_FLAGS([-wd424])
          ;;#(
   gnu)   AX_APPEND_COMPILE_FLAGS([-Wextra])
+         AX_APPEND_COMPILE_FLAGS([-fdiagnostics-show-option])
          ;;#(
   *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
          AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_c_compiler_vendor = $ax_cv_c_compiler_vendor unknown])
@@ -98,6 +99,7 @@ dnl      # Disable warning #2015: Effective C++ Item 4 prefer C++ style comments
 dnl      AX_APPEND_COMPILE_FLAGS([-wd2015])
          ;;#(
   gnu)   AX_APPEND_COMPILE_FLAGS([-Wextra])
+         AX_APPEND_COMPILE_FLAGS([-fdiagnostics-show-option])
          ;;#(
   *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
          AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_cxx_compiler_vendor = $ax_cv_cxx_compiler_vendor unknown])

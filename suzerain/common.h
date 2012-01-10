@@ -61,17 +61,17 @@
 
 #if __GNUC__ >= 3
 /**
-Provides hint to the compiler to optimize for the expression being false.
-@param expr boolean expression.
-@returns value of expression.
-*/
+ * Provides hint to the compiler to optimize for the expression being false.
+ * @param expr boolean expression.
+ * @returns value of expression.
+ */
 #define SUZERAIN_UNLIKELY(expr) __builtin_expect(expr, 0)
 #else
 /**
-Provides hint to the compiler to optimize for the expression being false.
-@param expr boolean expression.
-@returns value of expression.
-**/
+ * Provides hint to the compiler to optimize for the expression being false.
+ * @param expr boolean expression.
+ * @returns value of expression.
+ */
 #define SUZERAIN_UNLIKELY(expr) expr
 #endif
 
@@ -92,6 +92,28 @@ Provides hint to the compiler to optimize for the expression being false.
 #else
 /** Define synonym for C++ __restrict__ keyword */
 #define SUZERAIN_RESTRICT __restrict__
+#endif
+
+/* Push/pop-like macros for suppressing GCC warnings lifted from   */
+/* http://dbp-consulting.com/tutorials/SuppressingGCCWarnings.html */
+#if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 402
+# define SUZERAIN_GCC_DIAG_STR(s) #s
+# define SUZERAIN_GCC_DIAG_JOINSTR(x,y) SUZERAIN_GCC_DIAG_STR(x ## y)
+# define SUZERAIN_GCC_DIAG_DO_PRAGMA(x) _Pragma (#x)
+# define SUZERAIN_GCC_DIAG_PRAGMA(x) SUZERAIN_GCC_DIAG_DO_PRAGMA(GCC diagnostic x)
+# if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
+#  define SUZERAIN_GCC_DIAG_OFF(x) SUZERAIN_GCC_DIAG_PRAGMA(push) \
+        SUZERAIN_GCC_DIAG_PRAGMA(ignored SUZERAIN_GCC_DIAG_JOINSTR(-W,x))
+#  define SUZERAIN_GCC_DIAG_ON(x) SUZERAIN_GCC_DIAG_PRAGMA(pop)
+# else
+#  define SUZERAIN_GCC_DIAG_OFF(x) \
+    SUZERAIN_GCC_DIAG_PRAGMA(ignored SUZERAIN_GCC_DIAG_JOINSTR(-W,x))
+#  define SUZERAIN_GCC_DIAG_ON(x)  \
+    SUZERAIN_GCC_DIAG_PRAGMA(warning SUZERAIN_GCC_DIAG_JOINSTR(-W,x))
+# endif
+#else
+# define SUZERAIN_GCC_DIAG_OFF(x)
+# define SUZERAIN_GCC_DIAG_ON(x)
 #endif
 
 /**
