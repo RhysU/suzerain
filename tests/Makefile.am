@@ -76,6 +76,11 @@ check_PROGRAMS       += test_gbdddmv
 test_gbdddmv_SOURCES  = test_gbdddmv.cpp
 test_gbdddmv_LDADD    = ../suzerain/libsuzerain.la
 
+TESTS                += test_gbiddmv
+check_PROGRAMS       += test_gbiddmv
+test_gbiddmv_SOURCES  = test_gbiddmv.cpp
+test_gbiddmv_LDADD    = ../suzerain/libsuzerain.la
+
 TESTS             += test_sbmv
 check_PROGRAMS    += test_sbmv
 test_sbmv_SOURCES  = test_sbmv.cpp
