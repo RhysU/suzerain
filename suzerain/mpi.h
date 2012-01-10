@@ -27,7 +27,10 @@
  * $Id$
  *--------------------------------------------------------------------------
  *-------------------------------------------------------------------------- */
-
+#ifdef __GNUC__
+/* Some older implementations trigger many warnings.  Suppress them. */
+#pragma GCC system_header
+#endif
 #include <mpi.h>
 
 #ifndef __SUZERAIN_MPI_H__
