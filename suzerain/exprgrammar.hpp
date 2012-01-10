@@ -31,22 +31,14 @@
 #ifndef __SUZERAIN_EXPRGRAMMAR_HPP
 #define __SUZERAIN_EXPRGRAMMAR_HPP
 
-//////////////////////////////////////////////////////////////////////
-// Is Spirit new enough?  Compilation errors are astounding otherwise.
-//////////////////////////////////////////////////////////////////////
-#include <boost/version.hpp>
-#if BOOST_VERSION < 104100
-# error "Boost 1.41 or newer is required for exprgrammar.hpp functionality"
-#endif
-
-//////////////////////////////////////////////////////////////////
-// Implementation uses X macros to reduce boilerplate.
-// See http://drdobbs.com/blogs/cpp/228700289 for X macro details.
-//////////////////////////////////////////////////////////////////
-
 #include <cmath>
 #include <limits>
+#include <iterator>
 
+#include <boost/spirit/version.hpp>
+#if !defined(SPIRIT_VERSION) || SPIRIT_VERSION < 0x2010
+#error "At least Spirit version 2.1 required"
+#endif
 #include <boost/math/constants/constants.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -65,60 +57,45 @@ namespace suzerain {
  */
 namespace exprgrammar {
 
-#define SUZERAIN_EXPRGRAMMAR_FORALL_UNARY_FUNCTIONS(apply) \
-    apply(abs)                                             \
-    apply(acos)                                            \
-    apply(asin)                                            \
-    apply(atan)                                            \
-    apply(ceil)                                            \
-    apply(cos)                                             \
-    apply(cosh)                                            \
-    apply(exp)                                             \
-    apply(floor)                                           \
-    apply(log)                                             \
-    apply(log10)                                           \
-    apply(sin)                                             \
-    apply(sinh)                                            \
-    apply(sqrt)                                            \
-    apply(tan)                                             \
-    apply(tanh)
+namespace { // anonymous
 
-#define SUZERAIN_EXPRGRAMMAR_FORALL_BINARY_FUNCTIONS(apply) \
-    apply(pow)                                              \
-    apply(atan2)
+struct lazy_pow_
+{
+    template <typename X, typename Y>
+    struct result { typedef X type; };
 
-
-namespace detail {
-
-#define DECLARE_UNARY_FUNCTOR(name)                          \
-struct name ## _                                             \
-{                                                            \
-    template <typename X> struct result { typedef X type; }; \
-                                                             \
-    template <typename X> X operator()(X x) const            \
-    {                                                        \
-        using namespace std;                                 \
-        return name(x);                                      \
-    }                                                        \
+    template <typename X, typename Y>
+    X operator()(X x, Y y) const
+    {
+        return std::pow(x, y);
+    }
 };
-SUZERAIN_EXPRGRAMMAR_FORALL_UNARY_FUNCTIONS(DECLARE_UNARY_FUNCTOR)
-#undef DECLARE_UNARY_FUNCTOR
 
-#define DECLARE_BINARY_FUNCTOR(name)                                     \
-struct name ## _                                                         \
-{                                                                        \
-    template <typename X, typename Y> struct result { typedef X type; }; \
-                                                                         \
-    template <typename X, typename Y> X operator()(X x, Y y) const       \
-    {                                                                    \
-        using namespace std;                                             \
-        return name(x, y);                                               \
-    }                                                                    \
+struct lazy_ufunc_
+{
+    template <typename F, typename A1>
+    struct result { typedef A1 type; };
+
+    template <typename F, typename A1>
+    A1 operator()(F f, A1 a1) const
+    {
+        return f(a1);
+    }
 };
-SUZERAIN_EXPRGRAMMAR_FORALL_BINARY_FUNCTIONS(DECLARE_BINARY_FUNCTOR)
-#undef DECLARE_BINARY_FUNCTOR
 
-} // end namespace detail
+struct lazy_bfunc_
+{
+    template <typename F, typename A1, typename A2>
+    struct result { typedef A1 type; };
+
+    template <typename F, typename A1, typename A2>
+    A1 operator()(F f, A1 a1, A2 a2) const
+    {
+        return f(a1, a2);
+    }
+};
+
+} // end namespace anonymous
 
 /** A Boost Spirit.Qi-based constant arithmetic expression grammar. */
 template <typename FPT, typename Iterator>
@@ -127,27 +104,87 @@ struct grammar
             Iterator, FPT(), boost::spirit::ascii::space_type
         >
 {
+
+    // symbol table for constants like "pi"
+    struct constant_
+        : boost::spirit::qi::symbols<
+                typename std::iterator_traits<Iterator>::value_type,
+                FPT
+            >
+    {
+        constant_()
+        {
+            this->add
+                ("pi", boost::math::constants::pi<FPT>()  )
+            ;
+        }
+    } constant;
+
+    // symbol table for unary functions like "abs"
+    struct ufunc_
+        : boost::spirit::qi::symbols<
+                typename std::iterator_traits<Iterator>::value_type,
+                FPT (*)(FPT)
+            >
+    {
+        ufunc_()
+        {
+            this->add
+                ("abs"   , (FPT (*)(FPT)) std::abs  )
+                ("acos"  , (FPT (*)(FPT)) std::acos )
+                ("asin"  , (FPT (*)(FPT)) std::asin )
+                ("atan"  , (FPT (*)(FPT)) std::atan )
+                ("ceil"  , (FPT (*)(FPT)) std::ceil )
+                ("cos"   , (FPT (*)(FPT)) std::cos  )
+                ("cosh"  , (FPT (*)(FPT)) std::cosh )
+                ("exp"   , (FPT (*)(FPT)) std::exp  )
+                ("floor" , (FPT (*)(FPT)) std::floor)
+                ("log"   , (FPT (*)(FPT)) std::log  )
+                ("log10" , (FPT (*)(FPT)) std::log10)
+                ("sin"   , (FPT (*)(FPT)) std::sin  )
+                ("sinh"  , (FPT (*)(FPT)) std::sinh )
+                ("sqrt"  , (FPT (*)(FPT)) std::sqrt )
+                ("tan"   , (FPT (*)(FPT)) std::tan  )
+                ("tanh"  , (FPT (*)(FPT)) std::tanh )
+            ;
+        }
+    } ufunc;
+
+    // symbol table for binary functions like "pow"
+    struct bfunc_
+        : boost::spirit::qi::symbols<
+                typename std::iterator_traits<Iterator>::value_type,
+                FPT (*)(FPT, FPT)
+            >
+    {
+        bfunc_()
+        {
+            this->add
+                ("pow"  , (FPT (*)(FPT, FPT)) std::pow  )
+                ("atan2", (FPT (*)(FPT, FPT)) std::atan2)
+            ;
+        }
+    } bfunc;
+
     boost::spirit::qi::rule<
             Iterator, FPT(), boost::spirit::ascii::space_type
         > expression, term, factor, primary;
 
     grammar() : grammar::base_type(expression)
     {
-        namespace constants = boost::math::constants;
-#define DECLARE_PHOENIX_FUNCTION(name)                    \
-        boost::phoenix::function<detail::name ## _> name;
-SUZERAIN_EXPRGRAMMAR_FORALL_UNARY_FUNCTIONS(DECLARE_PHOENIX_FUNCTION)
-SUZERAIN_EXPRGRAMMAR_FORALL_BINARY_FUNCTIONS(DECLARE_PHOENIX_FUNCTION)
-#undef DECLARE_PHOENIX_FUNCTION
-
         using boost::spirit::qi::real_parser;
         using boost::spirit::qi::real_policies;
         real_parser<FPT,real_policies<FPT> > real;
 
         using boost::spirit::qi::_1;
         using boost::spirit::qi::_2;
+        using boost::spirit::qi::_3;
         using boost::spirit::qi::no_case;
         using boost::spirit::qi::_val;
+
+        boost::phoenix::function<lazy_pow_>   lazy_pow;
+        boost::phoenix::function<lazy_ufunc_> lazy_ufunc;
+        boost::phoenix::function<lazy_bfunc_> lazy_bfunc;
 
         expression =
             term                   [_val =  _1]
@@ -164,37 +201,26 @@ SUZERAIN_EXPRGRAMMAR_FORALL_BINARY_FUNCTIONS(DECLARE_PHOENIX_FUNCTION)
             ;
 
         factor =
-            primary                [_val =  _1          ]
-            >> *(  ("**" >> factor [_val = pow(_val, _1)])
+            primary                [_val =  _1]
+            >> *(  ("**" >> factor [_val = lazy_pow(_val, _1)])
                 )
             ;
-
-#define STRINGIFY(s) #s
-#define UNARY_FUNCTION_RULE(name)                                             \
-    | no_case[STRINGIFY(name)] >> '(' >> expression [_val =  name(_1)] >> ')'
-#define BINARY_FUNCTION_RULE(name)                                            \
-    | ( no_case[STRINGIFY(name)]>> '('                                        \
-        >> expression >> ',' >> expression >> ')' )[_val =  name(_1,_2)]
 
         primary =
             real                   [_val =  _1]
             |   '(' >> expression  [_val =  _1] >> ')'
             |   ('-' >> primary    [_val = -_1])
             |   ('+' >> primary    [_val =  _1])
-            |   no_case["pi"]      [_val =  constants::pi<FPT>()]
-                SUZERAIN_EXPRGRAMMAR_FORALL_UNARY_FUNCTIONS(UNARY_FUNCTION_RULE)
-                SUZERAIN_EXPRGRAMMAR_FORALL_BINARY_FUNCTIONS(BINARY_FUNCTION_RULE)
+            |   no_case[constant]  [_val =  _1]
+            |   (no_case[ufunc] >> '(' >> expression >> ')')
+                                   [_val = lazy_ufunc(_1, _2)]
+            |   (no_case[bfunc] >> '(' >> expression >> ','
+                                       >> expression >> ')')
+                                   [_val = lazy_bfunc(_1, _2, _3)]
             ;
-
-#undef UNARY_RULE
-#undef BINARY_RULE
-#undef STRINGIFY
 
     }
 };
-
-#undef SUZERAIN_EXPRGRAMMAR_FORALL_UNARY_FUNCTIONS
-#undef SUZERAIN_EXPRGRAMMAR_FORALL_BINARY_FUNCTIONS
 
 /**
  * Parse a constant arithmetic expression in [<tt>iter</tt>,<tt>end</tt>)
