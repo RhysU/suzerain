@@ -835,8 +835,9 @@ suzerain_blas_zgb_acc(
  * \brief Compute the LUP decomposition of a general banded matrix using
  * LAPACK's gbtrf.
  *
- * Stores the results back into the same matrix.  Note that the matrix must
- * have extra superdiagonals available to handle the factorization fill in.
+ * Stores the results back into the same matrix.  Note that the banded matrix
+ * storage must have \c kl extra superdiagonals available to handle the
+ * factorization fill in.
  *
  * \param m Number of rows in matrix \c ab.
  * \param n Number of columns in matrix \c ab.
@@ -851,8 +852,8 @@ suzerain_blas_zgb_acc(
  * \see gbtrs for how to solve a linear system
  *      once you have decomposed the matrix.
  * \see A LAPACK reference for more details, especially for the
- *      \c ku storage requirements and the resulting factored
- *      storage format.
+ *      <tt>lda >= 2*kl + ku + 1</tt> storage requirement and the resulting
+ *      factored storage format.
  */
 int
 suzerain_lapack_sgbtrf(
