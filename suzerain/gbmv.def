@@ -7,7 +7,6 @@
 // #define GBMV_SCALAR    double            /* Type of coeffs and vectors */
 // #define GBMV_KL        const int kl,     /* Matrix lower bandwidth     */
 // #define GBMV_KU        const int ku,     /* Matrix upper bandwidth     */
-// #define GBMV_LDA       const int lda,    /* Matrix leading dimension   */
 
 #ifndef __GBMV_INTERNAL_ONCE
 #define __GBMV_INTERNAL_ONCE
@@ -17,9 +16,9 @@ static inline int ndxmax(int a, int b) { return a > b ? a : b; }
 
 GBMV_STATIC int GBMV_FUNCTION(
     char trans, const int m, const int n, GBMV_KL GBMV_KU
-    const GBMV_SCALAR alpha, const GBMV_COMPONENT * restrict a, GBMV_LDA
-                             const    GBMV_SCALAR * restrict x, const int incx,
-    const GBMV_SCALAR beta,           GBMV_SCALAR * restrict y, const int incy)
+    const GBMV_SCALAR alpha, const GBMV_COMPONENT *       restrict a, int lda,
+                             const    GBMV_SCALAR * const restrict x, const int incx,
+    const GBMV_SCALAR beta,           GBMV_SCALAR * const restrict y, const int incy)
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
@@ -97,8 +96,9 @@ GBMV_STATIC int GBMV_FUNCTION(
     int ky = incy > 0 ? 0 : incy*(1 - leny);
 
     // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
-    // Incorporate the ku offset.  We will advance a after each j iteration.
+    // Incorporate the ku offset and decrement lda to speed indexing in loops.
     a += ku;
+    --lda;
 
     // Perform the banded matrix-vector accumulation
     const int klp1 = kl + 1;
@@ -115,7 +115,7 @@ GBMV_STATIC int GBMV_FUNCTION(
                     y[i] += temp*a[i];
                 }
                 jx += incx;
-                a += lda - 1;
+                a += lda;
             }
         } else {          // ...for strided y
             for (int j = 0; j < n; ++j) {
@@ -134,7 +134,7 @@ GBMV_STATIC int GBMV_FUNCTION(
                 if (j >= ku) {
                     ky += incy;
                 }
-                a += lda - 1;
+                a += lda;
             }
         }
 
@@ -151,7 +151,7 @@ GBMV_STATIC int GBMV_FUNCTION(
                 }
                 y[jy] += alpha * temp;
                 jy += incy;
-                a += lda - 1;
+                a += lda;
             }
         } else {          // ...for strided x
             for (int j = 0; j < n; ++j) {
@@ -171,7 +171,7 @@ GBMV_STATIC int GBMV_FUNCTION(
                 if (j >= ku) {
                     kx += incx;
                 }
-                a += lda - 1;
+                a += lda;
             }
         }
     }
@@ -185,4 +185,3 @@ GBMV_STATIC int GBMV_FUNCTION(
 #undef GBMV_SCALAR
 #undef GBMV_KL
 #undef GBMV_KU
-#undef GBMV_LDA

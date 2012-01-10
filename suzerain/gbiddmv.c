@@ -61,7 +61,6 @@
 #define GBIDDMV_SCALAR    float
 #define GBIDDMV_KL        const int kl,
 #define GBIDDMV_KU        const int ku,
-#define GBIDDMV_LDA       const int lda,
 #include "gbiddmv.def"
 
 #define GBIDDMV_STATIC    static
@@ -70,7 +69,6 @@
 #define GBIDDMV_SCALAR    double
 #define GBIDDMV_KL        const int kl,
 #define GBIDDMV_KU        const int ku,
-#define GBIDDMV_LDA       const int lda,
 #include "gbiddmv.def"
 
 #define GBIDDMV_STATIC    static
@@ -79,7 +77,6 @@
 #define GBIDDMV_SCALAR    float _Complex
 #define GBIDDMV_KL        const int kl,
 #define GBIDDMV_KU        const int ku,
-#define GBIDDMV_LDA       const int lda,
 #include "gbiddmv.def"
 
 #define GBIDDMV_STATIC    static
@@ -88,7 +85,6 @@
 #define GBIDDMV_SCALAR    double _Complex
 #define GBIDDMV_KL        const int kl,
 #define GBIDDMV_KU        const int ku,
-#define GBIDDMV_LDA       const int lda,
 #include "gbiddmv.def"
 
 // ------------------------------------------------------------------
@@ -330,7 +326,6 @@ suzerain_gbiddmv_dz(
 #define GBIDDMV_SCALAR    float
 #define GBIDDMV_KL
 #define GBIDDMV_KU
-#define GBIDDMV_LDA       const int lda,
 #include "gbiddmv.def"
 
 #define GBIDDMV_STATIC    static
@@ -340,7 +335,6 @@ suzerain_gbiddmv_dz(
 #define GBIDDMV_SCALAR    double
 #define GBIDDMV_KL
 #define GBIDDMV_KU
-#define GBIDDMV_LDA       const int lda,
 #include "gbiddmv.def"
 
 #define GBIDDMV_STATIC    static
@@ -350,7 +344,6 @@ suzerain_gbiddmv_dz(
 #define GBIDDMV_SCALAR    float _Complex
 #define GBIDDMV_KL
 #define GBIDDMV_KU
-#define GBIDDMV_LDA       const int lda,
 #include "gbiddmv.def"
 
 #define GBIDDMV_STATIC    static
@@ -360,7 +353,6 @@ suzerain_gbiddmv_dz(
 #define GBIDDMV_SCALAR    double _Complex
 #define GBIDDMV_KL
 #define GBIDDMV_KU
-#define GBIDDMV_LDA       const int lda,
 #include "gbiddmv.def"
 
 #undef kl

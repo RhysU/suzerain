@@ -61,7 +61,6 @@
 #define GBMV_SCALAR    float
 #define GBMV_KL        const int kl,
 #define GBMV_KU        const int ku,
-#define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
 #define GBMV_STATIC    static
@@ -70,7 +69,6 @@
 #define GBMV_SCALAR    double
 #define GBMV_KL        const int kl,
 #define GBMV_KU        const int ku,
-#define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
 #define GBMV_STATIC    static
@@ -79,7 +77,6 @@
 #define GBMV_SCALAR    float _Complex
 #define GBMV_KL        const int kl,
 #define GBMV_KU        const int ku,
-#define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
 #define GBMV_STATIC    static
@@ -88,7 +85,6 @@
 #define GBMV_SCALAR    double _Complex
 #define GBMV_KL        const int kl,
 #define GBMV_KU        const int ku,
-#define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
 // ------------------------------------------------------------------
@@ -306,7 +302,6 @@ suzerain_gbmv_dz(
 #define GBMV_SCALAR    float
 #define GBMV_KL
 #define GBMV_KU
-#define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
 #define GBMV_STATIC    static
@@ -316,7 +311,6 @@ suzerain_gbmv_dz(
 #define GBMV_SCALAR    double
 #define GBMV_KL
 #define GBMV_KU
-#define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
 #define GBMV_STATIC    static
@@ -326,7 +320,6 @@ suzerain_gbmv_dz(
 #define GBMV_SCALAR    float _Complex
 #define GBMV_KL
 #define GBMV_KU
-#define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
 #define GBMV_STATIC    static
@@ -336,7 +329,6 @@ suzerain_gbmv_dz(
 #define GBMV_SCALAR    double _Complex
 #define GBMV_KL
 #define GBMV_KU
-#define GBMV_LDA       const int lda,
 #include "gbmv.def"
 
 #undef kl

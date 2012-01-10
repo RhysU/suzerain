@@ -7,7 +7,6 @@
 // #define GBIDDMV_SCALAR    double            /* Type of coeffs and vectors */
 // #define GBIDDMV_KL        const int kl,     /* Matrix lower bandwidth     */
 // #define GBIDDMV_KU        const int ku,     /* Matrix upper bandwidth     */
-// #define GBIDDMV_LDA       const int lda,    /* Matrix leading dimension   */
 
 #ifndef __GBIDDMV_INTERNAL_ONCE
 #define __GBIDDMV_INTERNAL_ONCE
@@ -18,11 +17,11 @@ static inline int ndxmax(int a, int b) { return a > b ? a : b; }
 GBIDDMV_STATIC int GBIDDMV_FUNCTION(
     char trans, const int n, GBIDDMV_KL GBIDDMV_KU
     const GBIDDMV_SCALAR alpha0,
-    const GBIDDMV_SCALAR alpha1, const GBIDDMV_COMPONENT * restrict d1,
-    const GBIDDMV_SCALAR alpha2, const GBIDDMV_COMPONENT * restrict d2,
-                                 const GBIDDMV_COMPONENT * restrict a, GBIDDMV_LDA
-                                 const    GBIDDMV_SCALAR * restrict x, const int incx,
-    const GBIDDMV_SCALAR beta,            GBIDDMV_SCALAR * restrict y, const int incy)
+    const GBIDDMV_SCALAR alpha1, const GBIDDMV_COMPONENT * const restrict d1,
+    const GBIDDMV_SCALAR alpha2, const GBIDDMV_COMPONENT * const restrict d2,
+                                 const GBIDDMV_COMPONENT *       restrict a, int lda,
+                                 const    GBIDDMV_SCALAR * const restrict x, const int incx,
+    const GBIDDMV_SCALAR beta,            GBIDDMV_SCALAR * const restrict y, const int incy)
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
@@ -95,8 +94,9 @@ GBIDDMV_STATIC int GBIDDMV_FUNCTION(
     int ky = incy > 0 ? 0 : incy*(1 - n);
 
     // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
-    // Incorporate the ku offset.  We will advance a after each j iteration.
+    // Incorporate the ku offset and decrement lda to speed indexing in loops.
     a += ku;
+    --lda;
 
     // Perform the banded matrix-vector accumulation
     const int klp1 = kl + 1;
@@ -112,7 +112,7 @@ GBIDDMV_STATIC int GBIDDMV_FUNCTION(
                     y[i] += (alpha0 + alpha1*d1[i] + alpha2*d2[i])*a[i]*x[jx];
                 }
                 jx += incx;
-                a += lda - 1;
+                a += lda;
             }
         } else {          // ...for strided y
             for (int j = 0; j < n; ++j) {
@@ -130,7 +130,7 @@ GBIDDMV_STATIC int GBIDDMV_FUNCTION(
                 if (j >= ku) {
                     ky += incy;
                 }
-                a += lda - 1;
+                a += lda;
             }
         }
 
@@ -147,7 +147,7 @@ GBIDDMV_STATIC int GBIDDMV_FUNCTION(
                 }
                 y[jy] += (alpha0 + alpha1*d1[j] + alpha2*d2[j])*temp;
                 jy += incy;
-                a += lda - 1;
+                a += lda;
             }
         } else {          // ...for strided x
             for (int j = 0; j < n; ++j) {
@@ -167,7 +167,7 @@ GBIDDMV_STATIC int GBIDDMV_FUNCTION(
                 if (j >= ku) {
                     kx += incx;
                 }
-                a += lda - 1;
+                a += lda;
             }
         }
     }
@@ -181,4 +181,3 @@ GBIDDMV_STATIC int GBIDDMV_FUNCTION(
 #undef GBIDDMV_SCALAR
 #undef GBIDDMV_KL
 #undef GBIDDMV_KU
-#undef GBIDDMV_LDA

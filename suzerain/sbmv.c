@@ -60,7 +60,6 @@
 #define SBMV_COMPONENT float
 #define SBMV_SCALAR    float
 #define SBMV_K         const int k,
-#define SBMV_LDA       const int lda,
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
@@ -68,7 +67,6 @@
 #define SBMV_COMPONENT double
 #define SBMV_SCALAR    double
 #define SBMV_K         const int k,
-#define SBMV_LDA       const int lda,
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
@@ -76,7 +74,6 @@
 #define SBMV_COMPONENT float
 #define SBMV_SCALAR    float _Complex
 #define SBMV_K         const int k,
-#define SBMV_LDA       const int lda,
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
@@ -84,7 +81,6 @@
 #define SBMV_COMPONENT double
 #define SBMV_SCALAR    double _Complex
 #define SBMV_K         const int k,
-#define SBMV_LDA       const int lda,
 #include "sbmv.def"
 
 // ------------------------------------------------------------------
@@ -284,7 +280,6 @@ suzerain_sbmv_dz(
 #define SBMV_COMPONENT float
 #define SBMV_SCALAR    float
 #define SBMV_K
-#define SBMV_LDA       const int lda,
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
@@ -293,7 +288,6 @@ suzerain_sbmv_dz(
 #define SBMV_COMPONENT double
 #define SBMV_SCALAR    double
 #define SBMV_K
-#define SBMV_LDA       const int lda,
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
@@ -302,7 +296,6 @@ suzerain_sbmv_dz(
 #define SBMV_COMPONENT float
 #define SBMV_SCALAR    float _Complex
 #define SBMV_K
-#define SBMV_LDA       const int lda,
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
@@ -311,7 +304,6 @@ suzerain_sbmv_dz(
 #define SBMV_COMPONENT double
 #define SBMV_SCALAR    double _Complex
 #define SBMV_K
-#define SBMV_LDA       const int lda,
 #include "sbmv.def"
 
 #undef k
