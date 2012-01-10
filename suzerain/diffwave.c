@@ -70,8 +70,14 @@ void internal_zscal(const int n,
                     const double _Complex alpha,
                     double _Complex * const restrict x)
 {
-    for (int i = 0; i < n; ++i)
-        x[i] *= alpha;
+#pragma warning(push,disable:1572)
+    if (SUZERAIN_UNLIKELY(alpha == 0)) {
+#pragma warning(pop)
+        memset(x, 0, n*sizeof(x[0]));
+    } else {
+        for (int i = 0; i < n; ++i)
+            x[i] *= alpha;
+    }
 }
 
 // Specialization of BLAS zaxpby for exactly our needs
@@ -82,8 +88,14 @@ void internal_zaxpby(const int n,
                      const double _Complex beta,
                      double _Complex * const restrict y)
 {
-    for (int i = 0; i < n; ++i)
-        y[i] = alpha*x[i] + beta*y[i];
+#pragma warning(push,disable:1572)
+    switch ((beta == 0) << 1 & (alpha == 0)) {
+#pragma warning(pop)
+    case 0: for (int i = 0; i < n; ++i) y[i] = alpha*x[i] + beta*y[i]; break;
+    case 1: for (int i = 0; i < n; ++i) y[i] =              beta*y[i]; break;
+    case 2: for (int i = 0; i < n; ++i) y[i] = alpha*x[i];             break;
+    case 3: memset(y, 0, n*sizeof(y[0]));                              break;
+    }
 }
 
 // Special case for diffwave_apply when dxcnt = dzcnt = 0 and alpha = 1
