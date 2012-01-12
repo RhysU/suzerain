@@ -46,6 +46,11 @@ check_PROGRAMS  += test_os
 test_os_SOURCES  = test_os.c
 test_os_LDADD    = ../suzerain/libsuzerain.la
 
+TESTS               += test_parcel
+check_PROGRAMS      += test_parcel
+test_parcel_SOURCES  = test_parcel.cpp
+test_parcel_LDADD    = ../suzerain/libsuzerain.la
+
 TESTS                   += test_blas_et_al
 check_PROGRAMS          += test_blas_et_al
 test_blas_et_al_SOURCES  = test_blas_et_al.c

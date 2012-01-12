@@ -69,6 +69,7 @@ pkginclude_HEADERS += mpl.hpp
 pkginclude_HEADERS += multi_array.hpp
 pkginclude_HEADERS += operator_base.hpp
 pkginclude_HEADERS += os.h
+pkginclude_HEADERS += parcel.h
 pkginclude_HEADERS += pencilfft.hpp
 pkginclude_HEADERS += pencil_grid.hpp
 pkginclude_HEADERS += pencil.hpp
