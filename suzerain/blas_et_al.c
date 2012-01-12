@@ -68,17 +68,10 @@ suzerain_blas_xerbla(const char *srname, const int info)
 void *
 suzerain_blas_malloc(size_t size)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    /* We do not use MKL_malloc to avoid later needing MKL_free calls. */
-    /* Align at 16-byte boundaries per MKL user guide section 8. */
-    const size_t alignment = 16;
-#else
-#error "Sanity failure"
-#endif
-
     void * p = NULL;
 
-    const int status = posix_memalign(&p, alignment, size);
+    /* We do not use MKL_malloc to avoid later needing MKL_free calls. */
+    const int status = posix_memalign(&p, SUZERAIN_BLAS_ALIGNMENT, size);
 
     switch (status) {
         case 0:

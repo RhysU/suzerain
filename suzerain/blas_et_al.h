@@ -64,9 +64,16 @@ suzerain_blas_xerbla(const char *srname, const int info);
  * @{
  */
 
+/**
+ * The alignment of memory per the underlying BLAS' recommendations
+ * for performance and numerical stability.
+ *
+ * Align at 16-byte boundaries per MKL user guide section 8.
+ */
+#define SUZERAIN_BLAS_ALIGNMENT 16
+
 /*!
- * \brief Allocates memory aligned according to the underlying BLAS'
- * recommendations for performance and numerical stability.
+ * \brief Allocates memory aligned according to SUZERAIN_BLAS_ALIGNMENT.
  *
  * The memory is not cleared.  Any returned memory must later be freed using \c
  * suzerain_blas_free().
@@ -80,8 +87,8 @@ void *
 suzerain_blas_malloc(size_t size);
 
 /*!
- * \brief Allocate and clear memory aligned according to the underlying BLAS'
- * recommendations for performance and numerical stability.
+ * \brief Allocate and clear memory aligned according to
+ * SUZERAIN_BLAS_ALIGNMENT.
  *
  * The memory is set to zero.  Any returned memory must later be freed using \c
  * suzerain_blas_free.

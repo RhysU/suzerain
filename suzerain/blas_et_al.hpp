@@ -57,6 +57,9 @@ namespace blas {
  * @{
  */
 
+/*! @copydoc SUZERAIN_BLAS_ALIGNMENT */
+static const size_t alignment = SUZERAIN_BLAS_ALIGNMENT;
+
 /*! @copydoc suzerain_blas_malloc(size_t) */
 inline void * malloc(size_t size)
 {
