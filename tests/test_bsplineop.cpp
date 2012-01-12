@@ -259,8 +259,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
         const double coeff[] = { 2.0, -3.0, 999.0 };
         lu.form(sizeof(coeff)/sizeof(coeff[0]), coeff, op);
         CHECK_GBMATRIX_CLOSE(
-                 4,      4,      1,        2, good_A0,       4,
-            lu.n(), lu.n(), lu.kl(), lu.ku(),  lu.A(), lu.ld(),
+                 4,      4,      1,                2, good_A0,       4,
+            lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(),  lu.A(), lu.ld(),
             std::numeric_limits<double>::epsilon()*1000);
     }
 
@@ -334,8 +334,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
         const double coeff[][2] = {{2.0, -3.0}, {7.0, -5.0}, {999.0, -999.0}};
         luz.form(sizeof(coeff)/sizeof(coeff[0]), coeff, op);
         CHECK_GBMATRIX_CLOSE(
-                 4,        4,        1,       2,  good_A0,        4,
-            luz.n(), luz.n(), luz.kl(), luz.ku(),  luz.A(), luz.ld(),
+                 4,        4,        1,                 2,  good_A0,        4,
+            luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(),  luz.A(), luz.ld(),
             std::numeric_limits<double>::epsilon()*1000);
     }
 

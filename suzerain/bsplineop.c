@@ -1009,8 +1009,8 @@ suzerain_bsplineop_lu_alloc(
     /* Determine general banded matrix shape parameters */
     luw->n  = w->n;
     luw->kl = w->max_kl;
-    luw->ku = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS (#1724?) */
-    luw->ld = luw->kl + luw->ku + 1;
+    luw->ku = w->max_ku;
+    luw->ld = 2*luw->kl + luw->ku + 1; /* Increase per GBTRF, GBTRS */
 
     /* Allocate memory for LU factorization pivot storage */
     luw->ipiv = suzerain_blas_malloc(w->n * sizeof(luw->ipiv[0]));
@@ -1070,8 +1070,8 @@ suzerain_bsplineop_lu_form(
                        SUZERAIN_EINVAL);
     }
     /* Banded LU operator dimensions depend on largest derivative band */
-    if (luw->ku < w->max_kl + w->max_ku) {
-        SUZERAIN_ERROR("Incompatible workspaces: luw->ku too small",
+    if (luw->ld < 2*w->max_kl + w->max_ku + 1) {
+        SUZERAIN_ERROR("Incompatible workspaces: luw->ld too small",
                        SUZERAIN_EINVAL);
     }
 
@@ -1092,26 +1092,17 @@ suzerain_bsplineop_lu_form(
      * where the non-factored operator is available.  However, it has some
      * runtime overhead and is unnecessary for the solve() use case.
      */
-    info = suzerain_blasext_dgbnorm1(luw->n,
-                                     luw->n,
-                                     luw->kl,
-                                     luw->ku - luw->kl, /* NB (#1724?) */
-                                     luw->A + w->max_kl,
-                                     luw->ld,
-                                     &luw->norm1);
+    info = suzerain_blasext_dgbnorm1(luw->n, luw->n, luw->kl, luw->ku,
+                                     luw->A + luw->kl, /* not yet factored */
+                                     luw->ld, &luw->norm1);
     if (info) {
         SUZERAIN_ERROR("suzerain_blasext_dgbnorm1 reported an error",
                        SUZERAIN_ESANITY);
     }
 
     /* Compute LU factorization of the just-formed operator */
-    info = suzerain_lapack_dgbtrf(luw->n,
-                                  luw->n,
-                                  luw->kl,
-                                  luw->ku - luw->kl, /* NB (#1724?) */
-                                  luw->A,
-                                  luw->ld,
-                                  luw->ipiv);
+    info = suzerain_lapack_dgbtrf(luw->n, luw->n, luw->kl, luw->ku,
+                                  luw->A, luw->ld, luw->ipiv);
     if (info) {
         SUZERAIN_ERROR("suzerain_lapack_dgbtrf reported an error",
                        SUZERAIN_ESANITY);
@@ -1129,8 +1120,7 @@ suzerain_bsplineop_lu_form_mass(
     suzerain_bsplineop_lu_workspace *luw)
 {
     const double d_one = 1.0;
-    const int i_one = 1;
-    return suzerain_bsplineop_lu_form(i_one, &d_one, w, luw);
+    return suzerain_bsplineop_lu_form(1, &d_one, w, luw);
 }
 
 static
@@ -1147,16 +1137,9 @@ suzerain_bsplineop_lu_solve_contiguous(
                 SUZERAIN_EINVAL);
     }
 
-    const int info = suzerain_lapack_dgbtrs('N',
-                                            luw->n,
-                                            luw->kl,
-                                            luw->ku - luw->kl, /* NB */
-                                            nrhs,
-                                            luw->A,
-                                            luw->ld,
-                                            luw->ipiv,
-                                            b,
-                                            ldb);
+    const int info = suzerain_lapack_dgbtrs('N', luw->n, luw->kl, luw->ku,
+                                            nrhs, luw->A, luw->ld, luw->ipiv,
+                                            b, ldb);
     if (info) {
         SUZERAIN_ERROR("suzerain_lapack_dgbtrs reported an error",
                        SUZERAIN_ESANITY);
@@ -1192,16 +1175,10 @@ suzerain_bsplineop_lu_solve_noncontiguous(
         double * const b_j = b + j*ldb;
 
         suzerain_blas_dcopy(luw->n, b_j, incb, scratch, 1);
-        const int info = suzerain_lapack_dgbtrs('N',
-                                                luw->n,
-                                                luw->kl,
-                                                luw->ku - luw->kl, /* NB */
+        const int info = suzerain_lapack_dgbtrs('N', luw->n, luw->kl, luw->ku,
                                                 1, /* One RHS at a time */
-                                                luw->A,
-                                                luw->ld,
-                                                luw->ipiv,
-                                                scratch,
-                                                luw->n);
+                                                luw->A, luw->ld, luw->ipiv,
+                                                scratch, luw->n);
         if (info) {
             suzerain_blas_free(scratch);
             SUZERAIN_ERROR("suzerain_lapack_dgbtrs reported an error",
@@ -1239,8 +1216,8 @@ suzerain_bsplineop_lu_rcond(
 {
     if (luw->ipiv[0] == -1) {
         SUZERAIN_ERROR(
-                "One of suzerain_bsplineop_lu_form_* not called before solve",
-                SUZERAIN_EINVAL);
+            "One of suzerain_bsplineop_lu_form_* not called before lu_rcond",
+            SUZERAIN_EINVAL);
     }
 
     // Allocate one chunk of memory for both work and iwork usage
@@ -1250,16 +1227,9 @@ suzerain_bsplineop_lu_rcond(
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
     }
 
-    const int info = suzerain_lapack_dgbcon('1',
-                                            luw->n,
-                                            luw->kl,
-                                            luw->ku - luw->kl, /* NB */
-                                            luw->A,
-                                            luw->ld,
-                                            luw->ipiv,
-                                            luw->norm1,
-                                            rcond,
-                                            work,
+    const int info = suzerain_lapack_dgbcon('1', luw->n, luw->kl, luw->ku,
+                                            luw->A, luw->ld, luw->ipiv,
+                                            luw->norm1, rcond, work,
                                             (void *)(work + 3*luw->n));
     suzerain_blas_free(work);
 
@@ -1295,8 +1265,8 @@ suzerain_bsplineop_luz_alloc(
     /* Determine general banded matrix shape parameters */
     luzw->n  = w->n;
     luzw->kl = w->max_kl;
-    luzw->ku = w->max_kl + w->max_ku; /* Increase per GBTRF, GBTRS (#1724?) */
-    luzw->ld = luzw->kl + luzw->ku + 1;
+    luzw->ku = w->max_ku;
+    luzw->ld = 2*luzw->kl + luzw->ku + 1; /* Increase per GBTRF, GBTRS */
 
     /* Allocate memory for LU factorization pivot storage */
     luzw->ipiv = suzerain_blas_malloc(w->n * sizeof(luzw->ipiv[0]));
@@ -1356,8 +1326,8 @@ suzerain_bsplineop_luz_form(
                        SUZERAIN_EINVAL);
     }
     /* Banded LU operator dimensions depend on largest derivative band */
-    if (luzw->ku < w->max_kl + w->max_ku) {
-        SUZERAIN_ERROR("Incompatible workspaces: luzw->ku too small",
+    if (luzw->ld < 2*w->max_kl + w->max_ku + 1) {
+        SUZERAIN_ERROR("Incompatible workspaces: luzw->ld too small",
                        SUZERAIN_EINVAL);
     }
 
@@ -1379,26 +1349,17 @@ suzerain_bsplineop_luz_form(
      * where the non-factored operator is available.  However, it has some
      * runtime overhead and is unnecessary for the solve() use case.
      */
-    info = suzerain_blasext_zgbnorm1(luzw->n,
-                                     luzw->n,
-                                     luzw->kl,
-                                     luzw->ku - luzw->kl, /* NB (#1724?) */
+    info = suzerain_blasext_zgbnorm1(luzw->n, luzw->n, luzw->kl, luzw->ku,
                                      (const double (*)[2]) luzw->A + w->max_kl,
-                                     luzw->ld,
-                                     &luzw->norm1);
+                                     luzw->ld, &luzw->norm1);
     if (info) {
         SUZERAIN_ERROR("suzerain_blasext_zgbnorm1 reported an error",
                        SUZERAIN_ESANITY);
     }
 
     /* Compute LU factorization of the just-formed operator */
-    info = suzerain_lapack_zgbtrf(luzw->n,
-                                  luzw->n,
-                                  luzw->kl,
-                                  luzw->ku - luzw->kl, /* NB (#1724?) */
-                                  luzw->A,
-                                  luzw->ld,
-                                  luzw->ipiv);
+    info = suzerain_lapack_zgbtrf(luzw->n, luzw->n, luzw->kl, luzw->ku,
+                                  luzw->A, luzw->ld, luzw->ipiv);
     if (info) {
         SUZERAIN_ERROR("suzerain_lapack_zgbtrf reported an error",
                        SUZERAIN_ESANITY);
@@ -1416,8 +1377,7 @@ suzerain_bsplineop_luz_form_mass(
     suzerain_bsplineop_luz_workspace *luzw)
 {
     const double z_one[2] = { 1.0, 0.0 };
-    const int i_one = 1;
-    return suzerain_bsplineop_luz_form(i_one, &z_one, w, luzw);
+    return suzerain_bsplineop_luz_form(1, &z_one, w, luzw);
 }
 
 static
@@ -1434,16 +1394,10 @@ suzerain_bsplineop_luz_solve_contiguous(
                 SUZERAIN_EINVAL);
     }
 
-    const int info = suzerain_lapack_zgbtrs('N',
-                                            luzw->n,
-                                            luzw->kl,
-                                            luzw->ku - luzw->kl, /* NB */
+    const int info = suzerain_lapack_zgbtrs('N', luzw->n, luzw->kl, luzw->ku,
                                             nrhs,
                                             (const double (*)[2]) luzw->A,
-                                            luzw->ld,
-                                            luzw->ipiv,
-                                            b,
-                                            ldb);
+                                            luzw->ld, luzw->ipiv, b, ldb);
     if (info) {
         SUZERAIN_ERROR("suzerain_lapack_zgbtrs reported an error",
                        SUZERAIN_ESANITY);
@@ -1480,16 +1434,12 @@ suzerain_bsplineop_luz_solve_noncontiguous(
 
         suzerain_blas_zcopy(
                 luzw->n, (const double (*)[2]) b_j, incb, scratch, 1);
-        const int info = suzerain_lapack_zgbtrs('N',
-                                                luzw->n,
-                                                luzw->kl,
-                                                luzw->ku - luzw->kl, /* NB */
+        const int info = suzerain_lapack_zgbtrs('N', luzw->n, luzw->kl,
+                                                luzw->ku,
                                                 1, /* One RHS at a time */
                                                 (const double (*)[2]) luzw->A,
-                                                luzw->ld,
-                                                luzw->ipiv,
-                                                scratch,
-                                                luzw->n);
+                                                luzw->ld, luzw->ipiv,
+                                                scratch, luzw->n);
         if (info) {
             suzerain_blas_free(scratch);
             SUZERAIN_ERROR("suzerain_lapack_zgbtrs reported an error",
@@ -1528,8 +1478,8 @@ suzerain_bsplineop_luz_rcond(
 {
     if (luzw->ipiv[0] == -1) {
         SUZERAIN_ERROR(
-                "One of suzerain_bsplineop_luz_form_* not called before solve",
-                SUZERAIN_EINVAL);
+            "One of suzerain_bsplineop_luz_form_* not called before luz_rcond",
+            SUZERAIN_EINVAL);
     }
 
     // Allocate one chunk of memory for both work and rwork usage
@@ -1539,16 +1489,10 @@ suzerain_bsplineop_luz_rcond(
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
     }
 
-    const int info = suzerain_lapack_zgbcon('1',
-                                            luzw->n,
-                                            luzw->kl,
-                                            luzw->ku - luzw->kl, /* NB */
+    const int info = suzerain_lapack_zgbcon('1', luzw->n, luzw->kl, luzw->ku,
                                             (const double (*)[2]) luzw->A,
-                                            luzw->ld,
-                                            luzw->ipiv,
-                                            luzw->norm1,
-                                            rcond,
-                                            (double (*)[2]) work,
+                                            luzw->ld, luzw->ipiv, luzw->norm1,
+                                            rcond, (double (*)[2]) work,
                                             (void *)(work + 2*(2*luzw->n)));
     suzerain_blas_free(work);
 

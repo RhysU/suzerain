@@ -168,7 +168,7 @@ typedef struct suzerain_bsplineop_workspace {
      *     for the <tt>k</tt>-th derivative viewed using <tt>max_kl</tt>,
      *     <tt>max_ku</tt>, and <tt>ld</tt>.  This view is optimal for
      *     BLAS \c gb_acc and \c gb_add operations.
-     **/
+     */
     double **D;
 
     /* @} */
@@ -452,6 +452,13 @@ suzerain_bsplineop_interpolation_rhs_complex(
  * derivative operators.  Callers obtain a workspace using
  * suzerain_bsplineop_lu_alloc() and release it using suzerain_bsplineop_lu_free().
  *
+ * As manipulating an non-factored operator is easiest using the non-factored
+ * \c kl and \c ku, and as LAPACK's \c GBTRF and \c GBTRS are written using the
+ * non-factored values of \c kl and \c ku, we do too.  The non-factored
+ * operator uses column-major band storage per <tt>GBTRF</tt>'s \c AB "on
+ * entry" documentation.  After factorization, storage is per <tt>GBTRS</tt>'s
+ * "on entry" documentation.
+ *
  * @see suzerain_bsplineop_luz_workspace for manipulating the complex-valued case.
  */
 typedef struct suzerain_bsplineop_lu_workspace {
@@ -459,19 +466,17 @@ typedef struct suzerain_bsplineop_lu_workspace {
     /** Number of degrees of freedom in the basis */
     int n;
 
-    /** Number of subdiagonals in the factored operator. */
+    /** Number of subdiagonals in the non-factored operator. */
     int kl;
 
     /**
-     * Number of superdiagonals in the factored operator.
-     * Note that, for a given B-spline basis,
-     * suzerain_bsplineop_lu_workspace::ku is larger than the corresponding
-     * suzerain_bsplineop_workspace::ku according to the requirements of
-     * LAPACK's \c dgbtrf.
+     * Number of superdiagonals in the non-factored operator.  The number of
+     * superdiagonals in the upper triangular portion of the factored operator
+     * is <tt>kl + ku</tt>.
      */
     int ku;
 
-    /** Leading dimension in the factored operator derivative */
+    /** Leading dimension of the non-factored and factored operator storage */
     int ld;
 
     /** The \f$p = 1\f$ norm of the factored operator */
@@ -481,10 +486,12 @@ typedef struct suzerain_bsplineop_lu_workspace {
     int *ipiv;
 
     /**
-     * Raw data storage for the factored operator.  Operator is stored
-     * according to BLAS banded matrix conventions according to \c kl, \c ku,
-     * \c ld, and \c n
-     **/
+     * Raw data storage for the non-factored and factored operators.  Operator
+     * is stored according to LAPACK \c GBTRF conventions according to \c kl,
+     * \c ku, \c ld, and \c n.  In particular, this means <tt>A + kl</tt> is
+     * the starting general band storage location for the non-factored
+     * operator.
+     */
     double *A;
 
 } suzerain_bsplineop_lu_workspace;
@@ -621,6 +628,13 @@ suzerain_bsplineop_lu_rcond(
  * derivative operators.  Callers obtain a workspace using
  * suzerain_bsplineop_luz_alloc() and release it using suzerain_bsplineop_luz_free().
  *
+ * As manipulating an non-factored operator is easiest using the non-factored
+ * \c kl and \c ku, and as LAPACK's \c GBTRF and \c GBTRS are written using the
+ * non-factored values of \c kl and \c ku, we do too.  The non-factored
+ * operator uses column-major band storage per <tt>GBTRF</tt>'s \c AB "on
+ * entry" documentation.  After factorization, storage is per <tt>GBTRS</tt>'s
+ * "on entry" documentation.
+ *
  * @see suzerain_bsplineop_lu_workspace for manipulating the real-valued case.
  */
 typedef struct suzerain_bsplineop_luz_workspace {
@@ -628,18 +642,17 @@ typedef struct suzerain_bsplineop_luz_workspace {
     /** Number of degrees of freedom in the basis */
     int n;
 
-    /** Number of subdiagonals in the factored operator. */
+    /** Number of subdiagonals in the non-factored operator. */
     int kl;
 
     /**
-     * Number of superdiagonals in the factored operator.
-     * Note that, for a given B-spline basis, suzerain_bsplineop_luz_workspace::ku
-     * is larger than the corresponding suzerain_bsplineop_workspace::ku
-     * according to the requirements of LAPACK's \c zgbtrf.
+     * Number of superdiagonals in the non-factored operator.  The number of
+     * superdiagonals in the upper triangular portion of the factored operator
+     * is <tt>kl + ku</tt>.
      */
     int ku;
 
-    /** Leading dimension in the factored operator derivative */
+    /** Leading dimension of the non-factored and factored operator storage */
     int ld;
 
     /** The \f$p = 1\f$ norm of the factored operator */
@@ -649,10 +662,12 @@ typedef struct suzerain_bsplineop_luz_workspace {
     int *ipiv;
 
     /**
-     * Raw data storage for the factored operator.  Operator is stored
-     * according to BLAS banded matrix conventions according to \c kl, \c ku,
-     * \c ld, and \c n
-     **/
+     * Raw data storage for the non-factored and factored operators.  Operator
+     * is stored according to LAPACK \c GBTRF conventions according to \c kl,
+     * \c ku, \c ld, and \c n.  In particular, this means <tt>A + kl</tt> is
+     * the starting general band storage location for the non-factored
+     * operator.
+     */
     double (*A)[2];
 
 } suzerain_bsplineop_luz_workspace;
