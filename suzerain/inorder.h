@@ -32,8 +32,8 @@
 
 /** @file
  * Provides utilities for manipulating one dimensional discrete Fourier
- * transform coefficients stored "in-order".  From <a
- * href="http://www.fftw.org/fftw3.3alpha_doc/The-1d-Discrete-Fourier-Transform-_0028DFT_0029.html">FFTW's
+ * transform coefficients stored "in-order".  From
+ * href="http://www.fftw.org/fftw3_doc/One_002dDimensional-DFTs-of-Real-Data.html">FFTW's
  * documentation</a>:
  *     "...the <tt>k</tt>-th output corresponds to the frequency
  *     <tt>k/n</tt> (or <tt>k/T</tt>, where <tt>T</tt> is your total

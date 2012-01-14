@@ -308,7 +308,7 @@ using suzerain::rholt::explicit_div_e_plus_p_u_refcoeff_grad_e;
  * @param grad_m \f$\vec{\nabla}\vec{m}\f$
  * @param e \f$e\f$
  * @param grad_e \f$\vec{\nabla}e\f$
- * @param e \f$p\f$
+ * @param p \f$p\f$
  * @param refcoeff_div_m the reference coefficient
  *        on \f$\vec{\nabla}\cdot\vec{m}\f$ which may
  *        be computed using explicit_div_e_plus_p_u_refcoeff_div_m()

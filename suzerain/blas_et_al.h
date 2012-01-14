@@ -1590,7 +1590,7 @@ suzerain_blasext_sgbdmv_external(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_dgbdmv_external */
+/*! \copydoc suzerain_blasext_sgbdmv_external */
 void
 suzerain_blasext_dgbdmv_external(
         const char trans,
@@ -1730,7 +1730,7 @@ suzerain_blasext_sgbdmv(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_dgbdmv */
+/*! \copydoc suzerain_blasext_sgbdmv */
 void
 suzerain_blasext_dgbdmv(
         const char trans,
@@ -1873,7 +1873,7 @@ suzerain_blasext_sgbddmv_external(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_dgbddmv_external */
+/*! \copydoc suzerain_blasext_sgbddmv_external */
 void
 suzerain_blasext_dgbddmv_external(
         const char trans,
@@ -2028,7 +2028,7 @@ suzerain_blasext_sgbddmv(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_dgbddmv */
+/*! \copydoc suzerain_blasext_sgbddmv */
 void
 suzerain_blasext_dgbddmv(
         const char trans,
@@ -2181,7 +2181,7 @@ suzerain_blasext_sgbidmv_external(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_dgbidmv_external */
+/*! \copydoc suzerain_blasext_sgbidmv_external */
 void
 suzerain_blasext_dgbidmv_external(
         const char trans,
@@ -2329,7 +2329,7 @@ suzerain_blasext_sgbidmv(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_dgbidmv */
+/*! \copydoc suzerain_blasext_sgbidmv */
 void
 suzerain_blasext_dgbidmv(
         const char trans,
@@ -2483,7 +2483,7 @@ suzerain_blasext_sgbdddmv_external(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_dgbdddmv_external */
+/*! \copydoc suzerain_blasext_sgbdddmv_external */
 void
 suzerain_blasext_dgbdddmv_external(
         const char trans,
@@ -2654,7 +2654,7 @@ suzerain_blasext_sgbdddmv(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_dgbdddmv */
+/*! \copydoc suzerain_blasext_sgbdddmv */
 void
 suzerain_blasext_dgbdddmv(
         const char trans,
@@ -2821,7 +2821,7 @@ suzerain_blasext_sgbiddmv_external(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_dgbiddmv_external */
+/*! \copydoc suzerain_blasext_sgbiddmv_external */
 void
 suzerain_blasext_dgbiddmv_external(
         const char trans,
@@ -2985,7 +2985,7 @@ suzerain_blasext_sgbiddmv(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_dgbiddmv */
+/*! \copydoc suzerain_blasext_sgbiddmv */
 void
 suzerain_blasext_dgbiddmv(
         const char trans,

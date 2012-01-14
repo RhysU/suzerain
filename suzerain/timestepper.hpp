@@ -413,7 +413,7 @@ public:
      *
      * @param factor uniform scaling factor to apply.
      * @param delta_t uniform, presumably stable time step to
-     *        always return from ::applyOperator.
+     *        always return from applyOperator().
      */
     template< typename FactorType, typename DeltaTType >
     MultiplicativeOperator(const FactorType& factor, const DeltaTType& delta_t)

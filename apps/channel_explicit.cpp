@@ -158,7 +158,7 @@ static void atexit_esio(void)
 }
 
 /**
- * <tt>atexit</tt> callback to remove the metadata file.  Do \i NOT remove
+ * <tt>atexit</tt> callback to remove the metadata file.  Do \em NOT remove
  * restart.uncommitted as it may help post mortem debugging.
  */
 static void atexit_metadata(void) {
