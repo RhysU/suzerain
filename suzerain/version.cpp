@@ -31,22 +31,27 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <iostream>
+#include <string>
+#include <sstream>
 #include <suzerain/suzerain-revision.h>
-#include "print_version.hpp"
+#include <suzerain/version.hpp>
 
 namespace suzerain {
 
-void print_version(std::ostream &out,
-                   const std::string &application_name,
-                   const std::string &application_version)
+std::string version(const std::string &application_name,
+                    const std::string &application_version)
 {
-    out << application_name;
+    std::ostringstream oss;
+
+    oss << application_name;
     if (!application_version.empty()) {
-        out << ' ' << application_version;
+        oss << ' ' << application_version;
     }
-    out << " written using "
-        << PACKAGE_NAME << ' ' << SUZERAIN_REVISION_STR
+    if (   !application_name.empty()
+        || (application_name.empty() && !application_version.empty())) {
+        oss << " written using ";
+    }
+    oss << PACKAGE_NAME << ' ' << SUZERAIN_REVISION_STR
         << " ("
 #if defined(__INTEL_COMPILER)
         << "Intel "
@@ -57,8 +62,9 @@ void print_version(std::ostream &out,
 #else
         << "unknown compiler"
 #endif
-        << ')'
-        << std::endl;
+        << ')';
+
+    return oss.str();
 }
 
 } // namespace suzerain

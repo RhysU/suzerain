@@ -43,6 +43,7 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/utility.hpp>
+#include <suzerain/version.hpp>
 
 #include "logging.hpp"
 #include "precision.hpp"
@@ -216,7 +217,7 @@ int main(int argc, char **argv)
         std::ostringstream os;
         std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
         INFO0("Invocation: " << os.str());
-        INFO0("Build:      " << revstr);
+        INFO0("Build:      " << suzerain::version("", revstr));
 
         switch (options.verbose()) {
             case 0:                   break;

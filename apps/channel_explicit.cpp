@@ -56,6 +56,7 @@
 #include <suzerain/signal_definition.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/utility.hpp>
+#include <suzerain/version.hpp>
 
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
@@ -862,7 +863,7 @@ int main(int argc, char **argv)
         std::ostringstream os;
         std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
         INFO0("Invocation: " << os.str());
-        INFO0("Build:      " << revstr);
+        INFO0("Build:      " << suzerain::version("", revstr));
 
         switch (options.verbose()) {
             case 0:                   break;

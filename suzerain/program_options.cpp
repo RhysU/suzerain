@@ -35,9 +35,8 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
-#include <suzerain/suzerain-revision.h>
+#include <suzerain/version.hpp>
 #include <libgen.h>
-#include "print_version.hpp"
 
 // Parse Unix-like verbosity flags (http://stackoverflow.com/questions/5486753)
 static std::pair<std::string, std::string> verbosity(const std::string& s)
@@ -195,11 +194,9 @@ std::vector<std::string> suzerain::ProgramOptions::process_internal(
         exit(0);
     }
 
-    // Process --version
+    // Process --version using suzerain::version(...)
     if (variables_.count("version")) {
-        
-
-        suzerain::print_version(info, program_name, application_version_);
+        info << version(program_name, application_version_) << std::endl;
         exit(0);
     }
 

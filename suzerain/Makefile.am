@@ -26,7 +26,6 @@ suzerain-revision.h: $(srcdir)/*
 
 # Implementation-only headers
 noinst_HEADERS += exprparse_impl.hpp
-noinst_HEADERS += print_version.hpp
 
 # Public API headers
 pkginclude_HEADERS += allocator.hpp
@@ -99,6 +98,7 @@ pkginclude_HEADERS += timestepper.hpp
 pkginclude_HEADERS += traits.hpp
 pkginclude_HEADERS += utility.hpp
 pkginclude_HEADERS += validation.hpp
+pkginclude_HEADERS += version.hpp
 
 lib_LTLIBRARIES              += libsuzerain.la
 libsuzerain_la_SOURCES        = blas_et_al.c
@@ -125,7 +125,6 @@ libsuzerain_la_SOURCES       += mpi.cpp
 libsuzerain_la_SOURCES       += os.c
 libsuzerain_la_SOURCES       += pencil_grid.cpp
 libsuzerain_la_SOURCES       += pre_gsl.c
-libsuzerain_la_SOURCES       += print_version.cpp
 libsuzerain_la_SOURCES       += profile.cpp
 libsuzerain_la_SOURCES       += program_options.cpp
 libsuzerain_la_SOURCES       += restart_definition.cpp
@@ -135,6 +134,7 @@ libsuzerain_la_SOURCES       += sbmv.c
 libsuzerain_la_SOURCES       += signal_definition.cpp
 libsuzerain_la_SOURCES       += statistics_definition.cpp
 libsuzerain_la_SOURCES       += svehla.c
+libsuzerain_la_SOURCES       += version.cpp
 EXTRA_libsuzerain_la_SOURCES  = gbdddmv.def
 EXTRA_libsuzerain_la_SOURCES += gbiddmv.def
 EXTRA_libsuzerain_la_SOURCES += gbddmv.def
