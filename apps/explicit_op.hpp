@@ -138,7 +138,15 @@ public:
             suzerain::ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
-            const std::size_t substep_index) const;
+            const std::size_t substep_index) const
+    {
+        // Dispatch to implementation paying nothing for substep-related ifs
+        if (substep_index == 0) {
+            return applyOperator<true >(time, swave, evmaxmag_real, evmaxmag_imag);
+        } else {
+            return applyOperator<false>(time, swave, evmaxmag_real, evmaxmag_imag);
+        }
+    }
 
 protected:
 
@@ -149,6 +157,14 @@ protected:
     const boost::shared_ptr<const channel::manufactured_solution> msoln;
 
 private:
+
+    // Internal implementation of INonlinearOperator::applyOperator logic
+    template< bool zeroth_substep >
+    std::vector<real_t> applyOperator(
+            const real_t time,
+            suzerain::ContiguousState<4,complex_t> &swave,
+            const real_t evmaxmag_real,
+            const real_t evmaxmag_imag) const;
 
     // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
     NonlinearOperator(const NonlinearOperator&);

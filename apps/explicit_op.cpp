@@ -309,12 +309,16 @@ NonlinearOperator::NonlinearOperator(
     // NOP
 }
 
+// Notice that method is templated on being the zeroth substep to avoid runtime
+// costs of "if (zeroth_substep) { ... }" logic and potentially aid the
+// optimizer.  Penalty is code bloat from having two nearly identical versions
+// of the method in the final binary and some extra typename keywords below.
+template< bool zeroth_substep >
 std::vector<real_t> NonlinearOperator::applyOperator(
     const real_t time,
     suzerain::ContiguousState<4,complex_t> &swave,
     const real_t evmaxmag_real,
-    const real_t evmaxmag_imag,
-    const std::size_t substep_index) const
+    const real_t evmaxmag_imag) const
 {
     namespace ndx = channel::field::ndx;
 
@@ -451,9 +455,9 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
-    channel::physical_view<aux::count>::type auxp
+    typename channel::physical_view<aux::count>::type auxp
         = channel::physical_view<aux::count>::create(dgrid, auxw);
-    channel::physical_view<channel::field::count>::type sphys
+    typename channel::physical_view<channel::field::count>::type sphys
         = channel::physical_view<channel::field::count>::create(dgrid, swave);
     for (std::size_t i = 0; i < channel::field::count; ++i) {
         dgrid.transform_wave_to_physical(&sphys(i,0));
@@ -643,7 +647,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                     ;
 
                 // Maintain the minimum observed stable time step, if necessary
-                if (substep_index == 0) {
+                if (zeroth_substep) {
                     namespace timestepper = suzerain::timestepper;
                     // See convective_stability_criterion documentation for
                     // why the magic number 4 modifies one_over_delta_y
