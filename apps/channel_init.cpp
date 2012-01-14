@@ -294,7 +294,7 @@ int main(int argc, char **argv)
 
     INFO0("Initializing B-spline workspaces");
     bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
-    bopluz->form_mass(*bop);
+    bopluz->factor_mass(*bop);
 
     INFO0("Initializing pencil_grid to obtain parallel decomposition details");
     dgrid = make_shared<suzerain::pencil_grid>(grid.dN, grid.P);
@@ -389,7 +389,8 @@ int main(int argc, char **argv)
         // Build FFT normalization constant into Y direction's mass matrix
         suzerain::bsplineop_luz massluz(*bop);
         const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-        massluz.form(1, &scale_factor, *bop);
+        massluz.opform(1, &scale_factor, *bop);
+        massluz.factor();
 
         for (std::size_t i = 0; i < channel::field::count; ++i) {
             dgrid->transform_physical_to_wave(&sphys(i, 0));     // X, Z

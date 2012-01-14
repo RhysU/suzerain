@@ -908,14 +908,17 @@ int main(int argc, char **argv)
     assert(b->k() == grid.k);
     assert(b->n() == grid.N.y());
     bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
-    bopluz->form_mass(*bop);
+    bopluz->factor_mass(*bop);
     gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
     // Compute and display a couple of discretization quality metrics.
     {
         // Temporarily work in real-valued quantities as it is a bit simpler.
         suzerain::bsplineop_lu boplu(*bop);
-        boplu.form_mass(*bop);
+        boplu.opform_mass(*bop);
+        double norm1;
+        boplu.opnorm1(norm1);
+        boplu.factor();
 
         // Compute and display discrete conservation error magnitude
         Eigen::MatrixXXr mat = Eigen::MatrixXXr::Identity(b->n(),b->n());
@@ -933,7 +936,7 @@ int main(int argc, char **argv)
 
         // Compute and display condition number
         double rcond;
-        boplu.rcond(&rcond);
+        boplu.rcond(norm1, rcond);
         INFO0("B-spline mass matrix has condition number near "
               << (1 / rcond));
     }

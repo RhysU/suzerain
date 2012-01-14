@@ -134,6 +134,9 @@ public:
         gsl_bspline_free(bw);
     }
 
+/** @name General inquiry */
+/**@{*/
+
     /** The wrapped GSL B-spline workspace. */
     gsl_bspline_workspace * const bw;
 
@@ -178,6 +181,11 @@ public:
     {
         return gsl_bspline_greville_abscissa(i, bw);
     }
+
+/**@}*/
+
+/** @name Operations */
+/**@{*/
 
     /**
      * @copybrief suzerain_bspline_linear_combination
@@ -249,6 +257,8 @@ public:
                 nderiv, reinterpret_cast<double *>(coeffs),
                 sizeof(Complex)/sizeof(double), db_, bw, dbw);
     }
+
+/**@}*/
 
 private:
     gsl_matrix *db_; /**< Scratch storage for evaluation routines */
@@ -628,44 +638,94 @@ public:
      */
     double * A() { return luw_->A; }
 
+/** @name Operations */
+/**@{*/
+
     /**
-     * @copybrief suzerain_bsplineop_lu_form
-     * @see       suzerain_bsplineop_lu_form
+     * @copybrief suzerain_bsplineop_lu_opaccumulate
+     * @see       suzerain_bsplineop_lu_opaccumulate
      */
-    int form(int ncoefficients,
-             const double * coefficients,
-             const bsplineop &op)
+    int opaccumulate(int ncoefficients,
+                     const double * coefficients,
+                     const bsplineop &op,
+                     const double scale) const
     {
-        return suzerain_bsplineop_lu_form(
-                ncoefficients, coefficients, op.get(), luw_);
+        return suzerain_bsplineop_lu_opaccumulate(
+                ncoefficients, coefficients, op.get(), scale, luw_);
     }
 
     /**
-     * @copybrief suzerain_bsplineop_lu_form_mass
-     * @see       suzerain_bsplineop_lu_form_mass
+     * @copybrief suzerain_bsplineop_lu_opnorm1
+     * @see       suzerain_bsplineop_lu_opnorm1
      */
-    int form_mass(const bsplineop &op)
+    int opnorm1(double &norm1) const
     {
-        return suzerain_bsplineop_lu_form_mass(op.get(), luw_);
+        return suzerain_bsplineop_lu_opnorm1(luw_, &norm1);
     }
 
     /**
-     * @copybrief suzerain_bsplineop_lu_solve
-     * @see       suzerain_bsplineop_lu_solve
+     * @copybrief suzerain_bsplineop_lu_factor
+     * @see       suzerain_bsplineop_lu_factor
      */
-    int solve(int nrhs, double *b, int incb, int ldb) const
+    int factor()
     {
-        return suzerain_bsplineop_lu_solve(nrhs, b, incb, ldb, luw_);
+        return suzerain_bsplineop_lu_factor(luw_);
     }
 
     /**
      * @copybrief suzerain_bsplineop_lu_rcond
      * @see       suzerain_bsplineop_lu_rcond
      */
-    int rcond(double *rcond) const
+    int rcond(const double norm1, double &rcond) const
     {
-        return suzerain_bsplineop_lu_rcond(rcond, luw_);
+        return suzerain_bsplineop_lu_rcond(norm1, &rcond, luw_);
     }
+
+    /**
+     * @copybrief suzerain_bsplineop_lu_solve
+     * @see       suzerain_bsplineop_lu_solve
+     */
+    int solve(int nrhs, double *B, int incb, int ldb) const
+    {
+        return suzerain_bsplineop_lu_solve(nrhs, B, incb, ldb, luw_);
+    }
+
+/**@}*/
+
+/** @name Convenience operations */
+/**@{*/
+
+    /**
+     * @copybrief suzerain_bsplineop_lu_opform
+     * @see       suzerain_bsplineop_lu_opform
+     */
+    int opform(int ncoefficients,
+               const double * coefficients,
+               const bsplineop &op)
+    {
+        return suzerain_bsplineop_lu_opform(
+                ncoefficients, coefficients, op.get(), luw_);
+    }
+
+    /**
+     * @copybrief suzerain_bsplineop_lu_opform_mass
+     * @see       suzerain_bsplineop_lu_opform_mass
+     */
+    int opform_mass(const bsplineop &op)
+    {
+        return suzerain_bsplineop_lu_opform_mass(op.get(), luw_);
+    }
+
+    /**
+     * @copybrief suzerain_bsplineop_lu_factor_mass
+     * @see       suzerain_bsplineop_lu_factor_mass
+     */
+    int factor_mass(const bsplineop &op)
+    {
+        return suzerain_bsplineop_lu_factor_mass(op.get(), luw_);
+    }
+
+/**@}*/
 
 private:
     suzerain_bsplineop_lu_workspace *luw_; /**< The wrapped instance */
@@ -685,6 +745,9 @@ public:
 
     /** @see suzerain_bsplineop_luz_free */
     ~bsplineop_luz() { suzerain_bsplineop_luz_free(luzw_); }
+
+/** @name General inquiry */
+/**@{*/
 
     /** @return The wrapped suzerain_bsplineop_luz_workspace pointer. */
     const suzerain_bsplineop_luz_workspace* get() const { return luzw_; }
@@ -737,30 +800,58 @@ public:
      */
     double (*A())[2] { return luzw_->A; }
 
+/**@}*/
+
+/** @name Operations */
+/**@{*/
+
     /**
-     * @copybrief suzerain_bsplineop_luz_form
-     * @see       suzerain_bsplineop_luz_form
+     * @copybrief suzerain_bsplineop_luz_opaccumulate
+     * @see       suzerain_bsplineop_luz_opaccumulate
      */
-    template< typename Complex >
-    typename boost::enable_if<
-        suzerain::complex::traits::is_complex_double<Complex>, int
-    >::type form(int ncoefficients,
-                 const Complex* coefficients,
-                 const bsplineop &op)
+    template< typename Complex1,
+              typename Complex2 >
+    typename boost::enable_if<boost::mpl::and_<
+        suzerain::complex::traits::is_complex_double<Complex1>,
+        suzerain::complex::traits::is_complex_double<Complex2>
+    >, int>::type opaccumulate(int ncoefficients,
+                               const Complex1* coefficients,
+                               const bsplineop &op,
+                               const Complex2  &scale)
     {
-        return suzerain_bsplineop_luz_form(
+        double tmp[2];
+        suzerain::complex::assign_complex(tmp, scale);
+        return suzerain_bsplineop_luz_opaccumulate(
                 ncoefficients,
                 reinterpret_cast<const double (*)[2]>(coefficients),
-                op.get(), luzw_);
+                op.get(), tmp, luzw_);
     }
 
     /**
-     * @copybrief suzerain_bsplineop_luz_form_mass
-     * @see       suzerain_bsplineop_luz_form_mass
+     * @copybrief suzerain_bsplineop_luz_opnorm1
+     * @see       suzerain_bsplineop_luz_opnorm1
      */
-    int form_mass(const bsplineop &op)
+    int opnorm1(double &norm1) const
     {
-        return suzerain_bsplineop_luz_form_mass(op.get(), luzw_);
+        return suzerain_bsplineop_luz_opnorm1(luzw_, &norm1);
+    }
+
+    /**
+     * @copybrief suzerain_bsplineop_luz_factor
+     * @see       suzerain_bsplineop_luz_factor
+     */
+    int factor()
+    {
+        return suzerain_bsplineop_luz_factor(luzw_);
+    }
+
+    /**
+     * @copybrief suzerain_bsplineop_luz_rcond
+     * @see       suzerain_bsplineop_luz_rcond
+     */
+    int rcond(const double norm1, double &rcond) const
+    {
+        return suzerain_bsplineop_luz_rcond(norm1, &rcond, luzw_);
     }
 
     /**
@@ -770,20 +861,53 @@ public:
     template< typename Complex >
     typename boost::enable_if<
         suzerain::complex::traits::is_complex_double<Complex>, int
-    >::type solve(int nrhs, Complex *b, int incb, int ldb) const
+    >::type solve(int nrhs, Complex *B, int incb, int ldb) const
     {
         return suzerain_bsplineop_luz_solve(
-                nrhs, reinterpret_cast<double (*)[2]>(b), incb, ldb, luzw_);
+                nrhs, reinterpret_cast<double (*)[2]>(B), incb, ldb, luzw_);
+    }
+
+/**@}*/
+
+/** @name Convenience operations */
+/**@{*/
+
+    /**
+     * @copybrief suzerain_bsplineop_luz_opform
+     * @see       suzerain_bsplineop_luz_opform
+     */
+    template< typename Complex >
+    typename boost::enable_if<
+        suzerain::complex::traits::is_complex_double<Complex>, int
+    >::type opform(int ncoefficients,
+                   const Complex* coefficients,
+                   const bsplineop &op)
+    {
+        return suzerain_bsplineop_luz_opform(
+                ncoefficients,
+                reinterpret_cast<const double (*)[2]>(coefficients),
+                op.get(), luzw_);
     }
 
     /**
-     * @copybrief suzerain_bsplineop_luz_rcond
-     * @see       suzerain_bsplineop_luz_rcond
+     * @copybrief suzerain_bsplineop_luz_opform_mass
+     * @see       suzerain_bsplineop_luz_opform_mass
      */
-    int rcond(double *rcond) const
+    int opform_mass(const bsplineop &op)
     {
-        return suzerain_bsplineop_luz_rcond(rcond, luzw_);
+        return suzerain_bsplineop_luz_opform_mass(op.get(), luzw_);
     }
+
+    /**
+     * @copybrief suzerain_bsplineop_luz_factor_mass
+     * @see       suzerain_bsplineop_luz_factor_mass
+     */
+    int factor_mass(const bsplineop &op)
+    {
+        return suzerain_bsplineop_luz_factor_mass(op.get(), luzw_);
+    }
+
+/**@}*/
 
 private:
     suzerain_bsplineop_luz_workspace *luzw_; /**< The wrapped instance */

@@ -203,7 +203,7 @@ suzerain_bsplineop_alloc(
     enum suzerain_bsplineop_method method);
 
 /**
- * Frees a previously allocated workspace.
+ * Free a previously allocated workspace.
  *
  * @param[in] w Workspace to free.
  *
@@ -314,8 +314,9 @@ suzerain_bsplineop_accumulate(
  * @see suzerain_bsplineop_method() for details on available methods.
  *      Different methods will necessarily compute the right hand side
  *      differently.
- * @see suzerain_bsplineop_lu_form_mass() and suzerain_bsplineop_lu_solve()
- *      for how to solve the linear equation for \c x.
+ * @see suzerain_bsplineop_lu_opaccumulate(), suzerain_bsplineop_lu_factor(),
+ *      and suzerain_bsplineop_lu_solve() for how to solve the linear
+ *      equation for \c x.
  * @see suzerain_bsplineop_interpolation_rhs_complex() for a way to
  *      perform this operation for a complex-valued function.
  *
@@ -431,8 +432,9 @@ suzerain_bsplineop_accumulate_complex(
  * @see suzerain_bsplineop_method() for details on available methods.
  *      Different methods will necessarily compute the right hand side
  *      differently.
- * @see suzerain_bsplineop_luz_form_mass() and suzerain_bsplineop_luz_solve()
- *      for how to solve the linear equation for \c x.
+ * @see suzerain_bsplineop_luz_accumulate(), suzerain_bsplineop_luz_factor(),
+ *      and suzerain_bsplineop_luz_solve() for how to solve the linear
+ *      equation for \c x.
  * @see suzerain_bsplineop_interpolation_rhs() for a way to
  *      perform this operation for a real-valued function.
  *
@@ -448,9 +450,10 @@ suzerain_bsplineop_interpolation_rhs_complex(
 /**@}*/
 
 /**
- * Encapsulates the LU decomposition of a real-valued linear combination of
- * derivative operators.  Callers obtain a workspace using
- * suzerain_bsplineop_lu_alloc() and release it using suzerain_bsplineop_lu_free().
+ * Encapsulates an operator and a LU decomposition from a real-valued linear
+ * combination of derivative operators.  Callers obtain a workspace using
+ * suzerain_bsplineop_lu_alloc() and release it using
+ * suzerain_bsplineop_lu_free().
  *
  * As manipulating an non-factored operator is easiest using the non-factored
  * \c kl and \c ku, and as LAPACK's \c GBTRF and \c GBTRS are written using the
@@ -479,9 +482,6 @@ typedef struct suzerain_bsplineop_lu_workspace {
     /** Leading dimension of the non-factored and factored operator storage */
     int ld;
 
-    /** The \f$p = 1\f$ norm of the factored operator */
-    double norm1;
-
     /** Pivot matrix \c P from the \c LUP decomposition of the operator. */
     int *ipiv;
 
@@ -500,13 +500,13 @@ typedef struct suzerain_bsplineop_lu_workspace {
 /**@{*/
 
 /**
- * Allocates a B-spline operator LU workspace.
+ * Allocate a B-spline operator real-valued LU workspace.
  *
  * @param[in] w B-spline workspace on which to base the new workspace's
  *      dimensions.
  *
  * @return a workspace instance ready to be used with
- *      suzerain_bsplineop_lu_form() or suzerain_bsplineop_lu_form_mass().
+ *      suzerain_bsplineop_lu_opform() or suzerain_bsplineop_lu_opform_mass().
  *      On failure calls suzerain_error() and returns NULL.
  *
  * \memberof suzerain_bsplineop_lu_workspace
@@ -516,7 +516,7 @@ suzerain_bsplineop_lu_alloc(
     const suzerain_bsplineop_workspace *w);
 
 /**
- * Frees a previously allocated workspace.
+ * Free a previously allocated workspace.
  *
  * @param[in] luw Workspace to free.
  *
@@ -524,7 +524,7 @@ suzerain_bsplineop_lu_alloc(
  */
 void
 suzerain_bsplineop_lu_free(
-    suzerain_bsplineop_lu_workspace *luw);
+    suzerain_bsplineop_lu_workspace * luw);
 
 /**@}*/
 
@@ -532,18 +532,19 @@ suzerain_bsplineop_lu_free(
 /**@{*/
 
 /**
- * Forms the LU decomposition of a linear combination of derivative operators
- * from the workspace \c w.  That is, \f[
- *  \mbox{luw} \leftarrow \mbox{LU}\left(
- *      \sum_{j=0}^{\mbox{ncoefficients}} \mbox{coefficients}_{j} \, D[j]
- *  \right)
- * \f]
+ * Build an operator by accumulating a linear combination of derivative
+ * operators from the workspace \c w.  That is, \f[
+ *  \mbox{luw} \leftarrow
+ *  \sum_{j=0}^{\mbox{ncoefficients}} \mbox{coefficients}_{j} \, D[j]
+ *  + \mbox{scale} \mbox{luw}
+ * \f].
  *
  * @param[in] ncoefficients Number of coefficients stored in \c coefficients.
  * @param[in] coefficients Coefficients to use in the linear combination of
  *      derivative operators.
  * @param[in] w Workspace containing desired derivative operators.
- * @param[in,out] luw Workspace in which to store the factored operator.
+ * @param[in] scale Scale factor used on the current operator content.
+ * @param[in,out] luw Workspace in which to accumulate the operator.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -551,44 +552,36 @@ suzerain_bsplineop_lu_free(
  * \memberof suzerain_bsplineop_lu_workspace
  */
 int
-suzerain_bsplineop_lu_form(
+suzerain_bsplineop_lu_opaccumulate(
     int ncoefficients,
     const double * coefficients,
     const suzerain_bsplineop_workspace * w,
-    suzerain_bsplineop_lu_workspace *luw);
+    const double scale,
+    suzerain_bsplineop_lu_workspace * luw);
 
 /**
- * Forms the LU decomposition of the zeroth derivative operator, also
- * called the mass matrix, from workspace \c w.
+ * Compute the \f$p = 1\f$ norm of the non-factored operator stored in
+ * \c luw.  That is, find \f$ \left|\left|A\right|\right|_{1} \f$.
  *
- * @param[in] w Workspace containing the desired mass matrix.
- * @param[in,out] luw  Workspace in which to store the factored operator.
+ * \param[in]  luw Workspace containing the operator to investigate.
+ * \param[out] norm1 The one norm of the operator.
  *
- * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
- *
- * @see This is a convenience wrapper function built atop
- *      suzerain_bsplineop_lu_form().
  *
  * \memberof suzerain_bsplineop_lu_workspace
  */
 int
-suzerain_bsplineop_lu_form_mass(
-    const suzerain_bsplineop_workspace * w,
-    suzerain_bsplineop_lu_workspace *luw);
+suzerain_bsplineop_lu_opnorm1(
+    const suzerain_bsplineop_lu_workspace * luw,
+    double *norm1);
 
 /**
- * Solves the equation <tt>A x = b</tt> using the factored operator
- * stored in \c luw.
+ * Factorize the operator in the current workspace.  That is, \f[ \mbox{luw}
+ * \leftarrow \mbox{LU}\left(\mbox{luw}\right) \f].
  *
- * @param[in] nrhs Number of right hand sides, i.e. columns, stored in
- *      matrix \c b.
- * @param[in,out] b Matrix of right hand sides to solve and the resulting
- *      solutions.  On input, contains data \c b.  On output, contains
- *      solutions \c x.
- * @param[in] incb Stride between elements in matrix \c b.
- * @param[in] ldb Leading dimension of matrix \c b.
- * @param[in] luw Workspace containing the factored operator to use.
+ * @param[in,out] luw Workspace containing the desired operator and
+ *      in which to store the factored operator.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -596,18 +589,16 @@ suzerain_bsplineop_lu_form_mass(
  * \memberof suzerain_bsplineop_lu_workspace
  */
 int
-suzerain_bsplineop_lu_solve(
-    int nrhs,
-    double *b,
-    int incb,
-    int ldb,
-    const suzerain_bsplineop_lu_workspace *luw);
+suzerain_bsplineop_lu_factor(
+    suzerain_bsplineop_lu_workspace * luw);
 
 /**
  * Estimate the reciprocal condition number of the factored operator stored in
  * \c luw.  That is, \f$ \left( \left|\left|A\right|\right|_{1}
  * \left|\left|A^{-1}\right|\right|_{1} \right)^{-1} \f$.
  *
+ * \param[in]  norm1 The \f$p=1\f$ norm of the non-factored operator
+ *                   obtained from suzerain_bsplineop_lu_opnorm1().
  * \param[out] rcond The reciprocal of the condition number of the operator.
  * \param[in]  luw Workspace containing the factored operator to investigate.
  *
@@ -618,15 +609,116 @@ suzerain_bsplineop_lu_solve(
  */
 int
 suzerain_bsplineop_lu_rcond(
+    const double norm1,
     double *rcond,
-    const suzerain_bsplineop_lu_workspace *luw);
+    const suzerain_bsplineop_lu_workspace * luw);
+
+/**
+ * Solves the equation <tt>A X = B</tt> using the factored operator
+ * stored in \c luw.
+ *
+ * @param[in] nrhs Number of right hand sides, i.e. columns, stored in
+ *      matrix \c B.
+ * @param[in,out] B Matrix of right hand sides to solve and the resulting
+ *      solutions.  On input, contains data \c B.  On output, contains
+ *      solutions \c X.
+ * @param[in] incb Stride between elements in matrix \c B.
+ * @param[in] ldb Leading dimension of matrix \c B.
+ * @param[in] luw Workspace containing the factored operator to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+int
+suzerain_bsplineop_lu_solve(
+    int nrhs,
+    double *B,
+    int incb,
+    int ldb,
+    const suzerain_bsplineop_lu_workspace * luw);
+
+/**@}*/
+
+/** @name Convenience operations */
+/**@{*/
+
+/**
+ * Form an operator from a linear combination of derivative operators
+ * from the workspace \c w.  That is, \f[
+ *  \mbox{luw} \leftarrow
+ *  \sum_{j=0}^{\mbox{ncoefficients}} \mbox{coefficients}_{j} \, D[j]
+ * \f].
+ *
+ * @param[in] ncoefficients Number of coefficients stored in \c coefficients.
+ * @param[in] coefficients Coefficients to use in the linear combination of
+ *      derivative operators.
+ * @param[in] w Workspace containing desired derivative operators.
+ * @param[in,out] luw Workspace in which to store the factored operator.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see This is a convenience wrapper function built atop
+ *      suzerain_bsplineop_lu_opaccumulate().
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+int
+suzerain_bsplineop_lu_opform(
+    int ncoefficients,
+    const double * coefficients,
+    const suzerain_bsplineop_workspace * w,
+    suzerain_bsplineop_lu_workspace * luw);
+
+/**
+ * Form the zeroth derivative operator from the workspace \c w.
+ * That is, \f[ \mbox{luw} \leftarrow D[0] \f].
+ *
+ * @param[in] w Workspace containing desired derivative operators.
+ * @param[in,out] luw Workspace in which to store the factored operator.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see This is a convenience wrapper function built atop
+ *      suzerain_bsplineop_lu_opaccumulate().
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+int
+suzerain_bsplineop_lu_opform_mass(
+    const suzerain_bsplineop_workspace * w,
+    suzerain_bsplineop_lu_workspace * luw);
+
+/**
+ * Form and factorize the zeroth derivative operator from the workspace \c w.
+ * That is, \f[ \mbox{luw} \leftarrow \mbox{LU}\left(D[0]\right) \f].
+ *
+ * @param[in] w Workspace containing desired derivative operators.
+ * @param[in,out] luw Workspace in which to store the factored operator.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see This is a convenience wrapper function built atop
+ *      suzerain_bsplineop_lu_opaccumulate() and suzerain_bsplineop_lu_factor().
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+int
+suzerain_bsplineop_lu_factor_mass(
+    const suzerain_bsplineop_workspace * w,
+    suzerain_bsplineop_lu_workspace * luw);
 
 /**@}*/
 
 /**
- * Encapsulates the LU decomposition of a complex-valued linear combination of
- * derivative operators.  Callers obtain a workspace using
- * suzerain_bsplineop_luz_alloc() and release it using suzerain_bsplineop_luz_free().
+ * Encapsulates an operator and a LU decomposition from a complex-valued linear
+ * combination of derivative operators.  Callers obtain a workspace using
+ * suzerain_bsplineop_luz_alloc() and release it using
+ * suzerain_bsplineop_luz_free().
  *
  * As manipulating an non-factored operator is easiest using the non-factored
  * \c kl and \c ku, and as LAPACK's \c GBTRF and \c GBTRS are written using the
@@ -655,9 +747,6 @@ typedef struct suzerain_bsplineop_luz_workspace {
     /** Leading dimension of the non-factored and factored operator storage */
     int ld;
 
-    /** The \f$p = 1\f$ norm of the factored operator */
-    double norm1;
-
     /** Pivot matrix \c P from the \c LUP decomposition of the operator. */
     int *ipiv;
 
@@ -676,13 +765,13 @@ typedef struct suzerain_bsplineop_luz_workspace {
 /**@{*/
 
 /**
- * Allocates a B-spline operator LU workspace.
+ * Allocate a B-spline operator LU complex-valued workspace.
  *
  * @param[in] w B-spline workspace on which to base the new workspace's
  *      dimensions.
  *
  * @return a workspace instance ready to be used with
- *      suzerain_bsplineop_luz_form() or suzerain_bsplineop_luz_form_mass().
+ *      suzerain_bsplineop_luz_opform() or suzerain_bsplineop_luz_opform_mass().
  *      On failure calls suzerain_error() and returns NULL.
  *
  * \memberof suzerain_bsplineop_luz_workspace
@@ -692,7 +781,7 @@ suzerain_bsplineop_luz_alloc(
     const suzerain_bsplineop_workspace *w);
 
 /**
- * Frees a previously allocated workspace.
+ * Free a previously allocated workspace.
  *
  * @param[in] luzw Workspace to free.
  *
@@ -700,7 +789,7 @@ suzerain_bsplineop_luz_alloc(
  */
 void
 suzerain_bsplineop_luz_free(
-    suzerain_bsplineop_luz_workspace *luzw);
+    suzerain_bsplineop_luz_workspace * luzw);
 
 /**@}*/
 
@@ -708,18 +797,19 @@ suzerain_bsplineop_luz_free(
 /**@{*/
 
 /**
- * Forms the LU decomposition of a linear combination of derivative operators
- * from the workspace \c w.  That is, \f[
- *  \mbox{luw} \leftarrow \mbox{LU}\left(
- *      \sum_{j=0}^{\mbox{ncoefficients}} \mbox{coefficients}_{j} \, D[j]
- *  \right)
- * \f]
+ * Build an operator by accumulating a linear combination of derivative
+ * operators from the workspace \c w.  That is, \f[
+ *  \mbox{luzw} \leftarrow
+ *  \sum_{j=0}^{\mbox{ncoefficients}} \mbox{coefficients}_{j} \, D[j]
+ *  + \mbox{scale} \mbox{luzw}
+ * \f].
  *
  * @param[in] ncoefficients Number of coefficients stored in \c coefficients.
  * @param[in] coefficients Coefficients to use in the linear combination of
  *      derivative operators.
  * @param[in] w Workspace containing desired derivative operators.
- * @param[in,out] luzw Workspace in which to store the factored operator.
+ * @param[in] scale Scale factor used on the current operator content.
+ * @param[in,out] luzw Workspace in which to accumulate the operator.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -727,44 +817,36 @@ suzerain_bsplineop_luz_free(
  * \memberof suzerain_bsplineop_luz_workspace
  */
 int
-suzerain_bsplineop_luz_form(
+suzerain_bsplineop_luz_opaccumulate(
     int ncoefficients,
     const double (*coefficients)[2],
     const suzerain_bsplineop_workspace * w,
-    suzerain_bsplineop_luz_workspace *luzw);
+    const double scale[2],
+    suzerain_bsplineop_luz_workspace * luzw);
 
 /**
- * Forms the LU decomposition of the zeroth derivative operator, also
- * called the mass matrix, from workspace \c w.
+ * Compute the \f$p = 1\f$ norm of the non-factored operator stored in
+ * \c luzw.  That is, find \f$ \left|\left|A\right|\right|_{1} \f$.
  *
- * @param[in] w Workspace containing the desired mass matrix.
- * @param[in,out] luzw Workspace in which to store the factored operator.
+ * \param[in]  luzw Workspace containing the operator to investigate.
+ * \param[out] norm1 The one norm of the operator.
  *
- * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
- *
- * @see This is a convenience wrapper function built atop
- *      suzerain_bsplineop_luz_form().
  *
  * \memberof suzerain_bsplineop_luz_workspace
  */
 int
-suzerain_bsplineop_luz_form_mass(
-    const suzerain_bsplineop_workspace * w,
-    suzerain_bsplineop_luz_workspace *luzw);
+suzerain_bsplineop_luz_opnorm1(
+    const suzerain_bsplineop_luz_workspace * luzw,
+    double *norm1);
 
 /**
- * Solves the equation <tt>A x = b</tt> using the factored operator
- * stored in \c luzw.
+ * Factorize the operator in the current workspace.  That is, \f[ \mbox{luzw}
+ * \leftarrow \mbox{LU}\left(\mbox{luzw}\right) \f].
  *
- * @param[in] nrhs Number of right hand sides, i.e. columns, stored in
- *      matrix \c b.
- * @param[in,out] b Matrix of right hand sides to solve and the resulting
- *      solutions.  On input, contains data \c b.  On output, contains
- *      solutions \c x.
- * @param[in] incb Stride between elements in matrix \c b.
- * @param[in] ldb  Leading dimension of matrix \c b.
- * @param[in] luzw Workspace containing the factored operator to use.
+ * @param[in,out] luzw Workspace containing the desired operator and
+ *      in which to store the factored operator.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -772,18 +854,16 @@ suzerain_bsplineop_luz_form_mass(
  * \memberof suzerain_bsplineop_luz_workspace
  */
 int
-suzerain_bsplineop_luz_solve(
-    int nrhs,
-    double (*b)[2],
-    int incb,
-    int ldb,
-    const suzerain_bsplineop_luz_workspace *luzw);
+suzerain_bsplineop_luz_factor(
+    suzerain_bsplineop_luz_workspace * luzw);
 
 /**
  * Estimate the reciprocal condition number of the factored operator stored in
  * \c luzw.  That is, \f$ \left( \left|\left|A\right|\right|_{1}
  * \left|\left|A^{-1}\right|\right|_{1} \right)^{-1} \f$.
  *
+ * \param[in]  norm1 The \f$p=1\f$ norm of the non-factored operator
+ *                   obtained from suzerain_bsplineop_luz_norm1().
  * \param[out] rcond The reciprocal of the condition number of the operator.
  * \param[in]  luzw Workspace containing the factored operator to investigate.
  *
@@ -794,8 +874,109 @@ suzerain_bsplineop_luz_solve(
  */
 int
 suzerain_bsplineop_luz_rcond(
+    const double norm1,
     double *rcond,
-    const suzerain_bsplineop_luz_workspace *luzw);
+    const suzerain_bsplineop_luz_workspace * luzw);
+
+/**
+ * Solves the equation <tt>A X = B</tt> using the factored operator
+ * stored in \c luzw.
+ *
+ * @param[in] nrhs Number of right hand sides, i.e. columns, stored in
+ *      matrix \c B.
+ * @param[in,out] B Matrix of right hand sides to solve and the resulting
+ *      solutions.  On input, contains data \c B.  On output, contains
+ *      solutions \c X.
+ * @param[in] incb Stride between elements in matrix \c B.
+ * @param[in] ldb  Leading dimension of matrix \c B.
+ * @param[in] luzw Workspace containing the factored operator to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_bsplineop_luz_workspace
+ */
+int
+suzerain_bsplineop_luz_solve(
+    int nrhs,
+    double (*B)[2],
+    int incb,
+    int ldb,
+    const suzerain_bsplineop_luz_workspace * luzw);
+
+/**@}*/
+
+/** @name Convenience operations */
+/**@{*/
+
+/**
+ * Form an operator from a linear combination of derivative operators
+ * from the workspace \c w.  That is, \f[
+ *  \mbox{luzw} \leftarrow
+ *  \sum_{j=0}^{\mbox{ncoefficients}} \mbox{coefficients}_{j} \, D[j]
+ * \f].
+ *
+ * @param[in] ncoefficients Number of coefficients stored in \c coefficients.
+ * @param[in] coefficients Coefficients to use in the linear combination of
+ *      derivative operators.
+ * @param[in] w Workspace containing desired derivative operators.
+ * @param[in,out] luzw Workspace in which to store the factored operator.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see This is a convenience wrapper function built atop
+ *      suzerain_bsplineop_luz_opaccumulate().
+ *
+ * \memberof suzerain_bsplineop_luz_workspace
+ */
+int
+suzerain_bsplineop_luz_opform(
+    int ncoefficients,
+    const double (*coefficients)[2],
+    const suzerain_bsplineop_workspace * w,
+    suzerain_bsplineop_luz_workspace * luzw);
+
+/**
+ * Form the zeroth derivative operator from the workspace \c w.
+ * That is, \f[ \mbox{luzw} \leftarrow D[0] \f].
+ *
+ * @param[in] w Workspace containing desired derivative operators.
+ * @param[in,out] luzw Workspace in which to store the factored operator.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see This is a convenience wrapper function built atop
+ *      suzerain_bsplineop_luz_opaccumulate().
+ *
+ * \memberof suzerain_bsplineop_luz_workspace
+ */
+int
+suzerain_bsplineop_luz_opform_mass(
+    const suzerain_bsplineop_workspace * w,
+    suzerain_bsplineop_luz_workspace * luzw);
+
+/**
+ * Form and factorize the zeroth derivative operator from the workspace \c w.
+ * That is, \f[ \mbox{luw} \leftarrow \mbox{LU}\left(D[0]\right) \f].
+ *
+ * @param[in] w Workspace containing desired derivative operators.
+ * @param[in,out] luzw Workspace in which to store the factored operator.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * @see This is a convenience wrapper function built atop
+ *      suzerain_bsplineop_luz_opaccumulate()
+ *      and suzerain_bsplineop_luz_factor().
+ *
+ * \memberof suzerain_bsplineop_lu_workspace
+ */
+int
+suzerain_bsplineop_luz_factor_mass(
+    const suzerain_bsplineop_workspace * w,
+    suzerain_bsplineop_luz_workspace * luzw);
 
 /**@}*/
 

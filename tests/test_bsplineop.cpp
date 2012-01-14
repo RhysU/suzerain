@@ -257,7 +257,17 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
                                          0,      -3,   5,         0.6,
                                          0,      -3,   0.8, /*DK*/0    };
         const double coeff[] = { 2.0, -3.0, 999.0 };
-        lu.form(sizeof(coeff)/sizeof(coeff[0]), coeff, op);
+        lu.opform(sizeof(coeff)/sizeof(coeff[0]), coeff, op);
+
+        // Factorize, checking the norm and conditioning are sane
+        double norm1 = -123, rcond = -456;
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.opnorm1(norm1));
+        BOOST_CHECK_GT(norm1, 0.0);
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.factor());
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.rcond(norm1, rcond));
+        BOOST_CHECK_GT(rcond, 0.0);
+        BOOST_CHECK_LE(rcond, 1.0);
+
         CHECK_GBMATRIX_CLOSE(
                  4,      4,      1,                2, good_A0,       4,
             lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(),  lu.A(), lu.ld(),
@@ -278,6 +288,7 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
         };
         const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
         const int incb = 2;
+
         lu.solve(nrhs, b, incb, ldb);
         check_close_collections(
             b_good,
@@ -285,15 +296,6 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
             b,
             b + sizeof(b)/sizeof(b[0]),
             std::numeric_limits<double>::epsilon()*1000);
-    }
-
-    /* Provide the most minor of sanity checks on condition number computation */
-    // TODO Check the approximate value
-    {
-        double rcond = -555;
-        lu.rcond(&rcond);
-        BOOST_CHECK_GT(rcond, 0.0);
-        BOOST_CHECK_LE(rcond, 1.0);
     }
 
     /***********************************/
@@ -332,7 +334,17 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
                   {0,0},       {9,-8}, {25./74.,-109./74.}, /*DK*/{0,0}
         };
         const double coeff[][2] = {{2.0, -3.0}, {7.0, -5.0}, {999.0, -999.0}};
-        luz.form(sizeof(coeff)/sizeof(coeff[0]), coeff, op);
+        luz.opform(sizeof(coeff)/sizeof(coeff[0]), coeff, op);
+
+        // Factorize, checking the norm and conditioning are sane
+        double norm1 = -123, rcond = -456;
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, luz.opnorm1(norm1));
+        BOOST_CHECK_GT(norm1, 0.0);
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, luz.factor());
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, luz.rcond(norm1, rcond));
+        BOOST_CHECK_GT(rcond, 0.0);
+        BOOST_CHECK_LE(rcond, 1.0);
+
         CHECK_GBMATRIX_CLOSE(
                  4,        4,        1,                 2,  good_A0,        4,
             luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(),  luz.A(), luz.ld(),
@@ -405,15 +417,6 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
             b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
             b, b + sizeof(b)/sizeof(b[0]),
             1.0e-5);
-    }
-
-    /* Provide the most minor of sanity checks on condition number computation */
-    // TODO Check the approximate value
-    {
-        double rcond = -555;
-        luz.rcond(&rcond);
-        BOOST_CHECK_GT(rcond, 0.0);
-        BOOST_CHECK_LE(rcond, 1.0);
     }
 }
 
@@ -1241,9 +1244,9 @@ BOOST_AUTO_TEST_CASE( derivatives_of_a_piecewise_cubic_representation )
     p->n = 4;
     suzerain_function f = {poly_f, p};
 
-    // Form the mass matrix M
+    // Form and factorize the mass matrix M
     bsplineop_lu mass(op);
-    mass.form_mass(op);
+    mass.factor_mass(op);
 
     {
         const int derivative = 1;
@@ -1417,7 +1420,7 @@ void real_polynomial_interpolation(const int k,
     bspline b(k, bspline::from_breakpoints(), nbreak, breakpts);
     bsplineop op(b, k, method);
     bsplineop_lu mass(op);
-    mass.form_mass(op);
+    mass.factor_mass(op);
     const int ndof = b.n();
 
     // Initialize polynomial test function which we should recapture exactly
@@ -1534,3 +1537,234 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
         }
     }
 }
+
+struct RealMassFixture {
+
+    static const double breakpts[10]; // Init just below
+    bspline      b;
+    bsplineop    op;
+    bsplineop_lu lu;
+    bsplineop_lu t;
+
+    RealMassFixture()
+        : b(7, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts),
+          op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE),
+          lu(op),
+          t(op)
+    { lu.factor_mass(op); }
+
+};
+
+const double RealMassFixture::breakpts[10] = {
+    0.0, 0.5, 1.0, 3.0, 3.3, 7.0, 12.0, 12.5, 14.0, 15.0
+};
+
+// Tests for consistency among ways we might acquire just a mass matrix
+BOOST_FIXTURE_TEST_SUITE( opaccumulate_real, RealMassFixture )
+
+static const double zero = 0.0;
+static const double half = 0.5;
+static const double one  = 1.0;
+
+BOOST_AUTO_TEST_CASE( form_mass )
+{
+    t.opform_mass(op);
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
+BOOST_AUTO_TEST_CASE( form )
+{
+    t.opform(1, &one, op);
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
+BOOST_AUTO_TEST_CASE( opaccumulate_simple )
+{
+    t.opaccumulate(1, &one, op, zero);
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
+BOOST_AUTO_TEST_CASE( opaccumulate_simple_twice )
+{
+    t.opaccumulate(1, &half, op, zero);
+    t.opaccumulate(1, &half, op, one);
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
+BOOST_AUTO_TEST_CASE( opaccumulate_scale )
+{
+    t.opaccumulate(1, &half, op, zero);
+    t.opaccumulate(0, NULL,  op, 2.0); // Scaling operation
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
+BOOST_AUTO_TEST_CASE( opaccumulate_repeated )
+{
+    // Accumulate our way to a mass matrix
+    { double c[3] = { 5,  6,  4 }; t.opaccumulate(3, c, op, one ); }
+    { double c[3] = { 0, -2, 14 }; t.opaccumulate(3, c, op, zero); } // 0!
+    { double c[3] = { 2,  0,  0 }; t.opaccumulate(3, c, op, one ); }
+    { double c[3] = { 0,  1, -7 }; t.opaccumulate(3, c, op, half); }
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        std::numeric_limits<double>::epsilon()*1000000);
+
+    // Accumulate our way to a mass matrix one more time
+    { double c[3] = { 0,  4, -8 }; t.opaccumulate(3, c, op, zero); } // 0!
+    { double c[3] = { 2,  0,  0 }; t.opaccumulate(3, c, op, one ); }
+    { double c[3] = { 0, -2,  4 }; t.opaccumulate(3, c, op, half); }
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        std::numeric_limits<double>::epsilon()*1000000);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+struct ComplexMassFixture {
+
+    static const double breakpts[10]; // Init just below
+    bspline       b;
+    bsplineop     op;
+    bsplineop_luz luz;
+    bsplineop_luz t;
+
+    ComplexMassFixture()
+        : b(7, bspline::from_breakpoints(), COUNTOF(breakpts), breakpts),
+          op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE),
+          luz(op),
+          t(op)
+    { luz.factor_mass(op); }
+
+};
+
+const double ComplexMassFixture::breakpts[10] = {
+    0.0, 0.5, 1.0, 3.0, 3.3, 7.0, 12.0, 12.5, 14.0, 15.0
+};
+
+// Tests for consistency among ways we might acquire just a mass matrix
+BOOST_FIXTURE_TEST_SUITE( opaccumulate_complex, ComplexMassFixture )
+
+static const double zero[2] = { 0.0, 0.0 };
+static const double half[2] = { 0.5, 0.0 };
+static const double one[2]  = { 1.0, 0.0 };
+
+BOOST_AUTO_TEST_CASE( form_mass )
+{
+    t.opform_mass(op);
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
+BOOST_AUTO_TEST_CASE( form )
+{
+    t.opform(1, &one, op);
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
+BOOST_AUTO_TEST_CASE( opaccumulate_simple )
+{
+    t.opaccumulate(1, &one, op, zero);
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
+BOOST_AUTO_TEST_CASE( opaccumulate_simple_twice )
+{
+    t.opaccumulate(1, &half, op, zero);
+    t.opaccumulate(1, &half, op, one);
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
+BOOST_AUTO_TEST_CASE( opaccumulate_scale )
+{
+    const double coeff[2] = { 0.08, 0.04 };
+    const double scale[2] = { 10.0, -5.0 };
+    const double (*my_null)[2] = NULL; // Proper type required
+
+    t.opaccumulate(1, &coeff,  op, zero);
+    t.opaccumulate(0, my_null, op, scale); // Scaling operation
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        std::numeric_limits<double>::epsilon()*1000);
+}
+
+BOOST_AUTO_TEST_CASE( opaccumulate_repeated )
+{
+    // Accumulate our way to a mass matrix
+    { double c[3][2] = { {5,0}, { 6,0}, { 4,0} }; t.opaccumulate(3, c, op, one ); }
+    { double c[3][2] = { {0,0}, {-2,0}, {14,0} }; t.opaccumulate(3, c, op, zero); } // 0!
+    { double c[3][2] = { {2,0}, { 0,0}, { 0,0} }; t.opaccumulate(3, c, op, one ); }
+    { double c[3][2] = { {0,0}, { 1,0}, {-7,0} }; t.opaccumulate(3, c, op, half); }
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        std::numeric_limits<double>::epsilon()*1000000);
+
+    // Accumulate our way to a mass matrix a second time using imag higher derivs
+    { double c[3][2] = { {0,0}, {0,-2}, {0,14} }; t.opaccumulate(3, c, op, zero); } // 0!
+    { double c[3][2] = { {2,0}, {0, 0}, {0, 0} }; t.opaccumulate(3, c, op, one ); }
+    { double c[3][2] = { {0,0}, {0, 1}, {0,-7} }; t.opaccumulate(3, c, op, half); }
+    t.factor();
+
+    CHECK_GBMATRIX_CLOSE(
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        std::numeric_limits<double>::epsilon()*1000000);
+
+}
+
+BOOST_AUTO_TEST_SUITE_END()

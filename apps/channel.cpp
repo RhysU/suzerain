@@ -1132,7 +1132,7 @@ void load_coefficients(const esio_handle h,
         }};
         tmp.reset(new tmp_type(extent, boost::fortran_storage_order()));
         mass.reset(new suzerain::bsplineop_luz(bop));
-        mass->form_mass(bop);
+        mass->factor_mass(bop);
     }
 
     // Load each scalar field in turn
@@ -1420,7 +1420,8 @@ void load_collocation_values(
     // Build FFT normalization constant into Y direction's mass matrix
     suzerain::bsplineop_luz massluz(bop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-    massluz.form(1, &scale_factor, bop);
+    massluz.opform(1, &scale_factor, bop);
+    massluz.factor();
 
     for (size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys(i, 0)); // X, Z
@@ -1653,7 +1654,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     // Form mass matrix to convert (wave, collocation point values, wave)
     // perturbations to (wave, coefficients, wave)
     suzerain::bsplineop_luz massluz(bop);
-    massluz.form_mass(bop);
+    massluz.factor_mass(bop);
 
     // Set L'Ecuyer et al.'s RngStream seed.  Use a distinct Substream for each
     // wall-normal pencil to ensure process is a) repeatable despite changes in
@@ -1910,7 +1911,8 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     //  8) Bring perturbed state information back to wavespace.
     // Build FFT normalization constant into Y direction's mass matrix.
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-    massluz.form(1, &scale_factor, bop);
+    massluz.opform(1, &scale_factor, bop);
+    massluz.factor();
     assert(field::ndx::rho == 0);
     assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::rhou);
     for (size_t i = field::ndx::rhou; i < field::count; ++i) {
@@ -2115,7 +2117,8 @@ void accumulate_manufactured_solution(
     // building FFT normalization constant into Y direction's mass matrix.
     suzerain::bsplineop_luz massluz(bop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-    massluz.form(1, &scale_factor, bop);
+    massluz.opform(1, &scale_factor, bop);
+    massluz.factor();
     for (size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys(i, 0));      // X, Z
         obase.bop_solve(massluz, swave, i);                  // Y
@@ -2478,7 +2481,8 @@ mean sample_mean_quantities(
     const real_t scale_factor = dgrid.global_physical_extent.x()
                               * dgrid.global_physical_extent.z();
     suzerain::bsplineop_lu scaled_mass(bop);
-    scaled_mass.form(1, &scale_factor, bop);
+    scaled_mass.opform(1, &scale_factor, bop);
+    scaled_mass.factor();
     scaled_mass.solve(mean::nscalars::physical,
             ret.storage.middleCols<mean::nscalars::physical>(
                 mean::nscalars::wave).data(),

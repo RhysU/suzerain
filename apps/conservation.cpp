@@ -103,7 +103,7 @@ int main(int argc, char **argv)
         channel::create(N, k, 0.0, L, htdelta, b, bop);
         b->integration_coefficients(0, vec.data());
         boplu = boost::make_shared<suzerain::bsplineop_lu>(*bop);
-        boplu->form_mass(*bop);
+        boplu->factor_mass(*bop);
 
         mat = Eigen::MatrixXXr::Identity(N,N);
         boplu->solve(N, mat.data(), 1, N);

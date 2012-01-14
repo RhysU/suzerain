@@ -583,7 +583,7 @@ static quantity::storage_map_type process(
     // Compute factorized mass matrix
     shared_ptr<suzerain::bsplineop_lu> boplu
         = make_shared<suzerain::bsplineop_lu>(*bop.get());
-    boplu->form_mass(*bop.get());
+    boplu->factor_mass(*bop.get());
 
     // Load samples as coefficients
     auto_ptr<channel::mean> m(new channel::mean(time, b->n()));

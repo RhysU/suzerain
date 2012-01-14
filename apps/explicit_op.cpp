@@ -63,7 +63,7 @@ BsplineMassOperator::BsplineMassOperator(
     SUZERAIN_UNUSED(dgrid);
     SUZERAIN_UNUSED(b);
 
-    massluz.form_mass(bop);
+    massluz.factor_mass(bop);
 }
 
 void BsplineMassOperator::applyMassPlusScaledOperator(
