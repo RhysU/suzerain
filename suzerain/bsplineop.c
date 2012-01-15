@@ -47,7 +47,7 @@
 #include <suzerain/gbmatrix.h>
 #include <suzerain/pre_gsl.h>
 
-// Some operators are symmetric and allow using SBMV instead of GBMV
+// Some operators are symmetric and allow slightly optimized handling
 static inline
 int is_symmetric(const int nderiv, const suzerain_bsplineop_workspace *w)
 {
@@ -265,19 +265,13 @@ suzerain_bsplineop_accumulate(
         SUZERAIN_ERROR("x == y not allowed", SUZERAIN_EINVAL);
     }
 
-    const int use_sbmv = is_symmetric(nderiv, w);
+    // The operation y = alpha*A**T*x + beta*y accesses y in stride one pass
+    // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
+    const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
-        const double * const  x_j = x + j*ldx;
-        double       * const  y_j = y + j*ldy;
-        if (SUZERAIN_UNLIKELY(use_sbmv)) {
-            suzerain_blas_dsbmv('U', w->n, w->ku[nderiv],
-                                alpha, w->D[nderiv], w->ld, x_j, incx,
-                                beta, y_j, incy);
-        } else {
-            suzerain_blas_dgbmv('N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                                alpha, w->D[nderiv], w->ld, x_j, incx,
-                                beta, y_j, incy);
-        }
+        suzerain_blas_dgbmv(trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                            alpha, w->D[nderiv], w->ld, x + j*ldx, incx,
+                            beta,                       y + j*ldy, incy);
     }
 
     return SUZERAIN_SUCCESS;
@@ -312,21 +306,14 @@ suzerain_bsplineop_accumulate_complex(
         SUZERAIN_ERROR("x == y not allowed", SUZERAIN_EINVAL);
     }
 
-    const int use_sbmzv = is_symmetric(nderiv, w);
+    // The operation y = alpha*A**T*x + beta*y accesses y in stride one pass
+    // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
+    const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
-        const double (*const x_j)[2] = x + j*ldx;
-        double       (*const y_j)[2] = y + j*ldy;
-        if (SUZERAIN_UNLIKELY(use_sbmzv)) {
-            suzerain_blasext_dsbmzv(
-                    'U', w->n, w->ku[nderiv],
-                    alpha, w->D[nderiv], w->ld, x_j, incx,
-                    beta, y_j, incy);
-        } else {
-            suzerain_blasext_dgbmzv(
-                    'N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                    alpha, w->D[nderiv], w->ld, x_j, incx,
-                    beta, y_j, incy);
-        }
+        suzerain_blasext_dgbmzv(
+                trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                alpha, w->D[nderiv], w->ld, x + j*ldx, incx,
+                beta,                       y + j*ldy, incy);
     }
 
     return SUZERAIN_SUCCESS;
@@ -359,22 +346,16 @@ suzerain_bsplineop_apply(
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
     }
 
-    const int use_sbmv = is_symmetric(nderiv, w);
+    // The operation y = alpha*A**T*x + beta*y accesses x in stride one pass
+    // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
+    const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
         double * const x_j = x + j*ldx;
         /* Compute x_j := w->D[nderiv]*x_j */
         suzerain_blas_dcopy(w->n, x_j, incx, scratch, incscratch);
-        if (SUZERAIN_UNLIKELY(use_sbmv)) {
-            suzerain_blas_dsbmv(
-                    'U', w->n, w->ku[nderiv],
-                    alpha, w->D[nderiv], w->ld, scratch, incscratch,
-                    0.0, x_j, incx);
-        } else {
-            suzerain_blas_dgbmv(
-                    'N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                    alpha, w->D[nderiv], w->ld, scratch, incscratch,
-                    0.0, x_j, incx);
-        }
+        suzerain_blas_dgbmv(trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                            alpha, w->D[nderiv], w->ld, scratch, incscratch,
+                            0.0,                        x_j,     incx);
     }
 
     suzerain_blas_free(scratch);
@@ -408,24 +389,19 @@ suzerain_bsplineop_apply_complex(
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
     }
 
-    const int use_sbmv = is_symmetric(nderiv, w);
+    // The operation y = alpha*A**T*x + beta*y accesses y in stride one pass
+    // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
+    const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
         double (*const x_j)[2] = x + j*ldx;
         /* Compute x_j := w->D[nderiv]*x_j for real/imaginary parts */
         for (int i = 0; i < 2; ++i) {
             suzerain_blas_dcopy(
                     w->n, &(x_j[0][i]), 2*incx, scratch, incscratch);
-            if (SUZERAIN_UNLIKELY(use_sbmv)) {
-                suzerain_blas_dsbmv(
-                        'U', w->n, w->ku[nderiv],
-                        alpha, w->D[nderiv], w->ld, scratch, incscratch,
-                        0.0, &(x_j[0][i]), 2*incx);
-            } else {
-                suzerain_blas_dgbmv(
-                        'N', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                        alpha, w->D[nderiv], w->ld, scratch, incscratch,
-                        0.0, &(x_j[0][i]), 2*incx);
-            }
+            suzerain_blas_dgbmv(
+                    trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                    alpha, w->D[nderiv], w->ld, scratch,      incscratch,
+                    0.0,                        &(x_j[0][i]), 2*incx);
         }
     }
 
