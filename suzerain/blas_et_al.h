@@ -3244,6 +3244,193 @@ suzerain_blasext_dsbmzv(
         const int incy);
 
 /*!
+ * \brief Compute \f$ B \leftarrow{} \alpha{} A D + \beta{}B \f$
+ * for general \f$A\f$, diagonal \f$D\f$, and general \f$B\f$.
+ *
+ * Matrices \f$ A \f$ and \f$ B \f$ both have general storage.
+ * All three matrices may be generally strided.  The operation and
+ * interface differs from the BLAS' ge_diag_scale_acc.
+ *
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of matrix \f$ D\f$.
+ * \param kl Number of subdiagonals in band storage of \c a and \c b.
+ * \param ku Number of superdiagonals in band storage of \c a and \c b.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param a General band storage of the matrix \f$ A \f$.
+ * \param inca Strictly positive stride between values in \c a.
+ * \param lda Leading dimension of \c a.
+ * \param d Diagonal storage of matrix \f$ D \f$.
+ * \param incd Nonnegative between diagonal entries in \c d.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param b General band storage of the matrix \f$ B \f$.
+ * \param incb Strictly positive stride between values in \c b.
+ * \param ldb Leading dimension of \c b.
+ *
+ * \see A BLAS reference for general band storage matrix requirements.
+ */
+void
+suzerain_blasext_sge_diag_scale_acc(
+        const int m,
+        const int n,
+        const float alpha,
+        const float *a,
+        const int inca,
+        const int lda,
+        const float *d,
+        const int incd,
+        const float beta,
+        float *b,
+        const int incb,
+        const int ldb);
+
+/*! \copydoc suzerain_blasext_sge_acc */
+void
+suzerain_blas_dge_diag_scale_acc(
+        const int m,
+        const int n,
+        const double alpha,
+        const double *a,
+        const int inca,
+        const int lda,
+        const double *d,
+        const int incd,
+        const double beta,
+        double *b,
+        const int incb,
+        const int ldb);
+
+/*! \copydoc suzerain_blasext_sge_acc */
+void
+suzerain_blasext_cge_diag_scale_acc(
+        const int m,
+        const int n,
+        const float alpha[2],
+        const float (*a)[2],
+        const int inca,
+        const int lda,
+        const float (*d)[2],
+        const int incd,
+        const float beta[2],
+        float (*b)[2],
+        const int incb,
+        const int ldb);
+
+/*! \copydoc suzerain_blasext_sge_acc */
+void
+suzerain_blasext_zge_diag_scale_acc(
+        const int m,
+        const int n,
+        const double alpha[2],
+        const double (*a)[2],
+        const int inca,
+        const int lda,
+        const double (*d)[2],
+        const int incd,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb);
+
+/*!
+ * \brief Compute \f$ B \leftarrow{} \alpha{} A D + \beta{}B \f$
+ * for banded \f$A\f$, diagonal \f$D\f$, and banded \f$B\f$.
+ *
+ * Matrices \f$ A \f$ and \f$ B \f$ both have band storage and must have the
+ * same shape and same number of super- and subdiagonals.  All three matrices
+ * may be generally strided.  The operation and interface differs from the 
+ * BLAS' ge_diag_scale_acc.
+ *
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of matrix \f$ D\f$.
+ * \param kl Number of subdiagonals in band storage of \c a and \c b.
+ * \param ku Number of superdiagonals in band storage of \c a and \c b.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param a General band storage of the matrix \f$ A \f$.
+ * \param inca Strictly positive stride between values in \c a.
+ * \param lda Leading dimension of \c a.
+ * \param d Diagonal storage of matrix \f$ D \f$.
+ * \param incd Nonnegative stride between diagonal entries in \c d.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param b General band storage of the matrix \f$ B \f$.
+ * \param incb Strictly positive stride between values in \c b.
+ * \param ldb Leading dimension of \c b.
+ *
+ * \see A BLAS reference for general band storage matrix requirements.
+ */
+void
+suzerain_blasext_sgb_diag_scale_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha,
+        const float *a,
+        const int inca,
+        const int lda,
+        const float *d,
+        const int incd,
+        const float beta,
+        float *b,
+        const int incb,
+        const int ldb);
+
+/*! \copydoc suzerain_blasext_sgb_acc */
+void
+suzerain_blas_dgb_diag_scale_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha,
+        const double *a,
+        const int inca,
+        const int lda,
+        const double *d,
+        const int incd,
+        const double beta,
+        double *b,
+        const int incb,
+        const int ldb);
+
+/*! \copydoc suzerain_blasext_sgb_acc */
+void
+suzerain_blasext_cgb_diag_scale_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha[2],
+        const float (*a)[2],
+        const int inca,
+        const int lda,
+        const float (*d)[2],
+        const int incd,
+        const float beta[2],
+        float (*b)[2],
+        const int incb,
+        const int ldb);
+
+/*! \copydoc suzerain_blasext_sgb_acc */
+void
+suzerain_blasext_zgb_diag_scale_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double (*a)[2],
+        const int inca,
+        const int lda,
+        const double (*d)[2],
+        const int incd,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb);
+
+/*!
  * \brief Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using where
  * \f$B\f$, \f$\alpha\f$, and \f$\beta\f$ are complex-valued and \f$A\f$ is
  * real-valued.  Real-valued strides are in units of <tt>double</tt> while
