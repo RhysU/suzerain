@@ -3036,7 +3036,9 @@ suzerain_blasext_sge_diag_scale_acc(
         const int incb,
         const int ldb)
 {
-    if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
+    if (SUZERAIN_UNLIKELY(inca < 1)) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd  < 0)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(incb < 1)) suzerain_blas_xerbla(__func__, 11);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha == 0.0f);
@@ -3080,7 +3082,9 @@ suzerain_blasext_dge_diag_scale_acc(
         const int incb,
         const int ldb)
 {
-    if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
+    if (SUZERAIN_UNLIKELY(inca < 1)) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd  < 0)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(incb < 1)) suzerain_blas_xerbla(__func__, 11);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha == 0.0);
@@ -3124,7 +3128,9 @@ suzerain_blasext_cge_diag_scale_acc(
         const int incb,
         const int ldb)
 {
-    if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
+    if (SUZERAIN_UNLIKELY(inca < 1)) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd  < 0)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(incb < 1)) suzerain_blas_xerbla(__func__, 11);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0f);
@@ -3169,7 +3175,9 @@ suzerain_blasext_zge_diag_scale_acc(
         const int incb,
         const int ldb)
 {
-    if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
+    if (SUZERAIN_UNLIKELY(inca < 1)) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd  < 0)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(incb < 1)) suzerain_blas_xerbla(__func__, 11);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
@@ -3214,7 +3222,9 @@ suzerain_blasext_zge_diag_scale_dacc(
         const int incb,
         const int ldb)
 {
-    if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
+    if (SUZERAIN_UNLIKELY(inca < 1)) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd  < 0)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(incb < 1)) suzerain_blas_xerbla(__func__, 11);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
@@ -3261,8 +3271,10 @@ suzerain_blasext_zge_ddiag_scale_dacc(
         const int incb,
         const int ldb)
 {
+    if (SUZERAIN_UNLIKELY(inca < 1)) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(ldd0 < 0)) suzerain_blas_xerbla(__func__,  8);
     if (SUZERAIN_UNLIKELY(ldd1 < 0)) suzerain_blas_xerbla(__func__, 11);
+    if (SUZERAIN_UNLIKELY(incb < 1)) suzerain_blas_xerbla(__func__, 14);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha0_is_zero = (alpha0[0] == 0.0 && alpha0[1] == 0.0);
@@ -3316,9 +3328,11 @@ suzerain_blasext_zge_dddiag_scale_dacc(
         const int incb,
         const int ldb)
 {
+    if (SUZERAIN_UNLIKELY(inca < 1)) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(ldd0 < 0)) suzerain_blas_xerbla(__func__,  8);
     if (SUZERAIN_UNLIKELY(ldd1 < 0)) suzerain_blas_xerbla(__func__, 11);
     if (SUZERAIN_UNLIKELY(ldd2 < 0)) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(incb < 1)) suzerain_blas_xerbla(__func__, 17);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha0_is_zero = (alpha0[0] == 0.0 && alpha0[1] == 0.0);
@@ -3485,6 +3499,72 @@ suzerain_blasext_zgb_diag_scale_dacc(
     return suzerain_blasext_zge_diag_scale_dacc(ku + 1 + kl, n,
                                                 alpha, a, inca, lda, d, ldd,
                                                 beta,  b, incb, ldb);
+}
+
+void
+suzerain_blasext_zgb_ddiag_scale_dacc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double *a,
+        const int inca,
+        const int lda,
+        const double alpha0[2],
+        const double *d0,
+        const int ldd0,
+        const double alpha1[2],
+        const double *d1,
+        const int ldd1,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb)
+{
+    SUZERAIN_UNUSED(m);
+    // Only partial checks as next routine covers remaining requirements
+    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
+    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
+    return suzerain_blasext_zge_ddiag_scale_dacc(ku + 1 + kl, n,
+                                                 a, inca, lda,
+                                                 alpha0, d0, ldd0,
+                                                 alpha1, d1, ldd1,
+                                                 beta,    b, incb, ldb);
+}
+
+void
+suzerain_blasext_zgb_dddiag_scale_dacc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double *a,
+        const int inca,
+        const int lda,
+        const double alpha0[2],
+        const double *d0,
+        const int ldd0,
+        const double alpha1[2],
+        const double *d1,
+        const int ldd1,
+        const double alpha2[2],
+        const double *d2,
+        const int ldd2,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb)
+{
+    SUZERAIN_UNUSED(m);
+    // Only partial checks as next routine covers remaining requirements
+    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
+    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
+    return suzerain_blasext_zge_dddiag_scale_dacc(ku + 1 + kl, n,
+                                                  a, inca, lda,
+                                                  alpha0, d0, ldd0,
+                                                  alpha1, d1, ldd1,
+                                                  alpha2, d2, ldd2,
+                                                  beta,    b, incb, ldb);
 }
 
 void
