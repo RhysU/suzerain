@@ -3244,6 +3244,120 @@ suzerain_blasext_zge_diag_scale_dacc(
 }
 
 void
+suzerain_blasext_zge_ddiag_scale_dacc(
+        const int m,
+        const int n,
+        const double *a,
+        const int inca,
+        const int lda,
+        const double alpha0[2],
+        const double *d0,
+        const int ldd0,
+        const double alpha1[2],
+        const double *d1,
+        const int ldd1,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb)
+{
+    if (SUZERAIN_UNLIKELY(ldd0 < 0)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(ldd1 < 0)) suzerain_blas_xerbla(__func__, 11);
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha0_is_zero = (alpha0[0] == 0.0 && alpha0[1] == 0.0);
+    const _Bool alpha1_is_zero = (alpha1[0] == 0.0 && alpha1[1] == 0.0);
+    const _Bool beta_is_one    = (beta[0]   == 1.0 && beta[1]   == 0.0);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((   alpha0_is_zero && alpha1_is_zero && beta_is_one)
+                           || m <= 0
+                           || n <= 0))
+        return;
+
+#define COMPUTE_SCALED_DIAGONAL_AS(x)                              \
+    const double tmp[2] = {   alpha0[0]*(*d0) + alpha1[0]*(*d1),   \
+                              alpha0[1]*(*d0) + alpha1[1]*(*d1) };
+
+    /* const */ double (* const b_end)[2] = b + n*ldb;
+    if (beta_is_one) {
+        for (/* NOP */; b < b_end; a += lda, d0 += ldd0, d1 += ldd1, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
+            suzerain_blasext_daxpzy( m, tmp, a, inca,       b, incb);
+        }
+    } else {
+        for (/* NOP */; b < b_end; a += lda, d0 += ldd0, d1 += ldd1, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
+            suzerain_blasext_daxpzby(m, tmp, a, inca, beta, b, incb);
+        }
+    }
+
+#undef COMPUTE_SCALED_DIAGONAL_AS
+}
+
+void
+suzerain_blasext_zge_dddiag_scale_dacc(
+        const int m,
+        const int n,
+        const double *a,
+        const int inca,
+        const int lda,
+        const double alpha0[2],
+        const double *d0,
+        const int ldd0,
+        const double alpha1[2],
+        const double *d1,
+        const int ldd1,
+        const double alpha2[2],
+        const double *d2,
+        const int ldd2,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb)
+{
+    if (SUZERAIN_UNLIKELY(ldd0 < 0)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(ldd1 < 0)) suzerain_blas_xerbla(__func__, 11);
+    if (SUZERAIN_UNLIKELY(ldd2 < 0)) suzerain_blas_xerbla(__func__, 14);
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha0_is_zero = (alpha0[0] == 0.0 && alpha0[1] == 0.0);
+    const _Bool alpha1_is_zero = (alpha1[0] == 0.0 && alpha1[1] == 0.0);
+    const _Bool alpha2_is_zero = (alpha2[0] == 0.0 && alpha2[1] == 0.0);
+    const _Bool beta_is_one    = (beta[0]   == 1.0 && beta[1]   == 0.0);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((   alpha0_is_zero && alpha1_is_zero
+                                             && alpha2_is_zero && beta_is_one)
+                           || m <= 0
+                           || n <= 0))
+        return;
+
+#define COMPUTE_SCALED_DIAGONAL_AS(x)                            \
+    const double tmp[2] = {                                      \
+            alpha0[0]*(*d0) + alpha1[0]*(*d1) + alpha2[0]*(*d2), \
+            alpha0[1]*(*d0) + alpha1[1]*(*d1) + alpha2[1]*(*d2)  \
+    };
+
+    /* const */ double (* const b_end)[2] = b + n*ldb;
+    if (beta_is_one) {
+        for (/* NOP */; b < b_end;
+             a += lda, d0 += ldd0, d1 += ldd1, d2 += ldd2, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
+            suzerain_blasext_daxpzy( m, tmp, a, inca,       b, incb);
+        }
+    } else {
+        for (/* NOP */; b < b_end;
+             a += lda, d0 += ldd0, d1 += ldd1, d2 += ldd2, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
+            suzerain_blasext_daxpzby(m, tmp, a, inca, beta, b, incb);
+        }
+    }
+
+#undef COMPUTE_SCALED_DIAGONAL_AS
+}
+
+void
 suzerain_blasext_sgb_diag_scale_acc(
         const int m,
         const int n,
