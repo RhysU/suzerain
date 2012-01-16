@@ -2163,11 +2163,9 @@ state fields, the complete, SMR91-ready discrete operator $M+\varphi{}L$ is
 shown in figure~\vref{fig:discreteimplicitop}.  The representation chosen
 highlights how the full operator is built from discrete operators applied to
 individual state fields.  Applying the operator should not require fully
-forming it within a contiguous region.  Inverting the operator likely will.
-Though written using submatrices blocked assuming each conserved scalar is
-stored contiguously, in the implementation the five conserved scalars may be
-interleaved such that the overall operator bandwidth is only five times that of
-the B-spline mass matrix $M$.
+forming it within a contiguous region of memory.  ``Inverting'' the operator
+(more correctly, factorizing and solving for unknown coefficients given
+collocation point values) likely will.
 
 Strong Dirichlet boundary conditions may be enforced in the usual way.  Neumann
 boundary condition implementations are less straightforward.  For simulations
@@ -2432,15 +2430,14 @@ factorization only once per substep.
 \\
 \begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
 The complete discrete operator $M+\varphi{}L$ used for implicit time advance is
-depicted.  Notice the leftmost scalar factor $\bm{\vp}$!  The $3 N_y \times N_y$
-blocked vectors written using curly braces are to be dotted against the blocked
-vector $
+depicted.  Notice the leftmost scalar factor $\bm{\vp}$!  The $3 N_y \times
+N_y$ blocked vectors written using curly braces are to be ``dotted'' against
+the blocked vector $
   \trans{\begin{bmatrix} \M & \D{1} & \D{2} \end{bmatrix}}
-$.
-Each of $M$, $\D{1}$, and $\D{2}$ is a $N_y \times N_y$ banded matrix.
-Reference quantities like $C^\nu$ are $N_y \times N_y$ diagonal matrices.  The
-wavenumber-dependent operator takes wall-normal B-spline coefficients to
-B-spline collocation point values.
+$ to form $N_y \times N_y$ subblocks.  Each of $M$, $\D{1}$, and $\D{2}$ is a
+$N_y \times N_y$ banded matrix.  Reference quantities like $C^\nu$ are $N_y
+\times N_y$ diagonal matrices.  The wavenumber-dependent operator takes
+wall-normal B-spline coefficients to B-spline collocation point values.
 \end{minipage}
  \caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
   The complete discrete operator $M+\varphi{}L$ used for implicit time advance.
