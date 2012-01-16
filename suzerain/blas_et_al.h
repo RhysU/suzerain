@@ -3619,6 +3619,115 @@ suzerain_blasext_zgb_diag_scale_dacc(
         const int ldb);
 
 /*!
+ * \brief Compute \f$ B \leftarrow{} A (\alpha_0 D_0 + \alpha_1 D_1) + \beta{}B
+ * \f$ for real banded \f$A\f$, real diagonal \f$D_0\f$, real diagonal
+ * \f$D_1\f$, and complex banded \f$B\f$.  Real-valued strides are in units of
+ * <tt>double</tt> while complex-valued strides are in units of
+ * <tt>double[2]</tt>.
+ *
+ * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.  Any matrix may
+ * be generally strided.  Matrices \f$ D_0 \f$ and \f$ D_1 \f$ may be aliased.
+ *
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of matrix \f$ D\f$.
+ * \param kl Number of subdiagonals in band storage of \c a and \c b.
+ * \param ku Number of superdiagonals in band storage of \c a and \c b.
+ * \param a General band storage of the matrix \f$ A \f$.
+ * \param inca Strictly positive stride between values in \c a.
+ * \param lda Leading dimension of \c a.
+ * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$
+ * \param d0 Diagonal storage of matrix \f$ D_0 \f$.
+ * \param ldd0 Nonnegative stride between diagonal entries in \c d0.
+ * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$
+ * \param d1 Diagonal storage of matrix \f$ D_1 \f$.
+ * \param ldd1 Nonnegative stride between diagonal entries in \c d1.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param b General band storage of the matrix \f$ B \f$.
+ * \param incb Strictly positive stride between values in \c b.
+ * \param ldb Leading dimension of \c b.
+ *
+ * \see A BLAS reference for banded matrix storage requirements.
+ */
+void
+suzerain_blasext_zgb_ddiag_scale_dacc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double *a,
+        const int inca,
+        const int lda,
+        const double alpha0[2],
+        const double *d0,
+        const int ldd0,
+        const double alpha1[2],
+        const double *d1,
+        const int ldd1,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb);
+
+/*!
+ * \brief Compute \f$ B \leftarrow{} A (\alpha_0 D_0 + \alpha_1 D_1 + \alpha_2
+ * D_2) + \beta{}B \f$ for real banded \f$A\f$, real diagonal \f$D_0\f$, real
+ * diagonal \f$D_1\f$, real diagonal \f$D_2\f$,  and complex banded \f$B\f$.
+ * Real-valued strides are in units of <tt>double</tt> while complex-valued
+ * strides are in units of <tt>double[2]</tt>.
+ *
+ * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.  Any matrix may
+ * be generally strided.  Matrices \f$ D_0 \f$, \f$ D_1 \f$, and \f$ D_2 \f$
+ * may be aliased.
+ *
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of matrix \f$ D\f$.
+ * \param kl Number of subdiagonals in band storage of \c a and \c b.
+ * \param ku Number of superdiagonals in band storage of \c a and \c b.
+ * \param a General band storage of the matrix \f$ A \f$.
+ * \param inca Strictly positive stride between values in \c a.
+ * \param lda Leading dimension of \c a.
+ * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$
+ * \param d0 Diagonal storage of matrix \f$ D_0 \f$.
+ * \param ldd0 Nonnegative stride between diagonal entries in \c d0.
+ * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$
+ * \param d1 Diagonal storage of matrix \f$ D_1 \f$.
+ * \param ldd1 Nonnegative stride between diagonal entries in \c d1.
+ * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$
+ * \param d2 Diagonal storage of matrix \f$ D_2 \f$.
+ * \param ldd2 Nonnegative stride between diagonal entries in \c d2.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param b General band storage of the matrix \f$ B \f$.
+ * \param incb Strictly positive stride between values in \c b.
+ * \param ldb Leading dimension of \c b.
+ *
+ * \see A BLAS reference for banded matrix storage requirements.
+ */
+void
+suzerain_blasext_zgb_dddiag_scale_dacc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double *a,
+        const int inca,
+        const int lda,
+        const double alpha0[2],
+        const double *d0,
+        const int ldd0,
+        const double alpha1[2],
+        const double *d1,
+        const int ldd1,
+        const double alpha2[2],
+        const double *d2,
+        const int ldd2,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb);
+
+/*!
  * \brief Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using where
  * \f$B\f$, \f$\alpha\f$, and \f$\beta\f$ are complex-valued and \f$A\f$ is
  * real-valued.  Real-valued strides are in units of <tt>double</tt> while
