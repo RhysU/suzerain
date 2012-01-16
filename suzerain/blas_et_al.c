@@ -883,22 +883,14 @@ suzerain_blas_sgb_acc(
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate sgb_acc since MKL lacks the routine. */
-#pragma warning(push,disable:1572)
-    if (SUZERAIN_UNLIKELY((alpha == 0.0f && beta == 1.0f) || m <= 0)) return;
-#pragma warning(pop)
-
     const int veclength = ku + 1 + kl;
-    if (veclength == lda && veclength == ldb) {
-        /* Contiguous block optimization */
+    if (veclength == lda && veclength == ldb) {  // Contiguous block
         suzerain_blas_saxpby(veclength*n, alpha, a, 1, beta, b, 1);
-    } else {
-        const float * const bj_end = b + n*ldb;
-        const float *aj;
-        float       *bj;
-
-        for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
-            suzerain_blas_saxpby(veclength, alpha, aj, 1, beta, bj, 1);
-        }
+    } else {                                     // General case
+        const float one = 1.0f;
+        suzerain_blasext_sgb_diag_scale_acc(m, n, kl, ku,
+                                            alpha, a, 1, lda, &one, 0,
+                                            beta,  b, 1, ldb);
     }
 #else
 #error "Sanity failure"
@@ -920,22 +912,14 @@ suzerain_blas_dgb_acc(
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate dgb_acc since MKL lacks the routine. */
-#pragma warning(push,disable:1572)
-    if (SUZERAIN_UNLIKELY((alpha == 0.0 && beta == 1.0) || m <= 0)) return;
-#pragma warning(pop)
-
     const int veclength = ku + 1 + kl;
-    if (veclength == lda && veclength == ldb) {
-        /* Contiguous block optimization */
+    if (veclength == lda && veclength == ldb) {  // Contiguous block
         suzerain_blas_daxpby(veclength*n, alpha, a, 1, beta, b, 1);
-    } else {
-        const double * const bj_end = b + n*ldb;
-        const double *aj;
-        double       *bj;
-
-        for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
-            suzerain_blas_daxpby(veclength, alpha, aj, 1, beta, bj, 1);
-        }
+    } else {                                     // General case
+        const double one = 1.0;
+        suzerain_blasext_dgb_diag_scale_acc(m, n, kl, ku,
+                                            alpha, a, 1, lda, &one, 0,
+                                            beta,  b, 1, ldb);
     }
 #else
 #error "Sanity failure"
@@ -956,26 +940,15 @@ suzerain_blas_cgb_acc(
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    /* Simulate sgb_acc since MKL lacks the routine. */
-#pragma warning(push,disable:1572)
-    if (SUZERAIN_UNLIKELY((   alpha[0] == 0.0f && alpha[1] == 0.0f
-                           && beta[0]  == 1.0f && beta[1]  == 0.0f) || m <= 0)) {
-         return;
-    }
-#pragma warning(pop)
-
+    /* Simulate cgb_acc since MKL lacks the routine. */
     const int veclength = ku + 1 + kl;
-    if (veclength == lda && veclength == ldb) {
-        /* Contiguous block optimization */
+    if (veclength == lda && veclength == ldb) {  // Contiguous block
         suzerain_blas_caxpby(veclength*n, alpha, a, 1, beta, b, 1);
-    } else {
-        float (* const bj_end)[2] = b + n*ldb;
-        const float (*aj)[2];
-        float       (*bj)[2];
-
-        for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
-            suzerain_blas_caxpby(veclength, alpha, aj, 1, beta, bj, 1);
-        }
+    } else {                                     // General case
+        const float one[2] = { 1.0f, 0.0f };
+        suzerain_blasext_cgb_diag_scale_acc(m, n, kl, ku,
+                                            alpha, a, 1, lda, &one, 0,
+                                            beta,  b, 1, ldb);
     }
 #else
 #error "Sanity failure"
@@ -996,26 +969,15 @@ suzerain_blas_zgb_acc(
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    /* Simulate sgb_acc since MKL lacks the routine. */
-#pragma warning(push,disable:1572)
-    if (SUZERAIN_UNLIKELY((   alpha[0] == 0.0 && alpha[1] == 0.0
-                           && beta[0]  == 1.0 && beta[1]  == 0.0) || m <= 0)) {
-         return;
-    }
-#pragma warning(pop)
-
+    /* Simulate cgb_acc since MKL lacks the routine. */
     const int veclength = ku + 1 + kl;
-    if (veclength == lda && veclength == ldb) {
-        /* Contiguous block optimization */
+    if (veclength == lda && veclength == ldb) {  // Contiguous block
         suzerain_blas_zaxpby(veclength*n, alpha, a, 1, beta, b, 1);
-    } else {
-        double (* const bj_end)[2] = b + n*ldb;
-        const double (*aj)[2];
-        double       (*bj)[2];
-
-        for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
-            suzerain_blas_zaxpby(veclength, alpha, aj, 1, beta, bj, 1);
-        }
+    } else {                                     // General case
+        const double one[2] = { 1.0, 0.0 };
+        suzerain_blasext_zgb_diag_scale_acc(m, n, kl, ku,
+                                            alpha, a, 1, lda, &one, 0,
+                                            beta,  b, 1, ldb);
     }
 #else
 #error "Sanity failure"
@@ -3068,12 +3030,14 @@ suzerain_blasext_sge_diag_scale_acc(
         const int inca,
         const int lda,
         const float *d,
-        const int incd,
+        const int ldd,
         const float beta,
         float *b,
         const int incb,
         const int ldb)
 {
+    if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
+
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha == 0.0f);
     const _Bool beta_is_one   = (beta  == 1.0f);
@@ -3082,16 +3046,23 @@ suzerain_blasext_sge_diag_scale_acc(
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
+#define COMPUTE_SCALED_DIAGONAL_AS(x) \
+    const float tmp = alpha*(*d)
+
     const float * const b_end = b + n*ldb;
     if (beta_is_one) {
-        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
-            suzerain_blas_saxpy( m, alpha*(*d), a, inca,       b, incb);
+        for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
+            suzerain_blas_saxpy( m, tmp, a, inca,       b, incb);
         }
     } else {
-        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
-            suzerain_blas_saxpby(m, alpha*(*d), a, inca, beta, b, incb);
+        for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
+            suzerain_blas_saxpby(m, tmp, a, inca, beta, b, incb);
         }
     }
+
+#undef COMPUTE_SCALED_DIAGONAL_AS
 }
 
 void
@@ -3103,12 +3074,14 @@ suzerain_blasext_dge_diag_scale_acc(
         const int inca,
         const int lda,
         const double *d,
-        const int incd,
+        const int ldd,
         const double beta,
         double *b,
         const int incb,
         const int ldb)
 {
+    if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
+
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha == 0.0);
     const _Bool beta_is_one   = (beta  == 1.0);
@@ -3117,16 +3090,23 @@ suzerain_blasext_dge_diag_scale_acc(
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
+#define COMPUTE_SCALED_DIAGONAL_AS(x) \
+    const double tmp = alpha*(*d)
+
     const double * const b_end = b + n*ldb;
     if (beta_is_one) {
-        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
-            suzerain_blas_daxpy( m, alpha*(*d), a, inca,       b, incb);
+        for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
+            suzerain_blas_daxpy( m, tmp, a, inca,       b, incb);
         }
     } else {
-        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
-            suzerain_blas_daxpby(m, alpha*(*d), a, inca, beta, b, incb);
+        for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
+            suzerain_blas_daxpby(m, tmp, a, inca, beta, b, incb);
         }
     }
+
+#undef COMPUTE_SCALED_DIAGONAL_AS
 }
 
 void
@@ -3138,12 +3118,14 @@ suzerain_blasext_cge_diag_scale_acc(
         const int inca,
         const int lda,
         const float (*d)[2],
-        const int incd,
+        const int ldd,
         const float beta[2],
         float (*b)[2],
         const int incb,
         const int ldb)
 {
+    if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
+
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0);
     const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0);
@@ -3152,20 +3134,24 @@ suzerain_blasext_cge_diag_scale_acc(
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
+#define COMPUTE_SCALED_DIAGONAL_AS(x)                               \
+    const float tmp[2] = {   alpha[0]*(*d)[0] - alpha[1]*(*d)[1],   \
+                             alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+
     /* const */ float (* const b_end)[2] = b + n*ldb;
     if (beta_is_one) {
-        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
-            const float tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
-                                   alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+        for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
             suzerain_blas_caxpy( m, tmp, a, inca,       b, incb);
         }
     } else {
-        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
-            const float tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
-                                   alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+        for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
             suzerain_blas_caxpby(m, tmp, a, inca, beta, b, incb);
         }
     }
+
+#undef COMPUTE_SCALED_DIAGONAL_AS
 }
 
 void
@@ -3177,12 +3163,14 @@ suzerain_blasext_zge_diag_scale_acc(
         const int inca,
         const int lda,
         const double (*d)[2],
-        const int incd,
+        const int ldd,
         const double beta[2],
         double (*b)[2],
         const int incb,
         const int ldb)
 {
+    if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
+
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0);
     const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0);
@@ -3191,20 +3179,24 @@ suzerain_blasext_zge_diag_scale_acc(
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
+#define COMPUTE_SCALED_DIAGONAL_AS(x)                                \
+    const double tmp[2] = {   alpha[0]*(*d)[0] - alpha[1]*(*d)[1],   \
+                              alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+
     /* const */ double (* const b_end)[2] = b + n*ldb;
     if (beta_is_one) {
-        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
-            const double tmp[2] = { alpha[0]*d[0][0] - alpha[1]*d[0][1],
-                                    alpha[0]*d[0][1] + alpha[1]*d[0][0] };
+        for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
             suzerain_blas_zaxpy( m, tmp, a, inca,       b, incb);
         }
     } else {
-        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
-            const double tmp[2] = { alpha[0]*d[0][0] - alpha[1]*d[0][1],
-                                    alpha[0]*d[0][1] + alpha[1]*d[0][0] };
+        for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
             suzerain_blas_zaxpby(m, tmp, a, inca, beta, b, incb);
         }
     }
+
+#undef COMPUTE_SCALED_DIAGONAL_AS
 }
 
 void
@@ -3218,7 +3210,7 @@ suzerain_blasext_sgb_diag_scale_acc(
         const int inca,
         const int lda,
         const float *d,
-        const int incd,
+        const int ldd,
         const float beta,
         float *b,
         const int incb,
@@ -3229,7 +3221,7 @@ suzerain_blasext_sgb_diag_scale_acc(
     if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
     if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
     return suzerain_blasext_sge_diag_scale_acc(ku + 1 + kl, n,
-                                               alpha, a, inca, lda, d, incd,
+                                               alpha, a, inca, lda, d, ldd,
                                                beta,  b, incb, ldb);
 }
 
@@ -3244,7 +3236,7 @@ suzerain_blasext_dgb_diag_scale_acc(
         const int inca,
         const int lda,
         const double *d,
-        const int incd,
+        const int ldd,
         const double beta,
         double *b,
         const int incb,
@@ -3255,7 +3247,7 @@ suzerain_blasext_dgb_diag_scale_acc(
     if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
     if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
     return suzerain_blasext_dge_diag_scale_acc(ku + 1 + kl, n,
-                                               alpha, a, inca, lda, d, incd,
+                                               alpha, a, inca, lda, d, ldd,
                                                beta,  b, incb, ldb);
 }
 
@@ -3270,7 +3262,7 @@ suzerain_blasext_cgb_diag_scale_acc(
         const int inca,
         const int lda,
         const float (*d)[2],
-        const int incd,
+        const int ldd,
         const float beta[2],
         float (*b)[2],
         const int incb,
@@ -3281,7 +3273,7 @@ suzerain_blasext_cgb_diag_scale_acc(
     if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
     if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
     return suzerain_blasext_cge_diag_scale_acc(ku + 1 + kl, n,
-                                               alpha, a, inca, lda, d, incd,
+                                               alpha, a, inca, lda, d, ldd,
                                                beta,  b, incb, ldb);
 }
 
@@ -3296,7 +3288,7 @@ suzerain_blasext_zgb_diag_scale_acc(
         const int inca,
         const int lda,
         const double (*d)[2],
-        const int incd,
+        const int ldd,
         const double beta[2],
         double (*b)[2],
         const int incb,
@@ -3307,7 +3299,7 @@ suzerain_blasext_zgb_diag_scale_acc(
     if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
     if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
     return suzerain_blasext_zge_diag_scale_acc(ku + 1 + kl, n,
-                                               alpha, a, inca, lda, d, incd,
+                                               alpha, a, inca, lda, d, ldd,
                                                beta,  b, incb, ldb);
 }
 

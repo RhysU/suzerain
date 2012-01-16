@@ -3259,7 +3259,7 @@ suzerain_blasext_dsbmzv(
  * \param inca Strictly positive stride between values in \c a.
  * \param lda Leading dimension of \c a.
  * \param d Diagonal storage of matrix \f$ D \f$.
- * \param incd Nonnegative between diagonal entries in \c d.
+ * \param ldd Nonnegative stride between diagonal entries in \c d.
  * \param beta Multiplicative scalar \f$ \beta \f$
  * \param b General band storage of the matrix \f$ B \f$.
  * \param incb Strictly positive stride between values in \c b.
@@ -3276,7 +3276,7 @@ suzerain_blasext_sge_diag_scale_acc(
         const int inca,
         const int lda,
         const float *d,
-        const int incd,
+        const int ldd,
         const float beta,
         float *b,
         const int incb,
@@ -3292,7 +3292,7 @@ suzerain_blasext_dge_diag_scale_acc(
         const int inca,
         const int lda,
         const double *d,
-        const int incd,
+        const int ldd,
         const double beta,
         double *b,
         const int incb,
@@ -3308,7 +3308,7 @@ suzerain_blasext_cge_diag_scale_acc(
         const int inca,
         const int lda,
         const float (*d)[2],
-        const int incd,
+        const int ldd,
         const float beta[2],
         float (*b)[2],
         const int incb,
@@ -3324,7 +3324,7 @@ suzerain_blasext_zge_diag_scale_acc(
         const int inca,
         const int lda,
         const double (*d)[2],
-        const int incd,
+        const int ldd,
         const double beta[2],
         double (*b)[2],
         const int incb,
@@ -3339,6 +3339,9 @@ suzerain_blasext_zge_diag_scale_acc(
  * may be generally strided.  The operation and interface differs from the
  * BLAS' ge_diag_scale_acc.
  *
+ * \warning Unused positions within the general band storage \c b (which are
+ * typically not referenced by BLAS calls) \em will be modified by this method.
+ *
  * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
  *          and size of matrix \f$ D\f$.
@@ -3349,7 +3352,7 @@ suzerain_blasext_zge_diag_scale_acc(
  * \param inca Strictly positive stride between values in \c a.
  * \param lda Leading dimension of \c a.
  * \param d Diagonal storage of matrix \f$ D \f$.
- * \param incd Nonnegative stride between diagonal entries in \c d.
+ * \param ldd Nonnegative stride between diagonal entries in \c d.
  * \param beta Multiplicative scalar \f$ \beta \f$
  * \param b General band storage of the matrix \f$ B \f$.
  * \param incb Strictly positive stride between values in \c b.
@@ -3368,7 +3371,7 @@ suzerain_blasext_sgb_diag_scale_acc(
         const int inca,
         const int lda,
         const float *d,
-        const int incd,
+        const int ldd,
         const float beta,
         float *b,
         const int incb,
@@ -3376,7 +3379,7 @@ suzerain_blasext_sgb_diag_scale_acc(
 
 /*! \copydoc suzerain_blasext_sgb_diag_scale_acc */
 void
-suzerain_blas_dgb_diag_scale_acc(
+suzerain_blasext_dgb_diag_scale_acc(
         const int m,
         const int n,
         const int kl,
@@ -3386,7 +3389,7 @@ suzerain_blas_dgb_diag_scale_acc(
         const int inca,
         const int lda,
         const double *d,
-        const int incd,
+        const int ldd,
         const double beta,
         double *b,
         const int incb,
@@ -3404,7 +3407,7 @@ suzerain_blasext_cgb_diag_scale_acc(
         const int inca,
         const int lda,
         const float (*d)[2],
-        const int incd,
+        const int ldd,
         const float beta[2],
         float (*b)[2],
         const int incb,
@@ -3422,7 +3425,7 @@ suzerain_blasext_zgb_diag_scale_acc(
         const int inca,
         const int lda,
         const double (*d)[2],
-        const int incd,
+        const int ldd,
         const double beta[2],
         double (*b)[2],
         const int incb,
