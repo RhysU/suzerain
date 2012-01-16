@@ -32,9 +32,9 @@
 #include <suzerain/config.h>
 #endif
 #include <suzerain/common.h>
+#pragma hdrstop
 #include <suzerain/countof.h>
 #include <suzerain/error.h>
-#pragma hdrstop
 #include <suzerain/os.h>
 
 int suzerain_fpipe(int *rfd, int rflags, FILE **w, int wflags)
