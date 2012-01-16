@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 //
-// Copyright (C) 2010 The PECOS Development Team
+// Copyright (C) 2010, 2011, 2012 The PECOS Development Team
 // except where that copyright may conflict with Lai Shiaw San Kent and Sean
 // Kent.  Code adapted from Lai Shiaw San Kent's article "C++ Standard
 // Allocator, An Introduction and Implementation" from The Code Project

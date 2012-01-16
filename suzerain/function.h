@@ -3,7 +3,7 @@
  *
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2004, 2007 Gerard Jungman, Brian Gough
  * Adapted from the GNU Scientific Library
- * Extensions Copyright (C) 2011 The PECOS Development Team
+ * Extensions Copyright (C) 2011, 2012 The PECOS Development Team
  *
  * Please see http://pecos.ices.utexas.edu for more information.
  *

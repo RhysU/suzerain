@@ -1,7 +1,7 @@
 /*--------------------------------------------------------------------------
  *--------------------------------------------------------------------------
  *
- * Copyright (C) 2011 The PECOS Development Team
+ * Copyright (C) 2011, 2012 The PECOS Development Team
  *
  * Please see http://pecos.ices.utexas.edu for more information.
  *
