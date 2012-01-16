@@ -3482,7 +3482,7 @@ suzerain_blasext_zge_dddiag_scale_dacc(
  * BLAS' gb_diag_scale_acc.
  *
  * \warning Unused positions within the general band storage \c b (which are
- * typically not referenced by BLAS calls) \em will be modified by this method.
+ * typically not referenced by BLAS calls) \em will be used by this method.
  *
  * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
@@ -3584,7 +3584,7 @@ suzerain_blasext_zgb_diag_scale_acc(
  * interface differs from the BLAS' gb_diag_scale_acc.
  *
  * \warning Unused positions within the general band storage \c b (which are
- * typically not referenced by BLAS calls) \em will be modified by this method.
+ * typically not referenced by BLAS calls) \em will be used by this method.
  *
  * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
@@ -3632,7 +3632,7 @@ suzerain_blasext_zgb_diag_scale_dacc(
  * be generally strided.  Matrices \f$ D_0 \f$ and \f$ D_1 \f$ may be aliased.
  *
  * \warning Unused positions within the general band storage \c b (which are
- * typically not referenced by BLAS calls) \em will be modified by this method.
+ * typically not referenced by BLAS calls) \em will be used by this method.
  *
  * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
@@ -3687,7 +3687,7 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
  * may be aliased.
  *
  * \warning Unused positions within the general band storage \c b (which are
- * typically not referenced by BLAS calls) \em will be modified by this method.
+ * typically not referenced by BLAS calls) \em will be used by this method.
  *
  * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
