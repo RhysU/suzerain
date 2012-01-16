@@ -3060,6 +3060,258 @@ suzerain_blasext_dsbmzv(
 }
 
 void
+suzerain_blasext_sge_diag_scale_acc(
+        const int m,
+        const int n,
+        const float alpha,
+        const float *a,
+        const int inca,
+        const int lda,
+        const float *d,
+        const int incd,
+        const float beta,
+        float *b,
+        const int incb,
+        const int ldb)
+{
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_zero = (alpha == 0.0f);
+    const _Bool beta_is_one   = (beta  == 1.0f);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+        return;
+
+    const float * const b_end = b + n*ldb;
+    if (beta_is_one) {
+        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
+            suzerain_blas_saxpy( m, alpha*(*d), a, inca,       b, incb);
+        }
+    } else {
+        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
+            suzerain_blas_saxpby(m, alpha*(*d), a, inca, beta, b, incb);
+        }
+    }
+}
+
+void
+suzerain_blasext_dge_diag_scale_acc(
+        const int m,
+        const int n,
+        const double alpha,
+        const double *a,
+        const int inca,
+        const int lda,
+        const double *d,
+        const int incd,
+        const double beta,
+        double *b,
+        const int incb,
+        const int ldb)
+{
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_zero = (alpha == 0.0);
+    const _Bool beta_is_one   = (beta  == 1.0);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+        return;
+
+    const double * const b_end = b + n*ldb;
+    if (beta_is_one) {
+        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
+            suzerain_blas_daxpy( m, alpha*(*d), a, inca,       b, incb);
+        }
+    } else {
+        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
+            suzerain_blas_daxpby(m, alpha*(*d), a, inca, beta, b, incb);
+        }
+    }
+}
+
+void
+suzerain_blasext_cge_diag_scale_acc(
+        const int m,
+        const int n,
+        const float alpha[2],
+        const float (*a)[2],
+        const int inca,
+        const int lda,
+        const float (*d)[2],
+        const int incd,
+        const float beta[2],
+        float (*b)[2],
+        const int incb,
+        const int ldb)
+{
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0);
+    const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+        return;
+
+    /* const */ float (* const b_end)[2] = b + n*ldb;
+    if (beta_is_one) {
+        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
+            const float tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
+                                   alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+            suzerain_blas_caxpy( m, tmp, a, inca,       b, incb);
+        }
+    } else {
+        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
+            const float tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
+                                   alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+            suzerain_blas_caxpby(m, tmp, a, inca, beta, b, incb);
+        }
+    }
+}
+
+void
+suzerain_blasext_zge_diag_scale_acc(
+        const int m,
+        const int n,
+        const double alpha[2],
+        const double (*a)[2],
+        const int inca,
+        const int lda,
+        const double (*d)[2],
+        const int incd,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb)
+{
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0);
+    const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+        return;
+
+    /* const */ double (* const b_end)[2] = b + n*ldb;
+    if (beta_is_one) {
+        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
+            const double tmp[2] = { alpha[0]*d[0][0] - alpha[1]*d[0][1],
+                                    alpha[0]*d[0][1] + alpha[1]*d[0][0] };
+            suzerain_blas_zaxpy( m, tmp, a, inca,       b, incb);
+        }
+    } else {
+        for (/* NOP */; b < b_end; a += lda, d += incd, b += ldb) {
+            const double tmp[2] = { alpha[0]*d[0][0] - alpha[1]*d[0][1],
+                                    alpha[0]*d[0][1] + alpha[1]*d[0][0] };
+            suzerain_blas_zaxpby(m, tmp, a, inca, beta, b, incb);
+        }
+    }
+}
+
+void
+suzerain_blasext_sgb_diag_scale_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha,
+        const float *a,
+        const int inca,
+        const int lda,
+        const float *d,
+        const int incd,
+        const float beta,
+        float *b,
+        const int incb,
+        const int ldb)
+{
+    SUZERAIN_UNUSED(m);
+    // Only partial checks as next routine covers remaining requirements
+    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
+    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
+    return suzerain_blasext_sge_diag_scale_acc(ku + 1 + kl, n,
+                                               alpha, a, inca, lda, d, incd,
+                                               beta,  b, incb, ldb);
+}
+
+void
+suzerain_blasext_dgb_diag_scale_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha,
+        const double *a,
+        const int inca,
+        const int lda,
+        const double *d,
+        const int incd,
+        const double beta,
+        double *b,
+        const int incb,
+        const int ldb)
+{
+    SUZERAIN_UNUSED(m);
+    // Only partial checks as next routine covers remaining requirements
+    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
+    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
+    return suzerain_blasext_dge_diag_scale_acc(ku + 1 + kl, n,
+                                               alpha, a, inca, lda, d, incd,
+                                               beta,  b, incb, ldb);
+}
+
+void
+suzerain_blasext_cgb_diag_scale_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const float alpha[2],
+        const float (*a)[2],
+        const int inca,
+        const int lda,
+        const float (*d)[2],
+        const int incd,
+        const float beta[2],
+        float (*b)[2],
+        const int incb,
+        const int ldb)
+{
+    SUZERAIN_UNUSED(m);
+    // Only partial checks as next routine covers remaining requirements
+    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
+    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
+    return suzerain_blasext_cge_diag_scale_acc(ku + 1 + kl, n,
+                                               alpha, a, inca, lda, d, incd,
+                                               beta,  b, incb, ldb);
+}
+
+void
+suzerain_blasext_zgb_diag_scale_acc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double (*a)[2],
+        const int inca,
+        const int lda,
+        const double (*d)[2],
+        const int incd,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb)
+{
+    SUZERAIN_UNUSED(m);
+    // Only partial checks as next routine covers remaining requirements
+    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
+    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
+    return suzerain_blasext_zge_diag_scale_acc(ku + 1 + kl, n,
+                                               alpha, a, inca, lda, d, incd,
+                                               beta,  b, incb, ldb);
+}
+
+void
 suzerain_blasext_zgb_dacc(
         const int m,
         const int n,
