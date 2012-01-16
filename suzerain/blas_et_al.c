@@ -3127,8 +3127,8 @@ suzerain_blasext_cge_diag_scale_acc(
     if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
 
 #pragma warning(push,disable:1572)
-    const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0);
-    const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0);
+    const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0f);
+    const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0f);
 #pragma warning(pop)
 
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
@@ -3172,8 +3172,8 @@ suzerain_blasext_zge_diag_scale_acc(
     if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
 
 #pragma warning(push,disable:1572)
-    const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0);
-    const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0);
+    const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
+    const _Bool beta_is_one   = (beta[0]  == 1.0 && beta[1]  == 0.0);
 #pragma warning(pop)
 
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
@@ -3193,6 +3193,50 @@ suzerain_blasext_zge_diag_scale_acc(
         for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
             COMPUTE_SCALED_DIAGONAL_AS(tmp);
             suzerain_blas_zaxpby(m, tmp, a, inca, beta, b, incb);
+        }
+    }
+
+#undef COMPUTE_SCALED_DIAGONAL_AS
+}
+
+void
+suzerain_blasext_zge_diag_scale_dacc(
+        const int m,
+        const int n,
+        const double alpha[2],
+        const double *a,
+        const int inca,
+        const int lda,
+        const double *d,
+        const int ldd,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb)
+{
+    if (SUZERAIN_UNLIKELY(ldd < 0)) suzerain_blas_xerbla(__func__, 8);
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
+    const _Bool beta_is_one   = (beta[0]  == 1.0 && beta[1]  == 0.0);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+        return;
+
+#define COMPUTE_SCALED_DIAGONAL_AS(x)                         \
+    const double tmp[2] = {   alpha[0]*(*d), alpha[1]*(*d) };
+
+    /* const */ double (* const b_end)[2] = b + n*ldb;
+    if (beta_is_one) {
+        for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
+            suzerain_blasext_daxpzy( m, tmp, a, inca,       b, incb);
+        }
+    } else {
+        for (/* NOP */; b < b_end; a += lda, d += ldd, b += ldb) {
+            COMPUTE_SCALED_DIAGONAL_AS(tmp);
+            suzerain_blasext_daxpzby(m, tmp, a, inca, beta, b, incb);
         }
     }
 
@@ -3304,6 +3348,32 @@ suzerain_blasext_zgb_diag_scale_acc(
 }
 
 void
+suzerain_blasext_zgb_diag_scale_dacc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double *a,
+        const int inca,
+        const int lda,
+        const double *d,
+        const int ldd,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb)
+{
+    SUZERAIN_UNUSED(m);
+    // Only partial checks as next routine covers remaining requirements
+    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
+    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
+    return suzerain_blasext_zge_diag_scale_dacc(ku + 1 + kl, n,
+                                                alpha, a, inca, lda, d, ldd,
+                                                beta,  b, incb, ldb);
+}
+
+void
 suzerain_blasext_zgb_dacc(
         const int m,
         const int n,
@@ -3316,25 +3386,14 @@ suzerain_blasext_zgb_dacc(
         double (*b)[2],
         const int ldb)
 {
-#pragma warning(push,disable:1572)
-    if (SUZERAIN_UNLIKELY((   alpha[0] == 0.0 && alpha[1] == 0.0
-                           && beta[0]  == 1.0 && beta[1]  == 0.0) || m <= 0)) {
-         return;
-    }
-#pragma warning(pop)
-
     const int veclength = ku + 1 + kl;
-    if (veclength == lda && veclength == ldb) {
-        /* Contiguous block optimization */
+    if (veclength == lda && veclength == ldb) {  // Contiguous block
         suzerain_blasext_daxpzby(veclength*n, alpha, a, 1, beta, b, 1);
-    } else {
-        double (* const bj_end)[2] = b + n*ldb;
-        const double  *aj;
-        double       (*bj)[2];
-
-        for (aj = a, bj = b; bj < bj_end; aj += lda, bj += ldb) {
-            suzerain_blasext_daxpzby(veclength, alpha, aj, 1, beta, bj, 1);
-        }
+    } else {                                     // General case
+        const double one = 1.0;
+        suzerain_blasext_zgb_diag_scale_dacc(m, n, kl, ku,
+                                             alpha, a, 1, lda, &one, 0,
+                                             beta,  b, 1, ldb);
     }
 }
 

@@ -555,7 +555,7 @@ suzerain_blas_zscal(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blas_sgbmv_external(
@@ -613,7 +613,7 @@ suzerain_blas_dgbmv_external(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blas_sgbmv(
@@ -666,7 +666,7 @@ suzerain_blas_dgbmv(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blas_ssbmv_external(
@@ -717,7 +717,7 @@ suzerain_blas_dsbmv_external(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blas_ssbmv(
@@ -768,7 +768,7 @@ suzerain_blas_dsbmv(
  * \param ldb Leading dimension of \c b.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blas_sgb_acc(
@@ -1408,7 +1408,7 @@ suzerain_blasext_daxpzby(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbmzv_external(
@@ -1450,7 +1450,7 @@ suzerain_blasext_sgbmzv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbmzv_external(
@@ -1491,7 +1491,7 @@ suzerain_blasext_dgbmzv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbmzv(
@@ -1532,7 +1532,7 @@ suzerain_blasext_sgbmzv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbmzv(
@@ -1572,7 +1572,7 @@ suzerain_blasext_dgbmzv(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbdmv_external(
@@ -1631,7 +1631,7 @@ suzerain_blasext_dgbdmv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbdmzv_external(
@@ -1673,7 +1673,7 @@ suzerain_blasext_sgbdmzv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbdmzv_external(
@@ -1712,7 +1712,7 @@ suzerain_blasext_dgbdmzv_external(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbdmv(
@@ -1770,7 +1770,7 @@ suzerain_blasext_dgbdmv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbdmzv(
@@ -1811,7 +1811,7 @@ suzerain_blasext_sgbdmzv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbdmzv(
@@ -1853,7 +1853,7 @@ suzerain_blasext_dgbdmzv(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbddmv_external(
@@ -1918,7 +1918,7 @@ suzerain_blasext_dgbddmv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbddmzv_external(
@@ -1964,7 +1964,7 @@ suzerain_blasext_sgbddmzv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbddmzv_external(
@@ -2008,7 +2008,7 @@ suzerain_blasext_dgbddmzv_external(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbddmv(
@@ -2073,7 +2073,7 @@ suzerain_blasext_dgbddmv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbddmzv(
@@ -2119,7 +2119,7 @@ suzerain_blasext_sgbddmzv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbddmzv(
@@ -2162,7 +2162,7 @@ suzerain_blasext_dgbddmzv(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbidmv_external(
@@ -2224,7 +2224,7 @@ suzerain_blasext_dgbidmv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbidmzv_external(
@@ -2268,7 +2268,7 @@ suzerain_blasext_sgbidmzv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbidmzv_external(
@@ -2310,7 +2310,7 @@ suzerain_blasext_dgbidmzv_external(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbidmv(
@@ -2372,7 +2372,7 @@ suzerain_blasext_dgbidmv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbidmzv(
@@ -2416,7 +2416,7 @@ suzerain_blasext_sgbidmzv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbidmzv(
@@ -2461,7 +2461,7 @@ suzerain_blasext_dgbidmzv(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbdddmv_external(
@@ -2533,7 +2533,7 @@ suzerain_blasext_dgbdddmv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbdddmzv_external(
@@ -2584,7 +2584,7 @@ suzerain_blasext_sgbdddmzv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbdddmzv_external(
@@ -2632,7 +2632,7 @@ suzerain_blasext_dgbdddmzv_external(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbdddmv(
@@ -2703,7 +2703,7 @@ suzerain_blasext_dgbdddmv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbdddmzv(
@@ -2753,7 +2753,7 @@ suzerain_blasext_sgbdddmzv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbdddmzv(
@@ -2800,7 +2800,7 @@ suzerain_blasext_dgbdddmzv(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbiddmv_external(
@@ -2869,7 +2869,7 @@ suzerain_blasext_dgbiddmv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbiddmzv_external(
@@ -2918,7 +2918,7 @@ suzerain_blasext_sgbiddmzv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbiddmzv_external(
@@ -2964,7 +2964,7 @@ suzerain_blasext_dgbiddmzv_external(
  * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbiddmv(
@@ -3032,7 +3032,7 @@ suzerain_blasext_dgbiddmv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgbiddmzv(
@@ -3080,7 +3080,7 @@ suzerain_blasext_sgbiddmzv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dgbiddmzv(
@@ -3121,7 +3121,7 @@ suzerain_blasext_dgbiddmzv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_ssbmzv_external(
@@ -3157,7 +3157,7 @@ suzerain_blasext_ssbmzv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dsbmzv_external(
@@ -3192,7 +3192,7 @@ suzerain_blasext_dsbmzv_external(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_ssbmzv(
@@ -3227,7 +3227,7 @@ suzerain_blasext_ssbmzv(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
 suzerain_blasext_dsbmzv(
@@ -3265,7 +3265,7 @@ suzerain_blasext_dsbmzv(
  * \param incb Strictly positive stride between values in \c b.
  * \param ldb Leading dimension of \c b.
  *
- * \see A BLAS reference for general band storage matrix requirements.
+ * \see A BLAS reference for general matrix storage requirements.
  */
 void
 suzerain_blasext_sge_diag_scale_acc(
@@ -3331,6 +3331,47 @@ suzerain_blasext_zge_diag_scale_acc(
         const int ldb);
 
 /*!
+ * \brief Compute \f$ B \leftarrow{} \alpha{} A D + \beta{}B \f$ for real
+ * general \f$A\f$, real diagonal \f$D\f$, and complex general \f$B\f$.
+ * Real-valued strides are in units of <tt>double</tt> while complex-valued
+ * strides are in units of <tt>double[2]</tt>.
+ *
+ * Matrices \f$ A \f$ and \f$ B \f$ both have general storage.
+ * All three matrices may be generally strided.  The operation and
+ * interface differs from the BLAS' ge_diag_scale_acc.
+ *
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of matrix \f$ D\f$.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param a General band storage of the matrix \f$ A \f$.
+ * \param inca Strictly positive stride between values in \c a.
+ * \param lda Leading dimension of \c a.
+ * \param d Diagonal storage of matrix \f$ D \f$.
+ * \param ldd Nonnegative stride between diagonal entries in \c d.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param b General band storage of the matrix \f$ B \f$.
+ * \param incb Strictly positive stride between values in \c b.
+ * \param ldb Leading dimension of \c b.
+ *
+ * \see A BLAS reference for general matrix storage requirements.
+ */
+void
+suzerain_blasext_zge_diag_scale_dacc(
+        const int m,
+        const int n,
+        const double alpha[2],
+        const double *a,
+        const int inca,
+        const int lda,
+        const double *d,
+        const int ldd,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb);
+
+/*!
  * \brief Compute \f$ B \leftarrow{} \alpha{} A D + \beta{}B \f$
  * for banded \f$A\f$, diagonal \f$D\f$, and banded \f$B\f$.
  *
@@ -3358,7 +3399,7 @@ suzerain_blasext_zge_diag_scale_acc(
  * \param incb Strictly positive stride between values in \c b.
  * \param ldb Leading dimension of \c b.
  *
- * \see A BLAS reference for general band storage matrix requirements.
+ * \see A BLAS reference for general band matrix storage requirements.
  */
 void
 suzerain_blasext_sgb_diag_scale_acc(
@@ -3432,6 +3473,51 @@ suzerain_blasext_zgb_diag_scale_acc(
         const int ldb);
 
 /*!
+ * \brief Compute \f$ B \leftarrow{} \alpha{} A D + \beta{}B \f$ for real
+ * banded \f$A\f$, real diagonal \f$D\f$, and complex banded \f$B\f$.
+ * Real-valued strides are in units of <tt>double</tt> while complex-valued
+ * strides are in units of <tt>double[2]</tt>.
+ *
+ * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.
+ * All three matrices may be generally strided.  The operation and
+ * interface differs from the BLAS' ge_diag_scale_acc.
+ *
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of matrix \f$ D\f$.
+ * \param kl Number of subdiagonals in band storage of \c a and \c b.
+ * \param ku Number of superdiagonals in band storage of \c a and \c b.
+ * \param alpha Multiplicative scalar \f$ \alpha \f$
+ * \param a General band storage of the matrix \f$ A \f$.
+ * \param inca Strictly positive stride between values in \c a.
+ * \param lda Leading dimension of \c a.
+ * \param d Diagonal storage of matrix \f$ D \f$.
+ * \param ldd Nonnegative stride between diagonal entries in \c d.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param b General band storage of the matrix \f$ B \f$.
+ * \param incb Strictly positive stride between values in \c b.
+ * \param ldb Leading dimension of \c b.
+ *
+ * \see A BLAS reference for general band matrix storage requirements.
+ */
+void
+suzerain_blasext_zgb_diag_scale_dacc(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const double alpha[2],
+        const double *a,
+        const int inca,
+        const int lda,
+        const double *d,
+        const int ldd,
+        const double beta[2],
+        double (*b)[2],
+        const int incb,
+        const int ldb);
+
+/*!
  * \brief Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using where
  * \f$B\f$, \f$\alpha\f$, and \f$\beta\f$ are complex-valued and \f$A\f$ is
  * real-valued.  Real-valued strides are in units of <tt>double</tt> while
@@ -3452,7 +3538,7 @@ suzerain_blasext_zgb_diag_scale_acc(
  * \param b General band storage of the matrix \f$ B \f$.
  * \param ldb Leading dimension of \c b in units of <tt>double[2]</tt>.
  *
- * \see A BLAS reference for general band storage matrix requirements.
+ * \see A BLAS reference for general band matrix storage requirements.
  */
 void
 suzerain_blasext_zgb_dacc(
@@ -3532,7 +3618,7 @@ suzerain_blasext_i2s_zaxpby2(
  * \param norm1 The one norm of the matrix.
  *
  * \see A BLAS reference for more details, especially for general
- *      band storage matrix requirements.
+ *      band matrix storage requirements.
  *
  * \return Zero on successful execution.  Nonzero otherwise.
  */
