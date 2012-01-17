@@ -273,6 +273,7 @@ public:
 
     void addScaled(const Element& factor,
                    const ContiguousState& other);
+
     void assign(const ContiguousState &other);
 
     void exchange(ContiguousState &other);
