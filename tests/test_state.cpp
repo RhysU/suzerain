@@ -608,12 +608,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storage_order, T, test_types )
 {
     InterleavedState<3,T> foo(size(2,2,2));
 
-    BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   1, &(foo[1][0][0]));
-    BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   2, &(foo[0][1][0]));
+    BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   1, &(foo[0][1][0]));
+    BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   2, &(foo[1][0][0]));
     BOOST_CHECK_EQUAL( &(foo[0][0][0]) + 2*2, &(foo[0][0][1]));
 
-    BOOST_CHECK_EQUAL(   1, foo.strides()[0] );
-    BOOST_CHECK_EQUAL(   2, foo.strides()[1] );
+    BOOST_CHECK_EQUAL(   1, foo.strides()[1] );
+    BOOST_CHECK_EQUAL(   2, foo.strides()[0] );
     BOOST_CHECK_EQUAL( 2*2, foo.strides()[2] );
 }
 

@@ -25,11 +25,11 @@ BOOST_AUTO_TEST_CASE( interleaved )
         boost::array<int,D> strides;
         BOOST_CHECK_EQUAL(24U, storage::compute_strides(
                     sizes.begin(), strides.begin()));
-        BOOST_CHECK_EQUAL(strides, boost::assign::list_of(1)(2)(6));
+        BOOST_CHECK_EQUAL(strides, boost::assign::list_of(3)(1)(6));
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {{1, 1, 1}}, {{1, 2, 6}} };
+        const boost::array<int,D> minstrides[] = { {{1, 1, 1}}, {{3, 1, 6}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {
@@ -39,12 +39,12 @@ BOOST_AUTO_TEST_CASE( interleaved )
             boost::array<int,D> strides;
             BOOST_CHECK_EQUAL(24U, storage::compute_strides(
                     sizes.begin(), minstrides[i].begin(), strides.begin()));
-            BOOST_CHECK_EQUAL(strides, boost::assign::list_of(1)(2)(6));
+            BOOST_CHECK_EQUAL(strides, boost::assign::list_of(3)(1)(6));
         }
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {{2, 1, 1}}, {{2, 4, 12}} };
+        const boost::array<int,D> minstrides[] = { {{1, 2, 1}}, {{6, 2, 12}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {
@@ -54,22 +54,22 @@ BOOST_AUTO_TEST_CASE( interleaved )
             boost::array<int,D> strides;
             BOOST_CHECK_EQUAL(48U, storage::compute_strides(
                     sizes.begin(), minstrides[i].begin(), strides.begin()));
-            BOOST_CHECK_EQUAL(strides, boost::assign::list_of(2)(4)(12));
+            BOOST_CHECK_EQUAL(strides, boost::assign::list_of(6)(2)(12));
         }
     }
 
     {
-        const boost::array<int,D> minstrides[] = { {{1, 3, 1}}, {{1, 3, 8}} };
+        const boost::array<int,D> minstrides[] = { {{4, 1, 1}}, {{4, 1, 8}} };
         const std::size_t N = sizeof(minstrides)/sizeof(minstrides[0]);
 
         for (std::size_t i = 0; i < N; ++i) {
             BOOST_TEST_MESSAGE(sizes << " with minstrides " << minstrides[i]);
-            BOOST_CHECK_EQUAL(36U, storage::compute_storage(
+            BOOST_CHECK_EQUAL(32U, storage::compute_storage(
                     sizes.begin(), minstrides[i].begin()));
             boost::array<int,D> strides;
-            BOOST_CHECK_EQUAL(36U, storage::compute_strides(
+            BOOST_CHECK_EQUAL(32U, storage::compute_strides(
                     sizes.begin(), minstrides[i].begin(), strides.begin()));
-            BOOST_CHECK_EQUAL(strides, boost::assign::list_of(1)(3)(9));
+            BOOST_CHECK_EQUAL(strides, boost::assign::list_of(4)(1)(8));
         }
     }
 
@@ -84,14 +84,14 @@ BOOST_AUTO_TEST_CASE( interleaved )
             boost::array<int,D> strides;
             BOOST_CHECK_EQUAL(96U, storage::compute_strides(
                     sizes.begin(), minstrides[i].begin(), strides.begin()));
-            BOOST_CHECK_EQUAL(strides, boost::assign::list_of(1)(2)(24));
+            BOOST_CHECK_EQUAL(strides, boost::assign::list_of(3)(1)(24));
         }
     }
 }
 
-BOOST_AUTO_TEST_CASE( noninterleaved )
+BOOST_AUTO_TEST_CASE( contiguous )
 {
-    typedef suzerain::storage::noninterleaved<3> storage;
+    typedef suzerain::storage::contiguous<3> storage;
     const std::size_t D = storage::dimensionality;
 
     const boost::array<int,D> sizes = {{ 2, 3, 4 }};

@@ -218,43 +218,74 @@ std::size_t general<StorageOrderSequence>::compute_storage(
 }
 
 /**
+ * A marker type for specifying interleaved state storage.  The storage is
+ * Fortran's row-major ordering \em except that the first two indices are
+ * exchanged.  The second index is fastest, the first index next fastest, and
+ * indices three and higher follow regular row-major ordering.  Regions with
+ * the first index held constant are therefore "interleaved" with the second
+ * index and hence the name.
+ */
+
+/**
  * A marker type for specifying interleaved state storage (which happens to be
  * identical to Fortran's row-major storage ordering).
  */
-template< std::size_t NumDims > class interleaved
-    : public general<
-            typename boost::mpl::range_c<std::size_t,0,NumDims>::type
-      > {};
+template< std::size_t NumDims > class interleaved;
+
+/** Interleaved storage specification for one dimension */
+template<> class interleaved<1>
+    : public general< boost::mpl::vector_c<std::size_t,0> > {};
+
+/** Interleaved storage specification for two dimensions */
+template<> class interleaved<2>
+    : public general< boost::mpl::vector_c<std::size_t,1,0> > {};
+
+/** Interleaved storage specification for three dimensions */
+template<> class interleaved<3>
+    : public general< boost::mpl::vector_c<std::size_t,1,0,2> > {};
+
+/** Interleaved storage specification for four dimensions */
+template<> class interleaved<4>
+    : public general< boost::mpl::vector_c<std::size_t,1,0,2,3> > {};
+
+/** Interleaved storage specification for five dimensions */
+template<> class interleaved<5>
+    : public general< boost::mpl::vector_c<std::size_t,1,0,2,3,4> > {};
+
+/** Interleaved storage specification for six dimensions */
+template<> class interleaved<6>
+    : public general< boost::mpl::vector_c<std::size_t,1,0,2,3,4,5> > {};
 
 /**
  * A marker type for specifying non-interleaved state storage.  This is storage
  * for which the first index is slowest and the remaining indices follow
- * Fortran row-major storage ordering.
+ * Fortran row-major storage ordering.  Regions with the first index held
+ * constant are therefore "contiguous" and hence the name.
  */
-template< std::size_t NumDims > class noninterleaved;
+template< std::size_t NumDims > class contiguous;
 
-/** Noninterleaved storage specification for one dimension */
-template<> class noninterleaved<1>
+/** Contiguous storage specification for one dimension */
+template<> class contiguous<1>
     : public general< boost::mpl::vector_c<std::size_t,0> > {};
 
-/** Noninterleaved storage specification for two dimensions */
-template<> class noninterleaved<2>
+/** Contiguous storage specification for two dimensions */
+template<> class contiguous<2>
     : public general< boost::mpl::vector_c<std::size_t,1,0> > {};
 
-/** Noninterleaved storage specification for three dimensions */
-template<> class noninterleaved<3>
+/** Contiguous storage specification for three dimensions */
+template<> class contiguous<3>
     : public general< boost::mpl::vector_c<std::size_t,1,2,0> > {};
 
-/** Noninterleaved storage specification for four dimensions */
-template<> class noninterleaved<4>
+/** Contiguous storage specification for four dimensions */
+template<> class contiguous<4>
     : public general< boost::mpl::vector_c<std::size_t,1,2,3,0> > {};
 
-/** Noninterleaved storage specification for five dimensions */
-template<> class noninterleaved<5>
+/** Contiguous storage specification for five dimensions */
+template<> class contiguous<5>
     : public general< boost::mpl::vector_c<std::size_t,1,2,3,4,0> > {};
 
-/** Noninterleaved storage specification for six dimensions */
-template<> class noninterleaved<6>
+/** Contiguous storage specification for six dimensions */
+template<> class contiguous<6>
     : public general< boost::mpl::vector_c<std::size_t,1,2,3,4,5,0> > {};
 
 } // namespace storage

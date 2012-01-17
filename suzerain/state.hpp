@@ -182,8 +182,8 @@ void apply(BLASFunctor functor,
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
 
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-        ix < iu;
-        ++ix, ++iy) {
+         ix < iu;
+         ++ix, ++iy) {
 
         for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
              kx < ku;
@@ -209,16 +209,16 @@ void apply(BLASFunctor functor,
     const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
 
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-        ix < iu;
-        ++ix, ++iy) {
+         ix < iu;
+         ++ix, ++iy) {
 
         for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
-            lx < lu;
-            ++lx, ++ly) {
+             lx < lu;
+             ++lx, ++ly) {
 
             for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
-                kx < ku;
-                ++kx, ++ky) {
+                 kx < ku;
+                 ++kx, ++ky) {
 
                 functor(x.shape()[1],
                         &x[ix][x.index_bases()[1]][kx][lx], x.strides()[1],
@@ -242,20 +242,150 @@ void apply(BLASFunctor functor,
     const index mu = numeric_cast<index>(x.index_bases()[4] + x.shape()[4]);
 
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-        ix < iu;
-        ++ix, ++iy) {
+         ix < iu;
+         ++ix, ++iy) {
 
         for (index mx = x.index_bases()[4], my = y.index_bases()[4];
-            mx < mu;
-            ++mx, ++my) {
+             mx < mu;
+             ++mx, ++my) {
 
             for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
-                lx < lu;
-                ++lx, ++ly) {
+                 lx < lu;
+                 ++lx, ++ly) {
 
                 for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
-                    kx < ku;
-                    ++kx, ++ky) {
+                     kx < ku;
+                     ++kx, ++ky) {
+
+                    functor(x.shape()[1],
+                            &x[ix][x.index_bases()[1]][kx][lx][mx],
+                            x.strides()[1],
+                            &y[iy][y.index_bases()[1]][ky][ly][my],
+                            y.strides()[1]);
+                }
+            }
+        }
+    }
+}
+
+template< typename BLASFunctor, typename Element >
+void apply(BLASFunctor functor,
+           InterleavedState<1,Element>& x,
+           InterleavedState<1,Element>& y)
+{
+    assert(std::equal(x.shape(), x.shape() + 1, y.shape()));
+
+    functor(x.shape()[0],
+            x.range().begin(), x.strides()[0],
+            y.range().begin(), y.strides()[0]);
+}
+
+template< typename BLASFunctor, typename Element >
+void apply(BLASFunctor functor,
+           InterleavedState<2,Element>& x,
+           InterleavedState<2,Element>& y)
+{
+    typedef typename InterleavedState<2,Element>::index index;
+    assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+
+    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+         ix < iu;
+         ++ix, ++iy) {
+
+        functor(x.shape()[1],
+                &x[ix][x.index_bases()[1]], x.strides()[1],
+                &y[iy][y.index_bases()[1]], y.strides()[1]);
+    }
+}
+
+template< typename BLASFunctor, typename Element >
+void apply(BLASFunctor functor,
+           InterleavedState<3,Element>& x,
+           InterleavedState<3,Element>& y)
+{
+    typedef typename InterleavedState<3,Element>::index index;
+    assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+    const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
+
+    for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
+         kx < ku;
+         ++kx, ++ky) {
+
+        for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+             ix < iu;
+             ++ix, ++iy) {
+
+            functor(x.shape()[1],
+                    &x[ix][x.index_bases()[1]][kx], x.strides()[1],
+                    &y[iy][y.index_bases()[1]][ky], y.strides()[1]);
+        }
+    }
+}
+
+template< typename BLASFunctor, typename Element >
+void apply(BLASFunctor functor,
+           InterleavedState<4,Element>& x,
+           InterleavedState<4,Element>& y)
+{
+    typedef typename InterleavedState<4,Element>::index index;
+    assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+    const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
+    const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
+
+    for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
+         lx < lu;
+         ++lx, ++ly) {
+
+        for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
+             kx < ku;
+             ++kx, ++ky) {
+
+            for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+                 ix < iu;
+                 ++ix, ++iy) {
+
+                functor(x.shape()[1],
+                        &x[ix][x.index_bases()[1]][kx][lx], x.strides()[1],
+                        &y[iy][y.index_bases()[1]][ky][ly], y.strides()[1]);
+            }
+        }
+    }
+}
+
+template< typename BLASFunctor, typename Element >
+void apply(BLASFunctor functor,
+           InterleavedState<5,Element>& x,
+           InterleavedState<5,Element>& y)
+{
+    typedef typename InterleavedState<5,Element>::index index;
+    assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
+    using boost::numeric_cast;
+    const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
+    const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
+    const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
+    const index mu = numeric_cast<index>(x.index_bases()[4] + x.shape()[4]);
+
+    for (index mx = x.index_bases()[4], my = y.index_bases()[4];
+         mx < mu;
+         ++mx, ++my) {
+
+        for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
+             lx < lu;
+             ++lx, ++ly) {
+
+            for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
+                 kx < ku;
+                 ++kx, ++ky) {
+
+                for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
+                     ix < iu;
+                     ++ix, ++iy) {
 
                     functor(x.shape()[1],
                             &x[ix][x.index_bases()[1]][kx][lx][mx],

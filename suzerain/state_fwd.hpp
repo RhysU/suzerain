@@ -197,9 +197,9 @@ public:
 
     /**
      * Exchange <tt>this</tt>'s storage with <tt>other</tt>'s storage by moving
-     * the relevant data without incurring a lot of memory overhead.  In
-     * contrast with potentially optimized swap semantics, this method should
-     * swap data instead of playing tricks with underlying pointers.
+     * the relevant data while incurring minimal memory overhead.  In contrast
+     * with potentially optimized swap semantics, this method might swap data
+     * instead of playing tricks with underlying pointers.
      *
      * @param other instance with which to exchange data.
      * @throw std::logic_error if \c other is not isomorphic.
@@ -249,7 +249,7 @@ public:
 /**@}*/
 
     /** The storage ordering in use */
-    typedef typename storage::noninterleaved<NumDims> storage_order_type;
+    typedef typename storage::contiguous<NumDims> storage_order_type;
 
     template<typename ExtentList>
     explicit ContiguousState(const ExtentList& sizes);

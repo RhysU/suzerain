@@ -739,7 +739,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE( noninterleaved_storage )
+BOOST_AUTO_TEST_SUITE( contiguous_storage )
 
 // Run the explicit timestepper against (d/dt) y = a*y
 // where it is expected to be third order.
@@ -1012,7 +1012,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( mixed_storage )
 
-// FIXME: Implement explicit/hybrid tests against Interleaved/Noninterleaved
+// FIXME: Implement explicit/hybrid tests against Interleaved/Contiguous
 // See Redmine ticket #1194
 
 BOOST_AUTO_TEST_SUITE_END()
