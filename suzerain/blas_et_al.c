@@ -882,16 +882,11 @@ suzerain_blas_sgb_acc(
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    /* Simulate sgb_acc since MKL lacks the routine. */
-    const int veclength = ku + 1 + kl;
-    if (veclength == lda && veclength == ldb) {  // Contiguous block
-        suzerain_blas_saxpby(veclength*n, alpha, a, 1, beta, b, 1);
-    } else {                                     // General case
-        const float one = 1.0f;
-        suzerain_blasext_sgb_diag_scale_acc(m, n, kl, ku,
-                                            alpha, a, 1, lda, &one, 0,
-                                            beta,  b, 1, ldb);
-    }
+    /* Internal sgb_acc because MKL lacks the routine. */
+    const float one = 1.0f;
+    suzerain_blasext_sgb_diag_scale_acc(m, n, kl, ku,
+                                        alpha, a, 1, lda, &one, 0,
+                                        beta,  b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
@@ -911,16 +906,11 @@ suzerain_blas_dgb_acc(
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    /* Simulate dgb_acc since MKL lacks the routine. */
-    const int veclength = ku + 1 + kl;
-    if (veclength == lda && veclength == ldb) {  // Contiguous block
-        suzerain_blas_daxpby(veclength*n, alpha, a, 1, beta, b, 1);
-    } else {                                     // General case
-        const double one = 1.0;
-        suzerain_blasext_dgb_diag_scale_acc(m, n, kl, ku,
-                                            alpha, a, 1, lda, &one, 0,
-                                            beta,  b, 1, ldb);
-    }
+    /* Internal dgb_acc because MKL lacks the routine. */
+    const double one = 1.0;
+    suzerain_blasext_dgb_diag_scale_acc(m, n, kl, ku,
+                                        alpha, a, 1, lda, &one, 0,
+                                        beta,  b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
@@ -940,16 +930,11 @@ suzerain_blas_cgb_acc(
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    /* Simulate cgb_acc since MKL lacks the routine. */
-    const int veclength = ku + 1 + kl;
-    if (veclength == lda && veclength == ldb) {  // Contiguous block
-        suzerain_blas_caxpby(veclength*n, alpha, a, 1, beta, b, 1);
-    } else {                                     // General case
-        const float one[2] = { 1.0f, 0.0f };
-        suzerain_blasext_cgb_diag_scale_acc(m, n, kl, ku,
-                                            alpha, a, 1, lda, &one, 0,
-                                            beta,  b, 1, ldb);
-    }
+    /* Internal cgb_acc because MKL lacks the routine. */
+    const float one[2] = { 1.0f, 0.0f };
+    suzerain_blasext_cgb_diag_scale_acc(m, n, kl, ku,
+                                        alpha, a, 1, lda, &one, 0,
+                                        beta,  b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
@@ -969,16 +954,11 @@ suzerain_blas_zgb_acc(
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    /* Simulate cgb_acc since MKL lacks the routine. */
-    const int veclength = ku + 1 + kl;
-    if (veclength == lda && veclength == ldb) {  // Contiguous block
-        suzerain_blas_zaxpby(veclength*n, alpha, a, 1, beta, b, 1);
-    } else {                                     // General case
-        const double one[2] = { 1.0, 0.0 };
-        suzerain_blasext_zgb_diag_scale_acc(m, n, kl, ku,
-                                            alpha, a, 1, lda, &one, 0,
-                                            beta,  b, 1, ldb);
-    }
+    /* Internal zgb_acc because MKL lacks the routine. */
+    const double one[2] = { 1.0, 0.0 };
+    suzerain_blasext_zgb_diag_scale_acc(m, n, kl, ku,
+                                        alpha, a, 1, lda, &one, 0,
+                                        beta,  b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
@@ -3580,15 +3560,10 @@ suzerain_blasext_zgb_dacc(
         double (*b)[2],
         const int ldb)
 {
-    const int veclength = ku + 1 + kl;
-    if (veclength == lda && veclength == ldb) {  // Contiguous block
-        suzerain_blasext_daxpzby(veclength*n, alpha, a, 1, beta, b, 1);
-    } else {                                     // General case
-        const double one = 1.0;
-        suzerain_blasext_zgb_diag_scale_dacc(m, n, kl, ku,
-                                             alpha, a, 1, lda, &one, 0,
-                                             beta,  b, 1, ldb);
-    }
+    const double one = 1.0;
+    suzerain_blasext_zgb_diag_scale_dacc(m, n, kl, ku,
+                                         alpha, a, 1, lda, &one, 0,
+                                         beta,  b, 1, ldb);
 }
 
 void
