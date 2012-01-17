@@ -564,104 +564,162 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
     using boost::numeric_cast;
 
     // Regular constructor
-    InterleavedState<3,T> foo(size223());
-    BOOST_CHECK_EQUAL(foo.range().size(), 2*2*3);
+    InterleavedState<4,T> foo(size2234());
+    BOOST_CHECK_EQUAL(foo.range().size(), 2*2*3*4);
     load(foo, 1);
     verify(foo, 1);
 
     // Copy construct a second instance from the first
-    InterleavedState<3,T> bar(foo);
-    BOOST_CHECK_EQUAL(bar.range().size(), 2*2*3);
+    InterleavedState<4,T> bar(foo);
+    BOOST_CHECK_EQUAL(bar.range().size(), 2*2*3*4);
     verify(bar, 1);
 
     // Modify first instance's data
     for (int i = 0; i < numeric_cast<int>(foo.shape()[0]); ++i)
         for (int j = 0; j < numeric_cast<int>(foo.shape()[1]); ++j)
             for (int k = 0; k < numeric_cast<int>(foo.shape()[2]); ++k)
-                foo[i][j][k] += (i+1)*(j+1)*(k+1);
+                for (int l = 0; l < numeric_cast<int>(foo.shape()[3]); ++l)
+                    foo[i][j][k][l] += (i+1)*(j+1)*(k+1)*(l+1);
 
     // Ensure copy constructed data in second instance not modified
     verify(bar, 1);
 
     // Create padded instance and ensure content lies within padding
-    InterleavedState<3,T> baz(size223(), 2*2*3*7);
-    BOOST_CHECK_EQUAL(baz.range().size(), 2*2*3*7);
-    BOOST_CHECK_GE(baz.range().begin(), &(baz[0][0][0]));
-    BOOST_CHECK_LT(&(baz[1][1][2]), baz.range().end());
+    InterleavedState<4,T> baz(size2234(), 2*2*3*4*7);
+    BOOST_CHECK_EQUAL(baz.range().size(), 2*2*3*4*7);
+    BOOST_CHECK_GE(baz.range().begin(), &(baz[0][0][0][0]));
+    BOOST_CHECK_LT(&(baz[1][1][2][0]), baz.range().end());
 
     // Ensure padded information present propagated in copy operations
-    InterleavedState<3,T> qux(baz);
-    BOOST_CHECK_EQUAL(qux.range().size(), 2*2*3*7);
+    InterleavedState<4,T> qux(baz);
+    BOOST_CHECK_EQUAL(qux.range().size(), 2*2*3*4*7);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
 {
-    InterleavedState<3,T> foo(size223()), bar(size223());
+    InterleavedState<4,T> foo(size2234()), bar(size2234());
     test_assignment_helper(foo, bar);
 
     // Operation between two nonconforming states throws
-    InterleavedState<3,T> baz(size(2,2,2));
+    InterleavedState<4,T> baz(size(2,2,2,2));
     BOOST_CHECK_THROW(baz.assign(foo), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( storage_order, T, test_types )
 {
-    InterleavedState<3,T> foo(size(2,2,2));
+    InterleavedState<4,T> foo(size(2,2,2,2));
 
-    BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   1, &(foo[0][1][0]));
-    BOOST_CHECK_EQUAL( &(foo[0][0][0]) +   2, &(foo[1][0][0]));
-    BOOST_CHECK_EQUAL( &(foo[0][0][0]) + 2*2, &(foo[0][0][1]));
+    BOOST_CHECK_EQUAL( &(foo[0][0][0][0]) +     1, &(foo[0][1][0][0]));
+    BOOST_CHECK_EQUAL( &(foo[0][0][0][0]) +     2, &(foo[1][0][0][0]));
+    BOOST_CHECK_EQUAL( &(foo[0][0][0][0]) +   2*2, &(foo[0][0][1][0]));
+    BOOST_CHECK_EQUAL( &(foo[0][0][0][0]) + 2*2*2, &(foo[0][0][0][1]));
 
-    BOOST_CHECK_EQUAL(   1, foo.strides()[1] );
-    BOOST_CHECK_EQUAL(   2, foo.strides()[0] );
-    BOOST_CHECK_EQUAL( 2*2, foo.strides()[2] );
+    BOOST_CHECK_EQUAL(     1, foo.strides()[1] );
+    BOOST_CHECK_EQUAL(     2, foo.strides()[0] );
+    BOOST_CHECK_EQUAL(   2*2, foo.strides()[2] );
+    BOOST_CHECK_EQUAL( 2*2*2, foo.strides()[3] );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( isIsomorphic, T, test_types )
 {
-    InterleavedState<3,T> foo( size(2,2,2));
-    InterleavedState<3,T> bar( size(2,2,2));
-    InterleavedState<3,T> baz( size(1,2,2));
-    InterleavedState<3,T> qux( size(2,1,2));
-    InterleavedState<3,T> quux(size(2,2,1));
+    InterleavedState<4,T> foo(  size(2,2,2,2));
+    InterleavedState<4,T> bar(  size(2,2,2,2));
+    InterleavedState<4,T> baz(  size(1,2,2,2));
+    InterleavedState<4,T> qux(  size(2,1,2,2));
+    InterleavedState<4,T> quux( size(2,2,1,2));
+    InterleavedState<4,T> quuux(size(2,2,2,1));
 
     BOOST_CHECK_EQUAL(true,  foo.isIsomorphic(foo));
     BOOST_CHECK_EQUAL(true,  foo.isIsomorphic(bar));
     BOOST_CHECK_EQUAL(false, foo.isIsomorphic(baz));
     BOOST_CHECK_EQUAL(false, foo.isIsomorphic(qux));
     BOOST_CHECK_EQUAL(false, foo.isIsomorphic(quux));
+    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(quuux));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
 {
-    InterleavedState<3,T> foo(size223());
-    test_scale_helper(foo);
+    BOOST_TEST_MESSAGE("Instance without padding");
+    {
+        InterleavedState<4,T> foo(size2234());
+        test_scale_helper(foo);
+    }
+
+    BOOST_TEST_MESSAGE("Instance with padding");
+    {
+        InterleavedState<4,T> foo(size2234(), 87);
+        test_scale_helper(foo);
+    }
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
 {
-    InterleavedState<3,T> foo(size223()), bar(size223());
-    test_addScaled_helper(foo, bar);
+    BOOST_TEST_MESSAGE("Instances without padding");
+    {
+        InterleavedState<4,T> foo(size2234()), bar(size2234());
+        test_addScaled_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("First instance with padding");
+    {
+        InterleavedState<4,T> foo(size2234(), 87), bar(size2234());
+        test_addScaled_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Second instance with padding");
+    {
+        InterleavedState<4,T> foo(size2234()), bar(size2234(), 87);
+        test_addScaled_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Both instances with padding");
+    {
+        InterleavedState<4,T> foo(size2234(), 87), bar(size2234(), 78);
+        test_addScaled_helper(foo, bar);
+    }
 
     // Operation between two nonconforming states throws
-    InterleavedState<3,T> baz(size(2,2,2));
+    InterleavedState<4,T> foo(size2234());
+    InterleavedState<4,T> baz(size(2,2,2));
     BOOST_CHECK_THROW(foo.addScaled(3, baz), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
 {
-    InterleavedState<3,T> foo(size223()), bar(size223());
-    test_exchange_helper(foo, bar);
+    BOOST_TEST_MESSAGE("Instances without padding");
+    {
+        InterleavedState<4,T> foo(size2234()), bar(size2234());
+        test_exchange_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("First instance with padding");
+    {
+        InterleavedState<4,T> foo(size2234(), 87), bar(size2234());
+        test_exchange_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Second instance with padding");
+    {
+        InterleavedState<4,T> foo(size2234()), bar(size2234(), 87);
+        test_exchange_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Both instances with padding");
+    {
+        InterleavedState<4,T> foo(size2234(), 87), bar(size2234(), 78);
+        test_exchange_helper(foo, bar);
+    }
 
     // Operation between two nonconforming states throws
-    InterleavedState<3,T> baz(size(2,2,2));
+    InterleavedState<4,T> foo(size2234());
+    InterleavedState<4,T> baz(size(2,2,2));
     BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check, T, test_types )
 {
     using boost::detail::multi_array::MutableMultiArrayConcept;
-    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<InterleavedState<3,T>,3>));
+    BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<InterleavedState<4,T>,4>));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

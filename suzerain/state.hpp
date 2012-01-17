@@ -500,6 +500,8 @@ template< std::size_t NumDims, typename Element >
 void InterleavedState<NumDims,Element>::scale(
         const Element& factor)
 {
+    // Data guaranteed to be contiguous in first num_elements.
+    // Any padding from min_total_contiguous_count is unmodified.
     suzerain::blas::scal(this->num_elements(), factor, this->data(), 1);
 }
 
@@ -514,7 +516,8 @@ void InterleavedState<NumDims,Element>::addScaled(
     if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
             std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
 
-    assert(other.num_elements() == this->num_elements());
+    // Data in this and other guaranteed to be contiguous in num_elements.
+    // Any padding from min_total_contiguous_count is unmodified.
     suzerain::blas::axpy(
             this->num_elements(), factor, other.data(), 1, this->data(), 1);
 }
@@ -528,7 +531,8 @@ void InterleavedState<NumDims,Element>::assign(
     if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
             std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
 
-    assert(other.num_elements() == this->num_elements());
+    // Data in this and other guaranteed to be contiguous in num_elements.
+    // Any padding from min_total_contiguous_count is unmodified.
     suzerain::blas::copy(
             this->num_elements(), other.data(), 1, this->data(), 1);
 }
@@ -542,7 +546,8 @@ void InterleavedState<NumDims,Element>::exchange(
     if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
             std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
 
-    assert(other.num_elements() == this->num_elements());
+    // Data in this and other guaranteed to be contiguous in num_elements.
+    // Any padding from min_total_contiguous_count is unmodified.
     suzerain::blas::swap(
             this->num_elements(), other.data(), 1, this->data(), 1);
 }
