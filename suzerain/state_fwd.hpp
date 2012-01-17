@@ -46,8 +46,12 @@
  * Template Pattern (CRTP) to provide static polymorphism following
  * the style used in Eigen.
  *
- * @see Either <a href="https://secure.wikimedia.org/wikipedia/en/wiki/Curiously_recurring_template_pattern"> Wikipedia</a> or <a href="https://secure.wikimedia.org/wikibooks/en/wiki/More_C%2B%2B_Idioms/Curiously_Recurring_Template_Pattern"> More C++ Idioms</a>
- * for more information on the Curiously Recurring Template Pattern.
+ * @see Both <a
+ * href="https://secure.wikimedia.org/wikipedia/en/wiki/Curiously_recurring_template_pattern">
+ * Wikipedia</a> and <a
+ * href="https://secure.wikimedia.org/wikibooks/en/wiki/More_C%2B%2B_Idioms/Curiously_Recurring_Template_Pattern">
+ * More C++ Idioms</a> for more information on the Curiously Recurring Template
+ * Pattern.
  */
 
 namespace suzerain
