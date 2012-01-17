@@ -3600,20 +3600,20 @@ suzerain_blasext_zgb_diag_scale_acc(
  */
 void
 suzerain_blasext_zgb_diag_scale_dacc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const double alpha[2],
         const double *a,
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const double *d,
-        const int ldd,
+        int ldd,
         const double beta[2],
         double (*b)[2],
-        const int incb,
-        const int ldb);
+        int incb,
+        int ldb);
 
 /*!
  * \brief Compute \f$ B \leftarrow{} A (\alpha_0 D_0 + \alpha_1 D_1) + \beta{}B
@@ -3648,23 +3648,23 @@ suzerain_blasext_zgb_diag_scale_dacc(
  */
 void
 suzerain_blasext_zgb_ddiag_scale_dacc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const double *a,
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const double alpha0[2],
         const double *d0,
-        const int ldd0,
+        int ldd0,
         const double alpha1[2],
         const double *d1,
-        const int ldd1,
+        int ldd1,
         const double beta[2],
         double (*b)[2],
-        const int incb,
-        const int ldb);
+        int incb,
+        int ldb);
 
 /*!
  * \brief Compute \f$ B \leftarrow{} A (\alpha_0 D_0 + \alpha_1 D_1 + \alpha_2
@@ -3703,26 +3703,26 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
  */
 void
 suzerain_blasext_zgb_dddiag_scale_dacc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const double *a,
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const double alpha0[2],
         const double *d0,
-        const int ldd0,
+        int ldd0,
         const double alpha1[2],
         const double *d1,
-        const int ldd1,
+        int ldd1,
         const double alpha2[2],
         const double *d2,
-        const int ldd2,
+        int ldd2,
         const double beta[2],
         double (*b)[2],
-        const int incb,
-        const int ldb);
+        int incb,
+        int ldb);
 
 /*!
  * \brief Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using where
