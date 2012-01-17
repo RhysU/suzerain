@@ -41,7 +41,8 @@ test_daxpby()
 
     suzerain_blas_daxpby(nx/incx, alpha, x, incx, beta, y, incy);
     for (i = 0; i < nexpected; ++i) {
-        gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON, "daxpby index %d", i);
+        gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -74,7 +75,8 @@ test_saxpby()
 
     suzerain_blas_saxpby(nx/incx, alpha, x, incx, beta, y, incy);
     for (i = 0; i < nexpected; ++i) {
-        gsl_test_abs(y[i], expected[i], GSL_FLT_EPSILON, "saxpby index %d", i);
+        gsl_test_abs(y[i], expected[i], GSL_FLT_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -126,9 +128,9 @@ test_caxpby()
     suzerain_blas_caxpby(nx/incx, alpha, x, incx, beta, y, incy);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_FLT_EPSILON,
-                "caxpby real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(y[i][1], expected[i][1], GSL_FLT_EPSILON,
-                "caxpby imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -180,9 +182,9 @@ test_zaxpby()
     suzerain_blas_zaxpby(nx/incx, alpha, x, incx, beta, y, incy);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                "zaxpby real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                "zaxpby imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -215,7 +217,8 @@ test_dwaxpby()
 
     suzerain_blas_dwaxpby(nx/incx, alpha, x, incx, beta, y, incy, w, incw);
     for (i = 0; i < nexpected; ++i) {
-        gsl_test_abs(w[i], expected[i], GSL_DBL_EPSILON, "dwaxpby index %d", i);
+        gsl_test_abs(w[i], expected[i], GSL_DBL_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -248,7 +251,8 @@ test_swaxpby()
 
     suzerain_blas_swaxpby(nx/incx, alpha, x, incx, beta, y, incy, w, incw);
     for (i = 0; i < nexpected; ++i) {
-        gsl_test_abs(w[i], expected[i], GSL_FLT_EPSILON, "swaxpby index %d", i);
+        gsl_test_abs(w[i], expected[i], GSL_FLT_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -274,7 +278,8 @@ test_daxpby_nop()
 
     suzerain_blas_daxpby(nx/incx, alpha, x, incx, beta, y, incy);
     for (i = 0; i < nexpected; ++i) {
-        gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON, "daxpby index %d", i);
+        gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -300,7 +305,8 @@ test_saxpby_nop()
 
     suzerain_blas_saxpby(nx/incx, alpha, x, incx, beta, y, incy);
     for (i = 0; i < nexpected; ++i) {
-        gsl_test_abs(y[i], expected[i], GSL_FLT_EPSILON, "saxpby index %d", i);
+        gsl_test_abs(y[i], expected[i], GSL_FLT_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -328,11 +334,11 @@ test_dswap()
     suzerain_blas_dswap(nx/incx, x, incx, y, incy);
     for (i = 0; i < nx_expected; ++i) {
         gsl_test_abs(x[i], x_expected[i], GSL_DBL_EPSILON,
-                "dswap x index %d", i);
+                "%s:%d x index %d", __func__, __LINE__, i);
     }
     for (i = 0; i < ny_expected; ++i) {
         gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
-                "dswap y index %d", i);
+                "%s:%d y index %d", __func__, __LINE__, i);
     }
 }
 
@@ -360,11 +366,11 @@ test_sswap()
     suzerain_blas_sswap(nx/incx, x, incx, y, incy);
     for (i = 0; i < nx_expected; ++i) {
         gsl_test_abs(x[i], x_expected[i], GSL_DBL_EPSILON,
-                "sswap x index %d", i);
+                "%s:%d x index %d", __func__, __LINE__, i);
     }
     for (i = 0; i < ny_expected; ++i) {
         gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
-                "sswap y index %d", i);
+                "%s:%d y index %d", __func__, __LINE__, i);
     }
 }
 
@@ -392,15 +398,15 @@ test_cswap()
     suzerain_blas_cswap(nx/incx, x, incx, y, incy);
     for (i = 0; i < nx_expected; ++i) {
         gsl_test_abs(x[i][0], x_expected[i][0], GSL_FLT_EPSILON,
-                "cswap x real index %d", i);
+                "%s:%d x real index %d", __func__, __LINE__, i);
         gsl_test_abs(x[i][1], x_expected[i][1], GSL_FLT_EPSILON,
-                "cswap x imag index %d", i);
+                "%s:%d x imag index %d", __func__, __LINE__, i);
     }
     for (i = 0; i < ny_expected; ++i) {
         gsl_test_abs(y[i][0], y_expected[i][0], GSL_FLT_EPSILON,
-                "cswap y real index %d", i);
+                "%s:%d y real index %d", __func__, __LINE__, i);
         gsl_test_abs(y[i][1], y_expected[i][1], GSL_FLT_EPSILON,
-                "cswap y imag index %d", i);
+                "%s:%d y imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -428,15 +434,15 @@ test_zswap()
     suzerain_blas_zswap(nx/incx, x, incx, y, incy);
     for (i = 0; i < nx_expected; ++i) {
         gsl_test_abs(x[i][0], x_expected[i][0], GSL_DBL_EPSILON,
-                "zswap x real index %d", i);
+                "%s:%d x real index %d", __func__, __LINE__, i);
         gsl_test_abs(x[i][1], x_expected[i][1], GSL_DBL_EPSILON,
-                "zswap x imag index %d", i);
+                "%s:%d x imag index %d", __func__, __LINE__, i);
     }
     for (i = 0; i < ny_expected; ++i) {
         gsl_test_abs(y[i][0], y_expected[i][0], GSL_DBL_EPSILON,
-                "zswap y real index %d", i);
+                "%s:%d y real index %d", __func__, __LINE__, i);
         gsl_test_abs(y[i][1], y_expected[i][1], GSL_DBL_EPSILON,
-                "zswap y imag index %d", i);
+                "%s:%d y imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -458,7 +464,7 @@ test_dscal()
         suzerain_blas_dscal(nx/incx, alpha, x, incx);
         for (i = 0; i < nx_expected; ++i) {
             gsl_test_abs(x[i], x_expected[i], GSL_DBL_EPSILON,
-                    "dscal index %d", i);
+                    "%s:%d index %d", __func__, __LINE__, i);
         }
     }
 
@@ -475,7 +481,7 @@ test_dscal()
         suzerain_blas_dscal(ny/incy, beta, y, incy);
         for (i = 0; i < ny_expected; ++i) {
             gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
-                    "dscal index %d", i);
+                    "%s:%d index %d", __func__, __LINE__, i);
         }
     }
 }
@@ -498,7 +504,7 @@ test_sscal()
         suzerain_blas_sscal(nx/incx, alpha, x, incx);
         for (i = 0; i < nx_expected; ++i) {
             gsl_test_abs(x[i], x_expected[i], GSL_FLT_EPSILON,
-                    "sscal index %d", i);
+                    "%s:%d index %d", __func__, __LINE__, i);
         }
     }
 
@@ -515,7 +521,7 @@ test_sscal()
         suzerain_blas_sscal(ny/incy, beta, y, incy);
         for (i = 0; i < ny_expected; ++i) {
             gsl_test_abs(y[i], y_expected[i], GSL_FLT_EPSILON,
-                    "sscal index %d", i);
+                    "%s:%d index %d", __func__, __LINE__, i);
         }
     }
 }
@@ -566,9 +572,9 @@ test_zscal()
 
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(x[i][0], expected[i][0], GSL_DBL_EPSILON,
-                "zscal real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(x[i][1], expected[i][1], GSL_DBL_EPSILON,
-                "zscal imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -618,9 +624,9 @@ test_cscal()
 
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(x[i][0], expected[i][0], GSL_FLT_EPSILON,
-                "zscal real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(x[i][1], expected[i][1], GSL_FLT_EPSILON,
-                "zscal imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -645,7 +651,7 @@ test_dcopy()
     suzerain_blas_dcopy(nx/incx, x, incx, y, incy);
     for (i = 0; i < ny_expected; ++i) {
         gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
-                "dcopy y index %d", i);
+                "%s:%d y index %d", __func__, __LINE__, i);
     }
 }
 
@@ -667,7 +673,7 @@ test_dcopy_fill()
     suzerain_blas_dcopy(ny/incy, &x, 0 /* zero! */, y, incy);
     for (i = 0; i < ny_expected; ++i) {
         gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
-                "dcopy y index %d", i);
+                "%s:%d y index %d", __func__, __LINE__, i);
     }
 }
 
@@ -692,7 +698,7 @@ test_scopy()
     suzerain_blas_scopy(nx/incx, x, incx, y, incy);
     for (i = 0; i < ny_expected; ++i) {
         gsl_test_abs(y[i], y_expected[i], GSL_DBL_EPSILON,
-                "scopy y index %d", i);
+                "%s:%d y index %d", __func__, __LINE__, i);
     }
 }
 
@@ -721,9 +727,9 @@ test_zcopy()
     suzerain_blas_zcopy(nx/incx, x, incx, y, incy);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                "zcopy real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                "zcopy imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -752,9 +758,9 @@ test_ccopy()
     suzerain_blas_ccopy(nx/incx, x, incx, y, incy);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_FLT_EPSILON,
-                "ccopy real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(y[i][1], expected[i][1], GSL_FLT_EPSILON,
-                "ccopy imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -768,7 +774,7 @@ test_snrm2()
     const float  expected = 5;
 
     gsl_test_abs(suzerain_blas_snrm2(nx, x, incx), expected, GSL_FLT_EPSILON,
-            "snrm2 result");
+            "%s:%d result", __func__);
 }
 
 static
@@ -781,7 +787,7 @@ test_dnrm2()
     const double expected = 5;
 
     gsl_test_abs(suzerain_blas_dnrm2(nx, x, incx), expected, GSL_DBL_EPSILON,
-            "dnrm2 result");
+            "%s:%d result", __func__);
 }
 
 static
@@ -794,7 +800,7 @@ test_scnrm2()
     const float  expected = 9.27361849549570375251641607399; /* Sqrt 86 */
 
     gsl_test_abs(suzerain_blas_scnrm2(nx, x, incx), expected, GSL_FLT_EPSILON,
-            "scnrm2 result");
+            "%s:%d result", __func__);
 }
 
 static
@@ -807,7 +813,7 @@ test_dznrm2()
     const double expected = 9.27361849549570375251641607399; /* Sqrt 86 */
 
     gsl_test_abs(suzerain_blas_dznrm2(nx, x, incx), expected, GSL_FLT_EPSILON,
-            "dznrm2 result");
+            "%s:%d result", __func__);
 }
 
 static
@@ -838,7 +844,8 @@ test_daxpy()
 
     suzerain_blas_daxpy(nx/incx, alpha, x, incx, y, incy);
     for (i = 0; i < nexpected; ++i) {
-        gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON, "daxpy index %d", i);
+        gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -867,7 +874,8 @@ test_daxpy_const()
 
     suzerain_blas_daxpy(ny/incy, alpha, &x, 0 /* zero! */, y, incy);
     for (i = 0; i < nexpected; ++i) {
-        gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON, "daxpy index %d", i);
+        gsl_test_abs(y[i], expected[i], GSL_DBL_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -899,7 +907,8 @@ test_saxpy()
 
     suzerain_blas_saxpy(nx/incx, alpha, x, incx, y, incy);
     for (i = 0; i < nexpected; ++i) {
-        gsl_test_abs(y[i], expected[i], GSL_FLT_EPSILON, "saxpy index %d", i);
+        gsl_test_abs(y[i], expected[i], GSL_FLT_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -952,9 +961,9 @@ test_zaxpy()
 
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                "zaxpy real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                "zaxpy imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -1007,9 +1016,9 @@ test_caxpy()
 
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_FLT_EPSILON,
-                "caxpy real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(y[i][1], expected[i][1], GSL_FLT_EPSILON,
-                "caxpy imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -1028,7 +1037,7 @@ test_ddot()
     gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
 
     const double result = suzerain_blas_ddot(nx/incx, x, incx, y, incy);
-    gsl_test_abs(result, expected, GSL_DBL_EPSILON, "ddot result");
+    gsl_test_abs(result, expected, GSL_DBL_EPSILON, "%s:%d result", __func__);
 }
 
 static
@@ -1046,7 +1055,7 @@ test_sdot()
     gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
 
     const float  result = suzerain_blas_sdot(nx/incx, x, incx, y, incy);
-    gsl_test_abs(result, expected, GSL_DBL_EPSILON, "ddot result");
+    gsl_test_abs(result, expected, GSL_DBL_EPSILON, "%s:%d result", __func__);
 }
 
 static
@@ -1067,8 +1076,10 @@ test_zdotc()
 
     double result[2] = {555, 555};
     suzerain_blas_zdotc(nx/incx, x, incx, y, incy, result);
-    gsl_test_rel(result[0], expected[0], GSL_DBL_EPSILON, "zdotc real result");
-    gsl_test_rel(result[1], expected[1], GSL_DBL_EPSILON, "zdotc imag result");
+    gsl_test_rel(result[0], expected[0], GSL_DBL_EPSILON,
+            "%s:%d real result", __func__);
+    gsl_test_rel(result[1], expected[1], GSL_DBL_EPSILON,
+            "%s:%d imag result", __func__);
 }
 
 static
@@ -1089,8 +1100,10 @@ test_cdotc()
 
     float  result[2] = {555, 555};
     suzerain_blas_cdotc(nx/incx, x, incx, y, incy, result);
-    gsl_test_rel(result[0], expected[0], GSL_FLT_EPSILON, "cdotc real result");
-    gsl_test_rel(result[1], expected[1], GSL_FLT_EPSILON, "cdotc imag result");
+    gsl_test_rel(result[0], expected[0], GSL_FLT_EPSILON,
+            "%s:%d real result", __func__);
+    gsl_test_rel(result[1], expected[1], GSL_FLT_EPSILON,
+            "%s:%d imag result", __func__);
 }
 
 static
@@ -1099,7 +1112,7 @@ test_dgb_acc1()
 {
     int i;
 
-    const int    m     = 100;
+    const int    m     = 7;
     const int    n     = 7;
     const int    ku    = 2;
     const int    kl    = 1;
@@ -1132,13 +1145,13 @@ test_dgb_acc1()
     };
     const double expected_data[]  = {
         /*ldb buffer*/   /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
-         -2.2,   -1.1,     -5.0,    -5.0,     5.0,     10.0,
-         -2.2,   -1.1,     -5.0,    15.0,    20.0,     25.0,
+         -2.2,   -1.1,     -1.0,    -1.0,     5.0,     10.0,
+         -2.2,   -1.1,     -1.0,    15.0,    20.0,     25.0,
          -2.2,   -1.1,     30.0,    35.0,    40.0,     45.0,
          -2.2,   -1.1,     50.0,    55.0,    60.0,      5.0,
          -2.2,   -1.1,     10.0,    15.0,    20.0,     25.0,
          -2.2,   -1.1,     30.0,    35.0,    40.0,     45.0,
-         -2.2,   -1.1,     50.0,    55.0,    60.0,     -5.0
+         -2.2,   -1.1,     50.0,    55.0,    60.0,     -1.0
     };
     const double *a = a_data + lda-(ku+1+kl);
     double       *b = b_data + ldb-(ku+1+kl);
@@ -1150,7 +1163,7 @@ test_dgb_acc1()
     suzerain_blas_dgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i], expected_data[i], GSL_DBL_EPSILON,
-                "dgb_acc index %d", i);
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -1160,7 +1173,7 @@ test_dgb_acc2()
 {
     int i;
 
-    const int    m     = 6;
+    const int    m     = 2;
     const int    n     = 2;
     const int    ku    = 2;
     const int    kl    = 1;
@@ -1182,8 +1195,8 @@ test_dgb_acc2()
     };
     const double expected_data[]  = {
         /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
-          -5.0,    -5.0,     5.0,     10.0,
-          -5.0,    15.0,    20.0,    -25.0
+          -1.0,    -1.0,     5.0,     10.0,
+          -1.0,    15.0,    20.0,     -5.0
     };
     const double *a = a_data + lda-(ku+1+kl);
     double       *b = b_data + ldb-(ku+1+kl);
@@ -1195,7 +1208,7 @@ test_dgb_acc2()
     suzerain_blas_dgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i], expected_data[i], GSL_DBL_EPSILON,
-                "dgb_acc index %d", i);
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -1205,7 +1218,7 @@ test_sgb_acc1()
 {
     int i;
 
-    const int    m     = 15;
+    const int    m     = 4;
     const int    n     = 4;
     const int    ku    = 2;
     const int    kl    = 1;
@@ -1232,10 +1245,10 @@ test_sgb_acc1()
     };
     const float  expected_data[]  = {
         /*ldb buffer*/   /*ku2*/  /*ku1*/ /*diag*/   /*kl1*/
-         -2.2,   -1.1,     -5.0,    -5.0,     5.0,     10.0,
-         -2.2,   -1.1,     -5.0,    15.0,    20.0,     25.0,
+         -2.2,   -1.1,     -1.0,    -1.0,     5.0,     10.0,
+         -2.2,   -1.1,     -1.0,    15.0,    20.0,     25.0,
          -2.2,   -1.1,     30.0,    35.0,    40.0,     45.0,
-         -2.2,   -1.1,     50.0,    55.0,    60.0,     -5.0
+         -2.2,   -1.1,     50.0,    55.0,    60.0,     -1.0
     };
     const float  *a = a_data + lda-(ku+1+kl);
     float        *b = b_data + ldb-(ku+1+kl);
@@ -1247,7 +1260,7 @@ test_sgb_acc1()
     suzerain_blas_sgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i], expected_data[i], GSL_FLT_EPSILON,
-                "dgb_acc index %d", i);
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -1257,7 +1270,7 @@ test_sgb_acc2()
 {
     int i;
 
-    const int    m     = 4;
+    const int    m     = 5;
     const int    n     = 5;
     const int    ku    = 2;
     const int    kl    = 0;
@@ -1285,8 +1298,8 @@ test_sgb_acc2()
     };
     const float  expected_data[] = {
         /*ku2*/  /*ku1*/ /*diag*/
-          -5.0,    -5.0,     5.0,
-          -5.0,    15.0,    20.0,
+          -1.0,    -1.0,     5.0,
+          -1.0,    15.0,    20.0,
           30.0,    35.0,    40.0,
           50.0,    55.0,    60.0,
           50.0,    55.0,    60.0
@@ -1301,7 +1314,7 @@ test_sgb_acc2()
     suzerain_blas_sgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i], expected_data[i], GSL_FLT_EPSILON,
-                "dgb_acc index %d", i);
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 }
 
@@ -1311,7 +1324,7 @@ test_cgb_acc1()
 {
     int i;
 
-    const int    m        = 17;
+    const int    m        = 4;
     const int    n        = 4;
     const int    ku       = 2;
     const int    kl       = 1;
@@ -1338,10 +1351,10 @@ test_cgb_acc1()
     };
     const float  expected_data[][2]  = {
         /*ldb buffer*/            /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
-        {-2.2,-2.2}, {-1.1,-1.1}, {-5,-5}, {-5,-5}, { 5, 5}, {10,10},
-        {-2.2,-2.2}, {-1.1,-1.1}, {-5,-5}, {15,15}, {20,20}, {25,25},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, {-1,-1}, { 5, 5}, {10,10},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, {15,15}, {20,20}, {25,25},
         {-2.2,-2.2}, {-1.1,-1.1}, {30,30}, {35,35}, {40,40}, {45,45},
-        {-2.2,-2.2}, {-1.1,-1.1}, {50,50}, {55,55}, {60,60}, {-5,-5}
+        {-2.2,-2.2}, {-1.1,-1.1}, {50,50}, {55,55}, {60,60}, {-1,-1}
     };
     const float  (*a)[2] = a_data + lda-(ku+1+kl);
     float        (*b)[2] = b_data + ldb-(ku+1+kl);
@@ -1353,9 +1366,9 @@ test_cgb_acc1()
     suzerain_blas_cgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
-                "cgb_acc real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
-                "cgb_acc imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -1365,7 +1378,7 @@ test_cgb_acc2()
 {
     int i;
 
-    const int    m        = 4;
+    const int    m        = 7;
     const int    n        = 7;
     const int    ku       = 1;
     const int    kl       = 1;
@@ -1397,13 +1410,13 @@ test_cgb_acc2()
     };
     const float  expected_data[][2]  = {
         /*ku1*/  /*diag*/ /*kl1*/
-        {-5,-5}, { 5, 5}, {10,10},
+        {-1,-1}, { 5, 5}, {10,10},
         {15,15}, {20,20}, {25,25},
         {35,35}, {40,40}, {45,45},
         {55,55}, {60,60}, { 5, 5},
         {15,15}, {20,20}, {25,25},
         {35,35}, {40,40}, {45,45},
-        {55,55}, {60,60}, {-5,-5}
+        {55,55}, {60,60}, {-1,-1}
     };
     const float  (*a)[2] = a_data + lda-(ku+1+kl);
     float        (*b)[2] = b_data + ldb-(ku+1+kl);
@@ -1415,9 +1428,9 @@ test_cgb_acc2()
     suzerain_blas_cgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
-                "cgb_acc real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
-                "cgb_acc imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -1427,7 +1440,7 @@ test_zgb_acc1()
 {
     int i;
 
-    const int    m        = 25;
+    const int    m        = 4;
     const int    n        = 4;
     const int    ku       = 2;
     const int    kl       = 1;
@@ -1454,10 +1467,10 @@ test_zgb_acc1()
     };
     const double expected_data[][2]  = {
         /*ldb buffer*/            /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
-        {-2.2,-2.2}, {-1.1,-1.1}, {-5,-5}, {-5,-5}, { 5, 5}, {10,10},
-        {-2.2,-2.2}, {-1.1,-1.1}, {-5,-5}, {15,15}, {20,20}, {25,25},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, {-1,-1}, { 5, 5}, {10,10},
+        {-2.2,-2.2}, {-1.1,-1.1}, {-1,-1}, {15,15}, {20,20}, {25,25},
         {-2.2,-2.2}, {-1.1,-1.1}, {30,30}, {35,35}, {40,40}, {45,45},
-        {-2.2,-2.2}, {-1.1,-1.1}, {50,50}, {55,55}, {60,60}, {-5,-5}
+        {-2.2,-2.2}, {-1.1,-1.1}, {50,50}, {55,55}, {60,60}, {-1,-1}
     };
     const double (*a)[2] = a_data + lda-(ku+1+kl);
     double       (*b)[2] = b_data + ldb-(ku+1+kl);
@@ -1469,9 +1482,9 @@ test_zgb_acc1()
     suzerain_blas_zgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
-                "zgb_acc real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
-                "zgb_acc imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -1481,7 +1494,7 @@ test_zgb_acc2()
 {
     int i;
 
-    const int    m        = 100;
+    const int    m        = 3;
     const int    n        = 3;
     const int    ku       = 2;
     const int    kl       = 1;
@@ -1506,9 +1519,9 @@ test_zgb_acc2()
     };
     const double expected_data[][2]  = {
         /*ku2*/  /*ku1*/  /*diag*/ /*kl1*/
-        {-5,-5}, {-5,-5}, { 5, 5}, { 10, 10},
-        {-5,-5}, {15,15}, {20,20}, { 25, 25},
-        {30,30}, {35,35}, {40,40}, {-45,-45}
+        {-1,-1}, {-1,-1}, { 5, 5}, {10,10},
+        {-1,-1}, {15,15}, {20,20}, {25,25},
+        {30,30}, {35,35}, {40,40}, {-9,-9}
     };
     const double (*a)[2] = a_data + lda-(ku+1+kl);
     double       (*b)[2] = b_data + ldb-(ku+1+kl);
@@ -1520,9 +1533,9 @@ test_zgb_acc2()
     suzerain_blas_zgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
-                "zgb_acc real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
-                "zgb_acc imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -1572,7 +1585,7 @@ test_dgb_acc_nop()
     suzerain_blas_dgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i], expected_data[i], GSL_DBL_EPSILON,
-                "dgb_acc index %d", i);
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 
     free(expected_data);
@@ -1624,7 +1637,7 @@ test_sgb_acc_nop()
     suzerain_blas_sgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i], expected_data[i], GSL_DBL_EPSILON,
-                "sgb_acc index %d", i);
+                "%s:%d index %d", __func__, __LINE__, i);
     }
 
     free(expected_data);
@@ -1676,9 +1689,9 @@ test_cgb_acc_nop()
     suzerain_blas_cgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
-                "cgb_acc real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
-                "cgb_acc imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 
     free(expected_data);
@@ -1730,9 +1743,9 @@ test_zgb_acc_nop()
     suzerain_blas_zgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
-                "zgb_acc real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
-                "zgb_acc imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 
     free(expected_data);
@@ -1764,9 +1777,9 @@ test_daxpzy()
         suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                    "daxpzy real index %d", i);
+                    "%s:%d real index %d", __func__, __LINE__, i);
             gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                    "daxpzy imag index %d", i);
+                    "%s:%d imag index %d", __func__, __LINE__, i);
         }
     }
 
@@ -1790,9 +1803,9 @@ test_daxpzy()
         suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                    "daxpzy real index %d", i);
+                    "%s:%d real index %d", __func__, __LINE__, i);
             gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                    "daxpzy imag index %d", i);
+                    "%s:%d imag index %d", __func__, __LINE__, i);
         }
     }
 
@@ -1816,9 +1829,9 @@ test_daxpzy()
         suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                    "daxpzy real index %d", i);
+                    "%s:%d real index %d", __func__, __LINE__, i);
             gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                    "daxpzy imag index %d", i);
+                    "%s:%d imag index %d", __func__, __LINE__, i);
         }
     }
 
@@ -1842,9 +1855,9 @@ test_daxpzy()
         suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                    "daxpzy real index %d", i);
+                    "%s:%d real index %d", __func__, __LINE__, i);
             gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                    "daxpzy imag index %d", i);
+                    "%s:%d imag index %d", __func__, __LINE__, i);
         }
     }
 }
@@ -1876,9 +1889,9 @@ test_daxpzby()
         suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta, y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                    "daxpzby real index %d", i);
+                    "%s:%d real index %d", __func__, __LINE__, i);
             gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                    "daxpzby imag index %d", i);
+                    "%s:%d imag index %d", __func__, __LINE__, i);
         }
     }
 
@@ -1903,9 +1916,9 @@ test_daxpzby()
         suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta, y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                    "daxpzby real index %d", i);
+                    "%s:%d real index %d", __func__, __LINE__, i);
             gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                    "daxpzby imag index %d", i);
+                    "%s:%d imag index %d", __func__, __LINE__, i);
         }
     }
 
@@ -1930,9 +1943,9 @@ test_daxpzby()
         suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta, y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                    "daxpzby real index %d", i);
+                    "%s:%d real index %d", __func__, __LINE__, i);
             gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                    "daxpzby imag index %d", i);
+                    "%s:%d imag index %d", __func__, __LINE__, i);
         }
     }
 
@@ -1957,9 +1970,9 @@ test_daxpzby()
         suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta, y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
-                    "daxpzby real index %d", i);
+                    "%s:%d real index %d", __func__, __LINE__, i);
             gsl_test_abs(y[i][1], expected[i][1], GSL_DBL_EPSILON,
-                    "daxpzby imag index %d", i);
+                    "%s:%d imag index %d", __func__, __LINE__, i);
         }
     }
 }
@@ -1986,11 +1999,11 @@ test_blasext_i2s_zaxpby2()
 
         for (int i = 0; i < N; ++i) {
             gsl_test_abs(z_re[i], i+1, GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 real part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d real part of index %d",
+                        __func__, __LINE__, i);
             gsl_test_abs(z_im[i], i+1.5, GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 imag part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d imag part of index %d",
+                        __func__, __LINE__, i);
         }
     }
 
@@ -2027,11 +2040,11 @@ test_blasext_i2s_zaxpby2()
         for (int j = 0; j < M; ++j) {
             for (int i = 0; i < N; ++i) {
                 gsl_test_abs(z_re[i*incz_re+j*ldz_re], i+1, GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 real part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d real part of index %d",
+                        __func__, __LINE__, i);
                 gsl_test_abs(z_im[i*incz_im+j*ldz_im], i+1.5, GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 imag part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d imag part of index %d",
+                        __func__, __LINE__, i);
             }
         }
     }
@@ -2055,11 +2068,11 @@ test_blasext_i2s_zaxpby2()
 
         for (int i = 0; i < N; ++i) {
             gsl_test_abs(z_re[i], 2*(i+1), GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 real part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d real part of index",
+                        __func__, __LINE__, i);
             gsl_test_abs(z_im[i], 2*(i+1.5), GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 imag part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d imag part of index %d",
+                        __func__, __LINE__, i);
         }
     }
 
@@ -2095,12 +2108,12 @@ test_blasext_i2s_zaxpby2()
             for (int i = 0; i < N; ++i) {
                 gsl_test_abs(z_re[i*incz_re+j*ldz_re],
                         2*(i+1), GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 real part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d real part of index %d",
+                        __func__, __LINE__, i);
                 gsl_test_abs(z_im[i*incz_im+j*ldz_im],
                         2*(i+1.5), GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 imag part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d imag part of index %d",
+                        __func__, __LINE__, i);
             }
         }
     }
@@ -2127,12 +2140,12 @@ test_blasext_i2s_zaxpby2()
         for (int i = 0; i < N; ++i) {
             gsl_test_abs(z_re[i], 3*i*i + 3*i - 27,
                         GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 real part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d real part of index %d",
+                        __func__, __LINE__, i);
             gsl_test_abs(z_im[i], 2*i*i + 16*i + 85.5,
                         GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 imag part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d imag part of index %d",
+                        __func__, __LINE__, i);
         }
     }
 
@@ -2171,12 +2184,12 @@ test_blasext_i2s_zaxpby2()
             for (int i = 0; i < N; ++i) {
                 gsl_test_abs(z_re[i*incz_re+j*ldz_re], 3*i*i + 3*i - 27,
                         GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 real part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d real part of index %d",
+                        __func__, __LINE__, i);
                 gsl_test_abs(z_im[i*incz_im+j*ldz_im], 2*i*i + 16*i + 85.5,
                         GSL_DBL_EPSILON,
-                        "i2s_zaxpby2 imag part of index %d at line %d",
-                        i, __LINE__);
+                        "%s:%d imag part of index %d",
+                        __func__, __LINE__, i);
             }
         }
     }
@@ -2233,9 +2246,9 @@ test_zgb_dacc1()
     suzerain_blasext_zgb_dacc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
-                "zgb_dacc real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
-                "zgb_dacc imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -2290,9 +2303,9 @@ test_zgb_dacc2()
     suzerain_blasext_zgb_dacc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
-                "zgb_dacc real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
-                "zgb_dacc imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 }
 
@@ -2344,9 +2357,9 @@ test_zgb_dacc_nop()
     suzerain_blasext_zgb_dacc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
-                "zgb_dacc real index %d", i);
+                "%s:%d real index %d", __func__, __LINE__, i);
         gsl_test_abs(b_data[i][1], expected_data[i][1], GSL_FLT_EPSILON,
-                "zgb_dacc imag index %d", i);
+                "%s:%d imag index %d", __func__, __LINE__, i);
     }
 
     free(expected_data);
@@ -2365,9 +2378,9 @@ test_blasext_sgbnorm1()
 
     float norm1;
     const int status = suzerain_blasext_sgbnorm1(m, n, kl, ku, a, lda, &norm1);
-    gsl_test_int(0, status, "%s call success", __func__);
-    gsl_test_abs(norm1, 32.0, GSL_FLT_EPSILON, "%s norm result %d",
-                 __func__, norm1);
+    gsl_test_int(0, status, "%s:%d call success", __func__, __LINE__);
+    gsl_test_abs(norm1, 32.0, GSL_FLT_EPSILON, "%s:%d norm result %d",
+                 __func__, __LINE__, norm1);
 }
 
 static
@@ -2383,9 +2396,9 @@ test_blasext_dgbnorm1()
 
     double norm1;
     const int status = suzerain_blasext_dgbnorm1(m, n, kl, ku, a, lda, &norm1);
-    gsl_test_int(0, status, "%s call success", __func__);
-    gsl_test_abs(norm1, 32.0, GSL_DBL_EPSILON, "%s norm result %d",
-                 __func__, norm1);
+    gsl_test_int(0, status, "%s:%d call success", __func__, __LINE__);
+    gsl_test_abs(norm1, 32.0, GSL_DBL_EPSILON, "%s:%d norm result %d",
+                 __func__, __LINE__, norm1);
 }
 
 static
@@ -2404,9 +2417,9 @@ test_blasext_cgbnorm1()
 
     float norm1;
     const int status = suzerain_blasext_cgbnorm1(m, n, kl, ku, a, lda, &norm1);
-    gsl_test_int(0, status, "%s call success", __func__);
-    gsl_test_abs(norm1, expected, GSL_FLT_EPSILON, "%s norm result %d",
-                 __func__, norm1);
+    gsl_test_int(0, status, "%s:%d call success", __func__, __LINE__);
+    gsl_test_abs(norm1, expected, GSL_FLT_EPSILON, "%s:%d norm result %d",
+                 __func__, __LINE__, norm1);
 }
 
 static
@@ -2425,9 +2438,9 @@ test_blasext_zgbnorm1()
 
     double norm1;
     const int status = suzerain_blasext_zgbnorm1(m, n, kl, ku, a, lda, &norm1);
-    gsl_test_int(0, status, "%s call success", __func__);
-    gsl_test_abs(norm1, expected, GSL_DBL_EPSILON*100, "%s norm result %d",
-                 __func__, norm1);
+    gsl_test_int(0, status, "%s:%d call success", __func__, __LINE__);
+    gsl_test_abs(norm1, expected, GSL_DBL_EPSILON*100, "%s:%d norm result %d",
+                 __func__, __LINE__, norm1);
 }
 
 static
@@ -2457,19 +2470,20 @@ test_lapack_dgbcon()
 
     // Prepare factorization
     const int f = suzerain_lapack_dgbtrf(n, n, kl, ku, ab, 2*kl + ku + 1, ipiv);
-    gsl_test_int(0, f, "%s factorization success", __func__);
+    gsl_test_int(0, f, "%s:%d factorization success", __func__);
 
     // Compute reciprocal of condition number
     double rcond = -555;
     double work[3*n];
     int    iwork[n];
-    const int g = suzerain_lapack_dgbcon('1', n, kl, ku, ab, 2*kl + ku + 1, ipiv,
-                                         norm1, &rcond, work, iwork);
-    gsl_test_int(0, g, "%s condition number estimation success", __func__);
+    const int g = suzerain_lapack_dgbcon('1', n, kl, ku, ab, 2*kl + ku + 1,
+                                         ipiv, norm1, &rcond, work, iwork);
+    gsl_test_int(0, g, "%s:%d condition number estimation success", __func__);
 
     // Check result against expected
     gsl_test_abs(rcond, 25.0/748.0, GSL_DBL_EPSILON,
-                 "%s condition number estimation result %d", __func__, rcond);
+            "%s:%d condition number estimation result %d",
+            __func__, __LINE__, rcond);
 }
 
 int

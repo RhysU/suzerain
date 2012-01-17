@@ -3353,106 +3353,194 @@ suzerain_blasext_zge_dddiag_scale_dacc(
 
 void
 suzerain_blasext_sgb_diag_scale_acc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const float alpha,
         const float *a,
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const float *d,
-        const int ldd,
+        int ldd,
         const float beta,
         float *b,
-        const int incb,
-        const int ldb)
+        int incb,
+        int ldb)
 {
-    SUZERAIN_UNUSED(m);
-    // Only partial checks as next routine covers remaining requirements
-    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
-    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
-    return suzerain_blasext_sge_diag_scale_acc(ku + 1 + kl, n,
-                                               alpha, a, inca, lda, d, ldd,
-                                               beta,  b, incb, ldb);
+    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
+    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
+    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__, 10);
+    if (SUZERAIN_UNLIKELY(ldb  < 1       )) suzerain_blas_xerbla(__func__, 13);
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_zero = (alpha == 0.0f);
+    const _Bool beta_is_one   = (beta  == 1.0f);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+        return;
+
+    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Incorporate the ku offset and decrement ldX to speed indexing in loops.
+    // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
+    a += ku; --lda;
+    b += ku; --ldb;
+    ++kl;
+
+    for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+        const int il = imax(0, j - ku);
+        const int iu = imin(m, j + kl);
+        suzerain_blas_saxpby(iu - il, alpha*(*d), a + il*inca, inca,
+                                      beta,       b + il*incb, incb);
+    }
 }
 
 void
 suzerain_blasext_dgb_diag_scale_acc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const double alpha,
         const double *a,
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const double *d,
-        const int ldd,
+        int ldd,
         const double beta,
         double *b,
-        const int incb,
-        const int ldb)
+        int incb,
+        int ldb)
 {
-    SUZERAIN_UNUSED(m);
-    // Only partial checks as next routine covers remaining requirements
-    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
-    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
-    return suzerain_blasext_dge_diag_scale_acc(ku + 1 + kl, n,
-                                               alpha, a, inca, lda, d, ldd,
-                                               beta,  b, incb, ldb);
+    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
+    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
+    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__, 10);
+    if (SUZERAIN_UNLIKELY(ldb  < 1       )) suzerain_blas_xerbla(__func__, 13);
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_zero = (alpha == 0.0);
+    const _Bool beta_is_one   = (beta  == 1.0);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+        return;
+
+    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Incorporate the ku offset and decrement ldX to speed indexing in loops.
+    // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
+    a += ku; --lda;
+    b += ku; --ldb;
+    ++kl;
+
+    for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+        const int il = imax(0, j - ku);
+        const int iu = imin(m, j + kl);
+        suzerain_blas_daxpby(iu - il, alpha*(*d), a + il*inca, inca,
+                                      beta,       b + il*incb, incb);
+    }
 }
 
 void
 suzerain_blasext_cgb_diag_scale_acc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const float alpha[2],
         const float (*a)[2],
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const float (*d)[2],
-        const int ldd,
+        int ldd,
         const float beta[2],
         float (*b)[2],
-        const int incb,
-        const int ldb)
+        int incb,
+        int ldb)
 {
-    SUZERAIN_UNUSED(m);
-    // Only partial checks as next routine covers remaining requirements
-    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
-    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
-    return suzerain_blasext_cge_diag_scale_acc(ku + 1 + kl, n,
-                                               alpha, a, inca, lda, d, ldd,
-                                               beta,  b, incb, ldb);
+    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
+    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
+    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__, 10);
+    if (SUZERAIN_UNLIKELY(ldb  < 1       )) suzerain_blas_xerbla(__func__, 13);
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0f);
+    const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0f);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+        return;
+
+    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Incorporate the ku offset and decrement ldX to speed indexing in loops.
+    // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
+    a += ku; --lda;
+    b += ku; --ldb;
+    ++kl;
+
+    for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+        const int il = imax(0, j - ku);
+        const int iu = imin(m, j + kl);
+        const float tmp[2] = {   alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
+                                 alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+        suzerain_blas_caxpby(iu - il, tmp,  a + il*inca, inca,
+                                      beta, b + il*incb, incb);
+    }
 }
 
 void
 suzerain_blasext_zgb_diag_scale_acc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const double alpha[2],
         const double (*a)[2],
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const double (*d)[2],
-        const int ldd,
+        int ldd,
         const double beta[2],
         double (*b)[2],
-        const int incb,
-        const int ldb)
+        int incb,
+        int ldb)
 {
-    SUZERAIN_UNUSED(m);
-    // Only partial checks as next routine covers remaining requirements
-    if (SUZERAIN_UNLIKELY(kl < 0)) suzerain_blas_xerbla(__func__, 3);
-    if (SUZERAIN_UNLIKELY(ku < 0)) suzerain_blas_xerbla(__func__, 4);
-    return suzerain_blasext_zge_diag_scale_acc(ku + 1 + kl, n,
-                                               alpha, a, inca, lda, d, ldd,
-                                               beta,  b, incb, ldb);
+    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
+    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
+    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__, 10);
+    if (SUZERAIN_UNLIKELY(ldb  < 1       )) suzerain_blas_xerbla(__func__, 13);
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
+    const _Bool beta_is_one   = (beta[0]  == 1.0 && beta[1]  == 0.0);
+#pragma warning(pop)
+
+    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+        return;
+
+    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Incorporate the ku offset and decrement ldX to speed indexing in loops.
+    // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
+    a += ku; --lda;
+    b += ku; --ldb;
+    ++kl;
+
+    for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+        const int il = imax(0, j - ku);
+        const int iu = imin(m, j + kl);
+        const double tmp[2] = {   alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
+                                  alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+        suzerain_blas_zaxpby(iu - il, tmp,  a + il*inca, inca,
+                                      beta, b + il*incb, incb);
+    }
 }
 
 void

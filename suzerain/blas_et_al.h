@@ -3256,13 +3256,13 @@ suzerain_blasext_dsbmzv(
  *          and size of matrix \f$ D\f$.
  * \param alpha Multiplicative scalar \f$ \alpha \f$
  * \param a General band storage of the matrix \f$ A \f$.
- * \param inca Strictly positive stride between values in \c a.
+ * \param inca Nonzero stride between values in \c a.
  * \param lda Leading dimension of \c a.
  * \param d Diagonal storage of matrix \f$ D \f$.
  * \param ldd Nonnegative stride between diagonal entries in \c d.
  * \param beta Multiplicative scalar \f$ \beta \f$
  * \param b General band storage of the matrix \f$ B \f$.
- * \param incb Strictly positive stride between values in \c b.
+ * \param incb Nonzero stride between values in \c b.
  * \param ldb Leading dimension of \c b.
  *
  * \see A BLAS reference for general matrix storage requirements.
@@ -3345,13 +3345,13 @@ suzerain_blasext_zge_diag_scale_acc(
  *          and size of matrix \f$ D\f$.
  * \param alpha Multiplicative scalar \f$ \alpha \f$
  * \param a General band storage of the matrix \f$ A \f$.
- * \param inca Strictly positive stride between values in \c a.
+ * \param inca Nonzero stride between values in \c a.
  * \param lda Leading dimension of \c a.
  * \param d Diagonal storage of matrix \f$ D \f$.
  * \param ldd Nonnegative stride between diagonal entries in \c d.
  * \param beta Multiplicative scalar \f$ \beta \f$
  * \param b General band storage of the matrix \f$ B \f$.
- * \param incb Strictly positive stride between values in \c b.
+ * \param incb Nonzero stride between values in \c b.
  * \param ldb Leading dimension of \c b.
  *
  * \see A BLAS reference for general matrix storage requirements.
@@ -3385,7 +3385,7 @@ suzerain_blasext_zge_diag_scale_dacc(
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
  *          and size of matrix \f$ D\f$.
  * \param a General band storage of the matrix \f$ A \f$.
- * \param inca Strictly positive stride between values in \c a.
+ * \param inca Nonzero stride between values in \c a.
  * \param lda Leading dimension of \c a.
  * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$
  * \param d0 Diagonal storage of matrix \f$ D_0 \f$.
@@ -3395,7 +3395,7 @@ suzerain_blasext_zge_diag_scale_dacc(
  * \param ldd1 Nonnegative stride between diagonal entries in \c d1.
  * \param beta Multiplicative scalar \f$ \beta \f$
  * \param b General band storage of the matrix \f$ B \f$.
- * \param incb Strictly positive stride between values in \c b.
+ * \param incb Nonzero stride between values in \c b.
  * \param ldb Leading dimension of \c b.
  *
  * \see A BLAS reference for general matrix storage requirements.
@@ -3433,7 +3433,7 @@ suzerain_blasext_zge_ddiag_scale_dacc(
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
  *          and size of matrix \f$ D\f$.
  * \param a General band storage of the matrix \f$ A \f$.
- * \param inca Strictly positive stride between values in \c a.
+ * \param inca Nonzero stride between values in \c a.
  * \param lda Leading dimension of \c a.
  * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$
  * \param d0 Diagonal storage of matrix \f$ D_0 \f$.
@@ -3446,7 +3446,7 @@ suzerain_blasext_zge_ddiag_scale_dacc(
  * \param ldd2 Nonnegative stride between diagonal entries in \c d2.
  * \param beta Multiplicative scalar \f$ \beta \f$
  * \param b General band storage of the matrix \f$ B \f$.
- * \param incb Strictly positive stride between values in \c b.
+ * \param incb Nonzero stride between values in \c b.
  * \param ldb Leading dimension of \c b.
  *
  * \see A BLAS reference for general matrix storage requirements.
@@ -3481,9 +3481,6 @@ suzerain_blasext_zge_dddiag_scale_dacc(
  * may be generally strided.  The operation and interface differs from the
  * BLAS' gb_diag_scale_acc.
  *
- * \warning Unused positions within the general band storage \c b (which are
- * typically not referenced by BLAS calls) \em will be used by this method.
- *
  * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
  *          and size of matrix \f$ D\f$.
@@ -3504,74 +3501,74 @@ suzerain_blasext_zge_dddiag_scale_dacc(
  */
 void
 suzerain_blasext_sgb_diag_scale_acc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const float alpha,
         const float *a,
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const float *d,
-        const int ldd,
+        int ldd,
         const float beta,
         float *b,
-        const int incb,
-        const int ldb);
+        int incb,
+        int ldb);
 
 /*! \copydoc suzerain_blasext_sgb_diag_scale_acc */
 void
 suzerain_blasext_dgb_diag_scale_acc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const double alpha,
         const double *a,
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const double *d,
-        const int ldd,
+        int ldd,
         const double beta,
         double *b,
-        const int incb,
-        const int ldb);
+        int incb,
+        int ldb);
 
 /*! \copydoc suzerain_blasext_sgb_diag_scale_acc */
 void
 suzerain_blasext_cgb_diag_scale_acc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const float alpha[2],
         const float (*a)[2],
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const float (*d)[2],
-        const int ldd,
+        int ldd,
         const float beta[2],
         float (*b)[2],
-        const int incb,
-        const int ldb);
+        int incb,
+        int ldb);
 
 /*! \copydoc suzerain_blasext_sgb_diag_scale_acc */
 void
 suzerain_blasext_zgb_diag_scale_acc(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
+        int m,
+        int n,
+        int kl,
+        int ku,
         const double alpha[2],
         const double (*a)[2],
-        const int inca,
-        const int lda,
+        int inca,
+        int lda,
         const double (*d)[2],
-        const int ldd,
+        int ldd,
         const double beta[2],
         double (*b)[2],
-        const int incb,
-        const int ldb);
+        int incb,
+        int ldb);
 
 /*!
  * \brief Compute \f$ B \leftarrow{} \alpha{} A D + \beta{}B \f$ for real
@@ -3582,9 +3579,6 @@ suzerain_blasext_zgb_diag_scale_acc(
  * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.
  * All three matrices may be generally strided.  The operation and
  * interface differs from the BLAS' gb_diag_scale_acc.
- *
- * \warning Unused positions within the general band storage \c b (which are
- * typically not referenced by BLAS calls) \em will be used by this method.
  *
  * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
@@ -3630,9 +3624,6 @@ suzerain_blasext_zgb_diag_scale_dacc(
  *
  * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.  Any matrix may
  * be generally strided.  Matrices \f$ D_0 \f$ and \f$ D_1 \f$ may be aliased.
- *
- * \warning Unused positions within the general band storage \c b (which are
- * typically not referenced by BLAS calls) \em will be used by this method.
  *
  * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
@@ -3685,9 +3676,6 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
  * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.  Any matrix may
  * be generally strided.  Matrices \f$ D_0 \f$, \f$ D_1 \f$, and \f$ D_2 \f$
  * may be aliased.
- *
- * \warning Unused positions within the general band storage \c b (which are
- * typically not referenced by BLAS calls) \em will be used by this method.
  *
  * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
