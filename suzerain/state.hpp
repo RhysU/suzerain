@@ -140,8 +140,8 @@ namespace detail {
 
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           ContiguousState<1,Element>&  x,
-           multi_array::ref<Element,1>& y)
+           multi_array::ref<Element,1>& x,
+           ContiguousState<1,Element>&  y)
 {
     assert(std::equal(x.shape(), x.shape() + 1, y.shape()));
 
@@ -152,8 +152,8 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           ContiguousState<2,Element>&  x,
-           multi_array::ref<Element,2>& y)
+           multi_array::ref<Element,2>& x,
+           ContiguousState<2,Element>&  y)
 {
     typedef typename ContiguousState<2,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
@@ -172,8 +172,8 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           ContiguousState<3,Element>&  x,
-           multi_array::ref<Element,3>& y)
+           multi_array::ref<Element,3>& x,
+           ContiguousState<3,Element>&  y)
 {
     typedef typename ContiguousState<3,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
@@ -198,8 +198,8 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           ContiguousState<4,Element>&  x,
-           multi_array::ref<Element,4>& y)
+           multi_array::ref<Element,4>& x,
+           ContiguousState<4,Element>&  y)
 {
     typedef typename ContiguousState<4,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
@@ -230,8 +230,8 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           ContiguousState<5,Element>&  x,
-           multi_array::ref<Element,5>& y)
+           multi_array::ref<Element,5>& x,
+           ContiguousState<5,Element>&  y)
 {
     typedef typename ContiguousState<5,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
@@ -270,8 +270,8 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           InterleavedState<1,Element>& x,
-           multi_array::ref<Element,1>& y)
+           multi_array::ref<Element,1>& x,
+           InterleavedState<1,Element>& y)
 {
     assert(std::equal(x.shape(), x.shape() + 1, y.shape()));
 
@@ -282,8 +282,8 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           InterleavedState<2,Element>& x,
-           multi_array::ref<Element,2>& y)
+           multi_array::ref<Element,2>& x,
+           InterleavedState<2,Element>& y)
 {
     typedef typename InterleavedState<2,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
@@ -302,8 +302,8 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           InterleavedState<3,Element>& x,
-           multi_array::ref<Element,3>& y)
+           multi_array::ref<Element,3>& x,
+           InterleavedState<3,Element>& y)
 {
     typedef typename InterleavedState<3,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
@@ -328,8 +328,8 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           InterleavedState<4,Element>& x,
-           multi_array::ref<Element,4>& y)
+           multi_array::ref<Element,4>& x,
+           InterleavedState<4,Element>& y)
 {
     typedef typename InterleavedState<4,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
@@ -360,8 +360,8 @@ void apply(BLASFunctor functor,
 
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
-           InterleavedState<5,Element>& x,
-           multi_array::ref<Element,5>& y)
+           multi_array::ref<Element,5>& x,
+           InterleavedState<5,Element>& y)
 {
     typedef typename InterleavedState<5,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
