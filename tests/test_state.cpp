@@ -702,7 +702,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
 
     // Operation between two nonconforming states throws
     InterleavedState<4,T> foo(size2234());
-    InterleavedState<4,T> baz(size(2,2,2));
+    InterleavedState<4,T> baz(size(2,2,2,2));
     BOOST_CHECK_THROW(foo.addScaled(3, baz), std::logic_error);
 }
 
@@ -734,7 +734,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
 
     // Operation between two nonconforming states throws
     InterleavedState<4,T> foo(size2234());
-    InterleavedState<4,T> baz(size(2,2,2));
+    InterleavedState<4,T> baz(size(2,2,2,2));
     BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
 }
 
@@ -1421,6 +1421,174 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( concept_check4, T, test_types )
     using boost::detail::multi_array::MutableMultiArrayConcept;
     BOOST_CONCEPT_ASSERT((MutableMultiArrayConcept<ContiguousState<4,T>,4>));
     BOOST_CHECK(true); // Avoids "did not run any assertions" message
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( Contiguous_interoperate_Interleaved )
+
+using suzerain::ContiguousState;
+using suzerain::InterleavedState;
+
+// Types to be tested with both StateBase subclasses
+typedef boost::mpl::list<
+    double
+    ,float
+    ,std::complex<double>
+    ,std::complex<float>
+> test_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
+{
+    BOOST_TEST_MESSAGE("Instances without padding");
+    {
+        ContiguousState<4,T>  foo(size2234());
+        InterleavedState<4,T> bar(size2234());
+        test_assignment_helper(foo, bar);
+        test_assignment_helper(bar, foo);
+    }
+
+    BOOST_TEST_MESSAGE("First instance with padding");
+    {
+        ContiguousState<4,T>  foo(size2234(), size(27,1,1,1));
+        InterleavedState<4,T> bar(size2234());
+        test_assignment_helper(foo, bar);
+        test_assignment_helper(bar, foo);
+    }
+
+    BOOST_TEST_MESSAGE("Second instance with padding");
+    {
+        ContiguousState<4,T>  foo(size2234());
+        InterleavedState<4,T> bar(size2234(), 87);
+        test_assignment_helper(foo, bar);
+        test_assignment_helper(bar, foo);
+    }
+
+    BOOST_TEST_MESSAGE("Both instances with padding");
+    {
+        ContiguousState<4,T>  foo(size2234(), size(27,1,1,1));
+        InterleavedState<4,T> bar(size2234(), 87);
+        test_assignment_helper(foo, bar);
+        test_assignment_helper(bar, foo);
+    }
+
+    // Operation between two nonconforming states throws
+    ContiguousState<4,T>  foo(size2234());
+    InterleavedState<4,T> baz(size(2,2,2,2));
+    BOOST_CHECK_THROW(baz.assign(foo), std::logic_error);
+    BOOST_CHECK_THROW(foo.assign(baz), std::logic_error);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( isIsomorphic, T, test_types )
+{
+    InterleavedState<4,T> i_foo(  size(2,2,2,2));
+    InterleavedState<4,T> i_bar(  size(2,2,2,2));
+    InterleavedState<4,T> i_baz(  size(1,2,2,2));
+    InterleavedState<4,T> i_qux(  size(2,1,2,2));
+    InterleavedState<4,T> i_quux( size(2,2,1,2));
+    InterleavedState<4,T> i_quuux(size(2,2,2,1));
+    ContiguousState<4,T>  c_foo(  size(2,2,2,2));
+    ContiguousState<4,T>  c_bar(  size(2,2,2,2));
+    ContiguousState<4,T>  c_baz(  size(1,2,2,2));
+    ContiguousState<4,T>  c_qux(  size(2,1,2,2));
+    ContiguousState<4,T>  c_quux( size(2,2,1,2));
+    ContiguousState<4,T>  c_quuux(size(2,2,2,1));
+
+    BOOST_CHECK_EQUAL(true,  i_foo.isIsomorphic(c_foo));
+    BOOST_CHECK_EQUAL(true,  i_foo.isIsomorphic(c_bar));
+    BOOST_CHECK_EQUAL(false, i_foo.isIsomorphic(c_baz));
+    BOOST_CHECK_EQUAL(false, i_foo.isIsomorphic(c_qux));
+    BOOST_CHECK_EQUAL(false, i_foo.isIsomorphic(c_quux));
+    BOOST_CHECK_EQUAL(false, i_foo.isIsomorphic(c_quuux));
+    BOOST_CHECK_EQUAL(true,  c_foo.isIsomorphic(i_foo));
+    BOOST_CHECK_EQUAL(true,  c_foo.isIsomorphic(i_bar));
+    BOOST_CHECK_EQUAL(false, c_foo.isIsomorphic(i_baz));
+    BOOST_CHECK_EQUAL(false, c_foo.isIsomorphic(i_qux));
+    BOOST_CHECK_EQUAL(false, c_foo.isIsomorphic(i_quux));
+    BOOST_CHECK_EQUAL(false, c_foo.isIsomorphic(i_quuux));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
+{
+    BOOST_TEST_MESSAGE("Instances without padding");
+    {
+        ContiguousState<4,T>  foo(size2234());
+        InterleavedState<4,T> bar(size2234());
+        test_addScaled_helper(foo, bar);
+        test_addScaled_helper(bar, foo);
+    }
+
+    BOOST_TEST_MESSAGE("First instance with padding");
+    {
+        ContiguousState<4,T>  foo(size2234(), size(27,1,1,1));
+        InterleavedState<4,T> bar(size2234());
+        test_addScaled_helper(foo, bar);
+        test_addScaled_helper(bar, foo);
+    }
+
+    BOOST_TEST_MESSAGE("Second instance with padding");
+    {
+        ContiguousState<4,T>  foo(size2234());
+        InterleavedState<4,T> bar(size2234(), 87);
+        test_addScaled_helper(foo, bar);
+        test_addScaled_helper(bar, foo);
+    }
+
+    BOOST_TEST_MESSAGE("Both instances with padding");
+    {
+        ContiguousState<4,T>  foo(size2234(), size(27,1,1,1));
+        InterleavedState<4,T> bar(size2234(), 87);
+        test_addScaled_helper(foo, bar);
+        test_addScaled_helper(bar, foo);
+    }
+
+    // Operation between two nonconforming states throws
+    ContiguousState<4,T>  foo(size2234());
+    InterleavedState<4,T> baz(size(2,2,2,2));
+    BOOST_CHECK_THROW(foo.addScaled(3, baz), std::logic_error);
+    BOOST_CHECK_THROW(baz.addScaled(3, foo), std::logic_error);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
+{
+    BOOST_TEST_MESSAGE("Instances without padding");
+    {
+        ContiguousState<4,T>  foo(size2234());
+        InterleavedState<4,T> bar(size2234());
+        test_exchange_helper(foo, bar);
+        test_exchange_helper(bar, foo);
+    }
+
+    BOOST_TEST_MESSAGE("First instance with padding");
+    {
+        ContiguousState<4,T>  foo(size2234(), size(27,1,1,1));
+        InterleavedState<4,T> bar(size2234());
+        test_exchange_helper(foo, bar);
+        test_exchange_helper(bar, foo);
+    }
+
+    BOOST_TEST_MESSAGE("Second instance with padding");
+    {
+        ContiguousState<4,T>  foo(size2234());
+        InterleavedState<4,T> bar(size2234(), 87);
+        test_exchange_helper(foo, bar);
+        test_exchange_helper(bar, foo);
+    }
+
+    BOOST_TEST_MESSAGE("Both instances with padding");
+    {
+        ContiguousState<4,T>  foo(size2234(), size(27,1,1,1));
+        InterleavedState<4,T> bar(size2234(), 87);
+        test_exchange_helper(foo, bar);
+        test_exchange_helper(bar, foo);
+    }
+
+    // Operation between two nonconforming states throws
+    ContiguousState<4,T>  foo(size2234());
+    InterleavedState<4,T> baz(size(2,2,2,2));
+    BOOST_CHECK_THROW(foo.exchange(baz), std::logic_error);
+    BOOST_CHECK_THROW(baz.exchange(foo), std::logic_error);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
