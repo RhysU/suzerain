@@ -32,7 +32,6 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/math.hpp>
-#include <suzerain/state_fwd.hpp>
 #include <suzerain/timecontroller.hpp>
 #include <suzerain/traits.hpp>
 
@@ -389,8 +388,8 @@ public:
  * variables by a uniform factor.  The associated mass matrix \f$M\f$
  * is the identity matrix.
  *
- * @tparam StateA A state type which should descend from suzerain::StateBase.
- * @tparam StateB A state type which should descend from suzerain::StateBase.
+ * @tparam StateA A type which likely descends from suzerain::StateBase.
+ * @tparam StateB A type which likely descends from suzerain::StateBase.
  */
 template<typename StateA,typename StateB = StateA>
 class MultiplicativeOperator
@@ -545,17 +544,17 @@ private:
 template<
     typename FactorType,
     typename DeltaTType,
-    typename A,
-    typename B
+    typename StateA,
+    typename StateB
 >
-MultiplicativeOperator<A,B>
+MultiplicativeOperator<StateA,StateB>
 make_multiplicator_operator(
     const FactorType& factor,
     const DeltaTType& delta_t,
-    const StateBase<A>& input,
-    const StateBase<B>& output)
+    const StateA& input,
+    const StateB& output)
 {
-    MultiplicativeOperator<A,B> retval(factor,delta_t);
+    MultiplicativeOperator<StateA,StateB> retval(factor, delta_t);
     return retval;
 }
 
@@ -991,20 +990,26 @@ private:
  * @see The method step() provides more convenient ways to perform multiple
  *      substeps, including dynamic step size computation.
  */
-template< typename Element, typename A, typename B >
+template< typename Element,
+          typename LinearA, typename LinearB, typename NonlinearB,
+          typename StateA, typename StateB >
 const typename suzerain::traits::component<Element>::type substep(
     const ILowStorageMethod<Element>& m,
-    const ILinearOperator<A,B>& L,
+    const ILinearOperator<LinearA,LinearB>& L,
     const typename suzerain::traits::component<Element>::type chi,
-    const INonlinearOperator<B>& N,
+    const INonlinearOperator<NonlinearB>& N,
     const typename suzerain::traits::component<Element>::type time,
-    A& a,  // FIXME: Would love a StateBase subclass restriction here
-    B& b,  // FIXME: Would love a StateBase subclass restriction here
+    StateA& a,
+    StateB& b,
     const typename suzerain::traits::component<Element>::type delta_t,
     const std::size_t substep_index)
 {
-    BOOST_STATIC_ASSERT((boost::is_same<Element,typename A::element>::value));
-    BOOST_STATIC_ASSERT((boost::is_same<Element,typename B::element>::value));
+    using boost::is_same;
+    BOOST_STATIC_ASSERT((is_same<Element,typename    LinearA::element>::value));
+    BOOST_STATIC_ASSERT((is_same<Element,typename    LinearB::element>::value));
+    BOOST_STATIC_ASSERT((is_same<Element,typename NonlinearB::element>::value));
+    BOOST_STATIC_ASSERT((is_same<Element,typename     StateA::element>::value));
+    BOOST_STATIC_ASSERT((is_same<Element,typename     StateB::element>::value));
 
     if (SUZERAIN_UNLIKELY(substep_index >= m.substeps()))
         throw std::invalid_argument("Requested substep too large");
@@ -1052,20 +1057,26 @@ const typename suzerain::traits::component<Element>::type substep(
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
-template< typename Element, typename A, typename B, typename Reducer >
+template< typename Element, typename Reducer,
+          typename LinearA, typename LinearB, typename NonlinearB,
+          typename StateA, typename StateB >
 const typename suzerain::traits::component<Element>::type step(
     const ILowStorageMethod<Element>& m,
     Reducer& reducer,
-    const ILinearOperator<A,B>& L,
+    const ILinearOperator<LinearA,LinearB>& L,
     const typename suzerain::traits::component<Element>::type chi,
-    const INonlinearOperator<B>& N,
+    const INonlinearOperator<NonlinearB>& N,
     const typename suzerain::traits::component<Element>::type time,
-    A& a,  // FIXME: Would love a StateBase subclass restriction here
-    B& b,  // FIXME: Would love a StateBase subclass restriction here
+    StateA& a,
+    StateB& b,
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
 {
-    BOOST_STATIC_ASSERT((boost::is_same<Element,typename A::element>::value));
-    BOOST_STATIC_ASSERT((boost::is_same<Element,typename B::element>::value));
+    using boost::is_same;
+    BOOST_STATIC_ASSERT((is_same<Element,typename    LinearA::element>::value));
+    BOOST_STATIC_ASSERT((is_same<Element,typename    LinearB::element>::value));
+    BOOST_STATIC_ASSERT((is_same<Element,typename NonlinearB::element>::value));
+    BOOST_STATIC_ASSERT((is_same<Element,typename     StateA::element>::value));
+    BOOST_STATIC_ASSERT((is_same<Element,typename     StateB::element>::value));
     typedef typename suzerain::traits::component<Element>::type component_type;
 
     // First substep handling is special since we need to determine delta_t
@@ -1124,20 +1135,25 @@ const typename suzerain::traits::component<Element>::type step(
  *
  * @see ILowStorageMethod for the equation governing time advancement.
  */
-template< typename Element, typename A, typename B >
+template< typename Element,
+          typename LinearA, typename LinearB, typename NonlinearB,
+          typename StateA, typename StateB >
 const typename suzerain::traits::component<Element>::type step(
     const ILowStorageMethod<Element>& m,
-    const ILinearOperator<A,B>& L,
+    const ILinearOperator<LinearA,LinearB>& L,
     const typename suzerain::traits::component<Element>::type chi,
-    const INonlinearOperator<B>& N,
+    const INonlinearOperator<NonlinearB>& N,
     const typename suzerain::traits::component<Element>::type time,
-    A& a,  // FIXME: Would love a StateBase subclass restriction here
-    B& b,  // FIXME: Would love a StateBase subclass restriction here
+    StateA& a,
+    StateB& b,
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
 {
     DeltaTReducer reducer;
-    return step<Element, A, B, DeltaTReducer>(m, reducer, L, chi, N,
-                                              time, a, b, max_delta_t);
+    return step<
+            Element, DeltaTReducer,
+            LinearA, LinearB, NonlinearB,
+            StateA, StateB
+        >(m, reducer, L, chi, N, time, a, b, max_delta_t);
 }
 
 /**
@@ -1149,24 +1165,38 @@ const typename suzerain::traits::component<Element>::type step(
  * @see make_LowStorageTimeController for an easy way to create
  *      an instance with the appropriate type signature.
  */
-template< typename A, typename B, typename Reducer >
+template< typename StateA,
+          typename StateB,
+          typename Reducer,
+          typename LinearA    = StateA,
+          typename LinearB    = StateB,
+          typename NonlinearB = StateB >
 class LowStorageTimeController
     : public TimeController< typename suzerain::traits::component<
-            typename A::element
+            typename StateA::element
       >::type >
 {
 protected:
 
     /** Shorthand for the superclass */
     typedef TimeController< typename suzerain::traits::component<
-                typename A::element
+                typename StateA::element
             >::type > super;
 
 public:
 
     /** The real- or complex-valued scalar type the operator understands */
-    typedef typename A::element element;
-    BOOST_STATIC_ASSERT((boost::is_same<element, typename B::element>::value));
+    typedef typename StateA::element element;
+    BOOST_STATIC_ASSERT(
+            (boost::is_same<element, typename    LinearA::element>::value));
+    BOOST_STATIC_ASSERT(
+            (boost::is_same<element, typename    LinearB::element>::value));
+    BOOST_STATIC_ASSERT(
+            (boost::is_same<element, typename NonlinearB::element>::value));
+    BOOST_STATIC_ASSERT(
+            (boost::is_same<element, typename     StateA::element>::value));
+    BOOST_STATIC_ASSERT(
+            (boost::is_same<element, typename     StateB::element>::value));
 
     /**
      * Construct an instance that will advance a simulation built atop the
@@ -1205,11 +1235,11 @@ public:
     LowStorageTimeController(
             const ILowStorageMethod<element>& m,
             Reducer& reducer,
-            const ILinearOperator<A,B>& L,
+            const ILinearOperator<LinearA,LinearB>& L,
             const typename suzerain::traits::component<element>::type chi,
-            const INonlinearOperator<B>& N,
-            A& a,  // FIXME: Would love a StateBase subclass restriction here
-            B& b,  // FIXME: Would love a StateBase subclass restriction here
+            const INonlinearOperator<NonlinearB>& N,
+            StateA& a,
+            StateB& b,
             typename super::time_type initial_t = 0,
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
@@ -1223,11 +1253,11 @@ private:
 
     const ILowStorageMethod<element>& m;
     Reducer &reducer;
-    const ILinearOperator<A,B>& L;
+    const ILinearOperator<LinearA,LinearB>& L;
     const typename suzerain::traits::component<element>::type chi;
-    const INonlinearOperator<B>& N;
-    A& a;
-    B& b;
+    const INonlinearOperator<NonlinearB>& N;
+    StateA& a;
+    StateB& b;
 
     typename super::time_type stepper(typename super::time_type max_dt)
     {
@@ -1239,21 +1269,32 @@ private:
 
 /**
  * A partial specialization of the LowStorageTimeController template for the
- * case when default DeltaTReducer behavior is desired.
+ * case when default DeltaTReducer behavior is desired.  Empty base class
+ * optimization eliminates the DeltaTReducer instance overhead.
  */
-template< typename A, typename B >
-class LowStorageTimeController<A, B, void>
+template< typename StateA,
+          typename StateB,
+          typename LinearA,
+          typename LinearB,
+          typename NonlinearB >
+class LowStorageTimeController<StateA,StateB,void,LinearA,LinearB,NonlinearB>
     : private DeltaTReducer,
-      public LowStorageTimeController<A,B,DeltaTReducer>
+      public LowStorageTimeController<
+            StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
+        >
 {
 
 protected:
 
-    typedef typename LowStorageTimeController<A,B,DeltaTReducer>::super super;
+    typedef typename LowStorageTimeController<
+            StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
+        >::super super;
 
 public:
 
-    typedef typename LowStorageTimeController<A,B,DeltaTReducer>::element element;
+    typedef typename LowStorageTimeController<
+            StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
+        >::element element;
 
     /**
      * Construct an instance that will advance a simulation built atop the
@@ -1286,68 +1327,93 @@ public:
      */
     LowStorageTimeController(
             const ILowStorageMethod<element>& m,
-            const ILinearOperator<A,B>& L,
+            const ILinearOperator<LinearA,LinearB>& L,
             const typename suzerain::traits::component<element>::type chi,
-            const INonlinearOperator<B>& N,
-            A& a,  // FIXME: Would love a StateBase subclass restriction here
-            B& b,  // FIXME: Would love a StateBase subclass restriction here
+            const INonlinearOperator<NonlinearB>& N,
+            StateA& a,
+            StateB& b,
             typename super::time_type initial_t = 0,
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
         : DeltaTReducer(),
-          LowStorageTimeController<A,B,DeltaTReducer>(
-                  m,
-                  *reinterpret_cast<DeltaTReducer*>(this),
-                  L, chi, N, a, b, initial_t, min_dt, max_dt)
+          LowStorageTimeController<
+                StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
+            >(m, *reinterpret_cast<DeltaTReducer*>(this),
+              L, chi, N, a, b, initial_t, min_dt, max_dt)
     {}
 
 };
 
 /**
  * A helper method so the compiler can deduce the appropriate template
- * types for a LowStorageTimeController.
+ * types for a LowStorageTimeController employing a custom Reducer.
  *
  * \copydoc LowStorageTimeController
  */
-template< typename A, typename B, typename ChiType, typename Reducer >
-LowStorageTimeController<A,B,Reducer>*
+template< typename StateA,
+          typename StateB,
+          typename Reducer,
+          typename LinearA,
+          typename LinearB,
+          typename NonlinearB,
+          typename ChiType >
+LowStorageTimeController<StateA,StateB,Reducer,LinearA,LinearB,NonlinearB>*
 make_LowStorageTimeController(
-        const ILowStorageMethod<typename StateBase<A>::element>& m,
+        const ILowStorageMethod<typename StateA::element>& m,
         Reducer &reducer,
-        const ILinearOperator<A,B>& L,
+        const ILinearOperator<LinearA,LinearB>& L,
         const ChiType chi,
-        const INonlinearOperator<B>& N,
-        A& a,  // FIXME: Would love a StateBase subclass restriction here
-        B& b,  // FIXME: Would love a StateBase subclass restriction here
-        typename LowStorageTimeController<A,B,Reducer>::time_type initial_t = 0,
-        typename LowStorageTimeController<A,B,Reducer>::time_type min_dt = 0,
-        typename LowStorageTimeController<A,B,Reducer>::time_type max_dt = 0)
+        const INonlinearOperator<NonlinearB>& N,
+        StateA& a,
+        StateB& b,
+        typename LowStorageTimeController<
+                StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
+            >::time_type initial_t = 0,
+        typename LowStorageTimeController<
+                StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
+            >::time_type min_dt = 0,
+        typename LowStorageTimeController<
+                StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
+            >::time_type max_dt = 0)
 {
-    return new LowStorageTimeController<A,B,Reducer>(
-            m, reducer, L, chi, N, a, b, initial_t, min_dt, max_dt);
+    return new LowStorageTimeController<
+                StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
+        >(m, reducer, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }
 
 /**
  * A helper method so the compiler can deduce the appropriate template
- * types for a LowStorageTimeController.
+ * types for a LowStorageTimeController employing DeltaTReducer.
  *
  * \copydoc LowStorageTimeController
  */
-template< typename A, typename B, typename ChiType >
-LowStorageTimeController<A,B,void>*
+template< typename StateA,
+          typename StateB,
+          typename LinearA,
+          typename LinearB,
+          typename NonlinearB,
+          typename ChiType >
+LowStorageTimeController<StateA,StateB,void,LinearA,LinearB,NonlinearB>*
 make_LowStorageTimeController(
-        const ILowStorageMethod<typename StateBase<A>::element>& m,
-        const ILinearOperator<A,B>& L,
+        const ILowStorageMethod<typename StateA::element>& m,
+        const ILinearOperator<LinearA,LinearB>& L,
         const ChiType chi,
-        const INonlinearOperator<B>& N,
-        A& a,  // FIXME: Would love a StateBase subclass restriction here
-        B& b,  // FIXME: Would love a StateBase subclass restriction here
-        typename LowStorageTimeController<A,B,void>::time_type initial_t = 0,
-        typename LowStorageTimeController<A,B,void>::time_type min_dt = 0,
-        typename LowStorageTimeController<A,B,void>::time_type max_dt = 0)
+        const INonlinearOperator<NonlinearB>& N,
+        StateA& a,
+        StateB& b,
+        typename LowStorageTimeController<
+                StateA,StateB,void,LinearA,LinearB,NonlinearB
+            >::time_type initial_t = 0,
+        typename LowStorageTimeController<
+                StateA,StateB,void,LinearA,LinearB,NonlinearB
+            >::time_type min_dt = 0,
+        typename LowStorageTimeController<
+                StateA,StateB,void,LinearA,LinearB,NonlinearB
+            >::time_type max_dt = 0)
 {
-    return new LowStorageTimeController<A,B,void>(
-            m, L, chi, N, a, b, initial_t, min_dt, max_dt);
+    return new LowStorageTimeController<
+            StateA,StateB,void,LinearA,LinearB,NonlinearB
+        >(m, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }
 
 
