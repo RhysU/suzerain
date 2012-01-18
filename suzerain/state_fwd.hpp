@@ -158,14 +158,17 @@ public:
      * Is \c this instance isomorphic with <tt>other</tt>'s?
      * More concretely, do they have the same dimensionality and shape?
      *
-     * @param other another instance against which to compare.
+     * Implementation works on all <tt>StateBase<Derived></tt> subclasses
+     * and everything adhering to the <tt>Boost.MultiArray</tt> concept.
+     *
+     * @param other another object instance against which to compare.
      *
      * @return True if other's shape matches this instance's.
      *         False otherwise.
      */
-    template<class OtherDerived>
-    bool isIsomorphic(const StateBase<OtherDerived>& other) const {
-        if (dimensionality == StateBase<OtherDerived>::dimensionality) {
+    template<class OtherType>
+    bool isIsomorphic(const OtherType& other) const {
+        if (dimensionality == OtherType::dimensionality) {
             return std::equal(shape(), shape() + dimensionality, other.shape());
         } else {
             return false;
