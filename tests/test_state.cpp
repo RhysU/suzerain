@@ -597,10 +597,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
 {
-    InterleavedState<4,T> foo(size2234()), bar(size2234());
-    test_assignment_helper(foo, bar);
+    BOOST_TEST_MESSAGE("Instances without padding");
+    {
+        InterleavedState<4,T> foo(size2234()), bar(size2234());
+        test_assignment_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("First instance with padding");
+    {
+        InterleavedState<4,T> foo(size2234(), 87), bar(size2234());
+        test_assignment_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Second instance with padding");
+    {
+        InterleavedState<4,T> foo(size2234()), bar(size2234(), 87);
+        test_assignment_helper(foo, bar);
+    }
+
+    BOOST_TEST_MESSAGE("Both instances with padding");
+    {
+        InterleavedState<4,T> foo(size2234(), 87), bar(size2234(), 78);
+        test_assignment_helper(foo, bar);
+    }
 
     // Operation between two nonconforming states throws
+    InterleavedState<4,T> foo(size2234());
     InterleavedState<4,T> baz(size(2,2,2,2));
     BOOST_CHECK_THROW(baz.assign(foo), std::logic_error);
 }
