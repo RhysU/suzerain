@@ -229,6 +229,8 @@ public:
  *
  * @tparam NumDims    Number of dimensions
  * @tparam Element    Type of elements to store
+ *
+ * @see #storage_order_type for more details on the storage used.
  */
 template< std::size_t NumDims, typename Element >
 class ContiguousState
@@ -302,11 +304,13 @@ private:
 };
 
 /**
- * A state class storing elements in Fortran order.  The class is named
- * InterleavedState to contrast it with ContiguousState's storage ordering.
+ * A state class storing elements in Fortran order \em except that the
+ * first two indices are exchanged.
  *
  * @tparam NumDims    Number of dimensions
  * @tparam Element    Type of elements to store
+ *
+ * @see #storage_order_type for more details on the storage used.
  */
 template< std::size_t NumDims, typename Element >
 class InterleavedState
