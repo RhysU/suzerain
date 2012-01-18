@@ -1316,6 +1316,15 @@ int main(int argc, char **argv)
 
     // Output simulation advance rates when we advanced the simulation
     if (tc->current_nt()) {
+        const real_t wtime_advance = (wtime_advance_end - wtime_advance_start);
+
+        // Advance rate measured in a (mostly) problem-size-agnostic metric
+        INFO0("Advancing at " << wtime_advance / tc->current_nt() / grid.N.prod()
+                              << " wall seconds per time step per grid point");
+
+        // Advance rate measured in a problem-size-dependent metric
+        INFO0("Advancing at " << wtime_advance / tc->current_nt()
+                              << " wall seconds per time step");
 
         // Advance rate measured in flow through based on bulk velocity
         // (where bulk velocity is estimated from bulk momentum and density)
@@ -1323,22 +1332,13 @@ int main(int argc, char **argv)
                 = scenario.Lx / (scenario.bulk_rhou / scenario.bulk_rho);
         const real_t flowthroughs
                 = (tc->current_t() - initial_t) / flowthrough_time;
-        INFO0("Advancing at "
-              << (wtime_advance_end - wtime_advance_start) / flowthroughs
-              << " wall seconds per flow through");
-
-        // Advance rate measured in a (mostly) problem-size-agnostic metric
-        const real_t seconds_per_step_point
-                = (wtime_advance_end - wtime_advance_start)
-                / (tc->current_nt() * grid.N.prod());
-        INFO0("Advancing at " << seconds_per_step_point
-              << " wall seconds per time step per grid point");
+        INFO0("Advancing at " << wtime_advance / flowthroughs
+                              << " wall seconds per flow through");
 
         // Admit what overhead we've neglected in those calculations
-        const real_t overhead_time = (MPI_Wtime() - wtime_mpi_init
-                                   - (wtime_advance_end - wtime_advance_start));
         INFO0("Advancement rate calculations ignore "
-                << overhead_time << " seconds of fixed overhead");
+                              << MPI_Wtime() - wtime_mpi_init - wtime_advance
+                              << " seconds of fixed overhead");
     }
 
     return advance_success ? EXIT_SUCCESS : EXIT_FAILURE;
