@@ -225,11 +225,6 @@ std::size_t general<StorageOrderSequence>::compute_storage(
  * the first index held constant are therefore "interleaved" with the second
  * index and hence the name.
  */
-
-/**
- * A marker type for specifying interleaved state storage (which happens to be
- * identical to Fortran's row-major storage ordering).
- */
 template< std::size_t NumDims > class interleaved;
 
 /** Interleaved storage specification for one dimension */
