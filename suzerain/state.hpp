@@ -115,7 +115,7 @@ ContiguousState<NumDims,Element>::ContiguousState(
 
 template< std::size_t NumDims, typename Element >
 ContiguousState<NumDims,Element>::ContiguousState(
-        const ContiguousState &other)
+        const ContiguousState& other)
     : shared_range_type(suzerain::clone_shared_range(
                 typename suzerain::blas::allocator<Element>::type(),
                 other.range())),
@@ -425,6 +425,21 @@ void ContiguousState<NumDims,Element>::addScaled(
 }
 
 template< std::size_t NumDims, typename Element >
+void ContiguousState<NumDims,Element>::addScaled(
+            const Element& factor,
+            const multi_array_type& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
+        throw std::logic_error("Unable to handle this->addScaled(...,this)");
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
+                  const_cast<multi_array_type&>(other), *this);
+}
+
+template< std::size_t NumDims, typename Element >
 void ContiguousState<NumDims,Element>::assign(
             const ContiguousState& other)
 {
@@ -444,6 +459,19 @@ void ContiguousState<NumDims,Element>::assign(
         detail::apply(::suzerain::blas::functor::copy(),
                       const_cast<ContiguousState&>(other), *this);
     }
+}
+
+template< std::size_t NumDims, typename Element >
+void ContiguousState<NumDims,Element>::assign(
+            const multi_array_type& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    detail::apply(::suzerain::blas::functor::copy(),
+                  const_cast<multi_array_type&>(other), *this);
 }
 
 template< std::size_t NumDims, typename Element >
@@ -467,6 +495,18 @@ void ContiguousState<NumDims,Element>::exchange(
     }
 }
 
+template< std::size_t NumDims, typename Element >
+void ContiguousState<NumDims,Element>::exchange(
+            multi_array_type& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    detail::apply(::suzerain::blas::functor::swap(), other, *this);
+}
+
 
 template< std::size_t NumDims, typename Element >
 template< typename ExtentList >
@@ -485,7 +525,7 @@ InterleavedState<NumDims,Element>::InterleavedState(
 
 template< std::size_t NumDims, typename Element >
 InterleavedState<NumDims,Element>::InterleavedState(
-        const InterleavedState &other)
+        const InterleavedState& other)
     : shared_range_type(suzerain::clone_shared_range(
                 typename suzerain::blas::allocator<Element>::type(),
                 other.range())),
@@ -523,6 +563,21 @@ void InterleavedState<NumDims,Element>::addScaled(
 }
 
 template< std::size_t NumDims, typename Element >
+void InterleavedState<NumDims,Element>::addScaled(
+            const Element& factor,
+            const multi_array_type& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
+        throw std::logic_error("Unable to handle this->addScaled(...,this)");
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
+                  const_cast<multi_array_type&>(other), *this);
+}
+
+template< std::size_t NumDims, typename Element >
 void InterleavedState<NumDims,Element>::assign(
             const InterleavedState& other)
 {
@@ -538,6 +593,19 @@ void InterleavedState<NumDims,Element>::assign(
 }
 
 template< std::size_t NumDims, typename Element >
+void InterleavedState<NumDims,Element>::assign(
+            const multi_array_type& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    detail::apply(::suzerain::blas::functor::copy(),
+                  const_cast<multi_array_type&>(other), *this);
+}
+
+template< std::size_t NumDims, typename Element >
 void InterleavedState<NumDims,Element>::exchange(
             InterleavedState& other)
 {
@@ -550,6 +618,18 @@ void InterleavedState<NumDims,Element>::exchange(
     // Any padding from min_total_contiguous_count is unmodified.
     suzerain::blas::swap(
             this->num_elements(), other.data(), 1, this->data(), 1);
+}
+
+template< std::size_t NumDims, typename Element >
+void InterleavedState<NumDims,Element>::exchange(
+            multi_array_type& other)
+{
+    if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
+
+    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
+            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+
+    detail::apply(::suzerain::blas::functor::swap(), other, *this);
 }
 
 } // namespace suzerain

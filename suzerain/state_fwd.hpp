@@ -198,7 +198,7 @@ public:
      * @throw std::logic_error if \c other is not isomorphic.
      */
     template<class OtherDerived>
-    void assign(const StateBase<OtherDerived> &other) {
+    void assign(const StateBase<OtherDerived>& other) {
         return derived().assign(other.derived());
     }
 
@@ -283,9 +283,16 @@ public:
     void addScaled(const Element& factor,
                    const ContiguousState& other);
 
-    void assign(const ContiguousState &other);
+    void addScaled(const Element& factor,
+                   const multi_array_type& other);
 
-    void exchange(ContiguousState &other);
+    void assign(const ContiguousState& other);
+
+    void assign(const multi_array_type& other);
+
+    void exchange(ContiguousState& other);
+
+    void exchange(multi_array_type& other);
 
     const shared_range_type& range() const {
         return reinterpret_cast<const shared_range_type&>(*this);
@@ -356,9 +363,16 @@ public:
     void addScaled(const Element& factor,
                    const InterleavedState& other);
 
-    void assign(const InterleavedState &other);
+    void addScaled(const Element& factor,
+                   const multi_array_type& other);
 
-    void exchange(InterleavedState &other);
+    void assign(const InterleavedState& other);
+
+    void assign(const multi_array_type& other);
+
+    void exchange(InterleavedState& other);
+
+    void exchange(multi_array_type& other);
 
     const shared_range_type& range() const {
         return reinterpret_cast<const shared_range_type&>(*this);
