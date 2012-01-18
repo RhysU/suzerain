@@ -314,6 +314,13 @@ check_PROGRAMS          += test_richardson
 test_richardson_SOURCES  = test_richardson.c
 test_richardson_LDADD    = ../suzerain/libsuzerain.la
 
+TESTS                    += test_multi_array
+check_PROGRAMS           += test_multi_array
+test_multi_array_SOURCES  = test_multi_array.cpp
+test_multi_array_LDADD    = ../suzerain/libsuzerain.la
+test_multi_array_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_multi_array_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                       += test_timecontroller
 check_PROGRAMS              += test_timecontroller
 test_timecontroller_SOURCES  = test_timecontroller.cpp
@@ -327,13 +334,6 @@ test_timestepper_SOURCES  = test_timestepper.cpp
 test_timestepper_LDADD    = ../suzerain/libsuzerain.la
 test_timestepper_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_timestepper_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
-TESTS                    += test_multi_array
-check_PROGRAMS           += test_multi_array
-test_multi_array_SOURCES  = test_multi_array.cpp
-test_multi_array_LDADD    = ../suzerain/libsuzerain.la
-test_multi_array_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_multi_array_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS             += test_fftw
 check_PROGRAMS    += test_fftw
