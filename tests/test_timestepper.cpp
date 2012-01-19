@@ -18,6 +18,7 @@
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 // Shorthand
+namespace mpl = boost::mpl;
 using suzerain::InterleavedState;
 using suzerain::ContiguousState;
 using suzerain::multi_array::ref;
@@ -87,15 +88,16 @@ public:
 
 };
 
+template< typename StateA, typename StateB = StateA >
 class RiccatiLinearOperator
-    : public MultiplicativeOperator<ContiguousState<3,double> >
+    : public MultiplicativeOperator<StateA,StateB>
 {
 public:
     RiccatiLinearOperator(
             const double a,
             const double b,
             const double delta_t = std::numeric_limits<double>::infinity())
-        : MultiplicativeOperator<ContiguousState<3,double> >(b, delta_t)
+        : MultiplicativeOperator<StateA,StateB>(b, delta_t)
     {
         SUZERAIN_UNUSED(a);
     }
@@ -173,7 +175,7 @@ struct CosineSolution
 
 BOOST_AUTO_TEST_SUITE( timestep_stability )
 
-typedef boost::mpl::list< float ,double ,long double > constants_test_types;
+typedef mpl::list< float ,double ,long double > constants_test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( convective, T, constants_test_types )
 {
@@ -277,7 +279,7 @@ BOOST_AUTO_TEST_CASE( name )
     BOOST_CHECK(m.name());
 }
 
-typedef boost::mpl::list< float ,double ,long double > constants_test_types;
+typedef mpl::list< float ,double ,long double > constants_test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SMR91_constants, T, constants_test_types )
 {
@@ -598,7 +600,9 @@ BOOST_AUTO_TEST_CASE( substep_hybrid_time_independent )
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
     const SMR91Method<double> m;
     const RiccatiNonlinearOperator nonlinear_op(2, 3);
-    const RiccatiLinearOperator    linear_op(2, 3);
+    const RiccatiLinearOperator<
+                ContiguousState<3,double>
+            > linear_op(2, 3);
     ContiguousState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
 
     {
@@ -939,7 +943,9 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
     // Fix method, operators, and storage space
     const SMR91Method<double> m;
     const RiccatiNonlinearOperator nonlinear_op(soln.a, soln.b);
-    const RiccatiLinearOperator    linear_op(soln.a, soln.b);
+    const RiccatiLinearOperator<
+                ContiguousState<3,double>
+            > linear_op(soln.a, soln.b);
     ContiguousState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
 
     // Coarse grid calculation
@@ -1066,52 +1072,25 @@ template class LowStorageTimeController<
 
 BOOST_AUTO_TEST_SUITE( low_storage_controller_suite )
 
-BOOST_AUTO_TEST_CASE ( make_controller_homogeneous )
+typedef mpl::list<
+        mpl::vector<ContiguousState <3,double>, ContiguousState <3,double> >,
+        mpl::vector<InterleavedState<3,double>, InterleavedState<3,double> >,
+        mpl::vector<ContiguousState <3,double>, InterleavedState<3,double> >,
+        mpl::vector<InterleavedState<3,double>, ContiguousState <3,double> >
+    > test_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, State, test_types )
 {
+    typedef typename mpl::at<State,mpl::int_<0> >::type state_a_type;
+    typedef typename mpl::at<State,mpl::int_<1> >::type state_b_type;
+
     const SMR91Method<double> m;
-    const MultiplicativeOperator<ContiguousState<3,double> > trivial_linop(0);
+    const MultiplicativeOperator<state_a_type, state_b_type> trivial_linop(0);
     const RiccatiNonlinearOperator riccati_op(2, 3);
-    ContiguousState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
+    state_a_type a(size3(2,1,1));
+    state_b_type b(size3(2,1,1));
 
     // Compilation and instantiation is half the battle.  Go Joe!
-    boost::scoped_ptr<suzerain::timestepper::TimeController<double> > p(
-        make_LowStorageTimeController(m, trivial_linop,
-                                      1.0, riccati_op, a, b));
-
-    BOOST_REQUIRE(p);
-}
-
-// Compilation and instantiation is half the battle.
-BOOST_AUTO_TEST_CASE ( make_controller_heterogeneous1 )
-{
-    const SMR91Method<double> m;
-    const MultiplicativeOperator<
-            InterleavedState<3,double>,
-            ContiguousState<3,double>
-        > trivial_linop(0);
-    const RiccatiNonlinearOperator riccati_op(2, 3);
-    InterleavedState<3,double> a(size3(2,1,1));
-    ContiguousState<3,double>  b(size3(2,1,1));
-
-    boost::scoped_ptr<suzerain::timestepper::TimeController<double> > p(
-        make_LowStorageTimeController(m, trivial_linop,
-                                      1.0, riccati_op, a, b));
-
-    BOOST_REQUIRE(p);
-}
-
-// Compilation and instantiation is half the battle.
-BOOST_AUTO_TEST_CASE ( make_controller_heterogeneous2 )
-{
-    const SMR91Method<double> m;
-    const MultiplicativeOperator<
-            ContiguousState<3,double>,
-            InterleavedState<3,double>
-        > trivial_linop(0);
-    const RiccatiNonlinearOperator riccati_op(2, 3);
-    ContiguousState<3,double>  a(size3(2,1,1));
-    InterleavedState<3,double> b(size3(2,1,1));
-
     boost::scoped_ptr<suzerain::timestepper::TimeController<double> > p(
         make_LowStorageTimeController(m, trivial_linop,
                                       1.0, riccati_op, a, b));

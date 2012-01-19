@@ -79,11 +79,13 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/for_each.hpp>
+#include <boost/mpl/int.hpp>
 #include <boost/mpl/list_c.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/logical.hpp>
 #include <boost/mpl/range_c.hpp>
 #include <boost/mpl/size.hpp>
+#include <boost/mpl/vector.hpp>
 #include <boost/mpl/vector_c.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/noncopyable.hpp>
