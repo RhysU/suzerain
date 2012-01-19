@@ -160,6 +160,7 @@ void apply(BLASFunctor functor,
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
 
+    // Loops go from slower to faster indices for ContiguousState<2,Element>
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
          ix < iu;
          ++ix, ++iy) {
@@ -181,6 +182,7 @@ void apply(BLASFunctor functor,
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
 
+    // Loops go from slower to faster indices for ContiguousState<3,Element>
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
          ix < iu;
          ++ix, ++iy) {
@@ -208,6 +210,7 @@ void apply(BLASFunctor functor,
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
     const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
 
+    // Loops go from slower to faster indices for ContiguousState<4,Element>
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
          ix < iu;
          ++ix, ++iy) {
@@ -241,6 +244,7 @@ void apply(BLASFunctor functor,
     const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
     const index mu = numeric_cast<index>(x.index_bases()[4] + x.shape()[4]);
 
+    // Loops go from slower to faster indices for ContiguousState<5,Element>
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
          ix < iu;
          ++ix, ++iy) {
@@ -290,6 +294,7 @@ void apply(BLASFunctor functor,
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
 
+    // Loops go from slower to faster indices for InterleavedState<2,Element>
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
          ix < iu;
          ++ix, ++iy) {
@@ -311,6 +316,7 @@ void apply(BLASFunctor functor,
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
 
+    // Loops go from slower to faster indices for InterleavedState<3,Element>
     for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
          kx < ku;
          ++kx, ++ky) {
@@ -338,6 +344,7 @@ void apply(BLASFunctor functor,
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
     const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
 
+    // Loops go from slower to faster indices for InterleavedState<4,Element>
     for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
          lx < lu;
          ++lx, ++ly) {
@@ -371,6 +378,7 @@ void apply(BLASFunctor functor,
     const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
     const index mu = numeric_cast<index>(x.index_bases()[4] + x.shape()[4]);
 
+    // Loops go from slower to faster indices for InterleavedState<5,Element>
     for (index mx = x.index_bases()[4], my = y.index_bases()[4];
          mx < mu;
          ++mx, ++my) {
