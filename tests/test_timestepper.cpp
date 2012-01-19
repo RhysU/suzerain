@@ -755,13 +755,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_dependent,
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE( contiguous_storage )
+BOOST_AUTO_TEST_SUITE( step_suite )
 
 // Run the explicit timestepper against (d/dt) y = a*y
 // where it is expected to be third order.
-BOOST_AUTO_TEST_CASE( step_explicit_time_independent )
+BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_independent,
+                               StatePair, state_type_pairs )
 {
-    typedef MultiplicativeOperator<ContiguousState<3,double> > mult_op_type;
+    typedef typename mpl::at<StatePair,mpl::int_<0> >::type   state_a_type;
+    typedef typename mpl::at<StatePair,mpl::int_<1> >::type   state_b_type;
+    typedef MultiplicativeOperator<state_a_type,state_b_type> mult_op_type;
+
     // Fix test problem parameters
     const ExponentialSolution soln(2.0, 1.0);
     const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
@@ -769,7 +773,8 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_independent )
     // Fix method, operators, and storage space
     const SMR91Method<double> m;
     const mult_op_type trivial_linop(0);
-    ContiguousState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
+    state_a_type a(size3(1,1,1));
+    state_b_type b(size3(1,1,1));
 
     // Coarse grid calculation using explicitly provided time step
     const std::size_t coarse_nsteps = 16;
@@ -849,9 +854,12 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_independent )
 
 // Run the explicit timestepper against (d/dt) y = cos(t)
 // where it is expected to be third order.
-BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
+BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
+                               StatePair, state_type_pairs )
 {
-    typedef MultiplicativeOperator<ContiguousState<3,double> > mult_op_type;
+    typedef typename mpl::at<StatePair,mpl::int_<0> >::type   state_a_type;
+    typedef typename mpl::at<StatePair,mpl::int_<1> >::type   state_b_type;
+    typedef MultiplicativeOperator<state_a_type,state_b_type> mult_op_type;
 
     // Fix test problem parameters
     const CosineSolution soln(0.0);
@@ -860,7 +868,8 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
     // Fix method, operators, and storage space
     const SMR91Method<double> m;
     const mult_op_type trivial_linop(0);
-    ContiguousState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
+    state_a_type a(size3(1,1,1));
+    state_b_type b(size3(1,1,1));
 
     // Coarse grid calculation using explicitly provided time step
     const std::size_t coarse_nsteps = 16;
@@ -947,8 +956,11 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
 
 // Run the hybrid implicit/explicit timestepper against a Riccati problem
 // where it is expected to be second order.
-BOOST_AUTO_TEST_CASE( step_hybrid )
+BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
 {
+    typedef typename mpl::at<StatePair,mpl::int_<0> >::type state_a_type;
+    typedef typename mpl::at<StatePair,mpl::int_<1> >::type state_b_type;
+
     // Fix test problem parameters
     const RiccatiSolution soln(2.0, 2.0, -50.0);
     const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
@@ -957,9 +969,10 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
     const SMR91Method<double> m;
     const RiccatiNonlinearOperator nonlinear_op(soln.a, soln.b);
     const RiccatiLinearOperator<
-                ContiguousState<3,double>
+                state_a_type, state_b_type
             > linear_op(soln.a, soln.b);
-    ContiguousState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
+    state_a_type a(size3(1,1,1));
+    state_b_type b(size3(1,1,1));
 
     // Coarse grid calculation
     const std::size_t coarse_nsteps = 16;
@@ -1027,14 +1040,6 @@ BOOST_AUTO_TEST_CASE( step_hybrid )
         BOOST_CHECK_LT(richardson_h_error[1], richardson_h_error[3]);
     }
 }
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_AUTO_TEST_SUITE( mixed_storage )
-
-// FIXME: Implement explicit/hybrid tests against Interleaved/Contiguous
-// See Redmine ticket #1194
 
 BOOST_AUTO_TEST_SUITE_END()
 
