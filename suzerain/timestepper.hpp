@@ -968,8 +968,9 @@ private:
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
  * a hybrid implicit/explicit scheme to advance the system \f$ M u_t = Lu +
- * \chi N(u,t) \f$.  Note that the roles of state locations \c a and \c b are
- * flipped after each substep.
+ * \chi N(u,t) \f$.  Because the roles of state locations \c a and \c b are
+ * swapped after each substep, and in contrast to step(), only a single state
+ * type may be supplied to this method.
  *
  * @param m The low storage scheme to use.  For example, SMR91Method.
  * @param L The linear operator to be treated implicitly.
@@ -991,25 +992,26 @@ private:
  *      substeps, including dynamic step size computation.
  */
 template< typename Element,
-          typename LinearA, typename LinearB, typename NonlinearB,
-          typename StateA, typename StateB >
+          typename LinearState,
+          typename NonlinearState,
+          typename State >
 const typename suzerain::traits::component<Element>::type substep(
     const ILowStorageMethod<Element>& m,
-    const ILinearOperator<LinearA,LinearB>& L,
+    const ILinearOperator<LinearState>& L,
     const typename suzerain::traits::component<Element>::type chi,
-    const INonlinearOperator<NonlinearB>& N,
+    const INonlinearOperator<NonlinearState>& N,
     const typename suzerain::traits::component<Element>::type time,
-    StateA& a,
-    StateB& b,
+    State& a,
+    State& b,
     const typename suzerain::traits::component<Element>::type delta_t,
     const std::size_t substep_index)
 {
-    using boost::is_same;
-    BOOST_STATIC_ASSERT((is_same<Element,typename    LinearA::element>::value));
-    BOOST_STATIC_ASSERT((is_same<Element,typename    LinearB::element>::value));
-    BOOST_STATIC_ASSERT((is_same<Element,typename NonlinearB::element>::value));
-    BOOST_STATIC_ASSERT((is_same<Element,typename     StateA::element>::value));
-    BOOST_STATIC_ASSERT((is_same<Element,typename     StateB::element>::value));
+    BOOST_STATIC_ASSERT(
+            (boost::is_same<Element,typename    LinearState::element>::value));
+    BOOST_STATIC_ASSERT(
+            (boost::is_same<Element,typename NonlinearState::element>::value));
+    BOOST_STATIC_ASSERT(
+            (boost::is_same<Element,typename          State::element>::value));
 
     if (SUZERAIN_UNLIKELY(substep_index >= m.substeps()))
         throw std::invalid_argument("Requested substep too large");
