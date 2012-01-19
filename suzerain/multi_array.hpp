@@ -276,8 +276,9 @@ public:
      * and <tt>boost::multi_array_ref</tt>:
      *@{
      */
-    typedef typename base::extent_gen   extent_gen;
-    typedef typename base::extent_range extent_range;
+    typedef typename base::extent_gen         extent_gen;
+    typedef typename base::extent_range       extent_range;
+    typedef typename base::storage_order_type storage_order_type;
     using base::data;
     using base::storage_order;
     /*@}*/
