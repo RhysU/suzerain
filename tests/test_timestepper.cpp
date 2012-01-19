@@ -1023,7 +1023,8 @@ BOOST_AUTO_TEST_SUITE_END()
 // Tests for control logic of LowStorageTimeController in test_timecontroller.
 // Presumably getting LowStorageTimeController to type check is the big deal.
 // Explicitly instantiate it to ensure the template looks okay.
-// FIXME Instantiate LowStorageTimeController on mixed state
+
+// LowStorageTimeController for InterleavedState
 template class LowStorageTimeController<
         InterleavedState<3,double>, InterleavedState<3,double>,
         suzerain::timestepper::DeltaTReducer
@@ -1032,6 +1033,8 @@ template class LowStorageTimeController<
         InterleavedState<3,double>, InterleavedState<3,double>,
         void // Default Reducer behavior
     >;
+
+// LowStorageTimeController for ContiguousState
 template class LowStorageTimeController<
         ContiguousState<3,double>, ContiguousState<3,double>,
         suzerain::timestepper::DeltaTReducer
@@ -1041,9 +1044,29 @@ template class LowStorageTimeController<
         void // Default reducer behavior
     >;
 
+// LowStorageTimeController for {Interleaved,Contiguous}State
+template class LowStorageTimeController<
+        InterleavedState<3,double>, ContiguousState<3,double>,
+        suzerain::timestepper::DeltaTReducer
+    >;
+template class LowStorageTimeController<
+        InterleavedState<3,double>, ContiguousState<3,double>,
+        void // Default reducer behavior
+    >;
+
+// LowStorageTimeController for {Contiguous,Interleaved}State
+template class LowStorageTimeController<
+        ContiguousState<3,double>, InterleavedState<3,double>,
+        suzerain::timestepper::DeltaTReducer
+    >;
+template class LowStorageTimeController<
+        ContiguousState<3,double>, InterleavedState<3,double>,
+        void // Default reducer behavior
+    >;
+
 BOOST_AUTO_TEST_SUITE( low_storage_controller_suite )
 
-BOOST_AUTO_TEST_CASE ( make_controller )
+BOOST_AUTO_TEST_CASE ( make_controller_homogeneous )
 {
     const SMR91Method<double> m;
     const MultiplicativeOperator<ContiguousState<3,double> > trivial_linop(0);
@@ -1051,6 +1074,44 @@ BOOST_AUTO_TEST_CASE ( make_controller )
     ContiguousState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
 
     // Compilation and instantiation is half the battle.  Go Joe!
+    boost::scoped_ptr<suzerain::timestepper::TimeController<double> > p(
+        make_LowStorageTimeController(m, trivial_linop,
+                                      1.0, riccati_op, a, b));
+
+    BOOST_REQUIRE(p);
+}
+
+// Compilation and instantiation is half the battle.
+BOOST_AUTO_TEST_CASE ( make_controller_heterogeneous1 )
+{
+    const SMR91Method<double> m;
+    const MultiplicativeOperator<
+            InterleavedState<3,double>,
+            ContiguousState<3,double>
+        > trivial_linop(0);
+    const RiccatiNonlinearOperator riccati_op(2, 3);
+    InterleavedState<3,double> a(size3(2,1,1));
+    ContiguousState<3,double>  b(size3(2,1,1));
+
+    boost::scoped_ptr<suzerain::timestepper::TimeController<double> > p(
+        make_LowStorageTimeController(m, trivial_linop,
+                                      1.0, riccati_op, a, b));
+
+    BOOST_REQUIRE(p);
+}
+
+// Compilation and instantiation is half the battle.
+BOOST_AUTO_TEST_CASE ( make_controller_heterogeneous2 )
+{
+    const SMR91Method<double> m;
+    const MultiplicativeOperator<
+            ContiguousState<3,double>,
+            InterleavedState<3,double>
+        > trivial_linop(0);
+    const RiccatiNonlinearOperator riccati_op(2, 3);
+    ContiguousState<3,double>  a(size3(2,1,1));
+    InterleavedState<3,double> b(size3(2,1,1));
+
     boost::scoped_ptr<suzerain::timestepper::TimeController<double> > p(
         make_LowStorageTimeController(m, trivial_linop,
                                       1.0, riccati_op, a, b));
