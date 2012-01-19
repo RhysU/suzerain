@@ -136,7 +136,8 @@ template<class MultiArray,
          class UnaryFunction>
 inline
 UnaryFunction for_each(MultiArray &x,
-                       UnaryFunction f) {
+                       UnaryFunction f)
+{
     for_each_functor<MultiArray::dimensionality>()(x,f);
     return f;
 }
@@ -158,7 +159,8 @@ template<class ValueType, std::size_t NumDims, class Allocator,
          class UnaryFunction>
 inline
 UnaryFunction for_each(boost::multi_array<ValueType,NumDims,Allocator> &x,
-                       UnaryFunction f) {
+                       UnaryFunction f)
+{
     return std::for_each(x.data(), x.data() + x.num_elements(), f);
 }
 
@@ -194,9 +196,73 @@ UnaryFunction for_each(boost::multi_array_ref<ValueType,NumDims> &x,
  * @param v Value with which to fill \c x.
  */
 template<class MultiArray, class V>
-void fill(MultiArray &x, const V &v) {
+void fill(MultiArray &x, const V &v)
+{
     using suzerain::functional::assign;
     for_each(x, assign<typename MultiArray::element,V>(v));
+}
+
+/**
+ * Is the given MultiArray contiguous in memory?
+ *
+ * A MultiArray is contiguous when the <tt>product(shape(), shape() +
+ * dimensionality)</tt> equals the distance between the first and
+ * last element according to <tt>index_bases()</tt> and <tt>shape()</tt>.
+ *
+ * @param x MultiArray to check for contiguity.
+ *
+ * @return True if \c is contiguous.  False otherwise.
+ *
+ * @see SGI's <a href="http://www.sgi.com/tech/stl/UnaryFunction.html">
+ *      UnaryFunction</a> concept for more information.
+ */
+template<class MultiArray>
+bool is_contiguous(const MultiArray &x)
+{
+    bool retval = false;
+
+    static const std::size_t dimensionality = MultiArray::dimensionality;
+    if (dimensionality) {           // true ==> non-trivial product
+
+        typedef typename MultiArray::size_type size_type;
+        const size_type * const shape = x.shape();
+        const size_type contiguous_distance = std::accumulate(
+                shape, shape + dimensionality, 1, std::multiplies<size_type>());
+
+        if (contiguous_distance) {  // true ==> shape[i] > 0 forall i
+
+            typedef typename MultiArray::index index;
+            const index * const strides = x.strides();
+            const index * const bases   = x.bases();
+
+            const index ndx_first[dimensionality];
+            const index ndx_last [dimensionality];
+            for (std::size_t i = 0; i < dimensionality; ++i) {
+                ndx_first[i] = bases[i];
+                ndx_last [i] = bases[i] + static_cast<index>(shape[i] - 1);
+            }
+
+            typedef typename MultiArray::element element;
+            const element * const p_first = &x(ndx_first);
+            const element * const p_last  = &x(ndx_last);
+
+            using std::distance;
+            if (x.storage_order().all_dims_ascending()) {
+
+                // All dimensions ascending ==> (p_end == p_last + 1)
+                retval = contiguous_distance == distance(p_first, p_last + 1);
+
+            } else {
+
+                // Otherwise (p_end == p_last - 1) holds for all descending
+                // FIXME: Probably fails on ascending/descending pathologies
+                retval = contiguous_distance == distance(p_first, p_last - 1);
+
+            }
+        }
+    }
+
+    return retval;
 }
 
 /**
