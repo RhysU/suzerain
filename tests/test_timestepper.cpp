@@ -33,6 +33,14 @@ using suzerain::timestepper::lowstorage::LowStorageTimeController;
 template class InterleavedState<3,double>;
 template class ContiguousState<3,double>;
 
+// Pairs of State types to be tested against one another
+typedef mpl::list<
+        mpl::vector<ContiguousState <3,double>, ContiguousState <3,double> >,
+        mpl::vector<InterleavedState<3,double>, InterleavedState<3,double> >,
+        mpl::vector<ContiguousState <3,double>, InterleavedState<3,double> >,
+        mpl::vector<InterleavedState<3,double>, ContiguousState <3,double> >
+    > state_type_pairs;
+
 // Helper method for providing 3D size information
 static boost::array<std::size_t,3> size3(
     std::size_t x, std::size_t y, std::size_t z)
@@ -135,8 +143,7 @@ private:
     const double delta_t;
 
 public:
-    CosineExplicitOperator(
-            const double delta_t = std::numeric_limits<double>::quiet_NaN())
+    CosineExplicitOperator(const double delta_t = double_NaN)
         : delta_t(delta_t) { };
 
     virtual std::vector<double> applyOperator(
@@ -494,10 +501,9 @@ private:
     const double a, b, delta_t;
 
 public:
-    RiccatiExplicitOperator(
-            const double a,
-            const double b,
-            const double delta_t = std::numeric_limits<double>::quiet_NaN())
+    RiccatiExplicitOperator(const double a,
+                            const double b,
+                            const double delta_t = double_NaN)
         : a(a), b(b), delta_t(delta_t) { };
 
     virtual std::vector<double> applyOperator(
@@ -1072,14 +1078,7 @@ template class LowStorageTimeController<
 
 BOOST_AUTO_TEST_SUITE( low_storage_controller_suite )
 
-typedef mpl::list<
-        mpl::vector<ContiguousState <3,double>, ContiguousState <3,double> >,
-        mpl::vector<InterleavedState<3,double>, InterleavedState<3,double> >,
-        mpl::vector<ContiguousState <3,double>, InterleavedState<3,double> >,
-        mpl::vector<InterleavedState<3,double>, ContiguousState <3,double> >
-    > test_types;
-
-BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, State, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, State, state_type_pairs )
 {
     typedef typename mpl::at<State,mpl::int_<0> >::type state_a_type;
     typedef typename mpl::at<State,mpl::int_<1> >::type state_b_type;
