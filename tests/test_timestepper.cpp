@@ -33,7 +33,13 @@ using suzerain::timestepper::lowstorage::LowStorageTimeController;
 template class InterleavedState<3,double>;
 template class ContiguousState<3,double>;
 
-// Pairs of State types to be tested against one another
+// State types to be tested against themselves
+typedef mpl::list<
+        ContiguousState<3,double>,
+        InterleavedState<3,double>
+    > state_types;
+
+// Pairs of state types to be tested for interoperability
 typedef mpl::list<
         mpl::vector<ContiguousState <3,double>, ContiguousState <3,double> >,
         mpl::vector<InterleavedState<3,double>, InterleavedState<3,double> >,
@@ -531,7 +537,8 @@ public:
     }
 };
 
-BOOST_AUTO_TEST_CASE( substep_explicit_time_independent )
+BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_independent,
+                               State, state_types )
 {
     using suzerain::timestepper::lowstorage::substep;
     // See test_timestepper.sage for manufactured answers
@@ -539,9 +546,9 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_independent )
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
     const SMR91Method<double> m;
-    const MultiplicativeOperator<ContiguousState<3,double> > trivial_linop(0);
+    const MultiplicativeOperator<State> trivial_linop(0);
     const RiccatiExplicitOperator riccati_op(2, 3);
-    ContiguousState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
+    State a(size3(2,1,1)), b(size3(2,1,1));
 
     {
         a[0][0][0] =  5.0;
@@ -597,7 +604,8 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_independent )
             std::invalid_argument);
 }
 
-BOOST_AUTO_TEST_CASE( substep_hybrid_time_independent )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( substep_hybrid_time_independent,
+                                State, state_types )
 {
     using suzerain::timestepper::lowstorage::substep;
     // See test_timestepper.sage for manufactured answers
@@ -606,10 +614,8 @@ BOOST_AUTO_TEST_CASE( substep_hybrid_time_independent )
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
     const SMR91Method<double> m;
     const RiccatiNonlinearOperator nonlinear_op(2, 3);
-    const RiccatiLinearOperator<
-                ContiguousState<3,double>
-            > linear_op(2, 3);
-    ContiguousState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
+    const RiccatiLinearOperator<State> linear_op(2, 3);
+    State a(size3(2,1,1)), b(size3(2,1,1));
 
     {
         a[0][0][0] =  5.0;
@@ -665,7 +671,8 @@ BOOST_AUTO_TEST_CASE( substep_hybrid_time_independent )
             std::invalid_argument);
 }
 
-BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
+BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_dependent,
+                               State, state_types )
 {
     using suzerain::timestepper::lowstorage::substep;
     // See test_timestepper.sage for manufactured answers
@@ -675,9 +682,9 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
     const double pi = boost::math::constants::pi<double>();
     const double time = pi / 3.0;
     const SMR91Method<double> m;
-    const MultiplicativeOperator<ContiguousState<3,double> > trivial_linop(0);
+    const MultiplicativeOperator<State> trivial_linop(0);
     const CosineExplicitOperator cosine_op;
-    ContiguousState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
+    State a(size3(2,1,1)), b(size3(2,1,1));
 
     {
         a[0][0][0] =  5.0;
@@ -1078,10 +1085,10 @@ template class LowStorageTimeController<
 
 BOOST_AUTO_TEST_SUITE( low_storage_controller_suite )
 
-BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, State, state_type_pairs )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, StatePair, state_type_pairs )
 {
-    typedef typename mpl::at<State,mpl::int_<0> >::type state_a_type;
-    typedef typename mpl::at<State,mpl::int_<1> >::type state_b_type;
+    typedef typename mpl::at<StatePair,mpl::int_<0> >::type state_a_type;
+    typedef typename mpl::at<StatePair,mpl::int_<1> >::type state_b_type;
 
     const SMR91Method<double> m;
     const MultiplicativeOperator<state_a_type, state_b_type> trivial_linop(0);
