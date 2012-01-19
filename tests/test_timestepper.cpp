@@ -20,14 +20,13 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 // Shorthand
 using suzerain::InterleavedState;
 using suzerain::ContiguousState;
+using suzerain::multi_array::ref;
 using suzerain::timestepper::INonlinearOperator;
 using suzerain::timestepper::lowstorage::ILinearOperator;
 using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91Method;
 using suzerain::timestepper::lowstorage::Yang11Method;
 using suzerain::timestepper::lowstorage::LowStorageTimeController;
-typedef MultiplicativeOperator<ContiguousState<3,double> >
-    MultiplicativeOperatorD3;
 
 // Explicit template instantiation to hopefully speed compilation
 template class InterleavedState<3,double>;
@@ -47,7 +46,7 @@ static const double double_NaN = std::numeric_limits<double>::quiet_NaN();
 // Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
 // right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
 class RiccatiNonlinearOperator
-    : public INonlinearOperator<ContiguousState<3,double> >
+    : public INonlinearOperator<ref<double,3> >
 {
 private:
     const double a;
@@ -63,7 +62,7 @@ public:
 
     virtual std::vector<double> applyOperator(
             const double time,
-            ContiguousState<3,double>& state,
+            ref<double,3>& state,
             const double evmaxmag_real,
             const double evmaxmag_imag,
             const std::size_t substep_index = 0) const
@@ -73,14 +72,11 @@ public:
         SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(substep_index);
 
-        ContiguousState<3,double>& s
-            = dynamic_cast<ContiguousState<3,double>&>(state);
-
         typedef ContiguousState<3,double>::index index;
-        for (index i = 0; i < (index) s.shape()[0]; ++i) {
-            for (index k = 0; k < (index) s.shape()[2]; ++k) {
-                for (index j = 0; j < (index) s.shape()[1]; ++j) {
-                    double &y = s[i][j][k];
+        for (index i = 0; i < (index) state.shape()[0]; ++i) {
+            for (index k = 0; k < (index) state.shape()[2]; ++k) {
+                for (index j = 0; j < (index) state.shape()[1]; ++j) {
+                    double &y = state[i][j][k];
                     y = y*y - a*a - a*b;
                 }
             }
@@ -131,7 +127,7 @@ struct ExponentialSolution
 
 // Purely explicit, time-dependent operator for (d/dt) y = cos(t);
 class CosineExplicitOperator
-    : public INonlinearOperator<ContiguousState<3,double> >
+    : public INonlinearOperator<ref<double,3> >
 {
 private:
     const double delta_t;
@@ -143,7 +139,7 @@ public:
 
     virtual std::vector<double> applyOperator(
             const double time,
-            ContiguousState<3,double> & state,
+            ref<double,3> & state,
             const double evmaxmag_real,
             const double evmaxmag_imag,
             const std::size_t substep_index = 0) const
@@ -430,12 +426,13 @@ BOOST_AUTO_TEST_SUITE( MultiplicativeOperator_sanity )
 
 BOOST_AUTO_TEST_CASE( applyOperator )
 {
+    typedef MultiplicativeOperator<ContiguousState<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
     ContiguousState<3,double> a(size3(1,1,1));
     a[0][0][0] = 1.0;
 
-    MultiplicativeOperatorD3 op(2.0);
+    op_type op(2.0);
     op.applyOperator(double_NaN, a, double_NaN, double_NaN);
     BOOST_CHECK_CLOSE(a[0][0][0], 2.0, close_enough);
     op.applyOperator(double_NaN, a, double_NaN, double_NaN);
@@ -444,18 +441,19 @@ BOOST_AUTO_TEST_CASE( applyOperator )
     BOOST_CHECK_CLOSE(a[0][0][0], 8.0, close_enough);
 
     // Ensure we can instantiate
-    MultiplicativeOperator<ContiguousState<3,double> > unused(2.0);
+    op_type unused(2.0);
 }
 
 BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
 {
+    typedef MultiplicativeOperator<ContiguousState<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
     ContiguousState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
     a[0][0][0] = 2.0;
     b[0][0][0] = 3.0;
 
-    MultiplicativeOperatorD3 op(5.0);
+    op_type op(5.0);
     op.accumulateMassPlusScaledOperator(7.0, a, 1.0, b);
     BOOST_CHECK_CLOSE(b[0][0][0], 75.0, close_enough);
     op.accumulateMassPlusScaledOperator(0.0, b, 1.0, a);
@@ -469,12 +467,13 @@ BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
 
 BOOST_AUTO_TEST_CASE( invertMassPlusScaledOperator )
 {
+    typedef MultiplicativeOperator<ContiguousState<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
     ContiguousState<3,double> a(size3(1,1,1));
     a[0][0][0] = 2.0;
 
-    MultiplicativeOperatorD3 op(3.0);
+    op_type op(3.0);
     op.invertMassPlusScaledOperator(5.0, a);
     BOOST_CHECK_CLOSE(a[0][0][0], 1.0/8.0, close_enough);
 }
@@ -487,7 +486,7 @@ BOOST_AUTO_TEST_SUITE( substep_suite )
 // Purely explicit Riccati equation nonlinear operator
 // is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
 class RiccatiExplicitOperator
-    : public INonlinearOperator<ContiguousState<3,double> >
+    : public INonlinearOperator<ref<double,3> >
 {
 private:
     const double a, b, delta_t;
@@ -501,7 +500,7 @@ public:
 
     virtual std::vector<double> applyOperator(
             const double time,
-            ContiguousState<3,double> & state,
+            ref<double,3> & state,
             const double evmaxmag_real,
             const double evmaxmag_imag,
             const std::size_t substep_index = 0) const
@@ -532,7 +531,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_independent )
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
     const SMR91Method<double> m;
-    const MultiplicativeOperatorD3 trivial_linear_op(0);
+    const MultiplicativeOperator<ContiguousState<3,double> > trivial_linop(0);
     const RiccatiExplicitOperator riccati_op(2, 3);
     ContiguousState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
 
@@ -542,7 +541,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_independent )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+        const double delta_t_used = substep(m, trivial_linop, 1.0,
                 riccati_op, double_NaN, a, b, delta_t, 0);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
@@ -558,7 +557,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_independent )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+        const double delta_t_used = substep(m, trivial_linop, 1.0,
                 riccati_op, double_NaN, a, b, delta_t, 1);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
@@ -574,7 +573,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_independent )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+        const double delta_t_used = substep(m, trivial_linop, 1.0,
                 riccati_op, double_NaN, a, b, delta_t, 2);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
@@ -585,7 +584,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_independent )
     }
 
     // Requesting an out-of-bounds substep_index should balk
-    BOOST_CHECK_THROW(substep(m, trivial_linear_op, 1.0, riccati_op,
+    BOOST_CHECK_THROW(substep(m, trivial_linop, 1.0, riccati_op,
                               double_NaN, a, b, delta_t, 3),
             std::invalid_argument);
 }
@@ -666,7 +665,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
     const double pi = boost::math::constants::pi<double>();
     const double time = pi / 3.0;
     const SMR91Method<double> m;
-    const MultiplicativeOperatorD3 trivial_linear_op(0);
+    const MultiplicativeOperator<ContiguousState<3,double> > trivial_linop(0);
     const CosineExplicitOperator cosine_op;
     ContiguousState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
 
@@ -676,7 +675,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+        const double delta_t_used = substep(m, trivial_linop, 1.0,
                 cosine_op, time, a, b, delta_t, 0);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
@@ -692,7 +691,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+        const double delta_t_used = substep(m, trivial_linop, 1.0,
                 cosine_op, time, a, b, delta_t, 1);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
@@ -717,7 +716,7 @@ BOOST_AUTO_TEST_CASE( substep_explicit_time_dependent )
         b[0][0][0] = 11.0;
         b[1][0][0] = 13.0;
 
-        const double delta_t_used = substep(m, trivial_linear_op, 1.0,
+        const double delta_t_used = substep(m, trivial_linop, 1.0,
                 cosine_op, time, a, b, delta_t, 2);
         BOOST_CHECK_EQUAL(delta_t, delta_t_used);
 
@@ -745,13 +744,14 @@ BOOST_AUTO_TEST_SUITE( contiguous_storage )
 // where it is expected to be third order.
 BOOST_AUTO_TEST_CASE( step_explicit_time_independent )
 {
+    typedef MultiplicativeOperator<ContiguousState<3,double> > mult_op_type;
     // Fix test problem parameters
     const ExponentialSolution soln(2.0, 1.0);
     const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
 
     // Fix method, operators, and storage space
     const SMR91Method<double> m;
-    const MultiplicativeOperatorD3 trivial_linear_op(0);
+    const mult_op_type trivial_linop(0);
     ContiguousState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
 
     // Coarse grid calculation using explicitly provided time step
@@ -759,10 +759,10 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_independent )
     const double delta_t_coarse = (t_final - t_initial)/coarse_nsteps;
     a[0][0][0] = soln(t_initial);
     {
-        const MultiplicativeOperatorD3 nonlinear_op(soln.a);
+        const mult_op_type nonlinear_op(soln.a);
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
             const double delta_t_used = suzerain::timestepper::lowstorage::step(
-                    m, trivial_linear_op, 1.0, nonlinear_op,
+                    m, trivial_linop, 1.0, nonlinear_op,
                     double_NaN, a, b, delta_t_coarse);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
         }
@@ -776,10 +776,10 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_independent )
     const double delta_t_finer = (t_final - t_initial)/finer_nsteps;
     a[0][0][0] = soln(t_initial);
     {
-        const MultiplicativeOperatorD3 nonlinear_op(soln.a, delta_t_finer);
+        const mult_op_type nonlinear_op(soln.a, delta_t_finer);
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
             const double delta_t_used = suzerain::timestepper::lowstorage::step(
-                    m, trivial_linear_op, 1.0, nonlinear_op, double_NaN, a, b);
+                    m, trivial_linop, 1.0, nonlinear_op, double_NaN, a, b);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
         }
     }
@@ -834,13 +834,15 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_independent )
 // where it is expected to be third order.
 BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
 {
+    typedef MultiplicativeOperator<ContiguousState<3,double> > mult_op_type;
+
     // Fix test problem parameters
     const CosineSolution soln(0.0);
     const double t_initial = 0.000, t_final = 0.0125; // Asymptotic regime
 
     // Fix method, operators, and storage space
     const SMR91Method<double> m;
-    const MultiplicativeOperatorD3 trivial_linear_op(0);
+    const mult_op_type trivial_linop(0);
     ContiguousState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
 
     // Coarse grid calculation using explicitly provided time step
@@ -852,7 +854,7 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
         double t = t_initial;
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
             const double delta_t_used = suzerain::timestepper::lowstorage::step(
-                    m, trivial_linear_op, 1.0, nonlinear_op,
+                    m, trivial_linop, 1.0, nonlinear_op,
                     t, a, b, delta_t_coarse);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
             t += delta_t_used;
@@ -872,7 +874,7 @@ BOOST_AUTO_TEST_CASE( step_explicit_time_dependent )
         double t = t_initial;
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
             const double delta_t_used = suzerain::timestepper::lowstorage::step(
-                    m, trivial_linear_op, 1.0, nonlinear_op,
+                    m, trivial_linop, 1.0, nonlinear_op,
                     t, a, b, delta_t_finer);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
             t += delta_t_used;
@@ -1044,13 +1046,13 @@ BOOST_AUTO_TEST_SUITE( low_storage_controller_suite )
 BOOST_AUTO_TEST_CASE ( make_controller )
 {
     const SMR91Method<double> m;
-    const MultiplicativeOperatorD3 trivial_linear_op(0);
+    const MultiplicativeOperator<ContiguousState<3,double> > trivial_linop(0);
     const RiccatiNonlinearOperator riccati_op(2, 3);
     ContiguousState<3,double> a(size3(2,1,1)), b(size3(2,1,1));
 
     // Compilation and instantiation is half the battle.  Go Joe!
     boost::scoped_ptr<suzerain::timestepper::TimeController<double> > p(
-        make_LowStorageTimeController(m, trivial_linear_op,
+        make_LowStorageTimeController(m, trivial_linop,
                                       1.0, riccati_op, a, b));
 
     BOOST_REQUIRE(p);
