@@ -391,7 +391,7 @@ public:
  * @tparam StateA A type which likely descends from suzerain::StateBase.
  * @tparam StateB A type which likely descends from suzerain::StateBase.
  */
-template<typename StateA,typename StateB = StateA>
+template< typename StateA, typename StateB = StateA >
 class MultiplicativeOperator
     : public ILinearOperator<StateA,StateB>,
       public INonlinearOperator<StateB>
