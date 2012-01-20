@@ -406,6 +406,49 @@ BOOST_AUTO_TEST_CASE(fill_complex_multiarray)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+
+BOOST_AUTO_TEST_SUITE( suzerain_multi_array_is_contiguous )
+
+using boost::extents;
+using boost::indices;
+typedef boost::multi_array_types::index_range range;
+using suzerain::multi_array::is_contiguous;
+
+typedef boost::mpl::list<
+            boost::c_storage_order,
+            boost::fortran_storage_order
+        > storage_order_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( boost_multi_array,
+                               Storage, storage_order_types)
+{
+    {
+        boost::array<int,0> s;
+        boost::multi_array<char,0> a(s, Storage());
+        BOOST_CHECK(is_contiguous(a));
+    }
+
+    {
+        boost::multi_array<char,1> a(extents[10], Storage());
+        BOOST_CHECK(( is_contiguous(a)));
+        BOOST_CHECK(( is_contiguous(a[indices[range(1,7)  ]])));
+        BOOST_CHECK((!is_contiguous(a[indices[range(1,7,2)]])));
+    }
+}
+
+BOOST_AUTO_TEST_CASE(boost_multi_array_ref)
+{
+    // TODO
+}
+
+BOOST_AUTO_TEST_CASE(suzerain_multi_array_ref)
+{
+    // TODO
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 // Explicitly instantiate the multi_array::ref template
 template class ::suzerain::multi_array::ref<double, 3>;
 
