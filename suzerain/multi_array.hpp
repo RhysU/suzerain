@@ -221,64 +221,21 @@ void fill(MultiArray &x, const V &v)
 template<class MultiArray>
 bool is_contiguous(const MultiArray &x)
 {
-    // Shorthand
-    static const std::size_t dimensionality = MultiArray::dimensionality;
-    typedef typename MultiArray::element   element;
-    typedef typename MultiArray::index     index;
-    typedef typename MultiArray::size_type size_type;
+    // Using ptrdiff_t avoids unsigned/signed warnings when dimensionality == 0.
+    static const std::ptrdiff_t dimensionality = MultiArray::dimensionality;
 
-    // Zero dimensional arrays are inherently contiguous.
-    // Higher dimensional arrays are noncontiguous until proven otherwise.
-    bool retval = (dimensionality == 0);
+    typename MultiArray::size_type min_extent = (dimensionality == 0) ? 0 : 1;
+    typename MultiArray::size_type abs_extent = 1;
 
-    if (dimensionality) {           // true ==> non-trivial product below
-
-        // Compute distance holding a (hypothetically) contiguous version of x
-        const size_type * const shape = x.shape();
-        const size_type contiguous_distance = std::accumulate(
-                shape, shape + dimensionality, 1, std::multiplies<size_type>());
-
-        if (contiguous_distance) {  // true ==> shape[i] > 0 forall i
-
-            const element * first;
-            const element * last;
-            first = last = x.origin();
-
-            bool all_ascending  = true;
-            bool all_descending = true;
-
-            // Compute pointers to lexicographically first and last elements
-            // and determine if all strides are ascending/descending.
-            // ptrdiff_t usage avoids safe warning when dimensionality == 0.
-            const index * const strides     = x.strides();
-            const index * const index_bases = x.index_bases();
-            for (std::ptrdiff_t i = 0; i < (ptrdiff_t) dimensionality; ++i) {
-                const index stride = strides[i];
-                const index base   = stride*index_bases[i];
-                first += base;
-                last  += base + stride*static_cast<index>(shape[i] - 1);
-                if (stride >= 0) {
-                    all_descending = false;
-                } else {
-                    all_ascending = false;
-                }
-            }
-
-            // Use pointers and ascending/descending criteria to compare the
-            // hypothetically contiguous distance to the actual distance.
-            // Odd looking equality checks avoid safe signed/unsigned warnings.
-            using std::distance;
-            if (all_ascending) {
-                retval = 0 == contiguous_distance - distance(first, last + 1);
-            } else if (all_descending) {
-                retval = 0 == contiguous_distance - distance(last - 1, first);
-            } else {
-                retval = false;
-            }
-        }
+    // Obtain minimum possible extent and actual extent using abs(strides).
+    // (shape()[i] == 0) overflows abs_extent but min_extent becomes zero.
+    for (std::ptrdiff_t i = 0; i < dimensionality; ++i) {
+        const typename MultiArray::size_type shape = x.shape()[i];
+        min_extent *= shape;
+        abs_extent += (shape - 1)*std::abs(x.strides()[i]);
     }
 
-    return retval;
+    return (min_extent == 0) ? true : (min_extent == abs_extent);
 }
 
 /**
