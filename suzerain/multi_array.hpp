@@ -225,7 +225,9 @@ bool is_contiguous(const MultiArray &x)
     typedef typename MultiArray::index     index;
     typedef typename MultiArray::size_type size_type;
 
-    bool retval = false;
+    // Zero dimensional arrays are inherently contiguous.
+    // Higher dimensional arrays are noncontiguous until proven otherwise.
+    bool retval = (dimensionality == 0);
 
     if (dimensionality) {           // true ==> non-trivial product below
 
