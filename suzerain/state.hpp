@@ -413,11 +413,9 @@ void ContiguousState<NumDims,Element>::addScaled(
             const Element& factor,
             const ContiguousState& other)
 {
-    if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
-        throw std::logic_error("Unable to handle this->addScaled(...,this)");
-
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
+            "Detected this->addScaled(...,this)", std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
                     other.strides() + NumDims, this->strides()))) {
@@ -437,11 +435,9 @@ void ContiguousState<NumDims,Element>::addScaled(
             const Element& factor,
             const multi_array_type& other)
 {
-    if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
-        throw std::logic_error("Unable to handle this->addScaled(...,this)");
-
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
+            "Detected this->addScaled(...,this)", std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
                   const_cast<multi_array_type&>(other), *this);
@@ -452,9 +448,7 @@ void ContiguousState<NumDims,Element>::assign(
             const ContiguousState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
-
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
                     other.strides() + NumDims, this->strides()))) {
@@ -475,8 +469,7 @@ void ContiguousState<NumDims,Element>::assign(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     detail::apply(::suzerain::blas::functor::copy(),
                   const_cast<multi_array_type&>(other), *this);
@@ -488,8 +481,7 @@ void ContiguousState<NumDims,Element>::exchange(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
                     other.strides() + NumDims, this->strides()))) {
@@ -509,8 +501,7 @@ void ContiguousState<NumDims,Element>::exchange(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     detail::apply(::suzerain::blas::functor::swap(), other, *this);
 }
@@ -558,11 +549,9 @@ void InterleavedState<NumDims,Element>::addScaled(
             const Element& factor,
             const InterleavedState& other)
 {
-    if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
-        throw std::logic_error("Unable to handle this->addScaled(...,this)");
-
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
+            "Detected this->addScaled(...,this)", std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     // Data in this and other guaranteed to be contiguous in num_elements.
     // Any padding from min_total_contiguous_count is unmodified.
@@ -575,11 +564,9 @@ void InterleavedState<NumDims,Element>::addScaled(
             const Element& factor,
             const multi_array_type& other)
 {
-    if (SUZERAIN_UNLIKELY(this == boost::addressof(other)))
-        throw std::logic_error("Unable to handle this->addScaled(...,this)");
-
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
+            "Detected this->addScaled(...,this)", std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
                   const_cast<multi_array_type&>(other), *this);
@@ -591,8 +578,7 @@ void InterleavedState<NumDims,Element>::assign(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     // Data in this and other guaranteed to be contiguous in num_elements.
     // Any padding from min_total_contiguous_count is unmodified.
@@ -606,8 +592,7 @@ void InterleavedState<NumDims,Element>::assign(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     detail::apply(::suzerain::blas::functor::copy(),
                   const_cast<multi_array_type&>(other), *this);
@@ -619,8 +604,7 @@ void InterleavedState<NumDims,Element>::exchange(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     // Data in this and other guaranteed to be contiguous in num_elements.
     // Any padding from min_total_contiguous_count is unmodified.
@@ -634,8 +618,7 @@ void InterleavedState<NumDims,Element>::exchange(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    if (SUZERAIN_UNLIKELY(!isIsomorphic(other))) throw std::logic_error(
-            std::string("Non-isomorphic other in ") + __PRETTY_FUNCTION__);
+    SUZERAIN_ENSURE_EXCEPT(isIsomorphic(other), std::invalid_argument);
 
     detail::apply(::suzerain::blas::functor::swap(), other, *this);
 }

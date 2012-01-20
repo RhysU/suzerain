@@ -67,6 +67,7 @@
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
 #include <boost/concept/assert.hpp>
+#include <boost/current_function.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/function.hpp>
@@ -125,6 +126,50 @@ template< typename charT, typename traits, typename T, ::std::size_t N >
     return os;
 }
 } // namespace boost
+
+/**
+ * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
+ * evaluates to boolean \c false, then an exception \c except is thrown with
+ * message \c msg.
+ *
+ * This macro is intended for <tt>assert</tt>-like checks which should always
+ * be performed regardless of whether or not \c NDEBUG is <tt>#define</tt>d.
+ */
+#define SUZERAIN_ENSURE_MSGEXCEPT(expr, msg, except) \
+    if (SUZERAIN_UNLIKELY(!(expr)))                  \
+        throw except(::std::string(msg " in ") + BOOST_CURRENT_FUNCTION)
+
+/**
+ * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
+ * evaluates to boolean \c false, then a <tt>std::logic_error</tt> is thrown
+ * with message \c msg.
+ *
+ * This macro is intended for <tt>assert</tt>-like checks which should always
+ * be performed regardless of whether or not \c NDEBUG is <tt>#define</tt>d.
+ */
+#define SUZERAIN_ENSURE_MSG(expr, msg) \
+    SUZERAIN_ENSURE_MSGEXCEPT(expr, msg, ::std::logic_error)
+
+/**
+ * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
+ * evaluates to boolean \c false, then a <tt>std::logic_error</tt> is thrown.
+ *
+ * This macro is intended for <tt>assert</tt>-like checks which should always
+ * be performed regardless of whether or not \c NDEBUG is <tt>#define</tt>d.
+ */
+#define SUZERAIN_ENSURE(expr) \
+    SUZERAIN_ENSURE_MSG(expr, BOOST_PP_STRINGIZE(expr) " false")
+
+/**
+ * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
+ * evaluates to boolean \c false, then an exception \c except is thrown.
+ *
+ * This macro is intended for <tt>assert</tt>-like checks which should always
+ * be performed regardless of whether or not \c NDEBUG is <tt>#define</tt>d.
+ */
+#define SUZERAIN_ENSURE_EXCEPT(expr, except) \
+    SUZERAIN_ENSURE_MSGEXCEPT(expr, BOOST_PP_STRINGIZE(expr) " false", except)
+
 
 // SHIFTED_SUM taken from http://lists.boost.org/boost-users/2009/10/53245.php
 
