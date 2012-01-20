@@ -229,6 +229,7 @@ bool is_contiguous(const MultiArray &x)
 
     if (dimensionality) {           // true ==> non-trivial product below
 
+        // Compute distance holding a (hypothetically) contiguous version of x
         const size_type * const shape = x.shape();
         const size_type contiguous_distance = std::accumulate(
                 shape, shape + dimensionality, 1, std::multiplies<size_type>());
@@ -242,6 +243,8 @@ bool is_contiguous(const MultiArray &x)
             bool all_ascending  = true;
             bool all_descending = true;
 
+            // Compute pointers to lexicographically first and last elements
+            // Also determine if all strides are ascending/descending
             const index * const strides     = x.strides();
             const index * const index_bases = x.index_bases();
             for (std::size_t i = 0; i < dimensionality; ++i) {
@@ -256,6 +259,8 @@ bool is_contiguous(const MultiArray &x)
                 }
             }
 
+            // Use pointers and ascending/descending criteria to compare the
+            // hypothetically contiguous distance to the actual distance.
             using std::distance;
             if (all_ascending) {
                 retval = contiguous_distance == distance(p_first, p_last  + 1);
