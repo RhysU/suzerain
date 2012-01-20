@@ -219,45 +219,50 @@ void fill(MultiArray &x, const V &v)
 template<class MultiArray>
 bool is_contiguous(const MultiArray &x)
 {
+    // Shorthand
+    static const std::size_t dimensionality = MultiArray::dimensionality;
+    typedef typename MultiArray::element   element;
+    typedef typename MultiArray::index     index;
+    typedef typename MultiArray::size_type size_type;
+
     bool retval = false;
 
-    static const std::size_t dimensionality = MultiArray::dimensionality;
-    if (dimensionality) {           // true ==> non-trivial product
+    if (dimensionality) {           // true ==> non-trivial product below
 
-        typedef typename MultiArray::size_type size_type;
         const size_type * const shape = x.shape();
         const size_type contiguous_distance = std::accumulate(
                 shape, shape + dimensionality, 1, std::multiplies<size_type>());
 
         if (contiguous_distance) {  // true ==> shape[i] > 0 forall i
 
-            typedef typename MultiArray::index index;
-            const index * const strides = x.strides();
-            const index * const bases   = x.bases();
+            const element * p_first;
+            const element * p_last;
+            p_first = p_last = x.origin();
 
-            const index ndx_first[dimensionality];
-            const index ndx_last [dimensionality];
+            bool all_ascending  = true;
+            bool all_descending = true;
+
+            const index * const strides     = x.strides();
+            const index * const index_bases = x.index_bases();
             for (std::size_t i = 0; i < dimensionality; ++i) {
-                ndx_first[i] = bases[i];
-                ndx_last [i] = bases[i] + static_cast<index>(shape[i] - 1);
+                const index stride = strides[i];
+                const index base   = stride*index_bases[i];
+                p_first += base;
+                p_last  += base + stride*static_cast<index>(shape[i] - 1);
+                if (stride >= 0) {
+                    all_descending = false;
+                } else {
+                    all_ascending = false;
+                }
             }
 
-            typedef typename MultiArray::element element;
-            const element * const p_first = &x(ndx_first);
-            const element * const p_last  = &x(ndx_last);
-
             using std::distance;
-            if (x.storage_order().all_dims_ascending()) {
-
-                // All dimensions ascending ==> (p_end == p_last + 1)
-                retval = contiguous_distance == distance(p_first, p_last + 1);
-
+            if (all_ascending) {
+                retval = contiguous_distance == distance(p_first, p_last  + 1);
+            } else if (all_descending) {
+                retval = contiguous_distance == distance(p_last,  p_first - 1);
             } else {
-
-                // Otherwise (p_end == p_last - 1) holds for all descending
-                // FIXME: Probably fails on ascending/descending pathologies
-                retval = contiguous_distance == distance(p_first, p_last - 1);
-
+                retval = false;
             }
         }
     }
