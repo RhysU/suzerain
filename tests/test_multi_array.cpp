@@ -86,7 +86,7 @@ using boost::multi_array_types::index_range;
 using boost::scoped_array;
 using suzerain::multi_array::fill;
 
-const std::size_t NX = 3, NY = 4, NZ = 5, NZZ = 6;
+const std::size_t NX = 3, NY = 4, NZ = 5, NZZ = 6, NZZZ = 7;
 
 typedef boost::mpl::list<int, float, double> element_test_types;
 
@@ -362,6 +362,57 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_4D, T, element_test_types)
                         BOOST_CHECK_EQUAL(456, bar[i][j][k][l]); // view ?
                     } else {
                         BOOST_CHECK_EQUAL(123, foo[i][j][k][l]); // untouched?
+                    }
+                }
+            }
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_5D, T, element_test_types)
+{
+    // Fill boost::multi_array_ref
+    scoped_array<T> raw(new T[NX*NY*NZ*NZZ*NZZZ]);
+    multi_array_ref<T,5> foo(raw.get(),extents[NX][NY][NZ][NZZ][NZZZ]);
+    fill(foo,123);
+    for (index i = 0; i < (index) foo.shape()[0]; ++i) {
+        for (index j = 0; j < (index) foo.shape()[1]; ++j) {
+            for (index k = 0; k < (index) foo.shape()[2]; ++k) {
+                for (index l = 0; l < (index) foo.shape()[3]; ++l) {
+                    for (index m = 0; m < (index) foo.shape()[4]; ++m) {
+                        BOOST_CHECK_EQUAL(123, foo[i][j][k][l][m]); // filled?
+                    }
+                }
+            }
+        }
+    }
+
+    // Fill view of boost::multi_array_ref
+    typename array_view_gen<multi_array_ref<T,5>,5>::type bar = foo[
+        indices[index_range(0,foo.shape()[0]-1)]
+               [index_range(0,foo.shape()[1]-1)]
+               [index_range(0,foo.shape()[2]-1)]
+               [index_range(0,foo.shape()[3]-1)]
+               [index_range(0,foo.shape()[4]-1)]
+    ];
+    fill(bar,456);
+    for (index i = 0; i < (index) foo.shape()[0]; ++i) {
+        for (index j = 0; j < (index) foo.shape()[1]; ++j) {
+            for (index k = 0; k < (index) foo.shape()[2]; ++k) {
+                for (index l = 0; l < (index) foo.shape()[3]; ++l) {
+                    for (index m = 0; m < (index) foo.shape()[4]; ++m) {
+
+                        if (   i < (index) bar.shape()[0]
+                            && j < (index) bar.shape()[1]
+                            && k < (index) bar.shape()[2]
+                            && l < (index) bar.shape()[3]
+                            && m < (index) bar.shape()[4]) {
+
+                            BOOST_CHECK_EQUAL(456, foo[i][j][k][l][m]); // orig ?
+                            BOOST_CHECK_EQUAL(456, bar[i][j][k][l][m]); // view ?
+                        } else {
+                            BOOST_CHECK_EQUAL(123, foo[i][j][k][l][m]); // untouched?
+                        }
                     }
                 }
             }

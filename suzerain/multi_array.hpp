@@ -118,6 +118,183 @@ template<> struct for_each_functor<1> {
     }
 };
 
+// Detects storage order to walk memory linearly for 2D MultiArrays
+template<> struct for_each_functor<2> {
+
+    template<class MultiArray,
+             class UnaryFunction >
+    void operator()(MultiArray &x, UnaryFunction &f) const {
+
+        typedef typename MultiArray::index     index;
+        typedef typename MultiArray::size_type size_type;
+
+        // Compute lower and upper index bounds
+        const index     * const base   = x.index_bases();
+        const size_type * const shape  = x.shape();
+        const index il = base[0], iu = il + (index) shape[0];
+        const index jl = base[1], ju = jl + (index) shape[1];
+
+        // Obtain absolute strides for storage order determination
+        const index * const stride = x.strides();
+        const index si = std::abs(stride[0]);
+        const index sj = std::abs(stride[1]);
+
+        // Traverse according to runtime-determined storage order
+        if (si >= sj) {
+            for (index i = il; i < iu; ++i)
+            for (index j = jl; j < ju; ++j)
+                f(x[i][j]);
+        } else {
+            for (index j = jl; j < ju; ++j)
+            for (index i = il; i < iu; ++i)
+                f(x[i][j]);
+        }
+
+    }
+
+};
+
+// Detects storage order to walk memory linearly for 3D MultiArrays
+template<> struct for_each_functor<3> {
+
+    template<class MultiArray,
+             class UnaryFunction >
+    void operator()(MultiArray &x, UnaryFunction &f) const {
+
+        typedef typename MultiArray::index     index;
+        typedef typename MultiArray::size_type size_type;
+
+        // Compute lower and upper index bounds
+        const index     * const base   = x.index_bases();
+        const size_type * const shape  = x.shape();
+        const index il = base[0], iu = il + (index) shape[0];
+        const index jl = base[1], ju = jl + (index) shape[1];
+        const index kl = base[2], ku = kl + (index) shape[2];
+
+        // Obtain absolute strides for storage order determination
+        const index * const stride = x.strides();
+        const index si = std::abs(stride[0]);
+        const index sj = std::abs(stride[1]);
+        const index sk = std::abs(stride[2]);
+
+        // Perform all possible stride comparisons
+        const bool oij = si >= sj, oji = !oij;
+        const bool oik = si >= sk, oki = !oik;
+        const bool ojk = sj >= sk, okj = !ojk;
+
+#define FOR(ndx) for (index ndx = ndx##l; ndx < ndx##u; ++ndx)
+
+        // Traverse according to runtime-determined storage order
+        if      (oij && ojk) // boost::c_storage_order
+            FOR(i) FOR(j) FOR(k) f(x[i][j][k]);
+        else if (okj && oji) // boost::fortran_storage_order
+            FOR(k) FOR(j) FOR(i) f(x[i][j][k]);
+        else if (oki && oij) // suzerain::storage::interleaved<4>
+            FOR(k) FOR(i) FOR(j) f(x[i][j][k]);
+        else if (oik && okj) // suzerain::storage::contiguous<3>
+            FOR(i) FOR(k) FOR(j) f(x[i][j][k]);
+        else if (oji && oik) // lexicographic from here onward...
+            FOR(j) FOR(i) FOR(k) f(x[i][j][k]);
+        else // (ojk && oki)
+            FOR(j) FOR(k) FOR(i) f(x[i][j][k]);
+
+#undef FOR
+
+    }
+
+};
+
+// Detects storage order to walk memory linearly for 4D MultiArrays
+template<> struct for_each_functor<4> {
+
+    template<class MultiArray,
+             class UnaryFunction >
+    void operator()(MultiArray &x, UnaryFunction &f) const {
+
+        typedef typename MultiArray::index     index;
+        typedef typename MultiArray::size_type size_type;
+
+        // Compute lower and upper index bounds
+        const index     * const base   = x.index_bases();
+        const size_type * const shape  = x.shape();
+        const index il = base[0], iu = il + (index) shape[0];
+        const index jl = base[1], ju = jl + (index) shape[1];
+        const index kl = base[2], ku = kl + (index) shape[2];
+        const index ll = base[3], lu = ll + (index) shape[3];
+
+        // Obtain absolute strides for storage order determination
+        const index * const stride = x.strides();
+        const index si = std::abs(stride[0]);
+        const index sj = std::abs(stride[1]);
+        const index sk = std::abs(stride[2]);
+        const index sl = std::abs(stride[3]);
+
+        // Perform all possible stride comparisons
+        const bool oij = si >= sj, oji = !oij;
+        const bool oik = si >= sk, oki = !oik;
+        const bool oil = si >= sl, oli = !oil;
+        const bool ojk = sj >= sk, okj = !ojk;
+        const bool ojl = sj >= sl, olj = !ojl;
+        const bool okl = sk >= sl, olk = !okl;
+
+#define FOR(ndx) for (index ndx = ndx##l; ndx < ndx##u; ++ndx)
+
+        // Traverse according to runtime-determined storage order
+        if      (oij && ojk && okl) // boost::c_storage_order
+            FOR(i) FOR(j) FOR(k) FOR(l) f(x[i][j][k][l]);
+        else if (olk && okj && oji) // boost::fortran_storage_order
+            FOR(l) FOR(k) FOR(j) FOR(i) f(x[i][j][k][l]);
+        else if (olk && oki && oij) // suzerain::storage::interleaved<4>
+            FOR(l) FOR(k) FOR(i) FOR(j) f(x[i][j][k][l]);
+        else if (oil && olk && okj) // suzerain::storage::contiguous<4>
+            FOR(i) FOR(l) FOR(k) FOR(j) f(x[i][j][k][l]);
+        else if (oij && ojl && olk) // lexicographic from here onward...
+            FOR(i) FOR(j) FOR(l) FOR(k) f(x[i][j][k][l]);
+        else if (oik && okj && ojl)
+            FOR(i) FOR(k) FOR(j) FOR(l) f(x[i][j][k][l]);
+        else if (oik && okl && olj)
+            FOR(i) FOR(k) FOR(l) FOR(j) f(x[i][j][k][l]);
+        else if (oil && olj && ojk)
+            FOR(i) FOR(l) FOR(j) FOR(k) f(x[i][j][k][l]);
+        else if (oji && oik && okl)
+            FOR(j) FOR(i) FOR(k) FOR(l) f(x[i][j][k][l]);
+        else if (oji && oil && olk)
+            FOR(j) FOR(i) FOR(l) FOR(k) f(x[i][j][k][l]);
+        else if (ojk && oki && oil)
+            FOR(j) FOR(k) FOR(i) FOR(l) f(x[i][j][k][l]);
+        else if (ojk && okl && oli)
+            FOR(j) FOR(k) FOR(l) FOR(i) f(x[i][j][k][l]);
+        else if (ojl && oli && oik)
+            FOR(j) FOR(l) FOR(i) FOR(k) f(x[i][j][k][l]);
+        else if (ojl && olk && oki)
+            FOR(j) FOR(l) FOR(k) FOR(i) f(x[i][j][k][l]);
+        else if (oki && oij && ojl)
+            FOR(k) FOR(i) FOR(j) FOR(l) f(x[i][j][k][l]);
+        else if (oki && oil && olj)
+            FOR(k) FOR(i) FOR(l) FOR(j) f(x[i][j][k][l]);
+        else if (okj && oji && oil)
+            FOR(k) FOR(j) FOR(i) FOR(l) f(x[i][j][k][l]);
+        else if (okj && ojl && oli)
+            FOR(k) FOR(j) FOR(l) FOR(i) f(x[i][j][k][l]);
+        else if (okl && oli && oij)
+            FOR(k) FOR(l) FOR(i) FOR(j) f(x[i][j][k][l]);
+        else if (okl && olj && oji)
+            FOR(k) FOR(l) FOR(j) FOR(i) f(x[i][j][k][l]);
+        else if (oli && oij && ojk)
+            FOR(l) FOR(i) FOR(j) FOR(k) f(x[i][j][k][l]);
+        else if (oli && oik && okj)
+            FOR(l) FOR(i) FOR(k) FOR(j) f(x[i][j][k][l]);
+        else if (olj && oji && oik)
+            FOR(l) FOR(j) FOR(i) FOR(k) f(x[i][j][k][l]);
+        else // (olj && ojk && oki)
+            FOR(l) FOR(j) FOR(k) FOR(i) f(x[i][j][k][l]);
+
+#undef FOR
+
+    }
+
+};
+
 } // namespace anonymous
 
 /**
