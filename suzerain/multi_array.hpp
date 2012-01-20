@@ -238,22 +238,23 @@ bool is_contiguous(const MultiArray &x)
 
         if (contiguous_distance) {  // true ==> shape[i] > 0 forall i
 
-            const element * p_first;
-            const element * p_last;
-            p_first = p_last = x.origin();
+            const element * first;
+            const element * last;
+            first = last = x.origin();
 
             bool all_ascending  = true;
             bool all_descending = true;
 
             // Compute pointers to lexicographically first and last elements
-            // Also determine if all strides are ascending/descending
+            // and determine if all strides are ascending/descending.
+            // ptrdiff_t usage avoids safe warning when dimensionality == 0.
             const index * const strides     = x.strides();
             const index * const index_bases = x.index_bases();
-            for (std::size_t i = 0; i < dimensionality; ++i) {
+            for (std::ptrdiff_t i = 0; i < (ptrdiff_t) dimensionality; ++i) {
                 const index stride = strides[i];
                 const index base   = stride*index_bases[i];
-                p_first += base;
-                p_last  += base + stride*static_cast<index>(shape[i] - 1);
+                first += base;
+                last  += base + stride*static_cast<index>(shape[i] - 1);
                 if (stride >= 0) {
                     all_descending = false;
                 } else {
@@ -263,11 +264,12 @@ bool is_contiguous(const MultiArray &x)
 
             // Use pointers and ascending/descending criteria to compare the
             // hypothetically contiguous distance to the actual distance.
+            // Odd looking equality checks avoid safe signed/unsigned warnings.
             using std::distance;
             if (all_ascending) {
-                retval = contiguous_distance == distance(p_first, p_last  + 1);
+                retval = 0 == contiguous_distance - distance(first, last +  1);
             } else if (all_descending) {
-                retval = contiguous_distance == distance(p_last,  p_first - 1);
+                retval = 0 == contiguous_distance - distance(last,  first - 1);
             } else {
                 retval = false;
             }
