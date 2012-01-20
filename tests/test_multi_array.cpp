@@ -409,41 +409,52 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( suzerain_multi_array_is_contiguous )
 
+using boost::c_storage_order;
 using boost::extents;
+using boost::fortran_storage_order;
+using boost::general_storage_order;
 using boost::indices;
 typedef boost::multi_array_types::index_range range;
 using suzerain::multi_array::is_contiguous;
 
-typedef boost::mpl::list<
-            boost::c_storage_order,
-            boost::fortran_storage_order
-        > storage_order_types;
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( boost_multi_array,
-                               Storage, storage_order_types)
+BOOST_AUTO_TEST_CASE( boost_multi_array )
 {
-    {
+    { // Degenerate zero dimensional case
         boost::array<int,0> s;
-        boost::multi_array<char,0> a(s, Storage());
+        boost::multi_array<char,0> a(s);
         BOOST_CHECK(is_contiguous(a));
     }
 
-    {
-        boost::multi_array<char,1> a(extents[10], Storage());
+    { // One dimensional case with positive and negative strides
+        boost::multi_array<char,1> a(extents[10]);
         BOOST_CHECK(( is_contiguous(a)));
         BOOST_CHECK(( is_contiguous(a[indices[range(1,7)  ]])));
         BOOST_CHECK((!is_contiguous(a[indices[range(1,7,2)]])));
+
+        const std::size_t ordering[] = { 0 };
+        const bool ascending[] = { false };
+        boost::multi_array<char,1> d(extents[10],
+                general_storage_order<1>(ordering,ascending));
+        BOOST_CHECK(( is_contiguous(d)));
+        BOOST_CHECK(( is_contiguous(d[indices[range(1,7)  ]])));
+        BOOST_CHECK((!is_contiguous(d[indices[range(1,7,2)]])));
     }
-}
 
-BOOST_AUTO_TEST_CASE(boost_multi_array_ref)
-{
-    // TODO
-}
+    { // Two dimensional case with both C and Fortran storage
+        boost::multi_array<char,2> c(extents[10][9], c_storage_order());
+        BOOST_CHECK(( is_contiguous(c)));
+        BOOST_CHECK(( is_contiguous(c[indices[3][range(1,7)  ]])));
+        BOOST_CHECK((!is_contiguous(c[indices[3][range(1,7,2)]])));
+        BOOST_CHECK((!is_contiguous(c[indices[range(1,7)  ][1]])));
+        BOOST_CHECK((!is_contiguous(c[indices[range(1,7,2)][1]])));
 
-BOOST_AUTO_TEST_CASE(suzerain_multi_array_ref)
-{
-    // TODO
+        boost::multi_array<char,2> f(extents[10][9], fortran_storage_order());
+        BOOST_CHECK(( is_contiguous(f)));
+        BOOST_CHECK((!is_contiguous(f[indices[3][range(1,7)  ]])));
+        BOOST_CHECK((!is_contiguous(f[indices[3][range(1,7,2)]])));
+        BOOST_CHECK(( is_contiguous(f[indices[range(1,7)  ][1]])));
+        BOOST_CHECK((!is_contiguous(f[indices[range(1,7,2)][1]])));
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
