@@ -206,8 +206,10 @@ void fill(MultiArray &x, const V &v)
  * Is the given MultiArray contiguous in memory?
  *
  * A MultiArray is contiguous when the <tt>product(shape(), shape() +
- * dimensionality)</tt> equals the distance between the first and
- * last element according to <tt>index_bases()</tt> and <tt>shape()</tt>.
+ * dimensionality)</tt> equals the distance between the first and last element
+ * according to <tt>index_bases()</tt>, <tt>strides()</tt> and
+ * <tt>shape()</tt>.
+ *
  *
  * @param x MultiArray to check for contiguity.
  *
@@ -267,9 +269,9 @@ bool is_contiguous(const MultiArray &x)
             // Odd looking equality checks avoid safe signed/unsigned warnings.
             using std::distance;
             if (all_ascending) {
-                retval = 0 == contiguous_distance - distance(first, last +  1);
+                retval = 0 == contiguous_distance - distance(first, last + 1);
             } else if (all_descending) {
-                retval = 0 == contiguous_distance - distance(last,  first - 1);
+                retval = 0 == contiguous_distance - distance(last - 1, first);
             } else {
                 retval = false;
             }
