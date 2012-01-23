@@ -85,8 +85,8 @@ using std::size_t;
 
 // Explicit timestepping scheme uses only complex_t 4D ContiguousState
 // State indices range over (scalar field, Y, X, Z) in wave space
-typedef suzerain::ContiguousState<4,complex_t> linear_state_type;
-typedef suzerain::ContiguousState<4,complex_t> nonlinear_state_type;
+typedef suzerain::InterleavedState<4,complex_t> linear_state_type;
+typedef suzerain::ContiguousState<4,complex_t>  nonlinear_state_type;
 
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
