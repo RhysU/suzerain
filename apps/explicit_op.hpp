@@ -32,6 +32,7 @@
 #define EXPLICIT_OP_HPP
 
 #include <suzerain/grid_definition.hpp>
+#include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/scenario_definition.hpp>
@@ -176,12 +177,11 @@ private:
 class BsplineMassOperator
   : public suzerain::OperatorBase<real_t>,
     public suzerain::timestepper::lowstorage::ILinearOperator<
+        suzerain::multi_array::ref<complex_t,4>,
         suzerain::ContiguousState<4,complex_t>
     >
 {
 public:
-
-    typedef suzerain::ContiguousState<4,complex_t> state_type;
 
     BsplineMassOperator(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
@@ -192,21 +192,21 @@ public:
 
     virtual void applyMassPlusScaledOperator(
              const complex_t &phi,
-             state_type &state,
+             suzerain::multi_array::ref<complex_t,4> &state,
              const component delta_t,
              const std::size_t substep_index) const;
 
      virtual void accumulateMassPlusScaledOperator(
              const complex_t &phi,
-             const state_type &input,
+             const suzerain::multi_array::ref<complex_t,4> &input,
              const complex_t &beta,
-             state_type &output,
+             suzerain::ContiguousState<4,complex_t> &output,
              const component delta_t,
              const std::size_t substep_index) const;
 
      virtual void invertMassPlusScaledOperator(
              const complex_t &phi,
-             state_type &state,
+             suzerain::multi_array::ref<complex_t,4> &state,
              const component delta_t,
              const std::size_t substep_index,
              const real_t iota) const;
@@ -249,7 +249,7 @@ public:
 
     virtual void invertMassPlusScaledOperator(
             const complex_t &phi,
-            state_type &state,
+            suzerain::multi_array::ref<complex_t,4> &state,
             const component delta_t,
             const std::size_t substep_index,
             const real_t iota) const;

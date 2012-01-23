@@ -85,7 +85,8 @@ using std::size_t;
 
 // Explicit timestepping scheme uses only complex_t 4D ContiguousState
 // State indices range over (scalar field, Y, X, Z) in wave space
-typedef suzerain::ContiguousState<4,complex_t> state_type;
+typedef suzerain::ContiguousState<4,complex_t> linear_state_type;
+typedef suzerain::ContiguousState<4,complex_t> nonlinear_state_type;
 
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
@@ -139,8 +140,8 @@ static void atexit_underling(void) {
 }
 
 // State details specific to this rank initialized in main()
-static shared_ptr<state_type> state_linear;
-static shared_ptr<state_type> state_nonlinear;
+static shared_ptr<linear_state_type>    state_linear;
+static shared_ptr<nonlinear_state_type> state_nonlinear;
 
 // Common storage shared between the linear and nonlinear operators
 // which also includes instantaneous mean quantity statistics
@@ -1068,7 +1069,7 @@ int main(int argc, char **argv)
 
     // Create state storage for linear operator
     // TODO Have state_linear only store non-dealiased state
-    state_linear = make_shared<state_type>(
+    state_linear = make_shared<linear_state_type>(
             suzerain::to_yxz(channel::field::count, dgrid->local_wave_extent));
 
     // Load restart information into state_linear, including simulation time
@@ -1089,7 +1090,7 @@ int main(int argc, char **argv)
                        scenario, grid, *dgrid, *b, *bop);
 
     // Create the state storage for nonlinear operator with appropriate padding
-    state_nonlinear.reset(channel::allocate_padded_state<state_type>(
+    state_nonlinear.reset(channel::allocate_padded_state<nonlinear_state_type>(
                 channel::field::count, *dgrid));
 
     // Dump some state shape and stride information for debugging purposes
@@ -1102,33 +1103,23 @@ int main(int argc, char **argv)
     DEBUG("Nonlinear state strides (FYXZ): "
           << suzerain::multi_array::strides_array(*state_nonlinear));
 
-    // Prepare generic timestepping handles
-    using suzerain::timestepper::lowstorage::ILowStorageMethod;
-    scoped_ptr<ILowStorageMethod<complex_t> > m;
-
-    using suzerain::timestepper::lowstorage::ILinearOperator;
-    scoped_ptr<ILinearOperator<state_type,state_type> > L;
-
-    using suzerain::timestepper::INonlinearOperator;
-    scoped_ptr<INonlinearOperator<state_type> > N;
-
-    using suzerain::timestepper::TimeController;
-    scoped_ptr<TimeController<real_t> > tc;
-
-    // Prepare timestepping details specific to the chosen operators.
-    // Nonlinear scaling factor (N_x N_z)^(-1) from write up section 2.1
-    // (Spatial discretization) is modified for dealiasing and included here.
+    // Prepare chosen time stepping scheme and required operators
     common_block.storage.setZero(
             grid.dN.y(), channel::mean::storage_type::ColsAtCompileTime);
-    m.reset(new suzerain::timestepper::lowstorage::SMR91Method<complex_t>(
-                timedef.evmagfactor));
-    L.reset(new channel::BsplineMassOperatorIsothermal(
-                scenario, grid, *dgrid, *b, *bop, common_block));
-    N.reset(new channel::NonlinearOperator(
-                scenario, grid, *dgrid, *b, *bop, common_block, msoln));
-    tc.reset(make_LowStorageTimeController(
-                *m, delta_t_allreducer,
-                *L, real_t(1)/(grid.dN.x()*grid.dN.z()), *N,
+    suzerain::timestepper::lowstorage::SMR91Method<complex_t> m(
+                timedef.evmagfactor);
+    channel::BsplineMassOperatorIsothermal L(
+                scenario, grid, *dgrid, *b, *bop, common_block);
+    channel::NonlinearOperator N(
+                scenario, grid, *dgrid, *b, *bop, common_block, msoln);
+
+    // Prepare TimeController for managing the time advance
+    // Nonlinear scaling factor (N_x N_z)^(-1) from write up section 2.1
+    // (Spatial discretization) is modified for dealiasing and included here.
+    using suzerain::timestepper::TimeController;
+    scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
+                m, delta_t_allreducer,
+                L, real_t(1)/(grid.dN.x()*grid.dN.z()), N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 

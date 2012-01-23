@@ -68,7 +68,7 @@ BsplineMassOperator::BsplineMassOperator(
 
 void BsplineMassOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::ContiguousState<4,complex_t> &state,
+        suzerain::multi_array::ref<complex_t,4> &state,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -76,15 +76,20 @@ void BsplineMassOperator::applyMassPlusScaledOperator(
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
+    // Verify required assumptions
+    SUZERAIN_ENSURE(state.strides()[1] == 1);
+    SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(massluz.n()));
+    SUZERAIN_ENSURE(suzerain::multi_array::is_contiguous(state));
+
+    // Those assumptions holding, apply operator to each wall-normal pencil.
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
-    assert(static_cast<unsigned>(massluz.n()) == state.shape()[1]);
-    bop.apply(0, nrhs, 1, state.range().begin(), 1, state.shape()[1]);
+    bop.apply(0, nrhs, 1, state.data(), 1, state.shape()[1]);
 }
 
 
 void BsplineMassOperator::accumulateMassPlusScaledOperator(
         const complex_t &phi,
-        const suzerain::ContiguousState<4,complex_t> &input,
+        const suzerain::multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
         suzerain::ContiguousState<4,complex_t> &output,
         const component delta_t,
@@ -93,12 +98,15 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
     SUZERAIN_UNUSED(phi);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
-    const state_type &x   = input;  // Shorthand
-    state_type &y         = output; // Shorthand
-    const complex_t c_one = 1;
-    assert(x.isIsomorphic(y));
 
-    typedef state_type::index index;
+    SUZERAIN_ENSURE(output.isIsomorphic(input));
+
+    const suzerain::multi_array::ref<complex_t,4> &x = input;  // Shorthand
+    suzerain::ContiguousState<4,complex_t>        &y = output; // Shorthand
+    const complex_t c_one = 1;
+
+    // Loops go from slower to faster indices for ContiguousState<4,complex_t>
+    typedef suzerain::ContiguousState<4,complex_t>::index index;
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
         ix < static_cast<index>(x.index_bases()[0] + x.shape()[0]);
         ++ix, ++iy) {
@@ -120,7 +128,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
 
 void BsplineMassOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::ContiguousState<4,complex_t> &state,
+        suzerain::multi_array::ref<complex_t,4> &state,
         const component delta_t,
         const std::size_t substep_index,
         const real_t iota) const
@@ -130,9 +138,14 @@ void BsplineMassOperator::invertMassPlusScaledOperator(
     SUZERAIN_UNUSED(substep_index);
     SUZERAIN_UNUSED(iota);
 
+    // Verify required assumptions
+    SUZERAIN_ENSURE(state.strides()[1] == 1);
+    SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(massluz.n()));
+    SUZERAIN_ENSURE(suzerain::multi_array::is_contiguous(state));
+
+    // Those assumptions holding, invert operator on each wall-normal pencil.
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
-    assert(static_cast<unsigned>(massluz.n()) == state.shape()[1]);
-    massluz.solve(nrhs, state.range().begin(), 1, state.shape()[1]);
+    massluz.solve(nrhs, state.data(), 1, state.shape()[1]);
 }
 
 BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
@@ -153,7 +166,7 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
 
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::ContiguousState<4,complex_t> &state,
+        suzerain::multi_array::ref<complex_t,4> &state,
         const component delta_t,
         const std::size_t substep_index,
         const real_t iota) const
