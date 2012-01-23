@@ -3255,9 +3255,10 @@ suzerain_blasext_dsbmzv(
  *
  * \param side One of 'L' or 'R' indicating whether \f$D\f$ should be applied
  *        to the left or right side of \f$A\f$, respectively.
- * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of matrix \f$ D\f$ when <tt>side == 'L'</tt>.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
- *          and size of matrix \f$ D\f$.
+ *          and size of matrix \f$ D\f$ when <tt>side == 'R'</tt>.
  * \param kl Number of subdiagonals in band storage of \c a and \c b.
  * \param ku Number of superdiagonals in band storage of \c a and \c b.
  * \param alpha Multiplicative scalar \f$ \alpha \f$
@@ -3361,9 +3362,10 @@ suzerain_blasext_zgb_diag_scale_acc(
  *
  * \param side One of 'L' or 'R' indicating whether \f$D\f$ should be applied
  *        to the left or right side of \f$A\f$, respectively.
- * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of matrix \f$ D\f$ when <tt>side == 'L'</tt>.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
- *          and size of matrix \f$ D\f$.
+ *          and size of matrix \f$ D\f$ when <tt>side == 'R'</tt>.
  * \param kl Number of subdiagonals in band storage of \c a and \c b.
  * \param ku Number of superdiagonals in band storage of \c a and \c b.
  * \param alpha Multiplicative scalar \f$ \alpha \f$
@@ -3410,9 +3412,10 @@ suzerain_blasext_zgb_diag_scale_dacc(
  *
  * \param side One of 'L' or 'R' indicating whether the diagonal matrices
  *        should be applied to the left or right side of \f$A\f$, respectively.
- * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of diagonal matrices when <tt>side == 'L'</tt>.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
- *          and size of matrix \f$ D\f$.
+ *          and size of diagonal matrices when <tt>side == 'R'</tt>.
  * \param kl Number of subdiagonals in band storage of \c a and \c b.
  * \param ku Number of superdiagonals in band storage of \c a and \c b.
  * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$
@@ -3466,9 +3469,10 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
  *
  * \param side One of 'L' or 'R' indicating whether the diagonal matrices
  *        should be applied to the left or right side of \f$A\f$, respectively.
- * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of diagonal matrices when <tt>side == 'L'</tt>.
  * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
- *          and size of matrix \f$ D\f$.
+ *          and size of diagonal matrices when <tt>side == 'R'</tt>.
  * \param kl Number of subdiagonals in band storage of \c a and \c b.
  * \param ku Number of superdiagonals in band storage of \c a and \c b.
  * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$
