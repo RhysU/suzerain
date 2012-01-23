@@ -884,9 +884,9 @@ suzerain_blas_sgb_acc(
 #ifdef SUZERAIN_HAVE_MKL
     /* Internal sgb_acc because MKL lacks the routine. */
     const float one = 1.0f;
-    suzerain_blasext_sgb_diag_scale_acc(m, n, kl, ku,
-                                        alpha, a, 1, lda, &one, 0,
-                                        beta,  b, 1, ldb);
+    suzerain_blasext_sgb_diag_scale_acc('R', m, n, kl, ku,
+                                        alpha, &one, 0, a, 1, lda,
+                                        beta,           b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
@@ -908,9 +908,9 @@ suzerain_blas_dgb_acc(
 #ifdef SUZERAIN_HAVE_MKL
     /* Internal dgb_acc because MKL lacks the routine. */
     const double one = 1.0;
-    suzerain_blasext_dgb_diag_scale_acc(m, n, kl, ku,
-                                        alpha, a, 1, lda, &one, 0,
-                                        beta,  b, 1, ldb);
+    suzerain_blasext_dgb_diag_scale_acc('R', m, n, kl, ku,
+                                        alpha, &one, 0, a, 1, lda,
+                                        beta,           b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
@@ -932,9 +932,9 @@ suzerain_blas_cgb_acc(
 #ifdef SUZERAIN_HAVE_MKL
     /* Internal cgb_acc because MKL lacks the routine. */
     const float one[2] = { 1.0f, 0.0f };
-    suzerain_blasext_cgb_diag_scale_acc(m, n, kl, ku,
-                                        alpha, a, 1, lda, &one, 0,
-                                        beta,  b, 1, ldb);
+    suzerain_blasext_cgb_diag_scale_acc('R', m, n, kl, ku,
+                                        alpha, &one, 0, a, 1, lda,
+                                        beta,           b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
@@ -956,9 +956,9 @@ suzerain_blas_zgb_acc(
 #ifdef SUZERAIN_HAVE_MKL
     /* Internal zgb_acc because MKL lacks the routine. */
     const double one[2] = { 1.0, 0.0 };
-    suzerain_blasext_zgb_diag_scale_acc(m, n, kl, ku,
-                                        alpha, a, 1, lda, &one, 0,
-                                        beta,  b, 1, ldb);
+    suzerain_blasext_zgb_diag_scale_acc('R', m, n, kl, ku,
+                                        alpha, &one, 0, a, 1, lda,
+                                        beta,           b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
@@ -3003,21 +3003,25 @@ suzerain_blasext_dsbmzv(
 
 void
 suzerain_blasext_sgb_diag_scale_acc(
+        char side,
         int m,
         int n,
         int kl,
         int ku,
         const float alpha,
+        const float *d,
+        int ldd,
         const float *a,
         int inca,
         int lda,
-        const float *d,
-        int ldd,
         const float beta,
         float *b,
         int incb,
         int ldb)
 {
+    side = toupper(side);
+    assert(side == 'R'); // FIXME
+
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
@@ -3051,21 +3055,25 @@ suzerain_blasext_sgb_diag_scale_acc(
 
 void
 suzerain_blasext_dgb_diag_scale_acc(
+        char side,
         int m,
         int n,
         int kl,
         int ku,
         const double alpha,
+        const double *d,
+        int ldd,
         const double *a,
         int inca,
         int lda,
-        const double *d,
-        int ldd,
         const double beta,
         double *b,
         int incb,
         int ldb)
 {
+    side = toupper(side);
+    assert(side == 'R'); // FIXME
+
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
@@ -3099,21 +3107,25 @@ suzerain_blasext_dgb_diag_scale_acc(
 
 void
 suzerain_blasext_cgb_diag_scale_acc(
+        char side,
         int m,
         int n,
         int kl,
         int ku,
         const float alpha[2],
+        const float (*d)[2],
+        int ldd,
         const float (*a)[2],
         int inca,
         int lda,
-        const float (*d)[2],
-        int ldd,
         const float beta[2],
         float (*b)[2],
         int incb,
         int ldb)
 {
+    side = toupper(side);
+    assert(side == 'R'); // FIXME
+
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
@@ -3149,21 +3161,25 @@ suzerain_blasext_cgb_diag_scale_acc(
 
 void
 suzerain_blasext_zgb_diag_scale_acc(
+        char side,
         int m,
         int n,
         int kl,
         int ku,
         const double alpha[2],
+        const double (*d)[2],
+        int ldd,
         const double (*a)[2],
         int inca,
         int lda,
-        const double (*d)[2],
-        int ldd,
         const double beta[2],
         double (*b)[2],
         int incb,
         int ldb)
 {
+    side = toupper(side);
+    assert(side == 'R'); // FIXME
+
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
@@ -3199,21 +3215,25 @@ suzerain_blasext_zgb_diag_scale_acc(
 
 void
 suzerain_blasext_zgb_diag_scale_dacc(
+        char side,
         int m,
         int n,
         int kl,
         int ku,
         const double alpha[2],
+        const double *d,
+        int ldd,
         const double *a,
         int inca,
         int lda,
-        const double *d,
-        int ldd,
         const double beta[2],
         double (*b)[2],
         int incb,
         int ldb)
 {
+    side = toupper(side);
+    assert(side == 'R'); // FIXME
+
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
@@ -3248,24 +3268,28 @@ suzerain_blasext_zgb_diag_scale_dacc(
 
 void
 suzerain_blasext_zgb_ddiag_scale_dacc(
+        char side,
         int m,
         int n,
         int kl,
         int ku,
-        const double *a,
-        int inca,
-        int lda,
         const double alpha0[2],
         const double *d0,
         int ldd0,
         const double alpha1[2],
         const double *d1,
         int ldd1,
+        const double *a,
+        int inca,
+        int lda,
         const double beta[2],
         double (*b)[2],
         int incb,
         int ldb)
 {
+    side = toupper(side);
+    assert(side == 'R'); // FIXME
+
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  6);
@@ -3304,13 +3328,11 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
 
 void
 suzerain_blasext_zgb_dddiag_scale_dacc(
+        char side,
         int m,
         int n,
         int kl,
         int ku,
-        const double *a,
-        int inca,
-        int lda,
         const double alpha0[2],
         const double *d0,
         int ldd0,
@@ -3320,11 +3342,17 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
         const double alpha2[2],
         const double *d2,
         int ldd2,
+        const double *a,
+        int inca,
+        int lda,
         const double beta[2],
         double (*b)[2],
         int incb,
         int ldb)
 {
+    side = toupper(side);
+    assert(side == 'R'); // FIXME
+
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  6);
@@ -3381,9 +3409,9 @@ suzerain_blasext_zgb_dacc(
         const int ldb)
 {
     const double one = 1.0;
-    suzerain_blasext_zgb_diag_scale_dacc(m, n, kl, ku,
-                                         alpha, a, 1, lda, &one, 0,
-                                         beta,  b, 1, ldb);
+    suzerain_blasext_zgb_diag_scale_dacc('R', m, n, kl, ku,
+                                         alpha, &one, 0, a, 1, lda,
+                                         beta,           b, 1, ldb);
 }
 
 void
