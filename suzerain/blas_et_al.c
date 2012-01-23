@@ -3038,11 +3038,11 @@ suzerain_blasext_sgb_diag_scale_acc(
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
-    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
     // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
-    a += ku; --lda;
-    b += ku; --ldb;
+    a += ku*inca; lda -= inca;
+    b += ku*incb; ldb -= incb;
     ++kl;
 
     for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
@@ -3071,9 +3071,6 @@ suzerain_blasext_dgb_diag_scale_acc(
         int incb,
         int ldb)
 {
-    side = toupper(side);
-    assert(side == 'R'); // FIXME
-
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
     if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
@@ -3087,14 +3084,25 @@ suzerain_blasext_dgb_diag_scale_acc(
     const _Bool beta_is_one   = (beta  == 1.0);
 #pragma warning(pop)
 
+    // If necessary, recast side == 'L' details into a side == 'R' traversal
+    switch (toupper(side)) {
+        case 'R': break;
+        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
+    // Quick return if possible
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
-    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
     // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
-    a += ku; --lda;
-    b += ku; --ldb;
+    a += ku*inca; lda -= inca;
+    b += ku*incb; ldb -= incb;
     ++kl;
 
     for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
@@ -3123,9 +3131,6 @@ suzerain_blasext_cgb_diag_scale_acc(
         int incb,
         int ldb)
 {
-    side = toupper(side);
-    assert(side == 'R'); // FIXME
-
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
     if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
@@ -3139,14 +3144,21 @@ suzerain_blasext_cgb_diag_scale_acc(
     const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0f);
 #pragma warning(pop)
 
+    switch (toupper(side)) {
+        case 'R': break;
+        case 'L': assert(0);
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
-    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
     // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
-    a += ku; --lda;
-    b += ku; --ldb;
+    a += ku*inca; lda -= inca;
+    b += ku*incb; ldb -= incb;
     ++kl;
 
     for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
@@ -3177,9 +3189,6 @@ suzerain_blasext_zgb_diag_scale_acc(
         int incb,
         int ldb)
 {
-    side = toupper(side);
-    assert(side == 'R'); // FIXME
-
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
     if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
@@ -3193,14 +3202,21 @@ suzerain_blasext_zgb_diag_scale_acc(
     const _Bool beta_is_one   = (beta[0]  == 1.0 && beta[1]  == 0.0);
 #pragma warning(pop)
 
+    switch (toupper(side)) {
+        case 'R': break;
+        case 'L': assert(0);
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
-    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
     // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
-    a += ku; --lda;
-    b += ku; --ldb;
+    a += ku*inca; lda -= inca;
+    b += ku*incb; ldb -= incb;
     ++kl;
 
     for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
@@ -3231,9 +3247,6 @@ suzerain_blasext_zgb_diag_scale_dacc(
         int incb,
         int ldb)
 {
-    side = toupper(side);
-    assert(side == 'R'); // FIXME
-
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
     if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
@@ -3247,14 +3260,21 @@ suzerain_blasext_zgb_diag_scale_dacc(
     const _Bool beta_is_one   = (beta[0]  == 1.0 && beta[1]  == 0.0);
 #pragma warning(pop)
 
+    switch (toupper(side)) {
+        case 'R': break;
+        case 'L': assert(0);
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
     if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
-    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
     // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
-    a += ku; --lda;
-    b += ku; --ldb;
+    a += ku*inca; lda -= inca;
+    b += ku*incb; ldb -= incb;
     ++kl;
 
     for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
@@ -3287,9 +3307,6 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
         int incb,
         int ldb)
 {
-    side = toupper(side);
-    assert(side == 'R'); // FIXME
-
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
     if (SUZERAIN_UNLIKELY(ldd0 < 0       )) suzerain_blas_xerbla(__func__,  8);
@@ -3305,15 +3322,22 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
     const _Bool beta_is_one    = (beta[0]   == 1.0 && beta[1]   == 0.0);
 #pragma warning(pop)
 
+    switch (toupper(side)) {
+        case 'R': break;
+        case 'L': assert(0);
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
     if (SUZERAIN_UNLIKELY(   (alpha0_is_zero && alpha1_is_zero && beta_is_one)
                            || m <= 0 || n <= 0))
         return;
 
-    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
     // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
-    a += ku; --lda;
-    b += ku; --ldb;
+    a += ku*inca; lda -= inca;
+    b += ku*incb; ldb -= incb;
     ++kl;
 
     for (int j = 0; j < n; a += lda, d0 += ldd0, d1 += ldd1, b += ldb, ++j) {
@@ -3350,9 +3374,6 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
         int incb,
         int ldb)
 {
-    side = toupper(side);
-    assert(side == 'R'); // FIXME
-
     if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
     if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
     if (SUZERAIN_UNLIKELY(ldd0 < 0       )) suzerain_blas_xerbla(__func__,  8);
@@ -3370,16 +3391,23 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
     const _Bool beta_is_one    = (beta[0]   == 1.0 && beta[1]   == 0.0);
 #pragma warning(pop)
 
+    switch (toupper(side)) {
+        case 'R': break;
+        case 'L': assert(0);
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
     if (SUZERAIN_UNLIKELY(   (alpha0_is_zero && alpha1_is_zero
                                              && alpha2_is_zero && beta_is_one)
                            || m <= 0 || n <= 0))
         return;
 
-    // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
+    // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
     // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
-    a += ku; --lda;
-    b += ku; --ldb;
+    a += ku*inca; lda -= inca;
+    b += ku*incb; ldb -= incb;
     ++kl;
 
     for (int j = 0; j < n;
