@@ -191,7 +191,7 @@ template<> struct for_each_functor<3> {
             FOR(i) FOR(j) FOR(k) f(x[i][j][k]);
         else if (okj && oji) // boost::fortran_storage_order
             FOR(k) FOR(j) FOR(i) f(x[i][j][k]);
-        else if (oki && oij) // suzerain::storage::interleaved<4>
+        else if (oki && oij) // suzerain::storage::interleaved<3>
             FOR(k) FOR(i) FOR(j) f(x[i][j][k]);
         else if (oik && okj) // suzerain::storage::contiguous<3>
             FOR(i) FOR(k) FOR(j) f(x[i][j][k]);
