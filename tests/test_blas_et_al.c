@@ -2716,7 +2716,7 @@ main(int argc, char **argv)
     test_cgb_acc_nop();
 
     test_dgb_diag_scale_acc1();
-//  test_dgb_diag_scale_acc2();
+    test_dgb_diag_scale_acc2();
 
     test_daxpzy();
     test_daxpzby();
