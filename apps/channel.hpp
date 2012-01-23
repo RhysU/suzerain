@@ -263,8 +263,7 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
  */
 void store_coefficients(
         const esio_handle h,
-        const suzerain::ContiguousState<4,complex_t> &state,
-        suzerain::ContiguousState<4,complex_t> &scratch,
+        const suzerain::ContiguousState<4,complex_t> &swave,
         const suzerain::problem::ScenarioDefinition<real_t>& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid);
@@ -278,8 +277,7 @@ void store_coefficients(
  */
 void store_collocation_values(
         const esio_handle h,
-        const suzerain::ContiguousState<4,complex_t> &state,
-        suzerain::ContiguousState<4,complex_t>& scratch,
+        suzerain::ContiguousState<4,complex_t>& swave,
         const suzerain::problem::ScenarioDefinition<real_t>& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,

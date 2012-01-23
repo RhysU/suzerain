@@ -961,21 +961,22 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
 
 void store_coefficients(
         const esio_handle h,
-        const suzerain::ContiguousState<4,complex_t> &state,
-        suzerain::ContiguousState<4,complex_t> &scratch,
+        const suzerain::ContiguousState<4,complex_t> &swave,
         const suzerain::problem::ScenarioDefinition<real_t>& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid)
 {
-    // Ensure state and scratch storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == field::count);
-    assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
-    assert(scratch.shape()[0]  >= 1);
-    assert(scratch.strides()[1] == state.strides()[1]);
-    assert(scratch.strides()[2] == state.strides()[2]);
-    assert(scratch.strides()[3] == state.strides()[3]);
+    // Ensure swave meets this routine's assumptions
+    assert(                  swave.shape()[0]  == field::count);
+    assert(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
+
+    // Allocate one field of temporary storage for scratch purposes
+    using suzerain::ContiguousState;
+    boost::scoped_ptr<ContiguousState<4,complex_t> > _scratch_ptr( // RAII
+            allocate_padded_state<ContiguousState<4,complex_t> >(1, dgrid));
+    ContiguousState<4,complex_t> &scratch = *_scratch_ptr;         // Shorthand
 
     // Compute wavenumber translation logistics for X direction
     int fxb[2], fxe[2], mxb[2], mxe[2];
@@ -1013,7 +1014,7 @@ void store_coefficients(
         // ...next eliminating dealiased content via a copy into scratch[0]...
         suzerain::diffwave::accumulate(
                 0, 0,
-                complex_t(1), state[i].origin(),
+                complex_t(1), swave[i].origin(),
                 complex_t(0), scratch[0].origin(),
                 scenario.Lx, scenario.Lz, dgrid.global_wave_extent.y(),
                 grid.N.x(), grid.dN.x(),
@@ -1038,7 +1039,7 @@ void store_coefficients(
                                  grid.N.x()/2+1, fxb[0], (fxe[0] - fxb[0]),
                                  grid.N.y(),     0,      (     grid.N.y()));
 
-            // Perform collective write operation from state_linear
+            // Perform collective write operation from scratch
             complex_field_write(h, field::name[i], src,
                                 scratch.strides()[3],
                                 scratch.strides()[2],
@@ -1231,8 +1232,7 @@ void load_coefficients(const esio_handle h,
 
 void store_collocation_values(
         const esio_handle h,
-        const suzerain::ContiguousState<4,complex_t>& state,
-        suzerain::ContiguousState<4,complex_t>& scratch,
+        suzerain::ContiguousState<4,complex_t>& swave,
         const suzerain::problem::ScenarioDefinition<real_t>& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
@@ -1240,28 +1240,23 @@ void store_collocation_values(
         const suzerain::bsplineop& bop)
 {
     // Ensure state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == field::count);
-    assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
-    assert(                  scratch.shape()[0]  >= field::count);
-    assert(numeric_cast<int>(scratch.shape()[1]) == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(scratch.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(scratch.shape()[3]) == dgrid.local_wave_extent.z());
+    assert(                  swave.shape()[0]  == field::count);
+    assert(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
 
-    // Copy-and-convert coefficients into collocation point values
-    // Transforms from full-wave in state to full-physical in scratch
+    // Convert coefficients into collocation point values
+    // Transforms state from full-wave coefficients to full-physical points
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
     for (size_t i = 0; i < channel::field::count; ++i) {
-        obase.diffwave_accumulate(0, 0, 1., state, i, 0., scratch, i);
-        obase.bop_apply(0, 1, scratch, i);
+        obase.bop_apply(0, 1, swave, i);
         dgrid.transform_wave_to_physical(
-                reinterpret_cast<real_t *>(scratch[i].origin()));
+                reinterpret_cast<real_t *>(swave[i].origin()));
     }
 
     // Convert conserved rho, rhou, rhov, rhow, rhoe into u, v, w, p, T
     physical_view<field::count>::type sphys
-        = physical_view<field::count>::create(dgrid, scratch);
+        = physical_view<field::count>::create(dgrid, swave);
 
     const real_t alpha = scenario.alpha;
     const real_t beta  = scenario.beta;
@@ -1316,7 +1311,7 @@ void store_collocation_values(
                    " /collocation_points_z";
 
         esio_field_write(h, prim_names[i],
-                reinterpret_cast<real_t *>(scratch[i].origin()),
+                reinterpret_cast<real_t *>(swave[i].origin()),
                 0, 0, 0, comment.c_str());
     }
 }

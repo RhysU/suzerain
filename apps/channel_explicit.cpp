@@ -220,8 +220,9 @@ static void information_L2(const std::string& timeprefix)
     if (!INFO0_ENABLED(L2_mean) && !INFO0_ENABLED(rms_fluct)) return;
 
     // Collective computation of the L_2 norms
+    state_nonlinear->assign(*state_linear);
     const array<channel::L2,channel::field::count> L2
-        = channel::field_L2(*state_linear, scenario, grid, *dgrid, *gop);
+        = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
     std::ostringstream msg;
@@ -430,16 +431,17 @@ static bool save_restart(real_t t, size_t nt)
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
     channel::store_time(esioh, t);
 
+    // Copy state into state_nonlinear for possibly destructive processing
+    state_nonlinear->assign(*state_linear);
     if (restart.physical) {
         DEBUG0("Storing primitive collocation point values into "
                << restart.uncommitted);
         channel::store_collocation_values(
-                esioh, *state_linear, *state_nonlinear,
-                scenario, grid, *dgrid, *b, *bop);
+                esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
     } else {
         DEBUG0("Storing conserved coefficients into " << restart.uncommitted);
         channel::store_coefficients(
-                esioh, *state_linear, *state_nonlinear, scenario, grid, *dgrid);
+                esioh, *state_nonlinear, scenario, grid, *dgrid);
     }
 
     // Include statistics in the restart file
@@ -1067,12 +1069,11 @@ int main(int argc, char **argv)
     DEBUG("Local physical end    (XYZ): " << dgrid->local_physical_end);
     DEBUG("Local physical extent (XYZ): " << dgrid->local_physical_extent);
 
-    // Create state storage for linear operator
-    // TODO Have state_linear only store non-dealiased state
-    state_linear = make_shared<linear_state_type>(
-            suzerain::to_yxz(channel::field::count, dgrid->local_wave_extent));
+    // Create the state storage for nonlinear operator with appropriate padding
+    state_nonlinear.reset(channel::allocate_padded_state<nonlinear_state_type>(
+                channel::field::count, *dgrid));
 
-    // Load restart information into state_linear, including simulation time
+    // Load restart information into state_nonlinear, including simulation time
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     real_t initial_t;
     channel::load_time(esioh, initial_t);
@@ -1080,18 +1081,21 @@ int main(int argc, char **argv)
         const double begin = MPI_Wtime();
         samples.t = initial_t;         // For idempotent --advance_nt=0...
         channel::load(esioh, samples); // ...when no grid rescaling employed
-        channel::load(esioh, *state_linear, scenario, grid, *dgrid, *b, *bop);
+        channel::load(esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
         wtime_load_state = MPI_Wtime() - begin;
     }
     esio_file_close(esioh);
 
     // If requested, add noise to the momentum fields at startup (expensive).
-    channel::add_noise(*state_linear, noisedef,
+    channel::add_noise(*state_nonlinear, noisedef,
                        scenario, grid, *dgrid, *b, *bop);
 
-    // Create the state storage for nonlinear operator with appropriate padding
-    state_nonlinear.reset(channel::allocate_padded_state<nonlinear_state_type>(
-                channel::field::count, *dgrid));
+    // Create state storage for linear operator usage
+    state_linear = make_shared<linear_state_type>(
+            suzerain::to_yxz(channel::field::count, dgrid->local_wave_extent));
+
+    // Copy (possibly perturbed) state from state_nonlinear into state_linear
+    state_linear->assign(*state_nonlinear);
 
     // Dump some state shape and stride information for debugging purposes
     DEBUG("Linear state shape      (FYXZ): "
