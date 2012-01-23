@@ -164,6 +164,29 @@ BsplineMassOperatorIsothermal::BsplineMassOperatorIsothermal(
     bulkcoeff /= scenario.Ly;
 }
 
+// A helper class for implementing isothermal, no-slip boundary conditions
+class IsothermalNoSlipFunctor
+{
+private:
+    const ptrdiff_t field_stride;
+    const real_t    inv_gamma_gamma1;
+
+public:
+    IsothermalNoSlipFunctor(ptrdiff_t field_stride, real_t gamma)
+        : field_stride(field_stride),
+          inv_gamma_gamma1(1 / (gamma * (gamma - 1)))
+    {}
+
+    void operator()(complex_t &rho) const
+    {
+        namespace ndx = channel::field::ndx;
+        (&rho)[(ndx::rhou - ndx::rho)*field_stride] = 0;
+        (&rho)[(ndx::rhov - ndx::rho)*field_stride] = 0;
+        (&rho)[(ndx::rhow - ndx::rho)*field_stride] = 0;
+        (&rho)[(ndx::rhoe - ndx::rho)*field_stride] = rho*inv_gamma_gamma1;
+    }
+};
+
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::multi_array::ref<complex_t,4> &state,
@@ -196,30 +219,29 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // via shared OperatorCommonBlock storage space
 
     // channel_treatment step (8) sets no-slip conditions
-    // on wall collocation points.  Possible pre-solve since L = 0.
-    assert(static_cast<int>(ndx::rhov) == static_cast<int>(ndx::rhou) + 1);
-    assert(static_cast<int>(ndx::rhow) == static_cast<int>(ndx::rhov) + 1);
-    for (std::size_t i = ndx::rhou; i <= ndx::rhow; ++i) {
-        for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-            for (std::size_t j = 0; j < state.shape()[2]; ++j) {
-                state[i][wall_lower][j][k] = 0;
-                state[i][wall_upper][j][k] = 0;
-            }
-        }
-    }
-
+    // on wall collocation points.
+    //
     // channel_treatment step (9) sets isothermal conditions on wall
     // collocation points using e_wall = rho_wall / (gamma * (gamma - 1)).
+    //
     // Possible pre-solve since L = 0.
-    const real_t inv_gamma_gamma1
-        = 1 / (scenario.gamma * (scenario.gamma - 1));
-    for (std::size_t k = 0; k < state.shape()[3]; ++k) {
-        for (std::size_t j = 0; j < state.shape()[2]; ++j) {
-            state[ndx::rhoe][wall_lower][j][k]
-                    = inv_gamma_gamma1 * state[ndx::rho][wall_lower][j][k];
-            state[ndx::rhoe][wall_upper][j][k]
-                    = inv_gamma_gamma1 * state[ndx::rho][wall_upper][j][k];
-        }
+    {
+        // Prepare a state view of density locations at lower and upper walls
+        using boost::multi_array_types::index_range;
+        suzerain::multi_array::ref<complex_t,4>::array_view<3>::type view
+                = state[boost::indices[ndx::rho]
+                                      [index_range(wall_lower,
+                                                   wall_upper + 1,
+                                                   wall_upper - wall_lower)]
+                                      [index_range()]
+                                      [index_range()]];
+
+        // Prepare functor setting pointwise BCs given density locations
+        const IsothermalNoSlipFunctor bc_functor(
+                state.strides()[0], scenario.gamma);
+
+        // Apply the functor to all wall-only density locations
+        suzerain::multi_array::for_each(view, bc_functor);
     }
 
     // Integral constraints enabled only when parameters are non-inf, non-NaN.
