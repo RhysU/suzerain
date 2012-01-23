@@ -182,7 +182,9 @@ template<> struct for_each_functor<3> {
         const bool oik = si >= sk, oki = !oik;
         const bool ojk = sj >= sk, okj = !ojk;
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define FOR(ndx) for (index ndx = ndx##l; ndx < ndx##u; ++ndx)
+#endif
 
         // Traverse according to runtime-determined storage order
         if      (oij && ojk) // boost::c_storage_order
@@ -198,7 +200,9 @@ template<> struct for_each_functor<3> {
         else // (ojk && oki)
             FOR(j) FOR(k) FOR(i) f(x[i][j][k]);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #undef FOR
+#endif
 
     }
 
@@ -237,7 +241,9 @@ template<> struct for_each_functor<4> {
         const bool ojl = sj >= sl, olj = !ojl;
         const bool okl = sk >= sl, olk = !okl;
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define FOR(ndx) for (index ndx = ndx##l; ndx < ndx##u; ++ndx)
+#endif
 
         // Traverse according to runtime-determined storage order
         if      (oij && ojk && okl) // boost::c_storage_order
@@ -289,7 +295,9 @@ template<> struct for_each_functor<4> {
         else // (olj && ojk && oki)
             FOR(l) FOR(j) FOR(k) FOR(i) f(x[i][j][k][l]);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #undef FOR
+#endif
 
     }
 
