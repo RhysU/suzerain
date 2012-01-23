@@ -3074,13 +3074,13 @@ suzerain_blasext_dgb_diag_scale_acc(
     side = toupper(side);
     assert(side == 'R'); // FIXME
 
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 13);
-    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
+    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 10);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 11);
+    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha == 0.0);
@@ -3126,13 +3126,13 @@ suzerain_blasext_cgb_diag_scale_acc(
     side = toupper(side);
     assert(side == 'R'); // FIXME
 
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 13);
-    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
+    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 10);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 11);
+    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0f);
@@ -3180,13 +3180,13 @@ suzerain_blasext_zgb_diag_scale_acc(
     side = toupper(side);
     assert(side == 'R'); // FIXME
 
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 13);
-    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
+    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 10);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 11);
+    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
@@ -3234,13 +3234,13 @@ suzerain_blasext_zgb_diag_scale_dacc(
     side = toupper(side);
     assert(side == 'R'); // FIXME
 
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 13);
-    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
+    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 10);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 11);
+    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
@@ -3290,14 +3290,14 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
     side = toupper(side);
     assert(side == 'R'); // FIXME
 
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  6);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  7);
-    if (SUZERAIN_UNLIKELY(ldd0 < 0       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(ldd1 < 0       )) suzerain_blas_xerbla(__func__, 13);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 16);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 17);
+    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
+    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd0 < 0       )) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(ldd1 < 0       )) suzerain_blas_xerbla(__func__, 11);
+    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 13);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 17);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 18);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha0_is_zero = (alpha0[0] == 0.0 && alpha0[1] == 0.0);
@@ -3353,15 +3353,15 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
     side = toupper(side);
     assert(side == 'R'); // FIXME
 
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  6);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  7);
-    if (SUZERAIN_UNLIKELY(ldd0 < 0       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(ldd1 < 0       )) suzerain_blas_xerbla(__func__, 13);
-    if (SUZERAIN_UNLIKELY(ldd2 < 0       )) suzerain_blas_xerbla(__func__, 16);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 19);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 20);
+    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
+    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
+    if (SUZERAIN_UNLIKELY(ldd0 < 0       )) suzerain_blas_xerbla(__func__,  8);
+    if (SUZERAIN_UNLIKELY(ldd1 < 0       )) suzerain_blas_xerbla(__func__, 11);
+    if (SUZERAIN_UNLIKELY(ldd2 < 0       )) suzerain_blas_xerbla(__func__, 14);
+    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 16);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 17);
+    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 20);
+    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 21);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha0_is_zero = (alpha0[0] == 0.0 && alpha0[1] == 0.0);
