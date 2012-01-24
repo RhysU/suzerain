@@ -1560,12 +1560,6 @@ suzerain_blasext_daxpzby(
         double (* restrict y)[2],
         const int incy)
 {
-#pragma warning(push,disable:1572)
-    if (UNLIKELY((beta[0] == 1.0 && beta[1] == 0.0))) {
-#pragma warning(pop)
-        return suzerain_blasext_daxpzy(n, alpha, x, incx, y, incy);
-    }
-
     assert(incx >= 0); // TODO Handle negative incx
     assert(incy >= 0); // TODO Handle negative incy
 
@@ -3005,9 +2999,6 @@ suzerain_blasext_sgb_diag_scale_acc(
         int incb,
         int ldb)
 {
-    side = toupper(side);
-    assert(side == 'R'); // FIXME
-
     if (UNLIKELY(kl   < 0       )) return suzerain_blas_xerbla(__func__,  3);
     if (UNLIKELY(ku   < 0       )) return suzerain_blas_xerbla(__func__,  4);
     if (UNLIKELY(inca < 1       )) return suzerain_blas_xerbla(__func__,  7);
@@ -3021,6 +3012,17 @@ suzerain_blasext_sgb_diag_scale_acc(
     const _Bool beta_is_one   = (beta  == 1.0f);
 #pragma warning(pop)
 
+    // If necessary, recast side == 'L' details into a side == 'R' traversal
+    switch (toupper(side)) {
+        case 'R': break;
+        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
+    // Quick return if possible
     if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
@@ -3031,11 +3033,20 @@ suzerain_blasext_sgb_diag_scale_acc(
     b += ku*incb; ldb -= incb;
     ++kl;
 
-    for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
-        const int il = imax(0, j - ku);
-        const int iu = imin(m, j + kl);
-        suzerain_blas_saxpby(iu - il, alpha*(*d), a + il*inca, inca,
-                                      beta,       b + il*incb, incb);
+    if (beta_is_one) {
+        for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            suzerain_blas_saxpy (iu - il, alpha*(*d), a + il*inca, inca,
+                                                      b + il*incb, incb);
+        }
+    } else {
+        for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            suzerain_blas_saxpby(iu - il, alpha*(*d), a + il*inca, inca,
+                                          beta,       b + il*incb, incb);
+        }
     }
 }
 
@@ -3091,11 +3102,20 @@ suzerain_blasext_dgb_diag_scale_acc(
     b += ku*incb; ldb -= incb;
     ++kl;
 
-    for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
-        const int il = imax(0, j - ku);
-        const int iu = imin(m, j + kl);
-        suzerain_blas_daxpby(iu - il, alpha*(*d), a + il*inca, inca,
-                                      beta,       b + il*incb, incb);
+    if (beta_is_one) {
+        for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            suzerain_blas_daxpy (iu - il, alpha*(*d), a + il*inca, inca,
+                                                      b + il*incb, incb);
+        }
+    } else {
+        for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            suzerain_blas_daxpby(iu - il, alpha*(*d), a + il*inca, inca,
+                                          beta,       b + il*incb, incb);
+        }
     }
 }
 
@@ -3130,13 +3150,17 @@ suzerain_blasext_cgb_diag_scale_acc(
     const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0f);
 #pragma warning(pop)
 
+    // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
         case 'R': break;
-        case 'L': assert(0);
+        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
                   break;
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
+    // Quick return if possible
     if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
@@ -3147,13 +3171,24 @@ suzerain_blasext_cgb_diag_scale_acc(
     b += ku*incb; ldb -= incb;
     ++kl;
 
-    for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
-        const int il = imax(0, j - ku);
-        const int iu = imin(m, j + kl);
-        const float tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
-                               alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
-        suzerain_blas_caxpby(iu - il, tmp,  a + il*inca, inca,
-                                      beta, b + il*incb, incb);
+    if (beta_is_one) {
+        for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const float tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
+                                   alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+            suzerain_blas_caxpy (iu - il, tmp,  a + il*inca, inca,
+                                                b + il*incb, incb);
+        }
+    } else {
+        for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const float tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
+                                   alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+            suzerain_blas_caxpby(iu - il, tmp,  a + il*inca, inca,
+                                          beta, b + il*incb, incb);
+        }
     }
 }
 
@@ -3188,13 +3223,17 @@ suzerain_blasext_zgb_diag_scale_acc(
     const _Bool beta_is_one   = (beta[0]  == 1.0 && beta[1]  == 0.0);
 #pragma warning(pop)
 
+    // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
         case 'R': break;
-        case 'L': assert(0);
+        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
                   break;
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
+    // Quick return if possible
     if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
@@ -3205,13 +3244,24 @@ suzerain_blasext_zgb_diag_scale_acc(
     b += ku*incb; ldb -= incb;
     ++kl;
 
-    for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
-        const int il = imax(0, j - ku);
-        const int iu = imin(m, j + kl);
-        const double tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
-                                alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
-        suzerain_blas_zaxpby(iu - il, tmp,  a + il*inca, inca,
-                                      beta, b + il*incb, incb);
+    if (beta_is_one) {
+        for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const double tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
+                                    alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+            suzerain_blas_zaxpy (iu - il, tmp,  a + il*inca, inca,
+                                                b + il*incb, incb);
+        }
+    } else {
+        for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const double tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
+                                    alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+            suzerain_blas_zaxpby(iu - il, tmp,  a + il*inca, inca,
+                                          beta, b + il*incb, incb);
+        }
     }
 }
 
@@ -3246,13 +3296,17 @@ suzerain_blasext_zgb_diag_scale_dacc(
     const _Bool beta_is_one   = (beta[0]  == 1.0 && beta[1]  == 0.0);
 #pragma warning(pop)
 
+    // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
         case 'R': break;
-        case 'L': assert(0);
+        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
                   break;
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
+    // Quick return if possible
     if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
@@ -3263,12 +3317,22 @@ suzerain_blasext_zgb_diag_scale_dacc(
     b += ku*incb; ldb -= incb;
     ++kl;
 
-    for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
-        const int il = imax(0, j - ku);
-        const int iu = imin(m, j + kl);
-        const double tmp[2] = { alpha[0]*(*d), alpha[1]*(*d) };
-        suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
-                                          beta, b + il*incb, incb);
+    if (beta_is_one) {
+        for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const double tmp[2] = { alpha[0]*(*d), alpha[1]*(*d) };
+            suzerain_blasext_daxpzy (iu - il, tmp,  a + il*inca, inca,
+                                                    b + il*incb, incb);
+        }
+    } else {
+        for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const double tmp[2] = { alpha[0]*(*d), alpha[1]*(*d) };
+            suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
+                                              beta, b + il*incb, incb);
+        }
     }
 }
 
@@ -3308,13 +3372,17 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
     const _Bool beta_is_one    = (beta[0]   == 1.0 && beta[1]   == 0.0);
 #pragma warning(pop)
 
+    // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
         case 'R': break;
-        case 'L': assert(0);
+        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
                   break;
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
+    // Quick return if possible
     if (UNLIKELY(    (alpha0_is_zero && alpha1_is_zero && beta_is_one)
                   || m <= 0 || n <= 0))
         return;
@@ -3326,13 +3394,26 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
     b += ku*incb; ldb -= incb;
     ++kl;
 
-    for (int j = 0; j < n; a += lda, d0 += ldd0, d1 += ldd1, b += ldb, ++j) {
-        const int il = imax(0, j - ku);
-        const int iu = imin(m, j + kl);
-        const double tmp[2] = { alpha0[0]*(*d0) + alpha1[0]*(*d1),
-                                alpha0[1]*(*d0) + alpha1[1]*(*d1) };
-        suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
-                                          beta, b + il*incb, incb);
+    if (beta_is_one) {
+        for (int j = 0; j < n;
+             a += lda, d0 += ldd0, d1 += ldd1, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const double tmp[2] = { alpha0[0]*(*d0) + alpha1[0]*(*d1),
+                                    alpha0[1]*(*d0) + alpha1[1]*(*d1) };
+            suzerain_blasext_daxpzy (iu - il, tmp,  a + il*inca, inca,
+                                                    b + il*incb, incb);
+        }
+    } else {
+        for (int j = 0; j < n;
+             a += lda, d0 += ldd0, d1 += ldd1, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const double tmp[2] = { alpha0[0]*(*d0) + alpha1[0]*(*d1),
+                                    alpha0[1]*(*d0) + alpha1[1]*(*d1) };
+            suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
+                                              beta, b + il*incb, incb);
+        }
     }
 }
 
@@ -3377,13 +3458,17 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
     const _Bool beta_is_one    = (beta[0]   == 1.0 && beta[1]   == 0.0);
 #pragma warning(pop)
 
+    // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
         case 'R': break;
-        case 'L': assert(0);
+        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
                   break;
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
+    // Quick return if possible
     if (UNLIKELY(    (alpha0_is_zero && alpha1_is_zero && alpha2_is_zero
                                      && beta_is_one)
                   || m <= 0 || n <= 0))
@@ -3396,16 +3481,30 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
     b += ku*incb; ldb -= incb;
     ++kl;
 
-    for (int j = 0; j < n;
-         a += lda, d0 += ldd0, d1 += ldd1, d2 += ldd2, b += ldb, ++j) {
-        const int il = imax(0, j - ku);
-        const int iu = imin(m, j + kl);
-        const double tmp[2] = {
-                alpha0[0]*(*d0) + alpha1[0]*(*d1) + alpha2[0]*(*d2),
-                alpha0[1]*(*d0) + alpha1[1]*(*d1) + alpha2[1]*(*d2)
-        };
-        suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
-                                          beta, b + il*incb, incb);
+    if (beta_is_one) {
+        for (int j = 0; j < n;
+             a += lda, d0 += ldd0, d1 += ldd1, d2 += ldd2, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const double tmp[2] = {
+                    alpha0[0]*(*d0) + alpha1[0]*(*d1) + alpha2[0]*(*d2),
+                    alpha0[1]*(*d0) + alpha1[1]*(*d1) + alpha2[1]*(*d2)
+            };
+            suzerain_blasext_daxpzy (iu - il, tmp,  a + il*inca, inca,
+                                                    b + il*incb, incb);
+        }
+    } else {
+        for (int j = 0; j < n;
+             a += lda, d0 += ldd0, d1 += ldd1, d2 += ldd2, b += ldb, ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const double tmp[2] = {
+                    alpha0[0]*(*d0) + alpha1[0]*(*d1) + alpha2[0]*(*d2),
+                    alpha0[1]*(*d0) + alpha1[1]*(*d1) + alpha2[1]*(*d2)
+            };
+            suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
+                                              beta, b + il*incb, incb);
+        }
     }
 }
 
