@@ -1753,7 +1753,7 @@ test_zgb_acc_nop()
 
 static
 void
-test_dgb_diag_scale_acc1()
+test_dgb_diag_scale_acc1(const double beta)
 {
     int i;
 
@@ -1764,7 +1764,6 @@ test_dgb_diag_scale_acc1()
     const int    lda   = 5;
     const int    ldb   = 6;
     const double alpha = 2.0;
-    const double beta  = 6.0;
 
     /* Negative one represents values outside of the band */
     /* Decimal parts flag regions outside the matrix entirely */
@@ -1832,7 +1831,7 @@ test_dgb_diag_scale_acc1()
 
 static
 void
-test_dgb_diag_scale_acc2()
+test_dgb_diag_scale_acc2(const double beta)
 {
     int i;
 
@@ -1843,7 +1842,6 @@ test_dgb_diag_scale_acc2()
     const int    lda   = 5;
     const int    ldb   = 6;
     const double alpha = 2.0;
-    const double beta  = 6.0;
 
     /* Negative one represents values outside of the band */
     /* Decimal parts flag regions outside the matrix entirely */
@@ -1905,6 +1903,162 @@ test_dgb_diag_scale_acc2()
                                         beta,             b, 1, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i], expected_data[i], GSL_DBL_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
+    }
+}
+
+static
+void
+test_sgb_diag_scale_acc1(const float  beta)
+{
+    int i;
+
+    const int    m     = 10;
+    const int    n     = 10;
+    const int    ku    = 1;
+    const int    kl    = 2;
+    const int    lda   = 5;
+    const int    ldb   = 6;
+    const float  alpha = 2.0;
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const float  a_data[] = {
+        /*lda buffer*/ /*ku1*/ /*diag*/ /*kl1*/ /*kl2*/
+                 -1.1,     -1,       0,    10,      20,
+                 -1.1,      1,      11,    21,      31,
+                 -1.1,     12,      22,    32,      42,
+                 -1.1,     23,      33,    43,      53,
+                 -1.1,     34,      44,    54,      64,
+                 -1.1,     45,      55,    65,      75,
+                 -1.1,     56,      66,    76,      86,
+                 -1.1,     67,      77,    87,      97,
+                 -1.1,     78,      88,    98,      -1,
+                 -1.1,     89,      99,    -1,      -1
+    };
+
+    float  b_data[] = {
+        /*lda buffer*/ /*ku1*/ /*diag*/ /*kl1*/ /*kl2*/
+          -2.2,  -1.1,     -1,    0.00,  0.10,    0.20,
+          -2.2,  -1.1,   0.01,    0.11,  0.21,    0.31,
+          -2.2,  -1.1,   0.12,    0.22,  0.32,    0.42,
+          -2.2,  -1.1,   0.23,    0.33,  0.43,    0.53,
+          -2.2,  -1.1,   0.34,    0.44,  0.54,    0.64,
+          -2.2,  -1.1,   0.45,    0.55,  0.65,    0.75,
+          -2.2,  -1.1,   0.56,    0.66,  0.76,    0.86,
+          -2.2,  -1.1,   0.67,    0.77,  0.87,    0.97,
+          -2.2,  -1.1,   0.78,    0.88,  0.98,      -1,
+          -2.2,  -1.1,   0.89,    0.99,    -1,      -1
+    };
+
+    const float  d_data[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 };
+
+#define R(d,a,b) (alpha*d_data[d]*a + beta*b)
+    const float  expected_data[] = {
+        /*lda buffer*/       /*ku1*/      /*diag*/       /*kl1*/       /*kl2*/
+          -2.2,  -1.1,           -1, R(0, 0,0.00), R(0,10,0.10), R(0,20,0.20),
+          -2.2,  -1.1, R(1, 1,0.01), R(1,11,0.11), R(1,21,0.21), R(1,31,0.31),
+          -2.2,  -1.1, R(2,12,0.12), R(2,22,0.22), R(2,32,0.32), R(2,42,0.42),
+          -2.2,  -1.1, R(3,23,0.23), R(3,33,0.33), R(3,43,0.43), R(3,53,0.53),
+          -2.2,  -1.1, R(4,34,0.34), R(4,44,0.44), R(4,54,0.54), R(4,64,0.64),
+          -2.2,  -1.1, R(5,45,0.45), R(5,55,0.55), R(5,65,0.65), R(5,75,0.75),
+          -2.2,  -1.1, R(6,56,0.56), R(6,66,0.66), R(6,76,0.76), R(6,86,0.86),
+          -2.2,  -1.1, R(7,67,0.67), R(7,77,0.77), R(7,87,0.87), R(7,97,0.97),
+          -2.2,  -1.1, R(8,78,0.78), R(8,88,0.88), R(8,98,0.98),           -1,
+          -2.2,  -1.1, R(9,89,0.89), R(9,99,0.99),         -1,             -1
+    };
+#undef R
+
+    const float  *a = a_data + lda-(ku+1+kl);
+    float        *b = b_data + ldb-(ku+1+kl);
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blasext_sgb_diag_scale_acc('R', m, n, kl, ku,
+                                        alpha, d_data, 1, a, 1, lda,
+                                        beta,             b, 1, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i], expected_data[i], GSL_FLT_EPSILON,
+                "%s:%d index %d", __func__, __LINE__, i);
+    }
+}
+
+static
+void
+test_sgb_diag_scale_acc2(const float  beta)
+{
+    int i;
+
+    const int    m     = 10;
+    const int    n     = 10;
+    const int    ku    = 1;
+    const int    kl    = 2;
+    const int    lda   = 5;
+    const int    ldb   = 6;
+    const float  alpha = 2.0;
+
+    /* Negative one represents values outside of the band */
+    /* Decimal parts flag regions outside the matrix entirely */
+    const float  a_data[] = {
+        /*lda buffer*/ /*ku1*/ /*diag*/ /*kl1*/ /*kl2*/
+                 -1.1,     -1,       0,    10,      20,
+                 -1.1,      1,      11,    21,      31,
+                 -1.1,     12,      22,    32,      42,
+                 -1.1,     23,      33,    43,      53,
+                 -1.1,     34,      44,    54,      64,
+                 -1.1,     45,      55,    65,      75,
+                 -1.1,     56,      66,    76,      86,
+                 -1.1,     67,      77,    87,      97,
+                 -1.1,     78,      88,    98,      -1,
+                 -1.1,     89,      99,    -1,      -1
+    };
+
+    float  b_data[] = {
+        /*lda buffer*/ /*ku1*/ /*diag*/ /*kl1*/ /*kl2*/
+          -2.2,  -1.1,     -1,    0.00,  0.10,    0.20,
+          -2.2,  -1.1,   0.01,    0.11,  0.21,    0.31,
+          -2.2,  -1.1,   0.12,    0.22,  0.32,    0.42,
+          -2.2,  -1.1,   0.23,    0.33,  0.43,    0.53,
+          -2.2,  -1.1,   0.34,    0.44,  0.54,    0.64,
+          -2.2,  -1.1,   0.45,    0.55,  0.65,    0.75,
+          -2.2,  -1.1,   0.56,    0.66,  0.76,    0.86,
+          -2.2,  -1.1,   0.67,    0.77,  0.87,    0.97,
+          -2.2,  -1.1,   0.78,    0.88,  0.98,      -1,
+          -2.2,  -1.1,   0.89,    0.99,    -1,      -1
+    };
+
+    const float  d_data[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 };
+
+#define R(d,a,b) (alpha*d_data[d]*a + beta*b)
+    const float  expected_data[] = {
+        /*lda buffer*/       /*ku1*/      /*diag*/       /*kl1*/       /*kl2*/
+          -2.2,  -1.1,           -1, R(0, 0,0.00), R(1,10,0.10), R(2,20,0.20),
+          -2.2,  -1.1, R(0, 1,0.01), R(1,11,0.11), R(2,21,0.21), R(3,31,0.31),
+          -2.2,  -1.1, R(1,12,0.12), R(2,22,0.22), R(3,32,0.32), R(4,42,0.42),
+          -2.2,  -1.1, R(2,23,0.23), R(3,33,0.33), R(4,43,0.43), R(5,53,0.53),
+          -2.2,  -1.1, R(3,34,0.34), R(4,44,0.44), R(5,54,0.54), R(6,64,0.64),
+          -2.2,  -1.1, R(4,45,0.45), R(5,55,0.55), R(6,65,0.65), R(7,75,0.75),
+          -2.2,  -1.1, R(5,56,0.56), R(6,66,0.66), R(7,76,0.76), R(8,86,0.86),
+          -2.2,  -1.1, R(6,67,0.67), R(7,77,0.77), R(8,87,0.87), R(9,97,0.97),
+          -2.2,  -1.1, R(7,78,0.78), R(8,88,0.88), R(9,98,0.98),           -1,
+          -2.2,  -1.1, R(8,89,0.89), R(9,99,0.99),         -1,             -1
+    };
+#undef R
+
+    const float  *a = a_data + lda-(ku+1+kl);
+    float        *b = b_data + ldb-(ku+1+kl);
+
+    const int nb        = sizeof(b_data)/sizeof(b_data[0]);
+    const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
+    gsl_test_int(nb, nexpected, "Expected results' length");
+
+    suzerain_blasext_sgb_diag_scale_acc('L', m, n, kl, ku,
+                                        alpha, d_data, 1, a, 1, lda,
+                                        beta,             b, 1, ldb);
+    for (i = 0; i < nexpected; ++i) {
+        gsl_test_abs(b_data[i], expected_data[i], GSL_FLT_EPSILON,
                 "%s:%d index %d", __func__, __LINE__, i);
     }
 }
@@ -2715,8 +2869,15 @@ main(int argc, char **argv)
     test_cgb_acc2();
     test_cgb_acc_nop();
 
-    test_dgb_diag_scale_acc1();
-    test_dgb_diag_scale_acc2();
+    test_dgb_diag_scale_acc1(/* beta = */ 6.0);
+    test_dgb_diag_scale_acc1(/* beta = */ 1.0);
+    test_dgb_diag_scale_acc2(/* beta = */ 6.0);
+    test_dgb_diag_scale_acc2(/* beta = */ 1.0);
+
+    test_sgb_diag_scale_acc1(/* beta = */ 6.0);
+    test_sgb_diag_scale_acc1(/* beta = */ 1.0);
+    test_sgb_diag_scale_acc2(/* beta = */ 6.0);
+    test_sgb_diag_scale_acc2(/* beta = */ 1.0);
 
     test_daxpzy();
     test_daxpzby();
