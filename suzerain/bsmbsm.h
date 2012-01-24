@@ -36,7 +36,8 @@
  * (BSMBSM).  In particular, data structures to aid building and efficiently
  * solving linear equations with BSMBSM operators are provided.
  *
- * Matrix \f$A\f$ is a BSMBSM when
+ * Matrix \f$A\f$ is a blocked square matrix with banded submatrices (BSMBSM)
+ * when
  * \f[A = \begin{pmatrix}
  *     B_{0\,0}  & \cdots & B_{0\,S-1}   \\
  *     \vdots    & \ddots & \vdots       \\
