@@ -31,6 +31,7 @@ noinst_HEADERS += exprparse_impl.hpp
 pkginclude_HEADERS += allocator.hpp
 pkginclude_HEADERS += blas_et_al.h
 pkginclude_HEADERS += blas_et_al.hpp
+pkginclude_HEADERS += bsmbsm.h
 pkginclude_HEADERS += bspline.h
 pkginclude_HEADERS += bspline.hpp
 pkginclude_HEADERS += bsplineop.h
@@ -103,6 +104,7 @@ pkginclude_HEADERS += version.hpp
 
 lib_LTLIBRARIES              += libsuzerain.la
 libsuzerain_la_SOURCES        = blas_et_al.c
+libsuzerain_la_SOURCES       += bsmbsm.c
 libsuzerain_la_SOURCES       += bspline.c
 libsuzerain_la_SOURCES       += bsplineop.c
 libsuzerain_la_SOURCES       += diffwave.c
