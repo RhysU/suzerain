@@ -481,8 +481,6 @@ suzerain_blas_saxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate saxpby since MKL lacks the routine. */
-    if (UNLIKELY((alpha == 0.0f && beta == 1.0f) || n <= 0)) return;
-
     assert(sizeof(MKL_INT) == sizeof(int));
     if (beta != 1.0f)
         sscal(&n, &beta, y, &incy);
@@ -506,8 +504,6 @@ suzerain_blas_daxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate daxpby since MKL lacks the routine. */
-    if (UNLIKELY((alpha == 0.0 && beta == 1.0) || n <= 0)) return;
-
     assert(sizeof(MKL_INT) == sizeof(int));
     if (beta != 1.0)
         dscal(&n, &beta, y, &incy);
@@ -531,13 +527,8 @@ suzerain_blas_caxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate caxpby since MKL lacks the routine. */
+    assert(sizeof(MKL_INT) == sizeof(int));
     const int beta_is_one = (beta[0] == 1.0f && beta[1] == 0.0f);
-
-    if (UNLIKELY(    (alpha[0] == 0.0f && alpha[1] == 0.0f && beta_is_one)
-                  || n <= 0)) {
-        return;
-    }
-
     if (!beta_is_one)
         suzerain_blas_cscal(n, beta, y, incy);
     suzerain_blas_caxpy(n, alpha, x, incx, y, incy);
@@ -560,13 +551,8 @@ suzerain_blas_zaxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate caxpby since MKL lacks the routine. */
+    assert(sizeof(MKL_INT) == sizeof(int));
     const int beta_is_one = (beta[0] == 1.0 && beta[1] == 0.0);
-
-    if (UNLIKELY((    alpha[0] == 0.0 && alpha[1] == 0.0 && beta_is_one)
-                   || n <= 0)) {
-        return;
-    }
-
     if (!beta_is_one)
         suzerain_blas_zscal(n, beta, y, incy);
     suzerain_blas_zaxpy(n, alpha, x, incx, y, incy);
@@ -1079,7 +1065,7 @@ suzerain_lapack_sgbtrs(
     assert(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     sgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-        (float *)ab, (int*)&ldab, (int *)ipiv, b, (int*)&ldb, &info);
+           (float *)ab, (int*)&ldab, (int *)ipiv, b, (int*)&ldb, &info);
     return info;
 #else
 #error "Sanity failure"
@@ -1105,7 +1091,7 @@ suzerain_lapack_dgbtrs(
     assert(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     dgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-          (double *)ab, (int*)&ldab, (int *)ipiv, b, (int*)&ldb, &info);
+           (double *)ab, (int*)&ldab, (int *)ipiv, b, (int*)&ldb, &info);
     return info;
 #else
 #error "Sanity failure"
@@ -1131,8 +1117,8 @@ suzerain_lapack_cgbtrs(
     assert(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     cgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-        (MKL_Complex8*)ab, (int*)&ldab, (int *)ipiv,
-        (MKL_Complex8*)b,  (int*)&ldb, &info);
+           (MKL_Complex8*)ab, (int*)&ldab, (int *)ipiv,
+           (MKL_Complex8*)b,  (int*)&ldb, &info);
     return info;
 #else
 #error "Sanity failure"
@@ -1158,8 +1144,8 @@ suzerain_lapack_zgbtrs(
     assert(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     zgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-        (MKL_Complex16*)ab, (int*)&ldab, (int *)ipiv,
-        (MKL_Complex16*)b,  (int*)&ldb, &info);
+           (MKL_Complex16*)ab, (int*)&ldab, (int *)ipiv,
+           (MKL_Complex16*)b,  (int*)&ldb, &info);
     return info;
 #else
 #error "Sanity failure"
@@ -1186,8 +1172,8 @@ suzerain_lapack_sgbcon(
     assert(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     sgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-            (float*)ab, (int*)&ldab, (int*) ipiv, (float*)&anorm,
-            rcond, work, iwork, &info);
+           (float*)ab, (int*)&ldab, (int*) ipiv, (float*)&anorm,
+           rcond, work, iwork, &info);
     return info;
 #else
 #error "Sanity failure"
@@ -1214,8 +1200,8 @@ suzerain_lapack_dgbcon(
     assert(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     dgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-            (double*)ab, (int*)&ldab, (int*) ipiv, (double*)&anorm,
-            rcond, work, iwork, &info);
+           (double*)ab, (int*)&ldab, (int*) ipiv, (double*)&anorm,
+           rcond, work, iwork, &info);
     return info;
 #else
 #error "Sanity failure"
@@ -1242,8 +1228,8 @@ suzerain_lapack_cgbcon(
     assert(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     cgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-            (MKL_Complex8*)ab, (int*)&ldab, (int*)ipiv, (float*)&anorm,
-            rcond, (MKL_Complex8*)work, rwork, &info);
+           (MKL_Complex8*)ab, (int*)&ldab, (int*)ipiv, (float*)&anorm,
+           rcond, (MKL_Complex8*)work, rwork, &info);
     return info;
 #else
 #error "Sanity failure"
@@ -1270,8 +1256,8 @@ suzerain_lapack_zgbcon(
     assert(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     zgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-            (MKL_Complex16*)ab, (int*)&ldab, (int*) ipiv, (double*)&anorm,
-            rcond, (MKL_Complex16*)work, rwork, &info);
+           (MKL_Complex16*)ab, (int*)&ldab, (int*) ipiv, (double*)&anorm,
+           rcond, (MKL_Complex16*)work, rwork, &info);
     return info;
 #else
 #error "Sanity failure"
@@ -1543,8 +1529,7 @@ suzerain_blasext_daxpzy(
     const double alpha_re = alpha[0];
     const double alpha_im = alpha[1];
 
-    if (UNLIKELY(incx != 1 || incy != 1)) {
-        /* General stride case */
+    if (UNLIKELY(incx != 1 || incy != 1)) {  // General strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
             const double      xi    = x[i * incx];
@@ -1553,8 +1538,7 @@ suzerain_blasext_daxpzy(
             yi[0] += alpha_re*xi;
             yi[1] += alpha_im*xi;
         }
-    } else {
-        /* Unit stride case */
+    } else {                                 // Unit strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
             const double      xi    = x[i];
@@ -1576,22 +1560,21 @@ suzerain_blasext_daxpzby(
         double (* restrict y)[2],
         const int incy)
 {
-    assert(incx >= 0); // TODO Handle negative incx
-    assert(incy >= 0); // TODO Handle negative incy
-
 #pragma warning(push,disable:1572)
     if (UNLIKELY((beta[0] == 1.0 && beta[1] == 0.0))) {
 #pragma warning(pop)
         return suzerain_blasext_daxpzy(n, alpha, x, incx, y, incy);
     }
 
+    assert(incx >= 0); // TODO Handle negative incx
+    assert(incy >= 0); // TODO Handle negative incy
+
     const double alpha_re = alpha[0];
     const double alpha_im = alpha[1];
     const double beta_re  = beta[0];
     const double beta_im  = beta[1];
 
-    if (UNLIKELY(incx != 1 || incy != 1)) {
-        /* General stride case */
+    if (UNLIKELY(incx != 1 || incy != 1)) {  // General strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
             const double      xi    = x[i * incx];
@@ -1602,8 +1585,7 @@ suzerain_blasext_daxpzby(
             yi[0] = beta_re*yi_re - beta_im*yi_im + alpha_re*xi;
             yi[1] = beta_re*yi_im + beta_im*yi_re + alpha_im*xi;
         }
-    } else {
-        /* Unit stride case */
+    } else {                                 // Unit strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
             const double      xi    = x[i];
