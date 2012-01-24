@@ -81,7 +81,6 @@
 extern "C" {
 #endif
 
-
 /**
  * Encapsulates storage of a complex-valued BSMBSM matrix.
  * @see bsmbsm.h for details on BSMBSMs.
