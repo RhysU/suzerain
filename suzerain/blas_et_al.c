@@ -51,8 +51,12 @@
 #include <suzerain/gbmv.h>
 #include <suzerain/sbmv.h>
 
+
 static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
+
+// Shorthand
+#define UNLIKELY(expr) SUZERAIN_UNLIKELY(expr)
 
 void
 suzerain_blas_xerbla(const char *srname, const int info)
@@ -477,7 +481,7 @@ suzerain_blas_saxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate saxpby since MKL lacks the routine. */
-    if (SUZERAIN_UNLIKELY((alpha == 0.0f && beta == 1.0f) || n <= 0)) return;
+    if (UNLIKELY((alpha == 0.0f && beta == 1.0f) || n <= 0)) return;
 
     assert(sizeof(MKL_INT) == sizeof(int));
     if (beta != 1.0f)
@@ -502,7 +506,7 @@ suzerain_blas_daxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate daxpby since MKL lacks the routine. */
-    if (SUZERAIN_UNLIKELY((alpha == 0.0 && beta == 1.0) || n <= 0)) return;
+    if (UNLIKELY((alpha == 0.0 && beta == 1.0) || n <= 0)) return;
 
     assert(sizeof(MKL_INT) == sizeof(int));
     if (beta != 1.0)
@@ -529,8 +533,8 @@ suzerain_blas_caxpby(
     /* Simulate caxpby since MKL lacks the routine. */
     const int beta_is_one = (beta[0] == 1.0f && beta[1] == 0.0f);
 
-    if (SUZERAIN_UNLIKELY((   alpha[0] == 0.0f && alpha[1] == 0.0f
-                           && beta_is_one) || n <= 0)) {
+    if (UNLIKELY(    (alpha[0] == 0.0f && alpha[1] == 0.0f && beta_is_one)
+                  || n <= 0)) {
         return;
     }
 
@@ -558,8 +562,8 @@ suzerain_blas_zaxpby(
     /* Simulate caxpby since MKL lacks the routine. */
     const int beta_is_one = (beta[0] == 1.0 && beta[1] == 0.0);
 
-    if (SUZERAIN_UNLIKELY((   alpha[0] == 0.0 && alpha[1] == 0.0
-                           && beta_is_one) || n <= 0)) {
+    if (UNLIKELY((    alpha[0] == 0.0 && alpha[1] == 0.0 && beta_is_one)
+                   || n <= 0)) {
         return;
     }
 
@@ -757,7 +761,7 @@ suzerain_blas_sgbmv(
     const int info = suzerain_gbmv_s(trans, m, n, kl, ku,
                                      alpha, a, lda, x, incx,
                                      beta,          y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -779,7 +783,7 @@ suzerain_blas_dgbmv(
     const int info = suzerain_gbmv_d(trans, m, n, kl, ku,
                                      alpha, a, lda, x, incx,
                                      beta,          y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -845,7 +849,7 @@ suzerain_blas_ssbmv(
     const int info = suzerain_sbmv_s(uplo, n, k,
                                      alpha, a, lda, x, incx,
                                      beta,          y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -865,7 +869,7 @@ suzerain_blas_dsbmv(
     const int info = suzerain_sbmv_d(uplo, n, k,
                                      alpha, a, lda, x, incx,
                                      beta,          y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -1539,7 +1543,7 @@ suzerain_blasext_daxpzy(
     const double alpha_re = alpha[0];
     const double alpha_im = alpha[1];
 
-    if (SUZERAIN_UNLIKELY(incx != 1 || incy != 1)) {
+    if (UNLIKELY(incx != 1 || incy != 1)) {
         /* General stride case */
 #pragma unroll
         for (int i = 0; i < n; ++i) {
@@ -1576,7 +1580,7 @@ suzerain_blasext_daxpzby(
     assert(incy >= 0); // TODO Handle negative incy
 
 #pragma warning(push,disable:1572)
-    if (SUZERAIN_UNLIKELY((beta[0] == 1.0 && beta[1] == 0.0))) {
+    if (UNLIKELY((beta[0] == 1.0 && beta[1] == 0.0))) {
 #pragma warning(pop)
         return suzerain_blasext_daxpzy(n, alpha, x, incx, y, incy);
     }
@@ -1586,7 +1590,7 @@ suzerain_blasext_daxpzby(
     const double beta_re  = beta[0];
     const double beta_im  = beta[1];
 
-    if (SUZERAIN_UNLIKELY(incx != 1 || incy != 1)) {
+    if (UNLIKELY(incx != 1 || incy != 1)) {
         /* General stride case */
 #pragma unroll
         for (int i = 0; i < n; ++i) {
@@ -1732,7 +1736,7 @@ suzerain_blasext_sgbmzv(
     const int info = suzerain_gbmv_sc(trans, m, n, kl, ku,
                                       alpha, a, lda, x, incx,
                                       beta,          y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -1754,7 +1758,7 @@ suzerain_blasext_dgbmzv(
     const int info = suzerain_gbmv_dz(trans, m, n, kl, ku,
                                       alpha, a, lda, x, incx,
                                       beta,          y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -1870,7 +1874,7 @@ suzerain_blasext_sgbdmv_external(
         const int incy)
 {
     float * const z = suzerain_blas_malloc(n*sizeof(float));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blas_sgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_ssbmv_external(
@@ -1898,7 +1902,7 @@ suzerain_blasext_sgbdmv(
                                       alpha, d,
                                       a, lda, x, incx,
                                       beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -1918,7 +1922,7 @@ suzerain_blasext_dgbdmv_external(
         const int incy)
 {
     double * const z = suzerain_blas_malloc(n*sizeof(double));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blas_dgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_dsbmv_external(
@@ -1946,7 +1950,7 @@ suzerain_blasext_dgbdmv(
                                       alpha, d,
                                       a, lda, x, incx,
                                       beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -1968,7 +1972,7 @@ suzerain_blasext_sgbdmzv_external(
     static const float one[2]  = { 1, 0 };
     static const float zero[2] = { 0, 0 };
     float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_sgbmzv_external(
             trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
     suzerain_blasext_ssbmzv_external(
@@ -1996,7 +2000,7 @@ suzerain_blasext_sgbdmzv(
                                        alpha, d,
                                        a, lda, x, incx,
                                        beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2018,7 +2022,7 @@ suzerain_blasext_dgbdmzv_external(
     static const double one[2]  = { 1, 0 };
     static const double zero[2] = { 0, 0 };
     double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_dgbmzv_external(
             trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
     suzerain_blasext_dsbmzv_external(
@@ -2046,7 +2050,7 @@ suzerain_blasext_dgbdmzv(
                                        alpha, d,
                                        a, lda, x, incx,
                                        beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2068,7 +2072,7 @@ suzerain_blasext_sgbddmv_external(
         const int incy)
 {
     float * const z = suzerain_blas_malloc(n*sizeof(float));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blas_sgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_ssbmv_external(
@@ -2100,7 +2104,7 @@ suzerain_blasext_sgbddmv(
                                        alpha0, d0, alpha1, d1,
                                        a, lda, x, incx,
                                        beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2122,7 +2126,7 @@ suzerain_blasext_dgbddmv_external(
         const int incy)
 {
     double * const z = suzerain_blas_malloc(n*sizeof(double));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blas_dgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_dsbmv_external(
@@ -2154,7 +2158,7 @@ suzerain_blasext_dgbddmv(
                                        alpha0, d0, alpha1, d1,
                                        a, lda, x, incx,
                                        beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2178,7 +2182,7 @@ suzerain_blasext_sgbddmzv_external(
     static const float one[2]  = { 1, 0 };
     static const float zero[2] = { 0, 0 };
     float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_sgbmzv_external(
             trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
     suzerain_blasext_ssbmzv_external(
@@ -2210,7 +2214,7 @@ suzerain_blasext_sgbddmzv(
                                         alpha0, d0, alpha1, d1,
                                         a, lda, x, incx,
                                         beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2234,7 +2238,7 @@ suzerain_blasext_dgbddmzv_external(
     static const double one[2]  = { 1, 0 };
     static const double zero[2] = { 0, 0 };
     double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_dgbmzv_external(
             trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
     suzerain_blasext_dsbmzv_external(
@@ -2266,7 +2270,7 @@ suzerain_blasext_dgbddmzv(
                                         alpha0, d0, alpha1, d1,
                                         a, lda, x, incx,
                                         beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2287,7 +2291,7 @@ suzerain_blasext_sgbidmv_external(
         const int incy)
 {
     float * const z = suzerain_blas_malloc(n*sizeof(float));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blas_sgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_saxpby(
@@ -2318,7 +2322,7 @@ suzerain_blasext_sgbidmv(
                                        alpha0, alpha1, d1,
                                        a, lda, x, incx,
                                        beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2339,7 +2343,7 @@ suzerain_blasext_dgbidmv_external(
         const int incy)
 {
     double * const z = suzerain_blas_malloc(n*sizeof(double));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blas_dgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_daxpby(
@@ -2370,7 +2374,7 @@ suzerain_blasext_dgbidmv(
                                        alpha0, alpha1, d1,
                                        a, lda, x, incx,
                                        beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2393,7 +2397,7 @@ suzerain_blasext_sgbidmzv_external(
     static const float one[2]  = { 1, 0 };
     static const float zero[2] = { 0, 0 };
     float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_sgbmzv_external(
             trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
     suzerain_blas_caxpby(
@@ -2424,7 +2428,7 @@ suzerain_blasext_sgbidmzv(
                                         alpha0, alpha1, d1,
                                         a, lda, x, incx,
                                         beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2447,7 +2451,7 @@ suzerain_blasext_dgbidmzv_external(
     static const double one[2]  = { 1, 0 };
     static const double zero[2] = { 0, 0 };
     double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_dgbmzv_external(
             trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
     suzerain_blas_zaxpby(
@@ -2478,7 +2482,7 @@ suzerain_blasext_dgbidmzv(
                                         alpha0, alpha1, d1,
                                         a, lda, x, incx,
                                         beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2502,7 +2506,7 @@ suzerain_blasext_sgbdddmv_external(
         const int incy)
 {
     float * const z = suzerain_blas_malloc(n*sizeof(float));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blas_sgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_ssbmv_external(
@@ -2538,7 +2542,7 @@ suzerain_blasext_sgbdddmv(
                                         alpha0, d0, alpha1, d1, alpha2, d2,
                                         a, lda, x, incx,
                                         beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2562,7 +2566,7 @@ suzerain_blasext_dgbdddmv_external(
         const int incy)
 {
     double * const z = suzerain_blas_malloc(n*sizeof(double));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blas_dgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_dsbmv_external(
@@ -2598,7 +2602,7 @@ suzerain_blasext_dgbdddmv(
                                         alpha0, d0, alpha1, d1, alpha2, d2,
                                         a, lda, x, incx,
                                         beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2624,7 +2628,7 @@ suzerain_blasext_sgbdddmzv_external(
     static const float one[2]  = { 1, 0 };
     static const float zero[2] = { 0, 0 };
     float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_sgbmzv_external(
             trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
     suzerain_blasext_ssbmzv_external(
@@ -2660,7 +2664,7 @@ suzerain_blasext_sgbdddmzv(
                                          alpha0, d0, alpha1, d1, alpha2, d2,
                                          a, lda, x, incx,
                                          beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2686,7 +2690,7 @@ suzerain_blasext_dgbdddmzv_external(
     static const double one[2]  = { 1, 0 };
     static const double zero[2] = { 0, 0 };
     double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_dgbmzv_external(
             trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
     suzerain_blasext_dsbmzv_external(
@@ -2722,7 +2726,7 @@ suzerain_blasext_dgbdddmzv(
                                          alpha0, d0, alpha1, d1, alpha2, d2,
                                          a, lda, x, incx,
                                          beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2745,7 +2749,7 @@ suzerain_blasext_sgbiddmv_external(
         const int incy)
 {
     float * const z = suzerain_blas_malloc(n*sizeof(float));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blas_sgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_saxpby(
@@ -2780,7 +2784,7 @@ suzerain_blasext_sgbiddmv(
                                         alpha0, alpha1, d1, alpha2, d2,
                                         a, lda, x, incx,
                                         beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2803,7 +2807,7 @@ suzerain_blasext_dgbiddmv_external(
         const int incy)
 {
     double * const z = suzerain_blas_malloc(n*sizeof(double));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blas_dgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_daxpby(
@@ -2838,7 +2842,7 @@ suzerain_blasext_dgbiddmv(
                                         alpha0, alpha1, d1, alpha2, d2,
                                         a, lda, x, incx,
                                         beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2863,7 +2867,7 @@ suzerain_blasext_sgbiddmzv_external(
     static const float one[2]  = { 1, 0 };
     static const float zero[2] = { 0, 0 };
     float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_sgbmzv_external(
             trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
     suzerain_blas_caxpby(
@@ -2898,7 +2902,7 @@ suzerain_blasext_sgbiddmzv(
                                          alpha0, alpha1, d1, alpha2, d2,
                                          a, lda, x, incx,
                                          beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2923,7 +2927,7 @@ suzerain_blasext_dgbiddmzv_external(
     static const double one[2]  = { 1, 0 };
     static const double zero[2] = { 0, 0 };
     double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
-    if (SUZERAIN_UNLIKELY(!z)) suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_dgbmzv_external(
             trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
     suzerain_blas_zaxpby(
@@ -2958,7 +2962,7 @@ suzerain_blasext_dgbiddmzv(
                                          alpha0, alpha1, d1, alpha2, d2,
                                          a, lda, x, incx,
                                          beta,   y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2978,7 +2982,7 @@ suzerain_blasext_ssbmzv(
     const int info = suzerain_sbmv_sc(uplo, n, k,
                                       alpha, a, lda, x, incx,
                                       beta,          y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -2998,7 +3002,7 @@ suzerain_blasext_dsbmzv(
     const int info = suzerain_sbmv_dz(uplo, n, k,
                                       alpha, a, lda, x, incx,
                                       beta,          y, incy);
-    if (SUZERAIN_UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
 }
 
 void
@@ -3022,20 +3026,20 @@ suzerain_blasext_sgb_diag_scale_acc(
     side = toupper(side);
     assert(side == 'R'); // FIXME
 
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  3);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__,  7);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 13);
-    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 14);
+    if (UNLIKELY(kl   < 0       )) return suzerain_blas_xerbla(__func__,  3);
+    if (UNLIKELY(ku   < 0       )) return suzerain_blas_xerbla(__func__,  4);
+    if (UNLIKELY(inca < 1       )) return suzerain_blas_xerbla(__func__,  7);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__,  8);
+    if (UNLIKELY(ldd  < 0       )) return suzerain_blas_xerbla(__func__, 10);
+    if (UNLIKELY(incb < 1       )) return suzerain_blas_xerbla(__func__, 13);
+    if (UNLIKELY(ldb  <= kl + ku)) return suzerain_blas_xerbla(__func__, 14);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha == 0.0f);
     const _Bool beta_is_one   = (beta  == 1.0f);
 #pragma warning(pop)
 
-    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+    if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
@@ -3071,13 +3075,13 @@ suzerain_blasext_dgb_diag_scale_acc(
         int incb,
         int ldb)
 {
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
-    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 11);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 14);
-    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 15);
+    if (UNLIKELY(kl   < 0       )) return suzerain_blas_xerbla(__func__,  4);
+    if (UNLIKELY(ku   < 0       )) return suzerain_blas_xerbla(__func__,  5);
+    if (UNLIKELY(ldd  < 0       )) return suzerain_blas_xerbla(__func__,  8);
+    if (UNLIKELY(inca < 1       )) return suzerain_blas_xerbla(__func__, 10);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 11);
+    if (UNLIKELY(incb < 1       )) return suzerain_blas_xerbla(__func__, 14);
+    if (UNLIKELY(ldb  <= kl + ku)) return suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha == 0.0);
@@ -3095,7 +3099,7 @@ suzerain_blasext_dgb_diag_scale_acc(
     }
 
     // Quick return if possible
-    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+    if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
@@ -3131,13 +3135,13 @@ suzerain_blasext_cgb_diag_scale_acc(
         int incb,
         int ldb)
 {
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
-    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 11);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 14);
-    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 15);
+    if (UNLIKELY(kl   < 0       )) return suzerain_blas_xerbla(__func__,  4);
+    if (UNLIKELY(ku   < 0       )) return suzerain_blas_xerbla(__func__,  5);
+    if (UNLIKELY(ldd  < 0       )) return suzerain_blas_xerbla(__func__,  8);
+    if (UNLIKELY(inca < 1       )) return suzerain_blas_xerbla(__func__, 10);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 11);
+    if (UNLIKELY(incb < 1       )) return suzerain_blas_xerbla(__func__, 14);
+    if (UNLIKELY(ldb  <= kl + ku)) return suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0f);
@@ -3151,7 +3155,7 @@ suzerain_blasext_cgb_diag_scale_acc(
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
-    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+    if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
@@ -3189,13 +3193,13 @@ suzerain_blasext_zgb_diag_scale_acc(
         int incb,
         int ldb)
 {
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
-    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 11);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 14);
-    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 15);
+    if (UNLIKELY(kl   < 0       )) return suzerain_blas_xerbla(__func__,  4);
+    if (UNLIKELY(ku   < 0       )) return suzerain_blas_xerbla(__func__,  5);
+    if (UNLIKELY(ldd  < 0       )) return suzerain_blas_xerbla(__func__,  8);
+    if (UNLIKELY(inca < 1       )) return suzerain_blas_xerbla(__func__, 10);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 11);
+    if (UNLIKELY(incb < 1       )) return suzerain_blas_xerbla(__func__, 14);
+    if (UNLIKELY(ldb  <= kl + ku)) return suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
@@ -3209,7 +3213,7 @@ suzerain_blasext_zgb_diag_scale_acc(
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
-    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+    if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
@@ -3247,13 +3251,13 @@ suzerain_blasext_zgb_diag_scale_dacc(
         int incb,
         int ldb)
 {
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
-    if (SUZERAIN_UNLIKELY(ldd  < 0       )) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 10);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 11);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 14);
-    if (SUZERAIN_UNLIKELY(ldb  <= kl + ku)) suzerain_blas_xerbla(__func__, 15);
+    if (UNLIKELY(kl   < 0       )) return suzerain_blas_xerbla(__func__,  4);
+    if (UNLIKELY(ku   < 0       )) return suzerain_blas_xerbla(__func__,  5);
+    if (UNLIKELY(ldd  < 0       )) return suzerain_blas_xerbla(__func__,  8);
+    if (UNLIKELY(inca < 1       )) return suzerain_blas_xerbla(__func__, 10);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 11);
+    if (UNLIKELY(incb < 1       )) return suzerain_blas_xerbla(__func__, 14);
+    if (UNLIKELY(ldb  <= kl + ku)) return suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
@@ -3267,7 +3271,7 @@ suzerain_blasext_zgb_diag_scale_dacc(
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
-    if (SUZERAIN_UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
+    if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
         return;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
@@ -3307,14 +3311,14 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
         int incb,
         int ldb)
 {
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
-    if (SUZERAIN_UNLIKELY(ldd0 < 0       )) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(ldd1 < 0       )) suzerain_blas_xerbla(__func__, 11);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 13);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 14);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 17);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 18);
+    if (UNLIKELY(kl   < 0       )) return suzerain_blas_xerbla(__func__,  4);
+    if (UNLIKELY(ku   < 0       )) return suzerain_blas_xerbla(__func__,  5);
+    if (UNLIKELY(ldd0 < 0       )) return suzerain_blas_xerbla(__func__,  8);
+    if (UNLIKELY(ldd1 < 0       )) return suzerain_blas_xerbla(__func__, 11);
+    if (UNLIKELY(inca < 1       )) return suzerain_blas_xerbla(__func__, 13);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 14);
+    if (UNLIKELY(incb < 1       )) return suzerain_blas_xerbla(__func__, 17);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 18);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha0_is_zero = (alpha0[0] == 0.0 && alpha0[1] == 0.0);
@@ -3329,8 +3333,8 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
-    if (SUZERAIN_UNLIKELY(   (alpha0_is_zero && alpha1_is_zero && beta_is_one)
-                           || m <= 0 || n <= 0))
+    if (UNLIKELY(    (alpha0_is_zero && alpha1_is_zero && beta_is_one)
+                  || m <= 0 || n <= 0))
         return;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
@@ -3374,15 +3378,15 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
         int incb,
         int ldb)
 {
-    if (SUZERAIN_UNLIKELY(kl   < 0       )) suzerain_blas_xerbla(__func__,  4);
-    if (SUZERAIN_UNLIKELY(ku   < 0       )) suzerain_blas_xerbla(__func__,  5);
-    if (SUZERAIN_UNLIKELY(ldd0 < 0       )) suzerain_blas_xerbla(__func__,  8);
-    if (SUZERAIN_UNLIKELY(ldd1 < 0       )) suzerain_blas_xerbla(__func__, 11);
-    if (SUZERAIN_UNLIKELY(ldd2 < 0       )) suzerain_blas_xerbla(__func__, 14);
-    if (SUZERAIN_UNLIKELY(inca < 1       )) suzerain_blas_xerbla(__func__, 16);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 17);
-    if (SUZERAIN_UNLIKELY(incb < 1       )) suzerain_blas_xerbla(__func__, 20);
-    if (SUZERAIN_UNLIKELY(lda  <= kl + ku)) suzerain_blas_xerbla(__func__, 21);
+    if (UNLIKELY(kl   < 0       )) return suzerain_blas_xerbla(__func__,  4);
+    if (UNLIKELY(ku   < 0       )) return suzerain_blas_xerbla(__func__,  5);
+    if (UNLIKELY(ldd0 < 0       )) return suzerain_blas_xerbla(__func__,  8);
+    if (UNLIKELY(ldd1 < 0       )) return suzerain_blas_xerbla(__func__, 11);
+    if (UNLIKELY(ldd2 < 0       )) return suzerain_blas_xerbla(__func__, 14);
+    if (UNLIKELY(inca < 1       )) return suzerain_blas_xerbla(__func__, 16);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 17);
+    if (UNLIKELY(incb < 1       )) return suzerain_blas_xerbla(__func__, 20);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 21);
 
 #pragma warning(push,disable:1572)
     const _Bool alpha0_is_zero = (alpha0[0] == 0.0 && alpha0[1] == 0.0);
@@ -3398,9 +3402,9 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
-    if (SUZERAIN_UNLIKELY(   (alpha0_is_zero && alpha1_is_zero
-                                             && alpha2_is_zero && beta_is_one)
-                           || m <= 0 || n <= 0))
+    if (UNLIKELY(    (alpha0_is_zero && alpha1_is_zero && alpha2_is_zero
+                                     && beta_is_one)
+                  || m <= 0 || n <= 0))
         return;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
