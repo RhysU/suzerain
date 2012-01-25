@@ -1964,7 +1964,8 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
     // Hosed if MPI_COMM_WORLD rank 0 does not contain the zero-zero mode!
-    if (mxb[0] == 0 && mzb[0] == 0) {
+    if (    (/*nontrivial*/ mxe[0] > mxb[0] && /*has zero mode*/ mxb[0] == 0)
+         && (/*nontrivial*/ mze[0] > mzb[0] && /*has zero mode*/ mzb[0] == 0)) {
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
     }
 
@@ -2437,8 +2438,9 @@ mean sample_mean_quantities(
 
     } // end Y
 
-    // Notice rank zero already contains wave-samples quantities while the
-    // other ranks contain zeros in those locations.
+    // Notice rank zero already contains "wave-sampled" quantities.
+    // Other ranks with nontrivial physical data have zeros in those locations.
+    // Ranks with trivial physical data possess zeros due to ret constructor.
 
     // Reduce sums onto rank zero and then return garbage from non-zero ranks
     if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
