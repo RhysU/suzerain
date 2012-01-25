@@ -127,6 +127,11 @@ typedef struct suzerain_bsmbsm {
 static inline
 suzerain_bsmbsm suzerain_bsmbsm_construct(int S, int n, int kl, int ku)
 {
+    assert(S  >  0);
+    assert(n  >  0);
+    assert(kl >= 0);
+    assert(ku >= 0);
+
     suzerain_bsmbsm tmp;
     tmp.S  = S;
     tmp.n  = n;
@@ -155,6 +160,7 @@ static inline
 int suzerain_bsmbsm_q(int S, int n, int i)
 {
     assert(0 <= i && i < S*n);
+
     div_t t = div(i, S);
     return t.rem*n + t.quot;
 }
@@ -174,6 +180,7 @@ static inline
 int suzerain_bsmbsm_qinv(int S, int n, int i)
 {
     assert(0 <= i && i < S*n);
+
     div_t t = div(i, n);
     return t.rem*S + t.quot;
 }
