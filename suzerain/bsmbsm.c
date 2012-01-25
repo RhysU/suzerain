@@ -45,13 +45,71 @@ suzerain_bsmbsm_saPxpby(
     int S,
     int n,
     const float alpha,
-    const float *x,
+    const float * restrict x,
     int incx,
     const float beta,
-    float *y,
+    float * restrict y,
     int incy)
 {
-    assert(0); // FIXME Implement
+    if (UNLIKELY(S <  0)) return suzerain_blas_xerbla(__func__,  2);
+    if (UNLIKELY(n <  0)) return suzerain_blas_xerbla(__func__,  3);
+    if (UNLIKELY(x == y)) return suzerain_blas_xerbla(__func__, 58);
+
+    // Adjust for P versus P^T operation
+    switch (toupper(trans)) {
+        case 'N': break;
+        case 'T': S ^= n; n ^= S; S ^= n;  // (S <=> n) ==> (q <=> q^-1)
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_one  = (alpha == 1.0f);
+    const _Bool beta_is_zero  = (beta  == 0.0f);
+    const _Bool beta_is_one   = (beta  == 1.0f);
+#pragma warning(pop)
+
+    // Compute vector length and adjust traversal for negative strides
+    const int N = S*n;
+    int ix = (incx < 0) ? (1 - N)*incx : 0;
+    if (incy < 0) y += (1 - N)*incy;
+
+    // Dispatch to alpha- and beta-specific loops
+    if (alpha_is_one) {
+        if        (beta_is_zero) {                  // y :=       P x
+            for (int i = 0; i < N; ++i, ix += incx) {
+                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+                y[iy] = x[ix];
+            }
+        } else if (beta_is_one) {                   // y :=       P x +      y
+            for (int i = 0; i < N; ++i, ix += incx) {
+                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+                y[iy] += x[ix];
+            }
+        } else {                                    // y :=       P x + beta y
+            for (int i = 0; i < N; ++i, ix += incx) {
+                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+                y[iy] = x[ix] + beta*y[iy];
+            }
+        }
+    } else {
+        if        (beta_is_zero) {                  // y := alpha P x
+            for (int i = 0; i < N; ++i, ix += incx) {
+                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+                y[iy] = alpha*x[ix];
+            }
+        } else if (beta_is_one) {                   // y := alpha P x +      y
+            for (int i = 0; i < N; ++i, ix += incx) {
+                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+                y[iy] += alpha*x[ix];
+            }
+        } else {                                    // y := alpha P x + beta y
+            for (int i = 0; i < N; ++i, ix += incx) {
+                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+                y[iy] = alpha*x[ix] + beta*y[iy];
+            }
+        }
+    }
 }
 
 void
@@ -60,10 +118,10 @@ suzerain_bsmbsm_daPxpby(
     int S,
     int n,
     const double alpha,
-    const double *x,
+    const double * restrict x,
     int incx,
     const double beta,
-    double *y,
+    double * restrict y,
     int incy)
 {
     assert(0); // FIXME Implement
@@ -75,10 +133,10 @@ suzerain_bsmbsm_caPxpby(
     int S,
     int n,
     const float alpha[2],
-    const float (*x)[2],
+    const float (* restrict x)[2],
     int incx,
     const float beta[2],
-    float (*y)[2],
+    float (* restrict y)[2],
     int incy)
 {
     assert(0); // FIXME Implement
@@ -90,10 +148,10 @@ suzerain_bsmbsm_zaPxpby(
     int S,
     int n,
     const double alpha[2],
-    const double (*x)[2],
+    const double (* restrict x)[2],
     int incx,
     const double beta[2],
-    double (*y)[2],
+    double (* restrict y)[2],
     int incy)
 {
     assert(0); // FIXME Implement
