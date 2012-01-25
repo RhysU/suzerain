@@ -31,6 +31,9 @@
 #ifndef __SUZERAIN_BSMBSM_H__
 #define __SUZERAIN_BSMBSM_H__
 
+#include <assert.h>
+#include <stdlib.h>
+
 /** @file
  * Utilities for working with blocked square matrices with banded submatrices
  * (BSMBSM).
@@ -93,7 +96,7 @@ extern "C" {
  * redundant data which should be computed consistently using
  * suzerain_bsmbsm_construct().
  *
- * @see bsmbsm.h for details on BSMBSMs.
+ * @see bsmbsm.h for full details on BSMBSMs.
  */
 typedef struct suzerain_bsmbsm {
 
@@ -112,14 +115,14 @@ typedef struct suzerain_bsmbsm {
 /**
  * Populate a suzerain_bsmbsm instance with all BSMBSM storage details.
  *
- * @param S   Number of rows and columns of banded submatrices
- * @param n   Number or rows and columns in each banded submatrix
- * @param kl  Number of subdiagonals in each banded submatrix
- * @param ku  Number of superdiagonals in each banded submatrix
+ * @param S  Number of rows and columns of banded submatrices
+ * @param n  Number or rows and columns in each banded submatrix
+ * @param kl Number of subdiagonals in each banded submatrix
+ * @param ku Number of superdiagonals in each banded submatrix
  *
  * @return a fully populated BSMBSM storage description.
  *
- * @see bsmbsm.h for details on BSMBSMs.
+ * @see bsmbsm.h for full details on BSMBSMs.
  */
 static inline
 suzerain_bsmbsm suzerain_bsmbsm_construct(int S, int n, int kl, int ku)
@@ -135,6 +138,44 @@ suzerain_bsmbsm suzerain_bsmbsm_construct(int S, int n, int kl, int ku)
     tmp.KU = tmp.S*(tmp.ku + 1) - 1;
     tmp.LD = tmp.KL + 1 + tmp.KU;
     return tmp;
+}
+
+/**
+ * Compute the <tt>i</tt>th entry in the permutation vector \f$q\f$.
+ *
+ * @param S Number of rows and columns of banded submatrices
+ * @param n Number or rows and columns in each banded submatrix
+ * @param i Index \f$i\f$ in the range <tt>[0, S*n)</tt>.
+ *
+ * @return the value of \f$q(i)\f$.
+ *
+ * @see bsmbsm.h for full details on the permutation vector \f$q\f$.
+ */
+static inline
+int suzerain_bsmbsm_q(int S, int n, int i)
+{
+    assert(0 <= i && i < S*n);
+    div_t t = div(i, S);
+    return t.rem*n + t.quot;
+}
+
+/**
+ * Compute the <tt>i</tt>th entry in the permutation vector \f$q^{-1}\f$.
+ *
+ * @param S Number of rows and columns of banded submatrices
+ * @param n Number or rows and columns in each banded submatrix
+ * @param i Index \f$i\f$ in the range <tt>[0, S*n)</tt>.
+ *
+ * @return the value of \f$q^{-1}(i)\f$.
+ *
+ * @see bsmbsm.h for full details on the permutation vector \f$q^{-1}\f$.
+ */
+static inline
+int suzerain_bsmbsm_qinv(int S, int n, int i)
+{
+    assert(0 <= i && i < S*n);
+    div_t t = div(i, n);
+    return t.rem*S + t.quot;
 }
 
 #ifdef __cplusplus
