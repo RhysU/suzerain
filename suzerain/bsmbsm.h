@@ -31,8 +31,7 @@
 #ifndef __SUZERAIN_BSMBSM_H__
 #define __SUZERAIN_BSMBSM_H__
 
-#include <assert.h>
-#include <stdlib.h>
+#include <gsl/gsl_permute.h>
 
 /** @file
  * Utilities for working with blocked square matrices with banded submatrices
@@ -83,7 +82,7 @@
  * P^{\mbox{T}}\f$.  The linear equation \f$AX=B\f$, which is equivalent to
  * \f$LUPX=PB\f$, has the solution \f[X = A^{-1}B =
  * P^{\mbox{T}}\left(LU\right)^{-1}PB\f] where inversion has been used as a
- * notational convenience representing triangular backsubstitution.
+ * notational convenience representing triangular back substitution.
  */
 
 #ifdef __cplusplus
@@ -179,11 +178,115 @@ int suzerain_bsmbsm_q(int S, int n, int i)
 static inline
 int suzerain_bsmbsm_qinv(int S, int n, int i)
 {
-    assert(0 <= i && i < S*n);
-
-    div_t t = div(i, n);
-    return t.rem*S + t.quot;
+    return suzerain_bsmbsm_q(n, S, i);
 }
+
+/**
+ * @brief Compute \f$ y \leftarrow{} \alpha{} P x + \beta{}y \f$ or \f$
+ * y \leftarrow{} \alpha{} P^{\mbox{T}} x + \beta{}y \f$ where \f$P\f$
+ * is defined by permutation vector \f$q\f$.  Storage \c y must not alias
+ * storage \c x.  Negative strides may be used and are interpreted as
+ * in the BLAS.  On error invokes suzerain_blas_xerbla().
+ *
+ * @param trans Either 'N' for \f$P x\f$ or 'T' for \f$P^{\mbox{T}}\f$.
+ * @param S Number of rows and columns of banded submatrices
+ * @param n Number or rows and columns in each banded submatrix
+ * @param alpha Multiplicative scalar \f$ \alpha \f$
+ * @param x First source vector of length <tt>S*n</tt>.
+ * @param incx First source vector stride.
+ * @param beta Multiplicative scalar \f$ \beta \f$
+ * @param y Second source vector and target vector of length <tt>S*n</tt>.
+ * @param incy Second source vector and target vector stride.
+ *
+ * @see bsmbsm.h for full details on the permutation vector \f$q\f$.
+ */
+void
+suzerain_bsmbsm_saPxpby(
+    char trans,
+    int S,
+    int n,
+    const float alpha,
+    const float *x,
+    int incx,
+    const float beta,
+    float *y,
+    int incy);
+
+/** @copydoc suzerain_bsmbsm_saPxpby */
+void
+suzerain_bsmbsm_daPxpby(
+    char trans,
+    int S,
+    int n,
+    const double alpha,
+    const double *x,
+    int incx,
+    const double beta,
+    double *y,
+    int incy);
+
+/** @copydoc suzerain_bsmbsm_saPxpby */
+void
+suzerain_bsmbsm_caPxpby(
+    char trans,
+    int S,
+    int n,
+    const float alpha[2],
+    const float (*x)[2],
+    int incx,
+    const float beta[2],
+    float (*y)[2],
+    int incy);
+
+/** @copydoc suzerain_bsmbsm_saPxpby */
+void
+suzerain_bsmbsm_zaPxpby(
+    char trans,
+    int S,
+    int n,
+    const double alpha[2],
+    const double (*x)[2],
+    int incx,
+    const double beta[2],
+    double (*y)[2],
+    int incy);
+
+/**
+ * Create a <a
+ * href="http://www.gnu.org/software/gsl/">GNU Scientific Library</a> (GSL) <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Permutations.html">
+ * gsl_permutation</a> representing permutation vector \f$q\f$.
+ * The returned <tt>gsl_permutation*</tt> must be deallocated using
+ * <tt>gsl_permutation_free</tt>.
+ *
+ * After creation, the GSL methods
+ * <ul>
+ *     <li><code>gsl_permute_float</code>,
+ *         <code>gsl_permute_inverse</code></li>
+ *     <li><code>gsl_permute</code>,
+ *         <code>gsl_permute_float_inverse</code></li>
+ *     <li><code>gsl_permute_complex_float</code>,
+ *         <code>gsl_permute_complex_float_inverse</code></li>
+ *     <li><code>gsl_permute_complex_double</code>,
+ *         <code>gsl_permute_complex_double_inverse</code></li>
+ * </ul>
+ * may be used to apply \f$q\f$ or \f$q^{-1}\f$ <em>in-place</em> on
+ * <tt>float</tt>, <tt>double</tt>, <tt>float[2]</tt>, or <tt>double[2]</tt>
+ * data (with the complex cases requiring casting).
+ *
+ * Wherever possible other methods like suzerain_bsmbsm_dPcopy(),
+ * suzerain_bsmbsm_dPcopy(), suzerain_bsmbsm_daPxpby(), or
+ * suzerain_bsmbsm_daPxpby() should be used to perform out-of-place
+ * permutation is is much, much faster than the in-place methods available
+ * in the GSL.
+ *
+ * @param S Number of rows and columns of banded submatrices
+ * @param n Number or rows and columns in each banded submatrix
+ *
+ * @return A <tt>gsl_permutation*</tt> representing \f$q\f$ on success.
+ *         NULL otherwise (e.g. on memory allocation failure).
+ */
+gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
 
 #ifdef __cplusplus
 } /* extern "C" */

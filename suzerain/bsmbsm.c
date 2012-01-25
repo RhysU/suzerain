@@ -31,7 +31,87 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+#include <suzerain/common.h>
+#pragma hdrstop
 #include <suzerain/bsmbsm.h>
 #include <suzerain/blas_et_al.h>
 
-// TODO Implement
+// Shorthand
+#define UNLIKELY(expr) SUZERAIN_UNLIKELY(expr)
+
+void
+suzerain_bsmbsm_saPxpby(
+    char trans,
+    int S,
+    int n,
+    const float alpha,
+    const float *x,
+    int incx,
+    const float beta,
+    float *y,
+    int incy)
+{
+    assert(0); // FIXME Implement
+}
+
+void
+suzerain_bsmbsm_daPxpby(
+    char trans,
+    int S,
+    int n,
+    const double alpha,
+    const double *x,
+    int incx,
+    const double beta,
+    double *y,
+    int incy)
+{
+    assert(0); // FIXME Implement
+}
+
+void
+suzerain_bsmbsm_caPxpby(
+    char trans,
+    int S,
+    int n,
+    const float alpha[2],
+    const float (*x)[2],
+    int incx,
+    const float beta[2],
+    float (*y)[2],
+    int incy)
+{
+    assert(0); // FIXME Implement
+}
+
+void
+suzerain_bsmbsm_zaPxpby(
+    char trans,
+    int S,
+    int n,
+    const double alpha[2],
+    const double (*x)[2],
+    int incx,
+    const double beta[2],
+    double (*y)[2],
+    int incy)
+{
+    assert(0); // FIXME Implement
+}
+
+gsl_permutation *
+suzerain_bsmbsm_permutation(int S, int n)
+{
+    assert(S > 0);
+    assert(n > 0);
+
+    const ptrdiff_t N = S*n;
+    gsl_permutation * const p = gsl_permutation_alloc(N);
+    if (p) {
+        size_t * const q = p->data;
+        for (ptrdiff_t i = 0; i < N; ++i) {
+            q[i] = suzerain_bsmbsm_q(S, n, i);
+        }
+    }
+    return p;
+}
