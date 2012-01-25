@@ -62,12 +62,7 @@ teardown() {
 }
 test -z "${TEST_CHANNEL_DEBUG-}" && trap "teardown" EXIT
 
-banner "Creating degenerate 1D field to use for testing"
-runq ./channel_init "$testdir/degenerate.h5" --mms=0                     \
-                    --Nx=1 --Ny=12 --k=6 --htdelta=1 --Nz=1
-chmod +r "$testdir/degenerate.h5"
-
-banner "Creating initial 3D field to use for testing"
+banner "Creating initial field to use for tests"
 declare -ir Nx=4
 declare -ir Ny=12
 declare -ir k=6

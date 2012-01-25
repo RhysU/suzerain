@@ -1964,8 +1964,7 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
     // Hosed if MPI_COMM_WORLD rank 0 does not contain the zero-zero mode!
-    if (    (/*nontrivial*/ mxe[0] > mxb[0] && /*has zero mode*/ mxb[0] == 0)
-         && (/*nontrivial*/ mze[0] > mzb[0] && /*has zero mode*/ mzb[0] == 0)) {
+    if (mxb[0] == 0 && mzb[0] == 0 && dgrid.local_wave_extent.prod() > 0) {
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
     }
 

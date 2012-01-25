@@ -100,8 +100,11 @@ dist_check_SCRIPTS += test_channel_setup.sh     # Common initialization
 TESTS              += test_channel_restart.sh   # Restart handling...
 dist_check_SCRIPTS += test_channel_restart.sh   # ...using coefficients
 
-TESTS              += test_channel_parallel.sh  # Serial/parallel equivalence
-dist_check_SCRIPTS += test_channel_parallel.sh
+TESTS              += test_channel_dparallel.sh # Serial/parallel equivalence...
+dist_check_SCRIPTS += test_channel_dparallel.sh # ...for degenerate parallel
+
+TESTS              += test_channel_parallel.sh  # Serial/parallel equivalence...
+dist_check_SCRIPTS += test_channel_parallel.sh  # ...for regular parallel
 
 TESTS              += test_channel_fields.sh    # Read canned, legacy fields
 dist_check_SCRIPTS += test_channel_fields.sh
