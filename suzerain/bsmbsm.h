@@ -33,17 +33,16 @@
 
 /** @file
  * Utilities for working with blocked square matrices with banded submatrices
- * (BSMBSM).  In particular, data structures to aid building and efficiently
- * solving linear equations with BSMBSM operators are provided.
+ * (BSMBSM).
  *
  * Matrix \f$A\f$ is a blocked square matrix with banded submatrices (BSMBSM)
  * when
  * \f[A = \begin{pmatrix}
- *     B_{0\,0}  & \cdots & B_{0\,S-1}   \\
+ *     B^{0\,0}  & \cdots & B^{0\,S-1}   \\
  *     \vdots    & \ddots & \vdots       \\
- *     B_{S-1,0} & \cdots & B_{S-1\,S-1}
+ *     B^{S-1,0} & \cdots & B^{S-1\,S-1}
  * \end{pmatrix}\f]
- * where every \f$B_{i\,j}\f$ is an <tt>n</tt>x<tt>n</tt> banded submatrix
+ * where every \f$B^{i\,j}\f$ is an <tt>n</tt>x<tt>n</tt> banded submatrix
  * containing \c kl subdiagonals and \c ku superdiagonals.  We set the
  * convention that lowercase identifiers indicate submatrix details while
  * uppercase identifiers indicate global matrix details.  The structure of a
@@ -58,24 +57,30 @@
  * contiguous, banded submatrices is grossly inefficient for solving linear
  * equations.
  *
- * The zero-indexed permutation vector \f$q(i) \coloneqq
- * \left(i\bmod{}S\right)n + \lfloor{}i/S\rfloor{}\f$ may always be used to
+ * With appropriate renumbering of \f$A\f$, solving linear equations can be
+ * done efficiently.  The zero-indexed permutation vector \f[q(i) \coloneqq
+ * \left(i\bmod{}S\right)n + \lfloor{}i/S\rfloor{}\f] may always be used to
  * convert a BSMBSM into a globally banded <tt>N</tt>x<tt>N</tt> matrix with
  * minimum bandwidth.  More concretely, the permutation matrix \f$P\f$ uniquely
  * defined by vector \f$q\f$ causes \f$P A P^{\mbox{T}}\f$ to have <tt>KL :=
  * S*(kl+1)-1</tt> subdiagonals and <tt>KU := S*(ku+1)-1</tt> superdiagonals
- * summing to overall bandwidth <tt>KL + 1 + KU = S*(kl + ku + 2)-1</tt>.  Note
- * that the reverse permutation vector has a simple closed form \f$q^{-1}(i)
- * \coloneqq \left(i\bmod{}n\right)S + \lfloor{}i/n\rfloor{}\f$.
- *
- * With \f$A\f$ in hand, the banded renumbering \f$P A P^{\mbox{T}}\f$ may be
- * formed using \f$\left.P A P^{\mbox{T}}\right|_{i\,j} =
- * \left.A\right|_{q^{-1}(i)\,q^{-1}(j)}\f$.  This renumbering may be LU
- * factorized in order <tt>S*n*(S*(kl + ku + 2)-1)^2</tt> floating point
- * operations to find \f$LU = P A P^{\mbox{T}}\f$.  The linear equation
- * \f$AX=B\f$, which is equivalent to \f$LUPX=PB\f$, has the solution \f$X =
- * A^{-1}B = P^{\mbox{T}}\left(LU\right)^{-1}PB\f$.  Here inversion has been
- * used as a notational convenience for solve operations.
+ * summing to overall bandwidth <tt>KL + 1 + KU = S*(kl + ku + 2)-1</tt>.  The
+ * reverse permutation vector has a simple closed form \f[q^{-1}(i) \coloneqq
+ * \left(i\bmod{}n\right)S + \lfloor{}i/n\rfloor{}.\f] With \f$A_{i\,j}\f$ in
+ * hand, the banded renumbering may formed using the relationships
+ * \f{align*}{
+ *        \left.A\right|_{i\,j}
+ *     &= \left.P A P^{\mbox{T}}\right|_{q(i)\,q(j)}
+ *     &
+ *        \left.P A P^{\mbox{T}}\right|_{i\,j}
+ *     &= \left.A\right|_{q^{-1}(i)\,q^{-1}(j)}.
+ * \f}
+ * This renumbering can be LU factorized in order <tt>N*(KL + 1 + KU)^2 =
+ * S*n*(S*(kl + ku + 2)-1)^2</tt> floating point operations to find \f$LU = P A
+ * P^{\mbox{T}}\f$.  The linear equation \f$AX=B\f$, which is equivalent to
+ * \f$LUPX=PB\f$, has the solution \f[X = A^{-1}B =
+ * P^{\mbox{T}}\left(LU\right)^{-1}PB\f] where inversion has been used as a
+ * notational convenience representing triangular backsubstitution.
  */
 
 #ifdef __cplusplus
@@ -83,30 +88,54 @@ extern "C" {
 #endif
 
 /**
- * Encapsulates storage of a complex-valued BSMBSM matrix.
+ * Storage details for a banded square matrix with banded submatrices (BSMBSM).
+ * No data is stored within this POD type.  However, the struct contains
+ * redundant data which should be computed consistently using
+ * suzerain_bsmbsm_construct().
+ *
  * @see bsmbsm.h for details on BSMBSMs.
  */
-typedef struct suzerain_zbsmbsm {
+typedef struct suzerain_bsmbsm {
 
-    int n;
+    int S;  /**< Number of rows and columns of banded submatrices */
+    int n;  /**< Number or rows and columns in each banded submatrix */
+    int kl; /**< Number of subdiagonals in each banded submatrix */
+    int ku; /**< Number of superdiagonals in each banded submatrix */
+    int ld; /**< Minimum leading dimension for each submatrix */
+    int N;  /**< Number of rows and colums in global matrix */
+    int KL; /**< Number of subdiagonals in matrix after renumbering */
+    int KU; /**< Number of superdiagonals in matrix after renumbering */
+    int LD; /**< Minimum leading dimension for matrix after renumbering */
 
-    int kl;
+} suzerain_bsmbsm;
 
-    int ku;
-
-    int ld;
-
-    int S;
-
-    int N;
-
-    int KL;
-
-    int KU;
-
-    int LD;
-
-} suzerain_zbsmbsm;
+/**
+ * Populate a suzerain_bsmbsm instance with all BSMBSM storage details.
+ *
+ * @param S   Number of rows and columns of banded submatrices
+ * @param n   Number or rows and columns in each banded submatrix
+ * @param kl  Number of subdiagonals in each banded submatrix
+ * @param ku  Number of superdiagonals in each banded submatrix
+ *
+ * @return a fully populated BSMBSM storage description.
+ *
+ * @see bsmbsm.h for details on BSMBSMs.
+ */
+static inline
+suzerain_bsmbsm suzerain_bsmbsm_construct(int S, int n, int kl, int ku)
+{
+    suzerain_bsmbsm tmp;
+    tmp.S  = S;
+    tmp.n  = n;
+    tmp.kl = kl;
+    tmp.ku = ku;
+    tmp.ld = tmp.kl + 1 + tmp.ku;
+    tmp.N  = tmp.S*tmp.n;
+    tmp.KL = tmp.S*(tmp.kl + 1) - 1;
+    tmp.KU = tmp.S*(tmp.ku + 1) - 1;
+    tmp.LD = tmp.KL + 1 + tmp.KU;
+    return tmp;
+}
 
 #ifdef __cplusplus
 } /* extern "C" */
