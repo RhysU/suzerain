@@ -1270,7 +1270,7 @@ suzerain_lapack_zgbsvx(
         double *rwork);
 
 /*!
- * \brief Compute the the one norm, or the Frobenius norm, or the infinity
+ * \brief Compute the one norm, or the Frobenius norm, or the infinity
  * norm, or the element of largest absolute value of square band matrix.
  *
  * \see A LAPACK reference for more details.
