@@ -202,9 +202,10 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     using Eigen::ArrayXc;
     using Eigen::ArrayXr;
     namespace ndx = channel::field::ndx;
-    const std::size_t Ny         = state.shape()[1];
-    const std::size_t wall_lower = 0;
-    const std::size_t wall_upper = Ny - 1;
+    const std::size_t Ny          = state.shape()[1];
+    const std::size_t wall_lower  = 0;
+    const std::size_t wall_upper  = Ny - 1;
+    const bool has_zero_zero_modes = dgrid.has_zero_zero_modes();
 
     // See channel_treatment writeup for information on the steps below.
     // Steps appear out of order relative to the writeup (TODO fix writeup).
@@ -254,7 +255,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // channel_treatment step (2) loads ones and mean streamwise velocity at
     // collocation points into the imaginary part of the constant (zero zero)
     // mode coefficients.  No forcing occurs at the lower or upper walls.
-    if (constrain_bulk_rhou && has_zero_zero_mode) {
+    if (constrain_bulk_rhou && has_zero_zero_modes) {
 
         Map<ArrayXc> mean_rhou(state[ndx::rhou].origin(), Ny);
         mean_rhou.imag()[wall_lower] = 0;
@@ -271,7 +272,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // any asymmetry.  Combat the bulk density's very, very small tendency to
     // drift by adding an integral constraint that the bulk density stay fixed
     // at a target value.  Approach follows that of the bulk momentum forcing.
-    if (constrain_bulk_rho && has_zero_zero_mode) {
+    if (constrain_bulk_rho && has_zero_zero_modes) {
         Map<ArrayXc> mean_rho(state[ndx::rho].origin(), Ny);
         mean_rho.imag().setConstant(1);
     }
@@ -280,7 +281,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     base::invertMassPlusScaledOperator(
             phi, state, delta_t, substep_index, iota);
 
-    if (constrain_bulk_rhou && has_zero_zero_mode) {
+    if (constrain_bulk_rhou && has_zero_zero_modes) {
 
         // channel_treatment steps (4), (5), and (6) determine and
         // apply the appropriate bulk momentum forcing to achieve
@@ -305,7 +306,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     }
 
     // Complete the bulk density target forcing
-    if (constrain_bulk_rho && has_zero_zero_mode) {
+    if (constrain_bulk_rho && has_zero_zero_modes) {
 
         Map<ArrayXc> mean_rho(state[ndx::rho].origin(), Ny);
         const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rho.matrix());
@@ -714,12 +715,12 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 
     } // end Y
 
-    // Reduce and scale common.u() sums to obtain mean quantities on rank zero
-    if (has_zero_zero_mode) {
+    // Reduce and scale common.u() sums to obtain mean "zero-zero" quantities
+    if (dgrid.has_zero_zero_modes()) {
         assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
         SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
                     common.u().size(), suzerain::mpi::datatype<real_t>::value,
-                    MPI_SUM, 0, MPI_COMM_WORLD));
+                    MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
         common.u() /= (   dgrid.global_physical_extent.x()
                         * dgrid.global_physical_extent.z());
     } else {
@@ -728,7 +729,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
         tmp.setZero();
         SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),
                     common.u().size(), suzerain::mpi::datatype<real_t>::value,
-                    MPI_SUM, 0, MPI_COMM_WORLD));
+                    MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
     }
 
     // If active, add manufactured solution forcing in a second pass.

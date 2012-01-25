@@ -72,10 +72,7 @@ public:
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop)
-        : has_zero_zero_mode(    dgrid.local_wave_start.x() == 0
-                              && dgrid.local_wave_start.z() == 0
-                              && dgrid.local_wave_extent.prod() > 0),
-          one_over_delta_x(scenario.Lx / grid.N.x() /* !dN.x() */),
+        : one_over_delta_x(scenario.Lx / grid.N.x() /* !dN.x() */),
           one_over_delta_z(scenario.Lz / grid.N.z() /* !dN.z() */),
           scenario(scenario),
           grid(grid),
@@ -106,9 +103,6 @@ public:
 
     /** Virtual destructor for peace of mind */
     virtual ~OperatorBase() {}
-
-    /** Does the current rank contain the "zero-zero" constant modes? */
-    const bool has_zero_zero_mode;
 
     /** Shorthand for scaled operator accumulation */
     template<typename AlphaType, typename MultiArrayX,

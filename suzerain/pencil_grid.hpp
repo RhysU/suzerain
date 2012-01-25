@@ -73,7 +73,7 @@ public:
 #endif
 
     /** Default constructor for abstract base class */
-    pencil_grid_base() {}
+    pencil_grid_base() : rank_zero_zero_modes(/* deliberately invalid */-1) {}
 
     /** Virtual destructor for an abstract base class */
     virtual ~pencil_grid_base() {};
@@ -144,6 +144,29 @@ public:
     Eigen::Array3i local_wave_extent;
 
     /**
+     * Does this rank possess the "zero-zero" Fourier modes?
+     *
+     * More concretely, is <tt>local_wave_start.x() == 0 &&
+     * local_wave_start.z() == 0 && local_wave_extent.prod() > 0</tt> true?
+     * The last condition is required to detect degenerate conditions where
+     * some ranks may not contain any wave space data.
+     */
+    bool has_zero_zero_modes() const
+    {
+        return    local_wave_start.x() == 0     // Zero mode in X?
+               && local_wave_start.z() == 0     // Zero mode in Z?
+               && local_wave_extent.prod() > 0; // Nontrivial wave data?
+    }
+
+    /**
+     * Which single rank within MPI_COMM_WORLD reports has_zero_zero_modes()?
+     *
+     * \warning MPI_COMM_WORLD rank zero will not always report that it
+     * has_zero_zero_modes()!
+     */
+    int rank_zero_zero_modes;
+
+    /**
      * Retrieve the number of contiguous complex scalars required to store a
      * pencil's worth of data.  This accounts for any padding required due to
      * differences in the local physical and wave space extents, any padding
@@ -175,6 +198,14 @@ public:
      * @param inout Field to transform in place.
      */
     virtual void transform_physical_to_wave(double * inout) const = 0;
+
+protected:
+
+    /**
+     * Compute the value of \ref rank_zero_zero_modes.  Should be used by
+     * subclasses to after the pencil decomposition is established.
+     */
+    int compute_rank_zero_zero_modes_() const;
 
 };
 

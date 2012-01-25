@@ -1032,9 +1032,11 @@ int main(int argc, char **argv)
           << wtime_fftw_planning << " seconds");
     assert((grid.dN == dgrid->global_physical_extent).all());
     INFO0("Rank grid used for decomposition: " << dgrid->processor_grid);
-    { // Display normalized workloads metrics relative to zero rank workload
+    INFO0("Zero-zero modes located on MPI_COMM_WORLD rank "
+          << dgrid->rank_zero_zero_modes);
+    { // Display normalized workloads metrics relative to zero-zero workload
         real_t sendbuf[4];
-        if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+        if (dgrid->has_zero_zero_modes()) {
             sendbuf[0] = (real_t) dgrid->local_wave_extent.prod();
             sendbuf[1] = (real_t) dgrid->local_physical_extent.prod();
         }
@@ -1057,9 +1059,9 @@ int main(int argc, char **argv)
         SUZERAIN_MPICHKQ(MPI_Reduce(sendbuf, recvbuf, 4,
                          suzerain::mpi::datatype<real_t>(),
                          MPI_MIN, 0, MPI_COMM_WORLD));
-        INFO0("Wave space workload balance     (min/mean/max): "
+        INFO0("Wave space zero-zero normalized workloads     (min/mean/max): "
               << recvbuf[0] << ", " << mean_w << ", " << -recvbuf[2]);
-        INFO0("Physical space workload balance (min/mean/max): "
+        INFO0("Physical space zero-zero normalized workloads (min/mean/max): "
               << recvbuf[1] << ", " << mean_p << ", " << -recvbuf[3]);
     }
     DEBUG("Local wave start      (XYZ): " << dgrid->local_wave_start);

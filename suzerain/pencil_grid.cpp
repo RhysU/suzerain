@@ -31,13 +31,32 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <new>
+#include <suzerain/common.hpp>
+#pragma hdrstop
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/error.h>
 #include <suzerain/functional.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 
 namespace suzerain {
+
+int pencil_grid_base::compute_rank_zero_zero_modes_() const
+{
+    // Accumulate the sum of all rank numbers reporting has_zero_zero_modes().
+    // Accumulate the number of ranks where has_zero_zero_modes() == true.
+    // The first is our return value.  The second is a sanity check.
+    const bool this_rank_has_it = has_zero_zero_modes();
+    int buf[2] = {
+        this_rank_has_it ? suzerain::mpi::comm_rank(MPI_COMM_WORLD) : 0,
+        this_rank_has_it
+    };
+    SUZERAIN_MPICHKR(MPI_Allreduce(
+                MPI_IN_PLACE, &buf, sizeof(buf)/sizeof(buf[0]),
+                MPI_INT, MPI_SUM, MPI_COMM_WORLD));
+    SUZERAIN_ENSURE(buf[1] == 1);
+    return buf[0];
+}
 
 #ifdef HAVE_P3DFFT ///////////////////////////////////////////////////////////
 
@@ -135,6 +154,9 @@ void pencil_grid_p3dfft::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     // Transform indices for C conventions; want ranges like [istart, iend)
     local_physical_start -= 1;
     local_wave_start     -= 1;
+
+    // Compute which rank possesses the zero zero mode
+    rank_zero_zero_modes = compute_rank_zero_zero_modes_();
 }
 
 #pragma warning(push,disable:2017)
@@ -304,6 +326,9 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
         local_physical_end[2]   = e.start[1] + e.size[1];
         local_physical_extent   = local_physical_end - local_physical_start;
     }
+
+    // Compute which rank possesses the zero zero mode
+    rank_zero_zero_modes = compute_rank_zero_zero_modes_();
 
     // TODO Ensure wave space storage is column-major, contiguous Y X/2 Z
     // TODO Ensure wave space storage is column-major, contiguous X Z Y

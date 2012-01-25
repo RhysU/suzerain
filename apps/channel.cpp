@@ -1602,10 +1602,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     // centerline mean streamwise velocity and broadcast result.
     // Alright, alright... actually an approximate mean velocity.
     real_t maxfluct;
-    if (   dgrid.local_wave_start.x() == 0
-        && dgrid.local_wave_start.z() == 0
-        && dgrid.local_wave_extent.prod() > 0) {
-        assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
+    if (dgrid.has_zero_zero_modes()) {
         complex_t momentum, density;
         const real_t centerline = scenario.Ly / 2;
         b.linear_combination(
@@ -1619,7 +1616,8 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
         maxfluct = noisedef.percent / 100 * (abs(momentum) / abs(density));
     }
     SUZERAIN_MPICHKR(MPI_Bcast(&maxfluct, 1,
-                suzerain::mpi::datatype_of(maxfluct), 0, MPI_COMM_WORLD));
+                suzerain::mpi::datatype_of(maxfluct),
+                dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
     INFO0("Adding velocity perturbations with maximum magnitude " << maxfluct);
 
     // Compute and display kxfrac_min, kxfrac_max constraints
@@ -1963,11 +1961,6 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
                                             fzb[0], fze[0], fzb[1], fze[1],
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
-    // Hosed if MPI_COMM_WORLD rank 0 does not contain the zero-zero mode!
-    if (mxb[0] == 0 && mzb[0] == 0 && dgrid.local_wave_extent.prod() > 0) {
-        assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
-    }
-
     // Temporary storage for inner product computations
     Eigen::VectorXc tmp;
     tmp.setZero(grid.N.y());
@@ -2005,11 +1998,11 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
     SUZERAIN_MPICHKR(MPI_Reduce(total2.data(),
                 mean2.data(), field::count * sizeof(complex_t)/sizeof(real_t),
                 suzerain::mpi::datatype<real_t>(),
-                MPI_SUM, 0, MPI_COMM_WORLD));
+                MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
     total2 = mean2;
 
-    // Compute the mean-only L^2 squared for each field on the root processor
-    if (mzb[0] == 0 && mxb[0] == 0) {
+    // Compute the mean-only L^2 squared for each field using zero-zero modes
+    if (dgrid.has_zero_zero_modes()) {
         for (size_t k = 0; k < field::count; ++k) {
             const complex_t * u_mn = &state[k][0][0][0];
             gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
@@ -2021,7 +2014,8 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
     // Broadcast total2 and mean2 values to all processors
     SUZERAIN_MPICHKR(MPI_Bcast(
                 buf, SUZERAIN_COUNTOF(buf) * sizeof(complex_t)/sizeof(real_t),
-                suzerain::mpi::datatype<real_t>(), 0, MPI_COMM_WORLD));
+                suzerain::mpi::datatype<real_t>(),
+                dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     boost::array<L2,field::count> retval;
@@ -2182,10 +2176,7 @@ mean sample_mean_quantities(
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
-    if (   dgrid.local_wave_start.x() == 0
-        && dgrid.local_wave_start.z() == 0
-        && dgrid.local_wave_extent.prod() > 0) {
-        assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
+    if (dgrid.has_zero_zero_modes()) {
         ret.rho()         = Map<VectorXc>(swave[ndx::rho].origin(),  Ny).real();
         ret.rhou().col(0) = Map<VectorXc>(swave[ndx::rhou].origin(), Ny).real();
         ret.rhou().col(1) = Map<VectorXc>(swave[ndx::rhov].origin(), Ny).real();
@@ -2437,9 +2428,8 @@ mean sample_mean_quantities(
 
     } // end Y
 
-    // Notice rank zero already contains "wave-sampled" quantities.
-    // Other ranks with nontrivial physical data have zeros in those locations.
-    // Ranks with trivial physical data possess zeros due to ret constructor.
+    // Notice dgrid.rank_zero_zero_modes already contains "wave-sampled"
+    // quantities while other ranks have zeros in those locations.
 
     // Reduce sums onto rank zero and then return garbage from non-zero ranks
     if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {

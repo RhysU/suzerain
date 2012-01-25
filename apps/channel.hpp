@@ -708,7 +708,7 @@ public:
  * Using the provided state, sample the mean quantities declared in \ref mean
  * with the notable exceptions of \f$\bar{f}\f$, \f$\overline{\rho{}q_b}\f$,
  * and \f$\overline{f\cdot{}u}\f$.  This is an expensive, collective method
- * producing valid results on only rank zero.
+ * producing valid results <em>only on rank zero</em>.
  *
  * @param[in]     scenario Scenario parameters.
  * @param[in]     grid     Grid parameters.
