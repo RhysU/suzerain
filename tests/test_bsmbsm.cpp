@@ -6,7 +6,7 @@
 #define BOOST_TEST_MODULE $Id$
 #include <suzerain/bsmbsm.h>
 #include <suzerain/blas_et_al.hpp>
-#include <suzerain/complex.hpp>
+#include <suzerain/traits.hpp>
 #include <boost/test/included/unit_test.hpp>
 
 #include "test_tools.hpp"
@@ -172,7 +172,17 @@ BOOST_AUTO_TEST_SUITE( aPxbpy )
 
 // Templated type encapsulating a particular problem and precision
 template<typename Scalar>
-struct Problem {
+class Problem {
+public:
+
+    Problem(char trans, int S, int n,
+            const Scalar &alpha, int incx,
+            const Scalar &beta, int incy)
+       : trans(trans), S(S), n(n),
+         alpha(alpha), incx(incx),
+         beta(beta), incy(incy)
+    {}
+
     char trans;
     int S;
     int n;
@@ -190,12 +200,12 @@ std::basic_ostream<charT,traits>& operator<<(
 {
     os << '{'
        << "trans = "  << p.trans
-       << ",S = "     << p.S
-       << ",n = "     << p.n
-       << ",alpha = " << p.alpha
-       << ",incx = "  << p.incx
-       << ",beta = "  << p.beta
-       << ",incy = "  << p.incy
+       << ", S = "     << p.S
+       << ", n = "     << p.n
+       << ", alpha = " << p.alpha
+       << ", incx = "  << p.incx
+       << ", beta = "  << p.beta
+       << ", incy = "  << p.incy
        << '}';
     return os;
 }
@@ -297,6 +307,8 @@ void permute(const Problem<std::complex<double> > &p,
 template< typename Scalar >
 void test(const Problem<Scalar> &p)
 {
+   BOOST_TEST_MESSAGE("Problem " << p);
+
    const int N = p.S*p.n;
 
    // Allocate working storage
@@ -304,30 +316,69 @@ void test(const Problem<Scalar> &p)
    boost::scoped_array<Scalar> y(new Scalar[N*p.incy]);
    boost::scoped_array<Scalar> r(new Scalar[N*p.incy]);
 
-   // Create test data
+   // Synthesize test data
    std::fill(x.get(), x.get() + N*p.incx, 2*p.alpha+1);
    std::fill(y.get(), y.get() + N*p.incy,   p.alpha-7);
    std::accumulate(x.get(), x.get() + N*p.incx, 0);
    std::accumulate(y.get(), y.get() + N*p.incy, 0);
-   std::fill(y.get(), y.get() + N*p.incy, r.get());
+   std::copy(y.get(), y.get() + N*p.incy, r.get());
 
-   // Compute the single-shot result using BSMBSM
+   // Compute the single-shot result using BSMBSM routines
    aPxpby(p, x.get(), r.get());
 
    // Compute same result by permuting followed by axpby
    permute(p, x.get());
    suzerain::blas::axpby(N, p.alpha, x.get(), p.incx,
-                            p.beta(), y.get(), y.incy);
+                            p.beta,  y.get(), p.incy);
+
+   // Cook a reasonable agreement tolerance
+   namespace traits = suzerain::traits;
+   typedef typename traits::component<Scalar>::type component_type;
+   component_type tol = std::numeric_limits<component_type>::epsilon();
+   if (suzerain::complex::traits::is_complex<Scalar>::value) tol *= 4;
 
    // Do r (from aPxpby) and y (from permute/axpby) agree?
-   namespace traits = suzerain::complex::traits;
-   typedef typename traits::real<Scalar>::type real_type;
-   real_type tol = std::numeric_limits<real_type>::epsilon();
-   if (traits::is_complex<Scalar>::value) tol *= 4;
-
    check_close_collections(r.get(), r.get() + N*p.incy,
                            y.get(), y.get() + N*p.incy,
                            tol);
+}
+
+BOOST_AUTO_TEST_CASE( single_precision )
+{
+   typedef Problem<float> p;
+
+   // Code paths to test...
+   //     trans: N or T
+   //     alpha: 1 or general
+   //     beta:  0, 1, or general
+   //     incx:  positive or negative
+   //     incy:  positive or negative
+
+   //     trans, S, n, alpha, incx, beta, incy
+   test(p(  'N', 5, 9,     3,    1,    3,    1));
+}
+
+BOOST_AUTO_TEST_CASE( double_precision )
+{
+   typedef Problem<double> p;
+
+   // FIXME Implement
+}
+
+BOOST_AUTO_TEST_CASE( complex_single_precision )
+{
+   typedef std::complex<float> c;
+   typedef Problem<c> p;
+
+   // FIXME Implement
+}
+
+BOOST_AUTO_TEST_CASE( complex_double_precision )
+{
+   typedef std::complex<float> c;
+   typedef Problem<c> p;
+
+   // FIXME Implement
 }
 
 BOOST_AUTO_TEST_SUITE_END()
