@@ -223,28 +223,94 @@ suzerain_bsmbsm_caPxpby(
     if (incx < 0) x += (1 - N)*incx;
     int iy = (incy < 0) ? (1 - N)*incy : 0;
 
-// TODO
-//  // Dispatch to alpha- and beta-specific loops
-//  if        (alpha_is_one) {
-//      if        (beta_is_zero) {
-//      } else if (beta_is_one)  {
-//      } else if (beta_is_real) {
-//      } else {
-//      }
-//  } else if (alpha_is_real) {
-//      if        (beta_is_zero) {
-//      } else if (beta_is_one)  {
-//      } else if (beta_is_real) {
-//      } else {
-//      }
-//  } else {
-//      if        (beta_is_zero) {
-//      } else if (beta_is_one)  {
-//      } else if (beta_is_real) {
-//      } else {
-//      }
-//  }
-
+    // Dispatch to alpha- and beta-specific loops
+    if        (alpha_is_one) {
+        if        (beta_is_zero) {
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                y[iy][0]  =          x[ix][0];                     // P x
+                y[iy][1]  =          x[ix][1];
+            }
+        } else if (beta_is_one)  {
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                y[iy][0] +=          x[ix][0];                     // P x
+                y[iy][1] +=          x[ix][1];                     // y
+            }
+        } else if (beta_is_real) {
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                y[iy][0] =          x[ix][0] + beta [0]*y[iy][0];  // P x
+                y[iy][1] =          x[ix][1] + beta [0]*y[iy][1];  // beta y
+            }
+        } else {// beta_is_complex
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                float tmp[2];
+                tmp[0]   =          x[ix][0];                      // P x
+                tmp[1]   =          x[ix][1];
+                tmp[0]  += beta [0]*y[iy][0] - beta [1]*y[iy][1];  // beta y
+                tmp[1]  += beta [0]*y[iy][1] + beta [1]*y[iy][0];
+                y[iy][0] = tmp[0];
+                y[iy][1] = tmp[1];
+            }
+        }
+    } else if (alpha_is_real) {
+        if        (beta_is_zero) {
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                y[iy][0]  = alpha[0]*x[ix][0];                     // alpha P x
+                y[iy][1]  = alpha[0]*x[ix][1];
+            }
+        } else if (beta_is_one)  {
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                y[iy][0] += alpha[0]*x[ix][0];                     // alpha P x
+                y[iy][1] += alpha[0]*x[ix][1];                     // y
+            }
+        } else if (beta_is_real) {
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                y[iy][0] = alpha[0]*x[ix][0] + beta [0]*y[iy][0];  // alpha P x
+                y[iy][1] = alpha[0]*x[ix][1] + beta [0]*y[iy][1];  // beta y
+            }
+        } else {// beta_is_complex
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                float tmp[2];
+                tmp[0]   = alpha[0]*x[ix][0];                      // alpha P x
+                tmp[1]   = alpha[0]*x[ix][1];
+                tmp[0]  += beta [0]*y[iy][0] - beta [1]*y[iy][1];  // beta y
+                tmp[1]  += beta [0]*y[iy][1] + beta [1]*y[iy][0];
+                y[iy][0] = tmp[0];
+                y[iy][1] = tmp[1];
+            }
+        }
+    } else {// alpha_is_complex
+        if        (beta_is_zero) {
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                y[iy][0]  = alpha[0]*x[ix][0] - alpha[1]*x[ix][1];  // alpha P x
+                y[iy][1]  = alpha[0]*x[ix][1] + alpha[1]*x[ix][0];
+            }
+        } else if (beta_is_one)  {
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                y[iy][0] += alpha[0]*x[ix][0] - alpha[1]*x[ix][1];  // alpha P x
+                y[iy][1] += alpha[0]*x[ix][1] + alpha[1]*x[ix][0];  // y
+            }
+        } else if (beta_is_real) {
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
+                float tmp[2];
+                tmp[0]   = alpha[0]*x[ix][0] - alpha[1]*x[ix][1];  // alpha P x
+                tmp[1]   = alpha[0]*x[ix][1] + alpha[1]*x[ix][0];
+                tmp[0]  += beta [0]*y[iy][0];                      // beta y
+                tmp[1]  += beta [0]*y[iy][1];
+                y[iy][0] = tmp[0];
+                y[iy][1] = tmp[1];
+            }
+        } else {// beta_is_complex
             for (int i = 0; i < N; ++i, iy += incy) {
                 const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 float tmp[2];
@@ -255,6 +321,8 @@ suzerain_bsmbsm_caPxpby(
                 y[iy][0] = tmp[0];
                 y[iy][1] = tmp[1];
             }
+        }
+    }
 }
 
 void
