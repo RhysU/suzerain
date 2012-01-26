@@ -530,7 +530,7 @@ bool check_close_collections(const FPT *left_begin, const FPT *left_end,
 // Like BOOST_CHECK_EQUAL_COLLECTION but uses BOOST_CHECK_SMALL and
 // compares the absolute value of a complex difference.
 template<typename FPT>
-bool check_close_complex_collections(
+bool check_close_collections(
         const FPT (*left_begin )[2], const FPT (*left_end )[2],
         const FPT (*right_begin)[2], const FPT (*right_end)[2],
         FPT abs_tolerance)
@@ -590,6 +590,20 @@ bool check_close_complex_collections(
     BOOST_CHECK_MESSAGE(res, errormsg.str());
 
     return res;
+}
+
+template<typename FPT>
+bool check_close_collections(const std::complex<FPT> *left_begin,
+                             const std::complex<FPT> *left_end,
+                             const std::complex<FPT> *right_begin,
+                             const std::complex<FPT> *right_end,
+                             FPT abs_tolerance)
+{
+    return check_close_collections((const FPT (*)[2]) left_begin,
+                                   (const FPT (*)[2]) left_end,
+                                   (const FPT (*)[2]) right_begin,
+                                   (const FPT (*)[2]) right_end,
+                                   abs_tolerance);
 }
 
 /**

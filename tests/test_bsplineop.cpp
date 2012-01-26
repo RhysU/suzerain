@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
         luz.solve(nrhs, b, incb, ldb);
         /* Tolerance requirement adequate? condest(A) ~= 122.7 */
         /* Also, using approximate rationals via 'format rat'  */
-        check_close_complex_collections(
+        check_close_collections(
             b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
             b, b + sizeof(b)/sizeof(b[0]),
             1.0e-5);
@@ -413,7 +413,7 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
         luz.solve(nrhs, b, incb, ldb);
         /* Tolerance requirement adequate? condest(A) ~= 122.7 */
         /* Also, using approximate rationals via 'format rat'  */
-        check_close_complex_collections(
+        check_close_collections(
             b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
             b, b + sizeof(b)/sizeof(b[0]),
             1.0e-5);
