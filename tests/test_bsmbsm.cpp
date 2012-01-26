@@ -11,7 +11,7 @@
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
-BOOST_AUTO_TEST_SUITE( permutation_vector )
+BOOST_AUTO_TEST_SUITE( permutation )
 
 BOOST_AUTO_TEST_CASE( q_S5n9 )
 {
@@ -117,6 +117,36 @@ BOOST_AUTO_TEST_CASE( qinv_S5n9 )
     BOOST_CHECK_EQUAL(34, suzerain_bsmbsm_qinv(S, n, 42));
     BOOST_CHECK_EQUAL(39, suzerain_bsmbsm_qinv(S, n, 43));
     BOOST_CHECK_EQUAL(44, suzerain_bsmbsm_qinv(S, n, 44));
+}
+
+BOOST_AUTO_TEST_CASE( gsl_permutation_equivalence )
+{
+   const int S = 5, n = 9, N = S*n;
+   int data[N];
+
+   boost::scoped_ptr<gsl_permutation> p(suzerain_bsmbsm_permutation(S,n));
+   BOOST_REQUIRE(p);
+
+   for (int i = 0; i < N; ++i) data[i] = i;
+   gsl_permute_int(p->data, data, 1, N);
+   for (int i = 0; i < N; ++i) {
+      BOOST_CHECK_EQUAL(data[i], suzerain_bsmbsm_q(S, n, i));
+   }
+
+   gsl_permute_int_inverse(p->data, data, 1, N);
+   for (int i = 0; i < N; ++i) {
+      BOOST_CHECK_EQUAL(data[i], i);
+   }
+
+   boost::scoped_ptr<gsl_permutation> pinv(gsl_permutation_alloc(N));
+   BOOST_REQUIRE(pinv);
+   gsl_permutation_inverse(pinv.get(), p.get());
+
+   for (int i = 0; i < N; ++i) data[i] = i;
+   gsl_permute_int(pinv->data, data, 1, N);
+   for (int i = 0; i < N; ++i) {
+      BOOST_CHECK_EQUAL(data[i], suzerain_bsmbsm_qinv(S, n, i));
+   }
 }
 
 BOOST_AUTO_TEST_CASE( identity_relation )
