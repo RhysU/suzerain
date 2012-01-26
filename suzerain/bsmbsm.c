@@ -197,7 +197,64 @@ suzerain_bsmbsm_caPxpby(
     float (* restrict y)[2],
     int incy)
 {
-    assert(0); // FIXME Implement
+    if (UNLIKELY(S <  0)) return suzerain_blas_xerbla(__func__,  2);
+    if (UNLIKELY(n <  0)) return suzerain_blas_xerbla(__func__,  3);
+    if (UNLIKELY((void*)x == (void*)y))
+                          return suzerain_blas_xerbla(__func__, 58);
+
+    // Adjust for P versus P^T operation
+    switch (toupper(trans)) {
+        case 'N': break;
+        case 'T': S ^= n; n ^= S; S ^= n;  // (S <=> n) ==> (q <=> q^-1)
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_real = (alpha[1] == 0.0f);
+    const _Bool beta_is_real  = (beta[1]  == 0.0f);
+    const _Bool alpha_is_one  = (alpha_is_real && alpha[0] == 1.0f);
+    const _Bool beta_is_one   = (beta_is_real  && beta[0]  == 1.0f);
+    const _Bool beta_is_zero  = (beta_is_real  && beta[0]  == 0.0f);
+#pragma warning(pop)
+
+    // Compute vector length and adjust traversal for negative strides
+    const int N = S*n;
+    int ix = (incx < 0) ? (1 - N)*incx : 0;
+    if (incy < 0) y += (1 - N)*incy;
+
+// TODO
+//  // Dispatch to alpha- and beta-specific loops
+//  if        (alpha_is_one) {
+//      if        (beta_is_zero) {
+//      } else if (beta_is_one)  {
+//      } else if (beta_is_real) {
+//      } else {
+//      }
+//  } else if (alpha_is_real) {
+//      if        (beta_is_zero) {
+//      } else if (beta_is_one)  {
+//      } else if (beta_is_real) {
+//      } else {
+//      }
+//  } else {
+//      if        (beta_is_zero) {
+//      } else if (beta_is_one)  {
+//      } else if (beta_is_real) {
+//      } else {
+//      }
+//  }
+
+            for (int i = 0; i < N; ++i, ix += incx) {
+                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+                float tmp[2];
+                tmp[0]   = alpha[0]*x[ix][0] - alpha[1]*x[ix][1];  // alpha P x
+                tmp[1]   = alpha[0]*x[ix][1] + alpha[1]*x[ix][0];
+                tmp[0]  += beta [0]*y[iy][0] - beta [1]*y[iy][1];  // beta y
+                tmp[1]  += beta [0]*y[iy][1] + beta [1]*y[iy][0];
+                y[iy][0] = tmp[0];
+                y[iy][1] = tmp[1];
+            }
 }
 
 void
@@ -212,7 +269,64 @@ suzerain_bsmbsm_zaPxpby(
     double (* restrict y)[2],
     int incy)
 {
-    assert(0); // FIXME Implement
+    if (UNLIKELY(S <  0)) return suzerain_blas_xerbla(__func__,  2);
+    if (UNLIKELY(n <  0)) return suzerain_blas_xerbla(__func__,  3);
+    if (UNLIKELY((void*)x == (void*)y))
+                          return suzerain_blas_xerbla(__func__, 58);
+
+    // Adjust for P versus P^T operation
+    switch (toupper(trans)) {
+        case 'N': break;
+        case 'T': S ^= n; n ^= S; S ^= n;  // (S <=> n) ==> (q <=> q^-1)
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha_is_real = (alpha[1] == 0.0);
+    const _Bool beta_is_real  = (beta[1]  == 0.0);
+    const _Bool alpha_is_one  = (alpha_is_real && alpha[0] == 1.0);
+    const _Bool beta_is_one   = (beta_is_real  && beta[0]  == 1.0);
+    const _Bool beta_is_zero  = (beta_is_real  && beta[0]  == 0.0);
+#pragma warning(pop)
+
+    // Compute vector length and adjust traversal for negative strides
+    const int N = S*n;
+    int ix = (incx < 0) ? (1 - N)*incx : 0;
+    if (incy < 0) y += (1 - N)*incy;
+
+// TODO
+//  // Dispatch to alpha- and beta-specific loops
+//  if        (alpha_is_one) {
+//      if        (beta_is_zero) {
+//      } else if (beta_is_one)  {
+//      } else if (beta_is_real) {
+//      } else {
+//      }
+//  } else if (alpha_is_real) {
+//      if        (beta_is_zero) {
+//      } else if (beta_is_one)  {
+//      } else if (beta_is_real) {
+//      } else {
+//      }
+//  } else {
+//      if        (beta_is_zero) {
+//      } else if (beta_is_one)  {
+//      } else if (beta_is_real) {
+//      } else {
+//      }
+//  }
+
+            for (int i = 0; i < N; ++i, ix += incx) {
+                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+                double tmp[2];
+                tmp[0]   = alpha[0]*x[ix][0] - alpha[1]*x[ix][1];  // alpha P x
+                tmp[1]   = alpha[0]*x[ix][1] + alpha[1]*x[ix][0];
+                tmp[0]  += beta [0]*y[iy][0] - beta [1]*y[iy][1];  // beta y
+                tmp[1]  += beta [0]*y[iy][1] + beta [1]*y[iy][0];
+                y[iy][0] = tmp[0];
+                y[iy][1] = tmp[1];
+            }
 }
 
 gsl_permutation *

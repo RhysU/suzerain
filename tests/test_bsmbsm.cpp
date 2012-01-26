@@ -356,11 +356,13 @@ bool test(const Problem<Scalar> &p)
     scoped_array<Scalar> r(new Scalar[N*abs(p.incy)]);
 
     // Synthesize test data
-    fill(x.get(), x.get() + N*abs(p.incx), 2*p.alpha+1);
+    fill(x.get(), x.get() + N*abs(p.incx), p.alpha+p.alpha+Scalar(1));
     if (is_complex<Scalar>::value) {
-         fill(y.get(), y.get() + N*abs(p.incy), p.alpha-7 + sqrt(Scalar(-1)));
+         fill(y.get(), y.get() + N*abs(p.incy),
+              p.alpha-Scalar(7) + sqrt(Scalar(-1)));
     } else {
-         fill(y.get(), y.get() + N*abs(p.incy), p.alpha-7);
+         fill(y.get(), y.get() + N*abs(p.incy),
+              p.alpha-Scalar(7));
     }
     partial_sum(x.get(), x.get() + N*abs(p.incx), x.get());
     partial_sum(y.get(), y.get() + N*abs(p.incy), y.get());
@@ -421,6 +423,39 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, Component, component_types )
                             incx [im],
                             beta [in],
                             incy [io]);
+       BOOST_REQUIRE_MESSAGE(test(P), "Stopping due to failure in " << P);
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued, Component, component_types )
+{
+    typedef typename std::complex<Component> C;
+
+    // Test conditions
+    const char trans[] = { 'N', 'T' };
+    const int  S[]     = { 1, 2, 5 };
+    const int  n[]     = { 1, 7, 10 };
+    const C    alpha[] = { 1, 3, C(-2,2) };
+    const int  incx[]  = { 1, 2, -1, -2 };
+    const C    beta[]  = { 0, 1, -3, C(4,-2) };
+    const int  incy[]  = { 1, 3, -1, -3 };
+
+    // Outer product of all test conditions
+    for (size_t ii = 0; ii < SUZERAIN_COUNTOF(trans); ++ii)
+    for (size_t ij = 0; ij < SUZERAIN_COUNTOF(S);     ++ij)
+    for (size_t ik = 0; ik < SUZERAIN_COUNTOF(n);     ++ik)
+    for (size_t il = 0; il < SUZERAIN_COUNTOF(alpha); ++il)
+    for (size_t im = 0; im < SUZERAIN_COUNTOF(incx);  ++im)
+    for (size_t in = 0; in < SUZERAIN_COUNTOF(beta);  ++in)
+    for (size_t io = 0; io < SUZERAIN_COUNTOF(incy);  ++io)
+    {
+       Problem<C> P(trans[ii],
+                    S    [ij],
+                    n    [ik],
+                    alpha[il],
+                    incx [im],
+                    beta [in],
+                    incy [io]);
        BOOST_REQUIRE_MESSAGE(test(P), "Stopping due to failure in " << P);
     }
 }
