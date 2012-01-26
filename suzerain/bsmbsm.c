@@ -71,41 +71,41 @@ suzerain_bsmbsm_saPxpby(
 
     // Compute vector length and adjust traversal for negative strides
     const int N = S*n;
-    int ix = (incx < 0) ? (1 - N)*incx : 0;
-    if (incy < 0) y += (1 - N)*incy;
+    if (incx < 0) x += (1 - N)*incx;
+    int iy = (incy < 0) ? (1 - N)*incy : 0;
 
     // Dispatch to alpha- and beta-specific loops
     if (alpha_is_one) {
         if        (beta_is_zero) {                  // y :=       P x
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] = x[ix];
             }
         } else if (beta_is_one) {                   // y :=       P x +      y
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] += x[ix];
             }
         } else {                                    // y :=       P x + beta y
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] = x[ix] + beta*y[iy];
             }
         }
     } else {
         if        (beta_is_zero) {                  // y := alpha P x
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] = alpha*x[ix];
             }
         } else if (beta_is_one) {                   // y := alpha P x +      y
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] += alpha*x[ix];
             }
         } else {                                    // y := alpha P x + beta y
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] = alpha*x[ix] + beta*y[iy];
             }
         }
@@ -144,41 +144,41 @@ suzerain_bsmbsm_daPxpby(
 
     // Compute vector length and adjust traversal for negative strides
     const int N = S*n;
-    int ix = (incx < 0) ? (1 - N)*incx : 0;
-    if (incy < 0) y += (1 - N)*incy;
+    if (incx < 0) x += (1 - N)*incx;
+    int iy = (incy < 0) ? (1 - N)*incy : 0;
 
     // Dispatch to alpha- and beta-specific loops
     if (alpha_is_one) {
         if        (beta_is_zero) {                  // y :=       P x
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] = x[ix];
             }
         } else if (beta_is_one) {                   // y :=       P x +      y
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] += x[ix];
             }
         } else {                                    // y :=       P x + beta y
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] = x[ix] + beta*y[iy];
             }
         }
     } else {
         if        (beta_is_zero) {                  // y := alpha P x
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] = alpha*x[ix];
             }
         } else if (beta_is_one) {                   // y := alpha P x +      y
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] += alpha*x[ix];
             }
         } else {                                    // y := alpha P x + beta y
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 y[iy] = alpha*x[ix] + beta*y[iy];
             }
         }
@@ -220,8 +220,8 @@ suzerain_bsmbsm_caPxpby(
 
     // Compute vector length and adjust traversal for negative strides
     const int N = S*n;
-    int ix = (incx < 0) ? (1 - N)*incx : 0;
-    if (incy < 0) y += (1 - N)*incy;
+    if (incx < 0) x += (1 - N)*incx;
+    int iy = (incy < 0) ? (1 - N)*incy : 0;
 
 // TODO
 //  // Dispatch to alpha- and beta-specific loops
@@ -245,8 +245,8 @@ suzerain_bsmbsm_caPxpby(
 //      }
 //  }
 
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 float tmp[2];
                 tmp[0]   = alpha[0]*x[ix][0] - alpha[1]*x[ix][1];  // alpha P x
                 tmp[1]   = alpha[0]*x[ix][1] + alpha[1]*x[ix][0];
@@ -292,8 +292,8 @@ suzerain_bsmbsm_zaPxpby(
 
     // Compute vector length and adjust traversal for negative strides
     const int N = S*n;
-    int ix = (incx < 0) ? (1 - N)*incx : 0;
-    if (incy < 0) y += (1 - N)*incy;
+    if (incx < 0) x += (1 - N)*incx;
+    int iy = (incy < 0) ? (1 - N)*incy : 0;
 
 // TODO
 //  // Dispatch to alpha- and beta-specific loops
@@ -317,8 +317,8 @@ suzerain_bsmbsm_zaPxpby(
 //      }
 //  }
 
-            for (int i = 0; i < N; ++i, ix += incx) {
-                const int iy = incy*suzerain_bsmbsm_qinv(S, n, i);
+            for (int i = 0; i < N; ++i, iy += incy) {
+                const int ix = incx*suzerain_bsmbsm_q(S, n, i);
                 double tmp[2];
                 tmp[0]   = alpha[0]*x[ix][0] - alpha[1]*x[ix][1];  // alpha P x
                 tmp[1]   = alpha[0]*x[ix][1] + alpha[1]*x[ix][0];
