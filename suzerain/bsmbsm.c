@@ -400,6 +400,29 @@ suzerain_bsmbsm_caPxpby(
     if (incx < 0) x += (1 - N)*incx;
     int iy = (incy < 0) ? (1 - N)*incy : 0;
 
+//
+//  // Dispatch based on stride characteristics
+//  if (incx == 1 && incy == 1) {
+//
+//      // Dispatch to alpha- and beta-specific loops
+
+//  } else if (incx == 1) {
+
+//      // Adjust for possibly negative incy
+//      int iy = (incy < 0) ? (1 - N)*incy : 0;
+
+//      // Dispatch to alpha- and beta-specific loops
+
+//  } else { // general strides
+
+//      // Adjust for possibly negative incx and incy
+//      int iy = (incy < 0) ? (1 - N)*incy : 0;
+//      if (incx < 0) x += (1 - N)*incx;
+
+//      // Dispatch to alpha- and beta-specific loops
+
+//  }
+
     // Dispatch to alpha- and beta-specific loops
     if        (alpha_is_one) {
         if        (beta_is_zero) {
