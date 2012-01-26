@@ -649,6 +649,240 @@ inline void axpby(
                                 boost::numeric_cast<int>(incy));
 }
 
+/*! @copydoc suzerain_blas_saxpby */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2,
+          typename Complex3, typename Complex4 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>,
+    suzerain::complex::traits::is_complex_float<Complex3>,
+    suzerain::complex::traits::is_complex_float<Complex4>
+> >::type axpby(
+        const Integer1 n,
+        const Complex1 &alpha,
+        const Complex2 *x,
+        const Integer2 incx,
+        const Complex3 &beta,
+        Complex4 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_caxpby(boost::numeric_cast<int>(n),
+                                reinterpret_cast<const float *>(&alpha),
+                                reinterpret_cast<const float (*)[2]>(x),
+                                boost::numeric_cast<int>(incx),
+                                reinterpret_cast<const float *>(&beta),
+                                reinterpret_cast<float (*)[2]>(y),
+                                boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpby */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2, typename Complex3 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>,
+    suzerain::complex::traits::is_complex_float<Complex3>
+> >::type axpby(
+        const Integer1 n,
+        const float alpha,
+        const Complex1 *x,
+        const Integer2 incx,
+        const Complex2 &beta,
+        Complex3 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    const float alpha_complex[2] = { alpha, 0 };
+    return suzerain_blas_caxpby(boost::numeric_cast<int>(n),
+                                alpha_complex,
+                                reinterpret_cast<const float (*)[2]>(x),
+                                boost::numeric_cast<int>(incx),
+                                reinterpret_cast<const float *>(&beta),
+                                reinterpret_cast<float (*)[2]>(y),
+                                boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpby */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2, typename Complex3 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>,
+    suzerain::complex::traits::is_complex_float<Complex3>
+> >::type axpby(
+        const Integer1 n,
+        const Complex1 &alpha,
+        const Complex2 *x,
+        const Integer2 incx,
+        const float beta,
+        Complex3 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    const float beta_complex[2] = { beta, 0 };
+    return suzerain_blas_caxpby(boost::numeric_cast<int>(n),
+                                reinterpret_cast<const float *>(&alpha),
+                                reinterpret_cast<const float (*)[2]>(x),
+                                boost::numeric_cast<int>(incx),
+                                beta_complex,
+                                reinterpret_cast<float (*)[2]>(y),
+                                boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpby */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>
+> >::type axpby(
+        const Integer1 n,
+        const float alpha,
+        const Complex1 *x,
+        const Integer2 incx,
+        const float beta,
+        Complex2 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    const float alpha_complex[2] = { alpha, 0 };
+    const float beta_complex [2] = { beta, 0 };
+    return suzerain_blas_caxpby(boost::numeric_cast<int>(n),
+                                alpha_complex,
+                                reinterpret_cast<const float (*)[2]>(x),
+                                boost::numeric_cast<int>(incx),
+                                beta_complex,
+                                reinterpret_cast<float (*)[2]>(y),
+                                boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpby */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2,
+          typename Complex3, typename Complex4 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>,
+    suzerain::complex::traits::is_complex_double<Complex3>,
+    suzerain::complex::traits::is_complex_double<Complex4>
+> >::type axpby(
+        const Integer1 n,
+        const Complex1 &alpha,
+        const Complex2 *x,
+        const Integer2 incx,
+        const Complex3 &beta,
+        Complex4 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    return suzerain_blas_zaxpby(boost::numeric_cast<int>(n),
+                                reinterpret_cast<const double *>(&alpha),
+                                reinterpret_cast<const double (*)[2]>(x),
+                                boost::numeric_cast<int>(incx),
+                                reinterpret_cast<const double *>(&beta),
+                                reinterpret_cast<double (*)[2]>(y),
+                                boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpby */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2, typename Complex3 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>,
+    suzerain::complex::traits::is_complex_double<Complex3>
+> >::type axpby(
+        const Integer1 n,
+        const double alpha,
+        const Complex1 *x,
+        const Integer2 incx,
+        const Complex2 &beta,
+        Complex3 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    const double alpha_complex[2] = { alpha, 0 };
+    return suzerain_blas_zaxpby(boost::numeric_cast<int>(n),
+                                alpha_complex,
+                                reinterpret_cast<const double (*)[2]>(x),
+                                boost::numeric_cast<int>(incx),
+                                reinterpret_cast<const double *>(&beta),
+                                reinterpret_cast<double (*)[2]>(y),
+                                boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpby */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2, typename Complex3 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>,
+    suzerain::complex::traits::is_complex_double<Complex3>
+> >::type axpby(
+        const Integer1 n,
+        const Complex1 &alpha,
+        const Complex2 *x,
+        const Integer2 incx,
+        const double beta,
+        Complex3 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    const double beta_complex[2] = { beta, 0 };
+    return suzerain_blas_zaxpby(boost::numeric_cast<int>(n),
+                                reinterpret_cast<const double *>(&alpha),
+                                reinterpret_cast<const double (*)[2]>(x),
+                                boost::numeric_cast<int>(incx),
+                                beta_complex,
+                                reinterpret_cast<double (*)[2]>(y),
+                                boost::numeric_cast<int>(incy));
+}
+
+/*! @copydoc suzerain_blas_saxpby */
+template< typename Integer1, typename Integer2, typename Integer3,
+          typename Complex1, typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>
+> >::type axpby(
+        const Integer1 n,
+        const double alpha,
+        const Complex1 *x,
+        const Integer2 incx,
+        const double beta,
+        Complex2 *y,
+        const Integer3 incy)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    const double alpha_complex[2] = { alpha, 0 };
+    const double beta_complex [2] = { beta,  0 };
+    return suzerain_blas_zaxpby(boost::numeric_cast<int>(n),
+                                alpha_complex,
+                                reinterpret_cast<const double (*)[2]>(x),
+                                boost::numeric_cast<int>(incx),
+                                beta_complex,
+                                reinterpret_cast<double (*)[2]>(y),
+                                boost::numeric_cast<int>(incy));
+}
+
 /*! @copydoc suzerain_blas_swaxpby */
 template< typename Integer1,
           typename Integer2,
