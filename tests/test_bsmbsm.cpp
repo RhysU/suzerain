@@ -392,17 +392,18 @@ BOOST_AUTO_TEST_CASE( spot_checks )
     BOOST_REQUIRE((test(Problem<float>('N', 2, 7, 1, -1, 0, 1))));
 }
 
-BOOST_AUTO_TEST_CASE( single_precision )
+typedef boost::mpl::list<float /*, double*/> component_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, Component, component_types )
 {
     // Test conditions
-    typedef float scalar;
-    const char   trans[]  = { 'N', 'T' };
-    const int    S[]      = { 1, 2, 5 };
-    const int    n[]      = { 1, 7, 10 };
-    const scalar alpha[]  = { 1, 3, -2 };
-    const int    incx[]   = { 1, 2, -1, -2 };
-    const scalar beta[]   = { 0, 1, -3 };
-    const int    incy[]   = { 1, 3, -1, -3 };
+    const char      trans[] = { 'N', 'T' };
+    const int       S[]     = { 1, 2, 5 };
+    const int       n[]     = { 1, 7, 10 };
+    const Component alpha[] = { 1, 3, -2 };
+    const int       incx[]  = { 1, 2, -1, -2 };
+    const Component beta[]  = { 0, 1, -3 };
+    const int       incy[]  = { 1, 3, -1, -3 };
 
     // Outer product of all test conditions
     for (size_t ii = 0; ii < SUZERAIN_COUNTOF(trans); ++ii)
@@ -413,38 +414,15 @@ BOOST_AUTO_TEST_CASE( single_precision )
     for (size_t in = 0; in < SUZERAIN_COUNTOF(beta);  ++in)
     for (size_t io = 0; io < SUZERAIN_COUNTOF(incy);  ++io)
     {
-       Problem<scalar> P(trans[ii],
-                         S    [ij],
-                         n    [ik],
-                         alpha[il],
-                         incx [im],
-                         beta [in],
-                         incy [io]);
+       Problem<Component> P(trans[ii],
+                            S    [ij],
+                            n    [ik],
+                            alpha[il],
+                            incx [im],
+                            beta [in],
+                            incy [io]);
        BOOST_REQUIRE_MESSAGE(test(P), "Stopping due to failure in " << P);
     }
-}
-
-BOOST_AUTO_TEST_CASE( double_precision )
-{
-    typedef Problem<double> p;
-
-    // FIXME Implement
-}
-
-BOOST_AUTO_TEST_CASE( complex_single_precision )
-{
-    typedef std::complex<float> c;
-    typedef Problem<c> p;
-
-    // FIXME Implement
-}
-
-BOOST_AUTO_TEST_CASE( complex_double_precision )
-{
-    typedef std::complex<float> c;
-    typedef Problem<c> p;
-
-    // FIXME Implement
 }
 
 BOOST_AUTO_TEST_SUITE_END()
