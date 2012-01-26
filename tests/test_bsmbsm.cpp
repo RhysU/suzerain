@@ -17,6 +17,8 @@
 
 #include "test_tools.hpp"
 
+#pragma warning(disable:1418 1572)
+
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 BOOST_AUTO_TEST_SUITE( permutation )
@@ -219,23 +221,23 @@ std::basic_ostream<charT,traits>& operator<<(
 }
 
 // Precision-specific dispatch for floats
-void aPxpby(const Problem<float> &p, const float *x, float *y)
+static void aPxpby(const Problem<float> &p, const float *x, float *y)
 {
     suzerain_bsmbsm_saPxpby(
         p.trans, p.S, p.n, p.alpha, x, p.incx, p.beta, y, p.incy);
 }
 
 // Precision-specific dispatch for doubles
-void aPxpby(const Problem<double> &p, const double *x, double *y)
+static void aPxpby(const Problem<double> &p, const double *x, double *y)
 {
     suzerain_bsmbsm_daPxpby(
         p.trans, p.S, p.n, p.alpha, x, p.incx, p.beta, y, p.incy);
 }
 
 // Precision-specific dispatch for complex floats
-void aPxpby(const Problem<std::complex<float> > &p,
-            const std::complex<float> *x,
-                  std::complex<float> *y)
+static void aPxpby(const Problem<std::complex<float> > &p,
+                   const std::complex<float> *x,
+                         std::complex<float> *y)
 {
     float alpha[2], beta[2];
     memcpy(alpha, &p.alpha, sizeof(alpha));
@@ -246,9 +248,9 @@ void aPxpby(const Problem<std::complex<float> > &p,
 }
 
 // Precision-specific dispatch for complex doubles
-void aPxpby(const Problem<std::complex<double> > &p,
-            const std::complex<double> *x,
-                  std::complex<double> *y)
+static void aPxpby(const Problem<std::complex<double> > &p,
+                   const std::complex<double> *x,
+                         std::complex<double> *y)
 {
     double alpha[2], beta[2];
     memcpy(alpha, &p.alpha, sizeof(alpha));
@@ -260,7 +262,7 @@ void aPxpby(const Problem<std::complex<double> > &p,
 
 // Precision-specific dispatch for floats
 // GSL cannot permute a vector with negative strides.
-void permute(const Problem<float> &p, gsl_permutation *g, float *x)
+static void permute(const Problem<float> &p, gsl_permutation *g, float *x)
 {
     gsl_vector_float_view v
         = gsl_vector_float_view_array_with_stride(x, abs(p.incx), p.S*p.n);
@@ -277,7 +279,7 @@ void permute(const Problem<float> &p, gsl_permutation *g, float *x)
 
 // Precision-specific dispatch for floats
 // GSL cannot permute a vector with negative strides
-void permute(const Problem<double> &p, gsl_permutation *g, double *x)
+static void permute(const Problem<double> &p, gsl_permutation *g, double *x)
 {
     gsl_vector_view v
         = gsl_vector_view_array_with_stride(x, abs(p.incx), p.S*p.n);
@@ -294,8 +296,9 @@ void permute(const Problem<double> &p, gsl_permutation *g, double *x)
 
 // Precision-specific dispatch for complex floats
 // GSL cannot permute a vector with negative strides
-void permute(const Problem<std::complex<float> > &p,
-             gsl_permutation *g, std::complex<float> *x)
+static void permute(const Problem<std::complex<float> > &p,
+                    gsl_permutation *g,
+                    std::complex<float> *x)
 {
     gsl_vector_complex_float_view v
         = gsl_vector_complex_float_view_array_with_stride(
@@ -313,8 +316,9 @@ void permute(const Problem<std::complex<float> > &p,
 
 // Precision-specific dispatch for complex doubles
 // GSL cannot permute a vector with negative strides
-void permute(const Problem<std::complex<double> > &p,
-             gsl_permutation *g, std::complex<double> *x)
+static void permute(const Problem<std::complex<double> > &p,
+                    gsl_permutation *g,
+                    std::complex<double> *x)
 {
     gsl_vector_complex_view v
         = gsl_vector_complex_view_array_with_stride(
