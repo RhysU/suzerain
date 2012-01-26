@@ -4,10 +4,16 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
+#include <boost/test/included/unit_test.hpp>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_permute_vector.h>
+#include <gsl/gsl_permute_vector_float.h>
+#include <gsl/gsl_permute_vector_complex_float.h>
+#include <gsl/gsl_permute_vector_complex_double.h>
 #include <suzerain/bsmbsm.h>
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/countof.h>
 #include <suzerain/traits.hpp>
-#include <boost/test/included/unit_test.hpp>
 
 #include "test_tools.hpp"
 
@@ -123,46 +129,48 @@ BOOST_AUTO_TEST_CASE( qinv_S5n9 )
 
 BOOST_AUTO_TEST_CASE( gsl_permutation_equivalence )
 {
-   const int S = 5, n = 9, N = S*n;
-   int data[N];
+    const int S = 5, n = 9, N = S*n;
+    int data[N];
 
-   boost::scoped_ptr<gsl_permutation> p(suzerain_bsmbsm_permutation(S,n));
-   BOOST_REQUIRE(p);
+    boost::shared_ptr<gsl_permutation> p(suzerain_bsmbsm_permutation(S,n),
+                                         &gsl_permutation_free);
+    BOOST_REQUIRE(p);
 
-   for (int i = 0; i < N; ++i) data[i] = i;
-   gsl_permute_int(p->data, data, 1, N);
-   for (int i = 0; i < N; ++i) {
-      BOOST_CHECK_EQUAL(data[i], suzerain_bsmbsm_q(S, n, i));
-   }
+    for (int i = 0; i < N; ++i) data[i] = i;
+    gsl_permute_int(p->data, data, 1, N);
+    for (int i = 0; i < N; ++i) {
+        BOOST_CHECK_EQUAL(data[i], suzerain_bsmbsm_q(S, n, i));
+    }
 
-   gsl_permute_int_inverse(p->data, data, 1, N);
-   for (int i = 0; i < N; ++i) {
-      BOOST_CHECK_EQUAL(data[i], i);
-   }
+    gsl_permute_int_inverse(p->data, data, 1, N);
+    for (int i = 0; i < N; ++i) {
+        BOOST_CHECK_EQUAL(data[i], i);
+    }
 
-   boost::scoped_ptr<gsl_permutation> pinv(gsl_permutation_alloc(N));
-   BOOST_REQUIRE(pinv);
-   gsl_permutation_inverse(pinv.get(), p.get());
+    boost::shared_ptr<gsl_permutation> pinv(gsl_permutation_alloc(N),
+                                            &gsl_permutation_free);
+    BOOST_REQUIRE(pinv);
+    gsl_permutation_inverse(pinv.get(), p.get());
 
-   for (int i = 0; i < N; ++i) data[i] = i;
-   gsl_permute_int(pinv->data, data, 1, N);
-   for (int i = 0; i < N; ++i) {
-      BOOST_CHECK_EQUAL(data[i], suzerain_bsmbsm_qinv(S, n, i));
-   }
+    for (int i = 0; i < N; ++i) data[i] = i;
+    gsl_permute_int(pinv->data, data, 1, N);
+    for (int i = 0; i < N; ++i) {
+        BOOST_CHECK_EQUAL(data[i], suzerain_bsmbsm_qinv(S, n, i));
+    }
 }
 
 BOOST_AUTO_TEST_CASE( identity_relation )
 {
-   // Checks that qinv inverts q for a large operating S, n
-   for (int S = 1; S < 5; ++S) {
-      for (int n = 1; n < 10; ++n) {
-         for (int i = 0; i < S*n; ++i) {
-            BOOST_CHECK_EQUAL(i,
-               suzerain_bsmbsm_qinv(S, n,
-                  suzerain_bsmbsm_q(S, n, i)));
-         }
-      }
-   }
+    // Checks that qinv inverts q for a large operating S, n
+    for (int S = 1; S < 5; ++S) {
+        for (int n = 1; n < 10; ++n) {
+            for (int i = 0; i < S*n; ++i) {
+                BOOST_CHECK_EQUAL(i,
+                      suzerain_bsmbsm_qinv(S, n,
+                          suzerain_bsmbsm_q(S, n, i)));
+            }
+        }
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -213,15 +221,15 @@ std::basic_ostream<charT,traits>& operator<<(
 // Precision-specific dispatch for floats
 void aPxpby(const Problem<float> &p, const float *x, float *y)
 {
-   suzerain_bsmbsm_saPxpby(
-         p.trans, p.S, p.n, p.alpha, x, p.incx, p.beta, y, p.incy);
+    suzerain_bsmbsm_saPxpby(
+        p.trans, p.S, p.n, p.alpha, x, p.incx, p.beta, y, p.incy);
 }
 
 // Precision-specific dispatch for doubles
 void aPxpby(const Problem<double> &p, const double *x, double *y)
 {
-   suzerain_bsmbsm_daPxpby(
-         p.trans, p.S, p.n, p.alpha, x, p.incx, p.beta, y, p.incy);
+    suzerain_bsmbsm_daPxpby(
+        p.trans, p.S, p.n, p.alpha, x, p.incx, p.beta, y, p.incy);
 }
 
 // Precision-specific dispatch for complex floats
@@ -229,12 +237,12 @@ void aPxpby(const Problem<std::complex<float> > &p,
             const std::complex<float> *x,
                   std::complex<float> *y)
 {
-   float alpha[2], beta[2];
-   memcpy(alpha, &p.alpha, sizeof(alpha));
-   memcpy(beta,  &p.beta,  sizeof(beta));
-   suzerain_bsmbsm_caPxpby(p.trans, p.S, p.n,
-                           alpha, (const float (*)[2]) x, p.incx,
-                           beta,  (      float (*)[2]) y, p.incy);
+    float alpha[2], beta[2];
+    memcpy(alpha, &p.alpha, sizeof(alpha));
+    memcpy(beta,  &p.beta,  sizeof(beta));
+    suzerain_bsmbsm_caPxpby(p.trans, p.S, p.n,
+                            alpha, (const float (*)[2]) x, p.incx,
+                            beta,  (      float (*)[2]) y, p.incy);
 }
 
 // Precision-specific dispatch for complex doubles
@@ -242,143 +250,197 @@ void aPxpby(const Problem<std::complex<double> > &p,
             const std::complex<double> *x,
                   std::complex<double> *y)
 {
-   double alpha[2], beta[2];
-   memcpy(alpha, &p.alpha, sizeof(alpha));
-   memcpy(beta,  &p.beta,  sizeof(beta));
-   suzerain_bsmbsm_zaPxpby(p.trans, p.S, p.n,
-                           alpha, (const double (*)[2]) x, p.incx,
-                           beta,  (      double (*)[2]) y, p.incy);
+    double alpha[2], beta[2];
+    memcpy(alpha, &p.alpha, sizeof(alpha));
+    memcpy(beta,  &p.beta,  sizeof(beta));
+    suzerain_bsmbsm_zaPxpby(p.trans, p.S, p.n,
+                            alpha, (const double (*)[2]) x, p.incx,
+                            beta,  (      double (*)[2]) y, p.incy);
 }
 
 // Precision-specific dispatch for floats
-void permute(const Problem<float> &p, float *x)
+// GSL cannot permute a vector with negative strides.
+void permute(const Problem<float> &p, gsl_permutation *g, float *x)
 {
-   boost::scoped_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n));
-   switch (toupper(p.trans)) {
-      case 'N': gsl_permute_float        (g->data, x, p.incx, p.S*p.n);
-                break;
-      case 'T': gsl_permute_float_inverse(g->data, x, p.incx, p.S*p.n);
-                break;
-      default:  BOOST_FAIL("Unknown p.trans");
-   }
+    gsl_vector_float_view v
+        = gsl_vector_float_view_array_with_stride(x, abs(p.incx), p.S*p.n);
+    if (p.incx < 0) gsl_vector_float_reverse(&v.vector);
+    switch (toupper(p.trans)) {
+        case 'N': gsl_permute_vector_float        (g, &v.vector);
+                  break;
+        case 'T': gsl_permute_vector_float_inverse(g, &v.vector);
+                  break;
+        default:  BOOST_FAIL("Unknown p.trans");
+    }
+    if (p.incx < 0) gsl_vector_float_reverse(&v.vector);
 }
 
-// Precision-specific dispatch for doubles
-void permute(const Problem<double> &p, double *x)
+// Precision-specific dispatch for floats
+// GSL cannot permute a vector with negative strides
+void permute(const Problem<double> &p, gsl_permutation *g, double *x)
 {
-   boost::scoped_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n));
-   switch (toupper(p.trans)) {
-      case 'N': gsl_permute        (g->data, x, p.incx, p.S*p.n);
-                break;
-      case 'T': gsl_permute_inverse(g->data, x, p.incx, p.S*p.n);
-                break;
-      default:  BOOST_FAIL("Unknown p.trans");
-   }
+    gsl_vector_view v
+        = gsl_vector_view_array_with_stride(x, abs(p.incx), p.S*p.n);
+    if (p.incx < 0) gsl_vector_reverse(&v.vector);
+    switch (toupper(p.trans)) {
+        case 'N': gsl_permute_vector        (g, &v.vector);
+                  break;
+        case 'T': gsl_permute_vector_inverse(g, &v.vector);
+                  break;
+        default:  BOOST_FAIL("Unknown p.trans");
+    }
+    if (p.incx < 0) gsl_vector_reverse(&v.vector);
 }
 
 // Precision-specific dispatch for complex floats
+// GSL cannot permute a vector with negative strides
 void permute(const Problem<std::complex<float> > &p,
-             std::complex<float> *x)
+             gsl_permutation *g, std::complex<float> *x)
 {
-   boost::scoped_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n));
-   switch (toupper(p.trans)) {
-      case 'N': gsl_permute_complex_float        (g->data, (float *)x, p.incx, p.S*p.n);
-                break;
-      case 'T': gsl_permute_complex_float_inverse(g->data, (float *)x, p.incx, p.S*p.n);
-                break;
-      default:  BOOST_FAIL("Unknown p.trans");
-   }
+    gsl_vector_complex_float_view v
+        = gsl_vector_complex_float_view_array_with_stride(
+                (float *) x, abs(p.incx), p.S*p.n);
+    if (p.incx < 0) gsl_vector_complex_float_reverse(&v.vector);
+    switch (toupper(p.trans)) {
+        case 'N': gsl_permute_vector_complex_float        (g, &v.vector);
+                  break;
+        case 'T': gsl_permute_vector_complex_float_inverse(g, &v.vector);
+                  break;
+        default:  BOOST_FAIL("Unknown p.trans");
+    }
+    if (p.incx < 0) gsl_vector_complex_float_reverse(&v.vector);
 }
 
 // Precision-specific dispatch for complex doubles
+// GSL cannot permute a vector with negative strides
 void permute(const Problem<std::complex<double> > &p,
-             std::complex<double> *x)
+             gsl_permutation *g, std::complex<double> *x)
 {
-   boost::scoped_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n));
-   switch (toupper(p.trans)) {
-      case 'N': gsl_permute_complex        (g->data, (double *)x, p.incx, p.S*p.n);
-                break;
-      case 'T': gsl_permute_complex_inverse(g->data, (double *)x, p.incx, p.S*p.n);
-                break;
-      default:  BOOST_FAIL("Unknown p.trans");
-   }
+    gsl_vector_complex_view v
+        = gsl_vector_complex_view_array_with_stride(
+                (double *) x, abs(p.incx), p.S*p.n);
+    if (p.incx < 0) gsl_vector_complex_reverse(&v.vector);
+    switch (toupper(p.trans)) {
+        case 'N': gsl_permute_vector_complex        (g, &v.vector);
+                  break;
+        case 'T': gsl_permute_vector_complex_inverse(g, &v.vector);
+                  break;
+        default:  BOOST_FAIL("Unknown p.trans");
+    }
+    if (p.incx < 0) gsl_vector_complex_reverse(&v.vector);
 }
 
 template< typename Scalar >
-void test(const Problem<Scalar> &p)
+bool test(const Problem<Scalar> &p)
 {
-   BOOST_TEST_MESSAGE("Problem " << p);
+    BOOST_TEST_MESSAGE("Testing problem " << p);
 
-   const int N = p.S*p.n;
+    typedef typename suzerain::traits::component<Scalar>::type component_type;
+    using suzerain::complex::traits::is_complex;
+    using boost::scoped_array;
+    using std::abs;
+    using std::copy;
+    using std::fill;
+    using std::partial_sum;
+    using std::sqrt;
 
-   // Allocate working storage
-   boost::scoped_array<Scalar> x(new Scalar[N*p.incx]);
-   boost::scoped_array<Scalar> y(new Scalar[N*p.incy]);
-   boost::scoped_array<Scalar> r(new Scalar[N*p.incy]);
+    const int N = p.S*p.n;
 
-   // Synthesize test data
-   std::fill(x.get(), x.get() + N*p.incx, 2*p.alpha+1);
-   std::fill(y.get(), y.get() + N*p.incy,   p.alpha-7);
-   std::accumulate(x.get(), x.get() + N*p.incx, 0);
-   std::accumulate(y.get(), y.get() + N*p.incy, 0);
-   std::copy(y.get(), y.get() + N*p.incy, r.get());
+    // Allocate working storage
+    scoped_array<Scalar> x(new Scalar[N*abs(p.incx)]);
+    scoped_array<Scalar> y(new Scalar[N*abs(p.incy)]);
+    scoped_array<Scalar> r(new Scalar[N*abs(p.incy)]);
 
-   // Compute the single-shot result using BSMBSM routines
-   aPxpby(p, x.get(), r.get());
+    // Synthesize test data
+    fill(x.get(), x.get() + N*abs(p.incx), 2*p.alpha+1);
+    if (is_complex<Scalar>::value) {
+         fill(y.get(), y.get() + N*abs(p.incy), p.alpha-7 + sqrt(Scalar(-1)));
+    } else {
+         fill(y.get(), y.get() + N*abs(p.incy), p.alpha-7);
+    }
+    partial_sum(x.get(), x.get() + N*abs(p.incx), x.get());
+    partial_sum(y.get(), y.get() + N*abs(p.incy), y.get());
+    copy(y.get(), y.get() + N*abs(p.incy), r.get());
 
-   // Compute same result by permuting followed by axpby
-   permute(p, x.get());
-   suzerain::blas::axpby(N, p.alpha, x.get(), p.incx,
-                            p.beta,  y.get(), p.incy);
+    // Compute the single-shot result using BSMBSM routines
+    aPxpby(p, x.get(), r.get());
 
-   // Cook a reasonable agreement tolerance
-   namespace traits = suzerain::traits;
-   typedef typename traits::component<Scalar>::type component_type;
-   component_type tol = std::numeric_limits<component_type>::epsilon();
-   if (suzerain::complex::traits::is_complex<Scalar>::value) tol *= 4;
+    // Compute same result by permuting followed by axpby
+    boost::shared_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n),
+                                         &gsl_permutation_free);
+    permute(p, g.get(), x.get());
+    suzerain::blas::axpby(N, p.alpha, x.get(), p.incx,
+                             p.beta,  y.get(), p.incy);
 
-   // Do r (from aPxpby) and y (from permute/axpby) agree?
-   check_close_collections(r.get(), r.get() + N*p.incy,
-                           y.get(), y.get() + N*p.incy,
-                           tol);
+    // Cook a reasonable agreement tolerance
+    component_type tol = std::numeric_limits<component_type>::epsilon();
+    if (is_complex<Scalar>::value) tol *= 4;
+
+    // Do r (from aPxpby) and y (from permute/axpby) agree?
+    return check_close_collections(r.get(), r.get() + N*abs(p.incy),
+                                   y.get(), y.get() + N*abs(p.incy),
+                                   tol);
+}
+
+BOOST_AUTO_TEST_CASE( spot_checks )
+{
+    // Cases which have proven problematic to draft implementations
+    BOOST_REQUIRE((test(Problem<float>('N', 2, 7, 1, -1, 0, 1))));
 }
 
 BOOST_AUTO_TEST_CASE( single_precision )
 {
-   typedef Problem<float> p;
+    // Test conditions
+    typedef float scalar;
+    const char   trans[]  = { 'N', 'T' };
+    const int    S[]      = { 1, 2, 5 };
+    const int    n[]      = { 1, 7, 10 };
+    const scalar alpha[]  = { 1, 3, -2 };
+    const int    incx[]   = { 1, 2, -1, -2 };
+    const scalar beta[]   = { 0, 1, -3 };
+    const int    incy[]   = { 1, 3, -1, -3 };
 
-   // Code paths to test...
-   //     trans: N or T
-   //     alpha: 1 or general
-   //     beta:  0, 1, or general
-   //     incx:  positive or negative
-   //     incy:  positive or negative
-
-   //     trans, S, n, alpha, incx, beta, incy
-   test(p(  'N', 5, 9,     3,    1,    3,    1));
+    // Outer product of all test conditions
+    for (size_t ii = 0; ii < SUZERAIN_COUNTOF(trans); ++ii)
+    for (size_t ij = 0; ij < SUZERAIN_COUNTOF(S);     ++ij)
+    for (size_t ik = 0; ik < SUZERAIN_COUNTOF(n);     ++ik)
+    for (size_t il = 0; il < SUZERAIN_COUNTOF(alpha); ++il)
+    for (size_t im = 0; im < SUZERAIN_COUNTOF(incx);  ++im)
+    for (size_t in = 0; in < SUZERAIN_COUNTOF(beta);  ++in)
+    for (size_t io = 0; io < SUZERAIN_COUNTOF(incy);  ++io)
+    {
+       Problem<scalar> P(trans[ii],
+                         S    [ij],
+                         n    [ik],
+                         alpha[il],
+                         incx [im],
+                         beta [in],
+                         incy [io]);
+       BOOST_REQUIRE_MESSAGE(test(P), "Stopping due to failure in " << P);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( double_precision )
 {
-   typedef Problem<double> p;
+    typedef Problem<double> p;
 
-   // FIXME Implement
+    // FIXME Implement
 }
 
 BOOST_AUTO_TEST_CASE( complex_single_precision )
 {
-   typedef std::complex<float> c;
-   typedef Problem<c> p;
+    typedef std::complex<float> c;
+    typedef Problem<c> p;
 
-   // FIXME Implement
+    // FIXME Implement
 }
 
 BOOST_AUTO_TEST_CASE( complex_double_precision )
 {
-   typedef std::complex<float> c;
-   typedef Problem<c> p;
+    typedef std::complex<float> c;
+    typedef Problem<c> p;
 
-   // FIXME Implement
+    // FIXME Implement
 }
 
 BOOST_AUTO_TEST_SUITE_END()
