@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE( spot_checks )
     BOOST_REQUIRE((test(Problem<float>('N', 2, 7, 1, -1, 0, 1))));
 }
 
-typedef boost::mpl::list<float /*, double*/> component_types;
+typedef boost::mpl::list<float, double> component_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, Component, component_types )
 {

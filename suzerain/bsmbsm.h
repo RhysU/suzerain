@@ -183,11 +183,11 @@ int suzerain_bsmbsm_qinv(int S, int n, int i)
 }
 
 /**
- * @brief Compute \f$ y \leftarrow{} \alpha{} P x + \beta{}y \f$ or \f$
- * y \leftarrow{} \alpha{} P^{\mbox{T}} x + \beta{}y \f$ where \f$P\f$
- * is defined by permutation vector \f$q\f$.  Storage \c y must not alias
- * storage \c x.  Negative strides may be used and are interpreted as
- * in the BLAS.  On error invokes suzerain_blas_xerbla().
+ * @brief Compute \f$ y \leftarrow{} \alpha{} P x + \beta{}y \f$ or \f$ y
+ * \leftarrow{} \alpha{} P^{\mbox{T}} x + \beta{}y \f$ where \f$P\f$ is defined
+ * by permutation vector \f$q\f$.  Storage \c y must not alias storage \c x.
+ * Negative strides may be used and are interpreted as in the BLAS.  On error
+ * invokes suzerain_blas_xerbla().
  *
  * @param trans Either 'N' for \f$P x\f$ or 'T' for \f$P^{\mbox{T}}\f$.
  * @param S Number of rows and columns of banded submatrices
