@@ -5,6 +5,8 @@
 #pragma hdrstop
 #define BOOST_TEST_MODULE $Id$
 #include <suzerain/bsmbsm.h>
+#include <suzerain/blas_et_al.hpp>
+#include <suzerain/complex.hpp>
 #include <boost/test/included/unit_test.hpp>
 
 #include "test_tools.hpp"
@@ -161,6 +163,171 @@ BOOST_AUTO_TEST_CASE( identity_relation )
          }
       }
    }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( aPxbpy )
+
+// Templated type encapsulating a particular problem and precision
+template<typename Scalar>
+struct Problem {
+    char trans;
+    int S;
+    int n;
+    Scalar alpha;
+    int incx;
+    Scalar beta;
+    int incy;
+};
+
+// Helper outputting Problem<Scalar>
+template< typename charT, typename traits, typename Scalar >
+std::basic_ostream<charT,traits>& operator<<(
+        std::basic_ostream<charT,traits> &os,
+        const Problem<Scalar> &p)
+{
+    os << '{'
+       << "trans = "  << p.trans
+       << ",S = "     << p.S
+       << ",n = "     << p.n
+       << ",alpha = " << p.alpha
+       << ",incx = "  << p.incx
+       << ",beta = "  << p.beta
+       << ",incy = "  << p.incy
+       << '}';
+    return os;
+}
+
+// Precision-specific dispatch for floats
+void aPxpby(const Problem<float> &p, const float *x, float *y)
+{
+   suzerain_bsmbsm_saPxpby(
+         p.trans, p.S, p.n, p.alpha, x, p.incx, p.beta, y, p.incy);
+}
+
+// Precision-specific dispatch for doubles
+void aPxpby(const Problem<double> &p, const double *x, double *y)
+{
+   suzerain_bsmbsm_daPxpby(
+         p.trans, p.S, p.n, p.alpha, x, p.incx, p.beta, y, p.incy);
+}
+
+// Precision-specific dispatch for complex floats
+void aPxpby(const Problem<std::complex<float> > &p,
+            const std::complex<float> *x,
+                  std::complex<float> *y)
+{
+   float alpha[2], beta[2];
+   memcpy(alpha, &p.alpha, sizeof(alpha));
+   memcpy(beta,  &p.beta,  sizeof(beta));
+   suzerain_bsmbsm_caPxpby(p.trans, p.S, p.n,
+                           alpha, (const float (*)[2]) x, p.incx,
+                           beta,  (      float (*)[2]) y, p.incy);
+}
+
+// Precision-specific dispatch for complex doubles
+void aPxpby(const Problem<std::complex<double> > &p,
+            const std::complex<double> *x,
+                  std::complex<double> *y)
+{
+   double alpha[2], beta[2];
+   memcpy(alpha, &p.alpha, sizeof(alpha));
+   memcpy(beta,  &p.beta,  sizeof(beta));
+   suzerain_bsmbsm_zaPxpby(p.trans, p.S, p.n,
+                           alpha, (const double (*)[2]) x, p.incx,
+                           beta,  (      double (*)[2]) y, p.incy);
+}
+
+// Precision-specific dispatch for floats
+void permute(const Problem<float> &p, float *x)
+{
+   boost::scoped_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n));
+   switch (toupper(p.trans)) {
+      case 'N': gsl_permute_float        (g->data, x, p.incx, p.S*p.n);
+                break;
+      case 'T': gsl_permute_float_inverse(g->data, x, p.incx, p.S*p.n);
+                break;
+      default:  BOOST_FAIL("Unknown p.trans");
+   }
+}
+
+// Precision-specific dispatch for doubles
+void permute(const Problem<double> &p, double *x)
+{
+   boost::scoped_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n));
+   switch (toupper(p.trans)) {
+      case 'N': gsl_permute        (g->data, x, p.incx, p.S*p.n);
+                break;
+      case 'T': gsl_permute_inverse(g->data, x, p.incx, p.S*p.n);
+                break;
+      default:  BOOST_FAIL("Unknown p.trans");
+   }
+}
+
+// Precision-specific dispatch for complex floats
+void permute(const Problem<std::complex<float> > &p,
+             std::complex<float> *x)
+{
+   boost::scoped_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n));
+   switch (toupper(p.trans)) {
+      case 'N': gsl_permute_complex_float        (g->data, (float *)x, p.incx, p.S*p.n);
+                break;
+      case 'T': gsl_permute_complex_float_inverse(g->data, (float *)x, p.incx, p.S*p.n);
+                break;
+      default:  BOOST_FAIL("Unknown p.trans");
+   }
+}
+
+// Precision-specific dispatch for complex doubles
+void permute(const Problem<std::complex<double> > &p,
+             std::complex<double> *x)
+{
+   boost::scoped_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n));
+   switch (toupper(p.trans)) {
+      case 'N': gsl_permute_complex        (g->data, (double *)x, p.incx, p.S*p.n);
+                break;
+      case 'T': gsl_permute_complex_inverse(g->data, (double *)x, p.incx, p.S*p.n);
+                break;
+      default:  BOOST_FAIL("Unknown p.trans");
+   }
+}
+
+template< typename Scalar >
+void test(const Problem<Scalar> &p)
+{
+   const int N = p.S*p.n;
+
+   // Allocate working storage
+   boost::scoped_array<Scalar> x(new Scalar[N*p.incx]);
+   boost::scoped_array<Scalar> y(new Scalar[N*p.incy]);
+   boost::scoped_array<Scalar> r(new Scalar[N*p.incy]);
+
+   // Create test data
+   std::fill(x.get(), x.get() + N*p.incx, 2*p.alpha+1);
+   std::fill(y.get(), y.get() + N*p.incy,   p.alpha-7);
+   std::accumulate(x.get(), x.get() + N*p.incx, 0);
+   std::accumulate(y.get(), y.get() + N*p.incy, 0);
+   std::fill(y.get(), y.get() + N*p.incy, r.get());
+
+   // Compute the single-shot result using BSMBSM
+   aPxpby(p, x.get(), r.get());
+
+   // Compute same result by permuting followed by axpby
+   permute(p, x.get());
+   suzerain::blas::axpby(N, p.alpha, x.get(), p.incx,
+                            p.beta(), y.get(), y.incy);
+
+   // Do r (from aPxpby) and y (from permute/axpby) agree?
+   namespace traits = suzerain::complex::traits;
+   typedef typename traits::real<Scalar>::type real_type;
+   real_type tol = std::numeric_limits<real_type>::epsilon();
+   if (traits::is_complex<Scalar>::value) tol *= 4;
+
+   check_close_collections(r.get(), r.get() + N*p.incy,
+                           y.get(), y.get() + N*p.incy,
+                           tol);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

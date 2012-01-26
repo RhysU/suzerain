@@ -31,6 +31,7 @@
 #ifndef __SUZERAIN_BSMBSM_H__
 #define __SUZERAIN_BSMBSM_H__
 
+#include <gsl/gsl_permutation.h>
 #include <gsl/gsl_permute.h>
 
 /** @file
@@ -267,8 +268,8 @@ suzerain_bsmbsm_zaPxpby(
  *         <code>gsl_permute_float_inverse</code></li>
  *     <li><code>gsl_permute_complex_float</code>,
  *         <code>gsl_permute_complex_float_inverse</code></li>
- *     <li><code>gsl_permute_complex_double</code>,
- *         <code>gsl_permute_complex_double_inverse</code></li>
+ *     <li><code>gsl_permute_complex</code>,
+ *         <code>gsl_permute_complex_inverse</code></li>
  * </ul>
  * may be used to apply \f$q\f$ or \f$q^{-1}\f$ <em>in-place</em> on
  * <tt>float</tt>, <tt>double</tt>, <tt>float[2]</tt>, or <tt>double[2]</tt>
