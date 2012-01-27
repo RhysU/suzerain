@@ -304,8 +304,9 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  *       q\left(\hat{\jmath}n + j\right)
  *   }
  * \f]
- * relates the source and target values through the permutation
- * vector \f$q\f$.
+ * relates the source and target values through the permutation vector \f$q\f$.
+ * Storage \c b must not alias storage \c papt.  On error invokes
+ * suzerain_blas_xerbla().
  *
  * @see bsmbsm.h for full details on the permutation vector \f$q\f$.
  */

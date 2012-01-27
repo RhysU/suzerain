@@ -38,6 +38,8 @@
 
 // Shorthand
 #define UNLIKELY(expr) SUZERAIN_UNLIKELY(expr)
+static inline int imin(int a, int b) { return a < b ? a : b; }
+static inline int imax(int a, int b) { return a > b ? a : b; }
 
 void
 suzerain_bsmbsm_saPxpby(
@@ -1071,4 +1073,53 @@ suzerain_bsmbsm_permutation(int S, int n)
         }
     }
     return p;
+}
+
+void
+suzerain_bsmbsm_spack(int S, int n, int kl, int ku,
+                      const float * restrict b, int ihat, int jhat, int ldb,
+                            float * restrict papt, int ldpapt)
+{
+    int KL = S*(kl + 1) - 1;
+    int KU = S*(ku + 1) - 1;
+    int LD = KL + 1 + KU;
+
+    if (UNLIKELY(S  < 0))
+            return suzerain_blas_xerbla(__func__, 1);
+    if (UNLIKELY(n  < 0))
+            return suzerain_blas_xerbla(__func__, 2);
+    if (UNLIKELY(kl < 0))
+            return suzerain_blas_xerbla(__func__, 3);
+    if (UNLIKELY(ku < 0))
+            return suzerain_blas_xerbla(__func__, 4);
+    if (UNLIKELY(ihat < 0 || ihat >= S))
+            return suzerain_blas_xerbla(__func__,  6);
+    if (UNLIKELY(jhat < 0 || jhat >= S))
+            return suzerain_blas_xerbla(__func__,  7);
+    if (UNLIKELY(ldb    < kl + 1 + ku))
+            return suzerain_blas_xerbla(__func__,  8);
+    if (UNLIKELY(ldpapt < KL + 1 + KU))
+            return suzerain_blas_xerbla(__func__, 10);
+    if (UNLIKELY((void*)b == (void*)papt))
+            return suzerain_blas_xerbla(__func__, 59);
+
+    // Source matrix dereference is always of form b[ku + i + j*(ldb - 1)].
+    // Target matrix uses papt[KU + q(ihat*n + i) + q(jhat*n + j)*(LD - 1)].
+    // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
+    b    += ku; --ldb;
+    papt += KU; --LD;
+    ihat *= n;
+    jhat *= n;
+    ++kl;
+
+    // Copy matrix B into the appropriate locations within PAP^T
+    for (int j = 0; j < n; b += ldb, ++j) {
+        const int qjLD = LD*suzerain_bsmbsm_q(S, n, jhat + j);
+        const int il = imax(0, j - ku);
+        const int iu = imin(n, j + kl);
+        for (int i = il; i < iu; ++i) {
+            const int qi = suzerain_bsmbsm_q(S, n, ihat + i);
+            papt[qi + qjLD] = b[i];
+        }
+    }
 }
