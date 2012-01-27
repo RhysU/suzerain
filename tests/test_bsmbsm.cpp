@@ -461,3 +461,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued, Component, component_types )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( pack )
+
+BOOST_AUTO_TEST_CASE( degenerate_single )
+{
+    const suzerain_bsmbsm A = suzerain_bsmbsm_construct(1, 10, 2, 3);
+
+    // Allocate and generate source data
+    boost::scoped_array<float> b(new float[A.n*A.ld]);
+    std::fill(b.get(), b.get() + A.n*A.ld, 1);
+    std::partial_sum(b.get(), b.get() + A.n*A.ld, b.get());
+
+    // Allocate and fill target data with dummy values
+    boost::scoped_array<float> papt(new float[A.N*A.LD]);
+    std::fill(papt.get(), papt.get() + A.N*A.LD, -1);
+
+    // Perform the degenerate pack operation
+    suzerain_bsmbsm_spack(A.S,        A.n, A.kl, A.ku,
+                          b.get(),      0,    0, A.ld,
+                          papt.get(), A.LD);
+
+    // Check that the operation was indeed nothing but a copy
+    CHECK_GBMATRIX_CLOSE(A.n, A.n, A.kl, A.ku, b.get(),    A.ld,
+                         A.N, A.N, A.KL, A.KU, papt.get(), A.LD,
+                         std::numeric_limits<float>::epsilon());
+}
+
+BOOST_AUTO_TEST_SUITE_END()
