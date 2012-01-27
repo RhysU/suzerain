@@ -463,30 +463,86 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued, Component, component_types )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE( pack )
+BOOST_AUTO_TEST_SUITE( submatrix_packing )
 
-BOOST_AUTO_TEST_CASE( degenerate_single )
+// Precision-specific dispatch for floats
+static void pack(int S, int n, int kl, int ku,
+                 const float *b, int ihat, int jhat, int ldb,
+                       float *papt, int ldpapt)
 {
+    return suzerain_bsmbsm_spack(
+            S, n, kl, ku, b, ihat, jhat, ldb, papt, ldpapt);
+}
+
+// Precision-specific dispatch for doubles
+static void pack(int S, int n, int kl, int ku,
+                 const double *b, int ihat, int jhat, int ldb,
+                       double *papt, int ldpapt)
+{
+    return suzerain_bsmbsm_dpack(
+            S, n, kl, ku, b, ihat, jhat, ldb, papt, ldpapt);
+}
+
+// Precision-specific dispatch for complex floats
+static void pack(int S, int n, int kl, int ku,
+                 const std::complex<float> *b, int ihat, int jhat, int ldb,
+                       std::complex<float> *papt, int ldpapt)
+{
+    return suzerain_bsmbsm_cpack(S, n, kl, ku,
+                                 (const float (*)[2]) b, ihat, jhat, ldb,
+                                 (      float (*)[2]) papt, ldpapt);
+}
+
+// Precision-specific dispatch for complex doubles
+static void pack(int S, int n, int kl, int ku,
+                 const std::complex<double> *b, int ihat, int jhat, int ldb,
+                       std::complex<double> *papt, int ldpapt)
+{
+    return suzerain_bsmbsm_zpack(S, n, kl, ku,
+                                 (const double (*)[2]) b, ihat, jhat, ldb,
+                                 (      double (*)[2]) papt, ldpapt);
+}
+
+typedef boost::mpl::list<
+        float,
+        double,
+        std::complex<float>,
+        std::complex<double>
+    > test_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( degenerate, Scalar, test_types )
+{
+    static const Scalar one = 1;
+    typedef typename suzerain::traits::component<Scalar>::type component_type;
+    using suzerain::complex::traits::is_complex;
+    using std::fill;
+
     const suzerain_bsmbsm A = suzerain_bsmbsm_construct(1, 10, 2, 3);
 
     // Allocate and generate source data
-    boost::scoped_array<float> b(new float[A.n*A.ld]);
-    std::fill(b.get(), b.get() + A.n*A.ld, 1);
+    boost::scoped_array<Scalar> b(new Scalar[A.n*A.ld]);
+    if (suzerain::complex::traits::is_complex<Scalar>::value) {
+        fill(b.get(), b.get() + A.n*A.ld, one - std::sqrt(-one));
+    } else {
+        fill(b.get(), b.get() + A.n*A.ld, one);
+    }
     std::partial_sum(b.get(), b.get() + A.n*A.ld, b.get());
 
     // Allocate and fill target data with dummy values
-    boost::scoped_array<float> papt(new float[A.N*A.LD]);
-    std::fill(papt.get(), papt.get() + A.N*A.LD, -1);
+    boost::scoped_array<Scalar> papt(new Scalar[A.N*A.LD]);
+    if (suzerain::complex::traits::is_complex<Scalar>::value) {
+        fill(papt.get(), papt.get() + A.N*A.LD, one - std::sqrt(-one));
+    } else {
+        fill(papt.get(), papt.get() + A.N*A.LD, one);
+    }
 
     // Perform the degenerate pack operation
-    suzerain_bsmbsm_spack(A.S,        A.n, A.kl, A.ku,
-                          b.get(),      0,    0, A.ld,
-                          papt.get(), A.LD);
+    pack(A.S, A.n, A.kl, A.ku, b.get(), 0, 0, A.ld, papt.get(), A.LD);
 
     // Check that the operation was indeed nothing but a copy
     CHECK_GBMATRIX_CLOSE(A.n, A.n, A.kl, A.ku, b.get(),    A.ld,
                          A.N, A.N, A.KL, A.KU, papt.get(), A.LD,
-                         std::numeric_limits<float>::epsilon());
+                         std::numeric_limits<component_type>::epsilon());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
