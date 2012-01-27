@@ -289,6 +289,49 @@ suzerain_bsmbsm_zaPxpby(
  */
 gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
 
+/**
+ * Pack banded submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$ into the
+ * corresponding locations within globally banded storage of \f$P A
+ * P^{\mbox{T}}\f$.  More specifically,
+ * \f[
+ *   \left.B^{\hat{\imath}\,\hat{\jmath}}\right|_{i\,j}}
+ *   =
+ *   \left.A\right|_{\hat{\imath}n + i\, \hat{\jmath}n + j}
+ *   =
+ *   \left.PAP^{\mbox{T}}\right|_{
+ *       q\left(\hat{\imath}n + i\right)
+ *       \,
+ *       q\left(\hat{\jmath}n + j\right)
+ *   }
+ * \f]
+ * relates the source and target values through the permutation
+ * vector \f$q\f$.
+ *
+ * @see bsmbsm.h for full details on the permutation vector \f$q\f$.
+ */
+void
+suzerain_bsmbsm_spack(int S, int n, int kl, int ku,
+                      const float *b, int ihat, int jhat, int ldb,
+                            float *papt, int ldpapt);
+
+/** @copydoc suzerain_bsmbsm_spack */
+void
+suzerain_bsmbsm_dpack(int S, int n, int kl, int ku,
+                      const double *b, int ihat, int jhat, int ldb,
+                            double *papt, int ldpapt);
+
+/** @copydoc suzerain_bsmbsm_spack */
+void
+suzerain_bsmbsm_cpack(int S, int n, int kl, int ku,
+                      const float (*b)[2], int ihat, int jhat, int ldb,
+                            float (*papt)[2], int ldpapt);
+
+/** @copydoc suzerain_bsmbsm_spack */
+void
+suzerain_bsmbsm_zpack(int S, int n, int kl, int ku,
+                      const double (*b)[2], int ihat, int jhat, int ldb,
+                            double (*papt)[2], int ldpapt);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
