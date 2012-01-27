@@ -665,7 +665,78 @@ static const double X[] = { // Found with N[Solve[op, B], 30]
 
 BOOST_AUTO_TEST_CASE( solve_real )
 {
-    // TODO
+    namespace blas = suzerain::blas;
+    const suzerain_bsmbsm A = suzerain_bsmbsm_construct(3, 10, 4, 4);
+
+    // Sanity checks on compile-time information
+    BOOST_REQUIRE_EQUAL(A.S,       3);
+    BOOST_REQUIRE_EQUAL(A.n,      10);
+    BOOST_REQUIRE_EQUAL(A.kl,      4);
+    BOOST_REQUIRE_EQUAL(A.ku,      4);
+    BOOST_REQUIRE_EQUAL(A.ld,  4+1+4);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(M ), (unsigned) A.ld*A.n);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(D1), (unsigned) A.ld*A.n);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(D2), (unsigned) A.ld*A.n);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(B),  (unsigned) A.N);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(X),  (unsigned) A.N);
+
+    // Allocate working buffers for accumulating submatrices
+    boost::scoped_array<double> b   (new double[A.n*A.ld]);
+    boost::scoped_array<double> papt(new double[A.N*(A.LD+A.KL)]);
+    std::fill(papt.get(), papt.get() + A.N*(A.LD+A.KL), 0);
+
+    // Build the packed operator "op" per Mathematica above
+    // B^{0,0} is M
+    blas::copy(SUZERAIN_COUNTOF(M), M, 1, b.get(), 1);
+    pack(A.S, A.n, A.kl, A.ku, b.get(), 0, 0, A.ld,
+         papt.get() + A.KL, (A.LD+A.KL));
+    // B^{1,1} is 2*M
+    blas::scal(SUZERAIN_COUNTOF(M), 2, b.get(), 1);
+    pack(A.S, A.n, A.kl, A.ku, b.get(), 1, 1, A.ld,
+         papt.get() + A.KL, (A.LD+A.KL));
+    // B^{2,2} is 4*M
+    blas::scal(SUZERAIN_COUNTOF(M), 2, b.get(), 1);
+    pack(A.S, A.n, A.kl, A.ku, b.get(), 2, 2, A.ld,
+         papt.get() + A.KL, (A.LD+A.KL));
+
+    // B^{0,1} is (1/5)*D1
+    blas::copy(SUZERAIN_COUNTOF(D1), D1, 1, b.get(), 1);
+    blas::scal(SUZERAIN_COUNTOF(D1), 1.0/5.0, b.get(), 1);
+    pack(A.S, A.n, A.kl, A.ku, b.get(), 0, 1, A.ld,
+         papt.get() + A.KL, (A.LD+A.KL));
+    // B^{2,1} is (1/10)*D1
+    blas::scal(SUZERAIN_COUNTOF(D1), 1.0/2.0, b.get(), 1);
+    pack(A.S, A.n, A.kl, A.ku, b.get(), 2, 1, A.ld,
+         papt.get() + A.KL, (A.LD+A.KL));
+
+    // B^{1,0} is (1/7)*D2
+    blas::copy(SUZERAIN_COUNTOF(D2), D2, 1, b.get(), 1);
+    blas::scal(SUZERAIN_COUNTOF(D1), 1.0/7.0, b.get(), 1);
+    pack(A.S, A.n, A.kl, A.ku, b.get(), 1, 0, A.ld,
+         papt.get() + A.KL, (A.LD+A.KL));
+    // B^{1,2} is (1/14)*D2
+    blas::scal(SUZERAIN_COUNTOF(D1), 1.0/2.0, b.get(), 1);
+    pack(A.S, A.n, A.kl, A.ku, b.get(), 1, 2, A.ld,
+         papt.get() + A.KL, (A.LD+A.KL));
+
+    // Reuse working buffer to permute right hand side for solve
+    b.reset(new double[2*A.N]);
+    suzerain_bsmbsm_daPxpby(
+            'N', A.S, A.n, 1.0, B, 1, 0, b.get(), 1);
+
+    // Solve in place
+    boost::scoped_array<int> ipiv(new int[A.N]);
+    BOOST_REQUIRE_EQUAL(0, suzerain_lapack_dgbsv(
+        A.N, A.KL, A.KU, 1, papt.get(), A.LD + A.KL, ipiv.get(),
+        b.get(), A.N));
+
+    // Unpermute the right hand side out-of-place
+    suzerain_bsmbsm_daPxpby(
+            'T', A.S, A.n, 1.0, b.get(), 1, 0, b.get() + A.N, 1);
+
+    // Do we match the expected solution?
+    check_close_collections(X, X + A.N, b.get() + A.N, b.get() + 2*A.N,
+                            std::numeric_limits<double>::epsilon());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
