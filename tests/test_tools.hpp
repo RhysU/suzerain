@@ -383,6 +383,21 @@ _suzerain_check_gbmatrix_close(
 
 template<typename FPT>
 std::string
+_suzerain_check_gbmatrix_close(
+    int e_m, int e_n, int e_kl, int e_ku,
+    const ::std::complex<FPT> * const e, int e_ld,
+    int r_m, int r_n, int r_kl, int r_ku,
+    const ::std::complex<FPT> * const r, int r_ld,
+    FPT abs_tolerance)
+{
+    return _suzerain_check_gbmatrix_close(
+            e_m, e_n, e_kl, e_ku, (const FPT (* const)[2])e, e_ld,
+            r_m, r_n, r_kl, r_ku, (const FPT (* const)[2])r, r_ld,
+            abs_tolerance);
+}
+
+template<typename FPT>
+std::string
 _suzerain_check_gbmatrix_symmetric(
         int m, int n, int kl, int ku, const FPT *r, int ld)
 {
