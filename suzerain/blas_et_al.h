@@ -1100,32 +1100,102 @@ suzerain_lapack_zgbcon(
         double  *rwork);
 
 /*!
- * \brief Use the LU factorization to compute the solution to a real system
- * of linear equations \f$ AX=B \f$.
+ * \brief Compute the solution to a banded system of linear equations \f$ AX=B
+ * \f$ using an in-place LU factorization.
  *
- * @param[in]     fact
- * @param[in]     trans
- * @param[in]     n
- * @param[in]     kl
- * @param[in]     ku
- * @param[in]     nrhs
- * @param[in,out] ab    Dimension (ldab,n)
- * @param[in]     ldab  Minimum kl + ku + 1
- * @param[in,out] afb   Dimension (ldfab,n)
- * @param[in]     ldafb Minimum 2*kl + ku + 1
- * @param[in,out] ipiv  Dimension n
- * @param[in,out] equed
- * @param[in,out] r     Dimension n when fact == 'R' or 'B'
- * @param[in,out] c     Dimension n when fact == 'C' or 'B'
- * @param[in,out] b     Dimension (ldb,nrhs)
- * @param[in]     ldb   Minimum n
- * @param[in,out] x     Dimension (ldx,nrhs)
- * @param[in]     ldx   Minimum n
- * @param[out]    rcond
- * @param[out]    ferr  Dimension nrhs
- * @param[out]    berr  Dimension nrhs
- * @param[out]    work  Dimension 3*n
- * @param[out]    iwork Dimension n
+ * \param[in]     n
+ * \param[in]     kl
+ * \param[in]     ku
+ * \param[in]     nrhs
+ * \param[in,out] ab    Dimension (<tt>ldab</tt>,<tt>n</tt>)
+ * \param[in]     ldab  Minimum <tt>kl + ku + 1</tt>
+ * \param[in,out] ipiv  Dimension \c n
+ * \param[in,out] b     Dimension (<tt>ldb</tt>,<tt>nrhs</tt>)
+ * \param[in]     ldb   Minimum \c n
+ *
+ * \return Zero on successful execution.  Nonzero otherwise.
+ *
+ * \see A LAPACK reference for the details.
+ */
+int
+suzerain_lapack_sgbsv(
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        float *ab,
+        const int ldab,
+        int *ipiv,
+        float *b,
+        const int ldb);
+
+/*! \copydoc suzerain_lapack_sgbsv */
+int
+suzerain_lapack_dgbsv(
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        double *ab,
+        const int ldab,
+        int *ipiv,
+        double *b,
+        const int ldb);
+
+/*! \copydoc suzerain_lapack_sgbsv */
+int
+suzerain_lapack_cgbsv(
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        float (*ab)[2],
+        const int ldab,
+        int *ipiv,
+        float (*b)[2],
+        const int ldb);
+
+/*! \copydoc suzerain_lapack_sgbsv */
+int
+suzerain_lapack_zgbsv(
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        double (*ab)[2],
+        const int ldab,
+        int *ipiv,
+        double (*b)[2],
+        const int ldb);
+
+/*!
+ * \brief Compute the solution to a banded system of linear equations \f$ AX=B
+ * \f$ using an out-of-place LU factorization.  Error bounds on the solution
+ * and a condition estimate are also provided.
+ *
+ * \param[in]     fact
+ * \param[in]     trans
+ * \param[in]     n
+ * \param[in]     kl
+ * \param[in]     ku
+ * \param[in]     nrhs
+ * \param[in,out] ab    Dimension (<tt>ldab</tt>,<tt>n</tt>)
+ * \param[in]     ldab  Minimum <tt>kl + ku + 1</tt>
+ * \param[in,out] afb   Dimension (<tt>ldfab</tt>,<tt>n</tt>)
+ * \param[in]     ldafb Minimum <tt>2*kl + ku + 1</tt>
+ * \param[in,out] ipiv  Dimension \c n
+ * \param[in,out] equed
+ * \param[in,out] r     Dimension \c n when fact == 'R' or 'B'
+ * \param[in,out] c     Dimension \c n when fact == 'C' or 'B'
+ * \param[in,out] b     Dimension (<tt>ldb</tt>,<tt>nrhs</tt>)
+ * \param[in]     ldb   Minimum \c n
+ * \param[in,out] x     Dimension (<tt>ldx</tt>,<tt>nrhs</tt>)
+ * \param[in]     ldx   Minimum \c n
+ * \param[out]    rcond
+ * \param[out]    ferr  Dimension \c nrhs
+ * \param[out]    berr  Dimension \c nrhs
+ * \param[out]    work  Dimension <tt>3*n</tt>
+ * \param[out]    iwork Dimension \c n
  *
  * \return Zero on successful execution.  Nonzero otherwise.
  *
@@ -1185,32 +1255,33 @@ suzerain_lapack_dgbsvx(
         int *iwork);
 
 /*!
- * \brief Use the LU factorization to compute the solution to a real system
- * of linear equations \f$ AX=B \f$.
+ * \brief Compute the solution to a banded system of linear equations \f$ AX=B
+ * \f$ using an out-of-place LU factorization.  Error bounds on the solution
+ * and a condition estimate are also provided.
  *
- * @param[in]     fact
- * @param[in]     trans
- * @param[in]     n
- * @param[in]     kl
- * @param[in]     ku
- * @param[in]     nrhs
- * @param[in,out] ab    Dimension (ldab,n)
- * @param[in]     ldab  Minimum kl + ku + 1
- * @param[in,out] afb   Dimension (ldfab,n)
- * @param[in]     ldafb Minimum 2*kl + ku + 1
- * @param[in,out] ipiv  Dimension n
- * @param[in,out] equed
- * @param[in,out] r     Dimension n when fact == 'R' or 'B'
- * @param[in,out] c     Dimension n when fact == 'C' or 'B'
- * @param[in,out] b     Dimension (ldb,nrhs)
- * @param[in]     ldb   Minimum n
- * @param[in,out] x     Dimension (ldx,nrhs)
- * @param[in]     ldx   Minimum n
- * @param[out]    rcond
- * @param[out]    ferr  Dimension nrhs
- * @param[out]    berr  Dimension nrhs
- * @param[out]    work  Dimension 2*n
- * @param[out]    rwork Dimension n
+ * \param[in]     fact
+ * \param[in]     trans
+ * \param[in]     n
+ * \param[in]     kl
+ * \param[in]     ku
+ * \param[in]     nrhs
+ * \param[in,out] ab    Dimension (<tt>ldab</tt>,<tt>n</tt>)
+ * \param[in]     ldab  Minimum <tt>kl + ku + 1</tt>
+ * \param[in,out] afb   Dimension (<tt>ldfab</tt>,<tt>n</tt>)
+ * \param[in]     ldafb Minimum <tt>2*kl + ku + 1</tt>
+ * \param[in,out] ipiv  Dimension \c n
+ * \param[in,out] equed
+ * \param[in,out] r     Dimension \c n when fact == 'R' or 'B'
+ * \param[in,out] c     Dimension \c n when fact == 'C' or 'B'
+ * \param[in,out] b     Dimension (<tt>ldb</tt>,<tt>nrhs</tt>)
+ * \param[in]     ldb   Minimum \c n
+ * \param[in,out] x     Dimension (<tt>ldx</tt>,<tt>nrhs</tt>)
+ * \param[in]     ldx   Minimum \c n
+ * \param[out]    rcond
+ * \param[out]    ferr  Dimension \c nrhs
+ * \param[out]    berr  Dimension \c nrhs
+ * \param[out]    work  Dimension <tt>2*n</tt>
+ * \param[out]    rwork Dimension \c n
  *
  * \return Zero on successful execution.  Nonzero otherwise.
  *
