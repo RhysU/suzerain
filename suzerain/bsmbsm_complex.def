@@ -358,9 +358,8 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
         const COMPONENT (* restrict b)[2], int ihat, int jhat, int ldb,
         COMPONENT (* restrict papt)[2], int ldpapt)
 {
-    int KL = S*(kl + 1) - 1;
-    int KU = S*(ku + 1) - 1;
-    int LD = KL + 1 + KU;
+    const int KL = S*(kl + 1) - 1;
+    const int KU = S*(ku + 1) - 1;
 
     if (UNLIKELY(S  < 0))
             return suzerain_blas_xerbla(__func__, 1);
@@ -381,24 +380,24 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
     if (UNLIKELY((void*)b == (void*)papt))
             return suzerain_blas_xerbla(__func__, 59);
 
-    // Source matrix dereference is always of form b[ku + i + j*(ldb - 1)].
-    // Target matrix uses papt[KU + q(ihat*n + i) + q(jhat*n + j)*(LD - 1)].
-    // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
+    // Source dereference is always of form b[ku + i + j*(ldb - 1)].
+    // Target uses papt[KU + q(ihat*n + i) + q(jhat*n + j)*(ldpapt - 1)].
+    // Increment kl anticipating expressions like imin(m, j + kl + 1).
     b    += ku; --ldb;
-    papt += KU; --LD;
+    papt += KU; --ldpapt;
     ihat *= n;
     jhat *= n;
     ++kl;
 
-    // Copy matrix B into the appropriate locations within PAP^T
+    // Copy banded B into renumbered locations within banded PAP^T
     for (int j = 0; j < n; b += ldb, ++j) {
-        const int qjLD = LD*suzerain_bsmbsm_q(S, n, jhat + j);
+        const int qj_ldpapt = ldpapt*suzerain_bsmbsm_q(S, n, jhat + j);
         const int il = imax(0, j - ku);
         const int iu = imin(n, j + kl);
         for (int i = il; i < iu; ++i) {
             const int qi = suzerain_bsmbsm_q(S, n, ihat + i);
-            papt[qi + qjLD][0] = b[i][0];
-            papt[qi + qjLD][1] = b[i][1];
+            papt[qi + qj_ldpapt][0] = b[i][0];
+            papt[qi + qj_ldpapt][1] = b[i][1];
         }
     }
 }
