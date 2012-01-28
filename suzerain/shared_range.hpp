@@ -53,18 +53,17 @@ namespace suzerain {
 // implementation therefore can be #included into any namespace.
 
 /*! \file
- *  Defines \c shared_range and related functions.  \c shared_range is an \c
- *  iterator_range subclass adding smart pointer-like resource ownership
- *  semantics.
+ *  \brief Defines \c shared_range and related functions.
  */
 
 /*!
- * A \c shared_range extends the functionality of \c iterator_range by adding
- * smart pointer-like resource ownership semantics.  Semantically, it resembles
- * a <tt>shared_array<T></tt> which "knows" its own length.  Instances assume
- * ownership of pointers provided to constructors and guarantee resources will
- * be deleted when the last \c shared_range pointing to them is destroyed or
- * reset.
+ * \brief A \c shared_range extends the functionality of \c iterator_range by
+ * adding smart pointer-like resource ownership semantics.
+ *
+ * Semantically, \c shared_range resembles a <tt>shared_array<T></tt> which
+ * "knows" its own length.  Instances assume ownership of pointers provided to
+ * constructors and guarantee resources will be deleted when the last \c
+ * shared_range pointing to them is destroyed or reset.
  */
 template< class T >
 class shared_range
