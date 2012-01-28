@@ -73,10 +73,10 @@
  * hand, the banded renumbering may formed using the relationships
  * \f{align*}{
  *        \left.A\right|_{i\,j}
- *     &= \left.P A P^{\mbox{T}}\right|_{q(i)\,q(j)}
+ *     &= \left.P A P^{\mbox{T}}\right|_{q^{-1}(i)\,q^{-1}(j)}
  *     &
  *        \left.P A P^{\mbox{T}}\right|_{i\,j}
- *     &= \left.A\right|_{q^{-1}(i)\,q^{-1}(j)}.
+ *     &= \left.A\right|_{q(i)\,q(j)}.
  * \f}
  * This renumbering can be LU factorized in order <tt>N*(KL + 1 + KU)^2 =
  * S*n*(S*(kl + ku + 2)-1)^2</tt> floating point operations to find \f$LU = P A
@@ -299,9 +299,9 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  *   \left.A\right|_{\hat{\imath}n + i\, \hat{\jmath}n + j}
  *   =
  *   \left.PAP^{\mbox{T}}\right|_{
- *       q\left(\hat{\imath}n + i\right)
+ *       q^{-1}\left(\hat{\imath}n + i\right)
  *       \,
- *       q\left(\hat{\jmath}n + j\right)
+ *       q^{-1}\left(\hat{\jmath}n + j\right)
  *   }
  * \f]
  * relates the source and target values through the permutation vector \f$q\f$.

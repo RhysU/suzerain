@@ -391,13 +391,13 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
 
     // Copy banded B into renumbered locations within banded PAP^T
     for (int j = 0; j < n; b += ldb, ++j) {
-        const int qj_ldpapt = ldpapt*suzerain_bsmbsm_q(S, n, jhat + j);
+        const int qinvj_ldpapt = ldpapt*suzerain_bsmbsm_qinv(S, n, jhat + j);
         const int il = imax(0, j - ku);
         const int iu = imin(n, j + kl);
         for (int i = il; i < iu; ++i) {
-            const int qi = suzerain_bsmbsm_q(S, n, ihat + i);
-            papt[qi + qj_ldpapt][0] = b[i][0];
-            papt[qi + qj_ldpapt][1] = b[i][1];
+            const int qinvi = suzerain_bsmbsm_qinv(S, n, ihat + i);
+            papt[qinvi + qinvj_ldpapt][0] = b[i][0];
+            papt[qinvi + qinvj_ldpapt][1] = b[i][1];
         }
     }
 }
