@@ -711,11 +711,11 @@ BOOST_AUTO_TEST_CASE( solve_real )
 
     // B^{1,0} is (1/7)*D2
     blas::copy(SUZERAIN_COUNTOF(D2), D2, 1, b.get(), 1);
-    blas::scal(SUZERAIN_COUNTOF(D1), 1.0/7.0, b.get(), 1);
+    blas::scal(SUZERAIN_COUNTOF(D2), 1.0/7.0, b.get(), 1);
     pack(A.S, A.n, A.kl, A.ku, b.get(), 1, 0, A.ld,
          papt.get() + A.KL, (A.LD+A.KL));
     // B^{1,2} is (1/14)*D2
-    blas::scal(SUZERAIN_COUNTOF(D1), 1.0/2.0, b.get(), 1);
+    blas::scal(SUZERAIN_COUNTOF(D2), 1.0/2.0, b.get(), 1);
     pack(A.S, A.n, A.kl, A.ku, b.get(), 1, 2, A.ld,
          papt.get() + A.KL, (A.LD+A.KL));
 
