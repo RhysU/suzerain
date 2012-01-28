@@ -736,7 +736,7 @@ BOOST_AUTO_TEST_CASE( solve_real )
 
     // Do we match the expected solution?
     check_close_collections(X, X + A.N, b.get() + A.N, b.get() + 2*A.N,
-                            std::numeric_limits<double>::epsilon());
+                            std::numeric_limits<double>::epsilon()*1e4);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
