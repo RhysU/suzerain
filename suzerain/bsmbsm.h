@@ -310,11 +310,11 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  *
  * @param S      Number of rows and columns of banded submatrices.
  * @param n      Number or rows and columns in each banded submatrix.
+ * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
+ * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
  * @param kl     Number of subdiagonals in each banded submatrix.
  * @param ku     Number of superdiagonals in each banded submatrix.
  * @param b      Band storage of submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$.
- * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
- * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
  * @param ldb    Leading dimension of storage \c b.
  * @param KL     Number of subdiagonals in the renumbered matrix
  *               which must be at least <tt>S*(kl + 1) - 1</tt>.
@@ -327,31 +327,27 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  * @see bsmbsm.h for full details on the permutation vector \f$q\f$.
  */
 void
-suzerain_bsmbsm_spack(
-        int S,  int n,
-        int kl, int ku, const float *b,    int ihat, int jhat, int ldb,
-        int KL, int KU,       float *papt,                     int ldpapt);
+suzerain_bsmbsm_spack(int S,  int n, int ihat, int jhat,
+                      int kl, int ku, const float *b,    int ldb,
+                      int KL, int KU,       float *papt, int ldpapt);
 
 /** @copydoc suzerain_bsmbsm_spack */
 void
-suzerain_bsmbsm_dpack(
-        int S,  int n,
-        int kl, int ku, const double *b, int ihat, int jhat, int ldb,
-        int KL, int KU,       double *papt,                  int ldpapt);
+suzerain_bsmbsm_dpack(int S,  int n, int ihat, int jhat,
+                      int kl, int ku, const double *b,    int ldb,
+                      int KL, int KU,       double *papt, int ldpapt);
 
 /** @copydoc suzerain_bsmbsm_spack */
 void
-suzerain_bsmbsm_cpack(
-        int S,  int n,
-        int kl, int ku, const float (*b)[2], int ihat, int jhat, int ldb,
-        int KL, int KU,       float (*papt)[2],                  int ldpapt);
+suzerain_bsmbsm_cpack(int S,  int n, int ihat, int jhat,
+                      int kl, int ku, const float (*b)[2],    int ldb,
+                      int KL, int KU,       float (*papt)[2], int ldpapt);
 
 /** @copydoc suzerain_bsmbsm_spack */
 void
-suzerain_bsmbsm_zpack(
-        int S,  int n,
-        int kl, int ku, const double (*b)[2], int ihat, int jhat, int ldb,
-        int KL, int KU,       double (*papt)[2],                  int ldpapt);
+suzerain_bsmbsm_zpack(int S,  int n, int ihat, int jhat,
+                      int kl, int ku, const double (*b)[2],    int ldb,
+                      int KL, int KU,       double (*papt)[2], int ldpapt);
 
 #ifdef __cplusplus
 } /* extern "C" */
