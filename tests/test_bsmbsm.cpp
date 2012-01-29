@@ -758,9 +758,11 @@ BOOST_AUTO_TEST_CASE( solve_complex )
     // Allocate working buffers for accumulating submatrices
     boost::scoped_array<real_t> b   (new real_t[2*A.n*A.ld]);
     boost::scoped_array<real_t> papt(new real_t[2*A.N*(A.LD+A.KL)]);
+    std::fill(b.get(),    b.get()    + 2*A.n*A.ld,        0);
     std::fill(papt.get(), papt.get() + 2*A.N*(A.LD+A.KL), 0);
 
-    // Build the packed, complex operator "i*op" per Mathematica above
+    // Build the packed, complex operator "i*op" per Mathematica above.
+    // Notice that we only manipulate the imaginary portions of b.get().
     // B^{0,0} is i*M
     blas::copy(SUZERAIN_COUNTOF(M), M, 1, b.get()+1, 2);
     suzerain_bsmbsm_zpackf(A, 0, 0, (const real_t (*)[2]) b.get(),
@@ -785,7 +787,7 @@ BOOST_AUTO_TEST_CASE( solve_complex )
                                     (      real_t (*)[2]) papt.get());
 
     // B^{1,0} is i*(1/7)*D2
-    blas::copy(SUZERAIN_COUNTOF(D2), D2, 1, b.get()+1, 2);
+    blas::copy(SUZERAIN_COUNTOF(D2), D2, 1,   b.get()+1, 2);
     blas::scal(SUZERAIN_COUNTOF(D2), 1.0/7.0, b.get()+1, 2);
     suzerain_bsmbsm_zpackf(A, 1, 0, (const real_t (*)[2]) b.get(),
                                     (      real_t (*)[2]) papt.get());
@@ -813,12 +815,11 @@ BOOST_AUTO_TEST_CASE( solve_complex )
     suzerain_bsmbsm_daPxpby(
             'T', A.S, A.n, 1.0, b.get()+1, 2, 0, b.get() + 3*A.N, 1); // Im(X)
 
-// FIXME
-//  // Do we match the expected solution?
-//  check_close_collections(XR, XR + A.N, b.get() + 2*A.N, b.get() + 3*A.N,
-//                          std::numeric_limits<double>::epsilon()*1e4);
-//  check_close_collections(XR, XR + A.N, b.get() + 3*A.N, b.get() + 4*A.N,
-//                          std::numeric_limits<double>::epsilon()*1e4);
+    // Do we match the expected solution?
+    check_close_collections(XR, XR + A.N, b.get() + 2*A.N, b.get() + 3*A.N,
+                            std::numeric_limits<double>::epsilon()*1e4);
+    check_close_collections(XR, XR + A.N, b.get() + 3*A.N, b.get() + 4*A.N,
+                            std::numeric_limits<double>::epsilon()*1e4);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
