@@ -1674,6 +1674,76 @@ inline int gbtrs(
                                   boost::numeric_cast<int>(ldb));
 }
 
+/*! @copydoc suzerain_lapack_sgbsv */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Integer6 >
+inline int gbsv(
+        const Integer1 n,
+        const Integer2 kl,
+        const Integer3 ku,
+        const Integer4 nrhs,
+        const float *ab,
+        const Integer5 ldab,
+        const int *ipiv,
+        float *b,
+        const Integer6 ldb)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer6>::value);
+    return suzerain_lapack_sgbsv(boost::numeric_cast<int>(n),
+                                 boost::numeric_cast<int>(kl),
+                                 boost::numeric_cast<int>(ku),
+                                 boost::numeric_cast<int>(nrhs),
+                                 ab,
+                                 boost::numeric_cast<int>(ldab),
+                                 ipiv,
+                                 b,
+                                 boost::numeric_cast<int>(ldb));
+}
+
+/*! @copydoc suzerain_lapack_sgbsv */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Integer6 >
+inline int gbsv(
+        const Integer1 n,
+        const Integer2 kl,
+        const Integer3 ku,
+        const Integer4 nrhs,
+        const double *ab,
+        const Integer5 ldab,
+        const int *ipiv,
+        double *b,
+        const Integer6 ldb)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer6>::value);
+    return suzerain_lapack_dgbsv(boost::numeric_cast<int>(n),
+                                 boost::numeric_cast<int>(kl),
+                                 boost::numeric_cast<int>(ku),
+                                 boost::numeric_cast<int>(nrhs),
+                                 ab,
+                                 boost::numeric_cast<int>(ldab),
+                                 ipiv,
+                                 b,
+                                 boost::numeric_cast<int>(ldb));
+}
+
 /*! @copydoc suzerain_lapack_sgbcon */
 template< typename Integer1,
           typename Integer2,
