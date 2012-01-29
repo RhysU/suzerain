@@ -1828,6 +1828,86 @@ inline int gbsv(
                                  boost::numeric_cast<int>(ldb));
 }
 
+/*! @copydoc suzerain_lapack_sgbsv */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Integer6,
+          typename Complex1,
+          typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_float<Complex1>,
+    suzerain::complex::traits::is_complex_float<Complex2>
+>, int >::type gbsv(
+        const Integer1 n,
+        const Integer2 kl,
+        const Integer3 ku,
+        const Integer4 nrhs,
+        const Complex1 *ab,
+        const Integer5 ldab,
+        const int *ipiv,
+        Complex2 *b,
+        const Integer6 ldb)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer6>::value);
+    return suzerain_lapack_cgbsv(boost::numeric_cast<int>(n),
+                                 boost::numeric_cast<int>(kl),
+                                 boost::numeric_cast<int>(ku),
+                                 boost::numeric_cast<int>(nrhs),
+                                 reinterpret_cast<const float (*)[2]>(ab),
+                                 boost::numeric_cast<int>(ldab),
+                                 ipiv,
+                                 reinterpret_cast<float (*)[2]>(b),
+                                 boost::numeric_cast<int>(ldb));
+}
+
+/*! @copydoc suzerain_lapack_sgbsv */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Integer6,
+          typename Complex1,
+          typename Complex2 >
+inline typename boost::enable_if<boost::mpl::and_<
+    suzerain::complex::traits::is_complex_double<Complex1>,
+    suzerain::complex::traits::is_complex_double<Complex2>
+>, int >::type gbsv(
+        const Integer1 n,
+        const Integer2 kl,
+        const Integer3 ku,
+        const Integer4 nrhs,
+        const Complex1 *ab,
+        const Integer5 ldab,
+        const int *ipiv,
+        Complex2 *b,
+        const Integer6 ldb)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer6>::value);
+    return suzerain_lapack_zgbsv(boost::numeric_cast<int>(n),
+                                 boost::numeric_cast<int>(kl),
+                                 boost::numeric_cast<int>(ku),
+                                 boost::numeric_cast<int>(nrhs),
+                                 reinterpret_cast<const double (*)[2]>(ab),
+                                 boost::numeric_cast<int>(ldab),
+                                 ipiv,
+                                 reinterpret_cast<double (*)[2]>(b),
+                                 boost::numeric_cast<int>(ldb));
+}
+
 /*! @copydoc suzerain_lapack_sgbcon */
 template< typename Integer1,
           typename Integer2,
