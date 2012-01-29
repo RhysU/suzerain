@@ -2165,7 +2165,11 @@ highlights how the full operator is built from discrete operators applied to
 individual state fields.  Applying the operator should not require fully
 forming it within a contiguous region of memory.  ``Inverting'' the operator
 (more correctly, factorizing and solving for unknown coefficients given
-collocation point values) likely will.
+collocation point values) will.  Employing an appropriate permutation matrix
+$P$ causes the renumbered operator $P\left(M+\varphi{}L\right)\trans{P}$ to be
+globally banded with a small bandwidth independent of the number of wall-normal
+degrees of freedom.  This $P\left(M+\varphi{}L\right)\trans{P}$ allows
+efficient banded factorization and back substitution.
 
 Strong Dirichlet boundary conditions may be enforced in the usual way.  Neumann
 boundary condition implementations are less straightforward.  For simulations
