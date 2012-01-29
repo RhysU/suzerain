@@ -1536,6 +1536,70 @@ inline int gbtrf(
                                   ipiv);
 }
 
+/*! @copydoc suzerain_lapack_sgbtrf */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Complex1 >
+inline typename boost::enable_if<
+    suzerain::complex::traits::is_complex_float<Complex1>
+, int>::type gbtrf(
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
+        Complex1 *ab,
+        const Integer5 ldab,
+        int *ipiv)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    return suzerain_lapack_cgbtrf(boost::numeric_cast<int>(m),
+                                  boost::numeric_cast<int>(n),
+                                  boost::numeric_cast<int>(kl),
+                                  boost::numeric_cast<int>(ku),
+                                  reinterpret_cast<float (*)[2]>(ab),
+                                  boost::numeric_cast<int>(ldab),
+                                  ipiv);
+}
+
+/*! @copydoc suzerain_lapack_sgbtrf */
+template< typename Integer1,
+          typename Integer2,
+          typename Integer3,
+          typename Integer4,
+          typename Integer5,
+          typename Complex1 >
+inline typename boost::enable_if<
+    suzerain::complex::traits::is_complex_double<Complex1>
+, int>::type gbtrf(
+        const Integer1 m,
+        const Integer2 n,
+        const Integer3 kl,
+        const Integer4 ku,
+        Complex1 *ab,
+        const Integer5 ldab,
+        int *ipiv)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer3>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer4>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer5>::value);
+    return suzerain_lapack_zgbtrf(boost::numeric_cast<int>(m),
+                                  boost::numeric_cast<int>(n),
+                                  boost::numeric_cast<int>(kl),
+                                  boost::numeric_cast<int>(ku),
+                                  reinterpret_cast<double (*)[2]>(ab),
+                                  boost::numeric_cast<int>(ldab),
+                                  ipiv);
+}
+
 /*! @copydoc suzerain_lapack_sgbtrs */
 template< typename Integer1,
           typename Integer2,
