@@ -678,8 +678,8 @@ BOOST_AUTO_TEST_CASE( solve_real )
     BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(M ), (unsigned) A.ld*A.n);
     BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(D1), (unsigned) A.ld*A.n);
     BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(D2), (unsigned) A.ld*A.n);
-    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(BR),  (unsigned) A.N);
-    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(XR),  (unsigned) A.N);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(BR), (unsigned) A.N);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(XR), (unsigned) A.N);
 
     // Allocate working buffers for accumulating submatrices
     boost::scoped_array<double> b   (new double[A.n*A.ld]);
@@ -731,6 +731,94 @@ BOOST_AUTO_TEST_CASE( solve_real )
     // Do we match the expected solution?
     check_close_collections(XR, XR + A.N, b.get() + A.N, b.get() + 2*A.N,
                             std::numeric_limits<double>::epsilon()*1e4);
+}
+
+// Complex operator used for this test is i*op used for solve_real.
+// This decouples the real- and imaginary equations but is useful
+// for ensuring the data movement (what we care about) remains correct.
+BOOST_AUTO_TEST_CASE( solve_complex )
+{
+    typedef double               real_t;
+    typedef std::complex<real_t> complex_t;
+    namespace blas = suzerain::blas;
+    const suzerain_bsmbsm A = suzerain_bsmbsm_construct(3, 10, 4, 4);
+
+    // Sanity checks on compile-time information
+    BOOST_REQUIRE_EQUAL(A.S,       3);
+    BOOST_REQUIRE_EQUAL(A.n,      10);
+    BOOST_REQUIRE_EQUAL(A.kl,      4);
+    BOOST_REQUIRE_EQUAL(A.ku,      4);
+    BOOST_REQUIRE_EQUAL(A.ld,  4+1+4);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(M ), (unsigned) A.ld*A.n);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(D1), (unsigned) A.ld*A.n);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(D2), (unsigned) A.ld*A.n);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(BR), (unsigned) A.N);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(XR), (unsigned) A.N);
+
+    // Allocate working buffers for accumulating submatrices
+    boost::scoped_array<real_t> b   (new real_t[2*A.n*A.ld]);
+    boost::scoped_array<real_t> papt(new real_t[2*A.N*(A.LD+A.KL)]);
+    std::fill(papt.get(), papt.get() + 2*A.N*(A.LD+A.KL), 0);
+
+    // Build the packed, complex operator "i*op" per Mathematica above
+    // B^{0,0} is i*M
+    blas::copy(SUZERAIN_COUNTOF(M), M, 1, b.get()+1, 2);
+    suzerain_bsmbsm_zpackf(A, 0, 0, (const real_t (*)[2]) b.get(),
+                                    (      real_t (*)[2]) papt.get());
+    // B^{1,1} is i*2*M
+    blas::scal(SUZERAIN_COUNTOF(M), 2, b.get()+1, 2);
+    suzerain_bsmbsm_zpackf(A, 1, 1, (const real_t (*)[2]) b.get(),
+                                    (      real_t (*)[2]) papt.get());
+    // B^{2,2} is i*4*M
+    blas::scal(SUZERAIN_COUNTOF(M), 2, b.get()+1, 2);
+    suzerain_bsmbsm_zpackf(A, 2, 2, (const real_t (*)[2]) b.get(),
+                                    (      real_t (*)[2]) papt.get());
+
+    // B^{0,1} is i*(1/5)*D1
+    blas::copy(SUZERAIN_COUNTOF(D1), D1, 1, b.get()+1, 2);
+    blas::scal(SUZERAIN_COUNTOF(D1), 1.0/5.0, b.get()+1, 2);
+    suzerain_bsmbsm_zpackf(A, 0, 1, (const real_t (*)[2]) b.get(),
+                                    (      real_t (*)[2]) papt.get());
+    // B^{2,1} is i*(1/10)*D1
+    blas::scal(SUZERAIN_COUNTOF(D1), 1.0/2.0, b.get()+1, 2);
+    suzerain_bsmbsm_zpackf(A, 2, 1, (const real_t (*)[2]) b.get(),
+                                    (      real_t (*)[2]) papt.get());
+
+    // B^{1,0} is i*(1/7)*D2
+    blas::copy(SUZERAIN_COUNTOF(D2), D2, 1, b.get()+1, 2);
+    blas::scal(SUZERAIN_COUNTOF(D2), 1.0/7.0, b.get()+1, 2);
+    suzerain_bsmbsm_zpackf(A, 1, 0, (const real_t (*)[2]) b.get(),
+                                    (      real_t (*)[2]) papt.get());
+    // B^{1,2} is i*(1/14)*D2
+    blas::scal(SUZERAIN_COUNTOF(D2), 1.0/2.0, b.get()+1, 2);
+    suzerain_bsmbsm_zpackf(A, 1, 2, (const real_t (*)[2]) b.get(),
+                                    (      real_t (*)[2]) papt.get());
+
+    // Reuse working buffer to permute right hand side for solve
+    b.reset(new real_t[2*(2*A.N)]);
+    suzerain_bsmbsm_daPxpby(
+            'N', A.S, A.n, -1.0, BR, 1, 0, b.get(),   2); // Re(-BR)
+    suzerain_bsmbsm_daPxpby(
+            'N', A.S, A.n,  1.0, BR, 1, 0, b.get()+1, 2); // Im( BR)
+
+    // Solve in place
+    boost::scoped_array<int> ipiv(new int[A.N]);
+    BOOST_REQUIRE_EQUAL(0, suzerain::lapack::gbsv(
+        A.N, A.KL, A.KU, 1, (complex_t *) papt.get(), A.LD + A.KL, ipiv.get(),
+        (complex_t *) b.get(), A.N));
+
+    // Unpermute the right hand side out-of-place
+    suzerain_bsmbsm_daPxpby(
+            'T', A.S, A.n, 1.0, b.get(),   2, 0, b.get() + 2*A.N, 1); // Re(X)
+    suzerain_bsmbsm_daPxpby(
+            'T', A.S, A.n, 1.0, b.get()+1, 2, 0, b.get() + 3*A.N, 1); // Im(X)
+
+// FIXME
+//  // Do we match the expected solution?
+//  check_close_collections(XR, XR + A.N, b.get() + 2*A.N, b.get() + 3*A.N,
+//                          std::numeric_limits<double>::epsilon()*1e4);
+//  check_close_collections(XR, XR + A.N, b.get() + 3*A.N, b.get() + 4*A.N,
+//                          std::numeric_limits<double>::epsilon()*1e4);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
