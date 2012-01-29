@@ -625,13 +625,13 @@ static const double D2[] = {
         0.0, 0.0
     };
 
-static const double B[] = {
+static const double BR[] = {
         1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0,
         13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0,
         23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0
     };
 
-static const double X[] = { // Found with N[Solve[op, B], 30]
+static const double XR[] = { // Found with N[Solve[op, BR], 30]
         -17.1205296638145575157187077973,
         -18.2963281236408675358367770456,
         -17.7937495693148766965188650215,
@@ -678,8 +678,8 @@ BOOST_AUTO_TEST_CASE( solve_real )
     BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(M ), (unsigned) A.ld*A.n);
     BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(D1), (unsigned) A.ld*A.n);
     BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(D2), (unsigned) A.ld*A.n);
-    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(B),  (unsigned) A.N);
-    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(X),  (unsigned) A.N);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(BR),  (unsigned) A.N);
+    BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(XR),  (unsigned) A.N);
 
     // Allocate working buffers for accumulating submatrices
     boost::scoped_array<double> b   (new double[A.n*A.ld]);
@@ -716,11 +716,11 @@ BOOST_AUTO_TEST_CASE( solve_real )
     // Reuse working buffer to permute right hand side for solve
     b.reset(new double[2*A.N]);
     suzerain_bsmbsm_daPxpby(
-            'N', A.S, A.n, 1.0, B, 1, 0, b.get(), 1);
+            'N', A.S, A.n, 1.0, BR, 1, 0, b.get(), 1);
 
     // Solve in place
     boost::scoped_array<int> ipiv(new int[A.N]);
-    BOOST_REQUIRE_EQUAL(0, suzerain_lapack_dgbsv(
+    BOOST_REQUIRE_EQUAL(0, suzerain::lapack::gbsv(
         A.N, A.KL, A.KU, 1, papt.get(), A.LD + A.KL, ipiv.get(),
         b.get(), A.N));
 
@@ -729,7 +729,7 @@ BOOST_AUTO_TEST_CASE( solve_real )
             'T', A.S, A.n, 1.0, b.get(), 1, 0, b.get() + A.N, 1);
 
     // Do we match the expected solution?
-    check_close_collections(X, X + A.N, b.get() + A.N, b.get() + 2*A.N,
+    check_close_collections(XR, XR + A.N, b.get() + A.N, b.get() + 2*A.N,
                             std::numeric_limits<double>::epsilon()*1e4);
 }
 

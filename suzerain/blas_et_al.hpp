@@ -1770,9 +1770,9 @@ inline int gbsv(
         const Integer2 kl,
         const Integer3 ku,
         const Integer4 nrhs,
-        const float *ab,
+        float *ab,
         const Integer5 ldab,
-        const int *ipiv,
+        int *ipiv,
         float *b,
         const Integer6 ldb)
 {
@@ -1805,9 +1805,9 @@ inline int gbsv(
         const Integer2 kl,
         const Integer3 ku,
         const Integer4 nrhs,
-        const double *ab,
+        double *ab,
         const Integer5 ldab,
-        const int *ipiv,
+        int *ipiv,
         double *b,
         const Integer6 ldb)
 {
@@ -1845,9 +1845,9 @@ inline typename boost::enable_if<boost::mpl::and_<
         const Integer2 kl,
         const Integer3 ku,
         const Integer4 nrhs,
-        const Complex1 *ab,
+        Complex1 *ab,
         const Integer5 ldab,
-        const int *ipiv,
+        int *ipiv,
         Complex2 *b,
         const Integer6 ldb)
 {
@@ -1885,9 +1885,9 @@ inline typename boost::enable_if<boost::mpl::and_<
         const Integer2 kl,
         const Integer3 ku,
         const Integer4 nrhs,
-        const Complex1 *ab,
+        Complex1 *ab,
         const Integer5 ldab,
-        const int *ipiv,
+        int *ipiv,
         Complex2 *b,
         const Integer6 ldb)
 {
