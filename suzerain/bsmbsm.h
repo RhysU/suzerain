@@ -291,8 +291,8 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
 
 /**
  * Pack banded submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$ into the
- * corresponding locations within globally banded storage of \f$P A
- * P^{\mbox{T}}\f$.  More specifically,
+ * corresponding locations within banded storage of \f$P A P^{\mbox{T}}\f$.
+ * More specifically,
  * \f[
  *   \left.B^{\hat{\imath}\,\hat{\jmath}}\right|_{i\,j}}
  *   =
@@ -307,6 +307,17 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  * relates the source and target values through the permutation vector \f$q\f$.
  * Storage \c b must not alias storage \c papt.  On error invokes
  * suzerain_blas_xerbla().
+ *
+ * @param S      Number of rows and columns of banded submatrices
+ * @param n      Number or rows and columns in each banded submatrix
+ * @param kl     Number of subdiagonals in each banded submatrix
+ * @param ku     Number of superdiagonals in each banded submatrix
+ * @param b      Band storage of submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$
+ * @param ihat   Submatrix row offset \f$\hat{\imath}\f$
+ * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$
+ * @param ldb    Leading dimension of storage \c b
+ * @param papt   Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
+ * @param ldpapt Leading dimension of storage \c papt
  *
  * @see bsmbsm.h for full details on the permutation vector \f$q\f$.
  */
