@@ -349,6 +349,63 @@ suzerain_bsmbsm_zpack(int S,  int n, int ihat, int jhat,
                       int kl, int ku, const double (*b)[2],    int ldb,
                       int KL, int KU,       double (*papt)[2], int ldpapt);
 
+/**
+ * Pack contiguous, banded submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$ into
+ * the corresponding locations within contiguous, LU factorization-ready
+ * storage of \f$P A P^{\mbox{T}}\f$.  This is a convenience method to simplify
+ * preparing storage for use by LAPACK's <tt>gbtrf</tt> or <tt>gbsv</tt>.
+ *
+ * @param A      Storage details for the BSMBSM matrix.
+ * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
+ * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
+ * @param b      Band storage of submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$
+ *               which <em>must</em> have <tt>A.kl</tt> and <tt>A.ku</tt>
+ *               diagonals and leading dimension
+ *               <tt>A.ld = A.ku + 1 + A.kl</tt>.
+ * @param papt   Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
+ *               which <em>must</em> have <tt>A.KL</tt> and <tt>A.KU</tt>
+ *               diagonals and leading dimension
+ *               <tt>A.LD + A.KL = 2*A.KL + A.KU + 1</tt>.
+ */
+inline static void
+suzerain_bsmbsm_spackf(const suzerain_bsmbsm A, int ihat, int jhat,
+                       const float *b, float *papt)
+{
+    return suzerain_bsmbsm_spack(A.S, A.n, ihat, jhat,
+                                 A.kl, A.ku, b,           A.ld,
+                                 A.KL, A.KU, papt + A.KL, A.LD + A.KL);
+}
+
+/** @copydoc suzerain_bsmbsm_spackf */
+inline static void
+suzerain_bsmbsm_dpackf(const suzerain_bsmbsm A, int ihat, int jhat,
+                       const double *b, double *papt)
+{
+    return suzerain_bsmbsm_dpack(A.S, A.n, ihat, jhat,
+                                 A.kl, A.ku, b,           A.ld,
+                                 A.KL, A.KU, papt + A.KL, A.LD + A.KL);
+}
+
+/** @copydoc suzerain_bsmbsm_spackf */
+inline static void
+suzerain_bsmbsm_cpackf(const suzerain_bsmbsm A, int ihat, int jhat,
+                       const float (*b)[2], float (*papt)[2])
+{
+    return suzerain_bsmbsm_cpack(A.S, A.n, ihat, jhat,
+                                 A.kl, A.ku, b,           A.ld,
+                                 A.KL, A.KU, papt + A.KL, A.LD + A.KL);
+}
+
+/** @copydoc suzerain_bsmbsm_spackf */
+inline static void
+suzerain_bsmbsm_zpackf(const suzerain_bsmbsm A, int ihat, int jhat,
+                       const double (*b)[2], double (*papt)[2])
+{
+    return suzerain_bsmbsm_zpack(A.S, A.n, ihat, jhat,
+                                 A.kl, A.ku, b,           A.ld,
+                                 A.KL, A.KU, papt + A.KL, A.LD + A.KL);
+}
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
