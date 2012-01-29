@@ -167,31 +167,32 @@ AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
 
 void
 AFFIXPREC(suzerain_bsmbsm_,pack)(
-        int S, int n, int kl, int ku,
-        const COMPONENT * restrict b, int ihat, int jhat, int ldb,
-        COMPONENT * restrict papt, int ldpapt)
+    int S,  int n,
+    int kl, int ku, const COMPONENT * restrict b, int ihat, int jhat, int ldb,
+    int KL, int KU,       COMPONENT * restrict papt,                  int ldpapt)
 {
-    const int KL = S*(kl + 1) - 1;
-    const int KU = S*(ku + 1) - 1;
-
     if (UNLIKELY(S  < 0))
-            return suzerain_blas_xerbla(__func__, 1);
+            return suzerain_blas_xerbla(__func__,   1);
     if (UNLIKELY(n  < 0))
-            return suzerain_blas_xerbla(__func__, 2);
+            return suzerain_blas_xerbla(__func__,   2);
     if (UNLIKELY(kl < 0))
-            return suzerain_blas_xerbla(__func__, 3);
+            return suzerain_blas_xerbla(__func__,   3);
     if (UNLIKELY(ku < 0))
-            return suzerain_blas_xerbla(__func__, 4);
+            return suzerain_blas_xerbla(__func__,   4);
     if (UNLIKELY(ihat < 0 || ihat >= S))
-            return suzerain_blas_xerbla(__func__,  6);
+            return suzerain_blas_xerbla(__func__,   6);
     if (UNLIKELY(jhat < 0 || jhat >= S))
-            return suzerain_blas_xerbla(__func__,  7);
-    if (UNLIKELY(ldb    < kl + 1 + ku))
-            return suzerain_blas_xerbla(__func__,  8);
+            return suzerain_blas_xerbla(__func__,   7);
+    if (UNLIKELY(ldb  < kl + 1 + ku))
+            return suzerain_blas_xerbla(__func__,   8);
+    if (UNLIKELY(KL < S*(kl + 1) - 1))
+            return suzerain_blas_xerbla(__func__,   9);
+    if (UNLIKELY(KU < S*(ku + 1) - 1))
+            return suzerain_blas_xerbla(__func__,  10);
     if (UNLIKELY(ldpapt < KL + 1 + KU))
-            return suzerain_blas_xerbla(__func__, 10);
+            return suzerain_blas_xerbla(__func__,  12);
     if (UNLIKELY((void*)b == (void*)papt))
-            return suzerain_blas_xerbla(__func__, 59);
+            return suzerain_blas_xerbla(__func__, 511);
 
     // Source dereference is always of form b[ku + i + j*(ldb - 1)].
     // Target uses papt[KU + q(ihat*n + i) + q(jhat*n + j)*(ldpapt - 1)].
